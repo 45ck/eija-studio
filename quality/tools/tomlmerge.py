@@ -63,6 +63,10 @@ def _additive(base: list, side: list) -> bool:
     return all(any(item == candidate for candidate in remaining) for item in base)
 
 
+def _is_scalar(item) -> bool:
+    return not isinstance(item, (dict, list))
+
+
 def _both_only_extended(base_value, ours_value, theirs_value) -> bool:
     """All values are arrays (the base may be absent) and each side only extended the base."""
     if not (isinstance(ours_value, list) and isinstance(theirs_value, list)):
@@ -70,6 +74,8 @@ def _both_only_extended(base_value, ours_value, theirs_value) -> bool:
     if not (base_value is MISSING or isinstance(base_value, list)):
         return False
     base_list = [] if base_value is MISSING else base_value
+    if not all(_is_scalar(x) for x in (*base_list, *ours_value, *theirs_value)):
+        return False  # arrays of tables / nested arrays are never unioned: flattening would corrupt them
     return _additive(base_list, ours_value) and _additive(base_list, theirs_value)
 
 
