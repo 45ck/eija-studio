@@ -1,0 +1,11 @@
+{
+  "debt": {
+    "src/eija_studio/adapters/providers.py::OpenRouterProvider.propose": 17,
+    "src/eija_studio/application/compiler.py::compile_case": 16,
+    "src/eija_studio/application/runtime.py::execute": 16,
+    "src/eija_studio/application/verifier.py::verify_runtime": 23,
+    "src/eija_studio/domain/evidence.py::assess_receipt": 45,
+    "src/eija_studio/domain/policy.py::check_policy": 21,
+    "src/eija_studio/interfaces/cli.py::main": 33
+  }
+}

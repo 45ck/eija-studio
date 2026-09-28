@@ -3,6 +3,7 @@
 This is a bounded semantic/report compiler, not a general source-code compiler.
 """
 from __future__ import annotations
+from typing import Any, Callable
 from eija_studio.domain.models import Workflow, fingerprint
 from eija_studio.domain.change_case import ChangeCase
 from eija_studio.domain.policy import projections, check_policy, meaning_questions
@@ -10,12 +11,15 @@ from eija_studio.domain.impact import model_impact
 from eija_studio.domain.evidence import aggregate_status, assess_receipt
 
 
-def subject_for(model: Workflow, layout: dict, identity: dict) -> dict:
+def subject_for(model: Workflow, layout: dict[str, Any], identity: dict[str, Any]) -> dict[str, Any]:
     return {k: identity[k] for k in ("implementation", "policy", "environment", "harness")} | {
         "semantic": model.semantic_hash, "presentation": fingerprint(layout)}
 
 
-def compile_case(case: ChangeCase, identity: dict, authenticator, active_version: int, scope: str = "local-demo") -> dict:
+def compile_case(
+    case: ChangeCase, identity: dict[str, Any], authenticator: Callable[[dict[str, Any]], bool],
+    active_version: int, scope: str = "local-demo",
+) -> dict[str, Any]:
     if case.candidate is None:
         return {"eligible": False, "status": "BLOCKED", "blockers": ["MEANING_REQUIRED"], "human_understanding": "UNKNOWN"}
     model = case.candidate

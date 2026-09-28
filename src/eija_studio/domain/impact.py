@@ -1,13 +1,15 @@
 from __future__ import annotations
 from collections import deque
+from typing import Any
 from .models import Workflow
 
 
-def closure(graph: dict[str, list[str]], roots: list[str], budget: int | None = None) -> dict:
+def closure(graph: dict[str, list[str]], roots: list[str], budget: int | None = None) -> dict[str, Any]:
     """Edges mean source affects target. Fixed point, cycle-safe; no silent depth cap."""
     if budget is not None and budget < 0:
         raise ValueError("Negative traversal budget")
-    queue, visited = deque(sorted(set(roots))), set()
+    queue: deque[str] = deque(sorted(set(roots)))
+    visited: set[str] = set()
     while queue:
         if budget is not None and len(visited) >= budget:
             frontier = sorted(set(queue) - visited)
@@ -20,7 +22,7 @@ def closure(graph: dict[str, list[str]], roots: list[str], budget: int | None = 
     return {"affected": sorted(visited), "complete": True, "frontier": []}
 
 
-def model_impact(before: Workflow, after: Workflow) -> dict:
+def model_impact(before: Workflow, after: Workflow) -> dict[str, Any]:
     a, b = {t.action: t for t in before.transitions}, {t.action: t for t in after.transitions}
     changed = sorted(k for k in set(a) | set(b) if a.get(k) != b.get(k))
     graph: dict[str, list[str]] = {}
