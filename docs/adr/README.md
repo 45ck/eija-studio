@@ -11,6 +11,8 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0018](0018-formal-vv-portfolio.md) | Formal V&V portfolio: each technique is a distinct evidence kind | proposed |
 | [0019](0019-diagrams-generated-from-executable-model.md) | Diagrams are generated projections of the executable model | proposed |
 | [0020](0020-multi-provider-agent-adapters.md) | Proposal providers: Codex, Claude Code, OpenCode, Gemini CLI, OpenRouter | proposed |
+| [0031](0031-property-based-testing-with-hypothesis.md) | Property-based testing with Hypothesis in two profiles (ci derandomized, deep random) | accepted |
+| [0032](0032-stateful-differential-testing-and-negative-controls.md) | Stateful differential testing against a specification-derived reference, with mutant negative controls | accepted |
 
 ## Reserved numbers for capability lanes
 
