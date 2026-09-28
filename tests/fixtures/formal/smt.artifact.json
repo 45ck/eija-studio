@@ -1,0 +1,564 @@
+{
+ "accepted_set": {
+  "count": 3,
+  "enumeration_complete": true,
+  "equals_kernel_reachable_set": true,
+  "inconsistent_models": [],
+  "semantic_hashes": [
+   "5d3ef3a19c31d956a185b9c5ba4b1b79e651d0356e162436c5c67054d2ad4cdf",
+   "6514ed9e339658e5d068e6b1a31aa10576ba6b634f3638a9367328cd941b634b",
+   "b26c9af5ae4cd958099956232721a70e73cb7e6efe1b213ff32417829b588e56"
+  ]
+ },
+ "assumptions": [
+  "Candidates are workflows with unique actions (Workflow.coherent). check_policy indexes transitions by action; see assumption_witness.",
+  "Roles, states and effects outside the known vocabulary are one OTHER value each: sound because check_policy only compares them by equality/membership against known constants (checked by the differential test on foreign strings).",
+  "No Transition validator is assumed (base guards, required/forbidden disjointness, from/to membership are left free), so the policy alone must enforce them.",
+  "Transition ids are not read by check_policy and are outside the grammar.",
+  "Guard names come from the Guard literal (a type-checked field). A model_construct candidate with a guard string outside it is outside the grammar; check_policy would reject it (GUARD_POLICY), so this can lose an error code in the encoding but cannot make the encoding admit anything the real policy refuses.",
+  "The Z3 encoding of check_policy is hand-written; its faithfulness is established only by the differential test (sampled), not by proof.",
+  "AuthorityInvariant is the authors' statement of the policy's intent (same authorship as the policy): it is not an independently derived requirement."
+ ],
+ "binding": {
+  "current_sources_sha256_lf": {
+   "domain/models.py": "eae77547d1b9c6d639d48474aaf2415aad3fac207777c55ab88d7dba009884fa",
+   "domain/policy.py": "c868bada2d79bc9277ef37abf0dd33373343666e2873fcf3b6b2a1aec788415e"
+  },
+  "reported_sources_sha256_lf": {
+   "domain/models.py": "eae77547d1b9c6d639d48474aaf2415aad3fac207777c55ab88d7dba009884fa",
+   "domain/policy.py": "c868bada2d79bc9277ef37abf0dd33373343666e2873fcf3b6b2a1aec788415e"
+  }
+ },
+ "bounds": {
+  "actions": [
+   "Submit",
+   "Recommend",
+   "Approve",
+   "Reject",
+   "Revise"
+  ],
+  "bounded_by": "one slot per known action (unique actions), enumerated vocabulary",
+  "effect_atoms": [
+   "Audit:ExcursionApproved",
+   "Audit:ExcursionRecommended",
+   "Audit:ExcursionRejected",
+   "Audit:ExcursionReopened",
+   "Audit:ExcursionSubmitted",
+   "Notification:RegistrarQueued",
+   "ParentDataExported",
+   "PaymentCaptured"
+  ],
+  "guards": [
+   "actor_active",
+   "role_current",
+   "actor_assigned",
+   "state_equals",
+   "expected_version",
+   "operation_binding"
+  ],
+  "roles": [
+   "Teacher",
+   "Registrar",
+   "Viewer",
+   "<other>"
+  ],
+  "states": [
+   "Draft",
+   "Submitted",
+   "Recommended",
+   "Approved",
+   "Rejected",
+   "<other>"
+  ],
+  "unknown_action_slot": true,
+  "unknown_state_slot": true
+ },
+ "claim": "For every candidate in the symbolic Transition grammar, the HAND-WRITTEN Z3 ENCODING of check_policy admitting c implies AuthorityInvariant(c). That the encoding is the real check_policy is sampled (differential test), not proved; the source-digest drift check is the alarm for kernel changes the sample does not catch.",
+ "differential": {
+  "admitted_but_python_invariant_false": [],
+  "candidates": 2572,
+  "clauses": 105,
+  "clauses_never_fired": [],
+  "clauses_never_silent": [],
+  "code_disagreements": [],
+  "invariant_disagreements": [],
+  "seed": 20260928
+ },
+ "invariants": [
+  {
+   "id": "INV-TEACHER-NOT-DECIDER",
+   "status": "proved"
+  },
+  {
+   "id": "INV-REGISTRAR-ONLY-DECIDES",
+   "status": "proved"
+  },
+  {
+   "id": "INV-TEACHER-TRANSITIONS-NEVER-DECIDE",
+   "status": "proved"
+  },
+  {
+   "id": "INV-TEACHER-EMITS-NO-DECISION-AUDIT",
+   "status": "proved"
+  },
+  {
+   "id": "INV-APPROVE-REQUIRES-RECOMMENDED",
+   "status": "proved"
+  },
+  {
+   "id": "INV-APPROVED-ONLY-VIA-APPROVE",
+   "status": "proved"
+  },
+  {
+   "id": "INV-RECOMMEND-REQUIRES-ASSIGNMENT",
+   "status": "proved"
+  },
+  {
+   "id": "INV-RECOMMEND-CANNOT-CONCLUDE",
+   "status": "proved"
+  },
+  {
+   "id": "INV-REJECT-SOURCE-BOUNDED",
+   "status": "proved"
+  },
+  {
+   "id": "INV-APPROVE-ENDS-IN-APPROVED",
+   "status": "proved"
+  },
+  {
+   "id": "INV-RECOMMEND-STARTS-FROM-SUBMITTED",
+   "status": "proved"
+  },
+  {
+   "id": "INV-REJECT-FROM-SUBMITTED-WITHOUT-RECOMMENDATION",
+   "status": "proved"
+  },
+  {
+   "id": "INV-FORBIDDEN-EFFECTS-EXCLUDED",
+   "status": "proved"
+  },
+  {
+   "id": "INV-MANDATORY-GUARDS-PRESENT",
+   "status": "proved"
+  },
+  {
+   "id": "INV-CLOSED-WORKFLOW",
+   "status": "proved"
+  }
+ ],
+ "limitations": [
+  "Proves properties of the policy function on the modelled grammar, not of the runtime, SQLite adapter, HTTP layer or Python interpreter.",
+  "UNSAT answers are Z3's; no independently checked proof object is produced. Z3 is in the trusted base.",
+  "The accepted set is stated up to extra (non-mandatory) forbidden_effects atoms: check_policy only requires FORBIDDEN to be a subset, so infinitely many harmless supersets are admitted.",
+  "Not a human study, not a security audit."
+ ],
+ "negative_controls": {
+  "inconsistent_witnesses": [],
+  "named": [
+   {
+    "counterexample_found": true,
+    "expect_violation_of": "INV-TEACHER-NOT-DECIDER",
+    "remove": "PROTECTED_AUTHORITY:Approve/role",
+    "witness": {
+     "transitions": [
+      {
+       "action": "Submit",
+       "from": "Draft",
+       "role": "Teacher",
+       "to": "Submitted"
+      },
+      {
+       "action": "Recommend",
+       "from": "Submitted",
+       "role": "Teacher",
+       "to": "Recommended"
+      },
+      {
+       "action": "Approve",
+       "from": "Recommended",
+       "role": "Teacher",
+       "to": "Approved"
+      },
+      {
+       "action": "Reject",
+       "from": "Recommended",
+       "role": "Registrar",
+       "to": "Rejected"
+      },
+      {
+       "action": "Revise",
+       "from": "Rejected",
+       "role": "Teacher",
+       "to": "Draft"
+      }
+     ],
+     "violated_invariants": [
+      "INV-REGISTRAR-ONLY-DECIDES",
+      "INV-TEACHER-EMITS-NO-DECISION-AUDIT",
+      "INV-TEACHER-NOT-DECIDER",
+      "INV-TEACHER-TRANSITIONS-NEVER-DECIDE"
+     ]
+    }
+   },
+   {
+    "counterexample_found": true,
+    "expect_violation_of": "INV-TEACHER-NOT-DECIDER",
+    "remove": "PROTECTED_AUTHORITY:Reject/role",
+    "witness": {
+     "transitions": [
+      {
+       "action": "Submit",
+       "from": "Draft",
+       "role": "Teacher",
+       "to": "Submitted"
+      },
+      {
+       "action": "Recommend",
+       "from": "Submitted",
+       "role": "Teacher",
+       "to": "Recommended"
+      },
+      {
+       "action": "Approve",
+       "from": "Recommended",
+       "role": "Registrar",
+       "to": "Approved"
+      },
+      {
+       "action": "Reject",
+       "from": "Recommended",
+       "role": "Teacher",
+       "to": "Rejected"
+      },
+      {
+       "action": "Revise",
+       "from": "Rejected",
+       "role": "Teacher",
+       "to": "Draft"
+      }
+     ],
+     "violated_invariants": [
+      "INV-REGISTRAR-ONLY-DECIDES",
+      "INV-TEACHER-EMITS-NO-DECISION-AUDIT",
+      "INV-TEACHER-NOT-DECIDER",
+      "INV-TEACHER-TRANSITIONS-NEVER-DECIDE"
+     ]
+    }
+   },
+   {
+    "counterexample_found": true,
+    "expect_violation_of": "INV-APPROVE-REQUIRES-RECOMMENDED",
+    "remove": "PROTECTED_STATE:Approve/from",
+    "witness": {
+     "transitions": [
+      {
+       "action": "Submit",
+       "from": "Draft",
+       "role": "Teacher",
+       "to": "Submitted"
+      },
+      {
+       "action": "Recommend",
+       "from": "Submitted",
+       "role": "Teacher",
+       "to": "Recommended"
+      },
+      {
+       "action": "Approve",
+       "from": "Draft",
+       "role": "Registrar",
+       "to": "Approved"
+      },
+      {
+       "action": "Reject",
+       "from": "Recommended",
+       "role": "Registrar",
+       "to": "Rejected"
+      },
+      {
+       "action": "Revise",
+       "from": "Rejected",
+       "role": "Teacher",
+       "to": "Draft"
+      }
+     ],
+     "violated_invariants": [
+      "INV-APPROVE-REQUIRES-RECOMMENDED"
+     ]
+    }
+   },
+   {
+    "counterexample_found": true,
+    "expect_violation_of": "INV-RECOMMEND-REQUIRES-ASSIGNMENT",
+    "remove": "GUARD_POLICY:Recommend/actor_assigned",
+    "witness": {
+     "transitions": [
+      {
+       "action": "Submit",
+       "from": "Draft",
+       "role": "Teacher",
+       "to": "Submitted"
+      },
+      {
+       "action": "Recommend",
+       "from": "Submitted",
+       "role": "Teacher",
+       "to": "Recommended"
+      },
+      {
+       "action": "Approve",
+       "from": "Recommended",
+       "role": "Registrar",
+       "to": "Approved"
+      },
+      {
+       "action": "Reject",
+       "from": "Recommended",
+       "role": "Registrar",
+       "to": "Rejected"
+      },
+      {
+       "action": "Revise",
+       "from": "Rejected",
+       "role": "Teacher",
+       "to": "Draft"
+      }
+     ],
+     "violated_invariants": [
+      "INV-RECOMMEND-REQUIRES-ASSIGNMENT"
+     ]
+    }
+   },
+   {
+    "counterexample_found": true,
+    "expect_violation_of": "INV-MANDATORY-GUARDS-PRESENT",
+    "remove": "GUARD_POLICY:Reject/actor_active",
+    "witness": {
+     "transitions": [
+      {
+       "action": "Submit",
+       "from": "Draft",
+       "role": "Teacher",
+       "to": "Submitted"
+      },
+      {
+       "action": "Recommend",
+       "from": "Submitted",
+       "role": "Teacher",
+       "to": "Recommended"
+      },
+      {
+       "action": "Approve",
+       "from": "Recommended",
+       "role": "Registrar",
+       "to": "Approved"
+      },
+      {
+       "action": "Reject",
+       "from": "Submitted",
+       "role": "Registrar",
+       "to": "Rejected"
+      },
+      {
+       "action": "Revise",
+       "from": "Rejected",
+       "role": "Teacher",
+       "to": "Draft"
+      }
+     ],
+     "violated_invariants": [
+      "INV-MANDATORY-GUARDS-PRESENT"
+     ]
+    }
+   },
+   {
+    "counterexample_found": true,
+    "expect_violation_of": "INV-FORBIDDEN-EFFECTS-EXCLUDED",
+    "remove": "EFFECT_POLICY:Approve/forbidden:PaymentCaptured",
+    "witness": {
+     "transitions": [
+      {
+       "action": "Submit",
+       "from": "Draft",
+       "role": "Teacher",
+       "to": "Submitted"
+      },
+      {
+       "action": "Approve",
+       "from": "Submitted",
+       "role": "Registrar",
+       "to": "Approved"
+      },
+      {
+       "action": "Reject",
+       "from": "Submitted",
+       "role": "Registrar",
+       "to": "Rejected"
+      },
+      {
+       "action": "Revise",
+       "from": "Rejected",
+       "role": "Teacher",
+       "to": "Draft"
+      }
+     ],
+     "violated_invariants": [
+      "INV-FORBIDDEN-EFFECTS-EXCLUDED"
+     ]
+    }
+   },
+   {
+    "counterexample_found": true,
+    "expect_violation_of": "INV-FORBIDDEN-EFFECTS-EXCLUDED",
+    "remove": "EFFECT_POLICY:Approve/required:PaymentCaptured",
+    "witness": {
+     "transitions": [
+      {
+       "action": "Submit",
+       "from": "Draft",
+       "role": "Teacher",
+       "to": "Submitted"
+      },
+      {
+       "action": "Recommend",
+       "from": "Submitted",
+       "role": "Teacher",
+       "to": "Recommended"
+      },
+      {
+       "action": "Approve",
+       "from": "Recommended",
+       "role": "Registrar",
+       "to": "Approved"
+      },
+      {
+       "action": "Reject",
+       "from": "Recommended",
+       "role": "Registrar",
+       "to": "Rejected"
+      },
+      {
+       "action": "Revise",
+       "from": "Rejected",
+       "role": "Teacher",
+       "to": "Draft"
+      }
+     ],
+     "violated_invariants": [
+      "INV-FORBIDDEN-EFFECTS-EXCLUDED"
+     ]
+    }
+   },
+   {
+    "counterexample_found": true,
+    "expect_violation_of": "INV-REJECT-SOURCE-BOUNDED",
+    "remove": "UNSUPPORTED_REJECTION_SOURCE/source",
+    "witness": {
+     "transitions": [
+      {
+       "action": "Submit",
+       "from": "Draft",
+       "role": "Teacher",
+       "to": "Submitted"
+      },
+      {
+       "action": "Recommend",
+       "from": "Submitted",
+       "role": "Teacher",
+       "to": "Recommended"
+      },
+      {
+       "action": "Approve",
+       "from": "Recommended",
+       "role": "Registrar",
+       "to": "Approved"
+      },
+      {
+       "action": "Reject",
+       "from": "Draft",
+       "role": "Registrar",
+       "to": "Rejected"
+      },
+      {
+       "action": "Revise",
+       "from": "Rejected",
+       "role": "Teacher",
+       "to": "Draft"
+      }
+     ],
+     "violated_invariants": [
+      "INV-REJECT-SOURCE-BOUNDED"
+     ]
+    }
+   }
+  ],
+  "unknown": []
+ },
+ "non_vacuity": {
+  "each_invariant_falsifiable_by_some_candidate": {
+   "INV-APPROVE-ENDS-IN-APPROVED": true,
+   "INV-APPROVE-REQUIRES-RECOMMENDED": true,
+   "INV-APPROVED-ONLY-VIA-APPROVE": true,
+   "INV-CLOSED-WORKFLOW": true,
+   "INV-FORBIDDEN-EFFECTS-EXCLUDED": true,
+   "INV-MANDATORY-GUARDS-PRESENT": true,
+   "INV-RECOMMEND-CANNOT-CONCLUDE": true,
+   "INV-RECOMMEND-REQUIRES-ASSIGNMENT": true,
+   "INV-RECOMMEND-STARTS-FROM-SUBMITTED": true,
+   "INV-REGISTRAR-ONLY-DECIDES": true,
+   "INV-REJECT-FROM-SUBMITTED-WITHOUT-RECOMMENDATION": true,
+   "INV-REJECT-SOURCE-BOUNDED": true,
+   "INV-TEACHER-EMITS-NO-DECISION-AUDIT": true,
+   "INV-TEACHER-NOT-DECIDER": true,
+   "INV-TEACHER-TRANSITIONS-NEVER-DECIDE": true
+  },
+  "policy_admits_some_candidate": true
+ },
+ "protocol": "eija.formal.smt-proof/v1",
+ "reported": {
+  "checks": [
+   {
+    "id": "all_invariants_proved",
+    "status": "PASS"
+   },
+   {
+    "id": "non_vacuous",
+    "status": "PASS"
+   },
+   {
+    "id": "accepted_set_is_exactly_kernel_reachable_set",
+    "status": "PASS"
+   },
+   {
+    "id": "differential_agrees_with_real_check_policy",
+    "status": "PASS"
+   },
+   {
+    "id": "differential_exercises_every_clause_both_ways",
+    "status": "PASS"
+   },
+   {
+    "id": "named_negative_controls_yield_counterexamples",
+    "status": "PASS"
+   },
+   {
+    "id": "leave_one_out_witnesses_rejected_by_real_policy",
+    "status": "PASS"
+   },
+   {
+    "id": "committed_snapshot_has_no_drift",
+    "status": "PASS"
+   }
+  ],
+  "verdict": "PASS"
+ },
+ "source": {
+  "origin": "reports/formal/smt.json"
+ },
+ "subject_function": "eija_studio.domain.policy.check_policy",
+ "tool": {
+  "name": "z3-solver",
+  "package_version": "5.1.0.0",
+  "z3": "5.1.0"
+ }
+}

@@ -19,6 +19,8 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0041](0041-mcp-server-agent-surface.md) | MCP server as the agent surface: propose and check, never decide | accepted |
 | [0047](0047-hardcoded-scripted-demos-not-demo-machine.md) | Hand-authored scripted demo recordings, not demo-machine | accepted |
 | [0048](0048-scenario-dependency-gating.md) | Demo scenarios are gated by their real dependencies, never faked | accepted |
+| [0145](0145-per-kind-evidence-admissibility.md) | Per-kind admissibility: the kernel recomputes formal evidence from raw artifacts | proposed |
+| [0146](0146-formal-receipt-formats-binding-and-not-run.md) | Formal receipt formats, binding to the subject, and NOT_RUN semantics | proposed |
 <!-- adr-index:end -->
 
 ## Reserved numbers for capability lanes
