@@ -14,6 +14,10 @@ Keep original evidence and document counterexamples. Do not claim a mocked provi
 
 Before recommending updated Codex/OpenRouter parameters, check current official documentation and record the tested CLI/model versions. No remote publishing, deployment, paid loops, migration or key handling without explicit authorisation.
 
+## Knowledge base (start retrieval here)
+
+Start retrieval at [okf/index.md](okf/index.md): an [OKF v0.2](https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/main/SPEC.md) wiki of the ubiquitous language, bounded contexts, modules, public symbols, ADRs, acceptance criteria, verification techniques, gates and lanes. Every page has a `repo://` `resource` and hashes of the code it describes, so open the page, then the linked source. Do not hand-edit frontmatter or `okf:generated` blocks; write prose under `## Notes`. After adding a public domain/application symbol, ADR, nox session or lane, run `python -m quality.okf sync`. `nox -s okf` reports STALE pages (code changed since the page was baselined): review them, sync, and never record `verified` without reading the page. See [docs/knowledge-base.md](docs/knowledge-base.md).
+
 ## Capability lanes (parallel development)
 
 Work is split into lanes. Each lane has a GitHub issue, a branch `lane/<name>`, an ADR number block (`docs/adr/README.md`) and its own files. Lane rules:
