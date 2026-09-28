@@ -43,6 +43,9 @@ def main(argv=None) -> int:
     backup = subs.add_parser("backup", parents=[common]); backup.add_argument("--out", type=Path, required=True)
     compile_p = subs.add_parser("compile", parents=[common]); compile_p.add_argument("file", type=Path); compile_p.add_argument("--out", type=Path, required=True); compile_p.add_argument("--verify", action="store_true")
     check = subs.add_parser("check-export"); check.add_argument("file", type=Path)
+    mcp = subs.add_parser("mcp", parents=[common], help="Serve the agent-facing MCP server on stdio (needs the agents extra)")
+    mcp.add_argument("--print-config", choices=["claude", "codex", "opencode", "gemini"], help="Print copy-paste client config for this MCP server and exit")
+    mcp.add_argument("--egress-consent", action="store_true", help="Owner's standing consent to send requests to a networked provider; agents cannot grant it")
     args = parser.parse_args(argv)
     try:
         if args.command == "check-export":
@@ -50,6 +53,13 @@ def main(argv=None) -> int:
             valid = doc.get("format") == "eija.change-case.export.v1" and doc.get("payload_hash") == fingerprint(doc.get("payload"))
             output({"payload_integrity": valid, "authority": "NOT_VERIFIED; exported evidence is not imported for approval"})
             return 0 if valid else 2
+        if args.command == "mcp" and args.print_config:
+            from .agent_config import snippet
+            print(snippet(args.print_config, sys.executable, args.workspace), end="")
+            return 0
+        if args.command == "mcp" and (args.ask_key or (args.provider != "offline" and not (args.allow_network and args.egress_consent))):
+            # stdin/stdout are the protocol channel, and network use is the owner's decision made at startup.
+            raise DomainError("CONFIGURATION", "mcp: --ask-key is unsupported; a networked provider needs --allow-network and --egress-consent")
         key = None
         if args.ask_key:
             if args.provider != "openrouter":
@@ -79,6 +89,12 @@ def main(argv=None) -> int:
                 # Browser may briefly arrive before the listener; refresh if necessary.
                 webbrowser.open(url)
             uvicorn.run(create_app(studio, token, args.port), host="127.0.0.1", port=args.port, access_log=False, log_level="warning")
+        elif args.command == "mcp":
+            try:
+                from .mcp_server import serve_stdio
+            except ImportError:
+                raise DomainError("MISSING_EXTRA", 'Install the MCP SDK: pip install -e ".[agents]"') from None
+            serve_stdio(studio, egress_consent=args.egress_consent)
         elif args.command == "list":
             output([{k: c[k] for k in ("id", "stage", "version", "request")} for c in studio.store.list_cases()])
         elif args.command == "propose":

@@ -21,7 +21,7 @@ testing = []
 mutation = []
 metrics = []
 hci = []
-agents = []
+agents = ["mcp==2.2.0"]
 docs = []
 
 [project.scripts]
