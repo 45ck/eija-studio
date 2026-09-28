@@ -154,7 +154,7 @@ def mutate_once(instance: Any, path: tuple, kind: str, junk: str) -> Any:
         else:
             parent.pop(key)
     elif kind == "retype":
-        parent[key] = junk if not isinstance(value, str) else 0
+        parent[key] = "~" + junk if not isinstance(value, str) else 0  # not coercible to a number or bool
     elif kind == "add_key" and isinstance(value, dict):
         value[junk or "extra"] = 1
     elif kind == "stretch" and isinstance(value, str):
@@ -352,20 +352,27 @@ def test_real_change_cases_are_schema_valid(stage):
     assert not sorted(e.message for e in Draft202012Validator(load("change-case")).iter_errors(document))
 
 
-INTEGER_CONTRACTS = [
-    "change-case", "layout-change",
-    pytest.param("execute-command", marks=pytest.mark.xfail(strict=True, reason=(
-        "KERNEL FINDING (schema/model drift): ExecuteCommand.expected_version is `strict=True`, so an "
-        "integer-valued float such as 1.0 is refused, while contracts/execute-command.schema.json declares "
-        '`"type": "integer"` and JSON Schema 2020-12 treats 1.0 as an integer. The model is the stricter, '
-        "fail-closed side; fix by a separate kernel PR: accept integral floats or publish the restriction."))),
-]
+STRICTER = ("KERNEL FINDING (schema/model drift, fail-closed): ExecuteCommand.expected_version is `strict=True`, so an "
+            "integer-valued float such as 1.0 is refused, while contracts/execute-command.schema.json declares "
+            '`"type": "integer"` and JSON Schema 2020-12 treats 1.0 as an integer (Python json.dumps(1.0) emits 1.0). '
+            "Fix in a separate kernel change: accept integral floats or publish the restriction.")
+LAXER = ("KERNEL FINDING (schema/model drift, fail-open on type): this integer field is Pydantic-lax, so the model "
+         "accepts a numeric string or a boolean where contracts/*.schema.json declares `\"type\": \"integer\"`. "
+         "ExecuteCommand.expected_version is `strict=True` and refuses both, so the contracts are inconsistent. "
+         "Fix in a separate kernel change: StrictInt (or strict=True) on integer fields of request models.")
+COERCIONS = {"float": lambda v: float(v), "string": lambda v: str(v), "bool": lambda v: True}
+DIVERGENCES = {("execute-command", "float"): STRICTER, ("layout-change", "string"): LAXER, ("layout-change", "bool"): LAXER,
+               ("change-case", "string"): LAXER, ("change-case", "bool"): LAXER}
+COERCION_CASES = [
+    pytest.param(name, kind, marks=pytest.mark.xfail(strict=True, reason=DIVERGENCES[name, kind])) if (name, kind) in DIVERGENCES
+    else pytest.param(name, kind)
+    for name in ("change-case", "execute-command", "layout-change") for kind in COERCIONS]
 
 
-@pytest.mark.parametrize("name", INTEGER_CONTRACTS)
-def test_integer_valued_floats_are_treated_alike_by_schema_and_model(name):
-    """JSON has one number type: Python's ``json.dumps(1.0)`` emits ``1.0`` for a value a client sees as
-    the integer 1. Schema and model must agree on such an instance."""
+@pytest.mark.parametrize(("name", "coercion"), COERCION_CASES)
+def test_integer_coercions_are_treated_alike_by_schema_and_model(name, coercion):
+    """JSON has one number type and Pydantic has strict and lax integers: for an integer field replaced by
+    an integral float, a numeric string or a boolean, the schema and the model must agree."""
     validator, model, _ = near_misses(name)
     schema = load(name)
 
@@ -377,7 +384,7 @@ def test_integer_valued_floats_are_treated_alike_by_schema_and_model(name):
         assume(int_paths)
         path = data.draw(st.sampled_from(int_paths))
         mutated = copy.deepcopy(seed)
-        value_at(mutated, path[:-1])[path[-1]] = float(value_at(seed, path))
+        value_at(mutated, path[:-1])[path[-1]] = COERCIONS[coercion](value_at(seed, path))
         schema_ok = validator.is_valid(mutated)
         try:
             model.model_validate(mutated)
