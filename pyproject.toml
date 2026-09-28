@@ -32,7 +32,7 @@ mutation = []
 metrics = []
 hci = []
 agents = []
-docs = ["mkdocs==1.6.1", "mkdocs-material==9.7.7", "pymdown-extensions==12.1"]
+docs = ["mkdocs==1.6.1", "mkdocs-material==9.7.7", "pymdown-extensions==12.1", "PyYAML==6.0.3"]  # PyYAML: issue-form check in scripts/check_community_files.py
 demos = ["playwright==1.63.0"]  # drives the installed system Chrome; no browser download
 providers = []
 visual = []
@@ -177,9 +177,9 @@ output = "reports/coverage/coverage.xml"
 [tool.deptry]
 known_first_party = ["eija_studio", "quality", "verification"]
 extend_exclude = ['\.tmp', 'reports']
-# Only tool-only extras are dev groups. Feature extras (providers, agents, formal, hci, ...) are optional
+# Only tool-only extras (dev, lint, docs) are dev groups. Feature extras (providers, agents, formal, hci, ...) are optional
 # RUNTIME dependencies that lane code legitimately imports, so listing them here made every lane fail DEP004.
-optional_dependencies_dev_groups = ["dev", "lint"]
+optional_dependencies_dev_groups = ["dev", "lint", "docs"]
 
 [tool.deptry.package_module_name_map]
 # distribution name -> import name, where they differ
@@ -188,8 +188,9 @@ axe-playwright-python = "axe_playwright_python"
 
 [tool.deptry.per_rule_ignores]
 # nox/pytest/radon/tomlkit are dev tools imported by noxfile.py, quality/ and tests/ (dev-only trees deptry
-# cannot tell apart); tomlkit is the merge driver's parser (quality/tools/tomlmerge.py).
-DEP004 = ["nox", "pytest", "radon", "tomlkit"]
+# cannot tell apart); tomlkit is the merge driver's parser (quality/tools/tomlmerge.py); yaml (PyYAML, `docs`
+# extra) parses the issue forms in scripts/check_community_files.py, a dev-only gate.
+DEP004 = ["nox", "pytest", "radon", "tomlkit", "yaml"]
 # scripts/browser_*smoke.py import Playwright lazily; it belongs to the hci extra, and the scripts report
 # NOT_RUN when it is absent. Declaring it here would make a runtime dependency out of a QA tool.
 DEP001 = ["playwright"]

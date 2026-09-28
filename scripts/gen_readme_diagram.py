@@ -20,8 +20,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from eija_studio.domain.models import SemanticTransaction, Workflow  # noqa: E402
-from eija_studio.domain.policy import apply_transaction, baseline, check_policy  # noqa: E402
+from eija_studio.domain.impact import model_impact
+from eija_studio.domain.models import SemanticTransaction, Workflow
+from eija_studio.domain.policy import apply_transaction, baseline, check_policy
 
 BEGIN = "<!-- BEGIN GENERATED: excursion-diff (scripts/gen_readme_diagram.py; do not edit by hand) -->"
 END = "<!-- END GENERATED: excursion-diff -->"
@@ -35,8 +36,8 @@ def _edge_label(t, tag: str) -> str:
 def state_diagram(model: Workflow, *, new_states: set[str], changed: dict[str, str]) -> str:
     """Mermaid stateDiagram-v2 for one model. `changed` maps transition id -> tag such as ' (new)'."""
     lines = ["stateDiagram-v2", "    direction LR", f"    [*] --> {model.initial_state}"]
-    for t in sorted(model.transitions, key=lambda x: x.id):
-        lines.append(f"    {t.from_state} --> {t.to_state}: {_edge_label(t, changed.get(t.id, ''))}")
+    lines.extend(f"    {t.from_state} --> {t.to_state}: {_edge_label(t, changed.get(t.id, ''))}"
+                 for t in sorted(model.transitions, key=lambda x: x.id))
     if new_states:
         lines.append("    classDef added fill:#ffe8b3,stroke:#b26a00,color:#000")
         lines.extend(f"    class {state} added" for state in sorted(new_states))
@@ -65,6 +66,15 @@ def diff(before: Workflow, after: Workflow) -> dict[str, list[str]]:
     return out
 
 
+def _group_affected(affected: list[str]) -> list[str]:
+    """Bullets for impact artefact ids: `kind:Action` ids grouped by kind, bare ids listed as they are."""
+    grouped: dict[str, list[str]] = {}
+    for artefact in sorted(affected):
+        kind, sep, action = artefact.partition(":")
+        grouped.setdefault(kind, []).append(action if sep else "")
+    return [f"- `{kind}:` {', '.join(actions)}" if actions[0] else f"- `{kind}`" for kind, actions in grouped.items()]
+
+
 def render_block() -> str:
     """The full generated README section (markers included)."""
     before = baseline()
@@ -73,7 +83,8 @@ def render_block() -> str:
     new_ids = {t.id for t in after.transitions} - {t.id for t in before.transitions}
     b_by = {t.id: t for t in before.transitions}
     changed_ids = {t.id for t in after.transitions if t.id in b_by and b_by[t.id] != t}
-    tags = {**{i: " (new)" for i in new_ids}, **{i: " (changed)" for i in changed_ids}}
+    tags = {**dict.fromkeys(new_ids, " (new)"), **dict.fromkeys(changed_ids, " (changed)")}
+    impact = model_impact(before, after)
 
     # A protected-authority violation, to show the policy is not decorative: a candidate that hands
     # the registrar's final approval to Teacher is rejected by the kernel's own check_policy.
@@ -95,12 +106,21 @@ def render_block() -> str:
         state_diagram(after, new_states=set(d["states"]), changed=tags),
         "```",
         "",
-        "What the kernel says changed (computed by diffing the two typed models, not written by hand):",
+        "What changed, diffed from the two typed models by `scripts/gen_readme_diagram.py` (not written by hand):",
         "",
         *[f"- new state `{s}`" for s in d["states"]],
         *[f"- added {line}" for line in d["added"]],
         *[f"- changed {line}" for line in d["changed"]],
         *[f"- removed {line}" for line in d["removed"]],
+        "",
+        f"The kernel's own impact closure, `domain.impact.model_impact(baseline, candidate)`, reaches "
+        f"{len(impact['affected'])} artefacts from the changed action{'s' if len(impact['changed_actions']) != 1 else ''} "
+        f"{', '.join(f'`{a}`' for a in impact['changed_actions'])} "
+        f"(`complete: {impact['complete']}`). It follows a fixed rule → runtime → state view → journey → obligation → "
+        f"receipt → review packet → local decision chain per action, so it is the encoded projection mapping, "
+        f"not every real-world consequence:",
+        "",
+        *_group_affected(impact["affected"]),
         "",
         f"`check_policy(baseline)` -> `{check_policy(before)}`. "
         f"`check_policy(candidate)` -> `{check_policy(after)}`. "

@@ -1,6 +1,6 @@
 # Knowledge base
 
-Status as of 2026-09-29: **planned; no branch yet.** ADR block 0045-0046.
+Status as of 2026-09-29: **open PR #16, not on `main`.** ADR block 0045-0046.
 
 Goal: an [OKF v0.2](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md) wiki of the project's concepts, decisions and evidence, deterministically linked to code by content hash so that a stale page is a failing check rather than a silent lie.
 

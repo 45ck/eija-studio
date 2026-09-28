@@ -13,7 +13,7 @@ EIJA (Executable Intent and Journey Assurance) is an open-source assurance kerne
 [![Status: local proof of concept](https://img.shields.io/badge/status-local%20proof%20of%20concept-orange.svg)](docs/TECHNICAL_LEAD_REVIEW.md)
 [![Hosted CI: none, gates run locally](https://img.shields.io/badge/hosted%20CI-none%20(local%20gates)-lightgrey.svg)](docs/adr/0017-local-quality-gates.md)
 
-Local gate, stated as text so it cannot go stale silently: <!-- GATE-STATUS -->2026-09-29, Windows 11, Python 3.12.10, `main` at `ddc43b9`: `pytest` 95 passed; with the oss lane, `nox -t full` passed (111 tests plus the docs gates). The owner-only release fixture check does not pass on `main` (see the quickstart).<!-- /GATE-STATUS --> Reproduce it yourself with `nox -t full`; there is no hosted CI to trust instead of your own run. Hosted CI is unavailable for this repository ([ADR-0017](docs/adr/0017-local-quality-gates.md)).
+Local gate, a dated snapshot rather than a live check (nothing verifies these numbers, so treat them as a claim to reproduce): <!-- GATE-STATUS -->2026-09-29, Windows 11, Python 3.12, this branch merged with `main` at `0f51b62`: `nox -t full` succeeded (254 tests passed, 1 skipped because Playwright is not installed; coverage 78.85 %), and the `demos_dry` gate was skipped as `NOT_RUN` for the same reason. The owner-only release fixture check does not pass on `main` (see the quickstart).<!-- /GATE-STATUS --> Reproduce it yourself with `nox -t full`; there is no hosted CI to trust instead of your own run. Hosted CI is unavailable for this repository ([ADR-0017](docs/adr/0017-local-quality-gates.md)).
 
 > **Scope, stated up front.** EIJA v0.2 is a bounded local proof of concept. The one supported domain is a synthetic school-excursion approval workflow. It is a semantic compiler for that class of state-machine rules, not a universal code reviewer, theorem prover or application generator. What is finished, in progress and planned is listed in the [roadmap](docs/ROADMAP.md).
 
@@ -26,9 +26,9 @@ Agents write code faster than people can read it. A reviewer who is handed a 900
 | You get | How |
 |---|---|
 | **Review the change to the model, not the diff.** | A change is a typed `SemanticTransaction` over a `Workflow`. The rule table, state diagram and journey text are all derived from the same executable transitions, so they cannot disagree. |
-| **See the ripple.** | A fixed-point impact closure (`domain/impact.py`) lists the states, actions, roles and effects a change reaches. The visual before/after diff is in progress (see below). |
+| **See the ripple.** | A fixed-point impact closure (`domain/impact.py`) lists the rule, runtime, state view, journey, obligation and receipt artefacts a change reaches; the example below prints it. The Studio's visual before/after diff is not on `main` yet. |
 | **Agents cannot approve their own work.** | Provider output is an untrusted proposal. There is no approve or apply port for providers, authority is re-checked at commit time, and selecting a meaning, approving and applying are three separate owner actions. |
-| **Evidence you can recompute.** | A receipt keeps its raw observations, and eligibility is recomputed from them; a green label on a receipt is not trusted. Human understanding stays `UNKNOWN` until a human answers. |
+| **Evidence you can recompute.** | A receipt keeps its raw observations, and eligibility is recomputed from them; a green label on a receipt is not trusted. In this proof of concept human understanding is always `UNKNOWN`: an owner acknowledgement is recorded, but it is not a measurement of understanding. |
 | **Local and open.** | Loopback-only server, SQLite, no telemetry, Apache-2.0. Live model calls need explicit flags and per-request consent. |
 
 ## The loop
@@ -80,12 +80,23 @@ stateDiagram-v2
     class Recommended added
 ```
 
-What the kernel says changed (computed by diffing the two typed models, not written by hand):
+What changed, diffed from the two typed models by `scripts/gen_readme_diagram.py` (not written by hand):
 
 - new state `Recommended`
 - added `TR-RECOMMEND` Teacher: Submitted -> Recommended
 - changed `TR-APPROVE` from_state: Submitted -> Recommended
 - changed `TR-REJECT` from_state: Submitted -> Recommended
+
+The kernel's own impact closure, `domain.impact.model_impact(baseline, candidate)`, reaches 20 artefacts from the changed actions `Approve`, `Recommend`, `Reject` (`complete: True`). It follows a fixed rule → runtime → state view → journey → obligation → receipt → review packet → local decision chain per action, so it is the encoded projection mapping, not every real-world consequence:
+
+- `journey:` Approve, Recommend, Reject
+- `local-decision`
+- `obligation:` Approve, Recommend, Reject
+- `receipt:` Approve, Recommend, Reject
+- `review-packet`
+- `rule:` Approve, Recommend, Reject
+- `runtime:` Approve, Recommend, Reject
+- `state-view:` Approve, Recommend, Reject
 
 `check_policy(baseline)` -> `[]`. `check_policy(candidate)` -> `[]`. A candidate that lets a Teacher approve is rejected: `check_policy(unsafe)` -> `['PROTECTED_AUTHORITY:Approve']`.
 
@@ -125,22 +136,23 @@ Without a browser:
 
 ```bash
 eija compile examples/excursion-candidate.json --out output/compiled   # model, projections, impact
-python -m pytest -q                                                     # 95 passed on main on the date above
+python -m pytest -q                                                     # 254 passed, 1 skipped on the date above
 ```
 
-> **Known state of `main`.** The verification and apply gates check that the running source matches an owner-stamped release fixture. Kernel changes merged after v0.2.0 (for example the Windows durability fix) mean the fixture does not match, so `eija doctor` reports `release_fixture_matches: false` and `eija demo`, `--verify` and the Studio's Verify button return `SOURCE_REVIEW_REQUIRED`. That is by design and only the maintainer can re-stamp the fixture; agents never do. Everything else above works. Full detail, provider setup (OpenRouter, Codex) and the verification commands are in [docs/getting-started.md](docs/getting-started.md).
+> **Known state of `main`.** The verification and apply gates check that the running source matches an owner-stamped release fixture. Kernel changes merged after v0.2.0 (for example the Windows durability fix) mean the fixture does not match, so `eija doctor` reports `release_fixture_matches: false` and `eija demo`, `--verify` and the Studio's Verify button return `SOURCE_REVIEW_REQUIRED`. That is by design and only the maintainer can re-stamp the fixture; agents never do. Until then `eija doctor` and `eija compile` **exit with code 2** even though the compile output is written; read `source_review_required` (expected `true` here) and `policy_errors` in `compiled.json` rather than the exit code. Everything else above works. Full detail, provider setup (OpenRouter, Codex) and the verification commands are in [docs/getting-started.md](docs/getting-started.md).
 
 ## Use it from your agent
 
-What works **today, on `main`**: any agent that can read [`AGENTS.md`](AGENTS.md) and run shell commands can drive the CLI, and the repository ships a skill file at [`.agents/skills/eija-studio/SKILL.md`](.agents/skills/eija-studio/SKILL.md). For example, paste this into your agent:
+What works **on `main` today**: any agent that can read [`AGENTS.md`](AGENTS.md) and run shell commands can drive the CLI, and the repository ships a skill file at [`.agents/skills/eija-studio/SKILL.md`](.agents/skills/eija-studio/SKILL.md). For example, paste this into your agent:
 
 ```text
 Read AGENTS.md. Run: eija compile examples/excursion-candidate.json --out output/compiled
-Summarise policy_errors, projections and impact from output/compiled/compiled.json.
+Exit code 2 is expected until the maintainer re-stamps the release fixture; do not treat it as failure.
+Summarise source_review_required, policy_errors, projections and impact from output/compiled/compiled.json.
 Do not approve, apply, read receipt.key or fabricate review answers.
 ```
 
-What is **in progress, not on `main`** (statuses as of 2026-09-29; see the [roadmap](docs/ROADMAP.md)):
+What is **in progress, not on `main`** (pull-request states as of 2026-09-29; the [roadmap](docs/ROADMAP.md) is where they are kept current):
 
 | Agent | As proposer (agent suggests interpretations) | Over MCP (agent inspects and verifies) |
 |---|---|---|
@@ -158,16 +170,16 @@ The MCP server is designed so an agent can read, compile and verify but never ap
 | Claim | Mechanism | Status |
 |---|---|---|
 | Views match the model | Rules, state cards and journey text are `projections(model)`; nothing is written by AI or by hand | on `main` |
-| Diagrams match the model | Mermaid, PlantUML and DOT generated from the typed `Workflow`, plus a visual before/after diff ([ADR-0019](docs/adr/0019-diagrams-generated-from-executable-model.md)); the README example above already comes from `domain.policy` | generators in open PR #6; README example on `main` |
+| Diagrams match the model | Mermaid, PlantUML and DOT generated from the typed `Workflow`, plus a visual before/after diff ([ADR-0019](docs/adr/0019-diagrams-generated-from-executable-model.md)); the README example above already comes from `domain.policy` | generators in open PR #6; the README example is added by open PR #14 |
 | Receipts are computed, not asserted | `assess_receipt` recomputes claim, subject, observations and coverage from raw data; an HMAC seal gives local integrity, not external certification | on `main` |
 | Authority cannot be replayed or borrowed | Current-authority check before operation replay, CAS versions, audit and outbox in the same transaction; providers have no approve or apply port | on `main` |
 | One-step behaviour of the candidate | 5 actors x states x 5 actions runtime matrix against the real runtime (125 observations). The oracle is same-author | on `main` |
 | Implementation identity | Source must match an owner-stamped fixture before verify or apply | on `main` (currently mismatched; owner re-stamp pending) |
-| Local gates | `nox -t fast`, `-t full`, `-t release` ([ADR-0017](docs/adr/0017-local-quality-gates.md)); linting, typing and architecture contracts in open PR #3 | tests and docs gates on `main` |
-| Machine-checked laws over all action sequences | Bend 2 laws generated from the model ([ADR-0018](docs/adr/0018-formal-vv-portfolio.md)); evidence kind `bend_proof` | planned |
-| Safety invariants over the workflow and commit protocol | TLA+ with TLC, up to declared bounds; `tlc_model_check` | planned |
-| Policy soundness across the transaction grammar | Z3 SMT proof; bounded exhaustive runtime search | branch `lane/smt-bmc` pushed, no PR |
-| Runtime agrees with an independent reference model | Hypothesis stateful tests; `property_test` | planned |
+| Local gates | `nox -t fast`, `-t full`, `-t release` ([ADR-0017](docs/adr/0017-local-quality-gates.md)); linting, typing, architecture, complexity and dependency gates are on `main` (merged PR #3, [gate table](docs/quality/gates.md)); the docs, link and README-drift gates are added by open PR #14 | tests and quality gates on `main`; docs gates in open PR #14 |
+| Machine-checked laws over all action sequences | Bend 2 laws generated from the model ([ADR-0018](docs/adr/0018-formal-vv-portfolio.md)); evidence kind `bend_proof`; the claim is about the generated model, not the Python runtime ([details](docs/formal/bend.md)) | on `main` (merged PR #18); the proof runs in Docker and is `NOT_RUN` without it |
+| Safety invariants over the workflow and commit protocol | TLA+ with TLC, up to declared bounds; `tlc_model_check` | branch `lane/tla` pushed, no PR |
+| Policy soundness across the transaction grammar | Z3 SMT proof; bounded exhaustive runtime search | open PR #11 |
+| Runtime agrees with an independent reference model | Hypothesis stateful tests; `property_test` | branch `lane/property` pushed, no PR |
 | The tests can detect faults | Mutation analysis; `mutation_score` measures detection power, not correctness | planned |
 
 Each technique is a distinct kind of evidence and none may be relabelled as another. A proof about a model is not a proof about the Python runtime; conformance between them is a separate claim. Hashes show integrity, not truth. Read the limits in [Security and trust](docs/SECURITY_AND_TRUST.md).
@@ -189,20 +201,7 @@ EIJA adopts mature open source and writes only EIJA-specific generators, adapter
 
 ## Architecture decisions
 
-Decisions follow [MADR](https://adr.github.io/madr/) and are never rewritten, only superseded. The index, including reserved number blocks for every lane, is [docs/adr/README.md](docs/adr/README.md).
-
-| ADR | Decision | Status |
-|---|---|---|
-| [0000](docs/adr/0000-poc-decision-log.md) | v0.2 POC decision log (modular monolith, frozen vocabulary, AI proposal-only, SQLite unit of work, computed evidence, single local owner) | accepted |
-| [0015](docs/adr/0015-open-source-under-apache-2.md) | Publish as open source under Apache-2.0 | accepted |
-| [0016](docs/adr/0016-oss-first-adapters-not-engines.md) | OSS first: build adapters, not engines | accepted |
-| [0017](docs/adr/0017-local-quality-gates.md) | Local quality gates: nox sessions and noslop enforcement | accepted |
-| [0018](docs/adr/0018-formal-vv-portfolio.md) | Formal V&V portfolio: each technique is a distinct evidence kind | proposed |
-| [0019](docs/adr/0019-diagrams-generated-from-executable-model.md) | Diagrams are generated projections of the executable model | proposed |
-| [0020](docs/adr/0020-multi-provider-agent-adapters.md) | Proposal providers: Codex, Claude Code, OpenCode, Gemini CLI, OpenRouter | proposed |
-| [0043](docs/adr/0043-readme-truthfulness-and-docs-site.md) | The README is verifiable: generated diagrams, dated status, MkDocs Material docs site | proposed |
-
-ADRs from lanes that have not merged yet appear in the index when they do.
+Decisions follow [MADR](https://adr.github.io/madr/) and are never rewritten, only superseded. The index is generated from the ADR files (`python -m quality.tools.adr_index --write`), so it is the one place that lists every record and its status; it also holds the number blocks reserved for each lane: [docs/adr/README.md](docs/adr/README.md). Start with [ADR-0000](docs/adr/0000-poc-decision-log.md) (the v0.2 decision log: modular monolith, frozen vocabulary, AI proposal-only, SQLite unit of work, computed evidence, single local owner), [ADR-0016](docs/adr/0016-oss-first-adapters-not-engines.md) (OSS first) and [ADR-0043](docs/adr/0043-readme-truthfulness-and-docs-site.md) (why this README is verifiable).
 
 ## Where to go next
 

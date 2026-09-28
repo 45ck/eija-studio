@@ -36,7 +36,7 @@ This Code of Conduct applies within all community spaces, and also applies when 
 
 ## Enforcement
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the community leaders responsible for enforcement at the maintainers through a private report at <https://github.com/45ck/eija-studio/security/advisories/new> (say that it is a conduct concern, not a vulnerability). All complaints will be reviewed and investigated promptly and fairly.
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the community leaders responsible for enforcement at the maintainers through a private report at <https://github.com/45ck/eija-studio/security/advisories/new> (say that it is a conduct concern, not a vulnerability). **As of 2026-09-29 GitHub private vulnerability reporting is not yet enabled on this repository**, so that form may be unavailable; until it is, open a public issue (the bug report form is fine) whose title says only "conduct concern, contact requested" and whose body has no details, or message the repository owner [@45ck](https://github.com/45ck) on GitHub, and a private channel will be arranged. All complaints will be reviewed and investigated promptly and fairly.
 
 All community leaders are obligated to respect the privacy and security of the reporter of any incident.
 

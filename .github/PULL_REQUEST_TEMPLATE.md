@@ -27,7 +27,7 @@
 - [ ] Kernel guards and protected policy are not weakened; providers and agents still cannot select meaning, approve or apply
 - [ ] I did not run `scripts/stamp_release.py` or edit `trusted_build.json`
 - [ ] OSS first: adopted tools and custom modules have rows in `docs/oss/REGISTER.md`
-- [ ] Decisions are recorded in an ADR using only my lane's reserved numbers, and the ADR index is updated
+- [ ] Decisions are recorded in an ADR using only my lane's reserved numbers, and the ADR index is regenerated with `python -m quality.tools.adr_index --write` (never edited by hand)
 - [ ] Generated files are deterministic and have a drift check
 - [ ] LF line endings; no mass reformatting; shared files touched minimally
 - [ ] `README.md` not edited (oss lane only) and `resources/web/*` not edited (visual lane only), unless this is that lane

@@ -6,7 +6,7 @@ abstract: >-
   An open-source Python assurance kernel in which AI proposes changes to a typed workflow model, the kernel
   checks them and records computed evidence, and a local owner decides. Bounded local proof of concept.
 version: 0.2.0
-date-released: 2026-09-27
+date-released: 2026-09-27  # the CHANGELOG date of the 0.2.0 package version; no GitHub release or tag exists
 license: Apache-2.0
 repository-code: "https://github.com/45ck/eija-studio"
 url: "https://github.com/45ck/eija-studio"

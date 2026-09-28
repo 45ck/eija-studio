@@ -69,6 +69,7 @@ nav:
       - "0043 README truthfulness and docs site": adr/0043-readme-truthfulness-and-docs-site.md
   - Formal V&V:
       - Portfolio and status: lanes/formal.md
+      - Bend 2 machine-checked laws: formal/bend.md
       - Runtime verification report: verification/VERIFICATION.md
   - Visual: lanes/visual.md
   - Agents: lanes/agents.md

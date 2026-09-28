@@ -7,8 +7,9 @@ Thank you for helping. EIJA is an open-source (Apache-2.0) assurance kernel: "AI
 ```bash
 git clone https://github.com/45ck/eija-studio.git && cd eija-studio
 python3 -m venv .venv && source .venv/bin/activate   # Windows: py -3 -m venv .venv; .\.venv\Scripts\Activate.ps1
-python -m pip install -e ".[dev]"
+python -m pip install -e ".[dev,docs]"   # docs adds MkDocs and PyYAML, which the docs and community-file gates need
 python -m pytest -q
+python -m quality.tools.install_merge_drivers   # once per clone: the merge drivers for generated files and pyproject.toml
 ```
 
 Python 3.11 or later. If your system temp directory is slow, keep temporary data inside the checkout (`.tmp/`, `.pytest-tmp/`; both are gitignored).
@@ -33,9 +34,11 @@ Hosted CI is unavailable ([ADR-0017](docs/adr/0017-local-quality-gates.md)), so 
 
 | Tier | Command | When |
 |---|---|---|
-| fast | `nox -t fast` | before every commit; seconds |
+| fast | `nox -t fast` | before every commit |
 | full | `nox -t full` | before opening a PR |
-| release | `nox -t release` | maintainers; may need Docker, Java or Chromium |
+| release | `nox -t release` | maintainers; may need Docker, Java, Chromium, network or a logged-in `gh` |
+
+The gates are ruff, mypy, import-linter layering contracts, complexity and coverage ratchets, deptry and the test suite from the quality lane, plus documentation, link, README-drift and community-file checks from the oss lane; [docs/quality/gates.md](docs/quality/gates.md) lists each with its threshold. Ratchets tighten and never loosen. The lane map, ownership and merge order are in [docs/engineering/LANE-MAP.md](docs/engineering/LANE-MAP.md). To run the gates automatically, enable the noslop hooks as described in [ADR-0036](docs/adr/0036-noslop-hooks-adapted-to-nox.md); enabling them is an explicit step.
 
 A gate whose prerequisite is missing must report `NOT_RUN`, never `PASS`. Add a gate as a session in your own `quality/sessions/<lane>.py` with `python=False`, calling `sys.executable`. Heavy commands run one at a time; never start more than one Docker container or one browser from your lane.
 
@@ -45,7 +48,7 @@ Adopt a mature open-source tool before writing code, and write only EIJA-specifi
 
 ## Architecture decisions (ADRs)
 
-Use only your lane's reserved numbers, copy [docs/adr/template.md](docs/adr/template.md) (MADR), and add the record to the index in [docs/adr/README.md](docs/adr/README.md). An accepted ADR is never rewritten; supersede it with a new one. Kernel changes need a regression test and an ADR.
+Use only your lane's reserved numbers and copy [docs/adr/template.md](docs/adr/template.md) (MADR). **Never edit the index in [docs/adr/README.md](docs/adr/README.md) by hand**: it is generated, so run `python -m quality.tools.adr_index --write` after adding your file (the `adr_index` gate fails on a stale index). An accepted ADR is never rewritten; supersede it with a new one. Kernel changes need a regression test and an ADR.
 
 ## Evidence honesty
 

@@ -2,11 +2,13 @@
 
 What this establishes: the files GitHub and contributors expect are present; `CITATION.cff` names the
 same version and licence as `pyproject.toml`; the Code of Conduct is the Contributor Covenant 2.1 text
-with a contact filled in; the roadmap names every one of the 13 lane ADR blocks; issue templates parse.
+with a contact filled in; the roadmap covers every ADR block reserved in docs/adr/README.md; issue
+templates parse.
 
 What this does NOT establish: that the policies are good, that the contact address is monitored, or
 that CITATION.cff passes the full CFF JSON schema (no validator is installed; see ADR-0043).
-Exit 0 = PASS. A check that cannot run because a library is missing prints NOT_RUN and does not pass.
+Exit codes: 0 = every check ran and passed; 1 = a check failed; 2 = nothing failed but a check could not
+run (PyYAML missing), reported as NOT_RUN and never as PASS. The nox session turns exit 2 into a skip.
 """
 from __future__ import annotations
 
@@ -23,9 +25,8 @@ REQUIRED = [
     ".github/ISSUE_TEMPLATE/bug_report.yml", ".github/ISSUE_TEMPLATE/feature_request.yml",
     ".github/ISSUE_TEMPLATE/new_domain_proposal.yml",
 ]
-# The 13 capability lanes' reserved ADR blocks (docs/adr/README.md). Other blocks may exist.
-LANE_BLOCKS = ["0021-0022", "0023-0024", "0025-0026", "0027-0028", "0029-0030", "0031-0032", "0033-0034",
-               "0035-0036", "0037-0038", "0039-0040", "0041-0042", "0043-0044", "0045-0046"]
+NOT_RUN_EXIT = 2
+RANGE = re.compile(r"(\d{4})\s*[-\N{EN DASH}]\s*(\d{4})")
 
 
 def text(rel: str) -> str:
@@ -37,12 +38,10 @@ def check_presence() -> list[str]:
 
 
 def check_citation() -> list[str]:
-    errors: list[str] = []
     cff = text("CITATION.cff")
     project = tomllib.loads(text("pyproject.toml"))["project"]
-    for key in ("cff-version", "message", "title", "authors", "version", "license", "repository-code"):
-        if not re.search(rf"^{re.escape(key)}:", cff, re.M):
-            errors.append(f"CITATION.cff lacks key '{key}'")
+    keys = ("cff-version", "message", "title", "authors", "version", "license", "repository-code")
+    errors = [f"CITATION.cff lacks key '{key}'" for key in keys if not re.search(rf"^{re.escape(key)}:", cff, re.M)]
     if (m := re.search(r"^version:\s*(\S+)", cff, re.M)) and m.group(1) != project["version"]:
         errors.append(f"CITATION.cff version {m.group(1)} != pyproject {project['version']}")
     if (m := re.search(r"^license:\s*(\S+)", cff, re.M)) and m.group(1) != project["license"]:
@@ -60,9 +59,20 @@ def check_conduct() -> list[str]:
     return errors
 
 
+def reserved_blocks() -> list[tuple[int, int]]:
+    """ADR number blocks reserved in the first column of the table in docs/adr/README.md."""
+    rows = re.finditer(r"^\|\s*(\d{4}\s*[-\N{EN DASH}]\s*\d{4})\s*\|", text("docs/adr/README.md"), re.M)
+    return [(int(m.group(1)), int(m.group(2))) for r in rows if (m := RANGE.match(r.group(1)))]
+
+
 def check_roadmap() -> list[str]:
+    """Every reserved ADR block lies inside some range the roadmap names; the status line is dated."""
     roadmap = text("docs/ROADMAP.md")
-    errors = [f"docs/ROADMAP.md does not mention ADR block {b}" for b in LANE_BLOCKS if b not in roadmap]
+    named = [(int(a), int(b)) for a, b in RANGE.findall(roadmap)]
+    blocks = reserved_blocks()
+    errors = [] if blocks else ["docs/adr/README.md has no reserved ADR block table"]
+    errors += [f"docs/ROADMAP.md does not cover reserved ADR block {lo:04d}-{hi:04d}"
+               for lo, hi in blocks if not any(a <= lo and hi <= b for a, b in named)]
     if not re.search(r"^Status as of \*\*\d{4}-\d{2}-\d{2}\*\*", roadmap, re.M):
         errors.append("docs/ROADMAP.md lacks a dated 'Status as of' line")
     if "## Unreleased" not in text("CHANGELOG.md"):
@@ -76,19 +86,20 @@ def check_templates() -> tuple[list[str], list[str]]:
         import yaml
     except ImportError:
         return [], ["issue-template YAML parse (PyYAML not installed; pip install -e '.[docs]')"]
-    errors = []
+    errors: list[str] = []
     for path in sorted((ROOT / ".github/ISSUE_TEMPLATE").glob("*.yml")):
-        doc = yaml.safe_load(path.read_bytes().decode("utf-8"))
         rel = path.relative_to(ROOT).as_posix()
-        if path.name == "config.yml":
-            continue
-        if not isinstance(doc, dict) or not {"name", "description", "body"} <= doc.keys():
-            errors.append(f"{rel}: needs name, description and body")
-            continue
-        ids = [b.get("id") for b in doc["body"] if b.get("type") != "markdown"]
-        if len(ids) != len(set(ids)):
-            errors.append(f"{rel}: duplicate field ids")
+        if path.name != "config.yml":
+            errors += _template_errors(rel, yaml.safe_load(path.read_bytes().decode("utf-8")))
     return errors, []
+
+
+def _template_errors(rel: str, doc: object) -> list[str]:
+    """Structural problems of one parsed GitHub issue form (not a full schema validation)."""
+    if not isinstance(doc, dict) or not {"name", "description", "body"} <= doc.keys():
+        return [f"{rel}: needs name, description and body"]
+    ids = [b.get("id") for b in doc["body"] if b.get("type") != "markdown"]
+    return [f"{rel}: duplicate field ids"] if len(ids) != len(set(ids)) else []
 
 
 def check_line_endings() -> list[str]:
@@ -109,9 +120,14 @@ def main() -> int:
         print("FAIL", e)
     for n in not_run:
         print("NOT_RUN", n)
-    print(f"{'FAIL' if errors else 'PASS'} community files ({len(REQUIRED)} required present)"
-          + (f", {len(not_run)} check NOT_RUN" if not_run else ""))
-    return 1 if errors else 0
+    if errors:
+        print(f"FAIL community files ({len(errors)} problems)")
+        return 1
+    if not_run:
+        print(f"NOT_RUN-PARTIAL community files: {len(not_run)} check(s) could not run; the rest passed")
+        return NOT_RUN_EXIT
+    print(f"PASS community files ({len(REQUIRED)} required present)")
+    return 0
 
 
 if __name__ == "__main__":

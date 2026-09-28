@@ -2,9 +2,9 @@
 
 ## Reporting a vulnerability
 
-Please report suspected vulnerabilities **privately** using GitHub private vulnerability reporting: <https://github.com/45ck/eija-studio/security/advisories/new>. Do not open a public issue or pull request for an unpatched vulnerability, and do not post exploit details in discussions.
+Please report suspected vulnerabilities **privately** using GitHub private vulnerability reporting: <https://github.com/45ck/eija-studio/security/advisories/new>. **As of 2026-09-29 that feature is not yet enabled on this repository** (a maintainer action), so the form may not be available; use the fallback below until this notice is removed. Do not open a public issue or pull request for an unpatched vulnerability, and do not post exploit details in discussions.
 
-Include the affected version or commit, your platform, the smallest steps that reproduce it, and what an attacker gains. Please do not include real personal data, provider keys or `receipt.key` contents in a report. If the private reporting form is unavailable to you, open a public issue that says only "security contact requested", with no details, and a maintainer will arrange a private channel.
+Include the affected version or commit, your platform, the smallest steps that reproduce it, and what an attacker gains. Please do not include real personal data, provider keys or `receipt.key` contents in a report. If the private reporting form is unavailable to you (today it is), open a public issue (the bug report form is fine) whose title says only "security contact requested" and whose body has no details, and a maintainer will arrange a private channel.
 
 This is a volunteer-maintained proof of concept. We aim to acknowledge a report within a week and to say what we will do about it, but we do not offer a service-level agreement or a bounty.
 
@@ -13,7 +13,7 @@ This is a volunteer-maintained proof of concept. We aim to acknowledge a report 
 | Version | Supported |
 |---|---|
 | `main` (development) | yes, fixes land here first |
-| 0.2.x | yes, while it is the latest release |
+| 0.2.x (the `0.2.0` package version; no GitHub release or tag exists yet) | yes, while it is the latest version |
 | earlier | no |
 
 ## Threat model and scope

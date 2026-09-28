@@ -1,6 +1,6 @@
 # Metrics
 
-Status as of 2026-09-29: **planned; no branch yet.** ADR block 0037-0038.
+Status as of 2026-09-29: **open PR #12, not on `main`.** ADR block 0037-0038.
 
 Goal: quantitative models of the kernel and its use, reported with their assumptions. Planned scope: package structure and coupling metrics from existing OSS collectors (radon, grimp), latency measurements, fitted scaling models and a dashboard.
 

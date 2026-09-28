@@ -52,7 +52,7 @@ The server listens on **127.0.0.1 only**. Open the complete private URL printed 
 
 ## Release fixture on `main`
 
-Verification and apply refuse to run unless the running source matches the owner-stamped release fixture. Kernel changes merged after v0.2.0 (for example the Windows durability fix) mean `main` no longer matches: `eija doctor` prints `release_fixture_matches: false`, and `eija demo`, `eija compile --verify` and the Studio's Verify button report `SOURCE_REVIEW_REQUIRED`. This is by design. Only the maintainer re-stamps the fixture, after the kernel-touching changes settle; do not run `scripts/stamp_release.py` to make it go away. Proposing, previewing, `eija compile` without `--verify`, and the test suite are unaffected.
+Verification and apply refuse to run unless the running source matches the owner-stamped release fixture. Kernel changes merged after v0.2.0 (for example the Windows durability fix) mean `main` no longer matches: `eija doctor` prints `release_fixture_matches: false`, and `eija demo`, `eija compile --verify` and the Studio's Verify button report `SOURCE_REVIEW_REQUIRED`. This is by design. Only the maintainer re-stamps the fixture, after the kernel-touching changes settle; do not run `scripts/stamp_release.py` to make it go away. Proposing, previewing, `eija compile` without `--verify` and the test suite still work, with one catch: `eija doctor` and `eija compile` **exit with code 2** while the fixture is mismatched, even though `compile` still writes `compiled.json` and `model.json`. A script or agent should read `source_review_required` and `policy_errors` from `compiled.json` instead of trusting the exit code.
 
 ## OpenRouter
 

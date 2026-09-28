@@ -2,4 +2,4 @@ blank_issues_enabled: false
 contact_links:
   - name: Report a security vulnerability (private)
     url: https://github.com/45ck/eija-studio/security/advisories/new
-    about: Do not open a public issue for a vulnerability. Use private vulnerability reporting.
+    about: Do not put vulnerability details in a public issue. Private vulnerability reporting is not yet enabled (2026-09-29); if the form is unavailable, open a bug report titled 'security contact requested' with no details.

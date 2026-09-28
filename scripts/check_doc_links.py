@@ -23,8 +23,6 @@ ROOT = Path(__file__).resolve().parents[1]
 # target (repo-relative, posix) -> the lane that creates it. Remove an entry once it lands.
 PENDING: dict[str, str] = {
     "docs/agents/quickstart.md": "agents lane (open PR #8)",
-    "docs/engineering/LANE-MAP.md": "merge-hygiene (open PR #9)",
-    "docs/engineering/PRODUCT-THESIS.md": "merge-hygiene (open PR #9)",
 }
 
 FILES = ["README.md", "CONTRIBUTING.md", "CODE_OF_CONDUCT.md", "SECURITY.md", "CHANGELOG.md", "AGENTS.md",
@@ -106,12 +104,6 @@ def check(path: Path) -> tuple[list[str], list[str], int]:
     return broken, pending, ok
 
 
-def unlisted_adrs() -> list[str]:
-    """ADR files the ADR index does not link. Reported, and a failure: the index is the source of truth."""
-    index = read(ROOT / "docs/adr/README.md")
-    return [p.name for p in sorted((ROOT / "docs/adr").glob("[0-9][0-9][0-9][0-9]-*.md")) if p.name not in index]
-
-
 def main(argv: list[str] | None = None) -> int:
     argparse.ArgumentParser(description=__doc__.splitlines()[0]).parse_args(argv)
     broken: list[str] = []
@@ -123,8 +115,6 @@ def main(argv: list[str] | None = None) -> int:
         broken += b
         pending += p
         ok += n
-    for adr in unlisted_adrs():
-        broken.append(f"docs/adr/README.md: ADR file {adr} is not linked from the index")
     for line in pending:
         print("PENDING", line)
     for line in broken:
