@@ -147,9 +147,9 @@ def _unsafe(candidate, action, **changes):
     return Workflow.model_construct(**{**dict(candidate), "transitions": swapped})
 
 
-def _explore_without_policy_gate(sandbox, model, depth):
+def _explore_without_policy_gate(sandbox, model, depth, stop_when_found=()):
     with mock.patch.object(runtime, "ensure_policy", lambda _model: None):
-        return explore("unsafe", model, Config(depth=depth), sandbox)
+        return explore("unsafe", model, Config(depth=depth, stop_when_found=stop_when_found), sandbox)
 
 
 def test_the_policy_gate_is_what_blocks_an_unsafe_workflow(sandbox):
@@ -166,6 +166,6 @@ def test_the_policy_gate_is_what_blocks_an_unsafe_workflow(sandbox):
      "NO-FORBIDDEN-EFFECT", 3),
 ])
 def test_unsafe_workflow_variants_yield_shortest_counterexamples(sandbox, label, model, invariant, length):
-    res = _explore_without_policy_gate(sandbox, model, depth=3)
+    res = _explore_without_policy_gate(sandbox, model, depth=3, stop_when_found=(invariant,))
     assert invariant in res.findings.first, (label, sorted(res.findings.first))
     assert res.findings.first[invariant]["length"] == length and res.verdict == "FAIL"
