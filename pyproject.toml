@@ -34,11 +34,13 @@ testing = []
 mutation = []
 metrics = []
 hci = []
+demos = ["playwright==1.63.0"]  # drives the installed system Chrome; no browser download
+# Agent lane (ADR-0041). anyio is imported directly by interfaces/mcp_server.py, so it is pinned here as well;
+# the rest of the measured SDK dependency closure is recorded in requirements-agents-tested.txt (pip -c).
 agents = ["mcp==2.2.0", "anyio==4.15.1"]
 docs = []
 providers = []
 visual = []
-demos = ["playwright==1.63.0"]  # drives the installed system Chrome; no browser download
 ux = []
 graph = []
 dod = []
