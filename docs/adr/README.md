@@ -11,6 +11,8 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0018](0018-formal-vv-portfolio.md) | Formal V&V portfolio: each technique is a distinct evidence kind | proposed |
 | [0019](0019-diagrams-generated-from-executable-model.md) | Diagrams are generated projections of the executable model | proposed |
 | [0020](0020-multi-provider-agent-adapters.md) | Proposal providers: Codex, Claude Code, OpenCode, Gemini CLI, OpenRouter | proposed |
+| [0047](0047-hardcoded-scripted-demos-not-demo-machine.md) | Hand-authored scripted demo recordings, not demo-machine | accepted |
+| [0048](0048-scenario-dependency-gating.md) | Demo scenarios are gated by their real dependencies, never faked | accepted |
 
 ## Reserved numbers for capability lanes
 
@@ -31,3 +33,8 @@ Reserving numbers stops parallel lanes from colliding. A lane that needs more re
 | 0041–0042 | Agent integration (MCP server, skills) |
 | 0043–0044 | OSS community, documentation and release |
 | 0045–0046 | Knowledge base: OKF v0.2 wiki deterministically linked to code |
+| 0047–0048 | Demos: scripted live recordings, scenario dependency gating |
+| 0049–0050 | Wave 2: interactive drag-and-drop UML editor (`uml-editor`) |
+| 0051–0052 | Wave 2: ubiquitous-language editor and DDD tree (`ddd-language`) |
+| 0053–0054 | Wave 2: in-Studio image generation (`imagegen`) |
+| 0055–0056 | Wave 2: personas, ICP and persona-driven e2e scenarios (`personas-e2e`) |

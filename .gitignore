@@ -11,4 +11,5 @@ dist/
 .tmp/
 .pytest-tmp/
 reports/
+demos/output/
 .nox/

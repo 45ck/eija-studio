@@ -1,0 +1,12 @@
+{
+  "mode": "record",
+  "platform": "Windows 11 / Python 3.12.10",
+  "scenario": "assurance_loop",
+  "skipped": [
+    "Act 4 (verify, approve, apply): the owner has not restamped the release fixture, so verification returns SOURCE_REVIEW_REQUIRED. Agents never stamp; not exercised."
+  ],
+  "status": "PARTIAL",
+  "video": "demos\\output\\assurance_loop.webm",
+  "video_bytes": 7765711,
+  "video_sha256": "81e872c0661f5d4de14bb1a375ad67beb6e663a362958663b41f47d094941d0d"
+}

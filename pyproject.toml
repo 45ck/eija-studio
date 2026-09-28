@@ -21,6 +21,7 @@ testing = []
 mutation = []
 metrics = []
 hci = []
+demos = ["playwright==1.63.0"]  # drives the installed system Chrome; no browser download
 agents = []
 docs = []
 
@@ -34,6 +35,6 @@ where = ["src"]  # quality/ and verification/ are engineering tooling, never shi
 eija_studio = ["resources/**/*", "resources/*.json"]
 
 [tool.pytest.ini_options]
-pythonpath = ["src"]
+pythonpath = ["src", "."]  # "." so tests can import repo-root tooling packages (demos, quality)
 testpaths = ["tests"]
 addopts = "-ra"  # tests/conftest.py keeps pytest temp dirs inside the checkout (slow system temp)
