@@ -1,19 +1,17 @@
 """MCP adapter tests, driven through the SDK's in-memory client/server session.
 
-They prove: the exposed surface is exactly the agent surface; owner operations are absent and
+They prove (the SDK-free lint, config and docs checks are in test_agent_static.py): the exposed surface is exactly the agent surface; owner operations are absent and
 unreachable; kernel domain errors and unexpected errors surface safely; consent and answers cannot be
 supplied by an agent and networked calls are capped; sealed material does not leak; and the real stdio
 entry point starts, answers and keeps stdout to JSON-RPC only.
 """
 from __future__ import annotations
 
-import ast
 import asyncio
 import json
 import subprocess
 import sys
 import threading
-import tomllib
 from pathlib import Path
 
 import pytest
@@ -25,11 +23,9 @@ from mcp.server.mcpserver.exceptions import ToolError
 
 from conftest import approve
 from eija_studio.application.ports import ProviderResult
-from eija_studio.domain.models import OWNER, DomainError, Proposal, Alternative
-from eija_studio.interfaces import agent_config
-from eija_studio.interfaces.cli import main as cli_main
+from eija_studio.domain.models import AGENT, OWNER, DomainError, Proposal, Alternative
 from eija_studio.interfaces.mcp_server import (
-    AGENT_TOOLS, ALLOWED_STUDIO_CALLS, OWNER_ONLY_OPERATIONS, AgentSurface, _owner_next, create_server)
+    AGENT_TOOLS, OWNER_ONLY_OPERATIONS, AgentSurface, StudioAgentPort, _owner_next, create_server)
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUEST = "Let teachers sign off excursions."
@@ -94,22 +90,37 @@ def test_calling_an_owner_operation_is_an_error_not_a_dispatch(studio):
     session(studio)(block)
 
 
-def test_mcp_never_calls_owner_operations_on_studio():
-    source = (ROOT / "src/eija_studio/interfaces/mcp_server.py").read_text(encoding="utf-8")
-    tree = ast.parse(source)
-    called = {n.attr for n in ast.walk(tree) if isinstance(n, ast.Attribute) and isinstance(n.value, ast.Attribute)
-              and n.value.attr == "studio"}
-    assert called <= ALLOWED_STUDIO_CALLS, called - ALLOWED_STUDIO_CALLS
-    assert not called & set(OWNER_ONLY_OPERATIONS)
-    names = {n.id for n in ast.walk(tree) if isinstance(n, ast.Name)}
-    assert "OWNER" not in names, "the MCP adapter must never hold the owner principal"
-
-
-def test_surface_holds_no_principal_so_nothing_pretends_to_enforce_authority(studio):
-    # The guarantee is that owner tools are absent (tests above), not a principal check: the adapter has none.
-    assert not hasattr(AgentSurface(studio), "principal")
+def test_surface_holds_no_principal_and_needs_only_the_five_member_port(studio):
+    # The guarantee is that owner tools are absent (tests above and test_agent_static.py), not a principal check.
+    surface = AgentSurface(StudioAgentPort(studio))
+    assert not hasattr(surface, "principal") and not hasattr(surface, "studio")
     with pytest.raises(TypeError):
-        AgentSurface(studio, principal=OWNER)  # type: ignore[call-arg]
+        AgentSurface(StudioAgentPort(studio), principal=OWNER)  # type: ignore[call-arg]
+
+    class Fake:
+        networked = False
+
+        def list_cases(self):
+            return []
+
+        def create(self, request):
+            return {"id": "a" * 32, "version": 0, "stage": "DRAFT"}
+
+        def view(self, case_id):
+            raise ToolError("not reached")
+
+        propose = verify = view
+    fake_surface = AgentSurface(Fake())  # a five-member fake is enough to drive it: nothing else can be reached
+    assert fake_surface.list_cases() == {"cases": [], "count": 0}
+    assert fake_surface.create_case(REQUEST)["stage"] == "DRAFT"
+    assert not [name for name in dir(fake_surface.port) if name in OWNER_ONLY_OPERATIONS]
+
+
+def test_the_kernel_still_refuses_an_authority_less_principal_below_the_adapter(studio, selected):
+    """Kernel test, not an adapter test: the adapter is safe because it offers no such tool, not because of this."""
+    with pytest.raises(DomainError) as raised:
+        studio.select(selected["id"], selected["version"], "recommend_only", AGENT)
+    assert raised.value.code == "AUTHORITY_REQUIRED"
 
 
 def test_kernel_domain_errors_reach_the_agent_through_a_tool_path(studio, selected):
@@ -123,7 +134,7 @@ def test_kernel_domain_errors_reach_the_agent_through_a_tool_path(studio, select
 
 
 def test_guarded_translates_domain_errors_and_hides_unexpected_ones(studio):
-    surface = AgentSurface(studio)
+    surface = AgentSurface(StudioAgentPort(studio))
 
     def domain():
         raise DomainError("MEANING_REQUIRED", "select first")
@@ -279,7 +290,7 @@ def test_zero_cap_forbids_live_calls_and_a_negative_cap_is_invalid(studio):
     session(studio, egress_consent=True, max_provider_calls=0)(zero)
     assert stub.calls == 0
     with pytest.raises(ValueError):
-        AgentSurface(studio, max_provider_calls=-1)
+        AgentSurface(StudioAgentPort(studio), max_provider_calls=-1)
 
 
 def test_offline_proposals_do_not_consume_the_cap(studio):
@@ -325,74 +336,40 @@ def test_resources_language_and_adrs(studio):
     session(studio)(block)
 
 
-# ---- CLI and docs ------------------------------------------------------------------------------
-def test_cli_refuses_unsafe_mcp_configuration_on_stderr_never_stdout(tmp_path, capsys):
-    base = ["mcp", "--workspace", str(tmp_path / "w")]
-    unsafe = ([*base, "--provider", "openrouter"],                                        # networked, no flags
-              [*base, "--provider", "openrouter", "--allow-network"],                       # needs owner consent too
-              [*base, "--ask-key", "--provider", "openrouter", "--allow-network", "--egress-consent"],
-              [*base, "--max-provider-calls", "-1"])
-    for argv in unsafe:
-        assert cli_main(argv) == 2
-        captured = capsys.readouterr()
-        assert captured.out == "", "stdout is the MCP protocol channel; startup errors must not go there"
-        assert "CONFIGURATION" in captured.err
-    assert not (tmp_path / "w").exists()  # refused before touching the workspace
+# ---- sealed material: every tool -----------------------------------------------------------------
+def test_no_tool_leaks_sealed_material_after_owner_approval(studio, verified):
+    """Every tool that returns case data, scanned after approval: decision seal, signature, expected answers."""
+    approved = approve(studio, verified)
+    decision = approved["decision"]
+    packet = studio.view(approved["id"])["packet"]
+    forbidden = [decision["local_signature"], '"expected":', *(q["expected"] for q in packet["questions"] if len(q["expected"]) > 12)]
+
+    async def block(client):
+        outputs = [await call(client, "list_cases"), await call(client, "view_case", case_id=approved["id"]),
+                   await call(client, "impact", case_id=approved["id"]),
+                   await call(client, "verify", case_id=approved["id"])]
+        outputs += [await call(client, "render", case_id=approved["id"], view=view, format=fmt)
+                    for view in ("rules", "states", "journeys") for fmt in ("json", "text")]
+        for result in outputs:
+            text = json.dumps(result.structured_content) + result.content[0].text
+            for secret in forbidden:
+                assert secret not in text, (secret, text[:200])
+            assert "local_signature" not in text and str(studio.store.directory) not in text
+    session(studio)(block)
 
 
-def test_missing_extra_is_reported_on_stderr_in_mcp_mode(tmp_path, capsys, monkeypatch):
-    monkeypatch.setitem(sys.modules, "eija_studio.interfaces.mcp_server", None)  # makes the import fail
-    assert cli_main(["mcp", "--workspace", str(tmp_path / "w")]) == 2
-    captured = capsys.readouterr()
-    assert captured.out == "" and "MISSING_EXTRA" in captured.err
+def test_leak_scan_has_teeth(studio, verified, monkeypatch):
+    """Negative control: if `render` returned the sealed decision, a scan for the signature would find it."""
+    approved = approve(studio, verified)
+    real = AgentSurface.render
 
+    def leaky(self, case_id, view, fmt):
+        return real(self, case_id, view, fmt) | {"x": self.port.view(case_id)["case"]["decision"]}
+    monkeypatch.setattr(AgentSurface, "render", leaky)
 
-def test_non_mcp_commands_still_report_errors_on_stdout(tmp_path, capsys):
-    assert cli_main(["verify", "0" * 32, "--expected-version", "0", "--workspace", str(tmp_path / "w")]) == 2
-    captured = capsys.readouterr()
-    assert "NOT_FOUND" in captured.out and captured.err == ""
-
-
-@pytest.mark.parametrize("client", agent_config.CLIENTS)
-def test_print_config_is_valid_for_each_client(client, tmp_path, capsys):
-    assert cli_main(["mcp", "--workspace", str(tmp_path / "w"), "--print-config", client]) == 0
-    text = capsys.readouterr().out
-    workspace = str((tmp_path / "w").resolve())
-    if client == "codex":
-        server = tomllib.loads(text)["mcp_servers"]["eija"]
-        assert server["command"] == sys.executable and server["args"][:3] == ["-m", "eija_studio", "mcp"] and server["args"][-1] == workspace
-    elif client == "opencode":
-        server = json.loads(text)["mcp"]["eija"]
-        assert server["type"] == "local" and server["command"][0] == sys.executable and server["command"][-1] == workspace
-    elif client == "gemini":
-        server = json.loads(text)["mcpServers"]["eija"]
-        assert server["command"] == sys.executable and server["args"][-1] == workspace and server["trust"] is False
-    else:
-        assert text.startswith("claude mcp add --scope project eija -- ") and workspace in text
-    assert not (tmp_path / "w").exists()  # printing config creates nothing
-    with pytest.raises(ValueError):
-        agent_config.snippet("unknown", sys.executable, tmp_path)
-
-
-def test_docs_name_every_tool_and_forbid_every_owner_operation():
-    contract = (ROOT / "docs/agents/contract.md").read_text(encoding="utf-8")
-    quickstart = (ROOT / "docs/agents/quickstart.md").read_text(encoding="utf-8")
-    for tool in AGENT_TOOLS:
-        assert f"`{tool}`" in contract, tool
-    for operation in ("select", "edit", "approve", "apply"):
-        assert f"`{operation}`" in contract.split("## What an agent may not do")[1], operation
-    for client in ("claude mcp add", "[mcp_servers.eija]", '"mcp"', '"mcpServers"'):
-        assert client in quickstart, client
-
-
-@pytest.mark.parametrize("path", [".agents/skills/eija-studio/SKILL.md", ".claude/skills/eija-studio/SKILL.md"])
-def test_skills_name_every_tool_and_pre_approve_none(path):
-    text = (ROOT / path).read_text(encoding="utf-8")
-    assert text.startswith("---\nname: eija-studio\n")
-    for tool in AGENT_TOOLS:
-        assert tool in text, tool
-    assert "allowed-tools" not in text  # a skill must not silently pre-approve tool calls (some reach networked providers)
-    assert "no select, edit, approve or apply tool" in text
+    async def block(client):
+        return json.dumps((await call(client, "render", case_id=approved["id"], view="rules", format="json")).structured_content)
+    assert approved["decision"]["local_signature"] in session(studio)(block)
 
 
 def test_real_stdio_server_starts_lists_tools_and_answers(tmp_path):

@@ -20,6 +20,8 @@ Through the MCP server (`eija mcp`). Its guarantee is that owner operations are 
 
 Resources: `eija://agent/contract` (this file), `eija://language` (the ubiquitous language), `eija://adr` and `eija://adr/{number}`.
 
+Meaning-check answers and the decision seal are not returned, but that is hygiene, not secrecy: the answers are derivable from the projections you can read. Do not derive them to answer on the owner's behalf. `verify` on a case that is not yet approved bumps its version, so an owner review in flight goes stale; prefer passing `expected_version` (the version you last saw) to `propose` and `verify`.
+
 Agents should also: report `UNKNOWN`, `NOT_RUN` and limitations verbatim; explain to the user what the owner must do next (`owner_next` in tool output); keep requests synthetic.
 
 ## What an agent may not do
