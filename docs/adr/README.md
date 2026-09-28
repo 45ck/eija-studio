@@ -16,6 +16,8 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0022](0022-live-provider-evidence-and-not-run.md) | Live provider evidence is consent-gated, one call, and NOT_RUN when unproven | accepted |
 | [0035](0035-static-analysis-and-architecture-fitness-functions.md) | Static analysis, architecture fitness functions and ratcheted budgets | accepted |
 | [0036](0036-noslop-hooks-adapted-to-nox.md) | noslop guardrails adapted to run nox tiers; hook enablement is an explicit step | accepted |
+| [0047](0047-hardcoded-scripted-demos-not-demo-machine.md) | Hand-authored scripted demo recordings, not demo-machine | accepted |
+| [0048](0048-scenario-dependency-gating.md) | Demo scenarios are gated by their real dependencies, never faked | accepted |
 <!-- adr-index:end -->
 
 ## Reserved numbers for capability lanes
