@@ -1,0 +1,14 @@
+{
+  "mode": "record",
+  "notes": "Recorded before the manifest carried scenario_sha256. That field was computed afterwards from demos/scenarios/assurance_loop.py at commit b190e8d, the commit that introduced this take, and video_sha256 refers to that same earlier take. The script has since changed (the skipped act 4 now clicks Verify and asserts SOURCE_REVIEW_REQUIRED before its caption; in this take the caption sits over an unrelated notice), so registry --check warns that the recording predates the current script. Re-record after the UI redesign.",
+  "platform": "Windows 11 / Python 3.12.10",
+  "scenario": "assurance_loop",
+  "scenario_sha256": "639272fd0bf07a9920c2ca889c0bffede78cd0f36e44a3c9dba600d70ea920cb",
+  "skipped": [
+    "Act 4 (verify, approve, apply): the owner has not restamped the release fixture, so verification returns SOURCE_REVIEW_REQUIRED. Agents never stamp; not exercised."
+  ],
+  "status": "PARTIAL",
+  "video": "demos/output/assurance_loop.webm",
+  "video_bytes": 7765711,
+  "video_sha256": "81e872c0661f5d4de14bb1a375ad67beb6e663a362958663b41f47d094941d0d"
+}

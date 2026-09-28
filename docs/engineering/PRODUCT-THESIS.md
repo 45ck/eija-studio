@@ -19,6 +19,40 @@ Status: owner's thesis, 2026-09-29. In the owner's words: *everything is abstrac
 | **Drift is a lint error.** | Language-versus-code, language-versus-UI and model-versus-diagram mismatches are diagnostics from the compiler over the linked graph (the weave lane). |
 | Evidence attaches to **abstractions and their invariants**, and says what it does not cover. | Each invariant shows its checks (test, property, model check, proof) and their status, with UNKNOWN visible. |
 
+## Form factor: a modern IDE, not a wizard
+
+The owner's clarification (2026-09-29): the Studio is essentially **a modern IDE**, in the family of Visual Studio, IntelliJ and VS Code, whose subject is the domain model and its language instead of only source files. It is not a wizard.
+
+A wizard is linear (step 1, 2, 3, 4), modal and forgetful. An IDE is a **workbench**: many things visible and editable at once, navigated freely, with undo and history. What that means here:
+
+| IDE concept | EIJA meaning |
+|---|---|
+| Explorer / project tree | the ubiquitous-language and DDD tree (contexts, aggregates, terms, rules), plus requirements, tests, ADRs, diagrams |
+| Editor tabs and splits | diagram editor, rule/DSL text editor, semantic diff, term/concept editor, counterexample trace stepper, side by side |
+| Language service and squiggles | the linked-graph compiler; drift and broken links are **diagnostics** |
+| Problems panel | diagnostics from the compiler, with severity, provenance and quick fixes (deterministic codemods) |
+| Go to definition / find references | term to code to UI to test to proof and back; **ripple is find-references** |
+| Rename / refactor with preview | renaming, merging or splitting a concept is a typed semantic transaction with a computed ripple and a preview |
+| Source-control changes view | an agent's work as a **changeset of abstractions**, not only of lines |
+| Run / debug / test panel | evidence: proofs, model checks, property tests, mutation, with UNKNOWN visible |
+| Command palette, quick open, keybindings | keyboard-first operation; every action has a name and a shortcut |
+| Status bar | model hash, evidence status, agent activity, staleness |
+| Worktrees and agent sessions | **first-class**: each agent works in its own git worktree with its own session and changeset; create, switch and compare them; ownership and dependency map of parallel work |
+| Conflict prediction | before anything lands, predict overlap between parallel changesets by **file, symbol and abstraction** (two agents renaming or splitting the same concept is a semantic conflict git cannot see) |
+| Landing queue (merge queue) | review, merge main in, run the gates on the **merge result** (not just the branch), then merge; generated files and shared registries have merge rules so they stop conflicting |
+
+Two things stay deliberately *unlike* a typical IDE: approving and applying a change is a structurally isolated, owner-only action (the kernel decides who may, not the UI), and UNKNOWN is a first-class state that the workbench never hides.
+
+## Decisions (owner, 2026-09-29)
+
+| Question | Decision |
+|---|---|
+| Source of truth | **Hybrid, two-way.** Code and model are both real; an edit on either side becomes a typed, checked change. |
+| First minutes | **Prompt-first is the default** and must be as fast as vibe coding: the owner prompts, agents build, and the IDE *extracts* the language, DDD tree and UML for the owner to confirm (the model crystallizes). **Model-first is also supported** for people who want to define language and domains up front. |
+| Code editor | **None built in.** Code is written by agents or in the developer's own editor; the IDE shows code read-only with model-aware navigation (go to definition, find references, ripple). The model editors are the editors. |
+| Centre of gravity | **UML, modelling and flow diagrams.** Abstractions are seen as a **tree and as a graph**; **design patterns are shown visually** (recognised in the model and code, applied as checked refactorings). It must **feel good** to use, and speed is a requirement. |
+| Flagship demonstrations | (1) side by side with a vibe-coding tool: the same feature, then drift and breakage after five changes; (2) an agent's change as a semantic diff with ripple and evidence; (3) drag-and-drop UML that updates the software (a typed change, generated code and affected tests, or a rule blocks it with a reason); (4) parallel agents landing safely (semantic conflict prediction, gated landing queue); plus visualisations "under the hood" and UI/UX viewing. |
+
 ## Non-goals
 
 EIJA does not invent AI abstractions, and it does not claim to make abstractions *correct*. It makes them visible, linked, checked against the code, and reviewable, and it keeps the human decision with the human.
