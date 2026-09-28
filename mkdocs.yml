@@ -1,0 +1,80 @@
+site_name: EIJA Studio
+site_description: Review the meaning of a change, not every generated line. AI proposes, the kernel checks, the local owner decides.
+repo_url: https://github.com/45ck/eija-studio
+repo_name: 45ck/eija-studio
+edit_uri: edit/main/docs/
+docs_dir: docs
+site_dir: .tmp/site  # gitignored; there is no deployment (hosted CI is unavailable, ADR-0017)
+strict: true
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - toc.follow
+
+validation:
+  # Docs legitimately link to repository files outside docs/ (contracts, source, AGENTS.md). MkDocs
+  # cannot resolve those, so they are INFO here and are checked by scripts/check_doc_links.py
+  # (nox session docs_links), which also covers README and the community files. Anchors stay strict.
+  omitted_files: info
+  absolute_links: warn
+  links:
+    not_found: info
+    anchors: warn
+    absolute_links: warn
+    unrecognized_links: info
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+nav:
+  - Home: index.md
+  - Getting started: getting-started.md
+  - Architecture:
+      - Architecture and ubiquitous language: architecture/ARCHITECTURE.md
+      - Technical lead review: TECHNICAL_LEAD_REVIEW.md
+      - Security and trust: SECURITY_AND_TRUST.md
+      - Operations: OPERATIONS.md
+  - ADRs:
+      - Index: adr/README.md
+      - "0000 POC decision log": adr/0000-poc-decision-log.md
+      - "0015 Apache-2.0": adr/0015-open-source-under-apache-2.md
+      - "0016 OSS first": adr/0016-oss-first-adapters-not-engines.md
+      - "0017 Local quality gates": adr/0017-local-quality-gates.md
+      - "0018 Formal V&V portfolio": adr/0018-formal-vv-portfolio.md
+      - "0019 Generated diagrams": adr/0019-diagrams-generated-from-executable-model.md
+      - "0020 Agent providers": adr/0020-multi-provider-agent-adapters.md
+      - "0043 README truthfulness and docs site": adr/0043-readme-truthfulness-and-docs-site.md
+  - Formal V&V:
+      - Portfolio and status: lanes/formal.md
+      - Runtime verification report: verification/VERIFICATION.md
+  - Visual: lanes/visual.md
+  - Agents: lanes/agents.md
+  - Quality: lanes/quality.md
+  - Metrics: lanes/metrics.md
+  - HCI: lanes/hci.md
+  - Knowledge base: lanes/knowledge-base.md
+  - Roadmap: ROADMAP.md
+  - OSS register: oss/REGISTER.md

@@ -1,5 +1,24 @@
 # Change log
 
+## Unreleased
+
+Summary of the open-source foundation since 0.2.0. Nothing here changes kernel behaviour except where stated.
+
+### Added
+
+- Apache-2.0 licence, NOTICE, [ADR](docs/adr/README.md) index in MADR format (ADR-0015 to ADR-0020), OSS-first register ([docs/oss/REGISTER.md](docs/oss/REGISTER.md)), lane conventions in `AGENTS.md`, and nox gate sessions loaded as plugins from `quality/sessions/` (PR #2).
+- Durable and ephemeral SQLite profiles, an application-owned `SandboxFactory` port, and a fast Windows test suite (PR #1). This is a kernel change: it means the source no longer matches the owner-stamped release fixture, so `eija doctor` reports `release_fixture_matches: false` and verify/apply return `SOURCE_REVIEW_REQUIRED` until the maintainer re-stamps.
+- Front-door documentation (oss lane): README rewrite with a before/after state diagram generated from `domain.policy`, `docs/getting-started.md` (the previous README's install, provider and verification detail), CONTRIBUTING, CODE_OF_CONDUCT (Contributor Covenant 2.1), SECURITY, CITATION.cff, issue and pull-request templates, `docs/ROADMAP.md`, lane hub pages, a banner, ADR-0043.
+- MkDocs Material configuration (`mkdocs.yml`, extra `docs`), and nox sessions `docs_links`, `readme_diagram`, `community_files` (fast) and `docs` (release, `NOT_RUN` when MkDocs is absent). No deployment: hosted CI is unavailable.
+
+### Changed
+
+- The README is now the project's front door. Installation, OpenRouter, Codex, first-demonstration, compiler and operations detail moved to `docs/getting-started.md` without removal.
+
+### Not added
+
+Everything listed as planned in the [roadmap](docs/ROADMAP.md): formal V&V (Bend, TLA+, Z3), property and mutation testing, lint/type gates, metrics, HCI instrumentation, MCP server, knowledge base. Providers, visual, agents, quality and HCI work exists on open pull requests and is not part of this entry.
+
 ## 0.2.0 — 2026-09-27
 
 First runnable unified local implementation, following the v0.1 consolidation specification.

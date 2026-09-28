@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use EIJA Studio, please cite it as below. A software citation describes the code, not a measured benefit."
+type: software
+title: "EIJA Studio: Executable Intent and Journey Assurance"
+abstract: >-
+  An open-source Python assurance kernel in which AI proposes changes to a typed workflow model, the kernel
+  checks them and records computed evidence, and a local owner decides. Bounded local proof of concept.
+version: 0.2.0
+date-released: 2026-09-27
+license: Apache-2.0
+repository-code: "https://github.com/45ck/eija-studio"
+url: "https://github.com/45ck/eija-studio"
+authors:
+  - name: "EIJA Studio contributors"
+keywords:
+  - assurance
+  - semantic transactions
+  - workflow verification
+  - human-in-the-loop
+  - AI agents
