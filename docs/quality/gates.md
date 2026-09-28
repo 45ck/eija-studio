@@ -6,7 +6,7 @@ Every gate is a nox session in `quality/sessions/` ([ADR-0017](../adr/0017-local
 are the evidence; a green run shows that this checkout on this machine passed, not a remote attestation.
 
 ```sh
-nox -t fast       # pre-commit: tens of seconds
+nox -t fast       # pre-commit: about 2 minutes on the reference PC (most of it the test suite)
 nox -t full       # pre-push and the PR gate
 nox -t release    # maintainer release evidence (network, stamped fixture)
 nox -s typecheck  # any single gate
@@ -88,7 +88,7 @@ this gate does not make.
 | `.githooks/pre-push` | `nox -t full` |
 | `.githooks/commit-msg` | Conventional Commits subject; rejects `[skip ci]`-style bypass text; allows git-generated merge and revert subjects |
 | `.githooks/run-nox` | Finds `.venv/Scripts/python.exe` or `.venv/bin/python` (Git Bash on Windows and POSIX), sets TMP/TEMP inside the checkout, fails loudly if nox is missing |
-| `.claude/settings.json`, `.claude/hooks/pre-tool-use.sh` | Deny hook-bypass flags and edits to hooks and agent settings; the hook works without `jq` |
+| `.claude/settings.json`, `.claude/hooks/pre-tool-use.sh` | **Active for every agent automatically** (not opt-in). Deny force-pushes and `--no-verify` on `git commit`/`git push`, and edits to hooks and agent settings; ordinary `--force` operations (worktree removal, pip) and text that merely mentions a flag are allowed; the hook works without `jq` |
 | `.github/workflows/quality.yml`, `guardrails.yml` | `workflow_dispatch` only (hosted CI unavailable) |
 
 ### Enabling the hooks (one line, per clone)
@@ -108,3 +108,10 @@ check (`core.hooksPath` not set).
 Passing them shows that style, typing, layering, complexity and dependency hygiene are within budget. It says nothing about
 whether the kernel's semantics are right; that is the job of the tests and of the formal and testing lanes. Coverage counts
 executed lines, not verified behaviour, and `interfaces/cli.py` is 0 % covered because no test drives the CLI yet.
+
+## Notes for lane authors
+
+* **New modules need tests at or above the coverage floor.** Headroom is under one point (floor 78, measured 78.7); adding an under-tested module trips the gate. Add tests; do not lower the floor.
+* **Moving a function** (for example `adapters/providers.py` into a package) leaves a stale key in `complexity_baseline.json`, and `--update` will not add the moved entry. Rename the key by hand in the same change, and say so in the PR.
+* **Optional extras are not dev groups** for deptry: only `dev` and `lint` are. A lane that imports its extra's package from `src/` or a tooling tree is fine; declare the distribution-to-module name in `[tool.deptry.package_module_name_map]` when they differ.
+* **`typecheck_win32`** (release tier for now; it moves to `full` once the providers package replaces the POSIX-only `adapters/providers.py`) re-runs mypy as `win32` so Windows-only branches are checked; the default `typecheck` runs as `linux`.
