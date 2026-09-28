@@ -1,7 +1,7 @@
 import json, subprocess
 from pathlib import Path
 import httpx, pytest
-from eija_studio.adapters.providers import OpenRouterProvider, CodexProvider, OfflineProvider, parse_proposal
+from eija_studio.adapters.providers import OpenRouterProvider, CodexProvider, OfflineProvider, AnthropicApiProvider, parse_proposal
 from eija_studio.domain.policy import baseline
 from eija_studio.domain.models import DomainError
 
@@ -50,7 +50,8 @@ def test_codex_invocation_reuses_cli_auth_without_exposing_keys(monkeypatch):
     def runner(args,**kwargs):
         captured.append((args,kwargs))
         assert "OPENROUTER_API_KEY" not in kwargs["env"] and "CODEX_API_KEY" not in kwargs["env"]
-        if args[1:]==["exec","--help"]:return subprocess.CompletedProcess(args,0,"--output-schema --ephemeral --ignore-user-config --sandbox","")
+        if args[1:]==["--version"]:return subprocess.CompletedProcess(args,0,"codex-cli 0.0.0","")
+        if args[1:]==["exec","--help"]:return subprocess.CompletedProcess(args,0,"--output-schema --ephemeral --ignore-user-config --sandbox --output-last-message --skip-git-repo-check","")
         if args[1:]==["login","status"]:return subprocess.CompletedProcess(args,0,"Logged in using ChatGPT","")
         assert "--ignore-user-config" in args and "read-only" in args and "-"==args[-1]
         assert 'forced_login_method="chatgpt"' in args and "features.apps=false" in args
@@ -58,17 +59,17 @@ def test_codex_invocation_reuses_cli_auth_without_exposing_keys(monkeypatch):
         Path(args[args.index("--output-last-message")+1]).write_text(proposal_json())
         return subprocess.CompletedProcess(args,0,"","")
     result=CodexProvider(runner=runner).propose("Let teachers sign off excursions.",baseline())
-    assert result.provider=="codex" and len(captured)==3
+    assert result.provider=="codex" and len(captured)==4
 
 
 def test_codex_api_login_not_silently_substituted():
     def runner(args,**kwargs):
-        out="--output-schema --ephemeral --ignore-user-config --sandbox" if args[1]=="exec" else "Logged in using an API key"
+        out="--output-schema --ephemeral --ignore-user-config --sandbox --output-last-message --skip-git-repo-check" if args[1]=="exec" else "Logged in using an API key"
         return subprocess.CompletedProcess(args,0,out,"")
     p=CodexProvider(runner=runner)
     assert not p.doctor()["ready"]
     with pytest.raises(DomainError) as e:p.propose("request",baseline())
-    assert e.value.code=="CODEX_NOT_READY"
+    assert e.value.code=="PROVIDER_NOT_READY"
 
 
 def test_network_requires_both_startup_enable_and_request_consent(studio):
@@ -112,3 +113,38 @@ def test_invalid_provider_accounting_envelope_fails_cleanly(usage):
     provider=OpenRouterProvider('fixture/model','test-secret',transport=httpx.MockTransport(handler))
     with pytest.raises(DomainError) as e:provider.propose('request',baseline())
     assert e.value.code=='PROVIDER_OUTPUT_INVALID'
+
+
+def test_anthropic_api_wire_contract_and_redaction():
+    def handler(request):
+        body=json.loads(request.content)
+        assert str(request.url)=="https://api.anthropic.com/v1/messages"
+        assert request.headers["x-api-key"]=="test-secret" and request.headers["anthropic-version"]
+        assert "tools" not in body and body["output_config"]["format"]["type"]=="json_schema"
+        assert "maxLength" not in json.dumps(body["output_config"]["format"]["schema"])  # unsupported keywords relaxed; reply still validated
+        return httpx.Response(200,json={"model":"claude-fixture","stop_reason":"end_turn","content":[{"type":"text","text":proposal_json()}],"usage":{"input_tokens":3,"output_tokens":4,"debug":"no"}})
+    result=AnthropicApiProvider("claude-fixture","test-secret",transport=httpx.MockTransport(handler)).propose("Let teachers sign off excursions.",baseline())
+    assert result.provider=="anthropic" and result.usage=={"input_tokens":3,"output_tokens":4}
+
+
+@pytest.mark.parametrize("status,code",[(401,"PROVIDER_AUTH"),(429,"PROVIDER_RATE_LIMIT"),(500,"PROVIDER_HTTP_ERROR")])
+def test_anthropic_api_errors_are_redacted_and_not_retried(status,code):
+    calls=[]
+    def handler(request):calls.append(request);return httpx.Response(status,text="secret-value")
+    with pytest.raises(DomainError) as e:AnthropicApiProvider("m","test-secret",transport=httpx.MockTransport(handler)).propose("r",baseline())
+    assert e.value.code==code and "secret-value" not in str(e.value) and len(calls)==1
+
+
+@pytest.mark.parametrize("stop",["refusal","max_tokens","tool_use"])
+def test_anthropic_api_refused_or_truncated_output_is_not_accepted(stop):
+    def handler(request):return httpx.Response(200,json={"stop_reason":stop,"content":[{"type":"text","text":proposal_json()}]})
+    with pytest.raises(DomainError) as e:AnthropicApiProvider("m","k",transport=httpx.MockTransport(handler)).propose("r",baseline())
+    assert e.value.code=="PROVIDER_INCOMPLETE"
+
+
+def test_anthropic_api_needs_a_key_from_the_environment(monkeypatch):
+    monkeypatch.delenv("ANTHROPIC_API_KEY",raising=False)
+    p=AnthropicApiProvider()
+    assert not p.doctor()["ready"]
+    with pytest.raises(DomainError) as e:p.propose("r",baseline())
+    assert e.value.code=="PROVIDER_NOT_CONFIGURED"

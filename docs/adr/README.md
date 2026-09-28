@@ -10,7 +10,9 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0017](0017-local-quality-gates.md) | Local quality gates: nox sessions + noslop enforcement | accepted |
 | [0018](0018-formal-vv-portfolio.md) | Formal V&V portfolio: each technique is a distinct evidence kind | proposed |
 | [0019](0019-diagrams-generated-from-executable-model.md) | Diagrams are generated projections of the executable model | proposed |
-| [0020](0020-multi-provider-agent-adapters.md) | Proposal providers: Codex, Claude Code, OpenCode, Gemini CLI, OpenRouter | proposed |
+| [0020](0020-multi-provider-agent-adapters.md) | Proposal providers: Codex, Claude Code, OpenCode, Gemini CLI, OpenRouter | accepted |
+| [0021](0021-cli-provider-isolation-and-process-tree-kill.md) | Agent-CLI providers share one isolated, bounded, tree-killing base class | accepted |
+| [0022](0022-live-provider-evidence-and-not-run.md) | Live provider evidence is consent-gated, one call, and NOT_RUN when unproven | accepted |
 
 ## Reserved numbers for capability lanes
 

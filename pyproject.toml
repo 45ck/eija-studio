@@ -22,6 +22,7 @@ mutation = []
 metrics = []
 hci = []
 agents = []
+providers = ["psutil==7.2.2"]  # process-tree kill for agent CLIs; adapters degrade to taskkill/killpg without it
 docs = []
 
 [project.scripts]
