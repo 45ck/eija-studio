@@ -3,7 +3,7 @@
 Emitters only serialise. They add no information the model does not carry, sort everything they own
 (identifier maps, legend rows, class definitions) and end every document with a single newline, so equal
 input gives byte-identical output on every platform. Labels are escaped for the target syntax because a
-model may come from an untrusted file (`eija render --model`).
+model may come from an untrusted file (`eija render --workflow`).
 """
 from __future__ import annotations
 
@@ -19,6 +19,7 @@ FORMATS = ("mermaid", "plantuml", "dot")
 
 # status -> (fill, stroke, text). Light fills with dark text keep contrast in light and dark GitHub themes.
 PALETTE = {
+    "blocked": ("#ffc2c2", "#82071e", "#4c0008"),
     "added": ("#d4f4dd", "#1a7f37", "#0b3d1a"),
     "removed": ("#ffe0e0", "#cf222e", "#5c0b12"),
     "changed": ("#fff3c4", "#9a6700", "#4a3200"),
@@ -65,8 +66,12 @@ def _mm_generic(text: str) -> str:
 
 def _puml(text: str) -> str:
     """PlantUML labels are Creole: `<b>`, `<img:url>` and `[[link]]` would be interpreted, so `<` and `[` are
-    written as unicode escapes, which PlantUML documents for literal characters."""
-    return _clean(text).replace('"', "'").replace("\\", "/").replace("<", "<U+003C>").replace("[[", "<U+005B>[")
+    written as unicode escapes, which PlantUML documents for literal characters. `%` starts a preprocessor
+    function (`%getenv`, `%load_json`, `%file_exists`, ...) that PlantUML evaluates inside labels, which would
+    let an untrusted model file read environment variables or local files, so it is written as `<U+0025>`
+    too. (Escaping `<` first keeps the new `<U+0025>` markers intact.)"""
+    return (_clean(text).replace('"', "'").replace("\\", "/").replace("<", "<U+003C>").replace("[[", "<U+005B>[")
+            .replace("%", "<U+0025>"))
 
 
 def _dot(text: str) -> str:
@@ -113,6 +118,7 @@ def _mm_flow(g: Graph) -> str:
         out.append(f'    subgraph c_{clusters[c.id]}["{_mm(c.label)}"]')
         out += [f'        {ids[n.id]}["{_mm(n.label)}"]' for n in g.nodes if n.cluster == c.id]
         out.append("    end")
+        out.append(f"    style c_{clusters[c.id]} fill:#ffffff,stroke:#8c959f")  # neutral fill: keeps a cluster apart from the amber 'changed' nodes
     out += [f'    {ids[n.id]}["{_mm(n.label)}"]' for n in g.nodes if n.cluster is None]
     out += [f"    {ids[e.source]} -->" + (f'|"{_mm(e.label)}"|' if e.label else "") + f" {ids[e.target]}" for e in g.edges]
     for status in STATUS_ORDER:
@@ -125,7 +131,7 @@ def _mm_flow(g: Graph) -> str:
     if g.legend:
         out.append('    subgraph legend["Legend"]')
         out += [f'        legend_{s}["{_mm(m)}"]' for s, m in g.legend]
-        out += ["    end"] + [f"    class legend_{s} {s}" for s, _ in g.legend if s != "same"]
+        out += ["    end", "    style legend fill:#ffffff,stroke:#8c959f"] + [f"    class legend_{s} {s}" for s, _ in g.legend if s != "same"]
     return "\n".join(out) + "\n"
 
 

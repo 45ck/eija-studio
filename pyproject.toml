@@ -38,4 +38,5 @@ eija_studio = ["resources/**/*", "resources/*.json"]
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
+markers = ["browser: drives a real browser or renderer; skipped (NOT_RUN) unless EIJA_BROWSER_TESTS=1, run by the release session diagrams_syntax"]
 addopts = "-ra"  # tests/conftest.py keeps pytest temp dirs inside the checkout (slow system temp)

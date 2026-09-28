@@ -5,12 +5,14 @@ flowchart LR
         n_Registrar__Recommended["Recommended"]
         n_Registrar__Rejected["Rejected"]
     end
+    style c_Registrar fill:#ffffff,stroke:#8c959f
     subgraph c_Teacher["Teacher journey"]
         n_Teacher__Draft["Draft"]
         n_Teacher__Recommended["Recommended"]
         n_Teacher__Rejected["Rejected"]
         n_Teacher__Submitted["Submitted"]
     end
+    style c_Teacher fill:#ffffff,stroke:#8c959f
     n_Registrar__Recommended -->|"Approve"| n_Registrar__Approved
     n_Registrar__Recommended -->|"Reject"| n_Registrar__Rejected
     n_Teacher__Draft -->|"Submit"| n_Teacher__Submitted

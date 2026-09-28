@@ -8,11 +8,13 @@ or Graphviz DOT text.
 What this establishes: a diagram is a deterministic projection, so reordering the definition of the
 same workflow cannot change the output and the text can be regenerated and compared byte-for-byte.
 What it does NOT establish: that the model is correct, that a projection is complete beyond the
-mapping in `domain.impact`, or that a reader understood it. A picture is a review aid, not evidence.
+mapping in `domain.impact`, or that a reader understood it. Parts of a picture are modelled rather
+than derived: the commit-protocol order (checked against the real runtime by a spy test, not read
+from it) and the DDD stereotypes (a curated vocabulary). A picture is a review aid, not evidence.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import types
 import typing
 from typing import Any, Literal, get_args, get_origin
@@ -25,9 +27,10 @@ from eija_studio.domain.models import (
     Alternative, DomainError, ExecuteCommand, LayoutChange, Principal, Proposal, SemanticTransaction,
     Transition, Workflow,
 )
+from eija_studio.domain.policy import check_policy
 
-Status = Literal["same", "added", "removed", "changed", "affected"]
-STATUS_ORDER: tuple[str, ...] = ("added", "removed", "changed", "affected", "same")
+Status = Literal["same", "added", "removed", "changed", "affected", "blocked"]
+STATUS_ORDER: tuple[str, ...] = ("blocked", "added", "removed", "changed", "affected", "same")
 
 
 @dataclass(frozen=True)
@@ -143,6 +146,7 @@ LEGEND_TEXT = {
     "changed": "changed (~)",
     "affected": "affected downstream",
     "same": "unchanged",
+    "blocked": "blocked by the protected excursion policy",
 }
 
 
@@ -172,7 +176,7 @@ def state_graph(workflow: Workflow, *, role: str = "workflow") -> Graph:
 
 
 def _change_fields(a: Transition, b: Transition) -> list[str]:
-    fields = [name for name in ("from_state", "to_state", "role") if getattr(a, name) != getattr(b, name)]
+    fields = [name for name in ("id", "from_state", "to_state", "role") if getattr(a, name) != getattr(b, name)]
     fields += [name for name in ("guards", "required_effects", "forbidden_effects")
                if set(getattr(a, name)) != set(getattr(b, name))]
     return fields
@@ -228,6 +232,21 @@ def diff_graph(before: Workflow, after: Workflow) -> Graph:
                  provenance=_provenance(("baseline", before), ("candidate", after)))
 
 
+def _order_free(workflow: Workflow) -> Workflow:
+    """The same workflow with every unordered field sorted. `Workflow.semantic_hash` ignores that order but
+    `domain.impact.model_impact` compares `Transition` values as tuples, so it would report every action as
+    changed when only a guard or effect list was reordered. Sorting first makes the ripple agree with the diff."""
+    ordered = tuple(t.model_copy(update={k: tuple(sorted(getattr(t, k))) for k in ("guards", "required_effects", "forbidden_effects")})
+                    for t in workflow.transitions)
+    return workflow.model_copy(update={"transitions": ordered})
+
+
+def stable_impact(before: Workflow, after: Workflow) -> dict:
+    """`domain.impact.model_impact` over order-normalised workflows: the kernel's own closure and mapping,
+    without its sensitivity to the order of guards and effects (a non-semantic difference)."""
+    return model_impact(_order_free(before), _order_free(after))
+
+
 NODE_KIND = {"rule": "Rule", "runtime": "Runtime", "state-view": "State view", "journey": "Journey",
              "obligation": "Obligation", "receipt": "Receipt"}
 SHARED_NODE = {"review-packet": "Review packet", "local-decision": "Local decision"}
@@ -237,7 +256,7 @@ def impact_graph(before: Workflow, after: Workflow, impact: dict | None = None) 
     """The ripple of a change through the modelled dependency chain, taken from `domain.impact.model_impact`:
     changed rules -> runtime -> state view -> journey -> obligation -> receipt -> review packet -> decision.
     The mapping is the model's own; consequences outside it are not drawn (see the `envelope` note)."""
-    report = impact if impact is not None else model_impact(before, after)
+    report = impact if impact is not None else stable_impact(before, after)
     roots = {"rule:" + a for a in report["changed_actions"]}
     affected = set(report["affected"])
     ids = sorted(set(report["graph"]) | {t for targets in report["graph"].values() for t in targets})
@@ -285,11 +304,15 @@ GUARD_FAILURES = {  # guard -> (label, stable error code raised by application.r
 
 
 def commit_sequence(workflow: Workflow, action: str) -> Sequence:
-    """The commit protocol of one action, ordered as `application.runtime.execute` runs it: authority is
+    """The commit protocol of one action, in the order `application.runtime.execute` runs it: authority is
     checked BEFORE any replay lookup, then replay/operation binding, CAS on the instance version, state
-    guard, state write, audit and outbox effects, operation record, single commit. Guards and effects
-    come from the transition; the order is the runtime's. Effects are listed audit first, then outbox,
-    each sorted: their order inside the one transaction is non-semantic (see `Workflow.semantic_hash`)."""
+    guard, state write, audit and outbox effects, operation record, single commit.
+
+    Guards and effects come from the transition. The ORDER is hand-encoded here, not read from the runtime:
+    tests/test_diagrams.py replays the real `execute` through a recording unit of work and compares the call
+    order, so a reordering in the runtime fails that test, but the runtime source is never parsed. Effects are
+    listed audit first, then outbox, each sorted: their order inside the one transaction is non-semantic
+    (see `Workflow.semantic_hash`)."""
     t = next((x for x in workflow.transitions if x.action == action), None)
     if t is None:
         raise DomainError("ACTION_DENIED", f"Action {action!r} is not modelled; modelled: {', '.join(sorted(x.action for x in workflow.transitions))}")
@@ -303,7 +326,7 @@ def commit_sequence(workflow: Workflow, action: str) -> Sequence:
     if t.forbidden_effects:
         steps.append(Note(("Runtime",), "forbidden effects, never emitted: " + ", ".join(sorted(t.forbidden_effects))))
     for guard in ("actor_active", "role_current", "actor_assigned"):
-        if guard in t.guards:
+        if guard != "actor_assigned" or guard in t.guards:  # `check_actor` tests active and role unconditionally
             reason, code = GUARD_FAILURES[guard]
             steps.append(Fragment(f"guard {guard} fails: {reason}", (Message("Runtime", "Caller", code, reply=True),)))
     steps += [
@@ -398,3 +421,32 @@ def class_model() -> ClassModel:
     relations.sort(key=lambda r: (r.source, r.target, r.label))
     return ClassModel("Domain contracts", tuple(classes), tuple(relations),
                       ("source: pydantic models in eija_studio.domain (frozen, extra=forbid)",))
+
+
+BLOCKED_ID = "policy-blocked"
+
+
+def policy_violations(workflow: Workflow) -> tuple[str, ...]:
+    """Codes `domain.policy.check_policy` reports for `workflow` (empty: the protected policy accepts it).
+    A non-empty result means the runtime would raise POLICY_BLOCKED before doing anything else."""
+    return tuple(check_policy(workflow))
+
+
+def mark_blocked(diagram: Diagram, violations: tuple[str, ...]) -> Diagram:
+    """Make a policy-refused workflow look refused: a red node (graphs) or a note (sequences) naming the
+    codes, plus a provenance line. Without it a protected-authority change would draw like any other edit.
+    The class diagram describes the fixed contracts, not a workflow, so it is returned unchanged."""
+    if not violations:
+        return diagram
+    text = "POLICY BLOCKED: " + "; ".join(violations)
+    if isinstance(diagram, Graph):
+        taken = {n.id for n in diagram.nodes}
+        node_id = BLOCKED_ID
+        while node_id in taken:
+            node_id += "_"
+        return replace(diagram, nodes=diagram.nodes + (Node(node_id, text, "blocked"),),
+                       provenance=diagram.provenance + ("policy: " + text,))
+    if isinstance(diagram, Sequence):
+        note = Note(("Runtime",), text + "; execute raises POLICY_BLOCKED before any state is read")
+        return replace(diagram, steps=(note, *diagram.steps), provenance=diagram.provenance + ("policy: " + text,))
+    return diagram
