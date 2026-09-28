@@ -3,11 +3,20 @@ from __future__ import annotations
 import hmac
 from pathlib import Path
 from typing import Literal
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Query, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.exceptions import RequestValidationError
 from pydantic import Field
+from eija_studio.application.diagram_catalog import case_diagrams
 from eija_studio.domain.models import Contract, DomainError, OWNER, SemanticTransaction, LayoutChange, ExecuteCommand
+
+# The Studio page keeps this policy. Only /visual-frame, a static document with no API access, relaxes styles
+# (Mermaid writes inline style attributes) and is sandboxed; docs/SECURITY_AND_TRUST.md and ADR-0023 record why.
+PAGE_CSP = ("default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; frame-src 'self'; "
+            "frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
+FRAME_CSP = ("default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src data:; connect-src 'none'; "
+             "frame-ancestors 'self'; base-uri 'none'; form-action 'none'; sandbox allow-scripts")
+
 
 class NewCase(Contract):
     request: str = Field(min_length=1, max_length=6000)
@@ -28,6 +37,15 @@ class Approval(Version):
     answers: dict[str, str]
     acknowledge_unknowns: bool = Field(strict=True)
     scope: Literal["local-demo", "field-use"] = "local-demo"
+
+
+def _set_security_headers(response, path: str) -> None:
+    framed = path == "/visual-frame"
+    # The vendored renderer is a 5 MB public, versioned file with no user data: let the browser keep it for an hour.
+    cache = "private, max-age=3600" if path == "/assets/vendor/mermaid.min.js" and response.status_code == 200 else "no-store"
+    response.headers.update({"Cache-Control": cache, "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "no-referrer", "X-Frame-Options": "SAMEORIGIN" if framed else "DENY",
+        "Content-Security-Policy": FRAME_CSP if framed else PAGE_CSP})
 
 
 def create_app(studio, token: str, port: int = 8765) -> FastAPI:
@@ -58,9 +76,7 @@ def create_app(studio, token: str, port: int = 8765) -> FastAPI:
                     data.append(chunk)
                 request._body = b"".join(data)
         response = await call_next(request)
-        response.headers.update({"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff",
-            "Referrer-Policy": "no-referrer", "X-Frame-Options": "DENY",
-            "Content-Security-Policy": "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"})
+        _set_security_headers(response, request.url.path)
         return response
 
     @app.exception_handler(DomainError)
@@ -79,9 +95,19 @@ def create_app(studio, token: str, port: int = 8765) -> FastAPI:
 
     @app.get("/assets/{name}")
     def asset(name: str):
-        if name not in {"app.js", "app.css"}:
+        if name not in {"app.js", "app.css", "visual-frame.js", "visual-frame.css"}:
             return JSONResponse({"code": "NOT_FOUND"}, status_code=404)
         return FileResponse(web / name)
+
+    @app.get("/assets/vendor/{name}")
+    def vendored(name: str):
+        if name not in {"mermaid.min.js"}:  # exact allowlist; the vendor folder also holds a LICENSE for humans
+            return JSONResponse({"code": "NOT_FOUND"}, status_code=404)
+        return FileResponse(web / "vendor" / name)
+
+    @app.get("/visual-frame")
+    def visual_frame():
+        return FileResponse(web / "visual-frame.html")
 
     @app.get("/api/status")
     def status():
@@ -151,6 +177,11 @@ def create_app(studio, token: str, port: int = 8765) -> FastAPI:
     @app.post("/api/cases/{case_id}/execute")
     def execute(case_id: str, body: ExecuteCommand):
         return studio.execute(case_id, body)
+
+    @app.get("/api/cases/{case_id}/diagrams")
+    def diagrams(case_id: str, fmt: Literal["mermaid", "plantuml", "dot"] = Query("mermaid", alias="format")):
+        before, after = studio.workflows(case_id)
+        return case_diagrams(before, after, fmt)
 
     @app.get("/api/cases/{case_id}/export")
     def export(case_id: str):
