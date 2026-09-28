@@ -14,6 +14,8 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0020](0020-multi-provider-agent-adapters.md) | Proposal providers for Codex, Claude Code, OpenCode, Gemini CLI and OpenRouter | proposed |
 | [0035](0035-static-analysis-and-architecture-fitness-functions.md) | Static analysis, architecture fitness functions and ratcheted budgets | accepted |
 | [0036](0036-noslop-hooks-adapted-to-nox.md) | noslop guardrails adapted to run nox tiers; hook enablement is an explicit step | accepted |
+| [0047](0047-hardcoded-scripted-demos-not-demo-machine.md) | Hand-authored scripted demo recordings, not demo-machine | accepted |
+| [0048](0048-scenario-dependency-gating.md) | Demo scenarios are gated by their real dependencies, never faked | accepted |
 <!-- adr-index:end -->
 
 ## Reserved numbers for capability lanes
@@ -43,5 +45,3 @@ Reserving numbers stops parallel lanes from colliding. A lane that needs more re
 | 0057–0088 | HCI-ADRs: research-grounded UI/UX decisions (`ux`, `studio-ux`) |
 | 0089–0112 | Weave: deterministic linked graph, compiler and linter (`weave`) |
 | 0113–0136 | Definition of done, claims ledger, scorecard and evals (`dod`) |
-| 0137–0144 | Wave 2: design patterns shown visually (`patterns`) |
-| 0145–0152 | POC: formal evidence kinds in the kernel (`evidence-kinds`) |
