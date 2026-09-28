@@ -1,12 +1,10 @@
 """Bounded synthetic runtime experiments. Not a theorem prover or human study."""
 from __future__ import annotations
 from datetime import datetime, timezone
-from pathlib import Path
-from tempfile import TemporaryDirectory
 from uuid import uuid4
 from eija_studio.domain.models import Workflow, ExecuteCommand, DomainError, fingerprint
 from .runtime import initialise, execute
-from .ports import StoreFactory
+from .ports import SandboxFactory
 
 # Hand-authored oracle, separate from the runtime's transition/guard evaluator.
 # It shares authorship and the policy requirements: not an independently blinded oracle.
@@ -21,12 +19,11 @@ ACTORS = [("teacher-assigned", "Teacher", True, True), ("teacher-unassigned", "T
           ("teacher-revoked", "Teacher", False, True), ("registrar", "Registrar", True, False), ("viewer", "Viewer", True, False)]
 
 
-def verify_runtime(model: Workflow, subject: dict, store_factory: StoreFactory) -> dict:
+def verify_runtime(model: Workflow, subject: dict, sandbox: SandboxFactory) -> dict:
     cells = []
     candidate = any(t.action == "Recommend" for t in model.transitions)
     rejection_source = next(t.from_state for t in model.transitions if t.action == "Reject")
-    with TemporaryDirectory(prefix="eija-check-") as td:
-        store = store_factory(Path(td))
+    with sandbox() as store:
         for actor_id, role, active, assigned in ACTORS:
             for state in model.states:
                 for action, (required_role, source, target) in ORACLE.items():

@@ -3,6 +3,7 @@ from __future__ import annotations
 from contextlib import contextmanager, closing
 import json, os, sqlite3
 from pathlib import Path
+from typing import Literal
 from eija_studio.domain.models import Workflow, DomainError, canonical
 from eija_studio.domain.policy import baseline
 
@@ -95,8 +96,18 @@ class Session:
     def effect_counts(self) -> dict:
         return {t: self.db.execute("SELECT COUNT(*) FROM " + t).fetchone()[0] for t in ("audit", "outbox", "operations")}
 
+Durability = Literal["durable", "ephemeral"]
+
+
 class SQLiteStore:
-    def __init__(self, directory: Path):
+    """`durable` flushes every commit (the owner workspace). `ephemeral` is for disposable
+    verification sandboxes: identical transaction/atomicity semantics, but no per-commit fsync,
+    which costs ~150 ms per write on Windows and made a 125-cell verification take ~40 s."""
+
+    def __init__(self, directory: Path, *, durability: Durability = "durable"):
+        if durability not in ("durable", "ephemeral"):
+            raise ValueError("Unknown durability profile")
+        self.durability = durability
         self.directory = Path(directory).resolve()
         self.directory.mkdir(parents=True, exist_ok=True, mode=0o700)
         self.path = self.directory / "studio.sqlite3"
@@ -119,7 +130,7 @@ class SQLiteStore:
         db.row_factory = sqlite3.Row
         db.execute("PRAGMA foreign_keys=ON")
         db.execute("PRAGMA journal_mode=WAL")
-        db.execute("PRAGMA synchronous=FULL")
+        db.execute("PRAGMA synchronous=FULL" if self.durability == "durable" else "PRAGMA synchronous=OFF")
         return db
 
     @contextmanager

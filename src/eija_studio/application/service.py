@@ -6,7 +6,7 @@ import time
 from eija_studio.domain.models import Workflow, Principal, SemanticTransaction, LayoutChange, ExecuteCommand, DomainError, fingerprint
 from eija_studio.domain.change_case import ChangeCase
 from eija_studio.domain.policy import apply_transaction, CANONICAL_OPTIONS
-from .ports import ProposalProvider, Repository, ReceiptAuthenticator, IdentityProvider, StoreFactory, UnitOfWork
+from .ports import ProposalProvider, Repository, ReceiptAuthenticator, IdentityProvider, SandboxFactory, UnitOfWork
 from .compiler import compile_case, subject_for
 from .verifier import verify_runtime
 from .runtime import initialise, execute
@@ -17,9 +17,9 @@ def now() -> str:
 
 
 class Studio:
-    def __init__(self, store: Repository, provider: ProposalProvider, signer: ReceiptAuthenticator, identity_provider: IdentityProvider, store_factory: StoreFactory, *, allow_network: bool = False):
+    def __init__(self, store: Repository, provider: ProposalProvider, signer: ReceiptAuthenticator, identity_provider: IdentityProvider, sandbox: SandboxFactory, *, allow_network: bool = False):
         self.store, self.provider, self.signer = store, provider, signer
-        self.identity_provider, self.store_factory = identity_provider, store_factory
+        self.identity_provider, self.sandbox = identity_provider, sandbox
         self.allow_network, self._provider_lock = allow_network, Lock()
 
     @staticmethod
@@ -142,7 +142,7 @@ class Studio:
         identity = self.identity_provider()
         if not identity["trusted_fixture"]:
             raise DomainError("SOURCE_REVIEW_REQUIRED", "Implementation differs from the shipped release fixture")
-        receipt = self.signer.seal(verify_runtime(model, subject_for(model, case.layout, identity), self.store_factory))
+        receipt = self.signer.seal(verify_runtime(model, subject_for(model, case.layout, identity), self.sandbox))
         with self.store.transaction() as u:
             current = self._case(u, case_id, expected, editable=True)
             return self._save(u, current, {"receipts": list(current.receipts) + [receipt], "decision": None, "stage": "VERIFIED"})

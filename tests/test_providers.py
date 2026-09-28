@@ -31,7 +31,8 @@ def test_openrouter_errors_are_redacted_and_not_retried(status,code):
     with pytest.raises(DomainError) as e:p.propose("request",baseline())
     assert e.value.code==code and "secret-value" not in str(e.value) and len(calls)==1
 
-@pytest.mark.parametrize("content",["not json",'{}','{"summary":"x","alternatives":[],"unknowns":[]}',"x"*65537])
+@pytest.mark.parametrize("content",["not json",'{}','{"summary":"x","alternatives":[],"unknowns":[]}',"x"*65537],
+                         ids=["not_json","empty_object","no_alternatives","oversized"])
 def test_bad_proposals_fail_closed(content):
     with pytest.raises(DomainError):parse_proposal(content)
 
