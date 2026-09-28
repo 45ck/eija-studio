@@ -12,11 +12,11 @@ The owner wants live recordings — real cursor movement, real typing — that s
 
 * demo-machine: a YAML spec compiled into a recording. General-purpose, but its spec format is tuned for its own product demos; adopting it here means learning and fitting its schema for a one-off narrative walkthrough, and the owner declined it directly.
 * A hand-authored (scripted) recorder: a small typed Python harness (Playwright) that a demo **scenario module** drives directly with normal function calls (`type_text(...)`, `move_to(...)`, `click(...)`, `caption(...)`). No spec compiler, no YAML layer.
-* Manual screen recording: not reproducible, not reviewable as code, fails ADR-0016 (OSS-first still means keeping engineering artefacts, not producing throwaway media).
+* Manual screen recording: not reproducible, not reviewable as code, and it cannot be re-run against a changed UI or checked by a gate, so it goes stale silently. (This option involves no custom code, so the ADR-0016 OSS check does not apply to it; it is rejected on reproducibility grounds alone.)
 
 ## Decision outcome
 
-A hand-authored scripted recorder. It is still engineered with the same rigor as every other lane: typed, tested (a scenario can run "dry": the same real clicks, form input and assertions with video, overlay and delays skipped, so a gate can check a scenario still works as the UI changes), reviewed, and documented — not a one-off script kept outside version control. Cursor motion and typing use Playwright's real input events (`mouse.move` with interpolated waypoints, `keyboard.type` with per-character delay), recorded via Playwright's built-in video capture (Chromium, already a project dependency for the HCI and visual lanes — no new capture tool).
+A hand-authored scripted recorder. It is still engineered with the same rigor as every other lane: typed, tested (a scenario can run "dry": the same real clicks, form input and assertions with video, overlay and delays skipped, so a gate can check a scenario still works as the UI changes), reviewed, and documented — not a one-off script kept outside version control. Cursor motion is a smoothstep-eased loop of Playwright `mouse.move` steps that also moves a synthetic on-page cursor (Chromium does not render the OS pointer into recorded video); typing is `locator.press_sequentially` one character at a time with a seeded random pause between characters (`time.sleep`; the seed fixes only the typing cadence, so recordings are not otherwise repeatable). Video is Playwright's built-in capture, run against the **installed system Google Chrome** (`channel="chrome"`), so no browser is downloaded. Playwright is **not** a dependency of the kernel and was not declared anywhere on `main` before this lane (`scripts/browser_*smoke.py` import it lazily when present); this lane adds `playwright==1.63.0` to the new optional `demos` extra. When Playwright is not installed or Chrome cannot be launched, the CLI reports `NOT_RUN` (exit 3), never a pass.
 
 ### Consequences
 
@@ -30,4 +30,4 @@ A hand-authored scripted recorder. It is still engineered with the same rigor as
 | OSS checked | Why adapter/dependency use was insufficient | Replacement or fork path |
 |---|---|---|
 | [demo-machine](https://github.com/45ck/demo-machine) | Owner directive: use a hand-authored version instead, not its YAML-spec compiler | If reconsidered later, this harness's scenario steps could be lowered into a demo-machine spec |
-| Playwright (already an EIJA dependency: visual/HCI lanes) | Not insufficient — reused directly for input events and video capture; only the scenario narration is custom | — |
+| Playwright (new optional dependency: the `demos` extra, pinned `playwright==1.63.0`) | Not insufficient — reused directly for input events and video capture; only the scenario narration is custom | — |
