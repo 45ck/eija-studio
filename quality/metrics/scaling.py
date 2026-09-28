@@ -14,14 +14,13 @@ visits all V nodes and scans all E edges: the worst case for this algorithm on t
 
 What this does NOT establish: an asymptotic proof, behaviour on other graph shapes (e.g. very deep
 chains, dense cliques), the cost of building the graph, or performance on another machine. Times are
-wall-clock measurements (median of repeats, GC paused) and vary run to run.
+wall-clock measurements (minimum of repeats, GC paused) and vary run to run.
 """
 from __future__ import annotations
 
 import gc
 import math
 import random
-import statistics
 import time
 from typing import Callable
 
@@ -54,7 +53,8 @@ def synthetic_graph(nodes: int, degree: int, seed: int = SEED) -> tuple[dict[str
 
 
 def time_call(fn: Callable[[], object], repeats: int) -> float:
-    """Median wall-clock seconds of `fn`, garbage collector paused around each timed call."""
+    """Best-of-N wall-clock seconds of `fn` (the minimum, as `timeit` recommends: other processes only ever add
+    time), garbage collector paused around each timed call. Used for cost models, not for latency percentiles."""
     samples = []
     for _ in range(repeats):
         gc.collect()
@@ -65,7 +65,7 @@ def time_call(fn: Callable[[], object], repeats: int) -> float:
             samples.append(time.perf_counter() - start)
         finally:
             gc.enable()
-    return statistics.median(samples)
+    return min(samples)
 
 
 def fit_report(points: list[dict]) -> dict:

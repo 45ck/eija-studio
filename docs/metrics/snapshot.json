@@ -1,0 +1,2606 @@
+{
+  "budgets": [
+    {
+      "actual": 0,
+      "basis": "principled",
+      "description": "No dependency cycle between layers",
+      "id": "ARCH-01",
+      "kind": "structural",
+      "limit": 0,
+      "op": "==",
+      "section": "martin",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "basis": "principled",
+      "description": "No import cycle between modules",
+      "id": "ARCH-02",
+      "kind": "structural",
+      "limit": 0,
+      "op": "==",
+      "section": "martin",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "basis": "principled",
+      "description": "No Stable Dependencies Principle violation (a layer never depends on a less stable one)",
+      "id": "ARCH-03",
+      "kind": "structural",
+      "limit": 0,
+      "op": "==",
+      "section": "martin",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "basis": "principled",
+      "description": "Domain layer imports no other layer (Ce = 0)",
+      "id": "ARCH-04",
+      "kind": "structural",
+      "limit": 0,
+      "op": "==",
+      "section": "martin",
+      "status": "PASS"
+    },
+    {
+      "actual": 0.0,
+      "basis": "principled",
+      "description": "Domain layer is maximally stable (I <= 0.1)",
+      "id": "ARCH-05",
+      "kind": "structural",
+      "limit": 0.1,
+      "op": "<=",
+      "section": "martin",
+      "status": "PASS"
+    },
+    {
+      "actual": 0.292,
+      "basis": "ratchet",
+      "description": "Every non-domain layer lies within 0.5 of the main sequence (max D)",
+      "id": "ARCH-06",
+      "kind": "structural",
+      "limit": 0.5,
+      "op": "<=",
+      "section": "martin",
+      "status": "PASS"
+    },
+    {
+      "actual": 0.306,
+      "basis": "ratchet",
+      "description": "Mean layer distance from the main sequence",
+      "id": "ARCH-07",
+      "kind": "structural",
+      "limit": 0.5,
+      "op": "<=",
+      "section": "martin",
+      "status": "PASS"
+    },
+    {
+      "actual": 45,
+      "basis": "ratchet",
+      "description": "Largest function cyclomatic complexity",
+      "id": "CX-01",
+      "kind": "structural",
+      "limit": 50,
+      "op": "<=",
+      "section": "complexity",
+      "status": "PASS"
+    },
+    {
+      "actual": 0.9485294117647058,
+      "basis": "ratchet",
+      "description": "Share of functions ranked A or B (CC <= 10)",
+      "id": "CX-02",
+      "kind": "structural",
+      "limit": 0.9,
+      "op": ">=",
+      "section": "complexity",
+      "status": "PASS"
+    },
+    {
+      "actual": 27.494,
+      "basis": "ratchet",
+      "description": "Lowest module maintainability index (radon MI, rank A >= 20)",
+      "id": "CX-03",
+      "kind": "structural",
+      "limit": 20,
+      "op": ">=",
+      "section": "complexity",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "basis": "principled",
+      "description": "Every domain/application/adapters/interfaces layer has a directly importing test (count of untested)",
+      "id": "TEST-01",
+      "kind": "structural",
+      "limit": 0,
+      "op": "==",
+      "section": "tests",
+      "status": "PASS"
+    },
+    {
+      "actual": 78.993,
+      "basis": "ratchet",
+      "description": "Line+branch coverage of src/eija_studio, percent (when reports/coverage exists)",
+      "id": "COV-01",
+      "kind": "structural",
+      "limit": 75.0,
+      "op": ">=",
+      "section": "coverage",
+      "status": "PASS"
+    },
+    {
+      "actual": null,
+      "basis": "principled",
+      "description": "No aggregated lane report has status FAIL",
+      "id": "LANE-01",
+      "kind": "structural",
+      "limit": 0,
+      "op": "==",
+      "reason": "no other lane has written reports",
+      "section": "lane_reports",
+      "status": "NOT_RUN"
+    },
+    {
+      "actual": 38.533,
+      "basis": "external",
+      "description": "p95 of every read endpoint under 400 ms (TestClient)",
+      "id": "PERF-01",
+      "kind": "timing",
+      "limit": 400.0,
+      "op": "<",
+      "section": "performance",
+      "status": "PASS"
+    },
+    {
+      "actual": 54.55,
+      "basis": "external",
+      "description": "p95 of every non-compute write endpoint under 400 ms (TestClient, durable SQLite)",
+      "id": "PERF-02",
+      "kind": "timing",
+      "limit": 400.0,
+      "op": "<",
+      "section": "performance",
+      "status": "PASS"
+    },
+    {
+      "actual": 60.917,
+      "basis": "external",
+      "description": "p95 of every read and write endpoint under 400 ms (real uvicorn, loopback)",
+      "id": "PERF-03",
+      "kind": "timing",
+      "limit": 400.0,
+      "op": "<",
+      "section": "performance",
+      "status": "PASS"
+    },
+    {
+      "actual": 3332.996,
+      "basis": "external",
+      "description": "p95 of the verify compute endpoint under 10 s (long-running: needs a progress indication, see README)",
+      "id": "PERF-04",
+      "kind": "timing",
+      "limit": 10000.0,
+      "op": "<",
+      "section": "performance",
+      "status": "PASS"
+    },
+    {
+      "actual": 0.621057,
+      "basis": "principled",
+      "description": "Runtime verification time is linear in matrix size (R^2 of T = c0 + c1*cells)",
+      "id": "PERF-05",
+      "kind": "timing",
+      "limit": 0.9,
+      "op": ">=",
+      "section": "performance",
+      "status": "FAIL"
+    },
+    {
+      "actual": 0.985316,
+      "basis": "principled",
+      "description": "closure(): two-term linear fit T = c0 + cV*V + cE*E, R^2",
+      "id": "SCALE-01",
+      "kind": "timing",
+      "limit": 0.9,
+      "op": ">=",
+      "section": "scaling",
+      "status": "PASS"
+    },
+    {
+      "actual": true,
+      "basis": "principled",
+      "description": "closure(): log-log exponent of time against V+E lies in [0.8, 1.2]",
+      "id": "SCALE-02",
+      "kind": "timing",
+      "limit": true,
+      "op": "==",
+      "section": "scaling",
+      "status": "PASS"
+    },
+    {
+      "actual": 0.202664,
+      "basis": "principled",
+      "description": "closure(): linear fit beats the quadratic alternative (R^2 difference)",
+      "id": "SCALE-03",
+      "kind": "timing",
+      "limit": 0.0,
+      "op": ">",
+      "section": "scaling",
+      "status": "PASS"
+    }
+  ],
+  "meta": {
+    "generated_at": "2026-09-28",
+    "platform": {
+      "implementation": "CPython",
+      "label": "Windows 11 / CPython 3.12.10",
+      "machine": "AMD64",
+      "python": "3.12.10",
+      "release": "11",
+      "system": "Windows"
+    },
+    "profile": "full",
+    "schema": "eija.metrics.v1",
+    "source": {
+      "branch": "lane/metrics",
+      "commit": "15bdc83f4ff76a71cb39bc96854b162e5c39f081",
+      "dirty": false,
+      "dirty_paths": []
+    },
+    "timing_note": "Sections `performance`, `scaling` and `verification_yield` contain wall-clock MEASUREMENTS taken on this platform under this load; they vary run to run. All other sections are deterministic functions of the source tree.",
+    "tools": {
+      "coverage": "7.16.2",
+      "fastapi": "0.128.2",
+      "grimp": "3.17",
+      "httpx": "0.28.1",
+      "radon": "6.0.1",
+      "uvicorn": "0.48.0"
+    }
+  },
+  "schema": "eija.metrics.v1",
+  "sections": {
+    "complexity": {
+      "hotspots": [
+        {
+          "cc": 45,
+          "function": "domain.evidence:assess_receipt",
+          "line": 9,
+          "rank": "F"
+        },
+        {
+          "cc": 33,
+          "function": "interfaces.cli:main",
+          "line": 26,
+          "rank": "E"
+        },
+        {
+          "cc": 22,
+          "function": "application.verifier:verify_runtime",
+          "line": 22,
+          "rank": "D"
+        },
+        {
+          "cc": 21,
+          "function": "domain.policy:check_policy",
+          "line": 40,
+          "rank": "D"
+        },
+        {
+          "cc": 17,
+          "function": "adapters.providers:OpenRouterProvider.propose",
+          "line": 54,
+          "rank": "C"
+        },
+        {
+          "cc": 16,
+          "function": "application.compiler:compile_case",
+          "line": 18,
+          "rank": "C"
+        },
+        {
+          "cc": 16,
+          "function": "application.runtime:execute",
+          "line": 28,
+          "rank": "C"
+        },
+        {
+          "cc": 10,
+          "function": "adapters.providers:CodexProvider.propose",
+          "line": 138,
+          "rank": "B"
+        },
+        {
+          "cc": 10,
+          "function": "domain.evidence:aggregate_status",
+          "line": 64,
+          "rank": "B"
+        },
+        {
+          "cc": 9,
+          "function": "domain.impact:closure",
+          "line": 6,
+          "rank": "B"
+        }
+      ],
+      "layers": [
+        {
+          "functions": 42,
+          "layer": "adapters",
+          "max": 17,
+          "mean": 2.952,
+          "median": 2.0,
+          "p90": 5.0,
+          "ranks": {
+            "A": 38,
+            "B": 3,
+            "C": 1,
+            "D": 0,
+            "E": 0,
+            "F": 0
+          }
+        },
+        {
+          "functions": 46,
+          "layer": "application",
+          "max": 22,
+          "mean": 3.0,
+          "median": 1.0,
+          "p90": 6.5,
+          "ranks": {
+            "A": 39,
+            "B": 4,
+            "C": 2,
+            "D": 1,
+            "E": 0,
+            "F": 0
+          }
+        },
+        {
+          "functions": 1,
+          "layer": "bootstrap",
+          "max": 2,
+          "mean": 2.0,
+          "median": 2.0,
+          "p90": 2.0,
+          "ranks": {
+            "A": 1,
+            "B": 0,
+            "C": 0,
+            "D": 0,
+            "E": 0,
+            "F": 0
+          }
+        },
+        {
+          "functions": 22,
+          "layer": "domain",
+          "max": 45,
+          "mean": 6.591,
+          "median": 3.0,
+          "p90": 9.9,
+          "ranks": {
+            "A": 15,
+            "B": 5,
+            "C": 0,
+            "D": 1,
+            "E": 0,
+            "F": 1
+          }
+        },
+        {
+          "functions": 25,
+          "layer": "interfaces",
+          "max": 33,
+          "mean": 2.88,
+          "median": 1.0,
+          "p90": 3.0,
+          "ranks": {
+            "A": 23,
+            "B": 1,
+            "C": 0,
+            "D": 0,
+            "E": 1,
+            "F": 0
+          }
+        }
+      ],
+      "method": "radon cc_visit / mi_visit(multi=True) / raw.analyze over src/eija_studio/**/*.py",
+      "modules": [
+        {
+          "blank": 0,
+          "comments": 0,
+          "functions": 0,
+          "layer": "__main__",
+          "lloc": 2,
+          "loc": 2,
+          "max_cc": 0,
+          "mi": 100.0,
+          "mi_rank": "A",
+          "module": "__main__",
+          "sloc": 2
+        },
+        {
+          "blank": 0,
+          "comments": 1,
+          "functions": 0,
+          "layer": "adapters",
+          "lloc": 1,
+          "loc": 1,
+          "max_cc": 0,
+          "mi": 100.0,
+          "mi_rank": "A",
+          "module": "adapters",
+          "sloc": 0
+        },
+        {
+          "blank": 7,
+          "comments": 1,
+          "functions": 3,
+          "layer": "adapters",
+          "lloc": 25,
+          "loc": 34,
+          "max_cc": 4,
+          "mi": 54.399,
+          "mi_rank": "A",
+          "module": "adapters.identity",
+          "sloc": 26
+        },
+        {
+          "blank": 13,
+          "comments": 7,
+          "functions": 11,
+          "layer": "adapters",
+          "lloc": 134,
+          "loc": 166,
+          "max_cc": 17,
+          "mi": 33.802,
+          "mi_rank": "A",
+          "module": "adapters.providers",
+          "sloc": 149
+        },
+        {
+          "blank": 3,
+          "comments": 1,
+          "functions": 3,
+          "layer": "adapters",
+          "lloc": 27,
+          "loc": 28,
+          "max_cc": 4,
+          "mi": 54.426,
+          "mi_rank": "A",
+          "module": "adapters.receipts",
+          "sloc": 24
+        },
+        {
+          "blank": 35,
+          "comments": 8,
+          "functions": 25,
+          "layer": "adapters",
+          "lloc": 150,
+          "loc": 203,
+          "max_cc": 6,
+          "mi": 44.875,
+          "mi_rank": "A",
+          "module": "adapters.sqlite_store",
+          "sloc": 155
+        },
+        {
+          "blank": 0,
+          "comments": 1,
+          "functions": 0,
+          "layer": "application",
+          "lloc": 1,
+          "loc": 1,
+          "max_cc": 0,
+          "mi": 100.0,
+          "mi_rank": "A",
+          "module": "application",
+          "sloc": 0
+        },
+        {
+          "blank": 5,
+          "comments": 0,
+          "functions": 2,
+          "layer": "application",
+          "lloc": 36,
+          "loc": 54,
+          "max_cc": 16,
+          "mi": 63.007,
+          "mi_rank": "A",
+          "module": "application.compiler",
+          "sloc": 46
+        },
+        {
+          "blank": 6,
+          "comments": 6,
+          "functions": 22,
+          "layer": "application",
+          "lloc": 75,
+          "loc": 53,
+          "max_cc": 1,
+          "mi": 100.0,
+          "mi_rank": "A",
+          "module": "application.ports",
+          "sloc": 43
+        },
+        {
+          "blank": 6,
+          "comments": 4,
+          "functions": 3,
+          "layer": "application",
+          "lloc": 67,
+          "loc": 71,
+          "max_cc": 16,
+          "mi": 51.12,
+          "mi_rank": "A",
+          "module": "application.runtime",
+          "sloc": 63
+        },
+        {
+          "blank": 20,
+          "comments": 2,
+          "functions": 18,
+          "layer": "application",
+          "lloc": 202,
+          "loc": 214,
+          "max_cc": 8,
+          "mi": 27.494,
+          "mi_rank": "A",
+          "module": "application.service",
+          "sloc": 193
+        },
+        {
+          "blank": 3,
+          "comments": 6,
+          "functions": 1,
+          "layer": "application",
+          "lloc": 49,
+          "loc": 64,
+          "max_cc": 22,
+          "mi": 56.179,
+          "mi_rank": "A",
+          "module": "application.verifier",
+          "sloc": 58
+        },
+        {
+          "blank": 2,
+          "comments": 1,
+          "functions": 1,
+          "layer": "bootstrap",
+          "lloc": 14,
+          "loc": 15,
+          "max_cc": 2,
+          "mi": 69.988,
+          "mi_rank": "A",
+          "module": "bootstrap",
+          "sloc": 12
+        },
+        {
+          "blank": 0,
+          "comments": 1,
+          "functions": 0,
+          "layer": "domain",
+          "lloc": 1,
+          "loc": 1,
+          "max_cc": 0,
+          "mi": 100.0,
+          "mi_rank": "A",
+          "module": "domain",
+          "sloc": 0
+        },
+        {
+          "blank": 5,
+          "comments": 1,
+          "functions": 3,
+          "layer": "domain",
+          "lloc": 47,
+          "loc": 36,
+          "max_cc": 3,
+          "mi": 47.418,
+          "mi_rank": "A",
+          "module": "domain.change_case",
+          "sloc": 30
+        },
+        {
+          "blank": 5,
+          "comments": 4,
+          "functions": 2,
+          "layer": "domain",
+          "lloc": 67,
+          "loc": 73,
+          "max_cc": 45,
+          "mi": 41.893,
+          "mi_rank": "A",
+          "module": "domain.evidence",
+          "sloc": 66
+        },
+        {
+          "blank": 4,
+          "comments": 1,
+          "functions": 2,
+          "layer": "domain",
+          "lloc": 33,
+          "loc": 34,
+          "max_cc": 9,
+          "mi": 48.536,
+          "mi_rank": "A",
+          "module": "domain.impact",
+          "sloc": 29
+        },
+        {
+          "blank": 36,
+          "comments": 3,
+          "functions": 8,
+          "layer": "domain",
+          "lloc": 138,
+          "loc": 141,
+          "max_cc": 9,
+          "mi": 38.598,
+          "mi_rank": "A",
+          "module": "domain.models",
+          "sloc": 103
+        },
+        {
+          "blank": 15,
+          "comments": 2,
+          "functions": 7,
+          "layer": "domain",
+          "lloc": 67,
+          "loc": 110,
+          "max_cc": 21,
+          "mi": 36.417,
+          "mi_rank": "A",
+          "module": "domain.policy",
+          "sloc": 93
+        },
+        {
+          "blank": 0,
+          "comments": 1,
+          "functions": 0,
+          "layer": "eija_studio",
+          "lloc": 2,
+          "loc": 2,
+          "max_cc": 0,
+          "mi": 100.0,
+          "mi_rank": "A",
+          "module": "eija_studio",
+          "sloc": 1
+        },
+        {
+          "blank": 0,
+          "comments": 1,
+          "functions": 0,
+          "layer": "interfaces",
+          "lloc": 1,
+          "loc": 1,
+          "max_cc": 0,
+          "mi": 100.0,
+          "mi_rank": "A",
+          "module": "interfaces",
+          "sloc": 0
+        },
+        {
+          "blank": 5,
+          "comments": 4,
+          "functions": 2,
+          "layer": "interfaces",
+          "lloc": 144,
+          "loc": 132,
+          "max_cc": 33,
+          "mi": 36.645,
+          "mi_rank": "A",
+          "module": "interfaces.cli",
+          "sloc": 125
+        },
+        {
+          "blank": 26,
+          "comments": 5,
+          "functions": 23,
+          "layer": "interfaces",
+          "lloc": 150,
+          "loc": 159,
+          "max_cc": 9,
+          "mi": 42.735,
+          "mi_rank": "A",
+          "module": "interfaces.http",
+          "sloc": 130
+        }
+      ],
+      "not_measured": [
+        "module-level statement complexity (radon omits it)",
+        "cognitive complexity",
+        "test-code complexity"
+      ],
+      "overall": {
+        "functions": 136,
+        "max": 45,
+        "mean": 3.537,
+        "median": 2.0,
+        "p90": 8.0,
+        "ranks": {
+          "A": 116,
+          "B": 13,
+          "C": 3,
+          "D": 2,
+          "E": 1,
+          "F": 1
+        }
+      },
+      "source": "McCabe 1976; Oman & Hagemeister 1992; radon 6.0.1 rank tables",
+      "status": "MEASURED",
+      "summary": {
+        "files": 23,
+        "min_mi": 27.494,
+        "modules_below_mi_rank_a": [],
+        "sloc": 1348,
+        "sloc_weighted_mi": 42.975
+      }
+    },
+    "coverage": {
+      "files": [
+        {
+          "layer": "eija_studio",
+          "missing_lines": 0,
+          "module": "eija_studio",
+          "percent": 100.0,
+          "statements": 1
+        },
+        {
+          "layer": "__main__",
+          "missing_lines": 2,
+          "module": "__main__",
+          "percent": 0.0,
+          "statements": 2
+        },
+        {
+          "layer": "adapters",
+          "missing_lines": 0,
+          "module": "adapters",
+          "percent": 100.0,
+          "statements": 0
+        },
+        {
+          "layer": "adapters",
+          "missing_lines": 4,
+          "module": "adapters.identity",
+          "percent": 80.952,
+          "statements": 21
+        },
+        {
+          "layer": "adapters",
+          "missing_lines": 26,
+          "module": "adapters.providers",
+          "percent": 75.839,
+          "statements": 121
+        },
+        {
+          "layer": "adapters",
+          "missing_lines": 1,
+          "module": "adapters.receipts",
+          "percent": 92.0,
+          "statements": 23
+        },
+        {
+          "layer": "adapters",
+          "missing_lines": 10,
+          "module": "adapters.sqlite_store",
+          "percent": 90.062,
+          "statements": 137
+        },
+        {
+          "layer": "application",
+          "missing_lines": 0,
+          "module": "application",
+          "percent": 100.0,
+          "statements": 0
+        },
+        {
+          "layer": "application",
+          "missing_lines": 3,
+          "module": "application.compiler",
+          "percent": 87.5,
+          "statements": 32
+        },
+        {
+          "layer": "application",
+          "missing_lines": 0,
+          "module": "application.ports",
+          "percent": 100.0,
+          "statements": 21
+        },
+        {
+          "layer": "application",
+          "missing_lines": 5,
+          "module": "application.runtime",
+          "percent": 89.362,
+          "statements": 60
+        },
+        {
+          "layer": "application",
+          "missing_lines": 10,
+          "module": "application.service",
+          "percent": 90.367,
+          "statements": 176
+        },
+        {
+          "layer": "application",
+          "missing_lines": 2,
+          "module": "application.verifier",
+          "percent": 92.593,
+          "statements": 42
+        },
+        {
+          "layer": "bootstrap",
+          "missing_lines": 1,
+          "module": "bootstrap",
+          "percent": 85.714,
+          "statements": 12
+        },
+        {
+          "layer": "domain",
+          "missing_lines": 0,
+          "module": "domain",
+          "percent": 100.0,
+          "statements": 0
+        },
+        {
+          "layer": "domain",
+          "missing_lines": 1,
+          "module": "domain.change_case",
+          "percent": 94.444,
+          "statements": 30
+        },
+        {
+          "layer": "domain",
+          "missing_lines": 10,
+          "module": "domain.evidence",
+          "percent": 81.818,
+          "statements": 66
+        },
+        {
+          "layer": "domain",
+          "missing_lines": 1,
+          "module": "domain.impact",
+          "percent": 94.872,
+          "statements": 27
+        },
+        {
+          "layer": "domain",
+          "missing_lines": 5,
+          "module": "domain.models",
+          "percent": 92.366,
+          "statements": 103
+        },
+        {
+          "layer": "domain",
+          "missing_lines": 5,
+          "module": "domain.policy",
+          "percent": 87.013,
+          "statements": 55
+        },
+        {
+          "layer": "interfaces",
+          "missing_lines": 0,
+          "module": "interfaces",
+          "percent": 100.0,
+          "statements": 0
+        },
+        {
+          "layer": "interfaces",
+          "missing_lines": 118,
+          "module": "interfaces.cli",
+          "percent": 0.0,
+          "statements": 118
+        },
+        {
+          "layer": "interfaces",
+          "missing_lines": 5,
+          "module": "interfaces.http",
+          "percent": 95.833,
+          "statements": 126
+        }
+      ],
+      "layers": [
+        {
+          "branch_percent": null,
+          "branches": 0,
+          "covered": 0,
+          "covered_branches": 0,
+          "layer": "__main__",
+          "line_percent": 0.0,
+          "statements": 2
+        },
+        {
+          "branch_percent": 68.519,
+          "branches": 54,
+          "covered": 261,
+          "covered_branches": 37,
+          "layer": "adapters",
+          "line_percent": 86.424,
+          "statements": 302
+        },
+        {
+          "branch_percent": 79.808,
+          "branches": 104,
+          "covered": 311,
+          "covered_branches": 83,
+          "layer": "application",
+          "line_percent": 93.958,
+          "statements": 331
+        },
+        {
+          "branch_percent": 50.0,
+          "branches": 2,
+          "covered": 11,
+          "covered_branches": 1,
+          "layer": "bootstrap",
+          "line_percent": 91.667,
+          "statements": 12
+        },
+        {
+          "branch_percent": 80.357,
+          "branches": 112,
+          "covered": 259,
+          "covered_branches": 90,
+          "layer": "domain",
+          "line_percent": 92.171,
+          "statements": 281
+        },
+        {
+          "branch_percent": null,
+          "branches": 0,
+          "covered": 1,
+          "covered_branches": 0,
+          "layer": "eija_studio",
+          "line_percent": 100.0,
+          "statements": 1
+        },
+        {
+          "branch_percent": 26.562,
+          "branches": 64,
+          "covered": 121,
+          "covered_branches": 17,
+          "layer": "interfaces",
+          "line_percent": 49.59,
+          "statements": 244
+        }
+      ],
+      "method": "coverage.py json report of `pytest` under `coverage run --branch --source=src/eija_studio`",
+      "not_measured": [
+        "whether covered lines are asserted on (mutation lane)",
+        "subprocess-only or browser-driven paths"
+      ],
+      "source": "coverage.py 7.16.2",
+      "status": "MEASURED",
+      "summary": {
+        "branches": 336,
+        "covered": 964,
+        "covered_branches": 228,
+        "line_percent": 82.182,
+        "percent": 78.993,
+        "statements": 1173
+      }
+    },
+    "lane_reports": {
+      "groups": [
+        {
+          "group": "formal",
+          "lane": "formal (Bend / TLA+ / Z3 / BMC)",
+          "reason": "no reports/formal/*.json (lane not run on this checkout)",
+          "reports": [],
+          "status": "NOT_RUN"
+        },
+        {
+          "group": "hci",
+          "lane": "hci",
+          "reason": "no reports/hci/*.json (lane not run on this checkout)",
+          "reports": [],
+          "status": "NOT_RUN"
+        },
+        {
+          "group": "mutation",
+          "lane": "mutation",
+          "reason": "no reports/mutation/summary.json (lane not run on this checkout)",
+          "reports": [],
+          "status": "NOT_RUN"
+        },
+        {
+          "group": "testing",
+          "lane": "testing",
+          "reason": "no reports/testing/*.json (lane not run on this checkout)",
+          "reports": [],
+          "status": "NOT_RUN"
+        }
+      ],
+      "method": "read reports/{formal,mutation,testing,hci}; statuses copied verbatim, never inferred",
+      "not_measured": [
+        "the correctness of any lane's report (this module aggregates, it does not re-verify)"
+      ],
+      "status": "MEASURED",
+      "summary": {
+        "groups": 4,
+        "groups_not_run": 4,
+        "groups_with_reports": 0
+      }
+    },
+    "martin": {
+      "layer_edges": [
+        {
+          "from": "__main__",
+          "imports": 1,
+          "to": "interfaces"
+        },
+        {
+          "from": "adapters",
+          "imports": 1,
+          "to": "application"
+        },
+        {
+          "from": "adapters",
+          "imports": 5,
+          "to": "domain"
+        },
+        {
+          "from": "application",
+          "imports": 12,
+          "to": "domain"
+        },
+        {
+          "from": "bootstrap",
+          "imports": 4,
+          "to": "adapters"
+        },
+        {
+          "from": "bootstrap",
+          "imports": 1,
+          "to": "application"
+        },
+        {
+          "from": "interfaces",
+          "imports": 2,
+          "to": "application"
+        },
+        {
+          "from": "interfaces",
+          "imports": 1,
+          "to": "bootstrap"
+        },
+        {
+          "from": "interfaces",
+          "imports": 4,
+          "to": "domain"
+        },
+        {
+          "from": "interfaces",
+          "imports": 1,
+          "to": "eija_studio"
+        }
+      ],
+      "layers": [
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 0,
+          "ce": 1,
+          "classes": 0,
+          "distance": 0.0,
+          "instability": 1.0,
+          "modules": 1,
+          "name": "__main__",
+          "third_party_imports": [],
+          "zone": "main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 1,
+          "ce": 3,
+          "classes": 6,
+          "distance": 0.25,
+          "instability": 0.75,
+          "modules": 4,
+          "name": "adapters",
+          "third_party_imports": [
+            "httpx",
+            "pydantic"
+          ],
+          "zone": "main sequence"
+        },
+        {
+          "abstract_classes": 4,
+          "abstractness": 0.667,
+          "ca": 3,
+          "ce": 5,
+          "classes": 6,
+          "distance": 0.292,
+          "instability": 0.625,
+          "modules": 5,
+          "name": "application",
+          "third_party_imports": [],
+          "zone": "near main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 1,
+          "ce": 5,
+          "classes": 0,
+          "distance": 0.167,
+          "instability": 0.833,
+          "modules": 1,
+          "name": "bootstrap",
+          "third_party_imports": [],
+          "zone": "main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 11,
+          "ce": 0,
+          "classes": 11,
+          "distance": 1.0,
+          "instability": 0.0,
+          "modules": 5,
+          "name": "domain",
+          "third_party_imports": [
+            "pydantic"
+          ],
+          "zone": "zone of pain (stable, concrete)"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 1,
+          "ce": 7,
+          "classes": 8,
+          "distance": 0.125,
+          "instability": 0.875,
+          "modules": 2,
+          "name": "interfaces",
+          "third_party_imports": [
+            "fastapi",
+            "pydantic",
+            "uvicorn"
+          ],
+          "zone": "main sequence"
+        }
+      ],
+      "method": "grimp import graph (project modules only) + ast class census; unit of coupling = module",
+      "modules": [
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 0,
+          "ce": 1,
+          "classes": 0,
+          "distance": 0.0,
+          "instability": 1.0,
+          "layer": "__main__",
+          "name": "__main__",
+          "zone": "main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 1,
+          "ce": 1,
+          "classes": 0,
+          "distance": 0.5,
+          "instability": 0.5,
+          "layer": "adapters",
+          "name": "adapters.identity",
+          "zone": "near main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 1,
+          "ce": 2,
+          "classes": 3,
+          "distance": 0.333,
+          "instability": 0.667,
+          "layer": "adapters",
+          "name": "adapters.providers",
+          "zone": "near main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 1,
+          "ce": 1,
+          "classes": 1,
+          "distance": 0.5,
+          "instability": 0.5,
+          "layer": "adapters",
+          "name": "adapters.receipts",
+          "zone": "near main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 1,
+          "ce": 2,
+          "classes": 2,
+          "distance": 0.333,
+          "instability": 0.667,
+          "layer": "adapters",
+          "name": "adapters.sqlite_store",
+          "zone": "near main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 2,
+          "ce": 5,
+          "classes": 0,
+          "distance": 0.286,
+          "instability": 0.714,
+          "layer": "application",
+          "name": "application.compiler",
+          "zone": "near main sequence"
+        },
+        {
+          "abstract_classes": 4,
+          "abstractness": 0.8,
+          "ca": 4,
+          "ce": 1,
+          "classes": 5,
+          "distance": 0.0,
+          "instability": 0.2,
+          "layer": "application",
+          "name": "application.ports",
+          "zone": "main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 2,
+          "ce": 3,
+          "classes": 0,
+          "distance": 0.4,
+          "instability": 0.6,
+          "layer": "application",
+          "name": "application.runtime",
+          "zone": "near main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 1,
+          "ce": 7,
+          "classes": 1,
+          "distance": 0.125,
+          "instability": 0.875,
+          "layer": "application",
+          "name": "application.service",
+          "zone": "main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 2,
+          "ce": 3,
+          "classes": 0,
+          "distance": 0.4,
+          "instability": 0.6,
+          "layer": "application",
+          "name": "application.verifier",
+          "zone": "near main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 1,
+          "ce": 5,
+          "classes": 0,
+          "distance": 0.167,
+          "instability": 0.833,
+          "layer": "bootstrap",
+          "name": "bootstrap",
+          "zone": "main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 2,
+          "ce": 1,
+          "classes": 1,
+          "distance": 0.667,
+          "instability": 0.333,
+          "layer": "domain",
+          "name": "domain.change_case",
+          "zone": "zone of pain (stable, concrete)"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 1,
+          "ce": 1,
+          "classes": 0,
+          "distance": 0.5,
+          "instability": 0.5,
+          "layer": "domain",
+          "name": "domain.evidence",
+          "zone": "near main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 2,
+          "ce": 1,
+          "classes": 0,
+          "distance": 0.667,
+          "instability": 0.333,
+          "layer": "domain",
+          "name": "domain.impact",
+          "zone": "zone of pain (stable, concrete)"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 15,
+          "ce": 0,
+          "classes": 10,
+          "distance": 1.0,
+          "instability": 0.0,
+          "layer": "domain",
+          "name": "domain.models",
+          "zone": "zone of pain (stable, concrete)"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 5,
+          "ce": 1,
+          "classes": 0,
+          "distance": 0.833,
+          "instability": 0.167,
+          "layer": "domain",
+          "name": "domain.policy",
+          "zone": "zone of pain (stable, concrete)"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 1,
+          "ce": 8,
+          "classes": 0,
+          "distance": 0.111,
+          "instability": 0.889,
+          "layer": "interfaces",
+          "name": "interfaces.cli",
+          "zone": "main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 1,
+          "ce": 1,
+          "classes": 8,
+          "distance": 0.5,
+          "instability": 0.5,
+          "layer": "interfaces",
+          "name": "interfaces.http",
+          "zone": "near main sequence"
+        }
+      ],
+      "not_measured": [
+        "class-level coupling",
+        "runtime/dynamic imports",
+        "third-party coupling (listed per layer)",
+        "design quality: D is a balance heuristic, not a verdict"
+      ],
+      "source": "Martin 1994; Martin 2003 ch.20",
+      "status": "MEASURED",
+      "summary": {
+        "layer_cycles": [],
+        "layers": 6,
+        "max_layer_distance": 1.0,
+        "mean_layer_distance": 0.306,
+        "module_cycles": [],
+        "modules": 18,
+        "sdp_violations": []
+      }
+    },
+    "performance": {
+      "config": {
+        "apply_endpoint": "excluded (mutates baseline)",
+        "flows": 15,
+        "matrix_repeats": 5,
+        "reads": 120,
+        "warmup": "one full flow and one read per endpoint, excluded"
+      },
+      "kind": "measurement",
+      "method": "wall-clock latency per endpoint; offline provider; durable SQLite workspace",
+      "not_measured": [
+        "browser rendering",
+        "concurrent load",
+        "live model provider",
+        "other machines"
+      ],
+      "sources": [
+        "Doherty & Thadani, IBM Systems Journal 21(4), 1982",
+        "Miller 1968",
+        "Nielsen, Usability Engineering, 1993"
+      ],
+      "status": "MEASURED",
+      "thresholds": {
+        "doherty_ms": 400.0,
+        "instant_ms": 100.0
+      },
+      "transports": {
+        "testclient": {
+          "endpoints": [
+            {
+              "endpoint": "GET /",
+              "kind": "read",
+              "max_ms": 4.576,
+              "mean_ms": 2.765,
+              "min_ms": 1.815,
+              "n": 120,
+              "p50_ms": 2.746,
+              "p95_ms": 3.518,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 4.257
+            },
+            {
+              "endpoint": "GET /api/cases",
+              "kind": "read",
+              "max_ms": 495.446,
+              "mean_ms": 19.751,
+              "min_ms": 9.979,
+              "n": 120,
+              "p50_ms": 14.827,
+              "p95_ms": 31.692,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 43.364
+            },
+            {
+              "endpoint": "GET /api/cases/{id}",
+              "kind": "read",
+              "max_ms": 40.739,
+              "mean_ms": 29.221,
+              "min_ms": 18.878,
+              "n": 30,
+              "p50_ms": 28.299,
+              "p95_ms": 38.533,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 40.143
+            },
+            {
+              "endpoint": "GET /api/cases/{id}/export",
+              "kind": "read",
+              "max_ms": 36.513,
+              "mean_ms": 30.407,
+              "min_ms": 23.605,
+              "n": 15,
+              "p50_ms": 30.45,
+              "p95_ms": 34.762,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 36.163
+            },
+            {
+              "endpoint": "GET /api/doctor",
+              "kind": "read",
+              "max_ms": 2.257,
+              "mean_ms": 1.577,
+              "min_ms": 0.986,
+              "n": 120,
+              "p50_ms": 1.56,
+              "p95_ms": 2.03,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 2.156
+            },
+            {
+              "endpoint": "GET /api/status",
+              "kind": "read",
+              "max_ms": 30.13,
+              "mean_ms": 19.261,
+              "min_ms": 13.78,
+              "n": 120,
+              "p50_ms": 19.1,
+              "p95_ms": 23.171,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 27.642
+            },
+            {
+              "endpoint": "GET /assets/app.js",
+              "kind": "read",
+              "max_ms": 4.099,
+              "mean_ms": 2.763,
+              "min_ms": 1.957,
+              "n": 120,
+              "p50_ms": 2.73,
+              "p95_ms": 3.596,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 3.793
+            },
+            {
+              "endpoint": "POST /api/cases",
+              "kind": "write",
+              "max_ms": 25.009,
+              "mean_ms": 16.84,
+              "min_ms": 13.37,
+              "n": 15,
+              "p50_ms": 15.206,
+              "p95_ms": 23.687,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 24.745
+            },
+            {
+              "endpoint": "POST /api/cases/{id}/approve",
+              "kind": "write",
+              "max_ms": 61.743,
+              "mean_ms": 48.251,
+              "min_ms": 39.639,
+              "n": 15,
+              "p50_ms": 48.935,
+              "p95_ms": 54.55,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 60.305
+            },
+            {
+              "endpoint": "POST /api/cases/{id}/execute",
+              "kind": "write",
+              "max_ms": 26.611,
+              "mean_ms": 17.969,
+              "min_ms": 15.739,
+              "n": 15,
+              "p50_ms": 17.044,
+              "p95_ms": 22.299,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 25.748
+            },
+            {
+              "endpoint": "POST /api/cases/{id}/preview",
+              "kind": "write",
+              "max_ms": 18.392,
+              "mean_ms": 16.028,
+              "min_ms": 14.143,
+              "n": 15,
+              "p50_ms": 15.795,
+              "p95_ms": 17.965,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 18.307
+            },
+            {
+              "endpoint": "POST /api/cases/{id}/propose",
+              "kind": "write",
+              "max_ms": 47.998,
+              "mean_ms": 33.772,
+              "min_ms": 29.296,
+              "n": 15,
+              "p50_ms": 32.474,
+              "p95_ms": 42.869,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 46.972
+            },
+            {
+              "endpoint": "POST /api/cases/{id}/select",
+              "kind": "write",
+              "max_ms": 21.936,
+              "mean_ms": 17.369,
+              "min_ms": 15.085,
+              "n": 15,
+              "p50_ms": 17.47,
+              "p95_ms": 19.741,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 21.497
+            },
+            {
+              "endpoint": "POST /api/cases/{id}/verify",
+              "kind": "compute",
+              "max_ms": 7855.547,
+              "mean_ms": 1662.086,
+              "min_ms": 1095.459,
+              "n": 15,
+              "p50_ms": 1234.139,
+              "p95_ms": 3332.996,
+              "p95_within_doherty": false,
+              "p95_within_instant": false,
+              "p99_ms": 6951.037
+            }
+          ],
+          "status": "MEASURED",
+          "summary": {
+            "all_p95_within_doherty": false,
+            "endpoints": 14,
+            "over_doherty": [
+              "POST /api/cases/{id}/verify"
+            ],
+            "over_instant": [
+              "POST /api/cases/{id}/verify"
+            ],
+            "worst_p95_endpoint": "POST /api/cases/{id}/verify",
+            "worst_p95_ms": 3332.996
+          }
+        },
+        "uvicorn": {
+          "endpoints": [
+            {
+              "endpoint": "GET /",
+              "kind": "read",
+              "max_ms": 8.292,
+              "mean_ms": 4.088,
+              "min_ms": 3.415,
+              "n": 120,
+              "p50_ms": 4.012,
+              "p95_ms": 4.742,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 5.806
+            },
+            {
+              "endpoint": "GET /api/cases",
+              "kind": "read",
+              "max_ms": 46.309,
+              "mean_ms": 19.089,
+              "min_ms": 11.66,
+              "n": 120,
+              "p50_ms": 17.151,
+              "p95_ms": 39.248,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 45.242
+            },
+            {
+              "endpoint": "GET /api/cases/{id}",
+              "kind": "read",
+              "max_ms": 39.567,
+              "mean_ms": 29.388,
+              "min_ms": 20.688,
+              "n": 30,
+              "p50_ms": 28.873,
+              "p95_ms": 38.056,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 39.204
+            },
+            {
+              "endpoint": "GET /api/cases/{id}/export",
+              "kind": "read",
+              "max_ms": 48.838,
+              "mean_ms": 32.195,
+              "min_ms": 26.878,
+              "n": 15,
+              "p50_ms": 31.45,
+              "p95_ms": 39.363,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 46.943
+            },
+            {
+              "endpoint": "GET /api/doctor",
+              "kind": "read",
+              "max_ms": 4.535,
+              "mean_ms": 2.655,
+              "min_ms": 1.843,
+              "n": 120,
+              "p50_ms": 2.615,
+              "p95_ms": 3.334,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 3.562
+            },
+            {
+              "endpoint": "GET /api/status",
+              "kind": "read",
+              "max_ms": 52.355,
+              "mean_ms": 22.078,
+              "min_ms": 15.657,
+              "n": 120,
+              "p50_ms": 20.678,
+              "p95_ms": 29.274,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 49.57
+            },
+            {
+              "endpoint": "GET /assets/app.js",
+              "kind": "read",
+              "max_ms": 7.138,
+              "mean_ms": 4.211,
+              "min_ms": 2.501,
+              "n": 120,
+              "p50_ms": 4.184,
+              "p95_ms": 5.247,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 5.934
+            },
+            {
+              "endpoint": "POST /api/cases",
+              "kind": "write",
+              "max_ms": 25.549,
+              "mean_ms": 17.624,
+              "min_ms": 14.378,
+              "n": 15,
+              "p50_ms": 17.294,
+              "p95_ms": 22.423,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 24.924
+            },
+            {
+              "endpoint": "POST /api/cases/{id}/approve",
+              "kind": "write",
+              "max_ms": 68.445,
+              "mean_ms": 51.114,
+              "min_ms": 43.051,
+              "n": 15,
+              "p50_ms": 49.695,
+              "p95_ms": 60.917,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 66.94
+            },
+            {
+              "endpoint": "POST /api/cases/{id}/execute",
+              "kind": "write",
+              "max_ms": 22.647,
+              "mean_ms": 17.645,
+              "min_ms": 15.365,
+              "n": 15,
+              "p50_ms": 16.734,
+              "p95_ms": 21.028,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 22.323
+            },
+            {
+              "endpoint": "POST /api/cases/{id}/preview",
+              "kind": "write",
+              "max_ms": 19.549,
+              "mean_ms": 16.047,
+              "min_ms": 13.861,
+              "n": 15,
+              "p50_ms": 15.631,
+              "p95_ms": 18.448,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 19.329
+            },
+            {
+              "endpoint": "POST /api/cases/{id}/propose",
+              "kind": "write",
+              "max_ms": 39.886,
+              "mean_ms": 32.532,
+              "min_ms": 28.092,
+              "n": 15,
+              "p50_ms": 32.949,
+              "p95_ms": 37.711,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 39.451
+            },
+            {
+              "endpoint": "POST /api/cases/{id}/select",
+              "kind": "write",
+              "max_ms": 22.407,
+              "mean_ms": 17.903,
+              "min_ms": 15.174,
+              "n": 15,
+              "p50_ms": 17.449,
+              "p95_ms": 21.115,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 22.148
+            },
+            {
+              "endpoint": "POST /api/cases/{id}/verify",
+              "kind": "compute",
+              "max_ms": 1442.945,
+              "mean_ms": 1188.626,
+              "min_ms": 1098.807,
+              "n": 15,
+              "p50_ms": 1162.981,
+              "p95_ms": 1318.8,
+              "p95_within_doherty": false,
+              "p95_within_instant": false,
+              "p99_ms": 1418.116
+            }
+          ],
+          "status": "MEASURED",
+          "summary": {
+            "all_p95_within_doherty": false,
+            "endpoints": 14,
+            "over_doherty": [
+              "POST /api/cases/{id}/verify"
+            ],
+            "over_instant": [
+              "POST /api/cases/{id}/verify"
+            ],
+            "worst_p95_endpoint": "POST /api/cases/{id}/verify",
+            "worst_p95_ms": 1318.8
+          }
+        }
+      },
+      "verify_scaling": {
+        "c0_ms": -35.1184,
+        "c1_ms_per_cell": 12.678,
+        "model": "T_ms = c0 + c1 * cells",
+        "note": "Matrix = actors x states x 5 actions. Each cell is one isolated ephemeral-SQLite transaction pair; the same-author oracle means agreement is not independent evidence.",
+        "points": [
+          {
+            "actors": 1,
+            "cells": 20,
+            "model": "baseline",
+            "ms": 251.186,
+            "predicted_ms": 218.442,
+            "residual_ms": 32.744,
+            "states": 4
+          },
+          {
+            "actors": 1,
+            "cells": 25,
+            "model": "candidate",
+            "ms": 263.475,
+            "predicted_ms": 281.832,
+            "residual_ms": -18.357,
+            "states": 5
+          },
+          {
+            "actors": 2,
+            "cells": 40,
+            "model": "baseline",
+            "ms": 471.936,
+            "predicted_ms": 472.002,
+            "residual_ms": -0.066,
+            "states": 4
+          },
+          {
+            "actors": 2,
+            "cells": 50,
+            "model": "candidate",
+            "ms": 505.885,
+            "predicted_ms": 598.782,
+            "residual_ms": -92.897,
+            "states": 5
+          },
+          {
+            "actors": 3,
+            "cells": 60,
+            "model": "baseline",
+            "ms": 776.606,
+            "predicted_ms": 725.562,
+            "residual_ms": 51.044,
+            "states": 4
+          },
+          {
+            "actors": 3,
+            "cells": 75,
+            "model": "candidate",
+            "ms": 824.161,
+            "predicted_ms": 915.732,
+            "residual_ms": -91.571,
+            "states": 5
+          },
+          {
+            "actors": 4,
+            "cells": 80,
+            "model": "baseline",
+            "ms": 741.626,
+            "predicted_ms": 979.122,
+            "residual_ms": -237.496,
+            "states": 4
+          },
+          {
+            "actors": 5,
+            "cells": 100,
+            "model": "baseline",
+            "ms": 2140.315,
+            "predicted_ms": 1232.682,
+            "residual_ms": 907.633,
+            "states": 4
+          },
+          {
+            "actors": 4,
+            "cells": 100,
+            "model": "candidate",
+            "ms": 1017.779,
+            "predicted_ms": 1232.682,
+            "residual_ms": -214.903,
+            "states": 5
+          },
+          {
+            "actors": 5,
+            "cells": 125,
+            "model": "candidate",
+            "ms": 1213.497,
+            "predicted_ms": 1549.632,
+            "residual_ms": -336.135,
+            "states": 5
+          }
+        ],
+        "r2": 0.621057,
+        "status": "MEASURED"
+      }
+    },
+    "scaling": {
+      "fit": {
+        "alt_quadratic_r2": 0.70363,
+        "c0_ms": 1.526642,
+        "c1_ms_per_element": 0.000475871,
+        "loglog_exponent": 1.0298,
+        "loglog_r2": 0.955521,
+        "max_abs_residual_ms": 31.095,
+        "model": "T_ms = c0 + c1 * (V + E)",
+        "points": 32,
+        "r2": 0.906294,
+        "reading": "Both models are linear in the graph size, so an exponent near 1 with a high R^2 is consistent with O(V+E) on this graph family; it is a measurement, not a proof. The single-coefficient V+E model fits less well than the two-term model because a visited node costs several times more than a scanned edge (queue and per-node sort overhead).",
+        "two_term_c0_ms": -2.26174,
+        "two_term_cE_ms_per_edge": 0.000278591,
+        "two_term_cV_ms_per_node": 0.001691074,
+        "two_term_model": "T_ms = c0 + cV * V + cE * E",
+        "two_term_r2": 0.985316
+      },
+      "kind": "measurement",
+      "method": "repeated wall-clock timing of domain.impact.closure on seeded synthetic graphs",
+      "not_measured": [
+        "asymptotic proof",
+        "other graph shapes",
+        "graph construction cost",
+        "other hardware"
+      ],
+      "points": [
+        {
+          "E": 250,
+          "V": 250,
+          "degree": 1,
+          "ms": 0.303,
+          "predicted_ms": 1.765,
+          "residual_ms": -1.461,
+          "residual_pct": -482.27,
+          "size": 500,
+          "two_term_predicted_ms": -1.769
+        },
+        {
+          "E": 500,
+          "V": 250,
+          "degree": 2,
+          "ms": 0.355,
+          "predicted_ms": 1.884,
+          "residual_ms": -1.529,
+          "residual_pct": -430.576,
+          "size": 750,
+          "two_term_predicted_ms": -1.7
+        },
+        {
+          "E": 1000,
+          "V": 250,
+          "degree": 4,
+          "ms": 0.418,
+          "predicted_ms": 2.121,
+          "residual_ms": -1.704,
+          "residual_pct": -407.555,
+          "size": 1250,
+          "two_term_predicted_ms": -1.56
+        },
+        {
+          "E": 2000,
+          "V": 250,
+          "degree": 8,
+          "ms": 0.612,
+          "predicted_ms": 2.597,
+          "residual_ms": -1.985,
+          "residual_pct": -324.42,
+          "size": 2250,
+          "two_term_predicted_ms": -1.282
+        },
+        {
+          "E": 500,
+          "V": 500,
+          "degree": 1,
+          "ms": 0.629,
+          "predicted_ms": 2.003,
+          "residual_ms": -1.374,
+          "residual_pct": -218.412,
+          "size": 1000,
+          "two_term_predicted_ms": -1.277
+        },
+        {
+          "E": 1000,
+          "V": 500,
+          "degree": 2,
+          "ms": 0.716,
+          "predicted_ms": 2.24,
+          "residual_ms": -1.525,
+          "residual_pct": -212.94,
+          "size": 1500,
+          "two_term_predicted_ms": -1.138
+        },
+        {
+          "E": 2000,
+          "V": 500,
+          "degree": 4,
+          "ms": 0.846,
+          "predicted_ms": 2.716,
+          "residual_ms": -1.871,
+          "residual_pct": -221.101,
+          "size": 2500,
+          "two_term_predicted_ms": -0.859
+        },
+        {
+          "E": 4000,
+          "V": 500,
+          "degree": 8,
+          "ms": 1.205,
+          "predicted_ms": 3.668,
+          "residual_ms": -2.463,
+          "residual_pct": -204.412,
+          "size": 4500,
+          "two_term_predicted_ms": -0.302
+        },
+        {
+          "E": 1000,
+          "V": 1000,
+          "degree": 1,
+          "ms": 1.184,
+          "predicted_ms": 2.478,
+          "residual_ms": -1.294,
+          "residual_pct": -109.314,
+          "size": 2000,
+          "two_term_predicted_ms": -0.292
+        },
+        {
+          "E": 2000,
+          "V": 1000,
+          "degree": 2,
+          "ms": 1.163,
+          "predicted_ms": 2.954,
+          "residual_ms": -1.792,
+          "residual_pct": -154.063,
+          "size": 3000,
+          "two_term_predicted_ms": -0.013
+        },
+        {
+          "E": 4000,
+          "V": 1000,
+          "degree": 4,
+          "ms": 1.626,
+          "predicted_ms": 3.906,
+          "residual_ms": -2.28,
+          "residual_pct": -140.246,
+          "size": 5000,
+          "two_term_predicted_ms": 0.544
+        },
+        {
+          "E": 8000,
+          "V": 1000,
+          "degree": 8,
+          "ms": 2.29,
+          "predicted_ms": 5.809,
+          "residual_ms": -3.519,
+          "residual_pct": -153.685,
+          "size": 9000,
+          "two_term_predicted_ms": 1.658
+        },
+        {
+          "E": 2000,
+          "V": 2000,
+          "degree": 1,
+          "ms": 2.588,
+          "predicted_ms": 3.43,
+          "residual_ms": -0.842,
+          "residual_pct": -32.547,
+          "size": 4000,
+          "two_term_predicted_ms": 1.678
+        },
+        {
+          "E": 4000,
+          "V": 2000,
+          "degree": 2,
+          "ms": 2.681,
+          "predicted_ms": 4.382,
+          "residual_ms": -1.701,
+          "residual_pct": -63.453,
+          "size": 6000,
+          "two_term_predicted_ms": 2.235
+        },
+        {
+          "E": 8000,
+          "V": 2000,
+          "degree": 4,
+          "ms": 3.094,
+          "predicted_ms": 6.285,
+          "residual_ms": -3.191,
+          "residual_pct": -103.14,
+          "size": 10000,
+          "two_term_predicted_ms": 3.349
+        },
+        {
+          "E": 16000,
+          "V": 2000,
+          "degree": 8,
+          "ms": 3.713,
+          "predicted_ms": 10.092,
+          "residual_ms": -6.379,
+          "residual_pct": -171.813,
+          "size": 18000,
+          "two_term_predicted_ms": 5.578
+        },
+        {
+          "E": 4000,
+          "V": 4000,
+          "degree": 1,
+          "ms": 5.964,
+          "predicted_ms": 5.334,
+          "residual_ms": 0.631,
+          "residual_pct": 10.577,
+          "size": 8000,
+          "two_term_predicted_ms": 5.617
+        },
+        {
+          "E": 8000,
+          "V": 4000,
+          "degree": 2,
+          "ms": 7.852,
+          "predicted_ms": 7.237,
+          "residual_ms": 0.615,
+          "residual_pct": 7.835,
+          "size": 12000,
+          "two_term_predicted_ms": 6.731
+        },
+        {
+          "E": 16000,
+          "V": 4000,
+          "degree": 4,
+          "ms": 8.498,
+          "predicted_ms": 11.044,
+          "residual_ms": -2.546,
+          "residual_pct": -29.962,
+          "size": 20000,
+          "two_term_predicted_ms": 8.96
+        },
+        {
+          "E": 32000,
+          "V": 4000,
+          "degree": 8,
+          "ms": 11.493,
+          "predicted_ms": 18.658,
+          "residual_ms": -7.165,
+          "residual_pct": -62.34,
+          "size": 36000,
+          "two_term_predicted_ms": 13.417
+        },
+        {
+          "E": 8000,
+          "V": 8000,
+          "degree": 1,
+          "ms": 10.638,
+          "predicted_ms": 9.141,
+          "residual_ms": 1.497,
+          "residual_pct": 14.072,
+          "size": 16000,
+          "two_term_predicted_ms": 13.496
+        },
+        {
+          "E": 16000,
+          "V": 8000,
+          "degree": 2,
+          "ms": 14.622,
+          "predicted_ms": 12.948,
+          "residual_ms": 1.674,
+          "residual_pct": 11.451,
+          "size": 24000,
+          "two_term_predicted_ms": 15.724
+        },
+        {
+          "E": 32000,
+          "V": 8000,
+          "degree": 4,
+          "ms": 14.548,
+          "predicted_ms": 20.561,
+          "residual_ms": -6.013,
+          "residual_pct": -41.332,
+          "size": 40000,
+          "two_term_predicted_ms": 20.182
+        },
+        {
+          "E": 64000,
+          "V": 8000,
+          "degree": 8,
+          "ms": 28.36,
+          "predicted_ms": 35.789,
+          "residual_ms": -7.43,
+          "residual_pct": -26.198,
+          "size": 72000,
+          "two_term_predicted_ms": 29.097
+        },
+        {
+          "E": 16000,
+          "V": 16000,
+          "degree": 1,
+          "ms": 27.416,
+          "predicted_ms": 16.754,
+          "residual_ms": 10.662,
+          "residual_pct": 38.888,
+          "size": 32000,
+          "two_term_predicted_ms": 29.253
+        },
+        {
+          "E": 32000,
+          "V": 16000,
+          "degree": 2,
+          "ms": 31.733,
+          "predicted_ms": 24.368,
+          "residual_ms": 7.365,
+          "residual_pct": 23.209,
+          "size": 48000,
+          "two_term_predicted_ms": 33.71
+        },
+        {
+          "E": 64000,
+          "V": 16000,
+          "degree": 4,
+          "ms": 37.406,
+          "predicted_ms": 39.596,
+          "residual_ms": -2.191,
+          "residual_pct": -5.857,
+          "size": 80000,
+          "two_term_predicted_ms": 42.625
+        },
+        {
+          "E": 128000,
+          "V": 16000,
+          "degree": 8,
+          "ms": 49.967,
+          "predicted_ms": 70.052,
+          "residual_ms": -20.085,
+          "residual_pct": -40.196,
+          "size": 144000,
+          "two_term_predicted_ms": 60.455
+        },
+        {
+          "E": 32000,
+          "V": 32000,
+          "degree": 1,
+          "ms": 53.479,
+          "predicted_ms": 31.982,
+          "residual_ms": 21.497,
+          "residual_pct": 40.196,
+          "size": 64000,
+          "two_term_predicted_ms": 60.768
+        },
+        {
+          "E": 64000,
+          "V": 32000,
+          "degree": 2,
+          "ms": 78.305,
+          "predicted_ms": 47.21,
+          "residual_ms": 31.095,
+          "residual_pct": 39.71,
+          "size": 96000,
+          "two_term_predicted_ms": 69.682
+        },
+        {
+          "E": 128000,
+          "V": 32000,
+          "degree": 4,
+          "ms": 95.392,
+          "predicted_ms": 77.666,
+          "residual_ms": 17.726,
+          "residual_pct": 18.583,
+          "size": 160000,
+          "two_term_predicted_ms": 87.512
+        },
+        {
+          "E": 256000,
+          "V": 32000,
+          "degree": 8,
+          "ms": 126.156,
+          "predicted_ms": 138.577,
+          "residual_ms": -12.421,
+          "residual_pct": -9.846,
+          "size": 288000,
+          "two_term_predicted_ms": 123.172
+        }
+      ],
+      "repeats": 7,
+      "seed": 20260928,
+      "source": "algorithm: BFS closure, O(V+E); fit: stdlib statistics.linear_regression",
+      "status": "MEASURED"
+    },
+    "tests": {
+      "by_layer": [
+        {
+          "asserts_direct": 0,
+          "files_direct": 0,
+          "files_transitive": 0,
+          "layer": "__main__",
+          "tests_direct": 0,
+          "tests_transitive": 0
+        },
+        {
+          "asserts_direct": 31,
+          "files_direct": 2,
+          "files_transitive": 3,
+          "layer": "adapters",
+          "tests_direct": 25,
+          "tests_transitive": 55
+        },
+        {
+          "asserts_direct": 29,
+          "files_direct": 1,
+          "files_transitive": 3,
+          "layer": "application",
+          "tests_direct": 30,
+          "tests_transitive": 55
+        },
+        {
+          "asserts_direct": 40,
+          "files_direct": 2,
+          "files_transitive": 2,
+          "layer": "bootstrap",
+          "tests_direct": 37,
+          "tests_transitive": 37
+        },
+        {
+          "asserts_direct": 89,
+          "files_direct": 5,
+          "files_transitive": 7,
+          "layer": "domain",
+          "tests_direct": 86,
+          "tests_transitive": 98
+        },
+        {
+          "asserts_direct": 16,
+          "files_direct": 1,
+          "files_transitive": 1,
+          "layer": "interfaces",
+          "tests_direct": 5,
+          "tests_transitive": 5
+        }
+      ],
+      "files": [
+        {
+          "asserts": 12,
+          "file": "tests/metrics/test_metrics_aggregate.py",
+          "layers_direct": [],
+          "layers_transitive": [],
+          "raises_blocks": 0,
+          "test_functions": 5,
+          "tests": 5
+        },
+        {
+          "asserts": 8,
+          "file": "tests/metrics/test_metrics_budgets.py",
+          "layers_direct": [],
+          "layers_transitive": [],
+          "raises_blocks": 0,
+          "test_functions": 4,
+          "tests": 4
+        },
+        {
+          "asserts": 8,
+          "file": "tests/metrics/test_metrics_complexity.py",
+          "layers_direct": [],
+          "layers_transitive": [],
+          "raises_blocks": 0,
+          "test_functions": 3,
+          "tests": 3
+        },
+        {
+          "asserts": 22,
+          "file": "tests/metrics/test_metrics_dashboard.py",
+          "layers_direct": [],
+          "layers_transitive": [],
+          "raises_blocks": 0,
+          "test_functions": 9,
+          "tests": 9
+        },
+        {
+          "asserts": 11,
+          "file": "tests/metrics/test_metrics_inventory.py",
+          "layers_direct": [],
+          "layers_transitive": [],
+          "raises_blocks": 0,
+          "test_functions": 4,
+          "tests": 4
+        },
+        {
+          "asserts": 11,
+          "file": "tests/metrics/test_metrics_perf.py",
+          "layers_direct": [],
+          "layers_transitive": [],
+          "raises_blocks": 1,
+          "test_functions": 4,
+          "tests": 5
+        },
+        {
+          "asserts": 11,
+          "file": "tests/metrics/test_metrics_scaling.py",
+          "layers_direct": [
+            "domain"
+          ],
+          "layers_transitive": [
+            "domain"
+          ],
+          "raises_blocks": 0,
+          "test_functions": 3,
+          "tests": 3
+        },
+        {
+          "asserts": 10,
+          "file": "tests/metrics/test_metrics_stats.py",
+          "layers_direct": [],
+          "layers_transitive": [],
+          "raises_blocks": 3,
+          "test_functions": 7,
+          "tests": 7
+        },
+        {
+          "asserts": 23,
+          "file": "tests/metrics/test_metrics_structure.py",
+          "layers_direct": [],
+          "layers_transitive": [],
+          "raises_blocks": 0,
+          "test_functions": 9,
+          "tests": 16
+        },
+        {
+          "asserts": 29,
+          "file": "tests/test_application.py",
+          "layers_direct": [
+            "application",
+            "bootstrap",
+            "domain"
+          ],
+          "layers_transitive": [
+            "adapters",
+            "application",
+            "bootstrap",
+            "domain"
+          ],
+          "raises_blocks": 9,
+          "test_functions": 20,
+          "tests": 30
+        },
+        {
+          "asserts": 10,
+          "file": "tests/test_domain.py",
+          "layers_direct": [
+            "domain"
+          ],
+          "layers_transitive": [
+            "domain"
+          ],
+          "raises_blocks": 6,
+          "test_functions": 11,
+          "tests": 19
+        },
+        {
+          "asserts": 11,
+          "file": "tests/test_durability_and_sandbox.py",
+          "layers_direct": [
+            "adapters",
+            "bootstrap"
+          ],
+          "layers_transitive": [
+            "adapters",
+            "application",
+            "bootstrap",
+            "domain"
+          ],
+          "raises_blocks": 2,
+          "test_functions": 7,
+          "tests": 7
+        },
+        {
+          "asserts": 16,
+          "file": "tests/test_http_and_architecture.py",
+          "layers_direct": [
+            "interfaces"
+          ],
+          "layers_transitive": [
+            "domain",
+            "interfaces"
+          ],
+          "raises_blocks": 0,
+          "test_functions": 5,
+          "tests": 5
+        },
+        {
+          "asserts": 20,
+          "file": "tests/test_providers.py",
+          "layers_direct": [
+            "adapters",
+            "domain"
+          ],
+          "layers_transitive": [
+            "adapters",
+            "application",
+            "domain"
+          ],
+          "raises_blocks": 9,
+          "test_functions": 10,
+          "tests": 18
+        },
+        {
+          "asserts": 19,
+          "file": "tests/test_runtime.py",
+          "layers_direct": [
+            "domain"
+          ],
+          "layers_transitive": [
+            "domain"
+          ],
+          "raises_blocks": 6,
+          "test_functions": 9,
+          "tests": 16
+        }
+      ],
+      "method": "ast scan of tests/**/test_*.py; layer attribution from imports and the grimp import graph",
+      "not_measured": [
+        "test quality or fault-detection power (see the mutation lane)",
+        "dynamic parametrisation beyond literals",
+        "tests outside tests/"
+      ],
+      "status": "MEASURED",
+      "summary": {
+        "asserts": 221,
+        "asserts_per_test": 1.464,
+        "raises_blocks": 36,
+        "static_matches_collected": true,
+        "test_files": 15,
+        "tests_collected_by_pytest": 151,
+        "tests_static": 151
+      }
+    },
+    "verification_yield": {
+      "kind": "measurement",
+      "method": "states explored per technique: two measured here, the rest copied from lane reports",
+      "not_measured": [
+        "independence of techniques",
+        "defect-finding power (findings are counts reported by each technique)"
+      ],
+      "status": "MEASURED",
+      "summary": {
+        "from_lane_reports": 0,
+        "lane_reports_without_state_counts": 0,
+        "techniques": 2
+      },
+      "techniques": [
+        {
+          "accepted_cells": 7,
+          "denied_cells": 118,
+          "duration_s": 1.2135,
+          "findings": 0,
+          "kind": "measured-here",
+          "note": "cells = actor x state x action; findings = oracle/runtime disagreements (same-author oracle)",
+          "states_explored": 125,
+          "states_per_s": 103.008,
+          "status": "MEASURED",
+          "technique": "runtime_matrix (this kernel)"
+        },
+        {
+          "duration_s": 0.00011,
+          "findings": null,
+          "kind": "measured-here",
+          "note": "nodes of the projection-dependency graph reached from the changed actions",
+          "states_explored": 20,
+          "states_per_s": 181818.182,
+          "status": "MEASURED",
+          "technique": "impact_closure (this kernel)"
+        }
+      ]
+    }
+  }
+}
