@@ -277,7 +277,7 @@ def render_html(doc: dict) -> str:
                       table([("Group", False), ("Lane", False), ("Status", False), ("Reports / reason", False)], lane_rows, "Lane report aggregation"), True))
     y = s["verification_yield"]
     y_rows = [[t["technique"], t["kind"], t["states_explored"], "n/a" if t.get("findings") is None else t["findings"],
-               "n/a" if t.get("duration_s") is None else t["duration_s"], "n/a" if t.get("states_per_s") is None else t["states_per_s"], status(t["status"])]
+               svg.sig(t.get("duration_s")), "n/a" if t.get("states_per_s") is None else t["states_per_s"], status(t["status"])]
               for t in y["techniques"]]
     cards.append(card("Verification yield", "States explored per technique. Two are measured here; the rest are copied from lane reports when they publish a state count.",
                       table([("Technique", False), ("Source", False), ("States", True), ("Findings", True), ("Seconds", True), ("States/s", True), ("Status", False)], y_rows,
@@ -355,6 +355,6 @@ def render_markdown(doc: dict) -> str:
     out += ["", "## Other lanes' reports", "", "| Group | Lane | Status | Detail |", "|---|---|---|---|"]
     out += [f"| {g['group']} | {g['lane']} | {g['status']} | {', '.join(r['file'] for r in g['reports']) or g.get('reason', '')} |" for g in s["lane_reports"]["groups"]]
     out += ["", "## Verification yield", "", "| Technique | Source | States | Findings | Seconds | States/s |", "|---|---|---:|---:|---:|---:|"]
-    out += [f"| {r['technique']} | {r['kind']} | {fmt(r['states_explored'])} | {fmt(r.get('findings'))} | {fmt(r.get('duration_s'), 4)} | {fmt(r.get('states_per_s'))} |"
+    out += [f"| {r['technique']} | {r['kind']} | {fmt(r['states_explored'])} | {fmt(r.get('findings'))} | {svg.sig(r.get('duration_s'))} | {fmt(r.get('states_per_s'))} |"
             for r in s["verification_yield"]["techniques"]]
     return "\n".join(out) + "\n"

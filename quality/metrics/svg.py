@@ -36,6 +36,11 @@ def fmt(x: float | int | None, digits: int = 2) -> str:
     return s.rstrip("0").rstrip(".") if "." in s else s
 
 
+def sig(x: float | None) -> str:
+    """Four significant digits, for durations spanning microseconds to seconds."""
+    return "n/a" if x is None else f"{x:.4g}"
+
+
 def nice_ticks(lo: float, hi: float, count: int = 5) -> list[float]:
     if hi <= lo:
         return [lo]

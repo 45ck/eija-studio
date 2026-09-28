@@ -40,7 +40,7 @@ Design rules that are part of the decision:
 
 * Good: a regression in layering, complexity, coverage or latency becomes a failing budget (ADR-0038) with the formula and source documented in `docs/metrics/README.md`.
 * Good: the dashboard (`docs/metrics/index.html`) is static, offline and reproducible from the committed snapshot.
-* Good: the analysis surfaced real findings instead of confirming expectations, for example that the domain layer sits in Martin's "zone of pain" by construction (D = 1.0) and that `verify` takes about a second and exceeds the Doherty threshold.
+* Good: the analysis surfaced real findings instead of confirming expectations, for example that the domain layer sits in Martin's "zone of pain" by construction (D = 1.0) and that `verify` takes one to a few seconds and exceeds the Doherty threshold.
 * Bad: timing measurements depend on the machine and its load; a budget on them can fail on a busy PC. They are labelled as such and the snapshot names the platform.
 * Bad: module-level coupling and a Protocol/ABC share are proxies for the class-level definitions in Martin's papers.
 * Revisit when: another platform (Linux CI, macOS) produces a snapshot, or a second lane needs a numerical library, at which point adopting numpy for all lanes may be cheaper than each lane's own solver.

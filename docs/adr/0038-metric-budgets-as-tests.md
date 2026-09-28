@@ -26,7 +26,7 @@ Metrics that nobody enforces decay into a dashboard. But a budget can be dishone
 Chosen option: one table in code, with three kinds of basis.
 
 * Principled: holds at any size. No dependency cycles, the domain imports no other layer and has instability at most 0.1, no Stable Dependencies Principle violation, R^2 at least 0.9 for a linear fit, log-log exponent in [0.8, 1.2], every layer has a directly importing test, no lane report says FAIL.
-* External: a published threshold. Doherty and Thadani (1982): p95 of interactive endpoints under 400 ms. The `verify` endpoint is a long-running computation (about a second, because it runs a 125-cell isolated matrix), so it is budgeted separately at 10 s (Nielsen's limit for keeping attention) and its excess over 400 ms is reported, not hidden: it needs a progress indication in the UI.
+* External: a published threshold. Doherty and Thadani (1982): p95 of interactive endpoints under 400 ms. The `verify` endpoint is a long-running computation (one to a few seconds depending on machine load, because it runs a 125-cell isolated matrix), so it is budgeted separately at 10 s (Nielsen's limit for keeping attention) and its excess over 400 ms is reported, not hidden: it needs a progress indication in the UI.
 * Ratchet: current value plus headroom, to catch regressions (maximum cyclomatic complexity 50, at least 90 percent of functions in ranks A or B, minimum maintainability index 20, coverage at least 75 percent line+branch, non-domain layers within 0.5 of the main sequence). A ratchet is a guard rail and is labelled as one. It is tightened by a deliberate commit, never loosened to make a build pass without an ADR or a justification in the PR.
 
 Deliberate non-budget: the domain layer's distance from the main sequence. The formula gives D = 1.0 (stable, and concrete because it holds frozen contracts and pure rules with no Protocol). Adding an abstraction only to move the number would be the speculative abstraction ADR-0016 and AGENTS.md forbid. The number is reported with its zone; the budgets check what matters for that layer (I near 0, Ce = 0).
@@ -40,7 +40,7 @@ The committed dashboard (`docs/metrics/index.html`, `latest.md`) is a determinis
 * Good: one definition, three consumers, negative-control tests prove each family of budgets can fail.
 * Good: the honest exceptions (domain D, verify latency, single-coefficient V+E fit) are visible with their reasons.
 * Bad: ratchet limits are judgement; they will need revisiting as the code grows.
-* Bad: timing tests add roughly 15 seconds to the core suite (smoke-sized measurements of two transports and the closure fit).
+* Bad: timing tests add roughly 15 seconds to the core suite (smoke-sized measurements of two transports, which assert the median, and the closure fit).
 * Revisit when: a Linux runner exists (then timing budgets move to a fixed reference machine) or when GitHub Actions becomes available again and can host the release tier.
 
 ## OSS check (required for any custom module)

@@ -31,13 +31,13 @@ def yield_section(matrix: dict, impact: dict, lanes: dict) -> dict:
     rows = []
     if matrix:
         rows.append({"technique": "runtime_matrix (this kernel)", "kind": "measured-here", "states_explored": matrix["cells"],
-                     "findings": matrix["oracle_mismatches"], "duration_s": r3(matrix["seconds"]),
+                     "findings": matrix["oracle_mismatches"], "duration_s": round(matrix["seconds"], 4),
                      "states_per_s": r3(matrix["cells"] / matrix["seconds"]), "accepted_cells": matrix["accepted"],
                      "denied_cells": matrix["denied"], "status": "MEASURED",
                      "note": "cells = actor x state x action; findings = oracle/runtime disagreements (same-author oracle)"})
     if impact:
         rows.append({"technique": "impact_closure (this kernel)", "kind": "measured-here", "states_explored": impact["nodes"],
-                     "findings": None, "duration_s": r3(impact["seconds"]),
+                     "findings": None, "duration_s": round(impact["seconds"], 7),
                      "states_per_s": r3(impact["nodes"] / impact["seconds"]), "status": "MEASURED",
                      "note": "nodes of the projection-dependency graph reached from the changed actions"})
     rows += aggregate.yield_rows(lanes)

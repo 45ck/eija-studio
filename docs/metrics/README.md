@@ -96,7 +96,7 @@ A finding worth knowing: `GET /api/status` costs more than trivial reads because
 The algorithm dequeues each node once and scans each edge once, so it should be O(V + E). The collector times `closure` (median of repeats, garbage collector paused) on seeded synthetic graphs (a random recursive tree from `n0`, so everything is reachable, plus random edges to reach out-degree 1, 2, 4 and, in the full profile, 8) with V from 250 to 8,000 (32,000 in the full profile), then reports:
 
 * `T = c0 + c1 * (V + E)`, least squares, R^2 and per-point residuals;
-* `T = c0 + cV * V + cE * E`, because a visited node (queue append, per-node sort) costs several times more than a scanned edge, which is why the single-coefficient model fits only about R^2 0.9 while the two-term model is near 0.98;
+* `T = c0 + cV * V + cE * E`, because a visited node (queue append, per-node sort) costs several times more than a scanned edge, which is why the single-coefficient model fits only about R^2 0.9 while the two-term model is near 0.99;
 * the empirical exponent k of `T ~ n^k` (slope of the log-log regression; near 1 is consistent with linear growth) and a quadratic alternative `T = c0 + c2 * (V+E)^2` for comparison.
 
 This is a measurement on one graph family, not a proof, and not the cost of building the graph.
