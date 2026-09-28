@@ -12,6 +12,8 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0018](0018-formal-vv-portfolio.md) | Formal V&V portfolio: each technique is a distinct evidence kind | proposed |
 | [0019](0019-diagrams-generated-from-executable-model.md) | Diagrams are generated projections of the executable model | proposed |
 | [0020](0020-multi-provider-agent-adapters.md) | Proposal providers for Codex, Claude Code, OpenCode, Gemini CLI and OpenRouter | proposed |
+| [0025](0025-bend-machine-checked-laws.md) | Machine-check protected authority laws with Bend 2 in a pinned container | proposed |
+| [0026](0026-bend-model-generation-controls-conformance.md) | The Bend model is generated from the Workflow; negative controls and conformance accompany every proof | proposed |
 | [0029](0029-z3-policy-soundness-proof.md) | Z3 proof that the protected policy admits only authority-preserving candidates | proposed |
 | [0030](0030-bounded-model-checking-of-the-real-runtime.md) | Bounded model checking by explicit-state search over the real runtime | proposed |
 | [0035](0035-static-analysis-and-architecture-fitness-functions.md) | Static analysis, architecture fitness functions and ratcheted budgets | accepted |
