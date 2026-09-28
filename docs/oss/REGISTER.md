@@ -17,6 +17,7 @@
 | npm `.cmd` shim handling on Windows | Node itself (`node script.js`) | Running the `.cmd` through cmd.exe (BatBadBut argument injection) | `process._unwrap_node_shim` | Parses only the exact npm shim shape and refuses anything else |
 | Provider contract testing | pytest parametrization | Hypothesis (a later testing-lane concern) | `tests/test_provider_contract.py` | One table row per CLI; mocked runner, not live |
 | Live provider smoke | The vendor CLIs themselves | — | `scripts/live_provider_smoke.py` | Consent gate and evidence recording only |
+| Demo capture | Playwright (system Chrome, built-in video) | [demo-machine](https://github.com/45ck/demo-machine), OBS, screen recorders | `demos/lib/recorder.py`: synthetic cursor overlay, eased motion, typing cadence, captions (about 270 lines) | Owner chose a hand-authored version over demo-machine (ADR-0047); Chromium does not render the OS pointer into video, so a cursor overlay is unavoidable; scenario steps can be lowered into a demo-machine spec later |
 | Lint | [Ruff](https://docs.astral.sh/ruff/) | flake8 + plugins, pylint | — | Rules and per-file debt in `pyproject.toml` |
 | Type checking | [mypy](https://mypy.readthedocs.io/) + pydantic plugin | pyright | — | Strict on domain and application; ratchet plan in `docs/quality/gates.md` |
 | Architecture contracts | [import-linter](https://import-linter.readthedocs.io/) (grimp) | pytest-archon, custom AST test | `[tool.importlinter]` contracts | Also follows transitive imports, which the AST test cannot |
