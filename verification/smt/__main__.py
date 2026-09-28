@@ -4,6 +4,7 @@ Exit status: 0 PASS, 1 FAIL, 3 NOT_RUN (a prerequisite such as z3-solver is miss
 """
 from __future__ import annotations
 
+# ruff: noqa: PLC0415 (z3 is an optional extra: it is imported lazily so that its absence reports NOT_RUN)
 import argparse
 import sys
 from pathlib import Path
@@ -25,7 +26,7 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
 
     try:
-        import z3  # noqa: F401, PLC0415 - optional extra: absence is NOT_RUN, not an import error
+        import z3  # noqa: F401 - optional extra: absence is NOT_RUN, not an import error
     except ImportError:
         report = fr.not_run("smt_proof", "z3-solver is not installed; run `pip install -e .[smt]`",
                             fr.kernel_subject(*SUBJECT_FILES, function=SUBJECT_FUNCTION))
@@ -33,7 +34,7 @@ def main(argv: list[str] | None = None) -> int:
         print("NOT_RUN: z3-solver is not installed (pip install -e .[smt])", file=sys.stderr)
         return NOT_RUN_EXIT
 
-    from . import prove  # noqa: PLC0415 - imports z3, so only after the check above
+    from . import prove
 
     report = prove.build_report(args.differential_mutants, args.differential_fresh, args.seed,
                                 write_snapshot=args.write_snapshot)

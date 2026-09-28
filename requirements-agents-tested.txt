@@ -1,0 +1,31 @@
+# Measured dependency closure of the `agents` extra (mcp==2.2.0), resolved 2026-09-29 on win32, Python 3.12.
+# Use as a constraints file so transitive dependencies do not float:
+#   pip install -e ".[agents]" -c requirements-agents-tested.txt
+# It is a version constraint set measured on one platform, not a hash-locked supply-chain manifest.
+# Regenerate after bumping mcp (list the closure of `mcp` and re-run the agents tests).
+annotated-types==0.8.0
+anyio==4.15.1
+attrs==26.1.0
+click==8.5.0
+h11==0.16.0
+httpcore2==2.13.1
+httpx2==2.13.1
+idna==3.20
+jsonschema==4.26.0
+jsonschema-specifications==2025.9.1
+mcp==2.2.0
+mcp-types==2.2.0
+opentelemetry-api==1.45.0
+pydantic==2.13.4
+pydantic_core==2.46.4
+PyJWT==2.15.1
+python-multipart==0.0.32
+pywin32==312; sys_platform == "win32"
+referencing==0.37.0
+rpds-py==2026.6.3
+sse-starlette==3.5.0
+starlette==0.50.0
+truststore==0.10.4
+typing_extensions==4.16.0
+typing-inspection==0.4.4
+uvicorn==0.48.0

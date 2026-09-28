@@ -234,7 +234,7 @@ class Evaluator:
 
 
 def run(seed: int = 20260928, random_mutants: int = 1500, random_fresh: int = 500, keep: int = 5,
-        drop_clauses: frozenset[str] = frozenset()) -> DifferentialResult:
+        drop_clauses: frozenset[str] = frozenset(), stop_at_first_disagreement: bool = False) -> DifferentialResult:
     ev = Evaluator(drop_clauses)
     res = DifferentialResult(clause_fired={c.id: 0 for c in ev.clauses}, clause_silent={c.id: 0 for c in ev.clauses},
                              invariant_true={i.id: 0 for i in ev.invariants}, invariant_false={i.id: 0 for i in ev.invariants})
@@ -258,4 +258,6 @@ def run(seed: int = 20260928, random_mutants: int = 1500, random_fresh: int = 50
                                                     "candidate": wf.model_dump(mode="json")})
             if not real_codes and not py_inv[name]:
                 res.soundness_violations.append({"invariant": name, "candidate": wf.model_dump(mode="json")})
+        if stop_at_first_disagreement and not res.agrees:  # negative controls only need to see one disagreement
+            break
     return res

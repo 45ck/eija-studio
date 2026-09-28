@@ -82,7 +82,7 @@ def test_encoding_agrees_with_real_check_policy_and_covers_every_clause():
 def test_differential_detects_an_unfaithful_encoding():
     """Negative control for the faithfulness check itself: a wrong encoding must NOT agree."""
     wrong = frozenset({"PROTECTED_STATE:Reject/from-without-recommendation"})  # a clause a draft encoding could omit
-    r = D.run(random_mutants=0, random_fresh=0, drop_clauses=wrong)
+    r = D.run(random_mutants=0, random_fresh=0, drop_clauses=wrong, stop_at_first_disagreement=True)
     assert r.code_disagreements
 
 
@@ -91,7 +91,7 @@ def test_differential_detects_a_weakened_kernel_policy(monkeypatch):
     """If check_policy stops enforcing the Approve role, the encoded proof no longer describes it."""
     real = policy.check_policy
     monkeypatch.setattr(D, "check_policy", lambda wf: [e for e in real(wf) if e != "PROTECTED_AUTHORITY:Approve"])
-    r = D.run(random_mutants=0, random_fresh=0)
+    r = D.run(random_mutants=0, random_fresh=0, stop_at_first_disagreement=True)
     assert r.code_disagreements and r.soundness_violations
 
 

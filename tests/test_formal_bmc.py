@@ -5,11 +5,13 @@ Tests marked `formal` run searches that take seconds each, so the default (fast/
 """
 import json
 from dataclasses import replace
+from unittest import mock
 
 import pytest
 from eija_studio.adapters.sqlite_store import sandbox_factory
+from eija_studio.application import runtime
 from eija_studio.application.runtime import execute, initialise
-from eija_studio.domain.models import ExecuteCommand
+from eija_studio.domain.models import DomainError, ExecuteCommand, Workflow
 
 from verification.bmc import __main__ as bmc_cli
 from verification.bmc import mutants as M
@@ -171,3 +173,37 @@ def test_write_snapshot_is_refused_when_the_run_has_findings(tmp_path, monkeypat
     monkeypatch.setattr(report, "build_report", lambda *a, **k: doc)
     assert bmc_cli.main(["--depth", "2", "--write-snapshot", "--out", str(tmp_path / "bmc.json")]) != 0
     assert not (tmp_path / "expected_statistics.json").exists()
+
+
+# ---- unsafe POLICY variants: the state invariants must flag them when the policy gate is bypassed ------------
+# The runtime calls `ensure_policy` on every execute, so an unsafe workflow cannot run at all unless the gate is
+# removed. These controls remove it (in the test only) to show the BMC invariants would catch what the gate blocks.
+
+def _unsafe(candidate, action, **changes):
+    swapped = tuple(t.model_copy(update=changes) if t.action == action else t for t in candidate.transitions)
+    return Workflow.model_construct(**{**dict(candidate), "transitions": swapped})
+
+
+def _explore_without_policy_gate(sandbox, model, depth, stop_when_found=()):
+    with mock.patch.object(runtime, "ensure_policy", lambda _model: None):
+        return explore("unsafe", model, Config(depth=depth, stop_when_found=stop_when_found), sandbox)
+
+
+def test_the_policy_gate_is_what_blocks_an_unsafe_workflow(sandbox):
+    unsafe = _unsafe(CANDIDATE, "Approve", role="Teacher")
+    with pytest.raises(DomainError) as blocked:
+        explore("unsafe", unsafe, Config(depth=1), sandbox)
+    assert blocked.value.code == "POLICY_BLOCKED"
+
+
+@formal
+@pytest.mark.parametrize("label,model,invariant,length", [
+    ("teacher may approve", _unsafe(CANDIDATE, "Approve", role="Teacher"), "DECISION-ONLY-BY-REGISTRAR", 3),
+    ("approve skips Recommended", _unsafe(CANDIDATE, "Approve", from_state="Submitted"), "APPROVAL-FOLLOWS-RECOMMENDATION", 2),
+    ("forbidden effect required", _unsafe(CANDIDATE, "Approve", required_effects=("Audit:ExcursionApproved", "Audit:PaymentCaptured")),
+     "NO-FORBIDDEN-EFFECT", 3),
+])
+def test_unsafe_workflow_variants_yield_shortest_counterexamples(sandbox, label, model, invariant, length):
+    res = _explore_without_policy_gate(sandbox, model, depth=3, stop_when_found=(invariant,))
+    assert invariant in res.findings.first, (label, sorted(res.findings.first))
+    assert res.findings.first[invariant]["length"] == length and res.verdict == "FAIL"

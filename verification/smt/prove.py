@@ -37,6 +37,7 @@ ASSUMPTIONS = (
     "Roles, states and effects outside the known vocabulary are one OTHER value each: sound because check_policy only compares them by equality/membership against known constants (checked by the differential test on foreign strings).",
     "No Transition validator is assumed (base guards, required/forbidden disjointness, from/to membership are left free), so the policy alone must enforce them.",
     "Transition ids are not read by check_policy and are outside the grammar.",
+    "Guard names come from the Guard literal (a type-checked field). A model_construct candidate with a guard string outside it is outside the grammar; check_policy would reject it (GUARD_POLICY), so this can lose an error code in the encoding but cannot make the encoding admit anything the real policy refuses.",
     "The Z3 encoding of check_policy is hand-written; its faithfulness is established only by the differential test (sampled), not by proof.",
     "AuthorityInvariant is the authors' statement of the policy's intent (same authorship as the policy): it is not an independently derived requirement.",
 )
