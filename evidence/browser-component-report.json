@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "mode": "Chromium DOM + FastAPI in-process transport bridge",
+  "checks": [
+    "three explicit interpretations",
+    "denial retains persisted state",
+    "teacher submits/recommends; registrar approves",
+    "state-view edit invalidates receipt and decision",
+    "explicit exact-subject approval and local apply",
+    "390px viewport no document-level horizontal overflow"
+  ],
+  "javascript_errors": [],
+  "network_e2e": "NOT_RUN_ENVIRONMENT_BROWSER_NAVIGATION_BLOCKED",
+  "download_button": "NOT_RUN",
+  "human_usability_study": "NOT_RUN",
+  "live_provider_calls": 0
+}

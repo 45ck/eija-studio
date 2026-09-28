@@ -1,0 +1,64 @@
+{
+  "$defs": {
+    "Alternative": {
+      "additionalProperties": false,
+      "properties": {
+        "interpretation": {
+          "enum": [
+            "recommend_only",
+            "final_approval",
+            "confirm_only",
+            "unsupported"
+          ],
+          "title": "Interpretation",
+          "type": "string"
+        },
+        "explanation": {
+          "maxLength": 1600,
+          "minLength": 1,
+          "title": "Explanation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "interpretation",
+        "explanation"
+      ],
+      "title": "Alternative",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "summary": {
+      "maxLength": 1600,
+      "minLength": 1,
+      "title": "Summary",
+      "type": "string"
+    },
+    "alternatives": {
+      "items": {
+        "$ref": "#/$defs/Alternative"
+      },
+      "maxItems": 4,
+      "minItems": 1,
+      "title": "Alternatives",
+      "type": "array"
+    },
+    "unknowns": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 10,
+      "title": "Unknowns",
+      "type": "array"
+    }
+  },
+  "required": [
+    "summary",
+    "alternatives",
+    "unknowns"
+  ],
+  "title": "Proposal",
+  "type": "object"
+}

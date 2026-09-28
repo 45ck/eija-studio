@@ -1,0 +1,131 @@
+{
+  "release": "EIJA Studio 0.2.0",
+  "date": "2026-09-27T07:39:40.374039+00:00",
+  "classification": "Runnable bounded local POC, not production-ready",
+  "implementation_identity": {
+    "implementation": "223b43f302796986f9a0d50b201452a2b29a4750a67230ef28aaa17f5a306fec",
+    "policy": "08c93514ca7691f61797f9f373b33e63083f9b2df330868faddbcc7d69974beb",
+    "harness": "efc57f83d1380ce144fdadc1f3aa8d80b733e57babb65287ef84113e5fa4c348",
+    "trusted_fixture": true,
+    "environment": "77942d9242bfca9a5e471c32e5bba10a14b5645434a3a8c342989c8ba12f6374"
+  },
+  "platform": {
+    "system": "Linux",
+    "python": "3.13.5",
+    "other_platforms": "NOT_RUN"
+  },
+  "automated_suite": {
+    "tests": 88,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "elapsed_seconds": 9.79,
+    "source": "evidence/tests.xml",
+    "authorship": "Same-author implementation/policy/oracle/tests"
+  },
+  "measured_suite_coverage": {
+    "statement_percent": 81.47826086956522,
+    "branch_percent": 67.27272727272727,
+    "combined_percent": 78.3108108108108,
+    "note": "Only the coverage-instrumented pytest run; excludes spawned smoke subprocesses. Coverage is not a correctness score."
+  },
+  "candidate_matrix": {
+    "observations_per_run": 125,
+    "actors": 5,
+    "states": 5,
+    "actions": 5,
+    "scope": "One-step supported synthetic fixture; not exhaustive sequences or independent holdout"
+  },
+  "process_crash_recovery": {
+    "status": "PASS",
+    "termination_points": [
+      "after_state",
+      "after_effects",
+      "after_operation"
+    ],
+    "mechanism": "Separate subprocess os._exit(73), restart and retry",
+    "physical_power_loss": "NOT_RUN"
+  },
+  "http_server_smoke": {
+    "status": "PASS",
+    "mode": "actual CLI/Uvicorn/loopback TCP, offline provider",
+    "checks": [
+      "actual TCP runtime journey commits",
+      "actual TCP review/apply/export",
+      "cycle 1: assets and session gate",
+      "server restart retains baseline and case",
+      "cycle 2: assets and session gate"
+    ],
+    "live_provider_calls": 0,
+    "browser_network_navigation": "NOT_TESTED_BY_THIS_SCRIPT"
+  },
+  "chromium_component_smoke": {
+    "status": "PASS",
+    "mode": "Chromium DOM + FastAPI in-process transport bridge",
+    "checks": [
+      "three explicit interpretations",
+      "denial retains persisted state",
+      "teacher submits/recommends; registrar approves",
+      "state-view edit invalidates receipt and decision",
+      "explicit exact-subject approval and local apply",
+      "390px viewport no document-level horizontal overflow"
+    ],
+    "javascript_errors": [],
+    "network_e2e": "NOT_RUN_ENVIRONMENT_BROWSER_NAVIGATION_BLOCKED",
+    "download_button": "NOT_RUN",
+    "human_usability_study": "NOT_RUN",
+    "live_provider_calls": 0
+  },
+  "wheel_smoke": {
+    "status": "PASS",
+    "mode": "wheel installed into temporary target; current environment dependencies reused",
+    "checks": [
+      "wheel CRC and required resources",
+      "installed wheel source fixture matches",
+      "installed offline demo verifies without approval",
+      "installed export integrity command",
+      "installed compiler creates actual 125-cell runtime receipt"
+    ],
+    "clean_room_dependency_install": "NOT_RUN",
+    "live_provider_calls": 0
+  },
+  "browser_network_e2e": {
+    "status": "NOT_RUN_ENVIRONMENT_BLOCKED",
+    "observed": "ERR_BLOCKED_BY_ADMINISTRATOR before application load",
+    "policy_changed": false,
+    "download_button": "NOT_RUN"
+  },
+  "live_providers": {
+    "openrouter": {
+      "status": "NOT_RUN",
+      "contract_tests": "PASS_MOCK_TRANSPORT",
+      "reason": "No real credentials used"
+    },
+    "codex_chatgpt": {
+      "status": "NOT_RUN",
+      "contract_tests": "PASS_FAKE_PROCESS",
+      "reason": "Codex executable and saved login unavailable"
+    }
+  },
+  "acceptance_matrix_counts": {
+    "PASS_LOCAL": 17,
+    "PARTIAL": 9,
+    "NOT_RUN": 2
+  },
+  "unrun_release_gates": [
+    "Target Mac/Windows installation and browser E2E",
+    "Actual OpenRouter and saved-ChatGPT Codex calls",
+    "Independent source/credential review",
+    "Independent hidden mutation evaluation",
+    "Real human comprehension/productivity study",
+    "Dependency vulnerability and static type/lint audits",
+    "Institutional authentication and adversarial agent isolation"
+  ],
+  "evidence_boundaries": [
+    "Shipped source fixture is self-authored, not independent approval",
+    "HMAC is local integrity relative to a workspace key, not external attestation",
+    "No arbitrary-repository compiler or proof-assistant integration",
+    "No real production effects or institutional decisions",
+    "No model credentials, workspace databases or receipt keys bundled"
+  ]
+}

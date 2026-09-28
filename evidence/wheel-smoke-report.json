@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "mode": "wheel installed into temporary target; current environment dependencies reused",
+  "checks": [
+    "wheel CRC and required resources",
+    "installed wheel source fixture matches",
+    "installed offline demo verifies without approval",
+    "installed export integrity command",
+    "installed compiler creates actual 125-cell runtime receipt"
+  ],
+  "clean_room_dependency_install": "NOT_RUN",
+  "live_provider_calls": 0
+}

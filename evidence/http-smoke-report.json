@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "mode": "actual CLI/Uvicorn/loopback TCP, offline provider",
+  "checks": [
+    "actual TCP runtime journey commits",
+    "actual TCP review/apply/export",
+    "cycle 1: assets and session gate",
+    "server restart retains baseline and case",
+    "cycle 2: assets and session gate"
+  ],
+  "live_provider_calls": 0,
+  "browser_network_navigation": "NOT_TESTED_BY_THIS_SCRIPT"
+}

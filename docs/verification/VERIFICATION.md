@@ -1,0 +1,39 @@
+# Verification and validation — release envelope
+
+The authoritative machine-readable summary is `evidence/release-report.json`; raw tests are `evidence/tests.xml` and `evidence/tests.log`. Tests are authored with this implementation. Passing checks do not establish independent assurance, all possible executions or human benefit.
+
+## Executed checks
+
+The automated suite covers strict contracts, protected-policy mutations, semantic identities, fixed-point impact including a 1,001-node cyclic chain, invalid evidence shapes/coverage, subject substitution, agent capabilities, local review questions, stale decisions, baseline concurrency, replay identity/authority, effect atomicity, backend HTTP boundaries and provider adapter contracts.
+
+The candidate verifier executes **125 observations per run**: 5 synthetic actor fixtures × 5 candidate states × 5 actions. Baseline verification has 100. These are one-step experiments against the actual runtime with a separately written expected-outcome expression. They are not 125 independent studies or a theorem about arbitrary histories. The count of pytest executions is reported separately; neither count should be added into a misleading aggregate assurance score.
+
+Three tests terminate a separate worker with `os._exit(73)` after state update, after effects and after operation recording, before transaction commit. Restart observes no partial accepted state/audit/outbox/operation and retry succeeds. Other tests inject normal exceptions and competing updates. These are process-crash tests, not physical power-loss, disk-corruption or exhaustive scheduler tests.
+
+Provider tests use HTTP mock transports and fake Codex processes. They inspect arguments, required authentication mode, secret/environment isolation, schema envelopes, output rejection, sanitized errors and lack of silent retries. They do not validate a current account, model, real CLI executable or effective OS sandbox.
+
+The actual CLI/server was spawned and exercised over loopback TCP, including assets, session gating, request-to-review/apply/export and server restart persistence. Chromium executed the shipped browser JS/DOM against an in-process FastAPI transport bridge, including a denied action, semantic invalidation, approval and local apply. Screenshots are actual component-test renderings, not marketing mockups. A 390px layout overflow check passed; that is not comprehensive accessibility or usability validation.
+
+Direct Chromium navigation to the local server was blocked by an environment-wide browser policy before the application loaded. No browser policy was changed. The ordinary browser-network end-to-end test and browser download button remain **NOT_RUN_ENVIRONMENT_BLOCKED**. Real server TCP and bridged browser component tests are separately reported, not relabelled as that missing test.
+
+## Deliberately not claimed
+
+Live OpenRouter inference; live saved-ChatGPT Codex inference; Mac/Windows compatibility; all Python versions; independent hidden mutation evaluation; institutional identity; independent source review; theorem-prover proofs; physical crash durability; external notification delivery; arbitrary repository import; human comprehension/productivity benefit; end-to-end desktop installation; comprehensive accessibility or dependency-vulnerability audits.
+
+`ACCEPTANCE_MATRIX.csv` maps the original 28 criteria. PASS_LOCAL means only the declared synthetic/local portion was exercised. PARTIAL and NOT_RUN entries remain visible. AC12 is not fully accepted as originally phrased: its oracle is same-author and the later explicit rejection-source edit is a permitted change. AC08 and AC22 do not establish adversarial identity separation. AC26 and AC28 are unrun.
+
+## Repeat the tests
+
+`python scripts/verify_release.py` runs pytest, writes fresh raw results, and checks that the source still matches the release fixture; it never stamps changed code. It does not silently update the original release report. Use the HTTP and browser scripts for their separate levels. Review source/fixture changes before a new maintainer release.
+
+## Empirical validation protocol, not results
+
+For a real reviewer study, predefine matched tasks with authority, assignment, omitted effect and misleading-label defects. Counterbalance EIJA versus code/tests; randomise task order; separate training tasks; record correctness, critical misses, time to valid decision, agent-token spend, supervision, rework and delayed recall. Require a genuinely independent evaluator to author hidden cases, with provenance and contamination controls. Estimate uncertainty rather than calling small-sample point estimates proof. Stop and investigate any authority bypass even when average speed improves.
+
+Do not synthesize human observations and describe them as collected. This release supplies a testbed and protocol; no participants or user-study data are fabricated.
+
+## Recorded release result
+
+The final coverage-instrumented pytest run completed **88 passed, 0 failed, 0 errors, 0 skipped** in 9.79 seconds in this environment. Statement coverage was 81.5%; branch coverage was 67.3%. These coverage measurements exclude separate server/wheel subprocess smoke executions and are not a safety score.
+
+The original acceptance matrix currently has 17 PASS_LOCAL, 9 PARTIAL and 2 NOT_RUN entries. Counts do not hide the scope qualifications in those rows. The real TCP/server check, bridged Chromium component check and installed-wheel smoke each passed at their declared level.

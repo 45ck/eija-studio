@@ -1,0 +1,12 @@
+{
+  "openrouter": {
+    "status": "NOT_RUN",
+    "contract_tests": "PASS_MOCK_TRANSPORT",
+    "reason": "No real credentials used"
+  },
+  "codex_chatgpt": {
+    "status": "NOT_RUN",
+    "contract_tests": "PASS_FAKE_PROCESS",
+    "reason": "Codex executable and saved login unavailable"
+  }
+}

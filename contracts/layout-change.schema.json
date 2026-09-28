@@ -1,0 +1,30 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "node": {
+      "maxLength": 60,
+      "minLength": 1,
+      "title": "Node",
+      "type": "string"
+    },
+    "x": {
+      "maximum": 2000,
+      "minimum": 0,
+      "title": "X",
+      "type": "integer"
+    },
+    "y": {
+      "maximum": 2000,
+      "minimum": 0,
+      "title": "Y",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "node",
+    "x",
+    "y"
+  ],
+  "title": "LayoutChange",
+  "type": "object"
+}

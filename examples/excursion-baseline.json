@@ -1,0 +1,97 @@
+{
+  "schema_version": "eija.workflow.v1",
+  "id": "excursion",
+  "initial_state": "Draft",
+  "states": [
+    "Draft",
+    "Submitted",
+    "Approved",
+    "Rejected"
+  ],
+  "transitions": [
+    {
+      "id": "TR-SUBMIT",
+      "action": "Submit",
+      "from_state": "Draft",
+      "to_state": "Submitted",
+      "role": "Teacher",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:ExcursionSubmitted"
+      ],
+      "forbidden_effects": [
+        "PaymentCaptured",
+        "ParentDataExported"
+      ]
+    },
+    {
+      "id": "TR-APPROVE",
+      "action": "Approve",
+      "from_state": "Submitted",
+      "to_state": "Approved",
+      "role": "Registrar",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:ExcursionApproved"
+      ],
+      "forbidden_effects": [
+        "PaymentCaptured",
+        "ParentDataExported"
+      ]
+    },
+    {
+      "id": "TR-REJECT",
+      "action": "Reject",
+      "from_state": "Submitted",
+      "to_state": "Rejected",
+      "role": "Registrar",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:ExcursionRejected"
+      ],
+      "forbidden_effects": [
+        "PaymentCaptured",
+        "ParentDataExported"
+      ]
+    },
+    {
+      "id": "TR-REVISE",
+      "action": "Revise",
+      "from_state": "Rejected",
+      "to_state": "Draft",
+      "role": "Teacher",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:ExcursionReopened"
+      ],
+      "forbidden_effects": [
+        "PaymentCaptured",
+        "ParentDataExported"
+      ]
+    }
+  ]
+}

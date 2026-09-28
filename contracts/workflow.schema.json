@@ -1,0 +1,123 @@
+{
+  "$defs": {
+    "Transition": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z][A-Z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "action": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "Action",
+          "type": "string"
+        },
+        "from_state": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "From State",
+          "type": "string"
+        },
+        "to_state": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "To State",
+          "type": "string"
+        },
+        "role": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "Role",
+          "type": "string"
+        },
+        "guards": {
+          "items": {
+            "enum": [
+              "actor_active",
+              "role_current",
+              "actor_assigned",
+              "state_equals",
+              "expected_version",
+              "operation_binding"
+            ],
+            "type": "string"
+          },
+          "title": "Guards",
+          "type": "array"
+        },
+        "required_effects": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Required Effects",
+          "type": "array"
+        },
+        "forbidden_effects": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Forbidden Effects",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "action",
+        "from_state",
+        "to_state",
+        "role",
+        "guards",
+        "required_effects",
+        "forbidden_effects"
+      ],
+      "title": "Transition",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "eija.workflow.v1",
+      "default": "eija.workflow.v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "id": {
+      "const": "excursion",
+      "default": "excursion",
+      "title": "Id",
+      "type": "string"
+    },
+    "initial_state": {
+      "default": "Draft",
+      "title": "Initial State",
+      "type": "string"
+    },
+    "states": {
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 32,
+      "minItems": 1,
+      "title": "States",
+      "type": "array"
+    },
+    "transitions": {
+      "items": {
+        "$ref": "#/$defs/Transition"
+      },
+      "maxItems": 64,
+      "minItems": 1,
+      "title": "Transitions",
+      "type": "array"
+    }
+  },
+  "required": [
+    "states",
+    "transitions"
+  ],
+  "title": "Workflow",
+  "type": "object"
+}

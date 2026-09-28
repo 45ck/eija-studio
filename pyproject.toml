@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "eija-studio"
+version = "0.2.0"
+description = "Local executable intent and journey assurance: bounded workflow POC"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = ["fastapi==0.128.2", "uvicorn==0.48.0", "pydantic==2.13.4", "httpx==0.28.1"]
+
+[project.optional-dependencies]
+dev = ["pytest==9.0.2"]
+
+[project.scripts]
+eija = "eija_studio.interfaces.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+eija_studio = ["resources/**/*", "resources/*.json"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-ra"

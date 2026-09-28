@@ -1,0 +1,32 @@
+[
+  {
+    "name": "EIJA_Studio_Unified_POC_v0.1.zip",
+    "sha256": "8deabeff52e315103401a6c7e22a9f48e2125cb92a82851c20b933ee591413ee",
+    "bytes": 19400396,
+    "role": "input specification/audit, not integrated test evidence"
+  },
+  {
+    "name": "EIJA_Studio_Unified_POC_Specification.md",
+    "sha256": "4284db3d0b149fb0dd12f1cc7b7e7272d582e9d6aacebea7b4d845b4317f5bcd",
+    "bytes": 18138,
+    "role": "input specification/audit, not integrated test evidence"
+  },
+  {
+    "name": "EIJA_Studio_Consolidation_Audit.md",
+    "sha256": "9a60ec07b1ba61691c8bd5308d7ab39d4c240ccd8d8b459358fa21e7603fef29",
+    "bytes": 8772,
+    "role": "input specification/audit, not integrated test evidence"
+  },
+  {
+    "name": "A3_v09/src/eija/domain/model.py",
+    "sha256": "0ffa2fc2f8b0ad7475420f2784f280a02cd32dd5b615ad9260dd4c37aa5e0a42",
+    "bytes": 13190,
+    "role": "reviewed predecessor; new implementation reworked rather than copied intact"
+  },
+  {
+    "name": "A3_v09/src/eija/runtime/engine.py",
+    "sha256": "238478494fe5bb347fee284f9bb79ca06f2245203fa5568c3944669ce5b62860",
+    "bytes": 9219,
+    "role": "reviewed predecessor; new implementation reworked rather than copied intact"
+  }
+]

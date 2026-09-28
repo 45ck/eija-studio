@@ -1,0 +1,27 @@
+Name                                       Stmts   Miss Branch BrPart  Cover
+----------------------------------------------------------------------------
+src/eija_studio/__init__.py                    1      0      0      0   100%
+src/eija_studio/__main__.py                    2      2      0      0     0%
+src/eija_studio/adapters/__init__.py           0      0      0      0   100%
+src/eija_studio/adapters/identity.py          21      4      0      0    81%
+src/eija_studio/adapters/providers.py        121     27     28      8    75%
+src/eija_studio/adapters/receipts.py          23      1      2      1    92%
+src/eija_studio/adapters/sqlite_store.py     111     10     18      6    88%
+src/eija_studio/application/__init__.py        0      0      0      0   100%
+src/eija_studio/application/compiler.py       32      3     16      3    88%
+src/eija_studio/application/ports.py          21      0      0      0   100%
+src/eija_studio/application/runtime.py        60      5     34      5    89%
+src/eija_studio/application/service.py       176     10     42     11    90%
+src/eija_studio/application/verifier.py       45      2     12      2    93%
+src/eija_studio/bootstrap.py                  12      1      2      1    86%
+src/eija_studio/domain/__init__.py             0      0      0      0   100%
+src/eija_studio/domain/change_case.py         30      1      6      1    94%
+src/eija_studio/domain/evidence.py            66     10     44     10    82%
+src/eija_studio/domain/impact.py              27      1     12      1    95%
+src/eija_studio/domain/models.py             103      5     28      5    92%
+src/eija_studio/domain/policy.py              55      5     22      5    87%
+src/eija_studio/interfaces/__init__.py         0      0      0      0   100%
+src/eija_studio/interfaces/cli.py            118    118     46      0     0%
+src/eija_studio/interfaces/http.py           126      8     18      1    94%
+----------------------------------------------------------------------------
+TOTAL                                       1150    213    330     60    78%

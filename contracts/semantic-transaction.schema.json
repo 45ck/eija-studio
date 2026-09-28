@@ -1,0 +1,27 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "kind": {
+      "enum": [
+        "enable_recommendation",
+        "set_rejection_source"
+      ],
+      "title": "Kind",
+      "type": "string"
+    },
+    "rejection_source": {
+      "default": "Recommended",
+      "enum": [
+        "Submitted",
+        "Recommended"
+      ],
+      "title": "Rejection Source",
+      "type": "string"
+    }
+  },
+  "required": [
+    "kind"
+  ],
+  "title": "SemanticTransaction",
+  "type": "object"
+}

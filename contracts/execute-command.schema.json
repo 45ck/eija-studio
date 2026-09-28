@@ -1,0 +1,42 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "operation_id": {
+      "pattern": "^[A-Za-z0-9_-]{1,100}$",
+      "title": "Operation Id",
+      "type": "string"
+    },
+    "actor_id": {
+      "maxLength": 80,
+      "minLength": 1,
+      "title": "Actor Id",
+      "type": "string"
+    },
+    "instance_id": {
+      "maxLength": 80,
+      "minLength": 1,
+      "title": "Instance Id",
+      "type": "string"
+    },
+    "action": {
+      "maxLength": 60,
+      "minLength": 1,
+      "title": "Action",
+      "type": "string"
+    },
+    "expected_version": {
+      "minimum": 0,
+      "title": "Expected Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "operation_id",
+    "actor_id",
+    "instance_id",
+    "action",
+    "expected_version"
+  ],
+  "title": "ExecuteCommand",
+  "type": "object"
+}

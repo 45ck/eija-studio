@@ -1,0 +1,31 @@
+{
+  "trust_level": "self-authored-release-fixture-not-independent-review",
+  "files": {
+    "__init__.py": "07f42b9769931b6510484496ae0b6377dd3bfbd6d112fe4998add08c186aa180",
+    "__main__.py": "95393aece585db8a33fdb89094008c878d9d13155c86cad0884996ff76ab2b5e",
+    "adapters/__init__.py": "ca89e0fc7730c971388b6a39f5dad4c176c38945e0f2eff2ecda02f7d5942efe",
+    "adapters/identity.py": "efa615ef76557d3c46af0594f31e62565b423dfc9c6f0381f1d6d791239b13fa",
+    "adapters/providers.py": "9ae515c3f2c58dd78f3672c27bb1bd8695f0a8e41996948d082e9fecbc093afd",
+    "adapters/receipts.py": "586fcbcf22f5f97801318c30ca6648113d5fc7dad4aaab1d33d896a4778ae71b",
+    "adapters/sqlite_store.py": "ef227d79996e7847fb2d92a49b16e0faf017f6625cc7fd89ea155c62a791b647",
+    "application/__init__.py": "ca89e0fc7730c971388b6a39f5dad4c176c38945e0f2eff2ecda02f7d5942efe",
+    "application/compiler.py": "359a77564eac475598c41512edcf5938fcf4b2c9e851408ddbc2d52e9db243dc",
+    "application/ports.py": "5371461baebab05c39fa3b803e9c07c1cb1c4ddbe83586dbf217bc0633c5b7c5",
+    "application/runtime.py": "432e6ca5e0749722b58c7e0f9a9ec045fbf3a5c9fd75899b72d1170a00323540",
+    "application/service.py": "da6b49ed0249a48212c38ec09117a9850e05dfbf9132017bc7cf001a4b37e418",
+    "application/verifier.py": "efc57f83d1380ce144fdadc1f3aa8d80b733e57babb65287ef84113e5fa4c348",
+    "bootstrap.py": "7ff8f3b4ba040ba88f151ff9a5be1022287118aa47c41a5a02c1931f50f08032",
+    "domain/__init__.py": "ca89e0fc7730c971388b6a39f5dad4c176c38945e0f2eff2ecda02f7d5942efe",
+    "domain/change_case.py": "37680ce1b07d4964a15bd51c4f93f129081ee2a72c8360fcf7bc2e8d72b62585",
+    "domain/evidence.py": "8ff036991be6d08d65a196e2600c073c9e3a550b5c7ea08e7a90aac98f2ef079",
+    "domain/impact.py": "eef75a2a6e032fe70f6260b8c52233ad1b3b3c7610fa0ddb6b9ad50d7da1667f",
+    "domain/models.py": "eae77547d1b9c6d639d48474aaf2415aad3fac207777c55ab88d7dba009884fa",
+    "domain/policy.py": "08c93514ca7691f61797f9f373b33e63083f9b2df330868faddbcc7d69974beb",
+    "interfaces/__init__.py": "ca89e0fc7730c971388b6a39f5dad4c176c38945e0f2eff2ecda02f7d5942efe",
+    "interfaces/cli.py": "a7ab430f463ce8e6c4d1376a01750612387b9cb88eca0546f7c7e2b7061bf160",
+    "interfaces/http.py": "b6a629bdf6d73ce29bbd325c1bb1750afc90334b19e5e624146ba4832f81874e",
+    "resources/web/app.css": "3731536e34ae6cbe4986d7399bded7ef27dca6b8c94178404c21e06c1d83af54",
+    "resources/web/app.js": "44852a64b0e522cc7383b8574c511cd3f2a11e914a53e7688eb91f1a28301492",
+    "resources/web/index.html": "8666836379e1cf672961eb5acdad3c6bd9a87c5ca03c01943c1346312d3a58d0"
+  }
+}

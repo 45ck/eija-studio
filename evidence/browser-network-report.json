@@ -1,0 +1,6 @@
+{
+  "status": "NOT_RUN_ENVIRONMENT_BLOCKED",
+  "observed": "ERR_BLOCKED_BY_ADMINISTRATOR before application load",
+  "policy_changed": false,
+  "download_button": "NOT_RUN"
+}

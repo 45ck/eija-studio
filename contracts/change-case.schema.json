@@ -1,0 +1,366 @@
+{
+  "$defs": {
+    "Alternative": {
+      "additionalProperties": false,
+      "properties": {
+        "interpretation": {
+          "enum": [
+            "recommend_only",
+            "final_approval",
+            "confirm_only",
+            "unsupported"
+          ],
+          "title": "Interpretation",
+          "type": "string"
+        },
+        "explanation": {
+          "maxLength": 1600,
+          "minLength": 1,
+          "title": "Explanation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "interpretation",
+        "explanation"
+      ],
+      "title": "Alternative",
+      "type": "object"
+    },
+    "Proposal": {
+      "additionalProperties": false,
+      "properties": {
+        "summary": {
+          "maxLength": 1600,
+          "minLength": 1,
+          "title": "Summary",
+          "type": "string"
+        },
+        "alternatives": {
+          "items": {
+            "$ref": "#/$defs/Alternative"
+          },
+          "maxItems": 4,
+          "minItems": 1,
+          "title": "Alternatives",
+          "type": "array"
+        },
+        "unknowns": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 10,
+          "title": "Unknowns",
+          "type": "array"
+        }
+      },
+      "required": [
+        "summary",
+        "alternatives",
+        "unknowns"
+      ],
+      "title": "Proposal",
+      "type": "object"
+    },
+    "SemanticTransaction": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "enable_recommendation",
+            "set_rejection_source"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "rejection_source": {
+          "default": "Recommended",
+          "enum": [
+            "Submitted",
+            "Recommended"
+          ],
+          "title": "Rejection Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "SemanticTransaction",
+      "type": "object"
+    },
+    "Transition": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z][A-Z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "action": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "Action",
+          "type": "string"
+        },
+        "from_state": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "From State",
+          "type": "string"
+        },
+        "to_state": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "To State",
+          "type": "string"
+        },
+        "role": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "Role",
+          "type": "string"
+        },
+        "guards": {
+          "items": {
+            "enum": [
+              "actor_active",
+              "role_current",
+              "actor_assigned",
+              "state_equals",
+              "expected_version",
+              "operation_binding"
+            ],
+            "type": "string"
+          },
+          "title": "Guards",
+          "type": "array"
+        },
+        "required_effects": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Required Effects",
+          "type": "array"
+        },
+        "forbidden_effects": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Forbidden Effects",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "action",
+        "from_state",
+        "to_state",
+        "role",
+        "guards",
+        "required_effects",
+        "forbidden_effects"
+      ],
+      "title": "Transition",
+      "type": "object"
+    },
+    "Workflow": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "eija.workflow.v1",
+          "default": "eija.workflow.v1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "id": {
+          "const": "excursion",
+          "default": "excursion",
+          "title": "Id",
+          "type": "string"
+        },
+        "initial_state": {
+          "default": "Draft",
+          "title": "Initial State",
+          "type": "string"
+        },
+        "states": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 32,
+          "minItems": 1,
+          "title": "States",
+          "type": "array"
+        },
+        "transitions": {
+          "items": {
+            "$ref": "#/$defs/Transition"
+          },
+          "maxItems": 64,
+          "minItems": 1,
+          "title": "Transitions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "states",
+        "transitions"
+      ],
+      "title": "Workflow",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Aggregate boundary: transitions are mediated by the application and CAS store.",
+  "properties": {
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "version": {
+      "title": "Version",
+      "type": "integer"
+    },
+    "stage": {
+      "enum": [
+        "DRAFT",
+        "PROPOSED",
+        "PREVIEW",
+        "SAVED",
+        "VERIFIED",
+        "APPROVED",
+        "APPLIED",
+        "DISCARDED"
+      ],
+      "title": "Stage",
+      "type": "string"
+    },
+    "request": {
+      "title": "Request",
+      "type": "string"
+    },
+    "baseline_version": {
+      "title": "Baseline Version",
+      "type": "integer"
+    },
+    "baseline": {
+      "$ref": "#/$defs/Workflow"
+    },
+    "candidate": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Workflow"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "proposal": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Proposal"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "provider_run": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Provider Run"
+    },
+    "selected_meaning": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Selected Meaning"
+    },
+    "selected_by": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Selected By"
+    },
+    "transactions": {
+      "items": {
+        "$ref": "#/$defs/SemanticTransaction"
+      },
+      "title": "Transactions",
+      "type": "array"
+    },
+    "layout": {
+      "additionalProperties": {
+        "additionalProperties": {
+          "type": "integer"
+        },
+        "type": "object"
+      },
+      "title": "Layout",
+      "type": "object"
+    },
+    "receipts": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Receipts",
+      "type": "array"
+    },
+    "decision": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Decision"
+    },
+    "created_at": {
+      "title": "Created At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "version",
+    "stage",
+    "request",
+    "baseline_version",
+    "baseline",
+    "candidate",
+    "proposal",
+    "provider_run",
+    "selected_meaning",
+    "selected_by",
+    "transactions",
+    "layout",
+    "receipts",
+    "decision",
+    "created_at"
+  ],
+  "title": "ChangeCase",
+  "type": "object"
+}

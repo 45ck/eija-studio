@@ -1,0 +1,154 @@
+"""Durable local unit of work. One database transaction owns state + operation + effects."""
+from __future__ import annotations
+from contextlib import contextmanager, closing
+import json, os, sqlite3
+from pathlib import Path
+from eija_studio.domain.models import Workflow, DomainError, canonical
+from eija_studio.domain.policy import baseline
+
+SCHEMA = """
+CREATE TABLE IF NOT EXISTS schema_info(version INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS active(id INTEGER PRIMARY KEY CHECK(id=1), version INTEGER NOT NULL, model TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS cases(id TEXT PRIMARY KEY, version INTEGER NOT NULL, body TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS actors(id TEXT PRIMARY KEY, role TEXT NOT NULL, active INTEGER NOT NULL, assigned INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS instances(id TEXT PRIMARY KEY, case_id TEXT NOT NULL, model_hash TEXT NOT NULL, state TEXT NOT NULL, version INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS operations(id TEXT PRIMARY KEY, binding TEXT NOT NULL, body TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS audit(seq INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT NOT NULL, body TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS outbox(id TEXT PRIMARY KEY, case_id TEXT NOT NULL, operation_id TEXT NOT NULL, kind TEXT NOT NULL, body TEXT NOT NULL);
+"""
+FIXTURE_ACTORS = (
+    ("teacher-assigned", "Teacher", 1, 1), ("teacher-unassigned", "Teacher", 1, 0),
+    ("teacher-revoked", "Teacher", 0, 1), ("registrar", "Registrar", 1, 0), ("viewer", "Viewer", 1, 0),
+)
+
+class Session:
+    def __init__(self, connection: sqlite3.Connection):
+        self.db = connection
+
+    def load_case(self, case_id: str) -> dict:
+        row = self.db.execute("SELECT body FROM cases WHERE id=?", (case_id,)).fetchone()
+        if row is None:
+            raise DomainError("NOT_FOUND", "Change Case not found")
+        return json.loads(row[0])
+
+    def save_case(self, case: dict, expected: int) -> None:
+        case["version"] = expected + 1
+        changed = self.db.execute("UPDATE cases SET version=?, body=? WHERE id=? AND version=?",
+                                  (case["version"], canonical(case), case["id"], expected)).rowcount
+        if changed != 1:
+            raise DomainError("STALE_VERSION", "Case changed; reload before acting")
+
+    def insert_case(self, case: dict) -> None:
+        self.db.execute("INSERT INTO cases VALUES(?,?,?)", (case["id"], case["version"], canonical(case)))
+
+    def active(self) -> dict:
+        row = self.db.execute("SELECT version,model FROM active WHERE id=1").fetchone()
+        return {"version": row[0], "model": json.loads(row[1])}
+
+    def set_active(self, model: Workflow, expected: int) -> None:
+        n = self.db.execute("UPDATE active SET version=version+1,model=? WHERE id=1 AND version=?", (canonical(model), expected)).rowcount
+        if n != 1:
+            raise DomainError("STALE_BASELINE", "The local baseline changed; no automatic rebase")
+
+    def event(self, kind: str, body: dict) -> None:
+        self.db.execute("INSERT INTO audit(kind,body) VALUES(?,?)", (kind, canonical(body)))
+
+    def actor(self, actor_id: str) -> dict:
+        row = self.db.execute("SELECT * FROM actors WHERE id=?", (actor_id,)).fetchone()
+        if row is None:
+            raise DomainError("UNKNOWN_ACTOR", "Actor is not in the trusted fixture directory")
+        return dict(row)
+
+    def create_instance(self, item: dict) -> None:
+        self.db.execute("INSERT INTO instances VALUES(:id,:case_id,:model_hash,:state,:version)", item)
+
+    def find_instance(self, instance_id: str, case_id: str) -> dict | None:
+        row = self.db.execute("SELECT * FROM instances WHERE id=? AND case_id=?", (instance_id, case_id)).fetchone()
+        return dict(row) if row else None
+
+    def update_instance(self, item: dict, expected: int) -> None:
+        n = self.db.execute("UPDATE instances SET state=?,version=? WHERE id=? AND version=?",
+            (item["state"], item["version"], item["id"], expected)).rowcount
+        if n != 1:
+            raise DomainError("STALE_VERSION", "Concurrent state update")
+
+    def find_operation(self, operation_id: str) -> dict | None:
+        row = self.db.execute("SELECT binding,body FROM operations WHERE id=?", (operation_id,)).fetchone()
+        return {"binding": row[0], "result": json.loads(row[1])} if row else None
+
+    def record_operation(self, operation_id: str, binding: str, result: dict) -> None:
+        self.db.execute("INSERT INTO operations VALUES(?,?,?)", (operation_id, binding, canonical(result)))
+
+    def enqueue(self, case_id: str, operation_id: str, effect: str) -> None:
+        self.db.execute("INSERT INTO outbox VALUES(?,?,?,?,?)", (operation_id + ":" + effect, case_id,
+            operation_id, effect, canonical({"recipient": "registrar", "fixture_only": True})))
+
+    def observations(self, case_id: str) -> dict:
+        events = []
+        for row in self.db.execute("SELECT seq,kind,body FROM audit ORDER BY seq"):
+            body = json.loads(row[2])
+            if body.get("case_id") == case_id:
+                events.append({"seq": row[0], "kind": row[1], "body": body})
+        return {"events": events, "outbox": [dict(r) for r in self.db.execute("SELECT * FROM outbox WHERE case_id=?", (case_id,))],
+            "instances": [dict(r) for r in self.db.execute("SELECT * FROM instances WHERE case_id=?", (case_id,))]}
+
+    def effect_counts(self) -> dict:
+        return {t: self.db.execute("SELECT COUNT(*) FROM " + t).fetchone()[0] for t in ("audit", "outbox", "operations")}
+
+class SQLiteStore:
+    def __init__(self, directory: Path):
+        self.directory = Path(directory).resolve()
+        self.directory.mkdir(parents=True, exist_ok=True, mode=0o700)
+        self.path = self.directory / "studio.sqlite3"
+        with self.connection() as db:
+            db.executescript(SCHEMA)
+            row = db.execute("SELECT version FROM schema_info").fetchone()
+            if row and row[0] != 1:
+                raise DomainError("SCHEMA_MIGRATION_REQUIRED", "Unsupported database version; export before upgrading")
+            if row is None:
+                db.execute("INSERT INTO schema_info VALUES(1)")
+            db.execute("INSERT OR IGNORE INTO active VALUES(1,0,?)", (canonical(baseline()),))
+            db.executemany("INSERT OR IGNORE INTO actors VALUES(?,?,?,?)", FIXTURE_ACTORS)
+        try:
+            os.chmod(self.directory, 0o700); os.chmod(self.path, 0o600)
+        except OSError:
+            pass  # Windows ACLs require a separate platform review.
+
+    def _connect(self) -> sqlite3.Connection:
+        db = sqlite3.connect(self.path, timeout=10)
+        db.row_factory = sqlite3.Row
+        db.execute("PRAGMA foreign_keys=ON")
+        db.execute("PRAGMA journal_mode=WAL")
+        db.execute("PRAGMA synchronous=FULL")
+        return db
+
+    @contextmanager
+    def connection(self):
+        db = self._connect()
+        try:
+            with db:
+                yield db
+        finally:
+            db.close()
+
+    @contextmanager
+    def transaction(self):
+        db = self._connect()
+        try:
+            db.execute("BEGIN IMMEDIATE")
+            yield Session(db)
+            db.commit()
+        except BaseException:
+            db.rollback()
+            raise
+        finally:
+            db.close()
+
+    def list_cases(self) -> list[dict]:
+        with self.connection() as db:
+            return [json.loads(r[0]) for r in db.execute("SELECT body FROM cases ORDER BY rowid DESC")]
+
+    def backup(self, target: Path) -> None:
+        """SQLite online backup: do not copy the .sqlite3 file without its WAL."""
+        with self.connection() as source, closing(sqlite3.connect(target)) as destination:
+            source.backup(destination)
