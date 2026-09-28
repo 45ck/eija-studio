@@ -17,6 +17,9 @@ TITLE = "The assurance loop: intent to applied baseline"
 
 def run(scene: Scene, server: RunningServer) -> None:
     scene.goto(server.launch_url)
+    # The Studio ignores clicks while its startup request is still running (`aria-busy` on <body>); an instant
+    # dry run would click Create into that window and lose it. Wait for the page to go idle first.
+    scene.wait_for("body:not([aria-busy])")
     scene.title_card("EIJA Studio", "See meaning. Prove change. An AI proposes, a kernel checks, you decide.")
 
     # Act 1 - intent, then explicit meanings ------------------------------------------------------
@@ -39,7 +42,7 @@ def run(scene: Scene, server: RunningServer) -> None:
 
     # Act 2 - one model, synchronised views --------------------------------------------------------
     scene.click('[data-tab="impact"]')
-    scene.caption("One substrate, synchronised views: the rule table and state flow derive from the same model.")
+    scene.caption("One substrate, synchronised views: the rule table and state flow derive from one model.")
     scene.highlight("#state-flow")
     scene.highlight("#rule-table")
 
@@ -69,11 +72,15 @@ def run(scene: Scene, server: RunningServer) -> None:
     if not server.release_fixture_matches:
         scene.skip("Act 4 (verify, approve, apply): the owner has not restamped the release fixture, so "
                    "verification returns SOURCE_REVIEW_REQUIRED. Agents never stamp; not exercised.")
+        # Exercise the gate rather than describe it: clicking Verify must be refused with the real error.
+        # Only after the Studio has shown that refusal do we narrate it, so the caption matches the screen.
+        scene.click("#verify")
+        scene.expect_text("#notice", "SOURCE_REVIEW_REQUIRED")
         scene.caption("Verification is blocked until the owner reviews changed source - by design.")
         scene.highlight("#notice", duration_ms=1600)
         scene.clear_caption()
         scene.title_card("Intent, meaning, consequence",
-                         "Evidence and the human decision come next - once the owner stamps the reviewed release.")
+                         "Evidence and the human decision come next - once the owner stamps the release.")
         return
 
     scene.caption("Evidence is computed from 125 executed observations - a green label is never trusted.")
@@ -81,7 +88,7 @@ def run(scene: Scene, server: RunningServer) -> None:
     scene.expect_text("#notice", "Bounded runtime verification finished")
     scene.highlight("#claims")
 
-    scene.caption("Human understanding stays UNKNOWN. The owner answers, acknowledges, and approves the exact revision.")
+    scene.caption("Human understanding stays UNKNOWN. The owner answers, then approves the exact revision.")
     scene.highlight(".unknown")
     scene.type_text("#q-authority", "Registrar")
     scene.type_text("#q-assignment", "No")
@@ -95,7 +102,8 @@ def run(scene: Scene, server: RunningServer) -> None:
     scene.expect_text("#notice", "Applied to the local demo baseline only")
     scene.expect_text("#case-stage", "APPLIED")
     scene.clear_caption()
-    scene.title_card("Meaning reviewed. Evidence computed. Decision yours.", "EIJA Studio - open source, Apache-2.0")
+    scene.title_card("Meaning reviewed. Evidence computed. Decision yours.",
+                     "EIJA Studio - open source, Apache-2.0")
 
 
 def _act(scene: Scene, action: str) -> None:

@@ -12,14 +12,22 @@ Two modes share one code path:
   cosmetics skipped: no video, no overlay, no delays. A scenario that references a control the Studio
   no longer has fails here, so demos double as a fast scripted UI regression check.
 """
+# ruff: noqa: PLC0415
+# PLC0415 (import outside top level) is intentional in this file: Playwright is the optional `demos` extra,
+# so it is imported lazily inside the functions that need it. That keeps `import demos.lib` (and therefore
+# `python -m demos list|registry`) working without it; the CLI preflights the extra and reports NOT_RUN.
 from __future__ import annotations
 
 import random
 import time
+from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterator
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from playwright.sync_api import Page
 
 # Injected once per page. Deliberately asset-free so a scenario needs nothing beyond Playwright.
 _OVERLAY_CSS = """
@@ -52,20 +60,11 @@ _OVERLAY_JS = (
 _VISIBLE_TIMEOUT_MS = 10_000
 
 
-@dataclass(frozen=True)
-class Waypoint:
-    """One point on a cursor path. `hold_ms` pauses there before continuing (record mode only)."""
-
-    x: float
-    y: float
-    hold_ms: int = 0
-
-
 @dataclass
 class Scene:
     """The narration surface a scenario script calls into. One Scene per take."""
 
-    page: object
+    page: Page
     dry_run: bool
     seed: int = 0
     skipped: list[str] = field(default_factory=list)
@@ -73,7 +72,8 @@ class Scene:
     _rng: random.Random = field(init=False)
 
     def __post_init__(self) -> None:
-        self._rng = random.Random(self.seed)
+        # Typing cadence only: it needs to look human, not be unpredictable; the seed just fixes the cadence.
+        self._rng = random.Random(self.seed)  # noqa: S311
 
     # -- lifecycle --------------------------------------------------------------------------------
 
@@ -84,6 +84,10 @@ class Scene:
         if not self.dry_run:
             self.page.add_style_tag(content=_OVERLAY_CSS)
             self.page.evaluate(_OVERLAY_JS)
+
+    def wait_for(self, selector: str, *, timeout_ms: int = _VISIBLE_TIMEOUT_MS) -> None:
+        """Wait (in both modes) until `selector` matches, e.g. until startup requests have finished."""
+        self.page.wait_for_selector(selector, state="attached", timeout=timeout_ms)
 
     def skip(self, reason: str) -> None:
         """Record that part of a scenario could not run (missing prerequisite). Never silent."""
@@ -101,7 +105,7 @@ class Scene:
         self.page.wait_for_timeout(650)  # let the smooth scroll settle before measuring
         box = locator.bounding_box()
         if box is None:
-            raise AssertionError(f"target has no layout box: {target!r}")
+            raise ValueError(f"target has no layout box: {target!r}")
         self._animate_to(box["x"] + box["width"] / 2, box["y"] + box["height"] / 2, duration_ms)
 
     def click(self, target: str, *, duration_ms: int = 550) -> None:
@@ -156,7 +160,8 @@ class Scene:
 
         The caption stays up until the next caption or `clear_caption()`, so the words never
         disappear while the viewer is still looking at the thing they describe."""
-        assert text.strip(), "caption text must not be empty"
+        if not text.strip():
+            raise ValueError("caption text must not be empty")
         if self.dry_run:
             return
         self.page.evaluate(
@@ -172,7 +177,8 @@ class Scene:
 
     def title_card(self, title: str, subtitle: str = "", *, hold_ms: int = 2600) -> None:
         """Full-screen title/end card that fades in over the page and out again."""
-        assert title.strip(), "title must not be empty"
+        if not title.strip():
+            raise ValueError("title must not be empty")
         if self.dry_run:
             return
         self.clear_caption()
@@ -186,10 +192,6 @@ class Scene:
         self.wait(hold_ms)
         self.page.evaluate("() => document.getElementById('__demo_card')?.classList.remove('show')")
         self.wait(550)
-
-    def beat(self, ms: int = 700) -> None:
-        """A deliberate pause so the viewer can take in what just changed."""
-        self.wait(ms)
 
     def expect_text(self, target: str, needle: str, *, timeout_ms: int = 15_000) -> None:
         """Assert (in both modes) that `target` shows `needle`: the demo is also an e2e check."""
@@ -231,6 +233,11 @@ class Scene:
         self.page.wait_for_timeout(180)
 
 
+class BrowserUnavailableError(RuntimeError):
+    """The browser could not be launched (Chrome not installed, sandbox refused): a missing prerequisite,
+    reported as NOT_RUN by the CLI. Errors raised while a scenario runs are not this type: those fail."""
+
+
 class Recorder:
     """Launches the installed system Chrome (no browser download) and yields a `Scene`."""
 
@@ -240,15 +247,20 @@ class Recorder:
 
     @contextmanager
     def session(self, out_dir: Path, *, dry_run: bool = False, seed: int = 0) -> Iterator[Scene]:
-        """Yield a `Scene` on a real page. In record mode the video lands under `out_dir`."""
+        """Yield a `Scene` on a real page. In record mode the video lands under `out_dir`; a dry run
+        writes nothing to disk."""
+        from playwright.sync_api import Error as PlaywrightError
         from playwright.sync_api import sync_playwright
 
-        out_dir.mkdir(parents=True, exist_ok=True)
         size = {"width": self.viewport[0], "height": self.viewport[1]}
         with sync_playwright() as pw:
-            browser = pw.chromium.launch(channel="chrome", headless=self.headless)
-            options: dict = {"viewport": size}
+            try:
+                browser = pw.chromium.launch(channel="chrome", headless=self.headless)
+            except PlaywrightError as error:
+                raise BrowserUnavailableError(f"could not launch the system Chrome: {error}") from error
+            options: dict[str, Any] = {"viewport": size}
             if not dry_run:
+                out_dir.mkdir(parents=True, exist_ok=True)
                 # The Studio ships a strict CSP (style-src 'self'), which rightly blocks the injected
                 # cursor/caption styles. Bypass it for this recording context ONLY; the app's own
                 # policy is untouched and dry runs (which inject nothing) keep the real CSP.

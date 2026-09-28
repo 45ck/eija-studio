@@ -25,7 +25,7 @@ from radon.visitors import Function
 
 ROOT = Path(__file__).resolve().parents[2]
 BASELINE = Path(__file__).with_name("complexity_baseline.json")
-DEFAULT_ROOTS = ("src/eija_studio", "quality")
+DEFAULT_ROOTS = ("src/eija_studio", "quality", "demos")
 # Cyclomatic complexity 10 is the top of radon rank B. Rank C starts at 11.
 DEFAULT_MAX = 10
 UPDATE = "python -m quality.gates.complexity_ratchet --update"

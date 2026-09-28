@@ -54,7 +54,7 @@ def architecture(session: nox.Session) -> None:
 @nox.session(python=False, tags=["fast", "full"])
 def complexity(session: nox.Session) -> None:
     """xenon module/average rank ceilings plus the per-function ratchet."""
-    _run(session, "xenon", "--max-average", "A", "--max-modules", "D", "src", "quality")
+    _run(session, "xenon", "--max-average", "A", "--max-modules", "D", "src", "quality", "demos")
     _run(session, "quality.gates.complexity_ratchet", *session.posargs)
 
 

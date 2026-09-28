@@ -6,11 +6,12 @@ never a stub file pretending to run.
 """
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass
 from importlib.util import find_spec
 from pathlib import Path
-from typing import Literal
+from typing import Literal, cast
+
+from demos.manifest import load_manifest, manifest_path, stale_warnings, video_problems
 
 Status = Literal["recorded", "recorded-partial", "scripted-not-recorded", "blocked"]
 
@@ -46,7 +47,7 @@ class Scenario:
     def manifest(self, root: Path = ROOT) -> Path:
         """Small committed evidence (hash, size, platform, skipped acts). The video itself is a large
         binary kept out of git (`demos/output/`, gitignored) and published as a release asset."""
-        return root / "demos" / "recordings" / f"{self.key}.json"
+        return manifest_path(self.key, root)
 
 
 SCENARIOS: tuple[Scenario, ...] = (
@@ -97,28 +98,52 @@ def check_consistency(scenarios: tuple[Scenario, ...] = SCENARIOS, root: Path = 
     problems: list[str] = []
     keys = [s.key for s in scenarios]
     problems += [f"duplicate key: {k}" for k in sorted({k for k in keys if keys.count(k) > 1})]
-    for s in scenarios:
-        unknown = sorted(set(s.depends_on) - KNOWN_LANES)
-        if unknown:
-            problems.append(f"{s.key}: unknown lane(s) {unknown}")
-        has_module = find_spec(s.module) is not None
-        if s.status == "blocked" and has_module:
-            problems.append(f"{s.key}: blocked scenario must not have a module (ADR-0048)")
-        if s.status != "blocked" and not has_module:
-            problems.append(f"{s.key}: status {s.status!r} requires module {s.module}")
-        manifest = s.manifest(root)
-        recorded = s.status in ("recorded", "recorded-partial")
-        if recorded and not manifest.exists():
-            problems.append(f"{s.key}: status {s.status!r} but manifest {manifest.name} is missing")
-        elif not recorded and manifest.exists():
-            problems.append(f"{s.key}: manifest exists but status is {s.status!r}")
-        elif recorded:
-            skipped = json.loads(manifest.read_bytes().decode("utf-8")).get("skipped", [])
-            if s.status == "recorded" and skipped:
-                problems.append(f"{s.key}: 'recorded' requires no skipped acts, manifest lists {len(skipped)}; use 'recorded-partial'")
-            if s.status == "recorded-partial" and not skipped:
-                problems.append(f"{s.key}: 'recorded-partial' but the manifest lists no skipped acts; use 'recorded'")
+    for scenario in scenarios:
+        problems += _check_scenario(scenario, root)
     return problems
+
+
+def _check_scenario(s: Scenario, root: Path) -> list[str]:
+    problems: list[str] = []
+    unknown = sorted(set(s.depends_on) - KNOWN_LANES)
+    if unknown:
+        problems.append(f"{s.key}: unknown lane(s) {unknown}")
+    has_module = find_spec(s.module) is not None
+    if s.status == "blocked" and has_module:
+        problems.append(f"{s.key}: blocked scenario must not have a module (ADR-0048)")
+    if s.status != "blocked" and not has_module:
+        problems.append(f"{s.key}: status {s.status!r} requires module {s.module}")
+    return problems + _check_manifest(s, root)
+
+
+def _check_manifest(s: Scenario, root: Path) -> list[str]:
+    manifest = s.manifest(root)
+    if s.status not in ("recorded", "recorded-partial"):
+        return [f"{s.key}: manifest exists but status is {s.status!r}"] if manifest.exists() else []
+    if not manifest.exists():
+        return [f"{s.key}: status {s.status!r} but manifest {manifest.name} is missing"]
+    loaded, problems = load_manifest(s.key, root)
+    if loaded is None:
+        return problems
+    skipped = cast("list[str]", loaded["skipped"])  # shape-checked by load_manifest
+    if s.status == "recorded" and skipped:
+        problems.append(f"{s.key}: 'recorded' requires no skipped acts, manifest lists {len(skipped)}; "
+                        "use 'recorded-partial'")
+    if s.status == "recorded-partial" and not skipped:
+        problems.append(f"{s.key}: 'recorded-partial' but the manifest lists no skipped acts; use 'recorded'")
+    return problems + video_problems(s.key, loaded, root)
+
+
+def manifest_warnings(scenarios: tuple[Scenario, ...] = SCENARIOS, root: Path = ROOT) -> list[str]:
+    """Non-failing notes (a recording that predates the current script). Empty for unreadable manifests:
+    those are already failures in `check_consistency`."""
+    notes: list[str] = []
+    for s in scenarios:
+        if s.status in ("recorded", "recorded-partial") and s.manifest(root).exists():
+            loaded, _ = load_manifest(s.key, root)
+            if loaded is not None:
+                notes += stale_warnings(s.key, loaded, root)
+    return notes
 
 
 def render_markdown(scenarios: tuple[Scenario, ...] = SCENARIOS) -> str:
@@ -128,17 +153,21 @@ def render_markdown(scenarios: tuple[Scenario, ...] = SCENARIOS) -> str:
     lines = [
         "# Demo scenario registry",
         "",
-        "<!-- Generated by `python -m demos registry --write` from demos/scenarios/registry.py. Do not edit. -->",
+        "<!-- Generated by `python -m demos registry --write` from demos/scenarios/registry.py. "
+        "Do not edit. -->",
         "",
         f"**{counts['recorded']} recorded, {counts['recorded-partial']} recorded in part (an act was skipped "
         f"and is listed in its manifest), {counts['scripted-not-recorded']} scripted (not yet recorded), "
-        f"{counts['blocked']} blocked** on other lanes ([ADR-0048](../../docs/adr/0048-scenario-dependency-gating.md)).",
+        f"{counts['blocked']} blocked** on other lanes "
+        "([ADR-0048](../../docs/adr/0048-scenario-dependency-gating.md)).",
         "",
         "| Scenario | Status | Waits for | Story |",
         "|---|---|---|---|",
     ]
     for s in scenarios:
-        waits = ", ".join(f"`{d}`" + (" (wave 2)" if d in WAVE2_LANES else "") for d in s.depends_on) or "nothing"
+        waits = ", ".join(
+            f"`{d}`" + (" (wave 2)" if d in WAVE2_LANES else "") for d in s.depends_on
+        ) or "nothing"
         lines.append(f"| `{s.key}` — {s.title} | {s.status} | {waits} | {s.story} |")
     lines += ["", "Wave-2 lanes are capabilities the owner asked to demo that no wave-1 lane delivers.", ""]
     return "\n".join(lines)
