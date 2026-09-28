@@ -10,7 +10,8 @@ from .cli_base import CliProposalProvider, Extracted, Invocation, LoginState, St
 class CodexProvider(CliProposalProvider):
     name, label, default_executable = "codex", "Codex", "codex"
     help_args = ("exec", "--help")
-    required_flags = ("--output-schema", "--ephemeral", "--ignore-user-config", "--sandbox", "--output-last-message", "--skip-git-repo-check")
+    required_flags = ("--output-schema", "--ephemeral", "--ignore-user-config", "--sandbox", "--output-last-message", "--skip-git-repo-check",
+                      "--ignore-rules", "--cd")
     extra_env = frozenset({"CODEX_HOME"})  # a directory path; auth still lives in the CLI's own login
 
     def login_state(self, status: StatusRunner) -> LoginState:
@@ -40,5 +41,5 @@ class CodexProvider(CliProposalProvider):
             text = output.read_text(encoding="utf-8")
         except (OSError, UnicodeError):
             raise self.fail("PROVIDER_OUTPUT_INVALID") from None
-        return Extracted(text, self.model or "codex-default",
+        return Extracted(text, "",  # the CLI does not report which model ran; a requested --model is not evidence of it
                          {"accounting": "Check Codex; this adapter does not infer USD cost from subscription usage"})

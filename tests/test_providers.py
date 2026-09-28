@@ -51,7 +51,7 @@ def test_codex_invocation_reuses_cli_auth_without_exposing_keys(monkeypatch):
         captured.append((args,kwargs))
         assert "OPENROUTER_API_KEY" not in kwargs["env"] and "CODEX_API_KEY" not in kwargs["env"]
         if args[1:]==["--version"]:return subprocess.CompletedProcess(args,0,"codex-cli 0.0.0","")
-        if args[1:]==["exec","--help"]:return subprocess.CompletedProcess(args,0,"--output-schema --ephemeral --ignore-user-config --sandbox --output-last-message --skip-git-repo-check","")
+        if args[1:]==["exec","--help"]:return subprocess.CompletedProcess(args,0,"--output-schema --ephemeral --ignore-user-config --sandbox --output-last-message --skip-git-repo-check --ignore-rules --cd","")
         if args[1:]==["login","status"]:return subprocess.CompletedProcess(args,0,"Logged in using ChatGPT","")
         assert "--ignore-user-config" in args and "read-only" in args and "-"==args[-1]
         assert 'forced_login_method="chatgpt"' in args and "features.apps=false" in args
@@ -148,3 +148,12 @@ def test_anthropic_api_needs_a_key_from_the_environment(monkeypatch):
     assert not p.doctor()["ready"]
     with pytest.raises(DomainError) as e:p.propose("r",baseline())
     assert e.value.code=="PROVIDER_NOT_CONFIGURED"
+
+
+def test_anthropic_api_requires_an_explicit_model_and_has_no_default(monkeypatch):
+    monkeypatch.setenv("ANTHROPIC_API_KEY","test-secret")
+    p=AnthropicApiProvider()
+    assert p.model=="" and not p.doctor()["ready"]
+    with pytest.raises(DomainError) as e:p.propose("r",baseline())
+    assert e.value.code=="PROVIDER_NOT_CONFIGURED" and "EIJA_MODEL" in str(e.value)
+    assert AnthropicApiProvider("some-model").doctor()["ready"]

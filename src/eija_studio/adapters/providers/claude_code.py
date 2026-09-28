@@ -32,7 +32,7 @@ class ClaudeCodeProvider(CliProposalProvider):
         if result.returncode != 0 or not isinstance(data, dict):
             return LoginState("NOT_LOGGED_IN", "claude auth status did not report a login")
         if data.get("loggedIn") is True and data.get("authMethod") == "claude.ai":
-            return LoginState("LOGGED_IN", f"claude.ai subscription login ({data.get('subscriptionType', 'plan unknown')})")
+            return LoginState("LOGGED_IN", "claude.ai subscription login")  # plan tier deliberately not recorded
         return LoginState("NOT_LOGGED_IN", "Not a claude.ai subscription login (use the Anthropic API provider for API keys)")
 
     def invocation(self, work: Path) -> Invocation:

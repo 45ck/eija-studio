@@ -7,8 +7,8 @@
 | Web API | FastAPI, Uvicorn, Starlette | — | `interfaces/http.py` | Thin interface layer only |
 | Contracts and validation | Pydantic v2, JSON Schema | attrs, msgspec | `domain/models.py` | Domain contracts are the kernel |
 | Persistence | SQLite (stdlib) | SQLAlchemy | `adapters/sqlite_store.py` | Unit-of-work semantics are kernel invariants; replaceable behind the `UnitOfWork` port |
-| HTTP client | httpx | requests | `adapters/providers/openrouter.py`, `anthropic_api.py` | — |
-| Test runner | pytest | unittest | — | — |
+| HTTP client | httpx | requests, official `anthropic` SDK (a second HTTP stack and vendor-specific retries; raw Messages API over the shared bounded POST keeps one mockable transport with no redirects or env proxy) | `adapters/providers/_http.py` (bounded POST), `openrouter.py`, `anthropic_api.py` | Size cap while streaming, no redirects, stable error codes; replace with the SDK if the request shape becomes hard to keep in sync |
+| Test runner | pytest (incl. parametrization for the provider contract suite, `tests/test_provider_contract.py`) | unittest | — | — |
 | Gate orchestration | nox | tox, just, make | `noxfile.py` plugin loader (15 lines) | — |
 | Hook enforcement | [noslop](https://github.com/45ck/noslop) | pre-commit, husky | — | — |
 | ADR format | MADR | Nygard ADRs, log4brains | — | — |
@@ -26,5 +26,6 @@
 | Dependency hygiene | [deptry](https://deptry.com/) | pip-check-reqs, creosote | — | — |
 | Vulnerability audit | [pip-audit](https://github.com/pypa/pip-audit) | safety, OSV-Scanner | — | — |
 | Hook wiring | noslop hooks and Claude guardrails, adapted | pre-commit, husky | `.githooks/run-nox` (about 20 lines of shell) | noslop's Python pack hard-codes other gates; see ADR-0036 |
+| Live provider smoke (consent gate, evidence record) | The vendor CLIs themselves | — | `scripts/live_provider_smoke.py` | Consent gate and evidence recording only; contract tests use pytest (see the Test runner row) |
 
 Lanes still to add rows: providers (agent CLIs), diagrams (Mermaid, PlantUML, Graphviz), formal (Bend, TLA+/TLC, Z3), testing (Hypothesis), mutation, metrics (radon, grimp), HCI (Playwright, axe-core), agents (MCP Python SDK), tracing (OpenFastTrace), knowledge base ([OKF v0.2](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md)), docs.

@@ -12,6 +12,7 @@ from __future__ import annotations
 import os
 import re
 import tempfile
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Mapping
@@ -31,6 +32,12 @@ BASE_ENV_ALLOW = frozenset({
 SECRET_NAME = re.compile(r"KEY|TOKEN|SECRET|PASSW|CREDENTIAL|AUTH|COOKIE|SESSION_ID", re.IGNORECASE)
 PROBE_TIMEOUT = 20.0
 _ANSI = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
+# Deliberately narrow: a bare "log in" or "401" also appears in file names, prose and line numbers.
+_AUTH = re.compile(r"not logged in|please log ?in|/login\b|unauthori[sz]ed|(?:http|status|error|code)[ :=]*40[13]\b|\b40[13] forbidden"
+                   r"|authenticat(?:ion|e) (?:failed|required|error)|invalid api key|api key (?:is )?(?:missing|invalid|not set)"
+                   r"|credentials? (?:are |is )?(?:missing|invalid|expired|not found)|auth method")
+_RATE_LIMIT = re.compile(r"rate.?limit|(?:http|status|error|code)[ :=]*429\b|\b429 too many|quota|usage limit|overloaded|resource.?exhausted")
+PREFLIGHT_TTL = 60.0  # seconds a READY result is reused by propose(); `eija doctor` itself is never cached
 
 MESSAGES = {
     "PROVIDER_NOT_READY": "{label} is not ready: run eija doctor and sign in with the vendor CLI (no key is read or forwarded)",
@@ -77,6 +84,11 @@ def strip_ansi(text: str) -> str:
     return _ANSI.sub("", text)
 
 
+def has_flag(help_text: str, flag: str) -> bool:
+    """Whole-token match, so ``--tools`` is not satisfied by ``--tools-foo``. Says the flag is documented, not honoured."""
+    return re.search(rf"(?<![\w-]){re.escape(flag)}(?![\w-])", help_text) is not None
+
+
 class CliProposalProvider:
     """Template for a vendor CLI adapter. Subclasses set the class attributes and override four hooks."""
 
@@ -94,6 +106,7 @@ class CliProposalProvider:
         self.model = validate_model_name(model)
         self.executable = executable or self.default_executable
         self.runner, self.timeout = runner, timeout
+        self._ready_at: float | None = None
 
     # ---- hooks -----------------------------------------------------------------------------------
     def login_state(self, status: StatusRunner) -> LoginState:
@@ -122,10 +135,11 @@ class CliProposalProvider:
     def classify_failure(self, result: subprocess.CompletedProcess) -> str:
         """Map a failed run to a stable code from its output. The output itself is never returned."""
         text = strip_ansi(f"{result.stdout}\n{result.stderr}").lower()
-        if re.search(r"not logged in|log ?in|unauthori[sz]ed|\b40[13]\b|authenticat|credential|api key|auth method", text):
-            return "PROVIDER_AUTH"
-        if re.search(r"rate.?limit|\b429\b|quota|usage limit|overloaded|resource.?exhausted", text):
+        # Rate limits first: "usage limit reached, please log in to upgrade" is a limit, not a sign-in problem.
+        if _RATE_LIMIT.search(text):
             return "PROVIDER_RATE_LIMIT"
+        if _AUTH.search(text):
+            return "PROVIDER_AUTH"
         return "PROVIDER_PROCESS_FAILED"
 
     # ---- plumbing --------------------------------------------------------------------------------
@@ -161,19 +175,41 @@ class CliProposalProvider:
         except CliShimUnsupported:
             return report | {"reason": f"{self.label} launcher cannot be run without cmd.exe; refused (argument-injection risk)"}
         try:
-            with tempfile.TemporaryDirectory(prefix=f"eija-{self.name}-doctor-") as probe_dir:
-                version = self._probe(prefix, self.version_args, probe_dir)
-                helped = self._probe(prefix, self.help_args, probe_dir)
-                help_text = strip_ansi(f"{helped.stdout}\n{helped.stderr}")  # some CLIs print help on stderr
-                missing = [flag for flag in self.required_flags if flag not in help_text]
-                login = self.login_state(lambda args: self._probe(prefix, args, probe_dir))
+            version, missing, login = self._diagnose(prefix)
         except (CliTimeout, CliOutputLimit):
             return report | {"reason": f"{self.label} diagnostic timed out or was too large"}
         except OSError:
             return report | {"reason": f"{self.label} diagnostic failed"}
+        return report | self._readiness(version, missing, login)
+
+    def _diagnose(self, prefix: list[str]) -> tuple[subprocess.CompletedProcess, list[str], LoginState]:
+        """Run the three local probes (version, help, login status) in a throwaway directory."""
+        with tempfile.TemporaryDirectory(prefix=f"eija-{self.name}-doctor-") as probe_dir:
+            version = self._probe(prefix, self.version_args, probe_dir)
+            helped = self._probe(prefix, self.help_args, probe_dir)
+            help_text = strip_ansi(f"{helped.stdout}\n{helped.stderr}")  # some CLIs print help on stderr
+            missing = [flag for flag in self.required_flags if not has_flag(help_text, flag)]
+            login = self.login_state(lambda args: self._probe(prefix, args, probe_dir))
+        return version, missing, login
+
+    @staticmethod
+    def _readiness(version: subprocess.CompletedProcess, missing: list[str], login: LoginState) -> dict[str, Any]:
         first_line = (strip_ansi(version.stdout).strip().splitlines() or [""])[0][:80]
-        return report | {"ready": not missing and login.state != "NOT_LOGGED_IN", "cli_version": first_line if version.returncode == 0 else "",
-                         "required_flags_present": not missing, "missing_flags": missing, "login": login.state, "login_detail": login.detail}
+        ready = not missing and login.state != "NOT_LOGGED_IN"
+        # ``ready`` means "a call may be attempted". Only ``login_verified`` says the vendor CLI confirmed a login.
+        status = "NOT_RUN" if not ready else "READY" if login.state == "LOGGED_IN" else "READY_LOGIN_UNVERIFIED"
+        return {"ready": ready, "status": status, "login_verified": login.state == "LOGGED_IN",
+                "cli_version": first_line if version.returncode == 0 else "", "required_flags_present": not missing,
+                "missing_flags": missing, "login": login.state, "login_detail": login.detail}
+
+    def _preflight_ready(self) -> bool:
+        """Run doctor() before a call, reusing a READY result for PREFLIGHT_TTL seconds (each doctor is several processes)."""
+        now = time.monotonic()
+        if self._ready_at is not None and now - self._ready_at < PREFLIGHT_TTL:
+            return True
+        ready = bool(self.doctor()["ready"])
+        self._ready_at = now if ready else None
+        return ready
 
     # ---- propose ---------------------------------------------------------------------------------
     def propose(self, request: str, model: Workflow) -> ProviderResult:
@@ -181,7 +217,7 @@ class CliProposalProvider:
 
         Does not establish that the interpretation is correct, and never retries or falls back.
         """
-        if not self.doctor()["ready"]:
+        if not self._preflight_ready():
             raise self.fail("PROVIDER_NOT_READY")
         try:
             prefix = self._prefix()
@@ -202,5 +238,5 @@ class CliProposalProvider:
             if result.returncode != 0:
                 raise self.fail(self.classify_failure(result))
             extracted = self.extract(result, work)
-        return ProviderResult(parse_proposal(extracted.text), self.name, extracted.model or self.model or f"{self.name}-default",
+        return ProviderResult(parse_proposal(extracted.text), self.name, extracted.model or "unreported",
                               dict(extracted.usage), True)

@@ -2,7 +2,7 @@
 
 EIJA asks a model for an **untrusted proposal**: alternative readings of a change request. AI proposes; the kernel checks; the local owner decides. No provider can select a meaning, approve, apply, mint a receipt or touch protected policy. See [ADR-0020](adr/0020-multi-provider-agent-adapters.md), [ADR-0021](adr/0021-cli-provider-isolation-and-process-tree-kill.md) and [ADR-0022](adr/0022-live-provider-evidence-and-not-run.md).
 
-| `--provider` | Backend | Auth (delegated, never read by EIJA) | Structured output | Tools off by |
+| `--provider` | Backend | Auth (delegated, never read by EIJA) | Structured output | Tools off by (requested, not verified live) |
 |---|---|---|---|---|
 | `offline` | Deterministic fixture, not an LLM | none | n/a | n/a |
 | `codex` | Codex CLI | `codex login` (ChatGPT sign-in; an API-key login is refused) | `--output-schema` | `--sandbox read-only`, shell/apps/web features off |
@@ -20,7 +20,7 @@ py -3.12 -m venv .venv && .venv/Scripts/python -m pip install -e ".[dev,provider
 .venv/Scripts/eija propose "Let teachers sign off excursions." --provider claude --allow-network --consent
 ```
 
-`doctor` uses only the vendor's official commands (`--version`, `--help`, `claude auth status`, `codex login status`, `opencode auth list`). It never opens an auth or token file and never calls a model. `live_test` is always `NOT_RUN` there. Gemini CLI has no login-status command, so its login shows `UNKNOWN` until a call is made.
+`doctor` uses only the vendor's official commands (`--version`, `--help`, `claude auth status`, `codex login status`, `opencode auth list`). It never opens an auth or token file and never calls a model. `live_test` is always `NOT_RUN` there. Gemini CLI has no login-status command, so its login shows `UNKNOWN` until a call is made and `doctor` reports `READY (login unverified)`: a call may be attempted, no login was confirmed (`login_verified: false`). `--model` is required for the two HTTPS providers (no default model, so a metered call never picks a model and price for you); a CLI's own default model is used when none is given.
 
 Network use needs both `--allow-network` at start and per-request consent, exactly as for OpenRouter. A subscription CLI still sends data to the vendor and may consume plan usage.
 
@@ -28,15 +28,15 @@ Network use needs both `--allow-network` at start and per-request consent, exact
 
 Sent to the model: the fixed instructions, your request text, and the synthetic baseline workflow (as canonical JSON), on **stdin**. For prompt-only providers the JSON Schema is appended.
 
-Not sent, and not readable by the model: your repository (the CLI runs in an empty temporary directory that is removed afterwards), your environment (see below), and any tool output, because tools are disabled. Your CLI configuration is left out where the CLI offers a switch for it (`--safe-mode`, `--ignore-user-config`, `--pure` with an empty `XDG_CONFIG_HOME`), but that is the CLI's own promise and is not proven here: OpenCode, for example, still lists skills (`opencode debug skill` on the reference machine showed them, with its `skill` tool disabled by the deny-all config) from `~/.agents/skills`, and the only thing keeping the model from using one is the deny-all permission config (its `skill` tool is denied). The vendor still sees the prompt and your account identity, as with any use of that CLI.
+Not sent, and expected not to be readable by the model: your repository (the CLI runs in an empty temporary directory that is removed afterwards), your environment (see below), and your CLI configuration where the CLI allows it (`--safe-mode`, `--ignore-user-config`, empty `XDG_CONFIG_HOME`). EIJA **requests** that the CLI disable its tools (flags in the table above), so tool output is not expected to be sent. Whether each CLI honours those flags is **not verified live**: the tests prove the flags are passed, and a schema-valid reply proves nothing about tool use (evidence records carry `lockdown_verified: false`). The vendor still sees the prompt and your account identity, as with any use of that CLI. Your CLI's own configuration is left out only where the CLI offers a switch, and even then that is the CLI's promise: `opencode debug skill` on the reference machine still listed skills from `~/.agents/skills` (its `skill` tool was disabled by the deny-all config, which is what keeps the model from using them).
 
-Child environment: an allow-list of system, locale and profile-location variables plus one config-directory variable per vendor (`CODEX_HOME`, `CLAUDE_CONFIG_DIR`). Any variable whose name looks like a key, token, secret, password or auth value is dropped even if allow-listed. `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, `CLAUDE_CODE_OAUTH_TOKEN`, proxy credentials and studio tokens are never forwarded; sign in with the CLI instead.
+Child environment: an allow-list of system, locale and profile-location variables plus one config-directory variable per vendor (`CODEX_HOME`, `CLAUDE_CONFIG_DIR`). Any variable whose name looks like a key, token, secret, password or auth value is dropped even if allow-listed. `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, `CLAUDE_CODE_OAUTH_TOKEN`, proxy credentials and studio tokens are never forwarded; sign in with the CLI instead. Non-secret network settings (`HTTPS_PROXY`, `NO_PROXY`, `SSL_CERT_FILE`, `NODE_EXTRA_CA_CERTS`) are also **not** forwarded today, so a CLI behind a corporate proxy or custom CA may fail with an opaque `PROVIDER_PROCESS_FAILED` or `PROVIDER_AUTH`; an explicit opt-in list is an open follow-up.
 
 ## Failure behaviour
 
 One call, no retry, no fallback to another provider. Errors are stable codes with fixed text (`PROVIDER_NOT_READY`, `PROVIDER_AUTH`, `PROVIDER_RATE_LIMIT`, `PROVIDER_TIMEOUT`, `PROVIDER_OUTPUT_INVALID`, `PROVIDER_PROCESS_FAILED`); raw CLI output is never returned or stored. Output is capped at 256 KiB per stream while it is produced, the proposal at 64 KiB. On timeout or overflow the whole process tree is killed: a Windows Job Object with kill-on-close (or, on POSIX, the process group the child was started in), plus psutil from the `providers` extra, which snapshots descendants right after start and every 50 ms; without psutil Windows falls back to `taskkill /T`. If a descendant outlives the tree kill and keeps a pipe open, the call still returns its timeout; the reader thread is left to be reaped rather than blocking the caller. Usage may still have been billed when a call times out.
 
-Before each call `propose` runs `doctor` again (`--version`, `--help` and the vendor's login-status command: three short local CLI runs, roughly 10 s in total on the reference machine) so a signed-out or upgraded CLI is caught before anything billable. The smoke evidence's `latency_s` includes that cost.
+Before a call `propose` runs `doctor` (`--version`, `--help` and the vendor's login-status command: three short local CLI runs, roughly 10 s in total on the reference machine) so a signed-out or upgraded CLI is caught before anything billable. A READY result is reused for 60 s per provider instance; `eija doctor` itself is never cached. The smoke evidence's `latency_s` includes that cost.
 
 Windows: npm installs vendor CLIs as `.cmd` shims. EIJA unwraps the standard npm shim to `node <script>` and refuses any other `.cmd`, so arguments never pass through cmd.exe.
 
@@ -58,12 +58,15 @@ The current record is `evidence/live-providers/2026-09-28-windows.json`. It supe
 | `gemini` 0.37.1 | NOT_RUN: CLI reported no auth method configured (exit 41) |
 | `openrouter`, `anthropic` | NOT_RUN: no key in the environment |
 
-Unverified live: OpenCode's deny-all config and success event shape, Gemini's deny-all policy and prompt-only JSON, the Anthropic structured-output request shape.
+Unverified live: tool lockdown for **every** CLI (claude and codex included; only the flags are tested), OpenCode's deny-all config and success event shape, OpenCode and Gemini stdin ingestion (Gemini gets a fixed `-p` instruction and the prompt on stdin), Gemini's deny-all policy and prompt-only JSON, the Anthropic structured-output request shape. A canary probe (planted file in the temporary directory, prompt asking for it) is the open follow-up that would verify lockdown.
 
 ## Known limits
 
 * A CLI can ignore its own lockdown flags after an upgrade. `doctor` refuses CLIs whose `--help` lacks a required flag; it cannot prove a flag is honoured. Re-run the smoke after upgrades.
-* A descendant that deliberately breaks away from the process tree (a POSIX double fork with `setsid`, or `CREATE_BREAKAWAY_FROM_JOB` where the job allows it) before it is observed can survive a timeout kill. The Windows job is attached a few microseconds after `Popen` returns; a child spawned in that gap is only caught by the psutil scan.
+* A descendant that deliberately breaks away from the process tree (a POSIX double fork with `setsid`, or `CREATE_BREAKAWAY_FROM_JOB` where the job allows it) before it is observed can survive a timeout kill. On Windows a kill-on-close Job Object is attached a few microseconds after `Popen` returns, so a child spawned in that gap is only caught by the psutil scan (50 ms); closing the job also reaps stragglers after a normal return. By Windows job semantics the tree should die too if the EIJA process itself is killed while a call is in flight, but that is not tested here.
+* Gemini: a supplemental `--admin-policy` file is ignored by the CLI when system-level `.toml` policies already exist (its policy-engine documentation); the CLI then follows the system policy, which may be less strict than the deny-all file. Not detected by `doctor`.
+* POSIX (`killpg` fallback) is untested: the test suite has run on Windows only.
+* Executables are looked up on `PATH` only (never the current directory) and only from absolute `PATH` entries.
 * The shared contract suite (`tests/test_provider_contract.py`) runs the full secret, stdin, lockdown, working-directory and no-retry matrix over the four CLI adapters. The two HTTP providers get a smaller matrix over a mock transport (no tools in the request, key only in a header, one attempt, sanitised errors, size cap, wrong-label rejection); they have no subprocess, environment or working directory to isolate.
 * Prompt-only providers may wrap JSON in a Markdown fence; one outer fence is removed and the rest is validated. Anything else is rejected without repair.
 * `total_cost_usd` from Claude Code is a list-price estimate for a subscription, not an invoice.

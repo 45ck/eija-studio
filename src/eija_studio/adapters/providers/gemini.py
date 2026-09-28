@@ -59,4 +59,4 @@ class GeminiCliProvider(CliProposalProvider):
             raise self.fail("PROVIDER_OUTPUT_INVALID")
         stats = envelope.get("stats")
         model = first_key(stats.get("models") if isinstance(stats, dict) else None)
-        return Extracted(unwrap_single_fence(response), model or self.model, self._usage(stats, model))
+        return Extracted(unwrap_single_fence(response), model, self._usage(stats, model))
