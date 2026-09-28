@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Literal
+from typing import Any, Literal
 from .models import Contract, Workflow, Proposal, SemanticTransaction, DomainError
 
 
@@ -13,13 +13,13 @@ class ChangeCase(Contract):
     baseline: Workflow
     candidate: Workflow | None
     proposal: Proposal | None
-    provider_run: dict | None
+    provider_run: dict[str, Any] | None
     selected_meaning: str | None
     selected_by: str | None
     transactions: tuple[SemanticTransaction, ...]
     layout: dict[str, dict[str, int]]
-    receipts: tuple[dict, ...]
-    decision: dict | None
+    receipts: tuple[dict[str, Any], ...]
+    decision: dict[str, Any] | None
     created_at: str
 
     def require_editable(self) -> None:

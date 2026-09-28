@@ -1,0 +1,19 @@
+#!/bin/sh
+# Run one nox tier with the project's own interpreter. Usage: .githooks/run-nox <fast|full>
+# Works from Git Bash on Windows (.venv/Scripts) and POSIX (.venv/bin), from any worktree.
+tier="${1:?usage: run-nox <fast|full>}"
+root=$(git rev-parse --show-toplevel) || exit 1
+cd "$root" || exit 1
+py=""
+for candidate in "$root/.venv/Scripts/python.exe" "$root/.venv/bin/python"; do
+  if [ -x "$candidate" ]; then py="$candidate"; break; fi
+done
+[ -n "$py" ] || py=python
+if ! "$py" -c "import nox" >/dev/null 2>&1; then
+  echo "eija hooks: nox is not installed for '$py'. Create the venv first:" >&2
+  echo "  py -3.12 -m venv .venv && .venv/Scripts/python -m pip install -e \".[dev,lint]\"" >&2
+  exit 1
+fi
+# The system TEMP may be a slow HDD; keep scratch data inside the checkout (ignored by git).
+mkdir -p "$root/.tmp"
+TMP="$root/.tmp" TEMP="$root/.tmp" "$py" -m nox -t "$tier"
