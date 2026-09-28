@@ -98,4 +98,6 @@ def test_timing_reruns_are_disclosed_in_the_rendering(doc):
     rerun = copy.deepcopy(doc)
     rerun["meta"]["timing_runs"] = [{"run": 1, "failed_timing_budgets": ["PERF-02"]}, {"run": 2, "failed_timing_budgets": []}]
     assert "LAST of 2 runs" in dashboard.render_markdown(rerun) and "run 1: PERF-02" in dashboard.render_html(rerun)
-    assert "LAST of" not in dashboard.render_markdown(doc)  # a single run says nothing extra
+    single = copy.deepcopy(doc)
+    single["meta"]["timing_runs"] = [{"run": 1, "failed_timing_budgets": []}]
+    assert "LAST of" not in dashboard.render_markdown(single)  # a single run says nothing extra
