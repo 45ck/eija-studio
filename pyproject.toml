@@ -39,6 +39,7 @@ demos = ["playwright==1.63.0"]  # drives the installed system Chrome; no browser
 ux = []
 graph = []
 dod = []
+smt = ["z3-solver==5.1.0.0"]  # lane smt-bmc: Z3 policy-soundness proof
 
 [project.scripts]
 eija = "eija_studio.interfaces.cli:main"
