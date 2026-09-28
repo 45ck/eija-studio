@@ -9,7 +9,7 @@ ROOT=Path(__file__).resolve().parents[1]
 
 def main():
     checks=[]
-    with tempfile.TemporaryDirectory(prefix='eija-http-') as tmp:
+    with tempfile.TemporaryDirectory(prefix='eija-http-',dir=ROOT/'.tmp' if (ROOT/'.tmp').is_dir() else None,ignore_cleanup_errors=True) as tmp:
         tmp=Path(tmp);workspace=tmp/'workspace';case_id=None
         for cycle in (1,2):
             with socket.socket() as s:s.bind(('127.0.0.1',0));port=s.getsockname()[1]

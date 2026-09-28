@@ -10,7 +10,7 @@ Use one server per workspace. SQLite protects concurrent transactions, but the p
 
 ## Local data
 
-`studio.sqlite3` plus its WAL/SHM files contain cases, active baseline, synthetic actors, preview instances, operations, audit and outbox. `receipt.key` supplies local HMAC integrity. POSIX directory/file modes are set best-effort; Windows ACLs are not certified. Do not sync the workspace into shared folders by default.
+`studio.sqlite3` plus its WAL/SHM files contain cases, active baseline, synthetic actors, preview instances, operations, audit and outbox. `receipt.key` supplies local HMAC integrity. `sandboxes/` holds disposable verification databases with synthetic fixture data only; each is deleted when its verification ends, a leftover from a killed process is swept after an hour, it is not part of backup, and the folder is safe to delete while EIJA is stopped. POSIX directory/file modes are set best-effort; Windows ACLs are not certified. Do not sync the workspace into shared folders by default.
 
 All preview instances represent copies of one synthetic excursion fixture. The fixture assignment flag is deliberately simple, not a per-student/per-excursion assignment directory. Denied executions are returned as errors; accepted effects and governance/provider events are recorded. A complete denied-attempt security log is not implemented.
 

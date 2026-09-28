@@ -1,7 +1,6 @@
 import copy, json
 import pytest
 from eija_studio.bootstrap import build_studio
-from conftest import harness_identity
 from eija_studio.domain.models import OWNER, AGENT, DomainError, SemanticTransaction, LayoutChange, fingerprint
 from eija_studio.domain.change_case import ChangeCase
 from eija_studio.application.compiler import compile_case
@@ -127,8 +126,8 @@ def test_two_approved_cases_cannot_silently_overwrite(studio,verified):
     with pytest.raises(DomainError):studio.apply(c2["id"],c2["version"],OWNER)
 
 
-def test_restart_preserves_cases_and_receipt_signatures(studio,verified):
-    reopened=build_studio(studio.store.directory);reopened.identity_provider=harness_identity
+def test_restart_preserves_cases_and_receipt_signatures(studio,verified,open_studio):
+    reopened=open_studio(studio.store.directory)
     assert reopened.view(verified["id"])["packet"]["eligible"]
 
 

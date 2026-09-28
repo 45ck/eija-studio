@@ -11,6 +11,7 @@ flowchart LR
     App --> Domain[Domain contracts and policy]
     App --> Ports[Application-owned ports]
     Ports --> Store[SQLite unit of work]
+    Ports --> Sandbox[Disposable verification sandbox]
     Ports --> Propose[Proposal provider]
     Propose --> Offline[Offline fixture]
     Propose --> OR[OpenRouter HTTP]
@@ -84,6 +85,8 @@ Saving is a checkpoint, not apply. Stage labels alone never grant eligibility. V
 ## Runtime commit sequence
 
 Inside `BEGIN IMMEDIATE`: load candidate and instance; compare model identity; load trusted actor; check active/current role/assignment; check operation replay binding; check instance version and source state; update state; append required audit; enqueue required synthetic notification; record operation. The transaction commits before success reaches HTTP. Any raised exception rolls it back. Replay rechecks current authority before returning original results and does not enqueue again.
+
+The owner workspace runs SQLite with `synchronous=FULL` (every commit flushed). Verification runs in disposable sandboxes obtained through the application-owned `SandboxFactory` port: same unit-of-work and atomicity semantics, `synchronous=OFF`, located in `<workspace>/sandboxes/` and deleted on exit (stale leftovers from killed processes are swept after an hour). A sandbox therefore observes transaction semantics, not crash durability; receipts say so.
 
 This is an at-most-once **local enqueue** guarantee under the tested transaction model, not exactly-once external delivery. SQLite durability remains conditional on the OS/filesystem/storage assumptions. Tests include process termination, not physical power loss or disk corruption.
 
