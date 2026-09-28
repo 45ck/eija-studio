@@ -7,13 +7,15 @@ though they changed different keys. This driver merges by (table, key) instead:
 * a key changed on one side only takes that side's value;
 * a key changed identically on both sides is kept;
 * a table changed on both sides is merged recursively;
-* an array of scalars that both sides only *extended* is merged as an ordered union;
+* an array of scalars that both sides only *extended* is merged as an ordered union, except that two
+  different pins of the same package are a conflict, never a union;
 * anything else is a real conflict: exit status 1 and the file is left untouched.
 
 Usage (git calls it as `driver %O %A %B`): `python tomlmerge.py BASE OURS THEIRS`; the merged text is
 written to OURS. Requires `tomlkit`, which preserves comments and formatting. Wire it per clone with
 `quality/tools/install_merge_drivers.py`; without it, git falls back to its ordinary text merge.
 """
+# ruff: noqa: T201
 from __future__ import annotations
 
 import re
@@ -21,22 +23,22 @@ import sys
 from pathlib import Path
 
 import tomlkit
-from tomlkit.items import Array, Table
 from tomlkit.container import Container
+from tomlkit.items import Table
 
 MISSING = object()
+_REQUIREMENT_NAME = re.compile(r"^\s*([A-Za-z0-9][A-Za-z0-9._-]*)")
 
 
-def _value(node):
+def _plain(node):
     """Plain Python value for comparison (tomlkit items compare by trivia in some versions)."""
+    if node is MISSING:
+        return MISSING
     return node.unwrap() if hasattr(node, "unwrap") else node
 
 
 def _is_table(node) -> bool:
     return isinstance(node, (Table, Container))
-
-
-_REQUIREMENT_NAME = re.compile(r"^\s*([A-Za-z0-9][A-Za-z0-9._-]*)")
 
 
 def _requirement_name(item) -> str | None:
@@ -50,50 +52,69 @@ def _requirement_name(item) -> str | None:
 def _disagree_on_a_requirement(ours: list, added_by_theirs: list) -> bool:
     """Two lanes pinning the same package differently must be a conflict, never a union."""
     pinned = {n: x for x in ours if (n := _requirement_name(x)) is not None}
-    return any(pinned.get(n) not in (None, x) for x in added_by_theirs if (n := _requirement_name(x)) is not None)
+    return any(
+        pinned.get(n) not in (None, x) for x in added_by_theirs if (n := _requirement_name(x)) is not None
+    )
 
 
 def _additive(base: list, side: list) -> bool:
     """`side` only extended `base`: every base element is still present, in order."""
-    it = iter(side)
-    return all(any(item == candidate for candidate in it) for item in base)
+    remaining = iter(side)
+    return all(any(item == candidate for candidate in remaining) for item in base)
+
+
+def _both_only_extended(base_value, ours_value, theirs_value) -> bool:
+    """All values are arrays (the base may be absent) and each side only extended the base."""
+    if not (isinstance(ours_value, list) and isinstance(theirs_value, list)):
+        return False
+    if not (base_value is MISSING or isinstance(base_value, list)):
+        return False
+    base_list = [] if base_value is MISSING else base_value
+    return _additive(base_list, ours_value) and _additive(base_list, theirs_value)
+
+
+def _union_arrays(ours, key, base_value, ours_value, theirs_value) -> bool:
+    """Merge two additive edits of the same array into `ours[key]`. False when they are not mergeable."""
+    if not _both_only_extended(base_value, ours_value, theirs_value):
+        return False
+    added = [x for x in theirs_value if x not in ours_value]
+    if _disagree_on_a_requirement(ours_value, added):
+        return False
+    merged = tomlkit.array()
+    merged.extend(list(ours_value) + added)
+    ours[key] = merged
+    return True
+
+
+def _take_theirs(ours, key, theirs_item) -> None:
+    if theirs_item is MISSING:
+        del ours[key]
+    else:
+        ours[key] = theirs_item
+
+
+def _merge_key(key: str, base, ours, theirs, here: str) -> list[str]:
+    """Merge one key; return the conflicting key paths (empty when it merged)."""
+    b, o, t = base.get(key, MISSING), ours.get(key, MISSING), theirs.get(key, MISSING)
+    bv, ov, tv = _plain(b), _plain(o), _plain(t)
+    if tv == bv or ov == tv:  # theirs did not touch it, or both made the same change
+        return []
+    if ov == bv:  # only theirs changed it (or deleted it)
+        _take_theirs(ours, key, t)
+        return []
+    if _is_table(o) and _is_table(t):
+        return merge_tables(b if _is_table(b) else tomlkit.table(), o, t, here)
+    if _union_arrays(ours, key, bv, ov, tv):
+        return []
+    return [here]
 
 
 def merge_tables(base, ours, theirs, path: str = "") -> list[str]:
     """Merge `theirs` changes into `ours` in place. Returns the list of conflicting key paths."""
     conflicts: list[str] = []
-    keys = list(theirs.keys()) + [k for k in base.keys() if k not in theirs]
-    for key in keys:
+    for key in [*theirs, *(k for k in base if k not in theirs)]:
         here = f"{path}.{key}" if path else str(key)
-        b = base[key] if key in base else MISSING
-        o = ours[key] if key in ours else MISSING
-        t = theirs[key] if key in theirs else MISSING
-        bv, ov, tv = (_value(x) if x is not MISSING else MISSING for x in (b, o, t))
-
-        if tv == bv:                     # theirs did not touch it: keep ours
-            continue
-        if ov == bv:                     # only theirs changed it: take theirs (or its deletion)
-            if t is MISSING:
-                del ours[key]
-            else:
-                ours[key] = t
-            continue
-        if ov == tv:                     # both made the same change
-            continue
-        if _is_table(o) and _is_table(t):
-            sub_base = b if _is_table(b) else tomlkit.table()
-            conflicts += merge_tables(sub_base, o, t, here)
-            continue
-        if all(isinstance(x, list) for x in (ov, tv)) and (bv is MISSING or isinstance(bv, list)):
-            base_list = [] if bv is MISSING else bv
-            added = [x for x in tv if x not in ov]
-            if _additive(base_list, ov) and _additive(base_list, tv) and not _disagree_on_a_requirement(ov, added):
-                merged = list(ov) + added
-                arr = tomlkit.array()
-                arr.extend(merged)
-                ours[key] = arr
-                continue
-        conflicts.append(here)
+        conflicts += _merge_key(key, base, ours, theirs, here)
     return conflicts
 
 

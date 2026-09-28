@@ -6,6 +6,7 @@ ordinary line-based merge, so nothing breaks; you just get the old conflicts bac
 
     python -m quality.tools.install_merge_drivers
 """
+# ruff: noqa: T201
 from __future__ import annotations
 
 import subprocess
@@ -27,7 +28,7 @@ def main() -> int:
         ["git", "config", "merge.eija-ours.driver", "true"],
     ]
     for command in commands:
-        subprocess.run(command, cwd=ROOT, check=True)
+        subprocess.run(command, cwd=ROOT, check=True)  # noqa: S603 - argv is built from constants above
     print(f"registered merge driver {DRIVER!r} -> {python} {script}")
     return 0
 
