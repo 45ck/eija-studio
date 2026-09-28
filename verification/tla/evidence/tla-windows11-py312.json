@@ -2,7 +2,7 @@
   "kind": "tlc_model_check",
   "schema": "eija.formal.tla.v1",
   "lane": "tla",
-  "created_at": "2026-09-28T22:41:30+00:00",
+  "created_at": "2026-09-28T23:41:28+00:00",
   "claim": "Safety invariants of the excursion workflow and commit protocol hold in the TLC-explored state space of the declared bounds, and the runtime agrees with the model on the compared behaviours.",
   "limitations": [
     "Bounded: N operation ids, one preview instance, a fixed 5-actor fixture directory; no claim beyond the bounds.",
@@ -60,7 +60,7 @@
         "states_generated": 26017,
         "distinct_states": 5520,
         "depth": 9,
-        "seconds": 29.59,
+        "seconds": 24.7,
         "violated": null,
         "violation_kind": null
       },
@@ -99,7 +99,7 @@
         "states_generated": 16513,
         "distinct_states": 3600,
         "depth": 9,
-        "seconds": 24.17,
+        "seconds": 22.51,
         "violated": null,
         "violation_kind": null
       },
@@ -138,7 +138,7 @@
         "states_generated": 29377,
         "distinct_states": 6288,
         "depth": 9,
-        "seconds": 42.77,
+        "seconds": 36.31,
         "violated": null,
         "violation_kind": null
       },
@@ -179,7 +179,7 @@
         "states_generated": 114,
         "distinct_states": 76,
         "depth": 4,
-        "seconds": 2.75,
+        "seconds": 2.38,
         "violated": "NoTeacherApproval",
         "violation_kind": "invariant"
       },
@@ -274,7 +274,7 @@
         "states_generated": 2,
         "distinct_states": 2,
         "depth": 2,
-        "seconds": 1.89,
+        "seconds": 1.28,
         "violated": "ReplayNeverBypassesCurrentAuthority",
         "violation_kind": "invariant"
       },
@@ -338,7 +338,7 @@
         "states_generated": 114,
         "distinct_states": 76,
         "depth": 4,
-        "seconds": 3.14,
+        "seconds": 2.34,
         "violated": "OutboxAtMostOncePerOperation",
         "violation_kind": "invariant"
       },
@@ -434,7 +434,7 @@
         "states_generated": 114,
         "distinct_states": 76,
         "depth": 4,
-        "seconds": 7.67,
+        "seconds": 2.36,
         "violated": "ForbiddenEffectsNeverEmitted",
         "violation_kind": "invariant"
       },
@@ -530,7 +530,7 @@
         "states_generated": 130265,
         "distinct_states": 27696,
         "depth": 10,
-        "seconds": 190.64,
+        "seconds": 119.7,
         "violated": null,
         "violation_kind": null
       },
@@ -543,13 +543,13 @@
         "bound": {
           "operation_ids": 2
         },
-        "runtime_explore_seconds": 9.27,
+        "runtime_explore_seconds": 5.73,
         "tlc": {
           "result": "PASS",
           "states_generated": 945,
           "distinct_states": 208,
           "depth": 7,
-          "seconds": 3.81,
+          "seconds": 2.39,
           "violated": null,
           "violation_kind": null
         },
@@ -598,13 +598,13 @@
           "STATE_DENIED": 139,
           "UNKNOWN_ACTOR": 154
         },
-        "runtime_record_seconds": 57.92,
+        "runtime_record_seconds": 34.01,
         "tlc": {
           "result": "PASS",
           "states_generated": 3827,
           "distinct_states": 3827,
           "depth": 21,
-          "seconds": 22.8,
+          "seconds": 7.92,
           "violated": null,
           "violation_kind": null
         },
@@ -617,13 +617,13 @@
         "bound": {
           "operation_ids": 3
         },
-        "runtime_explore_seconds": 75.59,
+        "runtime_explore_seconds": 37.17,
         "tlc": {
           "result": "PASS",
           "states_generated": 3065,
           "distinct_states": 688,
           "depth": 8,
-          "seconds": 10.05,
+          "seconds": 6.34,
           "violated": null,
           "violation_kind": null
         },
@@ -672,13 +672,13 @@
           "STATE_DENIED": 38,
           "UNKNOWN_ACTOR": 215
         },
-        "runtime_record_seconds": 67.95,
+        "runtime_record_seconds": 35.11,
         "tlc": {
           "result": "PASS",
           "states_generated": 4264,
           "distinct_states": 4264,
           "depth": 21,
-          "seconds": 18.16,
+          "seconds": 12.8,
           "violated": null,
           "violation_kind": null
         },
@@ -698,13 +698,13 @@
         "bound": {
           "operation_ids": 2
         },
-        "runtime_explore_seconds": 11.28,
+        "runtime_explore_seconds": 13.08,
         "tlc": {
           "result": "PASS",
           "states_generated": 929,
           "distinct_states": 208,
           "depth": 7,
-          "seconds": 5.14,
+          "seconds": 2.97,
           "violated": null,
           "violation_kind": null
         },
@@ -753,13 +753,13 @@
           "STATE_DENIED": 28,
           "UNKNOWN_ACTOR": 176
         },
-        "runtime_record_seconds": 76.5,
+        "runtime_record_seconds": 41.72,
         "tlc": {
           "result": "PASS",
           "states_generated": 3818,
           "distinct_states": 3818,
           "depth": 21,
-          "seconds": 14.3,
+          "seconds": 9.67,
           "violated": null,
           "violation_kind": null
         },
@@ -768,7 +768,7 @@
       "agree": true
     }
   },
-  "total_seconds": 733.7,
+  "total_seconds": 460.5,
   "result": "PASS",
   "counterexamples_file": "reports\\formal\\tla-counterexamples.md"
 }

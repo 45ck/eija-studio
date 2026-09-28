@@ -70,7 +70,7 @@ The transition table (source, target, role, assignment guard, audit and notifica
 
 ## Results
 
-Snapshot: `verification/tla/evidence/tla-windows11-py312.json` (Windows 11 10.0.26200, Python 3.12.10, OpenJDK Temurin 17.0.19, TLC 2.19 from `tla2tools.jar` v1.7.4; run as `nox -s formal_tla_deep`, result `PASS`, about 12 minutes on the reference PC). The gate tier (`formal_tla`) is the same without the 5-operation-id row. Timings and counts of a re-run may differ in seconds only; state counts are deterministic.
+Snapshot: `verification/tla/evidence/tla-windows11-py312.json` (Windows 11 10.0.26200, Python 3.12.10, OpenJDK Temurin 17.0.19, TLC 2.19 from `tla2tools.jar` v1.7.4; run as `nox -s formal_tla_deep`, result `PASS`, 8 to 12 minutes on the reference PC depending on load). The gate tier (`formal_tla`) is the same without the 5-operation-id row. Timings and counts of a re-run may differ in seconds only; state counts are deterministic.
 
 ### Model checking (all invariants and `VersionMonotonic`)
 
