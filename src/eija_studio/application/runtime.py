@@ -1,12 +1,13 @@
 """Generic execution algorithm; domain-specific policy stays in domain.policy."""
 from __future__ import annotations
+from typing import Any, Callable
 from uuid import uuid4
-from eija_studio.domain.models import Workflow, ExecuteCommand, DomainError, fingerprint
+from eija_studio.domain.models import Workflow, ExecuteCommand, DomainError, Transition, fingerprint
 from eija_studio.domain.policy import ensure_policy
 from .ports import UnitOfWork
 
 
-def check_actor(actor: dict, transition, command: ExecuteCommand) -> None:
+def check_actor(actor: dict[str, Any], transition: Transition, command: ExecuteCommand) -> None:
     if not actor["active"]:
         raise DomainError("ACTOR_REVOKED", "Actor is not active at commit time")
     if actor["role"] != transition.role:
@@ -15,7 +16,7 @@ def check_actor(actor: dict, transition, command: ExecuteCommand) -> None:
         raise DomainError("ASSIGNMENT_DENIED", "Actor is not assigned in the trusted fixture directory")
 
 
-def initialise(session: UnitOfWork, case_id: str, model: Workflow, *, state: str | None = None) -> dict:
+def initialise(session: UnitOfWork, case_id: str, model: Workflow, *, state: str | None = None) -> dict[str, Any]:
     ensure_policy(model)
     state = state or model.initial_state
     if state not in model.states:
@@ -25,7 +26,10 @@ def initialise(session: UnitOfWork, case_id: str, model: Workflow, *, state: str
     return item
 
 
-def execute(session: UnitOfWork, case_id: str, model: Workflow, command: ExecuteCommand, *, fault=None) -> dict:
+def execute(
+    session: UnitOfWork, case_id: str, model: Workflow, command: ExecuteCommand, *,
+    fault: Callable[[str], None] | None = None,
+) -> dict[str, Any]:
     ensure_policy(model)
     row = session.find_instance(command.instance_id, case_id)
     if row is None:

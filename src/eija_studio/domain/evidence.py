@@ -1,12 +1,13 @@
 """Compatibility is computed. A supplied green status is never sufficient."""
 from __future__ import annotations
 from itertools import product
+from typing import Any, Callable
 from .models import fingerprint
 
 TECHNICAL_DIMENSIONS = ("semantic", "implementation", "policy", "environment", "harness")
 
 
-def assess_receipt(receipt: dict, subject: dict, claim: str, kind: str) -> str:
+def assess_receipt(receipt: dict[str, Any], subject: dict[str, Any], claim: str, kind: str) -> str:
     if claim != "runtime_matrix" or kind != "integration_test":
         return "UNKNOWN"  # This verifier has no authority to establish other claims.
     if receipt.get("claim") != claim or receipt.get("kind") != kind:
@@ -61,7 +62,9 @@ def assess_receipt(receipt: dict, subject: dict, claim: str, kind: str) -> str:
     return "PASS" if all(c["expected"] == c["actual"] for c in cells) else "FAIL"
 
 
-def aggregate_status(receipts: list[dict], subject: dict, authenticator) -> str:
+def aggregate_status(
+    receipts: list[dict[str, Any]], subject: dict[str, Any], authenticator: Callable[[dict[str, Any]], bool]
+) -> str:
     statuses = [assess_receipt(r, subject, "runtime_matrix", "integration_test") if authenticator(r) else "FAIL" for r in receipts]
     current = [s for s in statuses if s in {"PASS", "FAIL"}]
     if "PASS" in current and "FAIL" in current:

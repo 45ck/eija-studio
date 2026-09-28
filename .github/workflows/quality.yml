@@ -1,0 +1,17 @@
+name: quality-gates
+# Hosted CI is currently unavailable for this repository (ADR-0017, ADR-0035): manual dispatch only.
+# The authoritative local equivalent is `nox -t full` (also the pre-push hook). Pin actions to reviewed commit
+# digests before enabling push/pull_request triggers.
+on: [workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -e '.[dev,lint]'
+      - run: python -m nox -t full
