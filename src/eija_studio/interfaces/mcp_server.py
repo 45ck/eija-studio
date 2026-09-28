@@ -301,10 +301,10 @@ def create_server(studio: Studio, *, egress_consent: bool = False, diagram_rende
     surface = AgentSurface(studio, egress_consent=egress_consent, diagram_renderer=diagram_renderer,
                            max_provider_calls=max_provider_calls)
     server = MCPServer("eija-studio", instructions=INSTRUCTIONS, version=__version__)
-    read = ToolAnnotations(readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=False)
-    write = ToolAnnotations(readOnlyHint=False, destructiveHint=False, idempotentHint=False, openWorldHint=False)
-    reach = ToolAnnotations(readOnlyHint=False, destructiveHint=False, idempotentHint=False,
-                            openWorldHint=bool(studio.provider.networked))
+    read = ToolAnnotations(read_only_hint=True, destructive_hint=False, idempotent_hint=True, open_world_hint=False)
+    write = ToolAnnotations(read_only_hint=False, destructive_hint=False, idempotent_hint=False, open_world_hint=False)
+    reach = ToolAnnotations(read_only_hint=False, destructive_hint=False, idempotent_hint=False,
+                            open_world_hint=bool(studio.provider.networked))
 
     @server.tool(annotations=read)
     async def list_cases() -> dict[str, Any]:

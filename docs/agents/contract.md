@@ -6,7 +6,7 @@ The model in one line: **AI proposes. The kernel checks. The local owner decides
 
 ## What an agent may do
 
-Through the MCP server (`eija mcp`), as the `AGENT` principal (no capabilities):
+Through the MCP server (`eija mcp`). Its guarantee is that owner operations are not registered as tools at all; it is not a role check:
 
 | Tool | What it does | What it does NOT establish |
 |---|---|---|
@@ -30,7 +30,7 @@ These operations do not exist on the MCP server, and a test proves it. Do not tr
 * `edit`: changing the model or layout after selection.
 * `approve`: acknowledging an exact review subject.
 * `apply`: changing the active baseline.
-* Grant egress consent for a networked provider. The owner does that at server start with `--allow-network --egress-consent`; no tool argument carries consent.
+* Grant egress consent for a networked provider. The owner does that at server start with `--allow-network --egress-consent`; no tool argument carries consent. That flag is standing consent for the whole session: the agent may call `propose` repeatedly, bounded only by the owner's `--max-provider-calls` cap (default 3, refusal `PROVIDER_CALL_LIMIT`). Do not try to work around the cap, and do not call `propose` speculatively when a live provider is configured.
 * Mint or alter receipts, read `receipt.key`, read the browser launch token, run `scripts/stamp_release.py`, or edit `src/eija_studio/resources/trusted_build.json`.
 * Fabricate answers to the meaning-check questions, or present a model proposal, a mocked result or a synthetic test as a live result, a code proof or a human study.
 * Weaken kernel guards or protected policy to make a check pass.

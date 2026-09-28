@@ -13,6 +13,6 @@ def agents(session: nox.Session) -> None:
 
     Needs the `agents` extra. Without it the gate reports NOT_RUN (skipped), never a pass.
     """
-    if subprocess.run([PYTHON, "-c", "import mcp"], capture_output=True).returncode != 0:
+    if subprocess.run([PYTHON, "-c", "import mcp"], capture_output=True, check=False).returncode != 0:
         session.skip('NOT_RUN: the MCP SDK is not installed; run: pip install -e ".[agents]"')
     session.run(PYTHON, "-m", "pytest", "-q", "tests/test_mcp_server.py", *session.posargs)

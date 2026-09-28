@@ -15,7 +15,7 @@ If the `eija` MCP server is connected (setup: `docs/agents/quickstart.md`, or `e
 2. `view_case(case_id)`: report the stage, blockers, technical claims, every UNKNOWN and `owner_next` verbatim.
 3. The local owner selects a meaning in the browser Studio (`eija serve`). You cannot: there is no select, edit, approve or apply tool, and you must not reach those by another route.
 4. After selection: `verify(case_id)` (technical runtime matrix; same-author oracle; not approval, not proof, not human evidence), `impact(case_id)`, and `render(case_id, view, format)` (`rules|states|journeys`, `json|text`; `mermaid|plantuml|svg` return `DIAGRAMS_NOT_AVAILABLE` until a renderer is wired).
-5. Surface kernel error codes (`MEANING_REQUIRED`, `SOURCE_REVIEW_REQUIRED`, `STALE_VERSION`, `VERIFY_WOULD_INVALIDATE_DECISION`, `AUTHORITY_REQUIRED`) to the user; do not work around them.
+5. Surface kernel error codes (`MEANING_REQUIRED`, `SOURCE_REVIEW_REQUIRED`, `STALE_VERSION`, `VERIFY_WOULD_INVALIDATE_DECISION`, `PROVIDER_CALL_LIMIT`) to the user; do not work around them.
 
 ## Fallback: CLI
 

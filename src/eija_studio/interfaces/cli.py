@@ -24,6 +24,37 @@ def output(value, path: Path | None = None):
         print(text)
 
 
+def _report_failure(command: str, exc: Exception) -> None:
+    if isinstance(exc, DomainError):
+        failure = {"error": exc.code, "message": exc.message}
+    else:
+        failure = {"error": "INPUT_OR_ENVIRONMENT_ERROR", "message": "Check the file, schema, permissions and configuration; no raw sensitive input is echoed"}
+    if command == "mcp":
+        # stdout is the MCP protocol channel: a startup error printed there would corrupt it. Use stderr.
+        print(json.dumps(failure, indent=2, ensure_ascii=False), file=sys.stderr)
+    else:
+        output(failure)
+
+
+def _run_mcp(args) -> int:
+    """`eija mcp`: print client config, or serve the agent-facing MCP server on stdio. Errors here go to stderr."""
+    if args.print_config:
+        print(snippet(args.print_config, sys.executable, args.workspace), end="")
+        return 0
+    if args.ask_key or (args.provider != "offline" and not (args.allow_network and args.egress_consent)):
+        # stdin/stdout are the protocol channel, and network use is the owner's decision made at startup.
+        raise DomainError("CONFIGURATION", "mcp: --ask-key is unsupported; a networked provider needs --allow-network and --egress-consent")
+    if args.max_provider_calls < 0:
+        raise DomainError("CONFIGURATION", "mcp: --max-provider-calls must be 0 or more")
+    try:
+        from .mcp_server import serve_stdio
+    except ImportError:
+        raise DomainError("MISSING_EXTRA", 'Install the MCP SDK: pip install -e ".[agents]"') from None
+    studio = build_studio(args.workspace, args.provider, args.model, args.allow_network, None)
+    serve_stdio(studio, egress_consent=args.egress_consent, max_provider_calls=args.max_provider_calls)
+    return 0
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="eija", description="EIJA Studio — bounded local assurance POC")
     parser.add_argument("--version", action="version", version=__version__)
@@ -55,14 +86,8 @@ def main(argv=None) -> int:
             valid = doc.get("format") == "eija.change-case.export.v1" and doc.get("payload_hash") == fingerprint(doc.get("payload"))
             output({"payload_integrity": valid, "authority": "NOT_VERIFIED; exported evidence is not imported for approval"})
             return 0 if valid else 2
-        if args.command == "mcp" and args.print_config:
-            print(snippet(args.print_config, sys.executable, args.workspace), end="")
-            return 0
-        if args.command == "mcp" and (args.ask_key or (args.provider != "offline" and not (args.allow_network and args.egress_consent))):
-            # stdin/stdout are the protocol channel, and network use is the owner's decision made at startup.
-            raise DomainError("CONFIGURATION", "mcp: --ask-key is unsupported; a networked provider needs --allow-network and --egress-consent")
-        if args.command == "mcp" and args.max_provider_calls < 0:
-            raise DomainError("CONFIGURATION", "mcp: --max-provider-calls must be 0 or more")
+        if args.command == "mcp":
+            return _run_mcp(args)
         key = None
         if args.ask_key:
             if args.provider != "openrouter":
@@ -92,12 +117,6 @@ def main(argv=None) -> int:
                 # Browser may briefly arrive before the listener; refresh if necessary.
                 webbrowser.open(url)
             uvicorn.run(create_app(studio, token, args.port), host="127.0.0.1", port=args.port, access_log=False, log_level="warning")
-        elif args.command == "mcp":
-            try:
-                from .mcp_server import serve_stdio
-            except ImportError:
-                raise DomainError("MISSING_EXTRA", 'Install the MCP SDK: pip install -e ".[agents]"') from None
-            serve_stdio(studio, egress_consent=args.egress_consent, max_provider_calls=args.max_provider_calls)
         elif args.command == "list":
             output([{k: c[k] for k in ("id", "stage", "version", "request")} for c in studio.store.list_cases()])
         elif args.command == "propose":
@@ -141,15 +160,7 @@ def main(argv=None) -> int:
             return 2 if errors or not identity["trusted_fixture"] else 0
         return 0
     except (DomainError, ValidationError, OSError, ValueError, KeyError) as exc:
-        if isinstance(exc, DomainError):
-            failure = {"error": exc.code, "message": exc.message}
-        else:
-            failure = {"error": "INPUT_OR_ENVIRONMENT_ERROR", "message": "Check the file, schema, permissions and configuration; no raw sensitive input is echoed"}
-        if args.command == "mcp":
-            # stdout is the MCP protocol channel: a startup error printed there would corrupt it. Use stderr.
-            print(json.dumps(failure, indent=2, ensure_ascii=False), file=sys.stderr)
-        else:
-            output(failure)
+        _report_failure(args.command, exc)
         return 2
 
 if __name__ == "__main__":
