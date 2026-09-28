@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import os
 import re
+import sys
 from pathlib import Path
 from uuid import uuid4
 
@@ -17,10 +18,16 @@ from pydantic import BaseModel
 from eija_studio.application import diagrams
 from eija_studio.application.diagram_catalog import VIEW_FORMATS, case_diagrams, demo_pair, docs_bundle, render_view
 from eija_studio.application.diagram_emitters import emit, safe_ids
-from eija_studio.application.diagrams import class_model, commit_sequence, diff_graph, diff_summary, impact_graph, state_graph
+from eija_studio.application.diagrams import (
+    Message, class_model, commit_sequence, mark_blocked, policy_violations, diff_graph, diff_summary, impact_graph, state_graph,
+)
+from eija_studio.application.runtime import execute
 from eija_studio.domain.impact import model_impact
 from eija_studio.domain.models import DomainError, ExecuteCommand, Workflow
-from eija_studio.domain.policy import baseline
+from eija_studio.domain.policy import baseline, check_policy
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+from validate_diagram_syntax import HOSTILE_ACTION, MARKER, hostile_workflow  # noqa: E402  (one shared hostile fixture)
 
 GOLDEN = Path(__file__).parent / "golden"
 EXT = {"mermaid": "mmd", "plantuml": "puml", "dot": "dot"}
@@ -198,32 +205,32 @@ def test_class_diagram_covers_every_field_and_relation_of_the_real_contracts():
     assert set(diagrams.DDD_ROLE) <= {c.__name__ for c in diagrams.CONTRACTS}
 
 
-def hostile() -> Workflow:
-    guards = ["actor_active", "role_current", "state_equals", "expected_version", "operation_binding"]
-    def t(i, a, f, to, role):
-        return {"id": i, "action": a, "from_state": f, "to_state": to, "role": role, "guards": guards,
-                "required_effects": ["Audit:X"], "forbidden_effects": []}
-    return Workflow.model_validate({"initial_state": "start", "states": ["start", "end", 'a "q" <b>x</b>', "semi;colon #h"],
-        "transitions": [t("T-1", "Go", "start", "end", "Teacher"), t("T-2", 'Say "hi"; <i>', "end", 'a "q" <b>x</b>', "R;R"),
-                        t("T-3", "Next", "semi;colon #h", "start", "Teacher")]})
-
-
 @pytest.mark.parametrize("fmt", ["mermaid", "plantuml", "dot"])
 def test_hostile_names_cannot_inject_markup(fmt):
-    wf = hostile()
+    wf = hostile_workflow()
     outputs = [render_view("state", fmt, wf), render_view("journey", fmt, wf)]
     if fmt != "dot":
-        outputs.append(render_view("sequence", fmt, wf, None, 'Say "hi"; <i>'))
-    if fmt != "dot":  # DOT labels are always quoted strings, never HTML-like labels
-        for text in outputs:
+        outputs.append(render_view("sequence", fmt, wf, None, HOSTILE_ACTION))
+        for text in outputs:  # DOT labels are always quoted strings, never HTML-like labels
             assert "<b>" not in text and "<i>" not in text and "</b>" not in text
     if fmt == "mermaid":
-        assert 'state "a #quot;q#quot; #lt;b#gt;x#lt;/b#gt;" as n_a__q___b_x__b_' in outputs[0]
+        assert 'state "a #quot;quoted#quot; #lt;b#gt;x#lt;/b#gt;" as n_a__quoted___b_x__b_' in outputs[0]
         assert "state end" not in outputs[0] and "--> end\n" not in outputs[0]  # reserved word never used as an id
     if fmt == "plantuml":
         assert "<U+003C>b>x<U+003C>/b>" in outputs[0]
+        for text in outputs:  # PlantUML evaluates %getenv(), %load_json(), %file_exists(), %date() inside labels
+            assert not re.search(r"%\w+\(", text)
+        assert "<U+0025>getenv(PLANTUML_SECRETVAR)" in outputs[0]
+        assert MARKER not in "".join(outputs)
     if fmt == "dot":
-        assert '"a \\"q\\" <b>x</b>"' in outputs[0]  # quoted and escaped, not an HTML-like label
+        assert '"a \\"quoted\\" <b>x</b>"' in outputs[0]  # quoted and escaped, not an HTML-like label
+
+
+def test_plantuml_percent_escape_has_a_negative_control():
+    """The escape is what removes `%name(`: a raw label would match the pattern the test above forbids."""
+    from eija_studio.application import diagram_emitters
+    assert re.search(r"%\w+\(", 'state "%getenv(X)" as a')
+    assert not re.search(r"%\w+\(", diagram_emitters._puml("%getenv(X)")) and "%" not in diagram_emitters._puml("100%")
 
 
 def test_safe_ids_are_stable_unique_and_order_free():
@@ -256,3 +263,156 @@ def test_case_diagrams_payload_reports_sources_and_unsupported():
     assert set(no_candidate["views"]["sequences"]) == {t.action for t in BEFORE.transitions}
     dot = case_diagrams(BEFORE, AFTER, "dot")
     assert dot["unsupported"] == ["class", "sequence"] and dot["views"]["class"] is None and dot["views"]["diff"].startswith("//")
+
+
+def one_sided_reorder(wf: Workflow) -> Workflow:
+    """Reverse only the unordered fields inside each transition, plus the transition list."""
+    data = wf.model_dump(mode="json")
+    data["transitions"] = list(reversed(data["transitions"]))
+    for t in data["transitions"]:
+        for key in ("guards", "required_effects", "forbidden_effects"):
+            t[key] = list(reversed(t[key]))
+    return Workflow.model_validate(data)
+
+
+@pytest.mark.parametrize("fmt", ["mermaid", "plantuml", "dot"])
+def test_reordering_only_the_candidate_changes_nothing_in_any_view(fmt):
+    """`model_impact` compares transitions as tuples and would call every action changed when only a guard or
+    effect list is reordered; the ripple must agree with the diff and with the semantic hash."""
+    twin = one_sided_reorder(AFTER)
+    assert twin != AFTER and twin.semantic_hash == AFTER.semantic_hash
+    assert len(model_impact(BEFORE, twin)["changed_actions"]) > len(model_impact(BEFORE, AFTER)["changed_actions"])  # the kernel quirk
+    for view in ("state", "diff", "impact", "journey"):
+        if fmt in VIEW_FORMATS[view]:
+            assert render_view(view, fmt, BEFORE, twin) == render_view(view, fmt, BEFORE, AFTER), view
+    assert render_view("impact", "mermaid", twin, AFTER) == render_view("impact", "mermaid", AFTER, AFTER)
+    assert case_diagrams(BEFORE, twin)["impact"] == case_diagrams(BEFORE, AFTER)["impact"]
+    assert diff_summary(AFTER, twin)["changed_actions"] == {}
+
+
+def test_an_id_only_change_is_drawn_and_summarised():
+    data = AFTER.model_dump(mode="json")
+    for t in data["transitions"]:
+        if t["action"] == "Approve":
+            t["id"] = "T-APPROVE-RENAMED"
+    renamed = Workflow.model_validate(data)
+    assert renamed.semantic_hash != AFTER.semantic_hash and model_impact(AFTER, renamed)["changed_actions"] == ["Approve"]
+    assert diff_summary(AFTER, renamed)["changed_actions"]["Approve"][0]["field"] == "id"
+    text = render_view("diff", "mermaid", AFTER, renamed)
+    assert "~ Approve · Registrar" in text and "class Approved,Recommended changed" in text
+    assert any(n.status == "changed" for n in impact_graph(AFTER, renamed).nodes)
+
+
+def teacher_approves() -> Workflow:
+    data = AFTER.model_dump(mode="json")
+    for t in data["transitions"]:
+        if t["action"] == "Approve":
+            t["role"] = "Teacher"
+    return Workflow.model_validate(data)
+
+
+VIEW_CASES = [(v, f, a) for v, a in (("state", None), ("diff", None), ("impact", None), ("journey", None), ("sequence", "Approve"))
+              for f in ("mermaid", "plantuml")]
+
+
+@pytest.mark.parametrize("view,fmt,action", VIEW_CASES)
+def test_a_policy_refused_workflow_is_drawn_as_blocked(view, fmt, action):
+    bad = teacher_approves()
+    assert check_policy(bad) == ["PROTECTED_AUTHORITY:Approve"] and check_policy(AFTER) == []
+    text = render_view(view, fmt, BEFORE, bad, action)
+    assert "POLICY BLOCKED: PROTECTED_AUTHORITY:Approve" in text
+    assert "POLICY BLOCKED" not in render_view(view, fmt, BEFORE, AFTER, action)  # negative control: an accepted candidate has no marker
+    if view != "sequence" and fmt == "mermaid":
+        assert "blocked" in text  # the node carries the red `blocked` class, not just text
+
+
+def test_the_blocked_marker_cannot_collide_with_a_state_name():
+    data = AFTER.model_dump(mode="json")
+    data["states"] = [*data["states"], "policy-blocked"]
+    bad = Workflow.model_validate(data)
+    ids = [n.id for n in mark_blocked(diff_graph(BEFORE, bad), policy_violations(bad)).nodes]
+    assert len(ids) == len(set(ids)) and "policy-blocked_" in ids
+    assert "POLICY BLOCKED: UNSUPPORTED_WORKFLOW_SHAPE" in render_view("state", "mermaid", BEFORE, bad)
+
+
+class SpyUnitOfWork:
+    """A recording unit of work: answers exactly what `execute` needs and logs the order of port calls."""
+
+    def __init__(self, model: Workflow, state: str, actor: dict):
+        self.calls: list[str] = []
+        self.item = {"id": "i1", "case_id": "c1", "model_hash": model.semantic_hash, "state": state, "version": 0}
+        self._actor = actor
+
+    def find_instance(self, instance_id, case_id):
+        self.calls.append("find_instance")
+        return self.item
+
+    def actor(self, actor_id):
+        self.calls.append("actor")
+        return self._actor
+
+    def find_operation(self, operation_id):
+        self.calls.append("find_operation")
+        return None
+
+    def update_instance(self, item, expected):
+        self.calls.append("update_instance")
+
+    def event(self, kind, body):
+        self.calls.append("event")
+
+    def enqueue(self, case_id, operation_id, effect):
+        self.calls.append("enqueue")
+
+    def record_operation(self, operation_id, binding, result):
+        self.calls.append("record_operation")
+
+
+# What each Store/Audit/Outbox message of the diagram stands for at the unit-of-work port. A message that is
+# not listed fails the test, so a new step has to be mapped deliberately.
+PORT_CALL = (("load instance", "find_instance"), ("load actor", "actor"), ("find operation", "find_operation"),
+             ("compare-and-set", "update_instance"), ("append ", "event"), ("enqueue ", "enqueue"),
+             ("record operation", "record_operation"))
+
+
+def drawn_port_calls(workflow: Workflow, action: str) -> list[str]:
+    """Port calls in the order the sequence diagram shows them (main path: not the failure fragments)."""
+    calls = []
+    for step in commit_sequence(workflow, action).steps:
+        if isinstance(step, Message) and step.target in {"Store", "Audit", "Outbox"} and not step.text.startswith("commit "):
+            matches = [call for prefix, call in PORT_CALL if step.text.startswith(prefix)]
+            assert len(matches) == 1, f"unmapped diagram step {step.text!r}"
+            calls.append(matches[0])
+    return calls
+
+
+@pytest.mark.parametrize("action", sorted(t.action for t in AFTER.transitions))
+def test_sequence_matches_the_order_the_real_runtime_calls_its_port(action):
+    """Conformance, not a same-author oracle: run the real `execute` against a recording unit of work and compare the
+    order with the diagram. Moving the replay lookup before the authority check, or the audit write after the
+    operation record, in runtime.py fails this test. (The diagram is still hand-encoded; this pins it to the runtime.)"""
+    t = next(t for t in AFTER.transitions if t.action == action)
+    spy = SpyUnitOfWork(AFTER, t.from_state, {"active": True, "role": t.role, "assigned": True})
+    result = execute(spy, "c1", AFTER, ExecuteCommand(operation_id="op1", actor_id="a", instance_id="i1", action=action, expected_version=0))
+    assert result["committed"]
+    assert spy.calls == drawn_port_calls(AFTER, action), spy.calls
+    assert spy.calls.index("actor") < spy.calls.index("find_operation")  # authority is checked BEFORE the replay lookup
+
+
+def test_the_conformance_check_can_fail():
+    """Negative control: a runtime that looked up the operation before the actor would not match the drawing."""
+    t = next(t for t in AFTER.transitions if t.action == "Recommend")
+    spy = SpyUnitOfWork(AFTER, t.from_state, {"active": True, "role": t.role, "assigned": True})
+    execute(spy, "c1", AFTER, ExecuteCommand(operation_id="op1", actor_id="a", instance_id="i1", action="Recommend", expected_version=0))
+    swapped = list(spy.calls)
+    i, j = swapped.index("actor"), swapped.index("find_operation")
+    swapped[i], swapped[j] = swapped[j], swapped[i]
+    assert swapped != drawn_port_calls(AFTER, "Recommend")
+
+
+def test_authority_guards_the_runtime_always_checks_are_always_drawn():
+    """`check_actor` tests active and role with no guard lookup, so the diagram must not depend on the guards listed."""
+    for action in ("Submit", "Approve", "Recommend"):
+        text = render_view("sequence", "mermaid", BEFORE, AFTER, action)
+        assert "ACTOR_REVOKED" in text and "ROLE_DENIED" in text
+    assert "ASSIGNMENT_DENIED" not in render_view("sequence", "mermaid", BEFORE, AFTER, "Approve")  # conditional in the runtime too

@@ -24,5 +24,7 @@
 | Dependency hygiene | [deptry](https://deptry.com/) | pip-check-reqs, creosote | — | — |
 | Vulnerability audit | [pip-audit](https://github.com/pypa/pip-audit) | safety, OSV-Scanner | — | — |
 | Hook wiring | noslop hooks and Claude guardrails, adapted | pre-commit, husky | `.githooks/run-nox` (about 20 lines of shell) | noslop's Python pack hard-codes other gates; see ADR-0036 |
+| Diagram syntax validation | PlantUML `-syntax` (jar, optional; GPL-licensed, downloaded on demand by the person running the gate, never vendored or shipped, and not pinned by hash: the report prints its version), pydot 4.0.1, Graphviz `dot` (optional), Mermaid `parse`/`render` in Chrome | Mermaid CLI (pulls a bundled Chromium) | `scripts/validate_diagram_syntax.py` | Uses the installed Chrome (Playwright `channel="chrome"`) instead of downloading a browser; a missing tool reports `NOT_RUN` and fails the release session unless `EIJA_ALLOW_NOT_RUN=1` |
+| Browser drive and screenshots | Playwright 1.63.0 with installed Google Chrome (`channel="chrome"`) | Selenium, Puppeteer | `scripts/capture_visual_screenshots.py` | Playwright is the register's HCI tool; no browser download |
 
 Lanes still to add rows: providers (agent CLIs), diagrams (Mermaid, PlantUML, Graphviz), formal (Bend, TLA+/TLC, Z3), testing (Hypothesis), mutation, metrics (radon, grimp), HCI (Playwright, axe-core), agents (MCP Python SDK), tracing (OpenFastTrace), knowledge base ([OKF v0.2](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md)), docs.

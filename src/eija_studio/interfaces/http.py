@@ -3,7 +3,7 @@ from __future__ import annotations
 import hmac
 from pathlib import Path
 from typing import Literal
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Query, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.exceptions import RequestValidationError
 from pydantic import Field
@@ -68,7 +68,9 @@ def create_app(studio, token: str, port: int = 8765) -> FastAPI:
                 request._body = b"".join(data)
         response = await call_next(request)
         framed = request.url.path == "/visual-frame"
-        response.headers.update({"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff",
+        # The vendored renderer is a 5 MB public, versioned file with no user data: let the browser keep it for an hour.
+        cache = "private, max-age=3600" if request.url.path == "/assets/vendor/mermaid.min.js" and response.status_code == 200 else "no-store"
+        response.headers.update({"Cache-Control": cache, "X-Content-Type-Options": "nosniff",
             "Referrer-Policy": "no-referrer", "X-Frame-Options": "SAMEORIGIN" if framed else "DENY",
             "Content-Security-Policy": FRAME_CSP if framed else PAGE_CSP})
         return response
@@ -173,9 +175,9 @@ def create_app(studio, token: str, port: int = 8765) -> FastAPI:
         return studio.execute(case_id, body)
 
     @app.get("/api/cases/{case_id}/diagrams")
-    def diagrams(case_id: str, format: Literal["mermaid", "plantuml", "dot"] = "mermaid"):
+    def diagrams(case_id: str, fmt: Literal["mermaid", "plantuml", "dot"] = Query("mermaid", alias="format")):
         before, after = studio.workflows(case_id)
-        return case_diagrams(before, after, format)
+        return case_diagrams(before, after, fmt)
 
     @app.get("/api/cases/{case_id}/export")
     def export(case_id: str):

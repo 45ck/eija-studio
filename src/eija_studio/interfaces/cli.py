@@ -10,8 +10,7 @@ from eija_studio.domain.policy import baseline, apply_transaction, check_policy,
 from eija_studio.domain.impact import model_impact
 from eija_studio.application.compiler import subject_for
 from eija_studio.application.verifier import verify_runtime
-from eija_studio.application.diagram_catalog import VIEWS, VIEW_FORMATS, render_view
-from eija_studio.application.diagram_emitters import FORMATS
+from eija_studio.application.diagram_catalog import FORMATS, VIEWS, VIEW_FORMATS, html_panels, render_view
 
 
 def output(value, path: Path | None = None):
@@ -26,27 +25,20 @@ def output(value, path: Path | None = None):
 
 
 def render_command(args) -> int:
-    """Text on stdout is the diagram itself (no JSON wrapper) so it pipes into a renderer."""
-    if (args.case_id is None) == (args.model is None):
-        raise DomainError("CONFIGURATION", "Give exactly one of CASE_ID or --model FILE")
+    """Text on stdout is the diagram itself (no JSON wrapper) so it pipes into a renderer. A workflow the
+    protected policy refuses is still drawn, with a POLICY BLOCKED marker, and the command exits 2 so a script
+    cannot mistake it for a routine change. Read-only: it never creates a workspace or a receipt key."""
+    if (args.case_id is None) == (args.workflow is None):
+        raise DomainError("CONFIGURATION", "Give exactly one of CASE_ID or --workflow FILE")
     if args.case_id is not None:
+        if not args.workspace.is_dir():
+            raise DomainError("NOT_FOUND", "Workspace does not exist; render never creates one")
         before, after = build_studio(args.workspace).workflows(args.case_id)
     else:
-        before, after = baseline(), Workflow.model_validate_json(args.model.read_text(encoding="utf-8"))
+        before, after = baseline(), Workflow.model_validate_json(args.workflow.read_text(encoding="utf-8"))
     if args.fmt == "html":
         from .render_html import html_page
-        wanted = VIEWS if args.view == "all" else (args.view,)
-        panels = []
-        for view in wanted:
-            if view == "sequence" and args.action is None and args.view == "all":
-                panels += [(f"Commit protocol: {t.action}", "Order of checks and writes in one commit.", render_view("sequence", "mermaid", before, after, t.action))
-                           for t in sorted((after or before).transitions, key=lambda t: t.action)]
-            elif view in {"diff", "impact"} and after is None:
-                continue
-            else:
-                panels.append((view.capitalize() + " view", f"Generated from the workflow's semantic hash {(after or before).semantic_hash[:16]}.",
-                               render_view(view, "mermaid", before, after, args.action)))
-        text = html_page("EIJA diagrams: " + (args.case_id or args.model.name), panels)
+        text = html_page("EIJA diagrams: " + (args.case_id or args.workflow.name), html_panels(args.view, before, after, args.action))
     else:
         if args.view == "all":
             raise DomainError("CONFIGURATION", "--view all is only available with --format html")
@@ -61,6 +53,10 @@ def render_command(args) -> int:
     else:
         sys.stdout.buffer.write(data)
         sys.stdout.buffer.flush()
+    blocked = check_policy(after if after is not None else before)
+    if blocked:
+        print("POLICY_BLOCKED: " + "; ".join(blocked) + " (drawn with a marker; the runtime would refuse this workflow)", file=sys.stderr)
+        return 2
     return 0
 
 
@@ -85,8 +81,8 @@ def main(argv=None) -> int:
     compile_p = subs.add_parser("compile", parents=[common]); compile_p.add_argument("file", type=Path); compile_p.add_argument("--out", type=Path, required=True); compile_p.add_argument("--verify", action="store_true")
     check = subs.add_parser("check-export"); check.add_argument("file", type=Path)
     render = subs.add_parser("render", help="Generate UML (Mermaid, PlantUML, DOT or HTML) from a case's executable model")
-    render.add_argument("case_id", nargs="?", help="Change Case id; alternatively pass --model")
-    render.add_argument("--model", type=Path, help="Workflow JSON file, drawn as the candidate against the shipped baseline")
+    render.add_argument("case_id", nargs="?", help="Change Case id; alternatively pass --workflow")
+    render.add_argument("--workflow", type=Path, help="Workflow JSON file, drawn as the candidate against the shipped baseline")
     render.add_argument("--workspace", type=Path, default=Path(".eija"))
     render.add_argument("--view", choices=(*VIEWS, "all"), default="state", help="'all' is for --format html only")
     render.add_argument("--format", choices=(*FORMATS, "html"), default="mermaid", dest="fmt")

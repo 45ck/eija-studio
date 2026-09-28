@@ -19,6 +19,7 @@ flowchart LR
         n_runtime_Approve["Runtime · Approve"]
         n_state_view_Approve["State view · Approve"]
     end
+    style c_Approve fill:#ffffff,stroke:#8c959f
     subgraph c_Recommend["Action Recommend"]
         n_journey_Recommend["Journey · Recommend"]
         n_obligation_Recommend["Obligation · Recommend"]
@@ -27,6 +28,7 @@ flowchart LR
         n_runtime_Recommend["Runtime · Recommend"]
         n_state_view_Recommend["State view · Recommend"]
     end
+    style c_Recommend fill:#ffffff,stroke:#8c959f
     subgraph c_Reject["Action Reject"]
         n_journey_Reject["Journey · Reject"]
         n_obligation_Reject["Obligation · Reject"]
@@ -35,6 +37,7 @@ flowchart LR
         n_runtime_Reject["Runtime · Reject"]
         n_state_view_Reject["State view · Reject"]
     end
+    style c_Reject fill:#ffffff,stroke:#8c959f
     subgraph c_Revise["Action Revise"]
         n_journey_Revise["Journey · Revise"]
         n_obligation_Revise["Obligation · Revise"]
@@ -43,6 +46,7 @@ flowchart LR
         n_runtime_Revise["Runtime · Revise"]
         n_state_view_Revise["State view · Revise"]
     end
+    style c_Revise fill:#ffffff,stroke:#8c959f
     subgraph c_Submit["Action Submit"]
         n_journey_Submit["Journey · Submit"]
         n_obligation_Submit["Obligation · Submit"]
@@ -51,6 +55,7 @@ flowchart LR
         n_runtime_Submit["Runtime · Submit"]
         n_state_view_Submit["State view · Submit"]
     end
+    style c_Submit fill:#ffffff,stroke:#8c959f
     n_local_decision["Local decision"]
     n_review_packet["Review packet"]
     n_journey_Approve --> n_obligation_Approve
@@ -92,6 +97,7 @@ flowchart LR
         legend_affected["affected downstream"]
         legend_same["unaffected"]
     end
+    style legend fill:#ffffff,stroke:#8c959f
     class legend_changed changed
     class legend_affected affected
 ```

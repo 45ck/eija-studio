@@ -62,7 +62,10 @@ def test_studio_page_csp_stays_strict_and_only_the_frame_relaxes_styles(studio):
         assert rules["connect-src"] == "'none'" and rules["sandbox"] == "allow-scripts" and rules["frame-ancestors"] == "'self'"
         assert "unsafe-eval" not in frame.headers["content-security-policy"] and "unsafe-inline" not in rules["script-src"]
         assert frame.headers["x-frame-options"] == "SAMEORIGIN"
-        assert c.get("/assets/vendor/mermaid.min.js").status_code == 200
+        vendored = c.get("/assets/vendor/mermaid.min.js")
+        assert vendored.status_code == 200 and vendored.headers["cache-control"] == "private, max-age=3600"
+        assert c.get("/assets/app.js").headers["cache-control"] == "no-store"  # everything else stays uncached
+        assert c.get("/assets/vendor/nope.js").headers["cache-control"] == "no-store"
         assert c.get("/assets/visual-frame.js").status_code == 200
         for hidden in ("/assets/vendor/mermaid.LICENSE.txt", "/assets/vendor/VENDOR.json", "/assets/mermaid.min.js"):
             assert c.get(hidden).status_code == 404, hidden
@@ -108,24 +111,24 @@ def run_cli(capsysbinary, *argv):
 
 def test_cli_render_model_file_every_view_and_format(capsysbinary):
     model = str(ROOT / "examples/excursion-candidate.json")
-    code, out = run_cli(capsysbinary, "render", "--model", model, "--view", "diff", "--format", "mermaid")
+    code, out = run_cli(capsysbinary, "render", "--workflow", model, "--view", "diff", "--format", "mermaid")
     text = out.decode("utf-8")
     assert code == 0 and "stateDiagram-v2" in text and "+ Recommend · Teacher · assigned" in text and b"\r" not in out
-    code, out = run_cli(capsysbinary, "render", "--model", model, "--view", "impact", "--format", "dot")
+    code, out = run_cli(capsysbinary, "render", "--workflow", model, "--view", "impact", "--format", "dot")
     assert code == 0 and out.decode().count("digraph") == 1
-    code, out = run_cli(capsysbinary, "render", "--model", model, "--view", "sequence", "--action", "Recommend", "--format", "plantuml")
+    code, out = run_cli(capsysbinary, "render", "--workflow", model, "--view", "sequence", "--action", "Recommend", "--format", "plantuml")
     assert code == 0 and out.startswith(b"@startuml") and b"ASSIGNMENT_DENIED" in out
-    code, out = run_cli(capsysbinary, "render", "--model", model, "--view", "class")
+    code, out = run_cli(capsysbinary, "render", "--workflow", model, "--view", "class")
     assert code == 0 and b"classDiagram" in out
 
 
 @pytest.mark.parametrize("argv,error", [
     (["render", "--view", "state"], "CONFIGURATION"),
-    (["render", "x", "--model", "y.json"], "CONFIGURATION"),
-    (["render", "--model", "examples/excursion-candidate.json", "--view", "sequence"], "ACTION_REQUIRED"),
-    (["render", "--model", "examples/excursion-candidate.json", "--view", "sequence", "--action", "Recommend", "--format", "dot"], "FORMAT_UNSUPPORTED"),
-    (["render", "--model", "examples/excursion-candidate.json", "--view", "all"], "CONFIGURATION"),
-    (["render", "--model", "examples/excursion-candidate.json", "--view", "sequence", "--action", "Nope"], "ACTION_DENIED"),
+    (["render", "x", "--workflow", "y.json"], "CONFIGURATION"),
+    (["render", "--workflow", "examples/excursion-candidate.json", "--view", "sequence"], "ACTION_REQUIRED"),
+    (["render", "--workflow", "examples/excursion-candidate.json", "--view", "sequence", "--action", "Recommend", "--format", "dot"], "FORMAT_UNSUPPORTED"),
+    (["render", "--workflow", "examples/excursion-candidate.json", "--view", "all"], "CONFIGURATION"),
+    (["render", "--workflow", "examples/excursion-candidate.json", "--view", "sequence", "--action", "Nope"], "ACTION_DENIED"),
 ])
 def test_cli_render_errors_are_stable_codes(capsysbinary, monkeypatch, argv, error):
     monkeypatch.chdir(ROOT)
@@ -143,3 +146,56 @@ def test_cli_render_case_by_id_and_html(studio, selected, capsysbinary, tmp_path
     assert code == 0 and page.count('class="mermaid"') == 10 and "mermaid.initialize" in page and len(page) > 1_000_000
     code, out = run_cli(capsysbinary, "render", "does-not-exist", "--workspace", str(workspace))
     assert code == 2 and json.loads(out)["error"] == "NOT_FOUND"
+
+
+def write_teacher_approves(tmp_path) -> Path:
+    data = json.loads((ROOT / "examples/excursion-candidate.json").read_text(encoding="utf-8"))
+    for t in data["transitions"]:
+        if t["action"] == "Approve":
+            t["role"] = "Teacher"
+    target = tmp_path / "bad.json"
+    target.write_text(json.dumps(data), encoding="utf-8")
+    return target
+
+
+def test_cli_render_marks_a_policy_refused_workflow_and_exits_nonzero(capsysbinary, tmp_path):
+    bad = write_teacher_approves(tmp_path)
+    for view in ("diff", "state", "impact"):
+        code, out = run_cli(capsysbinary, "render", "--workflow", str(bad), "--view", view)
+        assert code == 2 and b"POLICY BLOCKED: PROTECTED_AUTHORITY:Approve" in out, view
+    assert "+ Approve · Teacher" in run_cli(capsysbinary, "render", "--workflow", str(bad), "--view", "diff")[1].decode("utf-8")
+    ok = run_cli(capsysbinary, "render", "--workflow", str(ROOT / "examples/excursion-candidate.json"), "--view", "diff")
+    assert ok[0] == 0 and b"POLICY BLOCKED" not in ok[1]  # control: the accepted candidate is unmarked and exits 0
+    target = tmp_path / "bad.html"
+    assert run_cli(capsysbinary, "render", "--workflow", str(bad), "--view", "all", "--format", "html", "--out", str(target))[0] == 2
+    assert "POLICY BLOCKED: PROTECTED_AUTHORITY:Approve" in target.read_text(encoding="utf-8")
+
+
+def test_cli_render_is_read_only_and_does_not_create_a_workspace_or_key(capsysbinary, tmp_path):
+    missing = tmp_path / "no-such-workspace"
+    code, out = run_cli(capsysbinary, "render", "case", "--workspace", str(missing))
+    assert code == 2 and json.loads(out)["error"] == "NOT_FOUND" and not missing.exists()
+
+
+def test_html_panels_compose_views_in_the_catalog():
+    from eija_studio.application.diagram_catalog import demo_pair, html_panels
+    before, after = demo_pair()
+    everything = html_panels("all", before, after)
+    assert len(everything) == 5 + len(after.transitions)  # the five non-sequence views + one commit protocol per action
+    assert not {"Diff view", "Impact view"} & {h for h, _, _ in html_panels("all", before, None)}  # no candidate: no diff or ripple
+    from eija_studio.domain.models import DomainError
+    with pytest.raises(DomainError) as e:
+        html_panels("diff", before, None)
+    assert e.value.code == "CANDIDATE_REQUIRED"
+
+
+def test_committed_screenshots_are_from_the_current_model():
+    """A stale-image tripwire that needs no browser: the sidecar written by scripts/capture_visual_screenshots.py
+    records which models the PNGs were drawn from. It does not prove the pixels; the release session regenerates them."""
+    import sys
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import capture_visual_screenshots as capture
+    recorded = json.loads(capture.SIDECAR.read_text(encoding="utf-8"))
+    assert recorded == capture.source_record(), "docs/assets/*.png are stale: run `nox -s visual_screenshots` and commit the images and sidecar"
+    for name in recorded["images"]:
+        assert (capture.ASSETS / name).is_file()
