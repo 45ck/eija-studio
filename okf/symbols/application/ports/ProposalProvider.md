@@ -16,6 +16,7 @@ sources:
   hash_method: ast-sig-v1
   sha256: 3ea25c091151175504929252f5146fbe03024fbac11d69447d3f5ba1720ecb2b
 description_override: 'The only door for AI: a provider returns an untrusted Proposal and cannot select meaning, approve or apply.'
+notes_baseline: fd2f65a2bd34dd7d60067a858176f484a7fc26181909502839221baa432ee81a
 ---
 
 # application.ports.ProposalProvider
@@ -27,7 +28,7 @@ description_override: 'The only door for AI: a provider returns an untrusted Pro
 | Module | [`application/ports`](/modules/application/ports.md) |
 | Signature | `class ProposalProvider(Protocol)` |
 | Code | `repo://src/eija_studio/application/ports.py#ProposalProvider` |
-| Hash | `ast-sig-v1` over the normalised AST (comments and formatting ignored) |
+| Hash | `ast-sig-v1` over the class signature view: fields and public method signatures; method bodies and private helpers are NOT hashed |
 
 ## Docstring
 
@@ -55,11 +56,11 @@ Implemented by the offline, OpenRouter and Codex adapters in [adapters.providers
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [application.ports.ProviderResult](/symbols/application/ports/ProviderResult.md) - `class ProviderResult` in `application/ports` (the source has no docstring).
-* [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models` (the source has no docstring).
+* [application.ports.ProviderResult](/symbols/application/ports/ProviderResult.md) - `class ProviderResult` in `application/ports`.
+* [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 
 ## Referenced by
 
 * [Provider integration](/contexts/provider-integration.md) - Owns Vendor transport, authentication delegation, limits and response normalization
-* [application.service.Studio](/symbols/application/service/Studio.md) - `class Studio` in `application/service` (the source has no docstring).
+* [application.service.Studio](/symbols/application/service/Studio.md) - `class Studio` in `application/service`.
 <!-- okf:generated:end links -->

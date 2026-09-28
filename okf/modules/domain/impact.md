@@ -14,6 +14,7 @@ sources:
   title: domain/impact.py
   hash_method: ast-api-v1
   sha256: 0084f7ea44c5884a2ad07afa41cffac4a5059f2422cbf581c6898946c3eef7bb
+notes_baseline: a16eb74b6059152f4193212103538ee4bbaa112524cf121cfd4e71f2e04f70a5
 ---
 
 # domain.impact
@@ -53,5 +54,5 @@ _No curated notes yet._
 * [application.compiler](/modules/application/compiler.md) - Compiler: model → projections + impacts + obligations + computed review packet.
 * [interfaces.cli](/modules/interfaces/cli.md) - Module `interfaces/cli` (no module docstring).
 * [domain.impact.closure](/symbols/domain/impact/closure.md) - Edges mean source affects target.
-* [domain.impact.model_impact](/symbols/domain/impact/model_impact.md) - `def model_impact(before: Workflow, after: Workflow) -> dict` in `domain/impact` (the source has no docstring).
+* [domain.impact.model_impact](/symbols/domain/impact/model_impact.md) - `def model_impact(before: Workflow, after: Workflow) -> dict` in `domain/impact`.
 <!-- okf:generated:end links -->

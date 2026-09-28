@@ -9,13 +9,13 @@ from __future__ import annotations
 
 import copy
 import functools
+import hashlib
 import posixpath
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-import frontmatter
 import yaml
 
 OKF_VERSION = "0.2"
@@ -124,7 +124,34 @@ def quote(text: str) -> str:
 
 @functools.lru_cache(maxsize=1024)
 def _load_yaml(text: str) -> Any:
-    return frontmatter.YAMLHandler().load(text)
+    return yaml.safe_load(text)
+
+
+def sources_sha256(sources: Any) -> str | None:
+    """One digest over a page's recorded source hashes (resource, method, sha256), order-independent.
+
+    Returns None when ``sources`` is not a well-formed list, so a malformed page can never look aligned.
+    """
+    if not isinstance(sources, list):
+        return None
+    lines = []
+    for entry in sources:
+        if not isinstance(entry, dict) or not isinstance(entry.get("resource"), str):
+            return None
+        lines.append(f"{entry['resource']} {entry.get('hash_method')} {entry.get('sha256')}")
+    return hashlib.sha256(chr(10).join(sorted(lines)).encode("utf-8")).hexdigest()
+
+
+def human_sha256(body: str) -> str:
+    """Digest of everything a human owns in a page body: the text outside the ``okf:generated`` blocks."""
+    prose = _BLOCK.sub(lambda m: f"<generated {m['name']}>", body)
+    return hashlib.sha256(" ".join(prose.split()).encode("utf-8")).hexdigest()
+
+
+def is_curated(body: str) -> bool:
+    """True when the page carries hand-written text under ``## Notes`` (anything but the placeholder)."""
+    match = re.search(r"^## Notes\n\n(.*?)(?=\n<!-- okf|\Z)", body, re.DOTALL | re.MULTILINE)
+    return bool(match and match[1].strip() and match[1].strip() != PLACEHOLDER)
 
 
 def split_page(text: str) -> tuple[dict[str, Any], str]:
@@ -149,14 +176,16 @@ def dump_frontmatter(meta: dict[str, Any]) -> str:
     return f"---\n{blob}---\n"
 
 
-def frontmatter_for(spec: PageSpec, digests: dict[str, str], existing: dict[str, Any] | None) -> tuple[dict[str, Any], list[str]]:
-    """Machine-owned keys in a fixed order, then preserved human keys, then ``verified`` if still valid.
+def frontmatter_for(spec: PageSpec, digests: dict[str, str], existing: dict[str, Any] | None, curated: bool = False) -> dict[str, Any]:
+    """Machine-owned keys in a fixed order, then preserved human keys.
 
-    ``verified`` is a human/process attestation that the *content matched its sources at that time*.
-    If any source hash changed since, the attestation no longer holds and is dropped (reported in notes),
-    which returns the page to the *unverified* trust tier until someone re-reviews it.
+    Human-owned keys are kept verbatim: ``verified`` (an append-only attestation history; whether an entry
+    still counts is decided at check time from the hashes it is bound to) and ``notes_baseline`` (the source
+    state the curated Notes were last aligned to). For a page with hand-written Notes (``curated``) ``sync``
+    NEVER advances an existing ``notes_baseline``: only ``review`` does, so regenerating cannot mark prose as
+    re-read. A page with no hand-written text follows its sources (there is nothing to align), and a curated
+    page with no baseline yet is seeded once; deleting the key to silence a finding is a visible diff in review.
     """
-    notes: list[str] = []
     description = spec.description
     if existing and isinstance(existing.get("description_override"), str) and existing["description_override"].strip():
         description = " ".join(existing["description_override"].split())   # human-owned one-line summary
@@ -179,20 +208,13 @@ def frontmatter_for(spec: PageSpec, digests: dict[str, str], existing: dict[str,
         meta["sources"] = entries
     if existing:
         for key, value in existing.items():
-            if key not in MACHINE_KEYS and key != "verified":
+            if key not in MACHINE_KEYS:
                 meta[key] = value
-        if "verified" in existing:
-            if _hashes(existing.get("sources")) == _hashes(meta.get("sources")):
-                meta["verified"] = existing["verified"]
-            else:
-                notes.append("verification reset (source hash changed)")
-    return meta, notes
-
-
-def _hashes(sources: Any) -> dict[str, str]:
-    if not isinstance(sources, list):
-        return {}
-    return {s.get("resource"): s.get("sha256") for s in sources if isinstance(s, dict)}
+        if meta.get("description_override") == spec.description:
+            del meta["description_override"]           # redundant: it only repeats the generated description
+    if "sources" in meta and (not curated or "notes_baseline" not in meta):
+        meta["notes_baseline"] = sources_sha256(meta["sources"])
+    return meta
 
 
 def block(name: str, content: str) -> str:
@@ -218,7 +240,7 @@ def render_body(spec: PageSpec, blocks: dict[str, str], existing_body: str | Non
     return re.sub(r"\n{3,}", "\n\n", body)
 
 
-def render_page(spec: PageSpec, blocks: dict[str, str], digests: dict[str, str], existing_text: str | None) -> tuple[str, list[str]]:
+def render_page(spec: PageSpec, blocks: dict[str, str], digests: dict[str, str], existing_text: str | None) -> str:
     existing_meta: dict[str, Any] | None = None
     existing_body: str | None = None
     if existing_text is not None:
@@ -226,8 +248,8 @@ def render_page(spec: PageSpec, blocks: dict[str, str], digests: dict[str, str],
             existing_meta, existing_body = split_page(existing_text)
         except ValueError:
             existing_meta, existing_body = None, None   # unparseable: regenerate; conformance reports it separately
-    meta, notes = frontmatter_for(spec, digests, existing_meta)
-    return dump_frontmatter(meta) + "\n" + render_body(spec, blocks, existing_body), notes
+    meta = frontmatter_for(spec, digests, existing_meta, curated=existing_body is not None and is_curated(existing_body))
+    return dump_frontmatter(meta) + "\n" + render_body(spec, blocks, existing_body)
 
 
 def link_entry(target: PageSpec | dict[str, str], path: str, relative_to: str | None = None) -> str:

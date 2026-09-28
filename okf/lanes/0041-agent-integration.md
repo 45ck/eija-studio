@@ -13,6 +13,7 @@ sources:
   title: docs/adr/README.md
   hash_method: md-table-row-v1
   sha256: a02311e73a6d9e22f891eed2501c176902e113d2f21c020a92691217447549ce
+notes_baseline: 9d5175736700f450cafc0fccbc64a108c00c627fc0c1d17d278bd003aae1d002
 ---
 
 # Agent integration (MCP server, skills)

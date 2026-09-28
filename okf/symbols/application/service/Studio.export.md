@@ -1,7 +1,7 @@
 ---
 type: Method
 title: application.service.Studio.export
-description: '`def export(self, case_id: str) -> dict` in `application/service` (the source has no docstring).'
+description: '`def export(self, case_id: str) -> dict` in `application/service`.'
 resource: repo://src/eija_studio/application/service.py#Studio.export
 tags:
 - symbol
@@ -13,8 +13,9 @@ generated:
 sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.export
   title: application/service.py
-  hash_method: ast-v1
-  sha256: 58f9e6ba10e9262dc5d42ba42916ffa780b4c84a470ccd5c71325391506f53a1
+  hash_method: ast-v2
+  sha256: 4f262b1e5f0acc6e18bf5e1c5473a499441fd9918a3fb452105ba2eb74c6833e
+notes_baseline: a92a7a3b22f40855d39f48c96780e819aeabdf68da26e796377b51f51bfba9dd
 ---
 
 # application.service.Studio.export
@@ -27,7 +28,7 @@ sources:
 | Class | [`Studio`](/symbols/application/service/Studio.md) |
 | Signature | `def export(self, case_id: str) -> dict` |
 | Code | `repo://src/eija_studio/application/service.py#Studio.export` |
-| Hash | `ast-v1` over the normalised AST (comments and formatting ignored) |
+| Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
@@ -41,5 +42,5 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [domain.models.fingerprint](/symbols/domain/models/fingerprint.md) - `def fingerprint(value: Any) -> str` in `domain/models` (the source has no docstring).
+* [domain.models.fingerprint](/symbols/domain/models/fingerprint.md) - `def fingerprint(value: Any) -> str` in `domain/models`.
 <!-- okf:generated:end links -->

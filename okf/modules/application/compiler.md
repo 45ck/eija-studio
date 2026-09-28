@@ -14,6 +14,7 @@ sources:
   title: application/compiler.py
   hash_method: ast-api-v1
   sha256: 6cd8935598852df04d62177fc03d8cfe0b0c91bcbeec0b9b6d4ed06e81159292
+notes_baseline: 22552f5c45023fdbcebb032bab9d18195903360b86ce46990567730134511142
 ---
 
 # application.compiler
@@ -65,6 +66,6 @@ _No curated notes yet._
 * [Assurance](/contexts/assurance.md) - Owns Subject dimensions, verification observations, admissibility and freshness
 * [application.service](/modules/application/service.md) - Module `application/service` (no module docstring).
 * [interfaces.cli](/modules/interfaces/cli.md) - Module `interfaces/cli` (no module docstring).
-* [application.compiler.compile_case](/symbols/application/compiler/compile_case.md) - `def compile_case(case: ChangeCase, identity: dict, authenticator, active_version: int, scope: str='local-demo') -> dict` in `application/compiler` (the source…
-* [application.compiler.subject_for](/symbols/application/compiler/subject_for.md) - `def subject_for(model: Workflow, layout: dict, identity: dict) -> dict` in `application/compiler` (the source has no docstring).
+* [application.compiler.compile_case](/symbols/application/compiler/compile_case.md) - `def compile_case(case: ChangeCase, identity: dict, authenticator, active_version: int, scope: str='local-demo…` in `application/compiler`.
+* [application.compiler.subject_for](/symbols/application/compiler/subject_for.md) - `def subject_for(model: Workflow, layout: dict, identity: dict) -> dict` in `application/compiler`.
 <!-- okf:generated:end links -->

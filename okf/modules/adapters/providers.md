@@ -14,6 +14,7 @@ sources:
   title: adapters/providers.py
   hash_method: ast-api-v1
   sha256: 0fb311a39c77aec5ac5a32807cff2ce27c3dc6509fcee620468d1167504b4253
+notes_baseline: 278502a583e7149fa59536dc10ef46740a49e37e1b03c3673758d35432199a11
 ---
 
 # adapters.providers

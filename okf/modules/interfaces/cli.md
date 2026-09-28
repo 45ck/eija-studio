@@ -14,6 +14,7 @@ sources:
   title: interfaces/cli.py
   hash_method: ast-api-v1
   sha256: 48c95cf170d6952f3d72f766abd92e4403c6dd600662018174996fd974ba582b
+notes_baseline: 5dde893bd0f89f34be038411993e6a8155e4b4c1c92e57d98841471d0025cc14
 ---
 
 # interfaces.cli

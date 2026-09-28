@@ -14,6 +14,7 @@ sources:
   title: ARCHITECTURE.md
   hash_method: md-bold-term-v1
   sha256: c2d205da3af4cbf0ae55bbddb62ae557250601db9964a44e0dff1d42083bd460
+notes_baseline: c6a8b952e5bc701c86ec670b8ad94dc9e6ce3d3bf1be6eb86a945fbd4f6be482
 ---
 
 # Change Case

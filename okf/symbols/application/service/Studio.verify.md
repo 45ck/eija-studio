@@ -13,9 +13,10 @@ generated:
 sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.verify
   title: application/service.py
-  hash_method: ast-v1
-  sha256: 1dcdb273a2c0dca8a532cbff1041fb6ec31a65dcbb6e3c2b374c3ed4e6013c5c
+  hash_method: ast-v2
+  sha256: ee1f0955b4ae434667ae13a4369c23b4a24e96bbae4a5a1979dedb76d6f38728
 description_override: Runs the runtime matrix in a sandbox and stores a sealed receipt; refuses a source that differs from the release fixture.
+notes_baseline: cb447b283609e7331c899eaed3407cebf36e002697082810e06650c5e036b38f
 ---
 
 # application.service.Studio.verify
@@ -28,7 +29,7 @@ description_override: Runs the runtime matrix in a sandbox and stores a sealed r
 | Class | [`Studio`](/symbols/application/service/Studio.md) |
 | Signature | `def verify(self, case_id: str, expected: int) -> dict` |
 | Code | `repo://src/eija_studio/application/service.py#Studio.verify` |
-| Hash | `ast-v1` over the normalised AST (comments and formatting ignored) |
+| Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
@@ -42,7 +43,7 @@ Verification clears any current decision and never approves. See [verify_runtime
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [application.compiler.subject_for](/symbols/application/compiler/subject_for.md) - `def subject_for(model: Workflow, layout: dict, identity: dict) -> dict` in `application/compiler` (the source has no docstring).
-* [application.verifier.verify_runtime](/symbols/application/verifier/verify_runtime.md) - `def verify_runtime(model: Workflow, subject: dict, sandbox: SandboxFactory) -> dict` in `application/verifier` (the source has no docstring).
+* [application.compiler.subject_for](/symbols/application/compiler/subject_for.md) - `def subject_for(model: Workflow, layout: dict, identity: dict) -> dict` in `application/compiler`.
+* [application.verifier.verify_runtime](/symbols/application/verifier/verify_runtime.md) - `def verify_runtime(model: Workflow, subject: dict, sandbox: SandboxFactory) -> dict` in `application/verifier`.
 * [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
 <!-- okf:generated:end links -->

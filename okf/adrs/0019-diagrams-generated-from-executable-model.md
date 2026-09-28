@@ -14,6 +14,7 @@ sources:
   title: 0019-diagrams-generated-from-executable-model.md
   hash_method: lf-sha256-v1
   sha256: 45cddf16f44bcd58713eaa1025bf221c0571983d07c41e4af08cae5745a4b53c
+notes_baseline: a81727f4f05fa2f96d80f153351cdfe2f034efbdb8407dcfbbe8a531cbb18462
 ---
 
 # ADR-0019: Diagrams are generated projections of the executable model

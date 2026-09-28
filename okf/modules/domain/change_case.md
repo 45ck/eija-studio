@@ -14,6 +14,7 @@ sources:
   title: domain/change_case.py
   hash_method: ast-api-v1
   sha256: 96f4f246f4ea79eb0d5512f5829787f5bb9df6b58301106f988cdcea083aba03
+notes_baseline: 59778286019f8dd1c292e8dc7219830862e3bee8d0748314b3d7cbe40baab982
 ---
 
 # domain.change_case
@@ -52,8 +53,8 @@ _No curated notes yet._
 * [Authoring](/contexts/authoring.md) - Owns Requested intent, alternatives, explicit selection, candidate and edits
 * [application.compiler](/modules/application/compiler.md) - Compiler: model → projections + impacts + obligations + computed review packet.
 * [application.service](/modules/application/service.md) - Module `application/service` (no module docstring).
-* [domain.change_case.ChangeCase.at_version](/symbols/domain/change_case/ChangeCase.at_version.md) - `def at_version(self, expected: int) -> None` in `domain/change_case` (the source has no docstring).
-* [domain.change_case.ChangeCase.executable](/symbols/domain/change_case/ChangeCase.executable.md) - `def executable(self) -> Workflow` in `domain/change_case` (the source has no docstring).
+* [domain.change_case.ChangeCase.at_version](/symbols/domain/change_case/ChangeCase.at_version.md) - `def at_version(self, expected: int) -> None` in `domain/change_case`.
+* [domain.change_case.ChangeCase.executable](/symbols/domain/change_case/ChangeCase.executable.md) - `def executable(self) -> Workflow` in `domain/change_case`.
 * [domain.change_case.ChangeCase](/symbols/domain/change_case/ChangeCase.md) - Aggregate boundary: transitions are mediated by the application and CAS store.
-* [domain.change_case.ChangeCase.require_editable](/symbols/domain/change_case/ChangeCase.require_editable.md) - `def require_editable(self) -> None` in `domain/change_case` (the source has no docstring).
+* [domain.change_case.ChangeCase.require_editable](/symbols/domain/change_case/ChangeCase.require_editable.md) - `def require_editable(self) -> None` in `domain/change_case`.
 <!-- okf:generated:end links -->

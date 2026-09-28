@@ -16,7 +16,7 @@ Before recommending updated Codex/OpenRouter parameters, check current official 
 
 ## Knowledge base (start retrieval here)
 
-Start retrieval at [okf/index.md](okf/index.md): an [OKF v0.2](https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/main/SPEC.md) wiki of the ubiquitous language, bounded contexts, modules, public symbols, ADRs, acceptance criteria, verification techniques, gates and lanes. Every page has a `repo://` `resource` and hashes of the code it describes, so open the page, then the linked source. Do not hand-edit frontmatter or `okf:generated` blocks; write prose under `## Notes`. After adding a public domain/application symbol, ADR, nox session or lane, run `python -m quality.okf sync`. `nox -s okf` reports STALE pages (code changed since the page was baselined): review them, sync, and never record `verified` without reading the page. See [docs/knowledge-base.md](docs/knowledge-base.md).
+Start retrieval at [okf/index.md](okf/index.md): an [OKF v0.2](https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/main/SPEC.md) wiki of the ubiquitous language, bounded contexts, modules, public symbols, ADRs, acceptance criteria, verification techniques, gates and lanes. Every page has a `repo://` `resource` and hashes of the code it describes, so open the page, then the linked source. Do not hand-edit frontmatter or `okf:generated` blocks; write prose under `## Notes`. After adding a public domain/application symbol, ADR, nox session or lane, or changing a linked source, run `python -m quality.okf sync` and commit the resulting `okf/` changes in the same PR (or leave one sync commit to the integrating lane). `nox -s okf` (full/release tiers) reports STALE pages (source changed since the page was baselined) and NOTES_STALE pages (hand-written Notes not re-read since): read them, fix the Notes, then `python -m quality.okf review`. Never record `verified` without reading the page, and agents use `--by process:<id>`, never `human:<id>`. The fast tier runs only `nox -s okf_structure`. See [docs/knowledge-base.md](docs/knowledge-base.md).
 
 ## Capability lanes (parallel development)
 
@@ -28,5 +28,6 @@ Work is split into lanes. Each lane has a GitHub issue, a branch `lane/<name>`, 
 - **Missing prerequisites report `NOT_RUN`**, never `PASS` (Java, Docker/WSL, Chromium, a vendor CLI login).
 - **Dependencies** go in the lane's extra in `pyproject.toml`, pinned `==`.
 - **Line endings are LF.** On Windows, write files with `newline="\n"`.
+- **Keep the wiki in step.** If your change adds a public domain/application symbol, an ADR, a nox session or a lane, or moves a linked source, run `python -m quality.okf sync`, review the pages it lists, and commit `okf/` in the same PR (`nox -s okf`, tags full and release).
 - **Stay off the shared hot spots.** Don't reformat unrelated files, don't rename kernel symbols, don't restamp `trusted_build.json`. Kernel changes need a regression test and an ADR.
 - **Heavy commands run serially.** The reference PC has 16 GB RAM, and D: is a slow HDD, so keep temp data in the checkout.

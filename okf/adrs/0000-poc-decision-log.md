@@ -14,6 +14,7 @@ sources:
   title: 0000-poc-decision-log.md
   hash_method: lf-sha256-v1
   sha256: 09988cfa6077b23445336b9d0f480f010f77da1ec773901c0f17aa7bf080c632
+notes_baseline: 69470f0b2170a006da8cffc87ea57bcf86972d786bfad3e906544d576fe44737
 ---
 
 # ADR-0000: v0.2 proof-of-concept decision log (ADR-001 … ADR-014)

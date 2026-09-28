@@ -14,6 +14,7 @@ sources:
   title: 0017-local-quality-gates.md
   hash_method: lf-sha256-v1
   sha256: 203666932a77afe16c9534f446fb156714ba271f9939229a06f4117a0e0d2559
+notes_baseline: d4ae5c69d86f7fcdd3692845ed27f1dbe173038ed9f047624ed492da8853cd6f
 ---
 
 # ADR-0017: Local quality gates with nox sessions and noslop enforcement

@@ -14,6 +14,7 @@ sources:
   title: ARCHITECTURE.md
   hash_method: md-bold-term-v1
   sha256: 7c5cea76988a7ab502e41125af99841d9dc4664494186551bf1d4d11448b591c
+notes_baseline: c0347f338074986949cd6b94f32fd14b8219416ff4a615fcd6b77e72f373edea
 ---
 
 # Local Decision

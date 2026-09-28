@@ -13,9 +13,10 @@ generated:
 sources:
 - resource: repo://src/eija_studio/application/runtime.py#initialise
   title: application/runtime.py
-  hash_method: ast-v1
-  sha256: 6c5f0957022fe1d4c1f5611b7bcc279f76b02975e90671a0ff9d465a65ce01cc
+  hash_method: ast-v2
+  sha256: d4927c0a0675e840040cb97a2d956f789ae525e9fdc142e2090e4a50cf4f3e61
 description_override: Creates an isolated preview instance bound to a model hash at version 0, after the policy check.
+notes_baseline: ce539a6168df599a2e54613d838ab9a12be1a7f1914ba18222c956820d235f84
 ---
 
 # application.runtime.initialise
@@ -27,7 +28,7 @@ description_override: Creates an isolated preview instance bound to a model hash
 | Module | [`application/runtime`](/modules/application/runtime.md) |
 | Signature | `def initialise(session: UnitOfWork, case_id: str, model: Workflow, *, state: str \| None=None) -> dict` |
 | Code | `repo://src/eija_studio/application/runtime.py#initialise` |
-| Hash | `ast-v1` over the normalised AST (comments and formatting ignored) |
+| Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
@@ -43,11 +44,11 @@ A changed candidate makes the instance stale; reset creates a new instance inste
 
 * [application.ports.UnitOfWork](/symbols/application/ports/UnitOfWork.md) - All mutations on this port commit together or roll back together.
 * [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
-* [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models` (the source has no docstring).
-* [domain.policy.ensure_policy](/symbols/domain/policy/ensure_policy.md) - `def ensure_policy(model: Workflow) -> None` in `domain/policy` (the source has no docstring).
+* [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
+* [domain.policy.ensure_policy](/symbols/domain/policy/ensure_policy.md) - `def ensure_policy(model: Workflow) -> None` in `domain/policy`.
 
 ## Referenced by
 
-* [application.service.Studio.reset_preview](/symbols/application/service/Studio.reset_preview.md) - `def reset_preview(self, case_id: str, expected: int, state: str | None=None) -> dict` in `application/service` (the source has no docstring).
-* [application.verifier.verify_runtime](/symbols/application/verifier/verify_runtime.md) - `def verify_runtime(model: Workflow, subject: dict, sandbox: SandboxFactory) -> dict` in `application/verifier` (the source has no docstring).
+* [application.service.Studio.reset_preview](/symbols/application/service/Studio.reset_preview.md) - `def reset_preview(self, case_id: str, expected: int, state: str | None=None) -> dict` in `application/service`.
+* [application.verifier.verify_runtime](/symbols/application/verifier/verify_runtime.md) - `def verify_runtime(model: Workflow, subject: dict, sandbox: SandboxFactory) -> dict` in `application/verifier`.
 <!-- okf:generated:end links -->

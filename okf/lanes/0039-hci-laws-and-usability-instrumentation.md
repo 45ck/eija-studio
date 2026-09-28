@@ -13,6 +13,7 @@ sources:
   title: docs/adr/README.md
   hash_method: md-table-row-v1
   sha256: e96faebb271cd31e9478cda37c55c3bd4b2be6cc1b93daaeb8c4ee1c9fe0f052
+notes_baseline: fc55e8f5942fecabc1f845852b5b15f2a9c5140cc147f32adc4b93c9bc1ce0b5
 ---
 
 # HCI laws and usability instrumentation

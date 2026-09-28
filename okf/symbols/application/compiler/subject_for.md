@@ -13,9 +13,10 @@ generated:
 sources:
 - resource: repo://src/eija_studio/application/compiler.py#subject_for
   title: application/compiler.py
-  hash_method: ast-v1
-  sha256: b5cb163af79ce92f8d6708ed8e282c7bba327b891bb766852d91574f1d99a0bd
+  hash_method: ast-v2
+  sha256: 74f7dd06322a42198c7c78d812c77c3296f08449549ff4247df513a4c0df3068
 description_override: 'Builds the exact review subject: implementation, policy, environment and harness identity plus semantic and presentation hashes.'
+notes_baseline: 17dd0240f2faff1218d76025bf6f7d3f864379d7a998b060869afbccd2366813
 ---
 
 # application.compiler.subject_for
@@ -27,7 +28,7 @@ description_override: 'Builds the exact review subject: implementation, policy, 
 | Module | [`application/compiler`](/modules/application/compiler.md) |
 | Signature | `def subject_for(model: Workflow, layout: dict, identity: dict) -> dict` |
 | Code | `repo://src/eija_studio/application/compiler.py#subject_for` |
-| Hash | `ast-v1` over the normalised AST (comments and formatting ignored) |
+| Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
@@ -41,11 +42,11 @@ The subject hash is what a [Local Decision](/language/local-decision.md) acknowl
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models` (the source has no docstring).
-* [domain.models.fingerprint](/symbols/domain/models/fingerprint.md) - `def fingerprint(value: Any) -> str` in `domain/models` (the source has no docstring).
+* [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
+* [domain.models.fingerprint](/symbols/domain/models/fingerprint.md) - `def fingerprint(value: Any) -> str` in `domain/models`.
 
 ## Referenced by
 
-* [application.compiler.compile_case](/symbols/application/compiler/compile_case.md) - `def compile_case(case: ChangeCase, identity: dict, authenticator, active_version: int, scope: str='local-demo') -> dict` in `application/compiler` (the source…
-* [application.service.Studio.verify](/symbols/application/service/Studio.verify.md) - `def verify(self, case_id: str, expected: int) -> dict` in `application/service` (the source has no docstring).
+* [application.compiler.compile_case](/symbols/application/compiler/compile_case.md) - `def compile_case(case: ChangeCase, identity: dict, authenticator, active_version: int, scope: str='local-demo…` in `application/compiler`.
+* [application.service.Studio.verify](/symbols/application/service/Studio.verify.md) - `def verify(self, case_id: str, expected: int) -> dict` in `application/service`.
 <!-- okf:generated:end links -->

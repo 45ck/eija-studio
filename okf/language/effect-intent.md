@@ -14,6 +14,7 @@ sources:
   title: ARCHITECTURE.md
   hash_method: md-bold-term-v1
   sha256: 1c04519ec91acb9b6d24bfb69761071bdc699bc201a890ad0a8733715dd6cbcc
+notes_baseline: 5d1ef643050bca2e562e0bf71ae74e9892a8b870d365ad1f30dfcdfe6ac7ef55
 ---
 
 # Effect Intent

@@ -13,9 +13,10 @@ generated:
 sources:
 - resource: repo://src/eija_studio/domain/policy.py#check_policy
   title: domain/policy.py
-  hash_method: ast-v1
-  sha256: 8761653b64b4d8caba35419d13edf173ec20ad66604b73eade9246ccedeacfcb
+  hash_method: ast-v2
+  sha256: 228e5d92eb7d7b3724d0e5fa681689a13ce9e856eaff4c5287b09930b30b510d
 description_override: Returns the sorted policy error codes of a workflow; an empty list means the model stays inside the protected excursion policy.
+notes_baseline: f259ee95657957c18bba38a4bb459a633a66198276d2941a63108c5028ca8856
 ---
 
 # domain.policy.check_policy
@@ -27,7 +28,7 @@ description_override: Returns the sorted policy error codes of a workflow; an em
 | Module | [`domain/policy`](/modules/domain/policy.md) |
 | Signature | `def check_policy(model: Workflow) -> list[str]` |
 | Code | `repo://src/eija_studio/domain/policy.py#check_policy` |
-| Hash | `ast-v1` over the normalised AST (comments and formatting ignored) |
+| Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
@@ -50,13 +51,13 @@ Used by [ensure_policy](/symbols/domain/policy/ensure_policy.md), which turns fi
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [domain.models.BASE_GUARDS](/symbols/domain/models/BASE_GUARDS.md) - `BASE_GUARDS: tuple[Guard, ...] = ('actor_active', 'role_current', 'state_equals', 'expected_version', 'operation_binding')` in `domain/models` (the source has…
-* [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models` (the source has no docstring).
-* [domain.policy.EFFECTS](/symbols/domain/policy/EFFECTS.md) - `EFFECTS = {'Submit': ('Audit:ExcursionSubmitted',), 'Recommend': ('Audit:ExcursionRecommended', 'Notification:RegistrarQueued'), 'Approve': ('Audit:E…` in `do…
-* [domain.policy.FORBIDDEN](/symbols/domain/policy/FORBIDDEN.md) - `FORBIDDEN = ('PaymentCaptured', 'ParentDataExported')` in `domain/policy` (the source has no docstring).
+* [domain.models.BASE_GUARDS](/symbols/domain/models/BASE_GUARDS.md) - Constant `BASE_GUARDS` in `domain/models`.
+* [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
+* [domain.policy.EFFECTS](/symbols/domain/policy/EFFECTS.md) - Constant `EFFECTS` in `domain/policy`.
+* [domain.policy.FORBIDDEN](/symbols/domain/policy/FORBIDDEN.md) - Constant `FORBIDDEN` in `domain/policy`.
 
 ## Referenced by
 
-* [application.compiler.compile_case](/symbols/application/compiler/compile_case.md) - `def compile_case(case: ChangeCase, identity: dict, authenticator, active_version: int, scope: str='local-demo') -> dict` in `application/compiler` (the source…
-* [domain.policy.ensure_policy](/symbols/domain/policy/ensure_policy.md) - `def ensure_policy(model: Workflow) -> None` in `domain/policy` (the source has no docstring).
+* [application.compiler.compile_case](/symbols/application/compiler/compile_case.md) - `def compile_case(case: ChangeCase, identity: dict, authenticator, active_version: int, scope: str='local-demo…` in `application/compiler`.
+* [domain.policy.ensure_policy](/symbols/domain/policy/ensure_policy.md) - `def ensure_policy(model: Workflow) -> None` in `domain/policy`.
 <!-- okf:generated:end links -->

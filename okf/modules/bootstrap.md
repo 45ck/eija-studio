@@ -14,6 +14,7 @@ sources:
   title: bootstrap.py
   hash_method: ast-api-v1
   sha256: 49d026f1c9cb67aded619e375c35996cdc8808b0c6110313e4359e7405df5e74
+notes_baseline: f3521deab8e22d962a50fe877d809044e621d5558a647aa167b83ad2936f46ef
 ---
 
 # bootstrap

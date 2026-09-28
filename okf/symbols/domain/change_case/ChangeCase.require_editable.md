@@ -1,7 +1,7 @@
 ---
 type: Method
 title: domain.change_case.ChangeCase.require_editable
-description: '`def require_editable(self) -> None` in `domain/change_case` (the source has no docstring).'
+description: '`def require_editable(self) -> None` in `domain/change_case`.'
 resource: repo://src/eija_studio/domain/change_case.py#ChangeCase.require_editable
 tags:
 - symbol
@@ -13,8 +13,9 @@ generated:
 sources:
 - resource: repo://src/eija_studio/domain/change_case.py#ChangeCase.require_editable
   title: domain/change_case.py
-  hash_method: ast-v1
-  sha256: 93b61872b446d2ed3f529ccda5f439d3ea5e7b85ef5864e03ad2a795cf346e60
+  hash_method: ast-v2
+  sha256: 832d1daa58ecd526229ff1c15b02a74426fdd4c67ccb07e80ee09fd1800b44ab
+notes_baseline: 1e6aee915a658d894efb9d78a784843d19277e5fff0c5332ad698dba77e062df
 ---
 
 # domain.change_case.ChangeCase.require_editable
@@ -27,7 +28,7 @@ sources:
 | Class | [`ChangeCase`](/symbols/domain/change_case/ChangeCase.md) |
 | Signature | `def require_editable(self) -> None` |
 | Code | `repo://src/eija_studio/domain/change_case.py#ChangeCase.require_editable` |
-| Hash | `ast-v1` over the normalised AST (comments and formatting ignored) |
+| Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 

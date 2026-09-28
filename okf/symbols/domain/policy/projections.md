@@ -13,9 +13,10 @@ generated:
 sources:
 - resource: repo://src/eija_studio/domain/policy.py#projections
   title: domain/policy.py
-  hash_method: ast-v1
-  sha256: 46852b508e911357575fa3d4ad908e6273ac837bb84ecf27b6b8275656926a98
+  hash_method: ast-v2
+  sha256: 6398db84b410971e6d289014aa4c19852a43538460a6d9eb369d3098a167c454
 description_override: Derives rules, state views and journey sentences from the executable transitions, so no view is a second source of truth.
+notes_baseline: a187b983cb2c335437e0848d9a93bf936831085d5404cfa280e880199dcc555b
 ---
 
 # domain.policy.projections
@@ -27,7 +28,7 @@ description_override: Derives rules, state views and journey sentences from the 
 | Module | [`domain/policy`](/modules/domain/policy.md) |
 | Signature | `def projections(model: Workflow) -> dict` |
 | Code | `repo://src/eija_studio/domain/policy.py#projections` |
-| Hash | `ast-v1` over the normalised AST (comments and formatting ignored) |
+| Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
@@ -43,9 +44,9 @@ Rules, state views and journey sentences are all computed here from the same [Wo
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models` (the source has no docstring).
+* [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 
 ## Referenced by
 
-* [application.compiler.compile_case](/symbols/application/compiler/compile_case.md) - `def compile_case(case: ChangeCase, identity: dict, authenticator, active_version: int, scope: str='local-demo') -> dict` in `application/compiler` (the source…
+* [application.compiler.compile_case](/symbols/application/compiler/compile_case.md) - `def compile_case(case: ChangeCase, identity: dict, authenticator, active_version: int, scope: str='local-demo…` in `application/compiler`.
 <!-- okf:generated:end links -->

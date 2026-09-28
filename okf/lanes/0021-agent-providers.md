@@ -13,6 +13,7 @@ sources:
   title: docs/adr/README.md
   hash_method: md-table-row-v1
   sha256: 55640142d7c9acb7247ce84344e4c87a16604021abd6920c80550f73627923f6
+notes_baseline: 9c5147257589176d9b1d2f277ab64ff7c7d775703f32d28a0bc29a0e3666873a
 ---
 
 # Agent providers (CLI adapters, contract suite)

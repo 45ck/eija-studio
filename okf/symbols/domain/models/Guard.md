@@ -1,7 +1,7 @@
 ---
 type: Type Alias
 title: domain.models.Guard
-description: '`Guard = Literal[''actor_active'', ''role_current'', ''actor_assigned'', ''state_equals'', ''expected_version'', ''operation_binding'']` in `domain/models` (the source has no docstring).'
+description: Type alias `Guard` in `domain/models`.
 resource: repo://src/eija_studio/domain/models.py#Guard
 tags:
 - symbol
@@ -13,8 +13,9 @@ generated:
 sources:
 - resource: repo://src/eija_studio/domain/models.py#Guard
   title: domain/models.py
-  hash_method: ast-v1
-  sha256: 917707314488956f981cc2640decd818421686bd57e00d47e5fca3fd50ce6d51
+  hash_method: ast-v2
+  sha256: 5cecf48d3c03830f8dccc9ce62739d394c68e139b58600292aa0d8c8f278ad21
+notes_baseline: 037f5244f0800cf5486c9e8caa208df38916cc3d79393e4b596cda388f147e65
 ---
 
 # domain.models.Guard
@@ -26,7 +27,7 @@ sources:
 | Module | [`domain/models`](/modules/domain/models.md) |
 | Signature | `Guard = Literal['actor_active', 'role_current', 'actor_assigned', 'state_equals', 'expected_version', 'operation_binding']` |
 | Code | `repo://src/eija_studio/domain/models.py#Guard` |
-| Hash | `ast-v1` over the normalised AST (comments and formatting ignored) |
+| Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
@@ -40,6 +41,6 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Referenced by
 
-* [domain.models.BASE_GUARDS](/symbols/domain/models/BASE_GUARDS.md) - `BASE_GUARDS: tuple[Guard, ...] = ('actor_active', 'role_current', 'state_equals', 'expected_version', 'operation_binding')` in `domain/models` (the source has…
-* [domain.models.Transition](/symbols/domain/models/Transition.md) - `class Transition(Contract)` in `domain/models` (the source has no docstring).
+* [domain.models.BASE_GUARDS](/symbols/domain/models/BASE_GUARDS.md) - Constant `BASE_GUARDS` in `domain/models`.
+* [domain.models.Transition](/symbols/domain/models/Transition.md) - `class Transition(Contract)` in `domain/models`.
 <!-- okf:generated:end links -->

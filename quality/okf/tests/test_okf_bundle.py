@@ -2,6 +2,8 @@
 
 Every negative test asserts the specific finding a maintainer would see, not just "something failed".
 """
+import csv
+import csv
 import re
 import shutil
 import sys
@@ -9,8 +11,7 @@ from pathlib import Path
 
 import pytest
 
-pytest.importorskip("frontmatter", reason="NOT_RUN: install the okf extra (pip install -e .[okf])")
-pytest.importorskip("yaml")
+pytest.importorskip("yaml", reason="NOT_RUN: install the okf extra (pip install -e .[okf])")
 pytest.importorskip("markdown_it")
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -25,24 +26,47 @@ CHECK_POLICY = "symbols/domain/policy/check_policy.md"
 
 
 IGNORE = shutil.ignore_patterns("__pycache__", "*.pyc", "resources", "web")
+PARTS = ("src/eija_studio", "docs", "quality", "tests", "scripts", "okf")   # everything the generator reads
+
+
+def _snapshot(root: Path) -> dict[str, bytes]:
+    return {p.relative_to(root).as_posix(): p.read_bytes() for part in PARTS for p in (root / part).rglob("*") if p.is_file()}
 
 
 @pytest.fixture(scope="module")
-def pristine(tmp_path_factory):
-    """One copy of the parts of the checkout the wiki is derived from, plus the committed bundle."""
-    root = tmp_path_factory.mktemp("okf-pristine")
-    for part in ("src/eija_studio", "docs", "quality", "tests", "scripts", "okf"):
+def workspace(tmp_path_factory):
+    """One private working copy of the inputs the wiki is derived from, shared by the module's tests.
+
+    Copying ~250 files per test made the tooling suite slower than the whole kernel suite on the reference
+    HDD machine; instead every test mutates this copy and ``repo`` restores it byte for byte afterwards.
+    """
+    root = tmp_path_factory.mktemp("okf-work")
+    for part in PARTS:
         shutil.copytree(ROOT / part, root / part, ignore=IGNORE)
     for name in ("noxfile.py", "AGENTS.md", "pyproject.toml"):
         shutil.copy2(ROOT / name, root / name)
-    return root
+    return root, _snapshot(root)
 
 
 @pytest.fixture
-def repo(pristine, tmp_path):
-    """A private, mutable copy per test."""
-    shutil.copytree(pristine, tmp_path / "repo")
-    return Repo(tmp_path / "repo")
+def repo(workspace):
+    """The working copy, guaranteed identical to the committed inputs at the start and restored at the end of each test."""
+    root, snapshot = workspace
+    _restore(root, snapshot)
+    yield Repo(root)
+    _restore(root, snapshot)
+
+
+def _restore(root: Path, snapshot: dict[str, bytes]) -> None:
+    for part in PARTS:
+        for path in (root / part).rglob("*"):
+            if path.is_file() and path.relative_to(root).as_posix() not in snapshot:
+                path.unlink()                                  # a file the test created
+    for rel, data in snapshot.items():
+        target = root / rel
+        if not target.is_file() or target.read_bytes() != data:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(data)
 
 
 def codes(report, check=None):
@@ -76,6 +100,12 @@ def sync(repo: Repo) -> None:
     assert cli.main(["--root", str(repo.root), "sync"]) == 0
 
 
+def review(repo: Repo, page: str, by: str = "human:reviewer", check: bool = True) -> int:
+    status = cli.main(["--root", str(repo.root), "review", page, "--by", by, "--at", "2026-09-28T09:00:00Z"])
+    assert status == 0 or not check
+    return status
+
+
 # ---- the committed bundle -----------------------------------------------------------------------
 
 def test_committed_bundle_passes_every_check():
@@ -92,9 +122,9 @@ def test_bundle_declares_okf_v02_and_reserved_files_exist():
 
 def test_generated_pages_never_carry_wall_clock_timestamps():
     for text in existing_pages(Repo(ROOT)).values():
-        if text.startswith("---"):
-            assert "generated:\n  by: process:eija-okf-sync\n" in text or "generated" not in text.split("---")[1]
-            assert "\n  at:" not in text.split("---")[1]
+        if text.startswith("---\ntype:"):
+            generated = split_page(text)[0].get("generated")
+            assert generated is None or generated == {"by": "process:eija-okf-sync"}   # review times live in `verified`, an explicit argument
 
 
 # ---- determinism and drift ----------------------------------------------------------------------
@@ -132,7 +162,8 @@ def test_hand_edited_generated_block_is_reported_as_drift(repo):
 def test_human_prose_verified_and_unknown_keys_survive_regeneration(repo):
     page = repo.bundle / CHECK_POLICY
     set_notes(page, "PROSE-MARKER: policy is protected; see [Authority](/language/authority.md).")
-    edit(page, "\n---\n", "\nx_owner_note: keep me\nverified:\n- by: human:reviewer\n  at: '2026-09-28T09:00:00Z'\n---\n")
+    edit(page, "\n---\n", "\nx_owner_note: keep me\n---\n")
+    review(repo, CHECK_POLICY)
     sync(repo)
     text = page.read_text(encoding="utf-8")
     meta, _ = split_page(text)
@@ -169,24 +200,96 @@ def test_formatting_only_change_is_not_stale(repo):
     assert run_checks(repo).ok
 
 
-def test_sync_rebaselines_and_resets_verification(repo):
+def test_sync_rebaselines_generated_content_but_cannot_clear_stale_notes_or_raise_the_tier(repo):
+    """The reviewers' scenario: gut check_policy, sync, and the page whose Notes now lie must stay red."""
     page = repo.bundle / CHECK_POLICY
-    assert cli.main(["--root", str(repo.root), "review", CHECK_POLICY, "--by", "human:reviewer", "--at", "2026-09-28T09:00:00Z"]) == 0
-    assert "human:reviewer" in page.read_text(encoding="utf-8") and run_checks(repo).ok
+    confirmed_before = run_checks(repo).stats["trust_tiers"].get("machine-confirmed", 0)
+    review(repo, CHECK_POLICY)
+    assert run_checks(repo).stats["trust_tiers"]["human-reviewed"] == 1 and run_checks(repo).ok
     sync(repo)
-    assert "human:reviewer" in page.read_text(encoding="utf-8")        # nothing changed: attestation kept
-    edit(repo.root / POLICY, '"PROTECTED_AUTHORITY:"', '"PROTECTED_AUTHORITY_V2:"')
-    assert run_checks(repo).stale == [CHECK_POLICY]
+    assert run_checks(repo).stats["trust_tiers"]["human-reviewed"] == 1        # nothing changed: attestation still current
+    text = (repo.root / POLICY).read_text(encoding="utf-8")
+    start = text.index("def check_policy(")
+    end = text.index("\n\n\n", start)
+    (repo.root / POLICY).write_bytes((text[:start] + "def check_policy(model: Workflow) -> list[str]:\n    return []" + text[end:]).encode("utf-8"))
+    report = run_checks(repo)
+    assert report.stale == [CHECK_POLICY] and "STALE" in codes(report, "codelinks")
     sync(repo)
-    assert "verified" not in split_page(page.read_text(encoding="utf-8"))[0]   # trust tier falls back to unverified
-    assert run_checks(repo).ok
+    after = run_checks(repo)
+    assert not after.ok and codes(after) == ["NOTES_STALE"] and after.stale == []            # generated parts are baselined, prose is not
+    assert "Teacher can never approve" in page.read_text(encoding="utf-8")                   # the contradicted prose is still there
+    assert after.stats["trust_tiers"].get("human-reviewed", 0) == 0                          # old attestation no longer counts
+    assert len(split_page(page.read_text(encoding="utf-8"))[0]["verified"]) == 1               # ...but the history is kept, not dropped
+    review(repo, CHECK_POLICY, by="process:eija-okf-test")
+    ok = run_checks(repo)
+    assert ok.ok and ok.stats["trust_tiers"].get("machine-confirmed", 0) == confirmed_before + 1
+    assert ok.stats["trust_tiers"].get("human-reviewed", 0) == 0
+    assert len(split_page(page.read_text(encoding="utf-8"))[0]["verified"]) == 2
+
+
+def test_uncurated_pages_follow_their_source_and_are_not_gated_for_notes(repo):
+    uncurated = "symbols/domain/models/AGENT.md"
+    assert "_No curated notes yet._" in (repo.bundle / uncurated).read_text(encoding="utf-8")
+    edit(repo.root / "src/eija_studio/domain/models.py", 'Principal(id="agent"', 'Principal(id="agent-2"')
+    assert uncurated in run_checks(repo).stale
+    sync(repo)
+    report = run_checks(repo)
+    assert uncurated not in [f.path for f in report.findings]         # nothing hand-written on it to re-read
+    assert report.ok
+
+
+def test_verified_entry_is_bound_to_the_prose_and_the_sources(repo):
+    page = repo.bundle / CHECK_POLICY
+    review(repo, CHECK_POLICY)
+    assert run_checks(repo).stats["trust_tiers"]["human-reviewed"] == 1
+    set_notes(page, "A Teacher can approve if assigned.")                                       # the prose is inverted after the review
+    report = run_checks(repo)
+    assert report.ok                                                                            # a hash cannot judge prose...
+    assert report.stats["trust_tiers"].get("human-reviewed", 0) == 0                            # ...but the attestation no longer counts
+    assert "verified" in split_page(page.read_text(encoding="utf-8"))[0]
+
+
+def test_unbound_verified_entry_is_a_conformance_error(repo):
+    edit(repo.bundle / CHECK_POLICY, "\n---\n", "\nverified:\n- by: human:someone\n  at: '2026-09-28T09:00:00Z'\n---\n")
+    assert "VERIFIED" in codes(run_checks(repo, ("conformance",)), "conformance")
+    assert run_checks(repo).stats["trust_tiers"].get("human-reviewed", 0) == 0                 # a forged, unbound entry never raises the tier
 
 
 def test_review_refuses_a_page_whose_sources_changed(repo, capsys):
     edit(repo.root / POLICY, '"PROTECTED_STATE:"', '"PROTECTED_STATE_V2:"')
-    status = cli.main(["--root", str(repo.root), "review", CHECK_POLICY, "--by", "human:reviewer", "--at", "2026-09-28T09:00:00Z"])
-    assert status == 1 and "refusing to verify" in capsys.readouterr().err
+    status = review(repo, CHECK_POLICY, check=False)
+    assert status == 1 and "refusing to review" in capsys.readouterr().err
     assert "verified" not in split_page((repo.bundle / CHECK_POLICY).read_text(encoding="utf-8"))[0]
+
+
+@pytest.mark.parametrize("args, message", [
+    (["--by", "whoever", "--at", "2026-09-28T09:00:00Z"], "--by must be"),
+    (["--by", "human:x", "--at", "garbage"], "--at must be"),
+    (["--by", "human:x", "--at", "yesterday"], "--at must be"),
+    (["--by", "human:x", "--at", "2026-09-28T09:00:00"], "--at must be"),        # no UTC offset
+])
+def test_review_rejects_malformed_actor_and_time_before_writing(repo, capsys, args, message):
+    before = (repo.bundle / CHECK_POLICY).read_bytes()
+    assert cli.main(["--root", str(repo.root), "review", CHECK_POLICY, *args]) == 2
+    assert message in capsys.readouterr().err
+    assert (repo.bundle / CHECK_POLICY).read_bytes() == before
+
+
+@pytest.mark.parametrize("name, message", [
+    ("../../../AGENTS.md", "not a concept page"),
+    ("../okf/index.md", "not a concept page"),
+    ("index.md", "not a concept page"),
+    ("nope/missing.md", "no such page"),
+])
+def test_review_confines_itself_to_concept_pages_inside_the_bundle(repo, capsys, name, message):
+    assert review(repo, name, check=False) == 1
+    assert message in capsys.readouterr().err
+
+
+def test_review_of_a_vanished_symbol_is_a_refusal_not_a_traceback(repo, capsys):
+    edit(repo.root / POLICY, "def check_policy(", "def check_policy_v2(")
+    assert review(repo, CHECK_POLICY, check=False) == 1
+    assert "refusing to review" in capsys.readouterr().err
 
 
 def test_changed_adr_and_acceptance_row_are_stale(repo):
@@ -206,6 +309,9 @@ def test_renamed_symbol_marks_old_page_deprecated_and_new_symbol_needs_a_page(re
     old = split_page((repo.bundle / CHECK_POLICY).read_text(encoding="utf-8"))[0]
     assert old["status"] == "deprecated"                       # kept for links and history (SPEC section 5.4)
     assert (repo.bundle / "symbols/domain/policy/check_policy_v2.md").is_file()
+    after = run_checks(repo)
+    assert [(f.code, f.path) for f in after.findings] == [("NOTES_STALE", "modules/domain/policy.md")]   # its public API changed and its Notes are hand-written
+    review(repo, "modules/domain/policy.md")
     assert run_checks(repo).ok
 
 
@@ -216,7 +322,7 @@ def test_unresolvable_resource_on_a_live_page_is_reported(repo):
 
 def test_missing_hash_or_unknown_method_is_reported(repo):
     page = repo.bundle / CHECK_POLICY
-    edit(page, "  hash_method: ast-v1\n", "  hash_method: made-up-v9\n")
+    edit(page, "  hash_method: ast-v2\n", "  hash_method: made-up-v9\n")
     assert "MISSING_HASH" in codes(run_checks(repo), "codelinks")
 
 
@@ -303,3 +409,65 @@ def test_prewritten_trust_is_never_invented_by_the_generator(repo):
     for text in existing_pages(repo).values():
         if text.startswith("---\ntype:"):
             assert "\nverified:" not in text, "the generator must not mint verification"
+
+
+# ---- what a hash covers: private helpers, collisions, unparseable sources -----------------------
+
+def test_removing_a_check_inside_a_private_helper_stales_the_public_methods_that_use_it(repo):
+    service = repo.root / "src/eija_studio/application/service.py"
+    edit(service, "            c.at_version(expected)\n", "            pass\n")           # drops the CAS check inside Studio._case
+    report = run_checks(repo)
+    stale = set(report.stale)
+    assert {"symbols/application/service/Studio.select.md", "symbols/application/service/Studio.edit.md"} <= stale
+    assert "symbols/application/service/Studio.md" not in stale                  # documented limit: the class page hashes signatures only
+    assert not report.ok
+
+
+def test_page_paths_that_differ_only_by_case_are_rejected_not_silently_overwritten(repo, capsys):
+    with (repo.root / "src/eija_studio/domain/impact.py").open("a", encoding="utf-8", newline="\n") as handle:
+        handle.write("\n\ndef Foo() -> None:\n    return None\n\n\ndef foo() -> None:\n    return None\n")
+    report = run_checks(repo)
+    assert "BROKEN_SOURCE" in codes(report) and "collide" in " ".join(f.message for f in report.findings)
+    assert cli.main(["--root", str(repo.root), "sync"]) == 1
+    assert "collide" in capsys.readouterr().err
+    assert not (repo.bundle / "symbols/domain/impact/Foo.md").exists()          # nothing was written half-way
+
+
+def test_a_syntax_error_in_a_covered_source_is_a_finding_not_a_traceback(repo, capsys):
+    edit(repo.root / "src/eija_studio/application/service.py", "class Studio:", "class Studio(:")
+    report = run_checks(repo)
+    assert "BROKEN_SOURCE" in codes(report) and not report.ok
+    assert cli.main(["--root", str(repo.root), "sync"]) == 1
+    assert "cannot build the bundle" in capsys.readouterr().err
+
+
+# ---- honest labels on the retrieval surface -----------------------------------------------------
+
+def test_planned_techniques_and_unrun_criteria_are_labelled_where_a_retriever_reads_them(repo):
+    index = (repo.bundle / "verification/index.md").read_text(encoding="utf-8")
+    planned = [line for line in index.split("\n") if "(bounded-model-check.md)" in line or "(smt-proof.md)" in line]
+    assert planned and all("Planned (not implemented)" in line for line in planned)
+    implemented = [line for line in index.split("\n") if "integration-test.md" in line]
+    assert implemented and "Implemented:" in implemented[0]
+    assert "Planned (not implemented)" in split_page((repo.bundle / "verification/tlc-model-check.md").read_text(encoding="utf-8"))[0]["description"]
+    rows = csv.DictReader((repo.root / "docs/verification/ACCEPTANCE_MATRIX.csv").read_text(encoding="utf-8").splitlines())
+    not_run = next(row["id"] for row in rows if row["v0_2_status"] == "NOT_RUN")
+    assert split_page((repo.bundle / f"requirements/{not_run.lower()}.md").read_text(encoding="utf-8"))[0]["description"].startswith("NOT_RUN: ")
+    assert "# Acceptance Criteria\n" in (repo.bundle / "requirements/index.md").read_text(encoding="utf-8")
+
+
+def test_planned_pages_stay_draft_even_when_the_governing_adr_is_accepted(repo):
+    adr = repo.root / "docs/adr/0018-formal-vv-portfolio.md"
+    text = adr.read_text(encoding="utf-8")
+    edit(adr, next(line for line in text.split("\n") if line.startswith("* Status:")), "* Status: accepted")
+    sync(repo)
+    for page in ("bend-proof", "smt-proof", "tlc-model-check"):
+        assert split_page((repo.bundle / f"verification/{page}.md").read_text(encoding="utf-8"))[0]["status"] == "draft"
+
+
+def test_okf_gate_tiers_keep_the_code_linked_checks_out_of_fast():
+    from quality.okf.extract import gate_pages
+
+    tags = {p.title: p.tags for p in gate_pages(Repo(ROOT)) if p.path.startswith("gates/okf/")}
+    assert "fast" in tags["nox -s okf_structure"] and "fast" not in tags["nox -s okf"]
+    assert {"full", "release"} <= set(tags["nox -s okf"])

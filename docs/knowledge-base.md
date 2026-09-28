@@ -28,13 +28,14 @@ status: stable
 generated: {by: process:eija-okf-sync}      # no timestamp: output is reproducible
 sources:
   - resource: repo://src/eija_studio/domain/policy.py#check_policy
-    hash_method: ast-v1                     # how the source is normalised before hashing
+    hash_method: ast-v2                     # how the source is normalised before hashing
     sha256: 8761653b...                     # baseline; the gate recomputes it from the code
 ```
 
 * `repo://<path>[#<fragment>]` names a file or one thing in it (a python symbol such as `Studio.approve`, a CSV row id, a term or a table row).
 * `sources[].sha256` and `hash_method` are extensions of the `sources` entry; OKF permits extra keys. Methods are listed in [ADR-0046](adr/0046-code-link-hash-methods-and-stale-semantics.md). Python is hashed as a canonical AST, so comments, formatting and CRLF never stale a page while a changed literal, guard, signature or docstring does.
-* `verified` is never written by the generator. Trust tier (SPEC section 5.3) is *unverified* until `python -m quality.okf review <page> --by human:<id> --at <ISO 8601>` records a verification; `review` refuses a page whose sources changed since baseline.
+* `verified` is never written by the generator. Trust tier (SPEC section 5.3) is *unverified* until `python -m quality.okf review <page> --by <actor> --at <ISO 8601>` records a verification. Each entry is bound to the page's prose (`notes_sha256`) and source hashes (`sources_sha256`) and counts only while both still match; `review` refuses a page whose sources changed since baseline and validates `--by` / `--at`. **The actor is self-declared**: the tool cannot authenticate `human:<id>`, so an agent must use `process:<id>`.
+* `notes_baseline` is the source state the hand-written Notes were last aligned to. `sync` never advances it for a page with curated Notes; only `review` does. That is what keeps a page red (**NOTES_STALE**) after `sync` until someone has re-read it.
 
 ## Who owns what on a page
 
@@ -44,7 +45,8 @@ sources:
 | text between `<!-- okf:generated:begin NAME -->` and `<!-- okf:generated:end NAME -->` (`facts`, `links`) | machine | yes |
 | everything else in the body, notably `## Notes` | human | never touched |
 | `description_override`, any other unknown frontmatter key | human | preserved; `description_override` replaces `description` (use it where the source has no docstring) |
-| `verified` | human or process | preserved while every source hash is unchanged, dropped when one changes |
+| `verified` | human or process | append-only history, always preserved; an entry counts toward the trust tier only while its prose and source hashes still match |
+| `notes_baseline` | human (via `review`) | seeded once for a curated page; never advanced by `sync` while the page has hand-written Notes |
 | `index.md` files | machine | yes |
 | `log.md` | human | created once, never rewritten |
 
@@ -56,10 +58,11 @@ sources:
 python -m quality.okf sync                    # regenerate machine-owned content and indexes (idempotent)
 python -m quality.okf check                   # the gate; exit 1 on any finding
 python -m quality.okf check --only codelinks  # one of: conformance, links, codelinks, coverage, drift
-python -m quality.okf review symbols/domain/policy/check_policy.md --by human:alice --at 2026-09-28T09:00:00Z
-nox -s okf                                    # the gate; tags: fast, full
+python -m quality.okf review symbols/domain/policy/check_policy.md --by process:my-agent --at 2026-09-28T09:00:00Z
+nox -s okf_structure                          # conformance + links only; tag: fast
+nox -s okf                                    # the full gate; tags: full, release
 nox -s okf_tools                              # tests of the tooling (quality/okf/tests); tag: full
-pip install -e ".[okf]"                       # python-frontmatter, PyYAML, markdown-it-py (pinned)
+pip install -e ".[okf]"                       # PyYAML, markdown-it-py (pinned)
 ```
 
 ## The gate
@@ -68,25 +71,29 @@ pip install -e ".[okf]"                       # python-frontmatter, PyYAML, mark
 |---|---|---|
 | conformance | a concept has no parseable frontmatter or an empty `type`; `index.md` has frontmatter other than the root `okf_version: "0.2"`, no section or no `* [Title](url)` entries; `log.md` has a non-ISO or out-of-order date; an optional family is malformed (`status`, `generated.by`, `verified`, timestamps without offset, duplicate `sources[].id`, dangling footnotes) | root `index.md` and `log.md` are required |
 | links | a markdown link does not resolve to a page (or an existing repository path when it leaves the bundle), or a `repo://` mention does not resolve | yes: the spec tolerates broken links because knowledge may be not-yet-written; every page here is generated, so a broken link is a defect. Links inside code spans and fences are not links. Anchors (`#heading`) are not checked |
-| codelinks | a `resource` does not resolve, or a source lacks a hash, or **STALE**: the source changed since the page was baselined. The report lists the pages to review | yes |
+| codelinks | a `resource` does not resolve, or a source lacks a hash, or **STALE**: the source changed since the page was baselined, or **NOTES_STALE**: a page with hand-written Notes was not `review`ed since its source changed (`sync` does not clear it). The report lists the pages to review | yes |
 | coverage | a public domain/application symbol, module, ADR, POC decision, term, context, acceptance row, gate, lane or verification technique has no page, or its page's `resource` differs | yes |
 | drift | regenerating the bundle would change any file (a hand-edited generated block, a missing index entry, a stale hash) | yes |
 
-A pass establishes that the wiki is well-formed, navigable and was baselined against the current code. It does not establish that any page's prose is correct, that the code is correct, or that a person reviewed a page (see the trust-tier counts in the report).
+A pass establishes that the wiki is well-formed, navigable, was baselined against the current code, and that hand-written Notes were re-read (by someone, self-declared) since their source last changed. It does not establish that any page's prose is correct, that the code is correct, or that a *person* reviewed a page (see the trust-tier counts in the report).
 
 ## Workflow
 
 1. Change code, an ADR, the acceptance matrix or a nox session.
 2. `nox -s okf` fails with STALE (existing pages), MISSING_PAGE (new symbol, ADR or gate) or DRIFT.
-3. Read each listed page against the diff and update the `## Notes` prose.
-4. `python -m quality.okf sync`. Pages whose source changed lose any `verified` entry. Pages for vanished sources become `status: deprecated` and stay for history; delete them by hand when the history is unwanted.
-5. Optionally record a review with `python -m quality.okf review`.
-6. Commit code and `okf/` together.
+3. `python -m quality.okf sync`. It re-baselines generated content only; pages with hand-written Notes now report NOTES_STALE. Pages for vanished sources become `status: deprecated` and stay for history; delete them by hand when the history is unwanted.
+4. Read each listed page against the diff, correct the `## Notes` prose, then `python -m quality.okf review <page> --by <actor> --at <time>`.
+5. Add a dated bullet to `okf/log.md` (`sync` never writes the log).
+6. Commit code and `okf/` together, in the same PR, so the wiki lands with the change that moved it.
 
 Adding a new concept kind means adding an extractor in `quality/okf/extract.py` (and, if it needs a new normalisation, a new versioned hash method in `codelink.py` with a test that shows what does and does not change the hash).
 
 ## Limits
 
+* **A hash covers one source.** A page's hash covers its own symbol and (`ast-v2`) the same-module private helpers it reaches by name. It does not cover public callees, symbols in other modules, dynamic dispatch, private methods of a class (class pages hash signatures only) or the bodies of adapter and interface code (module pages hash public signatures only). A dependency's change does not stale its dependants, and the generated `Depends on` edges are not a staleness graph. Example: the guard inside a public helper called by `execute` can change without staling `execute`'s page; only the helper's own page goes STALE.
+* `verified` is self-declared. `human:<id>` is a label anyone can type; the tool does not authenticate reviewers.
+* Hash stability across Python versions is evidence for the committed sources (3.11.15, 3.12.10, 3.13.12 on 2026-09-29, `quality/okf/crosscheck.py`), not a guarantee for future text. A missing interpreter reports NOT_RUN.
+* Page paths are compared case-insensitively; symbols differing only by case (`Foo` and `foo`) are rejected with an error, since Windows and macOS would map them to one file.
 * The generated `Signature` rows use `ast.unparse`, which can differ across Python minor versions for unusual syntax; hashes do not use it.
 * Symbol pages cover the domain and application layers only. Adapters and interfaces have module pages.
 * Type-alias versus constant is a naming heuristic (ALL_CAPS is a constant).

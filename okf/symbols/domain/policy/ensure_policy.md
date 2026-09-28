@@ -13,9 +13,10 @@ generated:
 sources:
 - resource: repo://src/eija_studio/domain/policy.py#ensure_policy
   title: domain/policy.py
-  hash_method: ast-v1
-  sha256: d50532d5168a83c6bdfac285bfeac9cea0fd26c84358da25b2a6c526a8d8e229
+  hash_method: ast-v2
+  sha256: edd9ae91cdd777eb49f40222fba87a5808ae6f9b35ba8b245ba3880f37993217
 description_override: Raises DomainError POLICY_BLOCKED when check_policy reports any finding; called before every model is executed or transformed.
+notes_baseline: 06a0ec38a91fec12d3659ecfe95795d1e45a35576c83ee73e86b8dbe5a2f4276
 ---
 
 # domain.policy.ensure_policy
@@ -27,7 +28,7 @@ description_override: Raises DomainError POLICY_BLOCKED when check_policy report
 | Module | [`domain/policy`](/modules/domain/policy.md) |
 | Signature | `def ensure_policy(model: Workflow) -> None` |
 | Code | `repo://src/eija_studio/domain/policy.py#ensure_policy` |
-| Hash | `ast-v1` over the normalised AST (comments and formatting ignored) |
+| Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
@@ -42,12 +43,12 @@ The fail-closed wrapper: [runtime.execute](/symbols/application/runtime/execute.
 ## Depends on
 
 * [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
-* [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models` (the source has no docstring).
-* [domain.policy.check_policy](/symbols/domain/policy/check_policy.md) - `def check_policy(model: Workflow) -> list[str]` in `domain/policy` (the source has no docstring).
+* [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
+* [domain.policy.check_policy](/symbols/domain/policy/check_policy.md) - `def check_policy(model: Workflow) -> list[str]` in `domain/policy`.
 
 ## Referenced by
 
-* [application.runtime.execute](/symbols/application/runtime/execute.md) - `def execute(session: UnitOfWork, case_id: str, model: Workflow, command: ExecuteCommand, *, fault=None) -> dict` in `application/runtime` (the source has no d…
-* [application.runtime.initialise](/symbols/application/runtime/initialise.md) - `def initialise(session: UnitOfWork, case_id: str, model: Workflow, *, state: str | None=None) -> dict` in `application/runtime` (the source has no docstring).
-* [domain.policy.apply_transaction](/symbols/domain/policy/apply_transaction.md) - `def apply_transaction(model: Workflow, tx: SemanticTransaction) -> Workflow` in `domain/policy` (the source has no docstring).
+* [application.runtime.execute](/symbols/application/runtime/execute.md) - `def execute(session: UnitOfWork, case_id: str, model: Workflow, command: ExecuteCommand, *, fault=None) -> di…` in `application/runtime`.
+* [application.runtime.initialise](/symbols/application/runtime/initialise.md) - `def initialise(session: UnitOfWork, case_id: str, model: Workflow, *, state: str | None=None) -> dict` in `application/runtime`.
+* [domain.policy.apply_transaction](/symbols/domain/policy/apply_transaction.md) - `def apply_transaction(model: Workflow, tx: SemanticTransaction) -> Workflow` in `domain/policy`.
 <!-- okf:generated:end links -->

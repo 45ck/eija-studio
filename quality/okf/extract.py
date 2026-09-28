@@ -210,19 +210,19 @@ def symbol_pages(repo: Repo) -> list[PageSpec]:
     symbols = symbols_of(repo)
     index = {(s.module, s.name): s for s in symbols if s.kind != "method"}
     imports = {mid: _import_map(repo, f"{PKG}/{mid}.py", index) for mid in sorted({s.module for s in symbols})}
-    by_name: dict[str, list[SymbolInfo]] = {}
-    for s in symbols:
-        by_name.setdefault(s.name, []).append(s)
-    pages = []
-    for s in symbols:
-        pages.append(_symbol_page(s, symbols, index, imports[s.module]))
-    return pages
+    return [_symbol_page(s, symbols, index, imports[s.module]) for s in symbols]
+
+
+_HASH_NOTE = {
+    cl.AST_SIG: "`ast-sig-v1` over the class signature view: fields and public method signatures; method bodies and private helpers are NOT hashed",
+    cl.AST_CLOSURE: "`ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored)",
+}
 
 
 def _symbol_page(s: SymbolInfo, symbols: list[SymbolInfo], index: dict[tuple[str, str], SymbolInfo],
                  imports: dict[str, tuple[str, str]]) -> PageSpec:
     is_class = s.kind == "class"
-    method = cl.AST_SIG if is_class else cl.AST_SYMBOL
+    method = cl.AST_SIG if is_class else cl.AST_CLOSURE
     walk_nodes = _signature_nodes(s.node) if is_class else [s.node]
     used = _names(walk_nodes)
     deps: set[str] = set()
@@ -241,7 +241,7 @@ def _symbol_page(s: SymbolInfo, symbols: list[SymbolInfo], index: dict[tuple[str
         lines.append(f"| Class | [`{s.owner}`](/{owner_page}) |")
         back.append(owner_page)
     lines += [f"| Signature | `{md_cell(signature(s))}` |", f"| Code | `{s.uri}` |",
-              f"| Hash | `{method}` over the normalised AST (comments and formatting ignored) |"]
+              f"| Hash | {_HASH_NOTE[method]} |"]
     parts = ["\n".join(lines)]
     if s.doc:
         parts.append("## Docstring\n\n" + fence(s.doc))
@@ -265,13 +265,20 @@ def _symbol_page(s: SymbolInfo, symbols: list[SymbolInfo], index: dict[tuple[str
                              + "\n".join(f"* `{md_cell(signature(SymbolInfo(s.layer, s.module, m.name, 'method', m, None)))}`" for m in protocol))
     if deps:
         out["Depends on"] = sorted(deps)
-    description = first_sentence(s.doc) if s.doc else f"`{one_line(signature(s), 150)}` in `{s.module}` (the source has no docstring)."
+    description = first_sentence(s.doc) if s.doc else _bare_description(s)
     layer_tag = s.layer
     return PageSpec(path=s.page, type={"function": "Function", "class": "Class", "constant": "Constant",
                                        "type-alias": "Type Alias", "method": "Method"}[s.kind],
                     title=f"{s.module.replace('/', '.')}.{s.name}", description=description, facts="\n\n".join(parts),
                     tags=["symbol", layer_tag, s.kind], resource=s.uri,
                     sources=[Source(s.uri, method, f"{s.module}.py")], out=out, back=back)
+
+
+def _bare_description(s: SymbolInfo) -> str:
+    """One-line description for a symbol with no docstring; short enough that no index line is cut mid-phrase."""
+    if s.kind in ("constant", "type-alias"):
+        return f"{_cap(s.kind.replace('-', ' '))} `{s.name}` in `{s.module}`."
+    return f"`{one_line(signature(s), 110)}` in `{s.module}`."
 
 
 def module_pages(repo: Repo, symbols: list[SymbolInfo]) -> list[PageSpec]:
@@ -494,7 +501,7 @@ def requirement_pages(repo: Repo, modules: set[str]) -> list[PageSpec]:
                              f"Source: matrix row `{uri}`. `PASS_LOCAL` means only the declared synthetic/local portion was "
                              "exercised; `PARTIAL` and `NOT_RUN` stay visible and are never rounded up."])
         pages.append(PageSpec(path=f"requirements/{ident.lower()}.md", type="Acceptance Criterion",
-                              title=f"{ident}: {row['area']}", description=describe(row["observable_acceptance_criterion"], 200),
+                              title=f"{ident}: {row['area']}", description=f"{status}: {describe(row['observable_acceptance_criterion'], 190)}",
                               facts=facts, tags=["acceptance", cl.slug(row["area"]), status.lower()], resource=uri,
                               sources=[Source(uri, cl.CSV_ROW, "ACCEPTANCE_MATRIX.csv")], out=out))
     return pages
@@ -505,8 +512,8 @@ def requirement_pages(repo: Repo, modules: set[str]) -> list[PageSpec]:
 IMPLEMENTED_EVIDENCE = (
     {"slug": "integration-test", "title": "Bounded runtime matrix (integration_test)", "kind": "integration_test",
      "claim": "runtime_matrix",
-     "establishes": "Every cell of a declared actor x state x action matrix, run against the real runtime in a disposable "
-                    "sandbox, matched a separately written expected outcome; the receipt is recomputed from raw observations.",
+     "establishes": "Every cell of a declared actor x state x action matrix, run against the real runtime in a sandbox, matched "
+                    "a hand-written oracle that is partly derived from the model under test. The receipt is recomputed from raw observations.",
      "not": "Not a proof over arbitrary histories, not an independent oracle (same author), not crash durability of the "
             "owner workspace, and never evidence of human comprehension (that stays UNKNOWN).",
      "code": ("application/verifier.py#verify_runtime", "domain/evidence.py#assess_receipt", "domain/evidence.py#aggregate_status")},
@@ -522,7 +529,7 @@ def verification_pages(repo: Repo, catalog_paths: dict[str, str], symbols: list[
             module, name = ref.split(".py#")
             symbol = by_key.get((module, name))
             uri = f"repo://{PKG}/{module}.py#{name}"
-            sources.append(Source(uri, cl.AST_SYMBOL, f"{module}.{name}"))
+            sources.append(Source(uri, cl.AST_CLOSURE, f"{module}.{name}"))
             if symbol:
                 out["Implemented by"].append(symbol.page)
                 code_lines.append(f"* [`{module}.{name}`](/{symbol.page})")
@@ -531,12 +538,11 @@ def verification_pages(repo: Repo, catalog_paths: dict[str, str], symbols: list[
                              f"## What it can establish\n\n{item['establishes']}", f"## What it does not establish\n\n{item['not']}",
                              "## Implemented by\n\n" + "\n".join(code_lines)])
         pages.append(PageSpec(path=f"verification/{item['slug']}.md", type="Verification Technique", title=item["title"],
-                              description=first_sentence(item["establishes"]), facts=facts, tags=["verification", "implemented"],
+                              description=f"Implemented: {first_sentence(item['establishes'])}", facts=facts, tags=["verification", "implemented"],
                               resource=sources[0].resource, sources=sources, out=out))
     adr_path = catalog_paths.get("0018")
     if (repo.root / VV_ADR).is_file():
         text = read(repo, VV_ADR)
-        status_word = _adr_meta(text).get("status", "proposed").split()[0].lower()
         for cells in cl.md_table_rows(text):
             if len(cells) != 4 or not cells[3].startswith("`"):
                 continue
@@ -546,11 +552,12 @@ def verification_pages(repo: Repo, catalog_paths: dict[str, str], symbols: list[
             facts = "\n\n".join(["| | |\n|---|---|\n" + "\n".join([f"| Evidence kind | `{kind_id}` |", f"| Tool | {md_cell(tool)} |",
                                  f"| Source | `{uri}` |"]),
                                  f"## What it can establish\n\n{establishes}",
-                                 "This technique is planned by the ADR. The page stays `draft` until its lane lands and the ADR accepts it. "
-                                 "It is a distinct evidence kind and may never be relabelled as another."])
+                                 "**Status: planned, not implemented in the kernel.** The ADR names this technique; no code in this repository "
+                                 "produces this evidence yet. The page is `draft` (unreviewed plan) whatever the ADR's own status becomes, "
+                                 "and it is a distinct evidence kind that may never be relabelled as another."])
             pages.append(PageSpec(path=f"verification/{cl.slug(kind_id)}.md", type="Verification Technique", title=technique,
-                                  description=f"Establishes: {describe(establishes, 180)}", facts=facts,
-                                  tags=["verification", "planned"], status=_STATUS.get(status_word, "draft"), resource=uri,
+                                  description=f"Planned (not implemented). Would establish: {describe(establishes, 160)}", facts=facts,
+                                  tags=["verification", "planned"], status="draft", resource=uri,
                                   sources=[Source(uri, cl.MD_ROW, "0018-formal-vv-portfolio.md")],
                                   out={"Decision": [adr_path]} if adr_path else {}))
     return pages
@@ -598,7 +605,7 @@ def gate_pages(repo: Repo) -> list[PageSpec]:
                                  "need Docker, Java or Chromium and reports `NOT_RUN`, never `PASS`, without them)."])
             pages.append(PageSpec(path=f"gates/{cl.slug(path.stem)}/{cl.slug(name)}.md", type="Quality Gate", title=f"nox -s {name}",
                                   description=first_sentence(doc) if doc else f"nox session `{name}` in `{path.name}`.",
-                                  facts=facts, tags=["gate", *tags], resource=uri, sources=[Source(uri, cl.AST_SYMBOL, path.name)]))
+                                  facts=facts, tags=["gate", *tags], resource=uri, sources=[Source(uri, cl.AST_CLOSURE, path.name)]))
     return pages
 
 
@@ -644,8 +651,10 @@ def collect(repo: Repo) -> list[PageSpec]:
     pages = [*symbol_pages(repo), *module_pages(repo, symbols), *language_pages(repo, symbols), *context_pages(repo, symbols),
              *adr_pages(repo, adr_paths), *poc_decision_pages(repo, adr_paths), *requirement_pages(repo, modules),
              *verification_pages(repo, adr_paths, symbols), *gate_pages(repo), *lane_pages(repo, adr_paths)]
-    paths = [p.path for p in pages]
-    duplicates = sorted({p for p in paths if paths.count(p) > 1})
+    folded: dict[str, int] = {}
+    for page in pages:
+        folded[page.path.casefold()] = folded.get(page.path.casefold(), 0) + 1
+    duplicates = sorted({p.path for p in pages if folded[p.path.casefold()] > 1})
     if duplicates:
-        raise ValueError(f"extractors produced duplicate page paths: {duplicates}")
+        raise ValueError(f"extractors produced page paths that collide (compared case-insensitively, as on Windows and macOS): {duplicates}")
     return sorted(pages, key=lambda p: p.path)

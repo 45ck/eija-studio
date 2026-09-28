@@ -14,6 +14,7 @@ sources:
   title: adapters/identity.py
   hash_method: ast-api-v1
   sha256: ea01b4a25fd741646756971fe06d2f16887ae8fd4c2891ffd633213edbebd37b
+notes_baseline: 3d796778138e16598d0ac24c46e80fd871b4df9afbec941e0b1f5fec480554ad
 ---
 
 # adapters.identity

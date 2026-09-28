@@ -1,7 +1,7 @@
 ---
 type: Class
 title: application.ports.Repository
-description: '`class Repository(Protocol)` in `application/ports` (the source has no docstring).'
+description: '`class Repository(Protocol)` in `application/ports`.'
 resource: repo://src/eija_studio/application/ports.py#Repository
 tags:
 - symbol
@@ -15,6 +15,7 @@ sources:
   title: application/ports.py
   hash_method: ast-sig-v1
   sha256: 19a4b18761ea27770d53e7482ff0204bf6953b9a2c40c8605dd75e14bbf8e6cf
+notes_baseline: a8858b0e9841865581c661ce23802bc336fe85f111f5e6084bbc9284d60da70d
 ---
 
 # application.ports.Repository
@@ -26,7 +27,7 @@ sources:
 | Module | [`application/ports`](/modules/application/ports.md) |
 | Signature | `class Repository(Protocol)` |
 | Code | `repo://src/eija_studio/application/ports.py#Repository` |
-| Hash | `ast-sig-v1` over the normalised AST (comments and formatting ignored) |
+| Hash | `ast-sig-v1` over the class signature view: fields and public method signatures; method bodies and private helpers are NOT hashed |
 
 ## Docstring
 
@@ -58,6 +59,6 @@ _No curated notes yet._
 
 ## Referenced by
 
-* [application.ports.SandboxFactory](/symbols/application/ports/SandboxFactory.md) - `SandboxFactory = Callable[[], ContextManager[Repository]]` in `application/ports` (the source has no docstring).
-* [application.service.Studio](/symbols/application/service/Studio.md) - `class Studio` in `application/service` (the source has no docstring).
+* [application.ports.SandboxFactory](/symbols/application/ports/SandboxFactory.md) - Type alias `SandboxFactory` in `application/ports`.
+* [application.service.Studio](/symbols/application/service/Studio.md) - `class Studio` in `application/service`.
 <!-- okf:generated:end links -->

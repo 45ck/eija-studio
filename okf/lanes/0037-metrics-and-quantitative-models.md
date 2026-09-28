@@ -13,6 +13,7 @@ sources:
   title: docs/adr/README.md
   hash_method: md-table-row-v1
   sha256: ff2d80fc7c5f494c7aa7c8cd1a50d11feca455fdb4814d67c8154b47aa8834aa
+notes_baseline: acb21e1156d53fdce7b685af493348b2e729e82e5740a75c51f8f20dc61e1db5
 ---
 
 # Metrics and quantitative models

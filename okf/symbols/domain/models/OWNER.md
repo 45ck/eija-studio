@@ -1,7 +1,7 @@
 ---
 type: Constant
 title: domain.models.OWNER
-description: '`OWNER = Principal(id=''local-owner'', capabilities=frozenset({''select'', ''edit'', ''approve'', ''apply''}))` in `domain/models` (the source has no docstring).'
+description: Constant `OWNER` in `domain/models`.
 resource: repo://src/eija_studio/domain/models.py#OWNER
 tags:
 - symbol
@@ -13,8 +13,9 @@ generated:
 sources:
 - resource: repo://src/eija_studio/domain/models.py#OWNER
   title: domain/models.py
-  hash_method: ast-v1
-  sha256: 7530d4dcf897921043af96f2c631466df31489f8ef3cccd921244d54c5c3e064
+  hash_method: ast-v2
+  sha256: 2b3d08af9878cbaf609733870c4e372cc5ba9d3e74ca5397210810f90e19e0c2
+notes_baseline: fed43cc5592de2a6b1521440f7483ff52e7469990e1efbd86e280eadbb3533f7
 ---
 
 # domain.models.OWNER
@@ -26,7 +27,7 @@ sources:
 | Module | [`domain/models`](/modules/domain/models.md) |
 | Signature | `OWNER = Principal(id='local-owner', capabilities=frozenset({'select', 'edit', 'approve', 'apply'}))` |
 | Code | `repo://src/eija_studio/domain/models.py#OWNER` |
-| Hash | `ast-v1` over the normalised AST (comments and formatting ignored) |
+| Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
@@ -40,5 +41,5 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [domain.models.Principal](/symbols/domain/models/Principal.md) - `class Principal(Contract)` in `domain/models` (the source has no docstring).
+* [domain.models.Principal](/symbols/domain/models/Principal.md) - `class Principal(Contract)` in `domain/models`.
 <!-- okf:generated:end links -->

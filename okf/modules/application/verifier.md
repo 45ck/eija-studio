@@ -14,6 +14,7 @@ sources:
   title: application/verifier.py
   hash_method: ast-api-v1
   sha256: 0a4795050927ac3abc66a911ca8c70fc6d812cb41d5bc8f6c056020620661efa
+notes_baseline: 5c6cee07a4c9f2d6a695e21cae2485ae2e46a9f6cafd7a2a21b19f5b255dfb91
 ---
 
 # application.verifier
@@ -60,9 +61,9 @@ _No curated notes yet._
 * [Assurance](/contexts/assurance.md) - Owns Subject dimensions, verification observations, admissibility and freshness
 * [application.service](/modules/application/service.md) - Module `application/service` (no module docstring).
 * [interfaces.cli](/modules/interfaces/cli.md) - Module `interfaces/cli` (no module docstring).
-* [AC09: Authority](/requirements/ac09.md) - Teacher final approval is denied under every candidate path and direct API call.
-* [AC12: Workflow](/requirements/ac12.md) - Recommend requires Submitted; registrar Approve/Reject requires Recommended; Submit and Revise remain valid.
-* [application.verifier.ACTORS](/symbols/application/verifier/ACTORS.md) - `ACTORS = [('teacher-assigned', 'Teacher', True, True), ('teacher-unassigned', 'Teacher', True, False), ('teacher-revoked', 'Teacher', False, True), (…` in `ap…
-* [application.verifier.ORACLE](/symbols/application/verifier/ORACLE.md) - `ORACLE = {'Submit': ('Teacher', 'Draft', 'Submitted'), 'Recommend': ('Teacher', 'Submitted', 'Recommended'), 'Approve': ('Registrar', 'Recommended',…` in `app…
-* [application.verifier.verify_runtime](/symbols/application/verifier/verify_runtime.md) - `def verify_runtime(model: Workflow, subject: dict, sandbox: SandboxFactory) -> dict` in `application/verifier` (the source has no docstring).
+* [AC09: Authority](/requirements/ac09.md) - PASS_LOCAL: Teacher final approval is denied under every candidate path and direct API call.
+* [AC12: Workflow](/requirements/ac12.md) - PARTIAL: Recommend requires Submitted; registrar Approve/Reject requires Recommended; Submit and Revise remain valid.
+* [application.verifier.ACTORS](/symbols/application/verifier/ACTORS.md) - Constant `ACTORS` in `application/verifier`.
+* [application.verifier.ORACLE](/symbols/application/verifier/ORACLE.md) - Constant `ORACLE` in `application/verifier`.
+* [application.verifier.verify_runtime](/symbols/application/verifier/verify_runtime.md) - `def verify_runtime(model: Workflow, subject: dict, sandbox: SandboxFactory) -> dict` in `application/verifier`.
 <!-- okf:generated:end links -->

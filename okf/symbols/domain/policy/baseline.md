@@ -13,9 +13,10 @@ generated:
 sources:
 - resource: repo://src/eija_studio/domain/policy.py#baseline
   title: domain/policy.py
-  hash_method: ast-v1
-  sha256: 2e26c1f07f3fecf9eb09e594cffa3bd06de9be0eecfda455cce39155c29a3edc
+  hash_method: ast-v2
+  sha256: 581f794861efc3065b93676316370ff94668fbe45a048098cffa7c83d8421ce3
 description_override: The trusted four-state excursion workflow (Draft, Submitted, Approved, Rejected) that every Change Case starts from.
+notes_baseline: ea1d82f16aa0c1f225a9035b1d218d49e5e5391dc089c9d7056655a668e3f735
 ---
 
 # domain.policy.baseline
@@ -27,7 +28,7 @@ description_override: The trusted four-state excursion workflow (Draft, Submitte
 | Module | [`domain/policy`](/modules/domain/policy.md) |
 | Signature | `def baseline() -> Workflow` |
 | Code | `repo://src/eija_studio/domain/policy.py#baseline` |
-| Hash | `ast-v1` over the normalised AST (comments and formatting ignored) |
+| Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
@@ -41,6 +42,6 @@ Submit and Revise belong to the Teacher, Approve and Reject to the Registrar. It
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models` (the source has no docstring).
-* [domain.policy.transition](/symbols/domain/policy/transition.md) - `def transition(action: str, source: str, target: str, role: str) -> Transition` in `domain/policy` (the source has no docstring).
+* [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
+* [domain.policy.transition](/symbols/domain/policy/transition.md) - `def transition(action: str, source: str, target: str, role: str) -> Transition` in `domain/policy`.
 <!-- okf:generated:end links -->

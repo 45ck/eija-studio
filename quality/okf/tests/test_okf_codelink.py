@@ -126,3 +126,56 @@ def test_document_fragments_hash_their_own_row_only(tmp_path):
     row = cl.digest(tmp_path, cl.parse_uri("repo://t.md#0045-0046"), cl.MD_ROW)
     (tmp_path / "t.md").write_text(table.replace("Other", "Changed"), encoding="utf-8")
     assert cl.digest(tmp_path, cl.parse_uri("repo://t.md#0045-0046"), cl.MD_ROW) == row
+
+
+HELPERS = '''"""Module doc."""
+_LIMIT = 3
+
+
+def _limit_check(value):
+    return value > _LIMIT
+
+
+def _unused(value):
+    return value
+
+
+class Service:
+    """A service."""
+
+    def go(self, value):
+        return self._guard(value)
+
+    def other(self, value):
+        return value
+
+    def _guard(self, value):
+        return _limit_check(value)
+
+
+def public(value):
+    return _limit_check(value)
+'''
+
+
+def test_closure_hash_sees_private_helpers_a_symbol_reaches_transitively(tmp_path):
+    go = digest(tmp_path, HELPERS, "repo://mod.py#Service.go", cl.AST_CLOSURE)
+    # method -> self._guard -> module _limit_check -> module _LIMIT: each hop is visible
+    for old, new in (("return _limit_check(value)\n\n\ndef public", "return _limit_check(value + 0)\n\n\ndef public"),
+                     ("return value > _LIMIT", "return value >= _LIMIT"),
+                     ("_LIMIT = 3", "_LIMIT = 4")):
+        assert digest(tmp_path, HELPERS.replace(old, new), "repo://mod.py#Service.go", cl.AST_CLOSURE) != go, old
+    # the negative controls: ast-v1 stays blind to helpers, and unreachable code does not move the hash
+    assert digest(tmp_path, HELPERS.replace("_LIMIT = 3", "_LIMIT = 4"), "repo://mod.py#Service.go", cl.AST_SYMBOL) == \
+        digest(tmp_path, HELPERS, "repo://mod.py#Service.go", cl.AST_SYMBOL)
+    assert digest(tmp_path, HELPERS.replace("def _unused(value):\n    return value", "def _unused(value):\n    return value * 2"),
+                  "repo://mod.py#Service.go", cl.AST_CLOSURE) == go
+    assert digest(tmp_path, HELPERS.replace("def other(self, value):\n        return value", "def other(self, value):\n        return 0"),
+                  "repo://mod.py#Service.go", cl.AST_CLOSURE) == go          # a sibling method is not reached
+
+
+def test_closure_hash_does_not_follow_public_callees_and_ignores_formatting(tmp_path):
+    public = digest(tmp_path, HELPERS, "repo://mod.py#public", cl.AST_CLOSURE)
+    assert digest(tmp_path, HELPERS.replace("return value\n\n\nclass", "return value + 1\n\n\nclass"), "repo://mod.py#public", cl.AST_CLOSURE) == public
+    assert digest(tmp_path, HELPERS.replace("value > _LIMIT", "value  >  _LIMIT  # cmt"), "repo://mod.py#public", cl.AST_CLOSURE) == public
+    assert digest(tmp_path, HELPERS.replace("value > _LIMIT", "value < _LIMIT"), "repo://mod.py#public", cl.AST_CLOSURE) != public

@@ -14,6 +14,7 @@ sources:
   title: domain/policy.py
   hash_method: ast-api-v1
   sha256: cee7ecd1eeed2519ce2e0401a403b6124e5a24a80b99e2a7add5775ef0d917bf
+notes_baseline: 239c1b23ae46eda77098545f8f38e480e797590bfb2252244316fe4b47a387bd
 ---
 
 # domain.policy
@@ -66,14 +67,14 @@ The protected policy module. Change it only with a regression test and an ADR: t
 * [application.runtime](/modules/application/runtime.md) - Generic execution algorithm; domain-specific policy stays in domain.policy.
 * [application.service](/modules/application/service.md) - Module `application/service` (no module docstring).
 * [interfaces.cli](/modules/interfaces/cli.md) - Module `interfaces/cli` (no module docstring).
-* [domain.policy.CANONICAL_OPTIONS](/symbols/domain/policy/CANONICAL_OPTIONS.md) - `CANONICAL_OPTIONS = {'recommend_only': {'label': 'Teacher recommends; registrar decides', 'supported': True, 'consequences': ['Only active, assigned…` in `dom…
-* [domain.policy.EFFECTS](/symbols/domain/policy/EFFECTS.md) - `EFFECTS = {'Submit': ('Audit:ExcursionSubmitted',), 'Recommend': ('Audit:ExcursionRecommended', 'Notification:RegistrarQueued'), 'Approve': ('Audit:E…` in `do…
-* [domain.policy.FORBIDDEN](/symbols/domain/policy/FORBIDDEN.md) - `FORBIDDEN = ('PaymentCaptured', 'ParentDataExported')` in `domain/policy` (the source has no docstring).
-* [domain.policy.apply_transaction](/symbols/domain/policy/apply_transaction.md) - `def apply_transaction(model: Workflow, tx: SemanticTransaction) -> Workflow` in `domain/policy` (the source has no docstring).
-* [domain.policy.baseline](/symbols/domain/policy/baseline.md) - `def baseline() -> Workflow` in `domain/policy` (the source has no docstring).
-* [domain.policy.check_policy](/symbols/domain/policy/check_policy.md) - `def check_policy(model: Workflow) -> list[str]` in `domain/policy` (the source has no docstring).
-* [domain.policy.ensure_policy](/symbols/domain/policy/ensure_policy.md) - `def ensure_policy(model: Workflow) -> None` in `domain/policy` (the source has no docstring).
-* [domain.policy.meaning_questions](/symbols/domain/policy/meaning_questions.md) - `def meaning_questions(model: Workflow) -> list[dict]` in `domain/policy` (the source has no docstring).
+* [domain.policy.CANONICAL_OPTIONS](/symbols/domain/policy/CANONICAL_OPTIONS.md) - Constant `CANONICAL_OPTIONS` in `domain/policy`.
+* [domain.policy.EFFECTS](/symbols/domain/policy/EFFECTS.md) - Constant `EFFECTS` in `domain/policy`.
+* [domain.policy.FORBIDDEN](/symbols/domain/policy/FORBIDDEN.md) - Constant `FORBIDDEN` in `domain/policy`.
+* [domain.policy.apply_transaction](/symbols/domain/policy/apply_transaction.md) - `def apply_transaction(model: Workflow, tx: SemanticTransaction) -> Workflow` in `domain/policy`.
+* [domain.policy.baseline](/symbols/domain/policy/baseline.md) - `def baseline() -> Workflow` in `domain/policy`.
+* [domain.policy.check_policy](/symbols/domain/policy/check_policy.md) - `def check_policy(model: Workflow) -> list[str]` in `domain/policy`.
+* [domain.policy.ensure_policy](/symbols/domain/policy/ensure_policy.md) - `def ensure_policy(model: Workflow) -> None` in `domain/policy`.
+* [domain.policy.meaning_questions](/symbols/domain/policy/meaning_questions.md) - `def meaning_questions(model: Workflow) -> list[dict]` in `domain/policy`.
 * [domain.policy.projections](/symbols/domain/policy/projections.md) - Journey wording and rules derive from executable transitions, not AI copy.
-* [domain.policy.transition](/symbols/domain/policy/transition.md) - `def transition(action: str, source: str, target: str, role: str) -> Transition` in `domain/policy` (the source has no docstring).
+* [domain.policy.transition](/symbols/domain/policy/transition.md) - `def transition(action: str, source: str, target: str, role: str) -> Transition` in `domain/policy`.
 <!-- okf:generated:end links -->

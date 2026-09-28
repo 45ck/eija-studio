@@ -1,7 +1,7 @@
 ---
 type: Method
 title: application.service.Studio.view
-description: '`def view(self, case_id: str, scope: str=''local-demo'') -> dict` in `application/service` (the source has no docstring).'
+description: '`def view(self, case_id: str, scope: str=''local-demo'') -> dict` in `application/service`.'
 resource: repo://src/eija_studio/application/service.py#Studio.view
 tags:
 - symbol
@@ -13,8 +13,9 @@ generated:
 sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.view
   title: application/service.py
-  hash_method: ast-v1
-  sha256: 84ee6786aa886a91cac4314c1bf19834dcee0067cc79b309951e146e02460a33
+  hash_method: ast-v2
+  sha256: b104cbb760ebc85dfd7cc2ec08500f1ba8d3c2e01263723f3cd10c0d10661726
+notes_baseline: 2af7d65e720367af5e24f8fb980a0c95e22fdcca7d12674d265a6607e7a4073d
 ---
 
 # application.service.Studio.view
@@ -27,7 +28,7 @@ sources:
 | Class | [`Studio`](/symbols/application/service/Studio.md) |
 | Signature | `def view(self, case_id: str, scope: str='local-demo') -> dict` |
 | Code | `repo://src/eija_studio/application/service.py#Studio.view` |
-| Hash | `ast-v1` over the normalised AST (comments and formatting ignored) |
+| Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
@@ -41,6 +42,6 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [application.compiler.compile_case](/symbols/application/compiler/compile_case.md) - `def compile_case(case: ChangeCase, identity: dict, authenticator, active_version: int, scope: str='local-demo') -> dict` in `application/compiler` (the source…
-* [domain.policy.CANONICAL_OPTIONS](/symbols/domain/policy/CANONICAL_OPTIONS.md) - `CANONICAL_OPTIONS = {'recommend_only': {'label': 'Teacher recommends; registrar decides', 'supported': True, 'consequences': ['Only active, assigned…` in `dom…
+* [application.compiler.compile_case](/symbols/application/compiler/compile_case.md) - `def compile_case(case: ChangeCase, identity: dict, authenticator, active_version: int, scope: str='local-demo…` in `application/compiler`.
+* [domain.policy.CANONICAL_OPTIONS](/symbols/domain/policy/CANONICAL_OPTIONS.md) - Constant `CANONICAL_OPTIONS` in `domain/policy`.
 <!-- okf:generated:end links -->

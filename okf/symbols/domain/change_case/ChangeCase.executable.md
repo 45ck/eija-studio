@@ -1,7 +1,7 @@
 ---
 type: Method
 title: domain.change_case.ChangeCase.executable
-description: '`def executable(self) -> Workflow` in `domain/change_case` (the source has no docstring).'
+description: '`def executable(self) -> Workflow` in `domain/change_case`.'
 resource: repo://src/eija_studio/domain/change_case.py#ChangeCase.executable
 tags:
 - symbol
@@ -13,8 +13,9 @@ generated:
 sources:
 - resource: repo://src/eija_studio/domain/change_case.py#ChangeCase.executable
   title: domain/change_case.py
-  hash_method: ast-v1
-  sha256: 296deebad53bed9a8ceee7f8f5dba4eeb3d1e822fb68d3753ac50543d1ef0958
+  hash_method: ast-v2
+  sha256: a3e909af42fb86b68b8d1c39b31b641f381f057de4dd0cec0eff1df9a9a40b0b
+notes_baseline: a113479c4c52fd1541aa6c566ac631248d16f0a7c05e19d7aaf6b5758eebff82
 ---
 
 # domain.change_case.ChangeCase.executable
@@ -27,7 +28,7 @@ sources:
 | Class | [`ChangeCase`](/symbols/domain/change_case/ChangeCase.md) |
 | Signature | `def executable(self) -> Workflow` |
 | Code | `repo://src/eija_studio/domain/change_case.py#ChangeCase.executable` |
-| Hash | `ast-v1` over the normalised AST (comments and formatting ignored) |
+| Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
@@ -42,5 +43,5 @@ _No curated notes yet._
 ## Depends on
 
 * [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
-* [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models` (the source has no docstring).
+* [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 <!-- okf:generated:end links -->

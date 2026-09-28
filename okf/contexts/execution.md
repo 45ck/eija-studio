@@ -14,6 +14,7 @@ sources:
   title: ARCHITECTURE.md
   hash_method: md-table-row-v1
   sha256: d5655a652840bcdbd3a01b720c57a358da9b956d7ebf3633befe8a53de641dc4
+notes_baseline: 213e1247d4710528d80afabe3af8260299b0c4e245a3ce9396933855aa3599c0
 ---
 
 # Execution
@@ -46,9 +47,9 @@ Where protected policy meets runtime: [check_policy](/symbols/domain/policy/chec
 ## Published contracts
 
 * [application.ports.UnitOfWork](/symbols/application/ports/UnitOfWork.md) - All mutations on this port commit together or roll back together.
-* [domain.models.ExecuteCommand](/symbols/domain/models/ExecuteCommand.md) - `class ExecuteCommand(Contract)` in `domain/models` (the source has no docstring).
-* [domain.models.Transition](/symbols/domain/models/Transition.md) - `class Transition(Contract)` in `domain/models` (the source has no docstring).
-* [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models` (the source has no docstring).
+* [domain.models.ExecuteCommand](/symbols/domain/models/ExecuteCommand.md) - `class ExecuteCommand(Contract)` in `domain/models`.
+* [domain.models.Transition](/symbols/domain/models/Transition.md) - `class Transition(Contract)` in `domain/models`.
+* [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 
 ## Implementing modules
 

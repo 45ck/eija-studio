@@ -13,9 +13,10 @@ generated:
 sources:
 - resource: repo://src/eija_studio/domain/policy.py#transition
   title: domain/policy.py
-  hash_method: ast-v1
-  sha256: 274d2ccc54637286efaacac73f62d012f5f3aa1d1fbeb01f6705db920f89331c
+  hash_method: ast-v2
+  sha256: e4abc97bf36ffd9435e5dc08fe17baa09e44fbd8283e60bbd582577929979341
 description_override: Builds a Transition whose guards and effects come from the protected tables, never from caller input.
+notes_baseline: 131f5b3ffb1c32f6fdfbae407b359fda148e5335ad64b4d62500a7929308ff58
 ---
 
 # domain.policy.transition
@@ -27,7 +28,7 @@ description_override: Builds a Transition whose guards and effects come from the
 | Module | [`domain/policy`](/modules/domain/policy.md) |
 | Signature | `def transition(action: str, source: str, target: str, role: str) -> Transition` |
 | Code | `repo://src/eija_studio/domain/policy.py#transition` |
-| Hash | `ast-v1` over the normalised AST (comments and formatting ignored) |
+| Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
@@ -41,13 +42,13 @@ _The source carries no docstring._
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [domain.models.BASE_GUARDS](/symbols/domain/models/BASE_GUARDS.md) - `BASE_GUARDS: tuple[Guard, ...] = ('actor_active', 'role_current', 'state_equals', 'expected_version', 'operation_binding')` in `domain/models` (the source has…
-* [domain.models.Transition](/symbols/domain/models/Transition.md) - `class Transition(Contract)` in `domain/models` (the source has no docstring).
-* [domain.policy.EFFECTS](/symbols/domain/policy/EFFECTS.md) - `EFFECTS = {'Submit': ('Audit:ExcursionSubmitted',), 'Recommend': ('Audit:ExcursionRecommended', 'Notification:RegistrarQueued'), 'Approve': ('Audit:E…` in `do…
-* [domain.policy.FORBIDDEN](/symbols/domain/policy/FORBIDDEN.md) - `FORBIDDEN = ('PaymentCaptured', 'ParentDataExported')` in `domain/policy` (the source has no docstring).
+* [domain.models.BASE_GUARDS](/symbols/domain/models/BASE_GUARDS.md) - Constant `BASE_GUARDS` in `domain/models`.
+* [domain.models.Transition](/symbols/domain/models/Transition.md) - `class Transition(Contract)` in `domain/models`.
+* [domain.policy.EFFECTS](/symbols/domain/policy/EFFECTS.md) - Constant `EFFECTS` in `domain/policy`.
+* [domain.policy.FORBIDDEN](/symbols/domain/policy/FORBIDDEN.md) - Constant `FORBIDDEN` in `domain/policy`.
 
 ## Referenced by
 
-* [domain.policy.apply_transaction](/symbols/domain/policy/apply_transaction.md) - `def apply_transaction(model: Workflow, tx: SemanticTransaction) -> Workflow` in `domain/policy` (the source has no docstring).
-* [domain.policy.baseline](/symbols/domain/policy/baseline.md) - `def baseline() -> Workflow` in `domain/policy` (the source has no docstring).
+* [domain.policy.apply_transaction](/symbols/domain/policy/apply_transaction.md) - `def apply_transaction(model: Workflow, tx: SemanticTransaction) -> Workflow` in `domain/policy`.
+* [domain.policy.baseline](/symbols/domain/policy/baseline.md) - `def baseline() -> Workflow` in `domain/policy`.
 <!-- okf:generated:end links -->

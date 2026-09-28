@@ -13,6 +13,7 @@ sources:
   title: docs/adr/README.md
   hash_method: md-table-row-v1
   sha256: 2692b65d46d1f760fe1d5b0fe5c75d2a8fe639de6fe2f063f94425fc6c91f247
+notes_baseline: ec3448c67f95273829e60ff32bacc8c7279b215bcd662a99ff1d74111a20ac19
 ---
 
 # Knowledge base: OKF v0.2 wiki deterministically linked to code

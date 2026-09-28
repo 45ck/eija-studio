@@ -13,6 +13,7 @@ sources:
   title: docs/adr/README.md
   hash_method: md-table-row-v1
   sha256: 716786984d3ec2f01f39e3efaf73370964a0488b07e35e8351bc9eeb84d87851
+notes_baseline: c0c19fc44523a0adc87ee10423d34e75a7750da9f14e2eb620ddd520aca7b247
 ---
 
 # Formal: Bend laws and proofs

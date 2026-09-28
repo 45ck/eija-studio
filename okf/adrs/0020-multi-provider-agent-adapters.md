@@ -14,6 +14,7 @@ sources:
   title: 0020-multi-provider-agent-adapters.md
   hash_method: lf-sha256-v1
   sha256: 7da3ee4dd18e42989f382489367bb7e07a9a508aed76eccc58683663f3c20664
+notes_baseline: 83f511f8a27b2afe496c1583b58f8ea8f5b67f853458e9f3ef1d2eb078ca8189
 ---
 
 # ADR-0020: Proposal providers for Codex, Claude Code, OpenCode, Gemini CLI and OpenRouter

@@ -1,7 +1,7 @@
 ---
 type: Verification Technique
 title: Machine-checked laws
-description: 'Establishes: Laws hold for **all** action sequences of the model generated from code'
+description: 'Planned (not implemented). Would establish: Laws hold for **all** action sequences of the model generated from code'
 resource: repo://docs/adr/0018-formal-vv-portfolio.md#bend_proof
 tags:
 - verification
@@ -14,6 +14,7 @@ sources:
   title: 0018-formal-vv-portfolio.md
   hash_method: md-table-row-v1
   sha256: df89b05c8c8eaa536add3a4158965a7d0a28a4b00933134e52275a10e5bae36d
+notes_baseline: e8b4c7c46591a99cc89c9af5c9abe4ed23856d1e9ea567cfa9cc710fe0cd3d3a
 ---
 
 # Machine-checked laws
@@ -29,7 +30,7 @@ sources:
 
 Laws hold for **all** action sequences of the model generated from code
 
-This technique is planned by the ADR. The page stays `draft` until its lane lands and the ADR accepts it. It is a distinct evidence kind and may never be relabelled as another.
+**Status: planned, not implemented in the kernel.** The ADR names this technique; no code in this repository produces this evidence yet. The page is `draft` (unreviewed plan) whatever the ADR's own status becomes, and it is a distinct evidence kind that may never be relabelled as another.
 <!-- okf:generated:end facts -->
 
 ## Notes

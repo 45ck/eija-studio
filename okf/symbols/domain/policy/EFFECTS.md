@@ -13,9 +13,10 @@ generated:
 sources:
 - resource: repo://src/eija_studio/domain/policy.py#EFFECTS
   title: domain/policy.py
-  hash_method: ast-v1
-  sha256: ad8634c2c7d1f2d3faf5dae9d6db857ca494735762b2d158920100e014a81a43
+  hash_method: ast-v2
+  sha256: c50b644c94d30c992f8795a22928009d50179d7ae419a6a8410aa53a4cef2cf8
 description_override: The exact audit and notification effects each action must produce at commit time.
+notes_baseline: c157773027d10311a6edf826ac64c1ba9c268a2f5fff1ae41e7afb8934dd031c
 ---
 
 # domain.policy.EFFECTS
@@ -27,7 +28,7 @@ description_override: The exact audit and notification effects each action must 
 | Module | [`domain/policy`](/modules/domain/policy.md) |
 | Signature | `EFFECTS = {'Submit': ('Audit:ExcursionSubmitted',), 'Recommend': ('Audit:ExcursionRecommended', 'Notification:RegistrarQueued'), 'Approve': ('Audit:ExcursionAp…` |
 | Code | `repo://src/eija_studio/domain/policy.py#EFFECTS` |
-| Hash | `ast-v1` over the normalised AST (comments and formatting ignored) |
+| Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
@@ -41,6 +42,6 @@ _The source carries no docstring._
 <!-- okf:generated:begin links -->
 ## Referenced by
 
-* [domain.policy.check_policy](/symbols/domain/policy/check_policy.md) - `def check_policy(model: Workflow) -> list[str]` in `domain/policy` (the source has no docstring).
-* [domain.policy.transition](/symbols/domain/policy/transition.md) - `def transition(action: str, source: str, target: str, role: str) -> Transition` in `domain/policy` (the source has no docstring).
+* [domain.policy.check_policy](/symbols/domain/policy/check_policy.md) - `def check_policy(model: Workflow) -> list[str]` in `domain/policy`.
+* [domain.policy.transition](/symbols/domain/policy/transition.md) - `def transition(action: str, source: str, target: str, role: str) -> Transition` in `domain/policy`.
 <!-- okf:generated:end links -->

@@ -13,9 +13,10 @@ generated:
 sources:
 - resource: repo://src/eija_studio/domain/impact.py#model_impact
   title: domain/impact.py
-  hash_method: ast-v1
-  sha256: 46f9bca100abff59cc6ad75e52835f2a16e8648d900c961087a9088afae7cd62
+  hash_method: ast-v2
+  sha256: 4c0f160e3bfd36fc9644988ce9c522daea8460aa9829c09e12497c10ef59a349
 description_override: Maps the changed actions between two workflows onto the rule, runtime, state-view, journey, obligation, receipt, review-packet and decision chain and closes over it.
+notes_baseline: 0aed33da6b73a9f7d9324d110608d99a2f99a5bbd9faec66aae354971bc40a4d
 ---
 
 # domain.impact.model_impact
@@ -27,7 +28,7 @@ description_override: Maps the changed actions between two workflows onto the ru
 | Module | [`domain/impact`](/modules/domain/impact.md) |
 | Signature | `def model_impact(before: Workflow, after: Workflow) -> dict` |
 | Code | `repo://src/eija_studio/domain/impact.py#model_impact` |
-| Hash | `ast-v1` over the normalised AST (comments and formatting ignored) |
+| Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
@@ -42,9 +43,9 @@ The envelope is explicit in the result: it covers dependencies encoded by this e
 ## Depends on
 
 * [domain.impact.closure](/symbols/domain/impact/closure.md) - Edges mean source affects target.
-* [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models` (the source has no docstring).
+* [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 
 ## Referenced by
 
-* [application.compiler.compile_case](/symbols/application/compiler/compile_case.md) - `def compile_case(case: ChangeCase, identity: dict, authenticator, active_version: int, scope: str='local-demo') -> dict` in `application/compiler` (the source…
+* [application.compiler.compile_case](/symbols/application/compiler/compile_case.md) - `def compile_case(case: ChangeCase, identity: dict, authenticator, active_version: int, scope: str='local-demo…` in `application/compiler`.
 <!-- okf:generated:end links -->

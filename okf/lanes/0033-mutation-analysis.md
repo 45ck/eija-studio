@@ -13,6 +13,7 @@ sources:
   title: docs/adr/README.md
   hash_method: md-table-row-v1
   sha256: 468139b0c572edba89761db31154bf27caa263d474f749bed94d4b9b26e84185
+notes_baseline: 60d6a55d8291b6191773fc9d8fa24c9658b0907e23c41a5db0a5fcf53b086f1b
 ---
 
 # Mutation analysis

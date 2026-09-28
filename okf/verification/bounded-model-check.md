@@ -1,7 +1,7 @@
 ---
 type: Verification Technique
 title: Bounded exhaustive runtime
-description: 'Establishes: No reachable counterexample within depth *k*'
+description: 'Planned (not implemented). Would establish: No reachable counterexample within depth *k*'
 resource: repo://docs/adr/0018-formal-vv-portfolio.md#bounded_model_check
 tags:
 - verification
@@ -14,6 +14,7 @@ sources:
   title: 0018-formal-vv-portfolio.md
   hash_method: md-table-row-v1
   sha256: 09bbf17b0f610d68de2697b8c065a6b38bb8cc8b4e781be041bef0d5edf5103d
+notes_baseline: a52b555aa8f78d3e953def9e9e6ab334cb35c900b8433afd685c182594a595a9
 ---
 
 # Bounded exhaustive runtime
@@ -29,7 +30,7 @@ sources:
 
 No reachable counterexample within depth *k*
 
-This technique is planned by the ADR. The page stays `draft` until its lane lands and the ADR accepts it. It is a distinct evidence kind and may never be relabelled as another.
+**Status: planned, not implemented in the kernel.** The ADR names this technique; no code in this repository produces this evidence yet. The page is `draft` (unreviewed plan) whatever the ADR's own status becomes, and it is a distinct evidence kind that may never be relabelled as another.
 <!-- okf:generated:end facts -->
 
 ## Notes

@@ -13,6 +13,7 @@ sources:
   title: docs/adr/README.md
   hash_method: md-table-row-v1
   sha256: 1f8a3e7a19765bd15ac13f46e2584ff584f7a09a548879d4b30f34152c5d7822
+notes_baseline: 408fd136eb98403517832dc1bacd17c1343ebc534b9c30b39ddd01897eb2f853
 ---
 
 # Testing: property-based and model-based tests

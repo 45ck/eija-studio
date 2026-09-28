@@ -14,6 +14,7 @@ sources:
   title: ARCHITECTURE.md
   hash_method: md-table-row-v1
   sha256: 329604fa944636e5b4e20f2d9dbe48a1e85673d511daaf85ed9787babb73967f
+notes_baseline: 7585a3f05dea5f963b79047ff15b4d649002430a425dd81df01e6ee42f75ec93
 ---
 
 # Assurance

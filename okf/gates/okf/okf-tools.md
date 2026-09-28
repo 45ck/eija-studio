@@ -12,8 +12,9 @@ generated:
 sources:
 - resource: repo://quality/sessions/okf.py#okf_tools
   title: okf.py
-  hash_method: ast-v1
-  sha256: 5beb81a8036a5af9c7884fc4880529ff3d86078e563d10892152e4811c74f31a
+  hash_method: ast-v2
+  sha256: 4b99688ce2393e1fc1693129edc6489f0d0d37e43a6166c80c3ca6e25a0d472e
+notes_baseline: 3fb3e551e861be2a37273fc313abc1baf2faa1236a7cd77939af2575a08fcc79
 ---
 
 # nox -s okf_tools

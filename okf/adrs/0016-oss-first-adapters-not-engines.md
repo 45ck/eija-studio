@@ -14,6 +14,7 @@ sources:
   title: 0016-oss-first-adapters-not-engines.md
   hash_method: lf-sha256-v1
   sha256: 76ece21c8e718003b8b3f1da32babb8bca1d9baa4c32fb42600d206cfbc7a7f4
+notes_baseline: 29f7b458f671b8da0a1d17e430a1c5d3e5840f24e5eedd6f46358c63b9634cb2
 ---
 
 # ADR-0016: OSS first: build adapters, not engines

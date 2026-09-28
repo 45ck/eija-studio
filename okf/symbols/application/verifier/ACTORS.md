@@ -1,7 +1,7 @@
 ---
 type: Constant
 title: application.verifier.ACTORS
-description: '`ACTORS = [(''teacher-assigned'', ''Teacher'', True, True), (''teacher-unassigned'', ''Teacher'', True, False), (''teacher-revoked'', ''Teacher'', False, True), (…` in `application/verifier` (the source has no docstring).'
+description: Constant `ACTORS` in `application/verifier`.
 resource: repo://src/eija_studio/application/verifier.py#ACTORS
 tags:
 - symbol
@@ -13,8 +13,9 @@ generated:
 sources:
 - resource: repo://src/eija_studio/application/verifier.py#ACTORS
   title: application/verifier.py
-  hash_method: ast-v1
-  sha256: b7eb1cd8495fa820215b43730b7e4982454eabda90fa3e4def7f846cedfc5715
+  hash_method: ast-v2
+  sha256: 60f1d42e59bfc69407c1e96bafc9c813b2958f46d04570fd36a2150d0490205c
+notes_baseline: 773c7a3de237c020a81b15a3812ae369c1601986779e03f1aaa1f980f4f6ae7e
 ---
 
 # application.verifier.ACTORS
@@ -26,7 +27,7 @@ sources:
 | Module | [`application/verifier`](/modules/application/verifier.md) |
 | Signature | `ACTORS = [('teacher-assigned', 'Teacher', True, True), ('teacher-unassigned', 'Teacher', True, False), ('teacher-revoked', 'Teacher', False, True), ('registrar…` |
 | Code | `repo://src/eija_studio/application/verifier.py#ACTORS` |
-| Hash | `ast-v1` over the normalised AST (comments and formatting ignored) |
+| Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
@@ -40,5 +41,5 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Referenced by
 
-* [application.verifier.verify_runtime](/symbols/application/verifier/verify_runtime.md) - `def verify_runtime(model: Workflow, subject: dict, sandbox: SandboxFactory) -> dict` in `application/verifier` (the source has no docstring).
+* [application.verifier.verify_runtime](/symbols/application/verifier/verify_runtime.md) - `def verify_runtime(model: Workflow, subject: dict, sandbox: SandboxFactory) -> dict` in `application/verifier`.
 <!-- okf:generated:end links -->

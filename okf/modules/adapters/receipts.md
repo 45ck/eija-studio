@@ -14,6 +14,7 @@ sources:
   title: adapters/receipts.py
   hash_method: ast-api-v1
   sha256: 9b25d012eeb8af24af6558e47fc78f3c0bd93615ea06cf5db6c1827f4a617d78
+notes_baseline: 21efa69e165d8b431353d373d555a482c4c2d3a559cc4d667e25564235a52807
 ---
 
 # adapters.receipts

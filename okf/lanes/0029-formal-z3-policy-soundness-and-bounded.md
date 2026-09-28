@@ -13,6 +13,7 @@ sources:
   title: docs/adr/README.md
   hash_method: md-table-row-v1
   sha256: 35e052005028e8d9b94347645f3b749a08d43d13dd67f43f7bdd6652ee50e377
+notes_baseline: 0301d8c0de5b1a9bc938fed3d631137641b2e89336237904f5ea70799febd6bb
 ---
 
 # Formal: Z3 policy soundness and bounded model checking

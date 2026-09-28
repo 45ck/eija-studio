@@ -14,6 +14,7 @@ sources:
   title: ARCHITECTURE.md
   hash_method: md-table-row-v1
   sha256: 654efaf4bb964c72e1d0851dd63954e61fc8e6f958739d22a63a6af8eca8cd9c
+notes_baseline: 13e09060c9aa3e899cd9ec3c09f68962417937fbd5c5611feae807449f913ef6
 ---
 
 # Provider integration
@@ -42,8 +43,8 @@ Vendor transport is isolated behind the [ProposalProvider](/symbols/application/
 <!-- okf:generated:begin links -->
 ## Published contracts
 
-* [application.ports.ProposalProvider](/symbols/application/ports/ProposalProvider.md) - `class ProposalProvider(Protocol)` in `application/ports` (the source has no docstring).
-* [application.ports.ProviderResult](/symbols/application/ports/ProviderResult.md) - `class ProviderResult` in `application/ports` (the source has no docstring).
+* [application.ports.ProposalProvider](/symbols/application/ports/ProposalProvider.md) - `class ProposalProvider(Protocol)` in `application/ports`.
+* [application.ports.ProviderResult](/symbols/application/ports/ProviderResult.md) - `class ProviderResult` in `application/ports`.
 
 ## Implementing modules
 

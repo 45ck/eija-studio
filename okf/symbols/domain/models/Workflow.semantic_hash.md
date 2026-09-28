@@ -13,9 +13,10 @@ generated:
 sources:
 - resource: repo://src/eija_studio/domain/models.py#Workflow.semantic_hash
   title: domain/models.py
-  hash_method: ast-v1
-  sha256: 44dba5d3de0b65bc16c2e9aa14f15cefa8f24d936cc84c2c75eaad5c72ac1cd6
+  hash_method: ast-v2
+  sha256: 8320b3ba427e12549b9120c151630a677b0596d84ff486bc11afa8f53b340786
 description_override: 'Order-insensitive fingerprint of the workflow: definition order is non-semantic, identifiers, states, roles and rules are semantic.'
+notes_baseline: 870f5e36162952709a48b7bb1c919a06b468ea6145b26789815e62a00eddb606
 ---
 
 # domain.models.Workflow.semantic_hash
@@ -28,7 +29,7 @@ description_override: 'Order-insensitive fingerprint of the workflow: definition
 | Class | [`Workflow`](/symbols/domain/models/Workflow.md) |
 | Signature | `def semantic_hash(self) -> str` |
 | Code | `repo://src/eija_studio/domain/models.py#Workflow.semantic_hash` |
-| Hash | `ast-v1` over the normalised AST (comments and formatting ignored) |
+| Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
@@ -42,5 +43,5 @@ Sorted states, transitions by id and sorted guards/effects go through [fingerpri
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [domain.models.fingerprint](/symbols/domain/models/fingerprint.md) - `def fingerprint(value: Any) -> str` in `domain/models` (the source has no docstring).
+* [domain.models.fingerprint](/symbols/domain/models/fingerprint.md) - `def fingerprint(value: Any) -> str` in `domain/models`.
 <!-- okf:generated:end links -->

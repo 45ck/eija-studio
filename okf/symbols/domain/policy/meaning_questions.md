@@ -13,9 +13,10 @@ generated:
 sources:
 - resource: repo://src/eija_studio/domain/policy.py#meaning_questions
   title: domain/policy.py
-  hash_method: ast-v1
-  sha256: 049f5704bdeee8d5c86b5f838bf5f62cb41968435d02f7908ebaebf3e44f2743
+  hash_method: ast-v2
+  sha256: b423eaa39e54be8153c22c2753b650463d34021720d4de9c3dcbc504ccdbe0ae
 description_override: The three critical questions a local owner must answer correctly before a decision is sealed.
+notes_baseline: 2758810cf1fa8438c38d7f1c311b4324c4d79afcd1161816f4a664a3205bdd29
 ---
 
 # domain.policy.meaning_questions
@@ -27,7 +28,7 @@ description_override: The three critical questions a local owner must answer cor
 | Module | [`domain/policy`](/modules/domain/policy.md) |
 | Signature | `def meaning_questions(model: Workflow) -> list[dict]` |
 | Code | `repo://src/eija_studio/domain/policy.py#meaning_questions` |
-| Hash | `ast-v1` over the normalised AST (comments and formatting ignored) |
+| Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
@@ -41,9 +42,9 @@ Authority (Registrar keeps final approval), assignment (an unassigned teacher ca
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models` (the source has no docstring).
+* [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 
 ## Referenced by
 
-* [application.compiler.compile_case](/symbols/application/compiler/compile_case.md) - `def compile_case(case: ChangeCase, identity: dict, authenticator, active_version: int, scope: str='local-demo') -> dict` in `application/compiler` (the source…
+* [application.compiler.compile_case](/symbols/application/compiler/compile_case.md) - `def compile_case(case: ChangeCase, identity: dict, authenticator, active_version: int, scope: str='local-demo…` in `application/compiler`.
 <!-- okf:generated:end links -->

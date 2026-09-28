@@ -13,9 +13,10 @@ generated:
 sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.select
   title: application/service.py
-  hash_method: ast-v1
-  sha256: faf2984c2b9a0a933cdd2911fc9f6e10e226b31e72523e3a2d0b814eeb911dec
+  hash_method: ast-v2
+  sha256: 554c21208bb641d8ab3309db199257209fe39e7e434c9c9a537a1acde53f9294
 description_override: Records the owner's explicit choice of one supported interpretation and derives the candidate workflow.
+notes_baseline: 94b71cd4e9f2946193b8bc0c926ce7b9f9d1d17f61f4afee9b26b7b2b1461de5
 ---
 
 # application.service.Studio.select
@@ -28,7 +29,7 @@ description_override: Records the owner's explicit choice of one supported inter
 | Class | [`Studio`](/symbols/application/service/Studio.md) |
 | Signature | `def select(self, case_id: str, expected: int, interpretation: str, principal: Principal) -> dict` |
 | Code | `repo://src/eija_studio/application/service.py#Studio.select` |
-| Hash | `ast-v1` over the normalised AST (comments and formatting ignored) |
+| Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
@@ -43,8 +44,8 @@ Requires the `select` capability. Only `recommend_only` is supported; other inte
 ## Depends on
 
 * [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
-* [domain.models.Principal](/symbols/domain/models/Principal.md) - `class Principal(Contract)` in `domain/models` (the source has no docstring).
-* [domain.models.SemanticTransaction](/symbols/domain/models/SemanticTransaction.md) - `class SemanticTransaction(Contract)` in `domain/models` (the source has no docstring).
-* [domain.policy.CANONICAL_OPTIONS](/symbols/domain/policy/CANONICAL_OPTIONS.md) - `CANONICAL_OPTIONS = {'recommend_only': {'label': 'Teacher recommends; registrar decides', 'supported': True, 'consequences': ['Only active, assigned…` in `dom…
-* [domain.policy.apply_transaction](/symbols/domain/policy/apply_transaction.md) - `def apply_transaction(model: Workflow, tx: SemanticTransaction) -> Workflow` in `domain/policy` (the source has no docstring).
+* [domain.models.Principal](/symbols/domain/models/Principal.md) - `class Principal(Contract)` in `domain/models`.
+* [domain.models.SemanticTransaction](/symbols/domain/models/SemanticTransaction.md) - `class SemanticTransaction(Contract)` in `domain/models`.
+* [domain.policy.CANONICAL_OPTIONS](/symbols/domain/policy/CANONICAL_OPTIONS.md) - Constant `CANONICAL_OPTIONS` in `domain/policy`.
+* [domain.policy.apply_transaction](/symbols/domain/policy/apply_transaction.md) - `def apply_transaction(model: Workflow, tx: SemanticTransaction) -> Workflow` in `domain/policy`.
 <!-- okf:generated:end links -->

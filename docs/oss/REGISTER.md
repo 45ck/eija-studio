@@ -13,8 +13,8 @@
 | Hook enforcement | [noslop](https://github.com/45ck/noslop) | pre-commit, husky | — | — |
 | ADR format | MADR | Nygard ADRs, log4brains | — | — |
 | Knowledge base format | [OKF v0.2](https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/main/SPEC.md) (Apache-2.0) | OKF v0.1 profiles (Calvin Ops, ProofMap Lite), pdoc, mkdocstrings | `quality/okf/` (extractors, hash methods, gate) | No OSS tool links OKF concepts to Python symbols with normalised hashes; the format itself stays standard ([ADR-0045](../adr/0045-okf-knowledge-base-linked-to-code.md)) |
-| Frontmatter and YAML | python-frontmatter, PyYAML | ruamel.yaml | `quality/okf/pages.py` | Deterministic write order and marker-preserving merge; parsing is not custom |
+| Frontmatter and YAML | PyYAML (`safe_load`, `safe_dump`) | ruamel.yaml, python-frontmatter (evaluated, dropped: it only wrapped `yaml.load`) | `quality/okf/pages.py` | The `---` split, deterministic write order and marker-preserving merge are custom; YAML parsing is not |
 | Markdown link extraction | markdown-it-py | regex | `quality/okf/checks.py` | Only the gate rules are custom |
-| Python symbol resolution and hashing | stdlib `ast` | griffe, libcst | `quality/okf/codelink.py` | Canonical AST JSON is stable across 3.11-3.13 ([ADR-0046](../adr/0046-code-link-hash-methods-and-stale-semantics.md)); griffe could later feed `ast-api-v1` |
+| Python symbol resolution and hashing | stdlib `ast` | griffe, libcst | `quality/okf/codelink.py` | Canonical AST JSON; the committed hashes were reproduced on CPython 3.11.15, 3.12.10 and 3.13.12 on 2026-09-29 (`quality/okf/crosscheck.py`): evidence for these sources, not a general guarantee ([ADR-0046](../adr/0046-code-link-hash-methods-and-stale-semantics.md)); griffe could later feed `ast-api-v1` |
 
 Lanes still to add rows: providers (agent CLIs), diagrams (Mermaid, PlantUML, Graphviz), formal (Bend, TLA+/TLC, Z3), testing (Hypothesis), mutation, lint and typing (Ruff, mypy, import-linter), metrics (radon, grimp), HCI (Playwright, axe-core), agents (MCP Python SDK), tracing (OpenFastTrace), docs.

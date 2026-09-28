@@ -13,9 +13,10 @@ generated:
 sources:
 - resource: repo://src/eija_studio/domain/evidence.py#TECHNICAL_DIMENSIONS
   title: domain/evidence.py
-  hash_method: ast-v1
-  sha256: ce194559573de513ef3b6e5beb5ea3b4519369658ee25507ebdaf6a9825df5bd
+  hash_method: ast-v2
+  sha256: c91b1314a884cbd51f594af06cd656a92f4dd632c692a0a4b25da45b3d027948
 description_override: 'The five subject dimensions an evidence receipt must match: semantic, implementation, policy, environment, harness.'
+notes_baseline: 1c5487da1ab710504cca43bcabe22e5e973201c1da87b0d71b70a03dd75acaec
 ---
 
 # domain.evidence.TECHNICAL_DIMENSIONS
@@ -27,7 +28,7 @@ description_override: 'The five subject dimensions an evidence receipt must matc
 | Module | [`domain/evidence`](/modules/domain/evidence.md) |
 | Signature | `TECHNICAL_DIMENSIONS = ('semantic', 'implementation', 'policy', 'environment', 'harness')` |
 | Code | `repo://src/eija_studio/domain/evidence.py#TECHNICAL_DIMENSIONS` |
-| Hash | `ast-v1` over the normalised AST (comments and formatting ignored) |
+| Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
@@ -41,5 +42,5 @@ Presentation (layout) is deliberately excluded from runtime applicability but in
 <!-- okf:generated:begin links -->
 ## Referenced by
 
-* [domain.evidence.assess_receipt](/symbols/domain/evidence/assess_receipt.md) - `def assess_receipt(receipt: dict, subject: dict, claim: str, kind: str) -> str` in `domain/evidence` (the source has no docstring).
+* [domain.evidence.assess_receipt](/symbols/domain/evidence/assess_receipt.md) - `def assess_receipt(receipt: dict, subject: dict, claim: str, kind: str) -> str` in `domain/evidence`.
 <!-- okf:generated:end links -->

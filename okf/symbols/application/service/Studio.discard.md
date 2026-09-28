@@ -1,7 +1,7 @@
 ---
 type: Method
 title: application.service.Studio.discard
-description: '`def discard(self, case_id: str, expected: int) -> dict` in `application/service` (the source has no docstring).'
+description: '`def discard(self, case_id: str, expected: int) -> dict` in `application/service`.'
 resource: repo://src/eija_studio/application/service.py#Studio.discard
 tags:
 - symbol
@@ -13,8 +13,9 @@ generated:
 sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.discard
   title: application/service.py
-  hash_method: ast-v1
-  sha256: 9b6514717cfe7801f85dfcc55863f1b3f7b4ad6fa09fd786debb05faf12af53f
+  hash_method: ast-v2
+  sha256: 05cd40f404ac2ff7bf3385f98428704987fbaa8a35fa6e6d5a3220fc06270bdf
+notes_baseline: 72ff28c27da819ab4da4901e050f31bd3b2edbaa727d9a1968aa51fbbab0eac9
 ---
 
 # application.service.Studio.discard
@@ -27,7 +28,7 @@ sources:
 | Class | [`Studio`](/symbols/application/service/Studio.md) |
 | Signature | `def discard(self, case_id: str, expected: int) -> dict` |
 | Code | `repo://src/eija_studio/application/service.py#Studio.discard` |
-| Hash | `ast-v1` over the normalised AST (comments and formatting ignored) |
+| Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 

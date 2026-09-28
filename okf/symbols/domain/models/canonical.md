@@ -13,9 +13,10 @@ generated:
 sources:
 - resource: repo://src/eija_studio/domain/models.py#canonical
   title: domain/models.py
-  hash_method: ast-v1
-  sha256: bca4f1ea07f3bdeb092537dff77c6ad20dc415f2c27ae88f6229226521c5315d
+  hash_method: ast-v2
+  sha256: d8aa96793b176d0dc4bbd35dd341e1d853493b1f53b8ea042df3063b976f6495
 description_override: Canonical JSON text (sorted keys, no whitespace, no NaN) for a value or pydantic model.
+notes_baseline: 64bc1b2dbf859863c53ed452ee491126840e4578d66b3c6e2ece6cff4088a360
 ---
 
 # domain.models.canonical
@@ -27,7 +28,7 @@ description_override: Canonical JSON text (sorted keys, no whitespace, no NaN) f
 | Module | [`domain/models`](/modules/domain/models.md) |
 | Signature | `def canonical(value: Any) -> str` |
 | Code | `repo://src/eija_studio/domain/models.py#canonical` |
-| Hash | `ast-v1` over the normalised AST (comments and formatting ignored) |
+| Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
@@ -41,5 +42,5 @@ Everything that is hashed goes through this so that equal meaning gives equal by
 <!-- okf:generated:begin links -->
 ## Referenced by
 
-* [domain.models.fingerprint](/symbols/domain/models/fingerprint.md) - `def fingerprint(value: Any) -> str` in `domain/models` (the source has no docstring).
+* [domain.models.fingerprint](/symbols/domain/models/fingerprint.md) - `def fingerprint(value: Any) -> str` in `domain/models`.
 <!-- okf:generated:end links -->

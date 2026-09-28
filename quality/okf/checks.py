@@ -2,7 +2,8 @@
 
 conformance  OKF v0.2 section 11 plus the optional families of sections 5-9 (stricter where noted)
 links        every internal markdown link resolves (the spec tolerates broken links; we do not, see ADR-0045)
-codelinks    every ``repo://`` resource resolves and every recorded hash still matches, else STALE
+codelinks    every ``repo://`` resource resolves and every recorded hash still matches, else STALE; curated Notes
+             not re-read since their source changed are NOTES_STALE (``sync`` cannot clear that, ``review`` can)
 coverage     every public domain/application symbol, ADR, acceptance row, term, gate and lane has a page
 drift        regenerating the bundle is a no-op
 
@@ -23,7 +24,7 @@ from markdown_it import MarkdownIt
 from . import codelink as cl
 from .build import build, existing_pages
 from .extract import collect
-from .pages import OKF_VERSION, PLACEHOLDER, Repo, split_page
+from .pages import OKF_VERSION, Repo, human_sha256, is_curated, sources_sha256, split_page
 
 CHECKS = ("conformance", "links", "codelinks", "coverage", "drift")
 STATUSES = ("draft", "stable", "deprecated")
@@ -72,6 +73,14 @@ def _iso(value: Any) -> bool:
         except ValueError:
             return False
     return False
+
+
+def valid_actor(value: Any) -> bool:
+    return isinstance(value, str) and bool(_ACTOR.match(value))
+
+
+def valid_iso(value: Any) -> bool:
+    return _iso(value)
 
 
 def _concepts(pages: dict[str, str]) -> dict[str, tuple[dict[str, Any], str]]:
@@ -181,8 +190,11 @@ def _concept(path: str, text: str, add) -> None:
     if "verified" in meta:
         entries = meta["verified"] if isinstance(meta["verified"], list) else [meta["verified"]]
         for entry in entries:
-            if not isinstance(entry, dict) or not isinstance(entry.get("by"), str) or not _ACTOR.match(entry["by"]) or not _iso(entry.get("at")):
+            if not isinstance(entry, dict) or not valid_actor(entry.get("by")) or not _iso(entry.get("at")):
                 add("VERIFIED", path, "each `verified` entry needs `by` (actor form) and `at` (ISO 8601 with offset)")
+            elif not all(isinstance(entry.get(k), str) and _SHA.match(entry[k]) for k in ("notes_sha256", "sources_sha256")):
+                add("VERIFIED", path, "each `verified` entry must be bound to the reviewed content: `notes_sha256` and `sources_sha256` "
+                                      "(64 hex); use `python -m quality.okf review`")
     ids: list[str] = []
     sources = meta.get("sources")
     if sources is not None:
@@ -257,10 +269,31 @@ def check_links(repo: Repo, pages: dict[str, str]) -> list[Finding]:
 
 # ---- code links ---------------------------------------------------------------------------------
 
+def current_sources_sha(repo: Repo, meta: dict[str, Any]) -> str | None:
+    """Digest of the page's sources as they are NOW (recomputed from the code), or None if any cannot be resolved."""
+    sources = meta.get("sources")
+    if not isinstance(sources, list):
+        return None
+    now = []
+    for entry in sources:
+        if not isinstance(entry, dict) or not isinstance(entry.get("resource"), str):
+            return None
+        if entry["resource"].startswith(cl.SCHEME):
+            try:
+                sha = cl.digest(repo.root, cl.parse_uri(entry["resource"]), str(entry.get("hash_method")))
+            except (cl.Unresolved, ValueError):
+                return None
+            now.append({**entry, "sha256": sha})
+        else:
+            now.append(entry)
+    return sources_sha256(now)
+
+
 def check_codelinks(repo: Repo, pages: dict[str, str]) -> tuple[list[Finding], list[str]]:
     found: list[Finding] = []
     stale: list[str] = []
-    for path, (meta, _body) in sorted(_concepts(pages).items()):
+    for path, (meta, body) in sorted(_concepts(pages).items()):
+        page_stale = False
         deprecated = meta.get("status") == "deprecated"
         resource = meta.get("resource")
         if isinstance(resource, str) and resource.startswith(cl.SCHEME) and not deprecated:
@@ -286,8 +319,16 @@ def check_codelinks(repo: Repo, pages: dict[str, str]) -> tuple[list[Finding], l
                 continue
             if current != recorded:
                 stale.append(path)
+                page_stale = True
                 found.append(Finding("codelinks", "STALE", path, f"source {uri} changed since this page was baselined "
-                                     f"({method}: {recorded[:10]} -> {current[:10]}); review the page, then run `python -m quality.okf sync`"))
+                                     f"({method}: {recorded[:10]} -> {current[:10]}); run `python -m quality.okf sync`, re-read the page's "
+                                     "Notes, then `python -m quality.okf review`"))
+        if not page_stale and not deprecated and is_curated(body) and isinstance(meta.get("sources"), list):
+            current_all = current_sources_sha(repo, meta)
+            if current_all is not None and meta.get("notes_baseline") != current_all:
+                found.append(Finding("codelinks", "NOTES_STALE", path, "hand-written Notes were last aligned to an older source state (or "
+                                     "have no recorded baseline); re-read them against the current source, edit if needed, then run "
+                                     "`python -m quality.okf review <page> --by <actor> --at <time>`. `sync` does not clear this"))
     return found, sorted(set(stale))
 
 
@@ -327,12 +368,19 @@ def check_drift(repo: Repo, skip: set[str]) -> list[Finding]:
 
 # ---- orchestration ------------------------------------------------------------------------------
 
-def trust_tier(meta: dict[str, Any]) -> str:
-    """SPEC section 5.3, derived only from `verified`."""
-    if "verified" not in meta:
+def trust_tier(meta: dict[str, Any], body: str = "", current_sources: str | None = None) -> str:
+    """SPEC section 5.3, derived only from `verified` entries that are still bound to the page as it is now.
+
+    An entry counts when its recorded prose hash and source hash equal the current ones; an older entry stays in
+    the file as history but no longer raises the tier. The actor is a self-declared label (`human:` is not authenticated).
+    """
+    entries = meta.get("verified")
+    entries = entries if isinstance(entries, list) else ([entries] if entries else [])
+    current = [e for e in entries if isinstance(e, dict) and e.get("notes_sha256") == human_sha256(body)
+               and current_sources is not None and e.get("sources_sha256") == current_sources]
+    if not current:
         return "unverified"
-    entries = meta["verified"] if isinstance(meta["verified"], list) else [meta["verified"]]
-    return "human-reviewed" if any(isinstance(e, dict) and str(e.get("by", "")).startswith("human:") for e in entries) else "machine-confirmed"
+    return "human-reviewed" if any(str(e.get("by", "")).startswith("human:") for e in current) else "machine-confirmed"
 
 
 def run_checks(repo: Repo, only: tuple[str, ...] = CHECKS) -> Report:
@@ -348,26 +396,31 @@ def run_checks(repo: Repo, only: tuple[str, ...] = CHECKS) -> Report:
     if "codelinks" in only:
         found, report.stale = check_codelinks(repo, pages)
         report.findings += found
-    if "coverage" in only:
-        report.findings += check_coverage(repo, pages)
-    if "drift" in only:
-        report.findings += check_drift(repo, set(report.stale))
+    try:
+        if "coverage" in only:
+            report.findings += check_coverage(repo, pages)
+        if "drift" in only:
+            report.findings += check_drift(repo, set(report.stale))
+    except (SyntaxError, ValueError, cl.Unresolved) as exc:
+        report.findings.append(Finding("coverage", "BROKEN_SOURCE", "src", "the bundle cannot be derived from the sources (unparseable file or "
+                                       f"colliding page paths), so coverage and drift cannot be established: {type(exc).__name__}: {exc}"))
     concepts = _concepts(pages)
     tiers: dict[str, int] = {}
     curated = 0
     for _path, (meta, body) in concepts.items():
-        tiers[trust_tier(meta)] = tiers.get(trust_tier(meta), 0) + 1
-        notes = re.search(r"^## Notes\n\n(.*?)(?=\n<!-- okf|\Z)", body, re.DOTALL | re.MULTILINE)
-        curated += bool(notes and notes[1].strip() and notes[1].strip() != PLACEHOLDER)
+        tier = trust_tier(meta, body, current_sources_sha(repo, meta))
+        tiers[tier] = tiers.get(tier, 0) + 1
+        curated += is_curated(body)
     report.stats = {"pages": len(concepts), "trust_tiers": dict(sorted(tiers.items())), "pages_with_curated_notes": curated,
-                    "stale_pages": len(report.stale)}
+                    "stale_pages": len(report.stale),
+                    "notes_stale_pages": sum(f.code == "NOTES_STALE" for f in report.findings)}
     return report
 
 
 def format_report(report: Report) -> str:
     lines = [f.line() for f in report.findings]
     if report.stale:
-        lines += ["", f"Pages requiring review ({len(report.stale)}): the code they describe changed."] + [f"  - okf/{p}" for p in report.stale]
+        lines += ["", f"Pages requiring review ({len(report.stale)}): the source they describe changed."] + [f"  - okf/{p}" for p in report.stale]
     lines += ["", "okf: " + ("PASS" if report.ok else f"FAIL ({len(report.findings)} findings)") + f"  {report.stats}"]
     return "\n".join(lines)
 

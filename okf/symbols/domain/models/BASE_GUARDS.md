@@ -1,7 +1,7 @@
 ---
 type: Constant
 title: domain.models.BASE_GUARDS
-description: '`BASE_GUARDS: tuple[Guard, ...] = (''actor_active'', ''role_current'', ''state_equals'', ''expected_version'', ''operation_binding'')` in `domain/models` (the source has no docstring).'
+description: Constant `BASE_GUARDS` in `domain/models`.
 resource: repo://src/eija_studio/domain/models.py#BASE_GUARDS
 tags:
 - symbol
@@ -13,8 +13,9 @@ generated:
 sources:
 - resource: repo://src/eija_studio/domain/models.py#BASE_GUARDS
   title: domain/models.py
-  hash_method: ast-v1
-  sha256: ae153132e4d12b3aae30f9b3ae92ea25da9a9972340ffbdc7ee457822db6a247
+  hash_method: ast-v2
+  sha256: 809e2c6774107af44fe8d37162c606af96c14dac8fbfa2260e6cee360a176136
+notes_baseline: 9c20ab9250592c6eb59418688191691281b78cace0348d95b73a8c98e878e2a7
 ---
 
 # domain.models.BASE_GUARDS
@@ -26,7 +27,7 @@ sources:
 | Module | [`domain/models`](/modules/domain/models.md) |
 | Signature | `BASE_GUARDS: tuple[Guard, ...] = ('actor_active', 'role_current', 'state_equals', 'expected_version', 'operation_binding')` |
 | Code | `repo://src/eija_studio/domain/models.py#BASE_GUARDS` |
-| Hash | `ast-v1` over the normalised AST (comments and formatting ignored) |
+| Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
@@ -40,11 +41,11 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [domain.models.Guard](/symbols/domain/models/Guard.md) - `Guard = Literal['actor_active', 'role_current', 'actor_assigned', 'state_equals', 'expected_version', 'operation_binding']` in `domain/models` (the source has…
+* [domain.models.Guard](/symbols/domain/models/Guard.md) - Type alias `Guard` in `domain/models`.
 
 ## Referenced by
 
-* [domain.models.Transition.guarded](/symbols/domain/models/Transition.guarded.md) - `def guarded(self) -> Transition` in `domain/models` (the source has no docstring).
-* [domain.policy.check_policy](/symbols/domain/policy/check_policy.md) - `def check_policy(model: Workflow) -> list[str]` in `domain/policy` (the source has no docstring).
-* [domain.policy.transition](/symbols/domain/policy/transition.md) - `def transition(action: str, source: str, target: str, role: str) -> Transition` in `domain/policy` (the source has no docstring).
+* [domain.models.Transition.guarded](/symbols/domain/models/Transition.guarded.md) - `def guarded(self) -> Transition` in `domain/models`.
+* [domain.policy.check_policy](/symbols/domain/policy/check_policy.md) - `def check_policy(model: Workflow) -> list[str]` in `domain/policy`.
+* [domain.policy.transition](/symbols/domain/policy/transition.md) - `def transition(action: str, source: str, target: str, role: str) -> Transition` in `domain/policy`.
 <!-- okf:generated:end links -->

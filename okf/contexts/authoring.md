@@ -14,6 +14,7 @@ sources:
   title: ARCHITECTURE.md
   hash_method: md-table-row-v1
   sha256: 65cd3700342afd28dae6c3a10196502c5fb9753fe5184372ae3dc7c0c1905457
+notes_baseline: 853ddec8aa0449d052b9cf9ce9388f219991587d0e07b0ad9dc8a28af6dda68d
 ---
 
 # Authoring
@@ -46,9 +47,9 @@ Aggregate: [Change Case](/language/change-case.md). Interpretations arrive only 
 ## Published contracts
 
 * [domain.change_case.ChangeCase](/symbols/domain/change_case/ChangeCase.md) - Aggregate boundary: transitions are mediated by the application and CAS store.
-* [domain.models.LayoutChange](/symbols/domain/models/LayoutChange.md) - `class LayoutChange(Contract)` in `domain/models` (the source has no docstring).
-* [domain.models.Proposal](/symbols/domain/models/Proposal.md) - `class Proposal(Contract)` in `domain/models` (the source has no docstring).
-* [domain.models.SemanticTransaction](/symbols/domain/models/SemanticTransaction.md) - `class SemanticTransaction(Contract)` in `domain/models` (the source has no docstring).
+* [domain.models.LayoutChange](/symbols/domain/models/LayoutChange.md) - `class LayoutChange(Contract)` in `domain/models`.
+* [domain.models.Proposal](/symbols/domain/models/Proposal.md) - `class Proposal(Contract)` in `domain/models`.
+* [domain.models.SemanticTransaction](/symbols/domain/models/SemanticTransaction.md) - `class SemanticTransaction(Contract)` in `domain/models`.
 
 ## Implementing modules
 

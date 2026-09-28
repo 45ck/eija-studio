@@ -13,6 +13,7 @@ sources:
   title: docs/adr/README.md
   hash_method: md-table-row-v1
   sha256: 244a51790fee13277da5fedb4b0715dec770ba74bfac1e041c31816ab2345ac2
+notes_baseline: 591d8f285b7aced6595eb9e4e1aa23668189f1658f53b29ef98ef964d076b63b
 ---
 
 # Formal: TLA+/TLC specification and trace conformance

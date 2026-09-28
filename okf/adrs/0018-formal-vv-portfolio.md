@@ -14,6 +14,7 @@ sources:
   title: 0018-formal-vv-portfolio.md
   hash_method: lf-sha256-v1
   sha256: a96d6e237cddf535f73b8998f9480355c7bdd38c5b2a90998337ab91f5e128b8
+notes_baseline: 29b356474621e7a1b67e86067b684d4437549ffe8c557d19fdb7e0e2dd768c77
 ---
 
 # ADR-0018: Formal V&V portfolio: each technique is a distinct evidence kind
@@ -43,10 +44,10 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Referenced by
 
-* [Machine-checked laws](/verification/bend-proof.md) - Establishes: Laws hold for **all** action sequences of the model generated from code
-* [Bounded exhaustive runtime](/verification/bounded-model-check.md) - Establishes: No reachable counterexample within depth *k*
-* [Mutation analysis](/verification/mutation-score.md) - Establishes: The suite detects seeded faults (fault-detection power, not correctness)
-* [Model-based differential tests](/verification/property-test.md) - Establishes: The runtime and SQLite agree with an independent reference model on generated sequences
-* [SMT policy soundness](/verification/smt-proof.md) - Establishes: `check_policy` accepts only authority-preserving candidates across the whole transaction grammar
-* [Temporal model checking](/verification/tlc-model-check.md) - Establishes: Safety invariants of the workflow and the commit protocol (replay, CAS, authority), up to declared bounds
+* [Machine-checked laws](/verification/bend-proof.md) - Planned (not implemented). Would establish: Laws hold for **all** action sequences of the model generated from code
+* [Bounded exhaustive runtime](/verification/bounded-model-check.md) - Planned (not implemented). Would establish: No reachable counterexample within depth *k*
+* [Mutation analysis](/verification/mutation-score.md) - Planned (not implemented). Would establish: The suite detects seeded faults (fault-detection power, not correctness)
+* [Model-based differential tests](/verification/property-test.md) - Planned (not implemented). Would establish: The runtime and SQLite agree with an independent reference model on generated sequences
+* [SMT policy soundness](/verification/smt-proof.md) - Planned (not implemented). Would establish: `check_policy` accepts only authority-preserving candidates across the whole transaction grammar
+* [Temporal model checking](/verification/tlc-model-check.md) - Planned (not implemented). Would establish: Safety invariants of the workflow and the commit protocol (replay, CAS, authority), up to declared bounds
 <!-- okf:generated:end links -->

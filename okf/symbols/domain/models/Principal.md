@@ -16,6 +16,7 @@ sources:
   hash_method: ast-sig-v1
   sha256: 01ac48f871213011c5cf34adc48fa83b2c455c5618ad5d4ddcf20c7a2bcd0d7d
 description_override: A named holder of capabilities (select, edit, approve, apply); OWNER has all four, AGENT has none.
+notes_baseline: 571ade4d077e9f587d443ac187dfe78d8c5e5ea1b201aa1657a8afb181b71ed4
 ---
 
 # domain.models.Principal
@@ -27,7 +28,7 @@ description_override: A named holder of capabilities (select, edit, approve, app
 | Module | [`domain/models`](/modules/domain/models.md) |
 | Signature | `class Principal(Contract)` |
 | Code | `repo://src/eija_studio/domain/models.py#Principal` |
-| Hash | `ast-sig-v1` over the normalised AST (comments and formatting ignored) |
+| Hash | `ast-sig-v1` over the class signature view: fields and public method signatures; method bodies and private helpers are NOT hashed |
 
 ## Docstring
 
@@ -52,18 +53,18 @@ Capabilities are checked with [require](/symbols/domain/models/Principal.require
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [domain.models.Contract](/symbols/domain/models/Contract.md) - `class Contract(BaseModel)` in `domain/models` (the source has no docstring).
+* [domain.models.Contract](/symbols/domain/models/Contract.md) - `class Contract(BaseModel)` in `domain/models`.
 
 ## Referenced by
 
 * [Governance](/contexts/governance.md) - Owns Local capabilities, exact-revision acknowledgement, active baseline version
-* [application.service.Studio.apply](/symbols/application/service/Studio.apply.md) - `def apply(self, case_id: str, expected: int, principal: Principal) -> dict` in `application/service` (the source has no docstring).
-* [application.service.Studio.approve](/symbols/application/service/Studio.approve.md) - `def approve(self, case_id: str, expected: int, subject_hash: str, answers: dict[str, str], acknowledge_unknowns: bool, principal: Principal, scope: s…` in `ap…
-* [application.service.Studio.edit](/symbols/application/service/Studio.edit.md) - `def edit(self, case_id: str, expected: int, tx: SemanticTransaction, principal: Principal) -> dict` in `application/service` (the source has no docstring).
-* [application.service.Studio.layout](/symbols/application/service/Studio.layout.md) - `def layout(self, case_id: str, expected: int, change: LayoutChange, principal: Principal) -> dict` in `application/service` (the source has no docstring).
-* [application.service.Studio](/symbols/application/service/Studio.md) - `class Studio` in `application/service` (the source has no docstring).
-* [application.service.Studio.select](/symbols/application/service/Studio.select.md) - `def select(self, case_id: str, expected: int, interpretation: str, principal: Principal) -> dict` in `application/service` (the source has no docstring).
-* [domain.models.AGENT](/symbols/domain/models/AGENT.md) - `AGENT = Principal(id='agent', capabilities=frozenset())` in `domain/models` (the source has no docstring).
-* [domain.models.OWNER](/symbols/domain/models/OWNER.md) - `OWNER = Principal(id='local-owner', capabilities=frozenset({'select', 'edit', 'approve', 'apply'}))` in `domain/models` (the source has no docstring).
-* [domain.models.Principal.require](/symbols/domain/models/Principal.require.md) - `def require(self, capability: str) -> None` in `domain/models` (the source has no docstring).
+* [application.service.Studio.apply](/symbols/application/service/Studio.apply.md) - `def apply(self, case_id: str, expected: int, principal: Principal) -> dict` in `application/service`.
+* [application.service.Studio.approve](/symbols/application/service/Studio.approve.md) - `def approve(self, case_id: str, expected: int, subject_hash: str, answers: dict[str, str], acknowledge_unknow…` in `application/service`.
+* [application.service.Studio.edit](/symbols/application/service/Studio.edit.md) - `def edit(self, case_id: str, expected: int, tx: SemanticTransaction, principal: Principal) -> dict` in `application/service`.
+* [application.service.Studio.layout](/symbols/application/service/Studio.layout.md) - `def layout(self, case_id: str, expected: int, change: LayoutChange, principal: Principal) -> dict` in `application/service`.
+* [application.service.Studio](/symbols/application/service/Studio.md) - `class Studio` in `application/service`.
+* [application.service.Studio.select](/symbols/application/service/Studio.select.md) - `def select(self, case_id: str, expected: int, interpretation: str, principal: Principal) -> dict` in `application/service`.
+* [domain.models.AGENT](/symbols/domain/models/AGENT.md) - Constant `AGENT` in `domain/models`.
+* [domain.models.OWNER](/symbols/domain/models/OWNER.md) - Constant `OWNER` in `domain/models`.
+* [domain.models.Principal.require](/symbols/domain/models/Principal.require.md) - `def require(self, capability: str) -> None` in `domain/models`.
 <!-- okf:generated:end links -->

@@ -13,9 +13,10 @@ generated:
 sources:
 - resource: repo://src/eija_studio/domain/evidence.py#assess_receipt
   title: domain/evidence.py
-  hash_method: ast-v1
-  sha256: 7648030c417e0858962511004fd9c3db260adad1e3bb3459f6c8e993d1760376
+  hash_method: ast-v2
+  sha256: 7c184b9e3d90629b393a013df319efc32a553d905d93fac3c08b74855c1d9ae9
 description_override: Recomputes a receipt's applicability from its raw observations; a supplied green status is never trusted.
+notes_baseline: 53de9f8d1cf80a2eb58d826d924d74e54ecd54718a0205e1a67ef10b2cbfb9d5
 ---
 
 # domain.evidence.assess_receipt
@@ -27,7 +28,7 @@ description_override: Recomputes a receipt's applicability from its raw observat
 | Module | [`domain/evidence`](/modules/domain/evidence.md) |
 | Signature | `def assess_receipt(receipt: dict, subject: dict, claim: str, kind: str) -> str` |
 | Code | `repo://src/eija_studio/domain/evidence.py#assess_receipt` |
-| Hash | `ast-v1` over the normalised AST (comments and formatting ignored) |
+| Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
@@ -40,6 +41,7 @@ Only the claim `runtime_matrix` with kind `integration_test` can be established 
 
 * `STALE` when any technical dimension of the receipt subject differs from the current subject ([TECHNICAL_DIMENSIONS](/symbols/domain/evidence/TECHNICAL_DIMENSIONS.md)),
 * `FAIL` when the artifact hash, matrix shape, duplicate or missing cells, or observation types are wrong,
+* `UNKNOWN` when the receipt's `producer`, `method` or artifact `protocol` is not the one this function knows (`eija-local-verifier`, `bounded-runtime-matrix-v1`): an unrecognised producer is never rounded to `PASS` or `FAIL`,
 * `PASS` only when every declared actor x state x action cell exists exactly once and expected equals actual.
 
 See [Evidence Receipt](/language/evidence-receipt.md) and the technique page [Bounded runtime matrix](/verification/integration-test.md). It cannot establish other claims by relabelling (acceptance [AC19](/requirements/ac19.md)).
@@ -47,12 +49,12 @@ See [Evidence Receipt](/language/evidence-receipt.md) and the technique page [Bo
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [domain.evidence.TECHNICAL_DIMENSIONS](/symbols/domain/evidence/TECHNICAL_DIMENSIONS.md) - `TECHNICAL_DIMENSIONS = ('semantic', 'implementation', 'policy', 'environment', 'harness')` in `domain/evidence` (the source has no docstring).
-* [domain.models.fingerprint](/symbols/domain/models/fingerprint.md) - `def fingerprint(value: Any) -> str` in `domain/models` (the source has no docstring).
+* [domain.evidence.TECHNICAL_DIMENSIONS](/symbols/domain/evidence/TECHNICAL_DIMENSIONS.md) - Constant `TECHNICAL_DIMENSIONS` in `domain/evidence`.
+* [domain.models.fingerprint](/symbols/domain/models/fingerprint.md) - `def fingerprint(value: Any) -> str` in `domain/models`.
 
 ## Referenced by
 
-* [application.compiler.compile_case](/symbols/application/compiler/compile_case.md) - `def compile_case(case: ChangeCase, identity: dict, authenticator, active_version: int, scope: str='local-demo') -> dict` in `application/compiler` (the source…
-* [domain.evidence.aggregate_status](/symbols/domain/evidence/aggregate_status.md) - `def aggregate_status(receipts: list[dict], subject: dict, authenticator) -> str` in `domain/evidence` (the source has no docstring).
-* [Bounded runtime matrix (integration_test)](/verification/integration-test.md) - Every cell of a declared actor x state x action matrix, run against the real runtime in a disposable sandbox, matched a separately written expected outcome; th…
+* [application.compiler.compile_case](/symbols/application/compiler/compile_case.md) - `def compile_case(case: ChangeCase, identity: dict, authenticator, active_version: int, scope: str='local-demo…` in `application/compiler`.
+* [domain.evidence.aggregate_status](/symbols/domain/evidence/aggregate_status.md) - `def aggregate_status(receipts: list[dict], subject: dict, authenticator) -> str` in `domain/evidence`.
+* [Bounded runtime matrix (integration_test)](/verification/integration-test.md) - Implemented: Every cell of a declared actor x state x action matrix, run against the real runtime in a sandbox, matched a hand-written oracle that is partly de…
 <!-- okf:generated:end links -->

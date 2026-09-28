@@ -14,6 +14,7 @@ sources:
   title: 0015-open-source-under-apache-2.md
   hash_method: lf-sha256-v1
   sha256: 1e449f94efa5627965df57a51ba546df9434658feeec9ed142a4320cdd9203ec
+notes_baseline: 0ffcda4139c2fe0383f6b2ba71494c99f7e154b998307ade8f9593fc74bc66b9
 ---
 
 # ADR-0015: Publish EIJA Studio as open source under Apache-2.0

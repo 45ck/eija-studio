@@ -1,7 +1,7 @@
 ---
 type: Method
 title: domain.models.Principal.require
-description: '`def require(self, capability: str) -> None` in `domain/models` (the source has no docstring).'
+description: '`def require(self, capability: str) -> None` in `domain/models`.'
 resource: repo://src/eija_studio/domain/models.py#Principal.require
 tags:
 - symbol
@@ -13,8 +13,9 @@ generated:
 sources:
 - resource: repo://src/eija_studio/domain/models.py#Principal.require
   title: domain/models.py
-  hash_method: ast-v1
-  sha256: f00a45a47badbe3caa3b14b618d48f2fa7fb1f3a623cb2553090686498e1d4fa
+  hash_method: ast-v2
+  sha256: a77644862af6709005e68679f7374852ebd8d7ded0d17c789938b7b0ad59d14a
+notes_baseline: 54604f164a253d56f0dd854eec3ec6c149ec2c3f8361c04502fb831b03e1a71f
 ---
 
 # domain.models.Principal.require
@@ -27,7 +28,7 @@ sources:
 | Class | [`Principal`](/symbols/domain/models/Principal.md) |
 | Signature | `def require(self, capability: str) -> None` |
 | Code | `repo://src/eija_studio/domain/models.py#Principal.require` |
-| Hash | `ast-v1` over the normalised AST (comments and formatting ignored) |
+| Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 

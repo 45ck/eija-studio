@@ -14,6 +14,7 @@ sources:
   title: ARCHITECTURE.md
   hash_method: md-table-row-v1
   sha256: e73c35e4bb5b7d52c47cf2444d30810d7453b0fb4af9dd766bc3f19c5234c14b
+notes_baseline: ab857e9035a305317cebbeb2958cd2a72d856d2af0e0e5e578dc81397cf6119d
 ---
 
 # Governance
@@ -43,7 +44,7 @@ Capabilities, exact-revision acknowledgement and the active baseline version. Si
 <!-- okf:generated:begin links -->
 ## Published contracts
 
-* [domain.models.Principal](/symbols/domain/models/Principal.md) - `class Principal(Contract)` in `domain/models` (the source has no docstring).
+* [domain.models.Principal](/symbols/domain/models/Principal.md) - `class Principal(Contract)` in `domain/models`.
 
 ## Implementing modules
 

@@ -1,7 +1,7 @@
 ---
 type: Method
 title: application.service.Studio.save
-description: '`def save(self, case_id: str, expected: int) -> dict` in `application/service` (the source has no docstring).'
+description: '`def save(self, case_id: str, expected: int) -> dict` in `application/service`.'
 resource: repo://src/eija_studio/application/service.py#Studio.save
 tags:
 - symbol
@@ -13,8 +13,9 @@ generated:
 sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.save
   title: application/service.py
-  hash_method: ast-v1
-  sha256: aa15d9d0d7dbc877f491e5b05886b9d3c9d3fb06d10100f150d20f97b005f994
+  hash_method: ast-v2
+  sha256: c54b5c0d30ab8b9aa13a17c9b1527dc6054a9b50f5aa9c3d1615db3d859385fe
+notes_baseline: a6ebad23f3f6e1a16fda4bcd13b216c52a6b1af5d90b2045f51589a34db2948a
 ---
 
 # application.service.Studio.save
@@ -27,7 +28,7 @@ sources:
 | Class | [`Studio`](/symbols/application/service/Studio.md) |
 | Signature | `def save(self, case_id: str, expected: int) -> dict` |
 | Code | `repo://src/eija_studio/application/service.py#Studio.save` |
-| Hash | `ast-v1` over the normalised AST (comments and formatting ignored) |
+| Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 

@@ -5,15 +5,21 @@ description: Humans and agents need a place to start reading EIJA that is smalle
 resource: repo://docs/adr/0045-okf-knowledge-base-linked-to-code.md
 tags:
 - adr
-- accepted
-status: stable
+- proposed
+status: draft
 generated:
   by: process:eija-okf-sync
 sources:
 - resource: repo://docs/adr/0045-okf-knowledge-base-linked-to-code.md
   title: 0045-okf-knowledge-base-linked-to-code.md
   hash_method: lf-sha256-v1
-  sha256: 2b1649b81e46a6628f65c137730f912a2aff00052388472f681cd74764fd793d
+  sha256: ebe5c97d436a6d4e94c4c7a8bd9a0d186fffe321c0f231756f5f71f3fcb301f4
+notes_baseline: 4f2d4c715a5d36ed00d29a1b3852f11933357957e34101a6767f606f743e8617
+verified:
+- by: process:eija-okf-lane-fix
+  at: '2026-09-28T23:24:05Z'
+  notes_sha256: daa96077fbe4018a5859a097276a24e330f4c037fdac4262009cb703aac7c1ce
+  sources_sha256: 4f2d4c715a5d36ed00d29a1b3852f11933357957e34101a6767f606f743e8617
 ---
 
 # ADR-0045: An OKF v0.2 knowledge base deterministically linked to code
@@ -21,7 +27,7 @@ sources:
 <!-- okf:generated:begin facts -->
 | | |
 |---|---|
-| Status | accepted |
+| Status | proposed |
 | Date | 2026-09-28 |
 | Lane | okf |
 | Source | `repo://docs/adr/0045-okf-knowledge-base-linked-to-code.md` |
@@ -33,9 +39,9 @@ sources:
 > How the linkage works:
 >
 > * `resource` is a stable `repo://<path>[#<fragment>]` URI. `sources[]` entries carry `hash_method` and `sha256` of the normalised thing they describe (details and normalisation in [ADR-0046](repo://docs/adr/0046-code-link-hash-methods-and-stale-semantics.md)).
-> * Machine-owned frontmatter and `okf:generated` blocks are rewritten by `python -m quality.okf sync`. Text outside the blocks, unknown frontmatter keys and `verified` are human-owned and preserved.
+> * Machine-owned frontmatter and `okf:generated` blocks are rewritten by `python -m quality.okf sync`. Text outside the blocks, unknown frontmatter keys, `verified` and `notes_baseline` are human-owned and preserved; `sync` never advances `notes_baseline` of a page with hand-written Notes, so a code change cannot be waved through by regenerating.
 > * The generator never mints `verified`, and never writes a timestamp: `generated` carries only `by: process:eija-okf-sync`. Trust tier is therefore *unverified* until a person or process records a verification with an explicit time.
-> * The gate has five checks: conformance, links, code links (STALE), coverage and drift. It is stricter than the specification in one deliberate way: OKF tolerates broken cross-links because knowledge may be not-yet-written, but here a broken link almost always means a rename that a reader will trip over, and every page is generated, so an unresolved link is a defect rather than a placeholder. The root `index.md` and `log.md` are also required, not optional.
+> * The gate has five checks: conformance, links, code links (STALE and NOTES_STALE), coverage and drift. `nox -s okf_structure` (tag `fast`) runs only conformance and links; `nox -s okf` (tags `full`, `release`) runs all five, so other lanes' code edits do not turn the fast tier red and the integrating lane runs `sync` once. It is stricter than the specification in one deliberate way: OKF tolerates broken cross-links because knowledge may be not-yet-written, but here a broken link almost always means a rename that a reader will trip over, and every page is generated, so an unresolved link is a defect rather than a placeholder. The root `index.md` and `log.md` are also required, not optional.
 > * Coverage: every public domain and application symbol (functions, classes, public methods, constants and aliases), module, ADR (including each POC decision in ADR-0000), ubiquitous-language term, bounded context, acceptance criterion, gate and lane has a page.
 
 ## Sections

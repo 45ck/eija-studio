@@ -1,7 +1,7 @@
 ---
 type: Verification Technique
 title: Model-based differential tests
-description: 'Establishes: The runtime and SQLite agree with an independent reference model on generated sequences'
+description: 'Planned (not implemented). Would establish: The runtime and SQLite agree with an independent reference model on generated sequences'
 resource: repo://docs/adr/0018-formal-vv-portfolio.md#property_test
 tags:
 - verification
@@ -14,6 +14,7 @@ sources:
   title: 0018-formal-vv-portfolio.md
   hash_method: md-table-row-v1
   sha256: 7902d2353ea36f67018e329f23e5fbf04cd9c525ac93ee2de69db9d143c8b080
+notes_baseline: e24efdacdb62b8a7ebe0e65de6fee8a718d5f2733ed301ba0cd9c5fac57d6786
 ---
 
 # Model-based differential tests
@@ -29,7 +30,7 @@ sources:
 
 The runtime and SQLite agree with an independent reference model on generated sequences
 
-This technique is planned by the ADR. The page stays `draft` until its lane lands and the ADR accepts it. It is a distinct evidence kind and may never be relabelled as another.
+**Status: planned, not implemented in the kernel.** The ADR names this technique; no code in this repository produces this evidence yet. The page is `draft` (unreviewed plan) whatever the ADR's own status becomes, and it is a distinct evidence kind that may never be relabelled as another.
 <!-- okf:generated:end facts -->
 
 ## Notes

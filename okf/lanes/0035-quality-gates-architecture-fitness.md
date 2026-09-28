@@ -13,6 +13,7 @@ sources:
   title: docs/adr/README.md
   hash_method: md-table-row-v1
   sha256: ee06eb02c9d6a7382e74040dc677809ede970d7c7b92613b0f19060792680066
+notes_baseline: 01eb6e26687b032f1dcaf9109c5216976726167f889adf1b2fa7f0818f5e4567
 ---
 
 # Quality gates, architecture fitness functions and static analysis

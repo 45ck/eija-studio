@@ -14,6 +14,7 @@ sources:
   title: ARCHITECTURE.md
   hash_method: md-bold-term-v1
   sha256: 54ef80276337645be16c1170bf70b6901e47347a0489e50d1e900f694daf4279
+notes_baseline: 2f5de69c20d11436d7a32e6845651df36efb4bbee742b78fb2b3ddcb42e06d1a
 ---
 
 # Authority

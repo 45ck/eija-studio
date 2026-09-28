@@ -14,6 +14,7 @@ sources:
   title: interfaces/http.py
   hash_method: ast-api-v1
   sha256: ea45676d507484490c70c6d762f783ea2eb4acf3149367fd7e8dd4dfc2d9dbeb
+notes_baseline: 4761616a6760ebdd5da177467763f8340b5997f6495fb30d69ee655179fc01a2
 ---
 
 # interfaces.http

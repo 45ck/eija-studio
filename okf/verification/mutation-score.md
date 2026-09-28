@@ -1,7 +1,7 @@
 ---
 type: Verification Technique
 title: Mutation analysis
-description: 'Establishes: The suite detects seeded faults (fault-detection power, not correctness)'
+description: 'Planned (not implemented). Would establish: The suite detects seeded faults (fault-detection power, not correctness)'
 resource: repo://docs/adr/0018-formal-vv-portfolio.md#mutation_score
 tags:
 - verification
@@ -14,6 +14,7 @@ sources:
   title: 0018-formal-vv-portfolio.md
   hash_method: md-table-row-v1
   sha256: 217ba17f494b55e58f06812f6ccda98eab84ec58281be33470d6068a03cad091
+notes_baseline: c96ffac1db762af1169af2f6a7fe72bd4d67bda76290cd291b49a6dbf483dd57
 ---
 
 # Mutation analysis
@@ -29,7 +30,7 @@ sources:
 
 The suite detects seeded faults (fault-detection power, not correctness)
 
-This technique is planned by the ADR. The page stays `draft` until its lane lands and the ADR accepts it. It is a distinct evidence kind and may never be relabelled as another.
+**Status: planned, not implemented in the kernel.** The ADR names this technique; no code in this repository produces this evidence yet. The page is `draft` (unreviewed plan) whatever the ADR's own status becomes, and it is a distinct evidence kind that may never be relabelled as another.
 <!-- okf:generated:end facts -->
 
 ## Notes

@@ -16,6 +16,7 @@ sources:
   hash_method: ast-sig-v1
   sha256: 9a1cad3bceaf4d96a0c5a0f57751fbfaf6158b92dcc95625a0dc7886af7e3b65
 description_override: 'One typed edge: action, from/to state, required role, guards, required effects and forbidden effects.'
+notes_baseline: b39ce37ccd85fd1386448fb7da8a693978d6a5f3e459dea27332403c16cf6aa7
 ---
 
 # domain.models.Transition
@@ -27,7 +28,7 @@ description_override: 'One typed edge: action, from/to state, required role, gua
 | Module | [`domain/models`](/modules/domain/models.md) |
 | Signature | `class Transition(Contract)` |
 | Code | `repo://src/eija_studio/domain/models.py#Transition` |
-| Hash | `ast-sig-v1` over the normalised AST (comments and formatting ignored) |
+| Hash | `ast-sig-v1` over the class signature view: fields and public method signatures; method bodies and private helpers are NOT hashed |
 
 ## Docstring
 
@@ -58,13 +59,13 @@ The validator [guarded](/symbols/domain/models/Transition.guarded.md) refuses re
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [domain.models.Contract](/symbols/domain/models/Contract.md) - `class Contract(BaseModel)` in `domain/models` (the source has no docstring).
-* [domain.models.Guard](/symbols/domain/models/Guard.md) - `Guard = Literal['actor_active', 'role_current', 'actor_assigned', 'state_equals', 'expected_version', 'operation_binding']` in `domain/models` (the source has…
+* [domain.models.Contract](/symbols/domain/models/Contract.md) - `class Contract(BaseModel)` in `domain/models`.
+* [domain.models.Guard](/symbols/domain/models/Guard.md) - Type alias `Guard` in `domain/models`.
 
 ## Referenced by
 
 * [Execution](/contexts/execution.md) - Owns Trusted fixture actor state, preview instances, command replay, committed effect intents
-* [domain.models.Transition.guarded](/symbols/domain/models/Transition.guarded.md) - `def guarded(self) -> Transition` in `domain/models` (the source has no docstring).
-* [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models` (the source has no docstring).
-* [domain.policy.transition](/symbols/domain/policy/transition.md) - `def transition(action: str, source: str, target: str, role: str) -> Transition` in `domain/policy` (the source has no docstring).
+* [domain.models.Transition.guarded](/symbols/domain/models/Transition.guarded.md) - `def guarded(self) -> Transition` in `domain/models`.
+* [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
+* [domain.policy.transition](/symbols/domain/policy/transition.md) - `def transition(action: str, source: str, target: str, role: str) -> Transition` in `domain/policy`.
 <!-- okf:generated:end links -->

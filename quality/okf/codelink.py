@@ -20,14 +20,15 @@ from typing import Any, Iterator
 
 SCHEME = "repo://"
 
-AST_SYMBOL = "ast-v1"          # python symbol (function, class, module-level assignment)
+AST_SYMBOL = "ast-v1"          # python symbol (function, class, module-level assignment); the symbol's own AST only
+AST_CLOSURE = "ast-v2"         # ast-v1 plus the same-module private helpers the symbol reaches (transitively)
 AST_API = "ast-api-v1"         # python module public surface: signatures, fields, docstrings, no bodies
 AST_SIG = "ast-sig-v1"         # one python symbol's signature view: class fields and method signatures, no bodies
 FILE_LF = "lf-sha256-v1"       # whole file, CRLF folded to LF
 CSV_ROW = "csv-row-v1"         # one CSV row addressed by its first column
 MD_TERM = "md-bold-term-v1"    # a paragraph beginning ``**Term:**``
 MD_ROW = "md-table-row-v1"     # a markdown table row addressed by the slug of any of its cells
-METHODS = (AST_SYMBOL, AST_API, AST_SIG, FILE_LF, CSV_ROW, MD_TERM, MD_ROW)
+METHODS = (AST_SYMBOL, AST_CLOSURE, AST_API, AST_SIG, FILE_LF, CSV_ROW, MD_TERM, MD_ROW)
 
 
 class Unresolved(Exception):
@@ -82,8 +83,9 @@ def _digest(value: Any) -> str:
 def canon(node: Any) -> Any:
     """Canonical JSON-able form of an AST subtree.
 
-    Comments, formatting, positions and empty/absent fields are dropped, so the form is stable across
-    Python 3.11-3.13 for the same program text. Docstrings ARE kept: they state invariants.
+    Comments, formatting, positions and empty/absent fields are dropped. The form was recomputed
+    identically on Python 3.11, 3.12 and 3.13 (see ADR-0046 and ``crosscheck``); that is evidence for the
+    committed sources, not a proof for every future program text. Docstrings ARE kept: they state invariants.
     """
     if isinstance(node, ast.AST):
         out: dict[str, Any] = {"_": type(node).__name__}
@@ -140,6 +142,58 @@ def find_symbol(tree: ast.Module, dotted: str) -> ast.AST | None:
                         return member
             return None
     return None
+
+
+def _find_with_owner(tree: ast.Module, dotted: str) -> tuple[ast.AST | None, ast.ClassDef | None]:
+    """Like ``find_symbol`` but also returns the owning class for ``Class.method``."""
+    node = find_symbol(tree, dotted)
+    if node is None or "." not in dotted:
+        return node, None
+    return node, find_symbol(tree, dotted.partition(".")[0])  # type: ignore[return-value]
+
+
+def _private_defs(body: list[ast.stmt]) -> dict[str, ast.AST]:
+    """Private (``_name``) functions, classes and single-name assignments among ``body`` statements."""
+    found: dict[str, ast.AST] = {}
+    for stmt in body:
+        if isinstance(stmt, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and stmt.name.startswith("_") and not is_public(stmt.name):
+            found[stmt.name] = stmt
+        elif isinstance(stmt, (ast.Assign, ast.AnnAssign)):
+            targets = stmt.targets if isinstance(stmt, ast.Assign) else [stmt.target]
+            if len(targets) == 1 and isinstance(targets[0], ast.Name) and not is_public(targets[0].id):
+                found[targets[0].id] = stmt
+    return found
+
+
+def private_closure(tree: ast.Module, node: ast.AST, owner: ast.ClassDef | None) -> dict[str, ast.AST]:
+    """Private helpers ``node`` reaches: module-level ``_name`` definitions and ``self._method`` of its class.
+
+    Reachability is static and by name (``ast.Name`` and ``self.``/``cls.`` attributes), transitively. It does
+    NOT follow dynamic dispatch, imports from other modules, or public callees: those keep their own pages.
+    """
+    module_private = _private_defs(tree.body)
+    class_private = _private_defs(owner.body) if owner is not None else {}
+    found: dict[str, ast.AST] = {}
+    queue: list[ast.AST] = [node]
+    while queue:
+        for child in ast.walk(queue.pop()):
+            key: str | None = None
+            target: ast.AST | None = None
+            if isinstance(child, ast.Name) and child.id in module_private:
+                key, target = child.id, module_private[child.id]
+            elif (isinstance(child, ast.Attribute) and isinstance(child.value, ast.Name) and child.value.id in ("self", "cls")
+                  and child.attr in class_private):
+                key, target = f"{owner.name}.{child.attr}", class_private[child.attr]  # type: ignore[union-attr]
+            if key is not None and target is not None and key not in found and target is not node:
+                found[key] = target
+                queue.append(target)
+    return found
+
+
+def closure_form(tree: ast.Module, node: ast.AST, owner: ast.ClassDef | None) -> Any:
+    """Canonical form of a symbol together with the private helpers it reaches (``ast-v2``)."""
+    helpers = private_closure(tree, node, owner)
+    return {"symbol": canon(node), "helpers": {name: canon(helpers[name]) for name in sorted(helpers)}}
 
 
 def _signature_form(node: ast.AST) -> Any:
@@ -217,7 +271,7 @@ def _digest_text(text: str, ref: CodeRef, method: str) -> str:
     """Pure function of (source text, reference, method); cached because every check re-derives every hash."""
     if method == FILE_LF:
         return sha256(text.encode("utf-8")).hexdigest()
-    if method in (AST_SYMBOL, AST_API, AST_SIG):
+    if method in (AST_SYMBOL, AST_CLOSURE, AST_API, AST_SIG):
         try:
             tree = parse_module(text, ref.path)
         except SyntaxError as exc:
@@ -226,9 +280,11 @@ def _digest_text(text: str, ref: CodeRef, method: str) -> str:
             return _digest(api_form(tree))
         if not ref.fragment:
             raise Unresolved(f"{ref.uri()}: {method} needs a #symbol fragment")
-        node = find_symbol(tree, ref.fragment)
+        node, owner = _find_with_owner(tree, ref.fragment)
         if node is None:
             raise Unresolved(f"symbol {ref.fragment!r} not found in {ref.path}")
+        if method == AST_CLOSURE:
+            return _digest(closure_form(tree, node, owner))
         return _digest(_signature_form(node) if method == AST_SIG else canon(node))
     if not ref.fragment:
         raise Unresolved(f"{ref.uri()}: {method} needs a #fragment")

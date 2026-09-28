@@ -14,6 +14,7 @@ sources:
   title: ARCHITECTURE.md
   hash_method: md-bold-term-v1
   sha256: 649a4875725910e78cf29f6a1532296f4942aa4e6d9f449797fa9ebe25bad178
+notes_baseline: 31a8b99059340421ea25aed9d0920bf3c003a14d762bdebec873c1a90938b0f1
 ---
 
 # Meaning Selection

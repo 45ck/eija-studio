@@ -13,9 +13,10 @@ generated:
 sources:
 - resource: repo://src/eija_studio/domain/policy.py#FORBIDDEN
   title: domain/policy.py
-  hash_method: ast-v1
-  sha256: 59bdc3b84d9af928c5a77c2f75ee07a55fd4bac877243a2e3fd604a0f87dac2f
+  hash_method: ast-v2
+  sha256: f8209ff9f835a751bb55a66b18366b9cdbed1724e29da770bc92d1569a13d9fe
 description_override: 'Effects no transition may ever perform: PaymentCaptured and ParentDataExported.'
+notes_baseline: e835ca5963059a1a766b92659a7e66d04a15fb9d29b937ba1ec471c86b2823af
 ---
 
 # domain.policy.FORBIDDEN
@@ -27,7 +28,7 @@ description_override: 'Effects no transition may ever perform: PaymentCaptured a
 | Module | [`domain/policy`](/modules/domain/policy.md) |
 | Signature | `FORBIDDEN = ('PaymentCaptured', 'ParentDataExported')` |
 | Code | `repo://src/eija_studio/domain/policy.py#FORBIDDEN` |
-| Hash | `ast-v1` over the normalised AST (comments and formatting ignored) |
+| Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
@@ -41,6 +42,6 @@ Every transition must list both as forbidden; [check_policy](/symbols/domain/pol
 <!-- okf:generated:begin links -->
 ## Referenced by
 
-* [domain.policy.check_policy](/symbols/domain/policy/check_policy.md) - `def check_policy(model: Workflow) -> list[str]` in `domain/policy` (the source has no docstring).
-* [domain.policy.transition](/symbols/domain/policy/transition.md) - `def transition(action: str, source: str, target: str, role: str) -> Transition` in `domain/policy` (the source has no docstring).
+* [domain.policy.check_policy](/symbols/domain/policy/check_policy.md) - `def check_policy(model: Workflow) -> list[str]` in `domain/policy`.
+* [domain.policy.transition](/symbols/domain/policy/transition.md) - `def transition(action: str, source: str, target: str, role: str) -> Transition` in `domain/policy`.
 <!-- okf:generated:end links -->

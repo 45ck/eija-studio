@@ -14,6 +14,7 @@ sources:
   title: adapters/sqlite_store.py
   hash_method: ast-api-v1
   sha256: 324548c0b5983743f7a0da13cd9999b576e66af970a275dfd9bef5ef4cad1131
+notes_baseline: 92f4cb40f3dd2c6930f7392dc5c5c2aacfe2a95cca8129575ff5037362e722b8
 ---
 
 # adapters.sqlite_store

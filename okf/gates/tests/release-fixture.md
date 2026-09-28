@@ -12,8 +12,9 @@ generated:
 sources:
 - resource: repo://quality/sessions/tests.py#release_fixture
   title: tests.py
-  hash_method: ast-v1
-  sha256: 2ab8a312a1c471d83072f2da018fd0d5322f6c33c3a9ad43113067dca88fbbe8
+  hash_method: ast-v2
+  sha256: 585844778a85efd5ae113077968e86dbc5b0dab67d7b564469c3593fa4c4c6e2
+notes_baseline: aee7f00fc5f773552a15a9b315acd805d9851df53f7ced54efa69bec8b90eb6e
 ---
 
 # nox -s release_fixture

@@ -13,6 +13,7 @@ sources:
   title: docs/adr/README.md
   hash_method: md-table-row-v1
   sha256: f05caf7ff4c38995ab10fbfbd9353189c2b2589adf12a53d85d7dbecae4a1449
+notes_baseline: 2dbd3e52815f232a93361314b393985a45ded56f54d7d12a487abb9200a9612f
 ---
 
 # OSS community, documentation and release

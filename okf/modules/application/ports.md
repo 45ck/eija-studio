@@ -14,6 +14,7 @@ sources:
   title: application/ports.py
   hash_method: ast-api-v1
   sha256: be29fd605269558dcf700e3c8c892ebc600d813abe795e331cb9504d043fbdfd
+notes_baseline: 70e2a3c117393eb12033b14cc2f844fa9f9c884e9d2ced0b6072da5b3d0b5dfe
 ---
 
 # application.ports
@@ -61,11 +62,11 @@ _No curated notes yet._
 * [application.runtime](/modules/application/runtime.md) - Generic execution algorithm; domain-specific policy stays in domain.policy.
 * [application.service](/modules/application/service.md) - Module `application/service` (no module docstring).
 * [application.verifier](/modules/application/verifier.md) - Bounded synthetic runtime experiments.
-* [application.ports.IdentityProvider](/symbols/application/ports/IdentityProvider.md) - `IdentityProvider = Callable[[], dict]` in `application/ports` (the source has no docstring).
-* [application.ports.ProposalProvider](/symbols/application/ports/ProposalProvider.md) - `class ProposalProvider(Protocol)` in `application/ports` (the source has no docstring).
-* [application.ports.ProviderResult](/symbols/application/ports/ProviderResult.md) - `class ProviderResult` in `application/ports` (the source has no docstring).
-* [application.ports.ReceiptAuthenticator](/symbols/application/ports/ReceiptAuthenticator.md) - `class ReceiptAuthenticator(Protocol)` in `application/ports` (the source has no docstring).
-* [application.ports.Repository](/symbols/application/ports/Repository.md) - `class Repository(Protocol)` in `application/ports` (the source has no docstring).
-* [application.ports.SandboxFactory](/symbols/application/ports/SandboxFactory.md) - `SandboxFactory = Callable[[], ContextManager[Repository]]` in `application/ports` (the source has no docstring).
+* [application.ports.IdentityProvider](/symbols/application/ports/IdentityProvider.md) - Type alias `IdentityProvider` in `application/ports`.
+* [application.ports.ProposalProvider](/symbols/application/ports/ProposalProvider.md) - `class ProposalProvider(Protocol)` in `application/ports`.
+* [application.ports.ProviderResult](/symbols/application/ports/ProviderResult.md) - `class ProviderResult` in `application/ports`.
+* [application.ports.ReceiptAuthenticator](/symbols/application/ports/ReceiptAuthenticator.md) - `class ReceiptAuthenticator(Protocol)` in `application/ports`.
+* [application.ports.Repository](/symbols/application/ports/Repository.md) - `class Repository(Protocol)` in `application/ports`.
+* [application.ports.SandboxFactory](/symbols/application/ports/SandboxFactory.md) - Type alias `SandboxFactory` in `application/ports`.
 * [application.ports.UnitOfWork](/symbols/application/ports/UnitOfWork.md) - All mutations on this port commit together or roll back together.
 <!-- okf:generated:end links -->

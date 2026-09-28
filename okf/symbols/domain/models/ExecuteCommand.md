@@ -16,6 +16,7 @@ sources:
   hash_method: ast-sig-v1
   sha256: 48b5954daef1d067ad22c9808aba5ec51cda6abfe17aa1aa88e93992eae3d285
 description_override: A preview command bound to an operation id, actor, instance, action and expected version.
+notes_baseline: a2a117be9176ce6df5636b2c58c81279923101006e80d95682985834ffcdb0d9
 ---
 
 # domain.models.ExecuteCommand
@@ -27,7 +28,7 @@ description_override: A preview command bound to an operation id, actor, instanc
 | Module | [`domain/models`](/modules/domain/models.md) |
 | Signature | `class ExecuteCommand(Contract)` |
 | Code | `repo://src/eija_studio/domain/models.py#ExecuteCommand` |
-| Hash | `ast-sig-v1` over the normalised AST (comments and formatting ignored) |
+| Hash | `ast-sig-v1` over the class signature view: fields and public method signatures; method bodies and private helpers are NOT hashed |
 
 ## Docstring
 
@@ -51,14 +52,14 @@ All five fields form the replay binding checked in [runtime.execute](/symbols/ap
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [domain.models.Contract](/symbols/domain/models/Contract.md) - `class Contract(BaseModel)` in `domain/models` (the source has no docstring).
+* [domain.models.Contract](/symbols/domain/models/Contract.md) - `class Contract(BaseModel)` in `domain/models`.
 
 ## Referenced by
 
 * [Execution](/contexts/execution.md) - Owns Trusted fixture actor state, preview instances, command replay, committed effect intents
-* [application.runtime.check_actor](/symbols/application/runtime/check_actor.md) - `def check_actor(actor: dict, transition, command: ExecuteCommand) -> None` in `application/runtime` (the source has no docstring).
-* [application.runtime.execute](/symbols/application/runtime/execute.md) - `def execute(session: UnitOfWork, case_id: str, model: Workflow, command: ExecuteCommand, *, fault=None) -> dict` in `application/runtime` (the source has no d…
-* [application.service.Studio.execute](/symbols/application/service/Studio.execute.md) - `def execute(self, case_id: str, command: ExecuteCommand, fault=None) -> dict` in `application/service` (the source has no docstring).
-* [application.service.Studio](/symbols/application/service/Studio.md) - `class Studio` in `application/service` (the source has no docstring).
-* [application.verifier.verify_runtime](/symbols/application/verifier/verify_runtime.md) - `def verify_runtime(model: Workflow, subject: dict, sandbox: SandboxFactory) -> dict` in `application/verifier` (the source has no docstring).
+* [application.runtime.check_actor](/symbols/application/runtime/check_actor.md) - `def check_actor(actor: dict, transition, command: ExecuteCommand) -> None` in `application/runtime`.
+* [application.runtime.execute](/symbols/application/runtime/execute.md) - `def execute(session: UnitOfWork, case_id: str, model: Workflow, command: ExecuteCommand, *, fault=None) -> di…` in `application/runtime`.
+* [application.service.Studio.execute](/symbols/application/service/Studio.execute.md) - `def execute(self, case_id: str, command: ExecuteCommand, fault=None) -> dict` in `application/service`.
+* [application.service.Studio](/symbols/application/service/Studio.md) - `class Studio` in `application/service`.
+* [application.verifier.verify_runtime](/symbols/application/verifier/verify_runtime.md) - `def verify_runtime(model: Workflow, subject: dict, sandbox: SandboxFactory) -> dict` in `application/verifier`.
 <!-- okf:generated:end links -->

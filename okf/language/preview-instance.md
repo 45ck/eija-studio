@@ -14,6 +14,7 @@ sources:
   title: ARCHITECTURE.md
   hash_method: md-bold-term-v1
   sha256: 1ed1b22feef6a146d018c225499473130555090f6f4f74158fcde32f5775a8df
+notes_baseline: 973051fa93026284069af84407fa3d534edb370d593d3c6a3ff300ca8c2aab75
 ---
 
 # Preview Instance
