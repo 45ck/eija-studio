@@ -237,7 +237,10 @@ def _kpis(doc: dict) -> list[tuple[str, str]]:
     kpis = []
     if s["tests"]["status"] == "MEASURED":
         t = s["tests"]["summary"]
-        kpis.append((f'{t["tests_static"]}', f'tests ({t["asserts"]} assertions)'))
+        collected = t["tests_collected_by_pytest"]
+        kpis.append((f'{t["tests_static"] if collected is None else collected}',
+                     f'tests ({"counted statically" if collected is None else "collected by pytest"}; {t["tests_static"]} static, '
+                     f'{t["asserts"]} assertions)'))
     if s["coverage"]["status"] == "MEASURED":
         kpis.append((f'{fmt(s["coverage"]["summary"]["percent"], 1)}%', "line+branch coverage"))
     else:

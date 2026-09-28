@@ -98,11 +98,15 @@ def scan_file(path: Path) -> dict:
             "imports": sorted(_imported_modules(tree))}
 
 
-def collected_count(python: str = sys.executable, timeout: int = 180) -> int | None:
-    """Number of tests pytest itself collects (exact, including dynamic parametrisation), or None."""
+def collected_count(python: str = sys.executable, timeout: int = 180, paths: tuple[str, ...] = ()) -> int | None:
+    """Number of tests pytest itself collects (exact, including dynamic parametrisation), or None.
+
+    Modules that skip at import (an optional extra is not installed) collect zero here although the static scan
+    counts their tests, so the two numbers legitimately differ on a machine without every extra.
+    """
+    command = [python, "-m", "pytest", "--collect-only", "-q", "-p", "no:cacheprovider", "-o", "addopts=", *paths]
     try:
-        out = subprocess.run([python, "-m", "pytest", "--collect-only", "-q", "-p", "no:cacheprovider", "-o", "addopts="], cwd=ROOT,
-                             capture_output=True, text=True, timeout=timeout, check=False)
+        out = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, timeout=timeout, check=False)
     except (OSError, subprocess.SubprocessError):
         return None
     match = re.search(r"(\d+) tests? collected", out.stdout) or re.search(r"^(\d+)/\d+ tests? collected", out.stdout, re.M)
