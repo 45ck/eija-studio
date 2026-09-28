@@ -11,7 +11,7 @@ Use when a task asks to interpret, compile, inspect, verify or explain an EIJA C
 2. Inspect `contracts/workflow.schema.json`, the protected excursion policy, and relevant tests. Keep current baseline and candidate separate.
 3. Run the offline demo or compile a supported explicit model. Capture paths, semantic/implementation/environment subjects and raw receipts.
 4. Explain affected authority, state entry, assignment, effects and remaining UNKNOWN claims. A browser check is not human evidence.
-5. Run regression/negative tests. If the implementation differs from its fixture, stop at source review rather than changing the manifest yourself.
+5. Run regression/negative tests (`python -m pytest`). Check release identity separately with `python scripts/verify_release.py` or `eija doctor`: if the implementation differs from its fixture, stop at source review rather than changing the manifest yourself.
 6. Produce a review packet for the owner. Do not approve, apply, infer consent, reveal keys or manufacture correct answers as a human acknowledgement.
 
 Commands are in README.md. Live provider use requires the owner's explicit consent and local credential configuration. Output must distinguish tested behaviour, same-author inference, mocked contracts, unrun live paths and proposed follow-up work.

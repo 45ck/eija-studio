@@ -48,4 +48,6 @@ class ReceiptAuthenticator(Protocol):
     def authentic(self, value: dict) -> bool: ...
 
 IdentityProvider = Callable[[], dict]
-StoreFactory = Callable[[Path], Repository]
+# Opens a disposable verification sandbox. It need not be durable but must keep UnitOfWork atomicity,
+# and it is deleted when the context exits.
+SandboxFactory = Callable[[], ContextManager[Repository]]

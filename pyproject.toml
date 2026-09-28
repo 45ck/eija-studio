@@ -25,4 +25,4 @@ eija_studio = ["resources/**/*", "resources/*.json"]
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
-addopts = "-ra"
+addopts = "-ra"  # tests/conftest.py keeps pytest temp dirs inside the checkout (slow system temp)

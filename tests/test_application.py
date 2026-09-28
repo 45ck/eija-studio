@@ -126,8 +126,8 @@ def test_two_approved_cases_cannot_silently_overwrite(studio,verified):
     with pytest.raises(DomainError):studio.apply(c2["id"],c2["version"],OWNER)
 
 
-def test_restart_preserves_cases_and_receipt_signatures(studio,verified):
-    reopened=build_studio(studio.store.directory)
+def test_restart_preserves_cases_and_receipt_signatures(studio,verified,open_studio):
+    reopened=open_studio(studio.store.directory)
     assert reopened.view(verified["id"])["packet"]["eligible"]
 
 

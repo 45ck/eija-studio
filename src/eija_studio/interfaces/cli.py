@@ -115,7 +115,7 @@ def main(argv=None) -> int:
                         "source_review_required": not identity["trusted_fixture"], "projections": projections(model),
                         "impact": model_impact(baseline(), model), "human_understanding": "UNKNOWN", "decision": "NONE"}
             if args.verify and not errors and identity["trusted_fixture"]:
-                compiled["receipt"] = studio.signer.seal(verify_runtime(model, subject_for(model, {}, identity), studio.store_factory))
+                compiled["receipt"] = studio.signer.seal(verify_runtime(model, subject_for(model, {}, identity), studio.sandbox))
             output(compiled, args.out / "compiled.json")
             output(model.model_dump(mode="json"), args.out / "model.json")
             print(str(args.out / "compiled.json"))

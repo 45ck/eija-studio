@@ -1,8 +1,11 @@
 """Durable local unit of work. One database transaction owns state + operation + effects."""
 from __future__ import annotations
 from contextlib import contextmanager, closing
-import json, os, sqlite3
+from tempfile import TemporaryDirectory
+from typing import Iterator
+import json, os, shutil, sqlite3, time
 from pathlib import Path
+from typing import Literal
 from eija_studio.domain.models import Workflow, DomainError, canonical
 from eija_studio.domain.policy import baseline
 
@@ -95,8 +98,18 @@ class Session:
     def effect_counts(self) -> dict:
         return {t: self.db.execute("SELECT COUNT(*) FROM " + t).fetchone()[0] for t in ("audit", "outbox", "operations")}
 
+Durability = Literal["durable", "ephemeral"]
+
+
 class SQLiteStore:
-    def __init__(self, directory: Path):
+    """`durable` flushes every commit (the owner workspace). `ephemeral` is for disposable
+    verification sandboxes: identical transaction/atomicity semantics, but no per-commit fsync,
+    which costs ~150 ms per write on Windows and made a 125-cell verification take ~40 s."""
+
+    def __init__(self, directory: Path, *, durability: Durability = "durable"):
+        if durability not in ("durable", "ephemeral"):
+            raise ValueError("Unknown durability profile")
+        self.durability = durability
         self.directory = Path(directory).resolve()
         self.directory.mkdir(parents=True, exist_ok=True, mode=0o700)
         self.path = self.directory / "studio.sqlite3"
@@ -119,7 +132,7 @@ class SQLiteStore:
         db.row_factory = sqlite3.Row
         db.execute("PRAGMA foreign_keys=ON")
         db.execute("PRAGMA journal_mode=WAL")
-        db.execute("PRAGMA synchronous=FULL")
+        db.execute("PRAGMA synchronous=FULL" if self.durability == "durable" else "PRAGMA synchronous=OFF")
         return db
 
     @contextmanager
@@ -152,3 +165,39 @@ class SQLiteStore:
         """SQLite online backup: do not copy the .sqlite3 file without its WAL."""
         with self.connection() as source, closing(sqlite3.connect(target)) as destination:
             source.backup(destination)
+
+
+SANDBOX_PREFIX = "eija-check-"
+STALE_SANDBOX_SECONDS = 3600
+
+
+def sandbox_factory(workspace: Path):
+    """Build the application's SandboxFactory for one workspace.
+
+    Sandboxes live in `<workspace>/sandboxes/` (same disk as the workspace, never the system temp
+    directory, which may be a slow drive) and use the ephemeral profile: the same unit-of-work
+    semantics with no per-commit flush. They hold only synthetic fixture data. A sandbox left behind
+    by a killed process is removed by a later call once it is older than STALE_SANDBOX_SECONDS; the
+    age threshold keeps a concurrent verification's live sandbox safe."""
+    root = Path(workspace).resolve() / "sandboxes"
+
+    @contextmanager
+    def sandbox() -> Iterator[SQLiteStore]:
+        root.mkdir(mode=0o700, exist_ok=True)  # no parents=True: never recreate a deleted workspace
+        _sweep_stale(root)
+        # ignore_cleanup_errors: on Windows a transiently locked file (antivirus, indexer) must not
+        # mask the verification's own outcome or exception.
+        with TemporaryDirectory(prefix=SANDBOX_PREFIX, dir=root, ignore_cleanup_errors=True) as directory:
+            yield SQLiteStore(Path(directory), durability="ephemeral")
+
+    return sandbox
+
+
+def _sweep_stale(root: Path) -> None:
+    cutoff = time.time() - STALE_SANDBOX_SECONDS
+    for entry in root.glob(SANDBOX_PREFIX + "*"):
+        try:
+            if entry.is_dir() and entry.stat().st_mtime < cutoff:
+                shutil.rmtree(entry, ignore_errors=True)
+        except OSError:
+            pass
