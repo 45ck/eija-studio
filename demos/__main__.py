@@ -3,8 +3,6 @@
 Exit codes: 0 PASS or PARTIAL (a printed PARTIAL line lists skipped acts), 1 failure, 2 usage, 3 NOT_RUN
 (blocked scenario, or Playwright/Chrome unavailable: never reported as a pass).
 """
-# ruff: noqa: T201
-# T201 (print) is intentional: this is a command-line tool that reports on stdout.
 from __future__ import annotations
 
 import argparse

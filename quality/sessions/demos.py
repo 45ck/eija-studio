@@ -1,5 +1,4 @@
 """Gates for the scripted demo recordings (ADR-0047, ADR-0048)."""
-import importlib.util
 import sys
 
 import nox
@@ -16,9 +15,7 @@ def demos_registry(session: nox.Session) -> None:
 
 @nox.session(python=False, tags=["full"])
 def demos_typecheck(session: nox.Session) -> None:
-    """mypy over the demos package (the shared mypy config names only eija_studio); needs the demos extra."""
-    if importlib.util.find_spec("playwright") is None:
-        session.skip("NOT_RUN: the demos extra (playwright) is not installed, so its types cannot be checked")
+    """mypy over the demos package (the shared mypy config names only eija_studio)."""
     session.run(PYTHON, "-m", "mypy", "demos")
 
 
