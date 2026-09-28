@@ -1,7 +1,7 @@
 # EIJA Studio metrics snapshot
 
 - Platform: **Windows 11 / CPython 3.12.10** (AMD64)
-- Commit: `adf5fbbb63d09ca118b4d7f94550f2426dc2b304`
+- Commit: `57084c3bc369f22b8ae502eff2bcf36ec47aff4b`
 - Profile: full, generated 2026-09-28
 - Tools: coverage 7.16.2, fastapi 0.128.2, grimp 3.17, httpx 0.28.1, radon 6.0.1, uvicorn 0.48.0
 
@@ -24,14 +24,14 @@
 | TEST-01 | Every domain/application/adapters/interfaces layer has a directly importing test (count of untested) | 0 | == 0 | principled | PASS |
 | COV-01 | Line+branch coverage of src/eija_studio, percent (when reports/coverage exists) | 78.99 | >= 75 | ratchet | PASS |
 | LANE-01 | No aggregated lane report has status FAIL | n/a | == 0 | principled | NOT_RUN |
-| PERF-01 | p95 of every read endpoint under 400 ms (TestClient) | 67.01 | < 400 | external | PASS |
-| PERF-02 | p95 of every non-compute write endpoint under 400 ms (TestClient, durable SQLite) | 62.1 | < 400 | external | PASS |
-| PERF-03 | p95 of every read and write endpoint under 400 ms (real uvicorn, loopback) | 139.92 | < 400 | external | PASS |
-| PERF-04 | p95 of the verify compute endpoint under 10 s (long-running: needs a progress indication, see README) | 2,852 | < 10,000 | external | PASS |
-| PERF-05 | Runtime verification time is linear in matrix size (R^2 of T = c0 + c1*cells) | 0.93 | >= 0.9 | principled | PASS |
+| PERF-01 | p95 of every read endpoint under 400 ms (TestClient) | 49.83 | < 400 | external | PASS |
+| PERF-02 | p95 of every non-compute write endpoint under 400 ms (TestClient, durable SQLite) | 101.74 | < 400 | external | PASS |
+| PERF-03 | p95 of every read and write endpoint under 400 ms (real uvicorn, loopback) | 73.69 | < 400 | external | PASS |
+| PERF-04 | p95 of the verify compute endpoint under 10 s (long-running: needs a progress indication, see README) | 1,578 | < 10,000 | external | PASS |
+| PERF-05 | Runtime verification time is linear in matrix size (R^2 of T = c0 + c1*cells) | 0.99 | >= 0.9 | principled | PASS |
 | SCALE-01 | closure(): two-term linear fit T = c0 + cV*V + cE*E, R^2 | 0.99 | >= 0.9 | principled | PASS |
 | SCALE-02 | closure(): log-log exponent of time against V+E lies in [0.8, 1.2] | True | == True | principled | PASS |
-| SCALE-03 | closure(): linear fit beats the quadratic alternative (R^2 difference) | 0.21 | > 0 | principled | PASS |
+| SCALE-03 | closure(): linear fit beats the quadratic alternative (R^2 difference) | 0.19 | > 0 | principled | PASS |
 
 ## Package metrics (Martin)
 
@@ -65,7 +65,7 @@ SDP violations 0, layer cycles 0, module cycles 0.
 
 ## Tests and coverage
 
-151 tests statically (151 collected by pytest), 221 assertions, 36 raises-blocks.
+166 tests statically (166 collected by pytest), 248 assertions, 36 raises-blocks.
 
 | Layer | Test files (direct) | Tests (direct) | Tests (transitive) |
 |---|---:|---:|---:|
@@ -94,43 +94,43 @@ Thresholds: 100 ms instant, 400 ms Doherty. Milliseconds.
 
 | Transport | Endpoint | Kind | n | p50 | p95 | p99 | Band |
 |---|---|---|---:|---:|---:|---:|---|
-| testclient | GET / | read | 120 | 2.93 | 4.26 | 21.77 | <=100 |
-| testclient | GET /api/cases | read | 120 | 16.03 | 33.63 | 40.74 | <=100 |
-| testclient | GET /api/cases/{id} | read | 30 | 30.14 | 67.01 | 123.5 | <=100 |
-| testclient | GET /api/cases/{id}/export | read | 15 | 29.9 | 47.59 | 55.83 | <=100 |
-| testclient | GET /api/doctor | read | 120 | 1.69 | 3.91 | 14.66 | <=100 |
-| testclient | GET /api/status | read | 120 | 19.68 | 36.65 | 78.8 | <=100 |
-| testclient | GET /assets/app.js | read | 120 | 3.27 | 5.65 | 11.31 | <=100 |
-| testclient | POST /api/cases | write | 15 | 17.98 | 30.82 | 35.41 | <=100 |
-| testclient | POST /api/cases/{id}/approve | write | 15 | 51.34 | 62.1 | 65.96 | <=100 |
-| testclient | POST /api/cases/{id}/execute | write | 15 | 19.85 | 28.08 | 33.88 | <=100 |
-| testclient | POST /api/cases/{id}/preview | write | 15 | 15.93 | 25.07 | 25.52 | <=100 |
-| testclient | POST /api/cases/{id}/propose | write | 15 | 33.43 | 57.85 | 58.04 | <=100 |
-| testclient | POST /api/cases/{id}/select | write | 15 | 20.3 | 28.77 | 31.13 | <=100 |
-| testclient | POST /api/cases/{id}/verify | compute | 15 | 1,397 | 2,852 | 5,288 | over 400 |
-| uvicorn | GET / | read | 120 | 4 | 5.03 | 6.28 | <=100 |
-| uvicorn | GET /api/cases | read | 120 | 18.41 | 139.92 | 179.47 | <=400 |
-| uvicorn | GET /api/cases/{id} | read | 30 | 34.24 | 62.2 | 68.67 | <=100 |
-| uvicorn | GET /api/cases/{id}/export | read | 15 | 30.61 | 39.42 | 43.04 | <=100 |
-| uvicorn | GET /api/doctor | read | 120 | 2.43 | 3.08 | 3.43 | <=100 |
-| uvicorn | GET /api/status | read | 120 | 21.95 | 33.35 | 42.17 | <=100 |
-| uvicorn | GET /assets/app.js | read | 120 | 4.05 | 5.18 | 6.54 | <=100 |
-| uvicorn | POST /api/cases | write | 15 | 20.32 | 45.05 | 65.42 | <=100 |
-| uvicorn | POST /api/cases/{id}/approve | write | 15 | 59.41 | 82.73 | 88.84 | <=100 |
-| uvicorn | POST /api/cases/{id}/execute | write | 15 | 18.92 | 44.5 | 57.4 | <=100 |
-| uvicorn | POST /api/cases/{id}/preview | write | 15 | 17.34 | 34.55 | 44.97 | <=100 |
-| uvicorn | POST /api/cases/{id}/propose | write | 15 | 36.17 | 56.8 | 60.7 | <=100 |
-| uvicorn | POST /api/cases/{id}/select | write | 15 | 19.6 | 35.49 | 48.16 | <=100 |
-| uvicorn | POST /api/cases/{id}/verify | compute | 15 | 1,429 | 1,675 | 1,744 | over 400 |
+| testclient | GET / | read | 120 | 3.11 | 4.42 | 6.52 | <=100 |
+| testclient | GET /api/cases | read | 120 | 18.67 | 49.83 | 64.61 | <=100 |
+| testclient | GET /api/cases/{id} | read | 30 | 33.1 | 39.56 | 42.41 | <=100 |
+| testclient | GET /api/cases/{id}/export | read | 15 | 30.01 | 46.26 | 64.77 | <=100 |
+| testclient | GET /api/doctor | read | 120 | 1.77 | 4.98 | 7.93 | <=100 |
+| testclient | GET /api/status | read | 120 | 20.28 | 36.66 | 61.66 | <=100 |
+| testclient | GET /assets/app.js | read | 120 | 3.22 | 5.66 | 11.43 | <=100 |
+| testclient | POST /api/cases | write | 15 | 16.56 | 24.6 | 26.94 | <=100 |
+| testclient | POST /api/cases/{id}/approve | write | 15 | 59.66 | 101.74 | 102.36 | <=400 |
+| testclient | POST /api/cases/{id}/execute | write | 15 | 18.78 | 20.97 | 21.33 | <=100 |
+| testclient | POST /api/cases/{id}/preview | write | 15 | 17.91 | 25.93 | 33.92 | <=100 |
+| testclient | POST /api/cases/{id}/propose | write | 15 | 35.65 | 47.54 | 51.95 | <=100 |
+| testclient | POST /api/cases/{id}/select | write | 15 | 19.5 | 33.73 | 46.93 | <=100 |
+| testclient | POST /api/cases/{id}/verify | compute | 15 | 1,411 | 1,578 | 1,606 | over 400 |
+| uvicorn | GET / | read | 120 | 3.77 | 4.69 | 4.8 | <=100 |
+| uvicorn | GET /api/cases | read | 120 | 16.68 | 39.59 | 46.22 | <=100 |
+| uvicorn | GET /api/cases/{id} | read | 30 | 34.91 | 49.52 | 57.16 | <=100 |
+| uvicorn | GET /api/cases/{id}/export | read | 15 | 30.9 | 38.45 | 42.91 | <=100 |
+| uvicorn | GET /api/doctor | read | 120 | 2.49 | 2.75 | 2.98 | <=100 |
+| uvicorn | GET /api/status | read | 120 | 19.53 | 24.42 | 35.87 | <=100 |
+| uvicorn | GET /assets/app.js | read | 120 | 3.9 | 4.78 | 5.34 | <=100 |
+| uvicorn | POST /api/cases | write | 15 | 16.07 | 30.44 | 37.98 | <=100 |
+| uvicorn | POST /api/cases/{id}/approve | write | 15 | 54.34 | 73.69 | 91.36 | <=100 |
+| uvicorn | POST /api/cases/{id}/execute | write | 15 | 18.43 | 25.86 | 27.21 | <=100 |
+| uvicorn | POST /api/cases/{id}/preview | write | 15 | 16.67 | 33.63 | 40.57 | <=100 |
+| uvicorn | POST /api/cases/{id}/propose | write | 15 | 31.62 | 47.53 | 55.71 | <=100 |
+| uvicorn | POST /api/cases/{id}/select | write | 15 | 18.33 | 28.14 | 28.33 | <=100 |
+| uvicorn | POST /api/cases/{id}/verify | compute | 15 | 1,264 | 2,968 | 5,969 | over 400 |
 
-verify_runtime: T = -59.9 + 13.901 * cells ms, R^2 = 0.927 over 10 matrix sizes (20 to 125 cells).
+verify_runtime: T = -93.97 + 13.787 * cells ms, R^2 = 0.991 over 10 matrix sizes (20 to 125 cells).
 
 ## closure() scaling (measured)
 
-- T_ms = c0 + c1 * (V + E): c0 = 1.342 ms, c1 = 0.48 us per element, R^2 = 0.9251
-- T_ms = c0 + cV * V + cE * E: cV = 1.591 us, cE = 0.299 us, R^2 = 0.9915
-- log-log exponent 1.031 (R^2 0.961); quadratic alternative R^2 = 0.713
-- 32 points, max |residual| 23.69 ms
+- T_ms = c0 + c1 * (V + E): c0 = 1.11 ms, c1 = 0.474 us per element, R^2 = 0.931
+- T_ms = c0 + cV * V + cE * E: cV = 1.523 us, cE = 0.304 us, R^2 = 0.9918
+- log-log exponent 1.029 (R^2 0.965); quadratic alternative R^2 = 0.74
+- 32 points, max |residual| 22.58 ms
 
 Both models are linear in the graph size, so an exponent near 1 with a high R^2 is consistent with O(V+E) on this graph family; it is a measurement, not a proof. The single-coefficient V+E model fits less well than the two-term model because a visited node costs several times more than a scanned edge (queue and per-node sort overhead).
 
@@ -147,5 +147,5 @@ Both models are linear in the graph size, so an exponent near 1 with a high R^2 
 
 | Technique | Source | States | Findings | Seconds | States/s |
 |---|---|---:|---:|---:|---:|
-| runtime_matrix (this kernel) | measured-here | 125 | 0 | 1.873 | 66.74 |
-| impact_closure (this kernel) | measured-here | 20 | n/a | 9.35e-05 | 213,904 |
+| runtime_matrix (this kernel) | measured-here | 125 | 0 | 1.686 | 74.12 |
+| impact_closure (this kernel) | measured-here | 20 | n/a | 0.0001036 | 193,050 |
