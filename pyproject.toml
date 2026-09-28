@@ -38,7 +38,7 @@ agents = []
 docs = []
 providers = []
 visual = []
-demos = []
+demos = ["playwright==1.63.0"]  # drives the installed system Chrome; no browser download
 ux = []
 graph = []
 dod = []
