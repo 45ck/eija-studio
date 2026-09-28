@@ -20,12 +20,23 @@ Sources (checked 2026-09-28):
     magical number 4 in short-term memory" (BBS 24:87-114).
   * Doherty, W. J. & Thadani, A. J. (1982), The economic value of rapid response time (IBM):
     interactions below ~400 ms keep the user and the computer both productive.
+
+Stability contract: this module is reused by other pipelines (for example the UX research lane).
+The public names in `__all__` and their docstrings (which state each model's validity limits) are
+stable; add new functions rather than changing the meaning of existing ones.
 """
 from __future__ import annotations
 
 import math
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
-from typing import Iterable, Sequence
+
+__all__ = [
+    "COWAN_LIMIT", "DEFAULT_FITTS", "DEFAULT_HICK", "DEFAULT_KLM", "DOHERTY_MS", "KLM_OPERATORS", "MAX_CHOICES",
+    "MAX_ID_BITS", "MILLER_UPPER", "MIN_TARGET_PX", "FittsModel", "HickModel", "KlmTimes", "count_operators",
+    "fitts_time", "hick_bits", "hick_time", "iqr", "klm_time", "nearest_edge_distance", "percentile", "shannon_id",
+    "smaller_of",
+]
 
 MIN_TARGET_PX = 24.0  # WCAG 2.2 SC 2.5.8 Target Size (Minimum), CSS pixels
 MAX_ID_BITS = 4.0  # brief: flag Fitts index of difficulty above 4 bits
@@ -63,6 +74,11 @@ class KlmTimes:
     M: float = 1.35
 
 
+DEFAULT_FITTS = FittsModel()
+DEFAULT_HICK = HickModel()
+DEFAULT_KLM = KlmTimes()
+
+
 def shannon_id(distance: float, width: float) -> float:
     """Fitts index of difficulty in bits, Shannon form: log2(D / W + 1).
 
@@ -92,7 +108,7 @@ def nearest_edge_distance(origin: tuple[float, float], box: tuple[float, float, 
     return math.hypot(dx, dy)
 
 
-def fitts_time(index_of_difficulty: float, model: FittsModel = FittsModel()) -> float:
+def fitts_time(index_of_difficulty: float, model: FittsModel = DEFAULT_FITTS) -> float:
     """Predicted movement time in seconds: a + b * ID."""
     return model.a + model.b * index_of_difficulty
 
@@ -104,7 +120,7 @@ def hick_bits(choices: int) -> float:
     return math.log2(choices + 1)
 
 
-def hick_time(choices: int, model: HickModel = HickModel()) -> float:
+def hick_time(choices: int, model: HickModel = DEFAULT_HICK) -> float:
     """Predicted choice time in seconds. Assumes equiprobable, unpractised choices: an upper bound
     for an expert who already knows the answer (Hyman: time follows uncertainty, not raw count)."""
     return model.b * hick_bits(choices)
@@ -114,7 +130,7 @@ def hick_time(choices: int, model: HickModel = HickModel()) -> float:
 KLM_OPERATORS = ("K", "P", "B", "H", "M")
 
 
-def klm_time(operators: Iterable[str], times: KlmTimes = KlmTimes()) -> float:
+def klm_time(operators: Iterable[str], times: KlmTimes = DEFAULT_KLM) -> float:
     """Sum of standard operator times. Unknown operator symbols raise, so nothing is silently free."""
     table = {"K": times.K, "P": times.P, "B": times.B, "H": times.H, "M": times.M}
     total = 0.0
@@ -127,7 +143,7 @@ def klm_time(operators: Iterable[str], times: KlmTimes = KlmTimes()) -> float:
 
 def count_operators(operators: Iterable[str]) -> dict[str, int]:
     """Operator histogram with every standard symbol present (zero counts included)."""
-    counts = {op: 0 for op in KLM_OPERATORS}
+    counts = dict.fromkeys(KLM_OPERATORS, 0)
     for op in operators:
         if op not in counts:
             raise ValueError(f"unknown KLM operator {op!r}")
@@ -136,14 +152,26 @@ def count_operators(operators: Iterable[str]) -> dict[str, int]:
 
 
 # --- descriptive statistics -------------------------------------------------------------------
+def _nearest_rank(ordered: Sequence[float], q: float) -> float:
+    if not 0 <= q <= 100:
+        raise ValueError("q must be within 0..100")
+    rank = max(1, math.ceil(q / 100.0 * len(ordered)))
+    return ordered[rank - 1]
+
+
 def percentile(values: Sequence[float], q: float) -> float | None:
     """Nearest-rank percentile (q in 0..100). Deterministic, no interpolation, None if empty.
 
     With few samples p95 is effectively the maximum; the report states the sample count."""
     if not values:
         return None
-    if not 0 <= q <= 100:
-        raise ValueError("q must be within 0..100")
+    return _nearest_rank(sorted(values), q)
+
+
+def iqr(values: Sequence[float]) -> tuple[float, float, float] | None:
+    """(p25, median, p75) by nearest rank, or None if empty. Use this, not one run, to describe a noisy
+    wall-clock measurement: the interquartile range shows the spread a single number hides."""
+    if not values:
+        return None
     ordered = sorted(values)
-    rank = max(1, math.ceil(q / 100.0 * len(ordered)))
-    return ordered[rank - 1]
+    return (_nearest_rank(ordered, 25), _nearest_rank(ordered, 50), _nearest_rank(ordered, 75))

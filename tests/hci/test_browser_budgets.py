@@ -3,9 +3,12 @@
 NOT_RUN (skip) when Chrome/Playwright is unavailable. A budget above its target but within its ratchet
 is reported as xfail (a documented gap), so a shortfall is never shown as a pass.
 """
+# ruff: noqa: PLC0415 - playwright belongs to the optional `hci` extra; import it only inside tests that run after the NOT_RUN check
+from urllib.parse import quote
+
 import pytest
 
-from quality.hci import budgets
+from quality.hci import analysis, budgets, journey
 
 pytestmark = pytest.mark.hci
 
@@ -42,7 +45,7 @@ def test_structural_metrics_repeat_exactly_across_journeys(hci_report):
     first, *rest = hci_report["raw"]["pointer_passes"]
     for other in rest:
         assert [t["step"] for t in other["pointer_targets"]] == [t["step"] for t in first["pointer_targets"]]
-        for a, b in zip(first["pointer_targets"], other["pointer_targets"]):
+        for a, b in zip(first["pointer_targets"], other["pointer_targets"], strict=True):
             assert a["effective"] == pytest.approx(b["effective"], abs=1.0), a["step"]
         assert [o["op"] for o in other["operators"]] == [o["op"] for o in first["operators"]]
 
@@ -65,11 +68,7 @@ PLANTED = (
 
 
 def test_planted_defects_are_flagged_by_probe_geometry_and_axe():
-    from urllib.parse import quote
-
     from playwright.sync_api import sync_playwright
-
-    from quality.hci import analysis, journey
 
     ok, detail = journey.prerequisites()
     if not ok:
@@ -77,10 +76,10 @@ def test_planted_defects_are_flagged_by_probe_geometry_and_axe():
     with sync_playwright() as pw:
         browser = pw.chromium.launch(channel="chrome", headless=True)
         try:
-            context, page = journey._new_page(browser)
+            context, page = journey.new_page(browser)
             page.goto("data:text/html," + quote(PLANTED))
             controls = page.evaluate("() => window.__hci.controls()")
-            statuses = {c["selector"]: s for c, s in analysis._status_table(controls)}
+            statuses = {c["selector"]: s for c, s in analysis.target_statuses(controls)}
             rules = {v["id"] for v in journey.run_axe(page)["violations"]}
             context.close()
         finally:

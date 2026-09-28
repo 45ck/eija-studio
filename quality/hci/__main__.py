@@ -1,4 +1,4 @@
-"""CLI: python -m quality.hci {prereq|run|check}.
+"""CLI: python -m quality.hci {prereq|run|check|rederive}.
 
 Exit codes: 0 ok, 1 budget regression / drift / journey failure, 2 misuse, 3 NOT_RUN (missing prerequisite; never a pass).
 """
@@ -20,33 +20,56 @@ def cmd_prereq(_: argparse.Namespace) -> int:
     return 0 if ok else NOT_RUN
 
 
-def cmd_run(args: argparse.Namespace) -> int:
+def _collect(args: argparse.Namespace) -> tuple[dict | None, int]:
+    """(trace, 0) on success; (None, exit code) with the reason printed when the run cannot produce a trace."""
     ok, detail = journey.prerequisites()
     if not ok:
         print("NOT_RUN: " + detail)
-        return NOT_RUN
+        return None, NOT_RUN
     try:
-        raw = journey.collect(repeats=args.repeats, headless=not args.headed, identity=args.identity)
+        return journey.collect(repeats=args.repeats, headless=not args.headed, identity=args.identity), 0
     except journey.ReleaseIdentityUnavailable as exc:
         print("NOT_RUN: " + str(exc))
-        return NOT_RUN
+        return None, NOT_RUN
     except journey.JourneyError as exc:
         print("FAIL: the journey did not complete: " + str(exc))
-        return 1
-    rep = report.build_report(raw, date=args.date)
-    out = Path(args.out)
+        return None, 1
+
+
+def _write_outputs(rep: dict, raw: dict, out: Path) -> None:
     report.write_text(out / "report.json", report.dumps(rep))
     report.write_text(out / "REPORT.md", report.render_markdown(rep))
     report.write_text(out / "trace.json", report.dump_trace(raw))
-    if args.publish_docs:
-        report.publish_docs(rep, raw)
+
+
+def _print_summary(rep: dict, out: Path) -> list[dict]:
+    """Print the one-line budget summary and every regression; return the FAIL budgets."""
+    statuses = [b["status"] for b in rep["budgets"]]
     fails = [b for b in rep["budgets"] if b["status"] == "FAIL"]
-    gaps = [b for b in rep["budgets"] if b["status"] == "GAP"]
-    print(f"HCI report written to {out} ({len(rep['recommendations'])} recommendations; budgets: "
-          f"{sum(b['status'] == 'PASS' for b in rep['budgets'])} PASS, {len(gaps)} GAP, {len(fails)} FAIL)")
+    print(
+        f"HCI report written to {out} ({len(rep['recommendations'])} recommendations; budgets: "
+        f"{statuses.count('PASS')} PASS, {statuses.count('GAP')} GAP, {len(fails)} FAIL)"
+    )
     for b in fails:
         print(f"FAIL {b['id']}: {b['value']} {b['unit']} > limit {b['limit']}")
-    return 1 if fails else 0
+    return fails
+
+
+def cmd_run(args: argparse.Namespace) -> int:
+    raw, code = _collect(args)
+    if raw is None:
+        return code
+    rep = report.build_report(raw, date=args.date)
+    _write_outputs(rep, raw, Path(args.out))
+    if args.publish_docs:
+        report.publish_docs(rep, raw)
+    return 1 if _print_summary(rep, Path(args.out)) else 0
+
+
+def cmd_rederive(_: argparse.Namespace) -> int:
+    report.rederive_docs()
+    print("re-derived docs/hci/report.snapshot.json and REPORT.md from the committed trace (no browser, no new measurement); review the diff")
+    return 0
 
 
 def cmd_check(args: argparse.Namespace) -> int:
@@ -70,6 +93,7 @@ def main(argv: list[str] | None = None) -> int:
     check = sub.add_parser("check", help="drift check, no browser: snapshot == derive(committed trace, current laws + budgets); REPORT.md == render(snapshot)")
     check.add_argument("--strict", action="store_true", help="also fail when the snapshot was taken on different UI bytes (release gate)")
     check.set_defaults(func=cmd_check)
+    sub.add_parser("rederive", help="rebuild snapshot + REPORT.md from the committed trace after an intentional code or budget change (no browser)").set_defaults(func=cmd_rederive)
     args = parser.parse_args(argv)
     return args.func(args)
 

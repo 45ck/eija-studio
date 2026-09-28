@@ -1,6 +1,6 @@
 """HCI test plumbing.
 
-* `quality/` is engineering tooling outside the shipped package, so the repo root joins sys.path here.
+* `quality/` is engineering tooling outside the shipped package; pyproject's pytest `pythonpath` puts the repo root on sys.path.
 * Browser tests carry the `hci` marker and are OPT-IN (`pytest -m hci`, `nox -s hci` or EIJA_HCI=1):
   the default `pytest -q` stays a fast kernel suite. Opted in but Chrome/Playwright unusable -> the
   tests are skipped with a reason starting `NOT_RUN`, which is never a pass.
@@ -8,14 +8,13 @@
 from __future__ import annotations
 
 import os
-import sys
 from pathlib import Path
 
 import pytest
 
+from quality.hci import journey, report
+
 ROOT = Path(__file__).resolve().parents[2]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
 
 
 def pytest_configure(config):
@@ -39,8 +38,6 @@ def pytest_collection_modifyitems(config, items):
 @pytest.fixture(scope="session")
 def hci_report():
     """One full instrumented run (Chrome, real `eija serve`), shared by every browser test."""
-    from quality.hci import journey, report
-
     ok, detail = journey.prerequisites()
     if not ok:
         pytest.skip("NOT_RUN: " + detail)

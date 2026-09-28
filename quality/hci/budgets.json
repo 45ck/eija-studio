@@ -1,6 +1,7 @@
 {
   "schema": "eija.hci.budgets.v1",
   "comment": "target = the law's threshold; limit = current ratchet (worst allowed). Tighten limits as recommendations land; never loosen without review. Timing limits are generous regression guards for a shared PC, not benchmarks.",
+  "calibration": "Deterministic budgets (geometry, counts, KLM model time, axe, focus): limit = the value measured on the snapshot machine (docs/hci/report.snapshot.json, Windows, Chrome 154), plus at most a little headroom where fonts or the Chrome version could shift geometry. Wall-clock budgets: a median guard (doherty.settled_p50, target = limit = 400 ms; measured about 60 ms) plus a loose tail guard (doherty.settled_p95, limit 4000 ms; the same UI gave 1.4 to 2.5 s p95 over several runs, single samples up to 4.5 s), because this PC is shared and noisy. Timing budgets catch order-of-magnitude regressions; they are not benchmarks. Re-derive the limits when the machine, Chrome or the UI changes.",
   "budgets": [
     {"id": "fitts.targets_under_24px", "law": "Fitts / WCAG 2.5.8", "path": "fitts.summary.targets_w_under_24", "unit": "targets", "target": 0, "limit": 0},
     {"id": "fitts.moves_over_4_bits", "law": "Fitts", "path": "fitts.summary.moves_id_over_4", "unit": "moves", "target": 0, "limit": 7, "note": "Chrome-build and font specific: five moves sit between 4.0 and 4.4 bits, so the limit is 1 above the measured 6 to avoid failing on a one-pixel layout difference; centre-landing convention (see nearest-edge variant)"},
@@ -9,6 +10,7 @@
     {"id": "hick.max_choices", "law": "Hick-Hyman", "path": "hick_hyman.summary.max_choices", "unit": "alternatives", "target": 7, "limit": 7},
     {"id": "klm.pointer_expert_time", "law": "KLM-GOMS", "path": "klm.expert_time_pointer_s", "unit": "s", "target": 65, "limit": 65, "note": "modelled, not measured: a regression guard on the journey definition (measured model value 62.7 s), so adding a journey step trips it on purpose; no law defines a threshold, so target = limit"},
     {"id": "doherty.first_feedback_p95", "law": "Doherty", "path": "measured.doherty.first_feedback_p95_ms", "unit": "ms", "target": 400, "limit": 400, "note": "first DOM mutation after the click (JavaScript-task latency, excludes paint); passes trivially, it is not perceived latency"},
+    {"id": "doherty.settled_p50", "law": "Doherty", "path": "measured.doherty.settled_p50_ms", "unit": "ms", "target": 400, "limit": 400, "note": "median over all interactions and repeats; robust to load spikes, so it is the timing regression guard"},
     {"id": "doherty.settled_p95", "law": "Doherty", "path": "measured.doherty.settled_p95_ms", "unit": "ms", "target": 400, "limit": 4000, "note": "wall-clock on a shared PC; p95 varied between about 1.4 and 2.5 s across runs under different load, the ratchet is generous on purpose"},
     {"id": "wcag.critical_rules", "law": "WCAG 2.2 AA", "path": "wcag.summary.critical", "unit": "rules", "target": 0, "limit": 0},
     {"id": "wcag.serious_rules", "law": "WCAG 2.2 AA", "path": "wcag.summary.serious", "unit": "rules", "target": 0, "limit": 1, "note": "count of violating axe rules (integer), measured 1"},

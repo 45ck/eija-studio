@@ -17,7 +17,7 @@ The current UI already misses some HCI thresholds (for example moves above 4 bit
 
 ## Considered options
 
-* Two-level budgets: `target` (the law's threshold) and `limit` (ratchet); PASS / GAP (xfail) / FAIL / NOT_RUN (chosen).
+* Two-level budgets: `target` (the law's threshold) and `limit` (ratchet, calibrated to measured values; the method is stated in `budgets.json`); PASS / GAP (xfail) / FAIL / NOT_RUN (chosen).
 * Hard failure at the law thresholds now (blocks all work until the UI is fixed).
 * Advisory report only (no regression protection).
 * For the journey: (a) stop at verification and mark approve/apply NOT_RUN; (b) serve with the kernel-test harness identity; (c) restamp the fixture (forbidden).
@@ -26,7 +26,7 @@ The current UI already misses some HCI thresholds (for example moves above 4 bit
 
 Chosen: two-level budgets in `quality/hci/budgets.json` evaluated by pure code and asserted by pytest marker `hci` tests (GAP is `pytest.xfail`, so a gap is visible and never a pass). Browser tests are opt-in (`pytest -m hci`, `nox -s hci`, `EIJA_HCI=1`) and skip with `NOT_RUN: <reason>` when Chrome, Playwright or axe is unavailable; the drift check and formula tests always run.
 
-For the journey, option (b): `quality/hci/serve_harness.py` serves through the same `create_app` and Uvicorn stack as `eija serve`, replacing only the identity provider with the harness identity that `tests/conftest.py` already uses for kernel tests. It changes no policy, guard or stamped file, and every report states `identity_source: pytest-harness`. `--identity release` runs the real `eija serve`; if the source is unstamped the run reports `NOT_RUN: ... SOURCE_REVIEW_REQUIRED ...` with exit code 3 (a missing prerequisite, never a pass and never a UI failure), and any other journey failure prints `FAIL:` with exit code 1. The scratch server directory, whose `server.log` holds the private launch token, is deleted even when the run fails. A test asserts that `serve_harness.harness_identity()` equals `tests/conftest.py`'s, so the two copies cannot drift silently, and the launcher banner states that approvals under it are not release approvals.
+For the journey, option (b): `quality/hci/serve_harness.py` serves through the same `create_app` and Uvicorn stack as `eija serve`, replacing only the identity provider with the harness identity that `tests/conftest.py` already uses for kernel tests. It changes no policy, guard or stamped file, and every report states `identity_source: pytest-harness`. `--identity release` runs the real `eija serve`; if the source is unstamped the run reports `NOT_RUN: ... SOURCE_REVIEW_REQUIRED ...` with exit code 3 (a missing prerequisite, never a pass and never a UI failure), and any other journey failure prints `FAIL:` with exit code 1. The scratch server directory, whose `server.log` holds the private launch token, is deleted even when the run fails. A test asserts that `serve_harness.harness_identity()` equals `tests/conftest.py`'s, so the two copies cannot drift silently, and the launcher banner states that approvals under it are not release approvals. Nothing under `src/` names or accepts the harness (a test scans the package for it), the launcher refuses any workspace outside the checkout's `.tmp/hci/` so the stand-in can never open a real workspace, and the branch's `git diff origin/main -- src/` is empty.
 
 ### Consequences
 

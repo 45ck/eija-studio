@@ -1,4 +1,5 @@
 """Static checks of the journey specification and the NOT_RUN contract (no browser needed)."""
+# ruff: noqa: PLC0415 - the axe test imports the optional `hci` extra only after importorskip
 import contextlib
 import importlib.util
 import inspect
@@ -83,7 +84,7 @@ def test_missing_chrome_is_not_run_never_pass(monkeypatch):
         def __exit__(self, *args):
             return False
 
-    _fake_playwright(monkeypatch, lambda: Boom())
+    _fake_playwright(monkeypatch, Boom)
     ok, reason = journey.prerequisites()
     assert ok is False and "Chrome" in reason
 
@@ -123,10 +124,9 @@ def test_studio_server_removes_its_scratch_directory_when_the_caller_raises(monk
         yield "http://127.0.0.1:1/#secret-launch-token"
 
     monkeypatch.setattr(server, "_serve", fake_serve)
-    with pytest.raises(RuntimeError, match="boom"):
-        with server.studio_server("cleanup-test"):
-            assert seen[0].exists()
-            raise RuntimeError("boom")
+    with pytest.raises(RuntimeError, match="boom"), server.studio_server("cleanup-test"):
+        assert seen[0].exists()
+        raise RuntimeError("boom")
     assert not seen[0].exists()  # the log holding the launch token is gone even though the block failed
 
 

@@ -4,7 +4,7 @@ import math
 
 import pytest
 
-from quality.hci import analysis, budgets, laws, report
+from quality.hci import analysis, budgets, journey, laws, report
 from . import hci_synthetic as syn
 
 
@@ -39,8 +39,6 @@ def test_nearest_edge_variant_bounds_the_centre_landing_bias(rep):
 
 
 def test_completion_flags_are_derived_from_the_recorded_steps_not_asserted(rep):
-    from quality.hci import journey
-
     assert rep["journey"]["completed"] is False  # negative control: the synthetic trace is not the canonical journey
     assert rep["keyboard"]["completed_journey_keyboard_only"] is False
     raw = syn.raw()
@@ -166,3 +164,19 @@ def test_report_serialisation_is_canonical_and_deterministic(rep):
     markdown = report.render_markdown(rep)
     assert markdown == report.render_markdown(json.loads(text))
     assert "\r" not in markdown and "NOT_RUN" in markdown and "Not a human study" in markdown
+
+
+def test_doherty_reports_median_and_interquartile_range_not_just_a_tail(rep):
+    d = rep["measured"]["doherty"]
+    assert d["settled_p25_ms"] <= d["settled_p50_ms"] <= d["settled_p75_ms"] <= d["settled_p95_ms"] <= d["settled_max_ms"]
+    steps = {s["step"]: s for s in d["steps"]}
+    assert (steps["s3"]["settled_p25_ms"], steps["s3"]["settled_p50_ms"], steps["s3"]["settled_p75_ms"]) == (300.0, 300.0, 900.0)  # two samples: nearest rank
+    assert any(b["id"] == "doherty.settled_p50" for b in rep["budgets"])  # a median guard exists beside the loose tail guard
+
+
+def test_markdown_separates_measurement_from_prediction(rep):
+    markdown = report.render_markdown(rep)
+    headline = markdown.split("## Headline")[1].split("## ")[0]
+    assert "| PREDICTION | KLM-GOMS |" in headline and "| MEASUREMENT (wall-clock) | Doherty |" in headline
+    assert "Fitts's law (prediction over measured geometry)" in markdown and "Doherty threshold (measurement" in markdown
+    assert "not evidence of user benefit" in markdown and "Nothing here shows that any change benefits users" in markdown

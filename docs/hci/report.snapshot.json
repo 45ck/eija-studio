@@ -78,6 +78,17 @@
       "value": 1
     },
     {
+      "id": "doherty.settled_p50",
+      "law": "Doherty",
+      "limit": 400,
+      "note": "median over all interactions and repeats; robust to load spikes, so it is the timing regression guard",
+      "path": "measured.doherty.settled_p50_ms",
+      "status": "PASS",
+      "target": 400,
+      "unit": "ms",
+      "value": 55.6
+    },
+    {
       "id": "doherty.settled_p95",
       "law": "Doherty",
       "limit": 4000,
@@ -2949,13 +2960,14 @@
     "This is NOT a human usability study. No participant, persona or task-success rate is represented (human study: NOT_RUN).",
     "The journey answers the three review questions with scripted fixture text; it exercises the UI and says nothing about comprehension.",
     "Approval and apply run under the kernel-test harness identity (source differs from the owner-stamped fixture); they are UI evidence, not a release approval.",
-    "Doherty timings are wall-clock on one shared Windows PC, headless Chrome, loopback server; they exclude OS/input latency and are sensitive to load (the settled p95 varied between about 1.4 and 2.5 s across runs).",
+    "Doherty timings are wall-clock on one shared Windows PC, headless Chrome, loopback server; they exclude OS/input latency and are sensitive to load (the settled p95 varied between about 1.4 and 2.5 s across runs). Read the medians and interquartile ranges, not a single number; the snapshot is one point-in-time record.",
     "'First feedback' is the first DOM mutation after the click (a JavaScript-task latency). It excludes style, layout, paint and compositing, so it is not perceived latency.",
     "Fitts D lands at the centre of the effective box, which overstates D for wide targets; the report also gives a nearest-edge variant so the flag count is a range. Geometry-based budgets are specific to this Chrome build and font set.",
     "Only uncaught page exceptions and HTTP error responses are counted as runtime hygiene; console.error and console.warn messages are not.",
     "Hick b and the KLM operator times came from secondary sources (Card, Moran & Newell as cited in the literature); only the Fitts constants were checked against the primary paper text.",
     "axe-core detects only a subset of WCAG failures; a clean axe run is not conformance. Exceptions to 2.5.8 other than spacing are not evaluated.",
-    "The working-memory number is a visibility-based heuristic proxy for Miller/Cowan chunk limits, not a measure of anyone's memory."
+    "The working-memory number is a visibility-based heuristic proxy for Miller/Cowan chunk limits, not a measure of anyone's memory.",
+    "Nothing here shows that any change benefits users; recommendations are model-ranked hypotheses to be tested with people."
   ],
   "measured": {
     "doherty": {
@@ -2966,13 +2978,15 @@
       "journey_wait_p50_sum_s": 2.356,
       "keyboard_settled_p50_ms": 56.7,
       "keyboard_settled_p95_ms": 6246.6,
-      "method": "nearest-rank percentiles over all repeats",
+      "method": "nearest-rank percentiles over all repeats; medians and interquartile range are the headline, p95 is the maximum with few samples",
       "native_control_interactions_excluded": [
         "acknowledge"
       ],
       "note": "settled = last DOM mutation before quiescence, from the click event; excludes OS/browser input latency",
       "settled_max_ms": 3739.1,
+      "settled_p25_ms": 41.5,
       "settled_p50_ms": 55.6,
+      "settled_p75_ms": 106.5,
       "settled_p95_ms": 2507.3,
       "steps": [
         {
@@ -2981,7 +2995,9 @@
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
+          "settled_p25_ms": 56,
           "settled_p50_ms": 63.2,
+          "settled_p75_ms": 81.1,
           "settled_p95_ms": 81.1,
           "step": "create-case"
         },
@@ -2991,7 +3007,9 @@
           "median_over_400ms": false,
           "over_400ms": true,
           "samples": 3,
+          "settled_p25_ms": 64.6,
           "settled_p50_ms": 98.2,
+          "settled_p75_ms": 538.6,
           "settled_p95_ms": 538.6,
           "step": "ask-interpretations"
         },
@@ -3001,7 +3019,9 @@
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
+          "settled_p25_ms": 47.1,
           "settled_p50_ms": 55,
+          "settled_p75_ms": 63,
           "settled_p95_ms": 63,
           "step": "select-meaning"
         },
@@ -3011,7 +3031,9 @@
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
+          "settled_p25_ms": 0.2,
           "settled_p50_ms": 0.2,
+          "settled_p75_ms": 0.3,
           "settled_p95_ms": 0.3,
           "step": "open-try"
         },
@@ -3021,7 +3043,9 @@
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
+          "settled_p25_ms": 41.5,
           "settled_p50_ms": 48.1,
+          "settled_p75_ms": 55.1,
           "settled_p95_ms": 55.1,
           "step": "reset-preview"
         },
@@ -3031,7 +3055,9 @@
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
+          "settled_p25_ms": 47.1,
           "settled_p50_ms": 48.1,
+          "settled_p75_ms": 55.6,
           "settled_p95_ms": 55.6,
           "step": "submit-teacher"
         },
@@ -3041,7 +3067,9 @@
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
+          "settled_p25_ms": 48.6,
           "settled_p50_ms": 49.1,
+          "settled_p75_ms": 102.2,
           "settled_p95_ms": 102.2,
           "step": "recommend-teacher"
         },
@@ -3051,7 +3079,9 @@
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
+          "settled_p25_ms": 50,
           "settled_p50_ms": 70.6,
+          "settled_p75_ms": 101.6,
           "settled_p95_ms": 101.6,
           "step": "approve-registrar"
         },
@@ -3061,7 +3091,9 @@
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
+          "settled_p25_ms": 7.4,
           "settled_p50_ms": 7.6,
+          "settled_p75_ms": 7.6,
           "settled_p95_ms": 7.6,
           "step": "denied-recommend"
         },
@@ -3071,7 +3103,9 @@
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
+          "settled_p25_ms": 0.1,
           "settled_p50_ms": 0.1,
+          "settled_p75_ms": 0.2,
           "settled_p95_ms": 0.2,
           "step": "open-evidence"
         },
@@ -3081,7 +3115,9 @@
           "median_over_400ms": true,
           "over_400ms": true,
           "samples": 3,
+          "settled_p25_ms": 1231.5,
           "settled_p50_ms": 1529.4,
+          "settled_p75_ms": 1633.6,
           "settled_p95_ms": 1633.6,
           "step": "run-verification"
         },
@@ -3091,7 +3127,9 @@
           "median_over_400ms": false,
           "over_400ms": true,
           "samples": 3,
+          "settled_p25_ms": 106.5,
           "settled_p50_ms": 238.7,
+          "settled_p75_ms": 3739.1,
           "settled_p95_ms": 3739.1,
           "step": "approve-exact"
         },
@@ -3101,7 +3139,9 @@
           "median_over_400ms": false,
           "over_400ms": true,
           "samples": 3,
+          "settled_p25_ms": 137.2,
           "settled_p50_ms": 147.7,
+          "settled_p75_ms": 2507.3,
           "settled_p95_ms": 2507.3,
           "step": "apply-baseline"
         }

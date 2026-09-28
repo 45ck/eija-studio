@@ -76,6 +76,59 @@ def test_thresholds_match_the_brief():
     assert (laws.MIN_TARGET_PX, laws.MAX_ID_BITS, laws.MAX_CHOICES, laws.DOHERTY_MS) == (24, 4, 7, 400)
 
 
+# --- oracles taken from the SOURCES, not from the code under test ------------------------------------
+# Every expected number below is derived by hand from the published formula and constants:
+#   Fitts (Shannon): MacKenzie (1992) Eq. 7-8, ID = log2(A/W + 1), MT = a + b*ID.
+#   MacKenzie & Buxton (1992) CHI '92, smaller-of model: MT = 230 + 166*ID ms, r = .9501, IP = 6.0 bits/s.
+#   Hick-Hyman: T = b*log2(n + 1) (Hick 1952, Hyman 1953); b ~ 150 ms/bit (Card, Moran & Newell 1983).
+#   KLM: Card, Moran & Newell (1980) operator table.
+@pytest.mark.parametrize(
+    ("amplitude_over_width", "id_bits", "mt_ms"),
+    [
+        (1, 1, 396),  # A = W: 230 + 166*1
+        (3, 2, 562),  # 230 + 166*2
+        (7, 3, 728),  # 230 + 166*3
+        (15, 4, 894),  # 230 + 166*4
+        (31, 5, 1060),  # 230 + 166*5
+    ],
+)
+def test_fitts_hand_computed_shannon_examples(amplitude_over_width, id_bits, mt_ms):
+    width = 40.0
+    got_id = laws.shannon_id(amplitude_over_width * width, width)
+    assert got_id == pytest.approx(id_bits, abs=1e-12)  # A/W + 1 is a power of two, so ID is an exact integer
+    assert laws.fitts_time(got_id) * 1000 == pytest.approx(mt_ms, abs=1e-6)
+
+
+def test_fitts_index_of_performance_matches_the_paper():
+    """MacKenzie & Buxton report IP = 6.0 bits/s for the smaller-of mouse model: IP = 1 / b."""
+    assert 1.0 / laws.FittsModel().b == pytest.approx(6.0, abs=0.03)
+
+
+@pytest.mark.parametrize(("n", "bits"), [(1, 1), (3, 2), (7, 3), (15, 4), (31, 5)])
+def test_hick_hand_computed_examples(n, bits):
+    assert laws.hick_bits(n) == pytest.approx(bits, abs=1e-12)
+    assert laws.hick_time(n) == pytest.approx(0.150 * bits, abs=1e-12)  # b = 150 ms/bit
+
+
+def test_klm_operator_table_matches_card_moran_newell_1980():
+    t = laws.KlmTimes()
+    assert (t.K, t.P, t.B, t.H, t.M) == (0.28, 1.10, 0.10, 0.40, 1.35)  # K: average non-secretary typist
+    assert laws.klm_time("BB") == pytest.approx(0.20)  # a click is a press plus a release
+    assert laws.klm_time("MPBB") == pytest.approx(1.35 + 1.10 + 0.20)  # think, point, click
+
+
+def test_iqr_is_nearest_rank_and_none_when_empty():
+    assert laws.iqr([]) is None
+    assert laws.iqr([4, 1, 3, 2]) == (1, 2, 3)  # ranks ceil(.25*4)=1, ceil(.5*4)=2, ceil(.75*4)=3
+    assert laws.iqr([9]) == (9, 9, 9)
+
+
+def test_public_api_is_declared():
+    """Other pipelines import these names; removing or renaming one must be a deliberate, reviewed change."""
+    assert set(laws.__all__) >= {"shannon_id", "smaller_of", "fitts_time", "hick_bits", "hick_time", "klm_time", "count_operators", "percentile", "iqr"}
+    assert all(hasattr(laws, name) for name in laws.__all__)
+
+
 # --- WCAG 2.5.8 -------------------------------------------------------------------------------
 def test_target_size_boundary_is_inclusive_at_24():
     assert target_size_status(0, [Box(0, 0, 24, 24)]) == "pass"

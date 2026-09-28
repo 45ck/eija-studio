@@ -8,7 +8,15 @@ Journey (brief): create case -> ask for interpretations -> select recommend_only
 Submit and Recommend as teacher-assigned, Approve as registrar, denied as teacher-unassigned -> run
 verification -> acknowledge -> approve -> apply. The three review answers are SCRIPTED fixture
 answers typed by the driver. They exercise the UI; they say nothing about human comprehension.
+
+Stable public API (reused by other pipelines, for example the UX research lane; add, do not change):
+`journey()`, `Step`, `Ref`, `Expect`, `Decision`, `Runner`, `run_pass()`, `collect()`, `prerequisites()`,
+`new_page()`, `open_studio()`, `run_axe()`, `keystrokes()`, `ui_hashes()`. Validity limits: the journey is
+scripted (one expert-style path, synthetic data, offline provider), so timings and operator counts describe
+that path only; a missing prerequisite must be reported as NOT_RUN by the caller, never as a pass.
 """
+
+# ruff: noqa: PLC0415 - playwright and axe belong to the optional `hci` extra: imported lazily so a machine without them reports NOT_RUN instead of failing at import
 from __future__ import annotations
 
 import hashlib
@@ -442,8 +450,8 @@ def run_axe(page) -> dict:
 def prerequisites() -> tuple[bool, str]:
     """(True, chrome version) or (False, reason). A False result must be reported NOT_RUN, never PASS."""
     try:
+        import axe_playwright_python  # noqa: F401 - presence check only
         from playwright.sync_api import sync_playwright
-        import axe_playwright_python  # noqa: F401
     except ImportError as exc:
         return False, f"python packages missing ({exc}); install the hci extra: pip install -e .[hci]"
     try:
@@ -452,17 +460,17 @@ def prerequisites() -> tuple[bool, str]:
             version = browser.version
             browser.close()
         return True, version
-    except Exception as exc:  # noqa: BLE001 - any launch failure is a missing prerequisite
+    except Exception as exc:  # any launch failure is a missing prerequisite, reported as NOT_RUN
         return False, "Google Chrome (channel 'chrome') could not be launched: " + str(exc).splitlines()[0]
 
 
-def _new_page(browser):
+def new_page(browser):
     context = browser.new_context(viewport=VIEWPORT, device_scale_factor=1)
     context.add_init_script(path=str(PROBE))
     return context, context.new_page()
 
 
-def _open(page, url: str) -> None:
+def open_studio(page, url: str) -> None:
     page.goto(url)
     page.locator("#connection").filter(has_text="offline").wait_for()
     page.evaluate("() => window.__hci.waitQuiet(150, 10000)")
@@ -471,10 +479,10 @@ def _open(page, url: str) -> None:
 def run_pass(browser, modality: str, *, audit: bool, label: str, identity: str = "harness") -> dict:
     """One full journey on a fresh server + workspace + browser context."""
     with studio_server(label, identity) as url:
-        context, page = _new_page(browser)
+        context, page = new_page(browser)
         try:
             runner = Runner(page, modality, audit)
-            _open(page, url)
+            open_studio(page, url)
             if audit:
                 runner.checkpoint("start")
             runner.run(journey())
