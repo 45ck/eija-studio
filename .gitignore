@@ -12,3 +12,6 @@ dist/
 .pytest-tmp/
 reports/
 .nox/
+.import_linter_cache/
+.mypy_cache/
+.ruff_cache/
