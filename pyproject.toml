@@ -27,11 +27,10 @@ lint = [
     "pip-audit==2.10.1",
 ]
 formal = []
-smt = ["z3-solver==5.1.0.0"]  # lane smt-bmc: Z3 policy-soundness proof
 testing = []
 mutation = []
 metrics = []
-hci = []
+hci = ["playwright==1.63.0", "axe-playwright-python==0.1.8"]  # drives the installed Chrome (channel="chrome"); no browser download
 agents = ["mcp==2.2.0", "anyio==4.15.1"]
 providers = ["psutil==7.2.2"]  # process-tree kill for agent CLIs; adapters degrade to taskkill/killpg without it
 docs = []
@@ -40,6 +39,7 @@ demos = ["playwright==1.63.0"]  # drives the installed system Chrome; no browser
 ux = []
 graph = []
 dod = []
+smt = ["z3-solver==5.1.0.0"]  # lane smt-bmc: Z3 policy-soundness proof
 
 [project.scripts]
 eija = "eija_studio.interfaces.cli:main"

@@ -1,0 +1,3907 @@
+{
+  "budgets": [
+    {
+      "id": "fitts.targets_under_24px",
+      "law": "Fitts / WCAG 2.5.8",
+      "limit": 0,
+      "note": "",
+      "path": "fitts.summary.targets_w_under_24",
+      "status": "PASS",
+      "target": 0,
+      "unit": "targets",
+      "value": 0
+    },
+    {
+      "id": "fitts.moves_over_4_bits",
+      "law": "Fitts",
+      "limit": 7,
+      "note": "Chrome-build and font specific: five moves sit between 4.0 and 4.4 bits, so the limit is 1 above the measured 6 to avoid failing on a one-pixel layout difference; centre-landing convention (see nearest-edge variant)",
+      "path": "fitts.summary.moves_id_over_4",
+      "status": "GAP",
+      "target": 0,
+      "unit": "moves",
+      "value": 6
+    },
+    {
+      "id": "fitts.max_id",
+      "law": "Fitts",
+      "limit": 4.5,
+      "note": "measured 4.405 bits; geometry is Chrome-build and font specific",
+      "path": "fitts.summary.max_id_bits",
+      "status": "GAP",
+      "target": 4,
+      "unit": "bits",
+      "value": 4.405
+    },
+    {
+      "id": "hick.choice_groups_over_7",
+      "law": "Hick-Hyman",
+      "limit": 0,
+      "note": "",
+      "path": "hick_hyman.summary.choice_points_over_7",
+      "status": "PASS",
+      "target": 0,
+      "unit": "groups",
+      "value": 0
+    },
+    {
+      "id": "hick.max_choices",
+      "law": "Hick-Hyman",
+      "limit": 7,
+      "note": "",
+      "path": "hick_hyman.summary.max_choices",
+      "status": "PASS",
+      "target": 7,
+      "unit": "alternatives",
+      "value": 5
+    },
+    {
+      "id": "klm.pointer_expert_time",
+      "law": "KLM-GOMS",
+      "limit": 65,
+      "note": "modelled, not measured: a regression guard on the journey definition (measured model value 62.7 s), so adding a journey step trips it on purpose; no law defines a threshold, so target = limit",
+      "path": "klm.expert_time_pointer_s",
+      "status": "PASS",
+      "target": 65,
+      "unit": "s",
+      "value": 62.71
+    },
+    {
+      "id": "doherty.first_feedback_p95",
+      "law": "Doherty",
+      "limit": 400,
+      "note": "first DOM mutation after the click (JavaScript-task latency, excludes paint); passes trivially, it is not perceived latency",
+      "path": "measured.doherty.first_feedback_p95_ms",
+      "status": "PASS",
+      "target": 400,
+      "unit": "ms",
+      "value": 1
+    },
+    {
+      "id": "doherty.settled_p50",
+      "law": "Doherty",
+      "limit": 400,
+      "note": "median over all interactions and repeats; robust to load spikes, so it is the timing regression guard",
+      "path": "measured.doherty.settled_p50_ms",
+      "status": "PASS",
+      "target": 400,
+      "unit": "ms",
+      "value": 55.6
+    },
+    {
+      "id": "doherty.settled_p95",
+      "law": "Doherty",
+      "limit": 4000,
+      "note": "wall-clock on a shared PC; p95 varied between about 1.4 and 2.5 s across runs under different load, the ratchet is generous on purpose",
+      "path": "measured.doherty.settled_p95_ms",
+      "status": "GAP",
+      "target": 400,
+      "unit": "ms",
+      "value": 2507.3
+    },
+    {
+      "id": "wcag.critical_rules",
+      "law": "WCAG 2.2 AA",
+      "limit": 0,
+      "note": "",
+      "path": "wcag.summary.critical",
+      "status": "PASS",
+      "target": 0,
+      "unit": "rules",
+      "value": 0
+    },
+    {
+      "id": "wcag.serious_rules",
+      "law": "WCAG 2.2 AA",
+      "limit": 1,
+      "note": "count of violating axe rules (integer), measured 1",
+      "path": "wcag.summary.serious",
+      "status": "GAP",
+      "target": 0,
+      "unit": "rules",
+      "value": 1
+    },
+    {
+      "id": "wcag.moderate_rules",
+      "law": "WCAG 2.2 AA",
+      "limit": 0,
+      "note": "",
+      "path": "wcag.summary.moderate",
+      "status": "PASS",
+      "target": 0,
+      "unit": "rules",
+      "value": 0
+    },
+    {
+      "id": "wcag.target_size_failures",
+      "law": "WCAG 2.5.8",
+      "limit": 0,
+      "note": "",
+      "path": "wcag.summary.target_size_failures",
+      "status": "PASS",
+      "target": 0,
+      "unit": "controls",
+      "value": 0
+    },
+    {
+      "id": "wcag.reflow_overflow_views",
+      "law": "WCAG 1.4.10",
+      "limit": 0,
+      "note": "",
+      "path": "wcag.summary.reflow_overflow_views",
+      "status": "PASS",
+      "target": 0,
+      "unit": "views",
+      "value": 0
+    },
+    {
+      "id": "keyboard.focus_lost_activations",
+      "law": "WCAG 2.4.3",
+      "limit": 7,
+      "note": "",
+      "path": "keyboard.focus_lost_count",
+      "status": "GAP",
+      "target": 0,
+      "unit": "activations",
+      "value": 7
+    },
+    {
+      "id": "keyboard.stops_without_indicator",
+      "law": "WCAG 2.4.7",
+      "limit": 0,
+      "note": "",
+      "path": "keyboard.stops_without_indicator_count",
+      "status": "PASS",
+      "target": 0,
+      "unit": "stops",
+      "value": 0
+    },
+    {
+      "id": "memory.max_chunks_viewport",
+      "law": "Miller / Cowan (proxy)",
+      "limit": 26,
+      "note": "heuristic proxy",
+      "path": "working_memory.summary.max_chunks_viewport",
+      "status": "GAP",
+      "target": 9,
+      "unit": "chunks",
+      "value": 25
+    },
+    {
+      "id": "runtime.js_exceptions",
+      "law": "hygiene",
+      "limit": 0,
+      "note": "",
+      "path": "runtime_errors.javascript_exception_count",
+      "status": "PASS",
+      "target": 0,
+      "unit": "exceptions",
+      "value": 0
+    }
+  ],
+  "date": "2026-09-28",
+  "environment": {
+    "axe_core": "4.12.1",
+    "axe_playwright_python": "0.1.8",
+    "chrome": "154.0.8037.58",
+    "device_scale_factor": 1,
+    "headless": true,
+    "identity_source": "pytest-harness",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "playwright": "1.63.0",
+    "provider": "offline (synthetic)",
+    "python": "3.12.10",
+    "repeats": 3,
+    "ui_sha256": {
+      "app.css": "3731536e34ae6cbe4986d7399bded7ef27dca6b8c94178404c21e06c1d83af54",
+      "app.js": "44852a64b0e522cc7383b8574c511cd3f2a11e914a53e7688eb91f1a28301492",
+      "index.html": "8666836379e1cf672961eb5acdad3c6bd9a87c5ca03c01943c1346312d3a58d0"
+    },
+    "viewport": {
+      "height": 900,
+      "width": 1440
+    }
+  },
+  "fitts": {
+    "model": {
+      "a_s": 0.23,
+      "b_s_per_bit": 0.166,
+      "citation": "MacKenzie & Buxton 1992 (CHI '92), mouse, smaller-of model, MT = 230 + 166*ID ms",
+      "form": "MT = a + b*log2(D/W + 1), W = min(width, height)"
+    },
+    "summary": {
+      "landing_convention_note": "primary D uses the centre of the effective box, which overstates D for wide targets; moves_id_over_4_nearest_edge recomputes D to the nearest edge, so the flag count is a range",
+      "max_id_bits": 4.405,
+      "max_id_step": "submit-teacher",
+      "mean_id_bits": 2.975,
+      "moves_id_over_4": 6,
+      "moves_id_over_4_nearest_edge": 4,
+      "moves_with_distance": 19,
+      "pointer_targets": 20,
+      "predicted_pointing_time_s": 13.753,
+      "scrolls_needed": 2,
+      "targets_w_under_24": 0,
+      "total_distance_px": 8225.8
+    },
+    "targets": [
+      {
+        "distance_px": null,
+        "flags": [],
+        "id_bits": null,
+        "id_bits_nearest_edge": null,
+        "note": "first pointer target: no preceding position",
+        "predicted_mt_s": null,
+        "raw_w_px": 96.2,
+        "scrolled_before": false,
+        "selector": "#request",
+        "step": "type-request",
+        "target": "What should change?",
+        "via_label": false,
+        "w_px": 96.2,
+        "wcag_2_5_8": "pass"
+      },
+      {
+        "distance_px": 447.4,
+        "flags": [],
+        "id_bits": 3.347,
+        "id_bits_nearest_edge": 3.056,
+        "predicted_mt_s": 0.786,
+        "raw_w_px": 48.8,
+        "scrolled_before": false,
+        "selector": "#create",
+        "step": "create-case",
+        "target": "Create Change Case",
+        "via_label": false,
+        "w_px": 48.8,
+        "wcag_2_5_8": "pass"
+      },
+      {
+        "distance_px": 858.4,
+        "flags": [
+          "ID>4"
+        ],
+        "id_bits": 4.218,
+        "id_bits_nearest_edge": 4.05,
+        "predicted_mt_s": 0.93,
+        "raw_w_px": 48.8,
+        "scrolled_before": false,
+        "selector": "#propose",
+        "step": "ask-interpretations",
+        "target": "Ask for interpretations",
+        "via_label": false,
+        "w_px": 48.8,
+        "wcag_2_5_8": "pass"
+      },
+      {
+        "distance_px": 852.4,
+        "flags": [
+          "ID>4"
+        ],
+        "id_bits": 4.208,
+        "id_bits_nearest_edge": 4.057,
+        "predicted_mt_s": 0.929,
+        "raw_w_px": 48.8,
+        "scrolled_before": true,
+        "selector": "#options > article:nth-of-type(1) > button",
+        "step": "select-meaning",
+        "target": "Select this meaning",
+        "via_label": false,
+        "w_px": 48.8,
+        "wcag_2_5_8": "pass"
+      },
+      {
+        "distance_px": 577.9,
+        "flags": [],
+        "id_bits": 3.639,
+        "id_bits_nearest_edge": 3.565,
+        "predicted_mt_s": 0.834,
+        "raw_w_px": 50.4,
+        "scrolled_before": false,
+        "selector": "#workspace > nav > button:nth-of-type(3)",
+        "step": "open-try",
+        "target": "03 / Try",
+        "via_label": false,
+        "w_px": 50.4,
+        "wcag_2_5_8": "pass"
+      },
+      {
+        "distance_px": 737.1,
+        "flags": [
+          "ID>4"
+        ],
+        "id_bits": 4.011,
+        "id_bits_nearest_edge": 3.83,
+        "predicted_mt_s": 0.896,
+        "raw_w_px": 48.8,
+        "scrolled_before": false,
+        "selector": "#reset",
+        "step": "reset-preview",
+        "target": "Start / reset preview",
+        "via_label": false,
+        "w_px": 48.8,
+        "wcag_2_5_8": "pass"
+      },
+      {
+        "distance_px": 983.9,
+        "flags": [
+          "ID>4"
+        ],
+        "id_bits": 4.405,
+        "id_bits_nearest_edge": 4.334,
+        "predicted_mt_s": 0.961,
+        "raw_w_px": 48.8,
+        "scrolled_before": false,
+        "selector": "#runtime-actions > button:nth-of-type(1)",
+        "step": "submit-teacher",
+        "target": "Submit",
+        "via_label": false,
+        "w_px": 48.8,
+        "wcag_2_5_8": "pass"
+      },
+      {
+        "distance_px": 119.2,
+        "flags": [],
+        "id_bits": 1.785,
+        "id_bits_nearest_edge": 1.121,
+        "predicted_mt_s": 0.526,
+        "raw_w_px": 48.8,
+        "scrolled_before": false,
+        "selector": "#runtime-actions > button:nth-of-type(2)",
+        "step": "recommend-teacher",
+        "target": "Recommend",
+        "via_label": false,
+        "w_px": 48.8,
+        "wcag_2_5_8": "pass"
+      },
+      {
+        "distance_px": 86.2,
+        "flags": [],
+        "id_bits": 1.565,
+        "id_bits_nearest_edge": 0.922,
+        "predicted_mt_s": 0.49,
+        "raw_w_px": 44,
+        "scrolled_before": false,
+        "selector": "#actor",
+        "step": "actor-registrar",
+        "target": "Synthetic actor",
+        "via_label": false,
+        "w_px": 44,
+        "wcag_2_5_8": "pass"
+      },
+      {
+        "distance_px": 88.4,
+        "flags": [],
+        "id_bits": 1.492,
+        "id_bits_nearest_edge": 0.866,
+        "predicted_mt_s": 0.478,
+        "raw_w_px": 48.8,
+        "scrolled_before": false,
+        "selector": "#runtime-actions > button:nth-of-type(3)",
+        "step": "approve-registrar",
+        "target": "Approve",
+        "via_label": false,
+        "w_px": 48.8,
+        "wcag_2_5_8": "pass"
+      },
+      {
+        "distance_px": 88.4,
+        "flags": [],
+        "id_bits": 1.589,
+        "id_bits_nearest_edge": 0.922,
+        "predicted_mt_s": 0.494,
+        "raw_w_px": 44,
+        "scrolled_before": false,
+        "selector": "#actor",
+        "step": "actor-unassigned",
+        "target": "Synthetic actor",
+        "via_label": false,
+        "w_px": 44,
+        "wcag_2_5_8": "pass"
+      },
+      {
+        "distance_px": 86.2,
+        "flags": [],
+        "id_bits": 1.469,
+        "id_bits_nearest_edge": 0.815,
+        "predicted_mt_s": 0.474,
+        "raw_w_px": 48.8,
+        "scrolled_before": false,
+        "selector": "#runtime-actions > button:nth-of-type(2)",
+        "step": "denied-recommend",
+        "target": "Recommend",
+        "via_label": false,
+        "w_px": 48.8,
+        "wcag_2_5_8": "pass"
+      },
+      {
+        "distance_px": 540.1,
+        "flags": [],
+        "id_bits": 3.549,
+        "id_bits_nearest_edge": 3.42,
+        "predicted_mt_s": 0.819,
+        "raw_w_px": 50.4,
+        "scrolled_before": false,
+        "selector": "#workspace > nav > button:nth-of-type(4)",
+        "step": "open-evidence",
+        "target": "04 / Evidence & Decision",
+        "via_label": false,
+        "w_px": 50.4,
+        "wcag_2_5_8": "pass"
+      },
+      {
+        "distance_px": 586.3,
+        "flags": [],
+        "id_bits": 3.703,
+        "id_bits_nearest_edge": 3.428,
+        "predicted_mt_s": 0.845,
+        "raw_w_px": 48.8,
+        "scrolled_before": false,
+        "selector": "#verify",
+        "step": "run-verification",
+        "target": "Run bounded verification",
+        "via_label": false,
+        "w_px": 48.8,
+        "wcag_2_5_8": "pass"
+      },
+      {
+        "distance_px": 925.3,
+        "flags": [
+          "ID>4"
+        ],
+        "id_bits": 4.378,
+        "id_bits_nearest_edge": 4.208,
+        "predicted_mt_s": 0.957,
+        "raw_w_px": 46.8,
+        "scrolled_before": false,
+        "selector": "#q-authority",
+        "step": "answer-authority",
+        "target": "Who retains final approval authority?",
+        "via_label": false,
+        "w_px": 46.8,
+        "wcag_2_5_8": "pass"
+      },
+      {
+        "distance_px": 99.5,
+        "flags": [],
+        "id_bits": 1.645,
+        "id_bits_nearest_edge": 1.394,
+        "predicted_mt_s": 0.503,
+        "raw_w_px": 46.8,
+        "scrolled_before": false,
+        "selector": "#q-assignment",
+        "step": "answer-assignment",
+        "target": "Can an unassigned teacher recommend?",
+        "via_label": false,
+        "w_px": 46.8,
+        "wcag_2_5_8": "pass"
+      },
+      {
+        "distance_px": 99.5,
+        "flags": [],
+        "id_bits": 1.645,
+        "id_bits_nearest_edge": 1.394,
+        "predicted_mt_s": 0.503,
+        "raw_w_px": 46.8,
+        "scrolled_before": false,
+        "selector": "#q-reject_entry",
+        "step": "answer-reject_entry",
+        "target": "Which state must precede registrar rejection?",
+        "via_label": false,
+        "w_px": 46.8,
+        "wcag_2_5_8": "pass"
+      },
+      {
+        "distance_px": 414.3,
+        "flags": [
+          "ID>4"
+        ],
+        "id_bits": 4.135,
+        "id_bits_nearest_edge": 1.452,
+        "predicted_mt_s": 0.916,
+        "raw_w_px": 18,
+        "scrolled_before": false,
+        "selector": "#acknowledge",
+        "step": "acknowledge",
+        "target": "I understand this is a local synthetic demo, with human outc",
+        "via_label": true,
+        "w_px": 25,
+        "wcag_2_5_8": "pass"
+      },
+      {
+        "distance_px": 406.2,
+        "flags": [],
+        "id_bits": 3.222,
+        "id_bits_nearest_edge": 2.783,
+        "predicted_mt_s": 0.765,
+        "raw_w_px": 48.8,
+        "scrolled_before": true,
+        "selector": "#approve",
+        "step": "approve-exact",
+        "target": "Approve exact local revision",
+        "via_label": false,
+        "w_px": 48.8,
+        "wcag_2_5_8": "pass"
+      },
+      {
+        "distance_px": 229.1,
+        "flags": [],
+        "id_bits": 2.511,
+        "id_bits_nearest_edge": 1.886,
+        "predicted_mt_s": 0.647,
+        "raw_w_px": 48.8,
+        "scrolled_before": false,
+        "selector": "#apply",
+        "step": "apply-baseline",
+        "target": "Apply to local baseline",
+        "via_label": false,
+        "w_px": 48.8,
+        "wcag_2_5_8": "pass"
+      }
+    ]
+  },
+  "hick_hyman": {
+    "decisions": [
+      {
+        "bits": 2.0,
+        "choices": 3,
+        "decision": "choose an interpretation",
+        "over_7": false,
+        "predicted_s": 0.3,
+        "screen_controls": 9,
+        "screen_over_7": true,
+        "screen_predicted_s": 0.498,
+        "step": "select-meaning"
+      },
+      {
+        "bits": 2.322,
+        "choices": 4,
+        "decision": "choose a work area",
+        "over_7": false,
+        "predicted_s": 0.348,
+        "screen_controls": 11,
+        "screen_over_7": true,
+        "screen_predicted_s": 0.538,
+        "step": "open-try"
+      },
+      {
+        "bits": 2.585,
+        "choices": 5,
+        "decision": "choose a lifecycle action",
+        "over_7": false,
+        "predicted_s": 0.388,
+        "screen_controls": 12,
+        "screen_over_7": true,
+        "screen_predicted_s": 0.555,
+        "step": "submit-teacher"
+      },
+      {
+        "bits": 2.585,
+        "choices": 5,
+        "decision": "choose a lifecycle action",
+        "over_7": false,
+        "predicted_s": 0.388,
+        "screen_controls": 12,
+        "screen_over_7": true,
+        "screen_predicted_s": 0.555,
+        "step": "recommend-teacher"
+      },
+      {
+        "bits": 2.585,
+        "choices": 5,
+        "decision": "choose the acting role",
+        "over_7": false,
+        "predicted_s": 0.388,
+        "screen_controls": 12,
+        "screen_over_7": true,
+        "screen_predicted_s": 0.555,
+        "step": "actor-registrar"
+      },
+      {
+        "bits": 2.585,
+        "choices": 5,
+        "decision": "choose a lifecycle action",
+        "over_7": false,
+        "predicted_s": 0.388,
+        "screen_controls": 12,
+        "screen_over_7": true,
+        "screen_predicted_s": 0.555,
+        "step": "approve-registrar"
+      },
+      {
+        "bits": 2.585,
+        "choices": 5,
+        "decision": "choose the acting role",
+        "over_7": false,
+        "predicted_s": 0.388,
+        "screen_controls": 12,
+        "screen_over_7": true,
+        "screen_predicted_s": 0.555,
+        "step": "actor-unassigned"
+      },
+      {
+        "bits": 2.585,
+        "choices": 5,
+        "decision": "choose a lifecycle action",
+        "over_7": false,
+        "predicted_s": 0.388,
+        "screen_controls": 12,
+        "screen_over_7": true,
+        "screen_predicted_s": 0.555,
+        "step": "denied-recommend"
+      },
+      {
+        "bits": 2.322,
+        "choices": 4,
+        "decision": "choose a work area",
+        "over_7": false,
+        "predicted_s": 0.348,
+        "screen_controls": 12,
+        "screen_over_7": true,
+        "screen_predicted_s": 0.555,
+        "step": "open-evidence"
+      }
+    ],
+    "model": {
+      "b_s_per_bit": 0.15,
+      "citation": "Card, Moran & Newell 1983 (~150 ms/bit); Hick 1952; Hyman 1953",
+      "form": "T = b*log2(n + 1)",
+      "note": "choices = enabled alternatives in the declared choice group; screen_controls = every enabled control in the viewport (an upper bound: an expert who knows the target does not search them all)"
+    },
+    "summary": {
+      "choice_points_over_7": 0,
+      "decision_points": 9,
+      "max_choices": 5,
+      "predicted_choice_time_s": 3.324,
+      "screen_points_over_7": 9
+    }
+  },
+  "journey": {
+    "completed": true,
+    "scripted_answers_note": "review answers are scripted fixture text; not a human comprehension measure",
+    "steps": [
+      {
+        "id": "type-request",
+        "kind": "type",
+        "label": "Type the change request"
+      },
+      {
+        "id": "create-case",
+        "kind": "click",
+        "label": "Create Change Case"
+      },
+      {
+        "id": "ask-interpretations",
+        "kind": "click",
+        "label": "Ask for interpretations"
+      },
+      {
+        "id": "select-meaning",
+        "kind": "click",
+        "label": "Select the supported meaning (recommend_only)"
+      },
+      {
+        "id": "open-try",
+        "kind": "click",
+        "label": "Open the Try tab"
+      },
+      {
+        "id": "reset-preview",
+        "kind": "click",
+        "label": "Start / reset preview"
+      },
+      {
+        "id": "submit-teacher",
+        "kind": "click",
+        "label": "Submit as teacher-assigned"
+      },
+      {
+        "id": "recommend-teacher",
+        "kind": "click",
+        "label": "Recommend as teacher-assigned"
+      },
+      {
+        "id": "actor-registrar",
+        "kind": "select",
+        "label": "Switch actor to registrar"
+      },
+      {
+        "id": "approve-registrar",
+        "kind": "click",
+        "label": "Approve as registrar"
+      },
+      {
+        "id": "actor-unassigned",
+        "kind": "select",
+        "label": "Switch actor to teacher-unassigned (negative control)"
+      },
+      {
+        "id": "denied-recommend",
+        "kind": "click",
+        "label": "Recommend as teacher-unassigned (expect denial)"
+      },
+      {
+        "id": "open-evidence",
+        "kind": "click",
+        "label": "Open Evidence & Decision"
+      },
+      {
+        "id": "run-verification",
+        "kind": "click",
+        "label": "Run bounded verification"
+      },
+      {
+        "id": "answer-authority",
+        "kind": "type",
+        "label": "Answer review question 'authority'"
+      },
+      {
+        "id": "answer-assignment",
+        "kind": "type",
+        "label": "Answer review question 'assignment'"
+      },
+      {
+        "id": "answer-reject_entry",
+        "kind": "type",
+        "label": "Answer review question 'reject_entry'"
+      },
+      {
+        "id": "acknowledge",
+        "kind": "check",
+        "label": "Acknowledge unknowns"
+      },
+      {
+        "id": "approve-exact",
+        "kind": "click",
+        "label": "Approve exact local revision"
+      },
+      {
+        "id": "apply-baseline",
+        "kind": "click",
+        "label": "Apply to local baseline"
+      }
+    ]
+  },
+  "keyboard": {
+    "activations": 14,
+    "activations_that_lost_focus": [
+      "create-case",
+      "select-meaning",
+      "submit-teacher",
+      "recommend-teacher",
+      "approve-registrar",
+      "approve-exact",
+      "apply-baseline"
+    ],
+    "completed_journey_keyboard_only": true,
+    "focus_lost_count": 7,
+    "focus_order_regression_count": 0,
+    "focus_order_regressions": [],
+    "max_tab_presses_for_one_target": 18,
+    "note": "Real Tab / Shift-free forward traversal; focus indicator = computed outline or box-shadow on the focused element; 'focus lost' = document.activeElement is <body> once the DOM settled after activation",
+    "stops_without_indicator_count": 0,
+    "stops_without_visible_focus_indicator": [],
+    "tab_presses_by_step": {
+      "acknowledge": 1,
+      "actor-registrar": 18,
+      "actor-unassigned": 18,
+      "answer-assignment": 1,
+      "answer-authority": 1,
+      "answer-reject_entry": 1,
+      "apply-baseline": 1,
+      "approve-exact": 1,
+      "approve-registrar": 3,
+      "ask-interpretations": 5,
+      "create-case": 1,
+      "denied-recommend": 2,
+      "open-evidence": 14,
+      "open-try": 15,
+      "recommend-teacher": 2,
+      "reset-preview": 2,
+      "run-verification": 1,
+      "select-meaning": 3,
+      "submit-teacher": 2,
+      "type-request": 4
+    },
+    "tab_presses_spent_after_focus_loss": 64,
+    "tab_presses_total": 96,
+    "unique_focus_stops_seen": 36
+  },
+  "klm": {
+    "citation": "Card, Moran & Newell 1980 (CACM 23(7)); K = average non-secretary typist (~40 wpm)",
+    "expert_time_keyboard_only_s": 63.11,
+    "expert_time_pointer_s": 62.71,
+    "keyboard_only_journey": {
+      "fitts_refined_total_s": null,
+      "operator_counts": {
+        "B": 0,
+        "H": 0,
+        "K": 182,
+        "M": 9,
+        "P": 0
+      },
+      "operators": [
+        {
+          "note": "Recall the change to request (start of the unit task)",
+          "op": "M",
+          "seconds": 1.35,
+          "step": "type-request"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "Ctrl",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "A",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "Shift",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'L'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'e'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 't'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key ' '",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 't'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'e'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'a'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'c'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'h'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'e'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'r'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 's'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key ' '",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 's'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'i'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'g'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'n'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key ' '",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'o'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'f'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'f'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key ' '",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'e'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'x'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'c'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'u'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'r'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 's'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'i'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'o'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'n'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 's'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key '.'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "create-case"
+        },
+        {
+          "note": "Enter",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "create-case"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "ask-interpretations"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "ask-interpretations"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "ask-interpretations"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "ask-interpretations"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "ask-interpretations"
+        },
+        {
+          "note": "Enter",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "ask-interpretations"
+        },
+        {
+          "note": "Compare the three interpretations and choose one",
+          "op": "M",
+          "seconds": 1.35,
+          "step": "select-meaning"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "select-meaning"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "select-meaning"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "select-meaning"
+        },
+        {
+          "note": "Enter",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "select-meaning"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-try"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-try"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-try"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-try"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-try"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-try"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-try"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-try"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-try"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-try"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-try"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-try"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-try"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-try"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-try"
+        },
+        {
+          "note": "Enter",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-try"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "reset-preview"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "reset-preview"
+        },
+        {
+          "note": "Enter",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "reset-preview"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "submit-teacher"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "submit-teacher"
+        },
+        {
+          "note": "Enter",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "submit-teacher"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "recommend-teacher"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "recommend-teacher"
+        },
+        {
+          "note": "Enter",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "recommend-teacher"
+        },
+        {
+          "note": "Decide which role must act next",
+          "op": "M",
+          "seconds": 1.35,
+          "step": "actor-registrar"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-registrar"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-registrar"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-registrar"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-registrar"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-registrar"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-registrar"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-registrar"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-registrar"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-registrar"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-registrar"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-registrar"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-registrar"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-registrar"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-registrar"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-registrar"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-registrar"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-registrar"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-registrar"
+        },
+        {
+          "note": "ArrowDown",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-registrar"
+        },
+        {
+          "note": "ArrowDown",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-registrar"
+        },
+        {
+          "note": "ArrowDown",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-registrar"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "approve-registrar"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "approve-registrar"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "approve-registrar"
+        },
+        {
+          "note": "Enter",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "approve-registrar"
+        },
+        {
+          "note": "Choose the unauthorised role to probe",
+          "op": "M",
+          "seconds": 1.35,
+          "step": "actor-unassigned"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-unassigned"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-unassigned"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-unassigned"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-unassigned"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-unassigned"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-unassigned"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-unassigned"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-unassigned"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-unassigned"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-unassigned"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-unassigned"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-unassigned"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-unassigned"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-unassigned"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-unassigned"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-unassigned"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-unassigned"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-unassigned"
+        },
+        {
+          "note": "ArrowUp",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-unassigned"
+        },
+        {
+          "note": "ArrowUp",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-unassigned"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "denied-recommend"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "denied-recommend"
+        },
+        {
+          "note": "Enter",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "denied-recommend"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-evidence"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-evidence"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-evidence"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-evidence"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-evidence"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-evidence"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-evidence"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-evidence"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-evidence"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-evidence"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-evidence"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-evidence"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-evidence"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-evidence"
+        },
+        {
+          "note": "Enter",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-evidence"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "run-verification"
+        },
+        {
+          "note": "Enter",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "run-verification"
+        },
+        {
+          "note": "Read the question and recall the fixture answer",
+          "op": "M",
+          "seconds": 1.35,
+          "step": "answer-authority"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-authority"
+        },
+        {
+          "note": "Ctrl",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-authority"
+        },
+        {
+          "note": "A",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-authority"
+        },
+        {
+          "note": "Shift",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-authority"
+        },
+        {
+          "note": "key 'R'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-authority"
+        },
+        {
+          "note": "key 'e'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-authority"
+        },
+        {
+          "note": "key 'g'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-authority"
+        },
+        {
+          "note": "key 'i'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-authority"
+        },
+        {
+          "note": "key 's'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-authority"
+        },
+        {
+          "note": "key 't'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-authority"
+        },
+        {
+          "note": "key 'r'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-authority"
+        },
+        {
+          "note": "key 'a'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-authority"
+        },
+        {
+          "note": "key 'r'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-authority"
+        },
+        {
+          "note": "Read the question and recall the fixture answer",
+          "op": "M",
+          "seconds": 1.35,
+          "step": "answer-assignment"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-assignment"
+        },
+        {
+          "note": "Ctrl",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-assignment"
+        },
+        {
+          "note": "A",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-assignment"
+        },
+        {
+          "note": "Shift",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-assignment"
+        },
+        {
+          "note": "key 'N'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-assignment"
+        },
+        {
+          "note": "key 'o'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-assignment"
+        },
+        {
+          "note": "Read the question and recall the fixture answer",
+          "op": "M",
+          "seconds": 1.35,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "Ctrl",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "A",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "Shift",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "key 'R'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "key 'e'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "key 'c'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "key 'o'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "key 'm'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "key 'm'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "key 'e'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "key 'n'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "key 'd'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "key 'e'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "key 'd'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "Read the acknowledgement before agreeing",
+          "op": "M",
+          "seconds": 1.35,
+          "step": "acknowledge"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "acknowledge"
+        },
+        {
+          "note": "Space",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "acknowledge"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "approve-exact"
+        },
+        {
+          "note": "Enter",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "approve-exact"
+        },
+        {
+          "note": "Confirm the intent to change the local baseline",
+          "op": "M",
+          "seconds": 1.35,
+          "step": "apply-baseline"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "apply-baseline"
+        },
+        {
+          "note": "Enter",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "apply-baseline"
+        }
+      ],
+      "per_step_s": {
+        "acknowledge": 1.91,
+        "actor-registrar": 7.23,
+        "actor-unassigned": 6.95,
+        "answer-assignment": 3.03,
+        "answer-authority": 4.99,
+        "answer-reject_entry": 5.55,
+        "apply-baseline": 1.91,
+        "approve-exact": 0.56,
+        "approve-registrar": 1.12,
+        "ask-interpretations": 1.68,
+        "create-case": 0.56,
+        "denied-recommend": 0.84,
+        "open-evidence": 4.2,
+        "open-try": 4.48,
+        "recommend-teacher": 0.84,
+        "reset-preview": 0.84,
+        "run-verification": 0.56,
+        "select-meaning": 2.47,
+        "submit-teacher": 0.84,
+        "type-request": 12.55
+      },
+      "total_s": 63.11
+    },
+    "placement_rules": "M is placed once per deliberate decision or reading moment (annotated per step in journey.py); H is derived from every mouse<->keyboard switch; a click is P + B + B; Shift counts as its own K; select lists model open and choose as two P+B+B; scrolling and system response R are NOT in the standard total",
+    "pointer_journey": {
+      "fitts_refined_total_s": 55.562,
+      "operator_counts": {
+        "B": 44,
+        "H": 8,
+        "K": 67,
+        "M": 9,
+        "P": 22
+      },
+      "operators": [
+        {
+          "note": "Recall the change to request (start of the unit task)",
+          "op": "M",
+          "seconds": 1.35,
+          "step": "type-request"
+        },
+        {
+          "note": "point at What should change?",
+          "op": "P",
+          "seconds": 1.1,
+          "step": "type-request"
+        },
+        {
+          "note": "button press",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "type-request"
+        },
+        {
+          "note": "button release",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "type-request"
+        },
+        {
+          "note": "hands to keyboard",
+          "op": "H",
+          "seconds": 0.4,
+          "step": "type-request"
+        },
+        {
+          "note": "Ctrl",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "A",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "Shift",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'L'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'e'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 't'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key ' '",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 't'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'e'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'a'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'c'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'h'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'e'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'r'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 's'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key ' '",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 's'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'i'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'g'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'n'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key ' '",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'o'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'f'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'f'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key ' '",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'e'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'x'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'c'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'u'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'r'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 's'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'i'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'o'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 'n'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key 's'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "key '.'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "type-request"
+        },
+        {
+          "note": "hands to mouse",
+          "op": "H",
+          "seconds": 0.4,
+          "step": "create-case"
+        },
+        {
+          "note": "point at Create Change Case",
+          "op": "P",
+          "seconds": 1.1,
+          "step": "create-case"
+        },
+        {
+          "note": "button press",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "create-case"
+        },
+        {
+          "note": "button release",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "create-case"
+        },
+        {
+          "note": "point at Ask for interpretations",
+          "op": "P",
+          "seconds": 1.1,
+          "step": "ask-interpretations"
+        },
+        {
+          "note": "button press",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "ask-interpretations"
+        },
+        {
+          "note": "button release",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "ask-interpretations"
+        },
+        {
+          "note": "Compare the three interpretations and choose one",
+          "op": "M",
+          "seconds": 1.35,
+          "step": "select-meaning"
+        },
+        {
+          "note": "point at Select this meaning",
+          "op": "P",
+          "seconds": 1.1,
+          "step": "select-meaning"
+        },
+        {
+          "note": "button press",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "select-meaning"
+        },
+        {
+          "note": "button release",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "select-meaning"
+        },
+        {
+          "note": "point at 03 / Try",
+          "op": "P",
+          "seconds": 1.1,
+          "step": "open-try"
+        },
+        {
+          "note": "button press",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "open-try"
+        },
+        {
+          "note": "button release",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "open-try"
+        },
+        {
+          "note": "point at Start / reset preview",
+          "op": "P",
+          "seconds": 1.1,
+          "step": "reset-preview"
+        },
+        {
+          "note": "button press",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "reset-preview"
+        },
+        {
+          "note": "button release",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "reset-preview"
+        },
+        {
+          "note": "point at Submit",
+          "op": "P",
+          "seconds": 1.1,
+          "step": "submit-teacher"
+        },
+        {
+          "note": "button press",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "submit-teacher"
+        },
+        {
+          "note": "button release",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "submit-teacher"
+        },
+        {
+          "note": "point at Recommend",
+          "op": "P",
+          "seconds": 1.1,
+          "step": "recommend-teacher"
+        },
+        {
+          "note": "button press",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "recommend-teacher"
+        },
+        {
+          "note": "button release",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "recommend-teacher"
+        },
+        {
+          "note": "Decide which role must act next",
+          "op": "M",
+          "seconds": 1.35,
+          "step": "actor-registrar"
+        },
+        {
+          "note": "point at Synthetic actor",
+          "op": "P",
+          "seconds": 1.1,
+          "step": "actor-registrar"
+        },
+        {
+          "note": "open list (press)",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "actor-registrar"
+        },
+        {
+          "note": "open list (release)",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "actor-registrar"
+        },
+        {
+          "note": "point at option (native popup; geometry not observable)",
+          "op": "P",
+          "seconds": 1.1,
+          "step": "actor-registrar"
+        },
+        {
+          "note": "choose option (press)",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "actor-registrar"
+        },
+        {
+          "note": "choose option (release)",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "actor-registrar"
+        },
+        {
+          "note": "point at Approve",
+          "op": "P",
+          "seconds": 1.1,
+          "step": "approve-registrar"
+        },
+        {
+          "note": "button press",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "approve-registrar"
+        },
+        {
+          "note": "button release",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "approve-registrar"
+        },
+        {
+          "note": "Choose the unauthorised role to probe",
+          "op": "M",
+          "seconds": 1.35,
+          "step": "actor-unassigned"
+        },
+        {
+          "note": "point at Synthetic actor",
+          "op": "P",
+          "seconds": 1.1,
+          "step": "actor-unassigned"
+        },
+        {
+          "note": "open list (press)",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "actor-unassigned"
+        },
+        {
+          "note": "open list (release)",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "actor-unassigned"
+        },
+        {
+          "note": "point at option (native popup; geometry not observable)",
+          "op": "P",
+          "seconds": 1.1,
+          "step": "actor-unassigned"
+        },
+        {
+          "note": "choose option (press)",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "actor-unassigned"
+        },
+        {
+          "note": "choose option (release)",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "actor-unassigned"
+        },
+        {
+          "note": "point at Recommend",
+          "op": "P",
+          "seconds": 1.1,
+          "step": "denied-recommend"
+        },
+        {
+          "note": "button press",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "denied-recommend"
+        },
+        {
+          "note": "button release",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "denied-recommend"
+        },
+        {
+          "note": "point at 04 / Evidence & Decision",
+          "op": "P",
+          "seconds": 1.1,
+          "step": "open-evidence"
+        },
+        {
+          "note": "button press",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "open-evidence"
+        },
+        {
+          "note": "button release",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "open-evidence"
+        },
+        {
+          "note": "point at Run bounded verification",
+          "op": "P",
+          "seconds": 1.1,
+          "step": "run-verification"
+        },
+        {
+          "note": "button press",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "run-verification"
+        },
+        {
+          "note": "button release",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "run-verification"
+        },
+        {
+          "note": "Read the question and recall the fixture answer",
+          "op": "M",
+          "seconds": 1.35,
+          "step": "answer-authority"
+        },
+        {
+          "note": "point at Who retains final approval authority?",
+          "op": "P",
+          "seconds": 1.1,
+          "step": "answer-authority"
+        },
+        {
+          "note": "button press",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "answer-authority"
+        },
+        {
+          "note": "button release",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "answer-authority"
+        },
+        {
+          "note": "hands to keyboard",
+          "op": "H",
+          "seconds": 0.4,
+          "step": "answer-authority"
+        },
+        {
+          "note": "Ctrl",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-authority"
+        },
+        {
+          "note": "A",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-authority"
+        },
+        {
+          "note": "Shift",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-authority"
+        },
+        {
+          "note": "key 'R'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-authority"
+        },
+        {
+          "note": "key 'e'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-authority"
+        },
+        {
+          "note": "key 'g'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-authority"
+        },
+        {
+          "note": "key 'i'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-authority"
+        },
+        {
+          "note": "key 's'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-authority"
+        },
+        {
+          "note": "key 't'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-authority"
+        },
+        {
+          "note": "key 'r'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-authority"
+        },
+        {
+          "note": "key 'a'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-authority"
+        },
+        {
+          "note": "key 'r'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-authority"
+        },
+        {
+          "note": "Read the question and recall the fixture answer",
+          "op": "M",
+          "seconds": 1.35,
+          "step": "answer-assignment"
+        },
+        {
+          "note": "hands to mouse",
+          "op": "H",
+          "seconds": 0.4,
+          "step": "answer-assignment"
+        },
+        {
+          "note": "point at Can an unassigned teacher recommend?",
+          "op": "P",
+          "seconds": 1.1,
+          "step": "answer-assignment"
+        },
+        {
+          "note": "button press",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "answer-assignment"
+        },
+        {
+          "note": "button release",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "answer-assignment"
+        },
+        {
+          "note": "hands to keyboard",
+          "op": "H",
+          "seconds": 0.4,
+          "step": "answer-assignment"
+        },
+        {
+          "note": "Ctrl",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-assignment"
+        },
+        {
+          "note": "A",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-assignment"
+        },
+        {
+          "note": "Shift",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-assignment"
+        },
+        {
+          "note": "key 'N'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-assignment"
+        },
+        {
+          "note": "key 'o'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-assignment"
+        },
+        {
+          "note": "Read the question and recall the fixture answer",
+          "op": "M",
+          "seconds": 1.35,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "hands to mouse",
+          "op": "H",
+          "seconds": 0.4,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "point at Which state must precede registrar rejection?",
+          "op": "P",
+          "seconds": 1.1,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "button press",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "button release",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "hands to keyboard",
+          "op": "H",
+          "seconds": 0.4,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "Ctrl",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "A",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "Shift",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "key 'R'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "key 'e'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "key 'c'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "key 'o'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "key 'm'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "key 'm'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "key 'e'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "key 'n'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "key 'd'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "key 'e'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "key 'd'",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "answer-reject_entry"
+        },
+        {
+          "note": "Read the acknowledgement before agreeing",
+          "op": "M",
+          "seconds": 1.35,
+          "step": "acknowledge"
+        },
+        {
+          "note": "hands to mouse",
+          "op": "H",
+          "seconds": 0.4,
+          "step": "acknowledge"
+        },
+        {
+          "note": "point at I understand this is a local synthetic demo, with human outc",
+          "op": "P",
+          "seconds": 1.1,
+          "step": "acknowledge"
+        },
+        {
+          "note": "button press",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "acknowledge"
+        },
+        {
+          "note": "button release",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "acknowledge"
+        },
+        {
+          "note": "point at Approve exact local revision",
+          "op": "P",
+          "seconds": 1.1,
+          "step": "approve-exact"
+        },
+        {
+          "note": "button press",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "approve-exact"
+        },
+        {
+          "note": "button release",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "approve-exact"
+        },
+        {
+          "note": "Confirm the intent to change the local baseline",
+          "op": "M",
+          "seconds": 1.35,
+          "step": "apply-baseline"
+        },
+        {
+          "note": "point at Apply to local baseline",
+          "op": "P",
+          "seconds": 1.1,
+          "step": "apply-baseline"
+        },
+        {
+          "note": "button press",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "apply-baseline"
+        },
+        {
+          "note": "button release",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "apply-baseline"
+        }
+      ],
+      "per_step_s": {
+        "acknowledge": 3.05,
+        "actor-registrar": 3.95,
+        "actor-unassigned": 3.95,
+        "answer-assignment": 4.85,
+        "answer-authority": 6.41,
+        "answer-reject_entry": 7.37,
+        "apply-baseline": 2.65,
+        "approve-exact": 1.3,
+        "approve-registrar": 1.3,
+        "ask-interpretations": 1.3,
+        "create-case": 1.7,
+        "denied-recommend": 1.3,
+        "open-evidence": 1.3,
+        "open-try": 1.3,
+        "recommend-teacher": 1.3,
+        "reset-preview": 1.3,
+        "run-verification": 1.3,
+        "select-meaning": 2.65,
+        "submit-teacher": 1.3,
+        "type-request": 13.13
+      },
+      "total_s": 62.71
+    },
+    "times_s": {
+      "B": 0.1,
+      "H": 0.4,
+      "K": 0.28,
+      "M": 1.35,
+      "P": 1.1
+    }
+  },
+  "limitations": [
+    "Every law is a population-average model from laboratory studies. Predicted times rank alternatives; they are not measurements of any user.",
+    "This is NOT a human usability study. No participant, persona or task-success rate is represented (human study: NOT_RUN).",
+    "The journey answers the three review questions with scripted fixture text; it exercises the UI and says nothing about comprehension.",
+    "Approval and apply run under the kernel-test harness identity (source differs from the owner-stamped fixture); they are UI evidence, not a release approval.",
+    "Doherty timings are wall-clock on one shared Windows PC, headless Chrome, loopback server; they exclude OS/input latency and are sensitive to load (the settled p95 varied between about 1.4 and 2.5 s across runs). Read the medians and interquartile ranges, not a single number; the snapshot is one point-in-time record.",
+    "'First feedback' is the first DOM mutation after the click (a JavaScript-task latency). It excludes style, layout, paint and compositing, so it is not perceived latency.",
+    "Fitts D lands at the centre of the effective box, which overstates D for wide targets; the report also gives a nearest-edge variant so the flag count is a range. Geometry-based budgets are specific to this Chrome build and font set.",
+    "Only uncaught page exceptions and HTTP error responses are counted as runtime hygiene; console.error and console.warn messages are not.",
+    "Hick b and the KLM operator times came from secondary sources (Card, Moran & Newell as cited in the literature); only the Fitts constants were checked against the primary paper text.",
+    "axe-core detects only a subset of WCAG failures; a clean axe run is not conformance. Exceptions to 2.5.8 other than spacing are not evaluated.",
+    "The working-memory number is a visibility-based heuristic proxy for Miller/Cowan chunk limits, not a measure of anyone's memory.",
+    "Nothing here shows that any change benefits users; recommendations are model-ranked hypotheses to be tested with people."
+  ],
+  "measured": {
+    "doherty": {
+      "citation": "Doherty & Thadani 1982 (IBM Systems Journal 21(1)); ~400 ms",
+      "first_feedback_p50_ms": 0.6,
+      "first_feedback_p95_ms": 1,
+      "interactions_measured": 39,
+      "journey_wait_p50_sum_s": 2.356,
+      "keyboard_settled_p50_ms": 56.7,
+      "keyboard_settled_p95_ms": 6246.6,
+      "method": "nearest-rank percentiles over all repeats; medians and interquartile range are the headline, p95 is the maximum with few samples",
+      "native_control_interactions_excluded": [
+        "acknowledge"
+      ],
+      "note": "settled = last DOM mutation before quiescence, from the click event; excludes OS/browser input latency",
+      "settled_max_ms": 3739.1,
+      "settled_p25_ms": 41.5,
+      "settled_p50_ms": 55.6,
+      "settled_p75_ms": 106.5,
+      "settled_p95_ms": 2507.3,
+      "steps": [
+        {
+          "first_feedback_p50_ms": 0.7,
+          "first_feedback_p95_ms": 0.8,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 56,
+          "settled_p50_ms": 63.2,
+          "settled_p75_ms": 81.1,
+          "settled_p95_ms": 81.1,
+          "step": "create-case"
+        },
+        {
+          "first_feedback_p50_ms": 0.8,
+          "first_feedback_p95_ms": 0.9,
+          "median_over_400ms": false,
+          "over_400ms": true,
+          "samples": 3,
+          "settled_p25_ms": 64.6,
+          "settled_p50_ms": 98.2,
+          "settled_p75_ms": 538.6,
+          "settled_p95_ms": 538.6,
+          "step": "ask-interpretations"
+        },
+        {
+          "first_feedback_p50_ms": 0.6,
+          "first_feedback_p95_ms": 0.8,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 47.1,
+          "settled_p50_ms": 55,
+          "settled_p75_ms": 63,
+          "settled_p95_ms": 63,
+          "step": "select-meaning"
+        },
+        {
+          "first_feedback_p50_ms": 0.2,
+          "first_feedback_p95_ms": 0.3,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 0.2,
+          "settled_p50_ms": 0.2,
+          "settled_p75_ms": 0.3,
+          "settled_p95_ms": 0.3,
+          "step": "open-try"
+        },
+        {
+          "first_feedback_p50_ms": 0.6,
+          "first_feedback_p95_ms": 0.7,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 41.5,
+          "settled_p50_ms": 48.1,
+          "settled_p75_ms": 55.1,
+          "settled_p95_ms": 55.1,
+          "step": "reset-preview"
+        },
+        {
+          "first_feedback_p50_ms": 0.7,
+          "first_feedback_p95_ms": 0.8,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 47.1,
+          "settled_p50_ms": 48.1,
+          "settled_p75_ms": 55.6,
+          "settled_p95_ms": 55.6,
+          "step": "submit-teacher"
+        },
+        {
+          "first_feedback_p50_ms": 0.5,
+          "first_feedback_p95_ms": 0.5,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 48.6,
+          "settled_p50_ms": 49.1,
+          "settled_p75_ms": 102.2,
+          "settled_p95_ms": 102.2,
+          "step": "recommend-teacher"
+        },
+        {
+          "first_feedback_p50_ms": 0.6,
+          "first_feedback_p95_ms": 0.6,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 50,
+          "settled_p50_ms": 70.6,
+          "settled_p75_ms": 101.6,
+          "settled_p95_ms": 101.6,
+          "step": "approve-registrar"
+        },
+        {
+          "first_feedback_p50_ms": 0.6,
+          "first_feedback_p95_ms": 0.8,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 7.4,
+          "settled_p50_ms": 7.6,
+          "settled_p75_ms": 7.6,
+          "settled_p95_ms": 7.6,
+          "step": "denied-recommend"
+        },
+        {
+          "first_feedback_p50_ms": 0.1,
+          "first_feedback_p95_ms": 0.2,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 0.1,
+          "settled_p50_ms": 0.1,
+          "settled_p75_ms": 0.2,
+          "settled_p95_ms": 0.2,
+          "step": "open-evidence"
+        },
+        {
+          "first_feedback_p50_ms": 0.6,
+          "first_feedback_p95_ms": 0.6,
+          "median_over_400ms": true,
+          "over_400ms": true,
+          "samples": 3,
+          "settled_p25_ms": 1231.5,
+          "settled_p50_ms": 1529.4,
+          "settled_p75_ms": 1633.6,
+          "settled_p95_ms": 1633.6,
+          "step": "run-verification"
+        },
+        {
+          "first_feedback_p50_ms": 1,
+          "first_feedback_p95_ms": 1.2,
+          "median_over_400ms": false,
+          "over_400ms": true,
+          "samples": 3,
+          "settled_p25_ms": 106.5,
+          "settled_p50_ms": 238.7,
+          "settled_p75_ms": 3739.1,
+          "settled_p95_ms": 3739.1,
+          "step": "approve-exact"
+        },
+        {
+          "first_feedback_p50_ms": 0.7,
+          "first_feedback_p95_ms": 0.8,
+          "median_over_400ms": false,
+          "over_400ms": true,
+          "samples": 3,
+          "settled_p25_ms": 137.2,
+          "settled_p50_ms": 147.7,
+          "settled_p75_ms": 2507.3,
+          "settled_p95_ms": 2507.3,
+          "step": "apply-baseline"
+        }
+      ],
+      "steps_median_over_400ms": [
+        "run-verification"
+      ],
+      "steps_over_400ms": [
+        "ask-interpretations",
+        "run-verification",
+        "approve-exact",
+        "apply-baseline"
+      ],
+      "threshold_ms": 400.0
+    }
+  },
+  "not_run": [
+    "Human usability study / think-aloud / task-success rate: NOT_RUN (needs participants; see docs/hci/README.md protocol notes)",
+    "Screen-reader testing (NVDA, JAWS, VoiceOver, TalkBack): NOT_RUN",
+    "Browsers other than Google Chrome (Firefox, Safari/WebKit): NOT_RUN",
+    "Real touch devices and 400% browser zoom (only 390x844 and 320x568 viewport emulation ran): NOT_RUN",
+    "Forced-colors / high-contrast and prefers-reduced-motion audits: NOT_RUN",
+    "Live model provider round-trips (offline synthetic provider only): NOT_RUN",
+    "Release-stamped identity (real `eija serve` approval): NOT_RUN on unstamped source; use --identity release on a stamped build"
+  ],
+  "recommendations": [
+    {
+      "category": "wcag",
+      "change": "Give each listed scrollable region tabindex=\"0\", role=\"region\" and an accessible name so keyboard users can scroll it, or make it non-scrolling (for example collapse long content by default).",
+      "evidence": {
+        "impact": "serious",
+        "nodes": 1,
+        "reference": "https://dequeuniversity.com/rules/axe/4.12/scrollable-region-focusable?application=axeAPI",
+        "tags": [
+          "EN-301-549",
+          "EN-9.2.1.1",
+          "EN-9.2.1.3",
+          "RGAA-7.3.2",
+          "RGAAv4",
+          "TT4.a",
+          "TTv5",
+          "cat.keyboard",
+          "wcag211",
+          "wcag213",
+          "wcag2a"
+        ],
+        "views": [
+          "try-denied",
+          "try-draft",
+          "try-idle"
+        ]
+      },
+      "id": "a11y-scrollable-region-focusable",
+      "laws": [
+        "WCAG 2.2 AA"
+      ],
+      "likely_cause": "",
+      "predicted_effect": "",
+      "predicted_saving_s": 0.0,
+      "rank": 1,
+      "rank_saving_s": 0.0,
+      "saving_kind": "model difference",
+      "severity": 4,
+      "targets": [
+        "#trace"
+      ],
+      "title": "WCAG: Scrollable region must have keyboard access (scrollable-region-focusable)"
+    },
+    {
+      "category": "doherty",
+      "change": "First DOM mutation after the click came within 1 ms (p95; paint not measured), while completion for the slow steps takes longer than 400 ms. For the slow steps show a determinate progress message, keep the previous result visible until the new one lands, and profile where the time goes before optimising anything.",
+      "evidence": {
+        "first_feedback_p95_ms": 1,
+        "slow_steps": [
+          "run-verification: p50 1529.4 / p95 1633.6 ms"
+        ]
+      },
+      "id": "doherty-completion",
+      "laws": [
+        "Doherty threshold"
+      ],
+      "likely_cause": "the server-side work per action, possibly the durable SQLite commit path, dominates (hypothesis; no profile was taken)",
+      "predicted_effect": "measured on this machine; wall-clock, sensitive to load from other processes",
+      "predicted_saving_s": 0.0,
+      "rank": 2,
+      "rank_saving_s": 0.0,
+      "saving_kind": "model difference",
+      "severity": 4,
+      "targets": [
+        "run-verification"
+      ],
+      "title": "1 interaction(s) usually take longer than 400 ms to finish"
+    },
+    {
+      "category": "keyboard",
+      "change": "Keep or restore keyboard focus across updates: update the activated control in place, or re-focus the same control after the update, and move focus deliberately to new content on tab changes (WCAG 2.4.3 Focus Order, 3.2.2).",
+      "evidence": {
+        "max_tab_presses_for_one_target": 18,
+        "steps": [
+          "create-case",
+          "select-meaning",
+          "submit-teacher",
+          "recommend-teacher",
+          "approve-registrar",
+          "approve-exact",
+          "apply-baseline"
+        ],
+        "tab_presses_after_loss": 64
+      },
+      "id": "focus-lost-after-render",
+      "laws": [
+        "WCAG 2.4.3",
+        "KLM"
+      ],
+      "likely_cause": "the render step replaces whole regions of the DOM (for example replaceChildren), destroying the focused element (hypothesis; a code search agrees, the probe does not observe it)",
+      "predicted_effect": "upper bound: 17.9 s is every Tab press on the step after a focus loss, including presses that would be needed anyway; not a difference against a preserved-focus counterfactual",
+      "predicted_saving_s": 17.92,
+      "rank": 3,
+      "rank_saving_s": 0.0,
+      "saving_kind": "upper bound",
+      "severity": 4,
+      "targets": [],
+      "title": "7/14 keyboard activations dropped focus to <body>"
+    },
+    {
+      "category": "wcag",
+      "change": "Expose the state programmatically: aria-current=\"page\" or role=tab + aria-selected on the work-area tabs and aria-current on the selected case in the sidebar (WCAG 1.3.1, 4.1.2).",
+      "evidence": {
+        "elements": [
+          "#case-list > button",
+          "#workspace > nav > button:nth-of-type(1)",
+          "#workspace > nav > button:nth-of-type(2)",
+          "#workspace > nav > button:nth-of-type(3)",
+          "#workspace > nav > button:nth-of-type(4)"
+        ]
+      },
+      "id": "state-only-visual",
+      "laws": [
+        "WCAG 4.1.2"
+      ],
+      "likely_cause": "",
+      "predicted_effect": "",
+      "predicted_saving_s": 0.0,
+      "rank": 4,
+      "rank_saving_s": 0.0,
+      "saving_kind": "model difference",
+      "severity": 3,
+      "targets": [
+        "#case-list > button",
+        "#workspace > nav > button:nth-of-type(1)",
+        "#workspace > nav > button:nth-of-type(2)",
+        "#workspace > nav > button:nth-of-type(3)",
+        "#workspace > nav > button:nth-of-type(4)"
+      ],
+      "title": "5 control(s) convey their active state only through CSS"
+    },
+    {
+      "category": "klm",
+      "change": "Focus the first question when Evidence opens after verification and make Enter in a field move to the next one (or submit on the last), so the three answers are typed without leaving the keyboard.",
+      "evidence": {
+        "keyboard_only_journey_tab_presses": {
+          "acknowledge": 1,
+          "actor-registrar": 18,
+          "actor-unassigned": 18,
+          "answer-assignment": 1,
+          "answer-authority": 1,
+          "answer-reject_entry": 1,
+          "apply-baseline": 1,
+          "approve-exact": 1,
+          "approve-registrar": 3,
+          "ask-interpretations": 5,
+          "create-case": 1,
+          "denied-recommend": 2,
+          "open-evidence": 14,
+          "open-try": 15,
+          "recommend-teacher": 2,
+          "reset-preview": 2,
+          "run-verification": 1,
+          "select-meaning": 3,
+          "submit-teacher": 2,
+          "type-request": 4
+        },
+        "operators_replaced": {
+          "B": 4,
+          "H": 4,
+          "P": 2
+        },
+        "typed_keystrokes_unchanged": 19
+      },
+      "id": "klm-answer-fields-tab",
+      "laws": [
+        "KLM"
+      ],
+      "likely_cause": "",
+      "predicted_effect": "model: 3.6 s of 62.7 s expert time (6%)",
+      "predicted_saving_s": 3.64,
+      "rank": 5,
+      "rank_saving_s": 3.64,
+      "saving_kind": "model difference",
+      "severity": 2,
+      "targets": [
+        "#q-assignment",
+        "#q-reject_entry"
+      ],
+      "title": "Review answers: move between fields with Tab instead of point-click and re-homing"
+    },
+    {
+      "category": "fitts",
+      "change": "Place each flagged target closer to the previous one (halve D) and give short targets an effective height of at least 44 px (W >= 44 px). Note the centre-landing convention overstates D for wide targets; see the nearest-edge column.",
+      "evidence": {
+        "moves": [
+          "ask-interpretations: D=858.4 px, W=48.8 px, ID=4.218 bits, MT=0.93 s",
+          "select-meaning: D=852.4 px, W=48.8 px, ID=4.208 bits, MT=0.929 s",
+          "reset-preview: D=737.1 px, W=48.8 px, ID=4.011 bits, MT=0.896 s",
+          "submit-teacher: D=983.9 px, W=48.8 px, ID=4.405 bits, MT=0.961 s",
+          "answer-authority: D=925.3 px, W=46.8 px, ID=4.378 bits, MT=0.957 s",
+          "acknowledge: D=414.3 px, W=25 px, ID=4.135 bits, MT=0.916 s"
+        ]
+      },
+      "id": "fitts-id-over-4",
+      "laws": [
+        "Fitts",
+        "MacKenzie & Buxton 1992"
+      ],
+      "likely_cause": "primary actions may sit at the far edge of a section while the preceding target is on the other side of the screen (hypothesis from the geometry table, not from the UI code)",
+      "predicted_effect": "model: halving D and W>=44 px saves 1.04 s of pointing time across the flagged moves",
+      "predicted_saving_s": 1.039,
+      "rank": 6,
+      "rank_saving_s": 1.039,
+      "saving_kind": "model difference",
+      "severity": 2,
+      "targets": [
+        "#acknowledge",
+        "#options > article:nth-of-type(1) > button",
+        "#propose",
+        "#q-authority",
+        "#reset",
+        "#runtime-actions > button:nth-of-type(1)"
+      ],
+      "title": "6 pointer move(s) exceed 4 bits"
+    },
+    {
+      "category": "doherty",
+      "change": "Re-measure with more --repeats before acting; with few samples p95 is the maximum.",
+      "evidence": {
+        "steps": [
+          "ask-interpretations: p50 98.2 / p95 538.6 ms (3 samples)",
+          "approve-exact: p50 238.7 / p95 3739.1 ms (3 samples)",
+          "apply-baseline: p50 147.7 / p95 2507.3 ms (3 samples)"
+        ]
+      },
+      "id": "doherty-tail",
+      "laws": [
+        "Doherty threshold"
+      ],
+      "likely_cause": "tail latency from disk or CPU contention or a first-request cost (hypothesis)",
+      "predicted_effect": "measured; may be machine noise",
+      "predicted_saving_s": 0.0,
+      "rank": 7,
+      "rank_saving_s": 0.0,
+      "saving_kind": "model difference",
+      "severity": 2,
+      "targets": [
+        "apply-baseline",
+        "approve-exact",
+        "ask-interpretations"
+      ],
+      "title": "3 interaction(s) occasionally exceed 400 ms (median under)"
+    },
+    {
+      "category": "fitts",
+      "change": "Keep the journey's targets above the fold (for example make the tab bar and the primary action sticky, or collapse persistent chrome once a case is open).",
+      "evidence": {
+        "steps": [
+          "select-meaning",
+          "approve-exact"
+        ],
+        "viewport": {
+          "height": 900,
+          "width": 1440
+        }
+      },
+      "id": "layout-hero-scroll",
+      "laws": [
+        "Fitts",
+        "KLM"
+      ],
+      "likely_cause": "banner or hero content above the work area pushes it down (hypothesis; the probe did not measure what sits above the fold)",
+      "predicted_effect": "each avoided scroll removes one unmodelled operator (the standard KLM total excludes scrolling); the 0.5 s per scroll is an assumption, not a measurement",
+      "predicted_saving_s": 1.0,
+      "rank": 8,
+      "rank_saving_s": 0.0,
+      "saving_kind": "upper bound",
+      "severity": 2,
+      "targets": [],
+      "title": "2 journey click(s) needed a scroll first at 1440x900"
+    },
+    {
+      "category": "keyboard",
+      "change": "Reduce the Tab distance to the slowest target: group related controls into a single tab stop with arrow-key navigation (WAI-ARIA composite widget pattern with roving tabindex) or provide a skip link past repeated regions.",
+      "evidence": {
+        "tab_presses_by_step": {
+          "acknowledge": 1,
+          "actor-registrar": 18,
+          "actor-unassigned": 18,
+          "answer-assignment": 1,
+          "answer-authority": 1,
+          "answer-reject_entry": 1,
+          "apply-baseline": 1,
+          "approve-exact": 1,
+          "approve-registrar": 3,
+          "ask-interpretations": 5,
+          "create-case": 1,
+          "denied-recommend": 2,
+          "open-evidence": 14,
+          "open-try": 15,
+          "recommend-teacher": 2,
+          "reset-preview": 2,
+          "run-verification": 1,
+          "select-meaning": 3,
+          "submit-teacher": 2,
+          "type-request": 4
+        }
+      },
+      "id": "tab-cost-high",
+      "laws": [
+        "KLM",
+        "WCAG 2.1.1"
+      ],
+      "likely_cause": "a long run of tab stops before the main content, such as a tab bar or sidebar, precedes the target (hypothesis)",
+      "predicted_effect": "",
+      "predicted_saving_s": 0.0,
+      "rank": 9,
+      "rank_saving_s": 0.0,
+      "saving_kind": "model difference",
+      "severity": 2,
+      "targets": [],
+      "title": "Reaching one control took 18 Tab presses"
+    },
+    {
+      "category": "fitts",
+      "change": "Raise each listed target's effective clickable box (min-height, min-width or hit padding; where a label is the real click area, size the label) to 44 px, so it meets the 44 px guideline (WCAG 2.5.5 AAA) as well as the 24 px minimum.",
+      "evidence": {
+        "targets": [
+          "I understand this is a local synthetic d eff 1041x25 raw 18x18px",
+          "I consent to sending this request and sy eff 1041x25 raw 18x18px"
+        ]
+      },
+      "id": "target-size-marginal",
+      "laws": [
+        "WCAG 2.5.8",
+        "Fitts"
+      ],
+      "likely_cause": "",
+      "predicted_effect": "removes the smallest-W pointing target from the journey",
+      "predicted_saving_s": 0.0,
+      "rank": 10,
+      "rank_saving_s": 0.0,
+      "saving_kind": "model difference",
+      "severity": 2,
+      "targets": [
+        "#acknowledge",
+        "#egress"
+      ],
+      "title": "2 target(s) pass 2.5.8 but are under 44 px"
+    },
+    {
+      "category": "working-memory",
+      "change": "Reduce what is simultaneously visible in the listed views: move persistent chrome out of the working area once a case is open and collapse raw or secondary content by default, so the work area competes for fewer chunks.",
+      "evidence": {
+        "label": "HEURISTIC PROXY - counts what is simultaneously visible, not what a person holds in memory",
+        "views": [
+          "applied: 18",
+          "change-empty: 22",
+          "change-options: 22",
+          "change-selected: 25",
+          "create-panel: 16",
+          "evidence-approved: 18",
+          "evidence-verified: 18",
+          "impact-tab: 25",
+          "start: 16",
+          "try-denied: 16",
+          "try-draft: 16",
+          "try-idle: 16"
+        ],
+        "worst_chunks": 25,
+        "worst_view": "change-selected"
+      },
+      "id": "working-memory-proxy",
+      "laws": [
+        "Miller 1956",
+        "Cowan 2001"
+      ],
+      "likely_cause": "",
+      "predicted_effect": "heuristic only: not a measurement of anyone's memory",
+      "predicted_saving_s": 0.0,
+      "rank": 11,
+      "rank_saving_s": 0.0,
+      "saving_kind": "model difference",
+      "severity": 2,
+      "targets": [],
+      "title": "12/12 views show more than 9 chunks at once (proxy)"
+    },
+    {
+      "category": "hick",
+      "change": "Keep one visually dominant primary action per view and demote the rest (secondary/text buttons), which lowers effective uncertainty for first-time users (Hyman).",
+      "evidence": {
+        "max_group_choices": 5,
+        "max_screen_controls": 12,
+        "note": "upper bound; the choice groups themselves are all <= 7"
+      },
+      "id": "hick-screen-load",
+      "laws": [
+        "Hick-Hyman"
+      ],
+      "likely_cause": "",
+      "predicted_effect": "if a novice searched the whole screen instead of the choice group: +1.60 s (upper bound, model)",
+      "predicted_saving_s": 1.597,
+      "rank": 12,
+      "rank_saving_s": 1.597,
+      "saving_kind": "model difference",
+      "severity": 1,
+      "targets": [],
+      "title": "9/9 decision points have more than 7 visible controls on screen"
+    },
+    {
+      "category": "klm",
+      "change": "Not a defect by itself; use it to decide where shortcuts (tab shortcuts, access keys) pay off.",
+      "evidence": {
+        "keyboard_K": 182,
+        "keyboard_total_s": 63.11,
+        "pointer_total_s": 62.71
+      },
+      "id": "klm-keyboard-vs-pointer",
+      "laws": [
+        "KLM"
+      ],
+      "likely_cause": "",
+      "predicted_effect": "",
+      "predicted_saving_s": 0.0,
+      "rank": 13,
+      "rank_saving_s": 0.0,
+      "saving_kind": "model difference",
+      "severity": 1,
+      "targets": [],
+      "title": "Keyboard-only journey costs 63.1 s vs 62.7 s with the pointer (model)"
+    },
+    {
+      "category": "klm",
+      "change": "Each M is a reading or decision moment (steps listed in the evidence). Keep the wording at those steps short and put the decision-relevant text next to the control (no cross-tab lookup).",
+      "evidence": {
+        "M_by_step": [
+          "acknowledge",
+          "actor-registrar",
+          "actor-unassigned",
+          "answer-assignment",
+          "answer-authority",
+          "answer-reject_entry",
+          "apply-baseline",
+          "select-meaning",
+          "type-request"
+        ]
+      },
+      "id": "klm-mental-load",
+      "laws": [
+        "KLM"
+      ],
+      "likely_cause": "",
+      "predicted_effect": "informational: M is the irreducible cognitive floor of the journey",
+      "predicted_saving_s": 0.0,
+      "rank": 14,
+      "rank_saving_s": 0.0,
+      "saving_kind": "model difference",
+      "severity": 1,
+      "targets": [],
+      "title": "9 mental operators = 12.2 s (19% of expert time)"
+    }
+  ],
+  "runtime_errors": {
+    "http_error_responses": [
+      {
+        "method": "POST",
+        "path": "/api/cases/29789376178d4a3e931a794066b95b99/execute",
+        "status": 409,
+        "step": "denied-recommend"
+      },
+      {
+        "method": "POST",
+        "path": "/api/cases/5caa9737106242c3b224364f5a9e6928/execute",
+        "status": 409,
+        "step": "denied-recommend"
+      },
+      {
+        "method": "POST",
+        "path": "/api/cases/e03f3fcc85e749dab0e30454d0011a52/execute",
+        "status": 409,
+        "step": "denied-recommend"
+      }
+    ],
+    "javascript_exception_count": 0,
+    "javascript_exceptions": []
+  },
+  "schema": "eija.hci.report.v1",
+  "wcag": {
+    "engine": "axe-core (tags wcag2a, wcag2aa, wcag21a, wcag21aa, wcag22aa)",
+    "needs_review_rules": [],
+    "reflow_and_targets_by_viewport": {
+      "320x568": {
+        "horizontal_overflow_tabs": [],
+        "targets_fail_2_5_8": 0
+      },
+      "390x844": {
+        "horizontal_overflow_tabs": [],
+        "targets_fail_2_5_8": 0
+      }
+    },
+    "summary": {
+      "critical": 0,
+      "minor": 0,
+      "moderate": 0,
+      "nodes": 1,
+      "reflow_overflow_views": 0,
+      "rules": 1,
+      "serious": 1,
+      "target_size_failures": 0
+    },
+    "supplementary_state_only_visual": {
+      "authority": "heuristic; not an axe rule",
+      "check": "interactive element styled active/selected without aria-current/selected/pressed/checked/expanded",
+      "elements": [
+        "#case-list > button",
+        "#workspace > nav > button:nth-of-type(1)",
+        "#workspace > nav > button:nth-of-type(2)",
+        "#workspace > nav > button:nth-of-type(3)",
+        "#workspace > nav > button:nth-of-type(4)"
+      ]
+    },
+    "target_size_2_5_8": {
+      "controls_audited": 42,
+      "exceptions_not_evaluated": [
+        "inline",
+        "user-agent controlled",
+        "equivalent control",
+        "essential"
+      ],
+      "status_counts": {
+        "pass": 42
+      },
+      "undersized_or_failing": [
+        {
+          "effective_px": [
+            1041,
+            25
+          ],
+          "name": "I understand this is a local synthetic demo, with human outc",
+          "raw_px": [
+            18,
+            18
+          ],
+          "selector": "#acknowledge",
+          "status": "pass",
+          "via_label": true
+        },
+        {
+          "effective_px": [
+            1041,
+            25
+          ],
+          "name": "I consent to sending this request and synthetic model to the",
+          "raw_px": [
+            18,
+            18
+          ],
+          "selector": "#egress",
+          "status": "pass",
+          "via_label": true
+        }
+      ]
+    },
+    "views_audited": [
+      "applied",
+      "change-empty",
+      "change-options",
+      "change-selected",
+      "create-panel",
+      "evidence-approved",
+      "evidence-verified",
+      "impact-tab",
+      "start",
+      "try-denied",
+      "try-draft",
+      "try-idle"
+    ],
+    "violation_rules_by_impact": {
+      "serious": 1
+    },
+    "violations_by_rule": [
+      {
+        "help": "Scrollable region must have keyboard access",
+        "help_url": "https://dequeuniversity.com/rules/axe/4.12/scrollable-region-focusable?application=axeAPI",
+        "id": "scrollable-region-focusable",
+        "impact": "serious",
+        "node_count": 1,
+        "nodes": [
+          "#trace"
+        ],
+        "tags": [
+          "EN-301-549",
+          "EN-9.2.1.1",
+          "EN-9.2.1.3",
+          "RGAA-7.3.2",
+          "RGAAv4",
+          "TT4.a",
+          "TTv5",
+          "cat.keyboard",
+          "wcag211",
+          "wcag213",
+          "wcag2a"
+        ],
+        "views": [
+          "try-denied",
+          "try-draft",
+          "try-idle"
+        ]
+      }
+    ]
+  },
+  "working_memory": {
+    "citations": [
+      "Miller 1956 (7 +/- 2)",
+      "Cowan 2001 (about 4)"
+    ],
+    "definition": "chunks = visible operable controls (a checkbox and its label are one) + groups of visible static text/heading atoms that share a parent element; viewport = first screen at scroll top, page = whole rendered view",
+    "label": "HEURISTIC PROXY - counts what is simultaneously visible, not what a person holds in memory",
+    "summary": {
+      "max_chunks_viewport": 25,
+      "views": 12,
+      "views_over_miller_9": 12
+    },
+    "views": [
+      {
+        "atoms_viewport": 23,
+        "chunks_page": 35,
+        "chunks_viewport": 18,
+        "content_groups": 6,
+        "controls": 12,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "view": "applied"
+      },
+      {
+        "atoms_viewport": 31,
+        "chunks_page": 23,
+        "chunks_viewport": 22,
+        "content_groups": 13,
+        "controls": 9,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "view": "change-empty"
+      },
+      {
+        "atoms_viewport": 31,
+        "chunks_page": 36,
+        "chunks_viewport": 22,
+        "content_groups": 13,
+        "controls": 9,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "view": "change-options"
+      },
+      {
+        "atoms_viewport": 60,
+        "chunks_page": 42,
+        "chunks_viewport": 25,
+        "content_groups": 14,
+        "controls": 11,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "view": "change-selected"
+      },
+      {
+        "atoms_viewport": 23,
+        "chunks_page": 16,
+        "chunks_viewport": 16,
+        "content_groups": 12,
+        "controls": 4,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "view": "create-panel"
+      },
+      {
+        "atoms_viewport": 23,
+        "chunks_page": 35,
+        "chunks_viewport": 18,
+        "content_groups": 6,
+        "controls": 12,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "view": "evidence-approved"
+      },
+      {
+        "atoms_viewport": 23,
+        "chunks_page": 35,
+        "chunks_viewport": 18,
+        "content_groups": 6,
+        "controls": 12,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "view": "evidence-verified"
+      },
+      {
+        "atoms_viewport": 60,
+        "chunks_page": 42,
+        "chunks_viewport": 25,
+        "content_groups": 14,
+        "controls": 11,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "view": "impact-tab"
+      },
+      {
+        "atoms_viewport": 23,
+        "chunks_page": 16,
+        "chunks_viewport": 16,
+        "content_groups": 12,
+        "controls": 4,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "view": "start"
+      },
+      {
+        "atoms_viewport": 20,
+        "chunks_page": 31,
+        "chunks_viewport": 16,
+        "content_groups": 4,
+        "controls": 12,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "view": "try-denied"
+      },
+      {
+        "atoms_viewport": 19,
+        "chunks_page": 31,
+        "chunks_viewport": 16,
+        "content_groups": 4,
+        "controls": 12,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "view": "try-draft"
+      },
+      {
+        "atoms_viewport": 19,
+        "chunks_page": 31,
+        "chunks_viewport": 16,
+        "content_groups": 4,
+        "controls": 12,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "view": "try-idle"
+      }
+    ]
+  }
+}
