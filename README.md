@@ -46,7 +46,7 @@ flowchart LR
     E -. drift or stale receipt .-> V
 ```
 
-Only the two diamonds are human. The kernel rejects a candidate that changes protected authority, and it does not silently rewrite an unsupported meaning into a supported one.
+The two diamonds and the final apply are the human actions; a provider can take part in none of them. The kernel rejects a candidate that changes protected authority, and it does not silently rewrite an unsupported meaning into a supported one.
 
 ## A visual example, generated from the real model
 
