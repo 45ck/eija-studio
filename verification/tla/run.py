@@ -17,7 +17,7 @@ import re
 import sys
 import time
 from dataclasses import replace
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -45,7 +45,7 @@ LIMITATIONS = [
 
 
 def _now() -> str:
-    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+    return datetime.now(UTC).isoformat(timespec="seconds")
 
 
 def _tlc_summary(run: tlc.TlcRun) -> dict[str, Any]:
@@ -194,14 +194,14 @@ def main(argv: list[str] | None = None) -> int:
     counterexamples: list[str] = []
     started = time.monotonic()
     for config in configs:
-        print(f"[tla] model-check {config.name}", flush=True)
+        generate.say(f"[tla] model-check {config.name}")
         entry, markdown = model_check(config, work)
         entries.append(entry)
         counterexamples += [markdown] if markdown else []
-        print(f"[tla]   {entry['tlc']['result']} states={entry['tlc']['distinct_states']} depth={entry['tlc']['depth']} passed={entry['passed']}", flush=True)
+        generate.say(f"[tla]   {entry['tlc']['result']} states={entry['tlc']['distinct_states']} depth={entry['tlc']['depth']} passed={entry['passed']}")
     if args.deep:
         candidate = next(c for c in model.configs() if c.name == "candidate")
-        print("[tla] model-check candidate (deep, 5 operation ids)", flush=True)
+        generate.say("[tla] model-check candidate (deep, 5 operation ids)")
         entry, _ = model_check(candidate, work, ops=5, workers=4)
         entry["name"] = "candidate_deep"
         entries.append(entry)
@@ -211,10 +211,10 @@ def main(argv: list[str] | None = None) -> int:
     for config in configs:
         if config.negative_control:
             continue
-        print(f"[tla] conformance {config.name}", flush=True)
+        generate.say(f"[tla] conformance {config.name}")
         conformance_entries[config.name] = conformance_for(config, work, seed=args.seed, random_count=args.random_count,
                                                             sensitivity=config.name == "candidate")
-        print(f"[tla]   agree={conformance_entries[config.name].get('agree')}", flush=True)
+        generate.say(f"[tla]   agree={conformance_entries[config.name].get('agree')}")
     report["conformance"] = conformance_entries
     report["total_seconds"] = round(time.monotonic() - started, 1)
 
@@ -236,9 +236,9 @@ def _finish(report: dict[str, Any], args: argparse.Namespace, code: int) -> int:
     if args.snapshot:
         args.snapshot.parent.mkdir(parents=True, exist_ok=True)
         args.snapshot.write_bytes(text.encode("utf-8"))
-    print(f"[tla] result={report['result']} report={args.out}")
+    generate.say(f"[tla] result={report['result']} report={args.out}")
     if report["result"] == "NOT_RUN":
-        print(f"[tla] NOT_RUN: {report['reason']}")
+        generate.say(f"[tla] NOT_RUN: {report['reason']}")
     return code
 
 

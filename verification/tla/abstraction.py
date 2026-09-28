@@ -15,8 +15,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from eija_studio.application.runtime import execute, initialise
 from eija_studio.application.ports import UnitOfWork
+from eija_studio.application.runtime import execute, initialise
 from eija_studio.domain.models import DomainError, ExecuteCommand, Workflow, fingerprint
 
 from .model import UNKNOWN_ACTORS, action_universe, directory, op_ids, transition_table
@@ -24,6 +24,9 @@ from .model import UNKNOWN_ACTORS, action_universe, directory, op_ids, transitio
 Key = tuple  # (state, version, audit, ops, outbox, directory) - see Key(s) in Excursion.tla
 
 CASE_ID = "tla-case"
+# Fixed statements (no string-built SQL): scratch-store wipe and directory changes.
+_WIPE = ("DELETE FROM instances", "DELETE FROM operations", "DELETE FROM audit", "DELETE FROM outbox")
+_SET_DIRECTORY = {"active": "UPDATE actors SET active=? WHERE id=?", "assigned": "UPDATE actors SET assigned=? WHERE id=?"}
 
 
 class AbstractionError(RuntimeError):
@@ -60,7 +63,7 @@ class Harness:
             result = self.execute_command(u, cmd)
         except DomainError as exc:
             return exc.code, None
-        except Exception as exc:  # noqa: BLE001 - any other failure is a disagreement, reported by name
+        except Exception as exc:
             return "EXC:" + type(exc).__name__, None
         return ("DUPLICATE" if result["duplicate"] else "COMMITTED"), result
 
@@ -101,14 +104,14 @@ class Harness:
     # -- gamma ---------------------------------------------------------------------------------
     def concretise(self, u: Any, key: Key) -> None:
         """Replace the scratch store's contents with the state `key` (scratch stores only)."""
-        for table in ("instances", "operations", "audit", "outbox"):
-            u.db.execute(f"DELETE FROM {table}")
+        for statement in _WIPE:
+            u.db.execute(statement)
         state, version, audit, ops, outbox, dirs = key
         u.create_instance({"id": self.instance_id, "case_id": self.case_id, "model_hash": self.workflow.semantic_hash,
                            "state": state, "version": version})
-        for actor, (active, assigned) in zip(self.actor_ids, dirs):
+        for actor, (active, assigned) in zip(self.actor_ids, dirs, strict=True):
             u.db.execute("UPDATE actors SET active=?, assigned=? WHERE id=?", (active, assigned, actor))
-        for op, sig, queued in zip(self.ops, ops, outbox):
+        for op, sig, queued in zip(self.ops, ops, outbox, strict=True):
             if sig:
                 actor, action, ver, res_state, res_ver = sig
                 entry = self.table[action]
@@ -126,8 +129,7 @@ class Harness:
 
     def environment(self, u: Any, env: dict[str, Any]) -> None:
         """Apply an environment step (directory change) to the store."""
-        column = {"active": "active", "assigned": "assigned"}[env["kind"]]
-        u.db.execute(f"UPDATE actors SET {column}=? WHERE id=?", (int(env["val"]), env["actor"]))
+        u.db.execute(_SET_DIRECTORY[env["kind"]], (int(env["val"]), env["actor"]))
 
     def start(self, u: UnitOfWork) -> Key:
         """Create the preview instance with the kernel's own `initialise` and abstract it."""

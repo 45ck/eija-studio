@@ -14,9 +14,10 @@ import shutil
 import subprocess
 import time
 import urllib.request
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
@@ -51,7 +52,7 @@ def java_major() -> int:
     exe = shutil.which("java")
     if exe is None:
         raise NotRun("java is not on PATH")
-    proc = subprocess.run([exe, "-version"], capture_output=True, text=True, timeout=60)
+    proc = subprocess.run([exe, "-version"], capture_output=True, text=True, timeout=60, check=False)  # noqa: S603 - fixed argv, no shell
     match = re.search(r'version "(\d+)(?:\.(\d+))?', proc.stderr + proc.stdout)
     if not match:
         raise NotRun("could not read the java version")
@@ -60,7 +61,7 @@ def java_major() -> int:
 
 
 def java_banner() -> str:
-    proc = subprocess.run([shutil.which("java") or "java", "-version"], capture_output=True, text=True, timeout=60)
+    proc = subprocess.run([shutil.which("java") or "java", "-version"], capture_output=True, text=True, timeout=60, check=False)  # noqa: S603 - fixed argv, no shell
     return (proc.stderr or proc.stdout).splitlines()[0].strip() if (proc.stderr or proc.stdout) else "unknown"
 
 
@@ -164,8 +165,8 @@ def top_level_values(lines: Iterator[str]) -> Iterator[Any]:
         if not buffer and not line.startswith("<<"):
             continue
         buffer.append(line)
-        for token in _TOKEN.findall(line):
-            depth += 1 if token == "<<" else -1 if token == ">>" else 0
+        for piece in _TOKEN.findall(line):
+            depth += 1 if piece == "<<" else -1 if piece == ">>" else 0
         if depth == 0:
             text = "\n".join(buffer)
             buffer = []
@@ -206,7 +207,7 @@ def run_tlc(spec: Path, config: Path, work: Path, *, workers: int = 2, heap: str
            "-config", str(config), str(spec)]
     started = time.monotonic()
     with output.open("w", encoding="utf-8", newline="\n") as sink:
-        proc = subprocess.run(cmd, stdout=sink, stderr=subprocess.STDOUT, cwd=work, timeout=timeout)
+        proc = subprocess.run(cmd, stdout=sink, stderr=subprocess.STDOUT, cwd=work, timeout=timeout, check=False)  # noqa: S603 - fixed argv, no shell
     run = TlcRun(spec=spec.name, config=config.name, returncode=proc.returncode, output=output, seconds=round(time.monotonic() - started, 2))
     parse_summary(run)
     shutil.rmtree(meta, ignore_errors=True)
@@ -248,7 +249,7 @@ def parse_trace(lines: list[str]) -> list[dict[str, Any]]:
                 states.append(_state_fields(current))
             current = []
         elif current is not None:
-            if line.startswith("Error:") or re.match(r"^\d+ states generated", line) or line.startswith("Finished in"):
+            if line.startswith(("Error:", "Finished in")) or re.match(r"^\d+ states generated", line):
                 states.append(_state_fields(current))
                 current = None
             else:

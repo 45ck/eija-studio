@@ -27,7 +27,7 @@ def _run(session: nox.Session, *extra: str) -> None:
         session.skip(f"NOT_RUN: {report.get('reason')}")
     if report["result"] != "PASS":
         session.error(f"formal_tla FAIL: see {REPORT}")
-    print(f"formal_tla PASS: {REPORT}")
+    session.log(f"formal_tla PASS: {REPORT}")
 
 
 @nox.session(python=False, tags=["full"])

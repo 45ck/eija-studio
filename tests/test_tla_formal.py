@@ -3,19 +3,13 @@
 Tests that need Java and the pinned jar are skipped with an explicit NOT_RUN reason when either is
 missing; they are never counted as passing evidence in that case.
 """
-import sys
 from dataclasses import replace
-from pathlib import Path
 
 import pytest
 
-ROOT = Path(__file__).resolve().parents[1]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))  # verification/ is engineering tooling, not part of the installed package
-
-from eija_studio.adapters.sqlite_store import sandbox_factory  # noqa: E402
-from eija_studio.domain.policy import baseline  # noqa: E402
-from verification.tla import conformance, generate, model, render, tlc  # noqa: E402
+from eija_studio.adapters.sqlite_store import sandbox_factory
+from eija_studio.domain.policy import baseline
+from verification.tla import conformance, generate, model, render, tlc
 
 
 def _tools() -> str | None:
@@ -135,7 +129,7 @@ def test_conformance_compare_reports_a_seeded_disagreement(sandbox):
     key = next(k for k, n in twin.nodes.items() if "DUPLICATE" in n.outcomes)
     node = twin.nodes[key]
     i = node.outcomes.index("DUPLICATE")
-    twin.nodes[key] = conformance.Node(node.outcomes[:i] + ("COMMITTED",) + node.outcomes[i + 1:], node.succ, node.env)
+    twin.nodes[key] = conformance.Node((*node.outcomes[:i], "COMMITTED", *node.outcomes[i + 1:]), node.succ, node.env)
     result = conformance.compare(graph, twin)
     assert result["agree"] is False and result["outcome_disagreements"] == 1
 

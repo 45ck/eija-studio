@@ -19,15 +19,22 @@ from __future__ import annotations
 
 import random
 from collections import deque
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Iterable
+from typing import Any
 
 from eija_studio.domain.models import DomainError, Workflow
 
 from .abstraction import Harness, Key
-from .model import (MUTABLE_ACTORS, UNKNOWN_ACTORS, action_universe, command_sequence, directory,
-                    environment_sequence)
+from .model import (
+    MUTABLE_ACTORS,
+    UNKNOWN_ACTORS,
+    action_universe,
+    command_sequence,
+    directory,
+    environment_sequence,
+)
 from .tlc import top_level_values
 
 Sandbox = Callable[[], Any]
@@ -155,14 +162,14 @@ def compare(python: Graph, tlc: Graph, *, sample: int = 5) -> dict[str, Any]:
     succ_diffs = env_diffs = compared = committed = 0
     for key in sorted(set(python.nodes) & set(tlc.nodes)):
         a, b = python.nodes[key], tlc.nodes[key]
-        for i, (x, y) in enumerate(zip(a.outcomes, b.outcomes)):
+        for i, (x, y) in enumerate(zip(a.outcomes, b.outcomes, strict=True)):
             compared += 1
             committed += x == "COMMITTED"
             if x != y:
                 outcome_diffs.append({"state": key, "command": python.cmds[i], "runtime": x, "spec": y})
             elif a.succ[i] != b.succ[i]:
                 succ_diffs += 1
-        env_diffs += sum(1 for x, y in zip(a.env, b.env) if x != y)
+        env_diffs += sum(1 for x, y in zip(a.env, b.env, strict=True) if x != y)
     problems.update({
         "states_runtime": len(python.nodes), "states_spec": len(tlc.nodes), "states_common": len(set(python.nodes) & set(tlc.nodes)),
         "initial_states_equal": python.initial == tlc.initial,
@@ -192,7 +199,7 @@ class TraceRecorder:
         self._sandbox = sandbox
         self.steps: list[Step] = []
 
-    def __enter__(self) -> "TraceRecorder":
+    def __enter__(self) -> TraceRecorder:
         self._context = self._sandbox()
         self.store = self._context.__enter__()
         with self.store.transaction() as u:
@@ -211,7 +218,7 @@ class TraceRecorder:
             code = "DUPLICATE" if result["duplicate"] else "COMMITTED"
         except DomainError as exc:
             code = exc.code
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             code = "EXC:" + type(exc).__name__
         self._observe(("X", op, actor, action, ver, code))
         return code
@@ -280,8 +287,8 @@ def random_walk(recorder: TraceRecorder, rng: random.Random, length: int) -> Non
         if rng.random() < 0.24:
             recorder.environment(rng.choice(MUTABLE_ACTORS), rng.choice(("active", "assigned")), rng.choice((0, 1)))
             continue
-        used = [op for op, sig in zip(h.ops, sigs) if sig]
-        fresh = [op for op, sig in zip(h.ops, sigs) if not sig]
+        used = [op for op, sig in zip(h.ops, sigs, strict=True) if sig]
+        fresh = [op for op, sig in zip(h.ops, sigs, strict=True) if not sig]
         mode = rng.choices(("progress", "replay", "conflict", "noise"), (48, 22, 12, 18))[0]
         if mode in ("replay", "conflict") and not used:
             mode = "progress"
@@ -373,7 +380,7 @@ def build_traces(workflow: Workflow, ops: int, sandbox: Sandbox, graph: Graph | 
         for _key, path in path_probe_traces(graph, probe_limit):
             record("path_probe", lambda rec, p=path: replay_path(rec, p))
     for i in range(random_count):
-        rng = random.Random(f"{seed}:{i}")
+        rng = random.Random(f"{seed}:{i}")  # noqa: S311 - seeded, non-cryptographic generator of test traces
         length = rng.randint(8, 20)
         record("random", lambda rec, r=rng, n=length: random_walk(rec, r, n))
     return traces, counts
