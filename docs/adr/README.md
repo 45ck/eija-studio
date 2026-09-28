@@ -43,3 +43,5 @@ Reserving numbers stops parallel lanes from colliding. A lane that needs more re
 | 0057–0088 | HCI-ADRs: research-grounded UI/UX decisions (`ux`, `studio-ux`) |
 | 0089–0112 | Weave: deterministic linked graph, compiler and linter (`weave`) |
 | 0113–0136 | Definition of done, claims ledger, scorecard and evals (`dod`) |
+| 0137–0144 | Wave 2: design patterns shown visually (`patterns`) |
+| 0145–0152 | POC: formal evidence kinds in the kernel (`evidence-kinds`) |
