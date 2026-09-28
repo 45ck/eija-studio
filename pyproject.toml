@@ -13,15 +13,53 @@ license-files = ["LICENSE", "NOTICE.md"]
 dependencies = ["fastapi==0.128.2", "uvicorn==0.48.0", "pydantic==2.13.4", "httpx==0.28.1"]
 
 [project.optional-dependencies]
-# Each extra belongs to one capability lane; see docs/oss/REGISTER.md for why each tool was chosen.
-dev = ["pytest==9.0.2", "nox>=2025.5.1"]
+# One block per capability lane, separated by a blank line and a comment. A lane edits ONLY its own
+# block, so parallel lanes do not conflict. Pin every dependency with == ; docs/oss/REGISTER.md says
+# why each was chosen.
+
+# --- dev: tests, gate runner and repository tooling ---
+dev = ["pytest==9.0.2", "nox>=2025.5.1", "tomlkit==0.15.1"]
+
+# --- lint / quality (quality lane) ---
 lint = []
+
+# --- formal V&V (bend, tla, smt-bmc lanes) ---
 formal = []
+
+# --- testing (property lane) ---
 testing = []
+
+# --- mutation analysis (mutation lane) ---
 mutation = []
+
+# --- metrics (metrics lane) ---
 metrics = []
+
+# --- HCI instrumentation (hci lane) ---
 hci = []
+
+# --- agents / MCP (agents lane) ---
 agents = []
+
+# --- providers (providers lane) ---
+providers = []
+
+# --- visual model and diagrams (visual lane) ---
+visual = []
+
+# --- demos (demos lane) ---
+demos = []
+
+# --- UX research, model and prototype (ux lane) ---
+ux = []
+
+# --- deterministic linking graph and compiler (weave lane) ---
+graph = []
+
+# --- definition of done, scorecard and evals (dod lane) ---
+dod = []
+
+# --- docs site (oss lane) ---
 docs = []
 
 [project.scripts]
@@ -34,6 +72,6 @@ where = ["src"]  # quality/ and verification/ are engineering tooling, never shi
 eija_studio = ["resources/**/*", "resources/*.json"]
 
 [tool.pytest.ini_options]
-pythonpath = ["src"]
+pythonpath = ["src", "."]  # "." so tests can import repo-root tooling packages (quality, demos)
 testpaths = ["tests"]
 addopts = "-ra"  # tests/conftest.py keeps pytest temp dirs inside the checkout (slow system temp)
