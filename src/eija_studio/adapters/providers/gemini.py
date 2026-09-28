@@ -64,4 +64,4 @@ class GeminiCliProvider(CliProposalProvider):
         tokens = models[model].get("tokens") if model and isinstance(models[model], dict) else None
         usage = safe_usage(tokens, frozenset({"input", "prompt", "candidates", "total"}))
         usage["accounting"] = "Subscription or free-tier usage; no USD inferred"
-        return Extracted(unwrap_single_fence(response), model or self.model, usage)
+        return Extracted(unwrap_single_fence(response), model, usage)

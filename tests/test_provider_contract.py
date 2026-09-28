@@ -77,7 +77,7 @@ class Spec:
 
 
 SPECS = [
-    Spec("codex", CodexProvider, "--output-schema --ephemeral --ignore-user-config --sandbox --output-last-message --skip-git-repo-check",
+    Spec("codex", CodexProvider, "--output-schema --ephemeral --ignore-user-config --sandbox --output-last-message --skip-git-repo-check --ignore-rules --cd",
          ("--version",), ("exec", "--help"), ("login", "status"), (0, "Logged in using ChatGPT"), (0, "Logged in using an API key"), emit_codex,
          (("--sandbox", "read-only"), ("--ignore-user-config",), ("--ephemeral",), ("-c", "features.shell_tool=false"), ("-c", 'web_search="disabled"'))),
     Spec("claude", ClaudeCodeProvider, "--json-schema --output-format --tools --safe-mode --no-session-persistence --permission-mode --permission-prompts --disable-slash-commands",
@@ -347,3 +347,149 @@ def test_live_smoke_records_not_run_when_the_cli_is_signed_out(tmp_path, monkeyp
     assert module.main(["--provider", "opencode", "--consent", "--out", str(out)]) == 0
     record = json.loads(out.read_text(encoding="utf-8"))["results"]["opencode"]
     assert record["status"] == "NOT_RUN" and "credentials" in record["reason"]
+
+
+# --- regression tests for review findings ------------------------------------------------------------------
+@pytest.mark.parametrize("text,code", [
+    ("could not read catalog input file", "PROVIDER_PROCESS_FAILED"),  # 'catalog in' is not a login prompt
+    ("Traceback: crash at parser.py:401", "PROVIDER_PROCESS_FAILED"),  # a line number is not an HTTP status
+    ("usage limit reached, please log in to upgrade", "PROVIDER_RATE_LIMIT"),  # limit wins over the login hint
+    ("unexpected status 429 Too Many Requests", "PROVIDER_RATE_LIMIT"),
+    ("Error: 401 Unauthorized", "PROVIDER_AUTH"),
+    ("You are not logged in. Run /login", "PROVIDER_AUTH"),
+    ("credentials expired", "PROVIDER_AUTH"),
+    ("something unrelated happened", "PROVIDER_PROCESS_FAILED"),
+])
+def test_failure_classification_has_negative_controls(text, code):
+    assert CodexProvider().classify_failure(envelope(rc=1, err=text)) == code
+
+
+def test_flag_detection_is_whole_token():
+    from eija_studio.adapters.providers.cli_base import has_flag
+    assert has_flag("  --tools <list>  disable tools", "--tools")
+    assert not has_flag("--tools-foo and --toolset", "--tools")
+
+
+def test_codex_ignore_rules_is_a_required_flag_and_it_is_used():
+    spec = SPECS[0]
+    assert "--ignore-rules" in CodexProvider.required_flags
+    h = ok(spec)
+    h.spec = Spec(**{**spec.__dict__, "help_text": spec.help_text.replace("--ignore-rules", "")})
+    assert provider(spec, h).doctor()["missing_flags"] == ["--ignore-rules"]
+    h = ok(spec)
+    provider(spec, h).propose(CANARY, baseline())
+    assert "--ignore-rules" in h.mains[0]["args"]
+
+
+@pytest.mark.parametrize("rc,out", [(1, json.dumps({"loggedIn": True, "authMethod": "claude.ai"})), (0, json.dumps({"loggedIn": False, "authMethod": "claude.ai"})),
+                                    (0, "not json at all"), (0, json.dumps(["loggedIn"]))],
+                         ids=["nonzero_exit_wins", "logged_in_false", "non_json", "non_object"])
+def test_claude_login_status_fails_closed(rc, out):
+    spec = SPECS[1]
+    h = Harness(spec, lambda args: pytest.fail("must not run"))
+    h.spec = Spec(**{**spec.__dict__, "logged_in": (rc, out)})
+    p = provider(spec, h)
+    assert p.doctor()["login"] == "NOT_LOGGED_IN"
+    with pytest.raises(DomainError) as e:
+        p.propose(CANARY, baseline())
+    assert e.value.code == "PROVIDER_NOT_READY" and not h.mains
+
+
+def test_gemini_error_envelope_with_exit_zero_is_a_failure():
+    spec = SPECS[3]
+    body = json.dumps({"error": {"type": "Error", "message": "Please set an Auth method", "code": 41}, "response": proposal_text()})
+    with pytest.raises(DomainError) as e:
+        provider(spec, Harness(spec, lambda args: envelope(rc=0, out=body))).propose(CANARY, baseline())
+    assert e.value.code == "PROVIDER_AUTH"
+
+
+def test_text_after_the_closing_fence_is_rejected_not_trimmed():
+    spec = SPECS[3]
+    for wrapped in ("```json\n" + proposal_text() + "\n```\nHere you go!", "Sure:\n```json\n" + proposal_text() + "\n```"):
+        with pytest.raises(DomainError) as e:
+            provider(spec, ok(spec, wrapped)).propose(CANARY, baseline())
+        assert e.value.code == "PROVIDER_OUTPUT_INVALID"
+
+
+def test_codex_extract_rejects_a_symlink(tmp_path, monkeypatch):
+    """The guard is exercised on every platform (symlink creation needs a privilege on Windows), by faking is_symlink."""
+    (tmp_path / "proposal.json").write_text(proposal_text(), encoding="utf-8")
+    assert CodexProvider().extract(envelope(), tmp_path).text  # control: the same file is accepted when it is not a link
+    monkeypatch.setattr(Path, "is_symlink", lambda self: self.name == "proposal.json")
+    with pytest.raises(DomainError) as e:
+        CodexProvider().extract(envelope(), tmp_path)
+    assert e.value.code == "PROVIDER_OUTPUT_INVALID"
+
+
+def test_unreported_model_is_never_invented_or_echoed_from_the_request():
+    """A CLI that does not say which model ran gets 'unreported', not a placeholder or the requested name."""
+    codex, opencode, gemini = SPECS[0], SPECS[2], SPECS[3]
+    assert codex.make(model="vendor/requested-1", runner=ok(codex)).propose(CANARY, baseline()).model == "unreported"
+    assert opencode.make(model="vendor/requested-1", runner=ok(opencode)).propose(CANARY, baseline()).model == "unreported"
+    body = json.dumps({"response": proposal_text()})  # a Gemini envelope without stats.models
+    result = gemini.make(model="vendor/requested-1", runner=Harness(gemini, lambda args: envelope(out=body))).propose(CANARY, baseline())
+    assert result.model == "unreported"
+
+
+def test_doctor_separates_ready_from_a_verified_login():
+    gemini = provider(SPECS[3], ok(SPECS[3])).doctor()
+    assert gemini["ready"] is True and gemini["login_verified"] is False and gemini["status"] == "READY_LOGIN_UNVERIFIED"
+    claude = provider(SPECS[1], ok(SPECS[1])).doctor()
+    assert claude["login_verified"] is True and claude["status"] == "READY"
+    out = provider(SPECS[1], Harness(SPECS[1], None, logged_out=True)).doctor()
+    assert out["status"] == "NOT_RUN" and out["login_verified"] is False
+
+
+def test_preflight_doctor_is_cached_for_a_short_ttl_but_doctor_itself_is_not(monkeypatch):
+    from eija_studio.adapters.providers import cli_base
+    spec = SPECS[1]
+    h = ok(spec)
+    p = provider(spec, h)
+
+    def probes():
+        return len(h.calls) - len(h.mains)
+    p.propose(CANARY, baseline())
+    first = probes()
+    p.propose(CANARY, baseline())
+    assert probes() == first  # the second call reused the READY result
+    p.doctor()
+    assert probes() > first  # an explicit doctor is always fresh
+    later = probes()
+    real = cli_base.time.monotonic()
+    monkeypatch.setattr(cli_base.time, "monotonic", lambda: real + cli_base.PREFLIGHT_TTL + 1)
+    p.propose(CANARY, baseline())
+    assert probes() > later  # expired: probed again
+
+
+def test_a_not_ready_result_is_never_cached():
+    spec = SPECS[1]
+    h = Harness(spec, lambda args: pytest.fail("must not run"), logged_out=True)
+    p = provider(spec, h)
+    for _ in range(2):
+        with pytest.raises(DomainError):
+            p.propose(CANARY, baseline())
+    h.logged_out = False
+    h.reply = lambda args: spec.emit(proposal_text(), list(args))
+    assert p.propose(CANARY, baseline()).proposal.alternatives  # signing in takes effect at once
+
+
+def test_smoke_record_never_claims_lockdown_and_only_records_a_model_that_was_requested(monkeypatch):
+    module = _smoke_module()
+
+    class Ready:
+        timeout = 1
+
+        def doctor(self):
+            return {"ready": True, "status": "READY", "login_verified": True, "login": "LOGGED_IN"}
+
+        def propose(self, *a):
+            return OfflineProvider().propose(*a)
+    monkeypatch.setattr(module, "create_provider", lambda name, model: Ready())
+    record = module.run_smoke("claude", "", 1)
+    assert record["lockdown_verified"] is False and "model_requested" not in record
+    assert module.run_smoke("claude", "vendor/m", 1)["model_requested"] == "vendor/m"
+
+
+def test_smoke_script_does_not_issue_a_wmi_query():
+    text = (Path(__file__).resolve().parents[1] / "scripts" / "live_provider_smoke.py").read_text(encoding="utf-8")
+    assert "platform.system" not in text and "platform.release" not in text

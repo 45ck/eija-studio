@@ -40,7 +40,10 @@ Decisions inside that:
 
 * Good: adding a CLI is one small module plus one row in the contract-suite table; the safety tests come for free.
 * Good: no vendor SDK, no token handling in EIJA.
-* Bad: the OpenCode and Gemini tool-lockdown mechanisms are documented behaviour, not live-verified here (no login on the reference machine). Only the contract test (flags present) covers them.
+* Bad: tool lockdown is **requested** for every CLI and **verified live for none**. The contract test proves the flags are passed; a schema-valid live reply shows nothing about tool use. OpenCode and Gemini mechanisms are also documented-not-observed (no login on the reference machine), and stdin ingestion for those two is unobserved. A canary probe is the follow-up.
+* Bad: on Windows the tree is tracked by polling (about 0.3 s), with no Job Object and no kill-on-close, so a descendant that spawns and detaches inside one interval, or that outlives an EIJA process that is itself killed, survives.
+* Executables are resolved from absolute `PATH` entries only (`shutil.which` puts the current directory first on Windows, which would let a planted `claude.exe` win). The current directory is never searched.
+* The metered `anthropic` provider is raw httpx over the shared bounded POST (`_http.py`) rather than the official SDK; see the register row. It has no default model.
 * Bad: the CLI flags are moving targets. `doctor()` refuses a CLI whose help lacks a required flag rather than running with weaker isolation.
 * Revisit when: a vendor ships a stable sandboxed non-interactive mode or ACP support that removes the need for flag-level lockdown.
 

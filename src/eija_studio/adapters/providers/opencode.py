@@ -67,4 +67,4 @@ class OpenCodeProvider(CliProposalProvider):
                 parts.append(part["text"])
         if not parts:
             raise self.fail("PROVIDER_OUTPUT_INVALID")
-        return Extracted(unwrap_single_fence("".join(parts)), self.model or "opencode-default", {"accounting": "Not reported by this adapter"})
+        return Extracted(unwrap_single_fence("".join(parts)), "", {"accounting": "Not reported by this adapter"})

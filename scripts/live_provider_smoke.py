@@ -16,7 +16,6 @@ one at a time. Tokens are never read or printed: sign-in is delegated to each ve
 from __future__ import annotations
 import argparse
 import json
-import platform
 import sys
 import time
 from pathlib import Path
@@ -29,6 +28,7 @@ from eija_studio.domain.models import DomainError  # noqa: E402
 from eija_studio.domain.policy import baseline  # noqa: E402
 
 REQUEST = "Let teachers sign off excursions."
+PLATFORM_NAMES = {"win32": "windows", "linux": "linux", "darwin": "macos"}
 LIVE_NAMES = tuple(n for n in PROVIDER_NAMES if n != "offline")
 
 
@@ -37,10 +37,14 @@ def run_smoke(name: str, model: str, timeout: float) -> dict:
     provider = create_provider(name, model)
     if hasattr(provider, "timeout"):
         provider.timeout = timeout
-    record: dict = {"provider": name, "status": "NOT_RUN", "model_requested": model or "(cli default)"}
+    record: dict = {"provider": name, "status": "NOT_RUN",
+                    # A smoke call proves a schema-valid reply, never that the CLI honoured its tool-lockdown flags.
+                    "lockdown_verified": False}
+    if model:
+        record["model_requested"] = model
     report = provider.doctor()
-    record["doctor"] = {k: report[k] for k in ("ready", "cli_version", "login", "login_detail", "required_flags_present", "missing_flags", "reason", "key_present")
-                        if k in report}
+    record["doctor"] = {k: report[k] for k in ("ready", "status", "login_verified", "cli_version", "login", "login_detail", "required_flags_present",
+                                               "missing_flags", "reason", "key_present") if k in report}
     if not report.get("ready"):
         record["reason"] = report.get("reason") or report.get("login_detail") or "provider reported not ready"
         return record
@@ -55,8 +59,9 @@ def run_smoke(name: str, model: str, timeout: float) -> dict:
             return record
         record.update(status="FAIL", schema_valid=False if error.code == "PROVIDER_OUTPUT_INVALID" else None, reason=str(error))
         return record
+    usage = {k: round(v, 6) if isinstance(v, float) else v for k, v in result.usage.items()}
     record.update(status="PASS", latency_s=round(time.monotonic() - started, 1), schema_valid=True, model=result.model,
-                  interpretations=sorted(a.interpretation for a in result.proposal.alternatives), usage=result.usage,
+                  interpretations=sorted(a.interpretation for a in result.proposal.alternatives), usage=usage,
                   note="Schema-valid proposal only; interpretation quality and human comprehension are not measured")
     return record
 
@@ -76,10 +81,10 @@ def main(argv=None) -> int:
     if not 1 <= args.timeout <= 180:
         print("--timeout must be between 1 and 180 seconds.", file=sys.stderr)
         return 2
-    system = platform.system().lower() or "unknown"
+    system = PLATFORM_NAMES.get(sys.platform, sys.platform)  # the stdlib platform module is avoided: it issues a WMI query on Windows
     out = args.out or ROOT / "evidence" / "live-providers" / f"{args.date}-{system}.json"
     document = json.loads(out.read_text(encoding="utf-8")) if out.exists() else {}
-    document.update({"recorded_on": args.date, "platform": {"system": platform.system(), "release": platform.release(), "python": platform.python_version()},
+    document.update({"recorded_on": args.date, "platform": {"system": system, "python": sys.version.split()[0]},
                      "latency_note": "latency_s is propose() end to end, including three diagnostic probes (version, help, login status)", "request": REQUEST, "baseline": "synthetic excursion workflow (eija_studio.domain.policy.baseline)"})
     record = run_smoke(args.provider, args.model, args.timeout)
     document.setdefault("results", {})[args.provider] = record

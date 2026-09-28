@@ -110,7 +110,7 @@ def test_npm_cmd_shim_is_unwrapped_to_node_never_cmd_exe(tmp_path, monkeypatch):
     script.write_text("//", encoding="utf-8")
     shim = tmp_path / "tool.cmd"
     shim.write_text(NPM_SHIM, encoding="utf-8")
-    monkeypatch.setattr(process.shutil, "which", lambda name: "C:/fake/node.exe" if name == "node" else None)
+    monkeypatch.setattr(process, "_find_executable", lambda name: "C:/fake/node.exe" if name == "node" else None)
     argv = process._unwrap_node_shim(shim)
     assert argv[0] == "C:/fake/node.exe" and argv[1] == "--no-warnings=DEP0040" and Path(argv[2]) == script
     assert not any(Path(a).name.lower() in {"cmd", "cmd.exe"} for a in argv)
@@ -126,3 +126,63 @@ def test_unrecognised_cmd_shim_is_refused_not_run_through_cmd(tmp_path):
 def test_missing_executable_raises_file_not_found():
     with pytest.raises(FileNotFoundError):
         process.resolve_command("eija-definitely-not-installed")
+
+
+def test_executable_planted_in_the_current_directory_is_never_chosen(tmp_path, monkeypatch):
+    """shutil.which prepends the current directory on Windows; resolve_command must not."""
+    name = "eija-planted-cli"
+    planted = tmp_path / (name + (".exe" if os.name == "nt" else ""))
+    planted.write_bytes(b"MZ")
+    planted.chmod(0o755)
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("NoDefaultCurrentDirectoryInExePath", raising=False)
+    monkeypatch.setenv("PATH", os.pathsep.join(["", ".", "relative-dir"]))
+    with pytest.raises(FileNotFoundError):
+        process.resolve_command(name)
+    monkeypatch.setenv("PATH", str(tmp_path))  # an ABSOLUTE PATH entry is a deliberate choice and is honoured
+    assert Path(process.resolve_command(name)[0]).resolve() == planted.resolve()
+
+
+FAKE_CLI = r"""
+import json, os, sys
+prompt = sys.stdin.read()
+assert os.listdir(os.getcwd()) == [], "cwd must be an empty temp directory"
+assert "sk-never" not in json.dumps(dict(os.environ)), "secret leaked into the child environment"
+sys.stdout.write(open(sys.argv[1], encoding="utf-8").read() if "CANARY" in prompt else "no canary on stdin")
+"""
+
+
+def _fake_cli_provider(tmp_path, proposal_path):
+    from eija_studio.adapters.providers.cli_base import CliProposalProvider, Extracted, Invocation, LoginState
+
+    script = tmp_path / "fake_cli.py"
+    script.write_text(FAKE_CLI, encoding="utf-8")
+
+    class Fake(CliProposalProvider):
+        name, label = "fake", "Fake CLI"
+        required_flags = ("--version",)
+
+        def login_state(self, status):
+            return LoginState("LOGGED_IN")
+
+        def invocation(self, work):
+            return Invocation((str(script), str(proposal_path)))
+
+        def extract(self, result, work):
+            return Extracted(result.stdout)
+
+    return Fake
+
+
+def test_provider_runs_through_the_real_runner_resolver_stdin_and_empty_cwd(tmp_path, monkeypatch):
+    """No mocked runner: real resolve_command + run_bounded + temp cwd + env allow-list + stdin, via a tiny fake CLI."""
+    from eija_studio.adapters.providers import OfflineProvider
+    from eija_studio.domain.policy import baseline
+
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-never")
+    proposal = tmp_path / "proposal.json"
+    proposal.write_text(OfflineProvider().propose("Let teachers sign off excursions.", baseline()).proposal.model_dump_json(), encoding="utf-8")
+    provider = _fake_cli_provider(tmp_path, proposal)(executable=sys.executable, timeout=30)
+    result = provider.propose("CANARY request", baseline())
+    assert result.provider == "fake" and result.live and result.proposal.alternatives
+    assert result.model == "unreported"  # a CLI that reports no model is never given an invented one

@@ -195,7 +195,7 @@ def _unwrap_node_shim(shim: Path) -> list[str]:
         raise CliShimUnsupported(shim.name)
     base = shim.parent
     node = base / "node.exe"
-    interpreter = str(node) if node.is_file() else shutil.which("node")
+    interpreter = str(node) if node.is_file() else _find_executable("node")
     if not interpreter:
         raise CliShimUnsupported("node not found for " + shim.name)
     argv: list[str] = []
@@ -210,12 +210,36 @@ def _unwrap_node_shim(shim: Path) -> list[str]:
     return [interpreter, *argv]
 
 
+def _find_executable(executable: str) -> str | None:
+    """Search PATH only, in order, over absolute directories. Never the current directory.
+
+    ``shutil.which`` on Windows puts the current directory first (unless NoDefaultCurrentDirectoryInExePath is
+    set), so a ``claude.exe`` planted in the working directory would be chosen. A name that already contains a
+    path separator is an explicit choice by the caller and is only checked, not searched.
+    """
+    if os.path.dirname(executable):
+        return shutil.which(executable)
+    extensions = [""]
+    if _IS_WINDOWS:
+        extensions = [e.lower() for e in os.environ.get("PATHEXT", ".COM;.EXE;.BAT;.CMD").split(";") if e]
+        if Path(executable).suffix.lower() in extensions:
+            extensions = [""]
+    for directory in os.environ.get("PATH", "").split(os.pathsep):
+        if not directory or not os.path.isabs(directory):
+            continue
+        for extension in extensions:
+            candidate = os.path.join(directory, executable + extension)
+            if os.path.isfile(candidate) and os.access(candidate, os.X_OK):
+                return candidate
+    return None
+
+
 def resolve_command(executable: str) -> list[str]:
     """Resolve a CLI name to an argv prefix that CreateProcess/execve can run directly.
 
     Raises FileNotFoundError when absent and CliShimUnsupported for a shim that would need cmd.exe.
     """
-    found = shutil.which(executable)
+    found = _find_executable(executable)
     if not found:
         raise FileNotFoundError(executable)
     suffix = Path(found).suffix.lower()
@@ -224,4 +248,3 @@ def resolve_command(executable: str) -> list[str]:
     if _IS_WINDOWS and suffix not in (".exe", ".com"):
         raise CliShimUnsupported(Path(found).name)
     return [found]
-
