@@ -27,15 +27,15 @@ lint = [
     "pip-audit==2.10.1",
 ]
 formal = []
+smt = ["z3-solver==5.1.0.0"]  # lane smt-bmc: Z3 policy-soundness proof
 testing = []
 mutation = []
 metrics = []
 hci = []
 agents = ["mcp==2.2.0", "anyio==4.15.1"]
-docs = []
-# visual lane: Playwright drives installed Chrome for screenshots and Mermaid syntax checks; pydot validates emitted DOT.
-visual = ["playwright==1.63.0", "pydot==4.0.1"]
 providers = ["psutil==7.2.2"]  # process-tree kill for agent CLIs; adapters degrade to taskkill/killpg without it
+docs = []
+visual = ["playwright==1.63.0", "pydot==4.0.1"]
 demos = ["playwright==1.63.0"]  # drives the installed system Chrome; no browser download
 ux = []
 graph = []
