@@ -4,7 +4,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from pydantic import ValidationError
 from eija_studio import __version__
-from eija_studio.bootstrap import build_studio
+from eija_studio.bootstrap import build_studio, KEYED_PROVIDERS, PROVIDER_NAMES
 from eija_studio.domain.models import Workflow, SemanticTransaction, DomainError, OWNER, fingerprint
 from eija_studio.domain.policy import baseline, apply_transaction, check_policy, projections
 from eija_studio.domain.impact import model_impact
@@ -28,10 +28,10 @@ def main(argv=None) -> int:
     parser.add_argument("--version", action="version", version=__version__)
     common = argparse.ArgumentParser(add_help=False)
     common.add_argument("--workspace", type=Path, default=Path(".eija"))
-    common.add_argument("--provider", choices=["offline", "openrouter", "codex"], default=os.getenv("EIJA_PROVIDER", "offline"))
+    common.add_argument("--provider", choices=PROVIDER_NAMES, default=os.getenv("EIJA_PROVIDER", "offline"))
     common.add_argument("--model", default=os.getenv("EIJA_MODEL", ""))
     common.add_argument("--allow-network", action="store_true", help="Allow explicit provider calls; per-request consent still required")
-    common.add_argument("--ask-key", action="store_true", help="Prompt locally for OpenRouter key; never persist it")
+    common.add_argument("--ask-key", action="store_true", help="Prompt locally for the OpenRouter/Anthropic API key; never persist it")
     subs = parser.add_subparsers(dest="command", required=True)
     for command in ("init", "doctor", "list"):
         subs.add_parser(command, parents=[common])
@@ -52,9 +52,9 @@ def main(argv=None) -> int:
             return 0 if valid else 2
         key = None
         if args.ask_key:
-            if args.provider != "openrouter":
-                raise DomainError("CONFIGURATION", "--ask-key is only for OpenRouter")
-            key = getpass.getpass("OpenRouter key (not stored): ")
+            if args.provider not in KEYED_PROVIDERS:
+                raise DomainError("CONFIGURATION", "--ask-key is only for the OpenRouter and Anthropic API providers")
+            key = getpass.getpass(f"{args.provider} API key (not stored): ")
         studio = build_studio(args.workspace, args.provider, args.model, args.allow_network, key)
         if args.command == "init":
             output({"workspace": str(studio.store.directory), "provider": args.provider, "state": "READY", "data": "synthetic only"})
