@@ -12,6 +12,8 @@ from pathlib import Path
 
 CLIENTS: tuple[str, ...] = ("claude", "codex", "opencode", "gemini")
 SERVER_NAME = "eija"
+#: Live (networked) provider calls one `eija mcp` session may make; SDK-free so the CLI can read it without the extra.
+DEFAULT_MAX_PROVIDER_CALLS = 3
 
 
 def _argv(python: str, workspace: Path) -> list[str]:

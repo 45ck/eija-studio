@@ -1,12 +1,20 @@
 """MCP (Model Context Protocol) adapter: the agent-facing face of EIJA Studio.
 
-Design in one paragraph. "AI proposes. The kernel checks. The local owner decides." An agent that
-connects here holds the ``AGENT`` principal (no capabilities). The server exposes only the operations
-an agent is allowed to perform: create a case, ask the configured provider for an UNTRUSTED proposal,
-read derived views, and run the technical runtime verifier. It deliberately has no tool that selects a
-meaning, edits the model, approves, applies, discards or previews-with-state. Those are owner
-capabilities and stay in the browser Studio (``eija serve``). A test asserts their absence, and another
-asserts this module never calls those ``Studio`` methods.
+Design in one paragraph. "AI proposes. The kernel checks. The local owner decides." The server exposes
+only the operations an agent is allowed to perform: create a case, ask the configured provider for an
+UNTRUSTED proposal, read derived views, and run the technical runtime verifier. It deliberately has no
+tool that selects a meaning, edits the model, approves, applies, discards or previews-with-state. Those
+are owner capabilities and stay in the browser Studio (``eija serve``).
+
+The guarantee is ABSENCE, not a role check: this module never holds the owner principal and never
+passes any principal to ``Studio``, because it never calls an owner method. A test asserts the tool
+surface, and another asserts (by AST) that this module never calls those ``Studio`` methods or names
+``OWNER``. Nothing here "runs as" the AGENT principal; if a new tool ever needed one, that would be a
+governance change to ADR-0041, not an implementation detail.
+
+Spend guard: ``--egress-consent`` is a STANDING consent set once at startup, so it covers every
+``propose`` call in the session. ``max_provider_calls`` caps how many networked provider calls one
+server session may make; the agent cannot change it.
 
 What this module does NOT establish: it is a convenience and a guard rail, not a sandbox. An agent
 with the same OS permissions as the owner can still read the workspace directly (see AGENTS.md).
@@ -16,7 +24,9 @@ SDK; nothing in ``domain`` or ``application`` imports it.
 """
 from __future__ import annotations
 
+import logging
 import re
+import threading
 from pathlib import Path
 from typing import Any, Callable, Literal
 
@@ -27,8 +37,9 @@ from mcp.types import ToolAnnotations
 
 from eija_studio import __version__
 from eija_studio.application.service import Studio
-from eija_studio.domain.models import AGENT, DomainError, Principal, Workflow
+from eija_studio.domain.models import DomainError, Workflow
 from eija_studio.domain.policy import projections
+from eija_studio.interfaces.agent_config import DEFAULT_MAX_PROVIDER_CALLS
 
 #: The complete agent tool surface. Adding a name here is a governance decision (ADR-0041).
 AGENT_TOOLS: tuple[str, ...] = ("list_cases", "create_case", "propose", "view_case", "impact", "verify", "render")
@@ -39,7 +50,7 @@ OWNER_ONLY_OPERATIONS: tuple[str, ...] = ("select", "select_meaning", "edit", "l
                                           "discard", "save", "reset_preview", "execute", "export")
 
 #: ``Studio`` methods this adapter may call. Anything else fails ``test_mcp_never_calls_owner_operations``.
-ALLOWED_STUDIO_CALLS: frozenset[str] = frozenset({"store", "create", "propose", "verify", "view"})
+ALLOWED_STUDIO_CALLS: frozenset[str] = frozenset({"store", "provider", "create", "propose", "verify", "view"})
 
 INSTRUCTIONS = (
     "EIJA Studio assurance kernel. You are an AGENT: you may create cases, request UNTRUSTED proposals, "
@@ -64,6 +75,15 @@ OWNER_NEXT: dict[str, str] = {
     "APPLIED": "Closed. Create a new case for further change.",
     "DISCARDED": "Closed. Create a new case for further change.",
 }
+
+_LOG = logging.getLogger("eija_studio.mcp")  # stderr only: stdout is the protocol channel
+
+
+def _owner_next(stage: str) -> str:
+    """Owner guidance for a stage; a stage this adapter does not know yet degrades to a safe default, never a KeyError."""
+    return OWNER_NEXT.get(stage, f"Unrecognised case stage {stage!r}: ask the local owner to inspect this case in Studio. "
+                                 "Take no further action on it.")
+
 
 DIAGRAM_FORMATS = ("mermaid", "plantuml", "svg")
 PROJECTION_VIEWS = ("rules", "states", "journeys")
@@ -120,16 +140,28 @@ class AgentSurface:
     """The operations exposed to an agent, as plain synchronous methods returning JSON-able dicts.
 
     Separated from the MCP registration so it is unit-testable and so the exposed surface is one
-    reviewable class. Every method acts as ``self.principal`` (AGENT: no capabilities).
+    reviewable class. It has no owner methods to call: see the module docstring.
     """
 
     def __init__(self, studio: Studio, *, egress_consent: bool = False, diagram_renderer: DiagramRenderer | None = None,
-                 principal: Principal = AGENT):
-        if principal.capabilities:
-            raise ValueError("The MCP surface must run as a principal without owner capabilities")
-        self.studio, self.principal = studio, principal
+                 max_provider_calls: int = DEFAULT_MAX_PROVIDER_CALLS):
+        if max_provider_calls < 0:
+            raise ValueError("max_provider_calls must not be negative")
+        self.studio = studio
         # Standing consent is a property of how the OWNER started the server. No tool argument can set it.
         self.egress_consent, self.diagram_renderer = egress_consent, diagram_renderer
+        self.max_provider_calls, self._provider_calls, self._budget = max_provider_calls, 0, threading.Lock()
+
+    def _reserve_provider_call(self) -> None:
+        """Spend guard: count a networked attempt BEFORE it is made (a started request may bill even if it fails)."""
+        if not self.studio.provider.networked:
+            return
+        with self._budget:
+            if self._provider_calls >= self.max_provider_calls:
+                raise DomainError("PROVIDER_CALL_LIMIT",
+                                  f"This server session allows {self.max_provider_calls} live provider call(s) and they are used. "
+                                  "Ask the owner to restart it with a higher --max-provider-calls if more are needed.")
+            self._provider_calls += 1
 
     # ---- read ---------------------------------------------------------------------------------
     def list_cases(self) -> dict[str, Any]:
@@ -152,7 +184,7 @@ class AgentSurface:
                      "selected_meaning": case["selected_meaning"], "selected_by": case["selected_by"],
                      "transactions": [t["kind"] for t in case["transactions"]], "receipt_count": len(case["receipts"]),
                      "decision": _decision_summary(case["decision"]), "provider_run": _provider_run_summary(case["provider_run"])},
-            "proposal": None if proposal is None else {"trust": "UNTRUSTED_PROPOSAL", **proposal},
+            "proposal": None if proposal is None else {**proposal, "trust": "UNTRUSTED_PROPOSAL"},
             "packet": {k: packet.get(k) for k in ("status", "eligible", "blockers", "policy_errors", "technical_claims",
                        "human_understanding", "core_status", "subject_hash", "receipt_applicability", "limitations")},
             # Question text only. The expected answers are the owner's meaning check, never shown to an agent.
@@ -160,7 +192,7 @@ class AgentSurface:
             "projection_subject": "candidate" if case["candidate"] else "baseline",
             "projections": projections(model),
             "unknowns": unknowns,
-            "owner_next": OWNER_NEXT[case["stage"]],
+            "owner_next": _owner_next(case["stage"]),
         }
 
     def impact(self, case_id: str) -> dict[str, Any]:
@@ -211,7 +243,7 @@ class AgentSurface:
     # ---- act as AGENT ---------------------------------------------------------------------------
     def create_case(self, request: str) -> dict[str, Any]:
         case = self.studio.create(request)
-        return {"id": case["id"], "version": case["version"], "stage": case["stage"], "owner_next": OWNER_NEXT[case["stage"]]}
+        return {"id": case["id"], "version": case["version"], "stage": case["stage"], "owner_next": _owner_next(case["stage"])}
 
     def _version(self, case_id: str, expected_version: int | None) -> int:
         current = self.studio.view(_case_id(case_id))["case"]["version"]
@@ -221,10 +253,11 @@ class AgentSurface:
 
     def propose(self, case_id: str, expected_version: int | None = None) -> dict[str, Any]:
         expected = self._version(case_id, expected_version)
+        self._reserve_provider_call()
         case = self.studio.propose(case_id, expected, consent=self.egress_consent)
         return {"id": case["id"], "version": case["version"], "stage": case["stage"],
-                "proposal": {"trust": "UNTRUSTED_PROPOSAL", **case["proposal"]},
-                "provider_run": _provider_run_summary(case["provider_run"]), "owner_next": OWNER_NEXT[case["stage"]]}
+                "proposal": {**case["proposal"], "trust": "UNTRUSTED_PROPOSAL"},
+                "provider_run": _provider_run_summary(case["provider_run"]), "owner_next": _owner_next(case["stage"])}
 
     def verify(self, case_id: str, expected_version: int | None = None) -> dict[str, Any]:
         expected = self._version(case_id, expected_version)
@@ -250,14 +283,23 @@ class AgentSurface:
             return call()
         except DomainError as error:
             raise _tool_error(error) from None
+        except ToolError:
+            raise
+        except Exception:
+            # Never return raw exception text: it can carry file paths or workspace internals. Log to stderr only.
+            _LOG.exception("unexpected error in an MCP tool")
+            raise ToolError("INTERNAL_ERROR: the server hit an unexpected error; details are in the server's stderr log "
+                            "for the owner. Do not retry in a loop.") from None
 
     async def guarded_async(self, call: Callable[[], Any]) -> Any:
         return await anyio.to_thread.run_sync(lambda: self.guarded(call))
 
 
-def create_server(studio: Studio, *, egress_consent: bool = False, diagram_renderer: DiagramRenderer | None = None) -> MCPServer:
+def create_server(studio: Studio, *, egress_consent: bool = False, diagram_renderer: DiagramRenderer | None = None,
+                  max_provider_calls: int = DEFAULT_MAX_PROVIDER_CALLS) -> MCPServer:
     """Build the MCP server around an already composed ``Studio`` (composition happens in bootstrap.py)."""
-    surface = AgentSurface(studio, egress_consent=egress_consent, diagram_renderer=diagram_renderer)
+    surface = AgentSurface(studio, egress_consent=egress_consent, diagram_renderer=diagram_renderer,
+                           max_provider_calls=max_provider_calls)
     server = MCPServer("eija-studio", instructions=INSTRUCTIONS, version=__version__)
     read = ToolAnnotations(readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=False)
     write = ToolAnnotations(readOnlyHint=False, destructiveHint=False, idempotentHint=False, openWorldHint=False)
@@ -336,6 +378,8 @@ def create_server(studio: Studio, *, egress_consent: bool = False, diagram_rende
     return server
 
 
-def serve_stdio(studio: Studio, *, egress_consent: bool = False, diagram_renderer: DiagramRenderer | None = None) -> None:
+def serve_stdio(studio: Studio, *, egress_consent: bool = False, diagram_renderer: DiagramRenderer | None = None,
+                max_provider_calls: int = DEFAULT_MAX_PROVIDER_CALLS) -> None:
     """Serve over stdio. stdout is the protocol channel: nothing else may write to it."""
-    create_server(studio, egress_consent=egress_consent, diagram_renderer=diagram_renderer).run("stdio")
+    create_server(studio, egress_consent=egress_consent, diagram_renderer=diagram_renderer,
+                  max_provider_calls=max_provider_calls).run("stdio")

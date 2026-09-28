@@ -10,6 +10,7 @@ from eija_studio.domain.policy import baseline, apply_transaction, check_policy,
 from eija_studio.domain.impact import model_impact
 from eija_studio.application.compiler import subject_for
 from eija_studio.application.verifier import verify_runtime
+from .agent_config import DEFAULT_MAX_PROVIDER_CALLS, snippet
 
 
 def output(value, path: Path | None = None):
@@ -45,7 +46,8 @@ def main(argv=None) -> int:
     check = subs.add_parser("check-export"); check.add_argument("file", type=Path)
     mcp = subs.add_parser("mcp", parents=[common], help="Serve the agent-facing MCP server on stdio (needs the agents extra)")
     mcp.add_argument("--print-config", choices=["claude", "codex", "opencode", "gemini"], help="Print copy-paste client config for this MCP server and exit")
-    mcp.add_argument("--egress-consent", action="store_true", help="Owner's standing consent to send requests to a networked provider; agents cannot grant it")
+    mcp.add_argument("--egress-consent", action="store_true", help="Owner's STANDING consent: every propose call in this session may send the request to a networked provider; agents cannot grant it")
+    mcp.add_argument("--max-provider-calls", type=int, default=DEFAULT_MAX_PROVIDER_CALLS, help="Cap on networked provider calls per MCP session (spend guard; 0 forbids them)")
     args = parser.parse_args(argv)
     try:
         if args.command == "check-export":
@@ -54,12 +56,13 @@ def main(argv=None) -> int:
             output({"payload_integrity": valid, "authority": "NOT_VERIFIED; exported evidence is not imported for approval"})
             return 0 if valid else 2
         if args.command == "mcp" and args.print_config:
-            from .agent_config import snippet
             print(snippet(args.print_config, sys.executable, args.workspace), end="")
             return 0
         if args.command == "mcp" and (args.ask_key or (args.provider != "offline" and not (args.allow_network and args.egress_consent))):
             # stdin/stdout are the protocol channel, and network use is the owner's decision made at startup.
             raise DomainError("CONFIGURATION", "mcp: --ask-key is unsupported; a networked provider needs --allow-network and --egress-consent")
+        if args.command == "mcp" and args.max_provider_calls < 0:
+            raise DomainError("CONFIGURATION", "mcp: --max-provider-calls must be 0 or more")
         key = None
         if args.ask_key:
             if args.provider != "openrouter":
@@ -94,7 +97,7 @@ def main(argv=None) -> int:
                 from .mcp_server import serve_stdio
             except ImportError:
                 raise DomainError("MISSING_EXTRA", 'Install the MCP SDK: pip install -e ".[agents]"') from None
-            serve_stdio(studio, egress_consent=args.egress_consent)
+            serve_stdio(studio, egress_consent=args.egress_consent, max_provider_calls=args.max_provider_calls)
         elif args.command == "list":
             output([{k: c[k] for k in ("id", "stage", "version", "request")} for c in studio.store.list_cases()])
         elif args.command == "propose":
@@ -139,9 +142,14 @@ def main(argv=None) -> int:
         return 0
     except (DomainError, ValidationError, OSError, ValueError, KeyError) as exc:
         if isinstance(exc, DomainError):
-            output({"error": exc.code, "message": exc.message})
+            failure = {"error": exc.code, "message": exc.message}
         else:
-            output({"error": "INPUT_OR_ENVIRONMENT_ERROR", "message": "Check the file, schema, permissions and configuration; no raw sensitive input is echoed"})
+            failure = {"error": "INPUT_OR_ENVIRONMENT_ERROR", "message": "Check the file, schema, permissions and configuration; no raw sensitive input is echoed"}
+        if args.command == "mcp":
+            # stdout is the MCP protocol channel: a startup error printed there would corrupt it. Use stderr.
+            print(json.dumps(failure, indent=2, ensure_ascii=False), file=sys.stderr)
+        else:
+            output(failure)
         return 2
 
 if __name__ == "__main__":
