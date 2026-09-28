@@ -22,6 +22,8 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0030](0030-bounded-model-checking-of-the-real-runtime.md) | Bounded model checking by explicit-state search over the real runtime | accepted |
 | [0035](0035-static-analysis-and-architecture-fitness-functions.md) | Static analysis, architecture fitness functions and ratcheted budgets | accepted |
 | [0036](0036-noslop-hooks-adapted-to-nox.md) | noslop guardrails adapted to run nox tiers; hook enablement is an explicit step | accepted |
+| [0039](0039-hci-law-instrumentation.md) | Apply HCI laws to the Studio UI with Playwright, axe-core and pure formula modules | accepted |
+| [0040](0040-hci-budgets-as-ratchets-and-harness-identity.md) | HCI budgets are ratchets, browser tests are opt-in, and the journey runs under the harness identity | accepted |
 | [0041](0041-mcp-server-agent-surface.md) | MCP server as the agent surface: propose and check, never decide | accepted |
 | [0047](0047-hardcoded-scripted-demos-not-demo-machine.md) | Hand-authored scripted demo recordings, not demo-machine | accepted |
 | [0048](0048-scenario-dependency-gating.md) | Demo scenarios are gated by their real dependencies, never faked | accepted |
@@ -54,5 +56,3 @@ Reserving numbers stops parallel lanes from colliding. A lane that needs more re
 | 0057–0088 | HCI-ADRs: research-grounded UI/UX decisions (`ux`, `studio-ux`) |
 | 0089–0112 | Weave: deterministic linked graph, compiler and linter (`weave`) |
 | 0113–0136 | Definition of done, claims ledger, scorecard and evals (`dod`) |
-| 0137–0144 | Wave 2: design patterns shown visually (`patterns`) |
-| 0145–0152 | POC: formal evidence kinds in the kernel (`evidence-kinds`) |
