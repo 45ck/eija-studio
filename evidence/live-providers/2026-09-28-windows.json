@@ -109,10 +109,11 @@
         "key_present": false,
         "ready": false
       },
-      "model_requested": "x/y",
+      "model_requested": "(placeholder x/y passed only so the provider could be constructed; no key, so never used)",
       "provider": "openrouter",
       "reason": "provider reported not ready",
       "status": "NOT_RUN"
     }
-  }
+  },
+  "supersedes": "evidence/live-provider-status.json (frozen v0.2.0 release snapshot listed in MANIFEST.json; it still says Codex NOT_RUN because no Codex CLI or login existed then)"
 }

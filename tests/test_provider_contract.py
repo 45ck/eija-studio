@@ -12,9 +12,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from collections.abc import Callable
 
+import httpx
 import pytest
 
-from eija_studio.adapters.providers import (ClaudeCodeProvider, CodexProvider, GeminiCliProvider, OfflineProvider, OpenCodeProvider,
+from eija_studio.adapters.providers import (AnthropicApiProvider, OpenRouterProvider, ClaudeCodeProvider, CodexProvider, GeminiCliProvider, OfflineProvider, OpenCodeProvider,
                                             create_provider, PROVIDER_NAMES)
 from eija_studio.adapters.providers.process import CliTimeout
 from eija_studio.domain.models import DomainError
@@ -347,3 +348,101 @@ def test_live_smoke_records_not_run_when_the_cli_is_signed_out(tmp_path, monkeyp
     assert module.main(["--provider", "opencode", "--consent", "--out", str(out)]) == 0
     record = json.loads(out.read_text(encoding="utf-8"))["results"]["opencode"]
     assert record["status"] == "NOT_RUN" and "credentials" in record["reason"]
+
+
+# --- the two HTTP providers: a smaller matrix over a mock transport (no subprocess, env or cwd to isolate) -----
+HTTP_KEY = "sk-http-never-in-body"
+
+
+def _openrouter_ok():
+    return {"model": "fixture/model", "choices": [{"finish_reason": "stop", "message": {"content": proposal_text()}}]}
+
+
+def _anthropic_ok():
+    return {"model": "claude-fixture", "stop_reason": "end_turn", "content": [{"type": "text", "text": proposal_text()}]}
+
+
+def _make_openrouter(handler):
+    return OpenRouterProvider("fixture/model", HTTP_KEY, transport=httpx.MockTransport(handler))
+
+
+def _make_anthropic(handler):
+    return AnthropicApiProvider("claude-fixture", HTTP_KEY, transport=httpx.MockTransport(handler))
+
+
+HTTP_SPECS = [pytest.param(_make_openrouter, _openrouter_ok, id="openrouter"), pytest.param(_make_anthropic, _anthropic_ok, id="anthropic")]
+
+
+@pytest.mark.parametrize(("make", "ok_body"), HTTP_SPECS)
+def test_http_request_has_no_tools_and_the_key_only_in_a_header(make, ok_body):
+    seen = []
+
+    def handler(request):
+        seen.append(request)
+        return httpx.Response(200, json=ok_body())
+
+    assert make(handler).propose(CANARY, baseline()).proposal.alternatives
+    (request,) = seen
+    body = json.loads(request.content)
+    assert "tools" not in body and "tool_choice" not in body
+    assert HTTP_KEY not in request.content.decode() and HTTP_KEY not in str(request.url)
+    assert HTTP_KEY in "".join(request.headers.values())
+
+
+@pytest.mark.parametrize(("make", "ok_body"), HTTP_SPECS)
+@pytest.mark.parametrize("failure", [httpx.Response(401, text="secret-body"), httpx.Response(429, text="secret-body"),
+                                     httpx.Response(503, text="secret-body"), httpx.Response(302, text="secret-body")],
+                         ids=["401", "429", "503", "redirect"])
+def test_http_failure_is_sanitised_and_never_retried(make, ok_body, failure):
+    calls = []
+
+    def handler(request):
+        calls.append(request)
+        return failure
+
+    with pytest.raises(DomainError) as e:
+        make(handler).propose(CANARY, baseline())
+    assert "secret-body" not in str(e.value) and HTTP_KEY not in str(e.value)
+    assert len(calls) == 1  # one attempt, redirects not followed, no fallback
+
+
+@pytest.mark.parametrize(("make", "ok_body"), HTTP_SPECS)
+def test_http_timeout_is_sanitised_and_never_retried(make, ok_body):
+    calls = []
+
+    def handler(request):
+        calls.append(request)
+        raise httpx.ReadTimeout("secret diagnostic")
+
+    with pytest.raises(DomainError) as e:
+        make(handler).propose(CANARY, baseline())
+    assert e.value.code == "PROVIDER_TRANSPORT" and "secret diagnostic" not in str(e.value) and len(calls) == 1
+
+
+def _with_text(ok_body, text):
+    body = ok_body()
+    if "choices" in body:
+        body["choices"][0]["message"]["content"] = text
+    else:
+        body["content"][0]["text"] = text
+    return body
+
+
+@pytest.mark.parametrize(("make", "ok_body"), HTTP_SPECS)
+@pytest.mark.parametrize("text", ["not json {", "{}", proposal_text().replace("recommend_only", "final_authority", 1),
+                                  '{"summary":"x","alternatives":[{"interpretation":"approve_everything","explanation":"y"}],"unknowns":[]}',
+                                  "x" * 70000],
+                         ids=["malformed_json", "empty_object", "wrong_label_in_valid_shape", "wrong_interpretation_label", "oversized"])
+def test_http_bad_model_output_fails_closed_without_repair(make, ok_body, text):
+    provider = make(lambda request: httpx.Response(200, json=_with_text(ok_body, text)))
+    with pytest.raises(DomainError) as e:
+        provider.propose(CANARY, baseline())
+    assert e.value.code == "PROVIDER_OUTPUT_INVALID"
+
+
+@pytest.mark.parametrize(("make", "ok_body"), HTTP_SPECS)
+def test_http_envelope_over_the_size_cap_is_rejected(make, ok_body):
+    provider = make(lambda request: httpx.Response(200, content=b'{"pad":"' + b"x" * 300000 + b'"}'))
+    with pytest.raises(DomainError) as e:
+        provider.propose(CANARY, baseline())
+    assert e.value.code == "PROVIDER_OUTPUT_INVALID"

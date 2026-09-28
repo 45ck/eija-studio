@@ -2,8 +2,9 @@
 
 OpenCode has no structured-output flag and no tools-off flag, so: the schema is requested in the prompt and the
 reply is validated here; tools are denied through inline config (``OPENCODE_CONFIG_CONTENT``); the user's
-config directory is swapped for an empty one (XDG_CONFIG_HOME) so their plugins, instructions and MCP servers
-are not loaded, while credentials (a separate data directory) keep working.
+config directory is swapped for an empty one (XDG_CONFIG_HOME) so OpenCode's own config, plugins and MCP entries
+are not read from it, while credentials (a separate data directory) keep working. Other discovery paths (for
+example ``~/.agents/skills``) are still visible; only the deny-all permission config stops the model using them.
 
 The deny-all permission config and the success event shape (``text`` events) are NOT live-verified: the
 reference machine had no OpenCode credentials. Only the error-event shape was observed.

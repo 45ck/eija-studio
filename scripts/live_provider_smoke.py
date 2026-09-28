@@ -15,6 +15,7 @@ one at a time. Tokens are never read or printed: sign-in is delegated to each ve
 """
 from __future__ import annotations
 import argparse
+import datetime
 import json
 import platform
 import sys
@@ -67,7 +68,7 @@ def main(argv=None) -> int:
     parser.add_argument("--consent", action="store_true", help="required: acknowledges egress and possible account usage")
     parser.add_argument("--model", default="")
     parser.add_argument("--timeout", type=float, default=150, help="seconds; the owner-authorised ceiling is 180")
-    parser.add_argument("--date", default="2026-09-28", help="recorded date, passed in for deterministic files")
+    parser.add_argument("--date", default=None, help="recorded date YYYY-MM-DD (default: today)")
     parser.add_argument("--out", type=Path, default=None, help="evidence file (default evidence/live-providers/<date>-<platform>.json)")
     args = parser.parse_args(argv)
     if not args.consent:
@@ -76,6 +77,7 @@ def main(argv=None) -> int:
     if not 1 <= args.timeout <= 180:
         print("--timeout must be between 1 and 180 seconds.", file=sys.stderr)
         return 2
+    args.date = args.date or datetime.date.today().isoformat()
     system = platform.system().lower() or "unknown"
     out = args.out or ROOT / "evidence" / "live-providers" / f"{args.date}-{system}.json"
     document = json.loads(out.read_text(encoding="utf-8")) if out.exists() else {}
