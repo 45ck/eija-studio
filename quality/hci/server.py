@@ -1,8 +1,9 @@
 """Ephemeral `eija serve` for measurement: real CLI, real Uvicorn, loopback TCP, offline provider.
 
 This is the lane's OWN throw-away server on a workspace inside the checkout (never the owner's
-workspace, never a provider call). The private launch link is consumed by the browser we drive; it
-is not logged or written anywhere.
+workspace, never a provider call). The server prints its private launch link to `server.log` in the
+scratch directory; that directory (token included) is deleted when the context exits, on success or
+failure, so the token never outlives the run.
 """
 from __future__ import annotations
 
@@ -35,6 +36,15 @@ def studio_server(label: str, identity: str = "harness", timeout: float = 30.0) 
     scratch = ROOT / ".tmp" / "hci" / f"{label}-{os.getpid()}"
     shutil.rmtree(scratch, ignore_errors=True)
     scratch.mkdir(parents=True)
+    try:
+        with _serve(scratch, identity, timeout) as url:
+            yield url
+    finally:  # runs when the caller's block raises too: no stale scratch dir, no leftover launch token
+        shutil.rmtree(scratch, ignore_errors=True)
+
+
+@contextlib.contextmanager
+def _serve(scratch: Path, identity: str, timeout: float) -> Iterator[str]:
     port = free_port()
     log = scratch / "server.log"
     env = os.environ.copy()
@@ -77,4 +87,3 @@ def studio_server(label: str, identity: str = "harness", timeout: float = 30.0) 
             except subprocess.TimeoutExpired:
                 process.kill()
                 process.wait()
-    shutil.rmtree(scratch, ignore_errors=True)

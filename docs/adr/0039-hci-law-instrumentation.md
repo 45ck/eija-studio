@@ -31,7 +31,9 @@ Chosen option: Playwright + axe-playwright-python, because both are mature, perm
 * `quality/hci/probe.js` only observes (geometry, choice counts, focus, click -> DOM-update timing); a unit test forbids mutating calls in it.
 * `quality/hci/journey.py` holds the canonical owner journey as data plus one driver for pointer and keyboard-only runs. The pointer moves to and clicks the exact landing point that Fitts's D is computed from, after verifying nothing covers it.
 * `analysis.py`, `recommend.py`, `report.py` turn traces into metrics, deterministic ranked recommendations, a canonical `report.json` and a `REPORT.md` that is a pure function of that JSON.
-* Fitts constants are MacKenzie & Buxton (1992) mouse, smaller-of, Shannon (`230 + 166 * ID` ms), verified against the paper's text; Hick `b = 0.150 s/bit` and KLM operator times are Card, Moran & Newell. All are labelled population averages.
+* Fitts constants are MacKenzie & Buxton (1992) mouse, smaller-of, Shannon (`230 + 166 * ID` ms), checked against the paper's text. Hick `b = 0.150 s/bit` and the KLM operator times are attributed to Card, Moran & Newell but were taken from secondary sources and NOT re-checked against the primary text. All are labelled population averages.
+* Fitts's `D` lands at the centre of the effective box (overstating D for wide targets); a nearest-edge variant is reported so flagged-move counts are a range. Doherty "first feedback" is the first DOM mutation (a JavaScript-task latency excluding paint), labelled as such.
+* Recommendations state only what the metrics show; any guess about the UI code or the server goes in an explicitly UNVERIFIED `likely_cause`, and a saving that is an upper bound is labelled so and never breaks ranking ties.
 * The working-memory figure is explicitly a visibility proxy, not a memory measurement.
 
 ### Consequences

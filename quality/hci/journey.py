@@ -35,6 +35,12 @@ class JourneyError(RuntimeError):
     """The UI did not do what the journey step expected; the run is invalid, not slow."""
 
 
+class ReleaseIdentityUnavailable(JourneyError):
+    """Approval is blocked because the running source is not the owner-stamped build (SOURCE_REVIEW_REQUIRED).
+
+    A missing prerequisite, not a UI defect: reported as NOT_RUN, never as pass or as a UI failure."""
+
+
 # --- journey specification --------------------------------------------------------------------
 @dataclass(frozen=True)
 class Ref:
@@ -207,8 +213,9 @@ class Runner:
             if time.monotonic() > deadline:
                 blockers = self.page.evaluate("() => window.__hci.text('#blockers')") or ""
                 if "SOURCE_REVIEW_REQUIRED" in blockers:
-                    raise JourneyError(f"step {step.id}: approval is blocked by SOURCE_REVIEW_REQUIRED (source differs from the "
-                                       "owner-stamped fixture). Use the default harness identity for UI measurement.")
+                    raise ReleaseIdentityUnavailable(
+                        f"step {step.id}: approval is blocked by SOURCE_REVIEW_REQUIRED (source differs from the owner-stamped "
+                        "fixture); --identity release needs a release-stamped build. Use the default harness identity for UI measurement.")
                 raise JourneyError(f"step {step.id}: expectation {e.kind} {e.css!r} {e.value!r} did not hold")
             time.sleep(0.05)
 
@@ -412,10 +419,12 @@ class Runner:
 
 def run_axe(page) -> dict:
     """axe-core (via axe-playwright-python) restricted to WCAG 2.0-2.2 A/AA tags."""
+    from axe_playwright_python.base import AXE_FILE_PATH
     from axe_playwright_python.sync_playwright import Axe
 
+    axe = Axe.from_file(AXE_FILE_PATH)  # explicit UTF-8 read; the package default would use the platform locale (cp1252 here)
     options = {"runOnly": {"type": "tag", "values": AXE_TAGS}, "resultTypes": ["violations", "incomplete"]}
-    response = Axe().run(page, options=options).response
+    response = axe.run(page, options=options).response
     return {
         "axe_core": response.get("testEngine", {}).get("version"),
         "violations": [

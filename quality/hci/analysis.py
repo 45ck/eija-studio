@@ -35,7 +35,7 @@ def fitts(pass0: dict, target_status: dict[str, str]) -> dict:
             "wcag_2_5_8": target_status.get(t["selector"], "not-audited"),
         }
         if t["from"] is None:
-            row.update(distance_px=None, id_bits=None, predicted_mt_s=None, flags=[], note="first pointer target: no preceding position")
+            row.update(distance_px=None, id_bits=None, predicted_mt_s=None, flags=[], id_bits_nearest_edge=None, note="first pointer target: no preceding position")
         else:
             d = math.dist(t["from"], t["to"])
             id_bits = laws.shannon_id(d, width)
@@ -44,7 +44,10 @@ def fitts(pass0: dict, target_status: dict[str, str]) -> dict:
                 flags.append("ID>4")
             if width < laws.MIN_TARGET_PX:
                 flags.append("W<24")
-            row.update(distance_px=r(d, 1), id_bits=r(id_bits, 3), predicted_mt_s=r(laws.fitts_time(id_bits, FITTS), 3), flags=flags)
+            box_xywh = (box["x"], box["y"], box["w"], box["h"])
+            near = laws.shannon_id(laws.nearest_edge_distance(tuple(t["from"]), box_xywh), width)
+            row.update(distance_px=r(d, 1), id_bits=r(id_bits, 3), predicted_mt_s=r(laws.fitts_time(id_bits, FITTS), 3), flags=flags,
+                       id_bits_nearest_edge=r(near, 3))
         rows.append(row)
     moves = [x for x in rows if x["id_bits"] is not None]
     hardest = max(moves, key=lambda x: x["id_bits"]) if moves else None
@@ -56,6 +59,9 @@ def fitts(pass0: dict, target_status: dict[str, str]) -> dict:
             "mean_id_bits": r(sum(x["id_bits"] for x in moves) / len(moves), 3) if moves else None,
             "max_id_bits": hardest["id_bits"] if hardest else None, "max_id_step": hardest["step"] if hardest else None,
             "moves_id_over_4": sum("ID>4" in x["flags"] for x in rows),
+            "moves_id_over_4_nearest_edge": sum((x.get("id_bits_nearest_edge") or 0) > laws.MAX_ID_BITS for x in rows),
+            "landing_convention_note": "primary D uses the centre of the effective box, which overstates D for wide targets; "
+                                       "moves_id_over_4_nearest_edge recomputes D to the nearest edge, so the flag count is a range",
             "targets_w_under_24": sum("W<24" in x["flags"] for x in rows),
             "predicted_pointing_time_s": r(sum(x["predicted_mt_s"] for x in moves), 3),
             "total_distance_px": r(sum(x["distance_px"] for x in moves), 1),
@@ -266,6 +272,14 @@ def _moves_up(previous: dict | None, current: dict | None) -> bool:
     return current["y"] < previous["y"] - 8
 
 
+def _completed(one_pass: dict) -> bool:
+    """True iff the pass recorded exactly the canonical journey's steps, in order. A step that failed raises in
+    the driver, so a shorter or different trace means the journey was not completed."""
+    from .journey import journey  # local import: journey.py is the data definition; analysis stays importable without a browser
+
+    return [s["id"] for s in one_pass["steps"]] == [s.id for s in journey()]
+
+
 def keyboard(kb_pass: dict) -> dict:
     steps = kb_pass["steps"]
     presses = {s["id"]: s.get("tab_presses") for s in steps if s.get("tab_presses") is not None}
@@ -292,7 +306,7 @@ def keyboard(kb_pass: dict) -> dict:
     no_ring = sorted(k for k, v in stops_by_selector.items() if not v["visible_ring"])
     activations = [s for s in steps if s.get("interaction") is not None]
     return {
-        "completed_journey_keyboard_only": True,
+        "completed_journey_keyboard_only": _completed(kb_pass),
         "tab_presses_total": sum(presses.values()),
         "tab_presses_by_step": presses,
         "max_tab_presses_for_one_target": max(presses.values(), default=0),
@@ -338,7 +352,7 @@ def analyse(raw: dict) -> dict:
     return {
         "environment": raw["environment"],
         "journey": {"steps": [{"id": s["id"], "label": s["label"], "kind": s["kind"]} for s in pass0["steps"]],
-                    "completed": True, "scripted_answers_note": "review answers are scripted fixture text; not a human comprehension measure"},
+                    "completed": all(_completed(p) for p in passes) and _completed(raw["keyboard_pass"]), "scripted_answers_note": "review answers are scripted fixture text; not a human comprehension measure"},
         "fitts": fitts(pass0, statuses),
         "hick_hyman": hick(pass0),
         "klm": klm(pass0, raw["keyboard_pass"]),

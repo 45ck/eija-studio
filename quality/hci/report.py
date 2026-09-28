@@ -1,8 +1,10 @@
 """Canonical JSON report, deterministic Markdown rendering, snapshot publishing and the drift check.
 
-`build_report` is pure over a `journey.collect()` result. `render_markdown` is pure over the report
-JSON, so the committed docs/hci/REPORT.md can be re-rendered from the committed snapshot and compared
-byte for byte (`python -m quality.hci check`), without a browser.
+`build_report` is pure over a `journey.collect()` result (the raw trace). The raw trace is committed
+beside the snapshot (docs/hci/trace.snapshot.json), so `python -m quality.hci check` can re-derive the
+snapshot from trace + current laws + current budgets and re-render REPORT.md, byte for byte, without
+a browser. Consequence: an edit to laws.py, analysis/recommend code or budgets.json that is not
+followed by a refresh is a drift failure in the fast tier.
 """
 from __future__ import annotations
 
@@ -14,6 +16,7 @@ from . import analysis, budgets, recommend
 ROOT = Path(__file__).resolve().parents[2]
 DOCS = ROOT / "docs" / "hci"
 SNAPSHOT = DOCS / "report.snapshot.json"
+TRACE = DOCS / "trace.snapshot.json"
 REPORT_MD = DOCS / "REPORT.md"
 SCHEMA = "eija.hci.report.v1"
 
@@ -22,7 +25,11 @@ LIMITATIONS = [
     "This is NOT a human usability study. No participant, persona or task-success rate is represented (human study: NOT_RUN).",
     "The journey answers the three review questions with scripted fixture text; it exercises the UI and says nothing about comprehension.",
     "Approval and apply run under the kernel-test harness identity (source differs from the owner-stamped fixture); they are UI evidence, not a release approval.",
-    "Doherty timings are wall-clock on one shared Windows PC, headless Chrome, loopback server; they exclude OS/input latency and are sensitive to load.",
+    "Doherty timings are wall-clock on one shared Windows PC, headless Chrome, loopback server; they exclude OS/input latency and are sensitive to load (the settled p95 varied between about 1.4 and 2.5 s across runs).",
+    "'First feedback' is the first DOM mutation after the click (a JavaScript-task latency). It excludes style, layout, paint and compositing, so it is not perceived latency.",
+    "Fitts D lands at the centre of the effective box, which overstates D for wide targets; the report also gives a nearest-edge variant so the flag count is a range. Geometry-based budgets are specific to this Chrome build and font set.",
+    "Only uncaught page exceptions and HTTP error responses are counted as runtime hygiene; console.error and console.warn messages are not.",
+    "Hick b and the KLM operator times came from secondary sources (Card, Moran & Newell as cited in the literature); only the Fitts constants were checked against the primary paper text.",
     "axe-core detects only a subset of WCAG failures; a clean axe run is not conformance. Exceptions to 2.5.8 other than spacing are not evaluated.",
     "The working-memory number is a visibility-based heuristic proxy for Miller/Cowan chunk limits, not a measure of anyone's memory.",
 ]
@@ -97,13 +104,14 @@ def render_markdown(rep: dict) -> str:
     add("## Headline")
     add("")
     add(_table(["Law / standard", "Metric", "Value", "Threshold", "Flag"], [
-        ["Fitts (Shannon)", "pointer moves with ID > 4 bits", fit["summary"]["moves_id_over_4"], "0", "FLAG" if fit["summary"]["moves_id_over_4"] else "ok"],
+        ["Fitts (Shannon)", "pointer moves with ID > 4 bits (centre landing; nearest-edge variant "
+         + str(fit["summary"]["moves_id_over_4_nearest_edge"]) + ")", fit["summary"]["moves_id_over_4"], "0", "FLAG" if fit["summary"]["moves_id_over_4"] else "ok"],
         ["Fitts / WCAG 2.5.8", "pointer targets with W < 24 px", fit["summary"]["targets_w_under_24"], "0", "FLAG" if fit["summary"]["targets_w_under_24"] else "ok"],
         ["Hick-Hyman", "choice groups with n > 7", hk["summary"]["choice_points_over_7"], "0", "FLAG" if hk["summary"]["choice_points_over_7"] else "ok"],
         ["KLM-GOMS", "predicted expert time, pointer journey (s)", kl["expert_time_pointer_s"], "-", "info"],
         ["KLM-GOMS", "predicted expert time, keyboard-only (s)", kl["expert_time_keyboard_only_s"], "-", "info"],
         ["Doherty", "click -> settled DOM p95 (ms)", dh["settled_p95_ms"], "400", "FLAG" if (dh["settled_p95_ms"] or 0) > 400 else "ok"],
-        ["Doherty", "click -> first feedback p95 (ms)", dh["first_feedback_p95_ms"], "400", "FLAG" if (dh["first_feedback_p95_ms"] or 0) > 400 else "ok"],
+        ["Doherty", "click -> first DOM mutation p95 (ms; excludes paint)", dh["first_feedback_p95_ms"], "400", "FLAG" if (dh["first_feedback_p95_ms"] or 0) > 400 else "ok"],
         ["WCAG 2.2 AA (axe)", "violating rules (critical/serious/moderate/minor)",
          f"{wc['summary']['rules']} ({wc['summary']['critical']}/{wc['summary']['serious']}/{wc['summary']['moderate']}/{wc['summary']['minor']})", "0",
          "FLAG" if wc["summary"]["rules"] else "ok"],
@@ -128,7 +136,9 @@ def render_markdown(rep: dict) -> str:
         add(f"- Evidence: `{json.dumps(x['evidence'], sort_keys=True, ensure_ascii=False)}`")
         if x["targets"]:
             add(f"- Targets: {', '.join(f'`{t}`' for t in x['targets'][:12])}")
-        add(f"- Laws: {', '.join(x['laws']) or '-'}; predicted saving (model): {x['predicted_saving_s']} s")
+        if x["likely_cause"]:
+            add(f"- Likely cause (UNVERIFIED hypothesis; the probe does not establish it): {x['likely_cause']}")
+        add(f"- Laws: {', '.join(x['laws']) or '-'}; predicted saving ({x['saving_kind']}): {x['predicted_saving_s']} s")
         add("")
     add("## Budgets")
     add("")
@@ -141,14 +151,16 @@ def render_markdown(rep: dict) -> str:
     add("")
     m = fit["model"]
     add(f"`{m['form']}`, a = {m['a_s']} s, b = {m['b_s_per_bit']} s/bit ({m['citation']}). D = distance between consecutive pointer landing points "
-        f"(centre of the clickable box); W = smaller side of the target's effective box (a checkbox and its label are one target).")
+        f"(centre of the clickable box, which overstates D for wide targets; the last column re-computes ID to the nearest edge); W = smaller side of the target's effective box (a checkbox and its label are one target).")
     add("")
-    add(_table(["Step", "Target", "D px", "W px", "ID bits", "MT s", "2.5.8", "Flags"],
-               [[t["step"], t["target"][:38], t["distance_px"], t["w_px"], t["id_bits"], t["predicted_mt_s"], t["wcag_2_5_8"], ", ".join(t["flags"]) or "-"] for t in fit["targets"]]))
+    add(_table(["Step", "Target", "D px", "W px", "ID bits", "MT s", "2.5.8", "Flags", "ID nearest edge"],
+               [[t["step"], t["target"][:38], t["distance_px"], t["w_px"], t["id_bits"], t["predicted_mt_s"], t["wcag_2_5_8"], ", ".join(t["flags"]) or "-",
+                 t.get("id_bits_nearest_edge")] for t in fit["targets"]]))
     add("")
     s = fit["summary"]
     add(f"Mean ID {s['mean_id_bits']} bits, hardest move `{s['max_id_step']}` ({s['max_id_bits']} bits), predicted pointing time {s['predicted_pointing_time_s']} s over "
-        f"{s['total_distance_px']} px, {s['scrolls_needed']} scroll(s) needed (not modelled).")
+        f"{s['total_distance_px']} px, {s['scrolls_needed']} scroll(s) needed (not modelled). Moves over 4 bits: {s['moves_id_over_4']} with centre landing, "
+        f"{s['moves_id_over_4_nearest_edge']} with nearest-edge landing.")
     add("")
     add("## Hick-Hyman law")
     add("")
@@ -176,13 +188,16 @@ def render_markdown(rep: dict) -> str:
     add("")
     add("## Doherty threshold (measured; varies run to run)")
     add("")
+    add("First feedback = first DOM mutation after the click: a JavaScript-task latency that excludes style, layout, paint and compositing. "
+        "It is not perceived latency and cannot meaningfully fail a 400 ms budget.")
+    add("")
     add(f"{dh['note']}. Percentiles are {dh['method']}; {dh['interactions_measured']} interactions. Native checkbox toggles that change no DOM "
         f"({', '.join(dh['native_control_interactions_excluded']) or 'none'}) are excluded.")
     add("")
-    add(_table(["Step", "n", "First feedback p50 ms", "p95 ms", "Settled p50 ms", "p95 ms", "> 400 ms"],
+    add(_table(["Step", "n", "First DOM mutation p50 ms", "p95 ms", "Settled p50 ms", "p95 ms", "> 400 ms"],
                [[x["step"], x["samples"], x["first_feedback_p50_ms"], x["first_feedback_p95_ms"], x["settled_p50_ms"], x["settled_p95_ms"], ("p50" if x["median_over_400ms"] else "p95 only" if x["over_400ms"] else "ok")] for x in dh["steps"]]))
     add("")
-    add(f"Overall: first feedback p50/p95 {dh['first_feedback_p50_ms']}/{dh['first_feedback_p95_ms']} ms; settled p50/p95 {dh['settled_p50_ms']}/{dh['settled_p95_ms']} ms "
+    add(f"Overall: first DOM mutation p50/p95 {dh['first_feedback_p50_ms']}/{dh['first_feedback_p95_ms']} ms; settled p50/p95 {dh['settled_p50_ms']}/{dh['settled_p95_ms']} ms "
         f"(max {dh['settled_max_ms']} ms). Keyboard activations settled p50/p95 {dh['keyboard_settled_p50_ms']}/{dh['keyboard_settled_p95_ms']} ms.")
     add("")
     add("## WCAG 2.2 AA")
@@ -248,24 +263,45 @@ def _ops(operators: list[dict], step: str) -> str:
 
 
 # --- publish / drift ---------------------------------------------------------------------------
-def publish_docs(report: dict) -> None:
-    """Commit-ready evidence: the JSON snapshot plus the Markdown rendered from it."""
+def dump_trace(raw: dict) -> str:
+    """Canonical compact JSON of the raw trace (sorted keys, LF): what the snapshot is derived from."""
+    return json.dumps(raw, sort_keys=True, separators=(",", ":"), ensure_ascii=False) + "\n"
+
+
+def publish_docs(report: dict, raw: dict) -> None:
+    """Commit-ready evidence: the raw trace, the derived JSON snapshot, and the Markdown rendered from it."""
+    write_text(TRACE, dump_trace(raw))
     write_text(SNAPSHOT, dumps(report))
     write_text(REPORT_MD, render_markdown(report))
 
 
-def check_docs() -> tuple[bool, str]:
-    """Drift check: does REPORT.md equal render(snapshot)? Does the snapshot match the current UI bytes?
+def check_docs(strict: bool = False, *, snapshot_path: Path = SNAPSHOT, trace_path: Path = TRACE,
+               report_path: Path = REPORT_MD) -> tuple[bool, str]:
+    """Drift check, no browser. Establishes that the committed evidence is internally reproducible; it does
+    NOT re-measure anything, so it cannot tell whether the live UI still behaves as the trace says.
 
-    The first is a hard requirement (a hand-edited or stale rendering). The second is informational:
-    when the UI changes the snapshot is legitimately stale until `nox -s hci` is rerun."""
-    if not SNAPSHOT.exists() or not REPORT_MD.exists():
-        return False, "docs/hci/report.snapshot.json or REPORT.md missing; run `python -m quality.hci run --publish-docs`"
-    snapshot = json.loads(SNAPSHOT.read_text(encoding="utf-8"))
-    if REPORT_MD.read_bytes() != render_markdown(snapshot).encode("utf-8"):
+    1. snapshot == build_report(committed trace) under the CURRENT laws, analysis, recommendations and
+       budgets.json (an edit to any of them without a refresh fails here);
+    2. REPORT.md == render(snapshot);
+    3. the snapshot's UI hashes vs the current web/* bytes: a note in the fast tier (the visual lane
+       legitimately changes the UI first, then refreshes evidence), a hard failure with strict=True
+       (release tier), so evidence about UI bytes that no longer exist cannot be released."""
+    if not (snapshot_path.exists() and trace_path.exists() and report_path.exists()):
+        return False, "docs/hci/{report.snapshot.json,trace.snapshot.json,REPORT.md} missing; run `python -m quality.hci run --publish-docs`"
+    snapshot = json.loads(snapshot_path.read_text(encoding="utf-8"))
+    raw = json.loads(trace_path.read_text(encoding="utf-8"))
+    if trace_path.read_bytes() != dump_trace(raw).encode("utf-8"):
+        return False, "DRIFT: docs/hci/trace.snapshot.json is not in canonical form (hand-edited?)"
+    if snapshot_path.read_bytes() != dumps(build_report(raw, date=snapshot.get("date"))).encode("utf-8"):
+        return False, ("DRIFT: docs/hci/report.snapshot.json is not what the committed trace yields under the current laws, analysis, "
+                       "recommendations and budgets.json; rerun `python -m quality.hci run --publish-docs` and review the diff")
+    if report_path.read_bytes() != render_markdown(snapshot).encode("utf-8"):
         return False, "DRIFT: docs/hci/REPORT.md differs from render(report.snapshot.json)"
     from .journey import ui_hashes
-    note = ""
     if snapshot["environment"]["ui_sha256"] != ui_hashes():
-        note = " (informational: UI bytes changed since the snapshot; rerun `nox -s hci` to refresh evidence)"
-    return True, "docs/hci/REPORT.md matches render(report.snapshot.json)" + note
+        stale = ("the snapshot was taken on different UI bytes than the current src/eija_studio/resources/web/*; "
+                 "rerun `nox -s hci` and `--publish-docs` to refresh evidence")
+        if strict:
+            return False, "STALE: " + stale
+        return True, "docs/hci evidence is reproducible from its trace (informational: " + stale + ")"
+    return True, "docs/hci evidence is reproducible from its committed trace and matches the current UI bytes"

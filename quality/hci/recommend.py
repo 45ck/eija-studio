@@ -3,7 +3,13 @@
 Each recommendation names the evidence numbers that triggered it, the smallest concrete change, and a
 predicted effect *when a law can compute one*. Ranking is deterministic:
 
-    sort by (severity desc, predicted_saving_s desc, id asc)
+    sort by (severity desc, rank_saving_s desc, id asc)
+
+`change` and `evidence` are derived from the metrics. Anything about WHY the UI behaves so (a guess at the
+code or the server) goes in `likely_cause`, rendered as an UNVERIFIED hypothesis: the probe observes
+behaviour, it does not profile or read the UI's code. `saving_kind` says what the saving number is:
+"model difference" (law applied to before/after values) or "upper bound" (a bound, not a difference
+against a counterfactual); upper bounds never break ranking ties.
 
 Severity: 5 critical WCAG failure, 4 serious WCAG failure / focus loss / >1 s wait, 3 moderate
 WCAG failure / 400 ms - 1 s wait / WCAG 2.5.8 failure, 2 measurable law flag (Fitts, Hick, KLM,
@@ -19,9 +25,8 @@ from .analysis import FITTS, KLM
 
 IMPACT_SEVERITY = {"critical": 5, "serious": 4, "moderate": 3, "minor": 2}
 AXE_FIXES = {
-    "scrollable-region-focusable": "Give each scrollable <pre> (Try: audit/outbox, Evidence: raw packet, Impact: closure JSON) tabindex=\"0\", "
-                                   "role=\"region\" and an aria-label so keyboard users can scroll it, or wrap the content in a <details> "
-                                   "that is closed by default.",
+    "scrollable-region-focusable": "Give each listed scrollable region tabindex=\"0\", role=\"region\" and an accessible name so keyboard "
+                                   "users can scroll it, or make it non-scrolling (for example collapse long content by default).",
     "color-contrast": "Raise the text/background contrast ratio to at least 4.5:1 (3:1 for large text) on the listed nodes.",
     "label": "Associate a programmatic label with each listed form control.",
     "button-name": "Give each listed button a text or aria-label name.",
@@ -33,9 +38,12 @@ AXE_FIXES = {
 
 
 def _rec(rid: str, title: str, category: str, severity: int, evidence: dict, change: str, saving_s: float = 0.0,
-         laws_: tuple[str, ...] = (), targets: list[str] | None = None, effect: str = "") -> dict[str, Any]:
+         laws_: tuple[str, ...] = (), targets: list[str] | None = None, effect: str = "", likely_cause: str = "",
+         upper_bound: bool = False) -> dict[str, Any]:
     return {"id": rid, "title": title, "category": category, "severity": severity, "evidence": evidence, "change": change,
-            "predicted_effect": effect, "predicted_saving_s": round(saving_s, 3), "laws": list(laws_), "targets": sorted(targets or [])}
+            "likely_cause": likely_cause, "predicted_effect": effect, "predicted_saving_s": round(saving_s, 3),
+            "saving_kind": "upper bound" if upper_bound else "model difference",
+            "rank_saving_s": 0.0 if upper_bound else round(saving_s, 3), "laws": list(laws_), "targets": sorted(targets or [])}
 
 
 def _axe(m: dict) -> list[dict]:
@@ -62,8 +70,8 @@ def _target_size(m: dict) -> list[dict]:
         out.append(_rec("target-size-marginal", f"{len(marginal)} target(s) pass 2.5.8 but are under 44 px", "fitts", 2,
                         {"targets": [f"{x['name'][:40]} eff {x['effective_px'][0]}x{x['effective_px'][1]} raw {x['raw_px'][0]}x{x['raw_px'][1]}px"
                                      for x in marginal]},
-                        "Give the checkbox label (the real click area) min-height 44 px and enlarge the raw 18 px input box or its hit padding, "
-                        "so the control meets the 44 px guideline (WCAG 2.5.5 AAA) as well as the 24 px minimum.",
+                        "Raise each listed target's effective clickable box (min-height, min-width or hit padding; where a label is the real click "
+                        "area, size the label) to 44 px, so it meets the 44 px guideline (WCAG 2.5.5 AAA) as well as the 24 px minimum.",
                         laws_=("WCAG 2.5.8", "Fitts"), targets=[x["selector"] for x in marginal],
                         effect="removes the smallest-W pointing target from the journey"))
     return out
@@ -82,18 +90,22 @@ def _fitts(m: dict) -> list[dict]:
         out.append(_rec(
             "fitts-id-over-4", f"{len(hard)} pointer move(s) exceed 4 bits", "fitts", 2,
             {"moves": [f"{x['step']}: D={x['distance_px']} px, W={x['w_px']} px, ID={x['id_bits']} bits, MT={x['predicted_mt_s']} s" for x in hard]},
-            "Place the next action next to the previous target (primary actions currently sit at the far right edge of section headings while "
-            "the preceding target is on the left), i.e. halve D, and give wide-but-short rows min-height 44 px.",
+            "Place each flagged target closer to the previous one (halve D) and give short targets an effective height of at least 44 px "
+            "(W >= 44 px). Note the centre-landing convention overstates D for wide targets; see the nearest-edge column.",
             saving, ("Fitts", "MacKenzie & Buxton 1992"), [x["selector"] for x in hard],
-            f"model: halving D and W>=44 px saves {saving:.2f} s of pointing time across the flagged moves"))
+            f"model: halving D and W>=44 px saves {saving:.2f} s of pointing time across the flagged moves",
+            likely_cause="primary actions may sit at the far edge of a section while the preceding target is on the other side of the screen "
+                         "(hypothesis from the geometry table, not from the UI code)"))
     total = m["fitts"]["summary"]
     if total["scrolls_needed"]:
         out.append(_rec(
             "layout-hero-scroll", f"{total['scrolls_needed']} journey click(s) needed a scroll first at 1440x900", "fitts", 2,
             {"steps": [x["step"] for x in m["fitts"]["targets"] if x["scrolled_before"]], "viewport": m["environment"]["viewport"]},
-            "Collapse the marketing hero/boundary banner once a case is open (or make the tab bar and primary action sticky) so the "
-            "journey's targets stay above the fold.", saving_s=total["scrolls_needed"] * 0.5, laws_=("Fitts", "KLM"),
-            effect="each avoided scroll removes one unmodelled operator (the standard KLM total excludes scrolling)"))
+            "Keep the journey's targets above the fold (for example make the tab bar and the primary action sticky, or collapse persistent "
+            "chrome once a case is open).", saving_s=total["scrolls_needed"] * 0.5, laws_=("Fitts", "KLM"),
+            effect="each avoided scroll removes one unmodelled operator (the standard KLM total excludes scrolling); the 0.5 s per scroll is an assumption, not a measurement",
+            likely_cause="banner or hero content above the work area pushes it down (hypothesis; the probe did not measure what sits above the fold)",
+            upper_bound=True))
     return out
 
 
@@ -144,8 +156,8 @@ def _klm(m: dict) -> list[dict]:
     if counts["M"]:
         out.append(_rec("klm-mental-load", f"{counts['M']} mental operators = {counts['M'] * KLM.M:.1f} s ({100 * counts['M'] * KLM.M / total:.0f}% of expert time)",
                         "klm", 1, {"M_by_step": sorted({o["step"] for o in ops if o["op"] == "M"})},
-                        "Each M is a reading or decision moment; the largest are the interpretation choice and the three review answers. "
-                        "Keep their wording short and put the decision-relevant text next to the control (no cross-tab lookup).",
+                        "Each M is a reading or decision moment (steps listed in the evidence). Keep the wording at those steps short and put the "
+                        "decision-relevant text next to the control (no cross-tab lookup).",
                         laws_=("KLM",), effect="informational: M is the irreducible cognitive floor of the journey"))
     kb = m["klm"]["keyboard_only_journey"]
     out.append(_rec("klm-keyboard-vs-pointer", f"Keyboard-only journey costs {kb['total_s']:.1f} s vs {total:.1f} s with the pointer (model)", "klm", 1,
@@ -163,9 +175,14 @@ def _keyboard(m: dict) -> list[dict]:
             "focus-lost-after-render", f"{len(k['activations_that_lost_focus'])}/{k['activations']} keyboard activations dropped focus to <body>", "keyboard", 4,
             {"steps": k["activations_that_lost_focus"], "tab_presses_after_loss": k["tab_presses_spent_after_focus_loss"],
              "max_tab_presses_for_one_target": k["max_tab_presses_for_one_target"]},
-            "render() rebuilds whole regions with replaceChildren(), destroying the focused button. Update disabled/text in place, or re-focus "
-            "the same control (by data-action / id) after render, and move focus deliberately to the new content on tab changes (WCAG 2.4.3 Focus Order, 3.2.2).",
-            wasted, ("WCAG 2.4.3", "KLM"), effect=f"model: up to {wasted:.1f} s of Tab keystrokes spent re-finding position"))
+            "Keep or restore keyboard focus across updates: update the activated control in place, or re-focus the same control after the update, and "
+            "move focus deliberately to new content on tab changes (WCAG 2.4.3 Focus Order, 3.2.2).",
+            wasted, ("WCAG 2.4.3", "KLM"),
+            effect=f"upper bound: {wasted:.1f} s is every Tab press on the step after a focus loss, including presses that would be needed anyway; "
+                   "not a difference against a preserved-focus counterfactual",
+            likely_cause="the render step replaces whole regions of the DOM (for example replaceChildren), destroying the focused element "
+                         "(hypothesis; a code search agrees, the probe does not observe it)",
+            upper_bound=True))
     if k["stops_without_visible_focus_indicator"]:
         out.append(_rec("focus-indicator-missing", f"{len(k['stops_without_visible_focus_indicator'])} focus stop(s) without a visible indicator", "keyboard", 4,
                         {"stops": k["stops_without_visible_focus_indicator"]}, "Give every focusable element a :focus-visible outline (WCAG 2.4.7, 2.4.11).",
@@ -177,9 +194,10 @@ def _keyboard(m: dict) -> list[dict]:
     if k["max_tab_presses_for_one_target"] >= 10:
         out.append(_rec("tab-cost-high", f"Reaching one control took {k['max_tab_presses_for_one_target']} Tab presses", "keyboard", 2,
                         {"tab_presses_by_step": k["tab_presses_by_step"]},
-                        "Make the work-area tabs a single tab stop with arrow-key navigation (WAI-ARIA tabs pattern: role=tablist/tab, aria-selected, roving tabindex) "
-                        "and keep the sidebar after main content in DOM order or behind the skip link.",
-                        laws_=("KLM", "WCAG 2.1.1")))
+                        "Reduce the Tab distance to the slowest target: group related controls into a single tab stop with arrow-key navigation "
+                        "(WAI-ARIA composite widget pattern with roving tabindex) or provide a skip link past repeated regions.",
+                        laws_=("KLM", "WCAG 2.1.1"),
+                        likely_cause="a long run of tab stops before the main content, such as a tab bar or sidebar, precedes the target (hypothesis)"))
     return out
 
 
@@ -203,17 +221,19 @@ def _doherty(m: dict) -> list[dict]:
         out.append(_rec("doherty-completion", f"{len(slow)} interaction(s) usually take longer than 400 ms to finish", "doherty", 4 if worst > 1000 else 3,
                         {"first_feedback_p95_ms": d["first_feedback_p95_ms"],
                          "slow_steps": [f"{x['step']}: p50 {x['settled_p50_ms']} / p95 {x['settled_p95_ms']} ms" for x in slow]},
-                        "First feedback is immediate (the busy notice), so the 400 ms acknowledgement is met, but completion is not. For the slow steps "
-                        "show a determinate progress message (for verification: matrix cells done / total), keep the previous result visible until the new one "
-                        "lands, and profile the server commit path (durable SQLite commit per action).",
+                        f"First DOM mutation after the click came within {d['first_feedback_p95_ms']} ms (p95; paint not measured), while completion "
+                        "for the slow steps takes longer than 400 ms. For the slow steps show a determinate progress message, keep the previous result "
+                        "visible until the new one lands, and profile where the time goes before optimising anything.",
                         laws_=("Doherty threshold",), targets=[x["step"] for x in slow],
-                        effect="measured on this machine; wall-clock, sensitive to load from other processes"))
+                        effect="measured on this machine; wall-clock, sensitive to load from other processes",
+                        likely_cause="the server-side work per action, possibly the durable SQLite commit path, dominates (hypothesis; no profile was taken)"))
     if tail:
         out.append(_rec("doherty-tail", f"{len(tail)} interaction(s) occasionally exceed 400 ms (median under)", "doherty", 2,
                         {"steps": [f"{x['step']}: p50 {x['settled_p50_ms']} / p95 {x['settled_p95_ms']} ms ({x['samples']} samples)" for x in tail]},
-                        "Tail latency on the durable commit path (first commit after start, disk contention). Re-measure with more --repeats before acting; "
-                        "with few samples p95 is the maximum.", laws_=("Doherty threshold",), targets=[x["step"] for x in tail],
-                        effect="measured; may be machine noise"))
+                        "Re-measure with more --repeats before acting; with few samples p95 is the maximum.",
+                        laws_=("Doherty threshold",), targets=[x["step"] for x in tail],
+                        effect="measured; may be machine noise",
+                        likely_cause="tail latency from disk or CPU contention or a first-request cost (hypothesis)"))
     return out
 
 
@@ -240,8 +260,8 @@ def _memory(m: dict) -> list[dict]:
     return [_rec("working-memory-proxy", f"{len(over)}/{len(wm['views'])} views show more than 9 chunks at once (proxy)", "working-memory", 2,
                  {"worst_view": worst["view"], "worst_chunks": worst["chunks_viewport"], "label": wm["label"],
                   "views": [f"{x['view']}: {x['chunks_viewport']}" for x in over]},
-                 "Move persistent chrome (hero copy, boundary banner, footer disclaimer, sidebar note) out of the working area once a case is open, and keep "
-                 "raw JSON blocks collapsed by default, so the work area competes for fewer chunks.", laws_=("Miller 1956", "Cowan 2001"),
+                 "Reduce what is simultaneously visible in the listed views: move persistent chrome out of the working area once a case is open and "
+                 "collapse raw or secondary content by default, so the work area competes for fewer chunks.", laws_=("Miller 1956", "Cowan 2001"),
                  effect="heuristic only: not a measurement of anyone's memory")]
 
 
@@ -249,7 +269,7 @@ def recommend(m: dict) -> list[dict]:
     """All recommendations, deterministically ranked (rank field added, 1 = do first)."""
     recs = (_axe(m) + _target_size(m) + _fitts(m) + _hick(m) + _klm(m) + _keyboard(m) + _state_only(m)
             + _doherty(m) + _console(m) + _memory(m))
-    recs.sort(key=lambda x: (-x["severity"], -x["predicted_saving_s"], x["id"]))
+    recs.sort(key=lambda x: (-x["severity"], -x["rank_saving_s"], x["id"]))
     for i, x in enumerate(recs, 1):
         x["rank"] = i
     return recs

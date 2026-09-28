@@ -8,7 +8,7 @@ PYTHON = sys.executable  # the project environment nox runs in; sessions use pyt
 
 @nox.session(python=False, tags=["fast", "full"])
 def hci_docs(session: nox.Session) -> None:
-    """Drift check: docs/hci/REPORT.md must equal the rendering of docs/hci/report.snapshot.json (no browser)."""
+    """Drift check (no browser): snapshot == derive(committed trace, current laws + budgets); REPORT.md == render(snapshot)."""
     session.run(PYTHON, "-m", "quality.hci", "check")
 
 
@@ -24,3 +24,12 @@ def hci(session: nox.Session) -> None:
         session.skip(out.strip())
     session.log(out.strip() if out else "")
     session.run(PYTHON, "-m", "pytest", "-m", "hci", "-q", "tests/hci", *session.posargs)
+
+
+@nox.session(python=False, tags=["release"])
+def hci_snapshot_fresh(session: nox.Session) -> None:
+    """Release tier: the committed HCI evidence must describe the CURRENT UI bytes (strict drift check, no browser).
+
+    The fast `hci_docs` gate only notes a stale UI hash, because the visual lane legitimately changes the UI first
+    and refreshes evidence after; a release must not ship evidence about UI bytes that no longer exist."""
+    session.run(PYTHON, "-m", "quality.hci", "check", "--strict")

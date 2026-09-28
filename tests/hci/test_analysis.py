@@ -4,7 +4,7 @@ import math
 
 import pytest
 
-from quality.hci import analysis, budgets, report
+from quality.hci import analysis, budgets, laws, report
 from . import hci_synthetic as syn
 
 
@@ -23,6 +23,55 @@ def test_fitts_rows_use_shannon_smaller_of_and_flags(rep):
     assert rows["s2"]["flags"] == []  # 3.46 bits: negative control, not flagged
     s = rep["fitts"]["summary"]
     assert (s["moves_id_over_4"], s["targets_w_under_24"]) == (1, 1)
+
+
+def test_nearest_edge_variant_bounds_the_centre_landing_bias(rep):
+    """Wide target: the centre landing (D=400) flags nothing here, but a 1000 px wide row is reached at its near edge."""
+    assert laws.nearest_edge_distance((0, 0), (300, -20, 200, 40)) == 300  # box 300..500 on the pointer's row
+    assert laws.nearest_edge_distance((350, 0), (300, -20, 200, 40)) == 0  # origin inside the box
+    assert laws.nearest_edge_distance((0, 0), (30, 40, 10, 10)) == 50  # dx=30, dy=40
+    rows = {r["step"]: r for r in rep["fitts"]["targets"]}
+    assert rows["s2"]["id_bits_nearest_edge"] < rows["s2"]["id_bits"]  # box edge is nearer than its centre
+    assert rows["s1"]["id_bits_nearest_edge"] is None
+    s = rep["fitts"]["summary"]
+    assert s["moves_id_over_4_nearest_edge"] <= s["moves_id_over_4"]  # a range whose upper end is the primary count
+    assert "overstates D" in s["landing_convention_note"]
+
+
+def test_completion_flags_are_derived_from_the_recorded_steps_not_asserted(rep):
+    from quality.hci import journey
+
+    assert rep["journey"]["completed"] is False  # negative control: the synthetic trace is not the canonical journey
+    assert rep["keyboard"]["completed_journey_keyboard_only"] is False
+    raw = syn.raw()
+    canonical = [{"id": s.id, "label": s.label, "kind": s.kind} for s in journey.journey()]
+    for p in (*raw["pointer_passes"], raw["keyboard_pass"]):
+        p["steps"] = [dict(x) for x in canonical]
+    assert analysis.analyse(raw)["journey"]["completed"] is True
+    raw["pointer_passes"][1]["steps"].pop()  # one pass stopped early
+    assert analysis.analyse(raw)["journey"]["completed"] is False
+
+
+def test_hypotheses_are_labelled_and_upper_bounds_do_not_break_ranking_ties(rep):
+    by_id = {x["id"]: x for x in rep["recommendations"]}
+    focus = by_id["focus-lost-after-render"]
+    assert focus["saving_kind"] == "upper bound" and focus["rank_saving_s"] == 0.0 and focus["predicted_saving_s"] > 0
+    assert focus["likely_cause"] and "hypothesis" in focus["likely_cause"]
+    assert "replaceChildren" not in focus["change"]  # UI-specific diagnosis is not stated as a fact in `change`
+    assert by_id["fitts-id-over-4"]["saving_kind"] == "model difference" and by_id["fitts-id-over-4"]["rank_saving_s"] > 0
+    md = report.render_markdown(rep)
+    assert "UNVERIFIED hypothesis" in md and "upper bound" in md
+
+
+def test_doherty_recommendation_states_only_what_the_data_says():
+    raw = syn.raw()
+    for p in raw["pointer_passes"]:
+        p["steps"][2]["interaction"]["settled_ms"] = 1500.0  # a step whose median exceeds 400 ms
+    for p in raw["pointer_passes"]:
+        p["steps"][2]["interaction"]["first_feedback_ms"] = 700.0  # and whose first DOM mutation is slow too
+    rec = {x["id"]: x for x in report.build_report(raw)["recommendations"]}["doherty-completion"]
+    assert "700" in rec["change"] and "immediate" not in rec["change"]  # the feedback claim comes from the measured number
+    assert "SQLite" not in rec["change"] and "SQLite" in rec["likely_cause"]
 
 
 def test_hick_flags_only_choice_groups_over_seven(rep):
@@ -89,7 +138,7 @@ def test_moves_up_ignores_wrap_row_noise_and_column_jumps():
 def test_recommendations_are_ranked_deterministically(rep):
     recs = rep["recommendations"]
     assert [x["rank"] for x in recs] == list(range(1, len(recs) + 1))
-    keys = [(-x["severity"], -x["predicted_saving_s"], x["id"]) for x in recs]
+    keys = [(-x["severity"], -x["rank_saving_s"], x["id"]) for x in recs]
     assert keys == sorted(keys)
     ids = {x["id"] for x in recs}
     assert {"a11y-color-contrast", "fitts-id-over-4", "target-size-fail", "focus-lost-after-render", "doherty-tail"} <= ids

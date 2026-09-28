@@ -1,11 +1,10 @@
 """CLI: python -m quality.hci {prereq|run|check}.
 
-Exit codes: 0 ok, 1 budget regression / drift, 2 misuse, 3 NOT_RUN (missing prerequisite; never a pass).
+Exit codes: 0 ok, 1 budget regression / drift / journey failure, 2 misuse, 3 NOT_RUN (missing prerequisite; never a pass).
 """
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 from pathlib import Path
 
@@ -26,14 +25,21 @@ def cmd_run(args: argparse.Namespace) -> int:
     if not ok:
         print("NOT_RUN: " + detail)
         return NOT_RUN
-    raw = journey.collect(repeats=args.repeats, headless=not args.headed, identity=args.identity)
+    try:
+        raw = journey.collect(repeats=args.repeats, headless=not args.headed, identity=args.identity)
+    except journey.ReleaseIdentityUnavailable as exc:
+        print("NOT_RUN: " + str(exc))
+        return NOT_RUN
+    except journey.JourneyError as exc:
+        print("FAIL: the journey did not complete: " + str(exc))
+        return 1
     rep = report.build_report(raw, date=args.date)
     out = Path(args.out)
     report.write_text(out / "report.json", report.dumps(rep))
     report.write_text(out / "REPORT.md", report.render_markdown(rep))
-    report.write_text(out / "trace.json", json.dumps(raw, indent=1, sort_keys=True))
+    report.write_text(out / "trace.json", report.dump_trace(raw))
     if args.publish_docs:
-        report.publish_docs(rep)
+        report.publish_docs(rep, raw)
     fails = [b for b in rep["budgets"] if b["status"] == "FAIL"]
     gaps = [b for b in rep["budgets"] if b["status"] == "GAP"]
     print(f"HCI report written to {out} ({len(rep['recommendations'])} recommendations; budgets: "
@@ -43,8 +49,8 @@ def cmd_run(args: argparse.Namespace) -> int:
     return 1 if fails else 0
 
 
-def cmd_check(_: argparse.Namespace) -> int:
-    ok, message = report.check_docs()
+def cmd_check(args: argparse.Namespace) -> int:
+    ok, message = report.check_docs(strict=args.strict)
     print(("OK: " if ok else "FAIL: ") + message)
     return 0 if ok else 1
 
@@ -61,7 +67,9 @@ def main(argv: list[str] | None = None) -> int:
     run.add_argument("--date", default=None, help="stamp the report (default: no timestamp, for determinism)")
     run.add_argument("--publish-docs", action="store_true", help="also write docs/hci/report.snapshot.json and REPORT.md")
     run.set_defaults(func=cmd_run)
-    sub.add_parser("check", help="drift check: docs/hci/REPORT.md == render(snapshot); no browser").set_defaults(func=cmd_check)
+    check = sub.add_parser("check", help="drift check, no browser: snapshot == derive(committed trace, current laws + budgets); REPORT.md == render(snapshot)")
+    check.add_argument("--strict", action="store_true", help="also fail when the snapshot was taken on different UI bytes (release gate)")
+    check.set_defaults(func=cmd_check)
     args = parser.parse_args(argv)
     return args.func(args)
 

@@ -14,8 +14,8 @@
     {
       "id": "fitts.moves_over_4_bits",
       "law": "Fitts",
-      "limit": 6,
-      "note": "",
+      "limit": 7,
+      "note": "Chrome-build and font specific: five moves sit between 4.0 and 4.4 bits, so the limit is 1 above the measured 6 to avoid failing on a one-pixel layout difference; centre-landing convention (see nearest-edge variant)",
       "path": "fitts.summary.moves_id_over_4",
       "status": "GAP",
       "target": 0,
@@ -26,7 +26,7 @@
       "id": "fitts.max_id",
       "law": "Fitts",
       "limit": 4.5,
-      "note": "",
+      "note": "measured 4.405 bits; geometry is Chrome-build and font specific",
       "path": "fitts.summary.max_id_bits",
       "status": "GAP",
       "target": 4,
@@ -59,7 +59,7 @@
       "id": "klm.pointer_expert_time",
       "law": "KLM-GOMS",
       "limit": 65,
-      "note": "regression guard on the modelled journey; no law defines a threshold, so target = limit",
+      "note": "modelled, not measured: a regression guard on the journey definition (measured model value 62.7 s), so adding a journey step trips it on purpose; no law defines a threshold, so target = limit",
       "path": "klm.expert_time_pointer_s",
       "status": "PASS",
       "target": 65,
@@ -70,23 +70,23 @@
       "id": "doherty.first_feedback_p95",
       "law": "Doherty",
       "limit": 400,
-      "note": "",
+      "note": "first DOM mutation after the click (JavaScript-task latency, excludes paint); passes trivially, it is not perceived latency",
       "path": "measured.doherty.first_feedback_p95_ms",
       "status": "PASS",
       "target": 400,
       "unit": "ms",
-      "value": 1.5
+      "value": 1
     },
     {
       "id": "doherty.settled_p95",
       "law": "Doherty",
       "limit": 4000,
-      "note": "wall-clock on a shared PC; verification dominates",
+      "note": "wall-clock on a shared PC; p95 varied between about 1.4 and 2.5 s across runs under different load, the ratchet is generous on purpose",
       "path": "measured.doherty.settled_p95_ms",
       "status": "GAP",
       "target": 400,
       "unit": "ms",
-      "value": 1417.8
+      "value": 2507.3
     },
     {
       "id": "wcag.critical_rules",
@@ -103,7 +103,7 @@
       "id": "wcag.serious_rules",
       "law": "WCAG 2.2 AA",
       "limit": 1,
-      "note": "",
+      "note": "count of violating axe rules (integer), measured 1",
       "path": "wcag.summary.serious",
       "status": "GAP",
       "target": 0,
@@ -219,10 +219,12 @@
       "form": "MT = a + b*log2(D/W + 1), W = min(width, height)"
     },
     "summary": {
+      "landing_convention_note": "primary D uses the centre of the effective box, which overstates D for wide targets; moves_id_over_4_nearest_edge recomputes D to the nearest edge, so the flag count is a range",
       "max_id_bits": 4.405,
       "max_id_step": "submit-teacher",
       "mean_id_bits": 2.975,
       "moves_id_over_4": 6,
+      "moves_id_over_4_nearest_edge": 4,
       "moves_with_distance": 19,
       "pointer_targets": 20,
       "predicted_pointing_time_s": 13.753,
@@ -235,6 +237,7 @@
         "distance_px": null,
         "flags": [],
         "id_bits": null,
+        "id_bits_nearest_edge": null,
         "note": "first pointer target: no preceding position",
         "predicted_mt_s": null,
         "raw_w_px": 96.2,
@@ -250,6 +253,7 @@
         "distance_px": 447.4,
         "flags": [],
         "id_bits": 3.347,
+        "id_bits_nearest_edge": 3.056,
         "predicted_mt_s": 0.786,
         "raw_w_px": 48.8,
         "scrolled_before": false,
@@ -266,6 +270,7 @@
           "ID>4"
         ],
         "id_bits": 4.218,
+        "id_bits_nearest_edge": 4.05,
         "predicted_mt_s": 0.93,
         "raw_w_px": 48.8,
         "scrolled_before": false,
@@ -282,6 +287,7 @@
           "ID>4"
         ],
         "id_bits": 4.208,
+        "id_bits_nearest_edge": 4.057,
         "predicted_mt_s": 0.929,
         "raw_w_px": 48.8,
         "scrolled_before": true,
@@ -296,6 +302,7 @@
         "distance_px": 577.9,
         "flags": [],
         "id_bits": 3.639,
+        "id_bits_nearest_edge": 3.565,
         "predicted_mt_s": 0.834,
         "raw_w_px": 50.4,
         "scrolled_before": false,
@@ -312,6 +319,7 @@
           "ID>4"
         ],
         "id_bits": 4.011,
+        "id_bits_nearest_edge": 3.83,
         "predicted_mt_s": 0.896,
         "raw_w_px": 48.8,
         "scrolled_before": false,
@@ -328,6 +336,7 @@
           "ID>4"
         ],
         "id_bits": 4.405,
+        "id_bits_nearest_edge": 4.334,
         "predicted_mt_s": 0.961,
         "raw_w_px": 48.8,
         "scrolled_before": false,
@@ -342,6 +351,7 @@
         "distance_px": 119.2,
         "flags": [],
         "id_bits": 1.785,
+        "id_bits_nearest_edge": 1.121,
         "predicted_mt_s": 0.526,
         "raw_w_px": 48.8,
         "scrolled_before": false,
@@ -356,6 +366,7 @@
         "distance_px": 86.2,
         "flags": [],
         "id_bits": 1.565,
+        "id_bits_nearest_edge": 0.922,
         "predicted_mt_s": 0.49,
         "raw_w_px": 44,
         "scrolled_before": false,
@@ -370,6 +381,7 @@
         "distance_px": 88.4,
         "flags": [],
         "id_bits": 1.492,
+        "id_bits_nearest_edge": 0.866,
         "predicted_mt_s": 0.478,
         "raw_w_px": 48.8,
         "scrolled_before": false,
@@ -384,6 +396,7 @@
         "distance_px": 88.4,
         "flags": [],
         "id_bits": 1.589,
+        "id_bits_nearest_edge": 0.922,
         "predicted_mt_s": 0.494,
         "raw_w_px": 44,
         "scrolled_before": false,
@@ -398,6 +411,7 @@
         "distance_px": 86.2,
         "flags": [],
         "id_bits": 1.469,
+        "id_bits_nearest_edge": 0.815,
         "predicted_mt_s": 0.474,
         "raw_w_px": 48.8,
         "scrolled_before": false,
@@ -412,6 +426,7 @@
         "distance_px": 540.1,
         "flags": [],
         "id_bits": 3.549,
+        "id_bits_nearest_edge": 3.42,
         "predicted_mt_s": 0.819,
         "raw_w_px": 50.4,
         "scrolled_before": false,
@@ -426,6 +441,7 @@
         "distance_px": 586.3,
         "flags": [],
         "id_bits": 3.703,
+        "id_bits_nearest_edge": 3.428,
         "predicted_mt_s": 0.845,
         "raw_w_px": 48.8,
         "scrolled_before": false,
@@ -442,6 +458,7 @@
           "ID>4"
         ],
         "id_bits": 4.378,
+        "id_bits_nearest_edge": 4.208,
         "predicted_mt_s": 0.957,
         "raw_w_px": 46.8,
         "scrolled_before": false,
@@ -456,6 +473,7 @@
         "distance_px": 99.5,
         "flags": [],
         "id_bits": 1.645,
+        "id_bits_nearest_edge": 1.394,
         "predicted_mt_s": 0.503,
         "raw_w_px": 46.8,
         "scrolled_before": false,
@@ -470,6 +488,7 @@
         "distance_px": 99.5,
         "flags": [],
         "id_bits": 1.645,
+        "id_bits_nearest_edge": 1.394,
         "predicted_mt_s": 0.503,
         "raw_w_px": 46.8,
         "scrolled_before": false,
@@ -486,6 +505,7 @@
           "ID>4"
         ],
         "id_bits": 4.135,
+        "id_bits_nearest_edge": 1.452,
         "predicted_mt_s": 0.916,
         "raw_w_px": 18,
         "scrolled_before": false,
@@ -500,6 +520,7 @@
         "distance_px": 406.2,
         "flags": [],
         "id_bits": 3.222,
+        "id_bits_nearest_edge": 2.783,
         "predicted_mt_s": 0.765,
         "raw_w_px": 48.8,
         "scrolled_before": true,
@@ -514,6 +535,7 @@
         "distance_px": 229.1,
         "flags": [],
         "id_bits": 2.511,
+        "id_bits_nearest_edge": 1.886,
         "predicted_mt_s": 0.647,
         "raw_w_px": 48.8,
         "scrolled_before": false,
@@ -2927,27 +2949,31 @@
     "This is NOT a human usability study. No participant, persona or task-success rate is represented (human study: NOT_RUN).",
     "The journey answers the three review questions with scripted fixture text; it exercises the UI and says nothing about comprehension.",
     "Approval and apply run under the kernel-test harness identity (source differs from the owner-stamped fixture); they are UI evidence, not a release approval.",
-    "Doherty timings are wall-clock on one shared Windows PC, headless Chrome, loopback server; they exclude OS/input latency and are sensitive to load.",
+    "Doherty timings are wall-clock on one shared Windows PC, headless Chrome, loopback server; they exclude OS/input latency and are sensitive to load (the settled p95 varied between about 1.4 and 2.5 s across runs).",
+    "'First feedback' is the first DOM mutation after the click (a JavaScript-task latency). It excludes style, layout, paint and compositing, so it is not perceived latency.",
+    "Fitts D lands at the centre of the effective box, which overstates D for wide targets; the report also gives a nearest-edge variant so the flag count is a range. Geometry-based budgets are specific to this Chrome build and font set.",
+    "Only uncaught page exceptions and HTTP error responses are counted as runtime hygiene; console.error and console.warn messages are not.",
+    "Hick b and the KLM operator times came from secondary sources (Card, Moran & Newell as cited in the literature); only the Fitts constants were checked against the primary paper text.",
     "axe-core detects only a subset of WCAG failures; a clean axe run is not conformance. Exceptions to 2.5.8 other than spacing are not evaluated.",
     "The working-memory number is a visibility-based heuristic proxy for Miller/Cowan chunk limits, not a measure of anyone's memory."
   ],
   "measured": {
     "doherty": {
       "citation": "Doherty & Thadani 1982 (IBM Systems Journal 21(1)); ~400 ms",
-      "first_feedback_p50_ms": 0.7,
-      "first_feedback_p95_ms": 1.5,
+      "first_feedback_p50_ms": 0.6,
+      "first_feedback_p95_ms": 1,
       "interactions_measured": 39,
-      "journey_wait_p50_sum_s": 2.099,
-      "keyboard_settled_p50_ms": 57.9,
-      "keyboard_settled_p95_ms": 1405.4,
+      "journey_wait_p50_sum_s": 2.356,
+      "keyboard_settled_p50_ms": 56.7,
+      "keyboard_settled_p95_ms": 6246.6,
       "method": "nearest-rank percentiles over all repeats",
       "native_control_interactions_excluded": [
         "acknowledge"
       ],
       "note": "settled = last DOM mutation before quiescence, from the click event; excludes OS/browser input latency",
-      "settled_max_ms": 1424.2,
-      "settled_p50_ms": 59.5,
-      "settled_p95_ms": 1417.8,
+      "settled_max_ms": 3739.1,
+      "settled_p50_ms": 55.6,
+      "settled_p95_ms": 2507.3,
       "steps": [
         {
           "first_feedback_p50_ms": 0.7,
@@ -2955,18 +2981,18 @@
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p50_ms": 88.1,
-          "settled_p95_ms": 95,
+          "settled_p50_ms": 63.2,
+          "settled_p95_ms": 81.1,
           "step": "create-case"
         },
         {
-          "first_feedback_p50_ms": 0.9,
-          "first_feedback_p95_ms": 1.1,
+          "first_feedback_p50_ms": 0.8,
+          "first_feedback_p95_ms": 0.9,
           "median_over_400ms": false,
-          "over_400ms": false,
+          "over_400ms": true,
           "samples": 3,
-          "settled_p50_ms": 74.3,
-          "settled_p95_ms": 76.8,
+          "settled_p50_ms": 98.2,
+          "settled_p95_ms": 538.6,
           "step": "ask-interpretations"
         },
         {
@@ -2976,38 +3002,18 @@
           "over_400ms": false,
           "samples": 3,
           "settled_p50_ms": 55,
-          "settled_p95_ms": 58.9,
+          "settled_p95_ms": 63,
           "step": "select-meaning"
         },
         {
           "first_feedback_p50_ms": 0.2,
-          "first_feedback_p95_ms": 0.2,
+          "first_feedback_p95_ms": 0.3,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
           "settled_p50_ms": 0.2,
-          "settled_p95_ms": 0.2,
+          "settled_p95_ms": 0.3,
           "step": "open-try"
-        },
-        {
-          "first_feedback_p50_ms": 0.7,
-          "first_feedback_p95_ms": 0.8,
-          "median_over_400ms": false,
-          "over_400ms": false,
-          "samples": 3,
-          "settled_p50_ms": 58.3,
-          "settled_p95_ms": 59.9,
-          "step": "reset-preview"
-        },
-        {
-          "first_feedback_p50_ms": 0.8,
-          "first_feedback_p95_ms": 0.8,
-          "median_over_400ms": false,
-          "over_400ms": false,
-          "samples": 3,
-          "settled_p50_ms": 61,
-          "settled_p95_ms": 69.5,
-          "step": "submit-teacher"
         },
         {
           "first_feedback_p50_ms": 0.6,
@@ -3015,68 +3021,88 @@
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p50_ms": 54.8,
-          "settled_p95_ms": 55.7,
+          "settled_p50_ms": 48.1,
+          "settled_p95_ms": 55.1,
+          "step": "reset-preview"
+        },
+        {
+          "first_feedback_p50_ms": 0.7,
+          "first_feedback_p95_ms": 0.8,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p50_ms": 48.1,
+          "settled_p95_ms": 55.6,
+          "step": "submit-teacher"
+        },
+        {
+          "first_feedback_p50_ms": 0.5,
+          "first_feedback_p95_ms": 0.5,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p50_ms": 49.1,
+          "settled_p95_ms": 102.2,
           "step": "recommend-teacher"
         },
         {
-          "first_feedback_p50_ms": 0.4,
+          "first_feedback_p50_ms": 0.6,
           "first_feedback_p95_ms": 0.6,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p50_ms": 54.8,
-          "settled_p95_ms": 59.5,
+          "settled_p50_ms": 70.6,
+          "settled_p95_ms": 101.6,
           "step": "approve-registrar"
         },
         {
           "first_feedback_p50_ms": 0.6,
-          "first_feedback_p95_ms": 0.7,
+          "first_feedback_p95_ms": 0.8,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p50_ms": 7.8,
-          "settled_p95_ms": 260.6,
+          "settled_p50_ms": 7.6,
+          "settled_p95_ms": 7.6,
           "step": "denied-recommend"
         },
         {
-          "first_feedback_p50_ms": 0.2,
+          "first_feedback_p50_ms": 0.1,
           "first_feedback_p95_ms": 0.2,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p50_ms": 0.2,
+          "settled_p50_ms": 0.1,
           "settled_p95_ms": 0.2,
           "step": "open-evidence"
         },
         {
-          "first_feedback_p50_ms": 0.7,
-          "first_feedback_p95_ms": 0.8,
+          "first_feedback_p50_ms": 0.6,
+          "first_feedback_p95_ms": 0.6,
           "median_over_400ms": true,
           "over_400ms": true,
           "samples": 3,
-          "settled_p50_ms": 1417.8,
-          "settled_p95_ms": 1424.2,
+          "settled_p50_ms": 1529.4,
+          "settled_p95_ms": 1633.6,
           "step": "run-verification"
         },
         {
-          "first_feedback_p50_ms": 1.5,
-          "first_feedback_p95_ms": 1.5,
+          "first_feedback_p50_ms": 1,
+          "first_feedback_p95_ms": 1.2,
           "median_over_400ms": false,
-          "over_400ms": false,
+          "over_400ms": true,
           "samples": 3,
-          "settled_p50_ms": 102.7,
-          "settled_p95_ms": 108.2,
+          "settled_p50_ms": 238.7,
+          "settled_p95_ms": 3739.1,
           "step": "approve-exact"
         },
         {
           "first_feedback_p50_ms": 0.7,
-          "first_feedback_p95_ms": 0.7,
+          "first_feedback_p95_ms": 0.8,
           "median_over_400ms": false,
-          "over_400ms": false,
+          "over_400ms": true,
           "samples": 3,
-          "settled_p50_ms": 124.2,
-          "settled_p95_ms": 158.9,
+          "settled_p50_ms": 147.7,
+          "settled_p95_ms": 2507.3,
           "step": "apply-baseline"
         }
       ],
@@ -3084,7 +3110,10 @@
         "run-verification"
       ],
       "steps_over_400ms": [
-        "run-verification"
+        "ask-interpretations",
+        "run-verification",
+        "approve-exact",
+        "apply-baseline"
       ],
       "threshold_ms": 400.0
     }
@@ -3100,36 +3129,8 @@
   ],
   "recommendations": [
     {
-      "category": "keyboard",
-      "change": "render() rebuilds whole regions with replaceChildren(), destroying the focused button. Update disabled/text in place, or re-focus the same control (by data-action / id) after render, and move focus deliberately to the new content on tab changes (WCAG 2.4.3 Focus Order, 3.2.2).",
-      "evidence": {
-        "max_tab_presses_for_one_target": 18,
-        "steps": [
-          "create-case",
-          "select-meaning",
-          "submit-teacher",
-          "recommend-teacher",
-          "approve-registrar",
-          "approve-exact",
-          "apply-baseline"
-        ],
-        "tab_presses_after_loss": 64
-      },
-      "id": "focus-lost-after-render",
-      "laws": [
-        "WCAG 2.4.3",
-        "KLM"
-      ],
-      "predicted_effect": "model: up to 17.9 s of Tab keystrokes spent re-finding position",
-      "predicted_saving_s": 17.92,
-      "rank": 1,
-      "severity": 4,
-      "targets": [],
-      "title": "7/14 keyboard activations dropped focus to <body>"
-    },
-    {
       "category": "wcag",
-      "change": "Give each scrollable <pre> (Try: audit/outbox, Evidence: raw packet, Impact: closure JSON) tabindex=\"0\", role=\"region\" and an aria-label so keyboard users can scroll it, or wrap the content in a <details> that is closed by default.",
+      "change": "Give each listed scrollable region tabindex=\"0\", role=\"region\" and an accessible name so keyboard users can scroll it, or make it non-scrolling (for example collapse long content by default).",
       "evidence": {
         "impact": "serious",
         "nodes": 1,
@@ -3157,9 +3158,12 @@
       "laws": [
         "WCAG 2.2 AA"
       ],
+      "likely_cause": "",
       "predicted_effect": "",
       "predicted_saving_s": 0.0,
-      "rank": 2,
+      "rank": 1,
+      "rank_saving_s": 0.0,
+      "saving_kind": "model difference",
       "severity": 4,
       "targets": [
         "#trace"
@@ -3168,25 +3172,59 @@
     },
     {
       "category": "doherty",
-      "change": "First feedback is immediate (the busy notice), so the 400 ms acknowledgement is met, but completion is not. For the slow steps show a determinate progress message (for verification: matrix cells done / total), keep the previous result visible until the new one lands, and profile the server commit path (durable SQLite commit per action).",
+      "change": "First DOM mutation after the click came within 1 ms (p95; paint not measured), while completion for the slow steps takes longer than 400 ms. For the slow steps show a determinate progress message, keep the previous result visible until the new one lands, and profile where the time goes before optimising anything.",
       "evidence": {
-        "first_feedback_p95_ms": 1.5,
+        "first_feedback_p95_ms": 1,
         "slow_steps": [
-          "run-verification: p50 1417.8 / p95 1424.2 ms"
+          "run-verification: p50 1529.4 / p95 1633.6 ms"
         ]
       },
       "id": "doherty-completion",
       "laws": [
         "Doherty threshold"
       ],
+      "likely_cause": "the server-side work per action, possibly the durable SQLite commit path, dominates (hypothesis; no profile was taken)",
       "predicted_effect": "measured on this machine; wall-clock, sensitive to load from other processes",
       "predicted_saving_s": 0.0,
-      "rank": 3,
+      "rank": 2,
+      "rank_saving_s": 0.0,
+      "saving_kind": "model difference",
       "severity": 4,
       "targets": [
         "run-verification"
       ],
       "title": "1 interaction(s) usually take longer than 400 ms to finish"
+    },
+    {
+      "category": "keyboard",
+      "change": "Keep or restore keyboard focus across updates: update the activated control in place, or re-focus the same control after the update, and move focus deliberately to new content on tab changes (WCAG 2.4.3 Focus Order, 3.2.2).",
+      "evidence": {
+        "max_tab_presses_for_one_target": 18,
+        "steps": [
+          "create-case",
+          "select-meaning",
+          "submit-teacher",
+          "recommend-teacher",
+          "approve-registrar",
+          "approve-exact",
+          "apply-baseline"
+        ],
+        "tab_presses_after_loss": 64
+      },
+      "id": "focus-lost-after-render",
+      "laws": [
+        "WCAG 2.4.3",
+        "KLM"
+      ],
+      "likely_cause": "the render step replaces whole regions of the DOM (for example replaceChildren), destroying the focused element (hypothesis; a code search agrees, the probe does not observe it)",
+      "predicted_effect": "upper bound: 17.9 s is every Tab press on the step after a focus loss, including presses that would be needed anyway; not a difference against a preserved-focus counterfactual",
+      "predicted_saving_s": 17.92,
+      "rank": 3,
+      "rank_saving_s": 0.0,
+      "saving_kind": "upper bound",
+      "severity": 4,
+      "targets": [],
+      "title": "7/14 keyboard activations dropped focus to <body>"
     },
     {
       "category": "wcag",
@@ -3204,9 +3242,12 @@
       "laws": [
         "WCAG 4.1.2"
       ],
+      "likely_cause": "",
       "predicted_effect": "",
       "predicted_saving_s": 0.0,
       "rank": 4,
+      "rank_saving_s": 0.0,
+      "saving_kind": "model difference",
       "severity": 3,
       "targets": [
         "#case-list > button",
@@ -3254,9 +3295,12 @@
       "laws": [
         "KLM"
       ],
+      "likely_cause": "",
       "predicted_effect": "model: 3.6 s of 62.7 s expert time (6%)",
       "predicted_saving_s": 3.64,
       "rank": 5,
+      "rank_saving_s": 3.64,
+      "saving_kind": "model difference",
       "severity": 2,
       "targets": [
         "#q-assignment",
@@ -3266,7 +3310,7 @@
     },
     {
       "category": "fitts",
-      "change": "Place the next action next to the previous target (primary actions currently sit at the far right edge of section headings while the preceding target is on the left), i.e. halve D, and give wide-but-short rows min-height 44 px.",
+      "change": "Place each flagged target closer to the previous one (halve D) and give short targets an effective height of at least 44 px (W >= 44 px). Note the centre-landing convention overstates D for wide targets; see the nearest-edge column.",
       "evidence": {
         "moves": [
           "ask-interpretations: D=858.4 px, W=48.8 px, ID=4.218 bits, MT=0.93 s",
@@ -3282,9 +3326,12 @@
         "Fitts",
         "MacKenzie & Buxton 1992"
       ],
+      "likely_cause": "primary actions may sit at the far edge of a section while the preceding target is on the other side of the screen (hypothesis from the geometry table, not from the UI code)",
       "predicted_effect": "model: halving D and W>=44 px saves 1.04 s of pointing time across the flagged moves",
       "predicted_saving_s": 1.039,
       "rank": 6,
+      "rank_saving_s": 1.039,
+      "saving_kind": "model difference",
       "severity": 2,
       "targets": [
         "#acknowledge",
@@ -3297,8 +3344,36 @@
       "title": "6 pointer move(s) exceed 4 bits"
     },
     {
+      "category": "doherty",
+      "change": "Re-measure with more --repeats before acting; with few samples p95 is the maximum.",
+      "evidence": {
+        "steps": [
+          "ask-interpretations: p50 98.2 / p95 538.6 ms (3 samples)",
+          "approve-exact: p50 238.7 / p95 3739.1 ms (3 samples)",
+          "apply-baseline: p50 147.7 / p95 2507.3 ms (3 samples)"
+        ]
+      },
+      "id": "doherty-tail",
+      "laws": [
+        "Doherty threshold"
+      ],
+      "likely_cause": "tail latency from disk or CPU contention or a first-request cost (hypothesis)",
+      "predicted_effect": "measured; may be machine noise",
+      "predicted_saving_s": 0.0,
+      "rank": 7,
+      "rank_saving_s": 0.0,
+      "saving_kind": "model difference",
+      "severity": 2,
+      "targets": [
+        "apply-baseline",
+        "approve-exact",
+        "ask-interpretations"
+      ],
+      "title": "3 interaction(s) occasionally exceed 400 ms (median under)"
+    },
+    {
       "category": "fitts",
-      "change": "Collapse the marketing hero/boundary banner once a case is open (or make the tab bar and primary action sticky) so the journey's targets stay above the fold.",
+      "change": "Keep the journey's targets above the fold (for example make the tab bar and the primary action sticky, or collapse persistent chrome once a case is open).",
       "evidence": {
         "steps": [
           "select-meaning",
@@ -3314,16 +3389,19 @@
         "Fitts",
         "KLM"
       ],
-      "predicted_effect": "each avoided scroll removes one unmodelled operator (the standard KLM total excludes scrolling)",
+      "likely_cause": "banner or hero content above the work area pushes it down (hypothesis; the probe did not measure what sits above the fold)",
+      "predicted_effect": "each avoided scroll removes one unmodelled operator (the standard KLM total excludes scrolling); the 0.5 s per scroll is an assumption, not a measurement",
       "predicted_saving_s": 1.0,
-      "rank": 7,
+      "rank": 8,
+      "rank_saving_s": 0.0,
+      "saving_kind": "upper bound",
       "severity": 2,
       "targets": [],
       "title": "2 journey click(s) needed a scroll first at 1440x900"
     },
     {
       "category": "keyboard",
-      "change": "Make the work-area tabs a single tab stop with arrow-key navigation (WAI-ARIA tabs pattern: role=tablist/tab, aria-selected, roving tabindex) and keep the sidebar after main content in DOM order or behind the skip link.",
+      "change": "Reduce the Tab distance to the slowest target: group related controls into a single tab stop with arrow-key navigation (WAI-ARIA composite widget pattern with roving tabindex) or provide a skip link past repeated regions.",
       "evidence": {
         "tab_presses_by_step": {
           "acknowledge": 1,
@@ -3353,16 +3431,19 @@
         "KLM",
         "WCAG 2.1.1"
       ],
+      "likely_cause": "a long run of tab stops before the main content, such as a tab bar or sidebar, precedes the target (hypothesis)",
       "predicted_effect": "",
       "predicted_saving_s": 0.0,
-      "rank": 8,
+      "rank": 9,
+      "rank_saving_s": 0.0,
+      "saving_kind": "model difference",
       "severity": 2,
       "targets": [],
       "title": "Reaching one control took 18 Tab presses"
     },
     {
       "category": "fitts",
-      "change": "Give the checkbox label (the real click area) min-height 44 px and enlarge the raw 18 px input box or its hit padding, so the control meets the 44 px guideline (WCAG 2.5.5 AAA) as well as the 24 px minimum.",
+      "change": "Raise each listed target's effective clickable box (min-height, min-width or hit padding; where a label is the real click area, size the label) to 44 px, so it meets the 44 px guideline (WCAG 2.5.5 AAA) as well as the 24 px minimum.",
       "evidence": {
         "targets": [
           "I understand this is a local synthetic d eff 1041x25 raw 18x18px",
@@ -3374,9 +3455,12 @@
         "WCAG 2.5.8",
         "Fitts"
       ],
+      "likely_cause": "",
       "predicted_effect": "removes the smallest-W pointing target from the journey",
       "predicted_saving_s": 0.0,
-      "rank": 9,
+      "rank": 10,
+      "rank_saving_s": 0.0,
+      "saving_kind": "model difference",
       "severity": 2,
       "targets": [
         "#acknowledge",
@@ -3386,7 +3470,7 @@
     },
     {
       "category": "working-memory",
-      "change": "Move persistent chrome (hero copy, boundary banner, footer disclaimer, sidebar note) out of the working area once a case is open, and keep raw JSON blocks collapsed by default, so the work area competes for fewer chunks.",
+      "change": "Reduce what is simultaneously visible in the listed views: move persistent chrome out of the working area once a case is open and collapse raw or secondary content by default, so the work area competes for fewer chunks.",
       "evidence": {
         "label": "HEURISTIC PROXY - counts what is simultaneously visible, not what a person holds in memory",
         "views": [
@@ -3411,9 +3495,12 @@
         "Miller 1956",
         "Cowan 2001"
       ],
+      "likely_cause": "",
       "predicted_effect": "heuristic only: not a measurement of anyone's memory",
       "predicted_saving_s": 0.0,
-      "rank": 10,
+      "rank": 11,
+      "rank_saving_s": 0.0,
+      "saving_kind": "model difference",
       "severity": 2,
       "targets": [],
       "title": "12/12 views show more than 9 chunks at once (proxy)"
@@ -3430,9 +3517,12 @@
       "laws": [
         "Hick-Hyman"
       ],
+      "likely_cause": "",
       "predicted_effect": "if a novice searched the whole screen instead of the choice group: +1.60 s (upper bound, model)",
       "predicted_saving_s": 1.597,
-      "rank": 11,
+      "rank": 12,
+      "rank_saving_s": 1.597,
+      "saving_kind": "model difference",
       "severity": 1,
       "targets": [],
       "title": "9/9 decision points have more than 7 visible controls on screen"
@@ -3449,16 +3539,19 @@
       "laws": [
         "KLM"
       ],
+      "likely_cause": "",
       "predicted_effect": "",
       "predicted_saving_s": 0.0,
-      "rank": 12,
+      "rank": 13,
+      "rank_saving_s": 0.0,
+      "saving_kind": "model difference",
       "severity": 1,
       "targets": [],
       "title": "Keyboard-only journey costs 63.1 s vs 62.7 s with the pointer (model)"
     },
     {
       "category": "klm",
-      "change": "Each M is a reading or decision moment; the largest are the interpretation choice and the three review answers. Keep their wording short and put the decision-relevant text next to the control (no cross-tab lookup).",
+      "change": "Each M is a reading or decision moment (steps listed in the evidence). Keep the wording at those steps short and put the decision-relevant text next to the control (no cross-tab lookup).",
       "evidence": {
         "M_by_step": [
           "acknowledge",
@@ -3476,9 +3569,12 @@
       "laws": [
         "KLM"
       ],
+      "likely_cause": "",
       "predicted_effect": "informational: M is the irreducible cognitive floor of the journey",
       "predicted_saving_s": 0.0,
-      "rank": 13,
+      "rank": 14,
+      "rank_saving_s": 0.0,
+      "saving_kind": "model difference",
       "severity": 1,
       "targets": [],
       "title": "9 mental operators = 12.2 s (19% of expert time)"
@@ -3488,19 +3584,19 @@
     "http_error_responses": [
       {
         "method": "POST",
-        "path": "/api/cases/99f6e04dc2944e05977261aea16d85b2/execute",
+        "path": "/api/cases/29789376178d4a3e931a794066b95b99/execute",
         "status": 409,
         "step": "denied-recommend"
       },
       {
         "method": "POST",
-        "path": "/api/cases/bd5c4642da334cf99faab10358780136/execute",
+        "path": "/api/cases/5caa9737106242c3b224364f5a9e6928/execute",
         "status": 409,
         "step": "denied-recommend"
       },
       {
         "method": "POST",
-        "path": "/api/cases/c33da209c16e478383277d1dda0ff9e1/execute",
+        "path": "/api/cases/e03f3fcc85e749dab0e30454d0011a52/execute",
         "status": 409,
         "step": "denied-recommend"
       }

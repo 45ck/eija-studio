@@ -1,6 +1,6 @@
 # HCI-law instrumentation
 
-Quantitative, reproducible HCI checks of the Studio UI. **This is prediction plus instrumented measurement on synthetic data. It is not a usability study, and it says nothing about real users' speed, comprehension or satisfaction.** The latest results are in [REPORT.md](REPORT.md) (rendered from [report.snapshot.json](report.snapshot.json)). Decisions: [ADR-0039](../adr/0039-hci-law-instrumentation.md), [ADR-0040](../adr/0040-hci-budgets-as-ratchets-and-harness-identity.md).
+Quantitative, reproducible HCI checks of the Studio UI. **This is prediction plus instrumented measurement on synthetic data. It is not a usability study, and it says nothing about real users' speed, comprehension or satisfaction.** The latest results are in [REPORT.md](REPORT.md) (rendered from [report.snapshot.json](report.snapshot.json), which is derived from the raw observations in [trace.snapshot.json](trace.snapshot.json)). Decisions: [ADR-0039](../adr/0039-hci-law-instrumentation.md), [ADR-0040](../adr/0040-hci-budgets-as-ratchets-and-harness-identity.md).
 
 ## Run it
 
@@ -9,9 +9,10 @@ pip install -e ".[dev,hci]"              # playwright==1.63.0, axe-playwright-py
 python -m quality.hci prereq             # READY, or NOT_RUN: <reason> (exit 3)
 python -m quality.hci run                # writes reports/hci/{report.json,REPORT.md,trace.json}
 python -m quality.hci run --publish-docs --date 2026-09-28   # also refresh docs/hci/ (commit these)
-python -m quality.hci check              # drift check, no browser
+python -m quality.hci check              # drift check, no browser: snapshot == derive(trace, laws, budgets), REPORT.md == render(snapshot)
+python -m quality.hci check --strict     # also fails if the snapshot was taken on different UI bytes (release gate)
 pytest -m hci                            # budgets as tests (opt-in; skipped => NOT_RUN if Chrome is missing)
-nox -s hci                               # the same, as a gate (tags: full, release); nox -s hci_docs is the fast drift check
+nox -s hci                               # the same, as a gate (tags: full, release); nox -s hci_docs is the fast drift check; nox -s hci_snapshot_fresh is the strict one (release)
 ```
 
 Requirements: Google Chrome installed (Playwright `channel="chrome"`; nothing is downloaded), Python 3.11+. The run starts its own `eija serve`-equivalent on an ephemeral loopback port with a workspace under `.tmp/hci/` (offline provider, synthetic data), one fresh server per journey. Without Chrome, Playwright or axe every entry point reports `NOT_RUN` and never `PASS`.
@@ -26,7 +27,7 @@ The canonical owner journey (20 modelled actions): type the request, create the 
 
 Shannon formulation (MacKenzie 1992): `ID = log2(D / W + 1)` bits, predicted `MT = a + b * ID`.
 
-* `D`: distance in CSS px between the landing point of the previous and of the current pointer target. The landing point is the centre of the target's effective clickable box, and the driver clicks exactly there (it verifies with `elementFromPoint` that nothing covers it). The first pointer target has no preceding position and no `ID`.
+* `D`: distance in CSS px between the landing point of the previous and of the current pointer target. The landing point is the centre of the target's effective clickable box, and the driver clicks exactly there (it verifies with `elementFromPoint` that nothing covers it). The first pointer target has no preceding position and no `ID`. **Bias:** for a wide target (a full-width row, a checkbox label) the centre is farther than where a person would stop, so the centre convention overstates `D` and inflates `ID`. The report therefore also computes `ID` to the nearest edge of the box (`id_bits_nearest_edge`, `moves_id_over_4_nearest_edge`), and the count of flagged moves is a range (centre landing is the upper end and is what the budget ratchets).
 * `W = min(width, height)` of the effective box (MacKenzie & Buxton 1992, "smaller-of"). A checkbox and its `<label>` are one target because the label activates the control; the raw input box is reported alongside.
 * `a = 0.230 s`, `b = 0.166 s/bit`: MacKenzie & Buxton (1992) mouse regression on the smaller-of model, `MT = 230 + 166 * ID` ms, r = .9501 (Macintosh II, laboratory pointing). Population average; swap `laws.FittsModel` for locally fitted values.
 * Flags: `ID > 4` bits, and `W < 24 px` (WCAG 2.2 SC 2.5.8 Target Size (Minimum)).
@@ -42,7 +43,7 @@ Card, Moran & Newell (1980): `K` 0.28 s (average non-secretary typist), `P` 1.10
 
 ### Doherty threshold (responsiveness)
 
-Doherty & Thadani (1982): about 400 ms. In the page, a capture-phase `click` listener timestamps each interaction (mouse or Enter/Space activation) and a `MutationObserver` timestamps DOM updates. Reported per interaction: **first feedback** (first DOM mutation; here the synchronous "Working..." notice) and **settled** (last mutation before the page was quiet for 150 ms with no `aria-busy`). Percentiles are nearest-rank (deterministic; with few samples p95 is the maximum). Native controls that change no DOM (the acknowledge checkbox) are listed and excluded. Timings exclude input-device and OS latency and are wall-clock on a possibly busy PC: budgets use generous ratchets.
+Doherty & Thadani (1982): about 400 ms. In the page, a capture-phase `click` listener timestamps each interaction (mouse or Enter/Space activation) and a `MutationObserver` timestamps DOM updates. Reported per interaction: **first DOM mutation** (JSON key `first_feedback`; here the synchronous "Working..." notice; a JavaScript-task latency that excludes style, layout, paint and compositing, so it is not perceived latency and cannot meaningfully fail its 400 ms budget) and **settled** (last mutation before the page was quiet for 150 ms with no `aria-busy`). Percentiles are nearest-rank (deterministic; with few samples p95 is the maximum). Native controls that change no DOM (the acknowledge checkbox) are listed and excluded. Timings exclude input-device and OS latency and are wall-clock on a possibly busy PC (the settled p95 measured between about 1.4 s and 2.5 s in different runs on the shared PC): budgets use generous ratchets.
 
 ### WCAG 2.2 AA
 
@@ -62,11 +63,15 @@ Miller (1956) 7 +/- 2, Cowan (2001) about 4. These limits concern chunks a perso
 
 ## Determinism and drift
 
-Geometry, operators, axe results and all derived numbers are deterministic for the same UI bytes, Chrome and fonts (a browser test asserts that target boxes and operator sequences repeat across journeys). Timings are measured and vary. `report.json` is canonical (sorted keys, LF); `REPORT.md` is a pure function of the JSON, so `python -m quality.hci check` (fast tier) re-renders the committed snapshot and compares bytes. A snapshot older than the current UI bytes is reported as informational, not as failure; rerun `nox -s hci` and `--publish-docs` to refresh it. No timestamp is written unless `--date` is given.
+Geometry-based budgets (moves over 4 bits, max ID) are specific to the Chrome build and fonts of the snapshot: five moves sit between 4.0 and 4.4 bits, so the `moves_over_4_bits` limit has one bit of headroom and a different Chrome may still shift the count. Geometry, operators, axe results and all derived numbers are deterministic for the same UI bytes, Chrome and fonts (a browser test asserts that target boxes and operator sequences repeat across journeys). Timings are measured and vary. The raw trace is committed (`trace.snapshot.json`, canonical compact JSON). `report.snapshot.json` is canonical (sorted keys, LF) and a pure function of that trace, the laws, the analysis and recommendation code and `budgets.json`; `REPORT.md` is a pure function of the snapshot. `python -m quality.hci check` (fast tier, no browser) re-derives the snapshot from the trace and re-renders the Markdown, comparing bytes, so an edit to a law constant, the analysis, a recommendation or a budget limit without a refresh fails. It cannot re-measure the UI: a change to `web/*` is visible only through the recorded UI hashes. Decision (ADR-0040): a UI-hash mismatch is a note in the fast tier (the visual lane changes the UI first, then refreshes evidence) and a **failure in the release tier** (`nox -s hci_snapshot_fresh`, `check --strict`). Refresh with `nox -s hci` and `python -m quality.hci run --publish-docs`. No timestamp is written unless `--date` is given.
 
 ## Reuse for demos
 
 The journey is data (`quality/hci/journey.py`: `Step`, `Ref`, `Expect`, `Decision`) executed by one driver, so a live, visible demo (headed Chrome, cursor, typing) can replay the same steps with `--headed`. Recording and narration are out of scope for this lane.
+
+## Provenance of the constants
+
+Checked against the primary paper text: the Fitts constants (MacKenzie & Buxton 1992, `MT = 230 + 166 * ID`). Taken from secondary sources and NOT re-checked against the primary text: Hick `b = 0.150 s/bit` and the KLM operator times (as cited from Card, Moran & Newell). Every constant is a population average and a swappable field in `laws.py`.
 
 ## Human study (NOT_RUN)
 

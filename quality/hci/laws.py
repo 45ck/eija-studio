@@ -81,6 +81,17 @@ def smaller_of(width: float, height: float) -> float:
     return min(width, height)
 
 
+def nearest_edge_distance(origin: tuple[float, float], box: tuple[float, float, float, float]) -> float:
+    """Distance from `origin` to the closest point of `box` (x, y, w, h); 0 when the origin is inside.
+
+    Sensitivity variant of Fitts's D: a person often stops at the near edge of a wide target, while the
+    primary model lands at the centre. It bounds the centre-convention bias; it is not a better model."""
+    x, y, w, h = box
+    dx = max(x - origin[0], 0.0, origin[0] - (x + w))
+    dy = max(y - origin[1], 0.0, origin[1] - (y + h))
+    return math.hypot(dx, dy)
+
+
 def fitts_time(index_of_difficulty: float, model: FittsModel = FittsModel()) -> float:
     """Predicted movement time in seconds: a + b * ID."""
     return model.a + model.b * index_of_difficulty
