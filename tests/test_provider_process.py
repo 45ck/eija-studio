@@ -2,6 +2,7 @@
 import json
 import os
 import sys
+import threading
 import time
 from pathlib import Path
 
@@ -21,6 +22,14 @@ child = "import sys,time\\nwhile True:\\n    open(sys.argv[1],'a').write('x')\\n
 subprocess.Popen([sys.executable, "-c", child, beat])
 print("started", flush=True)
 time.sleep(int(sys.argv[2]))
+"""
+
+
+# The parent exits within milliseconds, before any periodic descendant scan could have seen the grandchild.
+QUICK_PARENT = """
+import subprocess, sys
+child = "import sys,time\\nwhile True:\\n    open(sys.argv[1],'a').write('x')\\n    time.sleep(0.05)\\n"
+subprocess.Popen([sys.executable, "-c", child, sys.argv[1]])
 """
 
 
@@ -77,6 +86,32 @@ def test_grandchild_holding_the_pipe_after_parent_exit_is_killed(tmp_path):
         run_bounded([PY, "-c", HEARTBEAT, str(beat), "1"], input=None, env=ENV, timeout=4)
     assert time.monotonic() - started < 15
     assert not _alive(beat)
+
+
+@pytest.mark.parametrize("with_psutil", [True, False], ids=["psutil", "fallback"])
+def test_parent_exiting_at_once_cannot_hang_the_runner_or_leak_the_grandchild(tmp_path, monkeypatch, with_psutil):
+    """Regression: a grandchild that outlives a very fast parent held the pipe open and run_bounded blocked forever."""
+    if with_psutil and process._psutil is None:
+        pytest.skip("psutil is part of the providers extra; the fallback variant still runs")
+    if not with_psutil:
+        monkeypatch.setattr(process, "_psutil", None)
+    beat = tmp_path / "beat.txt"
+    outcome: dict[str, object] = {}
+
+    def call() -> None:
+        try:
+            run_bounded([PY, "-c", QUICK_PARENT, str(beat)], input=None, env=ENV, timeout=3)
+            outcome["result"] = "returned"
+        except CliTimeout:
+            outcome["result"] = "timeout"
+
+    worker = threading.Thread(target=call, daemon=True)
+    worker.start()
+    worker.join(20)
+    assert not worker.is_alive(), "run_bounded blocked past its deadline"
+    assert outcome["result"] == "timeout"  # the grandchild kept the pipe open: treated as a hung tree
+    assert beat.exists() and beat.stat().st_size > 0, "grandchild never ran"
+    assert not _alive(beat), "grandchild survived: process tree was not killed"
 
 
 def test_environment_builder_drops_secret_looking_names_even_if_allowed():
