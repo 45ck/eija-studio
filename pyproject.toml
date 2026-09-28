@@ -14,7 +14,7 @@ dependencies = ["fastapi==0.128.2", "uvicorn==0.48.0", "pydantic==2.13.4", "http
 
 [project.optional-dependencies]
 # Each extra belongs to one capability lane; see docs/oss/REGISTER.md for why each tool was chosen.
-dev = ["pytest==9.0.2", "nox>=2025.5.1"]
+dev = ["pytest==9.0.2", "nox>=2025.5.1", "tomlkit==0.15.1"]
 lint = []
 formal = []
 testing = []
@@ -23,6 +23,12 @@ metrics = ["radon==6.0.1", "grimp==3.17", "coverage==7.16.2"]
 hci = []
 agents = []
 docs = []
+providers = []
+visual = []
+demos = []
+ux = []
+graph = []
+dod = []
 
 [project.scripts]
 eija = "eija_studio.interfaces.cli:main"
@@ -34,6 +40,6 @@ where = ["src"]  # quality/ and verification/ are engineering tooling, never shi
 eija_studio = ["resources/**/*", "resources/*.json"]
 
 [tool.pytest.ini_options]
-pythonpath = ["src"]
+pythonpath = ["src", "."]  # "." so tests can import repo-root tooling packages (quality, demos)
 testpaths = ["tests"]
 addopts = "-ra"  # tests/conftest.py keeps pytest temp dirs inside the checkout (slow system temp)
