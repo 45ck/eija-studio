@@ -61,7 +61,7 @@ flowchart LR
 | File | Problem | Mechanism |
 |---|---|---|
 | `pyproject.toml` | every lane adds an extra or a tool section | one blank-line-separated block per lane; key-level merge driver `quality/tools/tomlmerge.py` (install once per clone: `python -m quality.tools.install_merge_drivers`); two lanes pinning the same package differently is a *conflict*, never a union |
-| `docs/adr/README.md` | every lane added a table row | the index is **generated** from the ADR files (`python -m quality.tools.adr_index --write`), checked by the `adr_index` gate; add a file, not a row; on a merge the `eija-ours` driver keeps our side and you regenerate; all planned ADR number blocks are already reserved in the hand-written table |
+| `docs/adr/README.md` | every lane added a table row | the index is **generated** from the ADR files (`python -m quality.tools.adr_index --write`), checked by the `adr_index` gate; add a file, not a row; on a merge the `eija-generated` driver keeps whichever side still carries the generator marker and you regenerate; all planned ADR number blocks are already reserved in the hand-written table |
 | `docs/oss/REGISTER.md`, `AGENTS.md`, `.gitignore` | append-only | `merge=union` in `.gitattributes` |
 | `src/eija_studio/interfaces/cli.py` | `providers`, `agents`, `visual` each add commands | resolved manually in merge order; if a fourth lane needs it, extract a command registry first |
 | `src/eija_studio/application/service.py` | `quality` annotations vs `visual` additions | `quality` lands first; `visual` rebases |
