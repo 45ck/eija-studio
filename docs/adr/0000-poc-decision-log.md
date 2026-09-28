@@ -1,6 +1,9 @@
-# Architecture decision records
+# ADR-0000: v0.2 proof-of-concept decision log (ADR-001 … ADR-014)
 
-All decisions below are accepted **for the local POC**, not endorsements for production.
+* Status: accepted (for the local POC; not endorsements for production)
+* Date: 2026-09-27
+
+These fourteen decisions shipped with EIJA Studio 0.2.0 and are kept verbatim as one log. Later decisions use one [MADR](https://adr.github.io/madr/) file each, numbered from 0015. The index is in [README.md](README.md).
 
 | ID | Decision and rationale | Rejected shortcut | Consequence / revisit trigger |
 |---|---|---|---|
