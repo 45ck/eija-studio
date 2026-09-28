@@ -1,0 +1,26 @@
+name: guardrails
+# noslop guardrail: changes to hooks or agent settings need the `noslop-approved` label on their PR.
+# Manual dispatch only while hosted CI is unavailable; a human applies the same check by reading the diff of
+# .githooks/, .claude/settings.json and .claude/hooks/ in review.
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Pull request to check
+        required: true
+permissions:
+  contents: read
+  pull-requests: read
+jobs:
+  guardrails:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require the noslop-approved label
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ inputs.pr_number }}
+        run: |
+          if ! gh pr view "$PR" --repo "$GITHUB_REPOSITORY" --json labels --jq '.labels[].name' | grep -q 'noslop-approved'; then
+            echo "::error::Protected noslop files may have changed. Add the 'noslop-approved' label after review."
+            exit 1
+          fi
