@@ -12,7 +12,7 @@ The runtime matrix in `application/verifier.py` is one-step: five actors times f
 
 * Check the code that runs (`application.runtime.execute` over the SQLite unit of work), not a model of it; a model of the runtime is the TLA+ lane's job (ADR-0027) and the two should later be linked by trace conformance.
 * Shortest counterexample traces, state-space statistics and honest bounds.
-* Fast enough for the full tier (depth 6 in about a minute); a deeper release tier.
+* Fast enough for the full tier (depth 6 measured at 85 s including the self-test on the shared reference PC, 2026-09-29); a deeper release tier.
 * The checker must be shown to find bugs: seeded faults must be caught.
 
 ## Considered options
@@ -39,7 +39,7 @@ Chosen option: "explicit-state BFS in `verification/bmc/`", because no mature mo
 * Good: multi-step authority, replay and revocation behaviour of the shipped code is checked with shortest counterexamples and a fault-detection demonstration.
 * Bad: bounded. No violation to depth k is not a proof for k+1; the reachable set did not close at the depths run, and the report says so.
 * Bad: the reference model is a same-author oracle; concurrency, crash points and unknown actors beyond one are out of scope; SQLite itself is trusted.
-* Bad: about 1.7 ms per transition (each `store.transaction()` opens a connection); the alphabet, not the engine, is the cost driver.
+* Bad: between 1.7 ms (author's machine) and 3.6 ms (measured 2026-09-29 on the loaded reference PC) per transition (each `store.transaction()` opens a connection); the alphabet, not the engine, is the cost driver.
 * Revisit when: the actors table, the guard set or the effect kinds change (the statistics drift check fails), or when TLC trace conformance can consume these traces.
 
 ## OSS check (required for any custom module)
