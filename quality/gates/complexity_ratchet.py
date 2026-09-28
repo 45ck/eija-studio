@@ -21,11 +21,13 @@ import sys
 from pathlib import Path
 
 from radon.complexity import cc_visit
-from radon.visitors import Function
+from radon.visitors import Class, Function
 
 ROOT = Path(__file__).resolve().parents[2]
 BASELINE = Path(__file__).with_name("complexity_baseline.json")
-DEFAULT_ROOTS = ("src/eija_studio", "quality")
+# Roots that do not exist yet (for example `verification/`, added by another lane) are skipped, not errors.
+# `tests/` and `scripts/` are outside the ratchet on purpose: they are not shipped kernel code.
+DEFAULT_ROOTS = ("src/eija_studio", "quality", "verification")
 # Cyclomatic complexity 10 is the top of radon rank B. Rank C starts at 11.
 DEFAULT_MAX = 10
 UPDATE = "python -m quality.gates.complexity_ratchet --update"
@@ -40,6 +42,17 @@ def _flatten(blocks: list[Function], prefix: str = "") -> dict[str, int]:
     return found
 
 
+def _class_blocks(block: Class, prefix: str = "") -> dict[str, int]:
+    """Methods of a class and, recursively, of classes nested inside it."""
+    found: dict[str, int] = {}
+    name = f"{prefix}{block.name}."
+    for method in block.methods:
+        found.update(_flatten([method], name))
+    for inner in block.inner_classes:
+        found.update(_class_blocks(inner, name))
+    return found
+
+
 def _function_blocks(source: str) -> dict[str, int]:
     """Qualified function/method name -> complexity. Classes are containers, not measured themselves."""
     found: dict[str, int] = {}
@@ -50,8 +63,7 @@ def _function_blocks(source: str) -> dict[str, int]:
             if not block.is_method:
                 found.update(_flatten([block]))
         else:
-            for method in block.methods:
-                found.update(_flatten([method], f"{block.name}."))
+            found.update(_class_blocks(block))
     return found
 
 
@@ -91,8 +103,11 @@ def evaluate(measured: dict[str, int], debt: dict[str, int], default_max: int = 
 def tightened(
     measured: dict[str, int], debt: dict[str, int], default_max: int = DEFAULT_MAX
 ) -> dict[str, int]:
-    """The debt list after a refactor: lowered values, resolved entries dropped, no new debt ever added."""
-    return {k: measured[k] for k in sorted(debt) if k in measured and measured[k] > default_max}
+    """The debt list after a refactor: lowered values, resolved entries dropped, no new or grown debt ever.
+
+    `min(measured, recorded)` keeps growth a violation: `--update` never launders a regression.
+    """
+    return {k: min(measured[k], debt[k]) for k in sorted(debt) if k in measured and measured[k] > default_max}
 
 
 def write_baseline(debt: dict[str, int], path: Path = BASELINE) -> None:

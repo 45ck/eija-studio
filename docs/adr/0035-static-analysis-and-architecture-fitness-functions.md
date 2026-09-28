@@ -13,7 +13,7 @@ The kernel's central claims (a vendor-free domain, authority checked before repl
 * ADR-0016: adopt mature OSS, write only EIJA-specific glue.
 * Other lanes edit `src/` and `tests/` concurrently, so a mass reformat would cause conflicts on every branch.
 * Gates must be reproducible locally on Windows and POSIX because hosted CI is unavailable (ADR-0017).
-* A gate that cannot fail is worse than no gate, so each needs a negative control.
+* A gate that cannot fail is worse than no gate, so gates get negative controls where a cheap one exists: committed for the architecture contracts, the complexity ratchet (including that `--update` cannot raise debt), Ruff's bandit rules and mypy strict on the domain. There is none yet for the coverage floor or deptry.
 
 ## Considered options
 
@@ -29,10 +29,10 @@ Chosen option: separate, tiered nox sessions in `quality/sessions/quality.py`, e
 
 * **Ratchet, not cliff.** The current code passes every gate except the release-tier audit. Existing violations are named debt: per-file ruff ignores, per-module mypy overrides, a complexity baseline. Thresholds tighten, never loosen; debt is deleted in the commit that fixes it.
 * **Architecture as fitness functions** with import-linter: layers `interfaces > bootstrap > adapters > application > domain`, a vendor-free domain and application, and adapters wired only by bootstrap. `tests/test_quality_gates.py` seeds violations into a copy of the kernel and requires the contracts to break.
-* **mypy strict where invariants live** (`domain`, `application`), default profile elsewhere with a written module-by-module plan. No `ignore_errors`.
-* **Complexity**: xenon enforces average and module rank; a small custom ratchet (`quality/gates/complexity_ratchet.py`) adds the per-function debt list xenon cannot express. `--update` can only lower debt.
+* **mypy strict where invariants live** (`domain`, `application`), default profile elsewhere with a written module-by-module plan. No `ignore_errors`. Strict means annotated, not modelled: the payloads are still `dict[str, Any]`, so this proves less than a typed model would (ratchet item).
+* **Complexity**: xenon enforces average and module rank; a small custom ratchet (`quality/gates/complexity_ratchet.py`) adds the per-function debt list xenon cannot express. `--update` can only lower debt (`min(measured, recorded)`), never raise it. Why not Ruff `C901` with `noqa` on the seven legacy functions: `noqa` cannot pin a value, so a function could grow from 16 to 40 unnoticed.
 * **Coverage** is branch coverage with `fail_under` at the floor of the measured value.
-* **Dependency hygiene**: deptry in the fast tier; pip-audit in the release tier because it needs network, reporting `NOT_RUN` when offline.
+* **Dependency hygiene**: deptry in the fast tier; pip-audit in the release tier because it needs network. Offline it fails with a `NOT_RUN` message (nox exits 0 for a skipped session, which would read as PASS) unless `EIJA_ALLOW_NOT_RUN=1` is set.
 * **Kernel edits** were limited to type annotations with no behaviour change (`dict[str, Any]`, callable types, one narrowing `assert`).
 
 ### Consequences

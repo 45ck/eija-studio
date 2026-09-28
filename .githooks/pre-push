@@ -1,4 +1,6 @@
 #!/bin/sh
-# noslop pre-push, adapted: the full tier is `nox -t full` (the PR gate, plus coverage). Never bypass with --no-verify.
+# noslop pre-push, adapted: the full tier is `nox -t full` (the PR gate, plus coverage). Never bypass with the
+# no-verify flag. The `coverage` session already runs the whole pytest suite, so the separate foundation `tests`
+# session is deselected here to avoid running the suite twice (`nox -t full` alone still runs both).
 set -e
-exec "$(dirname "$0")/run-nox" full
+exec "$(dirname "$0")/run-nox" full -k "not tests"

@@ -1,7 +1,8 @@
 #!/bin/sh
-# Run one nox tier with the project's own interpreter. Usage: .githooks/run-nox <fast|full>
+# Run one nox tier with the project's own interpreter. Usage: .githooks/run-nox <fast|full> [extra nox args]
 # Works from Git Bash on Windows (.venv/Scripts) and POSIX (.venv/bin), from any worktree.
-tier="${1:?usage: run-nox <fast|full>}"
+tier="${1:?usage: run-nox <fast|full> [nox args]}"
+shift
 root=$(git rev-parse --show-toplevel) || exit 1
 cd "$root" || exit 1
 py=""
@@ -9,11 +10,19 @@ for candidate in "$root/.venv/Scripts/python.exe" "$root/.venv/bin/python"; do
   if [ -x "$candidate" ]; then py="$candidate"; break; fi
 done
 [ -n "$py" ] || py=python
-if ! "$py" -c "import nox" >/dev/null 2>&1; then
-  echo "eija hooks: nox is not installed for '$py'. Create the venv first:" >&2
+# Probe every tool the gates import, so a missing extra gives one clear instruction instead of a traceback per session.
+missing=$("$py" - <<'PYEOF' 2>/dev/null
+import importlib.util
+tools = ["nox", "pytest", "pytest_cov", "ruff", "mypy", "importlinter", "xenon", "radon", "deptry"]
+print(" ".join(t for t in tools if importlib.util.find_spec(t) is None))
+PYEOF
+)
+if [ -z "$missing" ] && ! "$py" -c "pass" >/dev/null 2>&1; then missing="a working Python interpreter"; fi
+if [ -n "$missing" ]; then
+  echo "eija hooks: '$py' is missing: $missing. Create the venv first:" >&2
   echo "  py -3.12 -m venv .venv && .venv/Scripts/python -m pip install -e \".[dev,lint]\"" >&2
   exit 1
 fi
 # The system TEMP may be a slow HDD; keep scratch data inside the checkout (ignored by git).
 mkdir -p "$root/.tmp"
-TMP="$root/.tmp" TEMP="$root/.tmp" "$py" -m nox -t "$tier"
+TMP="$root/.tmp" TEMP="$root/.tmp" "$py" -m nox -t "$tier" "$@"

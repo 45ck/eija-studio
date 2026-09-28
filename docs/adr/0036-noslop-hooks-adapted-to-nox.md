@@ -31,13 +31,16 @@ Chosen option: the second. The generated files were kept where sound and changed
 * The generated workflows are `workflow_dispatch` only. The label-gating guardrail workflow takes a PR number input.
 * `.github/workflows/**` is not in the deny list of agent edits, because docs and release lanes legitimately edit workflows; hook and agent-settings edits stay denied.
 
-Hooks are committed but not enabled by this change. The enable step is `git config core.hooksPath .githooks` (see `docs/quality/gates.md`). `noslop doctor` reports that single check as failed until then.
+The **git hooks** in `.githooks/` are committed but not enabled by this change. The enable step is `git config core.hooksPath .githooks` (see `docs/quality/gates.md`). `noslop doctor` passes 5 of 6 checks and fails that one until then (PARTIAL, expected).
+
+The **Claude Code files in `.claude/` are not gated on that step**: Claude Code loads `.claude/settings.json` automatically, so its deny rules and PreToolUse hook are live in every clone and worktree as soon as this merges. The deny list was narrowed to force-pushes so ordinary worktree removal and `--force-with-lease` keep working. The hook matches known bypass forms (long flag, `git commit -n`, `core.hooksPath`, `HUSKY=`/`SKIP=`); it is a tripwire, not a security control, and review of diffs to `.githooks/` and `.claude/` is the control.
 
 ### Consequences
 
 * Good: hooks and manual runs execute the same gates; nothing in the hooks can drift from `nox -t`.
 * Good: no repository-wide behaviour change happens as a side effect of merging this lane.
-* Bad: until someone runs the enable line, the hooks protect nothing. The gap is stated in the PR and in `docs/quality/gates.md`.
+* Bad: until someone runs the enable line, the git hooks protect nothing. The gap is stated in the PR and in `docs/quality/gates.md`.
+* Bad: the agent guardrail can be evaded by anyone with a shell; it stops the common accidental forms only.
 * Bad: `noslop update` would regenerate and overwrite these adaptations; do not run it without diffing.
 * Revisit when: every lane has merged and installed the `lint` extra (then enable hooksPath for all clones), or noslop gains a configurable command per tier.
 

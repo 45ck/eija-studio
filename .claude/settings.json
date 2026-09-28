@@ -2,11 +2,17 @@
   "permissions": {
     "deny": [
       "Bash(*--no-verify*)",
-      "Bash(*--force*)",
       "Bash(git push -f*)",
+      "Bash(git push --force)",
+      "Bash(git push --force *)",
+      "Bash(git push * --force *)",
+      "Bash(git push * --force)",
       "Edit(.githooks/**)",
+      "Write(.githooks/**)",
       "Edit(.claude/settings.json)",
-      "Edit(.claude/hooks/**)"
+      "Write(.claude/settings.json)",
+      "Edit(.claude/hooks/**)",
+      "Write(.claude/hooks/**)"
     ]
   },
   "hooks": {
