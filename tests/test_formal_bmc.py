@@ -139,3 +139,40 @@ def test_committed_statistics_snapshot_is_valid_json_with_the_full_tier_run():
     doc = report.load_snapshot()
     run = doc["runs"]["depth-6"]
     assert run["config"]["depth"] == 6 and set(run["models"]) == set(report.DEFAULT_MODELS["full"])
+
+
+# ---- unsafe POLICY variants: the state invariants must flag them when the policy gate is bypassed ------------
+# The runtime calls `ensure_policy` on every execute, so an unsafe workflow cannot run at all unless the gate is
+# removed. These controls remove it (in the test only) to show the BMC invariants would catch what the gate blocks.
+
+def _unsafe(candidate, action, **changes):
+    from eija_studio.domain.models import Transition, Workflow
+    swapped = tuple(t.model_copy(update=changes) if t.action == action else t for t in candidate.transitions)
+    return Workflow.model_construct(**{**dict(candidate), "transitions": tuple(Transition.model_construct(**dict(t)) for t in swapped)})
+
+
+def _explore_without_policy_gate(sandbox, model, depth):
+    from unittest import mock
+    from eija_studio.application import runtime
+    with mock.patch.object(runtime, "ensure_policy", lambda _model: None):
+        return explore("unsafe", model, Config(depth=depth), sandbox)
+
+
+def test_the_policy_gate_is_what_blocks_an_unsafe_workflow(sandbox):
+    from eija_studio.domain.models import DomainError
+    unsafe = _unsafe(CANDIDATE, "Approve", role="Teacher")
+    with pytest.raises(DomainError) as blocked:
+        explore("unsafe", unsafe, Config(depth=1), sandbox)
+    assert blocked.value.code == "POLICY_BLOCKED"
+
+
+@pytest.mark.parametrize("label,model,invariant,length", [
+    ("teacher may approve", _unsafe(CANDIDATE, "Approve", role="Teacher"), "DECISION-ONLY-BY-REGISTRAR", 3),
+    ("approve skips Recommended", _unsafe(CANDIDATE, "Approve", from_state="Submitted"), "APPROVAL-FOLLOWS-RECOMMENDATION", 2),
+    ("forbidden effect required", _unsafe(CANDIDATE, "Approve", required_effects=("Audit:ExcursionApproved", "Audit:PaymentCaptured")),
+     "NO-FORBIDDEN-EFFECT", 3),
+])
+def test_unsafe_workflow_variants_yield_shortest_counterexamples(sandbox, label, model, invariant, length):
+    res = _explore_without_policy_gate(sandbox, model, depth=3)
+    assert invariant in res.findings.first, (label, sorted(res.findings.first))
+    assert res.findings.first[invariant]["length"] == length and res.verdict == "FAIL"

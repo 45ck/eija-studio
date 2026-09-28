@@ -15,6 +15,8 @@ dependencies = ["fastapi==0.128.2", "uvicorn==0.48.0", "pydantic==2.13.4", "http
 [project.optional-dependencies]
 # Each extra belongs to one capability lane; see docs/oss/REGISTER.md for why each tool was chosen.
 dev = ["pytest==9.0.2", "nox>=2025.5.1", "tomlkit==0.15.1"]
+# Quality lane (ADR-0035): static analysis, architecture contracts, complexity, coverage, dependency hygiene.
+# Exact pins: a linter upgrade must never silently change a gate result.
 lint = [
     "ruff==0.16.9",
     "mypy==2.3.1",

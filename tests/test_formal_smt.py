@@ -42,7 +42,7 @@ def test_encoding_agrees_with_real_check_policy_and_covers_every_clause():
 
 def test_differential_detects_an_unfaithful_encoding():
     """Negative control for the faithfulness check itself: a wrong encoding must NOT agree."""
-    wrong = frozenset({"PROTECTED_STATE:Reject/from-without-recommendation"})  # the clause my first draft omitted
+    wrong = frozenset({"PROTECTED_STATE:Reject/from-without-recommendation"})  # the clause a first draft of the encoding omitted
     r = D.run(random_mutants=0, random_fresh=0, drop_clauses=wrong)
     assert r.code_disagreements
 
