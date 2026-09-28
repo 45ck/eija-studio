@@ -14,8 +14,18 @@ dependencies = ["fastapi==0.128.2", "uvicorn==0.48.0", "pydantic==2.13.4", "http
 
 [project.optional-dependencies]
 # Each extra belongs to one capability lane; see docs/oss/REGISTER.md for why each tool was chosen.
-dev = ["pytest==9.0.2", "nox>=2025.5.1"]
-lint = []
+dev = ["pytest==9.0.2", "nox>=2025.5.1", "tomlkit==0.15.1"]
+lint = [
+    "ruff==0.16.9",
+    "mypy==2.3.1",
+    "import-linter==2.15",
+    "radon==6.0.1",
+    "xenon==0.9.3",
+    "pytest-cov==7.1.0",
+    "coverage==7.16.2",
+    "deptry==0.25.1",
+    "pip-audit==2.10.1",
+]
 formal = []
 testing = []
 mutation = []
@@ -23,6 +33,12 @@ metrics = []
 hci = []
 agents = []
 docs = ["mkdocs==1.6.1", "mkdocs-material==9.7.7", "pymdown-extensions==12.1"]
+demos = ["playwright==1.63.0"]  # drives the installed system Chrome; no browser download
+providers = []
+visual = []
+ux = []
+graph = []
+dod = []
 
 [project.scripts]
 eija = "eija_studio.interfaces.cli:main"
@@ -34,6 +50,177 @@ where = ["src"]  # quality/ and verification/ are engineering tooling, never shi
 eija_studio = ["resources/**/*", "resources/*.json"]
 
 [tool.pytest.ini_options]
-pythonpath = ["src"]
+pythonpath = ["src", "."]  # "." so tests can import repo-root tooling packages (quality, demos)
 testpaths = ["tests"]
 addopts = "-ra"  # tests/conftest.py keeps pytest temp dirs inside the checkout (slow system temp)
+
+[tool.ruff]
+target-version = "py311"
+line-length = 110
+extend-exclude = [".tmp", ".pytest-tmp", ".nox", "reports"]
+
+[tool.ruff.lint]
+# Curated set: pyflakes/pycodestyle basics, bugbear, bandit subset (S), simplify, pyupgrade, comprehensions,
+# pie, ruff-specific, pylint error/warning/convention subset, perflint, print, import order.
+select = ["E", "W", "F", "I", "B", "S", "SIM", "UP", "C4", "PIE", "RUF", "PLE", "PLW", "PLC", "PERF", "T20"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["eija_studio", "quality", "verification"]
+
+# Documented debt, not blanket ignores. The kernel was written in a compact style and other lanes are editing
+# these files in parallel, so the formatting-class findings are ignored per path instead of mass-reformatting
+# (`ruff format` is NOT run over src/, tests/ or scripts/). Ratchet: when a file is next touched for a real
+# change, remove its entry here and fix the finding in the same commit. Files this lane owns (quality/gates,
+# verification/) get no ignores beyond the ones justified below.
+[tool.ruff.lint.per-file-ignores]
+# Compact one-line style (E701/E702), long lines, and import formatting: style debt in every legacy tree.
+"src/**/*.py" = ["E401", "E501", "E701", "E702", "I001", "UP035"]
+"tests/**/*.py" = ["E401", "E501", "E701", "E702", "I001", "S101"]  # S101: assert is the pytest idiom
+"tests/test_application.py" = ["F401", "PLC0415"]
+"tests/test_domain.py" = ["F401"]
+"tests/test_http_and_architecture.py" = ["F401"]
+"tests/test_runtime.py" = ["F401", "PLC0415", "S603", "PLW1510"]
+"tests/test_durability_and_sandbox.py" = ["SIM117"]
+"tests/test_providers.py" = ["SIM300"]
+"scripts/**/*.py" = ["E401", "E402", "E501", "E701", "E702", "I001", "T201", "S603", "S607", "PLW1510", "PLW2901", "S101", "PLC0415", "B023"]
+"noxfile.py" = ["E501", "RUF100"]  # shared file owned by the foundation lane; its E402 noqa is now redundant
+# New top-level tooling trees written by lanes: long docstrings and messages are not a defect worth a rewrite.
+"quality/**/*.py" = ["E501"]
+"demos/**/*.py" = ["E501"]
+"verification/**/*.py" = ["E501"]
+"graph/**/*.py" = ["E501"]
+"design/**/*.py" = ["E501"]
+"**/__main__.py" = ["T201"]  # command-line entry points print by design
+# Per-file debt in kernel sources (each names the finding so a fix removes exactly one entry).
+"src/eija_studio/adapters/providers.py" = ["SIM117", "S603"]  # subprocess.Popen(list, no shell) with a fixed argv
+"src/eija_studio/adapters/sqlite_store.py" = ["S608"]  # false positive: table name comes from a closed literal tuple
+"src/eija_studio/application/service.py" = ["UP017", "RUF001", "RUF005"]
+"src/eija_studio/application/verifier.py" = ["UP017", "PLW2901"]
+"src/eija_studio/domain/impact.py" = ["B905", "RUF007"]
+"src/eija_studio/bootstrap.py" = ["PLW0108"]
+"src/eija_studio/interfaces/cli.py" = ["T201", "PLC0415", "F401"]  # a CLI prints; 3 unused imports are debt
+# Gate sessions shell out to fixed tool argv lists by design.
+"quality/sessions/*.py" = ["S603"]
+"quality/gates/*.py" = ["T201"]  # command-line tools that report on stdout
+"quality/sessions/quality.py" = ["T201"]  # NOT_RUN banner
+"tests/test_quality_gates.py" = ["S603"]  # runs lint-imports with a fixed argv
+
+[tool.ruff.format]
+# Applied only to files this lane owns (quality/gates, quality/sessions/quality.py); see docs/quality/gates.md.
+line-ending = "lf"
+
+[tool.mypy]
+python_version = "3.11"
+mypy_path = "src"
+packages = ["eija_studio"]
+plugins = ["pydantic.mypy"]
+# Portable default for the whole package: the adapters use POSIX-only process-group calls that a Windows
+# host would otherwise flag, and CI-less local runs must give the same answer on every developer PC.
+platform = "linux"
+check_untyped_defs = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+no_implicit_optional = true
+strict_equality = true
+show_error_codes = true
+
+# Strict where the kernel's invariants live. These are the flags `mypy --strict` enables.
+[[tool.mypy.overrides]]
+module = ["eija_studio.domain.*", "eija_studio.application.*"]
+disallow_any_generics = true
+disallow_subclassing_any = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_decorators = true
+warn_return_any = true
+no_implicit_reexport = true
+extra_checks = true
+
+# Ratchet plan for the outer layers (adapters, interfaces, bootstrap): they already pass the default
+# profile above. Next steps, one module at a time, each removing a line here: (1) bootstrap.py: annotate
+# the provider factory table (currently inferred as `object`), (2) adapters.*: annotate dict[str, Any]
+# returns and enable disallow_untyped_defs, (3) interfaces.*: same. `ignore_errors` is never used.
+[[tool.mypy.overrides]]
+module = ["eija_studio.bootstrap"]
+disable_error_code = ["arg-type"]
+
+# Feature extras are optional: type-checking must not fail on a machine where a lane's extra is not installed.
+[[tool.mypy.overrides]]
+module = ["mcp.*", "anyio.*", "psutil.*", "playwright.*", "axe_playwright_python.*", "z3.*", "hypothesis.*"]
+ignore_missing_imports = true
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+
+[tool.coverage.run]
+source = ["src/eija_studio"]
+branch = true
+data_file = "reports/coverage/.coverage"
+
+[tool.coverage.report]
+# Ratchet: fail_under is the measured value floor (integer, rounded down). Raise it whenever coverage rises.
+fail_under = 78  # measured 78.72 on 2026-09-28 (win32, py3.12); floor it, then only raise
+show_missing = true
+skip_empty = true
+exclude_also = ["if TYPE_CHECKING:", "raise NotImplementedError", '\.\.\.$']
+
+[tool.coverage.html]
+directory = "reports/coverage/html"
+
+[tool.coverage.xml]
+output = "reports/coverage/coverage.xml"
+
+[tool.deptry]
+known_first_party = ["eija_studio", "quality", "verification"]
+extend_exclude = ['\.tmp', 'reports']
+# Only tool-only extras are dev groups. Feature extras (providers, agents, formal, hci, ...) are optional
+# RUNTIME dependencies that lane code legitimately imports, so listing them here made every lane fail DEP004.
+optional_dependencies_dev_groups = ["dev", "lint"]
+
+[tool.deptry.package_module_name_map]
+# distribution name -> import name, where they differ
+z3-solver = "z3"
+axe-playwright-python = "axe_playwright_python"
+
+[tool.deptry.per_rule_ignores]
+# nox/pytest/radon/tomlkit are dev tools imported by noxfile.py, quality/ and tests/ (dev-only trees deptry
+# cannot tell apart); tomlkit is the merge driver's parser (quality/tools/tomlmerge.py).
+DEP004 = ["nox", "pytest", "radon", "tomlkit"]
+# scripts/browser_*smoke.py import Playwright lazily; it belongs to the hci extra, and the scripts report
+# NOT_RUN when it is absent. Declaring it here would make a runtime dependency out of a QA tool.
+DEP001 = ["playwright"]
+
+[tool.importlinter]
+root_package = "eija_studio"
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "Layers: interfaces > bootstrap > adapters > application > domain"
+type = "layers"
+layers = [
+    "eija_studio.interfaces",
+    "eija_studio.bootstrap",
+    "eija_studio.adapters",
+    "eija_studio.application",
+    "eija_studio.domain",
+]
+
+[[tool.importlinter.contracts]]
+name = "Domain and application are free of web, HTTP, database and process vendors"
+type = "forbidden"
+source_modules = ["eija_studio.domain", "eija_studio.application"]
+forbidden_modules = [
+    "fastapi", "starlette", "httpx", "uvicorn", "sqlite3", "subprocess",
+    "urllib", "http", "socket", "requests", "aiohttp", "sqlalchemy",
+]
+
+[[tool.importlinter.contracts]]
+name = "Only bootstrap wires adapters"
+type = "forbidden"
+source_modules = ["eija_studio.domain", "eija_studio.application", "eija_studio.interfaces"]
+forbidden_modules = ["eija_studio.adapters"]
+allow_indirect_imports = true  # bootstrap legitimately reaches adapters; only DIRECT imports are wiring
