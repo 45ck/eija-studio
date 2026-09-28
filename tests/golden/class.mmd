@@ -12,12 +12,12 @@ classDiagram
         +Literal~DRAFT|PROPOSED|PREVIEW|SAVED|VERIFIED|APPROVED|APPLIED|DISCARDED~ stage
         +str request
         +int baseline_version
-        +dict | None provider_run
+        +dict~str, Any~ | None provider_run
         +str | None selected_meaning
         +str | None selected_by
         +dict~str, dict~str, int~~ layout
-        +tuple~dict~ receipts
-        +dict | None decision
+        +tuple~dict~str, Any~~ receipts
+        +dict~str, Any~ | None decision
         +str created_at
     }
     class ExecuteCommand {

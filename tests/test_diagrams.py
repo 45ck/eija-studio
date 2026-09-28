@@ -15,11 +15,11 @@ from uuid import uuid4
 import pytest
 from pydantic import BaseModel
 
-from eija_studio.application import diagrams
-from eija_studio.application.diagram_catalog import VIEW_FORMATS, case_diagrams, demo_pair, docs_bundle, render_view
+from eija_studio.application import diagram_emitters, diagrams
+from eija_studio.application.diagram_catalog import VIEW_FORMATS, _summary_table, case_diagrams, demo_pair, docs_bundle, render_view
 from eija_studio.application.diagram_emitters import emit, safe_ids
 from eija_studio.application.diagrams import (
-    Message, class_model, commit_sequence, mark_blocked, policy_violations, diff_graph, diff_summary, impact_graph, state_graph,
+    Message, class_model, commit_sequence, mark_blocked, policy_violations, diff_graph, diff_summary, impact_graph,
 )
 from eija_studio.application.runtime import execute
 from eija_studio.domain.impact import model_impact
@@ -27,7 +27,7 @@ from eija_studio.domain.models import DomainError, ExecuteCommand, Workflow
 from eija_studio.domain.policy import baseline, check_policy
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-from validate_diagram_syntax import HOSTILE_ACTION, MARKER, hostile_workflow  # noqa: E402  (one shared hostile fixture)
+from validate_diagram_syntax import HOSTILE_ACTION, MARKER, hostile_candidate, hostile_workflow
 
 GOLDEN = Path(__file__).parent / "golden"
 EXT = {"mermaid": "mmd", "plantuml": "puml", "dot": "dot"}
@@ -37,9 +37,8 @@ BEFORE, AFTER = demo_pair()
 def golden_cases():
     cases = []
     for fmt in EXT:
-        for view in ("state-baseline", "state-candidate", "diff", "impact", "journey", "class"):
-            if fmt in VIEW_FORMATS[view.split("-")[0]]:
-                cases.append((view, fmt, None))
+        cases += [(view, fmt, None) for view in ("state-baseline", "state-candidate", "diff", "impact", "journey", "class")
+                  if fmt in VIEW_FORMATS[view.split("-")[0]]]
         if fmt in VIEW_FORMATS["sequence"]:
             cases += [("sequence-" + t.action.lower(), fmt, t.action) for t in AFTER.transitions]
     return cases
@@ -50,7 +49,7 @@ def generate(view: str, fmt: str, action: str | None, before=BEFORE, after=AFTER
         return render_view("state", fmt, before)
     if view == "state-candidate":
         return render_view("state", fmt, before, after)
-    return render_view(view.split("-")[0], fmt, before, after, action)
+    return render_view(view.split("-", maxsplit=1)[0], fmt, before, after, action)
 
 
 @pytest.mark.parametrize("view,fmt,action", golden_cases())
@@ -132,7 +131,75 @@ def test_identical_models_have_an_empty_diff():
     assert {n.status for n in g.nodes} == {"same"} and {e.status for e in g.edges} == {"same"} and g.legend == ()
     text = render_view("diff", "mermaid", BEFORE, BEFORE)
     assert "classDef" not in text and "legend_" not in text
-    assert diff_summary(BEFORE, BEFORE) == {"added_states": [], "removed_states": [], "added_actions": [], "removed_actions": [], "changed_actions": {}}
+    assert diff_summary(BEFORE, BEFORE) == {"initial_state": None, "added_states": [], "removed_states": [], "added_actions": [], "removed_actions": [], "changed_actions": {}}
+
+
+def _edit(wf: Workflow, **changes) -> Workflow:
+    data = wf.model_dump(mode="json")
+    data.update(changes)
+    return Workflow.model_validate(data)
+
+
+def _edit_transition(wf: Workflow, action: str, **changes) -> Workflow:
+    data = wf.model_dump(mode="json")
+    next(t for t in data["transitions"] if t["action"] == action).update(changes)
+    return Workflow.model_validate(data)
+
+
+def test_a_semantic_change_is_never_an_empty_diff():
+    """Whenever semantic_hash differs, the diff graph, its legend and the summary must say so."""
+    variants = {
+        "initial_state": _edit(AFTER, initial_state="Submitted"),
+        "transition id": _edit_transition(AFTER, "Recommend", id="T-RENAMED"),
+        "guard": _edit_transition(AFTER, "Approve", guards=[*next(t for t in AFTER.transitions if t.action == "Approve").guards, "actor_assigned"]),
+        "required effect": _edit_transition(AFTER, "Approve", required_effects=["Audit:ExcursionApproved", "Audit:Extra"]),
+        "forbidden effect": _edit_transition(AFTER, "Approve", forbidden_effects=["PaymentCaptured", "Extra"]),
+        "role": _edit_transition(AFTER, "Approve", role="Teacher"),
+    }
+    for name, mutated in variants.items():
+        assert mutated.semantic_hash != AFTER.semantic_hash, name
+        g, summary = diff_graph(AFTER, mutated), diff_summary(AFTER, mutated)
+        assert any(n.status != "same" for n in g.nodes) or any(e.status != "same" for e in g.edges) or g.initial_removed, name
+        assert g.legend, name
+        assert summary["initial_state"] or summary["changed_actions"], name
+        assert "classDef" in render_view("diff", "mermaid", AFTER, mutated), name
+
+
+def test_initial_state_change_marks_the_start_marker_and_summary():
+    moved = _edit(AFTER, initial_state="Submitted")
+    g, summary = diff_graph(AFTER, moved), diff_summary(AFTER, moved)
+    assert summary["initial_state"] == {"before": "Draft", "after": "Submitted"} and summary["changed_actions"] == {}
+    assert {n.id: n.status for n in g.nodes}["Draft"] == "changed" and {n.id: n.status for n in g.nodes}["Submitted"] == "changed"
+    mermaid = render_view("diff", "mermaid", AFTER, moved)
+    assert "[*] --> Draft: - start" in mermaid and "[*] --> Submitted: + start" in mermaid
+    assert "- start" in render_view("diff", "plantuml", AFTER, moved) and "- start" in render_view("diff", "dot", AFTER, moved)
+    assert "initial state" in _summary_text(AFTER, moved)
+
+
+def test_transition_id_rename_is_reported_with_before_and_after():
+    renamed = _edit_transition(AFTER, "Recommend", id="T-RENAMED")
+    old = next(t.id for t in AFTER.transitions if t.action == "Recommend")
+    assert diff_summary(AFTER, renamed)["changed_actions"] == {"Recommend": [{"field": "id", "before": old, "after": "T-RENAMED"}]}
+    assert f"id {old}→T-RENAMED" in render_view("diff", "mermaid", AFTER, renamed)
+
+
+def test_a_changed_edge_says_what_changed():
+    guards = next(t for t in AFTER.transitions if t.action == "Approve").guards
+    cases = {
+        "role Registrar→Teacher": _edit_transition(AFTER, "Approve", role="Teacher"),
+        "guards +actor_assigned": _edit_transition(AFTER, "Approve", guards=[*guards, "actor_assigned"]),
+        "required_effects +Audit:Extra": _edit_transition(AFTER, "Approve", required_effects=["Audit:ExcursionApproved", "Audit:Extra"]),
+        "forbidden_effects +Extra": _edit_transition(AFTER, "Approve", forbidden_effects=["PaymentCaptured", "Extra"]),
+    }
+    for note, mutated in cases.items():
+        labels = [e.label for e in diff_graph(AFTER, mutated).edges if e.status == "changed"]
+        assert len(labels) == 1 and labels[0].startswith("~ Approve · ") and note in labels[0], (note, labels)
+    unchanged = [e.label for e in diff_graph(AFTER, AFTER).edges]
+    assert all(not label.startswith("~") for label in unchanged)
+
+
+def _summary_text(before: Workflow, after: Workflow) -> str:
+    return _summary_table(before, after)
 
 
 def test_impact_highlight_equals_model_impact():
@@ -169,7 +236,7 @@ def test_sequence_failure_codes_are_the_codes_the_runtime_raises(studio, selecte
 
 
 def test_sequence_order_is_the_runtime_order_and_effects_come_from_the_transition():
-    text = render_view("sequence", "mermaid", BEFORE, AFTER, "Recommend")
+    text = render_view("sequence", "mermaid", BEFORE, AFTER, "Recommend").replace("#58;", ":")  # colons are entity-escaped for Mermaid
     order = ["load actor", "authorise BEFORE replay", "ROLE_DENIED", "find operation", "OPERATION_CONFLICT", "STALE_VERSION",
              "STATE_DENIED", "compare-and-set", "Audit:ExcursionRecommended", "Notification:RegistrarQueued", "record operation", "ONE transaction"]
     assert [text.index(x) for x in order] == sorted(text.index(x) for x in order)
@@ -228,7 +295,6 @@ def test_hostile_names_cannot_inject_markup(fmt):
 
 def test_plantuml_percent_escape_has_a_negative_control():
     """The escape is what removes `%name(`: a raw label would match the pattern the test above forbids."""
-    from eija_studio.application import diagram_emitters
     assert re.search(r"%\w+\(", 'state "%getenv(X)" as a')
     assert not re.search(r"%\w+\(", diagram_emitters._puml("%getenv(X)")) and "%" not in diagram_emitters._puml("100%")
 
@@ -277,11 +343,11 @@ def one_sided_reorder(wf: Workflow) -> Workflow:
 
 @pytest.mark.parametrize("fmt", ["mermaid", "plantuml", "dot"])
 def test_reordering_only_the_candidate_changes_nothing_in_any_view(fmt):
-    """`model_impact` compares transitions as tuples and would call every action changed when only a guard or
-    effect list is reordered; the ripple must agree with the diff and with the semantic hash."""
+    """Reordering guards or effects is not a change: the ripple must agree with the diff and with the semantic hash
+    (the kernel's `model_impact` once compared transitions as tuples; see tests/test_domain.py)."""
     twin = one_sided_reorder(AFTER)
     assert twin != AFTER and twin.semantic_hash == AFTER.semantic_hash
-    assert len(model_impact(BEFORE, twin)["changed_actions"]) > len(model_impact(BEFORE, AFTER)["changed_actions"])  # the kernel quirk
+    assert model_impact(BEFORE, twin)["changed_actions"] == model_impact(BEFORE, AFTER)["changed_actions"]  # kernel: order is not a change
     for view in ("state", "diff", "impact", "journey"):
         if fmt in VIEW_FORMATS[view]:
             assert render_view(view, fmt, BEFORE, twin) == render_view(view, fmt, BEFORE, AFTER), view
@@ -416,3 +482,27 @@ def test_authority_guards_the_runtime_always_checks_are_always_drawn():
         text = render_view("sequence", "mermaid", BEFORE, AFTER, action)
         assert "ACTOR_REVOKED" in text and "ROLE_DENIED" in text
     assert "ASSIGNMENT_DENIED" not in render_view("sequence", "mermaid", BEFORE, AFTER, "Approve")  # conditional in the runtime too
+
+
+def _puml_body(text: str) -> str:
+    """Emitted PlantUML without comment lines, with the escaped percent removed: nothing else may contain `%`."""
+    return chr(10).join(line for line in text.splitlines() if not line.startswith("'")).replace("<U+0025>", "")
+
+
+def test_hostile_names_are_inert_in_every_emitted_text():
+    """Mermaid breaks on a trailing colon, `:::` and a leading backtick; PlantUML expands `%name()` in labels (a
+    `%load_json` state name inlines a local file). No emitter may pass them through raw, in any view, including
+    the diff and ripple of a hostile candidate."""
+    hostile, moved = hostile_workflow(), hostile_candidate()
+    for fmt in EXT:
+        for view in ("state", "journey", "diff", "impact"):
+            text = render_view(view, fmt, hostile, moved)
+            if fmt == "plantuml":
+                assert "%" not in _puml_body(text), (view, text)
+            if fmt == "mermaid":
+                for line in text.splitlines():
+                    assert not re.search(r":\s*$|:::|:\s*`|\|\"`", line), (view, line)
+    assert "<U+0025>load_json" in render_view("state", "plantuml", hostile)
+    for t in hostile.transitions:
+        assert "%" not in _puml_body(render_view("sequence", "plantuml", hostile, None, t.action)), t.action
+        assert not re.search(r":\s*$", render_view("sequence", "mermaid", hostile, None, t.action), re.M)

@@ -16,30 +16,30 @@ sequenceDiagram
     Runtime->>Runtime: ensure_policy(model)
     Runtime->>Store: load instance (model_hash must equal the workflow semantic hash)
     Runtime->>Store: load actor from trusted directory
-    Note over Runtime: authorise BEFORE replay: role Teacher, assignment required
-    Note over Runtime: forbidden effects, never emitted: ParentDataExported, PaymentCaptured
-    opt guard actor_active fails: actor is not active at commit time
+    Note over Runtime: authorise BEFORE replay#58; role Teacher, assignment required
+    Note over Runtime: forbidden effects, never emitted#58; ParentDataExported, PaymentCaptured
+    opt guard actor_active fails#58; actor is not active at commit time
         Runtime-->>Caller: ACTOR_REVOKED
     end
-    opt guard role_current fails: actor lacks the transition's role
+    opt guard role_current fails#58; actor lacks the transition's role
         Runtime-->>Caller: ROLE_DENIED
     end
-    opt guard actor_assigned fails: actor is not assigned in the trusted directory
+    opt guard actor_assigned fails#58; actor is not assigned in the trusted directory
         Runtime-->>Caller: ASSIGNMENT_DENIED
     end
     Runtime->>Store: find operation by operation_id
-    opt guard operation_binding: id already bound
+    opt guard operation_binding#58; id already bound
         Runtime-->>Caller: OPERATION_CONFLICT if another request, else duplicate result (no effects)
     end
     opt guard expected_version fails
         Runtime-->>Caller: STALE_VERSION
     end
-    opt guard state_equals fails: state is not Submitted
+    opt guard state_equals fails#58; state is not Submitted
         Runtime-->>Caller: STATE_DENIED
     end
-    Runtime->>Store: compare-and-set instance: Submitted → Recommended, version + 1
-    Runtime->>Audit: append Audit:ExcursionRecommended
-    Runtime->>Outbox: enqueue Notification:RegistrarQueued
+    Runtime->>Store: compare-and-set instance#58; Submitted → Recommended, version + 1
+    Runtime->>Audit: append Audit#58;ExcursionRecommended
+    Runtime->>Outbox: enqueue Notification#58;RegistrarQueued
     Runtime->>Store: record operation (operation_id, binding, result)
     Store->>Store: commit state + audit + outbox + operation in ONE transaction
     Runtime-->>Caller: result, sent only after the transaction commits

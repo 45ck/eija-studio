@@ -7,6 +7,7 @@ p.note{margin:0 0 8px;color:var(--muted);font-size:12px}
 figure{margin:0;padding:10px;border:1px solid var(--line);border-radius:10px;overflow-x:auto;background:#fff}
 pre.mermaid{margin:0;background:transparent;font:12px/1.5 ui-monospace,Consolas,monospace}
 pre.mermaid[data-processed]{font:inherit}
+.changes{margin:8px 0 0;padding-left:18px;font-size:12px}
 .error{color:#9f382b;font-size:12px;margin:0 0 6px}
 .group{display:grid;grid-template-columns:1fr 1fr 1.6fr;gap:14px;align-items:start}
 @media(max-width:900px){.group{grid-template-columns:1fr}}

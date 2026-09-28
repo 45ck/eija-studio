@@ -22,8 +22,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-from eija_studio.application.diagram_catalog import VIEW_FORMATS, VIEWS, demo_pair, render_view  # noqa: E402
-from eija_studio.domain.models import Workflow  # noqa: E402
+from eija_studio.application.diagram_catalog import VIEW_FORMATS, VIEWS, demo_pair, render_view
+from eija_studio.domain.models import Workflow
 
 MERMAID_JS = ROOT / "src" / "eija_studio" / "resources" / "web" / "vendor" / "mermaid.min.js"
 
@@ -32,7 +32,8 @@ HOSTILE_ACTION = 'Say "hi"; <i>'
 # Text a hostile or careless model file could carry. PlantUML evaluates `%name(...)` in labels (verified
 # with 1.2025.4: %getenv read an environment variable, %load_json read a local file), so those are here too.
 HOSTILE_STATES = ("start", "end", 'a "quoted" <b>x</b>', "semi;colon #hash", "{brace}", "%getenv(PLANTUML_SECRETVAR)",
-                  "%load_json(secret.json)", "!include secret.puml", "%%{init: {}}%%")
+                  "%load_json(secret.json)", "!include secret.puml", "%%{init: {}}%%",
+                  "tail:", ":::cls", "`tick")  # Mermaid: a trailing colon, `:::` and a leading backtick break the parse unescaped
 MARKER = "TOPSECRET-eija-hostile"  # value of PLANTUML_SECRETVAR in the injection check; must never reach output
 
 
@@ -45,26 +46,43 @@ def hostile_workflow() -> Workflow:
     return Workflow.model_validate({"initial_state": "start", "states": list(HOSTILE_STATES), "transitions": [
         t("T-1", "Go", "start", "end", "Teacher"), t("T-2", HOSTILE_ACTION, "end", 'a "quoted" <b>x</b>', "Reg;Role"),
         t("T-3", "Next", "semi;colon #hash", "{brace}", "Teacher"), t("T-4", "%date()", "{brace}", "%getenv(PLANTUML_SECRETVAR)", "%version()"),
-        t("T-5", "Load", "%load_json(secret.json)", "!include secret.puml", "Teacher"), t("T-6", "Init", "%%{init: {}}%%", "start", "Teacher")]})
+        t("T-5", "Load", "%load_json(secret.json)", "!include secret.puml", "Teacher"), t("T-6", "Init", "%%{init: {}}%%", "start", "Teacher"),
+        t("T-7", "colon:", "tail:", ":::cls", "`r"), t("T-8", "`tick action", ":::cls", "`tick", "Role:")]})
+
+
+def hostile_candidate() -> Workflow:
+    """A candidate of the hostile model (initial state moved, a role and a guard changed, one action removed),
+    so the diff and ripple views also carry hostile names and the `~`, `+ start` and `- start` labels."""
+    data = hostile_workflow().model_dump(mode="json")
+    data["initial_state"] = "end"
+    data["transitions"] = [t for t in data["transitions"] if t["id"] != "T-8"]
+    for t in data["transitions"]:
+        if t["id"] == "T-1":
+            t["role"] = "Registrar"
+        if t["id"] == "T-2":
+            t["guards"] = [*t["guards"], "actor_assigned"]
+    return Workflow.model_validate(data)
 
 
 def corpus() -> dict[str, dict[str, str]]:
     """{format: {name: text}} for every view/format pair emitted, for the demo pair and a hostile model."""
     before, after = demo_pair()
-    hostile = hostile_workflow()
+    hostile, moved = hostile_workflow(), hostile_candidate()
     out: dict[str, dict[str, str]] = {"mermaid": {}, "plantuml": {}, "dot": {}}
-    for fmt in out:
+    for fmt, bucket in out.items():
         for view in VIEWS:
             if fmt not in VIEW_FORMATS[view]:
                 continue
             if view == "sequence":
                 for t in after.transitions:
-                    out[fmt][f"demo/sequence-{t.action}"] = render_view(view, fmt, before, after, t.action)
-                out[fmt]["hostile/sequence"] = render_view(view, fmt, hostile, None, HOSTILE_ACTION)
+                    bucket[f"demo/sequence-{t.action}"] = render_view(view, fmt, before, after, t.action)
+                bucket["hostile/sequence"] = render_view(view, fmt, hostile, None, HOSTILE_ACTION)
             else:
-                out[fmt][f"demo/{view}"] = render_view(view, fmt, before, after)
+                bucket[f"demo/{view}"] = render_view(view, fmt, before, after)
                 if view in {"state", "journey"}:
-                    out[fmt][f"hostile/{view}"] = render_view(view, fmt, hostile)
+                    bucket[f"hostile/{view}"] = render_view(view, fmt, hostile)
+                if view in {"diff", "impact"}:
+                    bucket[f"hostile/{view}"] = render_view(view, fmt, hostile, moved)
     return out
 
 
@@ -114,15 +132,15 @@ def check_plantuml(texts: dict[str, str], jar: str | None) -> dict:
     if shutil.which("java") is None:
         return {"status": "NOT_RUN", "reason": "java is not on PATH"}
     base = ["java", "-Djava.awt.headless=true", "-jar", jar, "-charset", "UTF-8"]
-    version = subprocess.run([*base, "-version"], text=True, capture_output=True, encoding="utf-8", timeout=120).stdout.splitlines()
+    version = subprocess.run([*base, "-version"], text=True, capture_output=True, encoding="utf-8", errors="replace", timeout=120).stdout.splitlines()
     failures = {}
     env = os.environ | {"PLANTUML_SECRETVAR": MARKER}
     for name, text in sorted(texts.items()):
-        run = subprocess.run([*base, "-syntax"], input=text, text=True, capture_output=True, encoding="utf-8", timeout=120, env=env)
+        run = subprocess.run([*base, "-syntax"], input=text, text=True, capture_output=True, encoding="utf-8", errors="replace", timeout=120, env=env)
         if run.returncode != 0 or run.stdout.startswith("ERROR"):
             failures[name] = (run.stdout or run.stderr)[:400]
         elif name.startswith("hostile/"):
-            shown = subprocess.run([*base, "-ttxt", "-pipe"], input=text, text=True, capture_output=True, encoding="utf-8", timeout=120, env=env)
+            shown = subprocess.run([*base, "-ttxt", "-pipe"], input=text, text=True, capture_output=True, encoding="utf-8", errors="replace", timeout=120, env=env)
             if MARKER in shown.stdout + shown.stderr:
                 failures[name] = "PlantUML evaluated a label: the environment marker reached the output"
     return {"status": "FAIL" if failures else "PASS", "checked": len(texts), "failures": failures,
@@ -141,7 +159,7 @@ def check_dot(texts: dict[str, str]) -> dict:
             graphs = pydot.graph_from_dot_data(text)
             if not graphs:
                 failures[name] = "pydot parsed no graph"
-        except Exception as exc:  # noqa: BLE001 - any parse failure is a finding
+        except Exception as exc:
             failures[name] = str(exc)[:400]
             continue
         if dot:

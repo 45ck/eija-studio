@@ -37,6 +37,7 @@ Chosen option: "Mermaid primary, PlantUML and DOT exports from one neutral model
 ### Consequences
 
 * Good: an agent's change is visible as a diff on a state machine and a ripple graph, generated from the same objects the kernel executes.
+* Good: the diff, its summary and the ripple share one definition of "changed" (`domain.impact.changed_fields`: id, endpoints, role, and guards and effects as sets), so a semantic change is never drawn as "no change": a `~` edge label names the changed fields and a moved initial state is drawn as `- start` and `+ start`.
 * Good: no diagram can drift silently; a policy change that alters a picture fails the drift gate until the docs are regenerated and reviewed.
 * Bad: Mermaid cannot colour state-diagram edges, so edge status is a label prefix (`+`, `-`, `~`) and node colour. Layout is the renderer's, not ours.
 * Bad: the commit-protocol order is a hand-written copy of `runtime.execute`, guarded by a spy test that covers port calls only.

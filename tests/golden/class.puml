@@ -11,12 +11,12 @@ class ChangeCase <<aggregate-root>> {
   +Literal<U+003C>DRAFT|PROPOSED|PREVIEW|SAVED|VERIFIED|APPROVED|APPLIED|DISCARDED> stage
   +str request
   +int baseline_version
-  +dict | None provider_run
+  +dict<U+003C>str, Any> | None provider_run
   +str | None selected_meaning
   +str | None selected_by
   +dict<U+003C>str, dict<U+003C>str, int>> layout
-  +tuple<U+003C>dict> receipts
-  +dict | None decision
+  +tuple<U+003C>dict<U+003C>str, Any>> receipts
+  +dict<U+003C>str, Any> | None decision
   +str created_at
 }
 class ExecuteCommand <<command>> {

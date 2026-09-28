@@ -15,26 +15,26 @@ sequenceDiagram
     Runtime->>Runtime: ensure_policy(model)
     Runtime->>Store: load instance (model_hash must equal the workflow semantic hash)
     Runtime->>Store: load actor from trusted directory
-    Note over Runtime: authorise BEFORE replay: role Teacher
-    Note over Runtime: forbidden effects, never emitted: ParentDataExported, PaymentCaptured
-    opt guard actor_active fails: actor is not active at commit time
+    Note over Runtime: authorise BEFORE replay#58; role Teacher
+    Note over Runtime: forbidden effects, never emitted#58; ParentDataExported, PaymentCaptured
+    opt guard actor_active fails#58; actor is not active at commit time
         Runtime-->>Caller: ACTOR_REVOKED
     end
-    opt guard role_current fails: actor lacks the transition's role
+    opt guard role_current fails#58; actor lacks the transition's role
         Runtime-->>Caller: ROLE_DENIED
     end
     Runtime->>Store: find operation by operation_id
-    opt guard operation_binding: id already bound
+    opt guard operation_binding#58; id already bound
         Runtime-->>Caller: OPERATION_CONFLICT if another request, else duplicate result (no effects)
     end
     opt guard expected_version fails
         Runtime-->>Caller: STALE_VERSION
     end
-    opt guard state_equals fails: state is not Draft
+    opt guard state_equals fails#58; state is not Draft
         Runtime-->>Caller: STATE_DENIED
     end
-    Runtime->>Store: compare-and-set instance: Draft → Submitted, version + 1
-    Runtime->>Audit: append Audit:ExcursionSubmitted
+    Runtime->>Store: compare-and-set instance#58; Draft → Submitted, version + 1
+    Runtime->>Audit: append Audit#58;ExcursionSubmitted
     Runtime->>Store: record operation (operation_id, binding, result)
     Store->>Store: commit state + audit + outbox + operation in ONE transaction
     Runtime-->>Caller: result, sent only after the transaction commits

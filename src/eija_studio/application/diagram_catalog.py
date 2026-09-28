@@ -5,19 +5,22 @@ all three show the same generated text for the same model (ADR-0019, ADR-0023).
 """
 from __future__ import annotations
 
+from typing import Any
+
+from eija_studio.domain.impact import model_impact
 from eija_studio.domain.models import DomainError, SemanticTransaction, Workflow
 from eija_studio.domain.policy import apply_transaction, baseline
 from .diagram_emitters import FORMATS, emit
 from .diagrams import (
-    class_model, commit_sequence, diff_graph, diff_summary, impact_graph, journey_graph, mark_blocked, policy_violations,
-    stable_impact, state_graph,
+    Diagram, class_model, commit_sequence, diff_graph, diff_summary, impact_graph, journey_graph, mark_blocked, policy_violations,
+    state_graph,
 )
 
 __all__ = ["FORMATS", "VIEWS", "VIEW_FORMATS", "case_diagrams", "demo_pair", "docs_bundle", "html_panels", "render_view"]
 
 VIEWS = ("state", "diff", "sequence", "class", "journey", "impact")
 # Formats each view is emitted in. Sequence and class have no Graphviz form (DOT has no such diagram).
-VIEW_FORMATS = {v: FORMATS for v in ("state", "diff", "journey", "impact")} | {
+VIEW_FORMATS = dict.fromkeys(("state", "diff", "journey", "impact"), FORMATS) | {
     "sequence": ("mermaid", "plantuml"), "class": ("mermaid", "plantuml")}
 
 
@@ -33,6 +36,23 @@ def _need_candidate(view: str, after: Workflow | None) -> Workflow:
     return after
 
 
+def _diagram(view: str, before: Workflow, after: Workflow | None, action: str | None) -> Diagram:
+    subject = after if after is not None else before
+    if view == "state":
+        return state_graph(subject, role="candidate" if after is not None else "baseline")
+    if view == "diff":
+        return diff_graph(before, _need_candidate(view, after))
+    if view == "impact":
+        return impact_graph(before, _need_candidate(view, after))
+    if view == "journey":
+        return journey_graph(subject)
+    if view == "class":
+        return class_model()
+    if action is None:
+        raise DomainError("ACTION_REQUIRED", "The sequence view needs an action: " + ", ".join(sorted(t.action for t in subject.transitions)))
+    return commit_sequence(subject, action)
+
+
 def render_view(view: str, fmt: str, before: Workflow, after: Workflow | None = None, action: str | None = None) -> str:
     """Generated diagram text for one view. `state`, `journey` and `sequence` describe the candidate when
     there is one, else the baseline; `diff` and `impact` require a candidate. A workflow the protected policy
@@ -40,22 +60,12 @@ def render_view(view: str, fmt: str, before: Workflow, after: Workflow | None = 
     make a change the kernel would refuse look routine)."""
     if view not in VIEWS:
         raise DomainError("VIEW_UNKNOWN", f"Unknown view {view!r}; use one of {', '.join(VIEWS)}")
-    subject = after if after is not None else before
-    if view == "state":
-        diagram = state_graph(subject, role="candidate" if after is not None else "baseline")
-    elif view == "diff":
-        diagram = diff_graph(before, _need_candidate(view, after))
-    elif view == "impact":
-        diagram = impact_graph(before, _need_candidate(view, after))
-    elif view == "journey":
-        diagram = journey_graph(subject)
-    elif view == "class":
-        return emit(class_model(), fmt)
-    elif action is None:
-        raise DomainError("ACTION_REQUIRED", "The sequence view needs an action: " + ", ".join(sorted(t.action for t in subject.transitions)))
-    else:
-        diagram = commit_sequence(subject, action)
-    return emit(mark_blocked(diagram, policy_violations(subject)), fmt)
+    diagram = _diagram(view, before, after, action)
+    return emit(mark_blocked(diagram, policy_violations(after if after is not None else before)), fmt)
+
+
+def _panel(name: str, before: Workflow, after: Workflow | None, action: str | None, note: str) -> tuple[str, str, str]:
+    return (name.capitalize() + " view", note, render_view(name, "mermaid", before, after, action))
 
 
 def html_panels(view: str, before: Workflow, after: Workflow | None, action: str | None = None) -> list[tuple[str, str, str]]:
@@ -63,24 +73,23 @@ def html_panels(view: str, before: Workflow, after: Workflow | None, action: str
     one commit-protocol panel per action, and no diff or ripple when there is no candidate."""
     subject = after if after is not None else before
     note = f"Generated from the workflow's semantic hash {subject.semantic_hash[:16]}."
-    wanted = VIEWS if view == "all" else (view,)
+    if view != "all":
+        return [_panel(view, before, after, action, note)]
     panels: list[tuple[str, str, str]] = []
-    for name in wanted:
-        if name == "sequence" and action is None and view == "all":
+    for name in VIEWS:
+        if name == "sequence" and action is None:
             panels += [(f"Commit protocol: {t.action}", "Order of checks and writes in one commit.", render_view("sequence", "mermaid", before, after, t.action))
                        for t in sorted(subject.transitions, key=lambda t: t.action)]
-        elif name in {"diff", "impact"} and after is None and view == "all":
-            continue
-        else:
-            panels.append((name.capitalize() + " view", note, render_view(name, "mermaid", before, after, action)))
+        elif name not in {"diff", "impact"} or after is not None:
+            panels.append(_panel(name, before, after, action, note))
     return panels
 
 
-def case_diagrams(before: Workflow, after: Workflow | None, fmt: str = "mermaid") -> dict:
+def case_diagrams(before: Workflow, after: Workflow | None, fmt: str = "mermaid") -> dict[str, Any]:
     """Every view for one change case as one JSON-friendly payload. `sources` carries the semantic hashes the
     text was generated from, so a viewer can compare them with the review packet's evidence subject."""
     subject = after if after is not None else before
-    views: dict = {"state_before": render_view("state", fmt, before), "state_after": None, "diff": None, "impact": None,
+    views: dict[str, Any] = {"state_before": render_view("state", fmt, before), "state_after": None, "diff": None, "impact": None,
                    "journey": render_view("journey", fmt, before, after), "class": None, "sequences": {}}
     summary, impact = None, None
     if after is not None:
@@ -88,7 +97,7 @@ def case_diagrams(before: Workflow, after: Workflow | None, fmt: str = "mermaid"
         views["diff"] = render_view("diff", fmt, before, after)
         views["impact"] = render_view("impact", fmt, before, after)
         summary = diff_summary(before, after)
-        report = stable_impact(before, after)
+        report = model_impact(before, after)
         impact = {k: report[k] for k in ("changed_actions", "affected", "complete", "frontier", "envelope")}
     if fmt in VIEW_FORMATS["class"]:
         views["class"] = render_view("class", fmt, before)
@@ -118,6 +127,8 @@ def _summary_table(before: Workflow, after: Workflow) -> str:
     s = diff_summary(before, after)
     rows = [("added states", ", ".join(s["added_states"]) or "none"), ("removed states", ", ".join(s["removed_states"]) or "none"),
             ("added actions", ", ".join(s["added_actions"]) or "none"), ("removed actions", ", ".join(s["removed_actions"]) or "none")]
+    if s["initial_state"]:
+        rows.insert(0, ("initial state", f"{s['initial_state']['before']} → {s['initial_state']['after']}"))
     rows += [(f"changed `{a}`", "; ".join(f"{c['field']}: {_plain(c['before'])} → {_plain(c['after'])}" for c in changes))
              for a, changes in s["changed_actions"].items()]
     return "| Change | Detail |\n|---|---|\n" + "".join(f"| {_cell(k)} | {_cell(v)} |\n" for k, v in rows) + "\n"
@@ -134,7 +145,7 @@ def docs_bundle() -> dict[str, str]:
                                     "The candidate produced by the `enable_recommendation` semantic transaction.",
                                     render_view("state", "mermaid", before, after)),
         "diff.md": _page("Visual diff: baseline vs candidate",
-                         "Nodes: green added, red dashed removed, amber changed. Edges cannot be coloured in a Mermaid state diagram, so a label starting with `+`, `-` or `~` marks an added, removed or changed transition.",
+                         "Nodes: green added, red removed (dashed outline), amber changed. Edges cannot be coloured in a Mermaid state diagram, so a label starting with `+`, `-` or `~` marks an added, removed or changed transition; a `~` label names the changed fields.",
                          render_view("diff", "mermaid", before, after), _summary_table(before, after)),
         "impact.md": _page("Ripple: what the change touches",
                            "From `domain.impact.model_impact`: changed rules flow through runtime, state view, journey, obligation and receipt "

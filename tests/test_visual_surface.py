@@ -4,11 +4,14 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import sys
 from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
 
+from eija_studio.application.diagram_catalog import demo_pair, html_panels
+from eija_studio.domain.models import DomainError
 from eija_studio.interfaces import cli
 from eija_studio.interfaces.http import create_app
 from eija_studio.interfaces.render_html import html_page, mermaid_js
@@ -178,12 +181,10 @@ def test_cli_render_is_read_only_and_does_not_create_a_workspace_or_key(capsysbi
 
 
 def test_html_panels_compose_views_in_the_catalog():
-    from eija_studio.application.diagram_catalog import demo_pair, html_panels
     before, after = demo_pair()
     everything = html_panels("all", before, after)
     assert len(everything) == 5 + len(after.transitions)  # the five non-sequence views + one commit protocol per action
     assert not {"Diff view", "Impact view"} & {h for h, _, _ in html_panels("all", before, None)}  # no candidate: no diff or ripple
-    from eija_studio.domain.models import DomainError
     with pytest.raises(DomainError) as e:
         html_panels("diff", before, None)
     assert e.value.code == "CANDIDATE_REQUIRED"
@@ -192,9 +193,8 @@ def test_html_panels_compose_views_in_the_catalog():
 def test_committed_screenshots_are_from_the_current_model():
     """A stale-image tripwire that needs no browser: the sidecar written by scripts/capture_visual_screenshots.py
     records which models the PNGs were drawn from. It does not prove the pixels; the release session regenerates them."""
-    import sys
     sys.path.insert(0, str(ROOT / "scripts"))
-    import capture_visual_screenshots as capture
+    import capture_visual_screenshots as capture  # noqa: PLC0415 - scripts/ is not a package; put on sys.path only for this test
     recorded = json.loads(capture.SIDECAR.read_text(encoding="utf-8"))
     assert recorded == capture.source_record(), "docs/assets/*.png are stale: run `nox -s visual_screenshots` and commit the images and sidecar"
     for name in recorded["images"]:

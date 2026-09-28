@@ -39,6 +39,15 @@ class Approval(Version):
     scope: Literal["local-demo", "field-use"] = "local-demo"
 
 
+def _set_security_headers(response, path: str) -> None:
+    framed = path == "/visual-frame"
+    # The vendored renderer is a 5 MB public, versioned file with no user data: let the browser keep it for an hour.
+    cache = "private, max-age=3600" if path == "/assets/vendor/mermaid.min.js" and response.status_code == 200 else "no-store"
+    response.headers.update({"Cache-Control": cache, "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "no-referrer", "X-Frame-Options": "SAMEORIGIN" if framed else "DENY",
+        "Content-Security-Policy": FRAME_CSP if framed else PAGE_CSP})
+
+
 def create_app(studio, token: str, port: int = 8765) -> FastAPI:
     app = FastAPI(title="EIJA Studio", version="0.2.0", docs_url=None, redoc_url=None, openapi_url=None)
     web = Path(__file__).resolve().parents[1] / "resources" / "web"
@@ -67,12 +76,7 @@ def create_app(studio, token: str, port: int = 8765) -> FastAPI:
                     data.append(chunk)
                 request._body = b"".join(data)
         response = await call_next(request)
-        framed = request.url.path == "/visual-frame"
-        # The vendored renderer is a 5 MB public, versioned file with no user data: let the browser keep it for an hour.
-        cache = "private, max-age=3600" if request.url.path == "/assets/vendor/mermaid.min.js" and response.status_code == 200 else "no-store"
-        response.headers.update({"Cache-Control": cache, "X-Content-Type-Options": "nosniff",
-            "Referrer-Policy": "no-referrer", "X-Frame-Options": "SAMEORIGIN" if framed else "DENY",
-            "Content-Security-Policy": FRAME_CSP if framed else PAGE_CSP})
+        _set_security_headers(response, request.url.path)
         return response
 
     @app.exception_handler(DomainError)

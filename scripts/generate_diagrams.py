@@ -12,7 +12,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-from eija_studio.application.diagram_catalog import docs_bundle  # noqa: E402
+from eija_studio.application.diagram_catalog import docs_bundle
 
 TARGET = ROOT / "docs" / "diagrams"
 

@@ -11,6 +11,7 @@ import importlib.util
 import os
 import sys
 from pathlib import Path
+from typing import ClassVar
 
 import pytest
 
@@ -89,7 +90,7 @@ def test_exit_code_makes_not_run_visible(monkeypatch, capsys):
 
 
 class FakeSession:
-    posargs: list[str] = []
+    posargs: ClassVar[list[str]] = []
 
     def __init__(self):
         self.calls = []
@@ -100,7 +101,7 @@ class FakeSession:
 
 def test_release_sessions_fail_on_not_run_unless_opted_out(monkeypatch):
     sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "quality" / "sessions"))
-    import visual
+    import visual  # noqa: PLC0415 - quality/sessions is not a package; put on sys.path only for this test
     for opted_out in (False, True):
         (monkeypatch.setenv if opted_out else monkeypatch.delenv)(*(("EIJA_ALLOW_NOT_RUN", "1") if opted_out else ("EIJA_ALLOW_NOT_RUN", False)))
         shots, syntax = FakeSession(), FakeSession()
