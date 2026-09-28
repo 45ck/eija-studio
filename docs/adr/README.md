@@ -11,6 +11,8 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0018](0018-formal-vv-portfolio.md) | Formal V&V portfolio: each technique is a distinct evidence kind | proposed |
 | [0019](0019-diagrams-generated-from-executable-model.md) | Diagrams are generated projections of the executable model | proposed |
 | [0020](0020-multi-provider-agent-adapters.md) | Proposal providers: Codex, Claude Code, OpenCode, Gemini CLI, OpenRouter | proposed |
+| [0029](0029-z3-policy-soundness-proof.md) | Z3 proof that the protected policy admits only authority-preserving candidates | accepted |
+| [0030](0030-bounded-model-checking-of-the-real-runtime.md) | Bounded model checking by explicit-state search over the real runtime | accepted |
 
 ## Reserved numbers for capability lanes
 

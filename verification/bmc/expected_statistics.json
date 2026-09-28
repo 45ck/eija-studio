@@ -1,0 +1,174 @@
+{
+  "runs": {
+    "depth-6": {
+      "config": {
+        "actions": [
+          "Submit",
+          "Recommend",
+          "Approve",
+          "Reject",
+          "Revise",
+          "Bogus"
+        ],
+        "actors": [
+          "teacher-assigned",
+          "teacher-unassigned",
+          "teacher-revoked",
+          "registrar",
+          "viewer",
+          "ghost"
+        ],
+        "depth": 6,
+        "environment_toggles": [
+          [
+            "teacher-assigned",
+            "active"
+          ],
+          [
+            "teacher-assigned",
+            "assigned"
+          ],
+          [
+            "registrar",
+            "active"
+          ]
+        ],
+        "max_seconds": null,
+        "replay_conflicts": true,
+        "stale_versions": true,
+        "stop_when_found": []
+      },
+      "models": {
+        "baseline": {
+          "exhausted": false,
+          "max_depth": 6,
+          "outcomes": {
+            "committed:Approve": 32,
+            "committed:Reject": 32,
+            "committed:Revise": 40,
+            "committed:Submit": 56,
+            "duplicate": 300,
+            "env:active=0": 168,
+            "env:active=1": 96,
+            "env:assigned=0": 84,
+            "env:assigned=1": 48,
+            "rejected:ACTION_DENIED": 3912,
+            "rejected:ACTOR_REVOKED": 2628,
+            "rejected:OPERATION_CONFLICT": 512,
+            "rejected:ROLE_DENIED": 3616,
+            "rejected:STALE_VERSION": 600,
+            "rejected:STATE_DENIED": 440,
+            "rejected:UNKNOWN_ACTOR": 1428
+          },
+          "per_depth": [
+            {
+              "depth": 1,
+              "frontier": 1,
+              "new_states": 5,
+              "transitions": 75
+            },
+            {
+              "depth": 2,
+              "frontier": 5,
+              "new_states": 13,
+              "transitions": 397
+            },
+            {
+              "depth": 3,
+              "frontier": 13,
+              "new_states": 23,
+              "transitions": 1129
+            },
+            {
+              "depth": 4,
+              "frontier": 23,
+              "new_states": 34,
+              "transitions": 2187
+            },
+            {
+              "depth": 5,
+              "frontier": 34,
+              "new_states": 56,
+              "transitions": 3584
+            },
+            {
+              "depth": 6,
+              "frontier": 56,
+              "new_states": 92,
+              "transitions": 6620
+            }
+          ],
+          "semantic_hash": "5d3ef3a19c31d956a185b9c5ba4b1b79e651d0356e162436c5c67054d2ad4cdf",
+          "states": 224,
+          "transitions": 13992
+        },
+        "candidate-reject-from-Recommended": {
+          "exhausted": false,
+          "max_depth": 6,
+          "outcomes": {
+            "committed:Approve": 8,
+            "committed:Recommend": 12,
+            "committed:Reject": 8,
+            "committed:Revise": 22,
+            "committed:Submit": 40,
+            "duplicate": 162,
+            "env:active=0": 112,
+            "env:active=1": 72,
+            "env:assigned=0": 56,
+            "env:assigned=1": 36,
+            "rejected:ACTION_DENIED": 1340,
+            "rejected:ACTOR_REVOKED": 2260,
+            "rejected:ASSIGNMENT_DENIED": 382,
+            "rejected:OPERATION_CONFLICT": 348,
+            "rejected:ROLE_DENIED": 2688,
+            "rejected:STALE_VERSION": 442,
+            "rejected:STATE_DENIED": 352,
+            "rejected:UNKNOWN_ACTOR": 1156
+          },
+          "per_depth": [
+            {
+              "depth": 1,
+              "frontier": 1,
+              "new_states": 5,
+              "transitions": 75
+            },
+            {
+              "depth": 2,
+              "frontier": 5,
+              "new_states": 11,
+              "transitions": 397
+            },
+            {
+              "depth": 3,
+              "frontier": 11,
+              "new_states": 17,
+              "transitions": 935
+            },
+            {
+              "depth": 4,
+              "frontier": 17,
+              "new_states": 24,
+              "transitions": 1605
+            },
+            {
+              "depth": 5,
+              "frontier": 24,
+              "new_states": 34,
+              "transitions": 2526
+            },
+            {
+              "depth": 6,
+              "frontier": 34,
+              "new_states": 48,
+              "transitions": 3958
+            }
+          ],
+          "semantic_hash": "b26c9af5ae4cd958099956232721a70e73cb7e6efe1b213ff32417829b588e56",
+          "states": 140,
+          "transitions": 9496
+        }
+      }
+    }
+  },
+  "schema": "eija.bmc-statistics/v1"
+}

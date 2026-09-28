@@ -17,6 +17,7 @@ dependencies = ["fastapi==0.128.2", "uvicorn==0.48.0", "pydantic==2.13.4", "http
 dev = ["pytest==9.0.2", "nox>=2025.5.1"]
 lint = []
 formal = []
+smt = ["z3-solver==5.1.0.0"]  # lane smt-bmc: Z3 policy-soundness proof
 testing = []
 mutation = []
 metrics = []

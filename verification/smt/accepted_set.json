@@ -1,0 +1,428 @@
+{
+  "accepted_up_to_extra_forbidden_effects": [
+    {
+      "label": "baseline",
+      "semantic_hash": "5d3ef3a19c31d956a185b9c5ba4b1b79e651d0356e162436c5c67054d2ad4cdf",
+      "states": [
+        "Approved",
+        "Draft",
+        "Rejected",
+        "Submitted"
+      ],
+      "transitions": [
+        {
+          "action": "Approve",
+          "forbidden_effects": [
+            "ParentDataExported",
+            "PaymentCaptured"
+          ],
+          "from": "Submitted",
+          "guards": [
+            "actor_active",
+            "expected_version",
+            "operation_binding",
+            "role_current",
+            "state_equals"
+          ],
+          "required_effects": [
+            "Audit:ExcursionApproved"
+          ],
+          "role": "Registrar",
+          "to": "Approved"
+        },
+        {
+          "action": "Reject",
+          "forbidden_effects": [
+            "ParentDataExported",
+            "PaymentCaptured"
+          ],
+          "from": "Submitted",
+          "guards": [
+            "actor_active",
+            "expected_version",
+            "operation_binding",
+            "role_current",
+            "state_equals"
+          ],
+          "required_effects": [
+            "Audit:ExcursionRejected"
+          ],
+          "role": "Registrar",
+          "to": "Rejected"
+        },
+        {
+          "action": "Revise",
+          "forbidden_effects": [
+            "ParentDataExported",
+            "PaymentCaptured"
+          ],
+          "from": "Rejected",
+          "guards": [
+            "actor_active",
+            "expected_version",
+            "operation_binding",
+            "role_current",
+            "state_equals"
+          ],
+          "required_effects": [
+            "Audit:ExcursionReopened"
+          ],
+          "role": "Teacher",
+          "to": "Draft"
+        },
+        {
+          "action": "Submit",
+          "forbidden_effects": [
+            "ParentDataExported",
+            "PaymentCaptured"
+          ],
+          "from": "Draft",
+          "guards": [
+            "actor_active",
+            "expected_version",
+            "operation_binding",
+            "role_current",
+            "state_equals"
+          ],
+          "required_effects": [
+            "Audit:ExcursionSubmitted"
+          ],
+          "role": "Teacher",
+          "to": "Submitted"
+        }
+      ]
+    },
+    {
+      "label": "candidate-reject-from-Recommended",
+      "semantic_hash": "b26c9af5ae4cd958099956232721a70e73cb7e6efe1b213ff32417829b588e56",
+      "states": [
+        "Approved",
+        "Draft",
+        "Recommended",
+        "Rejected",
+        "Submitted"
+      ],
+      "transitions": [
+        {
+          "action": "Approve",
+          "forbidden_effects": [
+            "ParentDataExported",
+            "PaymentCaptured"
+          ],
+          "from": "Recommended",
+          "guards": [
+            "actor_active",
+            "expected_version",
+            "operation_binding",
+            "role_current",
+            "state_equals"
+          ],
+          "required_effects": [
+            "Audit:ExcursionApproved"
+          ],
+          "role": "Registrar",
+          "to": "Approved"
+        },
+        {
+          "action": "Recommend",
+          "forbidden_effects": [
+            "ParentDataExported",
+            "PaymentCaptured"
+          ],
+          "from": "Submitted",
+          "guards": [
+            "actor_active",
+            "actor_assigned",
+            "expected_version",
+            "operation_binding",
+            "role_current",
+            "state_equals"
+          ],
+          "required_effects": [
+            "Audit:ExcursionRecommended",
+            "Notification:RegistrarQueued"
+          ],
+          "role": "Teacher",
+          "to": "Recommended"
+        },
+        {
+          "action": "Reject",
+          "forbidden_effects": [
+            "ParentDataExported",
+            "PaymentCaptured"
+          ],
+          "from": "Recommended",
+          "guards": [
+            "actor_active",
+            "expected_version",
+            "operation_binding",
+            "role_current",
+            "state_equals"
+          ],
+          "required_effects": [
+            "Audit:ExcursionRejected"
+          ],
+          "role": "Registrar",
+          "to": "Rejected"
+        },
+        {
+          "action": "Revise",
+          "forbidden_effects": [
+            "ParentDataExported",
+            "PaymentCaptured"
+          ],
+          "from": "Rejected",
+          "guards": [
+            "actor_active",
+            "expected_version",
+            "operation_binding",
+            "role_current",
+            "state_equals"
+          ],
+          "required_effects": [
+            "Audit:ExcursionReopened"
+          ],
+          "role": "Teacher",
+          "to": "Draft"
+        },
+        {
+          "action": "Submit",
+          "forbidden_effects": [
+            "ParentDataExported",
+            "PaymentCaptured"
+          ],
+          "from": "Draft",
+          "guards": [
+            "actor_active",
+            "expected_version",
+            "operation_binding",
+            "role_current",
+            "state_equals"
+          ],
+          "required_effects": [
+            "Audit:ExcursionSubmitted"
+          ],
+          "role": "Teacher",
+          "to": "Submitted"
+        }
+      ]
+    },
+    {
+      "label": "candidate-reject-from-Submitted",
+      "semantic_hash": "6514ed9e339658e5d068e6b1a31aa10576ba6b634f3638a9367328cd941b634b",
+      "states": [
+        "Approved",
+        "Draft",
+        "Recommended",
+        "Rejected",
+        "Submitted"
+      ],
+      "transitions": [
+        {
+          "action": "Approve",
+          "forbidden_effects": [
+            "ParentDataExported",
+            "PaymentCaptured"
+          ],
+          "from": "Recommended",
+          "guards": [
+            "actor_active",
+            "expected_version",
+            "operation_binding",
+            "role_current",
+            "state_equals"
+          ],
+          "required_effects": [
+            "Audit:ExcursionApproved"
+          ],
+          "role": "Registrar",
+          "to": "Approved"
+        },
+        {
+          "action": "Recommend",
+          "forbidden_effects": [
+            "ParentDataExported",
+            "PaymentCaptured"
+          ],
+          "from": "Submitted",
+          "guards": [
+            "actor_active",
+            "actor_assigned",
+            "expected_version",
+            "operation_binding",
+            "role_current",
+            "state_equals"
+          ],
+          "required_effects": [
+            "Audit:ExcursionRecommended",
+            "Notification:RegistrarQueued"
+          ],
+          "role": "Teacher",
+          "to": "Recommended"
+        },
+        {
+          "action": "Reject",
+          "forbidden_effects": [
+            "ParentDataExported",
+            "PaymentCaptured"
+          ],
+          "from": "Submitted",
+          "guards": [
+            "actor_active",
+            "expected_version",
+            "operation_binding",
+            "role_current",
+            "state_equals"
+          ],
+          "required_effects": [
+            "Audit:ExcursionRejected"
+          ],
+          "role": "Registrar",
+          "to": "Rejected"
+        },
+        {
+          "action": "Revise",
+          "forbidden_effects": [
+            "ParentDataExported",
+            "PaymentCaptured"
+          ],
+          "from": "Rejected",
+          "guards": [
+            "actor_active",
+            "expected_version",
+            "operation_binding",
+            "role_current",
+            "state_equals"
+          ],
+          "required_effects": [
+            "Audit:ExcursionReopened"
+          ],
+          "role": "Teacher",
+          "to": "Draft"
+        },
+        {
+          "action": "Submit",
+          "forbidden_effects": [
+            "ParentDataExported",
+            "PaymentCaptured"
+          ],
+          "from": "Draft",
+          "guards": [
+            "actor_active",
+            "expected_version",
+            "operation_binding",
+            "role_current",
+            "state_equals"
+          ],
+          "required_effects": [
+            "Audit:ExcursionSubmitted"
+          ],
+          "role": "Teacher",
+          "to": "Submitted"
+        }
+      ]
+    }
+  ],
+  "grammar": {
+    "actions": [
+      "Submit",
+      "Recommend",
+      "Approve",
+      "Reject",
+      "Revise"
+    ],
+    "bounded_by": "one slot per known action (unique actions), enumerated vocabulary",
+    "effect_atoms": [
+      "Audit:ExcursionApproved",
+      "Audit:ExcursionRecommended",
+      "Audit:ExcursionRejected",
+      "Audit:ExcursionReopened",
+      "Audit:ExcursionSubmitted",
+      "Notification:RegistrarQueued",
+      "ParentDataExported",
+      "PaymentCaptured"
+    ],
+    "guards": [
+      "actor_active",
+      "role_current",
+      "actor_assigned",
+      "state_equals",
+      "expected_version",
+      "operation_binding"
+    ],
+    "roles": [
+      "Teacher",
+      "Registrar",
+      "Viewer",
+      "<other>"
+    ],
+    "states": [
+      "Draft",
+      "Submitted",
+      "Recommended",
+      "Approved",
+      "Rejected",
+      "<other>"
+    ],
+    "unknown_action_slot": true,
+    "unknown_state_slot": true
+  },
+  "invariants": [
+    {
+      "id": "INV-TEACHER-NOT-DECIDER",
+      "statement": "Teacher never holds Approve or Reject."
+    },
+    {
+      "id": "INV-REGISTRAR-ONLY-DECIDES",
+      "statement": "Approve and Reject are held by Registrar and by no other role."
+    },
+    {
+      "id": "INV-TEACHER-TRANSITIONS-NEVER-DECIDE",
+      "statement": "No Teacher-held transition (of any action) ends in Approved or Rejected."
+    },
+    {
+      "id": "INV-TEACHER-EMITS-NO-DECISION-AUDIT",
+      "statement": "No Teacher-held transition requires an Approved or Rejected audit effect."
+    },
+    {
+      "id": "INV-APPROVE-REQUIRES-RECOMMENDED",
+      "statement": "When the recommendation meaning is enabled (Recommend exists), Approve starts from Recommended."
+    },
+    {
+      "id": "INV-APPROVED-ONLY-VIA-APPROVE",
+      "statement": "Approve is the only transition that can end in Approved."
+    },
+    {
+      "id": "INV-RECOMMEND-REQUIRES-ASSIGNMENT",
+      "statement": "Recommend is guarded by actor_assigned and held by Teacher."
+    },
+    {
+      "id": "INV-RECOMMEND-CANNOT-CONCLUDE",
+      "statement": "Recommend ends in Recommended, never in Approved or Rejected."
+    },
+    {
+      "id": "INV-REJECT-SOURCE-BOUNDED",
+      "statement": "Reject starts only from Recommended or Submitted."
+    },
+    {
+      "id": "INV-FORBIDDEN-EFFECTS-EXCLUDED",
+      "statement": "No transition requires a forbidden effect, and every transition forbids all of them."
+    },
+    {
+      "id": "INV-MANDATORY-GUARDS-PRESENT",
+      "statement": "Every transition carries every base guard (a candidate cannot weaken authority checks)."
+    },
+    {
+      "id": "INV-CLOSED-WORKFLOW",
+      "statement": "The workflow starts in Draft, has no unknown action and no unknown state."
+    }
+  ],
+  "schema": "eija.smt-accepted-set/v1",
+  "subject": {
+    "function": "eija_studio.domain.policy.check_policy",
+    "sources_sha256_lf": {
+      "domain/models.py": "eae77547d1b9c6d639d48474aaf2415aad3fac207777c55ab88d7dba009884fa",
+      "domain/policy.py": "08c93514ca7691f61797f9f373b33e63083f9b2df330868faddbcc7d69974beb"
+    }
+  }
+}
