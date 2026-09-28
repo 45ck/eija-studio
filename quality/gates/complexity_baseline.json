@@ -5,6 +5,6 @@
     "src/eija_studio/application/verifier.py::verify_runtime": 23,
     "src/eija_studio/domain/evidence.py::assess_receipt": 45,
     "src/eija_studio/domain/policy.py::check_policy": 21,
-    "src/eija_studio/interfaces/cli.py::main": 33
+    "src/eija_studio/interfaces/cli.py::main": 31
   }
 }

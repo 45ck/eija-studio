@@ -1,0 +1,17 @@
+@startuml
+' eija: candidate: workflow excursion semantic_hash=b26c9af5ae4cd958099956232721a70e73cb7e6efe1b213ff32417829b588e56
+title excursion state machine
+hide empty description
+state "Approved" as Approved
+state "Draft" as Draft
+state "Recommended" as Recommended
+state "Rejected" as Rejected
+state "Submitted" as Submitted
+[*] --> Draft
+Draft -[#57606a]-> Submitted : Submit · Teacher
+Recommended -[#57606a]-> Approved : Approve · Registrar
+Recommended -[#57606a]-> Rejected : Reject · Registrar
+Rejected -[#57606a]-> Draft : Revise · Teacher
+Submitted -[#57606a]-> Recommended : Recommend · Teacher · assigned
+Approved --> [*]
+@enduml
