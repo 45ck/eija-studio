@@ -11,6 +11,8 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0018](0018-formal-vv-portfolio.md) | Formal V&V portfolio: each technique is a distinct evidence kind | proposed |
 | [0019](0019-diagrams-generated-from-executable-model.md) | Diagrams are generated projections of the executable model | proposed |
 | [0020](0020-multi-provider-agent-adapters.md) | Proposal providers: Codex, Claude Code, OpenCode, Gemini CLI, OpenRouter | proposed |
+| [0027](0027-tla-plus-specification-and-model-checking.md) | TLA+ specification of the workflow and commit protocol, checked with TLC | accepted |
+| [0028](0028-runtime-conformance-by-graph-comparison-and-trace-validation.md) | Model-to-code conformance by exhaustive graph comparison and TLC trace validation | accepted |
 
 ## Reserved numbers for capability lanes
 

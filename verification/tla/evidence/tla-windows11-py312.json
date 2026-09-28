@@ -1,0 +1,774 @@
+{
+  "kind": "tlc_model_check",
+  "schema": "eija.formal.tla.v1",
+  "lane": "tla",
+  "created_at": "2026-09-28T22:41:30+00:00",
+  "claim": "Safety invariants of the excursion workflow and commit protocol hold in the TLC-explored state space of the declared bounds, and the runtime agrees with the model on the compared behaviours.",
+  "limitations": [
+    "Bounded: N operation ids, one preview instance, a fixed 5-actor fixture directory; no claim beyond the bounds.",
+    "The model is a hand-written TLA+ transcription of the runtime's check order; agreement with the code is measured (state-graph comparison and trace validation), not proved.",
+    "Not modelled: several instances or cases, model-hash staleness, NOT_FOUND, concurrent connections, crash/power loss (covered by the kernel's process-termination tests), real identity, external delivery of the outbox.",
+    "Negative controls use seeded defects and hostile workflows that protected policy rejects; they show the invariants are sensitive, not that the kernel contains those defects.",
+    "The runtime side is compared through the abstraction in verification/tla/abstraction.py; fields outside it (audit bodies, payloads, timestamps) are not compared.",
+    "Same-author model and code: agreement is not independent validation."
+  ],
+  "generated_files": {
+    "count": 20,
+    "drift": []
+  },
+  "environment": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.12.10",
+    "java": "openjdk version \"17.0.19\" 2026-04-21",
+    "tlc": {
+      "release": "v1.7.4",
+      "sha256": "936a262061c914694dfd669a543be24573c45d5aa0ff20a8b96b23d01e050e88",
+      "url": "https://github.com/tlaplus/tlaplus/releases/download/v1.7.4/tla2tools.jar"
+    }
+  },
+  "model_checking": [
+    {
+      "name": "baseline",
+      "description": "Baseline: no recommendation; registrar decides from Submitted",
+      "role": "safe",
+      "bound": {
+        "operation_ids": 4,
+        "max_expected_version": 4,
+        "actors": 5,
+        "mutable_actors": [
+          "teacher-assigned",
+          "registrar"
+        ]
+      },
+      "workflow_semantic_hash": "5d3ef3a19c31d956a185b9c5ba4b1b79e651d0356e162436c5c67054d2ad4cdf",
+      "policy_verdict": "accepted",
+      "mutation": "none",
+      "invariants": [
+        "TypeOK",
+        "NoTeacherApproval",
+        "ApprovalRequiresRecommendation",
+        "OutboxAtMostOncePerOperation",
+        "AtomicCommit",
+        "ReplayNeverBypassesCurrentAuthority",
+        "ForbiddenEffectsNeverEmitted"
+      ],
+      "properties": [
+        "VersionMonotonic"
+      ],
+      "tlc": {
+        "result": "PASS",
+        "states_generated": 26017,
+        "distinct_states": 5520,
+        "depth": 9,
+        "seconds": 29.59,
+        "violated": null,
+        "violation_kind": null
+      },
+      "passed": true
+    },
+    {
+      "name": "candidate",
+      "description": "Candidate: teacher recommends, registrar approves or rejects from Recommended",
+      "role": "safe",
+      "bound": {
+        "operation_ids": 4,
+        "max_expected_version": 4,
+        "actors": 5,
+        "mutable_actors": [
+          "teacher-assigned",
+          "registrar"
+        ]
+      },
+      "workflow_semantic_hash": "b26c9af5ae4cd958099956232721a70e73cb7e6efe1b213ff32417829b588e56",
+      "policy_verdict": "accepted",
+      "mutation": "none",
+      "invariants": [
+        "TypeOK",
+        "NoTeacherApproval",
+        "ApprovalRequiresRecommendation",
+        "OutboxAtMostOncePerOperation",
+        "AtomicCommit",
+        "ReplayNeverBypassesCurrentAuthority",
+        "ForbiddenEffectsNeverEmitted"
+      ],
+      "properties": [
+        "VersionMonotonic"
+      ],
+      "tlc": {
+        "result": "PASS",
+        "states_generated": 16513,
+        "distinct_states": 3600,
+        "depth": 9,
+        "seconds": 24.17,
+        "violated": null,
+        "violation_kind": null
+      },
+      "passed": true
+    },
+    {
+      "name": "candidate_reject_submitted",
+      "description": "Candidate with registrar rejection allowed from Submitted",
+      "role": "safe",
+      "bound": {
+        "operation_ids": 4,
+        "max_expected_version": 4,
+        "actors": 5,
+        "mutable_actors": [
+          "teacher-assigned",
+          "registrar"
+        ]
+      },
+      "workflow_semantic_hash": "6514ed9e339658e5d068e6b1a31aa10576ba6b634f3638a9367328cd941b634b",
+      "policy_verdict": "accepted",
+      "mutation": "none",
+      "invariants": [
+        "TypeOK",
+        "NoTeacherApproval",
+        "ApprovalRequiresRecommendation",
+        "OutboxAtMostOncePerOperation",
+        "AtomicCommit",
+        "ReplayNeverBypassesCurrentAuthority",
+        "ForbiddenEffectsNeverEmitted"
+      ],
+      "properties": [
+        "VersionMonotonic"
+      ],
+      "tlc": {
+        "result": "PASS",
+        "states_generated": 29377,
+        "distinct_states": 6288,
+        "depth": 9,
+        "seconds": 42.77,
+        "violated": null,
+        "violation_kind": null
+      },
+      "passed": true
+    },
+    {
+      "name": "nc_teacher_approval",
+      "description": "NEGATIVE CONTROL: Approve granted to the Teacher role",
+      "role": "negative_control",
+      "bound": {
+        "operation_ids": 4,
+        "max_expected_version": 4,
+        "actors": 5,
+        "mutable_actors": [
+          "teacher-assigned",
+          "registrar"
+        ]
+      },
+      "workflow_semantic_hash": "ce9a57a8b68c544d65315e15da399f2df7754f5d6c4784e9d9ba642bbd49f590",
+      "policy_verdict": [
+        "PROTECTED_AUTHORITY:Approve"
+      ],
+      "mutation": "none",
+      "invariants": [
+        "TypeOK",
+        "NoTeacherApproval",
+        "ApprovalRequiresRecommendation",
+        "OutboxAtMostOncePerOperation",
+        "AtomicCommit",
+        "ReplayNeverBypassesCurrentAuthority",
+        "ForbiddenEffectsNeverEmitted"
+      ],
+      "properties": [
+        "VersionMonotonic"
+      ],
+      "tlc": {
+        "result": "VIOLATION",
+        "states_generated": 114,
+        "distinct_states": 76,
+        "depth": 4,
+        "seconds": 2.75,
+        "violated": "NoTeacherApproval",
+        "violation_kind": "invariant"
+      },
+      "expected_violation": "NoTeacherApproval",
+      "why": "With Approve assigned to the Teacher role the assigned teacher can walk Submit, Recommend, Approve. Protected policy rejects this workflow (PROTECTED_AUTHORITY:Approve), so the kernel never runs it.",
+      "expected_violation_observed": true,
+      "counterexample": [
+        {
+          "n": 1,
+          "step": "initial state (Draft, version 0, fixture directory)",
+          "state": "Draft",
+          "version": 0,
+          "audit": 0,
+          "outbox": {},
+          "effects_emitted": []
+        },
+        {
+          "n": 2,
+          "step": "teacher-assigned executes Submit as op1 (expectedVersion 0): Draft -> Submitted, version 1",
+          "state": "Submitted",
+          "version": 1,
+          "audit": 1,
+          "outbox": {},
+          "effects_emitted": [
+            "Audit:ExcursionSubmitted"
+          ]
+        },
+        {
+          "n": 3,
+          "step": "teacher-assigned executes Recommend as op2 (expectedVersion 1): Submitted -> Recommended, version 2",
+          "state": "Recommended",
+          "version": 2,
+          "audit": 2,
+          "outbox": {
+            "op2": 1
+          },
+          "effects_emitted": [
+            "Audit:ExcursionRecommended",
+            "Audit:ExcursionSubmitted",
+            "Notification:RegistrarQueued"
+          ]
+        },
+        {
+          "n": 4,
+          "step": "teacher-assigned executes Approve as op3 (expectedVersion 2): Recommended -> Approved, version 3",
+          "state": "Approved",
+          "version": 3,
+          "audit": 3,
+          "outbox": {
+            "op2": 1
+          },
+          "effects_emitted": [
+            "Audit:ExcursionApproved",
+            "Audit:ExcursionRecommended",
+            "Audit:ExcursionSubmitted",
+            "Notification:RegistrarQueued"
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "nc_replay_before_auth",
+      "description": "NEGATIVE CONTROL: operation replay looked up BEFORE authority",
+      "role": "negative_control",
+      "bound": {
+        "operation_ids": 4,
+        "max_expected_version": 4,
+        "actors": 5,
+        "mutable_actors": [
+          "teacher-assigned",
+          "registrar"
+        ]
+      },
+      "workflow_semantic_hash": "b26c9af5ae4cd958099956232721a70e73cb7e6efe1b213ff32417829b588e56",
+      "policy_verdict": "accepted",
+      "mutation": "replay_before_auth",
+      "invariants": [
+        "TypeOK",
+        "NoTeacherApproval",
+        "ApprovalRequiresRecommendation",
+        "OutboxAtMostOncePerOperation",
+        "AtomicCommit",
+        "ReplayNeverBypassesCurrentAuthority",
+        "ForbiddenEffectsNeverEmitted"
+      ],
+      "properties": [
+        "VersionMonotonic"
+      ],
+      "tlc": {
+        "result": "VIOLATION",
+        "states_generated": 2,
+        "distinct_states": 2,
+        "depth": 2,
+        "seconds": 1.89,
+        "violated": "ReplayNeverBypassesCurrentAuthority",
+        "violation_kind": "invariant"
+      },
+      "expected_violation": "ReplayNeverBypassesCurrentAuthority",
+      "why": "ReplayNeverBypassesCurrentAuthority is a predicate over every command in the last state. Once op1 is recorded, the seeded spec answers OPERATION_CONFLICT (or DUPLICATE) to an actor that is not authorised now, for example teacher-revoked (inactive in the fixture directory) reusing op1, instead of ACTOR_REVOKED.",
+      "expected_violation_observed": true,
+      "counterexample": [
+        {
+          "n": 1,
+          "step": "initial state (Draft, version 0, fixture directory)",
+          "state": "Draft",
+          "version": 0,
+          "audit": 0,
+          "outbox": {},
+          "effects_emitted": []
+        },
+        {
+          "n": 2,
+          "step": "teacher-assigned executes Submit as op1 (expectedVersion 0): Draft -> Submitted, version 1",
+          "state": "Submitted",
+          "version": 1,
+          "audit": 1,
+          "outbox": {},
+          "effects_emitted": [
+            "Audit:ExcursionSubmitted"
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "nc_replay_reemits",
+      "description": "NEGATIVE CONTROL: a replay re-queues its notification effects",
+      "role": "negative_control",
+      "bound": {
+        "operation_ids": 4,
+        "max_expected_version": 4,
+        "actors": 5,
+        "mutable_actors": [
+          "teacher-assigned",
+          "registrar"
+        ]
+      },
+      "workflow_semantic_hash": "b26c9af5ae4cd958099956232721a70e73cb7e6efe1b213ff32417829b588e56",
+      "policy_verdict": "accepted",
+      "mutation": "replay_reemits",
+      "invariants": [
+        "TypeOK",
+        "NoTeacherApproval",
+        "ApprovalRequiresRecommendation",
+        "OutboxAtMostOncePerOperation",
+        "AtomicCommit",
+        "ReplayNeverBypassesCurrentAuthority",
+        "ForbiddenEffectsNeverEmitted"
+      ],
+      "properties": [
+        "VersionMonotonic"
+      ],
+      "tlc": {
+        "result": "VIOLATION",
+        "states_generated": 114,
+        "distinct_states": 76,
+        "depth": 4,
+        "seconds": 3.14,
+        "violated": "OutboxAtMostOncePerOperation",
+        "violation_kind": "invariant"
+      },
+      "expected_violation": "OutboxAtMostOncePerOperation",
+      "why": "Replaying the committed Recommend (op2) with the same binding queues its notification a second time.",
+      "expected_violation_observed": true,
+      "counterexample": [
+        {
+          "n": 1,
+          "step": "initial state (Draft, version 0, fixture directory)",
+          "state": "Draft",
+          "version": 0,
+          "audit": 0,
+          "outbox": {},
+          "effects_emitted": []
+        },
+        {
+          "n": 2,
+          "step": "teacher-assigned executes Submit as op1 (expectedVersion 0): Draft -> Submitted, version 1",
+          "state": "Submitted",
+          "version": 1,
+          "audit": 1,
+          "outbox": {},
+          "effects_emitted": [
+            "Audit:ExcursionSubmitted"
+          ]
+        },
+        {
+          "n": 3,
+          "step": "teacher-assigned executes Recommend as op2 (expectedVersion 1): Submitted -> Recommended, version 2",
+          "state": "Recommended",
+          "version": 2,
+          "audit": 2,
+          "outbox": {
+            "op2": 1
+          },
+          "effects_emitted": [
+            "Audit:ExcursionRecommended",
+            "Audit:ExcursionSubmitted",
+            "Notification:RegistrarQueued"
+          ]
+        },
+        {
+          "n": 4,
+          "step": "replay of op2 re-queued its effects (outbox rows 1 -> 2, audit 2 -> 2)",
+          "state": "Recommended",
+          "version": 2,
+          "audit": 2,
+          "outbox": {
+            "op2": 2
+          },
+          "effects_emitted": [
+            "Audit:ExcursionRecommended",
+            "Audit:ExcursionSubmitted",
+            "Notification:RegistrarQueued"
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "nc_forbidden_effect",
+      "description": "NEGATIVE CONTROL: unadapted forbidden effect emitted instead of rejected",
+      "role": "negative_control",
+      "bound": {
+        "operation_ids": 4,
+        "max_expected_version": 4,
+        "actors": 5,
+        "mutable_actors": [
+          "teacher-assigned",
+          "registrar"
+        ]
+      },
+      "workflow_semantic_hash": "14660619167ad774cdf94c284dc87c5640925ae99761fd616e6f61c5c8bc9e50",
+      "policy_verdict": [
+        "EFFECT_POLICY:Approve"
+      ],
+      "mutation": "emit_unadapted",
+      "invariants": [
+        "TypeOK",
+        "NoTeacherApproval",
+        "ApprovalRequiresRecommendation",
+        "OutboxAtMostOncePerOperation",
+        "AtomicCommit",
+        "ReplayNeverBypassesCurrentAuthority",
+        "ForbiddenEffectsNeverEmitted"
+      ],
+      "properties": [
+        "VersionMonotonic"
+      ],
+      "tlc": {
+        "result": "VIOLATION",
+        "states_generated": 114,
+        "distinct_states": 76,
+        "depth": 4,
+        "seconds": 7.67,
+        "violated": "ForbiddenEffectsNeverEmitted",
+        "violation_kind": "invariant"
+      },
+      "expected_violation": "ForbiddenEffectsNeverEmitted",
+      "why": "Approve requires PaymentCaptured, which has no adapter. The real runtime raises EFFECT_DENIED and rolls back; the seeded spec emits it instead. Protected policy also rejects this workflow (EFFECT_POLICY:Approve).",
+      "expected_violation_observed": true,
+      "counterexample": [
+        {
+          "n": 1,
+          "step": "initial state (Draft, version 0, fixture directory)",
+          "state": "Draft",
+          "version": 0,
+          "audit": 0,
+          "outbox": {},
+          "effects_emitted": []
+        },
+        {
+          "n": 2,
+          "step": "teacher-assigned executes Submit as op1 (expectedVersion 0): Draft -> Submitted, version 1",
+          "state": "Submitted",
+          "version": 1,
+          "audit": 1,
+          "outbox": {},
+          "effects_emitted": [
+            "Audit:ExcursionSubmitted"
+          ]
+        },
+        {
+          "n": 3,
+          "step": "teacher-assigned executes Recommend as op2 (expectedVersion 1): Submitted -> Recommended, version 2",
+          "state": "Recommended",
+          "version": 2,
+          "audit": 2,
+          "outbox": {
+            "op2": 1
+          },
+          "effects_emitted": [
+            "Audit:ExcursionRecommended",
+            "Audit:ExcursionSubmitted",
+            "Notification:RegistrarQueued"
+          ]
+        },
+        {
+          "n": 4,
+          "step": "registrar executes Approve as op3 (expectedVersion 2): Recommended -> Approved, version 3",
+          "state": "Approved",
+          "version": 3,
+          "audit": 3,
+          "outbox": {
+            "op2": 1
+          },
+          "effects_emitted": [
+            "Audit:ExcursionApproved",
+            "Audit:ExcursionRecommended",
+            "Audit:ExcursionSubmitted",
+            "Notification:RegistrarQueued",
+            "PaymentCaptured"
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "name": "candidate_deep",
+      "description": "Candidate: teacher recommends, registrar approves or rejects from Recommended",
+      "role": "safe",
+      "bound": {
+        "operation_ids": 5,
+        "max_expected_version": 5,
+        "actors": 5,
+        "mutable_actors": [
+          "teacher-assigned",
+          "registrar"
+        ]
+      },
+      "workflow_semantic_hash": "b26c9af5ae4cd958099956232721a70e73cb7e6efe1b213ff32417829b588e56",
+      "policy_verdict": "accepted",
+      "mutation": "none",
+      "invariants": [
+        "TypeOK",
+        "NoTeacherApproval",
+        "ApprovalRequiresRecommendation",
+        "OutboxAtMostOncePerOperation",
+        "AtomicCommit",
+        "ReplayNeverBypassesCurrentAuthority",
+        "ForbiddenEffectsNeverEmitted"
+      ],
+      "properties": [
+        "VersionMonotonic"
+      ],
+      "tlc": {
+        "result": "PASS",
+        "states_generated": 130265,
+        "distinct_states": 27696,
+        "depth": 10,
+        "seconds": 190.64,
+        "violated": null,
+        "violation_kind": null
+      },
+      "passed": true
+    }
+  ],
+  "conformance": {
+    "baseline": {
+      "state_graph": {
+        "bound": {
+          "operation_ids": 2
+        },
+        "runtime_explore_seconds": 9.27,
+        "tlc": {
+          "result": "PASS",
+          "states_generated": 945,
+          "distinct_states": 208,
+          "depth": 7,
+          "seconds": 3.81,
+          "violated": null,
+          "violation_kind": null
+        },
+        "states_runtime": 208,
+        "states_spec": 208,
+        "states_common": 208,
+        "initial_states_equal": true,
+        "only_in_runtime": 0,
+        "only_in_spec": 0,
+        "state_command_cells_compared": 37440,
+        "committing_cells": 112,
+        "outcome_disagreements": 0,
+        "successor_disagreements": 0,
+        "environment_successor_disagreements": 0,
+        "runtime_executions": 37440,
+        "runtime_side_defects": 0,
+        "examples": {
+          "outcome": [],
+          "only_in_runtime": [],
+          "only_in_spec": [],
+          "defects": []
+        },
+        "agree": true
+      },
+      "trace_validation": {
+        "bound": {
+          "operation_ids": 6
+        },
+        "seed": "eija-tla-v1",
+        "traces": 283,
+        "by_kind": {
+          "scenario": 13,
+          "path_probe": 70,
+          "random": 200
+        },
+        "steps": 3544,
+        "outcome_histogram": {
+          "ACTION_DENIED": 158,
+          "ACTOR_REVOKED": 625,
+          "COMMITTED": 606,
+          "DUPLICATE": 455,
+          "ENV": 806,
+          "OPERATION_CONFLICT": 113,
+          "ROLE_DENIED": 371,
+          "STALE_VERSION": 117,
+          "STATE_DENIED": 139,
+          "UNKNOWN_ACTOR": 154
+        },
+        "runtime_record_seconds": 57.92,
+        "tlc": {
+          "result": "PASS",
+          "states_generated": 3827,
+          "distinct_states": 3827,
+          "depth": 21,
+          "seconds": 22.8,
+          "violated": null,
+          "violation_kind": null
+        },
+        "agree": true
+      },
+      "agree": true
+    },
+    "candidate": {
+      "state_graph": {
+        "bound": {
+          "operation_ids": 3
+        },
+        "runtime_explore_seconds": 75.59,
+        "tlc": {
+          "result": "PASS",
+          "states_generated": 3065,
+          "distinct_states": 688,
+          "depth": 8,
+          "seconds": 10.05,
+          "violated": null,
+          "violation_kind": null
+        },
+        "states_runtime": 688,
+        "states_spec": 688,
+        "states_common": 688,
+        "initial_states_equal": true,
+        "only_in_runtime": 0,
+        "only_in_spec": 0,
+        "state_command_cells_compared": 247680,
+        "committing_cells": 312,
+        "outcome_disagreements": 0,
+        "successor_disagreements": 0,
+        "environment_successor_disagreements": 0,
+        "runtime_executions": 247680,
+        "runtime_side_defects": 0,
+        "examples": {
+          "outcome": [],
+          "only_in_runtime": [],
+          "only_in_spec": [],
+          "defects": []
+        },
+        "agree": true
+      },
+      "trace_validation": {
+        "bound": {
+          "operation_ids": 6
+        },
+        "seed": "eija-tla-v1",
+        "traces": 312,
+        "by_kind": {
+          "scenario": 13,
+          "path_probe": 99,
+          "random": 200
+        },
+        "steps": 3952,
+        "outcome_histogram": {
+          "ACTOR_REVOKED": 795,
+          "ASSIGNMENT_DENIED": 283,
+          "COMMITTED": 618,
+          "DUPLICATE": 470,
+          "ENV": 882,
+          "OPERATION_CONFLICT": 97,
+          "ROLE_DENIED": 454,
+          "STALE_VERSION": 100,
+          "STATE_DENIED": 38,
+          "UNKNOWN_ACTOR": 215
+        },
+        "runtime_record_seconds": 67.95,
+        "tlc": {
+          "result": "PASS",
+          "states_generated": 4264,
+          "distinct_states": 4264,
+          "depth": 21,
+          "seconds": 18.16,
+          "violated": null,
+          "violation_kind": null
+        },
+        "agree": true
+      },
+      "agree": true,
+      "sensitivity": {
+        "seeded_defect": "replay_before_auth",
+        "state_graph_detected": true,
+        "state_graph_outcome_disagreements": 168096,
+        "trace_validation_detected": true,
+        "detected": true
+      }
+    },
+    "candidate_reject_submitted": {
+      "state_graph": {
+        "bound": {
+          "operation_ids": 2
+        },
+        "runtime_explore_seconds": 11.28,
+        "tlc": {
+          "result": "PASS",
+          "states_generated": 929,
+          "distinct_states": 208,
+          "depth": 7,
+          "seconds": 5.14,
+          "violated": null,
+          "violation_kind": null
+        },
+        "states_runtime": 208,
+        "states_spec": 208,
+        "states_common": 208,
+        "initial_states_equal": true,
+        "only_in_runtime": 0,
+        "only_in_spec": 0,
+        "state_command_cells_compared": 37440,
+        "committing_cells": 96,
+        "outcome_disagreements": 0,
+        "successor_disagreements": 0,
+        "environment_successor_disagreements": 0,
+        "runtime_executions": 37440,
+        "runtime_side_defects": 0,
+        "examples": {
+          "outcome": [],
+          "only_in_runtime": [],
+          "only_in_spec": [],
+          "defects": []
+        },
+        "agree": true
+      },
+      "trace_validation": {
+        "bound": {
+          "operation_ids": 6
+        },
+        "seed": "eija-tla-v1",
+        "traces": 283,
+        "by_kind": {
+          "scenario": 13,
+          "path_probe": 70,
+          "random": 200
+        },
+        "steps": 3535,
+        "outcome_histogram": {
+          "ACTOR_REVOKED": 667,
+          "ASSIGNMENT_DENIED": 136,
+          "COMMITTED": 651,
+          "DUPLICATE": 451,
+          "ENV": 802,
+          "OPERATION_CONFLICT": 125,
+          "ROLE_DENIED": 385,
+          "STALE_VERSION": 114,
+          "STATE_DENIED": 28,
+          "UNKNOWN_ACTOR": 176
+        },
+        "runtime_record_seconds": 76.5,
+        "tlc": {
+          "result": "PASS",
+          "states_generated": 3818,
+          "distinct_states": 3818,
+          "depth": 21,
+          "seconds": 14.3,
+          "violated": null,
+          "violation_kind": null
+        },
+        "agree": true
+      },
+      "agree": true
+    }
+  },
+  "total_seconds": 733.7,
+  "result": "PASS",
+  "counterexamples_file": "reports\\formal\\tla-counterexamples.md"
+}

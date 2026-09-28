@@ -1,0 +1,12 @@
+{
+  "tool": "TLC (tla2tools.jar)",
+  "upstream": "https://github.com/tlaplus/tlaplus",
+  "license": "MIT",
+  "release": "v1.7.4",
+  "released": "2024-08-05",
+  "url": "https://github.com/tlaplus/tlaplus/releases/download/v1.7.4/tla2tools.jar",
+  "size": 2274532,
+  "sha256": "936a262061c914694dfd669a543be24573c45d5aa0ff20a8b96b23d01e050e88",
+  "reported_version": "TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)",
+  "notes": "sha256 computed locally on 2026-09-29 (v1.7.4 publishes no digest). v1.8.0 exists only as a pre-release and is deliberately not pinned. Java 11+ required; tested with Temurin 17."
+}
