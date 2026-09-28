@@ -1,5 +1,7 @@
 name: local-poc-checks
-on: [push, pull_request]
+# Hosted CI is currently unavailable for this repository: manual dispatch only (ADR-0017).
+# Local equivalent: `nox -t full`.
+on: [workflow_dispatch]
 permissions:
   contents: read
 jobs:
