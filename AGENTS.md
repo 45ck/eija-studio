@@ -14,6 +14,8 @@ Keep original evidence and document counterexamples. Do not claim a mocked provi
 
 Before recommending updated Codex/OpenRouter parameters, check current official documentation and record the tested CLI/model versions. No remote publishing, deployment, paid loops, migration or key handling without explicit authorisation.
 
+For agent onboarding and what an agent may or may not do over MCP, see `docs/agents/contract.md` and `docs/agents/quickstart.md` (`eija mcp`).
+
 ## Capability lanes (parallel development)
 
 Work is split into lanes. Each lane has a GitHub issue, a branch `lane/<name>`, an ADR number block (`docs/adr/README.md`) and its own files. Lane rules:

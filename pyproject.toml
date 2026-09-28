@@ -31,14 +31,15 @@ testing = []
 mutation = []
 metrics = ["eija-studio[lint]", "grimp==3.17"]  # radon and coverage pins live once, in the lint extra
 hci = []
-agents = []
+agents = ["mcp==2.2.0", "anyio==4.15.1"]
 docs = []
-providers = []
-visual = []
+providers = ["psutil==7.2.2"]  # process-tree kill for agent CLIs; adapters degrade to taskkill/killpg without it
+visual = ["playwright==1.63.0", "pydot==4.0.1"]
 demos = ["playwright==1.63.0"]  # drives the installed system Chrome; no browser download
 ux = []
 graph = []
 dod = []
+smt = ["z3-solver==5.1.0.0"]  # lane smt-bmc: Z3 policy-soundness proof
 
 [project.scripts]
 eija = "eija_studio.interfaces.cli:main"
@@ -53,10 +54,7 @@ eija_studio = ["resources/**/*", "resources/*.json"]
 pythonpath = ["src", "."]  # "." so tests can import repo-root tooling packages (quality, demos)
 testpaths = ["tests"]
 addopts = "-ra -m 'not slow and not timing'"  # tests/conftest.py keeps pytest temp dirs inside the checkout (slow system temp)
-markers = [
-    "slow: starts a real server or a nested pytest; excluded from the default run, run by `nox -s metrics` (`-m slow`)",
-    "timing: asserts on wall-clock measurements and can flake on a busy machine; excluded from the default run",
-]
+markers = ["slow: starts a real server or a nested pytest; excluded from the default run, run by `nox -s metrics` (`-m slow`)", "timing: asserts on wall-clock measurements and can flake on a busy machine; excluded from the default run", "browser: drives a real browser or renderer; skipped (NOT_RUN) unless EIJA_BROWSER_TESTS=1, run by the release session diagrams_syntax"]
 
 [tool.ruff]
 target-version = "py311"
@@ -96,7 +94,6 @@ known-first-party = ["eija_studio", "quality", "verification"]
 "design/**/*.py" = ["E501"]
 "**/__main__.py" = ["T201"]  # command-line entry points print by design
 # Per-file debt in kernel sources (each names the finding so a fix removes exactly one entry).
-"src/eija_studio/adapters/providers.py" = ["SIM117", "S603"]  # subprocess.Popen(list, no shell) with a fixed argv
 "src/eija_studio/adapters/sqlite_store.py" = ["S608"]  # false positive: table name comes from a closed literal tuple
 "src/eija_studio/application/service.py" = ["UP017", "RUF001", "RUF005"]
 "src/eija_studio/application/verifier.py" = ["UP017", "PLW2901"]
@@ -109,6 +106,7 @@ known-first-party = ["eija_studio", "quality", "verification"]
 "quality/gates/*.py" = ["T201"]  # command-line tools that report on stdout
 "quality/sessions/quality.py" = ["T201"]  # NOT_RUN banner
 "tests/test_quality_gates.py" = ["S603"]  # runs lint-imports with a fixed argv
+"src/eija_studio/adapters/providers/process.py" = ["S603"]  # subprocess.Popen/run with an argv list and no shell; argv is a resolved executable plus adapter constants
 
 [tool.ruff.format]
 # Applied only to files this lane owns (quality/gates, quality/sessions/quality.py); see docs/quality/gates.md.

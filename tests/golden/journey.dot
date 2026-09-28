@@ -1,0 +1,23 @@
+// eija: workflow: workflow excursion semantic_hash=b26c9af5ae4cd958099956232721a70e73cb7e6efe1b213ff32417829b588e56
+digraph "excursion journeys by role" {
+    rankdir=LR;
+    graph [fontname="Helvetica"];
+    node [shape=box, fontname="Helvetica", margin="0.15,0.08"];
+    edge [fontname="Helvetica", fontsize=10];
+    subgraph "cluster_Registrar" { label="Registrar journey"; style=rounded;
+    "n_Registrar__Approved" [label="Approved", fillcolor="#f6f8fa", color="#57606a", fontcolor="#1f2328", style="rounded,filled"]
+    "n_Registrar__Recommended" [label="Recommended", fillcolor="#f6f8fa", color="#57606a", fontcolor="#1f2328", style="rounded,filled"]
+    "n_Registrar__Rejected" [label="Rejected", fillcolor="#f6f8fa", color="#57606a", fontcolor="#1f2328", style="rounded,filled"]
+    }
+    subgraph "cluster_Teacher" { label="Teacher journey"; style=rounded;
+    "n_Teacher__Draft" [label="Draft", fillcolor="#f6f8fa", color="#57606a", fontcolor="#1f2328", style="rounded,filled"]
+    "n_Teacher__Recommended" [label="Recommended", fillcolor="#f6f8fa", color="#57606a", fontcolor="#1f2328", style="rounded,filled"]
+    "n_Teacher__Rejected" [label="Rejected", fillcolor="#f6f8fa", color="#57606a", fontcolor="#1f2328", style="rounded,filled"]
+    "n_Teacher__Submitted" [label="Submitted", fillcolor="#f6f8fa", color="#57606a", fontcolor="#1f2328", style="rounded,filled"]
+    }
+    "n_Registrar__Recommended" -> "n_Registrar__Approved" [color="#57606a", label="Approve"]
+    "n_Registrar__Recommended" -> "n_Registrar__Rejected" [color="#57606a", label="Reject"]
+    "n_Teacher__Draft" -> "n_Teacher__Submitted" [color="#57606a", label="Submit"]
+    "n_Teacher__Rejected" -> "n_Teacher__Draft" [color="#57606a", label="Revise"]
+    "n_Teacher__Submitted" -> "n_Teacher__Recommended" [color="#57606a", label="Recommend · assigned"]
+}
