@@ -1,6 +1,7 @@
 """Bounded synthetic runtime experiments. Not a theorem prover or human study."""
 from __future__ import annotations
 from datetime import datetime, timezone
+from typing import Any
 from uuid import uuid4
 from eija_studio.domain.models import Workflow, ExecuteCommand, DomainError, fingerprint
 from .runtime import initialise, execute
@@ -19,7 +20,7 @@ ACTORS = [("teacher-assigned", "Teacher", True, True), ("teacher-unassigned", "T
           ("teacher-revoked", "Teacher", False, True), ("registrar", "Registrar", True, False), ("viewer", "Viewer", True, False)]
 
 
-def verify_runtime(model: Workflow, subject: dict, sandbox: SandboxFactory) -> dict:
+def verify_runtime(model: Workflow, subject: dict[str, Any], sandbox: SandboxFactory) -> dict[str, Any]:
     cells = []
     candidate = any(t.action == "Recommend" for t in model.transitions)
     rejection_source = next(t.from_state for t in model.transitions if t.action == "Reject")
@@ -51,6 +52,7 @@ def verify_runtime(model: Workflow, subject: dict, sandbox: SandboxFactory) -> d
                     with store.transaction() as u:
                         after = u.find_instance(item["id"], "oracle")
                         counts = u.effect_counts()
+                    assert after is not None, "the fixture instance was just initialised in this sandbox"  # noqa: S101
                     actual = {"accepted": accepted, "state": after["state"], "version": after["version"],
                               **{k: counts[k] - before[k] for k in ("audit", "outbox", "operations")}}
                     cells.append({"actor": actor_id, "state": state, "action": action, "expected": expected, "actual": actual})

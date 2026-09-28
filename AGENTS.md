@@ -26,3 +26,4 @@ Work is split into lanes. Each lane has a GitHub issue, a branch `lane/<name>`, 
 - **Line endings are LF.** On Windows, write files with `newline="\n"`.
 - **Stay off the shared hot spots.** Don't reformat unrelated files, don't rename kernel symbols, don't restamp `trusted_build.json`. Kernel changes need a regression test and an ADR.
 - **Heavy commands run serially.** The reference PC has 16 GB RAM, and D: is a slow HDD, so keep temp data in the checkout.
+- **Quality gates** ([docs/quality/gates.md](docs/quality/gates.md), ADR-0035/0036): run `nox -t fast` before committing and `nox -t full` before a PR. Never bypass hooks (`--no-verify`). Thresholds only tighten: fix the code or shrink the named debt; do not add ignores, raise budgets or lower `fail_under` to get green. `pip install -e ".[dev,lint]"` provides the tools.
