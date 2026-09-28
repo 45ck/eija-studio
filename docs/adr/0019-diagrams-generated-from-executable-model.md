@@ -1,6 +1,6 @@
 # ADR-0019: Diagrams are generated projections of the executable model
 
-* Status: proposed
+* Status: accepted
 * Date: 2026-09-28
 
 ## Context and problem statement

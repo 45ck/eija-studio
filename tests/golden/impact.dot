@@ -1,0 +1,88 @@
+// eija: baseline: workflow excursion semantic_hash=5d3ef3a19c31d956a185b9c5ba4b1b79e651d0356e162436c5c67054d2ad4cdf
+// eija: candidate: workflow excursion semantic_hash=b26c9af5ae4cd958099956232721a70e73cb7e6efe1b213ff32417829b588e56
+// eija: closure: complete within this mapping
+// eija: envelope: All dependencies encoded by this excursion projection mapping; not every real-world consequence.
+digraph "excursion change ripple" {
+    rankdir=LR;
+    graph [fontname="Helvetica"];
+    node [shape=box, fontname="Helvetica", margin="0.15,0.08"];
+    edge [fontname="Helvetica", fontsize=10];
+    subgraph "cluster_Approve" { label="Action Approve"; style=rounded;
+    "n_journey_Approve" [label="Journey · Approve", fillcolor="#ffe8cc", color="#bc4c00", fontcolor="#4d2000", style="rounded,filled"]
+    "n_obligation_Approve" [label="Obligation · Approve", fillcolor="#ffe8cc", color="#bc4c00", fontcolor="#4d2000", style="rounded,filled"]
+    "n_receipt_Approve" [label="Receipt · Approve", fillcolor="#ffe8cc", color="#bc4c00", fontcolor="#4d2000", style="rounded,filled"]
+    "n_rule_Approve" [label="Rule · Approve", fillcolor="#fff3c4", color="#9a6700", fontcolor="#4a3200", style="rounded,filled"]
+    "n_runtime_Approve" [label="Runtime · Approve", fillcolor="#ffe8cc", color="#bc4c00", fontcolor="#4d2000", style="rounded,filled"]
+    "n_state_view_Approve" [label="State view · Approve", fillcolor="#ffe8cc", color="#bc4c00", fontcolor="#4d2000", style="rounded,filled"]
+    }
+    subgraph "cluster_Recommend" { label="Action Recommend"; style=rounded;
+    "n_journey_Recommend" [label="Journey · Recommend", fillcolor="#ffe8cc", color="#bc4c00", fontcolor="#4d2000", style="rounded,filled"]
+    "n_obligation_Recommend" [label="Obligation · Recommend", fillcolor="#ffe8cc", color="#bc4c00", fontcolor="#4d2000", style="rounded,filled"]
+    "n_receipt_Recommend" [label="Receipt · Recommend", fillcolor="#ffe8cc", color="#bc4c00", fontcolor="#4d2000", style="rounded,filled"]
+    "n_rule_Recommend" [label="Rule · Recommend", fillcolor="#fff3c4", color="#9a6700", fontcolor="#4a3200", style="rounded,filled"]
+    "n_runtime_Recommend" [label="Runtime · Recommend", fillcolor="#ffe8cc", color="#bc4c00", fontcolor="#4d2000", style="rounded,filled"]
+    "n_state_view_Recommend" [label="State view · Recommend", fillcolor="#ffe8cc", color="#bc4c00", fontcolor="#4d2000", style="rounded,filled"]
+    }
+    subgraph "cluster_Reject" { label="Action Reject"; style=rounded;
+    "n_journey_Reject" [label="Journey · Reject", fillcolor="#ffe8cc", color="#bc4c00", fontcolor="#4d2000", style="rounded,filled"]
+    "n_obligation_Reject" [label="Obligation · Reject", fillcolor="#ffe8cc", color="#bc4c00", fontcolor="#4d2000", style="rounded,filled"]
+    "n_receipt_Reject" [label="Receipt · Reject", fillcolor="#ffe8cc", color="#bc4c00", fontcolor="#4d2000", style="rounded,filled"]
+    "n_rule_Reject" [label="Rule · Reject", fillcolor="#fff3c4", color="#9a6700", fontcolor="#4a3200", style="rounded,filled"]
+    "n_runtime_Reject" [label="Runtime · Reject", fillcolor="#ffe8cc", color="#bc4c00", fontcolor="#4d2000", style="rounded,filled"]
+    "n_state_view_Reject" [label="State view · Reject", fillcolor="#ffe8cc", color="#bc4c00", fontcolor="#4d2000", style="rounded,filled"]
+    }
+    subgraph "cluster_Revise" { label="Action Revise"; style=rounded;
+    "n_journey_Revise" [label="Journey · Revise", fillcolor="#f6f8fa", color="#57606a", fontcolor="#1f2328", style="rounded,filled"]
+    "n_obligation_Revise" [label="Obligation · Revise", fillcolor="#f6f8fa", color="#57606a", fontcolor="#1f2328", style="rounded,filled"]
+    "n_receipt_Revise" [label="Receipt · Revise", fillcolor="#f6f8fa", color="#57606a", fontcolor="#1f2328", style="rounded,filled"]
+    "n_rule_Revise" [label="Rule · Revise", fillcolor="#f6f8fa", color="#57606a", fontcolor="#1f2328", style="rounded,filled"]
+    "n_runtime_Revise" [label="Runtime · Revise", fillcolor="#f6f8fa", color="#57606a", fontcolor="#1f2328", style="rounded,filled"]
+    "n_state_view_Revise" [label="State view · Revise", fillcolor="#f6f8fa", color="#57606a", fontcolor="#1f2328", style="rounded,filled"]
+    }
+    subgraph "cluster_Submit" { label="Action Submit"; style=rounded;
+    "n_journey_Submit" [label="Journey · Submit", fillcolor="#f6f8fa", color="#57606a", fontcolor="#1f2328", style="rounded,filled"]
+    "n_obligation_Submit" [label="Obligation · Submit", fillcolor="#f6f8fa", color="#57606a", fontcolor="#1f2328", style="rounded,filled"]
+    "n_receipt_Submit" [label="Receipt · Submit", fillcolor="#f6f8fa", color="#57606a", fontcolor="#1f2328", style="rounded,filled"]
+    "n_rule_Submit" [label="Rule · Submit", fillcolor="#f6f8fa", color="#57606a", fontcolor="#1f2328", style="rounded,filled"]
+    "n_runtime_Submit" [label="Runtime · Submit", fillcolor="#f6f8fa", color="#57606a", fontcolor="#1f2328", style="rounded,filled"]
+    "n_state_view_Submit" [label="State view · Submit", fillcolor="#f6f8fa", color="#57606a", fontcolor="#1f2328", style="rounded,filled"]
+    }
+    "n_local_decision" [label="Local decision", fillcolor="#ffe8cc", color="#bc4c00", fontcolor="#4d2000", style="rounded,filled"]
+    "n_review_packet" [label="Review packet", fillcolor="#ffe8cc", color="#bc4c00", fontcolor="#4d2000", style="rounded,filled"]
+    "n_journey_Approve" -> "n_obligation_Approve" [color="#bc4c00"]
+    "n_journey_Recommend" -> "n_obligation_Recommend" [color="#bc4c00"]
+    "n_journey_Reject" -> "n_obligation_Reject" [color="#bc4c00"]
+    "n_journey_Revise" -> "n_obligation_Revise" [color="#57606a"]
+    "n_journey_Submit" -> "n_obligation_Submit" [color="#57606a"]
+    "n_obligation_Approve" -> "n_receipt_Approve" [color="#bc4c00"]
+    "n_obligation_Recommend" -> "n_receipt_Recommend" [color="#bc4c00"]
+    "n_obligation_Reject" -> "n_receipt_Reject" [color="#bc4c00"]
+    "n_obligation_Revise" -> "n_receipt_Revise" [color="#57606a"]
+    "n_obligation_Submit" -> "n_receipt_Submit" [color="#57606a"]
+    "n_receipt_Approve" -> "n_review_packet" [color="#bc4c00"]
+    "n_receipt_Recommend" -> "n_review_packet" [color="#bc4c00"]
+    "n_receipt_Reject" -> "n_review_packet" [color="#bc4c00"]
+    "n_receipt_Revise" -> "n_review_packet" [color="#57606a"]
+    "n_receipt_Submit" -> "n_review_packet" [color="#57606a"]
+    "n_review_packet" -> "n_local_decision" [color="#bc4c00"]
+    "n_rule_Approve" -> "n_runtime_Approve" [color="#bc4c00"]
+    "n_rule_Recommend" -> "n_runtime_Recommend" [color="#bc4c00"]
+    "n_rule_Reject" -> "n_runtime_Reject" [color="#bc4c00"]
+    "n_rule_Revise" -> "n_runtime_Revise" [color="#57606a"]
+    "n_rule_Submit" -> "n_runtime_Submit" [color="#57606a"]
+    "n_runtime_Approve" -> "n_state_view_Approve" [color="#bc4c00"]
+    "n_runtime_Recommend" -> "n_state_view_Recommend" [color="#bc4c00"]
+    "n_runtime_Reject" -> "n_state_view_Reject" [color="#bc4c00"]
+    "n_runtime_Revise" -> "n_state_view_Revise" [color="#57606a"]
+    "n_runtime_Submit" -> "n_state_view_Submit" [color="#57606a"]
+    "n_state_view_Approve" -> "n_journey_Approve" [color="#bc4c00"]
+    "n_state_view_Recommend" -> "n_journey_Recommend" [color="#bc4c00"]
+    "n_state_view_Reject" -> "n_journey_Reject" [color="#bc4c00"]
+    "n_state_view_Revise" -> "n_journey_Revise" [color="#57606a"]
+    "n_state_view_Submit" -> "n_journey_Submit" [color="#57606a"]
+    subgraph "cluster_legend" { label="Legend"; style=rounded;
+    "legend_changed" [label="changed rule (root of the ripple)", fillcolor="#fff3c4", color="#9a6700", fontcolor="#4a3200", style="rounded,filled"]
+    "legend_affected" [label="affected downstream", fillcolor="#ffe8cc", color="#bc4c00", fontcolor="#4d2000", style="rounded,filled"]
+    "legend_same" [label="unaffected", fillcolor="#f6f8fa", color="#57606a", fontcolor="#1f2328", style="rounded,filled"]
+    }
+}

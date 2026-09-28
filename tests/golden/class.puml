@@ -1,0 +1,83 @@
+@startuml
+' eija: source: pydantic models in eija_studio.domain (frozen, extra=forbid)
+title Domain contracts
+left to right direction
+class Alternative <<value-object>> {
+  +str explanation
+}
+class ChangeCase <<aggregate-root>> {
+  +str id
+  +int version
+  +Literal<U+003C>DRAFT|PROPOSED|PREVIEW|SAVED|VERIFIED|APPROVED|APPLIED|DISCARDED> stage
+  +str request
+  +int baseline_version
+  +dict | None provider_run
+  +str | None selected_meaning
+  +str | None selected_by
+  +dict<U+003C>str, dict<U+003C>str, int>> layout
+  +tuple<U+003C>dict> receipts
+  +dict | None decision
+  +str created_at
+}
+class ExecuteCommand <<command>> {
+  +str operation_id
+  +str actor_id
+  +str instance_id
+  +str action
+  +int expected_version
+}
+class LayoutChange <<command>> {
+  +str node
+  +int x
+  +int y
+}
+class Principal <<value-object>> {
+  +str id
+  +frozenset<U+003C>str> capabilities
+}
+class Proposal <<value-object>> {
+  +str summary
+  +tuple<U+003C>str> unknowns
+}
+class SemanticTransaction <<command>> {
+  +Literal<U+003C>enable_recommendation|set_rejection_source> kind
+  +Literal<U+003C>Submitted|Recommended> rejection_source
+}
+class Transition <<value-object>> {
+  +str id
+  +str action
+  +str from_state
+  +str to_state
+  +str role
+  +tuple<U+003C>str> required_effects
+  +tuple<U+003C>str> forbidden_effects
+}
+class Workflow <<value-object>> {
+  +Literal<U+003C>eija.workflow.v1> schema_version
+  +Literal<U+003C>excursion> id
+  +str initial_state
+  +tuple<U+003C>str> states
+}
+enum Guard {
+  actor_active
+  role_current
+  actor_assigned
+  state_equals
+  expected_version
+  operation_binding
+}
+enum Interpretation {
+  recommend_only
+  final_approval
+  confirm_only
+  unsupported
+}
+Alternative "1" --> "1" Interpretation : interpretation
+ChangeCase "1" *-- "0..1" Proposal : proposal
+ChangeCase "1" *-- "*" SemanticTransaction : transactions
+ChangeCase "1" *-- "1" Workflow : baseline
+ChangeCase "1" *-- "0..1" Workflow : candidate
+Proposal "1" *-- "1..*" Alternative : alternatives
+Transition "1" --> "*" Guard : guards
+Workflow "1" *-- "1..*" Transition : transitions
+@enduml

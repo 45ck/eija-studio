@@ -10,6 +10,8 @@ from eija_studio.domain.policy import baseline, apply_transaction, check_policy,
 from eija_studio.domain.impact import model_impact
 from eija_studio.application.compiler import subject_for
 from eija_studio.application.verifier import verify_runtime
+from eija_studio.application.diagram_catalog import VIEWS, VIEW_FORMATS, render_view
+from eija_studio.application.diagram_emitters import FORMATS
 
 
 def output(value, path: Path | None = None):
@@ -21,6 +23,45 @@ def output(value, path: Path | None = None):
         temporary.replace(path)
     else:
         print(text)
+
+
+def render_command(args) -> int:
+    """Text on stdout is the diagram itself (no JSON wrapper) so it pipes into a renderer."""
+    if (args.case_id is None) == (args.model is None):
+        raise DomainError("CONFIGURATION", "Give exactly one of CASE_ID or --model FILE")
+    if args.case_id is not None:
+        before, after = build_studio(args.workspace).workflows(args.case_id)
+    else:
+        before, after = baseline(), Workflow.model_validate_json(args.model.read_text(encoding="utf-8"))
+    if args.fmt == "html":
+        from .render_html import html_page
+        wanted = VIEWS if args.view == "all" else (args.view,)
+        panels = []
+        for view in wanted:
+            if view == "sequence" and args.action is None and args.view == "all":
+                panels += [(f"Commit protocol: {t.action}", "Order of checks and writes in one commit.", render_view("sequence", "mermaid", before, after, t.action))
+                           for t in sorted((after or before).transitions, key=lambda t: t.action)]
+            elif view in {"diff", "impact"} and after is None:
+                continue
+            else:
+                panels.append((view.capitalize() + " view", f"Generated from the workflow's semantic hash {(after or before).semantic_hash[:16]}.",
+                               render_view(view, "mermaid", before, after, args.action)))
+        text = html_page("EIJA diagrams: " + (args.case_id or args.model.name), panels)
+    else:
+        if args.view == "all":
+            raise DomainError("CONFIGURATION", "--view all is only available with --format html")
+        if args.fmt not in VIEW_FORMATS[args.view]:
+            raise DomainError("FORMAT_UNSUPPORTED", f"{args.view} is not emitted as {args.fmt}; supported: {', '.join(VIEW_FORMATS[args.view])}")
+        text = render_view(args.view, args.fmt, before, after, args.action)
+    data = text.encode("utf-8")
+    if args.out:
+        args.out.parent.mkdir(parents=True, exist_ok=True)
+        args.out.write_bytes(data)
+        print(str(args.out))
+    else:
+        sys.stdout.buffer.write(data)
+        sys.stdout.buffer.flush()
+    return 0
 
 
 def main(argv=None) -> int:
@@ -43,6 +84,14 @@ def main(argv=None) -> int:
     backup = subs.add_parser("backup", parents=[common]); backup.add_argument("--out", type=Path, required=True)
     compile_p = subs.add_parser("compile", parents=[common]); compile_p.add_argument("file", type=Path); compile_p.add_argument("--out", type=Path, required=True); compile_p.add_argument("--verify", action="store_true")
     check = subs.add_parser("check-export"); check.add_argument("file", type=Path)
+    render = subs.add_parser("render", help="Generate UML (Mermaid, PlantUML, DOT or HTML) from a case's executable model")
+    render.add_argument("case_id", nargs="?", help="Change Case id; alternatively pass --model")
+    render.add_argument("--model", type=Path, help="Workflow JSON file, drawn as the candidate against the shipped baseline")
+    render.add_argument("--workspace", type=Path, default=Path(".eija"))
+    render.add_argument("--view", choices=(*VIEWS, "all"), default="state", help="'all' is for --format html only")
+    render.add_argument("--format", choices=(*FORMATS, "html"), default="mermaid", dest="fmt")
+    render.add_argument("--action", help="Action for --view sequence")
+    render.add_argument("--out", type=Path, help="Write here instead of stdout (LF, UTF-8)")
     args = parser.parse_args(argv)
     try:
         if args.command == "check-export":
@@ -50,6 +99,8 @@ def main(argv=None) -> int:
             valid = doc.get("format") == "eija.change-case.export.v1" and doc.get("payload_hash") == fingerprint(doc.get("payload"))
             output({"payload_integrity": valid, "authority": "NOT_VERIFIED; exported evidence is not imported for approval"})
             return 0 if valid else 2
+        if args.command == "render":
+            return render_command(args)
         key = None
         if args.ask_key:
             if args.provider != "openrouter":

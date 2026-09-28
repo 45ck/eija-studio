@@ -1,0 +1,24 @@
+{
+  "files": {
+    "mermaid.LICENSE.txt": {
+      "bytes": 1089,
+      "sha256": "ec9fb67dcb25eccc416ed56e1aab819222c805a2a4bfe4cb19e7556bf2ffde80"
+    },
+    "mermaid.min.js": {
+      "bytes": 5575485,
+      "sha256": "28fca7ae6ebc7ed7bb63bde63136a74bfef14f296a57e403657eeb8b32836073"
+    }
+  },
+  "license": "MIT",
+  "npm_integrity": "sha512-/wQXC9iBxoGV8p3erbvaXs9h77VyLDBH6GdayVjj3hEcSQhFU4N1WUhUppotCEqlIxI2pRMwjwBSwTB1MfZBgQ==",
+  "npm_tarball": "https://registry.npmjs.org/mermaid/-/mermaid-12.0.0.tgz",
+  "package": "mermaid",
+  "runtime_network": "none: served from this package, never from a CDN",
+  "source": "npm pack mermaid@12.0.0 -> package/dist/mermaid.min.js and package/LICENSE (unmodified)",
+  "used_by": [
+    "resources/web/visual-frame.html (sandboxed frame)",
+    "interfaces/render_html.py (eija render --format html, inlined)"
+  ],
+  "verified": "2026-09-29: re-downloaded the tarball; the sha512 matched the registry's dist.integrity and both files are byte-identical to these",
+  "version": "12.0.0"
+}

@@ -208,6 +208,12 @@ class Studio:
             return {"case": case.model_dump(mode="json"), "packet": packet, "options": CANONICAL_OPTIONS,
                     "observations": u.observations(case_id)}
 
+    def workflows(self, case_id: str) -> tuple[Workflow, Workflow | None]:
+        """Baseline and candidate of a case, for read-only projections (diagrams). No authority, no writes."""
+        with self.store.transaction() as u:
+            case = self._case(u, case_id)
+        return case.baseline, case.candidate
+
     def export(self, case_id: str) -> dict:
         content = self.view(case_id)
         return {"format": "eija.change-case.export.v1", "payload_hash": fingerprint(content), "payload": content,

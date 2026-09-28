@@ -23,6 +23,8 @@ metrics = []
 hci = []
 agents = []
 docs = []
+# visual lane: Playwright drives installed Chrome for screenshots and Mermaid syntax checks; pydot validates emitted DOT.
+visual = ["playwright==1.63.0", "pydot==4.0.1"]
 
 [project.scripts]
 eija = "eija_studio.interfaces.cli:main"
