@@ -14,5 +14,13 @@
 | ADR format | MADR | Nygard ADRs, log4brains | — | — |
 | Agent integration (MCP server) | [MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk) `mcp==2.2.0` | hand-written JSON-RPC, FastMCP 1.x (`mcp<2`) | `interfaces/mcp_server.py`, `interfaces/agent_config.py` | EIJA-specific tool surface (agent-only, redaction, owner-held consent) and client config snippets; the protocol itself is the SDK. Replace the one adapter file if the SDK is swapped; ADR-0041 |
 | Agent client config targets | Claude Code, Codex CLI, OpenCode, Gemini CLI (documented `mcp add`/config formats) | per-client plugins | `docs/agents/quickstart.md` | Docs only; syntax is parse-tested in `tests/test_mcp_server.py` |
+| Lint | [Ruff](https://docs.astral.sh/ruff/) | flake8 + plugins, pylint | — | Rules and per-file debt in `pyproject.toml` |
+| Type checking | [mypy](https://mypy.readthedocs.io/) + pydantic plugin | pyright | — | Strict on domain and application; ratchet plan in `docs/quality/gates.md` |
+| Architecture contracts | [import-linter](https://import-linter.readthedocs.io/) (grimp) | pytest-archon, custom AST test | `[tool.importlinter]` contracts | Also follows transitive imports, which the AST test cannot |
+| Complexity budget | [radon](https://radon.readthedocs.io/), [xenon](https://github.com/rubik/xenon) | Ruff C901, lizard | `quality/gates/complexity_ratchet.py` (about 130 lines) | Neither tool can pin a named list of legacy functions while budgeting the rest; replace with C901 once the debt list is empty |
+| Coverage | [coverage.py](https://coverage.readthedocs.io/), pytest-cov | — | — | — |
+| Dependency hygiene | [deptry](https://deptry.com/) | pip-check-reqs, creosote | — | — |
+| Vulnerability audit | [pip-audit](https://github.com/pypa/pip-audit) | safety, OSV-Scanner | — | — |
+| Hook wiring | noslop hooks and Claude guardrails, adapted | pre-commit, husky | `.githooks/run-nox` (about 20 lines of shell) | noslop's Python pack hard-codes other gates; see ADR-0036 |
 
-Lanes still to add rows: providers (agent CLIs), diagrams (Mermaid, PlantUML, Graphviz), formal (Bend, TLA+/TLC, Z3), testing (Hypothesis), mutation, lint and typing (Ruff, mypy, import-linter), metrics (radon, grimp), HCI (Playwright, axe-core), agents (MCP Python SDK), tracing (OpenFastTrace), knowledge base ([OKF v0.2](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md)), docs.
+Lanes still to add rows: providers (agent CLIs), diagrams (Mermaid, PlantUML, Graphviz), formal (Bend, TLA+/TLC, Z3), testing (Hypothesis), mutation, metrics (radon, grimp), HCI (Playwright, axe-core), agents (MCP Python SDK), tracing (OpenFastTrace), knowledge base ([OKF v0.2](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md)), docs.
