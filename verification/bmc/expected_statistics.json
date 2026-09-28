@@ -168,6 +168,276 @@
           "transitions": 9496
         }
       }
+    },
+    "depth-8": {
+      "config": {
+        "actions": [
+          "Submit",
+          "Recommend",
+          "Approve",
+          "Reject",
+          "Revise",
+          "Bogus"
+        ],
+        "actors": [
+          "teacher-assigned",
+          "teacher-unassigned",
+          "teacher-revoked",
+          "registrar",
+          "viewer",
+          "ghost"
+        ],
+        "depth": 8,
+        "environment_toggles": [
+          [
+            "teacher-assigned",
+            "active"
+          ],
+          [
+            "teacher-assigned",
+            "assigned"
+          ],
+          [
+            "registrar",
+            "active"
+          ]
+        ],
+        "max_seconds": null,
+        "replay_conflicts": true,
+        "stale_versions": true,
+        "stop_when_found": []
+      },
+      "models": {
+        "baseline": {
+          "exhausted": false,
+          "max_depth": 8,
+          "outcomes": {
+            "committed:Approve": 72,
+            "committed:Reject": 72,
+            "committed:Revise": 112,
+            "committed:Submit": 172,
+            "duplicate": 1228,
+            "env:active=0": 440,
+            "env:active=1": 280,
+            "env:assigned=0": 220,
+            "env:assigned=1": 140,
+            "rejected:ACTION_DENIED": 11840,
+            "rejected:ACTOR_REVOKED": 8940,
+            "rejected:OPERATION_CONFLICT": 2104,
+            "rejected:ROLE_DENIED": 11728,
+            "rejected:STALE_VERSION": 1600,
+            "rejected:STATE_DENIED": 1172,
+            "rejected:UNKNOWN_ACTOR": 4480
+          },
+          "per_depth": [
+            {
+              "depth": 1,
+              "frontier": 1,
+              "new_states": 5,
+              "transitions": 75
+            },
+            {
+              "depth": 2,
+              "frontier": 5,
+              "new_states": 13,
+              "transitions": 397
+            },
+            {
+              "depth": 3,
+              "frontier": 13,
+              "new_states": 23,
+              "transitions": 1129
+            },
+            {
+              "depth": 4,
+              "frontier": 23,
+              "new_states": 34,
+              "transitions": 2187
+            },
+            {
+              "depth": 5,
+              "frontier": 34,
+              "new_states": 56,
+              "transitions": 3584
+            },
+            {
+              "depth": 6,
+              "frontier": 56,
+              "new_states": 92,
+              "transitions": 6620
+            },
+            {
+              "depth": 7,
+              "frontier": 92,
+              "new_states": 136,
+              "transitions": 11784
+            },
+            {
+              "depth": 8,
+              "frontier": 136,
+              "new_states": 224,
+              "transitions": 18824
+            }
+          ],
+          "semantic_hash": "5d3ef3a19c31d956a185b9c5ba4b1b79e651d0356e162436c5c67054d2ad4cdf",
+          "states": 584,
+          "transitions": 44600
+        },
+        "candidate-reject-from-Recommended": {
+          "exhausted": false,
+          "max_depth": 8,
+          "outcomes": {
+            "committed:Approve": 32,
+            "committed:Recommend": 20,
+            "committed:Reject": 32,
+            "committed:Revise": 40,
+            "committed:Submit": 60,
+            "duplicate": 580,
+            "env:active=0": 248,
+            "env:active=1": 168,
+            "env:assigned=0": 124,
+            "env:assigned=1": 84,
+            "rejected:ACTION_DENIED": 3352,
+            "rejected:ACTOR_REVOKED": 6120,
+            "rejected:ASSIGNMENT_DENIED": 1072,
+            "rejected:OPERATION_CONFLICT": 1232,
+            "rejected:ROLE_DENIED": 7128,
+            "rejected:STALE_VERSION": 986,
+            "rejected:STATE_DENIED": 802,
+            "rejected:UNKNOWN_ACTOR": 2936
+          },
+          "per_depth": [
+            {
+              "depth": 1,
+              "frontier": 1,
+              "new_states": 5,
+              "transitions": 75
+            },
+            {
+              "depth": 2,
+              "frontier": 5,
+              "new_states": 11,
+              "transitions": 397
+            },
+            {
+              "depth": 3,
+              "frontier": 11,
+              "new_states": 17,
+              "transitions": 935
+            },
+            {
+              "depth": 4,
+              "frontier": 17,
+              "new_states": 24,
+              "transitions": 1605
+            },
+            {
+              "depth": 5,
+              "frontier": 24,
+              "new_states": 34,
+              "transitions": 2526
+            },
+            {
+              "depth": 6,
+              "frontier": 34,
+              "new_states": 48,
+              "transitions": 3958
+            },
+            {
+              "depth": 7,
+              "frontier": 48,
+              "new_states": 68,
+              "transitions": 6108
+            },
+            {
+              "depth": 8,
+              "frontier": 68,
+              "new_states": 96,
+              "transitions": 9412
+            }
+          ],
+          "semantic_hash": "b26c9af5ae4cd958099956232721a70e73cb7e6efe1b213ff32417829b588e56",
+          "states": 304,
+          "transitions": 25016
+        },
+        "candidate-reject-from-Submitted": {
+          "exhausted": false,
+          "max_depth": 8,
+          "outcomes": {
+            "committed:Approve": 40,
+            "committed:Recommend": 52,
+            "committed:Reject": 72,
+            "committed:Revise": 112,
+            "committed:Submit": 172,
+            "duplicate": 1380,
+            "env:active=0": 504,
+            "env:active=1": 312,
+            "env:assigned=0": 252,
+            "env:assigned=1": 156,
+            "rejected:ACTION_DENIED": 6736,
+            "rejected:ACTOR_REVOKED": 12000,
+            "rejected:ASSIGNMENT_DENIED": 1880,
+            "rejected:OPERATION_CONFLICT": 2712,
+            "rejected:ROLE_DENIED": 15032,
+            "rejected:STALE_VERSION": 1978,
+            "rejected:STATE_DENIED": 1530,
+            "rejected:UNKNOWN_ACTOR": 5920
+          },
+          "per_depth": [
+            {
+              "depth": 1,
+              "frontier": 1,
+              "new_states": 5,
+              "transitions": 75
+            },
+            {
+              "depth": 2,
+              "frontier": 5,
+              "new_states": 13,
+              "transitions": 397
+            },
+            {
+              "depth": 3,
+              "frontier": 13,
+              "new_states": 25,
+              "transitions": 1129
+            },
+            {
+              "depth": 4,
+              "frontier": 25,
+              "new_states": 40,
+              "transitions": 2403
+            },
+            {
+              "depth": 5,
+              "frontier": 40,
+              "new_states": 62,
+              "transitions": 4232
+            },
+            {
+              "depth": 6,
+              "frontier": 62,
+              "new_states": 102,
+              "transitions": 7268
+            },
+            {
+              "depth": 7,
+              "frontier": 102,
+              "new_states": 160,
+              "transitions": 13128
+            },
+            {
+              "depth": 8,
+              "frontier": 160,
+              "new_states": 248,
+              "transitions": 22208
+            }
+          ],
+          "semantic_hash": "6514ed9e339658e5d068e6b1a31aa10576ba6b634f3638a9367328cd941b634b",
+          "states": 656,
+          "transitions": 50840
+        }
+      }
     }
   },
   "schema": "eija.bmc-statistics/v1"

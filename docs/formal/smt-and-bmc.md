@@ -76,7 +76,7 @@ The statements come from the policy's stated intent (`TECHNICAL_LEAD_REVIEW.md`,
 
 **Self-test.** `mutants.py` seeds six runtime faults: revocation ignored, assignment ignored, role ignored, replay served before authority is rechecked, stale version accepted, replay reapplies effects. Each must be caught within three moves, with a shortest trace (for example `teacher-assigned Submit v=0 op=op0` then `teacher-revoked Submit v=0 op=op0` for the replay flaw). The state invariants have separate tampered-database tests.
 
-**Tiers.** Full: depth 6, `baseline` and `candidate-reject-from-Recommended`, self-test, drift check of the deterministic statistics in `verification/bmc/expected_statistics.json`. Release: depth 8, all three variants.
+**Tiers.** Full: depth 6, `baseline` and `candidate-reject-from-Recommended`, self-test, drift check of the deterministic statistics in `verification/bmc/expected_statistics.json`. Release: depth 8, all three variants, same drift check (the file holds one entry per depth).
 
 ### What the bounded model check does not establish
 
