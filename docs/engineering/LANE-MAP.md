@@ -1,6 +1,6 @@
 # Lane map: ownership, dependencies, merge order
 
-How the parallel workstreams fit together and in what order they land. Guiding idea: [the domain model and its language are the primary object](PRODUCT-THESIS.md); everything else (diagrams, UI, agents, evidence) is a view of it or a check on it. Live status is the GitHub PR list; this file records the *reasoning*. Last reviewed 2026-09-29.
+How the parallel workstreams fit together and in what order they land. Guiding idea: [the domain model and its language are the primary object](PRODUCT-THESIS.md); everything else (diagrams, UI, agents, evidence) is a view of it or a check on it. The end-to-end POC is defined in [POC-DEFINITION.md](POC-DEFINITION.md). Live status is the GitHub PR list; this file records the *reasoning*. Last reviewed 2026-09-29.
 
 ## Lanes
 
@@ -25,6 +25,8 @@ How the parallel workstreams fit together and in what order they land. Guiding i
 | wave 2: `studio-ux` | the **IDE workbench shell** (explorer, tabbed/split editors, Problems panel, command palette, status bar): port of the redesign into the real Studio, replacing the wizard-style tabs | (HCI-ADRs) | web UI | visual, ux, ddd-language |
 | wave 2: `imagegen` | consent-gated image generation via the provider port | 0053–0054 | providers | providers |
 | wave 2: `personas-e2e` | personas/ICP and persona-driven e2e scenarios | 0055–0056 | tests | ddd-language |
+| POC: `evidence-kinds` | formal evidence in the kernel: per-kind admissibility (SMT proof, TLC, Bend, bounded model check, property, mutation) recomputed from raw artifacts, with assumptions and bounds, UNKNOWN by default; shown in the review packet | 0145–0152 | domain/application/adapters + UI | smt-bmc, tla, bend, visual |
+| POC: `e2e` | one offline end-to-end test of the chain (MCP propose, diagrams, verification, formal evidence, owner decision); clean-clone install check | none | tests | providers, agents, visual, evidence-kinds |
 | wave 2: `patterns` | design patterns shown visually: recognised in the model and code, applied as checked refactorings; abstractions as tree and as graph | 0137–0144 | UI + kernel | weave, visual, ddd-language |
 
 ## Dependency graph

@@ -44,6 +44,14 @@ def typecheck(session: nox.Session) -> None:
     _run(session, "mypy", *session.posargs)
 
 
+# Tagged release until the providers package lands: the legacy adapters/providers.py calls os.killpg/SIGKILL
+# behind a runtime os.name check that mypy cannot see. Promote to ["full"] afterwards.
+@nox.session(python=False, tags=["release"])
+def typecheck_win32(session: nox.Session) -> None:
+    """mypy again as win32: Windows-only branches (subprocess creation flags, msvcrt) are invisible to the linux run."""
+    _run(session, "mypy", "--platform", "win32", *session.posargs)
+
+
 @nox.session(python=False, tags=["fast", "full"])
 def architecture(session: nox.Session) -> None:
     """import-linter: layer order, vendor-free domain and application, adapters wired only by bootstrap."""
