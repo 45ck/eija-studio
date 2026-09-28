@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Any
 
 from . import ROOT
-from .common import MEASURED, NOT_RUN, measured, not_run, r3, rel
+from .common import NOT_RUN, measured, r3, rel
 
 REPORTS = ROOT / "reports"
 GROUPS = {  # group -> (glob relative to reports/, owning lane, what a report there is expected to be)

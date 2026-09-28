@@ -24,8 +24,8 @@ def test_endpoint_report_classifies_kind_and_threshold_bands():
 
 @pytest.mark.parametrize("opener", [perf.testclient_call, perf.uvicorn_call], ids=["testclient", "real-uvicorn"])
 def test_interactive_endpoints_have_median_latency_under_the_doherty_threshold(opener):
-    """Smoke-sized measurement (one journey, 8 reads): with so few samples p95 is just the maximum and one slow
-    disk flush on a busy machine would make it flaky, so this guard uses the median. The p95 budgets are
+    """Smoke-sized measurement (three journeys, 6 reads): with so few samples p95 is just the maximum and one slow
+    disk flush on a busy machine would make it flaky, so this guard uses the median (robust to one outlier). The p95 budgets are
     evaluated over the larger quick/full profiles (nox -s metrics). The second case starts a real uvicorn
     server on an ephemeral loopback port."""
     report = perf.measure_transport(opener, "smoke")

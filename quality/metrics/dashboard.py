@@ -41,8 +41,12 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--muted);font-size:.85re
 GLYPH = {"PASS": "✓", "FAIL": "✗", "NOT_RUN": "–", "MEASURED": "●", "UNKNOWN": "?", "UNREADABLE": "?"}
 
 
+class Raw(str):
+    """Markup built by this module (trusted). Any other string is escaped by `table`."""
+
+
 def status(s: str) -> str:
-    return f'<span class="st {esc(s)}">{GLYPH.get(s, "?")} {esc(s)}</span>'
+    return Raw(f'<span class="st {esc(s)}">{GLYPH.get(s, "?")} {esc(s)}</span>')
 
 
 def table(headers: list[tuple[str, bool]], rows: list[list[object]], caption: str) -> str:
@@ -51,7 +55,7 @@ def table(headers: list[tuple[str, bool]], rows: list[list[object]], caption: st
     for row in rows:
         cells = ""
         for (h, numeric), cell in zip(headers, row):
-            raw = isinstance(cell, str) and cell.startswith("<")
+            raw = isinstance(cell, Raw)
             cells += f'<td class="{"n" if numeric else ""}">{cell if raw else esc(fmt(cell) if isinstance(cell, (int, float)) else cell)}</td>'
         body += f"<tr>{cells}</tr>"
     return f'<div class="wrap"><table><caption class="note" style="text-align:left">{esc(caption)}</caption><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table></div>'

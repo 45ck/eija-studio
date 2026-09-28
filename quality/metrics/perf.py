@@ -55,7 +55,7 @@ from .scaling import time_call
 INSTANT_MS, DOHERTY_MS = 100.0, 400.0
 TOKEN = "metrics-harness-token"
 PROFILES = {  # profile -> read samples per endpoint, flow iterations, verify-scaling repeats
-    "smoke": {"reads": 8, "flows": 1, "matrix_repeats": 1},  # unit tests only: proves the pipeline, not a statistic
+    "smoke": {"reads": 6, "flows": 3, "matrix_repeats": 1},  # unit tests only: proves the pipeline, not a statistic
     "quick": {"reads": 40, "flows": 4, "matrix_repeats": 3},
     "full": {"reads": 120, "flows": 15, "matrix_repeats": 5},
 }

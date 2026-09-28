@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from . import ROOT
 from . import aggregate, budgets, complexity, inventory, perf, scaling, structure
-from .common import MEASURED, NOT_RUN, dumps, measured, meta, not_run, r3, write_text
+from .common import dumps, measured, meta, r3, write_text
 
 REPORT = ROOT / "reports" / "metrics.json"
 DETERMINISTIC = ("martin", "complexity", "tests", "coverage", "lane_reports")
