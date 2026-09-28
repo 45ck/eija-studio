@@ -114,4 +114,4 @@ executed lines, not verified behaviour, and `interfaces/cli.py` is 0 % covered b
 * **New modules need tests at or above the coverage floor.** Headroom is under one point (floor 78, measured 78.7); adding an under-tested module trips the gate. Add tests; do not lower the floor.
 * **Moving a function** (for example `adapters/providers.py` into a package) leaves a stale key in `complexity_baseline.json`, and `--update` will not add the moved entry. Rename the key by hand in the same change, and say so in the PR.
 * **Optional extras are not dev groups** for deptry: only `dev` and `lint` are. A lane that imports its extra's package from `src/` or a tooling tree is fine; declare the distribution-to-module name in `[tool.deptry.package_module_name_map]` when they differ.
-* **`typecheck_win32`** (release tier for now; it moves to `full` once the providers package replaces the POSIX-only `adapters/providers.py`) re-runs mypy as `win32` so Windows-only branches are checked; the default `typecheck` runs as `linux`.
+* **`typecheck_win32`** (full tier) re-runs mypy as `win32` so Windows-only branches are checked; the default `typecheck` runs as `linux`.

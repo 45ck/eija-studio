@@ -4,12 +4,14 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from pydantic import ValidationError
 from eija_studio import __version__
-from eija_studio.bootstrap import build_studio
+from eija_studio.bootstrap import build_studio, KEYED_PROVIDERS, PROVIDER_NAMES
 from eija_studio.domain.models import Workflow, SemanticTransaction, DomainError, OWNER, fingerprint
 from eija_studio.domain.policy import baseline, apply_transaction, check_policy, projections
 from eija_studio.domain.impact import model_impact
 from eija_studio.application.compiler import subject_for
 from eija_studio.application.verifier import verify_runtime
+from eija_studio.application.diagram_catalog import FORMATS, VIEWS, VIEW_FORMATS, html_panels, render_view
+from .agent_config import DEFAULT_MAX_PROVIDER_CALLS, snippet
 
 
 def output(value, path: Path | None = None):
@@ -23,15 +25,111 @@ def output(value, path: Path | None = None):
         print(text)
 
 
+def _render_workflows(args) -> tuple[Workflow, Workflow | None]:
+    if (args.case_id is None) == (args.workflow is None):
+        raise DomainError("CONFIGURATION", "Give exactly one of CASE_ID or --workflow FILE")
+    if args.case_id is None:
+        return baseline(), Workflow.model_validate_json(args.workflow.read_text(encoding="utf-8"))
+    if not args.workspace.is_dir():
+        raise DomainError("NOT_FOUND", "Workspace does not exist; render never creates one")
+    return build_studio(args.workspace).workflows(args.case_id)
+
+
+def _render_text(args, before: Workflow, after: Workflow | None) -> str:
+    if args.fmt == "html":
+        from .render_html import html_page
+        return html_page("EIJA diagrams: " + (args.case_id or args.workflow.name), html_panels(args.view, before, after, args.action))
+    if args.view == "all":
+        raise DomainError("CONFIGURATION", "--view all is only available with --format html")
+    if args.fmt not in VIEW_FORMATS[args.view]:
+        raise DomainError("FORMAT_UNSUPPORTED", f"{args.view} is not emitted as {args.fmt}; supported: {', '.join(VIEW_FORMATS[args.view])}")
+    return render_view(args.view, args.fmt, before, after, args.action)
+
+
+def _write_render(data: bytes, out: Path | None) -> None:
+    if out is None:
+        sys.stdout.buffer.write(data)
+        sys.stdout.buffer.flush()
+        return
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_bytes(data)
+    print(str(out))
+
+
+def render_command(args) -> int:
+    """Text on stdout is the diagram itself (no JSON wrapper) so it pipes into a renderer. A workflow the
+    protected policy refuses is still drawn, with a POLICY BLOCKED marker, and the command exits 2 so a script
+    cannot mistake it for a routine change. Read-only: it never creates a workspace or a receipt key."""
+    before, after = _render_workflows(args)
+    _write_render(_render_text(args, before, after).encode("utf-8"), args.out)
+    blocked = check_policy(after if after is not None else before)
+    if blocked:
+        print("POLICY_BLOCKED: " + "; ".join(blocked) + " (drawn with a marker; the runtime would refuse this workflow)", file=sys.stderr)
+        return 2
+    return 0
+
+
+def check_export_command(args) -> int:
+    doc = json.loads(args.file.read_text(encoding="utf-8"))
+    valid = doc.get("format") == "eija.change-case.export.v1" and doc.get("payload_hash") == fingerprint(doc.get("payload"))
+    output({"payload_integrity": valid, "authority": "NOT_VERIFIED; exported evidence is not imported for approval"})
+    return 0 if valid else 2
+
+
+def _add_render_parser(subs) -> None:
+    render = subs.add_parser("render", help="Generate UML (Mermaid, PlantUML, DOT or HTML) from a case's executable model")
+    render.add_argument("case_id", nargs="?", help="Change Case id; alternatively pass --workflow")
+    render.add_argument("--workflow", type=Path, help="Workflow JSON file, drawn as the candidate against the shipped baseline")
+    render.add_argument("--workspace", type=Path, default=Path(".eija"))
+    render.add_argument("--view", choices=(*VIEWS, "all"), default="state", help="'all' is for --format html only")
+    render.add_argument("--format", choices=(*FORMATS, "html"), default="mermaid", dest="fmt")
+    render.add_argument("--action", help="Action for --view sequence")
+    render.add_argument("--out", type=Path, help="Write here instead of stdout (LF, UTF-8)")
+
+
+EARLY_COMMANDS = {"check-export": check_export_command, "render": render_command}  # need no workspace, provider or key
+
+
+def _report_failure(command: str, exc: Exception) -> None:
+    if isinstance(exc, DomainError):
+        failure = {"error": exc.code, "message": exc.message}
+    else:
+        failure = {"error": "INPUT_OR_ENVIRONMENT_ERROR", "message": "Check the file, schema, permissions and configuration; no raw sensitive input is echoed"}
+    if command == "mcp":
+        # stdout is the MCP protocol channel: a startup error printed there would corrupt it. Use stderr.
+        print(json.dumps(failure, indent=2, ensure_ascii=False), file=sys.stderr)
+    else:
+        output(failure)
+
+
+def _run_mcp(args) -> int:
+    """`eija mcp`: print client config, or serve the agent-facing MCP server on stdio. Errors here go to stderr."""
+    if args.print_config:
+        print(snippet(args.print_config, sys.executable, args.workspace), end="")
+        return 0
+    if args.ask_key or (args.provider != "offline" and not (args.allow_network and args.egress_consent)):
+        # stdin/stdout are the protocol channel, and network use is the owner's decision made at startup.
+        raise DomainError("CONFIGURATION", "mcp: --ask-key is unsupported; a networked provider needs --allow-network and --egress-consent")
+    if args.max_provider_calls < 0:
+        raise DomainError("CONFIGURATION", "mcp: --max-provider-calls must be 0 or more")
+    try:
+        from .mcp_server import serve_stdio
+    except ImportError:
+        raise DomainError("MISSING_EXTRA", 'Install the MCP SDK: pip install -e ".[agents]"') from None
+    studio = build_studio(args.workspace, args.provider, args.model, args.allow_network, None)
+    serve_stdio(studio, egress_consent=args.egress_consent, max_provider_calls=args.max_provider_calls)
+    return 0
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="eija", description="EIJA Studio — bounded local assurance POC")
     parser.add_argument("--version", action="version", version=__version__)
     common = argparse.ArgumentParser(add_help=False)
     common.add_argument("--workspace", type=Path, default=Path(".eija"))
-    common.add_argument("--provider", choices=["offline", "openrouter", "codex"], default=os.getenv("EIJA_PROVIDER", "offline"))
+    common.add_argument("--provider", choices=PROVIDER_NAMES, default=os.getenv("EIJA_PROVIDER", "offline"))
     common.add_argument("--model", default=os.getenv("EIJA_MODEL", ""))
     common.add_argument("--allow-network", action="store_true", help="Allow explicit provider calls; per-request consent still required")
-    common.add_argument("--ask-key", action="store_true", help="Prompt locally for OpenRouter key; never persist it")
+    common.add_argument("--ask-key", action="store_true", help="Prompt locally for the OpenRouter/Anthropic API key; never persist it")
     subs = parser.add_subparsers(dest="command", required=True)
     for command in ("init", "doctor", "list"):
         subs.add_parser(command, parents=[common])
@@ -43,18 +141,22 @@ def main(argv=None) -> int:
     backup = subs.add_parser("backup", parents=[common]); backup.add_argument("--out", type=Path, required=True)
     compile_p = subs.add_parser("compile", parents=[common]); compile_p.add_argument("file", type=Path); compile_p.add_argument("--out", type=Path, required=True); compile_p.add_argument("--verify", action="store_true")
     check = subs.add_parser("check-export"); check.add_argument("file", type=Path)
+    _add_render_parser(subs)
+    mcp = subs.add_parser("mcp", parents=[common], help="Serve the agent-facing MCP server on stdio (needs the agents extra)")
+    mcp.add_argument("--print-config", choices=["claude", "codex", "opencode", "gemini"], help="Print copy-paste client config for this MCP server and exit")
+    mcp.add_argument("--egress-consent", action="store_true", help="Owner's STANDING consent: every propose call in this session may send the request to a networked provider; agents cannot grant it")
+    mcp.add_argument("--max-provider-calls", type=int, default=DEFAULT_MAX_PROVIDER_CALLS, help="Cap on networked provider calls per MCP session (spend guard; 0 forbids them)")
     args = parser.parse_args(argv)
     try:
-        if args.command == "check-export":
-            doc = json.loads(args.file.read_text(encoding="utf-8"))
-            valid = doc.get("format") == "eija.change-case.export.v1" and doc.get("payload_hash") == fingerprint(doc.get("payload"))
-            output({"payload_integrity": valid, "authority": "NOT_VERIFIED; exported evidence is not imported for approval"})
-            return 0 if valid else 2
+        if args.command in EARLY_COMMANDS:
+            return EARLY_COMMANDS[args.command](args)
+        if args.command == "mcp":
+            return _run_mcp(args)
         key = None
         if args.ask_key:
-            if args.provider != "openrouter":
-                raise DomainError("CONFIGURATION", "--ask-key is only for OpenRouter")
-            key = getpass.getpass("OpenRouter key (not stored): ")
+            if args.provider not in KEYED_PROVIDERS:
+                raise DomainError("CONFIGURATION", "--ask-key is only for the OpenRouter and Anthropic API providers")
+            key = getpass.getpass(f"{args.provider} API key (not stored): ")
         studio = build_studio(args.workspace, args.provider, args.model, args.allow_network, key)
         if args.command == "init":
             output({"workspace": str(studio.store.directory), "provider": args.provider, "state": "READY", "data": "synthetic only"})
@@ -122,10 +224,7 @@ def main(argv=None) -> int:
             return 2 if errors or not identity["trusted_fixture"] else 0
         return 0
     except (DomainError, ValidationError, OSError, ValueError, KeyError) as exc:
-        if isinstance(exc, DomainError):
-            output({"error": exc.code, "message": exc.message})
-        else:
-            output({"error": "INPUT_OR_ENVIRONMENT_ERROR", "message": "Check the file, schema, permissions and configuration; no raw sensitive input is echoed"})
+        _report_failure(args.command, exc)
         return 2
 
 if __name__ == "__main__":

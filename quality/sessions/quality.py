@@ -44,9 +44,7 @@ def typecheck(session: nox.Session) -> None:
     _run(session, "mypy", *session.posargs)
 
 
-# Tagged release until the providers package lands: the legacy adapters/providers.py calls os.killpg/SIGKILL
-# behind a runtime os.name check that mypy cannot see. Promote to ["full"] afterwards.
-@nox.session(python=False, tags=["release"])
+@nox.session(python=False, tags=["full"])
 def typecheck_win32(session: nox.Session) -> None:
     """mypy again as win32: Windows-only branches (subprocess creation flags, msvcrt) are invisible to the linux run."""
     _run(session, "mypy", "--platform", "win32", *session.posargs)
@@ -62,7 +60,7 @@ def architecture(session: nox.Session) -> None:
 @nox.session(python=False, tags=["fast", "full"])
 def complexity(session: nox.Session) -> None:
     """xenon module/average rank ceilings plus the per-function ratchet."""
-    _run(session, "xenon", "--max-average", "A", "--max-modules", "D", "src", "quality")
+    _run(session, "xenon", "--max-average", "A", "--max-modules", "D", "src", "quality", "demos")
     _run(session, "quality.gates.complexity_ratchet", *session.posargs)
 
 

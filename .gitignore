@@ -11,6 +11,7 @@ dist/
 .tmp/
 .pytest-tmp/
 reports/
+demos/output/
 .nox/
 .cache/
 .import_linter_cache/
