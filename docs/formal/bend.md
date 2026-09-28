@@ -92,6 +92,12 @@ mathematical validity" and the gate does not count it.
 The official installer (`bend-lang.com/install.sh`) always installs the latest release, so the image performs
 its steps against a fixed version instead. The report records the image id and the Dockerfile hash of the run.
 
+Reproducibility check (2026-09-28, Windows 11, Docker Desktop 29.8.0): a `docker build --no-cache` from the Dockerfile
+rebuilt the image in about 2.5 minutes and produced the same BendTT kernel binary as the cached image
+(`bendtt` sha256 `dade0de15006991fd731172ab5628571a0007b4955765ac04ae25da686fc8d35`, compiled from `bendtt.lean`
+sha256 `7f6ef51c9f75d7de91c15f790fb3385189b1129e7bc13812c9d8aa30a2c73dec`), and `bend PROOF.bend --verdict` printed
+`ALL PROOFS CHECK` on it. That is one observation on one machine, not a reproducible-build guarantee.
+
 Docker unavailable, daemon stopped or first build without network: the gate reports `NOT_RUN` (exit code 3;
 a nox session is skipped) and never `PASS`.
 
