@@ -1,0 +1,23 @@
+{
+  "schema": "eija.hci.budgets.v1",
+  "comment": "target = the law's threshold; limit = current ratchet (worst allowed). Tighten limits as recommendations land; never loosen without review. Timing limits are generous regression guards for a shared PC, not benchmarks.",
+  "budgets": [
+    {"id": "fitts.targets_under_24px", "law": "Fitts / WCAG 2.5.8", "path": "fitts.summary.targets_w_under_24", "unit": "targets", "target": 0, "limit": 0},
+    {"id": "fitts.moves_over_4_bits", "law": "Fitts", "path": "fitts.summary.moves_id_over_4", "unit": "moves", "target": 0, "limit": 6},
+    {"id": "fitts.max_id", "law": "Fitts", "path": "fitts.summary.max_id_bits", "unit": "bits", "target": 4, "limit": 4.5},
+    {"id": "hick.choice_groups_over_7", "law": "Hick-Hyman", "path": "hick_hyman.summary.choice_points_over_7", "unit": "groups", "target": 0, "limit": 0},
+    {"id": "hick.max_choices", "law": "Hick-Hyman", "path": "hick_hyman.summary.max_choices", "unit": "alternatives", "target": 7, "limit": 7},
+    {"id": "klm.pointer_expert_time", "law": "KLM-GOMS", "path": "klm.expert_time_pointer_s", "unit": "s", "target": 65, "limit": 65, "note": "regression guard on the modelled journey; no law defines a threshold, so target = limit"},
+    {"id": "doherty.first_feedback_p95", "law": "Doherty", "path": "measured.doherty.first_feedback_p95_ms", "unit": "ms", "target": 400, "limit": 400},
+    {"id": "doherty.settled_p95", "law": "Doherty", "path": "measured.doherty.settled_p95_ms", "unit": "ms", "target": 400, "limit": 4000, "note": "wall-clock on a shared PC; verification dominates"},
+    {"id": "wcag.critical_rules", "law": "WCAG 2.2 AA", "path": "wcag.summary.critical", "unit": "rules", "target": 0, "limit": 0},
+    {"id": "wcag.serious_rules", "law": "WCAG 2.2 AA", "path": "wcag.summary.serious", "unit": "rules", "target": 0, "limit": 1},
+    {"id": "wcag.moderate_rules", "law": "WCAG 2.2 AA", "path": "wcag.summary.moderate", "unit": "rules", "target": 0, "limit": 0},
+    {"id": "wcag.target_size_failures", "law": "WCAG 2.5.8", "path": "wcag.summary.target_size_failures", "unit": "controls", "target": 0, "limit": 0},
+    {"id": "wcag.reflow_overflow_views", "law": "WCAG 1.4.10", "path": "wcag.summary.reflow_overflow_views", "unit": "views", "target": 0, "limit": 0},
+    {"id": "keyboard.focus_lost_activations", "law": "WCAG 2.4.3", "path": "keyboard.focus_lost_count", "unit": "activations", "target": 0, "limit": 7},
+    {"id": "keyboard.stops_without_indicator", "law": "WCAG 2.4.7", "path": "keyboard.stops_without_indicator_count", "unit": "stops", "target": 0, "limit": 0},
+    {"id": "memory.max_chunks_viewport", "law": "Miller / Cowan (proxy)", "path": "working_memory.summary.max_chunks_viewport", "unit": "chunks", "target": 9, "limit": 26, "note": "heuristic proxy"},
+    {"id": "runtime.js_exceptions", "law": "hygiene", "path": "runtime_errors.javascript_exception_count", "unit": "exceptions", "target": 0, "limit": 0}
+  ]
+}

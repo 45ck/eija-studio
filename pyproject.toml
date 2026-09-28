@@ -20,7 +20,7 @@ formal = []
 testing = []
 mutation = []
 metrics = []
-hci = []
+hci = ["playwright==1.63.0", "axe-playwright-python==0.1.8"]  # drives the installed Chrome (channel="chrome"); no browser download
 agents = []
 docs = []
 
