@@ -33,3 +33,11 @@ Reserving numbers stops parallel lanes from colliding. A lane that needs more re
 | 0041–0042 | Agent integration (MCP server, skills) |
 | 0043–0044 | OSS community, documentation and release |
 | 0045–0046 | Knowledge base: OKF v0.2 wiki deterministically linked to code |
+| 0047–0048 | Demos: scripted live recordings, scenario dependency gating |
+| 0049–0050 | Wave 2: interactive drag-and-drop UML editor (`uml-editor`) |
+| 0051–0052 | Wave 2: ubiquitous-language editor and DDD tree (`ddd-language`) |
+| 0053–0054 | Wave 2: in-Studio image generation (`imagegen`) |
+| 0055–0056 | Wave 2: personas, ICP and persona-driven e2e scenarios (`personas-e2e`) |
+| 0057–0088 | HCI-ADRs: research-grounded UI/UX decisions (`ux`, `studio-ux`) |
+| 0089–0112 | Weave: deterministic linked graph, compiler and linter (`weave`) |
+| 0113–0136 | Definition of done, claims ledger, scorecard and evals (`dod`) |

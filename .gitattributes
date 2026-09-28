@@ -2,10 +2,12 @@
 
 # Shared files that every lane appends to. `union` keeps both sides' added lines instead of
 # conflicting. Never use it for TOML, JSON or Python: a duplicated key or line would corrupt them.
-docs/adr/README.md merge=union
 docs/oss/REGISTER.md merge=union
 AGENTS.md merge=union
 .gitignore merge=union
+
+# The ADR index is generated: on a merge keep ours, then run `python -m quality.tools.adr_index --write`.
+docs/adr/README.md merge=eija-ours
 
 # pyproject.toml is merged per (table, key) by quality/tools/tomlmerge.py when the driver is installed
 # in your clone (python -m quality.tools.install_merge_drivers); otherwise git's line merge applies.

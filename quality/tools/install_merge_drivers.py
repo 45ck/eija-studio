@@ -1,4 +1,4 @@
-"""Register the repository's merge drivers in THIS clone's git config.
+"""Register the repository's merge drivers (eija-toml, eija-ours) in THIS clone's git config.
 
 Git stores merge-driver definitions in .git/config, which is per clone and not versioned, so each
 maintainer runs this once (worktrees of one clone share it). Without it git silently falls back to its
@@ -22,6 +22,9 @@ def main() -> int:
     commands = [
         ["git", "config", f"merge.{DRIVER}.name", "Key-granular three-way merge for TOML"],
         ["git", "config", f"merge.{DRIVER}.driver", f'"{python}" "{script}" %O %A %B'],
+        # generated files: keep our side (the generator rebuilds them from their sources afterwards)
+        ["git", "config", "merge.eija-ours.name", "Keep ours; regenerate afterwards"],
+        ["git", "config", "merge.eija-ours.driver", "true"],
     ]
     for command in commands:
         subprocess.run(command, cwd=ROOT, check=True)
