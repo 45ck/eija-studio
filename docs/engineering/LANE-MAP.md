@@ -22,7 +22,7 @@ How the parallel workstreams fit together and in what order they land. Guiding i
 | `dod` | definition of done, claims ledger, scorecard, evals | 0113–0136 | no | metrics, quality, formal lanes |
 | wave 2: `ddd-language` | ubiquitous-language editor and DDD tree in the Studio | 0051–0052 | UI + kernel | weave, ux |
 | wave 2: `uml-editor` | drag-and-drop UML issuing typed semantic transactions | 0049–0050 | UI + kernel | visual, ddd-language, ux |
-| wave 2: `studio-ux` | port of the redesign into the real Studio | (HCI-ADRs) | web UI | visual, ux, ddd-language |
+| wave 2: `studio-ux` | the **IDE workbench shell** (explorer, tabbed/split editors, Problems panel, command palette, status bar): port of the redesign into the real Studio, replacing the wizard-style tabs | (HCI-ADRs) | web UI | visual, ux, ddd-language |
 | wave 2: `imagegen` | consent-gated image generation via the provider port | 0053–0054 | providers | providers |
 | wave 2: `personas-e2e` | personas/ICP and persona-driven e2e scenarios | 0055–0056 | tests | ddd-language |
 
