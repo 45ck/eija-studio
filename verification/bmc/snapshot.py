@@ -61,7 +61,7 @@ class Observer:
         with self.store.transaction() as u:
             db = u.db
             for table in ("instances", "operations", "audit", "outbox"):
-                db.execute(f"DELETE FROM {table}")
+                db.execute(f"DELETE FROM {table}")  # noqa: S608 - table comes from the closed literal tuple above
             db.executemany("INSERT INTO instances VALUES(?,?,?,?,?)", snap.instances)
             db.executemany("INSERT INTO operations VALUES(?,?,?)", snap.operations)
             db.executemany("INSERT INTO audit(kind,body) VALUES(?,?)", snap.audit)
@@ -74,4 +74,4 @@ class Observer:
         if column not in ("active", "assigned"):
             raise ValueError("Only the active and assigned flags are environment variables")
         with self.store.transaction() as u:
-            u.db.execute(f"UPDATE actors SET {column}=? WHERE id=?", (value, actor))
+            u.db.execute(f"UPDATE actors SET {column}=? WHERE id=?", (value, actor))  # noqa: S608 - column validated above

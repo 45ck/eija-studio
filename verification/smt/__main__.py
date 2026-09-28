@@ -4,6 +4,7 @@ Exit status: 0 PASS, 1 FAIL, 3 NOT_RUN (a prerequisite such as z3-solver is miss
 """
 from __future__ import annotations
 
+# ruff: noqa: PLC0415 (z3 is an optional extra: it is imported lazily so that its absence reports NOT_RUN)
 import argparse
 import sys
 from pathlib import Path

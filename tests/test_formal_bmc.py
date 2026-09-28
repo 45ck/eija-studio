@@ -1,18 +1,17 @@
 """Bounded model checking of the real runtime (verification/bmc): checker behaviour and negative controls."""
 import json
-import sys
 from dataclasses import replace
-from pathlib import Path
+from unittest import mock
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # `verification/` is tooling, not a shipped package
-
-from eija_studio.adapters.sqlite_store import sandbox_factory  # noqa: E402
-from verification.bmc import mutants as M, report, spec  # noqa: E402
-from verification.bmc.explorer import Config, explore  # noqa: E402
-from verification.bmc.snapshot import Observer  # noqa: E402
-from eija_studio.application.runtime import initialise  # noqa: E402
+from eija_studio.adapters.sqlite_store import sandbox_factory
+from verification.bmc import mutants as M, report, spec
+from verification.bmc.explorer import Config, explore
+from verification.bmc.snapshot import Observer
+from eija_studio.application import runtime
+from eija_studio.application.runtime import execute, initialise
+from eija_studio.domain.models import DomainError, ExecuteCommand, Workflow
 
 CANDIDATE = report.workflows()["candidate-reject-from-Recommended"]
 BASELINE = report.workflows()["baseline"]
@@ -86,8 +85,6 @@ def test_real_runtime_after_mutant_context_is_unpatched(sandbox):
 
 def _valid_state(sandbox):
     """A real snapshot after Submit and Recommend, produced through the runtime."""
-    from eija_studio.application.runtime import execute
-    from eija_studio.domain.models import ExecuteCommand
     with sandbox() as store:
         with store.transaction() as u:
             item = initialise(u, spec.CASE, CANDIDATE)
@@ -108,7 +105,7 @@ def test_a_genuine_run_satisfies_every_state_invariant(sandbox):
 
 def _forged(kind, actor, base):
     body = json.dumps({"case_id": spec.CASE, "operation_id": "op9", "actor_id": actor, "instance_id": "x", "result": {}})
-    return base.audit + ((kind, body),)
+    return (*base.audit, (kind, body))
 
 
 @pytest.mark.parametrize("tamper,invariant", [
@@ -146,20 +143,16 @@ def test_committed_statistics_snapshot_is_valid_json_with_the_full_tier_run():
 # removed. These controls remove it (in the test only) to show the BMC invariants would catch what the gate blocks.
 
 def _unsafe(candidate, action, **changes):
-    from eija_studio.domain.models import Transition, Workflow
     swapped = tuple(t.model_copy(update=changes) if t.action == action else t for t in candidate.transitions)
-    return Workflow.model_construct(**{**dict(candidate), "transitions": tuple(Transition.model_construct(**dict(t)) for t in swapped)})
+    return Workflow.model_construct(**{**dict(candidate), "transitions": swapped})
 
 
 def _explore_without_policy_gate(sandbox, model, depth):
-    from unittest import mock
-    from eija_studio.application import runtime
     with mock.patch.object(runtime, "ensure_policy", lambda _model: None):
         return explore("unsafe", model, Config(depth=depth), sandbox)
 
 
 def test_the_policy_gate_is_what_blocks_an_unsafe_workflow(sandbox):
-    from eija_studio.domain.models import DomainError
     unsafe = _unsafe(CANDIDATE, "Approve", role="Teacher")
     with pytest.raises(DomainError) as blocked:
         explore("unsafe", unsafe, Config(depth=1), sandbox)

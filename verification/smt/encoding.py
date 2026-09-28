@@ -22,11 +22,12 @@ Grammar assumptions (each is repeated in the evidence report):
 """
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
 from itertools import count
-from typing import Iterable
 
 import z3
+
 from eija_studio.domain.models import Transition, Workflow
 from eija_studio.domain.policy import EFFECTS
 
@@ -34,8 +35,8 @@ from . import vocabulary as V
 
 RoleSort, ROLE_CONST = z3.EnumSort("Role", [*V.ROLES, "OTHER"])
 StateSort, STATE_CONST = z3.EnumSort("State", [*V.STATES, "OTHER"])
-ROLE = dict(zip([*V.ROLES, V.OTHER], ROLE_CONST))
-STATE = dict(zip([*V.STATES, V.OTHER], STATE_CONST))
+ROLE = dict(zip([*V.ROLES, V.OTHER], ROLE_CONST, strict=True))
+STATE = dict(zip([*V.STATES, V.OTHER], STATE_CONST, strict=True))
 _ids = count()
 TRUE, FALSE = z3.BoolVal(True), z3.BoolVal(False)
 
@@ -312,18 +313,18 @@ def decode(w: SymWorkflow, model: z3.ModelRef) -> tuple[Workflow, bool]:
         if not on(s.present):
             continue
         required = sorted([e for e in V.EFFECT_ATOMS if on(s.required[e])] + (["Audit:<other>"] if on(s.required_other) else []))
-        transitions.append(dict(id="TR-" + a.upper(), action=a, from_state=_name(STATE, val(s.source)),
-                                to_state=_name(STATE, val(s.target)), role=_name(ROLE, val(s.role)),
-                                guards=tuple(g for g in V.GUARDS if on(s.guards[g])),
-                                required_effects=tuple(required),
-                                forbidden_effects=tuple(e for e in V.EFFECT_ATOMS if on(s.forbidden[e]))))
+        transitions.append({"id": "TR-" + a.upper(), "action": a, "from_state": _name(STATE, val(s.source)),
+                                "to_state": _name(STATE, val(s.target)), "role": _name(ROLE, val(s.role)),
+                                "guards": tuple(g for g in V.GUARDS if on(s.guards[g])),
+                                "required_effects": tuple(required),
+                                "forbidden_effects": tuple(e for e in V.EFFECT_ATOMS if on(s.forbidden[e]))})
     if on(w.has_other_action):
-        transitions.append(dict(id="TR-OTHER", action="Other", from_state="Draft", to_state="Draft", role="Teacher",
-                                guards=V.BASE_GUARDS_TUPLE, required_effects=(), forbidden_effects=V.FORBIDDEN_EFFECTS))
+        transitions.append({"id": "TR-OTHER", "action": "Other", "from_state": "Draft", "to_state": "Draft", "role": "Teacher",
+                                "guards": V.BASE_GUARDS_TUPLE, "required_effects": (), "forbidden_effects": V.FORBIDDEN_EFFECTS})
     states = tuple(s for s in V.STATES if on(w.states_in[s])) + (("<other-state>",) if on(w.states_extra) else ())
     initial = _name(STATE, val(w.initial))
     initial = "<other-state>" if initial == V.OTHER else initial
-    data = dict(initial_state=initial, states=states, transitions=tuple(transitions))
+    data = {"initial_state": initial, "states": states, "transitions": tuple(transitions)}
     try:
         return Workflow.model_validate(data), True
     except ValueError:

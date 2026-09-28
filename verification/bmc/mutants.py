@@ -7,9 +7,9 @@ It has not demonstrated it for faults outside them.
 """
 from __future__ import annotations
 
-from contextlib import contextmanager
+from collections.abc import Callable, Iterator
+from contextlib import AbstractContextManager, contextmanager
 from dataclasses import dataclass
-from typing import Callable, ContextManager, Iterator
 from unittest import mock
 
 from eija_studio.application import runtime
@@ -23,7 +23,7 @@ class Mutant:
     name: str
     description: str
     expected_invariants: frozenset[str]
-    activate: Callable[[], ContextManager[ExecuteFn]]
+    activate: Callable[[], AbstractContextManager[ExecuteFn]]
 
 
 def _replay_first(real: ExecuteFn) -> ExecuteFn:

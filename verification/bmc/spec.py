@@ -169,7 +169,7 @@ def _commit_effects(pre: Snapshot, cmd: Command, t: Transition, outcome: Outcome
     if post.audit[:len(pre.audit)] != pre.audit or len(post.audit) != len(pre.audit) + len(audit_effects):
         problems.append("audit log did not grow by exactly the declared audit effects")
     else:
-        for (kind, body), effect in zip(post.audit[len(pre.audit):], audit_effects):
+        for (kind, body), effect in zip(post.audit[len(pre.audit):], audit_effects, strict=True):
             b = json.loads(body)
             if kind != effect or (b.get("case_id"), b.get("operation_id"), b.get("actor_id")) != (CASE, cmd.op_id, cmd.actor):
                 problems.append(f"audit entry {kind} does not record the committed command")

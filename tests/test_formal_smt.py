@@ -1,15 +1,16 @@
 """Z3 policy-soundness proof (verification/smt): proofs, faithfulness and negative controls."""
+import json
 import sys
-from pathlib import Path
 
 import pytest
 
 pytest.importorskip("z3", reason="z3-solver is in the `smt` extra; without it the proof is NOT_RUN, not passed")
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # `verification/` is tooling, not a shipped package
 
-from verification.smt import differential as D, prove  # noqa: E402
-from verification import formal_report as fr  # noqa: E402
-from eija_studio.domain import policy  # noqa: E402
+from verification.smt import differential as D, prove
+from verification import formal_report as fr
+from eija_studio.domain import policy
+from eija_studio.domain.models import Transition, Workflow
+from verification.smt.__main__ import NOT_RUN_EXIT, main
 
 
 def test_every_authority_invariant_is_proved_over_the_grammar():
@@ -65,7 +66,6 @@ def test_removing_a_clause_yields_a_counterexample_rejected_by_the_real_policy()
 
 
 def _workflow(dump):
-    from eija_studio.domain.models import Transition, Workflow
     return Workflow.model_construct(initial_state=dump["initial_state"], states=tuple(dump["states"]),
                                     transitions=tuple(Transition.model_construct(**t) for t in dump["transitions"]))
 
@@ -76,11 +76,9 @@ def test_unique_action_assumption_is_real_and_guarded_by_the_validator():
 
 
 def test_missing_z3_reports_not_run_never_pass(tmp_path, monkeypatch):
-    from verification.smt.__main__ import NOT_RUN_EXIT, main
     monkeypatch.setitem(sys.modules, "z3", None)  # import z3 -> ImportError
     out = tmp_path / "smt.json"
     assert main(["--out", str(out)]) == NOT_RUN_EXIT
-    import json
     assert json.loads(out.read_text())["verdict"] == "NOT_RUN"
 
 
@@ -88,3 +86,16 @@ def test_report_json_is_sorted_and_lf(tmp_path):
     fr.write(tmp_path / "x.json", {"b": 1, "a": {"d": 1, "c": 2}})
     raw = (tmp_path / "x.json").read_bytes()
     assert b"\r" not in raw and raw.index(b'"a"') < raw.index(b'"b"')
+
+
+def test_snapshot_drift_ignores_source_hashes_but_not_the_accepted_set(monkeypatch, tmp_path):
+    accepted = prove.enumerate_accepted()
+    doc = json.loads(prove.snapshot_text(accepted))
+    doc["subject"]["sources_sha256_lf"]["domain/policy.py"] = "0" * 64          # cosmetic edit of the kernel: tolerated
+    snapshot = tmp_path / "accepted_set.json"
+    snapshot.write_text(json.dumps(doc, indent=2, sort_keys=True), encoding="utf-8")
+    monkeypatch.setattr(prove, "SNAPSHOT", snapshot)
+    assert prove.drift(accepted) is None
+    doc["accepted_up_to_extra_forbidden_effects"].pop()                          # a different accepted set: reported
+    snapshot.write_text(json.dumps(doc, indent=2, sort_keys=True), encoding="utf-8")
+    assert prove.drift(accepted) is not None

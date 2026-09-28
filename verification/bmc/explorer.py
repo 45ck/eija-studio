@@ -18,8 +18,9 @@ from __future__ import annotations
 
 import hashlib
 import time
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
-from typing import Any, Callable, Iterator
+from typing import Any
 
 from eija_studio.adapters.sqlite_store import FIXTURE_ACTORS, SQLiteStore
 from eija_studio.application import runtime
@@ -36,7 +37,7 @@ ACTIONS: tuple[str, ...] = ("Submit", "Recommend", "Approve", "Reject", "Revise"
 
 
 CORE_TOGGLES = (("teacher-assigned", "active"), ("teacher-assigned", "assigned"), ("registrar", "active"))
-ALL_TOGGLES = CORE_TOGGLES + (("teacher-unassigned", "assigned"), ("teacher-revoked", "active"))
+ALL_TOGGLES = (*CORE_TOGGLES, ("teacher-unassigned", "assigned"), ("teacher-revoked", "active"))
 
 
 @dataclass(frozen=True)
@@ -126,7 +127,7 @@ def _moves(cfg: Config, node: Node) -> Iterator[tuple[str, Any]]:
                     yield "cmd", Command(rec.actor, action, rec.expected_version, rec.op_id)
     table = node.snap.actor_table()
     for actor, column in cfg.toggles:
-        role, active, assigned = table[actor]
+        _role, active, assigned = table[actor]
         current = active if column == "active" else assigned
         yield "env", (actor, column, 0 if current else 1)
 
@@ -184,12 +185,12 @@ def explore(name: str, model: Workflow, cfg: Config, sandbox: SandboxFactory, ex
                             violations = spec.check_step(model, pre, recorded, cmd, outcome, post)
                             counter = outcome.kind + (f":{cmd.action}" if outcome.kind == "committed" else "") + \
                                 (f":{outcome.code}" if outcome.code else "")
-                            new_recorded = node.recorded + (cmd,) if outcome.kind == "committed" else node.recorded
+                            new_recorded = (*node.recorded, cmd) if outcome.kind == "committed" else node.recorded
                         stats["transitions"] += 1
                         result.invariant_checks += 1
                         result.transitions += 1
                         result.outcomes[counter] = result.outcomes.get(counter, 0) + 1
-                        step_trace = trace(node.id) + [label]
+                        step_trace = [*trace(node.id), label]
                         for v in violations:
                             findings.record(v, step_trace)
                         if post == pre:

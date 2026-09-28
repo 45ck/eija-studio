@@ -1,16 +1,18 @@
 """Z3 proofs, accepted-set enumeration, leave-one-out negative controls and the evidence report."""
 from __future__ import annotations
 
+import json
 import time
 from dataclasses import dataclass
+from importlib.metadata import version
 from pathlib import Path
 from typing import Any
 
 import z3
+
 from eija_studio.domain.models import SemanticTransaction, Transition, Workflow
 from eija_studio.domain.policy import apply_transaction, baseline, check_policy
-
-from verification.formal_report import dumps, kernel_subject, platform_info
+from verification.formal_report import kernel_subject, platform_info
 
 from . import differential as D
 from . import encoding as E
@@ -258,16 +260,22 @@ def snapshot_document(accepted: dict[str, Any]) -> dict[str, Any]:
 
 
 def snapshot_text(accepted: dict[str, Any]) -> str:
-    import json
     return json.dumps(snapshot_document(accepted), indent=2, sort_keys=True, ensure_ascii=False) + "\n"
 
 
 def drift(accepted: dict[str, Any]) -> str | None:
-    """None if the committed snapshot equals a fresh regeneration, else a description."""
-    fresh = snapshot_text(accepted)
+    """None if the committed snapshot states the same accepted set as a fresh regeneration, else a description.
+
+    The `subject` block (source hashes) is recorded for provenance but not compared: a cosmetic edit of
+    policy.py (an annotation, a comment) must not fail the gate. A semantic change alters the accepted set
+    or the grammar, which are compared."""
     if not SNAPSHOT.exists():
         return f"{SNAPSHOT.name} is missing; regenerate with `python -m verification.smt --write-snapshot`"
-    if SNAPSHOT.read_bytes().decode("utf-8") != fresh:
+    committed = json.loads(SNAPSHOT.read_text(encoding="utf-8"))
+    fresh = json.loads(snapshot_text(accepted))
+    committed.pop("subject", None)
+    fresh.pop("subject", None)
+    if committed != fresh:
         return f"{SNAPSHOT.name} differs from regeneration; review the policy change, then `python -m verification.smt --write-snapshot`"
     return None
 
@@ -339,5 +347,4 @@ def build_report(differential_mutants: int = 1500, differential_fresh: int = 500
 
 
 def _pkg_version(name: str) -> str:
-    from importlib.metadata import version
     return version(name)
