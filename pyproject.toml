@@ -31,7 +31,7 @@ testing = []
 mutation = []
 metrics = []
 hci = []
-agents = []
+agents = ["mcp==2.2.0", "anyio==4.15.1"]
 providers = ["psutil==7.2.2"]  # process-tree kill for agent CLIs; adapters degrade to taskkill/killpg without it
 docs = []
 visual = []

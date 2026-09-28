@@ -1,0 +1,533 @@
+{
+  "conformance": {
+    "matrix": {
+      "agree": 225,
+      "cells": 225,
+      "mismatches": [],
+      "unmatched_cells": []
+    },
+    "method": "differential test (not a proof)",
+    "status": "PASS",
+    "witnesses": [
+      {
+        "agree": true,
+        "bend_final_state": "Approved",
+        "expected_final_state": "Approved",
+        "model": "Candidate",
+        "name": "safe_path_reaches_approved",
+        "python_final_state": "Approved",
+        "steps": [
+          [
+            "teacher-assigned",
+            "Submit"
+          ],
+          [
+            "teacher-assigned",
+            "Recommend"
+          ],
+          [
+            "registrar",
+            "Approve"
+          ]
+        ],
+        "why": "the intended path is reachable: teacher submits and recommends, registrar approves"
+      },
+      {
+        "agree": true,
+        "bend_final_state": "Recommended",
+        "expected_final_state": "Recommended",
+        "model": "Candidate",
+        "name": "teacher_cannot_approve_after_recommending",
+        "python_final_state": "Recommended",
+        "steps": [
+          [
+            "teacher-assigned",
+            "Submit"
+          ],
+          [
+            "teacher-assigned",
+            "Recommend"
+          ],
+          [
+            "teacher-assigned",
+            "Approve"
+          ]
+        ],
+        "why": "the teacher's Approve is denied and the instance stays Recommended"
+      },
+      {
+        "agree": true,
+        "bend_final_state": "Submitted",
+        "expected_final_state": "Submitted",
+        "model": "Candidate",
+        "name": "unassigned_teacher_cannot_recommend",
+        "python_final_state": "Submitted",
+        "steps": [
+          [
+            "teacher-assigned",
+            "Submit"
+          ],
+          [
+            "teacher-unassigned",
+            "Recommend"
+          ]
+        ],
+        "why": "an unassigned teacher's Recommend is denied"
+      },
+      {
+        "agree": true,
+        "bend_final_state": "Draft",
+        "expected_final_state": "Draft",
+        "model": "Candidate",
+        "name": "revoked_teacher_cannot_submit",
+        "python_final_state": "Draft",
+        "steps": [
+          [
+            "teacher-revoked",
+            "Submit"
+          ]
+        ],
+        "why": "a revoked teacher's command is denied"
+      },
+      {
+        "agree": true,
+        "bend_final_state": "Draft",
+        "expected_final_state": "Draft",
+        "model": "Candidate",
+        "name": "registrar_rejects_then_teacher_revises",
+        "python_final_state": "Draft",
+        "steps": [
+          [
+            "teacher-assigned",
+            "Submit"
+          ],
+          [
+            "teacher-assigned",
+            "Recommend"
+          ],
+          [
+            "registrar",
+            "Reject"
+          ],
+          [
+            "teacher-assigned",
+            "Revise"
+          ]
+        ],
+        "why": "rejection returns the instance to Draft for revision"
+      },
+      {
+        "agree": true,
+        "bend_final_state": "Approved",
+        "expected_final_state": "Approved",
+        "model": "Baseline",
+        "name": "baseline_registrar_approves_submitted",
+        "python_final_state": "Approved",
+        "steps": [
+          [
+            "teacher-assigned",
+            "Submit"
+          ],
+          [
+            "registrar",
+            "Approve"
+          ]
+        ],
+        "why": "the baseline needs no recommendation"
+      }
+    ]
+  },
+  "kind": "bend_proof",
+  "limits": [
+    "Laws are proved about the generated Bend model, not about the Python runtime or its SQLite adapter.",
+    "The model abstracts version (CAS), operation replay, audit persistence, crash durability and the HTTP layer.",
+    "Effect emission is modelled as 'a successful step emits exactly its rule's declared effects'; the runtime's additional EFFECT_DENIED rejection of unknown effect kinds is not modelled (the model is more permissive).",
+    "Conformance to the runtime is a bounded differential test (matrix cells and traces), not a proof.",
+    "The unsafe models are a fixed set of seeded faults; failing them shows sensitivity to those faults only.",
+    "The laws are authored by the same team as the model; they are not an independently blinded specification."
+  ],
+  "mode": "complete",
+  "model": {
+    "files": {
+      "LAWS.bend": "47a5a73bfc172467b331cc359ca9a59321a3b304da59a04fa72c544a97ba46da",
+      "PROOF.bend": "1dfed5b3f89f501fbd4d058851532373d548d795cffcd34b7b0157073c15f02f",
+      "bend_generate.py": "5eeadb4ac1d4fe2b5ca8e1ca76f1cd7a9fed584fec7ea6e61da37c448e246da6",
+      "main.bend": "88844cc9d7e9883d0b984f5430ae22c22c1685eb9962bb8f39f84bae5bfc5187"
+    },
+    "semantic_hash": {
+      "Baseline": "5d3ef3a19c31d956a185b9c5ba4b1b79e651d0356e162436c5c67054d2ad4cdf",
+      "Candidate": "b26c9af5ae4cd958099956232721a70e73cb7e6efe1b213ff32417829b588e56"
+    },
+    "slots": {
+      "Baseline": "policy.baseline()",
+      "Candidate": "recommend_only candidate (apply_transaction enable_recommendation)"
+    }
+  },
+  "negative_controls": [
+    {
+      "attribution": "per law (each law checked alone)",
+      "counterexample": {
+        "confirmed": true,
+        "final_state_expected_by_fault": "Approved",
+        "final_state_in_unsafe_model": "Approved",
+        "steps": [
+          [
+            "teacher-assigned",
+            "Submit"
+          ],
+          [
+            "teacher-assigned",
+            "Recommend"
+          ],
+          [
+            "teacher-assigned",
+            "Approve"
+          ]
+        ]
+      },
+      "description": "examples/unsafe-teacher-final-approval.json: the candidate lets a Teacher perform Approve (the excursion the kernel's policy blocks as PROTECTED_AUTHORITY:Approve)",
+      "expected_failing_laws": [
+        "teacher_never_approves",
+        "teacher_sequences_never_approve"
+      ],
+      "failing_laws": [
+        "teacher_never_approves",
+        "teacher_sequences_never_approve"
+      ],
+      "full_run": {
+        "exit_code": 1,
+        "first_error": "Error:\n- expected : Empty\n- observed : Unit\nContext:\n- s : M.State\nLocation: cert_teacher\n136 |     case M.Candidate{} M.Approve{}:\n137>|       Unit{}\n    |       ^^^^^^\n138 |     case M.Candidate{} M.Recommend{}:",
+        "location": "cert_teacher",
+        "result": "FAILED"
+      },
+      "kernel_policy_findings": [
+        "PROTECTED_AUTHORITY:Approve"
+      ],
+      "model_well_formed": true,
+      "name": "teacher_final_approval",
+      "passing_laws": [
+        "approved_only_from_recommended",
+        "every_path_to_approved_passes_recommended",
+        "revoked_teacher_cannot_recommend",
+        "unassigned_teacher_cannot_recommend",
+        "reject_only_from_declared_source",
+        "forbidden_effects_never_emitted"
+      ],
+      "result": "PROOF_FAILS_AS_EXPECTED"
+    },
+    {
+      "attribution": "per law (each law checked alone)",
+      "counterexample": {
+        "confirmed": true,
+        "final_state_expected_by_fault": "Approved",
+        "final_state_in_unsafe_model": "Approved",
+        "steps": [
+          [
+            "teacher-assigned",
+            "Submit"
+          ],
+          [
+            "registrar",
+            "Approve"
+          ]
+        ]
+      },
+      "description": "the candidate's Approve fires from Submitted, so Approved is reachable without Recommended",
+      "expected_failing_laws": [
+        "approved_only_from_recommended",
+        "every_path_to_approved_passes_recommended"
+      ],
+      "failing_laws": [
+        "approved_only_from_recommended",
+        "every_path_to_approved_passes_recommended"
+      ],
+      "full_run": {
+        "exit_code": 1,
+        "first_error": "Error:\n- expected : T(M.State.eq(s, M.Recommended{}))\n- observed : T(M.State.eq(s, M.Submitted{}))\nContext:\n- a : M.Actor\n- s : M.State\n- w : T(Bool.and(M.Role.eq(M.Actor.role(a), M.Registrar{}), Bool.and(M.live(a), Bool.and(M.assign_ok(Some{M.Rule{M.Submitted{}, M.Approved{}, M.Registrar{}, False{}, [M.Audit_ExcursionApproved{}]}}, a), M.State.eq(s, M.Submitted{})))))\nLocation: approve_pt\n215 |     case M.Approve{}:\n216>|       permits_from(M.rule_of(M.Candidate{}, M.Approve{}), a, s, w)\n    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n217 |     case M.Recommend{}:",
+        "location": "approve_pt",
+        "result": "FAILED"
+      },
+      "kernel_policy_findings": [
+        "PROTECTED_STATE:Approve"
+      ],
+      "model_well_formed": true,
+      "name": "approve_skips_recommendation",
+      "passing_laws": [
+        "teacher_never_approves",
+        "teacher_sequences_never_approve",
+        "revoked_teacher_cannot_recommend",
+        "unassigned_teacher_cannot_recommend",
+        "reject_only_from_declared_source",
+        "forbidden_effects_never_emitted"
+      ],
+      "result": "PROOF_FAILS_AS_EXPECTED"
+    },
+    {
+      "attribution": "per law (each law checked alone)",
+      "counterexample": {
+        "confirmed": true,
+        "final_state_expected_by_fault": "Recommended",
+        "final_state_in_unsafe_model": "Recommended",
+        "steps": [
+          [
+            "teacher-assigned",
+            "Submit"
+          ],
+          [
+            "teacher-unassigned",
+            "Recommend"
+          ]
+        ]
+      },
+      "description": "the candidate's Recommend drops the actor_assigned guard",
+      "expected_failing_laws": [
+        "unassigned_teacher_cannot_recommend"
+      ],
+      "failing_laws": [
+        "unassigned_teacher_cannot_recommend"
+      ],
+      "full_run": {
+        "exit_code": 1,
+        "first_error": "Error:\n- expected : Bool.not(M.Outcome.ok(M.finish(M.State.eq(s, M.Submitted{}), Some{M.Rule{M.Submitted{}, M.Recommended{}, M.Teacher{}, False{}, [M.Audit_ExcursionRecommended{}, M.Notification_RegistrarQueued{}]}}, s)))\n- observed : True{}\nContext:\n- s : M.State\nLocation: Laws.unassigned_teacher_cannot_recommend\n295 |         case True{}:\n296>|           {==}\n    |           ^^^^\n297 |         case False{}:",
+        "location": "Laws.unassigned_teacher_cannot_recommend",
+        "result": "FAILED"
+      },
+      "kernel_policy_findings": [
+        "GUARD_POLICY:Recommend"
+      ],
+      "model_well_formed": true,
+      "name": "unassigned_may_recommend",
+      "passing_laws": [
+        "teacher_never_approves",
+        "teacher_sequences_never_approve",
+        "approved_only_from_recommended",
+        "every_path_to_approved_passes_recommended",
+        "revoked_teacher_cannot_recommend",
+        "reject_only_from_declared_source",
+        "forbidden_effects_never_emitted"
+      ],
+      "result": "PROOF_FAILS_AS_EXPECTED"
+    },
+    {
+      "attribution": "per law (each law checked alone)",
+      "counterexample": {
+        "confirmed": true,
+        "final_state_expected_by_fault": "Rejected",
+        "final_state_in_unsafe_model": "Rejected",
+        "steps": [
+          [
+            "registrar",
+            "Reject"
+          ]
+        ]
+      },
+      "description": "the candidate's Reject fires from Draft instead of the declared rejection source",
+      "expected_failing_laws": [
+        "reject_only_from_declared_source"
+      ],
+      "failing_laws": [
+        "reject_only_from_declared_source"
+      ],
+      "full_run": {
+        "exit_code": 1,
+        "first_error": "Error:\n- expected : T(M.State.eq(s, M.Recommended{}))\n- observed : T(M.State.eq(s, M.Draft{}))\nContext:\n- a : M.Actor\n- s : M.State\n- w : T(Bool.and(M.Role.eq(M.Actor.role(a), M.Registrar{}), Bool.and(M.live(a), Bool.and(M.assign_ok(Some{M.Rule{M.Draft{}, M.Rejected{}, M.Registrar{}, False{}, [M.Audit_ExcursionRejected{}]}}, a), M.State.eq(s, M.Draft{})))))\nLocation: reject_pt\n310 |     case M.Candidate{}:\n311>|       permits_from(M.rule_of(M.Candidate{}, M.Reject{}), a, s, w)\n    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n312 |",
+        "location": "reject_pt",
+        "result": "FAILED"
+      },
+      "kernel_policy_findings": [
+        "UNSUPPORTED_REJECTION_SOURCE"
+      ],
+      "model_well_formed": true,
+      "name": "reject_from_draft",
+      "passing_laws": [
+        "teacher_never_approves",
+        "teacher_sequences_never_approve",
+        "approved_only_from_recommended",
+        "every_path_to_approved_passes_recommended",
+        "revoked_teacher_cannot_recommend",
+        "unassigned_teacher_cannot_recommend",
+        "forbidden_effects_never_emitted"
+      ],
+      "result": "PROOF_FAILS_AS_EXPECTED"
+    },
+    {
+      "attribution": "per law (each law checked alone)",
+      "description": "the candidate's Approve declares the forbidden effect PaymentCaptured and drops its forbidden list",
+      "effect_probe": {
+        "confirmed": true,
+        "emitted": [
+          "Audit_ExcursionApproved",
+          "PaymentCaptured"
+        ],
+        "step": [
+          "registrar",
+          "Approve",
+          "Recommended"
+        ]
+      },
+      "expected_failing_laws": [
+        "forbidden_effects_never_emitted"
+      ],
+      "failing_laws": [
+        "forbidden_effects_never_emitted"
+      ],
+      "full_run": {
+        "exit_code": 1,
+        "first_error": "Error:\n- expected : Empty\n- observed : Unit\nLocation: cert_effects\n338 |     case M.Candidate{} M.Approve{}:\n339>|       Unit{}\n    |       ^^^^^^\n340 |     case M.Candidate{} M.Recommend{}:",
+        "location": "cert_effects",
+        "result": "FAILED"
+      },
+      "kernel_policy_findings": [
+        "EFFECT_POLICY:Approve"
+      ],
+      "model_well_formed": true,
+      "name": "payment_effect_emitted",
+      "passing_laws": [
+        "teacher_never_approves",
+        "teacher_sequences_never_approve",
+        "approved_only_from_recommended",
+        "every_path_to_approved_passes_recommended",
+        "revoked_teacher_cannot_recommend",
+        "unassigned_teacher_cannot_recommend",
+        "reject_only_from_declared_source"
+      ],
+      "result": "PROOF_FAILS_AS_EXPECTED"
+    },
+    {
+      "attribution": "per law (each law checked alone)",
+      "counterexample": {
+        "confirmed": true,
+        "final_state_expected_by_fault": "Recommended",
+        "final_state_in_unsafe_model": "Recommended",
+        "steps": [
+          [
+            "teacher-revoked",
+            "Submit"
+          ],
+          [
+            "teacher-revoked",
+            "Recommend"
+          ]
+        ]
+      },
+      "description": "the guard evaluator ignores whether the actor is still active (a revoked actor keeps authority)",
+      "expected_failing_laws": [
+        "revoked_teacher_cannot_recommend"
+      ],
+      "failing_laws": [
+        "revoked_teacher_cannot_recommend"
+      ],
+      "full_run": {
+        "exit_code": 1,
+        "first_error": "Error:\n- expected : Bool.not(M.Outcome.ok(M.finish(Bool.and(assigned, M.State.eq(s, M.Submitted{})), Some{M.Rule{M.Submitted{}, M.Recommended{}, M.Teacher{}, True{}, [M.Audit_ExcursionRecommended{}, M.Notification_RegistrarQueued{}]}}, s)))\n- observed : True{}\nContext:\n- assigned : Bool\n- s        : M.State\nLocation: Laws.revoked_teacher_cannot_recommend\n286 |     case M.Candidate{}:\n287>|       {==}\n    |       ^^^^\n288 |",
+        "location": "Laws.revoked_teacher_cannot_recommend",
+        "result": "FAILED"
+      },
+      "kernel_policy_findings": null,
+      "model_well_formed": true,
+      "name": "engine_ignores_revocation",
+      "passing_laws": [
+        "teacher_never_approves",
+        "teacher_sequences_never_approve",
+        "approved_only_from_recommended",
+        "every_path_to_approved_passes_recommended",
+        "unassigned_teacher_cannot_recommend",
+        "reject_only_from_declared_source",
+        "forbidden_effects_never_emitted"
+      ],
+      "result": "PROOF_FAILS_AS_EXPECTED"
+    }
+  ],
+  "platform": "Windows-11-10.0.26200-SP0",
+  "producer": "verification/bend/bend_runner.py",
+  "proof": {
+    "command": "bend PROOF.bend --verdict",
+    "full_run": {
+      "exit_code": 0,
+      "result": "PROVEN"
+    },
+    "laws": [
+      {
+        "basis": "law checked alone (bend, sliced)",
+        "exit_code": 0,
+        "name": "teacher_never_approves",
+        "result": "PROVEN",
+        "statement": "LAW 1: whatever a Teacher does (active or not, assigned or not), in any state and in either model, the accepted command never leaves the instance Approved."
+      },
+      {
+        "basis": "law checked alone (bend, sliced)",
+        "exit_code": 0,
+        "name": "teacher_sequences_never_approve",
+        "result": "PROVEN",
+        "statement": "LAW 2: no sequence of commands issued only by teachers can ever reach Approved from the initial state."
+      },
+      {
+        "basis": "law checked alone (bend, sliced)",
+        "exit_code": 0,
+        "name": "approved_only_from_recommended",
+        "result": "PROVEN",
+        "statement": "LAW 3: in the recommend_only candidate, any accepted command into Approved fires from Recommended."
+      },
+      {
+        "basis": "law checked alone (bend, sliced)",
+        "exit_code": 0,
+        "name": "every_path_to_approved_passes_recommended",
+        "result": "PROVEN",
+        "statement": "LAW 4: in the candidate, every path to Approved passes through Recommended (all sequences, any actors)."
+      },
+      {
+        "basis": "law checked alone (bend, sliced)",
+        "exit_code": 0,
+        "name": "revoked_teacher_cannot_recommend",
+        "result": "PROVEN",
+        "statement": "LAW 5: a revoked teacher can never recommend, whatever their assignment and whatever the state."
+      },
+      {
+        "basis": "law checked alone (bend, sliced)",
+        "exit_code": 0,
+        "name": "unassigned_teacher_cannot_recommend",
+        "result": "PROVEN",
+        "statement": "LAW 6: an unassigned teacher can never recommend, whether or not they are active."
+      },
+      {
+        "basis": "law checked alone (bend, sliced)",
+        "exit_code": 0,
+        "name": "reject_only_from_declared_source",
+        "result": "PROVEN",
+        "statement": "LAW 7: Reject is accepted only from the declared rejection source of the model."
+      },
+      {
+        "basis": "law checked alone (bend, sliced)",
+        "exit_code": 0,
+        "name": "forbidden_effects_never_emitted",
+        "result": "PROVEN",
+        "statement": "LAW 8: no command, by any actor in any state, ever emits a forbidden effect."
+      }
+    ],
+    "laws_without_proof": [],
+    "model_check": {
+      "exit_code": 0,
+      "result": "PROVEN"
+    },
+    "status": "PASS"
+  },
+  "python": "3.12.10",
+  "schema_version": 1,
+  "status": "PASS",
+  "summary": {
+    "conformance": "PASS",
+    "negative_controls": "PASS",
+    "proof": "PASS"
+  },
+  "tool": {
+    "base_image": "ubuntu:24.04@sha256:496754492fb28b4d3049432f2ca787449331e23fb14f0dd3fffea86bf5a93eb4",
+    "bend_commit": "573002f01ec6c52416d44489543f69a9625facf8",
+    "bend_version": "2.0.32",
+    "bend_version_output": "bend 2.0.32",
+    "docker_server_version": "29.8.0",
+    "dockerfile_sha256": "71ebe0c76d8f0419689a355cf3f084a26889884b8df9610ad9cec21a549e4efa",
+    "image_id": "sha256:2735ef8d30a0c7e7aa870e5c8d8d8d9046498ae0e671be36f121abcbc88ad287",
+    "image_tag": "eija-bend-checker:2.0.32",
+    "lean_version": "4.34.0"
+  }
+}
