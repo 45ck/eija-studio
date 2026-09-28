@@ -14,10 +14,11 @@ candidates and how many clauses were exercised in each polarity.
 from __future__ import annotations
 
 import random
+from collections.abc import Iterator
 from dataclasses import dataclass, field
-from typing import Iterator
 
 import z3
+
 from eija_studio.domain.models import SemanticTransaction, Transition, Workflow
 from eija_studio.domain.policy import apply_transaction, baseline, check_policy, transition
 
@@ -51,9 +52,12 @@ def python_invariants(wf: Workflow) -> dict[str, bool]:
         "INV-RECOMMEND-REQUIRES-ASSIGNMENT": recommend is None or ("actor_assigned" in recommend.guards and recommend.role == "Teacher"),
         "INV-RECOMMEND-CANNOT-CONCLUDE": recommend is None or recommend.to_state == "Recommended",
         "INV-REJECT-SOURCE-BOUNDED": reject is None or reject.from_state in ("Recommended", "Submitted"),
-        "INV-FORBIDDEN-EFFECTS-EXCLUDED": all(not set(V.FORBIDDEN_EFFECTS) & set(t.required_effects) and set(V.FORBIDDEN_EFFECTS) <= set(t.forbidden_effects)
+        "INV-APPROVE-ENDS-IN-APPROVED": approve is None or approve.to_state == "Approved",
+        "INV-RECOMMEND-STARTS-FROM-SUBMITTED": recommend is None or recommend.from_state == "Submitted",
+        "INV-REJECT-FROM-SUBMITTED-WITHOUT-RECOMMENDATION": reject is None or recommend is not None or reject.from_state == "Submitted",
+        "INV-FORBIDDEN-EFFECTS-EXCLUDED": all(not set(V.REQUIRED_FORBIDDEN_EFFECTS) & set(t.required_effects) and set(V.REQUIRED_FORBIDDEN_EFFECTS) <= set(t.forbidden_effects)
                                               for t in ts if t.action in V.ACTIONS),
-        "INV-MANDATORY-GUARDS-PRESENT": all(V.BASE_GUARD_SET <= set(t.guards) for t in ts if t.action in V.ACTIONS),
+        "INV-MANDATORY-GUARDS-PRESENT": all(set(t.guards) >= set(V.REQUIRED_BASE_GUARDS) for t in ts if t.action in V.ACTIONS),
         "INV-CLOSED-WORKFLOW": wf.initial_state == "Draft" and all(t.action in V.ACTIONS for t in ts) and all(s in V.STATES for s in wf.states),
     }
 
@@ -70,12 +74,12 @@ def to_spec(wf: Workflow) -> Spec:
 
 def from_spec(spec: Spec) -> tuple[Workflow, bool]:
     """(workflow, passes_pydantic_validators)."""
-    ts = [dict(id="TR-" + a.upper().replace(" ", "-"), action=a, from_state=t["from"], to_state=t["to"], role=t["role"],
-               guards=tuple(sorted(t["guards"])), required_effects=tuple(sorted(t["req"])),
-               forbidden_effects=tuple(sorted(t["forb"]))) for a, t in spec["transitions"].items()]
+    ts = [{"id": "TR-" + a.upper().replace(" ", "-"), "action": a, "from_state": t["from"], "to_state": t["to"],
+           "role": t["role"], "guards": tuple(sorted(t["guards"])), "required_effects": tuple(sorted(t["req"])),
+           "forbidden_effects": tuple(sorted(t["forb"]))} for a, t in spec["transitions"].items()]
     states = tuple(dict.fromkeys(spec["states"]))
     try:
-        return Workflow.model_validate(dict(initial_state=spec["initial"], states=states, transitions=tuple(ts))), True
+        return Workflow.model_validate({"initial_state": spec["initial"], "states": states, "transitions": tuple(ts)}), True
     except ValueError:
         return Workflow.model_construct(initial_state=spec["initial"], states=states,
                                         transitions=tuple(Transition.model_construct(**t) for t in ts)), False
@@ -143,7 +147,7 @@ def random_spec(rng: random.Random) -> Spec:
 
 def candidates(seed: int, random_mutants: int, random_fresh: int) -> Iterator[tuple[Workflow, bool]]:
     """Deterministic stream: seeds, all single mutants of each seed, then seeded random candidates."""
-    rng = random.Random(seed)
+    rng = random.Random(seed)  # noqa: S311 - seeded case generator, not security
     base_specs = [to_spec(w) for w in seeds()]
     for spec in base_specs:
         yield from_spec(spec)

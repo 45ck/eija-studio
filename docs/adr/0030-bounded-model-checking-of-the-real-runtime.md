@@ -1,6 +1,6 @@
 # ADR-0030: Bounded model checking by explicit-state search over the real runtime
 
-* Status: accepted
+* Status: proposed
 * Date: 2026-09-28
 * Lane: smt-bmc (formal: bounded model checking)
 
@@ -12,7 +12,7 @@ The runtime matrix in `application/verifier.py` is one-step: five actors times f
 
 * Check the code that runs (`application.runtime.execute` over the SQLite unit of work), not a model of it; a model of the runtime is the TLA+ lane's job (ADR-0027) and the two should later be linked by trace conformance.
 * Shortest counterexample traces, state-space statistics and honest bounds.
-* Fast enough for the full tier (depth 6 in about a minute); a deeper release tier.
+* Fast enough for the full tier (depth 6 in about 75 s on the reference PC, about 95 s under load); a deeper release tier.
 * The checker must be shown to find bugs: seeded faults must be caught.
 
 ## Considered options
@@ -32,7 +32,7 @@ Chosen option: "explicit-state BFS in `verification/bmc/`", because no mature mo
 * **Checks** run on every transition and every new state: authority on commit, authority **before replay**, compare-and-swap, state guard, exactly-once operations and binding, exact commit effects, no trace from rejection or replay, no spurious denial, denial reason, the audit trail being a valid run of the model that ends at the instance state, decisions only by Registrar, approval only after a recommendation, no forbidden effect, outbox rows only for committed Recommends.
 * **Search** is breadth-first with state de-duplication, so the first counterexample per invariant is a shortest one. Reports carry states, transitions, per-depth new states, outcome-class counts (a coverage check fails if the alphabet never provokes a denial code, a replay or a revocation), whether the reachable set closed, and wall-clock time under `measurements` only.
 * **Self-test.** Six seeded runtime faults (revocation ignored, assignment ignored, role ignored, replay before authority, stale version accepted, replay reapplies effects) must each be found within three moves. The real runtime must not be flagged.
-* **Tiers.** Full: depth 6, baseline and recommendation candidate. Release: depth 8, all three workflow variants. Deterministic statistics for depth 6 are committed and drift-checked.
+* **Tiers.** Full: depth 6, baseline and the recommendation candidate with rejection from Recommended (two of the three accepted workflows). Release: depth 8, all three workflow variants (the third, rejection from Submitted, is only checked here). Deterministic statistics for depth 6 and depth 8 are committed and drift-checked. A run that cannot compare with committed statistics (different depth or alphabet) or skipped the self-test is `PARTIAL`, never `PASS`; the wall-clock cap is not part of the compared configuration.
 
 ### Consequences
 

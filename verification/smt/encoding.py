@@ -22,11 +22,12 @@ Grammar assumptions (each is repeated in the evidence report):
 """
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
 from itertools import count
-from typing import Iterable
 
 import z3
+
 from eija_studio.domain.models import Transition, Workflow
 from eija_studio.domain.policy import EFFECTS
 
@@ -34,8 +35,8 @@ from . import vocabulary as V
 
 RoleSort, ROLE_CONST = z3.EnumSort("Role", [*V.ROLES, "OTHER"])
 StateSort, STATE_CONST = z3.EnumSort("State", [*V.STATES, "OTHER"])
-ROLE = dict(zip([*V.ROLES, V.OTHER], ROLE_CONST))
-STATE = dict(zip([*V.STATES, V.OTHER], STATE_CONST))
+ROLE = dict(zip([*V.ROLES, V.OTHER], ROLE_CONST, strict=True))
+STATE = dict(zip([*V.STATES, V.OTHER], STATE_CONST, strict=True))
 _ids = count()
 TRUE, FALSE = z3.BoolVal(True), z3.BoolVal(False)
 
@@ -246,16 +247,41 @@ def authority_invariants(w: SymWorkflow) -> list[Invariant]:
         "Reject starts only from Recommended or Submitted.",
         z3.Implies(T["Reject"].present, z3.Or(T["Reject"].source == STATE["Recommended"],
                                               T["Reject"].source == STATE["Submitted"])))
+    add("INV-APPROVE-ENDS-IN-APPROVED",
+        "Approve ends in Approved.",
+        z3.Implies(T["Approve"].present, T["Approve"].target == STATE["Approved"]))
+    add("INV-RECOMMEND-STARTS-FROM-SUBMITTED",
+        "Recommend starts from Submitted.",
+        z3.Implies(T["Recommend"].present, T["Recommend"].source == STATE["Submitted"]))
+    add("INV-REJECT-FROM-SUBMITTED-WITHOUT-RECOMMENDATION",
+        "Without the recommendation meaning (no Recommend), Reject starts from Submitted.",
+        z3.Implies(z3.And(T["Reject"].present, z3.Not(w.candidate)), T["Reject"].source == STATE["Submitted"]))
     add("INV-FORBIDDEN-EFFECTS-EXCLUDED",
         "No transition requires a forbidden effect, and every transition forbids all of them.",
-        each(lambda t: z3.And(*(z3.And(z3.Not(t.required[f]), t.forbidden[f]) for f in V.FORBIDDEN_EFFECTS))))
+        each(lambda t: z3.And(*(z3.And(z3.Not(t.required[f]), t.forbidden[f]) for f in V.REQUIRED_FORBIDDEN_EFFECTS))))
     add("INV-MANDATORY-GUARDS-PRESENT",
         "Every transition carries every base guard (a candidate cannot weaken authority checks).",
-        each(lambda t: z3.And(*(t.guards[g] for g in sorted(V.BASE_GUARD_SET)))))
+        each(lambda t: z3.And(*(t.guards[g] for g in V.REQUIRED_BASE_GUARDS))))
     add("INV-CLOSED-WORKFLOW",
         "The workflow starts in Draft, has no unknown action and no unknown state.",
         z3.And(w.initial == STATE["Draft"], z3.Not(w.has_other_action), z3.Not(w.states_extra)))
     return inv
+
+
+def pydantic_valid(w: SymWorkflow) -> z3.BoolRef:
+    """An over-approximation of "Workflow.model_validate would accept this candidate" (mandatory guards present,
+    required and forbidden effects disjoint, every from/to state and the initial state declared in `states`).
+
+    It is NOT part of the proof (the proof deliberately assumes no validator). It only lets the leave-one-out
+    controls ask a second question: is the clause still critical if the validators are assumed? The witness is
+    then re-validated by the real pydantic models in `decode`, so the Z3 model of the validators is never trusted."""
+    def declared(state: z3.ExprRef) -> z3.BoolRef:
+        return z3.Or(*(z3.And(state == STATE[s], w.states_in[s]) for s in V.STATES),
+                     z3.And(state == STATE[V.OTHER], w.states_extra))
+
+    return z3.And(declared(w.initial), *(z3.Implies(t.present, z3.And(
+        declared(t.source), declared(t.target), *(t.guards[g] for g in sorted(V.BASE_GUARD_SET)),
+        *(z3.Not(z3.And(t.required[x], t.forbidden[x])) for x in V.EFFECT_ATOMS))) for t in w.transitions.values()))
 
 
 # ------------------------------------------------------------------------------------------------
@@ -312,18 +338,19 @@ def decode(w: SymWorkflow, model: z3.ModelRef) -> tuple[Workflow, bool]:
         if not on(s.present):
             continue
         required = sorted([e for e in V.EFFECT_ATOMS if on(s.required[e])] + (["Audit:<other>"] if on(s.required_other) else []))
-        transitions.append(dict(id="TR-" + a.upper(), action=a, from_state=_name(STATE, val(s.source)),
-                                to_state=_name(STATE, val(s.target)), role=_name(ROLE, val(s.role)),
-                                guards=tuple(g for g in V.GUARDS if on(s.guards[g])),
-                                required_effects=tuple(required),
-                                forbidden_effects=tuple(e for e in V.EFFECT_ATOMS if on(s.forbidden[e]))))
+        transitions.append({"id": "TR-" + a.upper(), "action": a, "from_state": _name(STATE, val(s.source)),
+                            "to_state": _name(STATE, val(s.target)), "role": _name(ROLE, val(s.role)),
+                            "guards": tuple(g for g in V.GUARDS if on(s.guards[g])),
+                            "required_effects": tuple(required),
+                            "forbidden_effects": tuple(e for e in V.EFFECT_ATOMS if on(s.forbidden[e]))})
     if on(w.has_other_action):
-        transitions.append(dict(id="TR-OTHER", action="Other", from_state="Draft", to_state="Draft", role="Teacher",
-                                guards=V.BASE_GUARDS_TUPLE, required_effects=(), forbidden_effects=V.FORBIDDEN_EFFECTS))
+        transitions.append({"id": "TR-OTHER", "action": "Other", "from_state": "Draft", "to_state": "Draft",
+                            "role": "Teacher", "guards": V.BASE_GUARDS_TUPLE, "required_effects": (),
+                            "forbidden_effects": V.FORBIDDEN_EFFECTS})
     states = tuple(s for s in V.STATES if on(w.states_in[s])) + (("<other-state>",) if on(w.states_extra) else ())
     initial = _name(STATE, val(w.initial))
     initial = "<other-state>" if initial == V.OTHER else initial
-    data = dict(initial_state=initial, states=states, transitions=tuple(transitions))
+    data = {"initial_state": initial, "states": states, "transitions": tuple(transitions)}
     try:
         return Workflow.model_validate(data), True
     except ValueError:

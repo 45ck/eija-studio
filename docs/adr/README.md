@@ -12,6 +12,8 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0018](0018-formal-vv-portfolio.md) | Formal V&V portfolio: each technique is a distinct evidence kind | proposed |
 | [0019](0019-diagrams-generated-from-executable-model.md) | Diagrams are generated projections of the executable model | proposed |
 | [0020](0020-multi-provider-agent-adapters.md) | Proposal providers for Codex, Claude Code, OpenCode, Gemini CLI and OpenRouter | proposed |
+| [0029](0029-z3-policy-soundness-proof.md) | Z3 proof that the protected policy admits only authority-preserving candidates | proposed |
+| [0030](0030-bounded-model-checking-of-the-real-runtime.md) | Bounded model checking by explicit-state search over the real runtime | proposed |
 | [0035](0035-static-analysis-and-architecture-fitness-functions.md) | Static analysis, architecture fitness functions and ratcheted budgets | accepted |
 | [0036](0036-noslop-hooks-adapted-to-nox.md) | noslop guardrails adapted to run nox tiers; hook enablement is an explicit step | accepted |
 | [0047](0047-hardcoded-scripted-demos-not-demo-machine.md) | Hand-authored scripted demo recordings, not demo-machine | accepted |

@@ -21,11 +21,11 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--differential-mutants", type=int, default=1500, help="seeded random multi-field mutants")
     ap.add_argument("--differential-fresh", type=int, default=500, help="seeded fully random candidates")
     ap.add_argument("--seed", type=int, default=20260928)
-    ap.add_argument("--write-snapshot", action="store_true", help="regenerate verification/smt/accepted_set.json")
+    ap.add_argument("--write-snapshot", action="store_true", help="regenerate verification/smt/accepted_set.json (refused if any other check fails)")
     args = ap.parse_args(argv)
 
     try:
-        import z3  # noqa: F401
+        import z3  # noqa: F401, PLC0415 - optional extra: absence is NOT_RUN, not an import error
     except ImportError:
         report = fr.not_run("smt_proof", "z3-solver is not installed; run `pip install -e .[smt]`",
                             fr.kernel_subject(*SUBJECT_FILES, function=SUBJECT_FUNCTION))
@@ -33,12 +33,10 @@ def main(argv: list[str] | None = None) -> int:
         print("NOT_RUN: z3-solver is not installed (pip install -e .[smt])", file=sys.stderr)
         return NOT_RUN_EXIT
 
-    from . import prove
+    from . import prove  # noqa: PLC0415 - imports z3, so only after the check above
 
-    if args.write_snapshot:
-        prove.SNAPSHOT.write_bytes(prove.snapshot_text(prove.enumerate_accepted()).encode("utf-8"))
-        print(f"wrote {prove.SNAPSHOT}")
-    report = prove.build_report(args.differential_mutants, args.differential_fresh, args.seed)
+    report = prove.build_report(args.differential_mutants, args.differential_fresh, args.seed,
+                                write_snapshot=args.write_snapshot)
     fr.write(args.out, report)
     for check in report["checks"]:
         print(f"{check['status']:4} {check['id']}: {check['detail']}")
