@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(*--no-verify*)",
+      "Bash(*--force*)",
+      "Bash(git push -f*)",
+      "Edit(.githooks/**)",
+      "Edit(.claude/settings.json)",
+      "Edit(.claude/hooks/**)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [{ "type": "command", "command": "sh .claude/hooks/pre-tool-use.sh" }]
+      }
+    ]
+  }
+}
