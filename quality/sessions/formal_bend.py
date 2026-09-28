@@ -26,7 +26,7 @@ NOT_RUN = 3  # bend_runner exit codes: 0 PASS, 1 FAIL, 3 NOT_RUN
 
 
 def _run_gate(session: nox.Session, report: Path, *args: str) -> None:
-    code = subprocess.run([PYTHON, RUNNER, "--report", str(report), *args, *session.posargs], cwd=ROOT).returncode
+    code = subprocess.run([PYTHON, RUNNER, "--report", str(report), *args, *session.posargs], cwd=ROOT, check=False).returncode
     if code == NOT_RUN:
         reason = json.loads(report.read_text(encoding="utf-8")).get("reason", "prerequisite missing")
         session.skip(f"NOT_RUN (not a pass): {reason}")

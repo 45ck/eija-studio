@@ -32,8 +32,8 @@ The two sequence laws also quantify over every command sequence of any length. N
 | 2 | `teacher_sequences_never_approve`: no sequence of teacher-only commands reaches Approved from the initial state | both models, all sequences |
 | 3 | `approved_only_from_recommended`: any accepted command into Approved fires from Recommended | candidate |
 | 4 | `every_path_to_approved_passes_recommended`: every path to Approved passes through Recommended | candidate, all sequences, any actors |
-| 5 | `revoked_teacher_cannot_recommend`: a revoked teacher can never recommend | both models |
-| 6 | `unassigned_teacher_cannot_recommend`: an unassigned teacher can never recommend, active or not | both models |
+| 5 | `revoked_teacher_cannot_recommend`: a revoked teacher can never recommend | both models (the baseline has no Recommend transition, so it holds there trivially; the content is in the candidate) |
+| 6 | `unassigned_teacher_cannot_recommend`: an unassigned teacher can never recommend, active or not | both models (trivial in the baseline, as for law 5) |
 | 7 | `reject_only_from_declared_source`: Reject is accepted only from the model's declared rejection source (Submitted in the baseline, Recommended in the shipped candidate) | both models |
 | 8 | `forbidden_effects_never_emitted`: no command ever emits `PaymentCaptured` or `ParentDataExported` | both models |
 

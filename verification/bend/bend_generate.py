@@ -17,6 +17,7 @@ differential test against the real runtime, which is evidence of conformance, no
 Run ``python verification/bend/bend_generate.py`` to (re)write the committed ``main.bend``, or with
 ``--check`` to fail when it is stale (the fast drift gate).
 """
+# ruff: noqa: T201  (command-line tool: printing the verdict and the drift message is its output)
 from __future__ import annotations
 
 import argparse

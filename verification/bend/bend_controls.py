@@ -18,12 +18,18 @@ that no *other* fault escapes them.
 """
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable
 
-from bend_generate import UNSAFE_EXAMPLE, ModelError, default_models, load_workflow, render_main
 from eija_studio.domain.models import Workflow
 from eija_studio.domain.policy import check_policy
+from verification.bend.bend_generate import (
+    UNSAFE_EXAMPLE,
+    ModelError,
+    default_models,
+    load_workflow,
+    render_main,
+)
 
 _LIVE = "def live(a: Actor) -> Bool:\n  Actor{role, active, assigned} = a\n  active\n"
 

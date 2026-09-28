@@ -17,13 +17,13 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 BEND = ROOT / "verification" / "bend"
-sys.path.insert(0, str(BEND))
+sys.path.insert(0, str(ROOT))
 
-import bend_conformance as conformance  # noqa: E402
-import bend_controls  # noqa: E402
-import bend_generate as gen  # noqa: E402
-import bend_runner as runner  # noqa: E402
-import bend_slicing as slicing  # noqa: E402
+import verification.bend.bend_conformance as conformance  # noqa: E402
+import verification.bend.bend_controls as bend_controls  # noqa: E402
+import verification.bend.bend_generate as gen  # noqa: E402
+import verification.bend.bend_runner as runner  # noqa: E402
+import verification.bend.bend_slicing as slicing  # noqa: E402
 from eija_studio.domain.policy import check_policy  # noqa: E402
 
 LAWS = (BEND / "LAWS.bend").read_text(encoding="utf-8")
@@ -37,10 +37,13 @@ EXPECTED_LAWS = [
 
 
 def docker_ready() -> bool:
-    if shutil.which("docker") is None:
+    docker = shutil.which("docker")
+    if docker is None:
         return False
     try:
-        return subprocess.run(["docker", "version", "--format", "{{.Server.Version}}"], capture_output=True, timeout=20).returncode == 0
+        probe = subprocess.run(  # noqa: S603  (fixed argv, no shell; the docker path comes from shutil.which)
+            [docker, "version", "--format", "{{.Server.Version}}"], capture_output=True, timeout=20, check=False)
+        return probe.returncode == 0
     except (subprocess.TimeoutExpired, OSError):
         return False
 
@@ -53,7 +56,7 @@ needs_docker = pytest.mark.skipif(not docker_ready(), reason="Docker daemon not 
 def test_generation_is_deterministic_and_the_committed_model_is_current():
     first, second = gen.render_main(gen.default_models()), gen.render_main(gen.default_models())
     assert first == second
-    assert MAIN == first, "main.bend is stale: run python verification/bend/bend_generate.py"
+    assert first == MAIN, "main.bend is stale: run python verification/bend/bend_generate.py"
     for name in ("main.bend", "LAWS.bend", "PROOF.bend", "bend_generate.py", "Dockerfile"):
         assert b"\r" not in (BEND / name).read_bytes(), f"{name} must use LF line endings"
 

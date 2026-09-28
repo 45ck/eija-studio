@@ -21,6 +21,7 @@ A gate run does four things, and reports each separately:
 Missing prerequisites (Docker, the daemon, the image, network for the first build) give ``NOT_RUN``,
 never PASS. What this proves and does not prove is stated in ``docs/formal/bend.md``.
 """
+# ruff: noqa: T201  (command-line tool: printing the verdict and the drift message is its output)
 from __future__ import annotations
 
 import argparse
@@ -38,12 +39,12 @@ from typing import NamedTuple
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
-sys.path.insert(0, str(HERE))
+sys.path.insert(0, str(ROOT))  # the repo root, so `verification.bend.*` resolves when run as a script
 
-import bend_conformance as conformance  # noqa: E402
-import bend_slicing as slicing  # noqa: E402
-from bend_controls import CONTROLS, Control  # noqa: E402
-from bend_generate import GENERATED_PATH, SLOTS, default_models, render_main  # noqa: E402
+import verification.bend.bend_conformance as conformance  # noqa: E402
+import verification.bend.bend_slicing as slicing  # noqa: E402
+from verification.bend.bend_controls import CONTROLS, Control  # noqa: E402
+from verification.bend.bend_generate import GENERATED_PATH, SLOTS, default_models, render_main  # noqa: E402
 
 IMAGE = "eija-bend-checker:2.0.32"
 DOCKERFILE = HERE / "Dockerfile"
@@ -92,7 +93,8 @@ class Checker:
     @staticmethod
     def _docker(*args: str, timeout: int) -> Result:
         try:
-            p = subprocess.run(["docker", *args], capture_output=True, text=True, timeout=timeout, encoding="utf-8", errors="replace")
+            p = subprocess.run(["docker", *args],  # noqa: S603, S607  (fixed argv, no shell; docker resolved from PATH by design)
+                                capture_output=True, text=True, timeout=timeout, encoding="utf-8", errors="replace", check=False)
         except FileNotFoundError as e:
             raise NotRun("docker CLI not found on PATH") from e
         except subprocess.TimeoutExpired as e:
@@ -117,7 +119,7 @@ class Checker:
         fmt = ("{{.Id}}|{{index .Config.Labels \"dev.eija.bend.version\"}}|{{index .Config.Labels \"dev.eija.bend.commit\"}}"
                "|{{index .Config.Labels \"dev.eija.lean.version\"}}")
         r = self._docker("image", "inspect", self.image, "--format", fmt, timeout=30)
-        image_id, bend, commit, lean = (r.out.strip().split("|") + ["", "", "", ""])[:4]
+        image_id, bend, commit, lean = [*r.out.strip().split("|"), "", "", "", ""][:4]
         version = self._docker("run", "--rm", "--network", "none", self.image, "version", timeout=60).out.strip()
         return {"image_tag": self.image, "image_id": image_id, "bend_version_output": version, "bend_version": bend,
                 "bend_commit": commit, "lean_version": lean, "base_image": _base_image()}
@@ -128,7 +130,8 @@ class Checker:
             f'echo "@@@BEGIN {i}"; (cd /work/{shlex.quote(j.dir)} && bend {" ".join(shlex.quote(a) for a in j.args)}) 2>&1; '
             f'echo "@@@END {i} $?"; ' for i, j in enumerate(jobs))
         run = self._docker(
-            "run", "--rm", "--network", "none", "--read-only", "--tmpfs", "/tmp", "--cap-drop", "ALL",
+            "run", "--rm", "--network", "none", "--read-only", "--tmpfs", "/tmp",  # noqa: S108  (a path inside the container, not a host temp file)
+             "--cap-drop", "ALL",
             "--security-opt", "no-new-privileges", "--pids-limit", "256", "--memory", "2g", "--cpus", "2",
             "-v", f"{root}:/work:ro", "--entrypoint", "sh", self.image, "-c", script, timeout=120 + 30 * len(jobs))
         if "@@@END" not in run.out:
@@ -262,7 +265,7 @@ def run_conformance(checker: Checker) -> dict:
     names = [*programs, *witnesses]
     root = stage("conformance", {"work": {"main.bend": main, **programs, **witnesses}})
     results = checker.run_jobs(root, [Job("work", (n,)) for n in names])
-    by_name = dict(zip(names, results))
+    by_name = dict(zip(names, results, strict=True))
     scratch = conformance.scratch_workspace(ROOT / ".tmp" / "bend-conformance")
     try:
         bend_cells: dict = {}
