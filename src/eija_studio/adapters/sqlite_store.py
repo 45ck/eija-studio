@@ -1,7 +1,9 @@
 """Durable local unit of work. One database transaction owns state + operation + effects."""
 from __future__ import annotations
 from contextlib import contextmanager, closing
-import json, os, sqlite3
+from tempfile import TemporaryDirectory
+from typing import Iterator
+import json, os, shutil, sqlite3, time
 from pathlib import Path
 from typing import Literal
 from eija_studio.domain.models import Workflow, DomainError, canonical
@@ -163,3 +165,39 @@ class SQLiteStore:
         """SQLite online backup: do not copy the .sqlite3 file without its WAL."""
         with self.connection() as source, closing(sqlite3.connect(target)) as destination:
             source.backup(destination)
+
+
+SANDBOX_PREFIX = "eija-check-"
+STALE_SANDBOX_SECONDS = 3600
+
+
+def sandbox_factory(workspace: Path):
+    """Build the application's SandboxFactory for one workspace.
+
+    Sandboxes live in `<workspace>/sandboxes/` (same disk as the workspace, never the system temp
+    directory, which may be a slow drive) and use the ephemeral profile: the same unit-of-work
+    semantics with no per-commit flush. They hold only synthetic fixture data. A sandbox left behind
+    by a killed process is removed by a later call once it is older than STALE_SANDBOX_SECONDS; the
+    age threshold keeps a concurrent verification's live sandbox safe."""
+    root = Path(workspace).resolve() / "sandboxes"
+
+    @contextmanager
+    def sandbox() -> Iterator[SQLiteStore]:
+        root.mkdir(mode=0o700, exist_ok=True)  # no parents=True: never recreate a deleted workspace
+        _sweep_stale(root)
+        # ignore_cleanup_errors: on Windows a transiently locked file (antivirus, indexer) must not
+        # mask the verification's own outcome or exception.
+        with TemporaryDirectory(prefix=SANDBOX_PREFIX, dir=root, ignore_cleanup_errors=True) as directory:
+            yield SQLiteStore(Path(directory), durability="ephemeral")
+
+    return sandbox
+
+
+def _sweep_stale(root: Path) -> None:
+    cutoff = time.time() - STALE_SANDBOX_SECONDS
+    for entry in root.glob(SANDBOX_PREFIX + "*"):
+        try:
+            if entry.is_dir() and entry.stat().st_mtime < cutoff:
+                shutil.rmtree(entry, ignore_errors=True)
+        except OSError:
+            pass

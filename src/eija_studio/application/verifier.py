@@ -57,7 +57,8 @@ def verify_runtime(model: Workflow, subject: dict, sandbox: SandboxFactory) -> d
     artifact = {"protocol": "bounded-runtime-matrix-v1", "expected_cells": len(ACTORS) * len(model.states) * len(ORACLE),
                 "matrix": {"actors": [a[0] for a in ACTORS], "states": list(model.states), "actions": list(ORACLE)},
                 "cells": cells, "limitations": ["Synthetic fixture directory; no real SSO", "No human-outcome measurement",
-                "One-step state/action matrix, not exhaustive arbitrary sequences", "Same-author oracle, not an independent holdout"]}
+                "One-step state/action matrix, not exhaustive arbitrary sequences", "Same-author oracle, not an independent holdout",
+                "Disposable non-durable sandbox: observes transaction semantics, not crash durability"]}
     return {"id": uuid4().hex, "claim": "runtime_matrix", "kind": "integration_test", "subject": subject,
             "producer": "eija-local-verifier", "method": artifact["protocol"], "created_at": datetime.now(timezone.utc).isoformat(),
             "artifact_hash": fingerprint(artifact), "artifact": artifact}
