@@ -11,6 +11,7 @@ from eija_studio.domain.impact import model_impact
 from eija_studio.application.compiler import subject_for
 from eija_studio.application.verifier import verify_runtime
 from eija_studio.application.diagram_catalog import FORMATS, VIEWS, VIEW_FORMATS, html_panels, render_view
+from .agent_config import DEFAULT_MAX_PROVIDER_CALLS, snippet
 
 
 def output(value, path: Path | None = None):
@@ -89,6 +90,37 @@ def _add_render_parser(subs) -> None:
 EARLY_COMMANDS = {"check-export": check_export_command, "render": render_command}  # need no workspace, provider or key
 
 
+def _report_failure(command: str, exc: Exception) -> None:
+    if isinstance(exc, DomainError):
+        failure = {"error": exc.code, "message": exc.message}
+    else:
+        failure = {"error": "INPUT_OR_ENVIRONMENT_ERROR", "message": "Check the file, schema, permissions and configuration; no raw sensitive input is echoed"}
+    if command == "mcp":
+        # stdout is the MCP protocol channel: a startup error printed there would corrupt it. Use stderr.
+        print(json.dumps(failure, indent=2, ensure_ascii=False), file=sys.stderr)
+    else:
+        output(failure)
+
+
+def _run_mcp(args) -> int:
+    """`eija mcp`: print client config, or serve the agent-facing MCP server on stdio. Errors here go to stderr."""
+    if args.print_config:
+        print(snippet(args.print_config, sys.executable, args.workspace), end="")
+        return 0
+    if args.ask_key or (args.provider != "offline" and not (args.allow_network and args.egress_consent)):
+        # stdin/stdout are the protocol channel, and network use is the owner's decision made at startup.
+        raise DomainError("CONFIGURATION", "mcp: --ask-key is unsupported; a networked provider needs --allow-network and --egress-consent")
+    if args.max_provider_calls < 0:
+        raise DomainError("CONFIGURATION", "mcp: --max-provider-calls must be 0 or more")
+    try:
+        from .mcp_server import serve_stdio
+    except ImportError:
+        raise DomainError("MISSING_EXTRA", 'Install the MCP SDK: pip install -e ".[agents]"') from None
+    studio = build_studio(args.workspace, args.provider, args.model, args.allow_network, None)
+    serve_stdio(studio, egress_consent=args.egress_consent, max_provider_calls=args.max_provider_calls)
+    return 0
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="eija", description="EIJA Studio — bounded local assurance POC")
     parser.add_argument("--version", action="version", version=__version__)
@@ -110,10 +142,16 @@ def main(argv=None) -> int:
     compile_p = subs.add_parser("compile", parents=[common]); compile_p.add_argument("file", type=Path); compile_p.add_argument("--out", type=Path, required=True); compile_p.add_argument("--verify", action="store_true")
     check = subs.add_parser("check-export"); check.add_argument("file", type=Path)
     _add_render_parser(subs)
+    mcp = subs.add_parser("mcp", parents=[common], help="Serve the agent-facing MCP server on stdio (needs the agents extra)")
+    mcp.add_argument("--print-config", choices=["claude", "codex", "opencode", "gemini"], help="Print copy-paste client config for this MCP server and exit")
+    mcp.add_argument("--egress-consent", action="store_true", help="Owner's STANDING consent: every propose call in this session may send the request to a networked provider; agents cannot grant it")
+    mcp.add_argument("--max-provider-calls", type=int, default=DEFAULT_MAX_PROVIDER_CALLS, help="Cap on networked provider calls per MCP session (spend guard; 0 forbids them)")
     args = parser.parse_args(argv)
     try:
         if args.command in EARLY_COMMANDS:
             return EARLY_COMMANDS[args.command](args)
+        if args.command == "mcp":
+            return _run_mcp(args)
         key = None
         if args.ask_key:
             if args.provider != "openrouter":
@@ -186,10 +224,7 @@ def main(argv=None) -> int:
             return 2 if errors or not identity["trusted_fixture"] else 0
         return 0
     except (DomainError, ValidationError, OSError, ValueError, KeyError) as exc:
-        if isinstance(exc, DomainError):
-            output({"error": exc.code, "message": exc.message})
-        else:
-            output({"error": "INPUT_OR_ENVIRONMENT_ERROR", "message": "Check the file, schema, permissions and configuration; no raw sensitive input is echoed"})
+        _report_failure(args.command, exc)
         return 2
 
 if __name__ == "__main__":

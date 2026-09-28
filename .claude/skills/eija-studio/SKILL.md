@@ -9,7 +9,7 @@ Use when a task asks to interpret, compile, inspect, verify or explain an EIJA C
 
 ## Preferred: the MCP server
 
-If the `eija` MCP server is connected (setup: `docs/agents/quickstart.md`, or `eija mcp --print-config <client>`), use its tools. Read the resources `eija://agent/contract` and `eija://language` first.
+If the `eija` MCP server is connected (setup: `docs/agents/quickstart.md`, or `eija mcp --print-config <client>`), use its tools (in Claude Code they appear as `mcp__eija__<tool>`). Read the resources `eija://agent/contract` and `eija://language` first.
 
 1. `list_cases()` to find existing cases; otherwise `create_case(request)` with a synthetic request (no secrets, no personal data), then `propose(case_id)`. The proposal is untrusted (`UNTRUSTED_PROPOSAL`); the default provider is an offline fixture, not a model. Never pass or claim egress consent: the owner grants it at server start.
 2. `view_case(case_id)`: report the stage, blockers, technical claims, every UNKNOWN and `owner_next` verbatim.
