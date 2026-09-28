@@ -37,7 +37,9 @@ A wizard is linear (step 1, 2, 3, 4), modal and forgetful. An IDE is a **workben
 | Run / debug / test panel | evidence: proofs, model checks, property tests, mutation, with UNKNOWN visible |
 | Command palette, quick open, keybindings | keyboard-first operation; every action has a name and a shortcut |
 | Status bar | model hash, evidence status, agent activity, staleness |
-| Multiple windows / worktrees | several agents working in parallel, each with its own session |
+| Worktrees and agent sessions | **first-class**: each agent works in its own git worktree with its own session and changeset; create, switch and compare them; ownership and dependency map of parallel work |
+| Conflict prediction | before anything lands, predict overlap between parallel changesets by **file, symbol and abstraction** (two agents renaming or splitting the same concept is a semantic conflict git cannot see) |
+| Landing queue (merge queue) | review, merge main in, run the gates on the **merge result** (not just the branch), then merge; generated files and shared registries have merge rules so they stop conflicting |
 
 Two things stay deliberately *unlike* a typical IDE: approving and applying a change is a structurally isolated, owner-only action (the kernel decides who may, not the UI), and UNKNOWN is a first-class state that the workbench never hides.
 
