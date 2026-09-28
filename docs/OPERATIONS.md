@@ -37,6 +37,7 @@ Source changes require source review and a fresh release identity. `scripts/stam
 | EGRESS_CONSENT_REQUIRED | Network startup or per-request consent missing | Review the payload; explicitly opt in only for an authorised synthetic test |
 | PROVIDER_BUSY | One proposal is already running | Wait for that call; no retry has been made |
 | PROVIDER_AUTH / RATE_LIMIT / provider configuration errors | Adapter rejected credential/availability conditions | Inspect local account and model configuration; never paste the key into case text |
+| PROVIDER_NOT_READY / PROVIDER_TIMEOUT / PROVIDER_PROCESS_FAILED | An agent CLI is missing, signed out, too old, timed out or failed | Run `eija doctor --provider <name>`; see [providers.md](providers.md). No retry or fallback was made and usage may still have occurred |
 | STALE_VERSION / STALE_BASELINE | Case, instance or baseline changed | Reload or create an explicitly rebased new case; do not force overwrite |
 | STALE_INSTANCE | Candidate semantics changed | Reset the isolated preview |
 | SOURCE_REVIEW_REQUIRED | Package no longer matches the fixture | Inspect the exact source change before creating a new release |
