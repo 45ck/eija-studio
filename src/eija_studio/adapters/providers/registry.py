@@ -13,8 +13,8 @@ from .openrouter import OpenRouterProvider
 KEYED_PROVIDERS = frozenset({"openrouter", "anthropic"})  # providers that take a key held in memory only
 _FACTORIES: dict[str, Callable[[str, str | None], ProposalProvider]] = {
     "offline": lambda model, key: OfflineProvider(),
-    "openrouter": lambda model, key: OpenRouterProvider(model, key),
-    "anthropic": lambda model, key: AnthropicApiProvider(model, key),
+    "openrouter": OpenRouterProvider,
+    "anthropic": AnthropicApiProvider,
     "codex": lambda model, key: CodexProvider(model),
     "claude": lambda model, key: ClaudeCodeProvider(model),
     "opencode": lambda model, key: OpenCodeProvider(model),

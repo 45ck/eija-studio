@@ -6,6 +6,7 @@ door through which text becomes a ``Proposal`` and it never repairs, guesses or 
 from __future__ import annotations
 import json
 import re
+from math import isfinite
 from typing import Any
 from pydantic import ValidationError
 from eija_studio.domain.models import Proposal, Workflow, DomainError, canonical
@@ -69,9 +70,36 @@ def validate_model_name(model: str) -> str:
     return model
 
 
-def safe_usage(source: Any, allowed: frozenset[str]) -> dict[str, int | float]:
+def safe_usage(source: Any, allowed: frozenset[str]) -> dict[str, Any]:
     """Keep only finite numeric accounting fields; never raw provider debug data."""
-    from math import isfinite
     if not isinstance(source, dict):
         return {}
     return {k: v for k, v in source.items() if k in allowed and type(v) in (int, float) and isfinite(v)}
+
+
+def with_accounting(usage: dict[str, Any], note: str) -> dict[str, Any]:
+    """Add the human-readable accounting caveat every adapter attaches (no USD is ever inferred here)."""
+    return {**usage, "accounting": note}
+
+
+def status_failure_code(status: Any, default: str = "PROVIDER_PROCESS_FAILED") -> str:
+    """Map an HTTP-like status (from an API or a CLI's error event) to a stable provider error code."""
+    if status in (401, 403):
+        return "PROVIDER_AUTH"
+    if status == 429:
+        return "PROVIDER_RATE_LIMIT"
+    return default
+
+
+def json_object(text: str) -> dict[str, Any] | None:
+    """Parse ``text`` as one JSON object; anything else (bad JSON, list, scalar) is None."""
+    try:
+        data = json.loads(text)
+    except ValueError:
+        return None
+    return data if isinstance(data, dict) else None
+
+
+def first_key(mapping: Any) -> str:
+    """Sorted first key of a non-empty dict (the model a CLI reports it used), else empty."""
+    return sorted(mapping)[0] if isinstance(mapping, dict) and mapping else ""

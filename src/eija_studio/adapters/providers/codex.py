@@ -30,7 +30,7 @@ class CodexProvider(CliProposalProvider):
                 "-c", "features.skill_mcp_dependency_install=false", "-c", 'history.persistence="none"']
         if self.model:
             args += ["--model", self.model]
-        return Invocation(tuple(args + ["-"]))
+        return Invocation((*args, "-"))
 
     def extract(self, result: subprocess.CompletedProcess, work: Path) -> Extracted:
         output = work / "proposal.json"

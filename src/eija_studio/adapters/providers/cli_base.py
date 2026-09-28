@@ -18,7 +18,7 @@ from typing import Any, Callable, Mapping
 import subprocess
 from eija_studio.domain.models import Workflow, DomainError
 from eija_studio.application.ports import ProviderResult
-from ._common import build_prompt, parse_proposal, validate_model_name
+from ._common import MAX_ENVELOPE_BYTES, build_prompt, json_object, parse_proposal, validate_model_name
 from .process import CliOutputLimit, CliShimUnsupported, CliTimeout, Runner, resolve_command, run_bounded
 
 BASE_ENV_ALLOW = frozenset({
@@ -105,6 +105,19 @@ class CliProposalProvider:
 
     def extract(self, result: subprocess.CompletedProcess, work: Path) -> Extracted:
         raise NotImplementedError
+
+    def stdout_within_cap(self, result: subprocess.CompletedProcess) -> str:
+        """The CLI's stdout, or PROVIDER_OUTPUT_INVALID when it exceeds the envelope cap."""
+        if len(result.stdout.encode("utf-8")) > MAX_ENVELOPE_BYTES:
+            raise self.fail("PROVIDER_OUTPUT_INVALID")
+        return str(result.stdout)
+
+    def json_envelope(self, result: subprocess.CompletedProcess) -> dict[str, Any]:
+        """stdout as exactly one bounded JSON object, or PROVIDER_OUTPUT_INVALID."""
+        envelope = json_object(self.stdout_within_cap(result))
+        if envelope is None:
+            raise self.fail("PROVIDER_OUTPUT_INVALID")
+        return envelope
 
     def classify_failure(self, result: subprocess.CompletedProcess) -> str:
         """Map a failed run to a stable code from its output. The output itself is never returned."""

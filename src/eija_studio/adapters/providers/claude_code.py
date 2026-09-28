@@ -8,7 +8,8 @@ from __future__ import annotations
 import json
 import subprocess
 from pathlib import Path
-from ._common import MAX_ENVELOPE_BYTES, compact_schema_json, safe_usage
+from typing import Any
+from ._common import compact_schema_json, first_key, safe_usage, status_failure_code, with_accounting
 from .cli_base import CliProposalProvider, Extracted, Invocation, LoginState, StatusRunner
 
 TOKEN_FIELDS = frozenset({"input_tokens", "output_tokens", "cache_read_input_tokens", "cache_creation_input_tokens"})
@@ -41,22 +42,17 @@ class ClaudeCodeProvider(CliProposalProvider):
             args += ["--model", self.model]
         return Invocation(tuple(args))
 
-    def extract(self, result: subprocess.CompletedProcess, work: Path) -> Extracted:
-        if len(result.stdout.encode("utf-8")) > MAX_ENVELOPE_BYTES:
-            raise self.fail("PROVIDER_OUTPUT_INVALID")
-        try:
-            envelope = json.loads(result.stdout)
-        except ValueError:
-            raise self.fail("PROVIDER_OUTPUT_INVALID") from None
-        if not isinstance(envelope, dict):
-            raise self.fail("PROVIDER_OUTPUT_INVALID")
-        if envelope.get("is_error") or envelope.get("subtype") != "success":
-            status = envelope.get("api_error_status")
-            raise self.fail("PROVIDER_AUTH" if status in (401, 403) else "PROVIDER_RATE_LIMIT" if status == 429 else "PROVIDER_PROCESS_FAILED")
+    @staticmethod
+    def _reply_text(envelope: dict[str, Any]) -> str:
+        """Prefer the schema-enforced ``structured_output``; fall back to the plain ``result`` string."""
         structured = envelope.get("structured_output")
         text = json.dumps(structured) if isinstance(structured, dict) else envelope.get("result")
-        models = envelope.get("modelUsage")
-        model = sorted(models)[0] if isinstance(models, dict) and models else ""
+        return text if isinstance(text, str) else ""
+
+    def extract(self, result: subprocess.CompletedProcess, work: Path) -> Extracted:
+        envelope = self.json_envelope(result)
+        if envelope.get("is_error") or envelope.get("subtype") != "success":
+            raise self.fail(status_failure_code(envelope.get("api_error_status")))
         usage = safe_usage(envelope.get("usage"), TOKEN_FIELDS) | safe_usage(envelope, frozenset({"total_cost_usd"}))
-        usage["accounting"] = "Subscription usage; total_cost_usd is a list-price estimate from the CLI, not an invoice"
-        return Extracted(text if isinstance(text, str) else "", model, usage)
+        note = "Subscription usage; total_cost_usd is a list-price estimate from the CLI, not an invoice"
+        return Extracted(self._reply_text(envelope), first_key(envelope.get("modelUsage")), with_accounting(usage, note))

@@ -7,10 +7,10 @@ The deny-all policy is documented behaviour (policy-engine.md) but was NOT live-
 machine had no Gemini sign-in.
 """
 from __future__ import annotations
-import json
 import subprocess
 from pathlib import Path
-from ._common import MAX_ENVELOPE_BYTES, safe_usage, unwrap_single_fence
+from typing import Any
+from ._common import first_key, json_object, safe_usage, unwrap_single_fence, with_accounting
 from .cli_base import CliProposalProvider, Extracted, Invocation, LoginState, StatusRunner
 
 DENY_ALL_POLICY = '[[rule]]\ntoolName = "*"\ndecision = "deny"\npriority = 999\ndenyMessage = "EIJA proposal calls run with all tools disabled"\n'
@@ -35,33 +35,28 @@ class GeminiCliProvider(CliProposalProvider):
             args += ["-m", self.model]
         return Invocation(tuple(args))
 
-    @staticmethod
-    def _envelope(text: str) -> dict:
-        try:
-            data = json.loads(text)
-        except ValueError:
-            return {}
-        return data if isinstance(data, dict) else {}
-
     def classify_failure(self, result: subprocess.CompletedProcess) -> str:
-        error = self._envelope(result.stdout).get("error")
+        error = (json_object(result.stdout) or {}).get("error")
         if result.returncode == AUTH_EXIT_CODE or (isinstance(error, dict) and error.get("code") == AUTH_EXIT_CODE):
             return "PROVIDER_AUTH"
         return super().classify_failure(result)
 
+    @staticmethod
+    def _usage(stats: Any, model: str) -> dict[str, Any]:
+        """Token counts for ``model`` from the CLI's ``stats.models`` block, allow-listed."""
+        models = stats.get("models") if isinstance(stats, dict) else None
+        entry = models.get(model) if isinstance(models, dict) else None
+        tokens = entry.get("tokens") if isinstance(entry, dict) else None
+        return with_accounting(safe_usage(tokens, frozenset({"input", "prompt", "candidates", "total"})),
+                               "Subscription or free-tier usage; no USD inferred")
+
     def extract(self, result: subprocess.CompletedProcess, work: Path) -> Extracted:
-        if len(result.stdout.encode("utf-8")) > MAX_ENVELOPE_BYTES:
-            raise self.fail("PROVIDER_OUTPUT_INVALID")
-        envelope = self._envelope(result.stdout)
+        envelope = self.json_envelope(result)
         if "error" in envelope:  # the exit code may still be 0
             raise self.fail(self.classify_failure(result))
         response = envelope.get("response")
         if not isinstance(response, str):
             raise self.fail("PROVIDER_OUTPUT_INVALID")
         stats = envelope.get("stats")
-        models = stats.get("models") if isinstance(stats, dict) else None
-        model = sorted(models)[0] if isinstance(models, dict) and models else ""
-        tokens = models[model].get("tokens") if model and isinstance(models[model], dict) else None
-        usage = safe_usage(tokens, frozenset({"input", "prompt", "candidates", "total"}))
-        usage["accounting"] = "Subscription or free-tier usage; no USD inferred"
-        return Extracted(unwrap_single_fence(response), model or self.model, usage)
+        model = first_key(stats.get("models") if isinstance(stats, dict) else None)
+        return Extracted(unwrap_single_fence(response), model or self.model, self._usage(stats, model))

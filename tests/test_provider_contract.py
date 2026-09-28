@@ -4,12 +4,13 @@ PASS here means the adapter's isolation, parsing and error handling hold against
 nothing about whether the real vendor CLI behaves this way: that is scripts/live_provider_smoke.py, recorded
 separately in evidence/live-providers/.
 """
+import importlib.util
 import json
 import os
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable
+from collections.abc import Callable
 
 import pytest
 
@@ -319,7 +320,6 @@ def test_registry_builds_every_named_provider_and_rejects_unknown():
 
 
 def _smoke_module():
-    import importlib.util
     path = Path(__file__).resolve().parents[1] / "scripts" / "live_provider_smoke.py"
     spec = importlib.util.spec_from_file_location("live_provider_smoke", path)
     module = importlib.util.module_from_spec(spec)

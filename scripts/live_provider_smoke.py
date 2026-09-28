@@ -24,9 +24,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from eija_studio.adapters.providers import PROVIDER_NAMES, create_provider  # noqa: E402
-from eija_studio.domain.models import DomainError  # noqa: E402
-from eija_studio.domain.policy import baseline  # noqa: E402
+from eija_studio.adapters.providers import PROVIDER_NAMES, create_provider
+from eija_studio.domain.models import DomainError
+from eija_studio.domain.policy import baseline
 
 REQUEST = "Let teachers sign off excursions."
 LIVE_NAMES = tuple(n for n in PROVIDER_NAMES if n != "offline")
