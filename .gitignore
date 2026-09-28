@@ -13,3 +13,6 @@ dist/
 reports/
 demos/output/
 .nox/
+.import_linter_cache/
+.mypy_cache/
+.ruff_cache/
