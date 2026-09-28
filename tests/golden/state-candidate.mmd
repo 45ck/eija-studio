@@ -1,0 +1,10 @@
+%% eija: candidate: workflow excursion semantic_hash=b26c9af5ae4cd958099956232721a70e73cb7e6efe1b213ff32417829b588e56
+stateDiagram-v2
+    direction TB
+    [*] --> Draft
+    Draft --> Submitted: Submit · Teacher
+    Recommended --> Approved: Approve · Registrar
+    Recommended --> Rejected: Reject · Registrar
+    Rejected --> Draft: Revise · Teacher
+    Submitted --> Recommended: Recommend · Teacher · assigned
+    Approved --> [*]
