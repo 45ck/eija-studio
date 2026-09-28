@@ -10,10 +10,12 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0016](0016-oss-first-adapters-not-engines.md) | OSS first: build adapters, not engines | accepted |
 | [0017](0017-local-quality-gates.md) | Local quality gates with nox sessions and noslop enforcement | accepted |
 | [0018](0018-formal-vv-portfolio.md) | Formal V&V portfolio: each technique is a distinct evidence kind | proposed |
-| [0019](0019-diagrams-generated-from-executable-model.md) | Diagrams are generated projections of the executable model | proposed |
+| [0019](0019-diagrams-generated-from-executable-model.md) | Diagrams are generated projections of the executable model | accepted |
 | [0020](0020-multi-provider-agent-adapters.md) | Proposal providers for Codex, Claude Code, OpenCode, Gemini CLI and OpenRouter | accepted |
 | [0021](0021-cli-provider-isolation-and-process-tree-kill.md) | Agent-CLI providers run in one isolated, bounded, tree-killing base class | accepted |
 | [0022](0022-live-provider-evidence-and-not-run.md) | Live provider evidence is consent-gated, one call, and NOT_RUN when unproven | accepted |
+| [0023](0023-generated-uml-and-visual-diff.md) | Generated UML and visual diff, with Mermaid as the primary renderer | accepted |
+| [0024](0024-sandboxed-frame-for-mermaid-rendering.md) | Render Mermaid in a sandboxed frame so the Studio page keeps its strict CSP | accepted |
 | [0025](0025-bend-machine-checked-laws.md) | Machine-check protected authority laws with Bend 2 in a pinned container | proposed |
 | [0026](0026-bend-model-generation-controls-conformance.md) | The Bend model is generated from the Workflow; negative controls and conformance accompany every proof | proposed |
 | [0029](0029-z3-policy-soundness-proof.md) | Z3 proof that the protected policy admits only authority-preserving candidates | proposed |
