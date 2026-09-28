@@ -32,9 +32,10 @@ mutation = []
 metrics = []
 hci = []
 agents = ["mcp==2.2.0", "anyio==4.15.1"]
-providers = ["psutil==7.2.2"]  # process-tree kill for agent CLIs; adapters degrade to taskkill/killpg without it
 docs = []
-visual = []
+# visual lane: Playwright drives installed Chrome for screenshots and Mermaid syntax checks; pydot validates emitted DOT.
+visual = ["playwright==1.63.0", "pydot==4.0.1"]
+providers = ["psutil==7.2.2"]  # process-tree kill for agent CLIs; adapters degrade to taskkill/killpg without it
 demos = ["playwright==1.63.0"]  # drives the installed system Chrome; no browser download
 ux = []
 graph = []
@@ -53,6 +54,7 @@ eija_studio = ["resources/**/*", "resources/*.json"]
 pythonpath = ["src", "."]  # "." so tests can import repo-root tooling packages (quality, demos)
 testpaths = ["tests"]
 addopts = "-ra"  # tests/conftest.py keeps pytest temp dirs inside the checkout (slow system temp)
+markers = ["browser: drives a real browser or renderer; skipped (NOT_RUN) unless EIJA_BROWSER_TESTS=1, run by the release session diagrams_syntax"]
 
 [tool.ruff]
 target-version = "py311"
