@@ -1,0 +1,127 @@
+{
+  "baseline": "synthetic excursion workflow (eija_studio.domain.policy.baseline)",
+  "latency_note": "latency_s is propose() end to end, including three diagnostic probes (version, help, login status)",
+  "lockdown_note": "lockdown_verified is false for every provider: a schema-valid reply does not show that the CLI honoured its tool-disabling flags. A canary probe is an open follow-up.",
+  "platform": {
+    "python": "3.12.10",
+    "system": "windows"
+  },
+  "recorded_on": "2026-09-28",
+  "request": "Let teachers sign off excursions.",
+  "results": {
+    "anthropic": {
+      "doctor": {
+        "key_present": false,
+        "ready": false
+      },
+      "lockdown_verified": false,
+      "provider": "anthropic",
+      "reason": "provider reported not ready",
+      "status": "NOT_RUN"
+    },
+    "claude": {
+      "doctor": {
+        "cli_version": "2.1.284 (Claude Code)",
+        "login": "LOGGED_IN",
+        "login_detail": "claude.ai subscription login",
+        "login_verified": true,
+        "missing_flags": [],
+        "ready": true,
+        "required_flags_present": true,
+        "status": "READY"
+      },
+      "interpretations": [
+        "confirm_only",
+        "final_approval",
+        "recommend_only"
+      ],
+      "latency_s": 9.1,
+      "lockdown_verified": false,
+      "model": "claude-sonnet-5-5",
+      "note": "Schema-valid proposal only; interpretation quality and human comprehension are not measured",
+      "provider": "claude",
+      "schema_valid": true,
+      "status": "PASS",
+      "usage": {
+        "accounting": "Subscription usage; total_cost_usd is a list-price estimate from the CLI, not an invoice",
+        "cache_creation_input_tokens": 2966,
+        "cache_read_input_tokens": 1187,
+        "input_tokens": 2,
+        "output_tokens": 886,
+        "total_cost_usd": 0.020965
+      }
+    },
+    "codex": {
+      "doctor": {
+        "cli_version": "codex-cli 0.144.1",
+        "login": "LOGGED_IN",
+        "login_detail": "ChatGPT sign-in detected",
+        "login_verified": true,
+        "missing_flags": [],
+        "ready": true,
+        "required_flags_present": true,
+        "status": "READY"
+      },
+      "interpretations": [
+        "confirm_only",
+        "final_approval",
+        "recommend_only"
+      ],
+      "latency_s": 27.1,
+      "lockdown_verified": false,
+      "model": "unreported",
+      "note": "Schema-valid proposal only; interpretation quality and human comprehension are not measured",
+      "provider": "codex",
+      "schema_valid": true,
+      "status": "PASS",
+      "usage": {
+        "accounting": "Check Codex; this adapter does not infer USD cost from subscription usage"
+      }
+    },
+    "gemini": {
+      "doctor": {
+        "cli_version": "0.37.1",
+        "login": "UNKNOWN",
+        "login_detail": "Gemini CLI has no official login-status command; a live call reports an auth error if not signed in",
+        "login_verified": false,
+        "missing_flags": [],
+        "ready": true,
+        "required_flags_present": true,
+        "status": "READY_LOGIN_UNVERIFIED"
+      },
+      "error_class": "PROVIDER_AUTH",
+      "latency_s": 4.4,
+      "lockdown_verified": false,
+      "provider": "gemini",
+      "reason": "Not signed in or no credentials (the CLI/API reported an authentication problem); no claim about the provider",
+      "status": "NOT_RUN"
+    },
+    "opencode": {
+      "doctor": {
+        "cli_version": "1.4.3",
+        "login": "NOT_LOGGED_IN",
+        "login_detail": "0 stored credentials; run opencode auth login",
+        "login_verified": false,
+        "missing_flags": [],
+        "ready": false,
+        "required_flags_present": true,
+        "status": "NOT_RUN"
+      },
+      "lockdown_verified": false,
+      "provider": "opencode",
+      "reason": "0 stored credentials; run opencode auth login",
+      "status": "NOT_RUN"
+    },
+    "openrouter": {
+      "doctor": {
+        "key_present": false,
+        "ready": false
+      },
+      "lockdown_verified": false,
+      "provider": "openrouter",
+      "reason": "provider reported not ready",
+      "status": "NOT_RUN"
+    }
+  },
+  "supersedes": "evidence/live-provider-status.json (frozen v0.2.0 release snapshot listed in MANIFEST.json; it still says Codex NOT_RUN because no Codex CLI or login existed then)"
+}
