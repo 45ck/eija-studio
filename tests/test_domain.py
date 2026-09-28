@@ -1,4 +1,6 @@
 import copy
+import random
+
 import pytest
 from pydantic import ValidationError
 from eija_studio.domain.models import Workflow, SemanticTransaction, Proposal
@@ -66,6 +68,39 @@ def test_full_modelled_impact_goes_beyond_five_edges():
     result=model_impact(baseline(),candidate())
     assert result["complete"] and "local-decision" in result["affected"]
     assert result["changed_actions"] == ["Approve","Recommend","Reject"]
+
+def _shuffled(wf: Workflow, seed: int) -> Workflow:
+    """Same workflow with the order of states, transitions, guards and effects shuffled (semantic_hash unchanged)."""
+    rng = random.Random(seed)  # noqa: S311 - a reproducible test shuffle, not security
+    data = wf.model_dump(mode="json")
+    rng.shuffle(data["states"]); rng.shuffle(data["transitions"])
+    for t in data["transitions"]:
+        for key in ("guards", "required_effects", "forbidden_effects"):
+            rng.shuffle(t[key])
+    return Workflow.model_validate(data)
+
+
+def test_impact_ignores_order_of_guards_and_effects_shuffled_independently():
+    """Regression: model_impact compared whole Transition objects, so shuffling guards/effects of an unchanged action
+    marked it changed. Before and after are shuffled with DIFFERENT seeds (reversing both alike would hide it)."""
+    before, after = baseline(), candidate()
+    expected = model_impact(before, after)
+    for seed in range(40):
+        got = model_impact(_shuffled(before, seed), _shuffled(after, seed + 1000))
+        assert got["changed_actions"] == expected["changed_actions"] == ["Approve", "Recommend", "Reject"]
+        assert got["affected"] == expected["affected"]
+    assert model_impact(_shuffled(before, 1), _shuffled(before, 2))["changed_actions"] == []
+
+
+def test_impact_still_sees_real_changes_in_every_field():
+    before = baseline()
+    for action, field, value in (("Submit", "role", "Registrar"), ("Submit", "id", "T-RENAMED"), ("Submit", "to_state", "Approved"),
+                                 ("Submit", "required_effects", ["Audit:ExcursionSubmitted", "Audit:Extra"]),
+                                 ("Submit", "forbidden_effects", ["PaymentCaptured"])):
+        data = before.model_dump(mode="json")
+        next(t for t in data["transitions"] if t["action"] == action)[field] = value
+        assert model_impact(before, Workflow.model_validate(data))["changed_actions"] == [action], field
+
 
 @pytest.mark.parametrize("action,field,value",[
     ("Approve","role","Teacher"), ("Recommend","role","Registrar"),

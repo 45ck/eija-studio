@@ -1,6 +1,6 @@
 # ADR-0020: Proposal providers for Codex, Claude Code, OpenCode, Gemini CLI and OpenRouter
 
-* Status: proposed
+* Status: accepted
 * Date: 2026-09-28
 
 ## Context and problem statement
