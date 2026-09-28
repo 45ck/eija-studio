@@ -170,8 +170,9 @@ extend_exclude = ['\.tmp', 'reports']
 optional_dependencies_dev_groups = ["dev", "lint", "formal", "testing", "mutation", "metrics", "hci", "agents", "docs"]
 
 [tool.deptry.per_rule_ignores]
-# nox/pytest/radon are dev tools imported by noxfile.py, quality/ and tests/ (dev-only trees deptry cannot tell apart).
-DEP004 = ["nox", "pytest", "radon"]
+# nox/pytest/radon/tomlkit are dev tools imported by noxfile.py, quality/ and tests/ (dev-only trees deptry
+# cannot tell apart); tomlkit is the merge driver's parser (quality/tools/tomlmerge.py).
+DEP004 = ["nox", "pytest", "radon", "tomlkit"]
 # scripts/browser_*smoke.py import Playwright lazily; it belongs to the hci extra, and the scripts report
 # NOT_RUN when it is absent. Declaring it here would make a runtime dependency out of a QA tool.
 DEP001 = ["playwright"]
