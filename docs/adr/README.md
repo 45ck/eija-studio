@@ -12,6 +12,8 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0018](0018-formal-vv-portfolio.md) | Formal V&V portfolio: each technique is a distinct evidence kind | proposed |
 | [0019](0019-diagrams-generated-from-executable-model.md) | Diagrams are generated projections of the executable model | proposed |
 | [0020](0020-multi-provider-agent-adapters.md) | Proposal providers for Codex, Claude Code, OpenCode, Gemini CLI and OpenRouter | proposed |
+| [0027](0027-tla-plus-specification-and-model-checking.md) | TLA+ specification of the workflow and commit protocol, checked with TLC | accepted |
+| [0028](0028-runtime-conformance-by-graph-comparison-and-trace-validation.md) | Model-to-code conformance by exhaustive graph comparison and TLC trace validation | accepted |
 | [0035](0035-static-analysis-and-architecture-fitness-functions.md) | Static analysis, architecture fitness functions and ratcheted budgets | accepted |
 | [0036](0036-noslop-hooks-adapted-to-nox.md) | noslop guardrails adapted to run nox tiers; hook enablement is an explicit step | accepted |
 <!-- adr-index:end -->
