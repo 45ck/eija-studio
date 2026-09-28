@@ -15,8 +15,6 @@ dependencies = ["fastapi==0.128.2", "uvicorn==0.48.0", "pydantic==2.13.4", "http
 [project.optional-dependencies]
 # Each extra belongs to one capability lane; see docs/oss/REGISTER.md for why each tool was chosen.
 dev = ["pytest==9.0.2", "nox>=2025.5.1", "tomlkit==0.15.1"]
-# Quality lane (ADR-0035): static analysis, architecture contracts, complexity, coverage, dependency hygiene.
-# Exact pins: a linter upgrade must never silently change a gate result.
 lint = [
     "ruff==0.16.9",
     "mypy==2.3.1",
@@ -33,13 +31,11 @@ testing = []
 mutation = []
 metrics = []
 hci = []
-demos = ["playwright==1.63.0"]  # drives the installed system Chrome; no browser download
-# Agent lane (ADR-0041). anyio is imported directly by interfaces/mcp_server.py, so it is pinned here as well;
-# the rest of the measured SDK dependency closure is recorded in requirements-agents-tested.txt (pip -c).
 agents = ["mcp==2.2.0", "anyio==4.15.1"]
+providers = ["psutil==7.2.2"]  # process-tree kill for agent CLIs; adapters degrade to taskkill/killpg without it
 docs = []
-providers = []
 visual = []
+demos = ["playwright==1.63.0"]  # drives the installed system Chrome; no browser download
 ux = []
 graph = []
 dod = []
@@ -96,7 +92,7 @@ known-first-party = ["eija_studio", "quality", "verification"]
 "design/**/*.py" = ["E501"]
 "**/__main__.py" = ["T201"]  # command-line entry points print by design
 # Per-file debt in kernel sources (each names the finding so a fix removes exactly one entry).
-"src/eija_studio/adapters/providers.py" = ["SIM117", "S603"]  # subprocess.Popen(list, no shell) with a fixed argv
+"src/eija_studio/adapters/providers/process.py" = ["S603"]  # subprocess.Popen/run with an argv list and no shell; argv is a resolved executable plus adapter constants
 "src/eija_studio/adapters/sqlite_store.py" = ["S608"]  # false positive: table name comes from a closed literal tuple
 "src/eija_studio/application/service.py" = ["UP017", "RUF001", "RUF005"]
 "src/eija_studio/application/verifier.py" = ["UP017", "PLW2901"]
