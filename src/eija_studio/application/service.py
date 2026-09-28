@@ -1,6 +1,7 @@
 from __future__ import annotations
 from datetime import datetime, timezone
 from threading import Lock
+from typing import Any, Callable
 from uuid import uuid4
 import time
 from eija_studio.domain.models import Workflow, Principal, SemanticTransaction, LayoutChange, ExecuteCommand, DomainError, fingerprint
@@ -23,7 +24,7 @@ class Studio:
         self.allow_network, self._provider_lock = allow_network, Lock()
 
     @staticmethod
-    def _case(u: UnitOfWork, case_id: str, expected: int | None = None, editable=False) -> ChangeCase:
+    def _case(u: UnitOfWork, case_id: str, expected: int | None = None, editable: bool = False) -> ChangeCase:
         c = ChangeCase.model_validate(u.load_case(case_id))
         if expected is not None:
             c.at_version(expected)
@@ -32,14 +33,14 @@ class Studio:
         return c
 
     @staticmethod
-    def _save(u: UnitOfWork, before: ChangeCase, changes: dict) -> dict:
+    def _save(u: UnitOfWork, before: ChangeCase, changes: dict[str, Any]) -> dict[str, Any]:
         # Full revalidation; model_copy(update=...) would bypass field validators.
         c = ChangeCase.model_validate(before.model_dump(mode="json") | changes)
         body = c.model_dump(mode="json")
         u.save_case(body, before.version)
         return body
 
-    def create(self, request: str) -> dict:
+    def create(self, request: str) -> dict[str, Any]:
         if not isinstance(request, str) or not request.strip() or len(request) > 6000:
             raise DomainError("INVALID_REQUEST", "Provide 1–6000 characters of synthetic request text")
         with self.store.transaction() as u:
@@ -53,7 +54,7 @@ class Studio:
             u.event("CaseCreated", {"case_id": case.id, "request_hash": fingerprint(request)})
         return body
 
-    def propose(self, case_id: str, expected: int, *, consent=False) -> dict:
+    def propose(self, case_id: str, expected: int, *, consent: bool = False) -> dict[str, Any]:
         with self.store.transaction() as u:
             case = self._case(u, case_id, expected, editable=True)
             if case.candidate is not None:
@@ -88,7 +89,7 @@ class Studio:
         finally:
             self._provider_lock.release()
 
-    def select(self, case_id: str, expected: int, interpretation: str, principal: Principal) -> dict:
+    def select(self, case_id: str, expected: int, interpretation: str, principal: Principal) -> dict[str, Any]:
         principal.require("select")
         with self.store.transaction() as u:
             case = self._case(u, case_id, expected, editable=True)
@@ -105,7 +106,7 @@ class Studio:
             u.event("MeaningSelected", {"case_id": case_id, "by": principal.id, "transaction": tx.model_dump(mode="json")})
         return body
 
-    def edit(self, case_id: str, expected: int, tx: SemanticTransaction, principal: Principal) -> dict:
+    def edit(self, case_id: str, expected: int, tx: SemanticTransaction, principal: Principal) -> dict[str, Any]:
         principal.require("edit")
         if tx.kind != "set_rejection_source":
             raise DomainError("UNSUPPORTED_EDIT", "After selection, use the typed rejection-source edit")
@@ -118,7 +119,7 @@ class Studio:
                 "transactions": [x.model_dump(mode="json") for x in case.transactions] + [tx.model_dump(mode="json")],
                 "decision": None, "stage": "PREVIEW"})
 
-    def layout(self, case_id: str, expected: int, change: LayoutChange, principal: Principal) -> dict:
+    def layout(self, case_id: str, expected: int, change: LayoutChange, principal: Principal) -> dict[str, Any]:
         principal.require("edit")
         with self.store.transaction() as u:
             case = self._case(u, case_id, expected, editable=True)
@@ -129,13 +130,13 @@ class Studio:
                 u.event("DecisionInvalidated", {"case_id": case_id, "old_decision": case.decision, "reason": "exact presentation changed"})
             return self._save(u, case, {"layout": layout, "decision": None, "stage": "PREVIEW"})
 
-    def save(self, case_id: str, expected: int) -> dict:
+    def save(self, case_id: str, expected: int) -> dict[str, Any]:
         with self.store.transaction() as u:
             case = self._case(u, case_id, expected, editable=True)
             case.executable()
             return self._save(u, case, {"stage": "SAVED", "decision": None})
 
-    def verify(self, case_id: str, expected: int) -> dict:
+    def verify(self, case_id: str, expected: int) -> dict[str, Any]:
         with self.store.transaction() as u:
             case = self._case(u, case_id, expected, editable=True)
         model = case.executable()
@@ -148,7 +149,7 @@ class Studio:
             return self._save(u, current, {"receipts": list(current.receipts) + [receipt], "decision": None, "stage": "VERIFIED"})
 
     def approve(self, case_id: str, expected: int, subject_hash: str, answers: dict[str, str], acknowledge_unknowns: bool,
-                principal: Principal, scope: str = "local-demo") -> dict:
+                principal: Principal, scope: str = "local-demo") -> dict[str, Any]:
         principal.require("approve")
         with self.store.transaction() as u:
             case = self._case(u, case_id, expected, editable=True)
@@ -169,7 +170,7 @@ class Studio:
             u.event("LocalDecision", {"case_id": case_id, "decision": decision})
             return body
 
-    def apply(self, case_id: str, expected: int, principal: Principal) -> dict:
+    def apply(self, case_id: str, expected: int, principal: Principal) -> dict[str, Any]:
         principal.require("apply")
         with self.store.transaction() as u:
             case = self._case(u, case_id, expected, editable=True)
@@ -184,31 +185,37 @@ class Studio:
             u.event("AppliedToLocalBaseline", {"case_id": case_id, "by": principal.id, "subject": packet["subject"]})
             return body
 
-    def discard(self, case_id: str, expected: int) -> dict:
+    def discard(self, case_id: str, expected: int) -> dict[str, Any]:
         with self.store.transaction() as u:
             case = self._case(u, case_id, expected, editable=True)
             u.event("CaseDiscarded", {"case_id": case_id})
             return self._save(u, case, {"stage": "DISCARDED", "decision": None})
 
-    def reset_preview(self, case_id: str, expected: int, state: str | None = None) -> dict:
+    def reset_preview(self, case_id: str, expected: int, state: str | None = None) -> dict[str, Any]:
         with self.store.transaction() as u:
             case = self._case(u, case_id, expected, editable=True)
             return initialise(u, case_id, case.executable(), state=state)
 
-    def execute(self, case_id: str, command: ExecuteCommand, fault=None) -> dict:
+    def execute(self, case_id: str, command: ExecuteCommand, fault: Callable[[str], None] | None = None) -> dict[str, Any]:
         with self.store.transaction() as u:
             case = self._case(u, case_id, editable=True)
             result = execute(u, case_id, case.executable(), command, fault=fault)
         return result
 
-    def view(self, case_id: str, scope: str = "local-demo") -> dict:
+    def view(self, case_id: str, scope: str = "local-demo") -> dict[str, Any]:
         with self.store.transaction() as u:
             case = self._case(u, case_id)
             packet = compile_case(case, self.identity_provider(), self.signer.authentic, u.active()["version"], scope)
             return {"case": case.model_dump(mode="json"), "packet": packet, "options": CANONICAL_OPTIONS,
                     "observations": u.observations(case_id)}
 
-    def export(self, case_id: str) -> dict:
+    def workflows(self, case_id: str) -> tuple[Workflow, Workflow | None]:
+        """Baseline and candidate of a case, for read-only projections (diagrams). No authority, no writes."""
+        with self.store.transaction() as u:
+            case = self._case(u, case_id)
+        return case.baseline, case.candidate
+
+    def export(self, case_id: str) -> dict[str, Any]:
         content = self.view(case_id)
         return {"format": "eija.change-case.export.v1", "payload_hash": fingerprint(content), "payload": content,
                 "verification_boundary": "Payload hash detects corruption. Local signatures require the originating workspace key; exports cannot confer fresh authority."}

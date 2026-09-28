@@ -1,0 +1,21 @@
+// eija: candidate: workflow excursion semantic_hash=b26c9af5ae4cd958099956232721a70e73cb7e6efe1b213ff32417829b588e56
+digraph "excursion state machine" {
+    rankdir=TB;
+    graph [fontname="Helvetica"];
+    node [shape=box, fontname="Helvetica", margin="0.15,0.08"];
+    edge [fontname="Helvetica", fontsize=10];
+    "__start" [shape=point, width=0.15, label=""];
+    "__start" -> "Draft";
+    "__end" [shape=doublecircle, width=0.2, label="", style=filled, fillcolor="#1f2328"];
+    "Approved" [label="Approved", fillcolor="#f6f8fa", color="#57606a", fontcolor="#1f2328", style="rounded,filled"]
+    "Draft" [label="Draft", fillcolor="#f6f8fa", color="#57606a", fontcolor="#1f2328", style="rounded,filled"]
+    "Recommended" [label="Recommended", fillcolor="#f6f8fa", color="#57606a", fontcolor="#1f2328", style="rounded,filled"]
+    "Rejected" [label="Rejected", fillcolor="#f6f8fa", color="#57606a", fontcolor="#1f2328", style="rounded,filled"]
+    "Submitted" [label="Submitted", fillcolor="#f6f8fa", color="#57606a", fontcolor="#1f2328", style="rounded,filled"]
+    "Draft" -> "Submitted" [color="#57606a", label="Submit · Teacher"]
+    "Recommended" -> "Approved" [color="#57606a", label="Approve · Registrar"]
+    "Recommended" -> "Rejected" [color="#57606a", label="Reject · Registrar"]
+    "Rejected" -> "Draft" [color="#57606a", label="Revise · Teacher"]
+    "Submitted" -> "Recommended" [color="#57606a", label="Recommend · Teacher · assigned"]
+    "Approved" -> "__end";
+}

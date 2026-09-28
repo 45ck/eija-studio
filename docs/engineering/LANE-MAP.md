@@ -1,6 +1,6 @@
 # Lane map: ownership, dependencies, merge order
 
-How the parallel workstreams fit together and in what order they land. Guiding idea: [the domain model and its language are the primary object](PRODUCT-THESIS.md); everything else (diagrams, UI, agents, evidence) is a view of it or a check on it. Live status is the GitHub PR list; this file records the *reasoning*. Last reviewed 2026-09-29.
+How the parallel workstreams fit together and in what order they land. Guiding idea: [the domain model and its language are the primary object](PRODUCT-THESIS.md); everything else (diagrams, UI, agents, evidence) is a view of it or a check on it. The end-to-end POC is defined in [POC-DEFINITION.md](POC-DEFINITION.md). Live status is the GitHub PR list; this file records the *reasoning*. Last reviewed 2026-09-29.
 
 ## Lanes
 
@@ -21,10 +21,13 @@ How the parallel workstreams fit together and in what order they land. Guiding i
 | `weave` | deterministic linked graph, compiler and linter, formal models | 0089–0112 | no | quality, okf |
 | `dod` | definition of done, claims ledger, scorecard, evals | 0113–0136 | no | metrics, quality, formal lanes |
 | wave 2: `ddd-language` | ubiquitous-language editor and DDD tree in the Studio | 0051–0052 | UI + kernel | weave, ux |
-| wave 2: `uml-editor` | drag-and-drop UML issuing typed semantic transactions | 0049–0050 | UI + kernel | visual, ddd-language, ux |
-| wave 2: `studio-ux` | port of the redesign into the real Studio | (HCI-ADRs) | web UI | visual, ux, ddd-language |
+| wave 2: `uml-editor` | drag-and-drop UML and flow diagrams issuing typed semantic transactions: **the centre of gravity of the product** | 0049–0050 | UI + kernel | visual, ddd-language, ux |
+| wave 2: `studio-ux` | the **IDE workbench shell** (explorer, tabbed/split editors, Problems panel, command palette, status bar): port of the redesign into the real Studio, replacing the wizard-style tabs | (HCI-ADRs) | web UI | visual, ux, ddd-language |
 | wave 2: `imagegen` | consent-gated image generation via the provider port | 0053–0054 | providers | providers |
 | wave 2: `personas-e2e` | personas/ICP and persona-driven e2e scenarios | 0055–0056 | tests | ddd-language |
+| POC: `evidence-kinds` | formal evidence in the kernel: per-kind admissibility (SMT proof, TLC, Bend, bounded model check, property, mutation) recomputed from raw artifacts, with assumptions and bounds, UNKNOWN by default; shown in the review packet | 0145–0152 | domain/application/adapters + UI | smt-bmc, tla, bend, visual |
+| POC: `e2e` | one offline end-to-end test of the chain (MCP propose, diagrams, verification, formal evidence, owner decision); clean-clone install check | none | tests | providers, agents, visual, evidence-kinds |
+| wave 2: `patterns` | design patterns shown visually: recognised in the model and code, applied as checked refactorings; abstractions as tree and as graph | 0137–0144 | UI + kernel | weave, visual, ddd-language |
 
 ## Dependency graph
 
@@ -39,6 +42,7 @@ flowchart LR
   weave --> ddd-language
   ux --> ddd-language & studio-ux
   ddd-language --> uml-editor & studio-ux & personas-e2e
+  weave & visual --> patterns
   metrics --> dod
   property & mutation & bend & tla & smt-bmc --> dod
   uml-editor & studio-ux --> demos-rerecord
@@ -61,7 +65,7 @@ flowchart LR
 | File | Problem | Mechanism |
 |---|---|---|
 | `pyproject.toml` | every lane adds an extra or a tool section | one blank-line-separated block per lane; key-level merge driver `quality/tools/tomlmerge.py` (install once per clone: `python -m quality.tools.install_merge_drivers`); two lanes pinning the same package differently is a *conflict*, never a union |
-| `docs/adr/README.md` | every lane added a table row | the index is **generated** from the ADR files (`python -m quality.tools.adr_index --write`), checked by the `adr_index` gate; add a file, not a row; on a merge the `eija-ours` driver keeps our side and you regenerate; all planned ADR number blocks are already reserved in the hand-written table |
+| `docs/adr/README.md` | every lane added a table row | the index is **generated** from the ADR files (`python -m quality.tools.adr_index --write`), checked by the `adr_index` gate; add a file, not a row; on a merge the `eija-generated` driver keeps whichever side still carries the generator marker and you regenerate; all planned ADR number blocks are already reserved in the hand-written table |
 | `docs/oss/REGISTER.md`, `AGENTS.md`, `.gitignore` | append-only | `merge=union` in `.gitattributes` |
 | `src/eija_studio/interfaces/cli.py` | `providers`, `agents`, `visual` each add commands | resolved manually in merge order; if a fourth lane needs it, extract a command registry first |
 | `src/eija_studio/application/service.py` | `quality` annotations vs `visual` additions | `quality` lands first; `visual` rebases |
@@ -89,3 +93,14 @@ flowchart LR
 ## Owner-only actions
 
 Restamping the release fixture; supplying API keys (`eija serve --ask-key`, never through an agent); consenting to live provider spend; anything that approves or applies a change case.
+
+## Ship horizons (re-estimated after the owner's decisions of 2026-09-29)
+
+| Horizon | What is shown | Needs | Rough estimate* |
+|---|---|---|---|
+| H1a | an agent's rule change as a semantic diff and ripple, with formal evidence and UNKNOWN visible, on the excursion domain; README with GIF | visual, agents, providers, formal lanes, oss; owner restamp | days |
+| H1b | drag-and-drop UML that updates the software (typed change, or a rule blocks it with a reason) | `uml-editor`, `ddd-language`, IDE workbench shell | 1-3 weeks |
+| H1c | side by side with vibe coding; parallel agents landing through the gated queue | comparison harness, worktrees and conflict prediction, `weave` | weeks |
+| H2 | the same on a real repository: extraction from code, design patterns view, redesigned UI | `weave`, `patterns`, `studio-ux` | 4-8+ weeks |
+
+*Rough guesses, not commitments; the biggest unknown is the live agent loop, which has only been tested with mocks so far.

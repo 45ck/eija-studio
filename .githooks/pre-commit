@@ -1,0 +1,5 @@
+#!/bin/sh
+# noslop pre-commit, adapted: the fast tier is `nox -t fast` (ruff, mypy, import-linter, complexity, deptry, tests).
+# It checks the working tree, not the index. Never bypass with --no-verify (guarded by .claude/settings.json).
+set -e
+exec "$(dirname "$0")/run-nox" fast
