@@ -32,10 +32,10 @@ mutation = []
 metrics = []
 hci = ["playwright==1.63.0", "axe-playwright-python==0.1.8"]  # drives the installed Chrome (channel="chrome"); no browser download
 agents = ["mcp==2.2.0", "anyio==4.15.1"]
-docs = []
-demos = ["playwright==1.63.0"]  # drives the installed system Chrome; no browser download
 providers = ["psutil==7.2.2"]  # process-tree kill for agent CLIs; adapters degrade to taskkill/killpg without it
+docs = []
 visual = []
+demos = ["playwright==1.63.0"]  # drives the installed system Chrome; no browser download
 ux = []
 graph = []
 dod = []
