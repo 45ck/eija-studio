@@ -58,7 +58,7 @@ providers = ["psutil==7.2.2"]
 visual = []
 
 # --- demos (demos lane) ---
-demos = []
+demos = ["playwright==1.63.0"]
 
 # --- UX research, model and prototype (ux lane) ---
 ux = []
