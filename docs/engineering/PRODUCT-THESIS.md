@@ -19,6 +19,28 @@ Status: owner's thesis, 2026-09-29. In the owner's words: *everything is abstrac
 | **Drift is a lint error.** | Language-versus-code, language-versus-UI and model-versus-diagram mismatches are diagnostics from the compiler over the linked graph (the weave lane). |
 | Evidence attaches to **abstractions and their invariants**, and says what it does not cover. | Each invariant shows its checks (test, property, model check, proof) and their status, with UNKNOWN visible. |
 
+## Form factor: a modern IDE, not a wizard
+
+The owner's clarification (2026-09-29): the Studio is essentially **a modern IDE**, in the family of Visual Studio, IntelliJ and VS Code, whose subject is the domain model and its language instead of only source files. It is not a wizard.
+
+A wizard is linear (step 1, 2, 3, 4), modal and forgetful. An IDE is a **workbench**: many things visible and editable at once, navigated freely, with undo and history. What that means here:
+
+| IDE concept | EIJA meaning |
+|---|---|
+| Explorer / project tree | the ubiquitous-language and DDD tree (contexts, aggregates, terms, rules), plus requirements, tests, ADRs, diagrams |
+| Editor tabs and splits | diagram editor, rule/DSL text editor, semantic diff, term/concept editor, counterexample trace stepper, side by side |
+| Language service and squiggles | the linked-graph compiler; drift and broken links are **diagnostics** |
+| Problems panel | diagnostics from the compiler, with severity, provenance and quick fixes (deterministic codemods) |
+| Go to definition / find references | term to code to UI to test to proof and back; **ripple is find-references** |
+| Rename / refactor with preview | renaming, merging or splitting a concept is a typed semantic transaction with a computed ripple and a preview |
+| Source-control changes view | an agent's work as a **changeset of abstractions**, not only of lines |
+| Run / debug / test panel | evidence: proofs, model checks, property tests, mutation, with UNKNOWN visible |
+| Command palette, quick open, keybindings | keyboard-first operation; every action has a name and a shortcut |
+| Status bar | model hash, evidence status, agent activity, staleness |
+| Multiple windows / worktrees | several agents working in parallel, each with its own session |
+
+Two things stay deliberately *unlike* a typical IDE: approving and applying a change is a structurally isolated, owner-only action (the kernel decides who may, not the UI), and UNKNOWN is a first-class state that the workbench never hides.
+
 ## Non-goals
 
 EIJA does not invent AI abstractions, and it does not claim to make abstractions *correct*. It makes them visible, linked, checked against the code, and reviewable, and it keeps the human decision with the human.
