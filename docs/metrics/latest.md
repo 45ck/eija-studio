@@ -1,8 +1,8 @@
 # EIJA Studio metrics snapshot
 
-- Platform: **Windows 11 / CPython 3.12.10** (AMD64)
-- Commit: `57084c3bc369f22b8ae502eff2bcf36ec47aff4b`
-- Profile: full, generated 2026-09-28
+- Platform: **Windows 10.0.26200 / CPython 3.12.10** (win-amd64)
+- Commit: `7a1682a8062ac9beab06d59a6719cd02334b422c` (source differs from commit)
+- Profile: full
 - Tools: coverage 7.16.2, fastapi 0.128.2, grimp 3.17, httpx 0.28.1, radon 6.0.1, uvicorn 0.48.0
 
 > Sections `performance`, `scaling` and `verification_yield` contain wall-clock MEASUREMENTS taken on this platform under this load; they vary run to run. All other sections are deterministic functions of the source tree.
@@ -18,20 +18,20 @@
 | ARCH-05 | Domain layer is maximally stable (I <= 0.1) | 0 | <= 0.1 | principled | PASS |
 | ARCH-06 | Every non-domain layer lies within 0.5 of the main sequence (max D) | 0.29 | <= 0.5 | ratchet | PASS |
 | ARCH-07 | Mean layer distance from the main sequence | 0.31 | <= 0.5 | ratchet | PASS |
-| CX-01 | Largest function cyclomatic complexity | 45 | <= 50 | ratchet | PASS |
-| CX-02 | Share of functions ranked A or B (CC <= 10) | 0.95 | >= 0.9 | ratchet | PASS |
-| CX-03 | Lowest module maintainability index (radon MI, rank A >= 20) | 27.49 | >= 20 | ratchet | PASS |
+| MI-01 | Lowest module maintainability index (radon MI, rank A >= 20) | 27.44 | >= 20 | ratchet | PASS |
 | TEST-01 | Every domain/application/adapters/interfaces layer has a directly importing test (count of untested) | 0 | == 0 | principled | PASS |
-| COV-01 | Line+branch coverage of src/eija_studio, percent (when reports/coverage exists) | 78.99 | >= 75 | ratchet | PASS |
-| LANE-01 | No aggregated lane report has status FAIL | n/a | == 0 | principled | NOT_RUN |
-| PERF-01 | p95 of every read endpoint under 400 ms (TestClient) | 49.83 | < 400 | external | PASS |
-| PERF-02 | p95 of every non-compute write endpoint under 400 ms (TestClient, durable SQLite) | 101.74 | < 400 | external | PASS |
-| PERF-03 | p95 of every read and write endpoint under 400 ms (real uvicorn, loopback) | 73.69 | < 400 | external | PASS |
-| PERF-04 | p95 of the verify compute endpoint under 10 s (long-running: needs a progress indication, see README) | 1,578 | < 10,000 | external | PASS |
-| PERF-05 | Runtime verification time is linear in matrix size (R^2 of T = c0 + c1*cells) | 0.99 | >= 0.9 | principled | PASS |
-| SCALE-01 | closure(): two-term linear fit T = c0 + cV*V + cE*E, R^2 | 0.99 | >= 0.9 | principled | PASS |
+| COV-01 | Line+branch coverage of src/eija_studio, percent (when reports/coverage exists) | 78.72 | >= 75 | ratchet | PASS |
+| LANE-01 | No aggregated lane report is FAIL, UNKNOWN or UNREADABLE (a present report must say PASS or NOT_RUN) | n/a | == 0 | principled | NOT_RUN |
+| PERF-01 | p95 of every read endpoint under 400 ms (TestClient) | 49.12 | < 400 | external | PASS |
+| PERF-02 | p95 of every non-compute write endpoint under 400 ms (TestClient, durable SQLite) | 91.56 | < 400 | external | PASS |
+| PERF-03 | p95 of every read and write endpoint under 400 ms (real uvicorn, loopback) | 71.08 | < 400 | external | PASS |
+| PERF-04 | p95 of the verify compute endpoint under 10 s (long-running: needs a progress indication, see README) | 1,615 | < 10,000 | external | PASS |
+| PERF-05 | Runtime verification time is near-linear in matrix size (R^2 of T = c0 + c1*cells; low power, see PERF-06) | 0.96 | >= 0.9 | principled | PASS |
+| PERF-06 | Runtime verification: linear fit beats the quadratic alternative in cells (R^2 difference) | 0.04 | > 0 | principled | PASS |
+| SCALE-01 | closure(): TWO-term fit T = c0 + cV*V + cE*E, R^2 (not the single V+E model; that is SCALE-04) | 0.96 | >= 0.9 | principled | PASS |
+| SCALE-04 | closure(): the requested SINGLE-term fit T = c0 + c1*(V+E), R^2 (fits worse than two-term; limit has headroom) | 0.91 | >= 0.85 | ratchet | PASS |
 | SCALE-02 | closure(): log-log exponent of time against V+E lies in [0.8, 1.2] | True | == True | principled | PASS |
-| SCALE-03 | closure(): linear fit beats the quadratic alternative (R^2 difference) | 0.19 | > 0 | principled | PASS |
+| SCALE-03 | closure(): linear fit beats the quadratic alternative (R^2 difference) | 0.14 | > 0 | principled | PASS |
 
 ## Package metrics (Martin)
 
@@ -48,13 +48,13 @@ SDP violations 0, layer cycles 0, module cycles 0.
 
 ## Complexity and maintainability
 
-136 functions; mean CC 3.54, median 2, p90 8, max 45. Ranks: A=116, B=13, C=3, D=2, E=1, F=1. SLOC 1348, SLOC-weighted MI 42.98, lowest module MI 27.49.
+136 functions; mean CC 3.54, median 2, p90 8, max 45. Ranks: A=116, B=13, C=3, D=2, E=1, F=1. SLOC 1365, SLOC-weighted MI 42.99, lowest module MI 27.44.
 
 | Hotspot | CC | Rank |
 |---|---:|---|
 | domain.evidence:assess_receipt | 45 | F |
 | interfaces.cli:main | 33 | E |
-| application.verifier:verify_runtime | 22 | D |
+| application.verifier:verify_runtime | 23 | D |
 | domain.policy:check_policy | 21 | D |
 | adapters.providers:OpenRouterProvider.propose | 17 | C |
 | application.compiler:compile_case | 16 | C |
@@ -65,7 +65,7 @@ SDP violations 0, layer cycles 0, module cycles 0.
 
 ## Tests and coverage
 
-166 tests statically (166 collected by pytest), 248 assertions, 36 raises-blocks.
+269 tests statically (269 collected by pytest), 361 assertions, 41 raises-blocks.
 
 | Layer | Test files (direct) | Tests (direct) | Tests (transitive) |
 |---|---:|---:|---:|
@@ -76,61 +76,61 @@ SDP violations 0, layer cycles 0, module cycles 0.
 | domain | 5 | 86 | 98 |
 | interfaces | 1 | 5 | 5 |
 
-Coverage: 78.99% (964/1173 statements, 228/336 branches).
+Coverage: 78.72% (967/1182 statements, 228/336 branches).
 
 | Layer | Statements | Line % | Branch % |
 |---|---:|---:|---:|
 | __main__ | 2 | 0 | n/a |
-| adapters | 302 | 86.42 | 68.52 |
-| application | 331 | 93.96 | 79.81 |
+| adapters | 302 | 85.43 | 68.52 |
+| application | 336 | 94.05 | 79.81 |
 | bootstrap | 12 | 91.67 | 50 |
-| domain | 281 | 92.17 | 80.36 |
+| domain | 285 | 92.28 | 80.36 |
 | eija_studio | 1 | 100 | n/a |
-| interfaces | 244 | 49.59 | 26.56 |
+| interfaces | 244 | 48.36 | 26.56 |
 
-## HTTP latency (measured on Windows 11 / CPython 3.12.10)
+## HTTP latency (measured on Windows 10.0.26200 / CPython 3.12.10)
 
 Thresholds: 100 ms instant, 400 ms Doherty. Milliseconds.
 
 | Transport | Endpoint | Kind | n | p50 | p95 | p99 | Band |
 |---|---|---|---:|---:|---:|---:|---|
-| testclient | GET / | read | 120 | 3.11 | 4.42 | 6.52 | <=100 |
-| testclient | GET /api/cases | read | 120 | 18.67 | 49.83 | 64.61 | <=100 |
-| testclient | GET /api/cases/{id} | read | 30 | 33.1 | 39.56 | 42.41 | <=100 |
-| testclient | GET /api/cases/{id}/export | read | 15 | 30.01 | 46.26 | 64.77 | <=100 |
-| testclient | GET /api/doctor | read | 120 | 1.77 | 4.98 | 7.93 | <=100 |
-| testclient | GET /api/status | read | 120 | 20.28 | 36.66 | 61.66 | <=100 |
-| testclient | GET /assets/app.js | read | 120 | 3.22 | 5.66 | 11.43 | <=100 |
-| testclient | POST /api/cases | write | 15 | 16.56 | 24.6 | 26.94 | <=100 |
-| testclient | POST /api/cases/{id}/approve | write | 15 | 59.66 | 101.74 | 102.36 | <=400 |
-| testclient | POST /api/cases/{id}/execute | write | 15 | 18.78 | 20.97 | 21.33 | <=100 |
-| testclient | POST /api/cases/{id}/preview | write | 15 | 17.91 | 25.93 | 33.92 | <=100 |
-| testclient | POST /api/cases/{id}/propose | write | 15 | 35.65 | 47.54 | 51.95 | <=100 |
-| testclient | POST /api/cases/{id}/select | write | 15 | 19.5 | 33.73 | 46.93 | <=100 |
-| testclient | POST /api/cases/{id}/verify | compute | 15 | 1,411 | 1,578 | 1,606 | over 400 |
-| uvicorn | GET / | read | 120 | 3.77 | 4.69 | 4.8 | <=100 |
-| uvicorn | GET /api/cases | read | 120 | 16.68 | 39.59 | 46.22 | <=100 |
-| uvicorn | GET /api/cases/{id} | read | 30 | 34.91 | 49.52 | 57.16 | <=100 |
-| uvicorn | GET /api/cases/{id}/export | read | 15 | 30.9 | 38.45 | 42.91 | <=100 |
-| uvicorn | GET /api/doctor | read | 120 | 2.49 | 2.75 | 2.98 | <=100 |
-| uvicorn | GET /api/status | read | 120 | 19.53 | 24.42 | 35.87 | <=100 |
-| uvicorn | GET /assets/app.js | read | 120 | 3.9 | 4.78 | 5.34 | <=100 |
-| uvicorn | POST /api/cases | write | 15 | 16.07 | 30.44 | 37.98 | <=100 |
-| uvicorn | POST /api/cases/{id}/approve | write | 15 | 54.34 | 73.69 | 91.36 | <=100 |
-| uvicorn | POST /api/cases/{id}/execute | write | 15 | 18.43 | 25.86 | 27.21 | <=100 |
-| uvicorn | POST /api/cases/{id}/preview | write | 15 | 16.67 | 33.63 | 40.57 | <=100 |
-| uvicorn | POST /api/cases/{id}/propose | write | 15 | 31.62 | 47.53 | 55.71 | <=100 |
-| uvicorn | POST /api/cases/{id}/select | write | 15 | 18.33 | 28.14 | 28.33 | <=100 |
-| uvicorn | POST /api/cases/{id}/verify | compute | 15 | 1,264 | 2,968 | 5,969 | over 400 |
+| testclient | GET / | read | 120 | 3.24 | 6.69 | 9.8 | <=100 |
+| testclient | GET /api/cases | read | 120 | 16 | 38.08 | 46.41 | <=100 |
+| testclient | GET /api/cases/{id} | read | 30 | 34.13 | 49.12 | 85.39 | <=100 |
+| testclient | GET /api/cases/{id}/export | read | 15 | 30.32 | 34.71 | 34.92 | <=100 |
+| testclient | GET /api/doctor | read | 120 | 1.72 | 3.3 | 3.97 | <=100 |
+| testclient | GET /api/status | read | 120 | 20.18 | 29.68 | 34.41 | <=100 |
+| testclient | GET /assets/app.js | read | 120 | 2.84 | 4.75 | 8.24 | <=100 |
+| testclient | POST /api/cases | write | 15 | 14.5 | 23.23 | 23.95 | <=100 |
+| testclient | POST /api/cases/{id}/approve | write | 15 | 53.86 | 91.56 | 96.59 | <=100 |
+| testclient | POST /api/cases/{id}/execute | write | 15 | 16.99 | 24.61 | 29.68 | <=100 |
+| testclient | POST /api/cases/{id}/preview | write | 15 | 13.85 | 30.14 | 53.67 | <=100 |
+| testclient | POST /api/cases/{id}/propose | write | 15 | 28.79 | 36.43 | 42.43 | <=100 |
+| testclient | POST /api/cases/{id}/select | write | 15 | 16.52 | 20.32 | 21.11 | <=100 |
+| testclient | POST /api/cases/{id}/verify | compute | 15 | 1,364 | 1,615 | 1,712 | over 400 |
+| uvicorn | GET / | read | 120 | 3.81 | 5.58 | 33.03 | <=100 |
+| uvicorn | GET /api/cases | read | 120 | 16.22 | 38.08 | 40.78 | <=100 |
+| uvicorn | GET /api/cases/{id} | read | 30 | 32.78 | 61.07 | 82.29 | <=100 |
+| uvicorn | GET /api/cases/{id}/export | read | 15 | 30.41 | 37.52 | 39.08 | <=100 |
+| uvicorn | GET /api/doctor | read | 120 | 2.38 | 3.21 | 4.34 | <=100 |
+| uvicorn | GET /api/status | read | 120 | 18.89 | 20.6 | 25.48 | <=100 |
+| uvicorn | GET /assets/app.js | read | 120 | 3.69 | 4.55 | 5.01 | <=100 |
+| uvicorn | POST /api/cases | write | 15 | 17.91 | 25.17 | 27.25 | <=100 |
+| uvicorn | POST /api/cases/{id}/approve | write | 15 | 52.15 | 71.08 | 88.76 | <=100 |
+| uvicorn | POST /api/cases/{id}/execute | write | 15 | 18.33 | 26.36 | 28.08 | <=100 |
+| uvicorn | POST /api/cases/{id}/preview | write | 15 | 18.23 | 27.56 | 33.02 | <=100 |
+| uvicorn | POST /api/cases/{id}/propose | write | 15 | 32.84 | 46.61 | 53.35 | <=100 |
+| uvicorn | POST /api/cases/{id}/select | write | 15 | 19.03 | 33.26 | 34.53 | <=100 |
+| uvicorn | POST /api/cases/{id}/verify | compute | 15 | 1,259 | 3,184 | 6,146 | over 400 |
 
-verify_runtime: T = -93.97 + 13.787 * cells ms, R^2 = 0.991 over 10 matrix sizes (20 to 125 cells).
+verify_runtime: T = -11.4 + 11.559 * cells ms, R^2 = 0.964 over 10 matrix sizes (20 to 125 cells).
 
 ## closure() scaling (measured)
 
-- T_ms = c0 + c1 * (V + E): c0 = 1.11 ms, c1 = 0.474 us per element, R^2 = 0.931
-- T_ms = c0 + cV * V + cE * E: cV = 1.523 us, cE = 0.304 us, R^2 = 0.9918
-- log-log exponent 1.029 (R^2 0.965); quadratic alternative R^2 = 0.74
-- 32 points, max |residual| 22.58 ms
+- T_ms = c0 + c1 * (V + E): c0 = 1.411 ms, c1 = 0.433 us per element, R^2 = 0.9086
+- T_ms = c0 + cV * V + cE * E: cV = 1.3 us, cE = 0.292 us, R^2 = 0.9573
+- log-log exponent 1.009 (R^2 0.959); quadratic alternative R^2 = 0.765
+- 32 points, max |residual| 25.97 ms
 
 Both models are linear in the graph size, so an exponent near 1 with a high R^2 is consistent with O(V+E) on this graph family; it is a measurement, not a proof. The single-coefficient V+E model fits less well than the two-term model because a visited node costs several times more than a scanned edge (queue and per-node sort overhead).
 
@@ -147,5 +147,39 @@ Both models are linear in the graph size, so an exponent near 1 with a high R^2 
 
 | Technique | Source | States | Findings | Seconds | States/s |
 |---|---|---:|---:|---:|---:|
-| runtime_matrix (this kernel) | measured-here | 125 | 0 | 1.686 | 74.12 |
-| impact_closure (this kernel) | measured-here | 20 | n/a | 0.0001036 | 193,050 |
+| runtime_matrix (this kernel) | measured-here | 125 | 0 | 1.469 | 85.11 |
+| impact_closure (this kernel) | measured-here | 20 | n/a | 9.95e-05 | 201,005 |
+
+## What these numbers do not establish
+
+| Scope | Not established |
+|---|---|
+| all | Latency and verify() timings use the offline provider; the identity is forced trusted_fixture=True (identity_source: metrics-harness) so a working tree that differs from the owner-stamped release can be measured. No kernel guard is changed, and this is not a measurement of the stamped release. |
+| all | Verification yield: findings are oracle/runtime disagreements of a same-author oracle, not independent evidence, and counts are not comparable across techniques. |
+| all | Timing budgets are advisory in the full gate and enforced in the release session; every timing value depends on the machine and its load at the time. |
+| all | verify() fit: a negative intercept is a fit artefact from pooling matrices of different shape, and 20 to 125 cells cannot separate linear from mildly superlinear growth (see the quadratic comparison). |
+| all | Martin metrics: single-module entry points (__main__, bootstrap) get D = 0 by degenerate I = 1, A = 0, and empty package __init__ modules show MI = 100; both pad the summaries. |
+| all | Freshness: the drift check compares the martin and complexity sections with the source tree; the tests and coverage sections are not checked for freshness (coverage is bound to a tree hash when it is collected). |
+| complexity | module-level statement complexity (radon omits it) |
+| complexity | cognitive complexity |
+| complexity | test-code complexity |
+| coverage | whether covered lines are asserted on (mutation lane) |
+| coverage | subprocess-only or browser-driven paths |
+| lane_reports | the correctness of any lane's report (this module aggregates, it does not re-verify) |
+| martin | class-level coupling |
+| martin | runtime/dynamic imports |
+| martin | third-party coupling (listed per layer) |
+| martin | design quality: D is a balance heuristic, not a verdict |
+| performance | browser rendering |
+| performance | concurrent load |
+| performance | live model provider |
+| performance | other machines |
+| scaling | asymptotic proof |
+| scaling | other graph shapes |
+| scaling | graph construction cost |
+| scaling | other hardware |
+| tests | test quality or fault-detection power (see the mutation lane) |
+| tests | dynamic parametrisation beyond literals |
+| tests | tests outside tests/ |
+| verification_yield | independence of techniques |
+| verification_yield | defect-finding power (findings are counts reported by each technique) |

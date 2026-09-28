@@ -32,6 +32,8 @@ def measured_scaling():
     return scaling.collect("quick")
 
 
+@pytest.mark.slow
+@pytest.mark.timing
 def test_closure_is_measured_linear_on_this_machine(measured_scaling):
     """A real measurement: the two-term fit must explain the timings and growth must be near-linear."""
     fit = measured_scaling["fit"]
@@ -39,4 +41,4 @@ def test_closure_is_measured_linear_on_this_machine(measured_scaling):
     assert fit["r2"] > fit["alt_quadratic_r2"]
     assert fit["two_term_cV_ms_per_node"] > 0 and fit["two_term_cE_ms_per_edge"] > 0
     results = {r["id"]: r["status"] for r in budgets.evaluate({"sections": {"scaling": measured_scaling}}) if r["section"] == "scaling"}
-    assert set(results.values()) == {PASS}
+    assert set(results) == {"SCALE-01", "SCALE-02", "SCALE-03", "SCALE-04"} and set(results.values()) == {PASS}

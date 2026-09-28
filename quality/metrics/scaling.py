@@ -22,7 +22,7 @@ import gc
 import math
 import random
 import time
-from typing import Callable
+from collections.abc import Callable
 
 from eija_studio.domain.impact import closure
 
@@ -38,7 +38,7 @@ PROFILES = {  # profile -> (node counts, out-degrees, repeats per point)
 
 def synthetic_graph(nodes: int, degree: int, seed: int = SEED) -> tuple[dict[str, list[str]], int]:
     """Seeded reachable digraph on `nodes` vertices with about `degree * nodes` distinct edges."""
-    rng = random.Random(f"{seed}:{nodes}:{degree}")
+    rng = random.Random(f"{seed}:{nodes}:{degree}")  # noqa: S311  (seeded and deterministic; not a security use)
     names = [f"n{i}" for i in range(nodes)]
     edges: set[tuple[int, int]] = {(rng.randrange(i), i) for i in range(1, nodes)}  # spanning tree from n0
     target = min(degree * nodes, nodes * (nodes - 1))
@@ -68,6 +68,14 @@ def time_call(fn: Callable[[], object], repeats: int) -> float:
     return min(samples)
 
 
+def _annotate(points: list[dict], lin: dict, two: dict) -> None:
+    """Attach the fitted values and residuals of both models to each measured point (in place)."""
+    for p, pred, res, pred2 in zip(points, lin["predicted"], lin["residuals"], two["predicted"], strict=True):
+        p["predicted_ms"], p["residual_ms"] = r3(pred), r3(res)
+        p["two_term_predicted_ms"] = r3(pred2)
+        p["residual_pct"] = r3(100 * res / p["ms"]) if p["ms"] else None
+
+
 def fit_report(points: list[dict]) -> dict:
     """Least-squares fit of T = c0 + c1*(V+E) plus a quadratic alternative and the log-log exponent."""
     xs = [float(p["size"]) for p in points]
@@ -76,10 +84,7 @@ def fit_report(points: list[dict]) -> dict:
     quad = ols([x * x for x in xs], ys)  # T = c0 + c2*(V+E)^2, the competing hypothesis
     loglog = ols([math.log(x) for x in xs], [math.log(y) for y in ys])
     two = ols_multi([[p["V"], p["E"]] for p in points], ys)  # T = c0 + cV*V + cE*E: nodes and edges weighted apart
-    for p, pred, res, pred2 in zip(points, lin["predicted"], lin["residuals"], two["predicted"]):
-        p["predicted_ms"], p["residual_ms"] = r3(pred), r3(res)
-        p["two_term_predicted_ms"] = r3(pred2)
-        p["residual_pct"] = r3(100 * res / p["ms"]) if p["ms"] else None
+    _annotate(points, lin, two)
     return {"model": "T_ms = c0 + c1 * (V + E)", "c0_ms": round(lin["c0"], 6), "c1_ms_per_element": round(lin["c1"], 9),
             "r2": round(lin["r2"], 6), "max_abs_residual_ms": r3(max(abs(r) for r in lin["residuals"])),
             "two_term_model": "T_ms = c0 + cV * V + cE * E", "two_term_c0_ms": round(two["beta"][0], 6),
@@ -102,7 +107,7 @@ def collect(profile: str = "quick") -> dict:
             result = closure(graph, ["n0"])
             if not result["complete"] or len(result["affected"]) != v:
                 raise RuntimeError("synthetic graph family must be fully reachable from n0")
-            seconds = time_call(lambda: closure(graph, ["n0"]), repeats)
+            seconds = time_call(lambda g=graph: closure(g, ["n0"]), repeats)
             points.append({"V": v, "E": e, "size": v + e, "degree": d, "seconds": seconds, "ms": r3(seconds * 1000)})
     fit = fit_report(points)
     for p in points:

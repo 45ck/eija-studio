@@ -4,6 +4,7 @@ Pure functions of the document: same input, same bytes. No scripts, no network, 
 Dark and light themes share one stylesheet (prefers-color-scheme, overridable with data-theme).
 Statuses are always written out (PASS / FAIL / NOT_RUN) beside a glyph, never colour alone.
 """
+# ruff: noqa: RUF001  (the typographic dash and multiplication sign are deliberate glyphs in rendered text)
 from __future__ import annotations
 
 from . import svg
@@ -38,6 +39,21 @@ svg.chart{width:100%;height:auto;display:block}.t{fill:var(--ink);font-size:11.5
 .banner{border-left:4px solid var(--warn);padding:8px 12px;background:var(--card);border-radius:6px;font-size:.88rem;margin-top:12px}
 details{margin-top:8px}summary{cursor:pointer;color:var(--muted);font-size:.85rem}code{font-size:.85em}
 """
+CAVEATS = (
+    "Latency and verify() timings use the offline provider; the identity is forced trusted_fixture=True "
+    "(identity_source: metrics-harness) so a working tree that differs from the owner-stamped release can be measured. "
+    "No kernel guard is changed, and this is not a measurement of the stamped release.",
+    "Verification yield: findings are oracle/runtime disagreements of a same-author oracle, not independent evidence, "
+    "and counts are not comparable across techniques.",
+    "Timing budgets are advisory in the full gate and enforced in the release session; every timing value depends on "
+    "the machine and its load at the time.",
+    "verify() fit: a negative intercept is a fit artefact from pooling matrices of different shape, and 20 to 125 cells "
+    "cannot separate linear from mildly superlinear growth (see the quadratic comparison).",
+    "Martin metrics: single-module entry points (__main__, bootstrap) get D = 0 by degenerate I = 1, A = 0, and empty "
+    "package __init__ modules show MI = 100; both pad the summaries.",
+    "Freshness: the drift check compares the martin and complexity sections with the source tree; the tests and "
+    "coverage sections are not checked for freshness (coverage is bound to a tree hash when it is collected).",
+)
 GLYPH = {"PASS": "✓", "FAIL": "✗", "NOT_RUN": "–", "MEASURED": "●", "UNKNOWN": "?", "UNREADABLE": "?"}
 
 
@@ -54,7 +70,7 @@ def table(headers: list[tuple[str, bool]], rows: list[list[object]], caption: st
     body = ""
     for row in rows:
         cells = ""
-        for (h, numeric), cell in zip(headers, row):
+        for (_h, numeric), cell in zip(headers, row, strict=True):
             raw = isinstance(cell, Raw)
             cells += f'<td class="{"n" if numeric else ""}">{cell if raw else esc(fmt(cell) if isinstance(cell, (int, float)) else cell)}</td>'
         body += f"<tr>{cells}</tr>"
@@ -63,6 +79,24 @@ def table(headers: list[tuple[str, bool]], rows: list[list[object]], caption: st
 
 def card(title: str, sub: str, inner: str, span: bool = False) -> str:  # `sub` is trusted markup built here
     return f'<section class="card{" span" if span else ""}"><h2>{esc(title)}</h2><p class="sub">{sub}</p>{inner}</section>'
+
+
+def timing_note(meta: dict) -> str:
+    """The timing caveat plus how many measurement runs produced the reported timing sections."""
+    runs = meta.get("timing_runs") or []
+    if len(runs) <= 1:
+        return meta["timing_note"]
+    failed = "; ".join(f"run {r['run']}: " + (", ".join(r["failed_timing_budgets"]) or "no timing budget failed") for r in runs)
+    return meta["timing_note"] + f" The reported values are from the LAST of {len(runs)} runs ({failed})."
+
+
+def limits(doc: dict) -> list[tuple[str, str]]:
+    """(scope, statement) pairs of what these numbers do not establish: fixed caveats plus each section's own list."""
+    rows = [("all", c) for c in CAVEATS]
+    for name, section in sorted(doc["sections"].items()):
+        if section.get("status") == "MEASURED":
+            rows += [(name, item) for item in section.get("not_measured", [])]
+    return rows
 
 
 def not_run_card(title: str, section: dict) -> str:
@@ -81,10 +115,9 @@ def martin_chart(m: dict) -> str:
     parts.append(text(x(0) + 8, y(0) - 8, "zone of pain", "zone"))
     parts.append(text(x(1) - 8, y(1) + 16, "zone of uselessness", "zone", "end"))
     parts.append(text(x(0.5) + 10, y(0.5) - 8, "main sequence", "zone"))
-    for r in m["modules"]:
-        if r["instability"] is not None:
-            parts.append(f'<circle class="dotm" cx="{svg.num(x(r["abstractness"]))}" cy="{svg.num(y(r["instability"]))}" r="3.5">'
-                         f'<title>{esc(r["name"])}: I={fmt(r["instability"])} A={fmt(r["abstractness"])} D={fmt(r["distance"])}</title></circle>')
+    parts.extend(f'<circle class="dotm" cx="{svg.num(x(r["abstractness"]))}" cy="{svg.num(y(r["instability"]))}" r="3.5">'
+                 f'<title>{esc(r["name"])}: I={fmt(r["instability"])} A={fmt(r["abstractness"])} D={fmt(r["distance"])}</title></circle>'
+                 for r in m["modules"] if r["instability"] is not None)
     labels = []
     for r in m["layers"]:
         if r["instability"] is None:
@@ -101,7 +134,7 @@ def martin_chart(m: dict) -> str:
 
 def cc_chart(o: dict) -> str:
     rows = [(f"rank {r}  ({lo})", o["ranks"][r], "b1" if r in "AB" else "b2" if r in "CD" else "bm", f"{o['ranks'][r]} functions")
-            for r, lo in zip("ABCDEF", ("CC 1-5", "6-10", "11-20", "21-30", "31-40", "41+"))]
+            for r, lo in zip("ABCDEF", ("CC 1-5", "6-10", "11-20", "21-30", "31-40", "41+"), strict=True)]
     return svg.hbars(rows, max(o["ranks"].values()) or 1, "Number of functions per cyclomatic-complexity rank", label_w=130)
 
 
@@ -121,6 +154,27 @@ def coverage_chart(layers: list[dict]) -> str:
     return svg.hbars(rows, 100, "Line coverage percent per layer", unit="%", label_w=120)
 
 
+def _latency_grid(x, top: float, bottom: float) -> list[str]:
+    """Decade grid lines with labels, then the two threshold lines (100 ms instant, 400 ms Doherty)."""
+    parts = []
+    for t in (1, 10, 100, 1000, 10000):
+        parts.append(f'<line class="gl" x1="{svg.num(x(t))}" x2="{svg.num(x(t))}" y1="{top}" y2="{bottom}"/>')
+        parts.append(text(x(t), bottom + 14, f"{t:,} ms", "tick", "middle"))
+    for thr, label in ((100, "100 ms instant"), (400, "400 ms Doherty")):
+        parts.append(f'<line class="thr" x1="{svg.num(x(thr))}" x2="{svg.num(x(thr))}" y1="{top - 6}" y2="{bottom}"/>')
+        parts.append(text(x(thr) + (-4 if thr == 100 else 4), top - 9, label, "tick", "end" if thr == 100 else "start"))
+    return parts
+
+
+def _latency_bar(transport: str, endpoint: str, e: dict, cls: str, geometry: tuple[float, float, float]) -> list[str]:
+    """One p95 bar plus its value label. `geometry` = (bar end x, axis left x, row top y offset for this transport)."""
+    end, left, y = geometry
+    w = max(end - left, 2)
+    return [f'<rect class="{cls}" x="{left}" y="{y + 4}" width="{svg.num(w)}" height="10" rx="2">'
+            f'<title>{esc(transport)} {esc(endpoint)}: p50 {fmt(e["p50_ms"])} ms, p95 {fmt(e["p95_ms"])} ms, p99 {fmt(e["p99_ms"])} ms (n={e["n"]})</title></rect>',
+            text(left + w + 5, y + 13, f'{fmt(e["p95_ms"])} ms', "val")]
+
+
 def latency_chart(perf: dict) -> str:
     names = {"testclient": ("TestClient (in-process)", "b1"), "uvicorn": ("uvicorn (loopback socket)", "b2")}
     data = {t: {e["endpoint"]: e for e in body.get("endpoints", [])} for t, body in perf["transports"].items() if body.get("status") == "MEASURED"}
@@ -130,24 +184,13 @@ def latency_chart(perf: dict) -> str:
     left, right, top, row_h = 210, 600, 22, 34
     lo, hi = 1.0, 10000.0
     x = svg.log10s(lo, hi, left, right)
-    parts = []
-    for t in (1, 10, 100, 1000, 10000):
-        parts.append(f'<line class="gl" x1="{svg.num(x(t))}" x2="{svg.num(x(t))}" y1="{top}" y2="{top + len(endpoints) * row_h}"/>')
-        parts.append(text(x(t), top + len(endpoints) * row_h + 14, f"{t:,} ms", "tick", "middle"))
-    for thr, label in ((100, "100 ms instant"), (400, "400 ms Doherty")):
-        parts.append(f'<line class="thr" x1="{svg.num(x(thr))}" x2="{svg.num(x(thr))}" y1="{top - 6}" y2="{top + len(endpoints) * row_h}"/>')
-        parts.append(text(x(thr) + (-4 if thr == 100 else 4), top - 9, label, "tick", "end" if thr == 100 else "start"))
+    parts = _latency_grid(x, top, top + len(endpoints) * row_h)
     for i, ep in enumerate(endpoints):
         y0 = top + i * row_h
         parts.append(text(left - 8, y0 + 20, ep.replace("/api/cases/", "…/"), "t", "end"))
         for j, (t, (_, cls)) in enumerate(names.items()):
-            e = data.get(t, {}).get(ep)
-            if not e:
-                continue
-            w = max(x(max(e["p95_ms"], lo)) - left, 2)
-            parts.append(f'<rect class="{cls}" x="{left}" y="{y0 + 4 + j * 12}" width="{svg.num(w)}" height="10" rx="2">'
-                         f'<title>{esc(t)} {esc(ep)}: p50 {fmt(e["p50_ms"])} ms, p95 {fmt(e["p95_ms"])} ms, p99 {fmt(e["p99_ms"])} ms (n={e["n"]})</title></rect>')
-            parts.append(text(left + w + 5, y0 + 13 + j * 12, f'{fmt(e["p95_ms"])} ms', "val"))
+            if e := data.get(t, {}).get(ep):
+                parts.extend(_latency_bar(t, ep, e, cls, (x(max(e["p95_ms"], lo)), left, y0 + j * 12)))
     return svg.frame(top + len(endpoints) * row_h + 26, "".join(parts), "p95 latency per endpoint on a logarithmic axis")
 
 
@@ -186,9 +229,8 @@ def _legend(*items: tuple[str, str]) -> str:
     return '<div class="legend">' + "".join(f'<span><i class="{c}"></i>{esc(t)}</span>' for c, t in items) + "</div>"
 
 
-def render_html(doc: dict) -> str:
-    s, meta = doc["sections"], doc["meta"]
-    plat, src = meta["platform"], meta["source"]
+def _kpis(doc: dict) -> list[tuple[str, str]]:
+    s = doc["sections"]
     counts = {"PASS": 0, "FAIL": 0, "NOT_RUN": 0}
     for b in doc["budgets"]:
         counts[b["status"]] += 1
@@ -205,15 +247,20 @@ def render_html(doc: dict) -> str:
     kpis.append((f'{fmt(c["summary"]["sloc_weighted_mi"], 1)}', "SLOC-weighted maintainability"))
     kpis.append((f'{fmt(s["martin"]["summary"]["mean_layer_distance"])}', "mean layer distance D"))
     kpis.append((f'{counts["PASS"]}/{counts["PASS"] + counts["FAIL"] + counts["NOT_RUN"]}', f'budgets pass ({counts["FAIL"]} fail, {counts["NOT_RUN"]} not run)'))
-    cards = []
+    return kpis
 
-    # budgets
+
+def _budget_cards(doc: dict) -> list[str]:
+    cards: list[str] = []
     cards.append(card("Budgets", "Numeric limits as tests. Basis: principled rule, external threshold, or ratchet (current value plus headroom).",
                       table([("ID", False), ("Budget", False), ("Actual", True), ("Limit", True), ("Basis", False), ("Status", False)],
                             [[b["id"], b["description"], "n/a" if b["actual"] is None else b["actual"], f'{b["op"]} {fmt(b["limit"])}',
                               b["basis"], status(b["status"])] for b in doc["budgets"]], "Budget evaluation; NOT_RUN means an input section was unavailable"), True))
+    return cards
 
-    # martin
+
+def _martin_cards(s: dict) -> list[str]:
+    cards: list[str] = []
     m = s["martin"]
     rows = [[r["name"], r["modules"], r["ca"], r["ce"], r["instability"], r["abstractness"], r["distance"], r["zone"]] for r in m["layers"]]
     cards.append(card("Package metrics (Martin)", "Instability I = Ce/(Ca+Ce), abstractness A = Na/Nc, distance D = |A+I-1|. Large dots are layers, small grey dots modules.",
@@ -223,14 +270,21 @@ def render_html(doc: dict) -> str:
                       f'<p class="note">SDP violations: {len(m["summary"]["sdp_violations"])}; layer cycles: {len(m["summary"]["layer_cycles"])}; '
                       f'module cycles: {len(m["summary"]["module_cycles"])}. The domain layer is stable and concrete by construction (frozen contracts and pure rules), so D is 1.0 by the formula; '
                       f'see README.</p>', True))
+    return cards
 
-    # complexity
+
+def _complexity_cards(s: dict) -> list[str]:
+    c = s["complexity"]
+    cards: list[str] = []
     hot = [[h["function"], h["cc"], h["rank"]] for h in c["hotspots"]]
     cards.append(card("Cyclomatic complexity", "McCabe (1976) per function via radon; ranks A-F.", cc_chart(c["overall"]) +
                       table([("Hotspot", False), ("CC", True), ("Rank", False)], hot, "Highest-complexity functions (refactoring candidates, not defects)")))
     cards.append(card("Maintainability index", "Higher is better; radon rank A is 20 or more. Size-weighted mean above.", mi_chart(c["modules"])))
+    return cards
 
-    # tests and coverage
+
+def _inventory_cards(s: dict) -> list[str]:
+    cards: list[str] = []
     if s["tests"]["status"] == "MEASURED":
         t = s["tests"]
         cards.append(card("Test inventory", f'{t["summary"]["test_files"]} files; pytest collects {t["summary"]["tests_collected_by_pytest"]}. Static attribution by import (a test can count for several layers).',
@@ -241,18 +295,26 @@ def render_html(doc: dict) -> str:
         cards.append(card("Coverage", "coverage.py, branch mode. Executed is not verified.", coverage_chart(s["coverage"]["layers"])))
     else:
         cards.append(not_run_card("Coverage", s["coverage"]))
+    return cards
 
-    # performance
-    perf = s["performance"]
-    lat = latency_chart(perf)
+
+def _latency_rows(perf: dict) -> list[list[object]]:
     perf_rows = []
     for tname, body in sorted(perf["transports"].items()):
         if body.get("status") != "MEASURED":
             perf_rows.append([tname, "-", "-", "-", "-", "-", status("NOT_RUN")])
             continue
-        for e in body["endpoints"]:
-            perf_rows.append([tname, e["endpoint"], e["n"], e["p50_ms"], e["p95_ms"], e["p99_ms"],
-                              "≤100 ms" if e["p95_within_instant"] else "≤400 ms" if e["p95_within_doherty"] else "over 400 ms"])
+        perf_rows.extend([tname, e["endpoint"], e["n"], e["p50_ms"], e["p95_ms"], e["p99_ms"],
+                          "≤100 ms" if e["p95_within_instant"] else "≤400 ms" if e["p95_within_doherty"] else "over 400 ms"]
+                         for e in body["endpoints"])
+    return perf_rows
+
+
+def _performance_cards(s: dict, plat: dict) -> list[str]:
+    cards: list[str] = []
+    perf = s["performance"]
+    lat = latency_chart(perf)
+    perf_rows = _latency_rows(perf)
     cards.append(card("HTTP latency (measurement)", "Measured on " + esc(plat["label"]) + ". Bars are p95 on a log axis; dashed lines are 100 ms (instant) and 400 ms (Doherty and Thadani 1982).",
                       lat + _legend(("b1", "TestClient, in-process"), ("b2", "real uvicorn on 127.0.0.1")) +
                       table([("Transport", False), ("Endpoint", False), ("n", True), ("p50 ms", True), ("p95 ms", True), ("p99 ms", True), ("p95 band", False)],
@@ -261,8 +323,11 @@ def render_html(doc: dict) -> str:
     pts = [(float(p["cells"]), p["ms"]) for p in vs["points"]]
     cards.append(card("verify() duration against matrix size (measurement)", f'T = {fmt(vs["c0_ms"])} + {fmt(vs["c1_ms_per_cell"], 3)}·cells ms, R² = {fmt(vs["r2"], 3)}. Matrix = actors × states × 5 actions.',
                       scatter_fit(pts, (vs["c0_ms"], vs["c1_ms_per_cell"]), "matrix cells", "verify_runtime (ms)", "verify duration against matrix size")))
+    return cards
 
-    # scaling
+
+def _scaling_cards(s: dict) -> list[str]:
+    cards: list[str] = []
     sc = s["scaling"]
     fit = sc["fit"]
     sp = [(float(p["size"]), p["ms"]) for p in sc["points"]]
@@ -273,8 +338,11 @@ def render_html(doc: dict) -> str:
                       scatter_fit(sp, (fit["c0_ms"], fit["c1_ms_per_element"]), "V + E (nodes + edges)", "closure (ms)", "closure time against graph size", two) +
                       _legend(("b1", "measured, with V+E least-squares line"), ("b2", "two-term prediction (ring)")) +
                       residual_chart([(float(p["size"]), p["residual_ms"]) for p in sc["points"]], "Residuals of the V+E fit", "V + E")))
+    return cards
 
-    # lane reports and yield
+
+def _lane_cards(s: dict) -> list[str]:
+    cards: list[str] = []
     lanes = s["lane_reports"]
     lane_rows = [[g["group"], g["lane"], status(g["status"]), ", ".join(r["file"] for r in g["reports"]) or g.get("reason", "")] for g in lanes["groups"]]
     cards.append(card("Other lanes' reports", "Aggregated read-only from reports/. A missing report is NOT_RUN, never a pass.",
@@ -286,33 +354,63 @@ def render_html(doc: dict) -> str:
     cards.append(card("Verification yield", "States explored per technique. Two are measured here; the rest are copied from lane reports when they publish a state count.",
                       table([("Technique", False), ("Source", False), ("States", True), ("Findings", True), ("Seconds", True), ("States/s", True), ("Status", False)], y_rows,
                             "Findings are counts each technique reports; they are not comparable across techniques"), True))
+    return cards
 
+
+def _limits_cards(doc: dict) -> list[str]:
+    cards: list[str] = []
+    cards.append(card("What these numbers do not establish", "Caveats that apply to the whole document, then what each collector lists as not measured.",
+                      table([("Scope", False), ("Not established", False)], [list(r) for r in limits(doc)], "Limits of the measurements"), True))
+    return cards
+
+
+def _header(meta: dict) -> str:
+    plat, src = meta["platform"], meta["source"]
     head = (f'<h1>EIJA Studio metrics</h1><p class="sub">Platform: <b>{esc(plat["label"])}</b> · commit <code>{esc((src.get("commit") or "unknown")[:12])}</code>'
             f'{" (source differs from commit)" if src.get("dirty") else ""} · profile {esc(meta["profile"])}'
             f'{" · generated " + esc(meta["generated_at"]) if meta.get("generated_at") else ""}</p>'
-            f'<p class="banner">{esc(meta["timing_note"])}</p>')
+            f'<p class="banner">{esc(timing_note(meta))}</p>')
+    return head
+
+
+def render_html(doc: dict) -> str:
+    s, meta = doc["sections"], doc["meta"]
+    cards = [*_budget_cards(doc), *_martin_cards(s), *_complexity_cards(s), *_inventory_cards(s),
+             *_performance_cards(s, meta["platform"]), *_scaling_cards(s), *_lane_cards(s), *_limits_cards(doc)]
+    head = _header(meta)
+    kpis = _kpis(doc)
     kpi_html = '<div class="kpis">' + "".join(f'<div class="kpi"><b>{esc(v)}</b><span>{esc(k)}</span></div>' for v, k in kpis) + "</div>"
     body = head + kpi_html + f'<div class="gl">{"".join(cards[:1])}</div>' + "".join(cards[1:])
     return ('<!doctype html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
             '<title>EIJA Studio metrics</title><style>' + CSS + '</style></head><body><main>' + body + '</main></body></html>\n')
 
 
-def render_markdown(doc: dict) -> str:
-    s, meta = doc["sections"], doc["meta"]
+def _md_header(doc: dict) -> list[str]:
+    meta = doc["meta"]
     plat, src = meta["platform"], meta["source"]
     out = ["# EIJA Studio metrics snapshot", "",
            f"- Platform: **{plat['label']}** ({plat['machine']})",
            f"- Commit: `{src.get('commit')}`" + (" (source differs from commit)" if src.get("dirty") else ""),
            f"- Profile: {meta['profile']}" + (f", generated {meta['generated_at']}" if meta.get("generated_at") else ""),
-           f"- Tools: " + ", ".join(f"{k} {v}" for k, v in sorted(meta["tools"].items())),
-           "", f"> {meta['timing_note']}", "", "## Budgets", "",
+           "- Tools: " + ", ".join(f"{k} {v}" for k, v in sorted(meta["tools"].items())),
+           "", f"> {timing_note(meta)}", "", "## Budgets", "",
            "| ID | Budget | Actual | Limit | Basis | Status |", "|---|---|---|---|---|---|"]
-    for b in doc["budgets"]:
-        out.append(f"| {b['id']} | {b['description']} | {'n/a' if b['actual'] is None else fmt(b['actual'])} | {b['op']} {fmt(b['limit'])} | {b['basis']} | {b['status']} |")
+    out.extend(f"| {b['id']} | {b['description']} | {'n/a' if b['actual'] is None else fmt(b['actual'])} | {b['op']} {fmt(b['limit'])} | {b['basis']} | {b['status']} |"
+               for b in doc["budgets"])
+    return out
+
+
+def _md_martin(s: dict) -> list[str]:
+    out: list[str] = []
     m = s["martin"]
     out += ["", "## Package metrics (Martin)", "", "| Layer | Modules | Ca | Ce | I | A | D | Zone |", "|---|---:|---:|---:|---:|---:|---:|---|"]
     out += [f"| {r['name']} | {r['modules']} | {r['ca']} | {r['ce']} | {fmt(r['instability'])} | {fmt(r['abstractness'])} | {fmt(r['distance'])} | {r['zone']} |" for r in m["layers"]]
     out += ["", f"SDP violations {len(m['summary']['sdp_violations'])}, layer cycles {len(m['summary']['layer_cycles'])}, module cycles {len(m['summary']['module_cycles'])}."]
+    return out
+
+
+def _md_complexity(s: dict) -> list[str]:
+    out: list[str] = []
     c = s["complexity"]
     o = c["overall"]
     out += ["", "## Complexity and maintainability", "",
@@ -320,6 +418,11 @@ def render_markdown(doc: dict) -> str:
             f"Ranks: " + ", ".join(f"{k}={v}" for k, v in o["ranks"].items()) +
             f". SLOC {c['summary']['sloc']}, SLOC-weighted MI {fmt(c['summary']['sloc_weighted_mi'])}, lowest module MI {fmt(c['summary']['min_mi'])}.",
             "", "| Hotspot | CC | Rank |", "|---|---:|---|"] + [f"| {h['function']} | {h['cc']} | {h['rank']} |" for h in c["hotspots"]]
+    return out
+
+
+def _md_tests_coverage(s: dict) -> list[str]:
+    out: list[str] = []
     t = s["tests"]
     out += ["", "## Tests and coverage", ""]
     if t["status"] == "MEASURED":
@@ -337,6 +440,11 @@ def render_markdown(doc: dict) -> str:
         out += [f"| {r['layer']} | {r['statements']} | {fmt(r['line_percent'])} | {fmt(r['branch_percent'])} |" for r in cv["layers"]]
     else:
         out.append(f"Coverage: NOT_RUN ({cv['reason']})")
+    return out
+
+
+def _md_latency(s: dict, plat: dict) -> list[str]:
+    out: list[str] = []
     p = s["performance"]
     out += ["", f"## HTTP latency (measured on {plat['label']})", "", "Thresholds: 100 ms instant, 400 ms Doherty. Milliseconds.", "",
             "| Transport | Endpoint | Kind | n | p50 | p95 | p99 | Band |", "|---|---|---|---:|---:|---:|---:|---|"]
@@ -350,15 +458,39 @@ def render_markdown(doc: dict) -> str:
     vs = p["verify_scaling"]
     out += ["", f"verify_runtime: T = {fmt(vs['c0_ms'])} + {fmt(vs['c1_ms_per_cell'], 3)} * cells ms, R^2 = {fmt(vs['r2'], 3)} over {len(vs['points'])} matrix sizes "
             f"({min(q['cells'] for q in vs['points'])} to {max(q['cells'] for q in vs['points'])} cells)."]
+    return out
+
+
+def _md_scaling(s: dict) -> list[str]:
+    out: list[str] = []
     fit = s["scaling"]["fit"]
     out += ["", "## closure() scaling (measured)", "",
             f"- {fit['model']}: c0 = {fmt(fit['c0_ms'], 3)} ms, c1 = {fmt(fit['c1_ms_per_element'] * 1000, 3)} us per element, R^2 = {fmt(fit['r2'], 4)}",
             f"- {fit['two_term_model']}: cV = {fmt(fit['two_term_cV_ms_per_node'] * 1000, 3)} us, cE = {fmt(fit['two_term_cE_ms_per_edge'] * 1000, 3)} us, R^2 = {fmt(fit['two_term_r2'], 4)}",
             f"- log-log exponent {fmt(fit['loglog_exponent'], 3)} (R^2 {fmt(fit['loglog_r2'], 3)}); quadratic alternative R^2 = {fmt(fit['alt_quadratic_r2'], 3)}",
             f"- {fit['points']} points, max |residual| {fmt(fit['max_abs_residual_ms'])} ms", "", fit["reading"]]
+    return out
+
+
+def _md_lanes_yield(s: dict) -> list[str]:
+    out: list[str] = []
     out += ["", "## Other lanes' reports", "", "| Group | Lane | Status | Detail |", "|---|---|---|---|"]
     out += [f"| {g['group']} | {g['lane']} | {g['status']} | {', '.join(r['file'] for r in g['reports']) or g.get('reason', '')} |" for g in s["lane_reports"]["groups"]]
     out += ["", "## Verification yield", "", "| Technique | Source | States | Findings | Seconds | States/s |", "|---|---|---:|---:|---:|---:|"]
     out += [f"| {r['technique']} | {r['kind']} | {fmt(r['states_explored'])} | {fmt(r.get('findings'))} | {svg.sig(r.get('duration_s'))} | {fmt(r.get('states_per_s'))} |"
             for r in s["verification_yield"]["techniques"]]
+    return out
+
+
+def _md_limits(doc: dict) -> list[str]:
+    out: list[str] = []
+    out += ["", "## What these numbers do not establish", "", "| Scope | Not established |", "|---|---|"]
+    out += [f"| {scope} | {statement} |" for scope, statement in limits(doc)]
+    return out
+
+
+def render_markdown(doc: dict) -> str:
+    s = doc["sections"]
+    out = [*_md_header(doc), *_md_martin(s), *_md_complexity(s), *_md_tests_coverage(s),
+           *_md_latency(s, doc["meta"]["platform"]), *_md_scaling(s), *_md_lanes_yield(s), *_md_limits(doc)]
     return "\n".join(out) + "\n"

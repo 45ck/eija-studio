@@ -62,3 +62,21 @@ def test_lane_budget_is_not_run_when_no_lane_reported():
     doc = {"sections": {"lane_reports": collect(Path("does-not-exist"))}}
     assert next(r for r in budgets.evaluate(doc) if r["id"] == "LANE-01")["status"] == NOT_RUN
     assert doc["sections"]["lane_reports"]["status"] == MEASURED
+
+
+def test_lane_budget_does_not_pass_when_every_present_report_is_unreadable_or_unknown(tmp_path, monkeypatch):
+    """Regression: LANE-01 used to PASS on corrupt reports or a misspelled status because only FAIL counted."""
+    monkeypatch.setattr(aggregate, "rel", lambda p: p.relative_to(tmp_path).as_posix())
+    write(tmp_path / "formal" / "a.json", "{not json")
+    write(tmp_path / "mutation" / "summary.json", {"status": "passed"})  # not in the PASS/FAIL/NOT_RUN vocabulary
+    result = collect(tmp_path)
+    assert {g["status"] for g in result["groups"] if g["status"] != NOT_RUN} == {"UNKNOWN"}
+    row = next(r for r in budgets.evaluate({"sections": {"lane_reports": result}}) if r["id"] == "LANE-01")
+    assert row["status"] == "FAIL" and row["actual"] == 2
+
+
+def test_lane_budget_passes_only_on_a_definite_pass(tmp_path, monkeypatch):
+    monkeypatch.setattr(aggregate, "rel", lambda p: p.relative_to(tmp_path).as_posix())
+    write(tmp_path / "formal" / "a.json", {"status": "PASS"})
+    doc = {"sections": {"lane_reports": collect(tmp_path)}}
+    assert next(r for r in budgets.evaluate(doc) if r["id"] == "LANE-01")["status"] == "PASS"

@@ -22,6 +22,8 @@ def test_endpoint_report_classifies_kind_and_threshold_bands():
     assert rep["summary"]["over_doherty"] == ["POST /api/cases/{id}/verify"]
 
 
+@pytest.mark.slow
+@pytest.mark.timing
 @pytest.mark.parametrize("opener", [perf.testclient_call, perf.uvicorn_call], ids=["testclient", "real-uvicorn"])
 def test_interactive_endpoints_have_median_latency_under_the_doherty_threshold(opener):
     """Smoke-sized measurement (three journeys, 6 reads): with so few samples p95 is just the maximum and one slow

@@ -26,13 +26,14 @@ release can still be measured; no kernel guard is changed.
 """
 from __future__ import annotations
 
+import math
 import socket
 import tempfile
 import threading
 import time
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Callable, Iterator
 from unittest import mock
 
 import httpx
@@ -53,7 +54,7 @@ from .common import latency_summary, measured, not_run, ols, r3
 from .scaling import time_call
 
 INSTANT_MS, DOHERTY_MS = 100.0, 400.0
-TOKEN = "metrics-harness-token"
+TOKEN = "metrics-harness-token"  # noqa: S105  (a fixed test credential for a loopback server started here)
 PROFILES = {  # profile -> read samples per endpoint, flow iterations, verify-scaling repeats
     "smoke": {"reads": 6, "flows": 3, "matrix_repeats": 1},  # unit tests only: proves the pipeline, not a statistic
     "quick": {"reads": 40, "flows": 4, "matrix_repeats": 3},
@@ -109,7 +110,7 @@ class ServerThread:
         self.server = uvicorn.Server(config)
         self.thread = threading.Thread(target=self.server.run, daemon=True)
 
-    def __enter__(self) -> "ServerThread":
+    def __enter__(self) -> ServerThread:
         self.thread.start()
         deadline = time.monotonic() + 20
         while not self.server.started:
@@ -230,7 +231,7 @@ def matrix_points(repeats: int) -> tuple[list[dict], dict]:
             for k in range(1, len(full_actors) + 1):
                 with mock.patch.object(verifier, "ACTORS", full_actors[:k]):
                     receipt = verifier.verify_runtime(model, subject, studio.sandbox)  # also warms up
-                    seconds = time_call(lambda: verifier.verify_runtime(model, subject, studio.sandbox), repeats)
+                    seconds = time_call(lambda m=model, s=subject: verifier.verify_runtime(m, s, studio.sandbox), repeats)
                 cells = receipt["artifact"]["expected_cells"]
                 if len(receipt["artifact"]["cells"]) != cells:
                     raise RuntimeError("verifier did not evaluate every expected cell")
@@ -250,12 +251,26 @@ def _matrix_yield(artifact: dict, seconds: float) -> dict:
 
 
 def verify_scaling(profile: str) -> tuple[dict, dict]:
+    """Fit verification time against matrix size (cells), with a quadratic alternative and a log-log exponent.
+
+    Establishes how well a straight line describes 10 points from 20 to 125 cells. That range is narrow, so
+    the test has LOW POWER: it cannot separate linear from mildly superlinear growth, and the fitted
+    intercept can be negative (a fit artefact from pooling matrices of different shape, not negative time).
+    """
     points, stats = matrix_points(PROFILES[profile]["matrix_repeats"])
-    fit = ols([float(p["cells"]) for p in points], [p["ms"] for p in points])
-    for p, pred, res in zip(points, fit["predicted"], fit["residuals"]):
+    xs, ys = [float(p["cells"]) for p in points], [p["ms"] for p in points]
+    fit = ols(xs, ys)
+    quad = ols([x * x for x in xs], ys)
+    loglog = ols([math.log(x) for x in xs], [math.log(y) for y in ys])
+    for p, pred, res in zip(points, fit["predicted"], fit["residuals"], strict=True):
         p["predicted_ms"], p["residual_ms"] = r3(pred), r3(res)
     body = {"status": "MEASURED", "model": "T_ms = c0 + c1 * cells", "c0_ms": round(fit["c0"], 4),
-            "c1_ms_per_cell": round(fit["c1"], 5), "r2": round(fit["r2"], 6), "points": points,
+            "c1_ms_per_cell": round(fit["c1"], 5), "r2": round(fit["r2"], 6),
+            "alt_quadratic_r2": round(quad["r2"], 6), "loglog_exponent": round(loglog["c1"], 4),
+            "intercept_caveat": ("a negative c0 is a fit artefact (baseline and candidate matrices are pooled and "
+                                 "differ in state count), not a physical negative time; treat c1 as a slope estimate"),
+            "power_caveat": "20 to 125 cells cannot separate linear from mildly superlinear growth; see alt_quadratic_r2",
+            "points": points,
             "note": ("Matrix = actors x states x 5 actions. Each cell is one isolated ephemeral-SQLite "
                      "transaction pair; the same-author oracle means agreement is not independent evidence.")}
     return body, stats

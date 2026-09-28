@@ -33,7 +33,7 @@ Design rules that are part of the decision:
 
 1. Sections split into deterministic (structure, complexity, inventory, aggregation) and measurements (performance, scaling, yield). The document says which; drift checks apply only to the rendering of a committed snapshot, never to timings.
 2. Every collector states `not_measured`. Every section is `MEASURED` or `NOT_RUN` with a reason.
-3. Models are fitted, then falsified: the closure fit is compared with a quadratic alternative and with the log-log exponent; the single-coefficient V+E model is reported as measured even where its R^2 is only about 0.9, and a two-term model (node cost and edge cost fitted separately) is reported beside it.
+3. Models are fitted, then falsified: the closure fit is compared with a quadratic alternative and with the log-log exponent; the requested single-coefficient V+E model is reported and budgeted (SCALE-04, R^2 at least 0.85, because it fits at about 0.90 to 0.93), and a two-term model (node cost and edge cost fitted separately, SCALE-01) is reported beside it; the two-term fit is not evidence for the single-term model.
 4. Measurement harness overrides are explicit: the identity provider keeps its real byte hashing but is forced `trusted_fixture=True` (marked `identity_source: metrics-harness`), the same idiom as `tests/conftest.py`; the kernel's actor list is patched only inside the measurement of matrix size, never in the kernel.
 
 ### Consequences
@@ -42,6 +42,7 @@ Design rules that are part of the decision:
 * Good: the dashboard (`docs/metrics/index.html`) is static, offline and reproducible from the committed snapshot.
 * Good: the analysis surfaced real findings instead of confirming expectations, for example that the domain layer sits in Martin's "zone of pain" by construction (D = 1.0) and that `verify` takes one to a few seconds and exceeds the Doherty threshold.
 * Bad: timing measurements depend on the machine and its load; a budget on them can fail on a busy PC. They are labelled as such and the snapshot names the platform.
+* Bad: radon complexity and coverage.py are also used by the quality lane (`quality/gates/complexity_ratchet.py`, `nox -s coverage`). The pins live once, in the `lint` extra (the `metrics` extra depends on it); this lane measures and displays complexity but budgets only the maintainability index, and the quality lane owns the per-function ratchet.
 * Bad: module-level coupling and a Protocol/ABC share are proxies for the class-level definitions in Martin's papers.
 * Revisit when: another platform (Linux CI, macOS) produces a snapshot, or a second lane needs a numerical library, at which point adopting numpy for all lanes may be cheaper than each lane's own solver.
 

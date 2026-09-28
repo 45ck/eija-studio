@@ -7,8 +7,8 @@ gives a native hover tooltip without JavaScript. Output is a pure function of th
 from __future__ import annotations
 
 import math
+from collections.abc import Callable, Sequence
 from html import escape
-from typing import Callable, Sequence
 
 W = 640  # viewBox width; the page scales the SVG to its container
 
@@ -98,8 +98,8 @@ def spread_labels(items: list[tuple[float, str, str]], gap: float = 13.0) -> lis
     """Nudge label y positions apart (top to bottom) so direct labels never overlap."""
     placed: list[tuple[float, str, str]] = []
     last = -1e9
-    for y, label, tip in sorted(items, key=lambda i: (i[0], i[1])):
-        y = max(y, last + gap)
+    for wanted, label, tip in sorted(items, key=lambda i: (i[0], i[1])):
+        y = max(wanted, last + gap)
         placed.append((y, label, tip))
         last = y
     return placed

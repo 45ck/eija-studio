@@ -7,6 +7,7 @@ prerequisite reports NOT_RUN, never PASS). See docs/metrics/README.md for the fo
 their sources, and the honesty conventions this package follows.
 """
 from __future__ import annotations
+
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]

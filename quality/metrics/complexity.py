@@ -21,7 +21,7 @@ from radon.raw import analyze
 
 from . import SRC
 from .common import measured, percentile, r3
-from .structure import layer_of, PACKAGE
+from .structure import PACKAGE, layer_of
 
 RANKS = ("A", "B", "C", "D", "E", "F")
 
@@ -61,13 +61,35 @@ def module_name(path: Path) -> str:
 def _stats(values: list[int]) -> dict:
     if not values:
         return {"functions": 0, "mean": None, "median": None, "p90": None, "max": None,
-                "ranks": {r: 0 for r in RANKS}}
+                "ranks": dict.fromkeys(RANKS, 0)}
     s = sorted(values)
-    ranks = {r: 0 for r in RANKS}
+    ranks = dict.fromkeys(RANKS, 0)
     for v in s:
         ranks[cc_rank(v)] += 1
     return {"functions": len(s), "mean": r3(statistics.fmean(s)), "median": r3(percentile(s, 50)),
             "p90": r3(percentile(s, 90)), "max": s[-1], "ranks": ranks}
+
+
+def _analyse_module(path: Path) -> tuple[str, list[tuple[str, int, int]], dict]:
+    """(layer, functions, module row) for one source file."""
+    text = path.read_text(encoding="utf-8")
+    module = module_name(path)
+    raw = analyze(text)
+    mi = mi_visit(text, True)
+    funcs = _flatten(cc_visit(text))
+    row = {"module": module.removeprefix(PACKAGE + "."), "layer": layer_of(module), "loc": raw.loc, "sloc": raw.sloc,
+           "lloc": raw.lloc, "comments": raw.comments + raw.single_comments, "blank": raw.blank,
+           "mi": r3(mi), "mi_rank": mi_rank(mi),
+           "functions": len(funcs), "max_cc": max((f[2] for f in funcs), default=0)}
+    return row["layer"], funcs, row
+
+
+def _summary(modules: list[dict]) -> dict:
+    total_sloc = sum(m["sloc"] for m in modules)
+    weighted_mi = sum(m["mi"] * m["sloc"] for m in modules) / total_sloc if total_sloc else None
+    return {"files": len(modules), "sloc": total_sloc, "sloc_weighted_mi": None if weighted_mi is None else r3(weighted_mi),
+            "min_mi": min((m["mi"] for m in modules), default=None),
+            "modules_below_mi_rank_a": sorted(m["module"] for m in modules if m["mi_rank"] != "A")}
 
 
 def collect(top: int = 10) -> dict:
@@ -75,30 +97,17 @@ def collect(top: int = 10) -> dict:
     hotspots: list[dict] = []
     modules: list[dict] = []
     for path in source_files():
-        text = path.read_text(encoding="utf-8")
-        module = module_name(path)
-        layer = layer_of(module)
-        raw = analyze(text)
-        mi = mi_visit(text, True)
-        funcs = _flatten(cc_visit(text))
+        layer, funcs, row = _analyse_module(path)
+        modules.append(row)
         for name, line, cc in funcs:
             per_layer.setdefault(layer, []).append(cc)
-            hotspots.append({"function": f"{module.removeprefix(PACKAGE + '.')}:{name}", "line": line,
-                             "cc": cc, "rank": cc_rank(cc)})
-        modules.append({"module": module.removeprefix(PACKAGE + "."), "layer": layer, "loc": raw.loc, "sloc": raw.sloc,
-                        "lloc": raw.lloc, "comments": raw.comments + raw.single_comments, "blank": raw.blank,
-                        "mi": r3(mi), "mi_rank": mi_rank(mi),
-                        "functions": len(funcs), "max_cc": max((f[2] for f in funcs), default=0)})
+            hotspots.append({"function": f"{row['module']}:{name}", "line": line, "cc": cc, "rank": cc_rank(cc)})
     hotspots.sort(key=lambda h: (-h["cc"], h["function"]))
     everything = [cc for values in per_layer.values() for cc in values]
     layers = [{"layer": layer, **_stats(values)} for layer, values in sorted(per_layer.items())]
-    total_sloc = sum(m["sloc"] for m in modules)
-    weighted_mi = sum(m["mi"] * m["sloc"] for m in modules) / total_sloc if total_sloc else None
     return measured(
         method="radon cc_visit / mi_visit(multi=True) / raw.analyze over src/eija_studio/**/*.py",
         source="McCabe 1976; Oman & Hagemeister 1992; radon 6.0.1 rank tables",
         not_measured=["module-level statement complexity (radon omits it)", "cognitive complexity", "test-code complexity"],
         overall=_stats(everything), layers=layers, hotspots=hotspots[:top], modules=sorted(modules, key=lambda m: m["module"]),
-        summary={"files": len(modules), "sloc": total_sloc, "sloc_weighted_mi": None if weighted_mi is None else r3(weighted_mi),
-                 "min_mi": min((m["mi"] for m in modules), default=None),
-                 "modules_below_mi_rank_a": sorted(m["module"] for m in modules if m["mi_rank"] != "A")})
+        summary=_summary(modules))

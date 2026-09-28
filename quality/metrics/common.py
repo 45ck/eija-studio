@@ -7,13 +7,16 @@ from __future__ import annotations
 
 import json
 import math
+import os
 import platform
 import statistics
 import subprocess
 import sys
+import sysconfig
+from collections.abc import Sequence
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any
 
 from . import ROOT, SCHEMA_VERSION
 
@@ -60,7 +63,7 @@ def _git(*args: str) -> str | None:
         out = subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True, timeout=30, check=True)
     except (OSError, subprocess.SubprocessError):
         return None
-    return out.stdout.strip()
+    return out.stdout.rstrip("\n")  # not strip(): porcelain lines start with a significant space (" M path")
 
 
 def git_state() -> dict:
@@ -80,9 +83,16 @@ def git_state() -> dict:
 
 
 def platform_info() -> dict:
-    return {"system": platform.system(), "release": platform.release(), "machine": platform.machine(),
+    """Platform label without `platform.system()/release()/machine()`: on some Windows CPython builds those
+    go through a WMI query that dumps a scary (handled) fatal-exception traceback into test and CLI output."""
+    if sys.platform == "win32":
+        v = sys.getwindowsversion()  # type: ignore[attr-defined]
+        system, release = "Windows", f"{v.major}.{v.minor}.{v.build}"
+    else:
+        system, release = sys.platform, os.uname().release
+    return {"system": system, "release": release, "machine": sysconfig.get_platform(),
             "python": platform.python_version(), "implementation": platform.python_implementation(),
-            "label": f"{platform.system()} {platform.release()} / CPython {platform.python_version()}"}
+            "label": f"{system} {release} / CPython {platform.python_version()}"}
 
 
 def meta(profile: str, generated_at: str | None) -> dict:
@@ -119,6 +129,13 @@ def r3(x: float) -> float:
     return round(float(x), 3)
 
 
+def _r_squared(ys: Sequence[float], predicted: Sequence[float]) -> float:
+    ss_res = sum((y - p) ** 2 for y, p in zip(ys, predicted, strict=True))
+    mean_y = statistics.fmean(ys)
+    ss_tot = sum((y - mean_y) ** 2 for y in ys)
+    return 1.0 - ss_res / ss_tot if ss_tot > 0 else 1.0
+
+
 def ols(xs: Sequence[float], ys: Sequence[float]) -> dict:
     """Ordinary least squares y = c0 + c1*x with R^2 and residuals.
 
@@ -129,12 +146,21 @@ def ols(xs: Sequence[float], ys: Sequence[float]) -> dict:
         raise ValueError("need at least three paired points")
     fit = statistics.linear_regression(xs, ys)
     predicted = [fit.intercept + fit.slope * x for x in xs]
-    ss_res = sum((y - p) ** 2 for y, p in zip(ys, predicted))
-    mean_y = statistics.fmean(ys)
-    ss_tot = sum((y - mean_y) ** 2 for y in ys)
-    r2 = 1.0 - ss_res / ss_tot if ss_tot > 0 else 1.0
-    return {"c0": fit.intercept, "c1": fit.slope, "r2": r2, "predicted": predicted,
-            "residuals": [y - p for y, p in zip(ys, predicted)]}
+    return {"c0": fit.intercept, "c1": fit.slope, "r2": _r_squared(ys, predicted), "predicted": predicted,
+            "residuals": [y - p for y, p in zip(ys, predicted, strict=True)]}
+
+
+def _solve(a: list[list[float]], k: int) -> list[float]:
+    """Gauss-Jordan elimination with partial pivoting on the k x (k+1) augmented matrix `a`."""
+    for col in range(k):
+        pivot = max(range(col, k), key=lambda r: abs(a[r][col]))
+        if abs(a[pivot][col]) < 1e-12:
+            raise ValueError("features are collinear")
+        a[col], a[pivot] = a[pivot], a[col]
+        for r in (r for r in range(k) if r != col):
+            f = a[r][col] / a[col][col]
+            a[r] = [x - f * y for x, y in zip(a[r], a[col], strict=True)]
+    return [a[i][k] / a[i][i] for i in range(k)]
 
 
 def ols_multi(rows: Sequence[Sequence[float]], ys: Sequence[float]) -> dict:
@@ -146,23 +172,12 @@ def ols_multi(rows: Sequence[Sequence[float]], ys: Sequence[float]) -> dict:
     if n < k + 1:
         raise ValueError("not enough points for this many parameters")
     design = [[1.0, *map(float, r)] for r in rows]
-    a = [[sum(d[i] * d[j] for d in design) for j in range(k)] + [sum(d[i] * y for d, y in zip(design, ys))] for i in range(k)]
-    for col in range(k):
-        pivot = max(range(col, k), key=lambda r: abs(a[r][col]))
-        if abs(a[pivot][col]) < 1e-12:
-            raise ValueError("features are collinear")
-        a[col], a[pivot] = a[pivot], a[col]
-        for r in range(k):
-            if r != col:
-                f = a[r][col] / a[col][col]
-                a[r] = [x - f * y for x, y in zip(a[r], a[col])]
-    beta = [a[i][k] / a[i][i] for i in range(k)]
-    predicted = [sum(b * x for b, x in zip(beta, d)) for d in design]
-    mean_y = statistics.fmean(ys)
-    ss_res = sum((y - p) ** 2 for y, p in zip(ys, predicted))
-    ss_tot = sum((y - mean_y) ** 2 for y in ys)
-    return {"beta": beta, "r2": 1.0 - ss_res / ss_tot if ss_tot > 0 else 1.0, "predicted": predicted,
-            "residuals": [y - p for y, p in zip(ys, predicted)]}
+    augmented = [[sum(d[i] * d[j] for d in design) for j in range(k)] + [sum(d[i] * y for d, y in zip(design, ys, strict=True))]
+                 for i in range(k)]
+    beta = _solve(augmented, k)
+    predicted = [sum(b * x for b, x in zip(beta, d, strict=True)) for d in design]
+    return {"beta": beta, "r2": _r_squared(ys, predicted), "predicted": predicted,
+            "residuals": [y - p for y, p in zip(ys, predicted, strict=True)]}
 
 
 def main_python() -> str:

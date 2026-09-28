@@ -12,6 +12,7 @@ NOT_RUN. A line executed by a test is not a line verified: coverage is necessary
 from __future__ import annotations
 
 import ast
+import hashlib
 import json
 import re
 import subprocess
@@ -21,12 +22,28 @@ from pathlib import Path
 import grimp
 
 from . import ROOT
-from .common import MEASURED, measured, not_run, r3, rel
+from .common import MEASURED, measured, not_run, r3, rel, write_text
 from .structure import PACKAGE, layer_of
 
 TESTS = ROOT / "tests"
 COVERAGE_JSON = ROOT / "reports" / "coverage" / "coverage.json"
 COVERAGE_DATA = ROOT / "reports" / "coverage" / ".coverage"
+COVERAGE_META = ROOT / "reports" / "coverage" / "coverage.meta.json"
+SRC = ROOT / "src" / PACKAGE
+CRLF, LF = bytes([13, 10]), bytes([10])
+
+
+def tree_fingerprint() -> str:
+    """SHA-256 over every `*.py` file of the measured package and of tests/ (path + LF-normalised bytes).
+
+    Binds a coverage report to the code and tests it was measured on. It establishes that the tree has not
+    changed since the coverage run; it does not say the coverage run was complete or that its tests passed.
+    """
+    digest = hashlib.sha256()
+    for path in sorted([*SRC.rglob("*.py"), *TESTS.rglob("*.py")]):
+        digest.update(path.relative_to(ROOT).as_posix().encode() + bytes(1))
+        digest.update(path.read_bytes().replace(CRLF, LF) + bytes(1))
+    return digest.hexdigest()
 
 
 def _is_test_function(node: ast.AST) -> bool:
@@ -84,8 +101,8 @@ def scan_file(path: Path) -> dict:
 def collected_count(python: str = sys.executable, timeout: int = 180) -> int | None:
     """Number of tests pytest itself collects (exact, including dynamic parametrisation), or None."""
     try:
-        out = subprocess.run([python, "-m", "pytest", "--collect-only", "-q", "-p", "no:cacheprovider"], cwd=ROOT,
-                             capture_output=True, text=True, timeout=timeout)
+        out = subprocess.run([python, "-m", "pytest", "--collect-only", "-q", "-p", "no:cacheprovider", "-o", "addopts="], cwd=ROOT,
+                             capture_output=True, text=True, timeout=timeout, check=False)
     except (OSError, subprocess.SubprocessError):
         return None
     match = re.search(r"(\d+) tests? collected", out.stdout) or re.search(r"^(\d+)/\d+ tests? collected", out.stdout, re.M)
@@ -95,13 +112,9 @@ def collected_count(python: str = sys.executable, timeout: int = 180) -> int | N
     return len(lines) if lines else None
 
 
-def collect(run_pytest_collection: bool = True) -> dict:
-    files = sorted(TESTS.rglob("test_*.py"))
-    if not files:
-        return not_run("no tests/ directory or no test_*.py files")
-    graph = grimp.build_graph(PACKAGE, include_external_packages=False, cache_dir=None)
+def _attribute_layers(per_file: list[dict], graph) -> None:
+    """Add layers_direct / layers_transitive to each scanned file (in place) and drop its raw import list."""
     known = set(graph.modules)
-    per_file = [scan_file(p) for p in files]
     for row in per_file:
         direct = {m for m in row["imports"] if m in known}
         reach = set(direct)
@@ -110,28 +123,45 @@ def collect(run_pytest_collection: bool = True) -> dict:
         row["layers_direct"] = sorted({layer_of(m) for m in direct})
         row["layers_transitive"] = sorted({layer_of(m) for m in reach if m != PACKAGE})
         del row["imports"]
-    layers = sorted({layer_of(m) for m in known if m != PACKAGE})
-    by_layer = []
+
+
+def _by_layer(per_file: list[dict], layers: list[str]) -> list[dict]:
+    rows = []
     for layer in layers:
         direct = [r for r in per_file if layer in r["layers_direct"]]
         trans = [r for r in per_file if layer in r["layers_transitive"]]
-        by_layer.append({"layer": layer,
-                         "files_direct": len(direct), "tests_direct": sum(r["tests"] for r in direct),
-                         "asserts_direct": sum(r["asserts"] for r in direct),
-                         "files_transitive": len(trans), "tests_transitive": sum(r["tests"] for r in trans)})
+        rows.append({"layer": layer,
+                     "files_direct": len(direct), "tests_direct": sum(r["tests"] for r in direct),
+                     "asserts_direct": sum(r["asserts"] for r in direct),
+                     "files_transitive": len(trans), "tests_transitive": sum(r["tests"] for r in trans)})
+    return rows
+
+
+def _inventory_summary(per_file: list[dict], collected: int | None) -> dict:
     total_tests = sum(r["tests"] for r in per_file)
     total_asserts = sum(r["asserts"] for r in per_file)
+    return {"test_files": len(per_file), "tests_static": total_tests, "asserts": total_asserts,
+            "raises_blocks": sum(r["raises_blocks"] for r in per_file),
+            "asserts_per_test": r3(total_asserts / total_tests) if total_tests else None,
+            "tests_collected_by_pytest": collected,
+            "static_matches_collected": (collected == total_tests) if collected is not None else None}
+
+
+def collect(run_pytest_collection: bool = True) -> dict:
+    files = sorted(TESTS.rglob("test_*.py"))
+    if not files:
+        return not_run("no tests/ directory or no test_*.py files")
+    graph = grimp.build_graph(PACKAGE, include_external_packages=False, cache_dir=None)
+    per_file = [scan_file(p) for p in files]
+    _attribute_layers(per_file, graph)
+    layers = sorted({layer_of(m) for m in graph.modules if m != PACKAGE})
     collected = collected_count() if run_pytest_collection else None
     return measured(
         method="ast scan of tests/**/test_*.py; layer attribution from imports and the grimp import graph",
         not_measured=["test quality or fault-detection power (see the mutation lane)", "dynamic parametrisation beyond literals",
                       "tests outside tests/"],
-        files=per_file, by_layer=by_layer,
-        summary={"test_files": len(per_file), "tests_static": total_tests, "asserts": total_asserts,
-                 "raises_blocks": sum(r["raises_blocks"] for r in per_file),
-                 "asserts_per_test": r3(total_asserts / total_tests) if total_tests else None,
-                 "tests_collected_by_pytest": collected,
-                 "static_matches_collected": (collected == total_tests) if collected is not None else None})
+        files=per_file, by_layer=_by_layer(per_file, layers),
+        summary=_inventory_summary(per_file, collected))
 
 
 def run_coverage(python: str = sys.executable) -> dict:
@@ -140,21 +170,41 @@ def run_coverage(python: str = sys.executable) -> dict:
     Returns a small status dict. A failing test run or a missing coverage.py is reported, never hidden.
     """
     COVERAGE_JSON.parent.mkdir(parents=True, exist_ok=True)
+    for stale in (COVERAGE_JSON, COVERAGE_META, COVERAGE_DATA):  # a failed run must not leave old evidence behind
+        stale.unlink(missing_ok=True)
+    fingerprint = tree_fingerprint()
     env_args = ["--data-file", str(COVERAGE_DATA)]
     run = subprocess.run([python, "-m", "coverage", "run", "--branch", "--source", str(ROOT / "src" / PACKAGE), *env_args,
-                          "-m", "pytest", "-q", "-p", "no:cacheprovider"], cwd=ROOT, capture_output=True, text=True)
+                          "-m", "pytest", "-q", "-p", "no:cacheprovider"], cwd=ROOT, capture_output=True, text=True, check=False)
     if not COVERAGE_DATA.exists():
         return {"status": "NOT_RUN", "reason": "coverage produced no data file", "stderr": run.stderr[-400:]}
     out = subprocess.run([python, "-m", "coverage", "json", *env_args, "-o", str(COVERAGE_JSON)],
-                         cwd=ROOT, capture_output=True, text=True)
+                         cwd=ROOT, capture_output=True, text=True, check=False)
     if out.returncode != 0:
         return {"status": "NOT_RUN", "reason": "coverage json failed", "stderr": out.stderr[-400:]}
+    meta = {"tree_sha256": fingerprint, "pytest_returncode": run.returncode}
+    write_text(COVERAGE_META, json.dumps(meta, sort_keys=True) + "\n")
     return {"status": MEASURED, "pytest_returncode": run.returncode, "pytest_tail": run.stdout.strip().splitlines()[-1:]}
 
 
-def collect_coverage() -> dict:
+def coverage_freshness() -> str | None:
+    """None when reports/coverage was measured on the current tree; otherwise the reason it cannot be used."""
     if not COVERAGE_JSON.exists():
-        return not_run("reports/coverage/coverage.json not found; run `python -m quality.metrics coverage`")
+        return "reports/coverage/coverage.json not found; run `python -m quality.metrics coverage`"
+    try:
+        recorded = json.loads(COVERAGE_META.read_text(encoding="utf-8")).get("tree_sha256")
+    except (OSError, ValueError, AttributeError):
+        return "reports/coverage/coverage.meta.json missing or unreadable: coverage.json is not bound to any tree"
+    if recorded != tree_fingerprint():
+        return "reports/coverage/coverage.json is stale: src/ or tests/ changed since it was measured; re-run `python -m quality.metrics coverage`"
+    return None
+
+
+def collect_coverage() -> dict:
+    """Coverage per layer, only when the report was measured on the tree that is on disk now (else NOT_RUN)."""
+    reason = coverage_freshness()
+    if reason:
+        return not_run(reason)
     data = json.loads(COVERAGE_JSON.read_text(encoding="utf-8"))
     per_layer: dict[str, dict[str, int]] = {}
     files = []

@@ -42,4 +42,4 @@ def test_complexity_budgets_hold_and_fail_on_a_worse_tree(cx):
     worse["overall"]["functions"] = 122
     worse["summary"]["min_mi"] = 5
     status = {r["id"]: r["status"] for r in budgets.evaluate({"sections": {"complexity": worse}})}
-    assert status["CX-01"] == FAIL and status["CX-02"] == FAIL and status["CX-03"] == FAIL
+    assert status["MI-01"] == FAIL and "CX-01" not in status  # per-function CC is the quality lane's ratchet, not budgeted twice

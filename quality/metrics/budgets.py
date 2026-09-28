@@ -5,8 +5,13 @@ A budget is a numeric limit with an operator. Limits are of three kinds and the 
   * principled  a design rule that should hold at any size (no dependency cycles, domain imports no
                 other layer, Stable Dependencies Principle, R^2 of a linear fit at least 0.9);
   * external    a published human-factors threshold (Doherty 400 ms);
-  * ratchet     the current value plus headroom, so a regression is caught (max cyclomatic complexity,
-                share of A/B-rank functions). A ratchet is a guard rail, not a claim of quality.
+  * ratchet     the current value plus headroom, so a regression is caught (lowest maintainability
+                index, coverage floor). A ratchet is a guard rail, not a claim of quality.
+
+Cyclomatic complexity per function is budgeted by the quality lane's `quality/gates/complexity_ratchet.py`
+(stricter: default 10 with a pinned debt list); this lane measures and displays it but does not budget it a
+second time. Timing budgets (kind `timing`) are advisory in the `full` gate and enforced in the release
+session with one re-measurement, because wall-clock values depend on machine load (ADR-0038).
 
 A budget whose input section is NOT_RUN evaluates to NOT_RUN, never PASS. Timing budgets are
 measurements on the machine that ran them and can fail under heavy machine load; the report says so.
@@ -14,8 +19,9 @@ measurements on the machine that ran them and can fail under heavy machine load;
 from __future__ import annotations
 
 import operator
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Any
 
 from .common import FAIL, NOT_RUN, PASS
 
@@ -66,11 +72,6 @@ def _non_domain_distance(doc: dict) -> float:
     return max(values)
 
 
-def _ab_share(doc: dict) -> float:
-    o = _sec(doc, "complexity")["overall"]
-    return (o["ranks"]["A"] + o["ranks"]["B"]) / o["functions"]
-
-
 def _untested_layers(doc: dict) -> list[str]:
     layers = _sec(doc, "tests")["by_layer"]
     return sorted(r["layer"] for r in layers if r["layer"] in {"domain", "application", "adapters", "interfaces"}
@@ -78,14 +79,22 @@ def _untested_layers(doc: dict) -> list[str]:
 
 
 def _lane_fail(doc: dict) -> int:
+    """Lane groups that are FAIL or UNKNOWN (unreadable, or a status other than PASS/FAIL/NOT_RUN).
+
+    A report whose status cannot be read is not evidence of success, so it counts against the budget.
+    """
     groups = [g for g in _sec(doc, "lane_reports")["groups"] if g["status"] != NOT_RUN]
     if not groups:
         raise Missing("no other lane has written reports")
-    return sum(g["status"] == "FAIL" for g in groups)
+    return sum(g["status"] in {"FAIL", "UNKNOWN"} for g in groups)
 
 
 def _cov(doc: dict, key: str) -> float:
     return _sec(doc, "coverage")["summary"][key]
+
+
+def _verify(doc: dict, key: str) -> float:
+    return _sec(doc, "performance")["verify_scaling"][key]
 
 
 def _closure(doc: dict, key: str) -> float:
@@ -107,16 +116,13 @@ BUDGETS: tuple[Budget, ...] = (
            "ratchet", "<=", 0.5, _non_domain_distance),
     Budget("ARCH-07", "Mean layer distance from the main sequence", "martin", "structural", "ratchet", "<=", 0.5,
            lambda d: _sec(d, "martin")["summary"]["mean_layer_distance"]),
-    Budget("CX-01", "Largest function cyclomatic complexity", "complexity", "structural", "ratchet", "<=", 50,
-           lambda d: _sec(d, "complexity")["overall"]["max"]),
-    Budget("CX-02", "Share of functions ranked A or B (CC <= 10)", "complexity", "structural", "ratchet", ">=", 0.9, _ab_share),
-    Budget("CX-03", "Lowest module maintainability index (radon MI, rank A >= 20)", "complexity", "structural",
+    Budget("MI-01", "Lowest module maintainability index (radon MI, rank A >= 20)", "complexity", "structural",
            "ratchet", ">=", 20, lambda d: _sec(d, "complexity")["summary"]["min_mi"]),
     Budget("TEST-01", "Every domain/application/adapters/interfaces layer has a directly importing test (count of untested)",
            "tests", "structural", "principled", "==", 0, lambda d: len(_untested_layers(d))),
     Budget("COV-01", "Line+branch coverage of src/eija_studio, percent (when reports/coverage exists)", "coverage", "structural",
            "ratchet", ">=", 75.0, lambda d: _cov(d, "percent")),
-    Budget("LANE-01", "No aggregated lane report has status FAIL", "lane_reports", "structural", "principled", "==", 0, _lane_fail),
+    Budget("LANE-01", "No aggregated lane report is FAIL, UNKNOWN or UNREADABLE (a present report must say PASS or NOT_RUN)", "lane_reports", "structural", "principled", "==", 0, _lane_fail),
     Budget("PERF-01", "p95 of every read endpoint under 400 ms (TestClient)", "performance", "timing", "external", "<", 400.0,
            lambda d: _worst_p95(d, "testclient", ("read",))),
     Budget("PERF-02", "p95 of every non-compute write endpoint under 400 ms (TestClient, durable SQLite)", "performance",
@@ -125,10 +131,15 @@ BUDGETS: tuple[Budget, ...] = (
            "external", "<", 400.0, lambda d: _worst_p95(d, "uvicorn", ("read", "write"))),
     Budget("PERF-04", "p95 of the verify compute endpoint under 10 s (long-running: needs a progress indication, see README)",
            "performance", "timing", "external", "<", 10_000.0, lambda d: _worst_p95(d, "testclient", ("compute",))),
-    Budget("PERF-05", "Runtime verification time is linear in matrix size (R^2 of T = c0 + c1*cells)", "performance", "timing",
-           "principled", ">=", 0.9, lambda d: _sec(d, "performance")["verify_scaling"]["r2"]),
-    Budget("SCALE-01", "closure(): two-term linear fit T = c0 + cV*V + cE*E, R^2", "scaling", "timing", "principled", ">=", 0.9,
-           lambda d: _closure(d, "two_term_r2")),
+    Budget("PERF-05", "Runtime verification time is near-linear in matrix size (R^2 of T = c0 + c1*cells; low power, see PERF-06)",
+           "performance", "timing", "principled", ">=", 0.9, lambda d: _sec(d, "performance")["verify_scaling"]["r2"]),
+    Budget("PERF-06", "Runtime verification: linear fit beats the quadratic alternative in cells (R^2 difference)", "performance",
+           "timing", "principled", ">", 0.0,
+           lambda d: round(_verify(d, "r2") - _verify(d, "alt_quadratic_r2"), 6)),
+    Budget("SCALE-01", "closure(): TWO-term fit T = c0 + cV*V + cE*E, R^2 (not the single V+E model; that is SCALE-04)", "scaling",
+           "timing", "principled", ">=", 0.9, lambda d: _closure(d, "two_term_r2")),
+    Budget("SCALE-04", "closure(): the requested SINGLE-term fit T = c0 + c1*(V+E), R^2 (fits worse than two-term; limit has headroom)",
+           "scaling", "timing", "ratchet", ">=", 0.85, lambda d: _closure(d, "r2")),
     Budget("SCALE-02", "closure(): log-log exponent of time against V+E lies in [0.8, 1.2]", "scaling", "timing", "principled",
            "==", True, lambda d: 0.8 <= _closure(d, "loglog_exponent") <= 1.2),
     Budget("SCALE-03", "closure(): linear fit beats the quadratic alternative (R^2 difference)", "scaling", "timing",

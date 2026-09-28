@@ -75,19 +75,27 @@ def read_report(path: Path) -> dict:
     return entry
 
 
+def _worst(entries: list[dict]) -> str:
+    """The weakest report decides: FAIL, then UNKNOWN (unreadable included), then NOT_RUN, else PASS."""
+    statuses = {e["status"] for e in entries}
+    if "FAIL" in statuses:
+        return "FAIL"
+    if statuses & {"UNKNOWN", "UNREADABLE"}:
+        return "UNKNOWN"
+    return "NOT_RUN" if "NOT_RUN" in statuses else "PASS"
+
+
+def _group(name: str, pattern: str, lane: str, reports: Path) -> dict:
+    files = sorted(reports.glob(pattern)) if reports.exists() else []
+    if not files:
+        return {"group": name, "lane": lane, "status": NOT_RUN,
+                "reason": f"no reports/{pattern} (lane not run on this checkout)", "reports": []}
+    entries = [read_report(f) for f in files]
+    return {"group": name, "lane": lane, "status": _worst(entries), "reports": entries}
+
+
 def collect(reports: Path = REPORTS) -> dict:
-    groups = []
-    for name, (pattern, lane, expectation) in sorted(GROUPS.items()):
-        files = sorted(reports.glob(pattern)) if reports.exists() else []
-        if not files:
-            groups.append({"group": name, "lane": lane, "status": NOT_RUN,
-                           "reason": f"no reports/{pattern} (lane not run on this checkout)", "reports": []})
-            continue
-        entries = [read_report(f) for f in files]
-        worst = ("FAIL" if any(e["status"] == "FAIL" for e in entries) else
-                 "UNKNOWN" if any(e["status"] in {"UNKNOWN", "UNREADABLE"} for e in entries) else
-                 "NOT_RUN" if any(e["status"] == "NOT_RUN" for e in entries) else "PASS")
-        groups.append({"group": name, "lane": lane, "status": worst, "reports": entries})
+    groups = [_group(name, pattern, lane, reports) for name, (pattern, lane, _expectation) in sorted(GROUPS.items())]
     present = sum(g["status"] != NOT_RUN for g in groups)
     return measured(
         method="read reports/{formal,mutation,testing,hci}; statuses copied verbatim, never inferred",

@@ -40,7 +40,7 @@ def test_ols_rejects_too_few_points():
 
 
 def test_ols_multi_recovers_two_coefficients_under_noise():
-    rng = random.Random(7)
+    rng = random.Random(7)  # noqa: S311  (seeded test data)
     rows = [[rng.uniform(1, 100), rng.uniform(1, 100)] for _ in range(60)]
     ys = [1.5 + 0.7 * a + 0.1 * b + rng.gauss(0, 0.05) for a, b in rows]
     fit = ols_multi(rows, ys)
