@@ -109,10 +109,10 @@ def main() -> int:
 
     # per-pair sensitivity and survival accumulators
     pair_total = 0
-    pair_changed = {m: 0 for m in METHODS}
+    pair_changed = dict.fromkeys(METHODS, 0)
     file_versions = 0
     file_bytes_changed_ast_same = 0
-    surv: dict[int, dict[str, int]] = {h: {m: 0 for m in METHODS} | {"total": 0, "broken": 0} for h in horizons}
+    surv: dict[int, dict[str, int]] = {h: dict.fromkeys(METHODS, 0) | {"total": 0, "broken": 0} for h in horizons}
     unparsable = 0
     files_used = 0
 

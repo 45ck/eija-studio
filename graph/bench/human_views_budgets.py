@@ -37,7 +37,6 @@ import itertools
 import json
 import re
 import sys
-from collections import deque
 from pathlib import Path
 from unittest import mock
 
@@ -622,7 +621,7 @@ def budget_section(defn: dict, sections: dict) -> dict:
         min(rq["rows"], b["matrix_rows_per_page_max"]) * rq["columns"] <= b["matrix_cells_max"])
     layers = sorted({n.split(".")[1] for n in sections["_nodes"] if n.count(".") >= 1 and n.split(".")[1] in ("domain", "application", "adapters", "interfaces")})
     add("HV-04", "default expansion rows (root plus layers)", 1 + len(layers), b["coverage_default_rows_max"], 1 + len(layers) <= b["coverage_default_rows_max"])
-    add("HV-04", "container depth (package, layer, module)", 3, b["tree_depth_max"], 3 <= b["tree_depth_max"])
+    add("HV-04", "container depth (package, layer, module)", 3, b["tree_depth_max"], b["tree_depth_max"] >= 3)
     add("HV-05", "tree depth", None, b["tree_depth_max"], None, lg["tree_depth_reason"])
     add("HV-06", "findings", None, None, None, "NOT_RUN: no rule is implemented, so no findings exist")
     add("HV-07", "witness segments to a requirement (max)", tr["witness_segments_to_requirements"]["max"], b["witness_segments_default_max"],

@@ -68,7 +68,7 @@ def score(counts: dict[str, int]) -> float | None:
 
 
 def tally(mutants: list[Mutant]) -> dict[str, Any]:
-    counts = {s: 0 for s in STATUSES}
+    counts = dict.fromkeys(STATUSES, 0)
     for m in mutants:
         counts[m.status] += 1
     return {"total": len(mutants), **counts, "score": score(counts)}

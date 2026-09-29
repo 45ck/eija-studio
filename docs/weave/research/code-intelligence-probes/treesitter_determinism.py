@@ -1,9 +1,16 @@
 # Probe (not a test): run from the worktree root with a venv holding tree-sitter==0.26.0, tree-sitter-python==0.25.0, tree-sitter-typescript==0.23.2, tree-sitter-javascript==0.25.0, tree-sitter-html==0.23.2, tree-sitter-css==0.25.0, tree-sitter-json==0.24.8, tree-sitter-markdown==0.5.1, libcst==1.9.0.
 # Output is quoted in docs/weave/research/code-intelligence-and-analysis.md (measured 2026-09-29, Windows 11, Python 3.12.10).
-import hashlib, ast, sys
+import ast
+import hashlib
+
+import tree_sitter_css as tsc
+import tree_sitter_html as tsh
+import tree_sitter_javascript as tsj
+import tree_sitter_json as tsjson
+import tree_sitter_markdown as tsm
+import tree_sitter_python as tsp
+import tree_sitter_typescript as tst
 from tree_sitter import Language, Parser
-import tree_sitter_python as tsp, tree_sitter_typescript as tst, tree_sitter_javascript as tsj
-import tree_sitter_html as tsh, tree_sitter_css as tsc, tree_sitter_json as tsjson, tree_sitter_markdown as tsm
 
 L = {
  'python': Language(tsp.language()),

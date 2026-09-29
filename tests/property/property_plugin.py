@@ -25,11 +25,11 @@ from pathlib import Path
 
 import pytest
 
-from hypothesis import HealthCheck, settings  # noqa: E402
-from hypothesis.database import DirectoryBasedExampleDatabase  # noqa: E402
-from hypothesis.statistics import collector  # noqa: E402
+from hypothesis import HealthCheck, settings
+from hypothesis.database import DirectoryBasedExampleDatabase
+from hypothesis.statistics import collector
 
-from . import property_support as support  # noqa: E402
+from . import property_support as support
 
 ROOT = Path(__file__).resolve().parents[2]
 PROFILE = os.environ.get("EIJA_HYPOTHESIS_PROFILE", "ci")

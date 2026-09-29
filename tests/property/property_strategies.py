@@ -12,7 +12,7 @@ from typing import Any
 from hypothesis import assume, strategies as st
 from pydantic import ValidationError
 
-from eija_studio.domain.models import BASE_GUARDS, Transition, Workflow
+from eija_studio.domain.models import BASE_GUARDS, Workflow
 
 NAMES = st.text(alphabet=st.characters(blacklist_categories=("Cs", "Cc")), min_size=1, max_size=10)
 IDENTIFIERS = st.from_regex(r"[A-Z][A-Z0-9_-]{0,10}", fullmatch=True)

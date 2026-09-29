@@ -34,7 +34,7 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import storage_query_probe as sq  # noqa: E402
+import storage_query_probe as sq
 
 PROP = ("depends_on", "satisfies")
 WORK = sq.SCRATCH / "lb"
@@ -127,8 +127,9 @@ def child_query(a) -> None:
 
 
 def child_shuffle(a) -> None:
-    import ladybug as lb
     import random
+
+    import ladybug as lb
     orders = set()
     prop_edges = sorted(tuple(r) for r in csv.reader(open(WORK / "prop.csv", encoding="utf-8")))
     for k in range(3):
@@ -171,7 +172,7 @@ def parent(a) -> None:
         print(json.dumps({"status": "NOT_RUN", "reason": f"{exc}; refusing to run an embedded engine unguarded"}))
         return
     try:
-        import ladybug as lb  # noqa: F401
+        import ladybug as lb
     except ImportError:
         print(json.dumps({"status": "NOT_RUN", "reason": "ladybug not installed"}))
         return

@@ -18,7 +18,7 @@ import hashlib
 import heapq
 import json
 from collections import deque
-from typing import Callable, Iterable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 
 STATUSES = ("PASS", "FAIL", "CONFLICT", "STALE", "UNKNOWN", "NOT_RUN")
 
@@ -107,7 +107,7 @@ def _adj(links: Iterable[Link], tier: int) -> dict[str, list[str]]:
 
 def bfs(adj: Mapping[str, Sequence[str]], roots: Iterable[str]) -> dict[str, tuple[int, str | None]]:
     """Distance and canonical parent of every reached node. Sorted roots, sorted successors."""
-    dist: dict[str, tuple[int, str | None]] = {r: (0, None) for r in sorted(set(roots))}
+    dist: dict[str, tuple[int, str | None]] = dict.fromkeys(sorted(set(roots)), (0, None))
     q = deque(sorted(set(roots)))
     while q:
         u = q.popleft()
@@ -388,7 +388,7 @@ def dependency_order(changed: Sequence[str], precedes: Iterable[tuple[str, str]]
     for n in nodes:
         members.setdefault(label[n], []).append(n)
     dag: dict[str, set[str]] = {m: set() for m in members}
-    indeg = {m: 0 for m in members}
+    indeg = dict.fromkeys(members, 0)
     for a, b in edges:
         la, lb = label[a], label[b]
         if la != lb and lb not in dag[la]:

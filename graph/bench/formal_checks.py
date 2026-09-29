@@ -17,7 +17,6 @@ Output is sorted-key ASCII JSON without timestamps: two runs on one platform are
 from __future__ import annotations
 
 import ast
-import hashlib
 import inspect
 import itertools
 import json
@@ -130,7 +129,7 @@ def f1b_budget_semantics(n: int = 3) -> dict:
         g = _adj(nodes, edges)
         for roots in _subsets(nodes):
             full = set(closure.lfp_kleene(g, roots))
-            for budget in range(0, n + 2):
+            for budget in range(n + 2):
                 r = kernel_closure(g, list(roots), budget)
                 cases += 1
                 bad_subset += not set(r["affected"]) <= full
@@ -226,7 +225,7 @@ def _kernel_aggregate(statuses):
 def f2_status() -> dict:
     laws = status.check_laws()
     kernel_vals = ("PASS", "FAIL", "STALE", "UNKNOWN")
-    seqs = [p for k in range(0, 7) for p in itertools.product(kernel_vals, repeat=k)]
+    seqs = [p for k in range(7) for p in itertools.product(kernel_vals, repeat=k)]
     agree = None
     if kernel_evidence is not None:
         agree = all(status.join(p) == _kernel_aggregate(p) for p in seqs if p)
@@ -310,7 +309,7 @@ def f3_canon() -> dict:
                    "Emoji: Grinning Face", "Hebrew Letter Dalet With Dagesh"]]
     rfc_order_ok = order_seen == sorted(order_seen)
     rfc_string = canon.dumps("€$\x0f\nA'B\"\\\\\"/".replace("\\\\", "\\")) == \
-        '"€$\\u000f\\nA\'B\\"\\\\\\"/"'.encode("utf-8")
+        '"€$\\u000f\\nA\'B\\"\\\\\\"/"'.encode()
     astral_vs_kernel = None
     if kernel_canonical is not None:
         astral_vs_kernel = {"jcs_subset": canon.dumps({"\U00010000": 1, "￿": 2}).decode(),
@@ -349,8 +348,8 @@ def f3_canon() -> dict:
     # Framing (T3): naive concatenation collides, frame does not; exhaustive over a tiny alphabet.
     naive_collides = canon.naive_concat_digest(b"a", b"bc") == canon.naive_concat_digest(b"ab", b"c")
     framed_distinct = canon.digest(b"t", b"a", b"bc") != canon.digest(b"t", b"ab", b"c")
-    strings = [b"".join(p) for k in range(0, 3) for p in itertools.product([b"a", b"b"], repeat=k)]
-    tuples = [(tag, fs) for tag in (b"x", b"xy") for k in range(0, 4) for fs in itertools.product(strings, repeat=k)]
+    strings = [b"".join(p) for k in range(3) for p in itertools.product([b"a", b"b"], repeat=k)]
+    tuples = [(tag, fs) for tag in (b"x", b"xy") for k in range(4) for fs in itertools.product(strings, repeat=k)]
     frames = {canon.frame(t, fs) for t, fs in tuples}
     # T4 Merkle: permutation invariance (all 24 orders), leaf sensitivity, duplicate refusal.
     leaves = [b"l0", b"l1", b"l2", b"l3"]
@@ -385,7 +384,7 @@ def f3b_kernel_canonical_hazards() -> dict:
     try:
         kernel_canonical({1: "a", "1": "b"})
         out["mixed_key_types"] = "accepted"
-    except TypeError as exc:
+    except TypeError:
         out["mixed_key_types"] = "TypeError"
     out["tuple_and_list_same_text"] = kernel_canonical((1, 2)) == kernel_canonical([1, 2])
     out["float_and_int_differ"] = (kernel_canonical(1.0), kernel_canonical(1))

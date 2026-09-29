@@ -289,7 +289,7 @@ def build_pack(nodes, edges, cost, seeds, budget, ranker="int") -> dict:
     hop2 = set().union(*(adj[u] for u in hop1)) | hop1
     weights = arc_weights(edges)
     if ranker == "int":
-        score = ref.ppr_int(nodes, weights, {s: 1 for s in seed_set})["ppm"]
+        score = ref.ppr_int(nodes, weights, dict.fromkeys(seed_set, 1))["ppm"]
     else:  # float, arc order = dict insertion order
         fl = ppr_float(nodes, list(weights.items()), sorted(seed_set))
         score = {u: int(fl[u] * 1_000_000 + 0.5) for u in nodes}

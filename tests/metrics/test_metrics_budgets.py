@@ -28,7 +28,7 @@ def test_tiers_are_declared_and_timing_or_machine_budgets_are_release_tier():
 def test_release_budgets_are_not_run_on_a_structural_profile_document():
     """The fast/full sessions collect the structural profile: every release budget must be NOT_RUN there, never PASS or FAIL."""
     skipped = {"status": NOT_RUN, "reason": collect.NOT_COLLECTED}
-    doc = {"sections": {name: skipped for name in ("coverage", "lane_reports", "performance", "scaling", "verification_yield")}}
+    doc = {"sections": dict.fromkeys(("coverage", "lane_reports", "performance", "scaling", "verification_yield"), skipped)}
     results = {r["id"]: r["status"] for r in budgets.evaluate(doc)}
     release = {b.id for b in budgets.BUDGETS if b.tier == "release"}
     assert release and {results[i] for i in release} == {NOT_RUN}

@@ -20,12 +20,12 @@ from __future__ import annotations
 import hashlib
 import importlib
 import json
+import platform
 import random
 import re
 import subprocess
 import sys
 import time
-import platform
 import uuid
 import warnings
 from pathlib import Path
@@ -36,7 +36,6 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from eija_studio.domain.impact import closure as kernel_closure  # noqa: E402
 from eija_studio.domain.models import canonical as kernel_canonical  # noqa: E402
-
 
 
 def _optional(name: str):

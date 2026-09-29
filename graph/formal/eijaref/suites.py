@@ -10,7 +10,7 @@ Domains are small and exhaustive on purpose; the size is part of each suite's na
 from __future__ import annotations
 
 import itertools
-from typing import Callable, Iterable
+from collections.abc import Callable
 
 from . import canon as ref_canon
 from . import closure as ref_closure
@@ -101,7 +101,7 @@ def suite_canon(dumps: Callable[[object], bytes]) -> Violations:
         try:
             dumps(value)
             bad.append(f"accepted a value outside the domain: {name}")
-        except Exception:  # noqa: BLE001 - any refusal is acceptable, silence is not
+        except Exception:
             pass
     return bad
 

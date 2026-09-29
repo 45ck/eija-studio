@@ -233,9 +233,8 @@ def test_fault_hooks_fire_in_order_and_roll_back_everything(store):
         if point == "after_operation":
             raise RuntimeError("boom")
 
-    with pytest.raises(RuntimeError):
-        with store.transaction() as u:
-            runtime.execute(u, CASE, candidate(), command(item), fault=fault)
+    with pytest.raises(RuntimeError), store.transaction() as u:
+        runtime.execute(u, CASE, candidate(), command(item), fault=fault)
     assert seen == ["after_state", "after_effects", "after_operation"]
     row, counts = snapshot(store, item)
     assert (row["state"], row["version"]) == ("Submitted", 0) and counts == {"audit": 0, "outbox": 0, "operations": 0}

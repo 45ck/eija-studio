@@ -476,7 +476,8 @@ def main() -> int:
         return 0
     body = run(a.sizes, a.shacl_max)
     try:
-        import pyshacl, rdflib  # noqa: E401, PLC0415
+        import pyshacl  # noqa: PLC0415
+        import rdflib
         shacl_env = {"pyshacl": pyshacl.__version__, "rdflib": rdflib.__version__}
     except ImportError:
         shacl_env = "not installed"

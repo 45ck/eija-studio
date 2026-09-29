@@ -12,7 +12,16 @@ from typing import Any
 
 from . import codelink as cl
 from .extract import collect, describe_dir
-from .pages import GENERATOR, OKF_VERSION, PageSpec, Repo, dump_frontmatter, render_links, render_page, split_page
+from .pages import (
+    GENERATOR,
+    OKF_VERSION,
+    PageSpec,
+    Repo,
+    dump_frontmatter,
+    render_links,
+    render_page,
+    split_page,
+)
 
 LOG_SEED = """# Update log
 

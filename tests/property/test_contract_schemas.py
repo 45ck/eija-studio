@@ -29,7 +29,7 @@ import pytest
 from hypothesis import assume, given, settings, strategies as st
 from hypothesis_jsonschema import from_schema
 from jsonschema import Draft202012Validator
-from pydantic import BaseModel, ValidationError
+from pydantic import ValidationError
 
 from eija_studio.domain.change_case import ChangeCase
 from eija_studio.domain.models import BASE_GUARDS, OWNER, Alternative, ExecuteCommand, LayoutChange, Proposal, SemanticTransaction, Workflow

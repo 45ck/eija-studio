@@ -18,9 +18,8 @@ negative edge (checked with the SCC code in ``order``). Both are decidable in li
 from __future__ import annotations
 
 import sqlite3
+from collections.abc import Iterable
 from dataclasses import dataclass
-from itertools import product
-from typing import Iterable
 
 from .order import scc_labels
 
@@ -74,7 +73,7 @@ def stratify(rules: list[Rule]) -> dict[str, int]:
     for a, b, neg in sorted(edges):
         if neg and label[a] == label[b]:
             raise RuleError(f"negation inside recursion: {a} -> {b}")
-    stratum = {p: 0 for p in preds}
+    stratum = dict.fromkeys(preds, 0)
     for _ in range(len(preds) + 1):  # longest path in the condensation, negative edges count one
         changed = False
         for a, b, neg in sorted(edges):

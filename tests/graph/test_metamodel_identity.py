@@ -21,8 +21,8 @@ ROOT = Path(__file__).resolve().parents[2]
 SCHEMA = ROOT / "graph" / "schema"
 sys.path.insert(0, str(SCHEMA))
 try:
-    import build_schemas as bs  # noqa: E402
-    import typecheck  # noqa: E402
+    import build_schemas as bs
+    import typecheck
 finally:  # leave sys.path as found: other test modules import their own top-level names
     sys.path.remove(str(SCHEMA))
 

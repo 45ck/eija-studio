@@ -16,7 +16,18 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from . import codelink as cl
-from .pages import PageSpec, Repo, Source, describe, fence, first_sentence, localize_links, md_cell, one_line, quote
+from .pages import (
+    PageSpec,
+    Repo,
+    Source,
+    describe,
+    fence,
+    first_sentence,
+    localize_links,
+    md_cell,
+    one_line,
+    quote,
+)
 
 PKG = "src/eija_studio"
 LAYERS = ("domain", "application", "adapters", "interfaces")
@@ -634,7 +645,7 @@ def lane_pages(repo: Repo, catalog_paths: dict[str, str]) -> list[PageSpec]:
         slug = f"{match[1]}-{_short(cl.slug(lane.split('(')[0]))}"
         uri = f"repo://{ADR_README}#{cl.slug(numbers)}"
         facts = "\n\n".join(["| | |\n|---|---|\n" + "\n".join([f"| Reserved ADR numbers | {match[1]}–{match[2]} |",
-                             f"| Branch convention | `lane/<name>` (see AGENTS.md, Capability lanes) |", f"| Source | `{uri}` |"]),
+                             "| Branch convention | `lane/<name>` (see AGENTS.md, Capability lanes) |", f"| Source | `{uri}` |"]),
                              "## Landed ADRs\n\n" + ("Listed under the generated links below." if adrs else "_None yet: the lane has not "
                                                      "recorded a decision in its reserved block._")])
         pages.append(PageSpec(path=f"lanes/{slug}.md", type="Capability Lane", title=lane, description=f"Capability lane with ADR numbers {match[1]}–{match[2]} reserved.",

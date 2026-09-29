@@ -27,7 +27,7 @@ from __future__ import annotations
 
 import heapq
 from collections import defaultdict, deque
-from typing import Iterable
+from collections.abc import Iterable
 
 Edge = tuple[str, str]
 
@@ -117,7 +117,7 @@ def check_scc_labels(nodes: Iterable[str], edges: Iterable[Edge], label: dict[st
                         queue.append(w)
             if seen != set(members):
                 return False, "2:class-not-strongly-connected"
-    indeg = {k: 0 for k in classes}
+    indeg = dict.fromkeys(classes, 0)
     out = defaultdict(set)
     for u, v in edge_l:
         if label[u] != label[v] and label[v] not in out[label[u]]:
@@ -138,7 +138,7 @@ def check_scc_labels(nodes: Iterable[str], edges: Iterable[Edge], label: dict[st
 def lexicographic_topological_order(nodes: Iterable[str], edges: Iterable[Edge]) -> list[str] | None:
     """Untrusted producer: Kahn with a min-heap. Returns None when the graph has a cycle."""
     adj = _adj(nodes, edges)
-    indeg = {n: 0 for n in adj}
+    indeg = dict.fromkeys(adj, 0)
     for u in adj:
         for v in adj[u]:
             indeg[v] += 1

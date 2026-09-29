@@ -13,10 +13,11 @@ import functools
 import io
 import json
 import re
+from collections.abc import Iterator
 from dataclasses import dataclass
 from hashlib import sha256
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any
 
 SCHEME = "repo://"
 

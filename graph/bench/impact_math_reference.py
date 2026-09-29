@@ -18,8 +18,8 @@ from __future__ import annotations
 import heapq
 import itertools
 from collections import deque
-from functools import cmp_to_key
 from fractions import Fraction
+from functools import cmp_to_key
 from math import comb
 
 Adj = dict[str, list[str]]
@@ -39,8 +39,8 @@ def closure(graph: Adj, roots: list[str], budget: int | None = None) -> dict:
         raise ValueError("Negative traversal budget")
     queue = deque(sorted(set(roots)))
     seen = set(queue)
-    dist = {r: 0 for r in queue}
-    parent: dict[str, str | None] = {r: None for r in queue}
+    dist = dict.fromkeys(queue, 0)
+    parent: dict[str, str | None] = dict.fromkeys(queue)
     visited: list[str] = []
     done: set[str] = set()
     while queue:
@@ -208,7 +208,7 @@ def condensation(nodes: list[str], adj: Adj) -> tuple[dict[str, str], dict[str, 
 def lex_topological_order(dag: Adj) -> list[str]:
     """Lexicographically smallest topological order (Kahn with a min-heap). Raises on a cycle."""
     nodes = sorted(set(dag) | {v for vs in dag.values() for v in vs})
-    indeg = {n: 0 for n in nodes}
+    indeg = dict.fromkeys(nodes, 0)
     for u in dag:
         for v in set(dag[u]):
             indeg[v] += 1
@@ -295,11 +295,11 @@ def ppr_int(nodes: list[str], weights: dict[tuple[str, str], int], seeds: dict[s
     if not seed_list:
         raise ValueError("at least one seed with positive weight")
     k = choose_iterations(alpha, bits) if iterations is None else iterations
-    x = {u: 0 for u in order}
+    x = dict.fromkeys(order, 0)
     for (s, _), sh in zip(seed_list, _spread(scale, seed_list)):
         x[s] += sh
     for _ in range(k):
-        y = {u: 0 for u in order}
+        y = dict.fromkeys(order, 0)
         tele = 0
         for u in order:
             if x[u] == 0:

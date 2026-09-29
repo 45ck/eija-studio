@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 from . import codelink as cl
-from .build import reorder, build, write
+from .build import build, reorder, write
 from .checks import CHECKS, current_sources_sha, format_report, run_checks, valid_actor, valid_iso
 from .pages import RESERVED, Repo, dump_frontmatter, human_sha256, sources_sha256, split_page
 

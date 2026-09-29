@@ -17,7 +17,8 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-from typing import Any, Iterable, Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
+from typing import Any
 
 FINGERPRINT_DOMAIN = "eija.finding.v1"
 SAFE_INT = 2**53 - 1

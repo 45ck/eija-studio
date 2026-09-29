@@ -14,4 +14,4 @@ if MISSING:
     def pytest_report_header(config):
         return f"property suite NOT_RUN: missing {', '.join(MISSING)} (pip install -e '.[dev,testing]')"
 else:
-    from .property_plugin import *  # noqa: F401,F403  (pytest hooks)
+    from .property_plugin import *  # noqa: F403  (pytest hooks)

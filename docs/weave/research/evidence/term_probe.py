@@ -6,7 +6,11 @@ Run from the repository root (measured at commit ddc43b9, Python 3.12, Windows 1
 Read-only. Not a gate and not part of the kernel. Splitting rule: camelCase / snake_case / kebab-case,
 acronym runs kept together, lowercase. Sorted output; no clock, no environment input.
 """
-import ast, re, sys, json, collections, pathlib
+import ast
+import collections
+import pathlib
+import re
+
 root = pathlib.Path('.')
 def split(name):
     name = re.sub(r'([a-z0-9])([A-Z])', r'\1 \2', name)
@@ -52,7 +56,7 @@ print('term | words | src-ident-uses | test-ident-uses | ui-text-hits')
 for r in rows: print(' | '.join(map(str,r)))
 gl = set(w for t in terms for w in split(t))
 print('top non-glossary words in src identifiers:')
-stop = set('self cls str int bool none true false list dict tuple set any type object args kwargs return'.split())
+stop = set(['self', 'cls', 'str', 'int', 'bool', 'none', 'true', 'false', 'list', 'dict', 'tuple', 'set', 'any', 'type', 'object', 'args', 'kwargs', 'return'])
 for w,c in sorted(allw.items(), key=lambda x:(-x[1],x[0])):
     if w not in gl and w not in stop and len(w)>2:
         pass

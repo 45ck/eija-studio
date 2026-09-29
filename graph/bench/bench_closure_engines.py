@@ -75,8 +75,9 @@ def main(sizes):
         res["sqlite_cte_s"] = round(t, 4)
         assert got == ref, "sqlite mismatch"
 
-        import duckdb
         import os
+
+        import duckdb
         d = duckdb.connect(":memory:")
         d.execute("CREATE TABLE e(a BIGINT, b BIGINT)")
         csv_path = os.path.join(os.environ.get("TMP", "."), "edges.csv")

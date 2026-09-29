@@ -19,7 +19,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from eijaref import canon, closure, order, status, suites  # noqa: E402
+from eijaref import canon, closure, order, status, suites
 
 
 def _suite(name: str, good: list, controls: list) -> dict:

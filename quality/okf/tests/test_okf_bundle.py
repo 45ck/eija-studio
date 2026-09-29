@@ -3,7 +3,6 @@
 Every negative test asserts the specific finding a maintainer would see, not just "something failed".
 """
 import csv
-import csv
 import re
 import shutil
 import sys

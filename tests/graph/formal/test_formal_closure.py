@@ -5,7 +5,6 @@ in docs/weave/design/formal-verification-of-weave.md section 5).
 """
 from __future__ import annotations
 
-import itertools
 import random
 import sqlite3
 

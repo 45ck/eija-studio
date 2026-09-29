@@ -10,7 +10,6 @@ from __future__ import annotations
 import itertools
 import json
 import random
-from pathlib import Path
 
 import pytest
 from eijaref import canon, closure, order, status, suites
@@ -65,7 +64,7 @@ def test_x_impact_budgeted_closure_is_a_prefix_of_the_true_closure(impact) -> No
         g = bench._adj(nodes, edges)
         for roots in bench._subsets(nodes):
             full = set(closure.lfp_kleene(g, roots))
-            for budget in range(0, 5):
+            for budget in range(5):
                 r = impact.closure(g, list(roots), budget)
                 assert set(r["affected"]) <= full
                 assert not r["complete"] or set(r["affected"]) == full

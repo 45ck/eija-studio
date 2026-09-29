@@ -13,7 +13,7 @@ import tempfile
 from collections import Counter
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Iterator
+from collections.abc import Iterator
 
 from eija_studio.adapters.identity import identity as measured_identity
 from eija_studio.adapters.providers import OfflineProvider

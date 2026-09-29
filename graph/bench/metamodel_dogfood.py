@@ -29,11 +29,12 @@ ROOT = HERE.parents[1]
 _PATHS = [str(HERE), str(ROOT / "graph" / "schema"), str(ROOT / "src")]
 sys.path[:0] = _PATHS
 try:
-    import build_schemas  # noqa: E402
-    import identity_checks as ic  # noqa: E402
-    import typecheck  # noqa: E402
-    from eija_studio.domain.impact import closure as kernel_closure  # noqa: E402
-    from eija_studio.domain.models import Workflow  # noqa: E402
+    import build_schemas
+    import identity_checks as ic
+    import typecheck
+
+    from eija_studio.domain.impact import closure as kernel_closure
+    from eija_studio.domain.models import Workflow
 finally:  # do not leave the bench and schema directories on sys.path for other modules
     for _p in _PATHS[:2]:
         if _p in sys.path:

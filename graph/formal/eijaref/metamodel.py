@@ -19,7 +19,6 @@ Findings are tuples (code, subject); the join-level codes and subjects deliberat
 from __future__ import annotations
 
 from collections import Counter, defaultdict
-from typing import Any
 
 Finding = tuple[str, str]
 
@@ -45,7 +44,7 @@ def _rows(mm: dict, kind: str) -> list[dict]:
 
 
 def _obligation_type(scope: str) -> str:
-    return scope.split()[0]  # "term with ddd_role aggregate" -> "term"; the qualifier text is not machine-checked here
+    return scope.split(maxsplit=1)[0]  # "term with ddd_role aggregate" -> "term"; the qualifier text is not machine-checked here
 
 
 def check_tables(mm: dict, rule_ids: set[str] | None = None) -> list[Finding]:

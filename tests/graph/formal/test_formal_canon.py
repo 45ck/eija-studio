@@ -29,7 +29,7 @@ def test_po_d3_rfc8785_vectors_sorting_and_string_escaping() -> None:
     positions = [text.index(v) for v in expected]
     assert positions == sorted(positions)
     # section 3.2.2: the string of the sample, escaped as JSON.stringify and JCS do
-    assert canon.dumps("€$\x0f\nA'B\"\\\"/") == '"€$\\u000f\\nA\'B\\"\\\\\\"/"'.encode("utf-8")
+    assert canon.dumps("€$\x0f\nA'B\"\\\"/") == '"€$\\u000f\\nA\'B\\"\\\\\\"/"'.encode()
 
 
 def test_po_d3_astral_keys_sort_before_U_FFFF_unlike_code_point_order() -> None:

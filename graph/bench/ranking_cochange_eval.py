@@ -234,7 +234,7 @@ def main(argv: list[str]) -> int:
     pairs = 0
     node_counts: list[int] = []
     arc_counts: list[int] = []
-    expected_recall: dict[int, float] = {k: 0.0 for k in KS}
+    expected_recall: dict[int, float] = dict.fromkeys(KS, 0.0)
     for sha, parent, changed in commits:
         nodes = sorted(tree_cache[parent])
         imports = build_graph(tree_cache[parent], reader, blob_cache)

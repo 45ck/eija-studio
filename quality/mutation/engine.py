@@ -159,7 +159,7 @@ def select_mutants(session: Path, *, sample: int | None, shard: tuple[int, int])
     exactly, which is how one target uses both workers.
     """
     from cosmic_ray.work_db import use_db
-    from cosmic_ray.work_item import WorkResult, WorkerOutcome
+    from cosmic_ray.work_item import WorkerOutcome, WorkResult
 
     def key(item) -> str:
         m = item.mutations[0]

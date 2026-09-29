@@ -5,7 +5,7 @@ dependency: the models here are one- and two-parameter least squares on tens of 
 and the interquartile range are NOT re-implemented: they come from `quality.hci.laws` (nearest rank),
 the one place this repository defines them, so an HCI report and a metrics report agree.
 """
-# ruff: noqa: S603, S607 - `git` is run with a fixed argv list, no shell, to label a snapshot with its commit
+
 from __future__ import annotations
 
 import json

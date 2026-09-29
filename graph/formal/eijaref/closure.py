@@ -34,7 +34,7 @@ The checker below is deliberately not the algorithm it checks: it has no queue a
 from __future__ import annotations
 
 from collections import deque
-from typing import Iterable, Mapping
+from collections.abc import Iterable, Mapping
 
 Graph = Mapping[str, Iterable[str]]  # the kernel's shape: node -> successors ("source affects target")
 
@@ -78,7 +78,7 @@ def warshall_closure(graph: Graph, roots: Iterable[str]) -> frozenset[str]:
 def certify(graph: Graph, roots: Iterable[str]) -> dict:
     """Untrusted producer: BFS with parent pointers. Rank is the BFS depth (roots have rank 0)."""
     root_set = sorted(set(roots))
-    rank = {r: 0 for r in root_set}
+    rank = dict.fromkeys(root_set, 0)
     parent: dict[str, str] = {}
     queue = deque(root_set)
     while queue:

@@ -29,9 +29,9 @@ An empty J is NOT_RUN (bottom). An empty M is NOT_RUN: a gate that requires noth
 """
 from __future__ import annotations
 
+from collections.abc import Callable, Iterable, Sequence
 from functools import reduce
 from itertools import permutations, product
-from typing import Callable, Iterable, Sequence
 
 VALUES = ("PASS", "FAIL", "STALE", "UNKNOWN", "CONFLICT", "NOT_RUN")
 NON_PASS = tuple(v for v in VALUES if v != "PASS")

@@ -11,7 +11,7 @@ runs the suite under coverage.py with the settings in pyproject `[tool.coverage.
 JSON per layer (`collect_coverage`); with no data file the section is NOT_RUN. A line executed by a test is not
 a line verified: coverage is necessary, not sufficient.
 """
-# ruff: noqa: S603 - subprocess argv lists are fixed (`python -m pytest|coverage`), no shell, no untrusted input
+
 from __future__ import annotations
 
 import ast
