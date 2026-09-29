@@ -37,6 +37,12 @@ The two sequence laws also quantify over every command sequence of any length. N
 | 7 | `reject_only_from_declared_source`: Reject is accepted only from the model's declared rejection source (Submitted in the baseline, Recommended in the shipped candidate) | both models |
 | 8 | `forbidden_effects_never_emitted`: no command ever emits `PaymentCaptured` or `ParentDataExported` | both models |
 
+Laws 7 and 8 restate two pieces of kernel policy by hand: the forbidden-effect list (`policy.FORBIDDEN`) and, per
+model, the state a rejection leaves (`reject_source`). They are spec inputs written in `LAWS.bend`, not generated.
+`bend_generate.py --check` (the `bend_drift` session) and the proof gate compare them with `policy.FORBIDDEN` and the
+workflows' Reject transitions and fail on a difference, so a new forbidden effect cannot leave law 8 silently out of
+date (a wildcard would have treated it as allowed). What the check does not do is decide whether the law is the right law.
+
 Law 4 uses a run monitor: a run records whether it was ever in `Recommended`, and the law says a run in
 `Approved` always has that record. It is proved by induction over the command sequence from an invariant
 that every command preserves.
@@ -58,35 +64,40 @@ That is what lets the same, unchanged proofs be run against unsafe models as neg
 
 ## Reproduce
 
-Prerequisites: Docker (Docker Desktop on Windows), `python -m pip install -e ".[dev]"`. The first run builds the
-pinned image (network needed once, to fetch the pinned Bend and Lean archives); later runs use no network.
+Prerequisites: Docker (Docker Desktop on Windows), `python -m pip install -e ".[dev]"`. Building the pinned image
+downloads about 300 MB of pinned Bend and Lean archives, so it is opt-in: pass `--build` (or set `EIJA_BEND_BUILD=1`)
+the first time and after any Dockerfile change. Without the image the gate reports `NOT_RUN`; proof runs use no network.
 
 ```bash
 python verification/bend/bend_generate.py --check          # fast: committed main.bend == regeneration
-python verification/bend/bend_runner.py                     # complete gate; writes reports/formal/bend.json
+python verification/bend/bend_runner.py --build             # complete gate; writes reports/formal/bend.json
 python verification/bend/bend_runner.py --quick             # skip per-law attribution of the controls
 nox -s bend_drift                                           # fast tier
-nox -s formal_bend_quick                                    # full tier (needs Docker)
-nox -s formal_bend                                          # release tier (needs Docker)
+nox -s formal_bend_quick -- --build                         # full tier (needs Docker; --build only when the image is missing)
+nox -s formal_bend                                          # release tier (needs Docker and the image)
+EIJA_BEND_DOCKER_TESTS=1 python -m pytest tests/test_formal_bend.py   # the opt-in Docker test (same proof, same fault)
 ```
 
 To run Bend by hand on the committed files (what the gate does, minus the reporting):
 
 ```bash
-docker run --rm --network none -v "$PWD/verification/bend:/work:ro" eija-bend-checker:2.0.32 PROOF.bend --verdict
+docker run --rm --network none -v "$PWD/verification/bend:/work:ro" "eija-bend-checker:2.0.32-$(sha256sum verification/bend/Dockerfile | cut -c1-12)" PROOF.bend --verdict
 ```
+The image tag carries the first 12 hex digits of the Dockerfile hash, so worktrees with different Dockerfiles never overwrite each other's image.
 
 The expected output is `ALL PROOFS CHECK`. `--verdict` rechecks every definition with BendTT, a small
-kernel that Bend's authors prove sound in Lean; without `--verdict` Bend prints "Use --verdict for
-mathematical validity" and the gate does not count it.
+kernel that Bend's authors prove sound in Lean. Without `--verdict` Bend prints `ALL PROOFS CHECK` and then
+"Use --verdict for mathematical validity": that is only its front-end check. The gate never counts such output as a
+proof (it classifies it `CHECKED_NO_VERDICT`), and every run it does count, including each per-law run, uses `--verdict`.
 
 ### Pins
 
 | Component | Pin |
 |---|---|
-| Bend | 2.0.32, git tag `v2.0.32`, commit `573002f01ec6c52416d44489543f69a9625facf8`, Linux x64 archive verified by sha256 in the Dockerfile |
+| Bend | 2.0.32, Linux x64 release archive verified by sha256 `5c365ddb12954d0933cef751802e0f7d9875f842edcb80f9661f89cd1a9ff7b6` (the pin of record; the same checksum the official installer checks). The git tag `v2.0.32` commit `573002f01ec6c52416d44489543f69a9625facf8` is declared in the Dockerfile and reported as `declared_bend_commit_unverified`: nothing ties the archive to it |
 | Lean (only to compile the BendTT kernel) | 4.34.0, archive verified by sha256 |
 | Base image | `ubuntu:24.04@sha256:496754492fb28b4d3049432f2ca787449331e23fb14f0dd3fffea86bf5a93eb4` |
+| Dockerfile frontend | `docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e` (the build stage also runs an unpinned `apt-get install zstd`; only the checksummed Lean archive and the recorded kernel hashes reach the verdict) |
 | Container | `--network none --read-only --cap-drop ALL --security-opt no-new-privileges`, files mounted read-only |
 
 The official installer (`bend-lang.com/install.sh`) always installs the latest release, so the image performs
@@ -98,16 +109,20 @@ rebuilt the image in about 2.5 minutes and produced the same BendTT kernel binar
 sha256 `7f6ef51c9f75d7de91c15f790fb3385189b1129e7bc13812c9d8aa30a2c73dec`), and `bend PROOF.bend --verdict` printed
 `ALL PROOFS CHECK` on it. That is one observation on one machine, not a reproducible-build guarantee.
 
-Docker unavailable, daemon stopped or first build without network: the gate reports `NOT_RUN` (exit code 3;
-a nox session is skipped) and never `PASS`.
+Docker unavailable, daemon stopped, or the image not built (and `--build` not given): the gate reports `NOT_RUN`
+(exit code 3; a nox session is skipped) and never `PASS`. A proof run that starts and then times out or is killed (for
+example out of memory) is a `FAIL` (exit code 1), not a skip; a timed-out container is removed.
 
 ## Evidence
 
 `reports/formal/bend.json` (`kind: bend_proof`) records: the model `semantic_hash` of both slots and the
 sha256 of `main.bend`, `LAWS.bend`, `PROOF.bend` and the generator; the Bend version, commit, image id and
-platform; the full `bend PROOF.bend --verdict` result and a result per law; every negative control; the
-conformance results; and the limits below. A snapshot of a complete run is committed as
-`verification/bend/evidence/bend.json`.
+platform; the full `bend PROOF.bend --verdict` result and, for each law, a result from running that law alone
+(a slice of `LAWS.bend`/`PROOF.bend`) under `--verdict`; every negative control; the conformance results; and the
+limits below. A snapshot of a complete run is committed as `verification/bend/evidence/bend.json`. The snapshot is
+unsigned: tests check that its recorded hashes match the committed files (including the Dockerfile and the
+generator), not that a run produced it. It is reproducible with `bend_runner.py --snapshot`, and an independent full
+run matched it apart from the platform field.
 
 ### Negative controls (the trust anchor)
 
@@ -153,8 +168,16 @@ denied; reject then revise; baseline approval) are run through both. The witness
   they are authored by the same team as the model and are not an independently blinded specification.
 * **Soundness of `check_policy`** over the whole transaction grammar (the Z3 lane's claim).
 * **Other faults.** The controls show sensitivity to six seeded faults, not that no other fault escapes the laws.
-* **The tool chain.** Bend 2 is new software. `--verdict` shifts trust to BendTT, whose soundness proof is Bend's
-  authors' Lean development, which this project has not audited. The Docker Desktop VM and host are trusted.
+* **The tool chain.** Bend 2 is new software. `--verdict` shifts trust to BendTT, whose soundness theorem is Bend's
+  authors' Lean development (for the declarative theory), which this project has not audited. The Bend front end
+  that elaborates each `law` into a type, resolves imports and translates to BendTT input, and the parser of
+  BendTT's input (`partial def`s), are trusted, unproven code outside that theorem. The Docker Desktop VM and host
+  are trusted.
+* **The guard semantics of the engine.** The generator derives each rule's role, source, target, effects and whether
+  it needs the assigned guard from the Workflow. The conjunction that combines them (`permits`) is a fixed,
+  hand-written template that equals the runtime's `check_actor` today (conformance agrees on 225 cells). The kernel's
+  guard vocabulary is closed and generation refuses a guard the template does not model, but a change to what a
+  guard means still needs a template edit and review.
 
 Nothing in this lane edits the kernel, stamps the release fixture or weakens a policy to make a proof pass.
 Providers and agents still never select meaning, approve or apply.

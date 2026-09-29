@@ -4,9 +4,11 @@
     nox -s formal_bend_quick   full: the proof, the negative controls and runtime conformance (about a minute)
     nox -s formal_bend         release: the same plus per-law attribution of every control (a few minutes)
 
-The two Docker sessions need Docker Desktop (or a Docker daemon) and, for the first build only, network
-access to fetch the pinned Bend and Lean archives. When a prerequisite is missing they report NOT_RUN by
-skipping the session: a skipped session is not a pass. The evidence report is written to
+The two Docker sessions need Docker Desktop (or a Docker daemon) and the pinned image. Building the image
+downloads about 300 MB of pinned archives, so it is opt-in: ``nox -s formal_bend_quick -- --build`` (or
+``EIJA_BEND_BUILD=1``). When a prerequisite is missing (no Docker, daemon stopped, image not built) they
+report NOT_RUN by skipping the session: a skipped session is not a pass. A proof run that starts and then
+times out or dies is a FAIL, not a skip. The evidence report is written to
 ``reports/formal/bend.json`` (``kind: bend_proof``). ``nox -s formal_bend -- --snapshot`` also refreshes the
 committed platform-named snapshot ``verification/bend/evidence/bend.json`` (maintainers only).
 """
@@ -31,7 +33,8 @@ def _run_gate(session: nox.Session, report: Path, *args: str) -> None:
         reason = json.loads(report.read_text(encoding="utf-8")).get("reason", "prerequisite missing")
         session.skip(f"NOT_RUN (not a pass): {reason}")
     if code != 0:
-        session.error(f"bend_proof FAIL: see {report.relative_to(ROOT)}")
+        reason = json.loads(report.read_text(encoding="utf-8")).get("reason", "")
+        session.error(f"bend_proof FAIL{': ' + reason if reason else ''}; see {report.relative_to(ROOT)}")
 
 
 @nox.session(python=False, tags=["fast", "full"])

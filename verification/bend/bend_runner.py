@@ -10,7 +10,10 @@ A gate run does four things, and reports each separately:
 
 1. **Proof**: ``bend PROOF.bend --verdict`` on the committed ``main.bend`` / ``LAWS.bend`` /
    ``PROOF.bend``. ``--verdict`` rechecks every definition with BendTT, the small kernel proved sound in
-   Lean. PASS means ``ALL PROOFS CHECK`` and exit 0, nothing weaker.
+   Lean (the elaborator and parser in front of it are trusted, see docs/formal/bend.md). PASS means
+   ``ALL PROOFS CHECK`` and exit 0, nothing weaker: plain ``bend`` output ("Use --verdict for
+   mathematical validity") is classified ``CHECKED_NO_VERDICT`` and is never a proof. Every run the gate
+   counts, including each per-law run, uses ``--verdict``.
 2. **Negative controls**: the unchanged proofs against deliberately unsafe models. Each must FAIL, and
    exactly the laws it was seeded to break must fail (per-law attribution).
 3. **Counterexamples**: for each seeded fault, a concrete trace evaluated by Bend that shows the law is
@@ -18,21 +21,25 @@ A gate run does four things, and reports each separately:
 4. **Conformance**: the Bend model evaluated against the real Python runtime on the runtime matrix and
    on witness traces (a differential test, see ``bend_conformance``).
 
-Missing prerequisites (Docker, the daemon, the image, network for the first build) give ``NOT_RUN``,
-never PASS. What this proves and does not prove is stated in ``docs/formal/bend.md``.
+Missing prerequisites (Docker, the daemon, the image, its first build) give ``NOT_RUN``, never PASS. A
+proof run that starts and then times out or dies (out of memory, killed) is a ``FAIL``, never ``NOT_RUN``:
+a slow or non-terminating proof must not look like a skipped gate. What this proves and does not prove is stated in ``docs/formal/bend.md``.
 """
 # ruff: noqa: T201  (command-line tool: printing the verdict and the drift message is its output)
 from __future__ import annotations
 
 import argparse
+import contextlib
 import hashlib
 import json
+import os
 import platform
 import re
 import shlex
 import shutil
 import subprocess
 import sys
+import uuid
 from dataclasses import dataclass
 from pathlib import Path
 from typing import NamedTuple
@@ -44,10 +51,17 @@ sys.path.insert(0, str(ROOT))  # the repo root, so `verification.bend.*` resolve
 import verification.bend.bend_conformance as conformance  # noqa: E402
 import verification.bend.bend_slicing as slicing  # noqa: E402
 from verification.bend.bend_controls import CONTROLS, Control  # noqa: E402
-from verification.bend.bend_generate import GENERATED_PATH, SLOTS, default_models, render_main  # noqa: E402
+from verification.bend.bend_generate import (  # noqa: E402
+    GENERATED_PATH,
+    SLOTS,
+    check_laws_against_policy,
+    default_models,
+    render_main,
+)
 
-IMAGE = "eija-bend-checker:2.0.32"
 DOCKERFILE = HERE / "Dockerfile"
+# The tag carries the Dockerfile hash: worktrees with different Dockerfiles must not overwrite one shared tag.
+IMAGE = f"eija-bend-checker:2.0.32-{hashlib.sha256(DOCKERFILE.read_bytes()).hexdigest()[:12]}"
 REPORT_PATH = ROOT / "reports" / "formal" / "bend.json"
 SNAPSHOT_PATH = HERE / "evidence" / "bend.json"
 STAGE_ROOT = ROOT / ".tmp" / "bend-stage"
@@ -60,11 +74,23 @@ LIMITS = (
     "Conformance to the runtime is a bounded differential test (matrix cells and traces), not a proof.",
     "The unsafe models are a fixed set of seeded faults; failing them shows sensitivity to those faults only.",
     "The laws are authored by the same team as the model; they are not an independently blinded specification.",
+    "Trust moves to BendTT, whose soundness theorem is proved in Lean for the declarative theory; Bend's elaborator "
+    "and the parser of BendTT's input are trusted, unproven code, and the Lean development has not been audited here.",
+    "The guard conjunction (`permits`) is a fixed hand-written engine template; the generator derives rule tables "
+    "from the Workflow, not guard semantics. `declared_bend_commit_unverified` is a Dockerfile label; the archive sha256 is the pin.",
 )
 
 
 class NotRun(Exception):
     """A prerequisite is missing: the gate reports NOT_RUN (never PASS)."""
+
+
+class DockerTimeout(NotRun):
+    """A docker call exceeded its time limit. Prerequisite calls treat it as NOT_RUN; a proof run does not."""
+
+
+class GateFailure(Exception):
+    """The proof run started but did not complete (timeout, killed container): a FAIL, never NOT_RUN."""
 
 
 @dataclass(frozen=True)
@@ -87,8 +113,9 @@ def sha256_file(path: Path) -> str:
 class Checker:
     """The pinned Bend container. Heavy work happens in ``docker run``; one container at a time."""
 
-    def __init__(self, image: str = IMAGE):
+    def __init__(self, image: str = IMAGE, *, build: bool = False):
         self.image = image
+        self.build = build  # building fetches ~300 MB of archives: only on explicit request
 
     @staticmethod
     def _docker(*args: str, timeout: int) -> Result:
@@ -98,7 +125,7 @@ class Checker:
         except FileNotFoundError as e:
             raise NotRun("docker CLI not found on PATH") from e
         except subprocess.TimeoutExpired as e:
-            raise NotRun(f"docker {args[0]} timed out after {timeout}s") from e
+            raise DockerTimeout(f"docker {args[0]} timed out after {timeout}s") from e
         return Result(p.returncode, p.stdout, p.stderr)
 
     def prerequisites(self) -> dict:
@@ -110,6 +137,10 @@ class Checker:
         inspect = self._docker("image", "inspect", self.image, "--format", "{{json .Config.Labels}}", timeout=30)
         labels = json.loads(inspect.out) if inspect.code == 0 and inspect.out.strip() not in ("", "null") else {}
         if labels.get("dev.eija.dockerfile.sha256") != want:
+            if not self.build:
+                raise NotRun(f"the pinned Bend image {self.image} is missing or not built from the current Dockerfile; "
+                             "building it downloads about 300 MB of pinned archives, so it is opt-in: rerun with --build "
+                             "(or set EIJA_BEND_BUILD=1)")
             build = self._docker("build", "--label", f"dev.eija.dockerfile.sha256={want}", "-t", self.image, str(HERE), timeout=900)
             if build.code != 0:
                 raise NotRun("could not build the pinned Bend image (network needed for the first build): " + build.err.strip()[-300:])
@@ -122,21 +153,35 @@ class Checker:
         image_id, bend, commit, lean = [*r.out.strip().split("|"), "", "", "", ""][:4]
         version = self._docker("run", "--rm", "--network", "none", self.image, "version", timeout=60).out.strip()
         return {"image_tag": self.image, "image_id": image_id, "bend_version_output": version, "bend_version": bend,
-                "bend_commit": commit, "lean_version": lean, "base_image": _base_image()}
+                "declared_bend_commit_unverified": commit, "bend_archive_sha256": _archive_pin(), "lean_version": lean, "base_image": _base_image()}
 
     def run_jobs(self, root: Path, jobs: list[Job]) -> list[Result]:
         """Run every job in one container with ``root`` mounted read-only at /work; stdout and stderr merged."""
         script = "".join(
             f'echo "@@@BEGIN {i}"; (cd /work/{shlex.quote(j.dir)} && bend {" ".join(shlex.quote(a) for a in j.args)}) 2>&1; '
             f'echo "@@@END {i} $?"; ' for i, j in enumerate(jobs))
-        run = self._docker(
-            "run", "--rm", "--network", "none", "--read-only", "--tmpfs", "/tmp",  # noqa: S108  (a path inside the container, not a host temp file)
-             "--cap-drop", "ALL",
-            "--security-opt", "no-new-privileges", "--pids-limit", "256", "--memory", "2g", "--cpus", "2",
-            "-v", f"{root}:/work:ro", "--entrypoint", "sh", self.image, "-c", script, timeout=120 + 30 * len(jobs))
-        if "@@@END" not in run.out:
-            raise NotRun("the Bend container did not run: " + (run.err.strip() or run.out.strip())[-300:])
+        name = f"eija-bend-{os.getpid()}-{uuid.uuid4().hex[:8]}"
+        try:
+            run = self._docker(
+                "run", "--rm", "--name", name, "--network", "none", "--read-only", "--tmpfs", "/tmp",  # noqa: S108  (a path inside the container, not a host temp file)
+                "--cap-drop", "ALL",
+                "--security-opt", "no-new-privileges", "--pids-limit", "256", "--memory", "2g", "--cpus", "2",
+                "-v", f"{root}:/work:ro", "--entrypoint", "sh", self.image, "-c", script, timeout=120 + 30 * len(jobs))
+        except DockerTimeout as e:
+            self._remove(name)  # killing the docker client does not stop the container
+            raise GateFailure(f"the Bend proof run timed out and was stopped: {e}") from e
+        if "@@@BEGIN" not in run.out:
+            raise NotRun("the Bend container did not start: " + (run.err.strip() or run.out.strip())[-300:])
+        if "@@@END" not in run.out or f"@@@END {len(jobs) - 1} " not in run.out:
+            # It started and never finished (out of memory, killed): the proof did not complete, which is not a skip.
+            raise GateFailure(f"the Bend container died before finishing (docker exit {run.code}): "
+                              + (run.err.strip() or run.out.strip())[-300:])
         return parse_jobs(run.out, len(jobs))
+
+    def _remove(self, name: str) -> None:
+        """Best effort: a timed-out container must not keep running on a shared machine."""
+        with contextlib.suppress(NotRun):
+            self._docker("rm", "-f", name, timeout=60)
 
 
 def parse_jobs(text: str, count: int) -> list[Result]:
@@ -146,6 +191,15 @@ def parse_jobs(text: str, count: int) -> list[Result]:
         m = re.search(rf"@@@BEGIN {i}\r?\n(.*?)@@@END {i} (\d+)", text, re.DOTALL)
         results.append(Result(int(m.group(2)), m.group(1)) if m else Result(255, ""))
     return results
+
+
+def _archive_pin() -> str:
+    """The sha256 of the Bend release archive: the pin that actually decides which Bend runs."""
+    match = re.search(r"--checksum=sha256:([0-9a-f]{64})[\s\\]+https://\S+/bend-[\d.]+-linux-x64\.tar\.gz",
+                      DOCKERFILE.read_text(encoding="utf-8"))
+    if match is None:
+        raise RuntimeError("the Bend archive checksum is not pinned in the Dockerfile")
+    return match.group(1)
 
 
 def _base_image() -> str:
@@ -166,9 +220,15 @@ def stage(name: str, dirs: dict[str, dict[str, str]]) -> Path:
 
 
 def classify(result: Result) -> dict:
-    """Bend's own verdict. Anything but ALL PROOFS CHECK with exit 0 is not a proof."""
+    """Bend's own verdict. Anything but ALL PROOFS CHECK with exit 0 under ``--verdict`` is not a proof.
+
+    Plain ``bend`` (no ``--verdict``) prints ``ALL PROOFS CHECK`` followed by "Use --verdict for mathematical
+    validity": that is Bend's front-end check only, not rechecked by the BendTT kernel, so it is reported as
+    ``CHECKED_NO_VERDICT`` and never as ``PROVEN``."""
     text = result.out + result.err
     if result.code == 0 and "ALL PROOFS CHECK" in result.out and "SOME PROOFS FAIL" not in text:
+        if "Use --verdict" in text:
+            return {"result": "CHECKED_NO_VERDICT", "exit_code": result.code}
         return {"result": "PROVEN", "exit_code": result.code}
     error = text.split("SOME PROOFS FAIL", 1)[1].strip() if "SOME PROOFS FAIL" in text else ""
     location = re.search(r"^Location: (.+)$", error, re.MULTILINE)
@@ -180,15 +240,15 @@ def prove_directory(checker: Checker, name: str, main: str, laws: str, proof: st
                     jobs_extra: list[Job] | None = None, *, attribute: bool = True) -> tuple[dict, list[Result]]:
     """Check a model with the given laws/proofs: model check, full verdict, and (unless quick) each law alone.
 
-    Per-law runs are Bend's ordinary check (attribution); the ``--verdict`` kernel recheck is the full run.
-    Returns the verdicts and the raw results of ``jobs_extra`` (run in the ``full`` directory)."""
+    Every run uses ``--verdict`` (the BendTT kernel recheck); a per-law run only gives attribution: which laws
+    fail alone. Returns the verdicts and the raw results of ``jobs_extra`` (run in the ``full`` directory)."""
     law_list = slicing.law_names(laws) if attribute else []
     dirs = {"full": {"main.bend": main, "LAWS.bend": laws, "PROOF.bend": proof, **extra}}
     for law in law_list:
         sliced_laws, sliced_proof = slicing.slice_for_law(laws, proof, law)
         dirs[f"law-{law}"] = {"main.bend": main, "LAWS.bend": sliced_laws, "PROOF.bend": sliced_proof}
-    jobs = [Job("full", ("main.bend", "--check-only")), Job("full", ("PROOF.bend", "--verdict"))]
-    jobs += [Job(f"law-{law}", ("PROOF.bend",)) for law in law_list]
+    jobs = [Job("full", ("main.bend", "--verdict")), Job("full", ("PROOF.bend", "--verdict"))]
+    jobs += [Job(f"law-{law}", ("PROOF.bend", "--verdict")) for law in law_list]
     jobs += jobs_extra or []
     results = checker.run_jobs(stage(name, dirs), jobs)
     verdicts = {"model_check": classify(results[0]), "full_run": classify(results[1]),
@@ -201,11 +261,12 @@ def run_proof(checker: Checker, *, attribute: bool = True) -> dict:
     main, laws, proof = (p.read_text(encoding="utf-8") for p in (GENERATED_PATH, HERE / "LAWS.bend", HERE / "PROOF.bend"))
     if main != render_main(default_models()):
         raise RuntimeError("main.bend is stale: run python verification/bend/bend_generate.py")
+    check_laws_against_policy(laws, default_models())
     unproved = sorted(set(slicing.law_names(laws)) - slicing.proof_names(proof))
     verdicts, _ = prove_directory(checker, "committed", main, laws, proof, {}, attribute=attribute)
     comments = slicing.law_comments(laws)
     if attribute:
-        per_law = [{"name": n, "statement": comments.get(n, ""), "basis": "law checked alone (bend, sliced)", **v}
+        per_law = [{"name": n, "statement": comments.get(n, ""), "basis": "law checked alone (bend --verdict, sliced)", **v}
                    for n, v in verdicts["laws"].items()]
     else:  # quick: the full run proves every law in the file or none of them
         full_result = verdicts["full_run"]["result"]
@@ -292,11 +353,11 @@ def model_facts() -> dict:
             "files": {name: sha256_file(HERE / name) for name in ("main.bend", "LAWS.bend", "PROOF.bend", "bend_generate.py")}}
 
 
-def build_report(*, controls: bool = True, conformance_check: bool = True, quick: bool = False) -> dict:
+def build_report(*, controls: bool = True, conformance_check: bool = True, quick: bool = False, build: bool = False) -> dict:
     report: dict = {"kind": "bend_proof", "schema_version": SCHEMA_VERSION, "producer": "verification/bend/bend_runner.py",
                     "platform": platform.platform(), "python": platform.python_version(), "model": model_facts(),
                     "limits": list(LIMITS)}
-    checker = Checker()
+    checker = Checker(build=build or os.environ.get("EIJA_BEND_BUILD") == "1")
     try:
         report["tool"] = {**checker.prerequisites(), **checker.image_facts()}
         report["mode"] = "quick" if quick else "complete"
@@ -307,6 +368,8 @@ def build_report(*, controls: bool = True, conformance_check: bool = True, quick
             report["conformance"] = run_conformance(checker)
     except NotRun as e:
         return {**report, "status": "NOT_RUN", "reason": str(e)}
+    except GateFailure as e:
+        return {**report, "status": "FAIL", "reason": str(e)}
     parts = [report["proof"]["status"]]
     if controls:
         parts.append("PASS" if all(c["result"] == "PROOF_FAILS_AS_EXPECTED" for c in report["negative_controls"]) else "FAIL")
@@ -328,11 +391,13 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="Run the Bend proof gate (Docker) and write the evidence report")
     ap.add_argument("--report", type=Path, default=REPORT_PATH)
     ap.add_argument("--snapshot", action="store_true", help=f"also write the committed snapshot {SNAPSHOT_PATH.relative_to(ROOT)}")
+    ap.add_argument("--build", action="store_true", help="build the pinned image when it is missing (downloads ~300 MB of pinned archives)")
     ap.add_argument("--quick", action="store_true", help="skip the per-law attribution runs (partial evidence; never snapshotted)")
     ap.add_argument("--no-controls", action="store_true", help="skip the negative controls (partial evidence; never snapshotted)")
     ap.add_argument("--no-conformance", action="store_true", help="skip the runtime conformance test (partial evidence; never snapshotted)")
     args = ap.parse_args(argv)
-    report = build_report(controls=not args.no_controls, conformance_check=not args.no_conformance, quick=args.quick)
+    report = build_report(controls=not args.no_controls, conformance_check=not args.no_conformance, quick=args.quick,
+                          build=args.build)
     write_report(report, args.report)
     complete = not (args.no_controls or args.no_conformance or args.quick)
     if args.snapshot and report["status"] == "PASS" and complete:
