@@ -49,9 +49,10 @@ def test_committed_snapshot_matches_regeneration():
 
 def test_requirement_literals_are_pinned_to_the_documented_values():
     """A deliberate change to FORBIDDEN or BASE_GUARDS fails here first, so the requirement is edited on purpose."""
-    assert tuple(sorted(policy.FORBIDDEN)) == V.REQUIRED_FORBIDDEN_EFFECTS
+    assert tuple(sorted(policy.forbidden_effects())) == V.REQUIRED_FORBIDDEN_EFFECTS
     assert tuple(sorted(models.BASE_GUARDS)) == V.REQUIRED_BASE_GUARDS
-    assert set(V.DECISION_AUDIT) <= set(policy.EFFECTS["Approve"]) | set(policy.EFFECTS["Reject"])
+    effects = policy.effects_table()
+    assert set(V.DECISION_AUDIT) <= set(effects["Approve"]) | set(effects["Reject"])
 
 
 def test_weakening_the_kernel_forbidden_effects_refutes_an_invariant_instead_of_moving_the_goalposts(monkeypatch):
@@ -111,9 +112,12 @@ def _workflow(dump):
                                     transitions=tuple(Transition.model_construct(**t) for t in dump["transitions"]))
 
 
-def test_unique_action_assumption_is_real_and_guarded_by_the_validator():
+def test_unique_action_assumption_is_guarded_by_the_validator_and_no_longer_needed_by_the_policy():
+    """Before domain packs, check_policy indexed transitions by action (last one wins), so a validator-bypassing duplicate
+    hid a Teacher-held Approve. The pack-driven policy judges every transition: the duplicate is refused either way."""
     w = prove.assumption_witness()
-    assert w["unvalidated_duplicate_action_workflow_admitted_by_check_policy"] and w["workflow_validator_rejects_it"]
+    assert w["teacher_holds_approve_in_that_workflow"] and w["workflow_validator_rejects_it"]
+    assert not w["unvalidated_duplicate_action_workflow_admitted_by_check_policy"]
 
 
 # ---- drift alarm: semantic digest, not raw bytes --------------------------------------------------------
@@ -138,7 +142,7 @@ def test_semantic_digest_ignores_formatting_comments_docstrings_and_typing_only_
 
 def test_semantic_digest_changes_on_any_executable_edit(tmp_path):
     original = POLICY.read_text(encoding="utf-8")
-    weakened = original.replace('FORBIDDEN = ("PaymentCaptured", "ParentDataExported")', 'FORBIDDEN = ("PaymentCaptured",)')
+    weakened = original.replace('codes.append("UNSUPPORTED_ACTION")', 'pass')
     assert weakened != original and _digest(tmp_path, weakened) != _digest(tmp_path, original)
     assert _digest(tmp_path, "x = 1\n") != _digest(tmp_path, "x = 2\n")
 

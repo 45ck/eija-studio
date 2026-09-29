@@ -14,7 +14,7 @@ sources:
 - resource: repo://src/eija_studio/domain/evidence.py#aggregate_status
   title: domain/evidence.py
   hash_method: ast-v2
-  sha256: 7ad71b12b551b1bcdf5e1f9ac639ebd499188cfd53a29a332adbd50033cfce06
+  sha256: 5b13b09743b7cd7d127d74542c01219ab6d666aeeed54b4951357f9395aaf8b0
 description_override: Combines authenticated receipts into one status; an authentic pass and an authentic fail give CONFLICT, not an average.
 notes_baseline: b8a8fdd5d0e2958c2c56cfad77c074a613cd474691a357f1bdde562231151364
 verified:
@@ -31,7 +31,7 @@ verified:
 |---|---|
 | Kind | function |
 | Module | [`domain/evidence`](/modules/domain/evidence.md) |
-| Signature | `def aggregate_status(receipts: list[dict[str, Any]], subject: dict[str, Any], authenticator: Callable[[dict[str, Any]], bool]) -> str` |
+| Signature | `def aggregate_status(receipts: list[dict[str, Any]], subject: dict[str, Any], authenticator: Callable[[dict[str, Any]], bool], context: Context \| None=None) -> str` |
 | Code | `repo://src/eija_studio/domain/evidence.py#aggregate_status` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
@@ -49,6 +49,7 @@ Unauthenticated receipts count as `FAIL`. An authenticated `PASS` and a `FAIL` t
 
 * [domain.evidence.assess_receipt](/symbols/domain/evidence/assess_receipt.md) - `def assess_receipt(receipt: dict[str, Any], subject: dict[str, Any], claim: str, kind: str, context: Context…` in `domain/evidence`.
 * [domain.evidence.combine](/symbols/domain/evidence/combine.md) - The status algebra: authenticated PASS and FAIL never average (CONFLICT); FAIL beats PASS-less states; STALE (a receipt for another subject), then NOT_RUN (a p…
+* [domain.formal.Context](/symbols/domain/formal/Context.md) - What the kernel itself knows about the CURRENT subject, beyond the technical dimensions.
 
 ## Referenced by
 

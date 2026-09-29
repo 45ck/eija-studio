@@ -4,12 +4,7 @@
       "additionalProperties": false,
       "properties": {
         "interpretation": {
-          "enum": [
-            "recommend_only",
-            "final_approval",
-            "confirm_only",
-            "unsupported"
-          ],
+          "pattern": "^[a-z][a-z0-9_]{0,39}$",
           "title": "Interpretation",
           "type": "string"
         },
@@ -174,13 +169,11 @@
           "type": "string"
         },
         "id": {
-          "default": "excursion",
           "pattern": "^[a-z][a-z0-9-]{0,39}$",
           "title": "Id",
           "type": "string"
         },
         "initial_state": {
-          "default": "Draft",
           "title": "Initial State",
           "type": "string"
         },
@@ -204,6 +197,8 @@
         }
       },
       "required": [
+        "id",
+        "initial_state",
         "states",
         "transitions"
       ],

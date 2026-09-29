@@ -14,7 +14,7 @@ sources:
 - resource: repo://src/eija_studio/domain/evidence.py#assess_receipt
   title: domain/evidence.py
   hash_method: ast-v2
-  sha256: bb6f442458c3a35dfda81ac33ed4835ef6b26e20674ad78771e33ebd3225af47
+  sha256: 336c57b0d35ce2729d8cc95b98d7590a53aa956a509ed5abe705009ad816c760
 description_override: Recomputes a receipt's applicability from its raw observations; a supplied green status is never trusted.
 notes_baseline: 9d21dc847e586dc822b77c20074aaefc587246dcef1ac109f6fd40c1fd79298c
 verified:
@@ -57,6 +57,7 @@ See [Evidence Receipt](/language/evidence-receipt.md) and the technique page [Bo
 * [domain.evidence.RUNTIME_MATRIX](/symbols/domain/evidence/RUNTIME_MATRIX.md) - Constant `RUNTIME_MATRIX` in `domain/evidence`.
 * [domain.evidence.TECHNICAL_DIMENSIONS](/symbols/domain/evidence/TECHNICAL_DIMENSIONS.md) - Constant `TECHNICAL_DIMENSIONS` in `domain/evidence`.
 * [domain.evidence.assess_formal_receipt](/symbols/domain/evidence/assess_formal_receipt.md) - Per-kind admissibility (ADR-0145): envelope checks in the runtime matrix's order, then the kind's own check.
+* [domain.evidence.runtime_shape](/symbols/domain/evidence/runtime_shape.md) - `def runtime_shape(context: Context | None) -> RuntimeShape` in `domain/evidence`.
 * [domain.formal.Context](/symbols/domain/formal/Context.md) - What the kernel itself knows about the CURRENT subject, beyond the technical dimensions.
 * [domain.models.fingerprint](/symbols/domain/models/fingerprint.md) - `def fingerprint(value: Any) -> str` in `domain/models`.
 

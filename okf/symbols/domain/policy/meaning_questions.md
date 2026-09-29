@@ -14,7 +14,7 @@ sources:
 - resource: repo://src/eija_studio/domain/policy.py#meaning_questions
   title: domain/policy.py
   hash_method: ast-v2
-  sha256: f572a456387fe360c0583269cb7b67fb193b51d7aedde39235904d7518e3168d
+  sha256: 438675367e95fa91f60dd3d98b60a7b9e78f0760a2b84c08c370c8549b71a7eb
 description_override: The three critical questions a local owner must answer correctly before a decision is sealed.
 notes_baseline: 2f18d658e9ce1c11e6d87ec5caebb432d523c91ee50aafbfaf53b6aaaca37d5a
 verified:
@@ -31,13 +31,15 @@ verified:
 |---|---|
 | Kind | function |
 | Module | [`domain/policy`](/modules/domain/policy.md) |
-| Signature | `def meaning_questions(model: Workflow) -> list[dict[str, Any]]` |
+| Signature | `def meaning_questions(model: Workflow, pack: Pack \| None=None) -> list[dict[str, Any]]` |
 | Code | `repo://src/eija_studio/domain/policy.py#meaning_questions` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
-_The source carries no docstring._
+~~~text
+The pack's meaning-check questions, with expected answers read from the model where the pack says so.
+~~~
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -48,6 +50,7 @@ Authority (Registrar keeps final approval), assignment (an unassigned teacher ca
 ## Depends on
 
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
+* [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
 
 ## Referenced by
 

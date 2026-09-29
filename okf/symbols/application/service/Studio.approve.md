@@ -14,7 +14,7 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.approve
   title: application/service.py
   hash_method: ast-v2
-  sha256: 6af8efea6c1f5cef2fd4499fc6f1497020e2d422bb12eff8040185f669ae231d
+  sha256: 0117418998297e3e3d58a7b96c90d145fdc4b07e2cf51c2659996407209886af
 description_override: Seals a local-owner acknowledgement of the exact subject after eligibility, matching subject hash, acknowledged unknowns and correct answers.
 notes_baseline: 7264410159eb2ed16e2583b0f1a8cfa3a7db072c2b1f0632d96f3f8d16be94ee
 verified:

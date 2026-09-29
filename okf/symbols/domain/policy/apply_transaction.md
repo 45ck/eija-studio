@@ -14,7 +14,7 @@ sources:
 - resource: repo://src/eija_studio/domain/policy.py#apply_transaction
   title: domain/policy.py
   hash_method: ast-v2
-  sha256: a374b6656c4d043e5ddf93667bde7dbc01e094078a3ac5fa55865483f9f4dc75
+  sha256: 7e43b6e39e10fc04e88c8c609f3918bf23da0a70ba93bfd80b3b65de8b90678c
 description_override: Applies one typed SemanticTransaction to a policy-valid workflow and returns a candidate that is itself re-checked against the policy.
 notes_baseline: a6499ed96a231bd6a329a5e2f41416f28a97f2271588d97b4bb5c744b372d3db
 ---
@@ -26,13 +26,16 @@ notes_baseline: a6499ed96a231bd6a329a5e2f41416f28a97f2271588d97b4bb5c744b372d3db
 |---|---|
 | Kind | function |
 | Module | [`domain/policy`](/modules/domain/policy.md) |
-| Signature | `def apply_transaction(model: Workflow, tx: SemanticTransaction) -> Workflow` |
+| Signature | `def apply_transaction(model: Workflow, tx: SemanticTransaction, pack: Pack \| None=None) -> Workflow` |
 | Code | `repo://src/eija_studio/domain/policy.py#apply_transaction` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
-_The source carries no docstring._
+~~~text
+Legacy closed vocabulary (two kinds), kept until the open vocabulary of WBS 1.3 replaces it: the recommendation
+meaning of the default pack and a rejection-source edit.
+~~~
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -51,8 +54,9 @@ Providers and agents never call it: authority to select a [Meaning](/language/me
 * [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [domain.models.SemanticTransaction](/symbols/domain/models/SemanticTransaction.md) - `class SemanticTransaction(Contract)` in `domain/models`.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
-* [domain.policy.ensure_policy](/symbols/domain/policy/ensure_policy.md) - `def ensure_policy(model: Workflow) -> None` in `domain/policy`.
-* [domain.policy.transition](/symbols/domain/policy/transition.md) - `def transition(action: str, source: str, target: str, role: str) -> Transition` in `domain/policy`.
+* [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
+* [domain.policy.ensure_policy](/symbols/domain/policy/ensure_policy.md) - `def ensure_policy(model: Workflow, pack: Pack | None=None) -> None` in `domain/policy`.
+* [domain.policy.transition](/symbols/domain/policy/transition.md) - A transition for a declared action, with the action's declared guards and effects and the pack's forbidden effects.
 
 ## Referenced by
 

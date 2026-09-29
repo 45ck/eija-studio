@@ -10,5 +10,7 @@
 * [formal_bmc](formal_bmc/) - Symbols of domain.formal_bmc
 * [formal_smt](formal_smt/) - Symbols of domain.formal_smt
 * [impact](impact/) - Symbols of domain.impact
+* [laws](laws/) - Symbols of domain.laws
 * [models](models/) - Symbols of domain.models
+* [pack](pack/) - Symbols of domain.pack
 * [policy](policy/) - Symbols of domain.policy

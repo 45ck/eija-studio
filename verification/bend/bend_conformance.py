@@ -24,9 +24,10 @@ from uuid import uuid4
 
 from eija_studio.adapters.sqlite_store import sandbox_factory
 from eija_studio.application.runtime import execute, initialise
-from eija_studio.application.verifier import ACTORS, ORACLE, verify_runtime
+from eija_studio.application.verifier import verify_runtime
 from eija_studio.domain.models import DomainError, ExecuteCommand, Workflow
 from verification.bend.bend_generate import SLOTS
+from verification.excursion_pack import ACTORS, ORACLE
 
 ACTOR_ID = {a[0]: a for a in ACTORS}
 _HEADER = "import Base\nimport ./main.bend as M\n\n"

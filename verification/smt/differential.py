@@ -79,9 +79,9 @@ def from_spec(spec: Spec) -> tuple[Workflow, bool]:
            "forbidden_effects": tuple(sorted(t["forb"]))} for a, t in spec["transitions"].items()]
     states = tuple(dict.fromkeys(spec["states"]))
     try:
-        return Workflow.model_validate({"initial_state": spec["initial"], "states": states, "transitions": tuple(ts)}), True
+        return Workflow.model_validate({"id": "excursion", "initial_state": spec["initial"], "states": states, "transitions": tuple(ts)}), True
     except ValueError:
-        return Workflow.model_construct(initial_state=spec["initial"], states=states,
+        return Workflow.model_construct(id="excursion", initial_state=spec["initial"], states=states,
                                         transitions=tuple(Transition.model_construct(**t) for t in ts)), False
 
 

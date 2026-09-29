@@ -32,5 +32,7 @@ Source: `repo://docs/architecture/ARCHITECTURE.md#effect-intent`.
 Declared in [EFFECTS](/symbols/domain/policy/EFFECTS.md), enqueued by [execute](/symbols/application/runtime/execute.md) through the [UnitOfWork](/symbols/application/ports/UnitOfWork.md). No delivery adapter exists in v0.2.
 
 <!-- okf:generated:begin links -->
-_No generated cross-references._
+## Realised in code
+
+* [domain.pack.Effect](/symbols/domain/pack/Effect.md) - A typed effect.
 <!-- okf:generated:end links -->

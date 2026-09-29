@@ -3,6 +3,7 @@
 title Domain contracts
 left to right direction
 class Alternative <<value-object>> {
+  +str interpretation
   +str explanation
 }
 class ChangeCase <<aggregate-root>> {
@@ -66,13 +67,6 @@ enum Guard {
   expected_version
   operation_binding
 }
-enum Interpretation {
-  recommend_only
-  final_approval
-  confirm_only
-  unsupported
-}
-Alternative "1" --> "1" Interpretation : interpretation
 ChangeCase "1" *-- "0..1" Proposal : proposal
 ChangeCase "1" *-- "*" SemanticTransaction : transactions
 ChangeCase "1" *-- "1" Workflow : baseline

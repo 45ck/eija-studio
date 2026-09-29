@@ -237,8 +237,9 @@ def leave_one_out() -> dict[str, Any]:
 # ------------------------------------------------------------------------------------------------
 
 def assumption_witness() -> dict[str, Any]:
-    """Shows why 'unique actions' is an assumption: without the Workflow validator, a duplicated action
-    hides a Teacher-held Approve from check_policy (it indexes transitions by action; the last one wins)."""
+    """Probes the 'unique actions' assumption: a validator-bypassing workflow with a duplicated, Teacher-held Approve.
+    The legacy policy indexed transitions by action (last one wins) and admitted it; the pack-driven policy judges
+    every transition and refuses it, and the Workflow validator rejects it as well."""
     base = baseline()
     approve = next(t for t in base.transitions if t.action == "Approve")
     rogue = Transition.model_construct(**{**approve.model_dump(), "id": "TR-ROGUE", "role": "Teacher"})
@@ -253,7 +254,7 @@ def assumption_witness() -> dict[str, Any]:
             "unvalidated_duplicate_action_workflow_admitted_by_check_policy": check_policy(dup) == [],
             "teacher_holds_approve_in_that_workflow": any(t.action == "Approve" and t.role == "Teacher" for t in dup.transitions),
             "workflow_validator_rejects_it": rejected_by_validator,
-            "consequence": "Soundness of check_policy depends on every Workflow passing pydantic validation; model_construct bypasses it."}
+            "consequence": "The Z3 encoding still assumes unique actions (Workflow.coherent); check_policy no longer depends on it."}
 
 
 # ------------------------------------------------------------------------------------------------

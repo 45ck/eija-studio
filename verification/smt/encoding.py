@@ -29,7 +29,7 @@ from itertools import count
 import z3
 
 from eija_studio.domain.models import Transition, Workflow
-from eija_studio.domain.policy import EFFECTS
+from verification.excursion_pack import EFFECTS
 
 from . import vocabulary as V
 
@@ -350,9 +350,9 @@ def decode(w: SymWorkflow, model: z3.ModelRef) -> tuple[Workflow, bool]:
     states = tuple(s for s in V.STATES if on(w.states_in[s])) + (("<other-state>",) if on(w.states_extra) else ())
     initial = _name(STATE, val(w.initial))
     initial = "<other-state>" if initial == V.OTHER else initial
-    data = {"initial_state": initial, "states": states, "transitions": tuple(transitions)}
+    data = {"id": "excursion", "initial_state": initial, "states": states, "transitions": tuple(transitions)}
     try:
         return Workflow.model_validate(data), True
     except ValueError:
         built = tuple(Transition.model_construct(**t) for t in transitions)
-        return Workflow.model_construct(initial_state=initial, states=states, transitions=built), False
+        return Workflow.model_construct(id="excursion", initial_state=initial, states=states, transitions=built), False

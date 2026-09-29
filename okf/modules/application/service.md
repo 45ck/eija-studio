@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/service.py
   title: application/service.py
   hash_method: ast-api-v1
-  sha256: 7647e6a26939a15d6be4eca8e360c3f1e7cbad5579f061733d337c022fe86f70
-notes_baseline: 29aa04116a8048307552fc1c8bc63d5348b12136cfcb6a1ea379995648283ecc
+  sha256: e7e308e791e736fe186937849db7631a7d7bf494fb0b700f3558bc482fdeb9da
+notes_baseline: d4a94492a5595d78729c1e75db2ad9a6404ca6a235b5c91489363c45a85b5e7b
 ---
 
 # application.service
@@ -45,6 +45,7 @@ _The source carries no module docstring._
 * [`domain/change_case`](/modules/domain/change_case.md)
 * [`domain/formal`](/modules/domain/formal.md)
 * [`domain/models`](/modules/domain/models.md)
+* [`domain/pack`](/modules/domain/pack.md)
 * [`domain/policy`](/modules/domain/policy.md)
 <!-- okf:generated:end facts -->
 
@@ -58,12 +59,13 @@ _No curated notes yet._
 * [application.compiler](/modules/application/compiler.md) - Compiler: model → projections + impacts + obligations + computed review packet.
 * [application.formal](/modules/application/formal.md) - Formal evidence in the application layer: seal what an adapter collected, and build the packet view.
 * [application.ports](/modules/application/ports.md) - Application-owned ports.
-* [application.runtime](/modules/application/runtime.md) - Generic execution algorithm; domain-specific policy stays in domain.policy.
+* [application.runtime](/modules/application/runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.
 * [application.verifier](/modules/application/verifier.md) - Bounded synthetic runtime experiments.
 * [domain.change_case](/modules/domain/change_case.md) - Module `domain/change_case` (no module docstring).
 * [domain.formal](/modules/domain/formal.md) - Primitives for per-kind admissibility of formal evidence (ADR-0145, ADR-0146).
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
-* [domain.policy](/modules/domain/policy.md) - Protected excursion policy.
+* [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
+* [domain.policy](/modules/domain/policy.md) - Generic policy: coherence with a domain pack's declared action catalog, the pack's laws, and declared effects.
 
 ## Referenced by
 

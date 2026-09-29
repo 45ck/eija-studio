@@ -17,6 +17,7 @@
 
 * [domain.models.AGENT](AGENT.md) - Constant `AGENT` in `domain/models`.
 * [domain.models.BASE_GUARDS](BASE_GUARDS.md) - Constant `BASE_GUARDS` in `domain/models`.
+* [domain.models.MEANING_ID](MEANING_ID.md) - Constant `MEANING_ID` in `domain/models`.
 * [domain.models.OWNER](OWNER.md) - Constant `OWNER` in `domain/models`.
 
 # Functions

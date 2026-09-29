@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py#Alternative
   title: domain/models.py
   hash_method: ast-sig-v1
-  sha256: 9f68103c0c7ca19301958b302b9a59e45213350b80de1b8cdf0feb48ba05b294
-notes_baseline: a5b965fcb6c13e2ad972106df8f2f5f07364bf9a68765bded68d879798464768
+  sha256: b6771e96505d7b355cfcc07c2a8e56b04dbdd80028e70987f2d3c09dd96edbc8
+notes_baseline: 972e90642b43fd9758fd2694e526b9ae99dca75176dcad7c2aee12686d81beb2
 ---
 
 # domain.models.Alternative
@@ -37,7 +37,7 @@ _The source carries no docstring._
 
 | Field | Annotation | Default |
 |---|---|---|
-| `interpretation` | `Interpretation` |  |
+| `interpretation` | `str` | `Field(pattern=MEANING_ID)` |
 | `explanation` | `str` | `Field(min_length=1, max_length=1600)` |
 <!-- okf:generated:end facts -->
 
@@ -49,10 +49,12 @@ _No curated notes yet._
 ## Depends on
 
 * [domain.models.Contract](/symbols/domain/models/Contract.md) - `class Contract(BaseModel)` in `domain/models`.
-* [domain.models.Interpretation](/symbols/domain/models/Interpretation.md) - Type alias `Interpretation` in `domain/models`.
+* [domain.models.MEANING_ID](/symbols/domain/models/MEANING_ID.md) - Constant `MEANING_ID` in `domain/models`.
 
 ## Referenced by
 
 * [application.diagrams.CONTRACTS](/symbols/application/diagrams/CONTRACTS.md) - Constant `CONTRACTS` in `application/diagrams`.
 * [domain.models.Proposal](/symbols/domain/models/Proposal.md) - `class Proposal(Contract)` in `domain/models`.
+* [domain.pack.ProposalRule](/symbols/domain/pack/ProposalRule.md) - Offline fixture: when the lower-cased request contains every ``all`` word and at least one ``any`` word.
+* [domain.pack.Proposals](/symbols/domain/pack/Proposals.md) - `class Proposals(Contract)` in `domain/pack`.
 <!-- okf:generated:end links -->

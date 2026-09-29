@@ -13,15 +13,15 @@ from eija_studio.domain.models import OWNER
 HARNESS_MARK = "pytest-harness"
 
 
-def harness_identity() -> dict:
+def harness_identity(pack=None) -> dict:
     """Kernel tests exercise the behaviour of the source under test. Whether those bytes are the
     owner-stamped release is a separate release gate (scripts/verify_release.py), never assumed here.
     The `identity_source` mark distinguishes this from a measured production identity."""
-    return measured_identity() | {"trusted_fixture": True, "identity_source": HARNESS_MARK}
+    return measured_identity(pack) | {"trusted_fixture": True, "identity_source": HARNESS_MARK}
 
 
-def harness_studio(workspace: Path):
-    s = build_studio(workspace)
+def harness_studio(workspace: Path, pack=None):
+    s = build_studio(workspace, pack=pack)
     s.identity_provider = harness_identity
     return s
 

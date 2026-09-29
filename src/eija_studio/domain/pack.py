@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Literal
@@ -19,11 +20,10 @@ from typing import Any, Literal
 from pydantic import Field, ValidationError
 
 from .laws import Law
-from .models import Contract, DomainError, Guard, Workflow, fingerprint
+from .models import MEANING_ID, Alternative, Contract, DomainError, Guard, Workflow, fingerprint
 
 PACK_SCHEMA = "eija.pack.v1"
 PACK_ID = r"^[a-z][a-z0-9-]{0,39}$"
-MEANING_ID = r"^[a-z][a-z0-9_]{0,39}$"
 REPO_URI = r"^repo://[A-Za-z0-9_./#:@-]{1,300}$"
 PACK_FILE = "pack.json"
 DEFAULT_FILE = "default.json"
@@ -89,11 +89,6 @@ class Actor(Contract):
     role: str = Field(min_length=1, max_length=60)
     active: bool
     assigned: bool
-
-
-class Alternative(Contract):
-    interpretation: str = Field(pattern=MEANING_ID)
-    explanation: str = Field(min_length=1, max_length=1600)
 
 
 class ProposalRule(Contract):
@@ -168,6 +163,19 @@ class Pack(Contract):
         return next((e for e in self.effects.catalog if e.id == effect_id), None)
 
 
+def state_sets(pack: Pack) -> tuple[frozenset[str], ...]:
+    """The state sets a workflow of this pack can have: the baseline's, and the baseline's after each supported
+    meaning (states its transactions add or remove). Used to bound evidence whose model is not at hand."""
+    base = frozenset(pack.model.states)
+    sets = [base]
+    for meaning in pack.meanings:
+        if meaning.supported:
+            added = {str(tx.get("state")) for tx in meaning.transactions if tx.get("kind") == "add_state"}
+            removed = {str(tx.get("state")) for tx in meaning.transactions if tx.get("kind") == "remove_state"}
+            sets.append(frozenset((base | added) - removed))
+    return tuple(dict.fromkeys(sets))
+
+
 def ui_key(pack_id: str, kind: str, element: str) -> str:
     """The derived UI/UML key of a pack element: ``data-eija-id="<pack>.<kind>.<id>"``."""
     return f"{pack_id}.{kind}.{element}"
@@ -214,7 +222,16 @@ def _effect_problems(pack: Pack) -> list[str]:
     effects = {e.id for e in pack.effects.catalog}
     found = [f"actions[{a.id}]: effect {e!r} is not in effects.catalog" for a in pack.actions for e in a.required_effects if e not in effects]
     found += [f"effects.forbidden: {e!r} is also a catalog effect" for e in pack.effects.forbidden if e in effects]
-    return found + [f"effects.catalog[{e.id}]: a notification needs a recipient" for e in pack.effects.catalog if e.kind == "notification" and not e.recipient]
+    return found + _recipient_problems(pack) + [f"actions[{a.id}]: the runtime matrix observes at most one {kind} effect per action"
+                    for a in pack.actions for kind in ("audit", "notification") if _count(pack, a, kind) > 1]
+
+
+def _recipient_problems(pack: Pack) -> list[str]:
+    return [f"effects.catalog[{e.id}]: a notification needs a recipient" for e in pack.effects.catalog if e.kind == "notification" and not e.recipient]
+
+
+def _count(pack: Pack, action: ActionSpec, kind: str) -> int:
+    return sum(1 for e in action.required_effects if (found := pack.effect(e)) is not None and found.kind == kind)
 
 
 def _law_problems(pack: Pack) -> list[str]:
@@ -290,10 +307,27 @@ def _read(path: Path) -> Any:
         raise PackError([f"{path.name}: nesting too deep"]) from None
 
 
+_LOADED: dict[str, Pack] = {}
+
+
 def load_pack(location: str | Path) -> Pack:
     """Load a pack from a directory holding ``pack.json`` or from the file itself."""
     path = Path(location)
-    return parse_pack(_read(path / PACK_FILE if path.is_dir() else path))
+    pack = parse_pack(_read(path / PACK_FILE if path.is_dir() else path))
+    _LOADED[pack.id] = pack
+    return pack
+
+
+def meaning_ids(pack_id: str) -> frozenset[str] | None:
+    """The meaning ids of the pack a workflow belongs to (``Workflow.id``): a pack loaded in this process, else the
+    repository pack of that id. None when no such pack can be found."""
+    pack = _LOADED.get(pack_id)
+    if pack is None and re.fullmatch(PACK_ID, pack_id) and (PACKS_ROOT / pack_id / PACK_FILE).is_file():
+        try:
+            pack = load_pack(PACKS_ROOT / pack_id)
+        except PackError:
+            return None
+    return None if pack is None else frozenset(m.id for m in pack.meanings)
 
 
 def default_location() -> Path:

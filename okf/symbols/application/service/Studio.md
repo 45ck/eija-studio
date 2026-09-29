@@ -14,7 +14,7 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio
   title: application/service.py
   hash_method: ast-sig-v1
-  sha256: 97daa3703a8b24b448c8b73bc0cf0b3cc09f5c0c3313ff0e1fc2cb3003730100
+  sha256: bc2b87036a6bb13c0c86b4d86351cbc3084ae4fa90493cc0a6d1950f9be21e90
 description_override: 'The Studio use cases: create, propose, select, edit, verify, approve, apply and execute over a Change Case.'
 notes_baseline: de7d46763e5f821cd3e3ec357af51a719512db92a36ea21137307c05cc341e97
 verified:
@@ -77,6 +77,7 @@ Every mutation runs inside one unit of work with version checks. Governance meth
 * [domain.models.Principal](/symbols/domain/models/Principal.md) - `class Principal(Contract)` in `domain/models`.
 * [domain.models.SemanticTransaction](/symbols/domain/models/SemanticTransaction.md) - `class SemanticTransaction(Contract)` in `domain/models`.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
+* [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
 
 ## Referenced by
 

@@ -14,7 +14,7 @@ sources:
 - resource: repo://src/eija_studio/domain/policy.py#check_policy
   title: domain/policy.py
   hash_method: ast-v2
-  sha256: 228e5d92eb7d7b3724d0e5fa681689a13ce9e856eaff4c5287b09930b30b510d
+  sha256: 9ca7b2de18533e6f28abd88a515f3dfa1b5528ed03d39a812e92ad86401135b4
 description_override: Returns the sorted policy error codes of a workflow; an empty list means the model stays inside the protected excursion policy.
 notes_baseline: f259ee95657957c18bba38a4bb459a633a66198276d2941a63108c5028ca8856
 ---
@@ -26,13 +26,15 @@ notes_baseline: f259ee95657957c18bba38a4bb459a633a66198276d2941a63108c5028ca8856
 |---|---|
 | Kind | function |
 | Module | [`domain/policy`](/modules/domain/policy.md) |
-| Signature | `def check_policy(model: Workflow) -> list[str]` |
+| Signature | `def check_policy(model: Workflow, pack: Pack \| None=None) -> list[str]` |
 | Code | `repo://src/eija_studio/domain/policy.py#check_policy` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
-_The source carries no docstring._
+~~~text
+Sorted, de-duplicated policy codes of ``model`` under the pack (empty means the model conforms).
+~~~
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -51,15 +53,15 @@ Used by [ensure_policy](/symbols/domain/policy/ensure_policy.md), which turns fi
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [domain.models.BASE_GUARDS](/symbols/domain/models/BASE_GUARDS.md) - Constant `BASE_GUARDS` in `domain/models`.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
-* [domain.policy.EFFECTS](/symbols/domain/policy/EFFECTS.md) - Constant `EFFECTS` in `domain/policy`.
-* [domain.policy.FORBIDDEN](/symbols/domain/policy/FORBIDDEN.md) - Constant `FORBIDDEN` in `domain/policy`.
+* [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
+* [domain.policy.declared_codes](/symbols/domain/policy/declared_codes.md) - Every transition must perform a declared action, with exactly its declared guards and required effects, and must declare every pack-forbidden effect forbidden.
+* [domain.policy.law_violations](/symbols/domain/policy/law_violations.md) - `def law_violations(model: Workflow, pack: Pack | None=None) -> list[Violation]` in `domain/policy`.
 
 ## Referenced by
 
 * [application.compiler.compile_case](/symbols/application/compiler/compile_case.md) - `def compile_case(case: ChangeCase, identity: dict[str, Any], authenticator: Callable[[dict[str, Any]], bool],…` in `application/compiler`.
 * [application.diagrams.policy_violations](/symbols/application/diagrams/policy_violations.md) - Codes `domain.policy.check_policy` reports for `workflow` (empty: the protected policy accepts it).
 * [application.service.Studio.formal_view](/symbols/application/service/Studio.formal_view.md) - Formal evidence for a bare workflow (``eija compile``): collected and sealed in memory, never stored, never a decision.
-* [domain.policy.ensure_policy](/symbols/domain/policy/ensure_policy.md) - `def ensure_policy(model: Workflow) -> None` in `domain/policy`.
+* [domain.policy.ensure_policy](/symbols/domain/policy/ensure_policy.md) - `def ensure_policy(model: Workflow, pack: Pack | None=None) -> None` in `domain/policy`.
 <!-- okf:generated:end links -->

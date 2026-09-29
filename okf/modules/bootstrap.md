@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/bootstrap.py
   title: bootstrap.py
   hash_method: ast-api-v1
-  sha256: a1127de2561670d3aa739bd220139ac386c5a813e5c75a802b1a992b34b57d71
-notes_baseline: 32cdefd065afda773184b28d119ad238e45cf1865e5f9bf7af4b96968675de1a
+  sha256: 38731b986e6b052d51ca2d1dce2f2e3d01bcecd3757b6e7fd7fdc885622492e3
+notes_baseline: 5a08ac4b825acd3f4c97d07021eec9b46d5546a9e7e95f775b241e955377bffc
 ---
 
 # bootstrap
@@ -42,6 +42,7 @@ _Symbol pages are generated for the domain and application layers only._
 * [`adapters/receipts`](/modules/adapters/receipts.md)
 * [`adapters/sqlite_store`](/modules/adapters/sqlite_store.md)
 * [`application/service`](/modules/application/service.md)
+* [`domain/pack`](/modules/domain/pack.md)
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -55,6 +56,7 @@ _No curated notes yet._
 * [adapters.receipts](/modules/adapters/receipts.md) - Local integrity seal.
 * [adapters.sqlite_store](/modules/adapters/sqlite_store.md) - Durable local unit of work.
 * [application.service](/modules/application/service.md) - Module `application/service` (no module docstring).
+* [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
 
 ## Referenced by
 

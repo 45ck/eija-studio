@@ -270,7 +270,8 @@ def evaluate_run(laws: Sequence[_Law], initial: str, steps: Sequence[Step], acti
     """Violations by one executed run: per-step laws on every step, sequence laws on the whole run.
 
     ``actions`` is the action set of the workflow the run executed (for ``when`` conditions). Structural laws
-    (``closed_shape``) and evidence requirements are about the table, not a run, and are not judged here. Only
+    (``closed_shape``, ``action_requires_guard``) and evidence requirements are about the table, not a run, and are
+    not judged here. Only
     a step's REQUIRED effects are known, so the ``forbidden_effects`` law judges that nothing forbidden ran."""
     found: list[Violation] = []
     for law in laws:
@@ -284,6 +285,8 @@ def evaluate_run(laws: Sequence[_Law], initial: str, steps: Sequence[Step], acti
 
 
 def _step_breaks(law: _Law, t: Transition) -> bool:
+    if isinstance(law, ActionRequiresGuard):
+        return False  # guards are a property of the table; a run step records what ran, not which guards held
     if isinstance(law, ForbiddenEffects):
         return bool(set(law.effects) & set(t.required_effects))
     return _breaks(law, t)

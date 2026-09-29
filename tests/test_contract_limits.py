@@ -88,7 +88,9 @@ def test_proposal_has_one_to_four_distinct_alternatives():
     base = {"summary": "s", "alternatives": [alt("recommend_only")], "unknowns": []}
     names = ["recommend_only", "final_approval", "confirm_only", "unsupported"]
     assert_bounds(Proposal, base, "alternatives", [[alt(n) for n in names[:k]] for k in (1, 2, 3, 4)],
-                  [[], [alt("recommend_only"), alt("recommend_only")], [alt("nonsense")]])
+                  [[], [alt("recommend_only"), alt("recommend_only")], [alt("Not a meaning id")]])
+    # Any well-formed meaning id is a valid proposal; whether the pack models it is checked at selection (INTERPRETATION_MISSING /
+    # MEANING_UNSUPPORTED), not by the contract.
 
 
 def test_proposal_and_transactions_reject_unknown_fields_and_values():
@@ -105,7 +107,7 @@ def test_proposal_and_transactions_reject_unknown_fields_and_values():
 def workflow_data(states: int = 4, transitions: int = 1) -> dict:
     names = ["Draft"] + [f"S{i}" for i in range(1, states)]
     rows = [transition_data(id=f"TR-{i}", action=f"Act{i}", from_state="Draft", to_state=names[i % len(names)], role="Teacher") for i in range(transitions)]
-    return {"states": names, "transitions": rows}
+    return {"id": "excursion", "initial_state": "Draft", "states": names, "transitions": rows}
 
 
 def test_workflow_state_count_is_1_to_32():

@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.edit
   title: application/service.py
   hash_method: ast-v2
-  sha256: f65d8a0e20dca7d97db8df3c816f58195f09c80f0c938e5ef8beebd95f5dc6f5
-notes_baseline: f7e30e771eecec0174d08d16f08f578c96546ffac5256af991f58bee60aaf8a2
+  sha256: 97816bacd67893d8cedb113d7d6b2e652fcc0f6459dc634abe0d770d2c8dd623
+notes_baseline: 4fcdccea36038b799d5e29258c6e462838a5d28f87824147880ee500c2a97ccb
 ---
 
 # application.service.Studio.edit
@@ -45,5 +45,5 @@ _No curated notes yet._
 * [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [domain.models.Principal](/symbols/domain/models/Principal.md) - `class Principal(Contract)` in `domain/models`.
 * [domain.models.SemanticTransaction](/symbols/domain/models/SemanticTransaction.md) - `class SemanticTransaction(Contract)` in `domain/models`.
-* [domain.policy.apply_transaction](/symbols/domain/policy/apply_transaction.md) - `def apply_transaction(model: Workflow, tx: SemanticTransaction) -> Workflow` in `domain/policy`.
+* [domain.policy.apply_transaction](/symbols/domain/policy/apply_transaction.md) - Legacy closed vocabulary (two kinds), kept until the open vocabulary of WBS 1.3 replaces it: the recommendation meaning of the default pack and a rejection-sou…
 <!-- okf:generated:end links -->

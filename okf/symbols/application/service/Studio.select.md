@@ -14,7 +14,7 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.select
   title: application/service.py
   hash_method: ast-v2
-  sha256: 7884aba375c306bef2f6a0b867eed8473432e57ac89118516cb87b56cfda1e30
+  sha256: 8ed7436c166cd675f05fee83f32cd2b9762430d09e2a8a4a030f7c1d2ca3ca84
 description_override: Records the owner's explicit choice of one supported interpretation and derives the candidate workflow.
 notes_baseline: 24503fadd70f4c9f51e66b9e8a8697fa6f0f3dc48588ca733c3e341e13381369
 verified:
@@ -51,6 +51,5 @@ Requires the `select` capability. Only `recommend_only` is supported; other inte
 * [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [domain.models.Principal](/symbols/domain/models/Principal.md) - `class Principal(Contract)` in `domain/models`.
 * [domain.models.SemanticTransaction](/symbols/domain/models/SemanticTransaction.md) - `class SemanticTransaction(Contract)` in `domain/models`.
-* [domain.policy.CANONICAL_OPTIONS](/symbols/domain/policy/CANONICAL_OPTIONS.md) - Constant `CANONICAL_OPTIONS` in `domain/policy`.
-* [domain.policy.apply_transaction](/symbols/domain/policy/apply_transaction.md) - `def apply_transaction(model: Workflow, tx: SemanticTransaction) -> Workflow` in `domain/policy`.
+* [domain.policy.apply_transaction](/symbols/domain/policy/apply_transaction.md) - Legacy closed vocabulary (two kinds), kept until the open vocabulary of WBS 1.3 replaces it: the recommendation meaning of the default pack and a rejection-sou…
 <!-- okf:generated:end links -->

@@ -495,7 +495,7 @@ def join(vals) -> str:
 
 def kernel_agg(statuses) -> str:
     from eija_studio.domain import evidence as kernel_evidence
-    with mock.patch.object(kernel_evidence, "assess_receipt", lambda r, s, c, k: r["st"]):
+    with mock.patch.object(kernel_evidence, "assess_receipt", lambda r, s, c, k, *context: r["st"]):
         return kernel_evidence.aggregate_status([{"st": x} for x in statuses], {}, lambda r: True)
 
 

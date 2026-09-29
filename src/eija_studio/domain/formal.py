@@ -55,6 +55,16 @@ class Context:
     ``baseline_semantic`` that of the baseline; both are recomputed from the Workflow objects by the caller."""
     candidate_semantic: str
     baseline_semantic: str | None = None
+    runtime: RuntimeShape | None = None  # the runtime matrix the subject must have; None: bounded by the default pack
+
+
+@dataclass(frozen=True)
+class RuntimeShape:
+    """What a runtime-matrix receipt for the current subject must cover: the pack's fixture actors and declared
+    actions, and one of the allowed state sets (exactly the model's states when the model is known)."""
+    actors: frozenset[str]
+    actions: frozenset[str]
+    state_sets: tuple[frozenset[str], ...]
 
 
 @dataclass(frozen=True)

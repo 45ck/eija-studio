@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.view
   title: application/service.py
   hash_method: ast-v2
-  sha256: e0f2fdb900b2d82378e5cf9c7761033e5d61191e5a838490660c78e9fb004a7f
-notes_baseline: 55d585bcc0f13138b0b6cf809d2cfa62cc69c803ad52148854e49acb63848acc
+  sha256: 24656d65f429f1ea6bc4ae25a303b37ca7d62394b15aa8a16039fe0eb9c35d14
+notes_baseline: 9f3f75794cbc8ddafc11c9d990c276b47c580b91447c04b42d093be64945e665
 ---
 
 # application.service.Studio.view
@@ -43,5 +43,5 @@ _No curated notes yet._
 ## Depends on
 
 * [application.compiler.compile_case](/symbols/application/compiler/compile_case.md) - `def compile_case(case: ChangeCase, identity: dict[str, Any], authenticator: Callable[[dict[str, Any]], bool],…` in `application/compiler`.
-* [domain.policy.CANONICAL_OPTIONS](/symbols/domain/policy/CANONICAL_OPTIONS.md) - Constant `CANONICAL_OPTIONS` in `domain/policy`.
+* [domain.policy.meaning_options](/symbols/domain/policy/meaning_options.md) - The pack's meanings as the review surface shows them: label, whether supported, consequences.
 <!-- okf:generated:end links -->

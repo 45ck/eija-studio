@@ -8,14 +8,15 @@ values come from the documented policy (docs/SECURITY_AND_TRUST.md, ADR-0000), n
 """
 from __future__ import annotations
 
-from typing import get_args
-
 import pytest
 
-from eija_studio.domain.models import DomainError, Interpretation, SemanticTransaction, Workflow
+from eija_studio.domain.models import DomainError, SemanticTransaction, Workflow
 from eija_studio.domain.policy import (
-    CANONICAL_OPTIONS, EFFECTS, FORBIDDEN, apply_transaction, baseline, check_policy, ensure_policy,
+    apply_transaction, baseline, check_policy, effects_table, ensure_policy, forbidden_effects, meaning_options,
     meaning_questions, projections, transition)
+
+# The protected tables now live in the excursion pack (packs/excursion/pack.json); the kernel reads them from there.
+FORBIDDEN, EFFECTS, CANONICAL_OPTIONS = forbidden_effects(), effects_table(), meaning_options()
 
 
 def candidate() -> Workflow:
@@ -46,7 +47,7 @@ def test_protected_tables_are_pinned_to_independent_literals():
 
 
 def test_only_recommend_only_is_a_supported_meaning():
-    assert set(CANONICAL_OPTIONS) == set(get_args(Interpretation))
+    assert set(CANONICAL_OPTIONS) == {"recommend_only", "final_approval", "confirm_only", "unsupported"}
     assert {k for k, v in CANONICAL_OPTIONS.items() if v["supported"] is True} == {"recommend_only"}
     assert {k for k, v in CANONICAL_OPTIONS.items() if v["supported"] is False} == {"final_approval", "confirm_only", "unsupported"}
     for option in CANONICAL_OPTIONS.values():

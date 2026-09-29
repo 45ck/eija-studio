@@ -9,6 +9,7 @@ classDiagram
     direction LR
     class Alternative {
         <<value-object>>
+        +str interpretation
         +str explanation
     }
     class ChangeCase {
@@ -81,14 +82,6 @@ classDiagram
         expected_version
         operation_binding
     }
-    class Interpretation {
-        <<enumeration>>
-        recommend_only
-        final_approval
-        confirm_only
-        unsupported
-    }
-    Alternative "1" --> "1" Interpretation : interpretation
     ChangeCase "1" *-- "0..1" Proposal : proposal
     ChangeCase "1" *-- "*" SemanticTransaction : transactions
     ChangeCase "1" *-- "1" Workflow : baseline

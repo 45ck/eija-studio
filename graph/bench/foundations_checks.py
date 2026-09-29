@@ -133,7 +133,7 @@ def pagerank_float_determinism(shuffles: int = 40) -> dict:
 
 
 def _aggregate(statuses) -> str:
-    with mock.patch.object(kernel_evidence, "assess_receipt", lambda r, s, c, k: r["st"]):
+    with mock.patch.object(kernel_evidence, "assess_receipt", lambda r, s, c, k, *context: r["st"]):
         return kernel_evidence.aggregate_status([{"st": x} for x in statuses], {}, lambda r: True)
 
 

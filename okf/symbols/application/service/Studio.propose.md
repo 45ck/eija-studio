@@ -14,7 +14,7 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.propose
   title: application/service.py
   hash_method: ast-v2
-  sha256: 4c3ea304a74de099b9a5f48ac5bd257f517a966c53af0d3328c613a6ea69b891
+  sha256: 56293554916d67fe35b5cdcd8106108be59db3c176cd12feba42610138bf4419
 description_override: Asks the configured provider for an untrusted interpretation and records the run; networked providers need startup enablement and explicit consent.
 notes_baseline: 5f16b9c69b6f03d1db68d7b7ae5194963849d2d8479a170b56dc0c83febfb927
 verified:

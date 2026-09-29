@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.reset_preview
   title: application/service.py
   hash_method: ast-v2
-  sha256: 4681f04c8892cf651eb4807b86eb59b022fd5a9a954b7cf84c46e6895fb8d249
-notes_baseline: f442f3904b0beb267b5865c142f820519255b0d92200ca6ae5f2346f9fe06b7d
+  sha256: 84560ded4654cfe195f65b93b2bdb3cec3426e0a0705f0dea6da682cd9f5dcfd
+notes_baseline: bd71000f1dbd5eb4cc6c06f4c2b303c10b02d100610aa3906641730897ae5db3
 ---
 
 # application.service.Studio.reset_preview
@@ -42,5 +42,5 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [application.runtime.initialise](/symbols/application/runtime/initialise.md) - `def initialise(session: UnitOfWork, case_id: str, model: Workflow, *, state: str | None=None) -> dict[str, An…` in `application/runtime`.
+* [application.runtime.initialise](/symbols/application/runtime/initialise.md) - `def initialise(session: UnitOfWork, case_id: str, model: Workflow, *, state: str | None=None, pack: Pack | No…` in `application/runtime`.
 <!-- okf:generated:end links -->

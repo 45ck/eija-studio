@@ -10,6 +10,7 @@ from math import isfinite
 from typing import Any
 from pydantic import ValidationError
 from eija_studio.domain.models import Proposal, Workflow, DomainError, canonical
+from eija_studio.domain.pack import meaning_ids
 
 SYSTEM = """You help interpret requests for EIJA's synthetic excursion workflow.
 Return only the supplied JSON schema. Your output is an UNTRUSTED PROPOSAL, never an approval or proof.
@@ -25,14 +26,21 @@ _FENCE = re.compile(r"\A```(?:json)?[ \t]*\r?\n(.*?)\r?\n```[ \t]*\Z", re.DOTALL
 _MODEL_NAME = re.compile(r"\A[A-Za-z0-9][A-Za-z0-9._:/@~\-\[\]]{0,99}\Z")
 
 
-def parse_proposal(content: str) -> Proposal:
-    """Validate provider text against the Proposal contract. Does NOT establish that the proposal is right."""
+def parse_proposal(content: str, model: Workflow | None = None) -> Proposal:
+    """Validate provider text against the Proposal contract and, given the workflow it was asked about, against the
+    meanings its domain pack models (an unknown or unresolvable meaning fails closed). Does NOT establish that the
+    proposal is right."""
     if not isinstance(content, str) or len(content.encode("utf-8")) > MAX_OUTPUT_BYTES:
         raise DomainError("PROVIDER_OUTPUT_INVALID", "Provider response is missing or too large")
     try:
-        return Proposal.model_validate_json(content)
+        proposal = Proposal.model_validate_json(content)
     except (ValidationError, ValueError):
         raise DomainError("PROVIDER_OUTPUT_INVALID", "Provider returned an invalid proposal; no repair or authority promotion") from None
+    if model is not None:
+        known = meaning_ids(model.id) or frozenset()
+        if any(a.interpretation not in known for a in proposal.alternatives):
+            raise DomainError("PROVIDER_OUTPUT_INVALID", "Provider named a meaning the domain pack does not model; no repair")
+    return proposal
 
 
 def proposal_schema() -> dict[str, Any]:

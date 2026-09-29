@@ -8,6 +8,6 @@
 * [application.diagrams](diagrams.md) - Diagram models derived from the executable Workflow (ADR-0019, ADR-0023).
 * [application.formal](formal.md) - Formal evidence in the application layer: seal what an adapter collected, and build the packet view.
 * [application.ports](ports.md) - Application-owned ports.
-* [application.runtime](runtime.md) - Generic execution algorithm; domain-specific policy stays in domain.policy.
+* [application.runtime](runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.
 * [application.service](service.md) - Module `application/service` (no module docstring).
 * [application.verifier](verifier.md) - Bounded synthetic runtime experiments.

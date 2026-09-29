@@ -238,5 +238,5 @@ class CliProposalProvider:
             if result.returncode != 0:
                 raise self.fail(self.classify_failure(result))
             extracted = self.extract(result, work)
-        return ProviderResult(parse_proposal(extracted.text), self.name, extracted.model or "unreported",
+        return ProviderResult(parse_proposal(extracted.text, model), self.name, extracted.model or "unreported",
                               dict(extracted.usage), True)

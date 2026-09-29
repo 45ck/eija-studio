@@ -13,9 +13,9 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from typing import Any
 
-from eija_studio.adapters.sqlite_store import FIXTURE_ACTORS
 from eija_studio.domain.models import SemanticTransaction, Workflow
-from eija_studio.domain.policy import EFFECTS, apply_transaction, baseline, check_policy
+from eija_studio.domain.policy import apply_transaction, baseline, check_policy
+from verification.excursion_pack import EFFECTS, FIXTURE_ACTORS
 
 UNKNOWN_ACTORS: tuple[str, ...] = ("ghost",)  # ids that are deliberately absent from the directory
 MUTABLE_ACTORS: tuple[str, ...] = ("teacher-assigned", "registrar")  # the environment may change these

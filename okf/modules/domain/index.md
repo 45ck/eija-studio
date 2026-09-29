@@ -10,5 +10,7 @@
 * [domain.formal_bmc](formal_bmc.md) - Admissibility of ``bounded_model_check`` receipts (ADR-0146; lane smt-bmc, ADR-0030).
 * [domain.formal_smt](formal_smt.md) - Admissibility of ``smt_proof`` receipts (ADR-0146; lane smt-bmc, ADR-0029).
 * [domain.impact](impact.md) - Module `domain/impact` (no module docstring).
+* [domain.laws](laws.md) - Typed law DSL of a domain pack: what a workflow may never do, stated as data (WBS 1.1/1.2).
 * [domain.models](models.md) - Module `domain/models` (no module docstring).
-* [domain.policy](policy.md) - Protected excursion policy.
+* [domain.pack](pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
+* [domain.policy](policy.md) - Generic policy: coherence with a domain pack's declared action catalog, the pack's laws, and declared effects.

@@ -283,7 +283,7 @@ def _wf_to_map(w: Workflow) -> Rec:
 def _map_to_wf(m: Rec) -> Workflow:
     states = tuple(sorted(v for k, v in m.items() if k.startswith("state:")))
     trans = tuple(Transition(**json.loads(v)) for k, v in sorted(m.items()) if k.startswith("transition:"))
-    return Workflow(initial_state=m["initial_state"], states=states, transitions=trans)
+    return Workflow(id="excursion", initial_state=m["initial_state"], states=states, transitions=trans)
 
 
 def _extra(id_: str, action: str, src: str, dst: str) -> Transition:
@@ -296,7 +296,8 @@ def _with(w: Workflow, states: Iterable[str] | None = None, add: Iterable[Transi
           drop_actions: Iterable[str] = ()) -> Workflow:
     drop = set(drop_actions)
     trans = tuple(t for t in w.transitions if t.action not in drop) + tuple(add)
-    return Workflow(states=tuple(states) if states is not None else w.states, transitions=trans)
+    return Workflow(id=w.id, initial_state=w.initial_state, states=tuple(states) if states is not None else w.states,
+                    transitions=trans)
 
 
 def _structure_errors(w: Workflow) -> list[str]:

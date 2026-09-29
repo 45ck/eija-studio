@@ -19,7 +19,8 @@ from hypothesis import given, settings, strategies as st
 
 from eija_studio.domain.models import BASE_GUARDS, Workflow
 from eija_studio.domain.pack import Pack, PackError, load_pack, parse_pack, ui_key
-from eija_studio.domain.policy import CANONICAL_OPTIONS, EFFECTS, FORBIDDEN, baseline, check_policy, pack_policy
+from eija_studio.domain.policy import baseline, check_policy
+from legacy_policy import CANONICAL_OPTIONS, EFFECTS, FORBIDDEN, check_policy as legacy_policy
 
 ROOT = Path(__file__).resolve().parents[1]
 EXCURSION, LIBRARY = ROOT / "packs" / "excursion", ROOT / "packs" / "library-loan"
@@ -61,7 +62,7 @@ def test_excursion_pack_transcribes_the_policy_constants(excursion):
 @pytest.mark.parametrize("path", sorted((ROOT / "examples").glob("*.json")), ids=lambda p: p.stem)
 def test_pack_policy_equals_legacy_policy_on_the_examples(excursion, path):
     model = Workflow.model_validate_json(path.read_text(encoding="utf-8"))
-    assert pack_policy(model, excursion) == check_policy(model)
+    assert check_policy(model, excursion) == legacy_policy(model)
 
 
 def _differential(pack: Pack, mutants: int = 1500, fresh: int = 500) -> tuple[int, int, list]:
@@ -69,7 +70,7 @@ def _differential(pack: Pack, mutants: int = 1500, fresh: int = 500) -> tuple[in
     total, valid, disagreements = 0, 0, []
     for model, schema_valid in differential.candidates(20260928, mutants, fresh):
         total, valid = total + 1, valid + int(schema_valid)
-        legacy, generic = check_policy(model), pack_policy(model, pack)
+        legacy, generic = legacy_policy(model), check_policy(model, pack)
         if legacy != generic:
             disagreements.append((legacy, generic))
     return total, valid, disagreements
@@ -97,16 +98,16 @@ def test_library_loan_is_structurally_different(library, excursion):
     assert all(t.from_state not in finals for t in library.model.transitions)
     assert {law.kind for law in library.laws if law.kind == "path_requires"} == {"path_requires"}
     assert "path_requires" not in {law.kind for law in excursion.laws}
-    assert pack_policy(library.model, library) == []
+    assert check_policy(library.model, library) == []
 
 
 def test_library_loan_unsafe_variant_is_refused_by_the_sequence_law_only(library):
     unsafe = Workflow.model_validate_json(UNSAFE_LOAN.read_text(encoding="utf-8"))
-    assert pack_policy(unsafe, library) == ["LOAN_RETURN_WITHOUT_CHECKOUT"]
+    assert check_policy(unsafe, library) == ["LOAN_RETURN_WITHOUT_CHECKOUT"]
     # Negative control: without the sequence law nothing else notices the defect.
     document = raw(LIBRARY)
     document["laws"] = [law for law in document["laws"] if law["kind"] != "path_requires"]
-    assert pack_policy(unsafe, parse_pack(document)) == []
+    assert check_policy(unsafe, parse_pack(document)) == []
 
 
 def test_ui_keys_derive_from_pack_ids(library):

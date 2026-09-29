@@ -1382,13 +1382,11 @@
           "type": "string"
         },
         "id": {
-          "default": "excursion",
           "pattern": "^[a-z][a-z0-9-]{0,39}$",
           "title": "Id",
           "type": "string"
         },
         "initial_state": {
-          "default": "Draft",
           "title": "Initial State",
           "type": "string"
         },
@@ -1412,6 +1410,8 @@
         }
       },
       "required": [
+        "id",
+        "initial_state",
         "states",
         "transitions"
       ],

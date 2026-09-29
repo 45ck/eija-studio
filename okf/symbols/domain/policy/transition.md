@@ -14,7 +14,7 @@ sources:
 - resource: repo://src/eija_studio/domain/policy.py#transition
   title: domain/policy.py
   hash_method: ast-v2
-  sha256: e4abc97bf36ffd9435e5dc08fe17baa09e44fbd8283e60bbd582577929979341
+  sha256: e983ccaddfa5cf5adeb1efee6f244d2a5015a2ed7cb617a8ebb8641e596739cb
 description_override: Builds a Transition whose guards and effects come from the protected tables, never from caller input.
 notes_baseline: 131f5b3ffb1c32f6fdfbae407b359fda148e5335ad64b4d62500a7929308ff58
 ---
@@ -26,13 +26,15 @@ notes_baseline: 131f5b3ffb1c32f6fdfbae407b359fda148e5335ad64b4d62500a7929308ff58
 |---|---|
 | Kind | function |
 | Module | [`domain/policy`](/modules/domain/policy.md) |
-| Signature | `def transition(action: str, source: str, target: str, role: str) -> Transition` |
+| Signature | `def transition(action: str, source: str, target: str, role: str, pack: Pack \| None=None) -> Transition` |
 | Code | `repo://src/eija_studio/domain/policy.py#transition` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
-_The source carries no docstring._
+~~~text
+A transition for a declared action, with the action's declared guards and effects and the pack's forbidden effects.
+~~~
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -42,13 +44,11 @@ _The source carries no docstring._
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [domain.models.BASE_GUARDS](/symbols/domain/models/BASE_GUARDS.md) - Constant `BASE_GUARDS` in `domain/models`.
+* [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [domain.models.Transition](/symbols/domain/models/Transition.md) - `class Transition(Contract)` in `domain/models`.
-* [domain.policy.EFFECTS](/symbols/domain/policy/EFFECTS.md) - Constant `EFFECTS` in `domain/policy`.
-* [domain.policy.FORBIDDEN](/symbols/domain/policy/FORBIDDEN.md) - Constant `FORBIDDEN` in `domain/policy`.
+* [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
 
 ## Referenced by
 
-* [domain.policy.apply_transaction](/symbols/domain/policy/apply_transaction.md) - `def apply_transaction(model: Workflow, tx: SemanticTransaction) -> Workflow` in `domain/policy`.
-* [domain.policy.baseline](/symbols/domain/policy/baseline.md) - `def baseline() -> Workflow` in `domain/policy`.
+* [domain.policy.apply_transaction](/symbols/domain/policy/apply_transaction.md) - Legacy closed vocabulary (two kinds), kept until the open vocabulary of WBS 1.3 replaces it: the recommendation meaning of the default pack and a rejection-sou…
 <!-- okf:generated:end links -->

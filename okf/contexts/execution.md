@@ -53,6 +53,6 @@ Where protected policy meets runtime: [check_policy](/symbols/domain/policy/chec
 
 ## Implementing modules
 
-* [application.runtime](/modules/application/runtime.md) - Generic execution algorithm; domain-specific policy stays in domain.policy.
-* [domain.policy](/modules/domain/policy.md) - Protected excursion policy.
+* [application.runtime](/modules/application/runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.
+* [domain.policy](/modules/domain/policy.md) - Generic policy: coherence with a domain pack's declared action catalog, the pack's laws, and declared effects.
 <!-- okf:generated:end links -->

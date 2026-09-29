@@ -71,5 +71,5 @@ class AnthropicApiProvider:
         headers = {"x-api-key": self._key, "anthropic-version": "2023-06-01"}
         payload = post_json(ENDPOINT, self._body(request, model), headers, transport=self.transport, timeout=self.timeout,
                             label="Anthropic API")
-        proposal = parse_proposal(_reply_text(payload))
+        proposal = parse_proposal(_reply_text(payload), model)
         return ProviderResult(proposal, self.name, str(payload.get("model", self.model)), safe_usage(payload.get("usage"), USAGE_FIELDS), True)

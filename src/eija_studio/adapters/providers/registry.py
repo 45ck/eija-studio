@@ -2,6 +2,7 @@
 from __future__ import annotations
 from typing import Callable
 from eija_studio.application.ports import ProposalProvider
+from eija_studio.domain.pack import Pack
 from .anthropic_api import AnthropicApiProvider
 from .claude_code import ClaudeCodeProvider
 from .codex import CodexProvider
@@ -23,7 +24,9 @@ _FACTORIES: dict[str, Callable[[str, str | None], ProposalProvider]] = {
 PROVIDER_NAMES = tuple(_FACTORIES)
 
 
-def create_provider(name: str, model: str = "", key: str | None = None) -> ProposalProvider:
+def create_provider(name: str, model: str = "", key: str | None = None, pack: Pack | None = None) -> ProposalProvider:
     if name not in _FACTORIES:
         raise ValueError("Unknown provider")
+    if name == "offline":
+        return OfflineProvider(pack)  # the deterministic fixture answers from the pack
     return _FACTORIES[name](model, key)

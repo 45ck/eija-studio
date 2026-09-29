@@ -59,5 +59,5 @@ class OpenRouterProvider:
         headers = {"Authorization": "Bearer " + self._key, "X-OpenRouter-Title": "EIJA Studio"}
         payload = post_json(ENDPOINT, self._body(request, model), headers, transport=self.transport, timeout=self.timeout,
                             label="OpenRouter")
-        proposal = parse_proposal(_reply_content(payload))
+        proposal = parse_proposal(_reply_content(payload), model)
         return ProviderResult(proposal, self.name, str(payload.get("model", self.model)), _reply_usage(payload), True)
