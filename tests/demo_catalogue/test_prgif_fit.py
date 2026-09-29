@@ -91,8 +91,16 @@ def test_too_large_lowers_fps_or_width_until_it_fits():
 def test_prediction_skips_hopeless_candidates():
     calls = []
     fit(model_encoder(0.6, calls), candidates(1280), 5_000_000)
-    # after the first measurement the model prunes: far fewer encodes than candidates
-    assert 1 < len(calls) <= 3 < len(candidates(1280))
+    # after the first measurement the model prunes: far fewer encodes than candidates. The default
+    # PREDICTION_SLACK (1.15) deliberately keeps borderline candidates, so it tries a few more than an exact model.
+    assert 1 < len(calls) <= 5 < len(candidates(1280)) // 4
+
+
+def test_prediction_without_slack_prunes_to_three_encodes(monkeypatch):
+    monkeypatch.setattr("demos.prgif.fit.PREDICTION_SLACK", 1.0)
+    calls = []
+    fit(model_encoder(0.6, calls), candidates(1280), 5_000_000)
+    assert 1 < len(calls) <= 3
 
 
 def test_accepted_size_is_the_measured_size_not_the_prediction():
