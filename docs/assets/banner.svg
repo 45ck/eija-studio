@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="300" viewBox="0 0 1200 300" role="img" aria-labelledby="banner-title banner-desc">
+  <title id="banner-title">EIJA Studio: review the meaning of a change, not every generated line</title>
+  <desc id="banner-desc">Banner showing the EIJA Studio name and its three-step promise: AI proposes, the kernel checks, the local owner decides.</desc>
+  <rect width="1200" height="300" fill="#0f172a"/>
+  <rect x="0" y="292" width="1200" height="8" fill="#38bdf8"/>
+  <g font-family="Segoe UI, Helvetica, Arial, sans-serif">
+    <text x="60" y="110" font-size="64" font-weight="700" fill="#f8fafc">EIJA Studio</text>
+    <text x="60" y="158" font-size="28" fill="#cbd5e1">Review the meaning of a change, not every generated line.</text>
+    <text x="60" y="196" font-size="18" fill="#94a3b8">Executable Intent and Journey Assurance. Open source, Apache-2.0, local-first.</text>
+  </g>
+  <g font-family="Consolas, Menlo, monospace" font-size="22" font-weight="600">
+    <rect x="60" y="222" width="250" height="44" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+    <text x="185" y="252" text-anchor="middle" fill="#e0f2fe">AI proposes</text>
+    <path d="M318 244 h34 m-8 -8 l8 8 l-8 8" fill="none" stroke="#94a3b8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="360" y="222" width="290" height="44" rx="8" fill="#1e293b" stroke="#a3e635" stroke-width="2"/>
+    <text x="505" y="252" text-anchor="middle" fill="#ecfccb">The kernel checks</text>
+    <path d="M658 244 h34 m-8 -8 l8 8 l-8 8" fill="none" stroke="#94a3b8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="700" y="222" width="360" height="44" rx="8" fill="#1e293b" stroke="#fbbf24" stroke-width="2"/>
+    <text x="880" y="252" text-anchor="middle" fill="#fef3c7">The local owner decides</text>
+  </g>
+</svg>
