@@ -497,23 +497,27 @@ def rename_probe(names=("closure", "fingerprint", "receipt", "impact", "verify",
 # ---------------------------------------------------------------------------------------------------
 def kernel_dry_run_example() -> dict:
     from eija_studio.domain.impact import model_impact
-    from eija_studio.domain.models import DomainError, SemanticTransaction
-    from eija_studio.domain.policy import apply_transaction, baseline
+    from eija_studio.domain.models import DomainError
+    from eija_studio.domain.policy import apply_transaction, baseline, demo_candidate
+    from eija_studio.domain.transactions import RetargetTransition
     base = baseline()
-    enable = SemanticTransaction(kind="enable_recommendation")
     out = {"baseline_semantic_hash": base.semantic_hash[:16], "baseline_actions": [t.action for t in base.transitions]}
-    cand = apply_transaction(base, enable)
+    cand = demo_candidate()
+    reject = next(t for t in base.transitions if t.action == "Reject")
+
+    def retarget(state: str) -> RetargetTransition:
+        return RetargetTransition(kind="retarget_transition", transition=reject.id, end="source", state=state)
     imp = model_impact(base, cand)
     out["enable_recommendation"] = {"verdict": "ACCEPTED", "candidate_semantic_hash": cand.semantic_hash[:16],
                                     "changed_actions": imp["changed_actions"], "closure_size": len(imp["affected"]),
                                     "complete": imp["complete"]}
-    try:
-        apply_transaction(base, SemanticTransaction(kind="set_rejection_source", rejection_source="Submitted"))
-        out["set_rejection_source_before_enable"] = {"verdict": "ACCEPTED"}
+    try:  # the drag: the rejection transition's source moved to the initial state
+        apply_transaction(base, retarget(base.initial_state))
+        out["drag_reject_source_to_initial"] = {"verdict": "ACCEPTED"}
     except DomainError as e:
-        out["set_rejection_source_before_enable"] = {"verdict": "REJECTED", "code": e.code}
-    cand2 = apply_transaction(cand, SemanticTransaction(kind="set_rejection_source", rejection_source="Submitted"))
-    out["set_rejection_source_after_enable"] = {"verdict": "ACCEPTED", "changed_actions": model_impact(cand, cand2)["changed_actions"]}
+        out["drag_reject_source_to_initial"] = {"verdict": "REJECTED", "code": e.code, "codes": (e.details or {}).get("codes")}
+    cand2 = apply_transaction(cand, retarget(base.transitions[0].to_state))
+    out["retarget_reject_source_after_meaning"] = {"verdict": "ACCEPTED", "changed_actions": model_impact(cand, cand2)["changed_actions"]}
     out["input_model_unchanged"] = base.semantic_hash[:16] == out["baseline_semantic_hash"]
     return {"status": "MEASURED", "domain": "kernel domain functions apply_transaction and model_impact on policy.baseline()", **out}
 

@@ -32,8 +32,17 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
-from eija_studio.domain.models import DomainError, SemanticTransaction, Transition, Workflow  # noqa: E402
-from eija_studio.domain.policy import apply_transaction, baseline, check_policy  # noqa: E402
+from eija_studio.domain.models import DomainError, Transition, Workflow  # noqa: E402
+from eija_studio.domain.policy import (  # noqa: E402
+    apply_meaning,
+    apply_transaction,
+    baseline,
+    check_policy,
+    demo_candidate,
+    ensure_policy,
+    first_supported_meaning,
+)
+from eija_studio.domain.transactions import RetargetTransition  # noqa: E402
 
 TMP = ROOT / ".tmp" / "merge_bench"
 
@@ -426,14 +435,32 @@ def translate(model: Workflow, edit: tuple) -> tuple[str, Any]:
 
 
 def put(model: Workflow, txs: tuple[str, ...]) -> Workflow:
-    """The only put: the kernel's apply_transaction. Raises DomainError on refusal."""
+    """The only put: the kernel's open vocabulary (apply_meaning / apply_transaction). Raises DomainError on refusal.
+
+    This bench's alphabet keeps its two historical tokens: ``enable_recommendation`` is the pack's first supported
+    meaning; ``set_rejection_source:<state>`` retargets the rejection transition's source and, as before, needs
+    that meaning first (MEANING_REQUIRED), a precondition of this bench's alphabet, not of the kernel."""
     for tx in txs:
         if tx == "enable_recommendation":
-            model = apply_transaction(model, SemanticTransaction(kind="enable_recommendation"))
+            model = _enable(model)
         else:
-            src = tx.split(":", 1)[1]
-            model = apply_transaction(model, SemanticTransaction(kind="set_rejection_source", rejection_source=src))
+            model = _retarget_reject(model, tx.split(":", 1)[1])
     return model
+
+
+def _enable(model: Workflow) -> Workflow:
+    """Idempotent, as the old kernel transaction was: an already-enabled model is returned unchanged."""
+    if any(t.action == "Recommend" for t in model.transitions):
+        ensure_policy(model)
+        return model
+    return apply_meaning(model, first_supported_meaning())
+
+
+def _retarget_reject(model: Workflow, source: str) -> Workflow:
+    if not any(t.action == "Recommend" for t in model.transitions):
+        raise DomainError("MEANING_REQUIRED", "Enable the recommendation meaning first")
+    reject = next(t for t in model.transitions if t.action == "Reject")
+    return apply_transaction(model, RetargetTransition(kind="retarget_transition", transition=reject.id, end="source", state=source))
 
 
 _PRIORITY = {"add_edge": 0, "retarget": 1, "move": 2}
@@ -483,7 +510,7 @@ def safe_put(m: Workflow, txs: tuple[str, ...]) -> Workflow | None:
 def lens_laws_on_kernel_alphabet(tr=None) -> dict:
     tr = tr or translate
     base = baseline()
-    cand = apply_transaction(base, SemanticTransaction(kind="enable_recommendation"))
+    cand = demo_candidate()
     bases = {"baseline": base, "candidate": cand}
     alphabet = [("add_edge", "Recommend", "Submitted", "Recommended"),
                 ("retarget", "Reject", "Submitted"), ("retarget", "Reject", "Recommended"),

@@ -21,6 +21,7 @@ from pydantic import Field, ValidationError
 
 from .laws import Law
 from .models import MEANING_ID, Alternative, Contract, DomainError, Guard, Workflow, fingerprint
+from .transactions import AddState, RemoveState, Transaction
 
 PACK_SCHEMA = "eija.pack.v1"
 PACK_ID = r"^[a-z][a-z0-9-]{0,39}$"
@@ -69,7 +70,7 @@ class Meaning(Contract):
     label: str = Field(min_length=1, max_length=200)
     supported: bool
     consequences: tuple[str, ...] = Field(min_length=1)
-    transactions: tuple[dict[str, Any], ...] = ()
+    transactions: tuple[Transaction, ...] = ()
 
 
 class Term(Contract):
@@ -170,8 +171,8 @@ def state_sets(pack: Pack) -> tuple[frozenset[str], ...]:
     sets = [base]
     for meaning in pack.meanings:
         if meaning.supported:
-            added = {str(tx.get("state")) for tx in meaning.transactions if tx.get("kind") == "add_state"}
-            removed = {str(tx.get("state")) for tx in meaning.transactions if tx.get("kind") == "remove_state"}
+            added = {tx.state for tx in meaning.transactions if isinstance(tx, AddState)}
+            removed = {tx.state for tx in meaning.transactions if isinstance(tx, RemoveState)}
             sets.append(frozenset((base | added) - removed))
     return tuple(dict.fromkeys(sets))
 
@@ -191,7 +192,7 @@ class PackError(DomainError):
 # ---- cross-references (what JSON Schema cannot state) ------------------------------------------------------
 
 def _known_states(pack: Pack) -> set[str]:
-    added = {str(tx.get("state")) for m in pack.meanings for tx in m.transactions if tx.get("kind") == "add_state"}
+    added = {tx.state for m in pack.meanings for tx in m.transactions if isinstance(tx, AddState)}
     return set(pack.model.states) | added
 
 

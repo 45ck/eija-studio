@@ -21,7 +21,8 @@ from hypothesis.stateful import (Bundle, RuleBasedStateMachine, initialize, inva
                                  run_state_machine_as_test)
 
 from . import property_reference as ref
-from eija_studio.domain.models import AGENT, OWNER, DomainError, ExecuteCommand, SemanticTransaction
+from eija_studio.domain.models import AGENT, OWNER, DomainError, ExecuteCommand
+from eija_studio.domain.transactions import RetargetTransition
 from .property_support import MAIN_OUTCOMES, OUTCOMES, ephemeral_studio, examples, scratch_directory, selected_case, set_actor
 
 ACTOR_IDS = tuple(ref.FIXTURE_DIRECTORY)
@@ -242,7 +243,7 @@ class PreviewRuntimeMachine(RuleBasedStateMachine):
         refusal = self.reference.predict_edit(expected_version, owner)
         try:
             self.studio.edit(self.case_id, expected_version,
-                             SemanticTransaction(kind="set_rejection_source", rejection_source=source),
+                             RetargetTransition(kind="retarget_transition", transition="TR-REJECT", end="source", state=source),
                              OWNER if owner else AGENT)
         except DomainError as error:
             assert refusal == ref.Refused(error.code), f"edit refused {error.code}; reference predicts {refusal}"

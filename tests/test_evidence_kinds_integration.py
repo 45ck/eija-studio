@@ -15,11 +15,11 @@ from eija_studio.bootstrap import build_studio
 from eija_studio.domain.change_case import ChangeCase
 from eija_studio.domain.evidence_kinds import KINDS
 from eija_studio.domain.formal_smt import SOURCES as SMT_SOURCES
-from eija_studio.domain.models import OWNER, DomainError, LayoutChange, SemanticTransaction, Workflow, fingerprint
-from eija_studio.domain.policy import check_policy
+from eija_studio.domain.models import OWNER, DomainError, LayoutChange, Workflow, fingerprint
+from eija_studio.domain.policy import check_policy, meaning_transactions
 from eija_studio.interfaces.cli import main as cli_main
 
-from kernel_support import approve, harness_identity
+from kernel_support import approve, harness_identity, reject_from
 from formal_support import (
     KIND_NAMES, ROOT, artifacts, attached, collect_all, leaves, make_checkout, not_run_artifact,
     receipt_of, smt_report, stub_all, with_change, workflows,
@@ -119,7 +119,7 @@ def test_a_layout_move_keeps_formal_evidence_but_a_semantic_edit_makes_the_model
     case = studio.verify(selected["id"], selected["version"])
     moved = studio.layout(case["id"], case["version"], LayoutChange(node="Submitted", x=5, y=6), OWNER)
     assert claims(studio, moved)["formal_bend_proof"] == "PASS"
-    edited = studio.edit(moved["id"], moved["version"], SemanticTransaction(kind="set_rejection_source", rejection_source="Submitted"), OWNER)
+    edited = studio.edit(moved["id"], moved["version"], reject_from("Submitted"), OWNER)
     now = claims(studio, edited)
     # The semantic subject dimension moved, so every receipt made for the old candidate is STALE, whatever it proved.
     assert {k: v for k, v in now.items() if k.startswith("formal_")} == dict.fromkeys(
@@ -158,7 +158,7 @@ def _case_with(studio, receipts, candidate=None):
     base, cand = workflows()
     return ChangeCase(id="c1", version=0, stage="PREVIEW", request="synthetic", baseline_version=0, baseline=base,
                       candidate=candidate or cand, proposal=None, provider_run=None, selected_meaning="recommend_only",
-                      selected_by="local-owner", transactions=(SemanticTransaction(kind="enable_recommendation"),), layout={},
+                      selected_by="local-owner", transactions=meaning_transactions("recommend_only"), layout={},
                       receipts=tuple(receipts), decision=None, created_at="2026-01-01T00:00:00+00:00")
 
 

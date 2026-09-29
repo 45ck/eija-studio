@@ -185,7 +185,7 @@ def _unsafe(candidate, action, **changes):
 
 
 def _explore_without_policy_gate(sandbox, model, depth, stop_when_found=()):
-    with mock.patch.object(runtime, "ensure_policy", lambda _model: None):
+    with mock.patch.object(runtime, "ensure_policy", lambda _model, _pack=None: None):
         return explore("unsafe", model, Config(depth=depth, stop_when_found=stop_when_found), sandbox)
 
 

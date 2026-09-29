@@ -4,10 +4,13 @@ from threading import Lock
 from typing import Any, Callable
 from uuid import uuid4
 import time
-from eija_studio.domain.models import Workflow, Principal, SemanticTransaction, LayoutChange, ExecuteCommand, DomainError, fingerprint
+from pydantic import ValidationError
+from eija_studio.domain.models import Workflow, Principal, LayoutChange, ExecuteCommand, DomainError, fingerprint
 from eija_studio.domain.change_case import ChangeCase
 from eija_studio.domain.pack import Pack, default_pack
-from eija_studio.domain.policy import apply_transaction, check_policy, meaning_options
+from eija_studio.domain.policy import apply_transactions, check_policy, meaning_options
+from eija_studio.domain.affordance import affordances as affordance_map, dry_run
+from eija_studio.domain.transactions import Transaction
 from eija_studio.domain.formal import Context
 from .ports import ProposalProvider, Repository, ReceiptAuthenticator, IdentityProvider, SandboxFactory, UnitOfWork, FormalEvidenceSource
 from .formal import attach as attach_formal, packet_view, what_if_model
@@ -18,6 +21,16 @@ from .runtime import initialise, execute
 
 def now() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def _parse_case(body: dict[str, Any]) -> ChangeCase:
+    """A stored case; one written in the closed pre-pack transaction vocabulary is refused, never migrated silently."""
+    try:
+        return ChangeCase.model_validate(body)
+    except ValidationError as error:
+        if any(e.get("loc", ())[:1] == ("transactions",) for e in error.errors()):
+            raise DomainError("CASE_SCHEMA_OLD", "This case was written by an older kernel; create a new Change Case") from None
+        raise
 
 
 class Studio:
@@ -31,7 +44,7 @@ class Studio:
 
     @staticmethod
     def _case(u: UnitOfWork, case_id: str, expected: int | None = None, editable: bool = False) -> ChangeCase:
-        c = ChangeCase.model_validate(u.load_case(case_id))
+        c = _parse_case(u.load_case(case_id))
         if expected is not None:
             c.at_version(expected)
         if editable:
@@ -115,25 +128,38 @@ class Studio:
                 raise DomainError("MEANING_UNSUPPORTED", "This meaning is not modelled by the domain pack")
             if not meaning.supported:
                 raise DomainError("MEANING_UNSUPPORTED", meaning.consequences[0])
-            tx = SemanticTransaction(kind="enable_recommendation")
-            candidate = apply_transaction(case.baseline, tx, self.pack)
+            candidate = apply_transactions(case.baseline, meaning.transactions, self.pack)
+            txs = [tx.model_dump(mode="json") for tx in meaning.transactions]
             body = self._save(u, case, {"selected_meaning": interpretation, "selected_by": principal.id,
-                "transactions": [tx.model_dump(mode="json")], "candidate": candidate.model_dump(mode="json"), "stage": "PREVIEW"})
-            u.event("MeaningSelected", {"case_id": case_id, "by": principal.id, "transaction": tx.model_dump(mode="json")})
+                "transactions": txs, "candidate": candidate.model_dump(mode="json"), "stage": "PREVIEW"})
+            u.event("MeaningSelected", {"case_id": case_id, "by": principal.id, "transactions": txs})
         return body
 
-    def edit(self, case_id: str, expected: int, tx: SemanticTransaction, principal: Principal) -> dict[str, Any]:
+    def edit(self, case_id: str, expected: int, tx: Transaction, principal: Principal) -> dict[str, Any]:
         principal.require("edit")
-        if tx.kind != "set_rejection_source":
-            raise DomainError("UNSUPPORTED_EDIT", "After selection, use the typed rejection-source edit")
         with self.store.transaction() as u:
             case = self._case(u, case_id, expected, editable=True)
-            model = apply_transaction(case.executable(), tx, self.pack)
+            model = apply_transactions(case.executable(), (tx,), self.pack)
             if case.decision:
                 u.event("DecisionInvalidated", {"case_id": case_id, "old_decision": case.decision, "reason": "semantic edit"})
             return self._save(u, case, {"candidate": model.model_dump(mode="json"),
                 "transactions": [x.model_dump(mode="json") for x in case.transactions] + [tx.model_dump(mode="json")],
                 "decision": None, "stage": "PREVIEW"})
+
+    def _working(self, case_id: str) -> Workflow:
+        """The model an edit would change: the candidate once a meaning is selected, else the baseline. Read-only."""
+        with self.store.transaction() as u:
+            case = self._case(u, case_id)
+        return case.candidate if case.candidate is not None else case.baseline
+
+    def edit_check(self, case_id: str, tx: Transaction) -> dict[str, Any]:
+        """Dry-run one edit: {legal, codes, refs}. No authority is needed because nothing is written."""
+        return dry_run(self._working(case_id), tx, self.pack)
+
+    def affordances(self, case_id: str) -> dict[str, Any]:
+        """Which single edits of the case's working model the kernel would accept (read-only)."""
+        model = self._working(case_id)
+        return {"pack": self.pack.id, "semantic_hash": model.semantic_hash, "affordances": affordance_map(model, self.pack)}
 
     def layout(self, case_id: str, expected: int, change: LayoutChange, principal: Principal) -> dict[str, Any]:
         principal.require("edit")
@@ -238,7 +264,7 @@ class Studio:
             return []
         found = []
         for alternative in case.proposal.alternatives:
-            model = what_if_model(case.baseline, alternative.interpretation)
+            model = what_if_model(case.baseline, alternative.interpretation, self.pack)
             meaning = self.pack.meaning(alternative.interpretation)
             if model is not None and meaning is not None:
                 found.append({"interpretation": alternative.interpretation, "label": meaning.label,

@@ -17,7 +17,7 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 import types
 import typing
-from typing import Any, Literal, get_args, get_origin
+from typing import Annotated, Any, Literal, get_args, get_origin
 
 from pydantic import BaseModel
 
@@ -25,7 +25,7 @@ from eija_studio.domain import models as domain_models
 from eija_studio.domain.change_case import ChangeCase
 from eija_studio.domain.impact import changed_fields, model_impact
 from eija_studio.domain.models import (
-    Alternative, DomainError, ExecuteCommand, LayoutChange, Principal, Proposal, SemanticTransaction,
+    Alternative, DomainError, ExecuteCommand, LayoutChange, Principal, Proposal,
     Transition, Workflow,
 )
 from eija_studio.domain.policy import check_policy
@@ -399,11 +399,11 @@ def _participants(t: Transition) -> tuple[Participant, ...]:
     return tuple(Participant(i, i) for i in ("Caller", "Runtime", "Store", "Audit", "Outbox") if i in used)
 
 
-CONTRACTS: tuple[type[BaseModel], ...] = (ChangeCase, Workflow, Transition, Proposal, Alternative, SemanticTransaction,
+CONTRACTS: tuple[type[BaseModel], ...] = (ChangeCase, Workflow, Transition, Proposal, Alternative,
                                           LayoutChange, ExecuteCommand, Principal)
 # Curated vocabulary from docs/architecture/ARCHITECTURE.md; tests assert every key is a real contract.
 DDD_ROLE = {"ChangeCase": "aggregate-root", "Workflow": "value-object", "Transition": "value-object",
-            "Proposal": "value-object", "Alternative": "value-object", "SemanticTransaction": "command",
+            "Proposal": "value-object", "Alternative": "value-object",
             "LayoutChange": "command", "ExecuteCommand": "command", "Principal": "value-object"}
 
 
@@ -430,6 +430,8 @@ def _union_text(args: tuple[Any, ...]) -> str:
 
 def _type_text(annotation: Any) -> str:
     origin, args = get_origin(annotation), get_args(annotation)
+    if origin is Annotated:  # a discriminated union (the open change vocabulary): its members, without the metadata
+        return _type_text(args[0])
     if origin is Literal:
         return "Literal<" + "|".join(str(a) for a in args) + ">"
     if origin in (typing.Union, types.UnionType):

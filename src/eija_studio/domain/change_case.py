@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import Any, Literal
-from .models import Contract, Workflow, Proposal, SemanticTransaction, DomainError
+from .models import Contract, Workflow, Proposal, DomainError
+from .transactions import Transaction
 
 
 class ChangeCase(Contract):
@@ -16,7 +17,7 @@ class ChangeCase(Contract):
     provider_run: dict[str, Any] | None
     selected_meaning: str | None
     selected_by: str | None
-    transactions: tuple[SemanticTransaction, ...]
+    transactions: tuple[Transaction, ...]
     layout: dict[str, dict[str, int]]
     receipts: tuple[dict[str, Any], ...]
     decision: dict[str, Any] | None

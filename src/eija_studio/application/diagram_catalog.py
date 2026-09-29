@@ -8,8 +8,8 @@ from __future__ import annotations
 from typing import Any
 
 from eija_studio.domain.impact import model_impact
-from eija_studio.domain.models import DomainError, SemanticTransaction, Workflow
-from eija_studio.domain.policy import apply_transaction, baseline
+from eija_studio.domain.models import DomainError, Workflow
+from eija_studio.domain.policy import baseline, demo_candidate
 from .diagram_emitters import FORMATS, emit
 from .diagrams import (
     Diagram, class_model, commit_sequence, diff_graph, diff_summary, impact_graph, journey_graph, mark_blocked, policy_violations,
@@ -27,7 +27,7 @@ VIEW_FORMATS = dict.fromkeys(("state", "diff", "journey", "impact"), FORMATS) | 
 def demo_pair() -> tuple[Workflow, Workflow]:
     """Baseline and the recommend_only candidate the excursion demo produces (rejection source Recommended)."""
     base = baseline()
-    return base, apply_transaction(base, SemanticTransaction(kind="enable_recommendation"))
+    return base, demo_candidate()
 
 
 def _need_candidate(view: str, after: Workflow | None) -> Workflow:
@@ -142,7 +142,7 @@ def docs_bundle() -> dict[str, str]:
         "state-baseline.md": _page("State machine: baseline", "The active excursion workflow, as the runtime interprets it.",
                                    render_view("state", "mermaid", before)),
         "state-candidate.md": _page("State machine: recommend-only candidate",
-                                    "The candidate produced by the `enable_recommendation` semantic transaction.",
+                                    "The candidate produced by the pack's first supported meaning.",
                                     render_view("state", "mermaid", before, after)),
         "diff.md": _page("Visual diff: baseline vs candidate",
                          "Nodes: green added, red removed (dashed outline), amber changed. Edges cannot be coloured in a Mermaid state diagram, so a label starting with `+`, `-` or `~` marks an added, removed or changed transition; a `~` label names the changed fields.",

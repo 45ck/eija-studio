@@ -9,6 +9,7 @@ from pathlib import Path
 from eija_studio.adapters.identity import identity as measured_identity
 from eija_studio.bootstrap import build_studio
 from eija_studio.domain.models import OWNER
+from eija_studio.domain.transactions import RetargetTransition
 
 HARNESS_MARK = "pytest-harness"
 
@@ -30,3 +31,8 @@ def approve(studio, case):
     packet = studio.view(case["id"])["packet"]
     return studio.approve(case["id"], case["version"], packet["subject_hash"],
         {q["id"]: q["expected"] for q in packet["questions"]}, True, OWNER)
+
+
+def reject_from(state: str):
+    """The typed edit that moves the excursion rejection transition's source to ``state`` (open vocabulary, WBS 1.3)."""
+    return RetargetTransition(kind="retarget_transition", transition="TR-REJECT", end="source", state=state)

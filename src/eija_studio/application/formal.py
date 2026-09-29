@@ -10,8 +10,9 @@ from typing import Any, Callable
 from eija_studio.domain.evidence import FormalVerdict, TECHNICAL_DIMENSIONS, aggregate_formal, intact_artifact
 from eija_studio.domain.evidence_kinds import KINDS
 from eija_studio.domain.formal import FORMAL_PRODUCER, PASS, Context, FormalArtifact, KindSpec
-from eija_studio.domain.models import SemanticTransaction, Workflow, fingerprint
-from eija_studio.domain.policy import apply_transaction
+from eija_studio.domain.models import Workflow, fingerprint
+from eija_studio.domain.pack import Pack
+from eija_studio.domain.policy import what_if
 from .ports import FormalEvidenceSource
 
 BLOCKING = ("FAIL", "CONFLICT")  # a counterexample stops approval; UNKNOWN, NOT_RUN and STALE never do, and are never green
@@ -101,18 +102,9 @@ def packet_view(receipts: list[dict[str, Any]], subject: dict[str, Any], authent
             "explanations": _explanations(receipts, authenticator, verdicts, tuple(policy_errors)) if policy_errors else []}
 
 
-# What an interpretation the policy refuses would MEAN in the model: the fault it would introduce. A what-if model is
-# evaluated by the kernel's own policy and explained by the formal negative controls; it is never a candidate.
-WHAT_IF_FAULTS = {"final_approval": ("Approve", "Teacher")}
-
-
-def what_if_model(baseline: Workflow, interpretation: str) -> Workflow | None:
-    """The workflow an unsupported interpretation would produce (recommendation enabled, the fault applied), or None."""
-    fault = WHAT_IF_FAULTS.get(interpretation)
-    if fault is None:
-        return None
-    data = apply_transaction(baseline, SemanticTransaction(kind="enable_recommendation")).model_dump(mode="json")
-    for transition in data["transitions"]:
-        if transition["action"] == fault[0]:
-            transition["role"] = fault[1]
-    return Workflow.model_validate(data)
+# What an interpretation the policy refuses would MEAN in the model: the unsupported pack meaning's own transactions,
+# applied structurally. A what-if model is evaluated by the kernel's own policy and explained by the formal negative
+# controls; it is never a candidate.
+def what_if_model(baseline: Workflow, interpretation: str, pack: Pack | None = None) -> Workflow | None:
+    """The workflow an unsupported interpretation would produce, or None (supported, unknown, or no transactions)."""
+    return what_if(baseline, interpretation, pack)

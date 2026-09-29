@@ -9,8 +9,9 @@ from typing import Any
 
 import z3
 
-from eija_studio.domain.models import SemanticTransaction, Transition, Workflow
-from eija_studio.domain.policy import apply_transaction, baseline, check_policy
+from eija_studio.domain.models import Transition, Workflow
+from eija_studio.domain.policy import baseline, check_policy
+from verification.excursion_pack import candidate as excursion_candidate
 from verification.formal_report import dumps, kernel_subject, platform_info
 
 from . import differential as D
@@ -172,8 +173,7 @@ def enumerate_accepted(limit: int = 64) -> dict[str, Any]:
         s.add(z3.Or(*(v != m.eval(v, model_completion=True) for v in variables)))
     found.sort(key=lambda x: (len(x.transitions), _label(x)))
     base = baseline()
-    reachable = [base] + [apply_transaction(base, SemanticTransaction(kind="enable_recommendation", rejection_source=src))
-                          for src in ("Recommended", "Submitted")]
+    reachable = [base] + [excursion_candidate(src) for src in ("Recommended", "Submitted")]
     return {"enumeration_complete": complete, "count": len(found), "inconsistent_models": inconsistent, "accepted": [_summary(x) for x in found],
             "equals_kernel_reachable_set": sorted(x.semantic_hash for x in found) == sorted(x.semantic_hash for x in reachable),
             "kernel_reachable_labels": sorted(_label(x) for x in reachable),

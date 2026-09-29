@@ -10,9 +10,11 @@ from __future__ import annotations
 
 import pytest
 
+from kernel_support import reject_from
+
 from eija_studio.domain.models import DomainError, SemanticTransaction, Workflow
 from eija_studio.domain.policy import (
-    apply_transaction, baseline, check_policy, effects_table, ensure_policy, forbidden_effects, meaning_options,
+    apply_meaning, apply_transaction, baseline, check_policy, effects_table, ensure_policy, forbidden_effects, meaning_options,
     meaning_questions, projections, transition)
 
 # The protected tables now live in the excursion pack (packs/excursion/pack.json); the kernel reads them from there.
@@ -187,17 +189,19 @@ def test_enabling_recommendation_moves_authority_exactly_as_documented():
     assert {t.role for t in model.transitions if t.action in {"Approve", "Reject"}} == {"Registrar"}
 
 
-def test_enabling_recommendation_twice_is_idempotent_not_a_duplicate_transition():
-    assert apply_transaction(candidate(), SemanticTransaction(kind="enable_recommendation")) == candidate()
-
-
-def test_rejection_source_can_only_be_set_after_the_meaning_is_enabled():
+def test_applying_the_meaning_twice_is_refused_never_a_duplicate_transition():
     with pytest.raises(DomainError) as info:
-        apply_transaction(baseline(), SemanticTransaction(kind="set_rejection_source"))
-    assert info.value.code == "MEANING_REQUIRED"
-    widened = apply_transaction(candidate(), SemanticTransaction(kind="set_rejection_source", rejection_source="Submitted"))
+        apply_meaning(candidate(), "recommend_only")
+    assert info.value.code == "EDIT_INVALID" and info.value.details["refs"] == ["state:Recommended"]
+
+
+def test_the_rejection_source_can_only_move_to_recommended_after_the_meaning_is_applied():
+    with pytest.raises(DomainError) as info:  # the state does not exist before the meaning adds it
+        apply_transaction(baseline(), reject_from("Recommended"))
+    assert info.value.code == "EDIT_INVALID"
+    widened = apply_transaction(candidate(), reject_from("Submitted"))
     assert next(t for t in widened.transitions if t.action == "Reject").from_state == "Submitted"
-    narrowed = apply_transaction(widened, SemanticTransaction(kind="set_rejection_source", rejection_source="Recommended"))
+    narrowed = apply_transaction(widened, reject_from("Recommended"))
     assert narrowed == candidate()
 
 

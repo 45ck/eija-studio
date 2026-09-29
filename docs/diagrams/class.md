@@ -22,6 +22,7 @@ classDiagram
         +dict~str, Any~ | None provider_run
         +str | None selected_meaning
         +str | None selected_by
+        +tuple~AddState | AddTransition | RemoveState | RemoveTransition | RenameState | RetargetTransition | SetEffects | SetGuards | SetInitial | SetRole~ transactions
         +dict~str, dict~str, int~~ layout
         +tuple~dict~str, Any~~ receipts
         +dict~str, Any~ | None decision
@@ -51,11 +52,6 @@ classDiagram
         +str summary
         +tuple~str~ unknowns
     }
-    class SemanticTransaction {
-        <<command>>
-        +Literal~enable_recommendation|set_rejection_source~ kind
-        +Literal~Submitted|Recommended~ rejection_source
-    }
     class Transition {
         <<value-object>>
         +str id
@@ -83,7 +79,6 @@ classDiagram
         operation_binding
     }
     ChangeCase "1" *-- "0..1" Proposal : proposal
-    ChangeCase "1" *-- "*" SemanticTransaction : transactions
     ChangeCase "1" *-- "1" Workflow : baseline
     ChangeCase "1" *-- "0..1" Workflow : candidate
     Proposal "1" *-- "1..*" Alternative : alternatives

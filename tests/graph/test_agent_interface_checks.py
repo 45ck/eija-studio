@@ -124,7 +124,9 @@ def test_kernel_dry_run_is_pure_and_matches_the_contract_example() -> None:
     pytest.importorskip("pydantic")
     r = checks.kernel_dry_run_example()
     assert r["input_model_unchanged"] is True
-    assert r["set_rejection_source_before_enable"] == {"verdict": "REJECTED", "code": "MEANING_REQUIRED"}
+    assert r["drag_reject_source_to_initial"] == {"verdict": "REJECTED", "code": "POLICY_BLOCKED",
+                                                   "codes": ["PROTECTED_STATE:Reject", "UNSUPPORTED_REJECTION_SOURCE"]}
+    assert r["retarget_reject_source_after_meaning"]["changed_actions"] == ["Reject"]
     assert r["enable_recommendation"]["changed_actions"] == ["Approve", "Recommend", "Reject"]
     assert r["enable_recommendation"]["closure_size"] == 20
 

@@ -19,8 +19,9 @@ from dataclasses import dataclass, field
 
 import z3
 
-from eija_studio.domain.models import SemanticTransaction, Transition, Workflow
-from eija_studio.domain.policy import apply_transaction, baseline, check_policy, transition
+from eija_studio.domain.models import Transition, Workflow
+from eija_studio.domain.policy import baseline, check_policy, transition
+from verification.excursion_pack import candidate as excursion_candidate
 
 from . import encoding as E
 from . import vocabulary as V
@@ -87,8 +88,7 @@ def from_spec(spec: Spec) -> tuple[Workflow, bool]:
 
 def seeds() -> list[Workflow]:
     base = baseline()
-    return [base] + [apply_transaction(base, SemanticTransaction(kind="enable_recommendation", rejection_source=s))
-                     for s in ("Recommended", "Submitted")]
+    return [base] + [excursion_candidate(s) for s in ("Recommended", "Submitted")]
 
 
 def _template(action: str) -> dict:

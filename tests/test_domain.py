@@ -6,6 +6,7 @@ from pydantic import ValidationError
 from eija_studio.domain.models import Workflow, SemanticTransaction, Proposal
 from eija_studio.domain.policy import baseline, apply_transaction, check_policy, projections
 from eija_studio.domain.impact import closure, model_impact
+from kernel_support import reject_from
 
 
 def candidate():
@@ -41,7 +42,7 @@ def test_semantic_hash_definition_order_is_irrelevant():
 
 def test_semantic_hash_rule_change_is_relevant():
     model = candidate()
-    changed = apply_transaction(model, SemanticTransaction(kind="set_rejection_source", rejection_source="Submitted"))
+    changed = apply_transaction(model, reject_from("Submitted"))
     assert model.semantic_hash != changed.semantic_hash
 
 

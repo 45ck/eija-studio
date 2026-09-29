@@ -111,8 +111,13 @@ class Proposal(Contract):
 
 
 class SemanticTransaction(Contract):
-    kind: Literal["enable_recommendation", "set_rejection_source"]
-    rejection_source: Literal["Submitted", "Recommended"] = "Recommended"
+    """DEPRECATED closed vocabulary, superseded by the open one in ``domain.transactions`` (WBS 1.3).
+
+    Kept for one caller only: verification/bend/bend_generate.py, whose bytes the committed Bend proof binds
+    (changing them turns that evidence non-PASS until Docker regenerates it, WBS 1.4). ``policy.apply_transaction``
+    reads it as "apply the pack's first supported meaning". The service, HTTP, pack meanings and stored cases never
+    accept it: a stored case holding one is refused with ``CASE_SCHEMA_OLD``."""
+    kind: Literal["enable_recommendation"]
 
 
 class LayoutChange(Contract):

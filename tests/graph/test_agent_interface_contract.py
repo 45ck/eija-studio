@@ -154,28 +154,25 @@ def test_every_input_forbids_extra_properties_and_has_no_trusted_status_field(bl
 def test_transaction_schema_matches_kernel(blocks) -> None:
     sys.path.insert(0, str(ROOT / "src"))
     try:
-        from eija_studio.domain.models import SemanticTransaction
+        from eija_studio.domain.transactions import TransactionDocument
     except Exception as exc:  # pragma: no cover
         pytest.skip(f"NOT_RUN: kernel not importable ({exc})")
-    kernel = SemanticTransaction.model_json_schema()
     ours = blocks[("schema", "txn_dry_run.input")]["properties"]["transaction"]
-    assert ours["properties"]["kind"]["enum"] == kernel["properties"]["kind"]["enum"]
-    assert ours["properties"]["rejection_source"]["enum"] == kernel["properties"]["rejection_source"]["enum"]
-    assert ours["properties"]["rejection_source"]["default"] == kernel["properties"]["rejection_source"]["default"]
-    assert ours["required"] == kernel["required"]
-    assert ours["additionalProperties"] is False and kernel["additionalProperties"] is False
+    assert ours == {"$ref": "../../contracts/semantic-transaction.schema.json"}
+    contract = json.loads((DOC.parent / ours["$ref"]).resolve().read_text(encoding="utf-8"))
+    assert contract == TransactionDocument.model_json_schema()
+    assert all(member.get("additionalProperties") is False for member in contract["$defs"].values())
 
 
 def test_real_kernel_hashes_in_the_dry_run_examples(blocks) -> None:
     sys.path.insert(0, str(ROOT / "src"))
     try:
         from eija_studio.domain.impact import model_impact
-        from eija_studio.domain.models import SemanticTransaction
-        from eija_studio.domain.policy import apply_transaction, baseline
+        from eija_studio.domain.policy import baseline, demo_candidate
     except Exception as exc:  # pragma: no cover
         pytest.skip(f"NOT_RUN: kernel not importable ({exc})")
     base = baseline()
-    cand = apply_transaction(base, SemanticTransaction(kind="enable_recommendation"))
+    cand = demo_candidate()
     impact = model_impact(base, cand)
     ok = blocks[("example", "txn_dry_run.response")]["result"]
     assert ok["base_semantic_hash"] == base.semantic_hash
@@ -185,7 +182,7 @@ def test_real_kernel_hashes_in_the_dry_run_examples(blocks) -> None:
     assert ok["kernel_impact"]["envelope"] == impact["envelope"]
     rejected = blocks[("example", "txn_dry_run.rejected")]["result"]
     assert rejected["base_semantic_hash"] == base.semantic_hash
-    assert rejected["kernel_code"] == "MEANING_REQUIRED"
+    assert rejected["kernel_code"] == "POLICY_BLOCKED"  # the drag of the rejection source onto the initial state
 
 
 def test_document_states_the_honest_limits() -> None:

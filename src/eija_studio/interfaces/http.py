@@ -8,7 +8,8 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.exceptions import RequestValidationError
 from pydantic import Field
 from eija_studio.application.diagram_catalog import case_diagrams
-from eija_studio.domain.models import Contract, DomainError, OWNER, SemanticTransaction, LayoutChange, ExecuteCommand
+from eija_studio.domain.models import MEANING_ID, Contract, DomainError, OWNER, LayoutChange, ExecuteCommand
+from eija_studio.domain.transactions import Transaction
 
 # The Studio page keeps this policy. Only /visual-frame, a static document with no API access, relaxes styles
 # (Mermaid writes inline style attributes) and is sandboxed; docs/SECURITY_AND_TRUST.md and ADR-0023 record why.
@@ -25,9 +26,11 @@ class Version(Contract):
 class Propose(Version):
     consent: bool = Field(default=False, strict=True)
 class Select(Version):
-    interpretation: Literal["recommend_only", "final_approval", "confirm_only", "unsupported"]
+    interpretation: str = Field(pattern=MEANING_ID)  # a meaning id of the active pack; the service checks it
+class EditCheck(Contract):
+    transaction: Transaction
 class Edit(Version):
-    transaction: SemanticTransaction
+    transaction: Transaction
 class Layout(Version):
     change: LayoutChange
 class Preview(Version):
@@ -82,7 +85,8 @@ def create_app(studio, token: str, port: int = 8765) -> FastAPI:
     @app.exception_handler(DomainError)
     async def domain_error(request, exc):
         status = 404 if exc.code == "NOT_FOUND" else 403 if exc.code in {"AUTHORITY_REQUIRED", "EGRESS_CONSENT_REQUIRED"} else 409
-        return JSONResponse({"code": exc.code, "message": exc.message}, status_code=status)
+        body = {"code": exc.code, "message": exc.message} | ({"details": exc.details} if exc.details else {})
+        return JSONResponse(body, status_code=status)
 
     @app.exception_handler(RequestValidationError)
     async def contract_error(request, exc):
@@ -145,6 +149,14 @@ def create_app(studio, token: str, port: int = 8765) -> FastAPI:
     @app.post("/api/cases/{case_id}/edit")
     def edit(case_id: str, body: Edit):
         return studio.edit(case_id, body.expected_version, body.transaction, OWNER)
+
+    @app.post("/api/cases/{case_id}/edit/check")
+    def edit_check(case_id: str, body: EditCheck):
+        return studio.edit_check(case_id, body.transaction)
+
+    @app.get("/api/cases/{case_id}/affordances")
+    def affordances(case_id: str):
+        return studio.affordances(case_id)
 
     @app.post("/api/cases/{case_id}/layout")
     def layout(case_id: str, body: Layout):

@@ -2,7 +2,7 @@
 
 What this establishes: the Mermaid text between the README markers is the output of the visual lane's own
 generators (`application.diagram_catalog.render_view`, the code behind `eija render`) for
-`domain.policy.baseline()` and `domain.policy.apply_transaction(..., enable_recommendation)`, and the change
+`domain.policy.baseline()` and `domain.policy.demo_candidate()` (the pack's first supported meaning), and the change
 list and impact list come from `application.diagrams.diff_summary` and `domain.impact.model_impact`. If the
 model or a generator changes and the README does not, `--check` fails (nox session `readme_diagram`).
 
@@ -24,8 +24,8 @@ sys.path.insert(0, str(ROOT / "src"))
 from eija_studio.application.diagram_catalog import render_view
 from eija_studio.application.diagrams import diff_summary
 from eija_studio.domain.impact import model_impact
-from eija_studio.domain.models import SemanticTransaction, Workflow
-from eija_studio.domain.policy import apply_transaction, baseline, check_policy
+from eija_studio.domain.models import Workflow
+from eija_studio.domain.policy import baseline, check_policy, demo_candidate
 
 BEGIN = "<!-- BEGIN GENERATED: excursion-diff (scripts/gen_readme_diagram.py; do not edit by hand) -->"
 END = "<!-- END GENERATED: excursion-diff -->"
@@ -65,7 +65,7 @@ def _fence(text: str) -> list[str]:
 def render_block() -> str:
     """The full generated README section (markers included)."""
     before = baseline()
-    after = apply_transaction(before, SemanticTransaction(kind="enable_recommendation"))
+    after = demo_candidate()
     impact = model_impact(before, after)
 
     # A protected-authority violation, to show the policy is not decorative: a candidate that hands

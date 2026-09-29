@@ -6,9 +6,10 @@ packs/excursion, never from generic kernel code.
 """
 from __future__ import annotations
 
-from eija_studio.domain.models import SemanticTransaction
+from eija_studio.domain.models import Workflow
 from eija_studio.domain.pack import PACKS_ROOT, load_pack
-from eija_studio.domain.policy import apply_transaction, effects_table, forbidden_effects
+from eija_studio.domain.policy import apply_meaning, apply_transaction, effects_table, forbidden_effects
+from eija_studio.domain.transactions import RetargetTransition
 
 PACK = load_pack(PACKS_ROOT / "excursion")
 EFFECTS: dict[str, tuple[str, ...]] = effects_table(PACK)
@@ -19,10 +20,19 @@ FIXTURE_ACTORS: tuple[tuple[str, str, int, int], ...] = tuple(
 ACTORS: tuple[tuple[str, str, bool, bool], ...] = tuple((a.id, a.role, a.active, a.assigned) for a in PACK.fixtures.actors)
 
 
+def candidate(rejection_source: str | None = None) -> Workflow:
+    """The recommend_only candidate; with ``rejection_source``, its rejection transition starting there instead."""
+    model = apply_meaning(PACK.model, "recommend_only", PACK)
+    reject = next(t for t in model.transitions if t.action == "Reject")
+    if rejection_source is None or reject.from_state == rejection_source:
+        return model
+    return apply_transaction(model, RetargetTransition(kind="retarget_transition", transition=reject.id, end="source",
+                                                       state=rejection_source), PACK)
+
+
 def _oracle() -> dict[str, tuple[str, str, str]]:
     """(role, source, target) per declared action, read from the recommendation candidate's table."""
-    candidate = apply_transaction(PACK.model, SemanticTransaction(kind="enable_recommendation"), PACK)
-    by = {t.action: t for t in candidate.transitions}
+    by = {t.action: t for t in candidate().transitions}
     return {a.id: (by[a.id].role, by[a.id].from_state, by[a.id].to_state) for a in PACK.actions}
 
 

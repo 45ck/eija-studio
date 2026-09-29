@@ -44,9 +44,8 @@ from eija_studio.application import verifier
 from eija_studio.application.compiler import subject_for
 from eija_studio.bootstrap import build_studio
 from eija_studio.domain.impact import model_impact
-from eija_studio.domain.models import SemanticTransaction
 from eija_studio.domain.pack import default_pack
-from eija_studio.domain.policy import apply_transaction, baseline
+from eija_studio.domain.policy import baseline, demo_candidate
 from eija_studio.interfaces.http import create_app
 
 from . import ROOT
@@ -219,7 +218,7 @@ def matrix_points(repeats: int) -> tuple[list[dict], dict]:
     Returns the points and the yield statistics of the full 125-cell matrix.
     """
     base = baseline()
-    candidate = apply_transaction(base, SemanticTransaction(kind="enable_recommendation"))
+    candidate = demo_candidate()
     pack = default_pack()
     full_actors = list(pack.fixtures.actors)
     points: list[dict] = []
@@ -280,7 +279,7 @@ def verify_scaling(profile: str) -> tuple[dict, dict]:
 def impact_yield() -> dict:
     """Nodes explored by the model-impact closure for the recommendation change (size of the change envelope)."""
     base = baseline()
-    candidate = apply_transaction(base, SemanticTransaction(kind="enable_recommendation"))
+    candidate = demo_candidate()
     report = model_impact(base, candidate)
     seconds = time_call(lambda: model_impact(base, candidate), 15)
     return {"nodes": len(report["affected"]), "edges": sum(len(v) for v in report["graph"].values()),

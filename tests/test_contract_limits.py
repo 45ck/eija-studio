@@ -12,9 +12,9 @@ import hashlib
 import pytest
 from pydantic import ValidationError
 
+from eija_studio.domain.transactions import TransactionDocument
 from eija_studio.domain.models import (
-    AGENT, OWNER, Alternative, DomainError, ExecuteCommand, LayoutChange, Principal, Proposal, SemanticTransaction,
-    Transition, Workflow, canonical, fingerprint)
+    AGENT, OWNER, Alternative, DomainError, ExecuteCommand, LayoutChange, Principal, Proposal, Transition, Workflow, canonical, fingerprint)
 from eija_studio.domain.policy import baseline
 
 
@@ -96,10 +96,13 @@ def test_proposal_has_one_to_four_distinct_alternatives():
 def test_proposal_and_transactions_reject_unknown_fields_and_values():
     base = {"summary": "s", "alternatives": [{"interpretation": "recommend_only", "explanation": "x"}], "unknowns": []}
     assert not accepts(Proposal, base | {"approved": True})
-    assert accepts(SemanticTransaction, {"kind": "enable_recommendation"})
-    assert not accepts(SemanticTransaction, {"kind": "grant_teacher_approval"})
-    assert not accepts(SemanticTransaction, {"kind": "set_rejection_source", "rejection_source": "Draft"})
-    assert SemanticTransaction(kind="set_rejection_source").rejection_source == "Recommended"
+    retarget = {"kind": "retarget_transition", "transition": "TR-REJECT", "end": "source", "state": "Submitted"}
+    assert accepts(TransactionDocument, retarget)
+    assert not accepts(TransactionDocument, {"kind": "grant_teacher_approval"})
+    assert not accepts(TransactionDocument, retarget | {"end": "middle"})
+    assert not accepts(TransactionDocument, retarget | {"approved": True})
+    assert not accepts(TransactionDocument, {"kind": "enable_recommendation"})  # the closed pre-pack vocabulary is gone
+    assert not accepts(TransactionDocument, {"kind": "set_guards", "transition": "TR-REJECT", "guards": ["actor_superuser"]})
 
 
 # ---- workflow size and coherence -------------------------------------------------------------------
