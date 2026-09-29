@@ -122,7 +122,9 @@ def _scenario_act(key: str, steps: Sequence[Step]) -> Callable[[Scene, RunningSe
     if scenario is None:
         raise StepError(f"unknown scenario {key!r}: use a key from `python -m demos list`, `studio`, or a URL")
     if scenario.status == "blocked":
-        raise ScenarioBlockedError(f"{key}: blocked on lane(s) {', '.join(scenario.depends_on)} (ADR-0048)")
+        raise ScenarioBlockedError(f"{key}: blocked on lane(s) {', '.join(scenario.waits_for)} (ADR-0048)")
+    if scenario.status == "unscripted":
+        raise ScenarioBlockedError(f"{key}: no scenario script exists yet (every lane it needs has landed; ADR-0048)")
     if steps:
         raise StepError("--step applies to a URL or `studio`; a registered scenario is already scripted")
     module = importlib.import_module(scenario.module)

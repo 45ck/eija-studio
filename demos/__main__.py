@@ -34,7 +34,7 @@ def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     if args.command == "list":
         for s in SCENARIOS:
-            print(f"{s.status:<22} {s.key:<30} waits for: {', '.join(s.depends_on) or '-'}")
+            print(f"{s.status:<22} {s.key:<30} waits for: {', '.join(s.waits_for) or '-'}")
         return 0
     if args.command == "registry":
         return _registry(check=args.check)
@@ -107,7 +107,9 @@ def _not_run(reason: str) -> int:
 def _blocker(scenario: Scenario) -> str | None:
     """Why this scenario cannot run here (a NOT_RUN reason), or None."""
     if scenario.status == "blocked":
-        return f"{scenario.key}: blocked on lane(s) {', '.join(scenario.depends_on)} (ADR-0048)"
+        return f"{scenario.key}: blocked on lane(s) {', '.join(scenario.waits_for)} (ADR-0048)"
+    if scenario.status == "unscripted":
+        return f"{scenario.key}: no scenario script exists yet (every lane it needs has landed; ADR-0048)"
     # The harness imports Playwright lazily, so a missing package never fails at import time: check up front.
     if importlib.util.find_spec("playwright") is None:
         return f"{scenario.key}: prerequisite missing (playwright). Install with pip install -e .[demos]"
