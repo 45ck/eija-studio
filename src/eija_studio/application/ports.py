@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol, ContextManager, Any, Callable
+from eija_studio.domain.formal import FormalArtifact
 from eija_studio.domain.models import Proposal, Workflow
 
 @dataclass(frozen=True)
@@ -36,6 +37,13 @@ class UnitOfWork(Protocol):
     def enqueue(self, case_id: str, operation_id: str, effect: str) -> None: ...
     def observations(self, case_id: str) -> dict[str, Any]: ...
     def effect_counts(self) -> dict[str, Any]: ...
+
+class FormalEvidenceSource(Protocol):
+    """Where formal artifacts come from (Docker, Java, z3 or saved reports are adapter prerequisites).
+
+    A missing prerequisite is returned as a NOT_RUN artifact, never omitted and never a pass."""
+    def collect(self, baseline: Workflow, candidate: Workflow) -> list[FormalArtifact]: ...
+
 
 class Repository(Protocol):
     directory: Path

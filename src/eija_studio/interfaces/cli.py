@@ -90,6 +90,23 @@ def _add_render_parser(subs) -> None:
 EARLY_COMMANDS = {"check-export": check_export_command, "render": render_command}  # need no workspace, provider or key
 
 
+def formal_table(evidence: list) -> str:
+    """One line per formal evidence kind for a human reader (stderr); the full detail is in the JSON packet."""
+    lines = ["formal evidence (recomputed by the kernel from raw artifacts; UNKNOWN and NOT_RUN are never rounded up):"]
+    for e in evidence:
+        why = "" if e["status"] == "PASS" else (e.get("reasons") or [""])[0]
+        lines.append(f"  {e['kind']:<22} {e['status']:<8} {e['evidence_level']}" + (f"  {why}" if why else ""))
+    return "\n".join(lines)
+
+
+def _formal_for_compile(studio, model) -> dict:
+    """Formal evidence and, if the policy blocks the model, the negative-control counterexamples that explain why."""
+    if studio.formal is None:
+        return {}
+    view = studio.formal_view(model)
+    return {"formal_evidence": view["evidence"], "formal_explanations": view["explanations"]}
+
+
 def _report_failure(command: str, exc: Exception) -> None:
     if isinstance(exc, DomainError):
         failure = {"error": exc.code, "message": exc.message}
@@ -120,7 +137,7 @@ def _run_mcp(args) -> int:
         # The SDK is there but unusable (for example mcp<2 has no mcp.server.mcpserver): say so, do not say "install".
         raise DomainError("MCP_SDK_INCOMPATIBLE", f"The installed MCP SDK cannot be used ({error}); this release expects "
                                                    'mcp==2.2.0: pip install -e ".[agents]"') from error
-    studio = build_studio(args.workspace, args.provider, args.model, args.allow_network, None)
+    studio = build_studio(args.workspace, args.provider, args.model, args.allow_network, None, formal=not args.no_formal)
     serve_stdio(studio, egress_consent=args.egress_consent, max_provider_calls=args.max_provider_calls)
     return 0
 
@@ -134,6 +151,7 @@ def main(argv=None) -> int:
     common.add_argument("--model", default=os.getenv("EIJA_MODEL", ""))
     common.add_argument("--allow-network", action="store_true", help="Allow explicit provider calls; per-request consent still required")
     common.add_argument("--ask-key", action="store_true", help="Prompt locally for the OpenRouter/Anthropic API key; never persist it")
+    common.add_argument("--no-formal", action="store_true", help="Do not attach formal-lane evidence (Bend, SMT, bounded model check) when verifying")
     subs = parser.add_subparsers(dest="command", required=True)
     for command in ("init", "doctor", "list"):
         subs.add_parser(command, parents=[common])
@@ -161,7 +179,7 @@ def main(argv=None) -> int:
             if args.provider not in KEYED_PROVIDERS:
                 raise DomainError("CONFIGURATION", "--ask-key is only for the OpenRouter and Anthropic API providers")
             key = getpass.getpass(f"{args.provider} API key (not stored): ")
-        studio = build_studio(args.workspace, args.provider, args.model, args.allow_network, key)
+        studio = build_studio(args.workspace, args.provider, args.model, args.allow_network, key, formal=not args.no_formal)
         if args.command == "init":
             output({"workspace": str(studio.store.directory), "provider": args.provider, "state": "READY", "data": "synthetic only"})
         elif args.command == "doctor":
@@ -191,7 +209,10 @@ def main(argv=None) -> int:
             c = studio.create(args.request)
             output(studio.propose(c["id"], c["version"], consent=args.consent))
         elif args.command == "verify":
-            studio.verify(args.case_id, args.expected_version); output(studio.view(args.case_id)["packet"])
+            studio.verify(args.case_id, args.expected_version)
+            packet = studio.view(args.case_id)["packet"]
+            output(packet)
+            print(formal_table(packet.get("formal_evidence", [])), file=sys.stderr)
         elif args.command == "export":
             output(studio.export(args.case_id), args.out); print(str(args.out))
         elif args.command == "backup":
@@ -222,6 +243,7 @@ def main(argv=None) -> int:
                         "impact": model_impact(baseline(), model), "human_understanding": "UNKNOWN", "decision": "NONE"}
             if args.verify and not errors and identity["trusted_fixture"]:
                 compiled["receipt"] = studio.signer.seal(verify_runtime(model, subject_for(model, {}, identity), studio.sandbox))
+            compiled |= _formal_for_compile(studio, model)
             output(compiled, args.out / "compiled.json")
             output(model.model_dump(mode="json"), args.out / "model.json")
             print(str(args.out / "compiled.json"))
