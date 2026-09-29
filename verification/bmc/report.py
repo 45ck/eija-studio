@@ -95,12 +95,17 @@ def write_snapshot(depth: int, stats: dict[str, Any], config: dict[str, Any]) ->
     SNAPSHOT.write_bytes(dumps(doc).encode("utf-8"))
 
 
+def _comparable(config: dict[str, Any]) -> dict[str, Any]:
+    """The wall-clock cap does not change the explored state space (a run it cuts short is INCONCLUSIVE anyway)."""
+    return {k: v for k, v in config.items() if k != "max_seconds"}
+
+
 def drift(depth: int, stats: dict[str, Any], config: dict[str, Any]) -> tuple[bool | None, str]:
     """(True, ..) identical to the committed statistics; (False, why) drift; (None, why) NOT_RUN: nothing to compare."""
     run = load_snapshot().get("runs", {}).get(f"depth-{depth}")
     if run is None:
         return None, f"no committed statistics for depth {depth}"
-    if run["config"] != config:
+    if _comparable(run["config"]) != _comparable(config):
         return None, "committed statistics were produced with a different alphabet/config"
     if any(name not in run["models"] or run["models"][name] != s for name, s in stats.items()):
         return False, ("state-space statistics differ from the committed snapshot; review the runtime change, "
@@ -157,10 +162,15 @@ def build_report(cfg: Config, workdir: Path, *, run_self_test: bool = True, self
     if run_self_test:
         checks.append(("seeded_runtime_faults_are_detected", all(r["detected"] for r in mutation),
                        f"{sum(r['detected'] for r in mutation)}/{len(mutation)} mutants caught"))
+    else:
+        checks.append(("seeded_runtime_faults_are_detected", None, "self-test skipped (--no-self-test)"))
     if check_drift:
         checks.append(("committed_statistics_have_no_drift", *drift(cfg.depth, stats, cfg.describe())))
     failed = [c for c in checks if c[1] is False and c[0] != "search_completed_within_time_cap"]
-    verdict = "FAIL" if failed else ("INCONCLUSIVE" if truncated else "PASS")
+    not_run = [c for c in checks if c[1] is None]
+    # PARTIAL: nothing failed, but a protection was not exercised (no committed statistics to compare, or no
+    # self-test). It is never reported as PASS, so a differently-configured run cannot look like the gated one.
+    verdict = "FAIL" if failed else "INCONCLUSIVE" if truncated else "PARTIAL" if not_run else "PASS"
     return {
         "schema": "eija.formal-report/v1", "kind": "bounded_model_check", "verdict": verdict, "tier": tier,
         "claim": ("No reachable state or transition within the bound violates a safety invariant when the real runtime is "
