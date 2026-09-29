@@ -175,7 +175,7 @@ def relaxed_length(name: str) -> dict:
 
 def tightened_enum(name: str) -> dict:
     schema = REAL_LOAD(name)
-    schema["properties"]["rejection_source"]["enum"] = ["Recommended"]
+    schema["$defs"]["RetargetTransition"]["properties"]["end"]["enum"] = ["source"]
     return schema
 
 

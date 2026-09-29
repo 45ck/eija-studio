@@ -12,9 +12,9 @@ import hashlib
 import pytest
 from pydantic import ValidationError
 
+from eija_studio.domain.transactions import TransactionDocument
 from eija_studio.domain.models import (
-    AGENT, OWNER, Alternative, DomainError, ExecuteCommand, LayoutChange, Principal, Proposal, SemanticTransaction,
-    Transition, Workflow, canonical, fingerprint)
+    AGENT, OWNER, Alternative, DomainError, ExecuteCommand, LayoutChange, Principal, Proposal, Transition, Workflow, canonical, fingerprint)
 from eija_studio.domain.policy import baseline
 
 
@@ -88,16 +88,21 @@ def test_proposal_has_one_to_four_distinct_alternatives():
     base = {"summary": "s", "alternatives": [alt("recommend_only")], "unknowns": []}
     names = ["recommend_only", "final_approval", "confirm_only", "unsupported"]
     assert_bounds(Proposal, base, "alternatives", [[alt(n) for n in names[:k]] for k in (1, 2, 3, 4)],
-                  [[], [alt("recommend_only"), alt("recommend_only")], [alt("nonsense")]])
+                  [[], [alt("recommend_only"), alt("recommend_only")], [alt("Not a meaning id")]])
+    # Any well-formed meaning id is a valid proposal; whether the pack models it is checked at selection (INTERPRETATION_MISSING /
+    # MEANING_UNSUPPORTED), not by the contract.
 
 
 def test_proposal_and_transactions_reject_unknown_fields_and_values():
     base = {"summary": "s", "alternatives": [{"interpretation": "recommend_only", "explanation": "x"}], "unknowns": []}
     assert not accepts(Proposal, base | {"approved": True})
-    assert accepts(SemanticTransaction, {"kind": "enable_recommendation"})
-    assert not accepts(SemanticTransaction, {"kind": "grant_teacher_approval"})
-    assert not accepts(SemanticTransaction, {"kind": "set_rejection_source", "rejection_source": "Draft"})
-    assert SemanticTransaction(kind="set_rejection_source").rejection_source == "Recommended"
+    retarget = {"kind": "retarget_transition", "transition": "TR-REJECT", "end": "source", "state": "Submitted"}
+    assert accepts(TransactionDocument, retarget)
+    assert not accepts(TransactionDocument, {"kind": "grant_teacher_approval"})
+    assert not accepts(TransactionDocument, retarget | {"end": "middle"})
+    assert not accepts(TransactionDocument, retarget | {"approved": True})
+    assert not accepts(TransactionDocument, {"kind": "enable_recommendation"})  # the closed pre-pack vocabulary is gone
+    assert not accepts(TransactionDocument, {"kind": "set_guards", "transition": "TR-REJECT", "guards": ["actor_superuser"]})
 
 
 # ---- workflow size and coherence -------------------------------------------------------------------
@@ -105,7 +110,7 @@ def test_proposal_and_transactions_reject_unknown_fields_and_values():
 def workflow_data(states: int = 4, transitions: int = 1) -> dict:
     names = ["Draft"] + [f"S{i}" for i in range(1, states)]
     rows = [transition_data(id=f"TR-{i}", action=f"Act{i}", from_state="Draft", to_state=names[i % len(names)], role="Teacher") for i in range(transitions)]
-    return {"states": names, "transitions": rows}
+    return {"id": "excursion", "initial_state": "Draft", "states": names, "transitions": rows}
 
 
 def test_workflow_state_count_is_1_to_32():

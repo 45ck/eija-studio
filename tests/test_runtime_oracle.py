@@ -172,7 +172,7 @@ def test_an_effect_without_an_adapter_is_refused_not_ignored(store, monkeypatch)
     """Defence in depth: policy forbids unknown effects, but `execute` must still refuse one it cannot perform."""
     data = candidate().model_dump(mode="json")
     next(t for t in data["transitions"] if t["action"] == "Recommend")["required_effects"] = ["Payment:Attempted"]
-    monkeypatch.setattr(runtime, "ensure_policy", lambda model: None)
+    monkeypatch.setattr(runtime, "ensure_policy", lambda model, pack=None: None)
     model = Workflow.model_validate(data)
     item = start(store, model)
     before = snapshot(store, item)

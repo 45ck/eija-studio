@@ -14,14 +14,18 @@ sources:
 - resource: repo://src/eija_studio/application/runtime.py#initialise
   title: application/runtime.py
   hash_method: ast-v2
-  sha256: a8cc32d53c5e29e6be91371ec8368d01bcc0df599fa52be5b1038836497a461f
+  sha256: 1f3094bd90c52113be7d3cc8977d3edd363170b286a35a946e8831e043ecfeee
 description_override: Creates an isolated preview instance bound to a model hash at version 0, after the policy check.
-notes_baseline: a7fb3056b1f349861bc302e97cb8f880ccd73a1cfce96d0f7da8bf1651c0a2e6
+notes_baseline: 24c83ebfb1ec46af0dd84eb62bfc5354f84a37fb27722270e7b29c2721a8cad4
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
   notes_sha256: 9469f61f318d2fb0871f23aed6c62eedb90c39d4811dc8c723af165ef60ba35c
   sources_sha256: a7fb3056b1f349861bc302e97cb8f880ccd73a1cfce96d0f7da8bf1651c0a2e6
+- by: process:eija-wbs-1.3-agent
+  at: '2026-09-29T08:20:47Z'
+  notes_sha256: 9469f61f318d2fb0871f23aed6c62eedb90c39d4811dc8c723af165ef60ba35c
+  sources_sha256: 24c83ebfb1ec46af0dd84eb62bfc5354f84a37fb27722270e7b29c2721a8cad4
 ---
 
 # application.runtime.initialise
@@ -31,7 +35,7 @@ verified:
 |---|---|
 | Kind | function |
 | Module | [`application/runtime`](/modules/application/runtime.md) |
-| Signature | `def initialise(session: UnitOfWork, case_id: str, model: Workflow, *, state: str \| None=None) -> dict[str, Any]` |
+| Signature | `def initialise(session: UnitOfWork, case_id: str, model: Workflow, *, state: str \| None=None, pack: Pack \| None=None) -> dict[str, Any]` |
 | Code | `repo://src/eija_studio/application/runtime.py#initialise` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
@@ -50,10 +54,10 @@ A changed candidate makes the instance stale; reset creates a new instance inste
 * [application.ports.UnitOfWork](/symbols/application/ports/UnitOfWork.md) - All mutations on this port commit together or roll back together.
 * [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
-* [domain.policy.ensure_policy](/symbols/domain/policy/ensure_policy.md) - `def ensure_policy(model: Workflow) -> None` in `domain/policy`.
+* [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
+* [domain.policy.ensure_policy](/symbols/domain/policy/ensure_policy.md) - `def ensure_policy(model: Workflow, pack: Pack | None=None) -> None` in `domain/policy`.
 
 ## Referenced by
 
 * [application.service.Studio.reset_preview](/symbols/application/service/Studio.reset_preview.md) - `def reset_preview(self, case_id: str, expected: int, state: str | None=None) -> dict[str, Any]` in `application/service`.
-* [application.verifier.verify_runtime](/symbols/application/verifier/verify_runtime.md) - `def verify_runtime(model: Workflow, subject: dict[str, Any], sandbox: SandboxFactory) -> dict[str, Any]` in `application/verifier`.
 <!-- okf:generated:end links -->

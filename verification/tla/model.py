@@ -13,9 +13,10 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from typing import Any
 
-from eija_studio.adapters.sqlite_store import FIXTURE_ACTORS
-from eija_studio.domain.models import SemanticTransaction, Workflow
-from eija_studio.domain.policy import EFFECTS, apply_transaction, baseline, check_policy
+from eija_studio.domain.models import Workflow
+from eija_studio.domain.policy import baseline, check_policy
+from verification.excursion_pack import EFFECTS, FIXTURE_ACTORS
+from verification.excursion_pack import candidate as excursion_candidate
 
 UNKNOWN_ACTORS: tuple[str, ...] = ("ghost",)  # ids that are deliberately absent from the directory
 MUTABLE_ACTORS: tuple[str, ...] = ("teacher-assigned", "registrar")  # the environment may change these
@@ -56,8 +57,8 @@ def _replace_transition(workflow: Workflow, action: str, **changes: Any) -> Work
 def configs() -> tuple[TlaConfig, ...]:
     """All configurations, in a fixed order. Safe ones pass protected policy; controls do not."""
     base = baseline()
-    cand = apply_transaction(base, SemanticTransaction(kind="enable_recommendation"))
-    cand_sub = apply_transaction(cand, SemanticTransaction(kind="set_rejection_source", rejection_source="Submitted"))
+    cand = excursion_candidate()
+    cand_sub = excursion_candidate("Submitted")
     teacher = _replace_transition(cand, "Approve", role="Teacher")
     payment = _replace_transition(cand, "Approve", required_effects=("Audit:ExcursionApproved", "PaymentCaptured"))
     made = (

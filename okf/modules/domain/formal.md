@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/formal.py
   title: domain/formal.py
   hash_method: ast-api-v1
-  sha256: 5c5efe49259a15c57e9a4e25a13c2c299b529e7364f176ff3204509285c731b8
-notes_baseline: bc560c71c4f0ac4ef0291c5e1cfcde1d292fb9885ae52ae1b3172ded18c3e765
+  sha256: ef25e461809f43ecf1b3d6c6ac26a0967d953927625307f41ba463219fb97c48
+notes_baseline: a89a168681e97c3fdd9e8e8bdf9285830b7cac3f5af82c27fa973ba3848729b9
 ---
 
 # domain.formal
@@ -52,6 +52,7 @@ Nothing here imports a vendor library, touches the file system or reads a clock.
 * [`LEVEL_RECOMPUTED`](/symbols/domain/formal/LEVEL_RECOMPUTED.md) (constant) - no docstring
 * [`LEVEL_SEALED_TOOL`](/symbols/domain/formal/LEVEL_SEALED_TOOL.md) (constant) - no docstring
 * [`Malformed`](/symbols/domain/formal/Malformed.md) (class) - The artifact does not have the declared typed shape (a structural defect, judged FAIL).
+* [`RuntimeShape`](/symbols/domain/formal/RuntimeShape.md) (class) - What a runtime-matrix receipt for the current subject must cover: the pack's fixture actors and declared actions, and o…
 * [`as_records`](/symbols/domain/formal/as_records.md) (function) - Defensive view for display-only helpers: a list of dicts, or nothing.
 * [`carried_statements`](/symbols/domain/formal/carried_statements.md) (function) - The artifact must carry its own assumptions and limitations (a proof without them is not shown as one).
 * [`digest`](/symbols/domain/formal/digest.md) (function) - no docstring
@@ -95,6 +96,7 @@ _No curated notes yet._
 * [domain.formal.LEVEL_RECOMPUTED](/symbols/domain/formal/LEVEL_RECOMPUTED.md) - Constant `LEVEL_RECOMPUTED` in `domain/formal`.
 * [domain.formal.LEVEL_SEALED_TOOL](/symbols/domain/formal/LEVEL_SEALED_TOOL.md) - Constant `LEVEL_SEALED_TOOL` in `domain/formal`.
 * [domain.formal.Malformed](/symbols/domain/formal/Malformed.md) - The artifact does not have the declared typed shape (a structural defect, judged FAIL).
+* [domain.formal.RuntimeShape](/symbols/domain/formal/RuntimeShape.md) - What a runtime-matrix receipt for the current subject must cover: the pack's fixture actors and declared actions, and one of the allowed state sets (exactly th…
 * [domain.formal.as_records](/symbols/domain/formal/as_records.md) - Defensive view for display-only helpers: a list of dicts, or nothing.
 * [domain.formal.carried_statements](/symbols/domain/formal/carried_statements.md) - The artifact must carry its own assumptions and limitations (a proof without them is not shown as one).
 * [domain.formal.digest](/symbols/domain/formal/digest.md) - `def digest(container: Any, key: str, where: str) -> str` in `domain/formal`.

@@ -31,15 +31,15 @@ def duplicate_result(session, case_id, command, prior) -> dict:
             "original_result": prior["result"], "effects": []}
 
 
-def replay_before_authority(session, case_id, model, command, *, fault=None):
+def replay_before_authority(session, case_id, model, command, *, fault=None, pack=None):
     """Mutant: a cached success is returned without re-checking the actor (violates ADR-007)."""
     prior = session.find_operation(command.operation_id)
     if prior is not None and prior["binding"] == binding_of(case_id, model, command):
         return duplicate_result(session, case_id, command, prior)
-    return REAL_EXECUTE(session, case_id, model, command, fault=fault)
+    return REAL_EXECUTE(session, case_id, model, command, fault=fault, pack=pack)
 
 
-def conflict_treated_as_replay(session, case_id, model, command, *, fault=None):
+def conflict_treated_as_replay(session, case_id, model, command, *, fault=None, pack=None):
     """Mutant: an operation id already used for a different request is answered as a replay."""
     prior = session.find_operation(command.operation_id)
     if prior is not None and session.find_instance(command.instance_id, case_id) is not None:
@@ -47,15 +47,15 @@ def conflict_treated_as_replay(session, case_id, model, command, *, fault=None):
         if transition is not None:
             REAL_CHECK_ACTOR(session.actor(command.actor_id), transition, command)
             return duplicate_result(session, case_id, command, prior)
-    return REAL_EXECUTE(session, case_id, model, command, fault=fault)
+    return REAL_EXECUTE(session, case_id, model, command, fault=fault, pack=pack)
 
 
-def stale_version_ignored(session, case_id, model, command, *, fault=None):
+def stale_version_ignored(session, case_id, model, command, *, fault=None, pack=None):
     """Mutant: the optimistic-concurrency check is skipped by rewriting the caller's expected version."""
     row = session.find_instance(command.instance_id, case_id)
     if row is not None and row["version"] != command.expected_version:
         command = command.model_copy(update={"expected_version": row["version"]})
-    return REAL_EXECUTE(session, case_id, model, command, fault=fault)
+    return REAL_EXECUTE(session, case_id, model, command, fault=fault, pack=pack)
 
 
 def assignment_not_required(actor, transition, command):

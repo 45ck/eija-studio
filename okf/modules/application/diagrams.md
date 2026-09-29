@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/diagrams.py
   title: application/diagrams.py
   hash_method: ast-api-v1
-  sha256: 607cdb807a08c5442e92351baf01805fa5ff9b823f11408b19050f8331916751
-notes_baseline: 1b92b9b6e9918c9de522cee93d150ded55976f4f25cf3f3d7c5ada28bfa24d3b
+  sha256: 49a01fb0303b64974b85b503a45ba22a373ec668aca86fa148307db16cdab64e
+notes_baseline: dea0b4093fe67149ebf7ce46c0b10cac31c15a758278c084253f656bdfd5cbab
 ---
 
 # application.diagrams
@@ -99,7 +99,7 @@ _No curated notes yet._
 * [domain.change_case](/modules/domain/change_case.md) - Module `domain/change_case` (no module docstring).
 * [domain.impact](/modules/domain/impact.md) - Module `domain/impact` (no module docstring).
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
-* [domain.policy](/modules/domain/policy.md) - Protected excursion policy.
+* [domain.policy](/modules/domain/policy.md) - Generic policy: coherence with a domain pack's declared action catalog, the pack's laws, and declared effects.
 
 ## Referenced by
 

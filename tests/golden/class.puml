@@ -3,6 +3,7 @@
 title Domain contracts
 left to right direction
 class Alternative <<value-object>> {
+  +str interpretation
   +str explanation
 }
 class ChangeCase <<aggregate-root>> {
@@ -14,6 +15,7 @@ class ChangeCase <<aggregate-root>> {
   +dict<U+003C>str, Any> | None provider_run
   +str | None selected_meaning
   +str | None selected_by
+  +tuple<U+003C>AddState | AddTransition | RemoveState | RemoveTransition | RenameState | RetargetTransition | SetEffects | SetGuards | SetInitial | SetRole> transactions
   +dict<U+003C>str, dict<U+003C>str, int>> layout
   +tuple<U+003C>dict<U+003C>str, Any>> receipts
   +dict<U+003C>str, Any> | None decision
@@ -39,10 +41,6 @@ class Proposal <<value-object>> {
   +str summary
   +tuple<U+003C>str> unknowns
 }
-class SemanticTransaction <<command>> {
-  +Literal<U+003C>enable_recommendation|set_rejection_source> kind
-  +Literal<U+003C>Submitted|Recommended> rejection_source
-}
 class Transition <<value-object>> {
   +str id
   +str action
@@ -54,7 +52,7 @@ class Transition <<value-object>> {
 }
 class Workflow <<value-object>> {
   +Literal<U+003C>eija.workflow.v1> schema_version
-  +Literal<U+003C>excursion> id
+  +str id
   +str initial_state
   +tuple<U+003C>str> states
 }
@@ -66,15 +64,7 @@ enum Guard {
   expected_version
   operation_binding
 }
-enum Interpretation {
-  recommend_only
-  final_approval
-  confirm_only
-  unsupported
-}
-Alternative "1" --> "1" Interpretation : interpretation
 ChangeCase "1" *-- "0..1" Proposal : proposal
-ChangeCase "1" *-- "*" SemanticTransaction : transactions
 ChangeCase "1" *-- "1" Workflow : baseline
 ChangeCase "1" *-- "0..1" Workflow : candidate
 Proposal "1" *-- "1..*" Alternative : alternatives

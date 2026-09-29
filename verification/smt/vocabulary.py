@@ -19,7 +19,7 @@ from __future__ import annotations
 from typing import get_args
 
 from eija_studio.domain.models import BASE_GUARDS, Guard
-from eija_studio.domain.policy import EFFECTS, FORBIDDEN
+from verification.excursion_pack import EFFECTS, FORBIDDEN
 
 OTHER = "<other>"
 

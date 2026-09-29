@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/ports.py
   title: application/ports.py
   hash_method: ast-api-v1
-  sha256: a3e508358641361c82b8ea3e240d7299dfc2eb89d6804756f7472813e7823898
-notes_baseline: dc29f4028865bf7d5b2af736b95d1a41198c9a573e4a6fd50acf704817f2d4e1
+  sha256: a754074a73bcb18fb53d02647705a1c30a4df032b9721b6cf4d7c7bbbd86913f
+notes_baseline: 50c993dfa11aec64410e8c2bffcd59b808836d7756170ad1870fbc2919b2b006
 ---
 
 # application.ports
@@ -62,7 +62,7 @@ _No curated notes yet._
 ## Referenced by
 
 * [application.formal](/modules/application/formal.md) - Formal evidence in the application layer: seal what an adapter collected, and build the packet view.
-* [application.runtime](/modules/application/runtime.md) - Generic execution algorithm; domain-specific policy stays in domain.policy.
+* [application.runtime](/modules/application/runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.
 * [application.service](/modules/application/service.md) - Module `application/service` (no module docstring).
 * [application.verifier](/modules/application/verifier.md) - Bounded synthetic runtime experiments.
 * [application.ports.FormalEvidenceSource](/symbols/application/ports/FormalEvidenceSource.md) - Where formal artifacts come from (Docker, Java, z3 or saved reports are adapter prerequisites).

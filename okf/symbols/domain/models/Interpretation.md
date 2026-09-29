@@ -7,7 +7,7 @@ tags:
 - symbol
 - domain
 - type-alias
-status: stable
+status: deprecated
 generated:
   by: process:eija-okf-sync
 sources:

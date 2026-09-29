@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/diagrams.py#class_model
   title: application/diagrams.py
   hash_method: ast-v2
-  sha256: 47576c62ab0b1423bbae0a5146a2e628ae6333cbecfca36ae8df4b029458e68b
-notes_baseline: f3ba32993f388d58399b2f88d420a2830f15e10c0a3fd3a69ee5598ac4f55743
+  sha256: 9f5db4152d9dc3eb50be9ae6d4f7f5ff4210d1b4c39443c26704a7622eb816c6
+notes_baseline: 25045aa0ae61249e06ecaa5d887d3ef538b45a74c3cee170e554062ed4ebfbfd
 ---
 
 # application.diagrams.class_model

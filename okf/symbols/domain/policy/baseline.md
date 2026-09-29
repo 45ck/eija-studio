@@ -14,9 +14,14 @@ sources:
 - resource: repo://src/eija_studio/domain/policy.py#baseline
   title: domain/policy.py
   hash_method: ast-v2
-  sha256: 581f794861efc3065b93676316370ff94668fbe45a048098cffa7c83d8421ce3
+  sha256: 821029d1f7e3057b4e51323b8d32473c549f214b7145bc83df7798b4af46f075
 description_override: The trusted four-state excursion workflow (Draft, Submitted, Approved, Rejected) that every Change Case starts from.
-notes_baseline: ea1d82f16aa0c1f225a9035b1d218d49e5e5391dc089c9d7056655a668e3f735
+notes_baseline: 61a4225c98115fc3a26eab1353aec521afc46101581d02e2acc091e40db6078e
+verified:
+- by: process:eija-wbs-1.3-agent
+  at: '2026-09-29T08:20:47Z'
+  notes_sha256: 3e0cf050751c4e95a0bbbe403b3b3821f86fa5580e12b815453e07413faed137
+  sources_sha256: 61a4225c98115fc3a26eab1353aec521afc46101581d02e2acc091e40db6078e
 ---
 
 # domain.policy.baseline
@@ -26,27 +31,29 @@ notes_baseline: ea1d82f16aa0c1f225a9035b1d218d49e5e5391dc089c9d7056655a668e3f735
 |---|---|
 | Kind | function |
 | Module | [`domain/policy`](/modules/domain/policy.md) |
-| Signature | `def baseline() -> Workflow` |
+| Signature | `def baseline(pack: Pack \| None=None) -> Workflow` |
 | Code | `repo://src/eija_studio/domain/policy.py#baseline` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
-_The source carries no docstring._
+~~~text
+The pack's baseline workflow.
+~~~
 <!-- okf:generated:end facts -->
 
 ## Notes
 
-Submit and Revise belong to the Teacher, Approve and Reject to the Registrar. It passes [check_policy](/symbols/domain/policy/check_policy.md) by construction; the tests assert that rather than assume it.
+The pack's baseline workflow (`pack.model`); for the excursion pack Submit and Revise belong to the Teacher, Approve and Reject to the Registrar. It passes [check_policy](/symbols/domain/policy/check_policy.md); the tests assert that rather than assume it.
 
 <!-- okf:generated:begin links -->
 ## Depends on
 
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
-* [domain.policy.transition](/symbols/domain/policy/transition.md) - `def transition(action: str, source: str, target: str, role: str) -> Transition` in `domain/policy`.
+* [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
 
 ## Referenced by
 
-* [application.diagram_catalog.demo_pair](/symbols/application/diagram_catalog/demo_pair.md) - Baseline and the recommend_only candidate the excursion demo produces (rejection source Recommended).
-* [application.service.Studio.formal_view](/symbols/application/service/Studio.formal_view.md) - Formal evidence for a bare workflow (``eija compile``): collected and sealed in memory, never stored, never a decision.
+* [application.diagram_catalog.demo_pair](/symbols/application/diagram_catalog/demo_pair.md) - Baseline and the demo candidate: the default pack's baseline with its first supported meaning applied.
+* [domain.policy.demo_candidate](/symbols/domain/policy/demo_candidate.md) - The pack's baseline with its first supported meaning applied.
 <!-- okf:generated:end links -->

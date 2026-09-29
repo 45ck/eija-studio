@@ -161,6 +161,39 @@ passing. The pre-commit hook checks the working tree, not the index. Before enab
 fails exactly one (`core.hooksPath` not set): report that as PARTIAL (expected), not PASS. The hooks were exercised on Windows
 Git Bash only; POSIX behaviour is by construction, not measured.
 
+### Parallel test runs (pytest-xdist)
+
+The pytest-driven CPU-bound sessions (`tests`, `property`, `coverage`) run on 4 workers with
+`--dist loadfile` (all tests of a file on one worker, so module fixtures and the stateful Hypothesis test with its post-run
+assertion behave as they do serially). The switch is `quality/tools/parallel.py`:
+
+* `EIJA_SERIAL=1` forces the serial run (use it to debug a failure); a missing `pytest-xdist` also gives the serial run, never an error.
+* `EIJA_XDIST_WORKERS=N` changes the worker count (default 4; the PC has 12 logical cores but shares 16 GB RAM with other sessions).
+* Deliberately serial: `okf_tools` (measured: 92 s serial, 88 to 116 s with `-n 4`, its subprocess-heavy tests sit in one file), the heavy formal sessions (Z3, TLC, Bend, Chrome: RAM-bound), `metrics` (its slow and timing tests assert on
+  wall-clock, which parallel load would disturb; 5 tests, 16 s), `providers_contract` and `demos_registry` (measured: no gain
+  with `-n 4`, one file dominates and `loadfile` keeps it on one worker), and `hci_docs` (not pytest).
+* xdist-safe by inspection and by measurement: tests use `tmp_path` or unique `mkdtemp` scratch dirs, HTTP tests use Starlette
+  `TestClient` (no sockets, no fixed ports), and the full suite ran green at `-n 4` and `-n 8` with the same counts as serial.
+* Coverage: pytest-cov combines the per-worker data itself; the floor is unchanged (78) and the measured total is identical.
+* Hypothesis stays deterministic: `tests/conftest.py` loads a derandomized profile (`derandomize=True`, `database=None`) for every
+  test that does not choose its own, `tests/property` keeps `ci` (derandomized) or `deep` (random, release only), and the
+  property report is merged from the workers by the controller (`workeroutput`), not overwritten by whichever worker finished last.
+* Negative control: `tests/tools/test_parallel_gate.py` plants a failing test in a nested project and requires the `-n 2` run to
+  fail with exactly the counts of the serial run (3 passed, 1 failed).
+
+**MEASUREMENT** (2026-09-29, reference PC, Windows 11, 12 logical cores; one run each, wall-clock, another agent session was
+running on the same machine, so read these as a ratio, not as a benchmark; "serial" is the pre-change command or `EIJA_SERIAL=1`):
+
+| Gate | Serial | `-n 4 --dist loadfile` | Result equality |
+|------|--------|------------------------|-----------------|
+| `nox -s tests` (pytest 1509 passed, 153 skipped, 1 xfailed) | 3 min 48 s (pytest 224 s) | 1 min 14 s (pytest 73 s); `-n 8`: pytest 57 s | same counts |
+| `nox -s property` (91 passed, 6 xfailed) | 1 min 51 s | 36 s | `property.json` identical in profile, totals (9257 generated, 7809 valid examples), per-test example counts (77 tests) and stateful outcome histogram |
+| `nox -s coverage` | 4 min 13 s | 1 min 34 s | same pass counts, total 93.88 % in both, floor 78 unchanged |
+| `nox -t fast` (21 sessions) | 4 min 48 s | 2 min 28 s | all sessions green in both; 1518 passed, 153 skipped, 1 xfailed |
+
+Where the remaining `nox -t fast` time goes (parallel run): `tests` about 1 min, `providers_contract` 27 s, `demos_registry` 16 s,
+`graph_metamodel` 7 s, everything else under 5 s. A further speed-up needs the provider process-tree tests split across files.
+
 ## What these gates do not establish
 
 Passing them shows that style, typing, layering, complexity and dependency hygiene are within budget. It says nothing about

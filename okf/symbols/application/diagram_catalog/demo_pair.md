@@ -1,7 +1,7 @@
 ---
 type: Function
 title: application.diagram_catalog.demo_pair
-description: Baseline and the recommend_only candidate the excursion demo produces (rejection source Recommended).
+description: 'Baseline and the demo candidate: the default pack''s baseline with its first supported meaning applied.'
 resource: repo://src/eija_studio/application/diagram_catalog.py#demo_pair
 tags:
 - symbol
@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/diagram_catalog.py#demo_pair
   title: application/diagram_catalog.py
   hash_method: ast-v2
-  sha256: 2b2a3ee9323e296bac7127644a42bcbdd192bfeee15fd092482f460085fd71fb
-notes_baseline: 6e3ad83027c02c1d9da5d3a9e91c43dd15441d8c0f9e311035fd992a908d8d75
+  sha256: 2cbea45d4d05133818e61ae39b23f0ffa08c2d8582d9f8bf647ad612f46b61b2
+notes_baseline: f5010957c72dc57090f479c811041d4a641ecc3799b46d8bc4c88cab606a18ee
 ---
 
 # application.diagram_catalog.demo_pair
@@ -32,7 +32,7 @@ notes_baseline: 6e3ad83027c02c1d9da5d3a9e91c43dd15441d8c0f9e311035fd992a908d8d75
 ## Docstring
 
 ~~~text
-Baseline and the recommend_only candidate the excursion demo produces (rejection source Recommended).
+Baseline and the demo candidate: the default pack's baseline with its first supported meaning applied.
 ~~~
 <!-- okf:generated:end facts -->
 
@@ -43,10 +43,9 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [domain.models.SemanticTransaction](/symbols/domain/models/SemanticTransaction.md) - `class SemanticTransaction(Contract)` in `domain/models`.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
-* [domain.policy.apply_transaction](/symbols/domain/policy/apply_transaction.md) - `def apply_transaction(model: Workflow, tx: SemanticTransaction) -> Workflow` in `domain/policy`.
-* [domain.policy.baseline](/symbols/domain/policy/baseline.md) - `def baseline() -> Workflow` in `domain/policy`.
+* [domain.policy.baseline](/symbols/domain/policy/baseline.md) - The pack's baseline workflow.
+* [domain.policy.demo_candidate](/symbols/domain/policy/demo_candidate.md) - The pack's baseline with its first supported meaning applied.
 
 ## Referenced by
 

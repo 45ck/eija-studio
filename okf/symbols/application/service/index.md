@@ -10,11 +10,13 @@
 
 # Methods
 
+* [application.service.Studio.affordances](Studio.affordances.md) - Which single edits of the case's working model the kernel would accept (read-only).
 * [application.service.Studio.apply](Studio.apply.md) - Applies an approved candidate to the local baseline only if an eligible, authentic, exact-subject decision exists.
 * [application.service.Studio.approve](Studio.approve.md) - Seals a local-owner acknowledgement of the exact subject after eligibility, matching subject hash, acknowledged unknowns and correct answers.
 * [application.service.Studio.create](Studio.create.md) - `def create(self, request: str) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.discard](Studio.discard.md) - `def discard(self, case_id: str, expected: int) -> dict[str, Any]` in `application/service`.
-* [application.service.Studio.edit](Studio.edit.md) - `def edit(self, case_id: str, expected: int, tx: SemanticTransaction, principal: Principal) -> dict[str, Any]` in `application/service`.
+* [application.service.Studio.edit](Studio.edit.md) - `def edit(self, case_id: str, expected: int, tx: Transaction, principal: Principal) -> dict[str, Any]` in `application/service`.
+* [application.service.Studio.edit_check](Studio.edit_check.md) - Dry-run one edit: {legal, codes, refs}.
 * [application.service.Studio.execute](Studio.execute.md) - `def execute(self, case_id: str, command: ExecuteCommand, fault: Callable[[str], None] | None=None) -> dict[st…` in `application/service`.
 * [application.service.Studio.export](Studio.export.md) - `def export(self, case_id: str) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.formal_view](Studio.formal_view.md) - Formal evidence for a bare workflow (``eija compile``): collected and sealed in memory, never stored, never a decision.

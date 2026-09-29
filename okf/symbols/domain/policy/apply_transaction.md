@@ -14,9 +14,14 @@ sources:
 - resource: repo://src/eija_studio/domain/policy.py#apply_transaction
   title: domain/policy.py
   hash_method: ast-v2
-  sha256: a374b6656c4d043e5ddf93667bde7dbc01e094078a3ac5fa55865483f9f4dc75
+  sha256: 4768634617fda3a8dbec19f5055778bb2d71968b1fdc8025da410fea248b852f
 description_override: Applies one typed SemanticTransaction to a policy-valid workflow and returns a candidate that is itself re-checked against the policy.
-notes_baseline: a6499ed96a231bd6a329a5e2f41416f28a97f2271588d97b4bb5c744b372d3db
+notes_baseline: 0f924881e6afa2a9fbc58b0a10c619d04f0d70cb9e0bce8d6768a1813cca8318
+verified:
+- by: process:eija-wbs-1.3-agent
+  at: '2026-09-29T08:20:47Z'
+  notes_sha256: 087e615d318ca230268ebd8b8df30c420b1bc8be7156f6fc9922357da9c1500a
+  sources_sha256: 0f924881e6afa2a9fbc58b0a10c619d04f0d70cb9e0bce8d6768a1813cca8318
 ---
 
 # domain.policy.apply_transaction
@@ -26,38 +31,34 @@ notes_baseline: a6499ed96a231bd6a329a5e2f41416f28a97f2271588d97b4bb5c744b372d3db
 |---|---|
 | Kind | function |
 | Module | [`domain/policy`](/modules/domain/policy.md) |
-| Signature | `def apply_transaction(model: Workflow, tx: SemanticTransaction) -> Workflow` |
+| Signature | `def apply_transaction(model: Workflow, tx: Transaction \| SemanticTransaction, pack: Pack \| None=None) -> Workflow` |
 | Code | `repo://src/eija_studio/domain/policy.py#apply_transaction` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
-_The source carries no docstring._
+~~~text
+Apply one transaction (policy-checked). The deprecated ``SemanticTransaction`` (only
+verification/bend/bend_generate.py still builds one; see models.py) means "the pack's first supported meaning".
+~~~
 <!-- okf:generated:end facts -->
 
 ## Notes
 
-The only path by which a meaning becomes a model. Policy is enforced on both sides: the input model must pass [ensure_policy](/symbols/domain/policy/ensure_policy.md), and so must the result.
+Applies one transaction of the open vocabulary through `apply_transactions`: the input model must pass [ensure_policy](/symbols/domain/policy/ensure_policy.md), and so must the result. Structural defects are `EDIT_INVALID`; a policy refusal is `POLICY_BLOCKED` with `details {codes, refs}` naming the laws broken.
+* An added transition takes its guards and effects from the pack's declared action, so a transaction never supplies its own guards or effects to an added transition; `set_guards`/`set_effects` are judged by the policy like any other edit.
+* The deprecated [SemanticTransaction](/symbols/domain/models/SemanticTransaction.md) means the pack's first supported meaning.
 
-* `enable_recommendation` adds `Recommend` (Teacher, `Submitted` to `Recommended`) and moves `Approve` to start from `Recommended`.
-* `set_rejection_source` needs recommendation to be enabled first (`MEANING_REQUIRED`); it changes only where `Reject` starts (`Submitted` or `Recommended`).
-* The result is rebuilt with [transition](/symbols/domain/policy/transition.md), so guards and effects always come from the protected tables and can never be supplied by the transaction.
-
-Providers and agents never call it: authority to select a [Meaning](/language/meaning-selection.md) belongs to the local owner ([Studio.select](/symbols/application/service/Studio.select.md), [Studio.edit](/symbols/application/service/Studio.edit.md)).
+Providers and agents never call it: authority to select a [Meaning](/language/meaning-selection.md) or edit belongs to the local owner ([Studio.select](/symbols/application/service/Studio.select.md), [Studio.edit](/symbols/application/service/Studio.edit.md)).
 
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
-* [domain.models.SemanticTransaction](/symbols/domain/models/SemanticTransaction.md) - `class SemanticTransaction(Contract)` in `domain/models`.
+* [domain.models.SemanticTransaction](/symbols/domain/models/SemanticTransaction.md) - DEPRECATED closed vocabulary, superseded by the open one in ``domain.transactions`` (WBS 1.3).
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
-* [domain.policy.ensure_policy](/symbols/domain/policy/ensure_policy.md) - `def ensure_policy(model: Workflow) -> None` in `domain/policy`.
-* [domain.policy.transition](/symbols/domain/policy/transition.md) - `def transition(action: str, source: str, target: str, role: str) -> Transition` in `domain/policy`.
-
-## Referenced by
-
-* [application.diagram_catalog.demo_pair](/symbols/application/diagram_catalog/demo_pair.md) - Baseline and the recommend_only candidate the excursion demo produces (rejection source Recommended).
-* [application.formal.what_if_model](/symbols/application/formal/what_if_model.md) - The workflow an unsupported interpretation would produce (recommendation enabled, the fault applied), or None.
-* [application.service.Studio.edit](/symbols/application/service/Studio.edit.md) - `def edit(self, case_id: str, expected: int, tx: SemanticTransaction, principal: Principal) -> dict[str, Any]` in `application/service`.
-* [application.service.Studio.select](/symbols/application/service/Studio.select.md) - `def select(self, case_id: str, expected: int, interpretation: str, principal: Principal) -> dict[str, Any]` in `application/service`.
+* [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
+* [domain.policy.apply_meaning](/symbols/domain/policy/apply_meaning.md) - The candidate a supported pack meaning produces from ``model`` (policy-checked).
+* [domain.policy.apply_transactions](/symbols/domain/policy/apply_transactions.md) - Apply an edit sequence as one change: the start must conform, the result must conform (intermediate steps need only be coherent workflows).
+* [domain.policy.first_supported_meaning](/symbols/domain/policy/first_supported_meaning.md) - The id of the pack's first supported meaning (the demo candidate's meaning).
+* [domain.transactions.Transaction](/symbols/domain/transactions/Transaction.md) - Type alias `Transaction` in `domain/transactions`.
 <!-- okf:generated:end links -->

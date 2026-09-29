@@ -8,6 +8,7 @@
 * [domain.formal.FormalArtifact](FormalArtifact.md) - One raw formal artifact from a tool report.
 * [domain.formal.KindSpec](KindSpec.md) - One evidence kind: what it claims, how it is checked, what it does not establish.
 * [domain.formal.Malformed](Malformed.md) - The artifact does not have the declared typed shape (a structural defect, judged FAIL).
+* [domain.formal.RuntimeShape](RuntimeShape.md) - What a runtime-matrix receipt for the current subject must cover: the pack's fixture actors and declared actions, and one of the allowed state sets (exactly the model's states when the model is known).
 
 # Constants
 

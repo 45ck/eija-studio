@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/adapters/identity.py
   title: adapters/identity.py
   hash_method: ast-api-v1
-  sha256: ea01b4a25fd741646756971fe06d2f16887ae8fd4c2891ffd633213edbebd37b
-notes_baseline: 3d796778138e16598d0ac24c46e80fd871b4df9afbec941e0b1f5fec480554ad
+  sha256: 24cb598385954bb20629ea8b98200244c2509e49c5eabce08ba19b4d675fdf76
+notes_baseline: da085560aa74af55315b7a2344be57f433ac0e03c02b2529a1dd00ab2fbc3fe5
 ---
 
 # adapters.identity
@@ -39,6 +39,7 @@ _Symbol pages are generated for the domain and application layers only._
 ## Internal imports
 
 * [`domain/models`](/modules/domain/models.md)
+* [`domain/pack`](/modules/domain/pack.md)
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -49,6 +50,7 @@ _No curated notes yet._
 ## Imports
 
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
+* [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
 
 ## Referenced by
 

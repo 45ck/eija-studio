@@ -16,8 +16,9 @@ import pytest
 from hypothesis import assume, given, settings, strategies as st
 from pydantic import ValidationError
 
-from eija_studio.domain.models import SemanticTransaction, Workflow
-from eija_studio.domain.policy import apply_transaction, baseline
+from eija_studio.domain.models import Workflow
+from eija_studio.domain.policy import apply_transaction, demo_candidate
+from eija_studio.domain.transactions import RetargetTransition
 from .property_strategies import normal_form, reordered, semantic_edits, workflows
 from .property_support import examples
 
@@ -77,11 +78,12 @@ def test_hash_survives_serialisation_round_trip(workflow):
 @given(st.lists(st.sampled_from(["Submitted", "Recommended"]), min_size=1, max_size=6))
 def test_semantic_transactions_are_last_writer_wins(sources):
     """Applying a history of typed rejection-source edits yields the model of the last edit only."""
-    model = apply_transaction(baseline(), SemanticTransaction(kind="enable_recommendation"))
+    def reject_from(state: str) -> RetargetTransition:
+        return RetargetTransition(kind="retarget_transition", transition="TR-REJECT", end="source", state=state)
+    model = demo_candidate()
     for source in sources:
-        model = apply_transaction(model, SemanticTransaction(kind="set_rejection_source", rejection_source=source))
-    direct = apply_transaction(apply_transaction(baseline(), SemanticTransaction(kind="enable_recommendation")),
-                               SemanticTransaction(kind="set_rejection_source", rejection_source=sources[-1]))
+        model = apply_transaction(model, reject_from(source))
+    direct = apply_transaction(demo_candidate(), reject_from(sources[-1]))
     assert model.semantic_hash == direct.semantic_hash
     assert normal_form(model) == normal_form(direct)
 

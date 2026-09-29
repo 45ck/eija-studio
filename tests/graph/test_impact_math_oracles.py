@@ -563,7 +563,7 @@ def test_o7_join_table_and_laws_exhaustively() -> None:
 
 
 def _kernel_aggregate(statuses) -> str:
-    with mock.patch.object(kernel_evidence, "assess_receipt", lambda r, s, c, k: r["st"]):
+    with mock.patch.object(kernel_evidence, "assess_receipt", lambda r, s, c, k, *context: r["st"]):
         return kernel_evidence.aggregate_status([{"st": x} for x in statuses], {}, lambda r: True)
 
 

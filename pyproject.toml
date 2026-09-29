@@ -14,7 +14,7 @@ dependencies = ["fastapi==0.128.2", "uvicorn==0.48.0", "pydantic==2.13.4", "http
 
 [project.optional-dependencies]
 # Each extra belongs to one capability lane; see docs/oss/REGISTER.md for why each tool was chosen.
-dev = ["pytest==9.0.2", "nox>=2025.5.1", "tomlkit==0.15.1"]
+dev = ["pytest==9.0.2", "pytest-xdist==3.8.0", "nox>=2025.5.1", "tomlkit==0.15.1"]  # pytest-xdist: quality/tools/parallel.py runs the CPU-bound pytest sessions on 4 workers; absent or EIJA_SERIAL=1 means serial
 lint = [
     "ruff==0.16.9",
     "mypy==2.3.1",

@@ -12,6 +12,8 @@ from pathlib import Path
 
 import nox
 
+from quality.tools.parallel import xdist_args
+
 PYTHON = sys.executable  # the project environment nox runs in; sessions use python=False
 ROOT = Path(__file__).resolve().parents[2]
 REPORTS = ROOT / "reports" / "testing"
@@ -26,7 +28,7 @@ def run_profile(session: nox.Session, profile: str, report: str) -> None:
             "status": "NOT_RUN", "reason": f"{MISSING} (missing: {', '.join(missing)})"}, indent=2, sort_keys=True) + "\n").encode("utf-8"))
         session.skip(f"NOT_RUN: {MISSING}")
     env = {"EIJA_HYPOTHESIS_PROFILE": profile, "EIJA_PROPERTY_REPORT": f"reports/testing/{report}"}
-    session.run(PYTHON, "-m", "pytest", "tests/property", "-q", "-p", "no:cacheprovider", *session.posargs, env=env)
+    session.run(PYTHON, "-m", "pytest", "tests/property", "-q", "-p", "no:cacheprovider", *xdist_args(), *session.posargs, env=env)
 
 
 @nox.session(name="property", python=False, tags=["full"])

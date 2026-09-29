@@ -8,14 +8,17 @@ values come from the documented policy (docs/SECURITY_AND_TRUST.md, ADR-0000), n
 """
 from __future__ import annotations
 
-from typing import get_args
-
 import pytest
 
-from eija_studio.domain.models import DomainError, Interpretation, SemanticTransaction, Workflow
+from kernel_support import reject_from
+
+from eija_studio.domain.models import DomainError, SemanticTransaction, Workflow
 from eija_studio.domain.policy import (
-    CANONICAL_OPTIONS, EFFECTS, FORBIDDEN, apply_transaction, baseline, check_policy, ensure_policy,
+    apply_meaning, apply_transaction, baseline, check_policy, effects_table, ensure_policy, forbidden_effects, meaning_options,
     meaning_questions, projections, transition)
+
+# The protected tables now live in the excursion pack (packs/excursion/pack.json); the kernel reads them from there.
+FORBIDDEN, EFFECTS, CANONICAL_OPTIONS = forbidden_effects(), effects_table(), meaning_options()
 
 
 def candidate() -> Workflow:
@@ -46,7 +49,7 @@ def test_protected_tables_are_pinned_to_independent_literals():
 
 
 def test_only_recommend_only_is_a_supported_meaning():
-    assert set(CANONICAL_OPTIONS) == set(get_args(Interpretation))
+    assert set(CANONICAL_OPTIONS) == {"recommend_only", "final_approval", "confirm_only", "unsupported"}
     assert {k for k, v in CANONICAL_OPTIONS.items() if v["supported"] is True} == {"recommend_only"}
     assert {k for k, v in CANONICAL_OPTIONS.items() if v["supported"] is False} == {"final_approval", "confirm_only", "unsupported"}
     for option in CANONICAL_OPTIONS.values():
@@ -186,17 +189,19 @@ def test_enabling_recommendation_moves_authority_exactly_as_documented():
     assert {t.role for t in model.transitions if t.action in {"Approve", "Reject"}} == {"Registrar"}
 
 
-def test_enabling_recommendation_twice_is_idempotent_not_a_duplicate_transition():
-    assert apply_transaction(candidate(), SemanticTransaction(kind="enable_recommendation")) == candidate()
-
-
-def test_rejection_source_can_only_be_set_after_the_meaning_is_enabled():
+def test_applying_the_meaning_twice_is_refused_never_a_duplicate_transition():
     with pytest.raises(DomainError) as info:
-        apply_transaction(baseline(), SemanticTransaction(kind="set_rejection_source"))
-    assert info.value.code == "MEANING_REQUIRED"
-    widened = apply_transaction(candidate(), SemanticTransaction(kind="set_rejection_source", rejection_source="Submitted"))
+        apply_meaning(candidate(), "recommend_only")
+    assert info.value.code == "EDIT_INVALID" and info.value.details["refs"] == ["state:Recommended"]
+
+
+def test_the_rejection_source_can_only_move_to_recommended_after_the_meaning_is_applied():
+    with pytest.raises(DomainError) as info:  # the state does not exist before the meaning adds it
+        apply_transaction(baseline(), reject_from("Recommended"))
+    assert info.value.code == "EDIT_INVALID"
+    widened = apply_transaction(candidate(), reject_from("Submitted"))
     assert next(t for t in widened.transitions if t.action == "Reject").from_state == "Submitted"
-    narrowed = apply_transaction(widened, SemanticTransaction(kind="set_rejection_source", rejection_source="Recommended"))
+    narrowed = apply_transaction(widened, reject_from("Recommended"))
     assert narrowed == candidate()
 
 

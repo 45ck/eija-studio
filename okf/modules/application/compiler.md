@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/compiler.py
   title: application/compiler.py
   hash_method: ast-api-v1
-  sha256: fa59f6260fca61079932cefcef40b7262d6ca0ee914d87bc2d8ddd776f55ac71
-notes_baseline: d24616a6b10f155ca8915470c0e07e144baa40ed55552ca161e45c8a68ac79e4
+  sha256: d6198d74fc99204a9b537fac19455dcf141156609652726a5b223a66b34e9099
+notes_baseline: 09c54346f29559e179e219706f3870a20267a8f6eb282112c0e149b556c1dc11
 ---
 
 # application.compiler
@@ -47,6 +47,7 @@ This is a bounded semantic/report compiler, not a general source-code compiler.
 * [`domain/formal`](/modules/domain/formal.md)
 * [`domain/impact`](/modules/domain/impact.md)
 * [`domain/models`](/modules/domain/models.md)
+* [`domain/pack`](/modules/domain/pack.md)
 * [`domain/policy`](/modules/domain/policy.md)
 <!-- okf:generated:end facts -->
 
@@ -63,7 +64,8 @@ _No curated notes yet._
 * [domain.formal](/modules/domain/formal.md) - Primitives for per-kind admissibility of formal evidence (ADR-0145, ADR-0146).
 * [domain.impact](/modules/domain/impact.md) - Module `domain/impact` (no module docstring).
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
-* [domain.policy](/modules/domain/policy.md) - Protected excursion policy.
+* [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
+* [domain.policy](/modules/domain/policy.md) - Generic policy: coherence with a domain pack's declared action catalog, the pack's laws, and declared effects.
 
 ## Referenced by
 

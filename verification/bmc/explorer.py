@@ -22,10 +22,11 @@ from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
 from typing import Any
 
-from eija_studio.adapters.sqlite_store import FIXTURE_ACTORS, SQLiteStore
+from eija_studio.adapters.sqlite_store import SQLiteStore
 from eija_studio.application import runtime
 from eija_studio.application.ports import SandboxFactory
 from eija_studio.domain.models import DomainError, ExecuteCommand, Workflow
+from verification.excursion_pack import FIXTURE_ACTORS
 
 from . import spec
 from .snapshot import Observer, Snapshot

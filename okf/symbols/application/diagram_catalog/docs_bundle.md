@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/diagram_catalog.py#docs_bundle
   title: application/diagram_catalog.py
   hash_method: ast-v2
-  sha256: 3c0809017a94ee0d5be4f5d3979ae7bb755cf51817098247b352c60135920052
-notes_baseline: 2cc54e06a5828744259c976c368547286541f9eda7a88eaf03b6991f8352cc14
+  sha256: b6c7e952be151d6df7ff4a8ab92bd7cc5c2dd73126c57d2b841ebe6e776e391e
+notes_baseline: 83dd880e0072b6a7af2c8e226aaeffa21d33b8ae3917d90779c8a02d54fcace9
 ---
 
 # application.diagram_catalog.docs_bundle
@@ -44,6 +44,6 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [application.diagram_catalog.demo_pair](/symbols/application/diagram_catalog/demo_pair.md) - Baseline and the recommend_only candidate the excursion demo produces (rejection source Recommended).
+* [application.diagram_catalog.demo_pair](/symbols/application/diagram_catalog/demo_pair.md) - Baseline and the demo candidate: the default pack's baseline with its first supported meaning applied.
 * [application.diagram_catalog.render_view](/symbols/application/diagram_catalog/render_view.md) - Generated diagram text for one view.
 <!-- okf:generated:end links -->

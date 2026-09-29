@@ -1,7 +1,7 @@
 ---
 type: Method
 title: application.service.Studio.edit
-description: '`def edit(self, case_id: str, expected: int, tx: SemanticTransaction, principal: Principal) -> dict[str, Any]` in `application/service`.'
+description: '`def edit(self, case_id: str, expected: int, tx: Transaction, principal: Principal) -> dict[str, Any]` in `application/service`.'
 resource: repo://src/eija_studio/application/service.py#Studio.edit
 tags:
 - symbol
@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.edit
   title: application/service.py
   hash_method: ast-v2
-  sha256: f65d8a0e20dca7d97db8df3c816f58195f09c80f0c938e5ef8beebd95f5dc6f5
-notes_baseline: f7e30e771eecec0174d08d16f08f578c96546ffac5256af991f58bee60aaf8a2
+  sha256: 45fb8c0e196d48b21bfafdc184b331a2d1f7349f4d33767ec6a3ee06d7a756ca
+notes_baseline: 99e069c5a0c5115e828fa0a230beec648e7b2834e6abf5c17d8c2cefa7f357be
 ---
 
 # application.service.Studio.edit
@@ -26,7 +26,7 @@ notes_baseline: f7e30e771eecec0174d08d16f08f578c96546ffac5256af991f58bee60aaf8a2
 | Kind | method |
 | Module | [`application/service`](/modules/application/service.md) |
 | Class | [`Studio`](/symbols/application/service/Studio.md) |
-| Signature | `def edit(self, case_id: str, expected: int, tx: SemanticTransaction, principal: Principal) -> dict[str, Any]` |
+| Signature | `def edit(self, case_id: str, expected: int, tx: Transaction, principal: Principal) -> dict[str, Any]` |
 | Code | `repo://src/eija_studio/application/service.py#Studio.edit` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
@@ -42,8 +42,7 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [domain.models.Principal](/symbols/domain/models/Principal.md) - `class Principal(Contract)` in `domain/models`.
-* [domain.models.SemanticTransaction](/symbols/domain/models/SemanticTransaction.md) - `class SemanticTransaction(Contract)` in `domain/models`.
-* [domain.policy.apply_transaction](/symbols/domain/policy/apply_transaction.md) - `def apply_transaction(model: Workflow, tx: SemanticTransaction) -> Workflow` in `domain/policy`.
+* [domain.policy.apply_transactions](/symbols/domain/policy/apply_transactions.md) - Apply an edit sequence as one change: the start must conform, the result must conform (intermediate steps need only be coherent workflows).
+* [domain.transactions.Transaction](/symbols/domain/transactions/Transaction.md) - Type alias `Transaction` in `domain/transactions`.
 <!-- okf:generated:end links -->

@@ -550,20 +550,13 @@ Nothing is written to the worktree. If any precondition is not `OK` or `ALREADY_
   "properties": {
     "at": {"$ref": "#/$defs/Selector"},
     "base": {"type": "object", "properties": {"workflow": {"$ref": "#/$defs/NodeId"}}, "required": ["workflow"], "additionalProperties": false},
-    "transaction": {
-      "type": "object",
-      "properties": {
-        "kind": {"enum": ["enable_recommendation", "set_rejection_source"]},
-        "rejection_source": {"enum": ["Submitted", "Recommended"], "default": "Recommended"}
-      },
-      "required": ["kind"], "additionalProperties": false
-    }
+    "transaction": {"$ref": "../../contracts/semantic-transaction.schema.json"}
   },
   "required": ["base", "transaction"], "additionalProperties": false
 }
 ```
 
-The `transaction` object is the kernel's `SemanticTransaction` (`src/eija_studio/domain/models.py`); the test `test_transaction_schema_matches_kernel` compares this block with `SemanticTransaction.model_json_schema()` so the two cannot drift. When the kernel adds a transaction kind, this schema is regenerated, not edited by hand.
+The `transaction` object is one transaction of the kernel's open change vocabulary (`src/eija_studio/domain/transactions.py`, WBS 1.3), by reference to the generated contract `contracts/semantic-transaction.schema.json`; the test `test_transaction_schema_matches_kernel` checks the reference and that the contract equals the kernel's schema, so the two cannot drift.
 
 <!-- schema: txn_dry_run.result -->
 ```json
@@ -989,7 +982,7 @@ The tool returns a proposal. It edits nothing. Sites it cannot resolve syntactic
     "candidate_semantic_hash": "b26c9af5ae4cd958099956232721a70e73cb7e6efe1b213ff32417829b588e56",
     "base_semantic_hash": "5d3ef3a19c31d956a185b9c5ba4b1b79e651d0356e162436c5c67054d2ad4cdf",
     "model_delta": {"changed_actions": ["Approve", "Recommend", "Reject"]},
-    "kernel_impact": {"affected": ["journey:Approve", "journey:Recommend", "journey:Reject", "local-decision", "obligation:Approve", "obligation:Recommend", "obligation:Reject", "receipt:Approve", "receipt:Recommend", "receipt:Reject", "review-packet", "rule:Approve", "rule:Recommend", "rule:Reject", "runtime:Approve", "runtime:Recommend", "runtime:Reject", "state-view:Approve", "state-view:Recommend", "state-view:Reject"], "complete": true, "envelope": "All dependencies encoded by this excursion projection mapping; not every real-world consequence."},
+    "kernel_impact": {"affected": ["journey:Approve", "journey:Recommend", "journey:Reject", "local-decision", "obligation:Approve", "obligation:Recommend", "obligation:Reject", "receipt:Approve", "receipt:Recommend", "receipt:Reject", "review-packet", "rule:Approve", "rule:Recommend", "rule:Reject", "runtime:Approve", "runtime:Recommend", "runtime:Reject", "state-view:Approve", "state-view:Recommend", "state-view:Reject"], "complete": true, "envelope": "All dependencies encoded by this projection mapping; not every real-world consequence."},
     "ripple": null,
     "findings_delta": null,
     "links_becoming_suspect": [],
@@ -1012,7 +1005,7 @@ The tool returns a proposal. It edits nothing. Sites it cannot resolve syntactic
   "request_hash": "sha256:6666666666666666666666666666666666666666666666666666666666666666",
   "result": {
     "verdict": "REJECTED",
-    "kernel_code": "MEANING_REQUIRED",
+    "kernel_code": "POLICY_BLOCKED",
     "candidate_semantic_hash": null,
     "base_semantic_hash": "5d3ef3a19c31d956a185b9c5ba4b1b79e651d0356e162436c5c67054d2ad4cdf",
     "model_delta": {"changed_actions": []},

@@ -43,10 +43,10 @@ def hostile_workflow() -> Workflow:
         guards = ["actor_active", "role_current", "state_equals", "expected_version", "operation_binding"]
         return {"id": i, "action": a, "from_state": f, "to_state": to, "role": role, "guards": guards,
                 "required_effects": ["Audit:X"], "forbidden_effects": []}
-    return Workflow.model_validate({"initial_state": "start", "states": list(HOSTILE_STATES), "transitions": [
-        t("T-1", "Go", "start", "end", "Teacher"), t("T-2", HOSTILE_ACTION, "end", 'a "quoted" <b>x</b>', "Reg;Role"),
-        t("T-3", "Next", "semi;colon #hash", "{brace}", "Teacher"), t("T-4", "%date()", "{brace}", "%getenv(PLANTUML_SECRETVAR)", "%version()"),
-        t("T-5", "Load", "%load_json(secret.json)", "!include secret.puml", "Teacher"), t("T-6", "Init", "%%{init: {}}%%", "start", "Teacher"),
+    return Workflow.model_validate({"id": "hostile", "initial_state": "start", "states": list(HOSTILE_STATES), "transitions": [
+        t("T-1", "Go", "start", "end", "Author"), t("T-2", HOSTILE_ACTION, "end", 'a "quoted" <b>x</b>', "Reg;Role"),
+        t("T-3", "Next", "semi;colon #hash", "{brace}", "Author"), t("T-4", "%date()", "{brace}", "%getenv(PLANTUML_SECRETVAR)", "%version()"),
+        t("T-5", "Load", "%load_json(secret.json)", "!include secret.puml", "Author"), t("T-6", "Init", "%%{init: {}}%%", "start", "Author"),
         t("T-7", "colon:", "tail:", ":::cls", "`r"), t("T-8", "`tick action", ":::cls", "`tick", "Role:")]})
 
 
@@ -58,7 +58,7 @@ def hostile_candidate() -> Workflow:
     data["transitions"] = [t for t in data["transitions"] if t["id"] != "T-8"]
     for t in data["transitions"]:
         if t["id"] == "T-1":
-            t["role"] = "Registrar"
+            t["role"] = "Decider"
         if t["id"] == "T-2":
             t["guards"] = [*t["guards"], "actor_assigned"]
     return Workflow.model_validate(data)

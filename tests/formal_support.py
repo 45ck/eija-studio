@@ -19,8 +19,9 @@ from eija_studio.domain.formal import Context, FormalArtifact, FORMAL_PRODUCER
 from eija_studio.domain.evidence_kinds import KINDS
 from eija_studio.domain.formal_bmc import MUTANTS as BMC_MUTANTS, STEP_INVARIANTS, STATE_INVARIANTS, SOURCES as BMC_SOURCES
 from eija_studio.domain.formal_smt import INVARIANTS as SMT_INVARIANTS, NAMED_CONTROLS, SOURCES as SMT_SOURCES
-from eija_studio.domain.models import SemanticTransaction, Workflow, fingerprint
-from eija_studio.domain.policy import apply_transaction, baseline
+from eija_studio.domain.models import Workflow, fingerprint
+from eija_studio.domain.policy import baseline
+from verification.excursion_pack import candidate as excursion_candidate
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "tests" / "fixtures" / "formal"
@@ -31,7 +32,7 @@ KIND_NAMES = ("bend_proof", "smt_proof", "bounded_model_check")
 
 def workflows(rejection_source: str = "Recommended") -> tuple[Workflow, Workflow]:
     base = baseline()
-    return base, apply_transaction(base, SemanticTransaction(kind="enable_recommendation", rejection_source=rejection_source))
+    return base, excursion_candidate(rejection_source)
 
 
 def subject_of(candidate: Workflow) -> dict[str, Any]:

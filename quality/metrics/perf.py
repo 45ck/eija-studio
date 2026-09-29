@@ -34,7 +34,6 @@ import time
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from unittest import mock
 
 import httpx
 import uvicorn
@@ -45,8 +44,8 @@ from eija_studio.application import verifier
 from eija_studio.application.compiler import subject_for
 from eija_studio.bootstrap import build_studio
 from eija_studio.domain.impact import model_impact
-from eija_studio.domain.models import SemanticTransaction
-from eija_studio.domain.policy import apply_transaction, baseline
+from eija_studio.domain.pack import default_pack
+from eija_studio.domain.policy import baseline, demo_candidate
 from eija_studio.interfaces.http import create_app
 
 from . import ROOT
@@ -214,13 +213,14 @@ def endpoints_report(record: dict[str, list[float]]) -> dict:
 def matrix_points(repeats: int) -> tuple[list[dict], dict]:
     """Time `verify_runtime` for matrices of 20..125 cells (models x actor-count prefixes).
 
-    The kernel's actor list is a module constant; slicing it (unittest.mock.patch.object, measurement
-    only) varies the matrix size through the REAL verification code path without editing the kernel.
+    The actor directory comes from the pack's fixtures; verifying with a copy of the pack whose fixture list is
+    sliced (measurement only) varies the matrix size through the REAL verification code path.
     Returns the points and the yield statistics of the full 125-cell matrix.
     """
     base = baseline()
-    candidate = apply_transaction(base, SemanticTransaction(kind="enable_recommendation"))
-    full_actors = list(verifier.ACTORS)
+    candidate = demo_candidate()
+    pack = default_pack()
+    full_actors = list(pack.fixtures.actors)
     points: list[dict] = []
     yield_stats: dict = {}
     with workspace() as work:
@@ -229,9 +229,9 @@ def matrix_points(repeats: int) -> tuple[list[dict], dict]:
         for label, model in (("baseline", base), ("candidate", candidate)):
             subject = subject_for(model, {}, identity)
             for k in range(1, len(full_actors) + 1):
-                with mock.patch.object(verifier, "ACTORS", full_actors[:k]):
-                    receipt = verifier.verify_runtime(model, subject, studio.sandbox)  # also warms up
-                    seconds = time_call(lambda m=model, s=subject: verifier.verify_runtime(m, s, studio.sandbox), repeats)
+                sliced = pack.model_copy(update={"fixtures": pack.fixtures.model_copy(update={"actors": tuple(full_actors[:k])})})
+                receipt = verifier.verify_runtime(model, subject, studio.sandbox, sliced)  # also warms up
+                seconds = time_call(lambda m=model, s=subject, p=sliced: verifier.verify_runtime(m, s, studio.sandbox, p), repeats)
                 cells = receipt["artifact"]["expected_cells"]
                 if len(receipt["artifact"]["cells"]) != cells:
                     raise RuntimeError("verifier did not evaluate every expected cell")
@@ -279,7 +279,7 @@ def verify_scaling(profile: str) -> tuple[dict, dict]:
 def impact_yield() -> dict:
     """Nodes explored by the model-impact closure for the recommendation change (size of the change envelope)."""
     base = baseline()
-    candidate = apply_transaction(base, SemanticTransaction(kind="enable_recommendation"))
+    candidate = demo_candidate()
     report = model_impact(base, candidate)
     seconds = time_call(lambda: model_impact(base, candidate), 15)
     return {"nodes": len(report["affected"]), "edges": sum(len(v) for v in report["graph"].values()),

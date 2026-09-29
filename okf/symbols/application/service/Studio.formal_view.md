@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.formal_view
   title: application/service.py
   hash_method: ast-v2
-  sha256: 914a5ca2418e1bd1cfd744604faed163ae51ccc73656f8e21204013778ff82a5
-notes_baseline: 5bbbfffec3d622cbd011581278a8e713908316729a4578c9dad302d329de3b4e
+  sha256: 87789f9e0eb22f4de843785bbb1be798eadb7a5ccd3ab3e23096c87444e78474
+notes_baseline: 7e46cbdaad52d681a7f0ae0a47c76cb81764cfad310a5f4f0eb35a8abf90847e
 ---
 
 # application.service.Studio.formal_view
@@ -46,10 +46,9 @@ _No curated notes yet._
 
 * [application.compiler.subject_for](/symbols/application/compiler/subject_for.md) - `def subject_for(model: Workflow, layout: dict[str, Any], identity: dict[str, Any]) -> dict[str, Any]` in `application/compiler`.
 * [application.formal.attach](/symbols/application/formal/attach.md) - Sealed receipts for every registered kind the source returned, skipping an exact repeat of the latest one.
-* [application.formal.packet_view](/symbols/application/formal/packet_view.md) - The formal part of the review packet: per-kind claims, blockers, the full evidence list, explanations.
+* [application.formal.packet_view](/symbols/application/formal/packet_view.md) - The formal part of the review packet: per-kind claims, blockers, the full evidence list, explanations, and (with a pack) the pack's declared verifiers, so a ki…
 * [application.service.now](/symbols/application/service/now.md) - `def now() -> str` in `application/service`.
 * [domain.formal.Context](/symbols/domain/formal/Context.md) - What the kernel itself knows about the CURRENT subject, beyond the technical dimensions.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
-* [domain.policy.baseline](/symbols/domain/policy/baseline.md) - `def baseline() -> Workflow` in `domain/policy`.
-* [domain.policy.check_policy](/symbols/domain/policy/check_policy.md) - `def check_policy(model: Workflow) -> list[str]` in `domain/policy`.
+* [domain.policy.check_policy](/symbols/domain/policy/check_policy.md) - Sorted, de-duplicated policy codes of ``model`` under the pack (empty means the model conforms).
 <!-- okf:generated:end links -->

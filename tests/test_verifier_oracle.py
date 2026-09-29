@@ -19,6 +19,7 @@ from eija_studio.application import runtime, verifier
 from eija_studio.domain.evidence import assess_receipt
 from eija_studio.domain.models import SemanticTransaction, Workflow, fingerprint
 from eija_studio.domain.policy import apply_transaction, baseline
+from kernel_support import reject_from
 
 SUBJECT = {"semantic": "s", "implementation": "i", "policy": "p", "environment": "e", "harness": "h"}
 
@@ -56,7 +57,7 @@ def built(tmp_path_factory):
 def candidate(rejection_source: str = "Recommended") -> Workflow:
     model = apply_transaction(baseline(), SemanticTransaction(kind="enable_recommendation"))
     if rejection_source != "Recommended":
-        model = apply_transaction(model, SemanticTransaction(kind="set_rejection_source", rejection_source=rejection_source))
+        model = apply_transaction(model, reject_from(rejection_source))
     return model
 
 

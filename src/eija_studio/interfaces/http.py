@@ -8,7 +8,9 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.exceptions import RequestValidationError
 from pydantic import Field
 from eija_studio.application.diagram_catalog import case_diagrams
-from eija_studio.domain.models import Contract, DomainError, OWNER, SemanticTransaction, LayoutChange, ExecuteCommand
+from eija_studio.domain.models import MEANING_ID, Contract, DomainError, OWNER, LayoutChange, ExecuteCommand
+from eija_studio.domain.pack import Pack
+from eija_studio.domain.transactions import Transaction
 
 # The Studio page keeps this policy. Only /visual-frame, a static document with no API access, relaxes styles
 # (Mermaid writes inline style attributes) and is sandboxed; docs/SECURITY_AND_TRUST.md and ADR-0023 record why.
@@ -25,9 +27,11 @@ class Version(Contract):
 class Propose(Version):
     consent: bool = Field(default=False, strict=True)
 class Select(Version):
-    interpretation: Literal["recommend_only", "final_approval", "confirm_only", "unsupported"]
+    interpretation: str = Field(pattern=MEANING_ID)  # a meaning id of the active pack; the service checks it
+class EditCheck(Contract):
+    transaction: Transaction
 class Edit(Version):
-    transaction: SemanticTransaction
+    transaction: Transaction
 class Layout(Version):
     change: LayoutChange
 class Preview(Version):
@@ -46,6 +50,14 @@ def _set_security_headers(response, path: str) -> None:
     response.headers.update({"Cache-Control": cache, "X-Content-Type-Options": "nosniff",
         "Referrer-Policy": "no-referrer", "X-Frame-Options": "SAMEORIGIN" if framed else "DENY",
         "Content-Security-Policy": FRAME_CSP if framed else PAGE_CSP})
+
+
+def pack_summary(pack: Pack) -> dict[str, object]:
+    """What the page needs to name the domain without hardcoding it: the pack's name, demo request, declared actions
+    (in declaration order) and synthetic fixture actors."""
+    return {"id": pack.id, "name": pack.pack.name, "version": pack.pack.version, "demo_request": pack.fixtures.demo_request,
+            "actions": [a.id for a in pack.actions],
+            "actors": [{"id": a.id, "role": a.role, "active": a.active, "assigned": a.assigned} for a in pack.fixtures.actors]}
 
 
 def create_app(studio, token: str, port: int = 8765) -> FastAPI:
@@ -82,7 +94,8 @@ def create_app(studio, token: str, port: int = 8765) -> FastAPI:
     @app.exception_handler(DomainError)
     async def domain_error(request, exc):
         status = 404 if exc.code == "NOT_FOUND" else 403 if exc.code in {"AUTHORITY_REQUIRED", "EGRESS_CONSENT_REQUIRED"} else 409
-        return JSONResponse({"code": exc.code, "message": exc.message}, status_code=status)
+        body = {"code": exc.code, "message": exc.message} | ({"details": exc.details} if exc.details else {})
+        return JSONResponse(body, status_code=status)
 
     @app.exception_handler(RequestValidationError)
     async def contract_error(request, exc):
@@ -116,7 +129,8 @@ def create_app(studio, token: str, port: int = 8765) -> FastAPI:
         identity = studio.identity_provider()
         return {"version": "0.2.0", "provider": studio.provider.name, "network_enabled": studio.allow_network,
             "provider_networked": studio.provider.networked, "baseline_version": active["version"], "baseline": active["model"],
-            "trusted_fixture": identity["trusted_fixture"], "identity_boundary": "Single local owner; synthetic actors only"}
+            "trusted_fixture": identity["trusted_fixture"], "identity_boundary": "Single local owner; synthetic actors only",
+            "pack": pack_summary(studio.pack)}
 
     @app.get("/api/doctor")
     def doctor():
@@ -146,6 +160,14 @@ def create_app(studio, token: str, port: int = 8765) -> FastAPI:
     def edit(case_id: str, body: Edit):
         return studio.edit(case_id, body.expected_version, body.transaction, OWNER)
 
+    @app.post("/api/cases/{case_id}/edit/check")
+    def edit_check(case_id: str, body: EditCheck):
+        return studio.edit_check(case_id, body.transaction)
+
+    @app.get("/api/cases/{case_id}/affordances")
+    def affordances(case_id: str):
+        return studio.affordances(case_id)
+
     @app.post("/api/cases/{case_id}/layout")
     def layout(case_id: str, body: Layout):
         return studio.layout(case_id, body.expected_version, body.change, OWNER)
@@ -158,7 +180,7 @@ def create_app(studio, token: str, port: int = 8765) -> FastAPI:
     def verify(case_id: str, body: Version):
         return studio.verify(case_id, body.expected_version)
 
-    @app.post("/api/cases/{case_id}/approve")
+    @app.post("/api/cases/{case_id}/approve", summary="Owner decision on the exact revision")
     def approve(case_id: str, body: Approval):
         return studio.approve(case_id, body.expected_version, body.subject_hash, body.answers, body.acknowledge_unknowns, OWNER, body.scope)
 

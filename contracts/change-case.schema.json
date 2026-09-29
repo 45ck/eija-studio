@@ -1,15 +1,96 @@
 {
   "$defs": {
+    "AddState": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "add_state",
+          "title": "Kind",
+          "type": "string"
+        },
+        "state": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "State",
+          "type": "string"
+        },
+        "after": {
+          "anyOf": [
+            {
+              "maxLength": 60,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "After"
+        }
+      },
+      "required": [
+        "kind",
+        "state"
+      ],
+      "title": "AddState",
+      "type": "object"
+    },
+    "AddTransition": {
+      "additionalProperties": false,
+      "description": "A transition performing a declared action; its guards and effects are the action's declared ones.",
+      "properties": {
+        "kind": {
+          "const": "add_transition",
+          "title": "Kind",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[A-Z][A-Z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "action": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "Action",
+          "type": "string"
+        },
+        "from_state": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "From State",
+          "type": "string"
+        },
+        "to_state": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "To State",
+          "type": "string"
+        },
+        "role": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "Role",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "action",
+        "from_state",
+        "to_state",
+        "role"
+      ],
+      "title": "AddTransition",
+      "type": "object"
+    },
     "Alternative": {
       "additionalProperties": false,
       "properties": {
         "interpretation": {
-          "enum": [
-            "recommend_only",
-            "final_approval",
-            "confirm_only",
-            "unsupported"
-          ],
+          "pattern": "^[a-z][a-z0-9_]{0,39}$",
           "title": "Interpretation",
           "type": "string"
         },
@@ -62,31 +143,235 @@
       "title": "Proposal",
       "type": "object"
     },
-    "SemanticTransaction": {
+    "RemoveState": {
       "additionalProperties": false,
       "properties": {
         "kind": {
-          "enum": [
-            "enable_recommendation",
-            "set_rejection_source"
-          ],
+          "const": "remove_state",
           "title": "Kind",
           "type": "string"
         },
-        "rejection_source": {
-          "default": "Recommended",
-          "enum": [
-            "Submitted",
-            "Recommended"
-          ],
-          "title": "Rejection Source",
+        "state": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "State",
           "type": "string"
         }
       },
       "required": [
-        "kind"
+        "kind",
+        "state"
       ],
-      "title": "SemanticTransaction",
+      "title": "RemoveState",
+      "type": "object"
+    },
+    "RemoveTransition": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "remove_transition",
+          "title": "Kind",
+          "type": "string"
+        },
+        "transition": {
+          "pattern": "^[A-Z][A-Z0-9_-]{0,63}$",
+          "title": "Transition",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "transition"
+      ],
+      "title": "RemoveTransition",
+      "type": "object"
+    },
+    "RenameState": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "rename_state",
+          "title": "Kind",
+          "type": "string"
+        },
+        "state": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "State",
+          "type": "string"
+        },
+        "to": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "To",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "state",
+        "to"
+      ],
+      "title": "RenameState",
+      "type": "object"
+    },
+    "RetargetTransition": {
+      "additionalProperties": false,
+      "description": "Move one end of a transition to another state (the drag-and-drop edit).",
+      "properties": {
+        "kind": {
+          "const": "retarget_transition",
+          "title": "Kind",
+          "type": "string"
+        },
+        "transition": {
+          "pattern": "^[A-Z][A-Z0-9_-]{0,63}$",
+          "title": "Transition",
+          "type": "string"
+        },
+        "end": {
+          "enum": [
+            "source",
+            "target"
+          ],
+          "title": "End",
+          "type": "string"
+        },
+        "state": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "transition",
+        "end",
+        "state"
+      ],
+      "title": "RetargetTransition",
+      "type": "object"
+    },
+    "SetEffects": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "set_effects",
+          "title": "Kind",
+          "type": "string"
+        },
+        "transition": {
+          "pattern": "^[A-Z][A-Z0-9_-]{0,63}$",
+          "title": "Transition",
+          "type": "string"
+        },
+        "required_effects": {
+          "items": {
+            "maxLength": 60,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Required Effects",
+          "type": "array"
+        }
+      },
+      "required": [
+        "kind",
+        "transition",
+        "required_effects"
+      ],
+      "title": "SetEffects",
+      "type": "object"
+    },
+    "SetGuards": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "set_guards",
+          "title": "Kind",
+          "type": "string"
+        },
+        "transition": {
+          "pattern": "^[A-Z][A-Z0-9_-]{0,63}$",
+          "title": "Transition",
+          "type": "string"
+        },
+        "guards": {
+          "items": {
+            "enum": [
+              "actor_active",
+              "role_current",
+              "actor_assigned",
+              "state_equals",
+              "expected_version",
+              "operation_binding"
+            ],
+            "type": "string"
+          },
+          "maxItems": 8,
+          "minItems": 1,
+          "title": "Guards",
+          "type": "array"
+        }
+      },
+      "required": [
+        "kind",
+        "transition",
+        "guards"
+      ],
+      "title": "SetGuards",
+      "type": "object"
+    },
+    "SetInitial": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "set_initial",
+          "title": "Kind",
+          "type": "string"
+        },
+        "state": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "state"
+      ],
+      "title": "SetInitial",
+      "type": "object"
+    },
+    "SetRole": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "set_role",
+          "title": "Kind",
+          "type": "string"
+        },
+        "transition": {
+          "pattern": "^[A-Z][A-Z0-9_-]{0,63}$",
+          "title": "Transition",
+          "type": "string"
+        },
+        "role": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "Role",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "transition",
+        "role"
+      ],
+      "title": "SetRole",
       "type": "object"
     },
     "Transition": {
@@ -174,13 +459,11 @@
           "type": "string"
         },
         "id": {
-          "const": "excursion",
-          "default": "excursion",
+          "pattern": "^[a-z][a-z0-9-]{0,39}$",
           "title": "Id",
           "type": "string"
         },
         "initial_state": {
-          "default": "Draft",
           "title": "Initial State",
           "type": "string"
         },
@@ -204,6 +487,8 @@
         }
       },
       "required": [
+        "id",
+        "initial_state",
         "states",
         "transitions"
       ],
@@ -303,7 +588,53 @@
     },
     "transactions": {
       "items": {
-        "$ref": "#/$defs/SemanticTransaction"
+        "discriminator": {
+          "mapping": {
+            "add_state": "#/$defs/AddState",
+            "add_transition": "#/$defs/AddTransition",
+            "remove_state": "#/$defs/RemoveState",
+            "remove_transition": "#/$defs/RemoveTransition",
+            "rename_state": "#/$defs/RenameState",
+            "retarget_transition": "#/$defs/RetargetTransition",
+            "set_effects": "#/$defs/SetEffects",
+            "set_guards": "#/$defs/SetGuards",
+            "set_initial": "#/$defs/SetInitial",
+            "set_role": "#/$defs/SetRole"
+          },
+          "propertyName": "kind"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/$defs/AddState"
+          },
+          {
+            "$ref": "#/$defs/RenameState"
+          },
+          {
+            "$ref": "#/$defs/RemoveState"
+          },
+          {
+            "$ref": "#/$defs/SetInitial"
+          },
+          {
+            "$ref": "#/$defs/AddTransition"
+          },
+          {
+            "$ref": "#/$defs/RetargetTransition"
+          },
+          {
+            "$ref": "#/$defs/RemoveTransition"
+          },
+          {
+            "$ref": "#/$defs/SetRole"
+          },
+          {
+            "$ref": "#/$defs/SetGuards"
+          },
+          {
+            "$ref": "#/$defs/SetEffects"
+          }
+        ]
       },
       "title": "Transactions",
       "type": "array"

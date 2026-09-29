@@ -14,9 +14,14 @@ sources:
 - resource: repo://src/eija_studio/domain/policy.py#check_policy
   title: domain/policy.py
   hash_method: ast-v2
-  sha256: 228e5d92eb7d7b3724d0e5fa681689a13ce9e856eaff4c5287b09930b30b510d
+  sha256: 9ca7b2de18533e6f28abd88a515f3dfa1b5528ed03d39a812e92ad86401135b4
 description_override: Returns the sorted policy error codes of a workflow; an empty list means the model stays inside the protected excursion policy.
-notes_baseline: f259ee95657957c18bba38a4bb459a633a66198276d2941a63108c5028ca8856
+notes_baseline: 172de13737d848ef5e10c86c3294d9a43774a6b543068e153e34bd957b60b536
+verified:
+- by: process:eija-wbs-1.3-agent
+  at: '2026-09-29T08:20:47Z'
+  notes_sha256: e4d9fc5fc96451b56c4bda65da62b3a0c6a0800b09ecd5269faafd16a7a5f6d1
+  sources_sha256: 172de13737d848ef5e10c86c3294d9a43774a6b543068e153e34bd957b60b536
 ---
 
 # domain.policy.check_policy
@@ -26,40 +31,40 @@ notes_baseline: f259ee95657957c18bba38a4bb459a633a66198276d2941a63108c5028ca8856
 |---|---|
 | Kind | function |
 | Module | [`domain/policy`](/modules/domain/policy.md) |
-| Signature | `def check_policy(model: Workflow) -> list[str]` |
+| Signature | `def check_policy(model: Workflow, pack: Pack \| None=None) -> list[str]` |
 | Code | `repo://src/eija_studio/domain/policy.py#check_policy` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
-_The source carries no docstring._
+~~~text
+Sorted, de-duplicated policy codes of ``model`` under the pack (empty means the model conforms).
+~~~
 <!-- okf:generated:end facts -->
 
 ## Notes
 
-**Invariant.** The protected policy is the only definition of what an excursion workflow may look like. Roles, source and target states, mandatory guards and required/forbidden effects of every transition are compared with fixed expectations, so a candidate cannot gain authority by editing the model or by an AI proposal.
+**Invariant.** The domain pack is the only definition of what a workflow may look like; this function is generic. It reports:
+* `UNSUPPORTED_ACTION` for a transition whose action the pack does not declare;
+* `GUARD_POLICY:<action>` / `EFFECT_POLICY:<action>` when a transition's guards or required effects differ from the declared action, or it does not declare every pack-forbidden effect forbidden;
+* the code of every broken pack law ([domain.laws](/modules/domain/laws.md)): for the excursion pack `UNSUPPORTED_WORKFLOW_SHAPE`, `PROTECTED_AUTHORITY:<action>`, `PROTECTED_STATE:<action>`, `UNSUPPORTED_REJECTION_SOURCE`.
 
-* Candidate detection: a workflow with a `Recommend` transition is a *candidate* and must have exactly the five actions and five states; otherwise exactly the four baseline actions and states. Anything else is `UNSUPPORTED_WORKFLOW_SHAPE`.
-* `Approve` moves to `Approved` and must be the Registrar's; `Recommend` is the Teacher's and additionally needs the `actor_assigned` guard. A Teacher can never approve: `PROTECTED_AUTHORITY:<action>`.
-* `Reject` may start from `Submitted` or `Recommended` (the one owner-selectable parameter, see [apply_transaction](/symbols/domain/policy/apply_transaction.md)); any other source is `UNSUPPORTED_REJECTION_SOURCE`.
-* Every transition must carry [FORBIDDEN](/symbols/domain/policy/FORBIDDEN.md) effects and exactly the required effects in [EFFECTS](/symbols/domain/policy/EFFECTS.md).
+**What it establishes.** Structural conformance of one model to the pack. For the excursion pack the codes equal the pre-pack hand-written policy on the examples and on all 2572 SMT differential candidates (tests/test_pack.py), and a Z3 proof covers its transaction grammar ([SMT proof](/verification/smt-proof.md)). **What it does not.** That the pack's laws are the right laws.
 
-**What it establishes.** Structural conformance of one model to this policy. **What it does not.** Soundness over the whole transaction grammar (a planned [SMT proof](/verification/smt-proof.md)), or anything about another domain: the policy deliberately rejects arbitrary domains.
-
-Used by [ensure_policy](/symbols/domain/policy/ensure_policy.md), which turns findings into a `POLICY_BLOCKED` error, and by the compiler's review packet.
+Used by [ensure_policy](/symbols/domain/policy/ensure_policy.md), which turns findings into a `POLICY_BLOCKED` error with `{codes, refs}`, and by the compiler's review packet.
 
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [domain.models.BASE_GUARDS](/symbols/domain/models/BASE_GUARDS.md) - Constant `BASE_GUARDS` in `domain/models`.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
-* [domain.policy.EFFECTS](/symbols/domain/policy/EFFECTS.md) - Constant `EFFECTS` in `domain/policy`.
-* [domain.policy.FORBIDDEN](/symbols/domain/policy/FORBIDDEN.md) - Constant `FORBIDDEN` in `domain/policy`.
+* [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
+* [domain.policy.declared_codes](/symbols/domain/policy/declared_codes.md) - Every transition must perform a declared action, with exactly its declared guards and required effects, and must declare every pack-forbidden effect forbidden.
+* [domain.policy.law_violations](/symbols/domain/policy/law_violations.md) - `def law_violations(model: Workflow, pack: Pack | None=None) -> list[Violation]` in `domain/policy`.
 
 ## Referenced by
 
 * [application.compiler.compile_case](/symbols/application/compiler/compile_case.md) - `def compile_case(case: ChangeCase, identity: dict[str, Any], authenticator: Callable[[dict[str, Any]], bool],…` in `application/compiler`.
 * [application.diagrams.policy_violations](/symbols/application/diagrams/policy_violations.md) - Codes `domain.policy.check_policy` reports for `workflow` (empty: the protected policy accepts it).
 * [application.service.Studio.formal_view](/symbols/application/service/Studio.formal_view.md) - Formal evidence for a bare workflow (``eija compile``): collected and sealed in memory, never stored, never a decision.
-* [domain.policy.ensure_policy](/symbols/domain/policy/ensure_policy.md) - `def ensure_policy(model: Workflow) -> None` in `domain/policy`.
+* [domain.policy.ensure_policy](/symbols/domain/policy/ensure_policy.md) - `def ensure_policy(model: Workflow, pack: Pack | None=None) -> None` in `domain/policy`.
 <!-- okf:generated:end links -->

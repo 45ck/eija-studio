@@ -9,7 +9,7 @@ import httpx
 from eija_studio.application.ports import ProviderResult
 from eija_studio.domain.models import DomainError, Workflow, canonical
 
-from ._common import SYSTEM, parse_proposal, proposal_schema, safe_usage
+from ._common import parse_proposal, proposal_schema, safe_usage, system_prompt
 from ._http import post_json
 
 ENDPOINT = "https://openrouter.ai/api/v1/chat/completions"
@@ -48,7 +48,7 @@ class OpenRouterProvider:
 
     def _body(self, request: str, model: Workflow) -> dict[str, Any]:
         user = canonical({"request": request, "baseline": model.model_dump(mode="json")})
-        return {"model": self.model, "messages": [{"role": "system", "content": SYSTEM}, {"role": "user", "content": user}],
+        return {"model": self.model, "messages": [{"role": "system", "content": system_prompt(model)}, {"role": "user", "content": user}],
                 "max_tokens": 1600, "stream": False, "provider": {"require_parameters": True},
                 "response_format": {"type": "json_schema", "json_schema": {"name": "eija_proposal", "strict": True,
                                                                             "schema": proposal_schema()}}}
@@ -59,5 +59,5 @@ class OpenRouterProvider:
         headers = {"Authorization": "Bearer " + self._key, "X-OpenRouter-Title": "EIJA Studio"}
         payload = post_json(ENDPOINT, self._body(request, model), headers, transport=self.transport, timeout=self.timeout,
                             label="OpenRouter")
-        proposal = parse_proposal(_reply_content(payload))
+        proposal = parse_proposal(_reply_content(payload), model)
         return ProviderResult(proposal, self.name, str(payload.get("model", self.model)), _reply_usage(payload), True)

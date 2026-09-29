@@ -16,5 +16,7 @@
 * [domain.evidence.assess_formal_receipt](assess_formal_receipt.md) - Per-kind admissibility (ADR-0145): envelope checks in the runtime matrix's order, then the kind's own check.
 * [domain.evidence.assess_receipt](assess_receipt.md) - Recomputes a receipt's applicability from its raw observations; a supplied green status is never trusted.
 * [domain.evidence.combine](combine.md) - The status algebra: authenticated PASS and FAIL never average (CONFLICT); FAIL beats PASS-less states; STALE (a receipt for another subject), then NOT_RUN (a prerequisite was missing), then UNKNOWN.
+* [domain.evidence.expected_shape](expected_shape.md) - The runtime matrix a receipt must cover under ``pack``: exactly ``model``'s states when it is known.
 * [domain.evidence.intact_artifact](intact_artifact.md) - The raw artifact of an authentic, hash-consistent, known-protocol receipt of this kind, whatever its subject.
 * [domain.evidence.receipt_status](receipt_status.md) - One receipt's applicability by its OWN declared claim and kind; an unauthentic receipt is FAIL.
+* [domain.evidence.runtime_shape](runtime_shape.md) - `def runtime_shape(context: Context | None) -> RuntimeShape` in `domain/evidence`.

@@ -32,13 +32,14 @@ from jsonschema import Draft202012Validator
 from pydantic import ValidationError
 
 from eija_studio.domain.change_case import ChangeCase
-from eija_studio.domain.models import BASE_GUARDS, OWNER, Alternative, ExecuteCommand, LayoutChange, Proposal, SemanticTransaction, Workflow
+from eija_studio.domain.models import BASE_GUARDS, OWNER, Alternative, ExecuteCommand, LayoutChange, Proposal, Workflow
+from eija_studio.domain.transactions import RetargetTransition, SetRole, TransactionDocument
 from .property_strategies import workflows
 from .property_support import REQUEST, ROOT, ephemeral_studio, examples, scratch_directory
 
 CONTRACTS = {
     "change-case": ChangeCase, "execute-command": ExecuteCommand, "layout-change": LayoutChange,
-    "proposal": Proposal, "semantic-transaction": SemanticTransaction, "workflow": Workflow,
+    "proposal": Proposal, "semantic-transaction": TransactionDocument, "workflow": Workflow,
 }
 
 # Rules enforced by ``model_validator`` that JSON Schema (structural) cannot state. A schema-valid
@@ -316,8 +317,11 @@ MODEL_INSTANCES = {
         actor_id=st.text(min_size=1, max_size=80), instance_id=st.text(min_size=1, max_size=80),
         action=st.text(min_size=1, max_size=60), expected_version=st.integers(0, 2**40)),
     "layout-change": st.builds(LayoutChange, node=st.text(min_size=1, max_size=60), x=st.integers(0, 2000), y=st.integers(0, 2000)),
-    "semantic-transaction": st.builds(SemanticTransaction, kind=st.sampled_from(["enable_recommendation", "set_rejection_source"]),
-                                      rejection_source=st.sampled_from(["Submitted", "Recommended"])),
+    "semantic-transaction": st.one_of(
+        st.builds(RetargetTransition, kind=st.just("retarget_transition"), transition=st.from_regex(r"[A-Z][A-Z0-9_-]{0,20}", fullmatch=True),
+                  end=st.sampled_from(["source", "target"]), state=st.text(min_size=1, max_size=60)),
+        st.builds(SetRole, kind=st.just("set_role"), transition=st.from_regex(r"[A-Z][A-Z0-9_-]{0,20}", fullmatch=True),
+                  role=st.text(min_size=1, max_size=60))).map(TransactionDocument),
     "proposal": st.builds(
         Proposal, summary=st.text(min_size=1, max_size=200),
         alternatives=st.lists(st.builds(Alternative, interpretation=st.sampled_from(["recommend_only", "final_approval", "confirm_only", "unsupported"]),

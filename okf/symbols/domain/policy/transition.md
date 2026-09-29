@@ -14,9 +14,14 @@ sources:
 - resource: repo://src/eija_studio/domain/policy.py#transition
   title: domain/policy.py
   hash_method: ast-v2
-  sha256: e4abc97bf36ffd9435e5dc08fe17baa09e44fbd8283e60bbd582577929979341
+  sha256: 5cfd823f12167550486daf9b77e0f38a281690f2a3508340ff2b0006c4a4d8a8
 description_override: Builds a Transition whose guards and effects come from the protected tables, never from caller input.
-notes_baseline: 131f5b3ffb1c32f6fdfbae407b359fda148e5335ad64b4d62500a7929308ff58
+notes_baseline: 729b494d9a90757214d89e5ab2d79f6cfd31409c0a04ac52aacda3d1f5e2424c
+verified:
+- by: process:eija-wbs-1.3-agent
+  at: '2026-09-29T08:20:47Z'
+  notes_sha256: e4dcb5910fdfcdf2e8d6b9ab45a46c39ed0d163d496f03c58bb10fb394f31b2e
+  sources_sha256: 729b494d9a90757214d89e5ab2d79f6cfd31409c0a04ac52aacda3d1f5e2424c
 ---
 
 # domain.policy.transition
@@ -26,29 +31,25 @@ notes_baseline: 131f5b3ffb1c32f6fdfbae407b359fda148e5335ad64b4d62500a7929308ff58
 |---|---|
 | Kind | function |
 | Module | [`domain/policy`](/modules/domain/policy.md) |
-| Signature | `def transition(action: str, source: str, target: str, role: str) -> Transition` |
+| Signature | `def transition(action: str, source: str, target: str, role: str, pack: Pack \| None=None, *, transition_id: str \| None=None) -> Transition` |
 | Code | `repo://src/eija_studio/domain/policy.py#transition` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
-_The source carries no docstring._
+~~~text
+A transition for a declared action, with the action's declared guards and effects and the pack's forbidden effects.
+~~~
 <!-- okf:generated:end facts -->
 
 ## Notes
 
-`TR-<ACTION>` id; guards are [BASE_GUARDS](/symbols/domain/models/BASE_GUARDS.md) plus `actor_assigned` for `Recommend`; required effects come from [EFFECTS](/symbols/domain/policy/EFFECTS.md) and forbidden effects from [FORBIDDEN](/symbols/domain/policy/FORBIDDEN.md).
+A transition for an action the pack declares: id `TR-<ACTION>` unless given, guards and required effects from the action's declaration, forbidden effects from the pack. An undeclared action is `UNSUPPORTED_ACTION`.
 
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [domain.models.BASE_GUARDS](/symbols/domain/models/BASE_GUARDS.md) - Constant `BASE_GUARDS` in `domain/models`.
+* [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [domain.models.Transition](/symbols/domain/models/Transition.md) - `class Transition(Contract)` in `domain/models`.
-* [domain.policy.EFFECTS](/symbols/domain/policy/EFFECTS.md) - Constant `EFFECTS` in `domain/policy`.
-* [domain.policy.FORBIDDEN](/symbols/domain/policy/FORBIDDEN.md) - Constant `FORBIDDEN` in `domain/policy`.
-
-## Referenced by
-
-* [domain.policy.apply_transaction](/symbols/domain/policy/apply_transaction.md) - `def apply_transaction(model: Workflow, tx: SemanticTransaction) -> Workflow` in `domain/policy`.
-* [domain.policy.baseline](/symbols/domain/policy/baseline.md) - `def baseline() -> Workflow` in `domain/policy`.
+* [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
 <!-- okf:generated:end links -->

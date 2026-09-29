@@ -6,8 +6,10 @@ Two kinds of check, both computed only from observed database snapshots and the 
                     commits only when every guard holds, rejected/replayed commands leave no trace,
                     a commit changes exactly state + version + operation + declared effects.
 * state properties  (any reached state): version counts commits, the audit trail is a valid run of the
-                    model, decisions are made only by Registrar, approval follows recommendation,
-                    forbidden effects never appear, outbox rows correspond to committed Recommends.
+                    model, the pack's laws hold on the recorded run (``PACK-LAWS-HOLD-ON-RUN``: the run is rebuilt
+                    from the audit and outbox rows and judged by ``domain.laws.evaluate_run``, the kernel's own law
+                    evaluator, so there is no second encoding of the laws here; the pack's forbidden effects are one
+                    more ``forbidden_effects`` law), outbox rows correspond to committed notification effects.
 
 The reference model is a small independent re-statement of the intended semantics, written by the
 same authors as the runtime and verifier. It is a same-author oracle, not an independent one.
@@ -20,15 +22,16 @@ import json
 from dataclasses import dataclass, field
 from typing import Any
 
+from eija_studio.domain.laws import ForbiddenEffects, Step, evaluate_run
 from eija_studio.domain.models import Transition, Workflow
+from eija_studio.domain.pack import Pack, default_pack
 
 from .snapshot import Snapshot
 
 CASE = "bmc"
 UNKNOWN_ACTOR = "ghost"
 UNMODELLED_ACTION = "Bogus"
-DECISION_KINDS = ("Audit:ExcursionApproved", "Audit:ExcursionRejected")
-FORBIDDEN_FRAGMENTS = ("PaymentCaptured", "ParentDataExported")
+LAWS_ON_RUN = "PACK-LAWS-HOLD-ON-RUN"
 
 
 @dataclass(frozen=True)
@@ -187,7 +190,58 @@ def _commit_effects(pre: Snapshot, cmd: Command, t: Transition, outcome: Outcome
 # State properties
 # ------------------------------------------------------------------------------------------------
 
-def check_state(model: Workflow, snap: Snapshot) -> list[Violation]:
+def _effect_names(kind: str) -> tuple[str, ...]:
+    """A recorded effect row by its id and by its bare name (``Audit:X`` is also ``X``), so a namespaced row of a
+    forbidden effect matches the pack's bare forbidden id."""
+    bare = kind.rsplit(":", 1)[-1]
+    return (kind,) if bare == kind else (kind, bare)
+
+
+def _rows_by_operation(snap: Snapshot) -> tuple[list[str], dict[str, list[tuple[str, str | None, bool]]]]:
+    """Audit and outbox rows grouped by operation id, operations in audit (commit) order, outbox-only ones last:
+    (kind, recording actor's role or None, is an audit row)."""
+    roles = {a[0]: a[1] for a in snap.actors}
+    rows: dict[str, list[tuple[str, str | None, bool]]] = {}
+    for kind, body in snap.audit:
+        b = json.loads(body)
+        rows.setdefault(str(b.get("operation_id")), []).append((kind, roles.get(b.get("actor_id")), True))
+    for row in snap.outbox:
+        rows.setdefault(str(row[2]), []).append((row[3], None, False))
+    return list(rows), rows
+
+
+def recorded_run(model: Workflow, snap: Snapshot) -> list[Step]:
+    """The run the database records: one step per operation, its transition named by its AUDIT rows (the outbox only
+    adds effects), with the recording actor's role and the state the replayed trail was in. An operation whose rows
+    name no model transition becomes a step with no action and no states, which only effect laws can judge."""
+    audit_of = {e: t for t in model.transitions for e in t.required_effects}
+    order, rows = _rows_by_operation(snap)
+    steps, state = [], model.initial_state
+    for op in order:
+        role = next((r for _, r, _ in rows[op] if r is not None), "")
+        t = next((audit_of[k] for k, _, audit in rows[op] if audit and k in audit_of), None)
+        effects = tuple(n for k, _, _ in rows[op] for n in _effect_names(k))
+        if t is None:
+            steps.append(Step(action="", role=role, source="", target="", effects=effects))
+            continue
+        steps.append(Step(action=t.action, role=role, source=state, target=t.to_state, effects=effects))
+        state = t.to_state
+    return steps
+
+
+def law_violations_on_run(model: Workflow, snap: Snapshot, pack: Pack | None = None) -> list[Violation]:
+    """``PACK-LAWS-HOLD-ON-RUN``: ``evaluate_run`` over the recorded run, with the pack's forbidden effects as one more law."""
+    p = pack if pack is not None else default_pack()
+    laws = [*p.laws]
+    if p.effects.forbidden:
+        laws.append(ForbiddenEffects(kind="forbidden_effects", id="pack-forbidden-effects", code="EFFECT_POLICY",
+                                     effects=p.effects.forbidden))
+    actions = {t.action for t in model.transitions}
+    found = evaluate_run(laws, model.initial_state, recorded_run(model, snap), actions)
+    return [Violation(LAWS_ON_RUN, f"law {v.law} ({v.code}) at {', '.join(v.refs[1:])}") for v in found]
+
+
+def check_state(model: Workflow, snap: Snapshot, pack: Pack | None = None) -> list[Violation]:
     out: list[Violation] = []
 
     def bad(invariant: str, detail: str) -> None:
@@ -197,16 +251,12 @@ def check_state(model: Workflow, snap: Snapshot) -> list[Violation]:
         bad("ONE-INSTANCE", f"{len(snap.instances)} instances")
         return out
     roles = {a[0]: a[1] for a in snap.actors}
-    transitions = {t.action: t for t in model.transitions}
     audit_actions = {e: t for t in model.transitions for e in t.required_effects if e.startswith("Audit:")}
     events = [(kind, json.loads(body)) for kind, body in snap.audit]
     if snap.state not in model.states:
         bad("STATE-IN-MODEL", snap.state)
     if snap.version != len(snap.operations):
         bad("VERSION-COUNTS-COMMITS", f"version {snap.version} but {len(snap.operations)} recorded operations")
-    for kind in [k for k, _ in events] + [r[3] for r in snap.outbox]:
-        if any(f in kind for f in FORBIDDEN_FRAGMENTS):
-            bad("NO-FORBIDDEN-EFFECT", kind)
     allowed_outbox = {e for t in model.transitions for e in t.required_effects if e.startswith("Notification:")}
     if any(k not in audit_actions for k, _ in events) or any(r[3] not in allowed_outbox for r in snap.outbox):
         bad("EFFECTS-DECLARED-BY-MODEL", "an audit/outbox kind outside the model's declared effects")
@@ -223,24 +273,28 @@ def check_state(model: Workflow, snap: Snapshot) -> list[Violation]:
     else:
         if state != snap.state:
             bad("AUDIT-TRAIL-IS-A-VALID-RUN", f"trail ends in {state} but the instance is {snap.state}")
-    # Authority in the record.
-    seen: list[str] = []
+    # Authority in the record: the recording actor holds the transition's role, and the pack's laws hold on the run.
     for kind, body in events:
         t = audit_actions.get(kind)
         actor_role = roles.get(body.get("actor_id"))
-        if kind in DECISION_KINDS and actor_role != "Registrar":
-            bad("DECISION-ONLY-BY-REGISTRAR", f"{kind} recorded for {body.get('actor_id')} ({actor_role})")
         if t is not None and actor_role != t.role:
             bad("AUDIT-ACTOR-HOLDS-TRANSITION-ROLE", f"{kind} recorded for {body.get('actor_id')} ({actor_role}), needs {t.role}")
-        if kind == "Audit:ExcursionApproved" and "Recommend" in transitions and "Audit:ExcursionRecommended" not in seen:
-            bad("APPROVAL-FOLLOWS-RECOMMENDATION", "approved without an earlier recommendation in the trail")
-        seen.append(kind)
-    recommended = sum(k == "Audit:ExcursionRecommended" for k, _ in events)
-    if len(snap.outbox) != recommended * len(allowed_outbox) or len({r[2] for r in snap.outbox}) != recommended:
-        bad("OUTBOX-MATCHES-COMMITTED-RECOMMENDS", f"{len(snap.outbox)} outbox rows for {recommended} recommendations")
+    out.extend(law_violations_on_run(model, snap, pack))
+    out.extend(_outbox_matches(model, events, snap))
     if {e[1].get("operation_id") for e in events} - {o[0] for o in snap.operations}:
         bad("AUDIT-REFERENCES-RECORDED-OPERATION", "audit entry for an operation that was never recorded")
     return out
+
+
+def _outbox_matches(model: Workflow, events: list[tuple[str, dict[str, Any]]], snap: Snapshot) -> list[Violation]:
+    """The outbox holds exactly the declared notification effects of the committed operations, one row each."""
+    audit_actions = {e: t for t in model.transitions for e in t.required_effects if e.startswith("Audit:")}
+    committed = {str(b.get("operation_id")): audit_actions[k] for k, b in events if k in audit_actions}
+    want = sorted((op, e) for op, t in committed.items() for e in t.required_effects if e.startswith("Notification:"))
+    got = sorted((str(r[2]), str(r[3])) for r in snap.outbox)
+    if got == want:
+        return []
+    return [Violation("OUTBOX-MATCHES-COMMITTED-NOTIFICATIONS", f"{len(got)} outbox rows for {len(want)} declared notifications")]
 
 
 @dataclass

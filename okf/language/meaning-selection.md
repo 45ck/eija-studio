@@ -32,5 +32,7 @@ Source: `repo://docs/architecture/ARCHITECTURE.md#meaning-selection`.
 Performed by [Studio.select](/symbols/application/service/Studio.select.md) with the `select` capability. The supported meanings are in [CANONICAL_OPTIONS](/symbols/domain/policy/CANONICAL_OPTIONS.md); `final_approval` stays blocked.
 
 <!-- okf:generated:begin links -->
-_No generated cross-references._
+## Realised in code
+
+* [domain.pack.Meaning](/symbols/domain/pack/Meaning.md) - One interpretation of a request.
 <!-- okf:generated:end links -->

@@ -4,8 +4,9 @@ from dataclasses import dataclass
 from itertools import product
 from typing import Any, Callable
 from .evidence_kinds import KINDS
-from .formal import FAIL, FORMAL_PRODUCER, NOT_RUN, STALE, UNKNOWN, Assessment, Context, KindSpec, Malformed, not_run_reason
-from .models import fingerprint
+from .formal import FAIL, FORMAL_PRODUCER, NOT_RUN, STALE, UNKNOWN, Assessment, Context, KindSpec, Malformed, RuntimeShape, not_run_reason
+from .models import Workflow, fingerprint
+from .pack import Pack, default_pack, state_sets
 
 TECHNICAL_DIMENSIONS = ("semantic", "implementation", "policy", "environment", "harness")
 RUNTIME_MATRIX = ("runtime_matrix", "integration_test")
@@ -36,13 +37,11 @@ def assess_receipt(receipt: dict[str, Any], subject: dict[str, Any], claim: str,
     matrix = artifact.get("matrix")
     if not isinstance(matrix, dict) or set(matrix) != {"actors", "states", "actions"}:
         return "FAIL"
-    actors = {"teacher-assigned", "teacher-unassigned", "teacher-revoked", "registrar", "viewer"}
-    actions = {"Submit", "Recommend", "Approve", "Reject", "Revise"}
-    baseline_states = {"Draft", "Submitted", "Approved", "Rejected"}
     if any(not isinstance(v, list) or not all(isinstance(x, str) for x in v) or len(v) != len(set(v)) for v in matrix.values()):
         return "FAIL"
-    states = set(matrix["states"])
-    if set(matrix["actors"]) != actors or set(matrix["actions"]) != actions or states not in (baseline_states, baseline_states | {"Recommended"}):
+    shape = runtime_shape(context)
+    actors, actions, states = set(matrix["actors"]), set(matrix["actions"]), set(matrix["states"])
+    if actors != shape.actors or actions != shape.actions or states not in shape.state_sets:
         return "FAIL"
     required_keys = set(product(actors, states, actions))
     observed_keys = []
@@ -67,6 +66,16 @@ def assess_receipt(receipt: dict[str, Any], subject: dict[str, Any], claim: str,
     return "PASS" if all(c["expected"] == c["actual"] for c in cells) else "FAIL"
 
 
+def expected_shape(pack: Pack, model: Workflow | None = None) -> RuntimeShape:
+    """The runtime matrix a receipt must cover under ``pack``: exactly ``model``'s states when it is known."""
+    states = (frozenset(model.states),) if model is not None else state_sets(pack)
+    return RuntimeShape(frozenset(a.id for a in pack.fixtures.actors), frozenset(a.id for a in pack.actions), states)
+
+
+def runtime_shape(context: Context | None) -> RuntimeShape:
+    return context.runtime if context is not None and context.runtime is not None else expected_shape(default_pack())
+
+
 def combine(statuses: list[str]) -> str:
     """The status algebra: authenticated PASS and FAIL never average (CONFLICT); FAIL beats PASS-less states;
     STALE (a receipt for another subject), then NOT_RUN (a prerequisite was missing), then UNKNOWN."""
@@ -81,9 +90,11 @@ def combine(statuses: list[str]) -> str:
 
 
 def aggregate_status(
-    receipts: list[dict[str, Any]], subject: dict[str, Any], authenticator: Callable[[dict[str, Any]], bool]
+    receipts: list[dict[str, Any]], subject: dict[str, Any], authenticator: Callable[[dict[str, Any]], bool],
+    context: Context | None = None,
 ) -> str:
-    return combine([assess_receipt(r, subject, "runtime_matrix", "integration_test") if authenticator(r) else "FAIL" for r in receipts])
+    return combine([assess_receipt(r, subject, "runtime_matrix", "integration_test", context) if authenticator(r) else "FAIL"
+                    for r in receipts])
 
 
 def assess_formal_receipt(receipt: dict[str, Any], subject: dict[str, Any], claim: str, kind: str,

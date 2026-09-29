@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/diagrams.py#LEGEND_TEXT
   title: application/diagrams.py
   hash_method: ast-v2
-  sha256: 6473554e6619aa5c229b731ff7a57e2f2a2a6ca7ae9539331f3fa1ffad0955c0
-notes_baseline: 2a0812fc8d0bc6348e9042a975ec629ef81e5927aa399445e84ad4d990ea98aa
+  sha256: 9ff9c89553eead22c057472586f25e98a990ebdfb0b49a4e5eb2f2a3d7b204cf
+notes_baseline: ac08e0001a81ff3b5fe7763a424a2cda261d65370d9e39937cf6ef820e3bb14d
 ---
 
 # application.diagrams.LEGEND_TEXT

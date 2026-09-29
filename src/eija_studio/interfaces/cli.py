@@ -5,8 +5,8 @@ from tempfile import TemporaryDirectory
 from pydantic import ValidationError
 from eija_studio import __version__
 from eija_studio.bootstrap import build_studio, KEYED_PROVIDERS, PROVIDER_NAMES
-from eija_studio.domain.models import Workflow, SemanticTransaction, DomainError, OWNER, fingerprint
-from eija_studio.domain.policy import baseline, apply_transaction, check_policy, projections
+from eija_studio.domain.models import Workflow, DomainError, OWNER, fingerprint
+from eija_studio.domain.policy import baseline, check_policy, first_supported_meaning, projections
 from eija_studio.domain.impact import model_impact
 from eija_studio.application.compiler import subject_for
 from eija_studio.application.verifier import verify_runtime
@@ -224,10 +224,10 @@ def main(argv=None) -> int:
         elif args.command == "demo":
             if args.provider != "offline":
                 raise DomainError("CONFIGURATION", "demo is deliberately offline; use propose for a live provider test")
-            c = studio.create("Let teachers sign off excursions.")
+            c = studio.create(studio.pack.fixtures.demo_request)
             c = studio.propose(c["id"], c["version"])
-            # Explicit scripted fixture choice, NOT an actual human authorisation.
-            c = studio.select(c["id"], c["version"], "recommend_only", OWNER)
+            # Explicit scripted fixture choice (the pack's first supported meaning), NOT an actual human authorisation.
+            c = studio.select(c["id"], c["version"], first_supported_meaning(studio.pack), OWNER)
             c = studio.verify(c["id"], c["version"])
             data = studio.export(c["id"])
             data["demo_note"] = "Scripted fixture meaning selection. No human approval or baseline application occurred."

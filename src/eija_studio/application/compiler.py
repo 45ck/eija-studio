@@ -8,7 +8,8 @@ from eija_studio.domain.models import Workflow, fingerprint
 from eija_studio.domain.change_case import ChangeCase
 from eija_studio.domain.policy import projections, check_policy, meaning_questions
 from eija_studio.domain.impact import model_impact
-from eija_studio.domain.evidence import aggregate_status, receipt_status
+from eija_studio.domain.evidence import aggregate_status, expected_shape, receipt_status
+from eija_studio.domain.pack import Pack, default_pack
 from eija_studio.domain.formal import Context
 from .formal import packet_view
 
@@ -18,19 +19,25 @@ def subject_for(model: Workflow, layout: dict[str, Any], identity: dict[str, Any
         "semantic": model.semantic_hash, "presentation": fingerprint(layout)}
 
 
+def _resolve(pack: Pack | None) -> Pack:
+    return pack if pack is not None else default_pack()
+
+
 def compile_case(
     case: ChangeCase, identity: dict[str, Any], authenticator: Callable[[dict[str, Any]], bool],
-    active_version: int, scope: str = "local-demo",
+    active_version: int, scope: str = "local-demo", pack: Pack | None = None,
 ) -> dict[str, Any]:
+    pack = _resolve(pack)
     if case.candidate is None:
         return {"eligible": False, "status": "BLOCKED", "blockers": ["MEANING_REQUIRED"], "human_understanding": "UNKNOWN"}
     model = case.candidate
     subject = subject_for(model, case.layout, identity)
     impact = model_impact(case.baseline, model)
-    policy_errors = check_policy(model)
-    evidence = aggregate_status(list(case.receipts), subject, authenticator)
-    context = Context(candidate_semantic=model.semantic_hash, baseline_semantic=case.baseline.semantic_hash)
-    formal = packet_view(list(case.receipts), subject, authenticator, context, policy_errors)
+    policy_errors = check_policy(model, pack)
+    context = Context(candidate_semantic=model.semantic_hash, baseline_semantic=case.baseline.semantic_hash,
+                      runtime=expected_shape(pack, model))
+    evidence = aggregate_status(list(case.receipts), subject, authenticator, context)
+    formal = packet_view(list(case.receipts), subject, authenticator, context, policy_errors, pack)
     blockers = []
     if policy_errors:
         blockers.append("POLICY_BLOCKED")
@@ -57,7 +64,7 @@ def compile_case(
         "human_understanding": "UNKNOWN", "core_status": "RELEASE_FIXTURE_MATCH" if identity["trusted_fixture"] else "SOURCE_REVIEW_REQUIRED",
         "receipt_applicability": [{"id": r.get("id"), "kind": r.get("kind"), "status": receipt_status(r, subject, authenticator, context)}
              for r in case.receipts],
-        "questions": meaning_questions(model),
+        "questions": meaning_questions(model, pack),
         "limitations": ["Human comprehension is not established by these checks or questions.",
             "Hash match identifies the shipped fixture; it is not an independent core review.",
             "Local owner is a single-user capability, not institutional identity or separation of duties.",

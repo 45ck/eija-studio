@@ -84,7 +84,7 @@ _No curated notes yet._
 
 * [application.service](/modules/application/service.md) - Module `application/service` (no module docstring).
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
-* [domain.policy](/modules/domain/policy.md) - Protected excursion policy.
+* [domain.policy](/modules/domain/policy.md) - Generic policy: coherence with a domain pack's declared action catalog, the pack's laws, and declared effects.
 * [interfaces.agent_config](/modules/interfaces/agent_config.md) - Copy-paste MCP client configuration for `eija mcp --print-config <client>`.
 * [interfaces.agent_policy](/modules/interfaces/agent_policy.md) - SDK-free policy data for the agent adapter: which persistence operations an agent adapter must never touch.
 <!-- okf:generated:end links -->

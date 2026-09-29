@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/diagram_catalog.py
   title: application/diagram_catalog.py
   hash_method: ast-api-v1
-  sha256: 54ecee0a717158be6c5659abe1e89363ca991edbcaf4d267d13ad4e8ff42c1ee
-notes_baseline: 544fc8f1b471b4e41cc09fdcad5407dfc2860580c40db37be709380e9814142e
+  sha256: 5fa272533b65b0a98dcc6d61c21cc9fbf3aea6193ecded5702f0b5e62a876085
+notes_baseline: 8405959ab3887d432c657083c1abe7ee619cd08c199a4e93f8a5c45510e71976
 ---
 
 # application.diagram_catalog
@@ -40,7 +40,7 @@ all three show the same generated text for the same model (ADR-0019, ADR-0023).
 * [`VIEWS`](/symbols/application/diagram_catalog/VIEWS.md) (constant) - no docstring
 * [`VIEW_FORMATS`](/symbols/application/diagram_catalog/VIEW_FORMATS.md) (constant) - no docstring
 * [`case_diagrams`](/symbols/application/diagram_catalog/case_diagrams.md) (function) - Every view for one change case as one JSON-friendly payload.
-* [`demo_pair`](/symbols/application/diagram_catalog/demo_pair.md) (function) - Baseline and the recommend_only candidate the excursion demo produces (rejection source Recommended).
+* [`demo_pair`](/symbols/application/diagram_catalog/demo_pair.md) (function) - Baseline and the demo candidate: the default pack's baseline with its first supported meaning applied.
 * [`docs_bundle`](/symbols/application/diagram_catalog/docs_bundle.md) (function) - Markdown pages for docs/diagrams/, keyed by file name.
 * [`html_panels`](/symbols/application/diagram_catalog/html_panels.md) (function) - (heading, note, Mermaid text) for `eija render --format html`.
 * [`render_view`](/symbols/application/diagram_catalog/render_view.md) (function) - Generated diagram text for one view.
@@ -65,7 +65,7 @@ _No curated notes yet._
 * [application.diagrams](/modules/application/diagrams.md) - Diagram models derived from the executable Workflow (ADR-0019, ADR-0023).
 * [domain.impact](/modules/domain/impact.md) - Module `domain/impact` (no module docstring).
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
-* [domain.policy](/modules/domain/policy.md) - Protected excursion policy.
+* [domain.policy](/modules/domain/policy.md) - Generic policy: coherence with a domain pack's declared action catalog, the pack's laws, and declared effects.
 
 ## Referenced by
 
@@ -74,7 +74,7 @@ _No curated notes yet._
 * [application.diagram_catalog.VIEWS](/symbols/application/diagram_catalog/VIEWS.md) - Constant `VIEWS` in `application/diagram_catalog`.
 * [application.diagram_catalog.VIEW_FORMATS](/symbols/application/diagram_catalog/VIEW_FORMATS.md) - Constant `VIEW_FORMATS` in `application/diagram_catalog`.
 * [application.diagram_catalog.case_diagrams](/symbols/application/diagram_catalog/case_diagrams.md) - Every view for one change case as one JSON-friendly payload.
-* [application.diagram_catalog.demo_pair](/symbols/application/diagram_catalog/demo_pair.md) - Baseline and the recommend_only candidate the excursion demo produces (rejection source Recommended).
+* [application.diagram_catalog.demo_pair](/symbols/application/diagram_catalog/demo_pair.md) - Baseline and the demo candidate: the default pack's baseline with its first supported meaning applied.
 * [application.diagram_catalog.docs_bundle](/symbols/application/diagram_catalog/docs_bundle.md) - Markdown pages for docs/diagrams/, keyed by file name.
 * [application.diagram_catalog.html_panels](/symbols/application/diagram_catalog/html_panels.md) - (heading, note, Mermaid text) for `eija render --format html`.
 * [application.diagram_catalog.render_view](/symbols/application/diagram_catalog/render_view.md) - Generated diagram text for one view.

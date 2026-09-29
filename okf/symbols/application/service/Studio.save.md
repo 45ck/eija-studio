@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.save
   title: application/service.py
   hash_method: ast-v2
-  sha256: 258985ac2c6bc20010d731a0858e0b1c908b2abf3bbe84c4ed1e5f46884f43f8
-notes_baseline: ba6f668fd563bfb4e44747dccf5221c48d8c6b2e677d9775325a8a628833fcf0
+  sha256: c59c8466ee4b0b92a2bc56a45e5c5e7d7850e0f620cc27eedeea10389b78604d
+notes_baseline: c49ea07d5940416e95ad9b6d7d6cde769e29e8c92feac8ebfa3a2f6c4a352071
 ---
 
 # application.service.Studio.save

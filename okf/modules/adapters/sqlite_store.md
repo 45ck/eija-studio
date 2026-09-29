@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/adapters/sqlite_store.py
   title: adapters/sqlite_store.py
   hash_method: ast-api-v1
-  sha256: 324548c0b5983743f7a0da13cd9999b576e66af970a275dfd9bef5ef4cad1131
-notes_baseline: 92f4cb40f3dd2c6930f7392dc5c5c2aacfe2a95cca8129575ff5037362e722b8
+  sha256: c0e292a561d09ac8cad84f65ee2afc3fd429dbdaba22a17b4e8313e2a8fae410
+notes_baseline: dd0ac9f8a168e4ac55a4aacd57a551e43beedcd62b670183df607a7e6c3effb7
 ---
 
 # adapters.sqlite_store
@@ -39,7 +39,7 @@ _Symbol pages are generated for the domain and application layers only._
 ## Internal imports
 
 * [`domain/models`](/modules/domain/models.md)
-* [`domain/policy`](/modules/domain/policy.md)
+* [`domain/pack`](/modules/domain/pack.md)
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -50,7 +50,7 @@ _No curated notes yet._
 ## Imports
 
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
-* [domain.policy](/modules/domain/policy.md) - Protected excursion policy.
+* [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
 
 ## Referenced by
 

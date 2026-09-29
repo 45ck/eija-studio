@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/verifier.py
   title: application/verifier.py
   hash_method: ast-api-v1
-  sha256: 7dc6c55b926374bcfbcdadeef6165b6007df6ffecac6fe85cad3dc14612b8814
-notes_baseline: 0ba6d75484559503a4e62cfda9a1e64b7782a8ef3c1279bf64103f30c26b092c
+  sha256: 44c863ddc1da8b2964c83d7d8a2bbb9c0423d96117a65bf872a9ee8b7849ce8a
+notes_baseline: c2b30b77267b938b55659a0c1e94398f328443f7bd0485ec61c9c0590ac4fe55
 ---
 
 # application.verifier
@@ -34,8 +34,6 @@ Bounded synthetic runtime experiments. Not a theorem prover or human study.
 
 ## Public symbols
 
-* [`ACTORS`](/symbols/application/verifier/ACTORS.md) (constant) - no docstring
-* [`ORACLE`](/symbols/application/verifier/ORACLE.md) (constant) - no docstring
 * [`verify_runtime`](/symbols/application/verifier/verify_runtime.md) (function) - no docstring
 
 ## Internal imports
@@ -43,6 +41,7 @@ Bounded synthetic runtime experiments. Not a theorem prover or human study.
 * [`application/ports`](/modules/application/ports.md)
 * [`application/runtime`](/modules/application/runtime.md)
 * [`domain/models`](/modules/domain/models.md)
+* [`domain/pack`](/modules/domain/pack.md)
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -53,8 +52,9 @@ _No curated notes yet._
 ## Imports
 
 * [application.ports](/modules/application/ports.md) - Application-owned ports.
-* [application.runtime](/modules/application/runtime.md) - Generic execution algorithm; domain-specific policy stays in domain.policy.
+* [application.runtime](/modules/application/runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
+* [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
 
 ## Referenced by
 
@@ -63,7 +63,5 @@ _No curated notes yet._
 * [interfaces.cli](/modules/interfaces/cli.md) - Module `interfaces/cli` (no module docstring).
 * [AC09: Authority](/requirements/ac09.md) - PASS_LOCAL: Teacher final approval is denied under every candidate path and direct API call.
 * [AC12: Workflow](/requirements/ac12.md) - PARTIAL: Recommend requires Submitted; registrar Approve/Reject requires Recommended; Submit and Revise remain valid.
-* [application.verifier.ACTORS](/symbols/application/verifier/ACTORS.md) - Constant `ACTORS` in `application/verifier`.
-* [application.verifier.ORACLE](/symbols/application/verifier/ORACLE.md) - Constant `ORACLE` in `application/verifier`.
-* [application.verifier.verify_runtime](/symbols/application/verifier/verify_runtime.md) - `def verify_runtime(model: Workflow, subject: dict[str, Any], sandbox: SandboxFactory) -> dict[str, Any]` in `application/verifier`.
+* [application.verifier.verify_runtime](/symbols/application/verifier/verify_runtime.md) - `def verify_runtime(model: Workflow, subject: dict[str, Any], sandbox: SandboxFactory, pack: Pack | None=None)…` in `application/verifier`.
 <!-- okf:generated:end links -->

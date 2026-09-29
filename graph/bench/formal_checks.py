@@ -218,7 +218,7 @@ def f1c_checker_soundness_and_mutants(n_exh: int = 2, n_mut: int = 3, seed: int 
 
 def _kernel_aggregate(statuses):
     from unittest import mock
-    with mock.patch.object(kernel_evidence, "assess_receipt", lambda r, s, c, k: r["st"]):
+    with mock.patch.object(kernel_evidence, "assess_receipt", lambda r, s, c, k, *context: r["st"]):
         return kernel_evidence.aggregate_status([{"st": x} for x in statuses], {}, lambda r: True)
 
 

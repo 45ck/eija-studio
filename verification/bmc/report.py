@@ -9,8 +9,9 @@ from typing import Any
 
 from eija_studio.adapters.sqlite_store import sandbox_factory
 from eija_studio.application import runtime
-from eija_studio.domain.models import SemanticTransaction, Workflow
-from eija_studio.domain.policy import apply_transaction, baseline
+from eija_studio.domain.models import Workflow
+from eija_studio.domain.policy import baseline
+from verification.excursion_pack import candidate as excursion_candidate
 from verification.formal_report import dumps, kernel_subject, platform_info
 
 from . import mutants as M
@@ -42,8 +43,8 @@ INVARIANTS = {
              "EXACTLY-ONCE-OPERATION", "OPERATION-BINDING", "COMMIT-EFFECTS-EXACT", "REPLAY-HAS-NO-EFFECT",
              "REJECTION-LEAVES-NO-TRACE", "NO-SPURIOUS-DENIAL", "DENIAL-REASON", "NO-UNEXPECTED-EXCEPTION"],
     "state": ["ONE-INSTANCE", "STATE-IN-MODEL", "VERSION-COUNTS-COMMITS", "AUDIT-TRAIL-IS-A-VALID-RUN",
-              "DECISION-ONLY-BY-REGISTRAR", "AUDIT-ACTOR-HOLDS-TRANSITION-ROLE", "APPROVAL-FOLLOWS-RECOMMENDATION",
-              "NO-FORBIDDEN-EFFECT", "EFFECTS-DECLARED-BY-MODEL", "OUTBOX-MATCHES-COMMITTED-RECOMMENDS",
+              "AUDIT-ACTOR-HOLDS-TRANSITION-ROLE", "PACK-LAWS-HOLD-ON-RUN", "EFFECTS-DECLARED-BY-MODEL",
+              "OUTBOX-MATCHES-COMMITTED-NOTIFICATIONS",
               "AUDIT-REFERENCES-RECORDED-OPERATION"]}
 
 
@@ -51,7 +52,7 @@ def workflows() -> dict[str, Workflow]:
     base = baseline()
 
     def candidate(source: str) -> Workflow:
-        return apply_transaction(base, SemanticTransaction(kind="enable_recommendation", rejection_source=source))
+        return excursion_candidate(source)
 
     return {"baseline": base, "candidate-reject-from-Recommended": candidate("Recommended"),
             "candidate-reject-from-Submitted": candidate("Submitted")}

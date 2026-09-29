@@ -23,7 +23,8 @@ def formal_smt(session: nox.Session) -> None:
         session.run(PYTHON, "-m", "verification.smt", success_codes=[3])  # writes a NOT_RUN report
         session.skip(Z3_MISSING)
     session.run(PYTHON, "-m", "verification.smt", *session.posargs)
-    session.run(PYTHON, "-m", "pytest", "-q", "-m", "formal", "tests/test_formal_smt.py")
+    session.run(PYTHON, "-m", "verification.smt.laws")  # WBS 1.4: generated laws, every pack; hand <=> generated where hand-encoded
+    session.run(PYTHON, "-m", "pytest", "-q", "-m", "formal", "tests/test_formal_smt.py", "tests/test_smt_laws_gen.py")
 
 
 @nox.session(python=False, tags=["release"])

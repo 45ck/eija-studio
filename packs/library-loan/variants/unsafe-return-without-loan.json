@@ -1,0 +1,28 @@
+{
+  "schema_version": "eija.workflow.v1",
+  "id": "library-loan",
+  "initial_state": "Requested",
+  "states": ["Requested", "OnLoan", "Overdue", "Returned", "Cancelled"],
+  "transitions": [
+    {"id": "TR-CHECKOUT", "action": "CheckOut", "from_state": "Requested", "to_state": "OnLoan", "role": "Librarian",
+     "guards": ["actor_active", "role_current", "state_equals", "expected_version", "operation_binding", "actor_assigned"],
+     "required_effects": ["Audit:LoanCheckedOut", "Notification:MemberNotified"],
+     "forbidden_effects": ["FineWaivedSilently", "MemberDataShared"]},
+    {"id": "TR-CANCEL", "action": "Cancel", "from_state": "Requested", "to_state": "Cancelled", "role": "Member",
+     "guards": ["actor_active", "role_current", "state_equals", "expected_version", "operation_binding"],
+     "required_effects": ["Audit:LoanCancelled"],
+     "forbidden_effects": ["FineWaivedSilently", "MemberDataShared"]},
+    {"id": "TR-MARKOVERDUE", "action": "MarkOverdue", "from_state": "OnLoan", "to_state": "Overdue", "role": "Clerk",
+     "guards": ["actor_active", "role_current", "state_equals", "expected_version", "operation_binding"],
+     "required_effects": ["Audit:LoanOverdue", "Notification:OverdueNoticeQueued"],
+     "forbidden_effects": ["FineWaivedSilently", "MemberDataShared"]},
+    {"id": "TR-RETURN", "action": "Return", "from_state": "Requested", "to_state": "Returned", "role": "Librarian",
+     "guards": ["actor_active", "role_current", "state_equals", "expected_version", "operation_binding"],
+     "required_effects": ["Audit:LoanReturned"],
+     "forbidden_effects": ["FineWaivedSilently", "MemberDataShared"]},
+    {"id": "TR-RETURNLATE", "action": "ReturnLate", "from_state": "Overdue", "to_state": "Returned", "role": "Librarian",
+     "guards": ["actor_active", "role_current", "state_equals", "expected_version", "operation_binding"],
+     "required_effects": ["Audit:LoanReturnedLate"],
+     "forbidden_effects": ["FineWaivedSilently", "MemberDataShared"]}
+  ]
+}

@@ -29,7 +29,7 @@ MUTANTS = ("revocation_ignored", "assignment_ignored", "role_ignored", "replay_b
            "stale_version_accepted", "replay_reapplies_effects")
 STEP_INVARIANTS = ("AUTHORITY-ON-COMMIT", "AUTHORITY-BEFORE-REPLAY", "CAS-ON-COMMIT", "STATE-GUARD-ON-COMMIT",
                    "EXACTLY-ONCE-OPERATION")
-STATE_INVARIANTS = ("DECISION-ONLY-BY-REGISTRAR", "APPROVAL-FOLLOWS-RECOMMENDATION", "NO-FORBIDDEN-EFFECT")
+STATE_INVARIANTS = ("PACK-LAWS-HOLD-ON-RUN",)  # the pack's laws judged on the recorded run by domain.laws.evaluate_run
 
 ESTABLISHES = ("No reachable state or step within the stated depth and alphabet violates the safety invariants when the real "
                "runtime executes every fixture actor, stale versions, operation replays and revocation or assignment changes.")
