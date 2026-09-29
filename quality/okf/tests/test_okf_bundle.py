@@ -199,6 +199,13 @@ def test_formatting_only_change_is_not_stale(repo):
     assert run_checks(repo).ok
 
 
+def _assert_notes_stay_red_and_history_kept(after, page):
+    assert not after.ok and codes(after) == ["NOTES_STALE"] and after.stale == []            # generated parts are baselined, prose is not
+    assert "Teacher can never approve" in page.read_text(encoding="utf-8")                   # the contradicted prose is still there
+    assert after.stats["trust_tiers"].get("human-reviewed", 0) == 0                          # old attestation no longer counts
+    assert len(split_page(page.read_text(encoding="utf-8"))[0]["verified"]) == 1               # ...but the history is kept, not dropped
+
+
 def test_sync_rebaselines_generated_content_but_cannot_clear_stale_notes_or_raise_the_tier(repo):
     """The reviewers' scenario: gut check_policy, sync, and the page whose Notes now lie must stay red."""
     page = repo.bundle / CHECK_POLICY
@@ -214,11 +221,7 @@ def test_sync_rebaselines_generated_content_but_cannot_clear_stale_notes_or_rais
     report = run_checks(repo)
     assert report.stale == [CHECK_POLICY] and "STALE" in codes(report, "codelinks")
     sync(repo)
-    after = run_checks(repo)
-    assert not after.ok and codes(after) == ["NOTES_STALE"] and after.stale == []            # generated parts are baselined, prose is not
-    assert "Teacher can never approve" in page.read_text(encoding="utf-8")                   # the contradicted prose is still there
-    assert after.stats["trust_tiers"].get("human-reviewed", 0) == 0                          # old attestation no longer counts
-    assert len(split_page(page.read_text(encoding="utf-8"))[0]["verified"]) == 1               # ...but the history is kept, not dropped
+    _assert_notes_stay_red_and_history_kept(run_checks(repo), page)
     review(repo, CHECK_POLICY, by="process:eija-okf-test")
     ok = run_checks(repo)
     assert ok.ok and ok.stats["trust_tiers"].get("machine-confirmed", 0) == confirmed_before + 1
@@ -442,12 +445,15 @@ def test_a_syntax_error_in_a_covered_source_is_a_finding_not_a_traceback(repo, c
 
 # ---- honest labels on the retrieval surface -----------------------------------------------------
 
-def test_planned_techniques_and_unrun_criteria_are_labelled_where_a_retriever_reads_them(repo):
+def test_planned_techniques_are_labelled_in_the_verification_index(repo):
     index = (repo.bundle / "verification/index.md").read_text(encoding="utf-8")
     planned = [line for line in index.split("\n") if "(bounded-model-check.md)" in line or "(smt-proof.md)" in line]
     assert planned and all("Planned (not implemented)" in line for line in planned)
     implemented = [line for line in index.split("\n") if "integration-test.md" in line]
     assert implemented and "Implemented:" in implemented[0]
+
+
+def test_unrun_criteria_and_planned_pages_are_labelled_where_a_retriever_reads_them(repo):
     assert "Planned (not implemented)" in split_page((repo.bundle / "verification/tlc-model-check.md").read_text(encoding="utf-8"))[0]["description"]
     rows = csv.DictReader((repo.root / "docs/verification/ACCEPTANCE_MATRIX.csv").read_text(encoding="utf-8").splitlines())
     not_run = next(row["id"] for row in rows if row["v0_2_status"] == "NOT_RUN")

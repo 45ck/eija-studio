@@ -115,22 +115,30 @@ def check_conformance(pages: dict[str, str]) -> list[Finding]:
     return found
 
 
+def _index_frontmatter(path: str, text: str, add) -> str | None:
+    """Check the frontmatter rules of an index page; return the body, or None when the page cannot be read further."""
+    if not text.startswith("---"):
+        if path == "index.md":
+            add("OKF_VERSION", path, f'root index.md should declare okf_version: "{OKF_VERSION}"')
+        return text
+    try:
+        meta, body = split_page(text)
+    except ValueError as exc:
+        add("INDEX_FRONTMATTER", path, str(exc))
+        return None
+    if path != "index.md":
+        add("INDEX_FRONTMATTER", path, "only the bundle-root index.md may carry frontmatter (okf_version)")
+    elif set(meta) - {"okf_version"}:
+        add("INDEX_FRONTMATTER", path, f"root index frontmatter may only carry okf_version, found {sorted(set(meta) - {'okf_version'})}")
+    elif meta.get("okf_version") != OKF_VERSION:
+        add("OKF_VERSION", path, f'okf_version must be "{OKF_VERSION}", found {meta.get("okf_version")!r}')
+    return body
+
+
 def _index(path: str, text: str, add) -> None:
-    body = text
-    if text.startswith("---"):
-        try:
-            meta, body = split_page(text)
-        except ValueError as exc:
-            add("INDEX_FRONTMATTER", path, str(exc))
-            return
-        if path != "index.md":
-            add("INDEX_FRONTMATTER", path, "only the bundle-root index.md may carry frontmatter (okf_version)")
-        elif set(meta) - {"okf_version"}:
-            add("INDEX_FRONTMATTER", path, f"root index frontmatter may only carry okf_version, found {sorted(set(meta) - {'okf_version'})}")
-        elif meta.get("okf_version") != OKF_VERSION:
-            add("OKF_VERSION", path, f'okf_version must be "{OKF_VERSION}", found {meta.get("okf_version")!r}')
-    elif path == "index.md":
-        add("OKF_VERSION", path, f'root index.md should declare okf_version: "{OKF_VERSION}"')
+    body = _index_frontmatter(path, text, add)
+    if body is None:
+        return
     if not re.search(r"^# \S", body, re.MULTILINE):
         add("INDEX_STRUCTURE", path, "index has no '# Heading' section")
     if not any(_ENTRY.match(line) for line in body.split("\n")):
@@ -167,6 +175,19 @@ def _concept(path: str, text: str, add) -> None:
     except ValueError as exc:
         add("FRONTMATTER", path, str(exc))
         return
+    _concept_fields(meta, path, add)
+    _concept_lifecycle(meta, path, add)
+    _concept_generated(meta, path, add)
+    _concept_verified(meta, path, add)
+    ids = _concept_sources(meta, path, add)
+    if len(ids) != len(set(ids)):
+        add("SOURCES", path, "`sources[].id` values must be unique")
+    for label in sorted(set(_FOOTNOTE_REF.findall(body))):
+        if label not in ids:
+            add("FOOTNOTE", path, f"footnote [^{label}] has no matching `sources[].id`")
+
+
+def _concept_fields(meta: dict[str, Any], path: str, add) -> None:
     kind = meta.get("type")
     if not isinstance(kind, str) or not kind.strip():
         add("TYPE", path, "frontmatter needs a non-empty string `type`")
@@ -176,41 +197,60 @@ def _concept(path: str, text: str, add) -> None:
     tags = meta.get("tags")
     if tags is not None and not (isinstance(tags, list) and all(isinstance(t, str) for t in tags)):
         add("FIELD_TYPE", path, "`tags` must be a list of strings")
+
+
+def _concept_lifecycle(meta: dict[str, Any], path: str, add) -> None:
     if "status" in meta and meta["status"] not in STATUSES:
         add("STATUS", path, f"`status` must be one of {STATUSES}, found {meta['status']!r}")
     if "stale_after" in meta and not _iso(meta["stale_after"]):
         add("TIMESTAMP", path, "`stale_after` must be ISO 8601 with an explicit UTC offset")
+
+
+def _concept_generated(meta: dict[str, Any], path: str, add) -> None:
     generated = meta.get("generated")
-    if generated is not None:
-        if not isinstance(generated, dict) or not isinstance(generated.get("by"), str) or not _ACTOR.match(generated["by"]):
-            add("ACTOR", path, "`generated` needs `by` in actor form (producer/version, human:id or process:id)")
-        elif "at" in generated and not _iso(generated["at"]):
-            add("TIMESTAMP", path, "`generated.at` must be ISO 8601 with an explicit UTC offset")
-    if "verified" in meta:
-        entries = meta["verified"] if isinstance(meta["verified"], list) else [meta["verified"]]
-        for entry in entries:
-            if not isinstance(entry, dict) or not valid_actor(entry.get("by")) or not _iso(entry.get("at")):
-                add("VERIFIED", path, "each `verified` entry needs `by` (actor form) and `at` (ISO 8601 with offset)")
-            elif not all(isinstance(entry.get(k), str) and _SHA.match(entry[k]) for k in ("notes_sha256", "sources_sha256")):
-                add("VERIFIED", path, "each `verified` entry must be bound to the reviewed content: `notes_sha256` and `sources_sha256` "
-                                      "(64 hex); use `python -m quality.okf review`")
-    ids: list[str] = []
+    if generated is None:
+        return
+    if not isinstance(generated, dict) or not isinstance(generated.get("by"), str) or not _ACTOR.match(generated["by"]):
+        add("ACTOR", path, "`generated` needs `by` in actor form (producer/version, human:id or process:id)")
+    elif "at" in generated and not _iso(generated["at"]):
+        add("TIMESTAMP", path, "`generated.at` must be ISO 8601 with an explicit UTC offset")
+
+
+def _verified_problem(entry: Any) -> str | None:
+    """Why one `verified` entry is malformed, or None."""
+    if not isinstance(entry, dict) or not valid_actor(entry.get("by")) or not _iso(entry.get("at")):
+        return "each `verified` entry needs `by` (actor form) and `at` (ISO 8601 with offset)"
+    if not all(isinstance(entry.get(k), str) and _SHA.match(entry[k]) for k in ("notes_sha256", "sources_sha256")):
+        return ("each `verified` entry must be bound to the reviewed content: `notes_sha256` and `sources_sha256` "
+                "(64 hex); use `python -m quality.okf review`")
+    return None
+
+
+def _concept_verified(meta: dict[str, Any], path: str, add) -> None:
+    if "verified" not in meta:
+        return
+    entries = meta["verified"] if isinstance(meta["verified"], list) else [meta["verified"]]
+    for entry in entries:
+        problem = _verified_problem(entry)
+        if problem:
+            add("VERIFIED", path, problem)
+
+
+def _concept_sources(meta: dict[str, Any], path: str, add) -> list[str]:
+    """Check `sources`; return the declared footnote ids."""
     sources = meta.get("sources")
-    if sources is not None:
-        if not isinstance(sources, list):
-            add("SOURCES", path, "`sources` must be a list")
-        else:
-            for entry in sources:
-                if not isinstance(entry, dict) or not isinstance(entry.get("resource"), str) or not entry["resource"]:
-                    add("SOURCES", path, "every `sources` entry needs a non-empty `resource`")
-                    continue
-                if "id" in entry:
-                    ids.append(str(entry["id"]))
-    if len(ids) != len(set(ids)):
-        add("SOURCES", path, "`sources[].id` values must be unique")
-    for label in sorted(set(_FOOTNOTE_REF.findall(body))):
-        if label not in ids:
-            add("FOOTNOTE", path, f"footnote [^{label}] has no matching `sources[].id`")
+    if sources is None:
+        return []
+    if not isinstance(sources, list):
+        add("SOURCES", path, "`sources` must be a list")
+        return []
+    ids: list[str] = []
+    for entry in sources:
+        if not isinstance(entry, dict) or not isinstance(entry.get("resource"), str) or not entry["resource"]:
+            add("SOURCES", path, "every `sources` entry needs a non-empty `resource`")
+        elif "id" in entry:
+            ids.append(str(entry["id"]))
+    return ids
 
 
 # ---- links --------------------------------------------------------------------------------------
@@ -233,6 +273,34 @@ def _hrefs(body: str) -> list[str]:
     return out
 
 
+def _broken_link(repo: Repo, pages: dict[str, str], path: str, href: str) -> Finding | None:
+    """The finding for one markdown link of page `path`, or None when it resolves."""
+    base = posixpath.dirname(path)
+    target = href.split("#", 1)[0].split("?", 1)[0]
+    if not target or re.match(r"^[a-z][a-z0-9+.-]*:", target, re.IGNORECASE):
+        return None   # anchors, http(s), mailto, repo:// (checked by codelinks)
+    resolved = posixpath.normpath(target.lstrip("/") if target.startswith("/") else posixpath.join(base, target))
+    if resolved.startswith(".."):
+        if (repo.bundle / base / target).resolve().exists():
+            return None
+        return Finding("links", "BROKEN_LINK", path, f"link {href!r} leaves the bundle and the target does not exist")
+    if resolved in pages or resolved + "/index.md" in pages:
+        return None
+    return Finding("links", "BROKEN_LINK", path, f"link {href!r} does not resolve to a page in the bundle")
+
+
+def _broken_mention(repo: Repo, path: str, raw_mention: str) -> Finding | None:
+    """The finding for one `repo://` mention in a page body, or None when it resolves."""
+    mention = raw_mention.rstrip(".,")
+    try:
+        ref = cl.parse_uri(mention)
+    except ValueError:
+        return Finding("links", "BROKEN_REPO_URI", path, f"{mention!r} is not a valid repo:// URI")
+    if not cl.resolves(repo.root, ref):
+        return Finding("links", "BROKEN_REPO_URI", path, f"{mention!r} does not resolve in the repository")
+    return None
+
+
 def check_links(repo: Repo, pages: dict[str, str]) -> list[Finding]:
     found: list[Finding] = []
     for path, text in sorted(pages.items()):
@@ -240,29 +308,10 @@ def check_links(repo: Repo, pages: dict[str, str]) -> list[Finding]:
             meta, body = split_page(text)
         except ValueError:
             meta, body = {}, text
-        base = posixpath.dirname(path)
-        for href in _hrefs(body):
-            target = href.split("#", 1)[0].split("?", 1)[0]
-            if not target or re.match(r"^[a-z][a-z0-9+.-]*:", target, re.IGNORECASE):
-                continue   # anchors, http(s), mailto, repo:// (checked by codelinks)
-            resolved = posixpath.normpath(target.lstrip("/") if target.startswith("/") else posixpath.join(base, target))
-            if resolved.startswith(".."):
-                outside = (repo.bundle / base / target).resolve()
-                if not outside.exists():
-                    found.append(Finding("links", "BROKEN_LINK", path, f"link {href!r} leaves the bundle and the target does not exist"))
-                continue
-            if resolved in pages or resolved + "/index.md" in pages:
-                continue
-            found.append(Finding("links", "BROKEN_LINK", path, f"link {href!r} does not resolve to a page in the bundle"))
-        for raw_mention in sorted(set(_REPO_MENTION.findall(body))) if meta.get("status") != "deprecated" else []:   # history may cite what is gone
-            mention = raw_mention.rstrip(".,")
-            try:
-                ref = cl.parse_uri(mention)
-            except ValueError:
-                found.append(Finding("links", "BROKEN_REPO_URI", path, f"{mention!r} is not a valid repo:// URI"))
-                continue
-            if not cl.resolves(repo.root, ref):
-                found.append(Finding("links", "BROKEN_REPO_URI", path, f"{mention!r} does not resolve in the repository"))
+        results = [_broken_link(repo, pages, path, href) for href in _hrefs(body)]
+        if meta.get("status") != "deprecated":   # history may cite what is gone
+            results += [_broken_mention(repo, path, m) for m in sorted(set(_REPO_MENTION.findall(body)))]
+        found += [r for r in results if r is not None]
     return found
 
 
@@ -288,46 +337,77 @@ def current_sources_sha(repo: Repo, meta: dict[str, Any]) -> str | None:
     return sources_sha256(now)
 
 
+def _check_resource(repo: Repo, path: str, meta: dict[str, Any], found: list[Finding]) -> bool:
+    """Check the page's own `resource`. False when the URI is malformed: the rest of that page is then not checked."""
+    resource = meta.get("resource")
+    if not isinstance(resource, str) or not resource.startswith(cl.SCHEME) or meta.get("status") == "deprecated":
+        return True
+    try:
+        ok = cl.resolves(repo.root, cl.parse_uri(resource))
+    except ValueError as exc:
+        found.append(Finding("codelinks", "BROKEN_RESOURCE", path, str(exc)))
+        return False
+    if not ok:
+        found.append(Finding("codelinks", "BROKEN_RESOURCE", path, f"`resource` {resource} does not resolve to an existing file or symbol"))
+    return True
+
+
+def _check_source(repo: Repo, path: str, entry: Any, found: list[Finding]) -> bool:
+    """Check one `repo://` source hash. True when the source changed since the page was baselined."""
+    uri = entry.get("resource") if isinstance(entry, dict) else None
+    if not isinstance(uri, str) or not uri.startswith(cl.SCHEME):
+        return False
+    recorded, method = entry.get("sha256"), entry.get("hash_method")
+    if method not in cl.METHODS or not isinstance(recorded, str) or not _SHA.match(recorded):
+        found.append(Finding("codelinks", "MISSING_HASH", path, f"source {uri} needs `hash_method` (one of {cl.METHODS}) and a 64-hex `sha256`"))
+        return False
+    try:
+        current = cl.digest(repo.root, cl.parse_uri(uri), method)
+    except (cl.Unresolved, ValueError) as exc:
+        found.append(Finding("codelinks", "BROKEN_RESOURCE", path, f"source {uri}: {exc}"))
+        return False
+    if current == recorded:
+        return False
+    found.append(Finding("codelinks", "STALE", path, f"source {uri} changed since this page was baselined "
+                         f"({method}: {recorded[:10]} -> {current[:10]}); run `python -m quality.okf sync`, re-read the page's "
+                         "Notes, then `python -m quality.okf review`"))
+    return True
+
+
+def _notes_stale(repo: Repo, path: str, meta: dict[str, Any]) -> Finding | None:
+    current_all = current_sources_sha(repo, meta)
+    if current_all is None or meta.get("notes_baseline") == current_all:
+        return None
+    return Finding("codelinks", "NOTES_STALE", path, "hand-written Notes were last aligned to an older source state (or "
+                   "have no recorded baseline); re-read them against the current source, edit if needed, then run "
+                   "`python -m quality.okf review <page> --by <actor> --at <time>`. `sync` does not clear this")
+
+
+def _check_page_codelinks(repo: Repo, path: str, meta: dict[str, Any], body: str) -> tuple[list[Finding], bool]:
+    """Code-link findings of one page, and whether any of its sources is stale."""
+    found: list[Finding] = []
+    if not _check_resource(repo, path, meta, found):
+        return found, False
+    if meta.get("status") == "deprecated":   # history may cite what is gone: neither its sources nor its Notes are gated
+        return found, False
+    page_stale = False
+    for entry in meta.get("sources") or []:
+        page_stale = _check_source(repo, path, entry, found) or page_stale
+    if not page_stale and is_curated(body) and isinstance(meta.get("sources"), list):
+        notes = _notes_stale(repo, path, meta)
+        if notes is not None:
+            found.append(notes)
+    return found, page_stale
+
+
 def check_codelinks(repo: Repo, pages: dict[str, str]) -> tuple[list[Finding], list[str]]:
     found: list[Finding] = []
     stale: list[str] = []
     for path, (meta, body) in sorted(_concepts(pages).items()):
-        page_stale = False
-        deprecated = meta.get("status") == "deprecated"
-        resource = meta.get("resource")
-        if isinstance(resource, str) and resource.startswith(cl.SCHEME) and not deprecated:
-            try:
-                ok = cl.resolves(repo.root, cl.parse_uri(resource))
-            except ValueError as exc:
-                found.append(Finding("codelinks", "BROKEN_RESOURCE", path, str(exc)))
-                continue
-            if not ok:
-                found.append(Finding("codelinks", "BROKEN_RESOURCE", path, f"`resource` {resource} does not resolve to an existing file or symbol"))
-        for entry in meta.get("sources") or []:
-            uri = entry.get("resource") if isinstance(entry, dict) else None
-            if not isinstance(uri, str) or not uri.startswith(cl.SCHEME) or deprecated:
-                continue
-            recorded, method = entry.get("sha256"), entry.get("hash_method")
-            if method not in cl.METHODS or not isinstance(recorded, str) or not _SHA.match(recorded):
-                found.append(Finding("codelinks", "MISSING_HASH", path, f"source {uri} needs `hash_method` (one of {cl.METHODS}) and a 64-hex `sha256`"))
-                continue
-            try:
-                current = cl.digest(repo.root, cl.parse_uri(uri), method)
-            except (cl.Unresolved, ValueError) as exc:
-                found.append(Finding("codelinks", "BROKEN_RESOURCE", path, f"source {uri}: {exc}"))
-                continue
-            if current != recorded:
-                stale.append(path)
-                page_stale = True
-                found.append(Finding("codelinks", "STALE", path, f"source {uri} changed since this page was baselined "
-                                     f"({method}: {recorded[:10]} -> {current[:10]}); run `python -m quality.okf sync`, re-read the page's "
-                                     "Notes, then `python -m quality.okf review`"))
-        if not page_stale and not deprecated and is_curated(body) and isinstance(meta.get("sources"), list):
-            current_all = current_sources_sha(repo, meta)
-            if current_all is not None and meta.get("notes_baseline") != current_all:
-                found.append(Finding("codelinks", "NOTES_STALE", path, "hand-written Notes were last aligned to an older source state (or "
-                                     "have no recorded baseline); re-read them against the current source, edit if needed, then run "
-                                     "`python -m quality.okf review <page> --by <actor> --at <time>`. `sync` does not clear this"))
+        page_found, page_stale = _check_page_codelinks(repo, path, meta, body)
+        found += page_found
+        if page_stale:
+            stale.append(path)
     return found, sorted(set(stale))
 
 
@@ -367,6 +447,14 @@ def check_drift(repo: Repo, skip: set[str]) -> list[Finding]:
 
 # ---- orchestration ------------------------------------------------------------------------------
 
+def _bound_entries(entries: list[Any], notes_sha: str, current_sources: str | None) -> list[dict[str, Any]]:
+    """The `verified` entries whose recorded prose and source hashes equal the current ones."""
+    if current_sources is None:
+        return []
+    return [e for e in entries if isinstance(e, dict) and e.get("notes_sha256") == notes_sha
+            and e.get("sources_sha256") == current_sources]
+
+
 def trust_tier(meta: dict[str, Any], body: str = "", current_sources: str | None = None) -> str:
     """SPEC section 5.3, derived only from `verified` entries that are still bound to the page as it is now.
 
@@ -375,8 +463,7 @@ def trust_tier(meta: dict[str, Any], body: str = "", current_sources: str | None
     """
     entries = meta.get("verified")
     entries = entries if isinstance(entries, list) else ([entries] if entries else [])
-    current = [e for e in entries if isinstance(e, dict) and e.get("notes_sha256") == human_sha256(body)
-               and current_sources is not None and e.get("sources_sha256") == current_sources]
+    current = _bound_entries(entries, human_sha256(body), current_sources)
     if not current:
         return "unverified"
     return "human-reviewed" if any(str(e.get("by", "")).startswith("human:") for e in current) else "machine-confirmed"

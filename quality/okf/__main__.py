@@ -44,13 +44,21 @@ def cmd_check(repo: Repo, args: argparse.Namespace) -> int:
     return 0 if report.ok else 1
 
 
-def _review_page(repo: Repo, name: str, by: str, at: str) -> str | None:
-    """Record a review of one page. Returns an error message, or None on success."""
+def _review_target(repo: Repo, name: str) -> tuple[Path | None, str | None]:
+    """(page path, None) for a concept page inside the bundle, else (None, why not)."""
     target = (repo.bundle / name).resolve()
     if not target.is_relative_to(repo.bundle.resolve()) or target.suffix != ".md" or target.name in RESERVED:
-        return "not a concept page inside the bundle"
+        return None, "not a concept page inside the bundle"
     if not target.is_file():
-        return "no such page"
+        return None, "no such page"
+    return target, None
+
+
+def _review_page(repo: Repo, name: str, by: str, at: str) -> str | None:
+    """Record a review of one page. Returns an error message, or None on success."""
+    target, error = _review_target(repo, name)
+    if target is None:
+        return error
     try:
         meta, body = split_page(target.read_bytes().decode("utf-8").replace("\r\n", "\n"))
         current = current_sources_sha(repo, meta)

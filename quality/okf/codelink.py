@@ -123,11 +123,18 @@ def public_symbols(tree: ast.Module) -> Iterator[tuple[str, str, ast.AST]]:
         elif isinstance(node, ast.ClassDef) and not node.name.startswith("_"):
             yield node.name, "class", node
         elif isinstance(node, (ast.Assign, ast.AnnAssign)):
-            targets = node.targets if isinstance(node, ast.Assign) else [node.target]
-            if len(targets) == 1 and isinstance(targets[0], ast.Name):
-                name = targets[0].id
-                if not name.startswith("_"):
-                    yield name, "constant" if name.isupper() else "type-alias", node
+            assigned = _assigned_symbol(node)
+            if assigned is not None:
+                yield assigned[0], assigned[1], node
+
+
+def _assigned_symbol(node: ast.Assign | ast.AnnAssign) -> tuple[str, str] | None:
+    """(name, kind) of a public single-name assignment, else None."""
+    targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+    if len(targets) != 1 or not isinstance(targets[0], ast.Name) or targets[0].id.startswith("_"):
+        return None
+    name = targets[0].id
+    return name, "constant" if name.isupper() else "type-alias"
 
 
 def find_symbol(tree: ast.Module, dotted: str) -> ast.AST | None:
@@ -178,17 +185,22 @@ def private_closure(tree: ast.Module, node: ast.AST, owner: ast.ClassDef | None)
     queue: list[ast.AST] = [node]
     while queue:
         for child in ast.walk(queue.pop()):
-            key: str | None = None
-            target: ast.AST | None = None
-            if isinstance(child, ast.Name) and child.id in module_private:
-                key, target = child.id, module_private[child.id]
-            elif (isinstance(child, ast.Attribute) and isinstance(child.value, ast.Name) and child.value.id in ("self", "cls")
-                  and child.attr in class_private):
-                key, target = f"{owner.name}.{child.attr}", class_private[child.attr]  # type: ignore[union-attr]
-            if key is not None and target is not None and key not in found and target is not node:
-                found[key] = target
-                queue.append(target)
+            hit = _private_reference(child, module_private, class_private, owner)
+            if hit is not None and hit[0] not in found and hit[1] is not node:
+                found[hit[0]] = hit[1]
+                queue.append(hit[1])
     return found
+
+
+def _private_reference(child: ast.AST, module_private: dict[str, ast.AST], class_private: dict[str, ast.AST],
+                       owner: ast.ClassDef | None) -> tuple[str, ast.AST] | None:
+    """(key, definition) when ``child`` names a private helper: a module ``_name`` or ``self._method`` of the owner."""
+    if isinstance(child, ast.Name) and child.id in module_private:
+        return child.id, module_private[child.id]
+    if (owner is not None and isinstance(child, ast.Attribute) and isinstance(child.value, ast.Name)
+            and child.value.id in ("self", "cls") and child.attr in class_private):
+        return f"{owner.name}.{child.attr}", class_private[child.attr]
+    return None
 
 
 def closure_form(tree: ast.Module, node: ast.AST, owner: ast.ClassDef | None) -> Any:
@@ -267,44 +279,60 @@ def digest(root: Path, ref: CodeRef, method: str) -> str:
     return _digest_text(read_text(root, ref.path), ref, method)
 
 
+def _digest_ast(text: str, ref: CodeRef, method: str) -> str:
+    try:
+        tree = parse_module(text, ref.path)
+    except SyntaxError as exc:
+        raise Unresolved(f"{ref.path} does not parse: {exc.msg}") from exc
+    if method == AST_API:
+        return _digest(api_form(tree))
+    if not ref.fragment:
+        raise Unresolved(f"{ref.uri()}: {method} needs a #symbol fragment")
+    node, owner = _find_with_owner(tree, ref.fragment)
+    if node is None:
+        raise Unresolved(f"symbol {ref.fragment!r} not found in {ref.path}")
+    if method == AST_CLOSURE:
+        return _digest(closure_form(tree, node, owner))
+    return _digest(_signature_form(node) if method == AST_SIG else canon(node))
+
+
+def _csv_row_digest(text: str, ref: CodeRef) -> str:
+    for row in csv_rows(text):
+        if next(iter(row.values())) == ref.fragment:
+            return _digest(row)
+    raise Unresolved(f"row {ref.fragment!r} not found in {ref.path}")
+
+
+def _md_term_digest(text: str, ref: CodeRef) -> str:
+    for term, definition in md_terms(text):
+        if slug(term) == slug(ref.fragment):
+            return _digest([term, " ".join(definition.split())])
+    raise Unresolved(f"term {ref.fragment!r} not found in {ref.path}")
+
+
+def _md_row_digest(text: str, ref: CodeRef) -> str:
+    for cells in md_table_rows(text):
+        if any(slug(c.replace("`", "")) == slug(ref.fragment) for c in cells):
+            return _digest(cells)
+    raise Unresolved(f"table row {ref.fragment!r} not found in {ref.path}")
+
+
+_FRAGMENT_DIGESTS = {CSV_ROW: _csv_row_digest, MD_TERM: _md_term_digest, MD_ROW: _md_row_digest}
+
+
 @functools.lru_cache(maxsize=2048)
 def _digest_text(text: str, ref: CodeRef, method: str) -> str:
     """Pure function of (source text, reference, method); cached because every check re-derives every hash."""
     if method == FILE_LF:
         return sha256(text.encode("utf-8")).hexdigest()
     if method in (AST_SYMBOL, AST_CLOSURE, AST_API, AST_SIG):
-        try:
-            tree = parse_module(text, ref.path)
-        except SyntaxError as exc:
-            raise Unresolved(f"{ref.path} does not parse: {exc.msg}") from exc
-        if method == AST_API:
-            return _digest(api_form(tree))
-        if not ref.fragment:
-            raise Unresolved(f"{ref.uri()}: {method} needs a #symbol fragment")
-        node, owner = _find_with_owner(tree, ref.fragment)
-        if node is None:
-            raise Unresolved(f"symbol {ref.fragment!r} not found in {ref.path}")
-        if method == AST_CLOSURE:
-            return _digest(closure_form(tree, node, owner))
-        return _digest(_signature_form(node) if method == AST_SIG else canon(node))
+        return _digest_ast(text, ref, method)
     if not ref.fragment:
         raise Unresolved(f"{ref.uri()}: {method} needs a #fragment")
-    if method == CSV_ROW:
-        for row in csv_rows(text):
-            if next(iter(row.values())) == ref.fragment:
-                return _digest(row)
-        raise Unresolved(f"row {ref.fragment!r} not found in {ref.path}")
-    if method == MD_TERM:
-        for term, definition in md_terms(text):
-            if slug(term) == slug(ref.fragment):
-                return _digest([term, " ".join(definition.split())])
-        raise Unresolved(f"term {ref.fragment!r} not found in {ref.path}")
-    if method == MD_ROW:
-        for cells in md_table_rows(text):
-            if any(slug(c.replace("`", "")) == slug(ref.fragment) for c in cells):
-                return _digest(cells)
-        raise Unresolved(f"table row {ref.fragment!r} not found in {ref.path}")
-    raise Unresolved(f"unknown hash method {method!r}")
+    digest = _FRAGMENT_DIGESTS.get(method)
+    if digest is None:
+        raise Unresolved(f"unknown hash method {method!r}")
+    return digest(text, ref)
 
 
 def resolves(root: Path, ref: CodeRef) -> bool:

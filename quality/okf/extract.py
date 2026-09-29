@@ -230,59 +230,81 @@ _HASH_NOTE = {
 }
 
 
-def _symbol_page(s: SymbolInfo, symbols: list[SymbolInfo], index: dict[tuple[str, str], SymbolInfo],
-                 imports: dict[str, tuple[str, str]]) -> PageSpec:
-    is_class = s.kind == "class"
-    method = cl.AST_SIG if is_class else cl.AST_CLOSURE
-    walk_nodes = _signature_nodes(s.node) if is_class else [s.node]
-    used = _names(walk_nodes)
+_TYPE_LABEL = {"function": "Function", "class": "Class", "constant": "Constant", "type-alias": "Type Alias", "method": "Method"}
+
+
+def _symbol_dependencies(s: SymbolInfo, index: dict[tuple[str, str], SymbolInfo], imports: dict[str, tuple[str, str]]) -> set[str]:
+    """Pages of the symbols this one names: imported ones and same-module ones, never itself or its own class."""
+    walk_nodes = _signature_nodes(s.node) if s.kind == "class" else [s.node]
     deps: set[str] = set()
-    for name in used:
+    for name in _names(walk_nodes):
         target = imports.get(name) or ((s.module, name) if (s.module, name) in index else None)
         if target and target != (s.module, s.owner or s.name) and target != (s.module, s.name):
             deps.add(index[target].page)
+    return deps
+
+
+def _symbol_facts_table(s: SymbolInfo, method: str) -> tuple[str, list[str]]:
+    """(the facts table, the pages that link back to this symbol: its module and, for a method, its class)."""
     module_page = f"modules/{s.module}.md"
-    lines = ["| | |", "|---|---|",
-             f"| Kind | {s.kind} |",
-             f"| Module | [`{s.module}`](/{module_page}) |"]
-    out: dict[str, list[str]] = {}
-    back: list[str] = [module_page]
+    lines = ["| | |", "|---|---|", f"| Kind | {s.kind} |", f"| Module | [`{s.module}`](/{module_page}) |"]
+    back = [module_page]
     if s.owner:
         owner_page = f"symbols/{s.module}/{s.owner}.md"
         lines.append(f"| Class | [`{s.owner}`](/{owner_page}) |")
         back.append(owner_page)
-    lines += [f"| Signature | `{md_cell(signature(s))}` |", f"| Code | `{s.uri}` |",
-              f"| Hash | {_HASH_NOTE[method]} |"]
-    parts = ["\n".join(lines)]
-    if s.doc:
-        parts.append("## Docstring\n\n" + fence(s.doc))
-    else:
-        parts.append("## Docstring\n\n_The source carries no docstring._")
+    lines += [f"| Signature | `{md_cell(signature(s))}` |", f"| Code | `{s.uri}` |", f"| Hash | {_HASH_NOTE[method]} |"]
+    return "\n".join(lines), back
+
+
+def _fields_section(node: ast.ClassDef) -> list[str]:
+    fields = [(m.target.id, ast.unparse(m.annotation), ast.unparse(m.value) if m.value else "")
+              for m in node.body if isinstance(m, ast.AnnAssign) and isinstance(m.target, ast.Name)]
+    if not fields:
+        return []
+    rows = "\n".join(f"| `{n}` | `{md_cell(a)}` | {'`' + md_cell(one_line(v, 80)) + '`' if v else ''} |" for n, a, v in fields)
+    return ["## Fields\n\n| Field | Annotation | Default |\n|---|---|---|\n" + rows]
+
+
+def _members_section(s: SymbolInfo, node: ast.ClassDef, symbols: list[SymbolInfo]) -> list[str]:
+    """The public methods of a class, or the members of a Protocol that has no method pages of its own."""
+    methods = [m for m in symbols if m.owner == s.name and m.module == s.module]
+    if methods:
+        return ["## Methods\n\n" + "\n".join(
+            f"* [`{m.name.split('.', 1)[1]}`](/{m.page}) - `{md_cell(signature(m))}`" for m in methods)]
+    return _protocol_section(s, node)
+
+
+def _protocol_section(s: SymbolInfo, node: ast.ClassDef) -> list[str]:
+    if not _is_protocol(node):
+        return []
+    protocol = [m for m in node.body if isinstance(m, (ast.FunctionDef, ast.AsyncFunctionDef))]
+    if not protocol:
+        return []
+    return ["## Protocol members\n\nStructural interface implemented by adapters; not a class to instantiate.\n\n"
+            + "\n".join(f"* `{md_cell(signature(SymbolInfo(s.layer, s.module, m.name, 'method', m, None)))}`" for m in protocol)]
+
+
+def _class_sections(s: SymbolInfo, symbols: list[SymbolInfo]) -> list[str]:
+    """Fields, methods or protocol members of a class symbol."""
+    if not isinstance(s.node, ast.ClassDef):
+        raise TypeError(f"{s.name}: a class symbol must wrap ast.ClassDef")
+    return [*_fields_section(s.node), *_members_section(s, s.node, symbols)]
+
+
+def _symbol_page(s: SymbolInfo, symbols: list[SymbolInfo], index: dict[tuple[str, str], SymbolInfo],
+                 imports: dict[str, tuple[str, str]]) -> PageSpec:
+    is_class = s.kind == "class"
+    method = cl.AST_SIG if is_class else cl.AST_CLOSURE
+    deps = _symbol_dependencies(s, index, imports)
+    table, back = _symbol_facts_table(s, method)
+    parts = [table, "## Docstring\n\n" + (fence(s.doc) if s.doc else "_The source carries no docstring._")]
     if is_class:
-        if not isinstance(s.node, ast.ClassDef):
-            raise TypeError(f"{s.name}: a class symbol must wrap ast.ClassDef")
-        fields = [(m.target.id, ast.unparse(m.annotation), ast.unparse(m.value) if m.value else "")
-                  for m in s.node.body if isinstance(m, ast.AnnAssign) and isinstance(m.target, ast.Name)]
-        if fields:
-            rows = "\n".join(f"| `{n}` | `{md_cell(a)}` | {'`' + md_cell(one_line(v, 80)) + '`' if v else ''} |" for n, a, v in fields)
-            parts.append("## Fields\n\n| Field | Annotation | Default |\n|---|---|---|\n" + rows)
-        methods = [m for m in symbols if m.owner == s.name and m.module == s.module]
-        if methods:
-            parts.append("## Methods\n\n" + "\n".join(
-                f"* [`{m.name.split('.', 1)[1]}`](/{m.page}) - `{md_cell(signature(m))}`" for m in methods))
-        elif _is_protocol(s.node):
-            protocol = [m for m in s.node.body if isinstance(m, (ast.FunctionDef, ast.AsyncFunctionDef))]
-            if protocol:
-                parts.append("## Protocol members\n\nStructural interface implemented by adapters; not a class to instantiate.\n\n"
-                             + "\n".join(f"* `{md_cell(signature(SymbolInfo(s.layer, s.module, m.name, 'method', m, None)))}`" for m in protocol))
-    if deps:
-        out["Depends on"] = sorted(deps)
+        parts += _class_sections(s, symbols)
+    out: dict[str, list[str]] = {"Depends on": sorted(deps)} if deps else {}
     description = first_sentence(s.doc) if s.doc else _bare_description(s)
-    layer_tag = s.layer
-    return PageSpec(path=s.page, type={"function": "Function", "class": "Class", "constant": "Constant",
-                                       "type-alias": "Type Alias", "method": "Method"}[s.kind],
-                    title=f"{s.module.replace('/', '.')}.{s.name}", description=description, facts="\n\n".join(parts),
-                    tags=["symbol", layer_tag, s.kind], resource=s.uri,
+    return PageSpec(path=s.page, type=_TYPE_LABEL[s.kind], title=f"{s.module.replace('/', '.')}.{s.name}",
+                    description=description, facts="\n\n".join(parts), tags=["symbol", s.layer, s.kind], resource=s.uri,
                     sources=[Source(s.uri, method, f"{s.module}.py")], out=out, back=back)
 
 
@@ -293,36 +315,39 @@ def _bare_description(s: SymbolInfo) -> str:
     return f"`{one_line(signature(s), 110)}` in `{s.module}`."
 
 
+def _public_symbols_section(own: list[SymbolInfo], layer: str) -> list[str]:
+    if own:
+        return ["## Public symbols\n\n" + "\n".join(
+            f"* [`{s.name}`](/{s.page}) ({s.kind}) - {one_line(first_sentence(s.doc) if s.doc else 'no docstring', 120)}" for s in own)]
+    if layer not in COVERED_LAYERS:
+        return ["## Public symbols\n\n_Symbol pages are generated for the domain and application layers only._"]
+    return []
+
+
+def _module_page(repo: Repo, path: str, known: set[str], symbols: list[SymbolInfo]) -> PageSpec:
+    mid = module_id(path)
+    layer = mid.split("/")[0] if "/" in mid else "root"
+    doc = ast.get_docstring(cl.parse_module(read(repo, path), path), clean=True)
+    uri = f"repo://{path}"
+    imports = module_imports(repo, path, known)
+    parts = ["| | |\n|---|---|\n" + "\n".join([f"| Layer | {layer} |", f"| Code | `{uri}` |",
+             "| Hash | `ast-api-v1` over public signatures, fields and docstrings (bodies excluded) |"])]
+    parts.append("## Module docstring\n\n" + (fence(doc) if doc else "_The source carries no module docstring._"))
+    parts += _public_symbols_section([s for s in symbols if s.module == mid and s.kind != "method"], layer)
+    out: dict[str, list[str]] = {}
+    if imports:
+        out["Imports"] = [f"modules/{m}.md" for m in imports]
+        parts.append("## Internal imports\n\n" + "\n".join(f"* [`{m}`](/modules/{m}.md)" for m in imports))
+    return PageSpec(path=f"modules/{mid}.md", type="Module", title=mid.replace("/", "."),
+                    description=first_sentence(doc) if doc else f"Module `{mid}` (no module docstring).",
+                    facts="\n\n".join(parts), tags=["module", layer], resource=uri,
+                    sources=[Source(uri, cl.AST_API, f"{mid}.py")], out=out)
+
+
 def module_pages(repo: Repo, symbols: list[SymbolInfo]) -> list[PageSpec]:
     paths = python_modules(repo)
     known = {module_id(p) for p in paths}
-    pages = []
-    for path in paths:
-        mid = module_id(path)
-        layer = mid.split("/")[0] if "/" in mid else "root"
-        tree = cl.parse_module(read(repo, path), path)
-        doc = ast.get_docstring(tree, clean=True)
-        page = f"modules/{mid}.md"
-        uri = f"repo://{path}"
-        own = [s for s in symbols if s.module == mid and s.kind != "method"]
-        imports = module_imports(repo, path, known)
-        out: dict[str, list[str]] = {}
-        parts = ["| | |\n|---|---|\n" + "\n".join([f"| Layer | {layer} |", f"| Code | `{uri}` |",
-                 "| Hash | `ast-api-v1` over public signatures, fields and docstrings (bodies excluded) |"])]
-        parts.append("## Module docstring\n\n" + (fence(doc) if doc else "_The source carries no module docstring._"))
-        if own:
-            parts.append("## Public symbols\n\n" + "\n".join(
-                f"* [`{s.name}`](/{s.page}) ({s.kind}) - {one_line(first_sentence(s.doc) if s.doc else 'no docstring', 120)}" for s in own))
-        elif layer not in COVERED_LAYERS:
-            parts.append("## Public symbols\n\n_Symbol pages are generated for the domain and application layers only._")
-        if imports:
-            out["Imports"] = [f"modules/{m}.md" for m in imports]
-            parts.append("## Internal imports\n\n" + "\n".join(f"* [`{m}`](/modules/{m}.md)" for m in imports))
-        pages.append(PageSpec(path=page, type="Module", title=mid.replace("/", "."),
-                              description=first_sentence(doc) if doc else f"Module `{mid}` (no module docstring).",
-                              facts="\n\n".join(parts), tags=["module", layer], resource=uri,
-                              sources=[Source(uri, cl.AST_API, f"{mid}.py")], out=out))
-    return pages
+    return [_module_page(repo, path, known, symbols) for path in paths]
 
 
 # ---- ubiquitous language and context map --------------------------------------------------------
@@ -336,32 +361,38 @@ def _cap(text: str) -> str:
     return text[:1].upper() + text[1:]
 
 
+def _realised_pages(symbols: list[SymbolInfo], term: str) -> list[str]:
+    """Pages of the unique public symbols a term is realised as: its CamelCase form and the form without its last word."""
+    camel = "".join(w.capitalize() if not w[:1].isupper() else w for w in term.split())
+    realised: list[str] = []
+    for name in [camel, "".join(term.split()[:-1])]:
+        hit = _unique_symbol(symbols, name) if name else None
+        if hit and hit.page not in realised:
+            realised.append(hit.page)
+    return realised
+
+
+def _language_page(term: str, definition: str, terms: list[tuple[str, str]], symbols: list[SymbolInfo]) -> PageSpec:
+    realised = _realised_pages(symbols, term)
+    related = [f"language/{cl.slug(other)}.md" for other, _ in terms if other != term and other in definition]
+    out = {}
+    parts = ["## Definition\n\n" + quote(localize_links(definition, "docs/architecture")),
+             f"Source: `repo://{ARCH}#{cl.slug(term)}`."]
+    if realised:
+        out["Realised in code"] = realised
+    if related:
+        out["Related terms"] = related
+    uri = f"repo://{ARCH}#{cl.slug(term)}"
+    return PageSpec(path=f"language/{cl.slug(term)}.md", type="Ubiquitous Language Term", title=term,
+                    description=_cap(first_sentence(definition)), facts="\n\n".join(parts),
+                    tags=["language", "ddd"], resource=uri, sources=[Source(uri, cl.MD_TERM, "ARCHITECTURE.md")], out=out)
+
+
 def language_pages(repo: Repo, symbols: list[SymbolInfo]) -> list[PageSpec]:
     text = read(repo, ARCH)
     section = re.search(r"^## Ubiquitous language\n(.*?)(?=^## )", text, re.DOTALL | re.MULTILINE)
     terms = cl.md_terms(section[1]) if section else []
-    pages = []
-    for term, definition in terms:
-        camel = "".join(w.capitalize() if not w[:1].isupper() else w for w in term.split())
-        candidates = [camel, "".join(term.split()[:-1])]
-        realised = []
-        for name in candidates:
-            hit = _unique_symbol(symbols, name) if name else None
-            if hit and hit.page not in realised:
-                realised.append(hit.page)
-        related = [f"language/{cl.slug(other)}.md" for other, _ in terms if other != term and other in definition]
-        out = {}
-        parts = ["## Definition\n\n" + quote(localize_links(definition, "docs/architecture")),
-                 f"Source: `repo://{ARCH}#{cl.slug(term)}`."]
-        if realised:
-            out["Realised in code"] = realised
-        if related:
-            out["Related terms"] = related
-        uri = f"repo://{ARCH}#{cl.slug(term)}"
-        pages.append(PageSpec(path=f"language/{cl.slug(term)}.md", type="Ubiquitous Language Term", title=term,
-                              description=_cap(first_sentence(definition)), facts="\n\n".join(parts),
-                              tags=["language", "ddd"], resource=uri, sources=[Source(uri, cl.MD_TERM, "ARCHITECTURE.md")], out=out))
-    return pages
+    return [_language_page(term, definition, terms, symbols) for term, definition in terms]
 
 
 def _module_page_for(path_text: str, modules: set[str]) -> str | None:
@@ -372,42 +403,52 @@ def _module_page_for(path_text: str, modules: set[str]) -> str | None:
     return f"modules/{tail}.md" if tail in modules else None
 
 
+def _contract_lines(contracts: str, symbols: list[SymbolInfo], out: dict[str, list[str]]) -> list[str]:
+    lines = []
+    for name in [c.strip() for c in contracts.split(",") if c.strip()]:
+        hit = _unique_symbol(symbols, name.replace(" ", ""))
+        if hit:
+            out.setdefault("Published contracts", []).append(hit.page)
+            lines.append(f"* [`{name}`](/{hit.page})")
+        else:
+            lines.append(f"* {name} (no public symbol of this name)")
+    return lines
+
+
+def _implementation_lines(implementation: str, modules: set[str], out: dict[str, list[str]]) -> list[str]:
+    lines = []
+    for token in re.findall(r"`([^`]+)`", implementation):
+        page = _module_page_for(token, modules)
+        if page:
+            out.setdefault("Implementing modules", []).append(page)
+            lines.append(f"* [`{token}`](/{page})")
+        else:
+            lines.append(f"* `{token}`")
+    return lines
+
+
+def _context_page(cells: list[str], symbols: list[SymbolInfo], modules: set[str]) -> PageSpec:
+    area, owns, contracts, implementation = cells
+    slug = cl.slug(area)
+    out: dict[str, list[str]] = {}
+    contract_lines = _contract_lines(contracts, symbols, out)
+    impl_lines = _implementation_lines(implementation, modules, out)
+    uri = f"repo://{ARCH}#{slug}"
+    facts = "\n\n".join([f"## Owns\n\n{owns}", "## Published contracts\n\n" + "\n".join(contract_lines),
+                         "## Implementation\n\n" + "\n".join(impl_lines),
+                         f"Source: context map row `{uri}`. These are responsibility boundaries inside a modular monolith, "
+                         "not separately deployed services."])
+    return PageSpec(path=f"contexts/{slug}.md", type="Bounded Context", title=area,
+                    description=f"Owns {describe(owns, 180)}", facts=facts, tags=["ddd", "context-map"],
+                    resource=uri, sources=[Source(uri, cl.MD_ROW, "ARCHITECTURE.md")], out=out)
+
+
 def context_pages(repo: Repo, symbols: list[SymbolInfo]) -> list[PageSpec]:
     text = read(repo, ARCH)
     section = re.search(r"^## Context map\n(.*?)(?=^## )", text, re.DOTALL | re.MULTILINE)
     modules = {module_id(p) for p in python_modules(repo)}
-    pages = []
-    for cells in cl.md_table_rows(section[1] if section else ""):
-        if len(cells) != 4:
-            continue
-        area, owns, contracts, implementation = cells
-        slug = cl.slug(area)
-        out: dict[str, list[str]] = {}
-        contract_lines = []
-        for name in [c.strip() for c in contracts.split(",") if c.strip()]:
-            hit = _unique_symbol(symbols, name.replace(" ", ""))
-            if hit:
-                out.setdefault("Published contracts", []).append(hit.page)
-                contract_lines.append(f"* [`{name}`](/{hit.page})")
-            else:
-                contract_lines.append(f"* {name} (no public symbol of this name)")
-        impl_lines = []
-        for token in re.findall(r"`([^`]+)`", implementation):
-            page = _module_page_for(token, modules)
-            if page:
-                out.setdefault("Implementing modules", []).append(page)
-                impl_lines.append(f"* [`{token}`](/{page})")
-            else:
-                impl_lines.append(f"* `{token}`")
-        uri = f"repo://{ARCH}#{slug}"
-        facts = "\n\n".join([f"## Owns\n\n{owns}", "## Published contracts\n\n" + "\n".join(contract_lines),
-                             "## Implementation\n\n" + "\n".join(impl_lines),
-                             f"Source: context map row `{uri}`. These are responsibility boundaries inside a modular monolith, "
-                             "not separately deployed services."])
-        pages.append(PageSpec(path=f"contexts/{slug}.md", type="Bounded Context", title=area,
-                              description=f"Owns {describe(owns, 180)}", facts=facts, tags=["ddd", "context-map"],
-                              resource=uri, sources=[Source(uri, cl.MD_ROW, "ARCHITECTURE.md")], out=out))
-    return pages
+    return [_context_page(cells, symbols, modules) for cells in cl.md_table_rows(section[1] if section else "")
+            if len(cells) == 4]
 
 
 # ---- ADRs ---------------------------------------------------------------------------------------
@@ -429,43 +470,58 @@ def _adr_meta(text: str) -> dict[str, str]:
     return meta
 
 
+def _adr_summary(text: str, title: re.Match[str] | None, stem: str) -> str:
+    """The context paragraph, else the first paragraph after the date line, else the title."""
+    context = re.search(r"^## Context and problem statement\n+(.+?)(?:\n\n|\Z)", text, re.MULTILINE | re.DOTALL)
+    body_start = re.search(r"^\* Date:[^\n]*\n\n(?:## [^\n]*\n\n)?(.+?)(?:\n\n|\Z)", text, re.MULTILINE | re.DOTALL)
+    if context:
+        return context[1]
+    if body_start:
+        return body_start[1]
+    return title[1] if title else stem
+
+
+def _adr_refs(text: str, number: str, catalog_paths: dict[str, str]) -> list[str]:
+    """Pages of the other ADRs this one names, by file name or as ADR-NNNN."""
+    named = re.findall(r"\b(\d{4})-[a-z0-9-]+\.md", text) + re.findall(r"ADR-(\d{4})", text)
+    return sorted({catalog_paths[n] for n in named if n in catalog_paths and n != number})
+
+
+def _adr_facts(repo: Repo, path: str, text: str, meta: dict[str, str]) -> str:
+    headings = re.findall(r"^## (.+)$", text, re.MULTILINE)
+    outcome = re.search(r"^## Decision outcome\n+(.*?)(?=^#{2,3} |\Z)", text, re.MULTILINE | re.DOTALL)
+    mentioned = sorted({m for m in re.findall(r"`([A-Za-z0-9_./-]+\.(?:py|md|json|csv|toml))`", text)
+                        if (repo.root / m).is_file() and not m.startswith(("docs/adr/", repo.bundle_name + "/"))})   # never the bundle itself: keeps sync a fixpoint
+    parts = ["| | |\n|---|---|\n" + "\n".join(
+        [f"| Status | {md_cell(meta.get('status', 'unknown'))} |", f"| Date | {md_cell(meta.get('date', 'unknown'))} |"]
+        + ([f"| Lane | {md_cell(localize_links(meta['lane'], 'docs/adr'))} |"] if "lane" in meta else []) + [f"| Source | `repo://{path}` |"])]
+    if outcome:
+        parts.append("## Decision outcome (verbatim)\n\n" + quote(localize_links("\n".join(outcome[1].strip().split("\n")[:20]), "docs/adr")))
+    if headings:
+        parts.append("## Sections\n\n" + "\n".join(f"* {h}" for h in headings))
+    if mentioned:
+        parts.append("## Code and docs mentioned\n\nExistence-checked by the gate; not hashed (an ADR is a decision record, "
+                     "not a description of current code).\n\n" + "\n".join(f"* `repo://{m}`" for m in mentioned))
+    return "\n\n".join(parts)
+
+
+def _adr_page(repo: Repo, path: str, catalog_paths: dict[str, str]) -> PageSpec:
+    text = read(repo, path)
+    stem = Path(path).stem
+    title = re.search(r"^# (.+)$", text, re.MULTILINE)
+    meta = _adr_meta(text)
+    status_word = meta.get("status", "proposed").split()[0].rstrip(",;.(").lower()
+    refs = _adr_refs(text, stem[:4], catalog_paths)
+    uri = f"repo://{path}"
+    return PageSpec(path=f"adrs/{stem}.md", type="Architecture Decision Record",
+                    title=title[1] if title else stem, description=first_sentence(_adr_summary(text, title, stem)),
+                    facts=_adr_facts(repo, path, text, meta), tags=["adr", status_word], status=_STATUS.get(status_word, "draft"),
+                    resource=uri, sources=[Source(uri, cl.FILE_LF, Path(path).name)], out={"Related decisions": refs} if refs else {})
+
+
 def adr_pages(repo: Repo, catalog_paths: dict[str, str]) -> list[PageSpec]:
     """``catalog_paths`` maps a 4-digit ADR number to its page path, for cross-references."""
-    pages = []
-    for path in adr_files(repo):
-        text = read(repo, path)
-        stem = Path(path).stem
-        number = stem[:4]
-        title = re.search(r"^# (.+)$", text, re.MULTILINE)
-        meta = _adr_meta(text)
-        status_word = meta.get("status", "proposed").split()[0].rstrip(",;.(").lower()
-        status = _STATUS.get(status_word, "draft")
-        context = re.search(r"^## Context and problem statement\n+(.+?)(?:\n\n|\Z)", text, re.MULTILINE | re.DOTALL)
-        body_start = re.search(r"^\* Date:[^\n]*\n\n(?:## [^\n]*\n\n)?(.+?)(?:\n\n|\Z)", text, re.MULTILINE | re.DOTALL)
-        summary = context[1] if context else (body_start[1] if body_start else (title[1] if title else stem))
-        refs = sorted({catalog_paths[n] for n in re.findall(r"\b(\d{4})-[a-z0-9-]+\.md", text) + re.findall(r"ADR-(\d{4})", text)
-                       if n in catalog_paths and n != number})
-        headings = re.findall(r"^## (.+)$", text, re.MULTILINE)
-        outcome = re.search(r"^## Decision outcome\n+(.*?)(?=^#{2,3} |\Z)", text, re.MULTILINE | re.DOTALL)
-        mentioned = sorted({m for m in re.findall(r"`([A-Za-z0-9_./-]+\.(?:py|md|json|csv|toml))`", text)
-                            if (repo.root / m).is_file() and not m.startswith(("docs/adr/", repo.bundle_name + "/"))})   # never the bundle itself: keeps sync a fixpoint
-        parts = ["| | |\n|---|---|\n" + "\n".join(
-            [f"| Status | {md_cell(meta.get('status', 'unknown'))} |", f"| Date | {md_cell(meta.get('date', 'unknown'))} |"]
-            + ([f"| Lane | {md_cell(localize_links(meta['lane'], 'docs/adr'))} |"] if "lane" in meta else []) + [f"| Source | `repo://{path}` |"])]
-        if outcome:
-            parts.append("## Decision outcome (verbatim)\n\n" + quote(localize_links("\n".join(outcome[1].strip().split("\n")[:20]), "docs/adr")))
-        if headings:
-            parts.append("## Sections\n\n" + "\n".join(f"* {h}" for h in headings))
-        if mentioned:
-            parts.append("## Code and docs mentioned\n\nExistence-checked by the gate; not hashed (an ADR is a decision record, "
-                         "not a description of current code).\n\n" + "\n".join(f"* `repo://{m}`" for m in mentioned))
-        out = {"Related decisions": refs} if refs else {}
-        uri = f"repo://{path}"
-        pages.append(PageSpec(path=f"adrs/{stem}.md", type="Architecture Decision Record",
-                              title=title[1] if title else stem, description=first_sentence(summary), facts="\n\n".join(parts),
-                              tags=["adr", status_word], status=status, resource=uri,
-                              sources=[Source(uri, cl.FILE_LF, Path(path).name)], out=out))
-    return pages
+    return [_adr_page(repo, path, catalog_paths) for path in adr_files(repo)]
 
 
 def poc_decision_pages(repo: Repo, catalog_paths: dict[str, str]) -> list[PageSpec]:
@@ -577,6 +633,21 @@ def verification_pages(repo: Repo, catalog_paths: dict[str, str], symbols: list[
 
 # ---- gates and lanes ----------------------------------------------------------------------------
 
+def _session_options(deco: ast.Call, default_name: str) -> tuple[str, list[str]]:
+    """(session name, sorted tags) from the literal keywords of a ``@nox.session(...)`` decorator."""
+    name, tags = default_name, []
+    for kw in deco.keywords:
+        try:
+            value = ast.literal_eval(kw.value)
+        except ValueError:
+            continue
+        if kw.arg == "name" and isinstance(value, str):
+            name = value
+        if kw.arg == "tags" and isinstance(value, (list, tuple)):
+            tags = sorted(str(t) for t in value)
+    return name, tags
+
+
 def _session_defs(tree: ast.Module) -> list[tuple[ast.FunctionDef, str, list[str]]]:
     found = []
     for node in tree.body:
@@ -584,17 +655,7 @@ def _session_defs(tree: ast.Module) -> list[tuple[ast.FunctionDef, str, list[str
             continue
         for deco in node.decorator_list:
             if isinstance(deco, ast.Call) and ast.unparse(deco.func) == "nox.session":
-                name, tags = node.name, []
-                for kw in deco.keywords:
-                    try:
-                        value = ast.literal_eval(kw.value)
-                    except ValueError:
-                        continue
-                    if kw.arg == "name" and isinstance(value, str):
-                        name = value
-                    if kw.arg == "tags" and isinstance(value, (list, tuple)):
-                        tags = sorted(str(t) for t in value)
-                found.append((node, name, tags))
+                found.append((node, *_session_options(deco, node.name)))
     return found
 
 

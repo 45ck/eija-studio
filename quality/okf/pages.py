@@ -176,6 +176,34 @@ def dump_frontmatter(meta: dict[str, Any]) -> str:
     return f"---\n{blob}---\n"
 
 
+def _source_entries(spec: PageSpec, digests: dict[str, str]) -> list[dict[str, Any]]:
+    entries = []
+    for source in spec.sources:
+        entry: dict[str, Any] = {"resource": source.resource}
+        if source.title:
+            entry["title"] = source.title
+        entry["hash_method"] = source.method
+        entry["sha256"] = digests[source.resource]
+        entries.append(entry)
+    return entries
+
+
+def _human_description(existing: dict[str, Any] | None) -> str | None:
+    """The one-line summary a human wrote in ``description_override``, whitespace-normalised, or None."""
+    override = existing.get("description_override") if existing else None
+    return " ".join(override.split()) if isinstance(override, str) and override.strip() else None
+
+
+def _keep_human_keys(meta: dict[str, Any], spec: PageSpec, existing: dict[str, Any] | None) -> None:
+    if not existing:
+        return
+    for key, value in existing.items():
+        if key not in MACHINE_KEYS:
+            meta[key] = value
+    if meta.get("description_override") == spec.description:
+        del meta["description_override"]           # redundant: it only repeats the generated description
+
+
 def frontmatter_for(spec: PageSpec, digests: dict[str, str], existing: dict[str, Any] | None, curated: bool = False) -> dict[str, Any]:
     """Machine-owned keys in a fixed order, then preserved human keys.
 
@@ -186,10 +214,7 @@ def frontmatter_for(spec: PageSpec, digests: dict[str, str], existing: dict[str,
     re-read. A page with no hand-written text follows its sources (there is nothing to align), and a curated
     page with no baseline yet is seeded once; deleting the key to silence a finding is a visible diff in review.
     """
-    description = spec.description
-    if existing and isinstance(existing.get("description_override"), str) and existing["description_override"].strip():
-        description = " ".join(existing["description_override"].split())   # human-owned one-line summary
-    meta: dict[str, Any] = {"type": spec.type, "title": spec.title, "description": description}
+    meta: dict[str, Any] = {"type": spec.type, "title": spec.title, "description": _human_description(existing) or spec.description}
     if spec.resource:
         meta["resource"] = spec.resource
     if spec.tags:
@@ -197,21 +222,8 @@ def frontmatter_for(spec: PageSpec, digests: dict[str, str], existing: dict[str,
     meta["status"] = spec.status
     meta["generated"] = {"by": GENERATOR}
     if spec.sources:
-        entries = []
-        for source in spec.sources:
-            entry: dict[str, Any] = {"resource": source.resource}
-            if source.title:
-                entry["title"] = source.title
-            entry["hash_method"] = source.method
-            entry["sha256"] = digests[source.resource]
-            entries.append(entry)
-        meta["sources"] = entries
-    if existing:
-        for key, value in existing.items():
-            if key not in MACHINE_KEYS:
-                meta[key] = value
-        if meta.get("description_override") == spec.description:
-            del meta["description_override"]           # redundant: it only repeats the generated description
+        meta["sources"] = _source_entries(spec, digests)
+    _keep_human_keys(meta, spec, existing)
     if "sources" in meta and (not curated or "notes_baseline" not in meta):
         meta["notes_baseline"] = sources_sha256(meta["sources"])
     return meta

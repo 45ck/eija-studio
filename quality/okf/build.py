@@ -53,40 +53,49 @@ def existing_pages(repo: Repo) -> dict[str, str]:
     return found
 
 
-def build(repo: Repo) -> Bundle:
-    on_disk = existing_pages(repo)
-    bundle = Bundle(specs=collect(repo))
-    catalog = {s.path: s for s in bundle.specs}
-    for spec in bundle.specs:
-        bundle.digests[spec.path] = {src.resource: cl.digest(repo.root, cl.parse_uri(src.resource), src.method) for src in spec.sources}
+def _inbound_links(specs: list[PageSpec], catalog: dict[str, PageSpec]) -> dict[str, set[str]]:
+    """Page path -> the pages that link to it, checking that every generated link has a target."""
     inbound: dict[str, set[str]] = {}
-    for spec in bundle.specs:
+    for spec in specs:
         targets = [(label, t) for label, paths in spec.out.items() for t in paths] + [("back", t) for t in spec.back]
         for label, target in targets:
             if target not in catalog:
                 raise ValueError(f"{spec.path}: generated link to unknown page {target!r} ({label})")
             if target != spec.path:
                 inbound.setdefault(target, set()).add(spec.path)
+    return inbound
+
+
+def _carry_over(bundle: Bundle, path: str, text: str) -> None:
+    """A page on disk that no spec produces: deprecate an orphaned generated page, leave anything else alone."""
+    try:
+        meta, body = split_page(text)
+    except ValueError:
+        bundle.files[path] = text          # left untouched; the conformance gate reports it
+        return
+    if not (isinstance(meta.get("generated"), dict) and meta["generated"].get("by") == GENERATOR):
+        bundle.files[path] = text                  # a hand-written concept page: left alone
+        return
+    if meta.get("status") != "deprecated":
+        meta["status"] = "deprecated"
+        bundle.notes.append(f"{path}: source no longer exists; marked deprecated (delete the page if the history is unwanted)")
+    bundle.deprecated.append(path)
+    bundle.files[path] = dump_frontmatter(reorder(meta)) + "\n" + body
+
+
+def build(repo: Repo) -> Bundle:
+    on_disk = existing_pages(repo)
+    bundle = Bundle(specs=collect(repo))
+    catalog = {s.path: s for s in bundle.specs}
+    for spec in bundle.specs:
+        bundle.digests[spec.path] = {src.resource: cl.digest(repo.root, cl.parse_uri(src.resource), src.method) for src in spec.sources}
+    inbound = _inbound_links(bundle.specs, catalog)
     for spec in bundle.specs:
         blocks = {"facts": spec.facts, "links": render_links(spec, catalog, sorted(inbound.get(spec.path, ())))}
         bundle.files[spec.path] = render_page(spec, blocks, bundle.digests[spec.path], on_disk.get(spec.path))
     for path, text in on_disk.items():
-        name = PurePosixPath(path).name
-        if path in bundle.files or name in ("index.md", "log.md"):
-            continue
-        try:
-            meta, body = split_page(text)
-        except ValueError:
-            bundle.files[path] = text          # left untouched; the conformance gate reports it
-            continue
-        if isinstance(meta.get("generated"), dict) and meta["generated"].get("by") == GENERATOR:
-            if meta.get("status") != "deprecated":
-                meta["status"] = "deprecated"
-                bundle.notes.append(f"{path}: source no longer exists; marked deprecated (delete the page if the history is unwanted)")
-            bundle.deprecated.append(path)
-            bundle.files[path] = dump_frontmatter(reorder(meta)) + "\n" + body
-        else:
-            bundle.files[path] = text                  # a hand-written concept page: left alone
+        if path not in bundle.files and PurePosixPath(path).name not in ("index.md", "log.md"):
+            _carry_over(bundle, path, text)
     bundle.files["log.md"] = on_disk.get("log.md", LOG_SEED)
     index_paths = _index_dirs(bundle.files)
     for directory in index_paths:
@@ -112,7 +121,26 @@ def _index_dirs(files: dict[str, str]) -> list[str]:
 def render_index(directory: str, files: dict[str, str]) -> str:
     """Directory listing per OKF section 8: relative links with the concept's own description."""
     prefix = directory + "/" if directory else ""
-    subdirs, concepts = set(), []
+    subdirs, concepts = _scan_directory(prefix, files)
+    out: list[str] = []
+    if directory == "":
+        out.append(f'---\nokf_version: "{OKF_VERSION}"\n---\n')
+        out.append("# Start here\n\n" + ROOT_INTRO + "\n")
+    else:
+        out.append(f"# {describe_dir(directory)}\n")
+    if subdirs:
+        rows = [f"* [{sub}]({sub}/) - {describe_dir(prefix + sub)}" for sub in sorted(subdirs)]
+        out.append("# Sections\n\n" + "\n".join(rows) + "\n")
+    if directory == "" and "log.md" in files:
+        out.append("# History\n\n* [Update log](log.md) - dated changes to this bundle\n")
+    out += _concept_sections(concepts)
+    return "\n".join(out).rstrip("\n") + "\n"
+
+
+def _scan_directory(prefix: str, files: dict[str, str]) -> tuple[set[str], list[tuple[str, str, str, str]]]:
+    """(child directory names, (type, title, file name, description) of each concept page) directly under ``prefix``."""
+    subdirs: set[str] = set()
+    concepts: list[tuple[str, str, str, str]] = []
     for path, text in files.items():
         if not path.startswith(prefix):
             continue
@@ -125,28 +153,19 @@ def render_index(directory: str, files: dict[str, str]) -> str:
             except ValueError:
                 meta = {}
             concepts.append((str(meta.get("type", "Unknown")), str(meta.get("title", rest[:-3])), rest, str(meta.get("description", ""))))
-    out: list[str] = []
-    if directory == "":
-        out.append(f'---\nokf_version: "{OKF_VERSION}"\n---\n')
-        out.append("# Start here\n\n" + ROOT_INTRO + "\n")
-    else:
-        out.append(f"# {describe_dir(directory)}\n")
-    if subdirs:
-        rows = []
-        for sub in sorted(subdirs):
-            key = (directory + "/" if directory else "") + sub
-            rows.append(f"* [{sub}]({sub}/) - {describe_dir(key)}")
-        out.append("# Sections\n\n" + "\n".join(rows) + "\n")
-    if directory == "" and "log.md" in files:
-        out.append("# History\n\n* [Update log](log.md) - dated changes to this bundle\n")
+    return subdirs, concepts
+
+
+def _concept_sections(concepts: list[tuple[str, str, str, str]]) -> list[str]:
+    """One '# Plural' list per concept type, entries sorted by file name."""
     groups: dict[str, list[tuple[str, str, str]]] = {}
     for kind, title, rest, description in concepts:
         groups.setdefault(kind, []).append((title, rest, description))
+    out = []
     for kind in sorted(groups):
         entries = sorted(groups[kind], key=lambda e: (e[1]))
-        plural = _plural(kind)
-        out.append(f"# {plural}\n\n" + "\n".join(f"* [{t}]({r}) - {d}" if d else f"* [{t}]({r})" for t, r, d in entries) + "\n")
-    return "\n".join(out).rstrip("\n") + "\n"
+        out.append(f"# {_plural(kind)}\n\n" + "\n".join(f"* [{t}]({r}) - {d}" if d else f"* [{t}]({r})" for t, r, d in entries) + "\n")
+    return out
 
 
 _IRREGULAR_PLURALS = {"Acceptance Criterion": "Acceptance Criteria"}
