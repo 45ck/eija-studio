@@ -1,0 +1,146 @@
+{
+  "checks": {
+    "c10_swhid_and_line_endings": {
+      "domain": "one synthetic two-line file and the worktree LICENSE",
+      "git_blob_id_lf_vs_crlf_differ": true,
+      "lf_sha256_lf_vs_crlf_equal": true,
+      "status": "MEASURED",
+      "swhid_cnt_equals_git_hash_object_for_LICENSE": true
+    },
+    "c1_jcs_subset": {
+      "all_out_of_subset_inputs_rejected": true,
+      "domain": "4000 seeded random documents (half with ASCII-only keys)",
+      "kernel_canonical_differs_ascii_key_docs": 0,
+      "kernel_canonical_differs_nonascii_key_docs": 45,
+      "kernel_differences_not_explained_by_utf16_key_order": 0,
+      "rejected": {
+        "bytes": true,
+        "float": true,
+        "int_-2**60": true,
+        "int_2**53": true,
+        "int_key": true,
+        "lone_surrogate": true,
+        "nan": true,
+        "set": true
+      },
+      "rfc8785_0.1.4_differs": 0,
+      "status": "MEASURED"
+    },
+    "c1b_utf16_order_boundary": {
+      "disagreeing_pairs": 18,
+      "domain": "all ordered pairs of 13 representative scalar values",
+      "exactly_supplementary_vs_e000_ffff": true,
+      "status": "MEASURED"
+    },
+    "c2_domain_separation": {
+      "concat_collides_a_bc_vs_ab_c": true,
+      "domain": "hand-built pairs",
+      "jcs_array_collides_a_bc_vs_ab_c": false,
+      "same_record_different_domain_collides": false,
+      "status": "MEASURED"
+    },
+    "c3_permutation_invariance": {
+      "distinct_hashes_insertion_order_json_dumps": 200,
+      "distinct_hashes_json_dumps_sort_keys_unsorted_lists": 200,
+      "distinct_hashes_networkx_node_link_data": 200,
+      "distinct_roots_sorted_records": 1,
+      "domain": "300 nodes, 900 edges, 200 shuffles (records, keys, lists)",
+      "root_equals_unshuffled": true,
+      "status": "MEASURED"
+    },
+    "c4_labelling_versus_identity": {
+      "domain": "two hand-built cases; networkx 3.5 weisfeiler_lehman_graph_hash",
+      "isomorphic_graphs_with_different_claims_are_isomorphic": true,
+      "label_free_wl_hash_equal_for_different_claims": true,
+      "sorted_record_root_equal_for_different_claims": false,
+      "status": "MEASURED",
+      "wl_hash_equal_for_c6_and_two_c3_which_are_not_isomorphic": true
+    },
+    "c5_shard_locality": {
+      "digest_change_root_changed": true,
+      "digest_change_shards_changed": true,
+      "domain": "20 shards, one seeded graph",
+      "edge_in_new_file_shards_changed": true,
+      "reorder_root_unchanged": true,
+      "shards_total": 20,
+      "status": "MEASURED"
+    },
+    "c6_closure_fingerprint": {
+      "by_mutation": {
+        "edge_anchor": {
+          "mismatches": 0,
+          "missed_by_node_only_v1": 12,
+          "trials": 12
+        },
+        "edge_class": {
+          "mismatches": 0,
+          "missed_by_node_only_v1": 12,
+          "trials": 12
+        },
+        "edge_kind": {
+          "mismatches": 0,
+          "missed_by_node_only_v1": 12,
+          "trials": 12
+        },
+        "edge_qualifier": {
+          "mismatches": 0,
+          "missed_by_node_only_v1": 12,
+          "trials": 12
+        },
+        "node_record": {
+          "mismatches": 0,
+          "missed_by_node_only_v1": 0,
+          "trials": 12
+        }
+      },
+      "domain": "60 seeded random cyclic graphs of 40 nodes and 90 edges, one mutated record each, five mutation kinds in rotation",
+      "edge_trials_missed_by_node_only_fingerprint": 48,
+      "status": "MEASURED",
+      "trials": 60,
+      "trials_where_changed_set_differs_from_kernel_closure": 0
+    },
+    "c7_rename_resolution": {
+      "cycle_detected": true,
+      "domain": "100 seeded chains x 10 shuffles x 3 probes; the mixed-level counterexample",
+      "example_probe": "repo://src/p/m1.py#g",
+      "mixed_level_counterexample": {
+        "composite_cycle_found": true,
+        "records": [
+          [
+            "repo://a.py",
+            "repo://b.py"
+          ],
+          [
+            "repo://b.py#f",
+            "repo://a.py#f"
+          ]
+        ],
+        "relation_cycle_or_conflict_found": false,
+        "resolve_raises": true
+      },
+      "nonfunctional_detected": true,
+      "order_dependent_resolutions": 0,
+      "status": "MEASURED"
+    },
+    "c8_id_canonicality": {
+      "all_as_expected": true,
+      "domain": "14 hand-built ids",
+      "mismatches": [],
+      "roundtrip_pct": true,
+      "status": "MEASURED"
+    },
+    "c9_export_ids": {
+      "domain": "2000 ids",
+      "example_id": "repo://src/eija_studio/domain/impact.py#closure",
+      "example_ncname": "eija-d76e7597-7183-53a1-9f05-d5213c527ed6",
+      "example_uuid": "d76e7597-7183-53a1-9f05-d5213c527ed6",
+      "hand_rfc9562_v5_equals_stdlib": true,
+      "namespace": "504a1617-fcab-5ac4-80d6-bd272560936e",
+      "ncname_valid": true,
+      "status": "MEASURED",
+      "uuid_collisions_in_2000": 0
+    }
+  },
+  "python": "3.12",
+  "schema": "eija.weave.bench.identity/v1"
+}
