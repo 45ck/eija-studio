@@ -18,3 +18,7 @@ demos/output/
 .mypy_cache/
 .ruff_cache/
 .hypothesis/
+
+# any virtualenv, whatever its name
+.venv*/
+venv/
