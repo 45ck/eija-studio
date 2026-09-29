@@ -23,25 +23,35 @@ def lf_sha256(path: Path) -> str:
 
 
 _IGNORED_FIELDS = frozenset({"type_comment", "kind", "type_params", "ctx"})
-_ANNOTATION_ONLY_MODULES = frozenset({"typing", "__future__", "collections.abc"})
+
+
+def _has_lazy_annotations(module: ast.Module) -> bool:
+    """True when the module says `from __future__ import annotations`: annotations are then never evaluated."""
+    return any(isinstance(node, ast.ImportFrom) and node.module == "__future__"
+               and any(alias.name == "annotations" for alias in node.names) for node in module.body)
 
 
 class _Normalise(ast.NodeTransformer):
-    """Drop what cannot change behaviour: docstrings, typing imports and (optionally) annotations."""
+    """Drop what cannot change behaviour: docstrings and, only where they are never evaluated, annotations.
+
+    Every import is kept, alias included (`from typing import get_args as sorted` rebinds a builtin), and so is the
+    `__future__` import itself: without it annotations are evaluated at definition time and can run code."""
 
     def __init__(self, strip_annotations: bool) -> None:
         self.strip_annotations = strip_annotations
 
     def _body(self, node: ast.AST) -> ast.AST:
         body = getattr(node, "body", None)
-        if isinstance(body, list) and body and isinstance(body[0], ast.Expr)                 and isinstance(body[0].value, ast.Constant) and isinstance(body[0].value.value, str):
+        if (isinstance(body, list) and body and isinstance(body[0], ast.Expr)
+                and isinstance(body[0].value, ast.Constant) and isinstance(body[0].value.value, str)):
             node.body = body[1:] or [ast.Pass()]
         return self.generic_visit(node)
 
-    visit_Module = visit_ClassDef = visit_FunctionDef = visit_AsyncFunctionDef = _body
+    def visit_Module(self, node: ast.Module) -> ast.AST:
+        self.strip_annotations = self.strip_annotations and _has_lazy_annotations(node)
+        return self._body(node)
 
-    def visit_ImportFrom(self, node: ast.ImportFrom) -> ast.AST | None:
-        return None if node.module in _ANNOTATION_ONLY_MODULES else node
+    visit_ClassDef = visit_FunctionDef = visit_AsyncFunctionDef = _body
 
     def visit_arg(self, node: ast.arg) -> ast.AST:
         if self.strip_annotations:
@@ -73,12 +83,14 @@ def _canonical(node: object) -> object:
 
 
 def semantic_sha256(path: Path, *, strip_annotations: bool) -> str:
-    """SHA-256 of the parsed program, so formatting, comments, docstrings and typing-only edits do not change it.
+    """SHA-256 of the parsed program, so formatting, comments, docstrings and lazy-annotation edits do not change it.
 
     What it establishes: two files with the same digest parse to the same executable structure (up to the
-    normalisation above). What it does NOT establish: that the code is correct, or that two different digests
-    differ in behaviour. With `strip_annotations=True` annotation edits are invisible, so use it only for
-    modules whose annotations carry no runtime meaning (pydantic models are NOT such a module)."""
+    normalisation above): imports (aliases included) and evaluated annotations are part of it. What it does NOT
+    establish: that the code is correct, or that two different digests differ in behaviour. With
+    `strip_annotations=True` annotation edits are invisible only in a module that says
+    `from __future__ import annotations`; use it only for modules whose annotations carry no runtime meaning
+    (pydantic models are NOT such a module)."""
     tree = _Normalise(strip_annotations).visit(ast.parse(path.read_text(encoding="utf-8")))
     return hashlib.sha256(json.dumps(_canonical(tree), sort_keys=True).encode("utf-8")).hexdigest()
 
@@ -87,8 +99,9 @@ def kernel_subject(*relative: str, function: str, plain_modules: tuple[str, ...]
     """Identify the kernel code a report is about. A hash names the bytes; it does not vouch for them.
 
     `sources_sha256_lf` changes on any byte edit (measurement only). `sources_semantic_sha256` ignores
-    formatting, comments, docstrings and typing-only changes, and is what a committed snapshot may embed:
-    annotations are stripped except for `plain_modules`, whose annotations are behaviour (pydantic fields)."""
+    formatting, comments, docstrings and edits to lazy annotations, and is what a committed snapshot may embed:
+    annotations are stripped only from modules with `from __future__ import annotations` and not listed in
+    `plain_modules`, whose annotations are behaviour (pydantic fields). Imports are always part of the digest."""
     return {"function": function,
             "sources_sha256_lf": {r: lf_sha256(KERNEL / r) for r in sorted(relative)},
             "sources_semantic_sha256": {r: semantic_sha256(KERNEL / r, strip_annotations=r not in plain_modules)

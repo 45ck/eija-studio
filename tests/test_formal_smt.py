@@ -16,6 +16,7 @@ from verification import formal_report as fr
 
 pytest.importorskip("z3", reason="z3-solver is in the `smt` extra; without it the proof is NOT_RUN, not passed")
 
+import z3
 from verification.smt import differential as D
 from verification.smt import prove
 from verification.smt import vocabulary as V
@@ -127,13 +128,17 @@ def _digest(tmp_path, text, *, strip=True):
     return fr.semantic_sha256(path, strip_annotations=strip)
 
 
-def test_semantic_digest_ignores_formatting_comments_docstrings_and_typing_only_edits(tmp_path):
+FUTURE = "from __future__ import annotations\n"
+
+
+def test_semantic_digest_ignores_formatting_comments_docstrings_and_lazy_annotation_edits(tmp_path):
     original = POLICY.read_text(encoding="utf-8")
     reformatted = "# a comment\n" + original.replace("\n\n", "\n\n\n\n")
     assert _digest(tmp_path, reformatted) == _digest(tmp_path, original)
-    plain = "def f(x):\n    return x + 1\n"
-    annotated = 'from typing import Any\n\n\ndef f(x: Any) -> Any:\n    """doc"""\n    return x + 1\n'
-    assert _digest(tmp_path, plain) == _digest(tmp_path, annotated)
+    # With `from __future__ import annotations` annotations are never evaluated, so editing them is not behaviour.
+    before = FUTURE + "def f(x: int) -> int:\n    return x + 1\n"
+    after = FUTURE + 'def f(x: "Any") -> None:\n    """doc"""\n    return x + 1\n'
+    assert _digest(tmp_path, before) == _digest(tmp_path, after)
 
 
 def test_semantic_digest_changes_on_any_executable_edit(tmp_path):
@@ -141,6 +146,25 @@ def test_semantic_digest_changes_on_any_executable_edit(tmp_path):
     weakened = original.replace('FORBIDDEN = ("PaymentCaptured", "ParentDataExported")', 'FORBIDDEN = ("PaymentCaptured",)')
     assert weakened != original and _digest(tmp_path, weakened) != _digest(tmp_path, original)
     assert _digest(tmp_path, "x = 1\n") != _digest(tmp_path, "x = 2\n")
+
+
+@pytest.mark.parametrize(
+    ("before", "after"),
+    [
+        # An import alias rebinds a builtin the policy calls (review of PR #25: a one-line backdoor the digest did not see).
+        (FUTURE + "from typing import Any\n\ndef f(x: Any):\n    return sorted(x)\n",
+         FUTURE + "from typing import Any, get_args as sorted\n\ndef f(x: Any):\n    return sorted(x)\n"),
+        (FUTURE + "from collections.abc import Set\n", FUTURE + "from collections.abc import Set as frozenset\n"),
+        (FUTURE + "import typing\n", FUTURE + "import typing as builtins\n"),
+        # Without the future import annotations are evaluated at definition time, so they are behaviour.
+        (FUTURE + "def f(x) -> int:\n    return x\n", "def f(x) -> int:\n    return x\n"),
+        ("def f(x: int) -> int:\n    return x\n", "def f(x: g()) -> int:\n    return x\n"),
+        ("def f(x) -> int:\n    return x\n", 'def f(x) -> globals().__setitem__("check_policy", lambda m: []):\n    return x\n'),
+        ("class C:\n    a: int\n", "class C:\n    a: g()\n"),
+    ],
+)
+def test_semantic_digest_sees_imports_and_evaluated_annotations_as_behaviour(tmp_path, before, after):
+    assert _digest(tmp_path, before) != _digest(tmp_path, after)
 
 
 def test_annotations_are_behaviour_for_modules_that_declare_pydantic_fields(tmp_path):
@@ -179,3 +203,27 @@ def test_report_json_is_sorted_and_lf(tmp_path):
 
 def test_platform_info_avoids_the_slow_wmi_query():
     assert fr.platform_info()["platform"] == sys.platform
+
+
+# ---- leave-one-out: UNKNOWN or an unconfirmed witness is not "not critical" (review of PR #25) ----------------
+
+@pytest.mark.parametrize(
+    ("solver_result", "pydantic_accepts", "expected"),
+    [
+        ("sat", True, "critical"),            # a witness the REAL pydantic models accept: critical even with validators
+        ("unsat", False, "not_critical"),     # proved: no validator-valid candidate exists
+        ("unknown", False, "inconclusive"),   # timeout or unknown says nothing
+        ("sat", False, "inconclusive"),       # pydantic_valid over-approximates: a rejected witness proves nothing either way
+    ],
+)
+def test_validator_assumed_criticality_is_three_valued(solver_result, pydantic_accepts, expected):
+    result = {"sat": z3.sat, "unsat": z3.unsat, "unknown": z3.unknown}[solver_result]
+    assert prove.validators_assumed_status(result, pydantic_accepts) == expected
+
+
+@formal
+def test_leave_one_out_split_under_validators_is_pinned_and_has_no_inconclusive_row():
+    loo = prove.leave_one_out()
+    statuses = [r["under_validators"] for r in loo["rows"] if r["status"] == "critical"]
+    assert loo["validators_inconclusive"] == [] and statuses.count("inconclusive") == 0
+    assert (statuses.count("critical"), statuses.count("not_critical")) == (30, 36)

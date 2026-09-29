@@ -56,7 +56,8 @@ def subject() -> dict[str, Any]:
 
 def snapshot_subject() -> dict[str, Any]:
     """The part of `subject()` that is committed: semantic digests only, so formatting/comment/typing-only edits
-    to the kernel do not break the drift check, while any executable change to check_policy does."""
+    to the kernel do not break the drift check, while a change to the executable structure (imports and evaluated
+    annotations included) does."""
     full = subject()
     return {"function": full["function"], "sources_semantic_sha256": full["sources_semantic_sha256"]}
 
@@ -184,6 +185,20 @@ def enumerate_accepted(limit: int = 64) -> dict[str, Any]:
 # Negative controls: delete one clause of the encoded policy
 # ------------------------------------------------------------------------------------------------
 
+def validators_assumed_status(result: Any, pydantic_accepts: bool) -> str:
+    """Is a critical clause still critical if the pydantic validators are assumed? Three-valued, never guessed.
+
+    `critical`: Z3 found a validator-valid candidate AND the real pydantic models accept its decoded witness.
+    `not_critical`: Z3 proved (UNSAT) that no validator-valid candidate violates an invariant without the clause.
+    `inconclusive`: a Z3 `unknown`/timeout, or a SAT model the real pydantic models reject (`pydantic_valid` is an
+    over-approximation, so that proves nothing either way). Inconclusive rows fail the leave-one-out check."""
+    if result == z3.unsat:
+        return "not_critical"
+    if result == z3.sat and pydantic_accepts:
+        return "critical"
+    return "inconclusive"
+
+
 def leave_one_out() -> dict[str, Any]:
     """For every clause c: does `policy minus c` admit a candidate violating some invariant?
 
@@ -205,11 +220,12 @@ def leave_one_out() -> dict[str, Any]:
             violated = sorted(i.id for i in invariants if z3.is_false(m.eval(i.formula, model_completion=True)))
             real = check_policy(wf)
             valid = _solver(w.canonical(), E.pydantic_valid(w), E.admits(clauses, frozenset({c.id})), negated)
-            valid_witness = False
-            if valid.check() == z3.sat:  # re-validated by the real pydantic models, not by the Z3 model of them
-                valid_witness = E.decode(w, valid.model())[1]
+            outcome = valid.check()
+            accepts = outcome == z3.sat and E.decode(w, valid.model())[1]  # re-validated by the REAL pydantic models
+            under_validators = validators_assumed_status(outcome, bool(accepts))
             rows.append({"clause": c.id, "status": "critical", "violated_invariants": violated,
-                         "critical_even_if_validators_are_assumed": valid_witness,
+                         "under_validators": under_validators,
+                         "critical_even_if_validators_are_assumed": under_validators == "critical",
                          "real_check_policy_rejects": bool(real), "real_errors_include_clause_code": c.code in real,
                          "passes_pydantic_validators": validated, "witness": wf.model_dump(mode="json")})
         else:
@@ -226,6 +242,7 @@ def leave_one_out() -> dict[str, Any]:
             "critical_even_if_validators_are_assumed": sum(r["critical_even_if_validators_are_assumed"] for r in critical),
             "not_needed_by_invariants": sorted(r["clause"] for r in rows if r["status"] == "not_needed_by_invariants"),
             "unknown": sorted(r["clause"] for r in rows if r["status"] == "unknown"),
+            "validators_inconclusive": sorted(r["clause"] for r in critical if r["under_validators"] == "inconclusive"),
             "named_controls": controls,
             "inconsistent_witnesses": sorted(r["clause"] for r in rows if r["status"] == "critical" and not (
                 r["real_check_policy_rejects"] and r["real_errors_include_clause_code"])),
@@ -321,7 +338,7 @@ def build_report(differential_mutants: int = 1500, differential_fresh: int = 500
          f"never fired: {diff.clauses_never_fired}; never silent: {diff.clauses_never_silent}"),
         ("named_negative_controls_yield_counterexamples", all(c["counterexample_found"] for c in loo["named_controls"]),
          f"{sum(c['counterexample_found'] for c in loo['named_controls'])}/{len(loo['named_controls'])}"),
-        ("leave_one_out_witnesses_rejected_by_real_policy", not loo["inconsistent_witnesses"] and not loo["unknown"],
+        ("leave_one_out_witnesses_rejected_by_real_policy", not loo["inconsistent_witnesses"] and not loo["unknown"] and not loo["validators_inconclusive"],
          f"{loo['critical']} critical clauses of {loo['clauses']}; {loo['critical_even_if_validators_are_assumed']} stay critical "
          "even if the pydantic validators are assumed (the others rely on the policy alone catching a validator-bypassing candidate)"),
     ]
@@ -354,7 +371,7 @@ def build_report(differential_mutants: int = 1500, differential_fresh: int = 500
                              "invariant_true_counts": dict(sorted(diff.invariant_true.items())),
                              "invariant_false_counts": dict(sorted(diff.invariant_false.items()))},
             "leave_one_out": {k: loo[k] for k in ("clauses", "critical", "critical_even_if_validators_are_assumed",
-                                                  "not_needed_by_invariants", "unknown",
+                                                  "not_needed_by_invariants", "unknown", "validators_inconclusive",
                                                   "named_controls", "inconsistent_witnesses")} | {"rows": loo["rows"]},
             "assumption_witness": witness,
         },

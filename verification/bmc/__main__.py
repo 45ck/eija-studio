@@ -37,8 +37,9 @@ def main(argv: list[str] | None = None) -> int:
     doc = report.build_report(cfg, args.workdir, run_self_test=not args.no_self_test, self_test_depth=args.self_test_depth,
                               tier=args.tier, model_names=tuple(args.models) if args.models else report.DEFAULT_MODELS[args.tier],
                               check_drift=not args.write_snapshot)
-    if args.write_snapshot and doc["verdict"] in ("FAIL", "INCONCLUSIVE"):
-        print(f"refusing --write-snapshot: the run is {doc['verdict']}; statistics are never recorded over a counterexample or a cut-off search")
+    if args.write_snapshot and doc["verdict"] != "PASS":  # the drift check is excluded on purpose here, so PASS means everything else ran
+        print(f"refusing --write-snapshot: the run is {doc['verdict']}; statistics are never recorded over a counterexample, "
+              "a cut-off search, or a run whose self-test did not execute")
     elif args.write_snapshot:
         stats = report.deterministic_stats(doc["results"]["models"])
         report.write_snapshot(cfg.depth, stats, cfg.describe())

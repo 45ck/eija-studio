@@ -166,8 +166,8 @@ def test_a_wall_clock_cap_does_not_disable_the_drift_check():
     assert report.drift(6, {}, {**snapshot_config, "stale_versions": snapshot_config["stale_versions"] + 1})[0] is None
 
 
-@pytest.mark.parametrize("verdict", ["FAIL", "INCONCLUSIVE"])
-def test_write_snapshot_is_refused_when_the_run_has_findings(tmp_path, monkeypatch, verdict):
+@pytest.mark.parametrize("verdict", ["FAIL", "INCONCLUSIVE", "PARTIAL"])
+def test_write_snapshot_is_refused_unless_the_run_is_a_full_pass(tmp_path, monkeypatch, verdict):
     monkeypatch.setattr(report, "SNAPSHOT", tmp_path / "expected_statistics.json")
     doc = {"verdict": verdict, "checks": [], "results": {"models": {}, "counterexamples": {}}, "measurements": {"seconds_total": 0.0}}
     monkeypatch.setattr(report, "build_report", lambda *a, **k: doc)
