@@ -19,7 +19,7 @@ from eija_studio.domain.models import OWNER, DomainError, LayoutChange, Semantic
 from eija_studio.domain.policy import check_policy
 from eija_studio.interfaces.cli import main as cli_main
 
-from conftest import approve, harness_identity
+from kernel_support import approve, harness_identity
 from formal_support import (
     KIND_NAMES, ROOT, artifacts, attached, collect_all, leaves, make_checkout, not_run_artifact,
     receipt_of, smt_report, stub_all, with_change, workflows,

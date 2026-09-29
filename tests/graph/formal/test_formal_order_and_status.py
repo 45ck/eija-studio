@@ -7,7 +7,7 @@ import random
 import pytest
 from eijaref import order, status, suites
 
-from conftest import load_bench
+from weave_formal_support import load_bench
 
 bench = load_bench()
 

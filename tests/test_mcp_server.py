@@ -21,7 +21,7 @@ pytest.importorskip("mcp", reason="install the agents extra: pip install -e '.[a
 from mcp import Client, MCPError, StdioServerParameters
 from mcp.server.mcpserver.exceptions import ToolError
 
-from conftest import approve
+from kernel_support import approve
 from eija_studio.application.ports import ProviderResult
 from eija_studio.domain.models import AGENT, OWNER, DomainError, Proposal, Alternative
 from eija_studio.interfaces.mcp_server import (

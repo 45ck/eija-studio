@@ -12,7 +12,7 @@ import sys
 
 import pytest
 
-from conftest import ROOT
+from weave_formal_support import ROOT
 
 CANDIDATES = [ROOT / "quality" / "okf" / "codelink.py", ROOT.parent / "okf" / "quality" / "okf" / "codelink.py"]
 

@@ -4,7 +4,7 @@ from eija_studio.bootstrap import build_studio
 from eija_studio.domain.models import OWNER, AGENT, DomainError, SemanticTransaction, LayoutChange, fingerprint
 from eija_studio.domain.change_case import ChangeCase
 from eija_studio.application.compiler import compile_case
-from conftest import approve
+from kernel_support import approve
 
 
 def test_agent_cannot_choose_meaning_or_approve(studio,selected):

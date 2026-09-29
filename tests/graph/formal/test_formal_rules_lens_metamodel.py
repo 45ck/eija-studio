@@ -7,7 +7,7 @@ import random
 import pytest
 from eijaref import asp, catalogue, lens, metamodel, rules
 
-from conftest import ROOT, load_bench
+from weave_formal_support import ROOT, load_bench
 
 bench = load_bench()
 

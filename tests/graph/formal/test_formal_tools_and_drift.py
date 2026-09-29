@@ -16,7 +16,7 @@ from pathlib import Path
 import pytest
 from eijaref import closure, suites
 
-from conftest import FORMAL, ROOT
+from weave_formal_support import FORMAL, ROOT
 
 sys.path.insert(0, str(FORMAL))
 run_alloy = importlib.import_module("run_alloy")
@@ -172,7 +172,7 @@ def test_hygiene_no_wall_clock_or_randomness_in_the_reference_package() -> None:
 
 
 def test_hygiene_bench_report_is_byte_identical_between_two_runs_of_a_fast_subset() -> None:
-    from conftest import load_bench
+    from weave_formal_support import load_bench
     b = load_bench()
     keys = ("F2", "F6", "F7", "F9")
     a = {k: b.CHECKS[k][1]() for k in keys if k != "F2"}

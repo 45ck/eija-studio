@@ -11,7 +11,7 @@ import sqlite3
 import pytest
 from eijaref import closure, suites
 
-from conftest import load_bench
+from weave_formal_support import load_bench
 
 bench = load_bench()
 

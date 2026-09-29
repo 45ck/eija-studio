@@ -14,7 +14,7 @@ import random
 import pytest
 from eijaref import canon, closure, order, status, suites
 
-from conftest import ROOT, load_bench
+from weave_formal_support import ROOT, load_bench
 
 bench = load_bench()
 
