@@ -18,7 +18,7 @@ The `agents` extra installs the official [MCP Python SDK](https://github.com/mod
 .venv/bin/python -m eija_studio mcp --workspace ~/eija-workspace --print-config claude    # or codex | opencode | gemini
 ```
 
-This prints a copy-paste snippet with absolute paths, so it works from any directory. It writes nothing. The snippets below show the same result with placeholders: replace `PY` with the absolute path of your venv's Python and `WS` with the absolute workspace path.
+This prints a copy-paste snippet with absolute paths, so it works from any directory. It writes nothing. The Claude one-liner is quoted for the shell you print it from (double quotes on Windows for cmd.exe and PowerShell, single quotes elsewhere); pasting it into a different shell needs its own quoting, or use the `.mcp.json` form below. The snippets below show the same result with placeholders: replace `PY` with the absolute path of your venv's Python and `WS` with the absolute workspace path.
 
 ### Claude Code
 
@@ -127,6 +127,15 @@ Each snippet printed by `eija mcp --print-config <client>` was fed to the real c
 | Gemini CLI 0.37.1 | `gemini mcp add --scope project` wrote `.gemini/settings.json` | Verified: the CLI writes the same `mcpServers.eija` keys. `gemini mcp list` printed nothing in the scratch directory (likely folder trust), so connection is unverified. `trust: false` matches the documented `--trust` flag |
 
 The environment-passthrough rows above come from each client's documentation, not from a live run.
+
+## What has actually been exercised per client
+
+| Client | Status | Evidence and limit |
+|---|---|---|
+| Claude Code 2.1.284 | Round-trip run once by the lane author: `tools/list` returned the seven tools and `create_case` + `propose` executed | Reported in PR #8 (about US$0.11). The transcript is not committed, so this repository cannot re-check it |
+| OpenCode 1.4.3 | Connected: `opencode mcp list` printed `eija connected` for the generated `opencode.json` (2026-09-29) | Connection and startup only; no tool call was made from OpenCode |
+| Codex CLI 0.144.1 | Config accepted: `codex mcp get eija` showed the entry enabled, stdio, `startup_timeout_sec: 30` | Config parsing only; no connection was made |
+| Gemini CLI 0.37.1 | NOT_RUN | `gemini mcp list` printed nothing with the generated file (inconclusive); the JSON is parse-tested only |
 
 ## Sources for the client syntax
 

@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import json
 import shlex
+import subprocess
+import sys
 from pathlib import Path
 
 CLIENTS: tuple[str, ...] = ("claude", "codex", "opencode", "gemini")
@@ -21,15 +23,26 @@ def _argv(python: str, workspace: Path) -> list[str]:
 
 
 def _toml(value: str) -> str:
-    return json.dumps(value)  # a JSON string is a valid TOML basic string for paths/ascii text
+    """A TOML basic string. JSON escapes are valid TOML, except ensure_ascii's surrogate pairs (non-BMP text) and a raw DEL."""
+    return json.dumps(value, ensure_ascii=False).replace(chr(0x7F), "\\u007f")
 
 
-def snippet(client: str, python: str, workspace: Path) -> str:
-    """Return the config text for `client`. Raises ValueError for an unknown client."""
+def _shell_join(argv: list[str], windows: bool) -> str:
+    """Quote for the pasting shell: cmd.exe/PowerShell double quotes on Windows, POSIX single quotes elsewhere."""
+    return subprocess.list2cmdline(argv) if windows else " ".join(shlex.quote(a) for a in argv)
+
+
+def snippet(client: str, python: str, workspace: Path, *, windows: bool | None = None) -> str:
+    """Return the config text for `client`. Raises ValueError for an unknown client.
+
+    `windows` picks the shell quoting of the Claude one-liner (default: this platform). It establishes only
+    that the text is well formed for that shell; it does not install or check anything in the client.
+    """
     argv = _argv(python, workspace.resolve())
     if client == "claude":
         # `--scope project` writes .mcp.json in the current project; drop it for a private local scope.
-        return "claude mcp add --scope project " + SERVER_NAME + " -- " + " ".join(shlex.quote(a) for a in argv)
+        return ("claude mcp add --scope project " + SERVER_NAME + " -- "
+                + _shell_join(argv, sys.platform == "win32" if windows is None else windows) + "\n")
     if client == "codex":
         return "\n".join([f"[mcp_servers.{SERVER_NAME}]", f"command = {_toml(argv[0])}",
                           "args = [" + ", ".join(_toml(a) for a in argv[1:]) + "]",

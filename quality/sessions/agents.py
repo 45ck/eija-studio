@@ -1,4 +1,4 @@
-"""Agent integration lane: MCP server surface, client config and docs drift (ADR-0041)."""
+"""Agent integration lane: MCP server surface and agent static checks (ADR-0041)."""
 import subprocess
 import sys
 
@@ -9,10 +9,14 @@ PYTHON = sys.executable  # the project environment nox runs in; sessions use pyt
 
 @nox.session(python=False, tags=["full"])
 def agents(session: nox.Session) -> None:
-    """MCP tools/resources via the SDK's in-memory session, owner-operation absence, stdio start-up, docs drift.
+    """MCP tools/resources via the SDK's in-memory session and stdio start-up, plus the SDK-free static checks.
 
-    Needs the `agents` extra. Without it the gate reports NOT_RUN (skipped), never a pass.
+    The SDK-free checks (owner-operation lint, config snippets, docs and skills drift) always run. The SDK tests
+    need the `agents` extra; without it they report NOT_RUN in the log (the session still exits 0, so read it).
     """
-    if subprocess.run([PYTHON, "-c", "import mcp"], capture_output=True, check=False).returncode != 0:
-        session.skip('NOT_RUN: the MCP SDK is not installed; run: pip install -e ".[agents]"')
-    session.run(PYTHON, "-m", "pytest", "-q", "tests/test_mcp_server.py", *session.posargs)
+    tests = ["tests/test_agent_static.py"]
+    if subprocess.run([PYTHON, "-c", "import mcp"], capture_output=True, check=False).returncode == 0:
+        tests.append("tests/test_mcp_server.py")
+    else:
+        session.log('NOT_RUN: the MCP SDK is not installed, so tests/test_mcp_server.py did not run; pip install -e ".[agents]"')
+    session.run(PYTHON, "-m", "pytest", "-q", *tests, *session.posargs)

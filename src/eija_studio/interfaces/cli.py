@@ -1,5 +1,5 @@
 from __future__ import annotations
-import argparse, getpass, json, os, secrets, sys
+import argparse, getpass, importlib.util, json, os, secrets, sys
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from pydantic import ValidationError
@@ -114,8 +114,12 @@ def _run_mcp(args) -> int:
         raise DomainError("CONFIGURATION", "mcp: --max-provider-calls must be 0 or more")
     try:
         from .mcp_server import serve_stdio
-    except ImportError:
-        raise DomainError("MISSING_EXTRA", 'Install the MCP SDK: pip install -e ".[agents]"') from None
+    except ImportError as error:
+        if importlib.util.find_spec("mcp") is None:
+            raise DomainError("MISSING_EXTRA", 'Install the MCP SDK: pip install -e ".[agents]"') from error
+        # The SDK is there but unusable (for example mcp<2 has no mcp.server.mcpserver): say so, do not say "install".
+        raise DomainError("MCP_SDK_INCOMPATIBLE", f"The installed MCP SDK cannot be used ({error}); this release expects "
+                                                   'mcp==2.2.0: pip install -e ".[agents]"') from error
     studio = build_studio(args.workspace, args.provider, args.model, args.allow_network, None)
     serve_stdio(studio, egress_consent=args.egress_consent, max_provider_calls=args.max_provider_calls)
     return 0
