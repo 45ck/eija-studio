@@ -1,0 +1,240 @@
+{
+  "$description": "EIJA Studio motion, feedback and performance budget tokens. DTCG Format Module 2025.10 (Final Community Group Report, not a W3C Standard; opened 2026-09-29 at https://www.designtokens.org/tr/2025.10/format/). Every token carries an extension record: kind is LITERATURE_LIMIT (a threshold copied from a source as published), LITERATURE_ANCHORED (a published value or point that the source does not frame as a pass/fail threshold; the p95 fail rule, its use here and any extension to a new case are ours), DESIGN_TARGET (our hypothesis, calibrate against measurements) or DERIVED (arithmetic on other tokens, or a nominal value that is not a limit). Nothing here is a measurement of users. Decision record: docs/adr/0066-hci-motion-performance.md. Design document: docs/hci/design/motion-and-performance.md. Test ids MB-nn are defined in section 10 of that document.",
+  "$extensions": {
+    "io.github.45ck.eija-studio": {
+      "aspect": "motion-performance",
+      "adr": "0066",
+      "date": "2026-09-29",
+      "status": "proposed",
+      "reduced-motion-rule": "Under prefers-reduced-motion: reduce, no transform, scale or translate animation runs; opacity fades are kept at most at motion.reduced.opacity-max; indeterminate progress is drawn static. Test MB-14.",
+      "css-implementation-note": "Under the Studio CSP (style-src 'self') a style attribute is blocked. Set custom properties with element.style.setProperty (CSSOM), animate with the Web Animations API or stylesheet classes, and move SVG nodes with the transform attribute. MEASURED 2026-09-29 in Chrome 154 on Windows: setAttribute('style') raised one style-src-attr violation; CSSOM writes, element.animate() creation, SVG transform attribute and adoptedStyleSheets raised none. Frame output was not observed because the tab was hidden."
+    }
+  },
+  "motion": {
+    "duration": {
+      "$type": "duration",
+      "$description": "Animation durations. Allowed set is exactly these four values (MB-13). NN/g gives 100 ms for simple feedback, 200 to 300 ms for larger changes, 400 ms as the upper end for large movements (https://www.nngroup.com/articles/animation-duration/, opened 2026-09-29). The four-step scale is our choice within that range.",
+      "feedback": {
+        "$value": { "value": 100, "unit": "ms" },
+        "$description": "Press, selection acknowledgement, focus and hover state change, opacity-only fades under reduced motion.",
+        "$extensions": { "io.github.45ck.eija-studio": { "kind": "DESIGN_TARGET", "purpose": "feedback", "source": "E3", "test": "MB-13" } }
+      },
+      "transient": {
+        "$value": { "value": 150, "unit": "ms" },
+        "$description": "Enter and exit of transient surfaces: palette, popover, drawer, tooltip. Exit uses the same duration, not longer.",
+        "$extensions": { "io.github.45ck.eija-studio": { "kind": "DESIGN_TARGET", "purpose": "enter-exit", "source": "E3", "test": "MB-13" } }
+      },
+      "continuity": {
+        "$value": { "value": 240, "unit": "ms" },
+        "$description": "Position continuity: reflow after expand or collapse, node settle after a kernel-generated relayout, return of a refused drop.",
+        "$extensions": { "io.github.45ck.eija-studio": { "kind": "DESIGN_TARGET", "purpose": "continuity", "source": "E3 E13 E14", "test": "MB-13 MB-11" } }
+      },
+      "cap": {
+        "$value": { "value": 400, "unit": "ms" },
+        "$description": "Upper bound for any animation in the main workflow. Used only for the longest travel of a continuity move; never for feedback or enter-exit. Anchored to NN/g, which gives up to 400 ms for large movements but calls 400 ms very slow and 500 ms a drag; we use it as a ceiling, not a target.",
+        "$extensions": { "io.github.45ck.eija-studio": { "kind": "LITERATURE_ANCHORED", "purpose": "cap", "source": "E3", "test": "MB-13" } }
+      },
+      "indeterminate-motion-max": {
+        "$value": { "value": 5000, "unit": "ms" },
+        "$description": "Indeterminate progress motion runs at most this long, then the glyph is static and the elapsed text carries liveness. Matches the 5 s threshold in WCAG 2.2 SC 2.2.2 (Level A) for MOVING content, https://www.w3.org/WAI/WCAG22/Understanding/pause-stop-hide.html, opened 2026-09-29. It covers the glyph only: the same page says auto-updating information has no five-second exception, so no text in a job row ticks or auto-updates in Phase 0 (the start time is written once). Phase 1 kernel-polled progress is auto-updating and its SC 2.2.2 handling is UNVERIFIED (open for the Phase 1 ADR).",
+        "$extensions": { "io.github.45ck.eija-studio": { "kind": "LITERATURE_LIMIT", "purpose": "progress", "source": "E6", "test": "MB-20" } }
+      }
+    },
+    "easing": {
+      "$type": "cubicBezier",
+      "$description": "Curves are the CSS keyword curves (MDN easing-function page, opened 2026-09-29): ease-out, ease-in, ease-in-out. NN/g: ease-out for entering, ease-in for exiting, avoid linear for movement.",
+      "enter": {
+        "$value": [0, 0, 0.58, 1],
+        "$description": "ease-out. Elements that appear.",
+        "$extensions": { "io.github.45ck.eija-studio": { "kind": "DESIGN_TARGET", "source": "E3" } }
+      },
+      "exit": {
+        "$value": [0.42, 0, 1, 1],
+        "$description": "ease-in. Elements that leave.",
+        "$extensions": { "io.github.45ck.eija-studio": { "kind": "DESIGN_TARGET", "source": "E3" } }
+      },
+      "move": {
+        "$value": [0.42, 0, 0.58, 1],
+        "$description": "ease-in-out. Elements that move between two positions on screen.",
+        "$extensions": { "io.github.45ck.eija-studio": { "kind": "DESIGN_TARGET", "source": "E3" } }
+      }
+    },
+    "transition": {
+      "$type": "transition",
+      "$description": "Composite motion recipes. properties limited to opacity and transform (MB-13); the properties list is in the extension record because the DTCG transition type carries only duration, delay and timingFunction.",
+      "feedback": {
+        "$value": {
+          "duration": "{motion.duration.feedback}",
+          "delay": { "value": 0, "unit": "ms" },
+          "timingFunction": "{motion.easing.enter}"
+        },
+        "$extensions": { "io.github.45ck.eija-studio": { "purpose": "feedback", "properties": ["opacity"], "interruptible": true } }
+      },
+      "enter": {
+        "$value": {
+          "duration": "{motion.duration.transient}",
+          "delay": { "value": 0, "unit": "ms" },
+          "timingFunction": "{motion.easing.enter}"
+        },
+        "$extensions": { "io.github.45ck.eija-studio": { "purpose": "enter-exit", "properties": ["opacity", "transform"], "interruptible": true } }
+      },
+      "exit": {
+        "$value": {
+          "duration": "{motion.duration.transient}",
+          "delay": { "value": 0, "unit": "ms" },
+          "timingFunction": "{motion.easing.exit}"
+        },
+        "$extensions": { "io.github.45ck.eija-studio": { "purpose": "enter-exit", "properties": ["opacity", "transform"], "interruptible": true } }
+      },
+      "continuity": {
+        "$value": {
+          "duration": "{motion.duration.continuity}",
+          "delay": { "value": 0, "unit": "ms" },
+          "timingFunction": "{motion.easing.move}"
+        },
+        "$extensions": { "io.github.45ck.eija-studio": { "purpose": "continuity", "properties": ["transform"], "technique": "FLIP with the Web Animations API, keyed by stable element id", "interruptible": true, "max-duration": "{motion.duration.cap}" } }
+      }
+    },
+    "reduced": {
+      "$type": "duration",
+      "$description": "Policy under prefers-reduced-motion: reduce. WCAG 2.2 SC 2.3.3 (Level AAA) defines motion animation so that colour, opacity and blur changes that do not alter perceived size, shape or position are outside it (https://www.w3.org/WAI/WCAG22/Understanding/animation-from-interactions.html, opened 2026-09-29). We conform to it although it is AAA.",
+      "opacity-max": {
+        "$value": "{motion.duration.feedback}",
+        "$description": "Longest permitted animation under reduce, opacity only.",
+        "$extensions": { "io.github.45ck.eija-studio": { "kind": "DESIGN_TARGET", "source": "E5 E4", "test": "MB-14" } }
+      }
+    }
+  },
+  "budget": {
+    "$description": "Latency and frame budgets as tokens so tests and documents read one source. limit is a published threshold or a hard fail; target is our design hypothesis and produces a warning when exceeded. All are p95 of at least 30 trials on the reference PC unless stated (MB-01 to MB-12). None is a measurement of users. Baseline measurements are in docs/hci/design/motion-and-performance.md section 3.",
+    "direct": {
+      "$type": "duration",
+      "$description": "Class 0.1 s: pointer and keyboard echo, selection, drag frame response, palette open, acknowledgement of a press. Anchored to Nielsen's 0.1 s instantaneous limit (https://www.nngroup.com/articles/response-times-3-important-limits/, opened 2026-09-29); the article gives no p95 fail rule, so applying it as a p95 fail threshold is ours. Target is our margin so that a loaded machine still stays under the limit.",
+      "limit": {
+        "$value": { "value": 100, "unit": "ms" },
+        "$extensions": { "io.github.45ck.eija-studio": { "kind": "LITERATURE_ANCHORED", "source": "E1", "test": "MB-01 MB-04", "on-exceed": "fail" } }
+      },
+      "target": {
+        "$value": { "value": 50, "unit": "ms" },
+        "$extensions": { "io.github.45ck.eija-studio": { "kind": "DESIGN_TARGET", "source": "E1 E9", "test": "MB-01 MB-04", "on-exceed": "warn" } }
+      }
+    },
+    "view": {
+      "$type": "duration",
+      "$description": "Class 1 s: view switch, tree selection that updates a facet lane, chapter open, palette result list per keystroke after the first. Limit anchored to Nielsen's 1 s flow-of-thought point (the article says no special feedback is needed between 0.1 and 1 s and gives no fail threshold, so the p95 fail rule is ours). Target 200 ms is the same number as the INP good boundary (https://web.dev/articles/inp, opened 2026-09-29), but INP is assessed at p75 and our budgets at p95, so ours is the stricter tail; it also lies near the 0.3 s row of the Doherty and Thadani data (E12).",
+      "limit": {
+        "$value": { "value": 1000, "unit": "ms" },
+        "$extensions": { "io.github.45ck.eija-studio": { "kind": "LITERATURE_ANCHORED", "source": "E1", "test": "MB-02", "on-exceed": "fail" } }
+      },
+      "target": {
+        "$value": { "value": 200, "unit": "ms" },
+        "$extensions": { "io.github.45ck.eija-studio": { "kind": "DESIGN_TARGET", "source": "E8 E12", "test": "MB-02", "on-exceed": "warn" } }
+      }
+    },
+    "commit": {
+      "$type": "duration",
+      "$description": "Kernel commit acknowledged: select meaning, typed edit, layout drop, save, approve, apply, discard. MEASURED server side 2026-09-29 (n=20, loopback): p95 26 ms for layout, 25 ms edit, 159 ms apply, 214 ms approve; max 1859 ms. Target 300 ms leaves room for the browser; the limit is anchored to Nielsen's 1 s point and the p95 fail rule is ours; outliers above 1 s must show the static start-time text (MB-05).",
+      "limit": {
+        "$value": { "value": 1000, "unit": "ms" },
+        "$extensions": { "io.github.45ck.eija-studio": { "kind": "LITERATURE_ANCHORED", "source": "E1 E23", "test": "MB-03 MB-11", "on-exceed": "fail" } }
+      },
+      "target": {
+        "$value": { "value": 300, "unit": "ms" },
+        "$extensions": { "io.github.45ck.eija-studio": { "kind": "DESIGN_TARGET", "source": "E12 E23", "test": "MB-03 MB-11", "on-exceed": "warn" } }
+      }
+    },
+    "regenerate": {
+      "$type": "duration",
+      "$description": "Typed edit dropped to regenerated picture visible, excursion model (5 states). Hypothesis from docs/hci/research/diagramming-and-uml-tools.md section 5 item 9: re-layout within 400 ms; not measured. Larger models need their own measurement.",
+      "target": {
+        "$value": { "value": 400, "unit": "ms" },
+        "$extensions": { "io.github.45ck.eija-studio": { "kind": "DESIGN_TARGET", "source": "DGM", "test": "MB-12", "on-exceed": "warn", "status": "UNKNOWN until measured" } }
+      }
+    },
+    "job": {
+      "$type": "duration",
+      "$description": "Jobs (verification, model checks, agent and provider runs). accept: press to RUNNING or pending visible. indicator-delay: no spinner, skeleton, start-time text or Abandon wait control before this age; NN/g advises no skeleton or spinner under 1 s (https://www.nngroup.com/articles/skeleton-screens/, opened 2026-09-29). poll-interval: maximum age of a progress update once the kernel reports progress. announce-interval: minimum gap between live-region announcements while RUNNING. cancel-ack: press of Cancel to visible state change.",
+      "accept": {
+        "$value": { "value": 100, "unit": "ms" },
+        "$description": "Anchored to Nielsen's 0.1 s; extending it to acknowledging a job is our choice.",
+        "$extensions": { "io.github.45ck.eija-studio": { "kind": "LITERATURE_ANCHORED", "source": "E1", "test": "MB-04", "on-exceed": "fail" } }
+      },
+      "indicator-delay": {
+        "$value": { "value": 1000, "unit": "ms" },
+        "$description": "Anchored to NN/g: no skeleton or spinner under 1 s. At this age the static start-time text and, in Phase 0, the Abandon wait control appear (written once, never updated).",
+        "$extensions": { "io.github.45ck.eija-studio": { "kind": "LITERATURE_ANCHORED", "source": "E1 E2", "test": "MB-05", "tolerance": { "value": 100, "unit": "ms" } } }
+      },
+      "poll-interval": {
+        "$value": { "value": 250, "unit": "ms" },
+        "$description": "PREDICTION: for the 125-cell matrix at p50 2096 ms this gives about 8 updates of about 15 cells each.",
+        "$extensions": { "io.github.45ck.eija-studio": { "kind": "DESIGN_TARGET", "test": "MB-06", "requires": "kernel job endpoint (Phase 1)" } }
+      },
+      "announce-interval": {
+        "$value": { "value": 10000, "unit": "ms" },
+        "$description": "Live-region announcements: at start, at most once per 10 s, and at the terminal outcome; never per progress tick (WCAG 2.2 SC 4.1.3, Level AA, https://www.w3.org/WAI/WCAG22/Understanding/status-messages.html, opened 2026-09-29).",
+        "$extensions": { "io.github.45ck.eija-studio": { "kind": "DESIGN_TARGET", "source": "E7", "test": "MB-18" } }
+      },
+      "cancel-ack": {
+        "$value": { "value": 100, "unit": "ms" },
+        "$description": "Anchored to Nielsen's 0.1 s; applying it to a Cancel press is our choice.",
+        "$extensions": { "io.github.45ck.eija-studio": { "kind": "LITERATURE_ANCHORED", "source": "E1", "test": "MB-08", "on-exceed": "fail" } }
+      },
+      "attention-limit": {
+        "$value": { "value": 10000, "unit": "ms" },
+        "$description": "Above this age a job must show a determinate percentage from the kernel, or the explicit words 'no progress signal', and offer interruption (Nielsen 10 s limit). Cancel is offered from the start in Phase 1 and Abandon wait from indicator-delay in Phase 0, earlier than Nielsen requires.",
+        "$extensions": { "io.github.45ck.eija-studio": { "kind": "LITERATURE_LIMIT", "source": "E1", "test": "MB-06 MB-08" } }
+      }
+    },
+    "frame": {
+      "$description": "Canvas drag. Reference display rate 60 Hz. The probe measures the display rate (median requestAnimationFrame interval over 1 s of idle) before the drag and reports MB-09 only when it is between 55 and 65 Hz; on any other rate the frame rows are reported as not comparable, so a 120 Hz or 144 Hz display cannot pass MB-09 trivially. The frame interval limit is a tolerance over the nominal period, not the period itself, because a healthy vsync-locked run jitters around 16.67 ms. RAIL: produce a frame in 10 ms or less because the browser needs about 6 ms of the 16 ms (https://web.dev/articles/rail, opened 2026-09-29; the page points to Core Web Vitals as the newer initiative). Long animation frame threshold 50 ms (MDN Long Animation Frame timing, opened 2026-09-29). 120 Hz (8.33 ms per frame, Zed, https://zed.dev/blog/videogame) is NOT promised for an SVG DOM canvas.",
+      "reference-rate": {
+        "$type": "number",
+        "$value": 60,
+        "$description": "Hz. Frames per second the drag must sustain; the probe accepts a measured display rate of 55 to 65 Hz (see the frame description).",
+        "$extensions": { "io.github.45ck.eija-studio": { "kind": "DESIGN_TARGET", "unit": "Hz", "test": "MB-09" } }
+      },
+      "period": {
+        "$type": "duration",
+        "$value": { "value": 16.7, "unit": "ms" },
+        "$description": "DERIVED nominal value, not a limit: 1000 / 60 = 16.67 ms. Nothing fails on it; interval-limit and late-frame-share-max carry the pass/fail rule.",
+        "$extensions": { "io.github.45ck.eija-studio": { "kind": "DERIVED", "source": "E9", "test": "MB-09" } }
+      },
+      "interval-limit": {
+        "$type": "duration",
+        "$value": { "value": 20, "unit": "ms" },
+        "$description": "p95 frame interval during drag must be at most this. 20 ms is 1.2 times the nominal 60 Hz period, a tolerance for vsync jitter so that a healthy run does not fail by chance. Our hypothesis; calibrate on the first probe runs (an unloaded machine should sit near 16.7 ms).",
+        "$extensions": { "io.github.45ck.eija-studio": { "kind": "DESIGN_TARGET", "test": "MB-09", "on-exceed": "fail", "status": "UNKNOWN until measured" } }
+      },
+      "late-frame": {
+        "$type": "duration",
+        "$value": { "value": 25, "unit": "ms" },
+        "$description": "DERIVED: a frame interval longer than this (1.5 nominal periods, 25 ms) is a late frame, i.e. at least one missed vsync.",
+        "$extensions": { "io.github.45ck.eija-studio": { "kind": "DERIVED", "source": "E9", "test": "MB-09" } }
+      },
+      "late-frame-share-max": {
+        "$type": "number",
+        "$value": 0.05,
+        "$description": "Share of drag frames that may be late (at most 5 percent). Our hypothesis; calibrate.",
+        "$extensions": { "io.github.45ck.eija-studio": { "kind": "DESIGN_TARGET", "unit": "fraction", "test": "MB-09", "on-exceed": "fail", "status": "UNKNOWN until measured" } }
+      },
+      "script-per-move": {
+        "$type": "duration",
+        "$value": { "value": 10, "unit": "ms" },
+        "$description": "p95 main-thread work (script, style, layout) per pointer move frame. The main gate of MB-09. DERIVED: RAIL (legacy page) says the browser needs about 6 ms of a 16 ms frame, so 16 - 6 = 10 ms is left for our work; RAIL states the 10 ms, but the subtraction and its use as a fail threshold are ours.",
+        "$extensions": { "io.github.45ck.eija-studio": { "kind": "DERIVED", "source": "E9", "test": "MB-09", "on-exceed": "fail" } }
+      },
+      "long-frame": {
+        "$type": "duration",
+        "$value": { "value": 50, "unit": "ms" },
+        "$description": "A long animation frame. Count during a drag must be zero.",
+        "$extensions": { "io.github.45ck.eija-studio": { "kind": "LITERATURE_LIMIT", "source": "E25", "test": "MB-09", "on-exceed": "fail" } }
+      },
+      "nodes-max": {
+        "$type": "number",
+        "$value": 100,
+        "$description": "Design scale of the budget: at most 100 nodes and 200 edges on one canvas. Above it the canvas shows a visible cap message instead of degrading silently. Hypothesis; the excursion model has 5 states.",
+        "$extensions": { "io.github.45ck.eija-studio": { "kind": "DESIGN_TARGET", "test": "MB-10", "edges-max": 200 } }
+      }
+    }
+  }
+}

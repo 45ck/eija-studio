@@ -1,0 +1,155 @@
+{
+  "schema": "eija.brief.v1",
+  "date": "2026-09-29",
+  "lane": "lane/ux-research",
+  "status": "proposed",
+  "notes": [
+    "Machine-readable digest of docs/hci/research/SYNTHESIS.md, docs/hci/research/PRINCIPLES.md and docs/hci/personas-and-jtbd.md. Source ids (AIC, ADC, DGM, REQ, MOK, REV, LAW, VIS, DEV, SLP, V1-V7, R1-R3) are defined in SYNTHESIS.md section 1.",
+    "Personas, frequencies and budgets are HYPOTHESES derived from literature; no user study has been run. Numbers derived from laws are PREDICTIONS.",
+    "baseline_support is judged from the baseline files (index.html element ids and app.js keyword search), not from a full read of app.js."
+  ],
+  "positioning": "Assurance by meaning for AI-generated change: the owner reviews a change to an executable model by what it means, what it touches and what is proved, keeps UNKNOWN visible, and decides. AI proposes, the kernel checks, the owner decides.",
+  "principles": [
+    {"id": "P1", "rank": 1, "type": "invariant", "statement": "UNKNOWN is always visible, counted, bounded and never rolled up into PASS.", "evidence": ["REV§0", "REV§4", "REV§9", "LAW§2.11", "R3"], "check": "Rendered UNKNOWN count equals model UNKNOWN count with a non-colour cue; roll-up is never PASS while UNKNOWN > 0."},
+    {"id": "P2", "rank": 2, "type": "invariant", "statement": "The owner decides; nothing an AI or provider can reach may approve or apply; approval stays one deliberate step with evidence in view.", "evidence": ["V2", "V5", "AIC§2.1", "REV§0", "LAW§3"], "check": "No palette command, agent-bridge tool or provider response maps to approve or apply; rubber-stamp indicators in the study."},
+    {"id": "P3", "rank": 3, "type": "invariant", "statement": "What you see is generated from the model; every edit is a typed request the kernel accepts or refuses with a reason; layout is stored apart from meaning keyed by stable id.", "evidence": ["DGM§3.1", "MOK§2.1", "ADC§2.7"], "check": "DOM equals render(model, layout); every drag maps to a kernel operation type or a refusal reason."},
+    {"id": "P4", "rank": 4, "type": "differentiator", "statement": "The unit of review is a semantic operation, not a line: chapters (core, consequences, glue), ADDED/MODIFIED/REMOVED, about 4 top-level chunks, hidden-null-edit counter, Viewed marks that clear on hash change.", "evidence": ["AIC§0", "REQ§2.2", "REV§2", "LAW§2.5"], "check": "Study: seeded-defect detection and time; prototype: chunks per change at most 4 (PREDICTION)."},
+    {"id": "P5", "rank": 5, "type": "differentiator", "statement": "Every change shows its ripple across states, journeys, tests, personas and requirements, with UNKNOWN separate and edge tiers (kernel-derived, heuristic, unknown); suspect is kernel-computed and cleared only by a logged owner decision.", "evidence": ["LAW§2.7", "DGM§3.2", "AIC§4", "REV§8", "REQ§2.2"], "check": "Property test: models changed by an operation are a subset of the listed ripple."},
+    {"id": "P6", "rank": 6, "type": "standard", "statement": "Status is never carried by colour alone (shape, word, colour); contrast is computed and reports UNKNOWN when not computable; light and dark ship together.", "evidence": ["VIS§2.3", "VIS§2.4", "SLP§3.2", "V4"], "check": "SLP M15 and M16 HARD gates; CVD simulation of every status pair."},
+    {"id": "P7", "rank": 7, "type": "standard", "statement": "Local actions answer inside 0.1 s; view switches inside 1 s; longer work is a job with progress, cancel, RUNNING and a real outcome; the previous verdict stays visible and marked STALE.", "evidence": ["V1", "LAW§2.6", "DEV§2.12"], "check": "Latency probe p95 per action class (PREDICTION targets until measured)."},
+    {"id": "P8", "rank": 8, "type": "standard", "statement": "Keyboard first: one Ctrl/Cmd+K palette that acts on the selection and contains no approve or apply; every drag has a non-dragging path; targets at least 24 by 24 CSS px.", "evidence": ["V6", "DGM§2.5", "DEV§2.1", "MOK§3", "LAW§2.4"], "check": "Task-flow JSON holds both paths; automated target-size check."},
+    {"id": "P9", "rank": 9, "type": "differentiator", "statement": "AI proposals cite only entities and tokens resolvable in the model or token files; anything new is an explicit item awaiting the owner; proposals look provisional (dashed outline plus text badge); imports list unmapped items as UNKNOWN; AI severity and effort are labelled AI-estimated.", "evidence": ["ADC§2.6", "ADC§2.3", "DGM§2.4", "MOK§2.6", "REV§2"], "check": "Grounding checker rejects unresolved references; AI text carries data-eija-source."},
+    {"id": "P10", "rank": 10, "type": "hypothesis", "statement": "Restraint: about 120 chrome words and 12 containers per viewport, nesting at most 3, at most 6 font sizes, at most 2 elevations, one accent hue plus status hues, at most 2 disclosure levels with UNKNOWN at level 0; chrome recedes.", "evidence": ["SLP§3", "V7", "DEV§2.5", "VIS§2.5", "LAW§2.12"], "check": "slop-budget script at 1440x900 and 1280x720; BAND metrics reported against a calibrated distribution."},
+    {"id": "P11", "rank": 11, "type": "practice", "statement": "Every undo, rewind or discard states what it does not restore; no undo that cannot be undone; receipts are retained.", "evidence": ["AIC§2.1", "AIC§2.4", "AIC§2.9"], "check": "Markup lint: each undo control has a coverage string."},
+    {"id": "P12", "rank": 12, "type": "method", "statement": "Predictions are labelled PREDICTION with constants and a band; no user-benefit claim exists before a study.", "evidence": ["LAW§0", "LAW§2.10", "AIC§2.12"], "check": "Model functions return the label and constants; HCI-ADR lint requires the section."}
+  ],
+  "personas": [
+    {
+      "id": "P1", "name": "Agent-change reviewer", "icp": true, "status": "HYPOTHESIS",
+      "job": "Judge what an AI-proposed change means, what else it touches and what is not known, then decide defensibly.",
+      "jobs": ["When an agent proposes a change, see what it means in domain terms so I can judge it without rebuilding it from a diff.", "When a change lands, see what else it touches and what is UNKNOWN so I do not approve a hidden consequence.", "When I approve, have the exact revision and every UNKNOWN in front of me."],
+      "frequency": "daily",
+      "context": "Desktop, keyboard-heavy, interleaved with editor and terminal work.",
+      "pains": ["Line diffs make meaning a reconstruction task (AIC§0)", "93% of Claude Code prompts approved, vendor-reported (V2)", "Perceived and measured AI effect diverge (AIC§2.12)"],
+      "success_measure": "STUDY: seeded defects found; UNKNOWN misread as PASS (target zero); calibration; time to first evidence. PREDICTION: at most 4 top-level chunks per change.",
+      "tasks": ["T02", "T03", "T08", "T09", "T12"]
+    },
+    {
+      "id": "P2", "name": "Domain-model owner (architect)", "icp": false, "status": "HYPOTHESIS",
+      "job": "Keep the ubiquitous language, tree, diagrams and executable model in step without hand-synchronising.",
+      "jobs": ["When the language changes, see every dependent state, journey, test and requirement.", "When I restructure, keep diagram and tree in step with the executable model.", "When something is suspect, see the cause and clear it by a recorded decision."],
+      "frequency": "weekly",
+      "context": "Long sessions on the tree and diagram; mouse plus keyboard; needs drag and non-drag paths.",
+      "pains": ["Knock-on viscosity (LAW§2.7)", "Hidden dependencies behind connectors (DGM§3.2)", "Suspect flags cleared by hand erode trust (REQ§2.2)"],
+      "success_measure": "Zero silent knock-on edits; edits to restore consistency after one rename equals 0 with full propagation; tree depth at most 4.",
+      "tasks": ["T01", "T04", "T05", "T11"]
+    },
+    {
+      "id": "P3", "name": "Requirements and product owner", "icp": false, "status": "HYPOTHESIS",
+      "job": "State intent, choose the meaning explicitly, and see which requirements have no evidence.",
+      "jobs": ["State an intent and resolve ambiguity by my own explicit choice.", "Find requirements with no evidence in one step.", "Ask AI for options and receive only grounded items with new ones labelled."],
+      "frequency": "weekly",
+      "context": "Reads more than edits; may not know the kernel vocabulary.",
+      "pains": ["Verbose spec artefacts (one reported case: 4 stories and 16 criteria, n=1) (REQ§2.1)", "Requirements with no linked test are hard to find (REQ§2.2)"],
+      "success_measure": "STUDY: time to find requirements with no evidence; wrong-meaning selections (target zero); criteria parsable in a constrained form.",
+      "tasks": ["T01", "T13", "T14"]
+    },
+    {
+      "id": "P4", "name": "Verification and QA engineer", "icp": false, "status": "HYPOTHESIS",
+      "job": "Read what a check covered, assumed and did not cover, and locate a failing step.",
+      "jobs": ["Know what a check covered, assumed and did not cover.", "Replay a failure pinned to the model action.", "See stale evidence as stale."],
+      "frequency": "daily",
+      "context": "Dense tables and traces; comfortable with formal tools.",
+      "pains": ["Skipped required checks count as success (REV§4)", "Merged coverage hides the uncovered part (REV§6)", "Full state graphs are unreadable (REV§5)"],
+      "success_measure": "STUDY: correct reading of the four-slot coverage row (hypothesis H1, REV§9); time to locate the failing step; UNKNOWN recall.",
+      "tasks": ["T06", "T07", "T12", "T14"]
+    },
+    {
+      "id": "P5", "name": "OSS evaluator (10-minute adopter)", "icp": false, "status": "HYPOTHESIS",
+      "job": "Understand within one short session why the Studio is worth trying.",
+      "jobs": ["See one real change reviewed by meaning with UNKNOWN shown.", "Install and run without a build step."],
+      "frequency": "rare",
+      "context": "Fresh install, no domain knowledge; skims; the 10-minute figure is task framing, not a measured behaviour.",
+      "pains": ["Text-heavy first screens (users read at most about 28% of words on an average page; SLP§5)", "Baseline first screen: about 404 static words across the page (MEASURED)"],
+      "success_measure": "STUDY: time to first reviewed change; first-click success; 50 ms and 500 ms appeal; completion without documentation.",
+      "tasks": ["T09", "T10"]
+    }
+  ],
+  "top_tasks": [
+    {"id": "T01", "name": "Create a change case and select a meaning", "persona": "P3", "also": ["P2"], "frequency": "weekly", "description": "State an intent, request interpretations, and select one canonical meaning explicitly; unsupported readings stay blocked, not downgraded.", "baseline_support": "exists", "principles": ["P2", "P9"]},
+    {"id": "T02", "name": "Review an agent's change by meaning", "persona": "P1", "also": ["P2"], "frequency": "daily", "description": "Read the change as an ordered list of typed semantic operations in chapters, each labelled ADDED, MODIFIED or REMOVED, with the line or JSON diff one level down.", "baseline_support": "partial", "principles": ["P4", "P5", "P1"]},
+    {"id": "T03", "name": "See the ripple of a change", "persona": "P1", "also": ["P2", "P4"], "frequency": "daily", "description": "For a selected change, see counts per affected model (states, journeys, tests, personas, requirements) with UNKNOWN listed separately and edge tiers labelled.", "baseline_support": "partial", "principles": ["P5", "P1"]},
+    {"id": "T04", "name": "Edit a state diagram by drag and drop", "persona": "P2", "also": [], "frequency": "weekly", "description": "Drag or connect states to emit a typed operation; the kernel accepts or refuses with a reason at the drop target; the picture regenerates from the model with stored layout; a non-drag path exists; only the frozen-vocabulary operations execute.", "baseline_support": "partial", "principles": ["P3", "P8", "P11"]},
+    {"id": "T05", "name": "Edit the ubiquitous-language tree", "persona": "P2", "also": ["P3"], "frequency": "weekly", "description": "Rename, add or move a term in the DDD tree (depth at most 4) and see the ripple of the edit before it is accepted; keyboard tree model; three-mode filter.", "baseline_support": "absent", "principles": ["P3", "P5", "P8"]},
+    {"id": "T06", "name": "Run and read verification evidence", "persona": "P4", "also": ["P1"], "frequency": "daily", "description": "Start bounded verification as a job with progress; read PASS, FAIL, CONFLICT, STALE, UNKNOWN and NOT_RUN per claim with the bound and a coverage row (claim, covered, assumed, NOT covered).", "baseline_support": "exists", "principles": ["P1", "P7", "P6"]},
+    {"id": "T07", "name": "Inspect a counterexample", "persona": "P4", "also": ["P1"], "frequency": "weekly", "description": "Step, rewind and pause a failing trace shown as state rows with changed variables only, an expression column, a jump to the model action, a minimal or not-minimised label and a replay token.", "baseline_support": "absent", "principles": ["P1", "P3"]},
+    {"id": "T08", "name": "Approve and apply the exact revision", "persona": "P1", "also": ["P2"], "frequency": "daily", "description": "On the blocking owner decision surface, see the exact revision and every UNKNOWN, acknowledge, approve, then separately apply; no AI or palette path reaches these actions.", "baseline_support": "exists", "principles": ["P2", "P1", "P11"]},
+    {"id": "T09", "name": "Find anything via the command palette", "persona": "P1", "also": ["P2", "P3", "P4", "P5"], "frequency": "daily", "description": "Open one palette on Ctrl/Cmd+K or slash, jump to a term, state, journey, test or requirement, or run a command; each command shows enabled, blocked-with-reason or AI-proposal; no approve or apply command exists.", "baseline_support": "absent", "principles": ["P8", "P2"]},
+    {"id": "T10", "name": "First-run onboarding", "persona": "P5", "also": [], "frequency": "rare", "description": "Reach a first change reviewed by meaning, with UNKNOWN visible, in a few action-first steps on the real excursion workflow; empty states name the missing thing and offer one verb-first action.", "baseline_support": "absent", "principles": ["P10", "P1"]},
+    {"id": "T11", "name": "Resolve a stale or suspect item", "persona": "P2", "also": ["P1"], "frequency": "weekly", "description": "See why an item is STALE or suspect with the causing diff of meaning-bearing fields; clear it only by a logged owner decision; no Clear All.", "baseline_support": "absent", "principles": ["P5", "P2"]},
+    {"id": "T12", "name": "Map a concept to code and check drift", "persona": "P1", "also": ["P4"], "frequency": "weekly", "description": "Open the concept-to-code mapping table (concept, code symbol, last check result, drift) and see kernel-checked drift; unmapped or unchecked items show as UNKNOWN.", "baseline_support": "absent", "principles": ["P1", "P3"]},
+    {"id": "T13", "name": "Ask AI to propose at a selected element", "persona": "P3", "also": ["P2"], "frequency": "weekly", "description": "Use the prompt lane on a selected element, marked as a provider call needing consent; the proposal appears provisional, grounded in the model, with any new item labelled and no accept control for AI.", "baseline_support": "partial", "principles": ["P9", "P2", "P7"]},
+    {"id": "T14", "name": "Find gaps: items with no evidence", "persona": "P4", "also": ["P3"], "frequency": "weekly", "description": "In one step list requirements, states or journeys with no linked evidence, split into UNKNOWN (never checked) and FAIL, with a click-to-filter roll-up on the tree.", "baseline_support": "absent", "principles": ["P1", "P5"]}
+  ],
+  "status_vocabulary": {
+    "evidence": ["PASS", "FAIL", "CONFLICT", "STALE", "UNKNOWN", "NOT_RUN"],
+    "eligibility": ["BLOCKED", "ELIGIBLE_FOR_LOCAL_REVIEW"],
+    "job_state": ["RUNNING"],
+    "provenance": ["AI_PROPOSED"],
+    "not_adopted": ["PARTIAL (needs a kernel ADR before use)"],
+    "source": "kernel words observed in src/eija_studio/domain/evidence.py and application/compiler.py; NOT_RUN from AGENTS.md lane rules; see SYNTHESIS.md C2"
+  },
+  "budgets_hypotheses": {
+    "chrome_words_per_primary_viewport": 120,
+    "containers_per_primary_viewport": 12,
+    "container_nesting_depth": 3,
+    "font_sizes_per_viewport": 6,
+    "elevations": 2,
+    "type_families": "2 plus 1 monospace",
+    "accent_hues": 1,
+    "eyebrows": 1,
+    "disclosure_levels": 2,
+    "latency_classes_seconds": [0.1, 1, 10],
+    "target_size_css_px": 24,
+    "label": "Starting hypotheses to be calibrated; each deviation needs an HCI-ADR."
+  },
+  "baseline_measured": {
+    "font_sizes": 13,
+    "font_weights": 7,
+    "hex_colours": 19,
+    "gradients": 0,
+    "shadows": 0,
+    "blur": 0,
+    "prefers_rules": 0,
+    "eyebrows": 10,
+    "panels": 6,
+    "pre_blocks": 3,
+    "static_words_index_html": 404,
+    "method": "regex count over app.css and index.html on 2026-09-29; dynamic text from app.js not included; see SYNTHESIS.md C3"
+  },
+  "invariants": [
+    {"id": "I1", "statement": "AI proposes, the kernel checks, the owner decides.", "source": "README; ADR-004"},
+    {"id": "I2", "statement": "What you see is generated from, or checked against, the code and model.", "source": "ADR-0019; ARCHITECTURE.md"},
+    {"id": "I3", "statement": "UNKNOWN is never hidden or rounded up; human understanding stays UNKNOWN until measured.", "source": "ADR-010"},
+    {"id": "I4", "statement": "Providers and agents never approve or apply; no palette command, agent-bridge tool or provider response reaches approve or apply.", "source": "ADR-004; AGENTS.md"},
+    {"id": "I5", "statement": "Untrusted text reaches the page only through DOM text nodes; no provider HTML, no iframe, no inline script or style.", "source": "ADR-013; CSP in interfaces/http.py"},
+    {"id": "I6", "statement": "Loopback only, single local owner, synthetic actors; no multi-user or institutional-identity claim.", "source": "ADR-011"},
+    {"id": "I7", "statement": "Original receipts and decisions are retained; no silent rebase.", "source": "ADR-012"},
+    {"id": "I8", "statement": "Egress needs the startup flag and per-request consent; the prompt lane is marked as a provider call.", "source": "README; AGENTS.md"},
+    {"id": "I9", "statement": "Every fact about a product, law or standard has a source the author opened; unverified items are labelled UNVERIFIED and not built on.", "source": "Lane rules"},
+    {"id": "I10", "statement": "No user-benefit claim without a user study; every law-derived number is labelled PREDICTION with a band.", "source": "Lane rules"}
+  ],
+  "constraints": [
+    "CSP: default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; no font-src; /assets serves only app.js and app.css; Cache-Control no-store everywhere.",
+    "ADR-013: no build-time framework; untrusted text via DOM text nodes.",
+    "ADR-003: frozen vocabulary; two typed edits execute today (enable recommendation; registrar rejection source); other drops are refusals with a reason.",
+    "ADR-008: layout change keeps domain evidence but invalidates exact-presentation approval."
+  ],
+  "unmet_needs": [
+    "Review of AI-generated change by semantic operation generated from the model diff, not from an LLM summary.",
+    "Ripple of a change across states, journeys, tests, personas and requirements, with UNKNOWN listed separately from no impact.",
+    "Evidence display with the bound, a tri-state plus CONFLICT, STALE and NOT_RUN, and a coverage row whose last slot is never empty.",
+    "Human-only approval bound to the exact revision with every UNKNOWN in view, and a study arm that detects rubber-stamping.",
+    "Drag editing on a picture generated from the executable model with layout persisted by stable id."
+  ]
+}

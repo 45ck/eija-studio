@@ -1,0 +1,2299 @@
+{
+  "schema": "eija.taskflow.v1",
+  "tasks": [
+    {
+      "id": "T04",
+      "name": "Reconnect the Reject transition source by dragging its tail handle (MEANING drag, stage 2 of HCI-ADR-0061)",
+      "persona": "P2",
+      "frequency": "weekly",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "locate the state-view edit control; headline geometry: below the fold (MEASURED y=938 of 900, notice box visible); layout-file geometry: straddles the fold (y=867, 33 px visible)"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "one wheel notch (100 px assumed), charged in the headline geometry only"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "diagram-source",
+            "layout": "current-impact",
+            "note": "headline geometry: D=425 px W=44 px ID=3.41 Fitts 0.814 s; layout-file geometry: D=454 px W=44 px ID=3.50 Fitts 0.825 s"
+          },
+          {
+            "op": "B",
+            "note": "press (click)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "M",
+            "note": "choose the value"
+          },
+          {
+            "op": "P",
+            "from": "diagram-source",
+            "to": "diagram-source-option-Submitted",
+            "note": "native popup row, 22 px rows assumed; D=44 px W=22 px ID=1.58 bits; Fitts 0.576 s (ESTIMATED geometry)"
+          },
+          {
+            "op": "B",
+            "note": "press (click)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "P",
+            "from": "diagram-source-option-Submitted",
+            "to": "edit-state",
+            "note": "headline geometry: D=183 px W=49 px ID=2.24 Fitts 0.662 s; layout-file geometry: D=183 px W=49 px ID=2.25 Fitts 0.662 s"
+          },
+          {
+            "op": "B",
+            "note": "press (click)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50: POST 19.5 ms + GET case 23.8 ms + GET cases about 24 ms, about 67 ms; 70 ms used)"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "know where the Reject tail handle is"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "handle-reject-source",
+            "layout": "proposed-canvas",
+            "note": "hit area 24x24; headline geometry: D=175 px W=24 px ID=3.05 Fitts 0.766 s; layout-file geometry: D=46 px W=24 px ID=1.54 Fitts 0.570 s"
+          },
+          {
+            "op": "B",
+            "note": "press on handle"
+          },
+          {
+            "op": "P",
+            "from": "handle-reject-source",
+            "to": "node-submitted",
+            "layout": "proposed-canvas",
+            "note": "drag with pointing constants (lower bound, see sensitivity); headline geometry: D=203 px W=56 px ID=2.21 Fitts 0.657 s; layout-file geometry: D=213 px W=48 px ID=2.44 Fitts 0.688 s"
+          },
+          {
+            "op": "B",
+            "note": "release on legal target"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50: POST 19.5 ms + GET case 23.8 ms + GET cases about 24 ms, about 67 ms; 70 ms used)"
+          }
+        ]
+      },
+      "assumptions": [
+        "Constants profile: M 1.35 s (Card, Moran and Newell 1983 value), K 0.20 s per key for an average skilled typist at 55 wpm (a chord such as ctrl+z counts 2 K), B 0.10 s per press or release (a click is two B), H 0.40 s, P = 0.37 + 0.13 x ID s (Cockburn et al. 2007 menu pointing, mouse), ID = log2(D/W+1), W = smaller side of the target. K, B, H, P(1.1 s flat) and the M range 0.6 to 1.35 s are in Kieras 2001, https://web.eecs.umich.edu/~kieras/docs/GOMS/KLM.pdf (text read locally 2026-09-29; the fetch tool could not verify the server certificate). Sensitivity with the Kieras design point (M 1.2, K 0.28) is in docs/hci/design/canvas-uml-interaction.md section 11.",
+        "Geometry profiles. Headline (D): current MEASURED on the real Studio (Chromium 151, 1440x900, Impact tab, meaning just selected so the notice box is visible), proposed = design document appendix B.2. Cross-check (L): current = design/layouts/current-impact.json (notice box empty, all y values 71 px smaller), proposed = design/layouts/proposed-canvas.json. Every P op that carries a \"layout\" key uses ids that exist in that layout file; its note gives both the headline and the layout-file Fitts numbers. A consumer that recomputes from the layout files obtains the L totals of section 11.2, which differ from the headline by at most 0.4 s and change no decision.",
+        "The pointer starts at the viewport centre (720,450) at 1440x900. P ops without a \"layout\" key point at elements that are not in the layout files (native popup rows, snap zone, Apply button, inspector segmented option, edge hit stroke); their geometry is ESTIMATED and stated in the note.",
+        "KLM covers expert, error-free, routine execution only; it excludes reading, learning, errors and discoverability; RMS error 21 percent, so every total carries a band of plus or minus 21 percent; every total is a PREDICTION. The M count is analyst judgement and every conclusion is tested with one M fewer for the current flow and one M more for the proposed flow.",
+        "Current flow is the state-view select plus Apply button on the Impact tab. Headline geometry: control below the fold (MEASURED y=938 of 900 with the notice box visible), one wheel notch of 100 px assumed. Layout-file geometry (notice box empty): the control straddles the fold at y=867 and no scroll is charged; this is the baseline-favourable condition.",
+        "Native select popup rows are not measurable; 22 px rows are ESTIMATED.",
+        "Kernel round trip R=70 ms is MEASURED p50 on this PC (C: drive, loopback, n=20) for POST edit plus the two reload GETs the baseline issues; on the D: HDD it may differ.",
+        "Drag uses pointing constants; MacKenzie, Sellen and Buxton 1991 report a lower index of performance for dragging than for pointing, so proposed is a lower bound (stress rows in section 11.2).",
+        "In the layout-file geometry the Reject handle lies 46 px from the assumed pointer start, which favours the drag flow by geometry; the flat-1.1 s row removes that effect.",
+        "The proposed handle is not discoverable by KLM; first-use discovery is a study measure, not a model output.",
+        "The predicted speed advantage is not robust to the M count: charging the current flow one M fewer, or the proposed flow one M more, makes the plus or minus 21 percent bands overlap.",
+        "Stage-2 flow (MEANING drag handle, D13). Its P ops reference handle-reject-source in design/layouts/proposed-canvas.json; that element must stay in the layout file behind a stage-2 flag (appendix B.3 of the design document), or this flow cannot be recomputed from layout files."
+      ]
+    },
+    {
+      "id": "T04-click",
+      "name": "Reconnect the Reject source by click then click on the tail handle (non-dragging single-pointer path, WCAG 2.5.7, stage 2)",
+      "persona": "P2",
+      "frequency": "weekly",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "locate the state-view edit control; headline geometry: below the fold (MEASURED y=938 of 900, notice box visible); layout-file geometry: straddles the fold (y=867, 33 px visible)"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "one wheel notch (100 px assumed), charged in the headline geometry only"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "diagram-source",
+            "layout": "current-impact",
+            "note": "headline geometry: D=425 px W=44 px ID=3.41 Fitts 0.814 s; layout-file geometry: D=454 px W=44 px ID=3.50 Fitts 0.825 s"
+          },
+          {
+            "op": "B",
+            "note": "press (click)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "M",
+            "note": "choose the value"
+          },
+          {
+            "op": "P",
+            "from": "diagram-source",
+            "to": "diagram-source-option-Submitted",
+            "note": "native popup row, 22 px rows assumed; D=44 px W=22 px ID=1.58 bits; Fitts 0.576 s (ESTIMATED geometry)"
+          },
+          {
+            "op": "B",
+            "note": "press (click)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "P",
+            "from": "diagram-source-option-Submitted",
+            "to": "edit-state",
+            "note": "headline geometry: D=183 px W=49 px ID=2.24 Fitts 0.662 s; layout-file geometry: D=183 px W=49 px ID=2.25 Fitts 0.662 s"
+          },
+          {
+            "op": "B",
+            "note": "press (click)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50: POST 19.5 ms + GET case 23.8 ms + GET cases about 24 ms, about 67 ms; 70 ms used)"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "know where the Reject tail handle is"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "handle-reject-source",
+            "layout": "proposed-canvas",
+            "note": "hit area 24x24; headline geometry: D=175 px W=24 px ID=3.05 Fitts 0.766 s; layout-file geometry: D=46 px W=24 px ID=1.54 Fitts 0.570 s"
+          },
+          {
+            "op": "B",
+            "note": "press (click)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "P",
+            "from": "handle-reject-source",
+            "to": "node-submitted",
+            "layout": "proposed-canvas",
+            "note": "headline geometry: D=203 px W=56 px ID=2.21 Fitts 0.657 s; layout-file geometry: D=213 px W=48 px ID=2.44 Fitts 0.688 s"
+          },
+          {
+            "op": "B",
+            "note": "press (click)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50: POST 19.5 ms + GET case 23.8 ms + GET cases about 24 ms, about 67 ms; 70 ms used)"
+          }
+        ]
+      },
+      "assumptions": [
+        "Constants profile: M 1.35 s (Card, Moran and Newell 1983 value), K 0.20 s per key for an average skilled typist at 55 wpm (a chord such as ctrl+z counts 2 K), B 0.10 s per press or release (a click is two B), H 0.40 s, P = 0.37 + 0.13 x ID s (Cockburn et al. 2007 menu pointing, mouse), ID = log2(D/W+1), W = smaller side of the target. K, B, H, P(1.1 s flat) and the M range 0.6 to 1.35 s are in Kieras 2001, https://web.eecs.umich.edu/~kieras/docs/GOMS/KLM.pdf (text read locally 2026-09-29; the fetch tool could not verify the server certificate). Sensitivity with the Kieras design point (M 1.2, K 0.28) is in docs/hci/design/canvas-uml-interaction.md section 11.",
+        "Geometry profiles. Headline (D): current MEASURED on the real Studio (Chromium 151, 1440x900, Impact tab, meaning just selected so the notice box is visible), proposed = design document appendix B.2. Cross-check (L): current = design/layouts/current-impact.json (notice box empty, all y values 71 px smaller), proposed = design/layouts/proposed-canvas.json. Every P op that carries a \"layout\" key uses ids that exist in that layout file; its note gives both the headline and the layout-file Fitts numbers. A consumer that recomputes from the layout files obtains the L totals of section 11.2, which differ from the headline by at most 0.4 s and change no decision.",
+        "The pointer starts at the viewport centre (720,450) at 1440x900. P ops without a \"layout\" key point at elements that are not in the layout files (native popup rows, snap zone, Apply button, inspector segmented option, edge hit stroke); their geometry is ESTIMATED and stated in the note.",
+        "KLM covers expert, error-free, routine execution only; it excludes reading, learning, errors and discoverability; RMS error 21 percent, so every total carries a band of plus or minus 21 percent; every total is a PREDICTION. The M count is analyst judgement and every conclusion is tested with one M fewer for the current flow and one M more for the proposed flow.",
+        "Current flow is the same select plus Apply path as T04 (the baseline already has a non-dragging path).",
+        "Not robust: the bands overlap when the current flow is charged one M fewer.",
+        "Stage-2 flow (MEANING drag handle, D13). Its P ops reference handle-reject-source in design/layouts/proposed-canvas.json; that element must stay in the layout file behind a stage-2 flag (appendix B.3 of the design document), or this flow cannot be recomputed from layout files."
+      ]
+    },
+    {
+      "id": "T04-lite",
+      "name": "Reconnect the Reject source by selecting the Reject edge, then clicking a legal state (stage 1 path of option D-lite: no drag handle)",
+      "persona": "P2",
+      "frequency": "weekly",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "locate the state-view edit control; headline geometry: below the fold (MEASURED y=938 of 900, notice box visible); layout-file geometry: straddles the fold (y=867, 33 px visible)"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "one wheel notch (100 px assumed), charged in the headline geometry only"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "diagram-source",
+            "layout": "current-impact",
+            "note": "headline geometry: D=425 px W=44 px ID=3.41 Fitts 0.814 s; layout-file geometry: D=454 px W=44 px ID=3.50 Fitts 0.825 s"
+          },
+          {
+            "op": "B",
+            "note": "press (click)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "M",
+            "note": "choose the value"
+          },
+          {
+            "op": "P",
+            "from": "diagram-source",
+            "to": "diagram-source-option-Submitted",
+            "note": "native popup row, 22 px rows assumed; D=44 px W=22 px ID=1.58 bits; Fitts 0.576 s (ESTIMATED geometry)"
+          },
+          {
+            "op": "B",
+            "note": "press (click)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "P",
+            "from": "diagram-source-option-Submitted",
+            "to": "edit-state",
+            "note": "headline geometry: D=183 px W=49 px ID=2.24 Fitts 0.662 s; layout-file geometry: D=183 px W=49 px ID=2.25 Fitts 0.662 s"
+          },
+          {
+            "op": "B",
+            "note": "press (click)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50: POST 19.5 ms + GET case 23.8 ms + GET cases about 24 ms, about 67 ms; 70 ms used)"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "know the Reject edge can be selected"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "edge-reject-label",
+            "layout": "proposed-canvas",
+            "note": "select the Reject edge (headline geometry: 24 px hit stroke on the vertical segment, ESTIMATED; layout-file geometry: the edge label); headline geometry: D=125 px W=24 px ID=2.64 Fitts 0.713 s; layout-file geometry: D=121 px W=24 px ID=2.59 Fitts 0.707 s"
+          },
+          {
+            "op": "B",
+            "note": "press (select edge; its source end is armed and legal targets are outlined)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "P",
+            "from": "edge-reject-label",
+            "to": "node-submitted",
+            "layout": "proposed-canvas",
+            "note": "headline geometry: D=219 px W=56 px ID=2.29 Fitts 0.668 s; layout-file geometry: D=282 px W=48 px ID=2.78 Fitts 0.732 s"
+          },
+          {
+            "op": "B",
+            "note": "press (click legal target)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50: POST 19.5 ms + GET case 23.8 ms + GET cases about 24 ms, about 67 ms; 70 ms used)"
+          }
+        ]
+      },
+      "assumptions": [
+        "Constants profile: M 1.35 s (Card, Moran and Newell 1983 value), K 0.20 s per key for an average skilled typist at 55 wpm (a chord such as ctrl+z counts 2 K), B 0.10 s per press or release (a click is two B), H 0.40 s, P = 0.37 + 0.13 x ID s (Cockburn et al. 2007 menu pointing, mouse), ID = log2(D/W+1), W = smaller side of the target. K, B, H, P(1.1 s flat) and the M range 0.6 to 1.35 s are in Kieras 2001, https://web.eecs.umich.edu/~kieras/docs/GOMS/KLM.pdf (text read locally 2026-09-29; the fetch tool could not verify the server certificate). Sensitivity with the Kieras design point (M 1.2, K 0.28) is in docs/hci/design/canvas-uml-interaction.md section 11.",
+        "Geometry profiles. Headline (D): current MEASURED on the real Studio (Chromium 151, 1440x900, Impact tab, meaning just selected so the notice box is visible), proposed = design document appendix B.2. Cross-check (L): current = design/layouts/current-impact.json (notice box empty, all y values 71 px smaller), proposed = design/layouts/proposed-canvas.json. Every P op that carries a \"layout\" key uses ids that exist in that layout file; its note gives both the headline and the layout-file Fitts numbers. A consumer that recomputes from the layout files obtains the L totals of section 11.2, which differ from the headline by at most 0.4 s and change no decision.",
+        "The pointer starts at the viewport centre (720,450) at 1440x900. P ops without a \"layout\" key point at elements that are not in the layout files (native popup rows, snap zone, Apply button, inspector segmented option, edge hit stroke); their geometry is ESTIMATED and stated in the note.",
+        "KLM covers expert, error-free, routine execution only; it excludes reading, learning, errors and discoverability; RMS error 21 percent, so every total carries a band of plus or minus 21 percent; every total is a PREDICTION. The M count is analyst judgement and every conclusion is tested with one M fewer for the current flow and one M more for the proposed flow.",
+        "Selecting the edge arms its source end and outlines legal targets (tier 1); a click on a refused state shows the refusal sentence and sends nothing.",
+        "The edge hit stroke (24 px wide) in the headline geometry is ESTIMATED; in the layout-file geometry the click lands on the edge label.",
+        "Not robust against the one-M-fewer stress row, like T04; it is the baseline for the comparison with T04 and T04-click (differences of 0.2 s or less, far inside the band)."
+      ]
+    },
+    {
+      "id": "T04-inspector",
+      "name": "Reconnect the Reject source with the inspector segmented control (non-dragging path, stage 1 and 2)",
+      "persona": "P2",
+      "frequency": "weekly",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "locate the state-view edit control; headline geometry: below the fold (MEASURED y=938 of 900, notice box visible); layout-file geometry: straddles the fold (y=867, 33 px visible)"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "one wheel notch (100 px assumed), charged in the headline geometry only"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "diagram-source",
+            "layout": "current-impact",
+            "note": "headline geometry: D=425 px W=44 px ID=3.41 Fitts 0.814 s; layout-file geometry: D=454 px W=44 px ID=3.50 Fitts 0.825 s"
+          },
+          {
+            "op": "B",
+            "note": "press (click)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "M",
+            "note": "choose the value"
+          },
+          {
+            "op": "P",
+            "from": "diagram-source",
+            "to": "diagram-source-option-Submitted",
+            "note": "native popup row, 22 px rows assumed; D=44 px W=22 px ID=1.58 bits; Fitts 0.576 s (ESTIMATED geometry)"
+          },
+          {
+            "op": "B",
+            "note": "press (click)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "P",
+            "from": "diagram-source-option-Submitted",
+            "to": "edit-state",
+            "note": "headline geometry: D=183 px W=49 px ID=2.24 Fitts 0.662 s; layout-file geometry: D=183 px W=49 px ID=2.25 Fitts 0.662 s"
+          },
+          {
+            "op": "B",
+            "note": "press (click)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50: POST 19.5 ms + GET case 23.8 ms + GET cases about 24 ms, about 67 ms; 70 ms used)"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "know the Reject edge can be selected"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "edge-reject-label",
+            "layout": "proposed-canvas",
+            "note": "select the Reject edge (headline geometry: 24 px hit stroke, ESTIMATED; layout-file geometry: the edge label); headline geometry: D=125 px W=24 px ID=2.64 Fitts 0.713 s; layout-file geometry: D=121 px W=24 px ID=2.59 Fitts 0.707 s"
+          },
+          {
+            "op": "B",
+            "note": "press (select edge)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "P",
+            "from": "edge-reject-label",
+            "to": "inspector-opt-Submitted",
+            "note": "segmented option in the inspector (proposed-canvas.json has a select plus Apply instead); headline geometry: D=403 px W=32 px ID=3.76 Fitts 0.859 s; layout-file geometry: D=430 px W=32 px ID=3.85 Fitts 0.871 s (ESTIMATED geometry)"
+          },
+          {
+            "op": "B",
+            "note": "press (choose Submitted; commit)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50: POST 19.5 ms + GET case 23.8 ms + GET cases about 24 ms, about 67 ms; 70 ms used)"
+          }
+        ]
+      },
+      "assumptions": [
+        "Constants profile: M 1.35 s (Card, Moran and Newell 1983 value), K 0.20 s per key for an average skilled typist at 55 wpm (a chord such as ctrl+z counts 2 K), B 0.10 s per press or release (a click is two B), H 0.40 s, P = 0.37 + 0.13 x ID s (Cockburn et al. 2007 menu pointing, mouse), ID = log2(D/W+1), W = smaller side of the target. K, B, H, P(1.1 s flat) and the M range 0.6 to 1.35 s are in Kieras 2001, https://web.eecs.umich.edu/~kieras/docs/GOMS/KLM.pdf (text read locally 2026-09-29; the fetch tool could not verify the server certificate). Sensitivity with the Kieras design point (M 1.2, K 0.28) is in docs/hci/design/canvas-uml-interaction.md section 11.",
+        "Geometry profiles. Headline (D): current MEASURED on the real Studio (Chromium 151, 1440x900, Impact tab, meaning just selected so the notice box is visible), proposed = design document appendix B.2. Cross-check (L): current = design/layouts/current-impact.json (notice box empty, all y values 71 px smaller), proposed = design/layouts/proposed-canvas.json. Every P op that carries a \"layout\" key uses ids that exist in that layout file; its note gives both the headline and the layout-file Fitts numbers. A consumer that recomputes from the layout files obtains the L totals of section 11.2, which differ from the headline by at most 0.4 s and change no decision.",
+        "The pointer starts at the viewport centre (720,450) at 1440x900. P ops without a \"layout\" key point at elements that are not in the layout files (native popup rows, snap zone, Apply button, inspector segmented option, edge hit stroke); their geometry is ESTIMATED and stated in the note.",
+        "KLM covers expert, error-free, routine execution only; it excludes reading, learning, errors and discoverability; RMS error 21 percent, so every total carries a band of plus or minus 21 percent; every total is a PREDICTION. The M count is analyst judgement and every conclusion is tested with one M fewer for the current flow and one M more for the proposed flow.",
+        "The segmented control (two toggle buttons, one click commits) is the design of docs/hci/design/canvas-uml-interaction.md section 9.1; design/layouts/proposed-canvas.json draws a select plus Apply instead (task T04-inspector-form).",
+        "Inspector option geometry is ESTIMATED."
+      ]
+    },
+    {
+      "id": "T04-inspector-form",
+      "name": "Reconnect the Reject source with the inspector select and Apply button as drawn in design/layouts/proposed-canvas.json",
+      "persona": "P2",
+      "frequency": "weekly",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "locate the state-view edit control; headline geometry: below the fold (MEASURED y=938 of 900, notice box visible); layout-file geometry: straddles the fold (y=867, 33 px visible)"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "one wheel notch (100 px assumed), charged in the headline geometry only"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "diagram-source",
+            "layout": "current-impact",
+            "note": "headline geometry: D=425 px W=44 px ID=3.41 Fitts 0.814 s; layout-file geometry: D=454 px W=44 px ID=3.50 Fitts 0.825 s"
+          },
+          {
+            "op": "B",
+            "note": "press (click)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "M",
+            "note": "choose the value"
+          },
+          {
+            "op": "P",
+            "from": "diagram-source",
+            "to": "diagram-source-option-Submitted",
+            "note": "native popup row, 22 px rows assumed; D=44 px W=22 px ID=1.58 bits; Fitts 0.576 s (ESTIMATED geometry)"
+          },
+          {
+            "op": "B",
+            "note": "press (click)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "P",
+            "from": "diagram-source-option-Submitted",
+            "to": "edit-state",
+            "note": "headline geometry: D=183 px W=49 px ID=2.24 Fitts 0.662 s; layout-file geometry: D=183 px W=49 px ID=2.25 Fitts 0.662 s"
+          },
+          {
+            "op": "B",
+            "note": "press (click)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50: POST 19.5 ms + GET case 23.8 ms + GET cases about 24 ms, about 67 ms; 70 ms used)"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "know the Reject edge can be selected"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "edge-reject-label",
+            "layout": "proposed-canvas",
+            "note": "select the Reject edge; headline geometry: D=125 px W=24 px ID=2.64 Fitts 0.713 s; layout-file geometry: D=121 px W=24 px ID=2.59 Fitts 0.707 s"
+          },
+          {
+            "op": "B",
+            "note": "press (select edge)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "P",
+            "from": "edge-reject-label",
+            "to": "insp-source",
+            "layout": "proposed-canvas",
+            "note": "the layout lane draws a select with an Apply button, not a segmented control; headline geometry: D=436 px W=32 px ID=3.87 Fitts 0.873 s; layout-file geometry: D=480 px W=32 px ID=4.00 Fitts 0.890 s"
+          },
+          {
+            "op": "B",
+            "note": "press (open the select)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "P",
+            "from": "insp-source",
+            "to": "insp-source-option-Submitted",
+            "note": "native popup row, 22 px rows assumed; D=49 px W=22 px ID=1.69 bits; Fitts 0.590 s (ESTIMATED geometry)"
+          },
+          {
+            "op": "B",
+            "note": "press (choose Submitted)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "P",
+            "from": "insp-source-option-Submitted",
+            "to": "insp-source-apply",
+            "note": "Apply button of the layout lane draft; D=190 px W=32 px ID=2.80 bits; Fitts 0.734 s"
+          },
+          {
+            "op": "B",
+            "note": "press (Apply)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50: POST 19.5 ms + GET case 23.8 ms + GET cases about 24 ms, about 67 ms; 70 ms used)"
+          }
+        ]
+      },
+      "assumptions": [
+        "Constants profile: M 1.35 s (Card, Moran and Newell 1983 value), K 0.20 s per key for an average skilled typist at 55 wpm (a chord such as ctrl+z counts 2 K), B 0.10 s per press or release (a click is two B), H 0.40 s, P = 0.37 + 0.13 x ID s (Cockburn et al. 2007 menu pointing, mouse), ID = log2(D/W+1), W = smaller side of the target. K, B, H, P(1.1 s flat) and the M range 0.6 to 1.35 s are in Kieras 2001, https://web.eecs.umich.edu/~kieras/docs/GOMS/KLM.pdf (text read locally 2026-09-29; the fetch tool could not verify the server certificate). Sensitivity with the Kieras design point (M 1.2, K 0.28) is in docs/hci/design/canvas-uml-interaction.md section 11.",
+        "Geometry profiles. Headline (D): current MEASURED on the real Studio (Chromium 151, 1440x900, Impact tab, meaning just selected so the notice box is visible), proposed = design document appendix B.2. Cross-check (L): current = design/layouts/current-impact.json (notice box empty, all y values 71 px smaller), proposed = design/layouts/proposed-canvas.json. Every P op that carries a \"layout\" key uses ids that exist in that layout file; its note gives both the headline and the layout-file Fitts numbers. A consumer that recomputes from the layout files obtains the L totals of section 11.2, which differ from the headline by at most 0.4 s and change no decision.",
+        "The pointer starts at the viewport centre (720,450) at 1440x900. P ops without a \"layout\" key point at elements that are not in the layout files (native popup rows, snap zone, Apply button, inspector segmented option, edge hit stroke); their geometry is ESTIMATED and stated in the note.",
+        "KLM covers expert, error-free, routine execution only; it excludes reading, learning, errors and discoverability; RMS error 21 percent, so every total carries a band of plus or minus 21 percent; every total is a PREDICTION. The M count is analyst judgement and every conclusion is tested with one M fewer for the current flow and one M more for the proposed flow.",
+        "Prices the layout lane draft of the non-drag path: predicted time is not distinguishable from the baseline form (bands overlap in every stress row). The segmented control of T04-inspector is faster by about 1.7 s (PREDICTION); the integrator should choose between them.",
+        "Native popup row geometry is ESTIMATED."
+      ]
+    },
+    {
+      "id": "T04-kbd",
+      "name": "Reconnect the Reject source with the keyboard only",
+      "persona": "P2",
+      "frequency": "weekly",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "decide the value to set"
+          },
+          {
+            "op": "K",
+            "n": 3,
+            "note": "Tab, Tab, Tab from the 02 / Impact tab button to the state-view select (03 Try, 04 Evidence, diagram-source)"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "ArrowDown selects Submitted without opening the list (assumed Chromium on Windows behaviour)"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to Apply state-view edit"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Enter"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50: POST 19.5 ms + GET case 23.8 ms + GET cases about 24 ms, about 67 ms; 70 ms used)"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "decide the value to set"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab into the canvas composite (single tab stop, roving tabindex); assumes the Reject transition is already selected from the change list"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Enter on a selected edge starts Move source end"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "ArrowLeft cycles to the other legal target (Submitted); only two legal targets exist"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Enter drops"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50: POST 19.5 ms + GET case 23.8 ms + GET cases about 24 ms, about 67 ms; 70 ms used)"
+          }
+        ]
+      },
+      "assumptions": [
+        "Constants profile: M 1.35 s (Card, Moran and Newell 1983 value), K 0.20 s per key for an average skilled typist at 55 wpm (a chord such as ctrl+z counts 2 K), B 0.10 s per press or release (a click is two B), H 0.40 s, P = 0.37 + 0.13 x ID s (Cockburn et al. 2007 menu pointing, mouse), ID = log2(D/W+1), W = smaller side of the target. K, B, H, P(1.1 s flat) and the M range 0.6 to 1.35 s are in Kieras 2001, https://web.eecs.umich.edu/~kieras/docs/GOMS/KLM.pdf (text read locally 2026-09-29; the fetch tool could not verify the server certificate). Sensitivity with the Kieras design point (M 1.2, K 0.28) is in docs/hci/design/canvas-uml-interaction.md section 11.",
+        "Geometry profiles. Headline (D): current MEASURED on the real Studio (Chromium 151, 1440x900, Impact tab, meaning just selected so the notice box is visible), proposed = design document appendix B.2. Cross-check (L): current = design/layouts/current-impact.json (notice box empty, all y values 71 px smaller), proposed = design/layouts/proposed-canvas.json. Every P op that carries a \"layout\" key uses ids that exist in that layout file; its note gives both the headline and the layout-file Fitts numbers. A consumer that recomputes from the layout files obtains the L totals of section 11.2, which differ from the headline by at most 0.4 s and change no decision.",
+        "The pointer starts at the viewport centre (720,450) at 1440x900. P ops without a \"layout\" key point at elements that are not in the layout files (native popup rows, snap zone, Apply button, inspector segmented option, edge hit stroke); their geometry is ESTIMATED and stated in the note.",
+        "KLM covers expert, error-free, routine execution only; it excludes reading, learning, errors and discoverability; RMS error 21 percent, so every total carries a band of plus or minus 21 percent; every total is a PREDICTION. The M count is analyst judgement and every conclusion is tested with one M fewer for the current flow and one M more for the proposed flow.",
+        "Proposed assumes the Reject transition is already the shared selection (for example chosen in the change list); without it add about three arrow presses (0.6 s).",
+        "Expected result: no difference outside the plus or minus 21 percent band; the design goal is parity and operability, not speed.",
+        "Tab order for the current UI was derived by reading index.html: hidden tab panels are not focusable.",
+        "Asymmetry: the current flow assumes ArrowDown changes a closed select without opening it; the proposed flow assumes the Reject edge is already selected. If two arrow keys are needed to reach the edge the proposed total becomes 2.62 s, equal to the current flow.",
+        "Stress result (revision 3): with one M fewer for the current flow (1.27 s, band 1.00 to 1.54) against the proposed 2.22 s (1.75 to 2.69) the bands separate with the CURRENT flow faster. The keyboard MEANING path has no predicted advantage and possibly a disadvantage for a keyboard-savvy user."
+      ]
+    },
+    {
+      "id": "T04-move",
+      "name": "Move one state node (LAYOUT gesture: keeps domain evidence, renews presentation approval)",
+      "persona": "P2",
+      "frequency": "weekly",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "decide which node to move and where"
+          },
+          {
+            "op": "K",
+            "n": 3,
+            "note": "wheel notches to bring the Layout-only change disclosure and its fields into view (headline geometry: summary MEASURED y=1045, 3 notches; layout-file geometry: y=974, 2 notches)"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "summary",
+            "layout": "current-impact",
+            "note": "headline geometry: D=338 px W=41 px ID=3.21 Fitts 0.787 s; layout-file geometry: D=366 px W=41 px ID=3.31 Fitts 0.800 s"
+          },
+          {
+            "op": "B",
+            "note": "press (click)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "M",
+            "note": "decide the coordinates: the baseline has no picture of positions"
+          },
+          {
+            "op": "P",
+            "from": "summary",
+            "to": "layout-node",
+            "note": "fields inside the opened disclosure; D=403 px W=44 px ID=3.34 bits; Fitts 0.805 s"
+          },
+          {
+            "op": "B",
+            "note": "press (click)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "P",
+            "from": "layout-node",
+            "to": "layout-node-option-Rejected",
+            "note": "fifth option in the native popup; D=121 px W=22 px ID=2.70 bits; Fitts 0.721 s (ESTIMATED geometry)"
+          },
+          {
+            "op": "B",
+            "note": "press (click)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "H",
+            "note": "mouse to keyboard"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to X (tabbing into a number input selects its content)"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "X value"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to Y"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "Y value"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to Save layout"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Enter"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50: POST 19.5 ms + GET case 23.8 ms + GET cases about 24 ms, about 67 ms; 70 ms used)"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "decide which node to move and where"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "node-rejected",
+            "layout": "proposed-canvas",
+            "note": "body of the node; headline geometry: D=226 px W=56 px ID=2.33 Fitts 0.673 s; layout-file geometry: D=229 px W=48 px ID=2.53 Fitts 0.699 s"
+          },
+          {
+            "op": "B",
+            "note": "press"
+          },
+          {
+            "op": "P",
+            "from": "node-rejected",
+            "to": "snap-zone-under-Recommended",
+            "note": "drop inside a 12 px snap zone (2 x 6 px capture, HYPOTHESIS); headline geometry: D=176 px W=12 px ID=3.97 Fitts 0.886 s; layout-file geometry: D=240 px W=12 px ID=4.39 Fitts 0.941 s"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50: POST 19.5 ms + GET case 23.8 ms + GET cases about 24 ms, about 67 ms; 70 ms used)"
+          }
+        ]
+      },
+      "assumptions": [
+        "Constants profile: M 1.35 s (Card, Moran and Newell 1983 value), K 0.20 s per key for an average skilled typist at 55 wpm (a chord such as ctrl+z counts 2 K), B 0.10 s per press or release (a click is two B), H 0.40 s, P = 0.37 + 0.13 x ID s (Cockburn et al. 2007 menu pointing, mouse), ID = log2(D/W+1), W = smaller side of the target. K, B, H, P(1.1 s flat) and the M range 0.6 to 1.35 s are in Kieras 2001, https://web.eecs.umich.edu/~kieras/docs/GOMS/KLM.pdf (text read locally 2026-09-29; the fetch tool could not verify the server certificate). Sensitivity with the Kieras design point (M 1.2, K 0.28) is in docs/hci/design/canvas-uml-interaction.md section 11.",
+        "Geometry profiles. Headline (D): current MEASURED on the real Studio (Chromium 151, 1440x900, Impact tab, meaning just selected so the notice box is visible), proposed = design document appendix B.2. Cross-check (L): current = design/layouts/current-impact.json (notice box empty, all y values 71 px smaller), proposed = design/layouts/proposed-canvas.json. Every P op that carries a \"layout\" key uses ids that exist in that layout file; its note gives both the headline and the layout-file Fitts numbers. A consumer that recomputes from the layout files obtains the L totals of section 11.2, which differ from the headline by at most 0.4 s and change no decision.",
+        "The pointer starts at the viewport centre (720,450) at 1440x900. P ops without a \"layout\" key point at elements that are not in the layout files (native popup rows, snap zone, Apply button, inspector segmented option, edge hit stroke); their geometry is ESTIMATED and stated in the note.",
+        "KLM covers expert, error-free, routine execution only; it excludes reading, learning, errors and discoverability; RMS error 21 percent, so every total carries a band of plus or minus 21 percent; every total is a PREDICTION. The M count is analyst judgement and every conclusion is tested with one M fewer for the current flow and one M more for the proposed flow.",
+        "Current flow uses the numeric X/Y form (baseline strength: it is a non-dragging path); two M are charged for deciding, one for the node and one for computing coordinates from a UI that does not show positions.",
+        "Native select popup rows are not measurable; the fifth-row geometry is ESTIMATED. The layout-file geometry is the headline geometry shifted up by 71 px and needs one wheel notch fewer.",
+        "Snap zone W=12 px (2 x 6 px capture radius) is a HYPOTHESIS to calibrate; snap-and-go (Baudisch et al. 2005) reports it is slightly slower than warp snapping.",
+        "Robust: separable in every stress row of section 11.2."
+      ]
+    },
+    {
+      "id": "T04-move-kbd",
+      "name": "Move one state node with the keyboard only",
+      "persona": "P2",
+      "frequency": "weekly",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "decide which node to move"
+          },
+          {
+            "op": "M",
+            "note": "decide the coordinates"
+          },
+          {
+            "op": "K",
+            "n": 5,
+            "note": "Tab x5 from the Impact tab button to the Layout-only change disclosure"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Enter opens the disclosure"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to the node select"
+          },
+          {
+            "op": "K",
+            "n": 3,
+            "note": "type-ahead R, e, j selects Rejected (Recommended also starts with R)"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to X"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "X value"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to Y"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "Y value"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to Save layout"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Enter"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50: POST 19.5 ms + GET case 23.8 ms + GET cases about 24 ms, about 67 ms; 70 ms used)"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "decide which node to move and where"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab into the canvas composite"
+          },
+          {
+            "op": "K",
+            "n": 2,
+            "note": "ArrowRight, ArrowDown to reach Rejected from a focused Recommended (assumption)"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Space lifts the node (mode shown in the canvas status line)"
+          },
+          {
+            "op": "K",
+            "n": 7,
+            "note": "176 units (headline geometry, one node pitch): Shift+ArrowLeft x5 (32 each) and ArrowLeft x2 (8 each) = 7 keys; layout-file geometry needs 240 units = 9 keys"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Enter drops"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50: POST 19.5 ms + GET case 23.8 ms + GET cases about 24 ms, about 67 ms; 70 ms used)"
+          }
+        ]
+      },
+      "assumptions": [
+        "Constants profile: M 1.35 s (Card, Moran and Newell 1983 value), K 0.20 s per key for an average skilled typist at 55 wpm (a chord such as ctrl+z counts 2 K), B 0.10 s per press or release (a click is two B), H 0.40 s, P = 0.37 + 0.13 x ID s (Cockburn et al. 2007 menu pointing, mouse), ID = log2(D/W+1), W = smaller side of the target. K, B, H, P(1.1 s flat) and the M range 0.6 to 1.35 s are in Kieras 2001, https://web.eecs.umich.edu/~kieras/docs/GOMS/KLM.pdf (text read locally 2026-09-29; the fetch tool could not verify the server certificate). Sensitivity with the Kieras design point (M 1.2, K 0.28) is in docs/hci/design/canvas-uml-interaction.md section 11.",
+        "Geometry profiles. Headline (D): current MEASURED on the real Studio (Chromium 151, 1440x900, Impact tab, meaning just selected so the notice box is visible), proposed = design document appendix B.2. Cross-check (L): current = design/layouts/current-impact.json (notice box empty, all y values 71 px smaller), proposed = design/layouts/proposed-canvas.json. Every P op that carries a \"layout\" key uses ids that exist in that layout file; its note gives both the headline and the layout-file Fitts numbers. A consumer that recomputes from the layout files obtains the L totals of section 11.2, which differ from the headline by at most 0.4 s and change no decision.",
+        "The pointer starts at the viewport centre (720,450) at 1440x900. P ops without a \"layout\" key point at elements that are not in the layout files (native popup rows, snap zone, Apply button, inspector segmented option, edge hit stroke); their geometry is ESTIMATED and stated in the note.",
+        "KLM covers expert, error-free, routine execution only; it excludes reading, learning, errors and discoverability; RMS error 21 percent, so every total carries a band of plus or minus 21 percent; every total is a PREDICTION. The M count is analyst judgement and every conclusion is tested with one M fewer for the current flow and one M more for the proposed flow.",
+        "Proposed lift mode: Space lifts, Arrow moves 8 units, Shift+Arrow moves 32 units, Enter drops, Escape cancels; 176 units of travel in the headline geometry (one node pitch), 240 in the layout-file geometry.",
+        "The numeric position fields remain in the inspector as a second non-dragging path, so proposed users may choose the current flow instead.",
+        "Not robust: the bands overlap when the current flow is charged one M fewer."
+      ]
+    },
+    {
+      "id": "T04-tidy",
+      "name": "Tidy the whole view (LAYOUT transaction, one undo unit), five sequential POSTs as the kernel is today",
+      "persona": "P2",
+      "frequency": "weekly",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "decide the coordinates for five nodes"
+          },
+          {
+            "op": "K",
+            "n": 5,
+            "note": "Tab x5 to the Layout-only change disclosure"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Enter opens"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to node select (node 1 of 5)"
+          },
+          {
+            "op": "K",
+            "n": 2,
+            "note": "type-ahead, average of two letters"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to X"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "X"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to Y"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "Y"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to Save layout"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Enter"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload"
+          },
+          {
+            "op": "K",
+            "n": 4,
+            "note": "Shift+Tab x4 back to the node select"
+          },
+          {
+            "op": "M",
+            "note": "decide next node position"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to node select (node 2 of 5)"
+          },
+          {
+            "op": "K",
+            "n": 2,
+            "note": "type-ahead, average of two letters"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to X"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "X"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to Y"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "Y"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to Save layout"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Enter"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload"
+          },
+          {
+            "op": "K",
+            "n": 4,
+            "note": "Shift+Tab x4 back to the node select"
+          },
+          {
+            "op": "M",
+            "note": "decide next node position"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to node select (node 3 of 5)"
+          },
+          {
+            "op": "K",
+            "n": 2,
+            "note": "type-ahead, average of two letters"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to X"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "X"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to Y"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "Y"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to Save layout"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Enter"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload"
+          },
+          {
+            "op": "K",
+            "n": 4,
+            "note": "Shift+Tab x4 back to the node select"
+          },
+          {
+            "op": "M",
+            "note": "decide next node position"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to node select (node 4 of 5)"
+          },
+          {
+            "op": "K",
+            "n": 2,
+            "note": "type-ahead, average of two letters"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to X"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "X"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to Y"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "Y"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to Save layout"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Enter"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload"
+          },
+          {
+            "op": "K",
+            "n": 4,
+            "note": "Shift+Tab x4 back to the node select"
+          },
+          {
+            "op": "M",
+            "note": "decide next node position"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to node select (node 5 of 5)"
+          },
+          {
+            "op": "K",
+            "n": 2,
+            "note": "type-ahead, average of two letters"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to X"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "X"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to Y"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "Y"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to Save layout"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Enter"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "decide to tidy the whole view"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "tool-tidy",
+            "layout": "proposed-canvas",
+            "note": "headline geometry: D=466 px W=32 px ID=3.96 Fitts 0.885 s; layout-file geometry: D=407 px W=28 px ID=3.96 Fitts 0.884 s"
+          },
+          {
+            "op": "B",
+            "note": "press (click)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "M",
+            "note": "read the ghost preview of the five target positions before Apply (the design makes preview-then-Apply the safety step)"
+          },
+          {
+            "op": "P",
+            "from": "tool-tidy",
+            "to": "tool-tidy-apply",
+            "note": "Apply appears beside Tidy after the ghost preview (not in proposed-canvas.json); headline geometry: D=80 px W=32 px ID=1.81 Fitts 0.605 s; layout-file geometry: D=140 px W=28 px ID=2.58 Fitts 0.706 s (ESTIMATED geometry)"
+          },
+          {
+            "op": "B",
+            "note": "press (click)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "R",
+            "ms": 350,
+            "why": "five sequential layout commits, each charged like every other commit in this file (POST plus two GETs, 70 ms): 5 x 70 ms (MEASURED p50 basis: layout POST 18.2 ms + two GETs about 24 ms each)"
+          }
+        ]
+      },
+      "assumptions": [
+        "Constants profile: M 1.35 s (Card, Moran and Newell 1983 value), K 0.20 s per key for an average skilled typist at 55 wpm (a chord such as ctrl+z counts 2 K), B 0.10 s per press or release (a click is two B), H 0.40 s, P = 0.37 + 0.13 x ID s (Cockburn et al. 2007 menu pointing, mouse), ID = log2(D/W+1), W = smaller side of the target. K, B, H, P(1.1 s flat) and the M range 0.6 to 1.35 s are in Kieras 2001, https://web.eecs.umich.edu/~kieras/docs/GOMS/KLM.pdf (text read locally 2026-09-29; the fetch tool could not verify the server certificate). Sensitivity with the Kieras design point (M 1.2, K 0.28) is in docs/hci/design/canvas-uml-interaction.md section 11.",
+        "Geometry profiles. Headline (D): current MEASURED on the real Studio (Chromium 151, 1440x900, Impact tab, meaning just selected so the notice box is visible), proposed = design document appendix B.2. Cross-check (L): current = design/layouts/current-impact.json (notice box empty, all y values 71 px smaller), proposed = design/layouts/proposed-canvas.json. Every P op that carries a \"layout\" key uses ids that exist in that layout file; its note gives both the headline and the layout-file Fitts numbers. A consumer that recomputes from the layout files obtains the L totals of section 11.2, which differ from the headline by at most 0.4 s and change no decision.",
+        "The pointer starts at the viewport centre (720,450) at 1440x900. P ops without a \"layout\" key point at elements that are not in the layout files (native popup rows, snap zone, Apply button, inspector segmented option, edge hit stroke); their geometry is ESTIMATED and stated in the note.",
+        "KLM covers expert, error-free, routine execution only; it excludes reading, learning, errors and discoverability; RMS error 21 percent, so every total carries a band of plus or minus 21 percent; every total is a PREDICTION. The M count is analyst judgement and every conclusion is tested with one M fewer for the current flow and one M more for the proposed flow.",
+        "Current has no tidy command; five nodes are set one by one through the form (repetition viscosity).",
+        "Proposed charges one M for reading the ghost preview before Apply (preview-then-Apply is the safety step) and R=250 ms for five sequential layout POSTs because the kernel has no batch layout endpoint (interface I-K3).",
+        "Tidy is two-step by design: a ghost preview of all target positions, then Apply beside the Tidy button; both clicks are charged. The Apply button and its position are ESTIMATED (proposed-canvas.json has no Apply or Undo button).",
+        "Robust: separable in every stress row of section 11.2.",
+        "Outcome differs from the current flow: Tidy applies an algorithmic arrangement the user only accepts, whereas the current flow places five nodes at positions the user chose. Tidy replaces manual arrangement only when the algorithm result is acceptable (layout quality UNKNOWN). The same-outcome comparator is T04-move-x5. Revision 3 charges R = 350 ms (5 x 70) instead of 250 ms, so the total is 4.94 s, not 4.84 s."
+      ]
+    },
+    {
+      "id": "T04-tidy-batch",
+      "name": "Tidy the whole view with one atomic batch layout request (I-K3 built)",
+      "persona": "P2",
+      "frequency": "weekly",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "decide the coordinates for five nodes"
+          },
+          {
+            "op": "K",
+            "n": 5,
+            "note": "Tab x5 to the Layout-only change disclosure"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Enter opens"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to node select (node 1 of 5)"
+          },
+          {
+            "op": "K",
+            "n": 2,
+            "note": "type-ahead, average of two letters"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to X"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "X"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to Y"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "Y"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to Save layout"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Enter"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload"
+          },
+          {
+            "op": "K",
+            "n": 4,
+            "note": "Shift+Tab x4 back to the node select"
+          },
+          {
+            "op": "M",
+            "note": "decide next node position"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to node select (node 2 of 5)"
+          },
+          {
+            "op": "K",
+            "n": 2,
+            "note": "type-ahead, average of two letters"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to X"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "X"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to Y"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "Y"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to Save layout"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Enter"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload"
+          },
+          {
+            "op": "K",
+            "n": 4,
+            "note": "Shift+Tab x4 back to the node select"
+          },
+          {
+            "op": "M",
+            "note": "decide next node position"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to node select (node 3 of 5)"
+          },
+          {
+            "op": "K",
+            "n": 2,
+            "note": "type-ahead, average of two letters"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to X"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "X"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to Y"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "Y"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to Save layout"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Enter"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload"
+          },
+          {
+            "op": "K",
+            "n": 4,
+            "note": "Shift+Tab x4 back to the node select"
+          },
+          {
+            "op": "M",
+            "note": "decide next node position"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to node select (node 4 of 5)"
+          },
+          {
+            "op": "K",
+            "n": 2,
+            "note": "type-ahead, average of two letters"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to X"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "X"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to Y"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "Y"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to Save layout"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Enter"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload"
+          },
+          {
+            "op": "K",
+            "n": 4,
+            "note": "Shift+Tab x4 back to the node select"
+          },
+          {
+            "op": "M",
+            "note": "decide next node position"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to node select (node 5 of 5)"
+          },
+          {
+            "op": "K",
+            "n": 2,
+            "note": "type-ahead, average of two letters"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to X"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "X"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to Y"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "Y"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to Save layout"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Enter"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "decide to tidy the whole view"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "tool-tidy",
+            "layout": "proposed-canvas",
+            "note": "headline geometry: D=466 px W=32 px ID=3.96 Fitts 0.885 s; layout-file geometry: D=407 px W=28 px ID=3.96 Fitts 0.884 s"
+          },
+          {
+            "op": "B",
+            "note": "press (click)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "M",
+            "note": "read the ghost preview of the five target positions before Apply (the design makes preview-then-Apply the safety step)"
+          },
+          {
+            "op": "P",
+            "from": "tool-tidy",
+            "to": "tool-tidy-apply",
+            "note": "Apply appears beside Tidy after the ghost preview (not in proposed-canvas.json); headline geometry: D=80 px W=32 px ID=1.81 Fitts 0.605 s; layout-file geometry: D=140 px W=28 px ID=2.58 Fitts 0.706 s (ESTIMATED geometry)"
+          },
+          {
+            "op": "B",
+            "note": "press (click)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "one atomic batch commit and reload (I-K3)"
+          }
+        ]
+      },
+      "assumptions": [
+        "Constants profile: M 1.35 s (Card, Moran and Newell 1983 value), K 0.20 s per key for an average skilled typist at 55 wpm (a chord such as ctrl+z counts 2 K), B 0.10 s per press or release (a click is two B), H 0.40 s, P = 0.37 + 0.13 x ID s (Cockburn et al. 2007 menu pointing, mouse), ID = log2(D/W+1), W = smaller side of the target. K, B, H, P(1.1 s flat) and the M range 0.6 to 1.35 s are in Kieras 2001, https://web.eecs.umich.edu/~kieras/docs/GOMS/KLM.pdf (text read locally 2026-09-29; the fetch tool could not verify the server certificate). Sensitivity with the Kieras design point (M 1.2, K 0.28) is in docs/hci/design/canvas-uml-interaction.md section 11.",
+        "Geometry profiles. Headline (D): current MEASURED on the real Studio (Chromium 151, 1440x900, Impact tab, meaning just selected so the notice box is visible), proposed = design document appendix B.2. Cross-check (L): current = design/layouts/current-impact.json (notice box empty, all y values 71 px smaller), proposed = design/layouts/proposed-canvas.json. Every P op that carries a \"layout\" key uses ids that exist in that layout file; its note gives both the headline and the layout-file Fitts numbers. A consumer that recomputes from the layout files obtains the L totals of section 11.2, which differ from the headline by at most 0.4 s and change no decision.",
+        "The pointer starts at the viewport centre (720,450) at 1440x900. P ops without a \"layout\" key point at elements that are not in the layout files (native popup rows, snap zone, Apply button, inspector segmented option, edge hit stroke); their geometry is ESTIMATED and stated in the note.",
+        "KLM covers expert, error-free, routine execution only; it excludes reading, learning, errors and discoverability; RMS error 21 percent, so every total carries a band of plus or minus 21 percent; every total is a PREDICTION. The M count is analyst judgement and every conclusion is tested with one M fewer for the current flow and one M more for the proposed flow.",
+        "Identical to T04-tidy except that R=70 ms (one POST plus the two reload GETs); saves 0.18 s.",
+        "Outcome differs from the current flow (algorithmic arrangement, accepted rather than chosen); see T04-tidy and T04-move-x5."
+      ]
+    },
+    {
+      "id": "T04-move-x5",
+      "name": "Arrange five state nodes at positions the user chooses by dragging each (same outcome as the current flow; fair comparator for T04-tidy)",
+      "persona": "P2",
+      "frequency": "weekly",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "decide the coordinates for five nodes"
+          },
+          {
+            "op": "K",
+            "n": 5,
+            "note": "Tab x5 to the Layout-only change disclosure"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Enter opens"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to node select (node 1 of 5)"
+          },
+          {
+            "op": "K",
+            "n": 2,
+            "note": "type-ahead, average of two letters"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to X"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "X"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to Y"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "Y"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to Save layout"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Enter"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload"
+          },
+          {
+            "op": "K",
+            "n": 4,
+            "note": "Shift+Tab x4 back to the node select"
+          },
+          {
+            "op": "M",
+            "note": "decide next node position"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to node select (node 2 of 5)"
+          },
+          {
+            "op": "K",
+            "n": 2,
+            "note": "type-ahead, average of two letters"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to X"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "X"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to Y"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "Y"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to Save layout"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Enter"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload"
+          },
+          {
+            "op": "K",
+            "n": 4,
+            "note": "Shift+Tab x4 back to the node select"
+          },
+          {
+            "op": "M",
+            "note": "decide next node position"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to node select (node 3 of 5)"
+          },
+          {
+            "op": "K",
+            "n": 2,
+            "note": "type-ahead, average of two letters"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to X"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "X"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to Y"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "Y"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to Save layout"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Enter"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload"
+          },
+          {
+            "op": "K",
+            "n": 4,
+            "note": "Shift+Tab x4 back to the node select"
+          },
+          {
+            "op": "M",
+            "note": "decide next node position"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to node select (node 4 of 5)"
+          },
+          {
+            "op": "K",
+            "n": 2,
+            "note": "type-ahead, average of two letters"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to X"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "X"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to Y"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "Y"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to Save layout"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Enter"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload"
+          },
+          {
+            "op": "K",
+            "n": 4,
+            "note": "Shift+Tab x4 back to the node select"
+          },
+          {
+            "op": "M",
+            "note": "decide next node position"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to node select (node 5 of 5)"
+          },
+          {
+            "op": "K",
+            "n": 2,
+            "note": "type-ahead, average of two letters"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to X"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "X"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to Y"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "Y"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Tab to Save layout"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "Enter"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "decide where node 1 of 5 goes (mirrors the one M per node of the current flow)"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "node-rejected",
+            "layout": "proposed-canvas",
+            "note": "body of the node; headline geometry: D=226 px W=56 px ID=2.33 Fitts 0.673 s; layout-file geometry: D=229 px W=48 px ID=2.53 Fitts 0.699 s"
+          },
+          {
+            "op": "B",
+            "note": "press"
+          },
+          {
+            "op": "P",
+            "from": "node",
+            "to": "snap-zone",
+            "note": "drag into a 12 px snap zone (ESTIMATED, repeats T04-move); headline geometry: D=176 px W=12 px ID=3.97 Fitts 0.886 s; layout-file geometry: D=240 px W=12 px ID=4.39 Fitts 0.941 s"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50 basis, as every other commit)"
+          },
+          {
+            "op": "M",
+            "note": "decide where node 2 of 5 goes (mirrors the one M per node of the current flow)"
+          },
+          {
+            "op": "P",
+            "from": "snap-zone-previous",
+            "to": "node-next",
+            "note": "ESTIMATED: repeats the T04-move geometry for each node (one node pitch); headline geometry: D=226 px W=56 px ID=2.33 Fitts 0.673 s; layout-file geometry: D=229 px W=48 px ID=2.53 Fitts 0.699 s"
+          },
+          {
+            "op": "B",
+            "note": "press"
+          },
+          {
+            "op": "P",
+            "from": "node",
+            "to": "snap-zone",
+            "note": "drag into a 12 px snap zone (ESTIMATED, repeats T04-move); headline geometry: D=176 px W=12 px ID=3.97 Fitts 0.886 s; layout-file geometry: D=240 px W=12 px ID=4.39 Fitts 0.941 s"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50 basis, as every other commit)"
+          },
+          {
+            "op": "M",
+            "note": "decide where node 3 of 5 goes (mirrors the one M per node of the current flow)"
+          },
+          {
+            "op": "P",
+            "from": "snap-zone-previous",
+            "to": "node-next",
+            "note": "ESTIMATED: repeats the T04-move geometry for each node (one node pitch); headline geometry: D=226 px W=56 px ID=2.33 Fitts 0.673 s; layout-file geometry: D=229 px W=48 px ID=2.53 Fitts 0.699 s"
+          },
+          {
+            "op": "B",
+            "note": "press"
+          },
+          {
+            "op": "P",
+            "from": "node",
+            "to": "snap-zone",
+            "note": "drag into a 12 px snap zone (ESTIMATED, repeats T04-move); headline geometry: D=176 px W=12 px ID=3.97 Fitts 0.886 s; layout-file geometry: D=240 px W=12 px ID=4.39 Fitts 0.941 s"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50 basis, as every other commit)"
+          },
+          {
+            "op": "M",
+            "note": "decide where node 4 of 5 goes (mirrors the one M per node of the current flow)"
+          },
+          {
+            "op": "P",
+            "from": "snap-zone-previous",
+            "to": "node-next",
+            "note": "ESTIMATED: repeats the T04-move geometry for each node (one node pitch); headline geometry: D=226 px W=56 px ID=2.33 Fitts 0.673 s; layout-file geometry: D=229 px W=48 px ID=2.53 Fitts 0.699 s"
+          },
+          {
+            "op": "B",
+            "note": "press"
+          },
+          {
+            "op": "P",
+            "from": "node",
+            "to": "snap-zone",
+            "note": "drag into a 12 px snap zone (ESTIMATED, repeats T04-move); headline geometry: D=176 px W=12 px ID=3.97 Fitts 0.886 s; layout-file geometry: D=240 px W=12 px ID=4.39 Fitts 0.941 s"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50 basis, as every other commit)"
+          },
+          {
+            "op": "M",
+            "note": "decide where node 5 of 5 goes (mirrors the one M per node of the current flow)"
+          },
+          {
+            "op": "P",
+            "from": "snap-zone-previous",
+            "to": "node-next",
+            "note": "ESTIMATED: repeats the T04-move geometry for each node (one node pitch); headline geometry: D=226 px W=56 px ID=2.33 Fitts 0.673 s; layout-file geometry: D=229 px W=48 px ID=2.53 Fitts 0.699 s"
+          },
+          {
+            "op": "B",
+            "note": "press"
+          },
+          {
+            "op": "P",
+            "from": "node",
+            "to": "snap-zone",
+            "note": "drag into a 12 px snap zone (ESTIMATED, repeats T04-move); headline geometry: D=176 px W=12 px ID=3.97 Fitts 0.886 s; layout-file geometry: D=240 px W=12 px ID=4.39 Fitts 0.941 s"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50 basis, as every other commit)"
+          }
+        ]
+      },
+      "assumptions": [
+        "Current flow is identical to T04-tidy current (five passes through the Layout-only form).",
+        "Proposed charges one M per node, as the current flow does; with a single M for the whole arrangement (the user plans once while seeing the picture) the proposed total falls by 4 M to 10.50 s (PREDICTION).",
+        "Nodes 2 to 5 repeat the T04-move pointing geometry (ESTIMATED); real per-node distances need the built canvas.",
+        "Drag uses pointing constants (lower bound; MacKenzie, Sellen and Buxton 1991 found dragging slower than pointing).",
+        "Each drop is its own LAYOUT commit and undo unit; no batch."
+      ]
+    },
+    {
+      "id": "T04-undo",
+      "name": "Undo the last edit",
+      "persona": "P2",
+      "frequency": "weekly",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "recall the previous value: the baseline has no undo, so the edit is repeated; includes the locate-control M from T04"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "one wheel notch (100 px assumed), charged in the headline geometry only"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "diagram-source",
+            "layout": "current-impact",
+            "note": "headline geometry: D=425 px W=44 px ID=3.41 Fitts 0.814 s; layout-file geometry: D=454 px W=44 px ID=3.50 Fitts 0.825 s"
+          },
+          {
+            "op": "B",
+            "note": "press (click)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "M",
+            "note": "choose the value"
+          },
+          {
+            "op": "P",
+            "from": "diagram-source",
+            "to": "diagram-source-option-Submitted",
+            "note": "native popup row, 22 px rows assumed; D=44 px W=22 px ID=1.58 bits; Fitts 0.576 s (ESTIMATED geometry)"
+          },
+          {
+            "op": "B",
+            "note": "press (click)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "P",
+            "from": "diagram-source-option-Submitted",
+            "to": "edit-state",
+            "note": "headline geometry: D=183 px W=49 px ID=2.24 Fitts 0.662 s; layout-file geometry: D=183 px W=49 px ID=2.25 Fitts 0.662 s"
+          },
+          {
+            "op": "B",
+            "note": "press (click)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50: POST 19.5 ms + GET case 23.8 ms + GET cases about 24 ms, about 67 ms; 70 ms used)"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "decide to undo"
+          },
+          {
+            "op": "H",
+            "note": "mouse to keyboard"
+          },
+          {
+            "op": "K",
+            "keys": "ctrl+z"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "inverse transaction commit and reload (MEASURED p50 basis)"
+          }
+        ]
+      },
+      "assumptions": [
+        "Constants profile: M 1.35 s (Card, Moran and Newell 1983 value), K 0.20 s per key for an average skilled typist at 55 wpm (a chord such as ctrl+z counts 2 K), B 0.10 s per press or release (a click is two B), H 0.40 s, P = 0.37 + 0.13 x ID s (Cockburn et al. 2007 menu pointing, mouse), ID = log2(D/W+1), W = smaller side of the target. K, B, H, P(1.1 s flat) and the M range 0.6 to 1.35 s are in Kieras 2001, https://web.eecs.umich.edu/~kieras/docs/GOMS/KLM.pdf (text read locally 2026-09-29; the fetch tool could not verify the server certificate). Sensitivity with the Kieras design point (M 1.2, K 0.28) is in docs/hci/design/canvas-uml-interaction.md section 11.",
+        "Geometry profiles. Headline (D): current MEASURED on the real Studio (Chromium 151, 1440x900, Impact tab, meaning just selected so the notice box is visible), proposed = design document appendix B.2. Cross-check (L): current = design/layouts/current-impact.json (notice box empty, all y values 71 px smaller), proposed = design/layouts/proposed-canvas.json. Every P op that carries a \"layout\" key uses ids that exist in that layout file; its note gives both the headline and the layout-file Fitts numbers. A consumer that recomputes from the layout files obtains the L totals of section 11.2, which differ from the headline by at most 0.4 s and change no decision.",
+        "The pointer starts at the viewport centre (720,450) at 1440x900. P ops without a \"layout\" key point at elements that are not in the layout files (native popup rows, snap zone, Apply button, inspector segmented option, edge hit stroke); their geometry is ESTIMATED and stated in the note.",
+        "KLM covers expert, error-free, routine execution only; it excludes reading, learning, errors and discoverability; RMS error 21 percent, so every total carries a band of plus or minus 21 percent; every total is a PREDICTION. The M count is analyst judgement and every conclusion is tested with one M fewer for the current flow and one M more for the proposed flow.",
+        "The baseline has no undo; current is a repeat of the T04 edit with the previous value, so this row prices a workaround, not an equivalent function.",
+        "Reading the \"not restored\" lines is not modelled; it adds one M (proposed 3.57 s: still separable from the current flow in the headline geometry, marginal overlap (4.29 against 4.32 s) in the layout-file geometry)."
+      ]
+    },
+    {
+      "id": "T04-refuse",
+      "name": "Attempt an unsupported drop and read the refusal (prices a refused attempt)",
+      "persona": "P2",
+      "frequency": "weekly",
+      "flows": {
+        "current": [],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "decide to try an unsupported target"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "handle-reject-source",
+            "layout": "proposed-canvas",
+            "note": "hit area 24x24; headline geometry: D=175 px W=24 px ID=3.05 Fitts 0.766 s; layout-file geometry: D=46 px W=24 px ID=1.54 Fitts 0.570 s"
+          },
+          {
+            "op": "B",
+            "note": "press"
+          },
+          {
+            "op": "P",
+            "from": "handle-reject-source",
+            "to": "node-approved",
+            "layout": "proposed-canvas",
+            "note": "headline geometry: D=156 px W=56 px ID=1.92 Fitts 0.619 s; layout-file geometry: D=203 px W=48 px ID=2.39 Fitts 0.680 s"
+          },
+          {
+            "op": "M",
+            "note": "read the refusal sentence shown at the drop target (reading time not modelled by KLM; one M as a floor)"
+          },
+          {
+            "op": "B",
+            "note": "release on refused target"
+          }
+        ]
+      },
+      "assumptions": [
+        "Constants profile: M 1.35 s (Card, Moran and Newell 1983 value), K 0.20 s per key for an average skilled typist at 55 wpm (a chord such as ctrl+z counts 2 K), B 0.10 s per press or release (a click is two B), H 0.40 s, P = 0.37 + 0.13 x ID s (Cockburn et al. 2007 menu pointing, mouse), ID = log2(D/W+1), W = smaller side of the target. K, B, H, P(1.1 s flat) and the M range 0.6 to 1.35 s are in Kieras 2001, https://web.eecs.umich.edu/~kieras/docs/GOMS/KLM.pdf (text read locally 2026-09-29; the fetch tool could not verify the server certificate). Sensitivity with the Kieras design point (M 1.2, K 0.28) is in docs/hci/design/canvas-uml-interaction.md section 11.",
+        "Geometry profiles. Headline (D): current MEASURED on the real Studio (Chromium 151, 1440x900, Impact tab, meaning just selected so the notice box is visible), proposed = design document appendix B.2. Cross-check (L): current = design/layouts/current-impact.json (notice box empty, all y values 71 px smaller), proposed = design/layouts/proposed-canvas.json. Every P op that carries a \"layout\" key uses ids that exist in that layout file; its note gives both the headline and the layout-file Fitts numbers. A consumer that recomputes from the layout files obtains the L totals of section 11.2, which differ from the headline by at most 0.4 s and change no decision.",
+        "The pointer starts at the viewport centre (720,450) at 1440x900. P ops without a \"layout\" key point at elements that are not in the layout files (native popup rows, snap zone, Apply button, inspector segmented option, edge hit stroke); their geometry is ESTIMATED and stated in the note.",
+        "KLM covers expert, error-free, routine execution only; it excludes reading, learning, errors and discoverability; RMS error 21 percent, so every total carries a band of plus or minus 21 percent; every total is a PREDICTION. The M count is analyst judgement and every conclusion is tested with one M fewer for the current flow and one M more for the proposed flow.",
+        "No current equivalent: the baseline select lists only legal values, so an illegal attempt cannot be made; current flow is intentionally empty and no ratio should be computed.",
+        "The entry exists to price the cost of exploration by refusal; the reading M is a floor. It applies to stage 2 (drag). In stage 1 a refused click costs the same order.",
+        "Stage-2 flow (MEANING drag handle, D13). Its P ops reference handle-reject-source in design/layouts/proposed-canvas.json; that element must stay in the layout file behind a stage-2 flag (appendix B.3 of the design document), or this flow cannot be recomputed from layout files.",
+        "current is empty on purpose: the baseline select offers only legal values, so a refusal cannot occur and there is nothing to compare. Consumers must report this task as not comparable, not as a zero-second baseline. design/tasks/ia-flows.json uses the same convention."
+      ]
+    },
+    {
+      "id": "T04-refuse-lite",
+      "name": "Select the Reject edge, click a state that is not a legal source, and read the refusal (release-1 path of option D-lite)",
+      "persona": "P2",
+      "frequency": "weekly",
+      "flows": {
+        "current": [],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "decide to try Approved as the new source"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "edge-reject-label",
+            "layout": "proposed-canvas",
+            "note": "select the Reject edge; headline geometry: D=125 px W=24 px ID=2.64 Fitts 0.713 s; layout-file geometry: D=121 px W=24 px ID=2.59 Fitts 0.707 s"
+          },
+          {
+            "op": "B",
+            "note": "press (select edge; its source end is armed and legal targets are outlined)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "P",
+            "from": "edge-reject-label",
+            "to": "node-approved",
+            "layout": "proposed-canvas",
+            "note": "layout-file geometry used for both profiles (B.2 gives no edge position): D=183 px W=48 px ID=2.27 Fitts 0.665 s"
+          },
+          {
+            "op": "B",
+            "note": "press (click a refused target)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "M",
+            "note": "read the refusal shown at the target (tier-1 affordance map, no round trip; reading time is not modelled by KLM, one M is a floor)"
+          }
+        ]
+      },
+      "assumptions": [
+        "current is empty on purpose: the baseline select offers only legal values, so a refusal cannot occur; not comparable.",
+        "No R: the refusal comes from the kernel affordance map delivered with the case (D3 tier 1), not from a request.",
+        "Approved is refused with the code listed for it in section 6 of the design document.",
+        "Uses only layout elements that exist in release 1 (no drag handle)."
+      ]
+    }
+  ]
+}

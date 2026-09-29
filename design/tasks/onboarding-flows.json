@@ -1,0 +1,910 @@
+{
+  "schema": "eija.taskflow.v1",
+  "tasks": [
+    {
+      "id": "T10",
+      "name": "First-run onboarding: open sample, select meaning, reach evidence with UNKNOWN visible",
+      "persona": "P5",
+      "frequency": "rare",
+      "flows": {
+        "current": [
+          {
+            "op": "R",
+            "ms": 28080,
+            "why": "reading: 117 novel words of the first screen (hero, aside, boundary, create panel, footer) at 250 wpm (ASSUMPTION; upper bound if every word is read)"
+          },
+          {
+            "op": "M",
+            "note": "decide to start: the prefilled request is left as is"
+          },
+          {
+            "op": "P",
+            "from": "request",
+            "to": "create",
+            "layout": "current-start"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 300,
+            "why": "system response: local API call(s), 100 ms each ASSUMED (unmeasured); 3 calls (create case, load case, refresh list)"
+          },
+          {
+            "op": "R",
+            "ms": 15600,
+            "why": "reading: 65 novel words of the workspace shell and the Change tab at 250 wpm (ASSUMPTION; upper bound if every word is read)"
+          },
+          {
+            "op": "M",
+            "note": "find the step that asks for interpretations"
+          },
+          {
+            "op": "P",
+            "from": "create",
+            "to": "propose",
+            "note": "cross-screen: the pointer starts on the previous screen, so no single layout holds both ids; default P"
+          },
+          {
+            "op": "B",
+            "note": "provider is offline by default so no consent tick is needed"
+          },
+          {
+            "op": "R",
+            "ms": 300,
+            "why": "system response: local API call(s), 100 ms each ASSUMED (unmeasured); 3 calls (propose, reload case, refresh list)"
+          },
+          {
+            "op": "R",
+            "ms": 19920,
+            "why": "reading: 83 novel words of the three option cards and unresolved lines at 250 wpm (ASSUMPTION; upper bound if every word is read)"
+          },
+          {
+            "op": "M",
+            "note": "choose a meaning"
+          },
+          {
+            "op": "P",
+            "from": "propose",
+            "to": "button",
+            "layout": "current-change",
+            "note": "layout id button is the Select meaning button on the supported card (captured after selection, where its label reads Meaning selected)"
+          },
+          {
+            "op": "B",
+            "note": "Select this meaning on the supported card"
+          },
+          {
+            "op": "R",
+            "ms": 300,
+            "why": "system response: local API call(s), 100 ms each ASSUMED (unmeasured); 3 calls (select, reload case, refresh list)"
+          },
+          {
+            "op": "R",
+            "ms": 11760,
+            "why": "reading: 49 novel words of the typed-edit panel that appears at 250 wpm (ASSUMPTION; upper bound if every word is read)"
+          },
+          {
+            "op": "M",
+            "note": "find where evidence lives"
+          },
+          {
+            "op": "P",
+            "from": "button",
+            "to": "tab-evidence",
+            "layout": "current-change"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 21840,
+            "why": "reading: 91 novel words of the Evidence and Decision tab at 250 wpm (ASSUMPTION; upper bound if every word is read)"
+          },
+          {
+            "op": "M",
+            "note": "find the verification button"
+          },
+          {
+            "op": "P",
+            "from": "tab-evidence",
+            "to": "verify",
+            "layout": "current-evidence"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 2400,
+            "why": "MEASURED verify_runtime 2.0 to 2.4 s (3 runs, 125 cells, Windows 11, Python 3.12.10) plus about 200 ms for reload and list"
+          },
+          {
+            "op": "R",
+            "ms": 3600,
+            "why": "reading: 15 novel words of the verification result and notice at 250 wpm (ASSUMPTION; upper bound if every word is read)"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "R",
+            "ms": 12720,
+            "why": "reading: 53 novel words of HOME (shell including the 3-word scope chip human outcomes UNKNOWN, empty state, sample) at 250 wpm (ASSUMPTION; upper bound if every word is read)"
+          },
+          {
+            "op": "M",
+            "note": "decide to open the sample"
+          },
+          {
+            "op": "P",
+            "from": "home.open-sample-anchor",
+            "to": "home.open-sample"
+          },
+          {
+            "op": "B",
+            "note": "creates the sample case and requests the offline fixture interpretations"
+          },
+          {
+            "op": "R",
+            "ms": 600,
+            "why": "system response: local API call(s), 100 ms each ASSUMED (unmeasured); 6 calls (create case and propose, each followed by load case and refresh list)"
+          },
+          {
+            "op": "R",
+            "ms": 23520,
+            "why": "reading: 98 novel words of REVIEW at stage PROPOSED (three interpretations) at 250 wpm (ASSUMPTION; upper bound if every word is read)"
+          },
+          {
+            "op": "M",
+            "note": "choose a meaning"
+          },
+          {
+            "op": "P",
+            "from": "home.open-sample",
+            "to": "review.select-meaning"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 300,
+            "why": "system response: local API call(s), 100 ms each ASSUMED (unmeasured); 3 calls (select, reload case, refresh list)"
+          },
+          {
+            "op": "R",
+            "ms": 14400,
+            "why": "reading: 60 novel words of REVIEW at stage PREVIEW (transactions, ripple, evidence roll-up) at 250 wpm (ASSUMPTION; upper bound if every word is read)"
+          },
+          {
+            "op": "M",
+            "note": "run verification: the Next slot names it"
+          },
+          {
+            "op": "P",
+            "from": "review.select-meaning",
+            "to": "review.run-verification"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 2400,
+            "why": "MEASURED verify_runtime 2.0 to 2.4 s (3 runs) plus about 200 ms for reload and list; shown as RUNNING, previous verdict kept"
+          },
+          {
+            "op": "R",
+            "ms": 17280,
+            "why": "reading: 72 novel words of evidence roll-up with the four-slot coverage row at 250 wpm (ASSUMPTION; upper bound if every word is read)"
+          }
+        ]
+      },
+      "assumptions": [
+        "Task ends when the verification result (with human understanding UNKNOWN) is visible: TTFV-2 in docs/hci/design/content-and-onboarding.md section 7.",
+        "KLM is invalid for first-time users (LAW section 2.4): the flow is an expert, error-free FLOOR, not an estimate of novice time. A novice takes longer; the study measures the real value.",
+        "Reading is modelled outside KLM as R operations at 250 wpm (NN/g assumed rate; band 180 to 250 wpm gives the low-to-high range) over NOVEL words only (words not on the previous screen); it assumes every word is read, which is an upper bound (NN/g 2008: users read at most about 28% of words on average pages).",
+        "Word counts: current = MEASURED from index.html (alphanumeric tokens) plus hand-counted dynamic strings from app.js, policy.py and providers.py; proposed = the drafts in the doc section 8, a design cap not a measurement.",
+        "Current flow uses the default offline provider and the prefilled request; ids follow the current-* layout files (button is the supported card's Select meaning button, case-item is the case list entry, tab-evidence, q-*, acknowledge).",
+        "Proposed flow assumes the layout lane keeps HOME open-sample as a single primary action and a Next slot on REVIEW; element ids are proposed interface names to be mapped by the layout lane.",
+        "Local API calls assumed 100 ms each (unmeasured); the verification time is MEASURED and equal in both flows.",
+        "Proposed sample creation needs create plus propose with the offline provider, which the current API allows without consent; with a networked provider the sample opens the case only (doc section 7).",
+        "P operations name a layout stem where both element ids exist in one current-* layout (request to create; propose to button to tab-evidence; tab-evidence to verify). The create to propose step crosses screens and the proposed ids are not in a layout, so those use the default P of 1.1 s. Geometry is in page coordinates and scrolling between elements is not modelled.",
+        "T10's proposed flow has 3 required clicks; the current flow has 5. Reading time is an upper bound (every novel word read); NN/g reports that readers read about 20 to 28 percent of words on typical web pages, so the reading totals are a sensitivity range in HCI-ADR-0065, not an estimate."
+      ]
+    },
+    {
+      "id": "T09-define-term",
+      "name": "Look up a ubiquitous-language term (variant of brief T09, find anything, by click)",
+      "persona": "P1",
+      "frequency": "weekly",
+      "flows": {
+        "current": [
+          {
+            "op": "H",
+            "note": "hand moves from the mouse to the keyboard"
+          },
+          {
+            "op": "M",
+            "note": "decide to look the term up"
+          },
+          {
+            "op": "K",
+            "keys": "alt+tab",
+            "note": "switch to a window that already shows docs/architecture/ARCHITECTURE.md (ASSUMED open)"
+          },
+          {
+            "op": "M",
+            "note": "recall the term to search"
+          },
+          {
+            "op": "K",
+            "keys": "ctrl+f"
+          },
+          {
+            "op": "T",
+            "chars": 17,
+            "note": "type Meaning Selection"
+          },
+          {
+            "op": "K",
+            "keys": "enter"
+          },
+          {
+            "op": "R",
+            "ms": 4800,
+            "why": "reading: the 20-word definition at 250 wpm (ASSUMPTION)"
+          },
+          {
+            "op": "K",
+            "keys": "alt+tab",
+            "note": "return to the Studio"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "decide to look the term up"
+          },
+          {
+            "op": "P",
+            "from": "term.meaning-selection",
+            "to": "term.meaning-selection.popover",
+            "note": "activate the term chip; the popover opens beside it"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 100,
+            "why": "popover opens inside the 0.1 s class (PREDICTION target, unmeasured)"
+          },
+          {
+            "op": "R",
+            "ms": 4320,
+            "why": "reading: the 18-word definition at 250 wpm (ASSUMPTION)"
+          },
+          {
+            "op": "H",
+            "note": "hand moves from the mouse to the keyboard"
+          },
+          {
+            "op": "K",
+            "keys": "esc",
+            "note": "dismiss; focus returns to the term"
+          }
+        ]
+      },
+      "assumptions": [
+        "Variant of brief task T09 (persona P1, daily); the share of T09 uses that are definition lookups is unknown, so the frequency is set to weekly as a hypothesis (deviation from the parent's daily).",
+        "P3 (requirements owner) may not know the kernel vocabulary and is the study's test case for this task (personas-and-jtbd.md); the operator list is the same for P1 and P3.",
+        "Current UI has no glossary: the term is looked up in docs/architecture/ARCHITECTURE.md open in another window (ASSUMED already open, which favours the current flow).",
+        "Definition lengths (20 and 18 words) are drafts; reading at 250 wpm is an assumption.",
+        "One H each side for the change of device: the flow starts with the hand on the mouse inside the Studio; the proposed flow ends on Esc after a mouse click.",
+        "Popover open time 100 ms is a PREDICTION target, unmeasured; popover under the strict CSP is untested (SYNTHESIS C15). Element ids are proposed names; the proposed layouts do not contain a term chip yet, so the pointing time is the default P of 1.1 s."
+      ]
+    },
+    {
+      "id": "T09-define-term-kbd",
+      "name": "Look up a term from the keyboard through the palette (variant of brief T09)",
+      "persona": "P1",
+      "frequency": "weekly",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "decide to look the term up"
+          },
+          {
+            "op": "K",
+            "keys": "alt+tab",
+            "note": "switch to a window that already shows docs/architecture/ARCHITECTURE.md (ASSUMED open)"
+          },
+          {
+            "op": "M",
+            "note": "recall the term to search"
+          },
+          {
+            "op": "K",
+            "keys": "ctrl+f"
+          },
+          {
+            "op": "T",
+            "chars": 17,
+            "note": "type Meaning Selection"
+          },
+          {
+            "op": "K",
+            "keys": "enter"
+          },
+          {
+            "op": "R",
+            "ms": 4800,
+            "why": "reading: the 20-word definition at 250 wpm (ASSUMPTION)"
+          },
+          {
+            "op": "K",
+            "keys": "alt+tab",
+            "note": "return to the Studio"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "decide to look the term up"
+          },
+          {
+            "op": "K",
+            "keys": "ctrl+k",
+            "note": "open the palette"
+          },
+          {
+            "op": "T",
+            "chars": 12,
+            "note": "type: define meaning"
+          },
+          {
+            "op": "K",
+            "keys": "enter",
+            "note": "opens the same definition popover"
+          },
+          {
+            "op": "R",
+            "ms": 100,
+            "why": "popover opens inside the 0.1 s class (PREDICTION target, unmeasured)"
+          },
+          {
+            "op": "R",
+            "ms": 4320,
+            "why": "reading: the 18-word definition at 250 wpm (ASSUMPTION)"
+          },
+          {
+            "op": "K",
+            "keys": "esc"
+          }
+        ]
+      },
+      "assumptions": [
+        "Same current flow as T09-define-term but starting with the hand on the keyboard (no H).",
+        "Variant of brief task T09 (P1, daily); weekly is a hypothesis for the definition-lookup share.",
+        "Typed text is 12 characters (define meaning) with fuzzy matching; typed search is not modelled by Hick-Hyman (LAW section 2.3).",
+        "Assumes a Define command exists in the palette (proposed here; the palette lane owns the command list and the no-approve rule)."
+      ]
+    },
+    {
+      "id": "T08-recover-stale",
+      "name": "Recover from a stale-case error while approving (variant of brief T08), mouse-only baseline",
+      "persona": "P1",
+      "frequency": "weekly",
+      "flows": {
+        "current": [
+          {
+            "op": "R",
+            "ms": 1440,
+            "why": "reading: 6 novel words of the notice STALE_VERSION: Case changed; reload before acting at 250 wpm (ASSUMPTION; upper bound if every word is read)"
+          },
+          {
+            "op": "M",
+            "note": "work out what to do; no control is offered"
+          },
+          {
+            "op": "H",
+            "note": "hand moves from the mouse to the keyboard"
+          },
+          {
+            "op": "K",
+            "keys": "f5"
+          },
+          {
+            "op": "R",
+            "ms": 500,
+            "why": "page reload, ASSUMED"
+          },
+          {
+            "op": "R",
+            "ms": 200,
+            "why": "system response: local API call(s), 100 ms each ASSUMED (unmeasured); 2 calls (status, list)"
+          },
+          {
+            "op": "M",
+            "note": "find the case again; the page opens on the create panel"
+          },
+          {
+            "op": "H",
+            "note": "hand moves from the keyboard to the mouse"
+          },
+          {
+            "op": "P",
+            "from": "approve",
+            "to": "case-item",
+            "layout": "current-evidence",
+            "note": "case list entry"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 200,
+            "why": "system response: local API call(s), 100 ms each ASSUMED (unmeasured)"
+          },
+          {
+            "op": "M",
+            "note": "find the Evidence tab again"
+          },
+          {
+            "op": "P",
+            "from": "case-item",
+            "to": "tab-evidence",
+            "layout": "current-evidence"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 10000,
+            "why": "ASSUMPTION, identical in both flows: the owner re-reads what changed before approving again; this design does not shorten it"
+          },
+          {
+            "op": "M",
+            "note": "retype the three meaning answers; the form was cleared"
+          },
+          {
+            "op": "P",
+            "from": "tab-evidence",
+            "to": "q-authority",
+            "layout": "current-evidence"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "H",
+            "note": "mouse to keyboard"
+          },
+          {
+            "op": "T",
+            "chars": 9,
+            "note": "Registrar"
+          },
+          {
+            "op": "H",
+            "note": "keyboard to mouse"
+          },
+          {
+            "op": "P",
+            "from": "q-authority",
+            "to": "q-assignment",
+            "layout": "current-evidence"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "H",
+            "note": "mouse to keyboard"
+          },
+          {
+            "op": "T",
+            "chars": 2,
+            "note": "No"
+          },
+          {
+            "op": "H",
+            "note": "keyboard to mouse"
+          },
+          {
+            "op": "P",
+            "from": "q-assignment",
+            "to": "q-reject_entry",
+            "layout": "current-evidence"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "H",
+            "note": "mouse to keyboard"
+          },
+          {
+            "op": "T",
+            "chars": 11,
+            "note": "Recommended"
+          },
+          {
+            "op": "H",
+            "note": "keyboard to mouse"
+          },
+          {
+            "op": "P",
+            "from": "q-reject_entry",
+            "to": "acknowledge",
+            "layout": "current-evidence"
+          },
+          {
+            "op": "B",
+            "note": "tick the acknowledgement again"
+          },
+          {
+            "op": "P",
+            "from": "acknowledge",
+            "to": "approve",
+            "layout": "current-evidence"
+          },
+          {
+            "op": "B"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "R",
+            "ms": 3600,
+            "why": "reading: 15 novel words of the error: Not saved. This case changed after you opened it. Reload it, then repeat the action. at 250 wpm (ASSUMPTION; upper bound if every word is read)"
+          },
+          {
+            "op": "M",
+            "note": "act on the message; a Reload case button sits in it"
+          },
+          {
+            "op": "P",
+            "from": "approve",
+            "to": "notice.reload-case"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 200,
+            "why": "system response: local API call(s), 100 ms each ASSUMED (unmeasured); 2 calls (reload case, refresh list); tab and typed answers are kept in place; the acknowledgement of UNKNOWNs is cleared because the case version changed (D4 rule)"
+          },
+          {
+            "op": "R",
+            "ms": 1440,
+            "why": "reading: 6 novel words of the notice: Case reloaded. Answers kept. Acknowledge again. at 250 wpm (ASSUMPTION; upper bound if every word is read)"
+          },
+          {
+            "op": "R",
+            "ms": 10000,
+            "why": "ASSUMPTION, identical in both flows: the owner re-reads what changed before approving again; this design does not shorten it"
+          },
+          {
+            "op": "M",
+            "note": "approve again"
+          },
+          {
+            "op": "M",
+            "note": "see that the acknowledgement is cleared and decide to re-tick it: a deliberate act on the changed case (I4, P2); conservative, one M more than a pure keystroke count"
+          },
+          {
+            "op": "P",
+            "from": "notice.reload-case",
+            "to": "decide.acknowledge",
+            "note": "proposed element id; default P"
+          },
+          {
+            "op": "B",
+            "note": "tick the acknowledgement again"
+          },
+          {
+            "op": "P",
+            "from": "decide.acknowledge",
+            "to": "approve"
+          },
+          {
+            "op": "B"
+          }
+        ]
+      },
+      "assumptions": [
+        "Variant of brief task T08 (approve and apply the exact revision, P1, daily). Frequency is set to weekly because recovery happens on a fraction of approvals; that fraction is unknown (deviation from the parent's daily, a hypothesis).",
+        "Trigger is STALE_VERSION (case changed elsewhere, for example by the CLI or another tab). The baseline clears the approval form on reload (page reload). The proposal keeps the typed answers in place but CLEARS the acknowledgement of UNKNOWNs whenever the case version changed, so the owner re-acknowledges on the changed case (I4, P2). This costs one M, one P and one B and 6 more words to read compared with the first draft.",
+        "This is the MOUSE-ONLY baseline (pointer between every answer field, H around each typed answer). It is a novice-like or strawman path and is reported for completeness. The expert baseline is T08-recover-stale-kbd, which types and Tabs through the fields; that is the comparison the ADR treats as primary.",
+        "The re-review time (10 s) is an assumption and is identical in all flows so that the design cannot appear faster by skipping review; the decision surface must still re-show the changed items.",
+        "Preserving typed answers is a client behaviour, not a kernel change; approval still needs the exact subject hash, so a changed subject blocks approval regardless (SUBJECT_CHANGED). Answers are kept only for questions whose id and text are unchanged.",
+        "Current answers are 9, 2 and 11 characters (Registrar, No, Recommended): the expected answers from meaning_questions in policy.py.",
+        "H operators: 8 in this baseline (hand to keyboard and back around F5, and around each of the three typed answers), 0 in the proposed flow, which has no typing. The current P operators use geometry from current-evidence (page coordinates; scrolling between elements is not modelled)."
+      ]
+    },
+    {
+      "id": "T08-recover-stale-kbd",
+      "name": "Recover from a stale-case error while approving (variant of brief T08), keyboard-Tab baseline",
+      "persona": "P1",
+      "frequency": "weekly",
+      "flows": {
+        "current": [
+          {
+            "op": "R",
+            "ms": 1440,
+            "why": "reading: 6 novel words of the notice STALE_VERSION: Case changed; reload before acting at 250 wpm (ASSUMPTION; upper bound if every word is read)"
+          },
+          {
+            "op": "M",
+            "note": "work out what to do; no control is offered"
+          },
+          {
+            "op": "H",
+            "note": "hand moves from the mouse to the keyboard"
+          },
+          {
+            "op": "K",
+            "keys": "f5"
+          },
+          {
+            "op": "R",
+            "ms": 500,
+            "why": "page reload, ASSUMED"
+          },
+          {
+            "op": "R",
+            "ms": 200,
+            "why": "system response: local API call(s), 100 ms each ASSUMED (unmeasured); 2 calls (status, list)"
+          },
+          {
+            "op": "M",
+            "note": "find the case again; the page opens on the create panel"
+          },
+          {
+            "op": "H",
+            "note": "hand moves from the keyboard to the mouse"
+          },
+          {
+            "op": "P",
+            "from": "approve",
+            "to": "case-item",
+            "layout": "current-evidence",
+            "note": "case list entry"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 200,
+            "why": "system response: local API call(s), 100 ms each ASSUMED (unmeasured)"
+          },
+          {
+            "op": "M",
+            "note": "find the Evidence tab again"
+          },
+          {
+            "op": "P",
+            "from": "case-item",
+            "to": "tab-evidence",
+            "layout": "current-evidence"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 10000,
+            "why": "ASSUMPTION, identical in both flows: the owner re-reads what changed before approving again; this design does not shorten it"
+          },
+          {
+            "op": "M",
+            "note": "retype the three meaning answers; the form was cleared"
+          },
+          {
+            "op": "P",
+            "from": "tab-evidence",
+            "to": "q-authority",
+            "layout": "current-evidence"
+          },
+          {
+            "op": "B",
+            "note": "click the first answer field once"
+          },
+          {
+            "op": "H",
+            "note": "mouse to keyboard"
+          },
+          {
+            "op": "T",
+            "chars": 9,
+            "note": "Registrar"
+          },
+          {
+            "op": "K",
+            "keys": "tab",
+            "note": "next answer field (plain text inputs in document order: questions, acknowledgement, Approve)"
+          },
+          {
+            "op": "T",
+            "chars": 2,
+            "note": "No"
+          },
+          {
+            "op": "K",
+            "keys": "tab"
+          },
+          {
+            "op": "T",
+            "chars": 11,
+            "note": "Recommended"
+          },
+          {
+            "op": "K",
+            "keys": "tab",
+            "note": "to the acknowledgement checkbox"
+          },
+          {
+            "op": "K",
+            "keys": "space",
+            "note": "tick the acknowledgement again"
+          },
+          {
+            "op": "K",
+            "keys": "tab",
+            "note": "to Approve exact local revision"
+          },
+          {
+            "op": "K",
+            "keys": "enter",
+            "note": "press Approve"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "R",
+            "ms": 3600,
+            "why": "reading: 15 novel words of the error: Not saved. This case changed after you opened it. Reload it, then repeat the action. at 250 wpm (ASSUMPTION; upper bound if every word is read)"
+          },
+          {
+            "op": "M",
+            "note": "act on the message; a Reload case button sits in it"
+          },
+          {
+            "op": "P",
+            "from": "approve",
+            "to": "notice.reload-case"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 200,
+            "why": "system response: local API call(s), 100 ms each ASSUMED (unmeasured); 2 calls (reload case, refresh list); tab and typed answers are kept in place; the acknowledgement of UNKNOWNs is cleared because the case version changed (D4 rule)"
+          },
+          {
+            "op": "R",
+            "ms": 1440,
+            "why": "reading: 6 novel words of the notice: Case reloaded. Answers kept. Acknowledge again. at 250 wpm (ASSUMPTION; upper bound if every word is read)"
+          },
+          {
+            "op": "R",
+            "ms": 10000,
+            "why": "ASSUMPTION, identical in both flows: the owner re-reads what changed before approving again; this design does not shorten it"
+          },
+          {
+            "op": "M",
+            "note": "approve again"
+          },
+          {
+            "op": "M",
+            "note": "see that the acknowledgement is cleared and decide to re-tick it: a deliberate act on the changed case (I4, P2); conservative, one M more than a pure keystroke count"
+          },
+          {
+            "op": "P",
+            "from": "notice.reload-case",
+            "to": "decide.acknowledge",
+            "note": "proposed element id; default P"
+          },
+          {
+            "op": "B",
+            "note": "tick the acknowledgement again"
+          },
+          {
+            "op": "P",
+            "from": "decide.acknowledge",
+            "to": "approve"
+          },
+          {
+            "op": "B"
+          }
+        ]
+      },
+      "assumptions": [
+        "Same trigger, re-review assumption and proposed flow as T08-recover-stale. The baseline is what an expert KLM user would do: click the first answer field, type, Tab through the second and third field, the acknowledgement checkbox and the Approve button (the form is plain inputs in document order in index.html and app.js), so there is one P and one B for the fields instead of three and 2 H instead of 6 around typing.",
+        "H operators: 3 in this baseline (around F5 and after the click on the first answer field), 0 in the proposal.",
+        "Chord and single keys: Tab, Space, Enter count 1 K each; F5 1 K.",
+        "The proposal clears the acknowledgement on a changed case version and adds M, P and B for the re-tick (I4, P2); the first draft kept it and was 2.55 s faster, which the audit found weakened the deliberate-act rule."
+      ]
+    },
+    {
+      "id": "T06-resolve-blocker",
+      "name": "Resolve a review blocker from its reason (variant of brief T06)",
+      "persona": "P4",
+      "frequency": "daily",
+      "flows": {
+        "current": [
+          {
+            "op": "R",
+            "ms": 720,
+            "why": "reading: 3 novel words of the blocker line: Review blocked: RUNTIME_EVIDENCE_UNKNOWN at 250 wpm (ASSUMPTION; upper bound if every word is read)"
+          },
+          {
+            "op": "M",
+            "note": "decode RUNTIME_EVIDENCE_UNKNOWN into an action"
+          },
+          {
+            "op": "M",
+            "note": "locate the verification button"
+          },
+          {
+            "op": "P",
+            "from": "approve",
+            "to": "verify",
+            "layout": "current-evidence"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 2400,
+            "why": "MEASURED verify_runtime 2.0 to 2.4 s plus reload and list"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "R",
+            "ms": 1920,
+            "why": "reading: 8 novel words of the blocker header and row: BLOCKED 1 reason. Runtime evidence UNKNOWN: Run verification. at 250 wpm (ASSUMPTION; upper bound if every word is read)"
+          },
+          {
+            "op": "M",
+            "note": "choose the blocker row to resolve"
+          },
+          {
+            "op": "P",
+            "from": "approve",
+            "to": "blocker.run-verification",
+            "note": "proposed element id; the layout lane has no blocker row yet, so default P"
+          },
+          {
+            "op": "B",
+            "note": "the action sits in the reason row"
+          },
+          {
+            "op": "R",
+            "ms": 2400,
+            "why": "MEASURED verify_runtime 2.0 to 2.4 s plus reload and list; shown as RUNNING with the previous verdict kept"
+          }
+        ]
+      },
+      "assumptions": [
+        "Variant of brief task T06 (run and read verification evidence, P4, daily); persona and frequency match the parent.",
+        "Trigger is one blocker: RUNTIME_EVIDENCE_UNKNOWN with the meaning already selected. The current line reads 3 words; the proposed header and row read 8 words (BLOCKED, 1, reason, Runtime evidence UNKNOWN, Run verification).",
+        "The proposed saving is one M operator (1.35 s) for decoding the raw code, against 1.2 s of extra reading; the net difference is inside the KLM band of plus or minus 21%, so this task is a consistency check, not evidence.",
+        "Verification time is MEASURED and identical in both flows.",
+        "The proposed P uses the default 1.1 s because the proposed layouts have no blocker row; the current P uses geometry from current-evidence (page coordinates; scrolling is not modelled)."
+      ]
+    }
+  ]
+}
