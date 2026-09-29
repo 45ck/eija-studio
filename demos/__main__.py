@@ -15,6 +15,7 @@ from pathlib import Path
 
 from demos.lib import BrowserUnavailableError, Recorder, ephemeral_eija_server
 from demos.manifest import build_manifest, write_manifest
+from demos.prgif import cli as pr_gif
 from demos.scenarios.registry import (
     ROOT,
     SCENARIOS,
@@ -37,6 +38,8 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if args.command == "registry":
         return _registry(check=args.check)
+    if args.command == "pr-gif":
+        return pr_gif.run(args)
     return _run(args.key, dry_run=args.dry_run, headed=args.headed, seed=args.seed)
 
 
@@ -59,6 +62,7 @@ def _parser() -> argparse.ArgumentParser:
         help="seeds the typing cadence ONLY; recordings are not otherwise repeatable "
              "(timing, encoder and Studio state vary)",
     )
+    pr_gif.add_parser(sub)  # GIFs for pull requests (ADR-0142, docs/engineering/PR-STANDARD.md)
     return parser
 
 
