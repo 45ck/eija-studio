@@ -53,41 +53,76 @@ The two diamonds and the final apply are the human actions; a provider can take 
 The excursion workflow before and after the owner selects the `recommend_only` meaning of "Let teachers sign off excursions." Teachers get a *recommend* step; the registrar keeps final approval and rejection.
 
 <!-- BEGIN GENERATED: excursion-diff (scripts/gen_readme_diagram.py; do not edit by hand) -->
-**Before**: the baseline workflow (`domain.policy.baseline()`).
+**Diff** (`eija render --workflow examples/excursion-candidate.json --view diff --format mermaid`): green is added, amber is changed, a `+` label is a new or changed transition and a `-` label is a transition the candidate no longer has. The first two comment lines carry the semantic hashes of the two workflows the diagram was generated from.
 
 ```mermaid
+%% eija: baseline: workflow excursion semantic_hash=5d3ef3a19c31d956a185b9c5ba4b1b79e651d0356e162436c5c67054d2ad4cdf
+%% eija: candidate: workflow excursion semantic_hash=b26c9af5ae4cd958099956232721a70e73cb7e6efe1b213ff32417829b588e56
 stateDiagram-v2
-    direction LR
+    direction TB
+    classDef added fill:#d4f4dd,stroke:#1a7f37,color:#0b3d1a
+    classDef removed fill:#ffe0e0,stroke:#cf222e,color:#5c0b12,stroke-dasharray:5 3
+    classDef changed fill:#fff3c4,stroke:#9a6700,color:#4a3200
     [*] --> Draft
-    Submitted --> Approved: Approve / Registrar
-    Submitted --> Rejected: Reject / Registrar
-    Rejected --> Draft: Revise / Teacher
-    Draft --> Submitted: Submit / Teacher
-```
-
-**After**: the `recommend_only` candidate (`apply_transaction(baseline, enable_recommendation)`). The amber state is new; edge labels say `(new)` or `(changed)`.
-
-```mermaid
-stateDiagram-v2
-    direction LR
-    [*] --> Draft
-    Recommended --> Approved: Approve / Registrar (changed)
-    Submitted --> Recommended: Recommend / Teacher (new)
-    Recommended --> Rejected: Reject / Registrar (changed)
-    Rejected --> Draft: Revise / Teacher
-    Draft --> Submitted: Submit / Teacher
-    classDef added fill:#ffe8b3,stroke:#b26a00,color:#000
+    Draft --> Submitted: Submit · Teacher
+    Recommended --> Approved: + Approve · Registrar
+    Recommended --> Rejected: + Reject · Registrar
+    Rejected --> Draft: Revise · Teacher
+    Submitted --> Approved: - Approve · Registrar
+    Submitted --> Recommended: + Recommend · Teacher · assigned
+    Submitted --> Rejected: - Reject · Registrar
+    Approved --> [*]
     class Recommended added
+    class Approved,Rejected,Submitted changed
+    state "added by the candidate (+)" as legend_added
+    class legend_added added
+    state "removed by the candidate (-)" as legend_removed
+    class legend_removed removed
+    state "changed (~)" as legend_changed
+    class legend_changed changed
 ```
 
-What changed, diffed from the two typed models by `scripts/gen_readme_diagram.py` (not written by hand):
+<details><summary>The same two workflows as separate state diagrams (<code>--view state</code>, baseline then candidate)</summary>
+
+Baseline:
+
+```mermaid
+%% eija: baseline: workflow excursion semantic_hash=5d3ef3a19c31d956a185b9c5ba4b1b79e651d0356e162436c5c67054d2ad4cdf
+stateDiagram-v2
+    direction TB
+    [*] --> Draft
+    Draft --> Submitted: Submit · Teacher
+    Rejected --> Draft: Revise · Teacher
+    Submitted --> Approved: Approve · Registrar
+    Submitted --> Rejected: Reject · Registrar
+    Approved --> [*]
+```
+
+Candidate (`recommend_only`):
+
+```mermaid
+%% eija: candidate: workflow excursion semantic_hash=b26c9af5ae4cd958099956232721a70e73cb7e6efe1b213ff32417829b588e56
+stateDiagram-v2
+    direction TB
+    [*] --> Draft
+    Draft --> Submitted: Submit · Teacher
+    Recommended --> Approved: Approve · Registrar
+    Recommended --> Rejected: Reject · Registrar
+    Rejected --> Draft: Revise · Teacher
+    Submitted --> Recommended: Recommend · Teacher · assigned
+    Approved --> [*]
+```
+
+</details>
+
+What changed, from `diff_summary` over the two typed models (not written by hand):
 
 - new state `Recommended`
-- added `TR-RECOMMEND` Teacher: Submitted -> Recommended
-- changed `TR-APPROVE` from_state: Submitted -> Recommended
-- changed `TR-REJECT` from_state: Submitted -> Recommended
+- new action `Recommend`
+- `Approve` from_state: `Submitted` becomes `Recommended`
+- `Reject` from_state: `Submitted` becomes `Recommended`
 
-The kernel's own impact closure, `domain.impact.model_impact(baseline, candidate)`, reaches 20 artefacts from the changed actions `Approve`, `Recommend`, `Reject` (`complete: True`). It follows a fixed rule → runtime → state view → journey → obligation → receipt → review packet → local decision chain per action, so it is the encoded projection mapping, not every real-world consequence:
+The kernel's own impact closure, `domain.impact.model_impact(baseline, candidate)`, reaches 20 artefacts from the changed actions `Approve`, `Recommend`, `Reject` (`complete: True`). It follows a fixed rule, runtime, state view, journey, obligation, receipt, review packet, local decision chain per action, so it is the encoded projection mapping, not every real-world consequence. Draw it with `--view impact`; the affected artefacts are:
 
 - `journey:` Approve, Recommend, Reject
 - `local-decision`
@@ -99,8 +134,6 @@ The kernel's own impact closure, `domain.impact.model_impact(baseline, candidate
 - `state-view:` Approve, Recommend, Reject
 
 `check_policy(baseline)` -> `[]`. `check_policy(candidate)` -> `[]`. A candidate that lets a Teacher approve is rejected: `check_policy(unsafe)` -> `['PROTECTED_AUTHORITY:Approve']`.
-
-<!-- TODO(visual lane): when docs/assets/visual-diff.png exists on main, add ![generated visual diff](docs/assets/visual-diff.png) here and drop this block. -->
 <!-- END GENERATED: excursion-diff -->
 
 The block above is not hand-drawn: `python scripts/gen_readme_diagram.py --check` (nox session `readme_diagram`) fails if it differs from what `domain.policy` produces today. It shows structure only. It does not show human understanding, and it is not a proof.
