@@ -58,24 +58,11 @@ def test_sdp_violation_is_reported_only_against_the_stability_gradient():
 TOY = {
     "__init__.py": "",
     "a/__init__.py": "",
-    "a/m.py": "from typing import Protocol
-
-class P(Protocol):
-    def f(self) -> int: ...
-
-class C:
-    pass
-",
+    "a/m.py": "from typing import Protocol\n\nclass P(Protocol):\n    def f(self) -> int: ...\n\nclass C:\n    pass\n",
     "b/__init__.py": "",
-    "b/m.py": "from toy.a import m
-
-class X:
-    pass
-",
+    "b/m.py": "from toy.a import m\n\nclass X:\n    pass\n",
     "c/__init__.py": "",
-    "c/m.py": "from toy.a import m
-from toy.b import m as bm
-",
+    "c/m.py": "from toy.a import m\nfrom toy.b import m as bm\n",
 }
 
 
