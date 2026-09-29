@@ -12,6 +12,7 @@ from eija_studio.adapters.sqlite_store import sandbox_factory
 from eija_studio.application import runtime
 from eija_studio.application.runtime import execute, initialise
 from eija_studio.domain.models import DomainError, ExecuteCommand, Workflow
+from eija_studio.domain.pack import Effect, default_pack
 
 from verification.bmc import __main__ as bmc_cli
 from verification.bmc import mutants as M
@@ -184,9 +185,30 @@ def _unsafe(candidate, action, **changes):
     return Workflow.model_construct(**{**dict(candidate), "transitions": swapped})
 
 
+def _pack_that_lets_forbidden_effects_run():
+    """The default pack with an audit effect for every effect it FORBIDS added to its catalog (``Audit:<forbidden id>``,
+    the shape the BMC's forbidden-fragment invariant matches), so the runtime's own catalog check (EFFECT_DENIED for an
+    undeclared effect) no longer stops a planted forbidden effect before the BMC can see it."""
+    pack = default_pack()
+    planted = tuple(Effect(id="Audit:" + effect, kind="audit") for effect in pack.effects.forbidden)
+    assert planted, "the default pack must forbid at least one effect for this control to mean anything"
+    return pack.model_copy(update={"effects": pack.effects.model_copy(update={"catalog": pack.effects.catalog + planted})})
+
+
 def _explore_without_policy_gate(sandbox, model, depth, stop_when_found=()):
-    with mock.patch.object(runtime, "ensure_policy", lambda _model, _pack=None: None):
+    """Run the search with the policy gate removed AND the catalog widened (both in the test only)."""
+    lax = _pack_that_lets_forbidden_effects_run()
+    with (mock.patch.object(runtime, "ensure_policy", lambda _model, _pack=None: None),
+          mock.patch.object(runtime, "default_pack", lambda: lax)):
         return explore("unsafe", model, Config(depth=depth, stop_when_found=stop_when_found), sandbox)
+
+
+def test_the_runtime_refuses_an_effect_outside_the_pack_catalog(sandbox):
+    """The runtime is stricter than the BMC invariant: an undeclared forbidden effect is denied, not committed."""
+    unsafe = _unsafe(CANDIDATE, "Approve", required_effects=("Audit:ExcursionApproved", "Audit:PaymentCaptured"))
+    with mock.patch.object(runtime, "ensure_policy", lambda _model, _pack=None: None):
+        res = explore("unsafe", unsafe, Config(depth=3, stop_when_found=("NO-FORBIDDEN-EFFECT",)), sandbox)
+    assert "NO-FORBIDDEN-EFFECT" not in res.findings.first
 
 
 def test_the_policy_gate_is_what_blocks_an_unsafe_workflow(sandbox):
