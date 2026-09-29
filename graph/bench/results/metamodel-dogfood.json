@@ -1,0 +1,154 @@
+{
+  "anchor_flow_lint": {
+    "kinds_with_an_anchored_end_and_no_flow_away_from_it": [
+      "attests",
+      "conforms_to",
+      "derived_from",
+      "exercised_by",
+      "formalises",
+      "models",
+      "motivates",
+      "proposes",
+      "proves"
+    ],
+    "kinds_with_anchors": 20
+  },
+  "cross_checks": {
+    "digests_equal_to_okf_codelink_by_method": {
+      "csv-row-v1": true,
+      "lf-sha256-v1": true,
+      "md-bold-term-v1": true
+    },
+    "workflow_semantic_v1_equals_kernel_semantic_hash": true
+  },
+  "domain": "this worktree at the state of the run: one workflow, the acceptance matrix, ARCHITECTURE.md, docs/adr, impact.py",
+  "edges": 108,
+  "edges_by_kind": {
+    "contains": 23,
+    "depends_on": 37,
+    "flows_to": 8,
+    "verifies": 40
+  },
+  "impact_fanout": {
+    "both_collapsed_to_to_source": {
+      "arcs": 108,
+      "max_closure": 10,
+      "roots_reaching_more_than_half_the_nodes": 0,
+      "sum_of_closure_sizes": 288
+    },
+    "domain": "the 83-node dogfood graph, every node as one root, kernel closure()",
+    "metamodel_affects": {
+      "arcs": 148,
+      "max_closure": 33,
+      "roots_reaching_more_than_half_the_nodes": 0,
+      "sum_of_closure_sizes": 1304
+    },
+    "status": "MEASURED"
+  },
+  "nodes": 83,
+  "nodes_by_type": {
+    "adr": 13,
+    "effect": 6,
+    "guard": 5,
+    "module": 1,
+    "requirement": 28,
+    "role": 2,
+    "state": 4,
+    "symbol": 2,
+    "term": 10,
+    "test": 7,
+    "transition": 4,
+    "workflow": 1
+  },
+  "non_canonical_ids": [],
+  "okf_bundle": {
+    "concept_pages": 180,
+    "domain": "concept pages (index.md and log.md excluded) of the okf worktree bundle at the time of the run",
+    "examples": [
+      [
+        "Verification Technique",
+        "repo://docs/adr/0018-formal-vv-portfolio.md#bend_proof"
+      ],
+      [
+        "Verification Technique",
+        "repo://docs/adr/0018-formal-vv-portfolio.md#bounded_model_check"
+      ],
+      [
+        "Verification Technique",
+        "repo://docs/adr/0018-formal-vv-portfolio.md#mutation_score"
+      ]
+    ],
+    "hash_methods_not_in_the_weave_registry": [],
+    "hash_methods_used": {
+      "ast-api-v1": 17,
+      "ast-sig-v1": 17,
+      "ast-v2": 63,
+      "csv-row-v1": 28,
+      "lf-sha256-v1": 9,
+      "md-bold-term-v1": 10,
+      "md-table-row-v1": 38
+    },
+    "okf_types": {
+      "Acceptance Criterion": 28,
+      "Architecture Decision Record": 23,
+      "Bounded Context": 5,
+      "Capability Lane": 13,
+      "Class": 17,
+      "Constant": 9,
+      "Function": 20,
+      "Method": 22,
+      "Module": 17,
+      "Quality Gate": 5,
+      "Type Alias": 4,
+      "Ubiquitous Language Term": 10,
+      "Verification Technique": 7
+    },
+    "pages_of_unmapped_types": {},
+    "resources_not_matching_the_pattern_of_the_mapped_type": 7,
+    "status": "MEASURED"
+  },
+  "reference_findings": [],
+  "root": "sha256:72b429392439d110e25e8cefba9442e2cf63c3387c678689597f2bda61583846",
+  "root_equal_after_a_second_clean_extraction": true,
+  "root_equal_when_extraction_order_is_shuffled": true,
+  "schema": "eija.weave.bench.dogfood/v1",
+  "schema_validation": {
+    "error_count": 0,
+    "errors": [],
+    "status": "MEASURED"
+  },
+  "shards": 25,
+  "stats": {
+    "adrs": 13,
+    "matrix": {
+      "distinct_test_files": 7,
+      "evidence_references": 44,
+      "existing_files_that_are_not_verifiers": [
+        "docs/verification/VERIFICATION.md",
+        "docs/verification/VERIFICATION.md"
+      ],
+      "references_that_are_existing_test_or_script_files": 40,
+      "references_with_a_function_fragment": 0,
+      "requirements": 28,
+      "requirements_with_no_verifies_link": [
+        "AC26",
+        "AC28"
+      ],
+      "unresolved_as_written": [
+        "application/verifier.py",
+        "application/verifier.py"
+      ]
+    },
+    "python": {
+      "functions_seen_by_ast": [
+        "closure",
+        "model_impact"
+      ]
+    },
+    "terms": {
+      "slug_collisions": [],
+      "terms": 10
+    }
+  },
+  "status": "MEASURED"
+}

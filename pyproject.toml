@@ -22,6 +22,11 @@ mutation = []
 metrics = []
 hci = []
 agents = []
+# weave lane (ADR-0089 to 0112). Phase 1 needs only jsonschema (rule catalogue and SARIF structural checks); pySHACL is an
+# optional cross-check installed by hand, not part of this extra (docs/weave/design/compiler-and-lint-rules.md section 2.4).
+graph = ["jsonschema==4.26.0", "rfc8785==0.1.4", "networkx==3.5"]  # rfc8785: differential oracle for the canonical writer (tests/graph/test_metamodel_identity.py); networkx: SCC-partition and PageRank cross-check oracle (tests/graph/test_impact_math_oracles.py, never an artefact producer); both NOT_RUN when absent
+# weave formal-verification aspect (ADR-0103): test-time tools only, never in a verdict path. Alloy is a pinned jar, not a wheel (graph/formal/TOOLS.lock).
+graph-formal = ["hypothesis==6.168.3", "clingo==5.8.2"]  # both optional: absence gives NOT_RUN in tests/graph/formal, never a pass
 docs = []
 
 [project.scripts]

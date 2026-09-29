@@ -1,0 +1,14 @@
+{
+  "schema": "eija.weave.formal-binding.v1",
+  "note": "Where the production function for each law suite is expected. Each target must have the SIGNATURE documented in graph/formal/eijaref/suites.py (a thin adapter is fine). While a module is absent the suite for it is NOT_RUN, never PASS. Names are proposals; the owning ADR may rename them by editing this file.",
+  "bindings": {
+    "closure": {"target": "eijagraph.store:closure", "signature": "(graph: dict[str, list[str]], roots: list[str]) -> iterable of affected nodes", "suite": "suite_closure", "obligations": ["PO-G1", "PO-G6"]},
+    "scc_labels": {"target": "eijagraph.order:scc_labels", "signature": "(nodes, edges) -> dict[node, label]", "suite": "suite_order", "obligations": ["PO-G3"]},
+    "lexicographic_topological_order": {"target": "eijagraph.order:lexicographic_topological_order", "signature": "(nodes, edges) -> list | None", "suite": "suite_order", "obligations": ["PO-G4"]},
+    "canon_dumps": {"target": "eijagraph.canon:dumps", "signature": "(value) -> bytes", "suite": "suite_canon", "obligations": ["PO-D1", "PO-D2", "PO-D3"]},
+    "status_join": {"target": "eijagraph.status:join", "signature": "(iterable of status) -> status", "suite": "suite_status", "obligations": ["PO-S1", "PO-S3"]},
+    "status_meet": {"target": "eijagraph.status:meet", "signature": "(iterable of status) -> status", "suite": "suite_status", "obligations": ["PO-S2"]},
+    "claim_status": {"target": "eijagraph.status:claim_status", "signature": "(list of list of status) -> status", "suite": "suite_status", "obligations": ["PO-S3"]},
+    "link_status": {"target": "eijagraph.links:link_status_pure", "signature": "(baseline_digest, observation, acks: frozenset[(link_id, digest)], link_id) -> status", "suite": "suite_link_status", "obligations": ["PO-S5", "PO-S6"]}
+  }
+}

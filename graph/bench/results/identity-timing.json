@@ -1,0 +1,17 @@
+{
+  "c11_scale_timing": {
+    "domain": "100000 nodes, 400000 edges, one run, this machine, not deterministic",
+    "generate_seconds": 3.16,
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 167 Stepping 1, GenuineIntel",
+    "python": "3.12.10",
+    "python_implementation": "CPython",
+    "root": "sha256:6f9cd8199274514ca65c7449f4bd207918a9419fa2dc5daa458c36bedb4c0280",
+    "root_seconds_c_json_encoder": 6.55,
+    "root_seconds_pure_python_writer": 16.92,
+    "roots_equal": true,
+    "status": "MEASURED"
+  },
+  "label": "MEASUREMENT, not deterministic, one run",
+  "schema": "eija.weave.bench.identity-timing/v1"
+}

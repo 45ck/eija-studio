@@ -1,0 +1,379 @@
+{
+  "definition_digest": "8eb96262f0a4bb6cec7f4c6494d2961507c846d538fd80b537ce418b7d760488",
+  "label": "MEASUREMENT of slice sizes; no comprehension effect is measured",
+  "schema": "eija.weave.bench.human-views/v1",
+  "sections": {
+    "adrs": {
+      "adr_files": 7,
+      "domain": "docs/adr records numbered below 0089 (outside the weave block); an edge is a markdown link or an ADR-NNNN mention of another of them",
+      "reference_edges": 0,
+      "status": "MEASURED"
+    },
+    "budgets": {
+      "checks": [
+        {
+          "check": "change digest",
+          "limit": null,
+          "note": "NOT_RUN: no graph snapshots exist, so no keyed diff can be measured",
+          "value": null,
+          "view": "HV-01",
+          "within": null
+        },
+        {
+          "check": "affected tests per changed module (max)",
+          "limit": 5,
+          "note": "over the limit means priority-then-cap and 'N more' apply",
+          "value": 6,
+          "view": "HV-02",
+          "within": false
+        },
+        {
+          "check": "affected requirements per changed module (max)",
+          "limit": 5,
+          "note": "same",
+          "value": 25,
+          "view": "HV-02",
+          "within": false
+        },
+        {
+          "check": "kernel ripple, affected nodes",
+          "limit": 25,
+          "note": "",
+          "value": 20,
+          "view": "HV-02",
+          "within": true
+        },
+        {
+          "check": "rows in the whole table",
+          "limit": 25,
+          "note": "over the limit means paging; pages = 2",
+          "value": 28,
+          "view": "HV-03",
+          "within": false
+        },
+        {
+          "check": "columns (evidence kinds)",
+          "limit": 7,
+          "note": "",
+          "value": 4,
+          "view": "HV-03",
+          "within": true
+        },
+        {
+          "check": "cells of the first page",
+          "limit": 175,
+          "note": "",
+          "value": 100,
+          "view": "HV-03",
+          "within": true
+        },
+        {
+          "check": "default expansion rows (root plus layers)",
+          "limit": 15,
+          "note": "",
+          "value": 5,
+          "view": "HV-04",
+          "within": true
+        },
+        {
+          "check": "container depth (package, layer, module)",
+          "limit": 4,
+          "note": "",
+          "value": 3,
+          "view": "HV-04",
+          "within": true
+        },
+        {
+          "check": "tree depth",
+          "limit": 4,
+          "note": "NOT_RUN: no term registry with ddd_role exists yet, so context -> aggregate -> value object depth cannot be computed",
+          "value": null,
+          "view": "HV-05",
+          "within": null
+        },
+        {
+          "check": "findings",
+          "limit": null,
+          "note": "NOT_RUN: no rule is implemented, so no findings exist",
+          "value": null,
+          "view": "HV-06",
+          "within": null
+        },
+        {
+          "check": "witness segments to a requirement (max)",
+          "limit": 4,
+          "note": "",
+          "value": 3,
+          "view": "HV-07",
+          "within": true
+        },
+        {
+          "check": "whole import graph nodes",
+          "limit": 20,
+          "note": "over the limit means the whole graph is never drawn as one node-link diagram",
+          "value": 23,
+          "view": "HV-08",
+          "within": false
+        },
+        {
+          "check": "closed 1-hop ego size (max)",
+          "limit": 20,
+          "note": "",
+          "value": 16,
+          "view": "HV-08",
+          "within": true
+        },
+        {
+          "check": "largest connected component (upper bound on any selection)",
+          "limit": 20,
+          "note": "within means the node budget never binds on this repo; a selection cannot exceed the budget by construction, so its size is not a check",
+          "value": 19,
+          "view": "HV-08",
+          "within": true
+        }
+      ],
+      "note": "within=null means NOT_RUN. A false 'within' is an expected finding: it says which overflow rule the view needs on this repo.",
+      "status": "MEASURED"
+    },
+    "import_graph": {
+      "closed_ego_1hop_sizes": {
+        "max": 16,
+        "median": 4,
+        "min": 1,
+        "n": 23
+      },
+      "density_ppm": 173913,
+      "directed_edges": 44,
+      "domain": "modules of src/eija_studio; imports resolved by ast among those modules; stdlib and third party ignored",
+      "edges_per_node_x1000": 1913,
+      "hv08_selection_sizes_at_default_budget": {
+        "max": 19,
+        "median": 19,
+        "min": 1,
+        "n": 23
+      },
+      "largest_connected_component": 19,
+      "largest_scc": 1,
+      "max_degree": 15,
+      "modules_with_ego_over_default_budget": 0,
+      "nodes": 23,
+      "scc_count": 23,
+      "status": "MEASURED",
+      "undirected_edges": 44,
+      "whole_graph_matrix_cells": 529,
+      "whole_graph_nodes_over_default_node_link_budget": true
+    },
+    "inputs": {
+      "domain": "src/eija_studio/**/*.py, tests/test_*.py, docs/adr records numbered below 0089, ARCHITECTURE.md, ACCEPTANCE_MATRIX.csv, examples/excursion-*.json, graph/schema/views.md; LF-folded",
+      "files": 41,
+      "root": "a075946e1ccde978fc1f49bc9c210fc1bc20042ad40ca2dddcbeb71f039963a4",
+      "status": "MEASURED"
+    },
+    "kernel_ripple": {
+      "affected": 20,
+      "affected_by_kind": {
+        "journey": 3,
+        "local-decision": 1,
+        "obligation": 3,
+        "receipt": 3,
+        "review-packet": 1,
+        "rule": 3,
+        "runtime": 3,
+        "state-view": 3
+      },
+      "changed_actions": [
+        "Approve",
+        "Recommend",
+        "Reject"
+      ],
+      "complete": true,
+      "domain": "model_impact(excursion-baseline, excursion-candidate)",
+      "edge_kinds_in_kernel_graph": 1,
+      "note": "the kernel projection has one edge kind, so a witness there is one segment of up to 7 hops; the typed graph is what makes segments informative",
+      "status": "MEASURED"
+    },
+    "language": {
+      "baseline_workflow": {
+        "roles": 2,
+        "states": 4,
+        "transitions": 4
+      },
+      "contexts": 5,
+      "domain": "ARCHITECTURE.md ubiquitous-language paragraphs and context-map rows; examples/excursion-baseline.json",
+      "status": "MEASURED",
+      "terms": 10,
+      "tree_depth_checkable": false,
+      "tree_depth_reason": "NOT_RUN: no term registry with ddd_role exists yet, so context -> aggregate -> value object depth cannot be computed"
+    },
+    "requirements": {
+      "area_group_sizes": [
+        3,
+        2,
+        2,
+        2,
+        2,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "area_groups": 22,
+      "cells_filled_by_kind": 34,
+      "columns": 4,
+      "columns_within_budget": true,
+      "distinct_evidence_files": 9,
+      "domain": "docs/verification/ACCEPTANCE_MATRIX.csv; a column is a kind of evidence file (test, script, doc, ...); rows are grouped by the `area` column",
+      "evidence_kinds_as_columns": [
+        "doc",
+        "other",
+        "script",
+        "test"
+      ],
+      "largest_area_group": 3,
+      "matrix_cells_whole": 112,
+      "pages_at_rows_per_page_budget": 2,
+      "rows": 28,
+      "singleton_areas": 17,
+      "status": "MEASURED",
+      "v0_2_status_counts": {
+        "NOT_RUN": 2,
+        "PARTIAL": 9,
+        "PASS_LOCAL": 17
+      },
+      "whole_table_exceeds_rows_per_page_budget": true
+    },
+    "rollup": {
+      "badge_operator_pass_iff_all_pass": {
+        "domain": "all sequences over six statuses, length 1 to 5; a violation is a PASS badge with a non-PASS item, or a non-PASS badge with all items PASS",
+        "first_join_example": {
+          "fold_b": "STALE",
+          "join": "PASS",
+          "sequence": [
+            "PASS",
+            "STALE"
+          ]
+        },
+        "fold_b_violations": 0,
+        "join_violations_negative_control": 996,
+        "sequences": 9330
+      },
+      "counts_vector_and_badge_laws": {
+        "badge_pass_iff_every_leaf_pass_violations": 0,
+        "c1_mismatches": 0,
+        "c2_mismatches": 0,
+        "c4_badge_equals_flat_fold_b_mismatches": 0,
+        "domain": "500 seeded random trees of depth 3, fan-out 1 to 5, leaves uniform over six statuses; badge = fold_b (chain minimum) over the support of the counts vector; the negative control is the weave join used as a badge",
+        "negative_control_join_badge_pass_while_a_leaf_is_not_pass": 3,
+        "trees": 500
+      },
+      "negative_control_kernel_reaggregation": {
+        "cases": 25488,
+        "domain": "all sequences over {PASS, FAIL, STALE, UNKNOWN}, length 2 to 6, every two-way split; kernel evidence.aggregate_status with assess_receipt patched to identity",
+        "first_example": {
+          "flat": "CONFLICT",
+          "rolled_up": "PASS",
+          "sequence": [
+            "PASS",
+            "PASS",
+            "FAIL"
+          ],
+          "split_at": 1
+        },
+        "label": "NEGATIVE CONTROL for a hypothetical hierarchical re-aggregation. It is not a failure that occurs in EIJA: the kernel takes receipts and never re-aggregates its own output; the harness patches assess_receipt to identity to feed statuses back in.",
+        "mismatch_per_10000": 4905,
+        "mismatches": 12504,
+        "rolled_up_pass_while_flat_not_pass": 3720
+      },
+      "split_composition_non_empty_parts": {
+        "cases": 35460,
+        "domain": "all sequences over six statuses, length 2 to 5, every two-way split",
+        "fold_b_mismatches": 0,
+        "join_mismatches": 0,
+        "note": "both operators compose; composition does not decide which one is a valid badge (see badge_operator_pass_iff_all_pass)"
+      },
+      "status": "MEASURED"
+    },
+    "typed_ripple": {
+      "affected_requirements_per_changed_module": {
+        "max": 25,
+        "median": 16,
+        "min": 0,
+        "n": 23
+      },
+      "affected_tests_per_changed_module": {
+        "max": 6,
+        "median": 2,
+        "min": 0,
+        "n": 23
+      },
+      "domain": "typed graph derived from this repo: depends_on and covers from ast imports (class derived, soundness may), verifies from the CSV evidence column (declared, must); tiers by nested closure; import-based covers is a proxy, not coverage",
+      "example_changed_modules": {
+        "eija_studio.domain.impact": {
+          "by_kind_and_tier": {
+            "module@tier1": 5,
+            "req@tier1": 22,
+            "test@tier1": 3
+          },
+          "direct": 3
+        },
+        "eija_studio.domain.policy": {
+          "by_kind_and_tier": {
+            "module@tier1": 8,
+            "req@tier1": 22,
+            "test@tier1": 4
+          },
+          "direct": 8
+        },
+        "eija_studio.interfaces.http": {
+          "by_kind_and_tier": {
+            "module@tier1": 2,
+            "req@tier1": 1,
+            "test@tier1": 1
+          },
+          "direct": 2
+        }
+      },
+      "modules_needing_overflow_at_rows_before_more": 15,
+      "modules_touched_by_no_test": 7,
+      "requirements_without_any_test_file": 3,
+      "segments_within_default_budget": true,
+      "status": "MEASURED",
+      "tier0_reach_anywhere": 0,
+      "typed_links": {
+        "covers": 16,
+        "depends_on": 44,
+        "verifies": 34
+      },
+      "typed_nodes": {
+        "module": 23,
+        "req": 28,
+        "test": 6
+      },
+      "witness_hops_to_requirements": {
+        "max": 4,
+        "median": 3,
+        "min": 2,
+        "n": 262
+      },
+      "witness_segments_to_requirements": {
+        "max": 3,
+        "median": 3,
+        "min": 2,
+        "n": 262
+      }
+    }
+  }
+}
