@@ -179,8 +179,8 @@
     {
       "id": "memory.max_chunks_viewport",
       "law": "Miller / Cowan (proxy)",
-      "limit": 26,
-      "note": "heuristic proxy",
+      "limit": 27,
+      "note": "heuristic proxy; limit raised 26 -> 27 on 2026-09-29: evidence-kinds UI added a group; UI replaced in Phase 2, WP 2.6 re-derives all budgets; accepted by delegated review 2026-09-29",
       "path": "working_memory.summary.max_chunks_viewport",
       "status": "GAP",
       "target": 9,

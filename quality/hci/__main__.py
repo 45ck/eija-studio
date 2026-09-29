@@ -44,8 +44,13 @@ def lane_status(rep: dict) -> str:
     return "FAIL" if any(b["status"] == "FAIL" for b in rep["budgets"]) else "PASS"
 
 
-def _write_outputs(rep: dict, raw: dict, out: Path) -> None:
+def write_lane_report(rep: dict, out: Path) -> None:
+    """Write report.json WITH the lane verdict; every writer of reports/hci/report.json must use this (the pytest fixture too)."""
     report.write_text(out / "report.json", report.dumps({**rep, "status": lane_status(rep)}))
+
+
+def _write_outputs(rep: dict, raw: dict, out: Path) -> None:
+    write_lane_report(rep, out)
     report.write_text(out / "REPORT.md", report.render_markdown(rep))
     report.write_text(out / "trace.json", report.dump_trace(raw))
 

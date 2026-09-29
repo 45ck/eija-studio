@@ -19,7 +19,7 @@
     {"id": "wcag.reflow_overflow_views", "law": "WCAG 1.4.10", "path": "wcag.summary.reflow_overflow_views", "unit": "views", "target": 0, "limit": 0},
     {"id": "keyboard.focus_lost_activations", "law": "WCAG 2.4.3", "path": "keyboard.focus_lost_count", "unit": "activations", "target": 0, "limit": 7},
     {"id": "keyboard.stops_without_indicator", "law": "WCAG 2.4.7", "path": "keyboard.stops_without_indicator_count", "unit": "stops", "target": 0, "limit": 0},
-    {"id": "memory.max_chunks_viewport", "law": "Miller / Cowan (proxy)", "path": "working_memory.summary.max_chunks_viewport", "unit": "chunks", "target": 9, "limit": 26, "note": "heuristic proxy"},
+    {"id": "memory.max_chunks_viewport", "law": "Miller / Cowan (proxy)", "path": "working_memory.summary.max_chunks_viewport", "unit": "chunks", "target": 9, "limit": 27, "note": "heuristic proxy; limit raised 26 -> 27 on 2026-09-29: evidence-kinds UI added a group; UI replaced in Phase 2, WP 2.6 re-derives all budgets; accepted by delegated review 2026-09-29"},
     {"id": "runtime.js_exceptions", "law": "hygiene", "path": "runtime_errors.javascript_exception_count", "unit": "exceptions", "target": 0, "limit": 0}
   ]
 }

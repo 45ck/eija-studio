@@ -175,7 +175,7 @@ Severity 5 critical WCAG, 4 serious WCAG / focus loss / wait over 1 s, 3 moderat
 | wcag.reflow_overflow_views | WCAG 1.4.10 | 0 views | 0 | 0 | PASS |
 | keyboard.focus_lost_activations | WCAG 2.4.3 | 7 activations | 0 | 7 | GAP |
 | keyboard.stops_without_indicator | WCAG 2.4.7 | 0 stops | 0 | 0 | PASS |
-| memory.max_chunks_viewport | Miller / Cowan (proxy) | 25 chunks | 9 | 26 | GAP |
+| memory.max_chunks_viewport | Miller / Cowan (proxy) | 25 chunks | 9 | 27 | GAP |
 | runtime.js_exceptions | hygiene | 0 exceptions | 0 | 0 | PASS |
 
 ## Fitts's law (prediction over measured geometry)
