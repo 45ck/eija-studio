@@ -71,7 +71,7 @@ Hotspots (the highest-CC functions) are refactoring candidates, not defects.
 
 ### 4. Other lanes' reports (`lane_reports`, `aggregate.py`)
 
-Read-only aggregation of `reports/formal/*.json`, `reports/mutation/summary.json`, `reports/testing/*.json`, `reports/hci/*.json`. A missing group is NOT_RUN with the reason. For a present report the module copies `status` (only `PASS`, `FAIL`, `NOT_RUN` are accepted; anything else is `UNKNOWN`, invalid JSON is `UNREADABLE`, neither is ever promoted to PASS) and harvests numeric fields at the top level or one level down (`summary`, `metrics`, `result`, `totals`) under a small vocabulary:
+Read-only aggregation of `reports/formal/*.json`, `reports/mutation/summary.json`, `reports/testing/*.json`, `reports/hci/*.json`. A missing group is NOT_RUN with the reason. For a present report the module copies the lane's own verdict, the first of `status`, `verdict` (the formal-report lanes) or a string `result` (the TLA+ lane) that holds a string (only `PASS`, `FAIL`, `NOT_RUN` are accepted, a nested `result` object is not a verdict; anything else is `UNKNOWN`, invalid JSON is `UNREADABLE`, neither is ever promoted to PASS) and harvests numeric fields at the top level or one level down (`summary`, `metrics`, `result`, `totals`) under a small vocabulary:
 
 | Canonical field | Accepted spellings |
 |---|---|

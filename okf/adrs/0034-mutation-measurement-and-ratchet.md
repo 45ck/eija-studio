@@ -63,6 +63,7 @@ notes_baseline: 82525a09648e354c117735d3595ec935a50c25b1a3f030ac12d041efbcfcf16e
 Existence-checked by the gate; not hashed (an ADR is a decision record, not a description of current code).
 
 * `repo://docs/TECHNICAL_LEAD_REVIEW.md`
+* `repo://quality/mutation/baseline.json`
 * `repo://quality/mutation/targets.py`
 <!-- okf:generated:end facts -->
 

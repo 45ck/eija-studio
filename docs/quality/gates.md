@@ -63,10 +63,23 @@ tuple). `assert` in `src/` is not ignored: the only one (`application/verifier.p
 
 ### Complexity debt (legacy, pinned)
 
-`domain/evidence.py::assess_receipt` 45, `interfaces/cli.py::main` 33, `application/verifier.py::verify_runtime` 23,
-`domain/policy.py::check_policy` 21, `adapters/providers.py::OpenRouterProvider.propose` 17,
-`application/compiler.py::compile_case` 16, `application/runtime.py::execute` 16. Other lanes may not increase these numbers;
-splitting any of them is a kernel change that needs a regression test.
+`domain/evidence.py::assess_receipt` 44, `interfaces/cli.py::main` 31, `application/verifier.py::verify_runtime` 23,
+`domain/policy.py::check_policy` 21, `application/runtime.py::execute` 16, `application/compiler.py::compile_case` 15
+(`quality/gates/complexity_baseline.json` is the source of truth). Other lanes may not increase these numbers; splitting any of
+them is a kernel change that needs a regression test. The 22 functions the okf and mutation lanes added over the budget were
+refactored on the integration branch (2026-09-29), so they add no debt.
+
+### Lane trees merged on 2026-09-29
+
+The graph (weave), okf, mutation and prgif lanes were merged without ever passing these gates as a whole. Fixed at the root:
+per-function complexity (refactors above), `deptry` (parso declared, numpy and scipy declared for the networkx PageRank oracle),
+import-linter and the SDP metric (the formal adapters now read the evidence-kind registry only), the metrics lane restored from
+its reviewed tip, and the ruff findings that had a safe or behaviour-preserving fix. What remains is named debt in
+`[tool.ruff.lint.per-file-ignores]` with the reason per rule in the comment above it: tree-level idioms (`assert` in checks,
+`print` in command-line reports, seeded `random.Random` fixtures, fixed-argv subprocess, lazy optional imports) and per-file
+loop-shape style in reference code that other tests compare against. `deptry` excludes `docs/weave/research` (recorded probes,
+not part of any gate) and lists the optional comparison engines (duckdb, rustworkx, ladybug, pyshacl, rdflib, clingo) as
+lazy imports that report `NOT_RUN` when absent.
 
 ### Known audit findings
 
