@@ -66,7 +66,7 @@ tuple). `assert` in `src/` is not ignored: the only one (`application/verifier.p
 `domain/evidence.py::assess_receipt` 44, `interfaces/cli.py::main` 31, `application/verifier.py::verify_runtime` 23,
 `domain/policy.py::check_policy` 21, `application/runtime.py::execute` 16, `application/compiler.py::compile_case` 15
 (`quality/gates/complexity_baseline.json` is the source of truth). Other lanes may not increase these numbers; splitting any of
-them is a kernel change that needs a regression test. The 22 functions the okf and mutation lanes added over the budget were
+them is a kernel change that needs a regression test. The 25 functions (5 mutation, 20 okf) the okf and mutation lanes added over the budget were
 refactored on the integration branch (2026-09-29), so they add no debt.
 
 ### Lane trees merged on 2026-09-29
