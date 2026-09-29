@@ -1668,7 +1668,7 @@
     },
     "Verifier": {
       "additionalProperties": false,
-      "description": "An evidence kind that applies to this pack. ``hand_encoded`` marks a hand-written formal model of the pack;\n``not_run`` records that the kind is deliberately not produced for this pack, with the reason.",
+      "description": "An evidence kind that applies to this pack (``kind`` is the evidence kind's name). ``hand_encoded`` marks a\nhand-written formal model of the pack; ``generated`` a model generated from the pack's laws; ``not_run`` records\nthat the kind is deliberately not produced for this pack, with the reason. Only ``kernel`` and ``hand_encoded``\nkinds read the checkout's committed formal reports; every other kind is NOT_RUN in the review packet, with the reason.",
       "properties": {
         "kind": {
           "pattern": "^[a-z][a-z0-9_]{0,39}$",
@@ -1679,6 +1679,7 @@
           "enum": [
             "kernel",
             "hand_encoded",
+            "generated",
             "not_run"
           ],
           "title": "Mode",

@@ -113,10 +113,12 @@ class Fixtures(Contract):
 
 
 class Verifier(Contract):
-    """An evidence kind that applies to this pack. ``hand_encoded`` marks a hand-written formal model of the pack;
-    ``not_run`` records that the kind is deliberately not produced for this pack, with the reason."""
+    """An evidence kind that applies to this pack (``kind`` is the evidence kind's name). ``hand_encoded`` marks a
+    hand-written formal model of the pack; ``generated`` a model generated from the pack's laws; ``not_run`` records
+    that the kind is deliberately not produced for this pack, with the reason. Only ``kernel`` and ``hand_encoded``
+    kinds read the checkout's committed formal reports; every other kind is NOT_RUN in the review packet, with the reason."""
     kind: str = Field(pattern=r"^[a-z][a-z0-9_]{0,39}$")
-    mode: Literal["kernel", "hand_encoded", "not_run"]
+    mode: Literal["kernel", "hand_encoded", "generated", "not_run"]
     reason: str = Field(default="", max_length=400)
 
 
@@ -156,6 +158,9 @@ class Pack(Contract):
 
     def action(self, name: str) -> ActionSpec | None:
         return next((a for a in self.actions if a.id == name), None)
+
+    def verifier(self, kind: str) -> Verifier | None:
+        return next((v for v in self.verifiers if v.kind == kind), None)
 
     def meaning(self, meaning_id: str) -> Meaning | None:
         return next((m for m in self.meanings if m.id == meaning_id), None)

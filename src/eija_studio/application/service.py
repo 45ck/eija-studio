@@ -188,7 +188,8 @@ class Studio:
         subject = subject_for(model, case.layout, identity)
         receipt = self.signer.seal(verify_runtime(model, subject, self.sandbox, self.pack))
         # Formal artifacts are collected outside any transaction (a tool run may be slow), then sealed and appended with the runtime receipt.
-        formal = attach_formal(self.formal, case.baseline, model, subject, list(case.receipts), self.signer.seal, now(), lambda: uuid4().hex)
+        formal = attach_formal(self.formal, case.baseline, model, subject, list(case.receipts), self.signer.seal, now(), lambda: uuid4().hex,
+                               self.pack)
         with self.store.transaction() as u:
             current = self._case(u, case_id, expected, editable=True)
             return self._save(u, current, {"receipts": list(current.receipts) + [receipt, *formal], "decision": None, "stage": "VERIFIED"})
@@ -274,9 +275,9 @@ class Studio:
     def formal_view(self, model: Workflow) -> dict[str, Any]:
         """Formal evidence for a bare workflow (``eija compile``): collected and sealed in memory, never stored, never a decision."""
         subject, base = subject_for(model, {}, self.identity_provider()), self.pack.model
-        receipts = attach_formal(self.formal, base, model, subject, [], self.signer.seal, now(), lambda: uuid4().hex)
+        receipts = attach_formal(self.formal, base, model, subject, [], self.signer.seal, now(), lambda: uuid4().hex, self.pack)
         return packet_view(receipts, subject, self.signer.authentic, Context(model.semantic_hash, base.semantic_hash),
-                           check_policy(model, self.pack))
+                           check_policy(model, self.pack), self.pack)
 
     def workflows(self, case_id: str) -> tuple[Workflow, Workflow | None]:
         """Baseline and candidate of a case, for read-only projections (diagrams). No authority, no writes."""

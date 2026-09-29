@@ -655,17 +655,17 @@
       "mode": "kernel"
     },
     {
-      "kind": "smt",
+      "kind": "smt_proof",
       "mode": "hand_encoded",
-      "reason": "verification/smt encodes this pack's laws by hand; a generated encoding (WBS 1.4) replaces it only after an equivalence gate."
+      "reason": "verification/smt encodes this pack by hand; the generated encoding is proved equivalent to it (python -m verification.smt.laws) and the hand encoding stays as the reference."
     },
     {
-      "kind": "bmc",
+      "kind": "bounded_model_check",
       "mode": "hand_encoded",
-      "reason": "verification/bmc checks this pack's runtime with hand-written state properties."
+      "reason": "verification/bmc explores this pack's runtime; its law property is the pack's laws judged on the recorded run by domain.laws.evaluate_run."
     },
     {
-      "kind": "bend",
+      "kind": "bend_proof",
       "mode": "hand_encoded",
       "reason": "verification/bend LAWS.bend and PROOF.bend are hand-written for this pack."
     },

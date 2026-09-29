@@ -134,9 +134,9 @@
   },
   "verifiers": [
     {"kind": "runtime_matrix", "mode": "kernel"},
-    {"kind": "smt", "mode": "not_run", "reason": "Generated SMT laws are WBS 1.4; no hand encoding exists for this pack."},
-    {"kind": "bmc", "mode": "not_run", "reason": "BMC state properties from evaluate_run are WBS 1.4."},
-    {"kind": "bend", "mode": "not_run", "reason": "Generating Bend laws is deferred (docs/engineering/FUTURE-WORK.md)."},
+    {"kind": "smt_proof", "mode": "generated", "reason": "The generated-law proof runs in the gate (python -m verification.smt.laws); binding its report into the review packet is WBS 1.7."},
+    {"kind": "bounded_model_check", "mode": "generated", "reason": "The BMC law property is the pack's laws judged by evaluate_run; a BMC search over this pack's runtime is not wired yet (WBS 1.7)."},
+    {"kind": "bend_proof", "mode": "not_run", "reason": "Generating Bend laws is deferred (docs/engineering/FUTURE-WORK.md)."},
     {"kind": "tlc", "mode": "not_run", "reason": "Generating TLA+ laws is deferred (docs/engineering/FUTURE-WORK.md)."}
   ],
   "journey": {"questions": [
