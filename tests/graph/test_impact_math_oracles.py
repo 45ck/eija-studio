@@ -39,6 +39,7 @@ try:
     import networkx as nx
 except ImportError:  # optional
     nx = None
+_HAS_PAGERANK_DEPS = nx is not None and all(importlib.util.find_spec(mod) for mod in ("numpy", "scipy"))  # nx.pagerank imports both lazily
 
 # ---------------------------------------------------------------- worked example G1 (oracle O1)
 LINKS = [("S2", "depends_on", "S1"), ("S3", "depends_on", "S2"), ("S1", "depends_on", "S3"),
@@ -399,7 +400,7 @@ def test_choose_iterations_is_exact_integer_arithmetic() -> None:
     assert 2 * (F(2, 3) ** k) <= F(1, 2**20) < 2 * (F(2, 3) ** (k - 1))
 
 
-@pytest.mark.skipif(nx is None, reason="networkx not installed (NOT_RUN)")
+@pytest.mark.skipif(not _HAS_PAGERANK_DEPS, reason="networkx, numpy or scipy not installed (NOT_RUN)")
 def test_ppr_matches_networkx_float_pagerank_within_error_bound() -> None:
     rng = random.Random(11)
     names = [f"n{i:02d}" for i in range(25)]

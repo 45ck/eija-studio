@@ -37,7 +37,7 @@ docs = ["mkdocs==1.6.1", "mkdocs-material==9.7.7", "pymdown-extensions==12.1", "
 visual = ["playwright==1.63.0", "pydot==4.0.1"]
 demos = ["playwright==1.63.0"]  # drives the installed system Chrome; no browser download
 ux = []
-graph = ["jsonschema==4.26.0", "rfc8785==0.1.4", "networkx==3.5"]
+graph = ["jsonschema==4.26.0", "rfc8785==0.1.4", "networkx==3.5", "numpy==2.5.3", "scipy==1.18.1"]  # numpy and scipy: networkx.pagerank (the PPR test oracle) imports them lazily
 dod = []
 smt = ["z3-solver==5.1.0.0"]  # lane smt-bmc: Z3 policy-soundness proof
 okf = ["PyYAML==6.0.3", "markdown-it-py==4.0.0"]
