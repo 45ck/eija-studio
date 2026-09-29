@@ -29,7 +29,7 @@ lint = [
 formal = []
 testing = ["hypothesis==6.168.3", "hypothesis-jsonschema==0.23.1", "jsonschema==4.26.0"]
 mutation = []
-metrics = []
+metrics = ["eija-studio[lint]", "grimp==3.17"]  # radon and coverage pins live once, in the lint extra
 hci = ["playwright==1.63.0", "axe-playwright-python==0.1.8"]  # drives the installed Chrome (channel="chrome"); no browser download
 agents = ["mcp==2.2.0", "anyio==4.15.1"]
 providers = ["psutil==7.2.2"]  # process-tree kill for agent CLIs; adapters degrade to taskkill/killpg without it
@@ -53,8 +53,8 @@ eija_studio = ["resources/**/*", "resources/*.json"]
 [tool.pytest.ini_options]
 pythonpath = ["src", "."]  # "." so tests can import repo-root tooling packages (quality, demos)
 testpaths = ["tests"]
-addopts = "-ra -m 'not formal'"  # tests/conftest.py keeps pytest temp dirs inside the checkout (slow system temp)
-markers = ["formal: re-runs a whole proof or model-checking search; deselected by default, selected by the formal_smt and bmc nox sessions", "browser: drives a real browser or renderer; skipped (NOT_RUN) unless EIJA_BROWSER_TESTS=1, run by the release session diagrams_syntax"]
+addopts = "-ra -m 'not formal and not slow and not timing'"  # tests/conftest.py keeps pytest temp dirs inside the checkout (slow system temp)
+markers = ["formal: re-runs a whole proof or model-checking search; deselected by default, selected by the formal_smt and bmc nox sessions", "slow: starts a real server or a nested pytest; excluded from the default run, run by `nox -s metrics` (`-m slow`)", "timing: asserts on wall-clock measurements and can flake on a busy machine; excluded from the default run", "browser: drives a real browser or renderer; skipped (NOT_RUN) unless EIJA_BROWSER_TESTS=1, run by the release session diagrams_syntax"]
 
 [tool.ruff]
 target-version = "py311"
@@ -95,6 +95,7 @@ known-first-party = ["eija_studio", "quality", "verification"]
 "**/__main__.py" = ["T201"]  # command-line entry points print by design
 # Per-file debt in kernel sources (each names the finding so a fix removes exactly one entry).
 "src/eija_studio/adapters/providers/process.py" = ["S603"]  # subprocess.Popen/run with an argv list and no shell; argv is a resolved executable plus adapter constants
+"quality/metrics/*.py" = ["S603", "S607"]  # measurement tools run git, pytest and coverage with fixed argv lists, no shell
 "src/eija_studio/adapters/sqlite_store.py" = ["S608"]  # false positive: table name comes from a closed literal tuple
 "src/eija_studio/application/service.py" = ["UP017", "RUF001", "RUF005"]
 "src/eija_studio/application/verifier.py" = ["UP017", "PLW2901"]
