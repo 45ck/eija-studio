@@ -12,6 +12,7 @@ import json
 import subprocess
 import sys
 import threading
+from operator import attrgetter, methodcaller
 from pathlib import Path
 
 import pytest
@@ -24,8 +25,10 @@ from mcp.server.mcpserver.exceptions import ToolError
 from kernel_support import approve
 from eija_studio.application.ports import ProviderResult
 from eija_studio.domain.models import AGENT, OWNER, DomainError, Proposal, Alternative
+from eija_studio.application.service import Studio
+from eija_studio.interfaces import agent_policy
 from eija_studio.interfaces.mcp_server import (
-    AGENT_TOOLS, OWNER_ONLY_OPERATIONS, AgentSurface, StudioAgentPort, _owner_next, create_server)
+    AGENT_TOOLS, OWNER_ONLY_OPERATIONS, AgentPort, AgentSurface, StudioAgentPort, _owner_next, create_server)
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUEST = "Let teachers sign off excursions."
@@ -113,7 +116,52 @@ def test_surface_holds_no_principal_and_needs_only_the_five_member_port(studio):
     fake_surface = AgentSurface(Fake())  # a five-member fake is enough to drive it: nothing else can be reached
     assert fake_surface.list_cases() == {"cases": [], "count": 0}
     assert fake_surface.create_case(REQUEST)["stage"] == "DRAFT"
-    assert not [name for name in dir(fake_surface.port) if name in OWNER_ONLY_OPERATIONS]
+    # Assert against the REAL port, not the fake above (which was written without owner names and so proved nothing):
+    # its public attributes are exactly the AgentPort members, and no owner operation is among them.
+    real = StudioAgentPort(studio)
+    public = {name for name in dir(real) if not name.startswith("_")}
+    assert public == agent_policy.port_members(AgentPort)
+    assert not public & set(OWNER_ONLY_OPERATIONS)
+
+
+def _reachable_by_ordinary_names(root, depth=5):
+    """Every object reachable from ``root`` through non-dunder attribute names, the way attrgetter/methodcaller or a
+    dotted path can go. (Dunder walks such as __closure__ are the lint's job, not this test's.)"""
+    seen, stack, found = set(), [(root, 0)], []
+    while stack:
+        obj, level = stack.pop()
+        if id(obj) in seen or level > depth:
+            continue
+        seen.add(id(obj))
+        found.append(obj)
+        for name in dir(obj):
+            if name.startswith("__"):
+                continue
+            try:
+                stack.append((getattr(obj, name), level + 1))
+            except Exception:  # noqa: S112  (a property that raises leads nowhere)
+                continue
+    return found
+
+
+def test_the_narrowed_port_cannot_reach_an_owner_operation_by_any_ordinary_name(studio):
+    """Review of PR #23: `attrgetter`, `methodcaller` and dotted paths must not find approve/apply on the narrowed port."""
+    port = StudioAgentPort(studio)
+    for name in (*OWNER_ONLY_OPERATIONS, "_studio", "studio", "_studio.approve", "studio.apply", "_studio.store.transaction"):
+        with pytest.raises(AttributeError):
+            attrgetter(name)(port)
+    for name in OWNER_ONLY_OPERATIONS:
+        with pytest.raises(AttributeError):
+            methodcaller(name, "0" * 32, 0)(port)
+    reachable = _reachable_by_ordinary_names(AgentSurface(port))
+    assert not any(isinstance(obj, Studio) for obj in reachable), "an ordinary attribute path leads from the surface to the Studio"
+    assert not any(getattr(obj, "__name__", "") in OWNER_ONLY_OPERATIONS for obj in reachable)
+    # negative control: the walk really does find a Studio when one is stored on the port (the old design)
+
+    class Leaky:
+        def __init__(self, held):
+            self._studio = held
+    assert any(isinstance(obj, Studio) for obj in _reachable_by_ordinary_names(Leaky(studio)))
 
 
 def test_the_kernel_still_refuses_an_authority_less_principal_below_the_adapter(studio, selected):
@@ -337,39 +385,99 @@ def test_resources_language_and_adrs(studio):
 
 
 # ---- sealed material: every tool -----------------------------------------------------------------
+SEALED_KEYS = {"expected", "local_signature", "seal", "signature"}
+
+
+def _walk(value, path=()):
+    """Every (path, key, value) triple of nested dicts and lists."""
+    if isinstance(value, dict):
+        for key, item in value.items():
+            yield path, key, item
+            yield from _walk(item, (*path, key))
+    elif isinstance(value, list):
+        for item in value:
+            yield from _walk(item, path)
+
+
+def sealed_material_violations(outputs, studio, case_id) -> list[str]:
+    """The real leak scan. Checks structure, not just strings: a substring scan misses a 9-character answer like
+    "Registrar" or a re-labelled key (review of PR #23: `hint: expected` passed the old scan).
+
+    1. no key anywhere is a sealed key (expected answers, seals, signatures);
+    2. every `questions` item has exactly the keys {id, question};
+    3. no dict pairs a question id with its expected value, and no long expected answer appears as text;
+    4. the local signature, and the workspace path, appear nowhere."""
+    decision = studio.view(case_id)["case"]["decision"] or {}
+    expected = {q["id"]: q["expected"] for q in studio.view(case_id)["packet"]["questions"]}
+    problems: list[str] = []
+    for label, result in outputs:
+        content = result.structured_content if result.structured_content is not None else {"text": result.content[0].text}
+        text = json.dumps(content) + result.content[0].text
+        for path, key, value in _walk(content):
+            if key in SEALED_KEYS:
+                problems.append(f"{label}: sealed key {key!r} at {'.'.join(map(str, path)) or '<root>'}")
+            if key == "questions" and isinstance(value, list):
+                problems += [f"{label}: question item has keys {sorted(q)}" for q in value if set(q) != {"id", "question"}]
+            if isinstance(value, dict) and any(isinstance(v, str) and v in expected for v in value.values()):
+                answered = [expected[v] for v in value.values() if isinstance(v, str) and v in expected]
+                if any(v == answer for v in value.values() if isinstance(v, str) for answer in answered):
+                    problems.append(f"{label}: a question id is paired with its expected answer")
+        problems += [f"{label}: {secret!r} in output" for secret in
+                     (decision.get("local_signature"), str(studio.store.directory), *(a for a in expected.values() if len(a) > 12))
+                     if secret and secret in text]
+    return problems
+
+
+async def _all_outputs(client, case_id, created=None):
+    outputs = [("list_cases", await call(client, "list_cases")),
+               ("view_case", await call(client, "view_case", case_id=case_id)),
+               ("impact", await call(client, "impact", case_id=case_id)),
+               ("verify", await call(client, "verify", case_id=case_id))]
+    outputs += [(f"render {view} {fmt}", await call(client, "render", case_id=case_id, view=view, format=fmt))
+                for view in ("rules", "states", "journeys") for fmt in ("json", "text")]
+    outputs.append(("create_case", await call(client, "create_case", request=REQUEST)))
+    outputs.append(("propose", await call(client, "propose", case_id=created or case_id)))
+    return outputs
+
+
 def test_no_tool_leaks_sealed_material_after_owner_approval(studio, verified):
-    """Every tool that returns case data, scanned after approval: decision seal, signature, expected answers."""
+    """Every tool that returns case data, including create_case and propose, scanned after approval."""
     approved = approve(studio, verified)
-    decision = approved["decision"]
-    packet = studio.view(approved["id"])["packet"]
-    forbidden = [decision["local_signature"], '"expected":', *(q["expected"] for q in packet["questions"] if len(q["expected"]) > 12)]
+    fresh = studio.create(REQUEST)  # a DRAFT case for propose (an approved case is past proposing)
 
     async def block(client):
-        outputs = [await call(client, "list_cases"), await call(client, "view_case", case_id=approved["id"]),
-                   await call(client, "impact", case_id=approved["id"]),
-                   await call(client, "verify", case_id=approved["id"])]
-        outputs += [await call(client, "render", case_id=approved["id"], view=view, format=fmt)
-                    for view in ("rules", "states", "journeys") for fmt in ("json", "text")]
-        for result in outputs:
-            text = json.dumps(result.structured_content) + result.content[0].text
-            for secret in forbidden:
-                assert secret not in text, (secret, text[:200])
-            assert "local_signature" not in text and str(studio.store.directory) not in text
+        outputs = await _all_outputs(client, approved["id"], created=fresh["id"])
+        assert sealed_material_violations(outputs, studio, approved["id"]) == []
     session(studio)(block)
 
 
 def test_leak_scan_has_teeth(studio, verified, monkeypatch):
-    """Negative control: if `render` returned the sealed decision, a scan for the signature would find it."""
+    """Negative control on the REAL scan: a view_case that hints the expected answers, and a render that returns the
+    sealed decision, must each be reported. (The old scan passed the first one.)"""
     approved = approve(studio, verified)
-    real = AgentSurface.render
+    real_view, real_render = AgentSurface.view_case, AgentSurface.render
 
-    def leaky(self, case_id, view, fmt):
-        return real(self, case_id, view, fmt) | {"x": self.port.view(case_id)["case"]["decision"]}
-    monkeypatch.setattr(AgentSurface, "render", leaky)
+    def hinting(self, case_id):
+        out = real_view(self, case_id)
+        expected = {q["id"]: q["expected"] for q in self.port.view(case_id)["packet"]["questions"]}
+        out["questions"] = [{**q, "hint": expected[q["id"]]} for q in out["questions"]]
+        return out
 
-    async def block(client):
-        return json.dumps((await call(client, "render", case_id=approved["id"], view="rules", format="json")).structured_content)
-    assert approved["decision"]["local_signature"] in session(studio)(block)
+    def sealing(self, case_id, view, fmt):
+        return real_render(self, case_id, view, fmt) | {"x": self.port.view(case_id)["case"]["decision"]}
+
+    async def scan(client):
+        outputs = [("view_case", await call(client, "view_case", case_id=approved["id"])),
+                   ("render", await call(client, "render", case_id=approved["id"], view="rules", format="json"))]
+        return sealed_material_violations(outputs, studio, approved["id"])
+
+    assert session(studio)(scan) == []  # the honest server is clean
+    monkeypatch.setattr(AgentSurface, "view_case", hinting)
+    leaked = session(studio)(scan)
+    assert any("question item has keys" in v for v in leaked), leaked
+    monkeypatch.setattr(AgentSurface, "render", sealing)
+    leaked = session(studio)(scan)
+    assert any("render" in v and ("sealed key" in v or "in output" in v) for v in leaked), leaked
 
 
 def test_real_stdio_server_starts_lists_tools_and_answers(tmp_path):
@@ -429,27 +537,53 @@ def _drive_raw_server(workspace, lines, expected_ids, timeout=90):
     return stdout_lines, stderr
 
 
+_INIT = [
+    _rpc(1, "initialize", {"protocolVersion": "2025-06-18", "capabilities": {}, "clientInfo": {"name": "raw-test", "version": "0"}}),
+    _rpc(None, "notifications/initialized"),
+]
+
+
+def _call(identifier, name, **arguments):
+    return _rpc(identifier, "tools/call", {"name": name, "arguments": arguments})
+
+
+def _created_case_id(workspace) -> str:
+    """A case created by a first raw server session, so the second can drive every tool on a real case."""
+    lines, _ = _drive_raw_server(workspace, [*_INIT, _call(2, "create_case", request=REQUEST)], expected_ids={1, 2})
+    reply = next(json.loads(line) for line in lines if json.loads(line).get("id") == 2)
+    return json.loads(reply["result"]["content"][0]["text"])["id"]
+
+
 def test_stdout_of_the_real_server_is_only_json_rpc(tmp_path):
+    case = _created_case_id(tmp_path / "w")
     lines = [
-        _rpc(1, "initialize", {"protocolVersion": "2025-06-18", "capabilities": {}, "clientInfo": {"name": "raw-test", "version": "0"}}),
-        _rpc(None, "notifications/initialized"),
+        *_INIT,
         "this line is not json at all",                       # garbage must not make the server print to stdout
         _rpc(2, "tools/list", {}),
-        _rpc(3, "tools/call", {"name": "create_case", "arguments": {"request": REQUEST}}),
-        _rpc(4, "tools/call", {"name": "view_case", "arguments": {"case_id": "../../etc/passwd"}}),   # tool error path
-        _rpc(5, "tools/call", {"name": "propose", "arguments": {"case_id": "0" * 32}}),               # kernel error path
+        _call(3, "create_case", request=REQUEST),
+        _call(4, "view_case", case_id="../../etc/passwd"),   # tool error path
+        _call(5, "propose", case_id="0" * 32),               # kernel error path
         _rpc(6, "resources/read", {"uri": "eija://adr/9999"}),                                        # protocol error path
         _rpc(7, "tools/call", {"name": "no_such_tool", "arguments": {}}),
+        # the SUCCESS paths of every tool (a print planted in one of these once went unnoticed: review of PR #23)
+        _call(8, "list_cases"), _call(9, "view_case", case_id=case), _call(10, "impact", case_id=case),
+        _call(11, "verify", case_id=case), _call(12, "render", case_id=case, view="rules", format="text"),
+        _call(13, "propose", case_id=case),
     ]
-    stdout_lines, _stderr = _drive_raw_server(tmp_path / "w", lines, expected_ids={1, 2, 3, 4, 5, 6, 7})
+    ids_expected = set(range(1, 14))
+    stdout_lines, _stderr = _drive_raw_server(tmp_path / "w", lines, expected_ids=ids_expected)
     ids = set()
+    replies = {}
     for line in stdout_lines:
         message = json.loads(line)  # every single stdout line must parse
         assert isinstance(message, dict) and message.get("jsonrpc") == "2.0", line
         assert "result" in message or "error" in message or "method" in message, line
         ids.add(message.get("id"))
-    assert {1, 2, 3, 4, 5, 6, 7} <= ids
+        replies[message.get("id")] = message
+    assert ids_expected <= ids
     assert "Traceback" not in "".join(stdout_lines)
+    assert all("result" in replies[i] and not replies[i]["result"].get("isError") for i in (8, 9, 10, 12)), "the read tools succeed on a real case"
+    assert "Traceback" not in "".join(map(str, replies.values()))
 
 
 def test_startup_refusal_of_the_real_server_writes_nothing_to_stdout(tmp_path):

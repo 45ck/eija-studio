@@ -7,11 +7,15 @@ tool that selects a meaning, edits the model, approves, applies, discards or pre
 are owner capabilities and stay in the browser Studio (``eija serve``).
 
 The guarantee is ABSENCE, not a role check, in three layers: (1) the tool registry is asserted equal to
-``AGENT_TOOLS``; (2) ``AgentSurface`` holds an ``AgentPort`` (five members) and never the whole ``Studio``,
-so an owner method is unreachable from it by construction (only ``StudioAgentPort`` holds a ``Studio``);
-(3) an AST lint (tests/test_agent_static.py, with mutation negative controls) rejects owner-operation
-names, store writes, ``OWNER``, dynamic attribute access and aliasing of ``Studio`` in this module. Layer 3
-is a best-effort lint, not a proof. Nothing here "runs as" the AGENT principal: ``Studio.create``,
+``AGENT_TOOLS``; (2) ``AgentSurface`` holds an ``AgentPort`` (five members) and never the whole ``Studio``:
+the typed surface has no owner method, and the port keeps the ``Studio`` only in a closure, so no chain of
+ordinary attribute names (``port._studio.approve``, ``attrgetter``, ``methodcaller``) reaches it (a test walks
+every non-dunder attribute path); (3) an AST lint (tests/test_agent_static.py, with a negative control that
+only each rule catches) rejects owner-operation and store-write names on any receiver, ``OWNER``, dynamic
+attribute access, object-internals dunders, ``operator``/``importlib``/``inspect`` imports, and the ``Studio``
+class or instance used outside the port factory. Reaching past the port needs dunder or introspection
+access, which layer 3 catches in the common spellings: it is a best-effort lint, not a proof, and the
+adapter is not a sandbox. Nothing here "runs as" the AGENT principal: ``Studio.create``,
 ``propose`` and ``verify`` take no principal, so the kernel cannot tell an MCP caller from any other and the
 audit log does not attribute these actions to an agent (kernel follow-up). If a new tool ever needed a
 principal, that would be a governance change to ADR-0041, not an implementation detail.
@@ -45,6 +49,7 @@ from eija_studio.application.service import Studio
 from eija_studio.domain.models import DomainError, Workflow
 from eija_studio.domain.policy import projections
 from eija_studio.interfaces.agent_config import DEFAULT_MAX_PROVIDER_CALLS
+from eija_studio.interfaces.agent_policy import STORE_WRITE_NAMES  # noqa: F401  (re-exported for the lint and the docs)
 
 #: The complete agent tool surface. Adding a name here is a governance decision (ADR-0041).
 AGENT_TOOLS: tuple[str, ...] = ("list_cases", "create_case", "propose", "view_case", "impact", "verify", "render")
@@ -54,8 +59,8 @@ AGENT_TOOLS: tuple[str, ...] = ("list_cases", "create_case", "propose", "view_ca
 OWNER_ONLY_OPERATIONS: tuple[str, ...] = ("select", "select_meaning", "edit", "layout", "approve", "apply",
                                           "discard", "save", "reset_preview", "execute", "export")
 
-#: Persistence internals an adapter must never touch; any use fails the lint in tests/test_agent_static.py.
-STORE_WRITE_NAMES: tuple[str, ...] = ("transaction", "set_active", "save_case", "put_case", "event", "backup", "seal")
+# STORE_WRITE_NAMES (persistence operations an adapter must never touch; any use fails the lint in
+# tests/test_agent_static.py) is derived from the ports in the SDK-free ``agent_policy`` module.
 
 INSTRUCTIONS = (
     "EIJA Studio assurance kernel. You are an AGENT: you may create cases, request UNTRUSTED proposals, "
@@ -154,34 +159,38 @@ class AgentPort(Protocol):
     def view(self, case_id: str) -> dict: ...
 
 
-class StudioAgentPort:
+def StudioAgentPort(studio: Studio) -> AgentPort:  # a class-like factory: the Studio lives only in a closure
     """``AgentPort`` over a composed ``Studio``. The only place in this module that holds a ``Studio``.
 
-    Establishes: the adapter's reachable ``Studio`` surface is these five delegations. It does NOT establish
-    identity: ``Studio`` takes no principal for these operations, so the kernel cannot tell this caller apart.
+    Establishes: the adapter's reachable ``Studio`` surface is these five delegations, and the returned object has
+    no attribute that leads to the ``Studio`` (it is captured by the methods' closure, not stored on the port), so
+    ``attrgetter``/``methodcaller``/dotted paths by ordinary names cannot reach an owner operation. It does NOT
+    stop dunder or introspection access (``__closure__``): the lint in tests/test_agent_static.py forbids those
+    in this module. It does NOT establish identity: ``Studio`` takes no principal for these operations, so the
+    kernel cannot tell this caller apart.
     """
 
-    def __init__(self, studio: Studio):
-        self._studio = studio
+    class _StudioAgentPort:
+        @property
+        def networked(self) -> bool:
+            return bool(studio.provider.networked)
 
-    @property
-    def networked(self) -> bool:
-        return bool(self._studio.provider.networked)
+        def list_cases(self) -> list[dict]:
+            return list(studio.store.list_cases())
 
-    def list_cases(self) -> list[dict]:
-        return list(self._studio.store.list_cases())
+        def create(self, request: str) -> dict:
+            return studio.create(request)
 
-    def create(self, request: str) -> dict:
-        return self._studio.create(request)
+        def propose(self, case_id: str, expected: int, *, consent: bool = False) -> dict:
+            return studio.propose(case_id, expected, consent=consent)
 
-    def propose(self, case_id: str, expected: int, *, consent: bool = False) -> dict:
-        return self._studio.propose(case_id, expected, consent=consent)
+        def verify(self, case_id: str, expected: int) -> dict:
+            return studio.verify(case_id, expected)
 
-    def verify(self, case_id: str, expected: int) -> dict:
-        return self._studio.verify(case_id, expected)
+        def view(self, case_id: str) -> dict:
+            return studio.view(case_id)
 
-    def view(self, case_id: str) -> dict:
-        return self._studio.view(case_id)
+    return _StudioAgentPort()
 
 
 class AgentSurface:

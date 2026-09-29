@@ -7,10 +7,12 @@ It does NOT install or verify anything in the client; the owner pastes it.
 from __future__ import annotations
 
 import json
+import re
 import shlex
-import subprocess
 import sys
 from pathlib import Path
+
+from eija_studio.domain.models import DomainError
 
 CLIENTS: tuple[str, ...] = ("claude", "codex", "opencode", "gemini")
 SERVER_NAME = "eija"
@@ -27,9 +29,24 @@ def _toml(value: str) -> str:
     return json.dumps(value, ensure_ascii=False).replace(chr(0x7F), "\\u007f")
 
 
+#: Characters that still expand, or end the quote, inside double quotes in PowerShell (`$`, backtick, `"`) or cmd.exe (`%`).
+_WINDOWS_UNSAFE = frozenset('$`"%')
+
+
 def _shell_join(argv: list[str], windows: bool) -> str:
-    """Quote for the pasting shell: cmd.exe/PowerShell double quotes on Windows, POSIX single quotes elsewhere."""
-    return subprocess.list2cmdline(argv) if windows else " ".join(shlex.quote(a) for a in argv)
+    """Quote for the pasting shell: POSIX single quotes (shlex), or on Windows double quotes around EVERY argument.
+
+    Double quotes keep `&`, `;`, `|`, `<`, `>` and `^` literal in both cmd.exe and PowerShell (`subprocess.list2cmdline`
+    quotes only arguments with whitespace, so a path like C:/R&D split at the ampersand). What double quotes cannot protect
+    (`$`, a backtick, `%`, an embedded `"`) is refused, not guessed at: use a JSON/TOML client form instead."""
+    if not windows:
+        return " ".join(shlex.quote(a) for a in argv)
+    for arg in argv:
+        if _WINDOWS_UNSAFE & set(arg):
+            raise DomainError("CONFIGURATION", f"{arg!r} contains a character (one of $ ` \" %) that PowerShell or cmd.exe would still "
+                                               "expand inside quotes, so no safe one-line command can be printed; use a path without it, "
+                                               "or print the codex, opencode or gemini configuration form instead")
+    return " ".join('"' + re.sub(r"(\\+)$", r"\1\1", arg) + '"' for arg in argv)  # a trailing backslash must not escape the closing quote
 
 
 def snippet(client: str, python: str, workspace: Path, *, windows: bool | None = None) -> str:

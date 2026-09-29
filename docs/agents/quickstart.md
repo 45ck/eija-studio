@@ -18,7 +18,7 @@ The `agents` extra installs the official [MCP Python SDK](https://github.com/mod
 .venv/bin/python -m eija_studio mcp --workspace ~/eija-workspace --print-config claude    # or codex | opencode | gemini
 ```
 
-This prints a copy-paste snippet with absolute paths, so it works from any directory. It writes nothing. The Claude one-liner is quoted for the shell you print it from (double quotes on Windows for cmd.exe and PowerShell, single quotes elsewhere); pasting it into a different shell needs its own quoting, or use the `.mcp.json` form below. The snippets below show the same result with placeholders: replace `PY` with the absolute path of your venv's Python and `WS` with the absolute workspace path.
+This prints a copy-paste snippet with absolute paths, so it works from any directory. It writes nothing. The Claude one-liner is quoted for the shell you print it from (every argument in double quotes on Windows for cmd.exe and PowerShell, single quotes elsewhere; on Windows a path containing `$`, a backtick, `%` or a double quote is refused because those still expand inside quotes, so use the `.mcp.json` or another JSON form for such a path); pasting it into a different shell needs its own quoting, or use the `.mcp.json` form below. The snippets below show the same result with placeholders: replace `PY` with the absolute path of your venv's Python and `WS` with the absolute workspace path.
 
 ### Claude Code
 
