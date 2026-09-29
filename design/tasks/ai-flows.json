@@ -1,0 +1,608 @@
+{
+  "schema": "eija.taskflow.v1",
+  "tasks": [
+    {
+      "id": "T13-intent",
+      "name": "Ask AI to propose from a typed intent (networked provider, per-request consent)",
+      "persona": "P3",
+      "frequency": "weekly",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "decide to ask AI; Rule 0 before the first command"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "request",
+            "layout": "current-start",
+            "note": "the request textarea is prefilled with the default text"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "H",
+            "note": "hands from mouse to keyboard"
+          },
+          {
+            "op": "T",
+            "chars": 33,
+            "note": "'Let teachers sign off excursions.' typed fresh; the demo case can keep the prefilled text, 0 chars"
+          },
+          {
+            "op": "H",
+            "note": "hands back to mouse"
+          },
+          {
+            "op": "P",
+            "from": "request",
+            "to": "create",
+            "layout": "current-start"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "M",
+            "note": "new screen: find consent checkbox and Ask button"
+          },
+          {
+            "op": "P",
+            "from": "create",
+            "to": "egress",
+            "note": "cross-screen move: create is in current-start, egress in current-change; no single layout holds both, so 1.1 s"
+          },
+          {
+            "op": "B",
+            "note": "consent checkbox; required only when the provider is networked (service.propose)"
+          },
+          {
+            "op": "P",
+            "from": "egress",
+            "to": "propose",
+            "layout": "current-change"
+          },
+          {
+            "op": "B",
+            "note": "provider latency (timeout 60 s OpenRouter, 120 s Codex) excluded: identical in both flows"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "decide to ask AI"
+          },
+          {
+            "op": "H",
+            "note": "start-state operator: hands from mouse to keyboard"
+          },
+          {
+            "op": "K",
+            "keys": "/",
+            "note": "opens the palette in prompt mode; alias of ctrl+k"
+          },
+          {
+            "op": "T",
+            "chars": 4,
+            "note": "'prop' filters to /propose; command name is one cognitive unit (Rule 2)"
+          },
+          {
+            "op": "K",
+            "keys": "enter"
+          },
+          {
+            "op": "T",
+            "chars": 33,
+            "note": "same intent text as current"
+          },
+          {
+            "op": "M",
+            "note": "read the consent line: provider name, what leaves the machine"
+          },
+          {
+            "op": "K",
+            "keys": "tab"
+          },
+          {
+            "op": "K",
+            "keys": "space",
+            "note": "per-request consent toggle, never remembered (invariant I8)"
+          },
+          {
+            "op": "K",
+            "keys": "enter",
+            "note": "send; creates the case and the proposal request in one gesture, as `eija propose` already does"
+          }
+        ]
+      },
+      "assumptions": [
+        "PREDICTION only. K 0.20 s, P 1.1 s, B 0.10 s, H 0.40 s, M 1.35 s (Card, Moran and Newell 1980 as tabulated at https://en.wikipedia.org/wiki/Keystroke-level_model, opened 2026-09-29); band plus or minus 21 percent.",
+        "Starting state, identical in both flows: hands on the mouse, pointer at the rest position `__pointer` (720, 450), focus on the page body. A proposed flow that uses the keyboard therefore begins with H (and P+B where a focus target must be clicked). A keyboard-resident user (focus already in the inbox or on the card) skips those start operations; that variant is reported separately in docs/hci/design/ai-interaction.md section 13.",
+        "P operators with a `layout` field are bound to design/layouts/<stem>.json. The geometry-derived Fitts time (T = 0.37 + 0.13 ID, ID = log2(D/W + 1), centre to centre, W = min(w, h); coefficients from the IA aspect's profile, UNVERIFIED in this aspect) is a sensitivity only; the decision figure uses the sourced KLM constant P = 1.1 s. Unbound P operators name elements that no layout file holds (proposed elements of this aspect, native select popups, cross-screen moves) and keep 1.1 s in every column.",
+        "Expert, error-free, routine execution only; reading the returned proposal is not modelled.",
+        "Offline fixture provider needs no consent: drop the last M and 3 K from proposed (1.95 s less) and the consent P+B from current (1.2 s less).",
+        "Keyboard-resident variant: remove the H from proposed (0.40 s less).",
+        "Mouse variant in the proposed UI (visible controls only): M, P, B, H, 33 K, H, M, P, B, P, B = 13.70 s at constant P.",
+        "Element context is passed to the proposal request only in the proposed design; the current UI has no element selection, so this is not a like-for-like feature comparison.",
+        "Task id T13-intent is aspect-local: it covers asking from a typed intent. design/brief.json T13 is 'ask AI at a selected element' (see design/tasks/ia-flows.json); the two ids are not merged."
+      ]
+    },
+    {
+      "id": "T13-stop",
+      "name": "Stop a running provider call",
+      "persona": "P1",
+      "frequency": "weekly",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "notice the wrong request"
+          },
+          {
+            "op": "R",
+            "ms": 60000,
+            "why": "NO CANCEL PATH in the current UI: task() returns while busy and no abort exists; the wait ends at the provider timeout (OpenRouter default 60 s, Codex 120 s in adapters/providers.py). Upper bound for OpenRouter, not an average."
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "notice the wrong request"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "run-stop",
+            "note": "run-stop is a proposed element of this aspect; no layout holds it, so 1.1 s. Keyboard path is /stop or Tab and Enter on the same button"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 100,
+            "why": "target: UI shows STOPPING within 0.1 s; time to kill the provider process tree is not modelled"
+          }
+        ]
+      },
+      "assumptions": [
+        "PREDICTION only. The current path is a wait, not a KLM sequence; the R value is a code-derived upper bound for one provider, so the difference is a missing capability, not a speed-up.",
+        "Starting state, identical in both flows: hands on the mouse, pointer at the rest position `__pointer` (720, 450), focus on the page body. A proposed flow that uses the keyboard therefore begins with H (and P+B where a focus target must be clicked). A keyboard-resident user (focus already in the inbox or on the card) skips those start operations; that variant is reported separately in docs/hci/design/ai-interaction.md section 13.",
+        "Requires the provider adapter to support cancellation (ADR-0020 already kills the process tree on timeout; the same mechanism on demand is an interface to the agent lane).",
+        "Task id T13-stop is aspect-local (a sub-flow of T13-intent); brief.json has no interrupt task."
+      ]
+    },
+    {
+      "id": "T02",
+      "name": "Review an agent's change by meaning (navigation cost only)",
+      "persona": "P1",
+      "frequency": "daily",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "choose the case"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "case-item",
+            "layout": "current-change"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "P",
+            "from": "case-item",
+            "to": "tab-impact",
+            "layout": "current-change"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "M",
+            "note": "read the impact summary line"
+          },
+          {
+            "op": "P",
+            "from": "tab-impact",
+            "to": "summary-2",
+            "layout": "current-impact",
+            "note": "the Dependency closure and fingerprint details element; y 1557 is below the 900 px fold, so a scroll is needed and is not modelled (understates the current cost)"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "M",
+            "note": "read the closure and fingerprint JSON"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "pick a row in the Needs-you group by recognition"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "inbox-row",
+            "note": "inbox-row is a proposed element of this aspect; no layout holds it, so 1.1 s"
+          },
+          {
+            "op": "B",
+            "note": "opens the proposal card in the context drawer; focus moves into the card"
+          },
+          {
+            "op": "H",
+            "note": "start-state operator: hands from mouse to keyboard for the chapter shortcut"
+          },
+          {
+            "op": "M",
+            "note": "judge chapter 1 (core change)"
+          },
+          {
+            "op": "K",
+            "keys": "v",
+            "note": "mark viewed and move to the next chapter; single-key shortcut active only while the card has focus (WCAG 2.1.4)"
+          },
+          {
+            "op": "M",
+            "note": "judge chapter 2 (consequences: ripple counts and UNKNOWN)"
+          },
+          {
+            "op": "K",
+            "keys": "v"
+          },
+          {
+            "op": "M",
+            "note": "judge chapter 3 (glue: hidden-edit count)"
+          },
+          {
+            "op": "K",
+            "keys": "v"
+          }
+        ]
+      },
+      "assumptions": [
+        "PREDICTION only. K 0.20 s, P 1.1 s, B 0.10 s, H 0.40 s, M 1.35 s (Card, Moran and Newell 1980 as tabulated at https://en.wikipedia.org/wiki/Keystroke-level_model, opened 2026-09-29); band plus or minus 21 percent.",
+        "Starting state, identical in both flows: hands on the mouse, pointer at the rest position `__pointer` (720, 450), focus on the page body. A proposed flow that uses the keyboard therefore begins with H (and P+B where a focus target must be clicked). A keyboard-resident user (focus already in the inbox or on the card) skips those start operations; that variant is reported separately in docs/hci/design/ai-interaction.md section 13.",
+        "P operators with a `layout` field are bound to design/layouts/<stem>.json. The geometry-derived Fitts time (T = 0.37 + 0.13 ID, ID = log2(D/W + 1), centre to centre, W = min(w, h); coefficients from the IA aspect's profile, UNVERIFIED in this aspect) is a sensitivity only; the decision figure uses the sourced KLM constant P = 1.1 s. Unbound P operators name elements that no layout file holds (proposed elements of this aspect, native select popups, cross-screen moves) and keep 1.1 s in every column.",
+        "Navigation and one judging M per chunk; reading and judging time is NOT modelled and is expected to dominate. KLM cannot predict review quality.",
+        "Keyboard-resident variant: replace the proposed P, B and H by one K enter (net 1.40 s less).",
+        "The two UIs show different content (typed operations, ripple and UNKNOWN versus a changed-action table and a JSON closure), so equal or lower KLM time is not evidence of a better review.",
+        "Three chapters (core, consequences, glue) is a design assumption within the 3 to 5 chunk range.",
+        "Maps to design/brief.json T02 (navigation part only)."
+      ]
+    },
+    {
+      "id": "T02-undo",
+      "name": "Undo one taken operation in the candidate",
+      "persona": "P1",
+      "frequency": "weekly",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "decide to set the previous value back"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "rejection-source",
+            "layout": "current-change",
+            "note": "rejection-source lies at y 1522, below the 900 px fold: a scroll is needed and is not modelled (understates the current cost)"
+          },
+          {
+            "op": "B",
+            "note": "open the select"
+          },
+          {
+            "op": "P",
+            "from": "rejection-source",
+            "to": "rejection-source-option",
+            "note": "the option lives in a native select popup that no layout file holds, so 1.1 s"
+          },
+          {
+            "op": "B",
+            "note": "choose the previous value"
+          },
+          {
+            "op": "P",
+            "from": "rejection-source-option",
+            "to": "edit-rule",
+            "note": "the pointer starts in the native popup, whose geometry is not in the layout, so 1.1 s"
+          },
+          {
+            "op": "B",
+            "note": "Apply rule-table edit (a new edit, not an undo)"
+          },
+          {
+            "op": "M",
+            "note": "read the notice: old evidence is now inapplicable"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "decide to undo"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "card-take-row",
+            "note": "card-take-row is a proposed element of this aspect; no layout holds it, so 1.1 s"
+          },
+          {
+            "op": "B",
+            "note": "focus the card that shows the taken operation; Ctrl+Z is scoped to card or candidate focus and native undo wins inside text inputs"
+          },
+          {
+            "op": "H",
+            "note": "start-state operator: hands from mouse to keyboard"
+          },
+          {
+            "op": "K",
+            "keys": "ctrl+z",
+            "note": "2 K; applies immediately as a NEW candidate revision; redo is ctrl+shift+z so the undo is itself undoable"
+          },
+          {
+            "op": "M",
+            "note": "read the status line: Restores / Does not restore"
+          }
+        ]
+      },
+      "assumptions": [
+        "PREDICTION only. K 0.20 s, P 1.1 s, B 0.10 s, H 0.40 s, M 1.35 s (Card, Moran and Newell 1980 as tabulated at https://en.wikipedia.org/wiki/Keystroke-level_model, opened 2026-09-29); band plus or minus 21 percent.",
+        "Starting state, identical in both flows: hands on the mouse, pointer at the rest position `__pointer` (720, 450), focus on the page body. A proposed flow that uses the keyboard therefore begins with H (and P+B where a focus target must be clicked). A keyboard-resident user (focus already in the inbox or on the card) skips those start operations; that variant is reported separately in docs/hci/design/ai-interaction.md section 13.",
+        "P operators with a `layout` field are bound to design/layouts/<stem>.json. The geometry-derived Fitts time (T = 0.37 + 0.13 ID, ID = log2(D/W + 1), centre to centre, W = min(w, h); coefficients from the IA aspect's profile, UNVERIFIED in this aspect) is a sensitivity only; the decision figure uses the sourced KLM constant P = 1.1 s. Unbound P operators name elements that no layout file holds (proposed elements of this aspect, native select popups, cross-screen moves) and keep 1.1 s in every column.",
+        "Both flows leave the candidate evidence STALE and require re-verification; that step is identical and excluded.",
+        "Keyboard-resident variant (focus already on the card right after Take): M, K ctrl+z, M = 3.10 s. Visible-button path (Undo take is a visible control on a TAKEN card): M, P, B, M = 3.90 s.",
+        "The current UI has two-valued edits, so a manual reverse edit exists only because the vocabulary has two edits (ADR-003); it is not an undo and states no coverage.",
+        "Task id T02-undo is aspect-local (a sub-flow of T02); brief.json has no undo task for taken operations."
+      ]
+    },
+    {
+      "id": "T08",
+      "name": "Approve and apply the exact revision (deliberately not shortened)",
+      "persona": "P1",
+      "frequency": "daily",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "start after verification finished: read claims and blockers"
+          },
+          {
+            "op": "P",
+            "from": "claims",
+            "to": "q-authority",
+            "layout": "current-evidence"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "H"
+          },
+          {
+            "op": "T",
+            "chars": 9,
+            "note": "'Registrar'"
+          },
+          {
+            "op": "K",
+            "keys": "tab"
+          },
+          {
+            "op": "T",
+            "chars": 2,
+            "note": "'No'"
+          },
+          {
+            "op": "K",
+            "keys": "tab"
+          },
+          {
+            "op": "T",
+            "chars": 11,
+            "note": "'Recommended'; expected answers come from domain/policy.meaning_questions"
+          },
+          {
+            "op": "H"
+          },
+          {
+            "op": "P",
+            "from": "q-reject_entry",
+            "to": "acknowledge",
+            "layout": "current-evidence"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "P",
+            "from": "acknowledge",
+            "to": "approve",
+            "layout": "current-evidence"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "M",
+            "note": "notice: apply is a separate act"
+          },
+          {
+            "op": "P",
+            "from": "approve",
+            "to": "apply",
+            "layout": "current-evidence"
+          },
+          {
+            "op": "B"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "start after verification finished: read the card summary"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "decision-open",
+            "note": "decision-open is a proposed element of this aspect; no layout holds it, so 1.1 s"
+          },
+          {
+            "op": "B",
+            "note": "opens the blocking Decision surface; a visible control, not a palette command"
+          },
+          {
+            "op": "H",
+            "note": "start-state operator: hands from mouse to keyboard inside the modal"
+          },
+          {
+            "op": "M",
+            "note": "UNKNOWN 1 of 1 (human_understanding): read label and bound"
+          },
+          {
+            "op": "K",
+            "keys": "tab"
+          },
+          {
+            "op": "K",
+            "keys": "space",
+            "note": "per-UNKNOWN acknowledgement; no select-all"
+          },
+          {
+            "op": "K",
+            "keys": "tab",
+            "note": "into the meaning questions (kernel still requires typed answers)"
+          },
+          {
+            "op": "T",
+            "chars": 9
+          },
+          {
+            "op": "K",
+            "keys": "tab"
+          },
+          {
+            "op": "T",
+            "chars": 2
+          },
+          {
+            "op": "K",
+            "keys": "tab"
+          },
+          {
+            "op": "T",
+            "chars": 11
+          },
+          {
+            "op": "M",
+            "note": "final check of revision id and counts"
+          },
+          {
+            "op": "K",
+            "keys": "tab"
+          },
+          {
+            "op": "K",
+            "keys": "enter",
+            "note": "Approve exact revision"
+          },
+          {
+            "op": "M",
+            "note": "apply is a separate act"
+          },
+          {
+            "op": "K",
+            "keys": "tab"
+          },
+          {
+            "op": "K",
+            "keys": "enter",
+            "note": "Apply to local baseline"
+          }
+        ]
+      },
+      "assumptions": [
+        "PREDICTION only. Approve is deliberate: Fitts and KLM are not applied to shorten it (principle P2). The number measures the added deliberate cost; it is not a target to minimise, and an equal or lower total is not a finding.",
+        "K 0.20 s, P 1.1 s, B 0.10 s, H 0.40 s, M 1.35 s (Card, Moran and Newell 1980 as tabulated at https://en.wikipedia.org/wiki/Keystroke-level_model, opened 2026-09-29); band plus or minus 21 percent.",
+        "Starting state, identical in both flows: hands on the mouse, pointer at the rest position `__pointer` (720, 450), focus on the page body. A proposed flow that uses the keyboard therefore begins with H (and P+B where a focus target must be clicked). A keyboard-resident user (focus already in the inbox or on the card) skips those start operations; that variant is reported separately in docs/hci/design/ai-interaction.md section 13.",
+        "P operators with a `layout` field are bound to design/layouts/<stem>.json. The geometry-derived Fitts time (T = 0.37 + 0.13 ID, ID = log2(D/W + 1), centre to centre, W = min(w, h); coefficients from the IA aspect's profile, UNVERIFIED in this aspect) is a sensitivity only; the decision figure uses the sourced KLM constant P = 1.1 s. Unbound P operators name elements that no layout file holds (proposed elements of this aspect, native select popups, cross-screen moves) and keep 1.1 s in every column.",
+        "N_unknown = 1 today: the kernel packet lists human_understanding as UNKNOWN and no other UNKNOWN claim (application/compiler.py, read 2026-09-29). Each further UNKNOWN adds one M + 2 K = 1.75 s; sensitivity for N = 1 to 6 is in docs/hci/design/ai-interaction.md section 13.",
+        "Per-UNKNOWN acknowledgement is the default assumed here; the owner-decision-surface aspect may replace it. This aspect specifies only the isolation contract.",
+        "The kernel still requires the three typed meaning answers (service.approve); typed lengths are 'Registrar' 9, 'No' 2, 'Recommended' 11.",
+        "Verification run time (R) is identical in both flows and excluded.",
+        "Maps to design/brief.json T08."
+      ]
+    },
+    {
+      "id": "T09-agent-inbox",
+      "name": "Jump to the agent proposal that needs the owner",
+      "persona": "P1",
+      "frequency": "daily",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "recall which case is waiting; the sidebar shows only a stage word"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "case-item",
+            "layout": "current-change"
+          },
+          {
+            "op": "B"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "decide to check the inbox"
+          },
+          {
+            "op": "H",
+            "note": "start-state operator: hands from mouse to keyboard"
+          },
+          {
+            "op": "K",
+            "keys": "ctrl+k"
+          },
+          {
+            "op": "T",
+            "chars": 2,
+            "note": "'ag' filters to /agents (Agent inbox: open)"
+          },
+          {
+            "op": "K",
+            "keys": "enter",
+            "note": "runs the command"
+          },
+          {
+            "op": "K",
+            "keys": "enter",
+            "note": "opens the first row of the Needs-you group"
+          }
+        ]
+      },
+      "assumptions": [
+        "PREDICTION only. K 0.20 s, P 1.1 s, B 0.10 s, H 0.40 s, M 1.35 s (Card, Moran and Newell 1980 as tabulated at https://en.wikipedia.org/wiki/Keystroke-level_model, opened 2026-09-29); band plus or minus 21 percent.",
+        "Starting state, identical in both flows: hands on the mouse, pointer at the rest position `__pointer` (720, 450), focus on the page body. A proposed flow that uses the keyboard therefore begins with H (and P+B where a focus target must be clicked). A keyboard-resident user (focus already in the inbox or on the card) skips those start operations; that variant is reported separately in docs/hci/design/ai-interaction.md section 13.",
+        "P operators with a `layout` field are bound to design/layouts/<stem>.json. The geometry-derived Fitts time (T = 0.37 + 0.13 ID, ID = log2(D/W + 1), centre to centre, W = min(w, h); coefficients from the IA aspect's profile, UNVERIFIED in this aspect) is a sensitivity only; the decision figure uses the sourced KLM constant P = 1.1 s. Unbound P operators name elements that no layout file holds (proposed elements of this aspect, native select popups, cross-screen moves) and keep 1.1 s in every column.",
+        "Visible-control path in the proposed UI: M, P (pointer to the footer count st-attn, bound to nav-proposed), B opens the inbox at the first Needs-you row; its Fitts value is reported in docs/hci/design/ai-interaction.md section 13. Expected result: no advantage of the palette over a visible control.",
+        "The current UI has no notion of an agent or of waiting for the owner; the case-item stage word is the closest signal.",
+        "Task id T09-agent-inbox is aspect-local. design/brief.json T09 is 'find anything via the command palette' and stays with design/tasks/ia-flows.json; this task is a different job (jump to the run that needs the owner) and must not be merged with it."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1389 @@
+{
+  "schema": "eija.fonts.lock.v1",
+  "date": "2026-09-29",
+  "status": "proposed",
+  "lane": "lane/ux-research",
+  "aspect": "typography",
+  "adr": "docs/adr/0060-hci-typography.md",
+  "note": "Machine-readable font manifest. Every number is MEASURED on 2026-09-29 unless labelled otherwise; the shipped files are not in the repository yet (the integrator copies them from the reproduction recipe). Coverage is of the symbol sets below, which are derived from the non-ASCII characters used in the repository and the formal notation named in docs/adr/0018-formal-vv-portfolio.md, not from a general Unicode survey.",
+  "toolchain": {
+    "fonttools": "4.56.0",
+    "brotli": "1.2.0",
+    "python": "3.12.10"
+  },
+  "stack": {
+    "sans": [
+      "EIJA Sans",
+      "EIJA Symbols",
+      "system-ui",
+      "Segoe UI",
+      "Roboto",
+      "Helvetica Neue",
+      "Arial",
+      "sans-serif"
+    ],
+    "mono": [
+      "EIJA Mono",
+      "EIJA Symbols",
+      "ui-monospace",
+      "Cascadia Mono",
+      "Consolas",
+      "SFMono-Regular",
+      "Menlo",
+      "monospace"
+    ]
+  },
+  "font_face_rules": {
+    "font-display": "swap",
+    "font-style": "normal",
+    "font-weight": {
+      "sans": "400 600",
+      "mono": "400 600",
+      "symbols": "400"
+    },
+    "css_requirements": [
+      "font-synthesis: none",
+      "font-variant-ligatures: none (mono)",
+      "font-feature-settings: \"zero\" 1 (mono)",
+      "text sizes in rem, line-height unitless"
+    ],
+    "preload": "<link rel=\"preload\" as=\"font\" type=\"font/woff2\" crossorigin> for the sans and mono files (crossorigin is required even for same-origin fonts: MDN rel=preload)"
+  },
+  "faces": [
+    {
+      "id": "sans",
+      "css_family": "EIJA Sans",
+      "role": "UI text, prose, headings, counts",
+      "upstream": {
+        "family": "Noto Sans",
+        "version_in_file": "Version 2.015",
+        "source_repo": "google/fonts@23e54b51ddffbc7713c583748e3bd86f62b1fa4a",
+        "source_url": "https://raw.githubusercontent.com/google/fonts/23e54b51ddffbc7713c583748e3bd86f62b1fa4a/ofl/notosans/NotoSans%5Bwdth%2Cwght%5D.ttf",
+        "source_sha256": "bfb7bb691513f12e734dc346c03a03f784912432d7e3fa8e56efcf906fe86b3d",
+        "source_bytes": 2049096,
+        "licence": "OFL-1.1",
+        "licence_url": "https://raw.githubusercontent.com/google/fonts/23e54b51ddffbc7713c583748e3bd86f62b1fa4a/ofl/notosans/OFL.txt",
+        "licence_sha256": "cee9892f9f0cc8fe882c9e9537ee6a89621d86ee7ceaf70b02e2b2b1c25c061a",
+        "copyright_line": "Copyright 2022 The Noto Project Authors (https://github.com/notofonts/latin-greek-cyrillic)",
+        "reserved_font_name_declared": false,
+        "axes_in_source": {
+          "wght": [
+            100.0,
+            400.0,
+            900.0
+          ],
+          "wdth": [
+            62.5,
+            100.0,
+            100.0
+          ]
+        }
+      },
+      "modification": {
+        "operations": [
+          "limit wght axis to 400-600 (fontTools instancer)",
+          "subset to listed codepoints (fontTools subset)",
+          "drop TrueType hinting",
+          "drop layout features not listed under features_kept",
+          "WOFF2 (brotli)"
+        ],
+        "ofl_faq": "https://openfontlicense.org/ofl-faq/ items 2.5 and 2.6: subsetting is a modification; renaming is required only if a Reserved Font Name is declared",
+        "renamed": false,
+        "note": "The internal name table is unchanged (a Chromium platform-font query reports the upstream name); css_family is a CSS alias only."
+      },
+      "shipped": {
+        "file": "EIJA-NotoSans-latin-400-600.woff2",
+        "proposed_repo_path": "src/eija_studio/resources/web/fonts/EIJA-NotoSans-latin-400-600.woff2",
+        "bytes": 16736,
+        "sha256": "4bc97b0ce527e2eff3fe1a90386f20ef433f0f027366cf31815430ececaa8cf2",
+        "glyphs": 215,
+        "axes": {
+          "wght": [
+            400.0,
+            400.0,
+            600.0
+          ]
+        },
+        "gsub_features_present": [
+          "locl"
+        ],
+        "unicode_range": "U+0020-007E, U+00A0-00FF, U+03BB, U+2013-2014, U+2016, U+2018-2019, U+201C-201D, U+2022, U+2026, U+2032-2033, U+2115, U+211D, U+2124, U+2212",
+        "gpos_features_present": [
+          "kern"
+        ],
+        "digits": "default digits are tabular in the source (all ten advances 0.572 em); MEASURED in the shipped file and in Chromium 151"
+      },
+      "metrics": {
+        "units_per_em": 1000,
+        "x_height_ratio": 0.536,
+        "cap_height_ratio": 0.714,
+        "ascender": 1069,
+        "descender": -293,
+        "line_gap": 0
+      }
+    },
+    {
+      "id": "mono",
+      "css_family": "EIJA Mono",
+      "role": "literal tokens, code, formal notation, key labels",
+      "upstream": {
+        "family": "Fira Code",
+        "version_in_file": "Version 5.002",
+        "source_repo": "google/fonts@23e54b51ddffbc7713c583748e3bd86f62b1fa4a",
+        "source_url": "https://raw.githubusercontent.com/google/fonts/23e54b51ddffbc7713c583748e3bd86f62b1fa4a/ofl/firacode/FiraCode%5Bwght%5D.ttf",
+        "source_sha256": "9335b082b3c7850d98a64b584f3417f65355f3471278bb5eeb8c6c0e8657aeeb",
+        "source_bytes": 260364,
+        "licence": "OFL-1.1",
+        "licence_url": "https://raw.githubusercontent.com/google/fonts/23e54b51ddffbc7713c583748e3bd86f62b1fa4a/ofl/firacode/OFL.txt",
+        "licence_sha256": "926041dac670e6922505e35ac1661a4e8d20f1ffeabbbcb5edb5544370702369",
+        "copyright_line": "Copyright 2014-2020 The Fira Code Project Authors (https://github.com/tonsky/FiraCode)",
+        "reserved_font_name_declared": false,
+        "axes_in_source": {
+          "wght": [
+            300.0,
+            300.0,
+            700.0
+          ]
+        }
+      },
+      "modification": {
+        "operations": [
+          "limit wght axis to 400-600 (fontTools instancer)",
+          "subset to listed codepoints (fontTools subset)",
+          "drop TrueType hinting",
+          "drop layout features not listed under features_kept",
+          "WOFF2 (brotli)"
+        ],
+        "ofl_faq": "https://openfontlicense.org/ofl-faq/ items 2.5 and 2.6: subsetting is a modification; renaming is required only if a Reserved Font Name is declared",
+        "renamed": false,
+        "note": "The internal name table is unchanged (a Chromium platform-font query reports the upstream name); css_family is a CSS alias only."
+      },
+      "shipped": {
+        "file": "EIJA-FiraCode-latin-notation-400-600.woff2",
+        "proposed_repo_path": "src/eija_studio/resources/web/fonts/EIJA-FiraCode-latin-notation-400-600.woff2",
+        "bytes": 19832,
+        "sha256": "9d67d3fdb67f00a6d30503223f5c0c65fd9dd206026420c3f4ea30362c553ce4",
+        "glyphs": 281,
+        "axes": {
+          "wght": [
+            400.0,
+            400.0,
+            600.0
+          ]
+        },
+        "gsub_features_present": [
+          "locl",
+          "zero"
+        ],
+        "unicode_range": "U+0020-007E, U+00A0-00FF, U+03BB, U+2013-2014, U+2016, U+2018-2019, U+201C-201D, U+2022, U+2026, U+2115, U+211D, U+2124, U+2190-2194, U+21B3, U+21E5, U+21E7, U+2200, U+2203-2205, U+2208-2209, U+2212, U+2227-222A, U+2248, U+2260-2261, U+2264-2265, U+2282, U+2286, U+22A2, U+22A4-22A5, U+22A8, U+2303, U+2318, U+2325, U+232B, U+238B, U+23CE, U+2500, U+2502, U+250C, U+2510, U+2514, U+2518, U+251C, U+252C, U+2534, U+253C, U+25A1, U+25C7, U+25CB, U+27E8-27E9",
+        "ligature_features_present": false,
+        "cell_width_em": 0.6,
+        "all_shipped_glyphs_cell_width": true
+      },
+      "metrics": {
+        "units_per_em": 2000,
+        "x_height_ratio": 0.5265,
+        "cap_height_ratio": 0.687,
+        "ascender": 1980,
+        "descender": -644,
+        "line_gap": 0,
+        "x_height_ratio_note": "MEASURED on the shipped woff2 (yMax of glyph x over unitsPerEm 2000, fontTools 4.56.0); corrects 0.525, which was the wght 300 default instance of the upstream file."
+      }
+    },
+    {
+      "id": "symbols",
+      "css_family": "EIJA Symbols",
+      "role": "glyph fallback only, never first in a stack",
+      "upstream": {
+        "family": "Noto Sans Math",
+        "version_in_file": "Version 3.000; ttfautohint (v1.8.4.7-5d5b)",
+        "source_repo": "google/fonts@23e54b51ddffbc7713c583748e3bd86f62b1fa4a",
+        "source_url": "https://raw.githubusercontent.com/google/fonts/23e54b51ddffbc7713c583748e3bd86f62b1fa4a/ofl/notosansmath/NotoSansMath-Regular.ttf",
+        "source_sha256": "3f495fe933c06786e4d5f6d86b8ee70b6753a68ee3b9d87528726de0f6e2c47d",
+        "source_bytes": 1015396,
+        "licence": "OFL-1.1",
+        "licence_url": "https://raw.githubusercontent.com/google/fonts/23e54b51ddffbc7713c583748e3bd86f62b1fa4a/ofl/notosansmath/OFL.txt",
+        "licence_sha256": "403a95275b469061b7d4371c328e0ada3bc7d63328abe2e88aad5cd243b2fe21",
+        "copyright_line": "Copyright 2022 The Noto Project Authors (https://github.com/notofonts/math)",
+        "reserved_font_name_declared": false,
+        "axes_in_source": {}
+      },
+      "modification": {
+        "operations": [
+          "none on axes (static font)",
+          "subset to listed codepoints (fontTools subset)",
+          "drop TrueType hinting",
+          "drop layout features not listed under features_kept",
+          "WOFF2 (brotli)"
+        ],
+        "ofl_faq": "https://openfontlicense.org/ofl-faq/ items 2.5 and 2.6: subsetting is a modification; renaming is required only if a Reserved Font Name is declared",
+        "renamed": false,
+        "note": "The internal name table is unchanged (a Chromium platform-font query reports the upstream name); css_family is a CSS alias only."
+      },
+      "shipped": {
+        "file": "EIJA-NotoSansMath-symbols-400.woff2",
+        "proposed_repo_path": "src/eija_studio/resources/web/fonts/EIJA-NotoSansMath-symbols-400.woff2",
+        "bytes": 4336,
+        "sha256": "e728586f8bba9b5ebf0cf6aad1273ee064837b48173987b4b7ec2a5c79720c70",
+        "glyphs": 131,
+        "axes": {},
+        "gsub_features_present": [],
+        "unicode_range": "U+2032-2033, U+2190-2194, U+21A6, U+21B3, U+21B5, U+21D0, U+21D2, U+21D4, U+21E5, U+21E7, U+2200, U+2203-2205, U+2208-2209, U+220E, U+2216, U+2218, U+2227-222A, U+2248, U+2260-2261, U+2264-2265, U+2282, U+2286, U+22A2, U+22A4-22A5, U+22A8, U+23CE, U+2500, U+250C, U+2510, U+2514, U+2518, U+25A1, U+25C7, U+25CB, U+27E6-27E9"
+      },
+      "metrics": {
+        "units_per_em": 1000,
+        "x_height_ratio": 0.536,
+        "cap_height_ratio": 0.714,
+        "ascender": 1069,
+        "descender": -423,
+        "line_gap": 0
+      }
+    }
+  ],
+  "budget": {
+    "shipped_bytes_total": 40904,
+    "target_bytes_max_first_paint": 100000,
+    "target_source": "docs/hci/research/visual-design-foundations.md section 4 item 5 (hypothesis from the dossier, not a standard)",
+    "font_files": 3,
+    "text_families": 2,
+    "glyph_fallback_families": 1,
+    "weights_used": [
+      400,
+      600
+    ],
+    "italic_files": 0
+  },
+  "server_requirements": {
+    "csp": "add font-src 'self' (MEASURED: with the current Studio CSP Chromium 151 refused all three fonts; console reported a default-src violation)",
+    "assets_route": "http.py serves only app.js and app.css today; the three woff2 files and licence texts need allowlist entries with Content-Type font/woff2 and nosniff",
+    "cache": "Cache-Control no-store stays valid: MEASURED loopback fetch of all three files median 6.7 ms, p95 17.9 ms (n=60, Python urllib, no browser)",
+    "owner": "security boundary / assets aspect; typography only states the need"
+  },
+  "symbol_sets": {
+    "arrows": [
+      {
+        "cp": "U+2192",
+        "name": "RIGHTWARDS ARROW"
+      },
+      {
+        "cp": "U+2190",
+        "name": "LEFTWARDS ARROW"
+      },
+      {
+        "cp": "U+2194",
+        "name": "LEFT RIGHT ARROW"
+      },
+      {
+        "cp": "U+2191",
+        "name": "UPWARDS ARROW"
+      },
+      {
+        "cp": "U+2193",
+        "name": "DOWNWARDS ARROW"
+      },
+      {
+        "cp": "U+21D2",
+        "name": "RIGHTWARDS DOUBLE ARROW"
+      },
+      {
+        "cp": "U+21D0",
+        "name": "LEFTWARDS DOUBLE ARROW"
+      },
+      {
+        "cp": "U+21D4",
+        "name": "LEFT RIGHT DOUBLE ARROW"
+      },
+      {
+        "cp": "U+21A6",
+        "name": "RIGHTWARDS ARROW FROM BAR"
+      },
+      {
+        "cp": "U+21B3",
+        "name": "DOWNWARDS ARROW WITH TIP RIGHTWARDS"
+      }
+    ],
+    "logic": [
+      {
+        "cp": "U+2227",
+        "name": "LOGICAL AND"
+      },
+      {
+        "cp": "U+2228",
+        "name": "LOGICAL OR"
+      },
+      {
+        "cp": "U+00AC",
+        "name": "NOT SIGN"
+      },
+      {
+        "cp": "U+22A2",
+        "name": "RIGHT TACK"
+      },
+      {
+        "cp": "U+22A8",
+        "name": "TRUE"
+      },
+      {
+        "cp": "U+22A5",
+        "name": "UP TACK"
+      },
+      {
+        "cp": "U+22A4",
+        "name": "DOWN TACK"
+      },
+      {
+        "cp": "U+2200",
+        "name": "FOR ALL"
+      },
+      {
+        "cp": "U+2203",
+        "name": "THERE EXISTS"
+      },
+      {
+        "cp": "U+2204",
+        "name": "THERE DOES NOT EXIST"
+      },
+      {
+        "cp": "U+2261",
+        "name": "IDENTICAL TO"
+      }
+    ],
+    "temporal": [
+      {
+        "cp": "U+25A1",
+        "name": "WHITE SQUARE"
+      },
+      {
+        "cp": "U+25C7",
+        "name": "WHITE DIAMOND"
+      },
+      {
+        "cp": "U+25CB",
+        "name": "WHITE CIRCLE"
+      }
+    ],
+    "sets": [
+      {
+        "cp": "U+2208",
+        "name": "ELEMENT OF"
+      },
+      {
+        "cp": "U+2209",
+        "name": "NOT AN ELEMENT OF"
+      },
+      {
+        "cp": "U+2286",
+        "name": "SUBSET OF OR EQUAL TO"
+      },
+      {
+        "cp": "U+2282",
+        "name": "SUBSET OF"
+      },
+      {
+        "cp": "U+222A",
+        "name": "UNION"
+      },
+      {
+        "cp": "U+2229",
+        "name": "INTERSECTION"
+      },
+      {
+        "cp": "U+2205",
+        "name": "EMPTY SET"
+      },
+      {
+        "cp": "U+2216",
+        "name": "SET MINUS"
+      },
+      {
+        "cp": "U+2115",
+        "name": "DOUBLE-STRUCK CAPITAL N"
+      },
+      {
+        "cp": "U+2124",
+        "name": "DOUBLE-STRUCK CAPITAL Z"
+      },
+      {
+        "cp": "U+211D",
+        "name": "DOUBLE-STRUCK CAPITAL R"
+      },
+      {
+        "cp": "U+2218",
+        "name": "RING OPERATOR"
+      }
+    ],
+    "relations": [
+      {
+        "cp": "U+2264",
+        "name": "LESS-THAN OR EQUAL TO"
+      },
+      {
+        "cp": "U+2265",
+        "name": "GREATER-THAN OR EQUAL TO"
+      },
+      {
+        "cp": "U+2260",
+        "name": "NOT EQUAL TO"
+      },
+      {
+        "cp": "U+2248",
+        "name": "ALMOST EQUAL TO"
+      },
+      {
+        "cp": "U+00B1",
+        "name": "PLUS-MINUS SIGN"
+      },
+      {
+        "cp": "U+00D7",
+        "name": "MULTIPLICATION SIGN"
+      },
+      {
+        "cp": "U+00F7",
+        "name": "DIVISION SIGN"
+      },
+      {
+        "cp": "U+2212",
+        "name": "MINUS SIGN"
+      }
+    ],
+    "brackets": [
+      {
+        "cp": "U+27E8",
+        "name": "MATHEMATICAL LEFT ANGLE BRACKET"
+      },
+      {
+        "cp": "U+27E9",
+        "name": "MATHEMATICAL RIGHT ANGLE BRACKET"
+      },
+      {
+        "cp": "U+27E6",
+        "name": "MATHEMATICAL LEFT WHITE SQUARE BRACKET"
+      },
+      {
+        "cp": "U+27E7",
+        "name": "MATHEMATICAL RIGHT WHITE SQUARE BRACKET"
+      },
+      {
+        "cp": "U+2016",
+        "name": "DOUBLE VERTICAL LINE"
+      },
+      {
+        "cp": "U+03BB",
+        "name": "GREEK SMALL LETTER LAMDA"
+      },
+      {
+        "cp": "U+220E",
+        "name": "END OF PROOF"
+      }
+    ],
+    "typographic": [
+      {
+        "cp": "U+2026",
+        "name": "HORIZONTAL ELLIPSIS"
+      },
+      {
+        "cp": "U+00B7",
+        "name": "MIDDLE DOT"
+      },
+      {
+        "cp": "U+2022",
+        "name": "BULLET"
+      },
+      {
+        "cp": "U+2013",
+        "name": "EN DASH"
+      },
+      {
+        "cp": "U+2014",
+        "name": "EM DASH"
+      },
+      {
+        "cp": "U+2018",
+        "name": "LEFT SINGLE QUOTATION MARK"
+      },
+      {
+        "cp": "U+2019",
+        "name": "RIGHT SINGLE QUOTATION MARK"
+      },
+      {
+        "cp": "U+201C",
+        "name": "LEFT DOUBLE QUOTATION MARK"
+      },
+      {
+        "cp": "U+201D",
+        "name": "RIGHT DOUBLE QUOTATION MARK"
+      },
+      {
+        "cp": "U+2032",
+        "name": "PRIME"
+      },
+      {
+        "cp": "U+2033",
+        "name": "DOUBLE PRIME"
+      },
+      {
+        "cp": "U+00B0",
+        "name": "DEGREE SIGN"
+      },
+      {
+        "cp": "U+00A7",
+        "name": "SECTION SIGN"
+      },
+      {
+        "cp": "U+00A0",
+        "name": "NO-BREAK SPACE"
+      }
+    ],
+    "keyboard": [
+      {
+        "cp": "U+2318",
+        "name": "PLACE OF INTEREST SIGN"
+      },
+      {
+        "cp": "U+2325",
+        "name": "OPTION KEY"
+      },
+      {
+        "cp": "U+21E7",
+        "name": "UPWARDS WHITE ARROW"
+      },
+      {
+        "cp": "U+2303",
+        "name": "UP ARROWHEAD"
+      },
+      {
+        "cp": "U+23CE",
+        "name": "RETURN SYMBOL"
+      },
+      {
+        "cp": "U+232B",
+        "name": "ERASE TO THE LEFT"
+      },
+      {
+        "cp": "U+238B",
+        "name": "BROKEN CIRCLE WITH NORTHWEST ARROW"
+      },
+      {
+        "cp": "U+21E5",
+        "name": "RIGHTWARDS ARROW TO BAR"
+      },
+      {
+        "cp": "U+21B5",
+        "name": "DOWNWARDS ARROW WITH CORNER LEFTWARDS"
+      }
+    ],
+    "box": [
+      {
+        "cp": "U+2500",
+        "name": "BOX DRAWINGS LIGHT HORIZONTAL"
+      },
+      {
+        "cp": "U+2502",
+        "name": "BOX DRAWINGS LIGHT VERTICAL"
+      },
+      {
+        "cp": "U+251C",
+        "name": "BOX DRAWINGS LIGHT VERTICAL AND RIGHT"
+      },
+      {
+        "cp": "U+2514",
+        "name": "BOX DRAWINGS LIGHT UP AND RIGHT"
+      },
+      {
+        "cp": "U+250C",
+        "name": "BOX DRAWINGS LIGHT DOWN AND RIGHT"
+      },
+      {
+        "cp": "U+2510",
+        "name": "BOX DRAWINGS LIGHT DOWN AND LEFT"
+      },
+      {
+        "cp": "U+2518",
+        "name": "BOX DRAWINGS LIGHT UP AND LEFT"
+      },
+      {
+        "cp": "U+252C",
+        "name": "BOX DRAWINGS LIGHT DOWN AND HORIZONTAL"
+      },
+      {
+        "cp": "U+2534",
+        "name": "BOX DRAWINGS LIGHT UP AND HORIZONTAL"
+      },
+      {
+        "cp": "U+253C",
+        "name": "BOX DRAWINGS LIGHT VERTICAL AND HORIZONTAL"
+      }
+    ]
+  },
+  "coverage": {
+    "needed_codepoints": 84,
+    "sans_stack": {
+      "covered": 74,
+      "missing": [
+        "U+2303",
+        "U+2318",
+        "U+2325",
+        "U+232B",
+        "U+238B",
+        "U+2502",
+        "U+251C",
+        "U+252C",
+        "U+2534",
+        "U+253C"
+      ],
+      "rule": "keyboard and box-drawing glyphs are mono-only; a sans context must not depend on them"
+    },
+    "mono_stack": {
+      "covered": 84,
+      "missing": []
+    },
+    "mono_native": 72,
+    "glyphs_in_mono_context_drawn_by_symbols_face": [
+      {
+        "cp": "U+2032",
+        "name": "PRIME"
+      },
+      {
+        "cp": "U+2033",
+        "name": "DOUBLE PRIME"
+      },
+      {
+        "cp": "U+21A6",
+        "name": "RIGHTWARDS ARROW FROM BAR"
+      },
+      {
+        "cp": "U+21B5",
+        "name": "DOWNWARDS ARROW WITH CORNER LEFTWARDS"
+      },
+      {
+        "cp": "U+21D0",
+        "name": "LEFTWARDS DOUBLE ARROW"
+      },
+      {
+        "cp": "U+21D2",
+        "name": "RIGHTWARDS DOUBLE ARROW"
+      },
+      {
+        "cp": "U+21D4",
+        "name": "LEFT RIGHT DOUBLE ARROW"
+      },
+      {
+        "cp": "U+220E",
+        "name": "END OF PROOF"
+      },
+      {
+        "cp": "U+2216",
+        "name": "SET MINUS"
+      },
+      {
+        "cp": "U+2218",
+        "name": "RING OPERATOR"
+      },
+      {
+        "cp": "U+27E6",
+        "name": "MATHEMATICAL LEFT WHITE SQUARE BRACKET"
+      },
+      {
+        "cp": "U+27E7",
+        "name": "MATHEMATICAL RIGHT WHITE SQUARE BRACKET"
+      }
+    ],
+    "residual_glyph_advances_em_vs_cell_0.6": {
+      "U+2032": 0.232,
+      "U+2033": 0.408,
+      "U+21A6": 1.012,
+      "U+21B5": 0.722,
+      "U+21D0": 1.012,
+      "U+21D2": 1.012,
+      "U+21D4": 1.262,
+      "U+220E": 0.558,
+      "U+2216": 0.403,
+      "U+2218": 0.382,
+      "U+27E6": 0.449,
+      "U+27E7": 0.449
+    },
+    "residual_glyphs_off_cell": 12,
+    "consequence": "these codepoints are not cell-width in a mono context; do not use them inside column-aligned text (lint the list)"
+  },
+  "alternatives_measured": {
+    "sans": {
+      "Noto Sans": {
+        "family": "Noto Sans",
+        "version_in_file": "Version 2.015",
+        "x_height_ratio": 0.536,
+        "native_needed_glyphs_of_84": 24,
+        "confusable_pair_distance_14px": {
+          "I/l": 0.405,
+          "I/1": 0.439,
+          "l/1": 0.572,
+          "0/O": 0.671
+        },
+        "min_of_4_pairs": 0.405,
+        "reserved_font_name_declared": false,
+        "source_sha256": "bfb7bb691513f12e734dc346c03a03f784912432d7e3fa8e56efcf906fe86b3d",
+        "source_bytes": 2049096,
+        "subset_woff2_bytes_wght400_600": 16348,
+        "digit_advance_em_default": [
+          0.572,
+          0.572
+        ],
+        "tabular_digit_advance_em": 0.572
+      },
+      "Public Sans": {
+        "family": "Public Sans",
+        "version_in_file": "Version 2.001",
+        "x_height_ratio": 0.517,
+        "native_needed_glyphs_of_84": 22,
+        "confusable_pair_distance_14px": {
+          "I/l": 0.545,
+          "I/1": 0.558,
+          "l/1": 0.804,
+          "0/O": 0.509
+        },
+        "min_of_4_pairs": 0.509,
+        "reserved_font_name_declared": false,
+        "source_sha256": "d75a7dc1a27eb9e336d5b33f55489d2ecb5621bf694d5c43b2415bce2ca830a8",
+        "source_bytes": 103316,
+        "subset_woff2_bytes_wght400_600": 19424,
+        "digit_advance_em_default": [
+          0.386,
+          0.625
+        ],
+        "tabular_digit_advance_em": 0.7
+      },
+      "Atkinson Hyperlegible Next": {
+        "family": "Atkinson Hyperlegible Next",
+        "version_in_file": "Version 2.001",
+        "x_height_ratio": 0.496,
+        "native_needed_glyphs_of_84": 21,
+        "confusable_pair_distance_14px": {
+          "I/l": 0.444,
+          "I/1": 0.694,
+          "l/1": 0.781,
+          "0/O": 0.474
+        },
+        "min_of_4_pairs": 0.444,
+        "reserved_font_name_declared": false,
+        "source_sha256": "5a455d1cfa099b601ab70751bb9673e8fe1854dc4500c80e1a220d0d75e31745",
+        "source_bytes": 114552,
+        "subset_woff2_bytes_wght400_600": 17724,
+        "digit_advance_em_default": [
+          0.407,
+          0.648
+        ],
+        "tabular_digit_advance_em": 0.632
+      },
+      "Geist": {
+        "family": "Geist",
+        "version_in_file": "Version 1.800",
+        "x_height_ratio": 0.53,
+        "native_needed_glyphs_of_84": 34,
+        "confusable_pair_distance_14px": {
+          "I/l": 0.111,
+          "I/1": 0.709,
+          "l/1": 0.666,
+          "0/O": 0.36
+        },
+        "min_of_4_pairs": 0.111,
+        "reserved_font_name_declared": false,
+        "source_sha256": "73894e0448cae90a92b6c2f8732b7bb9acb7b94c418bff559dad4a18e1de9659",
+        "source_bytes": 169056,
+        "subset_woff2_bytes_wght400_600": 16584,
+        "digit_advance_em_default": [
+          0.384,
+          0.663
+        ],
+        "tabular_digit_advance_em": 0.6
+      },
+      "Inter": {
+        "family": "Inter",
+        "version_in_file": "Version 4.001;git-66647c0bb",
+        "x_height_ratio": 0.5459,
+        "native_needed_glyphs_of_84": 47,
+        "confusable_pair_distance_14px": {
+          "I/l": 0.0,
+          "I/1": 0.718,
+          "l/1": 0.718,
+          "0/O": 0.522
+        },
+        "min_of_4_pairs": 0.0,
+        "reserved_font_name_declared": false,
+        "source_sha256": "29160a80ff49ddcab2c97711247e08b1fab27a484a329ce8b813d820dc559031",
+        "source_bytes": 876576,
+        "subset_woff2_bytes_wght400_600": 21588,
+        "digit_advance_em_default": [
+          0.407,
+          0.646
+        ],
+        "tabular_digit_advance_em": 0.648
+      },
+      "Inter (ss02 + tnum baked in, audit revision 2026-09-29)": {
+        "family": "Inter",
+        "version_in_file": "Version 4.001;git-66647c0bb",
+        "x_height_ratio": 0.5459,
+        "how_built": "Single-substitution lookups of the listed features applied to the cmap (fontTools, cmap remap, .tmp/fonts/inter_feat.py), then subset with the same codepoints and features as the shipped sans (wght 400 to 600, appendix A build function). A real build must also check that the slashed zero glyph gets a tabular advance: in this naive freeze the digit 0 advance is 0.631 em against 0.648 em for 1 to 9.",
+        "confusable_pair_distance_14px": {
+          "I/l": 0.493,
+          "I/1": 0.691,
+          "l/1": 0.794,
+          "0/O": 0.586
+        },
+        "confusable_pair_distance_14px_other_variants": {
+          "cv08": {
+            "I/l": 0.394,
+            "I/1": 0.691,
+            "l/1": 0.718,
+            "0/O": 0.522
+          },
+          "ss04": {
+            "I/l": 0.493,
+            "I/1": 0.691,
+            "l/1": 0.794,
+            "0/O": 0.522
+          }
+        },
+        "min_of_4_pairs": 0.493,
+        "reserved_font_name_declared": false,
+        "subset_woff2_bytes_wght400_600": {
+          "ss02_tnum_baked": 20288,
+          "ss02_baked": 20564,
+          "ss04_tnum_baked": 20320,
+          "no_features_baked": 20420
+        },
+        "note": "Sizes here use the shipped sans feature list; the 21,588 bytes recorded for plain Inter above used a different feature list and is not comparable with the 16,736 bytes of the shipped Noto Sans subset. Same-basis comparison: 20,288 against 16,736 bytes (+3,552 bytes, +21%). Proxy distances are unvalidated; differences of about 0.1 are treated as noise.",
+        "tabular_digit_advance_em": 0.648
+      },
+      "IBM Plex Sans": {
+        "family": "IBM Plex Sans",
+        "version_in_file": "Version 3.201",
+        "x_height_ratio": 0.516,
+        "native_needed_glyphs_of_84": 30,
+        "confusable_pair_distance_14px": {
+          "I/l": 0.487,
+          "I/1": 0.438,
+          "l/1": 0.678,
+          "0/O": 0.544
+        },
+        "min_of_4_pairs": 0.438,
+        "reserved_font_name_declared": true,
+        "source_sha256": "3b031aa4216174205bd8471f88a49b91f093169e9e87bd5262242bc5967fe2e3",
+        "source_bytes": 537244,
+        "whole_file_woff2_bytes": 229852,
+        "digit_advance_em_default": [
+          0.6,
+          0.6
+        ]
+      },
+      "Source Sans 3": {
+        "family": "Source Sans 3",
+        "version_in_file": "Version 3.052;hotconv 1.1.0;makeotfexe 2.6.0",
+        "x_height_ratio": 0.478,
+        "native_needed_glyphs_of_84": 47,
+        "confusable_pair_distance_14px": {
+          "I/l": 0.143,
+          "I/1": 0.482,
+          "l/1": 0.489,
+          "0/O": 0.637
+        },
+        "min_of_4_pairs": 0.143,
+        "reserved_font_name_declared": true,
+        "source_sha256": "042fe2cc0b933e328410d7acbd0aa6a1873dca5aef81875f4bc214b08825c7b9",
+        "source_bytes": 646340,
+        "whole_file_woff2_bytes": 169416,
+        "digit_advance_em_default": [
+          0.472,
+          0.472
+        ]
+      }
+    },
+    "mono": {
+      "Fira Code": {
+        "family": "Fira Code",
+        "version_in_file": "Version 5.002",
+        "x_height_ratio": 0.525,
+        "native_needed_glyphs_of_84": 72,
+        "confusable_pair_distance_14px": {
+          "I/l": 0.674,
+          "I/1": 0.368,
+          "l/1": 0.773,
+          "0/O": 0.406
+        },
+        "min_of_4_pairs": 0.368,
+        "reserved_font_name_declared": false,
+        "source_sha256": "9335b082b3c7850d98a64b584f3417f65355f3471278bb5eeb8c6c0e8657aeeb",
+        "source_bytes": 260364,
+        "subset_woff2_bytes_wght400_600": 19832,
+        "native_glyphs_off_cell_width": 0,
+        "x_height_ratio_note": "0.525 is the variable font's default instance (wght 300, Light). At wght 400 it is 0.526 and at wght 600 it is 0.529; the shipped subset (default instance wght 400) measures 0.5265, used for the PREDICTION tables (0.527 rounded)."
+      },
+      "JetBrains Mono": {
+        "family": "JetBrains Mono",
+        "version_in_file": "Version 2.211",
+        "x_height_ratio": 0.55,
+        "native_needed_glyphs_of_84": 58,
+        "confusable_pair_distance_14px": {
+          "I/l": 0.538,
+          "I/1": 0.48,
+          "l/1": 0.729,
+          "0/O": 0.204
+        },
+        "min_of_4_pairs": 0.204,
+        "reserved_font_name_declared": false,
+        "source_sha256": "48715a42ec242c21e9f02692891e147d022299a52e48d5e413e1a942193ffeda",
+        "source_bytes": 187208,
+        "subset_woff2_bytes_wght400_600": 14524,
+        "native_glyphs_off_cell_width": 0
+      },
+      "Noto Sans Mono": {
+        "family": "Noto Sans Mono",
+        "version_in_file": "Version 2.014",
+        "x_height_ratio": 0.536,
+        "native_needed_glyphs_of_84": 72,
+        "confusable_pair_distance_14px": {
+          "I/l": 0.369,
+          "I/1": 0.48,
+          "l/1": 0.397,
+          "0/O": 0.308
+        },
+        "min_of_4_pairs": 0.308,
+        "reserved_font_name_declared": false,
+        "source_sha256": "2cb2adb378a8f574213e23df697050b83c54c27df465a2015552740b2769a081",
+        "source_bytes": 1708408,
+        "subset_woff2_bytes_wght400_600": 16700,
+        "native_glyphs_off_cell_width": 6
+      },
+      "Geist Mono": {
+        "family": "Geist Mono",
+        "version_in_file": "Version 1.701",
+        "x_height_ratio": 0.53,
+        "native_needed_glyphs_of_84": 46,
+        "confusable_pair_distance_14px": {
+          "I/l": 0.281,
+          "I/1": 0.472,
+          "l/1": 0.347,
+          "0/O": 0.309
+        },
+        "min_of_4_pairs": 0.281,
+        "reserved_font_name_declared": false,
+        "source_sha256": "d00e590b8eb3a59acc329b2d044fd143ae935090b7da33199ebee27cc7de8196",
+        "source_bytes": 171948,
+        "subset_woff2_bytes_wght400_600": 14164,
+        "native_glyphs_off_cell_width": 0
+      },
+      "Red Hat Mono": {
+        "family": "Red Hat Mono",
+        "version_in_file": "Version 1.030",
+        "x_height_ratio": 0.488,
+        "native_needed_glyphs_of_84": 22,
+        "confusable_pair_distance_14px": {
+          "I/l": 0.353,
+          "I/1": 0.419,
+          "l/1": 0.489,
+          "0/O": 0.239
+        },
+        "min_of_4_pairs": 0.239,
+        "reserved_font_name_declared": false,
+        "source_sha256": "253377ac29ccce89cb1b5fb297c69812ffe993b0c436322b3656323ff30fd14f",
+        "source_bytes": 68356,
+        "subset_woff2_bytes_wght400_600": 14152
+      },
+      "Atkinson Hyperlegible Mono": {
+        "family": "Atkinson Hyperlegible Mono",
+        "version_in_file": "Version 2.001",
+        "x_height_ratio": 0.496,
+        "native_needed_glyphs_of_84": 21,
+        "confusable_pair_distance_14px": {
+          "I/l": 0.567,
+          "I/1": 0.271,
+          "l/1": 0.576,
+          "0/O": 0.271
+        },
+        "min_of_4_pairs": 0.271,
+        "reserved_font_name_declared": false,
+        "source_sha256": "5ce8b1698d1ded7dff2178c1a3ad159470085a58ea239e8b2cb88f4fb4a6f646",
+        "source_bytes": 53960,
+        "subset_woff2_bytes_wght400_600": 14872
+      },
+      "IBM Plex Mono": {
+        "family": "IBM Plex Mono",
+        "version_in_file": "Version 2.3",
+        "x_height_ratio": 0.516,
+        "native_needed_glyphs_of_84": 39,
+        "confusable_pair_distance_14px": {
+          "I/l": 0.205,
+          "I/1": 0.448,
+          "l/1": 0.462,
+          "0/O": 0.098
+        },
+        "min_of_4_pairs": 0.098,
+        "reserved_font_name_declared": true,
+        "source_sha256": "6a3412f058c7d8dfd9170c41e85ade48e5156ecb89356110ca57a0a27734af46",
+        "source_bytes": 135580,
+        "whole_file_woff2_bytes": 39176
+      },
+      "Source Code Pro": {
+        "family": "Source Code Pro",
+        "version_in_file": "Version 1.026;hotconv 1.1.0;makeotfexe 2.6.0",
+        "x_height_ratio": 0.478,
+        "native_needed_glyphs_of_84": 50,
+        "confusable_pair_distance_14px": {
+          "I/l": 0.428,
+          "I/1": 0.373,
+          "l/1": 0.533,
+          "0/O": 0.302
+        },
+        "min_of_4_pairs": 0.302,
+        "reserved_font_name_declared": true,
+        "source_sha256": "b400fc584e10aff25d0e775ce181b4fc1c5ea1b5dc37b81aeb2084375b945790",
+        "source_bytes": 212340,
+        "whole_file_woff2_bytes": 89484
+      },
+      "Cascadia Mono": {
+        "family": "Cascadia Mono",
+        "version_in_file": "Version 2407.024",
+        "x_height_ratio": 0.5176,
+        "native_needed_glyphs_of_84": 45,
+        "confusable_pair_distance_14px": {
+          "I/l": 0.54,
+          "I/1": 0.276,
+          "l/1": 0.609,
+          "0/O": 0.284
+        },
+        "min_of_4_pairs": 0.276,
+        "reserved_font_name_declared": true,
+        "source_sha256": "78864a1b4d03767a44731454a6f24c6b7d6e93fb5f62932860eb02e409cd50cb",
+        "source_bytes": 704344,
+        "whole_file_woff2_bytes": 210224
+      }
+    },
+    "system_baseline": {
+      "Segoe UI Variable": {
+        "file": "C:/Windows/Fonts/SegUIVar.ttf",
+        "x_height_ratio": 0.5,
+        "native_needed_glyphs_of_84": 44,
+        "redistributable": false,
+        "shipped": false,
+        "note": "measured on the reference PC (Windows 11) with fontTools; other operating systems resolve the baseline stack to different fonts (UNVERIFIED, not measured)",
+        "confusable_pair_distance_14px": {
+          "I/l": 0.164,
+          "I/1": 0.587,
+          "l/1": 0.535,
+          "0/O": 0.729
+        },
+        "tabular_digit_advance_em": 0.539
+      },
+      "Consolas": {
+        "file": "C:/Windows/Fonts/consola.ttf",
+        "x_height_ratio": 0.4902,
+        "native_needed_glyphs_of_84": 44,
+        "redistributable": false,
+        "shipped": false,
+        "note": "measured on the reference PC (Windows 11) with fontTools; other operating systems resolve the baseline stack to different fonts (UNVERIFIED, not measured)"
+      }
+    },
+    "method": {
+      "confusable_pair_distance_14px": "PROXY, not a legibility measurement: 1 minus soft intersection-over-union of two glyph bitmaps, Pillow/FreeType, 14 px rendered at 4x and box-filtered, baseline-aligned, default instance at wght 400. 0 means identical bitmaps. Not validated against human confusion rates.",
+      "x_height_ratio": "yMax of glyph x divided by unitsPerEm, from the glyph outline (fontTools)",
+      "subset_woff2_bytes_wght400_600": "same codepoints for every candidate (sans: Basic Latin, Latin-1, listed punctuation; mono: that plus every notation codepoint the font has), wght limited to 400-600, hinting dropped, listed features only",
+      "whole_file_woff2_bytes": "fonts that declare a Reserved Font Name cannot be subset without renaming (OFL FAQ 2.6); this is the size of the unmodified file as WOFF2 (allowed without renaming only if the data is unchanged apart from compression, FAQ 2.2.1)"
+    }
+  },
+  "verification": {
+    "browser": "Chrome for Testing 151.0.7922.34, headless shell, Playwright 1.58 Python client, Windows 11, device scale factor 1, one browser at a time",
+    "csp_with_font_src": {
+      "faces": [
+        "EIJA Sans loaded",
+        "EIJA Mono loaded",
+        "EIJA Symbols loaded"
+      ],
+      "layout_shift_sum": 0,
+      "console_messages": []
+    },
+    "csp_without_font_src": {
+      "faces": [
+        "EIJA Sans error",
+        "EIJA Mono error",
+        "EIJA Symbols error"
+      ],
+      "failed_requests": [
+        "EIJA-NotoSans-latin-400-600.woff2",
+        "EIJA-FiraCode-latin-notation-400-600.woff2",
+        "EIJA-NotoSansMath-symbols-400.woff2"
+      ],
+      "console_first": "Loading the font 'http://127.0.0.1:61034/without/fonts/EIJA-NotoSans-latin-400-600.woff2' violates the following Content"
+    },
+    "digits_10_chars_px_at_14px": 80.09375,
+    "digits_1111111111_px_at_14px": 80.09375,
+    "mono_12_chars_px_at_14px": 100.8125,
+    "mono_5_notation_glyphs_vs_5_M_px": [
+      42,
+      42
+    ],
+    "mono_residual_glyph_line_px_vs_5_cells": [
+      47.78125,
+      42.0
+    ],
+    "sans_terms_line_px_at_14px": {
+      "EIJA Sans": 615.921875,
+      "system stack (Segoe UI)": 578.890625
+    },
+    "mono_12_chars_px_at_14px_system": 92.375,
+    "weight_400_vs_600_px": [
+      145.953125,
+      151.71875
+    ],
+    "platform_fonts_used": {
+      "digits": [
+        [
+          "Noto Sans",
+          10,
+          true
+        ]
+      ],
+      "terms": [
+        [
+          "Noto Sans",
+          90,
+          true
+        ]
+      ],
+      "w600": [
+        [
+          "Noto Sans",
+          21,
+          true
+        ]
+      ],
+      "arrows_sans": [
+        [
+          "Noto Sans",
+          24,
+          true
+        ],
+        [
+          "Noto Sans Math",
+          5,
+          true
+        ]
+      ],
+      "mono_ascii": [
+        [
+          "Fira Code Light",
+          12,
+          true
+        ]
+      ],
+      "mono_not": [
+        [
+          "Fira Code Light",
+          19,
+          true
+        ]
+      ],
+      "mono_resid": [
+        [
+          "Fira Code Light",
+          4,
+          true
+        ],
+        [
+          "Noto Sans Math",
+          1,
+          true
+        ]
+      ],
+      "mono_zero": [
+        [
+          "Fira Code Light",
+          7,
+          true
+        ]
+      ]
+    },
+    "loopback_fetch_ms": {
+      "seq_median": 6.656450000264158,
+      "seq_p95": 17.931299998963368,
+      "par_median": 5.711450000035256,
+      "par_p95": 17.344699999739532,
+      "n": 60
+    },
+    "limits": "synthetic page, not the Studio; headless shell; loopback; layout-shift observer saw no shifts but the fetch is a few milliseconds, so this does not show behaviour on a slow disk or remote host",
+    "sans_terms_string": "Excursion Draft Submitted Approved Rejected Teacher Registrar Submit Approve Reject Revise",
+    "sans_terms_string_note": "The 11-term line measured in sans_terms_line_px_at_14px (one line, single spaces, 14 px). Same string as smoke/index.html id=terms.",
+    "average_domain_term_character_em": {
+      "value_em": 0.5291,
+      "font": "EIJA Sans (Noto Sans subset source metrics, hmtx advances over unitsPerEm)",
+      "term_list": [
+        "Excursion",
+        "Draft",
+        "Submitted",
+        "Approved",
+        "Rejected",
+        "Teacher",
+        "Registrar",
+        "Submit",
+        "Approve",
+        "Reject",
+        "Revise",
+        "Recommend",
+        "Audit",
+        "Payment captured",
+        "Parent data exported",
+        "Impact",
+        "Evidence",
+        "Journey",
+        "Persona"
+      ],
+      "counting": "sum of advances of every character in the 19 strings (internal spaces in the two multi-word terms included, no spaces between terms) divided by the total character count; the script is symbols.py DOMAIN_TERMS in the lane scratch area, not shipped",
+      "sample_dependence": "the figure depends on the sample: a 3-term sample gave 0.508 em in the audit. 0.6 / 0.529 = 1.134, so the mono cell is 13% wider for this 19-term sample only"
+    },
+    "equal_x_height_comparison": {
+      "method": "scale the system font so its x-height in px equals EIJA's at 14 px: size = 14 * x_EIJA / x_system; width scales linearly with size. Unrounded inputs: EIJA Sans 615.921875 px, Segoe UI 578.890625 px, EIJA Mono 100.8125 px, Consolas 92.375 px, all at 14 px. x-height ratios: EIJA Sans 0.536, EIJA Mono 0.5265, Segoe UI 0.500, Consolas 0.4902",
+      "segoe_ui_size_px": 15.008,
+      "segoe_ui_width_px": 620.57,
+      "segoe_ui_vs_eija_sans_percent": 0.75,
+      "consolas_size_px": 15.037,
+      "consolas_width_px": 99.22,
+      "consolas_vs_eija_mono_percent": -1.58,
+      "at_exactly_15px_instead": {
+        "segoe_ui_percent": 0.7,
+        "consolas_percent": -1.82
+      },
+      "label": "PREDICTION by linear scaling (a rendered check at those sizes was not run)"
+    },
+    "system_font_coverage_of_symbol_sets": {
+      "date": "2026-09-29",
+      "method": "fontTools cmap of the installed file; the 84 codepoints of symbol_sets; the 65 sans-usable ones are the 84 minus the 9 keyboard and 10 box-drawing codepoints; the attested set is the non-ASCII characters in tracked repository files outside docs/hci (git ls-files, UTF-8 files only)",
+      "attested_codepoints_in_repository": [
+        "U+00B7",
+        "U+00D7",
+        "U+2013",
+        "U+2014",
+        "U+201C",
+        "U+201D",
+        "U+2026",
+        "U+2192",
+        "U+FF0B"
+      ],
+      "attested_in_the_84": 8,
+      "attested_not_in_the_84": [
+        "U+FF0B"
+      ],
+      "design_assumption": "76 of the 84 codepoints are anticipated (formal notation named in ADR-0018 and interface needs), not attested in the repository today",
+      "Segoe UI Variable (SegUIVar.ttf)": {
+        "of_84": 44,
+        "of_65_sans_usable": 34,
+        "of_8_attested": 8
+      },
+      "Segoe UI (segoeui.ttf)": {
+        "of_84": 34,
+        "of_65_sans_usable": 34,
+        "of_8_attested": 8
+      },
+      "Consolas (consola.ttf)": {
+        "of_84": 44,
+        "of_65_sans_usable": 34,
+        "of_8_attested": 8
+      },
+      "other_windows_files_on_this_pc": {
+        "Segoe UI Symbol (seguisym.ttf)": {
+          "of_84": 84
+        },
+        "Cambria (cambria.ttc)": {
+          "of_84": 82
+        }
+      },
+      "caveat": "A browser falls back per glyph to other installed fonts, so on this PC the rendered coverage of the system stack may exceed the named-face figures; whether Chromium picks Segoe UI Symbol for these codepoints was not rendered or measured (UNVERIFIED). macOS and Linux were not measured. Fallback glyphs are not on the mono cell."
+    }
+  },
+  "baseline_type_measured": {
+    "source": "src/eija_studio/resources/web/app.css (static parse, tool: .tmp/baseline_type.py)",
+    "font_size_property_values": 13,
+    "font_size_values_including_font_shorthand": 14,
+    "font_weights": 7,
+    "letter_spacing_values": 7,
+    "line_height_values": 4,
+    "smallest_font_size_px": 10,
+    "font_bytes": 0,
+    "sizes": [
+      "15px",
+      "21px",
+      "22px",
+      "10px",
+      "12px",
+      "19px",
+      "13px",
+      "clamp(38px,4vw,58px)",
+      "17px",
+      "23px",
+      "25px",
+      "11px",
+      "36px",
+      "20px"
+    ],
+    "weights": [
+      "650",
+      "450",
+      "600",
+      "750",
+      "620",
+      "700",
+      "500"
+    ]
+  },
+  "reproduce": {
+    "note": "Appendix A of docs/hci/design/typography.md reads this file, downloads each source_url, verifies source_sha256, rebuilds the three woff2 files and compares sha256. MEASURED 2026-09-29: all three matched (fontTools 4.56.0, brotli, Python 3.12.10, Windows 11). Another fontTools or brotli version may change bytes without changing glyphs; then re-record the hash and keep the coverage check.",
+    "reproduction_verified": {
+      "date": "2026-09-29",
+      "result": "3 of 3 sha256 match after a fresh download"
+    },
+    "steps": [
+      "fetch each source_url and check source_sha256",
+      "instancer: wght limited to 400-600 for sans and mono, every other axis pinned to its default; save and reload",
+      "subset to unicode_range with features_kept, hinting dropped, glyph names dropped, WOFF2",
+      "compare sha256"
+    ],
+    "features_kept": {
+      "sans": [
+        "kern",
+        "ccmp",
+        "locl",
+        "mark",
+        "mkmk"
+      ],
+      "mono": [
+        "zero",
+        "ccmp",
+        "locl",
+        "mark",
+        "mkmk"
+      ],
+      "symbols": [
+        "ccmp"
+      ]
+    }
+  },
+  "register_rows_needed": [
+    {
+      "capability": "Web fonts (UI sans)",
+      "adopted": "Noto Sans (OFL-1.1, subset)",
+      "alternatives": "Public Sans, Atkinson Hyperlegible Next, Geist, Inter, IBM Plex Sans, Source Sans 3",
+      "custom": "none (fontTools subset recipe)"
+    },
+    {
+      "capability": "Web fonts (mono)",
+      "adopted": "Fira Code (OFL-1.1, subset, ligature tables removed)",
+      "alternatives": "JetBrains Mono, Noto Sans Mono, Geist Mono, IBM Plex Mono",
+      "custom": "none"
+    },
+    {
+      "capability": "Web fonts (symbol fallback)",
+      "adopted": "Noto Sans Math (OFL-1.1, subset)",
+      "alternatives": "Noto Sans Symbols 2, none (system fallback)",
+      "custom": "none"
+    }
+  ],
+  "notice_change_needed": "NOTICE.md currently says no font files are bundled; that sentence becomes false when the woff2 files ship. Add the three copyright lines and ship the three OFL.txt files (OFL FAQ 1.10 and 2.x).",
+  "note_audit_2026-09-29": "Revised after audit: shipped mono x-height corrected to 0.5265; Inter with ss02 and tnum baked in was measured (alternatives_measured.sans).",
+  "note_audit_round2_2026-09-29": "Round 2 audit: residual_glyphs_off_cell is now the integer 12 (was a duplicated list); the 11-term string and the 19-term list behind 0.5291 are stored under verification; equal x-height comparison redone with one method; system-font coverage of the attested and sans-usable sets added."
+}
