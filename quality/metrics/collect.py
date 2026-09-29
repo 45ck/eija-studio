@@ -8,92 +8,78 @@ Top-level keys of `reports/metrics.json`:
 
 Every section has `status` MEASURED or NOT_RUN (+ `reason`). Sections `performance`, `scaling` and
 `verification_yield` hold timing measurements; the rest are deterministic given the source tree.
+
+Profiles: `structural` measures only what is a deterministic function of the tree (martin, complexity, the
+static test inventory) and reports every machine-dependent section (timing, coverage, other lanes' reports)
+as NOT_RUN "not collected in this profile". It is what the fast/full tiers run: no number in it depends on
+the machine or on what else ran. `quick` and `full` add timing, coverage and lane reports (release tier);
+`smoke` is the pipeline check used by unit tests.
 """
 from __future__ import annotations
 
 from . import ROOT, aggregate, budgets, complexity, inventory, perf, scaling, structure
-from .common import dumps, measured, meta, r3, write_text
+from .common import dumps, measured, meta, not_run, r3, write_text
 
 REPORT = ROOT / "reports" / "metrics.json"
-DETERMINISTIC = ("martin", "complexity", "tests", "coverage", "lane_reports")
+DETERMINISTIC = ("martin", "complexity", "tests")  # sections that are a pure function of the source tree
+STRUCTURAL = "structural"
+PROFILES = (STRUCTURAL, *perf.PROFILES)
+NOT_COLLECTED = "not collected in the structural profile: machine-dependent evidence is release-tier (`nox -s metrics_report`)"
 
 
 def structural_sections(*, pytest_collection: bool = True) -> dict:
-    """The deterministic sections only (fast, no timing)."""
-    lanes = aggregate.collect()
+    """The deterministic sections only (no timing, no coverage, no other lanes' reports)."""
     return {"martin": structure.collect(), "complexity": complexity.collect(),
-            "tests": inventory.collect(run_pytest_collection=pytest_collection),
-            "coverage": inventory.collect_coverage(), "lane_reports": lanes}
+            "tests": inventory.collect(run_pytest_collection=pytest_collection)}
+
+
+def _matrix_row(matrix: dict) -> dict:
+    return {"technique": "runtime_matrix (this kernel)", "kind": "measured-here", "states_explored": matrix["cells"],
+            "findings": matrix["oracle_mismatches"], "duration_s": round(matrix["seconds"], 4),
+            "states_per_s": r3(matrix["cells"] / matrix["seconds"]), "accepted_cells": matrix["accepted"],
+            "denied_cells": matrix["denied"], "status": "MEASURED",
+            "note": ("cells = actor x state x action; findings = oracle/runtime disagreements (same-author oracle); "
+                     "duration = median of the repeats")}
+
+
+def _impact_row(impact: dict) -> dict:
+    return {"technique": "impact_closure (this kernel)", "kind": "measured-here", "states_explored": impact["nodes"],
+            "findings": None, "duration_s": round(impact["seconds"], 7),
+            "states_per_s": r3(impact["nodes"] / impact["seconds"]), "status": "MEASURED",
+            "note": "nodes of the projection-dependency graph reached from the changed actions; duration = median of 15 repeats"}
 
 
 def yield_section(matrix: dict, impact: dict, lanes: dict) -> dict:
-    rows = []
-    if matrix:
-        rows.append({"technique": "runtime_matrix (this kernel)", "kind": "measured-here", "states_explored": matrix["cells"],
-                     "findings": matrix["oracle_mismatches"], "duration_s": round(matrix["seconds"], 4),
-                     "states_per_s": r3(matrix["cells"] / matrix["seconds"]), "accepted_cells": matrix["accepted"],
-                     "denied_cells": matrix["denied"], "status": "MEASURED",
-                     "note": "cells = actor x state x action; findings = oracle/runtime disagreements (same-author oracle)"})
-    if impact:
-        rows.append({"technique": "impact_closure (this kernel)", "kind": "measured-here", "states_explored": impact["nodes"],
-                     "findings": None, "duration_s": round(impact["seconds"], 7),
-                     "states_per_s": r3(impact["nodes"] / impact["seconds"]), "status": "MEASURED",
-                     "note": "nodes of the projection-dependency graph reached from the changed actions"})
-    rows += aggregate.yield_rows(lanes)
+    rows = ([_matrix_row(matrix)] if matrix else []) + ([_impact_row(impact)] if impact else []) + aggregate.yield_rows(lanes)
     lane_rows = [r for r in rows if r["kind"] == "lane-report"]
+    reports = sum(len(g["reports"]) for g in lanes.get("groups", []))
     return measured(
         kind="measurement", method="states explored per technique: two measured here, the rest copied from lane reports",
         not_measured=["independence of techniques", "defect-finding power (findings are counts reported by each technique)"],
         techniques=rows, summary={"techniques": len(rows), "from_lane_reports": len(lane_rows),
-                                  "lane_reports_without_state_counts": max(0, sum(
-                                      len(g["reports"]) for g in lanes.get("groups", [])) - len(lane_rows))})
+                                  "lane_reports_without_state_counts": max(0, reports - len(lane_rows))})
 
 
-def _measure_timing(sections: dict, profile: str, real_server: bool) -> None:
-    """(Re)measure the wall-clock sections in place; the deterministic sections are left untouched."""
+def _release_sections(profile: str, real_server: bool) -> dict:
+    lanes = aggregate.collect()
     performance, yields = perf.collect(profile, real_server=real_server)
-    sections["performance"] = performance
-    sections["scaling"] = scaling.collect(profile)
-    sections["verification_yield"] = yield_section(yields["matrix"], yields["impact"], sections["lane_reports"])
+    return {"coverage": inventory.collect_coverage(), "lane_reports": lanes, "performance": performance,
+            "scaling": scaling.collect(profile), "verification_yield": yield_section(yields["matrix"], yields["impact"], lanes)}
 
 
-def _failed_timing(doc: dict) -> list[str]:
-    return sorted(r["id"] for r in doc["budgets"] if r["kind"] == "timing" and r["status"] == "FAIL")
+def _skipped_sections() -> dict:
+    return {name: not_run(NOT_COLLECTED) for name in ("coverage", "lane_reports", "performance", "scaling", "verification_yield")}
 
 
-def collect(profile: str = "quick", *, generated_at: str | None = None, real_server: bool = True,
-            pytest_collection: bool = True, timing_retries: int = 0) -> dict:
-    """Measure everything. With `timing_retries` > 0, failed timing budgets trigger a re-measurement of the
-    timing sections only; the LAST measurement is reported and `meta.timing_runs` records every run, so a
-    pass on a later attempt is never presented as a first-time pass."""
-    if profile not in perf.PROFILES:
+def collect(profile: str = STRUCTURAL, *, generated_at: str | None = None, real_server: bool = True) -> dict:
+    if profile not in PROFILES:
         raise ValueError(f"unknown profile {profile!r}")
-    sections = structural_sections(pytest_collection=pytest_collection)
-    _measure_timing(sections, profile, real_server)
+    structural = profile == STRUCTURAL
+    sections = structural_sections(pytest_collection=not structural)
+    sections |= _skipped_sections() if structural else _release_sections(profile, real_server)
     doc = {"schema": meta(profile, generated_at)["schema"], "meta": meta(profile, generated_at), "sections": sections}
     doc["budgets"] = budgets.evaluate(doc)
-    runs = [{"run": 1, "failed_timing_budgets": _failed_timing(doc)}]
-    for attempt in range(timing_retries):
-        if not runs[-1]["failed_timing_budgets"]:
-            break
-        _measure_timing(sections, profile, real_server)
-        doc["budgets"] = budgets.evaluate(doc)
-        runs.append({"run": attempt + 2, "failed_timing_budgets": _failed_timing(doc)})
-    doc["meta"]["timing_runs"] = runs
-    doc["meta"]["timing_policy"] = (f"timing sections measured once, re-measured up to {timing_retries} time(s) when a "
-                                    "timing budget failed; the last measurement is reported, earlier failures are listed "
-                                    "in timing_runs")
     return doc
-
-
-def stale_sections(doc: dict) -> list[str]:
-    """Deterministic sections of `doc` that no longer match the source tree on disk (martin, complexity only).
-
-    Establishes that the committed snapshot describes the current code structure. It does not check the tests
-    or coverage sections (those change with every test added by any lane).
-    """
-    fresh = structural_sections(pytest_collection=False)
-    return sorted(k for k in ("martin", "complexity") if fresh[k] != doc["sections"].get(k))
 
 
 def write(doc: dict, path=REPORT) -> None:

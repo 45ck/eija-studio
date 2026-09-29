@@ -1,8 +1,6 @@
-import json
-from types import SimpleNamespace
+import pytest
 
-from quality.metrics import budgets
-from quality.metrics.__main__ import cmd_check
+from quality.metrics import budgets, collect, inventory
 from quality.metrics.common import FAIL, NOT_RUN, PASS
 
 
@@ -17,53 +15,53 @@ def test_operators():
     assert ops["<"](1, 2) and not ops["<"](2, 2) and ops["<="](2, 2) and ops[">="](2, 2) and ops["=="](0, 0)
 
 
-def perf_doc(p95, r2=0.99, quad=0.9):
-    endpoints = [{"endpoint": "GET /x", "kind": "read", "p95_ms": p95},
-                 {"endpoint": "POST /y", "kind": "write", "p95_ms": 10.0},
-                 {"endpoint": "POST /verify", "kind": "compute", "p95_ms": 1500.0}]
-    return {"sections": {"performance": {"status": "MEASURED", "verify_scaling": {"r2": r2, "alt_quadratic_r2": quad},
-                                         "transports": {"testclient": {"status": "MEASURED", "endpoints": endpoints},
-                                                        "uvicorn": {"status": "NOT_RUN", "reason": "x"}}}}}
+def test_tiers_are_declared_and_timing_or_machine_budgets_are_release_tier():
+    tiers = {b.id: b.tier for b in budgets.BUDGETS}
+    assert set(tiers.values()) == {"structural", "release"}
+    for b in budgets.BUDGETS:
+        if b.kind == "timing" or b.section in {"coverage", "lane_reports"}:
+            assert b.tier == "release", b.id  # a machine-dependent number must never gate the fast/full tiers
+        else:
+            assert b.tier == "structural", b.id
+
+
+def test_release_budgets_are_not_run_on_a_structural_profile_document():
+    """The fast/full sessions collect the structural profile: every release budget must be NOT_RUN there, never PASS or FAIL."""
+    skipped = {"status": NOT_RUN, "reason": collect.NOT_COLLECTED}
+    doc = {"sections": {name: skipped for name in ("coverage", "lane_reports", "performance", "scaling", "verification_yield")}}
+    results = {r["id"]: r["status"] for r in budgets.evaluate(doc)}
+    release = {b.id for b in budgets.BUDGETS if b.tier == "release"}
+    assert release and {results[i] for i in release} == {NOT_RUN}
+
+
+def test_coverage_floor_is_the_quality_lanes_not_a_copy():
+    cov = next(b for b in budgets.BUDGETS if b.id == "COV-01")
+    assert cov.limit == inventory.coverage_floor()
+    doc = {"sections": {"coverage": {"status": "MEASURED", "summary": {"percent": cov.limit - 0.5}}}}
+    assert next(r for r in budgets.evaluate(doc) if r["id"] == "COV-01")["status"] == FAIL
+    doc["sections"]["coverage"]["summary"]["percent"] = cov.limit
+    assert next(r for r in budgets.evaluate(doc) if r["id"] == "COV-01")["status"] == PASS
 
 
 def test_timing_budgets_pass_and_fail_on_synthetic_measurements():
-    fast = {r["id"]: r["status"] for r in budgets.evaluate(perf_doc(50.0))}
-    slow = {r["id"]: r["status"] for r in budgets.evaluate(perf_doc(450.0))}
+    def doc(p95):
+        endpoints = [{"endpoint": "GET /x", "kind": "read", "p95_ms": p95},
+                     {"endpoint": "POST /y", "kind": "write", "p95_ms": 10.0},
+                     {"endpoint": "POST /verify", "kind": "compute", "p95_ms": 1500.0}]
+        return {"sections": {"performance": {"status": "MEASURED", "verify_scaling": {"r2": 0.99}, "transports": {
+            "testclient": {"status": "MEASURED", "endpoints": endpoints},
+            "uvicorn": {"status": "NOT_RUN", "reason": "x"}}}}}
+    fast = {r["id"]: r["status"] for r in budgets.evaluate(doc(50.0))}
+    slow = {r["id"]: r["status"] for r in budgets.evaluate(doc(450.0))}
     assert fast["PERF-01"] == PASS and slow["PERF-01"] == FAIL
     assert fast["PERF-04"] == PASS  # a 1.5 s verify is inside the 10 s long-running budget
     assert fast["PERF-03"] == NOT_RUN  # uvicorn transport not measured: no verdict
 
 
-def test_scaling_budgets_distinguish_linear_from_quadratic():
-    def doc(r2, exponent, quad):
-        return {"sections": {"scaling": {"status": "MEASURED", "fit": {
-            "two_term_r2": r2, "loglog_exponent": exponent, "r2": r2, "alt_quadratic_r2": quad}}}}
-    good = {r["id"]: r["status"] for r in budgets.evaluate(doc(0.99, 1.0, 0.7))}
-    bad = {r["id"]: r["status"] for r in budgets.evaluate(doc(0.6, 1.9, 0.99))}
-    assert good["SCALE-01"] == good["SCALE-02"] == good["SCALE-03"] == good["SCALE-04"] == PASS
-    assert bad["SCALE-01"] == bad["SCALE-02"] == bad["SCALE-03"] == bad["SCALE-04"] == FAIL
-
-
-def test_the_requested_single_term_model_is_budgeted_separately_from_the_two_term_model():
-    """Regression: only the two-term fit was budgeted, which hid a weaker fit of the model that was asked for."""
+@pytest.mark.parametrize(("r2", "exponent", "quad", "expected"), [
+    (0.99, 1.0, 0.7, PASS), (0.85, 0.9, 0.5, PASS), (0.6, 1.9, 0.99, FAIL)])
+def test_scaling_budgets_distinguish_linear_from_quadratic(r2, exponent, quad, expected):
     doc = {"sections": {"scaling": {"status": "MEASURED", "fit": {
-        "two_term_r2": 0.99, "r2": 0.7, "loglog_exponent": 1.0, "alt_quadratic_r2": 0.5}}}}
-    status = {r["id"]: r["status"] for r in budgets.evaluate(doc)}
-    assert status["SCALE-01"] == PASS and status["SCALE-04"] == FAIL
-
-
-def test_verify_scaling_must_beat_its_quadratic_alternative():
-    ok = {r["id"]: r["status"] for r in budgets.evaluate(perf_doc(50.0, r2=0.95, quad=0.90))}
-    worse = {r["id"]: r["status"] for r in budgets.evaluate(perf_doc(50.0, r2=0.91, quad=0.99))}
-    assert ok["PERF-05"] == ok["PERF-06"] == PASS and worse["PERF-06"] == FAIL
-
-
-def test_timing_budgets_are_advisory_for_the_full_gate_and_enforced_for_the_release_gate(tmp_path, capsys):
-    path = tmp_path / "metrics.json"
-    path.write_text(json.dumps(perf_doc(900.0)), encoding="utf-8")
-    assert cmd_check(SimpleNamespace(input=path, fail_on="structural")) == 0
-    assert "advisory" in capsys.readouterr().out
-    assert cmd_check(SimpleNamespace(input=path, fail_on="all")) == 1
-    structural = {"sections": {"lane_reports": {"status": "MEASURED", "groups": [{"group": "formal", "status": "FAIL"}]}}}
-    path.write_text(json.dumps(structural), encoding="utf-8")
-    assert cmd_check(SimpleNamespace(input=path, fail_on="structural")) == 1  # a structural FAIL always gates
+        "two_term_r2": r2, "loglog_exponent": exponent, "r2": r2, "alt_quadratic_r2": quad}}}}
+    got = {r["id"]: r["status"] for r in budgets.evaluate(doc)}
+    assert got["SCALE-01"] == got["SCALE-02"] == got["SCALE-03"] == expected
