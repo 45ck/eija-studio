@@ -1,0 +1,4 @@
+#!/bin/sh
+# noslop pre-push, adapted: the full tier is `nox -t full` (the PR gate, plus coverage). Never bypass with --no-verify.
+set -e
+exec "$(dirname "$0")/run-nox" full
