@@ -40,6 +40,7 @@ ux = []
 graph = []
 dod = []
 smt = ["z3-solver==5.1.0.0"]  # lane smt-bmc: Z3 policy-soundness proof
+okf = ["PyYAML==6.0.3", "markdown-it-py==4.0.0"]
 
 [project.scripts]
 eija = "eija_studio.interfaces.cli:main"
