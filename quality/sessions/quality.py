@@ -6,6 +6,7 @@ so a threshold change is one reviewable diff. Ratchet rule: thresholds tighten, 
 docs/quality/gates.md.
 """
 
+import os
 import socket
 import sys
 from pathlib import Path
@@ -98,11 +99,17 @@ def _pypi_reachable() -> bool:
 def audit(session: nox.Session) -> None:
     """pip-audit of the measured runtime pins (requirements-tested.txt) against the PyPI advisory database.
 
-    Needs network. Without it the session reports NOT_RUN, never PASS: an unchecked tree is not a clean one.
+    Needs network. Without it the session FAILS with a NOT_RUN message: nox turns `session.skip()` into
+    exit 0, and a success status for an unchecked tree would be PASS by status. Set EIJA_ALLOW_NOT_RUN=1 to
+    accept the gap explicitly (the session then skips and still prints NOT_RUN). The probe is a TCP connect
+    to pypi.org:443, so it does not prove the advisory API answers; pip-audit's own network error also fails.
     """
     if not _pypi_reachable():
-        print("NOT_RUN: pypi.org unreachable, so no advisory lookup happened. This is not a PASS.")
-        session.skip("NOT_RUN: network unavailable for pip-audit")
+        message = "NOT_RUN: pypi.org unreachable, so no advisory lookup happened. This is not a PASS."
+        if os.environ.get("EIJA_ALLOW_NOT_RUN") == "1":
+            print(message)
+            session.skip(message)
+        session.error(message + " Set EIJA_ALLOW_NOT_RUN=1 to record it as an accepted gap.")
     _run(
         session, "pip_audit", "-r", "requirements-tested.txt", "--no-deps", "--disable-pip", *session.posargs
     )

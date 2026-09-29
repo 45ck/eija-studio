@@ -53,8 +53,8 @@
 | Lint | [Ruff](https://docs.astral.sh/ruff/) | flake8 + plugins, pylint | — | Rules and per-file debt in `pyproject.toml` |
 | Type checking | [mypy](https://mypy.readthedocs.io/) + pydantic plugin | pyright | — | Strict on domain and application; ratchet plan in `docs/quality/gates.md` |
 | Architecture contracts | [import-linter](https://import-linter.readthedocs.io/) (grimp) | pytest-archon, custom AST test | `[tool.importlinter]` contracts | Also follows transitive imports, which the AST test cannot |
-| Complexity budget | [radon](https://radon.readthedocs.io/), [xenon](https://github.com/rubik/xenon) | Ruff C901, lizard | `quality/gates/complexity_ratchet.py` (about 130 lines) | Neither tool can pin a named list of legacy functions while budgeting the rest; replace with C901 once the debt list is empty |
 | Coverage | [coverage.py](https://coverage.readthedocs.io/), pytest-cov | — | `quality/metrics/inventory.py` (binds `reports/coverage` to a hash of src/ and tests/ and aggregates per layer for the dashboard) | The quality lane owns the gate (`nox -s coverage`); the metrics lane runs the same coverage.py pin from the `lint` extra and refuses a report from another tree |
+| Complexity budget | [radon](https://radon.readthedocs.io/), [xenon](https://github.com/rubik/xenon) | Ruff C901, lizard | `quality/gates/complexity_ratchet.py` (about 130 lines) | Neither tool can pin a named list of legacy functions while budgeting the rest (Ruff `C901` with `noqa` gives a budget but cannot stop a legacy function growing); replace with C901 once the debt list is empty |
 | Dependency hygiene | [deptry](https://deptry.com/) | pip-check-reqs, creosote | — | — |
 | Vulnerability audit | [pip-audit](https://github.com/pypa/pip-audit) | safety, OSV-Scanner | — | — |
 | Hook wiring | noslop hooks and Claude guardrails, adapted | pre-commit, husky | `.githooks/run-nox` (about 20 lines of shell) | noslop's Python pack hard-codes other gates; see ADR-0036 |

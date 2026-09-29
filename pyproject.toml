@@ -108,7 +108,7 @@ known-first-party = ["eija_studio", "quality", "verification"]
 "quality/sessions/*.py" = ["S603"]
 "quality/gates/*.py" = ["T201"]  # command-line tools that report on stdout
 "quality/sessions/quality.py" = ["T201"]  # NOT_RUN banner
-"tests/test_quality_gates.py" = ["S603"]  # runs lint-imports with a fixed argv
+"tests/test_quality_gates.py" = ["S603", "PLC0415"]  # fixed-argv tool runs; imports are lazy so a missing extra skips
 
 # Lane trees merged into integrate/all on 2026-09-29 (weave graph/ references and benches, quality/okf, quality/mutation, demos/prgif,
 # weave research probes). Same ratchet rule as above: named debt with the reason next to it, removed in the commit that next touches
@@ -239,7 +239,8 @@ data_file = "reports/coverage/.coverage"
 fail_under = 78  # measured 78.72 on 2026-09-28 (win32, py3.12); floor it, then only raise
 show_missing = true
 skip_empty = true
-exclude_also = ["if TYPE_CHECKING:", "raise NotImplementedError", '\.\.\.$']
+# Protocol/abstract stubs only: a `def ...: ...` line or a bare `...` line, never a real statement ending in `...`.
+exclude_also = ["if TYPE_CHECKING:", "raise NotImplementedError", 'def .*:\s*\.\.\.$', '^\s*\.\.\.$']
 
 [tool.coverage.html]
 directory = "reports/coverage/html"
@@ -283,13 +284,12 @@ include_external_packages = true
 [[tool.importlinter.contracts]]
 name = "Layers: interfaces > bootstrap > adapters > application > domain"
 type = "layers"
-layers = [
-    "eija_studio.interfaces",
-    "eija_studio.bootstrap",
-    "eija_studio.adapters",
-    "eija_studio.application",
-    "eija_studio.domain",
-]
+containers = ["eija_studio"]
+layers = ["interfaces", "bootstrap", "adapters", "application", "domain"]
+# A new subpackage added by another lane must be given a layer (or listed here with a reason), so it can never
+# sit outside the layer order unnoticed. `__main__` is the `python -m eija_studio` entry point.
+exhaustive = true
+exhaustive_ignores = ["__main__", "resources"]
 
 [[tool.importlinter.contracts]]
 name = "Domain and application are free of web, HTTP, database and process vendors"
@@ -297,7 +297,7 @@ type = "forbidden"
 source_modules = ["eija_studio.domain", "eija_studio.application"]
 forbidden_modules = [
     "fastapi", "starlette", "httpx", "uvicorn", "sqlite3", "subprocess",
-    "urllib", "http", "socket", "requests", "aiohttp", "sqlalchemy",
+    "urllib", "http", "socket", "requests", "aiohttp", "sqlalchemy", "ftplib",
 ]
 
 [[tool.importlinter.contracts]]
