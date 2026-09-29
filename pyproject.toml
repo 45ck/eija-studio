@@ -27,7 +27,7 @@ lint = [
     "pip-audit==2.10.1",
 ]
 formal = []
-testing = []
+testing = ["hypothesis==6.168.3", "hypothesis-jsonschema==0.23.1", "jsonschema==4.26.0"]
 mutation = []
 metrics = []
 hci = ["playwright==1.63.0", "axe-playwright-python==0.1.8"]  # drives the installed Chrome (channel="chrome"); no browser download
