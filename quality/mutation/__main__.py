@@ -59,6 +59,9 @@ def main(argv: list[str] | None = None) -> int:
         failures = report.check(summary, baseline)
         for failure in failures:
             print(f"RATCHET FAIL: {failure}", file=sys.stderr)
+        # The convention of quality.metrics.aggregate: a lane report says PASS or FAIL at the top level. Only a checked run
+        # has a verdict; an unchecked run leaves no `status`, which the aggregator reports as UNKNOWN, never as a pass.
+        report.write_json(args.out / "summary.json", {**summary, "status": "FAIL" if failures else "PASS"})
         return 1 if failures else 0
     return 0
 

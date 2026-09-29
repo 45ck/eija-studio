@@ -1,8 +1,9 @@
 """Aggregate the reports other capability lanes write under reports/ (read-only, never invented).
 
 Convention (documented in docs/metrics/README.md): a lane report is a JSON object. This module reads
-only what is there: a top-level `status` (PASS / FAIL / NOT_RUN, anything else is reported as
-UNKNOWN, never promoted to PASS) and, at the top level or one level down (`summary`, `metrics`,
+only what is there: a top-level verdict (`status`, else `verdict`, else a string `result`; PASS / FAIL / NOT_RUN,
+anything else is reported as UNKNOWN, never promoted to PASS; the formal-report and TLA+ lanes write `verdict`
+and `result`) and, at the top level or one level down (`summary`, `metrics`,
 `result`, `totals`), a small vocabulary of numeric fields mapped to canonical names. A missing
 directory or file is a NOT_RUN entry with the reason, so an absent lane can never look green.
 
@@ -60,6 +61,16 @@ def extract(doc: Any) -> dict:
     return found
 
 
+VERDICT_FIELDS = ("status", "verdict", "result")
+
+
+def _verdict(doc: Any) -> str:
+    """The lane's own verdict, verbatim: the first of `status`, `verdict`, `result` that holds a string (else empty)."""
+    if not isinstance(doc, dict):
+        return ""
+    return next((v.upper() for v in (doc.get(k) for k in VERDICT_FIELDS) if isinstance(v, str)), "")
+
+
 def read_report(path: Path) -> dict:
     raw = path.read_bytes()
     entry: dict[str, Any] = {"file": rel(path), "sha256": hashlib.sha256(raw).hexdigest()}
@@ -67,7 +78,7 @@ def read_report(path: Path) -> dict:
         doc = json.loads(raw)
     except ValueError as exc:
         return {**entry, "status": "UNREADABLE", "reason": f"invalid JSON: {exc.__class__.__name__}"}
-    status = str(doc.get("status", "")).upper() if isinstance(doc, dict) else ""
+    status = _verdict(doc)
     entry["status"] = status if status in STATUSES else "UNKNOWN"
     if isinstance(doc, dict) and isinstance(doc.get("technique"), str):
         entry["technique"] = doc["technique"]

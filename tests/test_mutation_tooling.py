@@ -329,3 +329,18 @@ def test_equivalents_are_excluded_from_the_score_and_listed_with_their_reason(tm
     summary_ = report.summarise(TARGETS[:1], ms, engine="e", workers=2, sample=None)
     assert summary_["modules"][TARGETS[0].module]["score"] == 1.0 and summary_["modules"][TARGETS[0].module]["equivalent"] == 1
     assert "Accepted as equivalent, excluded from the score: label only" in report.survivors_markdown(ms, tmp_path, summary_)
+
+
+def test_a_checked_run_writes_its_ratchet_verdict_into_the_summary_and_an_unchecked_run_writes_none(tmp_path, monkeypatch):
+    """quality.metrics.aggregate reads a top-level `status`: PASS or FAIL only after the ratchet was applied."""
+    import json
+
+    from quality.mutation import __main__ as cli
+
+    monkeypatch.setattr(cli, "run_all", lambda *a, **k: [])       # no mutants at all
+    monkeypatch.setattr(cli, "engine_version", lambda: "test-engine")
+    out = tmp_path / "out"
+    assert cli.main(["run", "--quick", "--out", str(out)]) == 0
+    assert "status" not in json.loads((out / "summary.json").read_text(encoding="utf-8"))
+    assert cli.main(["run", "--quick", "--check", "--out", str(out)]) == 1       # no mutants: the ratchet refuses it
+    assert json.loads((out / "summary.json").read_text(encoding="utf-8"))["status"] == "FAIL"

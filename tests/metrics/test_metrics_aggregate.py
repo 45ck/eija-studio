@@ -80,3 +80,15 @@ def test_lane_budget_passes_only_on_a_definite_pass(tmp_path, monkeypatch):
     write(tmp_path / "formal" / "a.json", {"status": "PASS"})
     doc = {"sections": {"lane_reports": collect(tmp_path)}}
     assert next(r for r in budgets.evaluate(doc) if r["id"] == "LANE-01")["status"] == "PASS"
+
+
+def test_verdict_and_string_result_are_read_verbatim_but_only_from_the_lane_itself(tmp_path, monkeypatch):
+    """The formal-report lanes write `verdict`, the TLA+ lane a string `result`; a nested `result` object and a misspelled verdict stay UNKNOWN."""
+    monkeypatch.setattr(aggregate, "rel", lambda p: p.relative_to(tmp_path).as_posix())
+    write(tmp_path / "formal" / "smt.json", {"verdict": "PASS"})
+    write(tmp_path / "formal" / "tla.json", {"result": "PASS"})
+    write(tmp_path / "formal" / "both.json", {"status": "FAIL", "verdict": "PASS"})  # `status` wins: the first field present decides
+    write(tmp_path / "formal" / "nested.json", {"result": {"verdict": "PASS"}})
+    write(tmp_path / "formal" / "typo.json", {"verdict": "PASSED"})
+    by_file = {r["file"].rsplit("/", 1)[-1]: r["status"] for r in group(collect(tmp_path), "formal")["reports"]}
+    assert by_file == {"smt.json": "PASS", "tla.json": "PASS", "both.json": "FAIL", "nested.json": "UNKNOWN", "typo.json": "UNKNOWN"}
