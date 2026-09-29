@@ -39,7 +39,7 @@ def layer_of(module: str) -> str:
     """First path component under `eija_studio`: a layer package (domain, ...) or a top-level module
     (bootstrap, __main__), which is then its own single-module package."""
     parts = module.split(".")
-    return parts[1] if len(parts) >= 2 else PACKAGE
+    return parts[1] if len(parts) >= 2 else parts[0]
 
 
 def _name(node: ast.expr) -> str:
@@ -52,17 +52,19 @@ def _name(node: ast.expr) -> str:
     return ""
 
 
+def _has_abstract_method(cls: ast.ClassDef) -> bool:
+    methods = [i for i in cls.body if isinstance(i, ast.FunctionDef | ast.AsyncFunctionDef)]
+    decorators = [d.func if isinstance(d, ast.Call) else d for m in methods for d in m.decorator_list]
+    return any(_name(d) in ABSTRACT_DECORATORS for d in decorators)
+
+
 def is_abstract(cls: ast.ClassDef) -> bool:
     """A class is abstract when it declares a Protocol/ABC base, ABCMeta, or an abstract method."""
     if any(_name(b) in ABSTRACT_BASES for b in cls.bases):
         return True
     if any(k.arg == "metaclass" and _name(k.value) == "ABCMeta" for k in cls.keywords):
         return True
-    for item in cls.body:
-        if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            if any(_name(d.func if isinstance(d, ast.Call) else d) in ABSTRACT_DECORATORS for d in item.decorator_list):
-                return True
-    return False
+    return _has_abstract_method(cls)
 
 
 def class_counts(path: Path) -> tuple[int, int]:
@@ -72,10 +74,10 @@ def class_counts(path: Path) -> tuple[int, int]:
     return len(classes), sum(is_abstract(c) for c in classes)
 
 
-def module_path(module: str) -> Path:
+def module_path(module: str, src: Path = SRC) -> Path:
     rel = Path(*module.split(".")[1:])
-    file = SRC / rel.with_suffix(".py")
-    return file if file.exists() else SRC / rel / "__init__.py"
+    file = src / rel.with_suffix(".py")
+    return file if file.exists() else src / rel / "__init__.py"
 
 
 def instability(ca: int, ce: int) -> float | None:
@@ -162,47 +164,58 @@ def sdp_violations(edges: list[dict], inst: dict[str, float | None]) -> list[dic
     return out
 
 
-def collect() -> dict:
-    graph = grimp.build_graph(PACKAGE, include_external_packages=False, cache_dir=None)
-    external = grimp.build_graph(PACKAGE, include_external_packages=True, cache_dir=None)
-    modules = sorted(m for m in graph.modules if m != PACKAGE)
-    leaves = [m for m in modules if not graph.find_children(m)]
-    layers = sorted({layer_of(m) for m in modules})
-
-    imports_of: dict[str, set[str]] = {m: set(graph.find_modules_directly_imported_by(m)) - {m} for m in modules}
+def _import_maps(graph: grimp.ImportGraph, modules: list[str]) -> tuple[dict[str, set[str]], dict[str, set[str]]]:
+    """(module -> modules it imports, module -> modules importing it), project modules only, self excluded."""
+    imports_of = {m: set(graph.find_modules_directly_imported_by(m)) - {m} for m in modules}
     imported_by: dict[str, set[str]] = defaultdict(set)
     for src, dsts in imports_of.items():
         for dst in dsts:
             imported_by[dst].add(src)
-    counts = {m: class_counts(module_path(m)) for m in leaves}
+    return imports_of, imported_by
 
-    module_rows = []
-    for m in leaves:
-        row = _row(m.removeprefix(PACKAGE + "."), len(imported_by[m]), len(imports_of[m]), *counts[m])
-        row["layer"] = layer_of(m)
-        module_rows.append(row)
 
-    layer_rows: list[dict] = []
-    layer_edges: dict[tuple[str, str], int] = defaultdict(int)
-    for layer in layers:
-        inside = {m for m in modules if layer_of(m) == layer}
-        ce_mods = {d for m in inside for d in imports_of[m] if layer_of(d) != layer}
-        ca_mods = {s for m in inside for s in imported_by[m] if layer_of(s) != layer}
-        nc = sum(counts[m][0] for m in inside if m in counts)
-        na = sum(counts[m][1] for m in inside if m in counts)
-        row = _row(layer, len(ca_mods), len(ce_mods), nc, na)
-        row["modules"] = sum(1 for m in inside if m in counts)
-        row["third_party_imports"] = sorted({d.split(".")[0] for m in inside
-                                             for d in external.find_modules_directly_imported_by(m)
-                                             if d.split(".")[0] not in STDLIB | {PACKAGE}})
-        layer_rows.append(row)
-        for m in inside:
-            for d in imports_of[m]:
-                if layer_of(d) != layer:
-                    layer_edges[(layer, layer_of(d))] += 1
+def _third_party(external: grimp.ImportGraph, inside: set[str], package: str) -> list[str]:
+    tops = {d.split(".")[0] for m in inside for d in external.find_modules_directly_imported_by(m)}
+    return sorted(tops - STDLIB - {package})
 
+
+def _layer_row(layer: str, inside: set[str], imports_of: dict[str, set[str]], imported_by: dict[str, set[str]],
+               counts: dict[str, tuple[int, int]], external: grimp.ImportGraph, package: str) -> dict:
+    """Martin row for one package (layer): Ca/Ce count OTHER-layer modules on each side of its boundary."""
+    ce_mods = {d for m in inside for d in imports_of[m] if layer_of(d) != layer}
+    ca_mods = {s for m in inside for s in imported_by[m] if layer_of(s) != layer}
+    leaves = [m for m in inside if m in counts]
+    row = _row(layer, len(ca_mods), len(ce_mods), sum(counts[m][0] for m in leaves), sum(counts[m][1] for m in leaves))
+    row["modules"] = len(leaves)
+    row["third_party_imports"] = _third_party(external, inside, package)
+    return row
+
+
+def _layer_edges(modules: list[str], imports_of: dict[str, set[str]]) -> list[dict]:
+    edges: dict[tuple[str, str], int] = defaultdict(int)
+    for m in modules:
+        for d in imports_of[m]:
+            if layer_of(d) != layer_of(m):
+                edges[(layer_of(m), layer_of(d))] += 1
+    return [{"from": a, "to": b, "imports": n} for (a, b), n in sorted(edges.items())]
+
+
+def collect(package: str = PACKAGE, src: Path = SRC) -> dict:
+    """Martin metrics of an importable package; the defaults measure the Studio kernel. `package` must be on sys.path."""
+    graph = grimp.build_graph(package, include_external_packages=False, cache_dir=None)
+    external = grimp.build_graph(package, include_external_packages=True, cache_dir=None)
+    modules = sorted(m for m in graph.modules if m != package)
+    leaves = [m for m in modules if not graph.find_children(m)]
+    layers = sorted({layer_of(m) for m in modules})
+    imports_of, imported_by = _import_maps(graph, modules)
+    counts = {m: class_counts(module_path(m, src)) for m in leaves}
+
+    module_rows = [{**_row(m.removeprefix(package + "."), len(imported_by[m]), len(imports_of[m]), *counts[m]),
+                    "layer": layer_of(m)} for m in leaves]
+    layer_rows = [_layer_row(layer, {m for m in modules if layer_of(m) == layer}, imports_of, imported_by, counts, external, package)
+                  for layer in layers]
     inst = {r["name"]: r["instability"] for r in layer_rows}
-    edges = [{"from": a, "to": b, "imports": n} for (a, b), n in sorted(layer_edges.items())]
+    edges = _layer_edges(modules, imports_of)
     adjacency: dict[str, set[str]] = defaultdict(set)
     for e in edges:
         adjacency[e["from"]].add(e["to"])

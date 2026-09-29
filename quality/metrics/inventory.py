@@ -5,10 +5,13 @@ assertion count says a check exists, not that it can fail (mutation analysis is 
 attribution is by import: a test file "touches" a layer directly when it imports a module of that layer,
 and transitively when the import graph reaches the layer from what it imports.
 
-Coverage is read from `reports/coverage/coverage.json` when present (produced by
-`python -m quality.metrics coverage`, which runs the suite under coverage.py) and otherwise reported
-NOT_RUN. A line executed by a test is not a line verified: coverage is necessary, not sufficient.
+Coverage is NOT run here. The quality lane's `coverage` session (nox -s coverage) is the one collector: it
+runs the suite under coverage.py with the settings in pyproject `[tool.coverage.*]` and leaves its data file in
+`reports/coverage/`. This module only converts that data file to JSON (`export_coverage`) and aggregates the
+JSON per layer (`collect_coverage`); with no data file the section is NOT_RUN. A line executed by a test is not
+a line verified: coverage is necessary, not sufficient.
 """
+# ruff: noqa: S603 - subprocess argv lists are fixed (`python -m pytest|coverage`), no shell, no untrusted input
 from __future__ import annotations
 
 import ast
@@ -16,6 +19,7 @@ import json
 import re
 import subprocess
 import sys
+import tomllib
 from pathlib import Path
 
 import grimp
@@ -26,7 +30,20 @@ from .structure import PACKAGE, layer_of
 
 TESTS = ROOT / "tests"
 COVERAGE_JSON = ROOT / "reports" / "coverage" / "coverage.json"
-COVERAGE_DATA = ROOT / "reports" / "coverage" / ".coverage"
+
+
+def _pyproject() -> dict:
+    return tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+
+
+def coverage_data_file() -> Path:
+    """The data file the quality lane's coverage session writes: `[tool.coverage.run].data_file`, one source of truth."""
+    return ROOT / _pyproject()["tool"]["coverage"]["run"]["data_file"]
+
+
+def coverage_floor() -> float:
+    """The quality lane's ratcheted floor, `[tool.coverage.report].fail_under`. Budgets read it, never copy it."""
+    return float(_pyproject()["tool"]["coverage"]["report"]["fail_under"])
 
 
 def _is_test_function(node: ast.AST) -> bool:
@@ -85,7 +102,7 @@ def collected_count(python: str = sys.executable, timeout: int = 180) -> int | N
     """Number of tests pytest itself collects (exact, including dynamic parametrisation), or None."""
     try:
         out = subprocess.run([python, "-m", "pytest", "--collect-only", "-q", "-p", "no:cacheprovider"], cwd=ROOT,
-                             capture_output=True, text=True, timeout=timeout)
+                             capture_output=True, text=True, timeout=timeout, check=False)
     except (OSError, subprocess.SubprocessError):
         return None
     match = re.search(r"(\d+) tests? collected", out.stdout) or re.search(r"^(\d+)/\d+ tests? collected", out.stdout, re.M)
@@ -95,13 +112,9 @@ def collected_count(python: str = sys.executable, timeout: int = 180) -> int | N
     return len(lines) if lines else None
 
 
-def collect(run_pytest_collection: bool = True) -> dict:
-    files = sorted(TESTS.rglob("test_*.py"))
-    if not files:
-        return not_run("no tests/ directory or no test_*.py files")
-    graph = grimp.build_graph(PACKAGE, include_external_packages=False, cache_dir=None)
+def _attribute_layers(per_file: list[dict], graph: grimp.ImportGraph) -> None:
+    """Add `layers_direct` / `layers_transitive` to each file row and drop its raw import list (in place)."""
     known = set(graph.modules)
-    per_file = [scan_file(p) for p in files]
     for row in per_file:
         direct = {m for m in row["imports"] if m in known}
         reach = set(direct)
@@ -110,51 +123,61 @@ def collect(run_pytest_collection: bool = True) -> dict:
         row["layers_direct"] = sorted({layer_of(m) for m in direct})
         row["layers_transitive"] = sorted({layer_of(m) for m in reach if m != PACKAGE})
         del row["imports"]
-    layers = sorted({layer_of(m) for m in known if m != PACKAGE})
-    by_layer = []
+
+
+def _by_layer(per_file: list[dict], layers: list[str]) -> list[dict]:
+    rows = []
     for layer in layers:
         direct = [r for r in per_file if layer in r["layers_direct"]]
         trans = [r for r in per_file if layer in r["layers_transitive"]]
-        by_layer.append({"layer": layer,
-                         "files_direct": len(direct), "tests_direct": sum(r["tests"] for r in direct),
-                         "asserts_direct": sum(r["asserts"] for r in direct),
-                         "files_transitive": len(trans), "tests_transitive": sum(r["tests"] for r in trans)})
+        rows.append({"layer": layer, "files_direct": len(direct), "tests_direct": sum(r["tests"] for r in direct),
+                     "asserts_direct": sum(r["asserts"] for r in direct),
+                     "files_transitive": len(trans), "tests_transitive": sum(r["tests"] for r in trans)})
+    return rows
+
+
+def collect(run_pytest_collection: bool = True) -> dict:
+    files = sorted(TESTS.rglob("test_*.py"))
+    if not files:
+        return not_run("no tests/ directory or no test_*.py files")
+    graph = grimp.build_graph(PACKAGE, include_external_packages=False, cache_dir=None)
+    per_file = [scan_file(p) for p in files]
+    _attribute_layers(per_file, graph)
+    layers = sorted({layer_of(m) for m in graph.modules if m != PACKAGE})
     total_tests = sum(r["tests"] for r in per_file)
     total_asserts = sum(r["asserts"] for r in per_file)
     collected = collected_count() if run_pytest_collection else None
     return measured(
         method="ast scan of tests/**/test_*.py; layer attribution from imports and the grimp import graph",
-        not_measured=["test quality or fault-detection power (see the mutation lane)", "dynamic parametrisation beyond literals",
-                      "tests outside tests/"],
-        files=per_file, by_layer=by_layer,
+        not_measured=["test quality or fault-detection power (see the mutation lane)",
+                      "dynamic parametrisation beyond literals (tests_static is a lower bound; "
+                      "tests_collected_by_pytest is exact when present)", "tests outside tests/"],
+        files=per_file, by_layer=_by_layer(per_file, layers),
         summary={"test_files": len(per_file), "tests_static": total_tests, "asserts": total_asserts,
                  "raises_blocks": sum(r["raises_blocks"] for r in per_file),
                  "asserts_per_test": r3(total_asserts / total_tests) if total_tests else None,
-                 "tests_collected_by_pytest": collected,
-                 "static_matches_collected": (collected == total_tests) if collected is not None else None})
+                 "tests_collected_by_pytest": collected})
 
 
-def run_coverage(python: str = sys.executable) -> dict:
-    """Run the suite under coverage.py (branch mode) and write reports/coverage/coverage.json.
+def export_coverage() -> dict:
+    """Convert the quality lane's coverage data file to `reports/coverage/coverage.json`. NOT_RUN if there is none.
 
-    Returns a small status dict. A failing test run or a missing coverage.py is reported, never hidden.
+    Never runs the test suite: run `nox -s coverage` first. Returns a small status dict.
     """
+    data = coverage_data_file()
+    if not data.exists():
+        return {"status": "NOT_RUN", "reason": f"{rel(data)} not found; run `nox -s coverage` first (the quality lane's collector)"}
     COVERAGE_JSON.parent.mkdir(parents=True, exist_ok=True)
-    env_args = ["--data-file", str(COVERAGE_DATA)]
-    run = subprocess.run([python, "-m", "coverage", "run", "--branch", "--source", str(ROOT / "src" / PACKAGE), *env_args,
-                          "-m", "pytest", "-q", "-p", "no:cacheprovider"], cwd=ROOT, capture_output=True, text=True)
-    if not COVERAGE_DATA.exists():
-        return {"status": "NOT_RUN", "reason": "coverage produced no data file", "stderr": run.stderr[-400:]}
-    out = subprocess.run([python, "-m", "coverage", "json", *env_args, "-o", str(COVERAGE_JSON)],
-                         cwd=ROOT, capture_output=True, text=True)
+    out = subprocess.run([sys.executable, "-m", "coverage", "json", "--data-file", str(data), "-o", str(COVERAGE_JSON)],
+                         cwd=ROOT, capture_output=True, text=True, check=False)
     if out.returncode != 0:
         return {"status": "NOT_RUN", "reason": "coverage json failed", "stderr": out.stderr[-400:]}
-    return {"status": MEASURED, "pytest_returncode": run.returncode, "pytest_tail": run.stdout.strip().splitlines()[-1:]}
+    return {"status": MEASURED, "output": rel(COVERAGE_JSON)}
 
 
 def collect_coverage() -> dict:
     if not COVERAGE_JSON.exists():
-        return not_run("reports/coverage/coverage.json not found; run `python -m quality.metrics coverage`")
+        return not_run("reports/coverage/coverage.json not found; run `nox -s coverage` then `python -m quality.metrics coverage`")
     data = json.loads(COVERAGE_JSON.read_text(encoding="utf-8"))
     per_layer: dict[str, dict[str, int]] = {}
     files = []
@@ -175,7 +198,7 @@ def collect_coverage() -> dict:
               for layer, v in sorted(per_layer.items())]
     totals = data["totals"]
     return measured(
-        method="coverage.py json report of `pytest` under `coverage run --branch --source=src/eija_studio`",
+        method="coverage.py json export of the quality lane's coverage run (`nox -s coverage`, branch mode, pyproject settings)",
         source="coverage.py " + data.get("meta", {}).get("version", "?"),
         not_measured=["whether covered lines are asserted on (mutation lane)", "subprocess-only or browser-driven paths"],
         layers=layers, files=files,
