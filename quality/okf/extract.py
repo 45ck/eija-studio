@@ -455,6 +455,10 @@ def context_pages(repo: Repo, symbols: list[SymbolInfo]) -> list[PageSpec]:
 
 _STATUS = {"accepted": "stable", "proposed": "draft", "superseded": "deprecated"}
 
+# Gitignored output roots (see .gitignore). A file that a gate wrote there exists on one machine and not on a clean checkout,
+# so an ADR page must not depend on it: nox -t full runs `metrics` (writes reports/) before `okf`.
+GENERATED_ROOTS = ("reports/", ".tmp/", ".cache/", ".nox/", "build/", "dist/")
+
 
 def adr_files(repo: Repo) -> list[str]:
     folder = repo.root / "docs" / "adr"
@@ -491,7 +495,7 @@ def _adr_facts(repo: Repo, path: str, text: str, meta: dict[str, str]) -> str:
     headings = re.findall(r"^## (.+)$", text, re.MULTILINE)
     outcome = re.search(r"^## Decision outcome\n+(.*?)(?=^#{2,3} |\Z)", text, re.MULTILINE | re.DOTALL)
     mentioned = sorted({m for m in re.findall(r"`([A-Za-z0-9_./-]+\.(?:py|md|json|csv|toml))`", text)
-                        if (repo.root / m).is_file() and not m.startswith(("docs/adr/", repo.bundle_name + "/"))})   # never the bundle itself: keeps sync a fixpoint
+                        if (repo.root / m).is_file() and not m.startswith(("docs/adr/", repo.bundle_name + "/", *GENERATED_ROOTS))})   # never the bundle itself, never gitignored output: keeps sync a fixpoint
     parts = ["| | |\n|---|---|\n" + "\n".join(
         [f"| Status | {md_cell(meta.get('status', 'unknown'))} |", f"| Date | {md_cell(meta.get('date', 'unknown'))} |"]
         + ([f"| Lane | {md_cell(localize_links(meta['lane'], 'docs/adr'))} |"] if "lane" in meta else []) + [f"| Source | `repo://{path}` |"])]
