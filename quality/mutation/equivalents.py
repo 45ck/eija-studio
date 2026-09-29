@@ -46,18 +46,25 @@ ACCEPTED: tuple[Accepted, ...] = (
 )
 
 
+def _defers_annotations(tree: ast.Module) -> bool:
+    """True when the module has `from __future__ import annotations`."""
+    return any(isinstance(n, ast.ImportFrom) and n.module == "__future__" and any(a.name == "annotations" for a in n.names) for n in tree.body)
+
+
+def _function_annotations(node: ast.FunctionDef | ast.AsyncFunctionDef) -> list[ast.expr]:
+    """Every argument annotation and the return annotation of one function."""
+    args = (*node.args.posonlyargs, *node.args.args, *node.args.kwonlyargs, node.args.vararg, node.args.kwarg)
+    annotated = [a.annotation for a in args if a and a.annotation]
+    return [annotation for annotation in (*annotated, node.returns) if annotation is not None]
+
+
 def _annotation_ranges(tree: ast.Module) -> list[tuple[tuple[int, int], tuple[int, int]]]:
     """Positions of function argument and return annotations (never evaluated under `from __future__ import annotations`)."""
-    if not any(isinstance(n, ast.ImportFrom) and n.module == "__future__" and any(a.name == "annotations" for a in n.names) for n in tree.body):
+    if not _defers_annotations(tree):
         return []
-    found = []
-    for node in ast.walk(tree):
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            annotated = [a.annotation for a in (*node.args.posonlyargs, *node.args.args, *node.args.kwonlyargs, node.args.vararg, node.args.kwarg) if a and a.annotation]
-            for annotation in (*annotated, node.returns):
-                if annotation is not None:
-                    found.append(((annotation.lineno, annotation.col_offset), (annotation.end_lineno, annotation.end_col_offset)))
-    return found
+    return [((a.lineno, a.col_offset), (a.end_lineno, a.end_col_offset))
+            for node in ast.walk(tree) if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+            for a in _function_annotations(node)]
 
 
 def _text(lines: list[str], mutant: Mutant) -> str:
@@ -67,11 +74,18 @@ def _text(lines: list[str], mutant: Mutant) -> str:
     return "\n".join([lines[l1 - 1][c1:], *lines[l1:l2 - 1], lines[l2 - 1][:c2]])
 
 
+def _changed_lines(diff: str) -> tuple[list[str], list[str]]:
+    """(removed, added) lines of a unified diff, without the marker and without the file headers."""
+    lines = diff.splitlines()
+    removed = [x[1:] for x in lines if x.startswith("-") and not x.startswith("---")]
+    added = [x[1:] for x in lines if x.startswith("+") and not x.startswith("+++")]
+    return removed, added
+
+
 def _produces(mutant: Mutant, lines: list[str], becomes: str) -> bool:
     """True when the diff is exactly the original line with the mutated text replaced by `becomes`."""
     (l1, c1), (l2, c2) = mutant.start, mutant.end
-    removed = [x[1:] for x in mutant.diff.splitlines() if x.startswith("-") and not x.startswith("---")]
-    added = [x[1:] for x in mutant.diff.splitlines() if x.startswith("+") and not x.startswith("+++")]
+    removed, added = _changed_lines(mutant.diff)
     if l1 != l2 or len(removed) != 1 or len(added) != 1:
         return False
     return removed[0] == lines[l1 - 1] and added[0] == lines[l1 - 1][:c1] + becomes + lines[l1 - 1][c2:]

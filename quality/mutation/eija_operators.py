@@ -22,6 +22,17 @@ from parso.python import tree
 _STRING = re.compile(r"^(?P<prefix>[rRuU]?)(?P<quote>'''|\"\"\"|'|\")(?P<body>.*)(?P=quote)$", re.DOTALL)
 
 
+def _inside_literal_annotation(node) -> bool:
+    """True when an ancestor is a `Literal[...]` subscript: its strings are types, not values."""
+    ancestor = node.parent
+    while ancestor is not None:
+        first = ancestor.children[0] if getattr(ancestor, "children", None) else None
+        if ancestor.type in {"atom_expr", "power"} and isinstance(first, tree.Name) and first.value == "Literal":
+            return True
+        ancestor = ancestor.parent
+    return False
+
+
 def _mutable_string(node) -> bool:
     if not isinstance(node, tree.String):
         return False
@@ -30,13 +41,7 @@ def _mutable_string(node) -> bool:
         return False  # bytes/f-string prefixes, empty strings and prose are out of scope
     if node.parent is not None and node.parent.type == "simple_stmt":
         return False  # docstring
-    ancestor = node.parent
-    while ancestor is not None:
-        first = ancestor.children[0] if getattr(ancestor, "children", None) else None
-        if ancestor.type in {"atom_expr", "power"} and isinstance(first, tree.Name) and first.value == "Literal":
-            return False
-        ancestor = ancestor.parent
-    return True
+    return not _inside_literal_annotation(node)
 
 
 class ReplaceStringLiteral(Operator):

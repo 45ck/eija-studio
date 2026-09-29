@@ -43,7 +43,10 @@ def classify(record: dict[str, Any]) -> str:
         return SKIPPED
     if result["worker_outcome"] != "normal":
         return INCOMPETENT
-    outcome, output = result["test_outcome"], result.get("output") or ""
+    return _classify_test_outcome(result["test_outcome"], result.get("output") or "")
+
+
+def _classify_test_outcome(outcome: str, output: str) -> str:
     if outcome == "survived":
         return SURVIVED
     if outcome == "incompetent":

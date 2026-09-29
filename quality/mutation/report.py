@@ -89,17 +89,28 @@ def survivors_markdown(mutants: list[Mutant], root: Path, summary: dict[str, Any
         out.append(f"| `{module}` | {shown} | {row['killed']} | {row['survived']} | {row['timeout']} | {row['incompetent']} | {row['equivalent']} |")
     for module in summary["modules"]:
         interesting = [m for m in mutants if m.module == module and m.status in {SURVIVED, INCOMPETENT, EQUIVALENT}]
-        if not interesting:
-            continue
-        source = (root / module).read_text(encoding="utf-8").splitlines()
-        out += ["", f"## `{module}`"]
-        for m in interesting:
-            out += ["", f"### {m.status}: line {m.start[0]}, col {m.start[1]}: `{m.operator}` in `{m.function or '<module>'}`", "",
-                    "```diff", _hunk(m.diff), "```", ""]
-            out.append({SURVIVED: lambda: f"Suggested test: {suggest_test(m, source)}",
-                        EQUIVALENT: lambda: f"Accepted as equivalent, excluded from the score: {m.equivalent_reason}. Reject this in review if it is wrong.",
-                        INCOMPETENT: lambda: "Not exercised (import or collection failure); excluded from the score. Check that this is not hiding a gap."}[m.status]())
+        if interesting:
+            out += _module_section(module, interesting, root)
     return "\n".join(out) + "\n"
+
+
+def _mutant_note(m: Mutant, source: list[str]) -> str:
+    """The sentence under one reported mutant, by status."""
+    if m.status == SURVIVED:
+        return f"Suggested test: {suggest_test(m, source)}"
+    if m.status == EQUIVALENT:
+        return f"Accepted as equivalent, excluded from the score: {m.equivalent_reason}. Reject this in review if it is wrong."
+    return "Not exercised (import or collection failure); excluded from the score. Check that this is not hiding a gap."
+
+
+def _module_section(module: str, interesting: list[Mutant], root: Path) -> list[str]:
+    source = (root / module).read_text(encoding="utf-8").splitlines()
+    out = ["", f"## `{module}`"]
+    for m in interesting:
+        out += ["", f"### {m.status}: line {m.start[0]}, col {m.start[1]}: `{m.operator}` in `{m.function or '<module>'}`", "",
+                "```diff", _hunk(m.diff), "```", ""]
+        out.append(_mutant_note(m, source))
+    return out
 
 
 def load_baseline(path: Path) -> dict[str, Any]:
