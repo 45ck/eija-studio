@@ -91,6 +91,25 @@ this gate does not make.
 | `.claude/settings.json`, `.claude/hooks/pre-tool-use.sh` | **Active for every agent automatically** (not opt-in). Deny force-pushes and `--no-verify` on `git commit`/`git push`, and edits to hooks and agent settings; ordinary `--force` operations (worktree removal, pip) and text that merely mentions a flag are allowed; the hook works without `jq` |
 | `.github/workflows/quality.yml`, `guardrails.yml` | `workflow_dispatch` only (hosted CI unavailable) |
 
+### Toolchain with uv (Windows reference PC)
+
+The sessions use `python=False`, so nox never creates its own virtualenv and the `-db uv` backend flag has nothing to
+switch: the environment is the one the sessions run in. Build that environment with uv once per worktree, keeping uv's cache
+off the slow system drive, and run nox through it:
+
+```sh
+export UV_CACHE_DIR=C:/Dev/.uv-cache TMP="$PWD/.tmp" TEMP="$PWD/.tmp"   # Git Bash; .tmp is gitignored
+uv venv --python 3.12 .venv
+uv pip install --python .venv/Scripts/python.exe -e ".[dev,lint,testing,mutation,metrics,hci,agents,providers,docs,visual,demos,graph,okf,graph-formal,smt]"
+source .venv/Scripts/activate            # or .venv/bin/activate on POSIX
+nox -l                                   # lists every session
+nox -t fast
+```
+
+`dev` and `lint` are enough for the fast tier. The other extras are the capability lanes' tools (`smt` Z3, `graph-formal`
+clingo, `okf` PyYAML, `hci`/`visual`/`demos` Playwright driving the installed Chrome, and so on); a session whose optional
+tool is absent reports `NOT_RUN`, never PASS. `.githooks/run-nox` finds `.venv` on its own, so the hooks need no activation.
+
 ### Enabling the hooks (one line, per clone)
 
 ```sh
