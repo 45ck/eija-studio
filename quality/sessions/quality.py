@@ -12,6 +12,8 @@ from pathlib import Path
 
 import nox
 
+from quality.tools.parallel import xdist_args
+
 PYTHON = sys.executable  # the project environment nox runs in; sessions use python=False
 ROOT = Path(__file__).resolve().parents[2]
 # Files this lane owns and holds to `ruff format`. The kernel (src/, tests/, scripts/) is deliberately NOT
@@ -82,6 +84,7 @@ def coverage(session: nox.Session) -> None:
         "--cov-report=term:skip-covered",
         "--cov-report=xml",
         "--cov-report=html",
+        *xdist_args(),
         *session.posargs,
     )  # fail_under comes from [tool.coverage.report]
 

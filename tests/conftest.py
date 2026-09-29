@@ -5,6 +5,11 @@ import pytest
 from eija_studio.domain.models import OWNER
 from kernel_support import HARNESS_MARK, approve, harness_identity, harness_studio  # noqa: F401 - re-exported for old imports
 
+try:
+    from hypothesis import settings
+except ImportError:
+    settings = None
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -14,6 +19,18 @@ def pytest_configure(config):
     if not config.option.basetemp:
         (ROOT / ".tmp").mkdir(exist_ok=True)
         tempfile.tempdir = str(ROOT / ".tmp")
+    _derandomize_hypothesis(config)
+
+
+def _derandomize_hypothesis(config):
+    """Every Hypothesis test that does not pick its own profile runs the same examples in every process, so a
+    parallel (pytest-xdist) run, a serial run and another machine agree. tests/property chooses its own profile
+    (ci: derandomized, deep: random) when it is collected, after this hook; an explicit --hypothesis-profile wins."""
+    if settings is None:  # the testing extra is optional; its absence is reported where it matters
+        return
+    if not config.getoption("hypothesis_profile", None):
+        settings.register_profile("eija-default", derandomize=True, database=None, deadline=None)
+        settings.load_profile("eija-default")
 
 
 @pytest.fixture

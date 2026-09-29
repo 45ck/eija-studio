@@ -9,6 +9,7 @@
 | Persistence | SQLite (stdlib) | SQLAlchemy | `adapters/sqlite_store.py` | Unit-of-work semantics are kernel invariants; replaceable behind the `UnitOfWork` port |
 | HTTP client | httpx | requests, official `anthropic` SDK (a second HTTP stack and vendor-specific retries; raw Messages API over the shared bounded POST keeps one mockable transport with no redirects or env proxy) | `adapters/providers/_http.py` (bounded POST), `openrouter.py`, `anthropic_api.py` | Size cap while streaming, no redirects, stable error codes; replace with the SDK if the request shape becomes hard to keep in sync |
 | Test runner | pytest (incl. parametrization for the provider contract suite, `tests/test_provider_contract.py`) | unittest | — | — |
+| Parallel test runs | pytest-xdist (MIT), `--dist loadfile` | multiprocessing by hand, pytest-parallel, tox parallel | `quality/tools/parallel.py` (worker count, serial fallback), `tests/property/property_plugin.py` (report merge across workers) | Only the CPU-bound pytest sessions use it; Z3, TLC, Bend and Chrome sessions stay serial (RAM). `EIJA_SERIAL=1` or a missing xdist gives the serial run |
 | Gate orchestration | nox | tox, just, make | `noxfile.py` plugin loader (15 lines) | — |
 | Hook enforcement | [noslop](https://github.com/45ck/noslop) | pre-commit, husky | — | — |
 | ADR format | MADR | Nygard ADRs, log4brains | — | — |
