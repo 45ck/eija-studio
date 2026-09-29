@@ -11,6 +11,8 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0018](0018-formal-vv-portfolio.md) | Formal V&V portfolio: each technique is a distinct evidence kind | proposed |
 | [0019](0019-diagrams-generated-from-executable-model.md) | Diagrams are generated projections of the executable model | proposed |
 | [0020](0020-multi-provider-agent-adapters.md) | Proposal providers: Codex, Claude Code, OpenCode, Gemini CLI, OpenRouter | proposed |
+| [0033](0033-mutation-tool-selection.md) | Mutation analysis with cosmic-ray, run natively on Windows | accepted |
+| [0034](0034-mutation-measurement-and-ratchet.md) | What is mutated, how a score is defined, and the ratchet | accepted |
 
 ## Reserved numbers for capability lanes
 
