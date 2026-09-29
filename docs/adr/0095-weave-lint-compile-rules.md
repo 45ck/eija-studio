@@ -4,7 +4,7 @@
 * Date: 2026-09-29
 * Lane: weave (aspect lint-compile-rules)
 
-Numbering note. This record was assigned 0095. `docs/weave/ARCHITECTURE.md` section 11 allocates 0095 to the extractor protocol and 0097 and 0098 to the rule model and the Finding and SARIF profile. This ADR covers the rule model, the diagnostics and the rule governance (allocation 0097 and 0098). Sibling aspects have used 0093, 0097 (impact ranking), 0099 (agent interface) and a file named 00101 (human views) for other topics, and the agent-interface design refers to the rules ADR as 0097. The integrator has to give every record a unique number in 0089 to 0112 and update the cross-references; nothing in the decision depends on the number.
+Numbering note. This record was assigned 0095. `docs/weave/ARCHITECTURE.md` section 11 allocates 0095 to the extractor protocol and 0097 and 0098 to the rule model and the Finding and SARIF profile. This ADR covers the rule model, the diagnostics and the rule governance (allocation 0097 and 0098). Sibling aspects have used 0093, 0097 (impact ranking), 0099 (agent interface) a file first named 00101 (human views, now 0105) and a file first named 00103 (formal verification of the weave, now 0102) for other topics, and the agent-interface design refers to the rules ADR as 0097. The integrator has to give every record a unique number in 0089 to 0112 and update the cross-references; nothing in the decision depends on the number.
 
 ## Context and problem statement
 

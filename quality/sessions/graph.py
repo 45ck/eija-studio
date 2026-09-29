@@ -87,7 +87,7 @@ def graph_impact_math_bench(session: nox.Session) -> None:
 
 @nox.session(python=False, tags=["fast"])
 def graph_formal(session: nox.Session) -> None:
-    """ADR-00103: stage-0 self-check of the trusted kernel references, then the fast formal tests (about 15 s).
+    """ADR-0102: stage-0 self-check of the trusted kernel references, then the fast formal tests (about 15 s).
 
     Missing Hypothesis, clingo, rfc8785, Java or the pinned Alloy jar make the affected tests skip: the output names NOT_RUN, never a pass.
     """
@@ -102,7 +102,7 @@ def graph_formal(session: nox.Session) -> None:
 
 @nox.session(python=False, tags=["full"])
 def graph_formal_full(session: nox.Session) -> None:
-    """ADR-00103: every formal test, the exhaustive enumerations (about 1 minute) and the Alloy certificate models (Glucose, about 25 s).
+    """ADR-0102: every formal test, the exhaustive enumerations (about 1 minute) and the Alloy certificate models (Glucose, about 25 s).
 
     Java 17 and the jar pinned in graph/formal/TOOLS.lock are needed for the Alloy commands; without them they are NOT_RUN.
     """
@@ -112,7 +112,7 @@ def graph_formal_full(session: nox.Session) -> None:
 
 @nox.session(python=False, tags=["release"])
 def graph_formal_release(session: nox.Session) -> None:
-    """ADR-00103 MEASUREMENTS and solver diversity: all formal benchmarks, then the Alloy certificate models on a second SAT backend (SAT4J, about 4 minutes).
+    """ADR-0102 MEASUREMENTS and solver diversity: all formal benchmarks, then the Alloy certificate models on a second SAT backend (SAT4J, about 4 minutes).
 
     A disagreement between the two backends is a FAIL. POSIX byte identity of the report is NOT_RUN until run on Linux or WSL.
     Run serially: one JVM at a time on the shared PC.

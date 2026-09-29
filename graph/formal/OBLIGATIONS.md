@@ -1,6 +1,6 @@
 # Proof obligations of the weave
 
-Lane: weave. Aspect: formal-verification-of-weave ([design](../../docs/weave/design/formal-verification-of-weave.md), [ADR-0103](../../docs/adr/00103-weave-formal-verification-of-weave.md)). Date: 2026-09-29. This file is the flat, checkable list. Each row is a property of the weave that must hold, the technique that closes it, its honest scope, and where it stands today. Nothing here says the production code is correct: `eijagraph` does not exist yet, so every "MEASURED" below is about a reference in `graph/formal/eijaref`, a sibling lane's reference file, or data files as they stood on this date.
+Lane: weave. Aspect: formal-verification-of-weave ([design](../../docs/weave/design/formal-verification-of-weave.md), [ADR-0102](../../docs/adr/0102-weave-formal-verification-of-weave.md)). Date: 2026-09-29. This file is the flat, checkable list. Each row is a property of the weave that must hold, the technique that closes it, its honest scope, and where it stands today. Nothing here says the production code is correct: `eijagraph` does not exist yet, so every "MEASURED" below is about a reference in `graph/formal/eijaref`, a sibling lane's reference file, or data files as they stood on this date.
 
 ## How to read a row
 

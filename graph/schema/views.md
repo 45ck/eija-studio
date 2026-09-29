@@ -1,6 +1,6 @@
 # Human views: definitions, slices, projections and budgets
 
-Lane: weave, aspect human-views. Date: 2026-09-29. Status: DESIGN (proposal for ADR-00101, see `docs/adr/00101-weave-human-views.md`). Rationale, evidence and worked numbers are in `docs/weave/design/human-comprehension-views.md`; this file is the definition. Nothing here is built except the executable reference definitions `graph/bench/human_views_reference.py`, the measurement script `graph/bench/human_views_budgets.py` and `tests/graph/test_human_views.py`, which check the definitions and measure sizes on this repository.
+Lane: weave, aspect human-views. Date: 2026-09-29. Status: DESIGN (proposal for ADR-0105, see `docs/adr/0105-weave-human-views.md`). Rationale, evidence and worked numbers are in `docs/weave/design/human-comprehension-views.md`; this file is the definition. Nothing here is built except the executable reference definitions `graph/bench/human_views_reference.py`, the measurement script `graph/bench/human_views_budgets.py` and `tests/graph/test_human_views.py`, which check the definitions and measure sizes on this repository.
 
 Labels: MEASUREMENT (a script ran, domain stated), PREDICTION (reasoned, not run), HYPOTHESIS (a starting value to be calibrated), DESIGN (a proposal of this lane). Every number in the `budgets` of section 8 is a HYPOTHESIS. The HCI lane implements the UI; a change to a budget is a reviewed diff of this file.
 

@@ -139,7 +139,7 @@ def test_po_x3_production_binding_runs_the_same_law_suite_or_reports_not_run(nam
 
 OWNED = [*sorted(FORMAL.rglob("*.py")), *sorted(FORMAL.rglob("*.als")), *sorted(FORMAL.rglob("*.json")), FORMAL / "OBLIGATIONS.md",
          ROOT / "graph" / "bench" / "formal_checks.py", ROOT / "docs" / "weave" / "design" / "formal-verification-of-weave.md",
-         ROOT / "docs" / "adr" / "00103-weave-formal-verification-of-weave.md", FORMAL / "TOOLS.lock"]
+         ROOT / "docs" / "adr" / "0102-weave-formal-verification-of-weave.md", FORMAL / "TOOLS.lock"]
 
 
 @pytest.mark.parametrize("path", [p for p in OWNED if p.exists()], ids=lambda p: str(p.relative_to(ROOT)))

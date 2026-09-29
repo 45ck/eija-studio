@@ -375,7 +375,7 @@ Every dependency is explicit. "Provides" and "Consumes" are from the weave side.
 | I-6 | Rule loader and strata | Allocation 0097; on disk inside ADR-0095 lint-compile-rules (the file named 0097 on disk is impact-ranking-math, a different topic) | New rules CS-01 to CS-05 (section 10) are ordinary rules; M8 is a differential run of the compiler | Needs the loader |
 | I-7 | Permutation harness | Allocation 0099 (determinism doctrine); not on disk as its own ADR; the file named 0099 on disk is agent-interface | Add merge-side swap (`ours` and `theirs`), base file order and CRLF to the matrix; require one distinct output (M1, M6) | DESIGN |
 | I-8 | Incremental engine | Allocation 0100; not on disk | Generator `prov` doubles as the cache key input; the release tier's full rebuild guards the undeclared-input risk | DESIGN |
-| I-9 | `eijagraph.views` | Allocation 0105 (views, lenses, SysML emitter, reflexion); not on disk (00101-human-views is a different topic) | Must pass the transformations.md laws; this aspect defines the laws, ADR-0105 the API and SysML emitter | Boundary to agree |
+| I-9 | `eijagraph.views` | Allocation 0105 (views, lenses, SysML emitter, reflexion); on disk as `0105-weave-human-views.md` (first filed as 00101) | Must pass the transformations.md laws; this aspect defines the laws, ADR-0105 the API and SysML emitter | Boundary to agree |
 | I-10 | Hypothesis strategies | property lane | Replace the seeded samplers; results stay labelled MEASUREMENT on the tested alphabet | Later |
 | I-11 | Kernel put | `src/` (read-only for weave) | `apply_transaction` is the only put; the amendment class per transaction kind is a table in the bench today (`AMENDMENT_POLICY`); the kernel exposing it would remove the duplication (separate ADR) | Question 5 |
 | I-12 | Sessions | quality lane | `quality/sessions/graph.py`, tags `fast`, `full`, `release`; the git-dependent M7 check is a `release` step and reports NOT_RUN without git | DESIGN |
@@ -401,7 +401,7 @@ ADR numbering, old to new (for the integrator). Every number in 0089 to 0111 is 
 | Ledger as content-addressed set, `entry_id`, ack subject binding, file layout | 0094 (human ledger) | Also removes `ledger_seq` from 0093 (link record) |
 | `merge3`, post-merge compile, I-confluence classification, CRDT criterion | new number, or 0111 if the integrator accepts a benchmarks-and-consistency scope | No slot fits; this is the residual of this ADR |
 | Lens laws L1 to L10, generation laws G1 to G7, complement laws C1 to C4 | 0105 (view lenses) | The laws are specified here, the API there |
-| Cross-references written as ADR-0097, 0098, 0099, 0100, 0105 in this lane's files | ARCHITECTURE numbers, not file numbers | On disk today 0095 is lint-compile-rules, 0097 impact-ranking-math, 0099 agent-interface, 00101 human-views |
+| Cross-references written as ADR-0097, 0098, 0099, 0100, 0105 in this lane's files | ARCHITECTURE numbers, not file numbers | On disk today 0095 is lint-compile-rules, 0097 impact-ranking-math, 0099 agent-interface, 0102 formal-verification-of-weave, 0105 human-views |
 
 Candidate rules (prefix CS to avoid colliding with WV ids; the rules aspect owns numbering):
 

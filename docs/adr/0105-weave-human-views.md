@@ -1,10 +1,10 @@
-# ADR-00101: Human views: eight task-driven, budgeted, deterministic projections of the weave graph, with counts that compose and no whole-graph picture
+# ADR-0105: Human views: eight task-driven, budgeted, deterministic projections of the weave graph, with counts that compose and no whole-graph picture
 
 * Status: proposed
 * Date: 2026-09-29
 * Lane: weave (aspect human-views). Design, evidence and arithmetic: [docs/weave/design/human-comprehension-views.md](../weave/design/human-comprehension-views.md). Definitions, slices, projections and budgets, machine-checked: [graph/schema/views.md](../../graph/schema/views.md). Reproducible checks: `graph/bench/human_views_reference.py`, `graph/bench/human_views_budgets.py`, `tests/graph/test_human_views.py` (30 passed on 2026-09-29, revised after audit).
 
-Numbering note for the integrator (DEFERRED): this record was assigned the file name `00101` (five digits). `docs/weave/ARCHITECTURE.md` section 11 allocates 0101 to the status lattice, and every number 0089 to 0112 is allocated (0105 view lenses, 0111 benchmarks, 0112 reserved), so there is no free number in the block. The integrator must extend the table or re-home this record, then update the register row, the design document, views.md and these links; the design document lists this as open question 3. References below to "ADR-0093" and similar use the section 11 numbering, as the sibling records do.
+Integration renumbering (2026-09-29): the record was first filed as 00101 (five digits, invisible to `quality/tools/adr_index.py`) and is now 0105, the slot `docs/weave/ARCHITECTURE.md` section 11 reserves for view lenses and views. Cross-references written as ADR-0101 elsewhere in the weave files mean the status lattice of that table, not this record. References below to "ADR-0093" and similar use the section 11 numbering, as the sibling records do.
 
 ## Context and problem statement
 

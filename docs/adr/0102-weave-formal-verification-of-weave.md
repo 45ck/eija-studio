@@ -1,10 +1,10 @@
-# ADR-00103: Formal verification of the weave: a small trusted kernel, certificates, exhaustive small scope, Alloy for bounded statements, and drift guards
+# ADR-0102: Formal verification of the weave: a small trusted kernel, certificates, exhaustive small scope, Alloy for bounded statements, and drift guards
 
 * Status: proposed
 * Date: 2026-09-29
 * Lane: weave (aspect formal-verification-of-weave). Design and evidence: [docs/weave/design/formal-verification-of-weave.md](../weave/design/formal-verification-of-weave.md). Obligation list: [graph/formal/OBLIGATIONS.md](../../graph/formal/OBLIGATIONS.md).
 
-Numbering note for the integrator. The brief gave this record the file name `00103`, as it gave `00101` to the human-views record (five digits, unlike the four-digit records above). `docs/weave/ARCHITECTURE.md` section 11 allocates 0103 to statement pinning and assumption ledgers; the statement-pinning content is a dependency of this record (section "Interfaces"), not part of it. Nothing in the decision depends on the number.
+Numbering note. The brief gave this record the file name `00103` (five digits, invisible to `quality/tools/adr_index.py`). At integration (2026-09-29) it was renumbered to 0102, a free file number in the reserved weave block, because 0101 and 0103 read as the status lattice and statement pinning in every cross-reference of the weave files. `docs/weave/ARCHITECTURE.md` section 11 allocates 0102 to link certificates and `assess_link`, which is a dependency of this record (section "Interfaces"), not part of it. Nothing in the decision depends on the number.
 
 ## Context and problem statement
 
