@@ -8,12 +8,14 @@ from pathlib import Path
 from typing import Any
 
 from eija_studio.domain.formal import FormalArtifact
-from eija_studio.domain.formal_bend import MODEL_FILES, PROTOCOL, SPEC
+from eija_studio.domain.evidence_kinds import BEND_MODEL_FILES as MODEL_FILES
+from eija_studio.domain.evidence_kinds import BEND_PROOF as SPEC
 from eija_studio.domain.models import Workflow
 
 from .common import NotRun, Report, collect_from, lf_sha256
 
 KIND = SPEC.kind
+PROTOCOL = SPEC.protocol
 REPORTS = ("reports/formal/bend.json", "verification/bend/evidence/bend.json")
 PREREQUISITE = "Docker with the pinned Bend image: python verification/bend/bend_runner.py"
 ASSUMPTIONS = (

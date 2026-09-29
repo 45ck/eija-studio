@@ -6,11 +6,13 @@ from pathlib import Path
 from typing import Any
 
 from eija_studio.domain.formal import FormalArtifact
-from eija_studio.domain.formal_bmc import PROTOCOL, SOURCES, SPEC
+from eija_studio.domain.evidence_kinds import BMC_SOURCES as SOURCES
+from eija_studio.domain.evidence_kinds import BOUNDED_MODEL_CHECK as SPEC
 
 from .common import NotRun, Report, collect_from, current_sources
 
 KIND = SPEC.kind
+PROTOCOL = SPEC.protocol
 # Deepest first; every readable report becomes its own receipt, and the kernel decides which count.
 REPORTS = ("reports/formal/bmc_deep.json", "reports/formal/bmc.json", "verification/bmc/evidence/bmc.json")
 PREREQUISITE = "python -m verification.bmc (no extra dependency)"

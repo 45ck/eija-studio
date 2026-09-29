@@ -5,11 +5,13 @@ from pathlib import Path
 from typing import Any
 
 from eija_studio.domain.formal import FormalArtifact
-from eija_studio.domain.formal_smt import PROTOCOL, SOURCES, SPEC
+from eija_studio.domain.evidence_kinds import SMT_PROOF as SPEC
+from eija_studio.domain.evidence_kinds import SMT_SOURCES as SOURCES
 
 from .common import NotRun, Report, collect_from, current_sources
 
 KIND = SPEC.kind
+PROTOCOL = SPEC.protocol
 REPORTS = ("reports/formal/smt.json", "verification/smt/evidence/smt.json")
 PREREQUISITE = "z3-solver (pip install -e .[smt]) and python -m verification.smt"
 SCHEMA = "eija.formal-report/v1"
