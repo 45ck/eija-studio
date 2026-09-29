@@ -37,10 +37,11 @@ docs = ["mkdocs==1.6.1", "mkdocs-material==9.7.7", "pymdown-extensions==12.1", "
 visual = ["playwright==1.63.0", "pydot==4.0.1"]
 demos = ["playwright==1.63.0"]  # drives the installed system Chrome; no browser download
 ux = []
-graph = []
+graph = ["jsonschema==4.26.0", "rfc8785==0.1.4", "networkx==3.5"]
 dod = []
 smt = ["z3-solver==5.1.0.0"]  # lane smt-bmc: Z3 policy-soundness proof
 okf = ["PyYAML==6.0.3", "markdown-it-py==4.0.0"]
+graph-formal = ["hypothesis==6.168.3", "clingo==5.8.2"]  # both optional: absence gives NOT_RUN in tests/graph/formal, never a pass
 
 [project.scripts]
 eija = "eija_studio.interfaces.cli:main"

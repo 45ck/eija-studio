@@ -1,0 +1,76 @@
+{
+ "environment": {
+  "note": "wall-clock, one machine, shared 16 GB PC, D: HDD scratch; not deterministic; median of 3 (2 at 10^6)",
+  "platform": "Windows 11",
+  "python": "3.12.10",
+  "sqlite": "3.49.1"
+ },
+ "python_baseline": {
+  "10000": {
+   "answers_equal_sqlite": true,
+   "build_python_dicts_s": 0.002,
+   "closure_5_roots_kernel_copy_s": 0.0034,
+   "closure_plus_lexmin_witness_s": 0.0022,
+   "closure_size": 2346,
+   "edges": 10000,
+   "nodes": 3500,
+   "violation_impacted_untested_rows": 42,
+   "violation_impacted_untested_stratified_s": 0.0039,
+   "violation_untested_requirements_anti_join_s": 2e-05
+  },
+  "100000": {
+   "answers_equal_sqlite": true,
+   "build_python_dicts_s": 0.051,
+   "closure_5_roots_kernel_copy_s": 0.0539,
+   "closure_plus_lexmin_witness_s": 0.0491,
+   "closure_size": 23290,
+   "edges": 100000,
+   "nodes": 35000,
+   "violation_impacted_untested_rows": 381,
+   "violation_impacted_untested_stratified_s": 0.0811,
+   "violation_untested_requirements_anti_join_s": 0.00029
+  },
+  "1000000": {
+   "answers_equal_sqlite": true,
+   "build_python_dicts_s": 0.654,
+   "closure_5_roots_kernel_copy_s": 0.7519,
+   "closure_plus_lexmin_witness_s": 0.8923,
+   "closure_size": 232499,
+   "edges": 1000000,
+   "nodes": 350000,
+   "violation_impacted_untested_rows": 3834,
+   "violation_impacted_untested_stratified_s": 0.7519,
+   "violation_untested_requirements_anti_join_s": 0.00551
+  }
+ },
+ "script_sha256": "dc84af0dc721ea7fe079df66d516b72638b198cc38262b54b0351e9e25afa566",
+ "wide_ddl": {
+  "10000": {
+   "build_file_journal_off_s": 0.08,
+   "canonical_dump_and_root_hash_s": 0.147,
+   "closure_5_roots_cte_text_ids_s": 0.0142,
+   "closure_size": 2346,
+   "edges": 10000,
+   "index_file_bytes": 2809856,
+   "nodes": 3500
+  },
+  "100000": {
+   "build_file_journal_off_s": 1.653,
+   "canonical_dump_and_root_hash_s": 1.339,
+   "closure_5_roots_cte_text_ids_s": 0.4007,
+   "closure_size": 23290,
+   "edges": 100000,
+   "index_file_bytes": 28930048,
+   "nodes": 35000
+  },
+  "1000000": {
+   "build_file_journal_off_s": 20.203,
+   "canonical_dump_and_root_hash_s": 12.576,
+   "closure_5_roots_cte_text_ids_s": 4.3538,
+   "closure_size": 232499,
+   "edges": 1000000,
+   "index_file_bytes": 299524096,
+   "nodes": 350000
+  }
+ }
+}

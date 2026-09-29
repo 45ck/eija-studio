@@ -1,0 +1,30 @@
+{
+  "alloy": {
+    "tool": "Alloy Analyzer 6 (org.alloytools.alloy.dist.jar)",
+    "upstream": "https://github.com/AlloyTools/org.alloytools.alloy",
+    "license": "MIT per the first line of the repository LICENSE file (\"THIS IS NOT VALID YET! CURRENTLY CODE IS UNDER MIT LICENSE\"), followed by an Apache-2.0 text; the dist jar bundles SAT solvers (Sat4j, MiniSat, Lingeling, Glucose per the README) whose licences were not read: UNVERIFIED",
+    "release": "v6.2.0",
+    "released": "2025-01-09",
+    "url": "https://github.com/AlloyTools/org.alloytools.alloy/releases/download/v6.2.0/org.alloytools.alloy.dist.jar",
+    "size": 21062377,
+    "sha256": "6b8c1cb5bc93bedfc7c61435c4e1ab6e688a242dc702a394628d9a9801edb78d",
+    "requires": "Java 17 or later (README); tested with Temurin 17.0.19",
+    "solver": "glucose",
+    "notes": "sha256 computed locally on 2026-09-29 from the file downloaded from the release URL; the size equals the GitHub release asset size. Run as a separate process only, never redistributed. The receipt.json Alloy writes contains wall-clock fields (timestamp, utctime, localtime, timezone, duration): graph/formal/run_alloy.py never copies them into an artefact."
+  },
+  "clingo": {
+    "tool": "clingo (Answer Set Programming, Python wheel)",
+    "upstream": "https://github.com/potassco/clingo",
+    "license": "MIT (LICENSE.md head read)",
+    "release": "5.8.2",
+    "requires": "pip install clingo==5.8.2 (win_amd64 cp312 wheel 1621287 bytes downloaded 2026-09-29)",
+    "notes": "optional test-time tool; absence gives NOT_RUN for the rule-fixture synthesis, never PASS"
+  },
+  "hypothesis": {
+    "tool": "Hypothesis",
+    "upstream": "https://github.com/HypothesisWorks/hypothesis",
+    "license": "MPL-2.0 (PyPI metadata for 6.168.3)",
+    "release": "6.168.3",
+    "notes": "same pin as the property lane; test-time only"
+  }
+}

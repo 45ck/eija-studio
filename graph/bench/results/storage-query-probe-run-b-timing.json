@@ -1,0 +1,71 @@
+{
+ "note": "Timing block of an earlier full run of storage_query_probe.py in this session (run B), kept as a second sample of run-to-run spread. Extracted from the result file that existed at that time; the script has since gained the extraction and repository-count probes. Wall-clock, not deterministic.",
+ "timing_by_edges": {
+  "10000": {
+   "build_s_file_default_pragmas": 0.124,
+   "build_s_file_journal_off_sync_off": 0.082,
+   "build_s_memory": 0.11,
+   "build_s_memory_int_interned_edges_only": 0.068,
+   "canonical_dump_and_root_hash_s": 0.095,
+   "closure_5_roots_cte_int_interned_ids_s": 0.0064,
+   "closure_5_roots_cte_text_ids_s": 0.0279,
+   "closure_plus_lexmin_witness_python_s": 0.0131,
+   "closure_size": 2346,
+   "duckdb_edge_load_s": 0.121,
+   "duckdb_violation_anti_join_s": 0.0067,
+   "index_file_bytes_journal_off": 1630208,
+   "neighbors_in_out_ms_p50_p99": [
+    0.0114,
+    0.0355
+   ],
+   "nodes": 3500,
+   "violation_impacted_untested_rows": 42,
+   "violation_impacted_untested_stratified_s": 0.0131,
+   "violation_untested_requirements_anti_join_s": 0.0006
+  },
+  "100000": {
+   "build_s_file_default_pragmas": 0.87,
+   "build_s_file_journal_off_sync_off": 0.712,
+   "build_s_memory": 1.14,
+   "build_s_memory_int_interned_edges_only": 0.201,
+   "canonical_dump_and_root_hash_s": 1.006,
+   "closure_5_roots_cte_int_interned_ids_s": 0.0899,
+   "closure_5_roots_cte_text_ids_s": 0.1633,
+   "closure_plus_lexmin_witness_python_s": 0.183,
+   "closure_size": 23290,
+   "duckdb_edge_load_s": 0.297,
+   "duckdb_violation_anti_join_s": 0.0121,
+   "index_file_bytes_journal_off": 16998400,
+   "neighbors_in_out_ms_p50_p99": [
+    0.0113,
+    0.0247
+   ],
+   "nodes": 35000,
+   "violation_impacted_untested_rows": 381,
+   "violation_impacted_untested_stratified_s": 0.2345,
+   "violation_untested_requirements_anti_join_s": 0.0083
+  },
+  "1000000": {
+   "build_s_file_default_pragmas": 12.536,
+   "build_s_file_journal_off_sync_off": 10.763,
+   "build_s_memory": 5.906,
+   "build_s_memory_int_interned_edges_only": 2.399,
+   "canonical_dump_and_root_hash_s": 10.789,
+   "closure_5_roots_cte_int_interned_ids_s": 1.6873,
+   "closure_5_roots_cte_text_ids_s": 3.5684,
+   "closure_plus_lexmin_witness_python_s": 2.7237,
+   "closure_size": 232499,
+   "duckdb_edge_load_s": 0.629,
+   "duckdb_violation_anti_join_s": 0.083,
+   "index_file_bytes_journal_off": 178798592,
+   "neighbors_in_out_ms_p50_p99": [
+    0.0136,
+    0.0482
+   ],
+   "nodes": 350000,
+   "violation_impacted_untested_rows": 3834,
+   "violation_impacted_untested_stratified_s": 4.4347,
+   "violation_untested_requirements_anti_join_s": 0.0658
+  }
+ }
+}

@@ -1,0 +1,2737 @@
+{
+  "aliases": {
+    "owner_vocabulary": {
+      "UI element": {
+        "maps_to": "ui_region | ui_control | ui_field | ui_status | ui_table"
+      },
+      "UI screen": {
+        "maps_to": "ui_view"
+      },
+      "aggregate": {
+        "how": "attrs.ddd_role = aggregate",
+        "maps_to": "term"
+      },
+      "code symbol": {
+        "maps_to": "symbol"
+      },
+      "context": {
+        "maps_to": "bounded_context"
+      },
+      "depends-on (link)": {
+        "maps_to": "depends_on"
+      },
+      "derives-from (link)": {
+        "maps_to": "derived_from"
+      },
+      "implements (link)": {
+        "maps_to": "satisfies (requirement), realises (concept), exposes (api_operation)"
+      },
+      "law / proof / model-check": {
+        "maps_to": "formal_law + witness (+ formal_model)"
+      },
+      "renders (link)": {
+        "maps_to": "derived_from (generated view) or realises (UI element realising a model concept)"
+      },
+      "state": {
+        "maps_to": "state"
+      },
+      "task": {
+        "how": "a work unit that exists in git; runs of it are agent_run",
+        "maps_to": "lane"
+      },
+      "tests (link)": {
+        "maps_to": "verifies (declared) and covers (derived)"
+      },
+      "traces-to (link)": {
+        "maps_to": "not an edge: the transitive relation over the trace view"
+      },
+      "transition": {
+        "maps_to": "transition"
+      }
+    }
+  },
+  "classes": [
+    "declared",
+    "derived",
+    "evidence",
+    "inferred"
+  ],
+  "date": "2026-09-29",
+  "domain_tags": [
+    {
+      "input": "one node record",
+      "owner": "weave metamodel-identity",
+      "tag": "eija.weave.node.v1"
+    },
+    {
+      "input": "one edge record",
+      "owner": "weave metamodel-identity",
+      "tag": "eija.weave.edge.v1"
+    },
+    {
+      "input": "[kind, from, to, qualifier]",
+      "owner": "weave metamodel-identity",
+      "tag": "eija.weave.edge-id.v1"
+    },
+    {
+      "input": "sorted record-hash rows of one source file",
+      "owner": "weave metamodel-identity",
+      "tag": "eija.weave.shard.v1"
+    },
+    {
+      "input": "{metamodel_major, shards[, view]}",
+      "owner": "weave metamodel-identity",
+      "tag": "eija.weave.root.v1"
+    },
+    {
+      "input": "{nodes: sorted [id, node record hash] rows, edges: sorted [kind, from, to, qualifier, edge record hash] rows} of the dependency closure and the edges induced on it",
+      "owner": "weave metamodel-identity",
+      "tag": "eija.weave.closure.v2"
+    },
+    {
+      "input": "a ledger entry without its entry_id",
+      "owner": "reserved for the ledger aspect",
+      "tag": "eija.weave.ledger-entry.v1"
+    },
+    {
+      "input": "a link certificate body",
+      "owner": "reserved for the assurance aspect",
+      "tag": "eija.weave.link-cert.v1"
+    }
+  ],
+  "hash_methods": [
+    {
+      "id": "ast-v1",
+      "note": "canonical AST JSON, docstring included",
+      "owner": "okf",
+      "scope": "python function, method, constant",
+      "status": "registered"
+    },
+    {
+      "id": "ast-sig-v1",
+      "note": "bodies excluded",
+      "owner": "okf",
+      "scope": "python class or symbol signature view",
+      "status": "registered"
+    },
+    {
+      "id": "ast-v2",
+      "note": "ast-v1 plus the same-module private helpers the symbol reaches, transitively",
+      "owner": "okf (working tree of the okf worktree, read 2026-09-29; ADR-0046 there still names v1 only)",
+      "scope": "python function, method, constant, type alias",
+      "status": "registered"
+    },
+    {
+      "id": "ast-api-v1",
+      "note": "signatures and module docstring",
+      "owner": "okf",
+      "scope": "python module public surface",
+      "status": "registered"
+    },
+    {
+      "id": "lf-sha256-v1",
+      "note": "UTF-8, CRLF folded to LF",
+      "owner": "okf",
+      "scope": "whole file",
+      "status": "registered"
+    },
+    {
+      "id": "csv-row-v1",
+      "note": "addressed by first column",
+      "owner": "okf",
+      "scope": "acceptance row",
+      "status": "registered"
+    },
+    {
+      "id": "md-bold-term-v1",
+      "note": "term plus whitespace-normalised definition",
+      "owner": "okf",
+      "scope": "ubiquitous-language term",
+      "status": "registered"
+    },
+    {
+      "id": "md-table-row-v1",
+      "note": "addressed by the slug of any cell; ambiguity is a finding",
+      "owner": "okf",
+      "scope": "markdown table row",
+      "status": "registered"
+    },
+    {
+      "id": "workflow-semantic-v1",
+      "note": "Workflow.semantic_hash, reimplemented from JSON; the kernel is the test oracle",
+      "owner": "weave, needs okf agreement",
+      "scope": "whole Workflow document",
+      "status": "proposed"
+    },
+    {
+      "id": "workflow-element-v1",
+      "note": "canonical JSON of that element only, so editing one transition does not stale links to the others",
+      "owner": "weave, needs okf agreement",
+      "scope": "one state, transition, role, guard or effect",
+      "status": "proposed"
+    },
+    {
+      "id": "json-key-v1",
+      "note": "RFC 6901 pointers are not stable under array insertion",
+      "owner": "weave, needs okf agreement",
+      "scope": "JSON object addressed by its key field",
+      "status": "proposed"
+    },
+    {
+      "id": "html-key-v1",
+      "note": "attribute order sorted",
+      "owner": "weave, needs okf agreement",
+      "scope": "element addressed by data-eija-key",
+      "status": "proposed"
+    },
+    {
+      "id": "okf-human-v1",
+      "note": "human-owned frontmatter keys and text outside okf:generated blocks, so a projection never feeds its own source",
+      "owner": "weave storage-and-query aspect, needs okf agreement",
+      "scope": "an OKF page without its generated parts",
+      "status": "proposed"
+    },
+    {
+      "id": "law-block-v1",
+      "note": "raw bytes, LF folded; the owner-approved digest lives in protected policy",
+      "owner": "weave, needs formal lanes",
+      "scope": "formal law or property definition",
+      "status": "proposed"
+    }
+  ],
+  "id_scheme": {
+    "digest": "sha256:<64 lowercase hex>",
+    "edge_id": "sha256 of JCS([kind, from, to, qualifier]) under the domain tag eija.weave.edge-id.v1",
+    "encoding": "path: A-Za-z0-9._- only; fragment segment: RFC 3986 unreserved characters plus a literal colon, every other UTF-8 byte as uppercase %XX",
+    "fragment": "segment ('/' segment)*",
+    "fragment_segment": "(?:[A-Za-z0-9._~:-]|%[0-9A-F]{2})+",
+    "path": "(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*",
+    "scheme": "repo://"
+  },
+  "link_types": {
+    "attests": {
+      "acyclic": false,
+      "affects": "to_source",
+      "affects_why": "a certificate is affected by a change in its subject",
+      "anchor_ends": [
+        "from"
+      ],
+      "attrs": {},
+      "classes": [
+        "evidence"
+      ],
+      "cover_role": "none",
+      "note": "the five subject dimensions live in the certificate body",
+      "proofmap": "",
+      "qualifiers": [],
+      "rank_weight": [
+        2,
+        1
+      ],
+      "signatures": [
+        {
+          "from": [
+            "link_certificate"
+          ],
+          "to": [
+            "requirement",
+            "formal_law",
+            "symbol",
+            "formal_model",
+            "workflow_element"
+          ]
+        }
+      ],
+      "soundness": "must",
+      "sysml_v2": "EIJA-specific",
+      "trace": false
+    },
+    "calls": {
+      "acyclic": false,
+      "affects": "to_source",
+      "affects_why": "a caller is affected by a change in its callee",
+      "anchor_ends": [],
+      "attrs": {},
+      "classes": [
+        "derived",
+        "declared"
+      ],
+      "cover_role": "none",
+      "note": "a dynamic path such as cases/${id}/${action} must be declared in the UI sidecar",
+      "proofmap": "calls",
+      "qualifiers": [],
+      "rank_weight": [
+        2,
+        1
+      ],
+      "signatures": [
+        {
+          "from": [
+            "ui_control"
+          ],
+          "to": [
+            "api_operation"
+          ]
+        },
+        {
+          "from": [
+            "symbol"
+          ],
+          "to": [
+            "symbol",
+            "api_operation"
+          ]
+        }
+      ],
+      "soundness": "heuristic",
+      "sysml_v2": "EIJA-specific",
+      "trace": false
+    },
+    "checked_by": {
+      "acyclic": false,
+      "affects": "to_source",
+      "affects_why": "evidence is affected by a change in its checker pin",
+      "anchor_ends": [
+        "to"
+      ],
+      "attrs": {},
+      "classes": [
+        "evidence"
+      ],
+      "cover_role": "none",
+      "proofmap": "",
+      "qualifiers": [],
+      "rank_weight": [
+        2,
+        1
+      ],
+      "signatures": [
+        {
+          "from": [
+            "link_certificate",
+            "evidence",
+            "witness"
+          ],
+          "to": [
+            "tool"
+          ]
+        }
+      ],
+      "soundness": "must",
+      "sysml_v2": "EIJA-specific",
+      "trace": false
+    },
+    "conforms_to": {
+      "acyclic": false,
+      "affects": "to_source",
+      "affects_why": "a conformance claim is affected by a change in the model",
+      "anchor_ends": [
+        "from",
+        "to"
+      ],
+      "attrs": {
+        "bounds": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "classes": [
+        "declared"
+      ],
+      "cover_role": "none",
+      "note": "CONFORMS_BOUNDED; own status, own bounds, printed abstraction losses",
+      "proofmap": "",
+      "qualifiers": [],
+      "rank_weight": [
+        2,
+        1
+      ],
+      "signatures": [
+        {
+          "from": [
+            "symbol",
+            "module"
+          ],
+          "to": [
+            "formal_model"
+          ]
+        }
+      ],
+      "soundness": "may",
+      "sysml_v2": "EIJA-specific",
+      "trace": false
+    },
+    "contains": {
+      "acyclic": true,
+      "affects": "to_source",
+      "affects_why": "a container depends on its parts; parts do not depend on the container (no sibling fan-out)",
+      "anchor_ends": [],
+      "attrs": {},
+      "classes": [
+        "derived",
+        "declared"
+      ],
+      "cover_role": "none",
+      "proofmap": "contains; declares",
+      "qualifiers": [],
+      "rank_weight": [
+        2,
+        1
+      ],
+      "signatures": [
+        {
+          "from": [
+            "module"
+          ],
+          "max_in": 1,
+          "to": [
+            "symbol"
+          ]
+        },
+        {
+          "from": [
+            "workflow"
+          ],
+          "max_in": 1,
+          "to": [
+            "workflow_element"
+          ]
+        },
+        {
+          "from": [
+            "bounded_context"
+          ],
+          "max_in": 1,
+          "obligations": [
+            {
+              "min": 1,
+              "rule": "WV-053",
+              "scope": "term",
+              "side": "in"
+            }
+          ],
+          "to": [
+            "term",
+            "invariant"
+          ]
+        },
+        {
+          "from": [
+            "bounded_context"
+          ],
+          "to": [
+            "module"
+          ]
+        },
+        {
+          "from": [
+            "component"
+          ],
+          "max_in": 1,
+          "note": "the reflexion mapping module to component is a function",
+          "to": [
+            "module"
+          ]
+        },
+        {
+          "from": [
+            "component"
+          ],
+          "max_in": 1,
+          "to": [
+            "component"
+          ]
+        },
+        {
+          "from": [
+            "ui_view",
+            "ui_region"
+          ],
+          "max_in": 1,
+          "to": [
+            "ui_region",
+            "ui_control",
+            "ui_field",
+            "ui_status",
+            "ui_table"
+          ]
+        },
+        {
+          "from": [
+            "diagram"
+          ],
+          "max_in": 1,
+          "to": [
+            "diagram_element"
+          ]
+        }
+      ],
+      "soundness": "must",
+      "sysml_v2": "composition (PREDICTION)",
+      "trace": false
+    },
+    "covers": {
+      "acyclic": false,
+      "affects": "to_source",
+      "affects_why": "a test is affected by a change in the code it executes",
+      "anchor_ends": [],
+      "attrs": {
+        "fault_detection_permille": {
+          "maximum": 1000,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "tool_pin": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "classes": [
+        "derived"
+      ],
+      "cover_role": "observer",
+      "note": "coverage is not fault detection; the mutation lane attaches fault_detection_permille with a tool pin (integer, no floats)",
+      "proofmap": "covers",
+      "qualifiers": [],
+      "rank_weight": [
+        2,
+        1
+      ],
+      "signatures": [
+        {
+          "from": [
+            "test",
+            "property"
+          ],
+          "to": [
+            "symbol"
+          ]
+        }
+      ],
+      "soundness": "may",
+      "sysml_v2": "EIJA-specific",
+      "trace": false
+    },
+    "decides": {
+      "acyclic": false,
+      "affects": "to_source",
+      "affects_why": "a human decision is void when its subject digest changes",
+      "anchor_ends": [
+        "to"
+      ],
+      "attrs": {},
+      "classes": [
+        "declared"
+      ],
+      "cover_role": "none",
+      "note": "humans only; the only act that clears SUSPECT or approves a statement digest; a decision whose subject is an edge names its edge id in attrs.subject",
+      "proofmap": "",
+      "qualifiers": [],
+      "rank_weight": [
+        2,
+        1
+      ],
+      "signatures": [
+        {
+          "from": [
+            "decision"
+          ],
+          "to": [
+            "link_certificate",
+            "claim",
+            "formal_law",
+            "requirement"
+          ]
+        }
+      ],
+      "soundness": "must",
+      "sysml_v2": "EIJA-specific",
+      "trace": false
+    },
+    "defeats": {
+      "acyclic": false,
+      "affects": "to_target",
+      "affects_why": "an unresolved defeater blocks its parent claim",
+      "anchor_ends": [],
+      "attrs": {},
+      "classes": [
+        "declared"
+      ],
+      "cover_role": "none",
+      "note": "Assurance 2.0 structural rule",
+      "proofmap": "",
+      "qualifiers": [],
+      "rank_weight": [
+        2,
+        1
+      ],
+      "signatures": [
+        {
+          "from": [
+            "claim",
+            "evidence"
+          ],
+          "to": [
+            "claim"
+          ]
+        }
+      ],
+      "soundness": "must",
+      "sysml_v2": "EIJA-specific",
+      "trace": false
+    },
+    "depends_on": {
+      "acyclic": false,
+      "affects": "to_source",
+      "affects_why": "a dependent is affected by a change in its dependency",
+      "anchor_ends": [],
+      "attrs": {},
+      "classes": [
+        "derived",
+        "declared"
+      ],
+      "cover_role": "none",
+      "note": "dynamic imports are invisible: heuristic wherever extraction is syntactic; the transition rows carry the kernel's role, guards, required and forbidden effects",
+      "proofmap": "depends_on; requires",
+      "qualifiers": [
+        "forbidden",
+        "required"
+      ],
+      "rank_weight": [
+        2,
+        1
+      ],
+      "signatures": [
+        {
+          "from": [
+            "module",
+            "symbol",
+            "component"
+          ],
+          "qualifiers": [],
+          "to": [
+            "module",
+            "symbol",
+            "component"
+          ]
+        },
+        {
+          "from": [
+            "transition"
+          ],
+          "qualifiers": [],
+          "to": [
+            "role",
+            "guard"
+          ]
+        },
+        {
+          "from": [
+            "transition"
+          ],
+          "qualifiers": [
+            "forbidden",
+            "required"
+          ],
+          "to": [
+            "effect"
+          ]
+        }
+      ],
+      "soundness": "may",
+      "sysml_v2": "EIJA-specific",
+      "trace": false
+    },
+    "derived_from": {
+      "acyclic": true,
+      "affects": "to_source",
+      "affects_why": "a generated artefact is stale when its source changes",
+      "anchor_ends": [
+        "from",
+        "to"
+      ],
+      "attrs": {
+        "generator": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "classes": [
+        "derived"
+      ],
+      "cover_role": "none",
+      "note": "GENERATED label; the kernel re-runs the generator and byte-compares; the from anchor detects hand edits",
+      "proofmap": "derived_from",
+      "qualifiers": [],
+      "rank_weight": [
+        2,
+        1
+      ],
+      "signatures": [
+        {
+          "from": [
+            "diagram",
+            "diagram_element",
+            "okf_page",
+            "contract",
+            "formal_model",
+            "document"
+          ],
+          "to": [
+            "workflow_element",
+            "workflow",
+            "symbol",
+            "module",
+            "term",
+            "requirement",
+            "contract",
+            "invariant"
+          ]
+        }
+      ],
+      "soundness": "must",
+      "sysml_v2": "EIJA-specific",
+      "trace": false
+    },
+    "documents": {
+      "acyclic": false,
+      "affects": "to_source",
+      "affects_why": "a document is stale when what it describes changes (the OKF STALE rule)",
+      "anchor_ends": [
+        "to"
+      ],
+      "attrs": {},
+      "classes": [
+        "declared"
+      ],
+      "cover_role": "none",
+      "proofmap": "documents; annotates",
+      "qualifiers": [],
+      "rank_weight": [
+        2,
+        1
+      ],
+      "signatures": [
+        {
+          "from": [
+            "okf_page",
+            "document",
+            "adr",
+            "diagram"
+          ],
+          "to": [
+            "*"
+          ]
+        }
+      ],
+      "soundness": "must",
+      "sysml_v2": "doc",
+      "trace": false
+    },
+    "exercised_by": {
+      "acyclic": false,
+      "affects": "to_target",
+      "affects_why": "a test is affected by a change in what it exercises",
+      "anchor_ends": [
+        "to"
+      ],
+      "attrs": {},
+      "classes": [
+        "declared",
+        "derived"
+      ],
+      "cover_role": "none",
+      "proofmap": "",
+      "qualifiers": [],
+      "rank_weight": [
+        2,
+        1
+      ],
+      "signatures": [
+        {
+          "from": [
+            "ui_control",
+            "ui_view",
+            "transition"
+          ],
+          "obligations": [
+            {
+              "min": 1,
+              "rule": "WV-037",
+              "scope": "ui_control",
+              "side": "out"
+            }
+          ],
+          "to": [
+            "test",
+            "journey"
+          ]
+        }
+      ],
+      "soundness": "may",
+      "sysml_v2": "EIJA-specific",
+      "trace": false
+    },
+    "exposes": {
+      "acyclic": false,
+      "affects": "to_target",
+      "affects_why": "an operation's behaviour is defined by its handler",
+      "anchor_ends": [],
+      "attrs": {},
+      "classes": [
+        "derived"
+      ],
+      "cover_role": "none",
+      "proofmap": "exposes",
+      "qualifiers": [],
+      "rank_weight": [
+        2,
+        1
+      ],
+      "signatures": [
+        {
+          "from": [
+            "symbol"
+          ],
+          "max_in": 1,
+          "to": [
+            "api_operation"
+          ]
+        }
+      ],
+      "soundness": "may",
+      "sysml_v2": "EIJA-specific",
+      "trace": false
+    },
+    "flows_to": {
+      "acyclic": false,
+      "affects": "to_target",
+      "affects_why": "control flow: an upstream state or transition affects what follows",
+      "anchor_ends": [],
+      "attrs": {},
+      "classes": [
+        "derived"
+      ],
+      "cover_role": "none",
+      "note": "bipartite: state to transition to state; the kernel already rejects dangling transition states",
+      "proofmap": "",
+      "qualifiers": [],
+      "rank_weight": [
+        2,
+        1
+      ],
+      "signatures": [
+        {
+          "from": [
+            "state"
+          ],
+          "max_in": 1,
+          "note": "a transition has exactly one source state",
+          "to": [
+            "transition"
+          ]
+        },
+        {
+          "from": [
+            "transition"
+          ],
+          "max_out": 1,
+          "note": "a transition has exactly one target state",
+          "to": [
+            "state"
+          ]
+        }
+      ],
+      "soundness": "must",
+      "sysml_v2": "EIJA-specific",
+      "trace": false
+    },
+    "formalises": {
+      "acyclic": false,
+      "affects": "to_source",
+      "affects_why": "a formal statement is affected by a change in the intent it formalises",
+      "anchor_ends": [
+        "from",
+        "to"
+      ],
+      "attrs": {},
+      "classes": [
+        "declared"
+      ],
+      "cover_role": "none",
+      "note": "human-reviewed fidelity of the statement; specification quality is the weak point",
+      "proofmap": "",
+      "qualifiers": [],
+      "rank_weight": [
+        2,
+        1
+      ],
+      "signatures": [
+        {
+          "from": [
+            "formal_law"
+          ],
+          "to": [
+            "invariant",
+            "requirement"
+          ]
+        }
+      ],
+      "soundness": "must",
+      "sysml_v2": "EIJA-specific",
+      "trace": true
+    },
+    "models": {
+      "acyclic": false,
+      "affects": "to_source",
+      "affects_why": "a model is affected by a change in what it models",
+      "anchor_ends": [
+        "from",
+        "to"
+      ],
+      "attrs": {},
+      "classes": [
+        "declared"
+      ],
+      "cover_role": "none",
+      "note": "a proof about a model is not a proof about the code",
+      "proofmap": "",
+      "qualifiers": [],
+      "rank_weight": [
+        2,
+        1
+      ],
+      "signatures": [
+        {
+          "from": [
+            "formal_model"
+          ],
+          "to": [
+            "workflow_element",
+            "workflow",
+            "symbol"
+          ]
+        }
+      ],
+      "soundness": "must",
+      "sysml_v2": "EIJA-specific",
+      "trace": true
+    },
+    "motivates": {
+      "acyclic": false,
+      "affects": "none",
+      "affects_why": "an ADR is a historical record; later change supersedes it rather than invalidating it",
+      "anchor_ends": [
+        "from"
+      ],
+      "attrs": {},
+      "classes": [
+        "declared"
+      ],
+      "cover_role": "none",
+      "proofmap": "motivates",
+      "qualifiers": [],
+      "rank_weight": [
+        2,
+        1
+      ],
+      "signatures": [
+        {
+          "from": [
+            "adr"
+          ],
+          "to": [
+            "requirement",
+            "invariant",
+            "adr"
+          ]
+        }
+      ],
+      "soundness": "must",
+      "sysml_v2": "EIJA-specific",
+      "trace": false
+    },
+    "names": {
+      "acyclic": false,
+      "affects": "both",
+      "affects_why": "a surface is affected by a change in its term; the term's binding by a rename of the surface",
+      "anchor_ends": [
+        "from",
+        "to"
+      ],
+      "attrs": {},
+      "classes": [
+        "declared"
+      ],
+      "cover_role": "none",
+      "note": "merges the ui dossier labels edge; qualifier is the surface; bindings are declared, not inferred",
+      "proofmap": "",
+      "qualifiers": [
+        "aria_name",
+        "diagram_label",
+        "docstring",
+        "identifier",
+        "label",
+        "placeholder",
+        "prose",
+        "test_name",
+        "text",
+        "title"
+      ],
+      "rank_weight": [
+        2,
+        1
+      ],
+      "signatures": [
+        {
+          "from": [
+            "symbol",
+            "ui_control",
+            "ui_field",
+            "ui_status",
+            "diagram_element",
+            "document",
+            "test"
+          ],
+          "qualifiers": [
+            "aria_name",
+            "diagram_label",
+            "docstring",
+            "identifier",
+            "label",
+            "placeholder",
+            "prose",
+            "test_name",
+            "text",
+            "title"
+          ],
+          "to": [
+            "term"
+          ]
+        }
+      ],
+      "soundness": "must",
+      "sysml_v2": "EIJA-specific",
+      "trace": false
+    },
+    "proposes": {
+      "acyclic": false,
+      "affects": "none",
+      "affects_why": "a proposal never propagates",
+      "anchor_ends": [
+        "from"
+      ],
+      "attrs": {
+        "confidence_permille": {
+          "maximum": 1000,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "model": {
+          "maxLength": 200,
+          "type": "string"
+        },
+        "tool": {
+          "maxLength": 200,
+          "type": "string"
+        },
+        "version": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "classes": [
+        "inferred"
+      ],
+      "cover_role": "none",
+      "note": "proposal only; cannot satisfy a gate or clear a link",
+      "proofmap": "",
+      "qualifiers": [],
+      "rank_weight": [
+        2,
+        1
+      ],
+      "signatures": [
+        {
+          "from": [
+            "agent_run"
+          ],
+          "to": [
+            "symbol",
+            "term",
+            "requirement",
+            "workflow_element",
+            "ui_control",
+            "document"
+          ]
+        }
+      ],
+      "soundness": "heuristic",
+      "sysml_v2": "EIJA-specific",
+      "trace": false
+    },
+    "proves": {
+      "acyclic": false,
+      "affects": "to_source",
+      "affects_why": "a witness is affected by a change in the statement it proves",
+      "anchor_ends": [
+        "from",
+        "to"
+      ],
+      "attrs": {},
+      "classes": [
+        "evidence"
+      ],
+      "cover_role": "none",
+      "note": "valid only with a pinned statement, an assumption ledger and a second check",
+      "proofmap": "",
+      "qualifiers": [],
+      "rank_weight": [
+        2,
+        1
+      ],
+      "signatures": [
+        {
+          "from": [
+            "witness"
+          ],
+          "to": [
+            "formal_law"
+          ]
+        }
+      ],
+      "soundness": "must",
+      "sysml_v2": "EIJA-specific",
+      "trace": false
+    },
+    "realises": {
+      "acyclic": false,
+      "affects": "both",
+      "affects_why": "a realisation is affected by a change in its concept; the concept's realisation status by a change in the realisation",
+      "anchor_ends": [
+        "from",
+        "to"
+      ],
+      "attrs": {},
+      "classes": [
+        "declared"
+      ],
+      "cover_role": "none",
+      "proofmap": "implements",
+      "qualifiers": [],
+      "rank_weight": [
+        2,
+        1
+      ],
+      "signatures": [
+        {
+          "from": [
+            "symbol"
+          ],
+          "obligations": [
+            {
+              "min": 1,
+              "rule": "WV-054",
+              "scope": "term with ddd_role aggregate",
+              "side": "in"
+            }
+          ],
+          "to": [
+            "workflow_element",
+            "term",
+            "invariant"
+          ]
+        },
+        {
+          "from": [
+            "ui_view",
+            "ui_status"
+          ],
+          "to": [
+            "state"
+          ]
+        },
+        {
+          "from": [
+            "ui_control"
+          ],
+          "obligations": [
+            {
+              "min": 1,
+              "rule": "WV-031",
+              "scope": "transition",
+              "side": "in"
+            }
+          ],
+          "to": [
+            "transition"
+          ]
+        }
+      ],
+      "soundness": "must",
+      "sysml_v2": "EIJA-specific",
+      "trace": true
+    },
+    "refines": {
+      "acyclic": true,
+      "affects": "to_source",
+      "affects_why": "a refinement is affected by a change in what it refines",
+      "anchor_ends": [
+        "to"
+      ],
+      "attrs": {},
+      "classes": [
+        "declared"
+      ],
+      "cover_role": "none",
+      "note": "term to term is SKOS broader (child refines parent); formal_model to formal_model is abstraction refinement",
+      "proofmap": "",
+      "qualifiers": [],
+      "rank_weight": [
+        2,
+        1
+      ],
+      "signatures": [
+        {
+          "from": [
+            "requirement"
+          ],
+          "max_in": 1,
+          "to": [
+            "requirement"
+          ]
+        },
+        {
+          "from": [
+            "term"
+          ],
+          "to": [
+            "term"
+          ]
+        },
+        {
+          "from": [
+            "formal_model"
+          ],
+          "to": [
+            "formal_model"
+          ]
+        },
+        {
+          "from": [
+            "invariant"
+          ],
+          "to": [
+            "invariant"
+          ]
+        }
+      ],
+      "soundness": "must",
+      "sysml_v2": "EIJA-specific",
+      "trace": true
+    },
+    "renamed_to": {
+      "acyclic": true,
+      "affects": "none",
+      "affects_why": "a rename record is applied by resolution, not by impact",
+      "anchor_ends": [],
+      "attrs": {},
+      "classes": [
+        "declared"
+      ],
+      "cover_role": "none",
+      "from_may_dangle": true,
+      "proofmap": "",
+      "qualifiers": [],
+      "rank_weight": [
+        2,
+        1
+      ],
+      "signatures": [
+        {
+          "from": [
+            "symbol",
+            "module",
+            "term",
+            "requirement",
+            "ui_control",
+            "state",
+            "transition",
+            "role",
+            "guard",
+            "effect"
+          ],
+          "max_in": 1,
+          "max_out": 1,
+          "note": "from may be absent from the graph (tombstone); path-level form: an edge between two module ids moves the whole file",
+          "same_type": true,
+          "to": [
+            "symbol",
+            "module",
+            "term",
+            "requirement",
+            "ui_control",
+            "state",
+            "transition",
+            "role",
+            "guard",
+            "effect"
+          ]
+        }
+      ],
+      "soundness": "must",
+      "sysml_v2": "EIJA-specific",
+      "trace": false
+    },
+    "satisfies": {
+      "acyclic": false,
+      "affects": "both",
+      "affects_why": "an implementation is affected by a change in its requirement; the requirement's satisfaction is affected by a change in the implementation",
+      "anchor_ends": [
+        "from",
+        "to"
+      ],
+      "attrs": {},
+      "classes": [
+        "declared"
+      ],
+      "cover_role": "none",
+      "proofmap": "satisfies; implements",
+      "qualifiers": [],
+      "rank_weight": [
+        2,
+        1
+      ],
+      "signatures": [
+        {
+          "from": [
+            "symbol",
+            "workflow_element",
+            "ui_control",
+            "component",
+            "contract"
+          ],
+          "obligations": [
+            {
+              "min": 1,
+              "rule": "WV-011",
+              "scope": "requirement",
+              "side": "in"
+            }
+          ],
+          "to": [
+            "requirement"
+          ]
+        }
+      ],
+      "soundness": "must",
+      "sysml_v2": "satisfy",
+      "trace": true
+    },
+    "serves": {
+      "acyclic": false,
+      "affects": "to_source",
+      "affects_why": "a journey or requirement is affected by a change in its persona",
+      "anchor_ends": [
+        "to"
+      ],
+      "attrs": {},
+      "classes": [
+        "declared"
+      ],
+      "cover_role": "none",
+      "proofmap": "",
+      "qualifiers": [],
+      "rank_weight": [
+        2,
+        1
+      ],
+      "signatures": [
+        {
+          "from": [
+            "journey",
+            "requirement",
+            "ui_view"
+          ],
+          "to": [
+            "persona"
+          ]
+        }
+      ],
+      "soundness": "must",
+      "sysml_v2": "EIJA-specific",
+      "trace": false
+    },
+    "styled_by": {
+      "acyclic": false,
+      "affects": "to_source",
+      "affects_why": "a UI node is affected by a change in its token",
+      "anchor_ends": [
+        "to"
+      ],
+      "attrs": {},
+      "classes": [
+        "derived"
+      ],
+      "cover_role": "none",
+      "proofmap": "",
+      "qualifiers": [],
+      "rank_weight": [
+        2,
+        1
+      ],
+      "signatures": [
+        {
+          "from": [
+            "ui_node"
+          ],
+          "to": [
+            "design_token"
+          ]
+        }
+      ],
+      "soundness": "may",
+      "sysml_v2": "EIJA-specific",
+      "trace": false
+    },
+    "supersedes": {
+      "acyclic": true,
+      "affects": "none",
+      "affects_why": "supersession is reported by a rule over documents links",
+      "anchor_ends": [],
+      "attrs": {},
+      "classes": [
+        "declared"
+      ],
+      "cover_role": "none",
+      "proofmap": "",
+      "qualifiers": [],
+      "rank_weight": [
+        2,
+        1
+      ],
+      "signatures": [
+        {
+          "from": [
+            "adr"
+          ],
+          "max_in": 1,
+          "to": [
+            "adr"
+          ]
+        }
+      ],
+      "soundness": "must",
+      "sysml_v2": "EIJA-specific",
+      "trace": false
+    },
+    "supports": {
+      "acyclic": false,
+      "affects": "to_target",
+      "affects_why": "a claim is affected by a change in its support",
+      "anchor_ends": [
+        "from"
+      ],
+      "attrs": {},
+      "classes": [
+        "declared"
+      ],
+      "cover_role": "none",
+      "proofmap": "",
+      "qualifiers": [],
+      "rank_weight": [
+        2,
+        1
+      ],
+      "signatures": [
+        {
+          "from": [
+            "evidence",
+            "link_certificate",
+            "decision"
+          ],
+          "to": [
+            "claim"
+          ]
+        }
+      ],
+      "soundness": "must",
+      "sysml_v2": "EIJA-specific",
+      "trace": false
+    },
+    "verifies": {
+      "acyclic": false,
+      "affects": "both",
+      "affects_why": "a verifier is affected by a change in what it verifies; the verified thing's evidence is affected by a change in the verifier",
+      "anchor_ends": [
+        "from",
+        "to"
+      ],
+      "attrs": {},
+      "classes": [
+        "declared"
+      ],
+      "cover_role": "verifier",
+      "note": "a model check that verifies a requirement carries the label CHECKED_BOUNDED; a model proof is not a code proof",
+      "proofmap": "verifies",
+      "qualifiers": [],
+      "rank_weight": [
+        2,
+        1
+      ],
+      "signatures": [
+        {
+          "from": [
+            "verifier"
+          ],
+          "obligations": [
+            {
+              "min": 1,
+              "rule": "WV-010",
+              "scope": "requirement",
+              "side": "in"
+            }
+          ],
+          "to": [
+            "requirement",
+            "invariant",
+            "workflow_element"
+          ]
+        }
+      ],
+      "soundness": "must",
+      "sysml_v2": "verify",
+      "trace": true
+    }
+  },
+  "metamodel_version": "1.0.0",
+  "node_types": {
+    "adr": {
+      "attrs": {
+        "adr_status": {
+          "enum": [
+            "proposed",
+            "accepted",
+            "superseded"
+          ]
+        },
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://docs/adr/0089-weave-metamodel-identity.md",
+      "extractor": "markdown",
+      "fragment": {
+        "pattern": "adr-[0-9]{3}",
+        "presence": "optional"
+      },
+      "layer": "requirements",
+      "methods": [
+        "lf-sha256-v1",
+        "md-table-row-v1"
+      ],
+      "methods_by_fragment": {
+        "with_fragment": [
+          "md-table-row-v1"
+        ],
+        "without_fragment": [
+          "lf-sha256-v1"
+        ]
+      },
+      "note": "a fragment names one decision inside a log file such as ADR-001 inside 0000-poc-decision-log.md (the okf lane has 14 such pages)",
+      "path": "docs/adr/[0-9]{4}-[a-z0-9-]+\\.md",
+      "proofmap": "design",
+      "sysml_v2": "EIJA-specific",
+      "truth": "declared"
+    },
+    "agent_run": {
+      "attrs": {
+        "agent": {
+          "maxLength": 200,
+          "type": "string"
+        },
+        "cli_version": {
+          "maxLength": 200,
+          "type": "string"
+        },
+        "model": {
+          "maxLength": 200,
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://graph/transcripts/run-0001.json",
+      "extractor": "json",
+      "fragment": {
+        "pattern": null,
+        "presence": "none"
+      },
+      "layer": "governance",
+      "methods": [
+        "lf-sha256-v1"
+      ],
+      "path": "(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*",
+      "proofmap": "prompt",
+      "sysml_v2": "EIJA-specific",
+      "truth": "evidence"
+    },
+    "api_operation": {
+      "attrs": {
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://contracts/openapi.json#verify_case",
+      "extractor": "json",
+      "fragment": {
+        "pattern": "[A-Za-z0-9][A-Za-z0-9._~-]*",
+        "presence": "required"
+      },
+      "layer": "code",
+      "methods": [
+        "json-key-v1"
+      ],
+      "path": "contracts/openapi\\.json",
+      "proofmap": "api, route",
+      "sysml_v2": "EIJA-specific",
+      "truth": "derived"
+    },
+    "bounded_context": {
+      "attrs": {
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://docs/architecture/ARCHITECTURE.md#assurance",
+      "extractor": "markdown",
+      "fragment": {
+        "pattern": "[a-z0-9]+(?:-[a-z0-9]+)*",
+        "presence": "required"
+      },
+      "layer": "language",
+      "methods": [
+        "md-table-row-v1"
+      ],
+      "path": "(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.md",
+      "proofmap": "component",
+      "sysml_v2": "package",
+      "truth": "declared"
+    },
+    "claim": {
+      "attrs": {
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://graph/claims.json#G1",
+      "extractor": "json",
+      "fragment": {
+        "pattern": "[A-Za-z0-9][A-Za-z0-9._~-]*",
+        "presence": "required"
+      },
+      "layer": "verification",
+      "methods": [
+        "json-key-v1"
+      ],
+      "path": "(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.json",
+      "proofmap": "",
+      "sysml_v2": "EIJA-specific (GSN goal)",
+      "truth": "declared"
+    },
+    "component": {
+      "attrs": {
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://graph/architecture.json#domain",
+      "extractor": "LikeC4 or Structurizr JSON export",
+      "fragment": {
+        "pattern": "[A-Za-z0-9][A-Za-z0-9._~-]*",
+        "presence": "required"
+      },
+      "layer": "views",
+      "methods": [
+        "json-key-v1"
+      ],
+      "path": "(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.json",
+      "proofmap": "component",
+      "sysml_v2": "part def",
+      "truth": "declared"
+    },
+    "contract": {
+      "attrs": {
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://contracts/workflow.schema.json",
+      "extractor": "json",
+      "fragment": {
+        "pattern": "[A-Za-z0-9][A-Za-z0-9._~-]*",
+        "presence": "optional"
+      },
+      "layer": "code",
+      "methods": [
+        "lf-sha256-v1",
+        "json-key-v1"
+      ],
+      "methods_by_fragment": {
+        "with_fragment": [
+          "json-key-v1"
+        ],
+        "without_fragment": [
+          "lf-sha256-v1"
+        ]
+      },
+      "path": "contracts/[A-Za-z0-9._-]+\\.json",
+      "proofmap": "api_contract",
+      "sysml_v2": "attribute def (PREDICTION)",
+      "truth": "derived"
+    },
+    "decision": {
+      "attrs": {
+        "actor": {
+          "maxLength": 200,
+          "type": "string"
+        },
+        "subject": {
+          "maxLength": 200,
+          "type": "string"
+        },
+        "subject_kind": {
+          "enum": [
+            "node",
+            "edge"
+          ]
+        },
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://graph/ledger/0.jsonl#9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f",
+      "extractor": "jsonl",
+      "fragment": {
+        "pattern": "[0-9a-f]{64}",
+        "presence": "required"
+      },
+      "layer": "governance",
+      "methods": [
+        "json-key-v1"
+      ],
+      "path": "graph/ledger(?:/[a-z0-9_-]+)?\\.jsonl",
+      "proofmap": "",
+      "sysml_v2": "EIJA-specific",
+      "truth": "declared"
+    },
+    "design_token": {
+      "attrs": {
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        },
+        "token_type": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://graph/tokens.json#color.text.primary",
+      "extractor": "json, css",
+      "fragment": {
+        "pattern": "[A-Za-z0-9][A-Za-z0-9._~-]*",
+        "presence": "required"
+      },
+      "layer": "ui",
+      "methods": [
+        "json-key-v1"
+      ],
+      "path": "(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.json",
+      "proofmap": "",
+      "sysml_v2": "EIJA-specific (DTCG 2025.10 token)",
+      "truth": "declared"
+    },
+    "diagram": {
+      "attrs": {
+        "notation": {
+          "enum": [
+            "mermaid",
+            "plantuml",
+            "dot",
+            "sysml",
+            "likec4",
+            "structurizr",
+            "drawio"
+          ]
+        },
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://docs/diagrams/workflow.mmd",
+      "extractor": "text (semantic_hash provenance comment)",
+      "fragment": {
+        "pattern": null,
+        "presence": "none"
+      },
+      "layer": "views",
+      "methods": [
+        "lf-sha256-v1"
+      ],
+      "path": "docs/diagrams/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*",
+      "proofmap": "uml",
+      "sysml_v2": "EIJA-specific (view)",
+      "truth": "derived"
+    },
+    "diagram_element": {
+      "attrs": {
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://docs/diagrams/workflow.mmd#Draft",
+      "extractor": "text",
+      "fragment": {
+        "pattern": "[A-Za-z0-9][A-Za-z0-9._~-]*",
+        "presence": "required"
+      },
+      "layer": "views",
+      "methods": [
+        "lf-sha256-v1"
+      ],
+      "path": "docs/diagrams/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*",
+      "proofmap": "uml",
+      "sysml_v2": "EIJA-specific",
+      "truth": "derived"
+    },
+    "document": {
+      "attrs": {
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://docs/weave/ARCHITECTURE.md#layers",
+      "extractor": "markdown",
+      "fragment": {
+        "pattern": "[a-z0-9]+(?:-[a-z0-9]+)*",
+        "presence": "optional"
+      },
+      "layer": "knowledge",
+      "methods": [
+        "lf-sha256-v1",
+        "md-table-row-v1"
+      ],
+      "methods_by_fragment": {
+        "with_fragment": [
+          "md-table-row-v1",
+          "lf-sha256-v1"
+        ],
+        "without_fragment": [
+          "lf-sha256-v1"
+        ]
+      },
+      "note": "a fragment names a table row (md-table-row-v1); the okf lane's Verification Technique pages map here",
+      "path": "(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.md",
+      "proofmap": "doc",
+      "sysml_v2": "doc (comment annotation)",
+      "truth": "declared"
+    },
+    "effect": {
+      "attrs": {
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://examples/excursion-baseline.json#effect/notify_registrar",
+      "extractor": "json",
+      "fragment": {
+        "pattern": "effect/(?:[A-Za-z0-9._~:-]|%[0-9A-F]{2})+",
+        "presence": "required"
+      },
+      "layer": "workflow",
+      "methods": [
+        "workflow-element-v1"
+      ],
+      "path": "(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.json",
+      "proofmap": "rule",
+      "sysml_v2": "metadata def (PREDICTION)",
+      "truth": "declared"
+    },
+    "evidence": {
+      "attrs": {
+        "evidence_kind": {
+          "enum": [
+            "receipt",
+            "report",
+            "log"
+          ]
+        },
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://evidence/release-report.json",
+      "extractor": "json",
+      "fragment": {
+        "pattern": null,
+        "presence": "none"
+      },
+      "layer": "verification",
+      "methods": [
+        "lf-sha256-v1"
+      ],
+      "path": "(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*",
+      "proofmap": "proof",
+      "sysml_v2": "EIJA-specific",
+      "truth": "evidence"
+    },
+    "formal_law": {
+      "attrs": {
+        "technique": {
+          "enum": [
+            "bend",
+            "tla",
+            "smt",
+            "other"
+          ]
+        },
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://verification/bend/laws.bend#mandatory_guards",
+      "extractor": "text",
+      "fragment": {
+        "pattern": "[A-Za-z0-9][A-Za-z0-9._~-]*",
+        "presence": "required"
+      },
+      "layer": "verification",
+      "methods": [
+        "law-block-v1"
+      ],
+      "path": "verification/[a-z0-9_-]+/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*",
+      "proofmap": "proof",
+      "sysml_v2": "EIJA-specific (statement)",
+      "truth": "declared"
+    },
+    "formal_model": {
+      "attrs": {
+        "technique": {
+          "enum": [
+            "bend",
+            "tla",
+            "smt",
+            "other"
+          ]
+        },
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://verification/tla/Workflow.tla",
+      "extractor": "text",
+      "fragment": {
+        "pattern": null,
+        "presence": "none"
+      },
+      "layer": "verification",
+      "methods": [
+        "lf-sha256-v1"
+      ],
+      "path": "verification/[a-z0-9_-]+/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*",
+      "proofmap": "proof",
+      "sysml_v2": "EIJA-specific",
+      "truth": "declared"
+    },
+    "gate": {
+      "attrs": {
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://quality/sessions/graph.py#fast",
+      "extractor": "ast",
+      "fragment": {
+        "pattern": "[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*",
+        "presence": "required"
+      },
+      "layer": "process",
+      "methods": [
+        "ast-v2",
+        "ast-v1"
+      ],
+      "path": "quality/sessions/[a-z0-9_]+\\.py",
+      "proofmap": "script",
+      "sysml_v2": "EIJA-specific",
+      "truth": "derived"
+    },
+    "guard": {
+      "attrs": {
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://examples/excursion-baseline.json#guard/actor_active",
+      "extractor": "json",
+      "fragment": {
+        "pattern": "guard/(?:[A-Za-z0-9._~:-]|%[0-9A-F]{2})+",
+        "presence": "required"
+      },
+      "layer": "workflow",
+      "methods": [
+        "workflow-element-v1"
+      ],
+      "path": "(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.json",
+      "proofmap": "rule",
+      "sysml_v2": "metadata def (PREDICTION)",
+      "truth": "declared"
+    },
+    "invariant": {
+      "attrs": {
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://docs/architecture/ARCHITECTURE.md#inv-mandatory-guards",
+      "extractor": "markdown, ast",
+      "fragment": {
+        "pattern": "[A-Za-z0-9][A-Za-z0-9._~-]*",
+        "presence": "required"
+      },
+      "layer": "language",
+      "methods": [
+        "md-bold-term-v1",
+        "ast-v1",
+        "json-key-v1"
+      ],
+      "path": "(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*",
+      "proofmap": "rule",
+      "sysml_v2": "EIJA-specific",
+      "truth": "declared"
+    },
+    "journey": {
+      "attrs": {
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://examples/excursion-baseline.json#journey/Teacher",
+      "extractor": "json",
+      "fragment": {
+        "pattern": "journey/(?:[A-Za-z0-9._~:-]|%[0-9A-F]{2})+",
+        "presence": "required"
+      },
+      "layer": "requirements",
+      "methods": [
+        "workflow-semantic-v1"
+      ],
+      "path": "(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.json",
+      "proofmap": "plan",
+      "sysml_v2": "EIJA-specific",
+      "truth": "derived"
+    },
+    "lane": {
+      "attrs": {
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://docs/adr/README.md#weave",
+      "extractor": "markdown",
+      "fragment": {
+        "pattern": "[a-z0-9]+(?:-[a-z0-9]+)*",
+        "presence": "required"
+      },
+      "layer": "process",
+      "methods": [
+        "md-table-row-v1"
+      ],
+      "note": "the owner's 'task' maps here",
+      "path": "docs/adr/README\\.md",
+      "proofmap": "",
+      "sysml_v2": "EIJA-specific",
+      "truth": "declared"
+    },
+    "link_certificate": {
+      "attrs": {
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://graph/certificates/LC-0001.json",
+      "extractor": "json",
+      "fragment": {
+        "pattern": null,
+        "presence": "none"
+      },
+      "layer": "verification",
+      "methods": [
+        "lf-sha256-v1"
+      ],
+      "path": "(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*",
+      "proofmap": "",
+      "sysml_v2": "EIJA-specific",
+      "truth": "evidence"
+    },
+    "module": {
+      "attrs": {
+        "lang": {
+          "enum": [
+            "python"
+          ]
+        },
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://src/eija_studio/domain/impact.py",
+      "extractor": "ast",
+      "fragment": {
+        "pattern": null,
+        "presence": "none"
+      },
+      "layer": "code",
+      "methods": [
+        "ast-api-v1"
+      ],
+      "path": "(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.py",
+      "proofmap": "code_surface",
+      "sysml_v2": "package",
+      "truth": "derived"
+    },
+    "okf_page": {
+      "attrs": {
+        "okf_status": {
+          "enum": [
+            "draft",
+            "stable",
+            "deprecated"
+          ]
+        },
+        "okf_type": {
+          "maxLength": 200,
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://okf/symbols/domain/impact/closure.md",
+      "extractor": "okf lane frontmatter",
+      "fragment": {
+        "pattern": null,
+        "presence": "none"
+      },
+      "layer": "knowledge",
+      "methods": [
+        "lf-sha256-v1",
+        "okf-human-v1"
+      ],
+      "path": "okf/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*\\.md",
+      "proofmap": "doc",
+      "sysml_v2": "EIJA-specific",
+      "truth": "derived"
+    },
+    "persona": {
+      "attrs": {
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://docs/personas.md#local-owner",
+      "extractor": "markdown",
+      "fragment": {
+        "pattern": "[a-z0-9]+(?:-[a-z0-9]+)*",
+        "presence": "required"
+      },
+      "layer": "requirements",
+      "methods": [
+        "md-table-row-v1"
+      ],
+      "path": "(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.md",
+      "proofmap": "",
+      "sysml_v2": "EIJA-specific",
+      "truth": "declared"
+    },
+    "property": {
+      "attrs": {
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://tests/property/test_impact.py#test_closure_is_monotone",
+      "extractor": "ast",
+      "fragment": {
+        "pattern": "[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*",
+        "presence": "required"
+      },
+      "layer": "verification",
+      "methods": [
+        "ast-v2",
+        "ast-v1"
+      ],
+      "path": "tests/property/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*\\.py",
+      "proofmap": "test",
+      "sysml_v2": "verification def (PREDICTION)",
+      "truth": "derived"
+    },
+    "requirement": {
+      "attrs": {
+        "area": {
+          "maxLength": 200,
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://docs/verification/ACCEPTANCE_MATRIX.csv#AC01",
+      "extractor": "csv, markdown",
+      "fragment": {
+        "pattern": "[A-Za-z0-9][A-Za-z0-9._~-]*",
+        "presence": "required"
+      },
+      "layer": "requirements",
+      "methods": [
+        "csv-row-v1"
+      ],
+      "path": "(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.csv",
+      "proofmap": "requirement",
+      "sysml_v2": "requirement def",
+      "truth": "declared"
+    },
+    "role": {
+      "attrs": {
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://examples/excursion-baseline.json#role/Teacher",
+      "extractor": "json",
+      "fragment": {
+        "pattern": "role/(?:[A-Za-z0-9._~:-]|%[0-9A-F]{2})+",
+        "presence": "required"
+      },
+      "layer": "workflow",
+      "methods": [
+        "workflow-element-v1"
+      ],
+      "path": "(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.json",
+      "proofmap": "rule",
+      "sysml_v2": "metadata def (PREDICTION)",
+      "truth": "declared"
+    },
+    "state": {
+      "attrs": {
+        "initial": {
+          "type": "boolean"
+        },
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://examples/excursion-baseline.json#state/Draft",
+      "extractor": "json",
+      "fragment": {
+        "pattern": "state/(?:[A-Za-z0-9._~:-]|%[0-9A-F]{2})+",
+        "presence": "required"
+      },
+      "layer": "workflow",
+      "methods": [
+        "workflow-element-v1"
+      ],
+      "path": "(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.json",
+      "proofmap": "rule",
+      "sysml_v2": "state def",
+      "truth": "declared"
+    },
+    "symbol": {
+      "attrs": {
+        "kind": {
+          "enum": [
+            "function",
+            "class",
+            "method",
+            "constant",
+            "type_alias"
+          ]
+        },
+        "lang": {
+          "enum": [
+            "python"
+          ]
+        },
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        },
+        "visibility": {
+          "enum": [
+            "public",
+            "private"
+          ]
+        }
+      },
+      "example": "repo://src/eija_studio/domain/impact.py#closure",
+      "extractor": "ast; LibCST for qualified names",
+      "fragment": {
+        "pattern": "[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*",
+        "presence": "required"
+      },
+      "layer": "code",
+      "methods": [
+        "ast-v2",
+        "ast-sig-v1",
+        "ast-v1"
+      ],
+      "path": "(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.py",
+      "proofmap": "code_surface",
+      "sysml_v2": "EIJA-specific (class to part def is a PREDICTION)",
+      "truth": "derived"
+    },
+    "term": {
+      "attrs": {
+        "ddd_role": {
+          "enum": [
+            "aggregate",
+            "entity",
+            "value_object",
+            "domain_event",
+            "domain_service",
+            "policy",
+            "concept"
+          ]
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "active",
+            "deprecated"
+          ]
+        },
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://docs/architecture/ARCHITECTURE.md#change-case",
+      "extractor": "markdown, json registry",
+      "fragment": {
+        "pattern": "[a-z0-9][a-z0-9._-]*",
+        "presence": "required"
+      },
+      "layer": "language",
+      "methods": [
+        "md-bold-term-v1",
+        "json-key-v1"
+      ],
+      "path": "(?:(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.md|(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.json)",
+      "proofmap": "",
+      "sysml_v2": "EIJA-specific (SKOS concept)",
+      "truth": "declared"
+    },
+    "test": {
+      "attrs": {
+        "kind": {
+          "enum": [
+            "unit",
+            "integration",
+            "property",
+            "golden",
+            "e2e"
+          ]
+        },
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://tests/test_domain.py#test_impact_closure_terminates_on_cycles",
+      "extractor": "ast",
+      "fragment": {
+        "pattern": "[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*",
+        "presence": "optional"
+      },
+      "layer": "verification",
+      "methods": [
+        "ast-v2",
+        "ast-v1",
+        "lf-sha256-v1"
+      ],
+      "methods_by_fragment": {
+        "with_fragment": [
+          "ast-v2",
+          "ast-v1"
+        ],
+        "without_fragment": [
+          "lf-sha256-v1"
+        ]
+      },
+      "note": "a fragment names one test function (ast-v1); without a fragment the node is a whole test or smoke file (lf-sha256-v1), which is how the acceptance matrix cites evidence today",
+      "path": "(?:tests|scripts)/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*\\.py",
+      "proofmap": "test",
+      "sysml_v2": "verification def",
+      "truth": "derived"
+    },
+    "tool": {
+      "attrs": {
+        "pin": {
+          "maxLength": 200,
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://graph/checkers.json#tlc",
+      "extractor": "json",
+      "fragment": {
+        "pattern": "[A-Za-z0-9][A-Za-z0-9._~-]*",
+        "presence": "required"
+      },
+      "layer": "verification",
+      "methods": [
+        "json-key-v1"
+      ],
+      "path": "graph/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*\\.json",
+      "proofmap": "",
+      "sysml_v2": "EIJA-specific",
+      "truth": "declared"
+    },
+    "transition": {
+      "attrs": {
+        "action": {
+          "maxLength": 200,
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://examples/excursion-baseline.json#transition/T-SUBMIT",
+      "extractor": "json",
+      "fragment": {
+        "pattern": "transition/(?:[A-Za-z0-9._~:-]|%[0-9A-F]{2})+",
+        "presence": "required"
+      },
+      "layer": "workflow",
+      "methods": [
+        "workflow-element-v1"
+      ],
+      "path": "(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.json",
+      "proofmap": "rule",
+      "sysml_v2": "transition",
+      "truth": "declared"
+    },
+    "ui_control": {
+      "attrs": {
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://graph/ui-model.json#control/submit",
+      "extractor": "html, js, ui-model",
+      "fragment": {
+        "pattern": "control/(?:[A-Za-z0-9._~:-]|%[0-9A-F]{2})+",
+        "presence": "required"
+      },
+      "layer": "ui",
+      "methods": [
+        "html-key-v1"
+      ],
+      "path": "(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.json",
+      "proofmap": "component",
+      "sysml_v2": "EIJA-specific",
+      "truth": "declared"
+    },
+    "ui_field": {
+      "attrs": {
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://graph/ui-model.json#field/reason",
+      "extractor": "html, ui-model",
+      "fragment": {
+        "pattern": "field/(?:[A-Za-z0-9._~:-]|%[0-9A-F]{2})+",
+        "presence": "required"
+      },
+      "layer": "ui",
+      "methods": [
+        "html-key-v1"
+      ],
+      "path": "(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.json",
+      "proofmap": "component",
+      "sysml_v2": "EIJA-specific",
+      "truth": "declared"
+    },
+    "ui_region": {
+      "attrs": {
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://graph/ui-model.json#region/actions",
+      "extractor": "html, ui-model",
+      "fragment": {
+        "pattern": "region/(?:[A-Za-z0-9._~:-]|%[0-9A-F]{2})+",
+        "presence": "required"
+      },
+      "layer": "ui",
+      "methods": [
+        "html-key-v1"
+      ],
+      "path": "(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.json",
+      "proofmap": "component",
+      "sysml_v2": "EIJA-specific",
+      "truth": "declared"
+    },
+    "ui_status": {
+      "attrs": {
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://graph/ui-model.json#status/state-badge",
+      "extractor": "html, ui-model",
+      "fragment": {
+        "pattern": "status/(?:[A-Za-z0-9._~:-]|%[0-9A-F]{2})+",
+        "presence": "required"
+      },
+      "layer": "ui",
+      "methods": [
+        "html-key-v1"
+      ],
+      "path": "(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.json",
+      "proofmap": "component",
+      "sysml_v2": "EIJA-specific",
+      "truth": "declared"
+    },
+    "ui_table": {
+      "attrs": {
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://graph/ui-model.json#table/receipts",
+      "extractor": "html, ui-model",
+      "fragment": {
+        "pattern": "table/(?:[A-Za-z0-9._~:-]|%[0-9A-F]{2})+",
+        "presence": "required"
+      },
+      "layer": "ui",
+      "methods": [
+        "html-key-v1"
+      ],
+      "path": "(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.json",
+      "proofmap": "table",
+      "sysml_v2": "EIJA-specific",
+      "truth": "declared"
+    },
+    "ui_view": {
+      "attrs": {
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://graph/ui-model.json#view/case",
+      "extractor": "html, ui-model",
+      "fragment": {
+        "pattern": "view/(?:[A-Za-z0-9._~:-]|%[0-9A-F]{2})+",
+        "presence": "required"
+      },
+      "layer": "ui",
+      "methods": [
+        "html-key-v1"
+      ],
+      "path": "(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.json",
+      "proofmap": "component",
+      "sysml_v2": "EIJA-specific",
+      "truth": "declared"
+    },
+    "witness": {
+      "attrs": {
+        "technique": {
+          "enum": [
+            "bend",
+            "tla",
+            "smt",
+            "property",
+            "mutation",
+            "other"
+          ]
+        },
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://reports/witness/bend-mandatory-guards.json",
+      "extractor": "adapter per lane",
+      "fragment": {
+        "pattern": null,
+        "presence": "none"
+      },
+      "layer": "verification",
+      "methods": [
+        "lf-sha256-v1"
+      ],
+      "path": "(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*",
+      "proofmap": "proof",
+      "sysml_v2": "EIJA-specific",
+      "truth": "evidence"
+    },
+    "workflow": {
+      "attrs": {
+        "title": {
+          "maxLength": 200,
+          "type": "string"
+        }
+      },
+      "example": "repo://examples/excursion-baseline.json",
+      "extractor": "json",
+      "fragment": {
+        "pattern": null,
+        "presence": "none"
+      },
+      "layer": "workflow",
+      "methods": [
+        "workflow-semantic-v1"
+      ],
+      "path": "(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.json",
+      "proofmap": "",
+      "sysml_v2": "package (PREDICTION)",
+      "truth": "declared"
+    }
+  },
+  "provenance": [
+    "exact",
+    "syntactic",
+    "candidate",
+    "tool-resolved",
+    "unresolved",
+    "partial"
+  ],
+  "schema": "eija.weave.metamodel/v1",
+  "status": "DESIGN (proposed by lane weave, ADR-0089)",
+  "supertypes": {
+    "model_concept": [
+      "state",
+      "transition",
+      "role",
+      "guard",
+      "effect",
+      "term",
+      "invariant"
+    ],
+    "ui_node": [
+      "ui_view",
+      "ui_region",
+      "ui_control",
+      "ui_field",
+      "ui_status",
+      "ui_table"
+    ],
+    "verifier": [
+      "test",
+      "property",
+      "formal_model",
+      "witness"
+    ],
+    "workflow_element": [
+      "state",
+      "transition",
+      "role",
+      "guard",
+      "effect"
+    ]
+  },
+  "views": {
+    "assurance": [
+      "verifies",
+      "models",
+      "conforms_to",
+      "proves",
+      "formalises",
+      "attests",
+      "checked_by",
+      "supports",
+      "defeats",
+      "decides"
+    ],
+    "governance": [
+      "decides",
+      "proposes",
+      "renamed_to",
+      "supersedes",
+      "motivates"
+    ],
+    "language": [
+      "names",
+      "refines",
+      "contains",
+      "realises"
+    ],
+    "structure": [
+      "contains",
+      "depends_on",
+      "flows_to",
+      "calls",
+      "exposes",
+      "derived_from"
+    ],
+    "trace": [
+      "realises",
+      "satisfies",
+      "verifies",
+      "refines",
+      "models",
+      "formalises"
+    ],
+    "ui": [
+      "contains",
+      "realises",
+      "calls",
+      "styled_by",
+      "exercised_by",
+      "names"
+    ]
+  }
+}

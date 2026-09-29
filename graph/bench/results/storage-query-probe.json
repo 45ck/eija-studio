@@ -1,0 +1,253 @@
+{
+ "deterministic": {
+  "budgeted_closure_checks": {
+   "budgeted_cases": 300,
+   "cases_truncated_by_budget": 195,
+   "graphs": 300,
+   "kernel_copy_budgeted_result_mismatches_under_shuffled_edge_order": 0,
+   "kernel_copy_vs_real_kernel_mismatches": 0,
+   "sql_unbounded_closure_set_mismatches_vs_kernel_copy": 0
+  },
+  "collation_pitfalls": {
+   "codepoint_order": [
+    "B",
+    "a",
+    "z",
+    "é",
+    "～",
+    "😀"
+   ],
+   "python_sorted_equals_sqlite_binary_order": true,
+   "sqlite_GLOB_A_a_is_case_sensitive": true,
+   "sqlite_LIKE_A_a_is_case_insensitive": true,
+   "sqlite_default_collation_is_binary_utf8_memcmp": true,
+   "utf16_code_unit_order_equals_codepoint_order": false,
+   "utf16_order": [
+    "B",
+    "a",
+    "z",
+    "é",
+    "😀",
+    "～"
+   ]
+  },
+  "file_bytes_vs_insertion_order": {
+   "rowid_tables": {
+    "distinct_file_sha256_over_6_builds": 5,
+    "distinct_logical_dump_sha256": 1,
+    "distinct_vacuum_into_sha256": 5,
+    "same_shuffle_built_twice_file_bytes_equal": true
+   },
+   "without_rowid+rev_index": {
+    "distinct_file_sha256_over_6_builds": 5,
+    "distinct_logical_dump_sha256": 1,
+    "distinct_vacuum_into_sha256": 1,
+    "same_shuffle_built_twice_file_bytes_equal": true
+   }
+  },
+  "query_correctness": {
+   "edges": 20000,
+   "nodes": 7000,
+   "seeded_untested_requirements": 92,
+   "violation_query_rows_equal_seeded_set": true
+  },
+  "recursive_cte_termination": {
+   "limit_guard_rows": 1000,
+   "rows_returned": {
+    "UNION ALL, no guard except LIMIT": 1000,
+    "UNION carrying a depth column": 1000,
+    "UNION carrying a path column": 1000,
+    "UNION on node only": 4
+   },
+   "terminated_by_itself": {
+    "UNION ALL, no guard except LIMIT": false,
+    "UNION carrying a depth column": false,
+    "UNION carrying a path column": false,
+    "UNION on node only": true
+   }
+  },
+  "row_order_without_order_by": {
+   "rowid_tables": {
+    "distinct_orders_closure_with_total_order_by": 1,
+    "distinct_orders_recursive_closure_without_order_by": 1,
+    "distinct_orders_unindexed_filter_scan_without_order_by": 8
+   },
+   "shuffled_insertion_orders": 8,
+   "without_rowid": {
+    "distinct_orders_closure_with_total_order_by": 1,
+    "distinct_orders_recursive_closure_without_order_by": 1,
+    "distinct_orders_unindexed_filter_scan_without_order_by": 1
+   }
+  },
+  "witness_checks": {
+   "graphs": 600,
+   "graphs_where_first_parent_bfs_gives_a_different_witness": 0,
+   "mismatches_under_shuffled_edge_order": 0,
+   "mismatches_vs_bruteforce_oracle": 0,
+   "paths_checked": 3373
+  }
+ },
+ "deterministic_sha256": "f771bce3ee387fe7355c162403ec04dd9002a7d099494bc1719c1744a18f76aa",
+ "observations_outside_hash": {
+  "budgeted_closure_sql_limit": {
+   "graphs_where_sql_limit_budget_differs_from_kernel_truncated_set": 33,
+   "note": "depends on SQLite's undefined queue order without ORDER BY; outside the determinism hash on purpose",
+   "sqlite_version": "3.49.1"
+  }
+ },
+ "repository_counts": {
+  "okf": {
+   "by_extension": {
+    "(none)": 3,
+    ".css": 1,
+    ".csv": 1,
+    ".html": 1,
+    ".js": 1,
+    ".json": 22,
+    ".log": 2,
+    ".md": 234,
+    ".png": 6,
+    ".ps1": 1,
+    ".py": 53,
+    ".sh": 1,
+    ".toml": 1,
+    ".txt": 2,
+    ".xml": 1,
+    ".yml": 1
+   },
+   "head": "cdc4f37321de",
+   "markdown_relative_links": 1141,
+   "okf_pages": 210,
+   "python_def_and_class_nodes": 465,
+   "python_import_statements": 276,
+   "repo_uri_occurrences": 687,
+   "tracked_files": 331,
+   "tracked_files_modified_vs_head": 0
+  },
+  "weave": {
+   "by_extension": {
+    "(none)": 3,
+    ".css": 1,
+    ".csv": 1,
+    ".html": 1,
+    ".js": 1,
+    ".json": 22,
+    ".log": 2,
+    ".md": 21,
+    ".png": 6,
+    ".ps1": 1,
+    ".py": 41,
+    ".sh": 1,
+    ".toml": 1,
+    ".txt": 2,
+    ".xml": 1,
+    ".yml": 1
+   },
+   "head": "ddc43b9b82d2",
+   "markdown_relative_links": 17,
+   "okf_pages": 0,
+   "python_def_and_class_nodes": 270,
+   "python_import_statements": 187,
+   "repo_uri_occurrences": 1,
+   "tracked_files": 106,
+   "tracked_files_modified_vs_head": 2
+  }
+ },
+ "revision_note": "2026-09-29 audit revision: the deterministic block, its hash and script_sha256 were regenerated with the current script (adds budgeted_closure_checks; earlier sub-blocks byte-identical to the previous run). The timing and repository_counts blocks are UNCHANGED from the earlier full run made with the script whose hash is timing_script_sha256; the previous deterministic_sha256 was fb6a7d964eb9d3d7e02826e623117bf98f500b3480a60aa6ea200c8f1ceb16c0.",
+ "script_sha256": "dc84af0dc721ea7fe079df66d516b72638b198cc38262b54b0351e9e25afa566",
+ "timing": {
+  "by_edges": {
+   "10000": {
+    "build_s_file_default_pragmas": 0.669,
+    "build_s_file_journal_off_sync_off": 0.052,
+    "build_s_memory": 0.028,
+    "build_s_memory_int_interned_edges_only": 0.022,
+    "canonical_dump_and_root_hash_s": 0.069,
+    "closure_5_roots_cte_int_interned_ids_s": 0.0084,
+    "closure_5_roots_cte_text_ids_s": 0.0195,
+    "closure_plus_lexmin_witness_python_s": 0.0192,
+    "closure_size": 2346,
+    "duckdb_edge_load_s": 0.078,
+    "duckdb_violation_anti_join_s": 0.0058,
+    "index_file_bytes_journal_off": 1630208,
+    "neighbors_in_out_ms_p50_p99": [
+     0.0112,
+     0.0452
+    ],
+    "nodes": 3500,
+    "violation_impacted_untested_rows": 42,
+    "violation_impacted_untested_stratified_s": 0.0218,
+    "violation_untested_requirements_anti_join_s": 0.0006
+   },
+   "100000": {
+    "build_s_file_default_pragmas": 0.796,
+    "build_s_file_journal_off_sync_off": 0.536,
+    "build_s_memory": 0.544,
+    "build_s_memory_int_interned_edges_only": 0.186,
+    "canonical_dump_and_root_hash_s": 0.885,
+    "closure_5_roots_cte_int_interned_ids_s": 0.0975,
+    "closure_5_roots_cte_text_ids_s": 0.1578,
+    "closure_plus_lexmin_witness_python_s": 0.1731,
+    "closure_size": 23290,
+    "duckdb_edge_load_s": 0.171,
+    "duckdb_violation_anti_join_s": 0.0134,
+    "index_file_bytes_journal_off": 16998400,
+    "neighbors_in_out_ms_p50_p99": [
+     0.0128,
+     0.1635
+    ],
+    "nodes": 35000,
+    "violation_impacted_untested_rows": 381,
+    "violation_impacted_untested_stratified_s": 0.1827,
+    "violation_untested_requirements_anti_join_s": 0.0061
+   },
+   "1000000": {
+    "build_s_file_default_pragmas": 9.623,
+    "build_s_file_journal_off_sync_off": 5.724,
+    "build_s_memory": 5.228,
+    "build_s_memory_int_interned_edges_only": 1.879,
+    "canonical_dump_and_root_hash_s": 8.505,
+    "closure_5_roots_cte_int_interned_ids_s": 1.1237,
+    "closure_5_roots_cte_text_ids_s": 2.5058,
+    "closure_plus_lexmin_witness_python_s": 2.1626,
+    "closure_size": 232499,
+    "duckdb_edge_load_s": 0.439,
+    "duckdb_violation_anti_join_s": 0.0434,
+    "index_file_bytes_journal_off": 178798592,
+    "neighbors_in_out_ms_p50_p99": [
+     0.0128,
+     0.0377
+    ],
+    "nodes": 350000,
+    "violation_impacted_untested_rows": 3834,
+    "violation_impacted_untested_stratified_s": 3.7707,
+    "violation_untested_requirements_anti_join_s": 0.067
+   }
+  },
+  "cold_start": {
+   "python_bare_startup_ms_last": 55,
+   "python_import_duckdb_ms_median": 280,
+   "python_import_networkx_ms_median": 503,
+   "python_import_sqlite3_ms_median": 88
+  },
+  "environment": {
+   "note": "wall-clock, one machine, shared 16 GB PC, D: HDD scratch; not deterministic",
+   "platform": "Windows 11",
+   "python": "3.12.10",
+   "sqlite": "3.49.1"
+  },
+  "extraction_stdlib_ast_parse": {
+   "okf": {
+    "markdown_files_read": 234,
+    "median_of_5_s": 0.115,
+    "python_files_parsed": 53
+   },
+   "weave": {
+    "markdown_files_read": 21,
+    "median_of_5_s": 0.058,
+    "python_files_parsed": 41
+   }
+  }
+ },
+ "timing_script_sha256": "4f44a11a06854e7e7f31210f0aa12cc74e55d70ac4a0bee97d6dfe578977db88"
+}

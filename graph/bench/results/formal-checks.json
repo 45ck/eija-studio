@@ -1,0 +1,407 @@
+{
+  "F1_closure": {
+    "bfs_certificate_rejected_or_wrong": 0,
+    "cases": 1048576,
+    "domain": "all 2^16 digraphs with self-loops on 4 nodes x all 16 root sets",
+    "kernel_present": true,
+    "kernel_vs_kleene_mismatches": 0,
+    "negative_witness_rejected": 0,
+    "sqlite_cte": {
+      "cases": 4096,
+      "domain": "all digraphs on 3 nodes x all root sets",
+      "mismatches": 0
+    },
+    "status": "MEASURED",
+    "warshall_vs_kleene_mismatches": 0
+  },
+  "F1b_budget_semantics": {
+    "affected_not_subset_of_closure": 0,
+    "cases": 20480,
+    "complete_but_not_equal_to_closure": 0,
+    "domain": "all digraphs on 3 nodes x all root sets x budgets 0..4",
+    "frontier_not_in_closure": 0,
+    "status": "MEASURED"
+  },
+  "F1c_checker_soundness_and_mutants": {
+    "mutant_domain": "first counterexample searched over all digraphs on 3 nodes",
+    "mutants_with_counterexample": {
+      "a": true,
+      "b1": true,
+      "b2": true,
+      "b3": true,
+      "c": true
+    },
+    "real_checker_exhaustive": {
+      "accepted": 480,
+      "accepted_but_not_closure": 0,
+      "candidates": 5184,
+      "domain": "all digraphs on 2 nodes x roots x every (C, parent, rank in 0..2)"
+    },
+    "real_checker_perturbed_sample": {
+      "accepted": 34540,
+      "accepted_but_not_closure": 0,
+      "candidates": 60000,
+      "domain": "seeded (11) one-field perturbations of correct certificates, 3..6 nodes"
+    },
+    "status": "MEASURED"
+  },
+  "F2_status_algebras": {
+    "chains": 120,
+    "domain": "6 values: all pairs and 216 triples; flat kernel sequences of length 0..6 over 4 values; 120 chains x multisets of size 1..4; 64^k evidence-subset combinations for k = 1..3 checks",
+    "empty_claim_is_not_run": true,
+    "empty_join_is_not_run": true,
+    "empty_meet_is_not_run": true,
+    "flat_sequences_checked": 5460,
+    "gate_is_pass_iff_all_pass_violations_over_all_chains": 0,
+    "join_equals_kernel_aggregate_on_flat_inputs": true,
+    "join_laws": {
+      "associative": true,
+      "commutative": true,
+      "idempotent": true,
+      "identity_not_run": true
+    },
+    "join_of_PASS_and_NOT_RUN_is_PASS_so_required_checks_must_use_meet": "PASS",
+    "kernel_present": true,
+    "link_statuses_lifting_to_PASS": [
+      "COVERED"
+    ],
+    "negative_control_leaky_meet_of_PASS_and_NOT_RUN": "PASS",
+    "negative_control_vacuous_meet_passes_empty_gate": true,
+    "status": "MEASURED",
+    "two_level_cases": 266304,
+    "two_level_pass_iff_every_check_joins_to_pass_violations": 0
+  },
+  "F3_canonical_serialisation": {
+    "astral_vs_bmp_key_order": {
+      "jcs_subset": "{\"\ud800\udc00\":1,\"\uffff\":2}",
+      "kernel": "{\"\uffff\":2,\"\ud800\udc00\":1}"
+    },
+    "collisions_between_unequal_values": 0,
+    "dict_permutations_distinct_outputs": 1,
+    "differential_vs_rfc8785": {
+      "domain": "seeded random members of V: null, bool, safe integers, strings over a hostile 20-character alphabet, lists, dicts (depth <= 3)",
+      "mismatches": 0,
+      "rfc8785_version": "0.1.4",
+      "status": "MEASURED",
+      "values": 20000
+    },
+    "distinct_texts": 282,
+    "domain": "282 hand-built values over a hostile alphabet (quote, backslash, controls, DEL, U+2028, U+FFFF, astral, digit-like strings), dicts of up to 2 keys, lists of up to 2 items, nesting 2",
+    "framing": {
+      "distinct_frames": 800,
+      "framed_distinct": true,
+      "naive_concat_collides_a_bc_vs_ab_c": true,
+      "tuples": 800
+    },
+    "merkle": {
+      "distinct_roots": 1,
+      "duplicate_leaf_refused": true,
+      "leaf_change_changes_root": true,
+      "permutations": 24
+    },
+    "refusals": {
+      "big_int": true,
+      "bool_key": true,
+      "bytes": true,
+      "float": true,
+      "int_key": true,
+      "lone_surrogate": true,
+      "nan": true,
+      "neg_zero_float": true,
+      "set": true,
+      "tuple": true
+    },
+    "rfc8785_section_3_2_2_string_vector_ok": true,
+    "rfc8785_section_3_2_3_sort_vector_ok": true,
+    "roundtrip_failures_incl_type": 0,
+    "status": "MEASURED",
+    "values": 282
+  },
+  "F3b_kernel_canonical_hazards": {
+    "cases": {
+      "float_and_int_differ": [
+        "1.0",
+        "1"
+      ],
+      "int_key_and_str_key_same_text": true,
+      "integer_above_2_53_kept_exact": "1152921504606846976",
+      "lone_surrogate_fingerprint": "UnicodeEncodeError",
+      "mixed_key_types": "TypeError",
+      "nan": "ValueError",
+      "negative_zero": "-0.0",
+      "numeric_key_order_by_value_not_text": "{\"9\":2,\"10\":1}",
+      "tuple_and_list_same_text": true
+    },
+    "status": "MEASURED"
+  },
+  "F4_scc_and_topological_order": {
+    "acyclic_among_them": 543,
+    "checker_accepts_producer_order": 543,
+    "checker_disagrees_with_definition": 0,
+    "domain": "all digraphs on 4 nodes (SCC, topological order), all 27 x 512 labelings on 3 nodes",
+    "graphs": 65536,
+    "labelings_tried_on_3_nodes": 13824,
+    "loopless_digraphs": 4096,
+    "producer_labels_accepted_by_checker": 65536,
+    "producer_labels_different_from_mutual_reachability_definition": 0,
+    "producer_order_differs_from_brute_force_lexicographic_minimum": 0,
+    "status": "MEASURED"
+  },
+  "F4b_library_default_labels": {
+    "checker_accepts_nx_partition_after_min_member_relabel": 60,
+    "checker_rejects_raw_nx_labels_as_non_canonical": 60,
+    "distinct_min_member_labellings": 1,
+    "distinct_nx_condensation_labellings": 5,
+    "domain": "60 seeded insertion orders of one 6-node graph",
+    "networkx": "3.5",
+    "status": "MEASURED"
+  },
+  "F5_rules": {
+    "differential": {
+      "orphan_and_ill_typed": {
+        "fact_sets_where_a_final_head_is_non_empty": 138,
+        "mismatches_reference_vs_sqlite": 0,
+        "random_fact_sets": 200,
+        "strata": {
+          "link": 0,
+          "node": 0,
+          "ntype": 0,
+          "sig": 0,
+          "violation": 1
+        }
+      },
+      "reach_and_cycle": {
+        "fact_sets_where_a_final_head_is_non_empty": 110,
+        "mismatches_reference_vs_sqlite": 0,
+        "random_fact_sets": 200,
+        "strata": {
+          "cyc": 0,
+          "edge": 0,
+          "reach": 0
+        }
+      },
+      "stratified_two_levels": {
+        "fact_sets_where_a_final_head_is_non_empty": 140,
+        "mismatches_reference_vs_sqlite": 0,
+        "random_fact_sets": 200,
+        "strata": {
+          "edge": 0,
+          "node": 0,
+          "reach": 0,
+          "unreached": 1
+        }
+      },
+      "uncovered": {
+        "fact_sets_where_a_final_head_is_non_empty": 125,
+        "mismatches_reference_vs_sqlite": 0,
+        "random_fact_sets": 200,
+        "strata": {
+          "requirement": 0,
+          "verified": 0,
+          "verifies": 0,
+          "violation": 1
+        }
+      }
+    },
+    "loader_rejects": {
+      "mutual_negation": true,
+      "negation_in_recursion": true,
+      "unsafe_head_variable": true,
+      "unsafe_negated_variable": true
+    },
+    "recursion_guard": {
+      "count_with_limit_10_applied_outside": 10,
+      "count_with_limit_inside_the_recursive_select": 10,
+      "detect_truncation_by_asking_for_limit_plus_one": true,
+      "note": "a LIMIT that truncates silently must be turned into a finding, never into a shorter result",
+      "true_reach_size": 51
+    },
+    "sqlite": "3.49.1",
+    "status": "MEASURED"
+  },
+  "F5b_clingo_bridge": {
+    "clingo": "5.8.2",
+    "dead_rule_control_returns_none": true,
+    "differential": {
+      "orphan_and_ill_typed": {
+        "mismatches_reference_vs_clingo": 0,
+        "random_fact_sets": 100
+      },
+      "reach_and_cycle": {
+        "mismatches_reference_vs_clingo": 0,
+        "random_fact_sets": 100
+      },
+      "stratified_two_levels": {
+        "mismatches_reference_vs_clingo": 0,
+        "random_fact_sets": 100
+      },
+      "uncovered": {
+        "mismatches_reference_vs_clingo": 0,
+        "random_fact_sets": 100
+      }
+    },
+    "status": "MEASURED",
+    "synthesised_positive_fixtures": {
+      "orphan_and_ill_typed": {
+        "facts": 1,
+        "fixture": {
+          "link": [
+            [
+              "b",
+              "l1",
+              "calls",
+              "calls"
+            ]
+          ]
+        },
+        "replayed_in_reference_and_sqlite": true,
+        "target": "violation"
+      },
+      "reach_and_cycle": {
+        "facts": 1,
+        "fixture": {
+          "edge": [
+            [
+              "a",
+              "a"
+            ]
+          ]
+        },
+        "replayed_in_reference_and_sqlite": true,
+        "target": "cyc"
+      },
+      "stratified_two_levels": {
+        "facts": 1,
+        "fixture": {
+          "node": [
+            [
+              "c"
+            ]
+          ]
+        },
+        "replayed_in_reference_and_sqlite": true,
+        "target": "unreached"
+      },
+      "uncovered": {
+        "facts": 1,
+        "fixture": {
+          "requirement": [
+            [
+              "a"
+            ]
+          ]
+        },
+        "replayed_in_reference_and_sqlite": true,
+        "target": "violation"
+      }
+    }
+  },
+  "F6_lens_laws": {
+    "controls": {
+      "getput_not_putget": {
+        "agrees": true,
+        "expected": [
+          "PutGet"
+        ],
+        "violated": [
+          "PutGet"
+        ]
+      },
+      "putget_not_getput": {
+        "agrees": true,
+        "expected": [
+          "GetPut"
+        ],
+        "violated": [
+          "GetPut"
+        ]
+      },
+      "well_behaved_not_putput": {
+        "agrees": true,
+        "expected": [
+          "PutPut"
+        ],
+        "violated": [
+          "PutPut"
+        ]
+      }
+    },
+    "source": "Foster et al., TOPLAS 2007, section 3 (read 2026-09-29)",
+    "status": "MEASURED"
+  },
+  "F7_checker_sizes": {
+    "definition": "count of distinct statement lines in the function bodies, docstrings excluded (ast); size of these REFERENCE implementations, not a promise for the production kernel",
+    "logical_lines": {
+      "canon.dumps (_string, _utf16_key, _text, dumps)": 35,
+      "canon.frame+digest": 6,
+      "closure.check_certificate": 16,
+      "closure.check_unreachable": 6,
+      "order.check_lexicographic_topological_order": 16,
+      "order.check_scc_labels": 41,
+      "order.scc_labels (producer, for scale)": 47,
+      "rules.check_safety+stratify+evaluate (+ helpers)": 73,
+      "status.join2+join+meet2+meet+claim_status": 12
+    },
+    "status": "MEASURED"
+  },
+  "F8_harness_sensitivity": {
+    "distinct_outputs_iterating_a_set": 8,
+    "distinct_outputs_sorted": 1,
+    "domain": "fresh interpreters, PYTHONHASHSEED in [0, 1, 2, 3, 4, 5, 6, 7], a 10-string set",
+    "harness_detects_the_seeded_defect": true,
+    "status": "MEASURED"
+  },
+  "F9_metamodel": {
+    "brief_json_table_findings": {
+      "by_code": {
+        "MM-004": 2,
+        "MM-007": 13,
+        "MM-013": 2
+      },
+      "isolated_node_types": [
+        "gate",
+        "lane"
+      ],
+      "link_types": 27,
+      "node_types": 37
+    },
+    "catalogue": {
+      "as_program_is_stratifiable": true,
+      "assumption": "rules of stratum 3 feed finding3, which nothing reads (the catalogue's description of the finding relation)",
+      "rules": 97,
+      "stratum_problems": []
+    },
+    "differential_vs_schema_reference": {
+      "codes_exercised": [
+        "cardinality-exceeded",
+        "dangling-link",
+        "duplicate-edge",
+        "ill-typed-edge",
+        "link-kind-cycle",
+        "self-loop"
+      ],
+      "domain": "seeded (3) random edge sets over 2 nodes per type, 70% signature-guided, 0 to 24 edges",
+      "instances": 600,
+      "instances_with_findings": 540,
+      "mismatches": 0
+    },
+    "metamodel_json": {
+      "constructive_instance": {
+        "edges": 6,
+        "findings_incl_min_obligations": [],
+        "nodes": 42,
+        "reference_findings": []
+      },
+      "link_types": 29,
+      "min_obligations": 6,
+      "node_types": 42,
+      "table_findings": []
+    },
+    "status": "MEASURED"
+  },
+  "networkx": "3.5",
+  "python": "3.12.10",
+  "rfc8785": "0.1.4",
+  "schema": "eija.weave.formal-checks.v1",
+  "sqlite": "3.49.1"
+}
