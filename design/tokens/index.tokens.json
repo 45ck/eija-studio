@@ -1,0 +1,788 @@
+{
+  "$description": "EIJA Studio design-system manifest in DTCG Format Module 2025.10 (Final Community Group Report, not a W3C Standard; opened 2026-09-29 at https://www.designtokens.org/tr/2025.10/format/). This file does four things: it lists the token files and who owns them; it fixes the CSS layering and naming contract the generator follows; it defines the density-mode tokens that components read; and it carries the component inventory and the size and load budgets as data so tests read one source. Every number is a DESIGN_TARGET (a hypothesis) unless its extension record says LITERATURE_LIMIT or DERIVED. Nothing here is a measurement of users. Decision record: docs/adr/0068-hci-design-system-architecture.md. Design document: docs/hci/design/design-system-architecture.md.",
+  "$extensions": {
+    "io.github.45ck.eija-studio": {
+      "aspect": "design-system-architecture",
+      "adr": "0068",
+      "date": "2026-09-29",
+      "status": "proposed",
+      "dtcg": {
+        "version": "2025.10",
+        "status": "Final Community Group Report of 28 October 2025, considered stable, not a W3C Standard",
+        "url": "https://www.designtokens.org/tr/2025.10/format/",
+        "pin": "Do not follow /tr/drafts/. Files use the .tokens.json extension the specification lists."
+      },
+      "pipeline": {
+        "generator": "scripts/build_tokens.py (proposed; Python standard library only; about 140 code lines, reference in docs/hci/design/design-system-architecture.md Appendix A)",
+        "output": "src/eija_studio/resources/web/tokens.css",
+        "output-policy": "Committed, never hand-edited. A test regenerates it and compares bytes (DS-01).",
+        "fail-closed": "Every token is validated before the emit filter, so an unsupported $type under a root that is not emitted (bundle, budget, load) is refused too. Unsupported $type, a dimension unit other than px or rem, a duration unit other than ms or s, an unsupported colour space, a hex that disagrees with its OKLCH source, a dangling alias, a cyclic alias, a duplicate token path and a root group listed in neither emit nor emit-not stop the build with an explicit error (DS-02: 15 negative fixtures).",
+        "supported-types": [
+          "color (colorSpace oklch, a 6-digit hex, alpha 1)",
+          "dimension",
+          "duration",
+          "cubicBezier",
+          "number",
+          "fontFamily",
+          "fontWeight",
+          "transition",
+          "typography (composite: one custom property per member)"
+        ],
+        "not-supported-on-purpose": [
+          "shadow",
+          "gradient",
+          "border composite",
+          "strokeStyle"
+        ],
+        "not-supported-reason": "The anti-slop rubric bans decorative gradients and shadow-only elevation; a token type that only serves them is refused until an HCI-ADR needs it.",
+        "emit": [
+          "space",
+          "size",
+          "border",
+          "focus",
+          "radius",
+          "density",
+          "motion",
+          "color",
+          "font",
+          "text"
+        ],
+        "emit-not": [
+          "budget",
+          "bundle",
+          "load"
+        ],
+        "emit-not-reason": "Budgets are read by tests, not by the browser; shipping them would add bytes for nothing. Every root group must be in emit or emit-not; a new group is classified here first.",
+        "modes": "Density (and any non-colour mode) uses $extensions.mode.<name> on the token (the shape Terrazzo 2.7.1 reads, verified 2026-09-29) and is written under [data-density=\"compact\"]. The key mode is a tool-specific Terrazzo key, not a reverse-domain key as DTCG recommends for extensions; it is kept until a resolver document is tested with both tools.",
+        "oracle": "@terrazzo/cli 2.7.1 may cross-check the generator on a machine that has Node 22; it reports NOT_RUN without Node and is never a gate. MEASURED 2026-09-29 (re-run): with its lint rule core/valid-color switched off it builds 243 tokens; of 106 non-colour custom-property names present in both outputs, 104 have identical values and 2 (the font stacks) differ only in Terrazzo's quoting of every family; with the rule on it stops with 28 errors and 12 warnings on the colour aspect's oklch components whose hue is the DTCG value \"none\".",
+        "tests": [
+          "DS-01",
+          "DS-02",
+          "DS-06"
+        ],
+        "color-output": "The hex value, as the colour aspect asks (docs/hci/design/color-system.md section 10). OKLCH stays the source of truth; the build checks that every hex equals its OKLCH components within 1 unit per 8-bit channel (MEASURED 2026-09-29 on color.tokens.json: 102 of 102 objects agree, maximum deviation 0).",
+        "theme-output": "Colour tokens are sibling groups color.light.* and color.dark.*. Each pair becomes one role, --color-<path>, written three times as the colour aspect specifies (C9): :root for light, a prefers-color-scheme block for dark, and :root[data-theme=\"dark\"]. Deviation from C9: color-scheme is written on :root[data-ui=\"next\"] (and its data-theme variants) until phase S8, because a global color-scheme changed the unmodified legacy page under a dark OS (MEASURED 2026-09-29, M12). MEASURED on the five real files: 14,538 B of custom properties and color-scheme rules. The alternative light-dark() output measured 10,302 B against 14,386 B for the first version of the generator (28% smaller; not re-measured after later changes), passes the CSP (MEASURED), and is not used because the colour aspect declined to rely on a feature MDN lists as newly available since May 2024; Baseline calls it widely available 30 months later (about November 2026, https://web.dev/baseline), when the question goes back to the colour aspect.",
+        "font-face": "@font-face rules are generated from design/fonts.lock.json (type aspect): css_family, shipped.file, unicode_range, font_face_rules. They sit inside tokens.css, which the entry sheet imports with layer(tokens) (MEASURED 2026-09-29, M13: the font loads under the Studio's CSP plus font-src 'self'), and reference flat /assets names (interface I-SEC1). Long unicode-range values are wrapped after commas so that no line exceeds 100 characters."
+      },
+      "css": {
+        "layer-order": [
+          "legacy",
+          "reset",
+          "tokens",
+          "base",
+          "components",
+          "overrides"
+        ],
+        "layer-order-rule": "Declared once, in the first line of the first stylesheet the page loads. Unlayered author CSS is refused because it outranks every layer (https://developer.mozilla.org/en-US/docs/Web/CSS/@layer, opened 2026-09-29). The only rules allowed outside a layer are @layer statements and @import ... layer() in the entry sheet; every other file is reached through such an import. tokens.css has no @layer of its own. Test DS-03.",
+        "legacy-layer": "The unmodified baseline app.css is imported as @import url(...) layer(legacy) so that new layers outrank it without specificity fights; tokens.css is imported as @import url(...) layer(tokens). It is deleted when empty (strangler plan, phase S8).",
+        "tiers": {
+          "T1": "Scale and palette tokens, one per value, named for position (--space-4, --color-neutral-9). Generated. Components must not read palette names.",
+          "T2": "Role tokens that change with theme or density (--density-control-height, colour roles). Generated. Components read these.",
+          "T3": "Component-private custom properties, prefixed --_ and declared in the component's own rule from T1 or T2 values. Hand-written, never in JSON, never part of an API."
+        },
+        "tier-rule": "A tier exists only where a value changes across it. Spacing has no T2 because nothing about a gap changes with theme or density; density-dependent sizes do.",
+        "naming": "DTCG path with dots replaced by hyphens, prefixed by two dashes: space.4 becomes --space-4. No global prefix (no third-party CSS is loaded).",
+        "mode-selectors": {
+          "theme": {
+            "light": ":root",
+            "dark": "@media (prefers-color-scheme: dark) { :root:not([data-theme=\"light\"]) } and :root[data-theme=\"dark\"]",
+            "mechanism": "Root only in v1, as the colour aspect specifies. A nested theme region is not supported; it would need to re-apply background and text roles because color inherits as a computed value (MEASURED 2026-09-29, Chromium 151, with the light-dark() form). color-scheme is not inert for legacy CSS, so it is scoped (MEASURED 2026-09-29, M12: a global one changed 895 computed values and the screenshot of the legacy page under emulated dark).",
+            "color-scheme": ":root[data-ui=\"next\"], with [data-theme=\"light\"] and [data-theme=\"dark\"] variants of that selector, until S8; then :root"
+          },
+          "density": {
+            "default": ":root",
+            "compact": "[data-density=\"compact\"]",
+            "mechanism": "Custom properties inherit, so any region may be compact (MEASURED 2026-09-29, Chromium 151)."
+          }
+        },
+        "data-hooks": [
+          "data-eija-component",
+          "data-eija-state",
+          "data-eija-model",
+          "data-eija-source"
+        ],
+        "data-hooks-source": "data-eija-source (values chrome, model, ai, provider, user), data-eija-state and data-eija-model are the hooks of docs/hci/research/ai-generated-ui-slop-and-first-impressions.md section 6 and HCI-ADR-0065 D7; data-eija-component is added here so the gallery can find every component instance."
+      },
+      "files": [
+        {
+          "file": "index.tokens.json",
+          "owner": "design-system-architecture",
+          "adr": "0068",
+          "holds": "manifest, density role tokens, budgets, component inventory"
+        },
+        {
+          "file": "spacing.tokens.json",
+          "owner": "design-system-architecture",
+          "adr": "0068",
+          "holds": "space, size, border, focus, radius"
+        },
+        {
+          "file": "motion.tokens.json",
+          "owner": "motion-performance",
+          "adr": "0066",
+          "holds": "motion, budget (latency and frame)"
+        },
+        {
+          "file": "color.tokens.json",
+          "owner": "colour aspect",
+          "adr": "0059",
+          "holds": "palette and roles, sibling groups light and dark",
+          "state": "present on 2026-09-29: 142 colour tokens (71 light, 71 dark), oklch with hex"
+        },
+        {
+          "file": "typography.tokens.json",
+          "owner": "type aspect",
+          "adr": "0060",
+          "holds": "font families, weights, five sizes, line heights, nine text composites",
+          "state": "present on 2026-09-29: 2 fontFamily, 2 fontWeight, 6 dimension, 7 number, 9 typography tokens"
+        },
+        {
+          "file": "../fonts.lock.json",
+          "owner": "type aspect",
+          "adr": "0060",
+          "holds": "font files, hashes, unicode ranges, @font-face parameters",
+          "state": "present on 2026-09-29: 3 WOFF2 files, 40,904 B"
+        }
+      ],
+      "interfaces-from-other-aspects": {
+        "rule": "The token files above are the interface: names are read from them, not repeated here. A component that reads a name the generator did not emit fails DS-04, so a renamed token cannot break a component silently. The lists below record what this aspect assumes about the other aspects and the kernel.",
+        "color": "Roles are color.<theme>.surface.{canvas,raised,overlay,sunken}, text.*, border.{subtle,control}, accent.*, focus.ring, selection.wash, status.<word>.{fg,tint} for pass, fail, unknown, stale, conflict, not-run, blocked, proposed and running, diff.*, category.* and canvas.*. Elevation is a surface step plus border.hairline; no shadow token exists.",
+        "font": "font.family.{sans,mono}, font.weight.{regular,strong}, font.size.{xs,sm,md,lg,xl}, font.lineHeight.*, font.letterSpacing.none, font.measure.*, and nine text.* composites. Generated names are kebab-case (--font-line-height-sm).",
+        "server": [
+          "I-SEC1: /assets serves flat URL names from a checked-in allowlist with an extension-to-MIME map (font/woff2 included); files may sit in subdirectories on disk",
+          "I-SEC2: font-src 'self' is required now that three font files exist (typography ADR-0060, MEASURED there)",
+          "I-SEC3: the CSP string is one exported constant that the gallery server and DS-11 import"
+        ],
+        "kernel": [
+          "I-KERN1: the implementation fingerprint (adapters/identity.py) hashes every file under resources/web, so any UI file change makes technical receipts STALE and the release fixture untrusted until the owner stamps; a kernel ADR may hash browser assets as their own dimension"
+        ],
+        "layout": "Density numbers come from docs/hci/design/layout-model.md section 3.5. Two resizable seams follow the APG window splitter (layout D6)."
+      },
+      "components": {
+        "rule": "A primitive exists only if at least two top tasks use it (DS-15 reads this list). A recipe is a documented composition of primitives with layout classes and no colour, type or state CSS of its own. Adding, removing or splitting an entry needs an HCI-ADR. States are the gallery's named states, not every CSS pseudo-class. Every string a component renders carries data-eija-source.",
+        "primitives": [
+          {
+            "id": "button",
+            "class": "native",
+            "element": "button",
+            "pattern": "https://www.w3.org/WAI/ARIA/apg/patterns/button/",
+            "tasks": [
+              "T01",
+              "T02",
+              "T04",
+              "T05",
+              "T06",
+              "T07",
+              "T08",
+              "T10",
+              "T11",
+              "T12",
+              "T13"
+            ],
+            "states": [
+              "primary-rest",
+              "primary-focus",
+              "primary-disabled",
+              "primary-busy",
+              "default-rest",
+              "default-focus",
+              "default-disabled",
+              "quiet-rest"
+            ],
+            "js": false
+          },
+          {
+            "id": "field",
+            "class": "native",
+            "element": "input, select, textarea, label",
+            "pattern": "native form controls",
+            "tasks": [
+              "T01",
+              "T04",
+              "T05",
+              "T08",
+              "T12",
+              "T13"
+            ],
+            "states": [
+              "text-rest",
+              "text-focus",
+              "text-invalid",
+              "text-disabled",
+              "select-rest",
+              "checkbox-checked",
+              "checkbox-unchecked",
+              "checkbox-focus"
+            ],
+            "js": false
+          },
+          {
+            "id": "table",
+            "class": "native",
+            "element": "table",
+            "pattern": "native table",
+            "tasks": [
+              "T02",
+              "T03",
+              "T06",
+              "T07",
+              "T10",
+              "T11",
+              "T12",
+              "T14"
+            ],
+            "states": [
+              "rows-default",
+              "row-selected",
+              "row-focus",
+              "sticky-header",
+              "empty-with-reason"
+            ],
+            "js": false
+          },
+          {
+            "id": "disclosure",
+            "class": "native",
+            "element": "details, or a button with aria-expanded and aria-controls inside a row",
+            "pattern": "https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/ (as named in docs/hci/design/accessibility.md D2)",
+            "tasks": [
+              "T01",
+              "T02",
+              "T06",
+              "T11",
+              "T13"
+            ],
+            "states": [
+              "closed",
+              "open",
+              "focus"
+            ],
+            "js": true
+          },
+          {
+            "id": "progress",
+            "class": "native",
+            "element": "progress",
+            "pattern": "native progress",
+            "tasks": [
+              "T06",
+              "T13"
+            ],
+            "states": [
+              "determinate",
+              "indeterminate",
+              "static-after-5s"
+            ],
+            "js": false
+          },
+          {
+            "id": "status-mark",
+            "class": "mark",
+            "element": "span with inline svg glyph and a word",
+            "pattern": "text and shape, never colour alone (WCAG 1.4.1)",
+            "tasks": [
+              "T01",
+              "T02",
+              "T03",
+              "T04",
+              "T05",
+              "T06",
+              "T07",
+              "T08",
+              "T09",
+              "T10",
+              "T11",
+              "T12",
+              "T13",
+              "T14"
+            ],
+            "states": [
+              "PASS",
+              "FAIL",
+              "CONFLICT",
+              "STALE",
+              "UNKNOWN",
+              "NOT_RUN",
+              "BLOCKED",
+              "ELIGIBLE_FOR_LOCAL_REVIEW",
+              "RUNNING",
+              "AI_PROPOSED",
+              "with-bound"
+            ],
+            "js": true
+          },
+          {
+            "id": "rollup",
+            "class": "mark",
+            "element": "role=toolbar of status-mark count buttons",
+            "pattern": "APG toolbar with count buttons, one tab stop; counts by state, never a percentage alone (docs/hci/design/accessibility.md 5.8)",
+            "tasks": [
+              "T02",
+              "T03",
+              "T06",
+              "T08",
+              "T14"
+            ],
+            "states": [
+              "mixed-counts",
+              "pass-with-unknowns",
+              "nothing-run",
+              "filter-active"
+            ],
+            "js": true
+          },
+          {
+            "id": "tree",
+            "class": "behaviour",
+            "element": "ul role=tree",
+            "pattern": "https://www.w3.org/WAI/ARIA/apg/patterns/treeview/",
+            "tasks": [
+              "T03",
+              "T05",
+              "T09",
+              "T12",
+              "T14"
+            ],
+            "states": [
+              "collapsed",
+              "expanded",
+              "selected",
+              "focus",
+              "filtered-ancestors-kept",
+              "with-status-glyphs",
+              "empty-filter-result"
+            ],
+            "js": true
+          },
+          {
+            "id": "dialog",
+            "class": "behaviour",
+            "element": "dialog opened with showModal(); the palette is a combobox with a listbox inside it",
+            "pattern": "native dialog (https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dialog, opened 2026-09-29); APG combobox for the palette (docs/hci/design/accessibility.md 5.5)",
+            "tasks": [
+              "T08",
+              "T09"
+            ],
+            "states": [
+              "modal-open",
+              "palette-results",
+              "palette-blocked-command",
+              "decision-blocking",
+              "decision-ready"
+            ],
+            "js": true
+          },
+          {
+            "id": "tabs",
+            "class": "behaviour",
+            "element": "role=tablist",
+            "pattern": "https://www.w3.org/WAI/ARIA/apg/patterns/tabs/",
+            "tasks": [
+              "T02",
+              "T03",
+              "T06",
+              "T14"
+            ],
+            "states": [
+              "rest",
+              "selected",
+              "focus",
+              "with-count"
+            ],
+            "js": true
+          },
+          {
+            "id": "notice",
+            "class": "behaviour",
+            "element": "role=status or role=alert region",
+            "pattern": "WCAG 2.2 SC 4.1.3 status messages",
+            "tasks": [
+              "T01",
+              "T04",
+              "T06",
+              "T08",
+              "T13"
+            ],
+            "states": [
+              "info",
+              "error",
+              "job-outcome"
+            ],
+            "js": true
+          },
+          {
+            "id": "menu",
+            "class": "behaviour",
+            "element": "button with aria-haspopup and role=menu",
+            "pattern": "APG menu button (docs/hci/design/accessibility.md D2 and 5.8)",
+            "tasks": [
+              "T04",
+              "T05"
+            ],
+            "states": [
+              "closed",
+              "open",
+              "item-focus",
+              "item-blocked-with-reason"
+            ],
+            "js": true
+          },
+          {
+            "id": "popover",
+            "class": "native",
+            "element": "button with popovertarget and an element with the popover attribute",
+            "pattern": "https://developer.mozilla.org/en-US/docs/Web/API/Popover_API (Baseline 2025, newly available since January 2025); term definitions and status reasons (docs/hci/design/content-and-onboarding.md D5)",
+            "tasks": [
+              "T02",
+              "T05",
+              "T11",
+              "T12"
+            ],
+            "states": [
+              "open-definition",
+              "open-blocked-reason",
+              "light-dismiss"
+            ],
+            "js": false
+          },
+          {
+            "id": "seam",
+            "class": "behaviour",
+            "element": "role=separator with aria-valuenow and aria-controls",
+            "pattern": "https://www.w3.org/WAI/ARIA/apg/patterns/windowsplitter/ (as used in docs/hci/design/layout-model.md D6)",
+            "tasks": [
+              "T03",
+              "T04"
+            ],
+            "states": [
+              "rest",
+              "focus",
+              "dragging",
+              "collapsed"
+            ],
+            "js": true
+          },
+          {
+            "id": "canvas-node",
+            "class": "behaviour",
+            "element": "SVG g built with createElementNS",
+            "pattern": "specified by the canvas aspect (docs/hci/design/canvas-uml-interaction.md)",
+            "tasks": [
+              "T02",
+              "T04"
+            ],
+            "states": [
+              "node-rest",
+              "node-selected",
+              "node-ghost",
+              "drop-legal",
+              "drop-refused",
+              "edge"
+            ],
+            "js": true
+          }
+        ],
+        "recipes": [
+          {
+            "id": "review-chapter",
+            "of": [
+              "table",
+              "status-mark",
+              "disclosure"
+            ],
+            "tasks": [
+              "T02",
+              "T11"
+            ]
+          },
+          {
+            "id": "ripple-lane",
+            "of": [
+              "rollup",
+              "table",
+              "tabs"
+            ],
+            "tasks": [
+              "T03",
+              "T14"
+            ]
+          },
+          {
+            "id": "coverage-row",
+            "of": [
+              "table",
+              "status-mark"
+            ],
+            "tasks": [
+              "T06",
+              "T14"
+            ]
+          },
+          {
+            "id": "trace-table",
+            "of": [
+              "table",
+              "button"
+            ],
+            "tasks": [
+              "T07"
+            ]
+          },
+          {
+            "id": "decision-surface",
+            "of": [
+              "dialog",
+              "rollup",
+              "field",
+              "button"
+            ],
+            "tasks": [
+              "T08"
+            ]
+          },
+          {
+            "id": "job-row",
+            "of": [
+              "status-mark",
+              "progress",
+              "button"
+            ],
+            "tasks": [
+              "T06",
+              "T13"
+            ]
+          },
+          {
+            "id": "proposal-row",
+            "of": [
+              "status-mark",
+              "disclosure",
+              "button"
+            ],
+            "tasks": [
+              "T01",
+              "T13"
+            ]
+          },
+          {
+            "id": "concept-code-table",
+            "of": [
+              "table",
+              "status-mark"
+            ],
+            "tasks": [
+              "T12"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "density": {
+    "$type": "dimension",
+    "$description": "Role tokens components read for sizes that change with density. The default value is the default-density token; $extensions.mode.compact is the compact one. Any region may set data-density=\"compact\".",
+    "control-height": {
+      "$value": "{size.control.default}",
+      "$description": "Height of buttons, inputs and selects.",
+      "$extensions": {
+        "mode": {
+          "compact": "{size.control.compact}"
+        },
+        "io.github.45ck.eija-studio": {
+          "kind": "DESIGN_TARGET",
+          "test": "DS-06 DS-07"
+        }
+      }
+    },
+    "row-height": {
+      "$value": "{size.row.default}",
+      "$description": "Height of tree, list and table rows.",
+      "$extensions": {
+        "mode": {
+          "compact": "{size.row.compact}"
+        },
+        "io.github.45ck.eija-studio": {
+          "kind": "DESIGN_TARGET",
+          "test": "DS-06 DS-07"
+        }
+      }
+    },
+    "icon-size": {
+      "$value": "{size.icon.default}",
+      "$description": "Glyph box for status marks and action glyphs.",
+      "$extensions": {
+        "mode": {
+          "compact": "{size.icon.compact}"
+        },
+        "io.github.45ck.eija-studio": {
+          "kind": "DESIGN_TARGET",
+          "test": "DS-06"
+        }
+      }
+    },
+    "field-height": {
+      "$value": "{size.field.default}",
+      "$description": "Height of fields that take typed answers.",
+      "$extensions": {
+        "mode": {
+          "compact": "{size.field.compact}"
+        },
+        "io.github.45ck.eija-studio": {
+          "kind": "DESIGN_TARGET",
+          "test": "DS-06 DS-07"
+        }
+      }
+    },
+    "chip-height": {
+      "$value": "{size.chip.default}",
+      "$description": "Height of non-interactive chips only (24 px default, 20 px compact). An interactive chip must not read this role: it reads size.chip.default (--size-chip-default, 24 px in both densities), because the compact value is below the 24 px floor. DS-04 fails an interactive component that reads --density-chip-height; DS-07 checks the rendered size.",
+      "$extensions": {
+        "mode": {
+          "compact": "{size.chip.compact}"
+        },
+        "io.github.45ck.eija-studio": {
+          "kind": "DESIGN_TARGET",
+          "test": "DS-04 DS-06 DS-07"
+        }
+      }
+    },
+    "gutter": {
+      "$value": "{space.3}",
+      "$description": "General pane gutter: 12 px default, 8 px compact (layout aspect: 12 to 16 / 8; the lower default end is used). Not used next to a seam: content beside a seam is inset space.3 (12 px) from the seam centre line in both densities, because the seam's SC 2.5.8 spacing exception needs a 24 px circle on its 8 px hit area to meet no other target (docs/hci/design/design-system-architecture.md section 5.4). The layout aspect may set space.4 as the default.",
+      "$extensions": {
+        "mode": {
+          "compact": "{space.2}"
+        },
+        "io.github.45ck.eija-studio": {
+          "kind": "DESIGN_TARGET",
+          "test": "DS-06"
+        }
+      }
+    }
+  },
+  "bundle": {
+    "$description": "Size budgets for the shipped browser client, in bytes of source as served (the client is not minified: ADR-013 keeps it small and inspectable, and no build step exists). Derivation and limits: docs/hci/design/design-system-architecture.md section 6. All are DESIGN_TARGET hypotheses. The baseline (src/eija_studio/resources/web, MEASURED with wc -c on 2026-09-29) is app.js 10561, app.css 7156, index.html 7561. A budget breach fails DS-13 until an HCI-ADR states the new number. Values are unit-less DTCG numbers; the unit of each is in its extension record (B, characters, requests, levels).",
+    "$type": "number",
+    "js-total": {
+      "$value": 120000,
+      "$description": "Bytes of JavaScript loaded on first render, all modules together, including the canvas module (25 000 to 45 000 ESTIMATED by the canvas aspect, no source).",
+      "$extensions": {
+        "io.github.45ck.eija-studio": {
+          "kind": "DESIGN_TARGET",
+          "unit": "B",
+          "test": "DS-13"
+        }
+      }
+    },
+    "css-total": {
+      "$value": 40000,
+      "$description": "Bytes of CSS loaded on first render, including tokens.css and the legacy layer while it exists.",
+      "$extensions": {
+        "io.github.45ck.eija-studio": {
+          "kind": "DESIGN_TARGET",
+          "unit": "B",
+          "test": "DS-13"
+        }
+      }
+    },
+    "tokens-css": {
+      "$value": 18000,
+      "$description": "Bytes of the generated tokens.css including @font-face rules. MEASURED 2026-09-29 on the five real token files and design/fonts.lock.json: 16,087 B (14,538 B of custom properties and color-scheme rules with the colour aspect's three-block theme output, 1,549 B of @font-face; 15,974 B before long lines were wrapped). The budget leaves about 12% headroom over the measured size.",
+      "$extensions": {
+        "io.github.45ck.eija-studio": {
+          "kind": "DESIGN_TARGET",
+          "unit": "B",
+          "test": "DS-13"
+        }
+      }
+    },
+    "file-max": {
+      "$value": 24000,
+      "$description": "Bytes of any one shipped JS or CSS file. Keeps a file reviewable as a single unit; not derived from a measurement.",
+      "$extensions": {
+        "io.github.45ck.eija-studio": {
+          "kind": "DESIGN_TARGET",
+          "unit": "B",
+          "test": "DS-13"
+        }
+      }
+    },
+    "line-max": {
+      "$value": 100,
+      "$description": "Characters per line in shipped JS, CSS and HTML. The baseline has lines of 1585 (app.js), 7155 (app.css) and 1446 (index.html) characters (MEASURED), which makes a line diff unreadable for reviewers and for agents. Generated files are included: the generator wraps long values after commas (the first version wrote 5 lines of 118 to 473 characters).",
+      "$extensions": {
+        "io.github.45ck.eija-studio": {
+          "kind": "DESIGN_TARGET",
+          "unit": "characters",
+          "test": "DS-12"
+        }
+      }
+    },
+    "requests-first-render": {
+      "$value": 30,
+      "$description": "Requests for the page, its stylesheets, scripts and fonts before the first API call. Derived: about 15 JS files (120,000 B at about 8,000 B each), 6 CSS files, 1 HTML file, 3 fonts is 25, plus 20% margin. Each request is about 2.2 ms p50 on loopback (MEASURED); the limit protects the size of the allowlist, and time is governed by module depth.",
+      "$extensions": {
+        "io.github.45ck.eija-studio": {
+          "kind": "DESIGN_TARGET",
+          "unit": "requests",
+          "test": "DS-13"
+        }
+      }
+    },
+    "module-depth": {
+      "$value": 3,
+      "$description": "Longest chain of static imports. Each level is one sequential request wave.",
+      "$extensions": {
+        "io.github.45ck.eija-studio": {
+          "kind": "DESIGN_TARGET",
+          "unit": "levels",
+          "test": "DS-13"
+        }
+      }
+    },
+    "font-total": {
+      "$value": 100000,
+      "$description": "Bytes of WOFF2 loaded for the first paint. The type aspect ships 40,904 B in 3 files (design/fonts.lock.json, MEASURED there) against its ceiling of 100,000 B, which is the figure proposed in docs/hci/research/visual-design-foundations.md section 4 item 5.",
+      "$extensions": {
+        "io.github.45ck.eija-studio": {
+          "kind": "DESIGN_TARGET",
+          "unit": "B",
+          "test": "DS-13",
+          "owner": "type aspect"
+        }
+      }
+    }
+  },
+  "load": {
+    "$type": "duration",
+    "$description": "Cold-load budget: navigation start until the connection chip shows the provider (the baseline's ready signal). Same 1 s limit and 200 ms target as the view class in motion.tokens.json (budget.view). Baseline MEASURED 2026-09-29: p50 114.3 ms, p95 159.1 ms, n = 22, Chromium 151 headless, Windows 11, other agents running.",
+    "ready-target": {
+      "$value": {
+        "value": 200,
+        "unit": "ms"
+      },
+      "$description": "p95 over at least 30 cold loads; exceeding it is a warning.",
+      "$extensions": {
+        "io.github.45ck.eija-studio": {
+          "kind": "DESIGN_TARGET",
+          "test": "DS-14",
+          "on-exceed": "warn"
+        }
+      }
+    },
+    "ready-limit": {
+      "$value": {
+        "value": 1000,
+        "unit": "ms"
+      },
+      "$description": "1 s keeps the flow of thought (https://www.nngroup.com/articles/response-times-3-important-limits/, opened 2026-09-29); exceeding it fails.",
+      "$extensions": {
+        "io.github.45ck.eija-studio": {
+          "kind": "LITERATURE_LIMIT",
+          "test": "DS-14",
+          "on-exceed": "fail"
+        }
+      }
+    }
+  }
+}

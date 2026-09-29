@@ -1,0 +1,384 @@
+{
+  "$description": "EIJA Studio spacing, size, border, focus and radius tokens. DTCG Format Module 2025.10 (Final Community Group Report, not a W3C Standard; opened 2026-09-29 at https://www.designtokens.org/tr/2025.10/format/). Every value is a DESIGN_TARGET (our hypothesis) unless its extension record says LITERATURE_LIMIT (a published threshold) or DERIVED (arithmetic on other tokens). Nothing here is a measurement of users. Density numbers follow the layout aspect (docs/hci/design/layout-model.md section 3.5, HCI-ADR-0058), which owns density; this file owns the names. Decision record: docs/adr/0068-hci-design-system-architecture.md. Design document: docs/hci/design/design-system-architecture.md. Colour and type tokens are in color.tokens.json and typography.tokens.json (other aspects).",
+  "$extensions": {
+    "io.github.45ck.eija-studio": {
+      "aspect": "design-system-architecture",
+      "adr": "0068",
+      "date": "2026-09-29",
+      "status": "proposed",
+      "unit-policy": "Spacing and control sizes are rem so they follow the user's default font size; border widths and radii are px so a hairline stays one CSS pixel. Tests convert rem to px at a 16 px root (assumption A-ROOT: the Studio never sets html font-size). Tokens here are DTCG dimensions {value, unit} with px or rem, the only units DTCG 2025.10 allows.",
+      "scale-rule": "space.N is N x 4 px. Eight steps, no half steps. A gap or padding in shipped CSS must be one of these or 0 (test DS-05).",
+      "baseline-measured": "Distinct px values in padding, margin and gap declarations of src/eija_studio/resources/web/app.css, counted by script on 2026-09-29: see docs/hci/design/design-system-architecture.md section 5.1.",
+      "mode-contract": "Groups size.control, size.field, size.row, size.chip and size.icon carry a default and a compact value. index.tokens.json maps the semantic density.* names to them per density mode. Both modes must have the same key set (test DS-06). The compact values are written under [data-density=\"compact\"] through the semantic density.* tokens in index.tokens.json (which carry the Terrazzo-style mode key, kept as a tool-specific key until resolver support is tested).",
+      "density-source": "docs/hci/design/layout-model.md section 3.5: chrome control and row 28 / 24, typed-answer field 32 / 28, chip 24 / 20 (non-interactive only), gutter 12 to 16 / 8. The accessibility design (docs/hci/design/accessibility.md D5) says default density 32; the layout aspect owns density and its numbers are used. The conflict is listed in design-system-architecture.md section 14."
+    }
+  },
+  "space": {
+    "$type": "dimension",
+    "$description": "Gap, padding and margin scale. Proximity encodes grouping before any border does (Gestalt proximity; rubric: containers only where they encode grouping or state).",
+    "1": {
+      "$value": {
+        "value": 0.25,
+        "unit": "rem"
+      },
+      "$description": "4 px. Glyph to its word; inline gaps inside one label.",
+      "$extensions": {
+        "io.github.45ck.eija-studio": {
+          "kind": "DESIGN_TARGET",
+          "px": 4,
+          "use": "inline, inside one label"
+        }
+      }
+    },
+    "2": {
+      "$value": {
+        "value": 0.5,
+        "unit": "rem"
+      },
+      "$description": "8 px. Items of one group; chip padding; gap between a row's cells.",
+      "$extensions": {
+        "io.github.45ck.eija-studio": {
+          "kind": "DESIGN_TARGET",
+          "px": 8,
+          "use": "items of one group"
+        }
+      }
+    },
+    "3": {
+      "$value": {
+        "value": 0.75,
+        "unit": "rem"
+      },
+      "$description": "12 px. Row padding along the reading axis; label to field.",
+      "$extensions": {
+        "io.github.45ck.eija-studio": {
+          "kind": "DESIGN_TARGET",
+          "px": 12,
+          "use": "row padding, label to field"
+        }
+      }
+    },
+    "4": {
+      "$value": {
+        "value": 1,
+        "unit": "rem"
+      },
+      "$description": "16 px. Between related groups; padding of a region.",
+      "$extensions": {
+        "io.github.45ck.eija-studio": {
+          "kind": "DESIGN_TARGET",
+          "px": 16,
+          "use": "between related groups, region padding"
+        }
+      }
+    },
+    "6": {
+      "$value": {
+        "value": 1.5,
+        "unit": "rem"
+      },
+      "$description": "24 px. Between unrelated groups.",
+      "$extensions": {
+        "io.github.45ck.eija-studio": {
+          "kind": "DESIGN_TARGET",
+          "px": 24,
+          "use": "between unrelated groups"
+        }
+      }
+    },
+    "8": {
+      "$value": {
+        "value": 2,
+        "unit": "rem"
+      },
+      "$description": "32 px. Between regions of one view.",
+      "$extensions": {
+        "io.github.45ck.eija-studio": {
+          "kind": "DESIGN_TARGET",
+          "px": 32,
+          "use": "between regions"
+        }
+      }
+    },
+    "12": {
+      "$value": {
+        "value": 3,
+        "unit": "rem"
+      },
+      "$description": "48 px. View margin; empty-state offset.",
+      "$extensions": {
+        "io.github.45ck.eija-studio": {
+          "kind": "DESIGN_TARGET",
+          "px": 48,
+          "use": "view margin, empty state"
+        }
+      }
+    },
+    "16": {
+      "$value": {
+        "value": 4,
+        "unit": "rem"
+      },
+      "$description": "64 px. Largest step. Reserved for first-run and empty views; not used in the working views.",
+      "$extensions": {
+        "io.github.45ck.eija-studio": {
+          "kind": "DESIGN_TARGET",
+          "px": 64,
+          "use": "first-run and empty views only"
+        }
+      }
+    }
+  },
+  "size": {
+    "$type": "dimension",
+    "$description": "Interactive target and row sizes in two density modes. Compact never goes below the 24 px floor for an interactive target.",
+    "hit-min": {
+      "$value": {
+        "value": 1.5,
+        "unit": "rem"
+      },
+      "$description": "24 px. Floor for the smaller side of any pointer target. WCAG 2.2 SC 2.5.8 Target Size (Minimum), Level AA: at least 24 by 24 CSS px unless a listed exception applies (https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html, opened 2026-09-29). Exceptions: spacing, equivalent, inline, user-agent control, essential. The design system uses two of them and no others: spacing for the seam only (content inset 12 px from its centre line in both densities) and inline for links inside running text only (test DS-07, docs/hci/design/design-system-architecture.md sections 5.4 and 10.2). Every other interactive element meets the floor.",
+      "$extensions": {
+        "io.github.45ck.eija-studio": {
+          "kind": "LITERATURE_LIMIT",
+          "px": 24,
+          "test": "DS-07",
+          "on-exceed": "fail"
+        }
+      }
+    },
+    "control": {
+      "default": {
+        "$value": {
+          "value": 1.75,
+          "unit": "rem"
+        },
+        "$description": "28 px. Button, tab, filter field and other chrome controls in the default density (layout-model.md section 3.5).",
+        "$extensions": {
+          "io.github.45ck.eija-studio": {
+            "kind": "DESIGN_TARGET",
+            "px": 28,
+            "test": "DS-07"
+          }
+        }
+      },
+      "compact": {
+        "$value": "{size.hit-min}",
+        "$description": "24 px. Compact density sits exactly on the WCAG floor and never below it.",
+        "$extensions": {
+          "io.github.45ck.eija-studio": {
+            "kind": "DERIVED",
+            "px": 24,
+            "test": "DS-07"
+          }
+        }
+      }
+    },
+    "field": {
+      "default": {
+        "$value": {
+          "value": 2,
+          "unit": "rem"
+        },
+        "$description": "32 px. Fields that take typed answers: decision dialog, rename, definition.",
+        "$extensions": {
+          "io.github.45ck.eija-studio": {
+            "kind": "DESIGN_TARGET",
+            "px": 32,
+            "test": "DS-07"
+          }
+        }
+      },
+      "compact": {
+        "$value": {
+          "value": 1.75,
+          "unit": "rem"
+        },
+        "$description": "28 px. Typed-answer field in the compact density.",
+        "$extensions": {
+          "io.github.45ck.eija-studio": {
+            "kind": "DESIGN_TARGET",
+            "px": 28,
+            "test": "DS-07"
+          }
+        }
+      }
+    },
+    "row": {
+      "default": {
+        "$value": {
+          "value": 1.75,
+          "unit": "rem"
+        },
+        "$description": "28 px. Tree row, list row and table row in the default density.",
+        "$extensions": {
+          "io.github.45ck.eija-studio": {
+            "kind": "DESIGN_TARGET",
+            "px": 28,
+            "test": "DS-07"
+          }
+        }
+      },
+      "compact": {
+        "$value": "{size.hit-min}",
+        "$description": "24 px. Compact row.",
+        "$extensions": {
+          "io.github.45ck.eija-studio": {
+            "kind": "DERIVED",
+            "px": 24,
+            "test": "DS-07"
+          }
+        }
+      }
+    },
+    "chip": {
+      "default": {
+        "$value": {
+          "value": 1.5,
+          "unit": "rem"
+        },
+        "$description": "24 px. Chip height. An interactive chip reads this value directly in both densities (not density.chip-height, whose compact value is 20 px).",
+        "$extensions": {
+          "io.github.45ck.eija-studio": {
+            "kind": "DESIGN_TARGET",
+            "px": 24,
+            "test": "DS-07"
+          }
+        }
+      },
+      "compact": {
+        "$value": {
+          "value": 1.25,
+          "unit": "rem"
+        },
+        "$description": "20 px. Non-interactive chips only (layout-model.md section 3.5). DS-07 fails an interactive element below the floor.",
+        "$extensions": {
+          "io.github.45ck.eija-studio": {
+            "kind": "DESIGN_TARGET",
+            "px": 20,
+            "test": "DS-07",
+            "applies-to": "non-interactive chips only"
+          }
+        }
+      }
+    },
+    "icon": {
+      "default": {
+        "$value": {
+          "value": 1,
+          "unit": "rem"
+        },
+        "$description": "16 px. Status glyph and action glyph box, one size for both. The canvas aspect assumes a 16 px status slot on each node.",
+        "$extensions": {
+          "io.github.45ck.eija-studio": {
+            "kind": "DESIGN_TARGET",
+            "px": 16,
+            "source": "docs/hci/design/canvas-uml-interaction.md section 5.4"
+          }
+        }
+      },
+      "compact": {
+        "$value": {
+          "value": 1,
+          "unit": "rem"
+        },
+        "$description": "16 px. Same as default: a glyph below 16 px is not drawn (status shapes must stay distinct, P6).",
+        "$extensions": {
+          "io.github.45ck.eija-studio": {
+            "kind": "DESIGN_TARGET",
+            "px": 16
+          }
+        }
+      }
+    }
+  },
+  "border": {
+    "$type": "dimension",
+    "$description": "Line widths in px so that a hairline is one CSS pixel at any root font size.",
+    "hairline": {
+      "$value": {
+        "value": 1,
+        "unit": "px"
+      },
+      "$description": "Separators, control outlines, the second elevation step (surface step plus 1 px border; dark-mode shadows are near invisible, see docs/hci/research/visual-design-foundations.md section 2.5).",
+      "$extensions": {
+        "io.github.45ck.eija-studio": {
+          "kind": "DESIGN_TARGET",
+          "px": 1
+        }
+      }
+    },
+    "strong": {
+      "$value": {
+        "value": 2,
+        "unit": "px"
+      },
+      "$description": "Selected state and keyboard focus ring. A second, non-colour cue for selection.",
+      "$extensions": {
+        "io.github.45ck.eija-studio": {
+          "kind": "DESIGN_TARGET",
+          "px": 2
+        }
+      }
+    }
+  },
+  "focus": {
+    "$type": "dimension",
+    "offset": {
+      "$value": {
+        "value": 2,
+        "unit": "px"
+      },
+      "$description": "Gap between a focused element and its ring so the ring does not touch the element's own border.",
+      "$extensions": {
+        "io.github.45ck.eija-studio": {
+          "kind": "DESIGN_TARGET",
+          "px": 2
+        }
+      }
+    },
+    "inset": {
+      "$value": {
+        "value": -2,
+        "unit": "px"
+      },
+      "$description": "Negative offset: the focus ring is drawn inside the element. Used for tree rows, list rows, tabs and anything inside a scroll container, where an outer ring is clipped (docs/hci/design/accessibility.md D6, MEASURED there in Chrome 154).",
+      "$extensions": {
+        "io.github.45ck.eija-studio": {
+          "kind": "DESIGN_TARGET",
+          "px": -2
+        }
+      }
+    }
+  },
+  "radius": {
+    "$type": "dimension",
+    "$description": "Two radii only. The baseline uses six distinct non-zero radii (MEASURED, docs/hci/design/design-system-architecture.md section 5.1).",
+    "1": {
+      "$value": {
+        "value": 4,
+        "unit": "px"
+      },
+      "$description": "Controls, chips, table cells with outlines.",
+      "$extensions": {
+        "io.github.45ck.eija-studio": {
+          "kind": "DESIGN_TARGET",
+          "px": 4
+        }
+      }
+    },
+    "2": {
+      "$value": {
+        "value": 8,
+        "unit": "px"
+      },
+      "$description": "Floating surfaces: dialog, popover, palette. Never a container inside a container.",
+      "$extensions": {
+        "io.github.45ck.eija-studio": {
+          "kind": "DESIGN_TARGET",
+          "px": 8
+        }
+      }
+    }
+  }
+}

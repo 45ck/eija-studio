@@ -1,0 +1,1529 @@
+{
+  "schema": "eija.taskflow.v1",
+  "note": "Revision 2 (2026-09-29). Task ids follow design/brief.json; T02-kbd is a keyboard-only variant of T02 (field variant_of). Totals are recomputed by summing the operators with the constants in each task's assumptions; every total is a PREDICTION with a plus or minus 21 percent band.",
+  "tasks": [
+    {
+      "id": "T01",
+      "name": "Create a change case and select a meaning (IA path only)",
+      "persona": "P3",
+      "frequency": "weekly",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "plan: start a new change case"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "request",
+            "layout": "nav-current",
+            "note": "the create panel is visible at launch and the textarea is pre-filled with a default request"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "K",
+            "keys": "ctrl+a",
+            "note": "select the pre-filled default text before replacing it"
+          },
+          {
+            "op": "M",
+            "note": "compose the request (variable string)"
+          },
+          {
+            "op": "T",
+            "chars": 33,
+            "note": "assumed request 'Let teachers sign off excursions.' (33 characters), identical in both flows"
+          },
+          {
+            "op": "P",
+            "from": "request",
+            "to": "create",
+            "layout": "nav-current"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 300,
+            "why": "local API round trip and re-render (300 ms = the commit-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "M",
+            "note": "read the new case and decide to ask for interpretations"
+          },
+          {
+            "op": "P",
+            "from": "create",
+            "to": "egress-consent",
+            "note": "content-owned checkbox, identical in both flows; constant P"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "P",
+            "from": "egress-consent",
+            "to": "propose",
+            "note": "content-owned button, constant P"
+          },
+          {
+            "op": "B",
+            "note": "provider wait excluded"
+          },
+          {
+            "op": "M",
+            "note": "read the alternatives"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "PageDown: the option cards extend below the first viewport (estimated)"
+          },
+          {
+            "op": "P",
+            "from": "propose",
+            "to": "option-select",
+            "note": "content-owned button, constant P"
+          },
+          {
+            "op": "B"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "plan: start a new change case"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "main-action",
+            "layout": "nav-proposed",
+            "note": "Changes home: New change... occupies the primary action slot"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 200,
+            "why": "local view change (client render, 200 ms = the view-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "M",
+            "note": "compose the request (variable string)"
+          },
+          {
+            "op": "T",
+            "chars": 33,
+            "note": "same request as current; the request field is empty and focused, so no select-all is needed"
+          },
+          {
+            "op": "K",
+            "keys": "Enter"
+          },
+          {
+            "op": "R",
+            "ms": 300,
+            "why": "local API round trip and re-render (300 ms = the commit-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "M",
+            "note": "read the new case and decide to ask for interpretations"
+          },
+          {
+            "op": "P",
+            "from": "main-action",
+            "to": "egress-consent",
+            "note": "content-owned checkbox in the composer, constant P"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "P",
+            "from": "egress-consent",
+            "to": "propose",
+            "note": "content-owned button, constant P"
+          },
+          {
+            "op": "B",
+            "note": "provider wait excluded"
+          },
+          {
+            "op": "M",
+            "note": "read the alternatives"
+          },
+          {
+            "op": "P",
+            "from": "propose",
+            "to": "option-select",
+            "note": "the alternatives are rows in the main list, no scroll; constant P"
+          },
+          {
+            "op": "B"
+          }
+        ]
+      },
+      "assumptions": [
+        "Start state S0: Studio just launched through the private link, the workspace holds cases (C1 'Let teachers sign off excursions.' awaits the owner), hands on the mouse, pointer at rest in the main column (element __pointer at 720,450), viewport 1440x900.",
+        "Current: the baseline shows the create panel at launch, so no New case click is needed; select-all is needed because the textarea is pre-filled (source: index.html, app.js).",
+        "Proposed: New change... is the primary action of Changes home; the composer provider-call marker and per-request consent (I8) are content owned by the review aspect and modelled as identical steps.",
+        "The option cards in the baseline extend below the first viewport (estimated from CSS), hence one PageDown; the proposed alternatives are list rows.",
+        "KLM constants: K 0.20 s (average skilled typist, 55 wpm), P 1.10 s when no layout is given, H 0.40 s, B 0.10 s (Kieras, Using the Keystroke-Level Model to Estimate Execution Times, https://web.eecs.umich.edu/~kieras/docs/GOMS/KLM.pdf, opened 2026-09-29, a tutorial by a KLM author based on Card, Moran and Newell 1983); M 1.35 s (the top of the 0.6 to 1.35 s range Kieras gives; he recommends 1.2 s; applied to both flows). Kieras counts B for a press or a release (a click is BB, 0.2 s); these flows use one B per click on both sides, so a delta understates by 0.1 s per extra click on the side with more clicks; P with a layout uses Fitts, Shannon form MT = 0.37 + 0.13 * log2(D/W + 1) s (Cockburn et al. 2007 menu pointing profile), D centre to centre, W = smaller side of the target (assumption). Calibration: 8 right-handed graduate CS students, mouse, pointing down a 16-item vertical menu of 130x22 px items (items 1, 4, 8, 12, 16), so D up to about 340 px and ID up to about 4.0 bits (derived from the item size; the paper does not state distances). Terms with D above 350 px or ID above 4.0, and all 2D movements, are EXTRAPOLATED; the constant-P total is the primary result; PREDICTION band plus or minus 21 percent.",
+        "M policy: one M at the start of each cognitive unit and one before each variable string (KLM rules 1, 2 and 4); the same rule for current and proposed. Reading and judging are not modelled beyond one closing M.",
+        "R values: 200 ms for a client-side view change (view-class target, docs/hci/design/motion-and-performance.md), 300 ms for a local API round trip with re-render (commit-class target); both are assumptions, not measurements. Provider, verification and fixture waits are excluded from both sides because they are identical.",
+        "Element geometry: design/layouts/nav-current.json is copied from the layout lane's Chromium measurement (design/layouts/current-*.json; per-element source field), not reproduced by this lane (MEASURED, second-hand); design/layouts/nav-proposed.json is a design, not a build, with one view per element (field view)."
+      ]
+    },
+    {
+      "id": "T02",
+      "name": "Review an agent's change by meaning (IA path only)",
+      "persona": "P1",
+      "frequency": "daily",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "plan: open the case and see what changed"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "case-item-1",
+            "layout": "nav-current"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 300,
+            "why": "local API round trip and re-render (300 ms = the commit-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "P",
+            "from": "case-item-1",
+            "to": "tab-impact",
+            "layout": "nav-current",
+            "note": "Impact tab lists changed actions, state flow and rule table"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 200,
+            "why": "local view change (client render, 200 ms = the view-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "M",
+            "note": "read the changed rules"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "plan: open the case and see what changed"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "main-row-1",
+            "layout": "nav-proposed",
+            "note": "first row of the Needs you group in Changes home"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 300,
+            "why": "local API round trip and re-render (300 ms = the commit-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "M",
+            "note": "read the first semantic operation and its ripple (the inspector shows it by default)"
+          }
+        ]
+      },
+      "assumptions": [
+        "Start state S0: Studio just launched through the private link, the workspace holds cases (C1 'Let teachers sign off excursions.' awaits the owner), hands on the mouse, pointer at rest in the main column (element __pointer at 720,450), viewport 1440x900.",
+        "Outcome is not equivalent: the baseline has no list of typed semantic operations, only the Impact tab; KLM measures the path length only.",
+        "Sensitivity: charging one extra M before the Impact tab click in the current flow adds 1.35 s (an unhabituated user).",
+        "KLM constants: K 0.20 s (average skilled typist, 55 wpm), P 1.10 s when no layout is given, H 0.40 s, B 0.10 s (Kieras, Using the Keystroke-Level Model to Estimate Execution Times, https://web.eecs.umich.edu/~kieras/docs/GOMS/KLM.pdf, opened 2026-09-29, a tutorial by a KLM author based on Card, Moran and Newell 1983); M 1.35 s (the top of the 0.6 to 1.35 s range Kieras gives; he recommends 1.2 s; applied to both flows). Kieras counts B for a press or a release (a click is BB, 0.2 s); these flows use one B per click on both sides, so a delta understates by 0.1 s per extra click on the side with more clicks; P with a layout uses Fitts, Shannon form MT = 0.37 + 0.13 * log2(D/W + 1) s (Cockburn et al. 2007 menu pointing profile), D centre to centre, W = smaller side of the target (assumption). Calibration: 8 right-handed graduate CS students, mouse, pointing down a 16-item vertical menu of 130x22 px items (items 1, 4, 8, 12, 16), so D up to about 340 px and ID up to about 4.0 bits (derived from the item size; the paper does not state distances). Terms with D above 350 px or ID above 4.0, and all 2D movements, are EXTRAPOLATED; the constant-P total is the primary result; PREDICTION band plus or minus 21 percent.",
+        "M policy: one M at the start of each cognitive unit and one before each variable string (KLM rules 1, 2 and 4); the same rule for current and proposed. Reading and judging are not modelled beyond one closing M.",
+        "R values: 200 ms for a client-side view change (view-class target, docs/hci/design/motion-and-performance.md), 300 ms for a local API round trip with re-render (commit-class target); both are assumptions, not measurements. Provider, verification and fixture waits are excluded from both sides because they are identical.",
+        "Element geometry: design/layouts/nav-current.json is copied from the layout lane's Chromium measurement (design/layouts/current-*.json; per-element source field), not reproduced by this lane (MEASURED, second-hand); design/layouts/nav-proposed.json is a design, not a build, with one view per element (field view)."
+      ]
+    },
+    {
+      "id": "T02-kbd",
+      "variant_of": "T02",
+      "name": "Review an agent's change by meaning, keyboard only (IA path only)",
+      "persona": "P1",
+      "frequency": "daily",
+      "flows": {
+        "current": [
+          {
+            "op": "H",
+            "note": "hands to keyboard"
+          },
+          {
+            "op": "M",
+            "note": "plan: open the case and see what changed"
+          },
+          {
+            "op": "K",
+            "n": 3,
+            "note": "Tab x3: skip link, New case, case row (counted from index.html order)"
+          },
+          {
+            "op": "K",
+            "keys": "Enter"
+          },
+          {
+            "op": "R",
+            "ms": 300,
+            "why": "local API round trip and re-render (300 ms = the commit-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "K",
+            "n": 4,
+            "note": "the case list is rebuilt with replaceChildren, which destroys the focused button; assumed Tab resumes at the removal point: case row, Check provider, 01, 02 (4 Tabs; if the browser resets the starting point to the document start it is 6; UNVERIFIED, source reading of app.js, not run)"
+          },
+          {
+            "op": "K",
+            "keys": "Enter"
+          },
+          {
+            "op": "R",
+            "ms": 200,
+            "why": "local view change (client render, 200 ms = the view-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "M",
+            "note": "read the changed rules"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "H",
+            "note": "hands to keyboard"
+          },
+          {
+            "op": "M",
+            "note": "plan: open the case and see what changed"
+          },
+          {
+            "op": "K",
+            "keys": "Enter",
+            "note": "launch focuses the first row of Needs you (a design rule to be verified)"
+          },
+          {
+            "op": "R",
+            "ms": 300,
+            "why": "local API round trip and re-render (300 ms = the commit-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "M",
+            "note": "read the first semantic operation and its ripple"
+          }
+        ]
+      },
+      "assumptions": [
+        "Start state S0: Studio just launched through the private link, the workspace holds cases (C1 'Let teachers sign off excursions.' awaits the owner), hands on the mouse, pointer at rest in the main column (element __pointer at 720,450), viewport 1440x900.",
+        "Keyboard-only variant of T02 (task ids are per file; the suffix style follows the other aspects). Current: counts derived from DOM order in index.html and from app.js re-rendering the case list; not executed in a browser.",
+        "Proposed relies on the rule that Changes home focuses the first item that needs the owner; if that rule is rejected, add Down presses.",
+        "KLM constants: K 0.20 s (average skilled typist, 55 wpm), P 1.10 s when no layout is given, H 0.40 s, B 0.10 s (Kieras, Using the Keystroke-Level Model to Estimate Execution Times, https://web.eecs.umich.edu/~kieras/docs/GOMS/KLM.pdf, opened 2026-09-29, a tutorial by a KLM author based on Card, Moran and Newell 1983); M 1.35 s (the top of the 0.6 to 1.35 s range Kieras gives; he recommends 1.2 s; applied to both flows). Kieras counts B for a press or a release (a click is BB, 0.2 s); these flows use one B per click on both sides, so a delta understates by 0.1 s per extra click on the side with more clicks; P with a layout uses Fitts, Shannon form MT = 0.37 + 0.13 * log2(D/W + 1) s (Cockburn et al. 2007 menu pointing profile), D centre to centre, W = smaller side of the target (assumption). Calibration: 8 right-handed graduate CS students, mouse, pointing down a 16-item vertical menu of 130x22 px items (items 1, 4, 8, 12, 16), so D up to about 340 px and ID up to about 4.0 bits (derived from the item size; the paper does not state distances). Terms with D above 350 px or ID above 4.0, and all 2D movements, are EXTRAPOLATED; the constant-P total is the primary result; PREDICTION band plus or minus 21 percent.",
+        "M policy: one M at the start of each cognitive unit and one before each variable string (KLM rules 1, 2 and 4); the same rule for current and proposed. Reading and judging are not modelled beyond one closing M.",
+        "R values: 200 ms for a client-side view change (view-class target, docs/hci/design/motion-and-performance.md), 300 ms for a local API round trip with re-render (commit-class target); both are assumptions, not measurements. Provider, verification and fixture waits are excluded from both sides because they are identical.",
+        "Element geometry: design/layouts/nav-current.json is copied from the layout lane's Chromium measurement (design/layouts/current-*.json; per-element source field), not reproduced by this lane (MEASURED, second-hand); design/layouts/nav-proposed.json is a design, not a build, with one view per element (field view)."
+      ]
+    },
+    {
+      "id": "T03",
+      "name": "See the ripple of a change (IA path only)",
+      "persona": "P1",
+      "frequency": "daily",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "plan: see what the changed rule touches"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "tab-impact",
+            "layout": "nav-current"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 200,
+            "why": "local view change (client render, 200 ms = the view-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "PageDown: impact summary and rule table start near or below the fold (estimated)"
+          },
+          {
+            "op": "M",
+            "note": "read the impact summary"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "plan: see what the changed rule touches"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "main-row-4",
+            "layout": "nav-proposed",
+            "note": "select the MODIFIED Reject operation; the inspector lane updates"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 200,
+            "why": "local view change (client render, 200 ms = the view-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "M",
+            "note": "read the ripple lane and the Not analysed list"
+          }
+        ]
+      },
+      "assumptions": [
+        "Start state S1: case C1 is already open in its default view (current: Change tab; proposed: Review), hands on the mouse, pointer at rest (element __pointer at 720,450), viewport 1440x900.",
+        "Content of the ripple lane is owned by the review aspect; navigation only needs each lane row to be a focusable target with a count.",
+        "Outcome is not equivalent: the baseline shows a one-line count and raw JSON, the proposal a lane per model kind with UNKNOWN listed apart.",
+        "KLM constants: K 0.20 s (average skilled typist, 55 wpm), P 1.10 s when no layout is given, H 0.40 s, B 0.10 s (Kieras, Using the Keystroke-Level Model to Estimate Execution Times, https://web.eecs.umich.edu/~kieras/docs/GOMS/KLM.pdf, opened 2026-09-29, a tutorial by a KLM author based on Card, Moran and Newell 1983); M 1.35 s (the top of the 0.6 to 1.35 s range Kieras gives; he recommends 1.2 s; applied to both flows). Kieras counts B for a press or a release (a click is BB, 0.2 s); these flows use one B per click on both sides, so a delta understates by 0.1 s per extra click on the side with more clicks; P with a layout uses Fitts, Shannon form MT = 0.37 + 0.13 * log2(D/W + 1) s (Cockburn et al. 2007 menu pointing profile), D centre to centre, W = smaller side of the target (assumption). Calibration: 8 right-handed graduate CS students, mouse, pointing down a 16-item vertical menu of 130x22 px items (items 1, 4, 8, 12, 16), so D up to about 340 px and ID up to about 4.0 bits (derived from the item size; the paper does not state distances). Terms with D above 350 px or ID above 4.0, and all 2D movements, are EXTRAPOLATED; the constant-P total is the primary result; PREDICTION band plus or minus 21 percent.",
+        "M policy: one M at the start of each cognitive unit and one before each variable string (KLM rules 1, 2 and 4); the same rule for current and proposed. Reading and judging are not modelled beyond one closing M.",
+        "R values: 200 ms for a client-side view change (view-class target, docs/hci/design/motion-and-performance.md), 300 ms for a local API round trip with re-render (commit-class target); both are assumptions, not measurements. Provider, verification and fixture waits are excluded from both sides because they are identical.",
+        "Element geometry: design/layouts/nav-current.json is copied from the layout lane's Chromium measurement (design/layouts/current-*.json; per-element source field), not reproduced by this lane (MEASURED, second-hand); design/layouts/nav-proposed.json is a design, not a build, with one view per element (field view)."
+      ]
+    },
+    {
+      "id": "T04",
+      "name": "Edit a state diagram, non-dragging path (IA path only)",
+      "persona": "P2",
+      "frequency": "weekly",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "plan: change where Reject starts"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "tab-impact",
+            "layout": "nav-current"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 200,
+            "why": "local view change (client render, 200 ms = the view-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "PageDown to the State-view edit row (estimated)"
+          },
+          {
+            "op": "P",
+            "from": "tab-impact",
+            "to": "diagram-source",
+            "note": "content-owned select, constant P"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "P",
+            "from": "diagram-source",
+            "to": "diagram-option",
+            "note": "choose Recommended in the dropdown, constant P"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "P",
+            "from": "diagram-option",
+            "to": "edit-state",
+            "note": "Apply state-view edit, constant P"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 300,
+            "why": "local API round trip and re-render (300 ms = the commit-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "M",
+            "note": "read the result"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "plan: change where Reject starts"
+          },
+          {
+            "op": "H",
+            "note": "hands to keyboard"
+          },
+          {
+            "op": "K",
+            "keys": "ctrl+k"
+          },
+          {
+            "op": "T",
+            "chars": 10,
+            "note": "typed 'set reject' (10 characters); the palette shows a pointer row for the owner edit; the name is a constant string so no extra M"
+          },
+          {
+            "op": "K",
+            "keys": "Enter",
+            "note": "the pointer row focuses the inspector edit control for TR-REJECT; it does not edit (palette holds classes C0 to C2 only)"
+          },
+          {
+            "op": "R",
+            "ms": 200,
+            "why": "local view change (client render, 200 ms = the view-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "K",
+            "keys": "Down",
+            "note": "choose Recommended in the inspector control"
+          },
+          {
+            "op": "K",
+            "keys": "Enter",
+            "note": "owner activation inside the inspector control: submit the typed request; the kernel accepts or refuses"
+          },
+          {
+            "op": "R",
+            "ms": 300,
+            "why": "local API round trip and re-render (300 ms = the commit-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "M",
+            "note": "read the result"
+          }
+        ]
+      },
+      "assumptions": [
+        "Start state S1: case C1 is already open in its default view (current: Change tab; proposed: Review), hands on the mouse, pointer at rest (element __pointer at 720,450), viewport 1440x900.",
+        "WCAG 2.5.7 requires a non-dragging path; both flows model that path. The drag path itself (diagram aspect) is not modelled here: KLM D is valid only for straight-line segments.",
+        "The baseline has no picture to drag; its state-view edit is a form (Impact tab).",
+        "Ranking (the typed prefix 'set reject' puts one pointer row first) is assumed. The canvas aspect asked for edit commands in the palette (interface I-P1); this ADR declines it and keeps pointer rows, see the design document section 6.",
+        "KLM constants: K 0.20 s (average skilled typist, 55 wpm), P 1.10 s when no layout is given, H 0.40 s, B 0.10 s (Kieras, Using the Keystroke-Level Model to Estimate Execution Times, https://web.eecs.umich.edu/~kieras/docs/GOMS/KLM.pdf, opened 2026-09-29, a tutorial by a KLM author based on Card, Moran and Newell 1983); M 1.35 s (the top of the 0.6 to 1.35 s range Kieras gives; he recommends 1.2 s; applied to both flows). Kieras counts B for a press or a release (a click is BB, 0.2 s); these flows use one B per click on both sides, so a delta understates by 0.1 s per extra click on the side with more clicks; P with a layout uses Fitts, Shannon form MT = 0.37 + 0.13 * log2(D/W + 1) s (Cockburn et al. 2007 menu pointing profile), D centre to centre, W = smaller side of the target (assumption). Calibration: 8 right-handed graduate CS students, mouse, pointing down a 16-item vertical menu of 130x22 px items (items 1, 4, 8, 12, 16), so D up to about 340 px and ID up to about 4.0 bits (derived from the item size; the paper does not state distances). Terms with D above 350 px or ID above 4.0, and all 2D movements, are EXTRAPOLATED; the constant-P total is the primary result; PREDICTION band plus or minus 21 percent.",
+        "M policy: one M at the start of each cognitive unit and one before each variable string (KLM rules 1, 2 and 4); the same rule for current and proposed. Reading and judging are not modelled beyond one closing M.",
+        "R values: 200 ms for a client-side view change (view-class target, docs/hci/design/motion-and-performance.md), 300 ms for a local API round trip with re-render (commit-class target); both are assumptions, not measurements. Provider, verification and fixture waits are excluded from both sides because they are identical.",
+        "Element geometry: design/layouts/nav-current.json is copied from the layout lane's Chromium measurement (design/layouts/current-*.json; per-element source field), not reproduced by this lane (MEASURED, second-hand); design/layouts/nav-proposed.json is a design, not a build, with one view per element (field view)."
+      ]
+    },
+    {
+      "id": "T05",
+      "name": "Edit the ubiquitous-language tree (IA path only)",
+      "persona": "P2",
+      "frequency": "weekly",
+      "flows": {
+        "current": [],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "plan: rename a term"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "tb-dest-model",
+            "layout": "nav-proposed"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 200,
+            "why": "local view change (client render, 200 ms = the view-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "P",
+            "from": "tb-dest-model",
+            "to": "sb-row-4",
+            "layout": "nav-proposed",
+            "note": "the tree row of the term"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 200,
+            "why": "local view change (client render, 200 ms = the view-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "K",
+            "keys": "F2",
+            "note": "rename in place (the APG tree pattern has no rename key; F2 is a convention to be tested)"
+          },
+          {
+            "op": "T",
+            "chars": 14,
+            "note": "assumed new name of 14 characters"
+          },
+          {
+            "op": "K",
+            "keys": "Enter",
+            "note": "submit the typed request"
+          },
+          {
+            "op": "R",
+            "ms": 300,
+            "why": "local API round trip and re-render (300 ms = the commit-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "M",
+            "note": "read the ripple preview or the refusal reason"
+          },
+          {
+            "op": "K",
+            "keys": "Enter",
+            "note": "accept only if the kernel answered with an acceptable preview"
+          }
+        ]
+      },
+      "assumptions": [
+        "current: [] means NOT SUPPORTED in the baseline (no tree, no rename); it is not zero seconds.",
+        "ADR-003: rename is outside the frozen vocabulary; today the kernel answers with a refusal and a reason, so the flow measures the path to the kernel's answer.",
+        "Start state S1: case C1 is already open in its default view (current: Change tab; proposed: Review), hands on the mouse, pointer at rest (element __pointer at 720,450), viewport 1440x900.",
+        "KLM constants: K 0.20 s (average skilled typist, 55 wpm), P 1.10 s when no layout is given, H 0.40 s, B 0.10 s (Kieras, Using the Keystroke-Level Model to Estimate Execution Times, https://web.eecs.umich.edu/~kieras/docs/GOMS/KLM.pdf, opened 2026-09-29, a tutorial by a KLM author based on Card, Moran and Newell 1983); M 1.35 s (the top of the 0.6 to 1.35 s range Kieras gives; he recommends 1.2 s; applied to both flows). Kieras counts B for a press or a release (a click is BB, 0.2 s); these flows use one B per click on both sides, so a delta understates by 0.1 s per extra click on the side with more clicks; P with a layout uses Fitts, Shannon form MT = 0.37 + 0.13 * log2(D/W + 1) s (Cockburn et al. 2007 menu pointing profile), D centre to centre, W = smaller side of the target (assumption). Calibration: 8 right-handed graduate CS students, mouse, pointing down a 16-item vertical menu of 130x22 px items (items 1, 4, 8, 12, 16), so D up to about 340 px and ID up to about 4.0 bits (derived from the item size; the paper does not state distances). Terms with D above 350 px or ID above 4.0, and all 2D movements, are EXTRAPOLATED; the constant-P total is the primary result; PREDICTION band plus or minus 21 percent.",
+        "M policy: one M at the start of each cognitive unit and one before each variable string (KLM rules 1, 2 and 4); the same rule for current and proposed. Reading and judging are not modelled beyond one closing M.",
+        "R values: 200 ms for a client-side view change (view-class target, docs/hci/design/motion-and-performance.md), 300 ms for a local API round trip with re-render (commit-class target); both are assumptions, not measurements. Provider, verification and fixture waits are excluded from both sides because they are identical.",
+        "Element geometry: design/layouts/nav-current.json is copied from the layout lane's Chromium measurement (design/layouts/current-*.json; per-element source field), not reproduced by this lane (MEASURED, second-hand); design/layouts/nav-proposed.json is a design, not a build, with one view per element (field view)."
+      ]
+    },
+    {
+      "id": "T06",
+      "name": "Run and read verification evidence (IA path only)",
+      "persona": "P4",
+      "frequency": "daily",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "plan: run verification and read the claims"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "tab-evidence",
+            "layout": "nav-current"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 200,
+            "why": "local view change (client render, 200 ms = the view-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "P",
+            "from": "tab-evidence",
+            "to": "verify",
+            "layout": "nav-current"
+          },
+          {
+            "op": "B",
+            "note": "verification runs; wait excluded"
+          },
+          {
+            "op": "M",
+            "note": "read the claims and the UNKNOWN box"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "plan: run verification and read the claims"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "tb-dest-evidence",
+            "layout": "nav-proposed"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 200,
+            "why": "local view change (client render, 200 ms = the view-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "P",
+            "from": "tb-dest-evidence",
+            "to": "main-action",
+            "layout": "nav-proposed",
+            "note": "Run verification occupies the primary action slot in Evidence"
+          },
+          {
+            "op": "B",
+            "note": "verification runs as a job; wait excluded"
+          },
+          {
+            "op": "M",
+            "note": "read the claim rows, counts and coverage row"
+          }
+        ]
+      },
+      "assumptions": [
+        "Start state S1: case C1 is already open in its default view (current: Change tab; proposed: Review), hands on the mouse, pointer at rest (element __pointer at 720,450), viewport 1440x900.",
+        "Prediction: no speed advantage for this path; the proposed benefit is what stays visible (roll-up counts and STALE while the job runs), which KLM does not measure.",
+        "KLM constants: K 0.20 s (average skilled typist, 55 wpm), P 1.10 s when no layout is given, H 0.40 s, B 0.10 s (Kieras, Using the Keystroke-Level Model to Estimate Execution Times, https://web.eecs.umich.edu/~kieras/docs/GOMS/KLM.pdf, opened 2026-09-29, a tutorial by a KLM author based on Card, Moran and Newell 1983); M 1.35 s (the top of the 0.6 to 1.35 s range Kieras gives; he recommends 1.2 s; applied to both flows). Kieras counts B for a press or a release (a click is BB, 0.2 s); these flows use one B per click on both sides, so a delta understates by 0.1 s per extra click on the side with more clicks; P with a layout uses Fitts, Shannon form MT = 0.37 + 0.13 * log2(D/W + 1) s (Cockburn et al. 2007 menu pointing profile), D centre to centre, W = smaller side of the target (assumption). Calibration: 8 right-handed graduate CS students, mouse, pointing down a 16-item vertical menu of 130x22 px items (items 1, 4, 8, 12, 16), so D up to about 340 px and ID up to about 4.0 bits (derived from the item size; the paper does not state distances). Terms with D above 350 px or ID above 4.0, and all 2D movements, are EXTRAPOLATED; the constant-P total is the primary result; PREDICTION band plus or minus 21 percent.",
+        "M policy: one M at the start of each cognitive unit and one before each variable string (KLM rules 1, 2 and 4); the same rule for current and proposed. Reading and judging are not modelled beyond one closing M.",
+        "R values: 200 ms for a client-side view change (view-class target, docs/hci/design/motion-and-performance.md), 300 ms for a local API round trip with re-render (commit-class target); both are assumptions, not measurements. Provider, verification and fixture waits are excluded from both sides because they are identical.",
+        "Element geometry: design/layouts/nav-current.json is copied from the layout lane's Chromium measurement (design/layouts/current-*.json; per-element source field), not reproduced by this lane (MEASURED, second-hand); design/layouts/nav-proposed.json is a design, not a build, with one view per element (field view)."
+      ]
+    },
+    {
+      "id": "T07",
+      "name": "Inspect a counterexample (IA path only)",
+      "persona": "P4",
+      "frequency": "weekly",
+      "flows": {
+        "current": [],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "plan: open the failing check"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "st-fail",
+            "layout": "nav-proposed",
+            "note": "click the FAIL count in the status bar"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 200,
+            "why": "local view change (client render, 200 ms = the view-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "P",
+            "from": "st-fail",
+            "to": "main-row-1",
+            "layout": "nav-proposed",
+            "note": "first failing claim"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 200,
+            "why": "local view change (client render, 200 ms = the view-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "K",
+            "n": 3,
+            "note": "step forward three states in the trace table"
+          },
+          {
+            "op": "M",
+            "note": "read the changed variables"
+          }
+        ]
+      },
+      "assumptions": [
+        "current: [] means NOT SUPPORTED (the baseline has a raw JSON packet only).",
+        "Start state S1: case C1 is already open in its default view (current: Change tab; proposed: Review), hands on the mouse, pointer at rest (element __pointer at 720,450), viewport 1440x900.",
+        "KLM constants: K 0.20 s (average skilled typist, 55 wpm), P 1.10 s when no layout is given, H 0.40 s, B 0.10 s (Kieras, Using the Keystroke-Level Model to Estimate Execution Times, https://web.eecs.umich.edu/~kieras/docs/GOMS/KLM.pdf, opened 2026-09-29, a tutorial by a KLM author based on Card, Moran and Newell 1983); M 1.35 s (the top of the 0.6 to 1.35 s range Kieras gives; he recommends 1.2 s; applied to both flows). Kieras counts B for a press or a release (a click is BB, 0.2 s); these flows use one B per click on both sides, so a delta understates by 0.1 s per extra click on the side with more clicks; P with a layout uses Fitts, Shannon form MT = 0.37 + 0.13 * log2(D/W + 1) s (Cockburn et al. 2007 menu pointing profile), D centre to centre, W = smaller side of the target (assumption). Calibration: 8 right-handed graduate CS students, mouse, pointing down a 16-item vertical menu of 130x22 px items (items 1, 4, 8, 12, 16), so D up to about 340 px and ID up to about 4.0 bits (derived from the item size; the paper does not state distances). Terms with D above 350 px or ID above 4.0, and all 2D movements, are EXTRAPOLATED; the constant-P total is the primary result; PREDICTION band plus or minus 21 percent.",
+        "M policy: one M at the start of each cognitive unit and one before each variable string (KLM rules 1, 2 and 4); the same rule for current and proposed. Reading and judging are not modelled beyond one closing M.",
+        "R values: 200 ms for a client-side view change (view-class target, docs/hci/design/motion-and-performance.md), 300 ms for a local API round trip with re-render (commit-class target); both are assumptions, not measurements. Provider, verification and fixture waits are excluded from both sides because they are identical.",
+        "Element geometry: design/layouts/nav-current.json is copied from the layout lane's Chromium measurement (design/layouts/current-*.json; per-element source field), not reproduced by this lane (MEASURED, second-hand); design/layouts/nav-proposed.json is a design, not a build, with one view per element (field view)."
+      ]
+    },
+    {
+      "id": "T08",
+      "name": "Approve and apply the exact revision (IA path only)",
+      "persona": "P1",
+      "frequency": "daily",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "plan: decide the case"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "tab-evidence",
+            "layout": "nav-current"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 200,
+            "why": "local view change (client render, 200 ms = the view-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "PageDown x1: Approve is at document y 1406 in the Evidence tab (layout-lane measurement), so one page scroll of about 800 px brings it into view"
+          },
+          {
+            "op": "M",
+            "note": "read the UNKNOWN box, blockers and questions"
+          },
+          {
+            "op": "P",
+            "from": "tab-evidence",
+            "to": "question-1",
+            "note": "content-owned, constant P"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "T",
+            "chars": 12,
+            "note": "assumed answer 1 (12 characters)"
+          },
+          {
+            "op": "K",
+            "keys": "Tab"
+          },
+          {
+            "op": "T",
+            "chars": 12,
+            "note": "assumed answer 2 (12 characters)"
+          },
+          {
+            "op": "K",
+            "keys": "Tab"
+          },
+          {
+            "op": "T",
+            "chars": 12,
+            "note": "assumed answer 3 (12 characters)"
+          },
+          {
+            "op": "P",
+            "from": "question-3",
+            "to": "acknowledge",
+            "note": "content-owned, constant P"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "P",
+            "from": "acknowledge",
+            "to": "approve",
+            "note": "constant P"
+          },
+          {
+            "op": "B",
+            "note": "Approve"
+          },
+          {
+            "op": "R",
+            "ms": 300,
+            "why": "local API round trip and re-render (300 ms = the commit-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "M",
+            "note": "read the approved state"
+          },
+          {
+            "op": "P",
+            "from": "approve",
+            "to": "apply",
+            "note": "constant P"
+          },
+          {
+            "op": "B",
+            "note": "Apply, a separate deliberate step"
+          },
+          {
+            "op": "R",
+            "ms": 300,
+            "why": "local API round trip and re-render (300 ms = the commit-class target of the motion aspect; assumption, unmeasured)"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "plan: decide the case"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "main-action",
+            "layout": "nav-proposed",
+            "note": "Decide... opens the owner decision surface (an in-memory history entry at the Review URL; the surface has no URL of its own)"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 200,
+            "why": "local view change (client render, 200 ms = the view-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "M",
+            "note": "read the exact revision, the UNKNOWN list and the questions"
+          },
+          {
+            "op": "P",
+            "from": "main-action",
+            "to": "question-1",
+            "note": "content-owned, constant P"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "T",
+            "chars": 12,
+            "note": "assumed answer 1 (12 characters)"
+          },
+          {
+            "op": "K",
+            "keys": "Tab"
+          },
+          {
+            "op": "T",
+            "chars": 12,
+            "note": "assumed answer 2 (12 characters)"
+          },
+          {
+            "op": "K",
+            "keys": "Tab"
+          },
+          {
+            "op": "T",
+            "chars": 12,
+            "note": "assumed answer 3 (12 characters)"
+          },
+          {
+            "op": "P",
+            "from": "question-3",
+            "to": "acknowledge",
+            "note": "constant P"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "P",
+            "from": "acknowledge",
+            "to": "approve",
+            "note": "constant P"
+          },
+          {
+            "op": "B",
+            "note": "Approve"
+          },
+          {
+            "op": "R",
+            "ms": 300,
+            "why": "local API round trip and re-render (300 ms = the commit-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "M",
+            "note": "read the approved state"
+          },
+          {
+            "op": "P",
+            "from": "approve",
+            "to": "apply",
+            "note": "constant P"
+          },
+          {
+            "op": "B",
+            "note": "Apply, a separate deliberate step"
+          },
+          {
+            "op": "R",
+            "ms": 300,
+            "why": "local API round trip and re-render (300 ms = the commit-class target of the motion aspect; assumption, unmeasured)"
+          }
+        ]
+      },
+      "assumptions": [
+        "Start state S1: case C1 is already open in its default view (current: Change tab; proposed: Review), hands on the mouse, pointer at rest (element __pointer at 720,450), viewport 1440x900.",
+        "Deliberately not optimised (PRINCIPLES P2, LAW section 3): the number of deliberate steps is the same in both flows; only navigation and scrolling differ.",
+        "The baseline asks three critical questions (q-authority, q-assignment, q-reject_entry, layout-lane measurement); three answers of 12 characters each are an assumption identical in both flows.",
+        "No palette command reaches Approve or Apply; Decide... is a navigation to a view, not an action.",
+        "KLM constants: K 0.20 s (average skilled typist, 55 wpm), P 1.10 s when no layout is given, H 0.40 s, B 0.10 s (Kieras, Using the Keystroke-Level Model to Estimate Execution Times, https://web.eecs.umich.edu/~kieras/docs/GOMS/KLM.pdf, opened 2026-09-29, a tutorial by a KLM author based on Card, Moran and Newell 1983); M 1.35 s (the top of the 0.6 to 1.35 s range Kieras gives; he recommends 1.2 s; applied to both flows). Kieras counts B for a press or a release (a click is BB, 0.2 s); these flows use one B per click on both sides, so a delta understates by 0.1 s per extra click on the side with more clicks; P with a layout uses Fitts, Shannon form MT = 0.37 + 0.13 * log2(D/W + 1) s (Cockburn et al. 2007 menu pointing profile), D centre to centre, W = smaller side of the target (assumption). Calibration: 8 right-handed graduate CS students, mouse, pointing down a 16-item vertical menu of 130x22 px items (items 1, 4, 8, 12, 16), so D up to about 340 px and ID up to about 4.0 bits (derived from the item size; the paper does not state distances). Terms with D above 350 px or ID above 4.0, and all 2D movements, are EXTRAPOLATED; the constant-P total is the primary result; PREDICTION band plus or minus 21 percent.",
+        "M policy: one M at the start of each cognitive unit and one before each variable string (KLM rules 1, 2 and 4); the same rule for current and proposed. Reading and judging are not modelled beyond one closing M.",
+        "R values: 200 ms for a client-side view change (view-class target, docs/hci/design/motion-and-performance.md), 300 ms for a local API round trip with re-render (commit-class target); both are assumptions, not measurements. Provider, verification and fixture waits are excluded from both sides because they are identical.",
+        "Element geometry: design/layouts/nav-current.json is copied from the layout lane's Chromium measurement (design/layouts/current-*.json; per-element source field), not reproduced by this lane (MEASURED, second-hand); design/layouts/nav-proposed.json is a design, not a build, with one view per element (field view)."
+      ]
+    },
+    {
+      "id": "T09",
+      "name": "Find anything via the command palette",
+      "persona": "P1",
+      "frequency": "daily",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "plan: go to the Reject rule"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "tab-impact",
+            "layout": "nav-current",
+            "note": "the expert guesses the tab; find-in-page only searches the visible tab"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 200,
+            "why": "local view change (client render, 200 ms = the view-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "H",
+            "note": "hands to keyboard"
+          },
+          {
+            "op": "K",
+            "keys": "ctrl+f",
+            "note": "browser find-in-page, the only search in the baseline"
+          },
+          {
+            "op": "T",
+            "chars": 6,
+            "note": "typed 'Reject'"
+          },
+          {
+            "op": "K",
+            "keys": "Enter"
+          },
+          {
+            "op": "M",
+            "note": "read the highlighted match"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "plan: go to the Reject rule"
+          },
+          {
+            "op": "H",
+            "note": "hands to keyboard"
+          },
+          {
+            "op": "K",
+            "keys": "ctrl+k"
+          },
+          {
+            "op": "T",
+            "chars": 6,
+            "note": "typed 'Reject'; the palette searches the scope (case candidate)"
+          },
+          {
+            "op": "K",
+            "keys": "Down",
+            "note": "assumed one disambiguation key between the action Reject and the state Rejected"
+          },
+          {
+            "op": "K",
+            "keys": "Enter"
+          },
+          {
+            "op": "R",
+            "ms": 200,
+            "why": "local view change (client render, 200 ms = the view-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "M",
+            "note": "read the selected element and its inspector"
+          }
+        ]
+      },
+      "assumptions": [
+        "Baseline capability absent per design/brief.json (baseline_support: absent). The current flow is a workaround comparator (browser find-in-page on one tab), not the same outcome; its delta is not a like-for-like cost.",
+        "Start state S1: case C1 is already open in its default view (current: Change tab; proposed: Review), hands on the mouse, pointer at rest (element __pointer at 720,450), viewport 1440x900.",
+        "Outcome is not equivalent: the baseline highlights text on the current tab; the palette selects the model element and opens its facets.",
+        "Typing 'Reject' is 6 characters; a fuzzy match on fewer characters would be faster (not modelled).",
+        "Sensitivity: if the palette result needs a visual scan of 8 rows, add 0.94 s (Cockburn novice search 0.30 + 0.08 * 8).",
+        "KLM constants: K 0.20 s (average skilled typist, 55 wpm), P 1.10 s when no layout is given, H 0.40 s, B 0.10 s (Kieras, Using the Keystroke-Level Model to Estimate Execution Times, https://web.eecs.umich.edu/~kieras/docs/GOMS/KLM.pdf, opened 2026-09-29, a tutorial by a KLM author based on Card, Moran and Newell 1983); M 1.35 s (the top of the 0.6 to 1.35 s range Kieras gives; he recommends 1.2 s; applied to both flows). Kieras counts B for a press or a release (a click is BB, 0.2 s); these flows use one B per click on both sides, so a delta understates by 0.1 s per extra click on the side with more clicks; P with a layout uses Fitts, Shannon form MT = 0.37 + 0.13 * log2(D/W + 1) s (Cockburn et al. 2007 menu pointing profile), D centre to centre, W = smaller side of the target (assumption). Calibration: 8 right-handed graduate CS students, mouse, pointing down a 16-item vertical menu of 130x22 px items (items 1, 4, 8, 12, 16), so D up to about 340 px and ID up to about 4.0 bits (derived from the item size; the paper does not state distances). Terms with D above 350 px or ID above 4.0, and all 2D movements, are EXTRAPOLATED; the constant-P total is the primary result; PREDICTION band plus or minus 21 percent.",
+        "M policy: one M at the start of each cognitive unit and one before each variable string (KLM rules 1, 2 and 4); the same rule for current and proposed. Reading and judging are not modelled beyond one closing M.",
+        "R values: 200 ms for a client-side view change (view-class target, docs/hci/design/motion-and-performance.md), 300 ms for a local API round trip with re-render (commit-class target); both are assumptions, not measurements. Provider, verification and fixture waits are excluded from both sides because they are identical.",
+        "Element geometry: design/layouts/nav-current.json is copied from the layout lane's Chromium measurement (design/layouts/current-*.json; per-element source field), not reproduced by this lane (MEASURED, second-hand); design/layouts/nav-proposed.json is a design, not a build, with one view per element (field view)."
+      ]
+    },
+    {
+      "id": "T10",
+      "name": "First-run onboarding (step count, not a time claim)",
+      "persona": "P5",
+      "frequency": "rare",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "read the hero and decide"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "create",
+            "layout": "nav-current",
+            "note": "default request is pre-filled; no typing needed"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 300,
+            "why": "local API round trip and re-render (300 ms = the commit-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "M",
+            "note": "read the new case"
+          },
+          {
+            "op": "P",
+            "from": "create",
+            "to": "propose",
+            "note": "content-owned, constant P"
+          },
+          {
+            "op": "B",
+            "note": "provider wait excluded"
+          },
+          {
+            "op": "M",
+            "note": "read the alternatives"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "PageDown"
+          },
+          {
+            "op": "P",
+            "from": "propose",
+            "to": "option-select",
+            "note": "constant P"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "M",
+            "note": "read the candidate"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "tab-evidence",
+            "layout": "nav-current",
+            "note": "pointer assumed back in the main column after selecting the meaning"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 200,
+            "why": "local view change (client render, 200 ms = the view-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "P",
+            "from": "tab-evidence",
+            "to": "verify",
+            "layout": "nav-current"
+          },
+          {
+            "op": "B",
+            "note": "verification runs; wait excluded"
+          },
+          {
+            "op": "M",
+            "note": "read the UNKNOWN box"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "read the empty state and decide"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "main-action",
+            "layout": "nav-proposed",
+            "note": "empty-state action: Review the sample change (runs the offline fixture, egress off)"
+          },
+          {
+            "op": "B",
+            "note": "fixture run; wait excluded"
+          },
+          {
+            "op": "R",
+            "ms": 200,
+            "why": "local view change (client render, 200 ms = the view-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "M",
+            "note": "read the operations, the ripple and the UNKNOWN count in the status bar"
+          }
+        ]
+      },
+      "assumptions": [
+        "Baseline capability absent per design/brief.json (baseline_support: absent: no onboarding). The current flow is a workaround comparator through the create panel; report step counts only.",
+        "KLM is not valid for first-time users (expert, error-free, routine tasks only). Do not quote seconds for this task; use the step counts (pointing plus click pairs: current 5, proposed 1) and the study measure 'time to first reviewed change'.",
+        "Feasibility UNVERIFIED: the proposed empty-state action needs an application feature that runs the offline fixture from the Studio; only the CLI demo command is documented (AGENTS.md).",
+        "Assumption: the offline fixture provider needs no consent checkbox; if it does, add two steps to both flows.",
+        "KLM constants: K 0.20 s (average skilled typist, 55 wpm), P 1.10 s when no layout is given, H 0.40 s, B 0.10 s (Kieras, Using the Keystroke-Level Model to Estimate Execution Times, https://web.eecs.umich.edu/~kieras/docs/GOMS/KLM.pdf, opened 2026-09-29, a tutorial by a KLM author based on Card, Moran and Newell 1983); M 1.35 s (the top of the 0.6 to 1.35 s range Kieras gives; he recommends 1.2 s; applied to both flows). Kieras counts B for a press or a release (a click is BB, 0.2 s); these flows use one B per click on both sides, so a delta understates by 0.1 s per extra click on the side with more clicks; P with a layout uses Fitts, Shannon form MT = 0.37 + 0.13 * log2(D/W + 1) s (Cockburn et al. 2007 menu pointing profile), D centre to centre, W = smaller side of the target (assumption). Calibration: 8 right-handed graduate CS students, mouse, pointing down a 16-item vertical menu of 130x22 px items (items 1, 4, 8, 12, 16), so D up to about 340 px and ID up to about 4.0 bits (derived from the item size; the paper does not state distances). Terms with D above 350 px or ID above 4.0, and all 2D movements, are EXTRAPOLATED; the constant-P total is the primary result; PREDICTION band plus or minus 21 percent.",
+        "M policy: one M at the start of each cognitive unit and one before each variable string (KLM rules 1, 2 and 4); the same rule for current and proposed. Reading and judging are not modelled beyond one closing M.",
+        "R values: 200 ms for a client-side view change (view-class target, docs/hci/design/motion-and-performance.md), 300 ms for a local API round trip with re-render (commit-class target); both are assumptions, not measurements. Provider, verification and fixture waits are excluded from both sides because they are identical.",
+        "Element geometry: design/layouts/nav-current.json is copied from the layout lane's Chromium measurement (design/layouts/current-*.json; per-element source field), not reproduced by this lane (MEASURED, second-hand); design/layouts/nav-proposed.json is a design, not a build, with one view per element (field view)."
+      ]
+    },
+    {
+      "id": "T11",
+      "name": "Resolve a stale or suspect item (IA path only)",
+      "persona": "P2",
+      "frequency": "weekly",
+      "flows": {
+        "current": [],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "plan: find and clear the stale item"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "st-stale",
+            "layout": "nav-proposed",
+            "note": "click the STALE count in the status bar"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 200,
+            "why": "local view change (client render, 200 ms = the view-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "P",
+            "from": "st-stale",
+            "to": "sb-row-4",
+            "layout": "nav-proposed",
+            "note": "first stale row in the filtered tree"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 200,
+            "why": "local view change (client render, 200 ms = the view-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "M",
+            "note": "read the cause: the meaning-bearing fields that changed"
+          },
+          {
+            "op": "P",
+            "from": "sb-row-4",
+            "to": "insp-decide",
+            "layout": "nav-proposed",
+            "note": "Clear by decision... (owner only; never in the palette)"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 200,
+            "why": "local view change (client render, 200 ms = the view-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "T",
+            "chars": 24,
+            "note": "assumed decision reason of 24 characters"
+          },
+          {
+            "op": "K",
+            "keys": "Enter",
+            "note": "log the decision"
+          },
+          {
+            "op": "R",
+            "ms": 300,
+            "why": "local API round trip and re-render (300 ms = the commit-class target of the motion aspect; assumption, unmeasured)"
+          }
+        ]
+      },
+      "assumptions": [
+        "current: [] means NOT SUPPORTED (the baseline has no suspect or stale item concept beyond a notice text).",
+        "Start state S1: case C1 is already open in its default view (current: Change tab; proposed: Review), hands on the mouse, pointer at rest (element __pointer at 720,450), viewport 1440x900.",
+        "The suspect flag is kernel computed; clearing is a logged owner decision; no Clear All (SYNTHESIS S7).",
+        "KLM constants: K 0.20 s (average skilled typist, 55 wpm), P 1.10 s when no layout is given, H 0.40 s, B 0.10 s (Kieras, Using the Keystroke-Level Model to Estimate Execution Times, https://web.eecs.umich.edu/~kieras/docs/GOMS/KLM.pdf, opened 2026-09-29, a tutorial by a KLM author based on Card, Moran and Newell 1983); M 1.35 s (the top of the 0.6 to 1.35 s range Kieras gives; he recommends 1.2 s; applied to both flows). Kieras counts B for a press or a release (a click is BB, 0.2 s); these flows use one B per click on both sides, so a delta understates by 0.1 s per extra click on the side with more clicks; P with a layout uses Fitts, Shannon form MT = 0.37 + 0.13 * log2(D/W + 1) s (Cockburn et al. 2007 menu pointing profile), D centre to centre, W = smaller side of the target (assumption). Calibration: 8 right-handed graduate CS students, mouse, pointing down a 16-item vertical menu of 130x22 px items (items 1, 4, 8, 12, 16), so D up to about 340 px and ID up to about 4.0 bits (derived from the item size; the paper does not state distances). Terms with D above 350 px or ID above 4.0, and all 2D movements, are EXTRAPOLATED; the constant-P total is the primary result; PREDICTION band plus or minus 21 percent.",
+        "M policy: one M at the start of each cognitive unit and one before each variable string (KLM rules 1, 2 and 4); the same rule for current and proposed. Reading and judging are not modelled beyond one closing M.",
+        "R values: 200 ms for a client-side view change (view-class target, docs/hci/design/motion-and-performance.md), 300 ms for a local API round trip with re-render (commit-class target); both are assumptions, not measurements. Provider, verification and fixture waits are excluded from both sides because they are identical.",
+        "Element geometry: design/layouts/nav-current.json is copied from the layout lane's Chromium measurement (design/layouts/current-*.json; per-element source field), not reproduced by this lane (MEASURED, second-hand); design/layouts/nav-proposed.json is a design, not a build, with one view per element (field view)."
+      ]
+    },
+    {
+      "id": "T12",
+      "name": "Map a concept to code and check drift (IA path only)",
+      "persona": "P1",
+      "frequency": "weekly",
+      "flows": {
+        "current": [],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "plan: open the mapping table"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "tb-dest-evidence",
+            "layout": "nav-proposed"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 200,
+            "why": "local view change (client render, 200 ms = the view-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "P",
+            "from": "tb-dest-evidence",
+            "to": "main-seg-mapping",
+            "layout": "nav-proposed"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 200,
+            "why": "local view change (client render, 200 ms = the view-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "M",
+            "note": "read concept, code symbol, last check and drift; unchecked rows read UNKNOWN"
+          }
+        ]
+      },
+      "assumptions": [
+        "current: [] means NOT SUPPORTED (no mapping table in the baseline).",
+        "Start state S1: case C1 is already open in its default view (current: Change tab; proposed: Review), hands on the mouse, pointer at rest (element __pointer at 720,450), viewport 1440x900.",
+        "The mapping data and drift check belong to a kernel and evidence aspect; this flow only reaches the table.",
+        "KLM constants: K 0.20 s (average skilled typist, 55 wpm), P 1.10 s when no layout is given, H 0.40 s, B 0.10 s (Kieras, Using the Keystroke-Level Model to Estimate Execution Times, https://web.eecs.umich.edu/~kieras/docs/GOMS/KLM.pdf, opened 2026-09-29, a tutorial by a KLM author based on Card, Moran and Newell 1983); M 1.35 s (the top of the 0.6 to 1.35 s range Kieras gives; he recommends 1.2 s; applied to both flows). Kieras counts B for a press or a release (a click is BB, 0.2 s); these flows use one B per click on both sides, so a delta understates by 0.1 s per extra click on the side with more clicks; P with a layout uses Fitts, Shannon form MT = 0.37 + 0.13 * log2(D/W + 1) s (Cockburn et al. 2007 menu pointing profile), D centre to centre, W = smaller side of the target (assumption). Calibration: 8 right-handed graduate CS students, mouse, pointing down a 16-item vertical menu of 130x22 px items (items 1, 4, 8, 12, 16), so D up to about 340 px and ID up to about 4.0 bits (derived from the item size; the paper does not state distances). Terms with D above 350 px or ID above 4.0, and all 2D movements, are EXTRAPOLATED; the constant-P total is the primary result; PREDICTION band plus or minus 21 percent.",
+        "M policy: one M at the start of each cognitive unit and one before each variable string (KLM rules 1, 2 and 4); the same rule for current and proposed. Reading and judging are not modelled beyond one closing M.",
+        "R values: 200 ms for a client-side view change (view-class target, docs/hci/design/motion-and-performance.md), 300 ms for a local API round trip with re-render (commit-class target); both are assumptions, not measurements. Provider, verification and fixture waits are excluded from both sides because they are identical.",
+        "Element geometry: design/layouts/nav-current.json is copied from the layout lane's Chromium measurement (design/layouts/current-*.json; per-element source field), not reproduced by this lane (MEASURED, second-hand); design/layouts/nav-proposed.json is a design, not a build, with one view per element (field view)."
+      ]
+    },
+    {
+      "id": "T13",
+      "name": "Ask AI to propose at a selected element (IA path only)",
+      "persona": "P3",
+      "frequency": "weekly",
+      "flows": {
+        "current": [],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "plan: ask AI about one element"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "tb-dest-model",
+            "layout": "nav-proposed"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 200,
+            "why": "local view change (client render, 200 ms = the view-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "P",
+            "from": "tb-dest-model",
+            "to": "sb-row-4",
+            "layout": "nav-proposed"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 200,
+            "why": "local view change (client render, 200 ms = the view-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "P",
+            "from": "sb-row-4",
+            "to": "insp-ask",
+            "layout": "nav-proposed",
+            "note": "Ask AI to propose... opens the composer marked as a provider call"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 200,
+            "why": "local view change (client render, 200 ms = the view-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "P",
+            "from": "insp-ask",
+            "to": "egress-consent",
+            "note": "per-request consent checkbox (I8), constant P"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "M",
+            "note": "compose the prompt (variable string)"
+          },
+          {
+            "op": "T",
+            "chars": 30,
+            "note": "assumed prompt of 30 characters"
+          },
+          {
+            "op": "K",
+            "keys": "Enter",
+            "note": "send; the provider wait is excluded"
+          }
+        ]
+      },
+      "assumptions": [
+        "design/brief.json marks T13 partial: the baseline asks for interpretations of a whole request. The element-scoped path this task needs is absent, so the current flow is empty (not supported), not a partial comparator.",
+        "current: [] means NOT SUPPORTED: the baseline asks for interpretations of a whole request and disables the button once a candidate exists.",
+        "Start state S1: case C1 is already open in its default view (current: Change tab; proposed: Review), hands on the mouse, pointer at rest (element __pointer at 720,450), viewport 1440x900.",
+        "The proposal appears as provisional items with no AI accept control (content owned by the review aspect).",
+        "KLM constants: K 0.20 s (average skilled typist, 55 wpm), P 1.10 s when no layout is given, H 0.40 s, B 0.10 s (Kieras, Using the Keystroke-Level Model to Estimate Execution Times, https://web.eecs.umich.edu/~kieras/docs/GOMS/KLM.pdf, opened 2026-09-29, a tutorial by a KLM author based on Card, Moran and Newell 1983); M 1.35 s (the top of the 0.6 to 1.35 s range Kieras gives; he recommends 1.2 s; applied to both flows). Kieras counts B for a press or a release (a click is BB, 0.2 s); these flows use one B per click on both sides, so a delta understates by 0.1 s per extra click on the side with more clicks; P with a layout uses Fitts, Shannon form MT = 0.37 + 0.13 * log2(D/W + 1) s (Cockburn et al. 2007 menu pointing profile), D centre to centre, W = smaller side of the target (assumption). Calibration: 8 right-handed graduate CS students, mouse, pointing down a 16-item vertical menu of 130x22 px items (items 1, 4, 8, 12, 16), so D up to about 340 px and ID up to about 4.0 bits (derived from the item size; the paper does not state distances). Terms with D above 350 px or ID above 4.0, and all 2D movements, are EXTRAPOLATED; the constant-P total is the primary result; PREDICTION band plus or minus 21 percent.",
+        "M policy: one M at the start of each cognitive unit and one before each variable string (KLM rules 1, 2 and 4); the same rule for current and proposed. Reading and judging are not modelled beyond one closing M.",
+        "R values: 200 ms for a client-side view change (view-class target, docs/hci/design/motion-and-performance.md), 300 ms for a local API round trip with re-render (commit-class target); both are assumptions, not measurements. Provider, verification and fixture waits are excluded from both sides because they are identical.",
+        "Element geometry: design/layouts/nav-current.json is copied from the layout lane's Chromium measurement (design/layouts/current-*.json; per-element source field), not reproduced by this lane (MEASURED, second-hand); design/layouts/nav-proposed.json is a design, not a build, with one view per element (field view)."
+      ]
+    },
+    {
+      "id": "T14",
+      "name": "Find gaps: items with no evidence (IA path only)",
+      "persona": "P4",
+      "frequency": "weekly",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "plan: list what has no evidence"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "tab-evidence",
+            "layout": "nav-current"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 200,
+            "why": "local view change (client render, 200 ms = the view-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "M",
+            "note": "scan the claim cards for UNKNOWN (requirements are not modelled in the baseline)"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "plan: list what has no evidence"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "st-unknown",
+            "layout": "nav-proposed",
+            "note": "click the UNKNOWN count in the status bar; the tree and the main list filter to it"
+          },
+          {
+            "op": "B"
+          },
+          {
+            "op": "R",
+            "ms": 200,
+            "why": "local view change (client render, 200 ms = the view-class target of the motion aspect; assumption, unmeasured)"
+          },
+          {
+            "op": "M",
+            "note": "read the filtered list: requirement, state or journey with the reason UNKNOWN or NOT_RUN"
+          }
+        ]
+      },
+      "assumptions": [
+        "Baseline capability absent per design/brief.json (baseline_support: absent). The current flow is a workaround comparator (scanning claim cards cannot list requirements without evidence); its delta, including the Fitts +0.39 s, is not a like-for-like cost.",
+        "Start state S1: case C1 is already open in its default view (current: Change tab; proposed: Review), hands on the mouse, pointer at rest (element __pointer at 720,450), viewport 1440x900.",
+        "Outcome is not equivalent: the baseline cannot list requirements without evidence; it shows claim cards only.",
+        "Sensitivity: placing the roll-up at the top of the sidebar instead of the bottom status bar changes the Fitts term by about 0.02 s (PREDICTION: centre (64,886) versus (136,100) from the pointer at (720,450)), far below the band.",
+        "KLM constants: K 0.20 s (average skilled typist, 55 wpm), P 1.10 s when no layout is given, H 0.40 s, B 0.10 s (Kieras, Using the Keystroke-Level Model to Estimate Execution Times, https://web.eecs.umich.edu/~kieras/docs/GOMS/KLM.pdf, opened 2026-09-29, a tutorial by a KLM author based on Card, Moran and Newell 1983); M 1.35 s (the top of the 0.6 to 1.35 s range Kieras gives; he recommends 1.2 s; applied to both flows). Kieras counts B for a press or a release (a click is BB, 0.2 s); these flows use one B per click on both sides, so a delta understates by 0.1 s per extra click on the side with more clicks; P with a layout uses Fitts, Shannon form MT = 0.37 + 0.13 * log2(D/W + 1) s (Cockburn et al. 2007 menu pointing profile), D centre to centre, W = smaller side of the target (assumption). Calibration: 8 right-handed graduate CS students, mouse, pointing down a 16-item vertical menu of 130x22 px items (items 1, 4, 8, 12, 16), so D up to about 340 px and ID up to about 4.0 bits (derived from the item size; the paper does not state distances). Terms with D above 350 px or ID above 4.0, and all 2D movements, are EXTRAPOLATED; the constant-P total is the primary result; PREDICTION band plus or minus 21 percent.",
+        "M policy: one M at the start of each cognitive unit and one before each variable string (KLM rules 1, 2 and 4); the same rule for current and proposed. Reading and judging are not modelled beyond one closing M.",
+        "R values: 200 ms for a client-side view change (view-class target, docs/hci/design/motion-and-performance.md), 300 ms for a local API round trip with re-render (commit-class target); both are assumptions, not measurements. Provider, verification and fixture waits are excluded from both sides because they are identical.",
+        "Element geometry: design/layouts/nav-current.json is copied from the layout lane's Chromium measurement (design/layouts/current-*.json; per-element source field), not reproduced by this lane (MEASURED, second-hand); design/layouts/nav-proposed.json is a design, not a build, with one view per element (field view)."
+      ]
+    }
+  ]
+}
