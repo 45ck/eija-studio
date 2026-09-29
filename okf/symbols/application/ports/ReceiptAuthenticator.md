@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/ports.py#ReceiptAuthenticator
   title: application/ports.py
   hash_method: ast-sig-v1
-  sha256: ff87a21da10fb101588a00821cd4ce7daef816437f2ae6d21a6f216e717d94f4
-notes_baseline: 7c081d8c14a6dd58af71c0370689d917a9029d61cefb5e060be40f14e986d5bb
+  sha256: ada8930b65b1a0967404c05d3cbc1551b9ef698bfe63ac73e4e1f651e68a4d71
+notes_baseline: 4d134a0230d38834dda5c9363e25023e7f92833e84b8dc3a70be6bcbd61cac04
 ---
 
 # application.ports.ReceiptAuthenticator
@@ -37,8 +37,8 @@ _The source carries no docstring._
 
 Structural interface implemented by adapters; not a class to instantiate.
 
-* `def seal(self, value: dict) -> dict`
-* `def authentic(self, value: dict) -> bool`
+* `def seal(self, value: dict[str, Any]) -> dict[str, Any]`
+* `def authentic(self, value: dict[str, Any]) -> bool`
 <!-- okf:generated:end facts -->
 
 ## Notes

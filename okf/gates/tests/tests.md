@@ -6,7 +6,6 @@ resource: repo://quality/sessions/tests.py#tests
 tags:
 - gate
 - fast
-- full
 status: stable
 generated:
   by: process:eija-okf-sync
@@ -14,8 +13,8 @@ sources:
 - resource: repo://quality/sessions/tests.py#tests
   title: tests.py
   hash_method: ast-v2
-  sha256: 5ac6913613ca601b1b42a033f77ac29c0b9df8e1673109a1f5566e3c857e12f1
-notes_baseline: 3f47412480429c78ef78d286bb021fd31d5d9985d7f519c36759f93abbb14342
+  sha256: a14a0f95e793332ba6004a6c935af68ffaa78c581c6bd5a68d85f25d9052d547
+notes_baseline: f24158097f135f4d9bdac9f334e4452e68e0e7f5f95ed1ede1c8cd95e15552b3
 ---
 
 # nox -s tests
@@ -24,7 +23,7 @@ notes_baseline: 3f47412480429c78ef78d286bb021fd31d5d9985d7f519c36759f93abbb14342
 | | |
 |---|---|
 | Command | `nox -s tests` |
-| Tiers | `fast`, `full` |
+| Tiers | `fast` |
 | Session module | `repo://quality/sessions/tests.py` |
 | Code | `repo://quality/sessions/tests.py#tests` |
 

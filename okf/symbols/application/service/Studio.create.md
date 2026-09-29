@@ -1,7 +1,7 @@
 ---
 type: Method
 title: application.service.Studio.create
-description: '`def create(self, request: str) -> dict` in `application/service`.'
+description: '`def create(self, request: str) -> dict[str, Any]` in `application/service`.'
 resource: repo://src/eija_studio/application/service.py#Studio.create
 tags:
 - symbol
@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.create
   title: application/service.py
   hash_method: ast-v2
-  sha256: 29300136592efa99ddba346499b767375a55dc584a8463bf5ccc0abafda25fc8
-notes_baseline: 023953489a44ccc3eedd8c97f11146248fed56fd57f8f5dd52f5f1efc06a116c
+  sha256: a9e3120ff9f1099398641b6a21d73b1ee4d400cfd8e58d1e0cb0332c1fb25636
+notes_baseline: 46f343ccdaad28ebf05ab5eba25a64d7e96597f5c0aa5e123fa9651cf87eba7c
 ---
 
 # application.service.Studio.create
@@ -26,7 +26,7 @@ notes_baseline: 023953489a44ccc3eedd8c97f11146248fed56fd57f8f5dd52f5f1efc06a116c
 | Kind | method |
 | Module | [`application/service`](/modules/application/service.md) |
 | Class | [`Studio`](/symbols/application/service/Studio.md) |
-| Signature | `def create(self, request: str) -> dict` |
+| Signature | `def create(self, request: str) -> dict[str, Any]` |
 | Code | `repo://src/eija_studio/application/service.py#Studio.create` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 

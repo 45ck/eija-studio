@@ -27,7 +27,7 @@ notes_baseline: 9d5175736700f450cafc0fccbc64a108c00c627fc0c1d17d278bd003aae1d002
 
 ## Landed ADRs
 
-_None yet: the lane has not recorded a decision in its reserved block._
+Listed under the generated links below.
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -35,5 +35,7 @@ _None yet: the lane has not recorded a decision in its reserved block._
 _No curated notes yet._
 
 <!-- okf:generated:begin links -->
-_No generated cross-references._
+## Landed ADRs
+
+* [ADR-0041: MCP server as the agent surface: propose and check, never decide](/adrs/0041-mcp-server-agent-surface.md) - People want their own agents (Claude Code, Codex, OpenCode, Gemini CLI) to use EIJA Studio.
 <!-- okf:generated:end links -->

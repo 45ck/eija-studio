@@ -14,7 +14,7 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.propose
   title: application/service.py
   hash_method: ast-v2
-  sha256: 98117860134ec11dc75bcf02f76d7e5e6b3c1da94194cb16fe4812180d5bedc5
+  sha256: 4c3ea304a74de099b9a5f48ac5bd257f517a966c53af0d3328c613a6ea69b891
 description_override: Asks the configured provider for an untrusted interpretation and records the run; networked providers need startup enablement and explicit consent.
 notes_baseline: ebf9eb94269ceae96303676ef0cc188001cf6b237e44e4d49bf68fcba6a1a707
 ---
@@ -27,7 +27,7 @@ notes_baseline: ebf9eb94269ceae96303676ef0cc188001cf6b237e44e4d49bf68fcba6a1a707
 | Kind | method |
 | Module | [`application/service`](/modules/application/service.md) |
 | Class | [`Studio`](/symbols/application/service/Studio.md) |
-| Signature | `def propose(self, case_id: str, expected: int, *, consent=False) -> dict` |
+| Signature | `def propose(self, case_id: str, expected: int, *, consent: bool=False) -> dict[str, Any]` |
 | Code | `repo://src/eija_studio/application/service.py#Studio.propose` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 

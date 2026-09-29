@@ -27,7 +27,7 @@ notes_baseline: 0301d8c0de5b1a9bc938fed3d631137641b2e89336237904f5ea70799febd6bb
 
 ## Landed ADRs
 
-_None yet: the lane has not recorded a decision in its reserved block._
+Listed under the generated links below.
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -35,5 +35,8 @@ _None yet: the lane has not recorded a decision in its reserved block._
 _No curated notes yet._
 
 <!-- okf:generated:begin links -->
-_No generated cross-references._
+## Landed ADRs
+
+* [ADR-0029: Z3 proof that the protected policy admits only authority-preserving candidates](/adrs/0029-z3-policy-soundness-proof.md) - `domain.policy.check_policy` is the gate between an AI-proposed candidate workflow and the local owner.
+* [ADR-0030: Bounded model checking by explicit-state search over the real runtime](/adrs/0030-bounded-model-checking-of-the-real-runtime.md) - The runtime matrix in `application/verifier.py` is one-step: five actors times five states times five actions, each cell from a fresh instance.
 <!-- okf:generated:end links -->

@@ -31,7 +31,7 @@ Vendor transport, authentication delegation, limits and response normalization
 
 ## Implementation
 
-* [`adapters/providers.py`](/modules/adapters/providers.md)
+* `adapters/providers.py`
 
 Source: context map row `repo://docs/architecture/ARCHITECTURE.md#provider-integration`. These are responsibility boundaries inside a modular monolith, not separately deployed services.
 <!-- okf:generated:end facts -->
@@ -45,8 +45,4 @@ Vendor transport is isolated behind the [ProposalProvider](/symbols/application/
 
 * [application.ports.ProposalProvider](/symbols/application/ports/ProposalProvider.md) - `class ProposalProvider(Protocol)` in `application/ports`.
 * [application.ports.ProviderResult](/symbols/application/ports/ProviderResult.md) - `class ProviderResult` in `application/ports`.
-
-## Implementing modules
-
-* [adapters.providers](/modules/adapters/providers.md) - Untrusted proposal adapters.
 <!-- okf:generated:end links -->

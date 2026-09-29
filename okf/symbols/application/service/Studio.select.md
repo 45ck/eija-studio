@@ -14,7 +14,7 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.select
   title: application/service.py
   hash_method: ast-v2
-  sha256: 554c21208bb641d8ab3309db199257209fe39e7e434c9c9a537a1acde53f9294
+  sha256: 7884aba375c306bef2f6a0b867eed8473432e57ac89118516cb87b56cfda1e30
 description_override: Records the owner's explicit choice of one supported interpretation and derives the candidate workflow.
 notes_baseline: 94b71cd4e9f2946193b8bc0c926ce7b9f9d1d17f61f4afee9b26b7b2b1461de5
 ---
@@ -27,7 +27,7 @@ notes_baseline: 94b71cd4e9f2946193b8bc0c926ce7b9f9d1d17f61f4afee9b26b7b2b1461de5
 | Kind | method |
 | Module | [`application/service`](/modules/application/service.md) |
 | Class | [`Studio`](/symbols/application/service/Studio.md) |
-| Signature | `def select(self, case_id: str, expected: int, interpretation: str, principal: Principal) -> dict` |
+| Signature | `def select(self, case_id: str, expected: int, interpretation: str, principal: Principal) -> dict[str, Any]` |
 | Code | `repo://src/eija_studio/application/service.py#Studio.select` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 

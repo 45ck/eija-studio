@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/ports.py#Repository
   title: application/ports.py
   hash_method: ast-sig-v1
-  sha256: 19a4b18761ea27770d53e7482ff0204bf6953b9a2c40c8605dd75e14bbf8e6cf
-notes_baseline: a8858b0e9841865581c661ce23802bc336fe85f111f5e6084bbc9284d60da70d
+  sha256: 0f905eb7198e6f9a1b3377c40c0f05cc67ba473b73ac8851edb415eef3837833
+notes_baseline: 8ab858c61846c3208882d322d85d8ecfd8cb088c56f232ce9d8abb5b6637a4f3
 ---
 
 # application.ports.Repository
@@ -44,7 +44,7 @@ _The source carries no docstring._
 Structural interface implemented by adapters; not a class to instantiate.
 
 * `def transaction(self) -> ContextManager[UnitOfWork]`
-* `def list_cases(self) -> list[dict]`
+* `def list_cases(self) -> list[dict[str, Any]]`
 * `def backup(self, target: Path) -> None`
 <!-- okf:generated:end facts -->
 

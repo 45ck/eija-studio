@@ -1,7 +1,7 @@
 ---
 type: Method
 title: application.service.Studio.edit
-description: '`def edit(self, case_id: str, expected: int, tx: SemanticTransaction, principal: Principal) -> dict` in `application/service`.'
+description: '`def edit(self, case_id: str, expected: int, tx: SemanticTransaction, principal: Principal) -> dict[str, Any]` in `application/service`.'
 resource: repo://src/eija_studio/application/service.py#Studio.edit
 tags:
 - symbol
@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.edit
   title: application/service.py
   hash_method: ast-v2
-  sha256: c5dc1b92e323794964fdbf417794a8ff0b6d47797014fccb191145d31a9f2ec9
-notes_baseline: ba05775e815c1fd83d45f0c756246672e3b6e1a252ae31850c9c0fc40245af6d
+  sha256: f65d8a0e20dca7d97db8df3c816f58195f09c80f0c938e5ef8beebd95f5dc6f5
+notes_baseline: f7e30e771eecec0174d08d16f08f578c96546ffac5256af991f58bee60aaf8a2
 ---
 
 # application.service.Studio.edit
@@ -26,7 +26,7 @@ notes_baseline: ba05775e815c1fd83d45f0c756246672e3b6e1a252ae31850c9c0fc40245af6d
 | Kind | method |
 | Module | [`application/service`](/modules/application/service.md) |
 | Class | [`Studio`](/symbols/application/service/Studio.md) |
-| Signature | `def edit(self, case_id: str, expected: int, tx: SemanticTransaction, principal: Principal) -> dict` |
+| Signature | `def edit(self, case_id: str, expected: int, tx: SemanticTransaction, principal: Principal) -> dict[str, Any]` |
 | Code | `repo://src/eija_studio/application/service.py#Studio.edit` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 

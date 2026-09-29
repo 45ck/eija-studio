@@ -27,7 +27,7 @@ notes_baseline: 98cc0db20d68fc4e91f4273033e446d8b1ef734192e3fb5cf506750fc6c08f43
 
 ## Landed ADRs
 
-_None yet: the lane has not recorded a decision in its reserved block._
+Listed under the generated links below.
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -35,5 +35,8 @@ _None yet: the lane has not recorded a decision in its reserved block._
 _No curated notes yet._
 
 <!-- okf:generated:begin links -->
-_No generated cross-references._
+## Landed ADRs
+
+* [ADR-0023: Generated UML and visual diff, with Mermaid as the primary renderer](/adrs/0023-generated-uml-and-visual-diff.md) - ADR-0019 decided that diagrams are generated projections of the executable model.
+* [ADR-0024: Render Mermaid in a sandboxed frame so the Studio page keeps its strict CSP](/adrs/0024-sandboxed-frame-for-mermaid-rendering.md) - The Studio page ships `Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; frame-ancest…
 <!-- okf:generated:end links -->

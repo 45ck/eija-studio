@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/verifier.py
   title: application/verifier.py
   hash_method: ast-api-v1
-  sha256: 0a4795050927ac3abc66a911ca8c70fc6d812cb41d5bc8f6c056020620661efa
-notes_baseline: 5c6cee07a4c9f2d6a695e21cae2485ae2e46a9f6cafd7a2a21b19f5b255dfb91
+  sha256: 7dc6c55b926374bcfbcdadeef6165b6007df6ffecac6fe85cad3dc14612b8814
+notes_baseline: 0ba6d75484559503a4e62cfda9a1e64b7782a8ef3c1279bf64103f30c26b092c
 ---
 
 # application.verifier
@@ -65,5 +65,5 @@ _No curated notes yet._
 * [AC12: Workflow](/requirements/ac12.md) - PARTIAL: Recommend requires Submitted; registrar Approve/Reject requires Recommended; Submit and Revise remain valid.
 * [application.verifier.ACTORS](/symbols/application/verifier/ACTORS.md) - Constant `ACTORS` in `application/verifier`.
 * [application.verifier.ORACLE](/symbols/application/verifier/ORACLE.md) - Constant `ORACLE` in `application/verifier`.
-* [application.verifier.verify_runtime](/symbols/application/verifier/verify_runtime.md) - `def verify_runtime(model: Workflow, subject: dict, sandbox: SandboxFactory) -> dict` in `application/verifier`.
+* [application.verifier.verify_runtime](/symbols/application/verifier/verify_runtime.md) - `def verify_runtime(model: Workflow, subject: dict[str, Any], sandbox: SandboxFactory) -> dict[str, Any]` in `application/verifier`.
 <!-- okf:generated:end links -->

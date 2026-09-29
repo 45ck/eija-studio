@@ -6,7 +6,7 @@ resource: repo://src/eija_studio/adapters/providers.py
 tags:
 - module
 - adapters
-status: stable
+status: deprecated
 generated:
   by: process:eija-okf-sync
 sources:

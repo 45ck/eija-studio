@@ -14,7 +14,7 @@ sources:
 - resource: repo://src/eija_studio/domain/policy.py#meaning_questions
   title: domain/policy.py
   hash_method: ast-v2
-  sha256: b423eaa39e54be8153c22c2753b650463d34021720d4de9c3dcbc504ccdbe0ae
+  sha256: f572a456387fe360c0583269cb7b67fb193b51d7aedde39235904d7518e3168d
 description_override: The three critical questions a local owner must answer correctly before a decision is sealed.
 notes_baseline: 2758810cf1fa8438c38d7f1c311b4324c4d79afcd1161816f4a664a3205bdd29
 ---
@@ -26,7 +26,7 @@ notes_baseline: 2758810cf1fa8438c38d7f1c311b4324c4d79afcd1161816f4a664a3205bdd29
 |---|---|
 | Kind | function |
 | Module | [`domain/policy`](/modules/domain/policy.md) |
-| Signature | `def meaning_questions(model: Workflow) -> list[dict]` |
+| Signature | `def meaning_questions(model: Workflow) -> list[dict[str, Any]]` |
 | Code | `repo://src/eija_studio/domain/policy.py#meaning_questions` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
@@ -46,5 +46,5 @@ Authority (Registrar keeps final approval), assignment (an unassigned teacher ca
 
 ## Referenced by
 
-* [application.compiler.compile_case](/symbols/application/compiler/compile_case.md) - `def compile_case(case: ChangeCase, identity: dict, authenticator, active_version: int, scope: str='local-demo…` in `application/compiler`.
+* [application.compiler.compile_case](/symbols/application/compiler/compile_case.md) - `def compile_case(case: ChangeCase, identity: dict[str, Any], authenticator: Callable[[dict[str, Any]], bool],…` in `application/compiler`.
 <!-- okf:generated:end links -->

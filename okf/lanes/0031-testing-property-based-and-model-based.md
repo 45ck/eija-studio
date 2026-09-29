@@ -27,7 +27,7 @@ notes_baseline: 408fd136eb98403517832dc1bacd17c1343ebc534b9c30b39ddd01897eb2f853
 
 ## Landed ADRs
 
-_None yet: the lane has not recorded a decision in its reserved block._
+Listed under the generated links below.
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -35,5 +35,8 @@ _None yet: the lane has not recorded a decision in its reserved block._
 _No curated notes yet._
 
 <!-- okf:generated:begin links -->
-_No generated cross-references._
+## Landed ADRs
+
+* [ADR-0031: Property-based testing with Hypothesis, in two profiles](/adrs/0031-property-based-testing-with-hypothesis.md) - The kernel's guarantees are universally quantified: "every actor x state x action", "any order of definitions hashes the same", "any dependency graph closes to…
+* [ADR-0032: Stateful differential testing against a specification-derived reference, with mutant negative controls](/adrs/0032-stateful-differential-testing-and-negative-controls.md) - The runtime's promises are about *histories*: replay never repeats effects, a revoked actor cannot replay a cached success, a crash rolls back everything, an e…
 <!-- okf:generated:end links -->

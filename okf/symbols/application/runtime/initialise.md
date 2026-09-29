@@ -14,7 +14,7 @@ sources:
 - resource: repo://src/eija_studio/application/runtime.py#initialise
   title: application/runtime.py
   hash_method: ast-v2
-  sha256: d4927c0a0675e840040cb97a2d956f789ae525e9fdc142e2090e4a50cf4f3e61
+  sha256: a8cc32d53c5e29e6be91371ec8368d01bcc0df599fa52be5b1038836497a461f
 description_override: Creates an isolated preview instance bound to a model hash at version 0, after the policy check.
 notes_baseline: ce539a6168df599a2e54613d838ab9a12be1a7f1914ba18222c956820d235f84
 ---
@@ -26,7 +26,7 @@ notes_baseline: ce539a6168df599a2e54613d838ab9a12be1a7f1914ba18222c956820d235f84
 |---|---|
 | Kind | function |
 | Module | [`application/runtime`](/modules/application/runtime.md) |
-| Signature | `def initialise(session: UnitOfWork, case_id: str, model: Workflow, *, state: str \| None=None) -> dict` |
+| Signature | `def initialise(session: UnitOfWork, case_id: str, model: Workflow, *, state: str \| None=None) -> dict[str, Any]` |
 | Code | `repo://src/eija_studio/application/runtime.py#initialise` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
@@ -49,6 +49,6 @@ A changed candidate makes the instance stale; reset creates a new instance inste
 
 ## Referenced by
 
-* [application.service.Studio.reset_preview](/symbols/application/service/Studio.reset_preview.md) - `def reset_preview(self, case_id: str, expected: int, state: str | None=None) -> dict` in `application/service`.
-* [application.verifier.verify_runtime](/symbols/application/verifier/verify_runtime.md) - `def verify_runtime(model: Workflow, subject: dict, sandbox: SandboxFactory) -> dict` in `application/verifier`.
+* [application.service.Studio.reset_preview](/symbols/application/service/Studio.reset_preview.md) - `def reset_preview(self, case_id: str, expected: int, state: str | None=None) -> dict[str, Any]` in `application/service`.
+* [application.verifier.verify_runtime](/symbols/application/verifier/verify_runtime.md) - `def verify_runtime(model: Workflow, subject: dict[str, Any], sandbox: SandboxFactory) -> dict[str, Any]` in `application/verifier`.
 <!-- okf:generated:end links -->

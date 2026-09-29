@@ -27,7 +27,7 @@ notes_baseline: c0c19fc44523a0adc87ee10423d34e75a7750da9f14e2eb620ddd520aca7b247
 
 ## Landed ADRs
 
-_None yet: the lane has not recorded a decision in its reserved block._
+Listed under the generated links below.
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -35,5 +35,8 @@ _None yet: the lane has not recorded a decision in its reserved block._
 _No curated notes yet._
 
 <!-- okf:generated:begin links -->
-_No generated cross-references._
+## Landed ADRs
+
+* [ADR-0025: Machine-check protected authority laws with Bend 2 in a pinned container](/adrs/0025-bend-machine-checked-laws.md) - The v0.2 runtime matrix observes one step of the runtime for 125 synthetic cells with a same-author oracle.
+* [ADR-0026: The Bend model is generated from the Workflow; negative controls and conformance accompany every proof](/adrs/0026-bend-model-generation-controls-conformance.md) - A proof is only as meaningful as the model it is about and the specification it proves.
 <!-- okf:generated:end links -->

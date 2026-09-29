@@ -14,7 +14,7 @@ sources:
 - resource: repo://src/eija_studio/application/verifier.py#verify_runtime
   title: application/verifier.py
   hash_method: ast-v2
-  sha256: 9ce4cacba1c16cafd1a9292e7e73b482d6839e079daa5590d4c485085fe40bfe
+  sha256: 541a56ce7ed40c5a24b78449b9ec97e2f5206a88810cac4227f9c6703eb045d3
 description_override: Runs the declared actor x state x action matrix against the real runtime in a disposable sandbox and returns the artifact a receipt is built from.
 notes_baseline: 56070df7c7371416eeaab221f951faf9f48dce8b5239766c8b592b85a1ffbec2
 ---
@@ -26,7 +26,7 @@ notes_baseline: 56070df7c7371416eeaab221f951faf9f48dce8b5239766c8b592b85a1ffbec2
 |---|---|
 | Kind | function |
 | Module | [`application/verifier`](/modules/application/verifier.md) |
-| Signature | `def verify_runtime(model: Workflow, subject: dict, sandbox: SandboxFactory) -> dict` |
+| Signature | `def verify_runtime(model: Workflow, subject: dict[str, Any], sandbox: SandboxFactory) -> dict[str, Any]` |
 | Code | `repo://src/eija_studio/application/verifier.py#verify_runtime` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
@@ -45,8 +45,8 @@ _The source carries no docstring._
 ## Depends on
 
 * [application.ports.SandboxFactory](/symbols/application/ports/SandboxFactory.md) - Type alias `SandboxFactory` in `application/ports`.
-* [application.runtime.execute](/symbols/application/runtime/execute.md) - `def execute(session: UnitOfWork, case_id: str, model: Workflow, command: ExecuteCommand, *, fault=None) -> di…` in `application/runtime`.
-* [application.runtime.initialise](/symbols/application/runtime/initialise.md) - `def initialise(session: UnitOfWork, case_id: str, model: Workflow, *, state: str | None=None) -> dict` in `application/runtime`.
+* [application.runtime.execute](/symbols/application/runtime/execute.md) - `def execute(session: UnitOfWork, case_id: str, model: Workflow, command: ExecuteCommand, *, fault: Callable[[…` in `application/runtime`.
+* [application.runtime.initialise](/symbols/application/runtime/initialise.md) - `def initialise(session: UnitOfWork, case_id: str, model: Workflow, *, state: str | None=None) -> dict[str, An…` in `application/runtime`.
 * [application.verifier.ACTORS](/symbols/application/verifier/ACTORS.md) - Constant `ACTORS` in `application/verifier`.
 * [application.verifier.ORACLE](/symbols/application/verifier/ORACLE.md) - Constant `ORACLE` in `application/verifier`.
 * [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
@@ -56,6 +56,6 @@ _The source carries no docstring._
 
 ## Referenced by
 
-* [application.service.Studio.verify](/symbols/application/service/Studio.verify.md) - `def verify(self, case_id: str, expected: int) -> dict` in `application/service`.
+* [application.service.Studio.verify](/symbols/application/service/Studio.verify.md) - `def verify(self, case_id: str, expected: int) -> dict[str, Any]` in `application/service`.
 * [Bounded runtime matrix (integration_test)](/verification/integration-test.md) - Implemented: Every cell of a declared actor x state x action matrix, run against the real runtime in a sandbox, matched a hand-written oracle that is partly de…
 <!-- okf:generated:end links -->

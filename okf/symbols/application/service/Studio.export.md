@@ -1,7 +1,7 @@
 ---
 type: Method
 title: application.service.Studio.export
-description: '`def export(self, case_id: str) -> dict` in `application/service`.'
+description: '`def export(self, case_id: str) -> dict[str, Any]` in `application/service`.'
 resource: repo://src/eija_studio/application/service.py#Studio.export
 tags:
 - symbol
@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.export
   title: application/service.py
   hash_method: ast-v2
-  sha256: 4f262b1e5f0acc6e18bf5e1c5473a499441fd9918a3fb452105ba2eb74c6833e
-notes_baseline: a92a7a3b22f40855d39f48c96780e819aeabdf68da26e796377b51f51bfba9dd
+  sha256: e31f257a01fbe1350b68e7357d15e315206ec4ebcd5fffb52430cb0f62285fbd
+notes_baseline: a39a41decef16b492f0901bdd2ecce52e7ca0056d018d54e9e2556d5d1a0e910
 ---
 
 # application.service.Studio.export
@@ -26,7 +26,7 @@ notes_baseline: a92a7a3b22f40855d39f48c96780e819aeabdf68da26e796377b51f51bfba9dd
 | Kind | method |
 | Module | [`application/service`](/modules/application/service.md) |
 | Class | [`Studio`](/symbols/application/service/Studio.md) |
-| Signature | `def export(self, case_id: str) -> dict` |
+| Signature | `def export(self, case_id: str) -> dict[str, Any]` |
 | Code | `repo://src/eija_studio/application/service.py#Studio.export` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 

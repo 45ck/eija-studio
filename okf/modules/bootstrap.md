@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/bootstrap.py
   title: bootstrap.py
   hash_method: ast-api-v1
-  sha256: 49d026f1c9cb67aded619e375c35996cdc8808b0c6110313e4359e7405df5e74
-notes_baseline: f3521deab8e22d962a50fe877d809044e621d5558a647aa167b83ad2936f46ef
+  sha256: a1127de2561670d3aa739bd220139ac386c5a813e5c75a802b1a992b34b57d71
+notes_baseline: 32cdefd065afda773184b28d119ad238e45cf1865e5f9bf7af4b96968675de1a
 ---
 
 # bootstrap
@@ -39,7 +39,6 @@ _Symbol pages are generated for the domain and application layers only._
 ## Internal imports
 
 * [`adapters/identity`](/modules/adapters/identity.md)
-* [`adapters/providers`](/modules/adapters/providers.md)
 * [`adapters/receipts`](/modules/adapters/receipts.md)
 * [`adapters/sqlite_store`](/modules/adapters/sqlite_store.md)
 * [`application/service`](/modules/application/service.md)
@@ -53,7 +52,6 @@ _No curated notes yet._
 ## Imports
 
 * [adapters.identity](/modules/adapters/identity.md) - Measured release identity, not a proof of correctness or author authenticity.
-* [adapters.providers](/modules/adapters/providers.md) - Untrusted proposal adapters.
 * [adapters.receipts](/modules/adapters/receipts.md) - Local integrity seal.
 * [adapters.sqlite_store](/modules/adapters/sqlite_store.md) - Durable local unit of work.
 * [application.service](/modules/application/service.md) - Module `application/service` (no module docstring).

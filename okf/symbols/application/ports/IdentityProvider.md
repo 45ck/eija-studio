@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/ports.py#IdentityProvider
   title: application/ports.py
   hash_method: ast-v2
-  sha256: eb8c182d81c77a74b083503dff835842209e2ac6bf791e9def1d173acbb4276d
-notes_baseline: 45922d28894c98290fa7fc5eb5a3e322ec0eb86f57ef9fe7e230e98d74625da7
+  sha256: 36975c2db982357100389061ba3b20ce6463ecc3a4b11b201ae1331e3a49660e
+notes_baseline: 11b2561cd522b2123c645a90d9c8aab67ffc0139148e3b357148d27cd8790bbf
 ---
 
 # application.ports.IdentityProvider
@@ -25,7 +25,7 @@ notes_baseline: 45922d28894c98290fa7fc5eb5a3e322ec0eb86f57ef9fe7e230e98d74625da7
 |---|---|
 | Kind | type-alias |
 | Module | [`application/ports`](/modules/application/ports.md) |
-| Signature | `IdentityProvider = Callable[[], dict]` |
+| Signature | `IdentityProvider = Callable[[], dict[str, Any]]` |
 | Code | `repo://src/eija_studio/application/ports.py#IdentityProvider` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 

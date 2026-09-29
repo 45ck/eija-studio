@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/change_case.py
   title: domain/change_case.py
   hash_method: ast-api-v1
-  sha256: 96f4f246f4ea79eb0d5512f5829787f5bb9df6b58301106f988cdcea083aba03
-notes_baseline: 59778286019f8dd1c292e8dc7219830862e3bee8d0748314b3d7cbe40baab982
+  sha256: 9b4204b5a4dd8a9944769c4c9d6cf8e33b38806e0dc409a9a708f10eb1f50a14
+notes_baseline: 8987f9428ed53176634e8decc0143444bdd720887341c38fb762537c9bdb0691
 ---
 
 # domain.change_case
@@ -52,6 +52,7 @@ _No curated notes yet._
 
 * [Authoring](/contexts/authoring.md) - Owns Requested intent, alternatives, explicit selection, candidate and edits
 * [application.compiler](/modules/application/compiler.md) - Compiler: model → projections + impacts + obligations + computed review packet.
+* [application.diagrams](/modules/application/diagrams.md) - Diagram models derived from the executable Workflow (ADR-0019, ADR-0023).
 * [application.service](/modules/application/service.md) - Module `application/service` (no module docstring).
 * [domain.change_case.ChangeCase.at_version](/symbols/domain/change_case/ChangeCase.at_version.md) - `def at_version(self, expected: int) -> None` in `domain/change_case`.
 * [domain.change_case.ChangeCase.executable](/symbols/domain/change_case/ChangeCase.executable.md) - `def executable(self) -> Workflow` in `domain/change_case`.

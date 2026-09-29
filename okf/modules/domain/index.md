@@ -4,6 +4,11 @@
 
 * [domain.change_case](change_case.md) - Module `domain/change_case` (no module docstring).
 * [domain.evidence](evidence.md) - Compatibility is computed.
+* [domain.evidence_kinds](evidence_kinds.md) - The registry of evidence kinds the kernel can assess (ADR-0145).
+* [domain.formal](formal.md) - Primitives for per-kind admissibility of formal evidence (ADR-0145, ADR-0146).
+* [domain.formal_bend](formal_bend.md) - Admissibility of ``bend_proof`` receipts (ADR-0146; lane bend, ADR-0025 and ADR-0026).
+* [domain.formal_bmc](formal_bmc.md) - Admissibility of ``bounded_model_check`` receipts (ADR-0146; lane smt-bmc, ADR-0030).
+* [domain.formal_smt](formal_smt.md) - Admissibility of ``smt_proof`` receipts (ADR-0146; lane smt-bmc, ADR-0029).
 * [domain.impact](impact.md) - Module `domain/impact` (no module docstring).
 * [domain.models](models.md) - Module `domain/models` (no module docstring).
 * [domain.policy](policy.md) - Protected excursion policy.

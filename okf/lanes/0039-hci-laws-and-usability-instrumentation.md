@@ -27,7 +27,7 @@ notes_baseline: fc55e8f5942fecabc1f845852b5b15f2a9c5140cc147f32adc4b93c9bc1ce0b5
 
 ## Landed ADRs
 
-_None yet: the lane has not recorded a decision in its reserved block._
+Listed under the generated links below.
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -35,5 +35,8 @@ _None yet: the lane has not recorded a decision in its reserved block._
 _No curated notes yet._
 
 <!-- okf:generated:begin links -->
-_No generated cross-references._
+## Landed ADRs
+
+* [ADR-0039: Apply HCI laws to the Studio UI with Playwright, axe-core and pure formula modules](/adrs/0039-hci-law-instrumentation.md) - The Studio UI is the owner's only instrument for reviewing an AI-proposed change, yet its usability claims are unmeasured.
+* [ADR-0040: HCI budgets are ratchets, browser tests are opt-in, and the journey runs under the harness identity](/adrs/0040-hci-budgets-as-ratchets-and-harness-identity.md) - The current UI already misses some HCI thresholds (for example moves above 4 bits, focus dropped after re-render, one serious axe rule).
 <!-- okf:generated:end links -->

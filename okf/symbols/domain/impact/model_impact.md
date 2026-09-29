@@ -14,7 +14,7 @@ sources:
 - resource: repo://src/eija_studio/domain/impact.py#model_impact
   title: domain/impact.py
   hash_method: ast-v2
-  sha256: 4c0f160e3bfd36fc9644988ce9c522daea8460aa9829c09e12497c10ef59a349
+  sha256: 86729990ee9638c0d5e0ad28d28d3222069d911beadfbef5a677e4d6baa3855f
 description_override: Maps the changed actions between two workflows onto the rule, runtime, state-view, journey, obligation, receipt, review-packet and decision chain and closes over it.
 notes_baseline: 0aed33da6b73a9f7d9324d110608d99a2f99a5bbd9faec66aae354971bc40a4d
 ---
@@ -26,7 +26,7 @@ notes_baseline: 0aed33da6b73a9f7d9324d110608d99a2f99a5bbd9faec66aae354971bc40a4d
 |---|---|
 | Kind | function |
 | Module | [`domain/impact`](/modules/domain/impact.md) |
-| Signature | `def model_impact(before: Workflow, after: Workflow) -> dict` |
+| Signature | `def model_impact(before: Workflow, after: Workflow) -> dict[str, Any]` |
 | Code | `repo://src/eija_studio/domain/impact.py#model_impact` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
@@ -42,10 +42,13 @@ The envelope is explicit in the result: it covers dependencies encoded by this e
 <!-- okf:generated:begin links -->
 ## Depends on
 
+* [domain.impact.changed_fields](/symbols/domain/impact/changed_fields.md) - Semantic differences of one action's transition.
 * [domain.impact.closure](/symbols/domain/impact/closure.md) - Edges mean source affects target.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 
 ## Referenced by
 
-* [application.compiler.compile_case](/symbols/application/compiler/compile_case.md) - `def compile_case(case: ChangeCase, identity: dict, authenticator, active_version: int, scope: str='local-demo…` in `application/compiler`.
+* [application.compiler.compile_case](/symbols/application/compiler/compile_case.md) - `def compile_case(case: ChangeCase, identity: dict[str, Any], authenticator: Callable[[dict[str, Any]], bool],…` in `application/compiler`.
+* [application.diagram_catalog.case_diagrams](/symbols/application/diagram_catalog/case_diagrams.md) - Every view for one change case as one JSON-friendly payload.
+* [application.diagrams.impact_graph](/symbols/application/diagrams/impact_graph.md) - The ripple of a change through the modelled dependency chain, taken from `domain.impact.model_impact`: changed rules -> runtime -> state view -> journey -> obl…
 <!-- okf:generated:end links -->

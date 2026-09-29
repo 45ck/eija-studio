@@ -14,7 +14,7 @@ sources:
 - resource: repo://src/eija_studio/application/runtime.py#execute
   title: application/runtime.py
   hash_method: ast-v2
-  sha256: 24d413605d10ad431ed9c32aee4abd32dfaf70a708e4c4b804922d112c0382f1
+  sha256: 095568eca654b5f5bdd12df6d9ae9b8a7275095ffe12303cfa6cab1a599937af
 description_override: 'Executes one command against a preview instance: authority is checked before replay, versions are compare-and-swap, and audit and outbox commit with the state change.'
 notes_baseline: 529d0c7db423344929dc3162b6822d7f092436d06112a3319b5c38851104f844
 ---
@@ -26,7 +26,7 @@ notes_baseline: 529d0c7db423344929dc3162b6822d7f092436d06112a3319b5c38851104f844
 |---|---|
 | Kind | function |
 | Module | [`application/runtime`](/modules/application/runtime.md) |
-| Signature | `def execute(session: UnitOfWork, case_id: str, model: Workflow, command: ExecuteCommand, *, fault=None) -> dict` |
+| Signature | `def execute(session: UnitOfWork, case_id: str, model: Workflow, command: ExecuteCommand, *, fault: Callable[[str], None] \| None=None) -> dict[str, Any]` |
 | Code | `repo://src/eija_studio/application/runtime.py#execute` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
@@ -51,7 +51,7 @@ Success is reported to HTTP only after the enclosing [UnitOfWork](/symbols/appli
 ## Depends on
 
 * [application.ports.UnitOfWork](/symbols/application/ports/UnitOfWork.md) - All mutations on this port commit together or roll back together.
-* [application.runtime.check_actor](/symbols/application/runtime/check_actor.md) - `def check_actor(actor: dict, transition, command: ExecuteCommand) -> None` in `application/runtime`.
+* [application.runtime.check_actor](/symbols/application/runtime/check_actor.md) - `def check_actor(actor: dict[str, Any], transition: Transition, command: ExecuteCommand) -> None` in `application/runtime`.
 * [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [domain.models.ExecuteCommand](/symbols/domain/models/ExecuteCommand.md) - `class ExecuteCommand(Contract)` in `domain/models`.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
@@ -60,6 +60,6 @@ Success is reported to HTTP only after the enclosing [UnitOfWork](/symbols/appli
 
 ## Referenced by
 
-* [application.service.Studio.execute](/symbols/application/service/Studio.execute.md) - `def execute(self, case_id: str, command: ExecuteCommand, fault=None) -> dict` in `application/service`.
-* [application.verifier.verify_runtime](/symbols/application/verifier/verify_runtime.md) - `def verify_runtime(model: Workflow, subject: dict, sandbox: SandboxFactory) -> dict` in `application/verifier`.
+* [application.service.Studio.execute](/symbols/application/service/Studio.execute.md) - `def execute(self, case_id: str, command: ExecuteCommand, fault: Callable[[str], None] | None=None) -> dict[st…` in `application/service`.
+* [application.verifier.verify_runtime](/symbols/application/verifier/verify_runtime.md) - `def verify_runtime(model: Workflow, subject: dict[str, Any], sandbox: SandboxFactory) -> dict[str, Any]` in `application/verifier`.
 <!-- okf:generated:end links -->

@@ -27,7 +27,7 @@ notes_baseline: 9c5147257589176d9b1d2f277ab64ff7c7d775703f32d28a0bc29a0e3666873a
 
 ## Landed ADRs
 
-_None yet: the lane has not recorded a decision in its reserved block._
+Listed under the generated links below.
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -35,5 +35,8 @@ _None yet: the lane has not recorded a decision in its reserved block._
 _No curated notes yet._
 
 <!-- okf:generated:begin links -->
-_No generated cross-references._
+## Landed ADRs
+
+* [ADR-0021: Agent-CLI providers run in one isolated, bounded, tree-killing base class](/adrs/0021-cli-provider-isolation-and-process-tree-kill.md) - Codex, Claude Code, OpenCode and Gemini CLI are agents with shell and file tools.
+* [ADR-0022: Live provider evidence is consent-gated, one call, and NOT_RUN when unproven](/adrs/0022-live-provider-evidence-and-not-run.md) - Mocked contract tests prove an adapter's handling of faked output.
 <!-- okf:generated:end links -->

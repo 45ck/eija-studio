@@ -1,0 +1,45 @@
+---
+type: Quality Gate
+title: nox -s formal_tla
+description: TLC model check of Excursion.tla, negative controls, and runtime-vs-spec conformance.
+resource: repo://quality/sessions/tla.py#formal_tla
+tags:
+- gate
+- full
+status: stable
+generated:
+  by: process:eija-okf-sync
+sources:
+- resource: repo://quality/sessions/tla.py#formal_tla
+  title: tla.py
+  hash_method: ast-v2
+  sha256: 90a2b8e52c152513bc8b4823c6b44566e0322f352711c923996a13bc49ea8bc9
+notes_baseline: 720cb6a5843ccf99fd40729713f0955b1b2c03d4a2ac50d9b889c1dadb4cd460
+---
+
+# nox -s formal_tla
+
+<!-- okf:generated:begin facts -->
+| | |
+|---|---|
+| Command | `nox -s formal_tla` |
+| Tiers | `full` |
+| Session module | `repo://quality/sessions/tla.py` |
+| Code | `repo://quality/sessions/tla.py#formal_tla` |
+
+## Docstring
+
+~~~text
+TLC model check of Excursion.tla, negative controls, and runtime-vs-spec conformance.
+~~~
+
+Tiers: `fast` (seconds, pre-commit), `full` (the PR gate) and `release` (maintainer evidence; may need Docker, Java or Chromium and reports `NOT_RUN`, never `PASS`, without them).
+<!-- okf:generated:end facts -->
+
+## Notes
+
+_No curated notes yet._
+
+<!-- okf:generated:begin links -->
+_No generated cross-references._
+<!-- okf:generated:end links -->

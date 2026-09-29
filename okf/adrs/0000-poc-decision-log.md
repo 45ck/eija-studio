@@ -35,6 +35,13 @@ _No curated notes yet._
 ## Referenced by
 
 * [ADR-0045: An OKF v0.2 knowledge base deterministically linked to code](/adrs/0045-okf-knowledge-base-linked-to-code.md) - Humans and agents need a place to start reading EIJA that is smaller than the repository and does not go stale.
+* [HCI-ADR-0057: Information architecture, navigation and command palette: three destinations, a stable frame, one palette, hash deep links](/adrs/0057-hci-ia-navigation.md) - HCI-ADR-0057: Information architecture, navigation and command palette: three destinations, a stable frame, one palette, hash deep links
+* [HCI-ADR-0061: Canvas and drag-and-drop UML editing as typed transactions on a generated picture](/adrs/0061-hci-canvas-uml.md) - HCI-ADR-0061: Canvas and drag-and-drop UML editing as typed transactions on a generated picture
+* [HCI-ADR-0062: Ubiquitous-language and DDD tree as the navigation spine, with typed edits and a tiered rename ripple](/adrs/0062-hci-language-ddd-tree.md) - HCI-ADR-0062: Ubiquitous-language and DDD tree as the navigation spine, with typed edits and a tiered rename ripple
+* [HCI-ADR-0064: AI and agent interaction: proposal cards, delegation fence, isolated owner controls](/adrs/0064-hci-ai-interaction.md) - HCI-ADR-0064: AI and agent interaction: proposal cards, delegation fence, isolated owner controls
+* [HCI-ADR-0067: Accessibility architecture](/adrs/0067-hci-accessibility.md) - HCI-ADR-0067: Accessibility architecture
+* [HCI-ADR-0068: Design system architecture: DTCG tokens with a small generator, layered CSS, native-first components, measured budgets and ADR-gated change](/adrs/0068-hci-design-system-architecture.md) - HCI-ADR-0068: Design system architecture: DTCG tokens with a small generator, layered CSS, native-first components, measured budgets and ADR-gated change
+* [ADR-0145: Per-kind admissibility: the kernel recomputes formal evidence from raw artifacts](/adrs/0145-per-kind-evidence-admissibility.md) - `domain.evidence.assess_receipt` recomputes admissibility for one claim only: the runtime matrix (`runtime_matrix` / `integration_test`).
 * [ADR-001: One modular monolith with browser and CLI over the same kernel](/adrs/poc/adr-001.md) - One modular monolith with browser and CLI over the same kernel.
 * [ADR-002: Rework the narrow A3-inspired kernel instead of inheriting its unchecked preconditions an…](/adrs/poc/adr-002.md) - Rework the narrow A3-inspired kernel instead of inheriting its unchecked preconditions and replay order.
 * [ADR-003: Freeze the supported excursion vocabulary and effect policy](/adrs/poc/adr-003.md) - Freeze the supported excursion vocabulary and effect policy.

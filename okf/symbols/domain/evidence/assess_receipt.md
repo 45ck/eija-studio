@@ -14,7 +14,7 @@ sources:
 - resource: repo://src/eija_studio/domain/evidence.py#assess_receipt
   title: domain/evidence.py
   hash_method: ast-v2
-  sha256: 7c184b9e3d90629b393a013df319efc32a553d905d93fac3c08b74855c1d9ae9
+  sha256: bb6f442458c3a35dfda81ac33ed4835ef6b26e20674ad78771e33ebd3225af47
 description_override: Recomputes a receipt's applicability from its raw observations; a supplied green status is never trusted.
 notes_baseline: 53de9f8d1cf80a2eb58d826d924d74e54ecd54718a0205e1a67ef10b2cbfb9d5
 ---
@@ -26,7 +26,7 @@ notes_baseline: 53de9f8d1cf80a2eb58d826d924d74e54ecd54718a0205e1a67ef10b2cbfb9d5
 |---|---|
 | Kind | function |
 | Module | [`domain/evidence`](/modules/domain/evidence.md) |
-| Signature | `def assess_receipt(receipt: dict, subject: dict, claim: str, kind: str) -> str` |
+| Signature | `def assess_receipt(receipt: dict[str, Any], subject: dict[str, Any], claim: str, kind: str, context: Context \| None=None) -> str` |
 | Code | `repo://src/eija_studio/domain/evidence.py#assess_receipt` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
@@ -49,12 +49,15 @@ See [Evidence Receipt](/language/evidence-receipt.md) and the technique page [Bo
 <!-- okf:generated:begin links -->
 ## Depends on
 
+* [domain.evidence.RUNTIME_MATRIX](/symbols/domain/evidence/RUNTIME_MATRIX.md) - Constant `RUNTIME_MATRIX` in `domain/evidence`.
 * [domain.evidence.TECHNICAL_DIMENSIONS](/symbols/domain/evidence/TECHNICAL_DIMENSIONS.md) - Constant `TECHNICAL_DIMENSIONS` in `domain/evidence`.
+* [domain.evidence.assess_formal_receipt](/symbols/domain/evidence/assess_formal_receipt.md) - Per-kind admissibility (ADR-0145): envelope checks in the runtime matrix's order, then the kind's own check.
+* [domain.formal.Context](/symbols/domain/formal/Context.md) - What the kernel itself knows about the CURRENT subject, beyond the technical dimensions.
 * [domain.models.fingerprint](/symbols/domain/models/fingerprint.md) - `def fingerprint(value: Any) -> str` in `domain/models`.
 
 ## Referenced by
 
-* [application.compiler.compile_case](/symbols/application/compiler/compile_case.md) - `def compile_case(case: ChangeCase, identity: dict, authenticator, active_version: int, scope: str='local-demo…` in `application/compiler`.
-* [domain.evidence.aggregate_status](/symbols/domain/evidence/aggregate_status.md) - `def aggregate_status(receipts: list[dict], subject: dict, authenticator) -> str` in `domain/evidence`.
+* [domain.evidence.aggregate_status](/symbols/domain/evidence/aggregate_status.md) - `def aggregate_status(receipts: list[dict[str, Any]], subject: dict[str, Any], authenticator: Callable[[dict[s…` in `domain/evidence`.
+* [domain.evidence.receipt_status](/symbols/domain/evidence/receipt_status.md) - One receipt's applicability by its OWN declared claim and kind; an unauthentic receipt is FAIL.
 * [Bounded runtime matrix (integration_test)](/verification/integration-test.md) - Implemented: Every cell of a declared actor x state x action matrix, run against the real runtime in a sandbox, matched a hand-written oracle that is partly de…
 <!-- okf:generated:end links -->

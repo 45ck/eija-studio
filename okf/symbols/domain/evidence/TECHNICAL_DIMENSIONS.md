@@ -42,5 +42,5 @@ Presentation (layout) is deliberately excluded from runtime applicability but in
 <!-- okf:generated:begin links -->
 ## Referenced by
 
-* [domain.evidence.assess_receipt](/symbols/domain/evidence/assess_receipt.md) - `def assess_receipt(receipt: dict, subject: dict, claim: str, kind: str) -> str` in `domain/evidence`.
+* [domain.evidence.assess_receipt](/symbols/domain/evidence/assess_receipt.md) - `def assess_receipt(receipt: dict[str, Any], subject: dict[str, Any], claim: str, kind: str, context: Context…` in `domain/evidence`.
 <!-- okf:generated:end links -->

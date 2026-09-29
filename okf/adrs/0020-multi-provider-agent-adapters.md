@@ -5,16 +5,16 @@ description: People use different agent CLIs, often with subscription logins rat
 resource: repo://docs/adr/0020-multi-provider-agent-adapters.md
 tags:
 - adr
-- proposed
-status: draft
+- accepted
+status: stable
 generated:
   by: process:eija-okf-sync
 sources:
 - resource: repo://docs/adr/0020-multi-provider-agent-adapters.md
   title: 0020-multi-provider-agent-adapters.md
   hash_method: lf-sha256-v1
-  sha256: 7da3ee4dd18e42989f382489367bb7e07a9a508aed76eccc58683663f3c20664
-notes_baseline: 83f511f8a27b2afe496c1583b58f8ea8f5b67f853458e9f3ef1d2eb078ca8189
+  sha256: 071e2de09b9d478723b109c83f0ed7d6c8f91ab3bca4915d1ee46f31666d0ef7
+notes_baseline: 6bb3e2b555cdb73e789525b881e7c28e9f7bdd0f99773f92fc44b1115f40ae91
 ---
 
 # ADR-0020: Proposal providers for Codex, Claude Code, OpenCode, Gemini CLI and OpenRouter
@@ -22,7 +22,7 @@ notes_baseline: 83f511f8a27b2afe496c1583b58f8ea8f5b67f853458e9f3ef1d2eb078ca8189
 <!-- okf:generated:begin facts -->
 | | |
 |---|---|
-| Status | proposed |
+| Status | accepted |
 | Date | 2026-09-28 |
 | Source | `repo://docs/adr/0020-multi-provider-agent-adapters.md` |
 
@@ -43,5 +43,8 @@ notes_baseline: 83f511f8a27b2afe496c1583b58f8ea8f5b67f853458e9f3ef1d2eb078ca8189
 _No curated notes yet._
 
 <!-- okf:generated:begin links -->
-_No generated cross-references._
+## Referenced by
+
+* [ADR-0021: Agent-CLI providers run in one isolated, bounded, tree-killing base class](/adrs/0021-cli-provider-isolation-and-process-tree-kill.md) - Codex, Claude Code, OpenCode and Gemini CLI are agents with shell and file tools.
+* [HCI-ADR-0064: AI and agent interaction: proposal cards, delegation fence, isolated owner controls](/adrs/0064-hci-ai-interaction.md) - HCI-ADR-0064: AI and agent interaction: proposal cards, delegation fence, isolated owner controls
 <!-- okf:generated:end links -->

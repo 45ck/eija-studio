@@ -73,5 +73,6 @@ Hash methods and STALE semantics are decided separately in [ADR-0046](/adrs/0046
 ## Referenced by
 
 * [ADR-0046: Code-link hash methods and STALE semantics](/adrs/0046-code-link-hash-methods-and-stale-semantics.md) - ADR-0045 links wiki pages to code with content hashes.
+* [ADR-0097: Impact, ranking and evidence-status mathematics: fixed points, integer relevance, greedy selection, count vectors, and no confidence percentage](/adrs/0097-weave-impact-ranking-math.md) - The weave graph must answer six questions about a change: what does it affect, what should an agent or a person read, which tests give the cheapest useful re-c…
 * [Knowledge base: OKF v0.2 wiki deterministically linked to code](/lanes/0045-knowledge-base-okf-v0-2-wiki.md) - Capability lane with ADR numbers 0045–0046 reserved.
 <!-- okf:generated:end links -->

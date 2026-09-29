@@ -27,7 +27,7 @@ notes_baseline: 60d6a55d8291b6191773fc9d8fa24c9658b0907e23c41a5db0a5fcf53b086f1b
 
 ## Landed ADRs
 
-_None yet: the lane has not recorded a decision in its reserved block._
+Listed under the generated links below.
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -35,5 +35,8 @@ _None yet: the lane has not recorded a decision in its reserved block._
 _No curated notes yet._
 
 <!-- okf:generated:begin links -->
-_No generated cross-references._
+## Landed ADRs
+
+* [ADR-0033: Mutation analysis with cosmic-ray, run natively on Windows](/adrs/0033-mutation-tool-selection.md) - The kernel test suite (88 tests at the start of this lane) passes, but a green suite says nothing about whether it would notice a wrong guard, a swapped role o…
+* [ADR-0034: What is mutated, how a score is defined, and the ratchet](/adrs/0034-mutation-measurement-and-ratchet.md) - ADR-0033 picks the engine.
 <!-- okf:generated:end links -->

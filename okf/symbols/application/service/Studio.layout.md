@@ -1,7 +1,7 @@
 ---
 type: Method
 title: application.service.Studio.layout
-description: '`def layout(self, case_id: str, expected: int, change: LayoutChange, principal: Principal) -> dict` in `application/service`.'
+description: '`def layout(self, case_id: str, expected: int, change: LayoutChange, principal: Principal) -> dict[str, Any]` in `application/service`.'
 resource: repo://src/eija_studio/application/service.py#Studio.layout
 tags:
 - symbol
@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.layout
   title: application/service.py
   hash_method: ast-v2
-  sha256: f644a0338feb07659cf1b3b5a2cbc6a475a2afdde96325ee085400fcde48a347
-notes_baseline: 180712cfe7c0fa913b712001dd7499ffe5169f882eeb2b683ded621aef5d0880
+  sha256: a3014a7b72937403c88090fd05de8ae45989520627e785e76087a171689edfa7
+notes_baseline: 3f8432e1717e5d1c74edd95ba102fda4cd62b4b53c6dfbbb040ffe90d50e6135
 ---
 
 # application.service.Studio.layout
@@ -26,7 +26,7 @@ notes_baseline: 180712cfe7c0fa913b712001dd7499ffe5169f882eeb2b683ded621aef5d0880
 | Kind | method |
 | Module | [`application/service`](/modules/application/service.md) |
 | Class | [`Studio`](/symbols/application/service/Studio.md) |
-| Signature | `def layout(self, case_id: str, expected: int, change: LayoutChange, principal: Principal) -> dict` |
+| Signature | `def layout(self, case_id: str, expected: int, change: LayoutChange, principal: Principal) -> dict[str, Any]` |
 | Code | `repo://src/eija_studio/application/service.py#Studio.layout` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 

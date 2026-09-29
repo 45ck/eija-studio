@@ -2,6 +2,7 @@
 
 # Classes
 
+* [application.ports.FormalEvidenceSource](FormalEvidenceSource.md) - Where formal artifacts come from (Docker, Java, z3 or saved reports are adapter prerequisites).
 * [application.ports.ProposalProvider](ProposalProvider.md) - The only door for AI: a provider returns an untrusted Proposal and cannot select meaning, approve or apply.
 * [application.ports.ProviderResult](ProviderResult.md) - `class ProviderResult` in `application/ports`.
 * [application.ports.ReceiptAuthenticator](ReceiptAuthenticator.md) - `class ReceiptAuthenticator(Protocol)` in `application/ports`.

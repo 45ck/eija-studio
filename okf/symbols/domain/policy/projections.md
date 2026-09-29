@@ -14,7 +14,7 @@ sources:
 - resource: repo://src/eija_studio/domain/policy.py#projections
   title: domain/policy.py
   hash_method: ast-v2
-  sha256: 6398db84b410971e6d289014aa4c19852a43538460a6d9eb369d3098a167c454
+  sha256: b6d80e8f3057e0060aadd5e541949b02c21b46c3af4bc058a8d1b3c4662c9a3e
 description_override: Derives rules, state views and journey sentences from the executable transitions, so no view is a second source of truth.
 notes_baseline: a187b983cb2c335437e0848d9a93bf936831085d5404cfa280e880199dcc555b
 ---
@@ -26,7 +26,7 @@ notes_baseline: a187b983cb2c335437e0848d9a93bf936831085d5404cfa280e880199dcc555b
 |---|---|
 | Kind | function |
 | Module | [`domain/policy`](/modules/domain/policy.md) |
-| Signature | `def projections(model: Workflow) -> dict` |
+| Signature | `def projections(model: Workflow) -> dict[str, Any]` |
 | Code | `repo://src/eija_studio/domain/policy.py#projections` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
@@ -48,5 +48,5 @@ Rules, state views and journey sentences are all computed here from the same [Wo
 
 ## Referenced by
 
-* [application.compiler.compile_case](/symbols/application/compiler/compile_case.md) - `def compile_case(case: ChangeCase, identity: dict, authenticator, active_version: int, scope: str='local-demo…` in `application/compiler`.
+* [application.compiler.compile_case](/symbols/application/compiler/compile_case.md) - `def compile_case(case: ChangeCase, identity: dict[str, Any], authenticator: Callable[[dict[str, Any]], bool],…` in `application/compiler`.
 <!-- okf:generated:end links -->

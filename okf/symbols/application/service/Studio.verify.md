@@ -14,7 +14,7 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.verify
   title: application/service.py
   hash_method: ast-v2
-  sha256: ee1f0955b4ae434667ae13a4369c23b4a24e96bbae4a5a1979dedb76d6f38728
+  sha256: cf1a9722ff0fd5db3eaf30cbbe040d99e9e431a40e76e3c427f582c7bc67f444
 description_override: Runs the runtime matrix in a sandbox and stores a sealed receipt; refuses a source that differs from the release fixture.
 notes_baseline: cb447b283609e7331c899eaed3407cebf36e002697082810e06650c5e036b38f
 ---
@@ -27,7 +27,7 @@ notes_baseline: cb447b283609e7331c899eaed3407cebf36e002697082810e06650c5e036b38f
 | Kind | method |
 | Module | [`application/service`](/modules/application/service.md) |
 | Class | [`Studio`](/symbols/application/service/Studio.md) |
-| Signature | `def verify(self, case_id: str, expected: int) -> dict` |
+| Signature | `def verify(self, case_id: str, expected: int) -> dict[str, Any]` |
 | Code | `repo://src/eija_studio/application/service.py#Studio.verify` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
@@ -43,7 +43,9 @@ Verification clears any current decision and never approves. See [verify_runtime
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [application.compiler.subject_for](/symbols/application/compiler/subject_for.md) - `def subject_for(model: Workflow, layout: dict, identity: dict) -> dict` in `application/compiler`.
-* [application.verifier.verify_runtime](/symbols/application/verifier/verify_runtime.md) - `def verify_runtime(model: Workflow, subject: dict, sandbox: SandboxFactory) -> dict` in `application/verifier`.
+* [application.compiler.subject_for](/symbols/application/compiler/subject_for.md) - `def subject_for(model: Workflow, layout: dict[str, Any], identity: dict[str, Any]) -> dict[str, Any]` in `application/compiler`.
+* [application.formal.attach](/symbols/application/formal/attach.md) - Sealed receipts for every registered kind the source returned, skipping an exact repeat of the latest one.
+* [application.service.now](/symbols/application/service/now.md) - `def now() -> str` in `application/service`.
+* [application.verifier.verify_runtime](/symbols/application/verifier/verify_runtime.md) - `def verify_runtime(model: Workflow, subject: dict[str, Any], sandbox: SandboxFactory) -> dict[str, Any]` in `application/verifier`.
 * [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
 <!-- okf:generated:end links -->

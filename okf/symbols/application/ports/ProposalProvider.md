@@ -14,7 +14,7 @@ sources:
 - resource: repo://src/eija_studio/application/ports.py#ProposalProvider
   title: application/ports.py
   hash_method: ast-sig-v1
-  sha256: 3ea25c091151175504929252f5146fbe03024fbac11d69447d3f5ba1720ecb2b
+  sha256: e729e5f4017c0f25ad40c1fdebf2e894ffc2dc24d665e4b063836c10c9e215e9
 description_override: 'The only door for AI: a provider returns an untrusted Proposal and cannot select meaning, approve or apply.'
 notes_baseline: fd2f65a2bd34dd7d60067a858176f484a7fc26181909502839221baa432ee81a
 ---
@@ -46,7 +46,7 @@ _The source carries no docstring._
 Structural interface implemented by adapters; not a class to instantiate.
 
 * `def propose(self, request: str, model: Workflow) -> ProviderResult`
-* `def doctor(self) -> dict`
+* `def doctor(self) -> dict[str, Any]`
 <!-- okf:generated:end facts -->
 
 ## Notes

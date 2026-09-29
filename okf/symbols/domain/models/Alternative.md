@@ -53,5 +53,6 @@ _No curated notes yet._
 
 ## Referenced by
 
+* [application.diagrams.CONTRACTS](/symbols/application/diagrams/CONTRACTS.md) - Constant `CONTRACTS` in `application/diagrams`.
 * [domain.models.Proposal](/symbols/domain/models/Proposal.md) - `class Proposal(Contract)` in `domain/models`.
 <!-- okf:generated:end links -->

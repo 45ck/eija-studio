@@ -439,7 +439,7 @@ def adr_pages(repo: Repo, catalog_paths: dict[str, str]) -> list[PageSpec]:
                             if (repo.root / m).is_file() and not m.startswith(("docs/adr/", repo.bundle_name + "/"))})   # never the bundle itself: keeps sync a fixpoint
         parts = ["| | |\n|---|---|\n" + "\n".join(
             [f"| Status | {md_cell(meta.get('status', 'unknown'))} |", f"| Date | {md_cell(meta.get('date', 'unknown'))} |"]
-            + ([f"| Lane | {md_cell(meta['lane'])} |"] if "lane" in meta else []) + [f"| Source | `repo://{path}` |"])]
+            + ([f"| Lane | {md_cell(localize_links(meta['lane'], 'docs/adr'))} |"] if "lane" in meta else []) + [f"| Source | `repo://{path}` |"])]
         if outcome:
             parts.append("## Decision outcome (verbatim)\n\n" + quote(localize_links("\n".join(outcome[1].strip().split("\n")[:20]), "docs/adr")))
         if headings:

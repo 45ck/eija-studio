@@ -1,7 +1,7 @@
 ---
 type: Method
 title: application.service.Studio.save
-description: '`def save(self, case_id: str, expected: int) -> dict` in `application/service`.'
+description: '`def save(self, case_id: str, expected: int) -> dict[str, Any]` in `application/service`.'
 resource: repo://src/eija_studio/application/service.py#Studio.save
 tags:
 - symbol
@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.save
   title: application/service.py
   hash_method: ast-v2
-  sha256: c54b5c0d30ab8b9aa13a17c9b1527dc6054a9b50f5aa9c3d1615db3d859385fe
-notes_baseline: a6ebad23f3f6e1a16fda4bcd13b216c52a6b1af5d90b2045f51589a34db2948a
+  sha256: 258985ac2c6bc20010d731a0858e0b1c908b2abf3bbe84c4ed1e5f46884f43f8
+notes_baseline: ba6f668fd563bfb4e44747dccf5221c48d8c6b2e677d9775325a8a628833fcf0
 ---
 
 # application.service.Studio.save
@@ -26,7 +26,7 @@ notes_baseline: a6ebad23f3f6e1a16fda4bcd13b216c52a6b1af5d90b2045f51589a34db2948a
 | Kind | method |
 | Module | [`application/service`](/modules/application/service.md) |
 | Class | [`Studio`](/symbols/application/service/Studio.md) |
-| Signature | `def save(self, case_id: str, expected: int) -> dict` |
+| Signature | `def save(self, case_id: str, expected: int) -> dict[str, Any]` |
 | Code | `repo://src/eija_studio/application/service.py#Studio.save` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 

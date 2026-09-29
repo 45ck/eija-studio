@@ -13,15 +13,15 @@ sources:
 - resource: repo://src/eija_studio/application/verifier.py#verify_runtime
   title: application/verifier.verify_runtime
   hash_method: ast-v2
-  sha256: 9ce4cacba1c16cafd1a9292e7e73b482d6839e079daa5590d4c485085fe40bfe
+  sha256: 541a56ce7ed40c5a24b78449b9ec97e2f5206a88810cac4227f9c6703eb045d3
 - resource: repo://src/eija_studio/domain/evidence.py#assess_receipt
   title: domain/evidence.assess_receipt
   hash_method: ast-v2
-  sha256: 7c184b9e3d90629b393a013df319efc32a553d905d93fac3c08b74855c1d9ae9
+  sha256: bb6f442458c3a35dfda81ac33ed4835ef6b26e20674ad78771e33ebd3225af47
 - resource: repo://src/eija_studio/domain/evidence.py#aggregate_status
   title: domain/evidence.aggregate_status
   hash_method: ast-v2
-  sha256: 68f2f5a2284255e82901d09975ed39d390a9395513e7a0dcb06a0c069ad3d2e5
+  sha256: 7ad71b12b551b1bcdf5e1f9ac639ebd499188cfd53a29a332adbd50033cfce06
 notes_baseline: 9596bb9166577ea4fb4a82c73069313fe00a61d341b57693892153d13e086a9c
 ---
 
@@ -56,7 +56,7 @@ The only evidence kind the kernel can currently establish. `ORACLE` and the runt
 <!-- okf:generated:begin links -->
 ## Implemented by
 
-* [application.verifier.verify_runtime](/symbols/application/verifier/verify_runtime.md) - `def verify_runtime(model: Workflow, subject: dict, sandbox: SandboxFactory) -> dict` in `application/verifier`.
-* [domain.evidence.aggregate_status](/symbols/domain/evidence/aggregate_status.md) - `def aggregate_status(receipts: list[dict], subject: dict, authenticator) -> str` in `domain/evidence`.
-* [domain.evidence.assess_receipt](/symbols/domain/evidence/assess_receipt.md) - `def assess_receipt(receipt: dict, subject: dict, claim: str, kind: str) -> str` in `domain/evidence`.
+* [application.verifier.verify_runtime](/symbols/application/verifier/verify_runtime.md) - `def verify_runtime(model: Workflow, subject: dict[str, Any], sandbox: SandboxFactory) -> dict[str, Any]` in `application/verifier`.
+* [domain.evidence.aggregate_status](/symbols/domain/evidence/aggregate_status.md) - `def aggregate_status(receipts: list[dict[str, Any]], subject: dict[str, Any], authenticator: Callable[[dict[s…` in `domain/evidence`.
+* [domain.evidence.assess_receipt](/symbols/domain/evidence/assess_receipt.md) - `def assess_receipt(receipt: dict[str, Any], subject: dict[str, Any], claim: str, kind: str, context: Context…` in `domain/evidence`.
 <!-- okf:generated:end links -->
