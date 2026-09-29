@@ -11,6 +11,7 @@ from eija_studio.domain.impact import model_impact
 from eija_studio.application.compiler import subject_for
 from eija_studio.application.verifier import verify_runtime
 from eija_studio.application.diagram_catalog import FORMATS, VIEWS, VIEW_FORMATS, html_panels, render_view
+from eija_studio.weave.cli import COMMANDS as WEAVE_COMMANDS, add_parsers as add_weave_parsers
 from .agent_config import DEFAULT_MAX_PROVIDER_CALLS, snippet
 
 
@@ -87,7 +88,7 @@ def _add_render_parser(subs) -> None:
     render.add_argument("--out", type=Path, help="Write here instead of stdout (LF, UTF-8)")
 
 
-EARLY_COMMANDS = {"check-export": check_export_command, "render": render_command}  # need no workspace, provider or key
+EARLY_COMMANDS = {"check-export": check_export_command, "render": render_command, **WEAVE_COMMANDS}  # need no workspace, provider or key
 
 
 def formal_table(evidence: list) -> str:
@@ -164,6 +165,7 @@ def main(argv=None) -> int:
     compile_p = subs.add_parser("compile", parents=[common]); compile_p.add_argument("file", type=Path); compile_p.add_argument("--out", type=Path, required=True); compile_p.add_argument("--verify", action="store_true")
     check = subs.add_parser("check-export"); check.add_argument("file", type=Path)
     _add_render_parser(subs)
+    add_weave_parsers(subs)
     mcp = subs.add_parser("mcp", parents=[common], help="Serve the agent-facing MCP server on stdio (needs the agents extra)")
     mcp.add_argument("--print-config", choices=["claude", "codex", "opencode", "gemini"], help="Print copy-paste client config for this MCP server and exit")
     mcp.add_argument("--egress-consent", action="store_true", help="Owner's STANDING consent: every propose call in this session may send the request to a networked provider; agents cannot grant it")
