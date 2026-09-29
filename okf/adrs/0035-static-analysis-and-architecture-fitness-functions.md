@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0035-static-analysis-and-architecture-fitness-functions.md
   title: 0035-static-analysis-and-architecture-fitness-functions.md
   hash_method: lf-sha256-v1
-  sha256: 1b5a87d28a087fee37591b10aa00006983cdd59e4a5bc45b6995108bcb157b43
-notes_baseline: ddc01bbf661652da7ddbeeeac5a7828f8bf59df70f069087c318235ff1a0153c
+  sha256: d409149f31b217b50f6000cae934b3ed1c3d55753aac24daeb993b08806084e6
+notes_baseline: 04a62b0c827ae9f7d7aa5465d47d936cbed4916c1844ad6c9fd64f8ec7933860
 ---
 
 # ADR-0035: Static analysis, architecture fitness functions and ratcheted budgets
@@ -33,10 +33,10 @@ notes_baseline: ddc01bbf661652da7ddbeeeac5a7828f8bf59df70f069087c318235ff1a0153c
 >
 > * **Ratchet, not cliff.** The current code passes every gate except the release-tier audit. Existing violations are named debt: per-file ruff ignores, per-module mypy overrides, a complexity baseline. Thresholds tighten, never loosen; debt is deleted in the commit that fixes it.
 > * **Architecture as fitness functions** with import-linter: layers `interfaces > bootstrap > adapters > application > domain`, a vendor-free domain and application, and adapters wired only by bootstrap. `tests/test_quality_gates.py` seeds violations into a copy of the kernel and requires the contracts to break.
-> * **mypy strict where invariants live** (`domain`, `application`), default profile elsewhere with a written module-by-module plan. No `ignore_errors`.
-> * **Complexity**: xenon enforces average and module rank; a small custom ratchet (`quality/gates/complexity_ratchet.py`) adds the per-function debt list xenon cannot express. `--update` can only lower debt.
+> * **mypy strict where invariants live** (`domain`, `application`), default profile elsewhere with a written module-by-module plan. No `ignore_errors`. Strict means annotated, not modelled: the payloads are still `dict[str, Any]`, so this proves less than a typed model would (ratchet item).
+> * **Complexity**: xenon enforces average and module rank; a small custom ratchet (`quality/gates/complexity_ratchet.py`) adds the per-function debt list xenon cannot express. `--update` can only lower debt (`min(measured, recorded)`), never raise it. Why not Ruff `C901` with `noqa` on the seven legacy functions: `noqa` cannot pin a value, so a function could grow from 16 to 40 unnoticed.
 > * **Coverage** is branch coverage with `fail_under` at the floor of the measured value.
-> * **Dependency hygiene**: deptry in the fast tier; pip-audit in the release tier because it needs network, reporting `NOT_RUN` when offline.
+> * **Dependency hygiene**: deptry in the fast tier; pip-audit in the release tier because it needs network. Offline it fails with a `NOT_RUN` message (nox exits 0 for a skipped session, which would read as PASS) unless `EIJA_ALLOW_NOT_RUN=1` is set.
 > * **Kernel edits** were limited to type annotations with no behaviour change (`dict[str, Any]`, callable types, one narrowing `assert`).
 
 ## Sections

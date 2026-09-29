@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/mcp_server.py
   title: interfaces/mcp_server.py
   hash_method: ast-api-v1
-  sha256: 0b22bf93399e9cfe702f5013bf2d2ac6a4a40dedde67ae340d8cbc79adffbb12
-notes_baseline: d1eb72262479007d309cb0119112938d4d970cba5aea588830c4a450fabfff58
+  sha256: c9b675a08758d28e48e1db08ec8b86c372a721a3aaa72d7f46b94e3edf71693e
+notes_baseline: de90df4ec09737c693082102dc32219643a5e4eaea8e9edbbd6e49a2ec982f20
 ---
 
 # interfaces.mcp_server
@@ -38,11 +38,15 @@ tool that selects a meaning, edits the model, approves, applies, discards or pre
 are owner capabilities and stay in the browser Studio (``eija serve``).
 
 The guarantee is ABSENCE, not a role check, in three layers: (1) the tool registry is asserted equal to
-``AGENT_TOOLS``; (2) ``AgentSurface`` holds an ``AgentPort`` (five members) and never the whole ``Studio``,
-so an owner method is unreachable from it by construction (only ``StudioAgentPort`` holds a ``Studio``);
-(3) an AST lint (tests/test_agent_static.py, with mutation negative controls) rejects owner-operation
-names, store writes, ``OWNER``, dynamic attribute access and aliasing of ``Studio`` in this module. Layer 3
-is a best-effort lint, not a proof. Nothing here "runs as" the AGENT principal: ``Studio.create``,
+``AGENT_TOOLS``; (2) ``AgentSurface`` holds an ``AgentPort`` (five members) and never the whole ``Studio``:
+the typed surface has no owner method, and the port keeps the ``Studio`` only in a closure, so no chain of
+ordinary attribute names (``port._studio.approve``, ``attrgetter``, ``methodcaller``) reaches it (a test walks
+every non-dunder attribute path); (3) an AST lint (tests/test_agent_static.py, with a negative control that
+only each rule catches) rejects owner-operation and store-write names on any receiver, ``OWNER``, dynamic
+attribute access, object-internals dunders, ``operator``/``importlib``/``inspect`` imports, and the ``Studio``
+class or instance used outside the port factory. Reaching past the port needs dunder or introspection
+access, which layer 3 catches in the common spellings: it is a best-effort lint, not a proof, and the
+adapter is not a sandbox. Nothing here "runs as" the AGENT principal: ``Studio.create``,
 ``propose`` and ``verify`` take no principal, so the kernel cannot tell an MCP caller from any other and the
 audit log does not attribute these actions to an agent (kernel follow-up). If a new tool ever needed a
 principal, that would be a governance change to ADR-0041, not an implementation detail.
@@ -68,6 +72,7 @@ _Symbol pages are generated for the domain and application layers only._
 * [`domain/models`](/modules/domain/models.md)
 * [`domain/policy`](/modules/domain/policy.md)
 * [`interfaces/agent_config`](/modules/interfaces/agent_config.md)
+* [`interfaces/agent_policy`](/modules/interfaces/agent_policy.md)
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -81,4 +86,5 @@ _No curated notes yet._
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.policy](/modules/domain/policy.md) - Protected excursion policy.
 * [interfaces.agent_config](/modules/interfaces/agent_config.md) - Copy-paste MCP client configuration for `eija mcp --print-config <client>`.
+* [interfaces.agent_policy](/modules/interfaces/agent_policy.md) - SDK-free policy data for the agent adapter: which persistence operations an agent adapter must never touch.
 <!-- okf:generated:end links -->

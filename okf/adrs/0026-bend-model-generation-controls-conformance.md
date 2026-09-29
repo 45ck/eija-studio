@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0026-bend-model-generation-controls-conformance.md
   title: 0026-bend-model-generation-controls-conformance.md
   hash_method: lf-sha256-v1
-  sha256: a46dc1af12001b8c83b872b1387c60d28bb30d0106fa3d05a6de6de6470f2db5
-notes_baseline: fad2932bbb42252095dc6fa572e6b56bb530f3dbd11fb90dfd516a19225eab30
+  sha256: 7e382a361305c4fa74a92dcb356aee3bb71bd4041d5e9ba50e3e494cb62c3a36
+notes_baseline: fe98571209c7636336f770092b970d424a9aefa4f268d1e2851e18891825955d
 ---
 
 # ADR-0026: The Bend model is generated from the Workflow; negative controls and conformance accompany every proof
@@ -47,8 +47,8 @@ notes_baseline: fad2932bbb42252095dc6fa572e6b56bb530f3dbd11fb90dfd516a19225eab30
 > * **Claims.** A `bend_proof` PASS requires: `main.bend` current; full `--verdict` result; per-law results; every control
 >   failing as designed; conformance agreeing. The report lists what is not proven. No lane text may describe the result
 >   as a proof of the Python runtime, of SQLite behaviour, or of the completeness of the laws.
-> * **Generation refuses** state/role/action/effect names that are not valid, unique Bend constructor names or collide with
->   the fixed part of the program, rather than emitting a model that means something else.
+> * **Laws that restate kernel policy are checked against it.** `forbidden` (law 8) and `reject_source` (law 7) are
+>   hand-written in `LAWS.bend`; `bend_policy.check_laws_against_policy` fails the drift gate when they differ from
 
 ## Sections
 

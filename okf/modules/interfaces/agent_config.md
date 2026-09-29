@@ -39,6 +39,10 @@ It does NOT install or verify anything in the client; the owner pastes it.
 ## Public symbols
 
 _Symbol pages are generated for the domain and application layers only._
+
+## Internal imports
+
+* [`domain/models`](/modules/domain/models.md)
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -46,6 +50,10 @@ _Symbol pages are generated for the domain and application layers only._
 _No curated notes yet._
 
 <!-- okf:generated:begin links -->
+## Imports
+
+* [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
+
 ## Referenced by
 
 * [interfaces.cli](/modules/interfaces/cli.md) - Module `interfaces/cli` (no module docstring).

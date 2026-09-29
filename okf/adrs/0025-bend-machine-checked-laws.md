@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0025-bend-machine-checked-laws.md
   title: 0025-bend-machine-checked-laws.md
   hash_method: lf-sha256-v1
-  sha256: cdfc9e1bf48e2374230d16384496f7089b8232a9a53e1453259da558ccd60395
-notes_baseline: 5863575f885bfe69f12e9b7269901805bcf86c085a4cf8e9a118f4d59a7ad39d
+  sha256: 23a076126f117b189fd6ab4ca1d5604bd8c7ce8e196c52ec8c6e9b080e485039
+notes_baseline: d7c799233f008802269e93016b81125de60ca91fd8152ac4cff3928b4481885d
 ---
 
 # ADR-0025: Machine-check protected authority laws with Bend 2 in a pinned container
@@ -39,8 +39,10 @@ notes_baseline: 5863575f885bfe69f12e9b7269901805bcf86c085a4cf8e9a118f4d59a7ad39d
 >   archive sha256. The official installer always installs the latest release and is therefore not run verbatim.
 > * The gate runs the container with no network, a read-only root filesystem, no capabilities and read-only inputs.
 > * PASS means exactly `bend PROOF.bend --verdict` printed `ALL PROOFS CHECK` with exit code 0. Docker, the daemon, the
->   image (first build needs network) or a timeout missing means `NOT_RUN`: exit code 3, a skipped nox session, a report with
->   `status: NOT_RUN` and the reason.
+>   image (built only on request: `--build` or `EIJA_BEND_BUILD=1`, since it downloads about 300 MB) missing means
+>   `NOT_RUN`: exit code 3, a skipped nox session, a report with `status: NOT_RUN` and the reason. A proof run that
+>   starts and then times out or is killed is a `FAIL`, never a skip. Plain `bend` output (no `--verdict`) is never
+>   counted as a proof.
 > * The evidence is `reports/formal/bend.json` with `kind: bend_proof`. A `bend_proof` states laws about the **model**; it
 >   never stands in for runtime conformance, a human study or a proof of the Python code
 >   ([ADR-0026](repo://docs/adr/0026-bend-model-generation-controls-conformance.md) defines the companions).

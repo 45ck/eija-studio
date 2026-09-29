@@ -13,8 +13,8 @@ sources:
 - resource: repo://quality/sessions/agents.py#agents
   title: agents.py
   hash_method: ast-v2
-  sha256: 8d3e462aef5a63d19a983aee0b842bce8f01746c0a3f2aeedef7e844be549c35
-notes_baseline: eb00fa2d3b1e0fa3a65896d5bdc543e28f96ad3cb88a536ccb9c83d14435064b
+  sha256: 8368ba7e61de2bf706f16d59a0bc59eca1c27b4d8a8256aafbc5caf030e79d72
+notes_baseline: 346c4ddc108d465e934cb4eac3019227d9b30d94c7dce214429a8c8e1c7cf795
 ---
 
 # nox -s agents
@@ -33,7 +33,8 @@ notes_baseline: eb00fa2d3b1e0fa3a65896d5bdc543e28f96ad3cb88a536ccb9c83d14435064b
 MCP tools/resources via the SDK's in-memory session and stdio start-up, plus the SDK-free static checks.
 
 The SDK-free checks (owner-operation lint, config snippets, docs and skills drift) always run. The SDK tests
-need the `agents` extra; without it they report NOT_RUN in the log (the session still exits 0, so read it).
+need the `agents` extra; without it the session runs the static checks and then SKIPS with a NOT_RUN reason:
+nox reports a plain success as a pass, so a session whose MCP behaviour tests did not run must not end in one.
 ~~~
 
 Tiers: `fast` (seconds, pre-commit), `full` (the PR gate) and `release` (maintainer evidence; may need Docker, Java or Chromium and reports `NOT_RUN`, never `PASS`, without them).

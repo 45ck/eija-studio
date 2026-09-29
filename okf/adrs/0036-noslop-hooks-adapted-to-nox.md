@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0036-noslop-hooks-adapted-to-nox.md
   title: 0036-noslop-hooks-adapted-to-nox.md
   hash_method: lf-sha256-v1
-  sha256: 16c957765057ed96b1e45be580deb54b1cd5ddd49f204a8b8d63e61291fd56f2
-notes_baseline: eafa3ac00d85a32e824f98c89de8eafdd1fcd68328a6b67c4b3f361978b0e37a
+  sha256: 46f989262de4cdcca589bb568a7b0fb42e1388594662afa640878e2b48372b09
+notes_baseline: ac7dd92c33bd7b8566e5bcade5379ba597be408016030f08e040a0870b4ed3d3
 ---
 
 # ADR-0036: noslop guardrails adapted to run nox tiers; hook enablement is an explicit step
@@ -37,7 +37,9 @@ notes_baseline: eafa3ac00d85a32e824f98c89de8eafdd1fcd68328a6b67c4b3f361978b0e37a
 > * The generated workflows are `workflow_dispatch` only. The label-gating guardrail workflow takes a PR number input.
 > * `.github/workflows/**` is not in the deny list of agent edits, because docs and release lanes legitimately edit workflows; hook and agent-settings edits stay denied.
 >
-> Hooks are committed but not enabled by this change. The enable step is `git config core.hooksPath .githooks` (see `docs/quality/gates.md`). `noslop doctor` reports that single check as failed until then.
+> The **git hooks** in `.githooks/` are committed but not enabled by this change. The enable step is `git config core.hooksPath .githooks` (see `docs/quality/gates.md`). `noslop doctor` passes 5 of 6 checks and fails that one until then (PARTIAL, expected).
+>
+> The **Claude Code files in `.claude/` are not gated on that step**: Claude Code loads `.claude/settings.json` automatically, so its deny rules and PreToolUse hook are live in every clone and worktree as soon as this merges. The deny list was narrowed to force-pushes so ordinary worktree removal and `pip --force-reinstall` keep working (`--force-with-lease` pushes are denied too). The hook matches inside a single `git ... commit|push` command segment, so a command that only mentions a flag in quoted text is not blocked. The hook matches known bypass forms (long flag, `git commit -n`, `core.hooksPath`, `HUSKY=`/`SKIP=`); it is a tripwire, not a security control, and review of diffs to `.githooks/` and `.claude/` is the control.
 
 ## Sections
 

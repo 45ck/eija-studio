@@ -75,6 +75,7 @@ _No curated notes yet._
 * [domain.evidence](/modules/domain/evidence.md) - Compatibility is computed.
 * [domain.impact](/modules/domain/impact.md) - Module `domain/impact` (no module docstring).
 * [domain.policy](/modules/domain/policy.md) - Protected excursion policy.
+* [interfaces.agent_config](/modules/interfaces/agent_config.md) - Copy-paste MCP client configuration for `eija mcp --print-config <client>`.
 * [interfaces.cli](/modules/interfaces/cli.md) - Module `interfaces/cli` (no module docstring).
 * [interfaces.http](/modules/interfaces/http.md) - Loopback-only local adapter.
 * [interfaces.mcp_server](/modules/interfaces/mcp_server.md) - MCP (Model Context Protocol) adapter: the agent-facing face of EIJA Studio.

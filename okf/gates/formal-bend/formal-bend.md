@@ -13,8 +13,8 @@ sources:
 - resource: repo://quality/sessions/formal_bend.py#formal_bend
   title: formal_bend.py
   hash_method: ast-v2
-  sha256: b65a1a1688945ec30bec4bf35b7ca137c2cf9c68567592b7b2370f0421390580
-notes_baseline: fe840b1b0abba8570b9eb58e54ff661e65089f9b1fed83c4720a755c0efa77c6
+  sha256: 94b6277f4795d4b22051f7434a1e5a354b9bcd48da9546fea2b1b785a68e0f4b
+notes_baseline: f9f64091741b8eb0c0afaa7fe97a9ae4ad7af4157f65ba287c0d8b4902db8975
 ---
 
 # nox -s formal_bend

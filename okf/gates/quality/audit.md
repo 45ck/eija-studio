@@ -13,8 +13,8 @@ sources:
 - resource: repo://quality/sessions/quality.py#audit
   title: quality.py
   hash_method: ast-v2
-  sha256: 4b2092c36f0468ba381dde52836aaa38e86635380d2408faa21ff4c0129f0db3
-notes_baseline: 12fec04b7d47c52f0e023076f34ed6f465008362a6246680367472ee99ffd386
+  sha256: 93a04efde670c9c54ab8df11aac1c963437c7caa395b825b719a985f3b498c1b
+notes_baseline: 82732a96127a2882d95518b747b99660165a463b96b56f5f1e776142895e0869
 ---
 
 # nox -s audit
@@ -32,7 +32,10 @@ notes_baseline: 12fec04b7d47c52f0e023076f34ed6f465008362a6246680367472ee99ffd386
 ~~~text
 pip-audit of the measured runtime pins (requirements-tested.txt) against the PyPI advisory database.
 
-Needs network. Without it the session reports NOT_RUN, never PASS: an unchecked tree is not a clean one.
+Needs network. Without it the session FAILS with a NOT_RUN message: nox turns `session.skip()` into
+exit 0, and a success status for an unchecked tree would be PASS by status. Set EIJA_ALLOW_NOT_RUN=1 to
+accept the gap explicitly (the session then skips and still prints NOT_RUN). The probe is a TCP connect
+to pypi.org:443, so it does not prove the advisory API answers; pip-audit's own network error also fails.
 ~~~
 
 Tiers: `fast` (seconds, pre-commit), `full` (the PR gate) and `release` (maintainer evidence; may need Docker, Java or Chromium and reports `NOT_RUN`, never `PASS`, without them).
