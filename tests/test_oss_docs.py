@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+from eija_studio.application.diagram_catalog import render_view
 from eija_studio.domain.impact import model_impact
 from eija_studio.domain.models import SemanticTransaction
 from eija_studio.domain.policy import apply_transaction, baseline
@@ -50,27 +51,34 @@ def test_render_is_deterministic(gen):
     assert gen.render_block() == gen.render_block()
 
 
-def test_diff_reports_the_real_semantic_change(gen):
+def test_change_lines_report_the_real_semantic_change(gen):
     before = baseline()
     after = apply_transaction(before, SemanticTransaction(kind="enable_recommendation"))
-    d = gen.diff(before, after)
-    assert d["states"] == ["Recommended"]
-    assert d["removed"] == []
-    assert [a.split()[0] for a in d["added"]] == ["`TR-RECOMMEND`"]
-    assert sorted(c.split()[0] for c in d["changed"]) == ["`TR-APPROVE`", "`TR-REJECT`"]
-    assert gen.diff(before, before) == {"states": [], "added": [], "changed": [], "removed": []}
+    assert gen.change_lines(before, after) == [
+        "- new state `Recommended`",
+        "- new action `Recommend`",
+        "- `Approve` from_state: `Submitted` becomes `Recommended`",
+        "- `Reject` from_state: `Submitted` becomes `Recommended`",
+    ]
+    assert gen.change_lines(before, before) == []
 
 
 def test_block_shows_the_kernel_rejecting_a_teacher_approval(gen):
     block = gen.render_block()
     assert "PROTECTED_AUTHORITY:Approve" in block
-    assert "Recommended --> Approved: Approve / Registrar (changed)" in block
+    assert "Recommended --> Approved: + Approve · Registrar" in block  # the visual lane's diff view marks the changed transition
+
+
+def test_block_diagram_is_the_visual_lanes_own_output(gen):
+    before = baseline()
+    after = apply_transaction(before, SemanticTransaction(kind="enable_recommendation"))
+    assert render_view("diff", "mermaid", before, after).rstrip(chr(10)) in gen.render_block()
 
 
 def test_stale_readme_is_detected(gen, monkeypatch, tmp_path, capsys):
     stale = tmp_path / "README.md"
     stale.write_bytes(gen.splice(gen.README.read_bytes().decode("utf-8"), gen.render_block())
-                      .replace("Recommend / Teacher (new)", "Recommend / Teacher").encode("utf-8"))
+                      .replace("- new state `Recommended`", "- new state `Recomended`").encode("utf-8"))
     monkeypatch.setattr(gen, "README", stale)
     assert gen.main(["--check"]) == 1
     assert "stale" in capsys.readouterr().out
