@@ -28,7 +28,7 @@ lint = [
 ]
 formal = []
 testing = ["hypothesis==6.168.3", "hypothesis-jsonschema==0.23.1", "jsonschema==4.26.0"]
-mutation = []
+mutation = ["cosmic-ray==8.7.0"]
 metrics = ["eija-studio[lint]", "grimp==3.17"]  # radon and coverage pins live once, in the lint extra
 hci = ["playwright==1.63.0", "axe-playwright-python==0.1.8"]  # drives the installed Chrome (channel="chrome"); no browser download
 agents = ["mcp==2.2.0", "anyio==4.15.1"]
