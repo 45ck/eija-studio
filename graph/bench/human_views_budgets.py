@@ -522,7 +522,7 @@ def rollup_section(defn: dict | None = None) -> dict:
         return [t] if isinstance(t, str) else [x for c in t for x in leaves(c)]
 
     def node_vec(t):
-        return vec([t]) if isinstance(t, str) else tuple(map(sum, zip(*[node_vec(c) for c in t])))
+        return vec([t]) if isinstance(t, str) else tuple(map(sum, zip(*[node_vec(c) for c in t], strict=False)))
 
     for _ in range(trees):
         t = gen(3)

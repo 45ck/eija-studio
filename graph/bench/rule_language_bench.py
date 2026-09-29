@@ -316,7 +316,7 @@ def datalog_run(rule: str, f: dict) -> list[str]:
             for (hname, hargs, _), body in rules:
                 pos = [i for i, a in enumerate(body) if a[0] in stratum and not a[2]]
                 for i in pos:
-                    ordered = [body[i]] + body[:i] + body[i + 1 :]
+                    ordered = [body[i], *body[:i], *body[i + 1:]]
                     ordered = sorted(ordered, key=lambda a: a[2] or a[0] == "!=")  # negation and != last
                     for env in _match(ordered, rels, {}, delta_at=len(ordered), delta=delta[body[i][0]]):
                         t = tuple(env[a] for a in hargs)
@@ -352,8 +352,8 @@ SHACL = {
 
 def shacl_child(rule: str, n: int) -> None:
     """Run one SHACL rule in this process and print a JSON object (used with a subprocess timeout)."""
-    from pyshacl import validate  # noqa: PLC0415
-    from rdflib import RDF, XSD, Graph, Literal, Namespace, URIRef  # noqa: PLC0415
+    from pyshacl import validate
+    from rdflib import RDF, XSD, Graph, Literal, Namespace, URIRef
 
     e = Namespace("urn:eija:")
     f = make_facts(n)
@@ -385,7 +385,7 @@ def shacl_child(rule: str, n: int) -> None:
 
 def shacl_run(rule: str, n: int) -> dict:
     try:
-        import pyshacl  # noqa: F401, PLC0415
+        import pyshacl  # noqa: F401
     except ImportError:
         return {"status": "NOT_RUN", "reason": "pyshacl not installed"}
     try:
@@ -436,7 +436,7 @@ def run(sizes: list[int], shacl_max: int) -> dict:
         db = sql_load(f)
         guard = n * 2 + 10
         out, tm = {}, {}
-        for r, py in zip(RULES, (py_r1, py_r2, py_r3, py_r4)):
+        for r, py in zip(RULES, (py_r1, py_r2, py_r3, py_r4), strict=False):
             res = {"python": py(f), "sql": sql_run(db, r, guard)}
             tm[r] = {"python": med(lambda py=py: py(f)), "sql": med(lambda r=r: sql_run(db, r, guard))}
             if n <= 100000:  # the toy evaluator is the slowest engine; above this size it would report NOT_RUN
@@ -476,7 +476,7 @@ def main() -> int:
         return 0
     body = run(a.sizes, a.shacl_max)
     try:
-        import pyshacl  # noqa: PLC0415
+        import pyshacl
         import rdflib
         shacl_env = {"pyshacl": pyshacl.__version__, "rdflib": rdflib.__version__}
     except ImportError:

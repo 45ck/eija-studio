@@ -96,10 +96,10 @@ def test_po_m2_constructive_instance_inhabits_every_type_and_meets_every_minimum
 
 def test_po_m2_the_instance_checker_has_teeth() -> None:
     mm = _load("graph/schema/metamodel.json")
-    nodes, edges = metamodel.constructive_instance(mm)
+    nodes, _edges = metamodel.constructive_instance(mm)
     missing = metamodel.check_instance(mm, nodes, [], with_min_obligations=True)
     assert any(c == "obligation-unmet" for c, _ in missing)  # dropping every edge breaks the minimum obligations
-    a, b = nodes[0]["id"], nodes[1]["id"]
+    a, _b = nodes[0]["id"], nodes[1]["id"]
     bad = metamodel.check_instance(mm, nodes, [{"kind": "contains", "from": a, "to": a}])
     assert ("self-loop", f"contains|{a}|{a}|") in bad
     cyc = [{"kind": "supersedes", "from": "repo://docs/adr/0001-x.md", "to": "repo://docs/adr/0002-y.md"},

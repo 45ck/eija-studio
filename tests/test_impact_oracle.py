@@ -12,6 +12,7 @@ import pytest
 from eija_studio.domain.impact import closure, model_impact
 from eija_studio.domain.models import SemanticTransaction, Workflow
 from eija_studio.domain.policy import apply_transaction, baseline
+import itertools
 
 CHAIN = ("rule", "runtime", "state-view", "journey", "obligation", "receipt")
 TAIL = ("review-packet", "local-decision")
@@ -83,7 +84,7 @@ def test_enabling_recommendation_changes_three_actions_and_reaches_the_decision(
     assert report["affected"] == expected
     assert report["complete"] is True and report["frontier"] == []
     assert "local-decision" in report["affected"] and "review-packet" in report["affected"]
-    assert not any(node.endswith(":Submit") or node.endswith(":Revise") for node in report["affected"])
+    assert not any(node.endswith((":Submit", ":Revise")) for node in report["affected"])
 
 
 def test_the_dependency_graph_is_the_documented_chain_for_every_action_in_either_model():
@@ -91,7 +92,7 @@ def test_the_dependency_graph_is_the_documented_chain_for_every_action_in_either
     graph = report["graph"]
     for action in ("Submit", "Recommend", "Approve", "Reject", "Revise"):
         nodes = chain_nodes(action)
-        for source, target in zip(nodes, nodes[1:]):
+        for source, target in itertools.pairwise(nodes):
             assert target in graph[source], (source, target)
     assert graph["receipt:Approve"] == ["review-packet"]
     assert graph["review-packet"] == ["local-decision"] * 5  # one edge per action, appended (not deduplicated)

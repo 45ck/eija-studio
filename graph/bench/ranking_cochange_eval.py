@@ -229,7 +229,7 @@ def main(argv: list[str]) -> int:
         "ppr_a1/5_impact2x": ((1, 5), (2, 1, False), None),
         "ppr_a1/5_hubdamped": ((1, 5), (1, 1, True), None),
     }
-    names = ["random", "dir_proximity", "bfs_undirected", "impact_closure"] + sorted(configs_spec)
+    names = ["random", "dir_proximity", "bfs_undirected", "impact_closure", *sorted(configs_spec)]
     per_commit: dict[str, list[dict[str, float]]] = {n: [] for n in names}
     pairs = 0
     node_counts: list[int] = []
@@ -260,7 +260,7 @@ def main(argv: list[str]) -> int:
 
             def shared(n: str) -> int:
                 c = 0
-                for a, b in zip(sp, n.split("/")):
+                for a, b in zip(sp, n.split("/"), strict=False):
                     if a != b:
                         break
                     c += 1

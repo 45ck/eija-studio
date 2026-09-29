@@ -112,7 +112,7 @@ def relation_stratum(name: str, base: dict[str, int]) -> int | None:
 def validate(cat: dict[str, Any] | None = None) -> list[str]:
     cat = cat or load()
     errors: list[str] = []
-    types, kinds, supers, mm, source = load_types()
+    types, kinds, _supers, mm, source = load_types()
     rel = {r["name"]: r["stratum"] for r in cat["relations"]}
     rules = cat["rules"]
     ids = [r["id"] for r in rules]

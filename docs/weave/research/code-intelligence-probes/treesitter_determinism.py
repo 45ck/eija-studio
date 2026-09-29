@@ -61,6 +61,6 @@ ret = tree.body[0].body[1]
 nm = ret.value
 print('ast col_offset (UTF-8 bytes) of zz:', nm.col_offset)
 tt = Parser(L['python']).parse(src.encode())
-ident = [n for n,_ in walk(tt.root_node) if n.type=='identifier' and n.text==b'zz'][0]
+ident = next(n for n,_ in walk(tt.root_node) if n.type=='identifier' and n.text==b'zz')
 line = src.split('\n')[1]
 print('tree-sitter start_point (byte col):', ident.start_point, ' python str index:', line.index('zz'), ' utf16 col:', len(line[:line.index('zz')].encode('utf-16-le'))//2)

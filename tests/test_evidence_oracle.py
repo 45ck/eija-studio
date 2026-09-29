@@ -160,7 +160,7 @@ def test_extra_cells_for_unlisted_keys_fail_even_when_the_count_is_declared(genu
     lambda m: m.update(states=["Draft", "Submitted", "Approved"]),
     lambda m: m.update(states=m["states"] + ["Draft"]),
     lambda m: m.update(actors=m["actors"] + [m["actors"][0]]),
-    lambda m: m.update(states=m["states"][:-1] + [7]),
+    lambda m: m.update(states=[*m["states"][:-1], 7]),
     lambda m: m.update(actions="Submit"),
 ], ids=["no-actors", "extra-key", "fewer-actors", "more-actors", "fewer-actions", "more-actions", "extra-state",
         "missing-states", "duplicate-state", "duplicate-actor", "non-text-state", "actions-not-list"])
@@ -227,7 +227,8 @@ def test_aggregate_status_combines_authentic_receipts_without_averaging(genuine)
     good, bad = genuine["candidate"], resealed(genuine["candidate"], lambda a: cell(a).__setitem__("actual", dict(cell(a)["expected"], version=1, state="Approved")))
     stale = field(genuine["candidate"], subject=dict(SUBJECT, policy="old"))
     unknown = field(genuine["candidate"], producer="someone-else")
-    always = lambda receipt: True
+    def always(receipt):
+        return True
     assert aggregate_status([], SUBJECT, always) == "UNKNOWN"
     assert aggregate_status([good], SUBJECT, always) == "PASS"
     assert aggregate_status([bad], SUBJECT, always) == "FAIL"

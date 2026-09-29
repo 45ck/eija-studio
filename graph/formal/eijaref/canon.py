@@ -47,7 +47,7 @@ def _string(s: str) -> str:
         if cp in _ESC:
             out.append(_ESC[cp])
         elif cp < 0x20:
-            out.append("\\u%04x" % cp)
+            out.append(f"\\u{cp:04x}")
         else:
             out.append(ch)
     out.append('"')

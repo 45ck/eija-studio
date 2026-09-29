@@ -183,8 +183,8 @@ class PreviewRuntimeMachine(RuleBasedStateMachine):
         action = data.draw(st.sampled_from(self.reference.enabled_actions(instance) or list(ref.ACTIONS)))
         return self.send(self.command(instance, data.draw(st.sampled_from(ACTOR_IDS)), action, 0))
 
-    @rule(target=issued, instance=instances, actor=st.sampled_from(ACTOR_IDS + (UNKNOWN_ACTOR,)),
-          action=st.sampled_from(ref.ACTIONS + (BOGUS_ACTION,)), delta=st.sampled_from([0, 0, 1, -1, 5]))
+    @rule(target=issued, instance=instances, actor=st.sampled_from((*ACTOR_IDS, UNKNOWN_ACTOR)),
+          action=st.sampled_from((*ref.ACTIONS, BOGUS_ACTION)), delta=st.sampled_from([0, 0, 1, -1, 5]))
     def execute_any(self, instance, actor, action, delta):
         """Unbiased command: mostly refusals, which must leave no trace."""
         return self.send(self.command(instance, actor, action, delta))

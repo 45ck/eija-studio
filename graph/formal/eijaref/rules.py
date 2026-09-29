@@ -94,7 +94,7 @@ def _matches(atom: Atom, facts: Facts, env: dict[str, str]):
             continue
         new = dict(env)
         ok = True
-        for term, val in zip(atom.terms, tup):
+        for term, val in zip(atom.terms, tup, strict=False):
             if is_var(term):
                 if new.setdefault(term, val) != val:
                     ok = False

@@ -96,7 +96,7 @@ def run(model: Path, timeout: int = 900, solver: str | None = None) -> dict:
     if len(got) != len(commands):
         return {"verdict": "FAIL", "reason": f"receipt lists {len(got)} commands, the model declares {len(commands)}"}
     results = []
-    for (key, entry), declared in zip(got.items(), commands):
+    for (key, entry), declared in zip(got.items(), commands, strict=False):
         found = bool(entry.get("solution"))
         expected = declared["expect"]
         results.append({"command": declared["name"] or key, "kind": entry["type"], "instance_found": found,

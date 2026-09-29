@@ -127,7 +127,7 @@ def check_instance(mm: dict, nodes: list[dict], edges: list[dict], with_min_obli
                 if s and t and s["type"] in r["_from"] and t["type"] in r["_to"]:
                     out_deg[e["from"]] += 1
                     in_deg[e["to"]] += 1
-            for name, deg, cap in (("out", out_deg, r.get("max_out")), ("in", in_deg, r.get("max_in"))):
+            for _name, deg, cap in (("out", out_deg, r.get("max_out")), ("in", in_deg, r.get("max_in"))):
                 if cap is not None:
                     found |= {("cardinality-exceeded", f"{kind}#{i}:{n}") for n, d in deg.items() if d > cap}
     for kind, es in sorted(by_kind.items()):
@@ -168,7 +168,7 @@ def constructive_instance(mm: dict) -> tuple[list[dict], list[dict]]:
     nodes = [{"id": mm["node_types"][t]["example"], "type": t} for t in sorted(mm["node_types"])]
     of_type = {n["type"]: n["id"] for n in nodes}
     edges: list[dict] = []
-    for kind, spec in sorted(mm["link_types"].items()):
+    for kind, _spec in sorted(mm["link_types"].items()):
         for r in _rows(mm, kind):
             for ob in r.get("obligations", []):
                 scope = _obligation_type(ob["scope"])

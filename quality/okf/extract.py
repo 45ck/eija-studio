@@ -259,7 +259,8 @@ def _symbol_page(s: SymbolInfo, symbols: list[SymbolInfo], index: dict[tuple[str
     else:
         parts.append("## Docstring\n\n_The source carries no docstring._")
     if is_class:
-        assert isinstance(s.node, ast.ClassDef)
+        if not isinstance(s.node, ast.ClassDef):
+            raise TypeError(f"{s.name}: a class symbol must wrap ast.ClassDef")
         fields = [(m.target.id, ast.unparse(m.annotation), ast.unparse(m.value) if m.value else "")
                   for m in s.node.body if isinstance(m, ast.AnnAssign) and isinstance(m.target, ast.Name)]
         if fields:

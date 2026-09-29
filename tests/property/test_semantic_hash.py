@@ -101,7 +101,7 @@ def test_duplicate_forbidden_effect_is_not_a_semantic_difference(data):
     forbidden = workflow.transitions[index].forbidden_effects
     assume(forbidden)
     document = workflow.model_dump(mode="json")
-    document["transitions"][index]["forbidden_effects"] = list(forbidden) + [forbidden[0]]
+    document["transitions"][index]["forbidden_effects"] = [*list(forbidden), forbidden[0]]
     try:
         duplicated = Workflow.model_validate(document)
     except ValidationError:

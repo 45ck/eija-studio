@@ -92,8 +92,8 @@ def json_paths(value: Any, prefix: Path_ = ()) -> list[Path_]:
     found: list[Path_] = []
     children = value.items() if isinstance(value, dict) else enumerate(value) if isinstance(value, list) else ()
     for key, child in children:
-        found.append(prefix + (key,))
-        found.extend(json_paths(child, prefix + (key,)))
+        found.append((*prefix, key))
+        found.extend(json_paths(child, (*prefix, key)))
     return found
 
 
@@ -120,7 +120,7 @@ def mutate(receipt: dict, path: Path_, kind: str) -> dict | None:
         elif isinstance(value, str):
             parent[key] = value + "x"
         elif isinstance(value, list):
-            parent[key] = value + [None]
+            parent[key] = [*value, None]
         elif isinstance(value, dict):
             parent[key] = {**value, "zz-extra": 1}
         else:
@@ -197,7 +197,7 @@ def test_the_genuine_receipt_is_pass_and_authentic(genuine):
 def test_any_single_field_mutation_breaks_the_seal(genuine, data):
     """The seal covers every field except itself. Weaker (and required by the lane brief): the mutated
     receipt is either inauthentic or no longer assessed PASS."""
-    receipt, subject, signer = genuine.receipt, genuine.subject, genuine.signer
+    _receipt, subject, signer = genuine.receipt, genuine.subject, genuine.signer
     m = data.draw(single_mutation(genuine))
     path, kind, mutated = m.path, m.kind, m.receipt
     assert not signer.authentic(mutated), f"{kind} at {path} kept the seal valid"
@@ -208,7 +208,7 @@ def test_any_single_field_mutation_breaks_the_seal(genuine, data):
 @given(st.data())
 def test_resealed_mutation_is_caught_by_artifact_hash_or_subject(genuine, data):
     """The attacker holds the key and re-seals but does not recompute ``artifact_hash``."""
-    receipt, subject, signer = genuine.receipt, genuine.subject, genuine.signer
+    _receipt, subject, signer = genuine.receipt, genuine.subject, genuine.signer
     m = data.draw(single_mutation(genuine))
     path, kind, mutated = m.path, m.kind, m.receipt
     forged = reseal(signer, mutated, rehash=False)
@@ -225,7 +225,7 @@ def test_coherent_forgery_is_caught_by_recomputation(genuine, data):
     """The attacker re-seals AND recomputes ``artifact_hash``: the recomputed matrix (shape, coverage,
     types and expected-versus-actual) must still reject every single-field alteration of the artifact
     and of the technical subject. Only the prose ``limitations`` and presentation are non-semantic."""
-    receipt, subject, signer = genuine.receipt, genuine.subject, genuine.signer
+    _receipt, subject, signer = genuine.receipt, genuine.subject, genuine.signer
     m = data.draw(single_mutation(genuine))
     path, kind, mutated = m.path, m.kind, m.receipt
     forged = reseal(signer, mutated, rehash=True)
@@ -272,7 +272,7 @@ def test_altered_receipts_never_make_a_passing_aggregate(genuine, data):
 def test_stale_subject_dimension_makes_receipt_stale(genuine, data):
     """A change in any technical subject dimension is STALE, whatever the receipt body says; the
     presentation dimension is excluded from runtime applicability by design."""
-    receipt, subject, signer = genuine.receipt, genuine.subject, genuine.signer
+    receipt, subject, _signer = genuine.receipt, genuine.subject, genuine.signer
     dimension = data.draw(st.sampled_from(["semantic", "implementation", "policy", "environment", "harness"]))
     other = {**subject, dimension: subject[dimension] + data.draw(st.text(min_size=1, max_size=5))}
     assert assess_receipt(receipt, other, CLAIM, KIND) == "STALE"

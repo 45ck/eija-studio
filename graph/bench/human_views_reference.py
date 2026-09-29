@@ -53,7 +53,7 @@ def counts_vector(statuses: Iterable[str]) -> tuple[int, ...]:
 
 
 def vec_add(a: Sequence[int], b: Sequence[int]) -> tuple[int, ...]:
-    return tuple(x + y for x, y in zip(a, b))
+    return tuple(x + y for x, y in zip(a, b, strict=False))
 
 
 def fold_b(statuses: Iterable[str], chain_worst_first: Sequence[str]) -> str:
@@ -72,7 +72,7 @@ def fold_b(statuses: Iterable[str], chain_worst_first: Sequence[str]) -> str:
 
 def badge_from_counts(vec: Sequence[int], chain_worst_first: Sequence[str]) -> str:
     """Badge from the support of a counts vector (law C4); an empty container is NOT_RUN."""
-    return fold_b((s for s, n in zip(STATUSES, vec) if n), chain_worst_first)
+    return fold_b((s for s, n in zip(STATUSES, vec, strict=False) if n), chain_worst_first)
 
 
 def priority_then_cap(items: Sequence[tuple[str, str, int]], cap: int,

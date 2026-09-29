@@ -22,6 +22,7 @@ import ast
 import copy
 import fnmatch
 import hashlib
+import itertools
 import json
 import subprocess
 import sys
@@ -152,7 +153,7 @@ def main() -> int:
                     best = v
             return best
 
-        for (i0, v0), (_i1, v1) in zip(versions, versions[1:]):
+        for (_i0, v0), (_i1, v1) in itertools.pairwise(versions):
             file_versions += 1
             if v0[0] != v1[0] and v0[1] == v1[1]:
                 file_bytes_changed_ast_same += 1

@@ -38,7 +38,7 @@ def workflows(draw, max_states: int = 6, max_transitions: int = 6) -> Workflow:
     count = draw(st.integers(1, max_transitions))
     ids = draw(st.lists(IDENTIFIERS, min_size=count, max_size=count, unique=True))
     actions = draw(st.lists(NAMES, min_size=count, max_size=count, unique=True))
-    transitions = [draw(transition_parts(states, i, a)) for i, a in zip(ids, actions)]
+    transitions = [draw(transition_parts(states, i, a)) for i, a in zip(ids, actions, strict=False)]
     return Workflow.model_validate({"states": states, "initial_state": draw(st.sampled_from(states)),
                                     "transitions": transitions})
 

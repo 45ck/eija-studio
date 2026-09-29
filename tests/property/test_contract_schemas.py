@@ -131,10 +131,10 @@ def walk(value: Any, path: tuple = ()) -> list[tuple]:
     found: list[tuple] = [path]
     if isinstance(value, dict):
         for k, v in value.items():
-            found.extend(walk(v, path + (k,)))
+            found.extend(walk(v, (*path, k)))
     elif isinstance(value, list):
         for i, v in enumerate(value):
-            found.extend(walk(v, path + (i,)))
+            found.extend(walk(v, (*path, i)))
     return found
 
 
@@ -360,7 +360,7 @@ LAXER = ("KERNEL FINDING (schema/model drift, fail-open on type): this integer f
          "accepts a numeric string or a boolean where contracts/*.schema.json declares `\"type\": \"integer\"`. "
          "ExecuteCommand.expected_version is `strict=True` and refuses both, so the contracts are inconsistent. "
          "Fix in a separate kernel change: StrictInt (or strict=True) on integer fields of request models.")
-COERCIONS = {"float": lambda v: float(v), "string": lambda v: str(v), "bool": lambda v: True}
+COERCIONS = {"float": float, "string": str, "bool": lambda v: True}
 DIVERGENCES = {("execute-command", "float"): STRICTER, ("layout-change", "string"): LAXER, ("layout-change", "bool"): LAXER,
                ("change-case", "string"): LAXER, ("change-case", "bool"): LAXER}
 COERCION_CASES = [

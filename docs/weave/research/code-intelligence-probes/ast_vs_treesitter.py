@@ -15,7 +15,7 @@ def ts_defs(b):
         for c in n.children:
             if c.type in ('function_definition','class_definition'):
                 nm = c.child_by_field_name('name').text.decode()
-                q = prefix+[nm]; out.append('.'.join(q)); w(c.child_by_field_name('body'), q)
+                q = [*prefix, nm]; out.append('.'.join(q)); w(c.child_by_field_name('body'), q)
             elif c.type == 'decorated_definition' or c.type in ('if_statement','try_statement','block','else_clause','elif_clause','except_clause','with_statement','for_statement','while_statement'):
                 w(c, prefix)
     w(t.root_node, []); return out
@@ -24,7 +24,7 @@ def ast_defs(src):
     def w(body, prefix):
         for n in body:
             if isinstance(n,(ast.FunctionDef,ast.AsyncFunctionDef,ast.ClassDef)):
-                q=prefix+[n.name]; out.append('.'.join(q)); w(n.body,q)
+                q=[*prefix, n.name]; out.append('.'.join(q)); w(n.body,q)
             else:
                 for f in ('body','orelse','finalbody'):
                     if isinstance(getattr(n,f,None), list): w(getattr(n,f), prefix)

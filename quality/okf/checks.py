@@ -12,6 +12,7 @@ is now. It does NOT establish that any page's prose is correct, or that the code
 """
 from __future__ import annotations
 
+import contextlib
 import difflib
 import posixpath
 import re
@@ -87,10 +88,8 @@ def _concepts(pages: dict[str, str]) -> dict[str, tuple[dict[str, Any], str]]:
     out = {}
     for path, text in pages.items():
         if not _is_reserved(path):
-            try:
+            with contextlib.suppress(ValueError):
                 out[path] = split_page(text)
-            except ValueError:
-                pass
     return out
 
 
@@ -255,8 +254,8 @@ def check_links(repo: Repo, pages: dict[str, str]) -> list[Finding]:
             if resolved in pages or resolved + "/index.md" in pages:
                 continue
             found.append(Finding("links", "BROKEN_LINK", path, f"link {href!r} does not resolve to a page in the bundle"))
-        for mention in sorted(set(_REPO_MENTION.findall(body))) if meta.get("status") != "deprecated" else []:   # history may cite what is gone
-            mention = mention.rstrip(".,")
+        for raw_mention in sorted(set(_REPO_MENTION.findall(body))) if meta.get("status") != "deprecated" else []:   # history may cite what is gone
+            mention = raw_mention.rstrip(".,")
             try:
                 ref = cl.parse_uri(mention)
             except ValueError:
@@ -407,7 +406,7 @@ def run_checks(repo: Repo, only: tuple[str, ...] = CHECKS) -> Report:
     concepts = _concepts(pages)
     tiers: dict[str, int] = {}
     curated = 0
-    for _path, (meta, body) in concepts.items():
+    for (meta, body) in concepts.values():
         tier = trust_tier(meta, body, current_sources_sha(repo, meta))
         tiers[tier] = tiers.get(tier, 0) + 1
         curated += is_curated(body)

@@ -130,7 +130,7 @@ def test_raw_url_for_github_remotes(remote):
 
 
 def test_no_raw_url_for_a_non_github_remote():
-    assert publish.raw_url("/tmp/origin.git", "pr-media", "pr/7/a.gif") is None
+    assert publish.raw_url("/tmp/origin.git", "pr-media", "pr/7/a.gif") is None  # noqa: S108 - a path-shaped string, never opened
 
 
 def test_cli_publish_prints_the_result(clone, tmp_path, capsys):

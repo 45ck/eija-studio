@@ -76,7 +76,7 @@ def test_x_impact_scc_labels_and_topological_order_agree_with_the_formal_checker
         adj = bench._adj(nodes, edges)
         lab = impact.scc_labels(list(nodes), adj)
         assert order.check_scc_labels(nodes, edges, lab)[0], edges
-        label, members, dag = impact.condensation(list(nodes), adj)
+        _label, _members, dag = impact.condensation(list(nodes), adj)
         topo = impact.lex_topological_order(dag)
         cond_edges = [(a, b) for a, bs in dag.items() for b in bs]
         assert order.check_lexicographic_topological_order(list(dag), cond_edges, topo)[0], edges

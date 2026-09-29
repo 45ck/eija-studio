@@ -266,7 +266,7 @@ def okf_bundle() -> dict:
     import collections
     patterns = {t: re.compile(build_schemas.id_pattern(MM, t)) for t in MM["node_types"]}
     pages = collections.Counter()
-    unmapped, invalid, noncanonical_slug = collections.Counter(), [], 0
+    unmapped, invalid, _noncanonical_slug = collections.Counter(), [], 0
     methods_seen: collections.Counter = collections.Counter()
     for f in sorted(bundle.rglob("*.md")):
         if f.name in ("index.md", "log.md"):
@@ -336,7 +336,7 @@ def anchor_flow_lint() -> dict:
 def report() -> dict:
     a = build()
     nodes = sorted(a["nodes"], key=lambda n: n["id"])
-    edges = sorted(a["edges"], key=lambda e: ic.edge_key(e))
+    edges = sorted(a["edges"], key=ic.edge_key)
     doc = {"schema": "eija.weave.graph/v1", "metamodel": MM["metamodel_version"], "nodes": nodes, "edges": edges}
     out: dict[str, Any] = {"schema": "eija.weave.bench.dogfood/v1", "status": "MEASURED",
                            "domain": "this worktree at the state of the run: one workflow, the acceptance matrix, ARCHITECTURE.md, docs/adr, impact.py",

@@ -229,7 +229,7 @@ def test_two_findings_of_one_rule_get_distinct_fingerprints() -> None:
 
 
 def test_fingerprint_survives_a_line_number_change() -> None:
-    moved = [dict(FINDINGS[0], start_line=99)] + FINDINGS[1:]
+    moved = [dict(FINDINGS[0], start_line=99), *FINDINGS[1:]]
     a = ref.build_sarif(CATALOGUE, FINDINGS)["runs"][0]["results"]
     b = ref.build_sarif(CATALOGUE, moved)["runs"][0]["results"]
     key = lambda rs: sorted(r["partialFingerprints"]["eijaFinding/v1"] for r in rs)  # noqa: E731

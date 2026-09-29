@@ -92,7 +92,7 @@ def _cycle(edges: list[tuple[str, str]]) -> list[str]:
             node, it = stack[-1]
             for nxt in it:
                 if state.get(nxt) == 1:
-                    return path[path.index(nxt):] + [nxt]
+                    return [*path[path.index(nxt):], nxt]
                 if not state.get(nxt):
                     state[nxt] = 1
                     path.append(nxt)
@@ -170,5 +170,5 @@ def check_document(mm: dict[str, Any], nodes: list[dict[str, Any]], edges: list[
                 found.append(("link-kind-cycle", kind, " -> ".join(cyc)))
             elif kind == "renamed_to":  # the relation is acyclic; the lifted id-level plus path-level system may still loop
                 for c in _rename_cycles([(e["from"], e["to"]) for e in per_kind[kind]]):
-                    found.append(("rename-cycle", c[0], " -> ".join(c + [c[0]])))
+                    found.append(("rename-cycle", c[0], " -> ".join([*c, c[0]])))
     return sorted(set(found))

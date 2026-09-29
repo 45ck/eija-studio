@@ -231,7 +231,7 @@ def test_pass_iff_all_pass_holds_for_every_chain_with_pass_on_top() -> None:
     from itertools import permutations
     non_pass = [s for s in ref.STATUSES if s != "PASS"]
     for perm in permutations(non_pass):
-        chain = list(perm) + ["PASS"]
+        chain = [*list(perm), "PASS"]
         for n in range(1, 4):
             for seq in itertools.product(ref.STATUSES, repeat=n):
                 assert (ref.fold_b(seq, chain) == "PASS") == all(x == "PASS" for x in seq)

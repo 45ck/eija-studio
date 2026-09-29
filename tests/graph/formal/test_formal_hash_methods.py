@@ -6,6 +6,7 @@ is ``quality/okf/codelink.py`` (okf lane). If it is not importable the tests are
 """
 from __future__ import annotations
 
+import contextlib
 import importlib.util
 import sys
 
@@ -82,7 +83,5 @@ def test_po_d10_a_missing_symbol_is_unresolved_never_a_digest(codelink, digest) 
                                        "UnicodeEncodeError instead of Unresolved or a digest; a link check would abort rather than report. "
                                        "Fix in the okf lane; when fixed this test XPASSes and strict mode asks for the marker to be removed.")
 def test_po_d10_a_lone_surrogate_string_literal_does_not_crash_the_hash(codelink, digest) -> None:
-    try:
+    with contextlib.suppress(codelink.Unresolved):  # an explicit, typed refusal is acceptable; an uncaught UnicodeEncodeError is not
         digest('def f():\n    return "\\ud800"\n')
-    except codelink.Unresolved:
-        pass  # an explicit, typed refusal is acceptable; an uncaught UnicodeEncodeError is not

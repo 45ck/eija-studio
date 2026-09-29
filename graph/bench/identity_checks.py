@@ -100,7 +100,7 @@ def _str(s: str, out: list[str]) -> None:
         if ch in _ESC:
             out.append(_ESC[ch])
         elif ord(ch) < 0x20:
-            out.append('\\u%04x' % ord(ch))
+            out.append(f'\\u{ord(ch):04x}')
         else:
             out.append(ch)
     out.append('"')
@@ -196,7 +196,7 @@ def split_id(node_id: str) -> tuple[str, str | None]:
 
 def is_canonical_id(node_id: str) -> bool:
     try:
-        path, frag = split_id(node_id)
+        _path, frag = split_id(node_id)
     except CanonError:
         return False
     if frag is None:
@@ -368,7 +368,7 @@ def check_renames(records: list[tuple[str, str]]) -> list[str]:
         cur, path = start, []
         while cur in seen:
             if cur in path:
-                problems.append("cycle: " + " -> ".join(path[path.index(cur):] + [cur]))
+                problems.append("cycle: " + " -> ".join([*path[path.index(cur):], cur]))
                 break
             path.append(cur)
             cur = seen[cur]
@@ -378,7 +378,7 @@ def check_renames(records: list[tuple[str, str]]) -> list[str]:
         _, cyc = _walk(start, id_map, path_map)
         if cyc:
             cycles.add(tuple(cyc))
-    problems += ["composite-cycle: " + " -> ".join(c + (c[0],)) for c in sorted(cycles)]
+    problems += ["composite-cycle: " + " -> ".join((*c, c[0])) for c in sorted(cycles)]
     return sorted(set(problems))
 
 
@@ -387,7 +387,7 @@ def resolve(node_id: str, records: list[tuple[str, str]]) -> str:
     id_map, path_map = _maps(records)
     nf, cyc = _walk(node_id, id_map, path_map)
     if cyc:
-        raise CanonError("rename cycle at " + " -> ".join(cyc + [cyc[0]]))
+        raise CanonError("rename cycle at " + " -> ".join([*cyc, cyc[0]]))
     return nf
 
 
@@ -433,7 +433,7 @@ def shuffled(rec: Any, rng: random.Random) -> Any:
 # ---- checks --------------------------------------------------------------------------------------------------
 
 def _first_diff(a: str, b: str) -> tuple[str, str]:
-    for x, y in zip(a, b):
+    for x, y in zip(a, b, strict=False):
         if x != y:
             return x, y
     return (a[len(b):][:1], "") if len(a) > len(b) else ("", b[len(a):][:1])
@@ -601,8 +601,7 @@ def shard_locality(seed: int = 5) -> dict:
             n["digest"] = {"method": "ast-v1", "value": "sha256:" + "0" * 64}
             break
     after_node = shard_hashes(n2, edges)
-    e2 = edges + [{"kind": "calls", "from": nodes[0]["id"], "to": nodes[1]["id"], "class": "derived", "prov": "exact",
-                   "asserted_in": "src/pkg/other.py"}]
+    e2 = [*edges, {"kind": "calls", "from": nodes[0]["id"], "to": nodes[1]["id"], "class": "derived", "prov": "exact", "asserted_in": "src/pkg/other.py"}]
     after_edge = shard_hashes(nodes, e2)
     changed = lambda a, b: sorted(k for k in set(a) | set(b) if a.get(k) != b.get(k))  # noqa: E731
     return {"status": "MEASURED", "domain": f"{len(before)} shards, one seeded graph",

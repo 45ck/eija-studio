@@ -196,7 +196,7 @@ def test_reference_checker_accepts_a_good_graph_and_names_each_defect() -> None:
         {"kind": "depends_on", "from": ex("transition"), "to": ex("effect"), "qualifier": "required"},
     ]
     assert typecheck.check_document(MM, nodes, good) == []
-    bad = good + [
+    bad = [*good,
         {"kind": "satisfies", "from": ex("requirement"), "to": ex("symbol")},                  # wrong direction
         {"kind": "depends_on", "from": ex("transition"), "to": ex("effect"), "qualifier": "x"},  # qualifier not on the row
         {"kind": "contains", "from": ex("state"), "to": ex("workflow")},                        # not a signature
@@ -227,7 +227,7 @@ def test_rename_records_may_start_at_a_tombstone_but_must_end_at_a_node() -> Non
     assert typecheck.check_document(MM, nodes, edges) == []
     assert {f[0] for f in typecheck.check_document(MM, [], edges)} == {"dangling-link"}
     mixed = [node("symbol", new)]
-    assert {f[0] for f in typecheck.check_document(MM, mixed + [node("module", "repo://src/a.py")],
+    assert {f[0] for f in typecheck.check_document(MM, [*mixed, node("module", "repo://src/a.py")],
                                                    [{"kind": "renamed_to", "from": "repo://src/a.py", "to": new}])} == {"ill-typed-edge"}
 
 
@@ -393,7 +393,7 @@ def test_rename_cycle_detection_agrees_with_brute_force_and_across_the_two_imple
         cyc = typecheck._rename_cycles(pairs)
         assert bool(cyc) == bool(looped), pairs  # walking from left sides finds every non-terminating probe
         composite = [p for p in ic.check_renames(pairs) if p.startswith("composite-cycle")]
-        assert composite == sorted("composite-cycle: " + " -> ".join(c + [c[0]]) for c in cyc), pairs
+        assert composite == sorted("composite-cycle: " + " -> ".join([*c, c[0]]) for c in cyc), pairs
         cyclic += bool(looped)
     assert 20 < cyclic < 380  # the sample exercises both outcomes
 

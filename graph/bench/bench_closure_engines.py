@@ -22,10 +22,7 @@ def make_edges(n_edges: int, seed: int = 7) -> tuple[int, list[tuple[int, int]]]
     edges = set()
     while len(edges) < n_edges:
         a = rng.randrange(n)
-        if rng.random() < 0.02:
-            b = rng.randrange(n)
-        else:
-            b = min(n - 1, a + 1 + int(rng.expovariate(1 / 20)))
+        b = rng.randrange(n) if rng.random() < 0.02 else min(n - 1, a + 1 + int(rng.expovariate(1 / 20)))
         if a != b:
             edges.add((a, b))
     return n, sorted(edges)

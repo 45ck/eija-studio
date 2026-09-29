@@ -19,7 +19,7 @@ bench = load_bench()
 def test_po_g1_kernel_closure_equals_two_independent_references_on_every_3_node_graph() -> None:
     kernel = pytest.importorskip("eija_studio.domain.impact").closure
     assert suites.suite_closure(lambda g, r: kernel(g, r)["affected"], n=3) == []
-    assert suites.suite_closure(lambda g, r: closure.warshall_closure(g, r), n=3) == []
+    assert suites.suite_closure(closure.warshall_closure, n=3) == []
 
 
 def test_po_g1_suite_has_teeth_it_rejects_a_one_hop_closure() -> None:

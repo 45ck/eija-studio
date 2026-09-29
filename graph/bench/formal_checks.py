@@ -143,10 +143,10 @@ def f1b_budget_semantics(n: int = 3) -> dict:
 def _certificate_candidates(nodes, roots, ranks):
     for c in _subsets(nodes):
         rest = [x for x in c if x not in roots]
-        parents = [list(nodes) + [None]] * len(rest)
+        parents = [[*list(nodes), None]] * len(rest)
         for pv in itertools.product(*parents):
             for rv in itertools.product(ranks, repeat=len(nodes)):  # rank is total on V: only b2 keeps it off non-members
-                yield frozenset(c), dict(zip(nodes, rv)), {r: p for r, p in zip(rest, pv) if p is not None}
+                yield frozenset(c), dict(zip(nodes, rv, strict=False)), {r: p for r, p in zip(rest, pv, strict=False) if p is not None}
 
 
 def f1c_checker_soundness_and_mutants(n_exh: int = 2, n_mut: int = 3, seed: int = 11, samples: int = 60000) -> dict:
@@ -238,7 +238,7 @@ def f2_status() -> dict:
             inv_bad += (status.meet(p, chain) == "PASS") != all(x == "PASS" for x in p)
     # Two-level claim status: PASS iff every required check has a PASS and no other observation that is
     # FAIL/CONFLICT-producing (join is PASS), over up to 3 required checks with evidence as SUBSETS of values.
-    subsets = [s for s in _subsets(status.VALUES)]
+    subsets = list(_subsets(status.VALUES))
     two_level_bad = 0
     two_level_cases = 0
     for k in range(1, 4):
@@ -318,7 +318,7 @@ def f3_canon() -> dict:
     diff: dict = not_run("rfc8785 not installed")
     if rfc8785 is not None:
         rng = random.Random(5)
-        alphabet = list("ab\"\\\n\t\x00\x1f\x7f€דּ\U0001f600￿  /1") + ["\u0080", "ö"]
+        alphabet = [*list('ab"\\\n\t\x00\x1f\x7f€דּ😀\uffff\u2028 /1'), "\x80", "ö"]
 
         def rstr():
             return "".join(rng.choice(alphabet) for _ in range(rng.randrange(0, 5)))
@@ -423,7 +423,7 @@ def f4_order(n: int = 4, n_lab: int = 3) -> dict:
         reach = {x: closure.lfp_kleene(_adj(nodes, edges), [x]) for x in nodes}
         truth = {x: min(y for y in nodes if y in reach[x] and x in reach[y]) for x in nodes}
         for choice in itertools.product(nodes, repeat=len(nodes)):
-            cand = dict(zip(nodes, choice))
+            cand = dict(zip(nodes, choice, strict=False))
             lab_cases += 1
             wrong_accept += order.check_scc_labels(nodes, edges, cand)[0] != (cand == truth)
     dag_n = dag_topo = 0
@@ -496,7 +496,7 @@ PROGRAMS = {
 
 def _random_facts(name: str, arity: dict, rng: random.Random):
     consts = ["a", "b", "c", "d"]
-    typed = consts + ["req", "sym"]
+    typed = [*consts, "req", "sym"]
     base = {"uncovered": ["verifies", "requirement"], "reach_and_cycle": ["edge"],
             "orphan_and_ill_typed": ["link", "node", "ntype", "sig"], "stratified_two_levels": ["edge", "node"]}[name]
     facts: rules.Facts = {}

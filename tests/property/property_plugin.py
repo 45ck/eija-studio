@@ -33,8 +33,8 @@ from . import property_support as support
 
 ROOT = Path(__file__).resolve().parents[2]
 PROFILE = os.environ.get("EIJA_HYPOTHESIS_PROFILE", "ci")
-_COMMON = dict(deadline=None, print_blob=True,
-               suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large, HealthCheck.filter_too_much])
+_COMMON = {"deadline": None, "print_blob": True,
+               "suppress_health_check": [HealthCheck.too_slow, HealthCheck.data_too_large, HealthCheck.filter_too_much]}
 
 settings.register_profile("ci", settings(derandomize=True, database=None, **_COMMON))
 settings.register_profile("deep", settings(derandomize=False, database=DirectoryBasedExampleDatabase(ROOT / ".hypothesis" / "examples"),

@@ -90,9 +90,9 @@ known-first-party = ["eija_studio", "quality", "verification"]
 "noxfile.py" = ["E501", "RUF100"]  # shared file owned by the foundation lane; its E402 noqa is now redundant
 # New top-level tooling trees written by lanes: long docstrings and messages are not a defect worth a rewrite.
 "quality/**/*.py" = ["E501"]
-"demos/**/*.py" = ["E501"]
+"demos/**/*.py" = ["E501", "T201"]
 "verification/**/*.py" = ["E501"]
-"graph/**/*.py" = ["E501"]
+"graph/**/*.py" = ["E501", "T201", "S101", "S603", "S607", "PLW1510", "S311"]
 "design/**/*.py" = ["E501"]
 "**/__main__.py" = ["T201"]  # command-line entry points print by design
 # Per-file debt in kernel sources (each names the finding so a fix removes exactly one entry).
@@ -109,6 +109,74 @@ known-first-party = ["eija_studio", "quality", "verification"]
 "quality/gates/*.py" = ["T201"]  # command-line tools that report on stdout
 "quality/sessions/quality.py" = ["T201"]  # NOT_RUN banner
 "tests/test_quality_gates.py" = ["S603"]  # runs lint-imports with a fixed argv
+
+# Lane trees merged into integrate/all on 2026-09-29 (weave graph/ references and benches, quality/okf, quality/mutation, demos/prgif,
+# weave research probes). Same ratchet rule as above: named debt with the reason next to it, removed in the commit that next touches
+# the file for a real change. Tree-level entries are idioms of that tree; per-file entries are the residual style debt after every
+# safe and unsafe autofix was applied. Reasons by rule:
+#   S101 assert is the check idiom of tests and reference self-checks; T201 the CLI prints its report; S311 seeded random.Random builds
+#   reproducible fixtures, never secrets; S603/S607/PLW1510 fixed argv lists (git, uv, java), failure is inspected by the caller;
+#   PLC0415 lazy import of an optional tool so a missing prerequisite is NOT_RUN, not an import error; B023 the closure runs inside the
+#   loop iteration that defines it (timing harness); PERF401/PERF403/PLC0206/SIM102/SIM115/B007/E741/PLW2901 loop-shape style in
+#   reference code that other tests compare against, so it is not reshaped for style; RUF001/RUF002 intentional unicode fixtures;
+#   S608 SQL text built from closed identifier lists; S324 sha1 to reproduce git object ids; S102/S110/PLW0603 documented in place.
+"quality/okf/tests/**/*.py" = ["S101", "S603", "S607", "PLW1510"]
+"quality/okf/**/*.py" = ["T201", "S603", "S607", "PLW1510"]
+"quality/mutation/**/*.py" = ["T201", "S101", "S603", "S607", "PLW1510"]
+"docs/weave/research/**/*.py" = ["T201", "E501", "E701", "E702", "E401", "E402"]
+"tests/graph/**/*.py" = ["S311", "S603", "S607"]
+"tests/demo_catalogue/**/*.py" = ["S603", "S607"]
+"demos/prgif/terminal.py" = ["PERF401"]
+"docs/weave/research/code-intelligence-probes/ast_vs_treesitter.py" = ["PERF401"]
+"docs/weave/research/evidence/term_probe.py" = ["B007", "B023", "E741"]
+"graph/bench/agent_interface_checks.py" = ["PERF401", "PLC0415"]
+"graph/bench/bench_closure_engines.py" = ["B023", "PLC0415"]
+"graph/bench/consistency_checks.py" = ["B007", "E741", "PLC0415", "S102"]
+"graph/bench/formal_checks.py" = ["PLC0206", "PLC0415", "RUF001"]
+"graph/bench/foundations_checks.py" = ["PLC0415", "RUF001"]
+"graph/bench/human_views_budgets.py" = ["PERF401", "PLC0415"]
+"graph/bench/identity_checks.py" = ["B023", "PLW0603", "RUF001", "S324"]
+"graph/bench/impact_math_reference.py" = ["B007", "E741"]
+"graph/bench/impact_math_timing.py" = ["B023"]
+"graph/bench/ladybug_probe.py" = ["PLC0415", "SIM115"]
+"graph/bench/metamodel_dogfood.py" = ["PERF401", "PLC0415"]
+"graph/bench/ranking_cochange_eval.py" = ["B023"]
+"graph/bench/rule_language_bench.py" = ["B023", "PLC0415"]
+"graph/bench/storage_query_probe.py" = ["B023", "PLC0206", "PLC0415", "RUF001", "S608"]
+"graph/bench/traceability_staleness.py" = ["B023"]
+"graph/formal/eijaref/asp.py" = ["PERF401"]
+"graph/formal/eijaref/metamodel.py" = ["B007", "E741", "PERF401"]
+"graph/formal/eijaref/rules.py" = ["B023", "S608"]
+"graph/formal/eijaref/suites.py" = ["PLC0415", "RUF001", "S110", "SIM102"]
+"graph/formal/selfcheck.py" = ["PLC0415"]
+"graph/rules/check_catalogue.py" = ["B007", "PERF401"]
+"graph/rules/reference.py" = ["S608"]
+"graph/schema/build_schemas.py" = ["PERF401"]
+"graph/schema/typecheck.py" = ["PERF401", "PLC0206"]
+"quality/mutation/engine.py" = ["PLC0415"]
+"quality/mutation/equivalents.py" = ["PERF401"]
+"quality/mutation/report.py" = ["B023"]
+"quality/okf/codelink.py" = ["RUF002"]
+"quality/okf/crosscheck.py" = ["PERF401"]
+"quality/okf/extract.py" = ["PERF401", "RUF001"]
+"quality/okf/pages.py" = ["PERF403", "PLC0206"]
+"quality/okf/tests/test_okf_bundle.py" = ["PLC0415"]
+"quality/okf/tests/test_okf_codelink.py" = ["RUF001"]
+"tests/graph/formal/test_formal_crosscheck.py" = ["B023", "E741"]
+"tests/graph/formal/test_formal_tools_and_drift.py" = ["PLC0415"]
+"tests/graph/test_agent_interface_contract.py" = ["PLC0415"]
+"tests/graph/test_human_views.py" = ["E741", "PLC0415"]
+"tests/graph/test_impact_math_oracles.py" = ["B023", "E741", "PERF401", "PLC0415"]
+"tests/graph/test_metamodel_identity.py" = ["PLC0415"]
+"tests/graph/test_rules_reference.py" = ["PLC0415"]
+"tests/metrics/test_metrics_perf.py" = ["PLC0415"]
+"tests/property/property_support.py" = ["S608"]
+"tests/test_evidence_oracle.py" = ["B023"]
+"tests/test_mutation_tooling.py" = ["PLC0415", "PLW1510"]
+
+[tool.ruff.lint.flake8-bugbear]
+# Frozen dataclasses: a default instance is immutable, so B008 does not apply.
+extend-immutable-calls = ["demos.prgif.fit.Limits", "demos.prgif.terminal.Pacing"]
 
 [tool.ruff.format]
 # Applied only to files this lane owns (quality/gates, quality/sessions/quality.py); see docs/quality/gates.md.

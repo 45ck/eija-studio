@@ -14,6 +14,7 @@ Run serially:  python graph/bench/storage_query_probe.py [--sizes 10000 100000 1
 from __future__ import annotations
 
 import argparse
+import contextlib
 import hashlib
 import json
 import os
@@ -183,7 +184,7 @@ def brute_lexmin(adj, roots):
             return
         for p in preds.get(v, ()):
             for path in all_paths(p):
-                yield path + (v,)
+                yield (*path, v)
     return {v: min(all_paths(v)) for v in dist}
 
 
@@ -402,7 +403,7 @@ def collation_pitfalls():
 
 
 def query_correctness(n_edges=20000):
-    nodes, edges, untested, roots = make_graph(n_edges)
+    nodes, edges, untested, _roots = make_graph(n_edges)
     con = sqlite3.connect(":memory:")
     load(con, nodes, edges)
     got = [r[0] for r in con.execute(
@@ -602,10 +603,8 @@ def extraction_timing(roots):
                 except (SyntaxError, UnicodeDecodeError, OSError):
                     pass
             for f in md:
-                try:
+                with contextlib.suppress(UnicodeDecodeError, OSError):
                     (r / f).read_bytes().decode("utf-8")
-                except (UnicodeDecodeError, OSError):
-                    pass
             return n
         n, t = timed(run, 5)
         out[Path(root).name] = {"python_files_parsed": n, "markdown_files_read": len(md), "median_of_5_s": round(t, 3)}
@@ -700,7 +699,7 @@ def python_baseline(n_edges):
 def wide_ddl(n_edges):
     """File size, build, closure and canonical-dump time with the DDL widths specified in the design
     (5 node columns, 7 edge columns, 64-hex digests). Digests are fake (sha256 of the row) but full width."""
-    nodes, edges, untested, roots = make_graph(n_edges)
+    nodes, edges, _untested, roots = make_graph(n_edges)
     wn = [(i, t, h, "sha256-bytes-v1", i.rsplit("/", 1)[-1]) for i, t, h in nodes]
     we = [(a, t, b, o, "exact", "sha256-bytes-v1", sha(f"{a}|{t}|{b}".encode())) for a, t, b, o in edges]
     SCRATCH.mkdir(parents=True, exist_ok=True)

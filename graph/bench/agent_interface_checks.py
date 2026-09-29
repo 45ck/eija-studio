@@ -382,7 +382,7 @@ def run_log_chain(length: int = 200) -> dict:
         bad = [dict(e) for e in events]
         bad[i]["seq"] = bad[i]["seq"] + 1000
         edit_detected += verify_chain(bad, hashes, head) == i
-    swap_detected = sum(verify_chain(events[:i] + [events[i + 1], events[i]] + events[i + 2:], hashes, head) == i
+    swap_detected = sum(verify_chain([*events[:i], events[i + 1], events[i], *events[i + 2:]], hashes, head) == i
                         for i in range(length - 1))
     trunc = verify_chain(events[:-1], hashes, head) == -1
     same_head = chain_head([dict(reversed(list(e.items()))) for e in events])[0] == head
@@ -417,9 +417,9 @@ def replay_of_tool_calls() -> dict:
         r = closure(g, c["roots"], c["budget"])
         return {"graph_root": root, "affected": r["affected"], "complete": r["complete"], "frontier": r["frontier"]}
     recorded = [dhash("eija.weave.mcp-response.v1", run(g, root, c)) for c in calls]
-    same = sum(dhash("eija.weave.mcp-response.v1", run(g, root, c)) == rec for c, rec in zip(calls, recorded))
+    same = sum(dhash("eija.weave.mcp-response.v1", run(g, root, c)) == rec for c, rec in zip(calls, recorded, strict=False))
     g2, root2 = snapshot(edges[:-1])
-    differ_with_root = sum(dhash("eija.weave.mcp-response.v1", run(g2, root2, c)) != rec for c, rec in zip(calls, recorded))
+    differ_with_root = sum(dhash("eija.weave.mcp-response.v1", run(g2, root2, c)) != rec for c, rec in zip(calls, recorded, strict=False))
     differ_content = sum(run(g2, root, c) != run(g, root, c) for c in calls)
     return {"status": "MEASURED", "domain": "40 recorded closure calls on a 120-node synthetic graph, kernel impact.closure as the tool",
             "replay_same_snapshot_equal": [same, len(calls)],

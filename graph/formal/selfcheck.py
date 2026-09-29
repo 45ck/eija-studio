@@ -32,8 +32,8 @@ def _suite(name: str, good: list, controls: list) -> dict:
 
 def run(with_alloy: bool = False) -> dict:
     results = [
-        _suite("closure (all 3-node graphs)", [suites.suite_closure(lambda g, r: closure.lfp_kleene(g, r)),
-                                               suites.suite_closure(lambda g, r: closure.warshall_closure(g, r))],
+        _suite("closure (all 3-node graphs)", [suites.suite_closure(closure.lfp_kleene),
+                                               suites.suite_closure(closure.warshall_closure)],
                [("one-hop closure", suites.suite_closure(suites.wrong_closure_one_hop))]),
         _suite("scc labels and topological order (all 3-node graphs)",
                [suites.suite_order(order.scc_labels, order.lexicographic_topological_order)],

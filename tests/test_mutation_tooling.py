@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))  # quality/ is engineering tooling outside the shipped package
 
 from quality.mutation import engine, report  # noqa: E402
-from quality.mutation.model import INCOMPETENT, KILLED, SURVIVED, TIMEOUT, Mutant, classify, score, tally
+from quality.mutation.model import INCOMPETENT, KILLED, SURVIVED, TIMEOUT, Mutant, classify, score, tally  # noqa: E402
 from quality.mutation.targets import OPERATORS, QUICK_MODULES, TARGETS, by_module  # noqa: E402
 
 needs_cosmic_ray = pytest.mark.skipif(importlib.util.find_spec("cosmic_ray") is None,

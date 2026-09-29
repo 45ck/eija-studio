@@ -54,9 +54,9 @@ for t in terms:
     rows.append((t, ' '.join(words), cnt(I_src), cnt(I_tst), uihit))
 print('term | words | src-ident-uses | test-ident-uses | ui-text-hits')
 for r in rows: print(' | '.join(map(str,r)))
-gl = set(w for t in terms for w in split(t))
+gl = {w for t in terms for w in split(t)}
 print('top non-glossary words in src identifiers:')
-stop = set(['self', 'cls', 'str', 'int', 'bool', 'none', 'true', 'false', 'list', 'dict', 'tuple', 'set', 'any', 'type', 'object', 'args', 'kwargs', 'return'])
+stop = {'self', 'cls', 'str', 'int', 'bool', 'none', 'true', 'false', 'list', 'dict', 'tuple', 'set', 'any', 'type', 'object', 'args', 'kwargs', 'return'}
 for w,c in sorted(allw.items(), key=lambda x:(-x[1],x[0])):
     if w not in gl and w not in stop and len(w)>2:
         pass

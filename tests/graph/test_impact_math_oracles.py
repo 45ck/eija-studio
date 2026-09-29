@@ -150,7 +150,7 @@ def test_witness_is_the_lexicographically_smallest_shortest_path() -> None:
                     continue
                 for nxt in adj.get(path[-1], []):
                     if nxt not in path:
-                        stack.append(path + [nxt])
+                        stack.append([*path, nxt])
             assert m.witness(rep, node) == best
 
 
@@ -224,7 +224,7 @@ def test_suspect_far_ends_lie_inside_the_impact_set_when_flow_covers_the_anchor(
     """The lint that ties suspicion to impact: flow must include the direction away from the anchored endpoint."""
     rng = random.Random(9)
     counterexamples = positives = 0
-    for trial in range(600):
+    for _trial in range(600):
         names = [f"n{i}" for i in range(7)]
         types = {f"t{i}": (rng.choice(["F", "R", "FR"]), rng.choice(["src", "dst", None]), rng.randrange(3)) for i in range(4)}
         links = [(rng.choice(names), rng.choice(sorted(types)), rng.choice(names)) for _ in range(rng.randrange(1, 12))]
@@ -310,7 +310,7 @@ def test_lexicographic_topological_order_is_the_minimum_over_all_orders() -> Non
         dag = {u: sorted({v for v in names[i + 1:] if rng.random() < 0.4}) for i, u in enumerate(names)}
         perm = list(names)
         rng.shuffle(perm)  # relabel so the DAG order is not the id order
-        ren = dict(zip(names, perm))
+        ren = dict(zip(names, perm, strict=False))
         dag2 = {ren[u]: sorted(ren[v] for v in vs) for u, vs in dag.items()}
         orders = [p for p in itertools.permutations(perm)
                   if all(p.index(u) < p.index(v) for u, vs in dag2.items() for v in vs)]
@@ -581,9 +581,9 @@ def test_o7_join_equals_kernel_on_flat_inputs_and_composes_where_the_kernel_does
 
 def test_o7_chain_meet_laws_and_the_pass_iff_all_pass_property_for_every_admissible_chain() -> None:
     non_pass = ["FAIL", "CONFLICT", "STALE", "NOT_RUN", "UNKNOWN"]
-    values = non_pass + ["PASS"]
+    values = [*non_pass, "PASS"]
     for perm in itertools.permutations(non_pass):
-        chain = tuple(perm) + ("PASS",)  # any total order with PASS on top
+        chain = (*perm, "PASS")  # any total order with PASS on top
         for x, y, z in itertools.product(values, repeat=3):
             assert m.meet_b(x, y, chain) == m.meet_b(y, x, chain)
             assert m.meet_b(m.meet_b(x, y, chain), z, chain) == m.meet_b(x, m.meet_b(y, z, chain), chain)
@@ -647,9 +647,9 @@ def test_o8_same_data_three_priors_three_answers() -> None:
 
 # ================================================================ O9 risk vector
 def test_o9_risk_vector_dominance_and_lexicographic_order() -> None:
-    x = dict(zip(m.RISK_FIELDS, (0, 0, 2, 3, 1, 4, 3, 1)))
-    y = dict(zip(m.RISK_FIELDS, (0, 0, 0, 5, 1, 10, 20, 1)))
-    z = dict(zip(m.RISK_FIELDS, (0, 0, 2, 2, 1, 4, 3, 1)))
+    x = dict(zip(m.RISK_FIELDS, (0, 0, 2, 3, 1, 4, 3, 1), strict=False))
+    y = dict(zip(m.RISK_FIELDS, (0, 0, 0, 5, 1, 10, 20, 1), strict=False))
+    z = dict(zip(m.RISK_FIELDS, (0, 0, 2, 2, 1, 4, 3, 1), strict=False))
     assert not m.dominates(x, y) and not m.dominates(y, x)  # incomparable: a partial order, no fake total
     assert m.dominates(x, z) and not m.dominates(z, x)
     assert sorted([("Y", y), ("Z", z), ("X", x)], key=lambda t: m.risk_key(t[1]), reverse=True)[0][0] == "X"

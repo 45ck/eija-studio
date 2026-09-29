@@ -167,7 +167,7 @@ def gap_distance_rule(d: Path, n: int) -> dict:
 
     def with_insert(g: int, tag: str) -> list[str]:
         new = json.dumps({"id": f"{10 * g + 5:05d}", "by": tag}, separators=(",", ":"))
-        return sorted(base + [new])
+        return sorted([*base, new])
 
     by_dist: dict[int, list[int]] = {}
     for g1 in range(n + 1):
@@ -231,8 +231,8 @@ def git_line_merge_vs_keyed(trials: int = 200, n: int = 20, seed: int = 20260929
         git_conf = union_dup = 0
         for _ in range(trials):
             base = [json.dumps({"seq": i, "e": f"{rng.getrandbits(32):08x}"}, sort_keys=True, separators=(",", ":")) for i in range(1, n + 1)]
-            ours = base + [json.dumps({"seq": n + 1, "e": "ours"}, sort_keys=True, separators=(",", ":"))]
-            theirs = base + [json.dumps({"seq": n + 1, "e": "theirs"}, sort_keys=True, separators=(",", ":"))]
+            ours = [*base, json.dumps({"seq": n + 1, "e": "ours"}, sort_keys=True, separators=(",", ":"))]
+            theirs = [*base, json.dumps({"seq": n + 1, "e": "theirs"}, sort_keys=True, separators=(",", ":"))]
             rc, _ = _merge_file(d, ours, base, theirs)
             git_conf += (rc != 0)
             _, ulines = _merge_file(d, ours, base, theirs, union=True)
@@ -257,7 +257,7 @@ def git_line_merge_vs_keyed(trials: int = 200, n: int = 20, seed: int = 20260929
             else:
                 tot_far += 1
                 conf_far += (rc != 0)
-            mk, ck = merge3(dict(zip(cids, base)), dict(zip(cids, ours)), dict(zip(cids, theirs)))
+            mk, ck = merge3(dict(zip(cids, base, strict=False)), dict(zip(cids, ours, strict=False)), dict(zip(cids, theirs, strict=False)))
             assert not ck
             if rc == 0:
                 c_clean += 1
@@ -332,8 +332,8 @@ def non_confluent_invariants() -> dict:
         _with(base, add=[_extra("TR-ESC", "Escalate", "Submitted", "Rejected")]))
     # 3. Foreign key with inserts only: both add an unused state (control, expected I-confluent).
     scenarios["control_insert_only"] = (
-        _with(base, states=base.states + ("Held",)),
-        _with(base, states=base.states + ("Closed",)))
+        _with(base, states=(*base.states, "Held")),
+        _with(base, states=(*base.states, "Closed")))
     out: dict[str, Any] = {"status": "MEASURED", "scenarios": {}}
     for name, (o, t) in scenarios.items():
         merged, conflicts = merge3(_wf_to_map(base), _wf_to_map(o), _wf_to_map(t))
@@ -527,7 +527,7 @@ def lens_laws_on_kernel_alphabet(tr=None) -> dict:
     # reported, and alpha only touches the actions the transaction kind is declared to rewire; empty alpha otherwise.
     putget_n = putget_ok = 0
     amendments: dict[str, dict] = {}
-    for bn, m, e, (txs, layout) in accepted_pairs:
+    for bn, m, e, (txs, _layout) in accepted_pairs:
         if e[0] == "move":
             continue
         intended = apply_view_edit(get_view(m), e)
@@ -607,7 +607,7 @@ def lens_laws_on_kernel_alphabet(tr=None) -> dict:
     # relaxation of PutGet): replaying an accepted edit on its own result is a no-op. Non-vacuous under amendments,
     # because the result already contains the kernel's completion of the edit.
     pgp_n = pgp_ok = 0
-    for bn, m, e, (txs, layout) in accepted_pairs:
+    for bn, m, e, (txs, _layout) in accepted_pairs:
         if e[0] == "move":
             continue
         after_m = safe_put(m, txs)

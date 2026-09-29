@@ -92,7 +92,7 @@ def claim_status(required_checks: Sequence[Sequence[str]], chain: Sequence[str] 
 
 def all_chains() -> list[tuple[str, ...]]:
     """Every total order of the six values with PASS at the top: 5! = 120 chains, low to high."""
-    return [tuple(p) + ("PASS",) for p in permutations(NON_PASS)]
+    return [(*tuple(p), "PASS") for p in permutations(NON_PASS)]
 
 
 # Link status (per link) and its fixed lift to the evidence sort (DESIGN, ADR-0093 / ADR-0101).

@@ -165,10 +165,7 @@ def defs(mm: dict[str, Any]) -> dict[str, Any]:
             "anchors": {"type": "array", "items": {"$ref": "#/$defs/anchor"}},
             "attrs": {"type": "object", "minProperties": 1},
         },
-        "allOf": [
-            {"if": {"properties": {"prov": {"const": "candidate"}}, "required": ["prov"]}, "then": {"required": ["candidates"]},
-             "else": {"properties": {"candidates": False}}},
-        ] + edge_branches,
+        "allOf": [{"if": {"properties": {"prov": {"const": "candidate"}}, "required": ["prov"]}, "then": {"required": ["candidates"]}, "else": {"properties": {"candidates": False}}}, *edge_branches],
     }
     d["graph"] = {
         "type": "object",

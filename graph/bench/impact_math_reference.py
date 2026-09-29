@@ -296,7 +296,7 @@ def ppr_int(nodes: list[str], weights: dict[tuple[str, str], int], seeds: dict[s
         raise ValueError("at least one seed with positive weight")
     k = choose_iterations(alpha, bits) if iterations is None else iterations
     x = dict.fromkeys(order, 0)
-    for (s, _), sh in zip(seed_list, _spread(scale, seed_list)):
+    for (s, _), sh in zip(seed_list, _spread(scale, seed_list), strict=False):
         x[s] += sh
     for _ in range(k):
         y = dict.fromkeys(order, 0)
@@ -307,11 +307,11 @@ def ppr_int(nodes: list[str], weights: dict[tuple[str, str], int], seeds: dict[s
             cont = x[u] * (b - a) // b
             tele += x[u] - cont
             if out[u]:
-                for (v, _), sh in zip(out[u], _spread(cont, out[u])):
+                for (v, _), sh in zip(out[u], _spread(cont, out[u]), strict=False):
                     y[v] += sh
             else:
                 tele += cont
-        for (s, _), sh in zip(seed_list, _spread(tele, seed_list)):
+        for (s, _), sh in zip(seed_list, _spread(tele, seed_list), strict=False):
             y[s] += sh
         x = y
     arcs = sum(len(v) for v in out.values())
@@ -357,7 +357,7 @@ def ppr_exact(nodes: list[str], weights: dict[tuple[str, str], int], seeds: dict
         for r in range(n):
             if r != col and A[r][col] != 0:
                 f = A[r][col]
-                A[r] = [x - f * y for x, y in zip(A[r], A[col])]
+                A[r] = [x - f * y for x, y in zip(A[r], A[col], strict=False)]
                 rhs[r] -= f * rhs[col]
     return {u: rhs[idx[u]] for u in order}
 
