@@ -170,8 +170,8 @@
     },
     {
       "path": "pyproject.toml",
-      "bytes": 11230,
-      "sha256": "29ffa24c5d1d8443993f60bc872560db9cdef4fec14c966c8f04e5df9de249eb"
+      "bytes": 17148,
+      "sha256": "8d3c73e72f27a7b1a97f3f9d6c344d829f7246fe50f50448bcb05f19d45f884a"
     },
     {
       "path": "requirements-tested.txt",
@@ -240,13 +240,13 @@
     },
     {
       "path": "src/eija_studio/adapters/formal/bend.py",
-      "bytes": 5269,
-      "sha256": "a6ae9f9be7e2824203a099788bf0931d14d1cb5c9cb6a7d3650843dfbfefaa48"
+      "bytes": 5366,
+      "sha256": "657f03407d7f75fed0e14bc4d20965f6ad6712f5a3152b4c9d46034e28009119"
     },
     {
       "path": "src/eija_studio/adapters/formal/bmc.py",
-      "bytes": 2544,
-      "sha256": "b832c7fc941d18ae91a9cc599ae2c13894bbaad4404254ef869777096d1064e6"
+      "bytes": 2646,
+      "sha256": "529d763b0fd159d0d96975919ad0c7e999c9b0739f2bf38648e5172a5deb85a8"
     },
     {
       "path": "src/eija_studio/adapters/formal/common.py",
@@ -255,8 +255,8 @@
     },
     {
       "path": "src/eija_studio/adapters/formal/smt.py",
-      "bytes": 3980,
-      "sha256": "bf1cc806c3d6b37eb62d6c0ce9ce099dea338b5f1b76706dbec89004ce2f706b"
+      "bytes": 4072,
+      "sha256": "ad7ff42a72c53e171a30b8d6140ee27d3606a82629b2efb0c7533dd5dae20121"
     },
     {
       "path": "src/eija_studio/adapters/identity.py",
@@ -415,8 +415,8 @@
     },
     {
       "path": "src/eija_studio/domain/evidence_kinds.py",
-      "bytes": 723,
-      "sha256": "0c124be4f51e5b1a013936ba61db01adb41efc35497fa9a34b1c907be0773f50"
+      "bytes": 1220,
+      "sha256": "71518ba1af55a6443318743c4476d89ce7dc09fc519a26980f6ae59d674a6b39"
     },
     {
       "path": "src/eija_studio/domain/formal.py",
