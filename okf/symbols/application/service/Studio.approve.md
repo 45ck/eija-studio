@@ -14,14 +14,18 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.approve
   title: application/service.py
   hash_method: ast-v2
-  sha256: 0117418998297e3e3d58a7b96c90d145fdc4b07e2cf51c2659996407209886af
+  sha256: 8002035a65ed8418dfa21983d8ab9f863040de38755ab1e380d510554fc377b8
 description_override: Seals a local-owner acknowledgement of the exact subject after eligibility, matching subject hash, acknowledged unknowns and correct answers.
-notes_baseline: 7264410159eb2ed16e2583b0f1a8cfa3a7db072c2b1f0632d96f3f8d16be94ee
+notes_baseline: 36d43f6f3d12babe5c5c57ea7c3d341c45adc9a1b656066dfd5496532bbca46c
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
   notes_sha256: ba937fc8341dae9b8cbe5125142ef8b9e647472b12d1456ac0835ee3269a0879
   sources_sha256: 7264410159eb2ed16e2583b0f1a8cfa3a7db072c2b1f0632d96f3f8d16be94ee
+- by: process:eija-wbs-1.3-agent
+  at: '2026-09-29T08:20:47Z'
+  notes_sha256: ba937fc8341dae9b8cbe5125142ef8b9e647472b12d1456ac0835ee3269a0879
+  sources_sha256: 36d43f6f3d12babe5c5c57ea7c3d341c45adc9a1b656066dfd5496532bbca46c
 ---
 
 # application.service.Studio.approve

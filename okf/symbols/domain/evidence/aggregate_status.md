@@ -16,12 +16,16 @@ sources:
   hash_method: ast-v2
   sha256: 5b13b09743b7cd7d127d74542c01219ab6d666aeeed54b4951357f9395aaf8b0
 description_override: Combines authenticated receipts into one status; an authentic pass and an authentic fail give CONFLICT, not an average.
-notes_baseline: b8a8fdd5d0e2958c2c56cfad77c074a613cd474691a357f1bdde562231151364
+notes_baseline: 50289e76309d1a4f8966760230f7f535a956e978c6e74ddee23e9a29d1837669
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
   notes_sha256: 1fcfb922ee02a5414d10244dd7f04f90758697ffd0ea66e688c0f4de3aaf3cf9
   sources_sha256: b8a8fdd5d0e2958c2c56cfad77c074a613cd474691a357f1bdde562231151364
+- by: process:eija-wbs-1.3-agent
+  at: '2026-09-29T08:20:47Z'
+  notes_sha256: 1fcfb922ee02a5414d10244dd7f04f90758697ffd0ea66e688c0f4de3aaf3cf9
+  sources_sha256: 50289e76309d1a4f8966760230f7f535a956e978c6e74ddee23e9a29d1837669
 ---
 
 # domain.evidence.aggregate_status

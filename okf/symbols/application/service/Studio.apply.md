@@ -14,14 +14,18 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.apply
   title: application/service.py
   hash_method: ast-v2
-  sha256: de9ec46bb044a4b3be59d533514ffe2cb39a8a59113e1640c3684f189fa72314
+  sha256: c9bcc51bb275d1cefc1560f4a2d9106dd62af1b3c817f260854d80e4b08f8873
 description_override: Applies an approved candidate to the local baseline only if an eligible, authentic, exact-subject decision exists.
-notes_baseline: 227e5a988200c87eff573195eafe8d2a5f3ff1712b64f8326495d8950a1911a3
+notes_baseline: ca2a11fdbb4c4f097688f5edebe043fbdb79a703f796a996e98eda67fb3f7a0c
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
   notes_sha256: 54d1699727ddc6215c45a311cfd5ca0d7b2baec089d1da3d52e339a74175fd64
   sources_sha256: 227e5a988200c87eff573195eafe8d2a5f3ff1712b64f8326495d8950a1911a3
+- by: process:eija-wbs-1.3-agent
+  at: '2026-09-29T08:20:47Z'
+  notes_sha256: 54d1699727ddc6215c45a311cfd5ca0d7b2baec089d1da3d52e339a74175fd64
+  sources_sha256: ca2a11fdbb4c4f097688f5edebe043fbdb79a703f796a996e98eda67fb3f7a0c
 ---
 
 # application.service.Studio.apply

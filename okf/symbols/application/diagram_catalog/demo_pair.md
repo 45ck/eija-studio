@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/diagram_catalog.py#demo_pair
   title: application/diagram_catalog.py
   hash_method: ast-v2
-  sha256: 2b2a3ee9323e296bac7127644a42bcbdd192bfeee15fd092482f460085fd71fb
-notes_baseline: 6e3ad83027c02c1d9da5d3a9e91c43dd15441d8c0f9e311035fd992a908d8d75
+  sha256: 55bfd1ceaea436780f8270c8c1894d027c10a6fc4dc6422f9475f198d28acb9c
+notes_baseline: f8b0c3dbf09660594ab48c643d514849d83a22de531f7ad42b720a33a30341b7
 ---
 
 # application.diagram_catalog.demo_pair
@@ -43,10 +43,9 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [domain.models.SemanticTransaction](/symbols/domain/models/SemanticTransaction.md) - `class SemanticTransaction(Contract)` in `domain/models`.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
-* [domain.policy.apply_transaction](/symbols/domain/policy/apply_transaction.md) - Legacy closed vocabulary (two kinds), kept until the open vocabulary of WBS 1.3 replaces it: the recommendation meaning of the default pack and a rejection-sou…
 * [domain.policy.baseline](/symbols/domain/policy/baseline.md) - The pack's baseline workflow.
+* [domain.policy.demo_candidate](/symbols/domain/policy/demo_candidate.md) - The pack's baseline with its first supported meaning applied.
 
 ## Referenced by
 

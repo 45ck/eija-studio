@@ -16,12 +16,16 @@ sources:
   hash_method: ast-v2
   sha256: ac1835feef99286527497b6eb723057569eb0806e1a31758f161083fbe2202f3
 description_override: 'Computes the review packet: subject, blockers, technical claims, impact, projections and critical questions for a Change Case.'
-notes_baseline: 391b1f844ea4320be4abb9994678cd8d72f7bfb9563e2d4e99a7691f8ae9a7f0
+notes_baseline: 94d02ec9df63ea410f322ccc595840e67e4a52cb702e37a78701958cd939e112
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
   notes_sha256: 2ff446bce73f01347f890a6fe117bbdaaf5ef2e4ea52c60224d7d0cd87941daa
   sources_sha256: 391b1f844ea4320be4abb9994678cd8d72f7bfb9563e2d4e99a7691f8ae9a7f0
+- by: process:eija-wbs-1.3-agent
+  at: '2026-09-29T08:20:47Z'
+  notes_sha256: 2ff446bce73f01347f890a6fe117bbdaaf5ef2e4ea52c60224d7d0cd87941daa
+  sources_sha256: 94d02ec9df63ea410f322ccc595840e67e4a52cb702e37a78701958cd939e112
 ---
 
 # application.compiler.compile_case

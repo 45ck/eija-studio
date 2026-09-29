@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/change_case.py
   title: domain/change_case.py
   hash_method: ast-api-v1
-  sha256: 9b4204b5a4dd8a9944769c4c9d6cf8e33b38806e0dc409a9a708f10eb1f50a14
-notes_baseline: 8987f9428ed53176634e8decc0143444bdd720887341c38fb762537c9bdb0691
+  sha256: 46fa3dd6b4477db7e897be4f28c846d89325d209598fe8cfa04a313514eb69bc
+notes_baseline: 2487d3cdebfd846d186cbdf02d51c943118618889a47408aed978b75db215ccf
 ---
 
 # domain.change_case
@@ -37,6 +37,7 @@ _The source carries no module docstring._
 ## Internal imports
 
 * [`domain/models`](/modules/domain/models.md)
+* [`domain/transactions`](/modules/domain/transactions.md)
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -47,6 +48,7 @@ _No curated notes yet._
 ## Imports
 
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
+* [domain.transactions](/modules/domain/transactions.md) - Open change vocabulary (WBS 1.3): the semantic edits an owner (or a pack meaning) may make to a workflow.
 
 ## Referenced by
 

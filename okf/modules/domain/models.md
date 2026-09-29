@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py
   title: domain/models.py
   hash_method: ast-api-v1
-  sha256: 0bdbf6cb0c00f6ef37a49c1cda47bced90ff38c8847c8547d723c6db626cbe95
-notes_baseline: a82e45d5a1f2ac8e6384900a045e50bf6488c3dd90d3006ec3e307d7c69b9876
+  sha256: 19ee9ee062677e926136fd9126481b5f144184375dc48ef9f27ddae7c4e63a95
+notes_baseline: 61c6c34f6e7082be87df3327b8157143fce5f509c507cb33393ee174af67909e
 ---
 
 # domain.models
@@ -44,7 +44,7 @@ _The source carries no module docstring._
 * [`OWNER`](/symbols/domain/models/OWNER.md) (constant) - no docstring
 * [`Principal`](/symbols/domain/models/Principal.md) (class) - no docstring
 * [`Proposal`](/symbols/domain/models/Proposal.md) (class) - no docstring
-* [`SemanticTransaction`](/symbols/domain/models/SemanticTransaction.md) (class) - no docstring
+* [`SemanticTransaction`](/symbols/domain/models/SemanticTransaction.md) (class) - DEPRECATED closed vocabulary, superseded by the open one in ``domain.transactions`` (WBS 1.3).
 * [`Transition`](/symbols/domain/models/Transition.md) (class) - no docstring
 * [`Workflow`](/symbols/domain/models/Workflow.md) (class) - no docstring
 * [`canonical`](/symbols/domain/models/canonical.md) (function) - no docstring
@@ -71,12 +71,14 @@ _No curated notes yet._
 * [application.runtime](/modules/application/runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.
 * [application.service](/modules/application/service.md) - Module `application/service` (no module docstring).
 * [application.verifier](/modules/application/verifier.md) - Bounded synthetic runtime experiments.
+* [domain.affordance](/modules/domain/affordance.md) - Affordance map (WBS 1.3): which single edits the kernel would accept, and why the others are refused.
 * [domain.change_case](/modules/domain/change_case.md) - Module `domain/change_case` (no module docstring).
 * [domain.evidence](/modules/domain/evidence.md) - Compatibility is computed.
 * [domain.impact](/modules/domain/impact.md) - Module `domain/impact` (no module docstring).
 * [domain.laws](/modules/domain/laws.md) - Typed law DSL of a domain pack: what a workflow may never do, stated as data (WBS 1.1/1.2).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
 * [domain.policy](/modules/domain/policy.md) - Generic policy: coherence with a domain pack's declared action catalog, the pack's laws, and declared effects.
+* [domain.transactions](/modules/domain/transactions.md) - Open change vocabulary (WBS 1.3): the semantic edits an owner (or a pack meaning) may make to a workflow.
 * [interfaces.cli](/modules/interfaces/cli.md) - Module `interfaces/cli` (no module docstring).
 * [interfaces.http](/modules/interfaces/http.md) - Loopback-only local adapter.
 * [interfaces.mcp_server](/modules/interfaces/mcp_server.md) - MCP (Model Context Protocol) adapter: the agent-facing face of EIJA Studio.
@@ -94,7 +96,7 @@ _No curated notes yet._
 * [domain.models.Principal.require](/symbols/domain/models/Principal.require.md) - `def require(self, capability: str) -> None` in `domain/models`.
 * [domain.models.Proposal](/symbols/domain/models/Proposal.md) - `class Proposal(Contract)` in `domain/models`.
 * [domain.models.Proposal.unique](/symbols/domain/models/Proposal.unique.md) - `def unique(self) -> Proposal` in `domain/models`.
-* [domain.models.SemanticTransaction](/symbols/domain/models/SemanticTransaction.md) - `class SemanticTransaction(Contract)` in `domain/models`.
+* [domain.models.SemanticTransaction](/symbols/domain/models/SemanticTransaction.md) - DEPRECATED closed vocabulary, superseded by the open one in ``domain.transactions`` (WBS 1.3).
 * [domain.models.Transition.guarded](/symbols/domain/models/Transition.guarded.md) - `def guarded(self) -> Transition` in `domain/models`.
 * [domain.models.Transition](/symbols/domain/models/Transition.md) - `class Transition(Contract)` in `domain/models`.
 * [domain.models.Workflow.coherent](/symbols/domain/models/Workflow.coherent.md) - `def coherent(self) -> Workflow` in `domain/models`.

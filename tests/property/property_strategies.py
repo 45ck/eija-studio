@@ -39,7 +39,8 @@ def workflows(draw, max_states: int = 6, max_transitions: int = 6) -> Workflow:
     ids = draw(st.lists(IDENTIFIERS, min_size=count, max_size=count, unique=True))
     actions = draw(st.lists(NAMES, min_size=count, max_size=count, unique=True))
     transitions = [draw(transition_parts(states, i, a)) for i, a in zip(ids, actions, strict=False)]
-    return Workflow.model_validate({"states": states, "initial_state": draw(st.sampled_from(states)),
+    pack_id = draw(st.from_regex(r"[a-z][a-z0-9-]{0,39}", fullmatch=True))  # Workflow.id is the pack id (WBS 1.1)
+    return Workflow.model_validate({"id": pack_id, "states": states, "initial_state": draw(st.sampled_from(states)),
                                     "transitions": transitions})
 
 

@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/pack.py
   title: domain/pack.py
   hash_method: ast-api-v1
-  sha256: bfacb20595042558deaa154024ae8f794a72e33a59b127f9f7f9b35157b95b92
-notes_baseline: d69ef11f91bbe5498d0e5849744d5a11b6ded17eb440d738072c3a1187aa195e
+  sha256: 9a211c75edaa2271bf13d82219e45a8753fe0f51e0b9607de19e33225cf98049
+notes_baseline: bf23e3c7a5e6b389557167eb1d705b4aad5eee376ae49d195849c3a0c17b9af9
 ---
 
 # domain.pack
@@ -79,6 +79,7 @@ action or effect) becomes ``PackError`` (code ``PACK_INVALID``) with SORTED diag
 
 * [`domain/laws`](/modules/domain/laws.md)
 * [`domain/models`](/modules/domain/models.md)
+* [`domain/transactions`](/modules/domain/transactions.md)
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -90,16 +91,19 @@ _No curated notes yet._
 
 * [domain.laws](/modules/domain/laws.md) - Typed law DSL of a domain pack: what a workflow may never do, stated as data (WBS 1.1/1.2).
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
+* [domain.transactions](/modules/domain/transactions.md) - Open change vocabulary (WBS 1.3): the semantic edits an owner (or a pack meaning) may make to a workflow.
 
 ## Referenced by
 
 * [adapters.identity](/modules/adapters/identity.md) - Measured release identity, not a proof of correctness or author authenticity.
 * [adapters.sqlite_store](/modules/adapters/sqlite_store.md) - Durable local unit of work.
 * [application.compiler](/modules/application/compiler.md) - Compiler: model → projections + impacts + obligations + computed review packet.
+* [application.formal](/modules/application/formal.md) - Formal evidence in the application layer: seal what an adapter collected, and build the packet view.
 * [application.runtime](/modules/application/runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.
 * [application.service](/modules/application/service.md) - Module `application/service` (no module docstring).
 * [application.verifier](/modules/application/verifier.md) - Bounded synthetic runtime experiments.
 * [bootstrap](/modules/bootstrap.md) - The only composition root: wires application ports to concrete adapters.
+* [domain.affordance](/modules/domain/affordance.md) - Affordance map (WBS 1.3): which single edits the kernel would accept, and why the others are refused.
 * [domain.evidence](/modules/domain/evidence.md) - Compatibility is computed.
 * [domain.policy](/modules/domain/policy.md) - Generic policy: coherence with a domain pack's declared action catalog, the pack's laws, and declared effects.
 * [domain.pack.ActionSpec](/symbols/domain/pack/ActionSpec.md) - The declared guards and required effects of one action; the policy holds every transition to them.

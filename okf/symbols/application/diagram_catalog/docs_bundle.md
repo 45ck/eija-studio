@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/diagram_catalog.py#docs_bundle
   title: application/diagram_catalog.py
   hash_method: ast-v2
-  sha256: 3c0809017a94ee0d5be4f5d3979ae7bb755cf51817098247b352c60135920052
-notes_baseline: 2cc54e06a5828744259c976c368547286541f9eda7a88eaf03b6991f8352cc14
+  sha256: cbe30d29262657a450dab071ae6f9ab7b277f7530e12e0a35d03cc6ea53d0877
+notes_baseline: 86694f6bccc348256340b49314e4e8cc882767ec6119ce8dd5942fb4ffd3719c
 ---
 
 # application.diagram_catalog.docs_bundle

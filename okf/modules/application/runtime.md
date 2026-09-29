@@ -14,12 +14,16 @@ sources:
   title: application/runtime.py
   hash_method: ast-api-v1
   sha256: 3899636ca8052d37e8ad2b090e55beacf6b38f1bb91c23f915769661901a1441
-notes_baseline: 53b19591611a7dfe565f6dd979e1c7e52bb3d1a74bf852d4a4bcd45b7f492043
+notes_baseline: d7a2e4e86517ea444c8094a627d3ae1944555e5143febf2a41e37ed024136ce1
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
   notes_sha256: 090429967737d6a66e5f0cbb10b99a1a5ee88b4f6ad6a9bf32a21c2776eba1f7
   sources_sha256: 53b19591611a7dfe565f6dd979e1c7e52bb3d1a74bf852d4a4bcd45b7f492043
+- by: process:eija-wbs-1.3-agent
+  at: '2026-09-29T08:20:47Z'
+  notes_sha256: 51ed90c46c69260b371ab2a1d5139bf24f4f09c768aa115ebe4f70f4d761e6bb
+  sources_sha256: d7a2e4e86517ea444c8094a627d3ae1944555e5143febf2a41e37ed024136ce1
 ---
 
 # application.runtime
@@ -53,7 +57,7 @@ Generic execution algorithm; the domain (policy, laws, typed effects) comes from
 
 ## Notes
 
-The generic execution algorithm; domain-specific policy stays in [domain.policy](/modules/domain/policy.md).
+The generic execution algorithm. Policy, laws and typed effects come from the domain pack ([domain.pack](/modules/domain/pack.md), [domain.policy](/modules/domain/policy.md)); nothing here names a domain.
 
 <!-- okf:generated:begin links -->
 ## Imports

@@ -2,6 +2,7 @@
 
 # Modules
 
+* [domain.affordance](affordance.md) - Affordance map (WBS 1.3): which single edits the kernel would accept, and why the others are refused.
 * [domain.change_case](change_case.md) - Module `domain/change_case` (no module docstring).
 * [domain.evidence](evidence.md) - Compatibility is computed.
 * [domain.evidence_kinds](evidence_kinds.md) - The registry of evidence kinds the kernel can assess (ADR-0145).
@@ -14,3 +15,4 @@
 * [domain.models](models.md) - Module `domain/models` (no module docstring).
 * [domain.pack](pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
 * [domain.policy](policy.md) - Generic policy: coherence with a domain pack's declared action catalog, the pack's laws, and declared effects.
+* [domain.transactions](transactions.md) - Open change vocabulary (WBS 1.3): the semantic edits an owner (or a pack meaning) may make to a workflow.

@@ -14,9 +14,14 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py#SemanticTransaction
   title: domain/models.py
   hash_method: ast-sig-v1
-  sha256: 80ee1eb79fe0406b313022532eda971325cf6ee7629f09d77b7d6e7a48d40e37
+  sha256: 7d70a888f1a198ac3b8ffc197dc001c643f1ae22ed9af154a3046b82d14acfcf
 description_override: 'One typed business-meaning edit: enable recommendation or set the registrar rejection source.'
-notes_baseline: 071a13d59d33ca89c6b36f8c46aacca71735cc9802f310bc41bb35362c033771
+notes_baseline: 6e702f86b1f5452281fdc9268c22c00f0944ba4c010e792aca26b71675bef728
+verified:
+- by: process:eija-wbs-1.3-agent
+  at: '2026-09-29T08:20:47Z'
+  notes_sha256: 448cfc6039aadb8c51542e6886ed1a8fe21f8503b21cb1d20ec0de761da2558a
+  sources_sha256: 6e702f86b1f5452281fdc9268c22c00f0944ba4c010e792aca26b71675bef728
 ---
 
 # domain.models.SemanticTransaction
@@ -32,19 +37,25 @@ notes_baseline: 071a13d59d33ca89c6b36f8c46aacca71735cc9802f310bc41bb35362c033771
 
 ## Docstring
 
-_The source carries no docstring._
+~~~text
+DEPRECATED closed vocabulary, superseded by the open one in ``domain.transactions`` (WBS 1.3).
+
+Kept for one caller only: verification/bend/bend_generate.py, whose bytes the committed Bend proof binds
+(changing them turns that evidence non-PASS until Docker regenerates it, WBS 1.4). ``policy.apply_transaction``
+reads it as "apply the pack's first supported meaning". The service, HTTP, pack meanings and stored cases never
+accept it: a stored case holding one is refused with ``CASE_SCHEMA_OLD``.
+~~~
 
 ## Fields
 
 | Field | Annotation | Default |
 |---|---|---|
-| `kind` | `Literal['enable_recommendation', 'set_rejection_source']` |  |
-| `rejection_source` | `Literal['Submitted', 'Recommended']` | `'Recommended'` |
+| `kind` | `Literal['enable_recommendation']` |  |
 <!-- okf:generated:end facts -->
 
 ## Notes
 
-Rule-table and state-view commands produce this same shape ([Semantic Transaction](/language/semantic-transaction.md)); it is consumed only by [apply_transaction](/symbols/domain/policy/apply_transaction.md).
+**Deprecated.** The closed pre-pack vocabulary. The open vocabulary is the discriminated union in `domain/transactions.py` ([Semantic Transaction](/language/semantic-transaction.md)). This class survives only because `verification/bend/bend_generate.py` builds one and the committed Bend proof binds that file's bytes; `policy.apply_transaction` reads it as "apply the pack's first supported meaning". The service, HTTP, pack meanings and stored cases never accept it. WBS 1.4 removes it.
 
 <!-- okf:generated:begin links -->
 ## Depends on
@@ -55,12 +66,5 @@ Rule-table and state-view commands produce this same shape ([Semantic Transactio
 
 * [Authoring](/contexts/authoring.md) - Owns Requested intent, alternatives, explicit selection, candidate and edits
 * [Semantic Transaction](/language/semantic-transaction.md) - One typed business-meaning edit.
-* [application.diagram_catalog.demo_pair](/symbols/application/diagram_catalog/demo_pair.md) - Baseline and the recommend_only candidate the excursion demo produces (rejection source Recommended).
-* [application.diagrams.CONTRACTS](/symbols/application/diagrams/CONTRACTS.md) - Constant `CONTRACTS` in `application/diagrams`.
-* [application.formal.what_if_model](/symbols/application/formal/what_if_model.md) - The workflow an unsupported interpretation would produce (recommendation enabled, the fault applied), or None.
-* [application.service.Studio.edit](/symbols/application/service/Studio.edit.md) - `def edit(self, case_id: str, expected: int, tx: SemanticTransaction, principal: Principal) -> dict[str, Any]` in `application/service`.
-* [application.service.Studio](/symbols/application/service/Studio.md) - `class Studio` in `application/service`.
-* [application.service.Studio.select](/symbols/application/service/Studio.select.md) - `def select(self, case_id: str, expected: int, interpretation: str, principal: Principal) -> dict[str, Any]` in `application/service`.
-* [domain.change_case.ChangeCase](/symbols/domain/change_case/ChangeCase.md) - Aggregate boundary: transitions are mediated by the application and CAS store.
-* [domain.policy.apply_transaction](/symbols/domain/policy/apply_transaction.md) - Legacy closed vocabulary (two kinds), kept until the open vocabulary of WBS 1.3 replaces it: the recommendation meaning of the default pack and a rejection-sou…
+* [domain.policy.apply_transaction](/symbols/domain/policy/apply_transaction.md) - Apply one transaction (policy-checked).
 <!-- okf:generated:end links -->

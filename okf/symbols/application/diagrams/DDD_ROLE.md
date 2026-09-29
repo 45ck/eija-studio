@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/diagrams.py#DDD_ROLE
   title: application/diagrams.py
   hash_method: ast-v2
-  sha256: 181add23a99f74fa2407b9d660b62c7941be8af346c889669b66a0673d31830e
-notes_baseline: 72a4eb4ccd4f692a39f9e16464bc9615cec59a8ce73bb737eb4e9fb068428bc5
+  sha256: 786bb4afbd62168fbe90a3ed664bb97c9b2f2ae427f557b488e518a04031d3d5
+notes_baseline: 6efd0c90255e610d5815b805d7b817a79444797df122a87a7a540c2e48959db8
 ---
 
 # application.diagrams.DDD_ROLE

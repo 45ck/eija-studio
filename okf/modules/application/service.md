@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/service.py
   title: application/service.py
   hash_method: ast-api-v1
-  sha256: e7e308e791e736fe186937849db7631a7d7bf494fb0b700f3558bc482fdeb9da
-notes_baseline: d4a94492a5595d78729c1e75db2ad9a6404ca6a235b5c91489363c45a85b5e7b
+  sha256: ecb5e983c35a7f964f6722bebf5b6bc0e3326173c3558c532a4c612028122a0c
+notes_baseline: 633dec04195e25168e638515a7aa681de37e2934bf3a38db7eb54fcfbfd113bb
 ---
 
 # application.service
@@ -42,11 +42,13 @@ _The source carries no module docstring._
 * [`application/ports`](/modules/application/ports.md)
 * [`application/runtime`](/modules/application/runtime.md)
 * [`application/verifier`](/modules/application/verifier.md)
+* [`domain/affordance`](/modules/domain/affordance.md)
 * [`domain/change_case`](/modules/domain/change_case.md)
 * [`domain/formal`](/modules/domain/formal.md)
 * [`domain/models`](/modules/domain/models.md)
 * [`domain/pack`](/modules/domain/pack.md)
 * [`domain/policy`](/modules/domain/policy.md)
+* [`domain/transactions`](/modules/domain/transactions.md)
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -61,11 +63,13 @@ _No curated notes yet._
 * [application.ports](/modules/application/ports.md) - Application-owned ports.
 * [application.runtime](/modules/application/runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.
 * [application.verifier](/modules/application/verifier.md) - Bounded synthetic runtime experiments.
+* [domain.affordance](/modules/domain/affordance.md) - Affordance map (WBS 1.3): which single edits the kernel would accept, and why the others are refused.
 * [domain.change_case](/modules/domain/change_case.md) - Module `domain/change_case` (no module docstring).
 * [domain.formal](/modules/domain/formal.md) - Primitives for per-kind admissibility of formal evidence (ADR-0145, ADR-0146).
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
 * [domain.policy](/modules/domain/policy.md) - Generic policy: coherence with a domain pack's declared action catalog, the pack's laws, and declared effects.
+* [domain.transactions](/modules/domain/transactions.md) - Open change vocabulary (WBS 1.3): the semantic edits an owner (or a pack meaning) may make to a workflow.
 
 ## Referenced by
 
@@ -73,11 +77,13 @@ _No curated notes yet._
 * [Governance](/contexts/governance.md) - Owns Local capabilities, exact-revision acknowledgement, active baseline version
 * [bootstrap](/modules/bootstrap.md) - The only composition root: wires application ports to concrete adapters.
 * [interfaces.mcp_server](/modules/interfaces/mcp_server.md) - MCP (Model Context Protocol) adapter: the agent-facing face of EIJA Studio.
+* [application.service.Studio.affordances](/symbols/application/service/Studio.affordances.md) - Which single edits of the case's working model the kernel would accept (read-only).
 * [application.service.Studio.apply](/symbols/application/service/Studio.apply.md) - `def apply(self, case_id: str, expected: int, principal: Principal) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.approve](/symbols/application/service/Studio.approve.md) - `def approve(self, case_id: str, expected: int, subject_hash: str, answers: dict[str, str], acknowledge_unknow…` in `application/service`.
 * [application.service.Studio.create](/symbols/application/service/Studio.create.md) - `def create(self, request: str) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.discard](/symbols/application/service/Studio.discard.md) - `def discard(self, case_id: str, expected: int) -> dict[str, Any]` in `application/service`.
-* [application.service.Studio.edit](/symbols/application/service/Studio.edit.md) - `def edit(self, case_id: str, expected: int, tx: SemanticTransaction, principal: Principal) -> dict[str, Any]` in `application/service`.
+* [application.service.Studio.edit](/symbols/application/service/Studio.edit.md) - `def edit(self, case_id: str, expected: int, tx: Transaction, principal: Principal) -> dict[str, Any]` in `application/service`.
+* [application.service.Studio.edit_check](/symbols/application/service/Studio.edit_check.md) - Dry-run one edit: {legal, codes, refs}.
 * [application.service.Studio.execute](/symbols/application/service/Studio.execute.md) - `def execute(self, case_id: str, command: ExecuteCommand, fault: Callable[[str], None] | None=None) -> dict[st…` in `application/service`.
 * [application.service.Studio.export](/symbols/application/service/Studio.export.md) - `def export(self, case_id: str) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.formal_view](/symbols/application/service/Studio.formal_view.md) - Formal evidence for a bare workflow (``eija compile``): collected and sealed in memory, never stored, never a decision.

@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/diagrams.py#CONTRACTS
   title: application/diagrams.py
   hash_method: ast-v2
-  sha256: 7af1a79ea3efaab700d5719c704fce7a5a55120140a22cdf89a5d5f0db427d40
-notes_baseline: e47a0911782feff7acb90d17ef8d5c01024c42516d947557e544cb445555972c
+  sha256: f6a5aef3fd72996f499ff9a8ca8cc255f625668411cc450ea1d7314a2939a022
+notes_baseline: 52ae58f1774dc3c14d055ec354382dd23c666400f4409ca5e51921fd2ebbf875
 ---
 
 # application.diagrams.CONTRACTS
@@ -25,7 +25,7 @@ notes_baseline: e47a0911782feff7acb90d17ef8d5c01024c42516d947557e544cb445555972c
 |---|---|
 | Kind | constant |
 | Module | [`application/diagrams`](/modules/application/diagrams.md) |
-| Signature | `CONTRACTS: tuple[type[BaseModel], ...] = (ChangeCase, Workflow, Transition, Proposal, Alternative, SemanticTransaction, LayoutChange, ExecuteCommand, Principal)` |
+| Signature | `CONTRACTS: tuple[type[BaseModel], ...] = (ChangeCase, Workflow, Transition, Proposal, Alternative, LayoutChange, ExecuteCommand, Principal)` |
 | Code | `repo://src/eija_studio/application/diagrams.py#CONTRACTS` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
@@ -47,7 +47,6 @@ _No curated notes yet._
 * [domain.models.LayoutChange](/symbols/domain/models/LayoutChange.md) - `class LayoutChange(Contract)` in `domain/models`.
 * [domain.models.Principal](/symbols/domain/models/Principal.md) - `class Principal(Contract)` in `domain/models`.
 * [domain.models.Proposal](/symbols/domain/models/Proposal.md) - `class Proposal(Contract)` in `domain/models`.
-* [domain.models.SemanticTransaction](/symbols/domain/models/SemanticTransaction.md) - `class SemanticTransaction(Contract)` in `domain/models`.
 * [domain.models.Transition](/symbols/domain/models/Transition.md) - `class Transition(Contract)` in `domain/models`.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 

@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/http.py
   title: interfaces/http.py
   hash_method: ast-api-v1
-  sha256: 5bd19a49098a1ff593d55a0913098a86bb2970213fc415446fa573385ac5f8e8
-notes_baseline: 1ea3669c1dd34a9097789365a5298b3eae672979564f2f8d66416b7ee46d5331
+  sha256: e064391f185ba8cf1d1285a48c2e5bcc05f686b49beddb8a4de1d927998ed497
+notes_baseline: 2ecd9233f62fa3a691cb31584d6881d132ade791a576c1b3c57a98d3f3512900
 ---
 
 # interfaces.http
@@ -40,6 +40,7 @@ _Symbol pages are generated for the domain and application layers only._
 
 * [`application/diagram_catalog`](/modules/application/diagram_catalog.md)
 * [`domain/models`](/modules/domain/models.md)
+* [`domain/transactions`](/modules/domain/transactions.md)
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -51,4 +52,5 @@ _No curated notes yet._
 
 * [application.diagram_catalog](/modules/application/diagram_catalog.md) - Named diagram views over a baseline and an optional candidate Workflow.
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
+* [domain.transactions](/modules/domain/transactions.md) - Open change vocabulary (WBS 1.3): the semantic edits an owner (or a pack meaning) may make to a workflow.
 <!-- okf:generated:end links -->

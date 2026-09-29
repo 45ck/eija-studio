@@ -40,7 +40,7 @@ These are responsibility boundaries inside a deliberately small modular monolith
 
 **Meaning Selection:** a local owner's explicit choice of one canonical supported interpretation. A provider explanation is not this event. Unsupported teacher-final-approval remains blocked rather than being rewritten as recommendation.
 
-**Semantic Transaction:** one typed business-meaning edit. Rule-table and state-view commands produce the same shape. The supported operations are enabling recommendation and changing the registrar rejection source between the declared states.
+**Semantic Transaction:** one typed business-meaning edit. Rule-table, state-view and canvas commands produce the same shape. The open vocabulary (`domain/transactions.py`) adds, renames or removes a state, sets the initial state, adds, retargets or removes a transition, and sets a transition's role, guards or required effects; a pack meaning is a list of them. Whether an edit is allowed is decided by the domain pack's policy and laws, never by the transaction.
 
 **Workflow Definition:** immutable typed states/transitions/roles/guards/effect declarations. A normalized semantic hash treats definition order as non-semantic. Identifiers, states, roles and rules remain meaningful.
 

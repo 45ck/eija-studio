@@ -22,12 +22,16 @@ sources:
   title: domain/evidence.aggregate_status
   hash_method: ast-v2
   sha256: 5b13b09743b7cd7d127d74542c01219ab6d666aeeed54b4951357f9395aaf8b0
-notes_baseline: 55d322b42a241bacd87634f5b798e2181b00997a7f8632b76ada1eecda97b702
+notes_baseline: 5c8d3828fbed2c29659c65cc5a2463b774d0c04f654e2cf6f1460d0302ead223
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
   notes_sha256: 5d21e613989ef49d69d9fecaa45b6ce4586bf651ae92865c6062a5fd79da4db3
   sources_sha256: 55d322b42a241bacd87634f5b798e2181b00997a7f8632b76ada1eecda97b702
+- by: process:eija-wbs-1.3-agent
+  at: '2026-09-29T08:20:47Z'
+  notes_sha256: 654d3341987ee594594ac8ee72ceffd2a980139e9862b7de85de5ba63dd36aed
+  sources_sha256: 5c8d3828fbed2c29659c65cc5a2463b774d0c04f654e2cf6f1460d0302ead223
 ---
 
 # Bounded runtime matrix (integration_test)
@@ -56,7 +60,7 @@ Not a proof over arbitrary histories, not an independent oracle (same author), n
 
 ## Notes
 
-The first evidence kind the kernel could establish; ADR-0145 adds per-kind admissibility for the formal kinds (`bend_proof`, `smt_proof`, `bounded_model_check`), which report `NOT_RUN` when their prerequisite is missing. `ORACLE` and the runtime share an author, and the expected outcome is not fully separate from the model under test (the `Reject` source state and the candidate shape are read from the model, see [verify_runtime](/symbols/application/verifier/verify_runtime.md)), so read a `PASS` as consistency with the written policy under bounded one-step experiments. Human comprehension remains `UNKNOWN`, and `field-use` remains blocked.
+The first evidence kind the kernel could establish; ADR-0145 adds per-kind admissibility for the formal kinds (`bend_proof`, `smt_proof`, `bounded_model_check`), which report `NOT_RUN` when their prerequisite is missing. The expected outcome and the runtime share an author and read the same model and pack (see [verify_runtime](/symbols/application/verifier/verify_runtime.md)), so read a `PASS` as consistency with the declared table under bounded one-step experiments. The matrix shape comes from the pack (fixture actors x states x declared actions); a receipt made under one pack FAILs under another pack's shape. Human comprehension remains `UNKNOWN`, and `field-use` remains blocked.
 
 <!-- okf:generated:begin links -->
 ## Implemented by

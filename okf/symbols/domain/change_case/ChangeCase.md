@@ -14,14 +14,18 @@ sources:
 - resource: repo://src/eija_studio/domain/change_case.py#ChangeCase
   title: domain/change_case.py
   hash_method: ast-sig-v1
-  sha256: 000e4f2582dbd14bcba5851ae3e3e3b76e09f62af8532c945821e32d7896ac58
+  sha256: 29ba785e367f122f7fa822a0011a15bb8ce1e9d04a02a25710473b67f9c379cc
 description_override: Aggregate linking one request to its interpretations, chosen meaning, baseline, candidate, transactions, receipts and decision.
-notes_baseline: 96d50b233b1935efee7ad78cd377dd0bf8e854185472d6e0780c79975a30be80
+notes_baseline: 7acf1d15dd42ae056bd469cf40243203e1959eb0b4ade3f01b89e8c9933e7479
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
   notes_sha256: 7cfa996320ebcd8dc82a47a1193aae8a98578009b6f86c73f2a102ee4d7770ab
   sources_sha256: 96d50b233b1935efee7ad78cd377dd0bf8e854185472d6e0780c79975a30be80
+- by: process:eija-wbs-1.3-agent
+  at: '2026-09-29T08:20:47Z'
+  notes_sha256: 7cfa996320ebcd8dc82a47a1193aae8a98578009b6f86c73f2a102ee4d7770ab
+  sources_sha256: 7acf1d15dd42ae056bd469cf40243203e1959eb0b4ade3f01b89e8c9933e7479
 ---
 
 # domain.change_case.ChangeCase
@@ -56,7 +60,7 @@ Aggregate boundary: transitions are mediated by the application and CAS store.
 | `provider_run` | `dict[str, Any] \| None` |  |
 | `selected_meaning` | `str \| None` |  |
 | `selected_by` | `str \| None` |  |
-| `transactions` | `tuple[SemanticTransaction, ...]` |  |
+| `transactions` | `tuple[Transaction, ...]` |  |
 | `layout` | `dict[str, dict[str, int]]` |  |
 | `receipts` | `tuple[dict[str, Any], ...]` |  |
 | `decision` | `dict[str, Any] \| None` |  |
@@ -78,8 +82,8 @@ The aggregate behind [Change Case](/language/change-case.md). Its `version` is a
 
 * [domain.models.Contract](/symbols/domain/models/Contract.md) - `class Contract(BaseModel)` in `domain/models`.
 * [domain.models.Proposal](/symbols/domain/models/Proposal.md) - `class Proposal(Contract)` in `domain/models`.
-* [domain.models.SemanticTransaction](/symbols/domain/models/SemanticTransaction.md) - `class SemanticTransaction(Contract)` in `domain/models`.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
+* [domain.transactions.Transaction](/symbols/domain/transactions/Transaction.md) - Type alias `Transaction` in `domain/transactions`.
 
 ## Referenced by
 

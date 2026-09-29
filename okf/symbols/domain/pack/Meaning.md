@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/pack.py#Meaning
   title: domain/pack.py
   hash_method: ast-sig-v1
-  sha256: d9b9d4109ad36201fef4bc9ea1267cd1be80560c4fbc41362688192e105fb8c3
-notes_baseline: f5aacf7fda95eb28be215c2874ee3c0e1750fd5064b783e6ac8d9f43e854e72d
+  sha256: 8ef28ec119bf6ebdbef82c321871ccca4170d721762946127d07ee8e424c5b73
+notes_baseline: cff7ed2008be76e7e52f8f949188d8805e4ba3e6858294cae0098eea8082d7ab
 ---
 
 # domain.pack.Meaning
@@ -44,7 +44,7 @@ one's transactions (if any) describe what it WOULD do, for explanation only, nev
 | `label` | `str` | `Field(min_length=1, max_length=200)` |
 | `supported` | `bool` |  |
 | `consequences` | `tuple[str, ...]` | `Field(min_length=1)` |
-| `transactions` | `tuple[dict[str, Any], ...]` | `()` |
+| `transactions` | `tuple[Transaction, ...]` | `()` |
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -56,6 +56,7 @@ _No curated notes yet._
 
 * [domain.models.Contract](/symbols/domain/models/Contract.md) - `class Contract(BaseModel)` in `domain/models`.
 * [domain.models.MEANING_ID](/symbols/domain/models/MEANING_ID.md) - Constant `MEANING_ID` in `domain/models`.
+* [domain.transactions.Transaction](/symbols/domain/transactions/Transaction.md) - Type alias `Transaction` in `domain/transactions`.
 
 ## Referenced by
 

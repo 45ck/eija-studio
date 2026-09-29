@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/pack.py#state_sets
   title: domain/pack.py
   hash_method: ast-v2
-  sha256: 6b680dc958e60709fe1e8bd64e50a196186651065b610fe3dd299050a8985547
-notes_baseline: 12891dcd54b69fb70651c6e54a9fcda5efd0e516781d9e86ff1a1d6c019f1272
+  sha256: e9d84070e894ace8ddc7149c343502545c7e6d792ec4adcfb925f0311dc09924
+notes_baseline: 5c439284b82cf5c44ef0bdb8f53d4f4782ca42bb8f904bfb1d275a2778ad33c9
 ---
 
 # domain.pack.state_sets
@@ -45,6 +45,8 @@ _No curated notes yet._
 ## Depends on
 
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
+* [domain.transactions.AddState](/symbols/domain/transactions/AddState.md) - `class AddState(Contract)` in `domain/transactions`.
+* [domain.transactions.RemoveState](/symbols/domain/transactions/RemoveState.md) - `class RemoveState(Contract)` in `domain/transactions`.
 
 ## Referenced by
 

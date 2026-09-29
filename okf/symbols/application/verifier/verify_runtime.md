@@ -16,12 +16,16 @@ sources:
   hash_method: ast-v2
   sha256: 8452f395c4b9f2584b0f8fe9775d3b147f611951072e44c923ce32ebd6dfde92
 description_override: Runs the declared actor x state x action matrix against the real runtime in a disposable sandbox and returns the artifact a receipt is built from.
-notes_baseline: 69b11e45b44825932c35593230a3bd5de4720cdfec8912cdebfed5959d931fdb
+notes_baseline: 4068a80e4e9f93b8598cf14f45dbfa6f5a17ec66fc09a7d7a7514d7db66ed786
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
   notes_sha256: c279d71ea83dd758ba400cd80b60beab9840befee12261208b61a9114f87b078
   sources_sha256: 69b11e45b44825932c35593230a3bd5de4720cdfec8912cdebfed5959d931fdb
+- by: process:eija-wbs-1.3-agent
+  at: '2026-09-29T08:20:47Z'
+  notes_sha256: ae41a14b066723067fde150de45124d29aab995e31cfc9a3df16d86d2534abad
+  sources_sha256: 4068a80e4e9f93b8598cf14f45dbfa6f5a17ec66fc09a7d7a7514d7db66ed786
 ---
 
 # application.verifier.verify_runtime
@@ -42,9 +46,9 @@ _The source carries no docstring._
 
 ## Notes
 
-125 cells for a candidate (100 for the baseline), each executed through [execute](/symbols/application/runtime/execute.md) in the sandbox from [SandboxFactory](/symbols/application/ports/SandboxFactory.md), compared with an expected outcome from [ORACLE](/symbols/application/verifier/ORACLE.md). Part of that expectation is not independent of the model under test: whether the workflow is a candidate (has a `Recommend` transition) and the source state of `Reject` are read from the model being verified, then override the ORACLE row, so those cells check the runtime against the model's declared parameter, not against a separately derived value.
+One cell per fixture actor x model state x declared action of the pack (the excursion candidate: 5 x 5 x 5 = 125; the library-loan baseline: 5 x 5 x 6 = 150), each executed through [execute](/symbols/application/runtime/execute.md) in the sandbox from [SandboxFactory](/symbols/application/ports/SandboxFactory.md) and compared with an expected outcome read from the model's transition table and the pack's fixture directory (active, role, assignment guard, typed effect counts).
 
-**Honest limits.** The oracle is hand-written by the same author as the runtime and shares the policy requirements: it is not an independent oracle. The cells are one-step experiments, not a theorem about arbitrary histories. A sandbox observes transaction semantics, not crash durability. See [Bounded runtime matrix](/verification/integration-test.md) and acceptance [AC12](/requirements/ac12.md).
+**Honest limits.** The expectation is computed separately from the runtime's guard evaluation but reads the same model and pack: it checks the runtime against the declared table, not against an independently derived policy. The cells are one-step experiments, not a theorem about arbitrary histories. A sandbox observes transaction semantics, not crash durability. See [Bounded runtime matrix](/verification/integration-test.md) and acceptance [AC12](/requirements/ac12.md).
 
 <!-- okf:generated:begin links -->
 ## Depends on

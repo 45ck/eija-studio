@@ -16,7 +16,12 @@ sources:
   hash_method: ast-v2
   sha256: aa2469b554f5c4a5bd365235abc8161b7bd6b055670a8fd333d549bb766adc40
 description_override: Raises DomainError POLICY_BLOCKED when check_policy reports any finding; called before every model is executed or transformed.
-notes_baseline: 06a0ec38a91fec12d3659ecfe95795d1e45a35576c83ee73e86b8dbe5a2f4276
+notes_baseline: d66cf47bd6fa859d683cfe1f3136af735b84b123a211c9575bdb61e1ad22da79
+verified:
+- by: process:eija-wbs-1.3-agent
+  at: '2026-09-29T08:20:47Z'
+  notes_sha256: 312b0eeb38c5cfced74e46d324621d279dcf1de42e83f930ffdb3934cf837adb
+  sources_sha256: d66cf47bd6fa859d683cfe1f3136af735b84b123a211c9575bdb61e1ad22da79
 ---
 
 # domain.policy.ensure_policy
@@ -37,7 +42,7 @@ _The source carries no docstring._
 
 ## Notes
 
-The fail-closed wrapper: [runtime.execute](/symbols/application/runtime/execute.md), [runtime.initialise](/symbols/application/runtime/initialise.md) and [apply_transaction](/symbols/domain/policy/apply_transaction.md) all call it first, so an out-of-policy model cannot be previewed or run even if a caller skipped verification. The message lists the sorted finding codes from [check_policy](/symbols/domain/policy/check_policy.md).
+The fail-closed wrapper: [runtime.execute](/symbols/application/runtime/execute.md), [runtime.initialise](/symbols/application/runtime/initialise.md) and `apply_transactions` all call it, so an out-of-policy model cannot be previewed, run or produced by an edit even if a caller skipped verification. The message lists the sorted finding codes from [check_policy](/symbols/domain/policy/check_policy.md); `details` carries the codes and the law/element refs.
 
 <!-- okf:generated:begin links -->
 ## Depends on
@@ -52,5 +57,5 @@ The fail-closed wrapper: [runtime.execute](/symbols/application/runtime/execute.
 
 * [application.runtime.execute](/symbols/application/runtime/execute.md) - `def execute(session: UnitOfWork, case_id: str, model: Workflow, command: ExecuteCommand, *, fault: Callable[[…` in `application/runtime`.
 * [application.runtime.initialise](/symbols/application/runtime/initialise.md) - `def initialise(session: UnitOfWork, case_id: str, model: Workflow, *, state: str | None=None, pack: Pack | No…` in `application/runtime`.
-* [domain.policy.apply_transaction](/symbols/domain/policy/apply_transaction.md) - Legacy closed vocabulary (two kinds), kept until the open vocabulary of WBS 1.3 replaces it: the recommendation meaning of the default pack and a rejection-sou…
+* [domain.policy.apply_transactions](/symbols/domain/policy/apply_transactions.md) - Apply an edit sequence as one change: the start must conform, the result must conform (intermediate steps need only be coherent workflows).
 <!-- okf:generated:end links -->
