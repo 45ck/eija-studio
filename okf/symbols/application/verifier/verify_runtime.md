@@ -16,7 +16,12 @@ sources:
   hash_method: ast-v2
   sha256: 541a56ce7ed40c5a24b78449b9ec97e2f5206a88810cac4227f9c6703eb045d3
 description_override: Runs the declared actor x state x action matrix against the real runtime in a disposable sandbox and returns the artifact a receipt is built from.
-notes_baseline: 56070df7c7371416eeaab221f951faf9f48dce8b5239766c8b592b85a1ffbec2
+notes_baseline: 69b11e45b44825932c35593230a3bd5de4720cdfec8912cdebfed5959d931fdb
+verified:
+- by: process:claude-code-integration-phase0
+  at: '2026-09-29T04:30:00Z'
+  notes_sha256: c279d71ea83dd758ba400cd80b60beab9840befee12261208b61a9114f87b078
+  sources_sha256: 69b11e45b44825932c35593230a3bd5de4720cdfec8912cdebfed5959d931fdb
 ---
 
 # application.verifier.verify_runtime

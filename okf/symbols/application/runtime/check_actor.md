@@ -16,7 +16,12 @@ sources:
   hash_method: ast-v2
   sha256: ce8cdbafa118c1fd015da3af28de070c1784658e205dd28179f6c4f2c8e985c3
 description_override: Denies a command unless the trusted actor is active, holds the transition's role and, where guarded, is assigned.
-notes_baseline: d55ffbf9987829aebc45beaec5e74faa8d397a4c675df42d407517a92d77dbc1
+notes_baseline: 033190fd6ffa84acfb1b881c9e228a845363fb71a941ae1a9aa2d6e27a233d0a
+verified:
+- by: process:claude-code-integration-phase0
+  at: '2026-09-29T04:30:00Z'
+  notes_sha256: 1c60da5093ed499a052bd060b18bcb937e9e73f4b73c18156eefa56fcd5d5e98
+  sources_sha256: 033190fd6ffa84acfb1b881c9e228a845363fb71a941ae1a9aa2d6e27a233d0a
 ---
 
 # application.runtime.check_actor

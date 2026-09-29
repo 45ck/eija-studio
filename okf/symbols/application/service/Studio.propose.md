@@ -16,7 +16,12 @@ sources:
   hash_method: ast-v2
   sha256: 4c3ea304a74de099b9a5f48ac5bd257f517a966c53af0d3328c613a6ea69b891
 description_override: Asks the configured provider for an untrusted interpretation and records the run; networked providers need startup enablement and explicit consent.
-notes_baseline: ebf9eb94269ceae96303676ef0cc188001cf6b237e44e4d49bf68fcba6a1a707
+notes_baseline: 5f16b9c69b6f03d1db68d7b7ae5194963849d2d8479a170b56dc0c83febfb927
+verified:
+- by: process:claude-code-integration-phase0
+  at: '2026-09-29T04:30:00Z'
+  notes_sha256: 9eaed967eadbbad9e46e1dc21c81f14dd4ab9fab4ef1b40dd4b567b578051604
+  sources_sha256: 5f16b9c69b6f03d1db68d7b7ae5194963849d2d8479a170b56dc0c83febfb927
 ---
 
 # application.service.Studio.propose

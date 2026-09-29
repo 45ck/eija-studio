@@ -16,7 +16,12 @@ sources:
   hash_method: ast-v2
   sha256: a8cc32d53c5e29e6be91371ec8368d01bcc0df599fa52be5b1038836497a461f
 description_override: Creates an isolated preview instance bound to a model hash at version 0, after the policy check.
-notes_baseline: ce539a6168df599a2e54613d838ab9a12be1a7f1914ba18222c956820d235f84
+notes_baseline: a7fb3056b1f349861bc302e97cb8f880ccd73a1cfce96d0f7da8bf1651c0a2e6
+verified:
+- by: process:claude-code-integration-phase0
+  at: '2026-09-29T04:30:00Z'
+  notes_sha256: 9469f61f318d2fb0871f23aed6c62eedb90c39d4811dc8c723af165ef60ba35c
+  sources_sha256: a7fb3056b1f349861bc302e97cb8f880ccd73a1cfce96d0f7da8bf1651c0a2e6
 ---
 
 # application.runtime.initialise

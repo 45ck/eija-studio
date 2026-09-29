@@ -16,7 +16,12 @@ sources:
   hash_method: ast-v2
   sha256: 7ad71b12b551b1bcdf5e1f9ac639ebd499188cfd53a29a332adbd50033cfce06
 description_override: Combines authenticated receipts into one status; an authentic pass and an authentic fail give CONFLICT, not an average.
-notes_baseline: f30182e543f20cf506d782e72e776b11de16043b01250edb4896fdfc8ba9a3ae
+notes_baseline: b8a8fdd5d0e2958c2c56cfad77c074a613cd474691a357f1bdde562231151364
+verified:
+- by: process:claude-code-integration-phase0
+  at: '2026-09-29T04:30:00Z'
+  notes_sha256: 1fcfb922ee02a5414d10244dd7f04f90758697ffd0ea66e688c0f4de3aaf3cf9
+  sources_sha256: b8a8fdd5d0e2958c2c56cfad77c074a613cd474691a357f1bdde562231151364
 ---
 
 # domain.evidence.aggregate_status
@@ -37,7 +42,7 @@ _The source carries no docstring._
 
 ## Notes
 
-Unauthenticated receipts count as `FAIL`. `STALE` is reported only when nothing current passed or failed. Human understanding is never derived here: it stays `UNKNOWN`.
+Unauthenticated receipts count as `FAIL`. An authenticated `PASS` and a `FAIL` together are `CONFLICT`, never averaged (see `combine`). `STALE` (then `NOT_RUN`, then `UNKNOWN`) is reported only when nothing current passed or failed. Human understanding is never derived here: it stays `UNKNOWN`.
 
 <!-- okf:generated:begin links -->
 ## Depends on

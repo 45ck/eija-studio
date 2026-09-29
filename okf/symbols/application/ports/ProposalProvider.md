@@ -16,7 +16,12 @@ sources:
   hash_method: ast-sig-v1
   sha256: e729e5f4017c0f25ad40c1fdebf2e894ffc2dc24d665e4b063836c10c9e215e9
 description_override: 'The only door for AI: a provider returns an untrusted Proposal and cannot select meaning, approve or apply.'
-notes_baseline: fd2f65a2bd34dd7d60067a858176f484a7fc26181909502839221baa432ee81a
+notes_baseline: 36b11ff444e878bc972d7433aed15158e16577e0a9a981098b004b464f236a4d
+verified:
+- by: process:claude-code-integration-phase0
+  at: '2026-09-29T04:30:00Z'
+  notes_sha256: 26c06fa8143628e68479b67d4d740bdde46473133f5dd061bae5a4743b830168
+  sources_sha256: 36b11ff444e878bc972d7433aed15158e16577e0a9a981098b004b464f236a4d
 ---
 
 # application.ports.ProposalProvider
@@ -51,7 +56,7 @@ Structural interface implemented by adapters; not a class to instantiate.
 
 ## Notes
 
-Implemented by the offline, OpenRouter and Codex adapters in [adapters.providers](/modules/adapters/providers.md). Networked providers additionally need `--allow-network` and per-request consent.
+Implemented by the adapters in the `src/eija_studio/adapters/providers/` package: offline, OpenRouter, Anthropic API, and the CLI providers Claude Code, Codex, Gemini and OpenCode. Networked providers additionally need `--allow-network` and per-request consent.
 
 <!-- okf:generated:begin links -->
 ## Depends on

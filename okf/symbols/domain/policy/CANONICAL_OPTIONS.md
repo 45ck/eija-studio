@@ -16,7 +16,12 @@ sources:
   hash_method: ast-v2
   sha256: d59b69032ab57f4e780e37f7f4a2b69969e74901123ed198008d8f4ccb89b660
 description_override: The four canonical interpretations a provider may propose; only recommend_only is supported.
-notes_baseline: e1f3a3dd15801ebdd34ea013cf87f3fede4c8f973b0913e2d00f1e0a1d287d24
+notes_baseline: bba1e12981ef068bdeb8e770298e1c5ee7312b83b1c0d6e3298a198ab3aba7a7
+verified:
+- by: process:claude-code-integration-phase0
+  at: '2026-09-29T04:30:00Z'
+  notes_sha256: 3c0ab625dc99074e639d148f6f2f81ad3a24dc252c702288bd377cc0e1039eca
+  sources_sha256: bba1e12981ef068bdeb8e770298e1c5ee7312b83b1c0d6e3298a198ab3aba7a7
 ---
 
 # domain.policy.CANONICAL_OPTIONS

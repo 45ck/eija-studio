@@ -16,7 +16,12 @@ sources:
   hash_method: ast-v2
   sha256: 9c9af5c81feca0582ccd012df03b49bb7497977805f6a11f59db9c087047957b
 description_override: Applies an approved candidate to the local baseline only if an eligible, authentic, exact-subject decision exists.
-notes_baseline: 43b77a6040925f386b0ccd8b5924d0609b2e34ba29a20b9cb683ae28a2501452
+notes_baseline: 227e5a988200c87eff573195eafe8d2a5f3ff1712b64f8326495d8950a1911a3
+verified:
+- by: process:claude-code-integration-phase0
+  at: '2026-09-29T04:30:00Z'
+  notes_sha256: 54d1699727ddc6215c45a311cfd5ca0d7b2baec089d1da3d52e339a74175fd64
+  sources_sha256: 227e5a988200c87eff573195eafe8d2a5f3ff1712b64f8326495d8950a1911a3
 ---
 
 # application.service.Studio.apply

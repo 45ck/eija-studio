@@ -16,7 +16,12 @@ sources:
   hash_method: ast-v2
   sha256: 095568eca654b5f5bdd12df6d9ae9b8a7275095ffe12303cfa6cab1a599937af
 description_override: 'Executes one command against a preview instance: authority is checked before replay, versions are compare-and-swap, and audit and outbox commit with the state change.'
-notes_baseline: 529d0c7db423344929dc3162b6822d7f092436d06112a3319b5c38851104f844
+notes_baseline: 916058b8d6b5dee1c03f0f144b91b10a2bed759ff5647993b8d3aceb0f4649a2
+verified:
+- by: process:claude-code-integration-phase0
+  at: '2026-09-29T04:30:00Z'
+  notes_sha256: 74d191e8403a93cba1b318cdf280ab7320daa213ed6f023aedf0a9a09986ae68
+  sources_sha256: 916058b8d6b5dee1c03f0f144b91b10a2bed759ff5647993b8d3aceb0f4649a2
 ---
 
 # application.runtime.execute

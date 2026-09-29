@@ -16,7 +16,12 @@ sources:
   hash_method: ast-sig-v1
   sha256: 000e4f2582dbd14bcba5851ae3e3e3b76e09f62af8532c945821e32d7896ac58
 description_override: Aggregate linking one request to its interpretations, chosen meaning, baseline, candidate, transactions, receipts and decision.
-notes_baseline: e5d1c0fc9a15557a6db9b580b3e19cff6b4b45293fdcfa3f67e0e0e16b15c02f
+notes_baseline: 96d50b233b1935efee7ad78cd377dd0bf8e854185472d6e0780c79975a30be80
+verified:
+- by: process:claude-code-integration-phase0
+  at: '2026-09-29T04:30:00Z'
+  notes_sha256: 7cfa996320ebcd8dc82a47a1193aae8a98578009b6f86c73f2a102ee4d7770ab
+  sources_sha256: 96d50b233b1935efee7ad78cd377dd0bf8e854185472d6e0780c79975a30be80
 ---
 
 # domain.change_case.ChangeCase

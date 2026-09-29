@@ -14,7 +14,12 @@ sources:
   title: domain/policy.py
   hash_method: ast-api-v1
   sha256: 3b1e30bf12b1ef8587e24a64282b438fba3d8e4506249949386b960e85e5cb53
-notes_baseline: 239c1b23ae46eda77098545f8f38e480e797590bfb2252244316fe4b47a387bd
+notes_baseline: 846587b399858da9ddff4c9cf8f14cc4dd14141d71ee84a7a459f9e193ccff8e
+verified:
+- by: process:claude-code-integration-phase0
+  at: '2026-09-29T04:30:00Z'
+  notes_sha256: 015301b776bfafc8613f1e1dcc88e29b58709099fa0383976cda9afe30e3e044
+  sources_sha256: 846587b399858da9ddff4c9cf8f14cc4dd14141d71ee84a7a459f9e193ccff8e
 ---
 
 # domain.policy

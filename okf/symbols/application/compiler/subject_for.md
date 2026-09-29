@@ -16,7 +16,12 @@ sources:
   hash_method: ast-v2
   sha256: b52c21f383d1c3adc66e2e2da74719aae74f88488bfaf5aaa5d952ec03b98c48
 description_override: 'Builds the exact review subject: implementation, policy, environment and harness identity plus semantic and presentation hashes.'
-notes_baseline: 17dd0240f2faff1218d76025bf6f7d3f864379d7a998b060869afbccd2366813
+notes_baseline: 05de6aade3da3f0e1e3abc9b1a64954bd48617c5a079bdb18b6263aa11d43060
+verified:
+- by: process:claude-code-integration-phase0
+  at: '2026-09-29T04:30:00Z'
+  notes_sha256: 1fcbf6a11516a651dcea03000293a0a66de1472fdc75bb4ed70b6725c114dc64
+  sources_sha256: 05de6aade3da3f0e1e3abc9b1a64954bd48617c5a079bdb18b6263aa11d43060
 ---
 
 # application.compiler.subject_for

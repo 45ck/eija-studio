@@ -16,7 +16,12 @@ sources:
   hash_method: ast-v2
   sha256: 7884aba375c306bef2f6a0b867eed8473432e57ac89118516cb87b56cfda1e30
 description_override: Records the owner's explicit choice of one supported interpretation and derives the candidate workflow.
-notes_baseline: 94b71cd4e9f2946193b8bc0c926ce7b9f9d1d17f61f4afee9b26b7b2b1461de5
+notes_baseline: 24503fadd70f4c9f51e66b9e8a8697fa6f0f3dc48588ca733c3e341e13381369
+verified:
+- by: process:claude-code-integration-phase0
+  at: '2026-09-29T04:30:00Z'
+  notes_sha256: 3fd1dacbb7883b756008624e1ebb726f609f24a346667396ac4be9cf24662511
+  sources_sha256: 24503fadd70f4c9f51e66b9e8a8697fa6f0f3dc48588ca733c3e341e13381369
 ---
 
 # application.service.Studio.select

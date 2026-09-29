@@ -16,7 +16,12 @@ sources:
   hash_method: ast-v2
   sha256: f6cb40b5202c1d28af2c8c72779e3f91e49f7fa65ed86e36b56d7671fa607849
 description_override: Fixed-point, cycle-safe reachability over a dependency graph; a budget yields complete=false and an explicit frontier, never a silent cap.
-notes_baseline: e4cf8f1ff509568b6cebd4f543f7e17505a234493ab0c9f4ffd3788d7d2bfe55
+notes_baseline: 36c3602e003f288f9fffa19b2d2afbbcb42c5f0be80d4506642e7842c755a354
+verified:
+- by: process:claude-code-integration-phase0
+  at: '2026-09-29T04:30:00Z'
+  notes_sha256: 48f905dc561806a65a255bdf1d419cefc1cbf94f1cdd982de9ae6c02a7f818d9
+  sources_sha256: 36c3602e003f288f9fffa19b2d2afbbcb42c5f0be80d4506642e7842c755a354
 ---
 
 # domain.impact.closure

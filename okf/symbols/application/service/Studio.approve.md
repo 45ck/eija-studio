@@ -16,7 +16,12 @@ sources:
   hash_method: ast-v2
   sha256: 6af8efea6c1f5cef2fd4499fc6f1497020e2d422bb12eff8040185f669ae231d
 description_override: Seals a local-owner acknowledgement of the exact subject after eligibility, matching subject hash, acknowledged unknowns and correct answers.
-notes_baseline: 0dd08f9d302d891992e32ff8449d0cd495edb04086ece4fa90528f747fdd53c7
+notes_baseline: 7264410159eb2ed16e2583b0f1a8cfa3a7db072c2b1f0632d96f3f8d16be94ee
+verified:
+- by: process:claude-code-integration-phase0
+  at: '2026-09-29T04:30:00Z'
+  notes_sha256: ba937fc8341dae9b8cbe5125142ef8b9e647472b12d1456ac0835ee3269a0879
+  sources_sha256: 7264410159eb2ed16e2583b0f1a8cfa3a7db072c2b1f0632d96f3f8d16be94ee
 ---
 
 # application.service.Studio.approve

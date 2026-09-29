@@ -16,7 +16,12 @@ sources:
   hash_method: ast-v2
   sha256: c587d997067425b2f597197e0d865f58d22e4af09c199f766262b21b8d4141e1
 description_override: 'Computes the review packet: subject, blockers, technical claims, impact, projections and critical questions for a Change Case.'
-notes_baseline: 6c1812fecd4c4226b95e23ee869102974b29321a822490849a6b5a5ac453db8e
+notes_baseline: 391b1f844ea4320be4abb9994678cd8d72f7bfb9563e2d4e99a7691f8ae9a7f0
+verified:
+- by: process:claude-code-integration-phase0
+  at: '2026-09-29T04:30:00Z'
+  notes_sha256: 2ff446bce73f01347f890a6fe117bbdaaf5ef2e4ea52c60224d7d0cd87941daa
+  sources_sha256: 391b1f844ea4320be4abb9994678cd8d72f7bfb9563e2d4e99a7691f8ae9a7f0
 ---
 
 # application.compiler.compile_case
@@ -37,7 +42,7 @@ _The source carries no docstring._
 
 ## Notes
 
-Eligibility is computed, never stored: blockers come from policy findings, source-fixture status, impact completeness, receipt status, stale baseline, scope and closed cases. `human_understanding` is always `UNKNOWN`. See [Review Packet](/language/review-packet.md) and [Local Decision](/language/local-decision.md).
+Eligibility is computed, never stored: blockers come from policy findings, source-fixture status, impact completeness, receipt status, stale baseline, scope and closed cases. Formal evidence per kind (ADR-0145) is part of the packet: a counterexample (`FAIL` or `CONFLICT`) blocks, while `UNKNOWN` and `NOT_RUN` never block and are never rounded up to `PASS`. `human_understanding` is always `UNKNOWN`. See [Review Packet](/language/review-packet.md) and [Local Decision](/language/local-decision.md).
 
 <!-- okf:generated:begin links -->
 ## Depends on

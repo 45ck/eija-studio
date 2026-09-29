@@ -16,7 +16,12 @@ sources:
   hash_method: ast-v2
   sha256: bb6f442458c3a35dfda81ac33ed4835ef6b26e20674ad78771e33ebd3225af47
 description_override: Recomputes a receipt's applicability from its raw observations; a supplied green status is never trusted.
-notes_baseline: 53de9f8d1cf80a2eb58d826d924d74e54ecd54718a0205e1a67ef10b2cbfb9d5
+notes_baseline: 9d21dc847e586dc822b77c20074aaefc587246dcef1ac109f6fd40c1fd79298c
+verified:
+- by: process:claude-code-integration-phase0
+  at: '2026-09-29T04:30:00Z'
+  notes_sha256: 4813aef1ec692d5ab82451d4249853fe1ff452e43126c16c8131e23223290019
+  sources_sha256: 9d21dc847e586dc822b77c20074aaefc587246dcef1ac109f6fd40c1fd79298c
 ---
 
 # domain.evidence.assess_receipt
@@ -37,7 +42,7 @@ _The source carries no docstring._
 
 ## Notes
 
-Only the claim `runtime_matrix` with kind `integration_test` can be established here; any other claim or kind is `UNKNOWN`. The function returns:
+The claim `runtime_matrix` with kind `integration_test` is assessed by the rules below. Any other claim and kind is delegated to `assess_formal_receipt`, which has an admissibility rule only for the kinds registered in `evidence_kinds` (ADR-0145: `bend_proof`, `smt_proof`, `bounded_model_check`); an unregistered claim or kind is `UNKNOWN`. For the runtime matrix the function returns:
 
 * `STALE` when any technical dimension of the receipt subject differs from the current subject ([TECHNICAL_DIMENSIONS](/symbols/domain/evidence/TECHNICAL_DIMENSIONS.md)),
 * `FAIL` when the artifact hash, matrix shape, duplicate or missing cells, or observation types are wrong,

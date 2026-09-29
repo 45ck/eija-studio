@@ -1,7 +1,7 @@
 ---
 type: Quality Gate
 title: nox -s metrics
-description: Structural metrics (Martin, complexity, test inventory), structural budgets, dashboard renders from its snapshot.
+description: Collect metrics (quick profile), gate structural budgets, verify the dashboard is not stale.
 resource: repo://quality/sessions/metrics.py#metrics
 tags:
 - gate
@@ -13,8 +13,8 @@ sources:
 - resource: repo://quality/sessions/metrics.py#metrics
   title: metrics.py
   hash_method: ast-v2
-  sha256: d87bd7dce45b2bde5d10e1d87f10009842d6aea8e59952b6e62acd82df85e0b7
-notes_baseline: fccb354082c070e16554490cd7798447ff2af244b667f9ce54675aa1c1dbe0ce
+  sha256: faa37067e19294004376baa09704a14c88915a7487aa469a2dec0db03d239570
+notes_baseline: b31e9142f965e769a607a125b5f9d32210a5410276dd9193847e500b1c66bd1f
 ---
 
 # nox -s metrics
@@ -30,7 +30,7 @@ notes_baseline: fccb354082c070e16554490cd7798447ff2af244b667f9ce54675aa1c1dbe0ce
 ## Docstring
 
 ~~~text
-Structural metrics (Martin, complexity, test inventory), structural budgets, dashboard renders from its snapshot.
+Collect metrics (quick profile), gate structural budgets, verify the dashboard is not stale.
 ~~~
 
 Tiers: `fast` (seconds, pre-commit), `full` (the PR gate) and `release` (maintainer evidence; may need Docker, Java or Chromium and reports `NOT_RUN`, never `PASS`, without them).

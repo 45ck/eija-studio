@@ -1,7 +1,7 @@
 ---
 type: Quality Gate
 title: nox -s metrics_report
-description: 'Release evidence: coverage export, full-profile measurement (median and IQR), all budgets, dashboard in reports/metrics/.'
+description: 'Release evidence: coverage run, full-profile measurement, all budgets, fresh snapshot, dashboard in reports/metrics/.'
 resource: repo://quality/sessions/metrics.py#metrics_report
 tags:
 - gate
@@ -13,8 +13,8 @@ sources:
 - resource: repo://quality/sessions/metrics.py#metrics_report
   title: metrics.py
   hash_method: ast-v2
-  sha256: 4f3d1996a5e6f1ffa6ed13b5934397ca4d544d173eb54c2255970670311663e4
-notes_baseline: 7287c8e200feafea5a17e65dd9bfefccb00e18abfac75bfdfd5be9be466c0b19
+  sha256: ed901da7b3bd4b628b9de4c32fd83d453d29135be9bd37fc8a2a2ef0e7dc9afa
+notes_baseline: d93ed3d3a7f792ca0d326710ae2d9edeb841562f8ed65373bb2e6dbfc1d6dcf4
 ---
 
 # nox -s metrics_report
@@ -30,7 +30,7 @@ notes_baseline: 7287c8e200feafea5a17e65dd9bfefccb00e18abfac75bfdfd5be9be466c0b19
 ## Docstring
 
 ~~~text
-Release evidence: coverage export, full-profile measurement (median and IQR), all budgets, dashboard in reports/metrics/.
+Release evidence: coverage run, full-profile measurement, all budgets, fresh snapshot, dashboard in reports/metrics/.
 ~~~
 
 Tiers: `fast` (seconds, pre-commit), `full` (the PR gate) and `release` (maintainer evidence; may need Docker, Java or Chromium and reports `NOT_RUN`, never `PASS`, without them).

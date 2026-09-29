@@ -16,7 +16,12 @@ sources:
   hash_method: ast-v2
   sha256: 86729990ee9638c0d5e0ad28d28d3222069d911beadfbef5a677e4d6baa3855f
 description_override: Maps the changed actions between two workflows onto the rule, runtime, state-view, journey, obligation, receipt, review-packet and decision chain and closes over it.
-notes_baseline: 0aed33da6b73a9f7d9324d110608d99a2f99a5bbd9faec66aae354971bc40a4d
+notes_baseline: 1fa7e60b0804d292ba91963007e02ae01a913013daf3257ce6829defb409fc0f
+verified:
+- by: process:claude-code-integration-phase0
+  at: '2026-09-29T04:30:00Z'
+  notes_sha256: 22a952a5eb7bdf0d09c283bd2d21b88a1eff164aff7e1a9bbc1f5d9d217991f8
+  sources_sha256: 1fa7e60b0804d292ba91963007e02ae01a913013daf3257ce6829defb409fc0f
 ---
 
 # domain.impact.model_impact

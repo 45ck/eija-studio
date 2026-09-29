@@ -22,7 +22,12 @@ sources:
   title: domain/evidence.aggregate_status
   hash_method: ast-v2
   sha256: 7ad71b12b551b1bcdf5e1f9ac639ebd499188cfd53a29a332adbd50033cfce06
-notes_baseline: 9596bb9166577ea4fb4a82c73069313fe00a61d341b57693892153d13e086a9c
+notes_baseline: 55d322b42a241bacd87634f5b798e2181b00997a7f8632b76ada1eecda97b702
+verified:
+- by: process:claude-code-integration-phase0
+  at: '2026-09-29T04:30:00Z'
+  notes_sha256: 5d21e613989ef49d69d9fecaa45b6ce4586bf651ae92865c6062a5fd79da4db3
+  sources_sha256: 55d322b42a241bacd87634f5b798e2181b00997a7f8632b76ada1eecda97b702
 ---
 
 # Bounded runtime matrix (integration_test)
@@ -51,7 +56,7 @@ Not a proof over arbitrary histories, not an independent oracle (same author), n
 
 ## Notes
 
-The only evidence kind the kernel can currently establish. `ORACLE` and the runtime share an author, and the expected outcome is not fully separate from the model under test (the `Reject` source state and the candidate shape are read from the model, see [verify_runtime](/symbols/application/verifier/verify_runtime.md)), so read a `PASS` as consistency with the written policy under bounded one-step experiments. Human comprehension remains `UNKNOWN`, and `field-use` remains blocked.
+The first evidence kind the kernel could establish; ADR-0145 adds per-kind admissibility for the formal kinds (`bend_proof`, `smt_proof`, `bounded_model_check`), which report `NOT_RUN` when their prerequisite is missing. `ORACLE` and the runtime share an author, and the expected outcome is not fully separate from the model under test (the `Reject` source state and the candidate shape are read from the model, see [verify_runtime](/symbols/application/verifier/verify_runtime.md)), so read a `PASS` as consistency with the written policy under bounded one-step experiments. Human comprehension remains `UNKNOWN`, and `field-use` remains blocked.
 
 <!-- okf:generated:begin links -->
 ## Implemented by

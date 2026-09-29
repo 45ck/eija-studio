@@ -16,7 +16,12 @@ sources:
   hash_method: ast-v2
   sha256: f572a456387fe360c0583269cb7b67fb193b51d7aedde39235904d7518e3168d
 description_override: The three critical questions a local owner must answer correctly before a decision is sealed.
-notes_baseline: 2758810cf1fa8438c38d7f1c311b4324c4d79afcd1161816f4a664a3205bdd29
+notes_baseline: 2f18d658e9ce1c11e6d87ec5caebb432d523c91ee50aafbfaf53b6aaaca37d5a
+verified:
+- by: process:claude-code-integration-phase0
+  at: '2026-09-29T04:30:00Z'
+  notes_sha256: e3922bd5e5107b8ef013a6dfc2d615dcc926e58e63e39302dc77ac131bf7c2ab
+  sources_sha256: 2f18d658e9ce1c11e6d87ec5caebb432d523c91ee50aafbfaf53b6aaaca37d5a
 ---
 
 # domain.policy.meaning_questions

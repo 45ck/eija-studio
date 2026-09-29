@@ -16,7 +16,12 @@ sources:
   hash_method: ast-sig-v1
   sha256: 31ef011814b1d1e414590677a0bca832e8aa0440a533c8ab3fac960464208afa
 description_override: 'The application-owned persistence port: all mutations on it commit together or roll back together.'
-notes_baseline: fd3a5271fb735e4f9da1c9f2edf1ed4d4837ea81814f7678a8505d6a8b8dc10b
+notes_baseline: 1545ec9c17df092b8f153cb805f59c2582f86c8bc012c4bb81cecb62a7e230cf
+verified:
+- by: process:claude-code-integration-phase0
+  at: '2026-09-29T04:30:00Z'
+  notes_sha256: 1bac22a1ccff4b30399a3a52a6ab9d82261992b125aa55337fe6cc7ec9447139
+  sources_sha256: 1545ec9c17df092b8f153cb805f59c2582f86c8bc012c4bb81cecb62a7e230cf
 ---
 
 # application.ports.UnitOfWork

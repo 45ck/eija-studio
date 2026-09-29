@@ -16,7 +16,12 @@ sources:
   hash_method: ast-sig-v1
   sha256: 97daa3703a8b24b448c8b73bc0cf0b3cc09f5c0c3313ff0e1fc2cb3003730100
 description_override: 'The Studio use cases: create, propose, select, edit, verify, approve, apply and execute over a Change Case.'
-notes_baseline: c253c00ce894a71fa8730f819827e739bfadf094d6201ce44462cd2b502a1ae9
+notes_baseline: de7d46763e5f821cd3e3ec357af51a719512db92a36ea21137307c05cc341e97
+verified:
+- by: process:claude-code-integration-phase0
+  at: '2026-09-29T04:30:00Z'
+  notes_sha256: d780f3dd51d7e77169dee305e138faf80bb4360a4c2594b58856017214392bdb
+  sources_sha256: de7d46763e5f821cd3e3ec357af51a719512db92a36ea21137307c05cc341e97
 ---
 
 # application.service.Studio

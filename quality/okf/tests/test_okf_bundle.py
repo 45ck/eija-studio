@@ -25,7 +25,11 @@ CHECK_POLICY = "symbols/domain/policy/check_policy.md"
 
 
 IGNORE = shutil.ignore_patterns("__pycache__", "*.pyc", "resources", "web")
-PARTS = ("src/eija_studio", "docs", "quality", "tests", "scripts", "okf")   # everything the generator reads
+# Everything the generator reads. ADR pages existence-check the files an ADR mentions (`graph/`, `verification/`,
+# `contracts/`, ...), so those trees must be in the copy too or the copy reports links the real repository does not have.
+PARTS = ("src/eija_studio", "docs", "quality", "tests", "scripts", "okf", "graph", "verification", "contracts", "demos", "examples",
+         "evidence", "design", "provenance", ".githooks", ".github", ".claude")
+ROOT_FILES = ("noxfile.py", "AGENTS.md", "pyproject.toml", "README.md", "NOTICE.md", "MANIFEST.json", "CONTRIBUTING.md", "CHANGELOG.md")
 
 
 def _snapshot(root: Path) -> dict[str, bytes]:
@@ -42,7 +46,7 @@ def workspace(tmp_path_factory):
     root = tmp_path_factory.mktemp("okf-work")
     for part in PARTS:
         shutil.copytree(ROOT / part, root / part, ignore=IGNORE)
-    for name in ("noxfile.py", "AGENTS.md", "pyproject.toml"):
+    for name in ROOT_FILES:
         shutil.copy2(ROOT / name, root / name)
     return root, _snapshot(root)
 

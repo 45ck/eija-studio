@@ -16,7 +16,12 @@ sources:
   hash_method: ast-v2
   sha256: cf1a9722ff0fd5db3eaf30cbbe040d99e9e431a40e76e3c427f582c7bc67f444
 description_override: Runs the runtime matrix in a sandbox and stores a sealed receipt; refuses a source that differs from the release fixture.
-notes_baseline: cb447b283609e7331c899eaed3407cebf36e002697082810e06650c5e036b38f
+notes_baseline: 6203f98aec197026c9e5cc2ee8781bc93af1b541464e98684ecfb516bbcc9c3a
+verified:
+- by: process:claude-code-integration-phase0
+  at: '2026-09-29T04:30:00Z'
+  notes_sha256: 56f0ccbab358790d8de0e49cde7f9024d5f5ec3f0263df470c46d9943a65df6a
+  sources_sha256: 6203f98aec197026c9e5cc2ee8781bc93af1b541464e98684ecfb516bbcc9c3a
 ---
 
 # application.service.Studio.verify
@@ -38,7 +43,7 @@ _The source carries no docstring._
 
 ## Notes
 
-Verification clears any current decision and never approves. See [verify_runtime](/symbols/application/verifier/verify_runtime.md) and [Evidence Receipt](/language/evidence-receipt.md).
+Verification clears any current decision and never approves. Besides the runtime receipt it appends the formal-evidence receipts of the configured source (collected outside the transaction; a missing prerequisite is a `NOT_RUN` artifact, never omitted). See [verify_runtime](/symbols/application/verifier/verify_runtime.md) and [Evidence Receipt](/language/evidence-receipt.md).
 
 <!-- okf:generated:begin links -->
 ## Depends on

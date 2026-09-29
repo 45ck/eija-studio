@@ -16,7 +16,12 @@ sources:
   hash_method: ast-v2
   sha256: b6d80e8f3057e0060aadd5e541949b02c21b46c3af4bc058a8d1b3c4662c9a3e
 description_override: Derives rules, state views and journey sentences from the executable transitions, so no view is a second source of truth.
-notes_baseline: a187b983cb2c335437e0848d9a93bf936831085d5404cfa280e880199dcc555b
+notes_baseline: 7202169821e390365e71cc835a35e68ee46944b297bafb9db0508ac4f4e562c4
+verified:
+- by: process:claude-code-integration-phase0
+  at: '2026-09-29T04:30:00Z'
+  notes_sha256: b9653ce09416d0dbaafd0b8269494a5d791cbb023eb9f6052d69ba815b4df895
+  sources_sha256: 7202169821e390365e71cc835a35e68ee46944b297bafb9db0508ac4f4e562c4
 ---
 
 # domain.policy.projections
