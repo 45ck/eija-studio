@@ -41,8 +41,9 @@ def _run_gate(session: nox.Session, report: Path, *args: str) -> None:
 def bend_drift(session: nox.Session) -> None:
     """The committed Bend model equals regeneration from the executable Workflow; laws and proofs pair up."""
     session.run(PYTHON, "verification/bend/bend_generate.py", "--check")
+    session.run(PYTHON, "verification/bend/bend_policy.py")
     session.run(PYTHON, "-m", "pytest", "-q", "tests/test_formal_bend.py",
-                "-k", "deterministic or law_has_a_proof or escape_hatches or docs_name")
+                "-k", "deterministic or law_has_a_proof or escape_hatches or docs_name or kernel_policy or forbidden or reject_source or guard")
 
 
 @nox.session(python=False, tags=["full"])

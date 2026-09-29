@@ -51,13 +51,8 @@ sys.path.insert(0, str(ROOT))  # the repo root, so `verification.bend.*` resolve
 import verification.bend.bend_conformance as conformance  # noqa: E402
 import verification.bend.bend_slicing as slicing  # noqa: E402
 from verification.bend.bend_controls import CONTROLS, Control  # noqa: E402
-from verification.bend.bend_generate import (  # noqa: E402
-    GENERATED_PATH,
-    SLOTS,
-    check_laws_against_policy,
-    default_models,
-    render_main,
-)
+from verification.bend.bend_generate import GENERATED_PATH, SLOTS, default_models, render_main  # noqa: E402
+from verification.bend.bend_policy import check_all as check_policy_consistency  # noqa: E402
 
 DOCKERFILE = HERE / "Dockerfile"
 # The tag carries the Dockerfile hash: worktrees with different Dockerfiles must not overwrite one shared tag.
@@ -261,7 +256,7 @@ def run_proof(checker: Checker, *, attribute: bool = True) -> dict:
     main, laws, proof = (p.read_text(encoding="utf-8") for p in (GENERATED_PATH, HERE / "LAWS.bend", HERE / "PROOF.bend"))
     if main != render_main(default_models()):
         raise RuntimeError("main.bend is stale: run python verification/bend/bend_generate.py")
-    check_laws_against_policy(laws, default_models())
+    check_policy_consistency()  # laws and engine template vs the kernel policy: a stale law must not pass silently
     unproved = sorted(set(slicing.law_names(laws)) - slicing.proof_names(proof))
     verdicts, _ = prove_directory(checker, "committed", main, laws, proof, {}, attribute=attribute)
     comments = slicing.law_comments(laws)

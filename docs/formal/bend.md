@@ -39,8 +39,8 @@ The two sequence laws also quantify over every command sequence of any length. N
 
 Laws 7 and 8 restate two pieces of kernel policy by hand: the forbidden-effect list (`policy.FORBIDDEN`) and, per
 model, the state a rejection leaves (`reject_source`). They are spec inputs written in `LAWS.bend`, not generated.
-`bend_generate.py --check` (the `bend_drift` session) and the proof gate compare them with `policy.FORBIDDEN` and the
-workflows' Reject transitions and fail on a difference, so a new forbidden effect cannot leave law 8 silently out of
+`verification/bend/bend_policy.py` (run by the `bend_drift` session and by the proof gate) compares them with
+`policy.FORBIDDEN` and the workflows' Reject transitions and fails on a difference, so a new forbidden effect cannot leave law 8 silently out of
 date (a wildcard would have treated it as allowed). What the check does not do is decide whether the law is the right law.
 
 Law 4 uses a run monitor: a run records whether it was ever in `Recommended`, and the law says a run in
@@ -70,6 +70,7 @@ the first time and after any Dockerfile change. Without the image the gate repor
 
 ```bash
 python verification/bend/bend_generate.py --check          # fast: committed main.bend == regeneration
+python verification/bend/bend_policy.py                     # fast: LAWS.bend and the engine template agree with the kernel policy
 python verification/bend/bend_runner.py --build             # complete gate; writes reports/formal/bend.json
 python verification/bend/bend_runner.py --quick             # skip per-law attribution of the controls
 nox -s bend_drift                                           # fast tier
@@ -120,9 +121,10 @@ sha256 of `main.bend`, `LAWS.bend`, `PROOF.bend` and the generator; the Bend ver
 platform; the full `bend PROOF.bend --verdict` result and, for each law, a result from running that law alone
 (a slice of `LAWS.bend`/`PROOF.bend`) under `--verdict`; every negative control; the conformance results; and the
 limits below. A snapshot of a complete run is committed as `verification/bend/evidence/bend.json`. The snapshot is
-unsigned: tests check that its recorded hashes match the committed files (including the Dockerfile and the
-generator), not that a run produced it. It is reproducible with `bend_runner.py --snapshot`, and an independent full
-run matched it apart from the platform field.
+unsigned: tests check that its recorded hashes match the committed files (`main.bend`, `LAWS.bend`, `PROOF.bend`; the
+generator hash is checked by the evidence-kind staleness rule), not that a run produced it. It is reproducible with
+`bend_runner.py --snapshot`. It predates the review fixes to the runner and Dockerfile (per-law `--verdict`, archive pin,
+Dockerfile-hash image tag): a strict xfail in `tests/test_formal_bend.py` records that until a Docker host refreshes it.
 
 ### Negative controls (the trust anchor)
 
@@ -176,7 +178,7 @@ denied; reject then revise; baseline approval) are run through both. The witness
 * **The guard semantics of the engine.** The generator derives each rule's role, source, target, effects and whether
   it needs the assigned guard from the Workflow. The conjunction that combines them (`permits`) is a fixed,
   hand-written template that equals the runtime's `check_actor` today (conformance agrees on 225 cells). The kernel's
-  guard vocabulary is closed and generation refuses a guard the template does not model, but a change to what a
+  guard vocabulary is closed and the drift gate refuses a guard the template does not model, but a change to what a
   guard means still needs a template edit and review.
 
 Nothing in this lane edits the kernel, stamps the release fixture or weakens a policy to make a proof pass.

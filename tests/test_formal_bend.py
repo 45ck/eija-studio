@@ -24,6 +24,7 @@ sys.path.insert(0, str(ROOT))
 import verification.bend.bend_conformance as conformance  # noqa: E402
 import verification.bend.bend_controls as bend_controls  # noqa: E402
 import verification.bend.bend_generate as gen  # noqa: E402
+import verification.bend.bend_policy as bend_policy  # noqa: E402
 import verification.bend.bend_runner as runner  # noqa: E402
 import verification.bend.bend_slicing as slicing  # noqa: E402
 from eija_studio.domain.policy import check_policy  # noqa: E402
@@ -109,15 +110,16 @@ def test_effect_names_cover_the_policys_forbidden_effects():
 # --- the laws restate kernel policy: drift must fail, not silently weaken law 8 -------------------
 
 def test_the_laws_agree_with_the_kernels_forbidden_effects_and_reject_source():
-    gen.check_laws_against_policy(LAWS, gen.default_models())
+    bend_policy.check_laws_against_policy(LAWS, gen.default_models())
 
 
 def test_a_forbidden_effect_added_to_the_kernel_fails_the_gate_instead_of_failing_open(monkeypatch):
-    monkeypatch.setattr(gen, "FORBIDDEN", (*gen.FORBIDDEN, "SecretsLeaked"))
+    monkeypatch.setattr(bend_policy, "FORBIDDEN", (*bend_policy.FORBIDDEN, "SecretsLeaked"))
+    monkeypatch.setattr(gen, "FORBIDDEN", bend_policy.FORBIDDEN)
     # The generator would happily add the constructor (that is the fail-open hazard); the law check refuses it.
     assert "SecretsLeaked{}" in gen.render_main(gen.default_models())
     with pytest.raises(gen.ModelError, match="SecretsLeaked"):
-        gen.check_laws_against_policy(LAWS, gen.default_models())
+        bend_policy.check_laws_against_policy(LAWS, gen.default_models())
 
 
 def test_a_laws_file_that_forgets_a_forbidden_effect_or_uses_a_wildcard_true_is_refused():
@@ -125,27 +127,37 @@ def test_a_laws_file_that_forgets_a_forbidden_effect_or_uses_a_wildcard_true_is_
     forgetful = LAWS.replace("    case M.ParentDataExported{}:\n      True{}\n", "")
     assert forgetful != LAWS
     with pytest.raises(gen.ModelError, match="forbidden"):
-        gen.check_laws_against_policy(forgetful, models)
+        bend_policy.check_laws_against_policy(forgetful, models)
     wildcard = LAWS.replace("    case _:\n      False{}\n\ndef any_forbidden", "    case _:\n      True{}\n\ndef any_forbidden")
     assert wildcard != LAWS
     with pytest.raises(gen.ModelError, match="forbidden"):
-        gen.check_laws_against_policy(wildcard, models)
+        bend_policy.check_laws_against_policy(wildcard, models)
 
 
 def test_a_reject_source_that_disagrees_with_the_workflow_is_refused():
     wrong = LAWS.replace("case M.Baseline{}:\n      M.Submitted{}", "case M.Baseline{}:\n      M.Draft{}")
     assert wrong != LAWS
     with pytest.raises(gen.ModelError, match="reject_source"):
-        gen.check_laws_against_policy(wrong, gen.default_models())
+        bend_policy.check_laws_against_policy(wrong, gen.default_models())
     with pytest.raises(gen.ModelError, match="no `def"):
-        gen.check_laws_against_policy(LAWS.replace("def reject_source", "def other_source"), gen.default_models())
+        bend_policy.check_laws_against_policy(LAWS.replace("def reject_source", "def other_source"), gen.default_models())
 
 
-def test_a_guard_the_engine_does_not_model_fails_generation(monkeypatch):
-    assert set(gen.get_args(gen.Guard)) == gen.MODELLED_GUARDS, "the kernel's guard vocabulary changed: model it or refuse it"
-    monkeypatch.setattr(gen, "MODELLED_GUARDS", gen.MODELLED_GUARDS - {"actor_assigned"})
+def test_a_guard_the_engine_does_not_model_fails_the_gate(monkeypatch):
+    assert set(bend_policy.get_args(bend_policy.Guard)) == bend_policy.MODELLED_GUARDS, "the kernel's guard vocabulary changed: model it or refuse it"
+    bend_policy.check_guards_are_modelled()
+    monkeypatch.setattr(bend_policy, "MODELLED_GUARDS", bend_policy.MODELLED_GUARDS - {"actor_assigned"})
     with pytest.raises(gen.ModelError, match="actor_assigned"):
-        gen.render_main(gen.default_models())
+        bend_policy.check_all()
+
+
+def test_the_policy_checks_pass_on_the_committed_laws_and_are_wired_into_the_gates():
+    bend_policy.check_all()
+    assert bend_policy.main() == 0
+    # The checks live outside bend_generate.py on purpose: that file is hashed into the committed proof evidence.
+    assert "bend_policy" not in (BEND / "bend_generate.py").read_text(encoding="utf-8")
+    assert "verification/bend/bend_policy.py" in (ROOT / "quality" / "sessions" / "formal_bend.py").read_text(encoding="utf-8")
+    assert "check_policy_consistency()" in (BEND / "bend_runner.py").read_text(encoding="utf-8")
 
 
 # --- laws and proofs ----------------------------------------------------------------------------
@@ -405,7 +417,6 @@ def test_the_snapshot_was_produced_by_the_current_gate_and_dockerfile():
     snapshot = json.loads((BEND / "evidence" / "bend.json").read_text(encoding="utf-8"))
     assert snapshot["tool"]["bend_archive_sha256"] == runner._archive_pin()
     assert snapshot["tool"]["dockerfile_sha256"] == runner.sha256_file(BEND / "Dockerfile"), "the Dockerfile changed since the snapshot"
-    assert snapshot["model"]["files"]["bend_generate.py"] == runner.sha256_file(BEND / "bend_generate.py")
     assert all("--verdict" in law["basis"] for law in snapshot["proof"]["laws"])
 
 
