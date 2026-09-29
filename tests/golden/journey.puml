@@ -1,0 +1,21 @@
+@startuml
+' eija: workflow: workflow excursion semantic_hash=b26c9af5ae4cd958099956232721a70e73cb7e6efe1b213ff32417829b588e56
+title excursion journeys by role
+left to right direction
+package "Registrar journey" {
+  rectangle "Approved" as n_Registrar__Approved
+  rectangle "Recommended" as n_Registrar__Recommended
+  rectangle "Rejected" as n_Registrar__Rejected
+}
+package "Teacher journey" {
+  rectangle "Draft" as n_Teacher__Draft
+  rectangle "Recommended" as n_Teacher__Recommended
+  rectangle "Rejected" as n_Teacher__Rejected
+  rectangle "Submitted" as n_Teacher__Submitted
+}
+n_Registrar__Recommended -[#57606a]-> n_Registrar__Approved : Approve
+n_Registrar__Recommended -[#57606a]-> n_Registrar__Rejected : Reject
+n_Teacher__Draft -[#57606a]-> n_Teacher__Submitted : Submit
+n_Teacher__Rejected -[#57606a]-> n_Teacher__Draft : Revise
+n_Teacher__Submitted -[#57606a]-> n_Teacher__Recommended : Recommend · assigned
+@enduml

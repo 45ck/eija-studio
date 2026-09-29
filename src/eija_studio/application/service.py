@@ -237,6 +237,12 @@ class Studio:
         receipts = attach_formal(self.formal, base, model, subject, [], self.signer.seal, now(), lambda: uuid4().hex)
         return packet_view(receipts, subject, self.signer.authentic, Context(model.semantic_hash, base.semantic_hash), check_policy(model))
 
+    def workflows(self, case_id: str) -> tuple[Workflow, Workflow | None]:
+        """Baseline and candidate of a case, for read-only projections (diagrams). No authority, no writes."""
+        with self.store.transaction() as u:
+            case = self._case(u, case_id)
+        return case.baseline, case.candidate
+
     def export(self, case_id: str) -> dict[str, Any]:
         content = self.view(case_id)
         return {"format": "eija.change-case.export.v1", "payload_hash": fingerprint(content), "payload": content,

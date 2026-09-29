@@ -1,0 +1,30 @@
+// eija: baseline: workflow excursion semantic_hash=5d3ef3a19c31d956a185b9c5ba4b1b79e651d0356e162436c5c67054d2ad4cdf
+// eija: candidate: workflow excursion semantic_hash=b26c9af5ae4cd958099956232721a70e73cb7e6efe1b213ff32417829b588e56
+digraph "excursion baseline vs candidate" {
+    rankdir=TB;
+    graph [fontname="Helvetica"];
+    node [shape=box, fontname="Helvetica", margin="0.15,0.08"];
+    edge [fontname="Helvetica", fontsize=10];
+    "__start" [shape=point, width=0.15, label=""];
+    "__start" -> "Draft";
+    "__end" [shape=doublecircle, width=0.2, label="", style=filled, fillcolor="#1f2328"];
+    "Approved" [label="Approved", fillcolor="#fff3c4", color="#9a6700", fontcolor="#4a3200", style="rounded,filled"]
+    "Draft" [label="Draft", fillcolor="#f6f8fa", color="#57606a", fontcolor="#1f2328", style="rounded,filled"]
+    "Recommended" [label="Recommended", fillcolor="#d4f4dd", color="#1a7f37", fontcolor="#0b3d1a", style="rounded,filled"]
+    "Rejected" [label="Rejected", fillcolor="#fff3c4", color="#9a6700", fontcolor="#4a3200", style="rounded,filled"]
+    "Submitted" [label="Submitted", fillcolor="#fff3c4", color="#9a6700", fontcolor="#4a3200", style="rounded,filled"]
+    "Draft" -> "Submitted" [color="#57606a", label="Submit · Teacher"]
+    "Recommended" -> "Approved" [color="#1a7f37", label="+ Approve · Registrar"]
+    "Recommended" -> "Rejected" [color="#1a7f37", label="+ Reject · Registrar"]
+    "Rejected" -> "Draft" [color="#57606a", label="Revise · Teacher"]
+    "Submitted" -> "Approved" [color="#cf222e", label="- Approve · Registrar", style="dashed"]
+    "Submitted" -> "Recommended" [color="#1a7f37", label="+ Recommend · Teacher · assigned"]
+    "Submitted" -> "Rejected" [color="#cf222e", label="- Reject · Registrar", style="dashed"]
+    "Approved" -> "__end";
+    subgraph "cluster_legend" { label="Legend"; style=rounded;
+    "legend_added" [label="added by the candidate (+)", fillcolor="#d4f4dd", color="#1a7f37", fontcolor="#0b3d1a", style="rounded,filled"]
+    "legend_removed" [label="removed by the candidate (-)", fillcolor="#ffe0e0", color="#cf222e", fontcolor="#5c0b12", style="rounded,filled,dashed"]
+    "legend_changed" [label="changed (~)", fillcolor="#fff3c4", color="#9a6700", fontcolor="#4a3200", style="rounded,filled"]
+    "legend_same" [label="unchanged", fillcolor="#f6f8fa", color="#57606a", fontcolor="#1f2328", style="rounded,filled"]
+    }
+}

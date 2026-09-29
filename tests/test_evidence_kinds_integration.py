@@ -438,3 +438,21 @@ def test_without_a_formal_source_no_meaning_is_explained(studio):
     case = studio.create("Let teachers sign off excursions.")
     case = studio.propose(case["id"], case["version"])
     assert studio.view(case["id"])["packet"]["blocked_meanings"] == []
+
+
+def test_only_the_negative_controls_of_the_blocking_fault_class_are_offered_as_explanations(studio):
+    unsafe = unsafe_workflow()
+    subject = subject_for(unsafe, {}, harness_identity())
+    receipts = attached(FormalReports().collect(BASE, unsafe), subject, studio.signer)
+    packet = compile_case(_case_with(studio, receipts, unsafe), harness_identity(), studio.signer.authentic, 0)
+    bend = [x["control"] for x in packet["explanations"] if x["source"] == "bend_proof negative control"]
+    assert bend == ["teacher_final_approval"]  # not the five other seeded faults, which this candidate does not have
+
+
+def test_blocked_meanings_disappear_once_a_supported_meaning_is_selected(studio):
+    studio.formal = FormalReports()
+    case = studio.create("Let teachers sign off excursions.")
+    case = studio.propose(case["id"], case["version"])
+    assert studio.view(case["id"])["packet"]["blocked_meanings"]
+    case = studio.select(case["id"], case["version"], "recommend_only", OWNER)
+    assert studio.view(case["id"])["packet"]["blocked_meanings"] == []

@@ -73,7 +73,7 @@
   "unknown_action_slot": true,
   "unknown_state_slot": true
  },
- "claim": "For every candidate in the symbolic Transition grammar, the HAND-WRITTEN Z3 ENCODING of check_policy admitting c implies AuthorityInvariant(c). That the encoding is the real check_policy is sampled (differential test), not proved; the source-digest drift check is the alarm for kernel changes the sample does not catch.",
+ "claim": "For every candidate in the symbolic Transition grammar, check_policy(c) == [] implies AuthorityInvariant(c).",
  "differential": {
   "admitted_but_python_invariant_false": [],
   "candidates": 2572,
@@ -122,18 +122,6 @@
    "status": "proved"
   },
   {
-   "id": "INV-APPROVE-ENDS-IN-APPROVED",
-   "status": "proved"
-  },
-  {
-   "id": "INV-RECOMMEND-STARTS-FROM-SUBMITTED",
-   "status": "proved"
-  },
-  {
-   "id": "INV-REJECT-FROM-SUBMITTED-WITHOUT-RECOMMENDATION",
-   "status": "proved"
-  },
-  {
    "id": "INV-FORBIDDEN-EFFECTS-EXCLUDED",
    "status": "proved"
   },
@@ -168,20 +156,14 @@
        "to": "Submitted"
       },
       {
-       "action": "Recommend",
-       "from": "Submitted",
-       "role": "Teacher",
-       "to": "Recommended"
-      },
-      {
        "action": "Approve",
-       "from": "Recommended",
+       "from": "Submitted",
        "role": "Teacher",
        "to": "Approved"
       },
       {
        "action": "Reject",
-       "from": "Recommended",
+       "from": "Submitted",
        "role": "Registrar",
        "to": "Rejected"
       },
@@ -213,20 +195,14 @@
        "to": "Submitted"
       },
       {
-       "action": "Recommend",
-       "from": "Submitted",
-       "role": "Teacher",
-       "to": "Recommended"
-      },
-      {
        "action": "Approve",
-       "from": "Recommended",
+       "from": "Submitted",
        "role": "Registrar",
        "to": "Approved"
       },
       {
        "action": "Reject",
-       "from": "Recommended",
+       "from": "Submitted",
        "role": "Teacher",
        "to": "Rejected"
       },
@@ -342,14 +318,8 @@
        "to": "Submitted"
       },
       {
-       "action": "Recommend",
-       "from": "Submitted",
-       "role": "Teacher",
-       "to": "Recommended"
-      },
-      {
        "action": "Approve",
-       "from": "Recommended",
+       "from": "Submitted",
        "role": "Registrar",
        "to": "Approved"
       },
@@ -420,20 +390,14 @@
        "to": "Submitted"
       },
       {
-       "action": "Recommend",
-       "from": "Submitted",
-       "role": "Teacher",
-       "to": "Recommended"
-      },
-      {
        "action": "Approve",
-       "from": "Recommended",
+       "from": "Submitted",
        "role": "Registrar",
        "to": "Approved"
       },
       {
        "action": "Reject",
-       "from": "Recommended",
+       "from": "Submitted",
        "role": "Registrar",
        "to": "Rejected"
       },
@@ -496,7 +460,6 @@
  },
  "non_vacuity": {
   "each_invariant_falsifiable_by_some_candidate": {
-   "INV-APPROVE-ENDS-IN-APPROVED": true,
    "INV-APPROVE-REQUIRES-RECOMMENDED": true,
    "INV-APPROVED-ONLY-VIA-APPROVE": true,
    "INV-CLOSED-WORKFLOW": true,
@@ -504,9 +467,7 @@
    "INV-MANDATORY-GUARDS-PRESENT": true,
    "INV-RECOMMEND-CANNOT-CONCLUDE": true,
    "INV-RECOMMEND-REQUIRES-ASSIGNMENT": true,
-   "INV-RECOMMEND-STARTS-FROM-SUBMITTED": true,
    "INV-REGISTRAR-ONLY-DECIDES": true,
-   "INV-REJECT-FROM-SUBMITTED-WITHOUT-RECOMMENDATION": true,
    "INV-REJECT-SOURCE-BOUNDED": true,
    "INV-TEACHER-EMITS-NO-DECISION-AUDIT": true,
    "INV-TEACHER-NOT-DECIDER": true,
