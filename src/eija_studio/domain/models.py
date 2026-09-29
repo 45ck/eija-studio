@@ -56,7 +56,7 @@ class Transition(Contract):
 
 class Workflow(Contract):
     schema_version: Literal["eija.workflow.v1"] = "eija.workflow.v1"
-    id: Literal["excursion"] = "excursion"
+    id: str = Field(default="excursion", pattern=r"^[a-z][a-z0-9-]{0,39}$")  # the pack id; the default goes in WBS 1.2
     initial_state: str = "Draft"
     states: tuple[str, ...] = Field(min_length=1, max_length=32)
     transitions: tuple[Transition, ...] = Field(min_length=1, max_length=64)

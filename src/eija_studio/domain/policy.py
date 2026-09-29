@@ -2,6 +2,8 @@
 from __future__ import annotations
 from typing import Any
 from .models import Workflow, Transition, BASE_GUARDS, SemanticTransaction, DomainError
+from .laws import Violation, evaluate_table
+from .pack import Pack
 
 FORBIDDEN = ("PaymentCaptured", "ParentDataExported")
 EFFECTS = {
@@ -109,3 +111,30 @@ def meaning_questions(model: Workflow) -> list[dict[str, Any]]:
         {"id": "assignment", "question": "Can an unassigned teacher recommend?", "expected": "No"},
         {"id": "reject_entry", "question": "Which state must precede registrar rejection?", "expected": by["Reject"].from_state},
     ]
+
+
+# ---- pack-driven policy (WBS 1.1): coherence with the declared catalog + the pack's laws ----------------------
+
+def declared_codes(model: Workflow, pack: Pack) -> list[str]:
+    """Every transition must perform a declared action, with exactly its declared guards and required effects,
+    and must declare every pack-forbidden effect forbidden."""
+    codes: list[str] = []
+    for t in model.transitions:
+        spec = pack.action(t.action)
+        if spec is None:
+            codes.append("UNSUPPORTED_ACTION")
+            continue
+        if set(t.guards) != set(spec.guards):
+            codes.append("GUARD_POLICY:" + t.action)
+        if set(t.required_effects) != set(spec.required_effects) or not set(pack.effects.forbidden) <= set(t.forbidden_effects):
+            codes.append("EFFECT_POLICY:" + t.action)
+    return codes
+
+
+def law_violations(model: Workflow, pack: Pack) -> list[Violation]:
+    return evaluate_table(pack.laws, model)
+
+
+def pack_policy(model: Workflow, pack: Pack) -> list[str]:
+    """Sorted, de-duplicated policy codes of ``model`` under ``pack``."""
+    return sorted(set(declared_codes(model, pack)) | {v.code for v in law_violations(model, pack)})

@@ -54,7 +54,7 @@ class Transition <<value-object>> {
 }
 class Workflow <<value-object>> {
   +Literal<U+003C>eija.workflow.v1> schema_version
-  +Literal<U+003C>excursion> id
+  +str id
   +str initial_state
   +tuple<U+003C>str> states
 }

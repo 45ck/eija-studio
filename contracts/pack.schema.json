@@ -1,0 +1,1560 @@
+{
+  "$defs": {
+    "ActionRequiresGuard": {
+      "additionalProperties": false,
+      "description": "Every transition performing ``action`` carries at least ``guards``.",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "code": {
+          "pattern": "^[A-Z][A-Z0-9_]{0,63}(:[A-Za-z0-9_-]{1,64})?$",
+          "title": "Code",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 400,
+          "title": "Description",
+          "type": "string"
+        },
+        "when": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/When"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "kind": {
+          "const": "action_requires_guard",
+          "title": "Kind",
+          "type": "string"
+        },
+        "action": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "Action",
+          "type": "string"
+        },
+        "guards": {
+          "items": {
+            "enum": [
+              "actor_active",
+              "role_current",
+              "actor_assigned",
+              "state_equals",
+              "expected_version",
+              "operation_binding"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Guards",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "code",
+        "kind",
+        "action",
+        "guards"
+      ],
+      "title": "ActionRequiresGuard",
+      "type": "object"
+    },
+    "ActionSourceIn": {
+      "additionalProperties": false,
+      "description": "Every transition performing ``action`` starts in one of ``states``.",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "code": {
+          "pattern": "^[A-Z][A-Z0-9_]{0,63}(:[A-Za-z0-9_-]{1,64})?$",
+          "title": "Code",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 400,
+          "title": "Description",
+          "type": "string"
+        },
+        "when": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/When"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "kind": {
+          "const": "action_source_in",
+          "title": "Kind",
+          "type": "string"
+        },
+        "action": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "Action",
+          "type": "string"
+        },
+        "states": {
+          "items": {
+            "maxLength": 60,
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "States",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "code",
+        "kind",
+        "action",
+        "states"
+      ],
+      "title": "ActionSourceIn",
+      "type": "object"
+    },
+    "ActionSpec": {
+      "additionalProperties": false,
+      "description": "The declared guards and required effects of one action; the policy holds every transition to them.",
+      "properties": {
+        "id": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "guards": {
+          "items": {
+            "enum": [
+              "actor_active",
+              "role_current",
+              "actor_assigned",
+              "state_equals",
+              "expected_version",
+              "operation_binding"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Guards",
+          "type": "array"
+        },
+        "required_effects": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Required Effects",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "guards"
+      ],
+      "title": "ActionSpec",
+      "type": "object"
+    },
+    "ActionTarget": {
+      "additionalProperties": false,
+      "description": "Every transition performing ``action`` ends in ``state``.",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "code": {
+          "pattern": "^[A-Z][A-Z0-9_]{0,63}(:[A-Za-z0-9_-]{1,64})?$",
+          "title": "Code",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 400,
+          "title": "Description",
+          "type": "string"
+        },
+        "when": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/When"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "kind": {
+          "const": "action_target",
+          "title": "Kind",
+          "type": "string"
+        },
+        "action": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "Action",
+          "type": "string"
+        },
+        "state": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "code",
+        "kind",
+        "action",
+        "state"
+      ],
+      "title": "ActionTarget",
+      "type": "object"
+    },
+    "Actor": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "role": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "Role",
+          "type": "string"
+        },
+        "active": {
+          "title": "Active",
+          "type": "boolean"
+        },
+        "assigned": {
+          "title": "Assigned",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "role",
+        "active",
+        "assigned"
+      ],
+      "title": "Actor",
+      "type": "object"
+    },
+    "Alternative": {
+      "additionalProperties": false,
+      "properties": {
+        "interpretation": {
+          "pattern": "^[a-z][a-z0-9_]{0,39}$",
+          "title": "Interpretation",
+          "type": "string"
+        },
+        "explanation": {
+          "maxLength": 1600,
+          "minLength": 1,
+          "title": "Explanation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "interpretation",
+        "explanation"
+      ],
+      "title": "Alternative",
+      "type": "object"
+    },
+    "ClosedShape": {
+      "additionalProperties": false,
+      "description": "The workflow has exactly these states and actions and this initial state.",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "code": {
+          "pattern": "^[A-Z][A-Z0-9_]{0,63}(:[A-Za-z0-9_-]{1,64})?$",
+          "title": "Code",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 400,
+          "title": "Description",
+          "type": "string"
+        },
+        "when": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/When"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "kind": {
+          "const": "closed_shape",
+          "title": "Kind",
+          "type": "string"
+        },
+        "states": {
+          "items": {
+            "maxLength": 60,
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "States",
+          "type": "array"
+        },
+        "actions": {
+          "items": {
+            "maxLength": 60,
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Actions",
+          "type": "array"
+        },
+        "initial_state": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "Initial State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "code",
+        "kind",
+        "states",
+        "actions",
+        "initial_state"
+      ],
+      "title": "ClosedShape",
+      "type": "object"
+    },
+    "Effect": {
+      "additionalProperties": false,
+      "description": "A typed effect. ``audit`` is written to the audit log, ``notification`` to the outbox for ``recipient``.",
+      "properties": {
+        "id": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "audit",
+            "notification"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "recipient": {
+          "anyOf": [
+            {
+              "maxLength": 60,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Recipient"
+        }
+      },
+      "required": [
+        "id",
+        "kind"
+      ],
+      "title": "Effect",
+      "type": "object"
+    },
+    "Effects": {
+      "additionalProperties": false,
+      "properties": {
+        "catalog": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Effect"
+          },
+          "title": "Catalog",
+          "type": "array"
+        },
+        "forbidden": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Forbidden",
+          "type": "array"
+        }
+      },
+      "title": "Effects",
+      "type": "object"
+    },
+    "Fixtures": {
+      "additionalProperties": false,
+      "properties": {
+        "actors": {
+          "items": {
+            "$ref": "#/$defs/Actor"
+          },
+          "minItems": 1,
+          "title": "Actors",
+          "type": "array"
+        },
+        "proposals": {
+          "$ref": "#/$defs/Proposals"
+        },
+        "demo_request": {
+          "maxLength": 6000,
+          "minLength": 1,
+          "title": "Demo Request",
+          "type": "string"
+        }
+      },
+      "required": [
+        "actors",
+        "proposals",
+        "demo_request"
+      ],
+      "title": "Fixtures",
+      "type": "object"
+    },
+    "ForbiddenEffects": {
+      "additionalProperties": false,
+      "description": "No transition requires any of ``effects`` and every transition declares them forbidden.",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "code": {
+          "pattern": "^[A-Z][A-Z0-9_]{0,63}(:[A-Za-z0-9_-]{1,64})?$",
+          "title": "Code",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 400,
+          "title": "Description",
+          "type": "string"
+        },
+        "when": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/When"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "kind": {
+          "const": "forbidden_effects",
+          "title": "Kind",
+          "type": "string"
+        },
+        "effects": {
+          "items": {
+            "maxLength": 60,
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Effects",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "code",
+        "kind",
+        "effects"
+      ],
+      "title": "ForbiddenEffects",
+      "type": "object"
+    },
+    "Journey": {
+      "additionalProperties": false,
+      "properties": {
+        "questions": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Question"
+          },
+          "title": "Questions",
+          "type": "array"
+        }
+      },
+      "title": "Journey",
+      "type": "object"
+    },
+    "Language": {
+      "additionalProperties": false,
+      "properties": {
+        "terms": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Term"
+          },
+          "title": "Terms",
+          "type": "array"
+        }
+      },
+      "title": "Language",
+      "type": "object"
+    },
+    "Meaning": {
+      "additionalProperties": false,
+      "description": "One interpretation of a request. A supported meaning's transactions produce the candidate; an unsupported\none's transactions (if any) describe what it WOULD do, for explanation only, never as a candidate.",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9_]{0,39}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "maxLength": 200,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "supported": {
+          "title": "Supported",
+          "type": "boolean"
+        },
+        "consequences": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Consequences",
+          "type": "array"
+        },
+        "transactions": {
+          "default": [],
+          "items": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "title": "Transactions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "supported",
+        "consequences"
+      ],
+      "title": "Meaning",
+      "type": "object"
+    },
+    "OnlyRoleHolds": {
+      "additionalProperties": false,
+      "description": "Every transition performing ``action`` is held by ``role``.",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "code": {
+          "pattern": "^[A-Z][A-Z0-9_]{0,63}(:[A-Za-z0-9_-]{1,64})?$",
+          "title": "Code",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 400,
+          "title": "Description",
+          "type": "string"
+        },
+        "when": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/When"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "kind": {
+          "const": "only_role_holds",
+          "title": "Kind",
+          "type": "string"
+        },
+        "action": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "Action",
+          "type": "string"
+        },
+        "role": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "Role",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "code",
+        "kind",
+        "action",
+        "role"
+      ],
+      "title": "OnlyRoleHolds",
+      "type": "object"
+    },
+    "PackInfo": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9-]{0,39}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "title": "Version",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 2000,
+          "title": "Description",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "version"
+      ],
+      "title": "PackInfo",
+      "type": "object"
+    },
+    "PathRequires": {
+      "additionalProperties": false,
+      "description": "Every path from the initial state to ``state`` passes through ``via`` (a sequence law).",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "code": {
+          "pattern": "^[A-Z][A-Z0-9_]{0,63}(:[A-Za-z0-9_-]{1,64})?$",
+          "title": "Code",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 400,
+          "title": "Description",
+          "type": "string"
+        },
+        "when": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/When"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "kind": {
+          "const": "path_requires",
+          "title": "Kind",
+          "type": "string"
+        },
+        "state": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "State",
+          "type": "string"
+        },
+        "via": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "Via",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "code",
+        "kind",
+        "state",
+        "via"
+      ],
+      "title": "PathRequires",
+      "type": "object"
+    },
+    "ProposalRule": {
+      "additionalProperties": false,
+      "description": "Offline fixture: when the lower-cased request contains every ``all`` word and at least one ``any`` word.",
+      "properties": {
+        "all": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "All",
+          "type": "array"
+        },
+        "any": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Any",
+          "type": "array"
+        },
+        "alternatives": {
+          "items": {
+            "$ref": "#/$defs/Alternative"
+          },
+          "maxItems": 4,
+          "minItems": 1,
+          "title": "Alternatives",
+          "type": "array"
+        }
+      },
+      "required": [
+        "alternatives"
+      ],
+      "title": "ProposalRule",
+      "type": "object"
+    },
+    "Proposals": {
+      "additionalProperties": false,
+      "properties": {
+        "summary": {
+          "maxLength": 1600,
+          "minLength": 1,
+          "title": "Summary",
+          "type": "string"
+        },
+        "rules": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ProposalRule"
+          },
+          "title": "Rules",
+          "type": "array"
+        },
+        "fallback": {
+          "items": {
+            "$ref": "#/$defs/Alternative"
+          },
+          "maxItems": 4,
+          "minItems": 1,
+          "title": "Fallback",
+          "type": "array"
+        },
+        "unknowns": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 10,
+          "title": "Unknowns",
+          "type": "array"
+        }
+      },
+      "required": [
+        "summary",
+        "fallback"
+      ],
+      "title": "Proposals",
+      "type": "object"
+    },
+    "Question": {
+      "additionalProperties": false,
+      "description": "A meaning-check question for the owner. The expected answer is literal, or read from a transition field.",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9_]{0,39}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "question": {
+          "maxLength": 400,
+          "minLength": 1,
+          "title": "Question",
+          "type": "string"
+        },
+        "expected": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expected"
+        },
+        "expected_from": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "string"
+                },
+                {
+                  "enum": [
+                    "from_state",
+                    "to_state",
+                    "role"
+                  ],
+                  "type": "string"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expected From"
+        }
+      },
+      "required": [
+        "id",
+        "question"
+      ],
+      "title": "Question",
+      "type": "object"
+    },
+    "RequiresEvidence": {
+      "additionalProperties": false,
+      "description": "A review needs evidence of this kind; judged by the evidence matrix, never by the table.",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "code": {
+          "pattern": "^[A-Z][A-Z0-9_]{0,63}(:[A-Za-z0-9_-]{1,64})?$",
+          "title": "Code",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 400,
+          "title": "Description",
+          "type": "string"
+        },
+        "when": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/When"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "kind": {
+          "const": "requires_evidence",
+          "title": "Kind",
+          "type": "string"
+        },
+        "evidence": {
+          "pattern": "^[a-z][a-z0-9_]{0,39}$",
+          "title": "Evidence",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "code",
+        "kind",
+        "evidence"
+      ],
+      "title": "RequiresEvidence",
+      "type": "object"
+    },
+    "Role": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 400,
+          "title": "Description",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "Role",
+      "type": "object"
+    },
+    "RoleNeverEnters": {
+      "additionalProperties": false,
+      "description": "No transition held by ``role`` enters ``state``.",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "code": {
+          "pattern": "^[A-Z][A-Z0-9_]{0,63}(:[A-Za-z0-9_-]{1,64})?$",
+          "title": "Code",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 400,
+          "title": "Description",
+          "type": "string"
+        },
+        "when": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/When"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "kind": {
+          "const": "role_never_enters",
+          "title": "Kind",
+          "type": "string"
+        },
+        "role": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "Role",
+          "type": "string"
+        },
+        "state": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "code",
+        "kind",
+        "role",
+        "state"
+      ],
+      "title": "RoleNeverEnters",
+      "type": "object"
+    },
+    "RoleNeverHolds": {
+      "additionalProperties": false,
+      "description": "No transition performing ``action`` is held by ``role``.",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "code": {
+          "pattern": "^[A-Z][A-Z0-9_]{0,63}(:[A-Za-z0-9_-]{1,64})?$",
+          "title": "Code",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 400,
+          "title": "Description",
+          "type": "string"
+        },
+        "when": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/When"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "kind": {
+          "const": "role_never_holds",
+          "title": "Kind",
+          "type": "string"
+        },
+        "action": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "Action",
+          "type": "string"
+        },
+        "role": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "Role",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "code",
+        "kind",
+        "action",
+        "role"
+      ],
+      "title": "RoleNeverHolds",
+      "type": "object"
+    },
+    "StateFinal": {
+      "additionalProperties": false,
+      "description": "No transition leaves ``state``.",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "code": {
+          "pattern": "^[A-Z][A-Z0-9_]{0,63}(:[A-Za-z0-9_-]{1,64})?$",
+          "title": "Code",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 400,
+          "title": "Description",
+          "type": "string"
+        },
+        "when": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/When"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "kind": {
+          "const": "state_final",
+          "title": "Kind",
+          "type": "string"
+        },
+        "state": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "code",
+        "kind",
+        "state"
+      ],
+      "title": "StateFinal",
+      "type": "object"
+    },
+    "StateOnlyVia": {
+      "additionalProperties": false,
+      "description": "Every transition entering ``state`` performs one of ``actions``.",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "code": {
+          "pattern": "^[A-Z][A-Z0-9_]{0,63}(:[A-Za-z0-9_-]{1,64})?$",
+          "title": "Code",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 400,
+          "title": "Description",
+          "type": "string"
+        },
+        "when": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/When"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "kind": {
+          "const": "state_only_via",
+          "title": "Kind",
+          "type": "string"
+        },
+        "state": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "State",
+          "type": "string"
+        },
+        "actions": {
+          "items": {
+            "maxLength": 60,
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Actions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "code",
+        "kind",
+        "state",
+        "actions"
+      ],
+      "title": "StateOnlyVia",
+      "type": "object"
+    },
+    "Term": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "definition": {
+          "default": "",
+          "maxLength": 2000,
+          "title": "Definition",
+          "type": "string"
+        },
+        "binds": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Binds",
+          "type": "array"
+        },
+        "refs": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Refs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "label"
+      ],
+      "title": "Term",
+      "type": "object"
+    },
+    "Transition": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Z][A-Z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "action": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "Action",
+          "type": "string"
+        },
+        "from_state": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "From State",
+          "type": "string"
+        },
+        "to_state": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "To State",
+          "type": "string"
+        },
+        "role": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "Role",
+          "type": "string"
+        },
+        "guards": {
+          "items": {
+            "enum": [
+              "actor_active",
+              "role_current",
+              "actor_assigned",
+              "state_equals",
+              "expected_version",
+              "operation_binding"
+            ],
+            "type": "string"
+          },
+          "title": "Guards",
+          "type": "array"
+        },
+        "required_effects": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Required Effects",
+          "type": "array"
+        },
+        "forbidden_effects": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Forbidden Effects",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "action",
+        "from_state",
+        "to_state",
+        "role",
+        "guards",
+        "required_effects",
+        "forbidden_effects"
+      ],
+      "title": "Transition",
+      "type": "object"
+    },
+    "Verifier": {
+      "additionalProperties": false,
+      "description": "An evidence kind that applies to this pack. ``hand_encoded`` marks a hand-written formal model of the pack;\n``not_run`` records that the kind is deliberately not produced for this pack, with the reason.",
+      "properties": {
+        "kind": {
+          "pattern": "^[a-z][a-z0-9_]{0,39}$",
+          "title": "Kind",
+          "type": "string"
+        },
+        "mode": {
+          "enum": [
+            "kernel",
+            "hand_encoded",
+            "not_run"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "reason": {
+          "default": "",
+          "maxLength": 400,
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "mode"
+      ],
+      "title": "Verifier",
+      "type": "object"
+    },
+    "When": {
+      "additionalProperties": false,
+      "description": "Condition under which a law applies. Both unset means always.",
+      "properties": {
+        "action_present": {
+          "anyOf": [
+            {
+              "maxLength": 60,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Action Present"
+        },
+        "action_absent": {
+          "anyOf": [
+            {
+              "maxLength": 60,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Action Absent"
+        }
+      },
+      "title": "When",
+      "type": "object"
+    },
+    "Workflow": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": "eija.workflow.v1",
+          "default": "eija.workflow.v1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "id": {
+          "default": "excursion",
+          "pattern": "^[a-z][a-z0-9-]{0,39}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "initial_state": {
+          "default": "Draft",
+          "title": "Initial State",
+          "type": "string"
+        },
+        "states": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 32,
+          "minItems": 1,
+          "title": "States",
+          "type": "array"
+        },
+        "transitions": {
+          "items": {
+            "$ref": "#/$defs/Transition"
+          },
+          "maxItems": 64,
+          "minItems": 1,
+          "title": "Transitions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "states",
+        "transitions"
+      ],
+      "title": "Workflow",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "eija.pack.v1",
+      "default": "eija.pack.v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "pack": {
+      "$ref": "#/$defs/PackInfo"
+    },
+    "model": {
+      "$ref": "#/$defs/Workflow"
+    },
+    "roles": {
+      "items": {
+        "$ref": "#/$defs/Role"
+      },
+      "minItems": 1,
+      "title": "Roles",
+      "type": "array"
+    },
+    "actions": {
+      "items": {
+        "$ref": "#/$defs/ActionSpec"
+      },
+      "minItems": 1,
+      "title": "Actions",
+      "type": "array"
+    },
+    "effects": {
+      "$ref": "#/$defs/Effects"
+    },
+    "laws": {
+      "default": [],
+      "items": {
+        "discriminator": {
+          "mapping": {
+            "action_requires_guard": "#/$defs/ActionRequiresGuard",
+            "action_source_in": "#/$defs/ActionSourceIn",
+            "action_target": "#/$defs/ActionTarget",
+            "closed_shape": "#/$defs/ClosedShape",
+            "forbidden_effects": "#/$defs/ForbiddenEffects",
+            "only_role_holds": "#/$defs/OnlyRoleHolds",
+            "path_requires": "#/$defs/PathRequires",
+            "requires_evidence": "#/$defs/RequiresEvidence",
+            "role_never_enters": "#/$defs/RoleNeverEnters",
+            "role_never_holds": "#/$defs/RoleNeverHolds",
+            "state_final": "#/$defs/StateFinal",
+            "state_only_via": "#/$defs/StateOnlyVia"
+          },
+          "propertyName": "kind"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/$defs/ClosedShape"
+          },
+          {
+            "$ref": "#/$defs/OnlyRoleHolds"
+          },
+          {
+            "$ref": "#/$defs/RoleNeverHolds"
+          },
+          {
+            "$ref": "#/$defs/RoleNeverEnters"
+          },
+          {
+            "$ref": "#/$defs/StateOnlyVia"
+          },
+          {
+            "$ref": "#/$defs/ActionTarget"
+          },
+          {
+            "$ref": "#/$defs/ActionSourceIn"
+          },
+          {
+            "$ref": "#/$defs/ActionRequiresGuard"
+          },
+          {
+            "$ref": "#/$defs/ForbiddenEffects"
+          },
+          {
+            "$ref": "#/$defs/StateFinal"
+          },
+          {
+            "$ref": "#/$defs/PathRequires"
+          },
+          {
+            "$ref": "#/$defs/RequiresEvidence"
+          }
+        ]
+      },
+      "title": "Laws",
+      "type": "array"
+    },
+    "meanings": {
+      "items": {
+        "$ref": "#/$defs/Meaning"
+      },
+      "minItems": 1,
+      "title": "Meanings",
+      "type": "array"
+    },
+    "language": {
+      "$ref": "#/$defs/Language",
+      "default": {
+        "terms": []
+      }
+    },
+    "fixtures": {
+      "$ref": "#/$defs/Fixtures"
+    },
+    "verifiers": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Verifier"
+      },
+      "title": "Verifiers",
+      "type": "array"
+    },
+    "journey": {
+      "$ref": "#/$defs/Journey",
+      "default": {
+        "questions": []
+      }
+    }
+  },
+  "required": [
+    "pack",
+    "model",
+    "roles",
+    "actions",
+    "effects",
+    "meanings",
+    "fixtures"
+  ],
+  "title": "Pack",
+  "type": "object"
+}

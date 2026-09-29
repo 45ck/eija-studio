@@ -1,0 +1,700 @@
+{
+  "schema_version": "eija.pack.v1",
+  "pack": {
+    "id": "excursion",
+    "name": "School excursion approval",
+    "version": "1.0.0",
+    "description": "The synthetic excursion workflow the POC was first built on: teachers submit, registrars decide; the supported change lets an assigned teacher recommend first."
+  },
+  "model": {
+    "schema_version": "eija.workflow.v1",
+    "id": "excursion",
+    "initial_state": "Draft",
+    "states": [
+      "Draft",
+      "Submitted",
+      "Approved",
+      "Rejected"
+    ],
+    "transitions": [
+      {
+        "id": "TR-SUBMIT",
+        "action": "Submit",
+        "from_state": "Draft",
+        "to_state": "Submitted",
+        "role": "Teacher",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:ExcursionSubmitted"
+        ],
+        "forbidden_effects": [
+          "PaymentCaptured",
+          "ParentDataExported"
+        ]
+      },
+      {
+        "id": "TR-APPROVE",
+        "action": "Approve",
+        "from_state": "Submitted",
+        "to_state": "Approved",
+        "role": "Registrar",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:ExcursionApproved"
+        ],
+        "forbidden_effects": [
+          "PaymentCaptured",
+          "ParentDataExported"
+        ]
+      },
+      {
+        "id": "TR-REJECT",
+        "action": "Reject",
+        "from_state": "Submitted",
+        "to_state": "Rejected",
+        "role": "Registrar",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:ExcursionRejected"
+        ],
+        "forbidden_effects": [
+          "PaymentCaptured",
+          "ParentDataExported"
+        ]
+      },
+      {
+        "id": "TR-REVISE",
+        "action": "Revise",
+        "from_state": "Rejected",
+        "to_state": "Draft",
+        "role": "Teacher",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:ExcursionReopened"
+        ],
+        "forbidden_effects": [
+          "PaymentCaptured",
+          "ParentDataExported"
+        ]
+      }
+    ]
+  },
+  "roles": [
+    {
+      "id": "Teacher",
+      "description": "Submits, recommends (when assigned) and revises excursion requests."
+    },
+    {
+      "id": "Registrar",
+      "description": "Holds final approval and rejection authority."
+    },
+    {
+      "id": "Viewer",
+      "description": "Reads only; holds no transition."
+    }
+  ],
+  "actions": [
+    {
+      "id": "Submit",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:ExcursionSubmitted"
+      ]
+    },
+    {
+      "id": "Recommend",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding",
+        "actor_assigned"
+      ],
+      "required_effects": [
+        "Audit:ExcursionRecommended",
+        "Notification:RegistrarQueued"
+      ]
+    },
+    {
+      "id": "Approve",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:ExcursionApproved"
+      ]
+    },
+    {
+      "id": "Reject",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:ExcursionRejected"
+      ]
+    },
+    {
+      "id": "Revise",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:ExcursionReopened"
+      ]
+    }
+  ],
+  "effects": {
+    "catalog": [
+      {
+        "id": "Audit:ExcursionSubmitted",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:ExcursionRecommended",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:RegistrarQueued",
+        "kind": "notification",
+        "recipient": "registrar"
+      },
+      {
+        "id": "Audit:ExcursionApproved",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:ExcursionRejected",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:ExcursionReopened",
+        "kind": "audit"
+      }
+    ],
+    "forbidden": [
+      "PaymentCaptured",
+      "ParentDataExported"
+    ]
+  },
+  "laws": [
+    {
+      "id": "shape-baseline",
+      "kind": "closed_shape",
+      "code": "UNSUPPORTED_WORKFLOW_SHAPE",
+      "when": {
+        "action_absent": "Recommend"
+      },
+      "description": "Without the recommendation meaning the workflow is exactly the baseline shape.",
+      "states": [
+        "Draft",
+        "Submitted",
+        "Approved",
+        "Rejected"
+      ],
+      "actions": [
+        "Submit",
+        "Approve",
+        "Reject",
+        "Revise"
+      ],
+      "initial_state": "Draft"
+    },
+    {
+      "id": "shape-recommendation",
+      "kind": "closed_shape",
+      "code": "UNSUPPORTED_WORKFLOW_SHAPE",
+      "when": {
+        "action_present": "Recommend"
+      },
+      "description": "With the recommendation meaning the workflow is exactly the baseline plus Recommended and Recommend.",
+      "states": [
+        "Draft",
+        "Submitted",
+        "Recommended",
+        "Approved",
+        "Rejected"
+      ],
+      "actions": [
+        "Submit",
+        "Recommend",
+        "Approve",
+        "Reject",
+        "Revise"
+      ],
+      "initial_state": "Draft"
+    },
+    {
+      "id": "submit-held-by-teacher",
+      "kind": "only_role_holds",
+      "code": "PROTECTED_AUTHORITY:Submit",
+      "description": "Only the Teacher role performs Submit.",
+      "action": "Submit",
+      "role": "Teacher"
+    },
+    {
+      "id": "recommend-held-by-teacher",
+      "kind": "only_role_holds",
+      "code": "PROTECTED_AUTHORITY:Recommend",
+      "description": "Only the Teacher role performs Recommend.",
+      "action": "Recommend",
+      "role": "Teacher"
+    },
+    {
+      "id": "approve-held-by-registrar",
+      "kind": "only_role_holds",
+      "code": "PROTECTED_AUTHORITY:Approve",
+      "description": "Only the Registrar role performs Approve.",
+      "action": "Approve",
+      "role": "Registrar"
+    },
+    {
+      "id": "reject-held-by-registrar",
+      "kind": "only_role_holds",
+      "code": "PROTECTED_AUTHORITY:Reject",
+      "description": "Only the Registrar role performs Reject.",
+      "action": "Reject",
+      "role": "Registrar"
+    },
+    {
+      "id": "revise-held-by-teacher",
+      "kind": "only_role_holds",
+      "code": "PROTECTED_AUTHORITY:Revise",
+      "description": "Only the Teacher role performs Revise.",
+      "action": "Revise",
+      "role": "Teacher"
+    },
+    {
+      "id": "submit-ends-submitted",
+      "kind": "action_target",
+      "code": "PROTECTED_STATE:Submit",
+      "description": "Submit always ends in Submitted.",
+      "action": "Submit",
+      "state": "Submitted"
+    },
+    {
+      "id": "recommend-ends-recommended",
+      "kind": "action_target",
+      "code": "PROTECTED_STATE:Recommend",
+      "description": "Recommend always ends in Recommended.",
+      "action": "Recommend",
+      "state": "Recommended"
+    },
+    {
+      "id": "approve-ends-approved",
+      "kind": "action_target",
+      "code": "PROTECTED_STATE:Approve",
+      "description": "Approve always ends in Approved.",
+      "action": "Approve",
+      "state": "Approved"
+    },
+    {
+      "id": "reject-ends-rejected",
+      "kind": "action_target",
+      "code": "PROTECTED_STATE:Reject",
+      "description": "Reject always ends in Rejected.",
+      "action": "Reject",
+      "state": "Rejected"
+    },
+    {
+      "id": "revise-ends-draft",
+      "kind": "action_target",
+      "code": "PROTECTED_STATE:Revise",
+      "description": "Revise always ends in Draft.",
+      "action": "Revise",
+      "state": "Draft"
+    },
+    {
+      "id": "submit-from-draft",
+      "kind": "action_source_in",
+      "code": "PROTECTED_STATE:Submit",
+      "description": "Submit starts in Draft.",
+      "action": "Submit",
+      "states": [
+        "Draft"
+      ]
+    },
+    {
+      "id": "recommend-from-submitted",
+      "kind": "action_source_in",
+      "code": "PROTECTED_STATE:Recommend",
+      "description": "Recommend starts in Submitted.",
+      "action": "Recommend",
+      "states": [
+        "Submitted"
+      ]
+    },
+    {
+      "id": "approve-requires-recommended",
+      "kind": "action_source_in",
+      "code": "PROTECTED_STATE:Approve",
+      "when": {
+        "action_present": "Recommend"
+      },
+      "description": "With the recommendation meaning, approval requires Recommended.",
+      "action": "Approve",
+      "states": [
+        "Recommended"
+      ]
+    },
+    {
+      "id": "approve-from-submitted",
+      "kind": "action_source_in",
+      "code": "PROTECTED_STATE:Approve",
+      "when": {
+        "action_absent": "Recommend"
+      },
+      "description": "Without the recommendation meaning, approval starts in Submitted.",
+      "action": "Approve",
+      "states": [
+        "Submitted"
+      ]
+    },
+    {
+      "id": "reject-from-submitted",
+      "kind": "action_source_in",
+      "code": "PROTECTED_STATE:Reject",
+      "when": {
+        "action_absent": "Recommend"
+      },
+      "description": "Without the recommendation meaning, rejection starts in Submitted.",
+      "action": "Reject",
+      "states": [
+        "Submitted"
+      ]
+    },
+    {
+      "id": "revise-from-rejected",
+      "kind": "action_source_in",
+      "code": "PROTECTED_STATE:Revise",
+      "description": "Revise starts in Rejected.",
+      "action": "Revise",
+      "states": [
+        "Rejected"
+      ]
+    },
+    {
+      "id": "reject-source-bounded",
+      "kind": "action_source_in",
+      "code": "UNSUPPORTED_REJECTION_SOURCE",
+      "description": "Rejection only ever starts in Submitted or Recommended.",
+      "action": "Reject",
+      "states": [
+        "Recommended",
+        "Submitted"
+      ]
+    }
+  ],
+  "meanings": [
+    {
+      "id": "recommend_only",
+      "label": "Teacher recommends; registrar decides",
+      "supported": true,
+      "consequences": [
+        "Only active, assigned teachers recommend.",
+        "Registrar approval AND rejection initially require Recommended.",
+        "Teachers do not receive final approval authority."
+      ],
+      "transactions": [
+        {
+          "kind": "add_state",
+          "state": "Recommended",
+          "after": "Submitted"
+        },
+        {
+          "kind": "retarget_transition",
+          "transition": "TR-APPROVE",
+          "end": "source",
+          "state": "Recommended"
+        },
+        {
+          "kind": "retarget_transition",
+          "transition": "TR-REJECT",
+          "end": "source",
+          "state": "Recommended"
+        },
+        {
+          "kind": "add_transition",
+          "id": "TR-RECOMMEND",
+          "action": "Recommend",
+          "from_state": "Submitted",
+          "to_state": "Recommended",
+          "role": "Teacher"
+        }
+      ]
+    },
+    {
+      "id": "final_approval",
+      "label": "Teacher grants final approval",
+      "supported": false,
+      "consequences": [
+        "Expands protected authority; blocked by this POC's policy."
+      ],
+      "transactions": [
+        {
+          "kind": "add_state",
+          "state": "Recommended",
+          "after": "Submitted"
+        },
+        {
+          "kind": "retarget_transition",
+          "transition": "TR-APPROVE",
+          "end": "source",
+          "state": "Recommended"
+        },
+        {
+          "kind": "retarget_transition",
+          "transition": "TR-REJECT",
+          "end": "source",
+          "state": "Recommended"
+        },
+        {
+          "kind": "add_transition",
+          "id": "TR-RECOMMEND",
+          "action": "Recommend",
+          "from_state": "Submitted",
+          "to_state": "Recommended",
+          "role": "Teacher"
+        },
+        {
+          "kind": "set_role",
+          "transition": "TR-APPROVE",
+          "role": "Teacher"
+        }
+      ]
+    },
+    {
+      "id": "confirm_only",
+      "label": "Teacher confirms a completed section",
+      "supported": false,
+      "consequences": [
+        "A different domain operation; not implemented by this bounded POC."
+      ],
+      "transactions": []
+    },
+    {
+      "id": "unsupported",
+      "label": "Outside the modelled scope",
+      "supported": false,
+      "consequences": [
+        "Requires domain and source-level engineering; no automatic application."
+      ],
+      "transactions": []
+    }
+  ],
+  "language": {
+    "terms": [
+      {
+        "id": "excursion-request",
+        "label": "Excursion request",
+        "definition": "A teacher's request to take students off site; one workflow instance.",
+        "binds": [
+          "repo://packs/excursion/pack.json",
+          "repo://examples/excursion-baseline.json"
+        ],
+        "refs": [
+          "state:Draft"
+        ]
+      },
+      {
+        "id": "recommendation",
+        "label": "Recommendation",
+        "definition": "An assigned teacher's endorsement that precedes the registrar's decision. It is not an approval.",
+        "binds": [
+          "repo://packs/excursion/pack.json"
+        ],
+        "refs": [
+          "state:Recommended"
+        ]
+      },
+      {
+        "id": "final-approval",
+        "label": "Final approval",
+        "definition": "The registrar's decision; protected authority.",
+        "binds": [
+          "repo://packs/excursion/pack.json"
+        ],
+        "refs": [
+          "transition:TR-APPROVE",
+          "law:approve-held-by-registrar"
+        ]
+      },
+      {
+        "id": "rejection",
+        "label": "Rejection",
+        "definition": "The registrar's refusal; its source state is bounded.",
+        "binds": [
+          "repo://packs/excursion/pack.json"
+        ],
+        "refs": [
+          "transition:TR-REJECT",
+          "law:reject-source-bounded"
+        ]
+      }
+    ]
+  },
+  "fixtures": {
+    "actors": [
+      {
+        "id": "teacher-assigned",
+        "role": "Teacher",
+        "active": true,
+        "assigned": true
+      },
+      {
+        "id": "teacher-unassigned",
+        "role": "Teacher",
+        "active": true,
+        "assigned": false
+      },
+      {
+        "id": "teacher-revoked",
+        "role": "Teacher",
+        "active": false,
+        "assigned": true
+      },
+      {
+        "id": "registrar",
+        "role": "Registrar",
+        "active": true,
+        "assigned": false
+      },
+      {
+        "id": "viewer",
+        "role": "Viewer",
+        "active": true,
+        "assigned": false
+      }
+    ],
+    "demo_request": "Let teachers sign off excursions.",
+    "proposals": {
+      "summary": "Deterministic demonstration; no model inference was used.",
+      "rules": [
+        {
+          "all": [
+            "excursion"
+          ],
+          "any": [
+            "teacher",
+            "recommend",
+            "sign"
+          ],
+          "alternatives": [
+            {
+              "interpretation": "recommend_only",
+              "explanation": "Teachers recommend; registrar approval and rejection initially require Recommended."
+            },
+            {
+              "interpretation": "final_approval",
+              "explanation": "Would expand final approval authority. Protected policy blocks this."
+            },
+            {
+              "interpretation": "confirm_only",
+              "explanation": "Would confirm a section rather than recommend the excursion. Not implemented."
+            }
+          ]
+        }
+      ],
+      "fallback": [
+        {
+          "interpretation": "unsupported",
+          "explanation": "This offline fixture only demonstrates teacher sign-off for excursions."
+        }
+      ],
+      "unknowns": [
+        "Actual school policy is unknown.",
+        "Reviewer comprehension has not been measured."
+      ]
+    }
+  },
+  "verifiers": [
+    {
+      "kind": "runtime_matrix",
+      "mode": "kernel"
+    },
+    {
+      "kind": "smt",
+      "mode": "hand_encoded",
+      "reason": "verification/smt encodes this pack's laws by hand; a generated encoding (WBS 1.4) replaces it only after an equivalence gate."
+    },
+    {
+      "kind": "bmc",
+      "mode": "hand_encoded",
+      "reason": "verification/bmc checks this pack's runtime with hand-written state properties."
+    },
+    {
+      "kind": "bend",
+      "mode": "hand_encoded",
+      "reason": "verification/bend LAWS.bend and PROOF.bend are hand-written for this pack."
+    },
+    {
+      "kind": "tlc",
+      "mode": "hand_encoded",
+      "reason": "verification/tla/Excursion.tla is hand-written for this pack."
+    }
+  ],
+  "journey": {
+    "questions": [
+      {
+        "id": "authority",
+        "question": "Who retains final approval authority?",
+        "expected": "Registrar"
+      },
+      {
+        "id": "assignment",
+        "question": "Can an unassigned teacher recommend?",
+        "expected": "No"
+      },
+      {
+        "id": "reject_entry",
+        "question": "Which state must precede registrar rejection?",
+        "expected_from": [
+          "TR-REJECT",
+          "from_state"
+        ]
+      }
+    ]
+  }
+}

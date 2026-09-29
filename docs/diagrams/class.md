@@ -68,7 +68,7 @@ classDiagram
     class Workflow {
         <<value-object>>
         +Literal~eija.workflow.v1~ schema_version
-        +Literal~excursion~ id
+        +str id
         +str initial_state
         +tuple~str~ states
     }

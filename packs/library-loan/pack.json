@@ -1,0 +1,146 @@
+{
+  "schema_version": "eija.pack.v1",
+  "pack": {
+    "id": "library-loan",
+    "name": "Library loan",
+    "version": "1.0.0",
+    "description": "A second, structurally different pack: a loan is requested, checked out, may go overdue, and ends returned or cancelled. It has two final states, three roles and a sequence law (no return without a loan) that the excursion pack lacks."
+  },
+  "model": {
+    "schema_version": "eija.workflow.v1",
+    "id": "library-loan",
+    "initial_state": "Requested",
+    "states": ["Requested", "OnLoan", "Overdue", "Returned", "Cancelled"],
+    "transitions": [
+      {"id": "TR-CHECKOUT", "action": "CheckOut", "from_state": "Requested", "to_state": "OnLoan", "role": "Librarian",
+       "guards": ["actor_active", "role_current", "state_equals", "expected_version", "operation_binding", "actor_assigned"],
+       "required_effects": ["Audit:LoanCheckedOut", "Notification:MemberNotified"],
+       "forbidden_effects": ["FineWaivedSilently", "MemberDataShared"]},
+      {"id": "TR-CANCEL", "action": "Cancel", "from_state": "Requested", "to_state": "Cancelled", "role": "Member",
+       "guards": ["actor_active", "role_current", "state_equals", "expected_version", "operation_binding"],
+       "required_effects": ["Audit:LoanCancelled"],
+       "forbidden_effects": ["FineWaivedSilently", "MemberDataShared"]},
+      {"id": "TR-MARKOVERDUE", "action": "MarkOverdue", "from_state": "OnLoan", "to_state": "Overdue", "role": "Clerk",
+       "guards": ["actor_active", "role_current", "state_equals", "expected_version", "operation_binding"],
+       "required_effects": ["Audit:LoanOverdue", "Notification:OverdueNoticeQueued"],
+       "forbidden_effects": ["FineWaivedSilently", "MemberDataShared"]},
+      {"id": "TR-RETURN", "action": "Return", "from_state": "OnLoan", "to_state": "Returned", "role": "Librarian",
+       "guards": ["actor_active", "role_current", "state_equals", "expected_version", "operation_binding"],
+       "required_effects": ["Audit:LoanReturned"],
+       "forbidden_effects": ["FineWaivedSilently", "MemberDataShared"]},
+      {"id": "TR-RETURNLATE", "action": "ReturnLate", "from_state": "Overdue", "to_state": "Returned", "role": "Librarian",
+       "guards": ["actor_active", "role_current", "state_equals", "expected_version", "operation_binding"],
+       "required_effects": ["Audit:LoanReturnedLate"],
+       "forbidden_effects": ["FineWaivedSilently", "MemberDataShared"]}
+    ]
+  },
+  "roles": [
+    {"id": "Member", "description": "Borrows; may cancel a request that has not been checked out."},
+    {"id": "Librarian", "description": "Checks loans out (when assigned to the branch) and takes returns."},
+    {"id": "Clerk", "description": "Flags overdue loans; never takes a return."}
+  ],
+  "actions": [
+    {"id": "CheckOut", "guards": ["actor_active", "role_current", "state_equals", "expected_version", "operation_binding", "actor_assigned"],
+     "required_effects": ["Audit:LoanCheckedOut", "Notification:MemberNotified"]},
+    {"id": "Cancel", "guards": ["actor_active", "role_current", "state_equals", "expected_version", "operation_binding"],
+     "required_effects": ["Audit:LoanCancelled"]},
+    {"id": "MarkOverdue", "guards": ["actor_active", "role_current", "state_equals", "expected_version", "operation_binding"],
+     "required_effects": ["Audit:LoanOverdue", "Notification:OverdueNoticeQueued"]},
+    {"id": "Return", "guards": ["actor_active", "role_current", "state_equals", "expected_version", "operation_binding"],
+     "required_effects": ["Audit:LoanReturned"]},
+    {"id": "ReturnLate", "guards": ["actor_active", "role_current", "state_equals", "expected_version", "operation_binding"],
+     "required_effects": ["Audit:LoanReturnedLate"]},
+    {"id": "Renew", "guards": ["actor_active", "role_current", "state_equals", "expected_version", "operation_binding"],
+     "required_effects": ["Audit:LoanRenewed"]}
+  ],
+  "effects": {
+    "catalog": [
+      {"id": "Audit:LoanCheckedOut", "kind": "audit"},
+      {"id": "Notification:MemberNotified", "kind": "notification", "recipient": "member"},
+      {"id": "Audit:LoanCancelled", "kind": "audit"},
+      {"id": "Audit:LoanOverdue", "kind": "audit"},
+      {"id": "Notification:OverdueNoticeQueued", "kind": "notification", "recipient": "member"},
+      {"id": "Audit:LoanReturned", "kind": "audit"},
+      {"id": "Audit:LoanReturnedLate", "kind": "audit"},
+      {"id": "Audit:LoanRenewed", "kind": "audit"}
+    ],
+    "forbidden": ["FineWaivedSilently", "MemberDataShared"]
+  },
+  "laws": [
+    {"id": "returned-requires-loan", "kind": "path_requires", "code": "LOAN_RETURN_WITHOUT_CHECKOUT",
+     "description": "Every path to Returned passes through OnLoan: nothing is returned that was never lent.",
+     "state": "Returned", "via": "OnLoan"},
+    {"id": "returned-final", "kind": "state_final", "code": "FINAL_STATE_LEFT:Returned",
+     "description": "A returned loan is closed.", "state": "Returned"},
+    {"id": "cancelled-final", "kind": "state_final", "code": "FINAL_STATE_LEFT:Cancelled",
+     "description": "A cancelled request is closed.", "state": "Cancelled"},
+    {"id": "checkout-held-by-librarian", "kind": "only_role_holds", "code": "PROTECTED_AUTHORITY:CheckOut",
+     "description": "Only a librarian checks a loan out.", "action": "CheckOut", "role": "Librarian"},
+    {"id": "member-never-lends", "kind": "role_never_enters", "code": "PROTECTED_AUTHORITY:OnLoan",
+     "description": "A member never moves a loan onto loan.", "role": "Member", "state": "OnLoan"},
+    {"id": "clerk-never-takes-returns", "kind": "role_never_holds", "code": "PROTECTED_AUTHORITY:Return",
+     "description": "A clerk never takes a return.", "action": "Return", "role": "Clerk"},
+    {"id": "returned-only-via-return", "kind": "state_only_via", "code": "PROTECTED_STATE:Returned",
+     "description": "Only a return (on time or late) ends a loan as Returned.", "state": "Returned", "actions": ["Return", "ReturnLate"]},
+    {"id": "cancel-from-requested", "kind": "action_source_in", "code": "PROTECTED_STATE:Cancel",
+     "description": "Only a request that was never lent can be cancelled.", "action": "Cancel", "states": ["Requested"]},
+    {"id": "checkout-needs-assignment", "kind": "action_requires_guard", "code": "GUARD_POLICY:CheckOut",
+     "description": "Checking out requires the librarian to be assigned to the branch.", "action": "CheckOut", "guards": ["actor_assigned"]},
+    {"id": "no-silent-waiver", "kind": "forbidden_effects", "code": "EFFECT_POLICY:forbidden",
+     "description": "No transition waives a fine silently or shares member data.", "effects": ["FineWaivedSilently", "MemberDataShared"]},
+    {"id": "runtime-evidence", "kind": "requires_evidence", "code": "EVIDENCE_REQUIRED:runtime_matrix",
+     "description": "A change is reviewed with the runtime matrix.", "evidence": "runtime_matrix"}
+  ],
+  "meanings": [
+    {"id": "allow_renewal", "label": "Librarians renew overdue loans", "supported": true,
+     "consequences": ["A librarian may move an overdue loan back onto loan.", "Returns still require the loan to have been checked out.", "Members gain no lending authority."],
+     "transactions": [
+       {"kind": "add_transition", "id": "TR-RENEW", "action": "Renew", "from_state": "Overdue", "to_state": "OnLoan", "role": "Librarian"}
+     ]},
+    {"id": "member_self_checkout", "label": "Members check books out themselves", "supported": false,
+     "consequences": ["Moves lending authority to members; blocked by this pack's laws."],
+     "transactions": [
+       {"kind": "set_role", "transition": "TR-CHECKOUT", "role": "Member"}
+     ]},
+    {"id": "unsupported", "label": "Outside the modelled scope", "supported": false,
+     "consequences": ["Requires domain and source-level engineering; no automatic application."]}
+  ],
+  "language": {"terms": [
+    {"id": "loan", "label": "Loan", "definition": "One book lent to one member; the workflow instance.",
+     "binds": ["repo://packs/library-loan/pack.json"], "refs": ["state:OnLoan"]},
+    {"id": "overdue", "label": "Overdue", "definition": "A loan past its due date that has not been returned.",
+     "binds": ["repo://packs/library-loan/pack.json"], "refs": ["state:Overdue", "transition:TR-MARKOVERDUE"]},
+    {"id": "return", "label": "Return", "definition": "The book is back; only possible for a loan that was checked out.",
+     "binds": ["repo://packs/library-loan/pack.json"], "refs": ["state:Returned", "law:returned-requires-loan"]}
+  ]},
+  "fixtures": {
+    "actors": [
+      {"id": "member-a", "role": "Member", "active": true, "assigned": false},
+      {"id": "librarian-assigned", "role": "Librarian", "active": true, "assigned": true},
+      {"id": "librarian-unassigned", "role": "Librarian", "active": true, "assigned": false},
+      {"id": "librarian-revoked", "role": "Librarian", "active": false, "assigned": true},
+      {"id": "clerk", "role": "Clerk", "active": true, "assigned": false}
+    ],
+    "demo_request": "Let librarians renew overdue loans.",
+    "proposals": {
+      "summary": "Deterministic demonstration; no model inference was used.",
+      "rules": [{"all": ["loan"], "any": ["renew", "extend", "overdue", "self"], "alternatives": [
+        {"interpretation": "allow_renewal", "explanation": "Librarians may renew an overdue loan; returns still require a checkout."},
+        {"interpretation": "member_self_checkout", "explanation": "Would let members lend to themselves. The pack's laws block this."}
+      ]}],
+      "fallback": [{"interpretation": "unsupported", "explanation": "This offline fixture only demonstrates loan renewal."}],
+      "unknowns": ["Actual library policy is unknown.", "Reviewer comprehension has not been measured."]
+    }
+  },
+  "verifiers": [
+    {"kind": "runtime_matrix", "mode": "kernel"},
+    {"kind": "smt", "mode": "not_run", "reason": "Generated SMT laws are WBS 1.4; no hand encoding exists for this pack."},
+    {"kind": "bmc", "mode": "not_run", "reason": "BMC state properties from evaluate_run are WBS 1.4."},
+    {"kind": "bend", "mode": "not_run", "reason": "Generating Bend laws is deferred (docs/engineering/FUTURE-WORK.md)."},
+    {"kind": "tlc", "mode": "not_run", "reason": "Generating TLA+ laws is deferred (docs/engineering/FUTURE-WORK.md)."}
+  ],
+  "journey": {"questions": [
+    {"id": "checkout_authority", "question": "Who may check a book out?", "expected": "Librarian"},
+    {"id": "return_entry", "question": "Which state must a loan have passed through before it can be returned?", "expected": "OnLoan"}
+  ]}
+}
