@@ -89,3 +89,12 @@ def test_delete_versus_modify_is_a_conflict(tmp_path):
     theirs = BASE.replace("demos = []\n", "")
     conflicts, _, _ = run(tmp_path, ours, theirs)
     assert conflicts == ["project.optional-dependencies.demos"]
+
+
+def test_arrays_of_tables_extended_on_both_sides_are_a_conflict_not_flattened(tmp_path):
+    base = "[[tool.mypy.overrides]]\nmodule = ['a']\n"
+    ours = base + "\n[[tool.mypy.overrides]]\nmodule = ['b']\n"
+    theirs = base + "\n[[tool.mypy.overrides]]\nmodule = ['c']\n"
+    conflicts, _, text = run(tmp_path, ours, theirs, base=base)
+    assert conflicts == ["tool.mypy.overrides"]
+    assert "[[tool.mypy.overrides]]" in text  # ours untouched, still real tables

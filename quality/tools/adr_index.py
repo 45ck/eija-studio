@@ -7,6 +7,7 @@ number blocks) stays hand-written.
     python -m quality.tools.adr_index --write     # regenerate
     python -m quality.tools.adr_index --check     # fail on drift, duplicate numbers or unparsable ADRs
 """
+# ruff: noqa: T201
 from __future__ import annotations
 
 import argparse
@@ -70,7 +71,10 @@ def collect(adr_dir: Path) -> tuple[list[Adr], list[str]]:
 
 def render_table(adrs: list[Adr]) -> str:
     rows = ["| ADR | Decision | Status |", "|---|---|---|"]
-    rows += [f"| [{a.number}]({a.file}) | {a.title.replace('|', '\\|')} | {a.status} |" for a in sorted(adrs, key=lambda a: a.number)]
+    for adr in sorted(adrs, key=lambda a: a.number):
+        # computed outside the f-string: Python 3.11 forbids backslashes inside f-string expressions
+        title = adr.title.replace("|", "\\|")
+        rows.append(f"| [{adr.number}]({adr.file}) | {title} | {adr.status} |")
     return "\n".join(rows)
 
 
@@ -107,7 +111,9 @@ def main(argv: list[str] | None = None) -> int:
         print(f"wrote index of {len(adrs)} ADRs")
         return 0
     if current != expected:
-        problems.append("docs/adr/README.md index is out of date: run `python -m quality.tools.adr_index --write`")
+        problems.append(
+            "docs/adr/README.md index is out of date: run `python -m quality.tools.adr_index --write`"
+        )
     for problem in problems:
         print(f"FAIL {problem}")
     if not problems:
