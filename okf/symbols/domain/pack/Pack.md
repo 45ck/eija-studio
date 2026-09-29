@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/pack.py#Pack
   title: domain/pack.py
   hash_method: ast-sig-v1
-  sha256: 8d85de04a3a400125e5e52d333e87bd22205afcf296e9b5abbc0db5a7ec3cc98
-notes_baseline: 1a514a15a90fe50f64efbd7b406b83d3b229a57dcd56b03f948f256392996630
+  sha256: 3b8d2db9d854a7459a5a03bea920dbb953464b72e6f04b02da7b74755d99b0ba
+notes_baseline: 100927721dcde05f8e542a27072cef5bdd253ef2af01327cecbb0ae4e2337f93
 ---
 
 # domain.pack.Pack
@@ -57,6 +57,7 @@ _The source carries no docstring._
 * [`effect`](/symbols/domain/pack/Pack.effect.md) - `def effect(self, effect_id: str) -> Effect \| None`
 * [`id`](/symbols/domain/pack/Pack.id.md) - `def id(self) -> str`
 * [`meaning`](/symbols/domain/pack/Pack.meaning.md) - `def meaning(self, meaning_id: str) -> Meaning \| None`
+* [`verifier`](/symbols/domain/pack/Pack.verifier.md) - `def verifier(self, kind: str) -> Verifier \| None`
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -78,11 +79,16 @@ _No curated notes yet._
 * [domain.pack.Meaning](/symbols/domain/pack/Meaning.md) - One interpretation of a request.
 * [domain.pack.PackInfo](/symbols/domain/pack/PackInfo.md) - `class PackInfo(Contract)` in `domain/pack`.
 * [domain.pack.Role](/symbols/domain/pack/Role.md) - `class Role(Contract)` in `domain/pack`.
-* [domain.pack.Verifier](/symbols/domain/pack/Verifier.md) - An evidence kind that applies to this pack.
+* [domain.pack.Verifier](/symbols/domain/pack/Verifier.md) - An evidence kind that applies to this pack (``kind`` is the evidence kind's name).
 
 ## Referenced by
 
 * [application.compiler.compile_case](/symbols/application/compiler/compile_case.md) - `def compile_case(case: ChangeCase, identity: dict[str, Any], authenticator: Callable[[dict[str, Any]], bool],…` in `application/compiler`.
+* [application.formal.attach](/symbols/application/formal/attach.md) - Sealed receipts for every registered kind the source returned, skipping an exact repeat of the latest one.
+* [application.formal.for_pack](/symbols/application/formal/for_pack.md) - Artifacts of a kind this pack does not verify from the reports become one NOT_RUN artifact with the pack's reason.
+* [application.formal.pack_not_run](/symbols/application/formal/pack_not_run.md) - Why ``kind`` is NOT_RUN for ``pack`` (None when the pack verifies it from the checkout's reports).
+* [application.formal.packet_view](/symbols/application/formal/packet_view.md) - The formal part of the review packet: per-kind claims, blockers, the full evidence list, explanations, and (with a pack) the pack's declared verifiers, so a ki…
+* [application.formal.verifier_view](/symbols/application/formal/verifier_view.md) - Every verifier the pack declares, with the status its mode implies before any evidence is read: a kind that is not produced for this pack (``not_run``) is NOT_…
 * [application.formal.what_if_model](/symbols/application/formal/what_if_model.md) - The workflow an unsupported interpretation would produce, or None (supported, unknown, or no transactions).
 * [application.runtime.execute](/symbols/application/runtime/execute.md) - `def execute(session: UnitOfWork, case_id: str, model: Workflow, command: ExecuteCommand, *, fault: Callable[[…` in `application/runtime`.
 * [application.runtime.initialise](/symbols/application/runtime/initialise.md) - `def initialise(session: UnitOfWork, case_id: str, model: Workflow, *, state: str | None=None, pack: Pack | No…` in `application/runtime`.
@@ -96,8 +102,10 @@ _No curated notes yet._
 * [domain.pack.Pack.effect](/symbols/domain/pack/Pack.effect.md) - `def effect(self, effect_id: str) -> Effect | None` in `domain/pack`.
 * [domain.pack.Pack.id](/symbols/domain/pack/Pack.id.md) - `def id(self) -> str` in `domain/pack`.
 * [domain.pack.Pack.meaning](/symbols/domain/pack/Pack.meaning.md) - `def meaning(self, meaning_id: str) -> Meaning | None` in `domain/pack`.
+* [domain.pack.Pack.verifier](/symbols/domain/pack/Pack.verifier.md) - `def verifier(self, kind: str) -> Verifier | None` in `domain/pack`.
 * [domain.pack.coherence_problems](/symbols/domain/pack/coherence_problems.md) - Every cross-reference defect of a structurally valid pack, sorted.
 * [domain.pack.default_pack](/symbols/domain/pack/default_pack.md) - The configured pack (cached per location).
+* [domain.pack.find_pack](/symbols/domain/pack/find_pack.md) - The pack a workflow belongs to (``Workflow.id``): a pack loaded in this process, else the repository pack of that id.
 * [domain.pack.load_pack](/symbols/domain/pack/load_pack.md) - Load a pack from a directory holding ``pack.json`` or from the file itself.
 * [domain.pack.parse_pack](/symbols/domain/pack/parse_pack.md) - Validate a decoded JSON document as a pack.
 * [domain.pack.state_sets](/symbols/domain/pack/state_sets.md) - The state sets a workflow of this pack can have: the baseline's, and the baseline's after each supported meaning (states its transactions add or remove).

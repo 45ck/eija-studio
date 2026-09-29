@@ -87,7 +87,7 @@ def main(argv=None) -> int:
     out = args.out or ROOT / "evidence" / "live-providers" / f"{args.date}-{system}.json"
     document = json.loads(out.read_text(encoding="utf-8")) if out.exists() else {}
     document.update({"recorded_on": args.date, "platform": {"system": system, "python": sys.version.split()[0]},
-                     "latency_note": "latency_s is propose() end to end, including three diagnostic probes (version, help, login status)", "request": REQUEST, "baseline": "synthetic excursion workflow (eija_studio.domain.policy.baseline)"})
+                     "latency_note": "latency_s is propose() end to end, including three diagnostic probes (version, help, login status)", "request": REQUEST, "baseline": "the default pack's synthetic baseline (eija_studio.domain.policy.baseline)"})
     record = run_smoke(args.provider, args.model, args.timeout)
     document.setdefault("results", {})[args.provider] = record
     out.parent.mkdir(parents=True, exist_ok=True)

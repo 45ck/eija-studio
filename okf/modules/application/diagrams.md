@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/diagrams.py
   title: application/diagrams.py
   hash_method: ast-api-v1
-  sha256: 46a6586fcf4a01e4578af41d9653e58392b2f86350351178ea2b53bc09853e82
-notes_baseline: 2552b8cb01e5f6e075e629cc4fcb38946e3adf40139d3c5573cf947aaa08ffc2
+  sha256: 49a01fb0303b64974b85b503a45ba22a373ec668aca86fa148307db16cdab64e
+notes_baseline: dea0b4093fe67149ebf7ce46c0b10cac31c15a758278c084253f656bdfd5cbab
 ---
 
 # application.diagrams

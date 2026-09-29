@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/diagram_catalog.py#case_diagrams
   title: application/diagram_catalog.py
   hash_method: ast-v2
-  sha256: 9fe39158bd84f5184b74dad201c4abc73ead7c8a01b1268e796ec0d7aeaa9995
-notes_baseline: a118b8992201a89f367e92461033e678a5cb02b2439e8525d4da87d6d87cff88
+  sha256: 2c6fb20ba0c33c05d9ec2820bb6bef46e4af98aa8c5dee070f46a314ea4a34fa
+notes_baseline: 465d21df8f972232903e29412606759f8ef0856503ff642c14db965cc1642f4d
 ---
 
 # application.diagram_catalog.case_diagrams
@@ -33,7 +33,7 @@ notes_baseline: a118b8992201a89f367e92461033e678a5cb02b2439e8525d4da87d6d87cff88
 
 ~~~text
 Every view for one change case as one JSON-friendly payload. `sources` carries the semantic hashes the
-text was generated from, so a viewer can compare them with the review packet's evidence subject.
+text was generated from, so a reader can compare them with the review packet's evidence subject.
 ~~~
 <!-- okf:generated:end facts -->
 

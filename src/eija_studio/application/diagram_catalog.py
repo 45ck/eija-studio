@@ -25,7 +25,7 @@ VIEW_FORMATS = dict.fromkeys(("state", "diff", "journey", "impact"), FORMATS) | 
 
 
 def demo_pair() -> tuple[Workflow, Workflow]:
-    """Baseline and the recommend_only candidate the excursion demo produces (rejection source Recommended)."""
+    """Baseline and the demo candidate: the default pack's baseline with its first supported meaning applied."""
     base = baseline()
     return base, demo_candidate()
 
@@ -87,7 +87,7 @@ def html_panels(view: str, before: Workflow, after: Workflow | None, action: str
 
 def case_diagrams(before: Workflow, after: Workflow | None, fmt: str = "mermaid") -> dict[str, Any]:
     """Every view for one change case as one JSON-friendly payload. `sources` carries the semantic hashes the
-    text was generated from, so a viewer can compare them with the review packet's evidence subject."""
+    text was generated from, so a reader can compare them with the review packet's evidence subject."""
     subject = after if after is not None else before
     views: dict[str, Any] = {"state_before": render_view("state", fmt, before), "state_after": None, "diff": None, "impact": None,
                    "journey": render_view("journey", fmt, before, after), "class": None, "sequences": {}}
@@ -139,9 +139,9 @@ def docs_bundle() -> dict[str, str]:
     check regenerates this and compares bytes with the committed files."""
     before, after = demo_pair()
     pages = {
-        "state-baseline.md": _page("State machine: baseline", "The active excursion workflow, as the runtime interprets it.",
+        "state-baseline.md": _page("State machine: baseline", "The active workflow of the default pack, as the runtime interprets it.",
                                    render_view("state", "mermaid", before)),
-        "state-candidate.md": _page("State machine: recommend-only candidate",
+        "state-candidate.md": _page("State machine: candidate",
                                     "The candidate produced by the pack's first supported meaning.",
                                     render_view("state", "mermaid", before, after)),
         "diff.md": _page("Visual diff: baseline vs candidate",

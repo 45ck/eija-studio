@@ -49,5 +49,5 @@ _No curated notes yet._
 
 ## Referenced by
 
-* [domain.pack.meaning_ids](/symbols/domain/pack/meaning_ids.md) - The meaning ids of the pack a workflow belongs to (``Workflow.id``): a pack loaded in this process, else the repository pack of that id.
+* [domain.pack.find_pack](/symbols/domain/pack/find_pack.md) - The pack a workflow belongs to (``Workflow.id``): a pack loaded in this process, else the repository pack of that id.
 <!-- okf:generated:end links -->

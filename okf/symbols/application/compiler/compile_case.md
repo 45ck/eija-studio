@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/application/compiler.py#compile_case
   title: application/compiler.py
   hash_method: ast-v2
-  sha256: ac1835feef99286527497b6eb723057569eb0806e1a31758f161083fbe2202f3
+  sha256: 406083375a209a7febeefd1a852ebb12dbc45e1b1b91d79a2da165094250d026
 description_override: 'Computes the review packet: subject, blockers, technical claims, impact, projections and critical questions for a Change Case.'
-notes_baseline: 94d02ec9df63ea410f322ccc595840e67e4a52cb702e37a78701958cd939e112
+notes_baseline: 39b80d1f54fd75dd986cb54b6b5cb99a0b095f454cdc92e15cfb20cdb9b153c0
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -26,6 +26,10 @@ verified:
   at: '2026-09-29T08:20:47Z'
   notes_sha256: 2ff446bce73f01347f890a6fe117bbdaaf5ef2e4ea52c60224d7d0cd87941daa
   sources_sha256: 94d02ec9df63ea410f322ccc595840e67e4a52cb702e37a78701958cd939e112
+- by: process:wbs-1.5-agent
+  at: '2026-09-29T12:00:00Z'
+  notes_sha256: b6116e3d60a7b02a7dd27860c62e4827ce0c7b940e6f734927432393c4cb6e87
+  sources_sha256: 39b80d1f54fd75dd986cb54b6b5cb99a0b095f454cdc92e15cfb20cdb9b153c0
 ---
 
 # application.compiler.compile_case
@@ -46,13 +50,13 @@ _The source carries no docstring._
 
 ## Notes
 
-Eligibility is computed, never stored: blockers come from policy findings, source-fixture status, impact completeness, receipt status, stale baseline, scope and closed cases. Formal evidence per kind (ADR-0145) is part of the packet: a counterexample (`FAIL` or `CONFLICT`) blocks, while `UNKNOWN` and `NOT_RUN` never block and are never rounded up to `PASS`. `human_understanding` is always `UNKNOWN`. See [Review Packet](/language/review-packet.md) and [Local Decision](/language/local-decision.md).
+Eligibility is computed, never stored: blockers come from policy findings, source-fixture status, impact completeness, receipt status, stale baseline, scope and closed cases. Formal evidence per kind (ADR-0145) is part of the packet: a counterexample (`FAIL` or `CONFLICT`) blocks, while `UNKNOWN` and `NOT_RUN` never block and are never rounded up to `PASS`. `human_understanding` is always `UNKNOWN`. The formal part also lists the pack's declared verifiers, so a kind no registered evidence covers (TLC for a new pack) is visible as `NOT_RUN` with its reason. See [Review Packet](/language/review-packet.md) and [Local Decision](/language/local-decision.md).
 
 <!-- okf:generated:begin links -->
 ## Depends on
 
 * [application.compiler.subject_for](/symbols/application/compiler/subject_for.md) - `def subject_for(model: Workflow, layout: dict[str, Any], identity: dict[str, Any]) -> dict[str, Any]` in `application/compiler`.
-* [application.formal.packet_view](/symbols/application/formal/packet_view.md) - The formal part of the review packet: per-kind claims, blockers, the full evidence list, explanations.
+* [application.formal.packet_view](/symbols/application/formal/packet_view.md) - The formal part of the review packet: per-kind claims, blockers, the full evidence list, explanations, and (with a pack) the pack's declared verifiers, so a ki…
 * [domain.change_case.ChangeCase](/symbols/domain/change_case/ChangeCase.md) - Aggregate boundary: transitions are mediated by the application and CAS store.
 * [domain.evidence.aggregate_status](/symbols/domain/evidence/aggregate_status.md) - `def aggregate_status(receipts: list[dict[str, Any]], subject: dict[str, Any], authenticator: Callable[[dict[s…` in `domain/evidence`.
 * [domain.evidence.expected_shape](/symbols/domain/evidence/expected_shape.md) - The runtime matrix a receipt must cover under ``pack``: exactly ``model``'s states when it is known.

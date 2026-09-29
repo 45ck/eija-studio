@@ -7,7 +7,7 @@ From `domain.impact.model_impact`: changed rules flow through runtime, state vie
 %% eija: baseline: workflow excursion semantic_hash=5d3ef3a19c31d956a185b9c5ba4b1b79e651d0356e162436c5c67054d2ad4cdf
 %% eija: candidate: workflow excursion semantic_hash=b26c9af5ae4cd958099956232721a70e73cb7e6efe1b213ff32417829b588e56
 %% eija: closure: complete within this mapping
-%% eija: envelope: All dependencies encoded by this excursion projection mapping; not every real-world consequence.
+%% eija: envelope: All dependencies encoded by this projection mapping; not every real-world consequence.
 flowchart LR
     classDef changed fill:#fff3c4,stroke:#9a6700,color:#4a3200
     classDef affected fill:#ffe8cc,stroke:#bc4c00,color:#4d2000

@@ -1,7 +1,7 @@
 ---
 type: Class
 title: domain.pack.Verifier
-description: An evidence kind that applies to this pack.
+description: An evidence kind that applies to this pack (``kind`` is the evidence kind's name).
 resource: repo://src/eija_studio/domain/pack.py#Verifier
 tags:
 - symbol
@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/pack.py#Verifier
   title: domain/pack.py
   hash_method: ast-sig-v1
-  sha256: aa06f2732f58b3bdb5df967934e7730432c93e7f939dfde9053254fb65fbd8d9
-notes_baseline: b3786cefdbb2c797327b791e3417e67ae68976cb034c3ab54260154161a15deb
+  sha256: e8e6dea32928196522694f05c16452f4756e45291bb44cba72523c1909e44710
+notes_baseline: 5e6810219542169d1d4fa6ca6d4c248f699530f4e3029cd8dcf898b384552b07
 ---
 
 # domain.pack.Verifier
@@ -32,8 +32,10 @@ notes_baseline: b3786cefdbb2c797327b791e3417e67ae68976cb034c3ab54260154161a15deb
 ## Docstring
 
 ~~~text
-An evidence kind that applies to this pack. ``hand_encoded`` marks a hand-written formal model of the pack;
-``not_run`` records that the kind is deliberately not produced for this pack, with the reason.
+An evidence kind that applies to this pack (``kind`` is the evidence kind's name). ``hand_encoded`` marks a
+hand-written formal model of the pack; ``generated`` a model generated from the pack's laws; ``not_run`` records
+that the kind is deliberately not produced for this pack, with the reason. Only ``kernel`` and ``hand_encoded``
+kinds read the checkout's committed formal reports; every other kind is NOT_RUN in the review packet, with the reason.
 ~~~
 
 ## Fields
@@ -41,7 +43,7 @@ An evidence kind that applies to this pack. ``hand_encoded`` marks a hand-writte
 | Field | Annotation | Default |
 |---|---|---|
 | `kind` | `str` | `Field(pattern='^[a-z][a-z0-9_]{0,39}$')` |
-| `mode` | `Literal['kernel', 'hand_encoded', 'not_run']` |  |
+| `mode` | `Literal['kernel', 'hand_encoded', 'generated', 'not_run']` |  |
 | `reason` | `str` | `Field(default='', max_length=400)` |
 <!-- okf:generated:end facts -->
 
@@ -57,4 +59,5 @@ _No curated notes yet._
 ## Referenced by
 
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
+* [domain.pack.Pack.verifier](/symbols/domain/pack/Pack.verifier.md) - `def verifier(self, kind: str) -> Verifier | None` in `domain/pack`.
 <!-- okf:generated:end links -->

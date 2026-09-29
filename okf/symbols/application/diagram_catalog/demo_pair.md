@@ -1,7 +1,7 @@
 ---
 type: Function
 title: application.diagram_catalog.demo_pair
-description: Baseline and the recommend_only candidate the excursion demo produces (rejection source Recommended).
+description: 'Baseline and the demo candidate: the default pack''s baseline with its first supported meaning applied.'
 resource: repo://src/eija_studio/application/diagram_catalog.py#demo_pair
 tags:
 - symbol
@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/diagram_catalog.py#demo_pair
   title: application/diagram_catalog.py
   hash_method: ast-v2
-  sha256: 55bfd1ceaea436780f8270c8c1894d027c10a6fc4dc6422f9475f198d28acb9c
-notes_baseline: f8b0c3dbf09660594ab48c643d514849d83a22de531f7ad42b720a33a30341b7
+  sha256: 2cbea45d4d05133818e61ae39b23f0ffa08c2d8582d9f8bf647ad612f46b61b2
+notes_baseline: f5010957c72dc57090f479c811041d4a641ecc3799b46d8bc4c88cab606a18ee
 ---
 
 # application.diagram_catalog.demo_pair
@@ -32,7 +32,7 @@ notes_baseline: f8b0c3dbf09660594ab48c643d514849d83a22de531f7ad42b720a33a30341b7
 ## Docstring
 
 ~~~text
-Baseline and the recommend_only candidate the excursion demo produces (rejection source Recommended).
+Baseline and the demo candidate: the default pack's baseline with its first supported meaning applied.
 ~~~
 <!-- okf:generated:end facts -->
 

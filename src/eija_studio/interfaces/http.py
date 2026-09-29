@@ -9,6 +9,7 @@ from fastapi.exceptions import RequestValidationError
 from pydantic import Field
 from eija_studio.application.diagram_catalog import case_diagrams
 from eija_studio.domain.models import MEANING_ID, Contract, DomainError, OWNER, LayoutChange, ExecuteCommand
+from eija_studio.domain.pack import Pack
 from eija_studio.domain.transactions import Transaction
 
 # The Studio page keeps this policy. Only /visual-frame, a static document with no API access, relaxes styles
@@ -49,6 +50,14 @@ def _set_security_headers(response, path: str) -> None:
     response.headers.update({"Cache-Control": cache, "X-Content-Type-Options": "nosniff",
         "Referrer-Policy": "no-referrer", "X-Frame-Options": "SAMEORIGIN" if framed else "DENY",
         "Content-Security-Policy": FRAME_CSP if framed else PAGE_CSP})
+
+
+def pack_summary(pack: Pack) -> dict[str, object]:
+    """What the page needs to name the domain without hardcoding it: the pack's name, demo request, declared actions
+    (in declaration order) and synthetic fixture actors."""
+    return {"id": pack.id, "name": pack.pack.name, "version": pack.pack.version, "demo_request": pack.fixtures.demo_request,
+            "actions": [a.id for a in pack.actions],
+            "actors": [{"id": a.id, "role": a.role, "active": a.active, "assigned": a.assigned} for a in pack.fixtures.actors]}
 
 
 def create_app(studio, token: str, port: int = 8765) -> FastAPI:
@@ -120,7 +129,8 @@ def create_app(studio, token: str, port: int = 8765) -> FastAPI:
         identity = studio.identity_provider()
         return {"version": "0.2.0", "provider": studio.provider.name, "network_enabled": studio.allow_network,
             "provider_networked": studio.provider.networked, "baseline_version": active["version"], "baseline": active["model"],
-            "trusted_fixture": identity["trusted_fixture"], "identity_boundary": "Single local owner; synthetic actors only"}
+            "trusted_fixture": identity["trusted_fixture"], "identity_boundary": "Single local owner; synthetic actors only",
+            "pack": pack_summary(studio.pack)}
 
     @app.get("/api/doctor")
     def doctor():
@@ -170,7 +180,7 @@ def create_app(studio, token: str, port: int = 8765) -> FastAPI:
     def verify(case_id: str, body: Version):
         return studio.verify(case_id, body.expected_version)
 
-    @app.post("/api/cases/{case_id}/approve")
+    @app.post("/api/cases/{case_id}/approve", summary="Owner decision on the exact revision")
     def approve(case_id: str, body: Approval):
         return studio.approve(case_id, body.expected_version, body.subject_hash, body.answers, body.acknowledge_unknowns, OWNER, body.scope)
 

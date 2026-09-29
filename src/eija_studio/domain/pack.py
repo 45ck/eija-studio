@@ -324,15 +324,21 @@ def load_pack(location: str | Path) -> Pack:
     return pack
 
 
-def meaning_ids(pack_id: str) -> frozenset[str] | None:
-    """The meaning ids of the pack a workflow belongs to (``Workflow.id``): a pack loaded in this process, else the
-    repository pack of that id. None when no such pack can be found."""
+def find_pack(pack_id: str) -> Pack | None:
+    """The pack a workflow belongs to (``Workflow.id``): a pack loaded in this process, else the repository pack of
+    that id. None when no such pack can be found."""
     pack = _LOADED.get(pack_id)
     if pack is None and re.fullmatch(PACK_ID, pack_id) and (PACKS_ROOT / pack_id / PACK_FILE).is_file():
         try:
             pack = load_pack(PACKS_ROOT / pack_id)
         except PackError:
             return None
+    return pack
+
+
+def meaning_ids(pack_id: str) -> frozenset[str] | None:
+    """The meaning ids of the pack a workflow belongs to, or None when no such pack can be found."""
+    pack = find_pack(pack_id)
     return None if pack is None else frozenset(m.id for m in pack.meanings)
 
 

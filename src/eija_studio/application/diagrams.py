@@ -149,7 +149,7 @@ LEGEND_TEXT = {
     "changed": "changed (~)",
     "affected": "affected downstream",
     "same": "unchanged",
-    "blocked": "blocked by the protected excursion policy",
+    "blocked": "blocked by the pack's protected policy",
 }
 
 
@@ -179,7 +179,7 @@ def state_graph(workflow: Workflow, *, role: str = "workflow") -> Graph:
 
 
 def _describe(old: Transition, new: Transition, field: str) -> str:
-    """What one changed field became: `role Registrar→Teacher`, `guards +actor_assigned -x`."""
+    """What one changed field became: `role A→B`, `guards +actor_assigned -x`."""
     before, after = getattr(old, field), getattr(new, field)
     if isinstance(before, tuple):
         added, removed = sorted(set(after) - set(before)), sorted(set(before) - set(after))

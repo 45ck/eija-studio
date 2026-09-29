@@ -18,7 +18,7 @@
 * [domain.pack.Question](Question.md) - A meaning-check question for the owner.
 * [domain.pack.Role](Role.md) - `class Role(Contract)` in `domain/pack`.
 * [domain.pack.Term](Term.md) - `class Term(Contract)` in `domain/pack`.
-* [domain.pack.Verifier](Verifier.md) - An evidence kind that applies to this pack.
+* [domain.pack.Verifier](Verifier.md) - An evidence kind that applies to this pack (``kind`` is the evidence kind's name).
 
 # Constants
 
@@ -35,8 +35,9 @@
 * [domain.pack.coherence_problems](coherence_problems.md) - Every cross-reference defect of a structurally valid pack, sorted.
 * [domain.pack.default_location](default_location.md) - ``$EIJA_PACK`` if set, else the pack named by ``packs/default.json``.
 * [domain.pack.default_pack](default_pack.md) - The configured pack (cached per location).
+* [domain.pack.find_pack](find_pack.md) - The pack a workflow belongs to (``Workflow.id``): a pack loaded in this process, else the repository pack of that id.
 * [domain.pack.load_pack](load_pack.md) - Load a pack from a directory holding ``pack.json`` or from the file itself.
-* [domain.pack.meaning_ids](meaning_ids.md) - The meaning ids of the pack a workflow belongs to (``Workflow.id``): a pack loaded in this process, else the repository pack of that id.
+* [domain.pack.meaning_ids](meaning_ids.md) - The meaning ids of the pack a workflow belongs to, or None when no such pack can be found.
 * [domain.pack.parse_pack](parse_pack.md) - Validate a decoded JSON document as a pack.
 * [domain.pack.state_sets](state_sets.md) - The state sets a workflow of this pack can have: the baseline's, and the baseline's after each supported meaning (states its transactions add or remove).
 * [domain.pack.ui_key](ui_key.md) - The derived UI/UML key of a pack element: ``data-eija-id="<pack>.<kind>.<id>"``.
@@ -48,3 +49,4 @@
 * [domain.pack.Pack.effect](Pack.effect.md) - `def effect(self, effect_id: str) -> Effect | None` in `domain/pack`.
 * [domain.pack.Pack.id](Pack.id.md) - `def id(self) -> str` in `domain/pack`.
 * [domain.pack.Pack.meaning](Pack.meaning.md) - `def meaning(self, meaning_id: str) -> Meaning | None` in `domain/pack`.
+* [domain.pack.Pack.verifier](Pack.verifier.md) - `def verifier(self, kind: str) -> Verifier | None` in `domain/pack`.

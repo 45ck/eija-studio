@@ -111,5 +111,5 @@ def test_a_change_to_a_single_action_affects_only_that_actions_chain():
 def test_impact_is_symmetric_in_the_changed_set_and_states_its_envelope():
     forward, backward = model_impact(baseline(), candidate()), model_impact(candidate(), baseline())
     assert forward["changed_actions"] == backward["changed_actions"] and forward["affected"] == backward["affected"]
-    assert forward["envelope"].startswith("All dependencies encoded by this excursion projection mapping")
+    assert forward["envelope"].startswith("All dependencies encoded by this projection mapping")
     assert "not every real-world consequence" in forward["envelope"]

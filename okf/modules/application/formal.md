@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/formal.py
   title: application/formal.py
   hash_method: ast-api-v1
-  sha256: 4fd44ad2297d38eb44fad59a9f0e30dd379c87493b038495824a267e7f13561c
-notes_baseline: e583bc3bed72f945aadbce27f18af49f47ab463b625df46aced78885eed2ce7b
+  sha256: 55bf8b4f32eab657dad11d90bb58dce07cf9f3c97942f3d73b67bcb43d6fe3b5
+notes_baseline: 3be93c009a1f27a7c0f14c40d4870a416a6bbf74dc03ec2b25bdd5bc573edd57
 ---
 
 # application.formal
@@ -38,8 +38,12 @@ recomputes every verdict. Nothing here reads a status label from an artifact.
 ## Public symbols
 
 * [`BLOCKING`](/symbols/application/formal/BLOCKING.md) (constant) - no docstring
+* [`READS_REPORTS`](/symbols/application/formal/READS_REPORTS.md) (constant) - no docstring
 * [`attach`](/symbols/application/formal/attach.md) (function) - Sealed receipts for every registered kind the source returned, skipping an exact repeat of the latest one.
-* [`packet_view`](/symbols/application/formal/packet_view.md) (function) - The formal part of the review packet: per-kind claims, blockers, the full evidence list, explanations.
+* [`for_pack`](/symbols/application/formal/for_pack.md) (function) - Artifacts of a kind this pack does not verify from the reports become one NOT_RUN artifact with the pack's reason.
+* [`pack_not_run`](/symbols/application/formal/pack_not_run.md) (function) - Why ``kind`` is NOT_RUN for ``pack`` (None when the pack verifies it from the checkout's reports).
+* [`packet_view`](/symbols/application/formal/packet_view.md) (function) - The formal part of the review packet: per-kind claims, blockers, the full evidence list, explanations, and (with a pack…
+* [`verifier_view`](/symbols/application/formal/verifier_view.md) (function) - Every verifier the pack declares, with the status its mode implies before any evidence is read: a kind that is not prod…
 * [`what_if_model`](/symbols/application/formal/what_if_model.md) (function) - The workflow an unsupported interpretation would produce, or None (supported, unknown, or no transactions).
 
 ## Internal imports
@@ -73,7 +77,11 @@ _No curated notes yet._
 * [application.compiler](/modules/application/compiler.md) - Compiler: model → projections + impacts + obligations + computed review packet.
 * [application.service](/modules/application/service.md) - Module `application/service` (no module docstring).
 * [application.formal.BLOCKING](/symbols/application/formal/BLOCKING.md) - Constant `BLOCKING` in `application/formal`.
+* [application.formal.READS_REPORTS](/symbols/application/formal/READS_REPORTS.md) - Constant `READS_REPORTS` in `application/formal`.
 * [application.formal.attach](/symbols/application/formal/attach.md) - Sealed receipts for every registered kind the source returned, skipping an exact repeat of the latest one.
-* [application.formal.packet_view](/symbols/application/formal/packet_view.md) - The formal part of the review packet: per-kind claims, blockers, the full evidence list, explanations.
+* [application.formal.for_pack](/symbols/application/formal/for_pack.md) - Artifacts of a kind this pack does not verify from the reports become one NOT_RUN artifact with the pack's reason.
+* [application.formal.pack_not_run](/symbols/application/formal/pack_not_run.md) - Why ``kind`` is NOT_RUN for ``pack`` (None when the pack verifies it from the checkout's reports).
+* [application.formal.packet_view](/symbols/application/formal/packet_view.md) - The formal part of the review packet: per-kind claims, blockers, the full evidence list, explanations, and (with a pack) the pack's declared verifiers, so a ki…
+* [application.formal.verifier_view](/symbols/application/formal/verifier_view.md) - Every verifier the pack declares, with the status its mode implies before any evidence is read: a kind that is not produced for this pack (``not_run``) is NOT_…
 * [application.formal.what_if_model](/symbols/application/formal/what_if_model.md) - The workflow an unsupported interpretation would produce, or None (supported, unknown, or no transactions).
 <!-- okf:generated:end links -->

@@ -982,7 +982,7 @@ The tool returns a proposal. It edits nothing. Sites it cannot resolve syntactic
     "candidate_semantic_hash": "b26c9af5ae4cd958099956232721a70e73cb7e6efe1b213ff32417829b588e56",
     "base_semantic_hash": "5d3ef3a19c31d956a185b9c5ba4b1b79e651d0356e162436c5c67054d2ad4cdf",
     "model_delta": {"changed_actions": ["Approve", "Recommend", "Reject"]},
-    "kernel_impact": {"affected": ["journey:Approve", "journey:Recommend", "journey:Reject", "local-decision", "obligation:Approve", "obligation:Recommend", "obligation:Reject", "receipt:Approve", "receipt:Recommend", "receipt:Reject", "review-packet", "rule:Approve", "rule:Recommend", "rule:Reject", "runtime:Approve", "runtime:Recommend", "runtime:Reject", "state-view:Approve", "state-view:Recommend", "state-view:Reject"], "complete": true, "envelope": "All dependencies encoded by this excursion projection mapping; not every real-world consequence."},
+    "kernel_impact": {"affected": ["journey:Approve", "journey:Recommend", "journey:Reject", "local-decision", "obligation:Approve", "obligation:Recommend", "obligation:Reject", "receipt:Approve", "receipt:Recommend", "receipt:Reject", "review-packet", "rule:Approve", "rule:Recommend", "rule:Reject", "runtime:Approve", "runtime:Recommend", "runtime:Reject", "state-view:Approve", "state-view:Recommend", "state-view:Reject"], "complete": true, "envelope": "All dependencies encoded by this projection mapping; not every real-world consequence."},
     "ripple": null,
     "findings_delta": null,
     "links_becoming_suspect": [],

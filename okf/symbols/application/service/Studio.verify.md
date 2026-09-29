@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.verify
   title: application/service.py
   hash_method: ast-v2
-  sha256: f3c29492dbb2b764bb80b278bece6323959e1b542d62634813d591ff25c086c9
+  sha256: c34d8a257b4ef17e179c000d0ffd92ba3b46af0b309934e46591ff3d5f985d9a
 description_override: Runs the runtime matrix in a sandbox and stores a sealed receipt; refuses a source that differs from the release fixture.
-notes_baseline: a9ed783a70558b432f88de89917d691d55c2272d4b60c8ae9cb0ca119d9b82d4
+notes_baseline: f5bc6b23b2b222232a737f2892c86137b1815030ca006a4489de2b0e3f5bd5c7
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -26,6 +26,10 @@ verified:
   at: '2026-09-29T08:20:47Z'
   notes_sha256: 56f0ccbab358790d8de0e49cde7f9024d5f5ec3f0263df470c46d9943a65df6a
   sources_sha256: a9ed783a70558b432f88de89917d691d55c2272d4b60c8ae9cb0ca119d9b82d4
+- by: process:wbs-1.5-agent
+  at: '2026-09-29T12:00:00Z'
+  notes_sha256: 1736d73398d6735d08651269065d70ae2776ea2d04ecfe339cd39add3a1baf33
+  sources_sha256: f5bc6b23b2b222232a737f2892c86137b1815030ca006a4489de2b0e3f5bd5c7
 ---
 
 # application.service.Studio.verify
@@ -47,7 +51,7 @@ _The source carries no docstring._
 
 ## Notes
 
-Verification clears any current decision and never approves. Besides the runtime receipt it appends the formal-evidence receipts of the configured source (collected outside the transaction; a missing prerequisite is a `NOT_RUN` artifact, never omitted). See [verify_runtime](/symbols/application/verifier/verify_runtime.md) and [Evidence Receipt](/language/evidence-receipt.md).
+Verification clears any current decision and never approves. Besides the runtime receipt it appends the formal-evidence receipts of the configured source (collected outside the transaction; a missing prerequisite is a `NOT_RUN` artifact, never omitted). A kind the studio's pack does not verify from the checkout's reports (its verifier is `generated`, `not_run` or undeclared) is replaced by a `NOT_RUN` artifact carrying the pack's reason, so another pack's proof never counts for this one. See [verify_runtime](/symbols/application/verifier/verify_runtime.md) and [Evidence Receipt](/language/evidence-receipt.md).
 
 <!-- okf:generated:begin links -->
 ## Depends on

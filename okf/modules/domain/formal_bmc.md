@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/formal_bmc.py
   title: domain/formal_bmc.py
   hash_method: ast-api-v1
-  sha256: 38aa045b6c2c19a9d19605ff9d21a0aebb51422480c5c1f1380f8eddfecf8389
-notes_baseline: fd2d81f57ff6a5bfe055d98fa7ca26758565e4077468d8fcea76ac6a58518284
+  sha256: a93e0f819903408a95e4766fdaac3ee67b788f188c663aedaa1dc50ce9e59972
+notes_baseline: 24ab9fe0623beca5b5df369d03b0a772a125b432dffe501ff41c45ac11d756d7
 ---
 
 # domain.formal_bmc

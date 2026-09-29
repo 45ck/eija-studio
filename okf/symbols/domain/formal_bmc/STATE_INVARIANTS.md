@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/formal_bmc.py#STATE_INVARIANTS
   title: domain/formal_bmc.py
   hash_method: ast-v2
-  sha256: 93245c3c698a3ae5481228b4699de967cbad55479b7512dd9e6f3dc6642858bc
-notes_baseline: 2339e84325e5ec0ad3efb13f62dd5fdd55e1c3ab4ffd31e2d58dd6cbb0f0618b
+  sha256: 925939acbce287dc37041d2db4d51a6c9276d68f661d582da4ba7d246c5626e9
+notes_baseline: b597d9d829317ff4fb93d4290c6236a15e5825cfa16d718505c0ca551e572027
 ---
 
 # domain.formal_bmc.STATE_INVARIANTS
@@ -25,7 +25,7 @@ notes_baseline: 2339e84325e5ec0ad3efb13f62dd5fdd55e1c3ab4ffd31e2d58dd6cbb0f0618b
 |---|---|
 | Kind | constant |
 | Module | [`domain/formal_bmc`](/modules/domain/formal_bmc.md) |
-| Signature | `STATE_INVARIANTS = ('DECISION-ONLY-BY-REGISTRAR', 'APPROVAL-FOLLOWS-RECOMMENDATION', 'NO-FORBIDDEN-EFFECT')` |
+| Signature | `STATE_INVARIANTS = ('PACK-LAWS-HOLD-ON-RUN',)` |
 | Code | `repo://src/eija_studio/domain/formal_bmc.py#STATE_INVARIANTS` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 

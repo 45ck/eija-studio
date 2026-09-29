@@ -538,7 +538,7 @@ def poc_decision_pages(repo: Repo, catalog_paths: dict[str, str]) -> list[PageSp
             continue
         ident, decision, rejected, consequence = cells
         uri = f"repo://{POC_LOG}#{cl.slug(ident)}"
-        facts = "\n\n".join([f"## Decision and rationale\n\n{decision}", f"## Rejected shortcut\n\n{rejected}",
+        facts = "\n\n".join([f"## Decision and rationale\n\n{decision}", f"## Rejected shortcut\n\n{rejected}",  # vocab-ok: English heading, not the state
                              f"## Consequence and revisit trigger\n\n{consequence}",
                              f"Source: `{uri}`. Accepted for the local POC only; not an endorsement for production."])
         pages.append(PageSpec(path=f"adrs/poc/{cl.slug(ident)}.md", type="Architecture Decision Record",

@@ -13,8 +13,8 @@ sources:
 - resource: repo://quality/sessions/smt_bmc.py#formal_smt
   title: smt_bmc.py
   hash_method: ast-v2
-  sha256: a806f9d0ebee51acd379f6ffb397349ff92932fbc498c29b93d48a880b5e2863
-notes_baseline: 2fa489e19dd0039f99dc2983bb4298faf0b7f1059f47745677c85616f6319a6c
+  sha256: 06d33d9ad6ef318aae098d9dfe23ef511491c2ff0fbb70679497b58c9e7333be
+notes_baseline: 06c5406a794bca0297cd953be1287b414a6c44ce1acd3127d796ab09080c2dd2
 ---
 
 # nox -s formal_smt
