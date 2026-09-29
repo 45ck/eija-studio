@@ -24,6 +24,8 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0036](0036-noslop-hooks-adapted-to-nox.md) | noslop guardrails adapted to run nox tiers; hook enablement is an explicit step | accepted |
 | [0037](0037-metrics-and-quantitative-models.md) | Measure design, performance and scaling with radon, grimp and coverage.py, and fit models rather than assert them | accepted |
 | [0038](0038-metric-budgets-as-tests.md) | Metric budgets are tests with a stated basis, and timing budgets are advisory in the full gate | accepted |
+| [0039](0039-hci-law-instrumentation.md) | Apply HCI laws to the Studio UI with Playwright, axe-core and pure formula modules | accepted |
+| [0040](0040-hci-budgets-as-ratchets-and-harness-identity.md) | HCI budgets are ratchets, browser tests are opt-in, and the journey runs under the harness identity | accepted |
 | [0041](0041-mcp-server-agent-surface.md) | MCP server as the agent surface: propose and check, never decide | accepted |
 | [0047](0047-hardcoded-scripted-demos-not-demo-machine.md) | Hand-authored scripted demo recordings, not demo-machine | accepted |
 | [0048](0048-scenario-dependency-gating.md) | Demo scenarios are gated by their real dependencies, never faked | accepted |
