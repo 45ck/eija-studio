@@ -170,8 +170,8 @@
     },
     {
       "path": "pyproject.toml",
-      "bytes": 17148,
-      "sha256": "8d3c73e72f27a7b1a97f3f9d6c344d829f7246fe50f50448bcb05f19d45f884a"
+      "bytes": 17556,
+      "sha256": "a5af95ec3a93be2a4fe5d2e2d9cb97b7a4eecf25b894c86bab65e04026d2a746"
     },
     {
       "path": "requirements-tested.txt",
@@ -460,8 +460,13 @@
     },
     {
       "path": "src/eija_studio/interfaces/agent_config.py",
-      "bytes": 2925,
-      "sha256": "4ac1910c803d028ceed60b83b04aa1dc2d13c4c440dda7ae9a234b1ea546456c"
+      "bytes": 4059,
+      "sha256": "90cd74c9f0e5e4c306d0234fe69fa6da8d4bd91717f948ee69301663170aa111"
+    },
+    {
+      "path": "src/eija_studio/interfaces/agent_policy.py",
+      "bytes": 1955,
+      "sha256": "9ee866555f66d3b4a48e62b7852b43d78470eca41973a2cd6113a4559639b103"
     },
     {
       "path": "src/eija_studio/interfaces/cli.py",
@@ -475,8 +480,8 @@
     },
     {
       "path": "src/eija_studio/interfaces/mcp_server.py",
-      "bytes": 25615,
-      "sha256": "84b2f5aa801ab83af6706fda3a7d5a0ef6eea7fc72295478b7ac29785e40f7fc"
+      "bytes": 26605,
+      "sha256": "713275877e139f097a97ad1b2704cd53bd8ef8de8d0152e918bfaae1985fd2bc"
     },
     {
       "path": "src/eija_studio/interfaces/render_html.py",
