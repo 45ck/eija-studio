@@ -22,7 +22,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 # target (repo-relative, posix) -> the lane that creates it. Remove an entry once it lands.
 PENDING: dict[str, str] = {
-    "docs/agents/quickstart.md": "agents lane (open PR #8)",
+    "docs/adr/0153-domain-agnostic-kernel.md": "WBS WP 1.11 (ADR of the domain-agnostic kernel; GENERALITY-AUDIT.md links it ahead of time)",
 }
 
 FILES = ["README.md", "CONTRIBUTING.md", "CODE_OF_CONDUCT.md", "SECURITY.md", "CHANGELOG.md", "AGENTS.md",
