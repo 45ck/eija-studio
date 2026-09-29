@@ -3,6 +3,7 @@
 Sessions use python=False and sys.executable like the other lanes, keep temp data inside the checkout, and report a
 missing optional prerequisite as a skip that the test output names NOT_RUN, never as a pass.
 """
+import json
 import sys
 from pathlib import Path
 
@@ -106,8 +107,14 @@ def graph_formal_full(session: nox.Session) -> None:
 
     Java 17 and the jar pinned in graph/formal/TOOLS.lock are needed for the Alloy commands; without them they are NOT_RUN.
     """
-    session.run(PYTHON, "graph/formal/selfcheck.py", "--alloy", env=_env())
+    # selfcheck exits 0 (PASS), 1 (FAIL) or 2 (NOT_RUN: a suite passed but Java or the pinned jar is missing). NOT_RUN is a skip, never a pass
+    # and never a failure, so it is reported after the tests have run.
+    report = session.run(PYTHON, "graph/formal/selfcheck.py", "--alloy", env=_env(), silent=True, success_codes=[0, 2])
+    session.log(report)
     session.run(PYTHON, "-m", "pytest", "-q", "-p", "no:cacheprovider", "tests/graph/formal", *session.posargs, env=_env())
+    alloy = json.loads(report).get("tools", {}).get("alloy", {})
+    if alloy.get("verdict") == "NOT_RUN":
+        session.skip(f"NOT_RUN (not a pass): the Alloy certificate models did not run: {alloy.get('reason')}")
 
 
 @nox.session(python=False, tags=["release"])
