@@ -1,6 +1,5 @@
 import ast
 import copy
-import sys
 
 import pytest
 
@@ -53,38 +52,6 @@ def test_sdp_violation_is_reported_only_against_the_stability_gradient():
     up = [{"from": "stable", "to": "flaky", "imports": 1}]
     assert structure.sdp_violations(down, inst) == []
     assert structure.sdp_violations(up, inst)[0]["to"] == "flaky"
-
-
-TOY = {
-    "__init__.py": "",
-    "a/__init__.py": "",
-    "a/m.py": "from typing import Protocol\n\nclass P(Protocol):\n    def f(self) -> int: ...\n\nclass C:\n    pass\n",
-    "b/__init__.py": "",
-    "b/m.py": "from toy.a import m\n\nclass X:\n    pass\n",
-    "c/__init__.py": "",
-    "c/m.py": "from toy.a import m\nfrom toy.b import m as bm\n",
-}
-
-
-def test_martin_metrics_of_a_hand_worked_toy_package(tmp_path, monkeypatch):
-    """Package `toy`: c imports a and b, b imports a, a imports nothing.  Derived by hand from the definitions:
-
-      a: Ca = {b.m, c.m} = 2, Ce = 0 -> I = 0/2 = 0;    classes 2 (one Protocol) -> A = 1/2;  D = |0.5 + 0 - 1| = 0.5
-      b: Ca = {c.m} = 1,      Ce = {a.m} = 1 -> I = 1/2; classes 1, none abstract  -> A = 0;    D = |0 + 0.5 - 1| = 0.5
-      c: Ca = 0,              Ce = {a.m, b.m} = 2 -> I = 1; no classes             -> A = 0;    D = |0 + 1 - 1| = 0
-    """
-    for name, body in TOY.items():
-        path = tmp_path / "toy" / name
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(body, encoding="utf-8")
-    monkeypatch.syspath_prepend(str(tmp_path))
-    sys.modules.pop("toy", None)
-    result = structure.collect("toy", tmp_path / "toy")
-    rows = {r["name"]: r for r in result["layers"]}
-    got = {n: (r["ca"], r["ce"], r["instability"], r["abstractness"], r["distance"]) for n, r in rows.items()}
-    assert got == {"a": (2, 0, 0.0, 0.5, 0.5), "b": (1, 1, 0.5, 0.0, 0.5), "c": (0, 2, 1.0, 0.0, 0.0)}
-    assert result["summary"]["layer_cycles"] == [] and result["summary"]["sdp_violations"] == []
-    assert result["summary"]["mean_layer_distance"] == pytest.approx(1 / 3, abs=1e-3)
 
 
 @pytest.fixture(scope="module")

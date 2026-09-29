@@ -8,21 +8,14 @@ Two transports are measured against the same application factory:
                   loopback socket with keep-alive. This is closest to what a browser experiences,
                   minus browser rendering.
 
-Per endpoint the report gives n, min, p25/p50/p75 (median and interquartile range), p95, p99, max and
-mean (milliseconds; nearest-rank percentiles from `quality.hci.laws`, the repository's one definition)
-and compares p95 with two thresholds:
+Per endpoint the report gives n, min, p50, p95, p99, max, mean (milliseconds; linear-interpolation
+percentiles) and compares p95 with two thresholds:
 
   * 100 ms  "instantaneous" (Miller 1968; Nielsen 1993, ch. 5: about 0.1 s feels immediate);
   * 400 ms  the Doherty threshold (Doherty & Thadani, IBM Systems Journal 1982: below ~400 ms
             computer and user stay in a productive, mutually paced loop).
 
-Percentile caveat: with n < 100, p99 is essentially the maximum; treat it as an upper indication. The
-median and IQR are the headline on a noisy shared machine.
-
-Relation to the hci lane: `quality.hci` measures what a BROWSER observes (click to last DOM mutation, real
-Chrome, the Studio UI). This module measures the HTTP layer beneath it (server and SQLite, no rendering),
-per endpoint. They share the Doherty constant, the percentile definition and the port helper; they do not
-share a harness because they answer different questions.
+Percentile caveat: with n < 100, p99 is essentially the maximum; treat it as an upper indication.
 
 What this does NOT establish: browser-perceived latency (parsing, layout, paint), behaviour under
 concurrent load, other machines or disks, or the latency of a networked provider (the offline
@@ -33,12 +26,13 @@ release can still be measured; no kernel guard is changed.
 """
 from __future__ import annotations
 
+import math
+import socket
 import tempfile
 import threading
 import time
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
-from functools import partial
 from pathlib import Path
 from unittest import mock
 
@@ -54,16 +48,15 @@ from eija_studio.domain.impact import model_impact
 from eija_studio.domain.models import SemanticTransaction
 from eija_studio.domain.policy import apply_transaction, baseline
 from eija_studio.interfaces.http import create_app
-from quality.hci.server import free_port
 
 from . import ROOT
-from .common import DOHERTY_MS, latency_summary, measured, not_run, ols, r3, spread
+from .common import latency_summary, measured, not_run, ols, r3
 from .scaling import time_call
 
-INSTANT_MS = 100.0
-TOKEN = "metrics-harness-token"  # noqa: S105 - a throw-away bearer for a private loopback server, not a credential
+INSTANT_MS, DOHERTY_MS = 100.0, 400.0
+TOKEN = "metrics-harness-token"  # noqa: S105  (a fixed test credential for a loopback server started here)
 PROFILES = {  # profile -> read samples per endpoint, flow iterations, verify-scaling repeats
-    "smoke": {"reads": 2, "flows": 1, "matrix_repeats": 1},  # unit tests only: proves the pipeline, not a statistic
+    "smoke": {"reads": 6, "flows": 3, "matrix_repeats": 1},  # unit tests only: proves the pipeline, not a statistic
     "quick": {"reads": 40, "flows": 4, "matrix_repeats": 3},
     "full": {"reads": 120, "flows": 15, "matrix_repeats": 5},
 }
@@ -80,6 +73,12 @@ def build(workspace: Path):
     studio = build_studio(workspace)
     studio.identity_provider = harness_identity
     return studio
+
+
+def free_port() -> int:
+    with socket.socket() as s:
+        s.bind(("127.0.0.1", 0))
+        return s.getsockname()[1]
 
 
 @contextmanager
@@ -232,15 +231,14 @@ def matrix_points(repeats: int) -> tuple[list[dict], dict]:
             for k in range(1, len(full_actors) + 1):
                 with mock.patch.object(verifier, "ACTORS", full_actors[:k]):
                     receipt = verifier.verify_runtime(model, subject, studio.sandbox)  # also warms up
-                    samples = time_call(partial(verifier.verify_runtime, model, subject, studio.sandbox), repeats)
+                    seconds = time_call(lambda m=model, s=subject: verifier.verify_runtime(m, s, studio.sandbox), repeats)
                 cells = receipt["artifact"]["expected_cells"]
                 if len(receipt["artifact"]["cells"]) != cells:
                     raise RuntimeError("verifier did not evaluate every expected cell")
-                ms = spread([x * 1000 for x in samples])  # fit on the fastest repeat; median and IQR reported beside it
                 points.append({"model": label, "actors": k, "states": len(model.states), "cells": cells,
-                               "ms": ms["min"], "median_ms": ms["median"], "p25_ms": ms["p25"], "p75_ms": ms["p75"]})
+                               "ms": r3(seconds * 1000)})
                 if label == "candidate" and k == len(full_actors):
-                    yield_stats = _matrix_yield(receipt["artifact"], ms["median"] / 1000)
+                    yield_stats = _matrix_yield(receipt["artifact"], seconds)
     return sorted(points, key=lambda p: (p["cells"], p["model"])), yield_stats
 
 
@@ -253,13 +251,26 @@ def _matrix_yield(artifact: dict, seconds: float) -> dict:
 
 
 def verify_scaling(profile: str) -> tuple[dict, dict]:
+    """Fit verification time against matrix size (cells), with a quadratic alternative and a log-log exponent.
+
+    Establishes how well a straight line describes 10 points from 20 to 125 cells. That range is narrow, so
+    the test has LOW POWER: it cannot separate linear from mildly superlinear growth, and the fitted
+    intercept can be negative (a fit artefact from pooling matrices of different shape, not negative time).
+    """
     points, stats = matrix_points(PROFILES[profile]["matrix_repeats"])
-    fit = ols([float(p["cells"]) for p in points], [p["ms"] for p in points])
+    xs, ys = [float(p["cells"]) for p in points], [p["ms"] for p in points]
+    fit = ols(xs, ys)
+    quad = ols([x * x for x in xs], ys)
+    loglog = ols([math.log(x) for x in xs], [math.log(y) for y in ys])
     for p, pred, res in zip(points, fit["predicted"], fit["residuals"], strict=True):
         p["predicted_ms"], p["residual_ms"] = r3(pred), r3(res)
     body = {"status": "MEASURED", "model": "T_ms = c0 + c1 * cells", "c0_ms": round(fit["c0"], 4),
-            "c1_ms_per_cell": round(fit["c1"], 5), "r2": round(fit["r2"], 6), "points": points,
-            "hypothesis": "verification cost is linear in the number of matrix cells (each cell is an independent transaction pair)",
+            "c1_ms_per_cell": round(fit["c1"], 5), "r2": round(fit["r2"], 6),
+            "alt_quadratic_r2": round(quad["r2"], 6), "loglog_exponent": round(loglog["c1"], 4),
+            "intercept_caveat": ("a negative c0 is a fit artefact (baseline and candidate matrices are pooled and "
+                                 "differ in state count), not a physical negative time; treat c1 as a slope estimate"),
+            "power_caveat": "20 to 125 cells cannot separate linear from mildly superlinear growth; see alt_quadratic_r2",
+            "points": points,
             "note": ("Matrix = actors x states x 5 actions. Each cell is one isolated ephemeral-SQLite "
                      "transaction pair; the same-author oracle means agreement is not independent evidence.")}
     return body, stats
@@ -270,9 +281,9 @@ def impact_yield() -> dict:
     base = baseline()
     candidate = apply_transaction(base, SemanticTransaction(kind="enable_recommendation"))
     report = model_impact(base, candidate)
-    ms = spread([x * 1000 for x in time_call(partial(model_impact, base, candidate), 15)])
+    seconds = time_call(lambda: model_impact(base, candidate), 15)
     return {"nodes": len(report["affected"]), "edges": sum(len(v) for v in report["graph"].values()),
-            "changed_actions": report["changed_actions"], "seconds": ms["median"] / 1000}
+            "changed_actions": report["changed_actions"], "seconds": seconds}
 
 
 def collect(profile: str = "quick", *, real_server: bool = True) -> tuple[dict, dict]:
