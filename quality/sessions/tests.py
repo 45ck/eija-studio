@@ -3,6 +3,8 @@ import sys
 
 import nox
 
+from quality.tools.parallel import xdist_args
+
 PYTHON = sys.executable  # the project environment nox runs in; sessions use python=False
 
 
@@ -11,7 +13,7 @@ PYTHON = sys.executable  # the project environment nox runs in; sessions use pyt
 @nox.session(python=False, tags=["fast"])
 def tests(session: nox.Session) -> None:
     """Unit, integration, crash-recovery and concurrency tests of the kernel."""
-    session.run(PYTHON, "-m", "pytest", "-q", *session.posargs)
+    session.run(PYTHON, "-m", "pytest", "-q", *xdist_args(), *session.posargs)
 
 
 @nox.session(python=False, tags=["release"])

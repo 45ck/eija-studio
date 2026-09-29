@@ -102,7 +102,21 @@ def pytest_runtest_logreport(report: pytest.TestReport) -> None:
         _RESULTS[report.nodeid]["outcome"] = report.outcome
 
 
+@pytest.hookimpl(optionalhook=True)  # only exists when pytest-xdist is installed
+def pytest_testnodedown(node, error) -> None:
+    """xdist controller: fold in what a worker measured (a worker only saw its own files, see ``loadfile``)."""
+    payload = getattr(node, "workeroutput", {}).get("eija_property")
+    if payload:
+        _RESULTS.update(payload["results"])
+        support.MAIN_OUTCOMES.update(payload["main_outcomes"])
+
+
+@pytest.hookimpl(trylast=True)
 def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
+    worker_output = getattr(session.config, "workeroutput", None)
+    if worker_output is not None:  # an xdist worker hands its partial result to the controller, which writes once
+        worker_output["eija_property"] = {"results": _RESULTS, "main_outcomes": dict(support.MAIN_OUTCOMES)}
+        return
     target = os.environ.get("EIJA_PROPERTY_REPORT")
     if not target or not _RESULTS:
         return

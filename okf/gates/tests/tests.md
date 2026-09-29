@@ -13,8 +13,8 @@ sources:
 - resource: repo://quality/sessions/tests.py#tests
   title: tests.py
   hash_method: ast-v2
-  sha256: a14a0f95e793332ba6004a6c935af68ffaa78c581c6bd5a68d85f25d9052d547
-notes_baseline: f24158097f135f4d9bdac9f334e4452e68e0e7f5f95ed1ede1c8cd95e15552b3
+  sha256: de65f8933b08e718de1d6d3759e9be467176ed797975eb1d54cd080378fef73f
+notes_baseline: 0a884b970e80fa5e4e4c33caa1f5dce4c5daf8732d26ebe55746b327d260ec26
 ---
 
 # nox -s tests

@@ -13,8 +13,8 @@ sources:
 - resource: repo://quality/sessions/quality.py#coverage
   title: quality.py
   hash_method: ast-v2
-  sha256: 73fc08848737a24b7896e18bcfb227a8e87c507cdff1833072481ec6d0435205
-notes_baseline: dd9f9f92cfd25e9a1be4c0add81f18b968bc62813d79beb3b4741f6c4c15b812
+  sha256: 415368d5bc9ec16ce7d101a575814527a87e1fed76b1fc01eebbaa921581e362
+notes_baseline: b760bf174fcb5a87b356522e5d3b570295cb5453e10b744030740fc5cb12390d
 ---
 
 # nox -s coverage
