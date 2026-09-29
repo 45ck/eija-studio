@@ -26,7 +26,7 @@ PENDING: dict[str, str] = {
 }
 
 FILES = ["README.md", "CONTRIBUTING.md", "CODE_OF_CONDUCT.md", "SECURITY.md", "CHANGELOG.md", "AGENTS.md",
-         ".github/PULL_REQUEST_TEMPLATE.md"]
+         ".github/pull_request_template.md"]
 FENCE = re.compile(r"^(```|~~~).*?^\1[ \t]*$", re.S | re.M)
 HTML_COMMENT = re.compile(r"<!--.*?-->", re.S)  # a TODO comment may mention a future target
 INLINE_CODE = re.compile(r"`[^`\n]*`")
