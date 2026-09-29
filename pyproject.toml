@@ -28,7 +28,7 @@ lint = [
 ]
 formal = []
 testing = ["hypothesis==6.168.3", "hypothesis-jsonschema==0.23.1", "jsonschema==4.26.0"]
-mutation = ["cosmic-ray==8.7.0"]
+mutation = ["cosmic-ray==8.7.0", "parso==0.8.7"]  # parso: imported directly by quality/mutation/eija_operators.py (also a cosmic-ray dependency)
 metrics = ["eija-studio[lint]", "grimp==3.17"]  # radon and coverage pins live once, in the lint extra
 hci = ["playwright==1.63.0", "axe-playwright-python==0.1.8"]  # drives the installed Chrome (channel="chrome"); no browser download
 agents = ["mcp==2.2.0", "anyio==4.15.1"]
@@ -248,11 +248,15 @@ directory = "reports/coverage/html"
 output = "reports/coverage/coverage.xml"
 
 [tool.deptry]
-known_first_party = ["eija_studio", "quality", "verification"]
-extend_exclude = ['\.tmp', 'reports']
+# Sibling modules that graph/ scripts load through sys.path (no package), so deptry would take them for third-party names.
+known_first_party = ["eija_studio", "quality", "verification", "eijaref", "human_views_reference", "storage_query_probe",
+                     "build_schemas", "identity_checks", "typecheck", "run_alloy"]
+# docs/weave/research holds one-off research probes with their own optional tools (tree-sitter, libcst, ...); they are
+# recorded experiments, not part of the package or of any gate, so their imports are not dependency claims.
+extend_exclude = ['\.tmp', 'reports', 'docs/weave/research']
 # Only tool-only extras (dev, lint, docs) are dev groups. Feature extras (providers, agents, formal, hci, ...) are optional
 # RUNTIME dependencies that lane code legitimately imports, so listing them here made every lane fail DEP004.
-optional_dependencies_dev_groups = ["dev", "lint", "docs"]
+optional_dependencies_dev_groups = ["dev", "lint", "docs", "testing", "graph-formal"]  # testing and graph-formal (hypothesis) are imported by tests only
 
 [tool.deptry.package_module_name_map]
 # distribution name -> import name, where they differ
@@ -263,10 +267,14 @@ axe-playwright-python = "axe_playwright_python"
 # nox/pytest/radon/tomlkit are dev tools imported by noxfile.py, quality/ and tests/ (dev-only trees deptry
 # cannot tell apart); tomlkit is the merge driver's parser (quality/tools/tomlmerge.py); yaml (PyYAML, `docs`
 # extra) parses the issue forms in scripts/check_community_files.py, a dev-only gate.
-DEP004 = ["nox", "pytest", "radon", "tomlkit", "yaml"]
+DEP004 = ["nox", "pytest", "radon", "tomlkit", "yaml", "clingo"]  # clingo: the ASP oracle in graph/formal/eijaref/asp.py imports it lazily; absent means NOT_RUN
 # scripts/browser_*smoke.py import Playwright lazily; it belongs to the hci extra, and the scripts report
 # NOT_RUN when it is absent. Declaring it here would make a runtime dependency out of a QA tool.
-DEP001 = ["playwright"]
+# graph/bench scripts import their optional comparison engines (duckdb, rustworkx, ladybug, pyshacl, rdflib) inside the function that
+# measures them; a missing engine is reported NOT_RUN. They are not runtime dependencies of anything.
+DEP001 = ["playwright", "duckdb", "rustworkx", "ladybug", "pyshacl", "rdflib"]
+# numpy and scipy are declared for networkx.pagerank (a test oracle) which imports them lazily; nothing of ours imports them.
+DEP002 = ["numpy", "scipy"]
 
 [tool.importlinter]
 root_package = "eija_studio"
