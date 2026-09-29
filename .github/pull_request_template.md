@@ -1,29 +1,34 @@
-<!-- Standard: docs/engineering/PR-STANDARD.md. Every section is required; write "None" rather than deleting. -->
+## Why
 
-## Summary
+<!-- The problem, and which lane or issue this belongs to. -->
 
-<!-- 2-3 plain sentences: what can a user or developer now do, and why does it matter for the POC or demo? -->
+## What
 
-## See it
-
-<!-- At least one GIF: `python -m demos pr-gif browser|terminal`, published to the pr-media branch. -->
-
-## What changed and why
-
-<!-- The decision, alternatives rejected, ADRs. Domain first, files second. -->
+| Area | Change |
+|---|---|
+|  |  |
 
 ## Evidence
 
-<!-- Gate results verbatim (session: result). New tests and what they prove. Negative controls.
-     MEASUREMENT vs PREDICTION. NOT_RUN items with the missing prerequisite. -->
+<!-- Commands and results verbatim, and the platform (OS, Python). -->
 
-## Review record
+```text
+```
 
-| Finding | Severity | Resolution |
-|---|---|---|
+## NOT_RUN
 
-## Risk and rollback
+<!-- Every gate or check you could not run, with the missing prerequisite. Write "none" if none. -->
 
-## Owner actions
+## Checklist
 
-<!-- Restamp, keys, consents, publishing. "None" if none. -->
+- [ ] `nox -t fast` and `nox -t full` pass locally (results above), or the failures are explained
+- [ ] `python -m pytest -q` passes
+- [ ] Missing prerequisites are reported as `NOT_RUN`, not `PASS`; nothing mocked is called live
+- [ ] Kernel guards and protected policy are not weakened; providers and agents still cannot select meaning, approve or apply
+- [ ] I did not run `scripts/stamp_release.py` or edit `trusted_build.json`
+- [ ] OSS first: adopted tools and custom modules have rows in `docs/oss/REGISTER.md`
+- [ ] Decisions are recorded in an ADR using only my lane's reserved numbers, and the ADR index is regenerated with `python -m quality.tools.adr_index --write` (never edited by hand)
+- [ ] Generated files are deterministic and have a drift check
+- [ ] LF line endings; no mass reformatting; shared files touched minimally
+- [ ] `README.md` not edited (oss lane only) and `resources/web/*` not edited (visual lane only), unless this is that lane
+- [ ] Docs and links updated; `nox -s docs_links` passes
