@@ -19,11 +19,13 @@ The first acceptance target is **EIJA's own checkout**. External applications co
 
 ## Recorded integration preview
 
+**3 October checkpoint:** the [code/model review observations](docs/design/2026-10-03-CODE-REVIEW-VALIDATION.md) and [historical navigation proof](docs/demos/2026-10-03-NAVIGATION-RECOVERY-PROOF.md) record the new review capabilities, exact evidence subjects and remaining acceptance work. The corresponding implementation is pinned at [`1f1b07f64889`](https://github.com/45ck/eija-studio/tree/1f1b07f648890d8e03f81d4269fa479d80a0f46a). This docs-only update does not add that implementation to main or declare the full IDE/POC/POF goals complete.
+
 The [2 October preview and reproduction record](docs/demos/2026-10-02-IDE-PREVIEW.md) shows the working source-connected model IDE from a fresh GitHub checkout: semantic before/after review, captured source, checked model edits, history and recovery. It includes actual screenshots, an unedited browser recording and the exact tested revision. The implementation remains in [draft PR #29](https://github.com/45ck/eija-studio/pull/29); this documentation does not merge that code onto main.
 
 ![The running EIJA model workbench](docs/demos/assets/ide-preview-20261002/working-model.png)
 
-Fresh Windows installation, real CLI startup and 20 recorded browser checks passed within the preview's declared scope. Full IDE acceptance remains open: the HCI density budget fails, source review is required, and human comprehension and live-provider usefulness are unmeasured. The generated design concepts above describe the target; the linked recording shows the actual product.
+At the 2 October checkpoint, fresh Windows installation, real CLI startup and 20 recorded browser checks passed within that preview's declared scope. Full IDE acceptance remains open: the HCI density budget fails, source review is required, and human comprehension and live-provider usefulness are unmeasured. The generated design concepts above describe the target; the linked recording shows the actual product.
 
 ## Available code and work in progress
 

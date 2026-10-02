@@ -1,0 +1,29 @@
+{
+  "schema": "eija.publication-bundle.v1",
+  "status": "PREPARED_NOT_PUBLISHED",
+  "files": {
+    "after-busy.png": {
+      "bytes": 87238,
+      "sha256": "75f62033c4990b35724c8da499fcd05b0e3bd74c0ec8c6818b0658f498d5d3a8"
+    },
+    "before-busy.png": {
+      "bytes": 87131,
+      "sha256": "fffe1d66ce2288ef0cdcd02ac66c50842c13f4d8dc4a891cc6084e7287bbce99"
+    },
+    "export-validation.json": {
+      "bytes": 2248,
+      "sha256": "b94c19f834f3762f23bdae49db8da6bdcb24ed049ff50d720c11326f95b0963d"
+    },
+    "proof-summary.json": {
+      "bytes": 12959,
+      "sha256": "1cbce6bdce0aac2034b8afc9e744edeb9385ea434cf1e49b1d9eb564f2aa82d4"
+    }
+  },
+  "scope": "Two generated excerpts and two byte-for-byte screenshots. This manifest excludes itself.",
+  "original_screenshot_paths": {
+    "before-busy.png": "base/busy-dropdown.png",
+    "after-busy.png": "head/busy-dropdown.png"
+  },
+  "original_report_sha256": "8947e7adce7ab84ad1a18c802e5afb0b4952753057c3ce9be511f99131e7eb6f",
+  "raw_reports": "Retained locally and not included. Excerpts identify their exact original digests and omit local/session/author identities."
+}
