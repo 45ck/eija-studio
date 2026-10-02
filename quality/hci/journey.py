@@ -115,7 +115,7 @@ def _action(name: str) -> Ref:
 def journey() -> list[Step]:
     """The canonical mouse-and-keyboard owner journey. M operators carry their rationale."""
     steps = [
-        Step("open-change", "Open a new change", "click", Ref(css="#new-case"),
+        Step("open-change", "Open a new change", "click", Ref(css="#start-intent"),
              expect=Expect("visible", "#request")),
         Step("type-request", "Type the change request", "type", Ref(css="#request"), REQUEST,
              think="Recall the change to request (start of the unit task)", view="create-panel"),

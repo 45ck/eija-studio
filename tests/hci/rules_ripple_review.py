@@ -251,8 +251,17 @@ class RulesReview(Journey):
         replay.expect(self.page.locator("#evidence-subject")).to_be_visible()
         replay.expect(self.page.locator("#evidence-subject")).to_have_attribute("data-subject-hash", view["packet"]["subject_hash"])
         assert self.packet() == view["packet"], "Rules evidence link changed packet"
-        for name, value in view["packet"]["technical_claims"].items():
-            replay.expect(self.page.locator(f'#claims [data-claim="{name}"] .claim-status')).to_have_text(value)
+        packet = view["packet"]
+        assert self.page.locator("#formal details[data-claim]").count() == len(packet["technical_claims"])
+        for name, value in packet["technical_claims"].items():
+            row = self.page.locator(f'#formal details[data-claim="{name}"]')
+            assert row.count() == 1, "Technical claim was dropped or repeated"
+            replay.expect(row.locator("summary .evidence-status")).to_have_text(value)
+        formal_rows = self.page.locator("#formal details[data-evidence-kind]")
+        assert formal_rows.count() == len(packet["formal_evidence"])
+        for index, record in enumerate(packet["formal_evidence"]):
+            replay.expect(formal_rows.nth(index)).to_have_attribute("data-evidence-kind", record["kind"])
+            replay.expect(formal_rows.nth(index).locator("summary .evidence-status")).to_have_text(record["status"])
         for code in view["packet"]["blockers"]:
             replay.expect(self.page.locator("#blockers")).to_contain_text(code)
         self.assert_unchanged(before)

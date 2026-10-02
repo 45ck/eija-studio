@@ -70,13 +70,16 @@ async function api(path, body) {
   if (body !== undefined) {options.method = "POST"; options.headers["Content-Type"] = "application/json"; options.body = JSON.stringify(body);}
   const response = await fetch("/api/" + path, options);
   let data; try {data = await response.json();} catch {throw new ApiError("RESPONSE_INVALID", "The server did not return JSON", {}, response.status);}
-  if (!response.ok) throw new ApiError(data.code || response.status, data.message || "Request failed", data.details || {}, response.status);
+  if (!response.ok) {
+    if(typeof data?.code!=="string"||typeof data?.message!=="string")throw new ApiError("RESPONSE_INVALID","The server did not return a structured refusal.",{},response.status);
+    const error=new ApiError(data.code,data.message,data.details||{},response.status);error.responseValid=true;throw error;
+  }
   return data;
 }
-function reportError(error) {
+function reportError(error,{reveal=true}={}) {
   lastDiagnostic = {code: error.code || "REQUEST_FAILED", message: error.message, details: error.details || {}};
   notice(error.message + (error.details?.codes?.length ? " · " + error.details.codes.join("; ") : ""), true);
-  $("error-details").hidden = false; $("error-json").textContent = JSON.stringify(lastDiagnostic, null, 2);renderProblems();EijaShell.bottom("problems-pane",{temporary:true});
+  $("error-details").hidden = false; $("error-json").textContent = JSON.stringify(lastDiagnostic, null, 2);renderProblems();if(reveal)EijaShell.bottom("problems-pane",{temporary:true});
 }
 function clearDiagnostic() {
   lastDiagnostic = null; $("error-details").hidden = true; $("error-json").textContent = ""; renderProblems();
@@ -132,24 +135,62 @@ function switchTab(name) {
 function formalList(parent,title,items){if(!items||!items.length)return;parent.append(el("h4",title));const ul=el("ul");for(const x of items)ul.append(el("li",typeof x==="string"?x:JSON.stringify(x)));parent.append(ul);}
 function explanation(root,x,lead){const box=el("div",undefined,"formal-explain");box.append(el("strong",lead+x.control+" ("+(x.source||"")+")"));box.append(el("p",(x.trace?"Counterexample trace: "+x.trace.map(s=>s.join(" ")).join(" -> ")+(x.final_state?" ends "+x.final_state:""):"Witness: "+JSON.stringify(x.witness))+". "+(x.note||"")));root.append(box);}
 function evidenceValue(value){return typeof value==="string"?value:JSON.stringify(value);}
-function evidenceKey(p){return `${current?.case.id||"no-case"}:${p.subject_hash||"no-subject"}`;}
+function evidenceKey(p){return typeof p.subject_hash==="string"&&p.subject_hash?JSON.stringify([current?.case.id||"no-case",p.subject_hash]):"";}
+function evidenceSubjectIssue(p,e){
+  if(!evidenceKey(p))return "Subject unavailable; reported result is not bound to an identified packet.";
+  if(e.subject_hash!==undefined&&e.subject_hash!==p.subject_hash)return "Subject mismatch; reported result is not evidence for this packet.";
+  if(e.subject!==undefined&&(!e.subject||typeof e.subject!=="object"||Array.isArray(e.subject)||!Object.keys(e.subject).length||Object.keys(e.subject).length!==Object.keys(p.subject||{}).length||Object.entries(e.subject).some(([name,value])=>p.subject?.[name]!==value)))return "Subject mismatch or incomplete identity; reported result dimensions do not match this packet.";
+  return "";
+}
+function evidenceSummary(row,name,status,scope,issue){
+  const summary=el("summary");summary.append(el("span",name,"evidence-name"),el("strong",evidenceValue(status),"evidence-status"),el("span",scope,"evidence-scope"));
+  if(issue)summary.append(el("span",issue,"evidence-warning"));
+  row.append(summary);
+}
+function formalDetails(row,e){
+  if(e.establishes!==undefined)row.append(el("p",evidenceValue(e.establishes)));
+  formalList(row,"Why this status",e.reasons);formalList(row,"Does not establish",e.does_not_establish);formalList(row,"Assumptions",e.assumptions);
+  if(e.bounds!==undefined)formalList(row,"Bounds",[evidenceValue(e.bounds)]);
+  formalList(row,"Counterexamples",e.counterexamples);row.append(el("p","Needs: "+evidenceValue(e.prerequisites===undefined?"Not reported":e.prerequisites)));
+  const alreadyShown=new Set(["establishes","reasons","does_not_establish","assumptions","bounds","counterexamples","prerequisites"]),metadata=el("dl",undefined,"evidence-metadata");
+  for(const [name,value]of Object.entries(e))if(!alreadyShown.has(name)||value===null||(Array.isArray(value)&&!value.length))metadata.append(el("dt",name.replaceAll("_"," ")),el("dd",evidenceValue(value)));
+  row.append(metadata);
+}
 function renderFormal(p){
-  const root=$("formal"),key=evidenceKey(p),opened=new Set(root.dataset.subjectKey===key?[...root.querySelectorAll("details[data-evidence-kind][open]")].map(node=>node.dataset.evidenceKind):[]);
+  const root=$("formal"),key=evidenceKey(p),opened=new Set(key&&root.dataset.subjectKey===key?[...root.querySelectorAll("details[data-evidence-key][open]")].map(node=>node.dataset.evidenceKey):[]);
   root.replaceChildren();root.dataset.subjectKey=key;
   for(const m of p.blocked_meanings||[]){root.append(el("p","Blocked meaning: "+m.label+" ("+(m.policy_errors||[]).join(", ")+")","formal-blocked"));for(const x of m.explanations||[])explanation(root,x,"Why the policy refuses it: ");}
   for(const x of p.explanations||[])explanation(root,x,"Why the policy blocks this: ");
-  for(const e of p.formal_evidence||[]){
-    const status=e.status??"NOT_REPORTED",d=el("details",undefined,"formal-item status-"+String(status).toLowerCase());
-    d.dataset.evidenceKind=e.kind;d.dataset.status=status;d.open=opened.has(e.kind);
-    d.append(el("summary",`${e.kind.replaceAll("_"," ")}: ${status} (${(e.evidence_level||"scope not reported").replaceAll("_"," ")})`));
-    d.append(el("p",e.establishes));formalList(d,"Why this status",e.reasons);formalList(d,"Does not establish",e.does_not_establish);formalList(d,"Assumptions",e.assumptions);
-    if(e.bounds!==undefined)formalList(d,"Bounds",[evidenceValue(e.bounds)]);
-    formalList(d,"Counterexamples",e.counterexamples);d.append(el("p","Needs: "+evidenceValue(e.prerequisites??"Not reported")));
-    const alreadyShown=new Set(["kind","status","evidence_level","establishes","reasons","does_not_establish","assumptions","bounds","counterexamples","prerequisites"]),metadata=el("dl",undefined,"evidence-metadata");
-    for(const [name,value]of Object.entries(e))if(!alreadyShown.has(name))metadata.append(el("dt",name.replaceAll("_"," ")),el("dd",evidenceValue(value)));
-    d.append(metadata);root.append(d);
+  const entries=Object.entries(p.technical_claims||{}),records=p.formal_evidence||[],paired=new Map(),notes=new Map(),counts=new Map();
+  for(const e of records)if(typeof e.kind==="string"&&e.kind)counts.set(e.kind,(counts.get(e.kind)||0)+1);
+  for(const [name,value]of entries){
+    if(!name.startsWith("formal_"))continue;
+    const matches=records.filter(e=>typeof e.kind==="string"&&e.kind&&name==="formal_"+e.kind);
+    if(matches.length===1&&typeof value==="string"&&value===matches[0].status&&!evidenceSubjectIssue(p,matches[0]))paired.set(matches[0],name);
+    else notes.set(name,!matches.length?"No formal record declares this exact kind.":matches.length>1?"Multiple formal records declare this kind; kept separate.":evidenceSubjectIssue(p,matches[0])||"Claim and formal record statuses differ or are not both reported; kept separate.");
   }
-  if(!(p.formal_evidence||[]).length)root.append(el("p","Formal evidence: not reported for this packet.","muted"));
+  for(const [name,value]of entries){
+    if([...paired.values()].includes(name))continue;
+    const d=el("details",undefined,"formal-item evidence-result"),rowKey="claim:"+name;
+    d.dataset.claim=name;d.dataset.status=evidenceValue(value);d.dataset.evidenceKey=rowKey;d.open=opened.has(rowKey);
+    evidenceSummary(d,name.replaceAll("_"," "),value,"Case-wide technical claim",[...new Set([evidenceSubjectIssue(p,{}),notes.get(name)].filter(Boolean))].join(" "));
+    d.append(el("p",notes.get(name)||"Reported by the current packet. This claim is not an element-specific verdict."));
+    const metadata=el("dl",undefined,"evidence-metadata");metadata.append(el("dt","Technical claim"),el("dd",name));d.append(metadata);root.append(d);
+  }
+  records.forEach((e,index)=>{
+    const status=e.status??"NOT_REPORTED",kind=typeof e.kind==="string"&&e.kind?e.kind:"Kind not reported",d=el("details",undefined,"formal-item evidence-result status-"+String(status).toLowerCase());
+    const rowKey=counts.get(e.kind)===1?"formal:"+e.kind:JSON.stringify(["record",index,e]);
+    d.dataset.evidenceKind=e.kind??"";d.dataset.evidenceIndex=String(index);d.dataset.status=status;d.dataset.evidenceKey=rowKey;d.open=opened.has(rowKey)||(paired.has(e)&&opened.has("claim:"+paired.get(e)));
+    if(paired.has(e))d.dataset.claim=paired.get(e);
+    const claimName="formal_"+e.kind,note=counts.get(e.kind)>1?"Multiple formal records declare this kind; kept separate.":notes.get(claimName)||(!paired.has(e)?"No matching technical claim is reported for this formal record.":"");
+    const issue=[...new Set([evidenceSubjectIssue(p,e),note].filter(Boolean))].join(" ");
+    evidenceSummary(d,kind.replaceAll("_"," "),status,`${String(e.evidence_level||"scope not reported").replaceAll("_"," ")} · case-wide`,issue);
+    if(paired.has(e))d.append(el("p","Technical claim: "+paired.get(e)));
+    else if(note)d.append(el("p",note,"evidence-warning"));
+    formalDetails(d,e);root.append(d);
+  });
+  if(!entries.length)root.append(el("p","Technical claims: not reported for this packet.","muted"));
+  if(!records.length)root.append(el("p","Formal evidence: not reported for this packet.","muted"));
 }
 function currentComparisonSelection(){
   return comparisonSelection&&comparisonSelection.case===current?.case.id&&comparisonSelection.revision===current?.case.version?comparisonSelection:null;
@@ -170,7 +211,7 @@ function renderEvidenceContext(){
   const selected=currentComparisonSelection();
   root.dataset.comparisonCaseId=selected?.case||"";root.dataset.comparisonRevision=String(selected?.revision??"");root.dataset.comparisonKind=selected?.kind||"";root.dataset.comparisonId=selected?.id||"";
   if(selected){
-    root.append(el("p",`Comparison selection: ${selected.kind} · ${selected.id} · case ${selected.case} · revision ${selected.revision}`));
+    root.append(el("p",`Comparison selection: ${selected.kind} · ${selected.id}`));
     root.append(el("p","Evidence scope: case-wide for the current candidate. The comparison selection is navigation context; it is not an element-specific result.","muted"));
   }
   if(inspectorSelection)root.append(el("p",`Model inspector selection: ${inspectorSelection.kind} · ${inspectorSelection.id}`));
@@ -180,15 +221,10 @@ function renderEvidenceContext(){
   if(!identities.childElementCount)identities.append(el("dt","Subject"),el("dd","Not available"));
 }
 function renderEvidencePacket(p){
-  const claims=$("claims");claims.replaceChildren();
-  for(const [name,value]of Object.entries(p.technical_claims||{})){
-    const row=el("div",undefined,"claim-row");row.dataset.claim=name;row.append(el("dt",name.replaceAll("_"," ")),el("dd",evidenceValue(value),"claim-status"));claims.append(row);
-  }
-  if(!claims.childElementCount){const row=el("div",undefined,"claim-row");row.append(el("dt","Technical claims"),el("dd","Not reported for this packet","claim-status"));claims.append(row);}
   renderFormal(p);renderProblems();renderEvidenceContext();
   $("blockers").textContent=p.blockers?.length?"Review blocked: "+p.blockers.join(", "):p.eligible?"Technical scope eligible. Human authorisation is still a separate decision.":"Review blocked. No blocker codes were reported.";
   $("packet").textContent=JSON.stringify(p,null,2);
-  const decision=$("review-decision"),key=evidenceKey(p),sameSubject=decision.dataset.subjectKey===key;
+  const decision=$("review-decision"),key=evidenceKey(p),sameSubject=!!key&&decision.dataset.subjectKey===key;
   const previous=sameSubject?new Map([...$("questions").querySelectorAll("input")].map(input=>[input.name,input.value])):new Map();
   if(!sameSubject){decision.open=false;$("acknowledge").checked=false;}
   decision.dataset.subjectKey=key;
@@ -196,32 +232,144 @@ function renderEvidencePacket(p){
   $("questions").replaceChildren();
   for(const q of p.questions||[]){const div=el("div",undefined,"question"),label=el("label",q.question);label.htmlFor="q-"+q.id;const input=el("input");input.id="q-"+q.id;input.name=q.id;input.autocomplete="off";input.required=true;input.value=previous.get(q.id)||"";div.append(label,input);$("questions").append(div);}
 }
-async function load(id) {
+async function load(id,canPublish=null) {
   const switching=current?.case.id!==id;
   if(switching&&current)caseViews.set(current.case.id,{tab,editId,inspectorSelection,modelView,historyModel,historyLabel,canvasDirection});
   const [next,affordances,historyData]=await Promise.all([api("cases/"+id),api(`cases/${id}/affordances`),api(`cases/${id}/history`).catch(error=>({status:"unavailable",reason:error.code||"HISTORY_UNAVAILABLE"}))]);
-  if(switching){instance=null;$("runtime-result").textContent="";const previous=caseViews.get(id);editId=previous?.editId||null;inspectorSelection=previous?.inspectorSelection||null;modelView=previous?.modelView||"working";historyModel=previous?.historyModel||null;historyLabel=previous?.historyLabel||"";canvasDirection=previous?.canvasDirection||"AUTO";if(previous)tab=previous.tab;}
+  if(canPublish&&!canPublish())return false;
+  reconcileRuntime(next);
+  if(switching){const previous=caseViews.get(id);editId=previous?.editId||null;inspectorSelection=previous?.inspectorSelection||null;modelView=previous?.modelView||"working";historyModel=previous?.historyModel||null;historyLabel=previous?.historyLabel||"";canvasDirection=previous?.canvasDirection||"AUTO";if(previous)tab=previous.tab;}
   if(current?.case.id!==next.case.id||current?.case.version!==next.case.version)cancelSourceRead();
-  current=next;affordanceData=affordances;caseHistory=historyData;render();await cases();clearDiagnostic();
+  current=next;affordanceData=affordances;caseHistory=historyData;render();await cases();if(canPublish&&!canPublish())return false;
+  if(runtimeAttempt&&runtimeOwns(runtimeAttempt)&&runtimeAttempt.refresh==="failed"){runtimeAttempt.refresh="current";renderRuntimeFeedback();}
+  clearDiagnostic();return true;
 }
-async function command(action,extra={}){const id=current.case.id;const result=await api(`cases/${id}/${action}`,{expected_version:current.case.version,...extra});await load(id);return result;}
+let runtimeAttempt=null,runtimeCommit=null,runtimeEpoch=0,runtimeUncertain=false;
+function runtimeSemantic(data=current){return data?.packet?.subject?.semantic??null;}
+function clearRuntime(){
+  ++runtimeEpoch;runtimeAttempt=null;runtimeCommit=null;runtimeUncertain=false;instance=null;
+  $("runtime-state").textContent="Not started";
+  $("runtime-version").textContent="No preview instance has been acknowledged";
+  for(const button of $("runtime-actions").children)button.disabled=true;
+  renderRuntimeFeedback();
+}
+function reconcileRuntime(next){
+  if(current?.case.id!==next.case.id||runtimeSemantic()!==runtimeSemantic(next))clearRuntime();
+}
+function runtimeOwns(attempt){
+  return runtimeAttempt===attempt&&attempt.epoch===runtimeEpoch&&attempt.caseId===current?.case.id&&attempt.semanticHash===runtimeSemantic()&&
+    (instance?.id??null)===(attempt.result?.instance.id??attempt.instanceId);
+}
+function runtimeRefused(error){
+  const boundaries={HOST_DENIED:403,SESSION_REQUIRED:401,ORIGIN_DENIED:403,CONTENT_TYPE:415,BODY_TOO_LARGE:413,CONTRACT_REJECTED:422,NOT_FOUND:404};
+  const domain=["CASE_SCHEMA_OLD","CASE_CLOSED","MEANING_REQUIRED","POLICY_BLOCKED","STALE_INSTANCE","ACTION_DENIED","UNKNOWN_ACTOR","ACTOR_REVOKED","ROLE_DENIED","ASSIGNMENT_DENIED","OPERATION_CONFLICT","STALE_VERSION","STATE_DENIED","EFFECT_DENIED","INVALID_STATE"];
+  return error instanceof ApiError&&error.responseValid===true&&error.httpStatus===(boundaries[error.code]??(domain.includes(error.code)?409:null));
+}
+function beginRuntimeAttempt(kind,action){
+  const requestId=crypto.randomUUID(),c=current.case;
+  runtimeAttempt={epoch:++runtimeEpoch,requestId,operationId:kind==="execute"?requestId:null,kind,caseId:c.id,caseVersion:c.version,
+    semanticHash:runtimeSemantic(),subjectHash:current.packet?.subject_hash??null,actorId:kind==="execute"?$("actor").value:null,action,
+    instanceId:instance?.id??null,instanceVersion:instance?.version??null,status:"pending",refresh:"not requested"};
+  runtimeAttempt.command=kind==="execute"?{operation_id:requestId,actor_id:runtimeAttempt.actorId,instance_id:runtimeAttempt.instanceId,action,expected_version:runtimeAttempt.instanceVersion}:{expected_version:c.version};
+  renderRuntimeFeedback();return runtimeAttempt;
+}
+function runtimeInstanceValid(value,attempt){
+  return value&&typeof value.id==="string"&&value.id.length>0&&value.case_id===attempt.caseId&&value.model_hash===attempt.semanticHash&&
+    typeof value.state==="string"&&value.state.length>0&&Number.isInteger(value.version)&&value.version>=0;
+}
+function validateRuntimeResult(result,attempt){
+  const validInstance=runtimeInstanceValid(result?.instance,attempt)&&result.instance.id===attempt.instanceId;
+  const effects=Array.isArray(result?.effects)&&result.effects.every(value=>typeof value==="string");
+  const committed=result?.committed===true&&result.duplicate===false&&result.instance?.version===attempt.instanceVersion+1;
+  const original=result?.original_result;
+  const duplicate=result?.duplicate===true&&result.committed===false&&result.effects?.length===0&&original?.committed===true&&original.duplicate===false&&
+    runtimeInstanceValid(original.instance,attempt)&&original.instance.id===attempt.instanceId&&original.instance.version===attempt.instanceVersion+1&&result.instance.version>=original.instance.version&&Array.isArray(original.effects)&&original.effects.every(value=>typeof value==="string");
+  if(!validInstance||!effects||(!committed&&!duplicate))throw new ApiError("RESPONSE_INVALID","The runtime response did not identify a valid outcome for this request.");
+}
+function runtimeFailure(attempt,error){
+  if(!runtimeOwns(attempt))return false;
+  attempt.status=runtimeRefused(error)?"refused":"unknown";attempt.error={code:error.code||"REQUEST_FAILED",message:error.message,details:error.details||{}};
+  runtimeUncertain=runtimeUncertain||attempt.status==="unknown"||["STALE_VERSION","STALE_INSTANCE","NOT_FOUND"].includes(error.code);
+  renderRuntimeFeedback();reportError(error,{reveal:false});return false;
+}
+async function refreshRuntime(attempt){
+  if(!runtimeOwns(attempt))return false;
+  attempt.refresh="pending";renderRuntimeFeedback();
+  try{
+    await load(attempt.caseId,()=>runtimeOwns(attempt));
+    if(!runtimeOwns(attempt))return false;
+    attempt.refresh="current";renderRuntimeFeedback();notice(attempt.kind==="preview"?"Fresh isolated instance acknowledged; case observations refreshed.":"Runtime outcome acknowledged; case observations refreshed.");return true;
+  }catch(error){
+    if(!runtimeOwns(attempt))return false;
+    attempt.refresh="failed";attempt.refreshError={code:error.code||"REQUEST_FAILED",message:error.message,details:error.details||{}};renderRuntimeFeedback();
+    reportError(new ApiError("RUNTIME_REFRESH_FAILED","The runtime outcome was acknowledged, but case observations could not be refreshed.",{cause:attempt.refreshError}),{reveal:false});return false;
+  }
+}
+async function executeRuntime(action,origin){
+  if(!current||origin.caseId!==current.case.id||origin.revision!==current.case.version||origin.semanticHash!==runtimeSemantic()||!instance||origin.instanceId!==instance.id||origin.instanceVersion!==instance.version)return false;
+  const attempt=beginRuntimeAttempt("execute",action);
+  let result;
+  try{result=await api(`cases/${attempt.caseId}/execute`,attempt.command);validateRuntimeResult(result,attempt);}catch(error){return runtimeFailure(attempt,error);}
+  if(!runtimeOwns(attempt))return false;
+  instance=result.instance;runtimeUncertain=false;attempt.status=result.committed?"committed":"duplicate";attempt.result=result;
+  if(result.committed)runtimeCommit={caseId:attempt.caseId,semanticHash:attempt.semanticHash,operationId:attempt.operationId,action:attempt.action,actorId:attempt.actorId,result};
+  renderRuntime();return refreshRuntime(attempt);
+}
+async function startRuntimePreview(){
+  if(!current)return false;
+  const attempt=beginRuntimeAttempt("preview","Start / reset preview");let result;
+  try{
+    result=await api(`cases/${attempt.caseId}/preview`,attempt.command);
+    if(!runtimeInstanceValid(result,attempt)||result.version!==0)throw new ApiError("RESPONSE_INVALID","The preview response did not identify a new instance for this candidate.");
+  }catch(error){return runtimeFailure(attempt,error);}
+  if(!runtimeOwns(attempt))return false;
+  instance=result;runtimeCommit=null;runtimeUncertain=false;attempt.status="preview";attempt.result={instance:result};
+  renderRuntime();return refreshRuntime(attempt);
+}
+function renderRuntimeFeedback(){
+  const root=$("runtime-result"),attempt=runtimeAttempt,identity=$("runtime-attempt-identity");
+  root.textContent="";identity.replaceChildren();
+  for(const key of ["status","operationId","requestId","caseId","caseRevision","semanticHash","actorId","action","instanceId","expectedVersion","refresh"])delete root.dataset[key];
+  if(attempt){
+    Object.assign(root.dataset,{status:attempt.status,operationId:attempt.operationId||"",requestId:attempt.requestId,caseId:attempt.caseId,caseRevision:String(attempt.caseVersion),semanticHash:attempt.semanticHash||"",actorId:attempt.actorId||"",action:attempt.action,instanceId:attempt.instanceId||"",expectedVersion:String(attempt.instanceVersion??""),refresh:attempt.refresh});
+    const effects=attempt.result?.effects||[],actor=attempt.kind==="execute"?` Actor: ${attempt.actorId}.`:"";
+    const message={pending:`Pending: ${attempt.action}.${actor} No outcome has been acknowledged.`,committed:`Committed: ${attempt.action}.${actor} Effects: ${effects.join(", ")||"none"}.`,
+      duplicate:`Previously committed operation acknowledged: ${attempt.action}.${actor} This request added no effects.`,preview:`New isolated preview acknowledged: ${attempt.result?.instance.state}.`,
+      refused:`Refused: ${attempt.action}.${actor} ${attempt.error?.message}. This request did not commit. See Attempt details and diagnostic.`,unknown:`Outcome unknown: ${attempt.action}.${actor} ${attempt.error?.message}. The request may have committed; no automatic retry was sent. See Attempt details and diagnostic.`}[attempt.status];
+    root.textContent=message+(attempt.refresh==="failed"?" Case observations refresh failed; the acknowledged runtime outcome is retained.":attempt.refresh==="pending"?" Refreshing case observations…":"")+(runtimeUncertain?" The last confirmed state may be stale.":"");
+    const values={"Client request ID":attempt.requestId,"Operation ID":attempt.operationId||"Not supplied by preview endpoint","Case":attempt.caseId,"Case revision at request":attempt.caseVersion,"Candidate semantic hash":attempt.semanticHash||"Not reported","Review subject hash at request":attempt.subjectHash||"Not reported","Actor":attempt.actorId||"Not applicable","Action":attempt.action,"Instance at request":attempt.instanceId||"None","Instance version at request":attempt.instanceVersion??"None","Latest status":attempt.status,"Case observations":attempt.refresh,"Exact request":JSON.stringify(attempt.command||{}),"Acknowledged instance":attempt.result?.instance?JSON.stringify(attempt.result.instance):"Not acknowledged"};
+    if(attempt.error)values["Request diagnostic"]=JSON.stringify(attempt.error);if(attempt.refreshError)values[attempt.refresh==="current"?"Earlier refresh diagnostic (later refresh succeeded)":"Refresh diagnostic"]=JSON.stringify(attempt.refreshError);
+    for(const [name,value]of Object.entries(values))identity.append(el("dt",name),el("dd",String(value)));
+  }
+  $("runtime-last-commit").textContent=runtimeCommit?`Last acknowledged commit: ${runtimeCommit.action} · actor ${runtimeCommit.actorId} · instance ${runtimeCommit.result.instance.id} · version ${runtimeCommit.result.instance.version}. Effects: ${runtimeCommit.result.effects.join(", ")||"none"}. This is separate from the latest attempt.`:"";
+}
+function renderRuntime(){
+  const c=current?.case,closed=!c||["APPLIED","DISCARDED"].includes(c.stage),origin={caseId:c?.id,revision:c?.version,semanticHash:runtimeSemantic(),instanceId:instance?.id,instanceVersion:instance?.version};
+  $("runtime-actions").replaceChildren();
+  for(const action of status?.pack?.actions||[]){const button=el("button",action,"secondary");button.dataset.action=action;button.disabled=!instance||closed;button.onclick=()=>task(()=>executeRuntime(action,origin));$("runtime-actions").append(button);}
+  $("runtime-state").textContent=instance?.state||"Not started";
+  $("runtime-version").textContent=instance?`Last confirmed instance ${instance.id.slice(0,8)} · version ${instance.version} · isolated candidate${runtimeUncertain?" · may be stale":""}`:"No preview instance has been acknowledged";
+  $("trace").textContent=JSON.stringify(current?.observations??[],null,2);renderRuntimeFeedback();
+}
+
+async function command(action,extra={}){const id=current.case.id;const result=await api(`cases/${id}/${action}`,{expected_version:current.case.version,...extra});if(["undo","redo","discard"].includes(action))clearRuntime();await load(id);return result;}
 function render(){const c=current.case,p=current.packet,closed=["APPLIED","DISCARDED"].includes(c.stage);$("create-panel").hidden=true;$("workspace").hidden=false;$("case-title").textContent=c.request;$("case-id").textContent=`CHANGE CASE ${c.id.slice(0,10)} / REVISION ${c.version} / BASELINE ${c.baseline_version}`;$("case-stage").textContent=c.stage;$("proposal-summary").textContent=c.proposal?.summary||"No interpretation has been requested. Your request is not yet a semantic change.";$("propose").disabled=!!c.candidate||closed;$("options").replaceChildren();
 for(const a of c.proposal?.alternatives||[]){const canonical=current.options[a.interpretation],chosen=c.selected_meaning===a.interpretation;const card=el("article",undefined,"option"+(chosen?" selected":""));card.append(el("small",chosen?"SELECTED BY LOCAL OWNER":canonical.supported?"SUPPORTED MEANING":"BLOCKED / OUT OF SCOPE"),el("h3",canonical.label));for(const consequence of canonical.consequences)card.append(el("p",consequence));const d=el("details");d.append(el("summary","Untrusted provider explanation"),el("p",a.explanation));card.append(d);const b=el("button",chosen?"Meaning selected":canonical.supported?"Select this meaning":"Explain boundary",chosen?"secondary":"");b.dataset.meaning=a.interpretation;b.disabled=closed||!!c.candidate;b.onclick=()=>task(async()=>{await command("select",{interpretation:a.interpretation});notice("Meaning selected. The local baseline has not changed.");});card.append(b);$("options").append(card);}
 $("proposal-unknowns").replaceChildren();for(const unknown of c.proposal?.unknowns||[])$("proposal-unknowns").append(el("p","Unresolved: "+unknown,"muted"));$("editor").hidden=!c.candidate;
 for(const id of ["save","discard","edit-rule","edit-state","move-node","verify","reset"])$(id).disabled=!c.candidate||closed;
 renderWorkbench(); renderChanges();
-$("runtime-actions").replaceChildren();for(const action of status?.pack?.actions||[]){const b=el("button",action,"secondary");b.dataset.action=action;b.disabled=!instance||closed;b.onclick=()=>task(async()=>{const result=await api(`cases/${c.id}/execute`,{operation_id:crypto.randomUUID(),actor_id:$("actor").value,instance_id:instance.id,action,expected_version:instance.version});instance=result.instance;await load(c.id);$("runtime-result").textContent="Committed: "+action+". Effects: "+result.effects.join(", ");notice("Commit completed; the displayed state is persisted.");});$("runtime-actions").append(b);}$("runtime-state").textContent=instance?.state||"Not started";$("runtime-version").textContent=instance?`Instance ${instance.id.slice(0,8)} · version ${instance.version} · isolated candidate`:"No candidate state has been executed";$("trace").textContent=JSON.stringify(current.observations,null,2);
+renderRuntime();
 renderEvidencePacket(p);$("approve").disabled=!p.eligible||closed||c.stage==="APPROVED";$("apply").disabled=c.stage!=="APPROVED"||!p.eligible;$("export").disabled=false;switchTab(tab);}
-$("create").onclick=()=>task(async()=>{const c=await api("cases",{request:$("request").value});tab="change";editId=null;await load(c.id);notice("Case created. No provider call or baseline change has occurred.");});$("new-case").onclick=openIntent;document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{openWorkTab(b.dataset.tab);if(b.closest("#reference-views")){$("reference-views").open=false;$("reference-views").querySelector("summary").focus();}});
+$("create").onclick=()=>task(async()=>{const c=await api("cases",{request:$("request").value});tab="change";editId=null;await load(c.id);notice("Case created. No provider call or baseline change has occurred.");});document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{openWorkTab(b.dataset.tab);if(b.closest("#reference-views")){$("reference-views").open=false;$("reference-views").querySelector("summary").focus();}});
 $("propose").onclick=()=>task(async()=>{await command("propose",{consent:$("egress").checked});notice("Interpretations received. No meaning was selected automatically.");},"Requesting an untrusted proposal…");
-$("save").onclick=()=>task(async()=>{await command("save");notice("Review checkpoint saved; the active baseline is unchanged.");});$("discard").onclick=()=>task(async()=>{await command("discard");instance=null;render();notice("Candidate closed. History is retained; the baseline is unchanged.");});
+$("save").onclick=()=>task(async()=>{await command("save");notice("Review checkpoint saved; the active baseline is unchanged.");});$("discard").onclick=()=>task(async()=>{await command("discard");clearRuntime();render();notice("Candidate closed. History is retained; the baseline is unchanged.");});
 function edit(source) {return commitChoice(choiceFor("retarget_source", "state:" + source));}
 $("edit-rule").onclick = () => edit($("rejection-source").value);
 $("edit-state").onclick = () => edit($("diagram-source").value);
 $("edit-target").onclick = () => commitChoice(choiceFor("retarget_target", "state:" + $("target-state").value));
 $("edit-role").onclick = () => commitChoice(choiceFor("set_role", "role:" + $("transition-role").value));
 $("move-node").onclick=()=>task(async()=>{await command("layout",{change:{node:$("layout-node").value,x:Number($("layout-x").value),y:Number($("layout-y").value)}});notice("Layout metadata changed. Domain receipts remain applicable; exact-presentation approval is cleared.");});
-$("reset").onclick=()=>task(async()=>{instance=await command("preview");render();$("runtime-result").textContent="";notice(`Fresh isolated instance created in ${instance.state}.`);});
+$("reset").onclick=()=>task(startRuntimePreview,"Starting an isolated preview…");
 $("verify").onclick=()=>task(async()=>{await command("verify");notice("Bounded runtime verification finished. Human evidence remains UNKNOWN.");},"Executing the synthetic state / actor / action matrix…");
 $("review-form").onsubmit=e=>{e.preventDefault();task(async()=>{const answers={};for(const q of current.packet.questions)answers[q.id]=$("q-"+q.id).value.trim();await command("approve",{subject_hash:current.packet.subject_hash,answers,acknowledge_unknowns:$("acknowledge").checked,scope:"local-demo"});notice("Exact local revision acknowledged. Apply remains a separate action.");});};
 $("apply").onclick=()=>task(async()=>{await command("apply");status=await api("status");workbench=await api("workbench");renderWorkbench();notice("Applied to the local demo baseline only. No production system was touched.");});
@@ -398,6 +546,7 @@ function renderWorkbench() {
   $("model-version").querySelector('option[value="history"]').hidden=!historyModel;$("model-version").value=modelView;$("model-version").querySelector('option[value="baseline"]').disabled=!current?.case.candidate;
   $("undo-edit").disabled=!caseHistory?.can_undo||!current||["APPLIED","DISCARDED"].includes(current.case.stage);
   $("redo-edit").disabled=!caseHistory?.can_redo||!current||["APPLIED","DISCARDED"].includes(current.case.stage);
+  $("history-undo").disabled=$("undo-edit").disabled;$("history-redo").disabled=$("redo-edit").disabled;
   $("source-status").textContent = status?.trusted_fixture ? "Source identity matches its release fixture. This identifies reviewed bytes; it does not prove correctness." : "SOURCE_REVIEW_REQUIRED · implementation changed since the owner-stamped fixture. Verification and apply remain blocked pending source review.";
   $("source-status").classList.toggle("source-required", !status?.trusted_fixture);
   $("status-model").textContent = `Pack ${pack.id} · ${current ? "revision " + current.case.version : "baseline"} · ${String(affordanceData?.semantic_hash || pack.digest || "unknown").slice(0, 12)}`;
@@ -481,7 +630,7 @@ function commitChoice(choice) {
       renderCanvas(); return;
     }
     await api(`cases/${id}/edit`, {expected_version: expectedVersion, transaction: choice.transaction});
-    instance = null; lastDiagnostic = null; $("error-details").hidden = true;
+    clearRuntime(); lastDiagnostic = null; $("error-details").hidden = true;
     await load(id);
     notice("One typed transaction committed. The canvas has reloaded the server model; prior evidence and decisions must be reconsidered.");
   }, "Checking the typed edit…");
@@ -624,8 +773,9 @@ async function previousSource(){
   if(await openSource(sourceHistory[previous],false)){sourceHistoryIndex=previous;$("source-back").disabled=previous<=0;}
 }
 $("source-back").onclick=previousSource;
-$("undo-edit").onclick=()=>task(async()=>{if(!caseHistory?.can_undo)return;await command("undo");instance=null;modelView="working";render();notice("Last semantic edit undone by the kernel. Earlier receipts are retained; eligibility is recomputed.");});
-$("redo-edit").onclick=()=>task(async()=>{if(!caseHistory?.can_redo)return;await command("redo");instance=null;modelView="working";render();notice("Semantic edit reapplied by the kernel. The displayed model was reloaded from the server.");});
+$("undo-edit").onclick=()=>task(async()=>{if(!current||!caseHistory?.can_undo||["APPLIED","DISCARDED"].includes(current.case.stage))return;await command("undo");clearRuntime();modelView="working";render();notice("Last semantic edit undone by the kernel. Earlier receipts are retained; eligibility is recomputed.");});
+$("redo-edit").onclick=()=>task(async()=>{if(!current||!caseHistory?.can_redo||["APPLIED","DISCARDED"].includes(current.case.stage))return;await command("redo");clearRuntime();modelView="working";render();notice("Semantic edit reapplied by the kernel. The displayed model was reloaded from the server.");});
+$("history-undo").onclick=$("undo-edit").onclick;$("history-redo").onclick=$("redo-edit").onclick;
 EijaShell.init({newIntent:openIntent,openTab:switchTab});
 let repositoryReview=null,repositoryComparison=null,repositoryFile=null,repositorySelection=null,repositoryView="diff";
 let repositoryGeneration=0,repositoryFileGeneration=0,repositoryRenderGeneration=0;

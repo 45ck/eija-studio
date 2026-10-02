@@ -25,7 +25,7 @@ def run(scene: Scene, server: RunningServer) -> None:
     # Act 1 - intent, then explicit meanings ------------------------------------------------------
     scene.caption("Start with intent: a plain-language request, not code.")
     # The workbench opens on Model; reveal the new-intent form through its public control.
-    scene.click("#new-case")
+    scene.click("#start-intent")
     scene.type_text("#request", "Let teachers sign off excursions.", clear=True)
     scene.click("#create")
     scene.expect_text("#notice", "Case created")
@@ -46,6 +46,7 @@ def run(scene: Scene, server: RunningServer) -> None:
     scene.click("#reference-views > summary")
     scene.click('[data-tab="impact"]')
     scene.caption("One substrate, synchronised views: the rule table and state flow derive from one model.")
+    scene.click("#rules-state-flow > summary")
     scene.highlight("#state-flow")
     scene.highlight("#rule-table")
 
@@ -54,6 +55,7 @@ def run(scene: Scene, server: RunningServer) -> None:
     scene.caption("Try the rule for real: an isolated executable preview, not a mocked response.")
     scene.click("#reset")
     scene.expect_text("#runtime-state", "Draft")
+    scene.wait_for("body:not([aria-busy])")
 
     scene.select_option("#actor", "teacher-assigned")
     _act(scene, "Submit")
@@ -89,7 +91,7 @@ def run(scene: Scene, server: RunningServer) -> None:
     scene.caption("Evidence is computed from 125 executed observations - a green label is never trusted.")
     scene.click("#verify")
     scene.expect_text("#notice", "Bounded runtime verification finished")
-    scene.highlight("#claims")
+    scene.highlight("#formal")
 
     scene.caption("Human understanding stays UNKNOWN. The owner answers, then approves the exact revision.")
     scene.highlight(".unknown")
@@ -110,5 +112,7 @@ def run(scene: Scene, server: RunningServer) -> None:
 
 
 def _act(scene: Scene, action: str) -> None:
+    scene.wait_for("body:not([aria-busy])")
     scene.click(f'#runtime-actions button:text-is("{action}")')
     scene.expect_text("#runtime-result", f"Committed: {action}")
+    scene.wait_for("body:not([aria-busy])")

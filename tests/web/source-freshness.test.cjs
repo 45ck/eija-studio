@@ -30,7 +30,7 @@ function harness(code=app){
     notice:(message,error=false)=>notices.push({message,error}),switchTab:name=>{sandbox.tab=name;},renderProblems:()=>{},render:()=>renders.push("render"),cases:async()=>{},clearDiagnostic:()=>{},
     renderWorkbench:()=>{throw Error("Repository refresh must not rebuild unsent model fields");},task:fn=>fn()
   });
-  for(const [start,end]of [["class ApiError", "async function api("],["function reportError(","function clearDiagnostic("],["async function load(id)","async function command("],["async function refreshCurrentModel()","function filterCommands("],["function sourceSnapshot()","function previewHistory("],["async function openSource(",'$("source-open-form").onsubmit']]){
+  for(const [start,end]of [["class ApiError", "async function api("],["function reportError(","function clearDiagnostic("],["async function load(","async function command("],["async function refreshCurrentModel()","function filterCommands("],["function sourceSnapshot()","function previewHistory("],["async function openSource(",'$("source-open-form").onsubmit']]){
     const from=code.indexOf(start),to=code.indexOf(end,from);assert.ok(from>=0&&to>from,start);vm.runInContext(code.slice(from,to),sandbox);
   }
   const previousStart=code.indexOf("async function previousSource()");if(previousStart>=0)vm.runInContext(code.slice(previousStart,code.indexOf('$("source-back").onclick=',previousStart)),sandbox);

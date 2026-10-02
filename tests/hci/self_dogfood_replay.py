@@ -162,7 +162,7 @@ class Review:
                 "content_security_policy": response.headers.get("content-security-policy"), "csp_modified": False}
 
     def intent(self):
-        self.page.locator("#new-case").click()
+        self.page.locator("#start-intent").click()
         expect(self.page.locator("#request")).to_be_visible()
         self.page.locator("#request").fill(
             self.label + ": Show the optional saved candidate path in EIJA's review journey."

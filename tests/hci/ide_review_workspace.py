@@ -571,16 +571,29 @@ class ReviewWorkspace(Journey):
         human = self.page.locator("#evidence .human-status")
         replay.expect(human).to_be_visible()
         replay.expect(human).to_contain_text("Human comprehension: " + packet["human_understanding"])
-        assert self.page.locator("#claims [data-claim]").count() == len(packet["technical_claims"])
+        claim_rows = self.page.locator("#formal details[data-claim]")
+        assert claim_rows.count() == len(packet["technical_claims"])
         for name, status in packet["technical_claims"].items():
-            row = self.page.locator(f'#claims [data-claim="{name}"] .claim-status')
-            replay.expect(row).to_be_visible()
-            replay.expect(row).to_have_text(status)
-        assert self.page.locator("#formal details[data-evidence-kind]").count() == len(packet["formal_evidence"])
-        for item in packet["formal_evidence"]:
-            summary = self.page.locator(f'#formal details[data-evidence-kind="{item["kind"]}"] summary').first
-            replay.expect(summary).to_be_visible()
-            replay.expect(summary).to_contain_text(item["status"])
+            row = self.page.locator(f'#formal details[data-claim="{name}"]')
+            assert row.count() == 1, "Technical claim was dropped or repeated"
+            replay.expect(row.locator("summary .evidence-status")).to_be_visible()
+            replay.expect(row.locator("summary .evidence-status")).to_have_text(status)
+        formal_rows = self.page.locator("#formal details[data-evidence-kind]")
+        assert formal_rows.count() == len(packet["formal_evidence"])
+        for index, item in enumerate(packet["formal_evidence"]):
+            row = formal_rows.nth(index)
+            replay.expect(row).to_have_attribute("data-evidence-kind", item["kind"])
+            replay.expect(row.locator("summary .evidence-status")).to_be_visible()
+            replay.expect(row.locator("summary .evidence-status")).to_have_text(item["status"])
+            replay.expect(row.locator("summary .evidence-scope")).to_contain_text(item["evidence_level"].replace("_", " "))
+        exact_pairs = {
+            "formal_" + item["kind"] for item in packet["formal_evidence"]
+            if sum(other["kind"] == item["kind"] for other in packet["formal_evidence"]) == 1
+            and packet["technical_claims"].get("formal_" + item["kind"]) == item["status"]
+        }
+        paired = self.page.locator("#formal details[data-evidence-kind][data-claim]")
+        assert set(paired.evaluate_all("nodes => nodes.map(n => n.dataset.claim)")) == exact_pairs
+        assert self.page.locator("#formal details").count() == len(packet["technical_claims"]) + len(packet["formal_evidence"]) - len(exact_pairs)
         for blocker in packet["blockers"]:
             replay.expect(self.page.locator("#blockers")).to_contain_text(blocker)
         assert self.packet() == packet

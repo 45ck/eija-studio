@@ -111,7 +111,7 @@ function editorHarness(){
   };
   vm.createContext(sandbox);
   vm.runInContext(code.slice(code.indexOf("function selectedConcept()"),code.indexOf("function renderNavigator()")),sandbox);
-  for(const [start,end] of [["function clearDiagnostic()","function captureTaskFocus()"],["async function load(id)","async function command("],["function workingModel()","function renderCanvas()"],["function renderSelectionDetail()","function followReference("],["function cancelDraft()",'$("cancel-draft").onclick'],["async function refreshCurrentModel()","function filterCommands()"]])vm.runInContext(code.slice(code.indexOf(start),code.indexOf(end)),sandbox);
+  for(const [start,end] of [["function clearDiagnostic()","function captureTaskFocus()"],["async function load(","async function command("],["function workingModel()","function renderCanvas()"],["function renderSelectionDetail()","function followReference("],["function cancelDraft()",'$("cancel-draft").onclick'],["async function refreshCurrentModel()","function filterCommands()"]])vm.runInContext(code.slice(code.indexOf(start),code.indexOf(end)),sandbox);
   sandbox.render=()=>{sandbox.renderEditor();sandbox.renderSelectionDetail();};
   return {sandbox,get,calls,notices,data};
 }

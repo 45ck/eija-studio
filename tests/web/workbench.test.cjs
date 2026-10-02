@@ -27,6 +27,7 @@ function harness(check, editError, interleave) {
     reportError: error => errors.push(error), renderCanvas: () => {}, notice: message => notices.push(message),
     $: () => ({hidden:false}), load: async id => reloaded.push(id)
   };
+  sandbox.clearRuntime=()=>{sandbox.instance=null;}; // Runtime identity lifecycle is exercised in runtime-outcome.test.cjs.
   vm.createContext(sandbox); vm.runInContext(commitSource, sandbox);
   return {sandbox, calls, errors, notices, reloaded};
 }
