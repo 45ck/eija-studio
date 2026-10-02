@@ -99,3 +99,43 @@ test("disabled approval advances focus to apply without activating it, while com
 test("async completion never steals a focus the user moved to another field",()=>{
   const h=focusHarness();h.document.activeElement=h.node("request");h.restore({id:"create"});assert.deepEqual(h.focused,[]);h.document.activeElement=h.document.body;h.restore({});assert.deepEqual(h.focused,[]);
 });
+
+function editorHarness(){
+  const get=dom(),code=fs.readFileSync(path.join(web,"app.js"),"utf8"),calls=[],notices=[];
+  const transition=(id,action,role="Teacher")=>({id,action,role,from_state:"Draft",to_state:"Submitted",guards:[],required_effects:[],forbidden_effects:[]});
+  const modelA=freeze({states:["Draft","Submitted"],transitions:[transition("TR-SAVE","Save")]}),modelB=freeze({states:["Draft","Submitted"],transitions:[transition("TR-APPROVE","Approve","Principal")]}),data={A:{case:{id:"A",version:3,stage:"EDITING",candidate:modelA,baseline:modelA}},B:{case:{id:"B",version:8,stage:"EDITING",candidate:modelB,baseline:modelB}}};
+  const sandbox={current:data.A,affordanceData:{affordances:[]},caseHistory:null,workbench:{pack:{id:"sample"},language:{terms:[{id:"intent",label:"Intent",definition:"Declared intent"}]},roles:[],laws:[],model:modelA},editId:"TR-SAVE",inspectorSelection:{kind:"transition",id:"TR-SAVE"},modelView:"working",historyModel:null,historyLabel:"",canvasDirection:"AUTO",tab:"model",caseViews:new Map(),busy:false,lastDiagnostic:null,
+    $:get,el:(tag,value,cls)=>{const node=new Node(tag);if(value!==undefined)node.textContent=value;if(cls)node.className=cls;return node;},
+    EijaCanvas:require(path.join(web,"canvas.js")),notice:value=>notices.push(value),renderProblems:()=>{get("problems").textContent=sandbox.lastDiagnostic?.message||"No active request error";},cases:async()=>{},
+    api:async(url,body)=>{calls.push({url,body});if(sandbox.failure)throw sandbox.failure;const parts=url.split("/");return parts.length===2?data[parts[1]]:parts[2]==="affordances"?{affordances:[]}:{case_id:parts[1],status:"ready"};}
+  };
+  vm.createContext(sandbox);
+  for(const [start,end] of [["function clearDiagnostic()","function captureTaskFocus()"],["async function load(id)","async function command("],["function workingModel()","function renderCanvas()"],["function renderSelectionDetail()","function followReference("],["function cancelDraft()",'$("cancel-draft").onclick'],["async function refreshCurrentModel()","function filterCommands()"]])vm.runInContext(code.slice(code.indexOf(start),code.indexOf(end)),sandbox);
+  sandbox.render=()=>{sandbox.renderEditor();sandbox.renderSelectionDetail();};
+  return {sandbox,get,calls,notices,data};
+}
+
+test("case switches rebuild the inspector from that case's authoritative model and restore historical context",async()=>{
+  const h=editorHarness(),s=h.sandbox,history=freeze({states:["Draft","Submitted"],transitions:[{...h.data.A.case.candidate.transitions[0],action:"Earlier save"}]});
+  s.modelView="history";s.historyModel=history;s.historyLabel="Protected meaning";s.render();
+  s.caseViews.set("B",{tab:"model",editId:"TR-APPROVE",inspectorSelection:{kind:"transition",id:"TR-APPROVE"},modelView:"working",canvasDirection:"TB"});
+  await s.load("B");assert.equal(h.get("transition-select").value,"TR-APPROVE");assert.match(text(h.get("selection-detail")),/Approve/);assert.doesNotMatch(text(h.get("selection-detail")),/Earlier save/);assert.equal(h.get("selection-detail").dataset.eijaId,"sample.detail.transition.TR-APPROVE");
+  await s.load("A");assert.equal(s.modelView,"history");assert.equal(s.historyModel,history);assert.match(text(h.get("selection-detail")),/Earlier save/);assert.equal(h.get("edit-role").disabled,true);assert.ok(h.calls.every(call=>call.body===undefined));
+});
+
+test("case-specific concept selection resolves current pack data and a missing selection clears old details",async()=>{
+  const h=editorHarness(),s=h.sandbox;s.inspectorSelection={kind:"term",id:"intent"};s.render();await s.load("B");assert.match(text(h.get("selection-detail")),/Explore a concept/);assert.doesNotMatch(text(h.get("selection-detail")),/Declared intent/);
+  await s.load("A");assert.match(text(h.get("selection-detail")),/Declared intent/);s.inspectorSelection={kind:"transition",id:"removed"};s.renderSelectionDetail();assert.equal(s.inspectorSelection,null);assert.match(text(h.get("selection-detail")),/Explore a concept/);
+});
+
+test("cancelling an unsent edit restores source target and role without sending or changing server state",()=>{
+  const h=editorHarness(),s=h.sandbox,before=JSON.stringify(h.data);s.render();h.get("model-source").value="Submitted";h.get("target-state").value="Draft";h.get("transition-role").value="Agent";s.cancelDraft();
+  assert.equal(h.get("model-source").value,"Draft");assert.equal(h.get("target-state").value,"Submitted");assert.equal(h.get("transition-role").value,"Teacher");assert.equal(h.calls.length,0);assert.equal(JSON.stringify(h.data),before);assert.equal(s.editId,"TR-SAVE");assert.match(h.notices.at(-1),/no transaction was sent/);
+  s.busy=true;h.get("transition-role").value="Agent";s.cancelDraft();assert.equal(h.get("transition-role").value,"Agent","an in-flight commit is never presented as cancelled");
+});
+
+test("a failed refresh retains model and diagnostic; a successful retry removes stale errors and completes feedback",async()=>{
+  const h=editorHarness(),s=h.sandbox;s.render();const before=s.current; s.lastDiagnostic={code:"REQUEST_FAILED",message:"Failed to fetch"};h.get("error-details").hidden=false;h.get("error-json").textContent=JSON.stringify(s.lastDiagnostic);s.renderProblems();s.failure=new Error("Connection unavailable");
+  await assert.rejects(s.refreshCurrentModel(),/Connection unavailable/);assert.equal(s.current,before);assert.equal(s.editId,"TR-SAVE");assert.equal(h.get("error-details").hidden,false);assert.match(h.get("problems").textContent,/Failed to fetch/);
+  delete s.failure;await s.refreshCurrentModel();assert.equal(s.current,before);assert.equal(s.lastDiagnostic,null);assert.equal(h.get("error-details").hidden,true);assert.equal(h.get("error-json").textContent,"");assert.doesNotMatch(h.get("problems").textContent,/Failed to fetch/);assert.match(h.notices.at(-1),/refreshed from the server/);assert.ok(h.calls.every(call=>call.body===undefined));
+});

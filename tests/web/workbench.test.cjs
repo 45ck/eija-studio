@@ -165,3 +165,27 @@ test("orientation preserves explicit saved coordinates and all routed transition
   for(const direction of ["LR","TB","AUTO"]){const result=canvas.projectLayout(graphFixture,saved,direction,{width:900,height:500});assert.deepEqual(result.coords.Review,{x:700,y:425});assert.deepEqual(Object.keys(result.routes).sort(),graphFixture.transitions.map(t=>t.id).sort());for(const route of Object.values(result.routes))assert.ok(route.points.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)));}
   assert.equal(JSON.stringify({graphFixture,saved}),before);
 });
+
+test("Dagre endpoints contact the painted rounded borders in both orientations and after manual placement", () => {
+  const excursion=freeze({states:["Draft","Submitted","Approved","Rejected"],transitions:[
+    {id:"TR-SUBMIT",action:"Submit",from_state:"Draft",to_state:"Submitted"},
+    {id:"TR-APPROVE",action:"Approve",from_state:"Submitted",to_state:"Approved"},
+    {id:"TR-REJECT",action:"Reject",from_state:"Submitted",to_state:"Rejected"},
+    {id:"TR-REVISE",action:"Revise",from_state:"Rejected",to_state:"Draft"}
+  ]});
+  for(const model of [excursion,graphFixture])for(const direction of ["LR","TB"])for(const saved of [{},{Submitted:{x:650,y:350},Review:{x:250,y:125}}]){
+    const before=JSON.stringify({model,saved}),projection=canvas.geometry(model,saved,direction);
+    for(const transition of model.transitions){
+      const points=projection.routes[transition.id].points;
+      for(const [point,state] of [[points[0],transition.from_state],[points.at(-1),transition.to_state]]){
+        const node=projection.coords[state],x=point.x-node.x,y=point.y-node.y;
+        assert.ok(x>=-1e-8&&x<=190+1e-8&&y>=-1e-8&&y<=76+1e-8);
+        // Independent signed distance to the SVG rounded rectangle (radius 12).
+        const qx=Math.abs(x-95)-83,qy=Math.abs(y-38)-26;
+        const distance=Math.hypot(Math.max(qx,0),Math.max(qy,0))+Math.min(Math.max(qx,qy),0)-12;
+        assert.ok(Math.abs(distance)<1e-8,`${direction} ${transition.id} ${state} endpoint misses painted border by ${distance}`);
+      }
+    }
+    assert.equal(JSON.stringify({model,saved}),before);
+  }
+});

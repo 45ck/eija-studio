@@ -5,6 +5,7 @@ let token = location.hash.slice(1) || sessionStorage.getItem("eija-session") || 
 if(location.hash){sessionStorage.setItem("eija-session",token); history.replaceState(null,"",location.pathname);}
 let current=null, instance=null, status=null, tab="model", busy=false, editId=null, workbench=null, affordanceData=null, lastDiagnostic=null, modelView="working", sourceSequence=0, sourceHistory=[], sourceHistoryIndex=-1, caseHistory=null, historyModel=null, historyLabel="", canvasDirection="AUTO";
 const caseViews = new Map();
+let inspectorSelection = null;
 function fillStates(id,states,value){$(id).replaceChildren(...states.map(s=>el("option",s)));$(id).value=value;}
 const notice=(text,error=false)=>{$("notice").textContent=text;$("notice").className=error?"error":"";};
 class ApiError extends Error {
@@ -22,6 +23,9 @@ function reportError(error) {
   lastDiagnostic = {code: error.code || "REQUEST_FAILED", message: error.message, details: error.details || {}};
   notice(error.message + (error.details?.codes?.length ? " · " + error.details.codes.join("; ") : ""), true);
   $("error-details").hidden = false; $("error-json").textContent = JSON.stringify(lastDiagnostic, null, 2);renderProblems();EijaShell.bottom("problems-pane");
+}
+function clearDiagnostic() {
+  lastDiagnostic = null; $("error-details").hidden = true; $("error-json").textContent = ""; renderProblems();
 }
 function captureTaskFocus(){const target=document.activeElement;return {id:target?.id,action:target?.dataset?.action,meaning:target?.dataset?.meaning};}
 function restoreTaskFocus(previous){
@@ -61,10 +65,10 @@ for(const x of p.explanations||[])explanation(root,x,"Why the policy blocks this
 for(const e of p.formal_evidence||[]){const d=el("details",undefined,"formal-item status-"+e.status.toLowerCase());d.append(el("summary",e.kind.replaceAll("_"," ")+": "+e.status+" ("+e.evidence_level.replaceAll("_"," ")+")"));d.append(el("p",e.establishes));formalList(d,"Why this status",e.reasons);formalList(d,"Does not establish",e.does_not_establish);formalList(d,"Assumptions",e.assumptions);if(e.bounds)formalList(d,"Bounds",[JSON.stringify(e.bounds)]);formalList(d,"Counterexamples",e.counterexamples);d.append(el("small","Needs: "+e.prerequisites));root.append(d);}}
 async function load(id) {
   const switching=current?.case.id!==id;
-  if(switching&&current)caseViews.set(current.case.id,{tab,editId,modelView,historyModel,historyLabel,canvasDirection});
+  if(switching&&current)caseViews.set(current.case.id,{tab,editId,inspectorSelection,modelView,historyModel,historyLabel,canvasDirection});
   const [next,affordances,historyData]=await Promise.all([api("cases/"+id),api(`cases/${id}/affordances`),api(`cases/${id}/history`).catch(error=>({status:"unavailable",reason:error.code||"HISTORY_UNAVAILABLE"}))]);
-  if(switching){const previous=caseViews.get(id);editId=previous?.editId||null;modelView=previous?.modelView||"working";historyModel=previous?.historyModel||null;historyLabel=previous?.historyLabel||"";canvasDirection=previous?.canvasDirection||"AUTO";if(previous)tab=previous.tab;}
-  current=next;affordanceData=affordances;caseHistory=historyData;render();await cases();
+  if(switching){const previous=caseViews.get(id);editId=previous?.editId||null;inspectorSelection=previous?.inspectorSelection||null;modelView=previous?.modelView||"working";historyModel=previous?.historyModel||null;historyLabel=previous?.historyLabel||"";canvasDirection=previous?.canvasDirection||"AUTO";if(previous)tab=previous.tab;}
+  current=next;affordanceData=affordances;caseHistory=historyData;render();await cases();clearDiagnostic();
 }
 async function command(action,extra={}){const id=current.case.id;const result=await api(`cases/${id}/${action}`,{expected_version:current.case.version,...extra});await load(id);return result;}
 function render(){const c=current.case,p=current.packet,closed=["APPLIED","DISCARDED"].includes(c.stage);$("create-panel").hidden=true;$("workspace").hidden=false;$("case-title").textContent=c.request;$("case-id").textContent=`CHANGE CASE ${c.id.slice(0,10)} / REVISION ${c.version} / BASELINE ${c.baseline_version}`;$("case-stage").textContent=c.stage;$("proposal-summary").textContent=c.proposal?.summary||"No interpretation has been requested. Your request is not yet a semantic change.";$("propose").disabled=!!c.candidate||closed;$("options").replaceChildren();
@@ -163,7 +167,7 @@ function renderEditor() {
   $("edit-fields").hidden=!target;
   for (const id of ["rejection-source", "diagram-source", "model-source"]) fillChoices(id, "retarget_source", target?.from_state);
   fillChoices("target-state", "retarget_target", target?.to_state); fillChoices("transition-role", "set_role", target?.role);
-  for (const id of ["edit-rule", "edit-state", "edit-source", "edit-target", "edit-role"]) $(id).disabled = !editable() || !target;
+  for (const id of ["edit-rule", "edit-state", "edit-source", "edit-target", "edit-role", "cancel-draft"]) $(id).disabled = !editable() || !target;
   $("rejection-label").textContent = target ? `${target.action} may start from` : "Select a transition in Model first";
   $("diagram-label").textContent = target ? `${target.action} source state` : "Select a transition in Model first";
 }
@@ -173,7 +177,15 @@ function renderCanvas() {
     direction:canvasDirection, selected: editId, affordances: affordanceData?.affordances, editable: editable(), onSelect: selectTransition, onDrop: commitChoice, onNotice: notice});
   EijaShell.mountCanvas(`${current?.case.id||workbench.pack.id}:${modelView}`);
 }
-function selectTransition(id) {const returnFocus=$("model-canvas").contains(document.activeElement);editId = id || null; EijaShell.toggle("inspector",true);const target=selectedTransition();if(target){$("selection-detail").replaceChildren(el("h3",target.action),el("p",`${target.from_state} → ${target.to_state}`,"muted"));$("inspector-impact").replaceChildren();}renderEditor();renderCanvas();if(returnFocus)$("model-canvas").querySelector(".model-edge.selected")?.focus();}
+function selectTransition(id) {const returnFocus=$("model-canvas").contains(document.activeElement);editId = id || null;inspectorSelection=editId?{kind:"transition",id:editId}:null;EijaShell.toggle("inspector",true);renderEditor();renderSelectionDetail();renderCanvas();if(returnFocus)$("model-canvas").querySelector(".model-edge.selected")?.focus();}
+function cancelDraft() {
+  if (busy || !editable() || !selectedTransition()) return;
+  renderEditor(); notice("Unsent fields reset to the loaded model; no transaction was sent.");
+}
+$("cancel-draft").onclick = cancelDraft;
+$("edit-fields").addEventListener("keydown", event => {
+  if (event.key === "Escape" && !busy) {event.preventDefault(); event.stopPropagation(); cancelDraft();}
+});
 function renderWorkbench() {
   if (!workbench) return;
   const model = workingModel(), pack = workbench.pack;
@@ -193,13 +205,22 @@ function renderWorkbench() {
   $("status-model").textContent = `Pack ${pack.id} · ${current ? "revision " + current.case.version : "baseline"} · ${String(affordanceData?.semantic_hash || pack.digest || "unknown").slice(0, 12)}`;
   $("repository-status").textContent = EijaSource.state(workbench.connection).title;
   EijaSource.render($("source-view"), workbench.connection);
-  EijaTree.render($("domain-tree"), workbench, model, showSelection);renderEditor();renderCanvas();EijaShell.renderHistory(current,caseHistory,previewHistory);
+  EijaTree.render($("domain-tree"), workbench, model, showSelection);renderEditor();renderSelectionDetail();renderCanvas();EijaShell.renderHistory(current,caseHistory,previewHistory);
 }
 function showSelection(kind, item) {
-  EijaShell.toggle("inspector",true);$("inspector-impact").replaceChildren();
-  const root = $("selection-detail"); root.replaceChildren(); root.dataset.eijaId = `${workbench.pack.id}.detail.${kind}.${item.id}`;
-  root.append(el("h3", item.label || item.id), el("p", item.definition || item.description || `Model ${kind}`));
-  if (kind === "transition") selectTransition(item.id);
+  inspectorSelection={kind,id:item.id};
+  EijaShell.toggle("inspector",true);
+  if(kind==="transition")selectTransition(item.id);else renderSelectionDetail();
+  if(["transition","state"].includes(kind))switchTab("model");
+}
+function renderSelectionDetail() {
+  const kind=inspectorSelection?.kind,id=inspectorSelection?.id,model=workingModel();
+  const items=kind==="transition"?model?.transitions:kind==="state"?model?.states.map(value=>({id:value})):kind==="term"?workbench.language?.terms:kind==="law"?workbench.laws:kind==="role"?workbench.roles:[];
+  const item=items?.find(value=>value.id===id),root=$("selection-detail");
+  root.replaceChildren();$("inspector-impact").replaceChildren();delete root.dataset.eijaId;
+  if(!item){inspectorSelection=null;root.append(el("h3","Explore a concept"),el("p","Select a term, state, role or law in the explorer.","muted"));return;}
+  root.dataset.eijaId = `${workbench.pack.id}.detail.${kind}.${item.id}`;
+  root.append(el("h3", item.label || item.action || item.id), el("p", kind==="transition"?`${item.from_state} → ${item.to_state}`:item.definition || item.description || `Model ${kind}`));
   for (const field of ["code", "kind", "role", "state", "action"]) if (item[field]) root.append(el("p", `${field}: ${item[field]}`));
   for (const field of ["refs", "binds"]) if (item[field]?.length) {
     root.append(el("h4", field === "refs" ? "Model references" : "Declared source bindings")); const list = el("ul");
@@ -212,7 +233,6 @@ function showSelection(kind, item) {
     const impact = el("button", "Find repository references", "secondary");
     impact.onclick=()=>task(async()=>{const data=await api("repository/impact?term="+encodeURIComponent(item.id));EijaShell.renderImpact($("inspector-impact"),data,openSource);notice("Known dependency links loaded. Unknown dependencies remain outside this mapping.");});root.append(impact);
   }
-  if(["transition","state"].includes(kind))switchTab("model");
 }
 function followReference(ref) {
   if(ref.startsWith("repo://")){openSource(ref);return;}
@@ -275,9 +295,13 @@ const paletteCommands = [
   ["Fit model overview",()=>{switchTab("model");EijaShell.fit();}],
   ...[...document.querySelectorAll("[data-tab]")].map(button => [`Open ${button.textContent}`, () => {switchTab(button.dataset.tab); button.focus();}]),
   ["Focus domain explorer", () => $("domain-tree").querySelector('[tabindex="0"]')?.focus()],
-  ["Refresh current model", () => task(async () => {if(current) await load(current.case.id); else {workbench = await api("workbench"); renderWorkbench();}})],
+  ["Refresh current model", () => task(refreshCurrentModel)],
   ["Select a transition", () => {switchTab("model");EijaShell.toggle("inspector",true); $("transition-select").focus();}]
 ];
+async function refreshCurrentModel() {
+  if(current)await load(current.case.id);else{workbench=await api("workbench");renderWorkbench();clearDiagnostic();}
+  notice("Current model refreshed from the server.");
+}
 function filterCommands() {
   const query = $("palette-search").value.toLowerCase(), root = $("palette-results"); root.replaceChildren();
   for (const [label, action] of paletteCommands.filter(([label]) => label.toLowerCase().includes(query))) {
@@ -299,7 +323,7 @@ $("refresh-source").onclick = () => task(async () => {
   notice(connection.connected ? "Repository snapshot refreshed. Source indexing did not execute project tests." : connection.title + ": " + connection.reason, !connection.connected);
 }, "Reading the configured repository snapshot…");
 
-function previewHistory(model,label){historyModel=model;historyLabel=label;modelView="history";editId=null;switchTab("model");renderWorkbench();notice("Historical model preview · read only. Use Working model to return to the current candidate.");}
+function previewHistory(model,label){historyModel=model;historyLabel=label;modelView="history";editId=null;inspectorSelection=null;switchTab("model");renderWorkbench();notice("Historical model preview · read only. Use Working model to return to the current candidate.");}
 function openIntent(){switchTab("change");$("create-panel").hidden=false;$("request").focus();notice("");}
 $("case-switcher").onchange=event=>{if(event.target.value)task(async()=>{instance=null;await load(event.target.value);notice("");});};
 $("canvas-direction").onchange=event=>{canvasDirection=event.target.value;renderCanvas();EijaShell.readable();};

@@ -271,7 +271,7 @@ class Journey(replay.Review):
         self.page.locator("#transition-role").select_option("Agent")
         writes = len([r for r in self.requests if r["method"] == "POST"])
         self.assert_unchanged(before)
-        cancel = self.page.get_by_role("button", name="Cancel draft", exact=True)
+        cancel = self.page.get_by_role("button", name="Reset unsent fields", exact=True)
         if cancel.count():
             cancel.click()
             replay.expect(self.page.locator("#transition-role")).to_have_value(original)
@@ -281,7 +281,7 @@ class Journey(replay.Review):
             self.shot("unsent-draft-no-cancel")
             retained = self.page.locator("#transition-role").input_value()
             self.page.locator("#transition-role").select_option(original)
-            result = {"status": "GAP", "reason": "No explicit Cancel draft control; manual reselection is not cancellation.",
+            result = {"status": "GAP", "reason": "No explicit Reset unsent fields control; manual reselection is not cancellation.",
                       "escape_retained_draft": retained != original}
         assert len([r for r in self.requests if r["method"] == "POST"]) == writes
         self.assert_unchanged(before)

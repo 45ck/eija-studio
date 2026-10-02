@@ -16,7 +16,7 @@ How to read this report. **MEASUREMENT**: recorded from the running Studio (elem
 | Viewport | 1440x900 @ 1x |
 | Provider | offline (synthetic) |
 | Pointer repeats (timing) | 3 |
-| UI bytes (sha256, first 12) | app.css e829361efc44, app.js 5f9be60f2a6b, canvas.js 5723fb7dd72e, index.html 6427700b1912, review.js 426978e96491, shell.js 9764b2b2d2eb, source.js 87e72798bfbf, tree.js 92d544b599ec, visual-frame.css ca5a74616eff, visual-frame.html 4408ecd716df, visual-frame.js cfda25808b8e |
+| UI bytes (sha256, first 12) | app.css e829361efc44, app.js 5062d7c1344e, canvas.js e0226d9361d7, index.html 70324f6a3eed, review.js 426978e96491, shell.js 9764b2b2d2eb, source.js 87e72798bfbf, tree.js 92d544b599ec, visual-frame.css ca5a74616eff, visual-frame.html 4408ecd716df, visual-frame.js cfda25808b8e |
 
 ## Headline
 
@@ -27,13 +27,13 @@ How to read this report. **MEASUREMENT**: recorded from the running Studio (elem
 | MEASUREMENT (DOM counts) | Hick-Hyman | choice groups with n > 7 | 0 | 0 | ok |
 | PREDICTION | KLM-GOMS | expert time, pointer journey (s) | 64.01 | - | info |
 | PREDICTION | KLM-GOMS | expert time, keyboard-only (s) | 68.99 | - | info |
-| MEASUREMENT (wall-clock) | Doherty | click -> settled DOM, median (ms) | 86.5 | 400 | ok |
-| MEASUREMENT (wall-clock) | Doherty | click -> settled DOM, p95 (ms) | 836.8 | 400 | FLAG |
+| MEASUREMENT (wall-clock) | Doherty | click -> settled DOM, median (ms) | 86.2 | 400 | ok |
+| MEASUREMENT (wall-clock) | Doherty | click -> settled DOM, p95 (ms) | 838.2 | 400 | FLAG |
 | MEASUREMENT (wall-clock) | Doherty | click -> first DOM mutation, p95 (ms; excludes paint) | 4.7 | 400 | ok |
 | MEASUREMENT (axe) | WCAG 2.2 AA | violating rules (critical/serious/moderate/minor) | 0 (0/0/0/0) | 0 | ok |
 | MEASUREMENT (geometry) | WCAG 2.5.8 | targets failing minimum size | 0 | 0 | ok |
 | MEASUREMENT (focus) | Keyboard | activations that dropped focus | 0/15 | 0 | ok |
-| MEASUREMENT (proxy) | Working memory | max chunks visible at once | 70 | 9 | FLAG |
+| MEASUREMENT (proxy) | Working memory | max chunks visible at once | 68 | 9 | FLAG |
 
 ## Ranked recommendations
 
@@ -53,7 +53,7 @@ Severity 5 critical WCAG, 4 serious WCAG / focus loss / wait over 1 s, 3 moderat
 ### 1. 1 interaction(s) usually take longer than 400 ms to finish
 
 - Change: First DOM mutation after the click came within 4.7 ms (p95; paint not measured), while completion for the slow steps takes longer than 400 ms. For the slow steps show a determinate progress message, keep the previous result visible until the new one lands, and profile where the time goes before optimising anything.
-- Evidence: `{"first_feedback_p95_ms": 4.7, "slow_steps": ["run-verification: p50 872.3 / p95 898.1 ms"]}`
+- Evidence: `{"first_feedback_p95_ms": 4.7, "slow_steps": ["run-verification: p50 880.6 / p95 884.5 ms"]}`
 - Targets: `run-verification`
 - Likely cause (UNVERIFIED hypothesis; the probe does not establish it): the server-side work per action, possibly the durable SQLite commit path, dominates (hypothesis; no profile was taken)
 - Laws: Doherty threshold; predicted saving (model difference): 0.0 s
@@ -81,7 +81,7 @@ Severity 5 critical WCAG, 4 serious WCAG / focus loss / wait over 1 s, 3 moderat
 ### 5. 12/12 views show more than 9 chunks at once (proxy)
 
 - Change: Reduce what is simultaneously visible in the listed views: move persistent chrome out of the working area once a case is open and collapse raw or secondary content by default, so the work area competes for fewer chunks.
-- Evidence: `{"label": "HEURISTIC PROXY - counts what is simultaneously visible, not what a person holds in memory", "views": ["applied: 63", "change-empty: 51", "change-options: 63", "change-selected: 66", "create-panel: 53", "evidence-approved: 63", "evidence-verified: 70", "impact-tab: 66", "start: 63", "try-denied: 60", "try-draft: 59", "try-idle: 59"], "worst_chunks": 70, "worst_view": "evidence-verified"}`
+- Evidence: `{"label": "HEURISTIC PROXY - counts what is simultaneously visible, not what a person holds in memory", "views": ["applied: 61", "change-empty: 51", "change-options: 63", "change-selected: 66", "create-panel: 53", "evidence-approved: 61", "evidence-verified: 68", "impact-tab: 66", "start: 63", "try-denied: 60", "try-draft: 59", "try-idle: 59"], "worst_chunks": 68, "worst_view": "evidence-verified"}`
 - Laws: Miller 1956, Cowan 2001; predicted saving (model difference): 0.0 s
 
 ### 6. 9/9 decision points have more than 7 visible controls on screen
@@ -115,8 +115,8 @@ Severity 5 critical WCAG, 4 serious WCAG / focus loss / wait over 1 s, 3 moderat
 | hick.max_choices | Hick-Hyman | 7 alternatives | 7 | 7 | PASS |
 | klm.pointer_expert_time | KLM-GOMS | 64.01 s | 65 | 65 | PASS |
 | doherty.first_feedback_p95 | Doherty | 4.7 ms | 400 | 400 | PASS |
-| doherty.settled_p50 | Doherty | 86.5 ms | 400 | 400 | PASS |
-| doherty.settled_p95 | Doherty | 836.8 ms | 400 | 4000 | GAP |
+| doherty.settled_p50 | Doherty | 86.2 ms | 400 | 400 | PASS |
+| doherty.settled_p95 | Doherty | 838.2 ms | 400 | 4000 | GAP |
 | wcag.critical_rules | WCAG 2.2 AA | 0 rules | 0 | 0 | PASS |
 | wcag.serious_rules | WCAG 2.2 AA | 0 rules | 0 | 1 | PASS |
 | wcag.moderate_rules | WCAG 2.2 AA | 0 rules | 0 | 0 | PASS |
@@ -124,7 +124,7 @@ Severity 5 critical WCAG, 4 serious WCAG / focus loss / wait over 1 s, 3 moderat
 | wcag.reflow_overflow_views | WCAG 1.4.10 | 0 views | 0 | 0 | PASS |
 | keyboard.focus_lost_activations | WCAG 2.4.3 | 0 activations | 0 | 7 | PASS |
 | keyboard.stops_without_indicator | WCAG 2.4.7 | 0 stops | 0 | 0 | PASS |
-| memory.max_chunks_viewport | Miller / Cowan (proxy) | 70 chunks | 9 | 27 | FAIL |
+| memory.max_chunks_viewport | Miller / Cowan (proxy) | 68 chunks | 9 | 27 | FAIL |
 | runtime.js_exceptions | hygiene | 0 exceptions | 0 | 0 | PASS |
 
 ## Fitts's law (prediction over measured geometry)
@@ -184,7 +184,7 @@ PREDICTION. Operator times (s): K 0.28, P 1.1, B 0.1, H 0.4, M 1.35 (Card, Moran
 | Pointer + typing | 67 | 23 | 46 | 8 | 9 | 64.01 | 55.11 |
 | Keyboard only (Tab, Enter, Space, arrows) | 203 | 0 | 0 | 0 | 9 | 68.99 | - |
 
-Expected expert time is 64.01 s pointer-driven (Fitts-refined 55.11 s) and 68.99 s keyboard-only, excluding system response (measured wait, sum of per-step medians: 1.825 s) and scrolling.
+Expected expert time is 64.01 s pointer-driven (Fitts-refined 55.11 s) and 68.99 s keyboard-only, excluding system response (measured wait, sum of per-step medians: 1.843 s) and scrolling.
 
 | Step | KLM s (pointer) | Operators |
 |---|---|---|
@@ -216,22 +216,22 @@ MEASUREMENT, wall-clock. The first-DOM-mutation columns time the first DOM chang
 
 | Step | n | First DOM mutation p50 ms | p95 ms | Settled p25 ms | p50 ms | p75 ms | p95 ms | > 400 ms |
 |---|---|---|---|---|---|---|---|---|
-| open-change | 3 | 5.2 | 7.5 | 4.7 | 5.2 | 7.5 | 7.5 | ok |
-| create-case | 3 | 0.4 | 0.6 | 80 | 80.5 | 89.9 | 89.9 | ok |
-| ask-interpretations | 3 | 0.5 | 0.5 | 86.6 | 90.7 | 102.4 | 102.4 | ok |
-| select-meaning | 3 | 0.4 | 0.6 | 82.4 | 86.5 | 100.8 | 100.8 | ok |
-| open-try | 3 | 0.9 | 1 | 0.9 | 0.9 | 1 | 1 | ok |
-| reset-preview | 3 | 0.4 | 0.5 | 78.6 | 86.3 | 88.3 | 88.3 | ok |
-| submit-teacher | 3 | 0.5 | 0.6 | 87.7 | 89.7 | 95.6 | 95.6 | ok |
-| recommend-teacher | 3 | 0.3 | 0.4 | 79.3 | 91.6 | 100.2 | 100.2 | ok |
-| approve-registrar | 3 | 0.4 | 0.4 | 70.2 | 80.3 | 97 | 97 | ok |
-| denied-recommend | 3 | 0.4 | 0.6 | 5.4 | 5.5 | 5.9 | 5.9 | ok |
-| open-evidence | 3 | 0.7 | 1.3 | 0.7 | 0.7 | 1.3 | 1.3 | ok |
-| run-verification | 3 | 0.4 | 0.5 | 836.8 | 872.3 | 898.1 | 898.1 | p50 |
-| approve-exact | 3 | 1.1 | 1.4 | 131 | 133.6 | 148.7 | 148.7 | ok |
-| apply-baseline | 3 | 0.4 | 0.5 | 193 | 201.6 | 208.7 | 208.7 | ok |
+| open-change | 3 | 5.9 | 6.7 | 4.7 | 5.9 | 6.7 | 6.7 | ok |
+| create-case | 3 | 0.5 | 0.6 | 77.4 | 95.6 | 103.2 | 103.2 | ok |
+| ask-interpretations | 3 | 0.4 | 0.5 | 73.7 | 85.7 | 95.9 | 95.9 | ok |
+| select-meaning | 3 | 0.4 | 0.4 | 84.8 | 86.4 | 94.8 | 94.8 | ok |
+| open-try | 3 | 0.9 | 0.9 | 0.7 | 0.9 | 0.9 | 0.9 | ok |
+| reset-preview | 3 | 0.5 | 0.5 | 80.6 | 93.9 | 104.6 | 104.6 | ok |
+| submit-teacher | 3 | 0.4 | 0.6 | 86.2 | 89.6 | 92.1 | 92.1 | ok |
+| recommend-teacher | 3 | 0.5 | 0.6 | 80.9 | 90.4 | 90.9 | 90.9 | ok |
+| approve-registrar | 3 | 0.4 | 0.5 | 76.2 | 85.4 | 92.8 | 92.8 | ok |
+| denied-recommend | 3 | 0.4 | 0.4 | 5.1 | 5.2 | 5.6 | 5.6 | ok |
+| open-evidence | 3 | 0.8 | 0.9 | 0.7 | 0.8 | 0.9 | 0.9 | ok |
+| run-verification | 3 | 0.4 | 0.4 | 838.2 | 880.6 | 884.5 | 884.5 | p50 |
+| approve-exact | 3 | 0.9 | 0.9 | 117.8 | 123.9 | 127.9 | 127.9 | ok |
+| apply-baseline | 3 | 0.4 | 0.6 | 175.2 | 198.5 | 213.9 | 213.9 | ok |
 
-Overall: first DOM mutation p50/p95 0.5/4.7 ms; settled p25/p50/p75 5.9/86.5/100.8 ms, p95 836.8 ms (max 898.1 ms). Keyboard activations settled p50/p95 85.3/816.5 ms.
+Overall: first DOM mutation p50/p95 0.5/4.7 ms; settled p25/p50/p75 5.9/86.2/103.2 ms, p95 838.2 ms (max 884.5 ms). Keyboard activations settled p50/p95 74.6/959.2 ms.
 
 ## WCAG 2.2 AA (measurement)
 
@@ -289,13 +289,13 @@ HEURISTIC PROXY - counts what is simultaneously visible, not what a person holds
 
 | View | Controls | Content groups | Chunks (viewport) | Chunks (page) | > 9 |
 |---|---|---|---|---|---|
-| applied | 35 | 28 | 63 | 63 | FLAG |
+| applied | 34 | 27 | 61 | 61 | FLAG |
 | change-empty | 28 | 23 | 51 | 51 | FLAG |
 | change-options | 34 | 29 | 63 | 63 | FLAG |
 | change-selected | 35 | 31 | 66 | 66 | FLAG |
 | create-panel | 30 | 23 | 53 | 53 | FLAG |
-| evidence-approved | 35 | 28 | 63 | 63 | FLAG |
-| evidence-verified | 31 | 39 | 70 | 70 | FLAG |
+| evidence-approved | 34 | 27 | 61 | 61 | FLAG |
+| evidence-verified | 30 | 38 | 68 | 68 | FLAG |
 | impact-tab | 35 | 31 | 66 | 66 | FLAG |
 | start | 36 | 27 | 63 | 63 | FLAG |
 | try-denied | 35 | 25 | 60 | 60 | FLAG |
@@ -304,7 +304,7 @@ HEURISTIC PROXY - counts what is simultaneously visible, not what a person holds
 
 ## Runtime hygiene
 
-JavaScript exceptions: 0. HTTP error responses: 409 POST /api/cases/5178a88e73df4bec9e2eb1150f4b07ab/execute during `denied-recommend`; 409 POST /api/cases/d5d8968bf9fc48db9dd2828c8be79200/execute during `denied-recommend`; 409 POST /api/cases/ee6813ec16e24067b0135c3a9447d7cd/execute during `denied-recommend`.
+JavaScript exceptions: 0. HTTP error responses: 409 POST /api/cases/45688a477a7743399330b634d09623bf/execute during `denied-recommend`; 409 POST /api/cases/d7949e4b65914d29acffa0a228e03e14/execute during `denied-recommend`; 409 POST /api/cases/f44a0081b52e4ac4be52c3504003dae6/execute during `denied-recommend`.
 
 ## Limitations
 

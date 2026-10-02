@@ -43,6 +43,7 @@ def run(scene: Scene, server: RunningServer) -> None:
     scene.expect_text("#notice", "Meaning selected")
 
     # Act 2 - one model, synchronised views --------------------------------------------------------
+    scene.click("#reference-views > summary")
     scene.click('[data-tab="impact"]')
     scene.caption("One substrate, synchronised views: the rule table and state flow derive from one model.")
     scene.highlight("#state-flow")

@@ -2,7 +2,17 @@
 // This renderer owns geometry and selection only. Every semantic verdict comes from the server.
 const EijaCanvas = (() => {
   const NS = "http://www.w3.org/2000/svg";
-  const width = 190, height = 76;
+  const width = 190, height = 76, cornerRadius = 12;
+  function paintedPort(point, node) {
+    // Dagre clips to rectangular boxes. Project only that endpoint onto the
+    // painted rounded outline; interior route points remain Dagre's output.
+    const x = point.x - node.x, y = point.y - node.y;
+    const cx = Math.max(cornerRadius, Math.min(width - cornerRadius, x));
+    const cy = Math.max(cornerRadius, Math.min(height - cornerRadius, y));
+    const dx = x - cx, dy = y - cy, distance = Math.hypot(dx, dy);
+    if (distance <= cornerRadius) return point;
+    return {x:node.x + cx + dx * cornerRadius / distance, y:node.y + cy + dy * cornerRadius / distance};
+  }
   function geometry(model, saved = {}, direction = "LR") {
     const engine = globalThis.dagre;
     if (!engine?.graphlib?.Graph || !engine.layout) throw new Error("The bundled Dagre layout engine is unavailable. Use the transition editor while the local asset is restored.");
@@ -36,6 +46,8 @@ const EijaCanvas = (() => {
         const weight = i / Math.max(1, edge.points.length - 1);
         return {x:point.x + a.x * (1 - weight) + b.x * weight, y:point.y + a.y * (1 - weight) + b.y * weight};
       });
+      points[0] = paintedPort(points[0], coords[transition.from_state]);
+      points[points.length - 1] = paintedPort(points[points.length - 1], coords[transition.to_state]);
       Object.defineProperty(routes, transition.id, {enumerable:true, value:{points,
         label:{x:edge.x + (a.x + b.x) / 2, y:edge.y + (a.y + b.y) / 2}}});
     });
@@ -106,7 +118,7 @@ const EijaCanvas = (() => {
     for (const state of model.states) {
       const p = coords[state], initial = model.initial_state === state;
       const group = svg("g", {class: "model-node", "data-state": state, "data-eija-id": `${pack}.state.${state}`});
-      group.append(svg("rect", {x: p.x, y: p.y, width, height, rx: 12, class: "state-box"}));
+      group.append(svg("rect", {x: p.x, y: p.y, width, height, rx: cornerRadius, class: "state-box"}));
       group.append(svg("text", {x: p.x + 15, y: p.y + 29, class: "state-label"}, state));
       group.append(svg("text", {x: p.x + 15, y: p.y + 53, class: "state-meta"}, initial ? "Initial state" : `${model.transitions.filter(t => t.from_state === state).length} outgoing transitions`));
       board.append(group);

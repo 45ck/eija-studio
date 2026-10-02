@@ -86,7 +86,7 @@
       "status": "PASS",
       "target": 400,
       "unit": "ms",
-      "value": 86.5
+      "value": 86.2
     },
     {
       "id": "doherty.settled_p95",
@@ -97,7 +97,7 @@
       "status": "GAP",
       "target": 400,
       "unit": "ms",
-      "value": 836.8
+      "value": 838.2
     },
     {
       "id": "wcag.critical_rules",
@@ -185,7 +185,7 @@
       "status": "FAIL",
       "target": 9,
       "unit": "chunks",
-      "value": 70
+      "value": 68
     },
     {
       "id": "runtime.js_exceptions",
@@ -214,9 +214,9 @@
     "repeats": 3,
     "ui_sha256": {
       "app.css": "e829361efc44495cd417575fdd6205cf1f3272bca48b8268439f98b10d32b811",
-      "app.js": "5f9be60f2a6b2622be0fb9978ec388f2aa9ed9ae8436fd5e33af52ce6a5282f0",
-      "canvas.js": "5723fb7dd72e663ae7b16cf55f42e2dbda2fc7c570d645f0acc0367ffc3226c4",
-      "index.html": "6427700b191212386fdec39dc87a9621dab23520aedbceb4b79090b105e766d5",
+      "app.js": "5062d7c1344efb90f39df9b24184162b1497f38b5d095d2bfcc5f5bbab348fe1",
+      "canvas.js": "e0226d9361d73aa1831e48080f5fc262bb0fcbd8086cd1387461d39de6ca1765",
+      "index.html": "70324f6a3eedff4a6fe8889125179a2ec290b3881a56bd1f7cb1138b7e1954e1",
       "review.js": "426978e964918a63b8e73ff1ae99b2b126e7a1a4d9429b2151e275cfaf178dee",
       "shell.js": "9764b2b2d2eb272376b60df592ec65f34750b1190dc71caf17946e9c7eae79d3",
       "source.js": "87e72798bfbfeab516923d79ab72495bd72a3086e3a706156ea71627530482a9",
@@ -3166,91 +3166,103 @@
       "first_feedback_p50_ms": 0.5,
       "first_feedback_p95_ms": 4.7,
       "interactions_measured": 42,
-      "journey_wait_p50_sum_s": 1.825,
-      "keyboard_settled_p50_ms": 85.3,
-      "keyboard_settled_p95_ms": 816.5,
+      "journey_wait_p50_sum_s": 1.843,
+      "keyboard_settled_p50_ms": 74.6,
+      "keyboard_settled_p95_ms": 959.2,
       "method": "nearest-rank percentiles over all repeats; medians and interquartile range are the headline, p95 is the maximum with few samples",
       "native_control_interactions_excluded": [
         "acknowledge"
       ],
       "note": "settled = last DOM mutation before quiescence, from the click event; excludes OS/browser input latency",
-      "settled_max_ms": 898.1,
+      "settled_max_ms": 884.5,
       "settled_p25_ms": 5.9,
-      "settled_p50_ms": 86.5,
-      "settled_p75_ms": 100.8,
-      "settled_p95_ms": 836.8,
+      "settled_p50_ms": 86.2,
+      "settled_p75_ms": 103.2,
+      "settled_p95_ms": 838.2,
       "steps": [
         {
-          "first_feedback_p50_ms": 5.2,
-          "first_feedback_p95_ms": 7.5,
+          "first_feedback_p50_ms": 5.9,
+          "first_feedback_p95_ms": 6.7,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
           "settled_p25_ms": 4.7,
-          "settled_p50_ms": 5.2,
-          "settled_p75_ms": 7.5,
-          "settled_p95_ms": 7.5,
+          "settled_p50_ms": 5.9,
+          "settled_p75_ms": 6.7,
+          "settled_p95_ms": 6.7,
           "step": "open-change"
         },
         {
-          "first_feedback_p50_ms": 0.4,
+          "first_feedback_p50_ms": 0.5,
           "first_feedback_p95_ms": 0.6,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 80,
-          "settled_p50_ms": 80.5,
-          "settled_p75_ms": 89.9,
-          "settled_p95_ms": 89.9,
+          "settled_p25_ms": 77.4,
+          "settled_p50_ms": 95.6,
+          "settled_p75_ms": 103.2,
+          "settled_p95_ms": 103.2,
           "step": "create-case"
         },
         {
-          "first_feedback_p50_ms": 0.5,
+          "first_feedback_p50_ms": 0.4,
           "first_feedback_p95_ms": 0.5,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 86.6,
-          "settled_p50_ms": 90.7,
-          "settled_p75_ms": 102.4,
-          "settled_p95_ms": 102.4,
+          "settled_p25_ms": 73.7,
+          "settled_p50_ms": 85.7,
+          "settled_p75_ms": 95.9,
+          "settled_p95_ms": 95.9,
           "step": "ask-interpretations"
         },
         {
           "first_feedback_p50_ms": 0.4,
-          "first_feedback_p95_ms": 0.6,
+          "first_feedback_p95_ms": 0.4,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 82.4,
-          "settled_p50_ms": 86.5,
-          "settled_p75_ms": 100.8,
-          "settled_p95_ms": 100.8,
+          "settled_p25_ms": 84.8,
+          "settled_p50_ms": 86.4,
+          "settled_p75_ms": 94.8,
+          "settled_p95_ms": 94.8,
           "step": "select-meaning"
         },
         {
           "first_feedback_p50_ms": 0.9,
-          "first_feedback_p95_ms": 1,
+          "first_feedback_p95_ms": 0.9,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 0.9,
+          "settled_p25_ms": 0.7,
           "settled_p50_ms": 0.9,
-          "settled_p75_ms": 1,
-          "settled_p95_ms": 1,
+          "settled_p75_ms": 0.9,
+          "settled_p95_ms": 0.9,
           "step": "open-try"
         },
         {
-          "first_feedback_p50_ms": 0.4,
+          "first_feedback_p50_ms": 0.5,
           "first_feedback_p95_ms": 0.5,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 78.6,
-          "settled_p50_ms": 86.3,
-          "settled_p75_ms": 88.3,
-          "settled_p95_ms": 88.3,
+          "settled_p25_ms": 80.6,
+          "settled_p50_ms": 93.9,
+          "settled_p75_ms": 104.6,
+          "settled_p95_ms": 104.6,
           "step": "reset-preview"
+        },
+        {
+          "first_feedback_p50_ms": 0.4,
+          "first_feedback_p95_ms": 0.6,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 86.2,
+          "settled_p50_ms": 89.6,
+          "settled_p75_ms": 92.1,
+          "settled_p95_ms": 92.1,
+          "step": "submit-teacher"
         },
         {
           "first_feedback_p50_ms": 0.5,
@@ -3258,23 +3270,23 @@
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 87.7,
-          "settled_p50_ms": 89.7,
-          "settled_p75_ms": 95.6,
-          "settled_p95_ms": 95.6,
-          "step": "submit-teacher"
+          "settled_p25_ms": 80.9,
+          "settled_p50_ms": 90.4,
+          "settled_p75_ms": 90.9,
+          "settled_p95_ms": 90.9,
+          "step": "recommend-teacher"
         },
         {
-          "first_feedback_p50_ms": 0.3,
-          "first_feedback_p95_ms": 0.4,
+          "first_feedback_p50_ms": 0.4,
+          "first_feedback_p95_ms": 0.5,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 79.3,
-          "settled_p50_ms": 91.6,
-          "settled_p75_ms": 100.2,
-          "settled_p95_ms": 100.2,
-          "step": "recommend-teacher"
+          "settled_p25_ms": 76.2,
+          "settled_p50_ms": 85.4,
+          "settled_p75_ms": 92.8,
+          "settled_p95_ms": 92.8,
+          "step": "approve-registrar"
         },
         {
           "first_feedback_p50_ms": 0.4,
@@ -3282,11 +3294,47 @@
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 70.2,
-          "settled_p50_ms": 80.3,
-          "settled_p75_ms": 97,
-          "settled_p95_ms": 97,
-          "step": "approve-registrar"
+          "settled_p25_ms": 5.1,
+          "settled_p50_ms": 5.2,
+          "settled_p75_ms": 5.6,
+          "settled_p95_ms": 5.6,
+          "step": "denied-recommend"
+        },
+        {
+          "first_feedback_p50_ms": 0.8,
+          "first_feedback_p95_ms": 0.9,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 0.7,
+          "settled_p50_ms": 0.8,
+          "settled_p75_ms": 0.9,
+          "settled_p95_ms": 0.9,
+          "step": "open-evidence"
+        },
+        {
+          "first_feedback_p50_ms": 0.4,
+          "first_feedback_p95_ms": 0.4,
+          "median_over_400ms": true,
+          "over_400ms": true,
+          "samples": 3,
+          "settled_p25_ms": 838.2,
+          "settled_p50_ms": 880.6,
+          "settled_p75_ms": 884.5,
+          "settled_p95_ms": 884.5,
+          "step": "run-verification"
+        },
+        {
+          "first_feedback_p50_ms": 0.9,
+          "first_feedback_p95_ms": 0.9,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 117.8,
+          "settled_p50_ms": 123.9,
+          "settled_p75_ms": 127.9,
+          "settled_p95_ms": 127.9,
+          "step": "approve-exact"
         },
         {
           "first_feedback_p50_ms": 0.4,
@@ -3294,58 +3342,10 @@
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 5.4,
-          "settled_p50_ms": 5.5,
-          "settled_p75_ms": 5.9,
-          "settled_p95_ms": 5.9,
-          "step": "denied-recommend"
-        },
-        {
-          "first_feedback_p50_ms": 0.7,
-          "first_feedback_p95_ms": 1.3,
-          "median_over_400ms": false,
-          "over_400ms": false,
-          "samples": 3,
-          "settled_p25_ms": 0.7,
-          "settled_p50_ms": 0.7,
-          "settled_p75_ms": 1.3,
-          "settled_p95_ms": 1.3,
-          "step": "open-evidence"
-        },
-        {
-          "first_feedback_p50_ms": 0.4,
-          "first_feedback_p95_ms": 0.5,
-          "median_over_400ms": true,
-          "over_400ms": true,
-          "samples": 3,
-          "settled_p25_ms": 836.8,
-          "settled_p50_ms": 872.3,
-          "settled_p75_ms": 898.1,
-          "settled_p95_ms": 898.1,
-          "step": "run-verification"
-        },
-        {
-          "first_feedback_p50_ms": 1.1,
-          "first_feedback_p95_ms": 1.4,
-          "median_over_400ms": false,
-          "over_400ms": false,
-          "samples": 3,
-          "settled_p25_ms": 131,
-          "settled_p50_ms": 133.6,
-          "settled_p75_ms": 148.7,
-          "settled_p95_ms": 148.7,
-          "step": "approve-exact"
-        },
-        {
-          "first_feedback_p50_ms": 0.4,
-          "first_feedback_p95_ms": 0.5,
-          "median_over_400ms": false,
-          "over_400ms": false,
-          "samples": 3,
-          "settled_p25_ms": 193,
-          "settled_p50_ms": 201.6,
-          "settled_p75_ms": 208.7,
-          "settled_p95_ms": 208.7,
+          "settled_p25_ms": 175.2,
+          "settled_p50_ms": 198.5,
+          "settled_p75_ms": 213.9,
+          "settled_p95_ms": 213.9,
           "step": "apply-baseline"
         }
       ],
@@ -3374,7 +3374,7 @@
       "evidence": {
         "first_feedback_p95_ms": 4.7,
         "slow_steps": [
-          "run-verification: p50 872.3 / p95 898.1 ms"
+          "run-verification: p50 880.6 / p95 884.5 ms"
         ]
       },
       "id": "doherty-completion",
@@ -3519,20 +3519,20 @@
       "evidence": {
         "label": "HEURISTIC PROXY - counts what is simultaneously visible, not what a person holds in memory",
         "views": [
-          "applied: 63",
+          "applied: 61",
           "change-empty: 51",
           "change-options: 63",
           "change-selected: 66",
           "create-panel: 53",
-          "evidence-approved: 63",
-          "evidence-verified: 70",
+          "evidence-approved: 61",
+          "evidence-verified: 68",
           "impact-tab: 66",
           "start: 63",
           "try-denied: 60",
           "try-draft: 59",
           "try-idle: 59"
         ],
-        "worst_chunks": 70,
+        "worst_chunks": 68,
         "worst_view": "evidence-verified"
       },
       "id": "working-memory-proxy",
@@ -3629,19 +3629,19 @@
     "http_error_responses": [
       {
         "method": "POST",
-        "path": "/api/cases/5178a88e73df4bec9e2eb1150f4b07ab/execute",
+        "path": "/api/cases/45688a477a7743399330b634d09623bf/execute",
         "status": 409,
         "step": "denied-recommend"
       },
       {
         "method": "POST",
-        "path": "/api/cases/d5d8968bf9fc48db9dd2828c8be79200/execute",
+        "path": "/api/cases/d7949e4b65914d29acffa0a228e03e14/execute",
         "status": 409,
         "step": "denied-recommend"
       },
       {
         "method": "POST",
-        "path": "/api/cases/ee6813ec16e24067b0135c3a9447d7cd/execute",
+        "path": "/api/cases/f44a0081b52e4ac4be52c3504003dae6/execute",
         "status": 409,
         "step": "denied-recommend"
       }
@@ -3764,21 +3764,21 @@
     "definition": "chunks = visible controls, including disabled controls (a checkbox and its label are one), + groups of visible static text/heading atoms that share a parent element; viewport = first screen at scroll top, page = whole rendered view. Independent pane overflow clips are intersected; partially visible items still count. Raw layout-box counts and clipped exclusions are retained; absent values identify older traces without this accounting.",
     "label": "HEURISTIC PROXY - counts what is simultaneously visible, not what a person holds in memory",
     "summary": {
-      "max_chunks_viewport": 70,
+      "max_chunks_viewport": 68,
       "views": 12,
       "views_over_miller_9": 12
     },
     "views": [
       {
-        "atoms_viewport": 87,
-        "chunks_page": 63,
-        "chunks_viewport": 63,
-        "content_groups": 28,
-        "controls": 35,
+        "atoms_viewport": 85,
+        "chunks_page": 61,
+        "chunks_viewport": 61,
+        "content_groups": 27,
+        "controls": 34,
         "excluded_clipped_chunks": 8,
         "over_cowan_4": true,
         "over_miller_9": true,
-        "raw_chunks_viewport": 71,
+        "raw_chunks_viewport": 69,
         "view": "applied"
       },
       {
@@ -3830,27 +3830,27 @@
         "view": "create-panel"
       },
       {
-        "atoms_viewport": 87,
-        "chunks_page": 63,
-        "chunks_viewport": 63,
-        "content_groups": 28,
-        "controls": 35,
+        "atoms_viewport": 85,
+        "chunks_page": 61,
+        "chunks_viewport": 61,
+        "content_groups": 27,
+        "controls": 34,
         "excluded_clipped_chunks": 8,
         "over_cowan_4": true,
         "over_miller_9": true,
-        "raw_chunks_viewport": 71,
+        "raw_chunks_viewport": 69,
         "view": "evidence-approved"
       },
       {
-        "atoms_viewport": 105,
-        "chunks_page": 70,
-        "chunks_viewport": 70,
-        "content_groups": 39,
-        "controls": 31,
+        "atoms_viewport": 103,
+        "chunks_page": 68,
+        "chunks_viewport": 68,
+        "content_groups": 38,
+        "controls": 30,
         "excluded_clipped_chunks": 3,
         "over_cowan_4": true,
         "over_miller_9": true,
-        "raw_chunks_viewport": 73,
+        "raw_chunks_viewport": 71,
         "view": "evidence-verified"
       },
       {
