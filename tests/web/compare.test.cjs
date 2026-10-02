@@ -352,3 +352,107 @@ test("actual viewport handlers defer hidden hosts instead of publishing invented
   handlers.focusSelection(s);assert.equal(s.shell.dataset.compareView,"focus");assert.equal(boxes[0].name,"viewBox");
   assertFramed([compare.selectionBounds(layout,item)],s.state.viewport,[{width:430,height:275}]);
 });
+
+test("declared impact families navigate to exact model changes or explicitly case-wide views", () => {
+  const expected = {
+    "rule:Recommend": {view:"review", kind:"transition", id:"T-CHANGE"},
+    "state-view:Recommend": {view:"review", kind:"transition", id:"T-CHANGE"},
+    "runtime:Recommend": {view:"try", action:"Recommend"},
+    "journey:Recommend": {view:"impact", action:"Recommend"},
+    "obligation:Recommend": {view:"evidence", section:"overview"},
+    "receipt:Recommend": {view:"evidence", section:"overview"},
+    "review-packet": {view:"evidence", section:"overview"},
+    "local-decision": {view:"evidence", section:"decision"}
+  };
+  const original = JSON.stringify({before, after});
+  for (const [reference, target] of Object.entries(expected)) {
+    const route = compare.impactNavigation(reference, before, after);
+    assert.deepEqual(route.target, target, reference);
+    assert.equal(route.reference, reference);
+    assert.ok(route.label.length > 0 && route.scope.length > 0);
+    assert.ok(!JSON.stringify(route).includes("repo://"), "projection navigation invents no source link");
+    if (target.view === "evidence") assert.match(route.scope, /Case-wide.*not an individual receipt or verdict/);
+  }
+  assert.equal(JSON.stringify({before, after}), original);
+});
+
+test("removed actions keep exact comparison and case evidence, with no candidate runtime or journey link", () => {
+  assert.deepEqual(compare.impactNavigation("rule:Restore", before, after).target,
+    {view:"review", kind:"transition", id:"T-REMOVE"});
+  assert.deepEqual(compare.impactNavigation("receipt:Restore", before, after).target,
+    {view:"evidence", section:"overview"});
+  for (const kind of ["runtime", "journey"]) {
+    const route = compare.impactNavigation(`${kind}:Restore`, before, after);
+    assert.equal(route.target, null); assert.match(route.reason, /only in the baseline/);
+  }
+});
+
+test("unknown and ambiguous impact references never choose a destination by prefix or first match", () => {
+  for (const reference of ["repo://src/runtime.py", "receipt:Recommend-extra", "rule:", "unknown:Recommend", "review-packet:extra", "local-decision:extra", null]) {
+    assert.equal(compare.impactNavigation(reference, before, after).target, null, String(reference));
+  }
+  const ambiguous = freeze({...after, transitions:[...after.transitions,
+    transition("T-SECOND", "Draft", "Done", {action:"Recommend"})]});
+  for (const kind of ["rule", "runtime", "state-view", "journey", "obligation", "receipt"]) {
+    const route = compare.impactNavigation(`${kind}:Recommend`, before, ambiguous);
+    assert.equal(route.target, null); assert.match(route.reason, /multiple transition identities/);
+  }
+  const renamedIdentity = freeze({...after, transitions:after.transitions.map(item =>
+    item.id === "T-CHANGE" ? {...item, id:"T-RENAMED"} : item)});
+  assert.equal(compare.impactNavigation("rule:Recommend", before, renamedIdentity).target, null);
+});
+
+test("literal action and transition identities remain exact, including prototype-looking values", () => {
+  const model = freeze({transitions:[transition("__proto__", "A", "B", {action:"constructor"})]});
+  assert.deepEqual(compare.impactNavigation("rule:constructor", model, model).target,
+    {view:"review", kind:"transition", id:"__proto__"});
+  assert.equal(compare.impactNavigation("rule:Constructor", model, model).target, null);
+});
+
+test("actual impact renderer exposes supported destinations and explanatory nonlinks with exact context", () => {
+  const fs = require("node:fs"), vm = require("node:vm");
+  const source = fs.readFileSync(process.env.EIJA_COMPARE_MODULE || path.join(web, "compare.js"), "utf8");
+  const begin = source.indexOf("  function buildContext(s) {"), end = source.indexOf("  function dimensions(s)", begin);
+  assert.ok(begin >= 0 && end > begin);
+  const element = (tag, content) => ({tag, textContent:content, children:[], dataset:{}, append(...nodes){this.children.push(...nodes);}});
+  const button = (label, onclick) => ({...element("button", label), onclick});
+  const buildContext = vm.runInNewContext("(" + source.slice(begin, end).trim() + ")", {element, button, impactNavigation:compare.impactNavigation});
+  const routes = [], s = {shell:element("section"), c:{baseline:before, candidate:after, transactions:[]},
+    packet:{impact:{complete:true, affected:["rule:Recommend", "receipt:Recommend", "runtime:Restore", "unknown:Recommend"]}},
+    callbacks:{openImpact:(...args)=>routes.push(args), openReference:()=>{throw Error("Projection references must not use generic source navigation");}},
+    subject:{case:"case-current", revision:8}, state:{selected:{kind:"state", id:"New"}}, stopped:false};
+  buildContext(s);
+  const impact = s.shell.children[0].children[0], controls = impact.children.filter(node => node.tag === "button");
+  assert.deepEqual(controls.map(node => node.dataset.compareImpact), ["rule:Recommend", "receipt:Recommend"]);
+  assert.equal(impact.children.filter(node => node.dataset?.compareImpactUnavailable).length, 2);
+  controls[0].onclick();
+  assert.deepEqual(routes[0][0].target, {view:"review", kind:"transition", id:"T-CHANGE"});
+  assert.deepEqual(JSON.parse(JSON.stringify(routes[0][1])), {case:"case-current", revision:8, kind:"state", id:"New"});
+  controls[1].onclick(); assert.match(routes[1][0].scope, /Case-wide/);
+  s.stopped = true; controls[0].onclick(); assert.equal(routes.length, 2, "destroyed render cannot navigate");
+});
+
+test("actual selected-change inspector sends exact context only for current candidate transitions", () => {
+  const fs = require("node:fs"), vm = require("node:vm");
+  const source = fs.readFileSync(process.env.EIJA_COMPARE_MODULE || path.join(web, "compare.js"), "utf8");
+  const begin = source.indexOf("  function updateSelection(s) {"), end = source.indexOf("  function buildContext(s)", begin);
+  assert.ok(begin >= 0 && end > begin);
+  const element = (tag, content) => ({tag, textContent:content, children:[], dataset:{}, append(...nodes){this.children.push(...nodes);}, replaceChildren(){this.children=[];}});
+  const button = (label, onclick, action) => ({...element("button", label), onclick, dataset:{compareAction:action}});
+  const updateSelection = vm.runInNewContext("(" + source.slice(begin, end).trim() + ")", {
+    element, button, bindings:()=>[], fieldTable:()=>element("table"), itemTitle:item=>item.id,
+    statusLabel:{changed:"Modified", removed:"Removed", unchanged:"Unchanged"}
+  });
+  const calls = [], item = {kind:"transition", id:"T-CHANGE", key:"transition:T-CHANGE", status:"changed", fields:[], before:{}, after:{}};
+  const s = {selected:()=>item, buttons:[], groups:[], panes:[], detail:element("section"), announcement:element("p"),
+    callbacks:{inspectTransition:(...args)=>calls.push(args)}, subject:{case:"case-current", revision:8},
+    state:{selected:{kind:"transition", id:"T-CHANGE"}}, stopped:false};
+  const descendants = node => [node, ...node.children.flatMap(descendants)];
+  updateSelection(s);
+  const inspect = descendants(s.detail).find(node => node.dataset.compareAction === "inspect-model");
+  assert.equal(inspect.textContent, "Inspect in model"); inspect.onclick();
+  assert.deepEqual(JSON.parse(JSON.stringify(calls)), [["T-CHANGE", {case:"case-current", revision:8, kind:"transition", id:"T-CHANGE"}]]);
+  s.stopped = true; inspect.onclick(); assert.equal(calls.length, 1);
+  delete item.after; item.status = "removed"; updateSelection(s);
+  assert.ok(!descendants(s.detail).some(node => node.dataset.compareAction === "inspect-model"), "removed transition has no current-model control");
+});

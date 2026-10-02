@@ -78,6 +78,24 @@ const EijaCompare = (() => {
     const refs = new Set(item.kind === "initial" ? [item.before, item.after].filter(Boolean).map(id => `state:${id}`) : [keyOf(item)]);
     return [...new Set(terms.filter(term => (term.refs || []).some(ref => refs.has(ref))).flatMap(term => term.binds || []).filter(ref => typeof ref === "string"))].sort();
   }
+  function impactNavigation(reference, before, after) {
+    const unavailable = reason => ({reference, label:"No direct destination", scope:"unresolved", target:null, reason});
+    const evidence = (section, label) => ({reference, label, scope:"Case-wide evidence; this projection reference is not an individual receipt or verdict.", target:{view:"evidence", section}});
+    if (reference === "review-packet") return evidence("overview", "Open case-wide Evidence");
+    if (reference === "local-decision") return evidence("decision", "Open local review location");
+    if (typeof reference !== "string") return unavailable("Invalid projection reference.");
+    const colon = reference.indexOf(":"), kind = reference.slice(0, colon), action = reference.slice(colon + 1);
+    if (colon < 1 || !action || !["rule", "runtime", "state-view", "journey", "obligation", "receipt"].includes(kind)) return unavailable("No declared navigation for this projection reference.");
+    const matches = [...(before?.transitions || []), ...(after?.transitions || [])].filter(item => item.action === action);
+    const ids = [...new Set(matches.map(item => item.id))];
+    if (!ids.length) return unavailable("This action is absent from both model snapshots.");
+    if (ids.length !== 1) return unavailable("This action names multiple transition identities; no destination was selected.");
+    if (["rule", "state-view"].includes(kind)) return {reference, label:"Inspect exact model change", scope:"Baseline and candidate snapshots; no repository binding is inferred.", target:{view:"review", kind:"transition", id:ids[0]}};
+    if (["obligation", "receipt"].includes(kind)) return evidence("overview", "Open case-wide Evidence");
+    if (!(after?.transitions || []).some(item => item.id === ids[0] && item.action === action)) return unavailable("This action exists only in the baseline; no candidate runtime or journey destination is available.");
+    return kind === "runtime" ? {reference, label:"Open Run view", scope:"Candidate preview controls only; navigation does not start or execute a preview.", target:{view:"try", action}} :
+      {reference, label:"Open case-wide rules and journeys", scope:"Current candidate projections for the whole case; no source binding or complete behavioral impact is implied.", target:{view:"impact", action}};
+  }
   function element(tag, content, cls) {
     const node = document.createElement(tag); if (content !== undefined) node.textContent = String(content); if (cls) node.className = cls; return node;
   }
@@ -227,7 +245,7 @@ const EijaCompare = (() => {
     if (!refs.length) related.append(element("p", "Source binding unknown: no declared binding for this selected element."));
     for (const ref of refs) {const open = button(`Open bound source · ${ref}`, () => s.callbacks.openReference?.(ref, {...s.subject, ...s.state.selected})); open.disabled = !s.callbacks.openReference; open.dataset.compareReference = ref; related.append(open);}
     const evidence = button("Inspect evidence for this revision", () => s.callbacks.openEvidence?.({...s.subject, ...s.state.selected}), "evidence"); evidence.disabled = !s.callbacks.openEvidence; related.append(evidence);
-    if (item.kind === "transition" && item.after && s.callbacks.inspectTransition) related.append(button("Inspect in model", () => s.callbacks.inspectTransition(item.id), "inspect-model"));
+    if (item.kind === "transition" && item.after && s.callbacks.inspectTransition) related.append(button("Inspect in model", () => {if (!s.stopped) s.callbacks.inspectTransition(item.id, {...s.subject, ...s.state.selected});}, "inspect-model"));
     s.detail.append(related); s.announcement.textContent = `${statusLabel[item.status]} ${itemTitle(item)} selected. Case revision ${s.subject.revision}.`;
   }
   function buildContext(s) {
@@ -235,7 +253,12 @@ const EijaCompare = (() => {
     impact.append(element("summary", `Case-wide known impact · ${affected.length} reported references`), element("p", s.packet.impact?.complete ?
       "Dependency closure is complete only within the declared mapping. This list is case-wide, not a claim about the selected element or complete behavioral impact." :
       "Dependency closure is unavailable or incomplete. This case-wide list is not a selected-element or complete behavioral-impact claim."));
-    for (const ref of affected) {const open = button(ref, () => s.callbacks.openReference?.(ref)); open.disabled = !s.callbacks.openReference; impact.append(open);}
+    for (const ref of affected) {
+      const navigation = impactNavigation(ref, s.c.baseline, s.c.candidate);
+      if (!navigation.target) {const note = element("p", `${ref} · ${navigation.reason}`); note.dataset.compareImpactUnavailable = ref; impact.append(note); continue;}
+      const open = button(`${ref} · ${navigation.label}`, () => {if (!s.stopped) s.callbacks.openImpact?.(navigation, {...s.subject, ...s.state.selected});});
+      open.disabled = !s.callbacks.openImpact; open.dataset.compareImpact = ref; open.title = navigation.scope; impact.append(open);
+    }
     const evidence = element("details"); evidence.append(element("summary", "Revision evidence, blockers and limits"), element("p", s.packet.eligible ? "Technically eligible within the declared scope." : "Technical review is blocked."));
     for (const entry of s.packet.formal_evidence || []) evidence.append(element("p", `${entry.kind} · ${entry.status}`));
     if (!(s.packet.formal_evidence || []).length) evidence.append(element("p", "Checks: NOT_RUN"));
@@ -307,6 +330,6 @@ const EijaCompare = (() => {
       board.addEventListener("pointermove", move); board.addEventListener("pointerup", end); board.addEventListener("pointercancel", end);
     });
   }
-  return {render, inventory, project, restoreState, bindings, selectionBounds, frameBounds};
+  return {render, inventory, project, restoreState, bindings, impactNavigation, selectionBounds, frameBounds};
 })();
 if (typeof module !== "undefined") module.exports = EijaCompare;
