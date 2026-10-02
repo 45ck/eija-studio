@@ -1,0 +1,86 @@
+# Full IDE / HCI status and traceability
+
+**2 October 2026 — scoped implementation checkpoint; full product acceptance OPEN.** The user's bar is a polished, non-linear workspace where UML-literate engineers using AI can understand a change, inspect exact source/evidence and recover safely, with reproducible GitHub proof. It is more than a passing recorded route. Current source navigation is **read-only**; source-code authoring and general agent-factory operation are not implemented here. Comparative comprehension benefit remains unmeasured.
+
+Code checkpoint: [`c666b6bb76905c0c9bd03e81cac0922136c4cf3e`][checkpoint], pushed with clean local/remote parity and zero divergence at handoff. `app.js` SHA-256 is `c45cb0a89c2ca29373b6c8c9b756bcd319cb30f7b2602014cc35c5a0a91477a2`. This ledger summarizes existing observations; it performs no new test or browser run. The linked [public preview record](../demos/2026-10-02-IDE-PREVIEW.md) is published separately from the tested code commit.
+
+## Evidence used
+
+- **E1 — current fresh public clone:** [public preview record](../demos/2026-10-02-IDE-PREVIEW.md), proof 2 on exact `c666b6bb76905c0c9bd03e81cac0922136c4cf3e`: new clone and Python environment, dependency installation **32.843s**, import provenance, CLI startup/cleanup and **20/20 browser checks** under normal CSP. The **101 captured source/replay files were unchanged**, content SHA-256 `18dad3ce606b6b8528a255fcd12c4fea1d1167a2400ba3fb5beb08f005f0eece`; total execution **145.977s**. Existing Windows host and package/browser caches were permitted. This is reproducible-install evidence on that host, not a fresh physical machine or all-platform result. The earlier proof 1 and recording on `9c22d42` remain historical; they do not cover the navigation repair.
+- **E2 — non-linear/recovery:** seven passing scoped checks covering source-first, intent→Changes, two-case/history/source context, reset unsent fields, stale second-page write, transport retry and keyboard edit/refusal. See the [validation record][validation], [actual browser journeys][edges] and [replay guide][edges-guide]. This run has its own earlier content manifest; do not add it to E1 as one combined test total or call seven complete US stories accepted.
+- **E3 — diagram fidelity:** [SD05 LR/TB painted-border checks][endpoints] with deliberate false endpoint, exact restoration and server nonmutation, **2/2 passed**. Default excursion scope; observations and original failure are retained in the [validation record][validation].
+- **E4 — latest retained HCI:** the [runtime-preview validation record][navigation-record] reports **16 PASS, one GAP, one FAIL**, with current-UI derivation **PASS**. Density remains **68 > 27**, at `evidence-verified` (**30 controls + 38 text-parent groups**); 70 was an earlier run. Settled-DOM p95 **777.5ms** is a GAP against 400ms, below the 4000ms ratchet. These observations do not measure human memory or perceived paint latency. The density budget is unchanged and its failure remains mandatory.
+- **E5 — preview recovery:** [actual-handler regressions][navigation-tests] pass **12/12**, including the real busy guard; the original eleven cases and added busy control failed before repair. The separate [ordinary-browser regression][navigation-browser] passes **5/5**: same-case refresh, failed list and dropdown switches followed by a real action on the retained runtime instance, busy-dropdown identity preservation, and successful different-case preview/result clearing. Exactly three intended 503s, zero JavaScript errors and zero forbidden endpoint attempts were observed; browser/server cleanup passed. Its **102 captured files were unchanged**, content SHA-256 `47fc02df033789b7704f40e0315b3d2990fa406881642be345a3a6d4bfbf6f4c`, on the repaired dirty source based on `9c22d42`. This is a distinct subject from clean-clone E1, not a claim that the old commit contained the fix. See the [browser invocation guide][navigation-guide] and [full observations][navigation-record].
+- **E6 — affected gates:** the [validation record][navigation-record] retains **22/22 fast sessions**, **1,963 tests passed** (201 skipped, two existing expected failures), and **38/38 JavaScript tests**. Release verification separately passed **1,963 tests** (201 skipped, 26 deselected, two expected failures), `tests_exit_code: 0`; its overall command exited **2**, with **SOURCE_REVIEW_REQUIRED**, `trusted_fixture: false`. See the [committed identity record][release-record]. No fixture was stamped and no owner approval/apply occurred. These counts are separate executions, not an aggregate pass total or a green full-tier/release result.
+
+The design stories' blanket **NOT_RUN** wording is historical preparation status, not the current implementation inventory. The mappings below add scoped support without declaring any full US story accepted. Source review, unresolved full-tier failure and absent human validation remain visible.
+
+Against the ten HCI criteria: **H01 target geometry / H02 measured choices** pass their retained instrument budgets; **H03 diagram organization / H04 context and disclosure** have partial browser support, with paired comparison still incomplete; **H05 cognitive-load proxy** retains the density FAIL; **H06 latency** retains the GAP; **H07 recovery** has scoped E2/E5 browser and regression support; **H08 terminology/status consistency** is implemented and partly exercised, not fully audited; **H09 accessibility** has scoped automatic/keyboard successes but outstanding manual and assistive-technology observations; **H10 minimal presentation/help** remains incomplete. No aggregate instrument result closes those broader criteria.
+
+## Four personas
+
+| Persona | Actual supported work | Remaining claim boundary |
+|---|---|---|
+| Domain engineer / modeller | Explore pack terms/rules; inspect/edit supported transition fields; use canvas, history and server-checked undo/redo. | Domain rename/split/merge and source transformation are planned; large-model usability is not established. |
+| AI-assisted engineer | Enter intent, inspect offline/provider-labelled interpretations, explicitly select meaning, inspect resulting semantic changes. | Live-agent usefulness and reduced review effort are NOT_RUN. Provider activity is not a complete agent-session workspace. |
+| Reviewer / technical lead | Follow changed model fields into exact bound source; inspect known impact, subject-bound evidence and unknowns. | No integrated graphical counterexample/source stepper; comprehensive behavioral impact and measured decision improvement are unproved. |
+| Agent-factory operator | Can use supported read/proposal interfaces within existing authority boundaries. | S09 parallel sessions/worktrees/conflicts/combined landing has no working UI acceptance. An agent list or concept image is not that capability. |
+
+## Ten screens: integrated surface versus design target
+
+| ID | Current UI / implementation | High-fidelity target still incomplete |
+|---|---|---|
+| S01 | **Model**, domain tree, transition inspector, readable zoom/pan/overview and model revision/history choice; E1/E2/E3. | Searchable domain tree, dense/long-label/other-pack usability sweep; no blanket full-model readability claim. |
+| S02 | **Intent** request, proposal alternatives, selected meaning, unknowns, provider/busy feedback; E1/E2. | Complete agent activity/recovery presentation and live-provider pilot. |
+| S03 | **Changes** per-transition before/after flows, exact changed-field table, state additions/removals, bound references and evidence links; E1/E2. | Synchronized baseline/candidate graph geometry and selected-change source/evidence inspection in one coherent view. |
+| S04 | **Source** exact captured text/range/hash; **Repository** connection, bindings, lint, inventory and syntactic facts; E1/E2. | Full stale-snapshot/unsupported-reference UX sweep; no code editing or automatic domain-conformance inference. |
+| S05 | **Model inspector** source/target/role edits, kernel check, typed commit and Reset unsent fields; E1/E2. | Explicit integrated before-submit consequence preview; rename/split/merge/code-generation operations absent. |
+| S06 | **Evidence / Problems** actual per-kind statuses, bounds/assumptions/raw packet, blockers and human UNKNOWN; E1/E4. | One consistent evidence presentation, counterexample-to-model/source stepper, all stale/empty states audited. |
+| S07 | **Run** isolated synthetic instance, actor/actions, committed result and trace; E5 verifies retained previews after failure/same-case refresh and clearing after a successful different-case switch. | Broader actor/refusal/duplicate-effect journey acceptance; no execution of the connected repository or production observation claim. |
+| S08 | **History** protected initial meaning, semantic edits, read-only historical models and server undo/redo; E1/E2. | Arbitrary revision-to-revision visual comparison and full restore semantics beyond the implemented undo/redo boundary. |
+| S09 | **Planned only**, generated agent-coordination concept. | Session/worktree ownership, conflict witnesses, combined-result verification and authorized landing controls. |
+| S10 | Status banner, repository refresh/limits, provider diagnostics, no-case baseline and request recovery; E1/E2/E5. | Full first-use/error/stale-state sweep; configured read-only connection is not an unrestricted in-app repository setup wizard. |
+
+## Fifteen stories: observed subset and remaining acceptance
+
+“Supported” below means observed scope, **not full-story PASS**. **US01–US12 are incomplete P0 acceptance**, required for the supported product. **US13–US15 are P1 future expansion**: parallel-agent coordination, combined landing and domain refactoring are not delivered capabilities. The [original story requirements][stories] remain authoritative; their preparation-time NOT_RUN entries are supplemented here without being promoted to acceptance.
+
+| Story | Current support | Missing before full acceptance |
+|---|---|---|
+| US01 truthful entry | E1 clean clone/venv/launch, scope/identity and source preservation. | All unconfigured/invalid-root/unsupported entry states and inventory reconciliation tied to the final subject. |
+| US02 context retention | E2 source-first, intent-first and two-case inspector/history/model return; E5 same-case, failed-switch and busy-switch runtime/identity preservation. | Wider concept/scroll/focus combinations and complete cross-view context acceptance. |
+| US03 intent proposal | E1/E2 offline proposal and explicit meaning selection. | Failed/ambiguous live-provider flow, useful activity/consent feedback; no live pilot result. |
+| US04 visual meaning change | E1/E2 actual field/state diffs; E3 catches lying canvas endpoint. | Paired graph orientation/stable layout; complete guard/effect/dense-model review fixtures. E3 is not a paired-diff oracle. |
+| US05 exact source/ripple | E2 exact bound URI/text/ranges/hashes; known graph impact available. | Source refresh staleness and independently enumerated witness/unknown display across the complete UI path. |
+| US06 safe model edits | E1/E2 legal/refused/stale edits, exact transaction and zero-write unsent reset. | Browser gesture/form parity across supported packs and full correction/impact-preview flow. |
+| US07 limited evidence | E1 source-review and human UNKNOWN remain visible; backend subject controls recorded separately. | Deliberately substituted subject through all visible panels; linked counterexample investigation. |
+| US08 runtime consequences | Synthetic state/actions/trace implemented; E5 actual browser plus GET oracles verify preview continuity and a subsequent Recommend action. | Duplicate activation, broader actor/refusal and complete effect/audit proof linked to the current subject. |
+| US09 history/recovery | E1/E2 undo/redo, historical context, reset, stale race and retry; E5 preview/navigation recovery. | Broader checkpoint/discard/revision comparison and complete recovery-state acceptance. |
+| US10 keyboard/reflow | E1 desktop/compact layouts and controls; E2 keyboard edit/refusal segment; E4 zero settled focus losses. | Entire source-to-edit/refusal journey keyboard-only, all incomplete axe findings, screen reader/forced colors/reduced motion. |
+| US11 failure feedback | E2 aborted GET, retained model, successful retry and cleared old diagnostic; E5 new navigation cases. | Complete double-activation/error matrix and unpaced paint-aware timing. E4 remains latency GAP. |
+| US12 reproducibility | E1 final pushed GitHub revision, new venv/import isolation, actual CLI cleanup and 20-check replay; E5/E6 separate recovery/gate records. | Full normal/non-linear/failure P0 acceptance and independent engineer reproduction. E1 covers its recorded operations and cannot certify later bytes. |
+| US13 parallel changes | Interface/design groundwork only. | Planned S09 implementation, overlap oracle and actual multi-branch journey. |
+| US14 combined landing | Existing single-case owner boundary is relevant groundwork only. | Planned combined-result/base-freshness/authorized landing and failure recovery. |
+| US15 domain refactor | Supported field transactions only. | Planned rename/split/merge source/model/test adapters and conformance oracles. |
+
+## Current visual-diff limit
+
+`review.js` genuinely compares server snapshots, matches transitions by ID, reports action/role/endpoints/guards/effects, and lists changed/added/removed states and transitions. Its before/after display is currently a pair of small state-arrow cards followed by a field table, repeated for every change. Related source and evidence occur later in the page. The **Diagrams** reference view separately renders generated diagrams. These are useful working views; they are not the synchronized, stable-layout, context-preserving graph comparison depicted in the design image. Model comparison also does not establish that connected source changed equivalently.
+
+## Next three product acceptance steps
+
+1. **Complete and exercise the core review screen.** Implement the specified selected-change paired graph/source/evidence loop, preserving stable element identity, exact old/new fields and visible unknowns. Remove actual duplicate task content. Replay relevant US04–07/09–11 states with wrong-arrow/field/subject controls, keyboard/reflow and the unchanged density budget, including opened required context. Obtain hands-on owner review of the actual application. A concept image or one tidy default screen is not completion.
+2. **Close the missing supported P0 UX on exact bytes.** Run the remaining first-use, error, dense/long-label, keyboard, accessibility and timing observations listed above. Preserve the density FAIL, latency GAP and source-review requirement until their own acceptance conditions are met; do not hide context or change a threshold to claim completion. Repeat public-clone feasibility and record the real end-to-end task after implementation changes, with each artifact's own revision and manifest.
+3. **Test the claimed comprehension benefit.** Run the separately authorized live-agent/engineer feasibility protocol on representative review tasks, then held-out supported repositories. Retain correctness, missed hazards, task time, effort, unknowns and failed cases against a declared comparison. Current automation does not establish reduced comprehension burden, superior V&V or any-codebase support. Keep US13–15 planned until their separate implementations and acceptance evidence exist.
+
+[checkpoint]: https://github.com/45ck/eija-studio/tree/c666b6bb76905c0c9bd03e81cac0922136c4cf3e
+[validation]: https://github.com/45ck/eija-studio/blob/c666b6bb76905c0c9bd03e81cac0922136c4cf3e/docs/engineering/2026-10-02-VALIDATION-CHECKPOINT.md
+[navigation-record]: https://github.com/45ck/eija-studio/blob/c666b6bb76905c0c9bd03e81cac0922136c4cf3e/docs/engineering/2026-10-02-VALIDATION-CHECKPOINT.md#runtime-preview-recovery-checkpoint
+[edges]: https://github.com/45ck/eija-studio/blob/c666b6bb76905c0c9bd03e81cac0922136c4cf3e/tests/hci/ide_journey_edges.py
+[edges-guide]: https://github.com/45ck/eija-studio/blob/c666b6bb76905c0c9bd03e81cac0922136c4cf3e/docs/verification/IDE-JOURNEY-EDGES.md
+[endpoints]: https://github.com/45ck/eija-studio/blob/c666b6bb76905c0c9bd03e81cac0922136c4cf3e/tests/hci/test_rendered_endpoints.py
+[navigation-tests]: https://github.com/45ck/eija-studio/blob/c666b6bb76905c0c9bd03e81cac0922136c4cf3e/tests/test_case_navigation.py
+[navigation-browser]: https://github.com/45ck/eija-studio/blob/c666b6bb76905c0c9bd03e81cac0922136c4cf3e/tests/hci/case_preview_navigation.py
+[navigation-guide]: https://github.com/45ck/eija-studio/blob/c666b6bb76905c0c9bd03e81cac0922136c4cf3e/tests/hci/case_preview_navigation.md
+[release-record]: https://github.com/45ck/eija-studio/blob/c666b6bb76905c0c9bd03e81cac0922136c4cf3e/evidence/last-verification.json
+[stories]: https://github.com/45ck/eija-studio/blob/c666b6bb76905c0c9bd03e81cac0922136c4cf3e/docs/design/WHOLE-APP-STORIES.md

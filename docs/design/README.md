@@ -2,6 +2,8 @@
 
 The [whole-application UX contract](WHOLE-APP-UX.md) defines linked screens and HCI acceptance. The [personas and user stories](WHOLE-APP-STORIES.md) turn those screens into tasks with observable outcomes. These documents guide implementation; their planned journeys are not claims of completed validation.
 
+The [current implementation and HCI ledger](IMPLEMENTATION-STATUS.md) maps all four personas, fifteen stories and ten screens to scoped observations and remaining work, including the exact public-clone preview. It preserves the density failure, latency gap and unmeasured human benefit.
+
 The [next UX build sequence](NEXT-UX-PASS.md) translates observed clutter and the visual-change target into concrete hierarchy, comparison and source/evidence work. Its proposed changes still require implementation and validation.
 
 ![EIJA Studio IDE concept](eija-ide-concept-v1.png)

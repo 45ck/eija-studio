@@ -1,0 +1,468 @@
+{
+  "schema": "eija.public-clone-preview.v1",
+  "run": "github-ide-preview-2",
+  "utc": "2026-10-02T08:32:52.659803+00:00",
+  "outcome": "PASS",
+  "tested_commit": "c666b6bb76905c0c9bd03e81cac0922136c4cf3e",
+  "clone_origin": "https://github.com/45ck/eija-studio.git",
+  "git_config_isolation": {
+    "global": "null device",
+    "system": "disabled",
+    "inherited_git_overrides": "removed",
+    "interactive_credentials": "disabled",
+    "user_config_modified": false
+  },
+  "host_scope": "Existing Windows 11 host; fresh clone and new venv; existing package/browser caches permitted",
+  "python": "3.12.10",
+  "application_imports": "Verified inside fresh clone/src",
+  "dependency_imports": "Verified inside new venv",
+  "editable_metadata": "Verified fresh clone",
+  "source": {
+    "git_clean_before": true,
+    "git_clean_after": true,
+    "head_before": "c666b6bb76905c0c9bd03e81cac0922136c4cf3e",
+    "head_after": "c666b6bb76905c0c9bd03e81cac0922136c4cf3e",
+    "captured_files": 101,
+    "captured_content_sha256": "18dad3ce606b6b8528a255fcd12c4fea1d1167a2400ba3fb5beb08f005f0eece",
+    "preservation": {
+      "status": "UNCHANGED",
+      "changed_paths": [],
+      "scope": "Captured src, packs and replay bytes; private/generated paths excluded. Git staging is not a byte change."
+    },
+    "scope": [
+      "src",
+      "packs",
+      "tests/hci/self_dogfood_replay.py",
+      "tests/hci/self_dogfood_subject.py"
+    ]
+  },
+  "dependencies": [
+    {
+      "name": "annotated-doc",
+      "version": "0.0.5"
+    },
+    {
+      "name": "annotated-types",
+      "version": "0.8.0"
+    },
+    {
+      "name": "anyio",
+      "version": "4.15.1"
+    },
+    {
+      "name": "argcomplete",
+      "version": "3.7.2"
+    },
+    {
+      "name": "attrs",
+      "version": "26.1.0"
+    },
+    {
+      "name": "axe-playwright-python",
+      "version": "0.1.8"
+    },
+    {
+      "name": "certifi",
+      "version": "2026.7.22"
+    },
+    {
+      "name": "click",
+      "version": "8.5.0"
+    },
+    {
+      "name": "colorama",
+      "version": "0.4.6"
+    },
+    {
+      "name": "colorlog",
+      "version": "6.12.0"
+    },
+    {
+      "name": "dependency-groups",
+      "version": "1.3.2"
+    },
+    {
+      "name": "distlib",
+      "version": "0.4.3"
+    },
+    {
+      "name": "eija-studio",
+      "version": "0.2.0"
+    },
+    {
+      "name": "execnet",
+      "version": "2.1.2"
+    },
+    {
+      "name": "fastapi",
+      "version": "0.128.2"
+    },
+    {
+      "name": "filelock",
+      "version": "4.0.9"
+    },
+    {
+      "name": "greenlet",
+      "version": "3.5.6"
+    },
+    {
+      "name": "h11",
+      "version": "0.16.0"
+    },
+    {
+      "name": "httpcore",
+      "version": "1.0.9"
+    },
+    {
+      "name": "httpx",
+      "version": "0.28.1"
+    },
+    {
+      "name": "humanize",
+      "version": "4.16.0"
+    },
+    {
+      "name": "idna",
+      "version": "3.20"
+    },
+    {
+      "name": "iniconfig",
+      "version": "2.3.0"
+    },
+    {
+      "name": "nox",
+      "version": "2026.8.17"
+    },
+    {
+      "name": "packaging",
+      "version": "26.3"
+    },
+    {
+      "name": "pip",
+      "version": "25.0.1"
+    },
+    {
+      "name": "platformdirs",
+      "version": "4.12.2"
+    },
+    {
+      "name": "playwright",
+      "version": "1.63.0"
+    },
+    {
+      "name": "pluggy",
+      "version": "1.6.0"
+    },
+    {
+      "name": "pydantic",
+      "version": "2.13.4"
+    },
+    {
+      "name": "pydantic_core",
+      "version": "2.46.4"
+    },
+    {
+      "name": "pyee",
+      "version": "13.0.1"
+    },
+    {
+      "name": "Pygments",
+      "version": "2.21.0"
+    },
+    {
+      "name": "pytest",
+      "version": "9.0.2"
+    },
+    {
+      "name": "pytest-xdist",
+      "version": "3.8.0"
+    },
+    {
+      "name": "python-discovery",
+      "version": "1.6.1"
+    },
+    {
+      "name": "starlette",
+      "version": "0.50.0"
+    },
+    {
+      "name": "tomlkit",
+      "version": "0.15.1"
+    },
+    {
+      "name": "typing_extensions",
+      "version": "4.16.0"
+    },
+    {
+      "name": "typing-inspection",
+      "version": "0.4.4"
+    },
+    {
+      "name": "uvicorn",
+      "version": "0.48.0"
+    },
+    {
+      "name": "virtualenv",
+      "version": "21.14.3"
+    }
+  ],
+  "steps": [
+    {
+      "id": "source-commit",
+      "status": "PASS",
+      "elapsed_seconds": 0.038
+    },
+    {
+      "id": "clone",
+      "status": "PASS",
+      "elapsed_seconds": 3.436
+    },
+    {
+      "id": "checkout",
+      "status": "PASS",
+      "elapsed_seconds": 0.753
+    },
+    {
+      "id": "create-venv",
+      "status": "PASS",
+      "elapsed_seconds": 8.28
+    },
+    {
+      "id": "pip-version",
+      "status": "PASS",
+      "elapsed_seconds": 0.259
+    },
+    {
+      "id": "install",
+      "status": "PASS",
+      "elapsed_seconds": 32.843
+    },
+    {
+      "id": "pip-check",
+      "status": "PASS",
+      "elapsed_seconds": 0.864
+    },
+    {
+      "id": "pip-freeze",
+      "status": "PASS",
+      "elapsed_seconds": 0.451
+    },
+    {
+      "id": "installed-packages",
+      "status": "PASS",
+      "elapsed_seconds": 0.321
+    },
+    {
+      "id": "import-probe",
+      "status": "PASS",
+      "elapsed_seconds": 0.702
+    },
+    {
+      "id": "cli-startup",
+      "status": "PASS",
+      "elapsed_seconds": 9.782
+    },
+    {
+      "id": "browser-replay",
+      "status": "PASS",
+      "elapsed_seconds": 68.785
+    }
+  ],
+  "cli": {
+    "outcome": "PASS",
+    "routes": [
+      "/",
+      "/assets/shell.js"
+    ],
+    "assets_match_clone": true,
+    "security_headers": {
+      "Content-Type": "text/html; charset=utf-8",
+      "Content-Security-Policy": "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; frame-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
+      "X-Content-Type-Options": "nosniff",
+      "Cache-Control": "no-store",
+      "Referrer-Policy": "no-referrer",
+      "X-Frame-Options": "DENY"
+    },
+    "captured_processes_exited": true,
+    "remaining_port_listeners": 0,
+    "workspace_removed": true,
+    "launch_output": "Discarded without reading",
+    "owner_api_requests": 0
+  },
+  "replay": {
+    "identity": "normal_source_review_required",
+    "browser": "153.0.8010.12",
+    "checks": [
+      {
+        "id": "ide-entry",
+        "status": "PASS"
+      },
+      {
+        "id": "offline-intent",
+        "status": "PASS"
+      },
+      {
+        "id": "source-navigation",
+        "status": "PASS"
+      },
+      {
+        "id": "canvas-controls",
+        "status": "PASS"
+      },
+      {
+        "id": "checked-edit",
+        "status": "PASS"
+      },
+      {
+        "id": "semantic-diff",
+        "status": "PASS"
+      },
+      {
+        "id": "refused-edit",
+        "status": "PASS"
+      },
+      {
+        "id": "undo-redo",
+        "status": "PASS"
+      },
+      {
+        "id": "reload",
+        "status": "PASS"
+      },
+      {
+        "id": "view-modes",
+        "status": "PASS"
+      },
+      {
+        "id": "workspace-panels",
+        "status": "PASS"
+      },
+      {
+        "id": "keyboard",
+        "status": "PASS"
+      },
+      {
+        "id": "evidence-truth",
+        "status": "PASS"
+      },
+      {
+        "id": "viewport",
+        "status": "PASS"
+      },
+      {
+        "id": "accessibility",
+        "status": "PASS"
+      },
+      {
+        "id": "readability",
+        "status": "PASS"
+      },
+      {
+        "id": "reflow-320",
+        "status": "PASS"
+      },
+      {
+        "id": "axe-observations",
+        "status": "PASS"
+      },
+      {
+        "id": "runtime-errors",
+        "status": "PASS"
+      },
+      {
+        "id": "owner-boundary",
+        "status": "PASS"
+      }
+    ],
+    "automatic_axe_violations": 0,
+    "incomplete_contrast": [
+      {
+        "view": "model",
+        "rule": "color-contrast",
+        "targets": 19
+      },
+      {
+        "view": "change",
+        "rule": "color-contrast",
+        "targets": 2
+      },
+      {
+        "view": "evidence",
+        "rule": "color-contrast",
+        "targets": 2
+      },
+      {
+        "view": "source",
+        "rule": "color-contrast",
+        "targets": 2
+      }
+    ],
+    "human_understanding": "UNKNOWN",
+    "source_review": "REQUIRED",
+    "verification": "REFUSED_SOURCE_REVIEW_REQUIRED",
+    "owner_approval_apply_requests": 0,
+    "csp_bypass": false
+  },
+  "media": {
+    "video_seconds": 63.6,
+    "codec": "vp8",
+    "width": 1600,
+    "height": 1100,
+    "fps": 25,
+    "edited": false,
+    "test_pacing": "Enabled; not performance evidence",
+    "assets": [
+      {
+        "destination": "docs/demos/assets/ide-preview-20261002/working-model.png",
+        "sha256": "694a4ae3beb47b2ed70f3caa8b50f4dc32170b29f931f1a44120e8dddaffb247",
+        "bytes": 144031
+      },
+      {
+        "destination": "docs/demos/assets/ide-preview-20261002/semantic-diff.png",
+        "sha256": "b99a8f84b26f76ca924cadc083a2c359aa8d423cfad343ea788caf2b87058b9b",
+        "bytes": 117529
+      },
+      {
+        "destination": "docs/demos/assets/ide-preview-20261002/source-reference.png",
+        "sha256": "b4b899b27dbf76e1a87e363183ead970deef143488fec91ab1c815fef4c67cf0",
+        "bytes": 157900
+      },
+      {
+        "destination": "docs/demos/assets/ide-preview-20261002/ide-preview.webm",
+        "sha256": "86e211bef27e206d2a9fa48dda4d273b9face26c8adacf65d9dcc8b6ad352023",
+        "bytes": 6626675
+      }
+    ]
+  },
+  "harness": {
+    "runner_sha256": "850c0fca80ed2eb51f2dd66a14c228cbad6738ed79f624cc634c653791fbaff5",
+    "cli_helper_sha256": "8971f2c6f3309e1842b7d7bbbc1a735840eb71b19b532b17526d09e85a12ce87"
+  },
+  "separate_navigation_regression": {
+    "checks_passed": 5,
+    "included_in_twenty_check_replay": false,
+    "executed_subject": "Dirty source based on 9c22d425ee33e52980a95b33330babec43c6aa59",
+    "captured_files": 102,
+    "content_sha256": "47fc02df033789b7704f40e0315b3d2990fa406881642be345a3a6d4bfbf6f4c",
+    "record": "https://github.com/45ck/eija-studio/blob/c666b6bb76905c0c9bd03e81cac0922136c4cf3e/docs/engineering/2026-10-02-VALIDATION-CHECKPOINT.md#runtime-preview-recovery-checkpoint"
+  },
+  "hci": {
+    "pass": 16,
+    "gap": 1,
+    "fail": 1,
+    "density_observed": 68,
+    "density_limit": 27,
+    "settled_dom_p95_ms": 777.5,
+    "settled_dom_target_ms": 400,
+    "scope": "Separate instrumented synthetic journey; not a human study or proof2 latency measurement"
+  },
+  "limits": [
+    "HCI visibility density68 exceeds allowed27; settled-DOM p95 777.5ms exceeds400ms target",
+    "Source review remains required; no release fixture stamp",
+    "Axe incompletes require review",
+    "Full paired-graph review and source-code authoring remain open",
+    "No human/live-provider/external-repository validation",
+    "Reference journey conformance NOT_RUN"
+  ],
+  "total_seconds": 145.977
+}
