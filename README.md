@@ -19,6 +19,8 @@ The first acceptance target is **EIJA's own checkout**. External applications co
 
 ## Recorded integration preview
 
+**3 October Rules review follow-up:** [eight scoped browser checks and a separate 320-width reflow probe](docs/design/2026-10-03-RULES-REVIEW.md) passed for current-rule identity, declared impact destinations and keyboard navigation, with the original failures retained. Fast gates pass; HCI budgets still fail. The implementation belongs to [integration checkpoint](https://github.com/45ck/eija-studio/tree/dbdf1dfb1569911e14016be13a6e519785d41c23); this docs-only update does not add it to main or complete IDE/POC/POF acceptance.
+
 **3 October checkpoint:** the [code/model review observations](docs/design/2026-10-03-CODE-REVIEW-VALIDATION.md) and [historical navigation proof](docs/demos/2026-10-03-NAVIGATION-RECOVERY-PROOF.md) record the new review capabilities, exact evidence subjects and remaining acceptance work. The corresponding implementation is pinned at [`1f1b07f64889`](https://github.com/45ck/eija-studio/tree/1f1b07f648890d8e03f81d4269fa479d80a0f46a). This docs-only update does not add that implementation to main or declare the full IDE/POC/POF goals complete.
 
 The [2 October preview and reproduction record](docs/demos/2026-10-02-IDE-PREVIEW.md) shows the working source-connected model IDE from a fresh GitHub checkout: semantic before/after review, captured source, checked model edits, history and recovery. It includes actual screenshots, an unedited browser recording and the exact tested revision. The implementation remains in [draft PR #29](https://github.com/45ck/eija-studio/pull/29); this documentation does not merge that code onto main.
