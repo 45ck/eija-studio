@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/repository.py#RepositorySource
   title: application/repository.py
   hash_method: ast-sig-v1
-  sha256: 9badecc35a35811008e7be3bf51a9292b82cd23475eb3ded1d3575eb47ada9cf
-notes_baseline: c45caaf2a087df8faf4ea2d06dae95b9399c59330f44a9073beeecdb1297caa8
+  sha256: 8bea782918a78b280fe59c3611ae53a4f0822410add7086c9d8a07fa17726646
+notes_baseline: 6ebfac9dbdce4d3bad7189352ef2eb4ff1a8a1c369cb32a5dd285552121a546f
 ---
 
 # application.repository.RepositorySource
@@ -41,9 +41,9 @@ Structural interface implemented by adapters; not a class to instantiate.
 
 * `def snapshot(self) -> dict[str, Any]`
 * `def context(self) -> dict[str, Any]`
-* `def impact(self, subject: str) -> dict[str, Any]`
-* `def read_source(self, reference: str) -> dict[str, Any]`
-* `def freshness(self, file_hashes: Mapping[str, str]) -> dict[str, Any]`
+* `def impact(self, subject: str, *, expected_source_hash: str \| None=None) -> dict[str, Any]`
+* `def read_source(self, reference: str, *, expected_source_hash: str \| None=None) -> dict[str, Any]`
+* `def freshness(self, file_hashes: Mapping[str, str] \| None=None, *, expected_source_hash: str \| None=None) -> dict[str, Any]`
 <!-- okf:generated:end facts -->
 
 ## Notes

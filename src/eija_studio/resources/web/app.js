@@ -4,7 +4,17 @@ const el = (tag, text, cls) => {const x=document.createElement(tag); if(text!==u
 let token = location.hash.slice(1) || sessionStorage.getItem("eija-session") || "";
 if(location.hash){sessionStorage.setItem("eija-session",token); history.replaceState(null,"",location.pathname);}
 let current=null, instance=null, status=null, tab="model", busy=false, editId=null, workbench=null, affordanceData=null, lastDiagnostic=null, modelView="working", sourceSequence=0, sourceHistory=[], sourceHistoryIndex=-1, caseHistory=null, historyModel=null, historyLabel="", canvasDirection="AUTO";
-const caseViews = new Map();
+const caseViews = new Map(), comparisonViews = new Map();
+let comparison = null, comparisonSelection = null, sourceRecord = null, sourcePending = false, impactSequence = 0;
+function renderChanges(){
+  comparison?.destroy();comparisonSelection=null;
+  const key=JSON.stringify([current?.case.id,current?.case.version]);
+  comparison=EijaCompare.render($("review-chapters"),current,{terms:workbench?.language?.terms,state:comparisonViews.get(key),
+    onStateChange:value=>comparisonViews.set(key,value),onSelection:rememberComparisonSelection,
+    inspectTransition:id=>{modelView="working";switchTab("model");selectTransition(id);},
+    openReference:(ref,selection)=>{if(!selection||rememberComparisonSelection(selection))followReference(ref);},
+    openEvidence:selection=>{if(rememberComparisonSelection(selection))switchTab("evidence");}});
+}
 let inspectorSelection = null;
 function fillStates(id,states,value){$(id).replaceChildren(...states.map(s=>el("option",s)));$(id).value=value;}
 const notice=(text,error=false)=>{$("notice").textContent=text;$("notice").className=error?"error":"";};
@@ -57,17 +67,81 @@ function switchTab(name) {
   for(const group of document.querySelectorAll('[role="tablist"]')){const tabs=[...group.querySelectorAll('[data-tab]')];if(tabs.length&&!tabs.some(button=>button.tabIndex===0))tabs[0].tabIndex=0;}
   const reference=$("reference-views"),selectedReference=reference.querySelector('[aria-selected="true"]');reference.dataset.active=String(!!selectedReference);reference.querySelector("summary").textContent=selectedReference?`Reference: ${selectedReference.textContent}`:"Reference views";
   if(name === "model" && workbench)EijaShell.mountCanvas(`${current?.case.id||workbench.pack.id}:${modelView}`);
+  if(name === "evidence")renderEvidenceContext();
 }
 function formalList(parent,title,items){if(!items||!items.length)return;parent.append(el("h4",title));const ul=el("ul");for(const x of items)ul.append(el("li",typeof x==="string"?x:JSON.stringify(x)));parent.append(ul);}
 function explanation(root,x,lead){const box=el("div",undefined,"formal-explain");box.append(el("strong",lead+x.control+" ("+(x.source||"")+")"));box.append(el("p",(x.trace?"Counterexample trace: "+x.trace.map(s=>s.join(" ")).join(" -> ")+(x.final_state?" ends "+x.final_state:""):"Witness: "+JSON.stringify(x.witness))+". "+(x.note||"")));root.append(box);}
-function renderFormal(p){const root=$("formal");root.replaceChildren();for(const m of p.blocked_meanings||[]){root.append(el("p","Blocked meaning: "+m.label+" ("+(m.policy_errors||[]).join(", ")+")","formal-blocked"));for(const x of m.explanations||[])explanation(root,x,"Why the policy refuses it: ");}
-for(const x of p.explanations||[])explanation(root,x,"Why the policy blocks this: ");
-for(const e of p.formal_evidence||[]){const d=el("details",undefined,"formal-item status-"+e.status.toLowerCase());d.append(el("summary",e.kind.replaceAll("_"," ")+": "+e.status+" ("+e.evidence_level.replaceAll("_"," ")+")"));d.append(el("p",e.establishes));formalList(d,"Why this status",e.reasons);formalList(d,"Does not establish",e.does_not_establish);formalList(d,"Assumptions",e.assumptions);if(e.bounds)formalList(d,"Bounds",[JSON.stringify(e.bounds)]);formalList(d,"Counterexamples",e.counterexamples);d.append(el("small","Needs: "+e.prerequisites));root.append(d);}}
+function evidenceValue(value){return typeof value==="string"?value:JSON.stringify(value);}
+function evidenceKey(p){return `${current?.case.id||"no-case"}:${p.subject_hash||"no-subject"}`;}
+function renderFormal(p){
+  const root=$("formal"),key=evidenceKey(p),opened=new Set(root.dataset.subjectKey===key?[...root.querySelectorAll("details[data-evidence-kind][open]")].map(node=>node.dataset.evidenceKind):[]);
+  root.replaceChildren();root.dataset.subjectKey=key;
+  for(const m of p.blocked_meanings||[]){root.append(el("p","Blocked meaning: "+m.label+" ("+(m.policy_errors||[]).join(", ")+")","formal-blocked"));for(const x of m.explanations||[])explanation(root,x,"Why the policy refuses it: ");}
+  for(const x of p.explanations||[])explanation(root,x,"Why the policy blocks this: ");
+  for(const e of p.formal_evidence||[]){
+    const status=e.status??"NOT_REPORTED",d=el("details",undefined,"formal-item status-"+String(status).toLowerCase());
+    d.dataset.evidenceKind=e.kind;d.dataset.status=status;d.open=opened.has(e.kind);
+    d.append(el("summary",`${e.kind.replaceAll("_"," ")}: ${status} (${(e.evidence_level||"scope not reported").replaceAll("_"," ")})`));
+    d.append(el("p",e.establishes));formalList(d,"Why this status",e.reasons);formalList(d,"Does not establish",e.does_not_establish);formalList(d,"Assumptions",e.assumptions);
+    if(e.bounds!==undefined)formalList(d,"Bounds",[evidenceValue(e.bounds)]);
+    formalList(d,"Counterexamples",e.counterexamples);d.append(el("p","Needs: "+evidenceValue(e.prerequisites??"Not reported")));
+    const alreadyShown=new Set(["kind","status","evidence_level","establishes","reasons","does_not_establish","assumptions","bounds","counterexamples","prerequisites"]),metadata=el("dl",undefined,"evidence-metadata");
+    for(const [name,value]of Object.entries(e))if(!alreadyShown.has(name))metadata.append(el("dt",name.replaceAll("_"," ")),el("dd",evidenceValue(value)));
+    d.append(metadata);root.append(d);
+  }
+  if(!(p.formal_evidence||[]).length)root.append(el("p","Formal evidence: not reported for this packet.","muted"));
+}
+function currentComparisonSelection(){
+  return comparisonSelection&&comparisonSelection.case===current?.case.id&&comparisonSelection.revision===current?.case.version?comparisonSelection:null;
+}
+function rememberComparisonSelection(selection){
+  if(!current||selection?.case!==current.case.id||selection.revision!==current.case.version||!["state","transition","initial"].includes(selection.kind)||typeof selection.id!=="string"||!selection.id)return false;
+  comparisonSelection={case:selection.case,revision:selection.revision,kind:selection.kind,id:selection.id};
+  renderEvidenceContext();return true;
+}
+function renderEvidenceContext(){
+  const p=current?.packet,c=current?.case,root=$("evidence-subject");root.replaceChildren();
+  root.dataset.subjectHash=p?.subject_hash||"";root.dataset.caseId=c?.id||"";root.dataset.displayedModel=modelView;root.dataset.revision=String(c?.version??"");
+  root.append(el("p",c?`Case ${c.id} · revision ${c.version} · baseline revision ${c.baseline_version}`:"No case selected; evidence has not been requested."));
+  root.append(el("p",p?.subject?.semantic?`Evidence subject: current candidate · semantic ${p.subject.semantic.slice(0,12)}`:"Evidence subject: not available. Select a supported meaning first."));
+  if(modelView==="history")root.append(el("p",`Displayed model: historical preview · ${historyLabel||"recorded model"}. This packet is not evidence for that preview.`,"subject-warning"));
+  else if(modelView==="baseline")root.append(el("p","Displayed model: original baseline. This packet describes the current candidate, not the baseline.","subject-warning"));
+  else root.append(el("p","Displayed model: working model"));
+  const selected=currentComparisonSelection();
+  root.dataset.comparisonCaseId=selected?.case||"";root.dataset.comparisonRevision=String(selected?.revision??"");root.dataset.comparisonKind=selected?.kind||"";root.dataset.comparisonId=selected?.id||"";
+  if(selected){
+    root.append(el("p",`Comparison selection: ${selected.kind} · ${selected.id} · case ${selected.case} · revision ${selected.revision}`));
+    root.append(el("p","Evidence scope: case-wide for the current candidate. The comparison selection is navigation context; it is not an element-specific result.","muted"));
+  }
+  if(inspectorSelection)root.append(el("p",`Model inspector selection: ${inspectorSelection.kind} · ${inspectorSelection.id}`));
+  const identities=$("evidence-identities");identities.replaceChildren();
+  if(p?.subject_hash)identities.append(el("dt","Review subject hash"),el("dd",p.subject_hash));
+  for(const [name,value]of Object.entries(p?.subject||{}))identities.append(el("dt",name),el("dd",evidenceValue(value)));
+  if(!identities.childElementCount)identities.append(el("dt","Subject"),el("dd","Not available"));
+}
+function renderEvidencePacket(p){
+  const claims=$("claims");claims.replaceChildren();
+  for(const [name,value]of Object.entries(p.technical_claims||{})){
+    const row=el("div",undefined,"claim-row");row.dataset.claim=name;row.append(el("dt",name.replaceAll("_"," ")),el("dd",evidenceValue(value),"claim-status"));claims.append(row);
+  }
+  if(!claims.childElementCount){const row=el("div",undefined,"claim-row");row.append(el("dt","Technical claims"),el("dd","Not reported for this packet","claim-status"));claims.append(row);}
+  renderFormal(p);renderProblems();renderEvidenceContext();
+  $("blockers").textContent=p.blockers?.length?"Review blocked: "+p.blockers.join(", "):p.eligible?"Technical scope eligible. Human authorisation is still a separate decision.":"Review blocked. No blocker codes were reported.";
+  $("packet").textContent=JSON.stringify(p,null,2);
+  const decision=$("review-decision"),key=evidenceKey(p),sameSubject=decision.dataset.subjectKey===key;
+  const previous=sameSubject?new Map([...$("questions").querySelectorAll("input")].map(input=>[input.name,input.value])):new Map();
+  if(!sameSubject){decision.open=false;$("acknowledge").checked=false;}
+  decision.dataset.subjectKey=key;
+  $("review-subject").textContent=`Review this exact subject · ${p.eligible?"eligible for local review":"blocked"} · ${p.subject_hash?p.subject_hash.slice(0,12):"subject not available"}`;
+  $("questions").replaceChildren();
+  for(const q of p.questions||[]){const div=el("div",undefined,"question"),label=el("label",q.question);label.htmlFor="q-"+q.id;const input=el("input");input.id="q-"+q.id;input.name=q.id;input.autocomplete="off";input.required=true;input.value=previous.get(q.id)||"";div.append(label,input);$("questions").append(div);}
+}
 async function load(id) {
   const switching=current?.case.id!==id;
   if(switching&&current)caseViews.set(current.case.id,{tab,editId,inspectorSelection,modelView,historyModel,historyLabel,canvasDirection});
   const [next,affordances,historyData]=await Promise.all([api("cases/"+id),api(`cases/${id}/affordances`),api(`cases/${id}/history`).catch(error=>({status:"unavailable",reason:error.code||"HISTORY_UNAVAILABLE"}))]);
   if(switching){instance=null;$("runtime-result").textContent="";const previous=caseViews.get(id);editId=previous?.editId||null;inspectorSelection=previous?.inspectorSelection||null;modelView=previous?.modelView||"working";historyModel=previous?.historyModel||null;historyLabel=previous?.historyLabel||"";canvasDirection=previous?.canvasDirection||"AUTO";if(previous)tab=previous.tab;}
+  if(current?.case.id!==next.case.id||current?.case.version!==next.case.version)cancelSourceRead();
   current=next;affordanceData=affordances;caseHistory=historyData;render();await cases();clearDiagnostic();
 }
 async function command(action,extra={}){const id=current.case.id;const result=await api(`cases/${id}/${action}`,{expected_version:current.case.version,...extra});await load(id);return result;}
@@ -91,9 +165,9 @@ for (const state of model.states) {
 $("impact-summary").textContent = p.impact ? `${p.impact.changed_actions.length} changed actions · ${p.impact.affected.length} modelled dependants · closure ${p.impact.complete ? "complete within this mapping" : "INCOMPLETE"}` : "Select a supported meaning before reviewing a candidate.";
 $("impact-json").textContent = JSON.stringify({impact:p.impact, subject:p.subject}, null, 2);
 $("journeys").replaceChildren(...(p.projections?.journeys || []).map(j => el("p", j, "muted")));
-renderWorkbench(); EijaReview.render($("review-chapters"), current,{terms:workbench.language?.terms,inspectTransition:id=>{modelView="working";switchTab("model");selectTransition(id);},openReference:followReference,openEvidence:()=>switchTab("evidence")});
+renderWorkbench(); renderChanges();
 $("runtime-actions").replaceChildren();for(const action of status?.pack?.actions||[]){const b=el("button",action,"secondary");b.dataset.action=action;b.disabled=!instance||closed;b.onclick=()=>task(async()=>{const result=await api(`cases/${c.id}/execute`,{operation_id:crypto.randomUUID(),actor_id:$("actor").value,instance_id:instance.id,action,expected_version:instance.version});instance=result.instance;await load(c.id);$("runtime-result").textContent="Committed: "+action+". Effects: "+result.effects.join(", ");notice("Commit completed; the displayed state is persisted.");});$("runtime-actions").append(b);}$("runtime-state").textContent=instance?.state||"Not started";$("runtime-version").textContent=instance?`Instance ${instance.id.slice(0,8)} · version ${instance.version} · isolated candidate`:"No candidate state has been executed";$("trace").textContent=JSON.stringify(current.observations,null,2);
-$("claims").replaceChildren();for(const [name,value]of Object.entries(p.technical_claims||{})){const card=el("div",undefined,"evidence-card");card.append(el("span",name.replaceAll("_"," ")),el("strong",value));$("claims").append(card);}renderFormal(p);renderProblems();$("blockers").textContent=p.blockers?.length?"Review blocked: "+p.blockers.join(", "):"Technical scope eligible. Human authorisation is still a separate decision.";$("packet").textContent=JSON.stringify(p,null,2);$("questions").replaceChildren();for(const q of p.questions||[]){const div=el("div",undefined,"question"),label=el("label",q.question);label.htmlFor="q-"+q.id;const input=el("input");input.id="q-"+q.id;input.name=q.id;input.autocomplete="off";input.required=true;div.append(label,input);$("questions").append(div);}$("approve").disabled=!p.eligible||closed||c.stage==="APPROVED";$("apply").disabled=c.stage!=="APPROVED"||!p.eligible;$("export").disabled=false;switchTab(tab);}
+renderEvidencePacket(p);$("approve").disabled=!p.eligible||closed||c.stage==="APPROVED";$("apply").disabled=c.stage!=="APPROVED"||!p.eligible;$("export").disabled=false;switchTab(tab);}
 $("create").onclick=()=>task(async()=>{const c=await api("cases",{request:$("request").value});tab="change";editId=null;await load(c.id);notice("Case created. No provider call or baseline change has occurred.");});$("new-case").onclick=openIntent;document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{switchTab(b.dataset.tab);if(b.closest("#reference-views")){$("reference-views").open=false;$("reference-views").querySelector("summary").focus();}});
 $("propose").onclick=()=>task(async()=>{await command("propose",{consent:$("egress").checked});notice("Interpretations received. No meaning was selected automatically.");},"Requesting an untrusted proposal…");
 $("save").onclick=()=>task(async()=>{await command("save");notice("Review checkpoint saved; the active baseline is unchanged.");});$("discard").onclick=()=>task(async()=>{await command("discard");instance=null;render();notice("Candidate closed. History is retained; the baseline is unchanged.");});
@@ -113,7 +187,7 @@ function showPack(pack){if(!pack)return;$("pack-name").textContent=pack.name;if(
 task(async () => {
   [status, workbench] = await Promise.all([api("status"), api("workbench")]);
   showPack(status.pack); $("connection").textContent = `${status.provider} · ${status.network_enabled ? "network enabled" : "local / offline"}`;
-  renderWorkbench(); renderProblems(); EijaReview.render($("review-chapters"), null); switchTab("model"); await cases(); notice("");
+  renderWorkbench(); renderProblems(); renderChanges(); switchTab("model"); await cases(); notice("");
 });
 // Visual view: diagram text is generated server-side from the executable model and drawn inside a sandboxed frame
 // (see visual-frame.js and docs/SECURITY_AND_TRUST.md). This page never parses or inserts diagram markup itself.
@@ -177,7 +251,7 @@ function renderCanvas() {
     direction:canvasDirection, selected: editId, affordances: affordanceData?.affordances, editable: editable(), onSelect: selectTransition, onDrop: commitChoice, onNotice: notice});
   EijaShell.mountCanvas(`${current?.case.id||workbench.pack.id}:${modelView}`);
 }
-function selectTransition(id) {const returnFocus=$("model-canvas").contains(document.activeElement);editId = id || null;inspectorSelection=editId?{kind:"transition",id:editId}:null;EijaShell.toggle("inspector",true);renderEditor();renderSelectionDetail();renderCanvas();if(returnFocus)$("model-canvas").querySelector(".model-edge.selected")?.focus();}
+function selectTransition(id) {const returnFocus=$("model-canvas").contains(document.activeElement);editId = id || null;inspectorSelection=editId?{kind:"transition",id:editId}:null;EijaShell.toggle("inspector",true);renderEditor();renderSelectionDetail();renderCanvas();renderEvidenceContext();if(returnFocus)$("model-canvas").querySelector(".model-edge.selected")?.focus();}
 function cancelDraft() {
   if (busy || !editable() || !selectedTransition()) return;
   renderEditor(); notice("Unsent fields reset to the loaded model; no transaction was sent.");
@@ -205,19 +279,20 @@ function renderWorkbench() {
   $("status-model").textContent = `Pack ${pack.id} · ${current ? "revision " + current.case.version : "baseline"} · ${String(affordanceData?.semantic_hash || pack.digest || "unknown").slice(0, 12)}`;
   $("repository-status").textContent = EijaSource.state(workbench.connection).title;
   EijaSource.render($("source-view"), workbench.connection);
-  EijaTree.render($("domain-tree"), workbench, model, showSelection);renderEditor();renderSelectionDetail();renderCanvas();EijaShell.renderHistory(current,caseHistory,previewHistory);
+  EijaTree.render($("domain-tree"), workbench, model, showSelection);renderEditor();renderSelectionDetail();renderCanvas();EijaShell.renderHistory(current,caseHistory,previewHistory);renderEvidenceContext();
 }
 function showSelection(kind, item) {
   inspectorSelection={kind,id:item.id};
   EijaShell.toggle("inspector",true);
   if(kind==="transition")selectTransition(item.id);else renderSelectionDetail();
   if(["transition","state"].includes(kind))switchTab("model");
+  renderEvidenceContext();
 }
 function renderSelectionDetail() {
   const kind=inspectorSelection?.kind,id=inspectorSelection?.id,model=workingModel();
   const items=kind==="transition"?model?.transitions:kind==="state"?model?.states.map(value=>({id:value})):kind==="term"?workbench.language?.terms:kind==="law"?workbench.laws:kind==="role"?workbench.roles:[];
   const item=items?.find(value=>value.id===id),root=$("selection-detail");
-  root.replaceChildren();$("inspector-impact").replaceChildren();delete root.dataset.eijaId;
+  root.replaceChildren();++impactSequence;$("inspector-impact").replaceChildren();delete $("inspector-impact").dataset.sourceHash;delete root.dataset.eijaId;
   if(!item){inspectorSelection=null;root.append(el("h3","Explore a concept"),el("p","Select a term, state, role or law in the explorer.","muted"));return;}
   root.dataset.eijaId = `${workbench.pack.id}.detail.${kind}.${item.id}`;
   root.append(el("h3", item.label || item.action || item.id), el("p", kind==="transition"?`${item.from_state} → ${item.to_state}`:item.definition || item.description || `Model ${kind}`));
@@ -231,7 +306,7 @@ function renderSelectionDetail() {
   if (kind === "law") {const detail = el("details"); detail.append(el("summary", "Exact declared law"), el("pre", JSON.stringify(item, null, 2))); root.append(detail);}
   if (kind === "term" && workbench.connection?.status === "connected") {
     const impact = el("button", "Find repository references", "secondary");
-    impact.onclick=()=>task(async()=>{const data=await api("repository/impact?term="+encodeURIComponent(item.id));EijaShell.renderImpact($("inspector-impact"),data,openSource);notice("Known dependency links loaded. Unknown dependencies remain outside this mapping.");});root.append(impact);
+    impact.onclick=()=>task(()=>loadRepositoryImpact(item.id));root.append(impact);
   }
 }
 function followReference(ref) {
@@ -259,6 +334,7 @@ function renderProblems() {
   }
   if (!problems.childElementCount) problems.append(el("li", p ? "No review blockers reported by the current packet." : "No case selected; case checks have not run."));
   EijaShell.renderEvidence($("evidence-summary"),p);$("problem-count").textContent=problems.childElementCount;
+  $("focus-problem-count").textContent=problems.childElementCount;
   $("status-evidence").textContent = p ? `Technical eligibility: ${p.eligible ? "eligible" : "blocked"} · human UNKNOWN` : "Evidence: NOT_RUN · human UNKNOWN";
 }
 function commitChoice(choice) {
@@ -291,6 +367,9 @@ const paletteCommands = [
   ["New change case",openIntent],
   ["Toggle explorer",()=>EijaShell.toggle("explorer")],
   ["Toggle inspector",()=>EijaShell.toggle("inspector")],
+  ["Toggle lower panel",()=>EijaShell.toggle("panel")],
+  ["Focus work area",()=>EijaShell.focusWorkspace()],
+  ["Restore workspace",()=>EijaShell.focusWorkspace(false)],
   ["Show local case history",()=>EijaShell.bottom("history-pane")],
   ["Fit model overview",()=>{switchTab("model");EijaShell.fit();}],
   ...[...document.querySelectorAll("[data-tab]")].map(button => [`Open ${button.textContent}`, () => {switchTab(button.dataset.tab); button.focus();}]),
@@ -299,7 +378,7 @@ const paletteCommands = [
   ["Select a transition", () => {switchTab("model");EijaShell.toggle("inspector",true); $("transition-select").focus();}]
 ];
 async function refreshCurrentModel() {
-  if(current)await load(current.case.id);else{workbench=await api("workbench");renderWorkbench();clearDiagnostic();}
+  if(current)await load(current.case.id);else{if(!await refreshSource(true))return;renderWorkbench();clearDiagnostic();}
   notice("Current model refreshed from the server.");
 }
 function filterCommands() {
@@ -316,29 +395,91 @@ $("palette-search").onkeydown = event => {if (["ArrowDown", "Enter"].includes(ev
 document.addEventListener("keydown", event => {if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {event.preventDefault(); if($("command-palette").open) $("command-palette").close(); else openPalette();}});
 
 $("open-source").onclick = () => switchTab("source");
-$("refresh-source").onclick = () => task(async () => {
-  [workbench, status] = await Promise.all([api("workbench"), api("status")]);
-  renderWorkbench(); renderProblems();
-  const connection = EijaSource.state(workbench.connection);
-  notice(connection.connected ? "Repository snapshot refreshed. Source indexing did not execute project tests." : connection.title + ": " + connection.reason, !connection.connected);
-}, "Reading the configured repository snapshot…");
+$("refresh-source").onclick = () => task(refreshSource, "Reading the configured repository snapshot…");
+function sourceSnapshot(){return workbench?.connection?.source_hash||null;}
+function sourceQuery(path,key,value,hash){
+  if(!hash)throw new ApiError("SOURCE_SNAPSHOT_UNAVAILABLE","Refresh the repository connection before following source links.");
+  return `repository/${path}?${key}=${encodeURIComponent(value)}&expected_source_hash=${encodeURIComponent(hash)}`;
+}
+function cancelSourceRead(){
+  ++sourceSequence;++impactSequence;
+  if(!sourcePending)return;
+  sourcePending=false;
+  if(sourceRecord)EijaShell.renderSource(sourceRecord);
+  else EijaShell.sourceError("The pending source request was cancelled because the displayed case changed.","SOURCE_REQUEST_CANCELLED");
+  EijaShell.sourceFreshness("cancelled","Source navigation cancelled by a case revision change. Choose a reference again.");
+}
+async function loadRepositoryImpact(term){
+  const sequence=++impactSequence,hash=sourceSnapshot(),selection=JSON.stringify(inspectorSelection);
+  const active=()=>sequence===impactSequence&&hash===sourceSnapshot()&&selection===JSON.stringify(inspectorSelection);
+  try{
+    const data=await api(sourceQuery("impact","term",term,hash));
+    if(!active())return;
+    if(data.status==="connected"&&data.source_hash!==hash)throw new ApiError("SOURCE_SNAPSHOT_MISMATCH","Impact response does not describe the selected source snapshot.");
+    EijaShell.renderImpact($("inspector-impact"),data,openSource);
+    notice("Known dependency links loaded for the captured snapshot. Unknown dependencies remain outside this mapping.");
+  }catch(error){
+    if(!active())return;
+    const root=$("inspector-impact");delete root.dataset.sourceHash;root.replaceChildren(el("p",error.message,"diagnostic"));
+    const retry=el("button","Refresh source","secondary");retry.dataset.sourceRefresh="true";retry.onclick=()=>task(refreshSource);root.append(retry);
+    reportError(error);
+  }
+}
+async function refreshSource(refreshBaseline=false){
+  cancelSourceRead();const sequence=sourceSequence;
+  const [next,nextStatus]=await Promise.all([api("workbench"),api("status")]);
+  if(sequence!==sourceSequence)return false;
+  workbench=refreshBaseline?next:{...workbench,connection:next.connection};status=nextStatus;
+  $("source-status").textContent=status?.trusted_fixture?"Source identity matches its release fixture. This identifies reviewed bytes; it does not prove correctness.":"SOURCE_REVIEW_REQUIRED · implementation changed since the owner-stamped fixture. Verification and apply remain blocked pending source review.";
+  $("source-status").classList.toggle("source-required",!status?.trusted_fixture);
+  $("repository-status").textContent=EijaSource.state(workbench.connection).title;
+  EijaSource.render($("source-view"),workbench.connection);
+  $("inspector-impact").replaceChildren(el("p","Source snapshot refreshed. Find repository references again to calculate its known links.","muted"));
+  delete $("inspector-impact").dataset.sourceHash;
+  renderProblems();
+  if(sourceRecord){
+    EijaShell.renderSource(sourceRecord);
+    EijaShell.sourceFreshness("previous","Previous captured source remains visible while its reference is reopened in the refreshed snapshot.");
+    if(!await openSource(sourceRecord.reference,false,false)||sequence+1!==sourceSequence)return false;
+  }
+  const connection=EijaSource.state(workbench.connection);
+  notice(connection.connected?"Repository snapshot refreshed. The model, unsent edits and runtime were preserved; indexing did not execute project tests.":connection.title+": "+connection.reason,!connection.connected);
+  return connection.connected;
+}
 
 function previewHistory(model,label){historyModel=model;historyLabel=label;modelView="history";editId=null;inspectorSelection=null;switchTab("model");renderWorkbench();notice("Historical model preview · read only. Use Working model to return to the current candidate.");}
 function openIntent(){switchTab("change");$("create-panel").hidden=false;$("request").focus();notice("");}
 $("case-switcher").onchange=event=>{const id=event.target.value;$("case-switcher").value=current?.case.id||"";if(id)task(async()=>{try{await load(id);notice("");}finally{$("case-switcher").value=current?.case.id||"";}});};
 $("canvas-direction").onchange=event=>{canvasDirection=event.target.value;renderCanvas();EijaShell.readable();};
 $("model-version").onchange=event=>{modelView=event.target.value;renderWorkbench();};
-async function openSource(reference,record=true){
-  const sequence=++sourceSequence;switchTab("code");EijaShell.sourceLoading(reference);
+async function openSource(reference,record=true,navigate=true){
+  const sequence=++sourceSequence,hash=sourceSnapshot();sourcePending=true;
+  if(navigate)switchTab("code");
+  if(sourceRecord){EijaShell.renderSource(sourceRecord);EijaShell.sourceFreshness("loading",`Reading ${reference}. Previous captured source remains visible until this request finishes.`);}
+  else {EijaShell.sourceLoading(reference);EijaShell.sourceFreshness("loading","Reading the selected repository snapshot…");}
   try{
-    const data=await api("repository/source?reference="+encodeURIComponent(reference));
-    if(sequence!==sourceSequence)return;EijaShell.renderSource(data);
-    if(record&&data.status==="connected"){sourceHistory=sourceHistory.slice(0,sourceHistoryIndex+1);sourceHistory.push(reference);sourceHistoryIndex=sourceHistory.length-1;}
+    const data=await api(sourceQuery("source","reference",reference,hash));
+    if(sequence!==sourceSequence||hash!==sourceSnapshot())return false;
+    if(data.status!=="connected")throw new ApiError("SOURCE_UNAVAILABLE",data.reason||"No source snapshot is available.");
+    if(data.source_hash!==hash)throw new ApiError("SOURCE_SNAPSHOT_MISMATCH","The source response does not describe the selected snapshot.");
+    sourceRecord=data;EijaShell.renderSource(data);
+    EijaShell.sourceFreshness("captured","Source and repository connection describe the same captured bytes. Later filesystem changes require another check.");
+    if(record){sourceHistory=sourceHistory.slice(0,sourceHistoryIndex+1);sourceHistory.push(reference);sourceHistoryIndex=sourceHistory.length-1;}
     $("source-back").disabled=sourceHistoryIndex<=0;
-  }catch(error){if(sequence===sourceSequence){EijaShell.sourceError(error.message,error.code);notice(error.message,true);}}
+    return true;
+  }catch(error){if(sequence===sourceSequence){
+    if(sourceRecord)EijaShell.renderSource(sourceRecord);else EijaShell.sourceError(error.message,error.code);
+    EijaShell.sourceFreshness(error.code=== "SOURCE_SNAPSHOT_STALE"?"stale":"unavailable",`${error.code||"SOURCE_UNAVAILABLE"}: ${error.message}${sourceRecord?" Previous captured source is retained; it is not a current filesystem read.":""}`,()=>task(refreshSource));
+    notice(error.message,true);
+  }return false;}finally{if(sequence===sourceSequence)sourcePending=false;}
 }
 $("source-open-form").onsubmit=event=>{event.preventDefault();const ref=$("source-reference").value.trim();if(ref)openSource(ref);};
-$("source-back").onclick=()=>{if(sourceHistoryIndex>0){sourceHistoryIndex--;openSource(sourceHistory[sourceHistoryIndex],false);}};
+async function previousSource(){
+  const previous=sourceHistoryIndex-1;
+  if(previous<0)return;
+  if(await openSource(sourceHistory[previous],false)){sourceHistoryIndex=previous;$("source-back").disabled=previous<=0;}
+}
+$("source-back").onclick=previousSource;
 $("undo-edit").onclick=()=>task(async()=>{if(!caseHistory?.can_undo)return;await command("undo");instance=null;modelView="working";render();notice("Last semantic edit undone by the kernel. Earlier receipts are retained; eligibility is recomputed.");});
 $("redo-edit").onclick=()=>task(async()=>{if(!caseHistory?.can_redo)return;await command("redo");instance=null;modelView="working";render();notice("Semantic edit reapplied by the kernel. The displayed model was reloaded from the server.");});
 EijaShell.init({newIntent:openIntent,openTab:switchTab});

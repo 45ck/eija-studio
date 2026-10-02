@@ -174,6 +174,23 @@
               "maxLength": 400,
               "title": "Term"
             }
+          },
+          {
+            "name": "expected_source_hash",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^sha256:[0-9a-f]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Expected Source Hash"
+            }
           }
         ],
         "responses": {
@@ -212,6 +229,61 @@
               "minLength": 1,
               "maxLength": 800,
               "title": "Reference"
+            }
+          },
+          {
+            "name": "expected_source_hash",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^sha256:[0-9a-f]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Expected Source Hash"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/repository/freshness": {
+      "get": {
+        "summary": "Repository Freshness",
+        "operationId": "repository_freshness_api_repository_freshness_get",
+        "parameters": [
+          {
+            "name": "expected_source_hash",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "title": "Expected Source Hash"
             }
           }
         ],

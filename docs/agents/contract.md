@@ -29,6 +29,15 @@ Meaning-check answers and the decision seal are not returned, but that is hygien
 
 Agents should also: report `UNKNOWN`, `NOT_RUN` and limitations verbatim; explain to the user what the owner must do next (`owner_next` in tool output); keep requests synthetic.
 
+When following repository links from `pack`, pass its exact `connection.source_hash`
+as optional `expected_source_hash` to `repository_source` and `repository_impact`.
+The value includes the `sha256:` prefix. The adapter compares that identity to the
+same captured bytes used for the answer. Changed bytes produce
+`SOURCE_SNAPSHOT_STALE`; fetch `pack` again and reconsider the links before retrying.
+Without the optional hash, each read describes its own fresh capture and must not
+be assumed to match an earlier view. This observes byte identity at read time;
+it does not prove behavior, continuous freshness or source/model conformance.
+
 ## What an agent may not do
 
 These operations do not exist on the MCP server, and a test proves it. Do not try to reach them by another route (HTTP API, SQLite file, CLI scripts):

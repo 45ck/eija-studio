@@ -55,7 +55,7 @@ def require_only_save_role_change(before, after):
 
 
 @contextlib.contextmanager
-def disposable_server():
+def disposable_server(repository_root=None):
     """Create this script's own offline workspace and loopback server; never attach to a live owner session."""
     repo = Path(__file__).resolve().parents[2]
     pack = repo / "packs/eija-review-slice"
@@ -67,7 +67,7 @@ def disposable_server():
         workspace = Path(directory).resolve()
         if not workspace.is_relative_to(scratch_root.resolve()):
             raise RuntimeError("Disposable workspace escaped the checkout scratch directory.")
-        studio = build_studio(workspace, pack=pack, repository_root=repo)
+        studio = build_studio(workspace, pack=pack, repository_root=repo if repository_root is None else repository_root)
         with socket.socket() as sock:
             sock.bind(("127.0.0.1", 0))
             port = sock.getsockname()[1]
@@ -374,17 +374,25 @@ class Review:
     def panels(self):
         before = self.semantic()
         dimensions = {}
+        layout = self.page.locator("#workspace-layout")
+        layout_was_open = layout.get_attribute("open") is not None
         for name, control in (("explorer", "#toggle-explorer"), ("inspector", "#toggle-inspector"),
                               ("bottom", "#toggle-bottom")):
             original = self.page.locator("#model-canvas").bounding_box()
+            if layout.get_attribute("open") is None:
+                self.page.locator("#layout-summary").click()
             self.page.locator(control).click()
             expect(self.page.locator(control)).to_have_attribute("aria-expanded", "false")
             expanded = self.page.locator("#model-canvas").bounding_box()
             key = "height" if name == "bottom" else "width"
             assert expanded[key] > original[key]
+            if layout.get_attribute("open") is None:
+                self.page.locator("#layout-summary").click()
             self.page.locator(control).click()
             expect(self.page.locator(control)).to_have_attribute("aria-expanded", "true")
             dimensions[name] = {"before": original[key], "collapsed": expanded[key]}
+        if layout_was_open:
+            self.page.locator("#layout-summary").click()
         assert self.semantic() == before
         return {"canvas_reclaims_panel_space": dimensions, "semantic_unchanged": before}
 

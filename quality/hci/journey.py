@@ -150,6 +150,8 @@ def journey() -> list[Step]:
              decision=TABS, expect=Expect("visible", "#verify")),
         Step("run-verification", "Run bounded verification", "click", Ref(css="#verify"),
              expect=Expect("enabled", "#approve"), view="evidence-verified"),
+        Step("open-review-subject", "Open review of this exact subject", "click", Ref(css="#review-subject"),
+             expect=Expect("visible", "#review-form"), view="evidence-review-open"),
     ]
     for key, value in ANSWERS:
         steps.append(Step(f"answer-{key}", f"Answer review question '{key}'", "type", Ref(css=f"#q-{key}"),

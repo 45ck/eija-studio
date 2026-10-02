@@ -18,7 +18,7 @@ PAGE_CSP = ("default-src 'none'; script-src 'self'; style-src 'self'; connect-sr
             "frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
 FRAME_CSP = ("default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src data:; connect-src 'none'; "
              "frame-ancestors 'self'; base-uri 'none'; form-action 'none'; sandbox allow-scripts")
-WEB_ASSETS = frozenset({"app.js", "app.css", "canvas.js", "tree.js", "review.js", "source.js", "shell.js", "visual-frame.js", "visual-frame.css"})
+WEB_ASSETS = frozenset({"app.js", "app.css", "canvas.js", "tree.js", "review.js", "compare.js", "compare.css", "source.js", "shell.js", "visual-frame.js", "visual-frame.css"})
 
 
 class NewCase(Contract):
@@ -142,12 +142,18 @@ def create_app(studio, token: str, port: int = 8765) -> FastAPI:
         return studio.workbench()
 
     @app.get("/api/repository/impact")
-    def repository_impact(term: str = Query(min_length=1, max_length=400)):
-        return studio.repository_impact(term)
+    def repository_impact(term: str = Query(min_length=1, max_length=400),
+                          expected_source_hash: str | None = Query(default=None, pattern="^sha256:[0-9a-f]{64}$")):
+        return studio.repository_impact(term, expected_source_hash=expected_source_hash)
 
     @app.get("/api/repository/source")
-    def repository_source(reference: str = Query(min_length=1, max_length=800)):
-        return studio.repository_source(reference)
+    def repository_source(reference: str = Query(min_length=1, max_length=800),
+                          expected_source_hash: str | None = Query(default=None, pattern="^sha256:[0-9a-f]{64}$")):
+        return studio.repository_source(reference, expected_source_hash=expected_source_hash)
+
+    @app.get("/api/repository/freshness")
+    def repository_freshness(expected_source_hash: str = Query(pattern="^sha256:[0-9a-f]{64}$")):
+        return studio.repository_freshness(expected_source_hash)
 
     @app.get("/api/cases")
     def cases():

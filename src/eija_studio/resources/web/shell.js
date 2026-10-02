@@ -6,8 +6,9 @@ const EijaShell = (() => {
   const clamp = (n, low, high) => Math.min(high, Math.max(low, n));
   let settings = {explorer:230, inspector:288, panel:160, explorerOpen:true, inspectorOpen:true, panelOpen:true};
   let compact = false, compactOpen = {explorer:false, inspector:false, panel:false};
+  let focusLayout = null, focusReturn = null;
   let area="model";const contextualInspector=new Map();
-  const paneOpen=key=>compact?compactOpen[key]:key==="inspector"&&!['model','code'].includes(area)?contextualInspector.get(area)===true:settings[key+"Open"];
+  const paneOpen=key=>focusLayout?focusLayout[key]:compact?compactOpen[key]:key==="inspector"&&!['model','code'].includes(area)?contextualInspector.get(area)===true:settings[key+"Open"];
   const views = new Map(); let canvas = null, canvasKey = "", baseBox = null, view = null, panHeld = false;
   function persist() {try {sessionStorage.setItem("eija-ui-layout", JSON.stringify(settings));} catch { /* Preferences are optional. */ }}
   function applySettings() {
@@ -18,25 +19,45 @@ const EijaShell = (() => {
       document.body.classList.toggle(key + "-collapsed", !open);
       get(key === "panel" ? "toggle-bottom" : "toggle-" + key).setAttribute("aria-expanded", String(open));
     }
-    document.body.dataset.compactExplorer=String(compact&&compactOpen.explorer);
-    document.body.dataset.compactInspector=String(compact&&compactOpen.inspector);
-    get("drawer-backdrop").hidden=!(compact&&(compactOpen.explorer||compactOpen.inspector));
+    document.body.dataset.workspaceFocused=String(!!focusLayout);
+    get("restore-workspace").hidden=!focusLayout;get("focus-problems").hidden=!focusLayout;
+    get("focus-evidence").disabled=!!focusLayout;
+    document.body.dataset.compactExplorer=String(compact&&paneOpen("explorer"));
+    document.body.dataset.compactInspector=String(compact&&paneOpen("inspector"));
+    get("drawer-backdrop").hidden=!(compact&&(paneOpen("explorer")||paneOpen("inspector")));
     get("explorer-resizer").hidden=compact;get("inspector-resizer").hidden=compact;
     get("explorer-resizer").setAttribute("aria-valuenow", settings.explorer);
     get("inspector-resizer").setAttribute("aria-valuenow", settings.inspector);
     get("panel-resizer").setAttribute("aria-valuenow", settings.panel);
   }
   function toggle(key, open) {
-    if(compact){compactOpen[key]=open===undefined?!compactOpen[key]:open;if(key!=="panel"&&compactOpen[key])compactOpen[key==="explorer"?"inspector":"explorer"]=false;}
+    if(focusLayout){focusLayout[key]=open===undefined?!focusLayout[key]:open;if(compact&&key!=="panel"&&focusLayout[key])focusLayout[key==="explorer"?"inspector":"explorer"]=false;}
+    else if(compact){compactOpen[key]=open===undefined?!compactOpen[key]:open;if(key!=="panel"&&compactOpen[key])compactOpen[key==="explorer"?"inspector":"explorer"]=false;}
     else if(key==="inspector"&&!['model','code'].includes(area))contextualInspector.set(area,open===undefined?!paneOpen(key):open);
     else settings[key+"Open"]=open===undefined?!settings[key+"Open"]:open;
     applySettings();if(!compact)persist();
   }
   function setArea(name){area=name;applySettings();}
-  function resizeMode(matches) {compact=matches;compactOpen={explorer:false,inspector:false,panel:false};applySettings();}
+  function resizeMode(matches) {compact=matches;compactOpen={explorer:false,inspector:false,panel:false};if(compact&&focusLayout?.explorer&&focusLayout.inspector)focusLayout.inspector=false;applySettings();}
+  function visibleFocus(target) {
+    let available=target&&!target.disabled&&target.isConnected&&target.getClientRects().length>0;
+    if(available&&["hidden","collapse"].includes(window.getComputedStyle(target).visibility))available=false;
+    for(let ancestor=target;available&&ancestor;ancestor=ancestor.parentElement){
+      if(ancestor.hidden||ancestor.inert)available=false;
+      if(ancestor.tagName==="DETAILS"&&!ancestor.open){const summary=[...ancestor.children].find(child=>child.tagName==="SUMMARY");if(!summary?.contains(target))available=false;}
+    }
+    (available?target:get("layout-summary")).focus();
+  }
+  function focusWorkspace(enabled=true) {
+    if(enabled===!!focusLayout)return;
+    if(enabled){focusReturn=document.activeElement;focusLayout={explorer:false,inspector:false,panel:false};}
+    else focusLayout=null;
+    get("workspace-layout").open=false;applySettings();
+    if(enabled)get("restore-workspace").focus();else{visibleFocus(focusReturn);focusReturn=null;}
+  }
   function closeDrawers(restoreFocus=false) {
-    const key=compactOpen.inspector?"inspector":"explorer";compactOpen.explorer=false;compactOpen.inspector=false;applySettings();
-    if(restoreFocus)get("toggle-"+key).focus();
+    toggle("explorer",false);toggle("inspector",false);
+    if(restoreFocus)visibleFocus(get("layout-summary"));
   }
   function bottom(id) {
     toggle("panel", true);
@@ -45,7 +66,7 @@ const EijaShell = (() => {
   }
   function splitter(id, key, minimum, maximum, direction) {
     const handle = get(id);
-    const update = value => {settings[key] = clamp(value, minimum, maximum); settings[key + "Open"] = true; applySettings();};
+    const update = value => {settings[key] = clamp(value, minimum, maximum);if(focusLayout)focusLayout[key]=true;else settings[key + "Open"] = true; applySettings();};
     handle.addEventListener("pointerdown", event => {
       if (event.button !== 0) return;
       event.preventDefault(); const start = key === "panel" ? event.clientY : event.clientX, original = settings[key];
@@ -117,9 +138,13 @@ const EijaShell = (() => {
   function sourceError(message,code="SOURCE_UNAVAILABLE") {
     const root=get("source-reader");root.removeAttribute("aria-busy");const box=make("div",undefined,"editor-empty error-empty");box.append(make("h2",code),make("p",message),make("p","Choose another declared binding or inspect the repository connection. No source was executed."));root.replaceChildren(box);get("source-metadata").replaceChildren();
   }
+  function sourceFreshness(status,message,retry){
+    const root=get("source-freshness");root.hidden=false;root.dataset.status=status;root.replaceChildren(make("span",message));
+    if(retry){const button=make("button","Refresh source","text-button");button.dataset.sourceRefresh="true";button.onclick=retry;root.append(button);}
+  }
   function renderSource(data) {
     if(data.status!=="connected"){sourceError(data.reason||"No source snapshot is available.",String(data.status||"unknown").toUpperCase());return;}
-    const rows=sourceLines(data),root=get("source-reader");root.removeAttribute("aria-busy");root.replaceChildren();
+    const rows=sourceLines(data),root=get("source-reader");root.dataset.sourceHash=data.source_hash;root.removeAttribute("aria-busy");root.replaceChildren();
     get("source-file").textContent=`${data.path}${data.symbol ? "  ›  "+data.symbol : ""}`;get("source-reference").value=data.reference;
     const code=make("div",undefined,"source-lines");code.setAttribute("role","region");code.setAttribute("aria-label",`Read-only source ${data.path}, lines ${data.lines.start} to ${data.lines.end}`);code.tabIndex=0;
     for(const line of rows){const row=make("div",undefined,"source-line"),number=make("span",line.number,"line-number"),content=make("code",line.text||" ");number.setAttribute("aria-hidden","true");row.append(number,content);code.append(row);}root.append(code);
@@ -146,8 +171,9 @@ const EijaShell = (() => {
     const human=make("tr");human.append(make("td","Human comprehension"),make("td","Human study"),make("td","UNKNOWN"));body.append(human);table.append(head,body);root.append(table);
   }
   function renderImpact(root,data,openReference) {
-    root.replaceChildren();root.append(make("h4","Known dependency ripple"));
+    root.replaceChildren();delete root.dataset.sourceHash;root.append(make("h4","Known dependency ripple"));
     if(data.status!=="connected"||!data.impact){root.append(make("p",data.reason||"No impact result is available.","muted"));return;}
+    root.dataset.sourceHash=data.source_hash;
     const impact=data.impact;root.append(make("p",`${impact.count} linked dependants · certificate ${impact.certificate}`),make("p",data.scope||"Declared links only; unknown dependencies are not covered.","muted"));
     const list=make("div",undefined,"impact-list");
     for(const item of impact.affected||[]){const details=make("details"),heading=make("summary",`${item.type} · ${item.id}`);details.append(heading);const button=make("button","Open source reference","text-button");button.onclick=()=>openReference(item.id);details.append(button);const path=make("ol");for(const ref of item.witness||[])path.append(make("li",ref));details.append(path);list.append(details);}root.append(list);
@@ -157,8 +183,13 @@ const EijaShell = (() => {
     try {const stored=JSON.parse(sessionStorage.getItem("eija-ui-layout")||"{}");for(const key of ["explorerOpen","inspectorOpen","panelOpen"])if(typeof stored[key]==="boolean")settings[key]=stored[key];for(const [key,min,max]of [["explorer",180,420],["inspector",240,440],["panel",100,420]])if(Number.isFinite(stored[key]))settings[key]=clamp(stored[key],min,max);}catch{/* Defaults remain usable. */}
     const compactQuery=window.matchMedia("(max-width: 850px)");resizeMode(compactQuery.matches);compactQuery.addEventListener("change",event=>resizeMode(event.matches));
     applySettings();splitter("explorer-resizer","explorer",180,420,1);splitter("inspector-resizer","inspector",240,440,-1);splitter("panel-resizer","panel",100,420,-1);
-    get("toggle-explorer").onclick=()=>toggle("explorer");get("toggle-inspector").onclick=()=>toggle("inspector");get("close-inspector").onclick=()=>toggle("inspector",false);get("toggle-bottom").onclick=()=>toggle("panel");get("collapse-bottom").onclick=()=>toggle("panel",false);
-    get("close-explorer").onclick=()=>{toggle("explorer",false);get("toggle-explorer").focus();};get("drawer-backdrop").onclick=()=>closeDrawers(true);
+    for(const [id,key]of [["toggle-explorer","explorer"],["toggle-inspector","inspector"],["toggle-bottom","panel"]])get(id).onclick=()=>{toggle(key);get("workspace-layout").open=false;visibleFocus(get("layout-summary"));};
+    get("close-inspector").onclick=()=>{toggle("inspector",false);visibleFocus(get("layout-summary"));};get("collapse-bottom").onclick=()=>{toggle("panel",false);visibleFocus(get("layout-summary"));};
+    get("close-explorer").onclick=()=>{toggle("explorer",false);visibleFocus(get("layout-summary"));};get("drawer-backdrop").onclick=()=>closeDrawers(true);
+    get("focus-evidence").onclick=()=>focusWorkspace();get("restore-workspace").onclick=()=>focusWorkspace(false);
+    get("focus-problems").onclick=()=>{bottom("problems-pane");document.querySelector('[data-bottom="problems-pane"]').focus();};
+    get("workspace-layout").addEventListener("keydown",event=>{if(event.key==="Escape"){get("workspace-layout").open=false;visibleFocus(get("layout-summary"));event.stopPropagation();}});
+    document.addEventListener("pointerdown",event=>{if(!get("workspace-layout").contains(event.target))get("workspace-layout").open=false;});
     get("explorer").addEventListener("click",event=>{if(compact&&event.target.closest("button:not(#close-explorer)"))closeDrawers();});
     get("start-intent").onclick=callbacks.newIntent;get("source-show-repository").onclick=()=>callbacks.openTab("source");get("open-evidence").onclick=()=>callbacks.openTab("evidence");
     document.querySelectorAll("[data-bottom]").forEach(button=>{button.onclick=()=>bottom(button.dataset.bottom);button.addEventListener("keydown",event=>{const tabs=[...document.querySelectorAll("[data-bottom]")],index=tabs.indexOf(button),next=event.key==="ArrowRight"?tabs[(index+1)%tabs.length]:event.key==="ArrowLeft"?tabs[(index+tabs.length-1)%tabs.length]:null;if(next){event.preventDefault();bottom(next.dataset.bottom);next.focus();}});});
@@ -168,9 +199,9 @@ const EijaShell = (() => {
     get("model-canvas").addEventListener("keydown",event=>{if(event.code==="Space"){panHeld=true;get("model-canvas").classList.add("pan-ready");if(event.target===get("model-canvas"))event.preventDefault();}if(["+","=","-","0"].includes(event.key)){event.preventDefault();if(event.key==="0")fit();else zoom(event.key==="-"?1/1.2:1.2);}});
     document.addEventListener("keyup",event=>{if(event.code==="Space"){panHeld=false;get("model-canvas").classList.remove("pan-ready");}});
     window.addEventListener("blur",()=>{panHeld=false;get("model-canvas").classList.remove("pan-ready");});
-    document.addEventListener("keydown",event=>{if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==="b"){event.preventDefault();toggle("explorer");}if(event.key==="Escape"){panHeld=false;get("model-canvas").classList.remove("pan-ready");if(compact&&(compactOpen.explorer||compactOpen.inspector))closeDrawers(true);}});
+    document.addEventListener("keydown",event=>{if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==="b"){event.preventDefault();toggle("explorer");}if(event.key==="Escape"){panHeld=false;get("model-canvas").classList.remove("pan-ready");if(compact&&(paneOpen("explorer")||paneOpen("inspector")))closeDrawers(true);}});
     document.querySelector(".editor-navigation").addEventListener("focusin",()=>{if(compact)closeDrawers();});
   }
-  return {init,toggle,bottom,mountCanvas,fit,zoom,readable,sourceLines,sourceLoading,sourceError,renderSource,renderHistory,renderEvidence,renderImpact,resizeMode,setArea};
+  return {init,toggle,bottom,mountCanvas,fit,zoom,readable,sourceLines,sourceLoading,sourceError,sourceFreshness,renderSource,renderHistory,renderEvidence,renderImpact,resizeMode,setArea,focusWorkspace,isFocused:()=>!!focusLayout};
 })();
 if(typeof module!=="undefined")module.exports=EijaShell;

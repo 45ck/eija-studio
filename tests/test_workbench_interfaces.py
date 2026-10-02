@@ -43,7 +43,8 @@ def test_repository_metadata_stays_separate_and_impact_has_no_path_input(studio)
         def snapshot(self):
             return {"status": "connected", "coverage": {"complete": False}, "gaps": ["dynamic calls"]}
 
-        def impact(self, subject):
+        def impact(self, subject, *, expected_source_hash=None):
+            assert expected_source_hash is None
             return {"status": "ok", "subject": subject, "complete": False}
 
     studio.repository = ReadOnlyRepository()

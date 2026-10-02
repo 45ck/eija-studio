@@ -164,8 +164,8 @@ class AgentPort(Protocol):
     def workbench(self) -> dict: ...
     def affordances(self, case_id: str) -> dict: ...
     def edit_check(self, case_id: str, proposal: Transaction) -> dict: ...
-    def repository_impact(self, term: str) -> dict: ...
-    def repository_source(self, reference: str) -> dict: ...
+    def repository_impact(self, term: str, *, expected_source_hash: str | None = None) -> dict: ...
+    def repository_source(self, reference: str, *, expected_source_hash: str | None = None) -> dict: ...
 
 
 def StudioAgentPort(studio: Studio) -> AgentPort:  # a class-like factory: the Studio lives only in a closure
@@ -208,11 +208,11 @@ def StudioAgentPort(studio: Studio) -> AgentPort:  # a class-like factory: the S
         def edit_check(self, case_id: str, proposal: Transaction) -> dict:
             return studio.edit_check(case_id, proposal)
 
-        def repository_impact(self, term: str) -> dict:
-            return studio.repository_impact(term)
+        def repository_impact(self, term: str, *, expected_source_hash: str | None = None) -> dict:
+            return studio.repository_impact(term, expected_source_hash=expected_source_hash)
 
-        def repository_source(self, reference: str) -> dict:
-            return studio.repository_source(reference)
+        def repository_source(self, reference: str, *, expected_source_hash: str | None = None) -> dict:
+            return studio.repository_source(reference, expected_source_hash=expected_source_hash)
 
     return _StudioAgentPort()
 
@@ -257,13 +257,13 @@ class AgentSurface:
         return result | {"trust": "UNTRUSTED_PROPOSAL", "applied": False, "persisted": False,
                          "boundary": "Dry-run only; the local owner must choose and perform any model edit."}
 
-    def repository_impact(self, term: str) -> dict[str, Any]:
+    def repository_impact(self, term: str, *, expected_source_hash: str | None = None) -> dict[str, Any]:
         if not term or len(term) > 400:
             raise DomainError("INVALID_TERM", "Provide a repository term id of 1-400 characters")
-        return self.port.repository_impact(term)
+        return self.port.repository_impact(term, expected_source_hash=expected_source_hash)
 
-    def repository_source(self, reference: str) -> dict[str, Any]:
-        return self.port.repository_source(reference)
+    def repository_source(self, reference: str, *, expected_source_hash: str | None = None) -> dict[str, Any]:
+        return self.port.repository_source(reference, expected_source_hash=expected_source_hash)
 
     def list_cases(self) -> dict[str, Any]:
         cases = [{"id": c["id"], "version": c["version"], "stage": c["stage"], "created_at": c["created_at"],
@@ -429,16 +429,18 @@ def create_server(studio: Studio, *, egress_consent: bool = False, diagram_rende
         return await surface.guarded_async(lambda: surface.edit_check(case_id, proposal))
 
     @server.tool(annotations=read)
-    async def repository_impact(term: str) -> dict[str, Any]:
+    async def repository_impact(term: str, expected_source_hash: str | None = None) -> dict[str, Any]:
         """Read impact across explicit links of the repository configured at startup; never executes its code.
-        Closure is limited to extracted links, not all real dependencies; missing coverage remains visible."""
-        return await surface.guarded_async(lambda: surface.repository_impact(term))
+        Closure is limited to extracted links, not all real dependencies; missing coverage remains visible.
+        Pass the pack connection's source_hash to refuse a different captured snapshot."""
+        return await surface.guarded_async(lambda: surface.repository_impact(term, expected_source_hash=expected_source_hash))
 
     @server.tool(annotations=read)
-    async def repository_source(reference: str) -> dict[str, Any]:
+    async def repository_source(reference: str, expected_source_hash: str | None = None) -> dict[str, Any]:
         """Read bounded source text for a captured Python node or explicit repo:// binding in the configured checkout.
-        File and snapshot hashes identify this read; it grants no edit, execution, approval or apply capability."""
-        return await surface.guarded_async(lambda: surface.repository_source(reference))
+        File and snapshot hashes identify this read; it grants no edit, execution, approval or apply capability.
+        Pass the pack connection's source_hash to refuse a different captured snapshot."""
+        return await surface.guarded_async(lambda: surface.repository_source(reference, expected_source_hash=expected_source_hash))
 
     @server.tool(annotations=read)
     async def list_cases() -> dict[str, Any]:

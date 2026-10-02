@@ -175,7 +175,8 @@ def test_mcp_source_is_read_only_narrow_and_returns_same_bound_payload(studio, c
             listing = await client.list_tools()
             tool = next(tool for tool in listing.tools if tool.name == "repository_source")
             assert tool.annotations.read_only_hint is True and tool.annotations.destructive_hint is False
-            assert set(tool.input_schema["properties"]) == {"reference"}
+            assert set(tool.input_schema["properties"]) == {"reference", "expected_source_hash"}
+            assert tool.input_schema["required"] == ["reference"]
             result = await client.call_tool("repository_source", {"reference": "repo://src/loans.py#borrow"})
             assert not result.is_error
             assert json.loads(result.content[0].text) == studio.repository_source("repo://src/loans.py#borrow")

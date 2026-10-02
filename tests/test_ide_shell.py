@@ -12,12 +12,13 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="NOT_RUN: Node is not installed")
-def test_ide_source_history_and_review_adapters() -> None:
+@pytest.mark.parametrize("suite", ["shell", "focus-layout", "evidence-overview", "compare", "source-freshness"])
+def test_ide_source_history_and_review_adapters(suite: str) -> None:
     """Run actual client functions with deterministic isolated DOM/server doubles."""
     node = shutil.which("node")
     assert node is not None
     result = run_bounded(
-        [*resolve_command(node), "--test", str(ROOT / "tests" / "web" / "shell.test.cjs")],
+        [*resolve_command(node), "--test", str(ROOT / "tests" / "web" / f"{suite}.test.cjs")],
         cwd=str(ROOT), input=None, env=dict(os.environ), timeout=30,
     )
     assert result.returncode == 0, result.stdout + result.stderr

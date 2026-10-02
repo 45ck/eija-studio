@@ -378,7 +378,7 @@ def test_render_formal_builds_only_text_nodes_from_a_hostile_packet(tmp_path):
     body = script[script.index("function formalList"):script.index("async function load")]
     harness = tmp_path / "render.js"
     harness.write_text(
-        "const made=[];const mk=t=>({tag:t,text:'',cls:'',kids:[],append(...k){this.kids.push(...k)},replaceChildren(){this.kids=[]}});"
+        "const current=null,made=[];const mk=t=>({tag:t,text:'',cls:'',kids:[],dataset:{},querySelectorAll(){return []},append(...k){this.kids.push(...k)},replaceChildren(){this.kids=[]}});"
         "const el=(t,x,c)=>{const n=mk(t);if(x!==undefined)n.text=String(x);if(c)n.cls=c;made.push(n);return n;};"
         "const root=mk('div');const $=id=>root;\n" + body +
         "\nconst hostile='<img src=x onerror=alert(1)>';"

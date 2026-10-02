@@ -51,6 +51,23 @@ An applied pack edit changes the local model runtime, not the connected Git chec
 Full two-way application editing and parallel landing remain separate acceptance items.
 No new live-provider calls, source stamping or migration are implied by this decision.
 
+### Snapshot consistency in linked views
+
+Source and impact reads can pin the exact `sha256:` identity returned with a
+repository snapshot. The capture used for comparison is also used for indexing
+and the returned excerpt, so a separate freshness check cannot race the read.
+The authenticated GET freshness endpoint accepts that small identity rather than
+a file manifest; the existing request-size limit stays unchanged. Manifest-based
+adapter checks can still identify changed paths; a single hash cannot.
+
+The browser pins linked reads, rejects mismatched responses and cancels obsolete
+requests after case/revision, selection or connection changes. Refresh updates
+the connection without resetting unsent model fields, historical previews or
+runtime state. Previously displayed source remains explicitly labelled while
+reopening its reference; source/impact failures provide a refresh action.
+External repository identity remains distinct from the evidence packet's subject.
+No receipt, conformance claim or approval is created by a freshness match.
+
 ## Validation
 
 Tests must distinguish extraction determinism from semantic correctness; include missing

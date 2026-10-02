@@ -687,7 +687,7 @@
     }
   },
   "journey": {
-    "completed": true,
+    "completed": false,
     "scripted_answers_note": "review answers are scripted fixture text; not a human comprehension measure",
     "steps": [
       {
@@ -800,7 +800,7 @@
   "keyboard": {
     "activations": 15,
     "activations_that_lost_focus": [],
-    "completed_journey_keyboard_only": true,
+    "completed_journey_keyboard_only": false,
     "focus_lost_count": 0,
     "focus_order_regression_count": 7,
     "focus_order_regressions": [

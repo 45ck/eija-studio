@@ -24,6 +24,28 @@ MAX_SOURCE_BYTES = 32768
 SOURCE_CONTEXT_LINES = 3
 
 
+def _validate_snapshot_hash(value: str | None) -> None:
+    if value is not None and (not isinstance(value, str) or not value.startswith("sha256:") or len(value) != 71
+                              or any(character not in "0123456789abcdef" for character in value[7:])):
+        raise DomainError("INVALID_SOURCE_HASH", "Use the exact sha256: source hash returned by the repository connection")
+
+
+def _capture_at(root: Path, expected_source_hash: str | None) -> _Capture:
+    """Compare against the very capture used for the answer, never a separate check/read pair."""
+    _validate_snapshot_hash(expected_source_hash)
+    captured = _capture(root)
+    if expected_source_hash is not None and captured.source_hash != expected_source_hash:
+        raise DomainError("SOURCE_SNAPSHOT_STALE", "Repository bytes changed. Refresh the source connection before following this snapshot's links.",
+                          {"expected_source_hash": expected_source_hash, "source_hash": captured.source_hash,
+                           "read_only": True, "scope": "Captured source bytes; no correctness or approval decision."})
+    return captured
+
+
+def _manifest_changes(current: Mapping[str, str], previous: Mapping[str, str]) -> dict[str, list[str]]:
+    return {"changed": sorted(path for path in current.keys() & previous.keys() if current[path] != previous[path]),
+            "added": sorted(current.keys() - previous.keys()), "removed": sorted(previous.keys() - current.keys())}
+
+
 def _build(captured: _Capture, pack: Pack, root: Path) -> Graph:
     for term in pack.language.terms:
         for binding in term.binds:
@@ -159,11 +181,11 @@ class RepositoryConnection:
         """The same evidence envelope for an agent; no agent-specific stronger claims."""
         return self.snapshot()
 
-    def read_source(self, reference: str) -> dict[str, Any]:
+    def read_source(self, reference: str, *, expected_source_hash: str | None = None) -> dict[str, Any]:
         """Read bounded text only from a known node/binding in one fresh safe capture; never execute the target."""
         ref = _source_reference(reference)
         try:
-            captured = _capture(self.root)
+            captured = _capture_at(self.root, expected_source_hash)
             graph = _build(captured, self.pack, self.root)
         except (_Unavailable, UnicodeError) as error:
             reason = str(error) if isinstance(error, _Unavailable) else "Repository paths are not valid UTF-8."
@@ -176,10 +198,10 @@ class RepositoryConnection:
                 "scope": "Current captured working-tree bytes; hashes identify this read, not correctness or future freshness.",
                 **_source_excerpt(ref, captured.files[ref.path])}
 
-    def impact(self, subject: str) -> dict[str, Any]:
+    def impact(self, subject: str, *, expected_source_hash: str | None = None) -> dict[str, Any]:
         """Use the existing certified closure and witness paths over a fresh captured graph."""
         try:
-            captured = _capture(self.root)
+            captured = _capture_at(self.root, expected_source_hash)
             graph = _build(captured, self.pack, self.root)
         except (_Unavailable, UnicodeError) as error:
             reason = str(error) if isinstance(error, _Unavailable) else "Repository paths are not valid UTF-8."
@@ -194,17 +216,26 @@ class RepositoryConnection:
             envelope.update({"status": "unknown_target", "reason": "Subject is not in the captured graph."})
         return envelope
 
-    def freshness(self, file_hashes: Mapping[str, str]) -> dict[str, Any]:
+    def freshness(self, file_hashes: Mapping[str, str] | None = None, *,
+                  expected_source_hash: str | None = None) -> dict[str, Any]:
         """Compare captured hashes without ever resolving paths supplied by the caller."""
+        _validate_snapshot_hash(expected_source_hash)
+        if file_hashes is None and expected_source_hash is None:
+            raise DomainError("INVALID_SOURCE_HASH", "Provide the captured snapshot hash to check freshness")
         try:
             captured = _capture(self.root)
         except (_Unavailable, UnicodeError) as error:
             reason = str(error) if isinstance(error, _Unavailable) else "Repository paths are not valid UTF-8."
             return self._unavailable(reason)
         current = captured.hashes
-        changed = sorted(path for path in current.keys() & file_hashes.keys() if current[path] != file_hashes[path])
-        added = sorted(current.keys() - file_hashes.keys())
-        removed = sorted(file_hashes.keys() - current.keys())
-        return {"status": "stale" if changed or added or removed else "current", "changed": changed,
-                "added": added, "removed": removed, "source_hash": captured.source_hash,
+        if file_hashes is None:
+            return {"status": "current" if captured.source_hash == expected_source_hash else "stale",
+                    "compared_source_hash": expected_source_hash, "source_hash": captured.source_hash,
+                    "read_only": True, "changed": None, "added": None, "removed": None,
+                    "scope": "Captured byte identity at this check; changed paths require both file manifests. Not correctness or approval."}
+        changes = _manifest_changes(current, file_hashes)
+        different_hash = expected_source_hash is not None and captured.source_hash != expected_source_hash
+        return {"status": "stale" if any(changes.values()) or different_hash else "current", **changes,
+                "source_hash": captured.source_hash,
+                "compared_source_hash": expected_source_hash, "read_only": True,
                 "scope": "Captured file bytes only; this is not a correctness or approval check."}

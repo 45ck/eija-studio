@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio
   title: application/service.py
   hash_method: ast-sig-v1
-  sha256: fbf31f54a744decb5b2ba6cd2f92843e2d23ab201cfa1c8dbf36ac7f7e880e63
+  sha256: 5f1cbb2c92ece678ea8d733a0798b8e6f19c84e31dbb37bd7f054465fa88c4f3
 description_override: 'The Studio use cases: create, propose, select, edit, verify, approve, apply and execute over a Change Case.'
-notes_baseline: 3df72f8f0cc5aaff4076130e21ce81c50640f9a33e0aee011b83899f9cfe5c12
+notes_baseline: 25f65b9ec4658d4094bf6f55fbb251e17a468c9995de8d373b45b6b004570a5c
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -34,6 +34,10 @@ verified:
   at: '2026-10-02T05:15:30Z'
   notes_sha256: 62abfebc9050ce78dc72bca0ce8709f948bb279a3ae739fb3ead2be83da4a912
   sources_sha256: 3df72f8f0cc5aaff4076130e21ce81c50640f9a33e0aee011b83899f9cfe5c12
+- by: process:codex-review-workspace
+  at: '2026-10-02T11:59:23Z'
+  notes_sha256: eb4ee7ae00fac76291bc2df9e7edbd3b30b736c73ba5e8135bf53c76b1da40e9
+  sources_sha256: 25f65b9ec4658d4094bf6f55fbb251e17a468c9995de8d373b45b6b004570a5c
 ---
 
 # application.service.Studio
@@ -67,8 +71,9 @@ _The source carries no docstring._
 * [`layout`](/symbols/application/service/Studio.layout.md) - `def layout(self, case_id: str, expected: int, change: LayoutChange, principal: Principal) -> dict[str, Any]`
 * [`propose`](/symbols/application/service/Studio.propose.md) - `def propose(self, case_id: str, expected: int, *, consent: bool=False) -> dict[str, Any]`
 * [`redo`](/symbols/application/service/Studio.redo.md) - `def redo(self, case_id: str, expected: int, principal: Principal) -> dict[str, Any]`
-* [`repository_impact`](/symbols/application/service/Studio.repository_impact.md) - `def repository_impact(self, term: str) -> dict[str, Any]`
-* [`repository_source`](/symbols/application/service/Studio.repository_source.md) - `def repository_source(self, reference: str) -> dict[str, Any]`
+* [`repository_freshness`](/symbols/application/service/Studio.repository_freshness.md) - `def repository_freshness(self, expected_source_hash: str) -> dict[str, Any]`
+* [`repository_impact`](/symbols/application/service/Studio.repository_impact.md) - `def repository_impact(self, term: str, *, expected_source_hash: str \| None=None) -> dict[str, Any]`
+* [`repository_source`](/symbols/application/service/Studio.repository_source.md) - `def repository_source(self, reference: str, *, expected_source_hash: str \| None=None) -> dict[str, Any]`
 * [`reset_preview`](/symbols/application/service/Studio.reset_preview.md) - `def reset_preview(self, case_id: str, expected: int, state: str \| None=None) -> dict[str, Any]`
 * [`save`](/symbols/application/service/Studio.save.md) - `def save(self, case_id: str, expected: int) -> dict[str, Any]`
 * [`select`](/symbols/application/service/Studio.select.md) - `def select(self, case_id: str, expected: int, interpretation: str, principal: Principal) -> dict[str, Any]`
@@ -88,6 +93,11 @@ repository snapshot through the application-owned repository port. `repository_i
 returns the closure of known source links. `repository_source` opens bounded text from
 an authorized captured reference. These reads do not edit source, establish
 model/implementation equivalence, produce verification receipts or grant owner authority.
+
+Source and impact reads optionally pin a captured source hash. `repository_freshness`
+compares that byte identity through the same port; it cannot attest to behavior or
+future filesystem state. A stale snapshot must be refreshed before following its
+links as though they described the current connection.
 
 Semantic edit, undo and redo use the existing interpreter with a protected atomic
 meaning prefix. They create new case versions, append command provenance and clear
@@ -127,6 +137,7 @@ semantic snapshots from commands; it does not invent timestamps for legacy edits
 * [application.service.Studio.layout](/symbols/application/service/Studio.layout.md) - `def layout(self, case_id: str, expected: int, change: LayoutChange, principal: Principal) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.propose](/symbols/application/service/Studio.propose.md) - `def propose(self, case_id: str, expected: int, *, consent: bool=False) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.redo](/symbols/application/service/Studio.redo.md) - Reapply the next undone typed command through the same interpreter and policy checks.
+* [application.service.Studio.repository_freshness](/symbols/application/service/Studio.repository_freshness.md) - Observe captured byte identity; this grants no source conformance, evidence or owner authority.
 * [application.service.Studio.repository_impact](/symbols/application/service/Studio.repository_impact.md) - Known repository links only.
 * [application.service.Studio.repository_source](/symbols/application/service/Studio.repository_source.md) - Bounded source view from the configured repository's captured nodes; no arbitrary path or execution.
 * [application.service.Studio.reset_preview](/symbols/application/service/Studio.reset_preview.md) - `def reset_preview(self, case_id: str, expected: int, state: str | None=None) -> dict[str, Any]` in `application/service`.

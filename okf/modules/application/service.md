@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/service.py
   title: application/service.py
   hash_method: ast-api-v1
-  sha256: 1e4e8d812b458ba98a200b883127e656db0f934db4a65312c6744c28b635d02e
-notes_baseline: 4f9d690951e1d1c5a958a06d4c87ed74e2c8e96bae3246959a187b7491464a78
+  sha256: cbd429b5fe4e4b4b3d84979fec8fd58efb2a93cb5521273e6f1e6352798ccd5a
+notes_baseline: 62d3ad2695a433e0c0b69e0caf1623db84178095586d4d374122d37f71ccf927
 ---
 
 # application.service
@@ -96,6 +96,7 @@ _No curated notes yet._
 * [application.service.Studio](/symbols/application/service/Studio.md) - `class Studio` in `application/service`.
 * [application.service.Studio.propose](/symbols/application/service/Studio.propose.md) - `def propose(self, case_id: str, expected: int, *, consent: bool=False) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.redo](/symbols/application/service/Studio.redo.md) - Reapply the next undone typed command through the same interpreter and policy checks.
+* [application.service.Studio.repository_freshness](/symbols/application/service/Studio.repository_freshness.md) - Observe captured byte identity; this grants no source conformance, evidence or owner authority.
 * [application.service.Studio.repository_impact](/symbols/application/service/Studio.repository_impact.md) - Known repository links only.
 * [application.service.Studio.repository_source](/symbols/application/service/Studio.repository_source.md) - Bounded source view from the configured repository's captured nodes; no arbitrary path or execution.
 * [application.service.Studio.reset_preview](/symbols/application/service/Studio.reset_preview.md) - `def reset_preview(self, case_id: str, expected: int, state: str | None=None) -> dict[str, Any]` in `application/service`.

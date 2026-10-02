@@ -53,3 +53,44 @@ body{font-size:14px}.muted{font-size:13px}.workspace-context strong,.case-headin
 .checkbox{min-height:44px;padding:8px 0;align-items:center}.option>button,#runtime-actions>button,#create,#propose,#reset,#verify,#approve,#apply{min-height:44px;font-size:13px;padding:9px 14px}.option details{width:100%}.option summary{min-height:32px}.section-heading{justify-content:flex-start;align-items:center;flex-wrap:wrap}.section-heading>button{margin-left:14px}.runtime-state{margin-top:14px}#trace:focus-visible{outline:2px solid #a3ceff;outline-offset:2px}#case-list button[aria-current=true]{border-left:3px solid #a8d0ff}
 @media(max-width:850px){.shell{grid-template-columns:0 0 minmax(0,1fr)}.editor-body{grid-template-columns:minmax(0,1fr) 0 0}}
 @media(max-width:540px){#reference-views{max-width:144px}#reference-views>summary{font-size:11px;padding:7px 9px}.reference-options{width:205px}.section-heading>button{margin-left:0}.option>button,#runtime-actions>button,#create,#propose,#reset,#verify,#approve,#apply{min-height:44px}.checkbox{padding:8px 0;align-items:flex-start}.checkbox input{margin-top:3px}}
+
+/* Focus is an explicit, reversible layout; all normal preferences remain intact. */
+body{grid-template-rows:auto auto minmax(0,1fr) 26px}
+.titlebar{min-height:46px;position:relative;z-index:20;overflow:visible}
+.title-actions{flex-wrap:wrap;padding-block:3px}
+#workspace-layout{position:relative;margin:0;flex:none}
+#layout-summary{min-height:36px;padding:7px 10px;color:var(--ink);cursor:pointer;border:1px solid var(--line);border-radius:5px}
+.layout-options{position:absolute;top:100%;right:0;width:210px;max-width:calc(100vw - 16px);padding:8px;background:#162a41;border:1px solid #476989;border-radius:6px;box-shadow:0 12px 28px #0007;z-index:25}
+.layout-options button.chrome-button{display:block;width:100%;min-height:44px;text-align:left;color:var(--ink);font-size:13px!important}
+.layout-options button[aria-expanded=true]::after{content:" · shown";color:#b5d7ff}
+.layout-options button[aria-expanded=false]::after{content:" · hidden";color:var(--muted)}
+#restore-workspace,#focus-problems{min-height:36px;white-space:nowrap}
+[hidden]{display:none!important}
+body[data-workspace-focused=true].panel-collapsed main{grid-template-rows:minmax(0,1fr) 0 0}
+body[data-workspace-focused=true].panel-collapsed #bottom-pane{display:none}
+.evidence-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+#focus-evidence{min-height:44px}
+.evidence-subject{padding:10px 12px;background:#0e1c2c;border-left:3px solid #779dcb;overflow-wrap:anywhere}
+.evidence-subject p{margin:3px 0;font-size:13px}
+.subject-warning,.evidence-blockers{color:#f0c1c6}
+.human-status{font-size:13px;color:#d6c3ee}
+.evidence-overview{margin-block:16px}
+.evidence-overview h3{font-size:14px;margin:16px 0 6px}
+.claim-list{margin:0;border:1px solid var(--line);border-radius:5px}
+.claim-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(120px,auto);gap:12px;padding:8px 12px;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
+.claim-row:last-child{border-bottom:0}.claim-row dt,.claim-row dd{margin:0}.claim-status{font-weight:600}
+.formal-list{display:block}.formal-item{padding:0;margin:6px 0;background:#102033}
+.formal-item>summary,.review-decision>summary,.evidence-identity>summary{min-height:44px;padding:10px 12px;cursor:pointer;overflow-wrap:anywhere}
+.formal-item>p,.formal-item>h4,.formal-item>ul,.formal-item>dl{margin:10px 16px}
+.evidence-metadata{display:grid;grid-template-columns:minmax(110px,auto) minmax(0,1fr);gap:6px 16px;overflow-wrap:anywhere}
+.evidence-metadata dt{color:var(--muted)}.evidence-metadata dd{margin:0;white-space:pre-wrap}
+.evidence-identity,.review-decision{margin:12px 0;border:1px solid var(--line);border-radius:5px}
+.evidence-identity>dl,.review-decision>form{margin:12px}
+.review-decision>summary{font-weight:600}
+@media(max-width:850px){.titlebar{flex-wrap:wrap;gap:4px;padding:5px 8px}.title-actions{flex:1;justify-content:flex-end}.title-actions .command-launch{margin-right:auto}.layout-options #toggle-explorer,.layout-options #toggle-inspector{display:block}}
+@media(max-width:540px){
+  body{grid-template-rows:auto auto minmax(0,1fr) 24px}.titlebar{overflow:visible}.title-actions{height:auto;min-height:44px;justify-content:flex-start;gap:5px}.title-actions .command-launch{min-height:36px}.title-actions #restore-workspace,.title-actions #focus-problems{font-size:12px!important;min-height:36px;padding:6px 8px}
+  #layout-summary{min-height:36px;font-size:13px}.layout-options{position:fixed;top:auto;right:8px;margin-top:2px}.claim-row{grid-template-columns:minmax(0,1fr) minmax(80px,auto);padding:8px;gap:8px;font-size:13px}.evidence-metadata{grid-template-columns:1fr;gap:3px}.evidence-metadata dd{margin-bottom:8px}
+}
+
+.source-freshness{padding:8px 16px;border-bottom:1px solid var(--line);font-size:12px;display:flex;gap:12px;align-items:center;justify-content:space-between}.source-freshness[hidden]{display:none}.source-freshness[data-status="stale"],.source-freshness[data-status="previous"],.source-freshness[data-status="unavailable"]{border-left:3px solid #f6bf66}

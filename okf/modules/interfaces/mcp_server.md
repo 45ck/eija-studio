@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/mcp_server.py
   title: interfaces/mcp_server.py
   hash_method: ast-api-v1
-  sha256: 2bbf0a1e2c4cfac7ff7f34d8adbf359da9d0b6e6144ab0ba29ca7fa800653074
-notes_baseline: 73edf76ae01fa26d72ebcaa68ef3db27c33c36814c3476d2841593deb7e490e6
+  sha256: e3a929d237e6a56270dc208ce8a0cd2cc28079a1980805f73aebd6ed093be58b
+notes_baseline: 0364013ec7c85d72006a91bf6e29a393bea85c61cd5f8b1c76d0f9bc6cc07947
 ---
 
 # interfaces.mcp_server

@@ -59,17 +59,23 @@ class Studio:
                 "connection": self.repository.snapshot() if self.repository is not None else None,
                 "source_review_required": not self.identity_provider()["trusted_fixture"]}
 
-    def repository_impact(self, term: str) -> dict[str, Any]:
+    def repository_impact(self, term: str, *, expected_source_hash: str | None = None) -> dict[str, Any]:
         """Known repository links only. This neither edits the repository nor grants evidence or authority."""
         if self.repository is None:
             return {"status": "unconfigured", "reason": "Start with --repo PATH to inspect a local repository"}
-        return self.repository.impact(term)
+        return self.repository.impact(term, expected_source_hash=expected_source_hash)
 
-    def repository_source(self, reference: str) -> dict[str, Any]:
+    def repository_source(self, reference: str, *, expected_source_hash: str | None = None) -> dict[str, Any]:
         """Bounded source view from the configured repository's captured nodes; no arbitrary path or execution."""
         if self.repository is None:
             return {"status": "unconfigured", "reason": "Start with --repo PATH to inspect a local repository"}
-        return self.repository.read_source(reference)
+        return self.repository.read_source(reference, expected_source_hash=expected_source_hash)
+
+    def repository_freshness(self, expected_source_hash: str) -> dict[str, Any]:
+        """Observe captured byte identity; this grants no source conformance, evidence or owner authority."""
+        if self.repository is None:
+            return {"status": "unconfigured", "reason": "Start with --repo PATH to inspect a local repository"}
+        return self.repository.freshness(expected_source_hash=expected_source_hash)
 
     @staticmethod
     def _case(u: UnitOfWork, case_id: str, expected: int | None = None, editable: bool = False) -> ChangeCase:

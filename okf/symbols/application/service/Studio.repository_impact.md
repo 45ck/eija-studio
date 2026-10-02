@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.repository_impact
   title: application/service.py
   hash_method: ast-v2
-  sha256: b6cc21469d9a1fed565d5ed087550ed4ea7e59e8b2244a49f3875a2bb29f54c0
-notes_baseline: 94e7708b3ade0dfc62f4d2e642a49b4d10352453a06d0bfca84750c582ac283c
+  sha256: efc3fdc1ebc960b0c5c22fef2867f470dbf080d600f4a79a081e40f9693f82db
+notes_baseline: 400d9c0bf27715951c8851ab0db336762a6d1a3df734041016681c6eb61cb83f
 ---
 
 # application.service.Studio.repository_impact
@@ -26,7 +26,7 @@ notes_baseline: 94e7708b3ade0dfc62f4d2e642a49b4d10352453a06d0bfca84750c582ac283c
 | Kind | method |
 | Module | [`application/service`](/modules/application/service.md) |
 | Class | [`Studio`](/symbols/application/service/Studio.md) |
-| Signature | `def repository_impact(self, term: str) -> dict[str, Any]` |
+| Signature | `def repository_impact(self, term: str, *, expected_source_hash: str \| None=None) -> dict[str, Any]` |
 | Code | `repo://src/eija_studio/application/service.py#Studio.repository_impact` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 

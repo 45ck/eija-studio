@@ -41,6 +41,8 @@ const sandbox = {
   $: get, el: () => new Element(), notice: () => {}, clearDiagnostic: () => {}, openIntent: () => {},
   document: {querySelectorAll: () => [], body: new Element()},
   captureTaskFocus: () => ({}), restoreTaskFocus: () => {},
+  // Source cancellation is covered with actual lifecycle functions in source-freshness.test.cjs.
+  cancelSourceRead: () => {},
   reportError: error => errors.push(error.message),
   api: async (path, body) => {
     requests.push({path, method: body === undefined ? "GET" : "POST"});

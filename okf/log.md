@@ -1,6 +1,7 @@
 # Update log
 
 ## 2026-10-02
+* **Linked source snapshot consistency**: synced the repository port, source/impact optional identity parameters, read-only freshness method and ADR-0147. Read the affected pages and updated the Studio Notes to distinguish byte identity from evidence and conformance. Review actor `process:codex-review-workspace`; functional and browser results remain separate.
 * **TLA evidence freshness**: synced the two TLA gate pages after enforcing successful child execution and a fresh report. Read both pages; neither has curated Notes. Notification concretisation now uses the pack's declared recipient. Regression and real conformance results remain separate execution evidence.
 * **Repository capture boundary**: synced the extracted bounded filesystem/Git capture adapter and its imports. The public source-navigation facade and capture policy are unchanged; neither affected module has curated Notes. Functional capture and source-refusal tests remain separate evidence.
 * **IDE recovery and source navigation**: synced the bounded source reader, injected source-facts profile and replay-based semantic history with ADR-0148. Re-read seven affected curated pages; updated Studio and ChangeCase Notes for source reads, immutable receipts and versioned undo/redo. Review actor is `process:codex-ide-integration`; browser and release results remain separate evidence.

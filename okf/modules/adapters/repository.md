@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/adapters/repository.py
   title: adapters/repository.py
   hash_method: ast-api-v1
-  sha256: d82e8a70eba3cb4dc2b3ddd1c260f16db9a4ce23c84667e035285f3656b5095a
-notes_baseline: 0d5db1c2d7cb826ea7d749cfa6bca1fdac81ef41c934f41a2d91d72b5f3b03aa
+  sha256: b92fbca836916427c96a9d5b49e94126763c6d8715733a97d3121bcf824331c4
+notes_baseline: 9196d9dcd6f114d46c1224db10c5aa2e0fe157494bf94dd34a37849b495a3e35
 ---
 
 # adapters.repository
