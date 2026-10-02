@@ -206,7 +206,7 @@ class RulesReview(Journey):
         next(t for t in expected["transitions"] if t["id"] == "TR-SAVE")["role"] = "Agent"
         assert view["case"]["candidate"] == expected, "Authorized role edit changed unrelated model facts"
         snapshot = self.snapshot()
-        self.page.locator('[data-bottom="history-pane"]').click()
+        self.open_bottom("history-pane")
         self.page.locator("#case-history .history-row").first.get_by_role("button", name="View model", exact=True).click()
         replay.expect(self.page.locator("#model-version")).to_have_value("history")
         self.canvas_matches(snapshot["history"]["selection"]["model"])

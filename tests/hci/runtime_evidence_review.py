@@ -36,6 +36,7 @@ class RuntimeReview(Journey):
         self.observations = []
         self.execute_fault = None
         self.case_get_fault = None
+        self.case_get_diagnostic = None
         self.held_route = None
         self.faults = []
 
@@ -65,10 +66,13 @@ class RuntimeReview(Journey):
         elif request.method == "GET" and path == self.case_get_fault:
             self.case_get_fault = None
             self.requests.append({"stage": self.stage, "method": request.method, "path": path})
-            self.faults.append({"stage": self.stage, "mode": "case-get-503", "path": path})
-            route.fulfill(status=503, content_type="application/json", body=json.dumps({
+            diagnostic, self.case_get_diagnostic = self.case_get_diagnostic, None
+            body = diagnostic or {
                 "code": "SYNTHETIC_REFRESH_UNAVAILABLE", "message": "Regression fixture: one refresh failed.",
-            }))
+            }
+            mode = "case-get-diagnostic-overflow" if diagnostic else "case-get-503"
+            self.faults.append({"stage": self.stage, "mode": mode, "path": path, "response": body})
+            route.fulfill(status=503, content_type="application/json", body=json.dumps(body))
         else:
             super().route(route)
 
@@ -225,7 +229,7 @@ class RuntimeReview(Journey):
             self.refresh()
             replay.expect(audit).to_have_attribute("open", "")
             assert json.loads(self.page.locator("#trace").text_content()) == after["observations"]
-            self.page.locator('[data-bottom="problems-pane"]').click()
+            self.open_bottom("problems-pane")
             replay.expect(self.page.locator("#problems")).to_be_visible()
             replay.expect(self.page.locator("#problems")).to_contain_text("SOURCE_REVIEW_REQUIRED")
             identity = self.page.locator("#runtime-attempt-details")
@@ -339,13 +343,13 @@ class RuntimeReview(Journey):
         replay.expect(self.page.locator("#runtime-state")).to_have_text("Not started")
         assert not self.page.locator("#runtime-result").get_attribute("data-operation-id"), "Candidate edit retained stale operation"
         assert not self.page.locator("#runtime-last-commit").text_content().strip(), "Candidate edit retained stale commit"
-        self.page.locator('[data-bottom="history-pane"]').click()
+        self.open_bottom("history-pane")
         self.page.locator("#history-undo").focus()
         self.page.locator("#history-undo").press("Enter")
         self.settled()
         assert self.view()["case"]["candidate"] == view["case"]["candidate"], "History undo from Run did not restore prior candidate"
         self.tab("evidence")
-        self.page.locator('[data-bottom="history-pane"]').click()
+        self.open_bottom("history-pane")
         self.page.locator("#history-redo").focus()
         self.page.locator("#history-redo").press("Enter")
         self.settled()
@@ -374,6 +378,215 @@ class RuntimeReview(Journey):
             self.shot("single-creation-entry-" + str(width))
         self.page.set_viewport_size({"width": 1440, "height": 900})
         return {"observations": observations, "case_creation_required_sidebar": False}
+
+    def raw_region_keyboard(self, selector, expected, label, *, status_text=False):
+        """Real Tab entry and native scrolling; content and server state have separate oracles."""
+        region = self.page.locator(selector)
+        entry_trail = []
+        if status_text:
+            entry = self.page.locator('.editor-navigation [data-tab][aria-current="page"]')
+            replay.expect(entry).to_have_count(1)
+            entry_view = entry.get_attribute("data-tab")
+            entry.focus()
+            for _ in range(6):
+                self.page.keyboard.press("Tab")
+                entry_trail.append(self.page.evaluate("() => ({id:document.activeElement.id, tag:document.activeElement.tagName})"))
+                if region.evaluate("n => document.activeElement === n"):
+                    break
+        else:
+            disclosure = region.locator("..")
+            summary = disclosure.locator(":scope > summary")
+            summary.focus()
+            if disclosure.get_attribute("open") is None:
+                summary.press("Enter")
+            summary.focus()
+            self.page.keyboard.press("Tab")
+        replay.expect(region).to_be_visible()
+        before_text = region.text_content()
+        actual = before_text if status_text else json.loads(before_text)
+        assert actual == expected, f"{selector}: raw data does not match its independent oracle"
+        replay.expect(region).to_be_focused()
+        replay.expect(region).to_have_attribute("role", "status" if status_text else "region")
+        replay.expect(region).to_have_attribute("aria-label", label)
+        if status_text:
+            replay.expect(region).to_have_attribute("aria-live", "polite")
+        geometry = region.evaluate("""n => {
+            const style = getComputedStyle(n);
+            return {clientHeight:n.clientHeight, scrollHeight:n.scrollHeight,
+                    focusVisible:n.matches(':focus-visible'), outlineStyle:style.outlineStyle,
+                    outlineWidth:parseFloat(style.outlineWidth), outlineColor:style.outlineColor};
+        }""")
+        assert geometry["scrollHeight"] > geometry["clientHeight"] + 2, f"{selector}: overflow was not exercised"
+        assert geometry["focusVisible"] and geometry["outlineStyle"] != "none" and geometry["outlineWidth"] >= 2
+        def capture_scroll(checkpoint):
+            observed = region.evaluate("""n => {
+                const chain = [];
+                for (let node = n; node; node = node.parentElement) {
+                    const rect = node.getBoundingClientRect(), style = getComputedStyle(node);
+                    chain.push({id:node.id, tag:node.tagName, scrollTop:node.scrollTop,
+                                scrollLeft:node.scrollLeft, clientHeight:node.clientHeight,
+                                scrollHeight:node.scrollHeight, overflowY:style.overflowY,
+                                rect:{x:rect.x,y:rect.y,width:rect.width,height:rect.height}});
+                }
+                return {viewport:[innerWidth,innerHeight], focused:document.activeElement===n,
+                        activeId:document.activeElement?.id, activeTag:document.activeElement?.tagName,
+                        nativeScroll:n.__eijaQaRawScroll || null, chain};
+            }""")
+            observations = getattr(self, "raw_scroll_observations", [])
+            observations.append({"region": selector, "checkpoint": checkpoint, **observed})
+            self.raw_scroll_observations = observations
+            write_json(self.out / "raw-scroll-observations.json", observations)
+
+        def arm_scroll_end(key):
+            supported = region.evaluate("""(n, key) => {
+                const state = {key, supported:'onscrollend' in n, ended:false, events:[]};
+                n.__eijaQaRawScroll = state;
+                if (state.supported) {
+                    const finished = event => {
+                        if (event.target !== n) return;
+                        state.events.push({type:event.type, isTrusted:event.isTrusted, scrollTop:n.scrollTop});
+                        state.ended = event.isTrusted;
+                        n.removeEventListener('scrollend', finished);
+                    };
+                    n.addEventListener('scrollend', finished);
+                }
+                return state.supported;
+            }""", key)
+            capture_scroll("armed-" + key)
+            assert supported, f"{selector}: NOT_RUN native scrollend is required for keyboard-scroll synchronization"
+
+        def wait_scroll_end():
+            self.page.wait_for_function("s => document.querySelector(s).__eijaQaRawScroll?.ended === true",
+                                        arg=selector)
+
+        capture_scroll("before-Control+Home")
+        try:
+            if region.evaluate("n => n.scrollTop") != 0:
+                arm_scroll_end("Control+Home")
+                region.press("Control+Home")
+                self.page.wait_for_function("s => document.querySelector(s).scrollTop === 0", arg=selector)
+                wait_scroll_end()
+                capture_scroll("Control+Home-scroll-complete")
+            else:
+                capture_scroll("Control+Home-skipped-already-at-top")
+            self.page.wait_for_function("s => document.querySelector(s).scrollTop === 0", arg=selector)
+            capture_scroll("at-top-before-PageDown")
+            arm_scroll_end("PageDown")
+            region.press("PageDown")
+            capture_scroll("PageDown-dispatched")
+            self.page.wait_for_function("s => document.querySelector(s).scrollTop > 0", arg=selector)
+            capture_scroll("PageDown-movement-observed")
+            wait_scroll_end()
+            after_scroll = region.evaluate("n => n.scrollTop")
+            assert after_scroll > 0, f"{selector}: native completion lost the required region scroll"
+            capture_scroll("PageDown-scroll-complete")
+        except Exception:
+            capture_scroll("scroll-failure")
+            viewport = self.page.viewport_size
+            self.shot(f"raw-scroll-failure-{selector.removeprefix('#')}-{viewport['width']}")
+            raise
+        if status_text:
+            self.shot(f"notice-keyboard-focused-{entry_view}-{self.page.viewport_size['width']}")
+        self.page.keyboard.press("Tab")
+        replay.expect(region).not_to_be_focused()
+        forward_exit = self.page.evaluate("() => document.activeElement.id || document.activeElement.tagName")
+        self.page.keyboard.press("Shift+Tab")
+        replay.expect(region).to_be_focused()
+        self.page.keyboard.press("Shift+Tab")
+        if status_text:
+            replay.expect(region).not_to_be_focused()
+            backward_exit = self.page.evaluate("() => document.activeElement.id || document.activeElement.tagName")
+        else:
+            replay.expect(summary).to_be_focused()
+            backward_exit = "parent summary"
+        assert region.text_content() == before_text, f"{selector}: navigation changed raw bytes"
+        return {"region": selector, "geometry": geometry, "scrollTopAfterPageDown": after_scroll,
+                "forwardExit": forward_exit, "backwardExit": backward_exit, "entryTrail": entry_trail,
+                "exact_data_unchanged": True}
+
+    def raw_diagnostics_keyboard(self):
+        """Opened overflow states: actual packet/audit and an explicitly synthetic oversized error."""
+        if self.page.url == "about:blank":
+            self.entry()
+        setup = self.fresh_preview()
+        self.execute("Propose", setup["agent"], 200)
+        before = self.view()
+        before_posts = len([r for r in self.requests if r["method"] == "POST"])
+        self.page.locator("#start-intent").click()
+        replay.expect(self.page.locator("#notice")).to_have_text("")
+        replay.expect(self.page.locator("#notice")).not_to_be_visible()
+        self.tab("try")
+        assert self.view() == before, "Opening an unsent intent changed the persisted subject"
+        assert len([r for r in self.requests if r["method"] == "POST"]) == before_posts
+        self.case_get_fault = "/api/cases/" + self.case_id
+        fixture = {
+            "code": "SYNTHETIC_DIAGNOSTIC_OVERFLOW",
+            "message": "Synthetic oversized diagnostic: keyboard scrolling coverage only; no kernel decision.",
+            "details": {"fixture": "raw-diagnostic-keyboard-overflow", "lines": [
+                f"Synthetic diagnostic line {number:02d}: retain this exact value while scrolling."
+                for number in range(48)
+            ]},
+        }
+        self.case_get_diagnostic = fixture
+        self.refresh()
+        expected_error = {"code": fixture["code"], "message": fixture["code"] + ": " + fixture["message"],
+                          "details": fixture["details"]}
+        assert self.view() == before, "The one-GET diagnostic fixture changed persisted data"
+        posts = len([r for r in self.requests if r["method"] == "POST"])
+        observations, audits = [], []
+        axe = replay.Axe.from_file(replay.AXE_FILE_PATH)
+        try:
+            for width, height in ((1440, 900), (1280, 800), (320, 800)):
+                self.page.set_viewport_size({"width": width, "height": height})
+                self.tab("try")
+                self.open_bottom("problems-pane")
+                rows = [self.raw_region_keyboard("#trace", before["observations"],
+                                                "Persisted audit and simulated outbox"),
+                        self.raw_region_keyboard("#error-json", expected_error, "Exact server diagnostic")]
+                for view in ("try", "evidence"):
+                    if view == "evidence":
+                        self.tab(view)
+                        rows.append(self.raw_region_keyboard("#packet", before["packet"],
+                                                             "Raw review packet and source-review boundary"))
+                    if width == 320:
+                        rows.append(self.raw_region_keyboard("#notice", expected_error["message"],
+                                                             "Workspace status and diagnostic", status_text=True))
+                    result = axe.run(self.page, options={
+                        "runOnly": {"type": "tag", "values": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"]},
+                        "resultTypes": ["violations", "incomplete"],
+                    }).response
+                    audits.append({"viewport": [width, height], "view": view, "axe_version": result["testEngine"]["version"],
+                                   "violations": result["violations"], "incomplete": result["incomplete"]})
+                    write_json(self.out / "axe-open-raw-diagnostics.json", audits)
+                    self.shot(f"raw-diagnostics-{view}-{width}")
+                observations.append({"viewport": [width, height], "regions": rows})
+                write_json(self.out / "raw-diagnostics-keyboard.json", observations)
+                assert self.view() == before, "Keyboard raw-data inspection changed persisted facts"
+                assert len([r for r in self.requests if r["method"] == "POST"]) == posts
+            # The behavioral oracle must detect deliberate removal from sequential keyboard navigation.
+            region = self.page.locator("#packet")
+            summary = region.locator("..").locator(":scope > summary")
+            original = region.get_attribute("tabindex")
+            try:
+                region.evaluate("n => n.tabIndex = -1")
+                summary.focus()
+                self.page.keyboard.press("Tab")
+                assert not region.evaluate("n => n === document.activeElement"), "Negative control did not omit keyboard entry"
+            finally:
+                region.evaluate("(n, value) => value === null ? n.removeAttribute('tabindex') : n.setAttribute('tabindex', value)", original)
+            summary.focus()
+            self.page.keyboard.press("Tab")
+            replay.expect(region).to_be_focused()
+            assert json.loads(region.text_content()) == before["packet"]
+            assert not any(audit["violations"] for audit in audits), "Opened raw-region axe violations: inspect retained report"
+        finally:
+            self.page.set_viewport_size({"width": 1440, "height": 900})
+        return {"viewports": observations, "error_fixture": fixture, "actual_packet_and_audit": True,
+                "notice_keyboard_scope": "Actual overflowing status on Run and Evidence at 320x800",
+                "empty_notice_hidden": True,
+                "persisted_data_unchanged": True, "keyboard_omission_control": True,
+                "axe_violations": 0, "axe_incomplete": sum(len(audit["incomplete"]) for audit in audits),
+                "scope": "Synthetic accessibility checks; not a human usability study or real oversized server failure."}
 
     def busy_keyboard(self):
         setup = self.fresh_preview()
@@ -413,7 +626,7 @@ def main():
         return 2
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path, required=True)
-    parser.add_argument("--scenario", choices=("baseline", "all"), default="baseline")
+    parser.add_argument("--scenario", choices=("baseline", "all", "diagnostics"), default="baseline")
     args = parser.parse_args()
     out = args.out.resolve()
     out.mkdir(parents=True, exist_ok=False)
@@ -444,8 +657,12 @@ def main():
                                  ("invalid-response-after-real-commit", review.invalid_response_unknown),
                                  ("committed-refresh-failed", review.committed_refresh_failed),
                                  ("context-history-isolation", review.context_isolation),
-                                 ("busy-keyboard-no-duplicate", review.busy_keyboard)]
+                                 ("busy-keyboard-no-duplicate", review.busy_keyboard),
+                                 ("raw-diagnostics-keyboard", review.raw_diagnostics_keyboard)]
                         result["not_run"] = ["human usability", "live provider", "owner approval/apply"]
+                    if args.scenario == "diagnostics":
+                        steps = [("raw-diagnostics-keyboard", review.raw_diagnostics_keyboard)]
+                        result["not_run"] = ["other runtime recovery scenarios", "human usability", "live provider", "owner approval/apply"]
                     for name, action in steps:
                         review.stage = name
                         evidence = action()
@@ -456,7 +673,7 @@ def main():
                     actual_errors = sorted((item["status"], item["path"]) for item in review.http_errors)
                     expected_errors = sorted([(item["status"], item["path"]) for item in review.runtime_responses
                                               if item["status"] >= 400]
-                                             + [(503, item["path"]) for item in review.faults if item["mode"] == "case-get-503"])
+                                             + [(503, item["path"]) for item in review.faults if item["mode"] in {"case-get-503", "case-get-diagnostic-overflow"}])
                     assert actual_errors == expected_errors, "Unexpected HTTP errors occurred beyond named controls"
                     result["status"] = "PASS"
                 finally:

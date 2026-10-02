@@ -2,7 +2,7 @@
 // Actual shell code in isolated DOM/storage adapters. Browser paint and human value remain separate.
 const {test}=require("node:test"),assert=require("node:assert/strict");
 const fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
-const shellPath=path.join(__dirname,"../../src/eija_studio/resources/web/shell.js");
+const shellPath=process.env.EIJA_SHELL_JS||path.join(process.env.EIJA_WEB_ROOT||path.join(__dirname,"../../src/eija_studio/resources/web"),"shell.js");
 const source=fs.readFileSync(shellPath,"utf8"),storageKey="eija-ui-layout";
 const normal={explorer:230,inspector:288,panel:160,explorerOpen:true,inspectorOpen:true,panelOpen:true};
 
@@ -19,27 +19,33 @@ function harness({code=source,stored=normal,storageFailure=false,compact=false}=
     getAttribute(name){return Object.hasOwn(this.attributes,name)?this.attributes[name]:null;}
     removeAttribute(name){delete this.attributes[name];if(name==="open")this.open=false;}
     contains(node){return this===node||this.children.some(child=>child.contains(node));}
-    closest(selector){for(let node=this;node;node=node.parentElement){if(selector.startsWith("button")&&node.tag==="button"&&(!selector.includes("#close-explorer")||node.id!=="close-explorer"))return node;if(selector.includes("details")&&node.tag==="details"&&(!selector.includes(":not([open])")||!node.open))return node;}return null;}
-    getClientRects(){if(this.rectangles)return this.rectangles;for(let node=this;node;node=node.parentElement){if(node.hidden)return [];if(node.tag==="details"&&!node.open&&this!==get("layout-summary"))return [];if(["explorer","inspector","panel"].includes(node.id)&&document.body.classList.contains(node.id+"-collapsed"))return [];}return [{}];}
+    closest(selector){for(let node=this;node;node=node.parentElement){if(selector.startsWith("button")&&node.tag==="button"&&(!selector.includes("#close-explorer")||node.id!=="close-explorer"))return node;if(selector.includes("details")&&node.tag==="details"&&(!selector.includes(":not([open])")||!node.open))return node;if(selector.startsWith("dialog")&&node.tag==="dialog"&&(!selector.includes("[open]")||node.open))return node;}return null;}
+    getClientRects(){if(this.rectangles)return this.rectangles;for(let node=this;node;node=node.parentElement){if(node.hidden)return [];if(node.tag==="dialog"&&!node.open)return [];if(node.tag==="details"&&!node.open&&!node.children.find(child=>child.tag==="summary")?.contains(this))return [];if(["explorer","inspector","panel"].includes(node.id)&&document.body.classList.contains(node.id+"-collapsed"))return [];}return [{}];}
     getBoundingClientRect(){return {x:0,y:0,width:800,height:400};}
     focus(){if(!this.getClientRects().length||["hidden","collapse"].includes(computedVisibility(this)))return;for(let ancestor=this.parentElement;ancestor;ancestor=ancestor.parentElement)if(ancestor.tag==="details"&&!ancestor.open&&this!==ancestor.children.find(child=>child.tag==="summary"))return;document.activeElement=this;focused.push(this.id);}
     querySelector(selector){return this.children.find(node=>node.tag===selector)||null;}
+    showModal(){if(this.open)throw new Error("dialog already open");this.open=true;this.modalInvoker=document.activeElement;}
+    close(){if(!this.open)return;this.open=false;this.modalInvoker?.focus();this.dispatch("close");}
     setPointerCapture(){}hasPointerCapture(){return false;}releasePointerCapture(){}
   }
-  function get(id){if(!nodes.has(id))nodes.set(id,new Element(id,id==="workspace-layout"?"details":id==="layout-summary"?"summary":"div"));return nodes.get(id);}
+  function get(id){if(!nodes.has(id))nodes.set(id,new Element(id,id==="workspace-layout"?"details":id==="workspace-layout-summary"?"summary":id.endsWith("dialog")||["command-palette","edit-preview"].includes(id)?"dialog":"div"));return nodes.get(id);}
   const bottomIds=["problems-pane","evidence-pane","history-pane"];
   const bottomTabs=bottomIds.map(id=>{const node=get("tab-"+id);node.dataset.bottom=id;return node;});
-  get("workspace-layout").append(get("layout-summary"),get("toggle-explorer"),get("toggle-inspector"),get("toggle-bottom"),get("reset-layout"));
+  get("workspace-layout").append(get("workspace-layout-summary"),get("toggle-explorer"),get("toggle-inspector"),get("toggle-bottom"),get("reset-layout"));
+  const workspaceViews=["model","change","impact","review","code","try","evidence","visual","source"].map(name=>{const node=get("workspace-view-"+name);node.dataset.workspaceView=name;return node;});
+  const workspacePanels=bottomIds.map(id=>{const node=get("workspace-panel-"+id);node.dataset.workspacePanel=id;return node;});
+  get("workspace-dialog").append(get("close-workspace"),...workspaceViews,...workspacePanels,get("workspace-layout"));
+  get("bottom-pane").append(...bottomTabs,...bottomIds.map(get),get("collapse-bottom"));
   get("explorer").append(get("close-explorer"));get("inspector").append(get("close-inspector"));
   const styleValues=new Map(),style={setProperty:(key,value)=>styleValues.set(key,value),getPropertyValue:key=>styleValues.get(key)};
-  document=listeners({body:get("body"),documentElement:{style},activeElement:get("body"),getElementById:get,createElement:tag=>new Element("",tag),querySelector:selector=>selector===".editor-navigation"?get("editor-navigation"):bottomTabs.find(tab=>selector===`[data-bottom="${tab.dataset.bottom}"]`)||null,querySelectorAll:selector=>selector==="[data-bottom]"?bottomTabs:selector===".bottom-tab"?bottomIds.map(get):[]});
+  document=listeners({body:get("body"),documentElement:{style},activeElement:get("body"),getElementById:get,createElement:tag=>new Element("",tag),querySelector:selector=>selector===".editor-navigation"?get("editor-navigation"):selector==="dialog[open]"?[...nodes.values()].find(node=>node.tag==="dialog"&&node.open)||null:bottomTabs.find(tab=>selector===`[data-bottom="${tab.dataset.bottom}"]`)||null,querySelectorAll:selector=>selector==="[data-bottom]"?bottomTabs:selector===".bottom-tab"?bottomIds.map(get):selector==="[data-workspace-view]"?workspaceViews:selector==="[data-workspace-panel]"?workspacePanels:selector==="dialog[open]"?[...nodes.values()].filter(node=>node.tag==="dialog"&&node.open):[]});
   const computedVisibility=node=>{for(let item=node;item;item=item.parentElement){if(item.style.visibility)return item.style.visibility;if(["explorer","inspector","panel"].includes(item.id)&&document.body.classList.contains(item.id+"-collapsed"))return "hidden";}return "visible";};
   const media=listeners({matches:compact}),window=listeners({matchMedia:()=>media,getComputedStyle:node=>({visibility:computedVisibility(node),display:node.hidden?"none":"block"})});
   const sessionStorage={getItem(key){if(storageFailure)throw new Error("storage unavailable");return storage.get(key)||null;},setItem(key,value){if(storageFailure)throw new Error("storage unavailable");writes.push([key,value]);storage.set(key,value);}};
   const sandbox={module:{exports:{}},document,window,sessionStorage,ResizeObserver:class{observe(){}},console,fetch(){throw new Error("Layout must not make a request");}};
   vm.createContext(sandbox);vm.runInContext(code,sandbox,{filename:shellPath});const shell=sandbox.module.exports;
   shell.init({newIntent:()=>callbacks.push("newIntent"),openTab:name=>callbacks.push(["openTab",name])});
-  return {shell,get,document,media,writes,callbacks,focused,styleValues,stored:()=>JSON.parse(storage.get(storageKey)||"null"),pane(key){return !document.body.classList.contains(key+"-collapsed");},assertPane(key,open){assert.equal(this.pane(key),open,key+" painted layout class");assert.equal(get(key==="panel"?"toggle-bottom":"toggle-"+key).getAttribute("aria-expanded"),String(open),key+" toggle ARIA");}};
+  return {shell,get,document,media,writes,callbacks,focused,styleValues,workspaceViews,workspacePanels,stored:()=>JSON.parse(storage.get(storageKey)||"null"),pane(key){return !document.body.classList.contains(key+"-collapsed");},assertPane(key,open){assert.equal(this.pane(key),open,key+" painted layout class");assert.equal(get(key==="panel"?"toggle-bottom":"toggle-"+key).getAttribute("aria-expanded"),String(open),key+" toggle ARIA");}};
 }
 function assertNormalPreserved(h){
   const before=h.stored();h.shell.focusWorkspace(true);
@@ -133,17 +139,17 @@ test("focus presentation leaves exact subject, source selection, historical prev
 
 test("restoring an unavailable invoker and closing compact drawers return focus to visible controls",()=>{
   const h=harness();h.get("focus-evidence").focus();h.shell.focusWorkspace(true);h.get("focus-evidence").hidden=true;h.shell.focusWorkspace(false);
-  assert.equal(h.document.activeElement,h.get("layout-summary"));assert.ok(h.document.activeElement.getClientRects().length);
+  assert.equal(h.document.activeElement,h.get("open-workspace"));assert.ok(h.document.activeElement.getClientRects().length);
   h.shell.resizeMode(true);h.shell.focusWorkspace(true);h.shell.toggle("explorer",true);h.get("close-explorer").onclick();
-  h.assertPane("explorer",false);assert.ok(h.document.activeElement.getClientRects().length,"drawer close must not focus a toggle inside closed Layout");assert.equal(h.document.activeElement,h.get("layout-summary"));
-  h.shell.toggle("inspector",true);h.document.dispatch("keydown",{key:"Escape"});h.assertPane("inspector",false);assert.equal(h.document.activeElement,h.get("layout-summary"));assert.ok(h.document.activeElement.getClientRects().length);
+  h.assertPane("explorer",false);assert.ok(h.document.activeElement.getClientRects().length,"drawer close must not focus a toggle inside closed Workspace");assert.equal(h.document.activeElement,h.get("open-workspace"));
+  h.shell.toggle("inspector",true);h.document.dispatch("keydown",{key:"Escape"});h.assertPane("inspector",false);assert.equal(h.document.activeElement,h.get("open-workspace"));assert.ok(h.document.activeElement.getClientRects().length);
 });
 
 function assertStyledInvokerFallback(h,visibility){
   const invoker=h.get("focus-origin");invoker.rectangles=[{width:180,height:32}];invoker.focus();
   h.shell.focusWorkspace(true);invoker.style.visibility=visibility;
   assert.ok(invoker.getClientRects().length,"CSS-hidden controls can retain layout rectangles");
-  h.shell.focusWorkspace(false);assert.equal(h.document.activeElement.id,"layout-summary",visibility+" invoker must fall back to visible Layout");
+  h.shell.focusWorkspace(false);assert.equal(h.document.activeElement.id,"open-workspace",visibility+" invoker must fall back to visible Workspace");
 }
 
 test("restore rejects hidden or collapsed CSS invokers even when layout rectangles remain",()=>{
@@ -151,10 +157,10 @@ test("restore rejects hidden or collapsed CSS invokers even when layout rectangl
 });
 
 test("restore rejects an invoker in closed native details despite retained layout rectangles",()=>{
-  const h=harness(),details=h.get("workspace-layout"),invoker=h.get("toggle-explorer");
+  const h=harness(),details=h.document.createElement("details"),invoker=h.get("nested-details-invoker");details.append(invoker);
   details.open=true;invoker.rectangles=[{width:180,height:32}];invoker.focus();assert.equal(h.document.activeElement,invoker);
-  h.shell.focusWorkspace(true);assert.equal(details.open,false);assert.ok(invoker.getClientRects().length);
-  h.shell.focusWorkspace(false);assert.equal(h.document.activeElement,h.get("layout-summary"));assert.ok(h.document.activeElement.getClientRects().length);
+  h.shell.focusWorkspace(true);details.open=false;assert.ok(invoker.getClientRects().length);
+  h.shell.focusWorkspace(false);assert.equal(h.document.activeElement,h.get("open-workspace"));assert.ok(h.document.activeElement.getClientRects().length);
 });
 
 test("normal-preference oracle rejects an actual-shell mutation that persists focus closures",()=>{

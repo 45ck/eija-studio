@@ -83,7 +83,7 @@ test("temporary errors during focus preserve stored choices, current context and
 test("reset action clears legacy and per-area visibility, exits focus and retains independent sizes",()=>{
   const h=harness({stored:{...normal,explorer:306,inspector:330,panel:218,explorerOpen:false}});
   h.shell.setArea("evidence");h.shell.toggle("inspector",true);h.shell.toggle("panel",true);h.shell.focusWorkspace(true);h.shell.reveal("inspector");
-  h.get("workspace-layout").open=true;h.get("reset-layout").onclick();assert.equal(h.shell.isFocused(),false);assert.equal(h.get("workspace-layout").open,false);assert.equal(h.document.activeElement,h.get("layout-summary"));
+  h.get("open-workspace").onclick();h.get("workspace-layout").open=true;h.get("reset-layout").onclick();assert.equal(h.shell.isFocused(),false);assert.equal(h.get("workspace-dialog").open,false);assert.equal(h.document.activeElement,h.get("open-workspace"));
   assertTaskDefaults(h);assert.equal(h.styleValues.get("--explorer-size"),"306px");assert.equal(h.styleValues.get("--inspector-size"),"330px");assert.equal(h.styleValues.get("--panel-size"),"218px");
   assertTaskDefaults(harness({stored:h.stored()}));assert.deepEqual(h.callbacks,[]);
 });

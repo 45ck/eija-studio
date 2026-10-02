@@ -236,7 +236,7 @@ class Journey(replay.Review):
         self.switch_case(first)
         self.edit_role()
         before_first, before_second = self.snapshot(first), self.snapshot(second)
-        self.page.locator('[data-bottom="history-pane"]').click()
+        self.open_bottom("history-pane")
         self.page.locator("#case-history .history-row").first.get_by_role("button", name="View model").click()
         historical = before_first["history"]["selection"]["model"]
         self.canvas_matches(historical)

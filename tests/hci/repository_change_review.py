@@ -363,7 +363,7 @@ class RepositoryReview(replay.Review):
         replay.expect(local).to_be_visible()
         local.click()
         self.navigation_action("click", "#comparison-code-tab")
-        replay.expect(self.page.locator('[data-tab="review"]')).to_have_attribute("aria-selected", "true")
+        replay.expect(self.page.locator('[data-tab="review"]')).to_have_attribute("aria-current", "page")
         replay.expect(local).to_have_attribute("aria-selected", "true")
         replay.expect(self.page.locator("#repository-changes")).to_be_visible()
         replay.expect(self.page.locator("#review")).to_be_hidden()

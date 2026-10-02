@@ -98,16 +98,43 @@ function restoreTaskFocus(previous){
   if(available(target))target.focus();
 }
 async function task(fn,message="Working…"){if(busy)return;const previousFocus=captureTaskFocus();busy=true;notice(message);$("status-agent").textContent=message;document.body.setAttribute("aria-busy","true");try{await fn();}catch(e){reportError(e);}finally{busy=false;$("status-agent").textContent="Provider idle";document.body.removeAttribute("aria-busy");restoreTaskFocus(previousFocus);}}
-async function cases() {
-  const data=await api("cases"),list=$("case-list"),select=$("case-switcher");list.replaceChildren();select.replaceChildren();
-  const empty=el("option",data.length?"Choose a change case…":"No change cases yet");empty.value="";select.append(empty);
-  for(const c of data){const b=el("button",c.request.slice(0,90),current?.case.id===c.id?"selected":"");b.append(el("small",c.stage));if(current?.case.id===c.id)b.setAttribute("aria-current","true");b.title=c.request;b.onclick=()=>task(async()=>{await load(c.id);notice("");});list.append(b);
-    const option=el("option",c.request.slice(0,65));option.value=c.id;select.append(option);}
-  select.value=current?.case.id||"";
-  if(!data.length)list.append(el("p","Start an intent to create a case.","muted"));
+let caseInventory=null, caseListState="loading", caseListSequence=0;
+function renderCasePicker(){
+  const select=$("case-switcher"),message=$("case-picker-status"),active=current?.case;
+  const entries=(caseInventory||[]).map(item=>item.id===active?.id?active:item),retained=active&&!entries.some(item=>item.id===active.id);
+  if(retained)entries.unshift(active);
+  const empty=caseListState==="ready"&&!entries.length,options=[];
+  const placeholder=el("option",empty?"No change cases yet":caseListState==="loading"&&!entries.length?"Loading change cases…":caseListState==="unavailable"&&!entries.length?"Case list unavailable":"Choose a change case…");placeholder.value="";options.push(placeholder);
+  for(const item of entries){const option=el("option",`${item.request} · ${item.stage} · ${item.id}`);option.value=item.id;option.title=item.request;options.push(option);}
+  select.replaceChildren(...options);select.value=active?.id||"";select.hidden=empty;select.disabled=!entries.length;
+  select.dataset.listState=caseListState;$("case-picker-label").hidden=empty;
+  const retainedMessage=entries.length?" Retained choices are shown; their list status may be older.":"";
+  message.textContent=caseListState==="loading"?`Refreshing case list…${retainedMessage}`:caseListState==="unavailable"?`Case list unavailable.${retainedMessage} Refresh the list to try again.`:empty?"No change cases yet.":retained?"The current case is the last loaded snapshot; it is absent from the latest case list.":"";
+  message.hidden=!message.textContent;$("case-picker-retry").hidden=caseListState!=="unavailable";
 }
+function focusCasePicker(){
+  const select=$("case-switcher");
+  const target=!select.hidden&&!select.disabled?select:caseListState==="unavailable"?$("case-picker-retry"):caseListState==="ready"?$("start-intent"):$("case-picker-status");target.focus();
+}
+async function cases() {
+  const sequence=++caseListSequence;caseListState="loading";renderCasePicker();
+  try{
+    const data=await api("cases");if(sequence!==caseListSequence)return false;
+    if(!Array.isArray(data)||data.some(item=>!item||typeof item.id!=="string"||!item.id||typeof item.request!=="string"||typeof item.stage!=="string")||new Set(data.map(item=>item.id)).size!==data.length)throw new ApiError("CASE_LIST_INVALID","The server did not provide a valid change case list.");
+    caseInventory=data;caseListState="ready";renderCasePicker();return true;
+  }catch(error){if(sequence!==caseListSequence)return false;caseListState="unavailable";renderCasePicker();throw error;}
+}
+
 let lastComparisonTab="review";
+const workDestinations = [["model","Model"],["code","Source"],["change","Intent"],["review","Changes"],["try","Run"],["evidence","Evidence"],["impact","Rules & ripple"],["visual","Diagrams"],["source","Repository"]];
 function openWorkTab(name){switchTab(name==="review"?lastComparisonTab:name);}
+function openWorkDestination(name){
+  if(!workDestinations.some(([id])=>id===name))return;
+  openWorkTab(name);
+  const primary=["review","repository-changes"].includes(tab)?"review":tab;
+  const target=document.querySelector(`[data-tab="${primary}"]`)||$(tab);
+  if(target?.getClientRects().length)target.focus();
+}
 function switchTab(name) {
   const focused=document.activeElement;
   const comparing=["review","repository-changes"].includes(name),primary=comparing?"review":name;
@@ -115,21 +142,24 @@ function switchTab(name) {
   if(comparing)lastComparisonTab=name;
   tab = name;EijaShell.setArea(name); if (name === "visual") loadVisual();
   if(name === "change" && !current) $("create-panel").hidden=false;
-  document.querySelectorAll(".tab-content").forEach(x => {x.hidden = x.id !== (comparing?"comparison-workspace":name); x.setAttribute("role", "tabpanel");});
-  document.querySelectorAll("[data-tab]").forEach(x => {const selected = x.dataset.tab === primary; x.classList.toggle("active", selected); x.setAttribute("aria-selected", String(selected)); x.tabIndex = selected ? 0 : -1;});
+  document.querySelectorAll(".tab-content").forEach(x => {x.hidden = x.id !== (comparing?"comparison-workspace":name); x.setAttribute("role", "region");});
+  document.querySelectorAll("[data-tab], [data-workspace-view]").forEach(x => {
+    const selected=(x.dataset.tab||x.dataset.workspaceView)===primary;x.classList.toggle("active",selected);
+    if(selected)x.setAttribute("aria-current","page");else x.removeAttribute("aria-current");
+  });
   document.querySelectorAll("[data-comparison-tab]").forEach(button=>{
     const selected=button.dataset.comparisonTab===lastComparisonTab;button.setAttribute("aria-selected",String(selected));button.tabIndex=selected?0:-1;
     $(button.dataset.comparisonTab).hidden=button.dataset.comparisonTab!==name;
   });
   $("comparison-workspace").dataset.comparisonView=lastComparisonTab;
-  for(const group of document.querySelectorAll('[role="tablist"]')){const tabs=[...group.querySelectorAll('[data-tab]')];if(tabs.length&&!tabs.some(button=>button.tabIndex===0))tabs[0].tabIndex=0;}
-  const reference=$("reference-views"),selectedReference=reference.querySelector('[aria-selected="true"]');reference.dataset.active=String(!!selectedReference);reference.querySelector("summary").textContent=selectedReference?`Reference: ${selectedReference.textContent}`:"Reference views";
+  const secondary=!document.querySelector(`[data-tab="${primary}"]`),destination=$("workspace-destination");
+  destination.hidden=!secondary;destination.textContent=secondary?` · ${workDestinations.find(([id])=>id===primary)?.[1]||primary}`:"";
   if(name === "model" && workbench)EijaShell.mountCanvas(`${current?.case.id||workbench.pack.id}:${modelView}`);
   if(name === "evidence")renderEvidenceContext();
   renderNavigator();
   if(hidingComparisonFocus&&[focused,document.body,document.documentElement].includes(document.activeElement)){
     const target=document.querySelector(comparing?`[data-comparison-tab="${name}"]`:`[data-tab="${primary}"]`);
-    if(target?.getClientRects().length)target.focus();
+    if(target?.getClientRects().length)target.focus();else if($(name)?.getClientRects().length)$(name).focus();
   }
 }
 function formalList(parent,title,items){if(!items||!items.length)return;parent.append(el("h4",title));const ul=el("ul");for(const x of items)ul.append(el("li",typeof x==="string"?x:JSON.stringify(x)));parent.append(ul);}
@@ -377,7 +407,7 @@ for(const id of ["save","discard","edit-rule","edit-state","move-node","verify",
 renderWorkbench(); renderChanges();
 renderRuntime();
 renderEvidencePacket(p);$("approve").disabled=!p.eligible||closed||c.stage==="APPROVED";$("apply").disabled=c.stage!=="APPROVED"||!p.eligible;$("export").disabled=false;switchTab(tab);}
-$("create").onclick=()=>task(async()=>{const c=await api("cases",{request:$("request").value});tab="change";editId=null;await load(c.id);notice("Case created. No provider call or baseline change has occurred.");});document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{openWorkTab(b.dataset.tab);if(b.closest("#reference-views")){$("reference-views").open=false;$("reference-views").querySelector("summary").focus();}});
+$("create").onclick=()=>task(async()=>{const c=await api("cases",{request:$("request").value});tab="change";editId=null;await load(c.id);notice("Case created. No provider call or baseline change has occurred.");});document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>openWorkDestination(b.dataset.tab));
 $("propose").onclick=()=>task(async()=>{await command("propose",{consent:$("egress").checked});notice("Interpretations received. No meaning was selected automatically.");},"Requesting an untrusted proposal…");
 $("save").onclick=()=>task(async()=>{await command("save");notice("Review checkpoint saved; the active baseline is unchanged.");});$("discard").onclick=()=>task(async()=>{await command("discard");clearRuntime();render();notice("Candidate closed. History is retained; the baseline is unchanged.");});
 function edit(source) {return commitChoice(choiceFor("retarget_source", "state:" + source));}
@@ -760,10 +790,9 @@ $("comparison-tabs").addEventListener("keydown",event=>{
   if(next){event.preventDefault();switchTab(next.dataset.comparisonTab);next.focus();}
 });
 
-$("reference-views").addEventListener("keydown",event=>{if(event.key==="Escape"){$("reference-views").open=false;$("reference-views").querySelector("summary").focus();event.stopPropagation();}});
-document.addEventListener("pointerdown",event=>{if(!$("reference-views").contains(event.target))$("reference-views").open=false;});
 const paletteCommands = [
   ["New change case",openIntent],
+  ["Switch change case",focusCasePicker],
   ["Toggle explorer",()=>EijaShell.toggle("explorer")],
   ["Toggle inspector",()=>EijaShell.toggle("inspector")],
   ["Toggle lower panel",()=>EijaShell.toggle("panel")],
@@ -771,7 +800,7 @@ const paletteCommands = [
   ["Restore workspace",()=>EijaShell.focusWorkspace(false)],
   ["Show local case history",()=>EijaShell.bottom("history-pane")],
   ["Fit model overview",()=>{switchTab("model");EijaShell.fit();}],
-  ...[...document.querySelectorAll("[data-tab]")].map(button => [`Open ${button.textContent}`, () => {openWorkTab(button.dataset.tab); button.focus();}]),
+  ...workDestinations.map(([name,label])=>[`Open ${label}`,()=>openWorkDestination(name)]),
   ["Open Model changes",()=>{switchTab("review");$("comparison-model-tab").focus();}],
   ["Open Code changes",()=>{switchTab("repository-changes");$("comparison-code-tab").focus();}],
   ["Focus domain explorer", () => {navigatorMode="domain";renderNavigator();EijaShell.reveal("explorer");$("domain-tree").querySelector('[tabindex="0"]')?.focus();}],
@@ -789,7 +818,7 @@ function filterCommands() {
   }
   if (!root.childElementCount) root.append(el("p", "No matching commands."));
 }
-function openPalette() {$("palette-search").value = ""; filterCommands(); $("command-palette").showModal(); $("palette-search").focus();}
+function openPalette() {if(document.querySelector("dialog[open]"))return;$("palette-search").value = ""; filterCommands(); $("command-palette").showModal(); $("palette-search").focus();}
 $("open-palette").onclick = openPalette; $("close-palette").onclick = () => $("command-palette").close();
 $("palette-search").oninput = filterCommands;
 $("palette-search").onkeydown = event => {if (["ArrowDown", "Enter"].includes(event.key)) {event.preventDefault(); $("palette-results").querySelector("button")?.focus();}};
@@ -851,6 +880,7 @@ async function refreshSource(refreshBaseline=false){
 function previewHistory(model,label){historyModel=model;historyLabel=label;modelView="history";editId=null;inspectorSelection=null;switchTab("model");renderWorkbench();notice("Historical model preview · read only. Use Working model to return to the current candidate.");}
 function openIntent(){switchTab("change");$("create-panel").hidden=false;$("request").focus();notice("");}
 $("case-switcher").onchange=event=>{const id=event.target.value;$("case-switcher").value=current?.case.id||"";if(id)task(async()=>{try{await load(id);notice("");}finally{$("case-switcher").value=current?.case.id||"";}});};
+$("case-picker-retry").onclick=()=>task(async()=>{const invoker=document.activeElement;if(await cases()){clearDiagnostic();notice("Case list refreshed from the server.");if(invoker===$("case-picker-retry")&&[invoker,document.body,document.documentElement].includes(document.activeElement))focusCasePicker();}},"Refreshing case list…");
 $("canvas-direction").onchange=event=>{canvasDirection=event.target.value;renderCanvas();EijaShell.readable();};
 $("model-version").onchange=event=>{modelView=event.target.value;renderWorkbench();};
 async function openSource(reference,record=true,navigate=true){
@@ -885,7 +915,7 @@ $("source-back").onclick=previousSource;
 $("undo-edit").onclick=()=>task(async()=>{if(!current||editNeedsRefresh.has(current.case.id)||!caseHistory?.can_undo||["APPLIED","DISCARDED"].includes(current.case.stage))return;await command("undo");clearRuntime();modelView="working";render();notice("Last semantic edit undone by the kernel. Earlier receipts are retained; eligibility is recomputed.");});
 $("redo-edit").onclick=()=>task(async()=>{if(!current||editNeedsRefresh.has(current.case.id)||!caseHistory?.can_redo||["APPLIED","DISCARDED"].includes(current.case.stage))return;await command("redo");clearRuntime();modelView="working";render();notice("Semantic edit reapplied by the kernel. The displayed model was reloaded from the server.");});
 $("history-undo").onclick=$("undo-edit").onclick;$("history-redo").onclick=$("redo-edit").onclick;
-EijaShell.init({newIntent:openIntent,openTab:switchTab});
+EijaShell.init({newIntent:openIntent,openTab:openWorkDestination});
 let repositoryReview=null,repositoryComparison=null,repositoryFile=null,repositorySelection=null,repositoryView="diff";
 let repositoryGeneration=0,repositoryFileGeneration=0,repositoryRenderGeneration=0;
 let repositoryLoading=null,repositoryPendingPair=null,repositoryPendingSelection=null,repositoryError=null,repositoryDiagnostic=null;

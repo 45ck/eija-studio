@@ -103,7 +103,7 @@ class Step:
 
 ANSWERS = (("authority", "Registrar"), ("assignment", "No"), ("reject_entry", "Recommended"))
 REQUEST = "Let teachers sign off excursions."
-TABS = Decision("choose a work area", (".tabs button", "#reference-views > summary"))
+TABS = Decision("choose a work area", (".tabs button", "#open-workspace"))
 ACTION_CHOICE = Decision("choose a lifecycle action", ("#runtime-actions button",))
 ACTOR_CHOICE = Decision("choose the acting role", ("#actor option",))
 
@@ -185,6 +185,7 @@ class Runner:
         self.pointer_targets: list[dict] = []
         self.steps: list[dict] = []
         self.views: dict[str, dict] = {}
+        self.audit_navigation: list[dict] = []
         self.errors: list[str] = []
         self.http_failures: list[dict] = []
         self.current_step = "load"
@@ -420,16 +421,45 @@ class Runner:
         record["target"] = {"name": info["name"], "selector": info["selector"], "effective": info["effective"], "raw": info["raw"]}
 
     # -- audits
+    def _observe_workspace_choices(self, tab: str) -> None:
+        """Checkpoint the complete route inventory and the choices actually visible in the open dialog."""
+        choices_selector = "#workspace-dialog [data-workspace-view]"
+        choices = self.page.locator(choices_selector).evaluate_all(
+            "nodes => nodes.map(node => ({view:node.dataset.workspaceView, name:node.textContent.trim(), disabled:node.disabled}))")
+        count = self.page.evaluate("(s) => window.__hci.choices(s)", [choices_selector])
+        expected = {"model", "code", "change", "review", "try", "evidence", "impact", "visual", "source"}
+        if (len(choices) != 9 or {choice["view"] for choice in choices} != expected
+                or any(choice["disabled"] for choice in choices) or not 0 < count <= 9):
+            raise JourneyError("Workspace did not expose all nine work-view choices")
+        geometry = self.page.evaluate("() => window.__hci.geometry()")
+        observation = {"action": "observe_choices", "selectors": [choices_selector],
+                       "inventory_count": len(choices), "n_choices": count,
+                       "choices": choices, "view": tab, "geometry": geometry}
+        self.audit_navigation.append(observation)
+        checkpoint = f'workspace-menu-{geometry["innerWidth"]}-{tab}'
+        self.checkpoint(checkpoint)
+        self.views[checkpoint]["work_view_choices"] = observation
+
     def _open_audit_tab(self, tab: str) -> None:
-        """Unmodelled audit navigation includes opening the native reference-view disclosure."""
-        target = self.page.locator(f'[data-tab="{tab}"]')
-        if not target.is_visible():
-            disclosure = self.page.locator("#reference-views")
-            if disclosure.count() and disclosure.get_attribute("open") is None:
-                disclosure.locator("summary").click()
+        """Record real audit navigation separately from the modelled owner journey."""
+        selector = f'[data-tab="{tab}"]'
+        target, dialog = self.page.locator(selector), self.page.locator("#workspace-dialog")
+        via_workspace = dialog.is_visible() or target.count() != 1 or not target.is_visible()
+        if via_workspace:
+            if not dialog.is_visible():
+                self.page.locator("#open-workspace").click()
+                self.audit_navigation.append({"action": "click", "selector": "#open-workspace", "view": tab})
                 self.settle()
+            if not dialog.is_visible():
+                raise JourneyError("Workspace dialog did not open for audit navigation")
+            self._observe_workspace_choices(tab)
+            selector = f'[data-workspace-view="{tab}"]'
+            target = self.page.locator(selector)
         target.click()
+        self.audit_navigation.append({"action": "click", "selector": selector, "view": tab})
         self.settle()
+        if via_workspace and dialog.is_visible():
+            raise JourneyError("Workspace dialog stayed open after audit navigation")
 
     def _audit_visit(self, tab: str) -> None:
         """Visit a work area only to audit it (not part of the modelled journey)."""
@@ -529,6 +559,7 @@ def run_pass(browser, modality: str, *, audit: bool, label: str, identity: str =
             return {
                 "modality": modality, "steps": runner.steps, "operators": runner.operators,
                 "pointer_targets": runner.pointer_targets, "views": runner.views,
+                "audit_navigation": runner.audit_navigation,
                 "responsive": responsive, "errors": runner.errors, "http_failures": runner.http_failures,
             }
         finally:

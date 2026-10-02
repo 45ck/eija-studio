@@ -200,15 +200,30 @@ test("actual task navigator keeps Code changes and model Changes roots distinct 
   assert.deepEqual(writes,[["eija-ui-navigator","domain"]]);
 });
 
-test("actual six primary tabs keep Changes at work-area level and navigation within each tablist",()=>{
-  const html=fs.readFileSync(path.join(__dirname,"../../src/eija_studio/resources/web/index.html"),"utf8"),mainMarkup=html.match(/<nav\b[^>]*aria-label="Work tabs"[^>]*>([\s\S]*?)<\/nav>/)?.[1];assert.ok(mainMarkup);
-  const names=[...mainMarkup.matchAll(/data-tab="([^"]+)"/g)].map(match=>match[1]);assert.equal(names.length,6);assert.ok(names.includes("review"));assert.ok(!names.includes("repository-changes"));
-  let handler,focused=null;const opened=[];
-  const group=names=>{const owner={querySelectorAll:selector=>{assert.equal(selector,"[data-tab]");return owner.buttons;}};owner.buttons=names.map(name=>({dataset:{tab:name},closest:selector=>{assert.equal(selector,'[role="tablist"]');return owner;},focus(){focused=name;}}));return owner;};
-  const main=group(names),reference=group(["impact","visual","source"]),context={document:{querySelector:selector=>{assert.equal(selector,".editor-navigation");return {addEventListener:(name,fn)=>{assert.equal(name,"keydown");handler=fn;}};}},switchTab:tab=>opened.push(tab),openWorkTab:tab=>opened.push(tab)};
-  const start=app.indexOf('document.querySelector(".editor-navigation").addEventListener("keydown"'),finish=app.indexOf('\ndocument.querySelectorAll("[data-comparison-tab]")',start);assert.ok(start>=0&&finish>start);vm.createContext(context);vm.runInContext(app.slice(start,finish),context);
-  const press=(owner,tab,key,expected)=>{let prevented=false;handler({target:owner.buttons.find(button=>button.dataset.tab===tab),key,preventDefault(){prevented=true;}});assert.equal(prevented,true);assert.equal(opened.at(-1),expected);assert.equal(focused,expected);};
-  press(main,"review","ArrowLeft","change");press(main,"review","ArrowRight","try");press(main,"review","Home","model");press(main,"review","End","evidence");press(reference,"impact","ArrowLeft","source");press(reference,"source","Home","impact");
+test("six native primary destinations keep Changes at work-area level and comparison tabs keep local navigation",()=>{
+  const html=fs.readFileSync(path.join(__dirname,"../../src/eija_studio/resources/web/index.html"),"utf8"),mainMarkup=html.match(/<nav\b[^>]*aria-label="Work views"[^>]*>[\s\S]*?<\/nav>/)?.[0];assert.ok(mainMarkup);
+  const attributes=tag=>Object.fromEntries([...tag.matchAll(/([\w-]+)="([^"]*)"/g)].map(match=>[match[1],match[2]]));
+  const primaryTags=[...mainMarkup.matchAll(/<button\b[^>]*>/g)].map(match=>attributes(match[0]));
+  assert.deepEqual(primaryTags.map(tag=>tag["data-tab"]),["model","code","change","review","try","evidence"]);
+  assert.equal(attributes(mainMarkup.match(/<nav\b[^>]*>/)[0]).role,undefined);
+  for(const tag of primaryTags){assert.equal(tag.role,undefined);assert.equal(tag["aria-selected"],undefined);assert.ok(tag.tabindex===undefined||tag.tabindex==="0");assert.equal(tag["aria-current"],tag["data-tab"]==="model"?"page":undefined);}
+  assert.equal(primaryTags.find(tag=>tag["data-tab"]==="review")["aria-controls"],"comparison-workspace");
+  const localMarkup=html.match(/<nav\b[^>]*id="comparison-tabs"[^>]*>[\s\S]*?<\/nav>/)?.[0];assert.ok(localMarkup);
+  assert.equal(attributes(localMarkup.match(/<nav\b[^>]*>/)[0]).role,"tablist");
+  const localTags=[...localMarkup.matchAll(/<button\b[^>]*>/g)].map(match=>attributes(match[0]));
+  assert.deepEqual(localTags.map(tag=>tag["data-comparison-tab"]),["review","repository-changes"]);
+  for(const tag of localTags){const selected=tag["data-comparison-tab"]==="review";assert.equal(tag.role,"tab");assert.equal(tag["aria-controls"],tag["data-comparison-tab"]);assert.equal(tag["aria-selected"],String(selected));assert.equal(tag.tabindex,selected?"0":"-1");}
+  let handler,localHandler,focused=null;const opened=[];
+  const primary=primaryTags.map(tag=>({dataset:{tab:tag["data-tab"]},closest:selector=>{assert.equal(selector,'[role="tablist"]');return null;},focus(){focused=this;}}));
+  const comparison=localTags.map(tag=>({dataset:{comparisonTab:tag["data-comparison-tab"]},focus(){focused=this;}}));
+  const local={querySelectorAll:selector=>{assert.equal(selector,"[data-comparison-tab]");return comparison;},addEventListener:(name,fn)=>{assert.equal(name,"keydown");localHandler=fn;}};
+  const context={document:{querySelector:selector=>{assert.equal(selector,".editor-navigation");return {addEventListener:(name,fn)=>{assert.equal(name,"keydown");handler=fn;}};},querySelectorAll:selector=>{assert.equal(selector,"[data-comparison-tab]");return comparison;}},$:id=>{assert.equal(id,"comparison-tabs");return local;},switchTab:tab=>opened.push(tab),openWorkTab:tab=>opened.push(tab)};
+  const start=app.indexOf('document.querySelector(".editor-navigation").addEventListener("keydown"'),finish=app.indexOf("\nconst paletteCommands =",start);assert.ok(start>=0&&finish>start);vm.createContext(context);vm.runInContext(app.slice(start,finish),context);
+  const press=(listener,target,key)=>{let prevented=false;listener({target,key,preventDefault(){prevented=true;}});return prevented;};
+  for(const target of primary)for(const key of ["ArrowLeft","ArrowRight","Home","End","Tab","Enter"," "]){target.focus();const count=opened.length;assert.equal(press(handler,target,key),false);assert.equal(opened.length,count);assert.equal(focused,target);}
+  for(const [name,key,expected]of [["review","ArrowLeft","repository-changes"],["review","ArrowRight","repository-changes"],["repository-changes","ArrowLeft","review"],["repository-changes","ArrowRight","review"],["repository-changes","Home","review"],["review","End","repository-changes"]]){const count=opened.length;assert.equal(press(localHandler,comparison.find(button=>button.dataset.comparisonTab===name),key),true);assert.equal(opened.length,count+1);assert.equal(opened.at(-1),expected);assert.equal(focused,comparison.find(button=>button.dataset.comparisonTab===expected));}
+  const count=opened.length;assert.equal(press(localHandler,primary[0],"ArrowRight"),false);assert.equal(press(localHandler,comparison[0],"Tab"),false);assert.equal(opened.length,count);
+  for(const button of comparison){button.onclick();assert.equal(opened.at(-1),button.dataset.comparisonTab);}
 });
 
 

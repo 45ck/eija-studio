@@ -622,9 +622,12 @@ class ReviewWorkspace(Journey):
         self.page.locator("#focus-evidence").click()
         replay.expect(self.page.locator("body")).to_have_attribute("data-workspace-focused", "true")
         assert all(self.page.locator(key).get_attribute("aria-expanded") == "false" for key in controls)
-        self.page.locator("#layout-summary").click()
+        self.page.locator("#open-workspace").click()
+        if self.page.locator("#workspace-layout").get_attribute("open") is None:
+            self.page.locator("#workspace-layout > summary").click()
         self.page.locator("#toggle-explorer").click()
-        replay.expect(self.page.locator("#layout-summary")).to_be_focused()
+        replay.expect(self.page.locator("#workspace-dialog")).to_be_hidden()
+        replay.expect(self.page.locator("#open-workspace")).to_be_focused()
         self.tab("review")
         self.tab("evidence")
         replay.expect(self.page.locator("#navigator-mode")).to_have_value("domain")
@@ -734,10 +737,17 @@ class ReviewWorkspace(Journey):
         self.keyboard_to("#focus-evidence")
         self.page.keyboard.press("Enter")
         replay.expect(self.page.locator("body")).to_have_attribute("data-workspace-focused", "true")
-        self.keyboard_to("#layout-summary")
+        self.keyboard_to("#open-workspace")
+        self.page.keyboard.press("Enter")
+        replay.expect(self.page.locator("#workspace-dialog")).to_be_visible()
+        self.keyboard_to("#workspace-layout > summary")
+        if self.page.locator("#workspace-layout").get_attribute("open") is not None:
+            self.page.keyboard.press("Enter")
         self.page.keyboard.press("Enter")
         replay.expect(self.page.locator("#workspace-layout")).to_have_attribute("open", "")
         self.page.keyboard.press("Escape")
+        replay.expect(self.page.locator("#workspace-dialog")).to_be_hidden()
+        replay.expect(self.page.locator("#open-workspace")).to_be_focused()
         self.keyboard_to("#restore-workspace")
         self.page.keyboard.press("Enter")
         replay.expect(self.page.locator("#focus-evidence")).to_be_focused()
@@ -1004,7 +1014,7 @@ def run_freshness_fixture(playwright, out):
                         retry.click()
                     review.settled()
                     assert refreshed.value.status == source2.value.status == 200
-                    replay.expect(page.locator('[data-tab="model"]')).to_have_attribute("aria-selected", "true")
+                    replay.expect(page.locator('[data-tab="model"]')).to_have_attribute("aria-current", "page")
                     workbench2 = review.oracle("workbench")
                     connection2 = workbench2["connection"]
                     assert refreshed.value.json()["connection"]["source_hash"] == connection2["source_hash"] == s2
@@ -1027,7 +1037,7 @@ def run_freshness_fixture(playwright, out):
                     assert impact2.value.json() == current_impact
                     assert current_impact["status"] == "connected" and current_impact["source_hash"] == s2
                     replay.expect(page.locator("#inspector-impact")).to_have_attribute("data-source-hash", s2)
-                    replay.expect(page.locator('[data-tab="model"]')).to_have_attribute("aria-selected", "true")
+                    replay.expect(page.locator('[data-tab="model"]')).to_have_attribute("aria-current", "page")
                     fresh = review.oracle("repository/freshness", expected_source_hash=s2)
                     assert fresh["status"] == "current" and fresh["source_hash"] == fresh["compared_source_hash"] == s2
                     assert review.oracle("cases") == cases_before

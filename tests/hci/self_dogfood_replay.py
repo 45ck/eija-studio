@@ -44,6 +44,8 @@ EXPECTED = (
     "runtime-errors", "owner-boundary",
 )
 TEST_CAPABILITY = uuid4().hex
+PRIMARY_VIEWS = ("model", "code", "change", "review", "try", "evidence")
+WORKSPACE_VIEWS = (*PRIMARY_VIEWS, "impact", "visual", "source")
 
 
 def require_only_save_role_change(before, after):
@@ -240,12 +242,106 @@ class Review:
         if self.record:
             time.sleep(1)  # Video pacing only; all synchronization uses locator assertions.
 
-    def tab(self, name):
-        target = self.page.locator(f'[data-tab="{name}"]')
-        if name in {"impact", "visual", "source"} and not target.is_visible():
-            self.page.locator("#reference-views > summary").click()
-        target.click()
+    def assert_view(self, name):
+        assert name in WORKSPACE_VIEWS, f"Unknown workspace view: {name}"
+        region = "comparison-workspace" if name == "review" else name
+        expect(self.page.locator(f"#{region}")).to_be_visible()
+        current = self.page.locator('[data-tab][aria-current="page"]')
+        expect(current).to_have_count(1 if name in PRIMARY_VIEWS else 0)
+        if name in PRIMARY_VIEWS:
+            expect(self.page.locator(f'[data-tab="{name}"]')).to_have_attribute("aria-current", "page")
+        else:
+            expect(self.page.locator(f'[data-tab="{name}"]')).to_have_count(0)
+
+    def open_workspace(self):
+        dialog = self.page.locator("dialog#workspace-dialog")
+        if not dialog.is_visible():
+            self.page.locator("#open-workspace").click()
+            self.navigation_action("click", "#open-workspace")
+        expect(dialog).to_be_visible()
+        expect(dialog).to_have_attribute("open", "")
+        expect(dialog.locator("button[data-workspace-view]")).to_have_count(len(WORKSPACE_VIEWS))
+        for name in WORKSPACE_VIEWS:
+            expect(dialog.locator(f'button[data-workspace-view="{name}"]')).to_be_visible()
+        expect(self.page.locator("button[data-tab]")).to_have_count(len(PRIMARY_VIEWS))
+        expect(self.page.locator('[data-tab][role="tab"], [role="tablist"] [data-tab]')).to_have_count(0)
+        expect(self.page.locator("[data-tab][aria-selected]")).to_have_count(0)
+        return dialog
+
+    def workspace_view(self, name):
+        assert name in WORKSPACE_VIEWS, f"Unknown workspace view: {name}"
+        dialog = self.open_workspace()
+        selector = f'[data-workspace-view="{name}"]'
+        dialog.locator(selector).click()
+        self.navigation_action("click", "#workspace-dialog " + selector)
+        expect(dialog).to_be_hidden()
         self.settled()
+        self.assert_view(name)
+        destination = f'[data-tab="{name}"]' if name in PRIMARY_VIEWS else f"#{name}"
+        expect(self.page.locator(destination)).to_be_focused()
+
+    def tab(self, name):
+        assert name in WORKSPACE_VIEWS, f"Unknown workspace view: {name}"
+        target = self.page.locator(f'[data-tab="{name}"]')
+        if name not in PRIMARY_VIEWS or not target.is_visible():
+            self.workspace_view(name)
+            return
+        target.click()
+        self.navigation_action("click", f'[data-tab="{name}"]')
+        self.settled()
+        self.assert_view(name)
+
+    def workspace_keyboard_routes(self):
+        dialog = self.open_workspace()
+        expect(self.page.locator("#close-workspace")).to_be_focused()
+        routes = ("model", "change", "impact", "review", "code", "try", "evidence", "visual", "source")
+        for name in routes:
+            self.page.keyboard.press("Tab")
+            self.navigation_action("key", "#workspace-dialog", "Tab")
+            target = dialog.locator(f'[data-workspace-view="{name}"]')
+            expect(target).to_be_focused()
+            expect(target).to_be_enabled()
+            expect(target).to_be_in_viewport()
+            self.assert_view("model")
+        self.page.keyboard.press("Escape")
+        self.navigation_action("key", "#workspace-dialog", "Escape")
+        expect(dialog).to_be_hidden()
+        expect(self.page.locator("#open-workspace")).to_be_focused()
+        return list(routes)
+
+    def open_bottom(self, panel):
+        assert panel in {"problems-pane", "evidence-pane", "history-pane"}, f"Unknown bottom panel: {panel}"
+        selector = f'[data-bottom="{panel}"]'
+        target = self.page.locator(selector)
+        if target.is_visible():
+            target.click()
+            self.navigation_action("click", selector)
+        else:
+            dialog = self.open_workspace()
+            choice = f'[data-workspace-panel="{panel}"]'
+            dialog.locator(choice).click()
+            self.navigation_action("click", "#workspace-dialog " + choice)
+        expect(self.page.locator("#workspace-dialog")).to_be_hidden()
+        expect(self.page.locator(f"#{panel}")).to_be_visible()
+        expect(target).to_have_attribute("aria-selected", "true")
+        expect(target).to_be_focused()
+
+    def open_layout(self):
+        dialog = self.open_workspace()
+        layout = dialog.locator("details#workspace-layout")
+        if layout.get_attribute("open") is None:
+            dialog.locator("#workspace-layout > summary").click()
+            self.navigation_action("click", "#workspace-dialog #workspace-layout > summary")
+        expect(layout).to_have_attribute("open", "")
+        return dialog
+
+    def toggle_layout(self, selector):
+        dialog = self.open_layout()
+        dialog.locator(selector).click()
+        self.navigation_action("click", "#workspace-dialog " + selector)
+        expect(dialog).to_be_hidden()
+        expect(self.page.locator("#open-workspace")).to_be_focused()
+        expect(self.page.locator("#workspace-layout")).to_have_attribute("open", "")
 
     def packet(self):
         return json.loads(self.page.locator("#packet").text_content())
@@ -295,19 +391,15 @@ class Review:
 
     def reveal_explorer(self):
         if self.page.locator("#toggle-explorer").get_attribute("aria-expanded") != "true":
-            if self.page.locator("#workspace-layout").get_attribute("open") is None:
-                self.page.locator("#layout-summary").click()
-                self.navigation_action("click", "#layout-summary")
-            self.page.locator("#toggle-explorer").click()
-            self.navigation_action("click", "#toggle-explorer")
+            self.toggle_layout("#toggle-explorer")
+        expect(self.page.locator("#toggle-explorer")).to_have_attribute("aria-expanded", "true")
+        expect(self.page.locator("#explorer")).to_be_visible()
 
     def reveal_inspector(self):
         if self.page.locator("#toggle-inspector").get_attribute("aria-expanded") != "true":
-            if self.page.locator("#workspace-layout").get_attribute("open") is None:
-                self.page.locator("#layout-summary").click()
-                self.navigation_action("click", "#layout-summary")
-            self.page.locator("#toggle-inspector").click()
-            self.navigation_action("click", "#toggle-inspector")
+            self.toggle_layout("#toggle-inspector")
+        expect(self.page.locator("#toggle-inspector")).to_have_attribute("aria-expanded", "true")
+        expect(self.page.locator("#inspector")).to_be_visible()
 
     def open_explorer_disclosure(self, selector):
         self.reveal_explorer()
@@ -453,7 +545,9 @@ class Review:
         self.page.locator("#edit-role").click()
         preview = self.inspect_edit_preview(preview_before, expected)
         self.apply_edit_preview(preview_before, preview)
-        expect(self.page.locator("#transition-details")).to_contain_text("TR-SAVE · Agent")
+        expect(self.page.locator("#transition-details")).to_have_attribute(
+            "data-eija-id", "eija-review-slice.transition-detail.TR-SAVE")
+        expect(self.page.locator("#transition-role")).to_have_value("Agent")
         self.changed_hash = self.semantic()
         assert self.changed_hash != self.original_hash
         assert self.revision() == self.original_version + 1
@@ -491,7 +585,7 @@ class Review:
                   "edit_delta": {"transition": "TR-SAVE", "field": "role", "before": "Owner", "after": "Agent"}}
         (self.out / "semantic-diff-response.json").write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
         article.get_by_role("button", name="Inspect in model", exact=True).click()
-        expect(self.page.locator('[data-tab="model"]')).to_have_attribute("aria-selected", "true")
+        expect(self.page.locator('[data-tab="model"]')).to_have_attribute("aria-current", "page")
         assert self.semantic() == candidate.semantic_hash and self.revision() == case["version"]
         return {"baseline_semantic": baseline.semantic_hash, "candidate_semantic": candidate.semantic_hash,
                 "case_baseline_diff": "TR-SAVE is added with Agent role", "accepted_edit_delta": record["edit_delta"],
@@ -526,13 +620,25 @@ class Review:
         return {"undo_exact_hash": self.original_hash, "redo_exact_hash": self.changed_hash}
 
     def reload(self):
+        before = self.edit_preview_snapshot()
+        case = before["view"]["case"]
         version = self.revision()
+        assert case["id"] == self.case_id and case["version"] == version
         self.page.reload()
         expect(self.page.locator("#connection")).to_contain_text("offline", timeout=60000)
         self.settled()
-        self.open_explorer_disclosure("#explorer details.case-explorer")
-        self.page.locator("#case-list button").filter(has_text=self.label).click()
+        self.page.locator("#case-switcher").select_option(self.case_id)
+        self.navigation_action("select_option", "#case-switcher", self.case_id)
         self.settled()
+        selected = self.page.locator("#case-switcher option:checked")
+        expect(selected).to_have_count(1)
+        expect(selected).to_have_attribute("value", self.case_id)
+        expect(selected).to_have_attribute("title", case["request"])
+        expect(selected).to_have_text(f'{case["request"]} · {case["stage"]} · {case["id"]}')
+        expect(self.page.locator("#case-title")).to_have_text(case["request"])
+        expect(self.page.locator("#case-stage")).to_have_text(case["stage"])
+        assert self.edit_preview_snapshot() == before, "Reload navigation changed the authoritative case or history"
+        assert self.packet() == before["view"]["packet"], "Reload displayed another case or review revision"
         self.tab("model")
         assert self.semantic() == self.changed_hash and self.revision() == version
         expect(self.page.locator("#undo-edit")).to_be_enabled()
@@ -544,11 +650,19 @@ class Review:
         expect(self.page.locator("#palette-search")).to_be_focused()
         self.page.keyboard.press("Escape")
         expect(self.page.locator("#command-palette")).to_be_hidden()
-        model_tab = self.page.locator('[data-tab="model"]')
-        model_tab.focus()
-        model_tab.press("ArrowRight")
+        self.tab("model")
+        expect(self.page.locator('[data-tab="model"]')).to_be_focused()
+        self.page.keyboard.press("Tab")
+        self.navigation_action("key", '[data-tab="model"]', "Tab")
         expect(self.page.locator('[data-tab="code"]')).to_be_focused()
-        expect(self.page.locator('[data-tab="code"]')).to_have_attribute("aria-selected", "true")
+        expect(self.page.locator('[data-tab="model"]')).to_have_attribute("aria-current", "page")
+        expect(self.page.locator('[data-tab="code"]')).not_to_have_attribute("aria-current", "page")
+        expect(self.page.locator("#code")).to_be_hidden()
+        self.page.keyboard.press("Enter")
+        self.navigation_action("key", '[data-tab="code"]', "Enter")
+        self.settled()
+        self.assert_view("code")
+        expect(self.page.locator('[data-tab="code"]')).to_be_focused()
         self.tab("model")
         self.domain_group("term")
         group = self.page.locator('#domain-tree [data-eija-id="eija-review-slice.group.term"]')
@@ -564,7 +678,8 @@ class Review:
         after_width = self.page.locator("#domain-tree").bounding_box()["width"]
         assert before_width != after_width
         splitter.press("ArrowLeft")
-        return {"palette_focus_and_escape": True, "tab_arrows": True, "tree_arrows_and_enter": True,
+        return {"palette_focus_and_escape": True, "primary_button_tab_then_enter": True,
+                "tab_focus_does_not_activate_view": True, "tree_arrows_and_enter": True,
                 "splitter_keyboard_resize": [before_width, after_width]}
 
     def view_modes(self):
@@ -574,7 +689,7 @@ class Review:
         expect(self.page.locator("#edit-role")).to_be_disabled()
         self.page.locator("#model-version").select_option("working")
         expect(self.page.locator('#model-canvas [data-state="SAVED"]')).to_have_count(1)
-        self.page.locator('[data-bottom="history-pane"]').click()
+        self.open_bottom("history-pane")
         self.page.locator("#case-history .history-row").first.get_by_role("button", name="View model").click()
         expect(self.page.locator("#model-version")).to_have_value("history")
         expect(self.page.locator("#edit-role")).to_be_disabled()
@@ -584,7 +699,9 @@ class Review:
         self.page.screenshot(path=str(self.out / "historical-preview.png"))
         self.page.locator("#model-version").select_option("working")
         self.select_transition("TR-SAVE")
-        expect(self.page.locator("#transition-details")).to_contain_text("TR-SAVE · Agent")
+        expect(self.page.locator("#transition-details")).to_have_attribute(
+            "data-eija-id", "eija-review-slice.transition-detail.TR-SAVE")
+        expect(self.page.locator("#transition-role")).to_have_value("Agent")
         assert self.semantic() == before and self.revision() == version
         return {"baseline_and_history_read_only": True, "history_owner_current_agent": True,
                 "candidate_and_revision_unchanged": True}
@@ -592,27 +709,24 @@ class Review:
     def panels(self):
         before = self.semantic()
         dimensions = {}
-        layout = self.page.locator("#workspace-layout")
-        layout_was_open = layout.get_attribute("open") is not None
+        self.reveal_explorer()
+        self.reveal_inspector()
+        self.open_bottom("history-pane")
         for name, control in (("explorer", "#toggle-explorer"), ("inspector", "#toggle-inspector"),
                               ("bottom", "#toggle-bottom")):
             original = self.page.locator("#model-canvas").bounding_box()
-            if layout.get_attribute("open") is None:
-                self.page.locator("#layout-summary").click()
-            self.page.locator(control).click()
+            self.toggle_layout(control)
             expect(self.page.locator(control)).to_have_attribute("aria-expanded", "false")
             expanded = self.page.locator("#model-canvas").bounding_box()
             key = "height" if name == "bottom" else "width"
             assert expanded[key] > original[key]
-            if layout.get_attribute("open") is None:
-                self.page.locator("#layout-summary").click()
-            self.page.locator(control).click()
+            self.toggle_layout(control)
             expect(self.page.locator(control)).to_have_attribute("aria-expanded", "true")
             dimensions[name] = {"before": original[key], "collapsed": expanded[key]}
-        if layout_was_open:
-            self.page.locator("#layout-summary").click()
         assert self.semantic() == before
-        return {"canvas_reclaims_panel_space": dimensions, "semantic_unchanged": before}
+        return {"canvas_reclaims_panel_space": dimensions, "semantic_unchanged": before,
+                "layout_choices_close_workspace_and_restore_focus": True,
+                "layout_disclosure_stays_expanded": True}
 
     def evidence(self):
         self.tab("evidence")
@@ -656,9 +770,17 @@ class Review:
             if not named:
                 unnamed.append(control.get_attribute("id") or "unnamed button")
         assert not unnamed
-        expect(self.page.locator('.tabs [role="tab"][aria-selected="true"]')).to_have_attribute("tabindex", "0")
+        primary = self.page.locator("button[data-tab]")
+        expect(primary).to_have_count(len(PRIMARY_VIEWS))
+        expect(self.page.locator('[data-tab][role="tab"], [role="tablist"] [data-tab]')).to_have_count(0)
+        expect(self.page.locator("[data-tab][aria-selected]")).to_have_count(0)
+        for name in PRIMARY_VIEWS:
+            expect(self.page.locator(f'button[data-tab="{name}"]')).to_have_js_property("tabIndex", 0)
+        expect(self.page.locator('[data-tab][aria-current="page"]')).to_have_count(1)
+        expect(self.page.locator('[data-tab="model"]')).to_have_attribute("aria-current", "page")
         expect(self.page.locator("#source-status")).to_have_attribute("role", "status")
-        return {"visible_buttons_have_names": True, "active_tab_keyboard_reachable": True,
+        return {"visible_buttons_have_names": True, "six_primary_buttons_in_tab_order": True,
+                "current_primary_view_marked": True,
                 "scope": "DOM names, live status and keyboard checks; axe observations are reported separately."}
 
     def readability(self):
@@ -690,9 +812,13 @@ class Review:
         results = []
         for height in (800, 568):
             self.page.set_viewport_size({"width": 320, "height": height})
-            for tab in ("change", "impact", "try", "evidence", "source", "code", "model"):
-                self.tab(tab)
-                expect(self.page.locator(f'[data-tab="{tab}"]')).to_have_attribute("aria-selected", "true")
+            for view in ("change", "impact", "try", "evidence", "source", "code", "review", "visual", "model"):
+                self.workspace_view(view)
+            for view in PRIMARY_VIEWS:
+                self.tab(view)
+                expect(self.page.locator(f'[data-tab="{view}"]')).to_have_attribute("aria-current", "page")
+            self.tab("model")
+            keyboard_routes = self.workspace_keyboard_routes()
             expect(self.page.locator("#model-canvas svg")).to_be_visible()
             self.page.locator("#canvas-readable").click()
             bounds = self.page.locator("body").evaluate("""element => ({
@@ -701,14 +827,16 @@ class Review:
             })""")
             assert bounds["body_width"] <= 321 and bounds["document_width"] <= 321
             readable = self.label_sizes()
-            results.append({"viewport": [320, height], "bounds": bounds, "readable": readable})
+            results.append({"viewport": [320, height], "bounds": bounds, "readable": readable,
+                            "workspace_routes_reached_by_native_tab": keyboard_routes})
             self.page.screenshot(path=str(self.out / f"reflow-320-{height}.png"))
             assert readable["state_label_min_px"] >= 14, f"100% labels shrink at 320x{height}: {readable}"
             assert abs(readable["actual_scale"]["x"] - 1) < .005 and abs(readable["actual_scale"]["y"] - 1) < .005
         assert self.semantic() == before and self.revision() == version
         self.page.set_viewport_size({"width": 1600, "height": 1100})
         self.page.locator("#canvas-readable").click()
-        return {"seven_tabs_clickable_without_force": True, "viewports": results,
+        return {"nine_workspace_views_clickable_without_force": True,
+                "six_primary_buttons_clickable_without_force": True, "viewports": results,
                 "candidate_and_revision_unchanged": True, "scope": "320 CSS pixels, not a mobile usability study."}
 
     def axe_observations(self):

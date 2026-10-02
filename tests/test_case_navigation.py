@@ -25,6 +25,7 @@ class Element {
   replaceChildren(...children) {this.children = children;}
   setAttribute() {}
   removeAttribute() {}
+  focus() {sandbox.document.activeElement = this;}
 }
 const elements = new Map(), get = id => {
   if (!elements.has(id)) elements.set(id, new Element());
@@ -34,7 +35,7 @@ get("runtime-result").textContent = "Committed: Submit. Effects: audit";
 const target = scenario === "same" ? "case-a" : "case-b", errors = [], renders = [], requests = [];
 let pending;
 const sandbox = {
-  current: {case: {id: "case-a", version: 2}}, instance: {id: "preview-a", state: "Submitted"},
+  current: {case: {id: "case-a", version: 2, request: "Synthetic current case", stage: "PREVIEW"}}, instance: {id: "preview-a", state: "Submitted"},
   busy: scenario === "busy",
   tab: "model", editId: "TR-SUBMIT", inspectorSelection: {kind:"transition", id:"TR-SUBMIT"},
   modelView: "working", historyModel: null, historyLabel: "", canvasDirection: "AUTO", caseViews: new Map(),
@@ -54,7 +55,7 @@ const sandbox = {
     }
     if (path.endsWith("/affordances")) return {affordances: []};
     if (path.endsWith("/history")) return {case_id: target, status: "ready"};
-    return {case: {id: target, version: 3}};
+    return {case: {id: target, version: 3, request: "Synthetic navigation target", stage: "PREVIEW"}};
   },
   render: () => renders.push({caseId: sandbox.current.case.id, instance: sandbox.instance,
                              result: get("runtime-result").textContent})
@@ -76,8 +77,11 @@ const actualTask = sandbox.task;
 sandbox.task = (...args) => pending = actualTask(...args);
 (async () => {
   await sandbox.cases();
-  if (route === "list") get("case-list").children[0].onclick();
-  if (route === "selector") {
+  if (route === "command") {
+    sandbox.focusCasePicker();
+    if (sandbox.document.activeElement !== get("case-switcher")) throw new Error("Case command did not focus the native picker");
+  }
+  if (route === "command" || route === "selector") {
     get("case-switcher").value = target;
     get("case-switcher").onchange({target: get("case-switcher")});
   }
@@ -89,7 +93,7 @@ sandbox.task = (...args) => pending = actualTask(...args);
 })().catch(error => {process.stderr.write(String(error)); process.exitCode = 1;});
 """
 
-SCENARIOS = [(route, scenario) for route in ("list", "selector", "create")
+SCENARIOS = [(route, scenario) for route in ("command", "selector", "create")
              for scenario in ("case_failure", "affordance_failure", "different", "same")
              if not (route == "create" and scenario == "same")] + [("selector", "busy")]
 

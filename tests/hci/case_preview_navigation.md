@@ -19,8 +19,8 @@ The output directory must be new. Run browser checks serially. On a Calvin perso
 ## Five checks
 
 1. Create a supported candidate through ordinary controls, start a preview and Submit as the assigned synthetic teacher. Refresh the same case through the command palette. Require a fresh actual case GET, unchanged persisted case/runtime/packet, and unchanged rendered Submitted preview/result.
-2. Inject a single HTTP 503 on another case's detail GET, reached through the case list. Preserve current case identity, Submitted instance and result. Recommend must commit against that original instance and increment its version exactly once; the other case remains untouched.
-3. Repeat through the dropdown and require its displayed selection to return to the retained case.
+2. Use the command palette's Switch change case action to focus the native case picker, then select another case. Inject a single HTTP 503 on that case's detail GET. Preserve current case identity, Submitted instance and result. Recommend must commit against that original instance and increment its version exactly once; the other case remains untouched.
+3. Repeat using the native case picker directly and require its displayed selection to return to the retained case.
 4. Hold the real diagnostics GET while the UI is busy, select another case and require no navigation or mutation. The dropdown must continue naming the retained case. Release the held GET with a synthetic 503, preserve the preview and successfully Recommend on the original instance.
 5. Switch successfully to another case. Its preview must be Not started, runtime result empty and actions disabled. Both persisted cases remain untouched by navigation.
 

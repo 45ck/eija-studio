@@ -1,10 +1,11 @@
 "use strict";
 // Isolated presentation/adapter checks. These do not claim browser or human validation.
 const {test}=require("node:test"),assert=require("node:assert/strict"),path=require("node:path"),fs=require("node:fs"),vm=require("node:vm");
-const web=path.join(__dirname,"../../src/eija_studio/resources/web"),shell=require(path.join(web,"shell.js")),review=require(path.join(web,"review.js"));
+const web=process.env.EIJA_WEB_ROOT||path.join(__dirname,"../../src/eija_studio/resources/web"),shell=require(process.env.EIJA_SHELL_JS||path.join(web,"shell.js")),review=require(path.join(web,"review.js"));
 class Node {
   constructor(tag){this.tag=tag;this.children=[];this.dataset={};this.attributes={};this.textContent="";this.events={};}
   append(...items){this.children.push(...items);}replaceChildren(...items){this.children=items;}
+  contains(node){return this===node||this.children.some(child=>child.contains(node));}
   setAttribute(key,value){this.attributes[key]=String(value);}getAttribute(key){return this.attributes[key];}removeAttribute(key){delete this.attributes[key];}
   addEventListener(key,value){this.events[key]=value;}querySelector(){return this.children.find(n=>n.tag==="svg")||null;}
   getBoundingClientRect(){return {width:800,height:400};}

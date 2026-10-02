@@ -120,12 +120,25 @@ class PreviewNavigation(Review):
         return case_id
 
     def switch(self, case_id, control):
-        if control == "dropdown":
-            self.page.locator("#case-switcher").select_option(case_id)
-        else:
-            self.open_explorer_disclosure("#explorer details.case-explorer")
-            request = self.get_case(case_id)["case"]["request"]
-            self.page.locator("#case-list button").filter(has_text=request).click()
+        assert control in {"dropdown", "command"}, f"Unknown case navigation control: {control}"
+        if control == "command":
+            self.page.keyboard.press("Control+k")
+            self.navigation_action("key", "body", "Control+k")
+            expect(self.page.locator("#command-palette")).to_be_visible()
+            expect(self.page.locator("#palette-search")).to_be_focused()
+            self.page.keyboard.type("Switch change case")
+            self.navigation_action("type", "#palette-search", "Switch change case")
+            command = self.page.locator("#palette-results").get_by_role("button", name="Switch change case", exact=True)
+            expect(command).to_have_count(1)
+            self.page.keyboard.press("ArrowDown")
+            self.navigation_action("key", "#palette-search", "ArrowDown")
+            expect(command).to_be_focused()
+            self.page.keyboard.press("Enter")
+            self.navigation_action("key", "#palette-results", "Enter")
+            expect(self.page.locator("#command-palette")).to_be_hidden()
+            expect(self.page.locator("#case-switcher")).to_be_focused()
+        self.page.locator("#case-switcher").select_option(case_id)
+        self.navigation_action("select_option", "#case-switcher", case_id)
         self.settled()
 
     def ui_state(self):
@@ -138,8 +151,13 @@ class PreviewNavigation(Review):
         expect(self.page.locator("#case-switcher")).to_have_value(case["id"])
         expect(self.page.locator("#case-title")).to_have_text(case["request"])
         expect(self.page.locator("#case-id")).to_contain_text(case["id"][:10])
-        expect(self.page.locator('#case-list button[aria-current="true"]')).to_have_count(1)
-        expect(self.page.locator('#case-list button[aria-current="true"]')).to_have_attribute("title", case["request"])
+        assert self.revision() == case["version"], "Displayed case revision differs from the authoritative case."
+        expect(self.page.locator("#case-stage")).to_have_text(case["stage"])
+        selected = self.page.locator("#case-switcher option:checked")
+        expect(selected).to_have_count(1)
+        expect(selected).to_have_attribute("value", case["id"])
+        expect(selected).to_have_attribute("title", case["request"])
+        expect(selected).to_have_text(f'{case["request"]} · {case["stage"]} · {case["id"]}')
         assert self.packet() == view["packet"], "Displayed review packet differs from the retained case/revision."
 
     def execute(self, action):
@@ -223,7 +241,7 @@ class PreviewNavigation(Review):
         self.tab("try")
         self.assert_case_identity(other_before)
         expect(self.page.locator("#runtime-state")).to_have_text("Not started")
-        expect(self.page.locator("#runtime-version")).to_have_text("No candidate state has been executed")
+        expect(self.page.locator("#runtime-version")).to_have_text("No preview instance has been acknowledged")
         expect(self.page.locator("#runtime-result")).to_have_text("")
         expect(self.page.locator("#runtime-actions button:enabled")).to_have_count(0)
         assert self.get_case(self.first) == before and self.get_case(self.second) == other_before
@@ -308,7 +326,7 @@ def main():
                     review.second = review.create("B")
                     for name, action in (
                         ("same-case-refresh", review.refresh_same),
-                        ("failed-case-list-503", lambda: review.failed_switch("list")),
+                        ("failed-command-503", lambda: review.failed_switch("command")),
                         ("failed-dropdown-503", lambda: review.failed_switch("dropdown")),
                         ("busy-dropdown-doctor-503", review.busy_switch),
                         ("different-case-clears-preview", review.successful_switch),
