@@ -1,0 +1,303 @@
+{
+  "schema": "eija.navigation-proof-public-excerpt.v1",
+  "artifact_kind": "GENERATED_EXCERPT_NOT_RAW_RECEIPT",
+  "status": "PASS",
+  "observed_utc": "2026-10-02T14:22:42.482162+00:00",
+  "pair": {
+    "base": "9c22d425ee33e52980a95b33330babec43c6aa59",
+    "head": "c666b6bb76905c0c9bd03e81cac0922136c4cf3e"
+  },
+  "generation": {
+    "basis": "Allowlisted fields from the original run5 report, exporter validation and retained unsuccessful attempts; no browser rerun.",
+    "normalization": "Disposable case identifiers map to fixture A or B using each original result's cases map and fixed fixture requests. Local filesystem paths, Git author identities, raw GET payloads and disposable IDs are omitted.",
+    "original_result_sha256": "8947e7adce7ab84ad1a18c802e5afb0b4952753057c3ce9be511f99131e7eb6f",
+    "original_artifact_manifest_sha256": "5312612538887eab715ef49ee9f419ebca0706ee3ce6f0cd7110c09cc8130477",
+    "generator_sha256": "447793d5ca4ff3de8fa8d0c58096b6829875b64c8a9af851cd2de2dbee2510bb"
+  },
+  "claim": {
+    "status": "PASS",
+    "scope": "Two displayed-navigation identity properties in the specified synthetic transport conditions.",
+    "before": "Designated dropdown/header mismatch observed for both properties",
+    "after": "Both properties and successful controls passed"
+  },
+  "observations": {
+    "base": {
+      "status": "OBSERVED",
+      "properties": [
+        {
+          "id": "failed-dropdown-retains-current-case",
+          "passes": false,
+          "state_unchanged": true,
+          "write_count": 0,
+          "required_current_case": "A",
+          "observed": {
+            "dropdown": "B",
+            "title": "A",
+            "selected_case_list": "A",
+            "stage": "DRAFT",
+            "case_id": "A"
+          }
+        },
+        {
+          "id": "busy-dropdown-retains-current-case",
+          "passes": false,
+          "state_unchanged": true,
+          "write_count": 0,
+          "required_current_case": "A",
+          "observed": {
+            "dropdown": "B",
+            "title": "A",
+            "selected_case_list": "A",
+            "stage": "DRAFT",
+            "case_id": "A"
+          },
+          "after_completion": {
+            "dropdown": "B",
+            "title": "A",
+            "selected_case_list": "A",
+            "stage": "DRAFT",
+            "case_id": "A"
+          }
+        }
+      ],
+      "controls": {
+        "successful_retry": {
+          "passes": true,
+          "control": "case_list",
+          "observed": {
+            "dropdown": "B",
+            "title": "B",
+            "selected_case_list": "B",
+            "stage": "DRAFT",
+            "case_id": "B"
+          }
+        },
+        "successful_switch_after_busy": {
+          "passes": true,
+          "control": "case_list",
+          "observed": {
+            "dropdown": "B",
+            "title": "B",
+            "selected_case_list": "B",
+            "stage": "DRAFT",
+            "case_id": "B"
+          }
+        }
+      },
+      "error_count": 0,
+      "unexpected_action_count": 0,
+      "service_worker_event_count": 0,
+      "active_service_worker_count": 0,
+      "owner_action_count": 0,
+      "provider_call_count": 0,
+      "fixture_create_count": 2,
+      "controlled_http_503_count": 1,
+      "unexpected_http_error_count": 0,
+      "context_closed": true,
+      "server_closed": true,
+      "implementation_binding": {
+        "basis": "Verified export bytes and configured CLI launch root; app.js additionally checked over HTTP",
+        "expected_export_implementation_sha256": "913be9a07e24ef37e1663eca417d5a6567151c5ca4edc331b1472d6a9dc04fd1",
+        "http_packet_implementation_subject": "NOT_EXPOSED_IN_DRAFT"
+      }
+    },
+    "head": {
+      "status": "OBSERVED",
+      "properties": [
+        {
+          "id": "failed-dropdown-retains-current-case",
+          "passes": true,
+          "state_unchanged": true,
+          "write_count": 0,
+          "required_current_case": "A",
+          "observed": {
+            "dropdown": "A",
+            "title": "A",
+            "selected_case_list": "A",
+            "stage": "DRAFT",
+            "case_id": "A"
+          }
+        },
+        {
+          "id": "busy-dropdown-retains-current-case",
+          "passes": true,
+          "state_unchanged": true,
+          "write_count": 0,
+          "required_current_case": "A",
+          "observed": {
+            "dropdown": "A",
+            "title": "A",
+            "selected_case_list": "A",
+            "stage": "DRAFT",
+            "case_id": "A"
+          },
+          "after_completion": {
+            "dropdown": "A",
+            "title": "A",
+            "selected_case_list": "A",
+            "stage": "DRAFT",
+            "case_id": "A"
+          }
+        }
+      ],
+      "controls": {
+        "successful_retry": {
+          "passes": true,
+          "control": "case_list",
+          "observed": {
+            "dropdown": "B",
+            "title": "B",
+            "selected_case_list": "B",
+            "stage": "DRAFT",
+            "case_id": "B"
+          }
+        },
+        "successful_switch_after_busy": {
+          "passes": true,
+          "control": "case_list",
+          "observed": {
+            "dropdown": "B",
+            "title": "B",
+            "selected_case_list": "B",
+            "stage": "DRAFT",
+            "case_id": "B"
+          }
+        }
+      },
+      "error_count": 0,
+      "unexpected_action_count": 0,
+      "service_worker_event_count": 0,
+      "active_service_worker_count": 0,
+      "owner_action_count": 0,
+      "provider_call_count": 0,
+      "fixture_create_count": 2,
+      "controlled_http_503_count": 1,
+      "unexpected_http_error_count": 0,
+      "context_closed": true,
+      "server_closed": true,
+      "implementation_binding": {
+        "basis": "Verified export bytes and configured CLI launch root; app.js additionally checked over HTTP",
+        "expected_export_implementation_sha256": "c2c87567252e26bd925f9e03af827a492419e15c314f172c0f3ea5de0f129c54",
+        "http_packet_implementation_subject": "NOT_EXPOSED_IN_DRAFT"
+      }
+    }
+  },
+  "source_input_hashes": {
+    "exports-manifest.json": "f448bcf37d4e2224cc7486cdf69ebc510702e955a3ed55f5f4d54ba68dd1da15",
+    "comparison.json": "844210a24e1a05fbd87888d5d9784559a6d0a74121536eeea5b1b1cb77c8f341",
+    "validation.json": "5885fc3f98d85415d557d518bdb8ec2045f84c65020e71b6026f3b71e79ffb06"
+  },
+  "comparison_id": "4fe95f588b252cc5a3eaeb31a99fab7a75bf588343ce8d378a91e1b3b56eed25",
+  "current_script_hashes": {
+    "tests/hci/repository_navigation_pair.py": "8abd70ce0aa1b2d2a4c8650c0e1d1ecbe1bcf98b52e16d4c7d878a016d473f88",
+    "tests/hci/repository_navigation_exports.py": "2f2c78ce1c2cc9dd8eff45f7a64da2141a7dc556b7f80f068991373eb4fdee89"
+  },
+  "browser_conditions": {
+    "viewport": {
+      "width": 1600,
+      "height": 1000
+    },
+    "device_scale_factor": 1,
+    "reduced_motion": "reduce",
+    "locale": "en-AU",
+    "timezone_id": "Australia/Sydney",
+    "bypass_csp": false
+  },
+  "browser": {
+    "version": "153.0.8010.12",
+    "engine": "chromium",
+    "playwright": "1.63.0",
+    "executable_name": "chrome-headless-shell.exe",
+    "executable_sha256": "addfa79abb060e1e514e155ed745d4bf96140bca402735958bb4e223aea0b98c",
+    "headless": true
+  },
+  "service_worker_policy": "Browser default in fresh contexts; worker registration requests, worker events or active workers fail the proof. Playwright block init-script was independently shown to fault on an empty sandboxed frame.",
+  "preservation": {
+    "browser_closed": true,
+    "source_preservation": "UNCHANGED",
+    "harness_preservation": "UNCHANGED"
+  },
+  "agent_provenance": {
+    "status": "DECLARED_ONLY",
+    "label": "Codex-assisted",
+    "note": "Git authorship and agent assistance are different claims. This proof does not authenticate agent authorship; Git author personal fields are omitted."
+  },
+  "retained_unsuccessful_attempts": [
+    {
+      "attempt": 1,
+      "status": "NOT_PROVEN",
+      "original_result_sha256": "e7c715529f56c77ae4d78ace2af1dd28acc346202c8b287948f5e8edf1a7cfd0",
+      "runner_sha256": "a1c8378933713e689f40fbfa019b07d7bd327bf878fb1c393ea43956b793f5c0",
+      "reason": "Requested full Chromium executable was not installed; no browser launched. Explicit installed headless-shell selection was added.",
+      "browser_lifecycle": "NOT_LAUNCHED",
+      "source_preservation": "UNCHANGED",
+      "harness_preservation": "UNCHANGED"
+    },
+    {
+      "attempt": 2,
+      "status": "NOT_PROVEN",
+      "original_result_sha256": "48940e7a608659f91094b13e71f2ed26d36e2d33b6cf48a06e6720c93519cc74",
+      "runner_sha256": "b8528871918a7942484ec3224219a194838bd466e0d0fe8de3f237a765940216",
+      "reason": "Harness assumed a packet.subject for an unselected DRAFT; actual contract has no subject. Replaced by explicit export/launch/served-app provenance.",
+      "browser_lifecycle": "CLOSED",
+      "source_preservation": "UNCHANGED",
+      "harness_preservation": "UNCHANGED"
+    },
+    {
+      "attempt": 3,
+      "status": "NOT_PROVEN",
+      "original_result_sha256": "bce450caefce5d5f38d995d65a41ba1b39457d6ee1faa8106fb4ea5880bb90fe",
+      "runner_sha256": "d08c358c20212cc175b44516f3e0db7179acad3ca451fa33c5b0ebaeb5597a34",
+      "reason": "Harness assumed diagnostics used a newer details container; both historical exports contain div.aside-note. Real historical controls were used and all remaining selectors audited.",
+      "browser_lifecycle": "CLOSED",
+      "source_preservation": "UNCHANGED",
+      "harness_preservation": "UNCHANGED"
+    },
+    {
+      "attempt": 4,
+      "status": "NOT_PROVEN",
+      "original_result_sha256": "d752a767a49e7afafb919852657f4b3c7aaef9991ac99fce4fe4e2f98fc4a524",
+      "runner_sha256": "e3e0205203024a34939933ff63a6b84f1abaef1073ac61457ac6c16af5da969e",
+      "reason": "Both scenarios and controls completed, but unchanged error gate rejected Playwright block-mode initialization's sandbox navigator.serviceWorker error. Independent empty-frame reproduction confirmed tool attribution.",
+      "browser_lifecycle": "CLOSED",
+      "source_preservation": "UNCHANGED",
+      "harness_preservation": "UNCHANGED"
+    }
+  ],
+  "instrumentation_attribution": {
+    "status": "CONFIRMED",
+    "original_result_sha256": "91f4f41454807ce4362a7fde88d405be13e3e7d0013dcf410cc515c396e8f691",
+    "product_code_executed": false,
+    "network": "Synthetic loopback document fulfilled by the browser test route; no server or external requests.",
+    "blocked_mode_error_class": "SecurityError",
+    "blocked_mode_error_summary": "Playwright's block-mode initialization reads navigator.serviceWorker in a sandboxed frame lacking allow-same-origin.",
+    "default_mode_error_count": 0,
+    "no_error_observation_ms": 1000,
+    "playwright_bundle_sha256": "549070af3acabb3efcc4f55bfe6210f9f7c2fcf633cf7eaa59bfe60719969171",
+    "browser_closed": true,
+    "prior_diagnostics": [
+      {
+        "id": 1,
+        "status": "NOT_CONFIRMED",
+        "reason": "about:blank top-level did not reproduce loopback secure-origin conditions; neither mode errored.",
+        "original_sha256": "7e5488b3aab4dd5beffcb08682afdc1f2698305886d64b3b1f041fe92000e2cf"
+      },
+      {
+        "id": 2,
+        "status": "HARNESS_FAILURE",
+        "reason": "Callback arity accepted Playwright Request as a result object. No product conclusion; cleanup was in finally.",
+        "retained_failure_note_sha256": "7077a1f70a7fea1944ab681b7a090c5b0f9d6cc1f3ec26140e1a078033892ba0"
+      }
+    ]
+  },
+  "limitations": [
+    "One scripted run for two displayed-navigation identity properties on one exact historical EIJA source pair, one Windows/Chromium setup and controlled transport failures; not a statistical reliability claim.",
+    "Only unselected DRAFT fixtures; no candidate preview, workflow execution, meaning selection, verification, approval, apply, export or live provider action.",
+    "Does not prove preview-instance retention/clearing, all four changed syntax sites, complete dependency/impact coverage or general source/model conformance.",
+    "No measurement of human comprehension, cognitive burden, satisfaction, usability improvement, production readiness, general codebase support or software-factory behavior.",
+    "DRAFT packets have no implementation subject. Exact export bytes and configured launch root bind runtime provenance; app.js is additionally hash-checked over HTTP.",
+    "The source intake and this browser observation are separate artifacts. The comparison's behavior status is not rewritten and the UI does not thereby gain a generic behavior verifier.",
+    "Agent assistance is declared; Git author metadata and this proof do not authenticate AI authorship.",
+    "Public excerpt deliberately omits raw observations and local identities. Original digests bind retained receipts; independent verification requires rerunning the published exporter and harness."
+  ]
+}

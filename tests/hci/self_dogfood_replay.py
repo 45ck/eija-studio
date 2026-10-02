@@ -98,6 +98,7 @@ class Review:
         self.label = "QA " + uuid4().hex[:8]
         self.case_id = None
         self.server_view = None
+        self.navigation_actions = []
         page.on("pageerror", lambda error: self.errors.append(str(error)))
         page.on("response", self.response)
         page.route("**/api/**", self.route)
@@ -183,7 +184,103 @@ class Review:
         expect(self.page.locator('#model-canvas [data-state="SAVED"]')).to_have_count(1)
         return {"stages": ["DRAFT", "PROPOSED", "PREVIEW"], "candidate_hash": self.semantic()}
 
+    def navigation_action(self, kind, selector, value=None):
+        self.navigation_actions.append({"stage": self.stage, "action": kind, "selector": selector, "value": value})
+
+    def reveal_explorer(self):
+        if self.page.locator("#toggle-explorer").get_attribute("aria-expanded") != "true":
+            if self.page.locator("#workspace-layout").get_attribute("open") is None:
+                self.page.locator("#layout-summary").click()
+                self.navigation_action("click", "#layout-summary")
+            self.page.locator("#toggle-explorer").click()
+            self.navigation_action("click", "#toggle-explorer")
+
+    def reveal_inspector(self):
+        if self.page.locator("#toggle-inspector").get_attribute("aria-expanded") != "true":
+            if self.page.locator("#workspace-layout").get_attribute("open") is None:
+                self.page.locator("#layout-summary").click()
+                self.navigation_action("click", "#layout-summary")
+            self.page.locator("#toggle-inspector").click()
+            self.navigation_action("click", "#toggle-inspector")
+
+    def open_explorer_disclosure(self, selector):
+        self.reveal_explorer()
+        disclosure = self.page.locator(selector)
+        if disclosure.get_attribute("open") is None:
+            disclosure.locator(":scope > summary").click()
+            self.navigation_action("click", selector + " > summary")
+
+    def navigator_mode(self, mode):
+        self.reveal_explorer()
+        control = self.page.locator("#navigator-mode")
+        if control.input_value() != mode:
+            control.select_option(mode)
+            self.navigation_action("select", "#navigator-mode", mode)
+        expect(control).to_have_value(mode)
+
+    def expand_tree_group(self, kind):
+        self.reveal_explorer()
+        selector = f'#domain-tree .tree-group[data-kind="{kind}"]'
+        group = self.page.locator(selector)
+        if group.get_attribute("aria-expanded") != "true":
+            group.locator(":scope > span").click()
+            self.navigation_action("click", selector + " > span")
+        expect(group).to_have_attribute("aria-expanded", "true")
+        return group
+
+    def domain_group(self, kind):
+        self.navigator_mode("domain")
+        return self.expand_tree_group(kind)
+
+    def select_transition(self, ident):
+        self.tab("model")
+        self.expand_tree_group("transition")
+        selector = f'#domain-tree [data-kind="transition"][data-item-id="{ident}"]'
+        self.page.locator(selector).click()
+        self.navigation_action("click", selector)
+        expect(self.page.locator("#transition-select")).to_have_value(ident)
+
+    def select_comparison(self, kind, ident):
+        self.tab("review")
+        self.navigator_mode("task")
+        selector = f'[data-compare-key="{kind}:{ident}"]'
+        control = self.page.locator(selector)
+        disclosure = control.locator("xpath=ancestor::details[1]")
+        if disclosure.count() and disclosure.get_attribute("open") is None:
+            disclosure.locator(":scope > summary").click()
+            self.navigation_action("click", selector + " ancestor details > summary")
+        control.click()
+        self.navigation_action("click", selector)
+        detail = self.page.locator(".compare-selection")
+        expect(detail).to_have_attribute("data-kind", kind)
+        expect(detail).to_have_attribute("data-id", ident)
+        return detail
+
+    def assert_comparison_transition(self, ident, baseline, candidate):
+        detail = self.select_comparison("transition", ident)
+        old = next((item for item in baseline["transitions"] if item["id"] == ident), None)
+        new = next((item for item in candidate["transitions"] if item["id"] == ident), None)
+        fields = ("action", "role", "from_state", "to_state", "guards", "required_effects", "forbidden_effects")
+        for field in fields:
+            row = detail.locator(f'[data-field="{field}"]')
+            expect(row).to_have_count(1)
+            cells = row.locator("td")
+            expect(cells).to_have_count(2)
+            for index, model in enumerate((old, new)):
+                value = None if model is None else model[field]
+                actual = cells.nth(index).text_content()
+                if value is None:
+                    assert actual == "Not present", (field, index, actual)
+                elif isinstance(value, list):
+                    assert json.loads(actual.removesuffix(" (none declared)")) == value, (field, index, actual, value)
+                else:
+                    assert actual == str(value), (field, index, actual, value)
+        for side, model in (("before", old), ("after", new)):
+            expect(self.page.locator(f'[data-compare-side="{side}"] [data-transition="{ident}"]')).to_have_count(int(model is not None))
+        return detail
+
     def source(self):
+        self.domain_group("term")
         self.page.locator('#domain-tree [data-eija-id="eija-review-slice.term.change-case"]').click()
         self.page.locator("#selection-detail").get_by_role(
             "button", name="repo://src/eija_studio/domain/change_case.py#ChangeCase", exact=True,
@@ -233,7 +330,7 @@ class Review:
 
     def edit(self):
         self.tab("model")
-        self.page.locator("#transition-select").select_option("TR-SAVE")
+        self.select_transition("TR-SAVE")
         self.original_hash, self.original_version = self.semantic(), self.revision()
         self.before_edit_view = self.server_view
         writes = sum(item["method"] == "POST" and item["path"].endswith("/edit") for item in self.requests)
@@ -264,12 +361,11 @@ class Review:
     def semantic_diff(self):
         case, before, baseline, candidate = self.comparison_models()
         self.tab("review")
-        article = self.page.locator('[data-eija-id="review.transition.TR-SAVE"]')
-        expect(article.locator(".before")).to_contain_text("Not present")
-        expect(article.locator(".after")).to_contain_text("Agent · Save")
-        expect(article.locator(".after")).to_contain_text("PREVIEW")
-        expect(article.locator(".after")).to_contain_text("SAVED")
-        expect(article.locator(".diff-table")).to_contain_text("Role")
+        article = self.assert_comparison_transition("TR-SAVE", case["baseline"], case["candidate"])
+        expect(article.locator('[data-field="role"]')).to_contain_text("Role")
+        expected_save = next(item for item in case["candidate"]["transitions"] if item["id"] == "TR-SAVE")
+        assert {key: expected_save[key] for key in ("role", "action", "from_state", "to_state")} == {
+            "role": "Agent", "action": "Save", "from_state": "PREVIEW", "to_state": "SAVED"}
         article.scroll_into_view_if_needed()
         self.page.screenshot(path=str(self.out / "changes-before-after.png"))
         self.recording_pause()
@@ -286,7 +382,7 @@ class Review:
                 "response_artifact": "semantic-diff-response.json", "context_preserved": True}
 
     def refusal(self):
-        self.page.locator("#transition-select").select_option("TR-APPROVE")
+        self.select_transition("TR-APPROVE")
         before, version = self.semantic(), self.revision()
         writes = sum(item["method"] == "POST" and item["path"].endswith("/edit") for item in self.requests)
         self.page.locator("#transition-role").select_option("Agent")
@@ -314,6 +410,7 @@ class Review:
         self.page.reload()
         expect(self.page.locator("#connection")).to_contain_text("offline", timeout=60000)
         self.settled()
+        self.open_explorer_disclosure("#explorer details.case-explorer")
         self.page.locator("#case-list button").filter(has_text=self.label).click()
         self.settled()
         self.tab("model")
@@ -333,6 +430,7 @@ class Review:
         expect(self.page.locator('[data-tab="code"]')).to_be_focused()
         expect(self.page.locator('[data-tab="code"]')).to_have_attribute("aria-selected", "true")
         self.tab("model")
+        self.domain_group("term")
         group = self.page.locator('#domain-tree [data-eija-id="eija-review-slice.group.term"]')
         group.focus()
         group.press("ArrowRight")
@@ -365,7 +463,7 @@ class Review:
         )
         self.page.screenshot(path=str(self.out / "historical-preview.png"))
         self.page.locator("#model-version").select_option("working")
-        self.page.locator("#transition-select").select_option("TR-SAVE")
+        self.select_transition("TR-SAVE")
         expect(self.page.locator("#transition-details")).to_contain_text("TR-SAVE · Agent")
         assert self.semantic() == before and self.revision() == version
         return {"baseline_and_history_read_only": True, "history_owner_current_agent": True,
@@ -544,6 +642,7 @@ def complete_report(review):
     review.checks.extend({"id": name, "status": "NOT_RUN", "reason": "An earlier dependent check failed."}
                         for name in EXPECTED if name not in completed)
     return {"checks": review.checks, "case_id": review.case_id, "requests": review.requests,
+            "navigation_actions": review.navigation_actions,
             "outcome": "PASS" if all(item["status"] == "PASS" for item in review.checks) else "FAIL"}
 
 

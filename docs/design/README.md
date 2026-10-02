@@ -6,6 +6,8 @@ The [current implementation and HCI ledger](IMPLEMENTATION-STATUS.md) maps all f
 
 The [next UX build sequence](NEXT-UX-PASS.md) translates observed clutter and the visual-change target into concrete hierarchy, comparison and source/evidence work. Its proposed changes still require implementation and validation.
 
+The [3 October review checkpoint](2026-10-03-CODE-REVIEW-VALIDATION.md) records the implemented comparison workspace and its scoped browser checks, including remaining HCI failures. The earlier ledgers retain their original subjects.
+
 ![EIJA Studio IDE concept](eija-ide-concept-v1.png)
 
 This generated concept sets a visual quality target for the working IDE. It is not a screenshot, test result, executable model, or claim of shipped functionality. Diagram arrows, counts, example hashes, and status labels are illustrative; the running application must derive these from its actual model and evidence.

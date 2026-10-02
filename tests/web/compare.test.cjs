@@ -291,3 +291,64 @@ test("restored selection and viewport belong to the exact case revision and miss
     {subject, selected:null, viewport:null, direction:"TB"});
   assert.equal(JSON.stringify(saved), original);
 });
+
+function assertFramed(boxes, viewport, sizes, padding = 19.999) {
+  for (const size of sizes) for (const box of boxes) {
+    const left = (box.x - viewport.cx) * viewport.scale + size.width / 2;
+    const top = (box.y - viewport.cy) * viewport.scale + size.height / 2;
+    assert.ok(left >= padding && top >= padding, "selected content begins inside each pane");
+    assert.ok(left + box.width * viewport.scale <= size.width - padding, "selected content ends inside pane width");
+    assert.ok(top + box.height * viewport.scale <= size.height - padding, "selected content ends inside pane height");
+  }
+}
+test("focus framing includes each side's selected endpoints, route and measured label bounds", () => {
+  const result = freeze(projection()), item = result.inventory.items.find(value => value.key === "transition:T-RETARGET");
+  // Browser getBBox supplies text/paint bounds; this deliberately exceeds the routed node bounds.
+  const measured = freeze([{x: -120, y: 12, width: 500, height: 31}]);
+  const source = JSON.stringify(result), box = compare.selectionBounds(result, item, measured);
+  const selected = [];
+  for (const [side, model] of [[result.before, before], [result.after, after]]) {
+    const t = model.transitions.find(value => value.id === "T-RETARGET");
+    selected.push(...side.nodes.filter(node => [t.from_state, t.to_state].includes(node.id)));
+    selected.push(...side.edges.find(edge => edge.id === t.id).points.map(point => ({...point, width: 0, height: 0})));
+  }
+  for (const sizes of [[{width: 640, height: 480}, {width: 635, height: 480}], [{width: 420, height: 255}, {width: 410, height: 245}]]) {
+    const view = compare.frameBounds(box, sizes);assert.ok(view.scale > 0 && view.scale <= 1);
+    assertFramed([...selected, ...measured], view, sizes);
+  }
+  assert.equal(JSON.stringify(result), source);
+});
+test("focus framing shows added and removed state and initial-state selections without phantom endpoints", () => {
+  const result = freeze(projection("TB", initialBefore, initialAfter));
+  for (const key of ["state:Removed", "state:Added", "initial:initial_state"]) {
+    const item = result.inventory.items.find(value => value.key === key), box = compare.selectionBounds(result, item);
+    const ids = item.kind === "initial" ? ["A", "B"] : [item.id];
+    const nodes = [...result.before.nodes, ...result.after.nodes].filter(node => ids.includes(node.id));
+    assertFramed(nodes, compare.frameBounds(box, [{width: 450, height: 280}]), [{width: 450, height: 280}]);
+  }
+});
+test("the clipping oracle rejects the original forced 100 percent focus on a tall selection", () => {
+  const box = freeze({x: 100, y: 90, width: 260, height: 610}), sizes = freeze([{width: 480, height: 310}]);
+  const fixed = compare.frameBounds(box, sizes);assertFramed([box], fixed, sizes);assert.ok(fixed.scale < 0.5);
+  assert.throws(() => assertFramed([box], {...fixed, scale: 1}, sizes), /selected content/);
+});
+test("fitting never enlarges small content and handles tiny panes without a false 100 percent label", () => {
+  const small = freeze({x: 20, y: 40, width: 190, height: 76});
+  assert.equal(compare.frameBounds(small, [{width: 800, height: 600}]).scale, 1);
+  const tiny = compare.frameBounds(small, [{width: 32, height: 20}]);
+  assert.ok(Number.isFinite(tiny.scale) && tiny.scale > 0 && tiny.scale < 0.1);
+});
+test("actual viewport handlers defer hidden hosts instead of publishing invented dimensions", () => {
+  const fs = require("node:fs"), vm = require("node:vm");
+  const source = fs.readFileSync(process.env.EIJA_COMPARE_MODULE || path.join(web, "compare.js"), "utf8");
+  const start = source.indexOf("  function dimensions(s)"), end = source.indexOf("  return {render, inventory");
+  assert.ok(start >= 0 && end > start);const handlers = {};vm.createContext(handlers);vm.runInContext(source.slice(start, end), handlers);
+  const layout = projection(), item = layout.inventory.items.find(value => value.key === "transition:T-RETARGET");
+  const host = {clientWidth: 0, clientHeight: 0}, board = {setAttribute:()=>{throw Error("A hidden SVG must not publish a fallback viewBox");}};
+  const s = {state:{viewport:null},panes:[{host,board}],shell:{dataset:{}},layout,selected:()=>item,groups:[],scale:{},scaleHint:{},notify:()=>{}};
+  handlers.focusSelection(s);assert.equal(s.state.viewport,null);assert.equal(s.shell.dataset.compareView,"focus");
+  handlers.fit(s);assert.equal(s.state.viewport,null);assert.equal(s.shell.dataset.compareView,"overview");
+  host.clientWidth=430;host.clientHeight=275;const boxes=[];board.setAttribute=(name,value)=>boxes.push({name,value});
+  handlers.focusSelection(s);assert.equal(s.shell.dataset.compareView,"focus");assert.equal(boxes[0].name,"viewBox");
+  assertFramed([compare.selectionBounds(layout,item)],s.state.viewport,[{width:430,height:275}]);
+});

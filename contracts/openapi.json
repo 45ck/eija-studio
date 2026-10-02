@@ -309,6 +309,135 @@
         }
       }
     },
+    "/api/repository/change": {
+      "get": {
+        "summary": "Repository Change",
+        "operationId": "repository_change_api_repository_change_get",
+        "parameters": [
+          {
+            "name": "base",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$",
+              "title": "Base"
+            }
+          },
+          {
+            "name": "head",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$",
+              "title": "Head"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/repository/change/file": {
+      "get": {
+        "summary": "Repository Change File",
+        "operationId": "repository_change_file_api_repository_change_file_get",
+        "parameters": [
+          {
+            "name": "base",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$",
+              "title": "Base"
+            }
+          },
+          {
+            "name": "head",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$",
+              "title": "Head"
+            }
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024,
+              "title": "Path"
+            }
+          },
+          {
+            "name": "reference",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 800
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Reference"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/cases": {
       "get": {
         "summary": "Cases",

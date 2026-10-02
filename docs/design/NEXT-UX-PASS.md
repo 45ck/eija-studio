@@ -1,6 +1,8 @@
 # EIJA next UX pass: focused work and visual change review
 
-**2 October 2026 — next build proposal.** This document proposes changes; they are not implemented by this plan. Latest density acceptance remains **FAIL: 68 > 27** (the earlier captures reviewed below measured 70). The supported product is a model/change workbench with **read-only captured source navigation**; it is not a source-code authoring editor or a working agent factory.
+**Implementation update, 3 October:** the [new validation checkpoint](2026-10-03-CODE-REVIEW-VALIDATION.md) records the implemented task navigator, paired model comparison, focused evidence and immutable code review. This proposal remains the design rationale. Its earlier density figures are historical; whole-app acceptance is still open.
+
+**2 October 2026 — next build proposal.** This document proposes changes; they are not implemented by this plan. At that proposal checkpoint, density acceptance was **FAIL: 68 > 27** (the earlier captures reviewed below measured 70). The supported product is a model/change workbench with **read-only captured source navigation**; it is not a source-code authoring editor or a working agent factory.
 
 ## What to change, and why
 
@@ -60,3 +62,43 @@ Retain browser/version, shipped asset hashes, state, viewport and negative contr
 - `docs/design/WHOLE-APP-UX.md`, `WHOLE-APP-STORIES.md`, design README and visual-change/evidence-runtime concept images.
 - Actual `work/ide-browser-qa/final-recording-4/changes-before-after.png` and `evidence-truth.png`; these are prior retained captures, not a new run.
 - Current `review.js`, shell/evidence presentation and HTML navigation. Backend/source/owner capability boundaries remain as already implemented and tested; this document adds no capability claim.
+## Proposed next acceptance order — 3 October
+
+The strongest next working benefit is a complete reviewer task: understand a
+specific change, follow its exact source and applicable evidence, detect a seeded
+harmful change or unsupported claim, and recover without losing context. Prioritize
+that usable loop; lower comprehension burden still needs observed human decisions.
+Keep the existing four personas, fifteen stories, ten screens and H01–H10 in
+[the story matrix](WHOLE-APP-STORIES.md) and [whole-app contract](WHOLE-APP-UX.md).
+This sequence is engineering work, not a wizard users must follow.
+
+| Order | User benefit / mapping | Next acceptance |
+| --- | --- | --- |
+| 1 | Reliable current baseline; all personas/H01–10 | Preserve canonical1 and corrected canonical2, both FAIL. The corrected count is 56 > 27, KLM 65.31 > 65 s and p95 747.6 ms GAP. Close real UX/gate failures, new JavaScript line-identity repair and post-refactor checks without relaxing budgets. |
+| 2 | Reviewer/lead and AI engineer can judge a change; US01/02/04/05/07/10/11, S10/S01/S03/S04/S06 | Complete source-first and review-first journeys through all changes, exact source, property/bounds/unknowns and available counterexamples. Check wrong fields/arrows/subjects, missing bindings, stale capture, failed refresh and cross-case return. Include populated/opened/pinned context. |
+| 3 | Modeller and AI engineer can change, try and recover; US03/06/08/09 plus US02/10/11, S02/S05/S07/S08 | Complete intent or typed-edit entry, supported consequence preview, authoritative redraw/evidence invalidation, allowed/refused runtime actions and history recovery. Preserve unsent work on failure; cancel makes no mutation; stale and duplicate requests cannot silently apply. |
+| 4 | All core personas can use and reproduce the supported IDE; US01–US12, S01–S08/S10 | Complete pointer/keyboard tasks and applicable empty/loading/error/stale variants at desktop, enlarged text and existing reflow sizes. Resolve manual accessibility/incomplete findings; measure paint-aware feedback separately. Reproduce the final published checkout with an independent engineer, then record the actual working product and limits. |
+| 5 | Factory operator can inspect and land a bounded combined result; US13/14, S09 with S03/S04/S06/S08 | Reuse Git/worktree/agent tools. Prove ownership, known overlap witnesses, fresh base and actual merged-result verification plus authorized landing/recovery. Separate branch passes or agent cards are insufficient. |
+| 6 | Modeller can use one explicit domain refactor; US15, S05/S03/S04/S06 | Choose one supported rename/split/merge adapter, inspect deterministic model/source/test effects and correspondence, test conformance and refusal. Unsupported transformations remain unavailable. |
+
+Accessibility, subject truth and recovery apply in each increment, not only step
+4. S09 and US13–US15 remain planned expansion; source authoring stays in the existing
+editor/agent. Reuse the OSS register and current components before adding tools.
+
+Observe representative reviewers, AI-assisted engineers and modellers on the real
+loop while closing it. Predeclare matched seeded changes, correct decisions,
+false alarms, completion/errors/effort and comparison conditions against existing
+review practice; report sample and limitations. Factory personas remain hypotheses
+until the coordination task exists. EIJA is first; select external repositories
+after the first accepted flow and record actual language/semantic coverage.
+Universal codebase correctness, general factory safety and reduced comprehension
+burden remain unproved. A useful demo and reproducible proof should say so plainly.
+
+The corrected density maximum is Rules & ripple: 31 controls + 25 text-parent
+groups, not the paired Changes layout. Inspect that actual state before simplifying
+it. Source inspection suggests repeated state-card/rule-table facts and contextual
+transition-edit discovery as candidates; the trace lacks a screenshot and named
+text-group inventory, so these are hypotheses for task review. Preserve impact
+coverage, exact subject, blockers and stable navigation. KLM's fixed pointer costs
+require an actually evaluated equivalent task path; cosmetic changes alone cannot
+close the 65.31-second failure.

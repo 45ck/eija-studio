@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/adapters/repository_capture.py
   title: adapters/repository_capture.py
   hash_method: ast-api-v1
-  sha256: 11adb0063e9c4a8de5776baf9291fc44df313c516363ed6cf57fc9be25ce6eb6
-notes_baseline: 7a6d91d35efd2efa5b5e3e377103ecade00d833563a5e4649fbeef6093c35595
+  sha256: 100e7bb0b6140b9d519f6f0855f358c456e1dd37038288f1391a51ced2f30671
+notes_baseline: ba277e39bfbd0e6de44b9fcbbc5f171cc892e55b3b956480b1bfa06af1610fd2
 ---
 
 # adapters.repository_capture
@@ -40,6 +40,10 @@ The trusted-local-user assumption still applies: this is not an OS security sand
 ## Public symbols
 
 _Symbol pages are generated for the domain and application layers only._
+
+## Internal imports
+
+* [`domain/models`](/modules/domain/models.md)
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -47,7 +51,14 @@ _Symbol pages are generated for the domain and application layers only._
 _No curated notes yet._
 
 <!-- okf:generated:begin links -->
+## Imports
+
+* [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
+
 ## Referenced by
 
 * [adapters.repository](/modules/adapters/repository.md) - Repository analysis and bounded source navigation over captured checkout bytes.
+* [adapters.repository_analysis](/modules/adapters/repository_analysis.md) - Captured-byte syntax and partial impact adapted to existing Weave primitives.
+* [adapters.repository_change_snapshot](/modules/adapters/repository_change_snapshot.md) - Captured immutable comparison snapshots shared by capture, analysis and retention.
+* [adapters.repository_changes](/modules/adapters/repository_changes.md) - Read-only, bounded comparison of two local Git commits.
 <!-- okf:generated:end links -->

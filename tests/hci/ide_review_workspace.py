@@ -366,9 +366,8 @@ class ReviewWorkspace(Journey):
         return value
 
     def chosen(self, key):
-        self.tab("review")
-        self.page.locator(f'[data-compare-key="{key}"]').click()
         kind, ident = key.split(":", 1)
+        self.select_comparison(kind, ident)
         self.comparison_selection = (kind, ident)
         detail = self.page.locator(".compare-selection")
         replay.expect(detail).to_have_attribute("data-kind", kind)
@@ -415,7 +414,7 @@ class ReviewWorkspace(Journey):
         assert len(wanted) == 1 and wanted[0]["legal"] is True, wanted
         before = self.case_view()
         self.tab("model")
-        self.page.locator("#transition-select").select_option(transition)
+        self.select_transition(transition)
         control = "#model-source" if end == "source" else "#target-state"
         self.page.locator(control).select_option(state)
         self.page.locator("#edit-" + end).click()
@@ -431,6 +430,8 @@ class ReviewWorkspace(Journey):
 
     def prepare(self):
         self.entry()
+        replay.expect(self.page.locator("#navigator-mode")).to_have_value("task")
+        replay.expect(self.page.locator('#domain-tree .tree-group[data-kind="transition"]')).to_have_attribute("aria-expanded", "true")
         self.shot("first-entry")
         emit({"milestone": "normal-csp-entry", "screenshot": str(self.out / "first-entry.png"), "javascript_errors": self.errors})
         self.create_candidate()
@@ -454,6 +455,8 @@ class ReviewWorkspace(Journey):
         view = self.case_view()
         self.page.locator('[data-compare-action="overview"]').click()
         pair = self.observe_pair(view, "parallel-overview")
+        fonts = self.page.locator(".paired-compare").evaluate("root => ({body:getComputedStyle(document.body).fontFamily, labels:[...root.querySelectorAll('.compare-state-label,.compare-edge-label,.compare-initial-label')].map(node=>({text:node.textContent,family:getComputedStyle(node).fontFamily}))})")
+        assert fonts["labels"] and all(item["family"] == fonts["body"] for item in fonts["labels"]), fonts
         controls = {side: graph_negative_controls(view["case"][field], pair[side])
                     for side, field in (("before", "baseline"), ("after", "candidate"))}
         board = self.page.locator('[data-compare-side="after"] svg.compare-svg')
@@ -464,6 +467,8 @@ class ReviewWorkspace(Journey):
             # A planted painted-path defect only; authoritative model data and labels stay intact.
             line.evaluate("node => node.setAttribute('d', 'M 0 0 L 1 1')")
             mutated = board.evaluate(OBSERVE_COMPARE)
+            write_json(self.out / "painted-endpoint-negative-control.json", {"expected": "REJECT",
+                       "model": view["case"]["candidate"], "observed": mutated, "original_path": actual_path})
             try:
                 assert_graph(view["case"]["candidate"], mutated)
             except AssertionError as error:
@@ -505,7 +510,7 @@ class ReviewWorkspace(Journey):
         self.page.set_viewport_size({"width": 1600, "height": 1100})
         self.page.locator('[data-compare-action="focus"]').click()
         self.assert_unchanged(before)
-        return {"oracle_controls": controls, "painted_endpoint_negative_control": rejected,
+        return {"oracle_controls": controls, "painted_endpoint_negative_control": rejected, "computed_fonts": fonts,
                 "visible_selected_endpoints": visible_focus,
                 "viewboxes_before": old, "viewboxes_after": new,
                 "absent_side_has_no_ghost": True, "case_layout_history_unchanged": True}
@@ -591,6 +596,9 @@ class ReviewWorkspace(Journey):
         self.page.locator('[data-compare-action="evidence"]').click()
         self.assert_evidence(view)
         replay.expect(self.page.locator("#evidence-subject")).to_contain_text("Model inspector selection: transition · TR-VERIFY")
+        self.domain_group("term")
+        tree_state = self.page.locator("#domain-tree .tree-group").evaluate_all("nodes => nodes.map(n => [n.dataset.kind, n.getAttribute('aria-expanded')])")
+        self.shot("domain-pinned-evidence")
         controls = ("#toggle-explorer", "#toggle-inspector", "#toggle-bottom")
         panes = {key: self.page.locator(key).get_attribute("aria-expanded") for key in controls}
         self.page.locator("#focus-evidence").click()
@@ -601,8 +609,11 @@ class ReviewWorkspace(Journey):
         replay.expect(self.page.locator("#layout-summary")).to_be_focused()
         self.tab("review")
         self.tab("evidence")
+        replay.expect(self.page.locator("#navigator-mode")).to_have_value("domain")
+        assert self.page.locator("#domain-tree .tree-group").evaluate_all("nodes => nodes.map(n => [n.dataset.kind, n.getAttribute('aria-expanded')])") == tree_state
         replay.expect(self.page.locator("#toggle-explorer")).to_have_attribute("aria-expanded", "true")
         self.assert_evidence(view)
+        self.shot("focused-domain-expanded")
         self.fail_next = "/api/cases/" + self.case_id
         self.palette("Refresh current model")
         assert self.fail_next is None
@@ -792,7 +803,8 @@ def _freshness_query(response, path, **query):
 
 def _freshness_ui_source(page):
     return {"reference": page.locator("#source-reference").input_value(),
-            "caption": page.locator("#source-file").inner_text(),
+            "caption": page.locator("#source-file").text_content(),
+            "range_label": page.locator(".source-lines").get_attribute("aria-label"),
             "source_hash": page.locator("#source-reader").get_attribute("data-source-hash"),
             "lines": page.locator(".source-line code").all_text_contents(),
             "numbers": page.locator(".source-line .line-number").all_text_contents(),
@@ -815,11 +827,13 @@ def _freshness_assert_source(page, payload, connection, file_bytes):
     lines = re.split(r"\r?\n", payload["text"])
     if lines and lines[-1] == "":
         lines.pop()
-    assert actual["reference"] == payload["reference"] and payload["path"] in actual["caption"]
-    assert "Studio.verify" in actual["caption"] and actual["source_hash"] == payload["source_hash"]
-    assert actual["lines"] == [line or " " for line in lines]
-    assert actual["numbers"] == [str(start + offset) for offset in range(len(lines))]
-    assert all(payload[key] in actual["metadata"] for key in ("source_hash", "graph_hash", "file_hash", "snippet_hash"))
+    assert actual["reference"] == payload["reference"] and payload["path"] in actual["caption"], "Source file/reference identity differs from the current GET"
+    assert "Studio.verify" in actual["caption"] and actual["source_hash"] == payload["source_hash"], "Source symbol/snapshot differs from the current GET"
+    expected_range = f"Read-only source {payload['path']}, lines {start} to {end}"
+    assert actual["range_label"] == expected_range, {"check": "source-range-label", "expected": expected_range, "actual": actual["range_label"]}
+    assert actual["lines"] == [line or " " for line in lines], "Rendered source text differs from current captured bytes"
+    assert actual["numbers"] == [str(start + offset) for offset in range(len(lines))], "Rendered source numbers differ from current captured range"
+    assert all(payload[key] in actual["metadata"] for key in ("source_hash", "graph_hash", "file_hash", "snippet_hash")), "Source metadata omits a current GET identity"
     return actual
 
 
@@ -874,6 +888,8 @@ def run_freshness_fixture(playwright, out):
     try:
         with tempfile.TemporaryDirectory(prefix="tracked-source-", dir=out) as scratch:
             fixture = Path(scratch).resolve()
+            if not fixture.is_relative_to(out.resolve()):
+                raise RuntimeError("Disposable source fixture escaped its named output directory.")
             target = fixture / _FRESHNESS_PATH
             target.parent.mkdir(parents=True)
             target.write_bytes(original)
@@ -905,7 +921,8 @@ def run_freshness_fixture(playwright, out):
                     assert initial.value.json()["connection"]["source_hash"] == s1
                     cases_before = review.oracle("cases")
                     assert cases_before == []
-                    leaf = page.locator('[data-eija-id="eija-review-slice.term.verify"]')
+                    review.domain_group("term")
+                    leaf = page.locator('#domain-tree [data-eija-id="eija-review-slice.term.verify"]')
                     leaf.click()
                     impact_button = page.locator("#selection-detail").get_by_role("button", name="Find repository references", exact=True)
                     with page.expect_response(lambda r: _freshness_query(r, "/api/repository/impact", term="verify", expected_source_hash=s1)) as impact1:
@@ -922,6 +939,7 @@ def run_freshness_fixture(playwright, out):
                     data1 = review.oracle("repository/source", reference=_FRESHNESS_REF, expected_source_hash=s1)
                     assert source1.value.json() == data1
                     replay.expect(page.locator("#source-freshness")).to_have_attribute("data-status", "captured")
+                    evidence["source_ui_before"] = _freshness_ui_source(page)
                     ui1 = _freshness_assert_source(page, data1, connection1, original)
                     page.screenshot(path=str(out / "source-s1.png"), full_page=True)
                     evidence["checks"].append({"id": "captured-s1", "status": "PASS", "source_hash": s1})
@@ -945,6 +963,9 @@ def run_freshness_fixture(playwright, out):
                     replay.expect(page.locator("#source-freshness")).to_have_attribute("data-status", "stale")
                     replay.expect(page.locator("#source-freshness")).to_contain_text("Previous captured source is retained")
                     assert _freshness_ui_source(page) == ui1, "Stale navigation replaced old source or caption"
+                    replay.expect(page.locator("#selection-detail")).to_have_attribute("data-eija-id", "eija-review-slice.detail.term.verify")
+                    review.reveal_inspector()
+                    replay.expect(impact_button).to_be_visible()
                     with page.expect_response(lambda r: _freshness_query(r, "/api/repository/impact", term="verify", expected_source_hash=s1)) as stale_impact:
                         impact_button.click()
                     review.settled()
@@ -953,10 +974,12 @@ def run_freshness_fixture(playwright, out):
                     replay.expect(page.locator("#error-json")).to_contain_text("SOURCE_SNAPSHOT_STALE")
                     assert _freshness_ui_source(page) == ui1
                     page.screenshot(path=str(out / "stale-source-retained.png"), full_page=True)
-                    evidence["checks"].append({"id": "stale-rejection-retains-s1", "status": "PASS", "source_hash": s2})
+                    evidence["checks"].append({"id": "stale-rejection-retains-s1", "status": "PASS", "expected_source_hash": s1, "current_source_hash": s2})
 
                     review.stage = "freshness-explicit-refresh"
                     review.tab("model")
+                    replay.expect(page.locator("#selection-detail")).to_have_attribute("data-eija-id", "eija-review-slice.detail.term.verify")
+                    review.reveal_inspector()
                     marker = len(review.full_requests)
                     retry = page.locator('#inspector-impact [data-source-refresh="true"]')
                     with page.expect_response(lambda r: _freshness_query(r, "/api/workbench")) as refreshed, page.expect_response(lambda r: _freshness_query(r, "/api/repository/source", reference=_FRESHNESS_REF, expected_source_hash=s2)) as source2:
@@ -971,8 +994,11 @@ def run_freshness_fixture(playwright, out):
                     data2 = review.oracle("repository/source", reference=_FRESHNESS_REF, expected_source_hash=s2)
                     assert source2.value.json() == data2 and _FRESHNESS_COMMENT in data2["text"]
                     replay.expect(page.locator("#source-freshness")).to_have_attribute("data-status", "captured")
+                    evidence["source_ui_after"] = _freshness_ui_source(page)
                     ui2 = _freshness_assert_source(page, data2, connection2, modified)
-                    assert ui2["lines"] != ui1["lines"] and ui2["caption"] == ui1["caption"]
+                    assert ui2["lines"] != ui1["lines"], "Explicit refresh failed to replace S1 text with the changed S2 excerpt"
+                    assert ui2["reference"] == ui1["reference"], "Explicit refresh changed the selected logical source reference"
+                    assert ui2["caption"] == ui1["caption"], {"check": "same-file-symbol-caption", "before": ui1["caption"], "after": ui2["caption"]}
                     assert not any(item["path"] == "/api/repository/impact" for item in review.full_requests[marker:]), "Refresh silently recalculated impact"
                     replay.expect(page.locator("#inspector-impact")).to_contain_text("Find repository references again")
                     with page.expect_response(lambda r: _freshness_query(r, "/api/repository/impact", term="verify", expected_source_hash=s2)) as impact2:
@@ -1007,7 +1033,8 @@ def run_freshness_fixture(playwright, out):
             evidence["server_closed"] = True
     except Exception as error:  # Retain failure evidence after fixture/browser/server cleanup.
         evidence["status"] = "FAIL"
-        evidence["error"] = {"type": type(error).__name__, "message": str(error).replace(replay.TEST_CAPABILITY, "[test-capability]")}
+        evidence["error"] = {"type": type(error).__name__, "message": str(error).replace(replay.TEST_CAPABILITY, "[test-capability]"),
+                             "traceback": traceback.format_exc().replace(replay.TEST_CAPABILITY, "[test-capability]")}
     finally:
         evidence["fixture_removed"] = fixture is not None and not fixture.exists()
         if endpoint is not None:
@@ -1018,7 +1045,9 @@ def run_freshness_fixture(playwright, out):
         if not all(evidence[key] for key in ("browser_closed", "server_closed", "fixture_removed", "real_file_preserved")):
             evidence["status"] = "FAIL"
         if review is not None:
-            evidence.update(requests=review.full_requests, http_errors=review.http_errors,
+            evidence.update(failed_stage=review.stage if evidence["status"] != "PASS" else None,
+                            requests=review.full_requests, http_errors=review.http_errors,
+                            navigation_actions=review.navigation_actions,
                             javascript_errors=review.errors, forbidden_attempts=review.forbidden)
             (out / "authoritative-get-oracles.json").write_text(json.dumps(review.oracles, indent=2) + "\n", encoding="utf-8")
         (out / "result.json").write_text(json.dumps(evidence, indent=2) + "\n", encoding="utf-8")
@@ -1028,12 +1057,38 @@ def run_freshness_fixture(playwright, out):
     return evidence
 
 
+def freshness_only(out, before):
+    """Run the same independent fixture without claiming the main review journey ran."""
+    result = {"schema": "eija.review-source-freshness-only.v1", "status": "FAIL", "main_review": "NOT_RUN",
+              "script_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
+    try:
+        with replay.sync_playwright() as playwright:
+            fixture = run_freshness_fixture(playwright, out / "freshness-fixture")
+        result.update(status=fixture["status"], source_freshness_fixture=fixture,
+                      browser_closed=fixture["browser_closed"], server_closed=fixture["server_closed"])
+    except Exception as error:
+        result["error"] = {"type": type(error).__name__, "message": str(error).replace(replay.TEST_CAPABILITY, "[test-capability]")}
+    finally:
+        after = subject_identity()
+        write_json(out / "subject-after.json", after)
+        result["subject_preservation"] = compare_subjects(before, after)
+        result["subject_content_sha256"] = before["content_sha256"]
+        if result["subject_preservation"]["status"] != "UNCHANGED":
+            result["status"] = "FAIL"
+        write_json(out / "result.json", result)
+        write_json(out / "artifact-manifest.json", {p.relative_to(out).as_posix(): {"bytes": p.stat().st_size, "sha256": hashlib.sha256(p.read_bytes()).hexdigest()}
+                                                    for p in sorted(out.rglob("*")) if p.is_file()})
+    emit({key: result.get(key) for key in ("status", "main_review", "browser_closed", "server_closed", "subject_preservation")})
+    return 0 if result["status"] == "PASS" else 1
+
+
 def main():
     if not __debug__:
         emit({"status": "NOT_RUN", "reason": "Assertion oracles require Python without -O/-OO."})
         return 2
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", required=True, type=Path)
+    parser.add_argument("--scenario", choices=("all", "source-freshness"), default="all")
     args = parser.parse_args()
     out = args.out.resolve()
     out.mkdir(parents=True, exist_ok=False)
@@ -1042,6 +1097,8 @@ def main():
         return 3
     before = subject_identity()
     write_json(out / "subject-before.json", before)
+    if args.scenario == "source-freshness":
+        return freshness_only(out, before)
     result = {"status": "FAIL", "schema": "eija.review-workspace-browser.v1", "utc": datetime.now(UTC).isoformat(),
               "script_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(), "checks": [],
               "identity": "normal_source_review_required", "pack": "eija-review-slice", "provider": "offline",
@@ -1077,6 +1134,7 @@ def main():
                     finally:
                         browser.close()
                         result["browser_closed"] = True
+        result["active_scope"] = "source-freshness-fixture"
         with replay.sync_playwright() as playwright:
             result["source_freshness_fixture"] = run_freshness_fixture(playwright, out / "freshness-fixture")
         assert result["source_freshness_fixture"]["status"] == "PASS", result["source_freshness_fixture"]
@@ -1093,8 +1151,9 @@ def main():
         if not result["browser_closed"] or not result["server_closed"]:
             result["status"] = "FAIL"
         if review is not None:
-            result.update({"checks": review.checks, "failed_stage": review.stage if result["status"] != "PASS" else None,
+            result.update({"checks": review.checks, "failed_stage": result.get("active_scope", review.stage) if result["status"] != "PASS" else None,
                            "requests": review.requests, "http_errors": review.http_errors, "injected": review.injected,
+                           "navigation_actions": review.navigation_actions,
                            "javascript_errors": review.errors, "forbidden_attempts": review.forbidden})
             write_json(out / "authoritative-get-oracles.json", review.oracles)
             write_json(out / "graph-observations.json", review.graph_records)

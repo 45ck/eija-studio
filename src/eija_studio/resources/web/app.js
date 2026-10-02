@@ -9,13 +9,56 @@ let comparison = null, comparisonSelection = null, sourceRecord = null, sourcePe
 function renderChanges(){
   comparison?.destroy();comparisonSelection=null;
   const key=JSON.stringify([current?.case.id,current?.case.version]);
-  comparison=EijaCompare.render($("review-chapters"),current,{terms:workbench?.language?.terms,state:comparisonViews.get(key),
+  comparison=EijaCompare.render($("review-chapters"),current,{terms:workbench?.language?.terms,state:comparisonViews.get(key),navigatorRoot:$("task-navigator"),
     onStateChange:value=>comparisonViews.set(key,value),onSelection:rememberComparisonSelection,
+    openNavigator:()=>{navigatorMode="task";renderNavigator();EijaShell.reveal("explorer");$("task-navigator").querySelector("button.selected,button")?.focus();},
     inspectTransition:id=>{modelView="working";switchTab("model");selectTransition(id);},
     openReference:(ref,selection)=>{if(!selection||rememberComparisonSelection(selection))followReference(ref);},
     openEvidence:selection=>{if(rememberComparisonSelection(selection))switchTab("evidence");}});
 }
 let inspectorSelection = null;
+let navigatorMode="task";
+try{if(sessionStorage.getItem("eija-ui-navigator")==="domain")navigatorMode="domain";}catch{/* Optional UI preference. */}
+function selectedConcept(){
+  const kind=inspectorSelection?.kind,id=inspectorSelection?.id,model=workingModel();
+  const items=kind==="transition"?model?.transitions:kind==="state"?model?.states.map(value=>({id:value})):kind==="term"?workbench?.language?.terms:kind==="law"?workbench?.laws:kind==="role"?workbench?.roles:[];
+  return items?.find(value=>value.id===id)||null;
+}
+function renderNavigator(){
+  if(!workbench)return;
+  const domain=navigatorMode==="domain"||tab==="model";
+  $("navigator-mode").value=navigatorMode;EijaTree.setVisible($("domain-tree"),domain);
+  $("task-navigator").hidden=domain||tab!=="review";
+  $("repository-change-navigator").hidden=domain||tab!=="repository-changes";
+  const root=$("navigator-context");root.hidden=domain||["review","repository-changes"].includes(tab);if(root.hidden)return;
+  const selectedChange=currentComparisonSelection();
+  const contextKey=JSON.stringify([workbench.pack.digest,tab,current?.case.id,current?.case.version,modelView,historyLabel,inspectorSelection,selectedChange]);
+  if(root.dataset.contextKey===contextKey)return;root.dataset.contextKey=contextKey;root.replaceChildren();
+  root.append(el("h3",{evidence:"Review context",code:"Source context",change:"Intent context",try:"Preview context"}[tab]||"Workspace context"));
+  root.append(el("p",current?`Case revision ${current.case.version} · ${current.case.stage}`:"Loaded baseline · no change case"));
+  if(selectedChange){
+    root.append(el("strong",`Selected change: ${selectedChange.kind} · ${selectedChange.id}`));
+    const back=el("button","Return to selected change","text-button");back.onclick=()=>switchTab("review");root.append(back);
+  }
+  const item=selectedConcept();
+  if(item){
+    const context=selectedChange?el("details"):root;
+    if(selectedChange){context.append(el("summary",`Model inspector: ${inspectorSelection.kind} · ${item.id}`));root.append(context);}
+    context.append(el("strong",item.label||item.action||item.id),el("p",`${inspectorSelection.kind} · ${item.id}`));
+    const refs=[...new Set([...(item.refs||[]),...(item.binds||[])])];
+    const detail=el("details"),list=el("ul");detail.append(el("summary",`Related model / source · ${refs.length}`));
+    for(const ref of refs){const li=el("li"),button=el("button",ref,"text-button");button.onclick=()=>followReference(ref);li.append(button);list.append(li);}detail.append(list);
+    if(!refs.length)detail.append(el("p","No direct references declared for this concept.","muted"));context.append(detail);
+    const inspect=el("button","Inspect selected concept","text-button");inspect.onclick=()=>{EijaShell.reveal("inspector");renderSelectionDetail();};context.append(inspect);
+  }else if(!selectedChange)root.append(el("p","No model concept selected. Pin Domain to explore concepts.","muted"));
+  if(modelView!=="working")root.append(el("p",modelView==="history"?`Historical model preview · ${historyLabel}`:"Original baseline preview","subject-warning"));
+  if(tab==="evidence")root.append(el("p","Checks in the editor describe the exact candidate subject, not a per-concept verdict.","muted"));
+}
+$("navigator-mode").onchange=event=>{
+  navigatorMode=event.target.value==="domain"?"domain":"task";
+  try{sessionStorage.setItem("eija-ui-navigator",navigatorMode);}catch{/* Optional UI preference. */}
+  renderNavigator();
+};
 function fillStates(id,states,value){$(id).replaceChildren(...states.map(s=>el("option",s)));$(id).value=value;}
 const notice=(text,error=false)=>{$("notice").textContent=text;$("notice").className=error?"error":"";};
 class ApiError extends Error {
@@ -32,7 +75,7 @@ async function api(path, body) {
 function reportError(error) {
   lastDiagnostic = {code: error.code || "REQUEST_FAILED", message: error.message, details: error.details || {}};
   notice(error.message + (error.details?.codes?.length ? " · " + error.details.codes.join("; ") : ""), true);
-  $("error-details").hidden = false; $("error-json").textContent = JSON.stringify(lastDiagnostic, null, 2);renderProblems();EijaShell.bottom("problems-pane");
+  $("error-details").hidden = false; $("error-json").textContent = JSON.stringify(lastDiagnostic, null, 2);renderProblems();EijaShell.bottom("problems-pane",{temporary:true});
 }
 function clearDiagnostic() {
   lastDiagnostic = null; $("error-details").hidden = true; $("error-json").textContent = ""; renderProblems();
@@ -59,15 +102,31 @@ async function cases() {
   select.value=current?.case.id||"";
   if(!data.length)list.append(el("p","Start an intent to create a case.","muted"));
 }
+let lastComparisonTab="review";
+function openWorkTab(name){switchTab(name==="review"?lastComparisonTab:name);}
 function switchTab(name) {
+  const focused=document.activeElement;
+  const comparing=["review","repository-changes"].includes(name),primary=comparing?"review":name;
+  const hidingComparisonFocus=comparing?["review","repository-changes"].some(id=>id!==name&&$(id).contains(focused)):$("comparison-workspace").contains(focused);
+  if(comparing)lastComparisonTab=name;
   tab = name;EijaShell.setArea(name); if (name === "visual") loadVisual();
   if(name === "change" && !current) $("create-panel").hidden=false;
-  document.querySelectorAll(".tab-content").forEach(x => {x.hidden = x.id !== name; x.setAttribute("role", "tabpanel");});
-  document.querySelectorAll("[data-tab]").forEach(x => {const selected = x.dataset.tab === name; x.classList.toggle("active", selected); x.setAttribute("aria-selected", String(selected)); x.tabIndex = selected ? 0 : -1;});
+  document.querySelectorAll(".tab-content").forEach(x => {x.hidden = x.id !== (comparing?"comparison-workspace":name); x.setAttribute("role", "tabpanel");});
+  document.querySelectorAll("[data-tab]").forEach(x => {const selected = x.dataset.tab === primary; x.classList.toggle("active", selected); x.setAttribute("aria-selected", String(selected)); x.tabIndex = selected ? 0 : -1;});
+  document.querySelectorAll("[data-comparison-tab]").forEach(button=>{
+    const selected=button.dataset.comparisonTab===lastComparisonTab;button.setAttribute("aria-selected",String(selected));button.tabIndex=selected?0:-1;
+    $(button.dataset.comparisonTab).hidden=button.dataset.comparisonTab!==name;
+  });
+  $("comparison-workspace").dataset.comparisonView=lastComparisonTab;
   for(const group of document.querySelectorAll('[role="tablist"]')){const tabs=[...group.querySelectorAll('[data-tab]')];if(tabs.length&&!tabs.some(button=>button.tabIndex===0))tabs[0].tabIndex=0;}
   const reference=$("reference-views"),selectedReference=reference.querySelector('[aria-selected="true"]');reference.dataset.active=String(!!selectedReference);reference.querySelector("summary").textContent=selectedReference?`Reference: ${selectedReference.textContent}`:"Reference views";
   if(name === "model" && workbench)EijaShell.mountCanvas(`${current?.case.id||workbench.pack.id}:${modelView}`);
   if(name === "evidence")renderEvidenceContext();
+  renderNavigator();
+  if(hidingComparisonFocus&&[focused,document.body,document.documentElement].includes(document.activeElement)){
+    const target=document.querySelector(comparing?`[data-comparison-tab="${name}"]`:`[data-tab="${primary}"]`);
+    if(target?.getClientRects().length)target.focus();
+  }
 }
 function formalList(parent,title,items){if(!items||!items.length)return;parent.append(el("h4",title));const ul=el("ul");for(const x of items)ul.append(el("li",typeof x==="string"?x:JSON.stringify(x)));parent.append(ul);}
 function explanation(root,x,lead){const box=el("div",undefined,"formal-explain");box.append(el("strong",lead+x.control+" ("+(x.source||"")+")"));box.append(el("p",(x.trace?"Counterexample trace: "+x.trace.map(s=>s.join(" ")).join(" -> ")+(x.final_state?" ends "+x.final_state:""):"Witness: "+JSON.stringify(x.witness))+". "+(x.note||"")));root.append(box);}
@@ -153,7 +212,7 @@ const model = c.candidate || c.baseline;
 $("rule-table").replaceChildren();
 for (const transition of model.transitions) {
   const row = el("tr"); row.dataset.eijaId = `${workbench?.pack.id || model.id}.rule.${transition.id}`;
-  const action = el("td"), choose = el("button", transition.action, "text-button"); choose.onclick = () => {selectTransition(transition.id); switchTab("model");}; action.append(choose); row.append(action);
+  const action = el("td"), choose = el("button", transition.action, "text-button"); choose.onclick = () => {switchTab("model"); selectTransition(transition.id);}; action.append(choose); row.append(action);
   [transition.role, transition.from_state, transition.to_state, transition.guards.join(", ")].forEach(value => row.append(el("td", value))); $("rule-table").append(row);
 }
 $("state-flow").replaceChildren(); $("layout-node").replaceChildren();
@@ -168,7 +227,7 @@ $("journeys").replaceChildren(...(p.projections?.journeys || []).map(j => el("p"
 renderWorkbench(); renderChanges();
 $("runtime-actions").replaceChildren();for(const action of status?.pack?.actions||[]){const b=el("button",action,"secondary");b.dataset.action=action;b.disabled=!instance||closed;b.onclick=()=>task(async()=>{const result=await api(`cases/${c.id}/execute`,{operation_id:crypto.randomUUID(),actor_id:$("actor").value,instance_id:instance.id,action,expected_version:instance.version});instance=result.instance;await load(c.id);$("runtime-result").textContent="Committed: "+action+". Effects: "+result.effects.join(", ");notice("Commit completed; the displayed state is persisted.");});$("runtime-actions").append(b);}$("runtime-state").textContent=instance?.state||"Not started";$("runtime-version").textContent=instance?`Instance ${instance.id.slice(0,8)} · version ${instance.version} · isolated candidate`:"No candidate state has been executed";$("trace").textContent=JSON.stringify(current.observations,null,2);
 renderEvidencePacket(p);$("approve").disabled=!p.eligible||closed||c.stage==="APPROVED";$("apply").disabled=c.stage!=="APPROVED"||!p.eligible;$("export").disabled=false;switchTab(tab);}
-$("create").onclick=()=>task(async()=>{const c=await api("cases",{request:$("request").value});tab="change";editId=null;await load(c.id);notice("Case created. No provider call or baseline change has occurred.");});$("new-case").onclick=openIntent;document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{switchTab(b.dataset.tab);if(b.closest("#reference-views")){$("reference-views").open=false;$("reference-views").querySelector("summary").focus();}});
+$("create").onclick=()=>task(async()=>{const c=await api("cases",{request:$("request").value});tab="change";editId=null;await load(c.id);notice("Case created. No provider call or baseline change has occurred.");});$("new-case").onclick=openIntent;document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{openWorkTab(b.dataset.tab);if(b.closest("#reference-views")){$("reference-views").open=false;$("reference-views").querySelector("summary").focus();}});
 $("propose").onclick=()=>task(async()=>{await command("propose",{consent:$("egress").checked});notice("Interpretations received. No meaning was selected automatically.");},"Requesting an untrusted proposal…");
 $("save").onclick=()=>task(async()=>{await command("save");notice("Review checkpoint saved; the active baseline is unchanged.");});$("discard").onclick=()=>task(async()=>{await command("discard");instance=null;render();notice("Candidate closed. History is retained; the baseline is unchanged.");});
 function edit(source) {return commitChoice(choiceFor("retarget_source", "state:" + source));}
@@ -232,7 +291,7 @@ function renderEditor() {
   select.value = editId || ""; const target = selectedTransition(), details = $("transition-details"); details.replaceChildren();
   if (target) {
     details.dataset.eijaId = `${workbench.pack.id}.transition-detail.${target.id}`;
-    details.append(el("h3", target.action), el("p", `${target.id} · ${target.role}`));
+    details.setAttribute("aria-label",`Declared constraints for ${target.id}`);
     for (const [label, values] of [["Guards", target.guards], ["Required effects", target.required_effects], ["Forbidden effects", target.forbidden_effects]]) {
       const group=el("details"),list=el("ul");group.append(el("summary",`${label} · ${(values||[]).length}`));for(const value of values||[])list.append(el("li",value));
       if(!list.childElementCount)list.append(el("li","None declared"));group.append(list);details.append(group);
@@ -251,7 +310,12 @@ function renderCanvas() {
     direction:canvasDirection, selected: editId, affordances: affordanceData?.affordances, editable: editable(), onSelect: selectTransition, onDrop: commitChoice, onNotice: notice});
   EijaShell.mountCanvas(`${current?.case.id||workbench.pack.id}:${modelView}`);
 }
-function selectTransition(id) {const returnFocus=$("model-canvas").contains(document.activeElement);editId = id || null;inspectorSelection=editId?{kind:"transition",id:editId}:null;EijaShell.toggle("inspector",true);renderEditor();renderSelectionDetail();renderCanvas();renderEvidenceContext();if(returnFocus)$("model-canvas").querySelector(".model-edge.selected")?.focus();}
+function selectTransition(id) {const returnFocus=$("model-canvas").contains(document.activeElement);editId = id || null;inspectorSelection=editId?{kind:"transition",id:editId}:null;EijaShell.reveal("inspector");EijaTree.reveal($("domain-tree"),"transition",editId);renderEditor();renderSelectionDetail();renderCanvas();renderEvidenceContext();renderNavigator();if(returnFocus)$("model-canvas").querySelector(".model-edge.selected")?.focus();}
+function openTransitionPicker(){
+  switchTab("model");inspectorSelection=selectedTransition()?{kind:"transition",id:editId}:null;
+  renderSelectionDetail();renderEvidenceContext();renderNavigator();EijaShell.reveal("inspector");
+  $("transition-inspector").hidden=false;$("transition-select").focus();
+}
 function cancelDraft() {
   if (busy || !editable() || !selectedTransition()) return;
   renderEditor(); notice("Unsent fields reset to the loaded model; no transaction was sent.");
@@ -279,19 +343,19 @@ function renderWorkbench() {
   $("status-model").textContent = `Pack ${pack.id} · ${current ? "revision " + current.case.version : "baseline"} · ${String(affordanceData?.semantic_hash || pack.digest || "unknown").slice(0, 12)}`;
   $("repository-status").textContent = EijaSource.state(workbench.connection).title;
   EijaSource.render($("source-view"), workbench.connection);
-  EijaTree.render($("domain-tree"), workbench, model, showSelection);renderEditor();renderSelectionDetail();renderCanvas();EijaShell.renderHistory(current,caseHistory,previewHistory);renderEvidenceContext();
+  EijaTree.render($("domain-tree"), workbench, model, showSelection,{key:JSON.stringify([pack.digest,current?.case.id||"baseline",modelView]),selection:inspectorSelection});renderNavigator();renderEditor();renderSelectionDetail();renderCanvas();EijaShell.renderHistory(current,caseHistory,previewHistory);renderEvidenceContext();
 }
 function showSelection(kind, item) {
   inspectorSelection={kind,id:item.id};
-  EijaShell.toggle("inspector",true);
-  if(kind==="transition")selectTransition(item.id);else renderSelectionDetail();
   if(["transition","state"].includes(kind))switchTab("model");
-  renderEvidenceContext();
+  EijaShell.reveal("inspector");EijaTree.reveal($("domain-tree"),kind,item.id);
+  if(kind==="transition")selectTransition(item.id);else renderSelectionDetail();
+  renderEvidenceContext();renderNavigator();
 }
 function renderSelectionDetail() {
   const kind=inspectorSelection?.kind,id=inspectorSelection?.id,model=workingModel();
-  const items=kind==="transition"?model?.transitions:kind==="state"?model?.states.map(value=>({id:value})):kind==="term"?workbench.language?.terms:kind==="law"?workbench.laws:kind==="role"?workbench.roles:[];
-  const item=items?.find(value=>value.id===id),root=$("selection-detail");
+  const item=selectedConcept(),root=$("selection-detail");
+  $("transition-inspector").hidden=!!item&&kind!=="transition";
   root.replaceChildren();++impactSequence;$("inspector-impact").replaceChildren();delete $("inspector-impact").dataset.sourceHash;delete root.dataset.eijaId;
   if(!item){inspectorSelection=null;root.append(el("h3","Explore a concept"),el("p","Select a term, state, role or law in the explorer.","muted"));return;}
   root.dataset.eijaId = `${workbench.pack.id}.detail.${kind}.${item.id}`;
@@ -317,25 +381,35 @@ function followReference(ref) {
   if(item)showSelection(kind,item);else notice(`Reference not found in the declared model: ${ref}`);
 }
 function renderProblems() {
-  const problems = $("problems"); problems.replaceChildren();
-  const p = current?.packet;
-  const source = workbench?.connection;
-  if (source && source.status !== "connected") problems.append(el("li", `Repository ${source.status || "unknown"}: ${source.reason || "No source snapshot available"}`, "diagnostic"));
-  if (source?.status === "connected" && ["FAIL", "REVIEW", "NOT_RUN"].includes(source.lint?.verdict)) {
-    const item = el("li"), button = el("button", `Source-link lint: ${source.lint.verdict} · ${source.lint.findings?.length || 0} findings. Inspect source checks.`, "text-button");
-    button.onclick = () => switchTab("source"); item.append(button); problems.append(item);
+  const problems=$("problems");problems.replaceChildren();
+  const p=current?.packet,source=workbench?.connection,issues=new Map();
+  const add=(code,message,origin)=>{
+    if(!issues.has(code))issues.set(code,{code,messages:new Set(),origins:new Set()});
+    const issue=issues.get(code);if(message)issue.messages.add(message);issue.origins.add(origin);return issue;
+  };
+  if(source&&source.status!=="connected")add("REPOSITORY_UNAVAILABLE",`Repository ${source.status||"unknown"}: ${source.reason||"No source snapshot available"}`,"Repository connection");
+  if(source?.status==="connected"&&["FAIL","REVIEW","NOT_RUN"].includes(source.lint?.verdict))add("SOURCE_LINK_LINT",`Source-link lint: ${source.lint.verdict} · ${source.lint.findings?.length||0} findings`,"Source snapshot");
+  if(!status?.trusted_fixture)add("SOURCE_REVIEW_REQUIRED","Owner review of changed implementation is outstanding.","Implementation identity");
+  for(const code of p?.blockers||[])add(String(code),null,"Current packet blocker");
+  if(lastDiagnostic){
+    add(lastDiagnostic.code,lastDiagnostic.message,"Latest refused operation");
+    for(const code of lastDiagnostic.details.codes||[])add(String(code),null,"Server diagnostic");
   }
-  if (!status?.trusted_fixture) problems.append(el("li", "SOURCE_REVIEW_REQUIRED · owner review of changed implementation is outstanding.", "diagnostic"));
-  for (const code of p?.blockers || []) problems.append(el("li", String(code), "diagnostic"));
-  if (lastDiagnostic) {
-    problems.append(el("li", lastDiagnostic.message, "diagnostic"));
-    for (const code of lastDiagnostic.details.codes || []) problems.append(el("li", code, "diagnostic"));
-    for (const ref of lastDiagnostic.details.refs || []) {const li = el("li"), button = el("button", ref, "text-button"); button.onclick = () => followReference(ref); li.append(button); problems.append(li);}
+  for(const issue of issues.values()){
+    const li=el("li",undefined,"diagnostic");li.dataset.problemCode=issue.code;li.dataset.problemOrigins=JSON.stringify([...issue.origins]);
+    li.append(el("strong",issue.code));for(const message of issue.messages)li.append(el("span",` · ${message}`));
+    const detail=el("details");detail.append(el("summary","Issue origins"),el("p",[...issue.origins].join(" · ")));li.append(detail);
+    if(issue.code==="SOURCE_LINK_LINT"){const button=el("button","Inspect source checks","text-button");button.onclick=()=>switchTab("source");li.append(button);}
+    problems.append(li);
   }
-  if (!problems.childElementCount) problems.append(el("li", p ? "No review blockers reported by the current packet." : "No case selected; case checks have not run."));
-  EijaShell.renderEvidence($("evidence-summary"),p);$("problem-count").textContent=problems.childElementCount;
-  $("focus-problem-count").textContent=problems.childElementCount;
-  $("status-evidence").textContent = p ? `Technical eligibility: ${p.eligible ? "eligible" : "blocked"} · human UNKNOWN` : "Evidence: NOT_RUN · human UNKNOWN";
+  if(lastDiagnostic?.details.refs?.length){
+    const item=el("li",undefined,"diagnostic-references");item.append(el("span","Refused operation references"));
+    for(const ref of lastDiagnostic.details.refs){const button=el("button",ref,"text-button");button.onclick=()=>followReference(ref);item.append(button);}problems.append(item);
+  }
+  if(!issues.size)problems.append(el("li",p?"No review blockers reported by the current packet.":"No case selected; case checks have not run."));
+  EijaShell.renderEvidence($("evidence-summary"),p);$("problem-count").textContent=issues.size;
+  $("focus-problem-count").textContent=issues.size;
+  $("status-evidence").textContent=p?`Technical eligibility: ${p.eligible?"eligible":"blocked"} · human UNKNOWN`:"Evidence: NOT_RUN · human UNKNOWN";
 }
 function commitChoice(choice) {
   if (!editable() || !choice) {notice("Choose a different server-listed destination for the selected transition."); return;}
@@ -358,7 +432,14 @@ document.querySelector(".editor-navigation").addEventListener("keydown", event =
   const group=event.target.closest('[role="tablist"]');if(!group)return;
   const tabs = [...group.querySelectorAll("[data-tab]")], index = tabs.indexOf(event.target); if (index < 0) return;
   const next = event.key === "ArrowRight" ? tabs[(index + 1) % tabs.length] : event.key === "ArrowLeft" ? tabs[(index + tabs.length - 1) % tabs.length] : event.key === "Home" ? tabs[0] : event.key === "End" ? tabs[tabs.length - 1] : null;
-  if (next) {event.preventDefault(); switchTab(next.dataset.tab); next.focus();}
+  if (next) {event.preventDefault(); openWorkTab(next.dataset.tab); next.focus();}
+});
+
+document.querySelectorAll("[data-comparison-tab]").forEach(button=>button.onclick=()=>switchTab(button.dataset.comparisonTab));
+$("comparison-tabs").addEventListener("keydown",event=>{
+  const tabs=[...$("comparison-tabs").querySelectorAll("[data-comparison-tab]")],index=tabs.indexOf(event.target);if(index<0)return;
+  const next=event.key==="ArrowRight"?tabs[(index+1)%tabs.length]:event.key==="ArrowLeft"?tabs[(index+tabs.length-1)%tabs.length]:event.key==="Home"?tabs[0]:event.key==="End"?tabs[tabs.length-1]:null;
+  if(next){event.preventDefault();switchTab(next.dataset.comparisonTab);next.focus();}
 });
 
 $("reference-views").addEventListener("keydown",event=>{if(event.key==="Escape"){$("reference-views").open=false;$("reference-views").querySelector("summary").focus();event.stopPropagation();}});
@@ -372,10 +453,12 @@ const paletteCommands = [
   ["Restore workspace",()=>EijaShell.focusWorkspace(false)],
   ["Show local case history",()=>EijaShell.bottom("history-pane")],
   ["Fit model overview",()=>{switchTab("model");EijaShell.fit();}],
-  ...[...document.querySelectorAll("[data-tab]")].map(button => [`Open ${button.textContent}`, () => {switchTab(button.dataset.tab); button.focus();}]),
-  ["Focus domain explorer", () => $("domain-tree").querySelector('[tabindex="0"]')?.focus()],
+  ...[...document.querySelectorAll("[data-tab]")].map(button => [`Open ${button.textContent}`, () => {openWorkTab(button.dataset.tab); button.focus();}]),
+  ["Open Model changes",()=>{switchTab("review");$("comparison-model-tab").focus();}],
+  ["Open Code changes",()=>{switchTab("repository-changes");$("comparison-code-tab").focus();}],
+  ["Focus domain explorer", () => {navigatorMode="domain";renderNavigator();EijaShell.reveal("explorer");$("domain-tree").querySelector('[tabindex="0"]')?.focus();}],
   ["Refresh current model", () => task(refreshCurrentModel)],
-  ["Select a transition", () => {switchTab("model");EijaShell.toggle("inspector",true); $("transition-select").focus();}]
+  ["Select a transition", openTransitionPicker]
 ];
 async function refreshCurrentModel() {
   if(current)await load(current.case.id);else{if(!await refreshSource(true))return;renderWorkbench();clearDiagnostic();}
@@ -469,7 +552,8 @@ async function openSource(reference,record=true,navigate=true){
     return true;
   }catch(error){if(sequence===sourceSequence){
     if(sourceRecord)EijaShell.renderSource(sourceRecord);else EijaShell.sourceError(error.message,error.code);
-    EijaShell.sourceFreshness(error.code=== "SOURCE_SNAPSHOT_STALE"?"stale":"unavailable",`${error.code||"SOURCE_UNAVAILABLE"}: ${error.message}${sourceRecord?" Previous captured source is retained; it is not a current filesystem read.":""}`,()=>task(refreshSource));
+    const code=error.code||"SOURCE_UNAVAILABLE",message=error.message.startsWith(code+":")?error.message:`${code}: ${error.message}`;
+    EijaShell.sourceFreshness(error.code=== "SOURCE_SNAPSHOT_STALE"?"stale":"unavailable",`${message}${sourceRecord?" Previous captured source is retained; it is not a current filesystem read.":""}`,()=>task(refreshSource));
     notice(error.message,true);
   }return false;}finally{if(sequence===sourceSequence)sourcePending=false;}
 }
@@ -483,3 +567,151 @@ $("source-back").onclick=previousSource;
 $("undo-edit").onclick=()=>task(async()=>{if(!caseHistory?.can_undo)return;await command("undo");instance=null;modelView="working";render();notice("Last semantic edit undone by the kernel. Earlier receipts are retained; eligibility is recomputed.");});
 $("redo-edit").onclick=()=>task(async()=>{if(!caseHistory?.can_redo)return;await command("redo");instance=null;modelView="working";render();notice("Semantic edit reapplied by the kernel. The displayed model was reloaded from the server.");});
 EijaShell.init({newIntent:openIntent,openTab:switchTab});
+let repositoryReview=null,repositoryComparison=null,repositoryFile=null,repositorySelection=null,repositoryView="diff";
+let repositoryGeneration=0,repositoryFileGeneration=0,repositoryRenderGeneration=0;
+let repositoryLoading=null,repositoryPendingPair=null,repositoryPendingSelection=null,repositoryError=null,repositoryDiagnostic=null;
+const repositoryObjectId=value=>typeof value==="string"&&/^(?:[0-9a-f]{40}|[0-9a-f]{64})$/.test(value);
+const repositoryPairMatches=(data,pair)=>data?.base?.commit===pair?.base&&data?.head?.commit===pair?.head;
+const repositorySameSelection=(left,right)=>!!left&&!!right&&["comparison_id","base_commit","head_commit","path"].every(key=>left[key]===right[key])&&(left.reference??null)===(right.reference??null);
+const repositoryPairLabel=(base,head)=>`${base.slice(0,12)}… → ${head.slice(0,12)}…`;
+function updateRepositoryRevisionHeader(){
+  const comparison=repositoryComparison,node=$("repository-loaded-pair");
+  const full=comparison?`Before ${comparison.base.commit}; After ${comparison.head.commit}`:"No immutable comparison loaded.";
+  node.textContent=comparison?repositoryPairLabel(comparison.base.commit,comparison.head.commit):full;
+  node.hidden=!comparison;$("repository-introduction").hidden=!!comparison;
+  node.title=full;node.setAttribute("aria-label",full);node.dataset.comparisonId=comparison?.comparison_id||"";
+  $("repository-pair-details").hidden=!comparison;
+  $("repository-loaded-base").textContent=comparison?.base.commit||"Not loaded";
+  $("repository-loaded-head").textContent=comparison?.head.commit||"Not loaded";
+}
+function closeInitialRepositoryRevisions(){
+  const editor=$("repository-revisions"),summary=$("repository-revisions-summary"),focused=document.activeElement;
+  const restore=editor.contains(focused)&&focused!==summary;
+  editor.open=false;
+  if(restore&&summary.getClientRects().length)summary.focus({preventScroll:true});
+}
+function repositoryRequestStatus(message,state){
+  const node=$("repository-comparison-status");node.textContent=message;node.dataset.status=state;
+  node.dataset.comparisonId=repositoryComparison?.comparison_id||"";
+  const quiet=!!repositoryComparison&&["captured","captured-file"].includes(state);
+  node.classList.toggle("sr-only",quiet);
+  const summary=$("repository-revisions-summary");
+  if(quiet&&document.activeElement===node&&summary.getClientRects().length)summary.focus({preventScroll:true});
+  $("repository-compare-form").setAttribute("aria-busy",String(!!repositoryLoading));
+}
+function repositoryRetainedLabel(){
+  if(!repositoryComparison)return "No successful repository comparison is displayed.";
+  const selected=repositorySelection?` · ${repositorySelection.path}${repositorySelection.reference?" · "+repositorySelection.reference:""}`:"";
+  return `Displaying retained immutable pair ${repositoryPairLabel(repositoryComparison.base.commit,repositoryComparison.head.commit)}${selected}. This is not the pending or refused result.`;
+}
+function restoreRepositoryFocus(previous){
+  if(!previous)return;
+  const active=document.activeElement;
+  if(active!==document.body&&active!==document.documentElement&&active!==previous.node)return;
+  const available=node=>node&&!node.disabled&&node.getClientRects().length>0;
+  const equivalent=previous.id?$(previous.id):null,status=$("repository-comparison-status");
+  const fallback=status.classList.contains("sr-only")?$("repository-revisions-summary"):status;
+  const target=available(equivalent)?equivalent:fallback;
+  if(available(target))target.focus({preventScroll:true});
+}
+function renderRepositoryReview(){
+  updateRepositoryRevisionHeader();
+  const root=$("repository-review"),navigator=$("repository-change-navigator"),focused=document.activeElement;
+  const previousFocus=focused&&(root.contains(focused)||navigator.contains(focused))?{id:focused.id,node:focused}:null;
+  const presentation=repositoryReview?.getState();
+  const previous=presentation?.selection,selectedFile=repositorySelection;
+  const sameFile=previous&&selectedFile&&["comparison_id","base_commit","head_commit","path"].every(key=>previous[key]===selectedFile[key]);
+  const symbolsOpen=!!(sameFile&&presentation.symbolsOpen);
+  const symbolsFilter=sameFile&&presentation.symbolsFilter==="all"?"all":"changed";
+  repositoryReview?.destroy();
+  const render=++repositoryRenderGeneration,generation=repositoryGeneration;
+  const identity=repositoryComparison?.comparison_id,selected=repositorySelection;
+  const active=()=>render===repositoryRenderGeneration&&generation===repositoryGeneration&&identity===repositoryComparison?.comparison_id;
+  const select=value=>{if(active()&&!repositoryPendingPair)return loadRepositoryChangeFile(value);return false;};
+  repositoryReview=EijaRepositoryReview.render(root,{
+    comparison:repositoryComparison,file:repositoryFile,selection:repositorySelection,view:repositoryView,
+    loading:repositoryLoading,error:repositoryError,symbolsOpen,symbolsFilter,navigatorRoot:navigator,
+    onSelectFile:repositoryPendingPair?undefined:select,onSelectSymbol:repositoryPendingPair?undefined:select,
+    onViewChange:(view,selection)=>{if(active()&&repositorySameSelection(selected,selection)&&repositorySameSelection(repositorySelection,selection))repositoryView=view;}
+  });
+  $("repository-show-files").disabled=!repositoryComparison?.files?.length;
+  restoreRepositoryFocus(previousFocus);
+}
+function invalidateRepositoryRequest(){
+  $("repository-revisions").open=true;
+  ++repositoryGeneration;++repositoryFileGeneration;repositoryPendingPair=null;repositoryPendingSelection=null;repositoryLoading=null;
+  repositoryRequestStatus(`Commit fields changed. Choose Compare commits to load them. ${repositoryRetainedLabel()}`,"draft");
+  renderRepositoryReview();
+}
+function repositoryFailure(error,state){
+  $("repository-revisions").open=true;
+  repositoryError={code:error.code||"REQUEST_FAILED",message:error.message||"Repository comparison request failed",details:error.details||{}};
+  const message=repositoryError.message.startsWith(repositoryError.code+":")?repositoryError.message:`${repositoryError.code}: ${repositoryError.message}`;
+  repositoryRequestStatus(`${message} ${repositoryRetainedLabel()}`,state);
+  renderRepositoryReview();reportError(error);repositoryDiagnostic=lastDiagnostic;
+}
+function clearRepositoryDiagnostic(){
+  if(repositoryDiagnostic&&lastDiagnostic===repositoryDiagnostic){
+    const expected=repositoryDiagnostic.message+(repositoryDiagnostic.details?.codes?.length?" · "+repositoryDiagnostic.details.codes.join("; "):"");
+    clearDiagnostic();if($("notice").textContent===expected)notice("");
+  }
+  repositoryDiagnostic=null;
+}
+async function loadRepositoryComparison(base,head){
+  const initialComparison=!repositoryComparison;
+  const generation=++repositoryGeneration;++repositoryFileGeneration;
+  repositoryPendingPair=null;repositoryPendingSelection=null;repositoryLoading=null;repositoryError=null;
+  const pair={base,head},validBase=repositoryObjectId(base),validHead=repositoryObjectId(head);
+  $("repository-base").setAttribute("aria-invalid",String(!validBase));$("repository-head").setAttribute("aria-invalid",String(!validHead));
+  if(!validBase||!validHead){
+    repositoryFailure(new ApiError("CHANGE_REVISION_INVALID","Use full 40- or 64-character lowercase hexadecimal local commit IDs for Before and After."),"invalid");
+    $(validBase?"repository-head":"repository-base").focus();return false;
+  }
+  repositoryPendingPair=pair;repositoryLoading="comparison";
+  const active=()=>generation===repositoryGeneration&&repositoryPendingPair?.base===base&&repositoryPendingPair?.head===head;
+  repositoryRequestStatus(`Loading requested commits ${repositoryPairLabel(base,head)}. ${repositoryRetainedLabel()}`,"loading");renderRepositoryReview();
+  try{
+    const data=await api(`repository/change?${new URLSearchParams(pair)}`);
+    if(!active())return false;
+    if(!["available","partial"].includes(data?.status))throw new ApiError(data?.status==="unconfigured"?"REPOSITORY_CHANGE_UNCONFIGURED":"REPOSITORY_CHANGE_UNAVAILABLE",data?.reason||"No immutable repository comparison is available.",{status:data?.status||"not_reported"});
+    if(!repositoryPairMatches(data,pair)||EijaRepositoryReview.inspect(data,null,null).status!=="select_file")throw new ApiError("CHANGE_SUBJECT_MISMATCH","The comparison response does not describe the requested immutable commit pair.");
+    repositoryComparison=data;repositoryFile=null;repositorySelection=null;repositoryView="diff";
+    repositoryPendingPair=null;repositoryLoading=null;repositoryError=null;clearRepositoryDiagnostic();
+    repositoryRequestStatus(`Comparison loaded · ${data.status.toUpperCase()}. Choose a changed file.`,"captured");renderRepositoryReview();if(initialComparison)closeInitialRepositoryRevisions();return true;
+  }catch(error){
+    if(!active())return false;
+    repositoryPendingPair=null;repositoryLoading=null;repositoryFailure(error,"unavailable");return false;
+  }
+}
+async function loadRepositoryChangeFile(selection){
+  if(repositoryPendingPair||!repositoryComparison)return false;
+  const sequence=++repositoryFileGeneration;
+  const selected=selection&&{comparison_id:selection.comparison_id,base_commit:selection.base_commit,head_commit:selection.head_commit,path:selection.path,reference:selection.reference??null};
+  if(EijaRepositoryReview.inspect(repositoryComparison,null,selected).status!=="select_file"||!selected){
+    repositoryPendingSelection=null;repositoryLoading=null;
+    repositoryFailure(new ApiError("CHANGE_REFERENCE_DENIED","Choose a file or extracted reference from the displayed immutable comparison."),"unavailable");return false;
+  }
+  const generation=repositoryGeneration,comparison=repositoryComparison;
+  repositoryPendingSelection=selected;repositoryLoading="file";repositoryError=null;
+  const active=()=>generation===repositoryGeneration&&sequence===repositoryFileGeneration&&comparison===repositoryComparison&&repositorySameSelection(repositoryPendingSelection,selected)&&repositoryPairMatches(repositoryComparison,{base:selected.base_commit,head:selected.head_commit});
+  repositoryRequestStatus(`Loading ${selected.path}${selected.reference?" · "+selected.reference:""} from the displayed commits. ${repositoryRetainedLabel()}`,"loading-file");renderRepositoryReview();
+  try{
+    const query=new URLSearchParams({base:selected.base_commit,head:selected.head_commit,path:selected.path});if(selected.reference!==null)query.set("reference",selected.reference);
+    const data=await api(`repository/change/file?${query}`);
+    if(!active())return false;
+    const result=EijaRepositoryReview.inspect(comparison,data,selected);
+    if(result.status!=="ready")throw new ApiError(result.status==="file_unavailable"?"REPOSITORY_CHANGE_FILE_UNAVAILABLE":"CHANGE_SUBJECT_MISMATCH",result.reason||"Historical file identity does not match the displayed comparison.");
+    repositoryFile=data;repositorySelection=selected;repositoryPendingSelection=null;repositoryLoading=null;repositoryError=null;clearRepositoryDiagnostic();
+    repositoryRequestStatus(`Captured ${selected.path}${selected.reference?" · "+selected.reference:""} at ${repositoryPairLabel(selected.base_commit,selected.head_commit)}.`,"captured-file");renderRepositoryReview();return true;
+  }catch(error){
+    if(!active())return false;
+    repositoryPendingSelection=null;repositoryLoading=null;repositoryFailure(error,"unavailable-file");return false;
+  }
+}
+$("repository-compare-form").onsubmit=event=>{event.preventDefault();loadRepositoryComparison($("repository-base").value,$("repository-head").value);};
+for(const id of ["repository-base","repository-head"])$(id).addEventListener("input",invalidateRepositoryRequest);
+$("repository-show-files").onclick=()=>{
+  navigatorMode="task";renderNavigator();EijaShell.reveal("explorer");
+  const root=$("repository-change-navigator");(root.querySelector('button[aria-pressed="true"]')||root.querySelector("button"))?.focus();
+};
+renderRepositoryReview();

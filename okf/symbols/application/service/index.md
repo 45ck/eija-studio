@@ -24,6 +24,8 @@
 * [application.service.Studio.layout](Studio.layout.md) - `def layout(self, case_id: str, expected: int, change: LayoutChange, principal: Principal) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.propose](Studio.propose.md) - Asks the configured provider for an untrusted interpretation and records the run; networked providers need startup enablement and explicit consent.
 * [application.service.Studio.redo](Studio.redo.md) - Reapply the next undone typed command through the same interpreter and policy checks.
+* [application.service.Studio.repository_change](Studio.repository_change.md) - Compare immutable source revisions; this grants no model or repository write authority.
+* [application.service.Studio.repository_change_file](Studio.repository_change_file.md) - Read bounded historical text and syntax; live source identity remains separate.
 * [application.service.Studio.repository_freshness](Studio.repository_freshness.md) - Observe captured byte identity; this grants no source conformance, evidence or owner authority.
 * [application.service.Studio.repository_impact](Studio.repository_impact.md) - Known repository links only.
 * [application.service.Studio.repository_source](Studio.repository_source.md) - Bounded source view from the configured repository's captured nodes; no arbitrary path or execution.

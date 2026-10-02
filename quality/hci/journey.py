@@ -536,7 +536,16 @@ def run_pass(browser, modality: str, *, audit: bool, label: str, identity: str =
 
 
 def ui_hashes() -> dict[str, str]:
-    return {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(WEB.iterdir()) if p.is_file()}
+    """Hash every shipped web asset using portable paths relative to WEB."""
+    root = WEB.resolve()
+    hashes = {}
+    for path in sorted(WEB.rglob("*"), key=lambda path: path.relative_to(WEB).as_posix()):
+        relative = path.relative_to(WEB).as_posix()
+        if not path.resolve().is_relative_to(root):
+            raise ValueError(f"UI asset resolves outside WEB: {relative}")
+        if path.is_file():
+            hashes[relative] = hashlib.sha256(path.read_bytes()).hexdigest()
+    return hashes
 
 
 def collect(repeats: int = 3, headless: bool = True, identity: str = "harness") -> dict:

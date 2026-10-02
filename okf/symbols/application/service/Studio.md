@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio
   title: application/service.py
   hash_method: ast-sig-v1
-  sha256: 5f1cbb2c92ece678ea8d733a0798b8e6f19c84e31dbb37bd7f054465fa88c4f3
+  sha256: b210aab2f8a79a94c38a8e684fcad7cca37bc7f069ef843cc5366e83194db288
 description_override: 'The Studio use cases: create, propose, select, edit, verify, approve, apply and execute over a Change Case.'
-notes_baseline: 25f65b9ec4658d4094bf6f55fbb251e17a468c9995de8d373b45b6b004570a5c
+notes_baseline: 19810e6ec12909e2564fed479dc296c3d64c9e51ba1f69d169b250d46711b528
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -38,6 +38,10 @@ verified:
   at: '2026-10-02T11:59:23Z'
   notes_sha256: eb4ee7ae00fac76291bc2df9e7edbd3b30b736c73ba5e8135bf53c76b1da40e9
   sources_sha256: 25f65b9ec4658d4094bf6f55fbb251e17a468c9995de8d373b45b6b004570a5c
+- by: process:codex-immutable-code-review
+  at: '2026-10-02T13:05:54Z'
+  notes_sha256: 5c65b08b05d0cc7eb7aa9ed783df92f6d4e99d4fc600f810506a434289cbba7d
+  sources_sha256: 19810e6ec12909e2564fed479dc296c3d64c9e51ba1f69d169b250d46711b528
 ---
 
 # application.service.Studio
@@ -71,6 +75,8 @@ _The source carries no docstring._
 * [`layout`](/symbols/application/service/Studio.layout.md) - `def layout(self, case_id: str, expected: int, change: LayoutChange, principal: Principal) -> dict[str, Any]`
 * [`propose`](/symbols/application/service/Studio.propose.md) - `def propose(self, case_id: str, expected: int, *, consent: bool=False) -> dict[str, Any]`
 * [`redo`](/symbols/application/service/Studio.redo.md) - `def redo(self, case_id: str, expected: int, principal: Principal) -> dict[str, Any]`
+* [`repository_change`](/symbols/application/service/Studio.repository_change.md) - `def repository_change(self, base: str, head: str) -> dict[str, Any]`
+* [`repository_change_file`](/symbols/application/service/Studio.repository_change_file.md) - `def repository_change_file(self, base: str, head: str, path: str, reference: str \| None=None) -> dict[str, Any]`
 * [`repository_freshness`](/symbols/application/service/Studio.repository_freshness.md) - `def repository_freshness(self, expected_source_hash: str) -> dict[str, Any]`
 * [`repository_impact`](/symbols/application/service/Studio.repository_impact.md) - `def repository_impact(self, term: str, *, expected_source_hash: str \| None=None) -> dict[str, Any]`
 * [`repository_source`](/symbols/application/service/Studio.repository_source.md) - `def repository_source(self, reference: str, *, expected_source_hash: str \| None=None) -> dict[str, Any]`
@@ -99,6 +105,12 @@ compares that byte identity through the same port; it cannot attest to behavior 
 future filesystem state. A stale snapshot must be refreshed before following its
 links as though they described the current connection.
 
+`repository_change` and `repository_change_file` use a separate read-only port for
+full local Git commit IDs. They retain immutable comparison and changed-file
+capture identities, bounded historical source and explicit partial syntax/impact.
+These facts neither reuse live source hashes nor establish model conformance,
+agent authorship or behavior evidence. An absent port stays unconfigured.
+
 Semantic edit, undo and redo use the existing interpreter with a protected atomic
 meaning prefix. They create new case versions, append command provenance and clear
 decisions while retaining receipts, baseline and layout. `history` reconstructs
@@ -113,6 +125,7 @@ semantic snapshots from commands; it does not invent timestamps for legacy edits
 * [application.ports.ReceiptAuthenticator](/symbols/application/ports/ReceiptAuthenticator.md) - `class ReceiptAuthenticator(Protocol)` in `application/ports`.
 * [application.ports.Repository](/symbols/application/ports/Repository.md) - `class Repository(Protocol)` in `application/ports`.
 * [application.ports.SandboxFactory](/symbols/application/ports/SandboxFactory.md) - Type alias `SandboxFactory` in `application/ports`.
+* [application.repository.RepositoryChangeSource](/symbols/application/repository/RepositoryChangeSource.md) - Immutable, read-only facts for an explicit pair in one configured repository.
 * [application.repository.RepositorySource](/symbols/application/repository/RepositorySource.md) - Evidence about one explicitly configured checkout and its declared domain bindings.
 * [domain.models.ExecuteCommand](/symbols/domain/models/ExecuteCommand.md) - `class ExecuteCommand(Contract)` in `domain/models`.
 * [domain.models.LayoutChange](/symbols/domain/models/LayoutChange.md) - `class LayoutChange(Contract)` in `domain/models`.
@@ -137,6 +150,8 @@ semantic snapshots from commands; it does not invent timestamps for legacy edits
 * [application.service.Studio.layout](/symbols/application/service/Studio.layout.md) - `def layout(self, case_id: str, expected: int, change: LayoutChange, principal: Principal) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.propose](/symbols/application/service/Studio.propose.md) - `def propose(self, case_id: str, expected: int, *, consent: bool=False) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.redo](/symbols/application/service/Studio.redo.md) - Reapply the next undone typed command through the same interpreter and policy checks.
+* [application.service.Studio.repository_change](/symbols/application/service/Studio.repository_change.md) - Compare immutable source revisions; this grants no model or repository write authority.
+* [application.service.Studio.repository_change_file](/symbols/application/service/Studio.repository_change_file.md) - Read bounded historical text and syntax; live source identity remains separate.
 * [application.service.Studio.repository_freshness](/symbols/application/service/Studio.repository_freshness.md) - Observe captured byte identity; this grants no source conformance, evidence or owner authority.
 * [application.service.Studio.repository_impact](/symbols/application/service/Studio.repository_impact.md) - Known repository links only.
 * [application.service.Studio.repository_source](/symbols/application/service/Studio.repository_source.md) - Bounded source view from the configured repository's captured nodes; no arbitrary path or execution.

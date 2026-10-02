@@ -62,6 +62,9 @@ _No curated notes yet._
 * [adapters.identity](/modules/adapters/identity.md) - Measured release identity, not a proof of correctness or author authenticity.
 * [adapters.receipts](/modules/adapters/receipts.md) - Local integrity seal.
 * [adapters.repository](/modules/adapters/repository.md) - Repository analysis and bounded source navigation over captured checkout bytes.
+* [adapters.repository_capture](/modules/adapters/repository_capture.md) - Bounded repository reads adapted to the existing deterministic Weave engine.
+* [adapters.repository_change_snapshot](/modules/adapters/repository_change_snapshot.md) - Captured immutable comparison snapshots shared by capture, analysis and retention.
+* [adapters.repository_changes](/modules/adapters/repository_changes.md) - Read-only, bounded comparison of two local Git commits.
 * [adapters.sqlite_store](/modules/adapters/sqlite_store.md) - Durable local unit of work.
 * [application.compiler](/modules/application/compiler.md) - Compiler: model → projections + impacts + obligations + computed review packet.
 * [application.diagram_catalog](/modules/application/diagram_catalog.md) - Named diagram views over a baseline and an optional candidate Workflow.
@@ -70,6 +73,7 @@ _No curated notes yet._
 * [application.formal](/modules/application/formal.md) - Formal evidence in the application layer: seal what an adapter collected, and build the packet view.
 * [application.history](/modules/application/history.md) - Semantic history is a projection of typed commands, replayed by the existing policy interpreter.
 * [application.ports](/modules/application/ports.md) - Application-owned ports.
+* [application.repository](/modules/application/repository.md) - Read-only repository evidence port; this does not grant project execution or approval.
 * [application.runtime](/modules/application/runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.
 * [application.service](/modules/application/service.md) - Module `application/service` (no module docstring).
 * [application.verifier](/modules/application/verifier.md) - Bounded synthetic runtime experiments.

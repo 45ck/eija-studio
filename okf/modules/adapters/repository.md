@@ -56,5 +56,7 @@ _No curated notes yet._
 
 ## Referenced by
 
+* [adapters.repository_analysis](/modules/adapters/repository_analysis.md) - Captured-byte syntax and partial impact adapted to existing Weave primitives.
+* [adapters.repository_change_snapshot](/modules/adapters/repository_change_snapshot.md) - Captured immutable comparison snapshots shared by capture, analysis and retention.
 * [bootstrap](/modules/bootstrap.md) - The only composition root: wires application ports to concrete adapters.
 <!-- okf:generated:end links -->

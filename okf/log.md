@@ -1,6 +1,13 @@
 # Update log
 
+## 2026-10-03
+
+* **Comparison responsibility split**: synced captured-source analysis, snapshot projections, retention eligibility and the application request helpers. Re-read the comparison Notes against the actual capture and generation-lock owner, updated its delegation boundaries, and reviewed as `process:codex-comparison-cohesion`. The retired JavaScript adapter page is marked deprecated. The separate 346-check integrated run covers compatibility, real Git reads, cache invalidation, worker failures and unchanged architecture/maintainability budgets; this knowledge-base review is not execution evidence.
+
 ## 2026-10-02
+
+* **Bounded historical detail reuse and source precision**: refreshed the repository comparison module and added Notes after reading cache/policy checks, literal diff paths, duplicate-definition handling and physical-line excerpts. Reviewed as `process:codex-immutable-code-review`; the 108 integrated regression results and browser observations are separate evidence.
+* **Immutable code review**: synced the separate read-only commit comparison port, HTTP/MCP methods, fixed parser worker and Git/syntax adapters. Re-read Studio Notes against the new port validation and forwarding; documented changed-file capture identity separately from live source and model receipts. Review actor `process:codex-immutable-code-review`; syntax and browser results are separate execution evidence.
 * **Linked source snapshot consistency**: synced the repository port, source/impact optional identity parameters, read-only freshness method and ADR-0147. Read the affected pages and updated the Studio Notes to distinguish byte identity from evidence and conformance. Review actor `process:codex-review-workspace`; functional and browser results remain separate.
 * **TLA evidence freshness**: synced the two TLA gate pages after enforcing successful child execution and a fresh report. Read both pages; neither has curated Notes. Notification concretisation now uses the pack's declared recipient. Regression and real conformance results remain separate execution evidence.
 * **Repository capture boundary**: synced the extracted bounded filesystem/Git capture adapter and its imports. The public source-navigation facade and capture policy are unchanged; neither affected module has curated Notes. Functional capture and source-refusal tests remain separate evidence.

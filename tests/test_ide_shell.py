@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="NOT_RUN: Node is not installed")
-@pytest.mark.parametrize("suite", ["shell", "focus-layout", "evidence-overview", "compare", "source-freshness"])
+@pytest.mark.parametrize("suite", ["shell", "focus-layout", "evidence-overview", "compare", "source-freshness", "tree-navigation", "task-navigation", "task-layout", "repository-review", "repository-navigation", "comparison-navigation"])
 def test_ide_source_history_and_review_adapters(suite: str) -> None:
     """Run actual client functions with deterministic isolated DOM/server doubles."""
     node = shutil.which("node")

@@ -31,7 +31,7 @@
       "status": "PASS",
       "target": 4,
       "unit": "bits",
-      "value": 3.797
+      "value": 3.87
     },
     {
       "id": "hick.choice_groups_over_7",
@@ -61,10 +61,10 @@
       "limit": 65,
       "note": "modelled, not measured: a regression guard on the journey definition (measured model value 62.7 s), so adding a journey step trips it on purpose; no law defines a threshold, so target = limit",
       "path": "klm.expert_time_pointer_s",
-      "status": "PASS",
+      "status": "FAIL",
       "target": 65,
       "unit": "s",
-      "value": 64.01
+      "value": 65.31
     },
     {
       "id": "doherty.first_feedback_p95",
@@ -75,7 +75,7 @@
       "status": "PASS",
       "target": 400,
       "unit": "ms",
-      "value": 4.3
+      "value": 4.9
     },
     {
       "id": "doherty.settled_p50",
@@ -86,7 +86,7 @@
       "status": "PASS",
       "target": 400,
       "unit": "ms",
-      "value": 80.7
+      "value": 79.2
     },
     {
       "id": "doherty.settled_p95",
@@ -97,7 +97,7 @@
       "status": "GAP",
       "target": 400,
       "unit": "ms",
-      "value": 777.5
+      "value": 747.6
     },
     {
       "id": "wcag.critical_rules",
@@ -185,7 +185,7 @@
       "status": "FAIL",
       "target": 9,
       "unit": "chunks",
-      "value": 68
+      "value": 56
     },
     {
       "id": "runtime.js_exceptions",
@@ -199,7 +199,7 @@
       "value": 0
     }
   ],
-  "date": "2026-10-02",
+  "date": "2026-10-03",
   "environment": {
     "axe_core": "4.12.1",
     "axe_playwright_python": "0.1.8",
@@ -213,14 +213,25 @@
     "python": "3.12.10",
     "repeats": 3,
     "ui_sha256": {
-      "app.css": "e829361efc44495cd417575fdd6205cf1f3272bca48b8268439f98b10d32b811",
-      "app.js": "c45cb0a89c2ca29373b6c8c9b756bcd319cb30f7b2602014cc35c5a0a91477a2",
+      "app.css": "66ddee52afa4a98f56bae9b4d0c5b82e45986948b406a301fac3ea3e6e86abf5",
+      "app.js": "3b6cfffb2be6f6d906b218801cad0c04c999c43255a169fcab464631d61d110a",
       "canvas.js": "e0226d9361d73aa1831e48080f5fc262bb0fcbd8086cd1387461d39de6ca1765",
-      "index.html": "70324f6a3eedff4a6fe8889125179a2ec290b3881a56bd1f7cb1138b7e1954e1",
+      "compare.css": "2b007d3bcd4cfea5e0ed61a4f37c506d4a852496b7ec0723f36423f9482e57aa",
+      "compare.js": "d6f1dc34678ab6941729470026bd4d9df0a149709d0be9f7123c20b96236bc5d",
+      "index.html": "476006913cebbd7037448d883832f88d25f782e3ced377fe5e6cc0c49688573b",
+      "repository-review.css": "ef87096d5fc1408c8605f50e31db4f9d85579adc3247c1f2e5ff1b4ba9d848bb",
+      "repository-review.js": "1a8559475a48f8855c31c3c1ac76ef28fa6cf70421d964e4fc22024bdfeeda02",
       "review.js": "426978e964918a63b8e73ff1ae99b2b126e7a1a4d9429b2151e275cfaf178dee",
-      "shell.js": "9764b2b2d2eb272376b60df592ec65f34750b1190dc71caf17946e9c7eae79d3",
+      "shell.js": "9eec86a8bc45ad05a96327462c3ba9e9e57c5564c2c2d25c2206ec1c8d841fec",
       "source.js": "87e72798bfbfeab516923d79ab72495bd72a3086e3a706156ea71627530482a9",
-      "tree.js": "92d544b599ec8eaf31baba90f92587593d61f6adac3bccb7f2755677ae5813fc",
+      "tree.js": "9dd0270ba356262f8b2fa5afdfc2f4ff3c9701030747f500f5e2d8d419bd2c5b",
+      "vendor/dagre-graphlib.LICENSE.txt": "6a349742a6cb219d5a2fc8d0844f6d89a6efc62e20c664450d884fc7ff2d6015",
+      "vendor/dagre.LICENSE.txt": "6a349742a6cb219d5a2fc8d0844f6d89a6efc62e20c664450d884fc7ff2d6015",
+      "vendor/dagre.VENDOR.json": "9ea8f38b29e9a766e0a413b83b24a2e6238dcb4f8568aad79a1bdb2866eee14d",
+      "vendor/dagre.min.js": "c35b8d6f410ce7bdd302fc00cad27331184e52b2e738609e55ae3bbb4fb4849f",
+      "vendor/mermaid.LICENSE.txt": "ec9fb67dcb25eccc416ed56e1aab819222c805a2a4bfe4cb19e7556bf2ffde80",
+      "vendor/mermaid.VENDOR.json": "96f346523699b230c87808985e1002009814b7ea692e7a1c777525ffdebbc8b0",
+      "vendor/mermaid.min.js": "28fca7ae6ebc7ed7bb63bde63136a74bfef14f296a57e403657eeb8b32836073",
       "visual-frame.css": "ca5a74616effa62ea4eb340fb73d9020374a69da7dcdb7ebbbc5c23d3ce49074",
       "visual-frame.html": "4408ecd716df1ccb43733b340db506a3b5eb108581dbba0f98380e881e914e2a",
       "visual-frame.js": "cfda25808b8e15a51ff3f47be57588daf78c8440cd450ce4c542147688c1ba78"
@@ -239,17 +250,17 @@
     },
     "summary": {
       "landing_convention_note": "primary D uses the centre of the effective box, which overstates D for wide targets; moves_id_over_4_nearest_edge recomputes D to the nearest edge, so the flag count is a range",
-      "max_id_bits": 3.797,
+      "max_id_bits": 3.87,
       "max_id_step": "open-try",
-      "mean_id_bits": 2.56,
+      "mean_id_bits": 2.714,
       "moves_id_over_4": 0,
       "moves_id_over_4_nearest_edge": 0,
-      "moves_with_distance": 20,
-      "pointer_targets": 21,
-      "predicted_pointing_time_s": 13.098,
+      "moves_with_distance": 21,
+      "pointer_targets": 22,
+      "predicted_pointing_time_s": 14.288,
       "scrolls_needed": 0,
       "targets_w_under_24": 0,
-      "total_distance_px": 5448.1
+      "total_distance_px": 6253.7
     },
     "targets": [
       {
@@ -314,11 +325,11 @@
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 404.7,
+        "distance_px": 433.8,
         "flags": [],
-        "id_bits": 3.35,
-        "id_bits_nearest_edge": 3.211,
-        "predicted_mt_s": 0.786,
+        "id_bits": 3.441,
+        "id_bits_nearest_edge": 3.315,
+        "predicted_mt_s": 0.801,
         "raw_w_px": 44,
         "scrolled_before": false,
         "selector": "#options > article:nth-of-type(1) > button",
@@ -329,11 +340,11 @@
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 528.9,
+        "distance_px": 558.3,
         "flags": [],
-        "id_bits": 3.797,
-        "id_bits_nearest_edge": 3.726,
-        "predicted_mt_s": 0.86,
+        "id_bits": 3.87,
+        "id_bits_nearest_edge": 3.803,
+        "predicted_mt_s": 0.872,
         "raw_w_px": 41,
         "scrolled_before": false,
         "selector": "#workspace > div:nth-of-type(3) > nav > button:nth-of-type(5)",
@@ -464,11 +475,11 @@
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 139.4,
+        "distance_px": 220.2,
         "flags": [],
-        "id_bits": 2.06,
-        "id_bits_nearest_edge": 1.715,
-        "predicted_mt_s": 0.572,
+        "id_bits": 2.586,
+        "id_bits_nearest_edge": 2.041,
+        "predicted_mt_s": 0.659,
         "raw_w_px": 44,
         "scrolled_before": false,
         "selector": "#verify",
@@ -479,11 +490,26 @@
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 247.5,
+        "distance_px": 423.7,
         "flags": [],
-        "id_bits": 2.943,
-        "id_bits_nearest_edge": 2.33,
-        "predicted_mt_s": 0.718,
+        "id_bits": 3.41,
+        "id_bits_nearest_edge": 3.333,
+        "predicted_mt_s": 0.796,
+        "raw_w_px": 44,
+        "scrolled_before": false,
+        "selector": "#review-subject",
+        "step": "open-review-subject",
+        "target": "Review this exact subject · eligible for local review · 9eb5",
+        "via_label": false,
+        "w_px": 44,
+        "wcag_2_5_8": "pass"
+      },
+      {
+        "distance_px": 338.7,
+        "flags": [],
+        "id_bits": 3.344,
+        "id_bits_nearest_edge": 2.21,
+        "predicted_mt_s": 0.785,
         "raw_w_px": 37,
         "scrolled_before": false,
         "selector": "#q-authority",
@@ -494,11 +520,11 @@
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 77.0,
+        "distance_px": 262.0,
         "flags": [],
-        "id_bits": 1.623,
-        "id_bits_nearest_edge": 1.368,
-        "predicted_mt_s": 0.499,
+        "id_bits": 3.015,
+        "id_bits_nearest_edge": 2.922,
+        "predicted_mt_s": 0.73,
         "raw_w_px": 37,
         "scrolled_before": false,
         "selector": "#q-assignment",
@@ -524,11 +550,11 @@
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 346.6,
+        "distance_px": 333.8,
         "flags": [],
-        "id_bits": 3.15,
+        "id_bits": 3.102,
         "id_bits_nearest_edge": 0.835,
-        "predicted_mt_s": 0.753,
+        "predicted_mt_s": 0.745,
         "raw_w_px": 17,
         "scrolled_before": false,
         "selector": "#acknowledge",
@@ -539,11 +565,11 @@
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 462.5,
+        "distance_px": 441.7,
         "flags": [],
-        "id_bits": 3.525,
-        "id_bits_nearest_edge": 3.195,
-        "predicted_mt_s": 0.815,
+        "id_bits": 3.465,
+        "id_bits_nearest_edge": 3.121,
+        "predicted_mt_s": 0.805,
         "raw_w_px": 44,
         "scrolled_before": false,
         "selector": "#approve",
@@ -578,9 +604,9 @@
         "decision": "choose an interpretation",
         "over_7": false,
         "predicted_s": 0.3,
-        "screen_controls": 32,
+        "screen_controls": 28,
         "screen_over_7": true,
-        "screen_predicted_s": 0.757,
+        "screen_predicted_s": 0.729,
         "step": "select-meaning"
       },
       {
@@ -589,9 +615,9 @@
         "decision": "choose a work area",
         "over_7": false,
         "predicted_s": 0.45,
-        "screen_controls": 31,
+        "screen_controls": 27,
         "screen_over_7": true,
-        "screen_predicted_s": 0.75,
+        "screen_predicted_s": 0.721,
         "step": "open-try"
       },
       {
@@ -600,9 +626,9 @@
         "decision": "choose a lifecycle action",
         "over_7": false,
         "predicted_s": 0.388,
-        "screen_controls": 33,
+        "screen_controls": 30,
         "screen_over_7": true,
-        "screen_predicted_s": 0.763,
+        "screen_predicted_s": 0.743,
         "step": "submit-teacher"
       },
       {
@@ -611,9 +637,9 @@
         "decision": "choose a lifecycle action",
         "over_7": false,
         "predicted_s": 0.388,
-        "screen_controls": 32,
+        "screen_controls": 30,
         "screen_over_7": true,
-        "screen_predicted_s": 0.757,
+        "screen_predicted_s": 0.743,
         "step": "recommend-teacher"
       },
       {
@@ -622,9 +648,9 @@
         "decision": "choose the acting role",
         "over_7": false,
         "predicted_s": 0.388,
-        "screen_controls": 32,
+        "screen_controls": 30,
         "screen_over_7": true,
-        "screen_predicted_s": 0.757,
+        "screen_predicted_s": 0.743,
         "step": "actor-registrar"
       },
       {
@@ -633,9 +659,9 @@
         "decision": "choose a lifecycle action",
         "over_7": false,
         "predicted_s": 0.388,
-        "screen_controls": 32,
+        "screen_controls": 30,
         "screen_over_7": true,
-        "screen_predicted_s": 0.757,
+        "screen_predicted_s": 0.743,
         "step": "approve-registrar"
       },
       {
@@ -644,9 +670,9 @@
         "decision": "choose the acting role",
         "over_7": false,
         "predicted_s": 0.388,
-        "screen_controls": 32,
+        "screen_controls": 30,
         "screen_over_7": true,
-        "screen_predicted_s": 0.757,
+        "screen_predicted_s": 0.743,
         "step": "actor-unassigned"
       },
       {
@@ -655,9 +681,9 @@
         "decision": "choose a lifecycle action",
         "over_7": false,
         "predicted_s": 0.388,
-        "screen_controls": 32,
+        "screen_controls": 30,
         "screen_over_7": true,
-        "screen_predicted_s": 0.757,
+        "screen_predicted_s": 0.743,
         "step": "denied-recommend"
       },
       {
@@ -666,9 +692,9 @@
         "decision": "choose a work area",
         "over_7": false,
         "predicted_s": 0.45,
-        "screen_controls": 33,
+        "screen_controls": 32,
         "screen_over_7": true,
-        "screen_predicted_s": 0.763,
+        "screen_predicted_s": 0.757,
         "step": "open-evidence"
       }
     ],
@@ -687,7 +713,7 @@
     }
   },
   "journey": {
-    "completed": false,
+    "completed": true,
     "scripted_answers_note": "review answers are scripted fixture text; not a human comprehension measure",
     "steps": [
       {
@@ -766,6 +792,11 @@
         "label": "Run bounded verification"
       },
       {
+        "id": "open-review-subject",
+        "kind": "click",
+        "label": "Open review of this exact subject"
+      },
+      {
         "id": "answer-authority",
         "kind": "type",
         "label": "Answer review question 'authority'"
@@ -798,9 +829,9 @@
     ]
   },
   "keyboard": {
-    "activations": 15,
+    "activations": 16,
     "activations_that_lost_focus": [],
-    "completed_journey_keyboard_only": false,
+    "completed_journey_keyboard_only": true,
     "focus_lost_count": 0,
     "focus_order_regression_count": 7,
     "focus_order_regressions": [
@@ -835,21 +866,21 @@
         "to": "Skip to workspace"
       },
       {
-        "from": "bounded model check: UNKNOWN (sealed tool verdict)",
-        "step": "answer-authority",
-        "to": "Who retains final approval authority?"
+        "from": "bend proof: UNKNOWN (sealed tool verdict)",
+        "step": "open-review-subject",
+        "to": "smt proof: UNKNOWN (sealed tool verdict)"
       }
     ],
-    "max_tab_presses_for_one_target": 29,
+    "max_tab_presses_for_one_target": 25,
     "note": "Real Tab traversal plus Arrow/Home navigation within tablists; every navigation and activation key is recorded; focus indicator = computed outline or box-shadow on the focused element; 'focus lost' = document.activeElement is <body> once the DOM settled after activation",
     "stops_without_indicator_count": 0,
     "stops_without_visible_focus_indicator": [],
     "tab_presses_by_step": {
       "acknowledge": 1,
-      "actor-registrar": 29,
-      "actor-unassigned": 28,
+      "actor-registrar": 25,
+      "actor-unassigned": 24,
       "answer-assignment": 1,
-      "answer-authority": 4,
+      "answer-authority": 1,
       "answer-reject_entry": 1,
       "apply-baseline": 0,
       "approve-exact": 1,
@@ -857,46 +888,35 @@
       "ask-interpretations": 0,
       "create-case": 1,
       "denied-recommend": 2,
-      "open-change": 6,
-      "open-evidence": 25,
+      "open-change": 4,
+      "open-evidence": 24,
+      "open-review-subject": 5,
       "open-try": 1,
       "recommend-teacher": 1,
       "reset-preview": 2,
-      "run-verification": 2,
+      "run-verification": 3,
       "select-meaning": 3,
       "submit-teacher": 2,
       "type-request": 0
     },
     "tab_presses_spent_after_focus_loss": 0,
-    "tab_presses_total": 113,
-    "unique_focus_stops_seen": 50
+    "tab_presses_total": 105,
+    "unique_focus_stops_seen": 52
   },
   "klm": {
     "citation": "Card, Moran & Newell 1980 (CACM 23(7)); K = average non-secretary typist (~40 wpm)",
-    "expert_time_keyboard_only_s": 68.99,
-    "expert_time_pointer_s": 64.01,
+    "expert_time_keyboard_only_s": 67.03,
+    "expert_time_pointer_s": 65.31,
     "keyboard_only_journey": {
       "fitts_refined_total_s": null,
       "operator_counts": {
         "B": 0,
         "H": 0,
-        "K": 203,
+        "K": 196,
         "M": 9,
         "P": 0
       },
       "operators": [
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "open-change"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "open-change"
-        },
         {
           "note": "Tab",
           "op": "K",
@@ -1426,30 +1446,6 @@
           "step": "actor-registrar"
         },
         {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "actor-registrar"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "actor-registrar"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "actor-registrar"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "actor-registrar"
-        },
-        {
           "note": "ArrowDown",
           "op": "K",
           "seconds": 0.28,
@@ -1642,30 +1638,6 @@
           "step": "actor-unassigned"
         },
         {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "actor-unassigned"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "actor-unassigned"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "actor-unassigned"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "actor-unassigned"
-        },
-        {
           "note": "ArrowUp",
           "op": "K",
           "seconds": 0.28,
@@ -1694,12 +1666,6 @@
           "op": "K",
           "seconds": 0.28,
           "step": "denied-recommend"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "open-evidence"
         },
         {
           "note": "Tab",
@@ -1870,33 +1836,57 @@
           "step": "run-verification"
         },
         {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "run-verification"
+        },
+        {
           "note": "Enter",
           "op": "K",
           "seconds": 0.28,
           "step": "run-verification"
         },
         {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-review-subject"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-review-subject"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-review-subject"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-review-subject"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-review-subject"
+        },
+        {
+          "note": "Enter",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-review-subject"
+        },
+        {
           "note": "Read the question and recall the fixture answer",
           "op": "M",
           "seconds": 1.35,
-          "step": "answer-authority"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "answer-authority"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "answer-authority"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
           "step": "answer-authority"
         },
         {
@@ -2160,10 +2150,10 @@
       ],
       "per_step_s": {
         "acknowledge": 1.91,
-        "actor-registrar": 10.31,
-        "actor-unassigned": 9.75,
+        "actor-registrar": 9.19,
+        "actor-unassigned": 8.63,
         "answer-assignment": 3.03,
-        "answer-authority": 5.83,
+        "answer-authority": 4.99,
         "answer-reject_entry": 5.55,
         "apply-baseline": 1.63,
         "approve-exact": 0.56,
@@ -2171,27 +2161,28 @@
         "ask-interpretations": 0.28,
         "create-case": 0.56,
         "denied-recommend": 0.84,
-        "open-change": 1.96,
-        "open-evidence": 7.56,
+        "open-change": 1.4,
+        "open-evidence": 7.28,
+        "open-review-subject": 1.68,
         "open-try": 1.12,
         "recommend-teacher": 0.56,
         "reset-preview": 0.84,
-        "run-verification": 0.84,
+        "run-verification": 1.12,
         "select-meaning": 2.47,
         "submit-teacher": 0.84,
         "type-request": 11.43
       },
-      "total_s": 68.99
+      "total_s": 67.03
     },
     "placement_rules": "M is placed once per deliberate decision or reading moment (annotated per step in journey.py); H is derived from every mouse<->keyboard switch; a click is P + B + B; Shift counts as its own K; select lists model open and choose as two P+B+B; scrolling and system response R are NOT in the standard total",
     "pointer_journey": {
-      "fitts_refined_total_s": 55.11,
+      "fitts_refined_total_s": 56.5,
       "operator_counts": {
-        "B": 46,
+        "B": 48,
         "H": 8,
         "K": 67,
         "M": 9,
-        "P": 23
+        "P": 24
       },
       "operators": [
         {
@@ -2753,6 +2744,24 @@
           "step": "run-verification"
         },
         {
+          "note": "point at Review this exact subject · eligible for local review · 9eb5",
+          "op": "P",
+          "seconds": 1.1,
+          "step": "open-review-subject"
+        },
+        {
+          "note": "button press",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "open-review-subject"
+        },
+        {
+          "note": "button release",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "open-review-subject"
+        },
+        {
           "note": "Read the question and recall the fixture answer",
           "op": "M",
           "seconds": 1.35,
@@ -3128,6 +3137,7 @@
         "denied-recommend": 1.3,
         "open-change": 1.3,
         "open-evidence": 1.3,
+        "open-review-subject": 1.3,
         "open-try": 1.3,
         "recommend-teacher": 1.3,
         "reset-preview": 1.3,
@@ -3136,7 +3146,7 @@
         "submit-teacher": 1.3,
         "type-request": 13.13
       },
-      "total_s": 64.01
+      "total_s": 65.31
     },
     "times_s": {
       "B": 0.1,
@@ -3164,45 +3174,33 @@
     "doherty": {
       "citation": "Doherty & Thadani 1982 (IBM Systems Journal 21(1)); ~400 ms",
       "first_feedback_p50_ms": 0.5,
-      "first_feedback_p95_ms": 4.3,
-      "interactions_measured": 42,
-      "journey_wait_p50_sum_s": 1.704,
-      "keyboard_settled_p50_ms": 81.9,
-      "keyboard_settled_p95_ms": 781.7,
+      "first_feedback_p95_ms": 4.9,
+      "interactions_measured": 45,
+      "journey_wait_p50_sum_s": 1.639,
+      "keyboard_settled_p50_ms": 81.2,
+      "keyboard_settled_p95_ms": 740.4,
       "method": "nearest-rank percentiles over all repeats; medians and interquartile range are the headline, p95 is the maximum with few samples",
       "native_control_interactions_excluded": [
         "acknowledge"
       ],
       "note": "settled = last DOM mutation before quiescence, from the click event; excludes OS/browser input latency",
-      "settled_max_ms": 824.7,
-      "settled_p25_ms": 5.6,
-      "settled_p50_ms": 80.7,
-      "settled_p75_ms": 94.2,
-      "settled_p95_ms": 777.5,
+      "settled_max_ms": 799.1,
+      "settled_p25_ms": 5.3,
+      "settled_p50_ms": 79.2,
+      "settled_p75_ms": 93.2,
+      "settled_p95_ms": 747.6,
       "steps": [
         {
-          "first_feedback_p50_ms": 4.8,
-          "first_feedback_p95_ms": 4.8,
+          "first_feedback_p50_ms": 5,
+          "first_feedback_p95_ms": 5.7,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 4.3,
-          "settled_p50_ms": 4.8,
-          "settled_p75_ms": 4.8,
-          "settled_p95_ms": 4.8,
+          "settled_p25_ms": 4.9,
+          "settled_p50_ms": 5,
+          "settled_p75_ms": 5.7,
+          "settled_p95_ms": 5.7,
           "step": "open-change"
-        },
-        {
-          "first_feedback_p50_ms": 0.5,
-          "first_feedback_p95_ms": 0.7,
-          "median_over_400ms": false,
-          "over_400ms": false,
-          "samples": 3,
-          "settled_p25_ms": 84.4,
-          "settled_p50_ms": 85.9,
-          "settled_p75_ms": 92,
-          "settled_p95_ms": 92,
-          "step": "create-case"
         },
         {
           "first_feedback_p50_ms": 0.5,
@@ -3210,11 +3208,11 @@
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 73.4,
-          "settled_p50_ms": 78.2,
-          "settled_p75_ms": 98.5,
-          "settled_p95_ms": 98.5,
-          "step": "ask-interpretations"
+          "settled_p25_ms": 73.5,
+          "settled_p50_ms": 75.8,
+          "settled_p75_ms": 83.1,
+          "settled_p95_ms": 83.1,
+          "step": "create-case"
         },
         {
           "first_feedback_p50_ms": 0.4,
@@ -3222,34 +3220,46 @@
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 77.7,
-          "settled_p50_ms": 81,
-          "settled_p75_ms": 84.3,
-          "settled_p95_ms": 84.3,
+          "settled_p25_ms": 70.1,
+          "settled_p50_ms": 82.6,
+          "settled_p75_ms": 102.1,
+          "settled_p95_ms": 102.1,
+          "step": "ask-interpretations"
+        },
+        {
+          "first_feedback_p50_ms": 0.4,
+          "first_feedback_p95_ms": 0.5,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 80.8,
+          "settled_p50_ms": 81.3,
+          "settled_p75_ms": 92.1,
+          "settled_p95_ms": 92.1,
           "step": "select-meaning"
         },
         {
-          "first_feedback_p50_ms": 0.8,
+          "first_feedback_p50_ms": 1,
           "first_feedback_p95_ms": 1.2,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 0.8,
-          "settled_p50_ms": 0.8,
+          "settled_p25_ms": 0.9,
+          "settled_p50_ms": 1,
           "settled_p75_ms": 1.2,
           "settled_p95_ms": 1.2,
           "step": "open-try"
         },
         {
           "first_feedback_p50_ms": 0.5,
-          "first_feedback_p95_ms": 0.5,
+          "first_feedback_p95_ms": 0.6,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 79.5,
-          "settled_p50_ms": 82.7,
-          "settled_p75_ms": 94.2,
-          "settled_p95_ms": 94.2,
+          "settled_p25_ms": 79.2,
+          "settled_p50_ms": 85.8,
+          "settled_p75_ms": 86.2,
+          "settled_p95_ms": 86.2,
           "step": "reset-preview"
         },
         {
@@ -3258,22 +3268,22 @@
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 74.5,
-          "settled_p50_ms": 86.1,
-          "settled_p75_ms": 92.3,
-          "settled_p95_ms": 92.3,
+          "settled_p25_ms": 71.3,
+          "settled_p50_ms": 83.4,
+          "settled_p75_ms": 96.8,
+          "settled_p95_ms": 96.8,
           "step": "submit-teacher"
         },
         {
-          "first_feedback_p50_ms": 0.4,
+          "first_feedback_p50_ms": 0.3,
           "first_feedback_p95_ms": 0.4,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 77,
-          "settled_p50_ms": 80.7,
-          "settled_p75_ms": 82.1,
-          "settled_p95_ms": 82.1,
+          "settled_p25_ms": 76.5,
+          "settled_p50_ms": 81.7,
+          "settled_p75_ms": 88.4,
+          "settled_p95_ms": 88.4,
           "step": "recommend-teacher"
         },
         {
@@ -3282,70 +3292,82 @@
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 68,
-          "settled_p50_ms": 76.6,
-          "settled_p75_ms": 83,
-          "settled_p95_ms": 83,
+          "settled_p25_ms": 73.2,
+          "settled_p50_ms": 78.9,
+          "settled_p75_ms": 93.2,
+          "settled_p95_ms": 93.2,
           "step": "approve-registrar"
         },
         {
           "first_feedback_p50_ms": 0.5,
-          "first_feedback_p95_ms": 0.5,
+          "first_feedback_p95_ms": 0.6,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 5.4,
-          "settled_p50_ms": 5.6,
-          "settled_p75_ms": 7.2,
-          "settled_p95_ms": 7.2,
+          "settled_p25_ms": 5.3,
+          "settled_p50_ms": 6.2,
+          "settled_p75_ms": 8.4,
+          "settled_p95_ms": 8.4,
           "step": "denied-recommend"
         },
         {
-          "first_feedback_p50_ms": 0.7,
-          "first_feedback_p95_ms": 0.8,
+          "first_feedback_p50_ms": 1.2,
+          "first_feedback_p95_ms": 1.2,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 0.7,
-          "settled_p50_ms": 0.7,
-          "settled_p75_ms": 0.8,
-          "settled_p95_ms": 0.8,
+          "settled_p25_ms": 0.9,
+          "settled_p50_ms": 1.2,
+          "settled_p75_ms": 1.2,
+          "settled_p95_ms": 1.2,
           "step": "open-evidence"
         },
         {
           "first_feedback_p50_ms": 0.4,
-          "first_feedback_p95_ms": 0.5,
+          "first_feedback_p95_ms": 0.4,
           "median_over_400ms": true,
           "over_400ms": true,
           "samples": 3,
-          "settled_p25_ms": 777.5,
-          "settled_p50_ms": 799.5,
-          "settled_p75_ms": 824.7,
-          "settled_p95_ms": 824.7,
+          "settled_p25_ms": 747.6,
+          "settled_p50_ms": 765.4,
+          "settled_p75_ms": 799.1,
+          "settled_p95_ms": 799.1,
           "step": "run-verification"
         },
         {
-          "first_feedback_p50_ms": 0.9,
-          "first_feedback_p95_ms": 1,
+          "first_feedback_p50_ms": 0.6,
+          "first_feedback_p95_ms": 0.7,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 119.1,
-          "settled_p50_ms": 126,
-          "settled_p75_ms": 131.5,
-          "settled_p95_ms": 131.5,
+          "settled_p25_ms": 0.6,
+          "settled_p50_ms": 0.6,
+          "settled_p75_ms": 0.7,
+          "settled_p95_ms": 0.7,
+          "step": "open-review-subject"
+        },
+        {
+          "first_feedback_p50_ms": 1,
+          "first_feedback_p95_ms": 1.1,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 111.2,
+          "settled_p50_ms": 113.5,
+          "settled_p75_ms": 129.1,
+          "settled_p95_ms": 129.1,
           "step": "approve-exact"
         },
         {
           "first_feedback_p50_ms": 0.4,
-          "first_feedback_p95_ms": 0.5,
+          "first_feedback_p95_ms": 0.6,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 181.2,
-          "settled_p50_ms": 195.5,
-          "settled_p75_ms": 196.6,
-          "settled_p95_ms": 196.6,
+          "settled_p25_ms": 175.9,
+          "settled_p50_ms": 176.7,
+          "settled_p75_ms": 191.3,
+          "settled_p95_ms": 191.3,
           "step": "apply-baseline"
         }
       ],
@@ -3370,11 +3392,11 @@
   "recommendations": [
     {
       "category": "doherty",
-      "change": "First DOM mutation after the click came within 4.3 ms (p95; paint not measured), while completion for the slow steps takes longer than 400 ms. For the slow steps show a determinate progress message, keep the previous result visible until the new one lands, and profile where the time goes before optimising anything.",
+      "change": "First DOM mutation after the click came within 4.9 ms (p95; paint not measured), while completion for the slow steps takes longer than 400 ms. For the slow steps show a determinate progress message, keep the previous result visible until the new one lands, and profile where the time goes before optimising anything.",
       "evidence": {
-        "first_feedback_p95_ms": 4.3,
+        "first_feedback_p95_ms": 4.9,
         "slow_steps": [
-          "run-verification: p50 799.5 / p95 824.7 ms"
+          "run-verification: p50 765.4 / p95 799.1 ms"
         ]
       },
       "id": "doherty-completion",
@@ -3425,10 +3447,10 @@
       "evidence": {
         "keyboard_only_journey_tab_presses": {
           "acknowledge": 1,
-          "actor-registrar": 29,
-          "actor-unassigned": 28,
+          "actor-registrar": 25,
+          "actor-unassigned": 24,
           "answer-assignment": 1,
-          "answer-authority": 4,
+          "answer-authority": 1,
           "answer-reject_entry": 1,
           "apply-baseline": 0,
           "approve-exact": 1,
@@ -3436,12 +3458,13 @@
           "ask-interpretations": 0,
           "create-case": 1,
           "denied-recommend": 2,
-          "open-change": 6,
-          "open-evidence": 25,
+          "open-change": 4,
+          "open-evidence": 24,
+          "open-review-subject": 5,
           "open-try": 1,
           "recommend-teacher": 1,
           "reset-preview": 2,
-          "run-verification": 2,
+          "run-verification": 3,
           "select-meaning": 3,
           "submit-teacher": 2,
           "type-request": 0
@@ -3458,7 +3481,7 @@
         "KLM"
       ],
       "likely_cause": "",
-      "predicted_effect": "model: 3.6 s of 64.0 s expert time (6%)",
+      "predicted_effect": "model: 3.6 s of 65.3 s expert time (6%)",
       "predicted_saving_s": 3.64,
       "rank": 3,
       "rank_saving_s": 3.64,
@@ -3476,10 +3499,10 @@
       "evidence": {
         "tab_presses_by_step": {
           "acknowledge": 1,
-          "actor-registrar": 29,
-          "actor-unassigned": 28,
+          "actor-registrar": 25,
+          "actor-unassigned": 24,
           "answer-assignment": 1,
-          "answer-authority": 4,
+          "answer-authority": 1,
           "answer-reject_entry": 1,
           "apply-baseline": 0,
           "approve-exact": 1,
@@ -3487,12 +3510,13 @@
           "ask-interpretations": 0,
           "create-case": 1,
           "denied-recommend": 2,
-          "open-change": 6,
-          "open-evidence": 25,
+          "open-change": 4,
+          "open-evidence": 24,
+          "open-review-subject": 5,
           "open-try": 1,
           "recommend-teacher": 1,
           "reset-preview": 2,
-          "run-verification": 2,
+          "run-verification": 3,
           "select-meaning": 3,
           "submit-teacher": 2,
           "type-request": 0
@@ -3511,7 +3535,7 @@
       "saving_kind": "model difference",
       "severity": 2,
       "targets": [],
-      "title": "Reaching one control took 29 Tab presses"
+      "title": "Reaching one control took 25 Tab presses"
     },
     {
       "category": "working-memory",
@@ -3519,21 +3543,22 @@
       "evidence": {
         "label": "HEURISTIC PROXY - counts what is simultaneously visible, not what a person holds in memory",
         "views": [
-          "applied: 61",
-          "change-empty: 51",
-          "change-options: 63",
-          "change-selected: 66",
-          "create-panel: 53",
-          "evidence-approved: 61",
-          "evidence-verified: 68",
-          "impact-tab: 66",
-          "start: 63",
-          "try-denied: 60",
-          "try-draft: 59",
-          "try-idle: 59"
+          "applied: 47",
+          "change-empty: 39",
+          "change-options: 49",
+          "change-selected: 56",
+          "create-panel: 41",
+          "evidence-approved: 47",
+          "evidence-review-open: 48",
+          "evidence-verified: 50",
+          "impact-tab: 56",
+          "start: 49",
+          "try-denied: 52",
+          "try-draft: 48",
+          "try-idle: 48"
         ],
-        "worst_chunks": 68,
-        "worst_view": "evidence-verified"
+        "worst_chunks": 56,
+        "worst_view": "change-selected"
       },
       "id": "working-memory-proxy",
       "laws": [
@@ -3548,14 +3573,14 @@
       "saving_kind": "model difference",
       "severity": 2,
       "targets": [],
-      "title": "12/12 views show more than 9 chunks at once (proxy)"
+      "title": "13/13 views show more than 9 chunks at once (proxy)"
     },
     {
       "category": "hick",
       "change": "Keep one visually dominant primary action per view and demote the rest (secondary/text buttons), which lowers effective uncertainty for first-time users (Hyman).",
       "evidence": {
         "max_group_choices": 7,
-        "max_screen_controls": 33,
+        "max_screen_controls": 32,
         "note": "upper bound; the choice groups themselves are all <= 7"
       },
       "id": "hick-screen-load",
@@ -3563,10 +3588,10 @@
         "Hick-Hyman"
       ],
       "likely_cause": "",
-      "predicted_effect": "if a novice searched the whole screen instead of the choice group: +3.29 s (upper bound, model)",
-      "predicted_saving_s": 3.29,
+      "predicted_effect": "if a novice searched the whole screen instead of the choice group: +3.14 s (upper bound, model)",
+      "predicted_saving_s": 3.137,
       "rank": 6,
-      "rank_saving_s": 3.29,
+      "rank_saving_s": 3.137,
       "saving_kind": "model difference",
       "severity": 1,
       "targets": [],
@@ -3576,9 +3601,9 @@
       "category": "klm",
       "change": "Not a defect by itself; use it to decide where shortcuts (tab shortcuts, access keys) pay off.",
       "evidence": {
-        "keyboard_K": 203,
-        "keyboard_total_s": 68.99,
-        "pointer_total_s": 64.01
+        "keyboard_K": 196,
+        "keyboard_total_s": 67.03,
+        "pointer_total_s": 65.31
       },
       "id": "klm-keyboard-vs-pointer",
       "laws": [
@@ -3592,7 +3617,7 @@
       "saving_kind": "model difference",
       "severity": 1,
       "targets": [],
-      "title": "Keyboard-only journey costs 69.0 s vs 64.0 s with the pointer (model)"
+      "title": "Keyboard-only journey costs 67.0 s vs 65.3 s with the pointer (model)"
     },
     {
       "category": "klm",
@@ -3629,19 +3654,19 @@
     "http_error_responses": [
       {
         "method": "POST",
-        "path": "/api/cases/65cb84ff4b924a8f83261bb8e6b19fe7/execute",
+        "path": "/api/cases/17c4169bfe4c4e968d12850f25ac52c9/execute",
         "status": 409,
         "step": "denied-recommend"
       },
       {
         "method": "POST",
-        "path": "/api/cases/a271e94f218c49bf99acfe13f7cd7cb1/execute",
+        "path": "/api/cases/5c8f6975cbf44a86a87e061b2ad0d4b2/execute",
         "status": 409,
         "step": "denied-recommend"
       },
       {
         "method": "POST",
-        "path": "/api/cases/a58597ceecbd4d3d9d9607fd7e928d96/execute",
+        "path": "/api/cases/bbe9d8a505bf44688c92be092bef5e80/execute",
         "status": 409,
         "step": "denied-recommend"
       }
@@ -3663,6 +3688,7 @@
           "change-selected",
           "create-panel",
           "evidence-approved",
+          "evidence-review-open",
           "evidence-verified",
           "impact-tab",
           "start",
@@ -3698,7 +3724,7 @@
       "elements": []
     },
     "target_size_2_5_8": {
-      "controls_audited": 76,
+      "controls_audited": 75,
       "exceptions_not_evaluated": [
         "inline",
         "user-agent controlled",
@@ -3706,12 +3732,12 @@
         "essential"
       ],
       "status_counts": {
-        "pass": 76
+        "pass": 75
       },
       "undersized_or_failing": [
         {
           "effective_px": [
-            1104,
+            1078,
             44
           ],
           "name": "I understand this is a local synthetic demo, with human outc",
@@ -3746,6 +3772,7 @@
       "change-selected",
       "create-panel",
       "evidence-approved",
+      "evidence-review-open",
       "evidence-verified",
       "impact-tab",
       "start",
@@ -3764,153 +3791,165 @@
     "definition": "chunks = visible controls, including disabled controls (a checkbox and its label are one), + groups of visible static text/heading atoms that share a parent element; viewport = first screen at scroll top, page = whole rendered view. Independent pane overflow clips are intersected; partially visible items still count. Raw layout-box counts and clipped exclusions are retained; absent values identify older traces without this accounting.",
     "label": "HEURISTIC PROXY - counts what is simultaneously visible, not what a person holds in memory",
     "summary": {
-      "max_chunks_viewport": 68,
-      "views": 12,
-      "views_over_miller_9": 12
+      "max_chunks_viewport": 56,
+      "views": 13,
+      "views_over_miller_9": 13
     },
     "views": [
       {
-        "atoms_viewport": 85,
-        "chunks_page": 61,
-        "chunks_viewport": 61,
-        "content_groups": 27,
+        "atoms_viewport": 59,
+        "chunks_page": 47,
+        "chunks_viewport": 47,
+        "content_groups": 13,
         "controls": 34,
-        "excluded_clipped_chunks": 8,
+        "excluded_clipped_chunks": 5,
         "over_cowan_4": true,
         "over_miller_9": true,
-        "raw_chunks_viewport": 69,
+        "raw_chunks_viewport": 52,
         "view": "applied"
       },
       {
-        "atoms_viewport": 71,
-        "chunks_page": 51,
-        "chunks_viewport": 51,
-        "content_groups": 23,
-        "controls": 28,
+        "atoms_viewport": 51,
+        "chunks_page": 39,
+        "chunks_viewport": 39,
+        "content_groups": 15,
+        "controls": 24,
         "excluded_clipped_chunks": 0,
         "over_cowan_4": true,
         "over_miller_9": true,
-        "raw_chunks_viewport": 51,
+        "raw_chunks_viewport": 39,
         "view": "change-empty"
       },
       {
-        "atoms_viewport": 91,
-        "chunks_page": 63,
-        "chunks_viewport": 63,
-        "content_groups": 29,
-        "controls": 34,
-        "excluded_clipped_chunks": 1,
+        "atoms_viewport": 70,
+        "chunks_page": 49,
+        "chunks_viewport": 49,
+        "content_groups": 19,
+        "controls": 30,
+        "excluded_clipped_chunks": 0,
         "over_cowan_4": true,
         "over_miller_9": true,
-        "raw_chunks_viewport": 64,
+        "raw_chunks_viewport": 49,
         "view": "change-options"
       },
       {
-        "atoms_viewport": 103,
-        "chunks_page": 66,
-        "chunks_viewport": 66,
-        "content_groups": 31,
-        "controls": 35,
-        "excluded_clipped_chunks": 7,
-        "over_cowan_4": true,
-        "over_miller_9": true,
-        "raw_chunks_viewport": 73,
-        "view": "change-selected"
-      },
-      {
-        "atoms_viewport": 73,
-        "chunks_page": 53,
-        "chunks_viewport": 53,
-        "content_groups": 23,
-        "controls": 30,
-        "excluded_clipped_chunks": 0,
-        "over_cowan_4": true,
-        "over_miller_9": true,
-        "raw_chunks_viewport": 53,
-        "view": "create-panel"
-      },
-      {
-        "atoms_viewport": 85,
-        "chunks_page": 61,
-        "chunks_viewport": 61,
-        "content_groups": 27,
-        "controls": 34,
-        "excluded_clipped_chunks": 8,
-        "over_cowan_4": true,
-        "over_miller_9": true,
-        "raw_chunks_viewport": 69,
-        "view": "evidence-approved"
-      },
-      {
-        "atoms_viewport": 103,
-        "chunks_page": 68,
-        "chunks_viewport": 68,
-        "content_groups": 38,
-        "controls": 30,
-        "excluded_clipped_chunks": 3,
-        "over_cowan_4": true,
-        "over_miller_9": true,
-        "raw_chunks_viewport": 71,
-        "view": "evidence-verified"
-      },
-      {
-        "atoms_viewport": 103,
-        "chunks_page": 66,
-        "chunks_viewport": 66,
-        "content_groups": 31,
-        "controls": 35,
-        "excluded_clipped_chunks": 7,
-        "over_cowan_4": true,
-        "over_miller_9": true,
-        "raw_chunks_viewport": 73,
-        "view": "impact-tab"
-      },
-      {
-        "atoms_viewport": 86,
-        "chunks_page": 63,
-        "chunks_viewport": 63,
-        "content_groups": 27,
-        "controls": 36,
-        "excluded_clipped_chunks": 0,
-        "over_cowan_4": true,
-        "over_miller_9": true,
-        "raw_chunks_viewport": 63,
-        "view": "start"
-      },
-      {
-        "atoms_viewport": 84,
-        "chunks_page": 60,
-        "chunks_viewport": 60,
+        "atoms_viewport": 94,
+        "chunks_page": 56,
+        "chunks_viewport": 56,
         "content_groups": 25,
-        "controls": 35,
+        "controls": 31,
         "excluded_clipped_chunks": 1,
         "over_cowan_4": true,
         "over_miller_9": true,
-        "raw_chunks_viewport": 61,
+        "raw_chunks_viewport": 57,
+        "view": "change-selected"
+      },
+      {
+        "atoms_viewport": 53,
+        "chunks_page": 41,
+        "chunks_viewport": 41,
+        "content_groups": 15,
+        "controls": 26,
+        "excluded_clipped_chunks": 0,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 41,
+        "view": "create-panel"
+      },
+      {
+        "atoms_viewport": 59,
+        "chunks_page": 47,
+        "chunks_viewport": 47,
+        "content_groups": 13,
+        "controls": 34,
+        "excluded_clipped_chunks": 5,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 52,
+        "view": "evidence-approved"
+      },
+      {
+        "atoms_viewport": 65,
+        "chunks_page": 48,
+        "chunks_viewport": 48,
+        "content_groups": 19,
+        "controls": 29,
+        "excluded_clipped_chunks": 5,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 53,
+        "view": "evidence-review-open"
+      },
+      {
+        "atoms_viewport": 75,
+        "chunks_page": 50,
+        "chunks_viewport": 50,
+        "content_groups": 24,
+        "controls": 26,
+        "excluded_clipped_chunks": 1,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 51,
+        "view": "evidence-verified"
+      },
+      {
+        "atoms_viewport": 94,
+        "chunks_page": 56,
+        "chunks_viewport": 56,
+        "content_groups": 25,
+        "controls": 31,
+        "excluded_clipped_chunks": 1,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 57,
+        "view": "impact-tab"
+      },
+      {
+        "atoms_viewport": 64,
+        "chunks_page": 49,
+        "chunks_viewport": 49,
+        "content_groups": 19,
+        "controls": 30,
+        "excluded_clipped_chunks": 0,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 49,
+        "view": "start"
+      },
+      {
+        "atoms_viewport": 68,
+        "chunks_page": 52,
+        "chunks_viewport": 52,
+        "content_groups": 18,
+        "controls": 34,
+        "excluded_clipped_chunks": 1,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 53,
         "view": "try-denied"
       },
       {
-        "atoms_viewport": 81,
-        "chunks_page": 59,
-        "chunks_viewport": 59,
-        "content_groups": 24,
-        "controls": 35,
+        "atoms_viewport": 62,
+        "chunks_page": 48,
+        "chunks_viewport": 48,
+        "content_groups": 16,
+        "controls": 32,
         "excluded_clipped_chunks": 0,
         "over_cowan_4": true,
         "over_miller_9": true,
-        "raw_chunks_viewport": 59,
+        "raw_chunks_viewport": 48,
         "view": "try-draft"
       },
       {
-        "atoms_viewport": 81,
-        "chunks_page": 59,
-        "chunks_viewport": 59,
-        "content_groups": 24,
-        "controls": 35,
+        "atoms_viewport": 62,
+        "chunks_page": 48,
+        "chunks_viewport": 48,
+        "content_groups": 16,
+        "controls": 32,
         "excluded_clipped_chunks": 0,
         "over_cowan_4": true,
         "over_miller_9": true,
-        "raw_chunks_viewport": 59,
+        "raw_chunks_viewport": 48,
         "view": "try-idle"
       }
     ]

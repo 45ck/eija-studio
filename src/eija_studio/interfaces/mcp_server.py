@@ -38,14 +38,16 @@ import platform
 import re
 import threading
 from pathlib import Path
-from typing import Any, Callable, Literal, Protocol
+from typing import Annotated, Any, Callable, Literal, Protocol
 
 import anyio.to_thread
 from mcp.server.mcpserver import MCPServer
 from mcp.server.mcpserver.exceptions import ResourceNotFoundError, ToolError
 from mcp.types import ToolAnnotations
+from pydantic import WithJsonSchema
 
 from eija_studio import __version__
+from eija_studio.application.repository import COMMIT_OID_PATTERN
 from eija_studio.application.service import Studio
 from eija_studio.domain.models import DomainError, Workflow
 from eija_studio.domain.policy import projections
@@ -55,7 +57,8 @@ from eija_studio.interfaces.agent_policy import STORE_WRITE_NAMES  # noqa: F401 
 
 #: The complete agent tool surface. Adding a name here is a governance decision (ADR-0041).
 AGENT_TOOLS: tuple[str, ...] = ("list_cases", "create_case", "propose", "view_case", "impact", "verify", "render",
-                               "pack", "affordances", "edit_check", "repository_impact", "repository_source")
+                               "pack", "affordances", "edit_check", "repository_impact", "repository_source",
+                               "repository_change", "repository_change_file")
 
 #: Owner-only operations. Tests assert none of these is registered as a tool, and that no identifier in this
 #: module names them on any receiver.
@@ -166,6 +169,8 @@ class AgentPort(Protocol):
     def edit_check(self, case_id: str, proposal: Transaction) -> dict: ...
     def repository_impact(self, term: str, *, expected_source_hash: str | None = None) -> dict: ...
     def repository_source(self, reference: str, *, expected_source_hash: str | None = None) -> dict: ...
+    def repository_change(self, base: str, head: str) -> dict: ...
+    def repository_change_file(self, base: str, head: str, path: str, reference: str | None = None) -> dict: ...
 
 
 def StudioAgentPort(studio: Studio) -> AgentPort:  # a class-like factory: the Studio lives only in a closure
@@ -213,6 +218,12 @@ def StudioAgentPort(studio: Studio) -> AgentPort:  # a class-like factory: the S
 
         def repository_source(self, reference: str, *, expected_source_hash: str | None = None) -> dict:
             return studio.repository_source(reference, expected_source_hash=expected_source_hash)
+
+        def repository_change(self, base: str, head: str) -> dict:
+            return studio.repository_change(base, head)
+
+        def repository_change_file(self, base: str, head: str, path: str, reference: str | None = None) -> dict:
+            return studio.repository_change_file(base, head, path, reference)
 
     return _StudioAgentPort()
 
@@ -264,6 +275,13 @@ class AgentSurface:
 
     def repository_source(self, reference: str, *, expected_source_hash: str | None = None) -> dict[str, Any]:
         return self.port.repository_source(reference, expected_source_hash=expected_source_hash)
+
+    def repository_change(self, base: str, head: str) -> dict[str, Any]:
+        return self.port.repository_change(base, head)
+
+    def repository_change_file(self, base: str, head: str, path: str,
+                               reference: str | None = None) -> dict[str, Any]:
+        return self.port.repository_change_file(base, head, path, reference)
 
     def list_cases(self) -> dict[str, Any]:
         cases = [{"id": c["id"], "version": c["version"], "stage": c["stage"], "created_at": c["created_at"],
@@ -441,6 +459,31 @@ def create_server(studio: Studio, *, egress_consent: bool = False, diagram_rende
         File and snapshot hashes identify this read; it grants no edit, execution, approval or apply capability.
         Pass the pack connection's source_hash to refuse a different captured snapshot."""
         return await surface.guarded_async(lambda: surface.repository_source(reference, expected_source_hash=expected_source_hash))
+
+    @server.tool(annotations=read)
+    async def repository_change(
+        base: Annotated[Any, WithJsonSchema({"type": "string", "pattern": COMMIT_OID_PATTERN, "maxLength": 64})],
+        head: Annotated[Any, WithJsonSchema({"type": "string", "pattern": COMMIT_OID_PATTERN, "maxLength": 64})],
+    ) -> dict[str, Any]:
+        """Compare full local commit IDs in the repository configured at startup, without target execution.
+        Changed-file syntax and incomplete known links are not behavior proof or complete impact analysis.
+        The changed_source_hash covers inspected changed files, not the live connection's source_hash."""
+        # The application enforces this advertised schema with fixed errors. SDK/Pydantic validation
+        # would echo rejected source/revision input, so pass it unchanged through the guarded boundary.
+        return await surface.guarded_async(lambda: surface.repository_change(base, head))
+
+    @server.tool(annotations=read)
+    async def repository_change_file(
+        base: Annotated[Any, WithJsonSchema({"type": "string", "pattern": COMMIT_OID_PATTERN, "maxLength": 64})],
+        head: Annotated[Any, WithJsonSchema({"type": "string", "pattern": COMMIT_OID_PATTERN, "maxLength": 64})],
+        path: Annotated[Any, WithJsonSchema({"type": "string", "minLength": 1, "maxLength": 1024})],
+        reference: Annotated[Any, WithJsonSchema({"anyOf": [
+            {"type": "string", "minLength": 1, "maxLength": 800}, {"type": "null"}]})] = None,
+    ) -> dict[str, Any]:
+        """Read bounded before/after text and the Git diff for one permitted changed path and optional syntax ID.
+        Use the exact commits and path from repository_change. No current-file fallback, patch, execution,
+        evidence admission or owner approval is performed. Inspect comparison identity and coverage gaps."""
+        return await surface.guarded_async(lambda: surface.repository_change_file(base, head, path, reference))
 
     @server.tool(annotations=read)
     async def list_cases() -> dict[str, Any]:

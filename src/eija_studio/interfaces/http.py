@@ -8,6 +8,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.exceptions import RequestValidationError
 from pydantic import Field
 from eija_studio.application.diagram_catalog import case_diagrams
+from eija_studio.application.repository import COMMIT_OID_PATTERN
 from eija_studio.domain.models import MEANING_ID, Contract, DomainError, OWNER, LayoutChange, ExecuteCommand
 from eija_studio.domain.pack import Pack
 from eija_studio.domain.transactions import Transaction
@@ -18,7 +19,7 @@ PAGE_CSP = ("default-src 'none'; script-src 'self'; style-src 'self'; connect-sr
             "frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
 FRAME_CSP = ("default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src data:; connect-src 'none'; "
              "frame-ancestors 'self'; base-uri 'none'; form-action 'none'; sandbox allow-scripts")
-WEB_ASSETS = frozenset({"app.js", "app.css", "canvas.js", "tree.js", "review.js", "compare.js", "compare.css", "source.js", "shell.js", "visual-frame.js", "visual-frame.css"})
+WEB_ASSETS = frozenset({"app.js", "app.css", "canvas.js", "tree.js", "review.js", "compare.js", "compare.css", "repository-review.js", "repository-review.css", "source.js", "shell.js", "visual-frame.js", "visual-frame.css"})
 
 
 class NewCase(Contract):
@@ -154,6 +155,18 @@ def create_app(studio, token: str, port: int = 8765) -> FastAPI:
     @app.get("/api/repository/freshness")
     def repository_freshness(expected_source_hash: str = Query(pattern="^sha256:[0-9a-f]{64}$")):
         return studio.repository_freshness(expected_source_hash)
+
+    @app.get("/api/repository/change")
+    def repository_change(base: str = Query(pattern=COMMIT_OID_PATTERN, max_length=64),
+                          head: str = Query(pattern=COMMIT_OID_PATTERN, max_length=64)):
+        return studio.repository_change(base, head)
+
+    @app.get("/api/repository/change/file")
+    def repository_change_file(base: str = Query(pattern=COMMIT_OID_PATTERN, max_length=64),
+                               head: str = Query(pattern=COMMIT_OID_PATTERN, max_length=64),
+                               path: str = Query(min_length=1, max_length=1024),
+                               reference: str | None = Query(default=None, min_length=1, max_length=800)):
+        return studio.repository_change_file(base, head, path, reference)
 
     @app.get("/api/cases")
     def cases():

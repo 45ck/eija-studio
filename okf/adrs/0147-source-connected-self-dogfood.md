@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0147-source-connected-self-dogfood.md
   title: 0147-source-connected-self-dogfood.md
   hash_method: lf-sha256-v1
-  sha256: 1e19411c96f05522d2d7d85b3df34ec5502da07243453117f5008806122a46eb
-notes_baseline: 1dfbfcb7d60ebeaf35e3d0a367f48bcddfb9adc26daa4997c4d7fbe5f52b01c6
+  sha256: f3605d11594ead7c584fa5cee68e22a1c23b7fe1039acc4d286e5889ff70f317
+notes_baseline: e932ae34993e2652b7ef9cee2d26e978f17e976ed2114274039c848db223cd27
 ---
 
 # ADR-0147: Source-connected self-dogfooding with explicit coverage

@@ -64,6 +64,13 @@
     return { x: r.left, y: r.top, w: r.width, h: r.height };
   };
   const layoutShown = (el) => {
+    // Closed native disclosures can retain nonempty child boxes in Chromium.
+    // Only their first direct summary (and its descendants) remains rendered.
+    for (let parent = el.parentElement; parent; parent = parent.parentElement) {
+      if (parent.tagName !== "DETAILS" || parent.open) continue;
+      const summary = [...parent.children].find(child => child.tagName === "SUMMARY");
+      if (!summary || !summary.contains(el)) return false;
+    }
     const r = el.getBoundingClientRect();
     if (r.width <= 0 || r.height <= 0) return false;
     const s = getComputedStyle(el);
@@ -217,6 +224,8 @@
         continue;
       }
       if (el.tagName === "LABEL" && el.control) continue; // paired with its control
+      // A closed details element's own box is its summary; direct body text is not painted.
+      if (el.tagName === "DETAILS" && !el.open) continue;
       const own = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim().length > 0);
       if (!own || !visibleHere(el)) continue;
       atoms += 1;

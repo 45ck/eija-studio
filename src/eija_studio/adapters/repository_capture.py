@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
 from typing import Any
 
-from eija_studio.weave.index import WEB_SUFFIXES, dhash
+from eija_studio.domain.models import canonical
 
 from .providers.process import CliOutputLimit, CliShimUnsupported, CliTimeout, resolve_command, run_bounded
 
@@ -24,9 +24,11 @@ MAX_FILE_BYTES = 2 * 1024 * 1024
 MAX_TOTAL_BYTES = 32 * 1024 * 1024
 MAX_GIT_BYTES = 2 * 1024 * 1024
 MAX_WORKTREES = 64
+# Explicit capture policy: reading a suffix does not imply an analysis capability.
 TEXT_SUFFIXES = frozenset({".py", ".md", ".json", ".yaml", ".yml", ".toml", ".txt", ".csv",
                            ".java", ".kt", ".go", ".rs", ".cs", ".c", ".h", ".cpp", ".hpp",
-                           ".rb", ".php", ".swift", ".sh", ".ps1", ".sql", ".css", *WEB_SUFFIXES})
+                           ".rb", ".php", ".swift", ".sh", ".ps1", ".sql", ".css",
+                           ".html", ".htm", ".js", ".jsx", ".ts", ".tsx", ".vue", ".svg"})
 DATA_SUFFIXES = frozenset({".md", ".json", ".yaml", ".yml", ".toml", ".txt", ".csv", ".css"})
 EXCLUDED_PARTS = frozenset({"node_modules", "vendor", "third_party", "vendored", "site-packages",
                             "build", "dist", "htmlcov", "__pycache__", "venv", "private", "secrets",
@@ -58,7 +60,8 @@ class _Capture:
 
     @property
     def source_hash(self) -> str:
-        return dhash("eija.repository.source.v1", [[path, digest] for path, digest in self.hashes.items()])
+        payload = canonical([[path, digest] for path, digest in self.hashes.items()]).encode("utf-8")
+        return "sha256:" + hashlib.sha256(b"eija.repository.source.v1\x00" + payload).hexdigest()
 
 
 def _git(root: Path, *args: str, input_bytes: bytes | None = None, allow_empty: bool = False) -> bytes:

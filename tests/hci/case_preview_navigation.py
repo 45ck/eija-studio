@@ -123,6 +123,7 @@ class PreviewNavigation(Review):
         if control == "dropdown":
             self.page.locator("#case-switcher").select_option(case_id)
         else:
+            self.open_explorer_disclosure("#explorer details.case-explorer")
             request = self.get_case(case_id)["case"]["request"]
             self.page.locator("#case-list button").filter(has_text=request).click()
         self.settled()
@@ -235,6 +236,7 @@ class PreviewNavigation(Review):
         before, ui, instance = self.prepare_submitted()
         other_before = self.get_case(self.second)
         marker = len(self.requests)
+        self.open_explorer_disclosure("#explorer details.aside-note")
         self.hold_path = "/api/doctor"
         with self.page.expect_request(lambda r: r.method == "GET" and urlsplit(r.url).path == "/api/doctor"):
             self.page.locator("#doctor").click()
@@ -343,7 +345,8 @@ def main():
             result.update({"checks": review.checks, "failed_stage": review.stage if result["status"] != "PASS" else None,
                            "requests": review.requests, "http_errors": review.http_errors, "injected": review.injected,
                            "javascript_errors": review.errors, "forbidden_attempts": review.forbidden,
-                           "runtime_responses": review.runtime_responses})
+                           "runtime_responses": review.runtime_responses,
+                           "navigation_actions": review.navigation_actions})
             write_json(out / "authoritative-get-oracles.json", review.oracles)
         after = run_subject()
         write_json(out / "subject-after.json", after)

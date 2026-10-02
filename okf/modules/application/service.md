@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/service.py
   title: application/service.py
   hash_method: ast-api-v1
-  sha256: cbd429b5fe4e4b4b3d84979fec8fd58efb2a93cb5521273e6f1e6352798ccd5a
-notes_baseline: 62d3ad2695a433e0c0b69e0caf1623db84178095586d4d374122d37f71ccf927
+  sha256: 80f7aa453b3255c3949b202f044ca1968d29827b7642fb41dfd7228eee97ccd5
+notes_baseline: e9d5a427343d86d166d34a0f32fffa6b4e53bd9bd99161c6344b092839eeca39
 ---
 
 # application.service
@@ -96,6 +96,8 @@ _No curated notes yet._
 * [application.service.Studio](/symbols/application/service/Studio.md) - `class Studio` in `application/service`.
 * [application.service.Studio.propose](/symbols/application/service/Studio.propose.md) - `def propose(self, case_id: str, expected: int, *, consent: bool=False) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.redo](/symbols/application/service/Studio.redo.md) - Reapply the next undone typed command through the same interpreter and policy checks.
+* [application.service.Studio.repository_change](/symbols/application/service/Studio.repository_change.md) - Compare immutable source revisions; this grants no model or repository write authority.
+* [application.service.Studio.repository_change_file](/symbols/application/service/Studio.repository_change_file.md) - Read bounded historical text and syntax; live source identity remains separate.
 * [application.service.Studio.repository_freshness](/symbols/application/service/Studio.repository_freshness.md) - Observe captured byte identity; this grants no source conformance, evidence or owner authority.
 * [application.service.Studio.repository_impact](/symbols/application/service/Studio.repository_impact.md) - Known repository links only.
 * [application.service.Studio.repository_source](/symbols/application/service/Studio.repository_source.md) - Bounded source view from the configured repository's captured nodes; no arbitrary path or execution.

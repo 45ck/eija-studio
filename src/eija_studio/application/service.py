@@ -17,7 +17,7 @@ from .formal import attach as attach_formal, packet_view, what_if_model
 from .compiler import compile_case, subject_for
 from .verifier import verify_runtime
 from .runtime import initialise, execute
-from .repository import RepositorySource
+from .repository import RepositoryChangeSource, RepositorySource, compare_repository_changes, read_repository_change_file
 from .history import command_event, history_view, replay
 
 
@@ -38,13 +38,14 @@ def _parse_case(body: dict[str, Any]) -> ChangeCase:
 class Studio:
     def __init__(self, store: Repository, provider: ProposalProvider, signer: ReceiptAuthenticator, identity_provider: IdentityProvider, sandbox: SandboxFactory, *, allow_network: bool = False,
                  formal: FormalEvidenceSource | None = None, pack: Pack | None = None,
-                 repository: RepositorySource | None = None):
+                 repository: RepositorySource | None = None, repository_changes: RepositoryChangeSource | None = None):
         self.pack = pack if pack is not None else default_pack()  # the domain: laws, meanings, fixtures
         self.formal = formal  # optional: without it the formal kinds stay UNKNOWN in the packet, never green
         self.store, self.provider, self.signer = store, provider, signer
         self.identity_provider, self.sandbox = identity_provider, sandbox
         self.allow_network, self._provider_lock = allow_network, Lock()
         self.repository = repository
+        self.repository_changes = repository_changes
 
     def workbench(self) -> dict[str, Any]:
         """Current pack declarations and baseline, with separately labelled read-only repository facts."""
@@ -76,6 +77,15 @@ class Studio:
         if self.repository is None:
             return {"status": "unconfigured", "reason": "Start with --repo PATH to inspect a local repository"}
         return self.repository.freshness(expected_source_hash=expected_source_hash)
+
+    def repository_change(self, base: str, head: str) -> dict[str, Any]:
+        """Compare immutable source revisions; this grants no model or repository write authority."""
+        return compare_repository_changes(self.repository_changes, base, head)
+
+    def repository_change_file(self, base: str, head: str, path: str,
+                               reference: str | None = None) -> dict[str, Any]:
+        """Read bounded historical text and syntax; live source identity remains separate."""
+        return read_repository_change_file(self.repository_changes, base, head, path, reference)
 
     @staticmethod
     def _case(u: UnitOfWork, case_id: str, expected: int | None = None, editable: bool = False) -> ChangeCase:

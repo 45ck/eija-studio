@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/http.py
   title: interfaces/http.py
   hash_method: ast-api-v1
-  sha256: 0ad3795202e65814296009e8a7f25fec409d1ab32a56095f0fa46135e2b36805
-notes_baseline: 3b6783cab528f07188b361d768d97c91f81091f7dd813d1dba1022464c63ceb7
+  sha256: 4321396677f8e0f8d51ba961e089fc77a9bf193be1b754ea036c1ce4a01a39c6
+notes_baseline: c7445473329b21aa4d27b75bc0bf03b83e4dded5ffff41bdac7d4a8828554448
 ---
 
 # interfaces.http
@@ -39,6 +39,7 @@ _Symbol pages are generated for the domain and application layers only._
 ## Internal imports
 
 * [`application/diagram_catalog`](/modules/application/diagram_catalog.md)
+* [`application/repository`](/modules/application/repository.md)
 * [`domain/models`](/modules/domain/models.md)
 * [`domain/pack`](/modules/domain/pack.md)
 * [`domain/transactions`](/modules/domain/transactions.md)
@@ -52,6 +53,7 @@ _No curated notes yet._
 ## Imports
 
 * [application.diagram_catalog](/modules/application/diagram_catalog.md) - Named diagram views over a baseline and an optional candidate Workflow.
+* [application.repository](/modules/application/repository.md) - Read-only repository evidence port; this does not grant project execution or approval.
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
 * [domain.transactions](/modules/domain/transactions.md) - Open change vocabulary (WBS 1.3): the semantic edits an owner (or a pack meaning) may make to a workflow.

@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/mcp_server.py
   title: interfaces/mcp_server.py
   hash_method: ast-api-v1
-  sha256: e3a929d237e6a56270dc208ce8a0cd2cc28079a1980805f73aebd6ed093be58b
-notes_baseline: 0364013ec7c85d72006a91bf6e29a393bea85c61cd5f8b1c76d0f9bc6cc07947
+  sha256: ecf334eab21e533898d29acad571bf5d75338f1702ca204b3f307853fc7ac2a6
+notes_baseline: 607f0f5f64bb83d19e59cc41d25a310fce47b460ef8dde25f7daba2f25f82142
 ---
 
 # interfaces.mcp_server
@@ -68,6 +68,7 @@ _Symbol pages are generated for the domain and application layers only._
 
 ## Internal imports
 
+* [`application/repository`](/modules/application/repository.md)
 * [`application/service`](/modules/application/service.md)
 * [`domain/models`](/modules/domain/models.md)
 * [`domain/policy`](/modules/domain/policy.md)
@@ -83,6 +84,7 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Imports
 
+* [application.repository](/modules/application/repository.md) - Read-only repository evidence port; this does not grant project execution or approval.
 * [application.service](/modules/application/service.md) - Module `application/service` (no module docstring).
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.policy](/modules/domain/policy.md) - Generic policy: coherence with a domain pack's declared action catalog, the pack's laws, and declared effects.

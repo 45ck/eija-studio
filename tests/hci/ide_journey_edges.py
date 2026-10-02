@@ -155,7 +155,7 @@ class Journey(replay.Review):
     def edit_role(self, transition="TR-SAVE", role="Agent"):
         choice = self.role_choice(transition, role, True)
         self.tab("model")
-        self.page.locator("#transition-select").select_option(transition)
+        self.select_transition(transition)
         self.page.locator("#transition-role").select_option(role)
         self.page.locator("#edit-role").click()
         self.settled()
@@ -217,7 +217,8 @@ class Journey(replay.Review):
         before = self.create_candidate()
         self.tab("review")
         replay.expect(self.page.locator("#review-chapters")).to_contain_text("Save")
-        replay.expect(self.page.locator('[data-eija-id="review.transition.TR-SAVE"]')).to_be_visible()
+        detail = self.assert_comparison_transition("TR-SAVE", before["case"]["baseline"], before["case"]["candidate"])
+        replay.expect(detail).to_be_visible()
         self.assert_unchanged(before)
         return {"case": self.case_id, "subject": before["subject"], "provider": "offline"}
 
@@ -226,7 +227,7 @@ class Journey(replay.Review):
         self.label += " second"
         second = self.create_candidate()["case"]["id"]
         refs = self.source_refs()
-        self.page.locator("#transition-select").select_option("TR-APPROVE")
+        self.select_transition("TR-APPROVE")
         second_source = self.open_source(refs[1])
         self.switch_case(first)
         self.edit_role()
@@ -266,7 +267,7 @@ class Journey(replay.Review):
 
     def cancel_unsubmitted_edit(self):
         before = self.create_candidate()
-        self.page.locator("#transition-select").select_option("TR-SAVE")
+        self.select_transition("TR-SAVE")
         original = self.page.locator("#transition-role").input_value()
         self.page.locator("#transition-role").select_option("Agent")
         writes = len([r for r in self.requests if r["method"] == "POST"])
@@ -289,7 +290,7 @@ class Journey(replay.Review):
 
     def stale_second_page(self):
         before = self.create_candidate()
-        self.page.locator("#transition-select").select_option("TR-SAVE")
+        self.select_transition("TR-SAVE")
         self.page.locator("#transition-role").select_option("Agent")
         second = Journey(self.page.context.new_page(), self.out, self.base)
         try:
@@ -317,7 +318,7 @@ class Journey(replay.Review):
 
     def transport_retry(self):
         before = self.create_candidate()
-        self.page.locator("#transition-select").select_option("TR-SAVE")
+        self.select_transition("TR-SAVE")
         self.abort_get = f"/api/cases/{self.case_id}"
         self.palette("Refresh current model")
         assert self.aborted == [f"/api/cases/{self.case_id}"]
@@ -388,7 +389,8 @@ def run_story(browser, base, out, name):
     if journey.errors or journey.forbidden or unexpected:
         result["status"] = "FAIL"
     result |= {"javascript_errors": journey.errors, "unexpected_http": unexpected,
-               "forbidden_requests": journey.forbidden, "case_id": journey.case_id}
+               "forbidden_requests": journey.forbidden, "case_id": journey.case_id,
+               "navigation_actions": journey.navigation_actions}
     write_json(folder / "oracle-responses.json", journey.oracles)
     write_json(folder / "requests.json", journey.requests)
     write_json(folder / "result.json", result)

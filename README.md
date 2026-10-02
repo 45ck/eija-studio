@@ -32,6 +32,8 @@ The [2 October preview and reproduction record](docs/demos/2026-10-02-IDE-PREVIE
 
 Fresh Windows installation, real CLI startup and 20 recorded browser checks passed within the preview's declared scope. Full IDE acceptance remains open: the HCI density budget fails, source review is required, and human comprehension and live-provider usefulness are unmeasured. The linked generated design concepts describe the target; the linked recording shows the actual product.
 
+The [3 October review checkpoint](docs/design/2026-10-03-CODE-REVIEW-VALIDATION.md) adds paired model graphs and immutable local-commit review with exact historical source, changed syntax references and explicit coverage gaps. The [reproducible navigation proof](docs/demos/2026-10-03-NAVIGATION-RECOVERY-PROOF.md) demonstrates two observed failures in the earlier revision and their repaired behavior. The refreshed HCI report retains its density and predicted-effort failures; these increments do not close full IDE acceptance.
+
 **Historical gate snapshot, 29 September 2026 — stale for the current integration work.** These numbers describe an earlier branch state, not the self-dogfood acceptance result: <!-- GATE-STATUS -->2026-09-29, Windows 11, Python 3.12, this branch merged with `main` at `0f51b62`: `nox -t full` succeeded (254 tests passed, 1 skipped because Playwright is not installed; coverage 78.85 %), and the `demos_dry` gate was skipped as `NOT_RUN` for the same reason. The owner-only release fixture check does not pass on `main` (see the quickstart).<!-- /GATE-STATUS --> Reproduce it yourself with `nox -t full`; there is no hosted CI to trust instead of your own run. Hosted CI is unavailable for this repository ([ADR-0017](docs/adr/0017-local-quality-gates.md)).
 
 ## Current scope and acceptance
@@ -170,11 +172,13 @@ The block above is not hand-drawn: `python scripts/gen_readme_diagram.py --check
 The connected IDE is developed on [`integrate/all`](https://github.com/45ck/eija-studio/tree/integrate/all), tracked in [PR #29](https://github.com/45ck/eija-studio/pull/29). From that checkout, create and activate a Python virtual environment as below, then run:
 
 ```console
-python -m pip install -e ".[dev,hci]"
+python -m pip install -e ".[dev,hci,source-analysis]"
 eija serve --provider offline --pack packs/eija-review-slice --repo . --workspace .eija/self-dogfood --open
 ```
 
 Use a fresh `.eija/self-dogfood` workspace for this pack. The explorer connects to the current checkout read-only. Start with **New intent**, inspect the offline proposal, choose a supported meaning, then move between Model, Source, Changes and Evidence. The offline provider is a deterministic fixture, not a live model. Source-review and unrun-conformance limits remain visible.
+
+**Code changes** compares two full local Git commit IDs independently of model cases. Inspect the native Git diff, bounded historical source and supported Python/JavaScript syntax changes; missing extraction and incomplete impact stay explicit. The optional `source-analysis` extra supplies pinned JavaScript parsing. Follow the [actual EIJA navigation-change example and its limits](docs/engineering/IMMUTABLE-CODE-REVIEW.md). This is source inspection, not a claim that a model receipt verifies the compared application.
 
 For an isolated, recorded replay, install Chromium with `python -m playwright install chromium`, then run `python tests/hci/self_dogfood_replay.py --record`. The [replay guide](docs/engineering/SELF-DOGFOOD-BROWSER-REPLAY.md) explains its exact checks, subject manifest and limitations. Local endpoint browser rules still apply.
 

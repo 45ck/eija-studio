@@ -16,6 +16,8 @@ Through the MCP server (`eija mcp`). Its guarantee is that owner operations are 
 | `edit_check` | Checks an untrusted typed transaction and returns violations and references | Dry-run only: not persisted, applied, approved or evidence |
 | `repository_impact` | Traverses declared links from a repository term | Covers supported extraction and declared bindings only; does not edit source |
 | `repository_source` | Reads a bounded, hash-bound excerpt from a captured source node or declared binding | Read-only; arbitrary, excluded, untracked and unresolved references are refused |
+| `repository_change` | Compares two full local Git commit IDs; reports captured changed files, syntax changes and explicit gaps | No target execution, agent-authorship assertion, behavior proof or model receipt |
+| `repository_change_file` | Reads the exact historical diff and bounded source for a permitted changed file or extracted definition | Never falls back to current source; known impact excludes uncaptured/unmodified dependencies |
 | `create_case` | Creates a case from a synthetic request | Not a chosen meaning |
 | `propose` | Asks the configured provider for an UNTRUSTED interpretation | Not a decision, not evidence. The default provider is an offline fixture, not a model |
 | `view_case` | Reads stage, proposal, review-packet summary, projections, meaning-check questions (no answers), UNKNOWNs | Not human understanding |
@@ -37,6 +39,13 @@ same captured bytes used for the answer. Changed bytes produce
 Without the optional hash, each read describes its own fresh capture and must not
 be assumed to match an earlier view. This observes byte identity at read time;
 it does not prove behavior, continuous freshness or source/model conformance.
+
+Historical comparison uses full lowercase 40- or 64-character local commit IDs.
+Keep `comparison_id`, both commit/tree identities and `changed_source_hash` values
+together when selecting a file or definition. Each changed-source digest covers
+only captured changed files and is distinct from live `connection.source_hash`.
+Report excluded counts, PARTIAL extraction and NOT_RUN behavior explicitly.
+See the [code-review boundary](../engineering/IMMUTABLE-CODE-REVIEW.md).
 
 ## What an agent may not do
 

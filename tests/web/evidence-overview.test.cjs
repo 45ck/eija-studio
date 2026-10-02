@@ -67,7 +67,8 @@ test("historical and baseline previews cannot borrow current candidate evidence"
 });
 test("selecting a term, role or law while Evidence stays open updates the actual context immediately",()=>{
   const h=harness(),switches=[],opened=[];h.sandbox.workbench={pack:{id:"pack-A"},language:{terms:[{id:"case",label:"Change Case"},{id:"model",label:"Model"}]},roles:[{id:"reviewer",label:"Reviewer"}],laws:[{id:"protected",description:"Protected authority"}]};
-  h.sandbox.workingModel=()=>({states:["Draft"],transitions:[]});h.sandbox.EijaShell={toggle:(...args)=>opened.push(args)};h.sandbox.switchTab=name=>switches.push(name);
+  h.sandbox.workingModel=()=>({states:["Draft"],transitions:[]});h.sandbox.EijaShell={reveal:(...args)=>opened.push(args)};h.sandbox.EijaTree={reveal:()=>{}};h.sandbox.renderNavigator=()=>{};h.sandbox.switchTab=name=>switches.push(name);
+  vm.runInContext(source.slice(source.indexOf("function selectedConcept()"),source.indexOf("function renderNavigator()")),h.sandbox);
   vm.runInContext(source.slice(source.indexOf("function showSelection("),source.indexOf("function followReference(")),h.sandbox);
   h.render(packet());
   for(const [kind,item]of [["term",{id:"case"}],["term",{id:"model"}],["role",{id:"reviewer"}],["law",{id:"protected"}]]){
@@ -108,7 +109,8 @@ test("status oracle rejects an actual-renderer mutation upgrading an unrun forma
   const marker='status=e.status??"NOT_REPORTED"';assert.ok(source.includes(marker));const h=harness(source.replace(marker,'status="PASS"'));h.render(packet());assert.throws(()=>assert.equal(h.formal().find(row=>row.dataset.evidenceKind==="bend").dataset.status,"NOT_RUN"),assert.AssertionError);
 });
 test("context oracle rejects the original missing refresh after a concept selection",()=>{
-  const h=harness();h.sandbox.workbench={pack:{id:"pack-A"},language:{terms:[{id:"case",label:"Change Case"}]}};h.sandbox.workingModel=()=>({states:[],transitions:[]});h.sandbox.EijaShell={toggle:()=>{}};h.sandbox.switchTab=()=>{};
+  const h=harness();h.sandbox.workbench={pack:{id:"pack-A"},language:{terms:[{id:"case",label:"Change Case"}]}};h.sandbox.workingModel=()=>({states:[],transitions:[]});h.sandbox.EijaShell={reveal:()=>{}};h.sandbox.EijaTree={reveal:()=>{}};h.sandbox.renderNavigator=()=>{};h.sandbox.switchTab=()=>{};
+  vm.runInContext(source.slice(source.indexOf("function selectedConcept()"),source.indexOf("function renderNavigator()")),h.sandbox);
   const original=source.slice(source.indexOf("function showSelection("),source.indexOf("function followReference("));assert.ok(original.includes("  renderEvidenceContext();"));
   vm.runInContext(original.replace("  renderEvidenceContext();", ""),h.sandbox);h.render(packet());h.sandbox.showSelection("term",{id:"case"});
   assert.equal(h.get("selection-detail").dataset.eijaId,"pack-A.detail.term.case");

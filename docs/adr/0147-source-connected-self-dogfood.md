@@ -70,6 +70,25 @@ No receipt, conformance claim or approval is created by a freshness match.
 
 ## Validation
 
+### Immutable code changes
+
+A separate application-owned read-only port compares explicit local commit pairs.
+Git owns object identity, inventory and the line diff; the adapter never checks out
+or executes the target. Historical excerpts retain exact blob/text/range identities
+and never fall back to the current source reader. Captured changed-file hashes are
+distinct from a complete live repository capture and from model receipt subjects.
+
+Reuse Python AST/Weave and optional pinned Tree-sitter JavaScript packages for
+bounded syntax facts. JavaScript native imports run only in a fixed bounded worker;
+missing packages, crashes and timeouts become NOT_RUN. Current coverage is partial:
+class/dynamic syntax and uncaptured dependency edges cannot be presented as proven
+absence. No owner capability or second workflow interpreter is introduced.
+
+The Code changes view uses the exact Git diff and historical sides, with a separate
+selection and task navigator. See [scope and reproduction](../engineering/IMMUTABLE-CODE-REVIEW.md).
+
+### Required observations
+
 Tests must distinguish extraction determinism from semantic correctness; include missing
 and changed bindings, excluded paths, pack collisions, stale versions, rejected edits,
 and absent owner capabilities on MCP. Run the same workbench against multiple packs,

@@ -110,6 +110,7 @@ function editorHarness(){
     api:async(url,body)=>{calls.push({url,body});if(sandbox.failure)throw sandbox.failure;const parts=url.split("/");return parts.length===2?data[parts[1]]:parts[2]==="affordances"?{affordances:[]}:{case_id:parts[1],status:"ready"};}
   };
   vm.createContext(sandbox);
+  vm.runInContext(code.slice(code.indexOf("function selectedConcept()"),code.indexOf("function renderNavigator()")),sandbox);
   for(const [start,end] of [["function clearDiagnostic()","function captureTaskFocus()"],["async function load(id)","async function command("],["function workingModel()","function renderCanvas()"],["function renderSelectionDetail()","function followReference("],["function cancelDraft()",'$("cancel-draft").onclick'],["async function refreshCurrentModel()","function filterCommands()"]])vm.runInContext(code.slice(code.indexOf(start),code.indexOf(end)),sandbox);
   sandbox.render=()=>{sandbox.renderEditor();sandbox.renderSelectionDetail();};
   return {sandbox,get,calls,notices,data};

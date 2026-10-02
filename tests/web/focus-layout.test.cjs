@@ -7,7 +7,7 @@ const source=fs.readFileSync(shellPath,"utf8"),storageKey="eija-ui-layout";
 const normal={explorer:230,inspector:288,panel:160,explorerOpen:true,inspectorOpen:true,panelOpen:true};
 
 function harness({code=source,stored=normal,storageFailure=false,compact=false}={}) {
-  const nodes=new Map(),storage=new Map([[storageKey,typeof stored==="string"?stored:JSON.stringify(stored)]]),writes=[],callbacks=[],focused=[];
+  const nodes=new Map(),storage=new Map(stored===null?[]:[[storageKey,typeof stored==="string"?stored:JSON.stringify(stored)]]),writes=[],callbacks=[],focused=[];
   const classList=()=>{const values=new Set();return {add(...names){names.forEach(n=>values.add(n));},remove(...names){names.forEach(n=>values.delete(n));},contains:n=>values.has(n),toggle(n,on){on=on===undefined?!values.has(n):on;on?values.add(n):values.delete(n);return on;}};};
   const listeners=target=>{target.events=new Map();target.addEventListener=(name,fn)=>{const values=target.events.get(name)||[];values.push(fn);target.events.set(name,values);};target.removeEventListener=(name,fn)=>target.events.set(name,(target.events.get(name)||[]).filter(value=>value!==fn));target.dispatch=(name,extra={})=>{const event={target,key:"",preventDefault(){this.prevented=true;},stopPropagation(){},...extra};for(const fn of target.events.get(name)||[])fn(event);return event;};return target;};
   let document;
@@ -19,7 +19,7 @@ function harness({code=source,stored=normal,storageFailure=false,compact=false}=
     getAttribute(name){return Object.hasOwn(this.attributes,name)?this.attributes[name]:null;}
     removeAttribute(name){delete this.attributes[name];if(name==="open")this.open=false;}
     contains(node){return this===node||this.children.some(child=>child.contains(node));}
-    closest(selector){for(let node=this;node;node=node.parentElement){if(selector.includes("details")&&node.tag==="details"&&(!selector.includes(":not([open])")||!node.open))return node;}return null;}
+    closest(selector){for(let node=this;node;node=node.parentElement){if(selector.startsWith("button")&&node.tag==="button"&&(!selector.includes("#close-explorer")||node.id!=="close-explorer"))return node;if(selector.includes("details")&&node.tag==="details"&&(!selector.includes(":not([open])")||!node.open))return node;}return null;}
     getClientRects(){if(this.rectangles)return this.rectangles;for(let node=this;node;node=node.parentElement){if(node.hidden)return [];if(node.tag==="details"&&!node.open&&this!==get("layout-summary"))return [];if(["explorer","inspector","panel"].includes(node.id)&&document.body.classList.contains(node.id+"-collapsed"))return [];}return [{}];}
     getBoundingClientRect(){return {x:0,y:0,width:800,height:400};}
     focus(){if(!this.getClientRects().length||["hidden","collapse"].includes(computedVisibility(this)))return;for(let ancestor=this.parentElement;ancestor;ancestor=ancestor.parentElement)if(ancestor.tag==="details"&&!ancestor.open&&this!==ancestor.children.find(child=>child.tag==="summary"))return;document.activeElement=this;focused.push(this.id);}
@@ -29,17 +29,17 @@ function harness({code=source,stored=normal,storageFailure=false,compact=false}=
   function get(id){if(!nodes.has(id))nodes.set(id,new Element(id,id==="workspace-layout"?"details":id==="layout-summary"?"summary":"div"));return nodes.get(id);}
   const bottomIds=["problems-pane","evidence-pane","history-pane"];
   const bottomTabs=bottomIds.map(id=>{const node=get("tab-"+id);node.dataset.bottom=id;return node;});
-  get("workspace-layout").append(get("layout-summary"),get("toggle-explorer"),get("toggle-inspector"),get("toggle-bottom"));
+  get("workspace-layout").append(get("layout-summary"),get("toggle-explorer"),get("toggle-inspector"),get("toggle-bottom"),get("reset-layout"));
   get("explorer").append(get("close-explorer"));get("inspector").append(get("close-inspector"));
   const styleValues=new Map(),style={setProperty:(key,value)=>styleValues.set(key,value),getPropertyValue:key=>styleValues.get(key)};
-  document=listeners({body:get("body"),documentElement:{style},activeElement:get("body"),getElementById:get,createElement:tag=>new Element("",tag),querySelector:selector=>selector===".editor-navigation"?get("editor-navigation"):null,querySelectorAll:selector=>selector==="[data-bottom]"?bottomTabs:selector===".bottom-tab"?bottomIds.map(get):[]});
+  document=listeners({body:get("body"),documentElement:{style},activeElement:get("body"),getElementById:get,createElement:tag=>new Element("",tag),querySelector:selector=>selector===".editor-navigation"?get("editor-navigation"):bottomTabs.find(tab=>selector===`[data-bottom="${tab.dataset.bottom}"]`)||null,querySelectorAll:selector=>selector==="[data-bottom]"?bottomTabs:selector===".bottom-tab"?bottomIds.map(get):[]});
   const computedVisibility=node=>{for(let item=node;item;item=item.parentElement){if(item.style.visibility)return item.style.visibility;if(["explorer","inspector","panel"].includes(item.id)&&document.body.classList.contains(item.id+"-collapsed"))return "hidden";}return "visible";};
   const media=listeners({matches:compact}),window=listeners({matchMedia:()=>media,getComputedStyle:node=>({visibility:computedVisibility(node),display:node.hidden?"none":"block"})});
   const sessionStorage={getItem(key){if(storageFailure)throw new Error("storage unavailable");return storage.get(key)||null;},setItem(key,value){if(storageFailure)throw new Error("storage unavailable");writes.push([key,value]);storage.set(key,value);}};
   const sandbox={module:{exports:{}},document,window,sessionStorage,ResizeObserver:class{observe(){}},console,fetch(){throw new Error("Layout must not make a request");}};
   vm.createContext(sandbox);vm.runInContext(code,sandbox,{filename:shellPath});const shell=sandbox.module.exports;
   shell.init({newIntent:()=>callbacks.push("newIntent"),openTab:name=>callbacks.push(["openTab",name])});
-  return {shell,get,document,media,writes,callbacks,focused,styleValues,stored:()=>JSON.parse(storage.get(storageKey)),pane(key){return !document.body.classList.contains(key+"-collapsed");},assertPane(key,open){assert.equal(this.pane(key),open,key+" painted layout class");assert.equal(get(key==="panel"?"toggle-bottom":"toggle-"+key).getAttribute("aria-expanded"),String(open),key+" toggle ARIA");}};
+  return {shell,get,document,media,writes,callbacks,focused,styleValues,stored:()=>JSON.parse(storage.get(storageKey)||"null"),pane(key){return !document.body.classList.contains(key+"-collapsed");},assertPane(key,open){assert.equal(this.pane(key),open,key+" painted layout class");assert.equal(get(key==="panel"?"toggle-bottom":"toggle-"+key).getAttribute("aria-expanded"),String(open),key+" toggle ARIA");}};
 }
 function assertNormalPreserved(h){
   const before=h.stored();h.shell.focusWorkspace(true);
@@ -52,6 +52,9 @@ function assertExplicitPanelSurvives(h){
   for(const area of ["evidence","source","model","try","evidence"]){h.shell.setArea(area);h.assertPane("panel",true);assert.equal(h.shell.isFocused(),true);}
 }
 
+module.exports={harness,source,normal};
+
+if(require.main===module){
 test("focus closes panes using temporary layout classes and ARIA without persisting normal preferences",()=>{
   const h=harness();h.get("focus-evidence").focus();assertNormalPreserved(h);
   assert.equal(h.shell.isFocused(),false);for(const key of ["explorer","inspector","panel"])h.assertPane(key,true);
@@ -82,10 +85,10 @@ test("opening Problems reveals the real panel and selects its tab while focus re
 
 test("restore retains the current area and restores pre-focus contextual inspector preferences",()=>{
   const preferences={...normal,explorerOpen:false,panelOpen:false},h=harness({stored:preferences});
-  h.shell.setArea("evidence");h.shell.toggle("inspector",true);h.shell.setArea("try");h.assertPane("inspector",false);
+  h.shell.setArea("evidence");h.shell.toggle("inspector",true);h.shell.setArea("try");h.assertPane("inspector",false);const saved=h.stored();
   h.shell.focusWorkspace(true);h.shell.toggle("explorer",true);h.shell.toggle("inspector",true);h.shell.toggle("panel",true);h.shell.setArea("evidence");h.shell.focusWorkspace(false);
   h.assertPane("explorer",false);h.assertPane("panel",false);h.assertPane("inspector",true);
-  h.shell.setArea("try");h.assertPane("inspector",false);h.shell.setArea("model");h.assertPane("inspector",true);h.shell.setArea("evidence");h.assertPane("inspector",true);assert.deepEqual(h.stored(),preferences);
+  h.shell.setArea("try");h.assertPane("inspector",false);h.shell.setArea("model");h.assertPane("inspector",true);h.shell.setArea("evidence");h.assertPane("inspector",true);assert.deepEqual(h.stored(),saved);
 });
 
 test("real splitter keyboard changes survive restore without saving temporary open states",()=>{
@@ -115,7 +118,7 @@ test("crossing responsive modes during focus preserves normal preferences and ex
 test("optional unavailable or malformed storage does not prevent focus, Problems, resize or restore",()=>{
   for(const options of [{storageFailure:true},{stored:"not json"}]){
     const h=harness(options);assert.doesNotThrow(()=>{h.shell.focusWorkspace(true);h.shell.bottom("problems-pane");h.shell.toggle("explorer",true);h.get("explorer-resizer").dispatch("keydown",{key:"ArrowRight"});h.shell.focusWorkspace(false);});
-    assert.equal(h.shell.isFocused(),false);h.assertPane("explorer",true);h.assertPane("panel",true);assert.equal(h.styleValues.get("--explorer-size"),"246px");
+    assert.equal(h.shell.isFocused(),false);h.assertPane("explorer",true);h.assertPane("inspector",false);h.assertPane("panel",false);assert.equal(h.styleValues.get("--explorer-size"),"246px");
   }
 });
 
@@ -173,3 +176,5 @@ test("paint-visibility oracle rejects removal of the actual computed-visibility 
   const mutated=source.replace(guard,"");
   assert.throws(()=>assertStyledInvokerFallback(harness({code:mutated}),"hidden"),assert.AssertionError);
 });
+
+}

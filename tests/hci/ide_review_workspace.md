@@ -8,6 +8,10 @@ Run from the repository root with the installed `hci` extra and Chromium:
 
 The output directory must be new. Python optimization (`-O`/`-OO`) is refused because it disables assertion oracles. Missing optional browser prerequisites are not a pass. On Calvin personal endpoints, complete the active browser-account-router device preflight before running. The script uses a fresh isolated browser context, its own temporary workspace/server and an in-memory test capability; it never uses personal browser profiles or a private owner launch token.
 
+To diagnose only source snapshot recovery, add `--scenario source-freshness` and
+use a new output directory. This executes the same source fixture and marks the
+main review journey `NOT_RUN`; its result must not be cited as nine review checks.
+
 ## What is checked
 
 The main journey uses the real EIJA repository as a read-only source connection and the offline `eija-review-slice` pack. Normal UI controls create cases and submit permitted typed edits. Independent GET responses supply complete baseline/candidate models, history, evidence subjects, source snapshots and persisted runtime observations. The renderer supplies observations, never expected topology.
