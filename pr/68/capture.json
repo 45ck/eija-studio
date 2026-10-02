@@ -1,0 +1,15 @@
+{
+  "source_commit": "8cb646e600d44612b84fb0d60f81e9423d476111",
+  "file": "preserve-case-preview.gif",
+  "sha256": "d215ff54bd75965f1f1b7536a0cd8759cd7afaaac78cd27e6b95aa2e2d68560b",
+  "bytes": 3204469,
+  "width": 1100,
+  "height": 860,
+  "seconds": 9.84,
+  "browser": "Chrome 154.0.8037.58",
+  "scope": "Actual local Studio; fresh synthetic offline workspace; deliberately injected case-load 503.",
+  "cursor": "Overlay follows actual mousemove events; product UI and outcomes unchanged.",
+  "checks_passed": 4,
+  "javascript_errors": 0,
+  "approval_apply_requests": 0
+}
