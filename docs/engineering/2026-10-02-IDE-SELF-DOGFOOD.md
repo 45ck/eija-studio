@@ -1,5 +1,7 @@
 # EIJA IDE browser evidence — 2 October 2026
 
+The [integration validation record](2026-10-02-VALIDATION-CHECKPOINT.md) adds the final-wording seven-story run, full-suite failures, affected reruns and the TLA false-success finding. The original recording below remains evidence for its own earlier source snapshot.
+
 Draft implementation checkpoint. This maps browser observations to the acceptance contract; it does not replace focused backend/source/MCP tests, local gates, or human validation. Exact final-tree gate results remain the integrator's responsibility before any release decision. Reproduce this lane using [the browser replay instructions](SELF-DOGFOOD-BROWSER-REPLAY.md).
 
 ## Original recorded run: identity and scope

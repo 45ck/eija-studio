@@ -1,6 +1,7 @@
 # Update log
 
 ## 2026-10-02
+* **TLA evidence freshness**: synced the two TLA gate pages after enforcing successful child execution and a fresh report. Read both pages; neither has curated Notes. Notification concretisation now uses the pack's declared recipient. Regression and real conformance results remain separate execution evidence.
 * **Repository capture boundary**: synced the extracted bounded filesystem/Git capture adapter and its imports. The public source-navigation facade and capture policy are unchanged; neither affected module has curated Notes. Functional capture and source-refusal tests remain separate evidence.
 * **IDE recovery and source navigation**: synced the bounded source reader, injected source-facts profile and replay-based semantic history with ADR-0148. Re-read seven affected curated pages; updated Studio and ChangeCase Notes for source reads, immutable receipts and versioned undo/redo. Review actor is `process:codex-ide-integration`; browser and release results remain separate evidence.
 * **Source-connected self-dogfood**: refreshed generated pages for the content-bound pack APIs, repository port and Studio read surfaces, plus ADR-0147. Re-read the Studio Notes against its use cases and added the explicit source-coverage boundary. Recorded the review as `process:codex-self-dogfood`, not a human review. Test results are recorded separately in the dated run report.

@@ -169,6 +169,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--seed", default="eija-tla-v1")
     parser.add_argument("--snapshot", type=Path, help="also copy the report here (a committed evidence snapshot)")
     args = parser.parse_args(argv)
+    available = model.configs()
+    wanted = {name.strip() for name in args.configs.split(",") if name.strip()}
+    unknown = wanted - {config.name for config in available}
+    if unknown or (args.configs and not wanted):
+        parser.error("--configs must name known configurations: " + ", ".join(config.name for config in available))
+    configs = [config for config in available if not wanted or config.name in wanted]
 
     report: dict[str, Any] = {"kind": "tlc_model_check", "schema": "eija.formal.tla.v1", "lane": "tla", "created_at": _now(),
                               "claim": "Safety invariants of the excursion workflow and commit protocol hold in the TLC-explored "
@@ -188,8 +194,6 @@ def main(argv: list[str] | None = None) -> int:
 
     work = args.work.resolve()
     work.mkdir(parents=True, exist_ok=True)
-    wanted = {n for n in args.configs.split(",") if n}
-    configs = [c for c in model.configs() if not wanted or c.name in wanted]
     entries: list[dict[str, Any]] = []
     counterexamples: list[str] = []
     started = time.monotonic()

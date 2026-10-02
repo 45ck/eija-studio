@@ -10,6 +10,7 @@ import pytest
 from eija_studio.adapters.sqlite_store import sandbox_factory
 from eija_studio.domain.policy import baseline
 from verification.tla import conformance, generate, model, render, tlc
+from verification.tla.abstraction import Harness
 
 
 def _tools() -> str | None:
@@ -107,6 +108,21 @@ def test_runtime_exploration_is_closed_and_atomic(sandbox):
     assert committed > 0
     # every successor of every node is itself an explored node (the bounded space is closed)
     assert all(k in graph.nodes for n in graph.nodes.values() for k in (*n.succ, *n.env) if k is not None)
+
+
+def test_concretise_preserves_the_real_notification_recipient(sandbox):
+    harness = Harness(config("candidate").workflow, 2)
+    with sandbox() as store, store.transaction() as unit:
+        harness.start(unit)
+        for operation, action, version in (("op1", "Submit", 0), ("op2", "Recommend", 1)):
+            outcome, _ = harness.run(unit, {"op": operation, "actor": "teacher-assigned", "action": action, "ver": version})
+            assert outcome == "COMMITTED"
+        original = unit.observations(harness.case_id)["outbox"]
+        assert len(original) == 1
+        key = harness.abstract(unit)
+        harness.concretise(unit, key)
+        assert harness.abstract(unit) == key
+        assert unit.observations(harness.case_id)["outbox"] == original
 
 
 def test_runtime_answers_replay_after_revocation_with_authority_error_first(sandbox):

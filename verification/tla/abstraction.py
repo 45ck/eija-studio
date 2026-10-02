@@ -18,6 +18,7 @@ from typing import Any
 from eija_studio.application.ports import UnitOfWork
 from eija_studio.application.runtime import execute, initialise
 from eija_studio.domain.models import DomainError, ExecuteCommand, Workflow, fingerprint
+from verification.excursion_pack import PACK
 
 from .model import UNKNOWN_ACTORS, action_universe, directory, op_ids, transition_table
 
@@ -121,7 +122,10 @@ class Harness:
                           "effects": [*entry["audit"], *entry["notify"], *entry["other"]]}
                 u.record_operation(op, self.binding(self.command(op, actor, action, ver)), result)
                 for effect in entry["notify"][:queued]:
-                    u.enqueue(self.case_id, op, effect)
+                    declared = PACK.effect(effect)
+                    if declared is None or declared.kind != "notification" or not declared.recipient:
+                        raise AbstractionError(f"notification {effect} has no declared recipient")
+                    u.enqueue(self.case_id, op, effect, declared.recipient)
             elif queued:
                 raise AbstractionError("outbox rows without an operation record cannot be concretised")
         for i in range(audit):

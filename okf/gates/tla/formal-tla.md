@@ -13,8 +13,8 @@ sources:
 - resource: repo://quality/sessions/tla.py#formal_tla
   title: tla.py
   hash_method: ast-v2
-  sha256: 90a2b8e52c152513bc8b4823c6b44566e0322f352711c923996a13bc49ea8bc9
-notes_baseline: 720cb6a5843ccf99fd40729713f0955b1b2c03d4a2ac50d9b889c1dadb4cd460
+  sha256: bb4344f1f394255ca6dc451bac82c55873e06a194e462e3177a3e1261c46f53f
+notes_baseline: 5df55227a655cf53edaa35c8f9ca7537efd36e11870209ad174401fe0aeba36c
 ---
 
 # nox -s formal_tla
