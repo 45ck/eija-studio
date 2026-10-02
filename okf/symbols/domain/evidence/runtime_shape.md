@@ -44,7 +44,7 @@ _No curated notes yet._
 * [domain.evidence.expected_shape](/symbols/domain/evidence/expected_shape.md) - The runtime matrix a receipt must cover under ``pack``: exactly ``model``'s states when it is known.
 * [domain.formal.Context](/symbols/domain/formal/Context.md) - What the kernel itself knows about the CURRENT subject, beyond the technical dimensions.
 * [domain.formal.RuntimeShape](/symbols/domain/formal/RuntimeShape.md) - What a runtime-matrix receipt for the current subject must cover: the pack's fixture actors and declared actions, and one of the allowed state sets (exactly th…
-* [domain.pack.default_pack](/symbols/domain/pack/default_pack.md) - The configured pack (cached per location).
+* [domain.pack.default_pack](/symbols/domain/pack/default_pack.md) - The configured pack, reread on every call and validated from a content-keyed cache.
 
 ## Referenced by
 

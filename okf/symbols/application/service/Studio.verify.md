@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.verify
   title: application/service.py
   hash_method: ast-v2
-  sha256: c34d8a257b4ef17e179c000d0ffd92ba3b46af0b309934e46591ff3d5f985d9a
+  sha256: 654315fdb18dfef13b2d0a23a9e5626ab2bf541b818c75d1ef94291d93cea95f
 description_override: Runs the runtime matrix in a sandbox and stores a sealed receipt; refuses a source that differs from the release fixture.
-notes_baseline: f5bc6b23b2b222232a737f2892c86137b1815030ca006a4489de2b0e3f5bd5c7
+notes_baseline: 41377bd722fc2f8c6bedb11ed9c90def97da991e6b05c342257ed7fc55a265cd
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -30,6 +30,10 @@ verified:
   at: '2026-09-29T12:00:00Z'
   notes_sha256: 1736d73398d6735d08651269065d70ae2776ea2d04ecfe339cd39add3a1baf33
   sources_sha256: f5bc6b23b2b222232a737f2892c86137b1815030ca006a4489de2b0e3f5bd5c7
+- by: process:codex-ide-integration
+  at: '2026-10-02T05:15:30Z'
+  notes_sha256: 1736d73398d6735d08651269065d70ae2776ea2d04ecfe339cd39add3a1baf33
+  sources_sha256: 41377bd722fc2f8c6bedb11ed9c90def97da991e6b05c342257ed7fc55a265cd
 ---
 
 # application.service.Studio.verify

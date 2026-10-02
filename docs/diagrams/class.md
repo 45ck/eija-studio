@@ -23,6 +23,7 @@ classDiagram
         +str | None selected_meaning
         +str | None selected_by
         +tuple~AddState | AddTransition | RemoveState | RemoveTransition | RenameState | RetargetTransition | SetEffects | SetGuards | SetInitial | SetRole~ transactions
+        +tuple~AddState | AddTransition | RemoveState | RemoveTransition | RenameState | RetargetTransition | SetEffects | SetGuards | SetInitial | SetRole~ redo_transactions
         +dict~str, dict~str, int~~ layout
         +tuple~dict~str, Any~~ receipts
         +dict~str, Any~ | None decision

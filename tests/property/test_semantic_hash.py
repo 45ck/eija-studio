@@ -109,3 +109,23 @@ def test_duplicate_forbidden_effect_is_not_a_semantic_difference(data):
     except ValidationError:
         return  # refused, like a duplicate required effect
     assert duplicated.semantic_hash == workflow.semantic_hash
+
+
+def assert_pack_identity_is_semantic():
+    """Equal structure from another domain pack cannot inherit the first pack's evidence subject."""
+    original = demo_candidate()
+    other = Workflow.model_validate(original.model_dump(mode="json") | {"id": "other-pack"})
+    assert normal_form(original) != normal_form(other)
+    assert original.semantic_hash != other.semantic_hash
+
+
+def test_pack_identity_is_part_of_semantic_equality():
+    assert_pack_identity_is_semantic()
+
+
+def test_pack_identity_oracle_detects_hash_that_ignores_pack(monkeypatch):
+    actual_hash = Workflow.semantic_hash.fget
+    monkeypatch.setattr(Workflow, "semantic_hash", property(
+        lambda workflow: actual_hash(workflow.model_copy(update={"id": "fixed-pack"}))))
+    with pytest.raises(AssertionError):
+        assert_pack_identity_is_semantic()

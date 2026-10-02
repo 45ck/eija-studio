@@ -24,6 +24,8 @@ def run(scene: Scene, server: RunningServer) -> None:
 
     # Act 1 - intent, then explicit meanings ------------------------------------------------------
     scene.caption("Start with intent: a plain-language request, not code.")
+    # The workbench opens on Model; reveal the new-intent form through its public control.
+    scene.click("#new-case")
     scene.type_text("#request", "Let teachers sign off excursions.", clear=True)
     scene.click("#create")
     scene.expect_text("#notice", "Case created")

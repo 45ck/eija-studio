@@ -13,6 +13,8 @@ Written from the specification text, not from ``application/runtime.py`` or the 
   assigned teachers recommend; registrar approval and rejection initially require Recommended; the
   typed edit may move the rejection source between Submitted and Recommended.
 * ADR-007 (reauthorise before replay) and ADR-011 (synthetic actors only).
+* ADR-0148: every successful owner semantic edit appends its command and case-version provenance;
+  refused edits append nothing. This authoring history is separate from runtime transition effects.
 
 The specification does not say where "is the action modelled?" sits in the sequence. This model checks
 it immediately before the actor, because role authority is only defined for a modelled action.
@@ -132,6 +134,7 @@ class ReferenceRuntime:
     operations: dict[str, tuple[tuple, Committed]] = field(default_factory=dict)
     audit: list[tuple[str, str, str, str]] = field(default_factory=list)  # (kind, operation, actor, instance)
     outbox: set[tuple[str, str]] = field(default_factory=set)  # (operation, kind)
+    semantic_edits: list[tuple[int, int, str]] = field(default_factory=list)  # (from_version, to_version, source)
 
     # --- Execution ----------------------------------------------------------------------------------
 
@@ -207,6 +210,8 @@ class ReferenceRuntime:
     def apply_edit(self, source: str) -> None:
         """Record an accepted edit. Instances of the previous model become stale unless the model is
         unchanged (their ``semantics`` no longer equals the case's)."""
+        # Even a no-op semantic command is an accepted, versioned owner edit (ADR-0148).
+        self.semantic_edits.append((self.case_version, self.case_version + 1, source))
         self.rejection_source = source
         self.case_version += 1
 

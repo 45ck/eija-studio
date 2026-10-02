@@ -1,7 +1,7 @@
 ---
 type: Function
 title: domain.pack.find_pack
-description: 'The pack a workflow belongs to (``Workflow.id``): a pack loaded in this process, else the repository pack of that id.'
+description: Resolve a loaded snapshot by digest, or an unambiguous id after refreshing its sources.
 resource: repo://src/eija_studio/domain/pack.py#find_pack
 tags:
 - symbol
@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/pack.py#find_pack
   title: domain/pack.py
   hash_method: ast-v2
-  sha256: 37f418cf9e59fd9bfbbc7f42b4125dba4b881949e8fb8fd3f3a02b817feb5c80
-notes_baseline: e7da4f717edc5761e44e3c7659275ebdb5706e5f161acebd6b283d8f04e61484
+  sha256: 0d37eb41617783b3185a9b001be1ebd7811066b8ed9f349b708a98e4cebd17e1
+notes_baseline: 849b660bcbaf5d84a27537a9f1ed6d84cb404d1e744e1852a5bb181a4a63e327
 ---
 
 # domain.pack.find_pack
@@ -25,15 +25,17 @@ notes_baseline: e7da4f717edc5761e44e3c7659275ebdb5706e5f161acebd6b283d8f04e61484
 |---|---|
 | Kind | function |
 | Module | [`domain/pack`](/modules/domain/pack.md) |
-| Signature | `def find_pack(pack_id: str) -> Pack \| None` |
+| Signature | `def find_pack(pack_id: str, *, digest: str \| None=None) -> Pack \| None` |
 | Code | `repo://src/eija_studio/domain/pack.py#find_pack` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
 ~~~text
-The pack a workflow belongs to (``Workflow.id``): a pack loaded in this process, else the repository pack of
-that id. None when no such pack can be found.
+Resolve a loaded snapshot by digest, or an unambiguous id after refreshing its sources.
+
+An id alone cannot select between different observed contents, even when their model/version matches.
+Ambiguity raises ``PACK_IDENTITY_REQUIRED`` rather than letting load order select policy or meanings.
 ~~~
 <!-- okf:generated:end facts -->
 
@@ -44,12 +46,8 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [domain.pack.PACKS_ROOT](/symbols/domain/pack/PACKS_ROOT.md) - Constant `PACKS_ROOT` in `domain/pack`.
-* [domain.pack.PACK_FILE](/symbols/domain/pack/PACK_FILE.md) - Constant `PACK_FILE` in `domain/pack`.
-* [domain.pack.PACK_ID](/symbols/domain/pack/PACK_ID.md) - Constant `PACK_ID` in `domain/pack`.
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
 * [domain.pack.PackError](/symbols/domain/pack/PackError.md) - A pack that cannot be used.
-* [domain.pack.load_pack](/symbols/domain/pack/load_pack.md) - Load a pack from a directory holding ``pack.json`` or from the file itself.
 
 ## Referenced by
 

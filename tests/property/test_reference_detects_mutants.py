@@ -10,9 +10,10 @@ The mutants live in tests only; nothing here changes the shipped kernel.
 from __future__ import annotations
 
 import pytest
-from hypothesis import HealthCheck, Phase, settings
+from hypothesis import HealthCheck, Phase, given, settings, strategies as st
 from hypothesis.stateful import run_state_machine_as_test
 
+from eija_studio.adapters.sqlite_store import Session
 from eija_studio.application import runtime, service
 from eija_studio.domain.models import fingerprint
 from .property_support import examples
@@ -93,3 +94,36 @@ def test_mutation_harness_is_not_vacuous(monkeypatch):
     run_state_machine_as_test(PreviewRuntimeMachine, settings=settings(
         max_examples=examples(20), stateful_step_count=20, database=None, derandomize=True,
         suppress_health_check=list(HealthCheck)))
+
+
+@pytest.mark.parametrize("mutation", ["missing", "duplicate", "wrong_transaction", "wrong_version"])
+def test_reference_detects_semantic_edit_audit_mutant(mutation, monkeypatch):
+    """Accounting for new history cannot hide a missing, extra or incorrectly attributed owner edit."""
+    real_event = Session.event
+
+    def altered_event(session, kind, body):
+        if kind == "SemanticEdited":
+            if mutation == "missing":
+                return
+            if mutation == "duplicate":
+                real_event(session, kind, body)
+            elif mutation == "wrong_transaction":
+                body = body | {"transaction": body["transaction"] | {"state": "Submitted"}}
+            elif mutation == "wrong_version":
+                body = body | {"to_version": body["to_version"] + 1}
+        real_event(session, kind, body)
+
+    monkeypatch.setattr(Session, "event", altered_event)
+    @settings(max_examples=1)
+    @given(st.none())
+    def exercise(_):
+        machine = PreviewRuntimeMachine()
+        try:
+            machine.first_instance(None)
+            machine.edit_rejection_source("Recommended", True, 0)
+            with pytest.raises(AssertionError):
+                machine.durable_state_matches_reference()
+        finally:
+            machine.teardown()
+
+    exercise()

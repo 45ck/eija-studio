@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/domain/change_case.py#ChangeCase
   title: domain/change_case.py
   hash_method: ast-sig-v1
-  sha256: 29ba785e367f122f7fa822a0011a15bb8ce1e9d04a02a25710473b67f9c379cc
+  sha256: 7215884267546a3c954434ed5b16f2081ef0855f613e7d3fcf56c87f1618bbf0
 description_override: Aggregate linking one request to its interpretations, chosen meaning, baseline, candidate, transactions, receipts and decision.
-notes_baseline: 7acf1d15dd42ae056bd469cf40243203e1959eb0b4ade3f01b89e8c9933e7479
+notes_baseline: 643098bf4edb2a84d27fd5245c569da35c4b0038a03a119ea4c6f159d74da191
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -26,6 +26,10 @@ verified:
   at: '2026-09-29T08:20:47Z'
   notes_sha256: 7cfa996320ebcd8dc82a47a1193aae8a98578009b6f86c73f2a102ee4d7770ab
   sources_sha256: 7acf1d15dd42ae056bd469cf40243203e1959eb0b4ade3f01b89e8c9933e7479
+- by: process:codex-ide-integration
+  at: '2026-10-02T05:15:30Z'
+  notes_sha256: 51dd8c27ccd9424ae7ecefd3ea3e37160645e438b23c1c095d1f596e84695f5a
+  sources_sha256: 643098bf4edb2a84d27fd5245c569da35c4b0038a03a119ea4c6f159d74da191
 ---
 
 # domain.change_case.ChangeCase
@@ -61,6 +65,7 @@ Aggregate boundary: transitions are mediated by the application and CAS store.
 | `selected_meaning` | `str \| None` |  |
 | `selected_by` | `str \| None` |  |
 | `transactions` | `tuple[Transaction, ...]` |  |
+| `redo_transactions` | `tuple[Transaction, ...]` | `()` |
 | `layout` | `dict[str, dict[str, int]]` |  |
 | `receipts` | `tuple[dict[str, Any], ...]` |  |
 | `decision` | `dict[str, Any] \| None` |  |
@@ -74,6 +79,10 @@ Aggregate boundary: transitions are mediated by the application and CAS store.
 <!-- okf:generated:end facts -->
 
 ## Notes
+
+`redo_transactions` is a persisted command stack, empty by default for older compatible
+cases. The selected meaning stays an atomic prefix outside undo. Restoring a model
+does not restore its old version or decision; fresh edits discard the redo branch.
 
 The aggregate behind [Change Case](/language/change-case.md). Its `version` is a compare-and-swap counter distinct from an instance version. Stage never grants eligibility on its own: [compile_case](/symbols/application/compiler/compile_case.md) computes it. `APPLIED` and `DISCARDED` cases are closed ([require_editable](/symbols/domain/change_case/ChangeCase.require_editable.md)).
 
@@ -91,6 +100,9 @@ The aggregate behind [Change Case](/language/change-case.md). Its `version` is a
 * [Change Case](/language/change-case.md) - Aggregate linking one original request to interpretations, chosen meaning, baseline, candidate, transactions, receipts and decision.
 * [application.compiler.compile_case](/symbols/application/compiler/compile_case.md) - `def compile_case(case: ChangeCase, identity: dict[str, Any], authenticator: Callable[[dict[str, Any]], bool],…` in `application/compiler`.
 * [application.diagrams.CONTRACTS](/symbols/application/diagrams/CONTRACTS.md) - Constant `CONTRACTS` in `application/diagrams`.
+* [application.history.command_event](/symbols/application/history/command_event.md) - Append-only command provenance; decision and receipt payloads remain in their existing audit.
+* [application.history.history_view](/symbols/application/history/history_view.md) - Read-only models for navigation plus actual command audit entries; no invented legacy timestamps.
+* [application.history.replay](/symbols/application/history/replay.md) - Fail closed when stored commands no longer explain the candidate under the exact active pack.
 * [application.service.Studio.create](/symbols/application/service/Studio.create.md) - `def create(self, request: str) -> dict[str, Any]` in `application/service`.
 * [domain.change_case.ChangeCase.at_version](/symbols/domain/change_case/ChangeCase.at_version.md) - `def at_version(self, expected: int) -> None` in `domain/change_case`.
 * [domain.change_case.ChangeCase.executable](/symbols/domain/change_case/ChangeCase.executable.md) - `def executable(self) -> Workflow` in `domain/change_case`.

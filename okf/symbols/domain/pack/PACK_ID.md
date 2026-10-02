@@ -42,5 +42,4 @@ _No curated notes yet._
 ## Referenced by
 
 * [domain.pack.PackInfo](/symbols/domain/pack/PackInfo.md) - `class PackInfo(Contract)` in `domain/pack`.
-* [domain.pack.find_pack](/symbols/domain/pack/find_pack.md) - The pack a workflow belongs to (``Workflow.id``): a pack loaded in this process, else the repository pack of that id.
 <!-- okf:generated:end links -->

@@ -77,6 +77,6 @@ def test_status_names_the_domain_from_the_pack_not_from_the_page():
 
 def test_the_provider_prompt_lists_only_the_workflow_packs_meanings():
     loan, excursion = load_pack(PACKS_ROOT / "library-loan"), load_pack(PACKS_ROOT / "excursion")
-    prompt = system_prompt(loan.model)
+    prompt = system_prompt(loan.model, pack=loan)
     assert all(f"- {m.id}:" in prompt for m in loan.meanings)
     assert not any(f"- {m.id}:" in prompt for m in excursion.meanings if m.id not in {x.id for x in loan.meanings})

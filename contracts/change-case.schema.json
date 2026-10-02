@@ -639,6 +639,60 @@
       "title": "Transactions",
       "type": "array"
     },
+    "redo_transactions": {
+      "default": [],
+      "items": {
+        "discriminator": {
+          "mapping": {
+            "add_state": "#/$defs/AddState",
+            "add_transition": "#/$defs/AddTransition",
+            "remove_state": "#/$defs/RemoveState",
+            "remove_transition": "#/$defs/RemoveTransition",
+            "rename_state": "#/$defs/RenameState",
+            "retarget_transition": "#/$defs/RetargetTransition",
+            "set_effects": "#/$defs/SetEffects",
+            "set_guards": "#/$defs/SetGuards",
+            "set_initial": "#/$defs/SetInitial",
+            "set_role": "#/$defs/SetRole"
+          },
+          "propertyName": "kind"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/$defs/AddState"
+          },
+          {
+            "$ref": "#/$defs/RenameState"
+          },
+          {
+            "$ref": "#/$defs/RemoveState"
+          },
+          {
+            "$ref": "#/$defs/SetInitial"
+          },
+          {
+            "$ref": "#/$defs/AddTransition"
+          },
+          {
+            "$ref": "#/$defs/RetargetTransition"
+          },
+          {
+            "$ref": "#/$defs/RemoveTransition"
+          },
+          {
+            "$ref": "#/$defs/SetRole"
+          },
+          {
+            "$ref": "#/$defs/SetGuards"
+          },
+          {
+            "$ref": "#/$defs/SetEffects"
+          }
+        ]
+      },
+      "title": "Redo Transactions",
+      "type": "array"
+    },
     "layout": {
       "additionalProperties": {
         "additionalProperties": {

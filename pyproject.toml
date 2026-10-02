@@ -282,10 +282,10 @@ root_package = "eija_studio"
 include_external_packages = true
 
 [[tool.importlinter.contracts]]
-name = "Layers: interfaces > bootstrap > adapters > application > domain"
+name = "Layers: interfaces > bootstrap > adapters > weave > application > domain"
 type = "layers"
 containers = ["eija_studio"]
-layers = ["interfaces", "bootstrap", "adapters", "application", "domain"]
+layers = ["interfaces", "bootstrap", "adapters", "weave", "application", "domain"]
 # A new subpackage added by another lane must be given a layer (or listed here with a reason), so it can never
 # sit outside the layer order unnoticed. `__main__` is the `python -m eija_studio` entry point.
 exhaustive = true

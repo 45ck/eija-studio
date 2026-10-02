@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.affordances
   title: application/service.py
   hash_method: ast-v2
-  sha256: 5db058fa13ac7b1df205e5e22b175d0911ea1ed63c1d8e6e8fdd799395b28862
-notes_baseline: 5bb480b1e6aedceef4a5c361a7a8590304f88fde8a2d2786b294c824ada575d0
+  sha256: 8159480cd832349200097c5db6fa18f8fffc1371b0d1fca1ac202f51f1239310
+notes_baseline: e4926178dad2090b1ccc27918dc532abdf58f2868e3ecfc99fe402b8f2be8a26
 ---
 
 # application.service.Studio.affordances

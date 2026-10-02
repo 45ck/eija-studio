@@ -8,7 +8,7 @@ from pydantic import ValidationError
 from eija_studio.domain.models import Workflow, Principal, LayoutChange, ExecuteCommand, DomainError, fingerprint
 from eija_studio.domain.change_case import ChangeCase
 from eija_studio.domain.pack import Pack, default_pack
-from eija_studio.domain.policy import apply_transactions, check_policy, meaning_options
+from eija_studio.domain.policy import apply_transaction, apply_transactions, check_policy, meaning_options
 from eija_studio.domain.affordance import affordances as affordance_map, dry_run
 from eija_studio.domain.transactions import Transaction
 from eija_studio.domain.formal import Context
@@ -17,6 +17,8 @@ from .formal import attach as attach_formal, packet_view, what_if_model
 from .compiler import compile_case, subject_for
 from .verifier import verify_runtime
 from .runtime import initialise, execute
+from .repository import RepositorySource
+from .history import command_event, history_view, replay
 
 
 def now() -> str:
@@ -28,19 +30,46 @@ def _parse_case(body: dict[str, Any]) -> ChangeCase:
     try:
         return ChangeCase.model_validate(body)
     except ValidationError as error:
-        if any(e.get("loc", ())[:1] == ("transactions",) for e in error.errors()):
+        if any(e.get("loc", ())[:1] in (("transactions",), ("redo_transactions",)) for e in error.errors()):
             raise DomainError("CASE_SCHEMA_OLD", "This case was written by an older kernel; create a new Change Case") from None
         raise
 
 
 class Studio:
     def __init__(self, store: Repository, provider: ProposalProvider, signer: ReceiptAuthenticator, identity_provider: IdentityProvider, sandbox: SandboxFactory, *, allow_network: bool = False,
-                 formal: FormalEvidenceSource | None = None, pack: Pack | None = None):
+                 formal: FormalEvidenceSource | None = None, pack: Pack | None = None,
+                 repository: RepositorySource | None = None):
         self.pack = pack if pack is not None else default_pack()  # the domain: laws, meanings, fixtures
         self.formal = formal  # optional: without it the formal kinds stay UNKNOWN in the packet, never green
         self.store, self.provider, self.signer = store, provider, signer
         self.identity_provider, self.sandbox = identity_provider, sandbox
         self.allow_network, self._provider_lock = allow_network, Lock()
+        self.repository = repository
+
+    def workbench(self) -> dict[str, Any]:
+        """Current pack declarations and baseline, with separately labelled read-only repository facts."""
+        with self.store.transaction() as u:
+            active = u.active()
+        return {"pack": {"id": self.pack.id, "name": self.pack.pack.name, "version": self.pack.pack.version,
+                         "digest": self.pack.digest},
+                "language": self.pack.language.model_dump(mode="json"),
+                "roles": [role.model_dump(mode="json") for role in self.pack.roles],
+                "laws": [law.model_dump(mode="json") for law in self.pack.laws],
+                "model": active["model"], "baseline_version": active["version"],
+                "connection": self.repository.snapshot() if self.repository is not None else None,
+                "source_review_required": not self.identity_provider()["trusted_fixture"]}
+
+    def repository_impact(self, term: str) -> dict[str, Any]:
+        """Known repository links only. This neither edits the repository nor grants evidence or authority."""
+        if self.repository is None:
+            return {"status": "unconfigured", "reason": "Start with --repo PATH to inspect a local repository"}
+        return self.repository.impact(term)
+
+    def repository_source(self, reference: str) -> dict[str, Any]:
+        """Bounded source view from the configured repository's captured nodes; no arbitrary path or execution."""
+        if self.repository is None:
+            return {"status": "unconfigured", "reason": "Start with --repo PATH to inspect a local repository"}
+        return self.repository.read_source(reference)
 
     @staticmethod
     def _case(u: UnitOfWork, case_id: str, expected: int | None = None, editable: bool = False) -> ChangeCase:
@@ -139,12 +168,52 @@ class Studio:
         principal.require("edit")
         with self.store.transaction() as u:
             case = self._case(u, case_id, expected, editable=True)
-            model = apply_transactions(case.executable(), (tx,), self.pack)
-            if case.decision:
-                u.event("DecisionInvalidated", {"case_id": case_id, "old_decision": case.decision, "reason": "semantic edit"})
-            return self._save(u, case, {"candidate": model.model_dump(mode="json"),
-                "transactions": [x.model_dump(mode="json") for x in case.transactions] + [tx.model_dump(mode="json")],
-                "decision": None, "stage": "PREVIEW"})
+            replay(case, self.pack)
+            model = apply_transaction(case.executable(), tx, self.pack)
+            return self._semantic_save(u, case, model, (*case.transactions, tx), (), tx, principal,
+                                       "SemanticEdited", "semantic edit", case.redo_transactions)
+
+    def undo(self, case_id: str, expected: int, principal: Principal) -> dict[str, Any]:
+        """Undo the last owner semantic edit; the selected meaning remains an indivisible protected prefix."""
+        principal.require("edit")
+        with self.store.transaction() as u:
+            case = self._case(u, case_id, expected, editable=True)
+            history = replay(case, self.pack)
+            if len(case.transactions) == history.initial_count:
+                raise DomainError("NOTHING_TO_UNDO", "The original meaning selection cannot be undone; no owner edits remain")
+            tx = case.transactions[-1]
+            return self._semantic_save(u, case, history.models[-2], case.transactions[:-1],
+                                       (*case.redo_transactions, tx), tx, principal, "SemanticUndone", "semantic undo")
+
+    def redo(self, case_id: str, expected: int, principal: Principal) -> dict[str, Any]:
+        """Reapply the next undone typed command through the same interpreter and policy checks."""
+        principal.require("edit")
+        with self.store.transaction() as u:
+            case = self._case(u, case_id, expected, editable=True)
+            history = replay(case, self.pack)
+            if not case.redo_transactions:
+                raise DomainError("NOTHING_TO_REDO", "No undone semantic edit remains on this branch")
+            tx = case.redo_transactions[-1]
+            return self._semantic_save(u, case, history.redo_models[0], (*case.transactions, tx),
+                                       case.redo_transactions[:-1], tx, principal, "SemanticRedone", "semantic redo")
+
+    def _semantic_save(self, u: UnitOfWork, case: ChangeCase, model: Workflow,
+                       transactions: tuple[Transaction, ...], redo: tuple[Transaction, ...],
+                       tx: Transaction, principal: Principal, kind: str, reason: str,
+                       discarded_redo: tuple[Transaction, ...] = ()) -> dict[str, Any]:
+        if case.decision:
+            u.event("DecisionInvalidated", {"case_id": case.id, "old_decision": case.decision, "reason": reason})
+        body = self._save(u, case, {"candidate": model.model_dump(mode="json"),
+            "transactions": [item.model_dump(mode="json") for item in transactions],
+            "redo_transactions": [item.model_dump(mode="json") for item in redo], "decision": None, "stage": "PREVIEW"})
+        u.event(kind, command_event(case, model, tx, principal.id, now(), discarded_redo))
+        return body
+
+    def history(self, case_id: str) -> dict[str, Any]:
+        """Reconstructed semantic revisions and append-only command audit; never changes the case."""
+        with self.store.transaction() as u:
+            case = self._case(u, case_id)
+            return history_view(case, self.pack, u.observations(case_id)["events"])
 
     def _working(self, case_id: str) -> Workflow:
         """The model an edit would change: the candidate once a meaning is selected, else the baseline. Read-only."""

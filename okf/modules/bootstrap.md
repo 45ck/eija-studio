@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/bootstrap.py
   title: bootstrap.py
   hash_method: ast-api-v1
-  sha256: 38731b986e6b052d51ca2d1dce2f2e3d01bcecd3757b6e7fd7fdc885622492e3
-notes_baseline: 5a08ac4b825acd3f4c97d07021eec9b46d5546a9e7e95f775b241e955377bffc
+  sha256: 2326f02a459d9df3471e986a8133c5c8aa631bdb78a6dab44adb566771b49f31
+notes_baseline: 8bc47825fdd7490cb764652bcc0f93045152e2eb3c9d5dbb2e2ded1c67b9b5be
 ---
 
 # bootstrap
@@ -40,6 +40,8 @@ _Symbol pages are generated for the domain and application layers only._
 
 * [`adapters/identity`](/modules/adapters/identity.md)
 * [`adapters/receipts`](/modules/adapters/receipts.md)
+* [`adapters/repository`](/modules/adapters/repository.md)
+* [`adapters/self_facts`](/modules/adapters/self_facts.md)
 * [`adapters/sqlite_store`](/modules/adapters/sqlite_store.md)
 * [`application/service`](/modules/application/service.md)
 * [`domain/pack`](/modules/domain/pack.md)
@@ -54,6 +56,8 @@ _No curated notes yet._
 
 * [adapters.identity](/modules/adapters/identity.md) - Measured release identity, not a proof of correctness or author authenticity.
 * [adapters.receipts](/modules/adapters/receipts.md) - Local integrity seal.
+* [adapters.repository](/modules/adapters/repository.md) - Repository analysis and bounded source navigation over captured checkout bytes.
+* [adapters.self_facts](/modules/adapters/self_facts.md) - Syntactic facts about EIJA's own review implementation, never a conformance proof.
 * [adapters.sqlite_store](/modules/adapters/sqlite_store.md) - Durable local unit of work.
 * [application.service](/modules/application/service.md) - Module `application/service` (no module docstring).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).

@@ -63,12 +63,34 @@
     const r = el.getBoundingClientRect();
     return { x: r.left, y: r.top, w: r.width, h: r.height };
   };
-  const shown = (el) => {
+  const layoutShown = (el) => {
     const r = el.getBoundingClientRect();
     if (r.width <= 0 || r.height <= 0) return false;
     const s = getComputedStyle(el);
     return s.visibility !== "hidden" && s.display !== "none" && parseFloat(s.opacity) !== 0;
   };
+  // A nonempty layout box can be completely outside an independently scrolling pane.
+  // Intersect its ancestors' overflow clips before calling it visible. Document viewport
+  // clipping remains a separate scope decision so the page/viewport distinction survives.
+  const visibleBounds = (el) => {
+    const raw = el.getBoundingClientRect();
+    let left = raw.left, right = raw.right, top = raw.top, bottom = raw.bottom;
+    for (let parent = el.parentElement; parent && parent !== document.body && parent !== document.documentElement; parent = parent.parentElement) {
+      const style = getComputedStyle(parent);
+      const clipX = /^(auto|scroll|hidden|clip)$/.test(style.overflowX);
+      const clipY = /^(auto|scroll|hidden|clip)$/.test(style.overflowY);
+      if (!clipX && !clipY) continue;
+      const box = parent.getBoundingClientRect();
+      const sx = parent.offsetWidth ? box.width / parent.offsetWidth : 1;
+      const sy = parent.offsetHeight ? box.height / parent.offsetHeight : 1;
+      const x = box.left + parent.clientLeft * sx, y = box.top + parent.clientTop * sy;
+      if (clipX) { left = Math.max(left, x); right = Math.min(right, x + parent.clientWidth * sx); }
+      if (clipY) { top = Math.max(top, y); bottom = Math.min(bottom, y + parent.clientHeight * sy); }
+      if (right <= left || bottom <= top) return null;
+    }
+    return {left, right, top, bottom, width: right - left, height: bottom - top};
+  };
+  const shown = (el) => layoutShown(el) && visibleBounds(el) !== null;
   const onCanvas = (r) => r.bottom + window.scrollY > 0 && r.right + window.scrollX > 0; // excludes the off-screen skip link
   const inViewport = (r) => r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth;
   const labelOf = (el) => {
@@ -134,7 +156,7 @@
   // Every visible pointer target on the current view, in page coordinates (for WCAG 2.5.8).
   H.controls = () =>
     [...document.querySelectorAll(INTERACTIVE)]
-      .filter((el) => shown(el) && onCanvas(el.getBoundingClientRect()))
+      .filter((el) => shown(el) && onCanvas(visibleBounds(el)))
       .map((el) => {
         const eff = effectiveBox(el);
         const r = eff.box;
@@ -146,7 +168,7 @@
           raw_w: rectOf(el).w, raw_h: rectOf(el).h,
           via_label: eff.viaLabel,
           disabled: !!el.disabled,
-          in_viewport: inViewport(el.getBoundingClientRect()),
+          in_viewport: inViewport(visibleBounds(el)),
         };
       });
 
@@ -162,20 +184,21 @@
   H.screenChoices = () =>
     [...document.querySelectorAll(INTERACTIVE)].filter((el) => {
       if (!shown(el) || el.disabled) return false;
-      const r = el.getBoundingClientRect();
+      const r = visibleBounds(el);
       return onCanvas(r) && inViewport(r);
     }).length;
 
   // --- Working memory proxy -------------------------------------------------------------------
-  // HEURISTIC, not a measurement of any person's memory. controls = each visible operable control
+  // HEURISTIC, not a measurement of any person's memory. controls = each visible control (including disabled)
   // (a decision/operation to keep in mind; a checkbox and its label are one). content_groups =
   // static text/heading atoms grouped by shared parent element (proximity in the DOM). Miller
   // (1956) 7+-2 and Cowan (2001) ~4 concern chunks a person holds, not pixels on screen.
   const SKIP_TAGS = new Set(["SCRIPT", "STYLE", "OPTION", "NOSCRIPT", "HEAD", "TEMPLATE"]);
-  H.chunks = (scope) => {
+  const countChunks = (scope, clipped) => {
     const visibleHere = (el) => {
-      if (!shown(el)) return false;
-      const r = el.getBoundingClientRect();
+      if (!layoutShown(el)) return false;
+      const r = clipped ? visibleBounds(el) : el.getBoundingClientRect();
+      if (!r) return false;
       if (!onCanvas(r)) return false;
       return scope === "page" ? true : inViewport(r);
     };
@@ -202,10 +225,15 @@
     }
     return { controls, content_groups: groups.size, atoms, chunks: controls + groups.size };
   };
+  H.chunks = (scope) => {
+    const visible = countChunks(scope, true), raw = countChunks(scope, false);
+    const excluded_clipped = Object.fromEntries(Object.keys(raw).map(key => [key, raw[key] - visible[key]]));
+    return {...visible, raw, excluded_clipped};
+  };
 
   // --- keyboard -------------------------------------------------------------------------------
   H.tabbableCount = () =>
-    [...document.querySelectorAll(INTERACTIVE)].filter((el) => shown(el) && !el.disabled && el.tabIndex >= 0 && onCanvas(el.getBoundingClientRect())).length;
+    [...document.querySelectorAll(INTERACTIVE)].filter((el) => shown(el) && !el.disabled && el.tabIndex >= 0 && onCanvas(visibleBounds(el))).length;
   H.focus = () => {
     const el = document.activeElement;
     if (!el || el === document.body || el === document.documentElement) return { tag: "body", id: "", name: "", visible_ring: false, rect: null, lost: true };

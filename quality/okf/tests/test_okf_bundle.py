@@ -2,6 +2,7 @@
 
 Every negative test asserts the specific finding a maintainer would see, not just "something failed".
 """
+import ast
 import csv
 import re
 import shutil
@@ -22,6 +23,7 @@ from quality.okf.pages import MACHINE_KEYS, Repo, dump_frontmatter, split_page  
 
 POLICY = "src/eija_studio/domain/policy.py"
 CHECK_POLICY = "symbols/domain/policy/check_policy.md"
+POLICY_MODULE = "modules/domain/policy.md"
 
 
 IGNORE = shutil.ignore_patterns("__pycache__", "*.pyc", "resources", "web")
@@ -82,6 +84,26 @@ def edit(path: Path, old: str, new: str) -> None:
     path.write_bytes(text.replace(old, new, 1).encode("utf-8"))
 
 
+def function_node(path: Path, name: str) -> ast.FunctionDef:
+    """Locate the current public API without depending on a previous domain-specific implementation."""
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    return next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == name)
+
+
+def replace_function_body(path: Path, name: str, replacement: str) -> None:
+    """A semantic mutation retaining signature and docstring, so module API hashes must stay current."""
+    node = function_node(path, name)
+    body = node.body[1:] if ast.get_docstring(node) is not None else node.body
+    assert body and node.end_lineno is not None
+    lines = path.read_text(encoding="utf-8").splitlines(keepends=True)
+    lines[body[0].lineno - 1:node.end_lineno] = ["    " + replacement + "\n"]
+    path.write_bytes("".join(lines).encode("utf-8"))
+
+
+def page_history(page: Path):
+    return split_page(page.read_text(encoding="utf-8"))[0].get("verified", [])
+
+
 def set_notes(page: Path, text: str) -> None:
     """Replace the human-owned Notes region of a page."""
     old = page.read_bytes().decode("utf-8")
@@ -138,9 +160,14 @@ def test_regeneration_is_a_byte_identical_noop_and_a_fresh_build_reproduces_mach
     shutil.rmtree(repo.bundle)
     sync(repo)
     fresh = existing_pages(repo)
-    assert set(fresh) == set(committed)
+    deprecated = {
+        path for path, text in committed.items()
+        if text.startswith("---\ntype:") and split_page(text)[0].get("status") == "deprecated"
+    }
+    # Historical pages cannot be reconstructed from vanished symbols; initial regeneration above must preserve them exactly.
+    assert set(fresh) == set(committed) - deprecated
     for path, text in committed.items():
-        if text.startswith("---\ntype:"):                        # concept pages: machine-owned parts reproduce exactly
+        if text.startswith("---\ntype:") and path not in deprecated:  # live concept pages reproduce exactly
             overridden = "description_override" in split_page(text)[0]      # a human-owned summary replaces the generated one
             assert machine_view(fresh[path], overridden) == machine_view(text, overridden), path
 
@@ -164,15 +191,18 @@ def test_hand_edited_generated_block_is_reported_as_drift(repo):
 
 def test_human_prose_verified_and_unknown_keys_survive_regeneration(repo):
     page = repo.bundle / CHECK_POLICY
+    before_history = page_history(page)
     set_notes(page, "PROSE-MARKER: policy is protected; see [Authority](/language/authority.md).")
     edit(page, "\n---\n", "\nx_owner_note: keep me\n---\n")
     review(repo, CHECK_POLICY)
+    reviewed_history = page_history(page)
+    assert reviewed_history[:-1] == before_history and reviewed_history[-1]["by"] == "human:reviewer"
     sync(repo)
     text = page.read_text(encoding="utf-8")
     meta, _ = split_page(text)
     assert "PROSE-MARKER" in text
     assert meta["x_owner_note"] == "keep me"
-    assert meta["verified"][0]["by"] == "human:reviewer"
+    assert meta["verified"] == reviewed_history
     assert run_checks(repo).ok
 
 
@@ -189,48 +219,69 @@ def test_description_override_is_human_owned(repo):
 # ---- STALE: the code moved on -------------------------------------------------------------------
 
 def test_semantic_code_change_makes_exactly_the_linked_pages_stale(repo):
-    edit(repo.root / POLICY, '"UNSUPPORTED_WORKFLOW_SHAPE"', '"UNSUPPORTED_WORKFLOW_SHAPE_V2"')
+    replace_function_body(repo.root / POLICY, "check_policy", 'return ["SYNTHETIC_POLICY_MUTATION"]')
     report = run_checks(repo)
     assert report.stale == [CHECK_POLICY]
     assert "STALE" in codes(report, "codelinks")
-    stale_line = next(f for f in report.findings if f.code == "STALE")
+    stale_line = next(f for f in report.findings if f.code == "STALE" and f.path == CHECK_POLICY)
     assert "check_policy" in stale_line.message and "python -m quality.okf sync" in stale_line.message
     assert not any(f.code == "DRIFT" and f.path == CHECK_POLICY for f in report.findings)   # reported once, as STALE
 
 
 def test_formatting_only_change_is_not_stale(repo):
-    edit(repo.root / POLICY, "def ensure_policy(model: Workflow) -> None:", "# reviewed\ndef ensure_policy(model:  Workflow)  ->  None:")
+    path = repo.root / POLICY
+    node = function_node(path, "ensure_policy")
+    lines = path.read_text(encoding="utf-8").splitlines(keepends=True)
+    header = lines[node.lineno - 1]
+    assert " -> " in header
+    edit(path, header, "# synthetic formatting-only fixture\n" + header.replace(" -> ", "  ->  "))
     assert run_checks(repo).ok
 
 
-def _assert_notes_stay_red_and_history_kept(after, page):
+def _assert_notes_stay_red_and_history_kept(after, page, history, human_before):
     assert not after.ok and codes(after) == ["NOTES_STALE"] and after.stale == []            # generated parts are baselined, prose is not
-    assert "Teacher can never approve" in page.read_text(encoding="utf-8")                   # the contradicted prose is still there
-    assert after.stats["trust_tiers"].get("human-reviewed", 0) == 0                          # old attestation no longer counts
-    assert len(split_page(page.read_text(encoding="utf-8"))[0]["verified"]) == 1               # ...but the history is kept, not dropped
+    assert "TEST-CURATED-POLICY-NOTE" in page.read_text(encoding="utf-8")                    # contradicted prose remains
+    assert after.stats["trust_tiers"].get("human-reviewed", 0) == human_before                # old attestation no longer counts
+    assert page_history(page) == history                                                    # complete history remains, not just a count
 
 
 def test_sync_rebaselines_generated_content_but_cannot_clear_stale_notes_or_raise_the_tier(repo):
     """The reviewers' scenario: gut check_policy, sync, and the page whose Notes now lie must stay red."""
     page = repo.bundle / CHECK_POLICY
-    confirmed_before = run_checks(repo).stats["trust_tiers"].get("machine-confirmed", 0)
+    set_notes(page, "TEST-CURATED-POLICY-NOTE: the checker enforces the declared pack rules.")
+    before = run_checks(repo)
+    confirmed_before = before.stats["trust_tiers"].get("machine-confirmed", 0)
+    human_before = before.stats["trust_tiers"].get("human-reviewed", 0)
+    history_before = page_history(page)
     review(repo, CHECK_POLICY)
-    assert run_checks(repo).stats["trust_tiers"]["human-reviewed"] == 1 and run_checks(repo).ok
+    reviewed_history = page_history(page)
+    assert reviewed_history[:-1] == history_before
+    assert run_checks(repo).stats["trust_tiers"]["human-reviewed"] == human_before + 1 and run_checks(repo).ok
     sync(repo)
-    assert run_checks(repo).stats["trust_tiers"]["human-reviewed"] == 1        # nothing changed: attestation still current
-    text = (repo.root / POLICY).read_text(encoding="utf-8")
-    start = text.index("def check_policy(")
-    end = text.index("\n\n\n", start)
-    (repo.root / POLICY).write_bytes((text[:start] + "def check_policy(model: Workflow) -> list[str]:\n    return []" + text[end:]).encode("utf-8"))
+    assert run_checks(repo).stats["trust_tiers"]["human-reviewed"] == human_before + 1  # unchanged attestation remains current
+    replace_function_body(repo.root / POLICY, "check_policy", "return []")
     report = run_checks(repo)
     assert report.stale == [CHECK_POLICY] and "STALE" in codes(report, "codelinks")
     sync(repo)
-    _assert_notes_stay_red_and_history_kept(run_checks(repo), page)
+    _assert_notes_stay_red_and_history_kept(run_checks(repo), page, reviewed_history, human_before)
     review(repo, CHECK_POLICY, by="process:eija-okf-test")
     ok = run_checks(repo)
     assert ok.ok and ok.stats["trust_tiers"].get("machine-confirmed", 0) == confirmed_before + 1
-    assert ok.stats["trust_tiers"].get("human-reviewed", 0) == 0
-    assert len(split_page(page.read_text(encoding="utf-8"))[0]["verified"]) == 2
+    assert ok.stats["trust_tiers"].get("human-reviewed", 0) == human_before
+    assert page_history(page)[:-1] == reviewed_history
+    assert page_history(page)[-1]["by"] == "process:eija-okf-test"
+
+
+def test_signature_change_stales_both_the_symbol_and_module_api(repo):
+    """A module's API hash includes parameter names, while a body-only mutation above must not stale it."""
+    path = repo.root / POLICY
+    node = function_node(path, "check_policy")
+    header = path.read_text(encoding="utf-8").splitlines(keepends=True)[node.lineno - 1]
+    parameter = node.args.args[0].arg
+    edit(path, header, header.replace(parameter + ":", "changed_parameter:", 1))
+    report = run_checks(repo)
+    assert report.stale == [POLICY_MODULE, CHECK_POLICY]
+    assert "STALE" in codes(report, "codelinks")
 
 
 def test_uncurated_pages_follow_their_source_and_are_not_gated_for_notes(repo):
@@ -262,10 +313,12 @@ def test_unbound_verified_entry_is_a_conformance_error(repo):
 
 
 def test_review_refuses_a_page_whose_sources_changed(repo, capsys):
-    edit(repo.root / POLICY, '"PROTECTED_STATE:"', '"PROTECTED_STATE_V2:"')
+    page = repo.bundle / CHECK_POLICY
+    before = page.read_bytes()
+    replace_function_body(repo.root / POLICY, "check_policy", 'return ["SYNTHETIC_POLICY_MUTATION"]')
     status = review(repo, CHECK_POLICY, check=False)
     assert status == 1 and "refusing to review" in capsys.readouterr().err
-    assert "verified" not in split_page((repo.bundle / CHECK_POLICY).read_text(encoding="utf-8"))[0]
+    assert page.read_bytes() == before  # refusing review must neither append history nor replace prior attestations
 
 
 @pytest.mark.parametrize("args, message", [

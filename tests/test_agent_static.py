@@ -25,9 +25,9 @@ ROOT = Path(__file__).resolve().parents[1]
 ADAPTER = ROOT / "src/eija_studio/interfaces/mcp_server.py"
 
 #: `Studio` attributes the port factory may read; `store` only as `store.list_cases`, `provider` only as `provider.networked`.
-ALLOWED_STUDIO = {"store", "create", "propose", "verify", "view", "provider"}
+ALLOWED_STUDIO = {"store", "create", "propose", "verify", "view", "provider", "workbench", "affordances", "edit_check", "repository_impact", "repository_source"}
 #: The methods AgentSurface may call on its port.
-ALLOWED_PORT = {"list_cases", "create", "propose", "verify", "view", "networked"}
+ALLOWED_PORT = {"list_cases", "create", "propose", "verify", "view", "networked", "workbench", "affordances", "edit_check", "repository_impact", "repository_source"}
 #: Builtins and helpers that reach an attribute by a computed name and so defeat the name checks.
 DYNAMIC = {"getattr", "setattr", "delattr", "eval", "exec", "__import__", "vars", "globals", "locals", "attrgetter", "methodcaller"}
 #: Modules that give computed attribute access or introspection; the adapter has no use for them.

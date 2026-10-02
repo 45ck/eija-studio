@@ -58,12 +58,12 @@ def reordered(draw, workflow: Workflow) -> Workflow:
 
 def normal_form(workflow: Workflow) -> tuple:
     """Order-free identity of a workflow, independent of ``semantic_hash``."""
-    return (frozenset(workflow.states), workflow.initial_state, frozenset(
+    return (workflow.schema_version, workflow.id, frozenset(workflow.states), workflow.initial_state, frozenset(
         (t.id, t.action, t.from_state, t.to_state, t.role, frozenset(t.guards),
          frozenset(t.required_effects), frozenset(t.forbidden_effects)) for t in workflow.transitions))
 
 
-EDIT_KINDS = ("rename_state", "add_state", "set_initial", "retarget_from", "retarget_to", "change_role",
+EDIT_KINDS = ("change_pack_id", "rename_state", "add_state", "set_initial", "retarget_from", "retarget_to", "change_role",
               "rename_action", "rename_id", "toggle_guard", "add_required_effect", "add_forbidden_effect",
               "drop_effect", "move_effect", "drop_transition", "add_transition", "swap_ids")
 
@@ -76,7 +76,9 @@ def semantic_edits(draw, workflow: Workflow) -> tuple[str, Workflow]:
     kind = draw(st.sampled_from(EDIT_KINDS))
     index = draw(st.integers(0, len(data["transitions"]) - 1))
     t = data["transitions"][index]
-    if kind == "rename_state":
+    if kind == "change_pack_id":
+        data["id"] = draw(st.from_regex(r"[a-z][a-z0-9-]{0,39}", fullmatch=True))
+    elif kind == "rename_state":
         old, new = draw(st.sampled_from(data["states"])), draw(NAMES)
         assume(new not in data["states"])
         data["states"] = [new if s == old else s for s in data["states"]]

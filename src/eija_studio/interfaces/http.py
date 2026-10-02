@@ -18,6 +18,7 @@ PAGE_CSP = ("default-src 'none'; script-src 'self'; style-src 'self'; connect-sr
             "frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
 FRAME_CSP = ("default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src data:; connect-src 'none'; "
              "frame-ancestors 'self'; base-uri 'none'; form-action 'none'; sandbox allow-scripts")
+WEB_ASSETS = frozenset({"app.js", "app.css", "canvas.js", "tree.js", "review.js", "source.js", "shell.js", "visual-frame.js", "visual-frame.css"})
 
 
 class NewCase(Contract):
@@ -108,13 +109,13 @@ def create_app(studio, token: str, port: int = 8765) -> FastAPI:
 
     @app.get("/assets/{name}")
     def asset(name: str):
-        if name not in {"app.js", "app.css", "visual-frame.js", "visual-frame.css"}:
+        if name not in WEB_ASSETS or not (web / name).is_file():
             return JSONResponse({"code": "NOT_FOUND"}, status_code=404)
         return FileResponse(web / name)
 
     @app.get("/assets/vendor/{name}")
     def vendored(name: str):
-        if name not in {"mermaid.min.js"}:  # exact allowlist; the vendor folder also holds a LICENSE for humans
+        if name not in {"mermaid.min.js", "dagre.min.js"}:  # exact allowlist; licenses are kept with the assets
             return JSONResponse({"code": "NOT_FOUND"}, status_code=404)
         return FileResponse(web / "vendor" / name)
 
@@ -135,6 +136,18 @@ def create_app(studio, token: str, port: int = 8765) -> FastAPI:
     @app.get("/api/doctor")
     def doctor():
         return studio.provider.doctor()
+
+    @app.get("/api/workbench")
+    def workbench():
+        return studio.workbench()
+
+    @app.get("/api/repository/impact")
+    def repository_impact(term: str = Query(min_length=1, max_length=400)):
+        return studio.repository_impact(term)
+
+    @app.get("/api/repository/source")
+    def repository_source(reference: str = Query(min_length=1, max_length=800)):
+        return studio.repository_source(reference)
 
     @app.get("/api/cases")
     def cases():
@@ -163,6 +176,18 @@ def create_app(studio, token: str, port: int = 8765) -> FastAPI:
     @app.post("/api/cases/{case_id}/edit/check")
     def edit_check(case_id: str, body: EditCheck):
         return studio.edit_check(case_id, body.transaction)
+
+    @app.post("/api/cases/{case_id}/undo")
+    def undo(case_id: str, body: Version):
+        return studio.undo(case_id, body.expected_version, OWNER)
+
+    @app.post("/api/cases/{case_id}/redo")
+    def redo(case_id: str, body: Version):
+        return studio.redo(case_id, body.expected_version, OWNER)
+
+    @app.get("/api/cases/{case_id}/history")
+    def history(case_id: str):
+        return studio.history(case_id)
 
     @app.get("/api/cases/{case_id}/affordances")
     def affordances(case_id: str):

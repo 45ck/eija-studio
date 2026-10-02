@@ -6,26 +6,45 @@
 
 **Review the meaning of a change, not every generated line.**
 
-EIJA (Executable Intent and Journey Assurance) is an open-source assurance kernel. An agent proposes a change to a model of your business rules; the kernel turns it into a typed transaction, regenerates the views, exercises the result and records evidence; a human owner decides. *AI proposes. The kernel checks. The local owner decides.*
+EIJA (Executable Intent and Journey Assurance) is an open-source code/model workbench under development for **UML-literate engineers who build with AI**. Its purpose is to let engineers inspect the concepts, rules and consequences behind an agent's changes, follow those concepts into actual source, and judge evidence without reconstructing every generated line. A deterministic assurance kernel checks supported model edits; the local owner selects meaning and decides. **AI proposes. The kernel checks. The local owner decides.**
+
+## Two outcome goals
+
+1. **A complete, polished IDE experience that makes a world-class WOW demo possible.** Build a coherent, non-linear workbench with an explorer, model editors, source navigation, agent changes, review, evidence, history, keyboard control and clear feedback. Engineers should be able to move freely through the supported workflow, understand what changes and recover safely. Walkthroughs and showcase clips must come from that usable product, not a thin happy-path presentation. The four flagship scenes remain the demonstration roadmap; unfinished capabilities stay labeled as planned.
+2. **A reproducible GitHub POC and POF.** Demonstrate the supported IDE experience end-to-end (**proof of concept**) and let another engineer clone, launch, use it and replay its scoped evidence (**proof of feasibility**). Publish clear setup, supported coverage, actual UX and test results, limitations, license/OSS records and demo artifacts together when that product experience is ready.
+
+**Delivery order:** finish the coherent EIJA self-dogfood IDE, exercise normal use and recovery paths, meet the visual and interaction quality bar, then produce the GitHub package and videos from retained runs. A wizard, attractive shell or isolated passing demonstration does not close this goal. The supported semantics remain explicit; a full IDE experience does not mean a universal solver or unmeasured superiority. Current status is **in integration; the full experience and both outcome goals remain unconfirmed**. The [mission and readiness criteria](docs/engineering/MISSION.md) govern these goals; the [run record](docs/engineering/SELF-DOGFOOD-ACCEPTANCE.md#run-record) supplies execution evidence.
+
+**Build on OSS.** Reuse maintained frameworks, parsers, diagram tooling and verification engines. EIJA adds domain contracts, adapters and generators; record adoption decisions before building a replacement engine. Use one coordinated integration path with a named writer for each file and a visible milestone/evidence ledger. [OSS register](docs/oss/REGISTER.md)
+
+The first acceptance target is **EIJA's own checkout**. External applications come after this self-dogfood flow works. Repository intake, structural extraction, behavior bindings and verified properties are separate coverage levels; accepting a codebase does not imply that EIJA understands or verifies all of it. This is an engineering preview, with no measured claim of superior V&V or reduced human comprehension burden.
 
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
 [![Status: local proof of concept](https://img.shields.io/badge/status-local%20proof%20of%20concept-orange.svg)](docs/TECHNICAL_LEAD_REVIEW.md)
 [![Hosted CI: none, gates run locally](https://img.shields.io/badge/hosted%20CI-none%20(local%20gates)-lightgrey.svg)](docs/adr/0017-local-quality-gates.md)
 
-Local gate, a dated snapshot rather than a live check (nothing verifies these numbers, so treat them as a claim to reproduce): <!-- GATE-STATUS -->2026-09-29, Windows 11, Python 3.12, this branch merged with `main` at `0f51b62`: `nox -t full` succeeded (254 tests passed, 1 skipped because Playwright is not installed; coverage 78.85 %), and the `demos_dry` gate was skipped as `NOT_RUN` for the same reason. The owner-only release fixture check does not pass on `main` (see the quickstart).<!-- /GATE-STATUS --> Reproduce it yourself with `nox -t full`; there is no hosted CI to trust instead of your own run. Hosted CI is unavailable for this repository ([ADR-0017](docs/adr/0017-local-quality-gates.md)).
+**Historical gate snapshot, 29 September 2026 — stale for the current integration work.** These numbers describe an earlier branch state, not the self-dogfood acceptance result: <!-- GATE-STATUS -->2026-09-29, Windows 11, Python 3.12, this branch merged with `main` at `0f51b62`: `nox -t full` succeeded (254 tests passed, 1 skipped because Playwright is not installed; coverage 78.85 %), and the `demos_dry` gate was skipped as `NOT_RUN` for the same reason. The owner-only release fixture check does not pass on `main` (see the quickstart).<!-- /GATE-STATUS --> Reproduce it yourself with `nox -t full`; there is no hosted CI to trust instead of your own run. Hosted CI is unavailable for this repository ([ADR-0017](docs/adr/0017-local-quality-gates.md)).
 
-> **Scope, stated up front.** EIJA v0.2 is a bounded local proof of concept. The one supported domain is a synthetic school-excursion approval workflow. It is a semantic compiler for that class of state-machine rules, not a universal code reviewer, theorem prover or application generator. What is finished, in progress and planned is listed in the [roadmap](docs/ROADMAP.md).
+## Current scope and acceptance
+
+The current integration connects a configured EIJA checkout read-only and indexes supported tracked Python and annotated UI structure. The delivery goal is a coherent IDE around that connection: domain explorer, editable model views, source navigation, repository impact, agent-change review, evidence and history that stay in sync as the engineer moves between them. SVG edits remain server-checked; the agent surface exposes read-only pack context, affordances, edit checks and repository impact. These are **requirements under integration**, not a claim that the full experience has passed. Both [engineering and UX acceptance](docs/engineering/SELF-DOGFOOD-ACCEPTANCE.md) must be demonstrated.
+
+See [self-dogfood acceptance](docs/engineering/SELF-DOGFOOD-ACCEPTANCE.md) for the exact flow, coverage boundaries and [run record](docs/engineering/SELF-DOGFOOD-ACCEPTANCE.md#run-record). The first connection does not rewrite repository source or generate an arbitrary application. `SOURCE_REVIEW_REQUIRED` remains an expected, visible condition until the maintainer reviews the changed source; agents must not restamp it. Live model validation and the engineer study are **NOT_RUN**.
+
+The [product thesis](docs/engineering/PRODUCT-THESIS.md), [current alternatives](docs/research/2026-10-02-current-alternatives.md) and [V&V protocol](docs/research/2026-10-02-vv-protocol.md) explain what is being built and how its value will be tested. The [whole-app design](docs/design/README.md) connects four personas, 15 user stories, ten screen states and explicit HCI criteria to the implementation. Generated concepts set the design target; the [dated browser evidence](docs/engineering/2026-10-02-IDE-SELF-DOGFOOD.md) records actual behavior and remaining gaps.
+
+> **Historical examples below.** The excursion diagrams, v0.2 quickstart and dated `main`/PR gate tables preserve the earlier kernel demonstration. They do not describe current integration readiness. Excursion and library-loan packs remain fixtures for the supported model contract; EIJA itself is the first repository connection target.
 
 ## The problem
 
-Agents write code faster than people can read it. A reviewer who is handed a 900-line generated diff has to reconstruct what business rule changed, who now has authority to do what, and what else depends on it, before they can say yes. Most reviews cannot afford that, so they approve on a green check and a plausible summary. The characteristic failure is not a syntax error; it is a silent change of meaning: an approval step that quietly lost a prerequisite, a role that gained a power.
+Agents write code faster than people can read it. A reviewer who is handed a 900-line generated diff has to reconstruct what business rule changed, who now has authority to do what, and what else depends on it, before they can say yes. Under that pressure, a green check and a plausible summary can substitute for understanding. The characteristic failure is not a syntax error; it is a silent change of meaning: an approval step that quietly lost a prerequisite, a role that gained a power.
 
 ## Why use it
 
 | You get | How |
 |---|---|
-| **Review the change to the model, not the diff.** | A change is a typed `SemanticTransaction` over a `Workflow`. The rule table, state diagram and journey text are all derived from the same executable transitions, so they cannot disagree. |
+| **Review the change to the model, not the diff.** | A change is a typed `SemanticTransaction` over a `Workflow`. The rule table, state diagram and journey text are derived from the same executable transitions and checked for consistency within that model; this does not establish complete source fidelity. |
 | **See the ripple.** | A fixed-point impact closure (`domain/impact.py`) lists the rule, runtime, state view, journey, obligation and receipt artefacts a change reaches; the example below prints it. The Studio's visual before/after diff is not on `main` yet. |
 | **Agents cannot approve their own work.** | Provider output is an untrusted proposal. There is no approve or apply port for providers, authority is re-checked at commit time, and selecting a meaning, approving and applying are three separate owner actions. |
 | **Evidence you can recompute.** | A receipt keeps its raw observations, and eligibility is recomputed from them; a green label on a receipt is not trusted. In this proof of concept human understanding is always `UNKNOWN`: an owner acknowledgement is recorded, but it is not a measurement of understanding. |
@@ -138,7 +157,22 @@ The kernel's own impact closure, `domain.impact.model_impact(baseline, candidate
 
 The block above is not hand-drawn: `python scripts/gen_readme_diagram.py --check` (nox session `readme_diagram`) fails if it differs from what `domain.policy` produces today. It shows structure only. It does not show human understanding, and it is not a proof.
 
-## 60-second quickstart
+## Try the connected IDE preview
+
+The connected IDE is developed on [`integrate/all`](https://github.com/45ck/eija-studio/tree/integrate/all), tracked in [PR #29](https://github.com/45ck/eija-studio/pull/29). From that checkout, create and activate a Python virtual environment as below, then run:
+
+```console
+python -m pip install -e ".[dev,hci]"
+eija serve --provider offline --pack packs/eija-review-slice --repo . --workspace .eija/self-dogfood --open
+```
+
+Use a fresh `.eija/self-dogfood` workspace for this pack. The explorer connects to the current checkout read-only. Start with **New intent**, inspect the offline proposal, choose a supported meaning, then move between Model, Source, Changes and Evidence. The offline provider is a deterministic fixture, not a live model. Source-review and unrun-conformance limits remain visible.
+
+For an isolated, recorded replay, install Chromium with `python -m playwright install chromium`, then run `python tests/hci/self_dogfood_replay.py --record`. The [replay guide](docs/engineering/SELF-DOGFOOD-BROWSER-REPLAY.md) explains its exact checks, subject manifest and limitations. Local endpoint browser rules still apply.
+
+## Historical 60-second quickstart
+
+> **Historical v0.2 walkthrough.** The commands and excursion interaction below preserve the earlier demonstration. Use the [current acceptance flow](docs/engineering/SELF-DOGFOOD-ACCEPTANCE.md#first-flow-contract) and [agent setup](docs/agents/quickstart.md) for the integration milestone; new interface behavior must be confirmed by the current run record.
 
 Requires Python 3.11 or later and git. No Node or frontend build. Installation downloads Python packages, so the first install is not air-gapped.
 
@@ -176,29 +210,13 @@ python -m pytest -q                                                     # 254 pa
 
 ## Use it from your agent
 
-What works **on `main` today**: any agent that can read [`AGENTS.md`](AGENTS.md) and run shell commands can drive the CLI, and the repository ships a skill file at [`.agents/skills/eija-studio/SKILL.md`](.agents/skills/eija-studio/SKILL.md). For example, paste this into your agent:
+The integration checkout contains CLI and MCP entry points; use the [agent contract](docs/agents/contract.md) and [setup guide](docs/agents/quickstart.md) for the supported interface. The current acceptance work adds read-only pack context, affordances, `edit_check` and `repository_impact`, so an agent can inspect the same model and repository facts as the engineer. The final available tool names and validation results belong to that interface documentation and the current run record.
 
-```text
-Read AGENTS.md. Run: eija compile examples/excursion-candidate.json --out output/compiled
-Exit code 2 is expected until the maintainer re-stamps the release fixture; do not treat it as failure.
-Summarise source_review_required, policy_errors, projections and impact from output/compiled/compiled.json.
-Do not approve, apply, read receipt.key or fabricate review answers.
-```
+Agent proposals remain untrusted. No agent may choose the owner's meaning, approve or apply a change, mint evidence, or bypass source review. A successful read or dry-run check is not an owner decision and does not modify connected repository source.
 
-What is **in progress, not on `main`** (pull-request states as of 2026-09-29; the [roadmap](docs/ROADMAP.md) is where they are kept current):
+## Historical assurance inventory: 29 September 2026
 
-| Agent | As proposer (agent suggests interpretations) | Over MCP (agent inspects and verifies) |
-|---|---|---|
-| Codex | offline/OpenRouter/Codex on `main`; multi-CLI adapter suite in open PR #4 | in open PR #8 |
-| Claude Code | open PR #4 | open PR #8 |
-| OpenCode | open PR #4 | open PR #8 |
-| Gemini CLI | open PR #4 | open PR #8 |
-
-The MCP server is designed so an agent can read, compile and verify but never approve or apply. One-minute setup for each agent will be in [docs/agents/quickstart.md](docs/agents/quickstart.md) when the agents lane merges. Until then there is no MCP server in this repository, and this README will not claim one.
-
-## Why you can trust it
-
-"What you see matches the code" is the guarantee we are building toward. This table separates what is on `main` from what is not. Statuses as of 2026-09-29.
+"What you see matches the code" is a claim to verify for a stated model, source revision and extraction scope. The following table is the historical `main`/PR inventory from 2026-09-29; its branch states and numbers are stale and are not current acceptance evidence. Use the [self-dogfood run record](docs/engineering/SELF-DOGFOOD-ACCEPTANCE.md#run-record) for the integrated result.
 
 | Claim | Mechanism | Status |
 |---|---|---|
@@ -219,14 +237,9 @@ Each technique is a distinct kind of evidence and none may be relabelled as anot
 
 ## How it compares
 
-EIJA is a complement to these, not a replacement, and its scope today is much narrower than all of them.
+Specification-driven agents, semantic review interfaces, executable modeling tools and formal checkers already overlap with EIJA. Kiro documents SMT-backed requirements analysis and property-based testing; MPS exposes model edits to coding agents; Stately connects statecharts and tests; CodeRabbit and Qodo address guided review and change impact. See the [dated primary-source comparison](docs/research/2026-10-02-current-alternatives.md) for feature boundaries and preview status.
 
-| Approach | Strong at | Gap when agents write most of the change | Relationship to EIJA |
-|---|---|---|---|
-| Plain code review | Design judgment, spotting a wrong idea, teaching | Reviewer must reconstruct the changed meaning from lines; cost grows with generation volume | EIJA reviews the meaning of a change in the modelled domain; code review still covers everything outside it |
-| AI review bots on PRs | Fast, broad, good at bugs and style | Probabilistic, often the same kind of system that wrote the code, no separation of authority, no recomputable evidence | EIJA treats AI output as an untrusted proposal that cannot approve |
-| TLA+ (or another model checker) alone | Exhaustive checking of a hand-written specification | The specification can drift from the code; needs expertise to write and read | Planned: generate the TLA+ from the executable model and replay traces against the runtime |
-| Specification documents and ADRs | Recording rationale and intent | Prose is not executable and drifts; nothing fails when it is wrong | Keep ADRs for *why*; the executable model is the source for *what* |
+EIJA's product hypothesis is that an explicit domain model, deterministic source connections and reviewable evidence help UML-literate engineers make more accurate decisions at a useful total cost. Neither novelty nor superiority is established by the presence of those features. The [V&V protocol](docs/research/2026-10-02-vv-protocol.md) separates software verification, model fidelity and observed engineer benefit.
 
 ## Built on open source
 
@@ -241,7 +254,8 @@ Decisions follow [MADR](https://adr.github.io/madr/) and are never rewritten, on
 | Purpose | Entry point |
 |---|---|
 | Install, run, provider setup, verification commands | [docs/getting-started.md](docs/getting-started.md) |
-| Engineering decisions and readiness | [docs/TECHNICAL_LEAD_REVIEW.md](docs/TECHNICAL_LEAD_REVIEW.md) |
+| Current product scope and self-dogfood acceptance | [Product thesis](docs/engineering/PRODUCT-THESIS.md), [acceptance and run record](docs/engineering/SELF-DOGFOOD-ACCEPTANCE.md) |
+| Historical v0.2 engineering review | [docs/TECHNICAL_LEAD_REVIEW.md](docs/TECHNICAL_LEAD_REVIEW.md) |
 | Domain boundaries, ubiquitous language, contracts | [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md), [`contracts/`](contracts/) |
 | Risks and trust assumptions | [docs/SECURITY_AND_TRUST.md](docs/SECURITY_AND_TRUST.md) |
 | Reproduce measured results | [docs/verification/VERIFICATION.md](docs/verification/VERIFICATION.md), [`evidence/`](evidence/) |

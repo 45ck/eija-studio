@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.edit
   title: application/service.py
   hash_method: ast-v2
-  sha256: 45fb8c0e196d48b21bfafdc184b331a2d1f7349f4d33767ec6a3ee06d7a756ca
-notes_baseline: 99e069c5a0c5115e828fa0a230beec648e7b2834e6abf5c17d8c2cefa7f357be
+  sha256: 718105f28cd24e9ee4c041a2588b62cc44fa9914443f22c276940c5c26161c5c
+notes_baseline: 7d8709a66c49b162657d5ab54ca1bfc90f1b275281b3a9fdb1c1c2e0ad5996ea
 ---
 
 # application.service.Studio.edit
@@ -42,7 +42,8 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
+* [application.history.replay](/symbols/application/history/replay.md) - Fail closed when stored commands no longer explain the candidate under the exact active pack.
 * [domain.models.Principal](/symbols/domain/models/Principal.md) - `class Principal(Contract)` in `domain/models`.
-* [domain.policy.apply_transactions](/symbols/domain/policy/apply_transactions.md) - Apply an edit sequence as one change: the start must conform, the result must conform (intermediate steps need only be coherent workflows).
+* [domain.policy.apply_transaction](/symbols/domain/policy/apply_transaction.md) - Apply one transaction (policy-checked).
 * [domain.transactions.Transaction](/symbols/domain/transactions/Transaction.md) - Type alias `Transaction` in `domain/transactions`.
 <!-- okf:generated:end links -->

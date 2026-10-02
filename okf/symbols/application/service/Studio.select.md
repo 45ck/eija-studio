@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.select
   title: application/service.py
   hash_method: ast-v2
-  sha256: f041dea781b0b1d4dcb5994d940268729fddc03986e53a2237372e61ba3feefa
+  sha256: f19250e1d420487dfff36dceb1375e20747194b06c69617fea50800e79adff90
 description_override: Records the owner's explicit choice of one supported interpretation and derives the candidate workflow.
-notes_baseline: b12570aef7471be1139026e37de6b57c6777343bcd0542b4c514c00f2ec8c636
+notes_baseline: 3b5c8c31487dee0325bc7dce3af452cb0fd485a61f0f7716793591e1f04d01f8
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -26,6 +26,10 @@ verified:
   at: '2026-09-29T08:20:47Z'
   notes_sha256: e96b3f94594a8a3d47fafcb4fcfba728cf874e4c5bd6ea96d3242ac134e2032c
   sources_sha256: b12570aef7471be1139026e37de6b57c6777343bcd0542b4c514c00f2ec8c636
+- by: process:codex-ide-integration
+  at: '2026-10-02T05:15:30Z'
+  notes_sha256: e96b3f94594a8a3d47fafcb4fcfba728cf874e4c5bd6ea96d3242ac134e2032c
+  sources_sha256: 3b5c8c31487dee0325bc7dce3af452cb0fd485a61f0f7716793591e1f04d01f8
 ---
 
 # application.service.Studio.select

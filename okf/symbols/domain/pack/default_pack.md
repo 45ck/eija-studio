@@ -1,7 +1,7 @@
 ---
 type: Function
 title: domain.pack.default_pack
-description: The configured pack (cached per location).
+description: The configured pack, reread on every call and validated from a content-keyed cache.
 resource: repo://src/eija_studio/domain/pack.py#default_pack
 tags:
 - symbol
@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/pack.py#default_pack
   title: domain/pack.py
   hash_method: ast-v2
-  sha256: 9fd31d713eb6cbd5d717877cde3d7b728c173c3e6cf6d0d54fadd0f7055b99a5
-notes_baseline: e06d5cc15f22b2189a4185a342d7c77fff145b866b26ee5cd44ff24041d255d4
+  sha256: e6fdda20d9b55846a346d12253ec8502316463d2b04378368ce139dbbecddf69
+notes_baseline: df305f6c4e3da4d4354c5f7c839e9847af708101e13708419c298ccb34307f4d
 ---
 
 # domain.pack.default_pack
@@ -32,7 +32,7 @@ notes_baseline: e06d5cc15f22b2189a4185a342d7c77fff145b866b26ee5cd44ff24041d255d4
 ## Docstring
 
 ~~~text
-The configured pack (cached per location).
+The configured pack, reread on every call and validated from a content-keyed cache.
 ~~~
 <!-- okf:generated:end facts -->
 
@@ -45,6 +45,7 @@ _No curated notes yet._
 
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
 * [domain.pack.default_location](/symbols/domain/pack/default_location.md) - ``$EIJA_PACK`` if set, else the pack named by ``packs/default.json``.
+* [domain.pack.load_pack](/symbols/domain/pack/load_pack.md) - Read current file contents and retain an immutable, digest-addressed pack snapshot.
 
 ## Referenced by
 

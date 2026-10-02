@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from hypothesis import HealthCheck, event, settings, strategies as st
+from hypothesis import HealthCheck, event, given, settings, strategies as st
 from hypothesis.stateful import (Bundle, RuleBasedStateMachine, initialize, invariant, multiple, rule,
                                  run_state_machine_as_test)
 
@@ -71,7 +71,9 @@ class PreviewRuntimeMachine(RuleBasedStateMachine):
         self.reference = ref.ReferenceRuntime(case_version=case["version"])
         self._operations = 0
         self.committed: list[ref.Command] = []  # commands that committed: the interesting ones to retry
-        self.baseline_audit = self.observe()["counts"]["audit"]
+        baseline = self.observe()
+        self.baseline_audit = baseline["counts"]["audit"]
+        self.baseline_events = baseline["observations"]["events"]
 
     def teardown(self) -> None:
         self._scratch.__exit__(None, None, None)
@@ -263,7 +265,20 @@ class PreviewRuntimeMachine(RuleBasedStateMachine):
         audit = [(e["kind"], e["body"]["operation_id"], e["body"]["actor_id"], e["body"]["instance_id"])
                  for e in seen["observations"]["events"] if e["kind"].startswith("Audit:")]
         assert audit == model.audit
-        assert seen["counts"]["audit"] - self.baseline_audit == len(model.audit)
+        events = seen["observations"]["events"]
+        assert events[:len(self.baseline_events)] == self.baseline_events
+        edits = [event["body"] for event in events if event["kind"] == "SemanticEdited"]
+        expected_edits = [
+            {"by": OWNER.id, "from_version": before, "to_version": after,
+             "transaction": {"kind": "retarget_transition", "transition": "TR-REJECT", "end": "source", "state": source},
+             "discarded_redo": []}
+            for before, after, source in model.semantic_edits
+        ]
+        assert len(edits) == len(expected_edits)
+        assert [{key: body.get(key) for key in expected} for body, expected in zip(edits, expected_edits, strict=True)] == expected_edits
+        assert all(body["time"] for body in edits)
+        # Exact total remains a guard against unclassified or duplicated durable effects.
+        assert seen["counts"]["audit"] - self.baseline_audit == len(model.audit) + len(model.semantic_edits)
         outbox = {(r["operation_id"], r["kind"]) for r in seen["observations"]["outbox"]}
         assert outbox == model.outbox and seen["counts"]["outbox"] == len(model.outbox)
         assert seen["operations"] == set(model.operations) and seen["counts"]["operations"] == len(model.operations)
@@ -290,3 +305,22 @@ def test_kernel_agrees_with_reference_model():
     MAIN_OUTCOMES.update(OUTCOMES)
     missing = REQUIRED_OUTCOMES - set(OUTCOMES)
     assert not missing, f"the generated sequences never reached: {sorted(missing)}"
+
+
+@settings(max_examples=1)
+@given(st.none())
+def test_runtime_and_semantic_edit_audits_are_both_accounted_for(_):
+    """ADR-0148 authoring events add to, rather than replace, independently predicted runtime effects."""
+    machine = PreviewRuntimeMachine()
+    try:
+        instance = machine.first_instance(None)
+        machine.send(machine.command(instance, "teacher-assigned", "Submit", 0))
+        machine.edit_rejection_source("Recommended", True, 0)  # accepted no-op still has provenance
+        machine.edit_rejection_source("Submitted", True, 0)
+        machine.edit_rejection_source("Recommended", False, 0)  # refused owner capability
+        machine.edit_rejection_source("Recommended", True, 1)  # refused stale version
+        machine.durable_state_matches_reference()
+        assert len(machine.reference.audit) == 1
+        assert len(machine.reference.semantic_edits) == 2
+    finally:
+        machine.teardown()

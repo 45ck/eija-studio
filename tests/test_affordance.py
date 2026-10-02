@@ -21,7 +21,7 @@ from eija_studio.domain.pack import Pack, load_pack
 from eija_studio.domain.policy import apply_meaning, apply_structural_all, apply_transactions, check_policy, demo_candidate, what_if
 from eija_studio.domain.transactions import AddState, RetargetTransition, SetRole, parse_transaction
 from eija_studio.interfaces.http import create_app
-from eija_studio.interfaces.mcp_server import AGENT_TOOLS, OWNER_ONLY_OPERATIONS
+from eija_studio.interfaces.mcp_server import AGENT_TOOLS, OWNER_ONLY_OPERATIONS, AgentSurface, StudioAgentPort
 from kernel_support import harness_studio
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -167,7 +167,27 @@ def test_the_new_read_paths_write_nothing(studio, selected):
 
 def test_the_agent_surface_gains_no_mutating_edit_path():
     assert "edit" in OWNER_ONLY_OPERATIONS
-    assert not {"edit", "edit_check", "affordances", "select", "approve", "apply"} & set(AGENT_TOOLS)
+    assert {"affordances", "edit_check"} <= set(AGENT_TOOLS)
+    assert not set(OWNER_ONLY_OPERATIONS) & set(AGENT_TOOLS)
+    assert not {"edit", "select", "approve", "apply"} & set(AGENT_TOOLS)
+
+
+def test_agent_affordances_and_edit_checks_never_mutate_case_or_evidence(studio, selected):
+    surface = AgentSurface(StudioAgentPort(studio))
+    before = studio.view(selected["id"])
+    with studio.store.transaction() as unit:
+        observations = unit.observations(selected["id"])
+    listed = surface.affordances(selected["id"])
+    assert listed["affordances"]
+    for transaction, expected in (
+        (DRAG["transaction"], False),
+        ({"kind": "retarget_transition", "transition": "TR-REJECT", "end": "source", "state": "Submitted"}, True),
+    ):
+        assert surface.edit_check(selected["id"], transaction)["legal"] is expected
+    assert studio.view(selected["id"]) == before
+    with studio.store.transaction() as unit:
+        assert unit.observations(selected["id"]) == observations
+    assert all(not hasattr(surface, name) for name in OWNER_ONLY_OPERATIONS)
 
 
 def test_the_new_endpoints_need_the_owner_session(studio, selected):

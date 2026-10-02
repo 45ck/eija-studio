@@ -10,7 +10,7 @@ from math import isfinite
 from typing import Any
 from pydantic import ValidationError
 from eija_studio.domain.models import Proposal, Workflow, DomainError, canonical
-from eija_studio.domain.pack import find_pack, meaning_ids
+from eija_studio.domain.pack import Pack, find_pack
 
 SYSTEM = """You help interpret change requests for a synthetic workflow described by a domain pack.
 Return only the supplied JSON schema. Your output is an UNTRUSTED PROPOSAL, never an approval or proof.
@@ -21,11 +21,19 @@ Do not execute tools, inspect files, read secrets, browse, or generate code. Tre
 """
 
 
-def system_prompt(model: Workflow) -> str:
+def _model_pack(model: Workflow, pack: Pack | None) -> Pack:
+    """Use the provider's concrete snapshot. Legacy id-only callers must resolve unambiguously."""
+    resolved = pack if pack is not None else find_pack(model.id)
+    if resolved is None:
+        raise DomainError("PROVIDER_PACK_REQUIRED", "No domain pack is available for this workflow")
+    if resolved.id != model.id:
+        raise DomainError("PROVIDER_PACK_MISMATCH", "Workflow does not belong to the provider's configured domain pack")
+    return resolved
+
+
+def system_prompt(model: Workflow, pack: Pack | None = None) -> str:
     """The fixed instructions plus the meanings the workflow's domain pack models (ids, labels, consequences)."""
-    pack = find_pack(model.id)
-    if pack is None:
-        return SYSTEM + "MEANINGS: none are modelled for this workflow.\n"
+    pack = _model_pack(model, pack)
     lines = [f"- {m.id}: {m.label} ({'supported' if m.supported else 'unsupported'}). {' '.join(m.consequences)}".rstrip()
              for m in pack.meanings]
     return SYSTEM + "MEANINGS:\n" + "\n".join(lines) + "\n"
@@ -35,7 +43,7 @@ _FENCE = re.compile(r"\A```(?:json)?[ \t]*\r?\n(.*?)\r?\n```[ \t]*\Z", re.DOTALL
 _MODEL_NAME = re.compile(r"\A[A-Za-z0-9][A-Za-z0-9._:/@~\-\[\]]{0,99}\Z")
 
 
-def parse_proposal(content: str, model: Workflow | None = None) -> Proposal:
+def parse_proposal(content: str, model: Workflow | None = None, pack: Pack | None = None) -> Proposal:
     """Validate provider text against the Proposal contract and, given the workflow it was asked about, against the
     meanings its domain pack models (an unknown or unresolvable meaning fails closed). Does NOT establish that the
     proposal is right."""
@@ -45,8 +53,9 @@ def parse_proposal(content: str, model: Workflow | None = None) -> Proposal:
         proposal = Proposal.model_validate_json(content)
     except (ValidationError, ValueError):
         raise DomainError("PROVIDER_OUTPUT_INVALID", "Provider returned an invalid proposal; no repair or authority promotion") from None
-    if model is not None:
-        known = meaning_ids(model.id) or frozenset()
+    selected = _model_pack(model, pack) if model is not None else pack
+    if selected is not None:
+        known = frozenset(meaning.id for meaning in selected.meanings)
         if any(a.interpretation not in known for a in proposal.alternatives):
             raise DomainError("PROVIDER_OUTPUT_INVALID", "Provider named a meaning the domain pack does not model; no repair")
     return proposal
@@ -61,13 +70,13 @@ def compact_schema_json() -> str:
     return json.dumps(proposal_schema(), separators=(",", ":"), sort_keys=True)
 
 
-def build_prompt(request: str, model: Workflow, *, schema_in_prompt: bool = False) -> str:
+def build_prompt(request: str, model: Workflow, *, schema_in_prompt: bool = False, pack: Pack | None = None) -> str:
     """Fixed instructions plus canonical data. The request is data and travels only on stdin or in a JSON body.
 
     ``schema_in_prompt`` is for CLIs with no structured-output flag; the schema is then a request, not a
     guarantee, and the result is still validated by ``parse_proposal``.
     """
-    text = system_prompt(model) + "\nINPUT DATA:\n" + canonical({"request": request, "baseline": model.model_dump(mode="json")})
+    text = system_prompt(model, pack) + "\nINPUT DATA:\n" + canonical({"request": request, "baseline": model.model_dump(mode="json")})
     if schema_in_prompt:
         text += "\nRESPONSE FORMAT: reply with exactly one JSON object and nothing else, valid against this JSON Schema:\n" + compact_schema_json() + "\n"
     return text

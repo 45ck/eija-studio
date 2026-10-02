@@ -60,6 +60,8 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0105](0105-weave-human-views.md) | Human views: eight task-driven, budgeted, deterministic projections of the weave graph, with counts that compose and no whole-graph picture | proposed |
 | [0145](0145-per-kind-evidence-admissibility.md) | Per-kind admissibility: the kernel recomputes formal evidence from raw artifacts | proposed |
 | [0146](0146-formal-receipt-formats-binding-and-not-run.md) | Formal receipt formats, binding to the subject, and NOT_RUN semantics | proposed |
+| [0147](0147-source-connected-self-dogfood.md) | Source-connected self-dogfooding with explicit coverage | accepted for the local development slice |
+| [0148](0148-semantic-history-by-replay.md) | Semantic undo and redo by replaying existing typed commands | accepted for the local owner workbench |
 <!-- adr-index:end -->
 
 ## Reserved numbers for capability lanes

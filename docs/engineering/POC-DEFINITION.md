@@ -1,5 +1,15 @@
 # Definition of done: the end-to-end proof of concept
 
+## Current scope update: 2 October 2026
+
+The next acceptance milestone is the **EIJA self-dogfood workbench** for UML-literate engineers using coding agents. Connect EIJA's own checkout read-only, inspect supported tracked Python and annotated UI links, navigate the domain tree, and exercise server-checked SVG model edits with honest repository-impact and evidence views. The MCP read surface supplies pack context, affordances, edit checks and repository impact. See [SELF-DOGFOOD-ACCEPTANCE.md](SELF-DOGFOOD-ACCEPTANCE.md) for required observations, milestone status and the current run record.
+
+This milestone does not transform arbitrary source code, complete every deferred formal backend, or establish improved human comprehension. External application connections follow EIJA's acceptance; live model validation and the engineer study remain NOT_RUN until their own records exist. The release-source review condition must stay visible.
+
+## Historical H1a definition: 29 September 2026
+
+The criteria and exclusions below preserve the earlier excursion-only H1a plan. In particular, the former workbench/diagram-editing exclusions are superseded for the current self-dogfood milestone above. They are not evidence that either milestone has passed.
+
 The POC is done when a stranger can clone the repository, run it on their machine, and watch an AI agent's change to a business rule be reviewed **by meaning**, with generated diagrams, formal evidence (UNKNOWN visible) and a human decision. It is deliberately the "H1a" slice of [the ship horizons](LANE-MAP.md): a bounded domain (the excursion workflow), not yet arbitrary repositories. See [the product thesis](PRODUCT-THESIS.md) for why.
 
 ## Acceptance criteria

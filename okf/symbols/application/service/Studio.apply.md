@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.apply
   title: application/service.py
   hash_method: ast-v2
-  sha256: c9bcc51bb275d1cefc1560f4a2d9106dd62af1b3c817f260854d80e4b08f8873
+  sha256: 2b1d1b0e39f3ac6384da2ed8922af411b422ff7cf9203abfcee44764639c1a37
 description_override: Applies an approved candidate to the local baseline only if an eligible, authentic, exact-subject decision exists.
-notes_baseline: ca2a11fdbb4c4f097688f5edebe043fbdb79a703f796a996e98eda67fb3f7a0c
+notes_baseline: f3fe728d004fdf9381dbdb0a3820463ff787d783299933a1d9f3a36bcb10f0a7
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -26,6 +26,10 @@ verified:
   at: '2026-09-29T08:20:47Z'
   notes_sha256: 54d1699727ddc6215c45a311cfd5ca0d7b2baec089d1da3d52e339a74175fd64
   sources_sha256: ca2a11fdbb4c4f097688f5edebe043fbdb79a703f796a996e98eda67fb3f7a0c
+- by: process:codex-ide-integration
+  at: '2026-10-02T05:15:30Z'
+  notes_sha256: 54d1699727ddc6215c45a311cfd5ca0d7b2baec089d1da3d52e339a74175fd64
+  sources_sha256: f3fe728d004fdf9381dbdb0a3820463ff787d783299933a1d9f3a36bcb10f0a7
 ---
 
 # application.service.Studio.apply

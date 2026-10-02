@@ -300,45 +300,80 @@ def parse_pack(document: Any) -> Pack:
     return pack
 
 
-def _read(path: Path) -> Any:
+def _read_text(path: Path) -> str:
     try:
-        text = path.read_text(encoding="utf-8")
+        return path.read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError) as error:
         raise PackError([f"{path.name}: cannot be read ({type(error).__name__})"]) from None
+
+
+def _decode(text: str, name: str) -> Any:
     try:
         return json.loads(text)
     except json.JSONDecodeError as error:
-        raise PackError([f"{path.name}: invalid JSON at line {error.lineno} column {error.colno}"]) from None
+        raise PackError([f"{name}: invalid JSON at line {error.lineno} column {error.colno}"]) from None
     except RecursionError:
-        raise PackError([f"{path.name}: nesting too deep"]) from None
+        raise PackError([f"{name}: nesting too deep"]) from None
 
 
-_LOADED: dict[str, Pack] = {}
+def _read(path: Path) -> Any:
+    return _decode(_read_text(path), path.name)
+
+
+_LOADED: dict[tuple[str, str], Pack] = {}
+_SOURCES: dict[Path, str] = {}
 
 
 def load_pack(location: str | Path) -> Pack:
-    """Load a pack from a directory holding ``pack.json`` or from the file itself."""
+    """Read current file contents and retain an immutable, digest-addressed pack snapshot."""
     path = Path(location)
-    pack = parse_pack(_read(path / PACK_FILE if path.is_dir() else path))
-    _LOADED[pack.id] = pack
+    path = (path / PACK_FILE if path.is_dir() else path).resolve()
+    pack = _cached(_read_text(path), path.name)
+    _LOADED[pack.id, pack.digest] = pack
+    _SOURCES[path] = pack.id
     return pack
 
 
-def find_pack(pack_id: str) -> Pack | None:
-    """The pack a workflow belongs to (``Workflow.id``): a pack loaded in this process, else the repository pack of
-    that id. None when no such pack can be found."""
-    pack = _LOADED.get(pack_id)
-    if pack is None and re.fullmatch(PACK_ID, pack_id) and (PACKS_ROOT / pack_id / PACK_FILE).is_file():
-        try:
-            pack = load_pack(PACKS_ROOT / pack_id)
-        except PackError:
-            return None
-    return pack
+def _refresh_sources(pack_id: str) -> None:
+    paths = {path for path, identity in _SOURCES.items() if identity == pack_id}
+    repository_file = PACKS_ROOT / pack_id / PACK_FILE
+    if re.fullmatch(PACK_ID, pack_id) and repository_file.is_file():
+        paths.add(repository_file.resolve())
+    for path in sorted(paths):
+        load_pack(path)
 
 
-def meaning_ids(pack_id: str) -> frozenset[str] | None:
+def _unique_snapshot(pack_id: str) -> Pack | None:
+    if pack_id not in _SOURCES.values():
+        return None
+    matches = [pack for (identity, _), pack in _LOADED.items() if identity == pack_id]
+    if len(matches) > 1:
+        raise DomainError("PACK_IDENTITY_REQUIRED", "Multiple contents were loaded for this pack id; supply the reviewed pack digest")
+    return matches[0] if matches else None
+
+
+def find_pack(pack_id: str, *, digest: str | None = None) -> Pack | None:
+    """Resolve a loaded snapshot by digest, or an unambiguous id after refreshing its sources.
+
+    An id alone cannot select between different observed contents, even when their model/version matches.
+    Ambiguity raises ``PACK_IDENTITY_REQUIRED`` rather than letting load order select policy or meanings.
+    """
+    if digest is not None and (pack := _LOADED.get((pack_id, digest))) is not None:
+        return pack
+    try:
+        _refresh_sources(pack_id)
+    except PackError:
+        if any(identity == pack_id for identity in _SOURCES.values()):
+            raise
+        return None
+    if digest is not None:
+        return _LOADED.get((pack_id, digest))
+    return _unique_snapshot(pack_id)
+
+
+def meaning_ids(pack_id: str, *, digest: str | None = None) -> frozenset[str] | None:
     """The meaning ids of the pack a workflow belongs to, or None when no such pack can be found."""
-    pack = find_pack(pack_id)
+    pack = find_pack(pack_id, digest=digest)
     return None if pack is None else frozenset(m.id for m in pack.meanings)
 
 
@@ -355,10 +390,10 @@ def default_location() -> Path:
 
 
 @lru_cache(maxsize=8)
-def _cached(location: str) -> Pack:
-    return load_pack(location)
+def _cached(text: str, name: str) -> Pack:
+    return parse_pack(_decode(text, name))
 
 
 def default_pack() -> Pack:
-    """The configured pack (cached per location)."""
-    return _cached(str(default_location().resolve()))
+    """The configured pack, reread on every call and validated from a content-keyed cache."""
+    return load_pack(default_location())

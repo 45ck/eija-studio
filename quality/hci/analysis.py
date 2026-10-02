@@ -497,7 +497,8 @@ def keyboard(kb_pass: dict) -> dict:
         "stops_without_indicator_count": len(no_ring),
         "focus_order_regression_count": len(regressions),
         "tab_presses_spent_after_focus_loss": tabs_after_loss,
-        "note": "Real Tab / Shift-free forward traversal; focus indicator = computed outline or box-shadow on the focused element; "
+        "note": "Real Tab traversal plus Arrow/Home navigation within tablists; every navigation and activation key is recorded; "
+        "focus indicator = computed outline or box-shadow on the focused element; "
         "'focus lost' = document.activeElement is <body> once the DOM settled after activation",
     }
 
@@ -512,6 +513,8 @@ def _memory_row(name: str, v: dict) -> dict[str, Any]:
         "chunks_viewport": c["chunks"],
         "chunks_page": v["chunks_page"]["chunks"],
         "atoms_viewport": c["atoms"],
+        "raw_chunks_viewport": c.get("raw", {}).get("chunks"),
+        "excluded_clipped_chunks": c.get("excluded_clipped", {}).get("chunks"),
         "over_miller_9": c["chunks"] > laws.MILLER_UPPER,
         "over_cowan_4": c["chunks"] > laws.COWAN_LIMIT,
     }
@@ -521,8 +524,10 @@ def working_memory(pass0: dict) -> dict:
     rows = [_memory_row(name, v) for name, v in sorted(pass0["views"].items())]
     return {
         "label": "HEURISTIC PROXY - counts what is simultaneously visible, not what a person holds in memory",
-        "definition": "chunks = visible operable controls (a checkbox and its label are one) + groups of visible static text/heading atoms "
-        "that share a parent element; viewport = first screen at scroll top, page = whole rendered view",
+        "definition": "chunks = visible controls, including disabled controls (a checkbox and its label are one), + groups of visible static text/heading atoms "
+        "that share a parent element; viewport = first screen at scroll top, page = whole rendered view. "
+        "Independent pane overflow clips are intersected; partially visible items still count. "
+        "Raw layout-box counts and clipped exclusions are retained; absent values identify older traces without this accounting.",
         "citations": ["Miller 1956 (7 +/- 2)", "Cowan 2001 (about 4)"],
         "views": rows,
         "summary": {

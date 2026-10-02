@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio
   title: application/service.py
   hash_method: ast-sig-v1
-  sha256: cd7c5ed421067ad8d09ba5cfd4acf64143ebaceba1b3f5c352b55a2e2402cb10
+  sha256: fbf31f54a744decb5b2ba6cd2f92843e2d23ab201cfa1c8dbf36ac7f7e880e63
 description_override: 'The Studio use cases: create, propose, select, edit, verify, approve, apply and execute over a Change Case.'
-notes_baseline: 4f1379e816c3db01e064ea1774ef7e83c46d346fc9b7858122a08feecd7f7f2e
+notes_baseline: 3df72f8f0cc5aaff4076130e21ce81c50640f9a33e0aee011b83899f9cfe5c12
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -26,6 +26,14 @@ verified:
   at: '2026-09-29T08:20:47Z'
   notes_sha256: d780f3dd51d7e77169dee305e138faf80bb4360a4c2594b58856017214392bdb
   sources_sha256: 4f1379e816c3db01e064ea1774ef7e83c46d346fc9b7858122a08feecd7f7f2e
+- by: process:codex-self-dogfood
+  at: '2026-10-02T04:33:54Z'
+  notes_sha256: 26c4b5cbf900e43a57627ae6075dc53ebea1fefb4efd8227fa8469adda531127
+  sources_sha256: cfe3a845cd089e70d754fb5fcbbc3e47df7e03d4c63a1bd47bf7062734b290bd
+- by: process:codex-ide-integration
+  at: '2026-10-02T05:15:30Z'
+  notes_sha256: 62abfebc9050ce78dc72bca0ce8709f948bb279a3ae739fb3ead2be83da4a912
+  sources_sha256: 3df72f8f0cc5aaff4076130e21ce81c50640f9a33e0aee011b83899f9cfe5c12
 ---
 
 # application.service.Studio
@@ -55,19 +63,36 @@ _The source carries no docstring._
 * [`execute`](/symbols/application/service/Studio.execute.md) - `def execute(self, case_id: str, command: ExecuteCommand, fault: Callable[[str], None] \| None=None) -> dict[str, Any]`
 * [`export`](/symbols/application/service/Studio.export.md) - `def export(self, case_id: str) -> dict[str, Any]`
 * [`formal_view`](/symbols/application/service/Studio.formal_view.md) - `def formal_view(self, model: Workflow) -> dict[str, Any]`
+* [`history`](/symbols/application/service/Studio.history.md) - `def history(self, case_id: str) -> dict[str, Any]`
 * [`layout`](/symbols/application/service/Studio.layout.md) - `def layout(self, case_id: str, expected: int, change: LayoutChange, principal: Principal) -> dict[str, Any]`
 * [`propose`](/symbols/application/service/Studio.propose.md) - `def propose(self, case_id: str, expected: int, *, consent: bool=False) -> dict[str, Any]`
+* [`redo`](/symbols/application/service/Studio.redo.md) - `def redo(self, case_id: str, expected: int, principal: Principal) -> dict[str, Any]`
+* [`repository_impact`](/symbols/application/service/Studio.repository_impact.md) - `def repository_impact(self, term: str) -> dict[str, Any]`
+* [`repository_source`](/symbols/application/service/Studio.repository_source.md) - `def repository_source(self, reference: str) -> dict[str, Any]`
 * [`reset_preview`](/symbols/application/service/Studio.reset_preview.md) - `def reset_preview(self, case_id: str, expected: int, state: str \| None=None) -> dict[str, Any]`
 * [`save`](/symbols/application/service/Studio.save.md) - `def save(self, case_id: str, expected: int) -> dict[str, Any]`
 * [`select`](/symbols/application/service/Studio.select.md) - `def select(self, case_id: str, expected: int, interpretation: str, principal: Principal) -> dict[str, Any]`
+* [`undo`](/symbols/application/service/Studio.undo.md) - `def undo(self, case_id: str, expected: int, principal: Principal) -> dict[str, Any]`
 * [`verify`](/symbols/application/service/Studio.verify.md) - `def verify(self, case_id: str, expected: int) -> dict[str, Any]`
 * [`view`](/symbols/application/service/Studio.view.md) - `def view(self, case_id: str, scope: str='local-demo') -> dict[str, Any]`
+* [`workbench`](/symbols/application/service/Studio.workbench.md) - `def workbench(self) -> dict[str, Any]`
 * [`workflows`](/symbols/application/service/Studio.workflows.md) - `def workflows(self, case_id: str) -> tuple[Workflow, Workflow \| None]`
 <!-- okf:generated:end facts -->
 
 ## Notes
 
 Every mutation runs inside one unit of work with version checks. Governance methods require a [Principal](/symbols/domain/models/Principal.md) capability; verification and approval are separate steps and neither implies apply ([Local Decision](/language/local-decision.md)).
+
+`workbench` reads pack declarations and the active baseline, alongside an optional
+repository snapshot through the application-owned repository port. `repository_impact`
+returns the closure of known source links. `repository_source` opens bounded text from
+an authorized captured reference. These reads do not edit source, establish
+model/implementation equivalence, produce verification receipts or grant owner authority.
+
+Semantic edit, undo and redo use the existing interpreter with a protected atomic
+meaning prefix. They create new case versions, append command provenance and clear
+decisions while retaining receipts, baseline and layout. `history` reconstructs
+semantic snapshots from commands; it does not invent timestamps for legacy edits.
 
 <!-- okf:generated:begin links -->
 ## Depends on
@@ -78,6 +103,7 @@ Every mutation runs inside one unit of work with version checks. Governance meth
 * [application.ports.ReceiptAuthenticator](/symbols/application/ports/ReceiptAuthenticator.md) - `class ReceiptAuthenticator(Protocol)` in `application/ports`.
 * [application.ports.Repository](/symbols/application/ports/Repository.md) - `class Repository(Protocol)` in `application/ports`.
 * [application.ports.SandboxFactory](/symbols/application/ports/SandboxFactory.md) - Type alias `SandboxFactory` in `application/ports`.
+* [application.repository.RepositorySource](/symbols/application/repository/RepositorySource.md) - Evidence about one explicitly configured checkout and its declared domain bindings.
 * [domain.models.ExecuteCommand](/symbols/domain/models/ExecuteCommand.md) - `class ExecuteCommand(Contract)` in `domain/models`.
 * [domain.models.LayoutChange](/symbols/domain/models/LayoutChange.md) - `class LayoutChange(Contract)` in `domain/models`.
 * [domain.models.Principal](/symbols/domain/models/Principal.md) - `class Principal(Contract)` in `domain/models`.
@@ -97,12 +123,18 @@ Every mutation runs inside one unit of work with version checks. Governance meth
 * [application.service.Studio.execute](/symbols/application/service/Studio.execute.md) - `def execute(self, case_id: str, command: ExecuteCommand, fault: Callable[[str], None] | None=None) -> dict[st…` in `application/service`.
 * [application.service.Studio.export](/symbols/application/service/Studio.export.md) - `def export(self, case_id: str) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.formal_view](/symbols/application/service/Studio.formal_view.md) - Formal evidence for a bare workflow (``eija compile``): collected and sealed in memory, never stored, never a decision.
+* [application.service.Studio.history](/symbols/application/service/Studio.history.md) - Reconstructed semantic revisions and append-only command audit; never changes the case.
 * [application.service.Studio.layout](/symbols/application/service/Studio.layout.md) - `def layout(self, case_id: str, expected: int, change: LayoutChange, principal: Principal) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.propose](/symbols/application/service/Studio.propose.md) - `def propose(self, case_id: str, expected: int, *, consent: bool=False) -> dict[str, Any]` in `application/service`.
+* [application.service.Studio.redo](/symbols/application/service/Studio.redo.md) - Reapply the next undone typed command through the same interpreter and policy checks.
+* [application.service.Studio.repository_impact](/symbols/application/service/Studio.repository_impact.md) - Known repository links only.
+* [application.service.Studio.repository_source](/symbols/application/service/Studio.repository_source.md) - Bounded source view from the configured repository's captured nodes; no arbitrary path or execution.
 * [application.service.Studio.reset_preview](/symbols/application/service/Studio.reset_preview.md) - `def reset_preview(self, case_id: str, expected: int, state: str | None=None) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.save](/symbols/application/service/Studio.save.md) - `def save(self, case_id: str, expected: int) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.select](/symbols/application/service/Studio.select.md) - `def select(self, case_id: str, expected: int, interpretation: str, principal: Principal) -> dict[str, Any]` in `application/service`.
+* [application.service.Studio.undo](/symbols/application/service/Studio.undo.md) - Undo the last owner semantic edit; the selected meaning remains an indivisible protected prefix.
 * [application.service.Studio.verify](/symbols/application/service/Studio.verify.md) - `def verify(self, case_id: str, expected: int) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.view](/symbols/application/service/Studio.view.md) - `def view(self, case_id: str, scope: str='local-demo') -> dict[str, Any]` in `application/service`.
+* [application.service.Studio.workbench](/symbols/application/service/Studio.workbench.md) - Current pack declarations and baseline, with separately labelled read-only repository facts.
 * [application.service.Studio.workflows](/symbols/application/service/Studio.workflows.md) - Baseline and candidate of a case, for read-only projections (diagrams).
 <!-- okf:generated:end links -->

@@ -7,6 +7,8 @@ gate; a planted ``Literal`` fails it even inside an allowlisted file; each exclu
 from __future__ import annotations
 
 import json
+
+import pytest
 from pathlib import Path
 
 from quality.gates import vocabulary as V
@@ -72,3 +74,72 @@ def test_main_exits_nonzero_on_a_finding_and_zero_on_the_real_tree(tmp_path, cap
     assert V.main(["--root", str(root)]) == 1
     assert "scripts/x.py:1: word 'picker-1'" in capsys.readouterr().out
     assert V.main([]) == 0
+
+
+# Kernel vocabulary is source-owned only through a reviewed export and an exact pack binding.
+# These fixtures intentionally use foreign domain words as the exports to prove provenance handling.
+
+def _bind_orchard(root: Path, binding: str) -> None:
+    path = root / "packs/orchard/pack.json"
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    doc["language"] = {"terms": [{"binds": [binding]}]}
+    path.write_text(json.dumps(doc), encoding="utf-8")
+
+
+def test_bound_kernel_enum_is_grounded_without_exempting_other_domain_tokens(tmp_path, monkeypatch):
+    monkeypatch.setattr(V, "KERNEL_EXPORTS", {"src/app/contracts.py#Review": "stage_enum"})
+    root = _tree(tmp_path, {
+        "src/app/contracts.py": 'from typing import Literal\nclass Review:\n    stage: Literal["Blossom"]\n',
+        "src/app/policy.py": 'stage = "Blossom"\nrole = "Picker"\n',
+    })
+    _bind_orchard(root, "repo://src/app/contracts.py#Review")
+    assert [(finding.path, finding.token) for finding in V.scan(root)] == [("src/app/policy.py", "Picker")]
+
+
+def test_a_self_binding_never_exempts_another_packs_shared_token(tmp_path, monkeypatch):
+    monkeypatch.setattr(V, "KERNEL_EXPORTS", {"src/app/contracts.py#Review": "stage_enum"})
+    root = _tree(tmp_path, {
+        "src/app/contracts.py": 'from typing import Literal\nclass Review:\n    stage: Literal["Blossom"]\n',
+    })
+    _bind_orchard(root, "repo://src/app/contracts.py#Review")
+    foreign = root / "packs/foreign/pack.json"
+    foreign.parent.mkdir()
+    foreign.write_text(json.dumps(PACK), encoding="utf-8")
+    assert V.pack_tokens(root / "packs")["Blossom"] == {"foreign"}
+    assert {(finding.token, finding.kind) for finding in V.scan(root)} == {
+        ("Blossom", "literal"), ("Blossom", "word"),
+    }
+
+
+@pytest.mark.parametrize("source,binding", [
+    ('class Renamed:\n    stage = "Blossom"\n', "repo://src/app/contracts.py#Review"),
+    ('invalid syntax!', "repo://src/app/contracts.py#Review"),
+    ('class Review:\n    note = "Blossom"\n', "repo://src/app/contracts.py#Review"),
+    ('class Review:\n    stage = "Blossom"\n', "repo://src/app/contracts.py#Missing"),
+])
+def test_unproven_or_stale_exports_cannot_exempt_a_planted_token(tmp_path, monkeypatch, source, binding):
+    monkeypatch.setattr(V, "KERNEL_EXPORTS", {"src/app/contracts.py#Review": "stage_enum"})
+    root = _tree(tmp_path, {"src/app/contracts.py": source, "src/app/policy.py": 'stage = "Blossom"\n'})
+    _bind_orchard(root, binding)
+    assert any((finding.path, finding.token) == ("src/app/policy.py", "Blossom") for finding in V.scan(root))
+
+
+def test_method_labels_require_an_exact_reviewed_source_binding(tmp_path, monkeypatch):
+    monkeypatch.setattr(V, "KERNEL_EXPORTS", {"src/app/service.py#Review": "method_labels"})
+    root = _tree(tmp_path, {
+        "src/app/service.py": 'class Review:\n    def pick(self):\n        note = "Picker"\n',
+        "src/app/use.py": 'action = "Pick"\n',
+    })
+    _bind_orchard(root, "repo://src/app/service.py#Review.pick")
+    assert [(finding.token, finding.path) for finding in V.scan(root)] == [("Picker", "src/app/service.py")]
+    _bind_orchard(root, "repo://src/app/service.py#Review")
+    assert any(finding.token in {"Pick"} for finding in V.scan(root))
+
+
+def test_missing_source_and_forged_export_path_fail_closed(tmp_path, monkeypatch):
+    root = _tree(tmp_path, {"src/app/policy.py": 'stage = "Blossom"\n'})
+    monkeypatch.setattr(V, "KERNEL_EXPORTS", {"src/missing.py#Review": "stage_enum"})
+    _bind_orchard(root, "repo://src/missing.py#Review")
+    assert "Blossom" in V.pack_tokens(root / "packs")
+    monkeypatch.setattr(V, "KERNEL_EXPORTS", {"../outside.py#Review": "stage_enum"})
+    assert V.kernel_exports(root) == {}

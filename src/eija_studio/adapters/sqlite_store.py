@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS instances(id TEXT PRIMARY KEY, case_id TEXT NOT NULL,
 CREATE TABLE IF NOT EXISTS operations(id TEXT PRIMARY KEY, binding TEXT NOT NULL, body TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS audit(seq INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT NOT NULL, body TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS outbox(id TEXT PRIMARY KEY, case_id TEXT NOT NULL, operation_id TEXT NOT NULL, kind TEXT NOT NULL, body TEXT NOT NULL);
-CREATE TABLE IF NOT EXISTS pack_info(id INTEGER PRIMARY KEY CHECK(id=1), pack TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS pack_info(id INTEGER PRIMARY KEY CHECK(id=1), pack TEXT NOT NULL, digest TEXT NOT NULL);
 """
 
 
@@ -115,26 +115,50 @@ class SQLiteStore:
         self.durability = durability
         self.pack = pack if pack is not None else default_pack()
         self.directory = Path(directory).resolve()
-        self.directory.mkdir(parents=True, exist_ok=True, mode=0o700)
         self.path = self.directory / "studio.sqlite3"
+        self._preflight()
+        self.directory.mkdir(parents=True, exist_ok=True, mode=0o700)
         with self.connection() as db:
             db.executescript(SCHEMA)
             row = db.execute("SELECT version FROM schema_info").fetchone()
-            if row and row[0] != 1:
-                raise DomainError("SCHEMA_MIGRATION_REQUIRED", "Unsupported database version; export before upgrading")
+            if row and row[0] != 2:
+                raise DomainError("SCHEMA_MIGRATION_REQUIRED", "Unsupported database version; source review and explicit migration required")
             if row is None:
-                db.execute("INSERT INTO schema_info VALUES(1)")
+                db.execute("INSERT INTO schema_info VALUES(2)")
             self._seed(db)
         try:
             os.chmod(self.directory, 0o700); os.chmod(self.path, 0o600)
         except OSError:
             pass  # Windows ACLs require a separate platform review.
 
+    def _preflight(self) -> None:
+        """Refuse incompatible identity before schema, seed, journal settings or permission changes.
+
+        Read-only SQLite may create lock sidecars; it must see committed WAL data so the CLI,
+        server and MCP can safely share a workspace. No immutable-mode stale snapshot is used.
+        """
+        if not self.path.exists():
+            return
+        try:
+            with closing(sqlite3.connect(self.path.as_uri() + "?mode=ro", uri=True)) as db:
+                versions = db.execute("SELECT version FROM schema_info").fetchall()
+                if versions != [(2,)]:
+                    raise DomainError("SCHEMA_MIGRATION_REQUIRED", "Workspace lacks a verified pack digest; source review and explicit migration required")
+                self._check_pack(db)
+        except sqlite3.DatabaseError:
+            raise DomainError("SCHEMA_MIGRATION_REQUIRED", "Workspace identity cannot be verified; source review and explicit migration required") from None
+
+    def _check_pack(self, db: sqlite3.Connection) -> None:
+        rows = db.execute("SELECT pack,digest FROM pack_info WHERE id=1").fetchall()
+        if len(rows) != 1 or not rows[0][1]:
+            raise DomainError("SCHEMA_MIGRATION_REQUIRED", "Workspace lacks a verified pack digest; source review and explicit migration required")
+        if tuple(rows[0]) != (self.pack.id, self.pack.digest):
+            raise DomainError("PACK_MISMATCH", "Workspace pack id or contents differ; use the original pack or an explicitly reviewed migration")
+
     def _seed(self, db: sqlite3.Connection) -> None:
-        """Seed a new workspace from the pack (baseline, synthetic actors); refuse to open one made for another pack."""
-        db.execute("INSERT OR IGNORE INTO pack_info VALUES(1,?)", (self.pack.id,))
-        if db.execute("SELECT pack FROM pack_info WHERE id=1").fetchone()[0] != self.pack.id:
-            raise DomainError("PACK_MISMATCH", "This workspace was created for another domain pack")
+        """Bind new workspaces to the exact pack before seeding baseline and synthetic actors."""
+        db.execute("INSERT OR IGNORE INTO pack_info VALUES(1,?,?)", (self.pack.id, self.pack.digest))
+        self._check_pack(db)
         db.execute("INSERT OR IGNORE INTO active VALUES(1,0,?)", (canonical(self.pack.model),))
         db.executemany("INSERT OR IGNORE INTO actors VALUES(?,?,?,?)", fixture_actors(self.pack))
 

@@ -1,6 +1,6 @@
 # EIJA repository agent instructions
 
-Read README.md, docs/TECHNICAL_LEAD_REVIEW.md, docs/SECURITY_AND_TRUST.md and the acceptance matrix before proposing changes. This is a bounded local excursion POC, not a universal compiler.
+Read README.md, docs/TECHNICAL_LEAD_REVIEW.md, docs/SECURITY_AND_TRUST.md and the acceptance matrix before proposing changes. Build a complete, polished local code/model IDE for UML-literate engineers using AI, with explicit supported semantics. The current acceptance target is EIJA's own checkout; connect it read-only before extending to external repositories. Read docs/engineering/SELF-DOGFOOD-ACCEPTANCE.md for the engineering and full IDE UX acceptance bar, and keep repository intake, extracted structure, behavior bindings and verified properties distinct. The dated v0.2 reviews remain historical evidence, not current integration results.
 
 Work through typed SemanticTransaction / Workflow contracts. Do not create parallel rule/state/journey sources. AI proposals are untrusted; they cannot choose meaning, mint receipts, approve, apply, or change protected policy merely to pass a task.
 

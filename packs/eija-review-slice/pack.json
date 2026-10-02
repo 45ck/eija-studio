@@ -1,0 +1,603 @@
+{
+  "schema_version": "eija.pack.v1",
+  "pack": {
+    "id": "eija-review-slice",
+    "name": "EIJA review reference journey",
+    "version": "0.1.0",
+    "description": "EIJA self-dogfood: a declared, synthetic review-path simulation with real source bindings. The source extractor reports observed syntax separately. This pack is NOT the full Studio lifecycle or a verified model of its implementation. Re-entry, layout/edit invalidation, discard, provider consent, exact-subject receipts and concurrent database gates need richer models. Pack effects are synthetic; changing this model does not modify EIJA source code."
+  },
+  "model": {
+    "schema_version": "eija.workflow.v1",
+    "id": "eija-review-slice",
+    "initial_state": "DRAFT",
+    "states": [
+      "DRAFT",
+      "PROPOSED",
+      "PREVIEW",
+      "VERIFIED",
+      "APPROVED",
+      "APPLIED"
+    ],
+    "transitions": [
+      {
+        "id": "TR-PROPOSE",
+        "action": "Propose",
+        "from_state": "DRAFT",
+        "to_state": "PROPOSED",
+        "role": "Agent",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:ReferencePropose"
+        ],
+        "forbidden_effects": []
+      },
+      {
+        "id": "TR-SELECT",
+        "action": "SelectMeaning",
+        "from_state": "PROPOSED",
+        "to_state": "PREVIEW",
+        "role": "Owner",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:ReferenceSelectMeaning"
+        ],
+        "forbidden_effects": []
+      },
+      {
+        "id": "TR-VERIFY",
+        "action": "Verify",
+        "from_state": "PREVIEW",
+        "to_state": "VERIFIED",
+        "role": "Agent",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:ReferenceVerify"
+        ],
+        "forbidden_effects": []
+      },
+      {
+        "id": "TR-APPROVE",
+        "action": "Approve",
+        "from_state": "VERIFIED",
+        "to_state": "APPROVED",
+        "role": "Owner",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:ReferenceApprove"
+        ],
+        "forbidden_effects": []
+      },
+      {
+        "id": "TR-APPLY",
+        "action": "Apply",
+        "from_state": "APPROVED",
+        "to_state": "APPLIED",
+        "role": "Owner",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:ReferenceApply"
+        ],
+        "forbidden_effects": []
+      }
+    ]
+  },
+  "roles": [
+    {
+      "id": "Agent",
+      "description": "Synthetic proposer/verifier actor; not an OS security boundary."
+    },
+    {
+      "id": "Owner",
+      "description": "Synthetic reviewer actor; real Principal checks remain in source."
+    }
+  ],
+  "actions": [
+    {
+      "id": "Propose",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:ReferencePropose"
+      ]
+    },
+    {
+      "id": "SelectMeaning",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:ReferenceSelectMeaning"
+      ]
+    },
+    {
+      "id": "Verify",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:ReferenceVerify"
+      ]
+    },
+    {
+      "id": "Approve",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:ReferenceApprove"
+      ]
+    },
+    {
+      "id": "Apply",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:ReferenceApply"
+      ]
+    },
+    {
+      "id": "Save",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:ReferenceSave"
+      ]
+    },
+    {
+      "id": "VerifySaved",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:ReferenceVerifySaved"
+      ]
+    }
+  ],
+  "effects": {
+    "catalog": [
+      {
+        "id": "Audit:ReferencePropose",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:ReferenceSelectMeaning",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:ReferenceVerify",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:ReferenceApprove",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:ReferenceApply",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:ReferenceSave",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:ReferenceVerifySaved",
+        "kind": "audit"
+      }
+    ],
+    "forbidden": []
+  },
+  "laws": [
+    {
+      "id": "selectmeaning-owner",
+      "kind": "only_role_holds",
+      "code": "REFERENCE_AUTHORITY:SelectMeaning",
+      "action": "SelectMeaning",
+      "role": "Owner",
+      "description": "In this simulation, only the owner holds this action."
+    },
+    {
+      "id": "approve-owner",
+      "kind": "only_role_holds",
+      "code": "REFERENCE_AUTHORITY:Approve",
+      "action": "Approve",
+      "role": "Owner",
+      "description": "In this simulation, only the owner holds this action."
+    },
+    {
+      "id": "apply-owner",
+      "kind": "only_role_holds",
+      "code": "REFERENCE_AUTHORITY:Apply",
+      "action": "Apply",
+      "role": "Owner",
+      "description": "In this simulation, only the owner holds this action."
+    },
+    {
+      "id": "approved-requires-verified",
+      "kind": "path_requires",
+      "code": "REFERENCE_SEQUENCE:APPROVED",
+      "state": "APPROVED",
+      "via": "VERIFIED",
+      "description": "Every reference-journey path passes the declared prerequisite; this is not a proof of Studio's data-dependent gates."
+    },
+    {
+      "id": "applied-requires-approved",
+      "kind": "path_requires",
+      "code": "REFERENCE_SEQUENCE:APPLIED",
+      "state": "APPLIED",
+      "via": "APPROVED",
+      "description": "Every reference-journey path passes the declared prerequisite; this is not a proof of Studio's data-dependent gates."
+    },
+    {
+      "id": "verified-requires-preview",
+      "kind": "path_requires",
+      "code": "REFERENCE_SEQUENCE:VERIFIED",
+      "state": "VERIFIED",
+      "via": "PREVIEW",
+      "description": "Every reference-journey path passes the declared prerequisite; this is not a proof of Studio's data-dependent gates."
+    },
+    {
+      "id": "applied-final",
+      "kind": "state_final",
+      "code": "REFERENCE_FINAL:APPLIED",
+      "state": "APPLIED",
+      "description": "The reference journey ends after apply."
+    },
+    {
+      "id": "runtime-evidence",
+      "kind": "requires_evidence",
+      "code": "EVIDENCE_REQUIRED:runtime_matrix",
+      "evidence": "runtime_matrix",
+      "description": "Exercise the synthetic pack runtime matrix."
+    }
+  ],
+  "meanings": [
+    {
+      "id": "show_saved_path",
+      "label": "Show the optional saved-candidate path",
+      "supported": true,
+      "consequences": [
+        "Adds SAVED as an optional reference-journey path.",
+        "The implementation already supports save; no source code is changed.",
+        "This synthetic workflow does not prove implementation conformance."
+      ],
+      "transactions": [
+        {
+          "kind": "add_state",
+          "state": "SAVED"
+        },
+        {
+          "kind": "add_transition",
+          "id": "TR-SAVE",
+          "action": "Save",
+          "from_state": "PREVIEW",
+          "to_state": "SAVED",
+          "role": "Owner"
+        },
+        {
+          "kind": "add_transition",
+          "id": "TR-VERIFY-SAVED",
+          "action": "VerifySaved",
+          "from_state": "SAVED",
+          "to_state": "VERIFIED",
+          "role": "Agent"
+        }
+      ]
+    },
+    {
+      "id": "agent_approval",
+      "label": "Let the agent approve",
+      "supported": false,
+      "consequences": [
+        "The reference law reserves approval for the owner; no automatic authority change."
+      ],
+      "transactions": [
+        {
+          "kind": "set_role",
+          "transition": "TR-APPROVE",
+          "role": "Agent"
+        }
+      ]
+    },
+    {
+      "id": "unsupported",
+      "label": "Outside this reference journey",
+      "supported": false,
+      "consequences": [
+        "Requires source-level engineering and independent validation."
+      ]
+    }
+  ],
+  "language": {
+    "terms": [
+      {
+        "id": "change-case",
+        "label": "Change Case",
+        "definition": "The implemented aggregate carries stage, candidate, selected meaning, receipts and decision. The displayed state graph is a declared reference path, not an exhaustive extraction of this aggregate.",
+        "binds": [
+          "repo://src/eija_studio/domain/change_case.py#ChangeCase"
+        ],
+        "refs": [
+          "state:DRAFT"
+        ]
+      },
+      {
+        "id": "principal",
+        "label": "Principal capability",
+        "definition": "Principal.require checks named capabilities in real source. Pack roles and runtime actor guards are simulation data, not a replacement for this capability check.",
+        "binds": [
+          "repo://src/eija_studio/domain/models.py#Principal.require",
+          "repo://src/eija_studio/domain/models.py#OWNER"
+        ],
+        "refs": [
+          "role:Owner"
+        ]
+      },
+      {
+        "id": "review-subject",
+        "label": "Exact review subject",
+        "definition": "The real subject binds semantic, presentation, implementation, policy, environment and harness identity. These dimensions are not encoded by the finite reference journey.",
+        "binds": [
+          "repo://src/eija_studio/application/compiler.py#subject_for"
+        ],
+        "refs": []
+      },
+      {
+        "id": "agent-surface",
+        "label": "Agent tool surface",
+        "definition": "Read the actual MCP tool declarations. An extracted allowlist is syntax evidence; it does not prove process isolation, registry conformance or protection against a process sharing owner OS permissions.",
+        "binds": [
+          "repo://src/eija_studio/interfaces/mcp_server.py#AGENT_TOOLS",
+          "repo://src/eija_studio/interfaces/mcp_server.py#OWNER_ONLY_OPERATIONS",
+          "repo://src/eija_studio/domain/models.py#AGENT"
+        ],
+        "refs": [
+          "role:Agent"
+        ]
+      },
+      {
+        "id": "optimistic-version",
+        "label": "Version comparison",
+        "definition": "SQLite predicates compare the expected case and baseline versions before updating. The source facts preserve these predicates; this pack does not model database interleavings.",
+        "binds": [
+          "repo://src/eija_studio/adapters/sqlite_store.py#Session.save_case",
+          "repo://src/eija_studio/adapters/sqlite_store.py#Session.set_active"
+        ],
+        "refs": []
+      },
+      {
+        "id": "propose",
+        "label": "Propose",
+        "definition": "Reference-journey step linked to Studio.propose. The real method's conditions, failure paths and repeated calls remain visible as source facts and are not fully modeled here.",
+        "binds": [
+          "repo://src/eija_studio/application/service.py#Studio.propose"
+        ],
+        "refs": [
+          "transition:TR-PROPOSE",
+          "state:PROPOSED"
+        ]
+      },
+      {
+        "id": "select",
+        "label": "SelectMeaning",
+        "definition": "Reference-journey step linked to Studio.select. The real method's conditions, failure paths and repeated calls remain visible as source facts and are not fully modeled here.",
+        "binds": [
+          "repo://src/eija_studio/application/service.py#Studio.select"
+        ],
+        "refs": [
+          "transition:TR-SELECT",
+          "state:PREVIEW"
+        ]
+      },
+      {
+        "id": "verify",
+        "label": "Verify",
+        "definition": "Reference-journey step linked to Studio.verify. The real method's conditions, failure paths and repeated calls remain visible as source facts and are not fully modeled here.",
+        "binds": [
+          "repo://src/eija_studio/application/service.py#Studio.verify"
+        ],
+        "refs": [
+          "transition:TR-VERIFY",
+          "state:VERIFIED"
+        ]
+      },
+      {
+        "id": "approve",
+        "label": "Approve",
+        "definition": "Reference-journey step linked to Studio.approve. The real method's conditions, failure paths and repeated calls remain visible as source facts and are not fully modeled here.",
+        "binds": [
+          "repo://src/eija_studio/application/service.py#Studio.approve"
+        ],
+        "refs": [
+          "transition:TR-APPROVE",
+          "state:APPROVED"
+        ]
+      },
+      {
+        "id": "apply",
+        "label": "Apply",
+        "definition": "Reference-journey step linked to Studio.apply. The real method's conditions, failure paths and repeated calls remain visible as source facts and are not fully modeled here.",
+        "binds": [
+          "repo://src/eija_studio/application/service.py#Studio.apply"
+        ],
+        "refs": [
+          "transition:TR-APPLY",
+          "state:APPLIED"
+        ]
+      },
+      {
+        "id": "save",
+        "label": "Save candidate",
+        "definition": "An optional SAVED path is the proposed change to this reference journey. Studio.save already exists: accepting this pack edit would not add source functionality.",
+        "binds": [
+          "repo://src/eija_studio/application/service.py#Studio.save"
+        ],
+        "refs": []
+      }
+    ]
+  },
+  "fixtures": {
+    "actors": [
+      {
+        "id": "agent-active",
+        "role": "Agent",
+        "active": true,
+        "assigned": true
+      },
+      {
+        "id": "agent-revoked",
+        "role": "Agent",
+        "active": false,
+        "assigned": true
+      },
+      {
+        "id": "owner-active",
+        "role": "Owner",
+        "active": true,
+        "assigned": true
+      },
+      {
+        "id": "owner-revoked",
+        "role": "Owner",
+        "active": false,
+        "assigned": true
+      }
+    ],
+    "demo_request": "Show the optional saved candidate path in EIJA's review journey.",
+    "proposals": {
+      "summary": "Deterministic reference-model demonstration; no AI inference or source change.",
+      "rules": [
+        {
+          "all": [
+            "saved"
+          ],
+          "any": [
+            "path",
+            "candidate",
+            "review"
+          ],
+          "alternatives": [
+            {
+              "interpretation": "show_saved_path",
+              "explanation": "Expose the declared SAVED path."
+            },
+            {
+              "interpretation": "agent_approval",
+              "explanation": "Unsafe authority alternative; rejected."
+            }
+          ]
+        }
+      ],
+      "fallback": [
+        {
+          "interpretation": "unsupported",
+          "explanation": "Outside the reference demo."
+        }
+      ],
+      "unknowns": [
+        "Implementation conformance is NOT_RUN.",
+        "Human comprehension is unmeasured."
+      ]
+    }
+  },
+  "verifiers": [
+    {
+      "kind": "runtime_matrix",
+      "mode": "kernel"
+    },
+    {
+      "kind": "smt_proof",
+      "mode": "not_run",
+      "reason": "No implementation conformance proof is wired."
+    },
+    {
+      "kind": "bounded_model_check",
+      "mode": "not_run",
+      "reason": "No full Studio state model exists."
+    },
+    {
+      "kind": "bend_proof",
+      "mode": "not_run",
+      "reason": "No Bend model or proof of the Studio implementation has been produced."
+    },
+    {
+      "kind": "tlc",
+      "mode": "not_run",
+      "reason": "No TLA+ model or TLC search of the Studio implementation has been produced."
+    }
+  ],
+  "journey": {
+    "questions": [
+      {
+        "id": "approval_authority",
+        "question": "Who can approve in this reference journey?",
+        "expected": "Owner"
+      },
+      {
+        "id": "model_scope",
+        "question": "Is implementation conformance proved?",
+        "expected": "No"
+      }
+    ]
+  }
+}

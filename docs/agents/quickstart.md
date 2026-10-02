@@ -12,6 +12,10 @@ python -m venv .venv                      # Python 3.11+
 
 The `agents` extra installs the official [MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk) (`mcp==2.2.0`). The server is `eija mcp --workspace PATH` over stdio; the workspace is a folder that holds the SQLite database and local keys, and is created on first use. It defaults to the offline fixture provider (deterministic, no network, not a model).
 
+Use the same explicit `--pack PATH` and `--repo PATH` for Studio and MCP. `--repo` connects a local Git repository read-only: tracked Python and annotated UI facts, declared bindings, hashes and coverage gaps. It does not execute the target or modify its code. For first self-dogfooding use `--pack packs/eija-review-slice --repo .` with a **fresh** workspace; this pack is a declared reference journey, not a complete extracted specification of EIJA. `--print-config` preserves both paths. Existing workspaces remain bound to the exact pack content; legacy identity requires an explicit migration instead of silent adoption.
+
+Read `pack()` to see domain terms and source connections; use `repository_impact(term)` and `repository_source(reference)` for known links. Once an owner selects a case, `affordances(case_id)` shows available typed edits and `edit_check(case_id, proposal)` checks a proposed edit without persisting or applying it. These tools help an agent explain its intended change while leaving selection and application with the owner.
+
 ## 2. Print the config for your client
 
 ```bash
@@ -112,7 +116,8 @@ Never commit the key or a config file that contains it. If a key was ever writte
 | Client times out at startup | Raise the startup timeout (Codex `startup_timeout_sec`, Gemini `timeout`); check `PY` is absolute |
 | `verify` returns `SOURCE_REVIEW_REQUIRED` | The checkout differs from the owner-stamped release fixture (expected on a modified tree). The owner reviews the source; do not restamp |
 | `verify` returns `MEANING_REQUIRED` | Correct: only the owner selects a meaning, in Studio |
-| `DIAGRAMS_NOT_AVAILABLE` | No diagram renderer is wired into this server yet; use `format=json` or `text` |
+| `DIAGRAMS_NOT_AVAILABLE` | A custom server has no diagram renderer; the CLI server wires text diagram formats by default |
+| `FORMAT_UNSUPPORTED` for SVG | Built-in MCP rendering provides Mermaid, PlantUML and DOT source; use the Studio for visual rendering |
 | Nothing prints to the terminal | Correct: stdout is the protocol channel; logs go to stderr |
 
 ## Verification status of the client syntax (checked 2026-09-29 on this repository's development machine)

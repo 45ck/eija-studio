@@ -10,6 +10,10 @@ keep the exclusion honest:
   the text re-exposes the mutant instead of silently keeping the exclusion.
 
 Every accepted equivalent appears in `survivors.md` with its reason so a reviewer can reject it.
+
+Postponed function annotations are excluded from executable-body mutation scope only. Their type
+hints and introspection results can change; this exclusion does not establish annotation-contract
+equivalence. The current quick target review is recorded in docs/quality/policy-mutation-review.md.
 """
 from __future__ import annotations
 
@@ -33,16 +37,8 @@ class Accepted:
 
 
 ACCEPTED: tuple[Accepted, ...] = (
-    Accepted(f"{_SRC}/application/runtime.py", "execute", '"case"', '"XXcaseXX"',
-             "dictionary key label inside the operation binding: the binding is computed identically when recorded and when compared, so renaming a key changes the hash consistently and nothing observes it"),
-    Accepted(f"{_SRC}/application/runtime.py", "execute", '"subject"', '"XXsubjectXX"',
-             "dictionary key label inside the operation binding (see \"case\")"),
-    Accepted(f"{_SRC}/application/runtime.py", "execute", '"command"', '"XXcommandXX"',
-             "dictionary key label inside the operation binding (see \"case\")"),
     Accepted(f"{_SRC}/domain/models.py", "semantic_hash", '"json"', '"XXjsonXX"',
              "Workflow holds only str, int and tuple fields, which serialise identically in python and json dump modes"),
-    Accepted(f"{_SRC}/domain/models.py", "Proposal", "4", "5",
-             "at most four alternatives can exist anyway: `Interpretation` has four values and duplicates are rejected by the validator"),
 )
 
 
@@ -59,7 +55,7 @@ def _function_annotations(node: ast.FunctionDef | ast.AsyncFunctionDef) -> list[
 
 
 def _annotation_ranges(tree: ast.Module) -> list[tuple[tuple[int, int], tuple[int, int]]]:
-    """Positions of function argument and return annotations (never evaluated under `from __future__ import annotations`)."""
+    """Positions of function annotations deferred until an annotation consumer resolves them."""
     if not _defers_annotations(tree):
         return []
     return [((a.lineno, a.col_offset), (a.end_lineno, a.end_col_offset))
@@ -91,23 +87,12 @@ def _produces(mutant: Mutant, lines: list[str], becomes: str) -> bool:
     return removed[0] == lines[l1 - 1] and added[0] == lines[l1 - 1][:c1] + becomes + lines[l1 - 1][c2:]
 
 
-def _bare_keyword_only_star(lines: list[str], mutant: Mutant) -> bool:
-    """The `*` separating keyword-only parameters is not multiplication; `cosmic-ray` mutates it as if it were."""
-    if _text(lines, mutant) != "*":
-        return False
-    line = lines[mutant.start[0] - 1]
-    before, after = line[:mutant.start[1]].rstrip(), line[mutant.end[1]:].lstrip()
-    return before[-1:] in {",", "("} and after[:1] == ","
-
-
 def reason(mutant: Mutant, source: str) -> str | None:
     """Why this surviving mutant cannot change behaviour, or `None` if it may."""
     lines = source.splitlines()
     text = _text(lines, mutant)
     if any(start <= mutant.start and mutant.end <= end for start, end in _annotation_ranges(ast.parse(source))):
-        return "inside a function annotation, which is never evaluated (`from __future__ import annotations`)"
-    if _bare_keyword_only_star(lines, mutant):
-        return "the bare `*` that makes later parameters keyword-only is syntax, not multiplication"
+        return "inside a postponed function annotation; excluded from executable-body scope, not a claim about type-hint consumers"
     for accepted in ACCEPTED:
         if (accepted.module, accepted.function, accepted.snippet) == (mutant.module, mutant.function, text) and _produces(mutant, lines, accepted.becomes):
             return accepted.reason

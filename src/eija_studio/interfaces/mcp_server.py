@@ -2,12 +2,12 @@
 
 Design in one paragraph. "AI proposes. The kernel checks. The local owner decides." The server exposes
 only the operations an agent is allowed to perform: create a case, ask the configured provider for an
-UNTRUSTED proposal, read derived views, and run the technical runtime verifier. It deliberately has no
+UNTRUSTED proposal, read derived views and repository links, dry-run a typed edit, and run the technical runtime verifier. It deliberately has no
 tool that selects a meaning, edits the model, approves, applies, discards or previews-with-state. Those
 are owner capabilities and stay in the browser Studio (``eija serve``).
 
 The guarantee is ABSENCE, not a role check, in three layers: (1) the tool registry is asserted equal to
-``AGENT_TOOLS``; (2) ``AgentSurface`` holds an ``AgentPort`` (five members) and never the whole ``Studio``:
+``AGENT_TOOLS``; (2) ``AgentSurface`` holds a narrow ``AgentPort`` and never the whole ``Studio``:
 the typed surface has no owner method, and the port keeps the ``Studio`` only in a closure, so no chain of
 ordinary attribute names (``port._studio.approve``, ``attrgetter``, ``methodcaller``) reaches it (a test walks
 every non-dunder attribute path); (3) an AST lint (tests/test_agent_static.py, with a negative control that
@@ -32,6 +32,7 @@ SDK; nothing in ``domain`` or ``application`` imports it.
 """
 from __future__ import annotations
 
+import json
 import logging
 import platform
 import re
@@ -48,15 +49,17 @@ from eija_studio import __version__
 from eija_studio.application.service import Studio
 from eija_studio.domain.models import DomainError, Workflow
 from eija_studio.domain.policy import projections
+from eija_studio.domain.transactions import Transaction, parse_transaction
 from eija_studio.interfaces.agent_config import DEFAULT_MAX_PROVIDER_CALLS
 from eija_studio.interfaces.agent_policy import STORE_WRITE_NAMES  # noqa: F401  (re-exported for the lint and the docs)
 
 #: The complete agent tool surface. Adding a name here is a governance decision (ADR-0041).
-AGENT_TOOLS: tuple[str, ...] = ("list_cases", "create_case", "propose", "view_case", "impact", "verify", "render")
+AGENT_TOOLS: tuple[str, ...] = ("list_cases", "create_case", "propose", "view_case", "impact", "verify", "render",
+                               "pack", "affordances", "edit_check", "repository_impact", "repository_source")
 
 #: Owner-only operations. Tests assert none of these is registered as a tool, and that no identifier in this
 #: module names them on any receiver.
-OWNER_ONLY_OPERATIONS: tuple[str, ...] = ("select", "select_meaning", "edit", "layout", "approve", "apply",
+OWNER_ONLY_OPERATIONS: tuple[str, ...] = ("select", "select_meaning", "edit", "undo", "redo", "layout", "approve", "apply",
                                           "discard", "save", "reset_preview", "execute", "export")
 
 # STORE_WRITE_NAMES (persistence operations an adapter must never touch; any use fails the lint in
@@ -95,7 +98,7 @@ def _owner_next(stage: str) -> str:
                                  "Take no further action on it.")
 
 
-DIAGRAM_FORMATS = ("mermaid", "plantuml", "svg")
+DIAGRAM_FORMATS = ("mermaid", "plantuml", "dot", "svg")
 PROJECTION_VIEWS = ("rules", "states", "journeys")
 
 #: EXTENSION POINT (visual lane, ADR-0019/0023). ``(workflow, view, format) -> text``. Until the diagrams
@@ -123,7 +126,8 @@ def _read_doc(relative: str, *, section: str | None = None) -> str:
 
 
 def _tool_error(error: DomainError) -> ToolError:
-    return ToolError(f"{error.code}: {error.message}")
+    details = "\n" + json.dumps({"details": error.details}, sort_keys=True) if error.details else ""
+    return ToolError(f"{error.code}: {error.message}" + details)
 
 
 def _case_id(value: str) -> str:
@@ -157,12 +161,17 @@ class AgentPort(Protocol):
     def propose(self, case_id: str, expected: int, *, consent: bool = False) -> dict: ...
     def verify(self, case_id: str, expected: int) -> dict: ...
     def view(self, case_id: str) -> dict: ...
+    def workbench(self) -> dict: ...
+    def affordances(self, case_id: str) -> dict: ...
+    def edit_check(self, case_id: str, proposal: Transaction) -> dict: ...
+    def repository_impact(self, term: str) -> dict: ...
+    def repository_source(self, reference: str) -> dict: ...
 
 
 def StudioAgentPort(studio: Studio) -> AgentPort:  # a class-like factory: the Studio lives only in a closure
     """``AgentPort`` over a composed ``Studio``. The only place in this module that holds a ``Studio``.
 
-    Establishes: the adapter's reachable ``Studio`` surface is these five delegations, and the returned object has
+    Establishes: the adapter's reachable ``Studio`` surface is these explicit delegations, and the returned object has
     no attribute that leads to the ``Studio`` (it is captured by the methods' closure, not stored on the port), so
     ``attrgetter``/``methodcaller``/dotted paths by ordinary names cannot reach an owner operation. It does NOT
     stop dunder or introspection access (``__closure__``): the lint in tests/test_agent_static.py forbids those
@@ -189,6 +198,21 @@ def StudioAgentPort(studio: Studio) -> AgentPort:  # a class-like factory: the S
 
         def view(self, case_id: str) -> dict:
             return studio.view(case_id)
+
+        def workbench(self) -> dict:
+            return studio.workbench()
+
+        def affordances(self, case_id: str) -> dict:
+            return studio.affordances(case_id)
+
+        def edit_check(self, case_id: str, proposal: Transaction) -> dict:
+            return studio.edit_check(case_id, proposal)
+
+        def repository_impact(self, term: str) -> dict:
+            return studio.repository_impact(term)
+
+        def repository_source(self, reference: str) -> dict:
+            return studio.repository_source(reference)
 
     return _StudioAgentPort()
 
@@ -221,6 +245,26 @@ class AgentSurface:
             self._provider_calls += 1
 
     # ---- read ---------------------------------------------------------------------------------
+    def pack(self) -> dict[str, Any]:
+        return self.port.workbench()
+
+    def affordances(self, case_id: str) -> dict[str, Any]:
+        return self.port.affordances(_case_id(case_id))
+
+    def edit_check(self, case_id: str, proposal: dict[str, Any]) -> dict[str, Any]:
+        """Check an untrusted typed edit without storing a proposal or changing the selected model."""
+        result = self.port.edit_check(_case_id(case_id), parse_transaction(proposal))
+        return result | {"trust": "UNTRUSTED_PROPOSAL", "applied": False, "persisted": False,
+                         "boundary": "Dry-run only; the local owner must choose and perform any model edit."}
+
+    def repository_impact(self, term: str) -> dict[str, Any]:
+        if not term or len(term) > 400:
+            raise DomainError("INVALID_TERM", "Provide a repository term id of 1-400 characters")
+        return self.port.repository_impact(term)
+
+    def repository_source(self, reference: str) -> dict[str, Any]:
+        return self.port.repository_source(reference)
+
     def list_cases(self) -> dict[str, Any]:
         cases = [{"id": c["id"], "version": c["version"], "stage": c["stage"], "created_at": c["created_at"],
                   "request": c["request"][:200]} for c in self.port.list_cases()]
@@ -368,6 +412,35 @@ def create_server(studio: Studio, *, egress_consent: bool = False, diagram_rende
                             open_world_hint=port.networked)
 
     @server.tool(annotations=read)
+    async def pack() -> dict[str, Any]:
+        """Read active pack declarations, current baseline, source-review requirement and configured repository facts.
+        Repository facts are read-only and carry extraction gaps; declarations are not proof of code behavior."""
+        return await surface.guarded_async(surface.pack)
+
+    @server.tool(annotations=read)
+    async def affordances(case_id: str) -> dict[str, Any]:
+        """Read legal and refused single edits with exact kernel codes and model references. This applies nothing."""
+        return await surface.guarded_async(lambda: surface.affordances(case_id))
+
+    @server.tool(annotations=read)
+    async def edit_check(case_id: str, proposal: dict[str, Any]) -> dict[str, Any]:
+        """Dry-run an untrusted typed transaction. Returns law codes and references; stores and changes nothing.
+        A legal result does not select a meaning, approve the change, or authorize an agent to apply it."""
+        return await surface.guarded_async(lambda: surface.edit_check(case_id, proposal))
+
+    @server.tool(annotations=read)
+    async def repository_impact(term: str) -> dict[str, Any]:
+        """Read impact across explicit links of the repository configured at startup; never executes its code.
+        Closure is limited to extracted links, not all real dependencies; missing coverage remains visible."""
+        return await surface.guarded_async(lambda: surface.repository_impact(term))
+
+    @server.tool(annotations=read)
+    async def repository_source(reference: str) -> dict[str, Any]:
+        """Read bounded source text for a captured Python node or explicit repo:// binding in the configured checkout.
+        File and snapshot hashes identify this read; it grants no edit, execution, approval or apply capability."""
+        return await surface.guarded_async(lambda: surface.repository_source(reference))
+
+    @server.tool(annotations=read)
     async def list_cases() -> dict[str, Any]:
         """List Change Cases in this workspace (id, version, stage, first 200 chars of the request)."""
         return await surface.guarded_async(surface.list_cases)
@@ -404,9 +477,9 @@ def create_server(studio: Studio, *, egress_consent: bool = False, diagram_rende
 
     @server.tool(annotations=read)
     async def render(case_id: str, view: Literal["rules", "states", "journeys"] = "journeys",
-                     format: Literal["json", "text", "mermaid", "plantuml", "svg"] = "text") -> dict[str, Any]:
-        """Render a derived view of the executable model. json/text are projections. mermaid/plantuml/svg need a
-        diagram renderer wiring that is not installed unless the response says otherwise (DIAGRAMS_NOT_AVAILABLE)."""
+                     format: Literal["json", "text", "mermaid", "plantuml", "dot", "svg"] = "text") -> dict[str, Any]:
+        """Render a derived view of the executable model. json/text are projections; CLI wiring emits
+        mermaid/plantuml/dot. SVG requires a separate renderer and is refused by the built-in renderer."""
         return await surface.guarded_async(lambda: surface.render(case_id, view, format))
 
     @server.resource("eija://agent/contract", name="agent-contract", mime_type="text/markdown",

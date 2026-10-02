@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.approve
   title: application/service.py
   hash_method: ast-v2
-  sha256: 8002035a65ed8418dfa21983d8ab9f863040de38755ab1e380d510554fc377b8
+  sha256: 59f6fc3e16aea85b414a28b9cb5b694e669e8152dde1b9a4cb6a71dfae5c3d5f
 description_override: Seals a local-owner acknowledgement of the exact subject after eligibility, matching subject hash, acknowledged unknowns and correct answers.
-notes_baseline: 36d43f6f3d12babe5c5c57ea7c3d341c45adc9a1b656066dfd5496532bbca46c
+notes_baseline: 08042ad0509f355fc844bba7a1c790b1d1eb25fc1d7e1b7ae918593254215b17
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -26,6 +26,10 @@ verified:
   at: '2026-09-29T08:20:47Z'
   notes_sha256: ba937fc8341dae9b8cbe5125142ef8b9e647472b12d1456ac0835ee3269a0879
   sources_sha256: 36d43f6f3d12babe5c5c57ea7c3d341c45adc9a1b656066dfd5496532bbca46c
+- by: process:codex-ide-integration
+  at: '2026-10-02T05:15:30Z'
+  notes_sha256: ba937fc8341dae9b8cbe5125142ef8b9e647472b12d1456ac0835ee3269a0879
+  sources_sha256: 08042ad0509f355fc844bba7a1c790b1d1eb25fc1d7e1b7ae918593254215b17
 ---
 
 # application.service.Studio.approve

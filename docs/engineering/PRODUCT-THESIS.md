@@ -1,6 +1,8 @@
 # Product thesis: abstractions, domain and language
 
-Status: owner's thesis, 2026-09-29. In the owner's words: *everything is abstraction, especially in software; the domain and its language are the most important thing; this product lets people see that better and see what agents do.* This document turns that into design and engineering consequences. It is a thesis to be tested, not a proven claim.
+Status: owner's thesis recorded 2026-09-29; audience and first acceptance target clarified 2026-10-02. In the owner's words: *everything is abstraction, especially in software; the domain and its language are the most important thing; this product lets people see that better and see what agents do.* This document turns that into design and engineering consequences. It is a thesis to be tested, not a proven claim.
+
+The [project mission](MISSION.md) turns this thesis into two delivery outcomes: a polished, source-grounded WOW demo with showcase content, and a GitHub package demonstrating both proof of concept and reproducible proof of feasibility. Deliver a complete, coherent IDE experience for the declared scope; expand the flagship scenes as their capabilities pass. Evidence of human benefit remains a separate validation result.
 
 ## The claims
 
@@ -43,7 +45,23 @@ A wizard is linear (step 1, 2, 3, 4), modal and forgetful. An IDE is a **workben
 
 Two things stay deliberately *unlike* a typical IDE: approving and applying a change is a structurally isolated, owner-only action (the kernel decides who may, not the UI), and UNKNOWN is a first-class state that the workbench never hides.
 
-## Decisions (owner, 2026-09-29)
+## Current delivery decisions: 2 October 2026
+
+| Question | Decision and acceptance boundary |
+|---|---|
+| Primary audience | **Engineers who understand UML, domain models and software design, including those who increasingly build by prompting coding agents.** Prompting and modeling are complementary workflows. Support for people without that background is a later validation question. |
+| Release outcomes | **WOW demo plus GitHub POC/POF.** A clear end-to-end demonstration establishes the concept; reproducible setup and scoped replay establish feasibility. Publish the usable IDE, evidence-derived walkthrough/clips and explicit limits together. Neither goal is complete merely because the UI or README exists. See [readiness](MISSION.md#prototype-readiness). |
+| Engineering approach | **OSS first, one coordinated integration path.** Prefer maintained frameworks/compiler/indexer/prover tooling; add EIJA contracts, adapters and generators. Record an adoption/gap decision before implementing a replacement engine. Named file ownership, a dependency-ordered milestone ledger and retained evidence keep delivery reviewable. |
+| First connected project | **EIJA itself first.** Exercise the real integration checkout, model/kernel, Python symbols and annotated UI in one read-only connection. External applications and held-out repositories follow a passing self-dogfood milestone; no external project is selected by this document. |
+| What the agent must show | The proposed change to concepts/rules, its actual source links, affected known dependents, refusals and evidence scope. Source facts, explicit bindings, runtime observations and AI hypotheses must remain distinguishable. |
+| Deterministic responsibilities | Parse supported structure, preserve stable identities, calculate known-edge impact, check typed model edits, and bind evidence to its subject. AI may propose domain meaning; it cannot turn an unsupported inference into a verified fact. |
+| Any-codebase ambition | **Graded support:** intake, structural extraction, selected behavior bindings, checked properties and supported change application. An accepted repository may have unsupported languages or unbound behavior. Language-neutral contracts do not imply universal extraction or proof. |
+| Current source-edit boundary | The first repository connection is read-only. Editing the model changes the supported EIJA candidate through the existing kernel; it does not rewrite the connected codebase. General two-way code/model edits remain a design target requiring adapters and conformance evidence. |
+| Evidence of benefit | No superiority, novelty or comprehension claim follows from feature count. First prove the local flow; then compare correctness, critical misses, comprehension and total effort using the [V&V protocol](../research/2026-10-02-vv-protocol.md). Live model and human-study results are NOT_RUN. |
+
+[Self-dogfood acceptance](SELF-DOGFOOD-ACCEPTANCE.md) is the current bounded delivery contract. The [current-alternatives review](../research/2026-10-02-current-alternatives.md) records substantial overlap with existing products and research. The capabilities below remain the wider design direction, not a claim that all of them are implemented.
+
+## Design decisions retained from 29 September 2026
 
 | Question | Decision |
 |---|---|

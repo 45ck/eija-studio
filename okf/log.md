@@ -1,5 +1,10 @@
 # Update log
 
+## 2026-10-02
+* **Repository capture boundary**: synced the extracted bounded filesystem/Git capture adapter and its imports. The public source-navigation facade and capture policy are unchanged; neither affected module has curated Notes. Functional capture and source-refusal tests remain separate evidence.
+* **IDE recovery and source navigation**: synced the bounded source reader, injected source-facts profile and replay-based semantic history with ADR-0148. Re-read seven affected curated pages; updated Studio and ChangeCase Notes for source reads, immutable receipts and versioned undo/redo. Review actor is `process:codex-ide-integration`; browser and release results remain separate evidence.
+* **Source-connected self-dogfood**: refreshed generated pages for the content-bound pack APIs, repository port and Studio read surfaces, plus ADR-0147. Re-read the Studio Notes against its use cases and added the explicit source-coverage boundary. Recorded the review as `process:codex-self-dogfood`, not a human review. Test results are recorded separately in the dated run report.
+
 ## 2026-09-29
 * **Review-fix sync**: regenerated after the Bend, quality, SMT/BMC, agents and demos review fixes (`python -m quality.okf sync`): source hashes of 6 ADRs and 7 gate pages refreshed, the new `interfaces/agent_policy` module page added. No page with curated Notes was affected (`notes_stale_pages` stays 0), so nothing needed `review`.
 * **Generated laws and the vocabulary gate (WBS 1.4-1.5)**: `sync` added pages for the `vocabulary` gate, `application.formal` (`for_pack`, `pack_not_run`, `verifier_view`, `READS_REPORTS`) and `domain.pack` (`find_pack`, `Pack.verifier`) and refreshed hashes after the BMC state property moved to `evaluate_run` and the page, prompt and diagram texts stopped naming the excursion domain. The Notes of `compile_case`, `Studio.verify` and `model_impact` were re-read and corrected (pack verifiers in the packet, NOT_RUN substitution, the envelope sentence) and recorded with `review` as `process:wbs-1.5-agent`.

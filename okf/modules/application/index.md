@@ -7,7 +7,9 @@
 * [application.diagram_emitters](diagram_emitters.md) - Text emitters for the diagram models in `application.diagrams`: Mermaid, PlantUML and Graphviz DOT.
 * [application.diagrams](diagrams.md) - Diagram models derived from the executable Workflow (ADR-0019, ADR-0023).
 * [application.formal](formal.md) - Formal evidence in the application layer: seal what an adapter collected, and build the packet view.
+* [application.history](history.md) - Semantic history is a projection of typed commands, replayed by the existing policy interpreter.
 * [application.ports](ports.md) - Application-owned ports.
+* [application.repository](repository.md) - Read-only repository evidence port; this does not grant project execution or approval.
 * [application.runtime](runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.
 * [application.service](service.md) - Module `application/service` (no module docstring).
 * [application.verifier](verifier.md) - Bounded synthetic runtime experiments.

@@ -75,19 +75,21 @@ def test_tool_surface_is_exactly_the_agent_surface(studio):
     names = [t.name for t in tools.tools]
     assert sorted(names) == sorted(AGENT_TOOLS)
     for forbidden in OWNER_ONLY_OPERATIONS:
-        assert not any(forbidden in name for name in names), forbidden
+        assert forbidden not in names, forbidden
     # An agent cannot smuggle consent, meaning or answers through a tool argument.
-    smuggled = {"consent", "interpretation", "answers", "subject_hash", "acknowledge_unknowns", "transaction", "principal"}
+    smuggled = {"consent", "interpretation", "answers", "subject_hash", "acknowledge_unknowns", "principal"}
     for tool in tools.tools:
         assert not smuggled & set(tool.input_schema.get("properties", {})), tool.name
+        assert ("proposal" in tool.input_schema.get("properties", {})) == (tool.name == "edit_check")
     hints = {t.name: t.annotations for t in tools.tools}
     assert all(h is not None and h.destructive_hint is False for h in hints.values())
     assert hints["view_case"].read_only_hint is True and hints["verify"].read_only_hint is False
+    assert all(hints[name].read_only_hint is True for name in ("pack", "affordances", "edit_check", "repository_impact", "repository_source"))
 
 
 def test_calling_an_owner_operation_is_an_error_not_a_dispatch(studio):
     async def block(client):
-        for name in ("select", "select_meaning", "edit", "approve", "apply"):
+        for name in ("select", "select_meaning", "edit", "undo", "redo", "approve", "apply"):
             result = await client.call_tool(name, {"case_id": "0" * 32})
             assert result.is_error and "Unknown tool" in result.content[0].text, name
     session(studio)(block)
@@ -435,6 +437,13 @@ async def _all_outputs(client, case_id, created=None):
                ("verify", await call(client, "verify", case_id=case_id))]
     outputs += [(f"render {view} {fmt}", await call(client, "render", case_id=case_id, view=view, format=fmt))
                 for view in ("rules", "states", "journeys") for fmt in ("json", "text")]
+    outputs += [("pack", await call(client, "pack")),
+                ("affordances", await call(client, "affordances", case_id=case_id)),
+                ("edit_check", await call(client, "edit_check", case_id=case_id,
+                                          proposal={"kind": "retarget_transition", "transition": "TR-REJECT",
+                                                       "end": "source", "state": "Submitted"})),
+                ("repository_impact", await call(client, "repository_impact", term="unknown")),
+                ("repository_source", await call(client, "repository_source", reference="repo://src/unknown.py"))]
     outputs.append(("create_case", await call(client, "create_case", request=REQUEST)))
     outputs.append(("propose", await call(client, "propose", case_id=created or case_id)))
     return outputs

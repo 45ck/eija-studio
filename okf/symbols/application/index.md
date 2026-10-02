@@ -7,7 +7,9 @@
 * [diagram_emitters](diagram_emitters/) - Symbols of application.diagram_emitters
 * [diagrams](diagrams/) - Symbols of application.diagrams
 * [formal](formal/) - Symbols of application.formal
+* [history](history/) - Symbols of application.history
 * [ports](ports/) - Symbols of application.ports
+* [repository](repository/) - Symbols of application.repository
 * [runtime](runtime/) - Symbols of application.runtime
 * [service](service/) - Symbols of application.service
 * [verifier](verifier/) - Symbols of application.verifier

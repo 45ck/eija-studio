@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.workflows
   title: application/service.py
   hash_method: ast-v2
-  sha256: ee8cf39388a63bbfb972d1bf12e712f2103eb4197b3005f0b8067a2138c547e9
-notes_baseline: 89904ab0d9b9860e5e85c82c9edc992c56d76464eabca85b0a96fe1dc023474c
+  sha256: 37c56c2e4993e5bec1be67e64dcc88cba13c083808adb7866aa47c9930bd3740
+notes_baseline: 8d06f151c00d4efbc1f8671f8f46ecc498604991cdd8d637fe5a929dfd47f642
 ---
 
 # application.service.Studio.workflows

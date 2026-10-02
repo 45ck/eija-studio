@@ -280,12 +280,12 @@ def _at(source: str, snippet: str, *, line: int | None = None, function: str | N
     return Mutant(module, operator, 0, (row, col), (row, col + len(snippet)), function, status, diff, "")
 
 
-def test_annotations_and_the_keyword_only_star_are_equivalent_but_real_arithmetic_is_not():
+def test_postponed_annotations_are_scoped_out_but_calling_convention_and_arithmetic_are_not():
     from quality.mutation import equivalents
     source = "from __future__ import annotations\n\ndef f(a: int | None, *, b: str = 'x') -> dict | None:\n    return a * b\n"
     assert "annotation" in equivalents.reason(_at(source, "|", line=3), source)
     assert "annotation" in equivalents.reason(_at(source, "|", line=3, operator="core/ReplaceBinaryOperator_BitOr_BitAnd"), source)
-    assert "keyword-only" in equivalents.reason(_at(source, "*", line=3), source)
+    assert equivalents.reason(_at(source, "*", line=3), source) is None
     assert equivalents.reason(_at(source, "*", line=4), source) is None  # multiplication in the body
     assert equivalents.reason(_at(source, "'x'", line=3), source) is None  # a default value is behaviour
 
@@ -298,26 +298,133 @@ def test_annotations_count_only_when_future_annotations_defers_them():
 
 def test_accepted_equivalent_matches_only_the_exact_text_replacement_and_function():
     from quality.mutation import equivalents
-    module = "src/eija_studio/application/runtime.py"
-    source = "def execute():\n    binding = fingerprint({\"case\": case_id})\n"
-    diff = "@@ -1 +1 @@\n-    binding = fingerprint({\"case\": case_id})\n+    binding = fingerprint({\"XXcaseXX\": case_id})"
-    mutant = _at(source, '"case"', function="execute", module=module, diff=diff)
+    module = "src/eija_studio/domain/models.py"
+    source = "def semantic_hash(self):\n    return self.model_dump(mode=\"json\")\n"
+    diff = "@@ -1 +1 @@\n-    return self.model_dump(mode=\"json\")\n+    return self.model_dump(mode=\"XXjsonXX\")"
+    mutant = _at(source, '"json"', function="semantic_hash", module=module, diff=diff)
     assert equivalents.reason(mutant, source)
-    other_function = _at(source, '"case"', function="other", module=module, diff=diff)
-    other_text = _at(source, '"case"', function="execute", module=module, diff=diff.replace("XXcaseXX", "other"))
-    other_module = _at(source, '"case"', function="execute", module="src/eija_studio/domain/policy.py", diff=diff)
+    other_function = _at(source, '"json"', function="other", module=module, diff=diff)
+    other_text = _at(source, '"json"', function="semantic_hash", module=module, diff=diff.replace("XXjsonXX", "other"))
+    other_module = _at(source, '"json"', function="semantic_hash", module="src/eija_studio/domain/policy.py", diff=diff)
     assert [equivalents.reason(m, source) for m in (other_function, other_text, other_module)] == [None, None, None]
 
 
+def test_five_valid_meaning_ids_make_the_proposal_limit_observable_not_equivalent():
+    from pydantic import ValidationError
+
+    from eija_studio.domain.models import Alternative, Proposal
+    from quality.mutation import equivalents
+
+    alternatives = [{"interpretation": f"meaning_{i}", "explanation": "Synthetic alternative"} for i in range(5)]
+    assert len({Alternative.model_validate(item).interpretation for item in alternatives}) == 5
+    document = {"summary": "Synthetic proposal", "alternatives": alternatives[:4], "unknowns": []}
+    assert len(Proposal.model_validate(document).alternatives) == 4
+    with pytest.raises(ValidationError) as info:
+        Proposal.model_validate(document | {"alternatives": alternatives})
+    assert [(error["loc"], error["type"]) for error in info.value.errors()] == [(("alternatives",), "too_long")]
+    source = "class Proposal:\n    alternatives = Field(min_length=1, max_length=4)\n"
+    diff = "@@ -1 +1 @@\n-    alternatives = Field(min_length=1, max_length=4)\n+    alternatives = Field(min_length=1, max_length=5)"
+    mutant = _at(source, "4", function="Proposal", module="src/eija_studio/domain/models.py", diff=diff,
+                 operator="core/NumberReplacer")
+    assert equivalents.reason(mutant, source) is None
+
+
+@pytest.mark.parametrize("renamed_key", ["case", "subject", "command"])
+def test_persisted_operation_binding_keys_are_observable_contracts(tmp_path, renamed_key):
+    """A restart must replay the established binding format; renamed keys cannot hide as labels."""
+    from eija_studio.adapters.sqlite_store import SQLiteStore
+    from eija_studio.application import runtime
+    from eija_studio.domain.models import DomainError, ExecuteCommand, fingerprint
+    from eija_studio.domain.policy import baseline
+    from quality.mutation import equivalents
+
+    directory = tmp_path / "synthetic-operation-store"
+    store = SQLiteStore(directory, durability="ephemeral")
+    model, case_id = baseline(), "binding-contract-case"
+    with store.transaction() as unit:
+        instance = runtime.initialise(unit, case_id, model)
+        command = ExecuteCommand(operation_id="persisted-op", actor_id="teacher-assigned",
+                                 instance_id=instance["id"], action="Submit", expected_version=0)
+        committed = runtime.execute(unit, case_id, model, command)
+    # Literal persisted-format oracle is independent of the runtime's binding construction.
+    established = {"case": case_id, "subject": model.semantic_hash, "command": command.model_dump(mode="json")}
+    reopened = SQLiteStore(directory, durability="ephemeral")
+    with reopened.transaction() as unit:
+        original = unit.find_operation(command.operation_id)
+        assert original["binding"] == fingerprint(established)
+        before = unit.find_instance(instance["id"], case_id), unit.effect_counts()
+        replayed = runtime.execute(unit, case_id, model, command)
+        assert replayed["duplicate"] and not replayed["committed"] and replayed["effects"] == []
+        assert replayed["original_result"] == committed
+        assert (unit.find_instance(instance["id"], case_id), unit.effect_counts()) == before
+        renamed = dict(established)
+        renamed["XX" + renamed_key + "XX"] = renamed.pop(renamed_key)
+        assert fingerprint(renamed) != original["binding"]
+        # Deliberately corrupt only this disposable test row's binding format. Its values stay the same.
+        unit.db.execute("UPDATE operations SET binding=? WHERE id=?", (fingerprint(renamed), command.operation_id))
+    with pytest.raises(DomainError) as info, reopened.transaction() as unit:
+        runtime.execute(unit, case_id, model, command)
+    assert info.value.code == "OPERATION_CONFLICT"
+    with reopened.transaction() as unit:
+        assert (unit.find_instance(instance["id"], case_id), unit.effect_counts()) == before
+    source = f'def execute():\n    binding = fingerprint({{"{renamed_key}": value}})\n'
+    diff = (f'@@ -1 +1 @@\n-    binding = fingerprint({{"{renamed_key}": value}})\n'
+            f'+    binding = fingerprint({{"XX{renamed_key}XX": value}})')
+    mutant = _at(source, f'"{renamed_key}"', function="execute", module="src/eija_studio/application/runtime.py", diff=diff,
+                 operator="eija/ReplaceStringLiteral")
+    assert equivalents.reason(mutant, source) is None
+
+
 def test_a_killed_mutant_is_never_reclassified_as_equivalent():
+    source = "from __future__ import annotations\n\ndef f(a: int | None): pass\n"
+    col = source.splitlines()[2].index("|")
+
     def line(outcome: str) -> str:
-        item = {"job_id": "a", "mutations": [{"module_path": "m.py", "operator_name": "core/ReplaceBinaryOperator_Mul_Div", "occurrence": 0,
-                                                "start_pos": [1, 9], "end_pos": [1, 10], "operator_args": {}, "definition_name": "f"}]}
+        item = {"job_id": "a", "mutations": [{"module_path": "m.py", "operator_name": "core/ReplaceBinaryOperator_BitOr_BitAnd", "occurrence": 0,
+                                                "start_pos": [3, col], "end_pos": [3, col + 1], "operator_args": {}, "definition_name": "f"}]}
         return json.dumps([item, {"worker_outcome": "normal", "test_outcome": outcome, "output": "F", "diff": ""}])
-    source = "def f(a, *, b): pass\n"
     assert [m.status for m in engine.parse_dump(line("survived"), "m.py", source)] == ["equivalent"]
     assert [m.status for m in engine.parse_dump(line("killed"), "m.py", source)] == ["killed"]
     assert [m.status for m in engine.parse_dump(line("survived"), "m.py", None)] == ["survived"]
+
+
+def test_changing_star_to_slash_changes_valid_calls_and_is_never_hidden_as_equivalent():
+    """Python call semantics make the separator a behavioral API boundary, not annotation metadata."""
+    from quality.mutation import equivalents
+
+    def keyword_only(a, *, b):
+        return a, b
+
+    def positional_only(a, /, b):
+        return a, b
+
+    assert keyword_only(a=1, b=2) == (1, 2)
+    with pytest.raises(TypeError):
+        positional_only(a=1, b=2)
+    with pytest.raises(TypeError):
+        keyword_only(1, 2)
+    assert positional_only(1, 2) == (1, 2)
+    source = "def f(a, *, b): return a, b\n"
+    assert equivalents.reason(_at(source, "*"), source) is None
+    item = {"job_id": "separator", "mutations": [{"module_path": "m.py", "operator_name": "core/ReplaceBinaryOperator_Mul_Div",
+            "occurrence": 0, "start_pos": [1, 9], "end_pos": [1, 10], "operator_args": {}, "definition_name": "f"}]}
+    result = {"worker_outcome": "normal", "test_outcome": "survived", "output": "", "diff": ""}
+    assert [m.status for m in engine.parse_dump(json.dumps([item, result]), "m.py", source)] == [SURVIVED]
+
+
+def test_changed_equivalence_rules_invalidate_cached_classified_results(tmp_path, monkeypatch):
+    from quality.mutation import runner
+
+    monkeypatch.setattr(runner, "engine_version", lambda: "synthetic-cache-test")
+    tooling = tmp_path / "quality" / "mutation"
+    tooling.mkdir(parents=True)
+    for name in ("targets.py", "model.py", "eija_operators.py", "equivalents.py"):
+        (tooling / name).write_text("# original\n", encoding="utf-8")
+    before = runner.fingerprint(tmp_path, TARGETS[0], None, (0, 1))
+    (tooling / "equivalents.py").write_text("# reviewed classification changed\n", encoding="utf-8")
+    after = runner.fingerprint(tmp_path, TARGETS[0], None, (0, 1))
+    assert after != before
+    assert after == runner.fingerprint(tmp_path, TARGETS[0], None, (0, 1))
 
 
 def test_equivalents_are_excluded_from_the_score_and_listed_with_their_reason(tmp_path):

@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/pack.py#default_location
   title: domain/pack.py
   hash_method: ast-v2
-  sha256: 700341f86d7afd66d4533fd06f8cafdbf531baecd720bb90a07908ae7c9f4cbb
-notes_baseline: 1b839c38fbed589e249b2e5493309339754855abed23de439dff0a5413cd5983
+  sha256: bfb22dd27d011375d49e8184b619f91ac40d4040e23799e184099e61074d8001
+notes_baseline: 2643e36637c0a40e9faa5bfaefd6321a0a3bc312ec34ab38cb4c0030b20c3877
 ---
 
 # domain.pack.default_location
@@ -50,5 +50,5 @@ _No curated notes yet._
 
 ## Referenced by
 
-* [domain.pack.default_pack](/symbols/domain/pack/default_pack.md) - The configured pack (cached per location).
+* [domain.pack.default_pack](/symbols/domain/pack/default_pack.md) - The configured pack, reread on every call and validated from a content-keyed cache.
 <!-- okf:generated:end links -->

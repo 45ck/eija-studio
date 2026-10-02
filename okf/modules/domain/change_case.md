@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/change_case.py
   title: domain/change_case.py
   hash_method: ast-api-v1
-  sha256: 46fa3dd6b4477db7e897be4f28c846d89325d209598fe8cfa04a313514eb69bc
-notes_baseline: 2487d3cdebfd846d186cbdf02d51c943118618889a47408aed978b75db215ccf
+  sha256: 9dc47137f7f5c69ddc61e5394b3677762a9fe369371fc6c53cb71b977cad58f1
+notes_baseline: ee9890c9dead6335e9922c295069b01a2542557038eb0ac3062e84fdf173f7e5
 ---
 
 # domain.change_case
@@ -55,6 +55,7 @@ _No curated notes yet._
 * [Authoring](/contexts/authoring.md) - Owns Requested intent, alternatives, explicit selection, candidate and edits
 * [application.compiler](/modules/application/compiler.md) - Compiler: model → projections + impacts + obligations + computed review packet.
 * [application.diagrams](/modules/application/diagrams.md) - Diagram models derived from the executable Workflow (ADR-0019, ADR-0023).
+* [application.history](/modules/application/history.md) - Semantic history is a projection of typed commands, replayed by the existing policy interpreter.
 * [application.service](/modules/application/service.md) - Module `application/service` (no module docstring).
 * [domain.change_case.ChangeCase.at_version](/symbols/domain/change_case/ChangeCase.at_version.md) - `def at_version(self, expected: int) -> None` in `domain/change_case`.
 * [domain.change_case.ChangeCase.executable](/symbols/domain/change_case/ChangeCase.executable.md) - `def executable(self) -> Workflow` in `domain/change_case`.

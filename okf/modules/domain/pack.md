@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/pack.py
   title: domain/pack.py
   hash_method: ast-api-v1
-  sha256: c69eeed1d7973c110f85571c5e4477d0bebfee9f2f5d9e70d38be2b07b3d8e2e
-notes_baseline: 00def6d3f158e41189c794125988cbe87cdc038c7b1401f86a439eab56f0aaad
+  sha256: d183d00906ed7e078ca45886325e319d97ecdd69c26476cfa993a418909e3639
+notes_baseline: 2a5027578fe2cfd7c1908194ea28def39bd21e2a0408cd747613c5eb7eb1bb04
 ---
 
 # domain.pack
@@ -68,9 +68,9 @@ action or effect) becomes ``PackError`` (code ``PACK_INVALID``) with SORTED diag
 * [`Verifier`](/symbols/domain/pack/Verifier.md) (class) - An evidence kind that applies to this pack (``kind`` is the evidence kind's name).
 * [`coherence_problems`](/symbols/domain/pack/coherence_problems.md) (function) - Every cross-reference defect of a structurally valid pack, sorted.
 * [`default_location`](/symbols/domain/pack/default_location.md) (function) - ``$EIJA_PACK`` if set, else the pack named by ``packs/default.json``.
-* [`default_pack`](/symbols/domain/pack/default_pack.md) (function) - The configured pack (cached per location).
-* [`find_pack`](/symbols/domain/pack/find_pack.md) (function) - The pack a workflow belongs to (``Workflow.id``): a pack loaded in this process, else the repository pack of that id.
-* [`load_pack`](/symbols/domain/pack/load_pack.md) (function) - Load a pack from a directory holding ``pack.json`` or from the file itself.
+* [`default_pack`](/symbols/domain/pack/default_pack.md) (function) - The configured pack, reread on every call and validated from a content-keyed cache.
+* [`find_pack`](/symbols/domain/pack/find_pack.md) (function) - Resolve a loaded snapshot by digest, or an unambiguous id after refreshing its sources.
+* [`load_pack`](/symbols/domain/pack/load_pack.md) (function) - Read current file contents and retain an immutable, digest-addressed pack snapshot.
 * [`meaning_ids`](/symbols/domain/pack/meaning_ids.md) (function) - The meaning ids of the pack a workflow belongs to, or None when no such pack can be found.
 * [`parse_pack`](/symbols/domain/pack/parse_pack.md) (function) - Validate a decoded JSON document as a pack.
 * [`state_sets`](/symbols/domain/pack/state_sets.md) (function) - The state sets a workflow of this pack can have: the baseline's, and the baseline's after each supported meaning (state…
@@ -97,9 +97,12 @@ _No curated notes yet._
 ## Referenced by
 
 * [adapters.identity](/modules/adapters/identity.md) - Measured release identity, not a proof of correctness or author authenticity.
+* [adapters.repository](/modules/adapters/repository.md) - Repository analysis and bounded source navigation over captured checkout bytes.
+* [adapters.self_facts](/modules/adapters/self_facts.md) - Syntactic facts about EIJA's own review implementation, never a conformance proof.
 * [adapters.sqlite_store](/modules/adapters/sqlite_store.md) - Durable local unit of work.
 * [application.compiler](/modules/application/compiler.md) - Compiler: model → projections + impacts + obligations + computed review packet.
 * [application.formal](/modules/application/formal.md) - Formal evidence in the application layer: seal what an adapter collected, and build the packet view.
+* [application.history](/modules/application/history.md) - Semantic history is a projection of typed commands, replayed by the existing policy interpreter.
 * [application.runtime](/modules/application/runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.
 * [application.service](/modules/application/service.md) - Module `application/service` (no module docstring).
 * [application.verifier](/modules/application/verifier.md) - Bounded synthetic runtime experiments.
@@ -140,9 +143,9 @@ _No curated notes yet._
 * [domain.pack.Verifier](/symbols/domain/pack/Verifier.md) - An evidence kind that applies to this pack (``kind`` is the evidence kind's name).
 * [domain.pack.coherence_problems](/symbols/domain/pack/coherence_problems.md) - Every cross-reference defect of a structurally valid pack, sorted.
 * [domain.pack.default_location](/symbols/domain/pack/default_location.md) - ``$EIJA_PACK`` if set, else the pack named by ``packs/default.json``.
-* [domain.pack.default_pack](/symbols/domain/pack/default_pack.md) - The configured pack (cached per location).
-* [domain.pack.find_pack](/symbols/domain/pack/find_pack.md) - The pack a workflow belongs to (``Workflow.id``): a pack loaded in this process, else the repository pack of that id.
-* [domain.pack.load_pack](/symbols/domain/pack/load_pack.md) - Load a pack from a directory holding ``pack.json`` or from the file itself.
+* [domain.pack.default_pack](/symbols/domain/pack/default_pack.md) - The configured pack, reread on every call and validated from a content-keyed cache.
+* [domain.pack.find_pack](/symbols/domain/pack/find_pack.md) - Resolve a loaded snapshot by digest, or an unambiguous id after refreshing its sources.
+* [domain.pack.load_pack](/symbols/domain/pack/load_pack.md) - Read current file contents and retain an immutable, digest-addressed pack snapshot.
 * [domain.pack.meaning_ids](/symbols/domain/pack/meaning_ids.md) - The meaning ids of the pack a workflow belongs to, or None when no such pack can be found.
 * [domain.pack.parse_pack](/symbols/domain/pack/parse_pack.md) - Validate a decoded JSON document as a pack.
 * [domain.pack.state_sets](/symbols/domain/pack/state_sets.md) - The state sets a workflow of this pack can have: the baseline's, and the baseline's after each supported meaning (states its transactions add or remove).

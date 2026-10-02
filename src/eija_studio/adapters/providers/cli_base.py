@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Any, Callable, Mapping
 import subprocess
 from eija_studio.domain.models import Workflow, DomainError
+from eija_studio.domain.pack import Pack, default_pack
 from eija_studio.application.ports import ProviderResult
 from ._common import MAX_ENVELOPE_BYTES, build_prompt, json_object, parse_proposal, validate_model_name
 from .process import CliOutputLimit, CliShimUnsupported, CliTimeout, Runner, resolve_command, run_bounded
@@ -102,8 +103,10 @@ class CliProposalProvider:
     required_flags: tuple[str, ...] = ()
     schema_in_prompt = False  # True for CLIs with no structured-output flag
 
-    def __init__(self, model: str = "", executable: str | None = None, *, runner: Runner | None = None, timeout: float = 120) -> None:
+    def __init__(self, model: str = "", executable: str | None = None, *, runner: Runner | None = None, timeout: float = 120,
+                 pack: Pack | None = None) -> None:
         self.model = validate_model_name(model)
+        self.pack = pack if pack is not None else default_pack()
         self.executable = executable or self.default_executable
         self.runner, self.timeout = runner, timeout
         self._ready_at: float | None = None
@@ -217,13 +220,13 @@ class CliProposalProvider:
 
         Does not establish that the interpretation is correct, and never retries or falls back.
         """
+        prompt = build_prompt(request, model, schema_in_prompt=self.schema_in_prompt, pack=self.pack)
         if not self._preflight_ready():
             raise self.fail("PROVIDER_NOT_READY")
         try:
             prefix = self._prefix()
         except (FileNotFoundError, CliShimUnsupported):
             raise self.fail("PROVIDER_NOT_READY") from None
-        prompt = build_prompt(request, model, schema_in_prompt=self.schema_in_prompt)
         with tempfile.TemporaryDirectory(prefix=f"eija-{self.name}-") as directory:
             work = Path(directory)
             call = self.invocation(work)
@@ -238,5 +241,5 @@ class CliProposalProvider:
             if result.returncode != 0:
                 raise self.fail(self.classify_failure(result))
             extracted = self.extract(result, work)
-        return ProviderResult(parse_proposal(extracted.text, model), self.name, extracted.model or "unreported",
+        return ProviderResult(parse_proposal(extracted.text, model, self.pack), self.name, extracted.model or "unreported",
                               dict(extracted.usage), True)

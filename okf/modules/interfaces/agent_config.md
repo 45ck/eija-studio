@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/agent_config.py
   title: interfaces/agent_config.py
   hash_method: ast-api-v1
-  sha256: 7929fadde2747a62cc4c818058c0a88de6c1ad57e81f4282c00e245b3001755e
-notes_baseline: ab10bae8ab3a8d14d09c76ac4d75b742be9e49345f7bf5dd82becc3a008e7ff5
+  sha256: d572a2356aba282a94db32b9f83145f4fd30c73802507b87addd96fb86f43dac
+notes_baseline: 512f108bda72b4595a62ccaafb26455235fe285392974f87e7dd6f4697170056
 ---
 
 # interfaces.agent_config

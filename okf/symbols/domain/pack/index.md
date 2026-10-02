@@ -34,9 +34,9 @@
 
 * [domain.pack.coherence_problems](coherence_problems.md) - Every cross-reference defect of a structurally valid pack, sorted.
 * [domain.pack.default_location](default_location.md) - ``$EIJA_PACK`` if set, else the pack named by ``packs/default.json``.
-* [domain.pack.default_pack](default_pack.md) - The configured pack (cached per location).
-* [domain.pack.find_pack](find_pack.md) - The pack a workflow belongs to (``Workflow.id``): a pack loaded in this process, else the repository pack of that id.
-* [domain.pack.load_pack](load_pack.md) - Load a pack from a directory holding ``pack.json`` or from the file itself.
+* [domain.pack.default_pack](default_pack.md) - The configured pack, reread on every call and validated from a content-keyed cache.
+* [domain.pack.find_pack](find_pack.md) - Resolve a loaded snapshot by digest, or an unambiguous id after refreshing its sources.
+* [domain.pack.load_pack](load_pack.md) - Read current file contents and retain an immutable, digest-addressed pack snapshot.
 * [domain.pack.meaning_ids](meaning_ids.md) - The meaning ids of the pack a workflow belongs to, or None when no such pack can be found.
 * [domain.pack.parse_pack](parse_pack.md) - Validate a decoded JSON document as a pack.
 * [domain.pack.state_sets](state_sets.md) - The state sets a workflow of this pack can have: the baseline's, and the baseline's after each supported meaning (states its transactions add or remove).

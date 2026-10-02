@@ -12,14 +12,14 @@ from .opencode import OpenCodeProvider
 from .openrouter import OpenRouterProvider
 
 KEYED_PROVIDERS = frozenset({"openrouter", "anthropic"})  # providers that take a key held in memory only
-_FACTORIES: dict[str, Callable[[str, str | None], ProposalProvider]] = {
-    "offline": lambda model, key: OfflineProvider(),
-    "openrouter": OpenRouterProvider,
-    "anthropic": AnthropicApiProvider,
-    "codex": lambda model, key: CodexProvider(model),
-    "claude": lambda model, key: ClaudeCodeProvider(model),
-    "opencode": lambda model, key: OpenCodeProvider(model),
-    "gemini": lambda model, key: GeminiCliProvider(model),
+_FACTORIES: dict[str, Callable[[str, str | None, Pack | None], ProposalProvider]] = {
+    "offline": lambda model, key, pack: OfflineProvider(pack),
+    "openrouter": lambda model, key, pack: OpenRouterProvider(model, key, pack=pack),
+    "anthropic": lambda model, key, pack: AnthropicApiProvider(model, key, pack=pack),
+    "codex": lambda model, key, pack: CodexProvider(model, pack=pack),
+    "claude": lambda model, key, pack: ClaudeCodeProvider(model, pack=pack),
+    "opencode": lambda model, key, pack: OpenCodeProvider(model, pack=pack),
+    "gemini": lambda model, key, pack: GeminiCliProvider(model, pack=pack),
 }
 PROVIDER_NAMES = tuple(_FACTORIES)
 
@@ -27,6 +27,4 @@ PROVIDER_NAMES = tuple(_FACTORIES)
 def create_provider(name: str, model: str = "", key: str | None = None, pack: Pack | None = None) -> ProposalProvider:
     if name not in _FACTORIES:
         raise ValueError("Unknown provider")
-    if name == "offline":
-        return OfflineProvider(pack)  # the deterministic fixture answers from the pack
-    return _FACTORIES[name](model, key)
+    return _FACTORIES[name](model, key, pack)

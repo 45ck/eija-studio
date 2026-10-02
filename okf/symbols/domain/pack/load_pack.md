@@ -1,7 +1,7 @@
 ---
 type: Function
 title: domain.pack.load_pack
-description: Load a pack from a directory holding ``pack.json`` or from the file itself.
+description: Read current file contents and retain an immutable, digest-addressed pack snapshot.
 resource: repo://src/eija_studio/domain/pack.py#load_pack
 tags:
 - symbol
@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/pack.py#load_pack
   title: domain/pack.py
   hash_method: ast-v2
-  sha256: 94b71b80701942229389f8544fba799b84e26b645b2c1cbb2a9132984022331c
-notes_baseline: a86855176b86ad35125e4fd619ec25505b78264d9e2482037c0f69db58393055
+  sha256: 909cf517b58c85368978e121a8f08ca5b160cdc87732ad87b65fc5dacb7b66f8
+notes_baseline: d4beed737b1406017936c3007d00b29739a596976ee42f79b8d7e843fcd39f41
 ---
 
 # domain.pack.load_pack
@@ -32,7 +32,7 @@ notes_baseline: a86855176b86ad35125e4fd619ec25505b78264d9e2482037c0f69db58393055
 ## Docstring
 
 ~~~text
-Load a pack from a directory holding ``pack.json`` or from the file itself.
+Read current file contents and retain an immutable, digest-addressed pack snapshot.
 ~~~
 <!-- okf:generated:end facts -->
 
@@ -45,9 +45,8 @@ _No curated notes yet._
 
 * [domain.pack.PACK_FILE](/symbols/domain/pack/PACK_FILE.md) - Constant `PACK_FILE` in `domain/pack`.
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
-* [domain.pack.parse_pack](/symbols/domain/pack/parse_pack.md) - Validate a decoded JSON document as a pack.
 
 ## Referenced by
 
-* [domain.pack.find_pack](/symbols/domain/pack/find_pack.md) - The pack a workflow belongs to (``Workflow.id``): a pack loaded in this process, else the repository pack of that id.
+* [domain.pack.default_pack](/symbols/domain/pack/default_pack.md) - The configured pack, reread on every call and validated from a content-keyed cache.
 <!-- okf:generated:end links -->

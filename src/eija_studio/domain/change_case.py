@@ -18,6 +18,7 @@ class ChangeCase(Contract):
     selected_meaning: str | None
     selected_by: str | None
     transactions: tuple[Transaction, ...]
+    redo_transactions: tuple[Transaction, ...] = ()  # stack: next redo is last; initial meaning never enters it
     layout: dict[str, dict[str, int]]
     receipts: tuple[dict[str, Any], ...]
     decision: dict[str, Any] | None

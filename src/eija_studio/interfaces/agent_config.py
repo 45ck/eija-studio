@@ -20,8 +20,12 @@ SERVER_NAME = "eija"
 DEFAULT_MAX_PROVIDER_CALLS = 3
 
 
-def _argv(python: str, workspace: Path) -> list[str]:
-    return [python, "-m", "eija_studio", "mcp", "--workspace", str(workspace)]
+def _argv(python: str, workspace: Path, pack: Path | None, repository: Path | None) -> list[str]:
+    argv = [python, "-m", "eija_studio", "mcp", "--workspace", str(workspace)]
+    for flag, path in (("--pack", pack), ("--repo", repository)):
+        if path is not None:
+            argv.extend((flag, str(path.resolve())))
+    return argv
 
 
 def _toml(value: str) -> str:
@@ -49,13 +53,14 @@ def _shell_join(argv: list[str], windows: bool) -> str:
     return " ".join('"' + re.sub(r"(\\+)$", r"\1\1", arg) + '"' for arg in argv)  # a trailing backslash must not escape the closing quote
 
 
-def snippet(client: str, python: str, workspace: Path, *, windows: bool | None = None) -> str:
+def snippet(client: str, python: str, workspace: Path, *, windows: bool | None = None,
+            pack: Path | None = None, repository: Path | None = None) -> str:
     """Return the config text for `client`. Raises ValueError for an unknown client.
 
     `windows` picks the shell quoting of the Claude one-liner (default: this platform). It establishes only
     that the text is well formed for that shell; it does not install or check anything in the client.
     """
-    argv = _argv(python, workspace.resolve())
+    argv = _argv(python, workspace.resolve(), pack, repository)
     if client == "claude":
         # `--scope project` writes .mcp.json in the current project; drop it for a private local scope.
         return ("claude mcp add --scope project " + SERVER_NAME + " -- "

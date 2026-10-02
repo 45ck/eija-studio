@@ -19,7 +19,7 @@ from .model import Mutant, tally
 from .targets import Target
 
 MAX_WORKERS = 2  # 10 lanes share one 16 GB PC; this is a hard ceiling, not a default
-_TOOLING = ("targets.py", "model.py", "eija_operators.py")  # inputs that change results; engine.py only orchestrates
+_TOOLING = ("targets.py", "model.py", "eija_operators.py", "equivalents.py")  # cached records include equivalence classification
 
 
 def fingerprint(root: Path, target: Target, sample: int | None, shard: tuple[int, int]) -> str:
