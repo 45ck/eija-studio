@@ -1,0 +1,58 @@
+TAP version 13
+# Subtest: raw diagnostic retains exact data while exposing a named native keyboard region
+ok 1 - raw diagnostic retains exact data while exposing a named native keyboard region
+  ---
+  duration_ms: 1.6247
+  type: 'test'
+  ...
+# Subtest: both authored raw surfaces have distinct accessible names and no generic pre bypass remains
+ok 2 - both authored raw surfaces have distinct accessible names and no generic pre bypass remains
+  ---
+  duration_ms: 0.2317
+  type: 'test'
+  ...
+# Subtest: global browsing across all ten surfaces never creates a contextual origin
+ok 3 - global browsing across all ten surfaces never creates a contextual origin
+  ---
+  duration_ms: 3.5475
+  type: 'test'
+  ...
+# Subtest: ordinary global round-trip then a new Verify investigation returns Verify, not earlier Save
+ok 4 - ordinary global round-trip then a new Verify investigation returns Verify, not earlier Save
+  ---
+  duration_ms: 1.2445
+  type: 'test'
+  ...
+# Subtest: Source to Evidence keeps the original selection despite deliberate selection at the destination
+ok 5 - Source to Evidence keeps the original selection despite deliberate selection at the destination
+  ---
+  duration_ms: 1.1287
+  type: 'test'
+  ...
+# Subtest: global arrival at the origin ends a detour without creating a reverse origin
+ok 6 - global arrival at the origin ends a detour without creating a reverse origin
+  ---
+  duration_ms: 1.0768
+  type: 'test'
+  ...
+# Subtest: explicit return restores the surviving invoking control's focus
+ok 7 - explicit return restores the surviving invoking control's focus
+  ---
+  duration_ms: 1.0158
+  type: 'test'
+  ...
+# Subtest: same-view or unknown route does not create or replace a detour
+ok 8 - same-view or unknown route does not create or replace a detour
+  ---
+  duration_ms: 2.1033
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 97.6949

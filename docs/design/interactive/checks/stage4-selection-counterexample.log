@@ -1,0 +1,2204 @@
+TAP version 13
+# Subtest: prepared Verify example and preview closure preserve parked case A Save and exact source context
+not ok 1 - prepared Verify example and preview closure preserve parked case A Save and exact source context
+  ---
+  duration_ms: 8.0782
+  type: 'test'
+  location: '<design-reference>\\checks\\prepared-selection.test.cjs:20:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    choosing/closing a prepared example must preserve parked case and source
+    + actual - expected
+    ... Skipped lines
+
+      {
+        all: {
+          missing: {
+            after: {
+              initial_state: 'DRAFT',
+    ...
+        selected: {
+    +     id: 'TR-VERIFY',
+    -     id: 'TR-SAVE',
+          kind: 'transition'
+        },
+        source: {
+          file: 'example/studio.py',
+          lines: [
+            '# Illustrative pseudocode; not captured repository source.',
+    +       'def verify(case, actor):',
+    -       'def save(case, actor):',
+            '    require_declared_actor(case, actor)',
+    +       '    subject = candidate_subject(case)',
+    +       '    return collect_bounded_checks(subject)'
+    -       '    transaction = SaveCheckpoint(case.id)',
+    -       '    return record_checkpoint(transaction)'
+          ],
+    +     name: 'Studio.verify',
+    +     ref: 'fixture://example/studio.py#Studio.verify',
+    +     start: 73
+    -     name: 'Studio.save',
+    -     ref: 'fixture://example/studio.py#Studio.save',
+    -     start: 42
+        },
+        stored: [
+          [
+            'review',
+            {
+              prompt: 'Preserve request A',
+              selected: {
+    +           id: 'TR-VERIFY',
+    -           id: 'TR-SAVE',
+                kind: 'transition'
+              }
+            }
+          ],
+          [
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    selected:
+      kind: 'transition'
+      id: 'TR-SAVE'
+    source:
+      name: 'Studio.save'
+      file: 'example/studio.py'
+      ref: 'fixture://example/studio.py#Studio.save'
+      start: 42
+      lines:
+        0: '# Illustrative pseudocode; not captured repository source.'
+        1: 'def save(case, actor):'
+        2: '    require_declared_actor(case, actor)'
+        3: '    transaction = SaveCheckpoint(case.id)'
+        4: '    return record_checkpoint(transaction)'
+    caseData:
+      id: 'DESIGN-A'
+      name: 'Save checkpoint before verification'
+      revision: 8
+      before:
+        states:
+          0: 'DRAFT'
+          1: 'PREVIEW'
+          2: 'SAVED'
+          3: 'VERIFIED'
+        initial_state: 'DRAFT'
+        transitions:
+          0:
+            id: 'TR-SELECT'
+            action: 'SelectMeaning'
+            from_state: 'DRAFT'
+            to_state: 'PREVIEW'
+            role: 'Owner'
+            guards:
+            required_effects:
+            forbidden_effects:
+          1:
+            id: 'TR-SAVE'
+            action: 'Save'
+            from_state: 'PREVIEW'
+            to_state: 'SAVED'
+            role: 'Owner'
+            guards:
+            required_effects:
+            forbidden_effects:
+          2:
+            id: 'TR-VERIFY'
+            action: 'Verify'
+            from_state: 'PREVIEW'
+            to_state: 'VERIFIED'
+            role: 'Owner'
+            guards:
+              0: 'authenticated'
+              1: 'assigned'
+            required_effects:
+            forbidden_effects:
+          3:
+            id: 'TR-VERIFY-SAVED'
+            action: 'VerifySaved'
+            from_state: 'SAVED'
+            to_state: 'VERIFIED'
+            role: 'Owner'
+            guards:
+              0: 'authenticated'
+            required_effects:
+            forbidden_effects:
+      after:
+        states:
+          0: 'DRAFT'
+          1: 'PREVIEW'
+          2: 'SAVED'
+          3: 'VERIFIED'
+        initial_state: 'DRAFT'
+        transitions:
+          0:
+            id: 'TR-SELECT'
+            action: 'SelectMeaning'
+            from_state: 'DRAFT'
+            to_state: 'PREVIEW'
+            role: 'Owner'
+            guards:
+            required_effects:
+            forbidden_effects:
+          1:
+            id: 'TR-SAVE'
+            action: 'Save'
+            from_state: 'PREVIEW'
+            to_state: 'SAVED'
+            role: 'Agent'
+            guards:
+            required_effects:
+            forbidden_effects:
+          2:
+            id: 'TR-VERIFY'
+            action: 'Verify'
+            from_state: 'SAVED'
+            to_state: 'VERIFIED'
+            role: 'Owner'
+            guards:
+              0: 'authenticated'
+            required_effects:
+            forbidden_effects:
+          3:
+            id: 'TR-VERIFY-SAVED'
+            action: 'VerifySaved'
+            from_state: 'SAVED'
+            to_state: 'VERIFIED'
+            role: 'Owner'
+            guards:
+              0: 'authenticated'
+            required_effects:
+            forbidden_effects:
+      selected:
+        kind: 'transition'
+        id: 'TR-SAVE'
+    all:
+      review:
+        id: 'DESIGN-A'
+        name: 'Save checkpoint before verification'
+        revision: 8
+        before:
+          states:
+            0: 'DRAFT'
+            1: 'PREVIEW'
+            2: 'SAVED'
+            3: 'VERIFIED'
+          initial_state: 'DRAFT'
+          transitions:
+            0:
+              id: 'TR-SELECT'
+              action: 'SelectMeaning'
+              from_state: 'DRAFT'
+              to_state: 'PREVIEW'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            1:
+              id: 'TR-SAVE'
+              action: 'Save'
+              from_state: 'PREVIEW'
+              to_state: 'SAVED'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            2:
+              id: 'TR-VERIFY'
+              action: 'Verify'
+              from_state: 'PREVIEW'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+                1: 'assigned'
+              required_effects:
+              forbidden_effects:
+            3:
+              id: 'TR-VERIFY-SAVED'
+              action: 'VerifySaved'
+              from_state: 'SAVED'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+              required_effects:
+              forbidden_effects:
+        after:
+          states:
+            0: 'DRAFT'
+            1: 'PREVIEW'
+            2: 'SAVED'
+            3: 'VERIFIED'
+          initial_state: 'DRAFT'
+          transitions:
+            0:
+              id: 'TR-SELECT'
+              action: 'SelectMeaning'
+              from_state: 'DRAFT'
+              to_state: 'PREVIEW'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            1:
+              id: 'TR-SAVE'
+              action: 'Save'
+              from_state: 'PREVIEW'
+              to_state: 'SAVED'
+              role: 'Agent'
+              guards:
+              required_effects:
+              forbidden_effects:
+            2:
+              id: 'TR-VERIFY'
+              action: 'Verify'
+              from_state: 'SAVED'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+              required_effects:
+              forbidden_effects:
+            3:
+              id: 'TR-VERIFY-SAVED'
+              action: 'VerifySaved'
+              from_state: 'SAVED'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+              required_effects:
+              forbidden_effects:
+        selected:
+          kind: 'transition'
+          id: 'TR-SAVE'
+      missing:
+        id: 'DESIGN-B'
+        name: 'A change with an unresolved binding'
+        revision: 3
+        before:
+          states:
+            0: 'DRAFT'
+            1: 'PREVIEW'
+            2: 'SAVED'
+            3: 'VERIFIED'
+          initial_state: 'DRAFT'
+          transitions:
+            0:
+              id: 'TR-SELECT'
+              action: 'SelectMeaning'
+              from_state: 'DRAFT'
+              to_state: 'PREVIEW'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            1:
+              id: 'TR-SAVE'
+              action: 'Save'
+              from_state: 'PREVIEW'
+              to_state: 'SAVED'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            2:
+              id: 'TR-VERIFY'
+              action: 'Verify'
+              from_state: 'PREVIEW'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+                1: 'assigned'
+              required_effects:
+              forbidden_effects:
+            3:
+              id: 'TR-VERIFY-SAVED'
+              action: 'VerifySaved'
+              from_state: 'SAVED'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+              required_effects:
+              forbidden_effects:
+        after:
+          states:
+            0: 'DRAFT'
+            1: 'PREVIEW'
+            2: 'SAVED'
+            3: 'VERIFIED'
+          initial_state: 'DRAFT'
+          transitions:
+            0:
+              id: 'TR-SELECT'
+              action: 'SelectMeaning'
+              from_state: 'DRAFT'
+              to_state: 'PREVIEW'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            1:
+              id: 'TR-SAVE'
+              action: 'Save'
+              from_state: 'PREVIEW'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            2:
+              id: 'TR-VERIFY'
+              action: 'Verify'
+              from_state: 'PREVIEW'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+                1: 'assigned'
+              required_effects:
+              forbidden_effects:
+            3:
+              id: 'TR-VERIFY-SAVED'
+              action: 'VerifySaved'
+              from_state: 'SAVED'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+              required_effects:
+              forbidden_effects:
+        selected:
+          kind: 'transition'
+          id: 'TR-SAVE'
+    stored:
+      0:
+        0: 'review'
+        1:
+          selected:
+            kind: 'transition'
+            id: 'TR-SAVE'
+          prompt: 'Preserve request A'
+      1:
+        0: 'missing'
+        1:
+          selected:
+            kind: 'transition'
+            id: 'TR-SAVE'
+          prompt: 'Preserve request B'
+  actual:
+    selected:
+      kind: 'transition'
+      id: 'TR-VERIFY'
+    source:
+      name: 'Studio.verify'
+      file: 'example/studio.py'
+      ref: 'fixture://example/studio.py#Studio.verify'
+      start: 73
+      lines:
+        0: '# Illustrative pseudocode; not captured repository source.'
+        1: 'def verify(case, actor):'
+        2: '    require_declared_actor(case, actor)'
+        3: '    subject = candidate_subject(case)'
+        4: '    return collect_bounded_checks(subject)'
+    caseData:
+      id: 'DESIGN-A'
+      name: 'Save checkpoint before verification'
+      revision: 8
+      before:
+        states:
+          0: 'DRAFT'
+          1: 'PREVIEW'
+          2: 'SAVED'
+          3: 'VERIFIED'
+        initial_state: 'DRAFT'
+        transitions:
+          0:
+            id: 'TR-SELECT'
+            action: 'SelectMeaning'
+            from_state: 'DRAFT'
+            to_state: 'PREVIEW'
+            role: 'Owner'
+            guards:
+            required_effects:
+            forbidden_effects:
+          1:
+            id: 'TR-SAVE'
+            action: 'Save'
+            from_state: 'PREVIEW'
+            to_state: 'SAVED'
+            role: 'Owner'
+            guards:
+            required_effects:
+            forbidden_effects:
+          2:
+            id: 'TR-VERIFY'
+            action: 'Verify'
+            from_state: 'PREVIEW'
+            to_state: 'VERIFIED'
+            role: 'Owner'
+            guards:
+              0: 'authenticated'
+              1: 'assigned'
+            required_effects:
+            forbidden_effects:
+          3:
+            id: 'TR-VERIFY-SAVED'
+            action: 'VerifySaved'
+            from_state: 'SAVED'
+            to_state: 'VERIFIED'
+            role: 'Owner'
+            guards:
+              0: 'authenticated'
+            required_effects:
+            forbidden_effects:
+      after:
+        states:
+          0: 'DRAFT'
+          1: 'PREVIEW'
+          2: 'SAVED'
+          3: 'VERIFIED'
+        initial_state: 'DRAFT'
+        transitions:
+          0:
+            id: 'TR-SELECT'
+            action: 'SelectMeaning'
+            from_state: 'DRAFT'
+            to_state: 'PREVIEW'
+            role: 'Owner'
+            guards:
+            required_effects:
+            forbidden_effects:
+          1:
+            id: 'TR-SAVE'
+            action: 'Save'
+            from_state: 'PREVIEW'
+            to_state: 'SAVED'
+            role: 'Agent'
+            guards:
+            required_effects:
+            forbidden_effects:
+          2:
+            id: 'TR-VERIFY'
+            action: 'Verify'
+            from_state: 'SAVED'
+            to_state: 'VERIFIED'
+            role: 'Owner'
+            guards:
+              0: 'authenticated'
+            required_effects:
+            forbidden_effects:
+          3:
+            id: 'TR-VERIFY-SAVED'
+            action: 'VerifySaved'
+            from_state: 'SAVED'
+            to_state: 'VERIFIED'
+            role: 'Owner'
+            guards:
+              0: 'authenticated'
+            required_effects:
+            forbidden_effects:
+      selected:
+        kind: 'transition'
+        id: 'TR-SAVE'
+    all:
+      review:
+        id: 'DESIGN-A'
+        name: 'Save checkpoint before verification'
+        revision: 8
+        before:
+          states:
+            0: 'DRAFT'
+            1: 'PREVIEW'
+            2: 'SAVED'
+            3: 'VERIFIED'
+          initial_state: 'DRAFT'
+          transitions:
+            0:
+              id: 'TR-SELECT'
+              action: 'SelectMeaning'
+              from_state: 'DRAFT'
+              to_state: 'PREVIEW'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            1:
+              id: 'TR-SAVE'
+              action: 'Save'
+              from_state: 'PREVIEW'
+              to_state: 'SAVED'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            2:
+              id: 'TR-VERIFY'
+              action: 'Verify'
+              from_state: 'PREVIEW'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+                1: 'assigned'
+              required_effects:
+              forbidden_effects:
+            3:
+              id: 'TR-VERIFY-SAVED'
+              action: 'VerifySaved'
+              from_state: 'SAVED'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+              required_effects:
+              forbidden_effects:
+        after:
+          states:
+            0: 'DRAFT'
+            1: 'PREVIEW'
+            2: 'SAVED'
+            3: 'VERIFIED'
+          initial_state: 'DRAFT'
+          transitions:
+            0:
+              id: 'TR-SELECT'
+              action: 'SelectMeaning'
+              from_state: 'DRAFT'
+              to_state: 'PREVIEW'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            1:
+              id: 'TR-SAVE'
+              action: 'Save'
+              from_state: 'PREVIEW'
+              to_state: 'SAVED'
+              role: 'Agent'
+              guards:
+              required_effects:
+              forbidden_effects:
+            2:
+              id: 'TR-VERIFY'
+              action: 'Verify'
+              from_state: 'SAVED'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+              required_effects:
+              forbidden_effects:
+            3:
+              id: 'TR-VERIFY-SAVED'
+              action: 'VerifySaved'
+              from_state: 'SAVED'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+              required_effects:
+              forbidden_effects:
+        selected:
+          kind: 'transition'
+          id: 'TR-SAVE'
+      missing:
+        id: 'DESIGN-B'
+        name: 'A change with an unresolved binding'
+        revision: 3
+        before:
+          states:
+            0: 'DRAFT'
+            1: 'PREVIEW'
+            2: 'SAVED'
+            3: 'VERIFIED'
+          initial_state: 'DRAFT'
+          transitions:
+            0:
+              id: 'TR-SELECT'
+              action: 'SelectMeaning'
+              from_state: 'DRAFT'
+              to_state: 'PREVIEW'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            1:
+              id: 'TR-SAVE'
+              action: 'Save'
+              from_state: 'PREVIEW'
+              to_state: 'SAVED'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            2:
+              id: 'TR-VERIFY'
+              action: 'Verify'
+              from_state: 'PREVIEW'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+                1: 'assigned'
+              required_effects:
+              forbidden_effects:
+            3:
+              id: 'TR-VERIFY-SAVED'
+              action: 'VerifySaved'
+              from_state: 'SAVED'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+              required_effects:
+              forbidden_effects:
+        after:
+          states:
+            0: 'DRAFT'
+            1: 'PREVIEW'
+            2: 'SAVED'
+            3: 'VERIFIED'
+          initial_state: 'DRAFT'
+          transitions:
+            0:
+              id: 'TR-SELECT'
+              action: 'SelectMeaning'
+              from_state: 'DRAFT'
+              to_state: 'PREVIEW'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            1:
+              id: 'TR-SAVE'
+              action: 'Save'
+              from_state: 'PREVIEW'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            2:
+              id: 'TR-VERIFY'
+              action: 'Verify'
+              from_state: 'PREVIEW'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+                1: 'assigned'
+              required_effects:
+              forbidden_effects:
+            3:
+              id: 'TR-VERIFY-SAVED'
+              action: 'VerifySaved'
+              from_state: 'SAVED'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+              required_effects:
+              forbidden_effects:
+        selected:
+          kind: 'transition'
+          id: 'TR-SAVE'
+    stored:
+      0:
+        0: 'review'
+        1:
+          selected:
+            kind: 'transition'
+            id: 'TR-VERIFY'
+          prompt: 'Preserve request A'
+      1:
+        0: 'missing'
+        1:
+          selected:
+            kind: 'transition'
+            id: 'TR-SAVE'
+          prompt: 'Preserve request B'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (<design-reference>\checks\prepared-selection.test.cjs:23:20)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: independent choices across cases A and B never rewrite either stored selection or unmapped source
+not ok 2 - independent choices across cases A and B never rewrite either stored selection or unmapped source
+  ---
+  duration_ms: 2.3854
+  type: 'test'
+  location: '<design-reference>\\checks\\prepared-selection.test.cjs:25:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    ... Skipped lines
+
+      {
+        all: {
+          missing: {
+            after: {
+              initial_state: 'DRAFT',
+    ...
+        selected: {
+    +     id: 'TR-SAVE',
+    -     id: 'TR-VERIFY',
+          kind: 'transition'
+        },
+        source: {
+          file: 'example/studio.py',
+          lines: [
+            '# Illustrative pseudocode; not captured repository source.',
+    +       'def save(case, actor):',
+    -       'def verify(case, actor):',
+            '    require_declared_actor(case, actor)',
+    +       '    transaction = SaveCheckpoint(case.id)',
+    +       '    return record_checkpoint(transaction)'
+    -       '    subject = candidate_subject(case)',
+    -       '    return collect_bounded_checks(subject)'
+          ],
+    +     name: 'Studio.save',
+    +     ref: 'fixture://example/studio.py#Studio.save',
+    +     start: 42
+    -     name: 'Studio.verify',
+    -     ref: 'fixture://example/studio.py#Studio.verify',
+    -     start: 73
+        },
+        stored: [
+          [
+            'review',
+            {
+              prompt: 'Preserve request A',
+              selected: {
+    +           id: 'TR-SAVE',
+    -           id: 'TR-VERIFY',
+                kind: 'transition'
+              }
+            }
+          ],
+          [
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    selected:
+      kind: 'transition'
+      id: 'TR-VERIFY'
+    source:
+      name: 'Studio.verify'
+      file: 'example/studio.py'
+      ref: 'fixture://example/studio.py#Studio.verify'
+      start: 73
+      lines:
+        0: '# Illustrative pseudocode; not captured repository source.'
+        1: 'def verify(case, actor):'
+        2: '    require_declared_actor(case, actor)'
+        3: '    subject = candidate_subject(case)'
+        4: '    return collect_bounded_checks(subject)'
+    caseData:
+      id: 'DESIGN-A'
+      name: 'Save checkpoint before verification'
+      revision: 8
+      before:
+        states:
+          0: 'DRAFT'
+          1: 'PREVIEW'
+          2: 'SAVED'
+          3: 'VERIFIED'
+        initial_state: 'DRAFT'
+        transitions:
+          0:
+            id: 'TR-SELECT'
+            action: 'SelectMeaning'
+            from_state: 'DRAFT'
+            to_state: 'PREVIEW'
+            role: 'Owner'
+            guards:
+            required_effects:
+            forbidden_effects:
+          1:
+            id: 'TR-SAVE'
+            action: 'Save'
+            from_state: 'PREVIEW'
+            to_state: 'SAVED'
+            role: 'Owner'
+            guards:
+            required_effects:
+            forbidden_effects:
+          2:
+            id: 'TR-VERIFY'
+            action: 'Verify'
+            from_state: 'PREVIEW'
+            to_state: 'VERIFIED'
+            role: 'Owner'
+            guards:
+              0: 'authenticated'
+              1: 'assigned'
+            required_effects:
+            forbidden_effects:
+          3:
+            id: 'TR-VERIFY-SAVED'
+            action: 'VerifySaved'
+            from_state: 'SAVED'
+            to_state: 'VERIFIED'
+            role: 'Owner'
+            guards:
+              0: 'authenticated'
+            required_effects:
+            forbidden_effects:
+      after:
+        states:
+          0: 'DRAFT'
+          1: 'PREVIEW'
+          2: 'SAVED'
+          3: 'VERIFIED'
+        initial_state: 'DRAFT'
+        transitions:
+          0:
+            id: 'TR-SELECT'
+            action: 'SelectMeaning'
+            from_state: 'DRAFT'
+            to_state: 'PREVIEW'
+            role: 'Owner'
+            guards:
+            required_effects:
+            forbidden_effects:
+          1:
+            id: 'TR-SAVE'
+            action: 'Save'
+            from_state: 'PREVIEW'
+            to_state: 'SAVED'
+            role: 'Agent'
+            guards:
+            required_effects:
+            forbidden_effects:
+          2:
+            id: 'TR-VERIFY'
+            action: 'Verify'
+            from_state: 'SAVED'
+            to_state: 'VERIFIED'
+            role: 'Owner'
+            guards:
+              0: 'authenticated'
+            required_effects:
+            forbidden_effects:
+          3:
+            id: 'TR-VERIFY-SAVED'
+            action: 'VerifySaved'
+            from_state: 'SAVED'
+            to_state: 'VERIFIED'
+            role: 'Owner'
+            guards:
+              0: 'authenticated'
+            required_effects:
+            forbidden_effects:
+      selected:
+        kind: 'transition'
+        id: 'TR-SAVE'
+    all:
+      review:
+        id: 'DESIGN-A'
+        name: 'Save checkpoint before verification'
+        revision: 8
+        before:
+          states:
+            0: 'DRAFT'
+            1: 'PREVIEW'
+            2: 'SAVED'
+            3: 'VERIFIED'
+          initial_state: 'DRAFT'
+          transitions:
+            0:
+              id: 'TR-SELECT'
+              action: 'SelectMeaning'
+              from_state: 'DRAFT'
+              to_state: 'PREVIEW'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            1:
+              id: 'TR-SAVE'
+              action: 'Save'
+              from_state: 'PREVIEW'
+              to_state: 'SAVED'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            2:
+              id: 'TR-VERIFY'
+              action: 'Verify'
+              from_state: 'PREVIEW'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+                1: 'assigned'
+              required_effects:
+              forbidden_effects:
+            3:
+              id: 'TR-VERIFY-SAVED'
+              action: 'VerifySaved'
+              from_state: 'SAVED'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+              required_effects:
+              forbidden_effects:
+        after:
+          states:
+            0: 'DRAFT'
+            1: 'PREVIEW'
+            2: 'SAVED'
+            3: 'VERIFIED'
+          initial_state: 'DRAFT'
+          transitions:
+            0:
+              id: 'TR-SELECT'
+              action: 'SelectMeaning'
+              from_state: 'DRAFT'
+              to_state: 'PREVIEW'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            1:
+              id: 'TR-SAVE'
+              action: 'Save'
+              from_state: 'PREVIEW'
+              to_state: 'SAVED'
+              role: 'Agent'
+              guards:
+              required_effects:
+              forbidden_effects:
+            2:
+              id: 'TR-VERIFY'
+              action: 'Verify'
+              from_state: 'SAVED'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+              required_effects:
+              forbidden_effects:
+            3:
+              id: 'TR-VERIFY-SAVED'
+              action: 'VerifySaved'
+              from_state: 'SAVED'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+              required_effects:
+              forbidden_effects:
+        selected:
+          kind: 'transition'
+          id: 'TR-SAVE'
+      missing:
+        id: 'DESIGN-B'
+        name: 'A change with an unresolved binding'
+        revision: 3
+        before:
+          states:
+            0: 'DRAFT'
+            1: 'PREVIEW'
+            2: 'SAVED'
+            3: 'VERIFIED'
+          initial_state: 'DRAFT'
+          transitions:
+            0:
+              id: 'TR-SELECT'
+              action: 'SelectMeaning'
+              from_state: 'DRAFT'
+              to_state: 'PREVIEW'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            1:
+              id: 'TR-SAVE'
+              action: 'Save'
+              from_state: 'PREVIEW'
+              to_state: 'SAVED'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            2:
+              id: 'TR-VERIFY'
+              action: 'Verify'
+              from_state: 'PREVIEW'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+                1: 'assigned'
+              required_effects:
+              forbidden_effects:
+            3:
+              id: 'TR-VERIFY-SAVED'
+              action: 'VerifySaved'
+              from_state: 'SAVED'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+              required_effects:
+              forbidden_effects:
+        after:
+          states:
+            0: 'DRAFT'
+            1: 'PREVIEW'
+            2: 'SAVED'
+            3: 'VERIFIED'
+          initial_state: 'DRAFT'
+          transitions:
+            0:
+              id: 'TR-SELECT'
+              action: 'SelectMeaning'
+              from_state: 'DRAFT'
+              to_state: 'PREVIEW'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            1:
+              id: 'TR-SAVE'
+              action: 'Save'
+              from_state: 'PREVIEW'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            2:
+              id: 'TR-VERIFY'
+              action: 'Verify'
+              from_state: 'PREVIEW'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+                1: 'assigned'
+              required_effects:
+              forbidden_effects:
+            3:
+              id: 'TR-VERIFY-SAVED'
+              action: 'VerifySaved'
+              from_state: 'SAVED'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+              required_effects:
+              forbidden_effects:
+        selected:
+          kind: 'transition'
+          id: 'TR-SAVE'
+    stored:
+      0:
+        0: 'review'
+        1:
+          selected:
+            kind: 'transition'
+            id: 'TR-VERIFY'
+          prompt: 'Preserve request A'
+      1:
+        0: 'missing'
+        1:
+          selected:
+            kind: 'transition'
+            id: 'TR-SAVE'
+          prompt: 'Preserve request B'
+  actual:
+    selected:
+      kind: 'transition'
+      id: 'TR-SAVE'
+    source:
+      name: 'Studio.save'
+      file: 'example/studio.py'
+      ref: 'fixture://example/studio.py#Studio.save'
+      start: 42
+      lines:
+        0: '# Illustrative pseudocode; not captured repository source.'
+        1: 'def save(case, actor):'
+        2: '    require_declared_actor(case, actor)'
+        3: '    transaction = SaveCheckpoint(case.id)'
+        4: '    return record_checkpoint(transaction)'
+    caseData:
+      id: 'DESIGN-A'
+      name: 'Save checkpoint before verification'
+      revision: 8
+      before:
+        states:
+          0: 'DRAFT'
+          1: 'PREVIEW'
+          2: 'SAVED'
+          3: 'VERIFIED'
+        initial_state: 'DRAFT'
+        transitions:
+          0:
+            id: 'TR-SELECT'
+            action: 'SelectMeaning'
+            from_state: 'DRAFT'
+            to_state: 'PREVIEW'
+            role: 'Owner'
+            guards:
+            required_effects:
+            forbidden_effects:
+          1:
+            id: 'TR-SAVE'
+            action: 'Save'
+            from_state: 'PREVIEW'
+            to_state: 'SAVED'
+            role: 'Owner'
+            guards:
+            required_effects:
+            forbidden_effects:
+          2:
+            id: 'TR-VERIFY'
+            action: 'Verify'
+            from_state: 'PREVIEW'
+            to_state: 'VERIFIED'
+            role: 'Owner'
+            guards:
+              0: 'authenticated'
+              1: 'assigned'
+            required_effects:
+            forbidden_effects:
+          3:
+            id: 'TR-VERIFY-SAVED'
+            action: 'VerifySaved'
+            from_state: 'SAVED'
+            to_state: 'VERIFIED'
+            role: 'Owner'
+            guards:
+              0: 'authenticated'
+            required_effects:
+            forbidden_effects:
+      after:
+        states:
+          0: 'DRAFT'
+          1: 'PREVIEW'
+          2: 'SAVED'
+          3: 'VERIFIED'
+        initial_state: 'DRAFT'
+        transitions:
+          0:
+            id: 'TR-SELECT'
+            action: 'SelectMeaning'
+            from_state: 'DRAFT'
+            to_state: 'PREVIEW'
+            role: 'Owner'
+            guards:
+            required_effects:
+            forbidden_effects:
+          1:
+            id: 'TR-SAVE'
+            action: 'Save'
+            from_state: 'PREVIEW'
+            to_state: 'SAVED'
+            role: 'Agent'
+            guards:
+            required_effects:
+            forbidden_effects:
+          2:
+            id: 'TR-VERIFY'
+            action: 'Verify'
+            from_state: 'SAVED'
+            to_state: 'VERIFIED'
+            role: 'Owner'
+            guards:
+              0: 'authenticated'
+            required_effects:
+            forbidden_effects:
+          3:
+            id: 'TR-VERIFY-SAVED'
+            action: 'VerifySaved'
+            from_state: 'SAVED'
+            to_state: 'VERIFIED'
+            role: 'Owner'
+            guards:
+              0: 'authenticated'
+            required_effects:
+            forbidden_effects:
+      selected:
+        kind: 'transition'
+        id: 'TR-SAVE'
+    all:
+      review:
+        id: 'DESIGN-A'
+        name: 'Save checkpoint before verification'
+        revision: 8
+        before:
+          states:
+            0: 'DRAFT'
+            1: 'PREVIEW'
+            2: 'SAVED'
+            3: 'VERIFIED'
+          initial_state: 'DRAFT'
+          transitions:
+            0:
+              id: 'TR-SELECT'
+              action: 'SelectMeaning'
+              from_state: 'DRAFT'
+              to_state: 'PREVIEW'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            1:
+              id: 'TR-SAVE'
+              action: 'Save'
+              from_state: 'PREVIEW'
+              to_state: 'SAVED'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            2:
+              id: 'TR-VERIFY'
+              action: 'Verify'
+              from_state: 'PREVIEW'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+                1: 'assigned'
+              required_effects:
+              forbidden_effects:
+            3:
+              id: 'TR-VERIFY-SAVED'
+              action: 'VerifySaved'
+              from_state: 'SAVED'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+              required_effects:
+              forbidden_effects:
+        after:
+          states:
+            0: 'DRAFT'
+            1: 'PREVIEW'
+            2: 'SAVED'
+            3: 'VERIFIED'
+          initial_state: 'DRAFT'
+          transitions:
+            0:
+              id: 'TR-SELECT'
+              action: 'SelectMeaning'
+              from_state: 'DRAFT'
+              to_state: 'PREVIEW'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            1:
+              id: 'TR-SAVE'
+              action: 'Save'
+              from_state: 'PREVIEW'
+              to_state: 'SAVED'
+              role: 'Agent'
+              guards:
+              required_effects:
+              forbidden_effects:
+            2:
+              id: 'TR-VERIFY'
+              action: 'Verify'
+              from_state: 'SAVED'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+              required_effects:
+              forbidden_effects:
+            3:
+              id: 'TR-VERIFY-SAVED'
+              action: 'VerifySaved'
+              from_state: 'SAVED'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+              required_effects:
+              forbidden_effects:
+        selected:
+          kind: 'transition'
+          id: 'TR-SAVE'
+      missing:
+        id: 'DESIGN-B'
+        name: 'A change with an unresolved binding'
+        revision: 3
+        before:
+          states:
+            0: 'DRAFT'
+            1: 'PREVIEW'
+            2: 'SAVED'
+            3: 'VERIFIED'
+          initial_state: 'DRAFT'
+          transitions:
+            0:
+              id: 'TR-SELECT'
+              action: 'SelectMeaning'
+              from_state: 'DRAFT'
+              to_state: 'PREVIEW'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            1:
+              id: 'TR-SAVE'
+              action: 'Save'
+              from_state: 'PREVIEW'
+              to_state: 'SAVED'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            2:
+              id: 'TR-VERIFY'
+              action: 'Verify'
+              from_state: 'PREVIEW'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+                1: 'assigned'
+              required_effects:
+              forbidden_effects:
+            3:
+              id: 'TR-VERIFY-SAVED'
+              action: 'VerifySaved'
+              from_state: 'SAVED'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+              required_effects:
+              forbidden_effects:
+        after:
+          states:
+            0: 'DRAFT'
+            1: 'PREVIEW'
+            2: 'SAVED'
+            3: 'VERIFIED'
+          initial_state: 'DRAFT'
+          transitions:
+            0:
+              id: 'TR-SELECT'
+              action: 'SelectMeaning'
+              from_state: 'DRAFT'
+              to_state: 'PREVIEW'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            1:
+              id: 'TR-SAVE'
+              action: 'Save'
+              from_state: 'PREVIEW'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            2:
+              id: 'TR-VERIFY'
+              action: 'Verify'
+              from_state: 'PREVIEW'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+                1: 'assigned'
+              required_effects:
+              forbidden_effects:
+            3:
+              id: 'TR-VERIFY-SAVED'
+              action: 'VerifySaved'
+              from_state: 'SAVED'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+              required_effects:
+              forbidden_effects:
+        selected:
+          kind: 'transition'
+          id: 'TR-SAVE'
+    stored:
+      0:
+        0: 'review'
+        1:
+          selected:
+            kind: 'transition'
+            id: 'TR-SAVE'
+          prompt: 'Preserve request A'
+      1:
+        0: 'missing'
+        1:
+          selected:
+            kind: 'transition'
+            id: 'TR-SAVE'
+          prompt: 'Preserve request B'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (<design-reference>\checks\prepared-selection.test.cjs:26:127)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: all prepared variants select only their independent preview item and preserve case snapshots
+not ok 3 - all prepared variants select only their independent preview item and preserve case snapshots
+  ---
+  duration_ms: 2.9289
+  type: 'test'
+  location: '<design-reference>\\checks\\prepared-selection.test.cjs:30:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    source
+    + actual - expected
+    ... Skipped lines
+
+      {
+        all: {
+          missing: {
+            after: {
+              initial_state: 'DRAFT',
+    ...
+        selected: {
+    +     id: 'TR-VERIFY',
+    -     id: 'TR-SAVE',
+          kind: 'transition'
+        },
+        source: {
+          file: 'example/studio.py',
+          lines: [
+            '# Illustrative pseudocode; not captured repository source.',
+    +       'def verify(case, actor):',
+    -       'def save(case, actor):',
+            '    require_declared_actor(case, actor)',
+    +       '    subject = candidate_subject(case)',
+    +       '    return collect_bounded_checks(subject)'
+    -       '    transaction = SaveCheckpoint(case.id)',
+    -       '    return record_checkpoint(transaction)'
+          ],
+    +     name: 'Studio.verify',
+    +     ref: 'fixture://example/studio.py#Studio.verify',
+    +     start: 73
+    -     name: 'Studio.save',
+    -     ref: 'fixture://example/studio.py#Studio.save',
+    -     start: 42
+        },
+        stored: [
+          [
+            'review',
+            {
+              prompt: 'Preserve request A',
+              selected: {
+    +           id: 'TR-VERIFY',
+    -           id: 'TR-SAVE',
+                kind: 'transition'
+              }
+            }
+          ],
+          [
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    selected:
+      kind: 'transition'
+      id: 'TR-SAVE'
+    source:
+      name: 'Studio.save'
+      file: 'example/studio.py'
+      ref: 'fixture://example/studio.py#Studio.save'
+      start: 42
+      lines:
+        0: '# Illustrative pseudocode; not captured repository source.'
+        1: 'def save(case, actor):'
+        2: '    require_declared_actor(case, actor)'
+        3: '    transaction = SaveCheckpoint(case.id)'
+        4: '    return record_checkpoint(transaction)'
+    caseData:
+      id: 'DESIGN-A'
+      name: 'Save checkpoint before verification'
+      revision: 8
+      before:
+        states:
+          0: 'DRAFT'
+          1: 'PREVIEW'
+          2: 'SAVED'
+          3: 'VERIFIED'
+        initial_state: 'DRAFT'
+        transitions:
+          0:
+            id: 'TR-SELECT'
+            action: 'SelectMeaning'
+            from_state: 'DRAFT'
+            to_state: 'PREVIEW'
+            role: 'Owner'
+            guards:
+            required_effects:
+            forbidden_effects:
+          1:
+            id: 'TR-SAVE'
+            action: 'Save'
+            from_state: 'PREVIEW'
+            to_state: 'SAVED'
+            role: 'Owner'
+            guards:
+            required_effects:
+            forbidden_effects:
+          2:
+            id: 'TR-VERIFY'
+            action: 'Verify'
+            from_state: 'PREVIEW'
+            to_state: 'VERIFIED'
+            role: 'Owner'
+            guards:
+              0: 'authenticated'
+              1: 'assigned'
+            required_effects:
+            forbidden_effects:
+          3:
+            id: 'TR-VERIFY-SAVED'
+            action: 'VerifySaved'
+            from_state: 'SAVED'
+            to_state: 'VERIFIED'
+            role: 'Owner'
+            guards:
+              0: 'authenticated'
+            required_effects:
+            forbidden_effects:
+      after:
+        states:
+          0: 'DRAFT'
+          1: 'PREVIEW'
+          2: 'SAVED'
+          3: 'VERIFIED'
+        initial_state: 'DRAFT'
+        transitions:
+          0:
+            id: 'TR-SELECT'
+            action: 'SelectMeaning'
+            from_state: 'DRAFT'
+            to_state: 'PREVIEW'
+            role: 'Owner'
+            guards:
+            required_effects:
+            forbidden_effects:
+          1:
+            id: 'TR-SAVE'
+            action: 'Save'
+            from_state: 'PREVIEW'
+            to_state: 'SAVED'
+            role: 'Agent'
+            guards:
+            required_effects:
+            forbidden_effects:
+          2:
+            id: 'TR-VERIFY'
+            action: 'Verify'
+            from_state: 'SAVED'
+            to_state: 'VERIFIED'
+            role: 'Owner'
+            guards:
+              0: 'authenticated'
+            required_effects:
+            forbidden_effects:
+          3:
+            id: 'TR-VERIFY-SAVED'
+            action: 'VerifySaved'
+            from_state: 'SAVED'
+            to_state: 'VERIFIED'
+            role: 'Owner'
+            guards:
+              0: 'authenticated'
+            required_effects:
+            forbidden_effects:
+      selected:
+        kind: 'transition'
+        id: 'TR-SAVE'
+    all:
+      review:
+        id: 'DESIGN-A'
+        name: 'Save checkpoint before verification'
+        revision: 8
+        before:
+          states:
+            0: 'DRAFT'
+            1: 'PREVIEW'
+            2: 'SAVED'
+            3: 'VERIFIED'
+          initial_state: 'DRAFT'
+          transitions:
+            0:
+              id: 'TR-SELECT'
+              action: 'SelectMeaning'
+              from_state: 'DRAFT'
+              to_state: 'PREVIEW'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            1:
+              id: 'TR-SAVE'
+              action: 'Save'
+              from_state: 'PREVIEW'
+              to_state: 'SAVED'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            2:
+              id: 'TR-VERIFY'
+              action: 'Verify'
+              from_state: 'PREVIEW'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+                1: 'assigned'
+              required_effects:
+              forbidden_effects:
+            3:
+              id: 'TR-VERIFY-SAVED'
+              action: 'VerifySaved'
+              from_state: 'SAVED'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+              required_effects:
+              forbidden_effects:
+        after:
+          states:
+            0: 'DRAFT'
+            1: 'PREVIEW'
+            2: 'SAVED'
+            3: 'VERIFIED'
+          initial_state: 'DRAFT'
+          transitions:
+            0:
+              id: 'TR-SELECT'
+              action: 'SelectMeaning'
+              from_state: 'DRAFT'
+              to_state: 'PREVIEW'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            1:
+              id: 'TR-SAVE'
+              action: 'Save'
+              from_state: 'PREVIEW'
+              to_state: 'SAVED'
+              role: 'Agent'
+              guards:
+              required_effects:
+              forbidden_effects:
+            2:
+              id: 'TR-VERIFY'
+              action: 'Verify'
+              from_state: 'SAVED'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+              required_effects:
+              forbidden_effects:
+            3:
+              id: 'TR-VERIFY-SAVED'
+              action: 'VerifySaved'
+              from_state: 'SAVED'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+              required_effects:
+              forbidden_effects:
+        selected:
+          kind: 'transition'
+          id: 'TR-SAVE'
+      missing:
+        id: 'DESIGN-B'
+        name: 'A change with an unresolved binding'
+        revision: 3
+        before:
+          states:
+            0: 'DRAFT'
+            1: 'PREVIEW'
+            2: 'SAVED'
+            3: 'VERIFIED'
+          initial_state: 'DRAFT'
+          transitions:
+            0:
+              id: 'TR-SELECT'
+              action: 'SelectMeaning'
+              from_state: 'DRAFT'
+              to_state: 'PREVIEW'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            1:
+              id: 'TR-SAVE'
+              action: 'Save'
+              from_state: 'PREVIEW'
+              to_state: 'SAVED'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            2:
+              id: 'TR-VERIFY'
+              action: 'Verify'
+              from_state: 'PREVIEW'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+                1: 'assigned'
+              required_effects:
+              forbidden_effects:
+            3:
+              id: 'TR-VERIFY-SAVED'
+              action: 'VerifySaved'
+              from_state: 'SAVED'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+              required_effects:
+              forbidden_effects:
+        after:
+          states:
+            0: 'DRAFT'
+            1: 'PREVIEW'
+            2: 'SAVED'
+            3: 'VERIFIED'
+          initial_state: 'DRAFT'
+          transitions:
+            0:
+              id: 'TR-SELECT'
+              action: 'SelectMeaning'
+              from_state: 'DRAFT'
+              to_state: 'PREVIEW'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            1:
+              id: 'TR-SAVE'
+              action: 'Save'
+              from_state: 'PREVIEW'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            2:
+              id: 'TR-VERIFY'
+              action: 'Verify'
+              from_state: 'PREVIEW'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+                1: 'assigned'
+              required_effects:
+              forbidden_effects:
+            3:
+              id: 'TR-VERIFY-SAVED'
+              action: 'VerifySaved'
+              from_state: 'SAVED'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+              required_effects:
+              forbidden_effects:
+        selected:
+          kind: 'transition'
+          id: 'TR-SAVE'
+    stored:
+      0:
+        0: 'review'
+        1:
+          selected:
+            kind: 'transition'
+            id: 'TR-SAVE'
+          prompt: 'Preserve request A'
+      1:
+        0: 'missing'
+        1:
+          selected:
+            kind: 'transition'
+            id: 'TR-SAVE'
+          prompt: 'Preserve request B'
+  actual:
+    selected:
+      kind: 'transition'
+      id: 'TR-VERIFY'
+    source:
+      name: 'Studio.verify'
+      file: 'example/studio.py'
+      ref: 'fixture://example/studio.py#Studio.verify'
+      start: 73
+      lines:
+        0: '# Illustrative pseudocode; not captured repository source.'
+        1: 'def verify(case, actor):'
+        2: '    require_declared_actor(case, actor)'
+        3: '    subject = candidate_subject(case)'
+        4: '    return collect_bounded_checks(subject)'
+    caseData:
+      id: 'DESIGN-A'
+      name: 'Save checkpoint before verification'
+      revision: 8
+      before:
+        states:
+          0: 'DRAFT'
+          1: 'PREVIEW'
+          2: 'SAVED'
+          3: 'VERIFIED'
+        initial_state: 'DRAFT'
+        transitions:
+          0:
+            id: 'TR-SELECT'
+            action: 'SelectMeaning'
+            from_state: 'DRAFT'
+            to_state: 'PREVIEW'
+            role: 'Owner'
+            guards:
+            required_effects:
+            forbidden_effects:
+          1:
+            id: 'TR-SAVE'
+            action: 'Save'
+            from_state: 'PREVIEW'
+            to_state: 'SAVED'
+            role: 'Owner'
+            guards:
+            required_effects:
+            forbidden_effects:
+          2:
+            id: 'TR-VERIFY'
+            action: 'Verify'
+            from_state: 'PREVIEW'
+            to_state: 'VERIFIED'
+            role: 'Owner'
+            guards:
+              0: 'authenticated'
+              1: 'assigned'
+            required_effects:
+            forbidden_effects:
+          3:
+            id: 'TR-VERIFY-SAVED'
+            action: 'VerifySaved'
+            from_state: 'SAVED'
+            to_state: 'VERIFIED'
+            role: 'Owner'
+            guards:
+              0: 'authenticated'
+            required_effects:
+            forbidden_effects:
+      after:
+        states:
+          0: 'DRAFT'
+          1: 'PREVIEW'
+          2: 'SAVED'
+          3: 'VERIFIED'
+        initial_state: 'DRAFT'
+        transitions:
+          0:
+            id: 'TR-SELECT'
+            action: 'SelectMeaning'
+            from_state: 'DRAFT'
+            to_state: 'PREVIEW'
+            role: 'Owner'
+            guards:
+            required_effects:
+            forbidden_effects:
+          1:
+            id: 'TR-SAVE'
+            action: 'Save'
+            from_state: 'PREVIEW'
+            to_state: 'SAVED'
+            role: 'Agent'
+            guards:
+            required_effects:
+            forbidden_effects:
+          2:
+            id: 'TR-VERIFY'
+            action: 'Verify'
+            from_state: 'SAVED'
+            to_state: 'VERIFIED'
+            role: 'Owner'
+            guards:
+              0: 'authenticated'
+            required_effects:
+            forbidden_effects:
+          3:
+            id: 'TR-VERIFY-SAVED'
+            action: 'VerifySaved'
+            from_state: 'SAVED'
+            to_state: 'VERIFIED'
+            role: 'Owner'
+            guards:
+              0: 'authenticated'
+            required_effects:
+            forbidden_effects:
+      selected:
+        kind: 'transition'
+        id: 'TR-SAVE'
+    all:
+      review:
+        id: 'DESIGN-A'
+        name: 'Save checkpoint before verification'
+        revision: 8
+        before:
+          states:
+            0: 'DRAFT'
+            1: 'PREVIEW'
+            2: 'SAVED'
+            3: 'VERIFIED'
+          initial_state: 'DRAFT'
+          transitions:
+            0:
+              id: 'TR-SELECT'
+              action: 'SelectMeaning'
+              from_state: 'DRAFT'
+              to_state: 'PREVIEW'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            1:
+              id: 'TR-SAVE'
+              action: 'Save'
+              from_state: 'PREVIEW'
+              to_state: 'SAVED'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            2:
+              id: 'TR-VERIFY'
+              action: 'Verify'
+              from_state: 'PREVIEW'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+                1: 'assigned'
+              required_effects:
+              forbidden_effects:
+            3:
+              id: 'TR-VERIFY-SAVED'
+              action: 'VerifySaved'
+              from_state: 'SAVED'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+              required_effects:
+              forbidden_effects:
+        after:
+          states:
+            0: 'DRAFT'
+            1: 'PREVIEW'
+            2: 'SAVED'
+            3: 'VERIFIED'
+          initial_state: 'DRAFT'
+          transitions:
+            0:
+              id: 'TR-SELECT'
+              action: 'SelectMeaning'
+              from_state: 'DRAFT'
+              to_state: 'PREVIEW'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            1:
+              id: 'TR-SAVE'
+              action: 'Save'
+              from_state: 'PREVIEW'
+              to_state: 'SAVED'
+              role: 'Agent'
+              guards:
+              required_effects:
+              forbidden_effects:
+            2:
+              id: 'TR-VERIFY'
+              action: 'Verify'
+              from_state: 'SAVED'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+              required_effects:
+              forbidden_effects:
+            3:
+              id: 'TR-VERIFY-SAVED'
+              action: 'VerifySaved'
+              from_state: 'SAVED'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+              required_effects:
+              forbidden_effects:
+        selected:
+          kind: 'transition'
+          id: 'TR-SAVE'
+      missing:
+        id: 'DESIGN-B'
+        name: 'A change with an unresolved binding'
+        revision: 3
+        before:
+          states:
+            0: 'DRAFT'
+            1: 'PREVIEW'
+            2: 'SAVED'
+            3: 'VERIFIED'
+          initial_state: 'DRAFT'
+          transitions:
+            0:
+              id: 'TR-SELECT'
+              action: 'SelectMeaning'
+              from_state: 'DRAFT'
+              to_state: 'PREVIEW'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            1:
+              id: 'TR-SAVE'
+              action: 'Save'
+              from_state: 'PREVIEW'
+              to_state: 'SAVED'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            2:
+              id: 'TR-VERIFY'
+              action: 'Verify'
+              from_state: 'PREVIEW'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+                1: 'assigned'
+              required_effects:
+              forbidden_effects:
+            3:
+              id: 'TR-VERIFY-SAVED'
+              action: 'VerifySaved'
+              from_state: 'SAVED'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+              required_effects:
+              forbidden_effects:
+        after:
+          states:
+            0: 'DRAFT'
+            1: 'PREVIEW'
+            2: 'SAVED'
+            3: 'VERIFIED'
+          initial_state: 'DRAFT'
+          transitions:
+            0:
+              id: 'TR-SELECT'
+              action: 'SelectMeaning'
+              from_state: 'DRAFT'
+              to_state: 'PREVIEW'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            1:
+              id: 'TR-SAVE'
+              action: 'Save'
+              from_state: 'PREVIEW'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+              required_effects:
+              forbidden_effects:
+            2:
+              id: 'TR-VERIFY'
+              action: 'Verify'
+              from_state: 'PREVIEW'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+                1: 'assigned'
+              required_effects:
+              forbidden_effects:
+            3:
+              id: 'TR-VERIFY-SAVED'
+              action: 'VerifySaved'
+              from_state: 'SAVED'
+              to_state: 'VERIFIED'
+              role: 'Owner'
+              guards:
+                0: 'authenticated'
+              required_effects:
+              forbidden_effects:
+        selected:
+          kind: 'transition'
+          id: 'TR-SAVE'
+    stored:
+      0:
+        0: 'review'
+        1:
+          selected:
+            kind: 'transition'
+            id: 'TR-VERIFY'
+          prompt: 'Preserve request A'
+      1:
+        0: 'missing'
+        1:
+          selected:
+            kind: 'transition'
+            id: 'TR-SAVE'
+          prompt: 'Preserve request B'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (<design-reference>\checks\prepared-selection.test.cjs:32:210)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 0
+# fail 3
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 98.0705
