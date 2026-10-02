@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>EIJA Studio · Interactive design reference</title>
+  <link rel="stylesheet" href="assets/compare.css">
+  <link rel="stylesheet" href="design.css">
+  <script src="assets/dagre.min.js" defer></script>
+  <script src="assets/canvas.js" defer></script>
+  <script src="assets/review.js" defer></script>
+  <script src="assets/compare.js" defer></script>
+  <script src="design.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#surface-title">Skip to current surface</a>
+  <div class="design-banner"><strong>INTERACTIVE DESIGN</strong><span>Illustrative fixtures · no backend, agent execution, or validation results</span><a href="HANDOFF.md">Design handoff</a></div>
+  <header class="app-bar">
+    <div class="brand"><span class="logo">E</span><strong>EIJA <span>Studio</span></strong><span class="project-name">Meaning review lab</span></div>
+    <div class="app-actions"><button id="workspace-open" aria-haspopup="dialog" aria-controls="workspace-menu">Workspace</button><button id="command-open">Find a surface <kbd>Ctrl K</kbd></button></div>
+  </header>
+  <div class="subject-bar"><label for="case-select">Case</label><select id="case-select"><option value="review">Review change · example A</option><option value="missing">Unmapped change · example B</option></select><span id="case-caption"></span><details class="identity"><summary>Exact fixture identities</summary><dl id="identities"></dl></details></div>
+  <div class="workspace">
+    <aside id="navigation" aria-label="Current task inventory">
+      <div class="nav-heading"><strong id="task-nav-title">MODEL CHANGES</strong><button id="navigation-close" aria-label="Close task inventory">Close</button></div>
+      <section class="selection-nav" aria-label="Current selection"><p class="eyebrow">SELECTED SUBJECT</p><h2 id="nav-selected">Save</h2><p id="nav-subject" class="muted"></p><div id="change-navigator"></div></section>
+    </aside>
+    <main id="main">
+      <nav class="work-tabs" aria-label="Frequent work views"><button data-view="model">Model</button><button data-view="intent">Intent</button><button data-view="changes">Changes</button><button data-view="source">Source</button><button data-view="evidence">Evidence</button><button data-view="run">Run</button></nav>
+      <div class="surface-heading"><div><h1 id="surface-title" tabindex="-1"></h1><span id="surface-kicker" class="eyebrow"></span></div><div class="row"><button id="navigation-toggle" aria-expanded="true" aria-controls="navigation">Task inventory</button><button id="return-origin" hidden>Return to selected change</button></div></div>
+      <section class="selected-ribbon" aria-label="Selected change"><strong id="selected-title"></strong><span id="selected-delta"></span></section>
+      <div class="content-grid"><section id="surface" class="surface" aria-labelledby="surface-title"></section><aside id="context" class="context" aria-label="Selected element context"></aside></div>
+      <section id="state-lab" class="state-lab"><details><summary>Design states &amp; interaction handoff <span id="state-label"></span></summary><div class="lab-controls"><label for="state-select">Surface state</label><select id="state-select"></select><label for="persona-select">Task lens</label><select id="persona-select"><option value="reviewer">Reviewer / technical lead</option><option value="modeller">Domain engineer / modeller</option><option value="ai">AI-assisted engineer</option><option value="factory">Factory operator · planned</option></select><button id="reset-design">Reset design fixtures</button></div><p id="state-handoff"></p><p id="persona-task" class="muted"></p><p class="muted">State controls change local illustration only. No requests, repository edits, receipts, approval or execution occur. Layouts and keyboard behavior require browser review; human benefit is NOT_RUN.</p></details></section>
+    </main>
+  </div>
+  <footer class="status"><span id="status-subject">Illustrative model review</span><span>Source review required · human comprehension UNKNOWN</span><span>Design reference · not product evidence</span></footer>
+  <div id="announcement" class="sr-only" role="status" aria-live="polite"></div>
+  <dialog id="workspace-menu" aria-labelledby="workspace-title"><div class="dialog-heading"><h2 id="workspace-title">Workspace surfaces</h2><button id="workspace-close">Close</button></div><nav aria-label="All ten surfaces" class="workspace-menu-grid"><div class="nav-group"><p>Build &amp; understand</p><button data-view="model">Model <span>S01</span></button><button data-view="intent">Intent <span>S02</span></button><button data-view="edit">Rules &amp; edit preview <span>S05</span></button></div><div class="nav-group"><p>Review &amp; investigate</p><button data-view="changes">Visual changes <span>S03</span></button><button data-view="source">Source &amp; connection <span>S04</span></button><button data-view="evidence">Evidence &amp; witness <span>S06</span></button><button data-view="run">Run candidate <span>S07</span></button></div><div class="nav-group"><p>Workspace &amp; recovery</p><button data-view="history">History <span>S08</span></button><button data-view="connection">Connection &amp; help <span>S10</span></button><button data-view="factory">Agent factory <span>PLANNED · S09</span></button></div></nav></dialog>
+  <dialog id="commands" aria-labelledby="commands-title"><div class="dialog-heading"><h2 id="commands-title">Find a surface</h2><button id="command-close">Close</button></div><label for="command-query">Search by task or surface</label><input id="command-query" type="search" autocomplete="off"><div id="command-results"></div></dialog>
+  <dialog id="preview-dialog" class="preview-dialog" aria-labelledby="preview-title"><div class="dialog-heading"><div><p class="eyebrow">S05 · ILLUSTRATIVE, UNSUBMITTED</p><h2 id="preview-title">Review proposed edit</h2></div><button id="preview-close">Close preview</button></div><p id="preview-outcome" role="status"></p><div id="preview-graph"></div><div class="preview-footer"><span>No backend exists in this artifact. Only the next illustration will change.</span><button id="preview-apply" class="primary">Show apply outcome</button></div></dialog>
+  <noscript><p>This interactive design needs its local JavaScript files. No network connection is used.</p></noscript>
+</body>
+</html>

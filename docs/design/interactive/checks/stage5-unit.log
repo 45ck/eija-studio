@@ -1,0 +1,76 @@
+TAP version 13
+# Subtest: raw diagnostic retains exact data while exposing a named native keyboard region
+ok 1 - raw diagnostic retains exact data while exposing a named native keyboard region
+  ---
+  duration_ms: 2.3488
+  type: 'test'
+  ...
+# Subtest: both authored raw surfaces have distinct accessible names and no generic pre bypass remains
+ok 2 - both authored raw surfaces have distinct accessible names and no generic pre bypass remains
+  ---
+  duration_ms: 0.3034
+  type: 'test'
+  ...
+# Subtest: global browsing across all ten surfaces never creates a contextual origin
+ok 3 - global browsing across all ten surfaces never creates a contextual origin
+  ---
+  duration_ms: 4.3376
+  type: 'test'
+  ...
+# Subtest: ordinary global round-trip then a new Verify investigation returns Verify, not earlier Save
+ok 4 - ordinary global round-trip then a new Verify investigation returns Verify, not earlier Save
+  ---
+  duration_ms: 1.5589
+  type: 'test'
+  ...
+# Subtest: Source to Evidence keeps the original selection despite deliberate selection at the destination
+ok 5 - Source to Evidence keeps the original selection despite deliberate selection at the destination
+  ---
+  duration_ms: 1.2619
+  type: 'test'
+  ...
+# Subtest: global arrival at the origin ends a detour without creating a reverse origin
+ok 6 - global arrival at the origin ends a detour without creating a reverse origin
+  ---
+  duration_ms: 1.4868
+  type: 'test'
+  ...
+# Subtest: explicit return restores the surviving invoking control's focus
+ok 7 - explicit return restores the surviving invoking control's focus
+  ---
+  duration_ms: 1.3717
+  type: 'test'
+  ...
+# Subtest: same-view or unknown route does not create or replace a detour
+ok 8 - same-view or unknown route does not create or replace a detour
+  ---
+  duration_ms: 3.1866
+  type: 'test'
+  ...
+# Subtest: prepared Verify example and preview closure preserve parked case A Save and exact source context
+ok 9 - prepared Verify example and preview closure preserve parked case A Save and exact source context
+  ---
+  duration_ms: 8.1258
+  type: 'test'
+  ...
+# Subtest: independent choices across cases A and B never rewrite either stored selection or unmapped source
+ok 10 - independent choices across cases A and B never rewrite either stored selection or unmapped source
+  ---
+  duration_ms: 4.1157
+  type: 'test'
+  ...
+# Subtest: all prepared variants select only their independent preview item and preserve case snapshots
+ok 11 - all prepared variants select only their independent preview item and preserve case snapshots
+  ---
+  duration_ms: 3.4097
+  type: 'test'
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 11
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 122.832

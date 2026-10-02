@@ -1,0 +1,361 @@
+{
+  "purpose": "Interactive design reference refinement5: isolate prepared example selection from parked cases and retain context/source identity; no product acceptance",
+  "date": "2026-10-03",
+  "parent_artifact_manifest_sha256": "1df75571aff40dbb9a674c227690dcab4546b55162f4b11012dd5dca60e3f118",
+  "source_checkout": {
+    "head_at_capture": "1ecef1ec31ab158ee9f3e53ed93fbcd53262e828",
+    "capture": "Dirty working-tree assets, including uncommitted US06 comparison changes and the later neutral captured-comparison caption repair. Captured asset hashes are authoritative; HEAD alone does not contain or certify those bytes."
+  },
+  "copied_assets": [
+    {
+      "path": "assets/compare.js",
+      "source": "src/eija_studio/resources/web/compare.js",
+      "parent_artifact_sha256": "2007ed3eaf766eadaa9a7d979033789fa2f825eb991b267ab888d9669df8d6bd",
+      "sha256": "2007ed3eaf766eadaa9a7d979033789fa2f825eb991b267ab888d9669df8d6bd",
+      "bytes": 33491,
+      "byte_identical_to_captured_repository_source": true
+    },
+    {
+      "path": "assets/compare.css",
+      "source": "src/eija_studio/resources/web/compare.css",
+      "parent_artifact_sha256": "6545e65f92a3c15c680abbbb6de018c76bacb833f6398890899750fb99f24a16",
+      "sha256": "6545e65f92a3c15c680abbbb6de018c76bacb833f6398890899750fb99f24a16",
+      "bytes": 7562,
+      "byte_identical_to_captured_repository_source": true
+    },
+    {
+      "path": "assets/canvas.js",
+      "source": "src/eija_studio/resources/web/canvas.js",
+      "parent_artifact_sha256": "e0226d9361d73aa1831e48080f5fc262bb0fcbd8086cd1387461d39de6ca1765",
+      "sha256": "e0226d9361d73aa1831e48080f5fc262bb0fcbd8086cd1387461d39de6ca1765",
+      "bytes": 11971,
+      "byte_identical_to_captured_repository_source": true
+    },
+    {
+      "path": "assets/review.js",
+      "source": "src/eija_studio/resources/web/review.js",
+      "parent_artifact_sha256": "426978e964918a63b8e73ff1ae99b2b126e7a1a4d9429b2151e275cfaf178dee",
+      "sha256": "426978e964918a63b8e73ff1ae99b2b126e7a1a4d9429b2151e275cfaf178dee",
+      "bytes": 7394,
+      "byte_identical_to_captured_repository_source": true
+    },
+    {
+      "path": "assets/dagre.min.js",
+      "source": "src/eija_studio/resources/web/vendor/dagre.min.js",
+      "parent_artifact_sha256": "c35b8d6f410ce7bdd302fc00cad27331184e52b2e738609e55ae3bbb4fb4849f",
+      "sha256": "c35b8d6f410ce7bdd302fc00cad27331184e52b2e738609e55ae3bbb4fb4849f",
+      "bytes": 97200,
+      "byte_identical_to_captured_repository_source": true
+    },
+    {
+      "path": "assets/dagre.LICENSE.txt",
+      "source": "src/eija_studio/resources/web/vendor/dagre.LICENSE.txt",
+      "parent_artifact_sha256": "6a349742a6cb219d5a2fc8d0844f6d89a6efc62e20c664450d884fc7ff2d6015",
+      "sha256": "6a349742a6cb219d5a2fc8d0844f6d89a6efc62e20c664450d884fc7ff2d6015",
+      "bytes": 1062,
+      "byte_identical_to_captured_repository_source": true
+    },
+    {
+      "path": "assets/dagre-graphlib.LICENSE.txt",
+      "source": "src/eija_studio/resources/web/vendor/dagre-graphlib.LICENSE.txt",
+      "parent_artifact_sha256": "6a349742a6cb219d5a2fc8d0844f6d89a6efc62e20c664450d884fc7ff2d6015",
+      "sha256": "6a349742a6cb219d5a2fc8d0844f6d89a6efc62e20c664450d884fc7ff2d6015",
+      "bytes": 1062,
+      "byte_identical_to_captured_repository_source": true
+    },
+    {
+      "path": "assets/dagre.VENDOR.json",
+      "source": "src/eija_studio/resources/web/vendor/dagre.VENDOR.json",
+      "parent_artifact_sha256": "9ea8f38b29e9a766e0a413b83b24a2e6238dcb4f8568aad79a1bdb2866eee14d",
+      "sha256": "9ea8f38b29e9a766e0a413b83b24a2e6238dcb4f8568aad79a1bdb2866eee14d",
+      "bytes": 1959,
+      "byte_identical_to_captured_repository_source": true
+    },
+    {
+      "path": "assets/EIJA-LICENSE.txt",
+      "source": "LICENSE",
+      "parent_artifact_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358,
+      "byte_identical_to_captured_repository_source": true
+    }
+  ],
+  "authored_files": [
+    {
+      "path": "index.html",
+      "base_sha256": "dce4dbf380651c5223afaa36bd421f8ce85c8872892aa4b862dde7dd33be06e4",
+      "sha256": "dce4dbf380651c5223afaa36bd421f8ce85c8872892aa4b862dde7dd33be06e4",
+      "bytes": 6699
+    },
+    {
+      "path": "design.css",
+      "base_sha256": "2c5848d338493cee5dd60ee37164c0761da28d0ad8b91d8ef5a486fdc121e80d",
+      "sha256": "2c5848d338493cee5dd60ee37164c0761da28d0ad8b91d8ef5a486fdc121e80d",
+      "bytes": 21738
+    },
+    {
+      "path": "design.js",
+      "base_sha256": "5223bf4121660eaae08431342ecd4f9177772d4acc2c232e4f5ad7a918e11ad5",
+      "sha256": "e3b02dfe288627e34645bab221f8d5193e1ce0437c17f3ad67aa6102f8544d00",
+      "bytes": 50262
+    },
+    {
+      "path": "README.md",
+      "base_sha256": "f996f7b71290fd6df591c2f23a69ae011e2fa2bebbb259df0e5386025acd2e6e",
+      "sha256": "ab6c41c5432dffc4d8a7445f78fdc444631a72525e163f5dba8be711c3ae5c46",
+      "bytes": 10468,
+      "frozen_design5_sha256": "c3e7b71828049083235775ed2fd487d5b81eb20eb2da58198df04ee1bc58939d"
+    },
+    {
+      "path": "HANDOFF.md",
+      "base_sha256": "6332e5cdf8571922ae06e296ae24f70e4ed1aacf6b25daabce8e14cfefda9edc",
+      "sha256": "43d4ad877c75ca8f1fe9a4eeb3a0b8ccb69da169d78b97698d44b69a67cd4255",
+      "bytes": 19917
+    },
+    {
+      "path": "checks/navigation-origin.test.cjs",
+      "base_sha256": "bd629ab13cd6b68ed9e835b199ab668c65208b1ae460a3b4dd41a956f0bdf677",
+      "sha256": "bd629ab13cd6b68ed9e835b199ab668c65208b1ae460a3b4dd41a956f0bdf677",
+      "bytes": 4620
+    },
+    {
+      "path": "checks/stage2-counterexample.log",
+      "base_sha256": "768931e585a6a4425460b085602604c15513660cf534a20ee552bcdaf6c252e8",
+      "sha256": "75a320afd3640e83525d41f237a10fe2857b8183a5acaeeeb7683c0892293920",
+      "bytes": 4117,
+      "frozen_design5_sha256": "768931e585a6a4425460b085602604c15513660cf534a20ee552bcdaf6c252e8"
+    },
+    {
+      "path": "checks/stage3-navigation.log",
+      "base_sha256": "d3a431e58f0b7bc87c35a2a819bc0be62be4ee1ed3b7c69a83fe98f48f92fce4",
+      "sha256": "d3a431e58f0b7bc87c35a2a819bc0be62be4ee1ed3b7c69a83fe98f48f92fce4",
+      "bytes": 1449
+    },
+    {
+      "path": "checks/exact-record.test.cjs",
+      "base_sha256": "34d3e9a2868c5b70784685e6879ff66cc0eb1ef5af170ac5aae4fdf1e82a67aa",
+      "sha256": "34d3e9a2868c5b70784685e6879ff66cc0eb1ef5af170ac5aae4fdf1e82a67aa",
+      "bytes": 1763
+    },
+    {
+      "path": "checks/stage4-unit.log",
+      "base_sha256": "0b41036200e4e16d9edc88268f0ebde05c4afc01aebe6bc2bbcd4ff15ded8020",
+      "sha256": "0b41036200e4e16d9edc88268f0ebde05c4afc01aebe6bc2bbcd4ff15ded8020",
+      "bytes": 1928
+    },
+    {
+      "path": "checks/prepared-selection.test.cjs",
+      "base_sha256": null,
+      "sha256": "cf7ac0c8791ed0eaea854b08d7359a59f0d2cadf2c8c41692c3d4f69f231bc3a",
+      "bytes": 4229
+    },
+    {
+      "path": "checks/stage4-selection-counterexample.log",
+      "base_sha256": null,
+      "sha256": "ea8e705e08a82268f8d2ca86ae378e30cb195821a31e5bf498d9f1657c13cd67",
+      "bytes": 61779,
+      "frozen_design5_sha256": "fde9cab59abb4e6d42f9bf49502037c4b2bc022df2060bb74508f14ce2b3b2e7"
+    },
+    {
+      "path": "checks/stage5-unit.log",
+      "base_sha256": null,
+      "sha256": "83e46abd99e5ccc1f2835647015121dd03f149bf6cdcc9ec553f66be1d447251",
+      "bytes": 2710
+    }
+  ],
+  "derived_public_logs": [
+    {
+      "path": "checks/stage2-counterexample.log",
+      "kind": "Derived public copy; not a rerun",
+      "raw_retained_at": "Local frozen refinement 3 / checks/stage2-counterexample.log",
+      "original_raw_sha256": "4528cb0cfaf754ca6f189dfab2d11e5580dba7c966f4828722b893e186411963",
+      "derived_sha256": "75a320afd3640e83525d41f237a10fe2857b8183a5acaeeeb7683c0892293920",
+      "transformation": "Replace only machine-specific artifact root with <design-reference> (escaped and unescaped variants); normalize CRLF to LF. No assertion/count/duration changes. Publication packaging additionally strips trailing ASCII spaces/tabs on six whitespace-only lines; nonblank lines and outcomes remain byte-identical.",
+      "bom_removed": false,
+      "frozen_design5_public_sha256": "768931e585a6a4425460b085602604c15513660cf534a20ee552bcdaf6c252e8"
+    },
+    {
+      "path": "checks/stage3-navigation.log",
+      "kind": "Derived public copy; not a rerun",
+      "raw_retained_at": "Local frozen refinement 3 / checks/stage3-navigation.log",
+      "original_raw_sha256": "8707368d8a9c591113bb78ae2ca93cbe9c7e46b97aac39ceafec125b99dd1332",
+      "derived_sha256": "d3a431e58f0b7bc87c35a2a819bc0be62be4ee1ed3b7c69a83fe98f48f92fce4",
+      "transformation": "Replace only machine-specific artifact root with <design-reference> (escaped and unescaped variants); normalize CRLF to LF. No assertion/count/duration changes.",
+      "bom_removed": false
+    },
+    {
+      "path": "checks/stage4-selection-counterexample.log",
+      "kind": "Derived public copy of current captured Node output",
+      "raw_retained_at": "Local work / design5-stage4-counterexample-final.raw.log",
+      "original_raw_sha256": "6f457f522034fcf34793742db9ce7e6695b9d754913e02fa9cb995b6cc577b1b",
+      "derived_sha256": "ea8e705e08a82268f8d2ca86ae378e30cb195821a31e5bf498d9f1657c13cd67",
+      "transformation": "Replace only machine-specific artifact root with <design-reference> (escaped and unescaped variants); normalize CRLF to LF. Assertions/counts/durations unchanged. Publication packaging additionally strips trailing ASCII spaces/tabs on six whitespace-only lines; nonblank lines and outcomes remain byte-identical.",
+      "bom_removed": false,
+      "frozen_design5_public_sha256": "fde9cab59abb4e6d42f9bf49502037c4b2bc022df2060bb74508f14ce2b3b2e7"
+    },
+    {
+      "path": "checks/stage5-unit.log",
+      "kind": "Derived public copy of current captured Node output",
+      "raw_retained_at": "Local work / design5-unit-final.raw.log",
+      "original_raw_sha256": "83e46abd99e5ccc1f2835647015121dd03f149bf6cdcc9ec553f66be1d447251",
+      "derived_sha256": "83e46abd99e5ccc1f2835647015121dd03f149bf6cdcc9ec553f66be1d447251",
+      "transformation": "Replace only machine-specific artifact root with <design-reference> (escaped and unescaped variants); normalize CRLF to LF. Assertions/counts/durations unchanged.",
+      "bom_removed": false
+    }
+  ],
+  "retained_check_provenance": {
+    "scope": "Static parsing, byte/link checks and eight authored-handler/helper unit checks; not browser or product/HCI acceptance",
+    "authoring_date": "2026-10-03",
+    "javascript_syntax": "PASS: node --check design.js",
+    "local_html_assets": {
+      "status": "PASS",
+      "count": 8
+    },
+    "markdown_links": {
+      "status": "PASS",
+      "count": 9
+    },
+    "html_unique_ids": {
+      "status": "PASS",
+      "count": 43
+    },
+    "declared_surface_routes": {
+      "status": "PASS",
+      "count": 10
+    },
+    "literal_dom_id_lookups": {
+      "status": "PASS",
+      "count": 37
+    },
+    "external_scripts_only": "PASS",
+    "network_calls_or_unsafe_dom_in_design_js": "NONE_FOUND",
+    "prior_stage_preserved": "PASS: all frozen refinement3 authored/assets/verification/manifest hashes unchanged",
+    "copied_component_assets": "PASS: all nine byte-identical to refinement3",
+    "public_file_scan": "PASS: no machine-specific absolute host paths or tested private-key/token patterns found; not a universal secret-detector claim",
+    "unit_checks": {
+      "subject_sha256": "5223bf4121660eaae08431342ecd4f9177772d4acc2c232e4f5ad7a918e11ad5",
+      "tests": [
+        {
+          "path": "checks/navigation-origin.test.cjs",
+          "sha256": "bd629ab13cd6b68ed9e835b199ab668c65208b1ae460a3b4dd41a956f0bdf677"
+        },
+        {
+          "path": "checks/exact-record.test.cjs",
+          "sha256": "34d3e9a2868c5b70784685e6879ff66cc0eb1ef5af170ac5aae4fdf1e82a67aa"
+        }
+      ],
+      "command": "node --test checks/navigation-origin.test.cjs checks/exact-record.test.cjs",
+      "exit_code": 0,
+      "pass": 8,
+      "fail": 0,
+      "log": "checks/stage4-unit.log",
+      "log_sha256": "0b41036200e4e16d9edc88268f0ebde05c4afc01aebe6bc2bbcd4ff15ded8020",
+      "raw_log_sha256": "0b41036200e4e16d9edc88268f0ebde05c4afc01aebe6bc2bbcd4ff15ded8020",
+      "log_transformation": "LF normalization of fresh captured output; raw retained locally outside public artifact",
+      "boundary": "Minimal DOM mocks test actual navigation handlers and named inert raw-record construction. Native scroll, rendered focus, clipping and axe need browser proof."
+    },
+    "retained_counterexample": "Derived prior-stage2 record preserves3PASS/3FAIL including TR-SAVE vs TR-VERIFY. It is not a current rerun.",
+    "browser_layout_and_behavior_at_authoring": "NOT_RUN",
+    "axe_keyboard_reflow_at_authoring": "NOT_RUN",
+    "human_comprehension": "NOT_RUN",
+    "later_reviews": "Separate source-bound records; prior acceptance does not transfer"
+  },
+  "static_verification": {
+    "path": "static-checks.json",
+    "sha256": "564227733ac378cef67e3602fca2ef87bfe0335928d6f120b199e21483f0ba05"
+  },
+  "all_files": [
+    "index.html",
+    "design.css",
+    "design.js",
+    "README.md",
+    "HANDOFF.md",
+    "checks/navigation-origin.test.cjs",
+    "checks/stage2-counterexample.log",
+    "checks/stage3-navigation.log",
+    "checks/exact-record.test.cjs",
+    "checks/stage4-unit.log",
+    "checks/prepared-selection.test.cjs",
+    "checks/stage4-selection-counterexample.log",
+    "checks/stage5-unit.log",
+    "assets/compare.js",
+    "assets/compare.css",
+    "assets/canvas.js",
+    "assets/review.js",
+    "assets/dagre.min.js",
+    "assets/dagre.LICENSE.txt",
+    "assets/dagre-graphlib.LICENSE.txt",
+    "assets/dagre.VENDOR.json",
+    "assets/EIJA-LICENSE.txt",
+    "static-checks.json",
+    "asset-manifest.json"
+  ],
+  "browser_at_authoring": "NOT_RUN",
+  "human_validation": "NOT_RUN",
+  "later_reviews": "Retain separately with this manifest hash; do not transfer prior observations",
+  "publication_derivation": {
+    "kind": "Whitespace-only log packaging plus provenance documentation; no runtime change or new QA run",
+    "source_frozen_manifest": {
+      "path": "../assets/interactive-20261003/frozen-design5-manifest.json",
+      "sha256": "f5a875d080585a76708d3f414b7907522c68b1e9a6857bfaf344f3fe71ea65a0"
+    },
+    "log_transformations": [
+      {
+        "path": "checks/stage2-counterexample.log",
+        "frozen_public_sha256": "768931e585a6a4425460b085602604c15513660cf534a20ee552bcdaf6c252e8",
+        "publication_sha256": "75a320afd3640e83525d41f237a10fe2857b8183a5acaeeeb7683c0892293920",
+        "frozen_bytes": 4141,
+        "publication_bytes": 4117,
+        "changed_lines": [
+          12,
+          21,
+          48,
+          52,
+          83,
+          93
+        ],
+        "removed_horizontal_whitespace_bytes": 24,
+        "all_nonblank_lines_byte_identical": true,
+        "transformation": "Remove trailing ASCII spaces/tabs; actual changes are six whitespace-only lines. No line removal, outcome/assertion/count/duration or nonblank-byte changes; not a rerun."
+      },
+      {
+        "path": "checks/stage4-selection-counterexample.log",
+        "frozen_public_sha256": "fde9cab59abb4e6d42f9bf49502037c4b2bc022df2060bb74508f14ce2b3b2e7",
+        "publication_sha256": "ea8e705e08a82268f8d2ca86ae378e30cb195821a31e5bf498d9f1657c13cd67",
+        "frozen_bytes": 61803,
+        "publication_bytes": 61779,
+        "changed_lines": [
+          13,
+          57,
+          743,
+          787,
+          1475,
+          1519
+        ],
+        "removed_horizontal_whitespace_bytes": 24,
+        "all_nonblank_lines_byte_identical": true,
+        "transformation": "Remove trailing ASCII spaces/tabs; actual changes are six whitespace-only lines. No line removal, outcome/assertion/count/duration or nonblank-byte changes; not a rerun."
+      }
+    ],
+    "documentation_changes": [
+      "README.md",
+      "asset-manifest.json"
+    ],
+    "qa5_applies_to": "Original frozen 24-file identity; runtime equivalence of the publication copy is established by exact byte comparison, not a new browser execution",
+    "runtime_files_byte_identical": {
+      "index.html": "dce4dbf380651c5223afaa36bd421f8ce85c8872892aa4b862dde7dd33be06e4",
+      "design.js": "e3b02dfe288627e34645bab221f8d5193e1ce0437c17f3ad67aa6102f8544d00",
+      "design.css": "2c5848d338493cee5dd60ee37164c0761da28d0ad8b91d8ef5a486fdc121e80d",
+      "assets/compare.js": "2007ed3eaf766eadaa9a7d979033789fa2f825eb991b267ab888d9669df8d6bd",
+      "assets/compare.css": "6545e65f92a3c15c680abbbb6de018c76bacb833f6398890899750fb99f24a16",
+      "assets/canvas.js": "e0226d9361d73aa1831e48080f5fc262bb0fcbd8086cd1387461d39de6ca1765",
+      "assets/review.js": "426978e964918a63b8e73ff1ae99b2b126e7a1a4d9429b2151e275cfaf178dee",
+      "assets/dagre.min.js": "c35b8d6f410ce7bdd302fc00cad27331184e52b2e738609e55ae3bbb4fb4849f",
+      "assets/dagre.LICENSE.txt": "6a349742a6cb219d5a2fc8d0844f6d89a6efc62e20c664450d884fc7ff2d6015",
+      "assets/dagre-graphlib.LICENSE.txt": "6a349742a6cb219d5a2fc8d0844f6d89a6efc62e20c664450d884fc7ff2d6015",
+      "assets/dagre.VENDOR.json": "9ea8f38b29e9a766e0a413b83b24a2e6238dcb4f8568aad79a1bdb2866eee14d",
+      "assets/EIJA-LICENSE.txt": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    "preserved": "Original capture provenance, raw source logs, source frozen artifact, static-check record, QA5 receipts and historical copy receipt"
+  }
+}

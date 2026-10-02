@@ -1,0 +1,19 @@
+{
+  "scope": "Illustrative design screenshots, not product or human acceptance",
+  "artifact_manifest_sha256": "f5a875d080585a76708d3f414b7907522c68b1e9a6857bfaf344f3fe71ea65a0",
+  "result_sha256": "b8133febfc434c67c20a54797312b3f9ded72eb68c83aa53423fed5f6080acba",
+  "captures": [
+    {
+      "path": "change-review.png",
+      "source_capture": "01-main-comparison-1440.png",
+      "bytes": 102630,
+      "sha256": "d9602e5dd96f41d4a4c5f68ac882b77ac77d661f9ca6ddd9a01f0d6c1f984d59"
+    },
+    {
+      "path": "source-preview.png",
+      "source_capture": "14-preview-frame-source-1280.png",
+      "bytes": 70451,
+      "sha256": "f81a66ab70ae5c32b8f53da34e553042d03151c9afc199e61d39aa450fcf5205"
+    }
+  ]
+}

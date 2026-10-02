@@ -1,0 +1,133 @@
+TAP version 13
+# Subtest: global browsing across all ten surfaces never creates a contextual origin
+not ok 1 - global browsing across all ten surfaces never creates a contextual origin
+  ---
+  duration_ms: 4.4018
+  type: 'test'
+  location: '<design-reference>\\checks\\navigation-origin.test.cjs:20:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    model
+    + actual - expected
+
+    + {
+    +   selected: {
+    +     id: 'TR-SAVE',
+    +     kind: 'transition'
+    +   },
+    +   view: 'changes'
+    + }
+    - null
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: ~
+  actual:
+    view: 'changes'
+    selected:
+      kind: 'transition'
+      id: 'TR-SAVE'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (<design-reference>\checks\navigation-origin.test.cjs:21:165)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: ordinary global round-trip then a new Verify investigation returns Verify, not earlier Save
+not ok 2 - ordinary global round-trip then a new Verify investigation returns Verify, not earlier Save
+  ---
+  duration_ms: 1.5141
+  type: 'test'
+  location: '<design-reference>\\checks\\navigation-origin.test.cjs:23:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+
+    + 'TR-SAVE'
+    - 'TR-VERIFY'
+          ^
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'TR-VERIFY'
+  actual: 'TR-SAVE'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (<design-reference>\checks\navigation-origin.test.cjs:26:51)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: Source to Evidence keeps the original selection despite deliberate selection at the destination
+ok 3 - Source to Evidence keeps the original selection despite deliberate selection at the destination
+  ---
+  duration_ms: 1.1204
+  type: 'test'
+  ...
+# Subtest: global arrival at the origin ends a detour without creating a reverse origin
+not ok 4 - global arrival at the origin ends a detour without creating a reverse origin
+  ---
+  duration_ms: 1.1462
+  type: 'test'
+  location: '<design-reference>\\checks\\navigation-origin.test.cjs:32:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+
+    + {
+    +   focus: 'changes:source',
+    +   selected: {
+    +     id: 'TR-SAVE',
+    +     kind: 'transition'
+    +   },
+    +   view: 'changes'
+    + }
+    - null
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: ~
+  actual:
+    view: 'changes'
+    selected:
+      kind: 'transition'
+      id: 'TR-SAVE'
+    focus: 'changes:source'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (<design-reference>\checks\navigation-origin.test.cjs:33:81)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: explicit return restores the surviving invoking control's focus
+ok 5 - explicit return restores the surviving invoking control's focus
+  ---
+  duration_ms: 1.4346
+  type: 'test'
+  ...
+# Subtest: same-view or unknown route does not create or replace a detour
+ok 6 - same-view or unknown route does not create or replace a detour
+  ---
+  duration_ms: 1.5172
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 3
+# fail 3
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 97.8949
