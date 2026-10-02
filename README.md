@@ -1,15 +1,35 @@
-# EIJA Studio 0.2.0
-## See Meaning. Prove Change.
+# EIJA Studio
 
-**A runnable local proof of concept, not a production assurance platform.**
+**Review the meaning of a change, not every generated line.**
 
-Change one rule, inspect consequences, verify evidence, approve with authority.
+EIJA (Executable Intent and Journey Assurance) is an open-source code/model workbench under development for **UML-literate engineers who build with AI**. Its purpose is to let engineers inspect the concepts, rules and consequences behind an agent's changes, follow those concepts into actual source, and judge evidence without reconstructing every generated line. A deterministic assurance kernel checks supported model edits; the local owner selects meaning and decides. **AI proposes. The kernel checks. The local owner decides.**
 
-EIJA means **Executable Intent and Journey Assurance**. One package contains a browser Studio, a command-line semantic compiler, the same deterministic kernel, persistent storage, and three interchangeable proposal providers. OpenRouter and Codex are implementation adapters, not separate products or approval engines.
+## Two outcome goals
 
-The first supported domain is a **synthetic excursion workflow**. An ambiguous request—“Let teachers sign off excursions”—does not silently grant teacher approval. A local owner chooses recommendation-only, inspects the explicit registrar prerequisites, exercises the candidate, verifies its bounded behaviour, acknowledges unknowns, then separately applies the exact revision to the **local demo baseline**.
+1. **A complete, polished IDE experience that makes a world-class WOW demo possible.** Build a coherent, non-linear workbench with an explorer, model editors, source navigation, agent changes, review, evidence, history, keyboard control and clear feedback. Engineers should be able to move freely through the supported workflow, understand what changes and recover safely. Walkthroughs and showcase clips must come from that usable product, not a thin happy-path presentation. The four flagship scenes remain the demonstration roadmap; unfinished capabilities stay labeled as planned.
+2. **A reproducible GitHub POC and POF.** Demonstrate the supported IDE experience end-to-end (**proof of concept**) and let another engineer clone, launch, use it and replay its scoped evidence (**proof of feasibility**). Publish clear setup, supported coverage, actual UX and test results, limitations, license/OSS records and demo artifacts together when that product experience is ready.
 
-**AI proposes. The kernel checks. The local owner decides.**
+**Delivery order:** finish the coherent EIJA self-dogfood IDE, exercise normal use and recovery paths, meet the visual and interaction quality bar, then produce the GitHub package and videos from retained runs. A wizard, attractive shell or isolated passing demonstration does not close this goal. The supported semantics remain explicit; a full IDE experience does not mean a universal solver or unmeasured superiority. Current status is **in development; the full IDE experience and both outcome goals remain unconfirmed**. This documentation update publishes the goals and acceptance contract; it does not deliver the IDE implementation or a completed POC/POF release. The [mission and readiness criteria](docs/engineering/MISSION.md) govern these goals; the [run record](docs/engineering/SELF-DOGFOOD-ACCEPTANCE.md#run-record) supplies execution evidence.
+
+**Build on OSS.** Reuse maintained frameworks, parsers, diagram tooling and verification engines. EIJA adds domain contracts, adapters and generators; record adoption decisions before building a replacement engine. Use one coordinated integration path with a named writer for each file and a visible milestone/evidence ledger. [OSS register](docs/oss/REGISTER.md)
+
+The first acceptance target is **EIJA's own checkout**. External applications come after this self-dogfood flow works. Repository intake, structural extraction, behavior bindings and verified properties are separate coverage levels; accepting a codebase does not imply that EIJA understands or verifies all of it. This is an engineering preview, with no measured claim of superior V&V or reduced human comprehension burden.
+
+[IDE design reference](docs/design/README.md): a generated visual quality target, explicitly labeled as a concept rather than a screenshot or execution evidence. Showcase recordings will use the real application.
+
+## Available code and work in progress
+
+At the documentation baseline (`8712d6c`, 2 October 2026), main contains the local synthetic excursion workflow, typed semantic transactions, generated views, runtime evidence, browser/CLI surfaces and an agent MCP interface. These are foundations. The v0.2 instructions and retained verification records below describe their earlier scope; this documentation change has not revalidated their historical results.
+
+The **source-connected self-dogfood IDE is in development and is not delivered by this documentation PR**. Its acceptance target is a configured, read-only connection to EIJA's own checkout, supported tracked Python and annotated UI structure, a domain explorer, server-checked model editors, source/impact navigation, agent-change review, evidence and history. Planned agent additions include read-only pack context, affordances, edit checks and repository impact. They must be implemented, integrated and exercised before being advertised as available on main.
+
+The [self-dogfood acceptance contract](docs/engineering/SELF-DOGFOOD-ACCEPTANCE.md) defines engineering and UX observations. Its [run record](docs/engineering/SELF-DOGFOOD-ACCEPTANCE.md#run-record) is **PENDING**. An initial model edit changes the supported candidate; it does not rewrite the connected repository. `SOURCE_REVIEW_REQUIRED` must remain visible until the maintainer legitimately reviews changed implementation. Live model validation and the engineer study are **NOT_RUN** for this milestone.
+
+Read the [product thesis](docs/engineering/PRODUCT-THESIS.md), [current alternatives](docs/research/2026-10-02-current-alternatives.md) and [V&V protocol](docs/research/2026-10-02-vv-protocol.md) for the rationale and evaluation plan. Existing products already offer substantial specification, modeling and guided-review capabilities; EIJA's novelty and superiority are unproven.
+
+## Existing local kernel: v0.2 reference
+
+The sections below retain the existing runnable kernel instructions and their historical limitations. They are useful for inspecting the foundations, but their earlier results do not establish the new IDE's readiness. Use the current acceptance/run record above for the new product milestone.
 
 ## Start here
 
@@ -86,7 +106,7 @@ EIJA calls `codex exec`, reusing the saved CLI authentication. It does not imple
 
 `doctor` checks for the required CLI features and a recognisable ChatGPT login. It intentionally refuses unknown/API-key authentication for this adapter. It does **not** execute a paid model probe. The proposal subprocess gets an empty temporary working directory, schema-constrained final output, read-only execution policy, explicit disabled shell/app/search features, ignored user configuration, and an environment allowlist. Live compatibility/effective-policy validation is still required on your machine.
 
-Both live adapters have mock-boundary tests. **Neither performed a real authenticated model call in this release environment.**
+Both live adapters have mock-boundary tests. **The retained v0.2 release record reports no real authenticated model call.** This documentation update makes no new live-provider claim.
 
 ## First demonstration
 
@@ -117,7 +137,7 @@ eija export CASE_ID --out output/change-case.json
 eija check-export output/change-case.json
 ```
 
-`compile` outputs the normalized model, projections, mapped impacts and optional runtime receipt. It is a **bounded semantic compiler**, not an arbitrary Python/TypeScript/repository compiler, theorem prover or automatic application generator. Unsupported semantics are rejected. There is no MCP server or installed Codex desktop extension in this version. The CLI, Python ports and included repository skill are the integration surfaces.
+`compile` outputs the normalized model, projections, mapped impacts and optional runtime receipt. It is a **bounded semantic compiler**, not an arbitrary Python/TypeScript/repository compiler, theorem prover or automatic application generator. Unsupported semantics are rejected. Main also includes an agent-facing MCP server (`eija mcp`, requiring the `agents` extra); see the [agent contract](docs/agents/contract.md) and [quickstart](docs/agents/quickstart.md). This does not imply the planned source-connected tools are available. The CLI, Python ports and included repository skill remain integration surfaces.
 
 ## Verify and operate
 
@@ -131,7 +151,7 @@ python scripts/browser_smoke.py --chromium /path/to/chromium
 eija backup --out backups/studio-backup.sqlite3
 ```
 
-The last browser command requires ordinary local browser navigation. It was blocked by this environment's browser policy; no policy was changed. Chromium DOM integration and actual TCP/server tests were run separately, with their narrower meanings recorded.
+The retained v0.2 verification record reports that ordinary browser navigation was blocked in its release environment, while Chromium DOM integration and TCP/server tests were exercised separately. That historical result is not a new browser-to-server acceptance run; the current milestone requires one.
 
 Do not publish workspace databases or `receipt.key`. Read the backup, recovery and upgrade boundaries in `docs/OPERATIONS.md`. Source modifications invalidate the shipped implementation fixture; ordinary approval cannot repair that. The maintainer stamping command is not an end-user “make green” button.
 
