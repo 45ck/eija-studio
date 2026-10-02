@@ -15,6 +15,8 @@ One person may switch roles within a session. Views and remembered layout can ad
 
 ## State of evidence
 
+The execution column below is the original preparation snapshot. Consult the [current implementation and HCI ledger](IMPLEMENTATION-STATUS.md) for subsequent scoped browser, installation and recovery observations. These observations do not declare an entire story accepted or replace its original requirements.
+
 **INSPECTED** means relevant development source/UI elements were seen in the integration checkout on this date; it does not mean merged, complete or usable. **PLANNED** means the whole capability has no acceptance result here; partial foundations may exist. Every story's execution status in this document is **NOT_RUN**. Replace it only with exact revision/environment, command or journey, raw observation and negative-control result in the [run record](../engineering/SELF-DOGFOOD-ACCEPTANCE.md#run-record). The older HCI snapshot covers the excursion journey, not these stories.
 
 ## Prioritized story and acceptance matrix

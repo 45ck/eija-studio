@@ -2,6 +2,8 @@
 
 The [whole-application UX contract](WHOLE-APP-UX.md) defines linked screens and HCI acceptance. The [personas and user stories](WHOLE-APP-STORIES.md) turn those screens into tasks with observable outcomes. These documents guide implementation; their planned journeys are not claims of completed validation.
 
+The [current implementation and HCI ledger](IMPLEMENTATION-STATUS.md) maps all four personas, fifteen stories and ten screens to scoped observations and remaining work, including the exact public-clone preview. It preserves the density failure, latency gap and unmeasured human benefit.
+
 ![EIJA Studio IDE concept](eija-ide-concept-v1.png)
 
 This generated concept sets a visual quality target for the working IDE. It is not a screenshot, test result, executable model, or claim of shipped functionality. Diagram arrows, counts, example hashes, and status labels are illustrative; the running application must derive these from its actual model and evidence.
