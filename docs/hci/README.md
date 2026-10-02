@@ -1,5 +1,7 @@
 # HCI-law instrumentation
 
+The [3 October integration HCI archive](../demos/evidence/hci-review-2026-10-03/README.md) retains the newer source subject, results and pinned runner. The canonical files and commands below remain matched to main's implementation; the docs-only publication does not replace its instrumentation, thresholds or snapshots.
+
 Quantitative, reproducible HCI checks of the Studio UI. **This is prediction plus instrumented measurement on synthetic data. It is not a usability study, and it says nothing about real users' speed, comprehension or satisfaction.** The latest results are in [REPORT.md](REPORT.md) (rendered from [report.snapshot.json](report.snapshot.json), which is derived from the raw observations in [trace.snapshot.json](trace.snapshot.json)). Decisions: [ADR-0039](../adr/0039-hci-law-instrumentation.md), [ADR-0040](../adr/0040-hci-budgets-as-ratchets-and-harness-identity.md).
 
 ## Run it

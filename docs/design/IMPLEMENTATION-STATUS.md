@@ -1,6 +1,6 @@
 # Full IDE / HCI status and traceability
 
-**3 October update:** the [code and model review checkpoint](2026-10-03-CODE-REVIEW-VALIDATION.md) supersedes the capability descriptions below for paired model comparison, immutable code review, navigation and source freshness. It records their new browser observations, remaining HCI failures and exact evidence subjects. The following ledger preserves the earlier `c666b6b` checkpoint; its figures are historical, not current release acceptance.
+**3 October update:** the [new review checkpoint](2026-10-03-CODE-REVIEW-VALIDATION.md) records paired-model comparison, immutable Code review, navigation and source-freshness observations, their exact subjects and remaining acceptance work. The ledger below preserves the earlier `c666b6b` checkpoint and its original figures.
 
 **2 October 2026 — scoped implementation checkpoint; full product acceptance OPEN.** The user's bar is a polished, non-linear workspace where UML-literate engineers using AI can understand a change, inspect exact source/evidence and recover safely, with reproducible GitHub proof. It is more than a passing recorded route. Current source navigation is **read-only**; source-code authoring and general agent-factory operation are not implemented here. Comparative comprehension benefit remains unmeasured.
 

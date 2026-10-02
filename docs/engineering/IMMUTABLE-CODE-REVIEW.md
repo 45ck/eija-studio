@@ -1,5 +1,15 @@
 # Immutable code change review
 
+Documentation for [integration checkpoint `1f1b07f64889`](https://github.com/45ck/eija-studio/tree/1f1b07f648890d8e03f81d4269fa479d80a0f46a). This publication adds documentation and evidence to main; it does not merge the IDE implementation. Observations retain their own recorded source subjects and are not a blanket acceptance of every file in this checkpoint.
+
+Run the commands below from a separate source checkout of that revision, for example:
+
+```sh
+git clone --branch integrate/all https://github.com/45ck/eija-studio.git eija-review-checkpoint
+cd eija-review-checkpoint
+git checkout --detach 1f1b07f648890d8e03f81d4269fa479d80a0f46a
+```
+
 EIJA can inspect two local Git commits without checking them out or executing the target project. The comparison is a separate subject from a model change case. A model receipt cannot establish that the compared application behaves as intended.
 
 ## Reproduce the navigation change
@@ -47,4 +57,4 @@ Git receives literal filenames: brackets cannot expand a selected path into neig
 
 ## Validation record
 
-The [review checkpoint](../design/2026-10-03-CODE-REVIEW-VALIDATION.md) records scoped browser checks, their source subjects and remaining gate failures. The [historical navigation proof](../demos/2026-10-03-NAVIGATION-RECOVERY-PROOF.md) reproduces two old-version display failures and their repair using exact exported commits; its [two-command replay guide](../../tests/hci/repository_navigation_pair.md) records prerequisites and boundaries. Those observations remain separate from the code comparison's behavior status. The [whole-app acceptance](SELF-DOGFOOD-ACCEPTANCE.md) stays open, including human comprehension and parallel-agent coordination.
+The [review checkpoint](../design/2026-10-03-CODE-REVIEW-VALIDATION.md) records scoped browser checks, their source subjects and remaining gate failures. The [historical navigation proof](../demos/2026-10-03-NAVIGATION-RECOVERY-PROOF.md) reproduces two old-version display failures and their repair using exact exported commits; its [two-command replay guide](https://github.com/45ck/eija-studio/blob/1f1b07f648890d8e03f81d4269fa479d80a0f46a/tests/hci/repository_navigation_pair.md) records prerequisites and boundaries. Those observations remain separate from the code comparison's behavior status. The [whole-app acceptance](SELF-DOGFOOD-ACCEPTANCE.md) stays open, including human comprehension and parallel-agent coordination.

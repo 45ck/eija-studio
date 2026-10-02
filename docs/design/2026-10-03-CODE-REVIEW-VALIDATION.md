@@ -1,5 +1,9 @@
 # Code and model review: validation checkpoint
 
+Documentation for [integration checkpoint `1f1b07f64889`](https://github.com/45ck/eija-studio/tree/1f1b07f648890d8e03f81d4269fa479d80a0f46a). This publication adds documentation and evidence to main; it does not merge the IDE implementation. Observations retain their own recorded source subjects and are not a blanket acceptance of every file in this checkpoint.
+
+The byte-exact [dated HCI evidence](../demos/evidence/hci-review-2026-10-03/README.md) belongs to this integration's instrumentation and thresholds. Main's canonical HCI snapshots remain paired with main's own runner.
+
 **3 October 2026 — scoped review browser checks and fast gates pass; full-tier
 FAIL retains HCI limits; release remains SOURCE_REVIEW_REQUIRED.**
 This note supplements the [whole-app status ledger](IMPLEMENTATION-STATUS.md).
@@ -115,9 +119,9 @@ compatibility checks support the tested corpus, not universal syntax correctness
 Original failed and inconclusive runs remain evidence, including Code review
 runs 1–2 and earlier historical-pair attempts. A repaired harness warrants a new
 named run; it does not change the old outcome. The applicable runnable scopes are
-the [model review guide](../../tests/hci/ide_review_workspace.md), [Code review
-guide](../../tests/hci/repository_change_review.md) and [historical pair
-guide](../../tests/hci/repository_navigation_pair.md).
+the [model review guide](https://github.com/45ck/eija-studio/blob/1f1b07f648890d8e03f81d4269fa479d80a0f46a/tests/hci/ide_review_workspace.md), [Code review
+guide](https://github.com/45ck/eija-studio/blob/1f1b07f648890d8e03f81d4269fa479d80a0f46a/tests/hci/repository_change_review.md) and [historical pair
+guide](https://github.com/45ck/eija-studio/blob/1f1b07f648890d8e03f81d4269fa479d80a0f46a/tests/hci/repository_navigation_pair.md).
 
 ## Full-tier and release verification
 
