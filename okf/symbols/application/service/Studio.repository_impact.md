@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.repository_impact
   title: application/service.py
   hash_method: ast-v2
-  sha256: efc3fdc1ebc960b0c5c22fef2867f470dbf080d600f4a79a081e40f9693f82db
-notes_baseline: 400d9c0bf27715951c8851ab0db336762a6d1a3df734041016681c6eb61cb83f
+  sha256: 70515e49c3fe05a50d36740cbab2dd0d7db65a59492f80bd10028389fd2f2a1d
+notes_baseline: 79e8ca3921fd83f1e9bda8a4c8aaa324ac57c5ac18776fc79f2c95bf400eb615
 ---
 
 # application.service.Studio.repository_impact
@@ -42,5 +42,7 @@ Known repository links only. This neither edits the repository nor grants eviden
 _No curated notes yet._
 
 <!-- okf:generated:begin links -->
-_No generated cross-references._
+## Depends on
+
+* [application.repository.read_repository_impact](/symbols/application/repository/read_repository_impact.md) - Known repository links only.
 <!-- okf:generated:end links -->

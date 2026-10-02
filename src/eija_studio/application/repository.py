@@ -67,3 +67,24 @@ def unconfigured_repository() -> dict[str, Any]:
     """An absent connection is visible, never an empty successful extraction."""
     return {"status": "unconfigured", "root": None, "read_only": True,
             "reason": "No repository root configured. Start Studio with an explicit --repo checkout root."}
+
+
+def read_repository_impact(source: RepositorySource | None, term: str, *, expected_source_hash: str | None = None) -> dict[str, Any]:
+    """Known repository links only. This neither edits the repository nor grants evidence or authority."""
+    if source is None:
+        return {"status": "unconfigured", "reason": "Start with --repo PATH to inspect a local repository"}
+    return source.impact(term, expected_source_hash=expected_source_hash)
+
+
+def read_repository_source(source: RepositorySource | None, reference: str, *, expected_source_hash: str | None = None) -> dict[str, Any]:
+    """Bounded source view from the configured repository's captured nodes; no arbitrary path or execution."""
+    if source is None:
+        return {"status": "unconfigured", "reason": "Start with --repo PATH to inspect a local repository"}
+    return source.read_source(reference, expected_source_hash=expected_source_hash)
+
+
+def read_repository_freshness(source: RepositorySource | None, expected_source_hash: str) -> dict[str, Any]:
+    """Observe captured byte identity; this grants no source conformance, evidence or owner authority."""
+    if source is None:
+        return {"status": "unconfigured", "reason": "Start with --repo PATH to inspect a local repository"}
+    return source.freshness(expected_source_hash=expected_source_hash)

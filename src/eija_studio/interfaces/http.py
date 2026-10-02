@@ -8,6 +8,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.exceptions import RequestValidationError
 from pydantic import Field
 from eija_studio.application.diagram_catalog import case_diagrams
+from eija_studio.application.edit_preview import EditPreview
 from eija_studio.application.repository import COMMIT_OID_PATTERN
 from eija_studio.domain.models import MEANING_ID, Contract, DomainError, OWNER, LayoutChange, ExecuteCommand
 from eija_studio.domain.pack import Pack
@@ -195,6 +196,10 @@ def create_app(studio, token: str, port: int = 8765) -> FastAPI:
     @app.post("/api/cases/{case_id}/edit/check")
     def edit_check(case_id: str, body: EditCheck):
         return studio.edit_check(case_id, body.transaction)
+
+    @app.post("/api/cases/{case_id}/edit/preview", response_model=EditPreview)
+    def edit_preview(case_id: str, body: EditCheck):
+        return studio.edit_preview(case_id, body.transaction)
 
     @app.post("/api/cases/{case_id}/undo")
     def undo(case_id: str, body: Version):

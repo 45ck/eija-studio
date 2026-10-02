@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/service.py
   title: application/service.py
   hash_method: ast-api-v1
-  sha256: 80f7aa453b3255c3949b202f044ca1968d29827b7642fb41dfd7228eee97ccd5
-notes_baseline: e9d5a427343d86d166d34a0f32fffa6b4e53bd9bd99161c6344b092839eeca39
+  sha256: 3a32f512b8f410aa4064183f7f107839448d2e75ee5e28f5a58a363f0007611d
+notes_baseline: f58f874ffa493980a3bba687c6806d26c7b571ad7b811274479f03471cf4df0b
 ---
 
 # application.service
@@ -38,6 +38,7 @@ _The source carries no module docstring._
 ## Internal imports
 
 * [`application/compiler`](/modules/application/compiler.md)
+* [`application/edit_preview`](/modules/application/edit_preview.md)
 * [`application/formal`](/modules/application/formal.md)
 * [`application/history`](/modules/application/history.md)
 * [`application/ports`](/modules/application/ports.md)
@@ -61,6 +62,7 @@ _No curated notes yet._
 ## Imports
 
 * [application.compiler](/modules/application/compiler.md) - Compiler: model → projections + impacts + obligations + computed review packet.
+* [application.edit_preview](/modules/application/edit_preview.md) - Read-only edit projection over one captured case, using the same interpreter as owner edits.
 * [application.formal](/modules/application/formal.md) - Formal evidence in the application layer: seal what an adapter collected, and build the packet view.
 * [application.history](/modules/application/history.md) - Semantic history is a projection of typed commands, replayed by the existing policy interpreter.
 * [application.ports](/modules/application/ports.md) - Application-owned ports.
@@ -88,6 +90,7 @@ _No curated notes yet._
 * [application.service.Studio.discard](/symbols/application/service/Studio.discard.md) - `def discard(self, case_id: str, expected: int) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.edit](/symbols/application/service/Studio.edit.md) - `def edit(self, case_id: str, expected: int, tx: Transaction, principal: Principal) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.edit_check](/symbols/application/service/Studio.edit_check.md) - Dry-run one edit: {legal, codes, refs}.
+* [application.service.Studio.edit_preview](/symbols/application/service/Studio.edit_preview.md) - Read-only edit preview bound to one case snapshot; the owner edit still requires capability and CAS.
 * [application.service.Studio.execute](/symbols/application/service/Studio.execute.md) - `def execute(self, case_id: str, command: ExecuteCommand, fault: Callable[[str], None] | None=None) -> dict[st…` in `application/service`.
 * [application.service.Studio.export](/symbols/application/service/Studio.export.md) - `def export(self, case_id: str) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.formal_view](/symbols/application/service/Studio.formal_view.md) - Formal evidence for a bare workflow (``eija compile``): collected and sealed in memory, never stored, never a decision.

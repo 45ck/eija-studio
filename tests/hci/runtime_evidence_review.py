@@ -324,8 +324,12 @@ class RuntimeReview(Journey):
         self.tab("model")
         self.select_transition("TR-SAVE")
         self.page.locator("#transition-role").select_option("Agent")
+        preview_before = self.edit_preview_snapshot()
+        preview_expected = json.loads(json.dumps(view["case"]["candidate"]))
+        next(rule for rule in preview_expected["transitions"] if rule["id"] == "TR-SAVE")["role"] = "Agent"
         self.page.locator("#edit-role").click()
-        self.settled()
+        preview = self.inspect_edit_preview(preview_before, preview_expected)
+        self.apply_edit_preview(preview_before, preview)
         changed = self.view()
         assert changed["packet"]["subject"]["semantic"] != view["packet"]["subject"]["semantic"]
         expected = json.loads(json.dumps(view["case"]["candidate"]))

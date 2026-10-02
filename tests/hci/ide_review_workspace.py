@@ -369,26 +369,26 @@ class ReviewWorkspace(Journey):
         kind, ident = key.split(":", 1)
         self.select_comparison(kind, ident)
         self.comparison_selection = (kind, ident)
-        detail = self.page.locator(".compare-selection")
+        detail = self.main_comparison().locator(".compare-selection")
         replay.expect(detail).to_have_attribute("data-kind", kind)
         replay.expect(detail).to_have_attribute("data-id", ident)
         return detail
 
     def assert_identity(self, view):
-        pair = self.page.locator(".paired-compare")
+        pair = self.main_comparison().locator(".paired-compare")
         replay.expect(pair).to_have_attribute("data-case", view["case"]["id"])
         replay.expect(pair).to_have_attribute("data-revision", str(view["case"]["version"]))
         assert self.packet() == view["packet"], "Displayed current evidence packet differs from the server."
 
     def assert_inventory(self, view):
         expected = semantic_inventory(view["case"]["baseline"], view["case"]["candidate"])
-        actual = self.page.locator("[data-compare-key]").evaluate_all("nodes => nodes.map(n => n.dataset.compareKey)")
+        actual = self.main_comparison_navigation().locator("[data-compare-key]").evaluate_all("nodes => nodes.map(n => n.dataset.compareKey)")
         models = (view["case"]["baseline"], view["case"]["candidate"])
         all_keys = {"state:" + state for model in models for state in model["states"]}
         all_keys |= {"transition:" + entry["id"] for model in models for entry in model["transitions"]}
         all_keys.add("initial:initial_state")
         assert sorted(actual) == sorted(all_keys), {"expected": sorted(all_keys), "actual": actual}
-        visible = self.page.locator("[data-compare-key]:visible").evaluate_all("nodes => nodes.map(n => n.dataset.compareKey)")
+        visible = self.main_comparison_navigation().locator("[data-compare-key]:visible").evaluate_all("nodes => nodes.map(n => n.dataset.compareKey)")
         assert sorted(visible) == sorted(expected), {"expected_changes": expected, "visible": visible}
         return expected
 
@@ -396,11 +396,12 @@ class ReviewWorkspace(Journey):
         self.assert_identity(view)
         records = {}
         for side, field in (("before", "baseline"), ("after", "candidate")):
-            board = self.page.locator(f'[data-compare-side="{side}"] svg.compare-svg')
+            board = self.main_comparison().locator(f'[data-compare-side="{side}"] svg.compare-svg')
             replay.expect(board).to_be_visible()
             observed = board.evaluate(OBSERVE_COMPARE)
             assert_graph(view["case"][field], observed)
             records[side] = observed
+        # ID collision detection intentionally includes every graph, even the closed preview.
         ids = self.page.locator(".paired-compare svg [id]").evaluate_all("nodes => nodes.map(n => n.id)")
         assert len(ids) == len(set(ids)), "Simultaneous diagrams have colliding SVG IDs."
         self.graph_records.append({"label": label, "case": view["case"]["id"], "revision": view["case"]["version"],
@@ -417,8 +418,12 @@ class ReviewWorkspace(Journey):
         self.select_transition(transition)
         control = "#model-source" if end == "source" else "#target-state"
         self.page.locator(control).select_option(state)
+        preview_before = self.edit_preview_snapshot()
+        preview_expected = deepcopy(before["case"]["candidate"])
+        next(t for t in preview_expected["transitions"] if t["id"] == transition)["from_state" if end == "source" else "to_state"] = state
         self.page.locator("#edit-" + end).click()
-        self.settled()
+        preview = self.inspect_edit_preview(preview_before, preview_expected, wanted[0]["transaction"])
+        self.apply_edit_preview(preview_before, preview)
         after = self.case_view()
         expected = deepcopy(before["case"]["candidate"])
         next(t for t in expected["transitions"] if t["id"] == transition)["from_state" if end == "source" else "to_state"] = state
@@ -445,7 +450,7 @@ class ReviewWorkspace(Journey):
         self.current_a = self.snapshot()
         self.chosen("transition:TR-VERIFY")
         expected = self.assert_inventory(view)
-        detail = self.page.locator('.compare-selection [data-field="from_state"]')
+        detail = self.main_comparison().locator('.compare-selection [data-field="from_state"]')
         assert detail.locator("td").all_text_contents() == ["PREVIEW", "SAVED"]
         return {"case": self.case_a, "revision": view["case"]["version"], "inventory": expected,
                 "parallel_edges": ["TR-VERIFY", "TR-VERIFY-SAVED"], "source_connection": self.connection["source_hash"]}
@@ -453,13 +458,13 @@ class ReviewWorkspace(Journey):
     def paired_graphs(self):
         before = self.snapshot()
         view = self.case_view()
-        self.page.locator('[data-compare-action="overview"]').click()
+        self.main_comparison().locator('[data-compare-action="overview"]').click()
         pair = self.observe_pair(view, "parallel-overview")
-        fonts = self.page.locator(".paired-compare").evaluate("root => ({body:getComputedStyle(document.body).fontFamily, labels:[...root.querySelectorAll('.compare-state-label,.compare-edge-label,.compare-initial-label')].map(node=>({text:node.textContent,family:getComputedStyle(node).fontFamily}))})")
+        fonts = self.main_comparison().locator(".paired-compare").evaluate("root => ({body:getComputedStyle(document.body).fontFamily, labels:[...root.querySelectorAll('.compare-state-label,.compare-edge-label,.compare-initial-label')].map(node=>({text:node.textContent,family:getComputedStyle(node).fontFamily}))})")
         assert fonts["labels"] and all(item["family"] == fonts["body"] for item in fonts["labels"]), fonts
         controls = {side: graph_negative_controls(view["case"][field], pair[side])
                     for side, field in (("before", "baseline"), ("after", "candidate"))}
-        board = self.page.locator('[data-compare-side="after"] svg.compare-svg')
+        board = self.main_comparison().locator('[data-compare-side="after"] svg.compare-svg')
         line = board.locator('[data-transition="TR-VERIFY"] path.compare-edge-line')
         actual_path = line.get_attribute("d")
         rejected = None
@@ -479,36 +484,36 @@ class ReviewWorkspace(Journey):
             line.evaluate("(node, value) => node.setAttribute('d', value)", actual_path)
         self.observe_pair(view, "painted-negative-control-restored")
         self.chosen("transition:TR-SAVE")
-        replay.expect(self.page.locator('[data-compare-side="before"] .compare-presence')).to_contain_text("Not present")
-        replay.expect(self.page.locator('[data-compare-side="before"] [data-transition="TR-SAVE"]')).to_have_count(0)
-        replay.expect(self.page.locator('[data-compare-side="after"] [data-transition="TR-SAVE"]')).to_have_count(1)
-        replay.expect(self.page.locator(".compare-selection")).to_contain_text("Source binding unknown")
-        replay.expect(self.page.locator(".compare-selection [data-compare-reference]")).to_have_count(0)
+        replay.expect(self.main_comparison().locator('[data-compare-side="before"] .compare-presence')).to_contain_text("Not present")
+        replay.expect(self.main_comparison().locator('[data-compare-side="before"] [data-transition="TR-SAVE"]')).to_have_count(0)
+        replay.expect(self.main_comparison().locator('[data-compare-side="after"] [data-transition="TR-SAVE"]')).to_have_count(1)
+        replay.expect(self.main_comparison().locator(".compare-selection")).to_contain_text("Source binding unknown")
+        replay.expect(self.main_comparison().locator(".compare-selection [data-compare-reference]")).to_have_count(0)
         self.chosen("state:SAVED")
-        replay.expect(self.page.locator('[data-compare-side="before"] .compare-presence')).to_contain_text("Not present")
+        replay.expect(self.main_comparison().locator('[data-compare-side="before"] .compare-presence')).to_contain_text("Not present")
         self.chosen("transition:TR-VERIFY")
-        boards = self.page.locator("svg.compare-svg")
+        boards = self.main_comparison().locator("svg.compare-svg")
         old = [boards.nth(i).get_attribute("viewBox") for i in range(2)]
-        self.page.locator('[data-compare-action="zoom-in"]').click()
+        self.main_comparison().locator('[data-compare-action="zoom-in"]').click()
         new = [boards.nth(i).get_attribute("viewBox") for i in range(2)]
         assert new[0] == new[1] and old != new, "Paired zoom did not synchronously change actual SVG viewports."
         self.observe_pair(view, "parallel-zoomed")
-        replay.expect(self.page.locator(".compare-selection")).to_have_attribute("data-id", "TR-VERIFY")
+        replay.expect(self.main_comparison().locator(".compare-selection")).to_have_attribute("data-id", "TR-VERIFY")
         visible_focus = []
         for width, height in ((1600, 1100), (1280, 800)):
             self.page.set_viewport_size({"width": width, "height": height})
-            self.page.locator('[data-compare-action="focus"]').click()
-            replay.expect(self.page.locator(".paired-compare")).to_have_attribute("data-compare-view", "focus")
+            self.main_comparison().locator('[data-compare-action="focus"]').click()
+            replay.expect(self.main_comparison().locator(".paired-compare")).to_have_attribute("data-compare-view", "focus")
             self.page.evaluate("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))")
             for side, field in (("before", "baseline"), ("after", "candidate")):
                 expected = next(item for item in view["case"][field]["transitions"] if item["id"] == "TR-VERIFY")
-                board = self.page.locator(f'[data-compare-side="{side}"] svg.compare-svg')
+                board = self.main_comparison().locator(f'[data-compare-side="{side}"] svg.compare-svg')
                 observed = board.evaluate(VISIBLE_SELECTION, expected)
                 visible_focus.append({"side": side, "observed": assert_visible_selection(expected, observed),
-                                      "displayed_scale": self.page.locator("output[data-compare-scale]").inner_text()})
+                                      "displayed_scale": self.main_comparison().locator("output[data-compare-scale]").inner_text()})
             self.shot(f"selected-endpoints-{width}")
         self.page.set_viewport_size({"width": 1600, "height": 1100})
-        self.page.locator('[data-compare-action="focus"]').click()
+        self.main_comparison().locator('[data-compare-action="focus"]').click()
         self.assert_unchanged(before)
         return {"oracle_controls": controls, "painted_endpoint_negative_control": rejected, "computed_fonts": fonts,
                 "visible_selected_endpoints": visible_focus,
@@ -524,7 +529,7 @@ class ReviewWorkspace(Journey):
         reference = "repo://src/eija_studio/application/service.py#Studio.verify"
         assert reference in term["binds"]
         with self.page.expect_response(lambda r: urlsplit(r.url).path == "/api/repository/source") as pending:
-            self.page.locator(f'[data-compare-reference="{reference}"]').click()
+            self.main_comparison().locator(f'[data-compare-reference="{reference}"]').click()
         self.settled()
         replay.expect(self.page.locator("#source-reader .source-lines")).to_be_visible()
         source = self.get("repository/source?" + urlencode({"reference": reference, "expected_source_hash": self.connection["source_hash"]}))
@@ -547,7 +552,7 @@ class ReviewWorkspace(Journey):
             replay.expect(self.page.locator("#source-metadata")).to_contain_text(source[key])
         self.source_records.append(source)
         self.tab("review")
-        replay.expect(self.page.locator(".compare-selection")).to_have_attribute("data-id", "TR-VERIFY")
+        replay.expect(self.main_comparison().locator(".compare-selection")).to_have_attribute("data-id", "TR-VERIFY")
         self.assert_identity(view)
         self.assert_unchanged(before)
         return {"reference": reference, "source": source, "selection_restored": True, "read_only": True}
@@ -606,7 +611,7 @@ class ReviewWorkspace(Journey):
         replay.expect(self.page.locator("#transition-select")).to_have_value("TR-VERIFY")
         self.chosen("transition:TR-SAVE")
         replay.expect(self.page.locator("#transition-select")).to_have_value("TR-VERIFY")
-        self.page.locator('[data-compare-action="evidence"]').click()
+        self.main_comparison().locator('[data-compare-action="evidence"]').click()
         self.assert_evidence(view)
         replay.expect(self.page.locator("#evidence-subject")).to_contain_text("Model inspector selection: transition · TR-VERIFY")
         self.domain_group("term")
@@ -679,16 +684,16 @@ class ReviewWorkspace(Journey):
         view_b = self.source_edit("TR-SAVE", "PREVIEW", end="target")
         before_b = self.snapshot()
         self.chosen("transition:TR-SAVE")
-        self.page.locator('[data-compare-action="overview"]').click()
+        self.main_comparison().locator('[data-compare-action="overview"]').click()
         self.assert_inventory(view_b)
         self.observe_pair(view_b, "separate-self-loop-case")
-        replay.expect(self.page.locator('.compare-selection [data-field="role"]')).to_contain_text("Owner")
+        replay.expect(self.main_comparison().locator('.compare-selection [data-field="role"]')).to_contain_text("Owner")
         self.switch_case(self.case_a)
         self.case_id = self.case_a
         self.chosen("transition:TR-SAVE")
         view_a = self.case_view()
         self.assert_inventory(view_a)
-        replay.expect(self.page.locator('.compare-selection [data-field="role"]')).to_contain_text("Agent")
+        replay.expect(self.main_comparison().locator('.compare-selection [data-field="role"]')).to_contain_text("Agent")
         self.observe_pair(view_a, "restored-case-a")
         self.assert_unchanged(before_a)
         self.assert_unchanged(before_b)
@@ -740,8 +745,8 @@ class ReviewWorkspace(Journey):
         measures = []
         for width, height in ((1600, 1100), (1280, 800), (320, 800)):
             self.page.set_viewport_size({"width": width, "height": height})
-            self.page.locator('[data-compare-action="readable"]').click()
-            labels = self.page.locator(".compare-state-label")
+            self.main_comparison().locator('[data-compare-action="readable"]').click()
+            labels = self.main_comparison().locator(".compare-state-label")
             sizes = [labels.nth(i).bounding_box()["height"] for i in range(labels.count())]
             assert min(sizes) >= 14, {"viewport": [width, height], "label_heights": sizes}
             bounds = self.page.evaluate("({body:document.body.scrollWidth,document:document.documentElement.scrollWidth,viewport:innerWidth})")

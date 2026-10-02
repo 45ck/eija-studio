@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.repository_source
   title: application/service.py
   hash_method: ast-v2
-  sha256: a78e45be2b7bd1dacb7bf73cdc170d87ff52e269db21663c6a9e1e5987f3bb15
-notes_baseline: 8b2f5b2eebcaa409d8eb11b786c8f2eb1f14968b74e18ce99636b82f5942a9cc
+  sha256: 9b8fcc69e509097d8716810d8434a41931c94af5e0bc87afbb3fc3be4266a978
+notes_baseline: 5dbf841ad761b82cb04dc3c066766e3fc58c611affe8d4f61545a6d529e59bac
 ---
 
 # application.service.Studio.repository_source
@@ -42,5 +42,7 @@ Bounded source view from the configured repository's captured nodes; no arbitrar
 _No curated notes yet._
 
 <!-- okf:generated:begin links -->
-_No generated cross-references._
+## Depends on
+
+* [application.repository.read_repository_source](/symbols/application/repository/read_repository_source.md) - Bounded source view from the configured repository's captured nodes; no arbitrary path or execution.
 <!-- okf:generated:end links -->

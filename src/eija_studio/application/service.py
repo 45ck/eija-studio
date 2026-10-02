@@ -17,8 +17,9 @@ from .formal import attach as attach_formal, packet_view, what_if_model
 from .compiler import compile_case, subject_for
 from .verifier import verify_runtime
 from .runtime import initialise, execute
-from .repository import RepositoryChangeSource, RepositorySource, compare_repository_changes, read_repository_change_file
+from .repository import RepositoryChangeSource, RepositorySource, compare_repository_changes, read_repository_change_file, read_repository_impact, read_repository_source, read_repository_freshness
 from .history import command_event, history_view, replay
+from .edit_preview import preview_edit
 
 
 def now() -> str:
@@ -62,21 +63,15 @@ class Studio:
 
     def repository_impact(self, term: str, *, expected_source_hash: str | None = None) -> dict[str, Any]:
         """Known repository links only. This neither edits the repository nor grants evidence or authority."""
-        if self.repository is None:
-            return {"status": "unconfigured", "reason": "Start with --repo PATH to inspect a local repository"}
-        return self.repository.impact(term, expected_source_hash=expected_source_hash)
+        return read_repository_impact(self.repository, term, expected_source_hash=expected_source_hash)
 
     def repository_source(self, reference: str, *, expected_source_hash: str | None = None) -> dict[str, Any]:
         """Bounded source view from the configured repository's captured nodes; no arbitrary path or execution."""
-        if self.repository is None:
-            return {"status": "unconfigured", "reason": "Start with --repo PATH to inspect a local repository"}
-        return self.repository.read_source(reference, expected_source_hash=expected_source_hash)
+        return read_repository_source(self.repository, reference, expected_source_hash=expected_source_hash)
 
     def repository_freshness(self, expected_source_hash: str) -> dict[str, Any]:
         """Observe captured byte identity; this grants no source conformance, evidence or owner authority."""
-        if self.repository is None:
-            return {"status": "unconfigured", "reason": "Start with --repo PATH to inspect a local repository"}
-        return self.repository.freshness(expected_source_hash=expected_source_hash)
+        return read_repository_freshness(self.repository, expected_source_hash)
 
     def repository_change(self, base: str, head: str) -> dict[str, Any]:
         """Compare immutable source revisions; this grants no model or repository write authority."""
@@ -240,6 +235,12 @@ class Studio:
     def edit_check(self, case_id: str, tx: Transaction) -> dict[str, Any]:
         """Dry-run one edit: {legal, codes, refs}. No authority is needed because nothing is written."""
         return dry_run(self._working(case_id), tx, self.pack)
+
+    def edit_preview(self, case_id: str, tx: Transaction) -> dict[str, Any]:
+        """Read-only edit preview bound to one case snapshot; the owner edit still requires capability and CAS."""
+        with self.store.transaction() as u:
+            case = self._case(u, case_id)
+        return preview_edit(case, tx, self.pack).model_dump(mode="json")
 
     def affordances(self, case_id: str) -> dict[str, Any]:
         """Which single edits of the case's working model the kernel would accept (read-only)."""

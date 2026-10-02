@@ -75,7 +75,7 @@
       "status": "PASS",
       "target": 400,
       "unit": "ms",
-      "value": 4.9
+      "value": 5.2
     },
     {
       "id": "doherty.settled_p50",
@@ -86,7 +86,7 @@
       "status": "PASS",
       "target": 400,
       "unit": "ms",
-      "value": 73.3
+      "value": 96.9
     },
     {
       "id": "doherty.settled_p95",
@@ -97,7 +97,7 @@
       "status": "GAP",
       "target": 400,
       "unit": "ms",
-      "value": 727.6
+      "value": 914.2
     },
     {
       "id": "wcag.critical_rules",
@@ -213,12 +213,12 @@
     "python": "3.12.10",
     "repeats": 3,
     "ui_sha256": {
-      "app.css": "0ae63ed2cbfbd409ecd620543c14b88a92c5ff66c12b0fad387d123c83ffd21c",
-      "app.js": "5a16425d61d38c4845d7c458996aa1a9c0e63a5b55c1f8a5a2698c9491455d93",
+      "app.css": "40e90839ea904a4970aa1bf58551fda4569f7e05a31ead56bf3b35b5b6e89dc4",
+      "app.js": "11af906022816f8dca6720c3aaf2825b6fc8ca7223d70ce3cc6db19de0ed4783",
       "canvas.js": "e0226d9361d73aa1831e48080f5fc262bb0fcbd8086cd1387461d39de6ca1765",
-      "compare.css": "2b007d3bcd4cfea5e0ed61a4f37c506d4a852496b7ec0723f36423f9482e57aa",
-      "compare.js": "d3aa0e90abb5d4b182ae711ab7a061d94f5d4d1cae8175c6aa7f3f2bca25ace0",
-      "index.html": "ce9b64b7895b0d33462044ae9ad9671cabd26b408b3ebd0fcf37f9e795218458",
+      "compare.css": "6545e65f92a3c15c680abbbb6de018c76bacb833f6398890899750fb99f24a16",
+      "compare.js": "2007ed3eaf766eadaa9a7d979033789fa2f825eb991b267ab888d9669df8d6bd",
+      "index.html": "6877655f12822c0fd351441d8807f29c216ddd700c14f3fdda82950b4040c255",
       "repository-review.css": "ef87096d5fc1408c8605f50e31db4f9d85579adc3247c1f2e5ff1b4ba9d848bb",
       "repository-review.js": "1a8559475a48f8855c31c3c1ac76ef28fa6cf70421d964e4fc22024bdfeeda02",
       "review.js": "426978e964918a63b8e73ff1ae99b2b126e7a1a4d9429b2151e275cfaf178dee",
@@ -347,7 +347,7 @@
         "predicted_mt_s": 0.872,
         "raw_w_px": 41,
         "scrolled_before": false,
-        "selector": "#workspace > div:nth-of-type(3) > nav > button:nth-of-type(5)",
+        "selector": "#workspace > div:nth-of-type(4) > nav > button:nth-of-type(5)",
         "step": "open-try",
         "target": "Run",
         "via_label": false,
@@ -467,7 +467,7 @@
         "predicted_mt_s": 0.825,
         "raw_w_px": 41,
         "scrolled_before": false,
-        "selector": "#workspace > div:nth-of-type(3) > nav > button:nth-of-type(6)",
+        "selector": "#workspace > div:nth-of-type(4) > nav > button:nth-of-type(6)",
         "step": "open-evidence",
         "target": "Evidence",
         "via_label": false,
@@ -499,7 +499,7 @@
         "scrolled_before": false,
         "selector": "#review-subject",
         "step": "open-review-subject",
-        "target": "Review this exact subject · eligible for local review · d43b",
+        "target": "Review this exact subject · eligible for local review · 88f1",
         "via_label": false,
         "w_px": 44,
         "wcag_2_5_8": "pass"
@@ -2753,7 +2753,7 @@
           "step": "run-verification"
         },
         {
-          "note": "point at Review this exact subject · eligible for local review · d43b",
+          "note": "point at Review this exact subject · eligible for local review · 88f1",
           "op": "P",
           "seconds": 1.1,
           "step": "open-review-subject"
@@ -3182,46 +3182,34 @@
   "measured": {
     "doherty": {
       "citation": "Doherty & Thadani 1982 (IBM Systems Journal 21(1)); ~400 ms",
-      "first_feedback_p50_ms": 0.6,
-      "first_feedback_p95_ms": 4.9,
+      "first_feedback_p50_ms": 0.7,
+      "first_feedback_p95_ms": 5.2,
       "interactions_measured": 45,
-      "journey_wait_p50_sum_s": 1.605,
-      "keyboard_settled_p50_ms": 81.7,
-      "keyboard_settled_p95_ms": 746.6,
+      "journey_wait_p50_sum_s": 2.045,
+      "keyboard_settled_p50_ms": 97.7,
+      "keyboard_settled_p95_ms": 983.8,
       "method": "nearest-rank percentiles over all repeats; medians and interquartile range are the headline, p95 is the maximum with few samples",
       "native_control_interactions_excluded": [
         "acknowledge"
       ],
       "note": "settled = last DOM mutation before quiescence, from the click event; excludes OS/browser input latency",
-      "settled_max_ms": 763.1,
-      "settled_p25_ms": 5.1,
-      "settled_p50_ms": 73.3,
-      "settled_p75_ms": 97.8,
-      "settled_p95_ms": 727.6,
+      "settled_max_ms": 1071.4,
+      "settled_p25_ms": 6.7,
+      "settled_p50_ms": 96.9,
+      "settled_p75_ms": 120.2,
+      "settled_p95_ms": 914.2,
       "steps": [
         {
-          "first_feedback_p50_ms": 4.9,
-          "first_feedback_p95_ms": 5.1,
+          "first_feedback_p50_ms": 5.8,
+          "first_feedback_p95_ms": 7.4,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 4.9,
-          "settled_p50_ms": 4.9,
-          "settled_p75_ms": 5.1,
-          "settled_p95_ms": 5.1,
+          "settled_p25_ms": 5.2,
+          "settled_p50_ms": 5.8,
+          "settled_p75_ms": 7.4,
+          "settled_p95_ms": 7.4,
           "step": "open-change"
-        },
-        {
-          "first_feedback_p50_ms": 0.4,
-          "first_feedback_p95_ms": 0.6,
-          "median_over_400ms": false,
-          "over_400ms": false,
-          "samples": 3,
-          "settled_p25_ms": 62.2,
-          "settled_p50_ms": 63.2,
-          "settled_p75_ms": 68.9,
-          "settled_p95_ms": 68.9,
-          "step": "create-case"
         },
         {
           "first_feedback_p50_ms": 0.5,
@@ -3229,83 +3217,71 @@
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 74.3,
-          "settled_p50_ms": 76.6,
-          "settled_p75_ms": 100.3,
-          "settled_p95_ms": 100.3,
+          "settled_p25_ms": 90.5,
+          "settled_p50_ms": 96.9,
+          "settled_p75_ms": 97.6,
+          "settled_p95_ms": 97.6,
+          "step": "create-case"
+        },
+        {
+          "first_feedback_p50_ms": 0.4,
+          "first_feedback_p95_ms": 0.6,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 96.3,
+          "settled_p50_ms": 103,
+          "settled_p75_ms": 123.9,
+          "settled_p95_ms": 123.9,
           "step": "ask-interpretations"
         },
         {
           "first_feedback_p50_ms": 0.4,
-          "first_feedback_p95_ms": 0.4,
-          "median_over_400ms": false,
-          "over_400ms": false,
-          "samples": 3,
-          "settled_p25_ms": 82.4,
-          "settled_p50_ms": 97.8,
-          "settled_p75_ms": 112.7,
-          "settled_p95_ms": 112.7,
-          "step": "select-meaning"
-        },
-        {
-          "first_feedback_p50_ms": 1.1,
-          "first_feedback_p95_ms": 1.6,
-          "median_over_400ms": false,
-          "over_400ms": false,
-          "samples": 3,
-          "settled_p25_ms": 0.9,
-          "settled_p50_ms": 1.1,
-          "settled_p75_ms": 1.6,
-          "settled_p95_ms": 1.6,
-          "step": "open-try"
-        },
-        {
-          "first_feedback_p50_ms": 0.8,
-          "first_feedback_p95_ms": 0.8,
-          "median_over_400ms": false,
-          "over_400ms": false,
-          "samples": 3,
-          "settled_p25_ms": 69.6,
-          "settled_p50_ms": 85.5,
-          "settled_p75_ms": 94.4,
-          "settled_p95_ms": 94.4,
-          "step": "reset-preview"
-        },
-        {
-          "first_feedback_p50_ms": 1.2,
-          "first_feedback_p95_ms": 1.6,
-          "median_over_400ms": false,
-          "over_400ms": false,
-          "samples": 3,
-          "settled_p25_ms": 73.3,
-          "settled_p50_ms": 76.3,
-          "settled_p75_ms": 84.9,
-          "settled_p95_ms": 84.9,
-          "step": "submit-teacher"
-        },
-        {
-          "first_feedback_p50_ms": 0.5,
           "first_feedback_p95_ms": 0.5,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 69.2,
-          "settled_p50_ms": 73.1,
-          "settled_p75_ms": 81,
-          "settled_p95_ms": 81,
-          "step": "recommend-teacher"
+          "settled_p25_ms": 111,
+          "settled_p50_ms": 120.2,
+          "settled_p75_ms": 123.2,
+          "settled_p95_ms": 123.2,
+          "step": "select-meaning"
         },
         {
-          "first_feedback_p50_ms": 0.5,
+          "first_feedback_p50_ms": 1.3,
+          "first_feedback_p95_ms": 1.7,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 1.2,
+          "settled_p50_ms": 1.3,
+          "settled_p75_ms": 1.7,
+          "settled_p95_ms": 1.7,
+          "step": "open-try"
+        },
+        {
+          "first_feedback_p50_ms": 1,
           "first_feedback_p95_ms": 1,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 69.8,
-          "settled_p50_ms": 75.2,
-          "settled_p75_ms": 75.7,
-          "settled_p95_ms": 75.7,
-          "step": "approve-registrar"
+          "settled_p25_ms": 90,
+          "settled_p50_ms": 96.1,
+          "settled_p75_ms": 99.5,
+          "settled_p95_ms": 99.5,
+          "step": "reset-preview"
+        },
+        {
+          "first_feedback_p50_ms": 0.7,
+          "first_feedback_p95_ms": 1.1,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 87.8,
+          "settled_p50_ms": 97.5,
+          "settled_p75_ms": 100.6,
+          "settled_p95_ms": 100.6,
+          "step": "submit-teacher"
         },
         {
           "first_feedback_p50_ms": 0.5,
@@ -3313,70 +3289,94 @@
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 5.5,
-          "settled_p50_ms": 5.6,
-          "settled_p75_ms": 6.1,
-          "settled_p95_ms": 6.1,
-          "step": "denied-recommend"
+          "settled_p25_ms": 92,
+          "settled_p50_ms": 94.2,
+          "settled_p75_ms": 103.1,
+          "settled_p95_ms": 103.1,
+          "step": "recommend-teacher"
         },
         {
-          "first_feedback_p50_ms": 1,
-          "first_feedback_p95_ms": 1.1,
+          "first_feedback_p50_ms": 0.7,
+          "first_feedback_p95_ms": 0.7,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 0.9,
-          "settled_p50_ms": 1,
-          "settled_p75_ms": 1.1,
-          "settled_p95_ms": 1.1,
+          "settled_p25_ms": 99.5,
+          "settled_p50_ms": 109.7,
+          "settled_p75_ms": 113.3,
+          "settled_p95_ms": 113.3,
+          "step": "approve-registrar"
+        },
+        {
+          "first_feedback_p50_ms": 0.6,
+          "first_feedback_p95_ms": 0.8,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 6.7,
+          "settled_p50_ms": 7.1,
+          "settled_p75_ms": 7.8,
+          "settled_p95_ms": 7.8,
+          "step": "denied-recommend"
+        },
+        {
+          "first_feedback_p50_ms": 1.3,
+          "first_feedback_p95_ms": 1.7,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 1.2,
+          "settled_p50_ms": 1.3,
+          "settled_p75_ms": 1.7,
+          "settled_p95_ms": 1.7,
           "step": "open-evidence"
         },
         {
-          "first_feedback_p50_ms": 0.4,
-          "first_feedback_p95_ms": 0.6,
+          "first_feedback_p50_ms": 0.5,
+          "first_feedback_p95_ms": 0.8,
           "median_over_400ms": true,
           "over_400ms": true,
           "samples": 3,
-          "settled_p25_ms": 727.6,
-          "settled_p50_ms": 753.3,
-          "settled_p75_ms": 763.1,
-          "settled_p95_ms": 763.1,
+          "settled_p25_ms": 914.2,
+          "settled_p50_ms": 933.3,
+          "settled_p75_ms": 1071.4,
+          "settled_p95_ms": 1071.4,
           "step": "run-verification"
         },
         {
           "first_feedback_p50_ms": 0.7,
-          "first_feedback_p95_ms": 0.9,
+          "first_feedback_p95_ms": 0.8,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
           "settled_p25_ms": 0.7,
           "settled_p50_ms": 0.7,
-          "settled_p75_ms": 0.9,
-          "settled_p95_ms": 0.9,
+          "settled_p75_ms": 0.8,
+          "settled_p95_ms": 0.8,
           "step": "open-review-subject"
         },
         {
-          "first_feedback_p50_ms": 0.9,
-          "first_feedback_p95_ms": 1.1,
+          "first_feedback_p50_ms": 1,
+          "first_feedback_p95_ms": 1.2,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 113.2,
-          "settled_p50_ms": 113.7,
-          "settled_p75_ms": 115.2,
-          "settled_p95_ms": 115.2,
+          "settled_p25_ms": 148.3,
+          "settled_p50_ms": 150.6,
+          "settled_p75_ms": 150.7,
+          "settled_p95_ms": 150.7,
           "step": "approve-exact"
         },
         {
-          "first_feedback_p50_ms": 0.4,
-          "first_feedback_p95_ms": 0.5,
+          "first_feedback_p50_ms": 0.6,
+          "first_feedback_p95_ms": 0.7,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 175.4,
-          "settled_p50_ms": 177.4,
-          "settled_p75_ms": 181.4,
-          "settled_p95_ms": 181.4,
+          "settled_p25_ms": 214.3,
+          "settled_p50_ms": 227.6,
+          "settled_p75_ms": 236.9,
+          "settled_p95_ms": 236.9,
           "step": "apply-baseline"
         }
       ],
@@ -3401,11 +3401,11 @@
   "recommendations": [
     {
       "category": "doherty",
-      "change": "First DOM mutation after the click came within 4.9 ms (p95; paint not measured), while completion for the slow steps takes longer than 400 ms. For the slow steps show a determinate progress message, keep the previous result visible until the new one lands, and profile where the time goes before optimising anything.",
+      "change": "First DOM mutation after the click came within 5.2 ms (p95; paint not measured), while completion for the slow steps takes longer than 400 ms. For the slow steps show a determinate progress message, keep the previous result visible until the new one lands, and profile where the time goes before optimising anything.",
       "evidence": {
-        "first_feedback_p95_ms": 4.9,
+        "first_feedback_p95_ms": 5.2,
         "slow_steps": [
-          "run-verification: p50 753.3 / p95 763.1 ms"
+          "run-verification: p50 933.3 / p95 1071.4 ms"
         ]
       },
       "id": "doherty-completion",
@@ -3662,19 +3662,19 @@
     "http_error_responses": [
       {
         "method": "POST",
-        "path": "/api/cases/268b39d84662479da738b74a45a42f54/execute",
+        "path": "/api/cases/35096d118adb4f738cb74a7d3952f636/execute",
         "status": 409,
         "step": "denied-recommend"
       },
       {
         "method": "POST",
-        "path": "/api/cases/377bf119671a45b39d07dbf7b9e91d58/execute",
+        "path": "/api/cases/a85659e19cac423dbbeff5e5884dcc7d/execute",
         "status": 409,
         "step": "denied-recommend"
       },
       {
         "method": "POST",
-        "path": "/api/cases/40c337c6cbd64477b929da7467dc48e0/execute",
+        "path": "/api/cases/ef5c08a2d9fe4c6c996d7ed6d057372f/execute",
         "status": 409,
         "step": "denied-recommend"
       }

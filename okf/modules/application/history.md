@@ -66,6 +66,7 @@ _No curated notes yet._
 
 ## Referenced by
 
+* [application.edit_preview](/modules/application/edit_preview.md) - Read-only edit projection over one captured case, using the same interpreter as owner edits.
 * [application.service](/modules/application/service.md) - Module `application/service` (no module docstring).
 * [application.history.SemanticHistory](/symbols/application/history/SemanticHistory.md) - Validated replay; models includes the selected meaning followed by each applied owner edit.
 * [application.history.command_event](/symbols/application/history/command_event.md) - Append-only command provenance; decision and receipt payloads remain in their existing audit.

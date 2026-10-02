@@ -64,5 +64,6 @@ Providers and agents never call it: authority to select a [Meaning](/language/me
 
 ## Referenced by
 
+* [application.edit_preview.preview_edit](/symbols/application/edit_preview/preview_edit.md) - The candidate edit would produce from this snapshot, or its refusal without a guessed model.
 * [application.service.Studio.edit](/symbols/application/service/Studio.edit.md) - `def edit(self, case_id: str, expected: int, tx: Transaction, principal: Principal) -> dict[str, Any]` in `application/service`.
 <!-- okf:generated:end links -->

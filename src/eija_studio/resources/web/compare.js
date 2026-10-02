@@ -107,15 +107,22 @@ const EijaCompare = (() => {
     const node = element("button", label); node.type = "button"; node.onclick = callback; if (action) node.dataset.compareAction = action; return node;
   }
   function itemTitle(item) { return item.kind === "transition" ? `${(item.after || item.before).action} · ${item.id}` : item.kind === "initial" ? "Initial state" : item.id; }
-  function fieldTable(fields) {
+  function fieldTable(fields, preview = false) {
     const table = element("table", undefined, "compare-fields"), head = element("thead"), row = element("tr"), body = element("tbody");
-    for (const label of ["Field", "Before · baseline", "After · candidate"]) {const th = element("th", label); th.scope = "col"; row.append(th);}
+    for (const label of ["Field", preview ? "Captured before" : "Before · baseline", preview ? "Proposed result" : "After · candidate"]) {const th = element("th", label); th.scope = "col"; row.append(th);}
     head.append(row); table.append(head, body);
     for (const field of fields) {
       const tr = element("tr"), th = element("th", field.label); th.scope = "row"; tr.dataset.field = field.key;
       tr.append(th, element("td", textValue(field.before)), element("td", textValue(field.after))); body.append(tr);
     }
     const wrap = element("div", undefined, "compare-table-wrap"); wrap.tabIndex = 0; wrap.setAttribute("role", "region"); wrap.setAttribute("aria-label", "Exact before and after values"); wrap.append(table); return wrap;
+  }
+  function buildPreviewSummary(s) {
+    if (!s.callbacks.preview) return;
+    s.previewSummary = element("section", undefined, "compare-preview-fields");
+    s.previewSummary.setAttribute("role", "region");
+    s.previewSummary.setAttribute("aria-label", "Selected element changes, captured before to proposed result");
+    s.shell.append(s.previewSummary);
   }
   function render(root, current, callbacks = {}) {
     root.replaceChildren();
@@ -137,6 +144,7 @@ const EijaCompare = (() => {
       state.selected = {kind: item.kind, id: item.id}; updateSelection(session); if (focus) focusSelection(session); session.notify();
       callbacks.onSelection?.({...subject, ...state.selected}, item); return true;
     };
+    buildPreviewSummary(session);
     session.visual = element("div", undefined, "compare-visual-workspace"); shell.append(session.visual);
     buildHeader(session); buildNavigator(session); buildPair(session); buildDetails(session); buildContext(session);
     updateSelection(session);
@@ -151,14 +159,14 @@ const EijaCompare = (() => {
       setViewport: value => setViewport(session, value), destroy() {session.stopped = true; observer?.disconnect(); session.navigator?.remove();}};
   }
   function buildHeader(s) {
-    const header = element("header", undefined, "compare-header"); header.append(element("h2", `Changes · revision ${s.c.version}`));
+    const header = element("header", undefined, "compare-header"); header.append(element("h2", s.callbacks.preview ? "Captured edit comparison" : `Changes · revision ${s.c.version}`));
     const tools = element("div", undefined, "compare-tools"); tools.setAttribute("aria-label", "Synchronized comparison view"); tools.setAttribute("role", "group");
     tools.append(button("Focus selection", () => focusSelection(s), "focus"), button("100%", () => setViewport(s, {...s.state.viewport, scale: 1}), "readable"),
       button("−", () => zoom(s, 1 / 1.2), "zoom-out"), button("+", () => zoom(s, 1.2), "zoom-in"), button("Overview", () => fit(s), "overview"));
     tools.querySelector('[data-compare-action="zoom-out"]').setAttribute("aria-label", "Zoom out both diagrams");
     tools.querySelector('[data-compare-action="zoom-in"]').setAttribute("aria-label", "Zoom in both diagrams");
     s.scale = element("output", "100%"); s.scale.dataset.compareScale = ""; s.scale.setAttribute("aria-label", "Shared diagram scale"); tools.append(s.scale);
-    const help = element("details", undefined, "compare-help"); help.append(element("summary", "View help"), element("p", "Read-only baseline and candidate snapshots share positions and zoom. Focus shows the selected endpoints, route and labels. Drag empty space or use arrow keys to pan; plus/minus zoom. Home focuses the selection. Focus and Overview may reduce text size; 100% restores readable scale."));
+    const help = element("details", undefined, "compare-help"); help.append(element("summary", "View help"), element("p", (s.callbacks.preview ? "Read-only captured before and proposed result snapshots share positions and zoom. " : "Read-only baseline and candidate snapshots share positions and zoom. ") + "Focus shows the selected endpoints, route and labels. Drag empty space or use arrow keys to pan; plus/minus zoom. Home focuses the selection. Focus and Overview may reduce text size; 100% restores readable scale."));
     help.addEventListener("keydown", event => {if (event.key === "Escape") {help.open = false; help.querySelector("summary").focus(); event.stopPropagation();}});
     s.scaleHint = element("span", "", "compare-scale-hint"); s.scaleHint.setAttribute("role", "status");
     if(s.callbacks.openNavigator)tools.prepend(button("All changes",s.callbacks.openNavigator,"navigator"));
@@ -187,7 +195,7 @@ const EijaCompare = (() => {
   }
   function buildPair(s) {
     const pair = element("div", undefined, "compare-pair");
-    for (const [side, title] of [["before", "Before · baseline"], ["after", "After · candidate"]]) {
+    for (const [side, title] of [["before", s.callbacks.preview ? "Captured before" : "Before · baseline"], ["after", s.callbacks.preview ? "Proposed result" : "After · candidate"]]) {
       const pane = element("section", undefined, "compare-pane"); pane.dataset.compareSide = side; pane.setAttribute("aria-label", title);
       const heading = element("h3", title), presence = element("p", "", "compare-presence"), host = element("div", undefined, "compare-graph");
       const board = svg("svg", {class: "compare-svg", role: "group", tabindex: 0, "aria-label": `${title} model diagram. Arrow keys pan both diagrams; plus and minus zoom.`});
@@ -239,8 +247,21 @@ const EijaCompare = (() => {
     s.detail.replaceChildren(); s.detail.dataset.kind = item.kind; s.detail.dataset.id = item.id;
     s.detail.append(element("h3", `${statusLabel[item.status]} · ${itemTitle(item)}`));
     const changed = item.fields.filter(field => field.changed), unchanged = item.fields.filter(field => !field.changed);
-    if (changed.length) s.detail.append(fieldTable(changed));
-    if (unchanged.length) {const details = element("details"); details.open = !changed.length; details.append(element("summary", `${unchanged.length} unchanged fields`), fieldTable(unchanged)); s.detail.append(details);}
+    if (changed.length) s.detail.append(fieldTable(changed, s.callbacks.preview));
+    if (unchanged.length) {const details = element("details"); details.open = !changed.length; details.append(element("summary", `${unchanged.length} unchanged fields`), fieldTable(unchanged, s.callbacks.preview)); s.detail.append(details);}
+    if (s.callbacks.preview) {
+      if (s.previewSummary) {
+        s.previewSummary.replaceChildren(element("span", "Selected element’s changes", "compare-preview-scope"));
+        Object.assign(s.previewSummary.dataset, {kind: item.kind, id: item.id});
+        for (const field of changed) {
+          const row = element("p"), before = element("span", textValue(field.before)), after = element("span", textValue(field.after));
+          row.dataset.field = field.key; before.dataset.compareBefore = ""; after.dataset.compareAfter = "";
+          row.append(element("strong", `${field.label}: `), before, element("span", " → "), after); s.previewSummary.append(row);
+        }
+        if (!changed.length) s.previewSummary.append(element("p", "No changed fields for this selected element."));
+      }
+      s.announcement.textContent = `${statusLabel[item.status]} ${itemTitle(item)} selected. Captured edit comparison for revision ${s.subject.revision}.`; return;
+    }
     const related = element("div", undefined, "compare-related"), refs = bindings(item, s.callbacks.terms || []);
     if (!refs.length) related.append(element("p", "Source binding unknown: no declared binding for this selected element."));
     for (const ref of refs) {const open = button(`Open bound source · ${ref}`, () => s.callbacks.openReference?.(ref, {...s.subject, ...s.state.selected})); open.disabled = !s.callbacks.openReference; open.dataset.compareReference = ref; related.append(open);}
@@ -249,6 +270,7 @@ const EijaCompare = (() => {
     s.detail.append(related); s.announcement.textContent = `${statusLabel[item.status]} ${itemTitle(item)} selected. Case revision ${s.subject.revision}.`;
   }
   function buildContext(s) {
+    if (s.callbacks.preview) return;
     const context = element("section", undefined, "compare-context"), impact = element("details"), affected = s.packet.impact?.affected || [];
     impact.append(element("summary", `Case-wide known impact · ${affected.length} reported references`), element("p", s.packet.impact?.complete ?
       "Dependency closure is complete only within the declared mapping. This list is case-wide, not a claim about the selected element or complete behavioral impact." :

@@ -713,6 +713,55 @@
         }
       }
     },
+    "/api/cases/{case_id}/edit/preview": {
+      "post": {
+        "summary": "Edit Preview",
+        "operationId": "edit_preview_api_cases__case_id__edit_preview_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditCheck"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EditPreview"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/cases/{case_id}/undo": {
       "post": {
         "summary": "Undo",
@@ -1603,6 +1652,153 @@
         ],
         "title": "EditCheck"
       },
+      "EditPreview": {
+        "properties": {
+          "legal": {
+            "type": "boolean",
+            "title": "Legal"
+          },
+          "codes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Codes"
+          },
+          "refs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Refs"
+          },
+          "case_id": {
+            "type": "string",
+            "title": "Case Id"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "stage": {
+            "type": "string",
+            "title": "Stage"
+          },
+          "semantic_hash": {
+            "type": "string",
+            "title": "Semantic Hash"
+          },
+          "transaction": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AddState"
+              },
+              {
+                "$ref": "#/components/schemas/RenameState"
+              },
+              {
+                "$ref": "#/components/schemas/RemoveState"
+              },
+              {
+                "$ref": "#/components/schemas/SetInitial"
+              },
+              {
+                "$ref": "#/components/schemas/AddTransition"
+              },
+              {
+                "$ref": "#/components/schemas/RetargetTransition"
+              },
+              {
+                "$ref": "#/components/schemas/RemoveTransition"
+              },
+              {
+                "$ref": "#/components/schemas/SetRole"
+              },
+              {
+                "$ref": "#/components/schemas/SetGuards"
+              },
+              {
+                "$ref": "#/components/schemas/SetEffects"
+              }
+            ],
+            "title": "Transaction",
+            "discriminator": {
+              "propertyName": "kind",
+              "mapping": {
+                "add_state": "#/components/schemas/AddState",
+                "add_transition": "#/components/schemas/AddTransition",
+                "remove_state": "#/components/schemas/RemoveState",
+                "remove_transition": "#/components/schemas/RemoveTransition",
+                "rename_state": "#/components/schemas/RenameState",
+                "retarget_transition": "#/components/schemas/RetargetTransition",
+                "set_effects": "#/components/schemas/SetEffects",
+                "set_guards": "#/components/schemas/SetGuards",
+                "set_initial": "#/components/schemas/SetInitial",
+                "set_role": "#/components/schemas/SetRole"
+              }
+            }
+          },
+          "current": {
+            "$ref": "#/components/schemas/Workflow"
+          },
+          "candidate": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Workflow"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "candidate_semantic_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Candidate Semantic Hash"
+          },
+          "applied": {
+            "type": "boolean",
+            "const": false,
+            "title": "Applied",
+            "default": false
+          },
+          "persisted": {
+            "type": "boolean",
+            "const": false,
+            "title": "Persisted",
+            "default": false
+          },
+          "scope": {
+            "type": "string",
+            "const": "semantic-edit-preview",
+            "title": "Scope",
+            "default": "semantic-edit-preview"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "legal",
+          "codes",
+          "refs",
+          "case_id",
+          "version",
+          "stage",
+          "semantic_hash",
+          "transaction",
+          "current",
+          "candidate",
+          "candidate_semantic_hash"
+        ],
+        "title": "EditPreview",
+        "description": "An uncommitted candidate bound to a captured case revision; no evidence or edit authority."
+      },
       "ExecuteCommand": {
         "properties": {
           "operation_id": {
@@ -2021,6 +2217,81 @@
         ],
         "title": "SetRole"
       },
+      "Transition": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_-]{0,63}$",
+            "title": "Id"
+          },
+          "action": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Action"
+          },
+          "from_state": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "From State"
+          },
+          "to_state": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "To State"
+          },
+          "role": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Role"
+          },
+          "guards": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "actor_active",
+                "role_current",
+                "actor_assigned",
+                "state_equals",
+                "expected_version",
+                "operation_binding"
+              ]
+            },
+            "type": "array",
+            "title": "Guards"
+          },
+          "required_effects": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Required Effects"
+          },
+          "forbidden_effects": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Forbidden Effects"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "action",
+          "from_state",
+          "to_state",
+          "role",
+          "guards",
+          "required_effects",
+          "forbidden_effects"
+        ],
+        "title": "Transition"
+      },
       "ValidationError": {
         "properties": {
           "loc": {
@@ -2075,6 +2346,52 @@
           "expected_version"
         ],
         "title": "Version"
+      },
+      "Workflow": {
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "const": "eija.workflow.v1",
+            "title": "Schema Version",
+            "default": "eija.workflow.v1"
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]{0,39}$",
+            "title": "Id"
+          },
+          "initial_state": {
+            "type": "string",
+            "title": "Initial State"
+          },
+          "states": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 32,
+            "minItems": 1,
+            "title": "States"
+          },
+          "transitions": {
+            "items": {
+              "$ref": "#/components/schemas/Transition"
+            },
+            "type": "array",
+            "maxItems": 64,
+            "minItems": 1,
+            "title": "Transitions"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "initial_state",
+          "states",
+          "transitions"
+        ],
+        "title": "Workflow"
       }
     }
   }

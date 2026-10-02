@@ -6,6 +6,7 @@
 * [diagram_catalog](diagram_catalog/) - Symbols of application.diagram_catalog
 * [diagram_emitters](diagram_emitters/) - Symbols of application.diagram_emitters
 * [diagrams](diagrams/) - Symbols of application.diagrams
+* [edit_preview](edit_preview/) - Symbols of application.edit_preview
 * [formal](formal/) - Symbols of application.formal
 * [history](history/) - Symbols of application.history
 * [ports](ports/) - Symbols of application.ports

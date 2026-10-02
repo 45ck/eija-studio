@@ -2,6 +2,8 @@
 
 ## 2026-10-03
 
+* **Repository query cohesion**: moved the three existing optional-port query bodies beside their port in `application.repository`, retaining Studio signatures and per-request connection lookup. Read the affected source and Notes; documented the preserved snapshot and refusal boundaries as `process:codex-query-cohesion`. This review does not certify runtime or maintainability gates.
+* **Prospective semantic edit**: synced the read-only edit-preview adapter, HTTP contract, public symbols and ADR-0149. Re-read Studio Notes against captured-case lifecycle/history checks and the unchanged policy-only `edit_check`; reviewed as `process:codex-edit-preview`. Projection is separate from authorized persistence and evidence. This knowledge-base review is not browser or execution acceptance.
 * **Comparison responsibility split**: synced captured-source analysis, snapshot projections, retention eligibility and the application request helpers. Re-read the comparison Notes against the actual capture and generation-lock owner, updated its delegation boundaries, and reviewed as `process:codex-comparison-cohesion`. The retired JavaScript adapter page is marked deprecated. The separate 346-check integrated run covers compatibility, real Git reads, cache invalidation, worker failures and unchanged architecture/maintainability budgets; this knowledge-base review is not execution evidence.
 
 ## 2026-10-02

@@ -240,9 +240,21 @@ async function load(id,canPublish=null) {
   reconcileRuntime(next);
   if(switching){const previous=caseViews.get(id);editId=previous?.editId||null;inspectorSelection=previous?.inspectorSelection||null;modelView=previous?.modelView||"working";historyModel=previous?.historyModel||null;historyLabel=previous?.historyLabel||"";canvasDirection=previous?.canvasDirection||"AUTO";if(previous)tab=previous.tab;}
   if(current?.case.id!==next.case.id||current?.case.version!==next.case.version)cancelSourceRead();
-  current=next;affordanceData=affordances;caseHistory=historyData;render();await cases();if(canPublish&&!canPublish())return false;
+  current=next;affordanceData=affordances;caseHistory=historyData;renderEditReconciliation();render();await cases();if(canPublish&&!canPublish())return false;
   if(runtimeAttempt&&runtimeOwns(runtimeAttempt)&&runtimeAttempt.refresh==="failed"){runtimeAttempt.refresh="current";renderRuntimeFeedback();}
+  if(editNeedsRefresh.delete(id))render();
+  renderEditReconciliation();
   clearDiagnostic();return true;
+}
+let editNeedsRefresh=new Map();
+function renderEditReconciliation(){
+  const root=$("edit-reconciliation"),pending=editNeedsRefresh.get(current?.case.id);root.hidden=!pending;
+  if(!pending){$("edit-reconciliation-status").textContent="";for(const key of ["caseId","revision","status"])delete root.dataset[key];return;}
+  Object.assign(root.dataset,{caseId:pending.caseId,revision:String(pending.version),status:pending.status});
+  const outcome=pending.status==="committed"?`Edit acknowledged at revision ${pending.version+1}.`:`Edit outcome unknown for revision ${pending.version}; it may have committed.`;
+  $("edit-reconciliation-status").textContent=`${outcome} Revision ${current.case.version} and its evidence are the last loaded snapshot. Refresh this case to reconcile before changing it or its runtime.`;
+  for(const id of ["propose","save","discard","move-node","verify","reset","approve","apply","undo-edit","redo-edit","history-undo","history-redo"])$(id).disabled=true;
+  for(const button of $("runtime-actions").children)button.disabled=true;
 }
 let runtimeAttempt=null,runtimeCommit=null,runtimeEpoch=0,runtimeUncertain=false;
 function runtimeSemantic(data=current){return data?.packet?.subject?.semantic??null;}
@@ -306,7 +318,7 @@ async function refreshRuntime(attempt){
   }
 }
 async function executeRuntime(action,origin){
-  if(!current||origin.caseId!==current.case.id||origin.revision!==current.case.version||origin.semanticHash!==runtimeSemantic()||!instance||origin.instanceId!==instance.id||origin.instanceVersion!==instance.version)return false;
+  if(!current||editNeedsRefresh.has(current.case.id)||origin.caseId!==current.case.id||origin.revision!==current.case.version||origin.semanticHash!==runtimeSemantic()||!instance||origin.instanceId!==instance.id||origin.instanceVersion!==instance.version)return false;
   const attempt=beginRuntimeAttempt("execute",action);
   let result;
   try{result=await api(`cases/${attempt.caseId}/execute`,attempt.command);validateRuntimeResult(result,attempt);}catch(error){return runtimeFailure(attempt,error);}
@@ -316,7 +328,7 @@ async function executeRuntime(action,origin){
   renderRuntime();return refreshRuntime(attempt);
 }
 async function startRuntimePreview(){
-  if(!current)return false;
+  if(!current||editNeedsRefresh.has(current.case.id))return false;
   const attempt=beginRuntimeAttempt("preview","Start / reset preview");let result;
   try{
     result=await api(`cases/${attempt.caseId}/preview`,attempt.command);
@@ -344,7 +356,7 @@ function renderRuntimeFeedback(){
   $("runtime-last-commit").textContent=runtimeCommit?`Last acknowledged commit: ${runtimeCommit.action} · actor ${runtimeCommit.actorId} · instance ${runtimeCommit.result.instance.id} · version ${runtimeCommit.result.instance.version}. Effects: ${runtimeCommit.result.effects.join(", ")||"none"}. This is separate from the latest attempt.`:"";
 }
 function renderRuntime(){
-  const c=current?.case,closed=!c||["APPLIED","DISCARDED"].includes(c.stage),origin={caseId:c?.id,revision:c?.version,semanticHash:runtimeSemantic(),instanceId:instance?.id,instanceVersion:instance?.version};
+  const c=current?.case,closed=!c||editNeedsRefresh.has(c.id)||["APPLIED","DISCARDED"].includes(c.stage),origin={caseId:c?.id,revision:c?.version,semanticHash:runtimeSemantic(),instanceId:instance?.id,instanceVersion:instance?.version};
   $("runtime-actions").replaceChildren();
   for(const action of status?.pack?.actions||[]){const button=el("button",action,"secondary");button.dataset.action=action;button.disabled=!instance||closed;button.onclick=()=>task(()=>executeRuntime(action,origin));$("runtime-actions").append(button);}
   $("runtime-state").textContent=instance?.state||"Not started";
@@ -352,8 +364,13 @@ function renderRuntime(){
   $("trace").textContent=JSON.stringify(current?.observations??[],null,2);renderRuntimeFeedback();
 }
 
-async function command(action,extra={}){const id=current.case.id;const result=await api(`cases/${id}/${action}`,{expected_version:current.case.version,...extra});if(["undo","redo","discard"].includes(action))clearRuntime();await load(id);return result;}
-function render(){const c=current.case,p=current.packet,closed=["APPLIED","DISCARDED"].includes(c.stage);$("create-panel").hidden=true;$("workspace").hidden=false;$("case-title").textContent=c.request;$("case-id").textContent=`CHANGE CASE ${c.id.slice(0,10)} / REVISION ${c.version} / BASELINE ${c.baseline_version}`;$("case-stage").textContent=c.stage;$("proposal-summary").textContent=c.proposal?.summary||"No interpretation has been requested. Your request is not yet a semantic change.";$("propose").disabled=!!c.candidate||closed;$("options").replaceChildren();
+async function command(action,extra={}){
+  const id=current.case.id;
+  if(editNeedsRefresh.has(id))throw new ApiError("EDIT_RECONCILIATION_REQUIRED","Refresh this case before changing it or its runtime; the previous edit submission needs reconciliation.",{case_id:id});
+  const result=await api(`cases/${id}/${action}`,{expected_version:current.case.version,...extra});
+  if(["undo","redo","discard"].includes(action))clearRuntime();await load(id);return result;
+}
+function render(){const c=current.case,p=current.packet,closed=editNeedsRefresh.has(c.id)||["APPLIED","DISCARDED"].includes(c.stage);$("create-panel").hidden=true;$("workspace").hidden=false;$("case-title").textContent=c.request;$("case-id").textContent=`CHANGE CASE ${c.id.slice(0,10)} / REVISION ${c.version} / BASELINE ${c.baseline_version}`;$("case-stage").textContent=c.stage;$("proposal-summary").textContent=c.proposal?.summary||"No interpretation has been requested. Your request is not yet a semantic change.";$("propose").disabled=!!c.candidate||closed;$("options").replaceChildren();
 for(const a of c.proposal?.alternatives||[]){const canonical=current.options[a.interpretation],chosen=c.selected_meaning===a.interpretation;const card=el("article",undefined,"option"+(chosen?" selected":""));card.append(el("small",chosen?"SELECTED BY LOCAL OWNER":canonical.supported?"SUPPORTED MEANING":"BLOCKED / OUT OF SCOPE"),el("h3",canonical.label));for(const consequence of canonical.consequences)card.append(el("p",consequence));const d=el("details");d.append(el("summary","Untrusted provider explanation"),el("p",a.explanation));card.append(d);const b=el("button",chosen?"Meaning selected":canonical.supported?"Select this meaning":"Explain boundary",chosen?"secondary":"");b.dataset.meaning=a.interpretation;b.disabled=closed||!!c.candidate;b.onclick=()=>task(async()=>{await command("select",{interpretation:a.interpretation});notice("Meaning selected. The local baseline has not changed.");});card.append(b);$("options").append(card);}
 $("proposal-unknowns").replaceChildren();for(const unknown of c.proposal?.unknowns||[])$("proposal-unknowns").append(el("p","Unresolved: "+unknown,"muted"));$("editor").hidden=!c.candidate;
 for(const id of ["save","discard","edit-rule","edit-state","move-node","verify","reset"])$(id).disabled=!c.candidate||closed;
@@ -403,7 +420,7 @@ $("visual-source").textContent=`Generated from workflow hash ${data.sources.base
 postVisual();}catch(e){reportError(e);}}
 
 function workingModel() {return current ? modelView === "history" && historyModel ? historyModel : modelView === "baseline" ? current.case.baseline : current.case.candidate || current.case.baseline : workbench?.model;}
-function editable() {return modelView === "working" && !!current?.case.candidate && !["APPLIED", "DISCARDED"].includes(current.case.stage);}
+function editable() {return !editNeedsRefresh.has(current?.case.id) && modelView === "working" && !!current?.case.candidate && !["APPLIED", "DISCARDED"].includes(current.case.stage);}
 function selectedTransition() {return workingModel()?.transitions.find(t => t.id === editId);}
 function choiceFor(kind, target) {return EijaCanvas.entries(affordanceData?.affordances, editId, kind).find(a => a.target === target);}
 function fillChoices(id, kind, currentValue) {
@@ -437,7 +454,7 @@ function renderEditor() {
   $("rejection-label").textContent = target ? `${target.action} may start from` : "Select a transition in Model first";
   $("diagram-label").textContent = target ? `${target.action} source state` : "Select a transition in Model first";
   const c=current?.case;
-  $("rules-edit-help").textContent=!c?.candidate?"The baseline is read only. Choose a supported meaning in Intent to create a candidate.":["APPLIED","DISCARDED"].includes(c.stage)?`This case is ${c.stage}; its model is read only. Open another case to make changes.`:modelView!=="working"?"The Model workspace shows a read-only preview. Choose a rule above to open the current candidate before editing.":target?`Editing ${target.action} (${target.id}) in the current candidate · revision ${c.version}. The kernel checks each submitted change.`:"Choose a rule above to select the current candidate transition to edit.";
+  $("rules-edit-help").textContent=editNeedsRefresh.has(c?.id)?"An edit submission needs reconciliation. Refresh this case before editing the last loaded model.":!c?.candidate?"The baseline is read only. Choose a supported meaning in Intent to create a candidate.":["APPLIED","DISCARDED"].includes(c.stage)?`This case is ${c.stage}; its model is read only. Open another case to make changes.`:modelView!=="working"?"The Model workspace shows a read-only preview. Choose a rule above to open the current candidate before editing.":target?`Editing ${target.action} (${target.id}) in the current candidate · revision ${c.version}. The kernel checks each submitted change.`:"Choose a rule above to select the current candidate transition to edit.";
 }
 function renderCanvas() {
   $("canvas-direction").value=canvasDirection;
@@ -544,8 +561,8 @@ function renderWorkbench() {
   $("model-empty").hidden=false;
   $("model-empty").textContent=modelView==="history"?`Read-only historical preview · ${historyLabel}. Choose Working model to return.`:modelView==="baseline"?"Original baseline · read only. Switch to Working model to edit the candidate.":editable()?"Drag an endpoint or use the inspector. Every edit is checked by the kernel.":"Select a transition to inspect it. Start an intent to change the model.";
   $("model-version").querySelector('option[value="history"]').hidden=!historyModel;$("model-version").value=modelView;$("model-version").querySelector('option[value="baseline"]').disabled=!current?.case.candidate;
-  $("undo-edit").disabled=!caseHistory?.can_undo||!current||["APPLIED","DISCARDED"].includes(current.case.stage);
-  $("redo-edit").disabled=!caseHistory?.can_redo||!current||["APPLIED","DISCARDED"].includes(current.case.stage);
+  $("undo-edit").disabled=!caseHistory?.can_undo||!current||editNeedsRefresh.has(current.case.id)||["APPLIED","DISCARDED"].includes(current.case.stage);
+  $("redo-edit").disabled=!caseHistory?.can_redo||!current||editNeedsRefresh.has(current.case.id)||["APPLIED","DISCARDED"].includes(current.case.stage);
   $("history-undo").disabled=$("undo-edit").disabled;$("history-redo").disabled=$("redo-edit").disabled;
   $("source-status").textContent = status?.trusted_fixture ? "Source identity matches its release fixture. This identifies reviewed bytes; it does not prove correctness." : "SOURCE_REVIEW_REQUIRED · implementation changed since the owner-stamped fixture. Verification and apply remain blocked pending source review.";
   $("source-status").classList.toggle("source-required", !status?.trusted_fixture);
@@ -620,21 +637,113 @@ function renderProblems() {
   $("focus-problem-count").textContent=issues.size;
   $("status-evidence").textContent=p?`Technical eligibility: ${p.eligible?"eligible":"blocked"} · human UNKNOWN`:"Evidence: NOT_RUN · human UNKNOWN";
 }
-function commitChoice(choice) {
-  if (!editable() || !choice) {notice("Choose a different server-listed destination for the selected transition."); return;}
-  return task(async () => {
-    const id = current.case.id, expectedVersion = current.case.version;
-    const check = await api(`cases/${id}/edit/check`, {transaction: choice.transaction});
-    if (!check.legal) {
-      reportError(new ApiError("EDIT_REFUSED", "The kernel refused this edit; the model is unchanged", {codes: check.codes, refs: check.refs}));
-      renderCanvas(); return;
-    }
-    await api(`cases/${id}/edit`, {expected_version: expectedVersion, transaction: choice.transaction});
-    clearRuntime(); lastDiagnostic = null; $("error-details").hidden = true;
-    await load(id);
-    notice("One typed transaction committed. The canvas has reloaded the server model; prior evidence and decisions must be reconsidered.");
-  }, "Checking the typed edit…");
+let editPreview=null,editPreviewSequence=0;
+function markEditReconciliation(preview,status){
+  editNeedsRefresh.set(preview.caseId,{caseId:preview.caseId,version:preview.version,semanticHash:preview.semanticHash,status});
+  renderEditReconciliation();if(current?.case.id===preview.caseId){renderEditor();renderCanvas();}
 }
+function editPreviewCurrent(preview){
+  return editPreview===preview&&editable()&&current?.case.id===preview.caseId&&current.case.version===preview.version&&
+    current.case.stage===preview.stage&&current.packet?.subject?.semantic===preview.semanticHash&&JSON.stringify(current.case.candidate)===preview.originalModel;
+}
+function editPreviewStatus(preview,phase,message){
+  if(editPreview!==preview)return;
+  preview.phase=phase;const root=$("edit-preview-status");root.dataset.status=phase;root.textContent=message;
+  $("edit-preview-apply").disabled=phase!=="ready";$("edit-preview-cancel").disabled=phase==="submitting"||!!preview.refreshPending;
+  $("edit-preview-cancel").textContent="Close preview";
+  $("edit-preview").setAttribute("aria-busy",String(["checking","submitting"].includes(phase)||!!preview.refreshPending));
+  if(!$("edit-preview-cancel").disabled&&!["checking","ready"].includes(phase)&&[document.body,$("edit-preview-apply")].includes(document.activeElement))$("edit-preview-cancel").focus();
+}
+function closeEditPreview(){
+  const preview=editPreview;if(!preview)return true;
+  if(preview.phase==="submitting"||preview.refreshPending)return false;
+  ++editPreviewSequence;editPreview=null;preview.comparison?.destroy();$("edit-preview").close();
+  const target=preview.invoker;
+  if(target?.isConnected&&!target.disabled&&target.getClientRects().length)target.focus();else if($("transition-select").getClientRects().length)$("transition-select").focus();else if($("case-title").getClientRects().length)$("case-title").focus();
+  if(!preview.submitted)notice("Edit preview closed. No edit was submitted.");return true;
+}
+function validateEditPreview(check,preview){
+  const strings=value=>Array.isArray(value)&&value.every(item=>typeof item==="string");
+  if(!check||check.scope!=="semantic-edit-preview"||check.applied!==false||check.persisted!==false||typeof check.legal!=="boolean"||!strings(check.codes)||!strings(check.refs)||JSON.stringify(check.transaction)!==JSON.stringify(preview.transaction))throw new ApiError("RESPONSE_INVALID","The edit check did not identify this exact proposed transaction.");
+  if(check.case_id!==preview.caseId||check.version!==preview.version||check.stage!==preview.stage||check.semantic_hash!==preview.semanticHash||JSON.stringify(check.current)!==preview.originalModel)throw new ApiError("EDIT_PREVIEW_STALE","The checked model is no longer the candidate selected for this edit. Close and refresh the current model.");
+  if(check.legal&&(!check.candidate||typeof check.candidate_semantic_hash!=="string"||!check.candidate_semantic_hash))throw new ApiError("RESPONSE_INVALID","The edit check supplied no identified proposed candidate.");
+  if(!check.legal&&(check.candidate!==null||check.candidate_semantic_hash!==null))throw new ApiError("RESPONSE_INVALID","A refused edit cannot supply an applicable proposed candidate.");
+}
+async function checkEditPreview(preview){
+  const active=()=>editPreview===preview&&preview.sequence===editPreviewSequence;
+  try{
+    const check=await api(`cases/${preview.caseId}/edit/preview`,{transaction:preview.transaction});
+    if(!active())return false;
+    $("edit-preview-json").textContent=JSON.stringify(check,null,2);
+    validateEditPreview(check,preview);preview.check=check;
+    if(!editPreviewCurrent(preview))throw new ApiError("EDIT_PREVIEW_STALE","The workspace subject changed while checking. Close and choose the edit again.");
+    if(!check.legal){
+      const error=new ApiError("EDIT_REFUSED","The kernel refused this edit; no model was changed",{codes:check.codes,refs:check.refs});
+      editPreviewStatus(preview,"refused",`${error.message} · ${check.codes.join("; ")}`);$("edit-preview-diagnostic").textContent=JSON.stringify(error.details,null,2);reportError(error,{reveal:false});renderCanvas();return false;
+    }
+    preview.comparison=EijaCompare.render($("edit-preview-comparison"),{case:{id:preview.caseId,version:preview.version,baseline:check.current,candidate:check.candidate},packet:{}},{preview:true});
+    if(typeof preview.comparison.select!=="function")throw new ApiError("RESPONSE_INVALID","The checked snapshots could not be rendered. No edit was submitted.");
+    preview.comparison.select({kind:"transition",id:preview.transaction.transition});
+    $("edit-preview").dataset.proposedSemanticHash=check.candidate_semantic_hash;
+    $("edit-preview-subject").textContent=`Case ${preview.caseId} · Captured revision ${preview.version} · before ${preview.semanticHash.slice(0,12)} → proposed ${check.candidate_semantic_hash.slice(0,12)}. Exact identities are in the server preview below.`;
+    editPreviewStatus(preview,"ready","Kernel check accepted this proposed edit. Review the exact differences, then Apply edit or close this preview. No model has changed.");return true;
+  }catch(error){
+    if(!active())return false;
+    editPreviewStatus(preview,error.code==="EDIT_PREVIEW_STALE"?"stale":"failed",error.message);
+    $("edit-preview-diagnostic").textContent=JSON.stringify({code:error.code||"REQUEST_FAILED",message:error.message,details:error.details||{}},null,2);reportError(error,{reveal:false});return false;
+  }
+}
+function commitChoice(choice){
+  if(busy||editPreview?.phase==="submitting")return;
+  if(editNeedsRefresh.has(current?.case.id)){notice("Refresh this case before proposing another edit: the previous submission needs reconciliation.",true);return;}
+  if(!editable()||!choice?.transaction){notice("Choose a different server-listed destination for the selected transition.");return;}
+  if(editPreview&&!closeEditPreview())return;
+  const c=current.case,preview={sequence:++editPreviewSequence,caseId:c.id,version:c.version,stage:c.stage,semanticHash:current.packet?.subject?.semantic,
+    transaction:JSON.parse(JSON.stringify(choice.transaction)),originalModel:JSON.stringify(c.candidate),invoker:document.activeElement,phase:"checking",submitted:false};
+  editPreview=preview;$("edit-preview-comparison").replaceChildren();$("edit-preview-diagnostic").textContent="";$("edit-preview-json").textContent=JSON.stringify({transaction:preview.transaction},null,2);
+  const dialog=$("edit-preview");Object.assign(dialog.dataset,{caseId:preview.caseId,revision:String(preview.version),semanticHash:preview.semanticHash||"",proposedSemanticHash:""});
+  $("edit-preview-subject").textContent=`Case ${preview.caseId} · Captured revision ${preview.version} · before ${preview.semanticHash||"identity unavailable"}`;
+  editPreviewStatus(preview,"checking","Checking the proposed edit without changing the model…");dialog.showModal();$("edit-preview-cancel").focus();
+  if(!preview.semanticHash){editPreviewStatus(preview,"stale","Candidate identity is unavailable. Close and refresh the model before editing.");return;}
+  return checkEditPreview(preview);
+}
+function confirmEditPreview(){
+  const preview=editPreview;
+  if(busy||!preview||preview.phase!=="ready")return;
+  if(!editPreviewCurrent(preview)){editPreviewStatus(preview,"stale","The case, model or inspection view changed. Close and choose the edit again.");return;}
+  editPreviewStatus(preview,"submitting","Submitting this exact checked edit. The request can no longer be cancelled.");preview.submitted=true;
+  return task(async()=>{
+    let acknowledged=false;
+    try{
+      const result=await api(`cases/${preview.caseId}/edit`,{expected_version:preview.version,transaction:preview.transaction});
+      if(!result||result.id!==preview.caseId||result.version!==preview.version+1||JSON.stringify(result.candidate)!==JSON.stringify(preview.check.candidate))throw new ApiError("RESPONSE_INVALID","The edit response did not acknowledge the expected case revision.");
+      acknowledged=true;
+      if(editPreview!==preview)return;
+      if(!editPreviewCurrent(preview)){markEditReconciliation(preview,"committed");editPreviewStatus(preview,"committed","Edit acknowledged, but the workspace subject changed. Close and refresh this case to reconcile.");return;}
+      preview.refreshPending=true;clearRuntime();editPreviewStatus(preview,"committed","Edit committed. Refreshing the workspace…");$("edit-preview-cancel").disabled=true;
+      await load(preview.caseId,()=>editPreview===preview&&current?.case.id===preview.caseId);
+      preview.refreshPending=false;
+      if(editPreview!==preview||current?.case.id!==preview.caseId)return;
+      closeEditPreview();notice("One typed transaction committed. The server model has reloaded; matching evidence and decisions must be reconsidered.");
+    }catch(error){
+      preview.refreshPending=false;
+      if(editPreview!==preview)return;
+      const refused=!acknowledged&&error.responseValid===true&&!["REQUEST_FAILED","RESPONSE_INVALID"].includes(error.code)&&[400,401,403,404,409,413,415,422].includes(error.httpStatus);
+      const phase=acknowledged?"committed":refused?"refused":"unknown";
+      if(acknowledged||!refused)markEditReconciliation(preview,phase);
+      editPreviewStatus(preview,phase,acknowledged?"Edit committed, but the workspace refresh failed. Close and refresh the current model.":refused?`${error.message}. This edit was refused; the last loaded model is retained.`:`Edit outcome unknown: ${error.message}. It may have committed. Close and refresh before proposing another edit; no automatic retry was sent.`);
+      $("edit-preview-diagnostic").textContent=JSON.stringify({code:error.code||"REQUEST_FAILED",message:error.message,details:error.details||{}},null,2);reportError(error,{reveal:false});
+    }
+  },"Submitting the checked edit…");
+}
+$("edit-reconcile-refresh").onclick=()=>task(refreshCurrentModel,"Refreshing the case to reconcile its edit…");
+$("edit-preview-cancel").onclick=closeEditPreview;
+$("edit-preview-apply").onclick=confirmEditPreview;
+$("edit-preview").addEventListener("cancel",event=>{event.preventDefault();closeEditPreview();});
+$("edit-preview").addEventListener("keydown",event=>{
+  if(event.key==="Escape"){event.preventDefault();event.stopPropagation();closeEditPreview();}
+  else if((event.ctrlKey||event.metaKey)&&["k","b"].includes(event.key.toLowerCase())){event.preventDefault();event.stopPropagation();}
+});
 $("transition-select").onchange = event => selectTransition(event.target.value);
 $("edit-source").onclick = () => edit($("model-source").value);
 document.querySelector(".editor-navigation").addEventListener("keydown", event => {
@@ -773,8 +882,8 @@ async function previousSource(){
   if(await openSource(sourceHistory[previous],false)){sourceHistoryIndex=previous;$("source-back").disabled=previous<=0;}
 }
 $("source-back").onclick=previousSource;
-$("undo-edit").onclick=()=>task(async()=>{if(!current||!caseHistory?.can_undo||["APPLIED","DISCARDED"].includes(current.case.stage))return;await command("undo");clearRuntime();modelView="working";render();notice("Last semantic edit undone by the kernel. Earlier receipts are retained; eligibility is recomputed.");});
-$("redo-edit").onclick=()=>task(async()=>{if(!current||!caseHistory?.can_redo||["APPLIED","DISCARDED"].includes(current.case.stage))return;await command("redo");clearRuntime();modelView="working";render();notice("Semantic edit reapplied by the kernel. The displayed model was reloaded from the server.");});
+$("undo-edit").onclick=()=>task(async()=>{if(!current||editNeedsRefresh.has(current.case.id)||!caseHistory?.can_undo||["APPLIED","DISCARDED"].includes(current.case.stage))return;await command("undo");clearRuntime();modelView="working";render();notice("Last semantic edit undone by the kernel. Earlier receipts are retained; eligibility is recomputed.");});
+$("redo-edit").onclick=()=>task(async()=>{if(!current||editNeedsRefresh.has(current.case.id)||!caseHistory?.can_redo||["APPLIED","DISCARDED"].includes(current.case.stage))return;await command("redo");clearRuntime();modelView="working";render();notice("Semantic edit reapplied by the kernel. The displayed model was reloaded from the server.");});
 $("history-undo").onclick=$("undo-edit").onclick;$("history-redo").onclick=$("redo-edit").onclick;
 EijaShell.init({newIntent:openIntent,openTab:switchTab});
 let repositoryReview=null,repositoryComparison=null,repositoryFile=null,repositorySelection=null,repositoryView="diff";

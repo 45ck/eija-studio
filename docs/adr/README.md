@@ -62,6 +62,7 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0146](0146-formal-receipt-formats-binding-and-not-run.md) | Formal receipt formats, binding to the subject, and NOT_RUN semantics | proposed |
 | [0147](0147-source-connected-self-dogfood.md) | Source-connected self-dogfooding with explicit coverage | accepted for the local development slice |
 | [0148](0148-semantic-history-by-replay.md) | Semantic undo and redo by replaying existing typed commands | accepted for the local owner workbench |
+| [0149](0149-read-only-edit-preview.md) | Preview a semantic edit from one captured case revision | accepted for the local owner workbench |
 <!-- adr-index:end -->
 
 ## Reserved numbers for capability lanes
@@ -91,3 +92,4 @@ Reserving numbers stops parallel lanes from colliding. A lane that needs more re
 | 0057–0088 | HCI-ADRs: research-grounded UI/UX decisions (`ux`, `studio-ux`) |
 | 0089–0112 | Weave: deterministic linked graph, compiler and linter (`weave`) |
 | 0113–0136 | Definition of done, claims ledger, scorecard and evals (`dod`) |
+| 0147–0149 | Integration: source-connected review, semantic history and edit preview (`integration`) |

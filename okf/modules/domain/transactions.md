@@ -79,6 +79,7 @@ _No curated notes yet._
 
 ## Referenced by
 
+* [application.edit_preview](/modules/application/edit_preview.md) - Read-only edit projection over one captured case, using the same interpreter as owner edits.
 * [application.history](/modules/application/history.md) - Semantic history is a projection of typed commands, replayed by the existing policy interpreter.
 * [application.service](/modules/application/service.md) - Module `application/service` (no module docstring).
 * [domain.affordance](/modules/domain/affordance.md) - Affordance map (WBS 1.3): which single edits the kernel would accept, and why the others are refused.

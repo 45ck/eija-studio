@@ -16,7 +16,7 @@ How to read this report. **MEASUREMENT**: recorded from the running Studio (elem
 | Viewport | 1440x900 @ 1x |
 | Provider | offline (synthetic) |
 | Pointer repeats (timing) | 3 |
-| UI bytes (sha256, first 12) | app.css 0ae63ed2cbfb, app.js 5a16425d61d3, canvas.js e0226d9361d7, compare.css 2b007d3bcd4c, compare.js d3aa0e90abb5, index.html ce9b64b7895b, repository-review.css ef87096d5fc1, repository-review.js 1a8559475a48, review.js 426978e96491, shell.js 9eec86a8bc45, source.js 87e72798bfbf, tree.js 9dd0270ba356, vendor/dagre-graphlib.LICENSE.txt 6a349742a6cb, vendor/dagre.LICENSE.txt 6a349742a6cb, vendor/dagre.VENDOR.json 9ea8f38b29e9, vendor/dagre.min.js c35b8d6f410c, vendor/mermaid.LICENSE.txt ec9fb67dcb25, vendor/mermaid.VENDOR.json 96f346523699, vendor/mermaid.min.js 28fca7ae6ebc, visual-frame.css ca5a74616eff, visual-frame.html 4408ecd716df, visual-frame.js cfda25808b8e |
+| UI bytes (sha256, first 12) | app.css 40e90839ea90, app.js 11af90602281, canvas.js e0226d9361d7, compare.css 6545e65f92a3, compare.js 2007ed3eaf76, index.html 6877655f1282, repository-review.css ef87096d5fc1, repository-review.js 1a8559475a48, review.js 426978e96491, shell.js 9eec86a8bc45, source.js 87e72798bfbf, tree.js 9dd0270ba356, vendor/dagre-graphlib.LICENSE.txt 6a349742a6cb, vendor/dagre.LICENSE.txt 6a349742a6cb, vendor/dagre.VENDOR.json 9ea8f38b29e9, vendor/dagre.min.js c35b8d6f410c, vendor/mermaid.LICENSE.txt ec9fb67dcb25, vendor/mermaid.VENDOR.json 96f346523699, vendor/mermaid.min.js 28fca7ae6ebc, visual-frame.css ca5a74616eff, visual-frame.html 4408ecd716df, visual-frame.js cfda25808b8e |
 
 ## Headline
 
@@ -27,9 +27,9 @@ How to read this report. **MEASUREMENT**: recorded from the running Studio (elem
 | MEASUREMENT (DOM counts) | Hick-Hyman | choice groups with n > 7 | 0 | 0 | ok |
 | PREDICTION | KLM-GOMS | expert time, pointer journey (s) | 65.31 | - | info |
 | PREDICTION | KLM-GOMS | expert time, keyboard-only (s) | 68.15 | - | info |
-| MEASUREMENT (wall-clock) | Doherty | click -> settled DOM, median (ms) | 73.3 | 400 | ok |
-| MEASUREMENT (wall-clock) | Doherty | click -> settled DOM, p95 (ms) | 727.6 | 400 | FLAG |
-| MEASUREMENT (wall-clock) | Doherty | click -> first DOM mutation, p95 (ms; excludes paint) | 4.9 | 400 | ok |
+| MEASUREMENT (wall-clock) | Doherty | click -> settled DOM, median (ms) | 96.9 | 400 | ok |
+| MEASUREMENT (wall-clock) | Doherty | click -> settled DOM, p95 (ms) | 914.2 | 400 | FLAG |
+| MEASUREMENT (wall-clock) | Doherty | click -> first DOM mutation, p95 (ms; excludes paint) | 5.2 | 400 | ok |
 | MEASUREMENT (axe) | WCAG 2.2 AA | violating rules (critical/serious/moderate/minor) | 0 (0/0/0/0) | 0 | ok |
 | MEASUREMENT (geometry) | WCAG 2.5.8 | targets failing minimum size | 0 | 0 | ok |
 | MEASUREMENT (focus) | Keyboard | activations that dropped focus | 0/16 | 0 | ok |
@@ -52,8 +52,8 @@ Severity 5 critical WCAG, 4 serious WCAG / focus loss / wait over 1 s, 3 moderat
 
 ### 1. 1 interaction(s) usually take longer than 400 ms to finish
 
-- Change: First DOM mutation after the click came within 4.9 ms (p95; paint not measured), while completion for the slow steps takes longer than 400 ms. For the slow steps show a determinate progress message, keep the previous result visible until the new one lands, and profile where the time goes before optimising anything.
-- Evidence: `{"first_feedback_p95_ms": 4.9, "slow_steps": ["run-verification: p50 753.3 / p95 763.1 ms"]}`
+- Change: First DOM mutation after the click came within 5.2 ms (p95; paint not measured), while completion for the slow steps takes longer than 400 ms. For the slow steps show a determinate progress message, keep the previous result visible until the new one lands, and profile where the time goes before optimising anything.
+- Evidence: `{"first_feedback_p95_ms": 5.2, "slow_steps": ["run-verification: p50 933.3 / p95 1071.4 ms"]}`
 - Targets: `run-verification`
 - Likely cause (UNVERIFIED hypothesis; the probe does not establish it): the server-side work per action, possibly the durable SQLite commit path, dominates (hypothesis; no profile was taken)
 - Laws: Doherty threshold; predicted saving (model difference): 0.0 s
@@ -114,9 +114,9 @@ Severity 5 critical WCAG, 4 serious WCAG / focus loss / wait over 1 s, 3 moderat
 | hick.choice_groups_over_7 | Hick-Hyman | 0 groups | 0 | 0 | PASS |
 | hick.max_choices | Hick-Hyman | 7 alternatives | 7 | 7 | PASS |
 | klm.pointer_expert_time | KLM-GOMS | 65.31 s | 65 | 65 | FAIL |
-| doherty.first_feedback_p95 | Doherty | 4.9 ms | 400 | 400 | PASS |
-| doherty.settled_p50 | Doherty | 73.3 ms | 400 | 400 | PASS |
-| doherty.settled_p95 | Doherty | 727.6 ms | 400 | 4000 | GAP |
+| doherty.first_feedback_p95 | Doherty | 5.2 ms | 400 | 400 | PASS |
+| doherty.settled_p50 | Doherty | 96.9 ms | 400 | 400 | PASS |
+| doherty.settled_p95 | Doherty | 914.2 ms | 400 | 4000 | GAP |
 | wcag.critical_rules | WCAG 2.2 AA | 0 rules | 0 | 0 | PASS |
 | wcag.serious_rules | WCAG 2.2 AA | 0 rules | 0 | 1 | PASS |
 | wcag.moderate_rules | WCAG 2.2 AA | 0 rules | 0 | 0 | PASS |
@@ -185,7 +185,7 @@ PREDICTION. Operator times (s): K 0.28, P 1.1, B 0.1, H 0.4, M 1.35 (Card, Moran
 | Pointer + typing | 67 | 24 | 48 | 8 | 9 | 65.31 | 56.336 |
 | Keyboard only (Tab, Enter, Space, arrows) | 200 | 0 | 0 | 0 | 9 | 68.15 | - |
 
-Expected expert time is 65.31 s pointer-driven (Fitts-refined 56.336 s) and 68.15 s keyboard-only, excluding system response (measured wait, sum of per-step medians: 1.605 s) and scrolling.
+Expected expert time is 65.31 s pointer-driven (Fitts-refined 56.336 s) and 68.15 s keyboard-only, excluding system response (measured wait, sum of per-step medians: 2.045 s) and scrolling.
 
 | Step | KLM s (pointer) | Operators |
 |---|---|---|
@@ -218,23 +218,23 @@ MEASUREMENT, wall-clock. The first-DOM-mutation columns time the first DOM chang
 
 | Step | n | First DOM mutation p50 ms | p95 ms | Settled p25 ms | p50 ms | p75 ms | p95 ms | > 400 ms |
 |---|---|---|---|---|---|---|---|---|
-| open-change | 3 | 4.9 | 5.1 | 4.9 | 4.9 | 5.1 | 5.1 | ok |
-| create-case | 3 | 0.4 | 0.6 | 62.2 | 63.2 | 68.9 | 68.9 | ok |
-| ask-interpretations | 3 | 0.5 | 0.5 | 74.3 | 76.6 | 100.3 | 100.3 | ok |
-| select-meaning | 3 | 0.4 | 0.4 | 82.4 | 97.8 | 112.7 | 112.7 | ok |
-| open-try | 3 | 1.1 | 1.6 | 0.9 | 1.1 | 1.6 | 1.6 | ok |
-| reset-preview | 3 | 0.8 | 0.8 | 69.6 | 85.5 | 94.4 | 94.4 | ok |
-| submit-teacher | 3 | 1.2 | 1.6 | 73.3 | 76.3 | 84.9 | 84.9 | ok |
-| recommend-teacher | 3 | 0.5 | 0.5 | 69.2 | 73.1 | 81 | 81 | ok |
-| approve-registrar | 3 | 0.5 | 1 | 69.8 | 75.2 | 75.7 | 75.7 | ok |
-| denied-recommend | 3 | 0.5 | 0.6 | 5.5 | 5.6 | 6.1 | 6.1 | ok |
-| open-evidence | 3 | 1 | 1.1 | 0.9 | 1 | 1.1 | 1.1 | ok |
-| run-verification | 3 | 0.4 | 0.6 | 727.6 | 753.3 | 763.1 | 763.1 | p50 |
-| open-review-subject | 3 | 0.7 | 0.9 | 0.7 | 0.7 | 0.9 | 0.9 | ok |
-| approve-exact | 3 | 0.9 | 1.1 | 113.2 | 113.7 | 115.2 | 115.2 | ok |
-| apply-baseline | 3 | 0.4 | 0.5 | 175.4 | 177.4 | 181.4 | 181.4 | ok |
+| open-change | 3 | 5.8 | 7.4 | 5.2 | 5.8 | 7.4 | 7.4 | ok |
+| create-case | 3 | 0.5 | 0.5 | 90.5 | 96.9 | 97.6 | 97.6 | ok |
+| ask-interpretations | 3 | 0.4 | 0.6 | 96.3 | 103 | 123.9 | 123.9 | ok |
+| select-meaning | 3 | 0.4 | 0.5 | 111 | 120.2 | 123.2 | 123.2 | ok |
+| open-try | 3 | 1.3 | 1.7 | 1.2 | 1.3 | 1.7 | 1.7 | ok |
+| reset-preview | 3 | 1 | 1 | 90 | 96.1 | 99.5 | 99.5 | ok |
+| submit-teacher | 3 | 0.7 | 1.1 | 87.8 | 97.5 | 100.6 | 100.6 | ok |
+| recommend-teacher | 3 | 0.5 | 0.6 | 92 | 94.2 | 103.1 | 103.1 | ok |
+| approve-registrar | 3 | 0.7 | 0.7 | 99.5 | 109.7 | 113.3 | 113.3 | ok |
+| denied-recommend | 3 | 0.6 | 0.8 | 6.7 | 7.1 | 7.8 | 7.8 | ok |
+| open-evidence | 3 | 1.3 | 1.7 | 1.2 | 1.3 | 1.7 | 1.7 | ok |
+| run-verification | 3 | 0.5 | 0.8 | 914.2 | 933.3 | 1071.4 | 1071.4 | p50 |
+| open-review-subject | 3 | 0.7 | 0.8 | 0.7 | 0.7 | 0.8 | 0.8 | ok |
+| approve-exact | 3 | 1 | 1.2 | 148.3 | 150.6 | 150.7 | 150.7 | ok |
+| apply-baseline | 3 | 0.6 | 0.7 | 214.3 | 227.6 | 236.9 | 236.9 | ok |
 
-Overall: first DOM mutation p50/p95 0.6/4.9 ms; settled p25/p50/p75 5.1/73.3/97.8 ms, p95 727.6 ms (max 763.1 ms). Keyboard activations settled p50/p95 81.7/746.6 ms.
+Overall: first DOM mutation p50/p95 0.7/5.2 ms; settled p25/p50/p75 6.7/96.9/120.2 ms, p95 914.2 ms (max 1071.4 ms). Keyboard activations settled p50/p95 97.7/983.8 ms.
 
 ## WCAG 2.2 AA (measurement)
 
@@ -309,7 +309,7 @@ HEURISTIC PROXY - counts what is simultaneously visible, not what a person holds
 
 ## Runtime hygiene
 
-JavaScript exceptions: 0. HTTP error responses: 409 POST /api/cases/268b39d84662479da738b74a45a42f54/execute during `denied-recommend`; 409 POST /api/cases/377bf119671a45b39d07dbf7b9e91d58/execute during `denied-recommend`; 409 POST /api/cases/40c337c6cbd64477b929da7467dc48e0/execute during `denied-recommend`.
+JavaScript exceptions: 0. HTTP error responses: 409 POST /api/cases/35096d118adb4f738cb74a7d3952f636/execute during `denied-recommend`; 409 POST /api/cases/a85659e19cac423dbbeff5e5884dcc7d/execute during `denied-recommend`; 409 POST /api/cases/ef5c08a2d9fe4c6c996d7ed6d057372f/execute during `denied-recommend`.
 
 ## Limitations
 

@@ -23,3 +23,4 @@
 * [HCI-ADRs: research-grounded UI/UX decisions (`ux`, `studio-ux`)](0057-hci-adrs-research-grounded-ui-ux.md) - Capability lane with ADR numbers 0057–0088 reserved.
 * [Weave: deterministic linked graph, compiler and linter (`weave`)](0089-weave-deterministic-linked-graph.md) - Capability lane with ADR numbers 0089–0112 reserved.
 * [Definition of done, claims ledger, scorecard and evals (`dod`)](0113-definition-of-done-claims-ledger.md) - Capability lane with ADR numbers 0113–0136 reserved.
+* [Integration: source-connected review, semantic history and edit preview (`integration`)](0147-integration-source-connected-review.md) - Capability lane with ADR numbers 0147–0149 reserved.

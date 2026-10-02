@@ -63,3 +63,4 @@
 * [ADR-0146: Formal receipt formats, binding to the subject, and NOT_RUN semantics](0146-formal-receipt-formats-binding-and-not-run.md) - ADR-0145 decides that the kernel recomputes formal evidence per kind.
 * [ADR-0147: Source-connected self-dogfooding with explicit coverage](0147-source-connected-self-dogfood.md) - ADR-0147: Source-connected self-dogfooding with explicit coverage
 * [ADR-0148: Semantic undo and redo by replaying existing typed commands](0148-semantic-history-by-replay.md) - ADR-0148: Semantic undo and redo by replaying existing typed commands
+* [ADR-0149: Preview a semantic edit from one captured case revision](0149-read-only-edit-preview.md) - ADR-0149: Preview a semantic edit from one captured case revision

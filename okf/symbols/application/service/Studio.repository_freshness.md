@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.repository_freshness
   title: application/service.py
   hash_method: ast-v2
-  sha256: 2457a50856d6efec610423a3d4a29d0edf027f0042592c01d08c9d2cff075a80
-notes_baseline: 661d02e6cbea0b63a6be0a566070c16e16b376b784cc03b4c9ac6c7ca3e1c225
+  sha256: 7520e91e5816b0f25c3fb9412dca3d2f3481b014c61b19b0ed47a5407724264c
+notes_baseline: d4419230053e0a504b414f053232762632a9fd974416571b28dc7f8903fa5c7d
 ---
 
 # application.service.Studio.repository_freshness
@@ -42,5 +42,7 @@ Observe captured byte identity; this grants no source conformance, evidence or o
 _No curated notes yet._
 
 <!-- okf:generated:begin links -->
-_No generated cross-references._
+## Depends on
+
+* [application.repository.read_repository_freshness](/symbols/application/repository/read_repository_freshness.md) - Observe captured byte identity; this grants no source conformance, evidence or owner authority.
 <!-- okf:generated:end links -->

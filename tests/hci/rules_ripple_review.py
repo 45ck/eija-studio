@@ -195,8 +195,12 @@ class RulesReview(Journey):
         self.select_transition("TR-SAVE")
         before = self.view()
         self.page.locator("#transition-role").select_option("Agent")
+        preview_before = self.edit_preview_snapshot()
+        preview_expected = deepcopy(before["case"]["candidate"])
+        next(t for t in preview_expected["transitions"] if t["id"] == "TR-SAVE")["role"] = "Agent"
         self.page.locator("#edit-role").click()
-        self.settled()
+        preview = self.inspect_edit_preview(preview_before, preview_expected)
+        self.apply_edit_preview(preview_before, preview)
         view = self.view()
         expected = deepcopy(before["case"]["candidate"])
         next(t for t in expected["transitions"] if t["id"] == "TR-SAVE")["role"] = "Agent"
@@ -218,7 +222,7 @@ class RulesReview(Journey):
         self.tab("model")
         self.page.locator("#model-version").select_option("baseline")
         self.select_comparison("transition", "TR-SAVE")
-        self.page.locator('[data-compare-action="inspect-model"]').click()
+        self.main_comparison().locator('[data-compare-action="inspect-model"]').click()
         self.settled()
         self.assert_current_inspector(self.view(), "TR-SAVE")
         self.assert_unchanged(before)
@@ -275,11 +279,11 @@ class RulesReview(Journey):
         observed = []
         for ref in refs:
             self.select_comparison("transition", "TR-SAVE")
-            detail = self.page.locator(".compare-context > details").first
+            detail = self.main_comparison().locator(".compare-context > details").first
             if detail.get_attribute("open") is None:
                 detail.locator(":scope > summary").click()
-                self.navigation_action("click", ".compare-context > details:first-child > summary")
-            inventory = self.page.locator("[data-compare-impact], [data-compare-impact-unavailable]").evaluate_all(
+                self.navigation_action("click", "#review-chapters .compare-context > details:first-child > summary")
+            inventory = self.main_comparison().locator("[data-compare-impact], [data-compare-impact-unavailable]").evaluate_all(
                 "nodes=>nodes.map(n=>n.dataset.compareImpact||n.dataset.compareImpactUnavailable)"
             )
             assert sorted(inventory) == sorted(refs), "Impact UI omits or invents authoritative references"
@@ -292,23 +296,23 @@ class RulesReview(Journey):
                 "try" if kind == "runtime" and candidate_action else "impact" if kind == "journey" and candidate_action else
                 "evidence" if (kind in {"obligation", "receipt"} and transitions) or ref in {"review-packet", "local-decision"} else None)
             if target is None:
-                note = self.page.locator(f'[data-compare-impact-unavailable="{ref}"]')
+                note = self.main_comparison().locator(f'[data-compare-impact-unavailable="{ref}"]')
                 replay.expect(note).to_be_visible()
                 assert note.evaluate("n=>n.tagName") == "P", "Unsupported projection masquerades as navigation"
                 observed.append({"reference": ref, "status": "unavailable"})
                 continue
             navigation_start = len(self.requests)
-            button = self.page.locator(f'[data-compare-impact="{ref}"]')
+            button = self.main_comparison().locator(f'[data-compare-impact="{ref}"]')
             button.focus()
             button.press("Enter")
-            self.navigation_action("key", f"[data-compare-impact={ref}]", "Enter")
+            self.navigation_action("key", f"#review-chapters [data-compare-impact={ref}]", "Enter")
             self.settled()
             replay.expect(self.page.locator("#" + target)).to_be_visible()
             focus = self.page.evaluate("""()=>{const n=document.activeElement;return {id:n.id,tag:n.tagName,
               visible:n.checkVisibility(),pane:n.closest('.tab-content,.comparison-content')?.id};}""")
             assert focus["tag"] != "BODY" and focus["visible"], "Impact navigation lost visible focus"
             if target == "review":
-                replay.expect(self.page.locator(".compare-selection")).to_have_attribute("data-id", next(iter(ids)))
+                replay.expect(self.main_comparison().locator(".compare-selection")).to_have_attribute("data-id", next(iter(ids)))
             elif target == "evidence":
                 replay.expect(self.page.locator("#evidence-subject")).to_have_attribute("data-subject-hash", view["packet"]["subject_hash"])
                 if ref == "local-decision":

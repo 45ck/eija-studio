@@ -45,5 +45,7 @@ Existence-checked by the gate; not hashed (an ADR is a decision record, not a de
 _No curated notes yet._
 
 <!-- okf:generated:begin links -->
-_No generated cross-references._
+## Referenced by
+
+* [Integration: source-connected review, semantic history and edit preview (`integration`)](/lanes/0147-integration-source-connected-review.md) - Capability lane with ADR numbers 0147–0149 reserved.
 <!-- okf:generated:end links -->

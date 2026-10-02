@@ -6,6 +6,7 @@ class Element{
   constructor(tag="div"){this.tag=tag;this.children=[];this.dataset={};this.attributes={};this.value="";this.textContent="";this.disabled=false;this.hidden=false;}
   append(...items){this.children.push(...items);}replaceChildren(...items){this.children=[...items];this.textContent="";}
   setAttribute(name,value){this.attributes[name]=String(value);}removeAttribute(name){delete this.attributes[name];}
+  addEventListener(name,fn){this.events??={};this.events[name]=fn;}showModal(){this.open=true;}close(){this.open=false;}focus(){this.focused=true;}getClientRects(){return this.hidden?[]:[{}];}
 }
 const clone=value=>JSON.parse(JSON.stringify(value)),tick=()=>new Promise(resolve=>setImmediate(resolve));
 const response=(data,status=200)=>({ok:status>=200&&status<300,status,json:async()=>clone(data)});
@@ -18,7 +19,7 @@ function harness(code=source){
   const s={current:fixture(),instance:preview(),status:{pack:{actions:["Submit","Recommend","Approve"]}},busy:false,lastDiagnostic:null,
     caseViews:new Map(),editId:null,inspectorSelection:null,modelView:"working",historyModel:null,historyLabel:"",canvasDirection:"AUTO",tab:"try",caseHistory:{can_undo:true,can_redo:true},affordanceData:{},
     token:"test",crypto:{randomUUID:()=>`operation-${++uuid}`},$:get,el:(tag,text)=>{const node=new Element(tag);if(text!==undefined)node.textContent=String(text);return node;},
-    document:{body:new Element()},captureTaskFocus:()=>({}),restoreTaskFocus(){},cancelSourceRead(){},renderProblems(){},EijaShell:{bottom:(...args)=>bottom.push(args)},
+    document:{body:new Element()},captureTaskFocus:()=>({}),restoreTaskFocus(){},cancelSourceRead(){},renderProblems(){},renderEditor(){},renderCanvas(){},EijaShell:{bottom:(...args)=>bottom.push(args)},
     notice:(message,error=false)=>notices.push({message,error}),
     fetch:async(url,options)=>{
       const body=options.body?JSON.parse(options.body):undefined,request={path:url.slice(5),method:options.method||"GET",body};requests.push(request);
@@ -32,7 +33,7 @@ function harness(code=source){
   for(const [start,end]of [["class ApiError","function captureTaskFocus("],["async function task(","async function cases("],["async function load(","function render(){"]]){
     const from=code.indexOf(start),to=code.indexOf(end,from);assert.ok(from>=0&&to>from,start);vm.runInContext(code.slice(from,to),s);
   }
-  for(const id of ["reset","undo-edit","redo-edit"]){const line=code.split("\n").find(line=>line.startsWith(`$("${id}").onclick=`));assert.ok(line);vm.runInContext(line,s);}
+  for(const id of ["reset","undo-edit","redo-edit","history-undo"]){const line=code.split("\n").find(line=>line.startsWith(`$("${id}").onclick=`));assert.ok(line);vm.runInContext(line,s);}
   get("actor").value="actor-A";s.renderRuntime();
   return {s,get,requests,notices,bottom,server,posts,
     action:name=>get("runtime-actions").children.find(node=>node.dataset.action===name),
@@ -109,9 +110,60 @@ function assertClearedRuntimeSurface(h){
 }
 test("acknowledged semantic edit immediately invalidates the visible runtime when refresh fails",async()=>{
   const h=harness();await succeed(h);h.s.editable=()=>true;h.s.renderCanvas=()=>{};
-  vm.runInContext(source.slice(source.indexOf("function commitChoice(choice)"),source.indexOf('$("transition-select").onchange')),h.s);
-  h.enqueue({legal:true});h.enqueue({id:"A",version:8});h.server.fail="cases/A";
-  await h.s.commitChoice({transaction:{kind:"retarget_transition",transition:"T",end:"target",state:"Recommended"}});assertClearedRuntimeSurface(h);
+  h.s.EijaCompare={render:()=>({select:()=>true,destroy(){}})};
+  const original={states:["Draft","Submitted","Recommended"],transitions:[{id:"T",action:"Submit",role:"Owner",from_state:"Draft",to_state:"Submitted",guards:[],required_effects:[],forbidden_effects:[]}]};
+  h.s.current.case.candidate=clone(original);const candidate=clone(original);candidate.transitions[0].to_state="Recommended";
+  const transaction={kind:"retarget_transition",transition:"T",end:"target",state:"Recommended"};
+  const previewStart=source.indexOf("let editPreview=null");assert.ok(previewStart>=0);
+  vm.runInContext(source.slice(previewStart,source.indexOf('$("transition-select").onchange',previewStart)),h.s);
+  h.enqueue({scope:"semantic-edit-preview",applied:false,persisted:false,case_id:"A",version:7,stage:"PREVIEW",semantic_hash:"semantic-A",current:original,transaction,legal:true,codes:[],refs:[],candidate,candidate_semantic_hash:"semantic-edited"});
+  const before=clone(h.s.instance);await h.s.commitChoice({transaction});assert.deepEqual(clone(h.s.instance),before);assert.match(h.feedback().text,/Committed: Submit/);
+  assert.equal(h.requests.filter(item=>item.path==="cases/A/edit").length,0);assert.equal(h.requests.at(-1).path,"cases/A/edit/preview");
+  h.enqueue({id:"A",version:8,candidate});h.server.fail="cases/A";await h.get("edit-preview-apply").onclick();assertClearedRuntimeSurface(h);
+  assert.equal(h.get("edit-preview-status").dataset.status,"committed");assert.match(h.get("edit-preview-status").textContent,/refresh failed/);
+  assert.deepEqual(h.requests.filter(item=>item.path==="cases/A/edit").map(item=>item.body),[{expected_version:7,transaction}]);
+});
+test("edit reconciliation lock survives refused or unrelated refresh and clears only after its successful case load",async()=>{
+  for(const failure of ["cases/A","cases/A/affordances","cases"]){const h=harness();vm.runInContext(source.slice(source.indexOf("function editable()"),source.indexOf("function selectedTransition()")),h.s);
+    vm.runInContext('editNeedsRefresh.set("A",{caseId:"A",version:7,semanticHash:"semantic-A",status:"unknown"});editNeedsRefresh.set("B",{caseId:"B",version:1,semanticHash:"semantic-B",status:"committed"})',h.s);h.s.renderEditReconciliation();assert.equal(h.get("edit-reconciliation").hidden,false);assert.equal(h.s.editable(),false);
+    h.server.fail=failure;await assert.rejects(h.s.load("A"),/refresh|Refresh/);assert.equal(vm.runInContext('editNeedsRefresh.has("A")',h.s),true);assert.equal(h.get("edit-reconciliation").hidden,false);assert.equal(h.s.editable(),false);h.server.fail=null;
+    assert.equal(await h.s.load("A",()=>false),false);assert.equal(vm.runInContext('editNeedsRefresh.has("A")',h.s),true);
+    h.server.value=fixture("B","semantic-B",2);await h.s.load("B");assert.equal(vm.runInContext('editNeedsRefresh.has("A")',h.s),true);assert.equal(vm.runInContext('editNeedsRefresh.has("B")',h.s),false);assert.equal(h.get("edit-reconciliation").hidden,true);assert.equal(h.s.editable(),true);
+    h.server.value=fixture("A","semantic-edited",8);assert.equal(await h.s.load("A"),true);assert.equal(vm.runInContext("editNeedsRefresh.size",h.s),0);assert.equal(h.get("edit-reconciliation").hidden,true);assert.equal(h.get("edit-reconciliation-status").textContent,"");assert.equal(h.get("edit-reconciliation").dataset.caseId,undefined);assert.equal(h.s.editable(),true);
+  }
+});
+test("an unresolved edit cannot undo an older edit before reconciliation",async()=>{
+  const h=harness();vm.runInContext('editNeedsRefresh.set("A",{caseId:"A",version:7,semanticHash:"semantic-A",status:"unknown"})',h.s);
+  h.enqueue({id:"A",version:8});let refusal=null;try{await h.s.command("undo");}catch(error){refusal=error;}
+  assert.equal(h.requests.filter(item=>item.method==="POST").length,0,"the prior Undo must not reach transport while the edit outcome is unresolved");
+  assert.equal(refusal?.code,"EDIT_RECONCILIATION_REQUIRED");assert.equal(vm.runInContext('editNeedsRefresh.has("A")',h.s),true);
+});
+test("all case commands stop before transport while its edit outcome requires reconciliation",async()=>{
+  for(const status of ["unknown","committed"])for(const action of ["select","propose","save","discard","layout","verify","approve","apply","undo","redo"]){const h=harness(),before=JSON.stringify(h.s.current),instanceBefore=clone(h.s.instance);
+    vm.runInContext(`editNeedsRefresh.set("A",{caseId:"A",version:7,semanticHash:"semantic-A",status:${JSON.stringify(status)}})`,h.s);
+    h.enqueue({id:"A",version:8});let refusal=null;try{await h.s.command(action,{test_context:"unchanged request"});}catch(error){refusal=error;}
+    assert.equal(h.requests.length,0,`${status}: ${action} must not reach any transport`);assert.equal(refusal?.code,"EDIT_RECONCILIATION_REQUIRED");assert.equal(JSON.stringify(h.s.current),before);assert.deepEqual(clone(h.s.instance),instanceBefore);assert.equal(vm.runInContext('editNeedsRefresh.has("A")',h.s),true);
+  }
+});
+test("a reconciliation lock for one case does not prohibit another case's command",async()=>{
+  const h=harness();vm.runInContext('editNeedsRefresh.set("A",{caseId:"A",version:7,semanticHash:"semantic-A",status:"unknown"})',h.s);h.s.current=fixture("B","semantic-B",2);h.server.value=fixture("B","semantic-B",3);h.enqueue({id:"B",version:3});await h.s.command("save");
+  assert.deepEqual(h.requests.filter(item=>item.method==="POST").map(item=>({path:item.path,body:item.body})),[{path:"cases/B/save",body:{expected_version:2}}]);assert.equal(vm.runInContext('editNeedsRefresh.has("A")',h.s),true);assert.equal(h.s.current.case.id,"B");
+});
+test("locked Model History and runtime handlers reject retained callbacks without replacing runtime evidence",async()=>{
+  for(const status of ["unknown","committed"]){const h=harness();await succeed(h);const oldAction=h.action("Submit").onclick,origin={caseId:"A",revision:7,semanticHash:"semantic-A",instanceId:"instance-A",instanceVersion:1};
+    vm.runInContext(`editNeedsRefresh.set("A",{caseId:"A",version:7,semanticHash:"semantic-A",status:${JSON.stringify(status)}})`,h.s);h.s.renderEditReconciliation();h.s.renderRuntime();
+    const before={requests:h.requests.length,current:JSON.stringify(h.s.current),instance:clone(h.s.instance),runtime:h.state(),feedback:h.feedback()};
+    for(const id of ["undo-edit","redo-edit","history-undo","history-redo","reset"]){assert.equal(h.get(id).disabled,true,id+" disabled");await h.get(id).onclick();}
+    assert.ok(h.get("runtime-actions").children.every(button=>button.disabled));await oldAction();await h.action("Submit").onclick();assert.equal(await h.s.executeRuntime("Submit",origin),false);assert.equal(await h.s.startRuntimePreview(),false);
+    assert.equal(h.requests.length,before.requests);assert.equal(JSON.stringify(h.s.current),before.current);assert.deepEqual(clone(h.s.instance),before.instance);assert.deepEqual(h.state(),before.runtime);assert.deepEqual(h.feedback(),before.feedback);assert.equal(h.s.lastDiagnostic,null);
+  }
+});
+test("another case can execute or start its runtime while the original case remains locked",async()=>{
+  const h=harness();vm.runInContext('editNeedsRefresh.set("A",{caseId:"A",version:7,semanticHash:"semantic-A",status:"unknown"})',h.s);
+  h.s.current=fixture("B","semantic-B",2);h.s.instance=preview("instance-B",0,"Draft","B","semantic-B");h.server.value=fixture("B","semantic-B",2);h.s.renderRuntime();assert.equal(h.action("Submit").disabled,false);
+  h.enqueue({duplicate:false,committed:true,instance:preview("instance-B",1,"Submitted","B","semantic-B"),effects:["Audit"]});await h.action("Submit").onclick();assert.equal(h.feedback().data.status,"committed");assert.equal(h.s.instance.case_id,"B");
+  h.enqueue(preview("new-instance-B",0,"Draft","B","semantic-B"));await h.get("reset").onclick();assert.equal(h.feedback().data.status,"preview");assert.equal(h.s.instance.id,"new-instance-B");
+  assert.deepEqual(h.requests.filter(item=>item.method==="POST").map(item=>item.path),["cases/B/execute","cases/B/preview"]);assert.equal(vm.runInContext('editNeedsRefresh.has("A")',h.s),true);assert.equal(vm.runInContext('editNeedsRefresh.has("B")',h.s),false);
 });
 test("counterexample oracle detects the old success-text retention pattern",async()=>{
   const begin="  renderRuntimeFeedback();return runtimeAttempt;",failure="  renderRuntimeFeedback();reportError(error,{reveal:false});return false;";

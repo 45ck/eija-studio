@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio
   title: application/service.py
   hash_method: ast-sig-v1
-  sha256: b210aab2f8a79a94c38a8e684fcad7cca37bc7f069ef843cc5366e83194db288
+  sha256: 82e069eec049dac30908556b342ee1216b85070100377baa66ab7ef861c4b151
 description_override: 'The Studio use cases: create, propose, select, edit, verify, approve, apply and execute over a Change Case.'
-notes_baseline: 19810e6ec12909e2564fed479dc296c3d64c9e51ba1f69d169b250d46711b528
+notes_baseline: a4a37d1c16da3a06c765472baba47c5c3b13e9b707e3fcbf8f262bc4335f334b
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -42,6 +42,18 @@ verified:
   at: '2026-10-02T13:05:54Z'
   notes_sha256: 5c65b08b05d0cc7eb7aa9ed783df92f6d4e99d4fc600f810506a434289cbba7d
   sources_sha256: 19810e6ec12909e2564fed479dc296c3d64c9e51ba1f69d169b250d46711b528
+- by: process:codex-edit-preview
+  at: '2026-10-02T19:25:25Z'
+  notes_sha256: f4a02da478c415d5bda1e511a72b5f08b82df701d0844c29c022945ae8819f8d
+  sources_sha256: a4a37d1c16da3a06c765472baba47c5c3b13e9b707e3fcbf8f262bc4335f334b
+- by: process:codex-query-cohesion
+  at: '2026-10-03T10:00:00+11:00'
+  notes_sha256: f4a02da478c415d5bda1e511a72b5f08b82df701d0844c29c022945ae8819f8d
+  sources_sha256: a4a37d1c16da3a06c765472baba47c5c3b13e9b707e3fcbf8f262bc4335f334b
+- by: process:codex-query-cohesion
+  at: '2026-10-02T20:26:56.4586414+00:00'
+  notes_sha256: f4a02da478c415d5bda1e511a72b5f08b82df701d0844c29c022945ae8819f8d
+  sources_sha256: a4a37d1c16da3a06c765472baba47c5c3b13e9b707e3fcbf8f262bc4335f334b
 ---
 
 # application.service.Studio
@@ -68,6 +80,7 @@ _The source carries no docstring._
 * [`discard`](/symbols/application/service/Studio.discard.md) - `def discard(self, case_id: str, expected: int) -> dict[str, Any]`
 * [`edit`](/symbols/application/service/Studio.edit.md) - `def edit(self, case_id: str, expected: int, tx: Transaction, principal: Principal) -> dict[str, Any]`
 * [`edit_check`](/symbols/application/service/Studio.edit_check.md) - `def edit_check(self, case_id: str, tx: Transaction) -> dict[str, Any]`
+* [`edit_preview`](/symbols/application/service/Studio.edit_preview.md) - `def edit_preview(self, case_id: str, tx: Transaction) -> dict[str, Any]`
 * [`execute`](/symbols/application/service/Studio.execute.md) - `def execute(self, case_id: str, command: ExecuteCommand, fault: Callable[[str], None] \| None=None) -> dict[str, Any]`
 * [`export`](/symbols/application/service/Studio.export.md) - `def export(self, case_id: str) -> dict[str, Any]`
 * [`formal_view`](/symbols/application/service/Studio.formal_view.md) - `def formal_view(self, model: Workflow) -> dict[str, Any]`
@@ -116,6 +129,13 @@ meaning prefix. They create new case versions, append command provenance and cle
 decisions while retaining receipts, baseline and layout. `history` reconstructs
 semantic snapshots from commands; it does not invent timestamps for legacy edits.
 
+`edit_check` remains a compact policy-only check against the working model.
+`edit_preview` captures one case revision and returns its current model plus the
+candidate from the existing interpreter, after the same lifecycle and history
+checks as edit. It writes nothing, grants no authority and creates no evidence.
+Applying still uses owner edit and the captured case version; an intervening
+revision makes that expected version stale.
+
 <!-- okf:generated:begin links -->
 ## Depends on
 
@@ -143,6 +163,7 @@ semantic snapshots from commands; it does not invent timestamps for legacy edits
 * [application.service.Studio.discard](/symbols/application/service/Studio.discard.md) - `def discard(self, case_id: str, expected: int) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.edit](/symbols/application/service/Studio.edit.md) - `def edit(self, case_id: str, expected: int, tx: Transaction, principal: Principal) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.edit_check](/symbols/application/service/Studio.edit_check.md) - Dry-run one edit: {legal, codes, refs}.
+* [application.service.Studio.edit_preview](/symbols/application/service/Studio.edit_preview.md) - Read-only edit preview bound to one case snapshot; the owner edit still requires capability and CAS.
 * [application.service.Studio.execute](/symbols/application/service/Studio.execute.md) - `def execute(self, case_id: str, command: ExecuteCommand, fault: Callable[[str], None] | None=None) -> dict[st…` in `application/service`.
 * [application.service.Studio.export](/symbols/application/service/Studio.export.md) - `def export(self, case_id: str) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.formal_view](/symbols/application/service/Studio.formal_view.md) - Formal evidence for a bare workflow (``eija compile``): collected and sealed in memory, never stored, never a decision.

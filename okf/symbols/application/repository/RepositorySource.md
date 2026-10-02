@@ -53,5 +53,8 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Referenced by
 
+* [application.repository.read_repository_freshness](/symbols/application/repository/read_repository_freshness.md) - Observe captured byte identity; this grants no source conformance, evidence or owner authority.
+* [application.repository.read_repository_impact](/symbols/application/repository/read_repository_impact.md) - Known repository links only.
+* [application.repository.read_repository_source](/symbols/application/repository/read_repository_source.md) - Bounded source view from the configured repository's captured nodes; no arbitrary path or execution.
 * [application.service.Studio](/symbols/application/service/Studio.md) - `class Studio` in `application/service`.
 <!-- okf:generated:end links -->

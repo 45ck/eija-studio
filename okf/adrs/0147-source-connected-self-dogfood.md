@@ -40,5 +40,7 @@ notes_baseline: e932ae34993e2652b7ef9cee2d26e978f17e976ed2114274039c848db223cd27
 _No curated notes yet._
 
 <!-- okf:generated:begin links -->
-_No generated cross-references._
+## Referenced by
+
+* [Integration: source-connected review, semantic history and edit preview (`integration`)](/lanes/0147-integration-source-connected-review.md) - Capability lane with ADR numbers 0147–0149 reserved.
 <!-- okf:generated:end links -->

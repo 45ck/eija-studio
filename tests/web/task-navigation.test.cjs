@@ -16,7 +16,7 @@ function harness(code=app){
   const transition={id:"T",action:"Send",role:"Owner",from_state:"A",to_state:"B",guards:["authorized"],required_effects:["Audit"],forbidden_effects:[]};
   const model=freeze({states:["A","B"],transitions:[transition]});
   const s={current:{case:{id:"case-A",version:4,stage:"PREVIEW",candidate:model,baseline:model},packet:{eligible:false,blockers:["SOURCE_REVIEW_REQUIRED","RUNTIME_EVIDENCE_UNKNOWN"]}},workbench:{pack:{id:"p",digest:"p-digest"},model,language:{terms:[{id:"TERM",label:"Declared term",definition:"One declared concept",refs:["transition:T"],binds:["repo://src/x.py#X"]}]},roles:[{id:"Owner"}],laws:[{id:"L",code:"LAW_X"}],connection:{status:"connected",lint:{verdict:"NOT_RUN",findings:[]}}},status:{trusted_fixture:false},inspectorSelection:{kind:"transition",id:"T"},editId:"T",modelView:"working",historyModel:null,historyLabel:"",tab:"model",impactSequence:0,lastDiagnostic:null,affordanceData:{affordances:[]},document:{activeElement:null},$:get,
-    sessionStorage:{getItem:()=>null,setItem:(key,value)=>writes.push([key,value])},el:(tag,text,cls)=>{const node=new Element(tag);if(text!==undefined)node.textContent=text;if(cls)node.className=cls;return node;},
+    editNeedsRefresh:new Map(),sessionStorage:{getItem:()=>null,setItem:(key,value)=>writes.push([key,value])},el:(tag,text,cls)=>{const node=new Element(tag);if(text!==undefined)node.textContent=text;if(cls)node.className=cls;return node;},
     EijaTree:{setVisible:(root,visible)=>root.hidden=!visible,reveal:()=>true},EijaShell:{reveal:key=>reveals.push([s.tab,key]),bottom:(id,options)=>opens.push({id,options}),renderEvidence:()=>{}},EijaCanvas:{entries:()=>[]},
     api:()=>{throw Error("Presentation must not call transport");},notice:()=>{},switchTab:name=>{s.tab=name;},renderCanvas:()=>{},renderEvidenceContext:()=>{},currentComparisonSelection:()=>s.comparisonSelection||null,followReference:ref=>references.push(ref)};
   vm.createContext(s);
@@ -117,6 +117,13 @@ test("Rules Evidence navigation transfers focus without opening or acting on the
 });
 test("closed case Rules retain current subject but explain why selecting a rule cannot enable editing",()=>{
   for(const stage of ["APPLIED","DISCARDED"]){const h=subjectHarness();h.s.current.case.stage=stage;h.s.renderWorkbench();ruleButton(h,"T").onclick();assert.match(h.get("rules-edit-help").textContent,new RegExp(`case is ${stage}.*read only`));assert.equal(h.get("edit-state").disabled,true);assert.equal(h.projected.canvas.editable,false);}
+});
+test("Model and History aliases stay disabled across rendering until edit reconciliation clears",()=>{
+  const h=subjectHarness();h.s.caseHistory={can_undo:true,can_redo:true};h.s.renderWorkbench();
+  for(const id of ["undo-edit","redo-edit","history-undo","history-redo"])assert.equal(h.get(id).disabled,false,id+" initially enabled");
+  h.s.editNeedsRefresh.set("case-A",{caseId:"case-A",version:4,semanticHash:"candidate-semantic-identity",status:"unknown"});h.s.renderWorkbench();
+  for(const id of ["undo-edit","redo-edit","history-undo","history-redo","edit-source","edit-target","edit-role","edit-state"])assert.equal(h.get(id).disabled,true,id+" remains disabled after render");assert.equal(h.projected.canvas.editable,false);
+  h.s.editNeedsRefresh.delete("case-A");h.s.renderWorkbench();for(const id of ["undo-edit","redo-edit","history-undo","history-redo"])assert.equal(h.get(id).disabled,false,id+" reenables after reconciliation");assert.equal(h.projected.canvas.editable,true);
 });
 test("impact navigation recomputes its destination, retains preview and never executes a runtime action",()=>{
   const h=subjectHarness(),selected=[];h.s.comparison={select:value=>{selected.push(value);return true;}};h.s.modelView="history";

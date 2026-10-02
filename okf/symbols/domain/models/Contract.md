@@ -42,6 +42,7 @@ The reason unknown fields and operators die at the boundary (acceptance [AC01](/
 <!-- okf:generated:begin links -->
 ## Referenced by
 
+* [application.edit_preview.EditPreview](/symbols/application/edit_preview/EditPreview.md) - An uncommitted candidate bound to a captured case revision; no evidence or edit authority.
 * [domain.change_case.ChangeCase](/symbols/domain/change_case/ChangeCase.md) - Aggregate boundary: transitions are mediated by the application and CAS store.
 * [domain.laws.When](/symbols/domain/laws/When.md) - Condition under which a law applies.
 * [domain.models.Alternative](/symbols/domain/models/Alternative.md) - `class Alternative(Contract)` in `domain/models`.

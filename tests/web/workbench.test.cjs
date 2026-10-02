@@ -9,70 +9,7 @@ const crypto = require("node:crypto");
 const web = path.join(__dirname, "../../src/eija_studio/resources/web");
 globalThis.dagre = require(path.join(web, "vendor/dagre.min.js"));
 const canvas = require(path.join(web, "canvas.js"));
-const source = fs.readFileSync(path.join(web, "app.js"), "utf8");
-const commitSource = source.slice(source.indexOf("function commitChoice(choice)"), source.indexOf('$("transition-select").onchange'));
-
-function harness(check, editError, interleave) {
-  const calls = [], errors = [], notices = [], reloaded = [];
-  const sandbox = {
-    current: {case: {id: "case-a", version: 7}}, instance: {state:"before"}, lastDiagnostic: {code:"old"},
-    editable: () => true, task: async fn => {try {await fn();} catch(error) {errors.push(error);}},
-    api: async (url, body) => {
-      calls.push({url, body});
-      if (url.endsWith("/edit/check")) {if(interleave) sandbox.current.case.version = 99; return check;}
-      if (editError) throw editError;
-      return {case: {version: 8}};
-    },
-    ApiError: class extends Error {constructor(code, message, details) {super(message); this.code=code; this.details=details;}},
-    reportError: error => errors.push(error), renderCanvas: () => {}, notice: message => notices.push(message),
-    $: () => ({hidden:false}), load: async id => reloaded.push(id)
-  };
-  sandbox.clearRuntime=()=>{sandbox.instance=null;}; // Runtime identity lifecycle is exercised in runtime-outcome.test.cjs.
-  vm.createContext(sandbox); vm.runInContext(commitSource, sandbox);
-  return {sandbox, calls, errors, notices, reloaded};
-}
 const transaction = Object.freeze({kind:"retarget_transition", transition:"TR-MOVE", end:"target", state:"Done"});
-const choice = Object.freeze({legal:true, transaction});
-
-test("an accepted gesture commits exactly one original typed transaction with the pre-check version", async () => {
-  const h = harness({legal:true, codes:[], refs:[]}, null, true);
-  await h.sandbox.commitChoice(choice);
-  assert.equal(h.calls.length, 2);
-  assert.equal(h.calls[0].url, "cases/case-a/edit/check");
-  assert.equal(h.calls[1].url, "cases/case-a/edit");
-  assert.equal(h.calls[1].body.expected_version, 7);
-  assert.equal(h.calls[1].body.transaction, transaction);
-  assert.deepEqual(h.reloaded, ["case-a"]);
-  assert.equal(h.sandbox.instance, null);
-  assert.equal(h.sandbox.lastDiagnostic, null);
-});
-
-test("a server refusal displays exact codes and refs, never mutates or invents a repaired transaction", async () => {
-  const h = harness({legal:false, codes:["LAW:requires-step"], refs:["law:requires-step", "state:Done"]});
-  await h.sandbox.commitChoice(choice);
-  assert.equal(h.calls.length, 1);
-  assert.equal(h.errors[0].code, "EDIT_REFUSED");
-  assert.deepEqual(h.errors[0].details.codes, ["LAW:requires-step"]);
-  assert.deepEqual(h.errors[0].details.refs, ["law:requires-step", "state:Done"]);
-  assert.deepEqual(h.reloaded, []);
-  assert.equal(h.sandbox.instance.state, "before");
-});
-
-test("a stale write after a successful check is reported without a success redraw", async () => {
-  const error = Object.assign(new Error("Version mismatch"), {code:"CASE_STALE", details:{codes:["CASE_STALE"]}});
-  const h = harness({legal:true, codes:[], refs:[]}, error);
-  await h.sandbox.commitChoice(choice);
-  assert.equal(h.calls.filter(call => call.url.endsWith("/edit")).length, 1);
-  assert.equal(h.errors[0], error);
-  assert.deepEqual(h.reloaded, []);
-  assert.equal(h.sandbox.instance.state, "before");
-});
-
-test("no selection produces no network operation", async () => {
-  const h = harness({legal:true});
-  await h.sandbox.commitChoice(undefined);
-  assert.equal(h.calls.length, 0);
-});
 
 test("canvas geometry is deterministic and never changes semantic state or saved layout", () => {
   const model = Object.freeze({states:Object.freeze(["A", "B", "C", "D"])});

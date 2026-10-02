@@ -99,6 +99,7 @@ class Review:
         self.case_id = None
         self.server_view = None
         self.navigation_actions = []
+        self.edit_preview_responses, self.edit_preview_records = [], []
         page.on("pageerror", lambda error: self.errors.append(str(error)))
         page.on("response", self.response)
         page.route("**/api/**", self.route)
@@ -119,6 +120,111 @@ class Review:
             self.server_view = response.json()
         if response.status >= 400:
             self.http_errors.append({"stage": self.stage, "status": response.status, "path": path})
+        if response.status == 200 and response.request.method == "POST" and path.endswith("/edit/preview"):
+            self.edit_preview_responses.append({"path": path, "body": response.json()})
+
+    def edit_preview_snapshot(self):
+        values = {}
+        for name, path in (("view", f"cases/{self.case_id}"), ("history", f"cases/{self.case_id}/history")):
+            response = self.page.context.request.get(self.base + "api/" + path,
+                headers={"Authorization": "Bearer " + TEST_CAPABILITY})
+            assert response.status == 200, f"Prospective-edit oracle GET {path}: HTTP {response.status}"
+            values[name] = response.json()
+        values["edit_posts"] = sum(item["method"] == "POST" and item["path"].endswith("/edit") for item in self.requests)
+        return values
+
+    def inspect_edit_preview(self, before, expected_candidate=None, transaction=None, *, legal=True):
+        dialog = self.page.locator("#edit-preview")
+        expect(dialog).to_be_visible()
+        expect(self.page.locator("#edit-preview-status")).to_have_attribute("data-status", "ready" if legal else "refused")
+        payload = json.loads(self.page.locator("#edit-preview-json").text_content())
+        assert self.edit_preview_responses and self.edit_preview_responses[-1] == {
+            "path": f"/api/cases/{self.case_id}/edit/preview", "body": payload}, "Visible preview differs from actual response"
+        case = before["view"]["case"]
+        assert payload["case_id"] == case["id"] and payload["version"] == case["version"] and payload["stage"] == case["stage"]
+        assert payload["semantic_hash"] == before["view"]["packet"]["subject"]["semantic"]
+        assert payload["current"] == case["candidate"] and payload["legal"] is legal
+        assert payload["scope"] == "semantic-edit-preview" and payload["applied"] is False and payload["persisted"] is False
+        if transaction is not None:
+            assert payload["transaction"] == transaction, "Server preview describes a different typed transaction"
+        expect(dialog).to_have_attribute("data-case-id", case["id"])
+        expect(dialog).to_have_attribute("data-revision", str(case["version"]))
+        expect(dialog).to_have_attribute("data-semantic-hash", payload["semantic_hash"])
+        assert self.edit_preview_snapshot() == before, "Preview changed case, history, runtime observations or sent /edit"
+        if legal:
+            assert expected_candidate is not None, "Legal preview needs an independent expected full candidate"
+            assert payload["candidate"] == expected_candidate, "Preview changes more than the intended fields"
+            proposed_hash = Workflow.model_validate(expected_candidate).semantic_hash
+            assert payload["candidate_semantic_hash"] == proposed_hash
+            expect(dialog).to_have_attribute("data-proposed-semantic-hash", proposed_hash)
+            expect(self.page.locator("#edit-preview-apply")).to_be_enabled()
+            pair = self.page.locator("#edit-preview-comparison")
+            ident = payload["transaction"]["transition"]
+            selected = pair.locator(".compare-selection")
+            expect(selected).to_have_attribute("data-kind", "transition")
+            expect(selected).to_have_attribute("data-id", ident)
+            fields = ("action", "role", "from_state", "to_state", "guards", "required_effects", "forbidden_effects")
+            for side, model in (("before", payload["current"]), ("after", expected_candidate)):
+                board = pair.locator(f'[data-compare-side="{side}"]')
+                states = board.locator("g.compare-node[data-state]").evaluate_all("nodes=>nodes.map(n=>n.dataset.state).sort()")
+                edges = board.locator("g.compare-edge[data-transition]").evaluate_all("nodes=>nodes.map(n=>n.dataset.transition).sort()")
+                assert states == sorted(model["states"]) and edges == sorted(t["id"] for t in model["transitions"])
+                transition = next(t for t in model["transitions"] if t["id"] == ident)
+                for field in fields:
+                    text = selected.locator(f'[data-field="{field}"] td').nth(0 if side == "before" else 1).text_content()
+                    actual = json.loads(text.removesuffix(" (none declared)")) if isinstance(transition[field], list) else text
+                    assert actual == transition[field], f"Prospective {side} {field} differs from full server snapshot"
+            expect(pair.locator('[data-compare-action="evidence"]')).to_have_count(0)
+            expect(pair.locator('[data-compare-reference]')).to_have_count(0)
+        else:
+            assert payload["candidate"] is None and payload["candidate_semantic_hash"] is None
+            expect(self.page.locator("#edit-preview-apply")).to_be_disabled()
+            expect(self.page.locator("#edit-preview-comparison .paired-compare")).to_have_count(0)
+        self.edit_preview_records.append({"stage": self.stage, "before": before, "server_preview": payload,
+                                          "expected_candidate": expected_candidate})
+        (self.out / "prospective-edit-observations.json").write_text(json.dumps(self.edit_preview_records, indent=2) + "\n", encoding="utf-8")
+        return payload
+
+    def activate_preview_control(self, selector, *, keyboard=False):
+        if keyboard:
+            for _ in range(80):
+                if self.page.locator(selector).evaluate("node=>node===document.activeElement"):
+                    break
+                self.page.keyboard.press("Tab")
+                self.navigation_action("key", "#edit-preview", "Tab")
+            else:
+                raise AssertionError(f"Preview control {selector} is not keyboard reachable")
+            self.page.keyboard.press("Enter")
+            self.navigation_action("key", selector, "Enter")
+        else:
+            self.page.locator(selector).click()
+            self.navigation_action("click", selector)
+
+    def apply_edit_preview(self, before, payload, *, keyboard=False):
+        with self.page.expect_response(lambda r: r.request.method == "POST"
+                                       and urlsplit(r.url).path == f"/api/cases/{self.case_id}/edit") as pending:
+            self.activate_preview_control("#edit-preview-apply", keyboard=keyboard)
+        assert pending.value.status == 200, f"Confirmed edit: HTTP {pending.value.status}"
+        assert pending.value.request.post_data_json == {"expected_version": before["view"]["case"]["version"],
+                                                        "transaction": payload["transaction"]}
+        ack = pending.value.json()
+        assert ack["id"] == self.case_id and ack["version"] == before["view"]["case"]["version"] + 1
+        assert ack["candidate"] == payload["candidate"]
+        self.settled()
+        expect(self.page.locator("#edit-preview")).to_be_hidden(timeout=60000)
+        after = self.edit_preview_snapshot()
+        assert after["view"]["case"]["candidate"] == payload["candidate"]
+        assert after["edit_posts"] == before["edit_posts"] + 1, "Apply did not send exactly one edit"
+        return after
+
+    def close_edit_preview(self, before, *, escape=False, keyboard=False):
+        if escape:
+            self.page.keyboard.press("Escape")
+            self.navigation_action("key", "#edit-preview", "Escape")
+        else:
+            self.activate_preview_control("#edit-preview-cancel", keyboard=keyboard)
+        expect(self.page.locator("#edit-preview")).to_be_hidden()
+        assert self.edit_preview_snapshot() == before, "Closing an unsubmitted preview changed persisted facts"
 
     def settled(self):
         expect(self.page.locator("body")).not_to_have_attribute("aria-busy", "true", timeout=60000)
@@ -240,18 +346,24 @@ class Review:
         self.navigation_action("click", selector)
         expect(self.page.locator("#transition-select")).to_have_value(ident)
 
+    def main_comparison(self):
+        return self.page.locator("#review-chapters")
+
+    def main_comparison_navigation(self):
+        return self.page.locator("#task-navigator")
+
     def select_comparison(self, kind, ident):
         self.tab("review")
         self.navigator_mode("task")
         selector = f'[data-compare-key="{kind}:{ident}"]'
-        control = self.page.locator(selector)
+        control = self.main_comparison_navigation().locator(selector)
         disclosure = control.locator("xpath=ancestor::details[1]")
         if disclosure.count() and disclosure.get_attribute("open") is None:
             disclosure.locator(":scope > summary").click()
-            self.navigation_action("click", selector + " ancestor details > summary")
+            self.navigation_action("click", "#task-navigator " + selector + " ancestor details > summary")
         control.click()
-        self.navigation_action("click", selector)
-        detail = self.page.locator(".compare-selection")
+        self.navigation_action("click", "#task-navigator " + selector)
+        detail = self.main_comparison().locator(".compare-selection")
         expect(detail).to_have_attribute("data-kind", kind)
         expect(detail).to_have_attribute("data-id", ident)
         return detail
@@ -276,7 +388,7 @@ class Review:
                 else:
                     assert actual == str(value), (field, index, actual, value)
         for side, model in (("before", old), ("after", new)):
-            expect(self.page.locator(f'[data-compare-side="{side}"] [data-transition="{ident}"]')).to_have_count(int(model is not None))
+            expect(self.main_comparison().locator(f'[data-compare-side="{side}"] [data-transition="{ident}"]')).to_have_count(int(model is not None))
         return detail
 
     def source(self):
@@ -333,10 +445,14 @@ class Review:
         self.select_transition("TR-SAVE")
         self.original_hash, self.original_version = self.semantic(), self.revision()
         self.before_edit_view = self.server_view
+        preview_before = self.edit_preview_snapshot()
+        expected = deepcopy(preview_before["view"]["case"]["candidate"])
+        next(t for t in expected["transitions"] if t["id"] == "TR-SAVE")["role"] = "Agent"
         writes = sum(item["method"] == "POST" and item["path"].endswith("/edit") for item in self.requests)
         self.page.locator("#transition-role").select_option("Agent")
         self.page.locator("#edit-role").click()
-        self.settled()
+        preview = self.inspect_edit_preview(preview_before, expected)
+        self.apply_edit_preview(preview_before, preview)
         expect(self.page.locator("#transition-details")).to_contain_text("TR-SAVE · Agent")
         self.changed_hash = self.semantic()
         assert self.changed_hash != self.original_hash
@@ -384,14 +500,18 @@ class Review:
     def refusal(self):
         self.select_transition("TR-APPROVE")
         before, version = self.semantic(), self.revision()
+        preview_before = self.edit_preview_snapshot()
         writes = sum(item["method"] == "POST" and item["path"].endswith("/edit") for item in self.requests)
         self.page.locator("#transition-role").select_option("Agent")
         self.page.locator("#edit-role").click()
+        preview = self.inspect_edit_preview(preview_before, legal=False)
+        assert "REFERENCE_AUTHORITY:Approve" in preview["codes"]
         expect(self.page.locator("#notice")).to_contain_text("EDIT_REFUSED")
         expect(self.page.locator("#notice")).to_contain_text("REFERENCE_AUTHORITY:Approve")
         self.settled()
         after_writes = sum(item["method"] == "POST" and item["path"].endswith("/edit") for item in self.requests)
         assert self.semantic() == before and self.revision() == version and writes == after_writes
+        self.close_edit_preview(preview_before)
         return {"diagnostic": "REFERENCE_AUTHORITY:Approve", "semantic_and_version_unchanged": True,
                 "edit_post_not_sent": True}
 

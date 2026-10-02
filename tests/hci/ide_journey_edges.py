@@ -157,8 +157,12 @@ class Journey(replay.Review):
         self.tab("model")
         self.select_transition(transition)
         self.page.locator("#transition-role").select_option(role)
+        preview_before = self.edit_preview_snapshot()
+        expected = deepcopy(preview_before["view"]["case"]["candidate"])
+        next(t for t in expected["transitions"] if t["id"] == transition)["role"] = role
         self.page.locator("#edit-role").click()
-        self.settled()
+        preview = self.inspect_edit_preview(preview_before, expected, choice["transaction"])
+        self.apply_edit_preview(preview_before, preview)
         return choice
 
     def assert_role_edit(self, before, transition, role, transaction):
@@ -247,6 +251,11 @@ class Journey(replay.Review):
         assert shown_reference in {first_source["reference"], second_source["reference"]}, "Source navigation changed to an unopened reference."
         shared_source = self.source_matches(shown_reference)
         selected = next(t for t in before_second["case"]["candidate"]["transitions"] if t["id"] == "TR-APPROVE")
+        self.reveal_inspector()
+        detail = self.page.locator("#selection-detail")
+        replay.expect(detail).to_be_visible()
+        replay.expect(detail).to_have_attribute("data-eija-id", before_second["case"]["candidate"]["id"] + ".detail.transition." + selected["id"])
+        replay.expect(detail.locator("h3")).to_have_text(selected["action"])
         selection = self.page.locator("#selection-detail").inner_text()
         self.shot("second-case-restored")
         selection_leaked = selected["action"] not in selection
@@ -292,19 +301,27 @@ class Journey(replay.Review):
         before = self.create_candidate()
         self.select_transition("TR-SAVE")
         self.page.locator("#transition-role").select_option("Agent")
+        preview_before = self.edit_preview_snapshot()
+        expected = deepcopy(before["case"]["candidate"])
+        next(t for t in expected["transitions"] if t["id"] == "TR-SAVE")["role"] = "Agent"
+        self.page.locator("#edit-role").click()
+        self.inspect_edit_preview(preview_before, expected)
         second = Journey(self.page.context.new_page(), self.out, self.base)
         try:
             second.entry()
             second.switch_case(self.case_id)
             choice = second.edit_role()
             winner = second.assert_role_edit(before, "TR-SAVE", "Agent", choice["transaction"])
-            self.page.locator("#edit-role").click()
+            self.activate_preview_control("#edit-preview-apply")
             self.settled()
+            replay.expect(self.page.locator("#edit-preview-status")).to_have_attribute("data-status", "refused")
             replay.expect(self.page.locator("#notice")).to_contain_text("STALE_VERSION")
             self.expected_http.append({"status": 409, "path": f"/api/cases/{self.case_id}/edit"})
             self.assert_unchanged(winner)
             self.canvas_matches(before["case"]["candidate"])
             self.shot("stale-rejected")
+            self.activate_preview_control("#edit-preview-cancel")
+            replay.expect(self.page.locator("#edit-preview")).to_be_hidden()
             self.palette("Refresh current model")
             self.canvas_matches(winner["case"]["candidate"])
             self.assert_unchanged(winner)
@@ -343,8 +360,12 @@ class Journey(replay.Review):
         self.keyboard_select("#transition-select", "TR-SAVE")
         self.keyboard_select("#transition-role", "Agent")
         self.keyboard_to("#edit-role")
+        preview_before = self.edit_preview_snapshot()
+        expected = deepcopy(before["case"]["candidate"])
+        next(t for t in expected["transitions"] if t["id"] == "TR-SAVE")["role"] = "Agent"
         self.page.keyboard.press("Enter")
-        self.settled()
+        preview = self.inspect_edit_preview(preview_before, expected, allowed["transaction"])
+        self.apply_edit_preview(preview_before, preview, keyboard=True)
         after = self.assert_role_edit(before, "TR-SAVE", "Agent", allowed["transaction"])
         self.shot("keyboard-supported-edit")
         refused = self.role_choice("TR-APPROVE", "Agent", False)
@@ -353,15 +374,18 @@ class Journey(replay.Review):
         self.keyboard_select("#transition-role", "Agent")
         self.keyboard_to("#edit-role")
         writes = sum(r["method"] == "POST" and r["path"].endswith("/edit") for r in self.requests)
+        preview_before = self.edit_preview_snapshot()
         self.page.keyboard.press("Enter")
-        self.settled()
+        preview = self.inspect_edit_preview(preview_before, transaction=refused["transaction"], legal=False)
         replay.expect(self.page.locator("#notice")).to_contain_text("EDIT_REFUSED")
         diagnostic = json.loads(self.page.locator("#error-json").text_content())
         assert diagnostic["details"]["codes"] == refused["codes"]
         assert diagnostic["details"]["refs"] == refused["refs"]
+        assert preview["codes"] == refused["codes"] and preview["refs"] == refused["refs"]
         assert sum(r["method"] == "POST" and r["path"].endswith("/edit") for r in self.requests) == writes
         self.assert_unchanged(after)
         self.canvas_matches(after["case"]["candidate"])
+        self.close_edit_preview(preview_before, escape=True)
         replay.expect(self.page.locator("#edit-role")).to_be_focused()
         return {"keyboard_only_after_fixture_setup": True, "refusal_codes": refused["codes"],
                 "refused_transaction_not_committed": True}
