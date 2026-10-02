@@ -75,7 +75,7 @@
       "status": "PASS",
       "target": 400,
       "unit": "ms",
-      "value": 4.7
+      "value": 4.3
     },
     {
       "id": "doherty.settled_p50",
@@ -86,7 +86,7 @@
       "status": "PASS",
       "target": 400,
       "unit": "ms",
-      "value": 86.2
+      "value": 80.7
     },
     {
       "id": "doherty.settled_p95",
@@ -97,7 +97,7 @@
       "status": "GAP",
       "target": 400,
       "unit": "ms",
-      "value": 838.2
+      "value": 777.5
     },
     {
       "id": "wcag.critical_rules",
@@ -214,7 +214,7 @@
     "repeats": 3,
     "ui_sha256": {
       "app.css": "e829361efc44495cd417575fdd6205cf1f3272bca48b8268439f98b10d32b811",
-      "app.js": "5062d7c1344efb90f39df9b24184162b1497f38b5d095d2bfcc5f5bbab348fe1",
+      "app.js": "c45cb0a89c2ca29373b6c8c9b756bcd319cb30f7b2602014cc35c5a0a91477a2",
       "canvas.js": "e0226d9361d73aa1831e48080f5fc262bb0fcbd8086cd1387461d39de6ca1765",
       "index.html": "70324f6a3eedff4a6fe8889125179a2ec290b3881a56bd1f7cb1138b7e1954e1",
       "review.js": "426978e964918a63b8e73ff1ae99b2b126e7a1a4d9429b2151e275cfaf178dee",
@@ -3164,80 +3164,80 @@
     "doherty": {
       "citation": "Doherty & Thadani 1982 (IBM Systems Journal 21(1)); ~400 ms",
       "first_feedback_p50_ms": 0.5,
-      "first_feedback_p95_ms": 4.7,
+      "first_feedback_p95_ms": 4.3,
       "interactions_measured": 42,
-      "journey_wait_p50_sum_s": 1.843,
-      "keyboard_settled_p50_ms": 74.6,
-      "keyboard_settled_p95_ms": 959.2,
+      "journey_wait_p50_sum_s": 1.704,
+      "keyboard_settled_p50_ms": 81.9,
+      "keyboard_settled_p95_ms": 781.7,
       "method": "nearest-rank percentiles over all repeats; medians and interquartile range are the headline, p95 is the maximum with few samples",
       "native_control_interactions_excluded": [
         "acknowledge"
       ],
       "note": "settled = last DOM mutation before quiescence, from the click event; excludes OS/browser input latency",
-      "settled_max_ms": 884.5,
-      "settled_p25_ms": 5.9,
-      "settled_p50_ms": 86.2,
-      "settled_p75_ms": 103.2,
-      "settled_p95_ms": 838.2,
+      "settled_max_ms": 824.7,
+      "settled_p25_ms": 5.6,
+      "settled_p50_ms": 80.7,
+      "settled_p75_ms": 94.2,
+      "settled_p95_ms": 777.5,
       "steps": [
         {
-          "first_feedback_p50_ms": 5.9,
-          "first_feedback_p95_ms": 6.7,
+          "first_feedback_p50_ms": 4.8,
+          "first_feedback_p95_ms": 4.8,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 4.7,
-          "settled_p50_ms": 5.9,
-          "settled_p75_ms": 6.7,
-          "settled_p95_ms": 6.7,
+          "settled_p25_ms": 4.3,
+          "settled_p50_ms": 4.8,
+          "settled_p75_ms": 4.8,
+          "settled_p95_ms": 4.8,
           "step": "open-change"
         },
         {
           "first_feedback_p50_ms": 0.5,
-          "first_feedback_p95_ms": 0.6,
+          "first_feedback_p95_ms": 0.7,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 77.4,
-          "settled_p50_ms": 95.6,
-          "settled_p75_ms": 103.2,
-          "settled_p95_ms": 103.2,
+          "settled_p25_ms": 84.4,
+          "settled_p50_ms": 85.9,
+          "settled_p75_ms": 92,
+          "settled_p95_ms": 92,
           "step": "create-case"
         },
         {
-          "first_feedback_p50_ms": 0.4,
+          "first_feedback_p50_ms": 0.5,
           "first_feedback_p95_ms": 0.5,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 73.7,
-          "settled_p50_ms": 85.7,
-          "settled_p75_ms": 95.9,
-          "settled_p95_ms": 95.9,
+          "settled_p25_ms": 73.4,
+          "settled_p50_ms": 78.2,
+          "settled_p75_ms": 98.5,
+          "settled_p95_ms": 98.5,
           "step": "ask-interpretations"
         },
         {
           "first_feedback_p50_ms": 0.4,
-          "first_feedback_p95_ms": 0.4,
+          "first_feedback_p95_ms": 0.6,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 84.8,
-          "settled_p50_ms": 86.4,
-          "settled_p75_ms": 94.8,
-          "settled_p95_ms": 94.8,
+          "settled_p25_ms": 77.7,
+          "settled_p50_ms": 81,
+          "settled_p75_ms": 84.3,
+          "settled_p95_ms": 84.3,
           "step": "select-meaning"
         },
         {
-          "first_feedback_p50_ms": 0.9,
-          "first_feedback_p95_ms": 0.9,
+          "first_feedback_p50_ms": 0.8,
+          "first_feedback_p95_ms": 1.2,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 0.7,
-          "settled_p50_ms": 0.9,
-          "settled_p75_ms": 0.9,
-          "settled_p95_ms": 0.9,
+          "settled_p25_ms": 0.8,
+          "settled_p50_ms": 0.8,
+          "settled_p75_ms": 1.2,
+          "settled_p95_ms": 1.2,
           "step": "open-try"
         },
         {
@@ -3246,35 +3246,95 @@
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 80.6,
-          "settled_p50_ms": 93.9,
-          "settled_p75_ms": 104.6,
-          "settled_p95_ms": 104.6,
+          "settled_p25_ms": 79.5,
+          "settled_p50_ms": 82.7,
+          "settled_p75_ms": 94.2,
+          "settled_p95_ms": 94.2,
           "step": "reset-preview"
         },
         {
-          "first_feedback_p50_ms": 0.4,
+          "first_feedback_p50_ms": 0.6,
           "first_feedback_p95_ms": 0.6,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 86.2,
-          "settled_p50_ms": 89.6,
-          "settled_p75_ms": 92.1,
-          "settled_p95_ms": 92.1,
+          "settled_p25_ms": 74.5,
+          "settled_p50_ms": 86.1,
+          "settled_p75_ms": 92.3,
+          "settled_p95_ms": 92.3,
           "step": "submit-teacher"
         },
         {
-          "first_feedback_p50_ms": 0.5,
-          "first_feedback_p95_ms": 0.6,
+          "first_feedback_p50_ms": 0.4,
+          "first_feedback_p95_ms": 0.4,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 80.9,
-          "settled_p50_ms": 90.4,
-          "settled_p75_ms": 90.9,
-          "settled_p95_ms": 90.9,
+          "settled_p25_ms": 77,
+          "settled_p50_ms": 80.7,
+          "settled_p75_ms": 82.1,
+          "settled_p95_ms": 82.1,
           "step": "recommend-teacher"
+        },
+        {
+          "first_feedback_p50_ms": 0.4,
+          "first_feedback_p95_ms": 0.4,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 68,
+          "settled_p50_ms": 76.6,
+          "settled_p75_ms": 83,
+          "settled_p95_ms": 83,
+          "step": "approve-registrar"
+        },
+        {
+          "first_feedback_p50_ms": 0.5,
+          "first_feedback_p95_ms": 0.5,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 5.4,
+          "settled_p50_ms": 5.6,
+          "settled_p75_ms": 7.2,
+          "settled_p95_ms": 7.2,
+          "step": "denied-recommend"
+        },
+        {
+          "first_feedback_p50_ms": 0.7,
+          "first_feedback_p95_ms": 0.8,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 0.7,
+          "settled_p50_ms": 0.7,
+          "settled_p75_ms": 0.8,
+          "settled_p95_ms": 0.8,
+          "step": "open-evidence"
+        },
+        {
+          "first_feedback_p50_ms": 0.4,
+          "first_feedback_p95_ms": 0.5,
+          "median_over_400ms": true,
+          "over_400ms": true,
+          "samples": 3,
+          "settled_p25_ms": 777.5,
+          "settled_p50_ms": 799.5,
+          "settled_p75_ms": 824.7,
+          "settled_p95_ms": 824.7,
+          "step": "run-verification"
+        },
+        {
+          "first_feedback_p50_ms": 0.9,
+          "first_feedback_p95_ms": 1,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 119.1,
+          "settled_p50_ms": 126,
+          "settled_p75_ms": 131.5,
+          "settled_p95_ms": 131.5,
+          "step": "approve-exact"
         },
         {
           "first_feedback_p50_ms": 0.4,
@@ -3282,70 +3342,10 @@
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 76.2,
-          "settled_p50_ms": 85.4,
-          "settled_p75_ms": 92.8,
-          "settled_p95_ms": 92.8,
-          "step": "approve-registrar"
-        },
-        {
-          "first_feedback_p50_ms": 0.4,
-          "first_feedback_p95_ms": 0.4,
-          "median_over_400ms": false,
-          "over_400ms": false,
-          "samples": 3,
-          "settled_p25_ms": 5.1,
-          "settled_p50_ms": 5.2,
-          "settled_p75_ms": 5.6,
-          "settled_p95_ms": 5.6,
-          "step": "denied-recommend"
-        },
-        {
-          "first_feedback_p50_ms": 0.8,
-          "first_feedback_p95_ms": 0.9,
-          "median_over_400ms": false,
-          "over_400ms": false,
-          "samples": 3,
-          "settled_p25_ms": 0.7,
-          "settled_p50_ms": 0.8,
-          "settled_p75_ms": 0.9,
-          "settled_p95_ms": 0.9,
-          "step": "open-evidence"
-        },
-        {
-          "first_feedback_p50_ms": 0.4,
-          "first_feedback_p95_ms": 0.4,
-          "median_over_400ms": true,
-          "over_400ms": true,
-          "samples": 3,
-          "settled_p25_ms": 838.2,
-          "settled_p50_ms": 880.6,
-          "settled_p75_ms": 884.5,
-          "settled_p95_ms": 884.5,
-          "step": "run-verification"
-        },
-        {
-          "first_feedback_p50_ms": 0.9,
-          "first_feedback_p95_ms": 0.9,
-          "median_over_400ms": false,
-          "over_400ms": false,
-          "samples": 3,
-          "settled_p25_ms": 117.8,
-          "settled_p50_ms": 123.9,
-          "settled_p75_ms": 127.9,
-          "settled_p95_ms": 127.9,
-          "step": "approve-exact"
-        },
-        {
-          "first_feedback_p50_ms": 0.4,
-          "first_feedback_p95_ms": 0.6,
-          "median_over_400ms": false,
-          "over_400ms": false,
-          "samples": 3,
-          "settled_p25_ms": 175.2,
-          "settled_p50_ms": 198.5,
-          "settled_p75_ms": 213.9,
-          "settled_p95_ms": 213.9,
+          "settled_p25_ms": 181.2,
+          "settled_p50_ms": 195.5,
+          "settled_p75_ms": 196.6,
+          "settled_p95_ms": 196.6,
           "step": "apply-baseline"
         }
       ],
@@ -3370,11 +3370,11 @@
   "recommendations": [
     {
       "category": "doherty",
-      "change": "First DOM mutation after the click came within 4.7 ms (p95; paint not measured), while completion for the slow steps takes longer than 400 ms. For the slow steps show a determinate progress message, keep the previous result visible until the new one lands, and profile where the time goes before optimising anything.",
+      "change": "First DOM mutation after the click came within 4.3 ms (p95; paint not measured), while completion for the slow steps takes longer than 400 ms. For the slow steps show a determinate progress message, keep the previous result visible until the new one lands, and profile where the time goes before optimising anything.",
       "evidence": {
-        "first_feedback_p95_ms": 4.7,
+        "first_feedback_p95_ms": 4.3,
         "slow_steps": [
-          "run-verification: p50 880.6 / p95 884.5 ms"
+          "run-verification: p50 799.5 / p95 824.7 ms"
         ]
       },
       "id": "doherty-completion",
@@ -3629,19 +3629,19 @@
     "http_error_responses": [
       {
         "method": "POST",
-        "path": "/api/cases/45688a477a7743399330b634d09623bf/execute",
+        "path": "/api/cases/65cb84ff4b924a8f83261bb8e6b19fe7/execute",
         "status": 409,
         "step": "denied-recommend"
       },
       {
         "method": "POST",
-        "path": "/api/cases/d7949e4b65914d29acffa0a228e03e14/execute",
+        "path": "/api/cases/a271e94f218c49bf99acfe13f7cd7cb1/execute",
         "status": 409,
         "step": "denied-recommend"
       },
       {
         "method": "POST",
-        "path": "/api/cases/f44a0081b52e4ac4be52c3504003dae6/execute",
+        "path": "/api/cases/a58597ceecbd4d3d9d9607fd7e928d96/execute",
         "status": 409,
         "step": "denied-recommend"
       }

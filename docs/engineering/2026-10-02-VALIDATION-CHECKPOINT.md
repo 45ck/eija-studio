@@ -179,3 +179,68 @@ There is **no green full-tier or release claim**: the HCI density failure remain
 metrics inherits it, and source review is outstanding. Fresh public-GitHub
 clone/install feasibility is a separate next execution, not inferred from these
 local gates.
+
+## Runtime-preview recovery checkpoint
+
+The public GitHub proof at `9c22d425ee33e52980a95b33330babec43c6aa59`
+subsequently passed fresh clone, a new Python 3.12 environment, ordinary dependency
+installation, import provenance, actual CLI startup/cleanup, and a recorded
+20/20 browser replay. This was an existing Windows host with package/browser
+caches, not a clean-machine or all-platform result. A later review exposed a
+navigation defect that those twenty checks did not cover; the earlier proof and
+recording remain scoped to their tested operations and revision.
+
+Case-list, dropdown and creation handlers cleared a runtime instance before the
+requested case had loaded. The repair adapts the successful-read boundary from
+PR #68: only a successfully loaded different case clears the old preview and
+execution feedback. Same-case selection and failed required reads preserve them.
+Independent review additionally caught a dropdown identity mismatch while another
+task was busy. Capturing the destination and restoring the displayed selection
+before the task guard closes that path. No preview is copied between cases.
+
+The actual-handler regression originally failed all eleven cases; the added busy
+control failed before its repair. The final integrated regression passes all
+**12 cases**, including the real task guard. Existing JavaScript tests pass
+**38/38**. The new standalone browser regression has a
+[Windows invocation and environment guide](../../tests/hci/case_preview_navigation.md),
+including the repository tooling import path and a new output directory.
+
+Its five checks passed in isolated Chromium under normal source identity:
+same-case refresh; failed case-list and dropdown navigation followed by a real
+Recommend action on the retained Submitted instance; busy-dropdown interaction
+during a held diagnostic request; and successful different-case invalidation.
+Exactly three intended 503 responses occurred. There were zero JavaScript errors
+or forbidden endpoint attempts; the browser and owned server closed. Independent
+GET observations checked persisted case/runtime data. The **102 captured files
+were unchanged**, with content SHA-256
+`47fc02df033789b7704f40e0315b3d2990fa406881642be345a3a6d4bfbf6f4c`.
+This was dirty source based on `9c22d42`, not a claim that the old commit contains
+the fix. The first browser attempt's DRAFT-packet oracle failure is retained;
+the later oracle compares the complete real packet and requires actual refresh
+traffic, including no deferred navigation after the busy task finishes.
+
+The affected fast tier (`navigation-fast.log`) passed all **22 sessions** with
+**1,963 passed, 201 skipped and two existing expected failures**. The subsequently
+added standalone browser script was checked separately with Ruff and executed
+in the five-check run; it is not collected as an ordinary pytest test.
+
+A fresh HCI collection (`navigation-hci.log`) on the repaired UI remains
+**16 PASS, one GAP, one FAIL**: density **68 > 27**, settled-DOM p95 **777.5ms**
+against target 400ms (legacy tail ratchet 4000ms). The current-UI derivation check
+passes. These replace neither earlier observations nor human validation.
+The existing validated Python formal implementation was unchanged by this
+JavaScript navigation repair; its prior scoped formal results remain separately
+identified above.
+
+The required `scripts/verify_release.py` rerun passed **1,963 tests, 201 skips,
+26 deselections and two existing expected failures**; `tests_exit_code` is zero.
+The exact observed command exit is **2**, with **SOURCE_REVIEW_REQUIRED** and
+`trusted_fixture: false`. Its original Windows line endings were archived;
+the committed JSON differs only by LF normalization, with identical parsed data.
+No release fixture was stamped and no owner action was performed.
+
+Full product acceptance remains open: information density, the latency target,
+source review, complete accessibility/manual evaluation, live-provider usefulness,
+human comprehension and held-out external repositories are not closed by this
+checkpoint. The next public-clone recording must identify its own exact pushed
+revision. No full-tier, release or superior-V&V claim is made.
