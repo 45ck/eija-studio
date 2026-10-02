@@ -1,0 +1,95 @@
+{
+  "schema": "eija.review-screenshots.v1",
+  "files": {
+    "code-review.png": {
+      "sha256": "a022c8351bfa6e7a72d055e2224be2170ea8253c7e4e03465d1f8095234fd0f0",
+      "bytes": 162413,
+      "source_run": "repository-change-review-5",
+      "source_image": "exact-historical-source.png",
+      "result_sha256": "6d315bb4b6fb934fa93332ac46e5efea6d68d2d433752d6c67841fd98bde5e1c",
+      "captured_subject_sha256": "82878cec712638cb2936a1faf4183b97a9ceee4202e5bb0a4e7542fb658d8eb8",
+      "captured_files": 117,
+      "script_sha256": "01ffac20aa2ba8d0030873f99cd29d176e87b43f2f771e6b5aef76fc0396f367",
+      "checks": [
+        {
+          "id": "empty-readonly-entry",
+          "status": "PASS"
+        },
+        {
+          "id": "immutable-inventory",
+          "status": "PASS"
+        },
+        {
+          "id": "exact-historical-source",
+          "status": "PASS"
+        },
+        {
+          "id": "keyboard-absent-side",
+          "status": "PASS"
+        },
+        {
+          "id": "transport-failure-retry",
+          "status": "PASS"
+        },
+        {
+          "id": "late-and-corrupt-response-identity",
+          "status": "PASS"
+        },
+        {
+          "id": "responsive-accessibility",
+          "status": "PASS"
+        }
+      ],
+      "scope": "Unedited screenshot from an isolated, normal-CSP scripted browser run; synthetic data, source-review required. Not a human usability result or full IDE acceptance."
+    },
+    "model-review.png": {
+      "sha256": "047c4cc58ede2197e0c44df31bb43ba101cdc1e7bedc4e34449d6eaab79d6d8b",
+      "bytes": 120591,
+      "source_run": "review-workspace-4",
+      "source_image": "selected-endpoints-1600.png",
+      "result_sha256": "b5e892948a3b7989ec37ac43fa481c65f33f5b3458bc709e5b331d3209848840",
+      "captured_subject_sha256": "72d899d83552733ae57b90fc9344426b77e6a5183ee1dfd97bdf55a587a3d24d",
+      "captured_files": 115,
+      "script_sha256": "808a4c9d6ecb2956bb9eb7221936abe1f18b22f348c56e836453a484cd34d2fa",
+      "checks": [
+        {
+          "id": "model-to-selected-change",
+          "status": "PASS"
+        },
+        {
+          "id": "paired-graph-truth",
+          "status": "PASS"
+        },
+        {
+          "id": "exact-source-roundtrip",
+          "status": "PASS"
+        },
+        {
+          "id": "evidence-focus-error-restore",
+          "status": "PASS"
+        },
+        {
+          "id": "history-current-subject",
+          "status": "PASS"
+        },
+        {
+          "id": "self-loop-cross-case",
+          "status": "PASS"
+        },
+        {
+          "id": "runtime-context",
+          "status": "PASS"
+        },
+        {
+          "id": "keyboard-responsive-review",
+          "status": "PASS"
+        },
+        {
+          "id": "review-accessibility",
+          "status": "PASS"
+        }
+      ],
+      "scope": "Unedited screenshot from an isolated, normal-CSP scripted browser run; synthetic data, source-review required. Not a human usability result or full IDE acceptance."
+    }
+  }
+}

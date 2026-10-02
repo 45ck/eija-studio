@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "runtime_exports_byte_identical": true,
+  "comparison_json_equal": true,
+  "revisions": {
+    "base": {
+      "commit": "9c22d425ee33e52980a95b33330babec43c6aa59",
+      "tree": "a24d5c145114f847418f1b805afbca6a2c971450",
+      "files": 100,
+      "file_inventory_sha256": "58f0dda9890940636007c57031f2214c52060a6ff4a1c9ec6c614f66f1625372"
+    },
+    "head": {
+      "commit": "c666b6bb76905c0c9bd03e81cac0922136c4cf3e",
+      "tree": "e5fa4c8af6959d3b212fdae3599cddaac9053a4d",
+      "files": 100,
+      "file_inventory_sha256": "64465e8f3e494e50190f12e0b2ba4895fc6e39179f5331051425b4cbbae64223"
+    }
+  },
+  "exporter_sha256": "28e362422b5807fb4f6f6bf56a4e5024eb23e71e44b3cf382ed9df6ac92eae2b",
+  "runner_sha256": "8abd70ce0aa1b2d2a4c8650c0e1d1ecbe1bcf98b52e16d4c7d878a016d473f88",
+  "fresh_validation_sha256": "9ec00d19757e5547771b47b573bcbb2a16e79151cf978816955270dd1a97cf8e",
+  "scope": "Fresh current-tool export is byte-identical to the runtime exports used by historical pair run 5. This is an export comparison, not a new browser run."
+}

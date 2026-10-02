@@ -1,5 +1,7 @@
 # Full IDE / HCI status and traceability
 
+**3 October update:** the [new review checkpoint](2026-10-03-CODE-REVIEW-VALIDATION.md) records paired-model comparison, immutable Code review, navigation and source-freshness observations, their exact subjects and remaining acceptance work. The ledger below preserves the earlier `c666b6b` checkpoint and its original figures.
+
 **2 October 2026 — scoped implementation checkpoint; full product acceptance OPEN.** The user's bar is a polished, non-linear workspace where UML-literate engineers using AI can understand a change, inspect exact source/evidence and recover safely, with reproducible GitHub proof. It is more than a passing recorded route. Current source navigation is **read-only**; source-code authoring and general agent-factory operation are not implemented here. Comparative comprehension benefit remains unmeasured.
 
 Code checkpoint: [`c666b6bb76905c0c9bd03e81cac0922136c4cf3e`][checkpoint], pushed with clean local/remote parity and zero divergence at handoff. `app.js` SHA-256 is `c45cb0a89c2ca29373b6c8c9b756bcd319cb30f7b2602014cc35c5a0a91477a2`. This ledger summarizes existing observations; it performs no new test or browser run. The linked [public preview record](../demos/2026-10-02-IDE-PREVIEW.md) is published separately from the tested code commit.
@@ -63,7 +65,7 @@ Against the ten HCI criteria: **H01 target geometry / H02 measured choices** pas
 | US14 combined landing | Existing single-case owner boundary is relevant groundwork only. | Planned combined-result/base-freshness/authorized landing and failure recovery. |
 | US15 domain refactor | Supported field transactions only. | Planned rename/split/merge source/model/test adapters and conformance oracles. |
 
-## Current visual-diff limit
+## Historical visual-diff limit at c666b6b
 
 `review.js` genuinely compares server snapshots, matches transitions by ID, reports action/role/endpoints/guards/effects, and lists changed/added/removed states and transitions. Its before/after display is currently a pair of small state-arrow cards followed by a field table, repeated for every change. Related source and evidence occur later in the page. The **Diagrams** reference view separately renders generated diagrams. These are useful working views; they are not the synchronized, stable-layout, context-preserving graph comparison depicted in the design image. Model comparison also does not establish that connected source changed equivalently.
 

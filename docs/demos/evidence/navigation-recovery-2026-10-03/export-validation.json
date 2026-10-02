@@ -1,0 +1,52 @@
+{
+  "schema": "eija.navigation-export-public-excerpt.v1",
+  "artifact_kind": "GENERATED_EXCERPT_NOT_RAW_RECEIPT",
+  "status": "PASS",
+  "original_validation_sha256": "5885fc3f98d85415d557d518bdb8ec2045f84c65020e71b6026f3b71e79ffb06",
+  "exports_manifest_sha256": "f448bcf37d4e2224cc7486cdf69ebc510702e955a3ed55f5f4d54ba68dd1da15",
+  "comparison_sha256": "844210a24e1a05fbd87888d5d9784559a6d0a74121536eeea5b1b1cb77c8f341",
+  "comparison_id": "4fe95f588b252cc5a3eaeb31a99fab7a75bf588343ce8d378a91e1b3b56eed25",
+  "git_observation_unchanged": true,
+  "exporter_sha256": "2f2c78ce1c2cc9dd8eff45f7a64da2141a7dc556b7f80f068991373eb4fdee89",
+  "probe_sha256": "8abd70ce0aa1b2d2a4c8650c0e1d1ecbe1bcf98b52e16d4c7d878a016d473f88",
+  "browser": "NOT_RUN",
+  "server": "NOT_RUN",
+  "target_code_execution": "NONE",
+  "boundary": "Exact exported source integrity and linked read-only intake only; no behavior or human-value claim.",
+  "exports": {
+    "base": {
+      "commit": "9c22d425ee33e52980a95b33330babec43c6aa59",
+      "tree": "a24d5c145114f847418f1b805afbca6a2c971450",
+      "files": 100,
+      "bytes": 6422912,
+      "content_sha256": "58f0dda9890940636007c57031f2214c52060a6ff4a1c9ec6c614f66f1625372",
+      "app_js": {
+        "sha256": "5062d7c1344efb90f39df9b24184162b1497f38b5d095d2bfcc5f5bbab348fe1",
+        "bytes": 40280,
+        "git_blob": "fd1905b04f8b14fdb21de0ebc25a97e1283affc2"
+      },
+      "probe_export_validation": "PASS",
+      "archive": {
+        "bytes": 6522880,
+        "sha256": "bbe82a5e5d4b886375e8a50088afa4b5a84cedb9b7dcaf12a1b620870a9baea3"
+      }
+    },
+    "head": {
+      "commit": "c666b6bb76905c0c9bd03e81cac0922136c4cf3e",
+      "tree": "e5fa4c8af6959d3b212fdae3599cddaac9053a4d",
+      "files": 100,
+      "bytes": 6423021,
+      "content_sha256": "64465e8f3e494e50190f12e0b2ba4895fc6e39179f5331051425b4cbbae64223",
+      "app_js": {
+        "sha256": "c45cb0a89c2ca29373b6c8c9b756bcd319cb30f7b2602014cc35c5a0a91477a2",
+        "bytes": 40389,
+        "git_blob": "9e041c4c51c7b18e36d8959e7201863fac1b47fe"
+      },
+      "probe_export_validation": "PASS",
+      "archive": {
+        "bytes": 6522880,
+        "sha256": "869988b461f554a08eb98ee928a583fffc181604be578b56218a1e7a2e57abd4"
+      }
+    }
+  }
+}
