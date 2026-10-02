@@ -1,0 +1,125 @@
+{
+  "schema": "eija.short-preview.v1",
+  "outcome": "PASS_PRESENTATION_ONLY",
+  "utc": "2026-10-02T08:56:37.786764+00:00",
+  "git_head": "c666b6bb76905c0c9bd03e81cac0922136c4cf3e",
+  "story": "offline source-connected bounded reference journey",
+  "source_conformance": "NOT_RUN",
+  "human_value": "NOT_MEASURED",
+  "device_status": "ready",
+  "recorder": "Existing demos.prgif.record.record plus demos.prgif.browser.plan URL mode",
+  "browser_channel": "temporary system Chrome context",
+  "browser_version": "154.0.8037.58",
+  "presentation_csp_bypass": true,
+  "product_csp_modified": false,
+  "not_evidence_for": [
+    "security",
+    "accessibility",
+    "performance",
+    "release eligibility"
+  ],
+  "steps_sha256": "db5544d026c3e7f83fd0032a8560fd1f18e852fac877aadee425bbcc286d53cb",
+  "wrapper_sha256": "1b983ac2dd821a831cc53c5fa1f80c9495bff2c6b2c55778e1d931dd464ad574",
+  "recorder_files": {
+    "demos/prgif/browser.py": "237e13cee1d94a7179f339b89316b2b63c2e9efc8d3c79c67a4bb40197369771",
+    "demos/prgif/cli.py": "8592dc2753ccf77428dbc2ff7ad8e95e3e554b6c33eaf1fdaef031e6861f6094",
+    "demos/prgif/encode.py": "bb77e21d9ae3e3a2fed7632ab0b8da25e4d3c815c7e010520b2a01a4444418dd",
+    "demos/prgif/fit.py": "9539014e23892f6a0c2da26e2136e515c174f8928ecf442acebdb750041e036d",
+    "demos/prgif/publish.py": "bf30bb045cf727551fd8d66da28279fd83da3cb2fb4dfa057716d2241d075762",
+    "demos/prgif/record.py": "84e4207bc44b54afc29278e102419f190177b0789271d06c8a38259c22f875de",
+    "demos/prgif/terminal.py": "69d3e1e2f945f6379888dbb884f6274529150ae52b6273926003ae7752588a57",
+    "demos/prgif/__init__.py": "dad7fbad84c80bd394e3a8bef4752ed6544844d4cf50d2ea2bdf65e4d2d0a3e7",
+    "demos/lib/recorder.py": "049ceef070eff26e02cd983d0e279d8e1c47dcf33b7ccacc0be6786488c15118",
+    "demos/lib/server.py": "245176afaef0719cc69a7e36f5c2c87295b0f5f260c07de59321202f4a05244d",
+    "demos/lib/__init__.py": "fe9c1ee046628878e6a43fd3661a515151407c7c43d9558f916ecce1e8a48264",
+    "demos/__main__.py": "7c38acd4fd423261c3c3a2a1ebeb1662243af8365c2ca4027d41dd6a68980de2"
+  },
+  "owned_server_closed": true,
+  "preparation": {
+    "status": "PASS",
+    "steps_sha256": "12353188dd17af620bac7a902a4dd46c818ae61c41293be6d47b283a8f25ab5b",
+    "steps_executed": 13,
+    "csp_bypass": false,
+    "candidate_created_outside_clip": true,
+    "method": "Existing Recorder.session(dry_run=True) and Scene; actual UI controls",
+    "actual_browser_version": "154.0.8037.58",
+    "creation_visible_in_short_clip": false
+  },
+  "raw_take": {
+    "file": "source.webm",
+    "sha256": "064c54cdd3d9c041cd295c04b03c099943fed7f920bccbb12813c2a0cf2ecf5a",
+    "bytes": 1828351,
+    "lead_in_s": 0.6409999999996217,
+    "skipped": [],
+    "edited": false,
+    "seconds": 23.56
+  },
+  "source_preservation": {
+    "status": "UNCHANGED",
+    "changed_paths": [],
+    "scope": "Captured src, packs and replay bytes; private/generated paths excluded. Git staging is not a byte change."
+  },
+  "recorder_unchanged": true,
+  "checkout_clean_after": true,
+  "pipeline": {
+    "recording": "Existing demos.prgif.record.record plus demos.prgif.browser.plan URL mode and Scene",
+    "encoding": "Existing python -m demos pr-gif convert --trim-start 14 --max-seconds 20 --max-width 1280 --max-speedup 1",
+    "stock_encoder_first_attempt_passed": true,
+    "custom_driver_or_codec": false
+  },
+  "transformation": {
+    "prefix_trim_seconds": 14.0,
+    "raw_seconds": 23.56,
+    "reason": "Remove startup and case opening; begin with actual selected Save model at100% then show complete Changes comparison",
+    "candidate_preparation": "13 actual UI steps with existing dry-run Scene and normal CSP before the recorded take",
+    "time_speed": 1.0,
+    "tail_cut": false,
+    "startup_or_performance_evidence": false
+  },
+  "gif": {
+    "bytes": 3334560,
+    "width": 1280,
+    "fps": 15,
+    "seconds": 9.56,
+    "speed": 1.0,
+    "tail_cut": false,
+    "attempts": [
+      "15fps/1280px=3334560B"
+    ],
+    "skipped": [],
+    "file": "ide-preview.gif",
+    "height": 800,
+    "actual_seconds": 9.54,
+    "sha256": "9db17b3d693bbc8d75fe31a15d67d63e3eb9abd432ad5d64cc36e49b932d795b"
+  },
+  "manual_frame_review": {
+    "status": "INSPECTED",
+    "raw_sample_seconds": [
+      14,
+      16,
+      18,
+      20,
+      22
+    ],
+    "gif_sample_seconds": [
+      0,
+      8
+    ],
+    "observed": "Readable selected Save model at100%, actual Model-to-Changes navigation, baseline absent Save versus candidate PREVIEW-to-SAVED with Owner role; no UI content replaced",
+    "limitations": "A bounded synthetic reference model; paired full-graph diff and source authoring remain open. Review is not human-value or accessibility evidence."
+  },
+  "post_conversion": {
+    "head": "c666b6bb76905c0c9bd03e81cac0922136c4cf3e",
+    "checkout_clean": true,
+    "temporary_playwright_chrome_processes": 0,
+    "headless_shell_processes": 0,
+    "manual_preview_server_untouched": true
+  },
+  "earlier_attempts_retained": [
+    "take1:784px small overview",
+    "take2:preparation readiness timeout10s",
+    "take3:784px output after preparation",
+    "take4:preflight rejected before server/browser; subsequent checkready; successful take4-retry"
+  ],
+  "normal_csp_proof": "Separate github-ide-preview-2 full20-check recording; not this presentation clip"
+}
