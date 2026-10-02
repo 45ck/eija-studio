@@ -31,13 +31,13 @@ The evidence establishes a serious problem worth tackling, plus heterogeneous AI
 
 All evidence should bind to an exact repository revision or content manifest, model revision, adapter/checker versions and relevant dependency/configuration hashes. Source change makes dependent evidence stale. Reordering harmless input should not. A green result with the wrong subject is a failure.
 
-## One bounded end-to-end acceptance milestone
+## Foundation experiment within full IDE acceptance
 
 Finish one continuous loop on **EIJA's own checkout** before connecting an external repository or broadening the assurance portfolio:
 
 **Connect snapshot → inspect actual structure/domain hypotheses → capture one agent's change → see a semantic explanation with source links and UML → inspect ripple and evidence → accept or reject the proposed model change through the existing owner flow → export and replay a review packet.**
 
-Keep the first milestone finite: one safe change, one consequential unsafe change, one stale-source case and one unsupported-language/construct case. A pair of overlapping worktree changes belongs to the later comparison milestone, unless the integration run explicitly implements and tests that capability. Broader fuzzing/proof expansion should follow a discovered defect or supported feature, not postpone the usable loop indefinitely.
+Start engineering falsification with one safe change, one consequential unsafe change, one stale-source case and one unsupported-language/construct case. This foundation experiment does not close the product release: the complete supported IDE must also pass non-linear navigation, source/editor/review/history, keyboard, feedback and recovery acceptance in the [IDE UX rubric](../engineering/SELF-DOGFOOD-ACCEPTANCE.md#ide-ux-rubric). A pair of overlapping worktree changes belongs to the later comparison milestone, unless the integration run explicitly implements and tests that capability. Broader fuzzing/proof expansion should follow a discovered defect or supported feature, not postpone the usable loop indefinitely.
 
 Acceptance observations:
 
@@ -55,7 +55,7 @@ Acceptance observations:
 | Usable UI | Real ordinary browser-to-server journey, source navigation, keyboard alternative to diagram gestures, and actionable refusal. Bridged component tests alone are not relabelled browser E2E. |
 | Portability | A fresh workspace can replay the packet against its declared snapshot and reproduce the deterministic results. |
 
-Block this milestone on data loss, false evidence attribution, an undetected declared critical fixture, broken safe path, or inability to complete the chosen real-repo journey. Noncritical unsupported features get an explicit limitation and backlog entry. Do not hold this milestone hostage to proving all software.
+Block the foundation experiment on data loss, false evidence attribution, an undetected declared critical fixture, broken safe path or inability to complete the chosen real-repo journey. Unsupported semantics must be explicit. Separately block the WOW/POC release on consequential UX defects or an incomplete supported IDE experience; a thin passing loop cannot substitute for that acceptance. Universal verification remains a separate ambition.
 
 ## Repository selection and the meaning of generality
 
@@ -123,7 +123,7 @@ Use the pilot to estimate variability, task difficulty, ceiling/floor effects, o
 
 ## Practical stop/continue decisions
 
-Ship an engineering preview once the bounded real-repo E2E loop and its required controls pass, with explicit adapter and assurance limits. That demonstrates functioning software.
+Ship the supported engineering preview once the bounded real-repo E2E loop, its required controls and the complete supported IDE engineering/UX acceptance pass, with explicit adapter and assurance limits. A foundation experiment can be published earlier as scoped progress, but does not establish that release readiness.
 
 Continue investing in the product hypothesis if the human pilot shows engineers can correctly explain changes, catch consequential defects and use the flow without excessive setup or interruption. If EIJA merely produces attractive diagrams, raises confidence without accuracy, misses dynamic paths while implying completeness, or consumes the time it purports to save, fix that observed problem before adding another proof backend.
 

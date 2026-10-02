@@ -1,18 +1,22 @@
-# Definition of done: the end-to-end proof of concept
+# Definition of done: IDE proof of concept and feasibility
 
-## Current scope update: 2 October 2026
+## Current scope: 2 October 2026
 
-The next acceptance milestone is the **EIJA self-dogfood workbench** for UML-literate engineers using coding agents. Connect EIJA's own checkout read-only, inspect supported tracked Python and annotated UI links, navigate the domain tree, and exercise server-checked SVG model edits with honest repository-impact and evidence views. The MCP read surface supplies pack context, affordances, edit checks and repository impact. See [SELF-DOGFOOD-ACCEPTANCE.md](SELF-DOGFOOD-ACCEPTANCE.md) for required observations, milestone status and the current run record.
+Deliver a **complete, polished, non-linear EIJA IDE for UML-literate engineers using AI**, first connected to EIJA's own checkout. The concept is demonstrated when engineers can freely explore domain concepts, edit supported models, follow source, inspect agent changes, review impact/evidence, revisit history and recover from refused or stale edits. A wizard, disconnected shell or filmed happy path does not close this goal.
 
-This milestone does not transform arbitrary source code, complete every deferred formal backend, or establish improved human comprehension. External application connections follow EIJA's acceptance; live model validation and the engineer study remain NOT_RUN until their own records exist. The release-source review condition must stay visible.
+The **proof of concept (POC)** makes that working experience tangible; the **proof of feasibility (POF)** lets another engineer reproduce setup, use and scoped evidence from a clean checkout. The WOW walkthrough, focused clips and README visuals are captured from the verified product. See the [mission and readiness criteria](MISSION.md#prototype-readiness) and [self-dogfood engineering/UX acceptance](SELF-DOGFOOD-ACCEPTANCE.md).
+
+The integration preview contains a configured read-only EIJA repository connection, supported tracked Python and annotated UI extraction, a domain tree, server-checked model editors and repository-impact views. Agent reads include pack context, affordances and dry-run edit/impact checks. The [dated browser evidence](2026-10-02-IDE-SELF-DOGFOOD.md) records the exercised subset and remaining defects; it does not establish full acceptance. Clean-checkout replay and the final combined engineering/UX record remain separate requirements.
+
+Repository intake, structural facts, behavior bindings and verified properties have separate coverage. Initial model editing changes the supported candidate, not connected repository source. External applications follow EIJA acceptance. Live model validation and the engineer study remain NOT_RUN; no novelty, superiority or universal code generation is claimed. Keep source-review status explicit and complete the maintainer gate legitimately before claiming trusted verification/apply.
 
 ## Historical H1a definition: 29 September 2026
 
-The criteria and exclusions below preserve the earlier excursion-only H1a plan. In particular, the former workbench/diagram-editing exclusions are superseded for the current self-dogfood milestone above. They are not evidence that either milestone has passed.
+The criteria and exclusions below preserve the earlier excursion-only H1a plan. In particular, the former workbench/diagram-editing exclusions are superseded for the current self-dogfood milestone above. They are not evidence that either milestone has passed. Use the mission and current acceptance contract above for the release goal; the old exclusions do not reduce the full IDE or UX requirement.
 
 The POC is done when a stranger can clone the repository, run it on their machine, and watch an AI agent's change to a business rule be reviewed **by meaning**, with generated diagrams, formal evidence (UNKNOWN visible) and a human decision. It is deliberately the "H1a" slice of [the ship horizons](LANE-MAP.md): a bounded domain (the excursion workflow), not yet arbitrary repositories. See [the product thesis](PRODUCT-THESIS.md) for why.
 
-## Acceptance criteria
+### Historical acceptance criteria
 
 | # | Criterion | Evidence that closes it | Needs |
 |---|---|---|---|
@@ -25,14 +29,14 @@ The POC is done when a stranger can clone the repository, run it on their machin
 | 7 | **Gates green on main.** ruff, mypy (linux and win32), architecture, complexity, dependencies, ADR index, tests. | `nox -t full` output | quality lane |
 | 8 | **Honest README.** Every claim links to evidence or is marked planned; a 60 second recording of the flow; ADR list and OSS register visible. | link check; README claims audit | oss lane, demos re-record |
 
-## Explicitly out of scope for the POC
+### Historical exclusions
 
 Reviewing changes to an arbitrary repository (needs the `weave` compiler), the redesigned IDE workbench, drag-and-drop UML editing, design-pattern views, image generation, multi-user or hosted operation. These are the next horizons, not omissions.
 
-## Owner-only steps
+### Historical owner steps
 
 Restamping the release fixture; supplying API keys; consenting to live provider spend; approving publication (tag, README, recording).
 
-## Status
+### Historical status
 
 Tracked in the pull request list and the lane map, not here, so this file does not go stale.

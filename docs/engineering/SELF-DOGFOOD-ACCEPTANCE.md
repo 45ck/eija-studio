@@ -11,7 +11,7 @@ The intended result is a **complete, polished, non-linear IDE experience across 
 | Existing model foundations | Pack-driven workflow/kernel, typed transactions and affordances, generated views, repository index/impact and computed evidence mechanisms | Present in the inspected integration checkout. This is source inspection, not proof that the combined tree passes. |
 | Source-connected foundations | Configured read-only EIJA connection; tracked Python/annotated UI coverage; domain tree; source/impact views; server-checked SVG model editor; agent read surfaces | **PENDING_INTEGRATION**. Functional evidence for these foundations does not alone close the IDE release goal. |
 | Complete supported IDE and UX | Non-linear explorer/editors/source navigation, agent changes, review/evidence/history, keyboard control, clear feedback and recoverable edits | **PENDING_ACCEPTANCE**. Close only when integrated engineering and UX journeys below pass; do not infer this from foundation test totals. |
-| Integrated engineering acceptance | Current-tree targeted tests, meaningful negative controls, ordinary browser-to-server checks and applicable local gates | **NOT_RUN** in this document. Stage-specific tests or earlier gate totals do not close it. |
+| Integrated engineering acceptance | Current-tree targeted tests, meaningful negative controls, ordinary browser-to-server checks and applicable local gates | **PARTIAL; see the dated run record.** Final combined engineering and UX acceptance remains open. Stage-specific tests or earlier gate totals do not close it. |
 | Live model pilot | A real selected agent uses the supported interface on the declared EIJA task, with versions, inputs, costs and outcomes retained | **NOT_RUN**. Mocked providers and synthetic MCP calls are engineering evidence only. |
 | Human comprehension validation | UML-literate engineers make scored review decisions using a predeclared comparison and independent oracle | **NOT_RUN**. Acknowledgements, recordings and generated explanations do not measure comprehension. |
 | External adoption and held-out generality | Owner-selected external repository followed by an evaluator-selected held-out case after the relevant adapter freezes | **NOT_RUN; later milestone**. EIJA is not held-out evidence for itself. |
@@ -29,7 +29,7 @@ This numbered sequence is a baseline test journey, not the product's navigation 
 5. Let an agent inspect the same facts through read-only pack context, affordances, `edit_check` and `repository_impact`. The final exact tool names and argument schemas are defined in the [agent contract](../agents/contract.md), not duplicated here.
 6. Preserve the existing separation between an untrusted proposal, owner meaning selection and owner approval/apply. A read or dry run grants no authority. Agents do not operate owner-only endpoints or use a test principal as a real owner's approval.
 
-The two existing domain packs remain regression fixtures for the model contract. Running both exercises pack variation; it is not equivalent to connecting two external applications.
+The two existing domain packs remain regression fixtures for the model contract. Running both exercises pack variation; it is not equivalent to connecting two external applications. Every future pack must add variation checks against the same typed contract.
 
 ## Integrated IDE contract
 
