@@ -1,5 +1,7 @@
 # Full IDE / HCI status and traceability
 
+**Rules and impact review follow-up:** [eight desktop checks and two separate 320-width reflow checks](2026-10-03-RULES-REVIEW.md) add scoped current-subject, navigation and keyboard evidence for H04/H07/H08/H09. The record retains the original failures and repairs, passing fast gates and a new HCI FAIL (15 PASS, one GAP, two FAIL). Earlier checkpoints below keep their original subjects and outcomes; no complete story or human-validation acceptance is implied.
+
 **3 October update:** the [new review checkpoint](2026-10-03-CODE-REVIEW-VALIDATION.md) records paired-model comparison, immutable Code review, navigation and source-freshness observations, their exact subjects and remaining acceptance work. The ledger below preserves the earlier `c666b6b` checkpoint and its original figures.
 
 **2 October 2026 — scoped implementation checkpoint; full product acceptance OPEN.** The user's bar is a polished, non-linear workspace where UML-literate engineers using AI can understand a change, inspect exact source/evidence and recover safely, with reproducible GitHub proof. It is more than a passing recorded route. Current source navigation is **read-only**; source-code authoring and general agent-factory operation are not implemented here. Comparative comprehension benefit remains unmeasured.
