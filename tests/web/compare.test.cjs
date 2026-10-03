@@ -755,12 +755,12 @@ test("quiet comparison diagrams retain exact names, initial markers, status mean
         assert.equal(name.textContent,isState ? item.id : item.action,"full visible names remain exact");
         assert.ok(group.attributes["aria-label"].includes(words[item.status]),"accessible status remains explicit");
         const status = group.children.filter(child=>child.attributes.class?.includes("compare-status-label"));
-        if(item.status==="unchanged") assert.ok(status.every(child=>!child.textContent.includes("Unchanged")),"unchanged badges no longer repeat in the diagram");
+        if(item.status==="unchanged"&&!item.initial) assert.ok(status.every(child=>!child.textContent.includes("Unchanged")),"ordinary unchanged badges no longer repeat in the diagram");
         else assert.ok(status.some(child=>child.textContent.includes(words[item.status])),"changed status has a visible word, not only color");
         if(isState) {
           const initial = group.children.filter(child=>child.attributes.class?.includes("compare-initial-label"));
           assert.equal(initial.length,item.initial ? 1 : 0,"visible initial marker matches this snapshot");
-          if(item.initial) assert.match(initial[0].textContent,/Initial/);
+          if(item.initial) assert.equal(initial[0].textContent,`● Initial · ${item.status==="unchanged" ? "= Unchanged" : item.status==="added" ? "+ Added" : "− Removed"}`);
         } else {
           assert.equal(group.attributes["data-source"],item.from_state);assert.equal(group.attributes["data-target"],item.to_state);
         }

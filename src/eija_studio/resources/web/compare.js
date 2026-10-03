@@ -225,7 +225,7 @@ const EijaCompare = (() => {
   function drawNode(s, board, node) {
     const item = s.layout.inventory.items.find(value => value.key === `state:${node.id}`), group = svg("g", {class: `compare-node ${node.status}`, "data-state": node.id,
       "data-eija-id": `state:${node.id}`, "data-initial": node.initial, "data-status": node.status, "aria-label": `${node.id}, ${statusLabel[node.status]}${node.initial ? ", initial state" : ""}`});
-    const label = [node.initial ? "● Initial" : "", node.status !== "unchanged" ? statusLabel[node.status] : ""].filter(Boolean).join(" · ");
+    const label = [node.initial ? "● Initial" : "", node.initial || node.status !== "unchanged" ? statusLabel[node.status] : ""].filter(Boolean).join(" · ");
     group.append(svg("rect", {x: node.x, y: node.y, width: node.width, height: node.height, rx: 12, class: "compare-state-box"}),
       svg("text", {x: node.x + 12, y: node.y + (label ? 29 : 44), class: "compare-state-label"}, node.id));
     if (label) group.append(svg("text", {x: node.x + 12, y: node.y + 54, class: `compare-status-label${node.initial ? " compare-initial-label" : ""}`}, label));
