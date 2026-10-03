@@ -29,11 +29,11 @@ lint = [
 formal = []
 testing = []
 mutation = []
-metrics = []
+metrics = ["eija-studio[lint]", "grimp==3.17"]  # radon and coverage pins live once, in the lint extra
 hci = ["playwright==1.63.0", "axe-playwright-python==0.1.8"]  # drives the installed Chrome (channel="chrome"); no browser download
 agents = ["mcp==2.2.0", "anyio==4.15.1"]
-providers = ["psutil==7.2.2"]  # process-tree kill for agent CLIs; adapters degrade to taskkill/killpg without it
 docs = []
+providers = ["psutil==7.2.2"]  # process-tree kill for agent CLIs; adapters degrade to taskkill/killpg without it
 visual = ["playwright==1.63.0", "pydot==4.0.1"]
 demos = ["playwright==1.63.0"]  # drives the installed system Chrome; no browser download
 ux = []
@@ -53,8 +53,8 @@ eija_studio = ["resources/**/*", "resources/*.json"]
 [tool.pytest.ini_options]
 pythonpath = ["src", "."]  # "." so tests can import repo-root tooling packages (quality, demos)
 testpaths = ["tests"]
-addopts = "-ra"  # tests/conftest.py keeps pytest temp dirs inside the checkout (slow system temp)
-markers = ["browser: drives a real browser or renderer; skipped (NOT_RUN) unless EIJA_BROWSER_TESTS=1, run by the release session diagrams_syntax"]
+addopts = "-ra -m 'not slow and not timing'"  # tests/conftest.py keeps pytest temp dirs inside the checkout (slow system temp)
+markers = ["slow: starts a real server or a nested pytest; excluded from the default run, run by `nox -s metrics` (`-m slow`)", "timing: asserts on wall-clock measurements and can flake on a busy machine; excluded from the default run", "browser: drives a real browser or renderer; skipped (NOT_RUN) unless EIJA_BROWSER_TESTS=1, run by the release session diagrams_syntax"]
 
 [tool.ruff]
 target-version = "py311"
@@ -94,7 +94,6 @@ known-first-party = ["eija_studio", "quality", "verification"]
 "design/**/*.py" = ["E501"]
 "**/__main__.py" = ["T201"]  # command-line entry points print by design
 # Per-file debt in kernel sources (each names the finding so a fix removes exactly one entry).
-"src/eija_studio/adapters/providers/process.py" = ["S603"]  # subprocess.Popen/run with an argv list and no shell; argv is a resolved executable plus adapter constants
 "src/eija_studio/adapters/sqlite_store.py" = ["S608"]  # false positive: table name comes from a closed literal tuple
 "src/eija_studio/application/service.py" = ["UP017", "RUF001", "RUF005"]
 "src/eija_studio/application/verifier.py" = ["UP017", "PLW2901"]
@@ -103,9 +102,11 @@ known-first-party = ["eija_studio", "quality", "verification"]
 "src/eija_studio/interfaces/cli.py" = ["T201", "PLC0415", "F401"]  # a CLI prints; 3 unused imports are debt
 # Gate sessions shell out to fixed tool argv lists by design.
 "quality/sessions/*.py" = ["S603"]
+"quality/metrics/*.py" = ["S603", "S607"]  # measurement tools run git, pytest and coverage with fixed argv lists, no shell
 "quality/gates/*.py" = ["T201"]  # command-line tools that report on stdout
 "quality/sessions/quality.py" = ["T201"]  # NOT_RUN banner
 "tests/test_quality_gates.py" = ["S603"]  # runs lint-imports with a fixed argv
+"src/eija_studio/adapters/providers/process.py" = ["S603"]  # subprocess.Popen/run with an argv list and no shell; argv is a resolved executable plus adapter constants
 
 [tool.ruff.format]
 # Applied only to files this lane owns (quality/gates, quality/sessions/quality.py); see docs/quality/gates.md.

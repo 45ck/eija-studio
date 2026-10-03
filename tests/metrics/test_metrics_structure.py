@@ -1,0 +1,88 @@
+import ast
+import copy
+
+import pytest
+
+from quality.metrics import budgets, structure
+from quality.metrics.common import FAIL, PASS
+
+
+def parse_class(src: str) -> ast.ClassDef:
+    return next(n for n in ast.walk(ast.parse(src)) if isinstance(n, ast.ClassDef))
+
+
+@pytest.mark.parametrize("src,expected", [
+    ("class P(Protocol):\n    def f(self): ...", True),
+    ("class P(typing.Protocol[T]):\n    pass", True),
+    ("class A(ABC):\n    pass", True),
+    ("class A(metaclass=ABCMeta):\n    pass", True),
+    ("class A:\n    @abstractmethod\n    def f(self): ...", True),
+    ("class A:\n    @abc.abstractmethod\n    def f(self): ...", True),
+    ("class C:\n    def f(self): ...", False),
+    ("class M(BaseModel):\n    x: int", False),
+])
+def test_is_abstract_classification(src, expected):
+    assert structure.is_abstract(parse_class(src)) is expected
+
+
+def test_martin_formulas_on_known_values():
+    assert structure.instability(3, 1) == 0.25 and structure.instability(0, 5) == 1.0
+    assert structure.instability(0, 0) is None  # isolated: undefined, never silently 0
+    assert structure.abstractness(4, 1) == 0.25 and structure.abstractness(0, 0) == 0.0
+    assert structure.distance(0.0, 1.0) == 0.0  # on the main sequence
+    assert structure.distance(0.0, 0.0) == 1.0  # stable and concrete: maximum distance
+    assert structure.distance(None, 0.5) is None
+
+
+def test_zones_name_the_regions():
+    assert structure.zone(0.0, 0.0).startswith("zone of pain")
+    assert structure.zone(1.0, 1.0).startswith("zone of uselessness")
+    assert structure.zone(0.5, 0.5) == "main sequence"
+    assert structure.zone(None, 0.0) == "undefined"
+
+
+def test_cycle_detection_finds_a_cycle_and_accepts_a_dag():
+    assert structure.cycles({"a": {"b"}, "b": {"c"}, "c": {"a"}, "d": {"a"}}) == [["a", "b", "c"]]
+    assert structure.cycles({"a": {"b"}, "b": {"c"}, "c": set()}) == []
+
+
+def test_sdp_violation_is_reported_only_against_the_stability_gradient():
+    inst = {"stable": 0.1, "flaky": 0.9}
+    down = [{"from": "flaky", "to": "stable", "imports": 1}]
+    up = [{"from": "stable", "to": "flaky", "imports": 1}]
+    assert structure.sdp_violations(down, inst) == []
+    assert structure.sdp_violations(up, inst)[0]["to"] == "flaky"
+
+
+@pytest.fixture(scope="module")
+def martin():
+    return structure.collect()
+
+
+def test_real_tree_layers_and_direction(martin):
+    layers = {r["name"]: r for r in martin["layers"]}
+    assert {"domain", "application", "adapters", "interfaces", "bootstrap"} <= set(layers)
+    assert layers["domain"]["ce"] == 0 and layers["domain"]["instability"] == 0.0
+    assert layers["application"]["abstract_classes"] >= 1  # the ports
+    assert martin["summary"]["layer_cycles"] == [] and martin["summary"]["module_cycles"] == []
+
+
+def test_structural_collection_is_deterministic(martin):
+    assert structure.collect() == martin
+
+
+def test_architecture_budgets_pass_on_the_real_tree(martin):
+    doc = {"sections": {"martin": martin}}
+    results = {r["id"]: r for r in budgets.evaluate(doc) if r["section"] == "martin"}
+    assert all(r["status"] == PASS for r in results.values()), results
+
+
+def test_budget_negative_controls_fail_when_the_property_is_broken(martin):
+    """Corrupt a copy of the measurement: the budgets must notice (they are not tautologies)."""
+    bad = copy.deepcopy(martin)
+    next(r for r in bad["layers"] if r["name"] == "domain").update(ce=2, instability=0.5)
+    bad["summary"]["layer_cycles"] = [["domain", "adapters"]]
+    bad["summary"]["sdp_violations"] = [{"from": "domain", "to": "adapters"}]
+    results = {r["id"]: r["status"] for r in budgets.evaluate({"sections": {"martin": bad}})}
+    assert results["ARCH-01"] == FAIL and results["ARCH-03"] == FAIL
+    assert results["ARCH-04"] == FAIL and results["ARCH-05"] == FAIL
