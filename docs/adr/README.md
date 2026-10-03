@@ -18,15 +18,52 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0024](0024-sandboxed-frame-for-mermaid-rendering.md) | Render Mermaid in a sandboxed frame so the Studio page keeps its strict CSP | accepted |
 | [0025](0025-bend-machine-checked-laws.md) | Machine-check protected authority laws with Bend 2 in a pinned container | proposed |
 | [0026](0026-bend-model-generation-controls-conformance.md) | The Bend model is generated from the Workflow; negative controls and conformance accompany every proof | proposed |
-| [0029](0029-z3-policy-soundness-proof.md) | Z3 proof that the protected policy admits only authority-preserving candidates | accepted |
-| [0030](0030-bounded-model-checking-of-the-real-runtime.md) | Bounded model checking by explicit-state search over the real runtime | accepted |
+| [0027](0027-tla-plus-specification-and-model-checking.md) | TLA+ specification of the workflow and commit protocol, checked with TLC | accepted |
+| [0028](0028-runtime-conformance-by-graph-comparison-and-trace-validation.md) | Model-to-code conformance by exhaustive graph comparison and TLC trace validation | accepted |
+| [0029](0029-z3-policy-soundness-proof.md) | Z3 proof that the protected policy admits only authority-preserving candidates | proposed |
+| [0030](0030-bounded-model-checking-of-the-real-runtime.md) | Bounded model checking by explicit-state search over the real runtime | proposed |
+| [0031](0031-property-based-testing-with-hypothesis.md) | Property-based testing with Hypothesis, in two profiles | accepted |
+| [0032](0032-stateful-differential-testing-and-negative-controls.md) | Stateful differential testing against a specification-derived reference, with mutant negative controls | accepted |
+| [0033](0033-mutation-tool-selection.md) | Mutation analysis with cosmic-ray, run natively on Windows | accepted |
+| [0034](0034-mutation-measurement-and-ratchet.md) | What is mutated, how a score is defined, and the ratchet | accepted |
 | [0035](0035-static-analysis-and-architecture-fitness-functions.md) | Static analysis, architecture fitness functions and ratcheted budgets | accepted |
 | [0036](0036-noslop-hooks-adapted-to-nox.md) | noslop guardrails adapted to run nox tiers; hook enablement is an explicit step | accepted |
+| [0037](0037-metrics-and-quantitative-models.md) | Measure design, performance and scaling with radon, grimp and coverage.py, and fit models rather than assert them | accepted |
+| [0038](0038-metric-budgets-as-tests.md) | Metric budgets are tests with a stated basis, and timing budgets are advisory in the full gate | accepted |
 | [0039](0039-hci-law-instrumentation.md) | Apply HCI laws to the Studio UI with Playwright, axe-core and pure formula modules | accepted |
 | [0040](0040-hci-budgets-as-ratchets-and-harness-identity.md) | HCI budgets are ratchets, browser tests are opt-in, and the journey runs under the harness identity | accepted |
 | [0041](0041-mcp-server-agent-surface.md) | MCP server as the agent surface: propose and check, never decide | accepted |
+| [0043](0043-readme-truthfulness-and-docs-site.md) | The README is verifiable: generated diagrams, dated status, MkDocs Material docs site | proposed |
+| [0044](0044-bundle-authored-domain-packs.md) | Bundle authored domain packs during distribution builds | proposed |
+| [0045](0045-okf-knowledge-base-linked-to-code.md) | An OKF v0.2 knowledge base deterministically linked to code | proposed |
+| [0046](0046-code-link-hash-methods-and-stale-semantics.md) | Code-link hash methods and STALE semantics | proposed |
 | [0047](0047-hardcoded-scripted-demos-not-demo-machine.md) | Hand-authored scripted demo recordings, not demo-machine | accepted |
 | [0048](0048-scenario-dependency-gating.md) | Demo scenarios are gated by their real dependencies, never faked | accepted |
+| [0057](0057-hci-ia-navigation.md) | Information architecture, navigation and command palette: three destinations, a stable frame, one palette, hash deep links | proposed |
+| [0058](0058-hci-layout-model.md) | Screen layout model: five persistent regions, derived widths, no page scroll | proposed |
+| [0059](0059-hci-color-system.md) | Colour system: OKLCH role tokens, redundant status coding, diff and categorical colour for the Studio | proposed |
+| [0060](0060-hci-typography.md) | Typography: families, scale, weights and the monospace rule for the Studio | proposed |
+| [0061](0061-hci-canvas-uml.md) | Canvas and drag-and-drop UML editing as typed transactions on a generated picture | proposed. **Owner decision point:** D-lite |
+| [0062](0062-hci-language-ddd-tree.md) | Ubiquitous-language and DDD tree as the navigation spine, with typed edits and a tiered rename ripple | proposed |
+| [0063](0063-hci-evidence-change-review.md) | Review an agent's change by meaning: operation list, ripple strip and an evidence rail with four-slot coverage | proposed |
+| [0064](0064-hci-ai-interaction.md) | AI and agent interaction: proposal cards, delegation fence, isolated owner controls | proposed |
+| [0065](0065-hci-content-onboarding.md) | Content, microcopy and sample-first onboarding for the Studio | proposed |
+| [0066](0066-hci-motion-performance.md) | Motion, feedback and performance budgets with authority-honest optimism | proposed |
+| [0067](0067-hci-accessibility.md) | Accessibility architecture | proposed |
+| [0068](0068-hci-design-system-architecture.md) | Design system architecture: DTCG tokens with a small generator, layered CSS, native-first components, measured budgets and ADR-gated change | proposed |
+| [0089](0089-weave-metamodel-identity.md) | Weave metamodel and identity: a closed typed metamodel, canonical ids, an RFC 8785 subset and sorted-record hashing | proposed |
+| [0091](0091-weave-storage-query.md) | Storage and query: git files are the truth, a disposable SQLite index answers named queries | proposed |
+| [0093](0093-weave-consistency-sync.md) | Consistency and synchronisation between views: one source per fact, one-way generation, keyed merge | proposed |
+| [0095](0095-weave-lint-compile-rules.md) | The weave compiler and lint rules: violation queries over a typed graph, SARIF diagnostics, expiring suppressions | proposed |
+| [0097](0097-weave-impact-ranking-math.md) | Impact, ranking and evidence-status mathematics: fixed points, integer relevance, greedy selection, count vectors, and no confidence percentage | proposed |
+| [0099](0099-weave-agent-interface.md) | Agent interface: typed read tools, deterministic context packs, pure dry runs, a small link checker and hash-chained replay | proposed |
+| [0102](0102-weave-formal-verification-of-weave.md) | Formal verification of the weave: a small trusted kernel, certificates, exhaustive small scope, Alloy for bounded statements, and drift guards | proposed |
+| [0105](0105-weave-human-views.md) | Human views: eight task-driven, budgeted, deterministic projections of the weave graph, with counts that compose and no whole-graph picture | proposed |
+| [0145](0145-per-kind-evidence-admissibility.md) | Per-kind admissibility: the kernel recomputes formal evidence from raw artifacts | proposed |
+| [0146](0146-formal-receipt-formats-binding-and-not-run.md) | Formal receipt formats, binding to the subject, and NOT_RUN semantics | proposed |
+| [0147](0147-source-connected-self-dogfood.md) | Source-connected self-dogfooding with explicit coverage | accepted for the local development slice |
+| [0148](0148-semantic-history-by-replay.md) | Semantic undo and redo by replaying existing typed commands | accepted for the local owner workbench |
+| [0149](0149-read-only-edit-preview.md) | Preview a semantic edit from one captured case revision | accepted for the local owner workbench |
 <!-- adr-index:end -->
 
 ## Reserved numbers for capability lanes
@@ -56,3 +93,4 @@ Reserving numbers stops parallel lanes from colliding. A lane that needs more re
 | 0057–0088 | HCI-ADRs: research-grounded UI/UX decisions (`ux`, `studio-ux`) |
 | 0089–0112 | Weave: deterministic linked graph, compiler and linter (`weave`) |
 | 0113–0136 | Definition of done, claims ledger, scorecard and evals (`dod`) |
+| 0147–0149 | Integration: source-connected review, semantic history and edit preview (`integration`) |

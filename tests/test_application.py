@@ -4,7 +4,8 @@ from eija_studio.bootstrap import build_studio
 from eija_studio.domain.models import OWNER, AGENT, DomainError, SemanticTransaction, LayoutChange, fingerprint
 from eija_studio.domain.change_case import ChangeCase
 from eija_studio.application.compiler import compile_case
-from conftest import approve
+from kernel_support import approve, reject_from
+from eija_studio.domain.transactions import parse_transaction
 
 
 def test_agent_cannot_choose_meaning_or_approve(studio,selected):
@@ -39,7 +40,7 @@ def test_verifier_produces_125_observations_and_human_unknown(studio,verified):
 def test_live_candidate_edit_invalidates_immutable_receipt_and_decision(studio,verified):
     before=json.dumps(verified["receipts"],sort_keys=True)
     c=approve(studio,verified)
-    c=studio.edit(c["id"],c["version"],SemanticTransaction(kind="set_rejection_source",rejection_source="Submitted"),OWNER)
+    c=studio.edit(c["id"],c["version"],reject_from("Submitted"),OWNER)
     assert json.dumps(c["receipts"],sort_keys=True)==before
     assert c["decision"] is None
     assert studio.view(c["id"])["packet"]["technical_claims"]["runtime_matrix"]=="STALE"
@@ -57,8 +58,8 @@ def test_layout_keeps_domain_evidence_but_clears_exact_decision(studio,verified)
 
 
 def test_same_transaction_from_two_views_same_hash(studio,selected):
-    tx1=SemanticTransaction.model_validate({"kind":"set_rejection_source","rejection_source":"Submitted"})
-    tx2=SemanticTransaction.model_validate({"rejection_source":"Submitted","kind":"set_rejection_source"})
+    tx1=parse_transaction({"kind":"retarget_transition","transition":"TR-REJECT","end":"source","state":"Submitted"})
+    tx2=parse_transaction({"state":"Submitted","end":"source","transition":"TR-REJECT","kind":"retarget_transition"})
     from eija_studio.domain.policy import apply_transaction
     case=ChangeCase.model_validate(selected)
     assert apply_transaction(case.candidate,tx1).semantic_hash==apply_transaction(case.candidate,tx2).semantic_hash

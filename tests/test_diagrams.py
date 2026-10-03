@@ -427,7 +427,7 @@ class SpyUnitOfWork:
     def event(self, kind, body):
         self.calls.append("event")
 
-    def enqueue(self, case_id, operation_id, effect):
+    def enqueue(self, case_id, operation_id, effect, recipient):
         self.calls.append("enqueue")
 
     def record_operation(self, operation_id, binding, result):

@@ -60,7 +60,7 @@ def test_unknown_durability_profile_is_rejected(tmp_path):
 
 def test_production_wiring_uses_measured_identity(tmp_path):
     studio = build_studio(tmp_path / "workspace")
-    assert studio.identity_provider is identity_adapter.identity
+    assert studio.identity_provider.func is identity_adapter.identity  # bound to the studio's pack
     assert "identity_source" not in studio.identity_provider()
 
 

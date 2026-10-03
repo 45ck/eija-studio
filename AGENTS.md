@@ -1,6 +1,6 @@
 # EIJA repository agent instructions
 
-Read README.md, docs/TECHNICAL_LEAD_REVIEW.md, docs/SECURITY_AND_TRUST.md and the acceptance matrix before proposing changes. Follow [the mission](docs/engineering/MISSION.md): a complete, polished, non-linear code/model IDE for UML-literate engineers using AI, with a WOW demonstration and reproducible GitHub proof of concept and feasibility. Main currently contains the local excursion-kernel foundations; the source-connected IDE is in development. The first repository acceptance target is EIJA itself, connected read-only before external projects. Use [self-dogfood acceptance](docs/engineering/SELF-DOGFOOD-ACCEPTANCE.md) for engineering and UX criteria. Keep repository intake, structural facts, behavior bindings and verified properties distinct; do not claim universal correctness or measured human benefit. Historical v0.2 results do not establish current IDE readiness.
+Read README.md, docs/TECHNICAL_LEAD_REVIEW.md, docs/SECURITY_AND_TRUST.md and the acceptance matrix before proposing changes. Follow [the mission](docs/engineering/MISSION.md): build a complete, polished, non-linear local code/model IDE for UML-literate engineers using AI, with explicit supported semantics, a WOW demonstration and reproducible GitHub proof of concept and feasibility. The current acceptance target is EIJA's own checkout; connect it read-only before extending to external repositories. Read docs/engineering/SELF-DOGFOOD-ACCEPTANCE.md for the engineering and full IDE UX acceptance bar, and keep repository intake, extracted structure, behavior bindings and verified properties distinct. The dated v0.2 reviews remain historical evidence, not current integration results.
 
 Work through typed SemanticTransaction / Workflow contracts. Do not create parallel rule/state/journey sources. AI proposals are untrusted; they cannot choose meaning, mint receipts, approve, apply, or change protected policy merely to pass a task.
 
@@ -15,6 +15,9 @@ Keep original evidence and document counterexamples. Do not claim a mocked provi
 Before recommending updated Codex/OpenRouter parameters, check current official documentation and record the tested CLI/model versions. No remote publishing, deployment, paid loops, migration or key handling without explicit authorisation.
 
 For agent onboarding and what an agent may or may not do over MCP, see `docs/agents/contract.md` and `docs/agents/quickstart.md` (`eija mcp`).
+## Knowledge base (start retrieval here)
+
+Start retrieval at [okf/index.md](okf/index.md): an [OKF v0.2](https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/main/SPEC.md) wiki of the ubiquitous language, bounded contexts, modules, public symbols, ADRs, acceptance criteria, verification techniques, gates and lanes. Every page has a `repo://` `resource` and hashes of the code it describes, so open the page, then the linked source. Do not hand-edit frontmatter or `okf:generated` blocks; write prose under `## Notes`. After adding a public domain/application symbol, ADR, nox session or lane, or changing a linked source, run `python -m quality.okf sync` and commit the resulting `okf/` changes in the same PR (or leave one sync commit to the integrating lane). `nox -s okf` (full/release tiers) reports STALE pages (source changed since the page was baselined) and NOTES_STALE pages (hand-written Notes not re-read since): read them, fix the Notes, then `python -m quality.okf review`. Never record `verified` without reading the page, and agents use `--by process:<id>`, never `human:<id>`. The fast tier runs only `nox -s okf_structure`. See [docs/knowledge-base.md](docs/knowledge-base.md).
 
 ## Capability lanes (parallel development)
 
@@ -26,6 +29,7 @@ Work is split into lanes. Each lane has a GitHub issue, a branch `lane/<name>`, 
 - **Missing prerequisites report `NOT_RUN`**, never `PASS` (Java, Docker/WSL, Chromium, a vendor CLI login).
 - **Dependencies** go in the lane's extra in `pyproject.toml`, pinned `==`.
 - **Line endings are LF.** On Windows, write files with `newline="\n"`.
+- **Keep the wiki in step.** If your change adds a public domain/application symbol, an ADR, a nox session or a lane, or moves a linked source, run `python -m quality.okf sync`, review the pages it lists, and commit `okf/` in the same PR (`nox -s okf`, tags full and release).
 - **Stay off the shared hot spots.** Don't reformat unrelated files, don't rename kernel symbols, don't restamp `trusted_build.json`. Kernel changes need a regression test and an ADR.
 - **Heavy commands run serially.** The reference PC has 16 GB RAM, and D: is a slow HDD, so keep temp data in the checkout.
 - **Quality gates** ([docs/quality/gates.md](docs/quality/gates.md), ADR-0035/0036): run `nox -t fast` before committing and `nox -t full` before a PR. Never bypass hooks (`--no-verify`). Thresholds only tighten: fix the code or shrink the named debt; do not add ignores, raise budgets or lower `fail_under` to get green. `pip install -e ".[dev,lint]"` provides the tools.

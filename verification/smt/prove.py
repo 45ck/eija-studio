@@ -1,7 +1,6 @@
 """Z3 proofs, accepted-set enumeration, leave-one-out negative controls and the evidence report."""
 from __future__ import annotations
 
-import json
 import time
 from dataclasses import dataclass
 from importlib.metadata import version
@@ -10,9 +9,10 @@ from typing import Any
 
 import z3
 
-from eija_studio.domain.models import SemanticTransaction, Transition, Workflow
-from eija_studio.domain.policy import apply_transaction, baseline, check_policy
-from verification.formal_report import kernel_subject, platform_info
+from eija_studio.domain.models import Transition, Workflow
+from eija_studio.domain.policy import baseline, check_policy
+from verification.excursion_pack import candidate as excursion_candidate
+from verification.formal_report import dumps, kernel_subject, platform_info
 
 from . import differential as D
 from . import encoding as E
@@ -51,7 +51,16 @@ LIMITATIONS = (
 
 
 def subject() -> dict[str, Any]:
-    return kernel_subject("domain/models.py", "domain/policy.py", function="eija_studio.domain.policy.check_policy")
+    return kernel_subject("domain/models.py", "domain/policy.py", function="eija_studio.domain.policy.check_policy",
+                          plain_modules=("domain/models.py",))  # models.py annotations are pydantic fields: they are behaviour
+
+
+def snapshot_subject() -> dict[str, Any]:
+    """The part of `subject()` that is committed: semantic digests only, so formatting/comment/typing-only edits
+    to the kernel do not break the drift check, while a change to the executable structure (imports and evaluated
+    annotations included) does."""
+    full = subject()
+    return {"function": full["function"], "sources_semantic_sha256": full["sources_semantic_sha256"]}
 
 
 # ------------------------------------------------------------------------------------------------
@@ -165,8 +174,7 @@ def enumerate_accepted(limit: int = 64) -> dict[str, Any]:
         s.add(z3.Or(*(v != m.eval(v, model_completion=True) for v in variables)))
     found.sort(key=lambda x: (len(x.transitions), _label(x)))
     base = baseline()
-    reachable = [base] + [apply_transaction(base, SemanticTransaction(kind="enable_recommendation", rejection_source=src))
-                          for src in ("Recommended", "Submitted")]
+    reachable = [base] + [excursion_candidate(src) for src in ("Recommended", "Submitted")]
     return {"enumeration_complete": complete, "count": len(found), "inconsistent_models": inconsistent, "accepted": [_summary(x) for x in found],
             "equals_kernel_reachable_set": sorted(x.semantic_hash for x in found) == sorted(x.semantic_hash for x in reachable),
             "kernel_reachable_labels": sorted(_label(x) for x in reachable),
@@ -176,6 +184,20 @@ def enumerate_accepted(limit: int = 64) -> dict[str, Any]:
 # ------------------------------------------------------------------------------------------------
 # Negative controls: delete one clause of the encoded policy
 # ------------------------------------------------------------------------------------------------
+
+def validators_assumed_status(result: Any, pydantic_accepts: bool) -> str:
+    """Is a critical clause still critical if the pydantic validators are assumed? Three-valued, never guessed.
+
+    `critical`: Z3 found a validator-valid candidate AND the real pydantic models accept its decoded witness.
+    `not_critical`: Z3 proved (UNSAT) that no validator-valid candidate violates an invariant without the clause.
+    `inconclusive`: a Z3 `unknown`/timeout, or a SAT model the real pydantic models reject (`pydantic_valid` is an
+    over-approximation, so that proves nothing either way). Inconclusive rows fail the leave-one-out check."""
+    if result == z3.unsat:
+        return "not_critical"
+    if result == z3.sat and pydantic_accepts:
+        return "critical"
+    return "inconclusive"
+
 
 def leave_one_out() -> dict[str, Any]:
     """For every clause c: does `policy minus c` admit a candidate violating some invariant?
@@ -197,7 +219,13 @@ def leave_one_out() -> dict[str, Any]:
             wf, validated = E.decode(w, m)
             violated = sorted(i.id for i in invariants if z3.is_false(m.eval(i.formula, model_completion=True)))
             real = check_policy(wf)
+            valid = _solver(w.canonical(), E.pydantic_valid(w), E.admits(clauses, frozenset({c.id})), negated)
+            outcome = valid.check()
+            accepts = outcome == z3.sat and E.decode(w, valid.model())[1]  # re-validated by the REAL pydantic models
+            under_validators = validators_assumed_status(outcome, bool(accepts))
             rows.append({"clause": c.id, "status": "critical", "violated_invariants": violated,
+                         "under_validators": under_validators,
+                         "critical_even_if_validators_are_assumed": under_validators == "critical",
                          "real_check_policy_rejects": bool(real), "real_errors_include_clause_code": c.code in real,
                          "passes_pydantic_validators": validated, "witness": wf.model_dump(mode="json")})
         else:
@@ -209,9 +237,12 @@ def leave_one_out() -> dict[str, Any]:
         ok = bool(row and row["status"] == "critical" and invariant in row["violated_invariants"]
                   and row["real_check_policy_rejects"] and row["real_errors_include_clause_code"])
         controls.append({"remove": clause, "expect_violation_of": invariant, "counterexample_found": ok})
-    return {"clauses": len(rows), "critical": sum(r["status"] == "critical" for r in rows),
+    critical = [r for r in rows if r["status"] == "critical"]
+    return {"clauses": len(rows), "critical": len(critical),
+            "critical_even_if_validators_are_assumed": sum(r["critical_even_if_validators_are_assumed"] for r in critical),
             "not_needed_by_invariants": sorted(r["clause"] for r in rows if r["status"] == "not_needed_by_invariants"),
             "unknown": sorted(r["clause"] for r in rows if r["status"] == "unknown"),
+            "validators_inconclusive": sorted(r["clause"] for r in critical if r["under_validators"] == "inconclusive"),
             "named_controls": controls,
             "inconsistent_witnesses": sorted(r["clause"] for r in rows if r["status"] == "critical" and not (
                 r["real_check_policy_rejects"] and r["real_errors_include_clause_code"])),
@@ -223,8 +254,9 @@ def leave_one_out() -> dict[str, Any]:
 # ------------------------------------------------------------------------------------------------
 
 def assumption_witness() -> dict[str, Any]:
-    """Shows why 'unique actions' is an assumption: without the Workflow validator, a duplicated action
-    hides a Teacher-held Approve from check_policy (it indexes transitions by action; the last one wins)."""
+    """Probes the 'unique actions' assumption: a validator-bypassing workflow with a duplicated, Teacher-held Approve.
+    The legacy policy indexed transitions by action (last one wins) and admitted it; the pack-driven policy judges
+    every transition and refuses it, and the Workflow validator rejects it as well."""
     base = baseline()
     approve = next(t for t in base.transitions if t.action == "Approve")
     rogue = Transition.model_construct(**{**approve.model_dump(), "id": "TR-ROGUE", "role": "Teacher"})
@@ -239,7 +271,7 @@ def assumption_witness() -> dict[str, Any]:
             "unvalidated_duplicate_action_workflow_admitted_by_check_policy": check_policy(dup) == [],
             "teacher_holds_approve_in_that_workflow": any(t.action == "Approve" and t.role == "Teacher" for t in dup.transitions),
             "workflow_validator_rejects_it": rejected_by_validator,
-            "consequence": "Soundness of check_policy depends on every Workflow passing pydantic validation; model_construct bypasses it."}
+            "consequence": "The Z3 encoding still assumes unique actions (Workflow.coherent); check_policy no longer depends on it."}
 
 
 # ------------------------------------------------------------------------------------------------
@@ -255,33 +287,29 @@ def grammar_description() -> dict[str, Any]:
 def snapshot_document(accepted: dict[str, Any]) -> dict[str, Any]:
     """Deterministic, timestamp-free artefact committed to the repository and drift-checked."""
     w = E.new_workflow("snap")
-    return {"schema": "eija.smt-accepted-set/v1", "subject": subject(), "grammar": grammar_description(),
+    return {"schema": "eija.smt-accepted-set/v1", "subject": snapshot_subject(), "grammar": grammar_description(),
             "invariants": [{"id": i.id, "statement": i.statement} for i in E.authority_invariants(w)],
             "accepted_up_to_extra_forbidden_effects": accepted["accepted"]}
 
 
 def snapshot_text(accepted: dict[str, Any]) -> str:
-    return json.dumps(snapshot_document(accepted), indent=2, sort_keys=True, ensure_ascii=False) + "\n"
+    return dumps(snapshot_document(accepted))
 
 
 def drift(accepted: dict[str, Any]) -> str | None:
-    """None if the committed snapshot states the same accepted set as a fresh regeneration, else a description.
-
-    The `subject` block (source hashes) is recorded for provenance but not compared: a cosmetic edit of
-    policy.py (an annotation, a comment) must not fail the gate. A semantic change alters the accepted set
-    or the grammar, which are compared."""
+    """None if the committed snapshot equals a fresh regeneration, else a description."""
+    fresh = snapshot_text(accepted)
     if not SNAPSHOT.exists():
         return f"{SNAPSHOT.name} is missing; regenerate with `python -m verification.smt --write-snapshot`"
-    committed = json.loads(SNAPSHOT.read_text(encoding="utf-8"))
-    fresh = json.loads(snapshot_text(accepted))
-    committed.pop("subject", None)
-    fresh.pop("subject", None)
-    if committed != fresh:
+    if SNAPSHOT.read_bytes().decode("utf-8") != fresh:
         return f"{SNAPSHOT.name} differs from regeneration; review the policy change, then `python -m verification.smt --write-snapshot`"
     return None
 
 
-def build_report(differential_mutants: int = 1500, differential_fresh: int = 500, seed: int = 20260928) -> dict[str, Any]:
+def build_report(differential_mutants: int = 1500, differential_fresh: int = 500, seed: int = 20260928,
+                 write_snapshot: bool = False) -> dict[str, Any]:
+    """Run every check and assemble the report. `write_snapshot` regenerates accepted_set.json, but only when
+    every other check passed: a snapshot is never recorded over a refuted invariant or a faithfulness failure."""
     t0 = time.perf_counter()
     lap: dict[str, float] = {}
 
@@ -297,7 +325,6 @@ def build_report(differential_mutants: int = 1500, differential_fresh: int = 500
     loo = timed("leave_one_out", leave_one_out)
     diff = timed("differential", lambda: D.run(seed, differential_mutants, differential_fresh))
     witness = timed("assumption_witness", assumption_witness)
-    problem = drift(accepted)
 
     checks = [
         ("all_invariants_proved", all(v.status == "proved" for v in verdicts), f"{sum(v.status == 'proved' for v in verdicts)}/{len(verdicts)} UNSAT"),
@@ -312,14 +339,22 @@ def build_report(differential_mutants: int = 1500, differential_fresh: int = 500
          f"never fired: {diff.clauses_never_fired}; never silent: {diff.clauses_never_silent}"),
         ("named_negative_controls_yield_counterexamples", all(c["counterexample_found"] for c in loo["named_controls"]),
          f"{sum(c['counterexample_found'] for c in loo['named_controls'])}/{len(loo['named_controls'])}"),
-        ("leave_one_out_witnesses_rejected_by_real_policy", not loo["inconsistent_witnesses"] and not loo["unknown"],
-         f"{loo['critical']} critical clauses of {loo['clauses']}"),
-        ("committed_snapshot_has_no_drift", problem is None, problem or "regeneration identical"),
+        ("leave_one_out_witnesses_rejected_by_real_policy", not loo["inconsistent_witnesses"] and not loo["unknown"] and not loo["validators_inconclusive"],
+         f"{loo['critical']} critical clauses of {loo['clauses']}; {loo['critical_even_if_validators_are_assumed']} stay critical "
+         "even if the pydantic validators are assumed (the others rely on the policy alone catching a validator-bypassing candidate)"),
     ]
+    if write_snapshot and all(ok for _, ok, _ in checks):
+        SNAPSHOT.write_bytes(snapshot_text(accepted).encode("utf-8"))
+    problem = drift(accepted)
+    if write_snapshot and problem is not None:
+        problem = f"snapshot NOT written because another check failed ({problem})"
+    checks.append(("committed_snapshot_has_no_drift", problem is None, problem or "regeneration identical"))
     verdict = "PASS" if all(ok for _, ok, _ in checks) else "FAIL"
     return {
         "schema": "eija.formal-report/v1", "kind": "smt_proof", "verdict": verdict,
-        "claim": "For every candidate in the symbolic Transition grammar, check_policy(c) == [] implies AuthorityInvariant(c).",
+        "claim": ("For every candidate in the symbolic Transition grammar, the HAND-WRITTEN Z3 ENCODING of check_policy admitting c implies "
+                  "AuthorityInvariant(c). That the encoding is the real check_policy is sampled (differential test), not proved; "
+                  "the source-digest drift check is the alarm for kernel changes the sample does not catch."),
         "subject": subject(),
         "tool": {"name": "z3-solver", "package_version": _pkg_version("z3-solver"), "z3": z3.get_version_string()},
         "bounds": grammar_description(), "assumptions": list(ASSUMPTIONS), "limitations": list(LIMITATIONS),
@@ -336,7 +371,8 @@ def build_report(differential_mutants: int = 1500, differential_fresh: int = 500
                              "clauses_never_silent": diff.clauses_never_silent,
                              "invariant_true_counts": dict(sorted(diff.invariant_true.items())),
                              "invariant_false_counts": dict(sorted(diff.invariant_false.items()))},
-            "leave_one_out": {k: loo[k] for k in ("clauses", "critical", "not_needed_by_invariants", "unknown",
+            "leave_one_out": {k: loo[k] for k in ("clauses", "critical", "critical_even_if_validators_are_assumed",
+                                                  "not_needed_by_invariants", "unknown", "validators_inconclusive",
                                                   "named_controls", "inconsistent_witnesses")} | {"rows": loo["rows"]},
             "assumption_witness": witness,
         },

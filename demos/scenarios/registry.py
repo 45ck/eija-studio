@@ -2,7 +2,8 @@
 
 `REGISTRY.md` is generated from this module and a gate fails if the two drift. A scenario module may
 exist only when its status is not `blocked`, and a `blocked` scenario names the lanes it waits for -
-never a stub file pretending to run.
+never a stub file pretending to run. A scenario whose lanes have all landed but which has no script yet is
+`unscripted`, not `blocked`: nothing else is in its way.
 """
 from __future__ import annotations
 
@@ -13,7 +14,8 @@ from typing import Literal, cast
 
 from demos.manifest import load_manifest, manifest_path, stale_warnings, video_problems
 
-Status = Literal["recorded", "recorded-partial", "scripted-not-recorded", "blocked"]
+Status = Literal["recorded", "recorded-partial", "scripted-not-recorded", "unscripted", "blocked"]
+STATUSES: tuple[Status, ...] = ("recorded", "recorded-partial", "scripted-not-recorded", "unscripted", "blocked")
 
 # Lanes known to the roadmap. Wave 1 is being built in parallel worktrees; wave 2 lanes were identified
 # while scaffolding this catalogue because no wave-1 lane delivers them.
@@ -28,6 +30,10 @@ WAVE2_LANES = frozenset({
     "personas-e2e",  # personas / ICP artefacts and generated e2e scenarios tied to them
 })
 KNOWN_LANES = WAVE1_LANES | WAVE2_LANES
+# Lanes that have landed on the integration branch (PR #29, 2026-09-29): every wave-1 lane. A scenario waits only for
+# lanes NOT in this set, so this is the one place to edit when a wave-2 lane lands. A landed lane's Docker- or
+# Java-backed sessions can still be NOT_RUN on a given machine; that is a run prerequisite, not a lane dependency.
+LANDED_LANES = WAVE1_LANES
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -39,6 +45,11 @@ class Scenario:
     status: Status
     depends_on: tuple[str, ...]
     story: str
+
+    @property
+    def waits_for(self) -> tuple[str, ...]:
+        """The lanes this scenario still waits for: the ones it uses that have not landed."""
+        return tuple(d for d in self.depends_on if d not in LANDED_LANES)
 
     @property
     def module(self) -> str:
@@ -55,11 +66,11 @@ SCENARIOS: tuple[Scenario, ...] = (
              "A vague request becomes explicit meanings; the owner selects one; the rule is exercised as "
              "different synthetic actors (including denials); evidence is computed; the owner approves the "
              "exact revision, then separately applies it. Needs no other lane: it is the shipped v0.2 flow."),
-    Scenario("agent_change_review", "Reviewing an agent's change by meaning, not by diff", "blocked",
+    Scenario("agent_change_review", "Reviewing an agent's change by meaning, not by diff", "unscripted",
              ("agents", "providers", "visual"),
              "An agent (Claude Code, Codex, OpenCode or Gemini via MCP) proposes; the developer sees the "
              "meaning, the ripple into other models and the evidence - and the agent cannot approve."),
-    Scenario("visual_diff_and_ripple", "Change a rule, watch the generated UML diff and ripple", "blocked",
+    Scenario("visual_diff_and_ripple", "Change a rule, watch the generated UML diff and ripple", "unscripted",
              ("visual",),
              "Before/after state machine, commit sequence and impact graph generated from the executable "
              "model, with added/removed/changed elements highlighted."),
@@ -79,14 +90,14 @@ SCENARIOS: tuple[Scenario, ...] = (
              ("personas-e2e", "quality", "property", "hci"),
              "Personas and the ideal customer profile drive generated e2e scenarios, shown next to the "
              "running app and the UML behind it."),
-    Scenario("formal_vv_tour", "Formal V&V tour: Bend, TLA+, Z3, properties, mutation", "blocked",
+    Scenario("formal_vv_tour", "Formal V&V tour: Bend, TLA+, Z3, properties, mutation", "unscripted",
              ("bend", "tla", "smt-bmc", "property", "mutation"),
              "Each technique checks the same model; a deliberately unsafe variant fails in each, and every "
              "claim states what it does not prove."),
-    Scenario("metrics_and_hci_dashboard", "Quantitative metrics and HCI-law budgets", "blocked",
+    Scenario("metrics_and_hci_dashboard", "Quantitative metrics and HCI-law budgets", "unscripted",
              ("metrics", "hci"),
              "Package metrics, complexity, latency against the Doherty threshold, Fitts/Hick/KLM budgets."),
-    Scenario("okf_wiki_tour", "The OKF wiki, deterministically linked to code", "blocked",
+    Scenario("okf_wiki_tour", "The OKF wiki, deterministically linked to code", "unscripted",
              ("okf",),
              "Follow a concept page to the exact code it describes; change the code and watch the page "
              "go stale in the gate."),
@@ -109,9 +120,13 @@ def _check_scenario(s: Scenario, root: Path) -> list[str]:
     if unknown:
         problems.append(f"{s.key}: unknown lane(s) {unknown}")
     has_module = find_spec(s.module) is not None
-    if s.status == "blocked" and has_module:
-        problems.append(f"{s.key}: blocked scenario must not have a module (ADR-0048)")
-    if s.status != "blocked" and not has_module:
+    if s.status == "blocked" and not s.waits_for:
+        problems.append(f"{s.key}: status 'blocked' but every lane it needs has landed; it is 'unscripted' (or scripted)")
+    if s.status != "blocked" and s.waits_for:
+        problems.append(f"{s.key}: status {s.status!r} but it still waits for lane(s) {list(s.waits_for)}; it is 'blocked'")
+    if s.status in ("blocked", "unscripted") and has_module:
+        problems.append(f"{s.key}: {s.status} scenario must not have a module (ADR-0048)")
+    if s.status not in ("blocked", "unscripted") and not has_module:
         problems.append(f"{s.key}: status {s.status!r} requires module {s.module}")
     return problems + _check_manifest(s, root)
 
@@ -148,8 +163,7 @@ def manifest_warnings(scenarios: tuple[Scenario, ...] = SCENARIOS, root: Path = 
 
 def render_markdown(scenarios: tuple[Scenario, ...] = SCENARIOS) -> str:
     """Deterministic REGISTRY.md text (no timestamps)."""
-    counts = {status: sum(s.status == status for s in scenarios)
-              for status in ("recorded", "recorded-partial", "scripted-not-recorded", "blocked")}
+    counts = {status: sum(s.status == status for s in scenarios) for status in STATUSES}
     lines = [
         "# Demo scenario registry",
         "",
@@ -158,7 +172,8 @@ def render_markdown(scenarios: tuple[Scenario, ...] = SCENARIOS) -> str:
         "",
         f"**{counts['recorded']} recorded, {counts['recorded-partial']} recorded in part (an act was skipped "
         f"and is listed in its manifest), {counts['scripted-not-recorded']} scripted (not yet recorded), "
-        f"{counts['blocked']} blocked** on other lanes "
+        f"{counts['unscripted']} unscripted (every lane it needs has landed; no script exists yet), "
+        f"{counts['blocked']} blocked** on lanes that have not landed "
         "([ADR-0048](../../docs/adr/0048-scenario-dependency-gating.md)).",
         "",
         "| Scenario | Status | Waits for | Story |",
@@ -166,8 +181,9 @@ def render_markdown(scenarios: tuple[Scenario, ...] = SCENARIOS) -> str:
     ]
     for s in scenarios:
         waits = ", ".join(
-            f"`{d}`" + (" (wave 2)" if d in WAVE2_LANES else "") for d in s.depends_on
+            f"`{d}`" + (" (wave 2)" if d in WAVE2_LANES else "") for d in s.waits_for
         ) or "nothing"
         lines.append(f"| `{s.key}` — {s.title} | {s.status} | {waits} | {s.story} |")
-    lines += ["", "Wave-2 lanes are capabilities the owner asked to demo that no wave-1 lane delivers.", ""]
+    lines += ["", "Every wave-1 lane has landed on the integration branch; the lanes a blocked scenario waits for are wave-2 "
+              "capabilities the owner asked to demo that no wave-1 lane delivers.", ""]
     return "\n".join(lines)

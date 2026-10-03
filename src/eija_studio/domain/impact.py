@@ -43,4 +43,4 @@ def model_impact(before: Workflow, after: Workflow) -> dict[str, Any]:
             graph.setdefault(source, []).append(target)
     report = closure(graph, ["rule:" + x for x in changed])
     return {**report, "changed_actions": changed, "graph": graph,
-            "envelope": "All dependencies encoded by this excursion projection mapping; not every real-world consequence."}
+            "envelope": "All dependencies encoded by this projection mapping; not every real-world consequence."}

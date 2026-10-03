@@ -1,0 +1,239 @@
+{
+  "scope": "Scoped local browser observations on an offline disposable fixture. No human, complete IDE, general-codebase or trusted-release acceptance.",
+  "runs": [
+    {
+      "run": "us06-prospective-edit-5",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_seconds": 24.266,
+      "subject_content_sha256": "9f6271a0455d627f902bd83ada1ec470ca20d57313fb815b4739769a93c9419a",
+      "captured_files": 117,
+      "captured_source_preserved": true,
+      "result_sha256": "9bafca04a30534de3406e9c6d3dc1d62edb0e9136c4006417148f483e699394d",
+      "checks": [
+        {
+          "id": "preview-close-escape-no-write",
+          "status": "PASS"
+        },
+        {
+          "id": "explicit-apply-full-candidate",
+          "status": "PASS"
+        },
+        {
+          "id": "late-preview-close-case-switch",
+          "status": "PASS"
+        },
+        {
+          "id": "acknowledged-write-refresh-failure",
+          "status": "PASS"
+        },
+        {
+          "id": "unknown-write-reconciliation",
+          "status": "PASS"
+        }
+      ],
+      "cleanup": {
+        "browser_closed": true,
+        "server_closed": true
+      },
+      "javascript_errors": [],
+      "forbidden_attempts": []
+    },
+    {
+      "run": "us06-journey-edges-5",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_seconds": 130.078,
+      "subject_content_sha256": "acd2a56730735e69dbb36c2dea9cafca8bf81de57b69a58f9f53e7319a57e4fc",
+      "captured_files": 113,
+      "captured_source_preserved": true,
+      "result_sha256": "a0f0fc57919931d3a17400c7a4aef9bddad33e9a209620dd33c432936dfa76dd",
+      "checks": [
+        {
+          "id": "source-first",
+          "status": "PASS"
+        },
+        {
+          "id": "intent-first-changes",
+          "status": "PASS"
+        },
+        {
+          "id": "cross-case-history-source",
+          "status": "PASS"
+        },
+        {
+          "id": "cancel-unsubmitted-edit",
+          "status": "PASS"
+        },
+        {
+          "id": "stale-second-page",
+          "status": "PASS"
+        },
+        {
+          "id": "transport-retry",
+          "status": "PASS"
+        },
+        {
+          "id": "keyboard-edit-refusal",
+          "status": "PASS"
+        }
+      ],
+      "cleanup": {},
+      "cleanup_scope": "No explicit closure flags in this schema; captured finally/context cleanup and normal process exit."
+    },
+    {
+      "run": "us06-runtime-evidence-4",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_seconds": 23.219,
+      "subject_content_sha256": "bc7ccf52d4d2c4d0a74a672f2641a4103da52632a8e3470f142dc8d3aecf84a4",
+      "captured_files": 116,
+      "captured_source_preserved": true,
+      "result_sha256": "720f37f9aa51013aeac4d5f7e9227f25e3f5ebdae8cc7aa6a0c64a3898a23566",
+      "checks": [
+        {
+          "id": "single-creation-entry",
+          "status": "PASS"
+        },
+        {
+          "id": "denied-after-success",
+          "status": "PASS"
+        },
+        {
+          "id": "transport-outcome-unknown",
+          "status": "PASS"
+        },
+        {
+          "id": "invalid-response-after-real-commit",
+          "status": "PASS"
+        },
+        {
+          "id": "committed-refresh-failed",
+          "status": "PASS"
+        },
+        {
+          "id": "context-history-isolation",
+          "status": "PASS"
+        },
+        {
+          "id": "busy-keyboard-no-duplicate",
+          "status": "PASS"
+        }
+      ],
+      "cleanup": {
+        "browser_closed": true,
+        "server_closed": true
+      },
+      "javascript_errors": [],
+      "forbidden_attempts": []
+    },
+    {
+      "run": "us06-rules-ripple-4",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_seconds": 25.812,
+      "subject_content_sha256": "06c4ad9b1f1d056c888df3c1715866af95d3c70eea68727959b4cbf07cee3adc",
+      "captured_files": 116,
+      "captured_source_preserved": true,
+      "result_sha256": "18ae1e90eede9cbdb68733087b1c6799f4185cf2e89c79cfb08347a201ae5c70",
+      "checks": [
+        {
+          "id": "empty-baseline-inventory",
+          "status": "PASS"
+        },
+        {
+          "id": "baseline-to-current-candidate",
+          "status": "PASS"
+        },
+        {
+          "id": "history-to-current-candidate",
+          "status": "PASS"
+        },
+        {
+          "id": "changes-inspect-current",
+          "status": "PASS"
+        },
+        {
+          "id": "case-roundtrip",
+          "status": "PASS"
+        },
+        {
+          "id": "rules-evidence-subject",
+          "status": "PASS"
+        },
+        {
+          "id": "impact-reference-navigation",
+          "status": "PASS"
+        },
+        {
+          "id": "keyboard-viewports",
+          "status": "PASS"
+        }
+      ],
+      "cleanup": {
+        "browser_closed": true,
+        "server_closed": true
+      },
+      "javascript_errors": [],
+      "forbidden_attempts": []
+    },
+    {
+      "run": "us06-review-workspace-3",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_seconds": 58.844,
+      "subject_content_sha256": "7ff4a7fb935422444fda0a3c58b39bc0bcac38d8ad308785e3542e615d30bdf3",
+      "captured_files": 116,
+      "captured_source_preserved": true,
+      "result_sha256": "e7bb40dbd0e6ee96b5b0e57c2fa72994c7cc9c46bfa6720433f8c1654623ed72",
+      "checks": [
+        {
+          "id": "model-to-selected-change",
+          "status": "PASS"
+        },
+        {
+          "id": "paired-graph-truth",
+          "status": "PASS"
+        },
+        {
+          "id": "exact-source-roundtrip",
+          "status": "PASS"
+        },
+        {
+          "id": "evidence-focus-error-restore",
+          "status": "PASS"
+        },
+        {
+          "id": "history-current-subject",
+          "status": "PASS"
+        },
+        {
+          "id": "self-loop-cross-case",
+          "status": "PASS"
+        },
+        {
+          "id": "runtime-context",
+          "status": "PASS"
+        },
+        {
+          "id": "keyboard-responsive-review",
+          "status": "PASS"
+        },
+        {
+          "id": "review-accessibility",
+          "status": "PASS"
+        }
+      ],
+      "cleanup": {
+        "browser_closed": true,
+        "server_closed": true
+      },
+      "javascript_errors": [],
+      "forbidden_attempts": [],
+      "separate_source_freshness_fixture": {
+        "status": "PASS",
+        "scope": "Separate temporary repository; not additional whole-IDE journeys."
+      }
+    }
+  ]
+}

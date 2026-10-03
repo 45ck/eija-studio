@@ -7,8 +7,11 @@
       "Bash(git push*--force*)",
       "Bash(git push -f*)",
       "Edit(.githooks/**)",
+      "Write(.githooks/**)",
       "Edit(.claude/settings.json)",
-      "Edit(.claude/hooks/**)"
+      "Write(.claude/settings.json)",
+      "Edit(.claude/hooks/**)",
+      "Write(.claude/hooks/**)"
     ]
   },
   "hooks": {

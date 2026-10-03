@@ -1,0 +1,73 @@
+{
+  "schema": "eija.rules-review-screenshots.v1",
+  "kind": "public summary of retained disposable browser observations; not human validation",
+  "main_result_sha256": "9e8ef8493586358d37103f28fd0d3895e72fd5e190c8666b923e93f01ce2bea3",
+  "narrow_result_sha256": "7c18232ec09788e0880468c28cd5dab59ed445407d56e1c9ab0f24c00c243afb",
+  "main_subject": "a8025b31d5d07a18a1065e208b6df18f7158c88f3dcad5fc41a7c221e54483cd",
+  "main_script_sha256": "847326a788b982f3f707549602a6f587a1e66fb69a8e044e742c4e38ce2d4556",
+  "narrow_script_sha256": "22284f4766bbdf49ccd0ccab5a2533dfcaa42364a2985680a172ce1a7e893015",
+  "main_checks": [
+    {
+      "id": "empty-baseline-inventory",
+      "status": "PASS"
+    },
+    {
+      "id": "baseline-to-current-candidate",
+      "status": "PASS"
+    },
+    {
+      "id": "history-to-current-candidate",
+      "status": "PASS"
+    },
+    {
+      "id": "changes-inspect-current",
+      "status": "PASS"
+    },
+    {
+      "id": "case-roundtrip",
+      "status": "PASS"
+    },
+    {
+      "id": "rules-evidence-subject",
+      "status": "PASS"
+    },
+    {
+      "id": "impact-reference-navigation",
+      "status": "PASS"
+    },
+    {
+      "id": "keyboard-viewports",
+      "status": "PASS"
+    }
+  ],
+  "narrow_checks": [
+    {
+      "id": "expanded-keyboard-table-320",
+      "status": "PASS"
+    },
+    {
+      "id": "domain-pin-and-return-320",
+      "status": "PASS"
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "rules-subject.png",
+      "sha256": "440328bd79a685775f28cb1de824c18f79f75a9f8135124a66031286c2ad1de1",
+      "bytes": 108573,
+      "description": "Current candidate Rules with an explicit warning that Model is previewing the original baseline."
+    },
+    {
+      "path": "current-model.png",
+      "sha256": "958a481990386044fe75727f0bb1906682d2f809308855e6423bd169cf790b00",
+      "bytes": 114936,
+      "description": "Following the candidate Save rule has opened that current transition in Model."
+    },
+    {
+      "path": "rules-reflow.png",
+      "sha256": "e236cb781a653e274ef002d73b77330310e61a4f6b397b6fa10992226536331d",
+      "bytes": 41182,
+      "description": "Desktop-created candidate reflowed to 320 pixels; the table scrolls horizontally."
+    }
+  ]
+}

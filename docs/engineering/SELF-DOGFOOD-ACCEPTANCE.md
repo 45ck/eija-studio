@@ -8,15 +8,15 @@ The intended result is a **complete, polished, non-linear IDE experience across 
 
 | Milestone | Deliverable | Status at preparation |
 |---|---|---|
-| Existing main foundations | Synthetic excursion workflow/kernel, typed transactions, generated views, computed runtime evidence and agent MCP surface | Present in documentation baseline `8712d6c`. Historical records describe earlier checks; no new integrated acceptance result is asserted here. |
-| Source-connected foundations | Configured read-only EIJA connection; tracked Python/annotated UI coverage; domain tree; source/impact views; server-checked SVG model editor; agent read surfaces | **IN_DEVELOPMENT; NOT_DELIVERED_BY_THIS_DOCS_CHANGE**. Implementation and integration evidence are pending. Foundation checks alone do not close the IDE release goal. |
+| Existing model foundations | Pack-driven workflow/kernel, typed transactions and affordances, generated views, repository index/impact and computed evidence mechanisms | Present in the inspected integration checkout. This is source inspection, not proof that the combined tree passes. |
+| Source-connected foundations | Configured read-only EIJA connection; tracked Python/annotated UI coverage; domain tree; source/impact views; server-checked SVG model editor; agent read surfaces | **PENDING_INTEGRATION**. Functional evidence for these foundations does not alone close the IDE release goal. |
 | Complete supported IDE and UX | Non-linear explorer/editors/source navigation, agent changes, review/evidence/history, keyboard control, clear feedback and recoverable edits | **PENDING_ACCEPTANCE**. Close only when integrated engineering and UX journeys below pass; do not infer this from foundation test totals. |
-| Integrated engineering acceptance | Current-tree targeted tests, meaningful negative controls, ordinary browser-to-server checks and applicable local gates | **NOT_RUN** in this document. Stage-specific tests or earlier gate totals do not close it. |
+| Integrated engineering acceptance | Current-tree targeted tests, meaningful negative controls, ordinary browser-to-server checks and applicable local gates | **PARTIAL; see the dated run record.** Final combined engineering and UX acceptance remains open. Stage-specific tests or earlier gate totals do not close it. |
 | Live model pilot | A real selected agent uses the supported interface on the declared EIJA task, with versions, inputs, costs and outcomes retained | **NOT_RUN**. Mocked providers and synthetic MCP calls are engineering evidence only. |
 | Human comprehension validation | UML-literate engineers make scored review decisions using a predeclared comparison and independent oracle | **NOT_RUN**. Acknowledgements, recordings and generated explanations do not measure comprehension. |
 | External adoption and held-out generality | Owner-selected external repository followed by an evaluator-selected held-out case after the relevant adapter freezes | **NOT_RUN; later milestone**. EIJA is not held-out evidence for itself. |
 
-These states change only through linked observations for the exact subject, not because the implementation work was assigned or a document was updated. Historical figures in the README and the v0.2 [acceptance matrix](../verification/ACCEPTANCE_MATRIX.csv) remain dated evidence for earlier scopes. The planned flow below is an acceptance specification, not a claim that all its controls or tool schemas are present on main.
+These states change only through linked observations for the exact subject, not because the implementation work was assigned or a document was updated. Historical figures in [STATUS.md](STATUS.md), the README and the v0.2 [acceptance matrix](../verification/ACCEPTANCE_MATRIX.csv) remain dated evidence for earlier scopes.
 
 ## First-flow contract
 
@@ -26,10 +26,10 @@ This numbered sequence is a baseline test journey, not the product's navigation 
 2. Inspect the domain/language tree alongside real source references, extraction diagnostics and known-edge repository impact. The initial deterministic scope is supported **tracked Python and statically annotated UI**. Untracked, unsupported, excluded or unparseable content must not silently become verified structure.
 3. Open a supported model change. The SVG editor renders the authoritative server model. Select a transition, request an affordance or edit check, and submit a typed model edit through the existing owner interaction. The browser does not create a second policy or workflow interpreter.
 4. Compare the resulting model, diagrams and evidence. Accepted edits reload authoritative state; refused or stale edits keep the previous state and show actionable server reasons. Model editing does not rewrite the connected repository's source.
-5. Let an agent inspect the same facts through read-only pack context, affordances, `edit_check` and `repository_impact`. These are planned additions to the agent surface. Their final tool names and argument schemas must be documented in the [agent contract](../agents/contract.md) when implemented; the current contract does not promise them.
+5. Let an agent inspect the same facts through read-only pack context, affordances, `edit_check` and `repository_impact`. The final exact tool names and argument schemas are defined in the [agent contract](../agents/contract.md), not duplicated here.
 6. Preserve the existing separation between an untrusted proposal, owner meaning selection and owner approval/apply. A read or dry run grants no authority. Agents do not operate owner-only endpoints or use a test principal as a real owner's approval.
 
-Retain the existing excursion workflow as a regression fixture. Any additional model packs introduced during implementation must add variation checks; their presence or execution is not claimed for this documentation baseline, and packs are not external repository connections.
+The two existing domain packs remain regression fixtures for the model contract. Running both exercises pack variation; it is not equivalent to connecting two external applications. Every future pack must add variation checks against the same typed contract.
 
 ## Integrated IDE contract
 
@@ -106,7 +106,7 @@ A complete supported IDE experience does not require pretending to offer univers
 
 ## Run record
 
-**Current integrated run: PENDING.** No completed run is claimed by this document. The integrator must add a dated run-report link here after retaining the observations; until then README links resolve to this explicit pending state.
+**Current integration: partially exercised; acceptance remains open.** The [2 October browser evidence](2026-10-02-IDE-SELF-DOGFOOD.md) retains the 20-check normal-identity replay, failed runs and their repairs, HCI observations and explicit acceptance gaps. It is an implementation checkpoint, not completion of the contract below. The final combined gate record, additional recovery journeys, clean-install proof and owner acceptance remain separate observations.
 
 The run report must identify:
 

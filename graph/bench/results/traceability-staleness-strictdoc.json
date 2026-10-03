@@ -1,0 +1,65 @@
+{
+  "commits_in_window": 600,
+  "file_versions_bytes_changed_but_ast_identical": 11,
+  "file_versions_compared": 956,
+  "files_with_history": 186,
+  "glob": "strictdoc/*.py",
+  "per_commit_pairs": 13029,
+  "per_commit_stale_rate": {
+    "file_ast": 0.9833,
+    "file_bytes": 1.0,
+    "symbol_ast_no_doc": 0.0722,
+    "symbol_ast_with_doc": 0.0744,
+    "symbol_signature": 0.018
+  },
+  "python": "3.12.10",
+  "repo_head": "abf7be7daa2a25721a56980b5be15845336ea0b8",
+  "survival_by_horizon": {
+    "10": {
+      "hash_mismatch_rate_given_symbol_present": {
+        "file_ast": 0.3895,
+        "file_bytes": 0.3913,
+        "symbol_ast_no_doc": 0.0345,
+        "symbol_ast_with_doc": 0.0352,
+        "symbol_signature": 0.0083
+      },
+      "link_baselines": 14616,
+      "target_symbol_missing_rate": 0.0073
+    },
+    "100": {
+      "hash_mismatch_rate_given_symbol_present": {
+        "file_ast": 0.8438,
+        "file_bytes": 0.8482,
+        "symbol_ast_no_doc": 0.1344,
+        "symbol_ast_with_doc": 0.139,
+        "symbol_signature": 0.0383
+      },
+      "link_baselines": 13015,
+      "target_symbol_missing_rate": 0.0334
+    },
+    "300": {
+      "hash_mismatch_rate_given_symbol_present": {
+        "file_ast": 0.9413,
+        "file_bytes": 0.9422,
+        "symbol_ast_no_doc": 0.2363,
+        "symbol_ast_with_doc": 0.2404,
+        "symbol_signature": 0.0822
+      },
+      "link_baselines": 7301,
+      "target_symbol_missing_rate": 0.093
+    },
+    "50": {
+      "hash_mismatch_rate_given_symbol_present": {
+        "file_ast": 0.748,
+        "file_bytes": 0.752,
+        "symbol_ast_no_doc": 0.0849,
+        "symbol_ast_with_doc": 0.0873,
+        "symbol_signature": 0.0223
+      },
+      "link_baselines": 13873,
+      "target_symbol_missing_rate": 0.0163
+    }
+  },
+  "unparsable_versions_skipped": 0,
+  "window_first_commit": "7d2595f80e5c88c487c2e093287c79f1ffab67e8"
+}

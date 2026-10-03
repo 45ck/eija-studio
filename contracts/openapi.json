@@ -58,6 +58,59 @@
         }
       }
     },
+    "/assets/vendor/{name}": {
+      "get": {
+        "summary": "Vendored",
+        "operationId": "vendored_assets_vendor__name__get",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/visual-frame": {
+      "get": {
+        "summary": "Visual Frame",
+        "operationId": "visual_frame_visual_frame_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/status": {
       "get": {
         "summary": "Status",
@@ -84,6 +137,301 @@
             "content": {
               "application/json": {
                 "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workbench": {
+      "get": {
+        "summary": "Workbench",
+        "operationId": "workbench_api_workbench_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/repository/impact": {
+      "get": {
+        "summary": "Repository Impact",
+        "operationId": "repository_impact_api_repository_impact_get",
+        "parameters": [
+          {
+            "name": "term",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 400,
+              "title": "Term"
+            }
+          },
+          {
+            "name": "expected_source_hash",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^sha256:[0-9a-f]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Expected Source Hash"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/repository/source": {
+      "get": {
+        "summary": "Repository Source",
+        "operationId": "repository_source_api_repository_source_get",
+        "parameters": [
+          {
+            "name": "reference",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 800,
+              "title": "Reference"
+            }
+          },
+          {
+            "name": "expected_source_hash",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^sha256:[0-9a-f]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Expected Source Hash"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/repository/freshness": {
+      "get": {
+        "summary": "Repository Freshness",
+        "operationId": "repository_freshness_api_repository_freshness_get",
+        "parameters": [
+          {
+            "name": "expected_source_hash",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "title": "Expected Source Hash"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/repository/change": {
+      "get": {
+        "summary": "Repository Change",
+        "operationId": "repository_change_api_repository_change_get",
+        "parameters": [
+          {
+            "name": "base",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$",
+              "title": "Base"
+            }
+          },
+          {
+            "name": "head",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$",
+              "title": "Head"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/repository/change/file": {
+      "get": {
+        "summary": "Repository Change File",
+        "operationId": "repository_change_file_api_repository_change_file_get",
+        "parameters": [
+          {
+            "name": "base",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$",
+              "title": "Base"
+            }
+          },
+          {
+            "name": "head",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$",
+              "title": "Head"
+            }
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024,
+              "title": "Path"
+            }
+          },
+          {
+            "name": "reference",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 800
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Reference"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
               }
             }
           }
@@ -318,6 +666,319 @@
         }
       }
     },
+    "/api/cases/{case_id}/edit/propose": {
+      "post": {
+        "summary": "Propose Edit",
+        "operationId": "propose_edit_api_cases__case_id__edit_propose_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditPropose"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TypedEditProposal"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cases/{case_id}/edit/check": {
+      "post": {
+        "summary": "Edit Check",
+        "operationId": "edit_check_api_cases__case_id__edit_check_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditCheck"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cases/{case_id}/edit/preview": {
+      "post": {
+        "summary": "Edit Preview",
+        "operationId": "edit_preview_api_cases__case_id__edit_preview_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditCheck"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EditPreview"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cases/{case_id}/undo": {
+      "post": {
+        "summary": "Undo",
+        "operationId": "undo_api_cases__case_id__undo_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Version"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cases/{case_id}/redo": {
+      "post": {
+        "summary": "Redo",
+        "operationId": "redo_api_cases__case_id__redo_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Version"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cases/{case_id}/history": {
+      "get": {
+        "summary": "History",
+        "operationId": "history_api_cases__case_id__history_get",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cases/{case_id}/affordances": {
+      "get": {
+        "summary": "Affordances",
+        "operationId": "affordances_api_cases__case_id__affordances_get",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/cases/{case_id}/layout": {
       "post": {
         "summary": "Layout",
@@ -461,7 +1122,7 @@
     },
     "/api/cases/{case_id}/approve": {
       "post": {
-        "summary": "Approve",
+        "summary": "Owner decision on the exact revision",
         "operationId": "approve_api_cases__case_id__approve_post",
         "parameters": [
           {
@@ -694,6 +1355,58 @@
         }
       }
     },
+    "/api/cases/{case_id}/diagrams": {
+      "get": {
+        "summary": "Diagrams",
+        "operationId": "diagrams_api_cases__case_id__diagrams_get",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "mermaid",
+                "plantuml",
+                "dot"
+              ],
+              "type": "string",
+              "default": "mermaid",
+              "title": "Format"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/cases/{case_id}/export": {
       "get": {
         "summary": "Export",
@@ -734,6 +1447,91 @@
   },
   "components": {
     "schemas": {
+      "AddState": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "add_state",
+            "title": "Kind"
+          },
+          "state": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "State"
+          },
+          "after": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 60,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "After"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "state"
+        ],
+        "title": "AddState"
+      },
+      "AddTransition": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "add_transition",
+            "title": "Kind"
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_-]{0,63}$",
+            "title": "Id"
+          },
+          "action": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Action"
+          },
+          "from_state": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "From State"
+          },
+          "to_state": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "To State"
+          },
+          "role": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Role"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "id",
+          "action",
+          "from_state",
+          "to_state",
+          "role"
+        ],
+        "title": "AddTransition",
+        "description": "A transition performing a declared action; its guards and effects are the action's declared ones."
+      },
       "Approval": {
         "properties": {
           "expected_version": {
@@ -785,7 +1583,54 @@
             "title": "Expected Version"
           },
           "transaction": {
-            "$ref": "#/components/schemas/SemanticTransaction"
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AddState"
+              },
+              {
+                "$ref": "#/components/schemas/RenameState"
+              },
+              {
+                "$ref": "#/components/schemas/RemoveState"
+              },
+              {
+                "$ref": "#/components/schemas/SetInitial"
+              },
+              {
+                "$ref": "#/components/schemas/AddTransition"
+              },
+              {
+                "$ref": "#/components/schemas/RetargetTransition"
+              },
+              {
+                "$ref": "#/components/schemas/RemoveTransition"
+              },
+              {
+                "$ref": "#/components/schemas/SetRole"
+              },
+              {
+                "$ref": "#/components/schemas/SetGuards"
+              },
+              {
+                "$ref": "#/components/schemas/SetEffects"
+              }
+            ],
+            "title": "Transaction",
+            "discriminator": {
+              "propertyName": "kind",
+              "mapping": {
+                "add_state": "#/components/schemas/AddState",
+                "add_transition": "#/components/schemas/AddTransition",
+                "remove_state": "#/components/schemas/RemoveState",
+                "remove_transition": "#/components/schemas/RemoveTransition",
+                "rename_state": "#/components/schemas/RenameState",
+                "retarget_transition": "#/components/schemas/RetargetTransition",
+                "set_effects": "#/components/schemas/SetEffects",
+                "set_guards": "#/components/schemas/SetGuards",
+                "set_initial": "#/components/schemas/SetInitial",
+                "set_role": "#/components/schemas/SetRole"
+              }
+            }
           }
         },
         "additionalProperties": false,
@@ -795,6 +1640,254 @@
           "transaction"
         ],
         "title": "Edit"
+      },
+      "EditCheck": {
+        "properties": {
+          "transaction": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AddState"
+              },
+              {
+                "$ref": "#/components/schemas/RenameState"
+              },
+              {
+                "$ref": "#/components/schemas/RemoveState"
+              },
+              {
+                "$ref": "#/components/schemas/SetInitial"
+              },
+              {
+                "$ref": "#/components/schemas/AddTransition"
+              },
+              {
+                "$ref": "#/components/schemas/RetargetTransition"
+              },
+              {
+                "$ref": "#/components/schemas/RemoveTransition"
+              },
+              {
+                "$ref": "#/components/schemas/SetRole"
+              },
+              {
+                "$ref": "#/components/schemas/SetGuards"
+              },
+              {
+                "$ref": "#/components/schemas/SetEffects"
+              }
+            ],
+            "title": "Transaction",
+            "discriminator": {
+              "propertyName": "kind",
+              "mapping": {
+                "add_state": "#/components/schemas/AddState",
+                "add_transition": "#/components/schemas/AddTransition",
+                "remove_state": "#/components/schemas/RemoveState",
+                "remove_transition": "#/components/schemas/RemoveTransition",
+                "rename_state": "#/components/schemas/RenameState",
+                "retarget_transition": "#/components/schemas/RetargetTransition",
+                "set_effects": "#/components/schemas/SetEffects",
+                "set_guards": "#/components/schemas/SetGuards",
+                "set_initial": "#/components/schemas/SetInitial",
+                "set_role": "#/components/schemas/SetRole"
+              }
+            }
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "transaction"
+        ],
+        "title": "EditCheck"
+      },
+      "EditPreview": {
+        "properties": {
+          "legal": {
+            "type": "boolean",
+            "title": "Legal"
+          },
+          "codes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Codes"
+          },
+          "refs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Refs"
+          },
+          "case_id": {
+            "type": "string",
+            "title": "Case Id"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "stage": {
+            "type": "string",
+            "title": "Stage"
+          },
+          "semantic_hash": {
+            "type": "string",
+            "title": "Semantic Hash"
+          },
+          "transaction": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AddState"
+              },
+              {
+                "$ref": "#/components/schemas/RenameState"
+              },
+              {
+                "$ref": "#/components/schemas/RemoveState"
+              },
+              {
+                "$ref": "#/components/schemas/SetInitial"
+              },
+              {
+                "$ref": "#/components/schemas/AddTransition"
+              },
+              {
+                "$ref": "#/components/schemas/RetargetTransition"
+              },
+              {
+                "$ref": "#/components/schemas/RemoveTransition"
+              },
+              {
+                "$ref": "#/components/schemas/SetRole"
+              },
+              {
+                "$ref": "#/components/schemas/SetGuards"
+              },
+              {
+                "$ref": "#/components/schemas/SetEffects"
+              }
+            ],
+            "title": "Transaction",
+            "discriminator": {
+              "propertyName": "kind",
+              "mapping": {
+                "add_state": "#/components/schemas/AddState",
+                "add_transition": "#/components/schemas/AddTransition",
+                "remove_state": "#/components/schemas/RemoveState",
+                "remove_transition": "#/components/schemas/RemoveTransition",
+                "rename_state": "#/components/schemas/RenameState",
+                "retarget_transition": "#/components/schemas/RetargetTransition",
+                "set_effects": "#/components/schemas/SetEffects",
+                "set_guards": "#/components/schemas/SetGuards",
+                "set_initial": "#/components/schemas/SetInitial",
+                "set_role": "#/components/schemas/SetRole"
+              }
+            }
+          },
+          "current": {
+            "$ref": "#/components/schemas/Workflow"
+          },
+          "candidate": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Workflow"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "candidate_semantic_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Candidate Semantic Hash"
+          },
+          "applied": {
+            "type": "boolean",
+            "const": false,
+            "title": "Applied",
+            "default": false
+          },
+          "persisted": {
+            "type": "boolean",
+            "const": false,
+            "title": "Persisted",
+            "default": false
+          },
+          "scope": {
+            "type": "string",
+            "const": "semantic-edit-preview",
+            "title": "Scope",
+            "default": "semantic-edit-preview"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "legal",
+          "codes",
+          "refs",
+          "case_id",
+          "version",
+          "stage",
+          "semantic_hash",
+          "transaction",
+          "current",
+          "candidate",
+          "candidate_semantic_hash"
+        ],
+        "title": "EditPreview",
+        "description": "An uncommitted candidate bound to a captured case revision; no evidence or edit authority."
+      },
+      "EditProposalPack": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "digest": {
+            "type": "string",
+            "title": "Digest"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "digest"
+        ],
+        "title": "EditProposalPack"
+      },
+      "EditPropose": {
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Version"
+          },
+          "request": {
+            "type": "string",
+            "maxLength": 6000,
+            "minLength": 1,
+            "title": "Request"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version",
+          "request"
+        ],
+        "title": "EditPropose"
       },
       "ExecuteCommand": {
         "properties": {
@@ -962,6 +2055,116 @@
         ],
         "title": "Propose"
       },
+      "RemoveState": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "remove_state",
+            "title": "Kind"
+          },
+          "state": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "State"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "state"
+        ],
+        "title": "RemoveState"
+      },
+      "RemoveTransition": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "remove_transition",
+            "title": "Kind"
+          },
+          "transition": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_-]{0,63}$",
+            "title": "Transition"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "transition"
+        ],
+        "title": "RemoveTransition"
+      },
+      "RenameState": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "rename_state",
+            "title": "Kind"
+          },
+          "state": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "State"
+          },
+          "to": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "To"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "state",
+          "to"
+        ],
+        "title": "RenameState"
+      },
+      "RetargetTransition": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "retarget_transition",
+            "title": "Kind"
+          },
+          "transition": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_-]{0,63}$",
+            "title": "Transition"
+          },
+          "end": {
+            "type": "string",
+            "enum": [
+              "source",
+              "target"
+            ],
+            "title": "End"
+          },
+          "state": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "State"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "transition",
+          "end",
+          "state"
+        ],
+        "title": "RetargetTransition",
+        "description": "Move one end of a transition to another state (the drag-and-drop edit)."
+      },
       "Select": {
         "properties": {
           "expected_version": {
@@ -971,12 +2174,7 @@
           },
           "interpretation": {
             "type": "string",
-            "enum": [
-              "recommend_only",
-              "final_approval",
-              "confirm_only",
-              "unsupported"
-            ],
+            "pattern": "^[a-z][a-z0-9_]{0,39}$",
             "title": "Interpretation"
           }
         },
@@ -988,32 +2186,255 @@
         ],
         "title": "Select"
       },
-      "SemanticTransaction": {
+      "SetEffects": {
         "properties": {
           "kind": {
             "type": "string",
-            "enum": [
-              "enable_recommendation",
-              "set_rejection_source"
-            ],
+            "const": "set_effects",
             "title": "Kind"
           },
-          "rejection_source": {
+          "transition": {
             "type": "string",
-            "enum": [
-              "Submitted",
-              "Recommended"
-            ],
-            "title": "Rejection Source",
-            "default": "Recommended"
+            "pattern": "^[A-Z][A-Z0-9_-]{0,63}$",
+            "title": "Transition"
+          },
+          "required_effects": {
+            "items": {
+              "type": "string",
+              "maxLength": 60,
+              "minLength": 1
+            },
+            "type": "array",
+            "maxItems": 16,
+            "title": "Required Effects"
           }
         },
         "additionalProperties": false,
         "type": "object",
         "required": [
-          "kind"
+          "kind",
+          "transition",
+          "required_effects"
         ],
-        "title": "SemanticTransaction"
+        "title": "SetEffects"
+      },
+      "SetGuards": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "set_guards",
+            "title": "Kind"
+          },
+          "transition": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_-]{0,63}$",
+            "title": "Transition"
+          },
+          "guards": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "actor_active",
+                "role_current",
+                "actor_assigned",
+                "state_equals",
+                "expected_version",
+                "operation_binding"
+              ]
+            },
+            "type": "array",
+            "maxItems": 8,
+            "minItems": 1,
+            "title": "Guards"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "transition",
+          "guards"
+        ],
+        "title": "SetGuards"
+      },
+      "SetInitial": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "set_initial",
+            "title": "Kind"
+          },
+          "state": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "State"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "state"
+        ],
+        "title": "SetInitial"
+      },
+      "SetRole": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "const": "set_role",
+            "title": "Kind"
+          },
+          "transition": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_-]{0,63}$",
+            "title": "Transition"
+          },
+          "role": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Role"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "transition",
+          "role"
+        ],
+        "title": "SetRole"
+      },
+      "Transition": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_-]{0,63}$",
+            "title": "Id"
+          },
+          "action": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Action"
+          },
+          "from_state": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "From State"
+          },
+          "to_state": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "To State"
+          },
+          "role": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Role"
+          },
+          "guards": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "actor_active",
+                "role_current",
+                "actor_assigned",
+                "state_equals",
+                "expected_version",
+                "operation_binding"
+              ]
+            },
+            "type": "array",
+            "title": "Guards"
+          },
+          "required_effects": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Required Effects"
+          },
+          "forbidden_effects": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Forbidden Effects"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "action",
+          "from_state",
+          "to_state",
+          "role",
+          "guards",
+          "required_effects",
+          "forbidden_effects"
+        ],
+        "title": "Transition"
+      },
+      "TypedEditProposal": {
+        "properties": {
+          "scope": {
+            "type": "string",
+            "const": "typed-edit-proposal",
+            "title": "Scope",
+            "default": "typed-edit-proposal"
+          },
+          "provider": {
+            "type": "string",
+            "const": "offline",
+            "title": "Provider",
+            "default": "offline"
+          },
+          "model": {
+            "type": "string",
+            "const": "typed-edit-fixture-v1",
+            "title": "Model",
+            "default": "typed-edit-fixture-v1"
+          },
+          "live": {
+            "type": "boolean",
+            "const": false,
+            "title": "Live",
+            "default": false
+          },
+          "trust": {
+            "type": "string",
+            "const": "UNTRUSTED_PROPOSAL",
+            "title": "Trust",
+            "default": "UNTRUSTED_PROPOSAL"
+          },
+          "request": {
+            "type": "string",
+            "maxLength": 6000,
+            "minLength": 1,
+            "title": "Request"
+          },
+          "pack": {
+            "$ref": "#/components/schemas/EditProposalPack"
+          },
+          "preview": {
+            "$ref": "#/components/schemas/EditPreview"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request",
+          "pack",
+          "preview"
+        ],
+        "title": "TypedEditProposal"
       },
       "ValidationError": {
         "properties": {
@@ -1069,6 +2490,52 @@
           "expected_version"
         ],
         "title": "Version"
+      },
+      "Workflow": {
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "const": "eija.workflow.v1",
+            "title": "Schema Version",
+            "default": "eija.workflow.v1"
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]{0,39}$",
+            "title": "Id"
+          },
+          "initial_state": {
+            "type": "string",
+            "title": "Initial State"
+          },
+          "states": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 32,
+            "minItems": 1,
+            "title": "States"
+          },
+          "transitions": {
+            "items": {
+              "$ref": "#/components/schemas/Transition"
+            },
+            "type": "array",
+            "maxItems": 64,
+            "minItems": 1,
+            "title": "Transitions"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "initial_state",
+          "states",
+          "transitions"
+        ],
+        "title": "Workflow"
       }
     }
   }

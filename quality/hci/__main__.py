@@ -36,8 +36,21 @@ def _collect(args: argparse.Namespace) -> tuple[dict | None, int]:
         return None, 1
 
 
+def lane_status(rep: dict) -> str:
+    """The lane's verdict for quality.metrics.aggregate: FAIL when any budget regressed past its ratchet, else PASS.
+
+    A GAP (the ratchet holds but the target is not met) is a documented gap, not a regression; it stays visible per
+    budget in the report. This says nothing about usability for people (see docs/hci/README.md)."""
+    return "FAIL" if any(b["status"] == "FAIL" for b in rep["budgets"]) else "PASS"
+
+
+def write_lane_report(rep: dict, out: Path) -> None:
+    """Write report.json WITH the lane verdict; every writer of reports/hci/report.json must use this (the pytest fixture too)."""
+    report.write_text(out / "report.json", report.dumps({**rep, "status": lane_status(rep)}))
+
+
 def _write_outputs(rep: dict, raw: dict, out: Path) -> None:
-    report.write_text(out / "report.json", report.dumps(rep))
+    write_lane_report(rep, out)
     report.write_text(out / "REPORT.md", report.render_markdown(rep))
     report.write_text(out / "trace.json", report.dump_trace(raw))
 

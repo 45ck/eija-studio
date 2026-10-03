@@ -1,0 +1,42 @@
+name: Feature request
+description: Propose a capability or an improvement
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: Whose review or verification is hard today, and why? Give the concrete scenario first and the solution second.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: What would you add? Keep it inside the kernel's authority model; providers and agents never select meaning, approve or apply.
+    validations:
+      required: true
+  - type: textarea
+    id: oss
+    attributes:
+      label: Open-source tools you checked first
+      description: ADR-0016 asks us to adopt before we build. Which existing tools cover part of this, and what is left for EIJA-specific glue?
+  - type: dropdown
+    id: lane
+    attributes:
+      label: Closest lane
+      options:
+        - providers
+        - visual
+        - formal
+        - testing
+        - mutation
+        - quality
+        - metrics
+        - hci
+        - agents
+        - oss
+        - knowledge base
+        - other or new
+    validations:
+      required: true

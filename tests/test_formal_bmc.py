@@ -1,17 +1,26 @@
-"""Bounded model checking of the real runtime (verification/bmc): checker behaviour and negative controls."""
+"""Bounded model checking of the real runtime (verification/bmc): checker behaviour and negative controls.
+
+Tests marked `formal` run searches that take seconds each, so the default (fast/coverage) pytest run deselects them
+(`-m "not formal"` in pyproject) and the `bmc` session selects them (`pytest -m formal`).
+"""
 import json
 from dataclasses import replace
 from unittest import mock
 
 import pytest
-
 from eija_studio.adapters.sqlite_store import sandbox_factory
-from verification.bmc import mutants as M, report, spec
-from verification.bmc.explorer import Config, explore
-from verification.bmc.snapshot import Observer
 from eija_studio.application import runtime
 from eija_studio.application.runtime import execute, initialise
 from eija_studio.domain.models import DomainError, ExecuteCommand, Workflow
+from eija_studio.domain.pack import PACKS_ROOT, Effect, default_pack, load_pack
+
+from verification.bmc import __main__ as bmc_cli
+from verification.bmc import mutants as M
+from verification.bmc import report, spec
+from verification.bmc.explorer import Config, explore
+from verification.bmc.snapshot import Observer, Snapshot
+
+formal = pytest.mark.formal
 
 CANDIDATE = report.workflows()["candidate-reject-from-Recommended"]
 BASELINE = report.workflows()["baseline"]
@@ -24,6 +33,7 @@ def sandbox(tmp_path):
     return sandbox_factory(root)
 
 
+@formal
 def test_real_runtime_has_no_violation_within_depth_three(sandbox):
     res = explore("candidate", CANDIDATE, Config(depth=3), sandbox)
     assert res.verdict == "PASS" and not res.findings.first
@@ -56,6 +66,7 @@ def test_time_cap_makes_the_run_inconclusive_never_pass(sandbox):
     assert res.truncated and res.verdict == "INCONCLUSIVE"
 
 
+@formal
 @pytest.mark.parametrize("mutant", M.MUTANTS, ids=lambda m: m.name)
 def test_every_seeded_runtime_fault_is_found_with_a_shortest_trace(sandbox, mutant):
     with mutant.activate() as fn:
@@ -66,6 +77,7 @@ def test_every_seeded_runtime_fault_is_found_with_a_shortest_trace(sandbox, muta
     assert found["length"] <= 2 and len(found["trace"]) == found["length"]
 
 
+@formal
 def test_replay_before_authority_counterexample_is_the_expected_scenario(sandbox):
     mutant = next(m for m in M.MUTANTS if m.name == "replay_before_authority")
     with mutant.activate() as fn:
@@ -108,17 +120,40 @@ def _forged(kind, actor, base):
     return (*base.audit, (kind, body))
 
 
-@pytest.mark.parametrize("tamper,invariant", [
-    (lambda s: replace(s, audit=_forged("Audit:ExcursionApproved", "teacher-assigned", s)), "DECISION-ONLY-BY-REGISTRAR"),
-    (lambda s: replace(s, audit=s.audit[:-1]), "AUDIT-TRAIL-IS-A-VALID-RUN"),                      # state ahead of its trail
-    (lambda s: replace(s, instances=((*s.instance[:4], s.version + 1),)), "VERSION-COUNTS-COMMITS"),
-    (lambda s: replace(s, outbox=()), "OUTBOX-MATCHES-COMMITTED-RECOMMENDS"),
-    (lambda s: replace(s, audit=_forged("Audit:PaymentCaptured", "registrar", s)), "NO-FORBIDDEN-EFFECT"),
-    (lambda s: replace(s, audit=s.audit[:1] + s.audit[2:]), "APPROVAL-FOLLOWS-RECOMMENDATION"),      # approval without a recommendation
+LAWS = "PACK-LAWS-HOLD-ON-RUN"
+
+
+@pytest.mark.parametrize("tamper,invariant,law", [
+    (lambda s: replace(s, audit=_forged("Audit:ExcursionApproved", "teacher-assigned", s)), LAWS, "approve-held-by-registrar"),
+    (lambda s: replace(s, audit=s.audit[:-1]), "AUDIT-TRAIL-IS-A-VALID-RUN", None),                      # state ahead of its trail
+    (lambda s: replace(s, instances=((*s.instance[:4], s.version + 1),)), "VERSION-COUNTS-COMMITS", None),
+    (lambda s: replace(s, outbox=()), "OUTBOX-MATCHES-COMMITTED-NOTIFICATIONS", None),
+    (lambda s: replace(s, audit=_forged("Audit:PaymentCaptured", "registrar", s)), LAWS, "pack-forbidden-effects"),
+    (lambda s: replace(s, audit=s.audit[:1] + s.audit[2:]), LAWS, "approve-requires-recommended"),  # approval without a recommendation
 ])
-def test_state_invariants_detect_tampering(sandbox, tamper, invariant):
-    bad = tamper(_valid_state(sandbox))
-    assert invariant in {v.invariant for v in spec.check_state(CANDIDATE, bad)}
+def test_state_invariants_detect_tampering(sandbox, tamper, invariant, law):
+    """The law cases are judged by the kernel's own evaluate_run over the recorded run (no second encoding of the laws)."""
+    found = spec.check_state(CANDIDATE, tamper(_valid_state(sandbox)))
+    assert invariant in {v.invariant for v in found}
+    assert law is None or any(v.invariant == LAWS and f"law {law} " in v.detail for v in found), [v.detail for v in found]
+
+
+def test_a_genuine_library_loan_run_satisfies_the_pack_laws_and_a_forged_one_does_not():
+    """The state property is generic: the library-loan pack's laws (a path law included) judge a recorded run."""
+    loan = load_pack(PACKS_ROOT / "library-loan")
+    model = loan.model
+
+    def row(kind, op, actor):
+        return (kind, json.dumps({"case_id": spec.CASE, "operation_id": op, "actor_id": actor}))
+
+    actors = (("lib", "Librarian", 1, 1), ("mem", "Member", 1, 0))
+    good = Snapshot(instances=(("i", spec.CASE, "w", "Returned", 2),), actors=actors, operations=(("o1",), ("o2",)),
+                    audit=(row("Audit:LoanCheckedOut", "o1", "lib"), row("Audit:LoanReturned", "o2", "lib")), outbox=())
+    assert spec.law_violations_on_run(model, good, loan) == []
+    skipped = replace(good, audit=(row("Audit:LoanReturned", "o2", "lib"),))       # returned without ever being lent
+    member = replace(good, audit=(row("Audit:LoanCheckedOut", "o1", "mem"),))    # a member moves the loan on loan
+    assert any("law returned-requires-loan " in v.detail for v in spec.law_violations_on_run(model, skipped, loan))
+    assert any("law member-never-lends " in v.detail for v in spec.law_violations_on_run(model, member, loan))
 
 
 def test_step_oracle_distinguishes_commit_replay_and_denial(sandbox):
@@ -138,6 +173,32 @@ def test_committed_statistics_snapshot_is_valid_json_with_the_full_tier_run():
     assert run["config"]["depth"] == 6 and set(run["models"]) == set(report.DEFAULT_MODELS["full"])
 
 
+# ---- a run that could not check everything must not read as a PASS --------------------------------------
+
+@formal
+def test_a_run_without_committed_statistics_is_partial_not_pass(tmp_path):
+    """Depth 2 has no committed statistics: the drift check cannot compare, so the verdict must say so."""
+    doc = report.build_report(Config(depth=2), tmp_path / "w", run_self_test=False, model_names=("baseline",))
+    statuses = {c["id"]: c["status"] for c in doc["checks"]}
+    assert statuses["committed_statistics_have_no_drift"] == "NOT_RUN" and statuses["seeded_runtime_faults_are_detected"] == "NOT_RUN"
+    assert doc["verdict"] == "PARTIAL"
+
+
+def test_a_wall_clock_cap_does_not_disable_the_drift_check():
+    snapshot_config = report.load_snapshot()["runs"]["depth-6"]["config"]
+    assert report.drift(6, {}, {**snapshot_config, "max_seconds": 100.0})[0] is True
+    assert report.drift(6, {}, {**snapshot_config, "stale_versions": snapshot_config["stale_versions"] + 1})[0] is None
+
+
+@pytest.mark.parametrize("verdict", ["FAIL", "INCONCLUSIVE", "PARTIAL"])
+def test_write_snapshot_is_refused_unless_the_run_is_a_full_pass(tmp_path, monkeypatch, verdict):
+    monkeypatch.setattr(report, "SNAPSHOT", tmp_path / "expected_statistics.json")
+    doc = {"verdict": verdict, "checks": [], "results": {"models": {}, "counterexamples": {}}, "measurements": {"seconds_total": 0.0}}
+    monkeypatch.setattr(report, "build_report", lambda *a, **k: doc)
+    assert bmc_cli.main(["--depth", "2", "--write-snapshot", "--out", str(tmp_path / "bmc.json")]) != 0
+    assert not (tmp_path / "expected_statistics.json").exists()
+
+
 # ---- unsafe POLICY variants: the state invariants must flag them when the policy gate is bypassed ------------
 # The runtime calls `ensure_policy` on every execute, so an unsafe workflow cannot run at all unless the gate is
 # removed. These controls remove it (in the test only) to show the BMC invariants would catch what the gate blocks.
@@ -147,9 +208,30 @@ def _unsafe(candidate, action, **changes):
     return Workflow.model_construct(**{**dict(candidate), "transitions": swapped})
 
 
+def _pack_that_lets_forbidden_effects_run():
+    """The default pack with an audit effect for every effect it FORBIDS added to its catalog (``Audit:<forbidden id>``,
+    the shape the BMC's forbidden-fragment invariant matches), so the runtime's own catalog check (EFFECT_DENIED for an
+    undeclared effect) no longer stops a planted forbidden effect before the BMC can see it."""
+    pack = default_pack()
+    planted = tuple(Effect(id="Audit:" + effect, kind="audit") for effect in pack.effects.forbidden)
+    assert planted, "the default pack must forbid at least one effect for this control to mean anything"
+    return pack.model_copy(update={"effects": pack.effects.model_copy(update={"catalog": pack.effects.catalog + planted})})
+
+
 def _explore_without_policy_gate(sandbox, model, depth, stop_when_found=()):
-    with mock.patch.object(runtime, "ensure_policy", lambda _model: None):
+    """Run the search with the policy gate removed AND the catalog widened (both in the test only)."""
+    lax = _pack_that_lets_forbidden_effects_run()
+    with (mock.patch.object(runtime, "ensure_policy", lambda _model, _pack=None: None),
+          mock.patch.object(runtime, "default_pack", lambda: lax)):
         return explore("unsafe", model, Config(depth=depth, stop_when_found=stop_when_found), sandbox)
+
+
+def test_the_runtime_refuses_an_effect_outside_the_pack_catalog(sandbox):
+    """The runtime is stricter than the BMC invariant: an undeclared forbidden effect is denied, not committed."""
+    unsafe = _unsafe(CANDIDATE, "Approve", required_effects=("Audit:ExcursionApproved", "Audit:PaymentCaptured"))
+    with mock.patch.object(runtime, "ensure_policy", lambda _model, _pack=None: None):
+        res = explore("unsafe", unsafe, Config(depth=3, stop_when_found=(LAWS,)), sandbox)
+    assert LAWS not in res.findings.first
 
 
 def test_the_policy_gate_is_what_blocks_an_unsafe_workflow(sandbox):
@@ -159,13 +241,15 @@ def test_the_policy_gate_is_what_blocks_an_unsafe_workflow(sandbox):
     assert blocked.value.code == "POLICY_BLOCKED"
 
 
-@pytest.mark.parametrize("label,model,invariant,length", [
-    ("teacher may approve", _unsafe(CANDIDATE, "Approve", role="Teacher"), "DECISION-ONLY-BY-REGISTRAR", 3),
-    ("approve skips Recommended", _unsafe(CANDIDATE, "Approve", from_state="Submitted"), "APPROVAL-FOLLOWS-RECOMMENDATION", 2),
+@formal
+@pytest.mark.parametrize("label,model,law,length", [
+    ("teacher may approve", _unsafe(CANDIDATE, "Approve", role="Teacher"), "approve-held-by-registrar", 3),
+    ("approve skips Recommended", _unsafe(CANDIDATE, "Approve", from_state="Submitted"), "approve-requires-recommended", 2),
     ("forbidden effect required", _unsafe(CANDIDATE, "Approve", required_effects=("Audit:ExcursionApproved", "Audit:PaymentCaptured")),
-     "NO-FORBIDDEN-EFFECT", 3),
+     "pack-forbidden-effects", 3),
 ])
-def test_unsafe_workflow_variants_yield_shortest_counterexamples(sandbox, label, model, invariant, length):
-    res = _explore_without_policy_gate(sandbox, model, depth=3, stop_when_found=(invariant,))
-    assert invariant in res.findings.first, (label, sorted(res.findings.first))
-    assert res.findings.first[invariant]["length"] == length and res.verdict == "FAIL"
+def test_unsafe_workflow_variants_yield_shortest_counterexamples(sandbox, label, model, law, length):
+    res = _explore_without_policy_gate(sandbox, model, depth=3, stop_when_found=(LAWS,))
+    assert LAWS in res.findings.first, (label, sorted(res.findings.first))
+    first = res.findings.first[LAWS]
+    assert f"law {law} " in first["detail"] and first["length"] == length and res.verdict == "FAIL"

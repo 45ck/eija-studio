@@ -19,7 +19,7 @@ python -m demos run assurance_loop --dry-run     # same real clicks and assertio
 python -m demos run assurance_loop               # record demos/output/assurance_loop.webm + its manifest
 ```
 
-Exit codes: `0` PASS or PARTIAL, `1` failure, `2` usage, `3` NOT_RUN (a blocked scenario, Playwright not
+Exit codes: `0` PASS or PARTIAL, `1` failure, `2` usage, `3` NOT_RUN (a blocked or unscripted scenario, Playwright not
 installed, or Chrome cannot be launched; never reported as a pass). `--seed` only fixes the typing cadence;
 recordings are not otherwise repeatable.
 
@@ -30,7 +30,8 @@ recordings are not otherwise repeatable.
 | `recorded` | a take exists and no act was skipped |
 | `recorded-partial` | a take exists but an act could not run; the manifest lists it |
 | `scripted-not-recorded` | the scenario module exists but has not been recorded |
-| `blocked` | waits for other lanes; there is deliberately no module, only a registry row |
+| `unscripted` | every lane the scenario needs has landed, but no script exists yet; there is deliberately no module, only a registry row |
+| `blocked` | waits for a lane that has not landed (a wave-2 lane); there is deliberately no module, only a registry row |
 
 The video is a large binary and stays out of git (`demos/output/`, gitignored). What is committed is a small manifest
 under `recordings/` (video sha256 and size, platform, skipped acts, and the sha256 of the scenario source at

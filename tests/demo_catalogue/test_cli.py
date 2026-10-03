@@ -49,9 +49,16 @@ def test_unknown_scenario_is_a_usage_error(capsys):
     assert cli.main(["run", "no_such_scenario", "--dry-run"]) == cli.EXIT_USAGE
 
 
-def test_blocked_scenario_is_not_run(capsys):
+def test_blocked_scenario_is_not_run_and_names_the_lane_it_waits_for(capsys):
+    assert cli.main(["run", "uml_drag_and_drop", "--dry-run"]) == cli.EXIT_NOT_RUN
+    out = capsys.readouterr().out
+    assert out.startswith("NOT_RUN") and "blocked on lane(s) uml-editor" in out and "visual" not in out
+
+
+def test_unscripted_scenario_is_not_run_and_says_there_is_no_script(capsys):
     assert cli.main(["run", "visual_diff_and_ripple", "--dry-run"]) == cli.EXIT_NOT_RUN
-    assert capsys.readouterr().out.startswith("NOT_RUN")
+    out = capsys.readouterr().out
+    assert out.startswith("NOT_RUN") and "no scenario script exists yet" in out and "blocked on" not in out
 
 
 def test_missing_playwright_is_not_run_not_a_pass(capsys, monkeypatch):

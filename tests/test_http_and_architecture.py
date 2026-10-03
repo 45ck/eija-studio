@@ -2,6 +2,9 @@ import ast, json
 from pathlib import Path
 from fastapi.testclient import TestClient
 from eija_studio.interfaces.http import create_app
+from eija_studio.adapters.providers._common import system_prompt
+from eija_studio.domain.pack import PACKS_ROOT, load_pack
+from eija_studio.interfaces.http import pack_summary
 
 
 def client(studio):
@@ -61,3 +64,19 @@ def test_architecture_dependency_direction():
 def test_browser_never_interprets_provider_html():
     js=(Path(__file__).resolve().parents[1]/"src/eija_studio/resources/web/app.js").read_text()
     assert "innerHTML" not in js and "eval(" not in js
+
+
+def test_status_names_the_domain_from_the_pack_not_from_the_page():
+    """WBS 1.5: the page takes the pack's name, demo request, actions and actors from /api/status (no literals in app.js)."""
+    for name in ("excursion", "library-loan"):
+        pack = load_pack(PACKS_ROOT / name)
+        summary = pack_summary(pack)
+        assert summary["actions"] == [a.id for a in pack.actions] and summary["demo_request"] == pack.fixtures.demo_request
+        assert [a["id"] for a in summary["actors"]] == [a.id for a in pack.fixtures.actors]
+
+
+def test_the_provider_prompt_lists_only_the_workflow_packs_meanings():
+    loan, excursion = load_pack(PACKS_ROOT / "library-loan"), load_pack(PACKS_ROOT / "excursion")
+    prompt = system_prompt(loan.model, pack=loan)
+    assert all(f"- {m.id}:" in prompt for m in loan.meanings)
+    assert not any(f"- {m.id}:" in prompt for m in excursion.meanings if m.id not in {x.id for x in loan.meanings})

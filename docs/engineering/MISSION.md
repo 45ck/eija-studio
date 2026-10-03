@@ -1,6 +1,6 @@
 # EIJA mission and delivery goals
 
-Established **2 October 2026**. The goal is a complete, polished IDE experience across the supported workflow. This mission guides implementation; it does not declare the product or its validation complete. This publication adds documentation to the existing kernel baseline, while the source-connected IDE remains in development.
+Established **2 October 2026**, incorporating the owner's clarification that the goal is a complete, polished IDE experience, not a minimal demo. This is the current mission for prioritizing work. It does not declare the product or its validation complete. This clarification supersedes earlier wording that a small working slice alone was sufficient for the WOW release.
 
 ## Mission
 
@@ -53,7 +53,7 @@ The POC/POF package is ready when the following checks are evidenced for **the c
 | Source review is handled honestly | Keep `SOURCE_REVIEW_REQUIRED` visible when implementation differs from the owner-reviewed fixture. A development POC may demonstrate read-only/model-edit capabilities with that restriction explicitly shown. Claim trusted verification or apply only after the maintainer's source-review gate is legitimately complete; agents never restamp or bypass it. |
 | Licenses and source boundaries are clear | Check the OSS register, pinned/vendor provenance and required license notices. Exclude private logs, credentials, unrelated source and unlicensed artifacts. Record any dependency or redistribution limitation. |
 | The UX and presentation are ready | Pass the IDE UX rubric on actual working journeys: readable unclipped layout, intelligible diagrams, coherent navigation, safe edit recovery, history, keyboard focus and feedback. Record review findings and fix consequential usability defects. Then produce the walkthrough and clips; test counts and video editing cannot substitute for this gate. |
-| GitHub reflects the artifact | Publish reviewed progress through focused commits and documentation/implementation PRs as work proceeds. Use auto-merge only where repository rules and required checks permit it. The POC/POF release must align the README, runnable revision, setup, evidence and limitations; earlier documentation PRs do not claim the product is ready. |
+| GitHub reflects the artifact | Publish reviewed progress through focused commits and documentation/implementation PRs as work proceeds. Use auto-merge only where repository rules and required checks permit it. Coordinate the POC/POF release so the README, runnable code/artifact revision, setup and reproduction steps, evidence links and limitations agree. Earlier progress PRs do not establish release readiness. Do not present planned scenes or historical test totals as current results. |
 
 An expected, disclosed source-review restriction or unsupported capability is different from an undisclosed defect in an advertised path. Data loss, source mutation through the read-only connection, false evidence attribution, a missed declared critical fixture or a broken advertised flow blocks readiness. Fix those before packaging.
 
@@ -83,7 +83,7 @@ The four flagship scenes remain the demonstration roadmap, with their own tested
 
 | Outcome | Current state | Evidence needed to advance |
 |---|---|---|
-| Full supported self-dogfood IDE | In development; not delivered by this documentation publication and not accepted | [Acceptance and current run record](SELF-DOGFOOD-ACCEPTANCE.md#run-record) |
+| Full supported self-dogfood IDE | Integrating; final combined result not established by this mission | [Acceptance and current run record](SELF-DOGFOOD-ACCEPTANCE.md#run-record) |
 | WOW walkthrough and clips from the usable IDE | Not declared ready | Passing integrated engineering/UX journeys, resolved consequential usability findings and captured artifacts tied to the run |
 | GitHub POC/POF package | Not declared ready | Prototype readiness checklist above, clean-checkout replay, content/license checks and coordinated publication |
 | Four-scene expansion | Staged goal; no all-four completion claim | Per-scene capability and replay evidence |

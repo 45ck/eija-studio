@@ -1,0 +1,231 @@
+{
+  "edge_id": {
+    "edge": {
+      "from": "repo://src/a.py#f",
+      "kind": "satisfies",
+      "to": "repo://docs/verification/ACCEPTANCE_MATRIX.csv#AC01"
+    },
+    "id": "sha256:be536833e2d7068ea0efba9a3805a7412a7b27f66d2f283e089657a26d65bca3",
+    "key": [
+      "satisfies",
+      "repo://src/a.py#f",
+      "repo://docs/verification/ACCEPTANCE_MATRIX.csv#AC01",
+      ""
+    ]
+  },
+  "ids": [
+    {
+      "canonical": true,
+      "id": "repo://src/a.py#f"
+    },
+    {
+      "canonical": false,
+      "id": "repo://x/y.json#state/a%2fb"
+    },
+    {
+      "canonical": true,
+      "id": "repo://examples/e.json#state/Awaiting%20approval"
+    }
+  ],
+  "jcs": [
+    {
+      "eija.weave.node.v1": "sha256:7d510331271fd499c07a83df13dccf6eeafe8625b90aad5b2e888b92329e98b0",
+      "input": {},
+      "jcs": "{}",
+      "name": "empty_object",
+      "sha256_of_jcs": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "eija.weave.node.v1": "sha256:84904fe059fceae4b218d57513d4be930064d441eaf5933989d6d3c027404a03",
+      "input": [],
+      "jcs": "[]",
+      "name": "empty_array",
+      "sha256_of_jcs": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "eija.weave.node.v1": "sha256:148cd41c8df2363f1f42a9c08c11a33129b5933493678d377a7596f6554566ff",
+      "input": [
+        null,
+        true,
+        false
+      ],
+      "jcs": "[null,true,false]",
+      "name": "null_true_false",
+      "sha256_of_jcs": "37257214f22b92121c5ff4d7e29ed2d31b3f1129ee698e96e581ec05cb2e3cf7"
+    },
+    {
+      "eija.weave.node.v1": "sha256:9d56428afc98b88d4ed09568487dded8c0f7a08d89c16103164268de54c68e9c",
+      "input": [
+        0,
+        -1,
+        9007199254740991,
+        -9007199254740991
+      ],
+      "jcs": "[0,-1,9007199254740991,-9007199254740991]",
+      "name": "int_edges",
+      "sha256_of_jcs": "d1f4b91349edc7ebd49ff1de73304f618c38a7456b5e36df82573d372466fff6"
+    },
+    {
+      "eija.weave.node.v1": "sha256:4a278167da33d231b59588fd7ab1446e5bc0885f304fe42e36c867571a824778",
+      "input": "\"\\/\b\f\n\r\t\u0000\u001f\u007f",
+      "jcs": "\"\\\"\\\\/\\b\\f\\n\\r\\t\\u0000\\u001f\u007f\"",
+      "name": "string_escapes",
+      "sha256_of_jcs": "739ef41795e702c041c56d7d0977e46cc0260085b60cc71e3fb99d181fe9be77"
+    },
+    {
+      "eija.weave.node.v1": "sha256:f5aaaf4a21229f1c2ada001be8029b37f7054db019b603c608d62050c0828b07",
+      "input": "\u00e9\u2028\u20ac\ud83d\ude00",
+      "jcs": "\"\u00e9\u2028\u20ac\ud83d\ude00\"",
+      "name": "string_unicode",
+      "sha256_of_jcs": "c771704f51814b3e7ad38fdc5521680a5596565d358921b914c1ced8757ddb0c"
+    },
+    {
+      "eija.weave.node.v1": "sha256:4661ee96ae38e3e389617078f272c82d55c6e6f251e9586620d4da836548ac85",
+      "input": {
+        "": 4,
+        "B": 3,
+        "a": 2,
+        "b": 1
+      },
+      "jcs": "{\"\":4,\"B\":3,\"a\":2,\"b\":1}",
+      "name": "key_order_ascii",
+      "sha256_of_jcs": "76f93dc76135c701a72f87fabf373e499fe76a0a10462948148921b6acad63b7"
+    },
+    {
+      "eija.weave.node.v1": "sha256:922f77993db9927ed5ed1c0c9d1955e2a029e3402266c9c4a174c4f41a874692",
+      "input": {
+        "\ud7ff": 4,
+        "\ue000": 3,
+        "\uffff": 2,
+        "\ud800\udc00": 1
+      },
+      "jcs": "{\"\ud7ff\":4,\"\ud800\udc00\":1,\"\ue000\":3,\"\uffff\":2}",
+      "name": "key_order_utf16",
+      "sha256_of_jcs": "f09039be48ea48aecece519c396e92d36d18409dea62e144f7dbdf4b3a569832"
+    },
+    {
+      "eija.weave.node.v1": "sha256:51c62bf1f00af1614d1b5d40a4b22f58592928936b61c15c49e8dfe7d09cc459",
+      "input": {
+        "a": {
+          "y": "x"
+        },
+        "z": [
+          {
+            "a": [
+              1,
+              2
+            ],
+            "b": null
+          }
+        ]
+      },
+      "jcs": "{\"a\":{\"y\":\"x\"},\"z\":[{\"a\":[1,2],\"b\":null}]}",
+      "name": "nested",
+      "sha256_of_jcs": "afd302e0f8c5bf71f58cbcc6191061b0bf8a2e78432db61ea0a50c2863895241"
+    },
+    {
+      "eija.weave.node.v1": "sha256:b2b6907bf4a80ac24481aa3e2eb73b4ba7f79ef0fa94a68cc3fa96a2cffdfcb4",
+      "input": {
+        "digest": {
+          "method": "ast-v1",
+          "value": "sha256:abababababababababababababababababababababababababababababababab"
+        },
+        "id": "repo://src/a.py#f",
+        "prov": "exact",
+        "type": "symbol"
+      },
+      "jcs": "{\"digest\":{\"method\":\"ast-v1\",\"value\":\"sha256:abababababababababababababababababababababababababababababababab\"},\"id\":\"repo://src/a.py#f\",\"prov\":\"exact\",\"type\":\"symbol\"}",
+      "name": "node_record",
+      "sha256_of_jcs": "d5fcf65d20f8b0c00a9406d70f5af4f3eed841e5fdbb4cd460b0f727608c5c05"
+    }
+  ],
+  "must_reject": [
+    {
+      "name": "float",
+      "why": "floats are outside the subset (RFC 8785 number formatting is not needed and not implemented)"
+    },
+    {
+      "name": "int_2**53",
+      "why": "outside +-(2^53-1)"
+    },
+    {
+      "name": "lone_surrogate",
+      "why": "RFC 8785 requires an error"
+    },
+    {
+      "name": "non_string_key",
+      "why": "JSON object keys are strings"
+    },
+    {
+      "name": "bytes_or_set",
+      "why": "not JSON types"
+    }
+  ],
+  "root": {
+    "nodes_edges": "synth(30, 60, seed=1) from graph/bench/identity_checks.py",
+    "value": "sha256:eac15ad2b9c1bb948f2f504895e6d78d8425717c7a7d3731905d86a1cc2381e1"
+  },
+  "schema": "eija.weave.identity-vectors/v1",
+  "shard_rows": {
+    "comparator": "element-wise lexicographic over the row lists; strings compare by UTF-8 bytes (every element is ASCII by schema, so code-point, byte and UTF-16 order coincide); rows are ['n', id, hash] and ['e', kind, from, to, qualifier, hash]",
+    "edges": [
+      {
+        "asserted_in": "src/a.py",
+        "class": "derived",
+        "from": "repo://src/a.py#b",
+        "kind": "depends_on",
+        "prov": "exact",
+        "to": "repo://src/a.py#a"
+      },
+      {
+        "asserted_in": "src/a.py",
+        "class": "derived",
+        "from": "repo://src/a.py#b",
+        "kind": "calls",
+        "prov": "exact",
+        "to": "repo://src/a.py#a"
+      },
+      {
+        "asserted_in": "docs/l.md",
+        "class": "declared",
+        "from": "repo://src/a.py#a",
+        "kind": "names",
+        "prov": "exact",
+        "qualifier": "surface",
+        "to": "repo://src/a.py#b"
+      }
+    ],
+    "language_view_root": "sha256:ebe5c2cecd8fdb8ee0d6ad00f3671af25dae0929c0929d84f429d7c61281d9a9",
+    "nodes": [
+      {
+        "digest": {
+          "method": "ast-v1",
+          "value": "sha256:0101010101010101010101010101010101010101010101010101010101010101"
+        },
+        "id": "repo://src/a.py#b",
+        "prov": "exact",
+        "type": "symbol"
+      },
+      {
+        "digest": {
+          "method": "ast-v1",
+          "value": "sha256:0202020202020202020202020202020202020202020202020202020202020202"
+        },
+        "id": "repo://src/a.py#a",
+        "prov": "exact",
+        "type": "symbol"
+      }
+    ],
+    "root": "sha256:27b353b38d0fcff97e1c09f5df870d33466e68cc6b497725c443d275c1955b14",
+    "shard_hashes": {
+      "docs/l.md": "sha256:cd727c97e881dcdfd87643788582a20ee167a63caef068e4b1c49e5c99cc69a7",
+      "src/a.py": "sha256:e98251d559a81453475fd3a49400531ea90e7f2155e10f21c98297b600b2dbbb"
+    },
+    "structure_view_root": "sha256:e22af9ff63ff3c0024d589b1f196754e4fe4e84ab2fe0a4b10d146782d7a4d10"
+  },
+  "uuid": {
+    "id": "repo://src/a.py#f",
+    "namespace": "504a1617-fcab-5ac4-80d6-bd272560936e",
+    "uuid5": "d1c299d8-6e44-5910-81fa-a7c4a10dcfff"
+  }
+}

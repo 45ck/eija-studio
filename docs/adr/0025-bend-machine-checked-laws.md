@@ -24,7 +24,8 @@ Which tool checks them, where does it run on a Windows-first reference PC, and w
 ## Considered options
 
 * **Bend 2** ([bendlang/bend](https://github.com/bendlang/bend), Apache-2.0): `LAWS.bend` states laws, `PROOF.bend` proves
-  them, `bend PROOF.bend --verdict` rechecks with a small Lean-proven kernel (BendTT). Linux, macOS and WSL only.
+  them, `bend PROOF.bend --verdict` rechecks with a small kernel (BendTT) whose soundness theorem is proven in Lean (the elaborator and parser in front of
+  it are trusted, not proven). Linux, macOS and WSL only.
 * Lean 4 / Coq / Agda / Isabelle directly: mature, larger proof ecosystems, heavier toolchains, no laws/proof file
   convention aimed at AI-written proofs, and a translation layer we would have to invent.
 * Dafny: verifies programs, not standalone laws about a generated model.
@@ -43,8 +44,10 @@ proved trust base.
   archive sha256. The official installer always installs the latest release and is therefore not run verbatim.
 * The gate runs the container with no network, a read-only root filesystem, no capabilities and read-only inputs.
 * PASS means exactly `bend PROOF.bend --verdict` printed `ALL PROOFS CHECK` with exit code 0. Docker, the daemon, the
-  image (first build needs network) or a timeout missing means `NOT_RUN`: exit code 3, a skipped nox session, a report with
-  `status: NOT_RUN` and the reason.
+  image (built only on request: `--build` or `EIJA_BEND_BUILD=1`, since it downloads about 300 MB) missing means
+  `NOT_RUN`: exit code 3, a skipped nox session, a report with `status: NOT_RUN` and the reason. A proof run that
+  starts and then times out or is killed is a `FAIL`, never a skip. Plain `bend` output (no `--verdict`) is never
+  counted as a proof.
 * The evidence is `reports/formal/bend.json` with `kind: bend_proof`. A `bend_proof` states laws about the **model**; it
   never stands in for runtime conformance, a human study or a proof of the Python code
   ([ADR-0026](0026-bend-model-generation-controls-conformance.md) defines the companions).
@@ -55,8 +58,8 @@ proved trust base.
 * Good: machine-checked laws over all sequences with a small trust base; the laws read as specifications; the same
   proofs are reusable against unsafe variants.
 * Bad: a Docker dependency (skipped, not failed, when absent); Bend 2 is young (2.0.x) and its language may change,
-  so the version is pinned and upgrading is an explicit, reviewed change; the first image build needs network and
-  downloads roughly 300 MB of pinned archives.
+  so the version is pinned and upgrading is an explicit, reviewed change; the image build needs network and
+  downloads roughly 300 MB of pinned archives, so it is opt-in.
 * Revisit when: Bend supports native Windows, a Bend release changes `--verdict` semantics, or another lane's
   Lean/Coq tooling makes a shared proof toolchain cheaper.
 

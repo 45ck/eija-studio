@@ -4,12 +4,7 @@
       "additionalProperties": false,
       "properties": {
         "interpretation": {
-          "enum": [
-            "recommend_only",
-            "final_approval",
-            "confirm_only",
-            "unsupported"
-          ],
+          "pattern": "^[a-z][a-z0-9_]{0,39}$",
           "title": "Interpretation",
           "type": "string"
         },

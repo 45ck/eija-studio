@@ -1,0 +1,3442 @@
+{
+  "$defs": {
+    "digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "id": {
+      "maxLength": 512,
+      "pattern": "^repo://(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)(?:#(?:[A-Za-z0-9._~:-]|%[0-9A-F]{2})+(?:/(?:[A-Za-z0-9._~:-]|%[0-9A-F]{2})+)*)?(?![\\s\\S])",
+      "type": "string"
+    },
+    "method": {
+      "enum": [
+        "ast-v1",
+        "ast-sig-v1",
+        "ast-v2",
+        "ast-api-v1",
+        "lf-sha256-v1",
+        "csv-row-v1",
+        "md-bold-term-v1",
+        "md-table-row-v1",
+        "workflow-semantic-v1",
+        "workflow-element-v1",
+        "json-key-v1",
+        "html-key-v1",
+        "okf-human-v1",
+        "law-block-v1"
+      ]
+    },
+    "node": {
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "adr"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.adr"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "agent_run"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.agent_run"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "api_operation"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.api_operation"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "bounded_context"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.bounded_context"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "claim"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.claim"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "component"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.component"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "contract"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.contract"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "decision"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.decision"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "design_token"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.design_token"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "diagram"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.diagram"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "diagram_element"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.diagram_element"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "document"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.document"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "effect"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.effect"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "evidence"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.evidence"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "formal_law"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.formal_law"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "formal_model"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.formal_model"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "gate"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.gate"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "guard"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.guard"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "invariant"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.invariant"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "journey"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.journey"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "lane"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.lane"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "link_certificate"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.link_certificate"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "module"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.module"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "okf_page"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.okf_page"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "persona"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.persona"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "property"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.property"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "requirement"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.requirement"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "role"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.role"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "state"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.state"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "symbol"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.symbol"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "term"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.term"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "test"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.test"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "tool"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.tool"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "transition"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.transition"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "ui_control"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.ui_control"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "ui_field"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.ui_field"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "ui_region"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.ui_region"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "ui_status"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.ui_status"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "ui_table"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.ui_table"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "ui_view"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.ui_view"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "witness"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.witness"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "workflow"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/node.workflow"
+          }
+        }
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "adr",
+            "agent_run",
+            "api_operation",
+            "bounded_context",
+            "claim",
+            "component",
+            "contract",
+            "decision",
+            "design_token",
+            "diagram",
+            "diagram_element",
+            "document",
+            "effect",
+            "evidence",
+            "formal_law",
+            "formal_model",
+            "gate",
+            "guard",
+            "invariant",
+            "journey",
+            "lane",
+            "link_certificate",
+            "module",
+            "okf_page",
+            "persona",
+            "property",
+            "requirement",
+            "role",
+            "state",
+            "symbol",
+            "term",
+            "test",
+            "tool",
+            "transition",
+            "ui_control",
+            "ui_field",
+            "ui_region",
+            "ui_status",
+            "ui_table",
+            "ui_view",
+            "witness",
+            "workflow"
+          ]
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "type": "object"
+    },
+    "node.adr": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "else": {
+            "properties": {
+              "digest": {
+                "properties": {
+                  "method": {
+                    "enum": [
+                      "lf-sha256-v1"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "if": {
+            "properties": {
+              "id": {
+                "pattern": "#"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "digest": {
+                "properties": {
+                  "method": {
+                    "enum": [
+                      "md-table-row-v1"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "adr_status": {
+              "enum": [
+                "proposed",
+                "accepted",
+                "superseded"
+              ]
+            },
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "lf-sha256-v1",
+                "md-table-row-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:docs/adr/[0-9]{4}-[a-z0-9-]+\\.md)(?:#(?:adr-[0-9]{3}))?(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "adr"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.agent_run": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "agent": {
+              "maxLength": 200,
+              "type": "string"
+            },
+            "cli_version": {
+              "maxLength": 200,
+              "type": "string"
+            },
+            "model": {
+              "maxLength": 200,
+              "type": "string"
+            },
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "lf-sha256-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "agent_run"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.api_operation": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "json-key-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:contracts/openapi\\.json)#(?:[A-Za-z0-9][A-Za-z0-9._~-]*)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "api_operation"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.bounded_context": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "md-table-row-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.md)#(?:[a-z0-9]+(?:-[a-z0-9]+)*)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "bounded_context"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.claim": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "json-key-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.json)#(?:[A-Za-z0-9][A-Za-z0-9._~-]*)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "claim"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.component": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "json-key-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.json)#(?:[A-Za-z0-9][A-Za-z0-9._~-]*)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "component"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.contract": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "else": {
+            "properties": {
+              "digest": {
+                "properties": {
+                  "method": {
+                    "enum": [
+                      "lf-sha256-v1"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "if": {
+            "properties": {
+              "id": {
+                "pattern": "#"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "digest": {
+                "properties": {
+                  "method": {
+                    "enum": [
+                      "json-key-v1"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "lf-sha256-v1",
+                "json-key-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:contracts/[A-Za-z0-9._-]+\\.json)(?:#(?:[A-Za-z0-9][A-Za-z0-9._~-]*))?(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "contract"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.decision": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "actor": {
+              "maxLength": 200,
+              "type": "string"
+            },
+            "subject": {
+              "maxLength": 200,
+              "type": "string"
+            },
+            "subject_kind": {
+              "enum": [
+                "node",
+                "edge"
+              ]
+            },
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "json-key-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:graph/ledger(?:/[a-z0-9_-]+)?\\.jsonl)#(?:[0-9a-f]{64})(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "decision"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.design_token": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            },
+            "token_type": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "json-key-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.json)#(?:[A-Za-z0-9][A-Za-z0-9._~-]*)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "design_token"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.diagram": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "notation": {
+              "enum": [
+                "mermaid",
+                "plantuml",
+                "dot",
+                "sysml",
+                "likec4",
+                "structurizr",
+                "drawio"
+              ]
+            },
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "lf-sha256-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:docs/diagrams/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "diagram"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.diagram_element": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "lf-sha256-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:docs/diagrams/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)#(?:[A-Za-z0-9][A-Za-z0-9._~-]*)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "diagram_element"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.document": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "else": {
+            "properties": {
+              "digest": {
+                "properties": {
+                  "method": {
+                    "enum": [
+                      "lf-sha256-v1"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "if": {
+            "properties": {
+              "id": {
+                "pattern": "#"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "digest": {
+                "properties": {
+                  "method": {
+                    "enum": [
+                      "md-table-row-v1",
+                      "lf-sha256-v1"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "lf-sha256-v1",
+                "md-table-row-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.md)(?:#(?:[a-z0-9]+(?:-[a-z0-9]+)*))?(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "document"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.effect": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "workflow-element-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.json)#(?:effect/(?:[A-Za-z0-9._~:-]|%[0-9A-F]{2})+)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "effect"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.evidence": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "evidence_kind": {
+              "enum": [
+                "receipt",
+                "report",
+                "log"
+              ]
+            },
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "lf-sha256-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "evidence"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.formal_law": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "technique": {
+              "enum": [
+                "bend",
+                "tla",
+                "smt",
+                "other"
+              ]
+            },
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "law-block-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:verification/[a-z0-9_-]+/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)#(?:[A-Za-z0-9][A-Za-z0-9._~-]*)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "formal_law"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.formal_model": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "technique": {
+              "enum": [
+                "bend",
+                "tla",
+                "smt",
+                "other"
+              ]
+            },
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "lf-sha256-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:verification/[a-z0-9_-]+/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "formal_model"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.gate": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "ast-v2",
+                "ast-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:quality/sessions/[a-z0-9_]+\\.py)#(?:[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "gate"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.guard": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "workflow-element-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.json)#(?:guard/(?:[A-Za-z0-9._~:-]|%[0-9A-F]{2})+)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "guard"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.invariant": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "md-bold-term-v1",
+                "ast-v1",
+                "json-key-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)#(?:[A-Za-z0-9][A-Za-z0-9._~-]*)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "invariant"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.journey": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "workflow-semantic-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.json)#(?:journey/(?:[A-Za-z0-9._~:-]|%[0-9A-F]{2})+)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "journey"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.lane": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "md-table-row-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:docs/adr/README\\.md)#(?:[a-z0-9]+(?:-[a-z0-9]+)*)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "lane"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.link_certificate": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "lf-sha256-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "link_certificate"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.module": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "lang": {
+              "enum": [
+                "python"
+              ]
+            },
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "ast-api-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.py)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "module"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.okf_page": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "okf_status": {
+              "enum": [
+                "draft",
+                "stable",
+                "deprecated"
+              ]
+            },
+            "okf_type": {
+              "maxLength": 200,
+              "type": "string"
+            },
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "lf-sha256-v1",
+                "okf-human-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:okf/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*\\.md)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "okf_page"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.persona": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "md-table-row-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.md)#(?:[a-z0-9]+(?:-[a-z0-9]+)*)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "persona"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.property": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "ast-v2",
+                "ast-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:tests/property/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*\\.py)#(?:[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "property"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.requirement": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "area": {
+              "maxLength": 200,
+              "type": "string"
+            },
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "csv-row-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.csv)#(?:[A-Za-z0-9][A-Za-z0-9._~-]*)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "requirement"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.role": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "workflow-element-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.json)#(?:role/(?:[A-Za-z0-9._~:-]|%[0-9A-F]{2})+)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "role"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.state": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "initial": {
+              "type": "boolean"
+            },
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "workflow-element-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.json)#(?:state/(?:[A-Za-z0-9._~:-]|%[0-9A-F]{2})+)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "state"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.symbol": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "kind": {
+              "enum": [
+                "function",
+                "class",
+                "method",
+                "constant",
+                "type_alias"
+              ]
+            },
+            "lang": {
+              "enum": [
+                "python"
+              ]
+            },
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            },
+            "visibility": {
+              "enum": [
+                "public",
+                "private"
+              ]
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "ast-v2",
+                "ast-sig-v1",
+                "ast-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.py)#(?:[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "symbol"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.term": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "ddd_role": {
+              "enum": [
+                "aggregate",
+                "entity",
+                "value_object",
+                "domain_event",
+                "domain_service",
+                "policy",
+                "concept"
+              ]
+            },
+            "status": {
+              "enum": [
+                "draft",
+                "active",
+                "deprecated"
+              ]
+            },
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "md-bold-term-v1",
+                "json-key-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:(?:(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.md|(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.json))#(?:[a-z0-9][a-z0-9._-]*)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "term"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.test": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "else": {
+            "properties": {
+              "digest": {
+                "properties": {
+                  "method": {
+                    "enum": [
+                      "lf-sha256-v1"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "if": {
+            "properties": {
+              "id": {
+                "pattern": "#"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "digest": {
+                "properties": {
+                  "method": {
+                    "enum": [
+                      "ast-v2",
+                      "ast-v1"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "kind": {
+              "enum": [
+                "unit",
+                "integration",
+                "property",
+                "golden",
+                "e2e"
+              ]
+            },
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "ast-v2",
+                "ast-v1",
+                "lf-sha256-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:(?:tests|scripts)/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*\\.py)(?:#(?:[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*))?(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "test"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.tool": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "pin": {
+              "maxLength": 200,
+              "type": "string"
+            },
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "json-key-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:graph/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*\\.json)#(?:[A-Za-z0-9][A-Za-z0-9._~-]*)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "tool"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.transition": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "action": {
+              "maxLength": 200,
+              "type": "string"
+            },
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "workflow-element-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.json)#(?:transition/(?:[A-Za-z0-9._~:-]|%[0-9A-F]{2})+)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "transition"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.ui_control": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "html-key-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.json)#(?:control/(?:[A-Za-z0-9._~:-]|%[0-9A-F]{2})+)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "ui_control"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.ui_field": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "html-key-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.json)#(?:field/(?:[A-Za-z0-9._~:-]|%[0-9A-F]{2})+)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "ui_field"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.ui_region": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "html-key-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.json)#(?:region/(?:[A-Za-z0-9._~:-]|%[0-9A-F]{2})+)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "ui_region"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.ui_status": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "html-key-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.json)#(?:status/(?:[A-Za-z0-9._~:-]|%[0-9A-F]{2})+)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "ui_status"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.ui_table": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "html-key-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.json)#(?:table/(?:[A-Za-z0-9._~:-]|%[0-9A-F]{2})+)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "ui_table"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.ui_view": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "html-key-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.json)#(?:view/(?:[A-Za-z0-9._~:-]|%[0-9A-F]{2})+)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "ui_view"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.witness": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "technique": {
+              "enum": [
+                "bend",
+                "tla",
+                "smt",
+                "property",
+                "mutation",
+                "other"
+              ]
+            },
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "lf-sha256-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "witness"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "node.workflow": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "title": {
+              "maxLength": 200,
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "digest": {
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "enum": [
+                "workflow-semantic-v1"
+              ]
+            },
+            "value": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "method",
+            "value"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "maxLength": 512,
+          "pattern": "^repo://(?:(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)\\.json)(?![\\s\\S])",
+          "type": "string"
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "partial",
+            "syntactic",
+            "tool-resolved"
+          ]
+        },
+        "type": {
+          "const": "workflow"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "digest",
+        "prov"
+      ],
+      "type": "object"
+    },
+    "path": {
+      "maxLength": 400,
+      "pattern": "^(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)(?![\\s\\S])",
+      "type": "string"
+    }
+  },
+  "$id": "urn:eija:weave:schema:node:1",
+  "$ref": "#/$defs/node",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EIJA weave node (metamodel 1.0.0); generated by build_schemas.py, do not edit"
+}

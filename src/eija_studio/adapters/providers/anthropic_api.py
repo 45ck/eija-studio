@@ -15,8 +15,9 @@ import httpx
 
 from eija_studio.application.ports import ProviderResult
 from eija_studio.domain.models import DomainError, Workflow, canonical
+from eija_studio.domain.pack import Pack, default_pack
 
-from ._common import SYSTEM, parse_proposal, proposal_schema, safe_usage, validate_model_name
+from ._common import parse_proposal, proposal_schema, safe_usage, system_prompt, validate_model_name
 from ._http import post_json
 
 ENDPOINT = "https://api.anthropic.com/v1/messages"
@@ -51,8 +52,10 @@ def _reply_text(payload: dict[str, Any]) -> str:
 class AnthropicApiProvider:
     name, networked = "anthropic", True
 
-    def __init__(self, model: str = "", key: str | None = None, *, transport: httpx.BaseTransport | None = None, timeout: float = 120):
+    def __init__(self, model: str = "", key: str | None = None, *, transport: httpx.BaseTransport | None = None, timeout: float = 120,
+                 pack: Pack | None = None):
         self.model = validate_model_name(model)
+        self.pack = pack if pack is not None else default_pack()
         self._key, self.transport, self.timeout = key or os.getenv("ANTHROPIC_API_KEY"), transport, timeout
 
     def doctor(self) -> dict:
@@ -61,7 +64,7 @@ class AnthropicApiProvider:
 
     def _body(self, request: str, model: Workflow) -> dict[str, Any]:
         data = canonical({"request": request, "baseline": model.model_dump(mode="json")})
-        return {"model": self.model, "max_tokens": 8000, "system": SYSTEM,
+        return {"model": self.model, "max_tokens": 8000, "system": system_prompt(model, self.pack),
                 "output_config": {"effort": "low", "format": {"type": "json_schema", "schema": _relax(proposal_schema())}},
                 "messages": [{"role": "user", "content": "INPUT DATA:\n" + data}]}
 
@@ -71,5 +74,5 @@ class AnthropicApiProvider:
         headers = {"x-api-key": self._key, "anthropic-version": "2023-06-01"}
         payload = post_json(ENDPOINT, self._body(request, model), headers, transport=self.transport, timeout=self.timeout,
                             label="Anthropic API")
-        proposal = parse_proposal(_reply_text(payload))
+        proposal = parse_proposal(_reply_text(payload), model, self.pack)
         return ProviderResult(proposal, self.name, str(payload.get("model", self.model)), safe_usage(payload.get("usage"), USAGE_FIELDS), True)

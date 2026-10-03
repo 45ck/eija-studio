@@ -1,0 +1,3463 @@
+{
+  "budgets": [
+    {
+      "actual": 0,
+      "basis": "principled",
+      "description": "No dependency cycle between layers",
+      "id": "ARCH-01",
+      "kind": "structural",
+      "limit": 0,
+      "op": "==",
+      "section": "martin",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "basis": "principled",
+      "description": "No import cycle between modules",
+      "id": "ARCH-02",
+      "kind": "structural",
+      "limit": 0,
+      "op": "==",
+      "section": "martin",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "basis": "principled",
+      "description": "No Stable Dependencies Principle violation (a layer never depends on a less stable one)",
+      "id": "ARCH-03",
+      "kind": "structural",
+      "limit": 0,
+      "op": "==",
+      "section": "martin",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "basis": "principled",
+      "description": "Domain layer imports no other layer (Ce = 0)",
+      "id": "ARCH-04",
+      "kind": "structural",
+      "limit": 0,
+      "op": "==",
+      "section": "martin",
+      "status": "PASS"
+    },
+    {
+      "actual": 0.0,
+      "basis": "principled",
+      "description": "Domain layer is maximally stable (I <= 0.1)",
+      "id": "ARCH-05",
+      "kind": "structural",
+      "limit": 0.1,
+      "op": "<=",
+      "section": "martin",
+      "status": "PASS"
+    },
+    {
+      "actual": 0.432,
+      "basis": "ratchet",
+      "description": "Every non-domain layer lies within 0.5 of the main sequence (max D)",
+      "id": "ARCH-06",
+      "kind": "structural",
+      "limit": 0.5,
+      "op": "<=",
+      "section": "martin",
+      "status": "PASS"
+    },
+    {
+      "actual": 0.318,
+      "basis": "ratchet",
+      "description": "Mean layer distance from the main sequence",
+      "id": "ARCH-07",
+      "kind": "structural",
+      "limit": 0.5,
+      "op": "<=",
+      "section": "martin",
+      "status": "PASS"
+    },
+    {
+      "actual": 22.574,
+      "basis": "ratchet",
+      "description": "Lowest module maintainability index (radon MI, rank A >= 20)",
+      "id": "MI-01",
+      "kind": "structural",
+      "limit": 20,
+      "op": ">=",
+      "section": "complexity",
+      "status": "PASS"
+    },
+    {
+      "actual": 0,
+      "basis": "principled",
+      "description": "Every domain/application/adapters/interfaces layer has a directly importing test (count of untested)",
+      "id": "TEST-01",
+      "kind": "structural",
+      "limit": 0,
+      "op": "==",
+      "section": "tests",
+      "status": "PASS"
+    },
+    {
+      "actual": 82.643,
+      "basis": "ratchet",
+      "description": "Line+branch coverage of src/eija_studio, percent (when reports/coverage exists)",
+      "id": "COV-01",
+      "kind": "structural",
+      "limit": 75.0,
+      "op": ">=",
+      "section": "coverage",
+      "status": "PASS"
+    },
+    {
+      "actual": null,
+      "basis": "principled",
+      "description": "No aggregated lane report is FAIL, UNKNOWN or UNREADABLE (a present report must say PASS or NOT_RUN)",
+      "id": "LANE-01",
+      "kind": "structural",
+      "limit": 0,
+      "op": "==",
+      "reason": "no other lane has written reports",
+      "section": "lane_reports",
+      "status": "NOT_RUN"
+    },
+    {
+      "actual": 62.646,
+      "basis": "external",
+      "description": "p95 of every read endpoint under 400 ms (TestClient)",
+      "id": "PERF-01",
+      "kind": "timing",
+      "limit": 400.0,
+      "op": "<",
+      "section": "performance",
+      "status": "PASS"
+    },
+    {
+      "actual": 1582.095,
+      "basis": "external",
+      "description": "p95 of every non-compute write endpoint under 400 ms (TestClient, durable SQLite)",
+      "id": "PERF-02",
+      "kind": "timing",
+      "limit": 400.0,
+      "op": "<",
+      "section": "performance",
+      "status": "FAIL"
+    },
+    {
+      "actual": 608.444,
+      "basis": "external",
+      "description": "p95 of every read and write endpoint under 400 ms (real uvicorn, loopback)",
+      "id": "PERF-03",
+      "kind": "timing",
+      "limit": 400.0,
+      "op": "<",
+      "section": "performance",
+      "status": "FAIL"
+    },
+    {
+      "actual": 1514.448,
+      "basis": "external",
+      "description": "p95 of the verify compute endpoint under 10 s (long-running: needs a progress indication, see README)",
+      "id": "PERF-04",
+      "kind": "timing",
+      "limit": 10000.0,
+      "op": "<",
+      "section": "performance",
+      "status": "PASS"
+    },
+    {
+      "actual": 0.989948,
+      "basis": "ratchet",
+      "description": "Runtime verification time is near-linear in matrix size (R^2 of T = c0 + c1*cells >= 0.8; measured 0.896 to 0.99 run to run under load, so the limit keeps headroom; low power, see PERF-06)",
+      "id": "PERF-05",
+      "kind": "timing",
+      "limit": 0.8,
+      "op": ">=",
+      "section": "performance",
+      "status": "PASS"
+    },
+    {
+      "actual": 0.052685,
+      "basis": "principled",
+      "description": "Runtime verification: linear fit beats the quadratic alternative in cells (R^2 difference)",
+      "id": "PERF-06",
+      "kind": "timing",
+      "limit": 0.0,
+      "op": ">",
+      "section": "performance",
+      "status": "PASS"
+    },
+    {
+      "actual": 0.949135,
+      "basis": "principled",
+      "description": "closure(): TWO-term fit T = c0 + cV*V + cE*E, R^2 (not the single V+E model; that is SCALE-04)",
+      "id": "SCALE-01",
+      "kind": "timing",
+      "limit": 0.9,
+      "op": ">=",
+      "section": "scaling",
+      "status": "PASS"
+    },
+    {
+      "actual": 0.915061,
+      "basis": "ratchet",
+      "description": "closure(): the requested SINGLE-term fit T = c0 + c1*(V+E), R^2 (fits worse than two-term; limit has headroom)",
+      "id": "SCALE-04",
+      "kind": "timing",
+      "limit": 0.85,
+      "op": ">=",
+      "section": "scaling",
+      "status": "PASS"
+    },
+    {
+      "actual": true,
+      "basis": "principled",
+      "description": "closure(): log-log exponent of time against V+E lies in [0.8, 1.2]",
+      "id": "SCALE-02",
+      "kind": "timing",
+      "limit": true,
+      "op": "==",
+      "section": "scaling",
+      "status": "PASS"
+    },
+    {
+      "actual": 0.114055,
+      "basis": "principled",
+      "description": "closure(): linear fit beats the quadratic alternative (R^2 difference)",
+      "id": "SCALE-03",
+      "kind": "timing",
+      "limit": 0.0,
+      "op": ">",
+      "section": "scaling",
+      "status": "PASS"
+    }
+  ],
+  "meta": {
+    "platform": {
+      "implementation": "CPython",
+      "label": "Windows 10.0.26200 / CPython 3.12.10",
+      "machine": "win-amd64",
+      "python": "3.12.10",
+      "release": "10.0.26200",
+      "system": "Windows"
+    },
+    "profile": "full",
+    "schema": "eija.metrics.v1",
+    "source": {
+      "branch": "lane/metrics",
+      "commit": "a5f5455e036969763c89ae5dde42f4a1340053e9",
+      "dirty": false,
+      "dirty_paths": []
+    },
+    "timing_note": "Sections `performance`, `scaling` and `verification_yield` contain wall-clock MEASUREMENTS taken on this platform under this load; they vary run to run. All other sections are deterministic functions of the source tree.",
+    "timing_policy": "timing sections measured once, re-measured up to 1 time(s) when a timing budget failed; the last measurement is reported, earlier failures are listed in timing_runs",
+    "timing_runs": [
+      {
+        "failed_timing_budgets": [
+          "PERF-02",
+          "PERF-03"
+        ],
+        "run": 1
+      },
+      {
+        "failed_timing_budgets": [
+          "PERF-02",
+          "PERF-03"
+        ],
+        "run": 2
+      }
+    ],
+    "tools": {
+      "coverage": "7.16.2",
+      "fastapi": "0.128.2",
+      "grimp": "3.17",
+      "httpx": "0.28.1",
+      "radon": "6.0.1",
+      "uvicorn": "0.48.0"
+    }
+  },
+  "schema": "eija.metrics.v1",
+  "sections": {
+    "complexity": {
+      "hotspots": [
+        {
+          "cc": 45,
+          "function": "domain.evidence:assess_receipt",
+          "line": 10,
+          "rank": "F"
+        },
+        {
+          "cc": 31,
+          "function": "interfaces.cli:main",
+          "line": 124,
+          "rank": "E"
+        },
+        {
+          "cc": 23,
+          "function": "application.verifier:verify_runtime",
+          "line": 23,
+          "rank": "D"
+        },
+        {
+          "cc": 21,
+          "function": "domain.policy:check_policy",
+          "line": 41,
+          "rank": "D"
+        },
+        {
+          "cc": 16,
+          "function": "application.compiler:compile_case",
+          "line": 19,
+          "rank": "C"
+        },
+        {
+          "cc": 16,
+          "function": "application.runtime:execute",
+          "line": 29,
+          "rank": "C"
+        },
+        {
+          "cc": 10,
+          "function": "application.diagram_catalog:_diagram",
+          "line": 39,
+          "rank": "B"
+        },
+        {
+          "cc": 10,
+          "function": "application.diagram_catalog:case_diagrams",
+          "line": 88,
+          "rank": "B"
+        },
+        {
+          "cc": 10,
+          "function": "application.diagrams:journey_graph",
+          "line": 310,
+          "rank": "B"
+        },
+        {
+          "cc": 10,
+          "function": "domain.evidence:aggregate_status",
+          "line": 65,
+          "rank": "B"
+        }
+      ],
+      "layers": [
+        {
+          "functions": 131,
+          "layer": "adapters",
+          "max": 9,
+          "mean": 2.786,
+          "median": 2.0,
+          "p90": 5.0,
+          "ranks": {
+            "A": 121,
+            "B": 10,
+            "C": 0,
+            "D": 0,
+            "E": 0,
+            "F": 0
+          }
+        },
+        {
+          "functions": 134,
+          "layer": "application",
+          "max": 23,
+          "mean": 3.791,
+          "median": 3.0,
+          "p90": 7.7,
+          "ranks": {
+            "A": 101,
+            "B": 30,
+            "C": 2,
+            "D": 1,
+            "E": 0,
+            "F": 0
+          }
+        },
+        {
+          "functions": 1,
+          "layer": "bootstrap",
+          "max": 1,
+          "mean": 1.0,
+          "median": 1.0,
+          "p90": 1.0,
+          "ranks": {
+            "A": 1,
+            "B": 0,
+            "C": 0,
+            "D": 0,
+            "E": 0,
+            "F": 0
+          }
+        },
+        {
+          "functions": 23,
+          "layer": "domain",
+          "max": 45,
+          "mean": 6.609,
+          "median": 3.0,
+          "p90": 10.0,
+          "ranks": {
+            "A": 16,
+            "B": 5,
+            "C": 0,
+            "D": 1,
+            "E": 0,
+            "F": 1
+          }
+        },
+        {
+          "functions": 76,
+          "layer": "interfaces",
+          "max": 31,
+          "mean": 2.671,
+          "median": 1.0,
+          "p90": 5.0,
+          "ranks": {
+            "A": 69,
+            "B": 6,
+            "C": 0,
+            "D": 0,
+            "E": 1,
+            "F": 0
+          }
+        }
+      ],
+      "method": "radon cc_visit / mi_visit(multi=True) / raw.analyze over src/eija_studio/**/*.py",
+      "modules": [
+        {
+          "blank": 0,
+          "comments": 0,
+          "functions": 0,
+          "layer": "__main__",
+          "lloc": 2,
+          "loc": 2,
+          "max_cc": 0,
+          "mi": 100.0,
+          "mi_rank": "A",
+          "module": "__main__",
+          "sloc": 2
+        },
+        {
+          "blank": 0,
+          "comments": 1,
+          "functions": 0,
+          "layer": "adapters",
+          "lloc": 1,
+          "loc": 1,
+          "max_cc": 0,
+          "mi": 100.0,
+          "mi_rank": "A",
+          "module": "adapters",
+          "sloc": 0
+        },
+        {
+          "blank": 7,
+          "comments": 1,
+          "functions": 3,
+          "layer": "adapters",
+          "lloc": 25,
+          "loc": 34,
+          "max_cc": 4,
+          "mi": 54.399,
+          "mi_rank": "A",
+          "module": "adapters.identity",
+          "sloc": 26
+        },
+        {
+          "blank": 2,
+          "comments": 0,
+          "functions": 0,
+          "layer": "adapters",
+          "lloc": 12,
+          "loc": 33,
+          "max_cc": 0,
+          "mi": 100.0,
+          "mi_rank": "A",
+          "module": "adapters.providers",
+          "sloc": 26
+        },
+        {
+          "blank": 25,
+          "comments": 8,
+          "functions": 11,
+          "layer": "adapters",
+          "lloc": 69,
+          "loc": 105,
+          "max_cc": 6,
+          "mi": 62.075,
+          "mi_rank": "A",
+          "module": "adapters.providers._common",
+          "sloc": 62
+        },
+        {
+          "blank": 10,
+          "comments": 1,
+          "functions": 2,
+          "layer": "adapters",
+          "lloc": 36,
+          "loc": 51,
+          "max_cc": 5,
+          "mi": 74.796,
+          "mi_rank": "A",
+          "module": "adapters.providers._http",
+          "sloc": 35
+        },
+        {
+          "blank": 23,
+          "comments": 2,
+          "functions": 8,
+          "layer": "adapters",
+          "lloc": 69,
+          "loc": 118,
+          "max_cc": 4,
+          "mi": 64.568,
+          "mi_rank": "A",
+          "module": "adapters.providers._winjob",
+          "sloc": 85
+        },
+        {
+          "blank": 16,
+          "comments": 2,
+          "functions": 6,
+          "layer": "adapters",
+          "lloc": 53,
+          "loc": 75,
+          "max_cc": 8,
+          "mi": 63.513,
+          "mi_rank": "A",
+          "module": "adapters.providers.anthropic_api",
+          "sloc": 50
+        },
+        {
+          "blank": 8,
+          "comments": 6,
+          "functions": 4,
+          "layer": "adapters",
+          "lloc": 42,
+          "loc": 58,
+          "max_cc": 6,
+          "mi": 70.575,
+          "mi_rank": "A",
+          "module": "adapters.providers.claude_code",
+          "sloc": 42
+        },
+        {
+          "blank": 40,
+          "comments": 34,
+          "functions": 20,
+          "layer": "adapters",
+          "lloc": 189,
+          "loc": 242,
+          "max_cc": 8,
+          "mi": 46.621,
+          "mi_rank": "A",
+          "module": "adapters.providers.cli_base",
+          "sloc": 167
+        },
+        {
+          "blank": 5,
+          "comments": 3,
+          "functions": 3,
+          "layer": "adapters",
+          "lloc": 35,
+          "loc": 45,
+          "max_cc": 5,
+          "mi": 62.621,
+          "mi_rank": "A",
+          "module": "adapters.providers.codex",
+          "sloc": 39
+        },
+        {
+          "blank": 9,
+          "comments": 3,
+          "functions": 5,
+          "layer": "adapters",
+          "lloc": 46,
+          "loc": 62,
+          "max_cc": 5,
+          "mi": 69.914,
+          "mi_rank": "A",
+          "module": "adapters.providers.gemini",
+          "sloc": 45
+        },
+        {
+          "blank": 2,
+          "comments": 1,
+          "functions": 2,
+          "layer": "adapters",
+          "lloc": 13,
+          "loc": 19,
+          "max_cc": 4,
+          "mi": 64.871,
+          "mi_rank": "A",
+          "module": "adapters.providers.offline",
+          "sloc": 16
+        },
+        {
+          "blank": 11,
+          "comments": 3,
+          "functions": 6,
+          "layer": "adapters",
+          "lloc": 66,
+          "loc": 83,
+          "max_cc": 5,
+          "mi": 64.328,
+          "mi_rank": "A",
+          "module": "adapters.providers.opencode",
+          "sloc": 61
+        },
+        {
+          "blank": 15,
+          "comments": 3,
+          "functions": 6,
+          "layer": "adapters",
+          "lloc": 47,
+          "loc": 63,
+          "max_cc": 5,
+          "mi": 47.579,
+          "mi_rank": "A",
+          "module": "adapters.providers.openrouter",
+          "sloc": 45
+        },
+        {
+          "blank": 68,
+          "comments": 25,
+          "functions": 26,
+          "layer": "adapters",
+          "lloc": 242,
+          "loc": 335,
+          "max_cc": 9,
+          "mi": 40.33,
+          "mi_rank": "A",
+          "module": "adapters.providers.process",
+          "sloc": 218
+        },
+        {
+          "blank": 3,
+          "comments": 2,
+          "functions": 1,
+          "layer": "adapters",
+          "lloc": 19,
+          "loc": 29,
+          "max_cc": 2,
+          "mi": 75.273,
+          "mi_rank": "A",
+          "module": "adapters.providers.registry",
+          "sloc": 25
+        },
+        {
+          "blank": 3,
+          "comments": 1,
+          "functions": 3,
+          "layer": "adapters",
+          "lloc": 27,
+          "loc": 28,
+          "max_cc": 4,
+          "mi": 54.426,
+          "mi_rank": "A",
+          "module": "adapters.receipts",
+          "sloc": 24
+        },
+        {
+          "blank": 35,
+          "comments": 8,
+          "functions": 25,
+          "layer": "adapters",
+          "lloc": 150,
+          "loc": 203,
+          "max_cc": 6,
+          "mi": 44.875,
+          "mi_rank": "A",
+          "module": "adapters.sqlite_store",
+          "sloc": 155
+        },
+        {
+          "blank": 0,
+          "comments": 1,
+          "functions": 0,
+          "layer": "application",
+          "lloc": 1,
+          "loc": 1,
+          "max_cc": 0,
+          "mi": 100.0,
+          "mi_rank": "A",
+          "module": "application",
+          "sloc": 0
+        },
+        {
+          "blank": 5,
+          "comments": 0,
+          "functions": 2,
+          "layer": "application",
+          "lloc": 37,
+          "loc": 58,
+          "max_cc": 16,
+          "mi": 62.199,
+          "mi_rank": "A",
+          "module": "application.compiler",
+          "sloc": 50
+        },
+        {
+          "blank": 29,
+          "comments": 3,
+          "functions": 12,
+          "layer": "application",
+          "lloc": 103,
+          "loc": 170,
+          "max_cc": 10,
+          "mi": 50.122,
+          "mi_rank": "A",
+          "module": "application.diagram_catalog",
+          "sloc": 125
+        },
+        {
+          "blank": 93,
+          "comments": 18,
+          "functions": 40,
+          "layer": "application",
+          "lloc": 244,
+          "loc": 360,
+          "max_cc": 9,
+          "mi": 24.707,
+          "mi_rank": "A",
+          "module": "application.diagram_emitters",
+          "sloc": 246
+        },
+        {
+          "blank": 118,
+          "comments": 21,
+          "functions": 35,
+          "layer": "application",
+          "lloc": 392,
+          "loc": 512,
+          "max_cc": 10,
+          "mi": 22.574,
+          "mi_rank": "A",
+          "module": "application.diagrams",
+          "sloc": 343
+        },
+        {
+          "blank": 6,
+          "comments": 6,
+          "functions": 22,
+          "layer": "application",
+          "lloc": 75,
+          "loc": 53,
+          "max_cc": 1,
+          "mi": 100.0,
+          "mi_rank": "A",
+          "module": "application.ports",
+          "sloc": 43
+        },
+        {
+          "blank": 6,
+          "comments": 4,
+          "functions": 3,
+          "layer": "application",
+          "lloc": 68,
+          "loc": 75,
+          "max_cc": 16,
+          "mi": 50.674,
+          "mi_rank": "A",
+          "module": "application.runtime",
+          "sloc": 67
+        },
+        {
+          "blank": 21,
+          "comments": 3,
+          "functions": 19,
+          "layer": "application",
+          "lloc": 208,
+          "loc": 221,
+          "max_cc": 8,
+          "mi": 27.028,
+          "mi_rank": "A",
+          "module": "application.service",
+          "sloc": 198
+        },
+        {
+          "blank": 3,
+          "comments": 7,
+          "functions": 1,
+          "layer": "application",
+          "lloc": 51,
+          "loc": 66,
+          "max_cc": 23,
+          "mi": 57.073,
+          "mi_rank": "A",
+          "module": "application.verifier",
+          "sloc": 60
+        },
+        {
+          "blank": 2,
+          "comments": 3,
+          "functions": 1,
+          "layer": "bootstrap",
+          "lloc": 11,
+          "loc": 13,
+          "max_cc": 1,
+          "mi": 100.0,
+          "mi_rank": "A",
+          "module": "bootstrap",
+          "sloc": 10
+        },
+        {
+          "blank": 0,
+          "comments": 1,
+          "functions": 0,
+          "layer": "domain",
+          "lloc": 1,
+          "loc": 1,
+          "max_cc": 0,
+          "mi": 100.0,
+          "mi_rank": "A",
+          "module": "domain",
+          "sloc": 0
+        },
+        {
+          "blank": 5,
+          "comments": 1,
+          "functions": 3,
+          "layer": "domain",
+          "lloc": 47,
+          "loc": 36,
+          "max_cc": 3,
+          "mi": 47.365,
+          "mi_rank": "A",
+          "module": "domain.change_case",
+          "sloc": 30
+        },
+        {
+          "blank": 5,
+          "comments": 4,
+          "functions": 2,
+          "layer": "domain",
+          "lloc": 68,
+          "loc": 76,
+          "max_cc": 45,
+          "mi": 41.535,
+          "mi_rank": "A",
+          "module": "domain.evidence",
+          "sloc": 69
+        },
+        {
+          "blank": 6,
+          "comments": 1,
+          "functions": 3,
+          "layer": "domain",
+          "lloc": 42,
+          "loc": 46,
+          "max_cc": 10,
+          "mi": 60.659,
+          "mi_rank": "A",
+          "module": "domain.impact",
+          "sloc": 36
+        },
+        {
+          "blank": 36,
+          "comments": 3,
+          "functions": 8,
+          "layer": "domain",
+          "lloc": 138,
+          "loc": 141,
+          "max_cc": 9,
+          "mi": 38.598,
+          "mi_rank": "A",
+          "module": "domain.models",
+          "sloc": 103
+        },
+        {
+          "blank": 15,
+          "comments": 2,
+          "functions": 7,
+          "layer": "domain",
+          "lloc": 68,
+          "loc": 111,
+          "max_cc": 21,
+          "mi": 36.277,
+          "mi_rank": "A",
+          "module": "domain.policy",
+          "sloc": 94
+        },
+        {
+          "blank": 0,
+          "comments": 1,
+          "functions": 0,
+          "layer": "eija_studio",
+          "lloc": 2,
+          "loc": 2,
+          "max_cc": 0,
+          "mi": 100.0,
+          "mi_rank": "A",
+          "module": "eija_studio",
+          "sloc": 1
+        },
+        {
+          "blank": 0,
+          "comments": 1,
+          "functions": 0,
+          "layer": "interfaces",
+          "lloc": 1,
+          "loc": 1,
+          "max_cc": 0,
+          "mi": 100.0,
+          "mi_rank": "A",
+          "module": "interfaces",
+          "sloc": 0
+        },
+        {
+          "blank": 9,
+          "comments": 6,
+          "functions": 3,
+          "layer": "interfaces",
+          "lloc": 28,
+          "loc": 43,
+          "max_cc": 7,
+          "mi": 78.774,
+          "mi_rank": "A",
+          "module": "interfaces.agent_config",
+          "sloc": 26
+        },
+        {
+          "blank": 23,
+          "comments": 10,
+          "functions": 10,
+          "layer": "interfaces",
+          "lloc": 222,
+          "loc": 231,
+          "max_cc": 31,
+          "mi": 32.195,
+          "mi_rank": "A",
+          "module": "interfaces.cli",
+          "sloc": 200
+        },
+        {
+          "blank": 33,
+          "comments": 12,
+          "functions": 27,
+          "layer": "interfaces",
+          "lloc": 170,
+          "loc": 190,
+          "max_cc": 9,
+          "mi": 43.865,
+          "mi_rank": "A",
+          "module": "interfaces.http",
+          "sloc": 151
+        },
+        {
+          "blank": 65,
+          "comments": 39,
+          "functions": 34,
+          "layer": "interfaces",
+          "lloc": 240,
+          "loc": 385,
+          "max_cc": 10,
+          "mi": 42.961,
+          "mi_rank": "A",
+          "module": "interfaces.mcp_server",
+          "sloc": 263
+        },
+        {
+          "blank": 7,
+          "comments": 2,
+          "functions": 2,
+          "layer": "interfaces",
+          "lloc": 18,
+          "loc": 44,
+          "max_cc": 3,
+          "mi": 82.26,
+          "mi_rank": "A",
+          "module": "interfaces.render_html",
+          "sloc": 31
+        }
+      ],
+      "not_measured": [
+        "module-level statement complexity (radon omits it)",
+        "cognitive complexity",
+        "test-code complexity"
+      ],
+      "overall": {
+        "functions": 365,
+        "max": 45,
+        "mean": 3.367,
+        "median": 2.0,
+        "p90": 7.0,
+        "ranks": {
+          "A": 308,
+          "B": 51,
+          "C": 2,
+          "D": 2,
+          "E": 1,
+          "F": 1
+        }
+      },
+      "source": "McCabe 1976; Oman & Hagemeister 1992; radon 6.0.1 rank tables",
+      "status": "MEASURED",
+      "summary": {
+        "files": 42,
+        "min_mi": 22.574,
+        "modules_below_mi_rank_a": [],
+        "sloc": 3269,
+        "sloc_weighted_mi": 44.449
+      }
+    },
+    "coverage": {
+      "files": [
+        {
+          "layer": "eija_studio",
+          "missing_lines": 0,
+          "module": "eija_studio",
+          "percent": 100.0,
+          "statements": 1
+        },
+        {
+          "layer": "__main__",
+          "missing_lines": 2,
+          "module": "__main__",
+          "percent": 0.0,
+          "statements": 2
+        },
+        {
+          "layer": "adapters",
+          "missing_lines": 0,
+          "module": "adapters",
+          "percent": 100.0,
+          "statements": 0
+        },
+        {
+          "layer": "adapters",
+          "missing_lines": 4,
+          "module": "adapters.identity",
+          "percent": 80.952,
+          "statements": 21
+        },
+        {
+          "layer": "adapters",
+          "missing_lines": 0,
+          "module": "adapters.providers",
+          "percent": 100.0,
+          "statements": 11
+        },
+        {
+          "layer": "adapters",
+          "missing_lines": 0,
+          "module": "adapters.providers._common",
+          "percent": 100.0,
+          "statements": 55
+        },
+        {
+          "layer": "adapters",
+          "missing_lines": 3,
+          "module": "adapters.providers._http",
+          "percent": 90.244,
+          "statements": 33
+        },
+        {
+          "layer": "adapters",
+          "missing_lines": 5,
+          "module": "adapters.providers._winjob",
+          "percent": 85.526,
+          "statements": 64
+        },
+        {
+          "layer": "adapters",
+          "missing_lines": 2,
+          "module": "adapters.providers.anthropic_api",
+          "percent": 94.545,
+          "statements": 45
+        },
+        {
+          "layer": "adapters",
+          "missing_lines": 0,
+          "module": "adapters.providers.claude_code",
+          "percent": 100.0,
+          "statements": 40
+        },
+        {
+          "layer": "adapters",
+          "missing_lines": 14,
+          "module": "adapters.providers.cli_base",
+          "percent": 90.062,
+          "statements": 147
+        },
+        {
+          "layer": "adapters",
+          "missing_lines": 2,
+          "module": "adapters.providers.codex",
+          "percent": 94.872,
+          "statements": 33
+        },
+        {
+          "layer": "adapters",
+          "missing_lines": 1,
+          "module": "adapters.providers.gemini",
+          "percent": 96.154,
+          "statements": 44
+        },
+        {
+          "layer": "adapters",
+          "missing_lines": 1,
+          "module": "adapters.providers.offline",
+          "percent": 90.909,
+          "statements": 11
+        },
+        {
+          "layer": "adapters",
+          "missing_lines": 2,
+          "module": "adapters.providers.opencode",
+          "percent": 93.75,
+          "statements": 60
+        },
+        {
+          "layer": "adapters",
+          "missing_lines": 5,
+          "module": "adapters.providers.openrouter",
+          "percent": 84.783,
+          "statements": 40
+        },
+        {
+          "layer": "adapters",
+          "missing_lines": 27,
+          "module": "adapters.providers.process",
+          "percent": 83.032,
+          "statements": 209
+        },
+        {
+          "layer": "adapters",
+          "missing_lines": 0,
+          "module": "adapters.providers.registry",
+          "percent": 100.0,
+          "statements": 17
+        },
+        {
+          "layer": "adapters",
+          "missing_lines": 1,
+          "module": "adapters.receipts",
+          "percent": 92.0,
+          "statements": 23
+        },
+        {
+          "layer": "adapters",
+          "missing_lines": 10,
+          "module": "adapters.sqlite_store",
+          "percent": 91.304,
+          "statements": 137
+        },
+        {
+          "layer": "application",
+          "missing_lines": 0,
+          "module": "application",
+          "percent": 100.0,
+          "statements": 0
+        },
+        {
+          "layer": "application",
+          "missing_lines": 3,
+          "module": "application.compiler",
+          "percent": 87.755,
+          "statements": 33
+        },
+        {
+          "layer": "application",
+          "missing_lines": 0,
+          "module": "application.diagram_catalog",
+          "percent": 100.0,
+          "statements": 88
+        },
+        {
+          "layer": "application",
+          "missing_lines": 1,
+          "module": "application.diagram_emitters",
+          "percent": 99.293,
+          "statements": 219
+        },
+        {
+          "layer": "application",
+          "missing_lines": 1,
+          "module": "application.diagrams",
+          "percent": 99.155,
+          "statements": 293
+        },
+        {
+          "layer": "application",
+          "missing_lines": 0,
+          "module": "application.ports",
+          "percent": 100.0,
+          "statements": 21
+        },
+        {
+          "layer": "application",
+          "missing_lines": 4,
+          "module": "application.runtime",
+          "percent": 91.579,
+          "statements": 61
+        },
+        {
+          "layer": "application",
+          "missing_lines": 10,
+          "module": "application.service",
+          "percent": 90.583,
+          "statements": 181
+        },
+        {
+          "layer": "application",
+          "missing_lines": 2,
+          "module": "application.verifier",
+          "percent": 92.857,
+          "statements": 44
+        },
+        {
+          "layer": "bootstrap",
+          "missing_lines": 0,
+          "module": "bootstrap",
+          "percent": 100.0,
+          "statements": 10
+        },
+        {
+          "layer": "domain",
+          "missing_lines": 0,
+          "module": "domain",
+          "percent": 100.0,
+          "statements": 0
+        },
+        {
+          "layer": "domain",
+          "missing_lines": 1,
+          "module": "domain.change_case",
+          "percent": 94.444,
+          "statements": 30
+        },
+        {
+          "layer": "domain",
+          "missing_lines": 10,
+          "module": "domain.evidence",
+          "percent": 81.982,
+          "statements": 67
+        },
+        {
+          "layer": "domain",
+          "missing_lines": 1,
+          "module": "domain.impact",
+          "percent": 95.556,
+          "statements": 33
+        },
+        {
+          "layer": "domain",
+          "missing_lines": 5,
+          "module": "domain.models",
+          "percent": 92.366,
+          "statements": 103
+        },
+        {
+          "layer": "domain",
+          "missing_lines": 1,
+          "module": "domain.policy",
+          "percent": 97.436,
+          "statements": 56
+        },
+        {
+          "layer": "interfaces",
+          "missing_lines": 0,
+          "module": "interfaces",
+          "percent": 100.0,
+          "statements": 0
+        },
+        {
+          "layer": "interfaces",
+          "missing_lines": 12,
+          "module": "interfaces.agent_config",
+          "percent": 33.333,
+          "statements": 22
+        },
+        {
+          "layer": "interfaces",
+          "missing_lines": 91,
+          "module": "interfaces.cli",
+          "percent": 46.97,
+          "statements": 192
+        },
+        {
+          "layer": "interfaces",
+          "missing_lines": 8,
+          "module": "interfaces.http",
+          "percent": 94.545,
+          "statements": 145
+        },
+        {
+          "layer": "interfaces",
+          "missing_lines": 199,
+          "module": "interfaces.mcp_server",
+          "percent": 0.0,
+          "statements": 199
+        },
+        {
+          "layer": "interfaces",
+          "missing_lines": 1,
+          "module": "interfaces.render_html",
+          "percent": 88.889,
+          "statements": 16
+        }
+      ],
+      "layers": [
+        {
+          "branch_percent": null,
+          "branches": 0,
+          "covered": 0,
+          "covered_branches": 0,
+          "layer": "__main__",
+          "line_percent": 0.0,
+          "statements": 2
+        },
+        {
+          "branch_percent": 79.5,
+          "branches": 200,
+          "covered": 913,
+          "covered_branches": 159,
+          "layer": "adapters",
+          "line_percent": 92.222,
+          "statements": 990
+        },
+        {
+          "branch_percent": 91.288,
+          "branches": 264,
+          "covered": 919,
+          "covered_branches": 241,
+          "layer": "application",
+          "line_percent": 97.766,
+          "statements": 940
+        },
+        {
+          "branch_percent": null,
+          "branches": 0,
+          "covered": 10,
+          "covered_branches": 0,
+          "layer": "bootstrap",
+          "line_percent": 100.0,
+          "statements": 10
+        },
+        {
+          "branch_percent": 83.929,
+          "branches": 112,
+          "covered": 271,
+          "covered_branches": 94,
+          "layer": "domain",
+          "line_percent": 93.772,
+          "statements": 289
+        },
+        {
+          "branch_percent": null,
+          "branches": 0,
+          "covered": 1,
+          "covered_branches": 0,
+          "layer": "eija_studio",
+          "line_percent": 100.0,
+          "statements": 1
+        },
+        {
+          "branch_percent": 29.861,
+          "branches": 144,
+          "covered": 263,
+          "covered_branches": 43,
+          "layer": "interfaces",
+          "line_percent": 45.819,
+          "statements": 574
+        }
+      ],
+      "method": "coverage.py json report of `pytest` under `coverage run --branch --source=src/eija_studio`",
+      "not_measured": [
+        "whether covered lines are asserted on (mutation lane)",
+        "subprocess-only or browser-driven paths"
+      ],
+      "source": "coverage.py 7.16.2",
+      "status": "MEASURED",
+      "summary": {
+        "branches": 720,
+        "covered": 2377,
+        "covered_branches": 537,
+        "line_percent": 84.711,
+        "percent": 82.643,
+        "statements": 2806
+      }
+    },
+    "lane_reports": {
+      "groups": [
+        {
+          "group": "formal",
+          "lane": "formal (Bend / TLA+ / Z3 / BMC)",
+          "reason": "no reports/formal/*.json (lane not run on this checkout)",
+          "reports": [],
+          "status": "NOT_RUN"
+        },
+        {
+          "group": "hci",
+          "lane": "hci",
+          "reason": "no reports/hci/*.json (lane not run on this checkout)",
+          "reports": [],
+          "status": "NOT_RUN"
+        },
+        {
+          "group": "mutation",
+          "lane": "mutation",
+          "reason": "no reports/mutation/summary.json (lane not run on this checkout)",
+          "reports": [],
+          "status": "NOT_RUN"
+        },
+        {
+          "group": "testing",
+          "lane": "testing",
+          "reason": "no reports/testing/*.json (lane not run on this checkout)",
+          "reports": [],
+          "status": "NOT_RUN"
+        }
+      ],
+      "method": "read reports/{formal,mutation,testing,hci}; statuses copied verbatim, never inferred",
+      "not_measured": [
+        "the correctness of any lane's report (this module aggregates, it does not re-verify)"
+      ],
+      "status": "MEASURED",
+      "summary": {
+        "groups": 4,
+        "groups_not_run": 4,
+        "groups_with_reports": 0
+      }
+    },
+    "martin": {
+      "layer_edges": [
+        {
+          "from": "__main__",
+          "imports": 1,
+          "to": "interfaces"
+        },
+        {
+          "from": "adapters",
+          "imports": 5,
+          "to": "application"
+        },
+        {
+          "from": "adapters",
+          "imports": 10,
+          "to": "domain"
+        },
+        {
+          "from": "application",
+          "imports": 20,
+          "to": "domain"
+        },
+        {
+          "from": "bootstrap",
+          "imports": 4,
+          "to": "adapters"
+        },
+        {
+          "from": "bootstrap",
+          "imports": 1,
+          "to": "application"
+        },
+        {
+          "from": "interfaces",
+          "imports": 5,
+          "to": "application"
+        },
+        {
+          "from": "interfaces",
+          "imports": 1,
+          "to": "bootstrap"
+        },
+        {
+          "from": "interfaces",
+          "imports": 6,
+          "to": "domain"
+        },
+        {
+          "from": "interfaces",
+          "imports": 2,
+          "to": "eija_studio"
+        }
+      ],
+      "layers": [
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 0,
+          "ce": 1,
+          "classes": 0,
+          "distance": 0.0,
+          "instability": 1.0,
+          "modules": 1,
+          "name": "__main__",
+          "third_party_imports": [],
+          "zone": "main sequence"
+        },
+        {
+          "abstract_classes": 1,
+          "abstractness": 0.042,
+          "ca": 1,
+          "ce": 3,
+          "classes": 24,
+          "distance": 0.208,
+          "instability": 0.75,
+          "modules": 16,
+          "name": "adapters",
+          "third_party_imports": [
+            "httpx",
+            "psutil",
+            "pydantic"
+          ],
+          "zone": "main sequence"
+        },
+        {
+          "abstract_classes": 4,
+          "abstractness": 0.211,
+          "ca": 9,
+          "ce": 5,
+          "classes": 19,
+          "distance": 0.432,
+          "instability": 0.357,
+          "modules": 8,
+          "name": "application",
+          "third_party_imports": [
+            "pydantic"
+          ],
+          "zone": "near main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 1,
+          "ce": 5,
+          "classes": 0,
+          "distance": 0.167,
+          "instability": 0.833,
+          "modules": 1,
+          "name": "bootstrap",
+          "third_party_imports": [],
+          "zone": "main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 20,
+          "ce": 0,
+          "classes": 11,
+          "distance": 1.0,
+          "instability": 0.0,
+          "modules": 5,
+          "name": "domain",
+          "third_party_imports": [
+            "pydantic"
+          ],
+          "zone": "zone of pain (stable, concrete)"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 1,
+          "ce": 9,
+          "classes": 9,
+          "distance": 0.1,
+          "instability": 0.9,
+          "modules": 5,
+          "name": "interfaces",
+          "third_party_imports": [
+            "anyio",
+            "fastapi",
+            "mcp",
+            "pydantic",
+            "uvicorn"
+          ],
+          "zone": "main sequence"
+        }
+      ],
+      "method": "grimp import graph (project modules only) + ast class census; unit of coupling = module",
+      "modules": [
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 0,
+          "ce": 1,
+          "classes": 0,
+          "distance": 0.0,
+          "instability": 1.0,
+          "layer": "__main__",
+          "name": "__main__",
+          "zone": "main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 1,
+          "ce": 1,
+          "classes": 0,
+          "distance": 0.5,
+          "instability": 0.5,
+          "layer": "adapters",
+          "name": "adapters.identity",
+          "zone": "near main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 9,
+          "ce": 1,
+          "classes": 0,
+          "distance": 0.9,
+          "instability": 0.1,
+          "layer": "adapters",
+          "name": "adapters.providers._common",
+          "zone": "zone of pain (stable, concrete)"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 2,
+          "ce": 2,
+          "classes": 0,
+          "distance": 0.5,
+          "instability": 0.5,
+          "layer": "adapters",
+          "name": "adapters.providers._http",
+          "zone": "near main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 1,
+          "ce": 0,
+          "classes": 4,
+          "distance": 1.0,
+          "instability": 0.0,
+          "layer": "adapters",
+          "name": "adapters.providers._winjob",
+          "zone": "zone of pain (stable, concrete)"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 2,
+          "ce": 4,
+          "classes": 1,
+          "distance": 0.333,
+          "instability": 0.667,
+          "layer": "adapters",
+          "name": "adapters.providers.anthropic_api",
+          "zone": "near main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 2,
+          "ce": 2,
+          "classes": 1,
+          "distance": 0.5,
+          "instability": 0.5,
+          "layer": "adapters",
+          "name": "adapters.providers.claude_code",
+          "zone": "near main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 5,
+          "ce": 4,
+          "classes": 4,
+          "distance": 0.556,
+          "instability": 0.444,
+          "layer": "adapters",
+          "name": "adapters.providers.cli_base",
+          "zone": "zone of pain (stable, concrete)"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 2,
+          "ce": 2,
+          "classes": 1,
+          "distance": 0.5,
+          "instability": 0.5,
+          "layer": "adapters",
+          "name": "adapters.providers.codex",
+          "zone": "near main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 2,
+          "ce": 2,
+          "classes": 1,
+          "distance": 0.5,
+          "instability": 0.5,
+          "layer": "adapters",
+          "name": "adapters.providers.gemini",
+          "zone": "near main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 2,
+          "ce": 2,
+          "classes": 1,
+          "distance": 0.5,
+          "instability": 0.5,
+          "layer": "adapters",
+          "name": "adapters.providers.offline",
+          "zone": "near main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 2,
+          "ce": 2,
+          "classes": 1,
+          "distance": 0.5,
+          "instability": 0.5,
+          "layer": "adapters",
+          "name": "adapters.providers.opencode",
+          "zone": "near main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 2,
+          "ce": 4,
+          "classes": 1,
+          "distance": 0.333,
+          "instability": 0.667,
+          "layer": "adapters",
+          "name": "adapters.providers.openrouter",
+          "zone": "near main sequence"
+        },
+        {
+          "abstract_classes": 1,
+          "abstractness": 0.167,
+          "ca": 1,
+          "ce": 1,
+          "classes": 6,
+          "distance": 0.333,
+          "instability": 0.5,
+          "layer": "adapters",
+          "name": "adapters.providers.process",
+          "zone": "near main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 1,
+          "ce": 8,
+          "classes": 0,
+          "distance": 0.111,
+          "instability": 0.889,
+          "layer": "adapters",
+          "name": "adapters.providers.registry",
+          "zone": "main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 1,
+          "ce": 1,
+          "classes": 1,
+          "distance": 0.5,
+          "instability": 0.5,
+          "layer": "adapters",
+          "name": "adapters.receipts",
+          "zone": "near main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 1,
+          "ce": 2,
+          "classes": 2,
+          "distance": 0.333,
+          "instability": 0.667,
+          "layer": "adapters",
+          "name": "adapters.sqlite_store",
+          "zone": "near main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 2,
+          "ce": 5,
+          "classes": 0,
+          "distance": 0.286,
+          "instability": 0.714,
+          "layer": "application",
+          "name": "application.compiler",
+          "zone": "near main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 2,
+          "ce": 5,
+          "classes": 0,
+          "distance": 0.286,
+          "instability": 0.714,
+          "layer": "application",
+          "name": "application.diagram_catalog",
+          "zone": "near main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 1,
+          "ce": 2,
+          "classes": 0,
+          "distance": 0.333,
+          "instability": 0.667,
+          "layer": "application",
+          "name": "application.diagram_emitters",
+          "zone": "near main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 2,
+          "ce": 4,
+          "classes": 13,
+          "distance": 0.333,
+          "instability": 0.667,
+          "layer": "application",
+          "name": "application.diagrams",
+          "zone": "near main sequence"
+        },
+        {
+          "abstract_classes": 4,
+          "abstractness": 0.8,
+          "ca": 8,
+          "ce": 1,
+          "classes": 5,
+          "distance": 0.089,
+          "instability": 0.111,
+          "layer": "application",
+          "name": "application.ports",
+          "zone": "main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 2,
+          "ce": 3,
+          "classes": 0,
+          "distance": 0.4,
+          "instability": 0.6,
+          "layer": "application",
+          "name": "application.runtime",
+          "zone": "near main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 2,
+          "ce": 7,
+          "classes": 1,
+          "distance": 0.222,
+          "instability": 0.778,
+          "layer": "application",
+          "name": "application.service",
+          "zone": "main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 2,
+          "ce": 3,
+          "classes": 0,
+          "distance": 0.4,
+          "instability": 0.6,
+          "layer": "application",
+          "name": "application.verifier",
+          "zone": "near main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 1,
+          "ce": 5,
+          "classes": 0,
+          "distance": 0.167,
+          "instability": 0.833,
+          "layer": "bootstrap",
+          "name": "bootstrap",
+          "zone": "main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 3,
+          "ce": 1,
+          "classes": 1,
+          "distance": 0.75,
+          "instability": 0.25,
+          "layer": "domain",
+          "name": "domain.change_case",
+          "zone": "zone of pain (stable, concrete)"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 1,
+          "ce": 1,
+          "classes": 0,
+          "distance": 0.5,
+          "instability": 0.5,
+          "layer": "domain",
+          "name": "domain.evidence",
+          "zone": "near main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 4,
+          "ce": 1,
+          "classes": 0,
+          "distance": 0.8,
+          "instability": 0.2,
+          "layer": "domain",
+          "name": "domain.impact",
+          "zone": "zone of pain (stable, concrete)"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 24,
+          "ce": 0,
+          "classes": 10,
+          "distance": 1.0,
+          "instability": 0.0,
+          "layer": "domain",
+          "name": "domain.models",
+          "zone": "zone of pain (stable, concrete)"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 8,
+          "ce": 1,
+          "classes": 0,
+          "distance": 0.889,
+          "instability": 0.111,
+          "layer": "domain",
+          "name": "domain.policy",
+          "zone": "zone of pain (stable, concrete)"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 2,
+          "ce": 0,
+          "classes": 0,
+          "distance": 1.0,
+          "instability": 0.0,
+          "layer": "interfaces",
+          "name": "interfaces.agent_config",
+          "zone": "zone of pain (stable, concrete)"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 1,
+          "ce": 12,
+          "classes": 0,
+          "distance": 0.077,
+          "instability": 0.923,
+          "layer": "interfaces",
+          "name": "interfaces.cli",
+          "zone": "main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 1,
+          "ce": 2,
+          "classes": 8,
+          "distance": 0.333,
+          "instability": 0.667,
+          "layer": "interfaces",
+          "name": "interfaces.http",
+          "zone": "near main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 1,
+          "ce": 5,
+          "classes": 1,
+          "distance": 0.167,
+          "instability": 0.833,
+          "layer": "interfaces",
+          "name": "interfaces.mcp_server",
+          "zone": "main sequence"
+        },
+        {
+          "abstract_classes": 0,
+          "abstractness": 0.0,
+          "ca": 1,
+          "ce": 0,
+          "classes": 0,
+          "distance": 1.0,
+          "instability": 0.0,
+          "layer": "interfaces",
+          "name": "interfaces.render_html",
+          "zone": "zone of pain (stable, concrete)"
+        }
+      ],
+      "not_measured": [
+        "class-level coupling",
+        "runtime/dynamic imports",
+        "third-party coupling (listed per layer)",
+        "design quality: D is a balance heuristic, not a verdict"
+      ],
+      "source": "Martin 1994; Martin 2003 ch.20",
+      "status": "MEASURED",
+      "summary": {
+        "layer_cycles": [],
+        "layers": 6,
+        "max_layer_distance": 1.0,
+        "mean_layer_distance": 0.318,
+        "module_cycles": [],
+        "modules": 36,
+        "sdp_violations": []
+      }
+    },
+    "performance": {
+      "config": {
+        "apply_endpoint": "excluded (mutates baseline)",
+        "flows": 15,
+        "matrix_repeats": 5,
+        "reads": 120,
+        "warmup": "one full flow and one read per endpoint, excluded"
+      },
+      "kind": "measurement",
+      "method": "wall-clock latency per endpoint; offline provider; durable SQLite workspace",
+      "not_measured": [
+        "browser rendering",
+        "concurrent load",
+        "live model provider",
+        "other machines"
+      ],
+      "sources": [
+        "Doherty & Thadani, IBM Systems Journal 21(4), 1982",
+        "Miller 1968",
+        "Nielsen, Usability Engineering, 1993"
+      ],
+      "status": "MEASURED",
+      "thresholds": {
+        "doherty_ms": 400.0,
+        "instant_ms": 100.0
+      },
+      "transports": {
+        "testclient": {
+          "endpoints": [
+            {
+              "endpoint": "GET /",
+              "kind": "read",
+              "max_ms": 3.045,
+              "mean_ms": 2.392,
+              "min_ms": 1.726,
+              "n": 120,
+              "p50_ms": 2.405,
+              "p95_ms": 2.847,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 2.907
+            },
+            {
+              "endpoint": "GET /api/cases",
+              "kind": "read",
+              "max_ms": 42.431,
+              "mean_ms": 16.836,
+              "min_ms": 12.532,
+              "n": 120,
+              "p50_ms": 15.071,
+              "p95_ms": 35.724,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 40.234
+            },
+            {
+              "endpoint": "GET /api/cases/{id}",
+              "kind": "read",
+              "max_ms": 131.324,
+              "mean_ms": 47.199,
+              "min_ms": 32.708,
+              "n": 30,
+              "p50_ms": 45.887,
+              "p95_ms": 62.646,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 112.608
+            },
+            {
+              "endpoint": "GET /api/cases/{id}/export",
+              "kind": "read",
+              "max_ms": 63.193,
+              "mean_ms": 44.987,
+              "min_ms": 35.365,
+              "n": 15,
+              "p50_ms": 43.278,
+              "p95_ms": 56.752,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 61.905
+            },
+            {
+              "endpoint": "GET /api/doctor",
+              "kind": "read",
+              "max_ms": 3.159,
+              "mean_ms": 1.72,
+              "min_ms": 1.197,
+              "n": 120,
+              "p50_ms": 1.627,
+              "p95_ms": 2.317,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 3.061
+            },
+            {
+              "endpoint": "GET /api/status",
+              "kind": "read",
+              "max_ms": 80.163,
+              "mean_ms": 33.39,
+              "min_ms": 21.941,
+              "n": 120,
+              "p50_ms": 32.51,
+              "p95_ms": 39.627,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 41.535
+            },
+            {
+              "endpoint": "GET /assets/app.js",
+              "kind": "read",
+              "max_ms": 3.235,
+              "mean_ms": 2.471,
+              "min_ms": 1.927,
+              "n": 120,
+              "p50_ms": 2.476,
+              "p95_ms": 2.88,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 3.167
+            },
+            {
+              "endpoint": "POST /api/cases",
+              "kind": "write",
+              "max_ms": 69.204,
+              "mean_ms": 19.271,
+              "min_ms": 9.575,
+              "n": 15,
+              "p50_ms": 16.044,
+              "p95_ms": 34.599,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 62.283
+            },
+            {
+              "endpoint": "POST /api/cases/{id}/approve",
+              "kind": "write",
+              "max_ms": 5072.383,
+              "mean_ms": 398.087,
+              "min_ms": 50.934,
+              "n": 15,
+              "p50_ms": 64.2,
+              "p95_ms": 1582.095,
+              "p95_within_doherty": false,
+              "p95_within_instant": false,
+              "p99_ms": 4374.325
+            },
+            {
+              "endpoint": "POST /api/cases/{id}/execute",
+              "kind": "write",
+              "max_ms": 47.413,
+              "mean_ms": 19.51,
+              "min_ms": 11.072,
+              "n": 15,
+              "p50_ms": 17.776,
+              "p95_ms": 33.45,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 44.62
+            },
+            {
+              "endpoint": "POST /api/cases/{id}/preview",
+              "kind": "write",
+              "max_ms": 48.257,
+              "mean_ms": 17.265,
+              "min_ms": 10.984,
+              "n": 15,
+              "p50_ms": 14.268,
+              "p95_ms": 29.953,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 44.596
+            },
+            {
+              "endpoint": "POST /api/cases/{id}/propose",
+              "kind": "write",
+              "max_ms": 96.38,
+              "mean_ms": 34.981,
+              "min_ms": 22.061,
+              "n": 15,
+              "p50_ms": 28.918,
+              "p95_ms": 60.285,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 89.161
+            },
+            {
+              "endpoint": "POST /api/cases/{id}/select",
+              "kind": "write",
+              "max_ms": 70.068,
+              "mean_ms": 21.267,
+              "min_ms": 12.776,
+              "n": 15,
+              "p50_ms": 15.109,
+              "p95_ms": 54.721,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 66.999
+            },
+            {
+              "endpoint": "POST /api/cases/{id}/verify",
+              "kind": "compute",
+              "max_ms": 1517.434,
+              "mean_ms": 1273.704,
+              "min_ms": 1049.993,
+              "n": 15,
+              "p50_ms": 1279.469,
+              "p95_ms": 1514.448,
+              "p95_within_doherty": false,
+              "p95_within_instant": false,
+              "p99_ms": 1516.836
+            }
+          ],
+          "status": "MEASURED",
+          "summary": {
+            "all_p95_within_doherty": false,
+            "endpoints": 14,
+            "over_doherty": [
+              "POST /api/cases/{id}/approve",
+              "POST /api/cases/{id}/verify"
+            ],
+            "over_instant": [
+              "POST /api/cases/{id}/approve",
+              "POST /api/cases/{id}/verify"
+            ],
+            "worst_p95_endpoint": "POST /api/cases/{id}/approve",
+            "worst_p95_ms": 1582.095
+          }
+        },
+        "uvicorn": {
+          "endpoints": [
+            {
+              "endpoint": "GET /",
+              "kind": "read",
+              "max_ms": 8.969,
+              "mean_ms": 4.343,
+              "min_ms": 3.275,
+              "n": 120,
+              "p50_ms": 4.004,
+              "p95_ms": 6.647,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 8.355
+            },
+            {
+              "endpoint": "GET /api/cases",
+              "kind": "read",
+              "max_ms": 44.27,
+              "mean_ms": 15.186,
+              "min_ms": 9.826,
+              "n": 120,
+              "p50_ms": 14.134,
+              "p95_ms": 31.411,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 41.665
+            },
+            {
+              "endpoint": "GET /api/cases/{id}",
+              "kind": "read",
+              "max_ms": 52.86,
+              "mean_ms": 43.977,
+              "min_ms": 34.937,
+              "n": 30,
+              "p50_ms": 45.611,
+              "p95_ms": 51.958,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 52.629
+            },
+            {
+              "endpoint": "GET /api/cases/{id}/export",
+              "kind": "read",
+              "max_ms": 47.225,
+              "mean_ms": 43.9,
+              "min_ms": 40.586,
+              "n": 15,
+              "p50_ms": 43.186,
+              "p95_ms": 46.92,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 47.164
+            },
+            {
+              "endpoint": "GET /api/doctor",
+              "kind": "read",
+              "max_ms": 2.933,
+              "mean_ms": 2.054,
+              "min_ms": 1.441,
+              "n": 120,
+              "p50_ms": 2.086,
+              "p95_ms": 2.494,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 2.658
+            },
+            {
+              "endpoint": "GET /api/status",
+              "kind": "read",
+              "max_ms": 42.494,
+              "mean_ms": 32.499,
+              "min_ms": 25.805,
+              "n": 120,
+              "p50_ms": 32.6,
+              "p95_ms": 35.341,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 37.016
+            },
+            {
+              "endpoint": "GET /assets/app.js",
+              "kind": "read",
+              "max_ms": 4.14,
+              "mean_ms": 3.168,
+              "min_ms": 2.368,
+              "n": 120,
+              "p50_ms": 3.275,
+              "p95_ms": 3.779,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 4.073
+            },
+            {
+              "endpoint": "POST /api/cases",
+              "kind": "write",
+              "max_ms": 1688.346,
+              "mean_ms": 127.587,
+              "min_ms": 11.76,
+              "n": 15,
+              "p50_ms": 15.766,
+              "p95_ms": 523.176,
+              "p95_within_doherty": false,
+              "p95_within_instant": false,
+              "p99_ms": 1455.312
+            },
+            {
+              "endpoint": "POST /api/cases/{id}/approve",
+              "kind": "write",
+              "max_ms": 1857.2,
+              "mean_ms": 181.784,
+              "min_ms": 55.033,
+              "n": 15,
+              "p50_ms": 61.885,
+              "p95_ms": 608.444,
+              "p95_within_doherty": false,
+              "p95_within_instant": false,
+              "p99_ms": 1607.449
+            },
+            {
+              "endpoint": "POST /api/cases/{id}/execute",
+              "kind": "write",
+              "max_ms": 90.083,
+              "mean_ms": 24.663,
+              "min_ms": 13.667,
+              "n": 15,
+              "p50_ms": 16.674,
+              "p95_ms": 57.576,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 83.581
+            },
+            {
+              "endpoint": "POST /api/cases/{id}/preview",
+              "kind": "write",
+              "max_ms": 52.156,
+              "mean_ms": 17.769,
+              "min_ms": 12.09,
+              "n": 15,
+              "p50_ms": 13.912,
+              "p95_ms": 32.628,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 48.25
+            },
+            {
+              "endpoint": "POST /api/cases/{id}/propose",
+              "kind": "write",
+              "max_ms": 1422.796,
+              "mean_ms": 122.434,
+              "min_ms": 23.772,
+              "n": 15,
+              "p50_ms": 29.406,
+              "p95_ms": 456.908,
+              "p95_within_doherty": false,
+              "p95_within_instant": false,
+              "p99_ms": 1229.618
+            },
+            {
+              "endpoint": "POST /api/cases/{id}/select",
+              "kind": "write",
+              "max_ms": 44.865,
+              "mean_ms": 18.405,
+              "min_ms": 12.716,
+              "n": 15,
+              "p50_ms": 16.461,
+              "p95_ms": 28.866,
+              "p95_within_doherty": true,
+              "p95_within_instant": true,
+              "p99_ms": 41.665
+            },
+            {
+              "endpoint": "POST /api/cases/{id}/verify",
+              "kind": "compute",
+              "max_ms": 2000.381,
+              "mean_ms": 1217.285,
+              "min_ms": 987.073,
+              "n": 15,
+              "p50_ms": 1136.966,
+              "p95_ms": 1597.157,
+              "p95_within_doherty": false,
+              "p95_within_instant": false,
+              "p99_ms": 1919.736
+            }
+          ],
+          "status": "MEASURED",
+          "summary": {
+            "all_p95_within_doherty": false,
+            "endpoints": 14,
+            "over_doherty": [
+              "POST /api/cases",
+              "POST /api/cases/{id}/approve",
+              "POST /api/cases/{id}/propose",
+              "POST /api/cases/{id}/verify"
+            ],
+            "over_instant": [
+              "POST /api/cases",
+              "POST /api/cases/{id}/approve",
+              "POST /api/cases/{id}/propose",
+              "POST /api/cases/{id}/verify"
+            ],
+            "worst_p95_endpoint": "POST /api/cases/{id}/verify",
+            "worst_p95_ms": 1597.157
+          }
+        }
+      },
+      "verify_scaling": {
+        "alt_quadratic_r2": 0.937263,
+        "c0_ms": 20.3437,
+        "c1_ms_per_cell": 7.27429,
+        "intercept_caveat": "a negative c0 is a fit artefact (baseline and candidate matrices are pooled and differ in state count), not a physical negative time; treat c1 as a slope estimate",
+        "loglog_exponent": 0.9567,
+        "model": "T_ms = c0 + c1 * cells",
+        "note": "Matrix = actors x states x 5 actions. Each cell is one isolated ephemeral-SQLite transaction pair; the same-author oracle means agreement is not independent evidence.",
+        "points": [
+          {
+            "actors": 1,
+            "cells": 20,
+            "model": "baseline",
+            "ms": 159.292,
+            "predicted_ms": 165.83,
+            "residual_ms": -6.538,
+            "states": 4
+          },
+          {
+            "actors": 1,
+            "cells": 25,
+            "model": "candidate",
+            "ms": 200.921,
+            "predicted_ms": 202.201,
+            "residual_ms": -1.28,
+            "states": 5
+          },
+          {
+            "actors": 2,
+            "cells": 40,
+            "model": "baseline",
+            "ms": 310.715,
+            "predicted_ms": 311.315,
+            "residual_ms": -0.6,
+            "states": 4
+          },
+          {
+            "actors": 2,
+            "cells": 50,
+            "model": "candidate",
+            "ms": 372.275,
+            "predicted_ms": 384.058,
+            "residual_ms": -11.783,
+            "states": 5
+          },
+          {
+            "actors": 3,
+            "cells": 60,
+            "model": "baseline",
+            "ms": 462.385,
+            "predicted_ms": 456.801,
+            "residual_ms": 5.584,
+            "states": 4
+          },
+          {
+            "actors": 3,
+            "cells": 75,
+            "model": "candidate",
+            "ms": 616.997,
+            "predicted_ms": 565.916,
+            "residual_ms": 51.081,
+            "states": 5
+          },
+          {
+            "actors": 4,
+            "cells": 80,
+            "model": "baseline",
+            "ms": 596.193,
+            "predicted_ms": 602.287,
+            "residual_ms": -6.094,
+            "states": 4
+          },
+          {
+            "actors": 5,
+            "cells": 100,
+            "model": "baseline",
+            "ms": 696.131,
+            "predicted_ms": 747.773,
+            "residual_ms": -51.642,
+            "states": 4
+          },
+          {
+            "actors": 4,
+            "cells": 100,
+            "model": "candidate",
+            "ms": 763.674,
+            "predicted_ms": 747.773,
+            "residual_ms": 15.901,
+            "states": 5
+          },
+          {
+            "actors": 5,
+            "cells": 125,
+            "model": "candidate",
+            "ms": 935.002,
+            "predicted_ms": 929.63,
+            "residual_ms": 5.372,
+            "states": 5
+          }
+        ],
+        "power_caveat": "20 to 125 cells cannot separate linear from mildly superlinear growth; see alt_quadratic_r2",
+        "r2": 0.989948,
+        "status": "MEASURED"
+      }
+    },
+    "scaling": {
+      "fit": {
+        "alt_quadratic_r2": 0.801006,
+        "c0_ms": -0.166367,
+        "c1_ms_per_element": 0.000399108,
+        "loglog_exponent": 1.0676,
+        "loglog_r2": 0.951701,
+        "max_abs_residual_ms": 29.316,
+        "model": "T_ms = c0 + c1 * (V + E)",
+        "points": 32,
+        "r2": 0.915061,
+        "reading": "Both models are linear in the graph size, so an exponent near 1 with a high R^2 is consistent with O(V+E) on this graph family; it is a measurement, not a proof. The single-coefficient V+E model fits less well than the two-term model because a visited node costs several times more than a scanned edge (queue and per-node sort overhead).",
+        "two_term_c0_ms": -2.242725,
+        "two_term_cE_ms_per_edge": 0.000290982,
+        "two_term_cV_ms_per_node": 0.001065144,
+        "two_term_model": "T_ms = c0 + cV * V + cE * E",
+        "two_term_r2": 0.949135
+      },
+      "kind": "measurement",
+      "method": "repeated wall-clock timing of domain.impact.closure on seeded synthetic graphs",
+      "not_measured": [
+        "asymptotic proof",
+        "other graph shapes",
+        "graph construction cost",
+        "other hardware"
+      ],
+      "points": [
+        {
+          "E": 250,
+          "V": 250,
+          "degree": 1,
+          "ms": 0.184,
+          "predicted_ms": 0.033,
+          "residual_ms": 0.151,
+          "residual_pct": 81.909,
+          "size": 500,
+          "two_term_predicted_ms": -1.904
+        },
+        {
+          "E": 500,
+          "V": 250,
+          "degree": 2,
+          "ms": 0.208,
+          "predicted_ms": 0.133,
+          "residual_ms": 0.075,
+          "residual_pct": 36.027,
+          "size": 750,
+          "two_term_predicted_ms": -1.831
+        },
+        {
+          "E": 1000,
+          "V": 250,
+          "degree": 4,
+          "ms": 0.285,
+          "predicted_ms": 0.333,
+          "residual_ms": -0.047,
+          "residual_pct": -16.603,
+          "size": 1250,
+          "two_term_predicted_ms": -1.685
+        },
+        {
+          "E": 2000,
+          "V": 250,
+          "degree": 8,
+          "ms": 0.352,
+          "predicted_ms": 0.732,
+          "residual_ms": -0.38,
+          "residual_pct": -107.905,
+          "size": 2250,
+          "two_term_predicted_ms": -1.394
+        },
+        {
+          "E": 500,
+          "V": 500,
+          "degree": 1,
+          "ms": 0.353,
+          "predicted_ms": 0.233,
+          "residual_ms": 0.12,
+          "residual_pct": 34.068,
+          "size": 1000,
+          "two_term_predicted_ms": -1.565
+        },
+        {
+          "E": 1000,
+          "V": 500,
+          "degree": 2,
+          "ms": 0.444,
+          "predicted_ms": 0.432,
+          "residual_ms": 0.012,
+          "residual_pct": 2.704,
+          "size": 1500,
+          "two_term_predicted_ms": -1.419
+        },
+        {
+          "E": 2000,
+          "V": 500,
+          "degree": 4,
+          "ms": 0.529,
+          "predicted_ms": 0.831,
+          "residual_ms": -0.302,
+          "residual_pct": -57.127,
+          "size": 2500,
+          "two_term_predicted_ms": -1.128
+        },
+        {
+          "E": 4000,
+          "V": 500,
+          "degree": 8,
+          "ms": 0.674,
+          "predicted_ms": 1.63,
+          "residual_ms": -0.955,
+          "residual_pct": -141.754,
+          "size": 4500,
+          "two_term_predicted_ms": -0.546
+        },
+        {
+          "E": 1000,
+          "V": 1000,
+          "degree": 1,
+          "ms": 0.703,
+          "predicted_ms": 0.632,
+          "residual_ms": 0.072,
+          "residual_pct": 10.192,
+          "size": 2000,
+          "two_term_predicted_ms": -0.887
+        },
+        {
+          "E": 2000,
+          "V": 1000,
+          "degree": 2,
+          "ms": 0.966,
+          "predicted_ms": 1.031,
+          "residual_ms": -0.065,
+          "residual_pct": -6.755,
+          "size": 3000,
+          "two_term_predicted_ms": -0.596
+        },
+        {
+          "E": 4000,
+          "V": 1000,
+          "degree": 4,
+          "ms": 1.055,
+          "predicted_ms": 1.829,
+          "residual_ms": -0.774,
+          "residual_pct": -73.344,
+          "size": 5000,
+          "two_term_predicted_ms": -0.014
+        },
+        {
+          "E": 8000,
+          "V": 1000,
+          "degree": 8,
+          "ms": 1.783,
+          "predicted_ms": 3.426,
+          "residual_ms": -1.643,
+          "residual_pct": -92.12,
+          "size": 9000,
+          "two_term_predicted_ms": 1.15
+        },
+        {
+          "E": 2000,
+          "V": 2000,
+          "degree": 1,
+          "ms": 1.926,
+          "predicted_ms": 1.43,
+          "residual_ms": 0.496,
+          "residual_pct": 25.765,
+          "size": 4000,
+          "two_term_predicted_ms": 0.47
+        },
+        {
+          "E": 4000,
+          "V": 2000,
+          "degree": 2,
+          "ms": 1.82,
+          "predicted_ms": 2.228,
+          "residual_ms": -0.408,
+          "residual_pct": -22.428,
+          "size": 6000,
+          "two_term_predicted_ms": 1.051
+        },
+        {
+          "E": 8000,
+          "V": 2000,
+          "degree": 4,
+          "ms": 2.53,
+          "predicted_ms": 3.825,
+          "residual_ms": -1.294,
+          "residual_pct": -51.155,
+          "size": 10000,
+          "two_term_predicted_ms": 2.215
+        },
+        {
+          "E": 16000,
+          "V": 2000,
+          "degree": 8,
+          "ms": 3.659,
+          "predicted_ms": 7.018,
+          "residual_ms": -3.358,
+          "residual_pct": -91.787,
+          "size": 18000,
+          "two_term_predicted_ms": 4.543
+        },
+        {
+          "E": 4000,
+          "V": 4000,
+          "degree": 1,
+          "ms": 5.306,
+          "predicted_ms": 3.026,
+          "residual_ms": 2.279,
+          "residual_pct": 42.959,
+          "size": 8000,
+          "two_term_predicted_ms": 3.182
+        },
+        {
+          "E": 8000,
+          "V": 4000,
+          "degree": 2,
+          "ms": 5.558,
+          "predicted_ms": 4.623,
+          "residual_ms": 0.935,
+          "residual_pct": 16.815,
+          "size": 12000,
+          "two_term_predicted_ms": 4.346
+        },
+        {
+          "E": 16000,
+          "V": 4000,
+          "degree": 4,
+          "ms": 6.947,
+          "predicted_ms": 7.816,
+          "residual_ms": -0.869,
+          "residual_pct": -12.51,
+          "size": 20000,
+          "two_term_predicted_ms": 6.674
+        },
+        {
+          "E": 32000,
+          "V": 4000,
+          "degree": 8,
+          "ms": 7.148,
+          "predicted_ms": 14.202,
+          "residual_ms": -7.054,
+          "residual_pct": -98.678,
+          "size": 36000,
+          "two_term_predicted_ms": 11.329
+        },
+        {
+          "E": 8000,
+          "V": 8000,
+          "degree": 1,
+          "ms": 10.015,
+          "predicted_ms": 6.219,
+          "residual_ms": 3.796,
+          "residual_pct": 37.903,
+          "size": 16000,
+          "two_term_predicted_ms": 8.606
+        },
+        {
+          "E": 16000,
+          "V": 8000,
+          "degree": 2,
+          "ms": 9.398,
+          "predicted_ms": 9.412,
+          "residual_ms": -0.014,
+          "residual_pct": -0.151,
+          "size": 24000,
+          "two_term_predicted_ms": 10.934
+        },
+        {
+          "E": 32000,
+          "V": 8000,
+          "degree": 4,
+          "ms": 9.876,
+          "predicted_ms": 15.798,
+          "residual_ms": -5.922,
+          "residual_pct": -59.961,
+          "size": 40000,
+          "two_term_predicted_ms": 15.59
+        },
+        {
+          "E": 64000,
+          "V": 8000,
+          "degree": 8,
+          "ms": 17.514,
+          "predicted_ms": 28.569,
+          "residual_ms": -11.055,
+          "residual_pct": -63.121,
+          "size": 72000,
+          "two_term_predicted_ms": 24.901
+        },
+        {
+          "E": 16000,
+          "V": 16000,
+          "degree": 1,
+          "ms": 20.64,
+          "predicted_ms": 12.605,
+          "residual_ms": 8.035,
+          "residual_pct": 38.928,
+          "size": 32000,
+          "two_term_predicted_ms": 19.455
+        },
+        {
+          "E": 32000,
+          "V": 16000,
+          "degree": 2,
+          "ms": 17.159,
+          "predicted_ms": 18.991,
+          "residual_ms": -1.832,
+          "residual_pct": -10.674,
+          "size": 48000,
+          "two_term_predicted_ms": 24.111
+        },
+        {
+          "E": 64000,
+          "V": 16000,
+          "degree": 4,
+          "ms": 42.905,
+          "predicted_ms": 31.762,
+          "residual_ms": 11.143,
+          "residual_pct": 25.971,
+          "size": 80000,
+          "two_term_predicted_ms": 33.422
+        },
+        {
+          "E": 128000,
+          "V": 16000,
+          "degree": 8,
+          "ms": 27.99,
+          "predicted_ms": 57.305,
+          "residual_ms": -29.316,
+          "residual_pct": -104.736,
+          "size": 144000,
+          "two_term_predicted_ms": 52.045
+        },
+        {
+          "E": 32000,
+          "V": 32000,
+          "degree": 1,
+          "ms": 39.751,
+          "predicted_ms": 25.377,
+          "residual_ms": 14.375,
+          "residual_pct": 36.162,
+          "size": 64000,
+          "two_term_predicted_ms": 41.153
+        },
+        {
+          "E": 64000,
+          "V": 32000,
+          "degree": 2,
+          "ms": 48.977,
+          "predicted_ms": 38.148,
+          "residual_ms": 10.829,
+          "residual_pct": 22.111,
+          "size": 96000,
+          "two_term_predicted_ms": 50.465
+        },
+        {
+          "E": 128000,
+          "V": 32000,
+          "degree": 4,
+          "ms": 73.236,
+          "predicted_ms": 63.691,
+          "residual_ms": 9.545,
+          "residual_pct": 13.033,
+          "size": 160000,
+          "two_term_predicted_ms": 69.088
+        },
+        {
+          "E": 256000,
+          "V": 32000,
+          "degree": 8,
+          "ms": 118.203,
+          "predicted_ms": 114.777,
+          "residual_ms": 3.426,
+          "residual_pct": 2.898,
+          "size": 288000,
+          "two_term_predicted_ms": 106.333
+        }
+      ],
+      "repeats": 7,
+      "seed": 20260928,
+      "source": "algorithm: BFS closure, O(V+E); fit: stdlib statistics.linear_regression",
+      "status": "MEASURED"
+    },
+    "tests": {
+      "by_layer": [
+        {
+          "asserts_direct": 0,
+          "files_direct": 0,
+          "files_transitive": 0,
+          "layer": "__main__",
+          "tests_direct": 0,
+          "tests_transitive": 0
+        },
+        {
+          "asserts_direct": 162,
+          "files_direct": 5,
+          "files_transitive": 8,
+          "layer": "adapters",
+          "tests_direct": 132,
+          "tests_transitive": 210
+        },
+        {
+          "asserts_direct": 299,
+          "files_direct": 5,
+          "files_transitive": 10,
+          "layer": "application",
+          "tests_direct": 132,
+          "tests_transitive": 248
+        },
+        {
+          "asserts_direct": 40,
+          "files_direct": 2,
+          "files_transitive": 4,
+          "layer": "bootstrap",
+          "tests_direct": 37,
+          "tests_transitive": 85
+        },
+        {
+          "asserts_direct": 566,
+          "files_direct": 13,
+          "files_transitive": 15,
+          "layer": "domain",
+          "tests_direct": 314,
+          "tests_transitive": 326
+        },
+        {
+          "asserts_direct": 167,
+          "files_direct": 3,
+          "files_transitive": 3,
+          "layer": "interfaces",
+          "tests_direct": 53,
+          "tests_transitive": 53
+        }
+      ],
+      "files": [
+        {
+          "asserts": 15,
+          "file": "tests/demo_catalogue/test_cli.py",
+          "layers_direct": [],
+          "layers_transitive": [],
+          "raises_blocks": 4,
+          "test_functions": 12,
+          "tests": 12
+        },
+        {
+          "asserts": 23,
+          "file": "tests/demo_catalogue/test_manifest.py",
+          "layers_direct": [],
+          "layers_transitive": [],
+          "raises_blocks": 0,
+          "test_functions": 11,
+          "tests": 31
+        },
+        {
+          "asserts": 14,
+          "file": "tests/demo_catalogue/test_registry.py",
+          "layers_direct": [],
+          "layers_transitive": [],
+          "raises_blocks": 0,
+          "test_functions": 12,
+          "tests": 12
+        },
+        {
+          "asserts": 7,
+          "file": "tests/demo_catalogue/test_server_helpers.py",
+          "layers_direct": [],
+          "layers_transitive": [],
+          "raises_blocks": 1,
+          "test_functions": 5,
+          "tests": 5
+        },
+        {
+          "asserts": 15,
+          "file": "tests/metrics/test_metrics_aggregate.py",
+          "layers_direct": [],
+          "layers_transitive": [],
+          "raises_blocks": 0,
+          "test_functions": 7,
+          "tests": 7
+        },
+        {
+          "asserts": 14,
+          "file": "tests/metrics/test_metrics_budgets.py",
+          "layers_direct": [],
+          "layers_transitive": [],
+          "raises_blocks": 0,
+          "test_functions": 7,
+          "tests": 7
+        },
+        {
+          "asserts": 14,
+          "file": "tests/metrics/test_metrics_collect.py",
+          "layers_direct": [],
+          "layers_transitive": [],
+          "raises_blocks": 0,
+          "test_functions": 7,
+          "tests": 7
+        },
+        {
+          "asserts": 8,
+          "file": "tests/metrics/test_metrics_complexity.py",
+          "layers_direct": [],
+          "layers_transitive": [],
+          "raises_blocks": 0,
+          "test_functions": 3,
+          "tests": 3
+        },
+        {
+          "asserts": 26,
+          "file": "tests/metrics/test_metrics_dashboard.py",
+          "layers_direct": [],
+          "layers_transitive": [],
+          "raises_blocks": 0,
+          "test_functions": 11,
+          "tests": 11
+        },
+        {
+          "asserts": 16,
+          "file": "tests/metrics/test_metrics_inventory.py",
+          "layers_direct": [],
+          "layers_transitive": [],
+          "raises_blocks": 0,
+          "test_functions": 7,
+          "tests": 7
+        },
+        {
+          "asserts": 11,
+          "file": "tests/metrics/test_metrics_perf.py",
+          "layers_direct": [],
+          "layers_transitive": [],
+          "raises_blocks": 1,
+          "test_functions": 4,
+          "tests": 5
+        },
+        {
+          "asserts": 11,
+          "file": "tests/metrics/test_metrics_scaling.py",
+          "layers_direct": [
+            "domain"
+          ],
+          "layers_transitive": [
+            "domain"
+          ],
+          "raises_blocks": 0,
+          "test_functions": 3,
+          "tests": 3
+        },
+        {
+          "asserts": 10,
+          "file": "tests/metrics/test_metrics_stats.py",
+          "layers_direct": [],
+          "layers_transitive": [],
+          "raises_blocks": 3,
+          "test_functions": 7,
+          "tests": 7
+        },
+        {
+          "asserts": 23,
+          "file": "tests/metrics/test_metrics_structure.py",
+          "layers_direct": [],
+          "layers_transitive": [],
+          "raises_blocks": 0,
+          "test_functions": 9,
+          "tests": 16
+        },
+        {
+          "asserts": 29,
+          "file": "tests/test_application.py",
+          "layers_direct": [
+            "application",
+            "bootstrap",
+            "domain"
+          ],
+          "layers_transitive": [
+            "adapters",
+            "application",
+            "bootstrap",
+            "domain"
+          ],
+          "raises_blocks": 9,
+          "test_functions": 20,
+          "tests": 30
+        },
+        {
+          "asserts": 98,
+          "file": "tests/test_diagrams.py",
+          "layers_direct": [
+            "application",
+            "domain"
+          ],
+          "layers_transitive": [
+            "application",
+            "domain"
+          ],
+          "raises_blocks": 5,
+          "test_functions": 29,
+          "tests": 33
+        },
+        {
+          "asserts": 14,
+          "file": "tests/test_domain.py",
+          "layers_direct": [
+            "domain"
+          ],
+          "layers_transitive": [
+            "domain"
+          ],
+          "raises_blocks": 6,
+          "test_functions": 13,
+          "tests": 21
+        },
+        {
+          "asserts": 11,
+          "file": "tests/test_durability_and_sandbox.py",
+          "layers_direct": [
+            "adapters",
+            "bootstrap"
+          ],
+          "layers_transitive": [
+            "adapters",
+            "application",
+            "bootstrap",
+            "domain"
+          ],
+          "raises_blocks": 2,
+          "test_functions": 7,
+          "tests": 7
+        },
+        {
+          "asserts": 72,
+          "file": "tests/test_formal_bend.py",
+          "layers_direct": [
+            "domain"
+          ],
+          "layers_transitive": [
+            "domain"
+          ],
+          "raises_blocks": 5,
+          "test_functions": 26,
+          "tests": 26
+        },
+        {
+          "asserts": 21,
+          "file": "tests/test_formal_bmc.py",
+          "layers_direct": [
+            "adapters",
+            "application",
+            "domain"
+          ],
+          "layers_transitive": [
+            "adapters",
+            "application",
+            "domain"
+          ],
+          "raises_blocks": 1,
+          "test_functions": 14,
+          "tests": 21
+        },
+        {
+          "asserts": 21,
+          "file": "tests/test_formal_smt.py",
+          "layers_direct": [
+            "domain"
+          ],
+          "layers_transitive": [
+            "domain"
+          ],
+          "raises_blocks": 0,
+          "test_functions": 12,
+          "tests": 12
+        },
+        {
+          "asserts": 16,
+          "file": "tests/test_http_and_architecture.py",
+          "layers_direct": [
+            "interfaces"
+          ],
+          "layers_transitive": [
+            "application",
+            "domain",
+            "interfaces"
+          ],
+          "raises_blocks": 0,
+          "test_functions": 5,
+          "tests": 5
+        },
+        {
+          "asserts": 95,
+          "file": "tests/test_mcp_server.py",
+          "layers_direct": [
+            "application",
+            "domain",
+            "interfaces"
+          ],
+          "layers_transitive": [
+            "adapters",
+            "application",
+            "bootstrap",
+            "domain",
+            "interfaces"
+          ],
+          "raises_blocks": 7,
+          "test_functions": 28,
+          "tests": 29
+        },
+        {
+          "asserts": 79,
+          "file": "tests/test_provider_contract.py",
+          "layers_direct": [
+            "adapters",
+            "domain"
+          ],
+          "layers_transitive": [
+            "adapters",
+            "application",
+            "domain"
+          ],
+          "raises_blocks": 20,
+          "test_functions": 40,
+          "tests": 62
+        },
+        {
+          "asserts": 19,
+          "file": "tests/test_provider_process.py",
+          "layers_direct": [
+            "adapters",
+            "domain"
+          ],
+          "layers_transitive": [
+            "adapters",
+            "application",
+            "domain"
+          ],
+          "raises_blocks": 6,
+          "test_functions": 13,
+          "tests": 15
+        },
+        {
+          "asserts": 32,
+          "file": "tests/test_providers.py",
+          "layers_direct": [
+            "adapters",
+            "domain"
+          ],
+          "layers_transitive": [
+            "adapters",
+            "application",
+            "domain"
+          ],
+          "raises_blocks": 13,
+          "test_functions": 15,
+          "tests": 27
+        },
+        {
+          "asserts": 18,
+          "file": "tests/test_quality_gates.py",
+          "layers_direct": [],
+          "layers_transitive": [],
+          "raises_blocks": 0,
+          "test_functions": 8,
+          "tests": 13
+        },
+        {
+          "asserts": 19,
+          "file": "tests/test_runtime.py",
+          "layers_direct": [
+            "domain"
+          ],
+          "layers_transitive": [
+            "domain"
+          ],
+          "raises_blocks": 6,
+          "test_functions": 9,
+          "tests": 16
+        },
+        {
+          "asserts": 14,
+          "file": "tests/test_syntax_validator.py",
+          "layers_direct": [],
+          "layers_transitive": [],
+          "raises_blocks": 0,
+          "test_functions": 6,
+          "tests": 6
+        },
+        {
+          "asserts": 56,
+          "file": "tests/test_visual_surface.py",
+          "layers_direct": [
+            "application",
+            "domain",
+            "interfaces"
+          ],
+          "layers_transitive": [
+            "adapters",
+            "application",
+            "bootstrap",
+            "domain",
+            "interfaces"
+          ],
+          "raises_blocks": 1,
+          "test_functions": 14,
+          "tests": 19
+        },
+        {
+          "asserts": 11,
+          "file": "tests/tools/test_adr_index.py",
+          "layers_direct": [],
+          "layers_transitive": [],
+          "raises_blocks": 0,
+          "test_functions": 5,
+          "tests": 5
+        },
+        {
+          "asserts": 2,
+          "file": "tests/tools/test_claude_hook.py",
+          "layers_direct": [],
+          "layers_transitive": [],
+          "raises_blocks": 0,
+          "test_functions": 2,
+          "tests": 11
+        },
+        {
+          "asserts": 3,
+          "file": "tests/tools/test_keep_generated.py",
+          "layers_direct": [],
+          "layers_transitive": [],
+          "raises_blocks": 0,
+          "test_functions": 3,
+          "tests": 3
+        },
+        {
+          "asserts": 16,
+          "file": "tests/tools/test_tomlmerge.py",
+          "layers_direct": [],
+          "layers_transitive": [],
+          "raises_blocks": 0,
+          "test_functions": 10,
+          "tests": 10
+        }
+      ],
+      "method": "ast scan of tests/**/test_*.py; layer attribution from imports and the grimp import graph",
+      "not_measured": [
+        "test quality or fault-detection power (see the mutation lane)",
+        "dynamic parametrisation beyond literals",
+        "tests outside tests/"
+      ],
+      "status": "MEASURED",
+      "summary": {
+        "asserts": 853,
+        "asserts_per_test": 1.692,
+        "raises_blocks": 90,
+        "static_matches_collected": false,
+        "test_files": 34,
+        "tests_collected_by_pytest": 601,
+        "tests_static": 504
+      }
+    },
+    "verification_yield": {
+      "kind": "measurement",
+      "method": "states explored per technique: two measured here, the rest copied from lane reports",
+      "not_measured": [
+        "independence of techniques",
+        "defect-finding power (findings are counts reported by each technique)"
+      ],
+      "status": "MEASURED",
+      "summary": {
+        "from_lane_reports": 0,
+        "lane_reports_without_state_counts": 0,
+        "techniques": 2
+      },
+      "techniques": [
+        {
+          "accepted_cells": 7,
+          "denied_cells": 118,
+          "duration_s": 0.935,
+          "findings": 0,
+          "kind": "measured-here",
+          "note": "cells = actor x state x action; findings = oracle/runtime disagreements (same-author oracle)",
+          "states_explored": 125,
+          "states_per_s": 133.69,
+          "status": "MEASURED",
+          "technique": "runtime_matrix (this kernel)"
+        },
+        {
+          "duration_s": 6.66e-05,
+          "findings": null,
+          "kind": "measured-here",
+          "note": "nodes of the projection-dependency graph reached from the changed actions",
+          "states_explored": 20,
+          "states_per_s": 300300.302,
+          "status": "MEASURED",
+          "technique": "impact_closure (this kernel)"
+        }
+      ]
+    }
+  }
+}

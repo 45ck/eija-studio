@@ -2,7 +2,7 @@
 
 Status: owner's thesis recorded 2026-09-29; audience and first acceptance target clarified 2026-10-02. In the owner's words: *everything is abstraction, especially in software; the domain and its language are the most important thing; this product lets people see that better and see what agents do.* This document turns that into design and engineering consequences. It is a thesis to be tested, not a proven claim.
 
-The [project mission](MISSION.md) turns this thesis into two delivery outcomes: a complete, polished, source-connected IDE across the supported workflow, demonstrated through a WOW walkthrough and showcase content; and a GitHub package demonstrating both proof of concept and reproducible proof of feasibility. The usable product must precede its recording. Finish coherent non-linear navigation, editors, source, agent changes, review, evidence, history and safe recovery; an isolated demo path is insufficient. Human benefit remains a separate validation result. These are development goals, not capabilities delivered by this documentation update.
+The [project mission](MISSION.md) turns this thesis into two delivery outcomes: a complete, polished, source-connected IDE across the supported workflow, demonstrated through a WOW walkthrough and showcase content; and a GitHub package demonstrating both proof of concept and reproducible proof of feasibility. The usable product must precede its recording. Finish coherent non-linear navigation, editors, source, agent changes, review, evidence, history and safe recovery; an isolated demo path is insufficient. Human benefit remains a separate validation result. These are development goals; current availability and acceptance are recorded in the self-dogfood contract.
 
 ## The claims
 
@@ -61,7 +61,7 @@ Two things stay deliberately *unlike* a typical IDE: approving and applying a ch
 | Current source-edit boundary | The first repository connection is read-only. Editing the model changes the supported EIJA candidate through the existing kernel; it does not rewrite the connected codebase. General two-way code/model edits remain a design target requiring adapters and conformance evidence. |
 | Evidence of benefit | No superiority, novelty or comprehension claim follows from feature count. First prove the local flow; then compare correctness, critical misses, comprehension and total effort using the [V&V protocol](../research/2026-10-02-vv-protocol.md). Live model and human-study results are NOT_RUN. |
 
-[Self-dogfood acceptance](SELF-DOGFOOD-ACCEPTANCE.md) is the current bounded delivery contract. The [current-alternatives review](../research/2026-10-02-current-alternatives.md) records substantial overlap with existing products and research. The IDE and model operations described in this thesis are design requirements. The wider capabilities below are not a claim that they are implemented or available on main.
+[Self-dogfood acceptance](SELF-DOGFOOD-ACCEPTANCE.md) is the current bounded delivery contract. The [current-alternatives review](../research/2026-10-02-current-alternatives.md) records substantial overlap with existing products and research. The IDE and model operations described in this thesis are design requirements. The wider capabilities below are not a claim that they are implemented.
 
 ## Design decisions retained from 29 September 2026
 

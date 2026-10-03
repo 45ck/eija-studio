@@ -1,0 +1,432 @@
+{
+  "agreement": {
+    "1000": {
+      "R1": {
+        "count": 246,
+        "engines_identical": true,
+        "engines_not_run": [],
+        "engines_run": [
+          "datalog",
+          "python",
+          "shacl",
+          "sql"
+        ],
+        "sha256_16": "7a8575b4d6377602"
+      },
+      "R2": {
+        "count": 371,
+        "engines_identical": true,
+        "engines_not_run": [],
+        "engines_run": [
+          "datalog",
+          "python",
+          "shacl",
+          "sql"
+        ],
+        "sha256_16": "2a30e0d3fd6604de"
+      },
+      "R3": {
+        "count": 165,
+        "engines_identical": true,
+        "engines_not_run": [],
+        "engines_run": [
+          "datalog",
+          "python",
+          "shacl",
+          "sql"
+        ],
+        "sha256_16": "077aa03b3c88f1ea"
+      },
+      "R4": {
+        "count": 10,
+        "engines_identical": true,
+        "engines_not_run": [],
+        "engines_run": [
+          "datalog",
+          "python",
+          "shacl",
+          "sql"
+        ],
+        "sha256_16": "1ed16d7af4fb348e"
+      }
+    },
+    "10000": {
+      "R1": {
+        "count": 2591,
+        "engines_identical": true,
+        "engines_not_run": [
+          "shacl"
+        ],
+        "engines_run": [
+          "datalog",
+          "python",
+          "sql"
+        ],
+        "sha256_16": "bc72a73f932d050c"
+      },
+      "R2": {
+        "count": 9881,
+        "engines_identical": true,
+        "engines_not_run": [
+          "shacl"
+        ],
+        "engines_run": [
+          "datalog",
+          "python",
+          "sql"
+        ],
+        "sha256_16": "99b1f75801ce9174"
+      },
+      "R3": {
+        "count": 1603,
+        "engines_identical": true,
+        "engines_not_run": [
+          "shacl"
+        ],
+        "engines_run": [
+          "datalog",
+          "python",
+          "sql"
+        ],
+        "sha256_16": "342784051c214c89"
+      },
+      "R4": {
+        "count": 96,
+        "engines_identical": true,
+        "engines_not_run": [
+          "shacl"
+        ],
+        "engines_run": [
+          "datalog",
+          "python",
+          "sql"
+        ],
+        "sha256_16": "059e95897a638e69"
+      }
+    },
+    "100000": {
+      "R1": {
+        "count": 25934,
+        "engines_identical": true,
+        "engines_not_run": [
+          "shacl"
+        ],
+        "engines_run": [
+          "datalog",
+          "python",
+          "sql"
+        ],
+        "sha256_16": "685f23e4b6307542"
+      },
+      "R2": {
+        "count": 99942,
+        "engines_identical": true,
+        "engines_not_run": [
+          "shacl"
+        ],
+        "engines_run": [
+          "datalog",
+          "python",
+          "sql"
+        ],
+        "sha256_16": "6d534c5da6191028"
+      },
+      "R3": {
+        "count": 16453,
+        "engines_identical": true,
+        "engines_not_run": [
+          "shacl"
+        ],
+        "engines_run": [
+          "datalog",
+          "python",
+          "sql"
+        ],
+        "sha256_16": "16f3a407ead3c677"
+      },
+      "R4": {
+        "count": 990,
+        "engines_identical": true,
+        "engines_not_run": [
+          "shacl"
+        ],
+        "engines_run": [
+          "datalog",
+          "python",
+          "sql"
+        ],
+        "sha256_16": "97caa64320b079df"
+      }
+    },
+    "200": {
+      "R1": {
+        "count": 53,
+        "engines_identical": true,
+        "engines_not_run": [],
+        "engines_run": [
+          "datalog",
+          "python",
+          "shacl",
+          "sql"
+        ],
+        "sha256_16": "21610f90838194e3"
+      },
+      "R2": {
+        "count": 3,
+        "engines_identical": true,
+        "engines_not_run": [],
+        "engines_run": [
+          "datalog",
+          "python",
+          "shacl",
+          "sql"
+        ],
+        "sha256_16": "bb274dfd763d8682"
+      },
+      "R3": {
+        "count": 28,
+        "engines_identical": true,
+        "engines_not_run": [],
+        "engines_run": [
+          "datalog",
+          "python",
+          "shacl",
+          "sql"
+        ],
+        "sha256_16": "d7f7ae83d55b00c7"
+      },
+      "R4": {
+        "count": 2,
+        "engines_identical": true,
+        "engines_not_run": [],
+        "engines_run": [
+          "datalog",
+          "python",
+          "shacl",
+          "sql"
+        ],
+        "sha256_16": "6e9acc4afc289519"
+      }
+    },
+    "2000": {
+      "R1": {
+        "count": 512,
+        "engines_identical": true,
+        "engines_not_run": [],
+        "engines_run": [
+          "datalog",
+          "python",
+          "shacl",
+          "sql"
+        ],
+        "sha256_16": "08d991903fffe355"
+      },
+      "R2": {
+        "count": 1930,
+        "engines_identical": true,
+        "engines_not_run": [],
+        "engines_run": [
+          "datalog",
+          "python",
+          "shacl",
+          "sql"
+        ],
+        "sha256_16": "386aa92ffc8bc87a"
+      },
+      "R3": {
+        "count": 320,
+        "engines_identical": true,
+        "engines_not_run": [],
+        "engines_run": [
+          "datalog",
+          "python",
+          "shacl",
+          "sql"
+        ],
+        "sha256_16": "8f44b2a2eafbf9b2"
+      },
+      "R4": {
+        "count": 20,
+        "engines_identical": true,
+        "engines_not_run": [],
+        "engines_run": [
+          "datalog",
+          "python",
+          "shacl",
+          "sql"
+        ],
+        "sha256_16": "9c578cef5b6978ed"
+      }
+    }
+  },
+  "environment": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.12.10",
+    "shacl": {
+      "pyshacl": "0.40.1",
+      "rdflib": "7.6.0"
+    },
+    "shacl_budget_s": 300,
+    "sqlite": "3.49.1"
+  },
+  "label": "MEASUREMENT for timings (one machine); deterministic sections are byte-stable for a fixed seed",
+  "rules": {
+    "R1": "requirement without verifier (anti-join)",
+    "R2": "transitive suspect (positive recursion)",
+    "R3": "requirement not covered through refinement chain (recursion then negation)",
+    "R4": "homonym in context (self-join and aggregate)"
+  },
+  "schema": "eija.weave.bench.rule-language/v1",
+  "seed": 20260929,
+  "source_lines": {
+    "datalog": {
+      "R1": 2,
+      "R2": 3,
+      "R3": 3,
+      "R4": 2
+    },
+    "note": "non-blank, non-comment lines of the rule definition only (no data loading, no driver code)",
+    "python": {
+      "R1": 3,
+      "R2": 13,
+      "R3": 13,
+      "R4": 5
+    },
+    "shacl": {
+      "R1": 2,
+      "R2": 4,
+      "R3": 3,
+      "R4": 3
+    },
+    "sql": {
+      "R1": 1,
+      "R2": 6,
+      "R3": 6,
+      "R4": 2
+    }
+  },
+  "timings_ms": {
+    "1000": {
+      "R1": {
+        "datalog": 7.11,
+        "python": 0.18,
+        "shacl_validate": 123.1,
+        "sql": 0.57
+      },
+      "R2": {
+        "datalog": 5.49,
+        "python": 0.66,
+        "shacl_validate": 28912.6,
+        "sql": 1.24
+      },
+      "R3": {
+        "datalog": 15.43,
+        "python": 1.5,
+        "shacl_validate": 9192.4,
+        "sql": 2.55
+      },
+      "R4": {
+        "datalog": 4.56,
+        "python": 0.16,
+        "shacl_validate": 5167.1,
+        "sql": 0.34
+      }
+    },
+    "10000": {
+      "R1": {
+        "datalog": 71.92,
+        "python": 1.96,
+        "sql": 6.56
+      },
+      "R2": {
+        "datalog": 273.06,
+        "python": 18.75,
+        "sql": 47.83
+      },
+      "R3": {
+        "datalog": 161.18,
+        "python": 9.99,
+        "sql": 31.88
+      },
+      "R4": {
+        "datalog": 84.38,
+        "python": 2.07,
+        "sql": 3.47
+      }
+    },
+    "100000": {
+      "R1": {
+        "datalog": 1031.33,
+        "python": 40.01,
+        "sql": 59.35
+      },
+      "R2": {
+        "datalog": 1822.33,
+        "python": 263.47,
+        "sql": 796.26
+      },
+      "R3": {
+        "datalog": 2255.22,
+        "python": 278.84,
+        "sql": 530.86
+      },
+      "R4": {
+        "datalog": 1268.88,
+        "python": 57.35,
+        "sql": 33.9
+      }
+    },
+    "200": {
+      "R1": {
+        "datalog": 1.1,
+        "python": 0.03,
+        "shacl_validate": 28.3,
+        "sql": 0.1
+      },
+      "R2": {
+        "datalog": 1.53,
+        "python": 0.07,
+        "shacl_validate": 2544.2,
+        "sql": 0.06
+      },
+      "R3": {
+        "datalog": 2.65,
+        "python": 0.14,
+        "shacl_validate": 1709.3,
+        "sql": 0.6
+      },
+      "R4": {
+        "datalog": 0.91,
+        "python": 0.03,
+        "shacl_validate": 1036.1,
+        "sql": 0.07
+      }
+    },
+    "2000": {
+      "R1": {
+        "datalog": 14.24,
+        "python": 0.34,
+        "shacl_validate": 364.1,
+        "sql": 1.4
+      },
+      "R2": {
+        "datalog": 30.89,
+        "python": 2.39,
+        "shacl_validate": 140613.5,
+        "sql": 7.0
+      },
+      "R3": {
+        "datalog": 31.3,
+        "python": 1.48,
+        "shacl_validate": 13491.9,
+        "sql": 5.21
+      },
+      "R4": {
+        "datalog": 9.55,
+        "python": 0.37,
+        "shacl_validate": 10070.3,
+        "sql": 0.67
+      }
+    }
+  }
+}
