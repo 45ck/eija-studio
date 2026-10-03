@@ -1,5 +1,5 @@
 "use strict";
-// Actual presentation and request handler/API; controlled task, reload and provenance-render boundaries.
+// Actual presentation, task, request/API and provenance rendering; controlled DOM/transport/reload boundaries.
 const {test}=require("node:test"),assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
 const source=fs.readFileSync(process.env.EIJA_APP_MODULE||path.join(__dirname,"../../src/eija_studio/resources/web/app.js"),"utf8");
 const clone=value=>JSON.parse(JSON.stringify(value));
@@ -12,44 +12,48 @@ function fixture(){return {case:{id:"case-A",version:2,stage:"PROPOSED",request:
   safe:{supported:true,label:"Recommend only",consequences:["Teacher recommends; Registrar retains final approval."]},
   authority:{supported:false,label:"Teacher approves",consequences:["Transfers approval authority to Teacher.","Protected policy rejects this interpretation."]},
   external:{supported:false,label:"External workflow",consequences:["Requires an unsupported operator."]}}};}
-function harness(code=source){
-  const document={},calls=[],roots=[],requests=[],reloads=[];let acceptedCase=null;
+function harness(code=source,{retainedDisclosureRects=false}={}){
+  const document={},calls=[],roots=[],requests=[],reloads=[],errors=[];let acceptedCase=null;
   class Element{
-    constructor(tag,text,cls){this.tag=tag;this.ownText=text===undefined?"":String(text);this.className=cls||"";this.children=[];this.dataset={};this.open=false;this.disabled=false;this.checked=false;this.id="";}
+    constructor(tag,text,cls){this.tag=tag;this.ownText=text===undefined?"":String(text);this.className=cls||"";this.children=[];this.dataset={};this.open=false;this.disabled=false;this.checked=false;this.id="";this.hidden=false;this.attributes={};}
+    get disabled(){return !!this.isDisabled;}
+    set disabled(value){this.isDisabled=!!value;if(value&&document.activeElement===this)document.activeElement=document.body;}
+    setAttribute(key,value){this.attributes[key]=String(value);}
+    removeAttribute(key){delete this.attributes[key];}
     get textContent(){return this.ownText+this.children.map(node=>node.textContent).join(" ");}
     set textContent(text){this.ownText=String(text);this.replaceChildren();}
     append(...nodes){for(const node of nodes){node.parent=this;this.children.push(node);}}
     replaceChildren(...nodes){if(this!==document.activeElement&&this.contains(document.activeElement))document.activeElement=document.body;for(const child of this.children)child.parent=null;this.children=[];this.append(...nodes);}
     contains(node){return node===this||this.children.some(child=>child.contains(node));}
     querySelectorAll(selector){assert.equal(selector,"button[data-meaning]");return descend(this).filter(node=>node.tag==="button"&&node.dataset.meaning);}
-    getClientRects(){for(let node=this;node.parent;node=node.parent)if(node.parent.tag==="details"&&!node.parent.open&&node!==node.parent.children[0])return [];return [1];}
-    focus(){document.activeElement=this;}
+    hiddenByDisclosure(){for(let node=this;node.parent;node=node.parent)if(node.parent.tag==="details"&&!node.parent.open&&node!==node.parent.children[0])return true;return false;}
+    getClientRects(){return this.hidden||(!retainedDisclosureRects&&this.hiddenByDisclosure())?[]:[1];}
+    focus(){if(!this.disabled&&!this.hidden&&!this.hiddenByDisclosure())document.activeElement=this;}
   }
   const el=(...args)=>new Element(...args),root=(id,tag="div")=>{const node=el(tag);node.id=id;roots.push(node);return node;};
-  const body=root("body");document.body=body;document.activeElement=body;
+  const body=root("body");document.body=body;document.documentElement=root("html");document.activeElement=body;
   const controls=root("proposal-controls","details"),summary=el("summary","Request interpretations"),propose=el("button","Get interpretations"),egress=el("input");
   summary.id="proposal-controls-summary";propose.id="propose";egress.id="egress";controls.open=true;controls.append(summary,propose,egress);
   const options=root("options"),interpretations=root("interpretation-panel","details"),intentSummary=el("summary","Interpretations");
   intentSummary.id="interpretation-summary";interpretations.open=true;interpretations.append(intentSummary,controls,options);root("case-title","h1");
+  for(const id of ["status-agent","proposal-provenance","proposal-record","proposal-provider","proposal-activity","proposal-subject","proposal-origin","proposal-metadata","proposal-events","proposal-events-heading"])root(id);
   const get=id=>roots.flatMap(node=>[node,...descend(node)]).find(node=>node.id===id)||null;
   const s={document,$:get,el,current:fixture(),editNeedsRefresh:new Map(),token:"fixture-token",
-    task:fn=>fn(),command:async(action,body)=>{calls.push({action,body});},notice:()=>{},
-    // Full metadata/transport-failure oracles live in proposal-provenance.test.cjs.
-    renderProposalProvenance(){},
+    busy:false,status:{provider:"offline",provider_networked:false},reportError:error=>errors.push(error),
+    command:async(action,body)=>{calls.push({action,body});},notice:()=>{},
     fetch:async(url,options)=>{
       const request={path:url.slice(5),method:options.method||"GET",body:options.body?JSON.parse(options.body):undefined};requests.push(request);
       assert.equal(request.path,`cases/${s.current.case.id}/propose`);assert.equal(request.method,"POST");
-      acceptedCase=clone(s.current.case);acceptedCase.version++;acceptedCase.stage="PROPOSED";
+      acceptedCase=clone(s.current.case);acceptedCase.version++;acceptedCase.stage="PROPOSED";acceptedCase.proposal??=fixture().case.proposal;
       return {ok:true,status:200,json:async()=>clone(acceptedCase)};
     },
     load:async(id,canPublish)=>{assert.equal(id,acceptedCase.id);assert.equal(canPublish(),true);reloads.push(id);s.current={...s.current,case:clone(acceptedCase)};s.renderProposals(s.current.case,false);return true;}};
   const start=code.indexOf("function renderProposals("),end=code.indexOf("function render(){",start);assert.ok(start>=0&&end>start);
   vm.createContext(s);vm.runInContext(code.slice(start,end),s);
-  vm.runInContext("let proposalAttempt=null;",s);
-  for(const [from,to]of [["class ApiError","function reportError("],["function proposalText(","function proposalMode("],
-    ["function proposalOwns(","function proposalEvents("],["async function requestInterpretations(","async function command("]])vm.runInContext(section(code,from,to),s);
+  for(const [from,to]of [["class ApiError","function reportError("],["function captureTaskFocus()","let caseInventory="],
+    ["let proposalAttempt=","async function command("]])vm.runInContext(section(code,from,to),s);
   const binding=code.split(/\r?\n/).find(line=>line.startsWith('$("propose").onclick='));assert.ok(binding);vm.runInContext(binding,s);
-  return {s,get,document,calls,requests,reloads,render:closed=>s.renderProposals(s.current.case,!!closed),cards:()=>descend(get("options")).filter(node=>node.className.split(" ").includes("option")),
+  return {s,get,document,calls,requests,reloads,errors,render:closed=>s.renderProposals(s.current.case,!!closed),cards:()=>descend(get("options")).filter(node=>node.className.split(" ").includes("option")),
     button:meaning=>get("options").querySelectorAll("button[data-meaning]").find(node=>node.dataset.meaning===meaning)};
 }
 function assertComplete(h){
@@ -136,4 +140,63 @@ test("candidate collapse preserves external navigation and native intent-summary
 test("explicit meaning selection keeps its existing case-title focus destination",()=>{
   const h=harness();h.render();h.button("safe").focus();h.s.current.case.candidate={id:"candidate"};h.s.current.case.selected_meaning="safe";h.render();
   assert.equal(h.document.activeElement,h.get("case-title"));assert.ok(h.document.activeElement.getClientRects().length);assert.equal(h.get("interpretation-panel").open,false);
+});
+
+async function firstRequestFocus(code=source,retainedDisclosureRects=false){
+  const h=harness(code,{retainedDisclosureRects});h.s.current.case.proposal=null;h.render();h.get("egress").checked=true;
+  const fetch=h.s.fetch;let release;const gate=new Promise(resolve=>{release=resolve;});
+  h.s.fetch=async(...args)=>{const response=await fetch(...args);await gate;return response;};
+  h.get("propose").focus();const pending=h.get("propose").onclick();
+  assert.equal(h.get("propose").disabled,true,"Actual provenance disables the in-flight request button");
+  assert.equal(h.document.activeElement,h.document.body,"Native disable blur must precede the response render");
+  await h.get("propose").onclick();assert.equal(h.requests.length,1,"Actual task blocks duplicate activation");
+  release();await pending;return h;
+}
+function assertFirstRequestFocus(h){
+  assert.deepEqual(h.errors,[]);assert.equal(h.get("proposal-controls").open,false);assert.equal(h.get("interpretation-panel").open,true);
+  assert.equal(h.get("propose").disabled,false);assert.equal(h.document.activeElement,h.get("proposal-controls-summary"));
+  assert.ok(!h.document.activeElement.hiddenByDisclosure());assert.equal(h.s.busy,false);assert.equal(h.s.current.case.selected_meaning,null);
+  assert.deepEqual(clone(h.requests),[{path:"cases/case-A/propose",method:"POST",body:{expected_version:2,consent:true}}]);
+  assert.deepEqual(h.reloads,["case-A"]);assert.deepEqual(h.calls,[]);
+}
+test("actual request task restores native-disable blur to the closed controls summary",async t=>{
+  // Retained layout boxes must never make content under closed details a focus destination.
+  for(const retainedRects of [false,true])await t.test(`retained disclosure boxes: ${retainedRects}`,async()=>{
+    assertFirstRequestFocus(await firstRequestFocus(source,retainedRects));
+  });
+});
+test("actual retry task restores the deliberately open request button",async()=>{
+  const h=harness();h.render();h.get("proposal-controls").open=true;h.get("propose").focus();
+  await h.get("propose").onclick();
+  assert.deepEqual(h.errors,[]);assert.equal(h.get("proposal-controls").open,true);assert.equal(h.get("interpretation-panel").open,true);
+  assert.equal(h.document.activeElement,h.get("propose"));assert.equal(h.get("propose").disabled,false);
+  assert.equal(h.requests.length,1);assert.equal(h.s.current.case.selected_meaning,null);
+});
+test("pending request completion preserves deliberate external focus and collapsed intent",async()=>{
+  for(const externalFocus of [false,true]){
+    const h=harness(source,{retainedDisclosureRects:true});h.s.current.case.proposal=null;h.render();
+    const fetch=h.s.fetch;let release;const gate=new Promise(resolve=>{release=resolve;});
+    h.s.fetch=async(...args)=>{const response=await fetch(...args);await gate;return response;};
+    h.get("propose").focus();const pending=h.get("propose").onclick();
+    h.get("interpretation-panel").open=false;if(externalFocus)h.get("case-title").focus();
+    release();await pending;
+    assert.deepEqual(h.errors,[]);assert.equal(h.get("interpretation-panel").open,false,"Completion must not reopen the owner's disclosure");
+    assert.equal(h.document.activeElement,h.get(externalFocus?"case-title":"interpretation-summary"));
+    assert.ok(!h.document.activeElement.hiddenByDisclosure());assert.equal(h.s.current.case.selected_meaning,null);assert.equal(h.requests.length,1);
+  }
+});
+test("request refusal restores the open request button without changing the loaded proposal",async()=>{
+  const h=harness();h.s.current.case.proposal=null;h.render();const before=JSON.stringify(h.s.current),fetch=h.s.fetch;
+  h.s.fetch=async(...args)=>{await fetch(...args);return {ok:false,status:409,json:async()=>({code:"STALE_VERSION",message:"Refresh required",details:{}})};};
+  h.get("propose").focus();await h.get("propose").onclick();
+  assert.equal(h.errors.length,1);assert.equal(h.errors[0].code,"STALE_VERSION");assert.equal(h.get("proposal-controls").open,true);
+  assert.equal(h.get("propose").disabled,false);assert.equal(h.document.activeElement,h.get("propose"));assert.equal(JSON.stringify(h.s.current),before);
+  assert.deepEqual(h.reloads,[]);assert.equal(h.requests.length,1);
+});
+test("focus oracle rejects removing async disclosure recovery independently of provider success",async()=>{
+  const recovery='  if(previous.id==="propose"&&!$("interpretation-panel").open)target=$("interpretation-summary");\n  else if(previous.id==="propose"&&!$("proposal-controls").open)target=$("proposal-controls-summary");\n';
+  assert.equal(source.split(recovery).length,2,"Mutation anchor must identify exactly one scoped recovery");
+  const h=await firstRequestFocus(source.replace(recovery,""),true);
+  assert.deepEqual(h.errors,[]);assert.equal(h.s.current.case.version,3);assert.equal(h.cards().length,3);
+  assert.throws(()=>assertFirstRequestFocus(h),assert.AssertionError,"A successful proposal must not mask lost focus");
 });

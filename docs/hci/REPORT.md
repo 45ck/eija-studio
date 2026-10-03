@@ -16,7 +16,7 @@ How to read this report. **MEASUREMENT**: recorded from the running Studio (elem
 | Viewport | 1440x900 @ 1x |
 | Provider | offline (synthetic) |
 | Pointer repeats (timing) | 3 |
-| UI bytes (sha256, first 12) | agent-edit.js 48dc93b79172, app.css b05629fbfe9d, app.js e37f3e9c0b8a, canvas.js 1a26b992386b, compare.css 0803b54e7e63, compare.js 5c9ba33750c1, index.html f5967c6a3d56, repository-review.css ef87096d5fc1, repository-review.js 1a8559475a48, review.js 426978e96491, shell.js 326b6da0d10e, source.js 87e72798bfbf, tree.js 6f5c5592837d, vendor/dagre-graphlib.LICENSE.txt 6a349742a6cb, vendor/dagre.LICENSE.txt 6a349742a6cb, vendor/dagre.VENDOR.json 9ea8f38b29e9, vendor/dagre.min.js c35b8d6f410c, vendor/mermaid.LICENSE.txt ec9fb67dcb25, vendor/mermaid.VENDOR.json 96f346523699, vendor/mermaid.min.js 28fca7ae6ebc, visual-frame.css ca5a74616eff, visual-frame.html 4408ecd716df, visual-frame.js cfda25808b8e |
+| UI bytes (sha256, first 12) | agent-edit.js 48dc93b79172, app.css b05629fbfe9d, app.js f42d3fe5df6e, canvas.js 1a26b992386b, compare.css 0803b54e7e63, compare.js 5c9ba33750c1, index.html f5967c6a3d56, repository-review.css ef87096d5fc1, repository-review.js 1a8559475a48, review.js 426978e96491, shell.js 326b6da0d10e, source.js 87e72798bfbf, tree.js 6f5c5592837d, vendor/dagre-graphlib.LICENSE.txt 6a349742a6cb, vendor/dagre.LICENSE.txt 6a349742a6cb, vendor/dagre.VENDOR.json 9ea8f38b29e9, vendor/dagre.min.js c35b8d6f410c, vendor/mermaid.LICENSE.txt ec9fb67dcb25, vendor/mermaid.VENDOR.json 96f346523699, vendor/mermaid.min.js 28fca7ae6ebc, visual-frame.css ca5a74616eff, visual-frame.html 4408ecd716df, visual-frame.js cfda25808b8e |
 | HCI driver, probe and derivation bytes (sha256, first 12) | __init__.py d42126b63c8b, __main__.py ff9a3f536a2b, analysis.py 27e92a13544e, budgets.json fa2049c78ca8, budgets.py daac2d702579, inspection.py 2c078ebcbe48, journey.py 7cd3d3d37c54, laws.py 4a47f56e5df2, probe.js 6af751d9043c, recommend.py 7e2a8bc5cc2a, report.py dd1d8c419185, serve_harness.py 224f4fcf6bdc, server.py dbf07833dd30, wcag.py 33c5f18c6270 |
 
 ## Headline
@@ -28,12 +28,12 @@ How to read this report. **MEASUREMENT**: recorded from the running Studio (elem
 | MEASUREMENT (DOM counts) | Hick-Hyman | choice groups with n > 7 | 0 | 0 | ok |
 | PREDICTION | KLM-GOMS | expert time, pointer journey (s) | 65.31 | - | info |
 | PREDICTION | KLM-GOMS | expert time, keyboard-only (s) | 65.07 | - | info |
-| MEASUREMENT (wall-clock) | Doherty | click -> settled DOM, median (ms) | 95.1 | 400 | ok |
-| MEASUREMENT (wall-clock) | Doherty | click -> settled DOM, p95 (ms) | 825 | 400 | FLAG |
-| MEASUREMENT (wall-clock) | Doherty | click -> first DOM mutation, p95 (ms; excludes paint) | 7 | 400 | ok |
+| MEASUREMENT (wall-clock) | Doherty | click -> settled DOM, median (ms) | 89.3 | 400 | ok |
+| MEASUREMENT (wall-clock) | Doherty | click -> settled DOM, p95 (ms) | 869.7 | 400 | FLAG |
+| MEASUREMENT (wall-clock) | Doherty | click -> first DOM mutation, p95 (ms; excludes paint) | 5.8 | 400 | ok |
 | MEASUREMENT (axe) | WCAG 2.2 AA | violating rules (critical/serious/moderate/minor) | 0 (0/0/0/0) | 0 | ok |
 | MEASUREMENT (geometry) | WCAG 2.5.8 | targets failing minimum size | 0 | 0 | ok |
-| MEASUREMENT (focus) | Keyboard | activations that dropped focus | 1/16 | 0 | FLAG |
+| MEASUREMENT (focus) | Keyboard | activations that dropped focus | 0/16 | 0 | ok |
 | MEASUREMENT (proxy) | Working memory | max chunks visible at once | 50 | 9 | FLAG |
 
 ## Ranked recommendations
@@ -42,70 +42,62 @@ Severity 5 critical WCAG, 4 serious WCAG / focus loss / wait over 1 s, 3 moderat
 
 | # | Sev | Recommendation | Category | Predicted effect |
 |---|---|---|---|---|
-| 1 | 4 | 1/16 keyboard activations dropped focus to <body> | keyboard | upper bound: 0.6 s is every Tab press on the step after a focus loss, including presses that would be needed anyway; not a difference against a preserved-focus counterfactual |
-| 2 | 3 | 1 interaction(s) usually take longer than 400 ms to finish | doherty | measured on this machine; wall-clock, sensitive to load from other processes |
-| 3 | 3 | 4 Tab step(s) move upward on screen | keyboard | - |
-| 4 | 2 | Review answers: move between fields with Tab instead of point-click and re-homing | klm | model: 3.6 s of 65.3 s expert time (6%) |
-| 5 | 2 | Reaching one control took 20 Tab presses | keyboard | - |
-| 6 | 2 | 34/34 views show more than 9 chunks at once (proxy) | working-memory | heuristic only: not a measurement of anyone's memory |
-| 7 | 1 | 9/9 decision points have more than 7 visible controls on screen | hick | if a novice searched the whole screen instead of the choice group: +2.52 s (upper bound, model) |
-| 8 | 1 | Keyboard-only journey costs 65.1 s vs 65.3 s with the pointer (model) | klm | - |
-| 9 | 1 | 9 mental operators = 12.2 s (19% of expert time) | klm | informational: M is the irreducible cognitive floor of the journey |
+| 1 | 3 | 1 interaction(s) usually take longer than 400 ms to finish | doherty | measured on this machine; wall-clock, sensitive to load from other processes |
+| 2 | 3 | 4 Tab step(s) move upward on screen | keyboard | - |
+| 3 | 2 | Review answers: move between fields with Tab instead of point-click and re-homing | klm | model: 3.6 s of 65.3 s expert time (6%) |
+| 4 | 2 | Reaching one control took 20 Tab presses | keyboard | - |
+| 5 | 2 | 34/34 views show more than 9 chunks at once (proxy) | working-memory | heuristic only: not a measurement of anyone's memory |
+| 6 | 1 | 9/9 decision points have more than 7 visible controls on screen | hick | if a novice searched the whole screen instead of the choice group: +2.52 s (upper bound, model) |
+| 7 | 1 | Keyboard-only journey costs 65.1 s vs 65.3 s with the pointer (model) | klm | - |
+| 8 | 1 | 9 mental operators = 12.2 s (19% of expert time) | klm | informational: M is the irreducible cognitive floor of the journey |
 
-### 1. 1/16 keyboard activations dropped focus to <body>
+### 1. 1 interaction(s) usually take longer than 400 ms to finish
 
-- Change: Keep or restore keyboard focus across updates: update the activated control in place, or re-focus the same control after the update, and move focus deliberately to new content on tab changes (WCAG 2.4.3 Focus Order, 3.2.2).
-- Evidence: `{"max_tab_presses_for_one_target": 20, "steps": ["ask-interpretations"], "tab_presses_after_loss": 2}`
-- Likely cause (UNVERIFIED hypothesis; the probe does not establish it): the render step replaces whole regions of the DOM (for example replaceChildren), destroying the focused element (hypothesis; a code search agrees, the probe does not observe it)
-- Laws: WCAG 2.4.3, KLM; predicted saving (upper bound): 0.56 s
-
-### 2. 1 interaction(s) usually take longer than 400 ms to finish
-
-- Change: First DOM mutation after the click came within 7 ms (p95; paint not measured), while completion for the slow steps takes longer than 400 ms. For the slow steps show a determinate progress message, keep the previous result visible until the new one lands, and profile where the time goes before optimising anything.
-- Evidence: `{"first_feedback_p95_ms": 7, "slow_steps": ["run-verification: p50 890.7 / p95 937.6 ms"]}`
+- Change: First DOM mutation after the click came within 5.8 ms (p95; paint not measured), while completion for the slow steps takes longer than 400 ms. For the slow steps show a determinate progress message, keep the previous result visible until the new one lands, and profile where the time goes before optimising anything.
+- Evidence: `{"first_feedback_p95_ms": 5.8, "slow_steps": ["run-verification: p50 881.9 / p95 1334.7 ms"]}`
 - Targets: `run-verification`
 - Likely cause (UNVERIFIED hypothesis; the probe does not establish it): the server-side work per action, possibly the durable SQLite commit path, dominates (hypothesis; no profile was taken)
 - Laws: Doherty threshold; predicted saving (model difference): 0.0 s
 
-### 3. 4 Tab step(s) move upward on screen
+### 2. 4 Tab step(s) move upward on screen
 
 - Change: Align DOM order with visual order (WCAG 2.4.3).
 - Evidence: `{"examples": ["Attempt details, diagnostic and persisted audit -> Skip to workspace", "Attempt details, diagnostic and persisted audit -> Skip to workspace", "Attempt details, diagnostic and persisted audit -> Skip to workspace", "modelled impact closurePASS Case-wide technical claim -> bend proofUNKNOWN sealed tool verdict · case-wide"]}`
 - Laws: WCAG 2.4.3; predicted saving (model difference): 0.0 s
 
-### 4. Review answers: move between fields with Tab instead of point-click and re-homing
+### 3. Review answers: move between fields with Tab instead of point-click and re-homing
 
 - Change: Focus the first question when Evidence opens after verification and make Enter in a field move to the next one (or submit on the last), so the three answers are typed without leaving the keyboard.
 - Evidence: `{"keyboard_only_journey_tab_presses": {"acknowledge": 1, "actor-registrar": 20, "actor-unassigned": 19, "answer-assignment": 1, "answer-authority": 1, "answer-reject_entry": 1, "apply-baseline": 0, "approve-exact": 1, "approve-registrar": 3, "ask-interpretations": 0, "create-case": 1, "denied-recommend": 2, "open-change": 8, "open-evidence": 18, "open-review-subject": 9, "open-try": 5, "recommend-teacher": 1, "reset-preview": 3, "run-verification": 3, "select-meaning": 2, "submit-teacher": 2, "type-request": 0}, "operators_replaced": {"B": 4, "H": 4, "P": 2}, "typed_keystrokes_unchanged": 19}`
 - Targets: `#q-assignment`, `#q-reject_entry`
 - Laws: KLM; predicted saving (model difference): 3.64 s
 
-### 5. Reaching one control took 20 Tab presses
+### 4. Reaching one control took 20 Tab presses
 
 - Change: Reduce the Tab distance to the slowest target: group related controls into a single tab stop with arrow-key navigation (WAI-ARIA composite widget pattern with roving tabindex) or provide a skip link past repeated regions.
 - Evidence: `{"tab_presses_by_step": {"acknowledge": 1, "actor-registrar": 20, "actor-unassigned": 19, "answer-assignment": 1, "answer-authority": 1, "answer-reject_entry": 1, "apply-baseline": 0, "approve-exact": 1, "approve-registrar": 3, "ask-interpretations": 0, "create-case": 1, "denied-recommend": 2, "open-change": 8, "open-evidence": 18, "open-review-subject": 9, "open-try": 5, "recommend-teacher": 1, "reset-preview": 3, "run-verification": 3, "select-meaning": 2, "submit-teacher": 2, "type-request": 0}}`
 - Likely cause (UNVERIFIED hypothesis; the probe does not establish it): a long run of tab stops before the main content, such as a tab bar or sidebar, precedes the target (hypothesis)
 - Laws: KLM, WCAG 2.1.1; predicted saving (model difference): 0.0 s
 
-### 6. 34/34 views show more than 9 chunks at once (proxy)
+### 5. 34/34 views show more than 9 chunks at once (proxy)
 
 - Change: Reduce what is simultaneously visible in the listed views: move persistent chrome out of the working area once a case is open and collapse raw or secondary content by default, so the work area competes for fewer chunks.
 - Evidence: `{"label": "HEURISTIC PROXY - counts what is simultaneously visible, not what a person holds in memory", "views": ["applied: 26", "change-empty: 25", "change-options: 26", "change-selected: 22", "create-panel: 24", "evidence-approved: 27", "evidence-review-open: 27", "evidence-verified: 30", "impact-tab: 22", "inspection/canvas-view-1440: 50", "inspection/domain-inspector-1440: 43", "inspection/intent-alternatives-1440: 25", "inspection/intent-alternatives-320: 18", "inspection/intent-controls-1440: 27", "inspection/intent-controls-320: 22", "inspection/intent-record-1440: 26", "inspection/intent-record-320: 21", "inspection/runtime-attempt-1440: 38", "inspection/runtime-attempt-320: 22", "inspection/workspace-connections-1440: 20", "inspection/workspace-connections-320: 18", "inspection/workspace-layout-1440: 21", "inspection/workspace-layout-320: 17", "inspection/workspace-panels-1440: 20", "inspection/workspace-panels-320: 18", "inspection/workspace-work-views-1440: 23", "inspection/workspace-work-views-320: 18", "start: 27", "try-denied: 29", "try-draft: 27", "try-idle: 27", "workspace-menu-1440-impact: 17", "workspace-menu-320-impact: 17", "workspace-menu-390-impact: 17"], "worst_chunks": 50, "worst_view": "inspection/canvas-view-1440"}`
 - Laws: Miller 1956, Cowan 2001; predicted saving (model difference): 0.0 s
 
-### 7. 9/9 decision points have more than 7 visible controls on screen
+### 6. 9/9 decision points have more than 7 visible controls on screen
 
 - Change: Keep one visually dominant primary action per view and demote the rest (secondary/text buttons), which lowers effective uncertainty for first-time users (Hyman).
 - Evidence: `{"max_group_choices": 7, "max_screen_controls": 21, "note": "upper bound; the choice groups themselves are all <= 7"}`
 - Laws: Hick-Hyman; predicted saving (model difference): 2.518 s
 
-### 8. Keyboard-only journey costs 65.1 s vs 65.3 s with the pointer (model)
+### 7. Keyboard-only journey costs 65.1 s vs 65.3 s with the pointer (model)
 
 - Change: Not a defect by itself; use it to decide where shortcuts (tab shortcuts, access keys) pay off.
 - Evidence: `{"keyboard_K": 189, "keyboard_total_s": 65.07, "pointer_total_s": 65.31}`
 - Laws: KLM; predicted saving (model difference): 0.0 s
 
-### 9. 9 mental operators = 12.2 s (19% of expert time)
+### 8. 9 mental operators = 12.2 s (19% of expert time)
 
 - Change: Each M is a reading or decision moment (steps listed in the evidence). Keep the wording at those steps short and put the decision-relevant text next to the control (no cross-tab lookup).
 - Evidence: `{"M_by_step": ["acknowledge", "actor-registrar", "actor-unassigned", "answer-assignment", "answer-authority", "answer-reject_entry", "apply-baseline", "select-meaning", "type-request"]}`
@@ -123,15 +115,15 @@ Severity 5 critical WCAG, 4 serious WCAG / focus loss / wait over 1 s, 3 moderat
 | hick.choice_groups_over_7 | Hick-Hyman | 0 groups | 0 | 0 | PASS |
 | hick.max_choices | Hick-Hyman | 7 alternatives | 7 | 7 | PASS |
 | klm.pointer_expert_time | KLM-GOMS | 65.31 s | 65 | 65 | FAIL |
-| doherty.first_feedback_p95 | Doherty | 7 ms | 400 | 400 | PASS |
-| doherty.settled_p50 | Doherty | 95.1 ms | 400 | 400 | PASS |
-| doherty.settled_p95 | Doherty | 825 ms | 400 | 4000 | GAP |
+| doherty.first_feedback_p95 | Doherty | 5.8 ms | 400 | 400 | PASS |
+| doherty.settled_p50 | Doherty | 89.3 ms | 400 | 400 | PASS |
+| doherty.settled_p95 | Doherty | 869.7 ms | 400 | 4000 | GAP |
 | wcag.critical_rules | WCAG 2.2 AA | 0 rules | 0 | 0 | PASS |
 | wcag.serious_rules | WCAG 2.2 AA | 0 rules | 0 | 1 | PASS |
 | wcag.moderate_rules | WCAG 2.2 AA | 0 rules | 0 | 0 | PASS |
 | wcag.target_size_failures | WCAG 2.5.8 | 0 controls | 0 | 0 | PASS |
 | wcag.reflow_overflow_views | WCAG 1.4.10 | 0 views | 0 | 0 | PASS |
-| keyboard.focus_lost_activations | WCAG 2.4.3 | 1 activations | 0 | 7 | GAP |
+| keyboard.focus_lost_activations | WCAG 2.4.3 | 0 activations | 0 | 7 | PASS |
 | keyboard.stops_without_indicator | WCAG 2.4.7 | 0 stops | 0 | 0 | PASS |
 | memory.max_chunks_viewport | Miller / Cowan (proxy) | 50 chunks | 9 | 27 | FAIL |
 | runtime.js_exceptions | hygiene | 0 exceptions | 0 | 0 | PASS |
@@ -142,24 +134,24 @@ Coverage **PASS**: 18/18 required states captured successfully; 18 observations.
 
 | State | Status | Captured view | Screenshot | Reason |
 |---|---|---|---|---|
-| workspace-work-views-1440 | PASS | inspection/workspace-work-views-1440 | inspection/workspace-work-views-1440.png (sha256 c10d67d2b689) | - |
-| workspace-panels-1440 | PASS | inspection/workspace-panels-1440 | inspection/workspace-panels-1440.png (sha256 80bbaf2a1bac) | - |
-| workspace-layout-1440 | PASS | inspection/workspace-layout-1440 | inspection/workspace-layout-1440.png (sha256 87b44da9036e) | - |
-| workspace-connections-1440 | PASS | inspection/workspace-connections-1440 | inspection/workspace-connections-1440.png (sha256 b97c575116a4) | - |
-| intent-record-1440 | PASS | inspection/intent-record-1440 | inspection/intent-record-1440.png (sha256 b69d6baa8a9b) | - |
-| intent-controls-1440 | PASS | inspection/intent-controls-1440 | inspection/intent-controls-1440.png (sha256 fdb667f27b6a) | - |
-| intent-alternatives-1440 | PASS | inspection/intent-alternatives-1440 | inspection/intent-alternatives-1440.png (sha256 694991ed4f65) | - |
-| domain-inspector-1440 | PASS | inspection/domain-inspector-1440 | inspection/domain-inspector-1440.png (sha256 96b28ac97abc) | - |
-| canvas-view-1440 | PASS | inspection/canvas-view-1440 | inspection/canvas-view-1440.png (sha256 fbaf256006f4) | - |
-| runtime-attempt-1440 | PASS | inspection/runtime-attempt-1440 | inspection/runtime-attempt-1440.png (sha256 779ffee69cd4) | - |
-| workspace-work-views-320 | PASS | inspection/workspace-work-views-320 | inspection/workspace-work-views-320.png (sha256 c6fdf3c05b84) | - |
-| workspace-panels-320 | PASS | inspection/workspace-panels-320 | inspection/workspace-panels-320.png (sha256 28a284980994) | - |
-| workspace-layout-320 | PASS | inspection/workspace-layout-320 | inspection/workspace-layout-320.png (sha256 8cb8361eb3ba) | - |
-| workspace-connections-320 | PASS | inspection/workspace-connections-320 | inspection/workspace-connections-320.png (sha256 4268870102d8) | - |
-| intent-record-320 | PASS | inspection/intent-record-320 | inspection/intent-record-320.png (sha256 9032194a3937) | - |
+| workspace-work-views-1440 | PASS | inspection/workspace-work-views-1440 | inspection/workspace-work-views-1440.png (sha256 82f7c30ec7bd) | - |
+| workspace-panels-1440 | PASS | inspection/workspace-panels-1440 | inspection/workspace-panels-1440.png (sha256 3e97cb911a80) | - |
+| workspace-layout-1440 | PASS | inspection/workspace-layout-1440 | inspection/workspace-layout-1440.png (sha256 67ff6ea203d5) | - |
+| workspace-connections-1440 | PASS | inspection/workspace-connections-1440 | inspection/workspace-connections-1440.png (sha256 c957f2594113) | - |
+| intent-record-1440 | PASS | inspection/intent-record-1440 | inspection/intent-record-1440.png (sha256 582d99b8ad43) | - |
+| intent-controls-1440 | PASS | inspection/intent-controls-1440 | inspection/intent-controls-1440.png (sha256 422d8396ac61) | - |
+| intent-alternatives-1440 | PASS | inspection/intent-alternatives-1440 | inspection/intent-alternatives-1440.png (sha256 ff9aeba2bbb8) | - |
+| domain-inspector-1440 | PASS | inspection/domain-inspector-1440 | inspection/domain-inspector-1440.png (sha256 0f0962c23fbf) | - |
+| canvas-view-1440 | PASS | inspection/canvas-view-1440 | inspection/canvas-view-1440.png (sha256 0d132989bc8d) | - |
+| runtime-attempt-1440 | PASS | inspection/runtime-attempt-1440 | inspection/runtime-attempt-1440.png (sha256 01ff9c848996) | - |
+| workspace-work-views-320 | PASS | inspection/workspace-work-views-320 | inspection/workspace-work-views-320.png (sha256 7d698c190ef8) | - |
+| workspace-panels-320 | PASS | inspection/workspace-panels-320 | inspection/workspace-panels-320.png (sha256 3855e567f43a) | - |
+| workspace-layout-320 | PASS | inspection/workspace-layout-320 | inspection/workspace-layout-320.png (sha256 7d4421c4238f) | - |
+| workspace-connections-320 | PASS | inspection/workspace-connections-320 | inspection/workspace-connections-320.png (sha256 13bf96963afd) | - |
+| intent-record-320 | PASS | inspection/intent-record-320 | inspection/intent-record-320.png (sha256 631f97fbec0a) | - |
 | intent-controls-320 | PASS | inspection/intent-controls-320 | inspection/intent-controls-320.png (sha256 cb858531102b) | - |
 | intent-alternatives-320 | PASS | inspection/intent-alternatives-320 | inspection/intent-alternatives-320.png (sha256 481af9ac66aa) | - |
-| runtime-attempt-320 | PASS | inspection/runtime-attempt-320 | inspection/runtime-attempt-320.png (sha256 930415ece7d4) | - |
+| runtime-attempt-320 | PASS | inspection/runtime-attempt-320 | inspection/runtime-attempt-320.png (sha256 c3db82992fc5) | - |
 
 | Planned state | Status | Reason |
 |---|---|---|
@@ -227,7 +219,7 @@ PREDICTION. Operator times (s): K 0.28, P 1.1, B 0.1, H 0.4, M 1.35 (Card, Moran
 | Pointer + typing | 67 | 24 | 48 | 8 | 9 | 65.31 | 56.276 |
 | Keyboard only (Tab, Enter, Space, arrows) | 189 | 0 | 0 | 0 | 9 | 65.07 | - |
 
-Expected expert time is 65.31 s pointer-driven (Fitts-refined 56.276 s) and 65.07 s keyboard-only, excluding system response (measured wait, sum of per-step medians: 1.983 s) and scrolling.
+Expected expert time is 65.31 s pointer-driven (Fitts-refined 56.276 s) and 65.07 s keyboard-only, excluding system response (measured wait, sum of per-step medians: 1.901 s) and scrolling.
 
 | Step | KLM s (pointer) | Operators |
 |---|---|---|
@@ -260,23 +252,23 @@ MEASUREMENT, wall-clock. The first-DOM-mutation columns time the first DOM chang
 
 | Step | n | First DOM mutation p50 ms | p95 ms | Settled p25 ms | p50 ms | p75 ms | p95 ms | > 400 ms |
 |---|---|---|---|---|---|---|---|---|
-| open-change | 3 | 5.9 | 8.2 | 5.6 | 5.9 | 8.2 | 8.2 | ok |
-| create-case | 3 | 0.5 | 0.6 | 87.8 | 93.4 | 95.1 | 95.1 | ok |
-| ask-interpretations | 3 | 0.7 | 0.8 | 86.6 | 93.3 | 100.1 | 100.1 | ok |
-| select-meaning | 3 | 0.5 | 0.8 | 113.5 | 117.3 | 119.4 | 119.4 | ok |
-| open-try | 3 | 3.6 | 3.8 | 3.2 | 3.6 | 3.8 | 3.8 | ok |
-| reset-preview | 3 | 0.8 | 1.2 | 91.9 | 97.8 | 114.6 | 114.6 | ok |
-| submit-teacher | 3 | 0.8 | 0.8 | 86.6 | 97 | 114.2 | 114.2 | ok |
-| recommend-teacher | 3 | 0.6 | 0.6 | 95.6 | 98.2 | 98.4 | 98.4 | ok |
-| approve-registrar | 3 | 0.6 | 0.6 | 86.8 | 95.3 | 101.5 | 101.5 | ok |
-| denied-recommend | 3 | 0.6 | 0.6 | 5.3 | 5.6 | 6 | 6 | ok |
-| open-evidence | 3 | 7 | 8.5 | 5 | 7 | 8.5 | 8.5 | ok |
-| run-verification | 3 | 0.4 | 0.4 | 825 | 890.7 | 937.6 | 937.6 | p50 |
-| open-review-subject | 3 | 0.8 | 1.1 | 0.7 | 0.8 | 1.1 | 1.1 | ok |
-| approve-exact | 3 | 1 | 1.1 | 127.2 | 143.4 | 148.9 | 148.9 | ok |
-| apply-baseline | 3 | 0.6 | 0.6 | 216.9 | 234 | 236.2 | 236.2 | ok |
+| open-change | 3 | 5.7 | 7.8 | 5.2 | 5.7 | 7.8 | 7.8 | ok |
+| create-case | 3 | 0.4 | 0.5 | 69.7 | 73.6 | 95 | 95 | ok |
+| ask-interpretations | 3 | 0.7 | 0.8 | 98 | 106.1 | 109.7 | 109.7 | ok |
+| select-meaning | 3 | 0.5 | 0.5 | 104.2 | 106.3 | 116.2 | 116.2 | ok |
+| open-try | 3 | 4.2 | 4.3 | 3.4 | 4.2 | 4.3 | 4.3 | ok |
+| reset-preview | 3 | 0.7 | 0.8 | 88.3 | 88.4 | 109.3 | 109.3 | ok |
+| submit-teacher | 3 | 0.8 | 0.8 | 77.8 | 80.1 | 99.1 | 99.1 | ok |
+| recommend-teacher | 3 | 0.5 | 0.6 | 90.8 | 91.4 | 102.9 | 102.9 | ok |
+| approve-registrar | 3 | 0.5 | 0.6 | 87.9 | 89.3 | 98.8 | 98.8 | ok |
+| denied-recommend | 3 | 0.5 | 0.6 | 5.4 | 5.4 | 5.5 | 5.5 | ok |
+| open-evidence | 3 | 5.8 | 6.2 | 4.9 | 5.8 | 6.2 | 6.2 | ok |
+| run-verification | 3 | 0.4 | 0.5 | 869.7 | 881.9 | 1334.7 | 1334.7 | p50 |
+| open-review-subject | 3 | 0.9 | 0.9 | 0.7 | 0.9 | 0.9 | 0.9 | ok |
+| approve-exact | 3 | 0.8 | 0.8 | 145.2 | 146.4 | 180.5 | 180.5 | ok |
+| apply-baseline | 3 | 0.4 | 0.5 | 209.8 | 215.4 | 219 | 219 | ok |
 
-Overall: first DOM mutation p50/p95 0.7/7 ms; settled p25/p50/p75 6/95.1/114.6 ms, p95 825 ms (max 937.6 ms). Keyboard activations settled p50/p95 91.9/913 ms.
+Overall: first DOM mutation p50/p95 0.7/5.8 ms; settled p25/p50/p75 5.7/89.3/109.3 ms, p95 869.7 ms (max 1334.7 ms). Keyboard activations settled p50/p95 100.5/933.8 ms.
 
 ## WCAG 2.2 AA (measurement)
 
@@ -302,7 +294,7 @@ Supplementary heuristic (heuristic; not an axe rule): interactive element styled
 
 ## Keyboard-only traversal (measurement)
 
-MEASUREMENT. The whole journey completed with the keyboard alone: 101 Tab presses; most for one target 20; 46 distinct focus stops seen; 1 of 16 activations dropped focus to the page body (ask-interpretations); 2 Tab presses were spent on steps right after a focus loss; 0 stops without a visible indicator; 4 upward focus moves. Real Tab traversal plus Arrow/Home navigation within tablists; every navigation and activation key is recorded; focus indicator = computed outline or box-shadow on the focused element; 'focus lost' = document.activeElement is <body> once the DOM settled after activation.
+MEASUREMENT. The whole journey completed with the keyboard alone: 101 Tab presses; most for one target 20; 46 distinct focus stops seen; 0 of 16 activations dropped focus to the page body (none); 0 Tab presses were spent on steps right after a focus loss; 0 stops without a visible indicator; 4 upward focus moves. Real Tab traversal plus Arrow/Home navigation within tablists; every navigation and activation key is recorded; focus indicator = computed outline or box-shadow on the focused element; 'focus lost' = document.activeElement is <body> once the DOM settled after activation.
 
 | Step | Tab presses |
 |---|---|
@@ -372,7 +364,7 @@ HEURISTIC PROXY - counts what is simultaneously visible, not what a person holds
 
 ## Runtime hygiene
 
-JavaScript exceptions: 0. HTTP error responses: 409 POST /api/cases/1cfd99a440b2452d8c3ebf1d61c1230e/execute during `denied-recommend`; 409 POST /api/cases/1f2a417685634738ba99055951c8130a/execute during `denied-recommend`; 409 POST /api/cases/4ead04bf534b4c8d88c705e78c9f2c75/execute during `denied-recommend`; 409 POST /api/cases/c5a7a1e4dd8141648a812a5345503637/execute during `denied-recommend`; 409 POST /api/cases/d3ae5baf8f7c4434ac6758023a3a3069/execute during `denied-recommend`.
+JavaScript exceptions: 0. HTTP error responses: 409 POST /api/cases/01bb661f519446a49b73da7c15f88e89/execute during `denied-recommend`; 409 POST /api/cases/6c6941874e5149b4827e4d1191e40b9b/execute during `denied-recommend`; 409 POST /api/cases/7a338943d4af4f21b121e71dcd5169d5/execute during `denied-recommend`; 409 POST /api/cases/c77488c207234b8481ade33b0d751188/execute during `denied-recommend`; 409 POST /api/cases/f358dba843284de69f671f338222ebe4/execute during `denied-recommend`.
 
 ## Limitations
 

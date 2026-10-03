@@ -75,7 +75,7 @@
       "status": "PASS",
       "target": 400,
       "unit": "ms",
-      "value": 7
+      "value": 5.8
     },
     {
       "id": "doherty.settled_p50",
@@ -86,7 +86,7 @@
       "status": "PASS",
       "target": 400,
       "unit": "ms",
-      "value": 95.1
+      "value": 89.3
     },
     {
       "id": "doherty.settled_p95",
@@ -97,7 +97,7 @@
       "status": "GAP",
       "target": 400,
       "unit": "ms",
-      "value": 825
+      "value": 869.7
     },
     {
       "id": "wcag.critical_rules",
@@ -160,10 +160,10 @@
       "limit": 7,
       "note": "",
       "path": "keyboard.focus_lost_count",
-      "status": "GAP",
+      "status": "PASS",
       "target": 0,
       "unit": "activations",
-      "value": 1
+      "value": 0
     },
     {
       "id": "keyboard.stops_without_indicator",
@@ -231,7 +231,7 @@
     "ui_sha256": {
       "agent-edit.js": "48dc93b791725ba2611e7910d814f6a9909426299b43fd0296d8df83f4f37b06",
       "app.css": "b05629fbfe9dcc13bb7e7698d72b072086e2ebc88ac87ea61ba7e953ffe509bc",
-      "app.js": "e37f3e9c0b8aa31766573b07c35935bac83a7f6a5943c97041dcddc597c6b0c2",
+      "app.js": "f42d3fe5df6e1cdb0a02510de655a19370c337ec18fa63154f283c212282d2d4",
       "canvas.js": "1a26b992386befbdf73735a9902a3dfc7efaaff95a6e0c9405e074ea4e73dc5b",
       "compare.css": "0803b54e7e638f7c169200c5c9baf435ba44a58df4fb27f8aa5e6c1d52c0b5c7",
       "compare.js": "5c9ba33750c1c57229662fd837b50e8fc5c1996c8770e4176f3fe7cf66cdd209",
@@ -516,7 +516,7 @@
         "scrolled_before": false,
         "selector": "#review-subject",
         "step": "open-review-subject",
-        "target": "Review this exact subject · eligible for local review · ffd5",
+        "target": "Review this exact subject · eligible for local review · 18dc",
         "via_label": false,
         "w_px": 44,
         "wcag_2_5_8": "pass"
@@ -783,13 +783,13 @@
         "requests": [],
         "screenshot": {
           "path": "inspection/workspace-work-views-1440.png",
-          "sha256": "c10d67d2b689e2ecb83bd208ce2fbbff3c3f3f66eebddf2c51cdce72c33682f2"
+          "sha256": "82f7c30ec7bdfaaf5a8413230d613c963530bf555d6f2b3c4b1b53ef6a55a762"
         },
         "status": "PASS",
         "story": "US02 / H05",
         "subject": {
           "candidate_json_sha256": null,
-          "case_id": "d3ae5baf8f7c4434ac6758023a3a3069",
+          "case_id": "f358dba843284de69f671f338222ebe4",
           "origin": "observed GET /api/cases/{case_id}",
           "revision": 1,
           "semantic_hash": null,
@@ -804,13 +804,13 @@
         "requests": [],
         "screenshot": {
           "path": "inspection/workspace-panels-1440.png",
-          "sha256": "80bbaf2a1bac25de4eb2d4a4ebe3570912fd010e2b7a1358cbb04f3b045c7e29"
+          "sha256": "3e97cb911a80b70015ba505d0d6b6e0716550aad4055a033171c8d0677cd787c"
         },
         "status": "PASS",
         "story": "US02 / H05",
         "subject": {
           "candidate_json_sha256": null,
-          "case_id": "d3ae5baf8f7c4434ac6758023a3a3069",
+          "case_id": "f358dba843284de69f671f338222ebe4",
           "origin": "observed GET /api/cases/{case_id}",
           "revision": 1,
           "semantic_hash": null,
@@ -825,13 +825,13 @@
         "requests": [],
         "screenshot": {
           "path": "inspection/workspace-layout-1440.png",
-          "sha256": "87b44da9036e9c074cf082b113be5d1115cfaf2c9127b0a0390ab2914a3536b3"
+          "sha256": "67ff6ea203d54965ad750735da2bcb07cc3aeaa09d8aa5d0c6ccd9f43cdfc042"
         },
         "status": "PASS",
         "story": "US02 / H05",
         "subject": {
           "candidate_json_sha256": null,
-          "case_id": "d3ae5baf8f7c4434ac6758023a3a3069",
+          "case_id": "f358dba843284de69f671f338222ebe4",
           "origin": "observed GET /api/cases/{case_id}",
           "revision": 1,
           "semantic_hash": null,
@@ -846,13 +846,13 @@
         "requests": [],
         "screenshot": {
           "path": "inspection/workspace-connections-1440.png",
-          "sha256": "b97c575116a421d5530e46979a5c2801250db98165984a4920cb9f8647236fd9"
+          "sha256": "c957f2594113ae278144fc4e50dc1a6aa4d7b4136ab326df2dca826e2a8b0b1f"
         },
         "status": "PASS",
         "story": "US02 / H05",
         "subject": {
           "candidate_json_sha256": null,
-          "case_id": "d3ae5baf8f7c4434ac6758023a3a3069",
+          "case_id": "f358dba843284de69f671f338222ebe4",
           "origin": "observed GET /api/cases/{case_id}",
           "revision": 1,
           "semantic_hash": null,
@@ -867,13 +867,13 @@
         "requests": [],
         "screenshot": {
           "path": "inspection/intent-record-1440.png",
-          "sha256": "b69d6baa8a9bc2f81d011e6902fad9a75fa685a5a08745f918ffa42dbc09c721"
+          "sha256": "582d99b8ad4397e19e2e32b9660e9ac5135ae73cc9baa8af64277045a11352a3"
         },
         "status": "PASS",
         "story": "US03 / H04 / H05",
         "subject": {
           "candidate_json_sha256": null,
-          "case_id": "d3ae5baf8f7c4434ac6758023a3a3069",
+          "case_id": "f358dba843284de69f671f338222ebe4",
           "origin": "observed GET /api/cases/{case_id}",
           "revision": 1,
           "semantic_hash": null,
@@ -888,13 +888,13 @@
         "requests": [],
         "screenshot": {
           "path": "inspection/intent-controls-1440.png",
-          "sha256": "fdb667f27b6a24b7b16468ecd5033354695c070fe45cfc381989ef8da6a810e9"
+          "sha256": "422d8396ac61304f0ab092d4138b2fef2c59dda439993d98d23a65dee4121d54"
         },
         "status": "PASS",
         "story": "US03 / H04 / H05",
         "subject": {
           "candidate_json_sha256": null,
-          "case_id": "d3ae5baf8f7c4434ac6758023a3a3069",
+          "case_id": "f358dba843284de69f671f338222ebe4",
           "origin": "observed GET /api/cases/{case_id}",
           "revision": 1,
           "semantic_hash": null,
@@ -909,13 +909,13 @@
         "requests": [],
         "screenshot": {
           "path": "inspection/intent-alternatives-1440.png",
-          "sha256": "694991ed4f65d199abd3db1c268fde93698dfcbbb48457d5ea7a11a74aa3ce1a"
+          "sha256": "ff9aeba2bbb8b67cce2bebf9a3f665a496c3edebfc8b0753beb56a2a9181a401"
         },
         "status": "PASS",
         "story": "US03 / H04 / H05",
         "subject": {
           "candidate_json_sha256": null,
-          "case_id": "d3ae5baf8f7c4434ac6758023a3a3069",
+          "case_id": "f358dba843284de69f671f338222ebe4",
           "origin": "observed GET /api/cases/{case_id}",
           "revision": 1,
           "semantic_hash": null,
@@ -930,18 +930,18 @@
         "requests": [],
         "screenshot": {
           "path": "inspection/domain-inspector-1440.png",
-          "sha256": "96b28ac97abcc4db35e2b504100b30fa1bafb35d4e411264b8fdc8771fe3956b"
+          "sha256": "0f0962c23fbf090c4a4833daf2ea06653d0748b27ca884efd0453762736d6287"
         },
         "status": "PASS",
         "story": "US06 / H05",
         "subject": {
           "candidate_json_sha256": "1540964f003e1dbbd0a39c297a6c0f959e16365c9e8e0fd8b55c64f2505228fe",
-          "case_id": "d3ae5baf8f7c4434ac6758023a3a3069",
+          "case_id": "f358dba843284de69f671f338222ebe4",
           "origin": "observed GET /api/cases/{case_id}",
           "revision": 2,
           "semantic_hash": "b26c9af5ae4cd958099956232721a70e73cb7e6efe1b213ff32417829b588e56",
           "stage": "PREVIEW",
-          "subject_hash": "ffd51da924b8500a2205b0b81e2d836d689cddb5a9fbf0c547c0f11adacd6ad2"
+          "subject_hash": "18dcc169cec99370181034e05a783bdc35fd7e3a5fd04e7af9f111dd1ee97e59"
         },
         "view": "inspection/domain-inspector-1440"
       },
@@ -951,18 +951,18 @@
         "requests": [],
         "screenshot": {
           "path": "inspection/canvas-view-1440.png",
-          "sha256": "fbaf256006f4410d8f09cc706277e174c122a5f469195ba7856ea829500465bd"
+          "sha256": "0d132989bc8d8ce690f3ef38f381bfde32fa77c3ea7f97e98b02866600b99ade"
         },
         "status": "PASS",
         "story": "US06 / H05",
         "subject": {
           "candidate_json_sha256": "1540964f003e1dbbd0a39c297a6c0f959e16365c9e8e0fd8b55c64f2505228fe",
-          "case_id": "d3ae5baf8f7c4434ac6758023a3a3069",
+          "case_id": "f358dba843284de69f671f338222ebe4",
           "origin": "observed GET /api/cases/{case_id}",
           "revision": 2,
           "semantic_hash": "b26c9af5ae4cd958099956232721a70e73cb7e6efe1b213ff32417829b588e56",
           "stage": "PREVIEW",
-          "subject_hash": "ffd51da924b8500a2205b0b81e2d836d689cddb5a9fbf0c547c0f11adacd6ad2"
+          "subject_hash": "18dcc169cec99370181034e05a783bdc35fd7e3a5fd04e7af9f111dd1ee97e59"
         },
         "view": "inspection/canvas-view-1440"
       },
@@ -972,18 +972,18 @@
         "requests": [],
         "screenshot": {
           "path": "inspection/runtime-attempt-1440.png",
-          "sha256": "779ffee69cd45b5abc202c58b38552874b7f4e485360b06b91693a1c877acbf9"
+          "sha256": "01ff9c8489969536b02789d66473380dd10a7dfb7fc351c5a60d936624e9d8b8"
         },
         "status": "PASS",
         "story": "US08 / H09",
         "subject": {
           "candidate_json_sha256": "1540964f003e1dbbd0a39c297a6c0f959e16365c9e8e0fd8b55c64f2505228fe",
-          "case_id": "d3ae5baf8f7c4434ac6758023a3a3069",
+          "case_id": "f358dba843284de69f671f338222ebe4",
           "origin": "observed GET /api/cases/{case_id}",
           "revision": 2,
           "semantic_hash": "b26c9af5ae4cd958099956232721a70e73cb7e6efe1b213ff32417829b588e56",
           "stage": "PREVIEW",
-          "subject_hash": "ffd51da924b8500a2205b0b81e2d836d689cddb5a9fbf0c547c0f11adacd6ad2"
+          "subject_hash": "18dcc169cec99370181034e05a783bdc35fd7e3a5fd04e7af9f111dd1ee97e59"
         },
         "view": "inspection/runtime-attempt-1440"
       },
@@ -993,13 +993,13 @@
         "requests": [],
         "screenshot": {
           "path": "inspection/workspace-work-views-320.png",
-          "sha256": "c6fdf3c05b8460e351f4f9eab2bb343f145312dc9349edd539c5e24bfcfbd174"
+          "sha256": "7d698c190ef8ee506000729c0ab98df3e6b7d4c4d6d3649b078dd41fe1054aaf"
         },
         "status": "PASS",
         "story": "US02 / H05",
         "subject": {
           "candidate_json_sha256": null,
-          "case_id": "c5a7a1e4dd8141648a812a5345503637",
+          "case_id": "01bb661f519446a49b73da7c15f88e89",
           "origin": "observed GET /api/cases/{case_id}",
           "revision": 1,
           "semantic_hash": null,
@@ -1014,13 +1014,13 @@
         "requests": [],
         "screenshot": {
           "path": "inspection/workspace-panels-320.png",
-          "sha256": "28a2849809941d3ed55471fcba35718d57f8459c3dfa026173931c10445b9016"
+          "sha256": "3855e567f43acfc151562c35f76073eb9c204ea70eaad065503d2c9f53bedb56"
         },
         "status": "PASS",
         "story": "US02 / H05",
         "subject": {
           "candidate_json_sha256": null,
-          "case_id": "c5a7a1e4dd8141648a812a5345503637",
+          "case_id": "01bb661f519446a49b73da7c15f88e89",
           "origin": "observed GET /api/cases/{case_id}",
           "revision": 1,
           "semantic_hash": null,
@@ -1035,13 +1035,13 @@
         "requests": [],
         "screenshot": {
           "path": "inspection/workspace-layout-320.png",
-          "sha256": "8cb8361eb3baf4d8f34d8de9e8b7fa56b6a1496c243839983e67e52146738029"
+          "sha256": "7d4421c4238f3642dc68826e289e7512f831d118496a68aced19505a75258244"
         },
         "status": "PASS",
         "story": "US02 / H05",
         "subject": {
           "candidate_json_sha256": null,
-          "case_id": "c5a7a1e4dd8141648a812a5345503637",
+          "case_id": "01bb661f519446a49b73da7c15f88e89",
           "origin": "observed GET /api/cases/{case_id}",
           "revision": 1,
           "semantic_hash": null,
@@ -1056,13 +1056,13 @@
         "requests": [],
         "screenshot": {
           "path": "inspection/workspace-connections-320.png",
-          "sha256": "4268870102d8b703ccc129b7a5a690c9973a9ed2991e620afd221b91d0722593"
+          "sha256": "13bf96963afd26b7767e78ee70babb1d58805b25d5e2da6978e92be71bd8b420"
         },
         "status": "PASS",
         "story": "US02 / H05",
         "subject": {
           "candidate_json_sha256": null,
-          "case_id": "c5a7a1e4dd8141648a812a5345503637",
+          "case_id": "01bb661f519446a49b73da7c15f88e89",
           "origin": "observed GET /api/cases/{case_id}",
           "revision": 1,
           "semantic_hash": null,
@@ -1077,13 +1077,13 @@
         "requests": [],
         "screenshot": {
           "path": "inspection/intent-record-320.png",
-          "sha256": "9032194a393764f7028f893b92fcd16783cc944934242d6b2042c053bf2df4c0"
+          "sha256": "631f97fbec0ae04f1eda5f6c0cab7e00106eeb07991f0d0aecc9de7ed9ca224d"
         },
         "status": "PASS",
         "story": "US03 / H04 / H05",
         "subject": {
           "candidate_json_sha256": null,
-          "case_id": "c5a7a1e4dd8141648a812a5345503637",
+          "case_id": "01bb661f519446a49b73da7c15f88e89",
           "origin": "observed GET /api/cases/{case_id}",
           "revision": 1,
           "semantic_hash": null,
@@ -1104,7 +1104,7 @@
         "story": "US03 / H04 / H05",
         "subject": {
           "candidate_json_sha256": null,
-          "case_id": "c5a7a1e4dd8141648a812a5345503637",
+          "case_id": "01bb661f519446a49b73da7c15f88e89",
           "origin": "observed GET /api/cases/{case_id}",
           "revision": 1,
           "semantic_hash": null,
@@ -1125,7 +1125,7 @@
         "story": "US03 / H04 / H05",
         "subject": {
           "candidate_json_sha256": null,
-          "case_id": "c5a7a1e4dd8141648a812a5345503637",
+          "case_id": "01bb661f519446a49b73da7c15f88e89",
           "origin": "observed GET /api/cases/{case_id}",
           "revision": 1,
           "semantic_hash": null,
@@ -1140,18 +1140,18 @@
         "requests": [],
         "screenshot": {
           "path": "inspection/runtime-attempt-320.png",
-          "sha256": "930415ece7d45bd58b113c178e41881cecca63db743891f4cd627abcdd9ad8ec"
+          "sha256": "c3db82992fc5ab8a78d5599427de3090d5db93d28099570d6785538b6291008a"
         },
         "status": "PASS",
         "story": "US08 / H09",
         "subject": {
           "candidate_json_sha256": "1540964f003e1dbbd0a39c297a6c0f959e16365c9e8e0fd8b55c64f2505228fe",
-          "case_id": "c5a7a1e4dd8141648a812a5345503637",
+          "case_id": "01bb661f519446a49b73da7c15f88e89",
           "origin": "observed GET /api/cases/{case_id}",
           "revision": 2,
           "semantic_hash": "b26c9af5ae4cd958099956232721a70e73cb7e6efe1b213ff32417829b588e56",
           "stage": "PREVIEW",
-          "subject_hash": "ffd51da924b8500a2205b0b81e2d836d689cddb5a9fbf0c547c0f11adacd6ad2"
+          "subject_hash": "18dcc169cec99370181034e05a783bdc35fd7e3a5fd04e7af9f111dd1ee97e59"
         },
         "view": "inspection/runtime-attempt-320"
       }
@@ -1301,11 +1301,9 @@
   },
   "keyboard": {
     "activations": 16,
-    "activations_that_lost_focus": [
-      "ask-interpretations"
-    ],
+    "activations_that_lost_focus": [],
     "completed_journey_keyboard_only": true,
-    "focus_lost_count": 1,
+    "focus_lost_count": 0,
     "focus_order_regression_count": 4,
     "focus_order_regressions": [
       {
@@ -1357,7 +1355,7 @@
       "submit-teacher": 2,
       "type-request": 0
     },
-    "tab_presses_spent_after_focus_loss": 2,
+    "tab_presses_spent_after_focus_loss": 0,
     "tab_presses_total": 101,
     "unique_focus_stops_seen": 46
   },
@@ -3160,7 +3158,7 @@
           "step": "run-verification"
         },
         {
-          "note": "point at Review this exact subject · eligible for local review · ffd5",
+          "note": "point at Review this exact subject · eligible for local review · 18dc",
           "op": "P",
           "seconds": 1.1,
           "step": "open-review-subject"
@@ -3590,44 +3588,44 @@
     "doherty": {
       "citation": "Doherty & Thadani 1982 (IBM Systems Journal 21(1)); ~400 ms",
       "first_feedback_p50_ms": 0.7,
-      "first_feedback_p95_ms": 7,
+      "first_feedback_p95_ms": 5.8,
       "interactions_measured": 45,
-      "journey_wait_p50_sum_s": 1.983,
-      "keyboard_settled_p50_ms": 91.9,
-      "keyboard_settled_p95_ms": 913,
+      "journey_wait_p50_sum_s": 1.901,
+      "keyboard_settled_p50_ms": 100.5,
+      "keyboard_settled_p95_ms": 933.8,
       "method": "nearest-rank percentiles over all repeats; medians and interquartile range are the headline, p95 is the maximum with few samples",
       "native_control_interactions_excluded": [
         "acknowledge"
       ],
       "note": "settled = last DOM mutation before quiescence, from the click event; excludes OS/browser input latency",
-      "settled_max_ms": 937.6,
-      "settled_p25_ms": 6,
-      "settled_p50_ms": 95.1,
-      "settled_p75_ms": 114.6,
-      "settled_p95_ms": 825,
+      "settled_max_ms": 1334.7,
+      "settled_p25_ms": 5.7,
+      "settled_p50_ms": 89.3,
+      "settled_p75_ms": 109.3,
+      "settled_p95_ms": 869.7,
       "steps": [
         {
-          "first_feedback_p50_ms": 5.9,
-          "first_feedback_p95_ms": 8.2,
+          "first_feedback_p50_ms": 5.7,
+          "first_feedback_p95_ms": 7.8,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 5.6,
-          "settled_p50_ms": 5.9,
-          "settled_p75_ms": 8.2,
-          "settled_p95_ms": 8.2,
+          "settled_p25_ms": 5.2,
+          "settled_p50_ms": 5.7,
+          "settled_p75_ms": 7.8,
+          "settled_p95_ms": 7.8,
           "step": "open-change"
         },
         {
-          "first_feedback_p50_ms": 0.5,
-          "first_feedback_p95_ms": 0.6,
+          "first_feedback_p50_ms": 0.4,
+          "first_feedback_p95_ms": 0.5,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 87.8,
-          "settled_p50_ms": 93.4,
-          "settled_p75_ms": 95.1,
-          "settled_p95_ms": 95.1,
+          "settled_p25_ms": 69.7,
+          "settled_p50_ms": 73.6,
+          "settled_p75_ms": 95,
+          "settled_p95_ms": 95,
           "step": "create-case"
         },
         {
@@ -3636,46 +3634,46 @@
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 86.6,
-          "settled_p50_ms": 93.3,
-          "settled_p75_ms": 100.1,
-          "settled_p95_ms": 100.1,
+          "settled_p25_ms": 98,
+          "settled_p50_ms": 106.1,
+          "settled_p75_ms": 109.7,
+          "settled_p95_ms": 109.7,
           "step": "ask-interpretations"
         },
         {
           "first_feedback_p50_ms": 0.5,
+          "first_feedback_p95_ms": 0.5,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 104.2,
+          "settled_p50_ms": 106.3,
+          "settled_p75_ms": 116.2,
+          "settled_p95_ms": 116.2,
+          "step": "select-meaning"
+        },
+        {
+          "first_feedback_p50_ms": 4.2,
+          "first_feedback_p95_ms": 4.3,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 3.4,
+          "settled_p50_ms": 4.2,
+          "settled_p75_ms": 4.3,
+          "settled_p95_ms": 4.3,
+          "step": "open-try"
+        },
+        {
+          "first_feedback_p50_ms": 0.7,
           "first_feedback_p95_ms": 0.8,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 113.5,
-          "settled_p50_ms": 117.3,
-          "settled_p75_ms": 119.4,
-          "settled_p95_ms": 119.4,
-          "step": "select-meaning"
-        },
-        {
-          "first_feedback_p50_ms": 3.6,
-          "first_feedback_p95_ms": 3.8,
-          "median_over_400ms": false,
-          "over_400ms": false,
-          "samples": 3,
-          "settled_p25_ms": 3.2,
-          "settled_p50_ms": 3.6,
-          "settled_p75_ms": 3.8,
-          "settled_p95_ms": 3.8,
-          "step": "open-try"
-        },
-        {
-          "first_feedback_p50_ms": 0.8,
-          "first_feedback_p95_ms": 1.2,
-          "median_over_400ms": false,
-          "over_400ms": false,
-          "samples": 3,
-          "settled_p25_ms": 91.9,
-          "settled_p50_ms": 97.8,
-          "settled_p75_ms": 114.6,
-          "settled_p95_ms": 114.6,
+          "settled_p25_ms": 88.3,
+          "settled_p50_ms": 88.4,
+          "settled_p75_ms": 109.3,
+          "settled_p95_ms": 109.3,
           "step": "reset-preview"
         },
         {
@@ -3684,106 +3682,106 @@
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 86.6,
-          "settled_p50_ms": 97,
-          "settled_p75_ms": 114.2,
-          "settled_p95_ms": 114.2,
+          "settled_p25_ms": 77.8,
+          "settled_p50_ms": 80.1,
+          "settled_p75_ms": 99.1,
+          "settled_p95_ms": 99.1,
           "step": "submit-teacher"
         },
         {
-          "first_feedback_p50_ms": 0.6,
+          "first_feedback_p50_ms": 0.5,
           "first_feedback_p95_ms": 0.6,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 95.6,
-          "settled_p50_ms": 98.2,
-          "settled_p75_ms": 98.4,
-          "settled_p95_ms": 98.4,
+          "settled_p25_ms": 90.8,
+          "settled_p50_ms": 91.4,
+          "settled_p75_ms": 102.9,
+          "settled_p95_ms": 102.9,
           "step": "recommend-teacher"
         },
         {
-          "first_feedback_p50_ms": 0.6,
+          "first_feedback_p50_ms": 0.5,
           "first_feedback_p95_ms": 0.6,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 86.8,
-          "settled_p50_ms": 95.3,
-          "settled_p75_ms": 101.5,
-          "settled_p95_ms": 101.5,
+          "settled_p25_ms": 87.9,
+          "settled_p50_ms": 89.3,
+          "settled_p75_ms": 98.8,
+          "settled_p95_ms": 98.8,
           "step": "approve-registrar"
         },
         {
-          "first_feedback_p50_ms": 0.6,
+          "first_feedback_p50_ms": 0.5,
           "first_feedback_p95_ms": 0.6,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 5.3,
-          "settled_p50_ms": 5.6,
-          "settled_p75_ms": 6,
-          "settled_p95_ms": 6,
+          "settled_p25_ms": 5.4,
+          "settled_p50_ms": 5.4,
+          "settled_p75_ms": 5.5,
+          "settled_p95_ms": 5.5,
           "step": "denied-recommend"
         },
         {
-          "first_feedback_p50_ms": 7,
-          "first_feedback_p95_ms": 8.5,
+          "first_feedback_p50_ms": 5.8,
+          "first_feedback_p95_ms": 6.2,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 5,
-          "settled_p50_ms": 7,
-          "settled_p75_ms": 8.5,
-          "settled_p95_ms": 8.5,
+          "settled_p25_ms": 4.9,
+          "settled_p50_ms": 5.8,
+          "settled_p75_ms": 6.2,
+          "settled_p95_ms": 6.2,
           "step": "open-evidence"
         },
         {
           "first_feedback_p50_ms": 0.4,
-          "first_feedback_p95_ms": 0.4,
+          "first_feedback_p95_ms": 0.5,
           "median_over_400ms": true,
           "over_400ms": true,
           "samples": 3,
-          "settled_p25_ms": 825,
-          "settled_p50_ms": 890.7,
-          "settled_p75_ms": 937.6,
-          "settled_p95_ms": 937.6,
+          "settled_p25_ms": 869.7,
+          "settled_p50_ms": 881.9,
+          "settled_p75_ms": 1334.7,
+          "settled_p95_ms": 1334.7,
           "step": "run-verification"
         },
         {
-          "first_feedback_p50_ms": 0.8,
-          "first_feedback_p95_ms": 1.1,
+          "first_feedback_p50_ms": 0.9,
+          "first_feedback_p95_ms": 0.9,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
           "settled_p25_ms": 0.7,
-          "settled_p50_ms": 0.8,
-          "settled_p75_ms": 1.1,
-          "settled_p95_ms": 1.1,
+          "settled_p50_ms": 0.9,
+          "settled_p75_ms": 0.9,
+          "settled_p95_ms": 0.9,
           "step": "open-review-subject"
         },
         {
-          "first_feedback_p50_ms": 1,
-          "first_feedback_p95_ms": 1.1,
+          "first_feedback_p50_ms": 0.8,
+          "first_feedback_p95_ms": 0.8,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 127.2,
-          "settled_p50_ms": 143.4,
-          "settled_p75_ms": 148.9,
-          "settled_p95_ms": 148.9,
+          "settled_p25_ms": 145.2,
+          "settled_p50_ms": 146.4,
+          "settled_p75_ms": 180.5,
+          "settled_p95_ms": 180.5,
           "step": "approve-exact"
         },
         {
-          "first_feedback_p50_ms": 0.6,
-          "first_feedback_p95_ms": 0.6,
+          "first_feedback_p50_ms": 0.4,
+          "first_feedback_p95_ms": 0.5,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 216.9,
-          "settled_p50_ms": 234,
-          "settled_p75_ms": 236.2,
-          "settled_p95_ms": 236.2,
+          "settled_p25_ms": 209.8,
+          "settled_p50_ms": 215.4,
+          "settled_p75_ms": 219,
+          "settled_p95_ms": 219,
           "step": "apply-baseline"
         }
       ],
@@ -3807,37 +3805,12 @@
   ],
   "recommendations": [
     {
-      "category": "keyboard",
-      "change": "Keep or restore keyboard focus across updates: update the activated control in place, or re-focus the same control after the update, and move focus deliberately to new content on tab changes (WCAG 2.4.3 Focus Order, 3.2.2).",
-      "evidence": {
-        "max_tab_presses_for_one_target": 20,
-        "steps": [
-          "ask-interpretations"
-        ],
-        "tab_presses_after_loss": 2
-      },
-      "id": "focus-lost-after-render",
-      "laws": [
-        "WCAG 2.4.3",
-        "KLM"
-      ],
-      "likely_cause": "the render step replaces whole regions of the DOM (for example replaceChildren), destroying the focused element (hypothesis; a code search agrees, the probe does not observe it)",
-      "predicted_effect": "upper bound: 0.6 s is every Tab press on the step after a focus loss, including presses that would be needed anyway; not a difference against a preserved-focus counterfactual",
-      "predicted_saving_s": 0.56,
-      "rank": 1,
-      "rank_saving_s": 0.0,
-      "saving_kind": "upper bound",
-      "severity": 4,
-      "targets": [],
-      "title": "1/16 keyboard activations dropped focus to <body>"
-    },
-    {
       "category": "doherty",
-      "change": "First DOM mutation after the click came within 7 ms (p95; paint not measured), while completion for the slow steps takes longer than 400 ms. For the slow steps show a determinate progress message, keep the previous result visible until the new one lands, and profile where the time goes before optimising anything.",
+      "change": "First DOM mutation after the click came within 5.8 ms (p95; paint not measured), while completion for the slow steps takes longer than 400 ms. For the slow steps show a determinate progress message, keep the previous result visible until the new one lands, and profile where the time goes before optimising anything.",
       "evidence": {
-        "first_feedback_p95_ms": 7,
+        "first_feedback_p95_ms": 5.8,
         "slow_steps": [
-          "run-verification: p50 890.7 / p95 937.6 ms"
+          "run-verification: p50 881.9 / p95 1334.7 ms"
         ]
       },
       "id": "doherty-completion",
@@ -3847,7 +3820,7 @@
       "likely_cause": "the server-side work per action, possibly the durable SQLite commit path, dominates (hypothesis; no profile was taken)",
       "predicted_effect": "measured on this machine; wall-clock, sensitive to load from other processes",
       "predicted_saving_s": 0.0,
-      "rank": 2,
+      "rank": 1,
       "rank_saving_s": 0.0,
       "saving_kind": "model difference",
       "severity": 3,
@@ -3874,7 +3847,7 @@
       "likely_cause": "",
       "predicted_effect": "",
       "predicted_saving_s": 0.0,
-      "rank": 3,
+      "rank": 2,
       "rank_saving_s": 0.0,
       "saving_kind": "model difference",
       "severity": 3,
@@ -3923,7 +3896,7 @@
       "likely_cause": "",
       "predicted_effect": "model: 3.6 s of 65.3 s expert time (6%)",
       "predicted_saving_s": 3.64,
-      "rank": 4,
+      "rank": 3,
       "rank_saving_s": 3.64,
       "saving_kind": "model difference",
       "severity": 2,
@@ -3970,7 +3943,7 @@
       "likely_cause": "a long run of tab stops before the main content, such as a tab bar or sidebar, precedes the target (hypothesis)",
       "predicted_effect": "",
       "predicted_saving_s": 0.0,
-      "rank": 5,
+      "rank": 4,
       "rank_saving_s": 0.0,
       "saving_kind": "model difference",
       "severity": 2,
@@ -4029,7 +4002,7 @@
       "likely_cause": "",
       "predicted_effect": "heuristic only: not a measurement of anyone's memory",
       "predicted_saving_s": 0.0,
-      "rank": 6,
+      "rank": 5,
       "rank_saving_s": 0.0,
       "saving_kind": "model difference",
       "severity": 2,
@@ -4051,7 +4024,7 @@
       "likely_cause": "",
       "predicted_effect": "if a novice searched the whole screen instead of the choice group: +2.52 s (upper bound, model)",
       "predicted_saving_s": 2.518,
-      "rank": 7,
+      "rank": 6,
       "rank_saving_s": 2.518,
       "saving_kind": "model difference",
       "severity": 1,
@@ -4073,7 +4046,7 @@
       "likely_cause": "",
       "predicted_effect": "",
       "predicted_saving_s": 0.0,
-      "rank": 8,
+      "rank": 7,
       "rank_saving_s": 0.0,
       "saving_kind": "model difference",
       "severity": 1,
@@ -4103,7 +4076,7 @@
       "likely_cause": "",
       "predicted_effect": "informational: M is the irreducible cognitive floor of the journey",
       "predicted_saving_s": 0.0,
-      "rank": 9,
+      "rank": 8,
       "rank_saving_s": 0.0,
       "saving_kind": "model difference",
       "severity": 1,
@@ -4115,31 +4088,31 @@
     "http_error_responses": [
       {
         "method": "POST",
-        "path": "/api/cases/1cfd99a440b2452d8c3ebf1d61c1230e/execute",
+        "path": "/api/cases/01bb661f519446a49b73da7c15f88e89/execute",
         "status": 409,
         "step": "denied-recommend"
       },
       {
         "method": "POST",
-        "path": "/api/cases/1f2a417685634738ba99055951c8130a/execute",
+        "path": "/api/cases/6c6941874e5149b4827e4d1191e40b9b/execute",
         "status": 409,
         "step": "denied-recommend"
       },
       {
         "method": "POST",
-        "path": "/api/cases/4ead04bf534b4c8d88c705e78c9f2c75/execute",
+        "path": "/api/cases/7a338943d4af4f21b121e71dcd5169d5/execute",
         "status": 409,
         "step": "denied-recommend"
       },
       {
         "method": "POST",
-        "path": "/api/cases/c5a7a1e4dd8141648a812a5345503637/execute",
+        "path": "/api/cases/c77488c207234b8481ade33b0d751188/execute",
         "status": 409,
         "step": "denied-recommend"
       },
       {
         "method": "POST",
-        "path": "/api/cases/d3ae5baf8f7c4434ac6758023a3a3069/execute",
+        "path": "/api/cases/f358dba843284de69f671f338222ebe4/execute",
         "status": 409,
         "step": "denied-recommend"
       }

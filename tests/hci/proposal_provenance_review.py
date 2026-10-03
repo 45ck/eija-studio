@@ -81,6 +81,7 @@ def review_type(runtime, replay):
             self.controls = []
             self.external = []
             self.snapshots = []
+            self.request_focus = []
             self.expected_http = []
             page.route("**/*", self.local_only)
 
@@ -257,7 +258,7 @@ def review_type(runtime, replay):
             replay.expect(self.page.locator("#propose")).to_be_visible()
             assert self.posts == posts, "Opening proposal controls submitted a request"
 
-        def request_proposal(self, mode=None):
+        def request_proposal(self, mode=None, *, expected_focus=None):
             self.mode = mode
             before = len(self.posts)
             self.reveal_proposal_controls()
@@ -280,6 +281,20 @@ def review_type(runtime, replay):
                 held.continue_()
             self.settled()
             assert len(self.posts) == before + 1, "One request activation sent duplicate proposal POSTs"
+            if expected_focus is not None:
+                # Observe completion before any later navigation; never repair focus in the replay.
+                target = self.page.locator(expected_focus)
+                replay.expect(target).to_be_visible()
+                replay.expect(target).to_be_focused()
+                geometry = self.triage_focus_geometry(target)
+                observed = self.page.evaluate("""() => ({active: document.activeElement.id,
+                    interpretationOpen: document.querySelector('#interpretation-panel').open,
+                    controlsOpen: document.querySelector('#proposal-controls').open})""")
+                assert observed["interpretationOpen"] is True
+                assert observed["controlsOpen"] is (expected_focus == "#propose")
+                self.request_focus.append({"stage": self.stage, "expected": expected_focus,
+                                           "observed": observed, "geometry": geometry})
+                write_json(self.out / "request-focus-observations.json", self.request_focus)
 
         def refresh_only(self):
             posts = list(self.posts)
@@ -412,7 +427,7 @@ def review_type(runtime, replay):
             bootstrap = self.failed_bootstrap()
             self.stage = "pending-and-offline-accept"
             case_a = self.create_case("[case-a]")
-            self.request_proposal("hold")
+            self.request_proposal("hold", expected_focus="#proposal-controls-summary")
             self.phase("received")
             accepted = self.view()
             assert accepted["case"]["version"] == 1
@@ -421,7 +436,7 @@ def review_type(runtime, replay):
 
             self.stage = "structured-provider-refusal"
             self.expected_http.append((409, "/api/cases/" + case_a + "/propose"))
-            self.request_proposal()
+            self.request_proposal(expected_focus="#propose")
             assert "SYNTHETIC_PROVIDER_REFUSED" in self.phase("refused")
             self.assert_provenance(accepted)  # Loaded snapshot remains unchanged on refusal.
             refused = self.view()
@@ -511,6 +526,7 @@ def review_type(runtime, replay):
             assert not self.errors and not self.forbidden and not self.external
             return {"cases": [case_a, case_b], "post_inventory": dict(counts), "post_count": 9,
                     "bootstrap_disabled": bootstrap, "editable_case_enables_proposal": True,
+                    "request_focus": self.request_focus,
                     "final_versions": [final_a["case"]["version"], final_b["case"]["version"]],
                     "accepted_proposals": 5, "meaning_selections": 0, "provider": "offline",
                     "synthetic_controls": ["one provider refusal", "one missing-model metadata response", "named transport/refresh faults"],

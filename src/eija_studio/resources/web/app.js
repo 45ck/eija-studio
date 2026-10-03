@@ -91,6 +91,8 @@ function restoreTaskFocus(previous){
   if(document.activeElement!==document.body&&document.activeElement!==document.documentElement)return;
   const available=node=>node&&!node.disabled&&node.getClientRects().length>0;
   let target=previous.id?$(previous.id):null;
+  if(previous.id==="propose"&&!$("interpretation-panel").open)target=$("interpretation-summary");
+  else if(previous.id==="propose"&&!$("proposal-controls").open)target=$("proposal-controls-summary");
   if(!available(target)&&previous.action)target=[...document.querySelectorAll("[data-action]")].find(node=>node.dataset.action===previous.action);
   if(!available(target)&&previous.meaning)target=[...document.querySelectorAll("[data-meaning]")].find(node=>node.dataset.meaning===previous.meaning);
   if(!available(target)&&previous.id==="create")target=$("propose");
