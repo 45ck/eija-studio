@@ -1,0 +1,8 @@
+{
+  "scope": "editable showcase replay snapshot",
+  "sha256": "dc7b717b1817e810dfdb48a97221743d03345aa9aeb2589eb0ccb9f88900beaf",
+  "production_readiness": "NOT_CLAIMED",
+  "live_inference": false,
+  "source_rewrite": false,
+  "utc": "2026-10-03T05:28:10.1820457Z"
+}
