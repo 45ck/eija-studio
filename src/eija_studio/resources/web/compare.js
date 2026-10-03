@@ -142,18 +142,15 @@ const EijaCompare = (() => {
     session.selected = () => layout.inventory.items.find(item => item.kind === state.selected?.kind && item.id === state.selected?.id);
     session.select = (reference, focus = true) => {
       const item = layout.inventory.items.find(value => value.kind === reference.kind && value.id === reference.id); if (!item) return false;
-      state.selected = {kind: item.kind, id: item.id}; updateSelection(session); if (focus) focusSelection(session); session.notify();
+      state.selected = {kind: item.kind, id: item.id}; updateSelection(session); selectionViewport(session, focus); session.notify();
       callbacks.onSelection?.({...subject, ...state.selected}, item); return true;
     };
     session.visual = element("div", undefined, "compare-visual-workspace");
     buildSelectedSummary(session); shell.append(session.visual);
     buildHeader(session); buildNavigator(session); buildPair(session); buildDetails(session); buildContext(session);
     updateSelection(session);
-    if (!state.viewport || callbacks.state?.viewMode === "focus") focusSelection(session); else if (callbacks.state?.viewMode === "overview") fit(session); else updateViewport(session);
-    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(() => {
-      if (session.stopped) return;
-      if (shell.dataset.compareView === "focus") focusSelection(session); else if (shell.dataset.compareView === "overview") fit(session); else updateViewport(session);
-    });
+    initializeViewport(session, callbacks.state);
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(() => refreshViewport(session));
     for (const pane of session.panes) observer?.observe(pane.host);
     session.notify(); callbacks.onSelection?.({...subject, ...state.selected}, session.selected());
     return {getState, select: session.select, fit: () => fit(session), focus: () => focusSelection(session),
@@ -162,12 +159,12 @@ const EijaCompare = (() => {
   function buildHeader(s) {
     const header = element("header", undefined, "compare-header"); header.append(element("h2", s.callbacks.preview ? "Captured edit comparison" : `Changes · revision ${s.c.version}`));
     const tools = element("div", undefined, "compare-tools"); tools.setAttribute("aria-label", "Synchronized comparison view"); tools.setAttribute("role", "group");
-    tools.append(button("Focus selection", () => focusSelection(s), "focus"), button("100%", () => setViewport(s, {...s.state.viewport, scale: 1}), "readable"),
+    tools.append(button(s.callbacks.preview ? "Focus selection" : "Fit selection", () => focusSelection(s), "focus"), button("100%", () => setViewport(s, {...s.state.viewport, scale: 1}), "readable"),
       button("−", () => zoom(s, 1 / 1.2), "zoom-out"), button("+", () => zoom(s, 1.2), "zoom-in"), button("Overview", () => fit(s), "overview"));
     tools.querySelector('[data-compare-action="zoom-out"]').setAttribute("aria-label", "Zoom out both diagrams");
     tools.querySelector('[data-compare-action="zoom-in"]').setAttribute("aria-label", "Zoom in both diagrams");
     s.scale = element("output", "100%"); s.scale.dataset.compareScale = ""; s.scale.setAttribute("aria-label", "Shared diagram scale"); tools.append(s.scale);
-    const help = element("details", undefined, "compare-help"); help.append(element("summary", "View help"), element("p", (s.callbacks.preview ? "Read-only captured before and proposed result snapshots share positions and zoom. " : "Read-only baseline and candidate snapshots share positions and zoom. ") + "Focus shows the selected endpoints, route and labels. Drag empty space or use arrow keys to pan; plus/minus zoom. Home focuses the selection. Focus and Overview may reduce text size; 100% restores readable scale."));
+    const help = element("details", undefined, "compare-help"); help.append(element("summary", "View help"), element("p", (s.callbacks.preview ? "Read-only captured before and proposed result snapshots share positions and zoom. " : "Read-only baseline and candidate snapshots share positions and zoom. ") + (s.callbacks.preview ? "Focus shows the selected endpoints, route and labels. Home focuses the selection. Focus and Overview may reduce text size. " : "Selections open at 100%; some content may require panning. Fit selection shows the selected endpoints, route and labels, and Home fits the selection. Fit selection and Overview may reduce text size. ") + "Drag empty space or use arrow keys to pan; plus/minus zoom. 100% restores readable scale."));
     help.addEventListener("keydown", event => {if (event.key === "Escape") {help.open = false; help.querySelector("summary").focus(); event.stopPropagation();}});
     s.scaleHint = element("span", "", "compare-scale-hint"); s.scaleHint.setAttribute("role", "status");
     if(s.callbacks.openNavigator)tools.prepend(button("All changes",s.callbacks.openNavigator,"navigator"));
@@ -336,14 +333,35 @@ const EijaCompare = (() => {
     const scale = Math.min(1, ...sizes.map(size => Math.min(Math.max(1, size.width - padding * 2) / Math.max(1, box.width), Math.max(1, size.height - padding * 2) / Math.max(1, box.height))));
     return {cx: box.x + box.width / 2, cy: box.y + box.height / 2, scale};
   }
-  function focusSelection(s) {
+  function defaultSelection(s) {focusSelection(s, Boolean(s.callbacks.preview));}
+  function selectionViewport(s, focus) {
+    if (focus) defaultSelection(s);
+    else if (!s.callbacks.preview && ["readable", "focus"].includes(s.shell.dataset.compareView)) s.shell.dataset.compareView = "manual";
+  }
+  function initializeViewport(s, saved) {
+    const pending = saved?.viewport === null && ["focus", "overview", "readable"].includes(saved?.viewMode);
+    s.shell.dataset.compareView = same(s.subject, saved?.subject) && (s.state.viewport || pending) ? saved.viewMode || "manual" : "manual";
+    refreshViewport(s);
+  }
+  function refreshViewport(s) {
+    if (s.stopped) return;
+    const mode = s.shell.dataset.compareView;
+    if (mode === "focus") focusSelection(s);
+    else if (mode === "overview") fit(s);
+    else if (mode === "readable") focusSelection(s, false);
+    else if (!s.state.viewport) defaultSelection(s);
+    else updateViewport(s);
+  }
+  function focusSelection(s, fitSelection = true) {
     const item = s.selected(); if (!item) return;
-    const sizes = dimensions(s); if (!sizes) {s.shell.dataset.compareView = "focus"; return;}
+    const mode = fitSelection ? "focus" : "readable";
+    const sizes = dimensions(s); if (!sizes) {s.shell.dataset.compareView = mode; return;}
     const ids = selectedNodeIds(item), painted = [];
     for (const group of s.groups) if (group.item.key === item.key || group.item.kind === "state" && ids.has(group.item.id)) {
       try {const box = group.node.getBBox(); if (box.width > 0 || box.height > 0) painted.push(box);} catch {/* Hidden SVG falls back to projection bounds until its resize notification. */}
     }
-    setViewport(s, frameBounds(selectionBounds(s.layout, item, painted), sizes), "focus");
+    const viewport = frameBounds(selectionBounds(s.layout, item, painted), sizes);
+    setViewport(s, fitSelection ? viewport : {...viewport, scale: 1}, mode);
   }
   function attachPan(s, board) {
     board.addEventListener("keydown", event => {

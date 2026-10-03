@@ -330,8 +330,26 @@ def assert_visible_selection(expected, observed):
         assert (box["x"] >= clip["left"] - 1 and box["y"] >= clip["top"] - 1
                 and box["x"] + box["width"] <= clip["right"] + 1
                 and box["y"] + box["height"] <= clip["bottom"] + 1), {
-            "reason": "Focus selection clips a required endpoint or action", "element": label, "box": box, "clip": clip}
+            "reason": "Fit selection clips a required endpoint or action", "element": label, "box": box, "clip": clip}
     return observed
+
+
+def assert_default_readability(record):
+    assert record["mode"] == "readable", "default_readability: not automatic readable selection"
+    assert record["displayed_scale"] == "100%", "default_readability: displayed scale is not 100%"
+    for side in record["panes"]:
+        assert math.isclose(side["scale"], 1, abs_tol=0.005), "default_readability: painted scale is not 100%"
+        assert side["label_heights"] and min(side["label_heights"]) >= 14, "default_readability: state text below existing 14px floor"
+
+
+def assert_same_presentation(expected, actual, mode):
+    for key in ("case", "revision", "kind", "id"):
+        assert actual[key] == expected[key], {"presentation_identity": key, "expected": expected, "actual": actual}
+    assert actual["mode"] == mode, {"expected_mode": mode, "actual": actual}
+    assert len(actual["panes"]) == len(expected["panes"]) == 2
+    for first, second in zip(expected["panes"], actual["panes"], strict=True):
+        for key in ("cx", "cy", "scale"):
+            assert math.isclose(first[key], second[key], abs_tol=0.005), {"presentation_changed": key, "expected": expected, "actual": actual}
 
 
 OBSERVE_SUMMARY = r"""root => {
@@ -506,6 +524,48 @@ class ReviewWorkspace(Journey):
         assert_summary(expected, observed)
         return expected, observed
 
+    def presentation(self):
+        return self.main_comparison().locator(".paired-compare").evaluate("""root => {
+            const selected=root.querySelector('.compare-selection');
+            return {mode:root.dataset.compareView, case:root.dataset.case, revision:root.dataset.revision,
+                kind:selected.dataset.kind,id:selected.dataset.id,
+                panes:[...root.querySelectorAll('svg.compare-svg')].map(board=>{
+                    const v=board.viewBox.baseVal,m=board.getScreenCTM();
+                    return {cx:v.x+v.width/2,cy:v.y+v.height/2,scale:Math.hypot(m.a,m.b)};
+                })};
+        }""")
+
+    def default_readability(self, view, label):
+        pair = self.observe_pair(view, label)
+        record = {"label": label, "viewport": self.page.viewport_size, **self.presentation(),
+                  "displayed_scale": self.main_comparison().locator("output[data-compare-scale]").inner_text()}
+        for index, (side, field) in enumerate((("before", "baseline"), ("after", "candidate"))):
+            expected = next(item for item in view["case"][field]["transitions"] if item["id"] == "TR-VERIFY")
+            board = self.main_comparison().locator(f'[data-compare-side="{side}"] svg.compare-svg')
+            visible = board.evaluate(VISIBLE_SELECTION, expected)
+            clip = visible["clip"]
+            boxes = [(state["id"], state["box"]) for state in visible["states"]]
+            boxes.append(("action:" + expected["action"], visible["action"]["box"]))
+            clipped = [name for name, box in boxes if not (
+                box["x"] >= clip["left"] - 1 and box["y"] >= clip["top"] - 1
+                and box["x"] + box["width"] <= clip["right"] + 1
+                and box["y"] + box["height"] <= clip["bottom"] + 1)]
+            record["panes"][index].update({"side": side, "actual_clip": visible,
+                "clipped_required_elements": clipped,
+                "label_heights": [node["label"]["screen_box"]["height"] for node in pair[side]["nodes"]]})
+        self.readability_records = [*getattr(self, "readability_records", []), record]
+        write_json(self.out / "default-readability.json", self.readability_records)
+        assert_default_readability(record)
+        mutant = deepcopy(record)
+        mutant["panes"][0]["scale"] = 0.69  # Wrong actual scale despite a truthful-looking 100% label.
+        try:
+            assert_default_readability(mutant)
+        except AssertionError as error:
+            assert str(error).startswith("default_readability: painted scale"), str(error)
+        else:
+            raise AssertionError("default_readability: accepted reduced painted scale")
+        return record
+
     def summary_layout(self):
         before, view = self.snapshot(), self.case_view()
         writes = [item for item in self.requests if item["method"] != "GET"]
@@ -520,6 +580,7 @@ class ReviewWorkspace(Journey):
             expected, observed = self.assert_selected_summary(view, "transition:TR-VERIFY", label=f"review-top-{width}")
             assert_summary_paint(observed, set(expected["fields"]))
             controls = summary_negative_controls(expected, observed)
+            readability = self.default_readability(view, f"automatic-selection-{width}")
             self.shot(f"ordinary-summary-top-{width}")
             self.page.set_viewport_size({"width": 1600, "height": 1100})
             self.chosen("transition:TR-SAVE")
@@ -536,7 +597,7 @@ class ReviewWorkspace(Journey):
                 reachable.append(field)
                 if field == "guards":
                     self.shot(f"ordinary-summary-guards-{width}")
-            evidence.append({"viewport": [width, height], "top": observed, "negative_controls": controls,
+            evidence.append({"viewport": [width, height], "top": observed, "negative_controls": controls, "default_readability": readability,
                              "all_added_fields_individually_reachable": reachable})
         self.page.set_viewport_size({"width": 1600, "height": 1100})
         self.chosen("transition:TR-VERIFY")
@@ -645,6 +706,7 @@ class ReviewWorkspace(Journey):
         assert detail.locator("td").all_text_contents() == ["PREVIEW", "SAVED"]
         summary_expected, summary_observed = self.assert_selected_summary(view, "transition:TR-VERIFY", label="initial-selected-change")
         assert_summary_paint(summary_observed, set(summary_expected["fields"]))
+        self.default_readability(view, "initial-selected-change")
         return {"case": self.case_a, "revision": view["case"]["version"], "inventory": expected,
                 "parallel_edges": ["TR-VERIFY", "TR-VERIFY-SAVED"], "source_connection": self.connection["source_hash"]}
 
@@ -652,6 +714,10 @@ class ReviewWorkspace(Journey):
         before = self.snapshot()
         view = self.case_view()
         self.main_comparison().locator('[data-compare-action="overview"]').click()
+        overview = self.presentation()
+        self.tab("model")
+        self.tab("review")
+        assert_same_presentation(overview, self.presentation(), "overview")
         pair = self.observe_pair(view, "parallel-overview")
         fonts = self.main_comparison().locator(".paired-compare").evaluate("root => ({body:getComputedStyle(document.body).fontFamily, labels:[...root.querySelectorAll('.compare-state-label,.compare-edge-label,.compare-initial-label')].map(node=>({text:node.textContent,family:getComputedStyle(node).fontFamily}))})")
         assert fonts["labels"] and all(item["family"] == fonts["body"] for item in fonts["labels"]), fonts
@@ -691,7 +757,19 @@ class ReviewWorkspace(Journey):
         new = [boards.nth(i).get_attribute("viewBox") for i in range(2)]
         assert new[0] == new[1] and old != new, "Paired zoom did not synchronously change actual SVG viewports."
         self.observe_pair(view, "parallel-zoomed")
+        boards.nth(1).focus()
+        self.page.keyboard.press("ArrowRight")
+        self.navigation_action("keyboard", "comparison SVG ArrowRight pans both diagrams")
+        manual = self.presentation()
+        self.page.set_viewport_size({"width": 1280, "height": 800})
+        self.page.evaluate("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))")
+        assert_same_presentation(manual, self.presentation(), "manual")
+        self.page.set_viewport_size({"width": 1600, "height": 1100})
+        self.tab("model")
+        self.tab("review")
+        assert_same_presentation(manual, self.presentation(), "manual")
         replay.expect(self.main_comparison().locator(".compare-selection")).to_have_attribute("data-id", "TR-VERIFY")
+        replay.expect(self.main_comparison().locator('[data-compare-action="focus"]')).to_have_text("Fit selection")
         visible_focus = []
         for width, height in ((1600, 1100), (1280, 800)):
             self.page.set_viewport_size({"width": width, "height": height})
@@ -709,7 +787,7 @@ class ReviewWorkspace(Journey):
         self.main_comparison().locator('[data-compare-action="focus"]').click()
         self.assert_unchanged(before)
         return {"oracle_controls": controls, "painted_endpoint_negative_control": rejected, "computed_fonts": fonts,
-                "visible_selected_endpoints": visible_focus,
+                "visible_selected_endpoints": visible_focus, "overview_preserved": overview, "manual_resize_and_rerender_preserved": manual,
                 "viewboxes_before": old, "viewboxes_after": new,
                 "absent_side_has_no_ghost": True, "case_layout_history_unchanged": True}
 

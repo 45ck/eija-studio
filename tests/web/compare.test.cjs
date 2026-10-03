@@ -623,3 +623,109 @@ test("ordinary summary preserves distinct literal whitespace values", () => {
   const h=previewSummaryHarness(false);h.select(compare.inventory(base,candidate).items.find(item=>item.key==="transition:T"));
   assert.deepEqual(h.pair("role"),["Team  Lead","Team Lead"]);
 });
+
+
+function viewportSession({preview = false, width = 420, height = 240} = {}) {
+  const source = require("node:fs").readFileSync(process.env.EIJA_COMPARE_MODULE || path.join(web, "compare.js"), "utf8");
+  const start = source.indexOf("  function dimensions(s)"), end = source.indexOf("  return {render, inventory");
+  const handlers = {same:(a,b)=>Boolean(a&&b&&a.case===b.case&&a.revision===b.revision)};
+  require("node:vm").createContext(handlers);require("node:vm").runInContext(source.slice(start,end),handlers);
+  const layout=projection(), item=layout.inventory.items.find(value=>value.key==="transition:T-RETARGET");
+  const host={clientWidth:width,clientHeight:height}, attributes={};
+  const s={subject:{case:"A",revision:2},callbacks:{preview},state:{viewport:null},
+    shell:{dataset:{}},layout,selected:()=>item,groups:[],scale:{},scaleHint:{},notify:()=>{},
+    panes:[{host,board:{setAttribute:(key,value)=>{attributes[key]=value;}}}]};
+  return {handlers,s,host,attributes,item};
+}
+
+test("ordinary initial and new selection center at natural scale; explicit fit keeps containment", () => {
+  const {handlers,s,item}=viewportSession();
+  handlers.initializeViewport(s);const box=compare.selectionBounds(s.layout,item);
+  const readable=()=>{assert.equal(s.state.viewport.scale,1);assert.equal(s.scale.textContent,"100%");};
+  readable();assert.equal(s.shell.dataset.compareView,"readable");
+  assert.equal(s.state.viewport.cx,box.x+box.width/2);assert.equal(s.state.viewport.cy,box.y+box.height/2);
+  handlers.focusSelection(s);assert.ok(s.state.viewport.scale<1);
+  assertFramed([box],s.state.viewport,[{width:420,height:240}]);
+  assert.throws(readable,/Expected values/); // Existing fit behavior must fail the distinct default-readability oracle.
+  handlers.defaultSelection(s);readable();
+});
+
+test("preview default still fits and hidden ordinary entry defers its readable viewport", () => {
+  const preview=viewportSession({preview:true});preview.handlers.initializeViewport(preview.s);
+  assert.equal(preview.s.shell.dataset.compareView,"focus");
+  assertFramed([compare.selectionBounds(preview.s.layout,preview.item)],preview.s.state.viewport,[{width:420,height:240}]);
+  const hidden=viewportSession({width:0,height:0});hidden.handlers.initializeViewport(hidden.s);
+  assert.equal(hidden.s.state.viewport,null);assert.deepEqual(hidden.attributes,{});
+  assert.equal(hidden.s.shell.dataset.compareView,"readable");
+  hidden.host.clientWidth=320;hidden.host.clientHeight=220;hidden.handlers.refreshViewport(hidden.s);
+  assert.equal(hidden.s.state.viewport.scale,1);assert.ok(hidden.attributes.viewBox);
+});
+
+test("manual zoom and pan survive resize and matching-subject rerender", () => {
+  const first=viewportSession();first.handlers.initializeViewport(first.s);
+  first.handlers.setViewport(first.s,{cx:321,cy:654,scale:0.73});
+  first.host.clientWidth=300;first.host.clientHeight=180;first.handlers.refreshViewport(first.s);
+  const expected=JSON.stringify({cx:321,cy:654,scale:0.73});
+  assert.equal(JSON.stringify(first.s.state.viewport),expected);assert.equal(first.s.shell.dataset.compareView,"manual");
+  const next=viewportSession();next.s.state.viewport={...first.s.state.viewport};
+  next.handlers.initializeViewport(next.s,{subject:{...first.s.subject},viewMode:"manual"});
+  assert.equal(JSON.stringify(next.s.state.viewport),expected);assert.equal(next.s.shell.dataset.compareView,"manual");
+});
+
+test("explicit overview and fit survive resize and matching-subject rerender", () => {
+  for(const mode of ["overview","focus"]){
+    const first=viewportSession();first.handlers.initializeViewport(first.s);
+    if(mode==="overview")first.handlers.fit(first.s);else first.handlers.focusSelection(first.s);
+    first.host.clientWidth=300;first.host.clientHeight=180;first.handlers.refreshViewport(first.s);
+    const box=mode==="overview"?first.s.layout.bounds:compare.selectionBounds(first.s.layout,first.item);
+    assert.equal(first.s.shell.dataset.compareView,mode);assertFramed([box],first.s.state.viewport,[{width:300,height:180}]);
+    const next=viewportSession();next.s.state.viewport={...first.s.state.viewport};
+    next.handlers.initializeViewport(next.s,{subject:{...first.s.subject},viewMode:mode});
+    assert.equal(next.s.shell.dataset.compareView,mode);assertFramed([box],next.s.state.viewport,[{width:420,height:240}]);
+  }
+});
+
+test("old case or revision presentation cannot turn a fresh ordinary view into automatic fit", () => {
+  for(const subject of [{case:"B",revision:2},{case:"A",revision:1}]){
+    const fresh=viewportSession();fresh.handlers.initializeViewport(fresh.s,{subject,viewMode:"overview"});
+    assert.equal(fresh.s.state.viewport.scale,1);assert.equal(fresh.s.shell.dataset.compareView,"readable");
+  }
+});
+
+test("ordinary graph selection keeps its view even when its summary triggers resize", () => {
+  for(const mode of ["readable","focus"]){
+    const {handlers,s,host}=viewportSession();handlers.initializeViewport(s);
+    if(mode==="focus")handlers.focusSelection(s);
+    const previous=JSON.stringify(s.state.viewport);
+    const selected=s.layout.inventory.items.find(item=>item.key==="state:Draft");assert.ok(selected);
+    s.selected=()=>selected;
+    handlers.selectionViewport(s,false);host.clientHeight=120;handlers.refreshViewport(s);
+    assert.equal(JSON.stringify(s.state.viewport),previous);assert.equal(s.shell.dataset.compareView,"manual");
+  }
+  const preview=viewportSession({preview:true});preview.handlers.initializeViewport(preview.s);
+  preview.handlers.selectionViewport(preview.s,false);assert.equal(preview.s.shell.dataset.compareView,"focus");
+});
+
+test("rejected saved coordinates default to readable after the hidden host becomes visible", () => {
+  for(const viewport of [{cx:"invalid",cy:100,scale:0.5},{cx:200,cy:100,scale:0}]){
+    const {handlers,s,host}=viewportSession({width:0,height:0});
+    const saved={subject:{...s.subject},selected:{kind:"transition",id:"T-RETARGET"},viewMode:"overview",viewport};
+    s.state=compare.restoreState(s.subject,s.layout.inventory,saved);assert.equal(s.state.viewport,null);
+    handlers.initializeViewport(s,saved);assert.equal(s.state.viewport,null);assert.equal(s.shell.dataset.compareView,"readable");
+    host.clientWidth=320;host.clientHeight=200;handlers.refreshViewport(s);
+    assert.equal(s.state.viewport.scale,1);assert.equal(s.shell.dataset.compareView,"readable");
+  }
+});
+
+test("hidden explicit fit and overview remain pending through a same-subject rerender", () => {
+  for(const mode of ["focus","overview"]){
+    const first=viewportSession({width:0,height:0});
+    if(mode==="overview")first.handlers.fit(first.s);else first.handlers.focusSelection(first.s);
+    const saved={subject:{...first.s.subject},viewport:first.s.state.viewport,viewMode:first.s.shell.dataset.compareView};
+    const next=viewportSession({width:0,height:0});next.s.state=compare.restoreState(next.s.subject,next.s.layout.inventory,saved);
+    next.handlers.initializeViewport(next.s,saved);assert.equal(next.s.state.viewport,null);assert.equal(next.s.shell.dataset.compareView,mode);
+    next.host.clientWidth=320;next.host.clientHeight=200;next.handlers.refreshViewport(next.s);
+    const box=mode==="overview"?next.s.layout.bounds:compare.selectionBounds(next.s.layout,next.item);
+    assertFramed([box],next.s.state.viewport,[{width:320,height:200}]);assert.equal(next.s.shell.dataset.compareView,mode);
+  }
+});

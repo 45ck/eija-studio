@@ -72,3 +72,30 @@ Authoritative case/evidence/history/runtime observations and write requests must
 remain unchanged across these checks. `summary-observations.json` is saved as
 observations are collected, including failures. These are sensitivity controls,
 not additional product stories or a human-comprehension measurement.
+
+
+## Default comparison readability and explicit fit
+
+The existing ten checks additionally require ordinary initial/navigator selection
+to use a measured 100% SVG scale, with the existing state-label floor of 14px,
+before activating Fit selection, Overview or 100%. This is checked on the initial
+desktop selection and the existing 1280/320 reached-summary reflow paths.
+`default-readability.json` records actual SVG transforms, state-label sizes and
+required endpoint/action boxes against their clipping ancestors. Natural scale
+may clip content; that record explicitly lists clipped elements and does **not**
+claim that every endpoint is visible or that a human found the graph readable.
+A copied observation with a 100% label but an actual 69% transform must fail.
+
+The same existing Fit selection control is then explicitly activated for the
+unchanged, independent two-sided endpoint/action containment oracle at 1600 and
+1280. Those fit checks may reduce scale; neither their geometry nor their limits
+are weakened to accommodate the natural-scale default. Preview comparisons keep
+their prior fitting behavior and existing prospective-edit checks.
+
+Actual zoom and keyboard pan must retain center, scale and selected case/revision
+through resize and a Model-to-Changes rerender. An explicitly selected Overview
+must retain its mode and framing through that rerender. Hidden-mount recovery,
+preview defaults, and direct graph selection during summary-driven resize have
+additional actual-handler Node coverage; no browser coverage is claimed for
+those narrower cases by this augmentation. Run status remains NOT_RUN until a
+fresh retained execution binds these source and replay bytes.
