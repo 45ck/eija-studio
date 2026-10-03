@@ -241,9 +241,26 @@ def review_type(runtime, replay):
             self.snapshots.append(captured)
             write_json(self.out / "provenance-observations.json", self.snapshots)
 
+        def reveal_proposal_controls(self):
+            """Reach native summaries before a retry; disclosure changes never submit."""
+            posts = list(self.posts)
+            for selector in ("#interpretation-panel", "#proposal-controls"):
+                disclosure = self.page.locator(selector)
+                replay.expect(disclosure).to_have_count(1)
+                if disclosure.get_attribute("open") is None:
+                    summary = selector + " > summary"
+                    self.keyboard_to(summary)
+                    replay.expect(self.page.locator(summary)).to_be_focused()
+                    self.page.keyboard.press("Enter")
+                    self.navigation_action("native-keyboard-disclosure", summary, "Enter")
+                replay.expect(disclosure).to_have_attribute("open", "")
+            replay.expect(self.page.locator("#propose")).to_be_visible()
+            assert self.posts == posts, "Opening proposal controls submitted a request"
+
         def request_proposal(self, mode=None):
             self.mode = mode
             before = len(self.posts)
+            self.reveal_proposal_controls()
             self.keyboard_to("#propose")
             replay.expect(self.page.locator("#propose")).to_be_enabled()
             self.page.keyboard.press("Enter")
@@ -329,14 +346,22 @@ def review_type(runtime, replay):
                 native = proposal.evaluate("node=>({tag:node.tagName,disabled:node.disabled,attribute:node.hasAttribute('disabled')})")
                 assert native == {"tag": "BUTTON", "disabled": True, "attribute": True}
                 notice = self.page.locator("#notice").text_content()
-                # Native forward and reverse Tab traversal must skip the disabled button.
+                # The two native summaries precede the checkbox in both directions.
+                # Record every stop and prove the disabled proposal is always skipped.
                 self.keyboard_to("#create")
-                self.page.keyboard.press("Tab")
-                replay.expect(self.page.locator("#egress")).to_be_focused()
-                replay.expect(proposal).not_to_be_focused()
-                self.page.keyboard.press("Shift+Tab")
-                replay.expect(self.page.locator("#create")).to_be_focused()
-                self.page.keyboard.press("Tab")
+                tab_order = ["create"]
+                for key, stops in (
+                    ("Tab", ("interpretation-summary", "proposal-controls-summary", "egress")),
+                    ("Shift+Tab", ("proposal-controls-summary", "interpretation-summary", "create")),
+                    ("Tab", ("interpretation-summary", "proposal-controls-summary", "egress")),
+                ):
+                    for target in stops:
+                        self.page.keyboard.press(key)
+                        replay.expect(self.page.locator("#" + target)).to_be_focused()
+                        replay.expect(proposal).not_to_be_focused()
+                        observed = self.page.evaluate("() => document.activeElement.id")
+                        assert observed == target
+                        tab_order.append(observed)
                 # These keys land on the next reachable checkbox, never on the disabled proposal.
                 self.page.keyboard.press("Enter")
                 self.page.keyboard.press("Space")
@@ -352,7 +377,7 @@ def review_type(runtime, replay):
                     ("GET", "/api/status"): 1, ("GET", "/api/workbench"): 1}, inventory
                 observations.append({"failed_get": self.get_fault or "/api/" + endpoint, "native": native,
                                      "document_status": document.status, "navigation": "goto" if endpoint == "status" else "reload",
-                                     "tab_order": ["create", "egress", "create", "egress"],
+                                     "tab_order": tab_order,
                                      "activation_keys_target": "egress checkbox; disabled proposal skipped",
                                      "notice": notice, "requests": inventory, "proposal_posts": 0})
                 write_json(self.out / "bootstrap-disabled-observations.json", observations)

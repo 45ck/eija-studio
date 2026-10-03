@@ -26,6 +26,7 @@ function selectedConcept(){
   return items?.find(value=>value.id===id)||null;
 }
 function renderNavigator(){
+  EijaShell.setNavigatorPinned?.(navigatorMode === "domain");
   if(!workbench)return;
   const domain=navigatorMode==="domain"||tab==="model";
   $("navigator-mode").value=navigatorMode;EijaTree.setVisible($("domain-tree"),domain);
@@ -686,13 +687,55 @@ async function command(action,extra={}){
   const result=await api(`cases/${id}/${action}`,{expected_version:current.case.version,...extra});
   if(["undo","redo","discard"].includes(action))clearRuntime();await load(id);return result;
 }
-function render(){const c=current.case,p=current.packet,closed=editNeedsRefresh.has(c.id)||["APPLIED","DISCARDED"].includes(c.stage);$("create-panel").hidden=true;$("workspace").hidden=false;$("case-title").textContent=c.request;$("case-id").textContent=`CHANGE CASE ${c.id.slice(0,10)} / REVISION ${c.version} / BASELINE ${c.baseline_version}`;$("case-stage").textContent=c.stage;$("proposal-summary").textContent=c.proposal?.summary||"No interpretation has been requested. Your request is not yet a semantic change.";$("propose").disabled=!!c.candidate||closed;renderProposalProvenance();$("options").replaceChildren();
-for(const a of c.proposal?.alternatives||[]){const canonical=current.options[a.interpretation],chosen=c.selected_meaning===a.interpretation;const card=el("article",undefined,"option"+(chosen?" selected":""));card.append(el("small",chosen?"SELECTED BY LOCAL OWNER":canonical.supported?"SUPPORTED MEANING":"BLOCKED / OUT OF SCOPE"),el("h3",canonical.label));for(const consequence of canonical.consequences)card.append(el("p",consequence));const d=el("details");d.append(el("summary","Untrusted provider explanation"),el("p",a.explanation));card.append(d);const b=el("button",chosen?"Meaning selected":canonical.supported?"Select this meaning":"Explain boundary",chosen?"secondary":"");b.dataset.meaning=a.interpretation;b.disabled=closed||!!c.candidate;b.onclick=()=>task(async()=>{await command("select",{interpretation:a.interpretation});notice("Meaning selected. The local baseline has not changed.");});card.append(b);$("options").append(card);}
+function renderProposals(c,closed){
+  const active=document.activeElement,interpretationPanel=$("interpretation-panel"),interpretationKey=JSON.stringify([c.id,!!c.candidate]);
+  if(interpretationPanel.dataset.caseState!==interpretationKey){interpretationPanel.open=!c.candidate;interpretationPanel.dataset.caseState=interpretationKey;}
+  $("interpretation-summary").textContent=c.candidate?`Selected intent: ${current.options[c.selected_meaning]?.label||c.selected_meaning}`:"Interpretations";
+  const options=$("options"),controls=$("proposal-controls");
+  const key=JSON.stringify([c.id,c.proposal]),previous=$("proposal-alternatives");
+  const retainOpen=previous?.dataset.proposalKey===key&&previous.open;
+  const optionFocused=options.contains(active),controlsFocused=active===$("propose")||active===$("egress"),meaning=active?.dataset?.meaning;
+  const unsupported=[],direct=[];options.replaceChildren();
+  for(const a of c.proposal?.alternatives||[]){
+    const canonical=current.options[a.interpretation],chosen=c.selected_meaning===a.interpretation;
+    const card=el("article",undefined,"option"+(chosen?" selected":""));
+    card.append(el("small",chosen?"SELECTED BY LOCAL OWNER":canonical.supported?"SUPPORTED MEANING":"BLOCKED / OUT OF SCOPE"),el("h3",canonical.label));
+    for(const consequence of canonical.consequences)card.append(el("p",consequence));
+    const explanation=el("details");explanation.append(el("summary","Untrusted provider explanation"),el("p",a.explanation));card.append(explanation);
+    const button=el("button",chosen?"Meaning selected":canonical.supported?"Select this meaning":"Explain boundary",chosen?"secondary":"");
+    button.dataset.meaning=a.interpretation;button.disabled=closed||!!c.candidate;
+    button.onclick=()=>task(async()=>{await command("select",{interpretation:a.interpretation});notice("Meaning selected. The local baseline has not changed.");});card.append(button);
+    if(canonical.supported||chosen)direct.push(card);else unsupported.push({card,canonical});
+  }
+  options.append(...direct);
+  if(unsupported.length){
+    if(!direct.length)options.append(el("p","No supported interpretation was proposed. Inspect the boundaries or request another proposal.","muted"));
+    const disclosure=el("details"),summary=el("summary"),cards=el("div",undefined,"options");
+    summary.append(el("strong",`Unsupported interpretations (${unsupported.length}) · inspect explanations`));
+    for(const {canonical} of unsupported)summary.append(el("span",`${canonical.label} — ${canonical.consequences.join(" ")}`,"proposal-boundary"));
+    disclosure.id="proposal-alternatives";disclosure.dataset.proposalKey=key;disclosure.open=!!retainOpen;
+    summary.id="proposal-alternatives-summary";cards.append(...unsupported.map(item=>item.card));disclosure.append(summary,cards);options.append(disclosure);
+  }
+  const controlKey=JSON.stringify([c.id,!!c.proposal]);
+  if(controls.dataset.proposalKey!==controlKey){controls.open=!c.proposal;controls.dataset.proposalKey=controlKey;}
+  $("proposal-controls-summary").textContent=c.proposal?"Interpretations received · proposal controls":"Request interpretations";
+  if(controlsFocused&&!controls.open&&interpretationPanel.open){$("proposal-controls-summary").focus();}
+  else if(optionFocused){
+    const retained=active?.id&&$(active.id);
+    const same=[...options.querySelectorAll("button[data-meaning]")].find(button=>button.dataset.meaning===meaning&&!button.disabled&&button.getClientRects().length);
+    const first=[...options.querySelectorAll("button[data-meaning]")].find(button=>!button.disabled&&button.getClientRects().length);
+    (retained&&!retained.disabled&&retained.getClientRects().length?retained:same||first||(c.candidate?$("case-title"):$("proposal-alternatives-summary"))||$("proposal-controls-summary")).focus();
+  }else if(!interpretationPanel.open&&interpretationPanel.contains(active)&&active!==$("interpretation-summary")&&!active.getClientRects().length&&$("interpretation-summary").getClientRects().length){
+    $("interpretation-summary").focus();
+  }
+}
+function render(){const c=current.case,p=current.packet,closed=editNeedsRefresh.has(c.id)||["APPLIED","DISCARDED"].includes(c.stage);$("create-panel").hidden=true;$("workspace").hidden=false;$("case-heading").hidden=false;$("case-title").textContent=c.request;$("case-id").textContent=`CHANGE CASE ${c.id.slice(0,10)} / REVISION ${c.version} / BASELINE ${c.baseline_version}`;$("case-stage").textContent=c.stage;$("proposal-summary").textContent=c.proposal?.summary||"No interpretation has been requested. Your request is not yet a semantic change.";$("propose").disabled=!!c.candidate||closed;renderProposals(c,closed);renderProposalProvenance();
 $("proposal-unknowns").replaceChildren();for(const unknown of c.proposal?.unknowns||[])$("proposal-unknowns").append(el("p","Unresolved: "+unknown,"muted"));$("editor").hidden=!c.candidate;
 for(const id of ["save","discard","edit-rule","edit-state","move-node","verify","reset"])$(id).disabled=!c.candidate||closed;
 renderWorkbench(); renderChanges();
+globalThis.eijaAgentEdits?.update();
 renderRuntime();
-renderEvidencePacket(p);$("approve").disabled=!p.eligible||closed||c.stage==="APPROVED";$("apply").disabled=c.stage!=="APPROVED"||!p.eligible;$("export").disabled=false;switchTab(tab);}
+renderEvidencePacket(p);$("approve").disabled=!p.eligible||closed||c.stage==="APPROVED";$("apply").hidden=c.stage!=="APPROVED";$("apply").disabled=c.stage!=="APPROVED"||!p.eligible;$("export").disabled=false;switchTab(tab);}
 $("create").onclick=()=>task(async()=>{const c=await api("cases",{request:$("request").value});tab="change";editId=null;await load(c.id);notice("Case created. No provider call or baseline change has occurred.");});document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>openWorkDestination(b.dataset.tab));
 $("propose").onclick=()=>task(requestInterpretations,"Requesting an untrusted proposal…");
 $("save").onclick=()=>task(async()=>{await command("save");notice("Review checkpoint saved; the active baseline is unchanged.");});$("discard").onclick=()=>task(async()=>{await command("discard");clearRuntime();render();notice("Candidate closed. History is retained; the baseline is unchanged.");});
@@ -703,7 +746,11 @@ $("edit-target").onclick = () => commitChoice(choiceFor("retarget_target", "stat
 $("edit-role").onclick = () => commitChoice(choiceFor("set_role", "role:" + $("transition-role").value));
 $("move-node").onclick=()=>task(async()=>{await command("layout",{change:{node:$("layout-node").value,x:Number($("layout-x").value),y:Number($("layout-y").value)}});notice("Layout metadata changed. Domain receipts remain applicable; exact-presentation approval is cleared.");});
 $("reset").onclick=()=>task(startRuntimePreview,"Starting an isolated preview…");
-$("verify").onclick=()=>task(async()=>{await command("verify");notice("Bounded runtime verification finished. Human evidence remains UNKNOWN.");},"Executing the synthetic state / actor / action matrix…");
+async function verifyForReview(){
+  await command("verify");
+  notice("Bounded runtime verification finished. Human evidence remains UNKNOWN.");
+}
+$("verify").onclick=()=>task(verifyForReview,"Executing the synthetic state / actor / action matrix…");
 $("review-form").onsubmit=e=>{e.preventDefault();task(async()=>{const answers={};for(const q of current.packet.questions)answers[q.id]=$("q-"+q.id).value.trim();await command("approve",{subject_hash:current.packet.subject_hash,answers,acknowledge_unknowns:$("acknowledge").checked,scope:"local-demo"});notice("Exact local revision acknowledged. Apply remains a separate action.");});};
 $("apply").onclick=()=>task(async()=>{await command("apply");status=await api("status");workbench=await api("workbench");renderWorkbench();notice("Applied to the local demo baseline only. No production system was touched.");});
 $("export").onclick=()=>task(async()=>{const data=await api(`cases/${current.case.id}/export`),blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=el("a");a.href=url;a.download=`eija-${current.case.id}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);notice("Case exported with model, evidence, observations and integrity hash.");});
@@ -763,7 +810,7 @@ function renderEditor() {
       if(!list.childElementCount)list.append(el("li","None declared"));group.append(list);details.append(group);
     }
   } else details.append(el("p", "Select an edge on the canvas or choose a transition above to inspect its guards and effects.", "muted"));
-  $("edit-fields").hidden=!target;
+  $("edit-fields").hidden=!target||!editable();
   for (const id of ["rejection-source", "diagram-source", "model-source"]) fillChoices(id, "retarget_source", target?.from_state);
   fillChoices("target-state", "retarget_target", target?.to_state); fillChoices("transition-role", "set_role", target?.role);
   for (const id of ["edit-rule", "edit-state", "edit-source", "edit-target", "edit-role", "cancel-draft"]) $(id).disabled = !editable() || !target;
@@ -771,11 +818,28 @@ function renderEditor() {
   $("diagram-label").textContent = target ? `${target.action} source state` : "Select a transition in Model first";
   const c=current?.case;
   $("rules-edit-help").textContent=editNeedsRefresh.has(c?.id)?"An edit submission needs reconciliation. Refresh this case before editing the last loaded model.":!c?.candidate?"The baseline is read only. Choose a supported meaning in Intent to create a candidate.":["APPLIED","DISCARDED"].includes(c.stage)?`This case is ${c.stage}; its model is read only. Open another case to make changes.`:modelView!=="working"?"The Model workspace shows a read-only preview. Choose a rule above to open the current candidate before editing.":target?`Editing ${target.action} (${target.id}) in the current candidate · revision ${c.version}. The kernel checks each submitted change.`:"Choose a rule above to select the current candidate transition to edit.";
+  $("manual-edit-summary").textContent=target?`Manual transition edit · ${target.action}`:"Manual transition edit";
+  $("manual-edit-help").textContent=$("rules-edit-help").textContent;
+  $("manual-select").disabled=!c?.candidate;
+  $("inspector-model-view").textContent=modelView==="baseline"?"Original baseline · read only":modelView==="history"?"Historical preview · read only":editNeedsRefresh.has(c?.id)?"Last loaded candidate · refresh required":!c?.candidate?"Loaded baseline · read only":["APPLIED","DISCARDED"].includes(c.stage)?`${c.stage} candidate · read only`:`Working candidate · revision ${c.version}`;
+  $("inspector-return-working").hidden=!c?.candidate||modelView==="working";
+}
+function returnToWorkingModel(){
+  if(!current?.case.candidate)return false;
+  modelView="working";switchTab("model");renderWorkbench();EijaShell.reveal("inspector");
+  ($("transition-inspector").hidden?$("model-version"):$("transition-select")).focus();return true;
+}
+$("inspector-return-working").onclick=returnToWorkingModel;
+$("manual-select").onclick=()=>{if(!returnToWorkingModel())return false;$("manual-edit").open=true;openTransitionPicker();return true;};
+function modelGuidance(){
+  return modelView==="history"?`Read-only historical preview · ${historyLabel}. Choose Working model to return.`:modelView==="baseline"?"Original baseline · read only. Switch to Working model to edit the candidate.":editable()?"Drag an endpoint or use the inspector. Every edit is checked by the kernel.":"Select a transition to inspect it. Start an intent to change the model.";
 }
 function renderCanvas() {
   $("canvas-direction").value=canvasDirection;
+  const surface=$("model-canvas"),gestureOwner={};surface.eijaGestureOwner=gestureOwner;
   EijaCanvas.render($("model-canvas"), {model: workingModel(), layout: current?.case.layout || {}, pack: workbench.pack.id,
-    direction:canvasDirection, selected: editId, affordances: affordanceData?.affordances, editable: editable(), onSelect: selectTransition, onDrop: commitChoice, onNotice: notice});
+    direction:canvasDirection, selected: editId, affordances: affordanceData?.affordances, editable: editable(), onSelect: selectTransition, onDrop: commitChoice, onNotice: notice,
+    onGestureStatus:message=>{if(surface.eijaGestureOwner===gestureOwner)$("model-empty").textContent=message??modelGuidance();}});
   EijaShell.mountCanvas(`${current?.case.id||workbench.pack.id}:${modelView}`);
 }
 function selectTransition(id) {const returnFocus=$("model-canvas").contains(document.activeElement);editId = id || null;inspectorSelection=editId?{kind:"transition",id:editId}:null;EijaShell.reveal("inspector");EijaTree.reveal($("domain-tree"),"transition",editId);renderEditor();renderSelectionDetail();renderCanvas();renderEvidenceContext();renderNavigator();if(returnFocus)$("model-canvas").querySelector(".model-edge.selected")?.focus();}
@@ -843,7 +907,7 @@ function inspectWorkingTransition(id,origin) {
   const model=current?(current.case.candidate||current.case.baseline):workbench?.model;
   if(!model?.transitions.some(item=>item.id===id)){notice("This transition is not present in the current working model.");return false;}
   modelView="working";editId=id;inspectorSelection={kind:"transition",id};
-  switchTab("model");renderWorkbench();EijaShell.reveal("inspector");EijaTree.reveal($("domain-tree"),"transition",id);$("transition-select").focus();return true;
+  switchTab("model");renderWorkbench();EijaShell.reveal("inspector");EijaTree.reveal($("domain-tree"),"transition",id);EijaShell.readable?.();$("transition-select").focus();return true;
 }
 function openComparisonImpact(navigation,selection) {
   if(!current||selection?.case!==current.case.id||selection.revision!==current.case.version)return false;
@@ -869,13 +933,13 @@ function renderWorkbench() {
   const model = workingModel(), pack = workbench.pack;
   renderRules();
   if (!current) {
-    $("case-title").textContent = "Explore the loaded baseline"; $("case-id").textContent = "No change case selected"; $("case-stage").textContent = "BASELINE";
+    $("case-heading").hidden = true; $("case-title").textContent = "Explore the loaded baseline"; $("case-id").textContent = "No change case selected"; $("case-stage").textContent = "BASELINE";
     for (const id of ["propose", "save", "discard", "move-node", "verify", "reset", "approve", "apply", "export"]) $(id).disabled = true;
   }
   $("explorer-pack").textContent = pack.name; $("model-title").textContent = pack.name;
   $("model-revision").textContent = current ? `r${current.case.version} · ${modelView==="history"?"history":modelView==="baseline"?"original":current.case.candidate?"candidate":"baseline"}` : `v${pack.version}`;
   $("model-empty").hidden=false;
-  $("model-empty").textContent=modelView==="history"?`Read-only historical preview · ${historyLabel}. Choose Working model to return.`:modelView==="baseline"?"Original baseline · read only. Switch to Working model to edit the candidate.":editable()?"Drag an endpoint or use the inspector. Every edit is checked by the kernel.":"Select a transition to inspect it. Start an intent to change the model.";
+  $("model-empty").textContent=modelGuidance();
   $("model-version").querySelector('option[value="history"]').hidden=!historyModel;$("model-version").value=modelView;$("model-version").querySelector('option[value="baseline"]').disabled=!current?.case.candidate;
   $("undo-edit").disabled=!caseHistory?.can_undo||!current||editNeedsRefresh.has(current.case.id)||["APPLIED","DISCARDED"].includes(current.case.stage);
   $("redo-edit").disabled=!caseHistory?.can_redo||!current||editNeedsRefresh.has(current.case.id)||["APPLIED","DISCARDED"].includes(current.case.stage);
@@ -885,7 +949,7 @@ function renderWorkbench() {
   $("status-model").textContent = `Pack ${pack.id} · ${current ? "revision " + current.case.version : "baseline"} · ${String(affordanceData?.semantic_hash || pack.digest || "unknown").slice(0, 12)}`;
   $("repository-status").textContent = EijaSource.state(workbench.connection).title;
   EijaSource.render($("source-view"), workbench.connection);
-  EijaTree.render($("domain-tree"), workbench, model, showSelection,{key:JSON.stringify([pack.digest,current?.case.id||"baseline",modelView]),selection:inspectorSelection});renderNavigator();renderEditor();renderSelectionDetail();renderCanvas();EijaShell.renderHistory(current,caseHistory,previewHistory);renderEvidenceContext();
+  EijaTree.render($("domain-tree"), workbench, model, showSelection,{key:JSON.stringify([pack.digest,current?.case.id||"baseline",modelView]),selection:inspectorSelection});renderNavigator();renderEditor();renderSelectionDetail();renderCanvas();EijaShell.renderHistory(current,caseHistory,previewHistory);renderEvidenceContext();globalThis.eijaAgentEdits?.update();
 }
 function showSelection(kind, item) {
   inspectorSelection={kind,id:item.id};
@@ -1010,13 +1074,13 @@ async function checkEditPreview(preview){
     $("edit-preview-diagnostic").textContent=JSON.stringify({code:error.code||"REQUEST_FAILED",message:error.message,details:error.details||{}},null,2);reportError(error,{reveal:false});return false;
   }
 }
-function commitChoice(choice){
+function commitChoice(choice,options={}){
   if(busy||editPreview?.phase==="submitting")return;
   if(editNeedsRefresh.has(current?.case.id)){notice("Refresh this case before proposing another edit: the previous submission needs reconciliation.",true);return;}
   if(!editable()||!choice?.transaction){notice("Choose a different server-listed destination for the selected transition.");return;}
   if(editPreview&&!closeEditPreview())return;
   const c=current.case,preview={sequence:++editPreviewSequence,caseId:c.id,version:c.version,stage:c.stage,semanticHash:current.packet?.subject?.semantic,
-    transaction:JSON.parse(JSON.stringify(choice.transaction)),originalModel:JSON.stringify(c.candidate),invoker:document.activeElement,phase:"checking",submitted:false};
+    transaction:JSON.parse(JSON.stringify(choice.transaction)),originalModel:JSON.stringify(c.candidate),invoker:document.activeElement,phase:"checking",submitted:false,onCommitted:options.onCommitted};
   editPreview=preview;$("edit-preview-comparison").replaceChildren();$("edit-preview-diagnostic").textContent="";$("edit-preview-json").textContent=JSON.stringify({transaction:preview.transaction},null,2);
   const dialog=$("edit-preview");Object.assign(dialog.dataset,{caseId:preview.caseId,revision:String(preview.version),semanticHash:preview.semanticHash||"",proposedSemanticHash:""});
   $("edit-preview-subject").textContent=`Case ${preview.caseId} · Captured revision ${preview.version} · before ${preview.semanticHash||"identity unavailable"}`;
@@ -1042,6 +1106,10 @@ function confirmEditPreview(){
       preview.refreshPending=false;
       if(editPreview!==preview||current?.case.id!==preview.caseId)return;
       closeEditPreview();notice("One typed transaction committed. The server model has reloaded; matching evidence and decisions must be reconsidered.");
+      if(current.case.version===preview.version+1&&current.packet?.subject?.semantic===preview.check.candidate_semantic_hash&&JSON.stringify(current.case.candidate)===JSON.stringify(preview.check.candidate)){
+        try{preview.onCommitted?.({caseId:preview.caseId,previousVersion:preview.version,version:current.case.version,semanticHash:current.packet.subject.semantic,transaction:preview.transaction});}
+        catch{notice("Edit committed. The proposal panel could not update; inspect the current model and history.",true);}
+      }
     }catch(error){
       preview.refreshPending=false;
       if(editPreview!==preview)return;
@@ -1351,3 +1419,32 @@ $("repository-show-files").onclick=()=>{
   const root=$("repository-change-navigator");(root.querySelector('button[aria-pressed="true"]')||root.querySelector("button"))?.focus();
 };
 renderRepositoryReview();
+
+
+// Suggestions never write a model. Owner confirmation remains in the existing edit preview.
+function agentEditContext(){
+  const c=current?.case;if(!c?.candidate)return null;
+  return {caseId:c.id,version:c.version,stage:c.stage,semanticHash:current.packet?.subject?.semantic,
+    model:c.candidate,packId:workbench?.pack.id,packDigest:workbench?.pack.digest,editable:editable(),selectedTransition:editId};
+}
+function navigateAgentEdit(kind,transaction){
+  const c=current?.case;if(!c?.candidate||!c.candidate.transitions.some(item=>item.id===transaction.transition))return false;
+  const origin={id:c.id,version:c.version};
+  if(kind==="model")return inspectWorkingTransition(transaction.transition,origin);
+  if(!["changes","rules"].includes(kind))return false;
+  editId=transaction.transition;inspectorSelection={kind:"transition",id:editId};modelView="working";
+  if(kind==="changes"){renderWorkbench();return openComparisonSelection({kind:"transition",id:transaction.transition});}
+  if(kind==="rules"){
+    switchTab("impact");renderWorkbench();
+    const row=[...$("rule-table").children].find(item=>item.dataset.transitionId===transaction.transition),target=row?.querySelector("button");
+    target?.scrollIntoView({block:"nearest"});target?.focus();return !!target;
+  }
+  return false;
+}
+globalThis.eijaAgentEdits=EijaAgentEdit.mount($("agent-edit-panel"),{
+  getContext:agentEditContext,
+  propose:(request,context)=>{if(busy)throw new ApiError("WORKSPACE_BUSY","Wait for the current workspace action to finish.");return api(`cases/${context.caseId}/edit/propose`,{request,expected_version:context.version});},
+  previewChoice:(choice,onCommitted)=>commitChoice(choice,{onCommitted}),
+  navigate:navigateAgentEdit
+});
+globalThis.eijaAgentEdits.update();

@@ -49,24 +49,24 @@ const isOpen=(h,kind)=>h.group(kind).getAttribute("aria-expanded")==="true";
 
 function assertInitial(h){
   h.render(data,model);
-  assert.deepEqual(kinds.filter(kind=>isOpen(h,kind)),["transition"]);
+  assert.deepEqual(kinds.filter(kind=>isOpen(h,kind)),[]);
   assert.deepEqual(kinds.map(kind=>h.group(kind).children[0].textContent),["Language (2)","States (3)","Transitions (3)","Roles (2)","Laws (2)"]);
   assert.equal(h.items().filter(node=>node.dataset.itemId!==undefined).length,12,"collapsing groups retains all model leaves");
-  for(const kind of kinds)assert.equal(h.group(kind).querySelector(':scope > [role="group"]').hidden,kind!=="transition");
+  for(const kind of kinds)assert.equal(h.group(kind).querySelector(':scope > [role="group"]').hidden,true);
   assert.equal(h.root.getAttribute("role"),"tree");assert.equal(h.root.getAttribute("aria-label"),"Domain explorer");h.assertRoving();
 }
 
 function assertExpansionRemembered(h){
-  h.render(data,model,{key:"case-A"});h.click(h.group("term").children[0]);h.click(h.group("transition").children[0]);
+  h.render(data,model,{key:"case-A"});h.click(h.group("term").children[0]);h.click(h.group("transition").children[0]);assert.equal(isOpen(h,"transition"),true);h.click(h.group("transition").children[0]);
   h.render(data,model,{key:"case-A"});assert.equal(isOpen(h,"term"),true);assert.equal(isOpen(h,"transition"),false);h.assertRoving();
 }
 
-test("initial tree exposes every category and count but expands only Transitions",()=>assertInitial(harness()));
+test("initial tree exposes every category and count with all groups deliberately collapsed",()=>assertInitial(harness()));
 
 test("deliberate expansion and collapse survive same-case rerenders",()=>assertExpansionRemembered(harness()));
 
 test("selection, focus, expansion and scroll restore independently for cases sharing one pack",()=>{
-  const h=harness();h.render(data,model,{key:"case-A"});h.click(h.group("term").children[0]);h.click(h.leaf("term","TERM-B"));h.leaf("transition","TR-B").focus();h.host.scrollTop=183;
+  const h=harness();h.render(data,model,{key:"case-A"});h.click(h.group("term").children[0]);h.click(h.leaf("term","TERM-B"));h.key(h.group("transition"),"ArrowRight");h.leaf("transition","TR-B").focus();h.host.scrollTop=183;
   h.render(data,model,{key:"case-B"});assert.equal(h.selected().length,0);assert.equal(isOpen(h,"term"),false);assert.equal(h.document.activeElement,h.group("term"));assert.equal(h.host.scrollTop,0);
   h.key(h.group("state"),"ArrowRight");h.leaf("state","READY").focus();h.click(h.leaf("state","READY"));h.host.scrollTop=41;
   h.render(data,model,{key:"case-A"});assert.deepEqual(h.selected().map(node=>node.dataset.itemId),["TERM-B"]);assert.equal(h.document.activeElement,h.leaf("transition","TR-B"));assert.equal(isOpen(h,"term"),true);assert.equal(isOpen(h,"state"),false);assert.equal(h.host.scrollTop,183);h.assertRoving();
@@ -75,12 +75,36 @@ test("selection, focus, expansion and scroll restore independently for cases sha
 
 test("explicit selection reconciles on render and a null selection clears only that case",()=>{
   const h=harness();h.render(data,model,{key:"case-A",selection:{kind:"transition",id:"TR-C"}});assert.deepEqual(h.selected().map(node=>node.dataset.itemId),["TR-C"]);
+  assert.equal(isOpen(h,"transition"),true);assert.equal(h.leaf("transition","TR-C").closest('[role="group"][hidden]'),null);
   h.render(data,model,{key:"case-B",selection:{kind:"state",id:"DONE"}});assert.deepEqual(h.selected().map(node=>node.dataset.itemId),["DONE"]);
+  assert.equal(isOpen(h,"state"),true);assert.equal(isOpen(h,"transition"),false);
   h.render(data,model,{key:"case-A",selection:null});assert.equal(h.selected().length,0);h.render(data,model,{key:"case-B"});assert.deepEqual(h.selected().map(node=>node.dataset.itemId),["DONE"]);h.assertRoving();
 });
 
+function assertSelectionDisclosure(h){
+  const options={key:"case-A",selection:{kind:"transition",id:"TR-A"}};
+  h.render(data,model,options);assert.equal(isOpen(h,"transition"),true,"a newly selected concept must be discoverable");
+  h.leaf("transition","TR-A").focus();h.click(h.group("transition").children[0]);h.host.scrollTop=91;
+  h.render(data,model,options);assert.equal(isOpen(h,"transition"),false,"the same selection must respect a deliberate collapse");
+  assert.deepEqual(h.selected().map(node=>node.dataset.itemId),["TR-A"]);assert.equal(h.document.activeElement,h.group("transition"));assert.equal(h.host.scrollTop,91);h.assertRoving();
+  h.render(data,model,{...options,selection:{kind:"transition",id:"TR-B"}});assert.equal(isOpen(h,"transition"),true,"a different selection in the same group reveals it again");
+  assert.deepEqual(h.selected().map(node=>node.dataset.itemId),["TR-B"]);assert.equal(h.document.activeElement,h.group("transition"));assert.equal(h.host.scrollTop,91);h.assertRoving();
+}
+
+test("new explicit selections reveal their group while unchanged selections preserve a deliberate collapse",()=>assertSelectionDisclosure(harness()));
+
+test("returning to a selected case keeps that case's deliberately collapsed group",()=>{
+  const h=harness(),a={key:"case-A",selection:{kind:"transition",id:"TR-A"}},b={key:"case-B",selection:{kind:"state",id:"READY"}};
+  h.render(data,model,a);h.click(h.group("transition").children[0]);h.render(data,model,b);assert.equal(isOpen(h,"state"),true);
+  h.render(data,model,a);assert.equal(isOpen(h,"transition"),false);assert.deepEqual(h.selected().map(node=>node.dataset.itemId),["TR-A"]);h.assertRoving();
+});
+
+test("an unresolved explicit selection never expands an unrelated category",()=>{
+  const h=harness();h.render(data,model,{key:"case-A",selection:{kind:"transition",id:"missing"}});assert.deepEqual(kinds.filter(kind=>isOpen(h,kind)),[]);assert.equal(h.selected().length,0);h.assertRoving();
+});
+
 test("collapsing a focused descendant moves focus and the sole tabstop to its visible group",()=>{
-  const h=harness();h.render(data,model);h.leaf("transition","TR-B").focus();h.click(h.group("transition").children[0]);assert.equal(h.document.activeElement,h.group("transition"));assert.equal(h.leaf("transition","TR-B").tabIndex,-1);h.assertRoving();
+  const h=harness();h.render(data,model);h.key(h.group("transition"),"ArrowRight");h.leaf("transition","TR-B").focus();h.click(h.group("transition").children[0]);assert.equal(h.document.activeElement,h.group("transition"));assert.equal(h.leaf("transition","TR-B").tabIndex,-1);h.assertRoving();
   h.render(data,model);assert.equal(isOpen(h,"transition"),false);assert.equal(h.document.activeElement,h.group("transition"));h.assertRoving();
 });
 
@@ -100,12 +124,12 @@ test("hiding and showing the tree restores scroll even after a hidden rerender",
 });
 
 test("restoring keyboard focus does not overwrite remembered scroll through native focus scrolling",()=>{
-  const h=harness({focusScroll:true});h.render(data,model,{key:"case-A"});h.leaf("transition","TR-C").focus();h.host.scrollTop=73;
+  const h=harness({focusScroll:true});h.render(data,model,{key:"case-A"});h.key(h.group("transition"),"ArrowRight");h.leaf("transition","TR-C").focus();h.host.scrollTop=73;
   h.render(data,model,{key:"case-A"});assert.equal(h.document.activeElement,h.leaf("transition","TR-C"));assert.equal(h.host.scrollTop,73,"focus restoration must prevent scrolling or precede scroll restoration");h.assertRoving();
 });
 
 test("removed selection and focus fall back to a visible item without leaking to another case",()=>{
-  const h=harness();h.render(data,model,{key:"case-A"});h.leaf("transition","TR-B").focus();h.click(h.leaf("transition","TR-B"));
+  const h=harness();h.render(data,model,{key:"case-A"});h.key(h.group("transition"),"ArrowRight");h.leaf("transition","TR-B").focus();h.click(h.leaf("transition","TR-B"));
   const reduced={...model,transitions:model.transitions.filter(item=>item.id!=="TR-B")};h.render(data,reduced,{key:"case-A"});assert.equal(h.selected().length,0);assert.equal(h.document.activeElement,h.group("term"));h.assertRoving();
   h.render(data,model,{key:"case-B"});assert.equal(h.selected().length,0);assert.equal(h.document.activeElement,h.group("term"));h.assertRoving();
 });
@@ -135,4 +159,11 @@ test("initial-expansion oracle rejects an actual-module mutation that opens ever
 test("remembered-expansion oracle rejects an actual-module mutation that discards expansion memory",()=>{
   const target='old.expanded=new Map(';assert.equal(source.split(target).length,2,"mutate the actual remembered expansion assignment once");
   assert.throws(()=>assertExpansionRemembered(harness({code:source.replace(target,'old.discardedExpanded=new Map(')})),assert.AssertionError);
+});
+
+test("selection-disclosure oracles reject hidden new selections and repeated forced expansion",()=>{
+  const target='if(selectionChanged&&items.some(item=>identifier(kind,item.id)===state.selected))state.expanded.set(kind,true);';assert.equal(source.split(target).length,2);
+  assert.throws(()=>assertSelectionDisclosure(harness({code:source.replace(target,"")})),assert.AssertionError);
+  const forced=source.replace(target,target.replace("selectionChanged&&",""));
+  assert.throws(()=>assertSelectionDisclosure(harness({code:forced})),assert.AssertionError);
 });

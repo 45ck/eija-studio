@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/service.py
   title: application/service.py
   hash_method: ast-api-v1
-  sha256: 3a32f512b8f410aa4064183f7f107839448d2e75ee5e28f5a58a363f0007611d
-notes_baseline: f58f874ffa493980a3bba687c6806d26c7b571ad7b811274479f03471cf4df0b
+  sha256: 7fb598ebcc9cfd051d4824e964752d0287de1971b0577816d00fdd3fa529f4f7
+notes_baseline: 8cc5fb3cb7bae68e1333ef16642c5c358d4d51267a72a8bd7df68134e603d611
 ---
 
 # application.service
@@ -39,6 +39,7 @@ _The source carries no module docstring._
 
 * [`application/compiler`](/modules/application/compiler.md)
 * [`application/edit_preview`](/modules/application/edit_preview.md)
+* [`application/edit_proposal`](/modules/application/edit_proposal.md)
 * [`application/formal`](/modules/application/formal.md)
 * [`application/history`](/modules/application/history.md)
 * [`application/ports`](/modules/application/ports.md)
@@ -63,6 +64,7 @@ _No curated notes yet._
 
 * [application.compiler](/modules/application/compiler.md) - Compiler: model → projections + impacts + obligations + computed review packet.
 * [application.edit_preview](/modules/application/edit_preview.md) - Read-only edit projection over one captured case, using the same interpreter as owner edits.
+* [application.edit_proposal](/modules/application/edit_proposal.md) - A read-only offline proposal over one captured candidate; owner edits keep their existing boundary.
 * [application.formal](/modules/application/formal.md) - Formal evidence in the application layer: seal what an adapter collected, and build the packet view.
 * [application.history](/modules/application/history.md) - Semantic history is a projection of typed commands, replayed by the existing policy interpreter.
 * [application.ports](/modules/application/ports.md) - Application-owned ports.
@@ -98,6 +100,7 @@ _No curated notes yet._
 * [application.service.Studio.layout](/symbols/application/service/Studio.layout.md) - `def layout(self, case_id: str, expected: int, change: LayoutChange, principal: Principal) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio](/symbols/application/service/Studio.md) - `class Studio` in `application/service`.
 * [application.service.Studio.propose](/symbols/application/service/Studio.propose.md) - `def propose(self, case_id: str, expected: int, *, consent: bool=False) -> dict[str, Any]` in `application/service`.
+* [application.service.Studio.propose_edit](/symbols/application/service/Studio.propose_edit.md) - Read-only offline proposal; capture and recheck the case revision without granting owner authority.
 * [application.service.Studio.redo](/symbols/application/service/Studio.redo.md) - Reapply the next undone typed command through the same interpreter and policy checks.
 * [application.service.Studio.repository_change](/symbols/application/service/Studio.repository_change.md) - Compare immutable source revisions; this grants no model or repository write authority.
 * [application.service.Studio.repository_change_file](/symbols/application/service/Studio.repository_change_file.md) - Read bounded historical text and syntax; live source identity remains separate.

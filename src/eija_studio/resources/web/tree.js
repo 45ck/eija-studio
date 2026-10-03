@@ -28,9 +28,10 @@ const EijaTree = (() => {
     const focused=root.contains(document.activeElement),key=options.key||data.pack.digest||data.pack.id;
     const oldFocus=focused&&key===memory.key?document.activeElement.dataset.eijaId:null;
     remember(root,memory);memory.key=key;
-    if(!memory.views.has(key))memory.views.set(key,{expanded:new Map([["transition",true]]),focus:null,selected:null,scroll:0});
+    if(!memory.views.has(key))memory.views.set(key,{expanded:new Map(),focus:null,selected:null,scroll:0});
     const state=memory.views.get(key),identifier=(kind,id)=>`${data.pack.id}.${kind}.${id}`;
-    if(Object.hasOwn(options,"selection"))state.selected=options.selection?identifier(options.selection.kind,options.selection.id):null;
+    const nextSelection=Object.hasOwn(options,"selection")?(options.selection?identifier(options.selection.kind,options.selection.id):null):state.selected;
+    const selectionChanged=nextSelection!==state.selected;state.selected=nextSelection;
     root.replaceChildren();root.setAttribute("role","tree");root.setAttribute("aria-label","Domain explorer");
     const groups=[
       ["Language","term",data.language?.terms||[],item=>item.label||item.id],
@@ -40,6 +41,7 @@ const EijaTree = (() => {
       ["Laws","law",data.laws||[],item=>item.id]
     ];
     for(const [title,kind,items,label]of groups){
+      if(selectionChanged&&items.some(item=>identifier(kind,item.id)===state.selected))state.expanded.set(kind,true);
       const section=document.createElement("div");section.setAttribute("role","treeitem");section.tabIndex=-1;section.className="tree-group";section.dataset.kind=kind;section.dataset.eijaId=identifier("group",kind);
       const heading=document.createElement("span");heading.textContent=`${title} (${items.length})`;section.append(heading);
       const children=document.createElement("div");children.setAttribute("role","group");

@@ -187,3 +187,60 @@ test("dialog shortcuts stay local and closing falls back when its invoking contr
 test("negative control: removing the expected subject guard is caught for a reused transition ID",async()=>{
   const marker='current.case.version===preview.version&&';assert.ok(source.includes(marker));const h=harness(source.replace(marker,""));await ready(h);h.s.current.case.version=8;h.enqueue({id:"case-A",version:8,candidate:model("Done")});await h.confirm();assert.throws(()=>assert.equal(h.writes().length,0),assert.AssertionError);
 });
+
+async function readyWithObserver(h, onCommitted, check=checked()){
+  h.enqueue(check);await h.s.commitChoice({transaction:clone(transaction)},{onCommitted});
+}
+function useAuthoritativeReload(h){
+  const previous=h.s.load;
+  h.s.load=async(id,canPublish)=>{
+    const value=await h.s.api(`cases/${id}`);
+    if(canPublish&&!canPublish())return false;
+    h.s.current=value;
+    await previous(id,()=>true);
+    return true;
+  };
+}
+function reloadedCandidate(){
+  const value=fixture();Object.assign(value.case,{version:8,stage:"DRAFT",candidate:model("Done")});value.packet.subject.semantic="semantic-after";return value;
+}
+
+test("owner edit observer runs once only after acknowledged edit and exact authoritative GET reload",async()=>{
+  const h=harness(),observed=[];useAuthoritativeReload(h);
+  await readyWithObserver(h,value=>observed.push({value:clone(value),current:clone(h.s.current),requests:clone(h.requests)}));
+  assert.deepEqual(observed,[]);h.enqueue({id:"case-A",version:8,candidate:model("Done")});h.enqueue(reloadedCandidate());await h.confirm();
+  assert.equal(observed.length,1);assert.deepEqual(observed[0].value,{caseId:"case-A",previousVersion:7,version:8,semanticHash:"semantic-after",transaction});
+  assert.deepEqual(observed[0].current,reloadedCandidate());assert.deepEqual(observed[0].requests.map(item=>[item.method,item.path]),[["POST","cases/case-A/edit/preview"],["POST","cases/case-A/edit"],["GET","cases/case-A"]]);
+  assert.equal(h.get("edit-preview").open,false);await h.confirm();assert.equal(observed.length,1);assert.equal(h.writes().length,1);
+});
+
+test("Close kernel refusal uncertain writes and refresh failure never notify an edit observer",async()=>{
+  for(const failure of ["close","refused","unknown","refresh"]){
+    const h=harness(),observed=[];
+    await readyWithObserver(h,value=>observed.push(value),failure==="refused"?checked({legal:false,candidate:null,candidate_semantic_hash:null,codes:["PROTECTED_AUTHORITY"],refs:["law:owner"]}):checked());
+    if(failure==="close")h.close();
+    else if(failure==="refused")await h.confirm();
+    else if(failure==="unknown"){h.queue.push(()=>Promise.reject(Error("Acknowledgement lost")));await h.confirm();}
+    else{useAuthoritativeReload(h);h.enqueue({id:"case-A",version:8,candidate:model("Done")});h.queue.push(()=>Promise.reject(Error("GET reload unavailable")));await h.confirm();}
+    assert.deepEqual(observed,[],failure);assert.equal(h.writes().length,["unknown","refresh"].includes(failure)?1:0);
+  }
+});
+
+test("stale workspace and mismatched authoritative case revision semantic or model never notify an observer",async()=>{
+  for(const change of [s=>{s.current.case.id="case-B";},s=>{s.current.case.version=8;},s=>{s.current.packet.subject.semantic="newer";}]){
+    const h=harness(),observed=[],pending=deferred();await readyWithObserver(h,value=>observed.push(value));
+    h.queue.push(()=>pending.promise);const run=h.confirm();change(h.s);pending.resolve(response({id:"case-A",version:8,candidate:model("Done")}));await run;
+    assert.deepEqual(observed,[]);assert.equal(h.reloads.length,0);
+  }
+  for(const change of [value=>{value.case.id="case-B";},value=>{value.case.version=9;},value=>{value.packet.subject.semantic="newer";},value=>{value.case.candidate=model("Draft");}]){
+    const h=harness(),observed=[],value=reloadedCandidate();change(value);useAuthoritativeReload(h);await readyWithObserver(h,result=>observed.push(result));
+    h.enqueue({id:"case-A",version:8,candidate:model("Done")});h.enqueue(value);await h.confirm();assert.deepEqual(observed,[]);
+  }
+});
+
+test("observer UI exception cannot turn an acknowledged reloaded edit into an uncertain mutation",async()=>{
+  const h=harness();useAuthoritativeReload(h);let calls=0;await readyWithObserver(h,()=>{calls++;throw Error("panel rendering failed");});
+  h.enqueue({id:"case-A",version:8,candidate:model("Done")});h.enqueue(reloadedCandidate());await h.confirm();
+  assert.equal(calls,1);assert.equal(h.writes().length,1);assert.equal(h.get("edit-preview").open,false);assert.deepEqual(clone(h.read("Array.from(editNeedsRefresh.keys())")),[]);
+  assert.equal(h.phase(),"committed");assert.equal(h.s.current.case.version,8);assert.match(h.notices.at(-1).message,/Edit committed.*proposal panel could not update/);assert.doesNotMatch(h.notices.at(-1).message,/unknown|may have committed/);
+});

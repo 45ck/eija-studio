@@ -74,7 +74,7 @@ class Ref:
 class Expect:
     """Post-condition that must hold after the action settles."""
 
-    kind: str  # text_equals | text_contains | visible | enabled | count
+    kind: str  # text_equals | text_contains | visible | enabled | count | verification_ready | review_ready
     css: str
     value: Any = None
 
@@ -149,9 +149,9 @@ def journey() -> list[Step]:
         Step("open-evidence", "Open Evidence & Decision", "click", Ref(css='[data-tab="evidence"]'),
              decision=TABS, expect=Expect("visible", "#verify")),
         Step("run-verification", "Run bounded verification", "click", Ref(css="#verify"),
-             expect=Expect("enabled", "#approve"), view="evidence-verified"),
+             expect=Expect("verification_ready", "#review-form"), view="evidence-verified"),
         Step("open-review-subject", "Open review of this exact subject", "click", Ref(css="#review-subject"),
-             expect=Expect("visible", "#review-form"), view="evidence-review-open"),
+             expect=Expect("review_ready", "#review-form"), view="evidence-review-open"),
     ]
     for key, value in ANSWERS:
         steps.append(Step(f"answer-{key}", f"Answer review question '{key}'", "type", Ref(css=f"#q-{key}"),
@@ -243,6 +243,18 @@ class Runner:
             return self.page.evaluate("(s) => window.__hci.isEnabled(s)", e.css)
         if e.kind == "count":
             return self.page.locator(e.css).count() == e.value
+        if e.kind in ("verification_ready", "review_ready"):
+            return self.page.evaluate("""({form, names, review}) => {
+                const decision=document.querySelector('#review-decision'), fields=[...document.querySelectorAll('#questions input')];
+                const packet=JSON.parse(document.querySelector('#packet').textContent);
+                return decision.open===review&&window.__hci.isVisible(form)===review&&
+                    (!review||window.__hci.isVisible('#review-subject'))&&window.__hci.isEnabled('#approve')&&
+                    document.querySelector('#case-stage').textContent.trim()==='VERIFIED'&&
+                    packet.eligible===true&&Array.isArray(packet.blockers)&&packet.blockers.length===0&&
+                    fields.length===names.length&&names.every((name,index)=>fields[index].name===name&&fields[index].value==='')&&
+                    document.activeElement===document.querySelector(review?'#review-subject':'#verify')&&
+                    !document.querySelector('#acknowledge').checked;
+            }""", {"form": e.css, "names": [name for name, _ in ANSWERS], "review": e.kind == "review_ready"})
         raise ValueError(e.kind)
 
     # -- execution
@@ -421,7 +433,7 @@ class Runner:
         record["target"] = {"name": info["name"], "selector": info["selector"], "effective": info["effective"], "raw": info["raw"]}
 
     # -- audits
-    def _observe_workspace_choices(self, tab: str) -> None:
+    def _observe_workspace_choices(self, tab: str, *, phase: str = "") -> None:
         """Checkpoint the complete route inventory and the choices actually visible in the open dialog."""
         choices_selector = "#workspace-dialog [data-workspace-view]"
         choices = self.page.locator(choices_selector).evaluate_all(
@@ -436,9 +448,24 @@ class Runner:
                        "inventory_count": len(choices), "n_choices": count,
                        "choices": choices, "view": tab, "geometry": geometry}
         self.audit_navigation.append(observation)
-        checkpoint = f'workspace-menu-{geometry["innerWidth"]}-{tab}'
+        checkpoint = f'workspace-menu-{geometry["innerWidth"]}-{tab}' + ("-" + phase if phase else "")
         self.checkpoint(checkpoint)
         self.views[checkpoint]["work_view_choices"] = observation
+
+    def _open_workspace_work_views(self, tab: str) -> None:
+        """Expose primary work views through the real native disclosure when needed."""
+        if tab not in {"model", "code", "change", "review", "try", "evidence"}:
+            return
+        disclosure = self.page.locator("#workspace-work-views")
+        if disclosure.get_attribute("open") is not None:
+            return
+        selector = "#workspace-work-views > summary"
+        self.page.locator(selector).click()
+        self.audit_navigation.append({"action": "click", "selector": selector, "view": tab})
+        self.settle()
+        if disclosure.get_attribute("open") is None:
+            raise JourneyError("Workspace Work views disclosure did not open")
+        self._observe_workspace_choices(tab, phase="work-views-open")
 
     def _open_audit_tab(self, tab: str) -> None:
         """Record real audit navigation separately from the modelled owner journey."""
@@ -455,6 +482,7 @@ class Runner:
             self._observe_workspace_choices(tab)
             selector = f'[data-workspace-view="{tab}"]'
             target = self.page.locator(selector)
+            self._open_workspace_work_views(tab)
         target.click()
         self.audit_navigation.append({"action": "click", "selector": selector, "view": tab})
         self.settle()
@@ -579,23 +607,43 @@ def ui_hashes() -> dict[str, str]:
     return hashes
 
 
-def collect(repeats: int = 3, headless: bool = True, identity: str = "harness") -> dict:
-    """Run the pointer journey `repeats` times (first one fully audited) plus one keyboard-only pass."""
+def tooling_hashes(directory: Path | None = None) -> dict[str, str]:
+    """Bind measurement drivers, observe-only probe and derivation code; exclude runtime caches."""
+    root = (directory or Path(__file__).parent).resolve()
+    hashes = {}
+    for path in sorted(root.iterdir()):
+        if path.suffix not in {".py", ".js", ".json"} or not path.is_file():
+            continue
+        if not path.resolve().is_relative_to(root):
+            raise ValueError(f"HCI tooling resolves outside its directory: {path.name}")
+        hashes[path.name] = hashlib.sha256(path.read_bytes()).hexdigest()
+    return hashes
+
+
+def collect(repeats: int = 3, headless: bool = True, identity: str = "harness", *, inspection_out: Path | None = None) -> dict:
+    """Run the owner journeys, then a separate necessary-state inspection without adding owner operators."""
     from playwright.sync_api import sync_playwright
 
+    from .inspection import run_inspection
+
+    tooling = tooling_hashes()
     with sync_playwright() as pw:
         browser = pw.chromium.launch(channel="chrome", headless=headless)
         try:
             passes = [run_pass(browser, "pointer", audit=(i == 0), label=f"pointer{i}", identity=identity) for i in range(repeats)]
             keyboard = run_pass(browser, "keyboard", audit=False, label="keyboard", identity=identity)
+            inspection = run_inspection(browser, out=inspection_out or ROOT / "reports" / "hci" / "inspection", identity=identity)
+            if tooling != tooling_hashes():
+                raise JourneyError("HCI tooling changed during collection; no combined trace was published")
             environment = {
                 "platform": platform.platform(), "python": platform.python_version(), "chrome": browser.version,
                 "playwright": importlib.metadata.version("playwright"),
                 "axe_playwright_python": importlib.metadata.version("axe-playwright-python"),
                 "axe_core": passes[0]["views"]["start"]["axe"]["axe_core"],
                 "viewport": VIEWPORT, "headless": headless, "repeats": repeats, "ui_sha256": ui_hashes(),
+                "hci_tooling_sha256": tooling,
                 "provider": "offline (synthetic)", "identity_source": "pytest-harness" if identity == "harness" else "release (real eija serve)", "device_scale_factor": 1,
             }
         finally:
             browser.close()
-    return {"environment": environment, "pointer_passes": passes, "keyboard_pass": keyboard}
+    return {"environment": environment, "pointer_passes": passes, "keyboard_pass": keyboard, "inspection_pass": inspection}

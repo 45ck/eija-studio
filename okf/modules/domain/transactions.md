@@ -79,8 +79,11 @@ _No curated notes yet._
 
 ## Referenced by
 
+* [adapters.edit_proposals](/modules/adapters/edit_proposals.md) - Bounded offline request fixture: exact model names and complete phrases, never an LLM.
 * [application.edit_preview](/modules/application/edit_preview.md) - Read-only edit projection over one captured case, using the same interpreter as owner edits.
+* [application.edit_proposal](/modules/application/edit_proposal.md) - A read-only offline proposal over one captured candidate; owner edits keep their existing boundary.
 * [application.history](/modules/application/history.md) - Semantic history is a projection of typed commands, replayed by the existing policy interpreter.
+* [application.ports](/modules/application/ports.md) - Application-owned ports.
 * [application.service](/modules/application/service.md) - Module `application/service` (no module docstring).
 * [domain.affordance](/modules/domain/affordance.md) - Affordance map (WBS 1.3): which single edits the kernel would accept, and why the others are refused.
 * [domain.change_case](/modules/domain/change_case.md) - Module `domain/change_case` (no module docstring).

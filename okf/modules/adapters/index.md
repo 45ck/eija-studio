@@ -2,6 +2,7 @@
 
 # Modules
 
+* [adapters.edit_proposals](edit_proposals.md) - Bounded offline request fixture: exact model names and complete phrases, never an LLM.
 * [adapters.identity](identity.md) - Measured release identity, not a proof of correctness or author authenticity.
 * [adapters.receipts](receipts.md) - Local integrity seal.
 * [adapters.repository](repository.md) - Repository analysis and bounded source navigation over captured checkout bytes.

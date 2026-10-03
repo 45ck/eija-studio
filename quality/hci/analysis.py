@@ -11,10 +11,12 @@ that geometry; Doherty timings are MEASURED wall-clock and vary run to run.
 from __future__ import annotations
 
 import math
-from collections import defaultdict
+import re
+from collections import Counter, defaultdict
 from typing import Any
 
 from . import laws
+from .inspection import required_states
 from .journey import journey
 from .wcag import Box, target_size_status
 
@@ -539,6 +541,136 @@ def working_memory(pass0: dict) -> dict:
 
 
 # --- assembly -----------------------------------------------------------------------------------
+def _inspection_subject_valid(subject, expected) -> bool:
+    return (
+        isinstance(subject, dict)
+        and subject == expected
+        and isinstance(subject.get("case_id"), str)
+        and bool(subject["case_id"].strip())
+        and isinstance(subject.get("revision"), int)
+        and not isinstance(subject.get("revision"), bool)
+    )
+
+
+def _inspection_screenshot_valid(screenshot, expected) -> bool:
+    return (
+        isinstance(screenshot, dict)
+        and screenshot == expected
+        and isinstance(screenshot.get("path"), str)
+        and bool(re.fullmatch(r"inspection/[A-Za-z0-9][A-Za-z0-9._-]*\.png", screenshot["path"]))
+        and isinstance(screenshot.get("sha256"), str)
+        and bool(re.fullmatch(r"[0-9a-fA-F]{64}", screenshot["sha256"]))
+    )
+
+
+def _inspection_binding_issues(state: dict, view: dict) -> list[str]:
+    """Validate trace bindings only; pure rederivation does not read screenshot files."""
+    issues = []
+    if not _inspection_subject_valid(state.get("subject"), view.get("subject")):
+        issues.append(f"State {state['id']}: subject is missing, invalid or does not match its captured view")
+    if not _inspection_screenshot_valid(state.get("screenshot"), view.get("screenshot")):
+        issues.append(f"State {state['id']}: screenshot is missing, invalid or does not match its captured view")
+    return issues
+
+
+def _inspection_duplicate_issues(counts: Counter, label: str) -> list[str]:
+    return [f"{label}: {key}" for key, count in sorted(counts.items()) if count != 1]
+
+
+def _inspection_manifest_issues(inspection: dict, required: list[str], counts: Counter) -> list[str]:
+    declared = Counter(inspection.get("required_states", []))
+    issues = [error for error in inspection.get("errors", []) if error.startswith("inspection-")]
+    if inspection.get("schema") != "eija.hci.inspection.v1":
+        issues.append("Unsupported or missing inspection schema")
+    if declared != Counter(required):
+        issues.append("Required inspection manifest differs from the fixed schema scope")
+    issues.extend(_inspection_duplicate_issues(declared, "Required state declared more than once"))
+    issues.extend(f"Required state not observed: {key}" for key in sorted(set(required) - counts.keys()))
+    issues.extend(_inspection_duplicate_issues(counts, "State observed more than once"))
+    issues.extend(f"Undeclared state observed: {key}" for key in sorted(counts.keys() - set(required)))
+    return issues
+
+
+def _inspection_audit_alias(reserved: set[str]) -> str:
+    index = 1
+    while f"inspection/invalid-key-{index:04d}" in reserved:
+        index += 1
+    alias = f"inspection/invalid-key-{index:04d}"
+    reserved.add(alias)
+    return alias
+
+
+def _inspection_views(inspection: dict, canonical_views: dict) -> tuple[dict, dict, list[str]]:
+    captured = inspection.get("views", {})
+    reserved = set(canonical_views) | set(captured)
+    views, invalid_views, issues = {}, {}, []
+    for key, view in sorted(captured.items()):
+        if not key.startswith("inspection/") or key in canonical_views:
+            alias = _inspection_audit_alias(reserved)
+            invalid_views[alias] = {**view, "inspection_original_view_key": key}
+            issues.append(f"Invalid or colliding inspection view key: {key}; retained for audit as {alias}")
+        else:
+            views[key] = view
+    return views, invalid_views, issues
+
+
+def _inspection_state_issues(state: dict, views: dict) -> list[str]:
+    key = state["id"]
+    if state.get("status") != "PASS":
+        return [f"State {key}: {state.get('status', 'NOT_RUN')} ({state.get('reason') or 'no reason recorded'})"]
+    if state.get("view") not in views:
+        return [f"State {key}: PASS has no captured inspection view"]
+    return _inspection_binding_issues(state, views[state["view"]])
+
+
+def _inspection_state_results(states: list[dict], views: dict, required: list[str], counts: Counter) -> tuple[int, list[str]]:
+    used_views = Counter(state.get("view") for state in states if state.get("view"))
+    issues = _inspection_duplicate_issues(used_views, "View shared by multiple states")
+    passed = 0
+    for state in states:
+        state_issues = _inspection_state_issues(state, views)
+        issues.extend(state_issues)
+        key = state["id"]
+        if not state_issues and key in required and counts[key] == 1 and used_views[state["view"]] == 1:
+            passed += 1
+    return passed, issues
+
+
+def _inspection_coverage(inspection: dict, canonical_views: dict) -> tuple[dict, dict]:
+    """Derive coverage from observations; declared PASS alone never completes an inspection.
+
+    Actual, uniquely named inspection views remain in the accessibility/density sample even when a
+    state failed. Invalid keys never replace canonical journey evidence.
+    """
+    required = required_states()
+    states = inspection.get("states", [])
+    counts = Counter(state["id"] for state in states)
+    issues = _inspection_manifest_issues(inspection, required, counts)
+    views, invalid_views, view_issues = _inspection_views(inspection, canonical_views)
+    audited_views = {**views, **invalid_views}
+    issues.extend(view_issues)
+    passed, state_issues = _inspection_state_results(states, views, required, counts)
+    issues.extend(state_issues)
+    section = {
+        "schema": inspection.get("schema"),
+        "status": "FAIL" if issues else "PASS",
+        "completed": not issues,
+        "required_states": required,
+        "states": states,
+        "planned_states": inspection.get("planned_states", []),
+        "views_audited": sorted(audited_views),
+        "issues": issues,
+        "summary": {"required": len(required), "observed": len(states), "passed": passed},
+        "note": "Separate necessary-state inspection. Its actual views contribute to WCAG and visible-density metrics; "
+        "its setup, navigation, operators and timings are excluded from the canonical journey's Fitts, Hick-Hyman, KLM, keyboard and Doherty metrics. "
+        "Inspection captures the actual viewport after native activation; document and pane scroll positions remain in each view's observed geometry. "
+        "Planned states have not run and do not count toward required coverage.",
+    }
+    if invalid_views:
+        section["audit_view_aliases"] = {key: view["inspection_original_view_key"] for key, view in invalid_views.items()}
+    return section, audited_views
+
+
 def _runtime_errors(passes: list[dict]) -> dict[str, Any]:
     exceptions = sorted({e for p in passes for e in p["errors"] if e.startswith("pageerror")})
     failures = sorted({(f["status"], f["method"], f["path"], f["step"]) for p in passes for f in p["http_failures"]})
@@ -554,7 +686,16 @@ def analyse(raw: dict) -> dict:
     passes = raw["pointer_passes"]
     pass0 = passes[0]
     wcag_section, statuses = wcag(pass0)
-    return {
+    inspection_section = None
+    audited_pass = pass0
+    runtime_passes = passes
+    if "inspection_pass" in raw:
+        inspection = raw["inspection_pass"]
+        inspection_section, inspection_views = _inspection_coverage(inspection, pass0["views"])
+        audited_pass = {**pass0, "views": {**pass0["views"], **inspection_views}}
+        wcag_section, _ = wcag(audited_pass)
+        runtime_passes = [*passes, inspection]
+    metrics = {
         "environment": raw["environment"],
         "journey": {
             "steps": [{"id": s["id"], "label": s["label"], "kind": s["kind"]} for s in pass0["steps"]],
@@ -566,7 +707,15 @@ def analyse(raw: dict) -> dict:
         "klm": klm(pass0, raw["keyboard_pass"]),
         "wcag": wcag_section,
         "keyboard": keyboard(raw["keyboard_pass"]),
-        "working_memory": working_memory(pass0),
-        "runtime_errors": _runtime_errors(passes),
+        "working_memory": working_memory(audited_pass),
+        "runtime_errors": _runtime_errors(runtime_passes),
         "measured": {"doherty": doherty(passes, raw["keyboard_pass"])},
     }
+    if inspection_section is not None:
+        metrics["inspection"] = inspection_section
+        metrics["working_memory"]["definition"] = metrics["working_memory"]["definition"].replace(
+            "viewport = first screen at scroll top, page = whole rendered view.",
+            "viewport = first screen at scroll top for canonical journey views; inspection views use the actual viewport after native activation, "
+            "with document and pane scroll positions retained in view.observed. Page = whole rendered view.",
+        )
+    return metrics

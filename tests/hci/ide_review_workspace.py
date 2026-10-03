@@ -825,6 +825,9 @@ class ReviewWorkspace(Journey):
     def prepare(self):
         self.entry()
         replay.expect(self.page.locator("#navigator-mode")).to_have_value("task")
+        # The task navigator now starts groups collapsed; inspect the real
+        # transition disclosure before asserting its expanded contents.
+        self.expand_tree_group("transition")
         replay.expect(self.page.locator('#domain-tree .tree-group[data-kind="transition"]')).to_have_attribute("aria-expanded", "true")
         self.shot("first-entry")
         emit({"milestone": "normal-csp-entry", "screenshot": str(self.out / "first-entry.png"), "javascript_errors": self.errors})
@@ -853,6 +856,7 @@ class ReviewWorkspace(Journey):
         view = self.case_view()
         self.main_comparison().locator('[data-compare-action="overview"]').click()
         overview = self.presentation()
+        # Tab navigation hides/shows the existing comparison; it does not recreate it.
         self.tab("model")
         self.tab("review")
         assert_same_presentation(overview, self.presentation(), "overview")
@@ -925,7 +929,7 @@ class ReviewWorkspace(Journey):
         self.main_comparison().locator('[data-compare-action="focus"]').click()
         self.assert_unchanged(before)
         return {"oracle_controls": controls, "painted_endpoint_negative_control": rejected, "computed_fonts": fonts,
-                "visible_selected_endpoints": visible_focus, "overview_preserved": overview, "manual_resize_and_rerender_preserved": manual,
+                "visible_selected_endpoints": visible_focus, "overview_preserved": overview, "manual_resize_and_hide_show_preserved": manual,
                 "viewboxes_before": old, "viewboxes_after": new,
                 "absent_side_has_no_ghost": True, "case_layout_history_unchanged": True}
 

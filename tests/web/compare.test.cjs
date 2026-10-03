@@ -851,3 +851,47 @@ test("optional display metrics preserve legacy defaults and reject invalid sizes
     finally{globalThis.dagre.layout=actual;}
   }
 });
+
+test("quiet comparison diagrams retain exact names, initial markers, status meanings and keyboard selection", () => {
+  const fs = require("node:fs"), vm = require("node:vm");
+  const source = fs.readFileSync(process.env.EIJA_COMPARE_MODULE || path.join(web, "compare.js"), "utf8");
+  const svg = (tag, attributes = {}, textContent) => ({tag, attributes:{...attributes}, textContent, children:[], handlers:{},
+    append(...nodes){this.children.push(...nodes);}, setAttribute(name,value){this.attributes[name]=String(value);},
+    addEventListener(name,handler){this.handlers[name]=handler;}});
+  const handlers = {svg};vm.createContext(handlers);
+  vm.runInContext(source.slice(source.indexOf("  const statusLabel ="),source.indexOf("  let serial =")),handlers);
+  vm.runInContext(source.slice(source.indexOf("  function selectable("),source.indexOf("  function buildDetails(")),handlers);
+  const words = {added:"Added",removed:"Removed",changed:"Modified",unchanged:"Unchanged"};
+  for(const [oldModel,newModel] of [[before,after],[initialBefore,initialAfter]]) {
+    const original = JSON.stringify({oldModel,newModel}), layout = compare.project(oldModel,newModel), selected = [];
+    const session = {layout,groups:[],select:(item,focus)=>selected.push({key:item.key,focus})};
+    for(const side of ["before","after"]) {
+      const board = svg("svg");
+      for(const edge of layout[side].edges) handlers.drawEdge(session,board,edge,"test-arrow");
+      for(const node of layout[side].nodes) handlers.drawNode(session,board,node);
+      assert.equal(board.children.length,layout[side].edges.length+layout[side].nodes.length,"every unchanged and changed element stays selectable");
+      for(const group of board.children) {
+        const isState = Object.hasOwn(group.attributes,"data-state"), id = group.attributes[isState ? "data-state" : "data-transition"];
+        const item = layout[side][isState ? "nodes" : "edges"].find(value=>value.id===id);
+        const name = group.children.find(child=>child.attributes.class===(isState ? "compare-state-label" : "compare-edge-label"));
+        assert.equal(name.textContent,isState ? item.id : item.action,"full visible names remain exact");
+        assert.ok(group.attributes["aria-label"].includes(words[item.status]),"accessible status remains explicit");
+        const status = group.children.filter(child=>child.attributes.class?.includes("compare-status-label"));
+        if(item.status==="unchanged") assert.ok(status.every(child=>!child.textContent.includes("Unchanged")),"unchanged badges no longer repeat in the diagram");
+        else assert.ok(status.some(child=>child.textContent.includes(words[item.status])),"changed status has a visible word, not only color");
+        if(isState) {
+          const initial = group.children.filter(child=>child.attributes.class?.includes("compare-initial-label"));
+          assert.equal(initial.length,item.initial ? 1 : 0,"visible initial marker matches this snapshot");
+          if(item.initial) assert.match(initial[0].textContent,/Initial/);
+        } else {
+          assert.equal(group.attributes["data-source"],item.from_state);assert.equal(group.attributes["data-target"],item.to_state);
+        }
+        assert.equal(group.attributes.role,"button");assert.equal(group.attributes.tabindex,"0");
+        let prevented = false, stopped = false;
+        group.handlers.keydown({key:"Enter",preventDefault(){prevented=true;},stopPropagation(){stopped=true;}});
+        assert.ok(prevented&&stopped);assert.deepEqual(selected.at(-1),{key:`${isState ? "state" : "transition"}:${id}`,focus:false});
+      }
+    }
+    assert.equal(JSON.stringify({oldModel,newModel}),original,"rendering and selection never mutate either model");
+  }
+});

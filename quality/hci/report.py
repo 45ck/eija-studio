@@ -134,6 +134,9 @@ def _environment(rep: dict) -> list[str]:
         ["Pointer repeats (timing)", env["repeats"]],
         ["UI bytes (sha256, first 12)", ", ".join(f"{k} {v[:12]}" for k, v in sorted(env["ui_sha256"].items()))],
     ]
+    if env.get("hci_tooling_sha256"):
+        rows.append(["HCI driver, probe and derivation bytes (sha256, first 12)",
+                     ", ".join(f"{k} {v[:12]}" for k, v in sorted(env["hci_tooling_sha256"].items()))])
     return _section("Environment", _table(["Item", "Value"], rows))
 
 
@@ -217,6 +220,35 @@ def _budgets(rep: dict) -> list[str]:
         [[b["id"], b["law"], f"{_fmt(b['value'])} {b['unit']}", b["target"], b["limit"], b["status"]] for b in rep["budgets"]],
     )
     return _section("Budgets", note, table)
+
+
+def _inspection_capture(state: dict) -> str | None:
+    capture = state.get("screenshot")
+    if not capture:
+        return None
+    if not isinstance(capture, dict) or not isinstance(capture.get("path"), str) or not isinstance(capture.get("sha256"), str):
+        return "Invalid screenshot record"
+    return f"{capture['path']} (sha256 {capture['sha256'][:12]})"
+
+
+def _inspection_section(rep: dict) -> list[str]:
+    if "inspection" not in rep:
+        return []  # Legacy snapshots did not run this separate pass.
+    inspection = rep["inspection"]
+    counts = inspection["summary"]
+    intro = (
+        f"Coverage **{inspection['status']}**: {counts['passed']}/{counts['required']} required states captured successfully; "
+        f"{counts['observed']} observations. {inspection['note']}"
+    )
+    rows = [[s["id"], s.get("status", "NOT_RUN"), s.get("view"), _inspection_capture(s), s.get("reason")]
+            for s in inspection["states"]]
+    blocks = [intro, _table(["State", "Status", "Captured view", "Screenshot", "Reason"], rows)]
+    if inspection["issues"]:
+        blocks.append("Coverage failures:\n\n" + "\n".join(f"- {_cell(issue)}" for issue in inspection["issues"]))
+    if inspection["planned_states"]:
+        planned = [[s["id"], "NOT_RUN", s["reason"]] for s in inspection["planned_states"]]
+        blocks.append(_table(["Planned state", "Status", "Reason"], planned))
+    return _section("Necessary-state inspection", *blocks)
 
 
 def _fitts_section(rep: dict) -> list[str]:
@@ -366,6 +398,7 @@ SECTIONS: list[Callable[[dict], list[str]]] = [
     _headline,
     _recommendations,
     _budgets,
+    _inspection_section,
     _fitts_section,
     _hick_section,
     _klm_section,

@@ -38,4 +38,5 @@ _No curated notes yet._
 ## Landed ADRs
 
 * [ADR-0043: The README is verifiable: generated diagrams, dated status, MkDocs Material docs site](/adrs/0043-readme-truthfulness-and-docs-site.md) - EIJA's promise is that what you see matches the code.
+* [ADR-0044: Bundle authored domain packs during distribution builds](/adrs/0044-bundle-authored-domain-packs.md) - The source checkout loads its top-level `packs/` directory.
 <!-- okf:generated:end links -->

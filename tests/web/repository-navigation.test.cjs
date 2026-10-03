@@ -192,12 +192,15 @@ test("Show changed files is disabled without an available nonempty inventory",as
 
 
 test("actual task navigator keeps Code changes and model Changes roots distinct and respects Domain pin",()=>{
-  const nodes=new Map(),writes=[],get=id=>{if(!nodes.has(id))nodes.set(id,{hidden:false,dataset:{},value:""});return nodes.get(id);};
-  const context={$:get,workbench:{},navigatorMode:"task",tab:"review",EijaTree:{setVisible:(root,visible)=>root.hidden=!visible},sessionStorage:{setItem:(key,value)=>writes.push([key,value])}};
+  const nodes=new Map(),writes=[],pins=[],get=id=>{if(!nodes.has(id))nodes.set(id,{hidden:false,dataset:{},value:""});return nodes.get(id);};
+  const context={$:get,workbench:{},navigatorMode:"task",tab:"review",EijaShell:{setNavigatorPinned:value=>pins.push(value)},EijaTree:{setVisible:(root,visible)=>root.hidden=!visible},sessionStorage:{setItem:(key,value)=>writes.push([key,value])}};
   const start=app.indexOf("function renderNavigator()"),finish=app.indexOf("function fillStates(",start);assert.ok(start>=0&&finish>start);vm.createContext(context);vm.runInContext(app.slice(start,finish),context);
-  for(const tab of ["review","repository-changes","review"]){context.tab=tab;context.renderNavigator();assert.equal(get("task-navigator").hidden,tab!=="review");assert.equal(get("repository-change-navigator").hidden,tab!=="repository-changes");assert.equal(get("domain-tree").hidden,true);assert.equal(get("navigator-context").hidden,true);}
-  get("navigator-mode").onchange({target:{value:"domain"}});for(const tab of ["repository-changes","review"]){context.tab=tab;context.renderNavigator();assert.equal(get("domain-tree").hidden,false);assert.equal(get("task-navigator").hidden,true);assert.equal(get("repository-change-navigator").hidden,true);}
+  for(const tab of ["review","repository-changes","review"]){context.tab=tab;context.renderNavigator();assert.equal(pins.at(-1),false);assert.equal(get("task-navigator").hidden,tab!=="review");assert.equal(get("repository-change-navigator").hidden,tab!=="repository-changes");assert.equal(get("domain-tree").hidden,true);assert.equal(get("navigator-context").hidden,true);}
+  get("navigator-mode").onchange({target:{value:"domain"}});assert.equal(pins.at(-1),true);for(const tab of ["repository-changes","review"]){context.tab=tab;context.renderNavigator();assert.equal(pins.at(-1),true);assert.equal(get("domain-tree").hidden,false);assert.equal(get("task-navigator").hidden,true);assert.equal(get("repository-change-navigator").hidden,true);}
   assert.deepEqual(writes,[["eija-ui-navigator","domain"]]);
+  get("navigator-mode").onchange({target:{value:"task"}});assert.equal(pins.at(-1),false);assert.equal(get("domain-tree").hidden,true);assert.equal(get("task-navigator").hidden,false);
+  assert.deepEqual(writes,[["eija-ui-navigator","domain"],["eija-ui-navigator","task"]]);
+  context.workbench=null;context.navigatorMode="domain";context.renderNavigator();assert.equal(pins.at(-1),true,"shell pin state synchronizes even before workbench data arrives");
 });
 
 test("six native primary destinations keep Changes at work-area level and comparison tabs keep local navigation",()=>{

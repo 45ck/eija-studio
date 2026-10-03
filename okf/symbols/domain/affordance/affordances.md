@@ -48,5 +48,6 @@ _No curated notes yet._
 
 ## Referenced by
 
+* [application.edit_proposal.propose_edit](/symbols/application/edit_proposal/propose_edit.md) - No persistence or evidence: resolve one request, then use the existing policy-checked projection.
 * [application.service.Studio.affordances](/symbols/application/service/Studio.affordances.md) - Which single edits of the case's working model the kernel would accept (read-only).
 <!-- okf:generated:end links -->

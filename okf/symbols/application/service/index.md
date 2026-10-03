@@ -24,6 +24,7 @@
 * [application.service.Studio.history](Studio.history.md) - Reconstructed semantic revisions and append-only command audit; never changes the case.
 * [application.service.Studio.layout](Studio.layout.md) - `def layout(self, case_id: str, expected: int, change: LayoutChange, principal: Principal) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.propose](Studio.propose.md) - Asks the configured provider for an untrusted interpretation and records the run; networked providers need startup enablement and explicit consent.
+* [application.service.Studio.propose_edit](Studio.propose_edit.md) - Read-only offline proposal; capture and recheck the case revision without granting owner authority.
 * [application.service.Studio.redo](Studio.redo.md) - Reapply the next undone typed command through the same interpreter and policy checks.
 * [application.service.Studio.repository_change](Studio.repository_change.md) - Compare immutable source revisions; this grants no model or repository write authority.
 * [application.service.Studio.repository_change_file](Studio.repository_change_file.md) - Read bounded historical text and syntax; live source identity remains separate.

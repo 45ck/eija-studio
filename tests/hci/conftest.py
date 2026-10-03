@@ -43,9 +43,10 @@ def hci_report():
     if not ok:
         pytest.skip("NOT_RUN: " + detail)
     repeats = int(os.environ.get("EIJA_HCI_REPEATS", "3"))
-    raw = journey.collect(repeats=repeats)
-    rep = report.build_report(raw)
     out = Path(os.environ.get("EIJA_HCI_OUT", ROOT / "reports" / "hci"))
+    raw = journey.collect(repeats=repeats, inspection_out=out / "inspection")
+    rep = report.build_report(raw)
     write_lane_report(rep, out)  # stamps the lane verdict quality.metrics reads
     report.write_text(out / "REPORT.md", report.render_markdown(rep))
+    report.write_text(out / "trace.json", report.dump_trace(raw))
     return {"raw": raw, "report": rep}

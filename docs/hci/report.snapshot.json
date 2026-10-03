@@ -17,10 +17,10 @@
       "limit": 7,
       "note": "Chrome-build and font specific: five moves sit between 4.0 and 4.4 bits, so the limit is 1 above the measured 6 to avoid failing on a one-pixel layout difference; centre-landing convention (see nearest-edge variant)",
       "path": "fitts.summary.moves_id_over_4",
-      "status": "GAP",
+      "status": "PASS",
       "target": 0,
       "unit": "moves",
-      "value": 1
+      "value": 0
     },
     {
       "id": "fitts.max_id",
@@ -28,10 +28,10 @@
       "limit": 4.5,
       "note": "measured 4.405 bits; geometry is Chrome-build and font specific",
       "path": "fitts.summary.max_id_bits",
-      "status": "GAP",
+      "status": "PASS",
       "target": 4,
       "unit": "bits",
-      "value": 4.187
+      "value": 3.852
     },
     {
       "id": "hick.choice_groups_over_7",
@@ -75,7 +75,7 @@
       "status": "PASS",
       "target": 400,
       "unit": "ms",
-      "value": 6.7
+      "value": 7
     },
     {
       "id": "doherty.settled_p50",
@@ -86,7 +86,7 @@
       "status": "PASS",
       "target": 400,
       "unit": "ms",
-      "value": 98.6
+      "value": 95.1
     },
     {
       "id": "doherty.settled_p95",
@@ -97,7 +97,7 @@
       "status": "GAP",
       "target": 400,
       "unit": "ms",
-      "value": 843.2
+      "value": 825
     },
     {
       "id": "wcag.critical_rules",
@@ -160,10 +160,10 @@
       "limit": 7,
       "note": "",
       "path": "keyboard.focus_lost_count",
-      "status": "PASS",
+      "status": "GAP",
       "target": 0,
       "unit": "activations",
-      "value": 0
+      "value": 1
     },
     {
       "id": "keyboard.stops_without_indicator",
@@ -185,7 +185,7 @@
       "status": "FAIL",
       "target": 9,
       "unit": "chunks",
-      "value": 61
+      "value": 50
     },
     {
       "id": "runtime.js_exceptions",
@@ -205,6 +205,22 @@
     "axe_playwright_python": "0.1.8",
     "chrome": "154.0.8037.95",
     "device_scale_factor": 1,
+    "hci_tooling_sha256": {
+      "__init__.py": "d42126b63c8bdcbb7550f5841ffcbcf44747c4f5fce06cc67443064595d7d183",
+      "__main__.py": "ff9a3f536a2b2dbf6842cd943be4500c16cf4d3e767ab34713d319b4ecdcb9b7",
+      "analysis.py": "27e92a13544e4200e0c4ab269f0173437a0381b3e8f35f862d944cf9697a7c9e",
+      "budgets.json": "fa2049c78ca8c429ae40ee0d79e22df8b19c730bef2a3bfec5576e36a9824363",
+      "budgets.py": "daac2d7025797594b7a3bfdc390f1b407cf5b67374414667ee9faf9b66d96483",
+      "inspection.py": "2c078ebcbe48581cd684c50f843762065452d94d9b3601756383103133caab80",
+      "journey.py": "7cd3d3d37c5441f471b4ed6e546d4229caf5c08d7fa60b3f33bc18bdb06098cc",
+      "laws.py": "4a47f56e5df20b291bfcd569e7e64e92644f13290e60bfbd2fe9a750d7282d81",
+      "probe.js": "6af751d9043c28721ddb77b11b5a9c478c2f3da73fa2d8ea3d2c7562dd6babd1",
+      "recommend.py": "7e2a8bc5cc2a02205a31ffd8ef5ed306edd4dab8cdbb5386974148286091c213",
+      "report.py": "dd1d8c419185b694cbb16bd2e5d12cd6ad01a7ba527dd8adb975245cda2ce838",
+      "serve_harness.py": "224f4fcf6bdce745bf140d6dc369e8400cb1ba5ea92a5bfc681206c9353d4735",
+      "server.py": "dbf07833dd3061b8402d2dce1ecfb4bf6a89a38a8a902abf43c1fdee7112522c",
+      "wcag.py": "33c5f18c62704cdd60ac8a7ec226a791c01778d231ed56a5a6c193295c6181de"
+    },
     "headless": true,
     "identity_source": "pytest-harness",
     "platform": "Windows-11-10.0.26200-SP0",
@@ -213,18 +229,19 @@
     "python": "3.12.10",
     "repeats": 3,
     "ui_sha256": {
-      "app.css": "9235aa276e5bddc1ccc877bfd53956ea50c58061d44c3ad9f690589aa4ad6319",
-      "app.js": "76f3795c7d290949b8563fd583a489e5b7abe9ea10a465a9248bdda4b6127a16",
-      "canvas.js": "ad53db5bf8d721e288026d76809d35520270bcc4948484bf7b4c047f66aa8d7f",
-      "compare.css": "f58ab0861b602c1e39a867ef60aa68e9235fb1360db5173b463ae50d5d6a1d7e",
-      "compare.js": "a730a32f7b95b081c6394711973742ed165eb3726d69633fc77c1bab5fd518d7",
-      "index.html": "730eee337eade39e44ad9b786d18bd5b71a562af506b373af1d330bdec55bd2d",
+      "agent-edit.js": "48dc93b791725ba2611e7910d814f6a9909426299b43fd0296d8df83f4f37b06",
+      "app.css": "b05629fbfe9dcc13bb7e7698d72b072086e2ebc88ac87ea61ba7e953ffe509bc",
+      "app.js": "e37f3e9c0b8aa31766573b07c35935bac83a7f6a5943c97041dcddc597c6b0c2",
+      "canvas.js": "1a26b992386befbdf73735a9902a3dfc7efaaff95a6e0c9405e074ea4e73dc5b",
+      "compare.css": "0803b54e7e638f7c169200c5c9baf435ba44a58df4fb27f8aa5e6c1d52c0b5c7",
+      "compare.js": "5c9ba33750c1c57229662fd837b50e8fc5c1996c8770e4176f3fe7cf66cdd209",
+      "index.html": "f5967c6a3d5655727143426a24c7e792554b85653d438562da1aea6c175c794e",
       "repository-review.css": "ef87096d5fc1408c8605f50e31db4f9d85579adc3247c1f2e5ff1b4ba9d848bb",
       "repository-review.js": "1a8559475a48f8855c31c3c1ac76ef28fa6cf70421d964e4fc22024bdfeeda02",
       "review.js": "426978e964918a63b8e73ff1ae99b2b126e7a1a4d9429b2151e275cfaf178dee",
-      "shell.js": "29e41c7dd572a03d86375d69d2fdb3bdb17db8f0a936d323dd4e71dd2f73480a",
+      "shell.js": "326b6da0d10e74eb52a90673e00817f76ff362c9c0411353723332493e717613",
       "source.js": "87e72798bfbfeab516923d79ab72495bd72a3086e3a706156ea71627530482a9",
-      "tree.js": "9dd0270ba356262f8b2fa5afdfc2f4ff3c9701030747f500f5e2d8d419bd2c5b",
+      "tree.js": "6f5c5592837de8dd37f59f31349f2130c02426aac51e4d6b3ffd41d7b102dfc2",
       "vendor/dagre-graphlib.LICENSE.txt": "6a349742a6cb219d5a2fc8d0844f6d89a6efc62e20c664450d884fc7ff2d6015",
       "vendor/dagre.LICENSE.txt": "6a349742a6cb219d5a2fc8d0844f6d89a6efc62e20c664450d884fc7ff2d6015",
       "vendor/dagre.VENDOR.json": "9ea8f38b29e9a766e0a413b83b24a2e6238dcb4f8568aad79a1bdb2866eee14d",
@@ -250,17 +267,17 @@
     },
     "summary": {
       "landing_convention_note": "primary D uses the centre of the effective box, which overstates D for wide targets; moves_id_over_4_nearest_edge recomputes D to the nearest edge, so the flag count is a range",
-      "max_id_bits": 4.187,
+      "max_id_bits": 3.852,
       "max_id_step": "open-try",
-      "mean_id_bits": 2.71,
-      "moves_id_over_4": 1,
-      "moves_id_over_4_nearest_edge": 1,
+      "mean_id_bits": 2.65,
+      "moves_id_over_4": 0,
+      "moves_id_over_4_nearest_edge": 0,
       "moves_with_distance": 21,
       "pointer_targets": 22,
-      "predicted_pointing_time_s": 14.276,
+      "predicted_pointing_time_s": 14.064,
       "scrolls_needed": 0,
       "targets_w_under_24": 0,
-      "total_distance_px": 6326.1
+      "total_distance_px": 6325.3
     },
     "targets": [
       {
@@ -280,11 +297,11 @@
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 576.3,
+        "distance_px": 830.5,
         "flags": [],
-        "id_bits": 2.758,
-        "id_bits_nearest_edge": 1.486,
-        "predicted_mt_s": 0.688,
+        "id_bits": 3.218,
+        "id_bits_nearest_edge": 2.056,
+        "predicted_mt_s": 0.764,
         "raw_w_px": 100,
         "scrolled_before": false,
         "selector": "#request",
@@ -295,11 +312,11 @@
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 511.7,
+        "distance_px": 489.0,
         "flags": [],
-        "id_bits": 3.659,
-        "id_bits_nearest_edge": 3.518,
-        "predicted_mt_s": 0.837,
+        "id_bits": 3.599,
+        "id_bits_nearest_edge": 3.452,
+        "predicted_mt_s": 0.827,
         "raw_w_px": 44,
         "scrolled_before": false,
         "selector": "#create",
@@ -310,11 +327,11 @@
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 225.7,
+        "distance_px": 38.4,
         "flags": [],
-        "id_bits": 2.616,
-        "id_bits_nearest_edge": 2.189,
-        "predicted_mt_s": 0.664,
+        "id_bits": 0.906,
+        "id_bits_nearest_edge": 0.277,
+        "predicted_mt_s": 0.38,
         "raw_w_px": 44,
         "scrolled_before": false,
         "selector": "#propose",
@@ -325,14 +342,14 @@
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 580.8,
+        "distance_px": 331.9,
         "flags": [],
-        "id_bits": 3.828,
-        "id_bits_nearest_edge": 3.744,
-        "predicted_mt_s": 0.865,
+        "id_bits": 3.095,
+        "id_bits_nearest_edge": 3.005,
+        "predicted_mt_s": 0.744,
         "raw_w_px": 44,
         "scrolled_before": false,
-        "selector": "#options > article:nth-of-type(1) > button",
+        "selector": "#options > article > button",
         "step": "select-meaning",
         "target": "Select this meaning",
         "via_label": false,
@@ -340,13 +357,11 @@
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 706.0,
-        "flags": [
-          "ID>4"
-        ],
-        "id_bits": 4.187,
-        "id_bits_nearest_edge": 4.137,
-        "predicted_mt_s": 0.925,
+        "distance_px": 551.0,
+        "flags": [],
+        "id_bits": 3.852,
+        "id_bits_nearest_edge": 3.784,
+        "predicted_mt_s": 0.869,
         "raw_w_px": 41,
         "scrolled_before": false,
         "selector": "#workspace > div:nth-of-type(4) > nav > button:nth-of-type(5)",
@@ -357,11 +372,11 @@
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 128.6,
+        "distance_px": 317.6,
         "flags": [],
-        "id_bits": 1.972,
-        "id_bits_nearest_edge": 1.715,
-        "predicted_mt_s": 0.557,
+        "id_bits": 3.039,
+        "id_bits_nearest_edge": 2.812,
+        "predicted_mt_s": 0.734,
         "raw_w_px": 44,
         "scrolled_before": false,
         "selector": "#reset",
@@ -372,11 +387,11 @@
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 389.3,
+        "distance_px": 144.0,
         "flags": [],
-        "id_bits": 3.3,
-        "id_bits_nearest_edge": 3.159,
-        "predicted_mt_s": 0.778,
+        "id_bits": 2.095,
+        "id_bits_nearest_edge": 1.827,
+        "predicted_mt_s": 0.578,
         "raw_w_px": 44,
         "scrolled_before": false,
         "selector": "#runtime-actions > button:nth-of-type(1)",
@@ -462,11 +477,11 @@
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 451.2,
+        "distance_px": 444.9,
         "flags": [],
-        "id_bits": 3.586,
-        "id_bits_nearest_edge": 3.481,
-        "predicted_mt_s": 0.825,
+        "id_bits": 3.567,
+        "id_bits_nearest_edge": 3.46,
+        "predicted_mt_s": 0.822,
         "raw_w_px": 41,
         "scrolled_before": false,
         "selector": "#workspace > div:nth-of-type(4) > nav > button:nth-of-type(6)",
@@ -492,26 +507,26 @@
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 462.6,
+        "distance_px": 521.2,
         "flags": [],
-        "id_bits": 3.525,
-        "id_bits_nearest_edge": 3.455,
-        "predicted_mt_s": 0.815,
+        "id_bits": 3.683,
+        "id_bits_nearest_edge": 3.548,
+        "predicted_mt_s": 0.841,
         "raw_w_px": 44,
         "scrolled_before": false,
         "selector": "#review-subject",
         "step": "open-review-subject",
-        "target": "Review this exact subject · eligible for local review · 8abf",
+        "target": "Review this exact subject · eligible for local review · ffd5",
         "via_label": false,
         "w_px": 44,
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 338.7,
+        "distance_px": 460.7,
         "flags": [],
-        "id_bits": 3.344,
-        "id_bits_nearest_edge": 2.21,
-        "predicted_mt_s": 0.785,
+        "id_bits": 3.75,
+        "id_bits_nearest_edge": 2.958,
+        "predicted_mt_s": 0.852,
         "raw_w_px": 37,
         "scrolled_before": false,
         "selector": "#q-authority",
@@ -522,11 +537,11 @@
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 282.0,
+        "distance_px": 271.0,
         "flags": [],
-        "id_bits": 3.108,
-        "id_bits_nearest_edge": 3.022,
-        "predicted_mt_s": 0.746,
+        "id_bits": 3.057,
+        "id_bits_nearest_edge": 2.968,
+        "predicted_mt_s": 0.738,
         "raw_w_px": 37,
         "scrolled_before": false,
         "selector": "#q-assignment",
@@ -552,11 +567,11 @@
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 333.8,
+        "distance_px": 459.5,
         "flags": [],
-        "id_bits": 3.102,
+        "id_bits": 3.516,
         "id_bits_nearest_edge": 0.835,
-        "predicted_mt_s": 0.745,
+        "predicted_mt_s": 0.814,
         "raw_w_px": 17,
         "scrolled_before": false,
         "selector": "#acknowledge",
@@ -567,11 +582,11 @@
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 441.7,
+        "distance_px": 567.9,
         "flags": [],
-        "id_bits": 3.465,
-        "id_bits_nearest_edge": 3.121,
-        "predicted_mt_s": 0.805,
+        "id_bits": 3.798,
+        "id_bits_nearest_edge": 3.533,
+        "predicted_mt_s": 0.86,
         "raw_w_px": 44,
         "scrolled_before": false,
         "selector": "#approve",
@@ -601,14 +616,14 @@
   "hick_hyman": {
     "decisions": [
       {
-        "bits": 2.0,
-        "choices": 3,
+        "bits": 1.0,
+        "choices": 1,
         "decision": "choose an interpretation",
         "over_7": false,
-        "predicted_s": 0.3,
-        "screen_controls": 24,
+        "predicted_s": 0.15,
+        "screen_controls": 17,
         "screen_over_7": true,
-        "screen_predicted_s": 0.697,
+        "screen_predicted_s": 0.625,
         "step": "select-meaning"
       },
       {
@@ -617,9 +632,9 @@
         "decision": "choose a work area",
         "over_7": false,
         "predicted_s": 0.45,
-        "screen_controls": 23,
+        "screen_controls": 19,
         "screen_over_7": true,
-        "screen_predicted_s": 0.688,
+        "screen_predicted_s": 0.648,
         "step": "open-try"
       },
       {
@@ -628,9 +643,9 @@
         "decision": "choose a lifecycle action",
         "over_7": false,
         "predicted_s": 0.388,
-        "screen_controls": 25,
+        "screen_controls": 20,
         "screen_over_7": true,
-        "screen_predicted_s": 0.705,
+        "screen_predicted_s": 0.659,
         "step": "submit-teacher"
       },
       {
@@ -639,9 +654,9 @@
         "decision": "choose a lifecycle action",
         "over_7": false,
         "predicted_s": 0.388,
-        "screen_controls": 25,
+        "screen_controls": 20,
         "screen_over_7": true,
-        "screen_predicted_s": 0.705,
+        "screen_predicted_s": 0.659,
         "step": "recommend-teacher"
       },
       {
@@ -650,9 +665,9 @@
         "decision": "choose the acting role",
         "over_7": false,
         "predicted_s": 0.388,
-        "screen_controls": 25,
+        "screen_controls": 20,
         "screen_over_7": true,
-        "screen_predicted_s": 0.705,
+        "screen_predicted_s": 0.659,
         "step": "actor-registrar"
       },
       {
@@ -661,9 +676,9 @@
         "decision": "choose a lifecycle action",
         "over_7": false,
         "predicted_s": 0.388,
-        "screen_controls": 25,
+        "screen_controls": 20,
         "screen_over_7": true,
-        "screen_predicted_s": 0.705,
+        "screen_predicted_s": 0.659,
         "step": "approve-registrar"
       },
       {
@@ -672,9 +687,9 @@
         "decision": "choose the acting role",
         "over_7": false,
         "predicted_s": 0.388,
-        "screen_controls": 25,
+        "screen_controls": 20,
         "screen_over_7": true,
-        "screen_predicted_s": 0.705,
+        "screen_predicted_s": 0.659,
         "step": "actor-unassigned"
       },
       {
@@ -683,9 +698,9 @@
         "decision": "choose a lifecycle action",
         "over_7": false,
         "predicted_s": 0.388,
-        "screen_controls": 25,
+        "screen_controls": 20,
         "screen_over_7": true,
-        "screen_predicted_s": 0.705,
+        "screen_predicted_s": 0.659,
         "step": "denied-recommend"
       },
       {
@@ -694,9 +709,9 @@
         "decision": "choose a work area",
         "over_7": false,
         "predicted_s": 0.45,
-        "screen_controls": 26,
+        "screen_controls": 21,
         "screen_over_7": true,
-        "screen_predicted_s": 0.713,
+        "screen_predicted_s": 0.669,
         "step": "open-evidence"
       }
     ],
@@ -710,9 +725,463 @@
       "choice_points_over_7": 0,
       "decision_points": 9,
       "max_choices": 7,
-      "predicted_choice_time_s": 3.528,
+      "predicted_choice_time_s": 3.378,
       "screen_points_over_7": 9
     }
+  },
+  "inspection": {
+    "completed": true,
+    "issues": [],
+    "note": "Separate necessary-state inspection. Its actual views contribute to WCAG and visible-density metrics; its setup, navigation, operators and timings are excluded from the canonical journey's Fitts, Hick-Hyman, KLM, keyboard and Doherty metrics. Inspection captures the actual viewport after native activation; document and pane scroll positions remain in each view's observed geometry. Planned states have not run and do not count toward required coverage.",
+    "planned_states": [
+      {
+        "id": "intermediate-widths",
+        "reason": "1280, 1600 and 390 inspection widths are not in this tranche."
+      },
+      {
+        "id": "scrolled-detail-content",
+        "reason": "Only the viewport after native disclosure activation is audited; lower scroll positions remain unmeasured."
+      },
+      {
+        "id": "compact-panes",
+        "reason": "Explorer and inspector drawers are mutually exclusive at narrow widths; their individual open states remain planned."
+      },
+      {
+        "id": "proposal-failures",
+        "reason": "Pending, refused, unknown-outcome and refresh-failure detail states remain in dedicated replay coverage, outside this density pass."
+      },
+      {
+        "id": "formal-and-agent-details",
+        "reason": "Formal record, source boundary and agent-edit detail density remain planned."
+      }
+    ],
+    "required_states": [
+      "workspace-work-views-1440",
+      "workspace-panels-1440",
+      "workspace-layout-1440",
+      "workspace-connections-1440",
+      "intent-record-1440",
+      "intent-controls-1440",
+      "intent-alternatives-1440",
+      "domain-inspector-1440",
+      "canvas-view-1440",
+      "runtime-attempt-1440",
+      "workspace-work-views-320",
+      "workspace-panels-320",
+      "workspace-layout-320",
+      "workspace-connections-320",
+      "intent-record-320",
+      "intent-controls-320",
+      "intent-alternatives-320",
+      "runtime-attempt-320"
+    ],
+    "schema": "eija.hci.inspection.v1",
+    "states": [
+      {
+        "id": "workspace-work-views-1440",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/workspace-work-views-1440.png",
+          "sha256": "c10d67d2b689e2ecb83bd208ce2fbbff3c3f3f66eebddf2c51cdce72c33682f2"
+        },
+        "status": "PASS",
+        "story": "US02 / H05",
+        "subject": {
+          "candidate_json_sha256": null,
+          "case_id": "d3ae5baf8f7c4434ac6758023a3a3069",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 1,
+          "semantic_hash": null,
+          "stage": "PROPOSED",
+          "subject_hash": null
+        },
+        "view": "inspection/workspace-work-views-1440"
+      },
+      {
+        "id": "workspace-panels-1440",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/workspace-panels-1440.png",
+          "sha256": "80bbaf2a1bac25de4eb2d4a4ebe3570912fd010e2b7a1358cbb04f3b045c7e29"
+        },
+        "status": "PASS",
+        "story": "US02 / H05",
+        "subject": {
+          "candidate_json_sha256": null,
+          "case_id": "d3ae5baf8f7c4434ac6758023a3a3069",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 1,
+          "semantic_hash": null,
+          "stage": "PROPOSED",
+          "subject_hash": null
+        },
+        "view": "inspection/workspace-panels-1440"
+      },
+      {
+        "id": "workspace-layout-1440",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/workspace-layout-1440.png",
+          "sha256": "87b44da9036e9c074cf082b113be5d1115cfaf2c9127b0a0390ab2914a3536b3"
+        },
+        "status": "PASS",
+        "story": "US02 / H05",
+        "subject": {
+          "candidate_json_sha256": null,
+          "case_id": "d3ae5baf8f7c4434ac6758023a3a3069",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 1,
+          "semantic_hash": null,
+          "stage": "PROPOSED",
+          "subject_hash": null
+        },
+        "view": "inspection/workspace-layout-1440"
+      },
+      {
+        "id": "workspace-connections-1440",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/workspace-connections-1440.png",
+          "sha256": "b97c575116a421d5530e46979a5c2801250db98165984a4920cb9f8647236fd9"
+        },
+        "status": "PASS",
+        "story": "US02 / H05",
+        "subject": {
+          "candidate_json_sha256": null,
+          "case_id": "d3ae5baf8f7c4434ac6758023a3a3069",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 1,
+          "semantic_hash": null,
+          "stage": "PROPOSED",
+          "subject_hash": null
+        },
+        "view": "inspection/workspace-connections-1440"
+      },
+      {
+        "id": "intent-record-1440",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/intent-record-1440.png",
+          "sha256": "b69d6baa8a9bc2f81d011e6902fad9a75fa685a5a08745f918ffa42dbc09c721"
+        },
+        "status": "PASS",
+        "story": "US03 / H04 / H05",
+        "subject": {
+          "candidate_json_sha256": null,
+          "case_id": "d3ae5baf8f7c4434ac6758023a3a3069",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 1,
+          "semantic_hash": null,
+          "stage": "PROPOSED",
+          "subject_hash": null
+        },
+        "view": "inspection/intent-record-1440"
+      },
+      {
+        "id": "intent-controls-1440",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/intent-controls-1440.png",
+          "sha256": "fdb667f27b6a24b7b16468ecd5033354695c070fe45cfc381989ef8da6a810e9"
+        },
+        "status": "PASS",
+        "story": "US03 / H04 / H05",
+        "subject": {
+          "candidate_json_sha256": null,
+          "case_id": "d3ae5baf8f7c4434ac6758023a3a3069",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 1,
+          "semantic_hash": null,
+          "stage": "PROPOSED",
+          "subject_hash": null
+        },
+        "view": "inspection/intent-controls-1440"
+      },
+      {
+        "id": "intent-alternatives-1440",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/intent-alternatives-1440.png",
+          "sha256": "694991ed4f65d199abd3db1c268fde93698dfcbbb48457d5ea7a11a74aa3ce1a"
+        },
+        "status": "PASS",
+        "story": "US03 / H04 / H05",
+        "subject": {
+          "candidate_json_sha256": null,
+          "case_id": "d3ae5baf8f7c4434ac6758023a3a3069",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 1,
+          "semantic_hash": null,
+          "stage": "PROPOSED",
+          "subject_hash": null
+        },
+        "view": "inspection/intent-alternatives-1440"
+      },
+      {
+        "id": "domain-inspector-1440",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/domain-inspector-1440.png",
+          "sha256": "96b28ac97abcc4db35e2b504100b30fa1bafb35d4e411264b8fdc8771fe3956b"
+        },
+        "status": "PASS",
+        "story": "US06 / H05",
+        "subject": {
+          "candidate_json_sha256": "1540964f003e1dbbd0a39c297a6c0f959e16365c9e8e0fd8b55c64f2505228fe",
+          "case_id": "d3ae5baf8f7c4434ac6758023a3a3069",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 2,
+          "semantic_hash": "b26c9af5ae4cd958099956232721a70e73cb7e6efe1b213ff32417829b588e56",
+          "stage": "PREVIEW",
+          "subject_hash": "ffd51da924b8500a2205b0b81e2d836d689cddb5a9fbf0c547c0f11adacd6ad2"
+        },
+        "view": "inspection/domain-inspector-1440"
+      },
+      {
+        "id": "canvas-view-1440",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/canvas-view-1440.png",
+          "sha256": "fbaf256006f4410d8f09cc706277e174c122a5f469195ba7856ea829500465bd"
+        },
+        "status": "PASS",
+        "story": "US06 / H05",
+        "subject": {
+          "candidate_json_sha256": "1540964f003e1dbbd0a39c297a6c0f959e16365c9e8e0fd8b55c64f2505228fe",
+          "case_id": "d3ae5baf8f7c4434ac6758023a3a3069",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 2,
+          "semantic_hash": "b26c9af5ae4cd958099956232721a70e73cb7e6efe1b213ff32417829b588e56",
+          "stage": "PREVIEW",
+          "subject_hash": "ffd51da924b8500a2205b0b81e2d836d689cddb5a9fbf0c547c0f11adacd6ad2"
+        },
+        "view": "inspection/canvas-view-1440"
+      },
+      {
+        "id": "runtime-attempt-1440",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/runtime-attempt-1440.png",
+          "sha256": "779ffee69cd45b5abc202c58b38552874b7f4e485360b06b91693a1c877acbf9"
+        },
+        "status": "PASS",
+        "story": "US08 / H09",
+        "subject": {
+          "candidate_json_sha256": "1540964f003e1dbbd0a39c297a6c0f959e16365c9e8e0fd8b55c64f2505228fe",
+          "case_id": "d3ae5baf8f7c4434ac6758023a3a3069",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 2,
+          "semantic_hash": "b26c9af5ae4cd958099956232721a70e73cb7e6efe1b213ff32417829b588e56",
+          "stage": "PREVIEW",
+          "subject_hash": "ffd51da924b8500a2205b0b81e2d836d689cddb5a9fbf0c547c0f11adacd6ad2"
+        },
+        "view": "inspection/runtime-attempt-1440"
+      },
+      {
+        "id": "workspace-work-views-320",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/workspace-work-views-320.png",
+          "sha256": "c6fdf3c05b8460e351f4f9eab2bb343f145312dc9349edd539c5e24bfcfbd174"
+        },
+        "status": "PASS",
+        "story": "US02 / H05",
+        "subject": {
+          "candidate_json_sha256": null,
+          "case_id": "c5a7a1e4dd8141648a812a5345503637",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 1,
+          "semantic_hash": null,
+          "stage": "PROPOSED",
+          "subject_hash": null
+        },
+        "view": "inspection/workspace-work-views-320"
+      },
+      {
+        "id": "workspace-panels-320",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/workspace-panels-320.png",
+          "sha256": "28a2849809941d3ed55471fcba35718d57f8459c3dfa026173931c10445b9016"
+        },
+        "status": "PASS",
+        "story": "US02 / H05",
+        "subject": {
+          "candidate_json_sha256": null,
+          "case_id": "c5a7a1e4dd8141648a812a5345503637",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 1,
+          "semantic_hash": null,
+          "stage": "PROPOSED",
+          "subject_hash": null
+        },
+        "view": "inspection/workspace-panels-320"
+      },
+      {
+        "id": "workspace-layout-320",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/workspace-layout-320.png",
+          "sha256": "8cb8361eb3baf4d8f34d8de9e8b7fa56b6a1496c243839983e67e52146738029"
+        },
+        "status": "PASS",
+        "story": "US02 / H05",
+        "subject": {
+          "candidate_json_sha256": null,
+          "case_id": "c5a7a1e4dd8141648a812a5345503637",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 1,
+          "semantic_hash": null,
+          "stage": "PROPOSED",
+          "subject_hash": null
+        },
+        "view": "inspection/workspace-layout-320"
+      },
+      {
+        "id": "workspace-connections-320",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/workspace-connections-320.png",
+          "sha256": "4268870102d8b703ccc129b7a5a690c9973a9ed2991e620afd221b91d0722593"
+        },
+        "status": "PASS",
+        "story": "US02 / H05",
+        "subject": {
+          "candidate_json_sha256": null,
+          "case_id": "c5a7a1e4dd8141648a812a5345503637",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 1,
+          "semantic_hash": null,
+          "stage": "PROPOSED",
+          "subject_hash": null
+        },
+        "view": "inspection/workspace-connections-320"
+      },
+      {
+        "id": "intent-record-320",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/intent-record-320.png",
+          "sha256": "9032194a393764f7028f893b92fcd16783cc944934242d6b2042c053bf2df4c0"
+        },
+        "status": "PASS",
+        "story": "US03 / H04 / H05",
+        "subject": {
+          "candidate_json_sha256": null,
+          "case_id": "c5a7a1e4dd8141648a812a5345503637",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 1,
+          "semantic_hash": null,
+          "stage": "PROPOSED",
+          "subject_hash": null
+        },
+        "view": "inspection/intent-record-320"
+      },
+      {
+        "id": "intent-controls-320",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/intent-controls-320.png",
+          "sha256": "cb858531102b572d030f4183daf45bb392d7529c7b9f970f0ae4adc96613590b"
+        },
+        "status": "PASS",
+        "story": "US03 / H04 / H05",
+        "subject": {
+          "candidate_json_sha256": null,
+          "case_id": "c5a7a1e4dd8141648a812a5345503637",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 1,
+          "semantic_hash": null,
+          "stage": "PROPOSED",
+          "subject_hash": null
+        },
+        "view": "inspection/intent-controls-320"
+      },
+      {
+        "id": "intent-alternatives-320",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/intent-alternatives-320.png",
+          "sha256": "481af9ac66aa19ef11f7c79268afe51055d5158459b688e0f9f0a6ca4041212e"
+        },
+        "status": "PASS",
+        "story": "US03 / H04 / H05",
+        "subject": {
+          "candidate_json_sha256": null,
+          "case_id": "c5a7a1e4dd8141648a812a5345503637",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 1,
+          "semantic_hash": null,
+          "stage": "PROPOSED",
+          "subject_hash": null
+        },
+        "view": "inspection/intent-alternatives-320"
+      },
+      {
+        "id": "runtime-attempt-320",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/runtime-attempt-320.png",
+          "sha256": "930415ece7d45bd58b113c178e41881cecca63db743891f4cd627abcdd9ad8ec"
+        },
+        "status": "PASS",
+        "story": "US08 / H09",
+        "subject": {
+          "candidate_json_sha256": "1540964f003e1dbbd0a39c297a6c0f959e16365c9e8e0fd8b55c64f2505228fe",
+          "case_id": "c5a7a1e4dd8141648a812a5345503637",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 2,
+          "semantic_hash": "b26c9af5ae4cd958099956232721a70e73cb7e6efe1b213ff32417829b588e56",
+          "stage": "PREVIEW",
+          "subject_hash": "ffd51da924b8500a2205b0b81e2d836d689cddb5a9fbf0c547c0f11adacd6ad2"
+        },
+        "view": "inspection/runtime-attempt-320"
+      }
+    ],
+    "status": "PASS",
+    "summary": {
+      "observed": 18,
+      "passed": 18,
+      "required": 18
+    },
+    "views_audited": [
+      "inspection/canvas-view-1440",
+      "inspection/domain-inspector-1440",
+      "inspection/intent-alternatives-1440",
+      "inspection/intent-alternatives-320",
+      "inspection/intent-controls-1440",
+      "inspection/intent-controls-320",
+      "inspection/intent-record-1440",
+      "inspection/intent-record-320",
+      "inspection/runtime-attempt-1440",
+      "inspection/runtime-attempt-320",
+      "inspection/workspace-connections-1440",
+      "inspection/workspace-connections-320",
+      "inspection/workspace-layout-1440",
+      "inspection/workspace-layout-320",
+      "inspection/workspace-panels-1440",
+      "inspection/workspace-panels-320",
+      "inspection/workspace-work-views-1440",
+      "inspection/workspace-work-views-320"
+    ]
   },
   "journey": {
     "completed": true,
@@ -832,23 +1301,25 @@
   },
   "keyboard": {
     "activations": 16,
-    "activations_that_lost_focus": [],
+    "activations_that_lost_focus": [
+      "ask-interpretations"
+    ],
     "completed_journey_keyboard_only": true,
-    "focus_lost_count": 0,
+    "focus_lost_count": 1,
     "focus_order_regression_count": 4,
     "focus_order_regressions": [
       {
-        "from": "Persisted audit and simulated outbox",
+        "from": "Attempt details, diagnostic and persisted audit",
         "step": "actor-registrar",
         "to": "Skip to workspace"
       },
       {
-        "from": "Persisted audit and simulated outbox",
+        "from": "Attempt details, diagnostic and persisted audit",
         "step": "actor-unassigned",
         "to": "Skip to workspace"
       },
       {
-        "from": "Persisted audit and simulated outbox",
+        "from": "Attempt details, diagnostic and persisted audit",
         "step": "open-evidence",
         "to": "Skip to workspace"
       },
@@ -858,14 +1329,14 @@
         "to": "bend proofUNKNOWN sealed tool verdict · case-wide"
       }
     ],
-    "max_tab_presses_for_one_target": 25,
+    "max_tab_presses_for_one_target": 20,
     "note": "Real Tab traversal plus Arrow/Home navigation within tablists; every navigation and activation key is recorded; focus indicator = computed outline or box-shadow on the focused element; 'focus lost' = document.activeElement is <body> once the DOM settled after activation",
     "stops_without_indicator_count": 0,
     "stops_without_visible_focus_indicator": [],
     "tab_presses_by_step": {
       "acknowledge": 1,
-      "actor-registrar": 25,
-      "actor-unassigned": 24,
+      "actor-registrar": 20,
+      "actor-unassigned": 19,
       "answer-assignment": 1,
       "answer-authority": 1,
       "answer-reject_entry": 1,
@@ -875,41 +1346,35 @@
       "ask-interpretations": 0,
       "create-case": 1,
       "denied-recommend": 2,
-      "open-change": 9,
-      "open-evidence": 23,
+      "open-change": 8,
+      "open-evidence": 18,
       "open-review-subject": 9,
       "open-try": 5,
       "recommend-teacher": 1,
       "reset-preview": 3,
       "run-verification": 3,
-      "select-meaning": 4,
+      "select-meaning": 2,
       "submit-teacher": 2,
       "type-request": 0
     },
-    "tab_presses_spent_after_focus_loss": 0,
-    "tab_presses_total": 119,
-    "unique_focus_stops_seen": 51
+    "tab_presses_spent_after_focus_loss": 2,
+    "tab_presses_total": 101,
+    "unique_focus_stops_seen": 46
   },
   "klm": {
     "citation": "Card, Moran & Newell 1980 (CACM 23(7)); K = average non-secretary typist (~40 wpm)",
-    "expert_time_keyboard_only_s": 70.11,
+    "expert_time_keyboard_only_s": 65.07,
     "expert_time_pointer_s": 65.31,
     "keyboard_only_journey": {
       "fitts_refined_total_s": null,
       "operator_counts": {
         "B": 0,
         "H": 0,
-        "K": 207,
+        "K": 189,
         "M": 9,
         "P": 0
       },
       "operators": [
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "open-change"
-        },
         {
           "note": "Tab",
           "op": "K",
@@ -1223,18 +1688,6 @@
           "step": "select-meaning"
         },
         {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "select-meaning"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "select-meaning"
-        },
-        {
           "note": "Enter",
           "op": "K",
           "seconds": 0.28,
@@ -1334,36 +1787,6 @@
           "note": "Decide which role must act next",
           "op": "M",
           "seconds": 1.35,
-          "step": "actor-registrar"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "actor-registrar"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "actor-registrar"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "actor-registrar"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "actor-registrar"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
           "step": "actor-registrar"
         },
         {
@@ -1649,36 +2072,6 @@
           "step": "actor-unassigned"
         },
         {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "actor-unassigned"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "actor-unassigned"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "actor-unassigned"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "actor-unassigned"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "actor-unassigned"
-        },
-        {
           "note": "ArrowUp",
           "op": "K",
           "seconds": 0.28,
@@ -1707,36 +2100,6 @@
           "op": "K",
           "seconds": 0.28,
           "step": "denied-recommend"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "open-evidence"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "open-evidence"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "open-evidence"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "open-evidence"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "open-evidence"
         },
         {
           "note": "Tab",
@@ -2203,8 +2566,8 @@
       ],
       "per_step_s": {
         "acknowledge": 1.91,
-        "actor-registrar": 9.19,
-        "actor-unassigned": 8.63,
+        "actor-registrar": 7.79,
+        "actor-unassigned": 7.23,
         "answer-assignment": 3.03,
         "answer-authority": 4.99,
         "answer-reject_entry": 5.55,
@@ -2214,22 +2577,22 @@
         "ask-interpretations": 0.28,
         "create-case": 0.56,
         "denied-recommend": 0.84,
-        "open-change": 2.8,
-        "open-evidence": 6.72,
+        "open-change": 2.52,
+        "open-evidence": 5.32,
         "open-review-subject": 2.8,
         "open-try": 1.68,
         "recommend-teacher": 0.56,
         "reset-preview": 1.12,
         "run-verification": 1.12,
-        "select-meaning": 2.75,
+        "select-meaning": 2.19,
         "submit-teacher": 0.84,
         "type-request": 11.43
       },
-      "total_s": 70.11
+      "total_s": 65.07
     },
     "placement_rules": "M is placed once per deliberate decision or reading moment (annotated per step in journey.py); H is derived from every mouse<->keyboard switch; a click is P + B + B; Shift counts as its own K; select lists model open and choose as two P+B+B; scrolling and system response R are NOT in the standard total",
     "pointer_journey": {
-      "fitts_refined_total_s": 56.488,
+      "fitts_refined_total_s": 56.276,
       "operator_counts": {
         "B": 48,
         "H": 8,
@@ -2797,7 +3160,7 @@
           "step": "run-verification"
         },
         {
-          "note": "point at Review this exact subject · eligible for local review · 8abf",
+          "note": "point at Review this exact subject · eligible for local review · ffd5",
           "op": "P",
           "seconds": 1.1,
           "step": "open-review-subject"
@@ -3226,33 +3589,33 @@
   "measured": {
     "doherty": {
       "citation": "Doherty & Thadani 1982 (IBM Systems Journal 21(1)); ~400 ms",
-      "first_feedback_p50_ms": 0.8,
-      "first_feedback_p95_ms": 6.7,
+      "first_feedback_p50_ms": 0.7,
+      "first_feedback_p95_ms": 7,
       "interactions_measured": 45,
-      "journey_wait_p50_sum_s": 2.246,
-      "keyboard_settled_p50_ms": 83.6,
-      "keyboard_settled_p95_ms": 1004.8,
+      "journey_wait_p50_sum_s": 1.983,
+      "keyboard_settled_p50_ms": 91.9,
+      "keyboard_settled_p95_ms": 913,
       "method": "nearest-rank percentiles over all repeats; medians and interquartile range are the headline, p95 is the maximum with few samples",
       "native_control_interactions_excluded": [
         "acknowledge"
       ],
       "note": "settled = last DOM mutation before quiescence, from the click event; excludes OS/browser input latency",
-      "settled_max_ms": 1502.5,
-      "settled_p25_ms": 7.5,
-      "settled_p50_ms": 98.6,
-      "settled_p75_ms": 136,
-      "settled_p95_ms": 843.2,
+      "settled_max_ms": 937.6,
+      "settled_p25_ms": 6,
+      "settled_p50_ms": 95.1,
+      "settled_p75_ms": 114.6,
+      "settled_p95_ms": 825,
       "steps": [
         {
-          "first_feedback_p50_ms": 6.7,
-          "first_feedback_p95_ms": 9,
+          "first_feedback_p50_ms": 5.9,
+          "first_feedback_p95_ms": 8.2,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 5.7,
-          "settled_p50_ms": 6.7,
-          "settled_p75_ms": 9,
-          "settled_p95_ms": 9,
+          "settled_p25_ms": 5.6,
+          "settled_p50_ms": 5.9,
+          "settled_p75_ms": 8.2,
+          "settled_p95_ms": 8.2,
           "step": "open-change"
         },
         {
@@ -3261,10 +3624,10 @@
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 85.5,
-          "settled_p50_ms": 86.6,
-          "settled_p75_ms": 104.7,
-          "settled_p95_ms": 104.7,
+          "settled_p25_ms": 87.8,
+          "settled_p50_ms": 93.4,
+          "settled_p75_ms": 95.1,
+          "settled_p95_ms": 95.1,
           "step": "create-case"
         },
         {
@@ -3273,154 +3636,154 @@
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 97.2,
-          "settled_p50_ms": 104.2,
-          "settled_p75_ms": 120.9,
-          "settled_p95_ms": 120.9,
+          "settled_p25_ms": 86.6,
+          "settled_p50_ms": 93.3,
+          "settled_p75_ms": 100.1,
+          "settled_p95_ms": 100.1,
           "step": "ask-interpretations"
         },
         {
-          "first_feedback_p50_ms": 0.6,
-          "first_feedback_p95_ms": 1.2,
+          "first_feedback_p50_ms": 0.5,
+          "first_feedback_p95_ms": 0.8,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 100.1,
-          "settled_p50_ms": 114.2,
-          "settled_p75_ms": 137.4,
-          "settled_p95_ms": 137.4,
+          "settled_p25_ms": 113.5,
+          "settled_p50_ms": 117.3,
+          "settled_p75_ms": 119.4,
+          "settled_p95_ms": 119.4,
           "step": "select-meaning"
         },
         {
-          "first_feedback_p50_ms": 4,
-          "first_feedback_p95_ms": 4.3,
+          "first_feedback_p50_ms": 3.6,
+          "first_feedback_p95_ms": 3.8,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 3.9,
-          "settled_p50_ms": 4,
-          "settled_p75_ms": 4.3,
-          "settled_p95_ms": 4.3,
+          "settled_p25_ms": 3.2,
+          "settled_p50_ms": 3.6,
+          "settled_p75_ms": 3.8,
+          "settled_p95_ms": 3.8,
           "step": "open-try"
         },
         {
           "first_feedback_p50_ms": 0.8,
-          "first_feedback_p95_ms": 1.6,
-          "median_over_400ms": false,
-          "over_400ms": false,
-          "samples": 3,
-          "settled_p25_ms": 90.1,
-          "settled_p50_ms": 101.6,
-          "settled_p75_ms": 144.5,
-          "settled_p95_ms": 144.5,
-          "step": "reset-preview"
-        },
-        {
-          "first_feedback_p50_ms": 0.9,
           "first_feedback_p95_ms": 1.2,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 97.4,
-          "settled_p50_ms": 98.6,
-          "settled_p75_ms": 124.7,
-          "settled_p95_ms": 124.7,
-          "step": "submit-teacher"
+          "settled_p25_ms": 91.9,
+          "settled_p50_ms": 97.8,
+          "settled_p75_ms": 114.6,
+          "settled_p95_ms": 114.6,
+          "step": "reset-preview"
         },
         {
-          "first_feedback_p50_ms": 0.5,
-          "first_feedback_p95_ms": 0.7,
+          "first_feedback_p50_ms": 0.8,
+          "first_feedback_p95_ms": 0.8,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 94.9,
-          "settled_p50_ms": 115.9,
-          "settled_p75_ms": 127.4,
-          "settled_p95_ms": 127.4,
+          "settled_p25_ms": 86.6,
+          "settled_p50_ms": 97,
+          "settled_p75_ms": 114.2,
+          "settled_p95_ms": 114.2,
+          "step": "submit-teacher"
+        },
+        {
+          "first_feedback_p50_ms": 0.6,
+          "first_feedback_p95_ms": 0.6,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 95.6,
+          "settled_p50_ms": 98.2,
+          "settled_p75_ms": 98.4,
+          "settled_p95_ms": 98.4,
           "step": "recommend-teacher"
         },
         {
           "first_feedback_p50_ms": 0.6,
-          "first_feedback_p95_ms": 0.7,
+          "first_feedback_p95_ms": 0.6,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 95.5,
-          "settled_p50_ms": 99.7,
-          "settled_p75_ms": 136,
-          "settled_p95_ms": 136,
+          "settled_p25_ms": 86.8,
+          "settled_p50_ms": 95.3,
+          "settled_p75_ms": 101.5,
+          "settled_p95_ms": 101.5,
           "step": "approve-registrar"
         },
         {
-          "first_feedback_p50_ms": 1.1,
-          "first_feedback_p95_ms": 1.5,
+          "first_feedback_p50_ms": 0.6,
+          "first_feedback_p95_ms": 0.6,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 6.9,
-          "settled_p50_ms": 7.5,
-          "settled_p75_ms": 13.5,
-          "settled_p95_ms": 13.5,
+          "settled_p25_ms": 5.3,
+          "settled_p50_ms": 5.6,
+          "settled_p75_ms": 6,
+          "settled_p95_ms": 6,
           "step": "denied-recommend"
         },
         {
-          "first_feedback_p50_ms": 6.7,
-          "first_feedback_p95_ms": 8,
+          "first_feedback_p50_ms": 7,
+          "first_feedback_p95_ms": 8.5,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 6.7,
-          "settled_p50_ms": 6.7,
-          "settled_p75_ms": 8,
-          "settled_p95_ms": 8,
+          "settled_p25_ms": 5,
+          "settled_p50_ms": 7,
+          "settled_p75_ms": 8.5,
+          "settled_p95_ms": 8.5,
           "step": "open-evidence"
         },
         {
-          "first_feedback_p50_ms": 0.6,
-          "first_feedback_p95_ms": 1.2,
+          "first_feedback_p50_ms": 0.4,
+          "first_feedback_p95_ms": 0.4,
           "median_over_400ms": true,
           "over_400ms": true,
           "samples": 3,
-          "settled_p25_ms": 843.2,
-          "settled_p50_ms": 1099.7,
-          "settled_p75_ms": 1502.5,
-          "settled_p95_ms": 1502.5,
+          "settled_p25_ms": 825,
+          "settled_p50_ms": 890.7,
+          "settled_p75_ms": 937.6,
+          "settled_p95_ms": 937.6,
           "step": "run-verification"
         },
         {
           "first_feedback_p50_ms": 0.8,
-          "first_feedback_p95_ms": 1.6,
+          "first_feedback_p95_ms": 1.1,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
           "settled_p25_ms": 0.7,
           "settled_p50_ms": 0.8,
-          "settled_p75_ms": 1.6,
-          "settled_p95_ms": 1.6,
+          "settled_p75_ms": 1.1,
+          "settled_p95_ms": 1.1,
           "step": "open-review-subject"
         },
         {
-          "first_feedback_p50_ms": 0.9,
-          "first_feedback_p95_ms": 2.2,
+          "first_feedback_p50_ms": 1,
+          "first_feedback_p95_ms": 1.1,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 140.1,
-          "settled_p50_ms": 149.9,
-          "settled_p75_ms": 209.6,
-          "settled_p95_ms": 209.6,
+          "settled_p25_ms": 127.2,
+          "settled_p50_ms": 143.4,
+          "settled_p75_ms": 148.9,
+          "settled_p95_ms": 148.9,
           "step": "approve-exact"
         },
         {
-          "first_feedback_p50_ms": 0.7,
-          "first_feedback_p95_ms": 1.6,
+          "first_feedback_p50_ms": 0.6,
+          "first_feedback_p95_ms": 0.6,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 225.5,
-          "settled_p50_ms": 250.1,
-          "settled_p75_ms": 264.4,
-          "settled_p95_ms": 264.4,
+          "settled_p25_ms": 216.9,
+          "settled_p50_ms": 234,
+          "settled_p75_ms": 236.2,
+          "settled_p95_ms": 236.2,
           "step": "apply-baseline"
         }
       ],
@@ -3444,12 +3807,37 @@
   ],
   "recommendations": [
     {
-      "category": "doherty",
-      "change": "First DOM mutation after the click came within 6.7 ms (p95; paint not measured), while completion for the slow steps takes longer than 400 ms. For the slow steps show a determinate progress message, keep the previous result visible until the new one lands, and profile where the time goes before optimising anything.",
+      "category": "keyboard",
+      "change": "Keep or restore keyboard focus across updates: update the activated control in place, or re-focus the same control after the update, and move focus deliberately to new content on tab changes (WCAG 2.4.3 Focus Order, 3.2.2).",
       "evidence": {
-        "first_feedback_p95_ms": 6.7,
+        "max_tab_presses_for_one_target": 20,
+        "steps": [
+          "ask-interpretations"
+        ],
+        "tab_presses_after_loss": 2
+      },
+      "id": "focus-lost-after-render",
+      "laws": [
+        "WCAG 2.4.3",
+        "KLM"
+      ],
+      "likely_cause": "the render step replaces whole regions of the DOM (for example replaceChildren), destroying the focused element (hypothesis; a code search agrees, the probe does not observe it)",
+      "predicted_effect": "upper bound: 0.6 s is every Tab press on the step after a focus loss, including presses that would be needed anyway; not a difference against a preserved-focus counterfactual",
+      "predicted_saving_s": 0.56,
+      "rank": 1,
+      "rank_saving_s": 0.0,
+      "saving_kind": "upper bound",
+      "severity": 4,
+      "targets": [],
+      "title": "1/16 keyboard activations dropped focus to <body>"
+    },
+    {
+      "category": "doherty",
+      "change": "First DOM mutation after the click came within 7 ms (p95; paint not measured), while completion for the slow steps takes longer than 400 ms. For the slow steps show a determinate progress message, keep the previous result visible until the new one lands, and profile where the time goes before optimising anything.",
+      "evidence": {
+        "first_feedback_p95_ms": 7,
         "slow_steps": [
-          "run-verification: p50 1099.7 / p95 1502.5 ms"
+          "run-verification: p50 890.7 / p95 937.6 ms"
         ]
       },
       "id": "doherty-completion",
@@ -3459,10 +3847,10 @@
       "likely_cause": "the server-side work per action, possibly the durable SQLite commit path, dominates (hypothesis; no profile was taken)",
       "predicted_effect": "measured on this machine; wall-clock, sensitive to load from other processes",
       "predicted_saving_s": 0.0,
-      "rank": 1,
+      "rank": 2,
       "rank_saving_s": 0.0,
       "saving_kind": "model difference",
-      "severity": 4,
+      "severity": 3,
       "targets": [
         "run-verification"
       ],
@@ -3473,9 +3861,9 @@
       "change": "Align DOM order with visual order (WCAG 2.4.3).",
       "evidence": {
         "examples": [
-          "Persisted audit and simulated outbox -> Skip to workspace",
-          "Persisted audit and simulated outbox -> Skip to workspace",
-          "Persisted audit and simulated outbox -> Skip to workspace",
+          "Attempt details, diagnostic and persisted audit -> Skip to workspace",
+          "Attempt details, diagnostic and persisted audit -> Skip to workspace",
+          "Attempt details, diagnostic and persisted audit -> Skip to workspace",
           "modelled impact closurePASS Case-wide technical claim -> bend proofUNKNOWN sealed tool verdict · case-wide"
         ]
       },
@@ -3486,7 +3874,7 @@
       "likely_cause": "",
       "predicted_effect": "",
       "predicted_saving_s": 0.0,
-      "rank": 2,
+      "rank": 3,
       "rank_saving_s": 0.0,
       "saving_kind": "model difference",
       "severity": 3,
@@ -3499,8 +3887,8 @@
       "evidence": {
         "keyboard_only_journey_tab_presses": {
           "acknowledge": 1,
-          "actor-registrar": 25,
-          "actor-unassigned": 24,
+          "actor-registrar": 20,
+          "actor-unassigned": 19,
           "answer-assignment": 1,
           "answer-authority": 1,
           "answer-reject_entry": 1,
@@ -3510,14 +3898,14 @@
           "ask-interpretations": 0,
           "create-case": 1,
           "denied-recommend": 2,
-          "open-change": 9,
-          "open-evidence": 23,
+          "open-change": 8,
+          "open-evidence": 18,
           "open-review-subject": 9,
           "open-try": 5,
           "recommend-teacher": 1,
           "reset-preview": 3,
           "run-verification": 3,
-          "select-meaning": 4,
+          "select-meaning": 2,
           "submit-teacher": 2,
           "type-request": 0
         },
@@ -3535,7 +3923,7 @@
       "likely_cause": "",
       "predicted_effect": "model: 3.6 s of 65.3 s expert time (6%)",
       "predicted_saving_s": 3.64,
-      "rank": 3,
+      "rank": 4,
       "rank_saving_s": 3.64,
       "saving_kind": "model difference",
       "severity": 2,
@@ -3546,38 +3934,13 @@
       "title": "Review answers: move between fields with Tab instead of point-click and re-homing"
     },
     {
-      "category": "fitts",
-      "change": "Place each flagged target closer to the previous one (halve D) and give short targets an effective height of at least 44 px (W >= 44 px). Note the centre-landing convention overstates D for wide targets; see the nearest-edge column.",
-      "evidence": {
-        "moves": [
-          "open-try: D=706.0 px, W=41 px, ID=4.187 bits, MT=0.925 s"
-        ]
-      },
-      "id": "fitts-id-over-4",
-      "laws": [
-        "Fitts",
-        "MacKenzie & Buxton 1992"
-      ],
-      "likely_cause": "primary actions may sit at the far edge of a section while the preceding target is on the other side of the screen (hypothesis from the geometry table, not from the UI code)",
-      "predicted_effect": "model: halving D and W>=44 px saves 0.17 s of pointing time across the flagged moves",
-      "predicted_saving_s": 0.168,
-      "rank": 4,
-      "rank_saving_s": 0.168,
-      "saving_kind": "model difference",
-      "severity": 2,
-      "targets": [
-        "#workspace > div:nth-of-type(4) > nav > button:nth-of-type(5)"
-      ],
-      "title": "1 pointer move(s) exceed 4 bits"
-    },
-    {
       "category": "keyboard",
       "change": "Reduce the Tab distance to the slowest target: group related controls into a single tab stop with arrow-key navigation (WAI-ARIA composite widget pattern with roving tabindex) or provide a skip link past repeated regions.",
       "evidence": {
         "tab_presses_by_step": {
           "acknowledge": 1,
-          "actor-registrar": 25,
-          "actor-unassigned": 24,
+          "actor-registrar": 20,
+          "actor-unassigned": 19,
           "answer-assignment": 1,
           "answer-authority": 1,
           "answer-reject_entry": 1,
@@ -3587,14 +3950,14 @@
           "ask-interpretations": 0,
           "create-case": 1,
           "denied-recommend": 2,
-          "open-change": 9,
-          "open-evidence": 23,
+          "open-change": 8,
+          "open-evidence": 18,
           "open-review-subject": 9,
           "open-try": 5,
           "recommend-teacher": 1,
           "reset-preview": 3,
           "run-verification": 3,
-          "select-meaning": 4,
+          "select-meaning": 2,
           "submit-teacher": 2,
           "type-request": 0
         }
@@ -3612,7 +3975,7 @@
       "saving_kind": "model difference",
       "severity": 2,
       "targets": [],
-      "title": "Reaching one control took 25 Tab presses"
+      "title": "Reaching one control took 20 Tab presses"
     },
     {
       "category": "working-memory",
@@ -3620,25 +3983,43 @@
       "evidence": {
         "label": "HEURISTIC PROXY - counts what is simultaneously visible, not what a person holds in memory",
         "views": [
-          "applied: 37",
-          "change-empty: 31",
-          "change-options: 40",
-          "change-selected: 31",
-          "create-panel: 32",
-          "evidence-approved: 37",
-          "evidence-review-open: 35",
-          "evidence-verified: 39",
-          "impact-tab: 31",
-          "start: 41",
-          "try-denied: 40",
-          "try-draft: 38",
-          "try-idle: 38",
-          "workspace-menu-1440-impact: 61",
-          "workspace-menu-320-impact: 35",
-          "workspace-menu-390-impact: 43"
+          "applied: 26",
+          "change-empty: 25",
+          "change-options: 26",
+          "change-selected: 22",
+          "create-panel: 24",
+          "evidence-approved: 27",
+          "evidence-review-open: 27",
+          "evidence-verified: 30",
+          "impact-tab: 22",
+          "inspection/canvas-view-1440: 50",
+          "inspection/domain-inspector-1440: 43",
+          "inspection/intent-alternatives-1440: 25",
+          "inspection/intent-alternatives-320: 18",
+          "inspection/intent-controls-1440: 27",
+          "inspection/intent-controls-320: 22",
+          "inspection/intent-record-1440: 26",
+          "inspection/intent-record-320: 21",
+          "inspection/runtime-attempt-1440: 38",
+          "inspection/runtime-attempt-320: 22",
+          "inspection/workspace-connections-1440: 20",
+          "inspection/workspace-connections-320: 18",
+          "inspection/workspace-layout-1440: 21",
+          "inspection/workspace-layout-320: 17",
+          "inspection/workspace-panels-1440: 20",
+          "inspection/workspace-panels-320: 18",
+          "inspection/workspace-work-views-1440: 23",
+          "inspection/workspace-work-views-320: 18",
+          "start: 27",
+          "try-denied: 29",
+          "try-draft: 27",
+          "try-idle: 27",
+          "workspace-menu-1440-impact: 17",
+          "workspace-menu-320-impact: 17",
+          "workspace-menu-390-impact: 17"
         ],
-        "worst_chunks": 61,
-        "worst_view": "workspace-menu-1440-impact"
+        "worst_chunks": 50,
+        "worst_view": "inspection/canvas-view-1440"
       },
       "id": "working-memory-proxy",
       "laws": [
@@ -3653,14 +4034,14 @@
       "saving_kind": "model difference",
       "severity": 2,
       "targets": [],
-      "title": "16/16 views show more than 9 chunks at once (proxy)"
+      "title": "34/34 views show more than 9 chunks at once (proxy)"
     },
     {
       "category": "hick",
       "change": "Keep one visually dominant primary action per view and demote the rest (secondary/text buttons), which lowers effective uncertainty for first-time users (Hyman).",
       "evidence": {
         "max_group_choices": 7,
-        "max_screen_controls": 26,
+        "max_screen_controls": 21,
         "note": "upper bound; the choice groups themselves are all <= 7"
       },
       "id": "hick-screen-load",
@@ -3668,10 +4049,10 @@
         "Hick-Hyman"
       ],
       "likely_cause": "",
-      "predicted_effect": "if a novice searched the whole screen instead of the choice group: +2.80 s (upper bound, model)",
-      "predicted_saving_s": 2.8,
+      "predicted_effect": "if a novice searched the whole screen instead of the choice group: +2.52 s (upper bound, model)",
+      "predicted_saving_s": 2.518,
       "rank": 7,
-      "rank_saving_s": 2.8,
+      "rank_saving_s": 2.518,
       "saving_kind": "model difference",
       "severity": 1,
       "targets": [],
@@ -3681,8 +4062,8 @@
       "category": "klm",
       "change": "Not a defect by itself; use it to decide where shortcuts (tab shortcuts, access keys) pay off.",
       "evidence": {
-        "keyboard_K": 207,
-        "keyboard_total_s": 70.11,
+        "keyboard_K": 189,
+        "keyboard_total_s": 65.07,
         "pointer_total_s": 65.31
       },
       "id": "klm-keyboard-vs-pointer",
@@ -3697,7 +4078,7 @@
       "saving_kind": "model difference",
       "severity": 1,
       "targets": [],
-      "title": "Keyboard-only journey costs 70.1 s vs 65.3 s with the pointer (model)"
+      "title": "Keyboard-only journey costs 65.1 s vs 65.3 s with the pointer (model)"
     },
     {
       "category": "klm",
@@ -3734,19 +4115,31 @@
     "http_error_responses": [
       {
         "method": "POST",
-        "path": "/api/cases/a0c8e6f4ea8b4984b6e5ca8d39c71058/execute",
+        "path": "/api/cases/1cfd99a440b2452d8c3ebf1d61c1230e/execute",
         "status": 409,
         "step": "denied-recommend"
       },
       {
         "method": "POST",
-        "path": "/api/cases/efec1af3f79342e08867f3caf515b7fa/execute",
+        "path": "/api/cases/1f2a417685634738ba99055951c8130a/execute",
         "status": 409,
         "step": "denied-recommend"
       },
       {
         "method": "POST",
-        "path": "/api/cases/fae3461ffc1c4f74b4b963589fb6ba71/execute",
+        "path": "/api/cases/4ead04bf534b4c8d88c705e78c9f2c75/execute",
+        "status": 409,
+        "step": "denied-recommend"
+      },
+      {
+        "method": "POST",
+        "path": "/api/cases/c5a7a1e4dd8141648a812a5345503637/execute",
+        "status": 409,
+        "step": "denied-recommend"
+      },
+      {
+        "method": "POST",
+        "path": "/api/cases/d3ae5baf8f7c4434ac6758023a3a3069/execute",
         "status": 409,
         "step": "denied-recommend"
       }
@@ -3758,6 +4151,14 @@
   "wcag": {
     "engine": "axe-core (tags wcag2a, wcag2aa, wcag21a, wcag21aa, wcag22aa)",
     "needs_review_rules": [
+      {
+        "id": "aria-prohibited-attr",
+        "impact": "serious",
+        "views": [
+          "inspection/canvas-view-1440",
+          "inspection/domain-inspector-1440"
+        ]
+      },
       {
         "id": "aria-valid-attr-value",
         "impact": "critical",
@@ -3771,6 +4172,24 @@
           "evidence-review-open",
           "evidence-verified",
           "impact-tab",
+          "inspection/canvas-view-1440",
+          "inspection/domain-inspector-1440",
+          "inspection/intent-alternatives-1440",
+          "inspection/intent-alternatives-320",
+          "inspection/intent-controls-1440",
+          "inspection/intent-controls-320",
+          "inspection/intent-record-1440",
+          "inspection/intent-record-320",
+          "inspection/runtime-attempt-1440",
+          "inspection/runtime-attempt-320",
+          "inspection/workspace-connections-1440",
+          "inspection/workspace-connections-320",
+          "inspection/workspace-layout-1440",
+          "inspection/workspace-layout-320",
+          "inspection/workspace-panels-1440",
+          "inspection/workspace-panels-320",
+          "inspection/workspace-work-views-1440",
+          "inspection/workspace-work-views-320",
           "start",
           "try-denied",
           "try-draft",
@@ -3784,6 +4203,9 @@
         "id": "color-contrast",
         "impact": "serious",
         "views": [
+          "inspection/canvas-view-1440",
+          "inspection/domain-inspector-1440",
+          "inspection/workspace-connections-320",
           "start"
         ]
       }
@@ -3814,7 +4236,7 @@
       "elements": []
     },
     "target_size_2_5_8": {
-      "controls_audited": 88,
+      "controls_audited": 103,
       "exceptions_not_evaluated": [
         "inline",
         "user-agent controlled",
@@ -3822,12 +4244,12 @@
         "essential"
       ],
       "status_counts": {
-        "pass": 88
+        "pass": 103
       },
       "undersized_or_failing": [
         {
           "effective_px": [
-            1078,
+            1332,
             44
           ],
           "name": "I understand this is a local synthetic demo, with human outc",
@@ -3841,7 +4263,7 @@
         },
         {
           "effective_px": [
-            1104,
+            1058,
             44
           ],
           "name": "I consent to sending this request and synthetic model to the",
@@ -3865,6 +4287,24 @@
       "evidence-review-open",
       "evidence-verified",
       "impact-tab",
+      "inspection/canvas-view-1440",
+      "inspection/domain-inspector-1440",
+      "inspection/intent-alternatives-1440",
+      "inspection/intent-alternatives-320",
+      "inspection/intent-controls-1440",
+      "inspection/intent-controls-320",
+      "inspection/intent-record-1440",
+      "inspection/intent-record-320",
+      "inspection/runtime-attempt-1440",
+      "inspection/runtime-attempt-320",
+      "inspection/workspace-connections-1440",
+      "inspection/workspace-connections-320",
+      "inspection/workspace-layout-1440",
+      "inspection/workspace-layout-320",
+      "inspection/workspace-panels-1440",
+      "inspection/workspace-panels-320",
+      "inspection/workspace-work-views-1440",
+      "inspection/workspace-work-views-320",
       "start",
       "try-denied",
       "try-draft",
@@ -3881,196 +4321,136 @@
       "Miller 1956 (7 +/- 2)",
       "Cowan 2001 (about 4)"
     ],
-    "definition": "chunks = visible controls, including disabled controls (a checkbox and its label are one), + groups of visible static text/heading atoms that share a parent element; viewport = first screen at scroll top, page = whole rendered view. Independent pane overflow clips are intersected; partially visible items still count. Raw layout-box counts and clipped exclusions are retained; absent values identify older traces without this accounting.",
+    "definition": "chunks = visible controls, including disabled controls (a checkbox and its label are one), + groups of visible static text/heading atoms that share a parent element; viewport = first screen at scroll top for canonical journey views; inspection views use the actual viewport after native activation, with document and pane scroll positions retained in view.observed. Page = whole rendered view. Independent pane overflow clips are intersected; partially visible items still count. Raw layout-box counts and clipped exclusions are retained; absent values identify older traces without this accounting.",
     "label": "HEURISTIC PROXY - counts what is simultaneously visible, not what a person holds in memory",
     "summary": {
-      "max_chunks_viewport": 61,
-      "views": 16,
-      "views_over_miller_9": 16
+      "max_chunks_viewport": 50,
+      "views": 34,
+      "views_over_miller_9": 34
     },
     "views": [
       {
-        "atoms_viewport": 49,
-        "chunks_page": 37,
-        "chunks_viewport": 37,
-        "content_groups": 10,
-        "controls": 27,
+        "atoms_viewport": 33,
+        "chunks_page": 26,
+        "chunks_viewport": 26,
+        "content_groups": 5,
+        "controls": 21,
         "excluded_clipped_chunks": 3,
         "over_cowan_4": true,
         "over_miller_9": true,
-        "raw_chunks_viewport": 40,
+        "raw_chunks_viewport": 29,
         "view": "applied"
       },
       {
-        "atoms_viewport": 44,
-        "chunks_page": 31,
-        "chunks_viewport": 31,
-        "content_groups": 13,
-        "controls": 18,
-        "excluded_clipped_chunks": 0,
-        "over_cowan_4": true,
-        "over_miller_9": true,
-        "raw_chunks_viewport": 31,
-        "view": "change-empty"
-      },
-      {
-        "atoms_viewport": 62,
-        "chunks_page": 40,
-        "chunks_viewport": 40,
-        "content_groups": 16,
-        "controls": 24,
-        "excluded_clipped_chunks": 0,
-        "over_cowan_4": true,
-        "over_miller_9": true,
-        "raw_chunks_viewport": 40,
-        "view": "change-options"
-      },
-      {
-        "atoms_viewport": 45,
-        "chunks_page": 31,
-        "chunks_viewport": 31,
-        "content_groups": 13,
-        "controls": 18,
-        "excluded_clipped_chunks": 1,
-        "over_cowan_4": true,
-        "over_miller_9": true,
-        "raw_chunks_viewport": 32,
-        "view": "change-selected"
-      },
-      {
-        "atoms_viewport": 44,
-        "chunks_page": 32,
-        "chunks_viewport": 32,
-        "content_groups": 15,
+        "atoms_viewport": 32,
+        "chunks_page": 25,
+        "chunks_viewport": 25,
+        "content_groups": 8,
         "controls": 17,
         "excluded_clipped_chunks": 0,
         "over_cowan_4": true,
         "over_miller_9": true,
-        "raw_chunks_viewport": 32,
+        "raw_chunks_viewport": 25,
+        "view": "change-empty"
+      },
+      {
+        "atoms_viewport": 37,
+        "chunks_page": 26,
+        "chunks_viewport": 26,
+        "content_groups": 9,
+        "controls": 17,
+        "excluded_clipped_chunks": 0,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 26,
+        "view": "change-options"
+      },
+      {
+        "atoms_viewport": 32,
+        "chunks_page": 22,
+        "chunks_viewport": 22,
+        "content_groups": 8,
+        "controls": 14,
+        "excluded_clipped_chunks": 1,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 23,
+        "view": "change-selected"
+      },
+      {
+        "atoms_viewport": 30,
+        "chunks_page": 24,
+        "chunks_viewport": 24,
+        "content_groups": 8,
+        "controls": 16,
+        "excluded_clipped_chunks": 0,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 24,
         "view": "create-panel"
       },
       {
-        "atoms_viewport": 49,
-        "chunks_page": 37,
-        "chunks_viewport": 37,
-        "content_groups": 10,
-        "controls": 27,
+        "atoms_viewport": 34,
+        "chunks_page": 27,
+        "chunks_viewport": 27,
+        "content_groups": 5,
+        "controls": 22,
         "excluded_clipped_chunks": 3,
         "over_cowan_4": true,
         "over_miller_9": true,
-        "raw_chunks_viewport": 40,
+        "raw_chunks_viewport": 30,
         "view": "evidence-approved"
       },
       {
-        "atoms_viewport": 47,
-        "chunks_page": 35,
-        "chunks_viewport": 35,
-        "content_groups": 10,
-        "controls": 25,
-        "excluded_clipped_chunks": 7,
-        "over_cowan_4": true,
-        "over_miller_9": true,
-        "raw_chunks_viewport": 42,
-        "view": "evidence-review-open"
-      },
-      {
-        "atoms_viewport": 57,
-        "chunks_page": 39,
-        "chunks_viewport": 39,
-        "content_groups": 17,
-        "controls": 22,
-        "excluded_clipped_chunks": 0,
-        "over_cowan_4": true,
-        "over_miller_9": true,
-        "raw_chunks_viewport": 39,
-        "view": "evidence-verified"
-      },
-      {
-        "atoms_viewport": 45,
-        "chunks_page": 31,
-        "chunks_viewport": 31,
-        "content_groups": 13,
-        "controls": 18,
-        "excluded_clipped_chunks": 1,
+        "atoms_viewport": 34,
+        "chunks_page": 27,
+        "chunks_viewport": 27,
+        "content_groups": 6,
+        "controls": 21,
+        "excluded_clipped_chunks": 5,
         "over_cowan_4": true,
         "over_miller_9": true,
         "raw_chunks_viewport": 32,
-        "view": "impact-tab"
+        "view": "evidence-review-open"
       },
       {
-        "atoms_viewport": 56,
-        "chunks_page": 41,
-        "chunks_viewport": 41,
-        "content_groups": 18,
-        "controls": 23,
+        "atoms_viewport": 43,
+        "chunks_page": 30,
+        "chunks_viewport": 30,
+        "content_groups": 12,
+        "controls": 18,
         "excluded_clipped_chunks": 0,
         "over_cowan_4": true,
         "over_miller_9": true,
-        "raw_chunks_viewport": 41,
-        "view": "start"
+        "raw_chunks_viewport": 30,
+        "view": "evidence-verified"
       },
       {
-        "atoms_viewport": 56,
-        "chunks_page": 40,
-        "chunks_viewport": 40,
-        "content_groups": 14,
-        "controls": 26,
-        "excluded_clipped_chunks": 0,
-        "over_cowan_4": true,
-        "over_miller_9": true,
-        "raw_chunks_viewport": 40,
-        "view": "try-denied"
-      },
-      {
-        "atoms_viewport": 53,
-        "chunks_page": 38,
-        "chunks_viewport": 38,
-        "content_groups": 13,
-        "controls": 25,
-        "excluded_clipped_chunks": 0,
-        "over_cowan_4": true,
-        "over_miller_9": true,
-        "raw_chunks_viewport": 38,
-        "view": "try-draft"
-      },
-      {
-        "atoms_viewport": 52,
-        "chunks_page": 38,
-        "chunks_viewport": 38,
-        "content_groups": 13,
-        "controls": 25,
-        "excluded_clipped_chunks": 0,
-        "over_cowan_4": true,
-        "over_miller_9": true,
-        "raw_chunks_viewport": 38,
-        "view": "try-idle"
-      },
-      {
-        "atoms_viewport": 82,
-        "chunks_page": 61,
-        "chunks_viewport": 61,
-        "content_groups": 22,
-        "controls": 39,
-        "excluded_clipped_chunks": 0,
-        "over_cowan_4": true,
-        "over_miller_9": true,
-        "raw_chunks_viewport": 61,
-        "view": "workspace-menu-1440-impact"
-      },
-      {
-        "atoms_viewport": 41,
-        "chunks_page": 35,
-        "chunks_viewport": 35,
-        "content_groups": 11,
-        "controls": 24,
+        "atoms_viewport": 32,
+        "chunks_page": 22,
+        "chunks_viewport": 22,
+        "content_groups": 8,
+        "controls": 14,
         "excluded_clipped_chunks": 1,
         "over_cowan_4": true,
         "over_miller_9": true,
-        "raw_chunks_viewport": 36,
-        "view": "workspace-menu-320-impact"
+        "raw_chunks_viewport": 23,
+        "view": "impact-tab"
       },
       {
-        "atoms_viewport": 53,
+        "atoms_viewport": 66,
+        "chunks_page": 50,
+        "chunks_viewport": 50,
+        "content_groups": 17,
+        "controls": 33,
+        "excluded_clipped_chunks": 1,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 51,
+        "view": "inspection/canvas-view-1440"
+      },
+      {
+        "atoms_viewport": 57,
         "chunks_page": 43,
         "chunks_viewport": 43,
         "content_groups": 14,
@@ -4079,6 +4459,282 @@
         "over_cowan_4": true,
         "over_miller_9": true,
         "raw_chunks_viewport": 44,
+        "view": "inspection/domain-inspector-1440"
+      },
+      {
+        "atoms_viewport": 36,
+        "chunks_page": 25,
+        "chunks_viewport": 25,
+        "content_groups": 8,
+        "controls": 17,
+        "excluded_clipped_chunks": 2,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 27,
+        "view": "inspection/intent-alternatives-1440"
+      },
+      {
+        "atoms_viewport": 22,
+        "chunks_page": 18,
+        "chunks_viewport": 18,
+        "content_groups": 5,
+        "controls": 13,
+        "excluded_clipped_chunks": 4,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 22,
+        "view": "inspection/intent-alternatives-320"
+      },
+      {
+        "atoms_viewport": 38,
+        "chunks_page": 27,
+        "chunks_viewport": 27,
+        "content_groups": 9,
+        "controls": 18,
+        "excluded_clipped_chunks": 1,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 28,
+        "view": "inspection/intent-controls-1440"
+      },
+      {
+        "atoms_viewport": 26,
+        "chunks_page": 22,
+        "chunks_viewport": 22,
+        "content_groups": 7,
+        "controls": 15,
+        "excluded_clipped_chunks": 1,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 23,
+        "view": "inspection/intent-controls-320"
+      },
+      {
+        "atoms_viewport": 38,
+        "chunks_page": 26,
+        "chunks_viewport": 26,
+        "content_groups": 10,
+        "controls": 16,
+        "excluded_clipped_chunks": 4,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 30,
+        "view": "inspection/intent-record-1440"
+      },
+      {
+        "atoms_viewport": 25,
+        "chunks_page": 21,
+        "chunks_viewport": 21,
+        "content_groups": 8,
+        "controls": 13,
+        "excluded_clipped_chunks": 4,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 25,
+        "view": "inspection/intent-record-320"
+      },
+      {
+        "atoms_viewport": 56,
+        "chunks_page": 38,
+        "chunks_viewport": 38,
+        "content_groups": 14,
+        "controls": 24,
+        "excluded_clipped_chunks": 0,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 38,
+        "view": "inspection/runtime-attempt-1440"
+      },
+      {
+        "atoms_viewport": 27,
+        "chunks_page": 22,
+        "chunks_viewport": 22,
+        "content_groups": 8,
+        "controls": 14,
+        "excluded_clipped_chunks": 3,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 25,
+        "view": "inspection/runtime-attempt-320"
+      },
+      {
+        "atoms_viewport": 24,
+        "chunks_page": 20,
+        "chunks_viewport": 20,
+        "content_groups": 7,
+        "controls": 13,
+        "excluded_clipped_chunks": 0,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 20,
+        "view": "inspection/workspace-connections-1440"
+      },
+      {
+        "atoms_viewport": 21,
+        "chunks_page": 18,
+        "chunks_viewport": 18,
+        "content_groups": 7,
+        "controls": 11,
+        "excluded_clipped_chunks": 0,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 18,
+        "view": "inspection/workspace-connections-320"
+      },
+      {
+        "atoms_viewport": 25,
+        "chunks_page": 21,
+        "chunks_viewport": 21,
+        "content_groups": 6,
+        "controls": 15,
+        "excluded_clipped_chunks": 0,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 21,
+        "view": "inspection/workspace-layout-1440"
+      },
+      {
+        "atoms_viewport": 20,
+        "chunks_page": 17,
+        "chunks_viewport": 17,
+        "content_groups": 6,
+        "controls": 11,
+        "excluded_clipped_chunks": 1,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 18,
+        "view": "inspection/workspace-layout-320"
+      },
+      {
+        "atoms_viewport": 24,
+        "chunks_page": 20,
+        "chunks_viewport": 20,
+        "content_groups": 6,
+        "controls": 14,
+        "excluded_clipped_chunks": 0,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 20,
+        "view": "inspection/workspace-panels-1440"
+      },
+      {
+        "atoms_viewport": 21,
+        "chunks_page": 18,
+        "chunks_viewport": 18,
+        "content_groups": 6,
+        "controls": 12,
+        "excluded_clipped_chunks": 0,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 18,
+        "view": "inspection/workspace-panels-320"
+      },
+      {
+        "atoms_viewport": 27,
+        "chunks_page": 23,
+        "chunks_viewport": 23,
+        "content_groups": 6,
+        "controls": 17,
+        "excluded_clipped_chunks": 0,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 23,
+        "view": "inspection/workspace-work-views-1440"
+      },
+      {
+        "atoms_viewport": 21,
+        "chunks_page": 18,
+        "chunks_viewport": 18,
+        "content_groups": 6,
+        "controls": 12,
+        "excluded_clipped_chunks": 1,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 19,
+        "view": "inspection/workspace-work-views-320"
+      },
+      {
+        "atoms_viewport": 33,
+        "chunks_page": 27,
+        "chunks_viewport": 27,
+        "content_groups": 10,
+        "controls": 17,
+        "excluded_clipped_chunks": 0,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 27,
+        "view": "start"
+      },
+      {
+        "atoms_viewport": 40,
+        "chunks_page": 29,
+        "chunks_viewport": 29,
+        "content_groups": 8,
+        "controls": 21,
+        "excluded_clipped_chunks": 0,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 29,
+        "view": "try-denied"
+      },
+      {
+        "atoms_viewport": 37,
+        "chunks_page": 27,
+        "chunks_viewport": 27,
+        "content_groups": 7,
+        "controls": 20,
+        "excluded_clipped_chunks": 0,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 27,
+        "view": "try-draft"
+      },
+      {
+        "atoms_viewport": 36,
+        "chunks_page": 27,
+        "chunks_viewport": 27,
+        "content_groups": 7,
+        "controls": 20,
+        "excluded_clipped_chunks": 0,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 27,
+        "view": "try-idle"
+      },
+      {
+        "atoms_viewport": 21,
+        "chunks_page": 17,
+        "chunks_viewport": 17,
+        "content_groups": 6,
+        "controls": 11,
+        "excluded_clipped_chunks": 0,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 17,
+        "view": "workspace-menu-1440-impact"
+      },
+      {
+        "atoms_viewport": 20,
+        "chunks_page": 17,
+        "chunks_viewport": 17,
+        "content_groups": 6,
+        "controls": 11,
+        "excluded_clipped_chunks": 0,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 17,
+        "view": "workspace-menu-320-impact"
+      },
+      {
+        "atoms_viewport": 20,
+        "chunks_page": 17,
+        "chunks_viewport": 17,
+        "content_groups": 6,
+        "controls": 11,
+        "excluded_clipped_chunks": 0,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 17,
         "view": "workspace-menu-390-impact"
       }
     ]

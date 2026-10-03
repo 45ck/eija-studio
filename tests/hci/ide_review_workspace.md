@@ -93,9 +93,11 @@ are weakened to accommodate the natural-scale default. Preview comparisons keep
 their prior fitting behavior and existing prospective-edit checks.
 
 Actual zoom and keyboard pan must retain center, scale and selected case/revision
-through resize and a Model-to-Changes rerender. An explicitly selected Overview
-must retain its mode and framing through that rerender. Hidden-mount recovery,
-preview defaults, and direct graph selection during summary-driven resize have
-additional actual-handler Node coverage; no browser coverage is claimed for
-those narrower cases by this augmentation. Run status remains NOT_RUN until a
-fresh retained execution binds these source and replay bytes.
+through resize and a Model-to-Changes hide/show cycle. An explicitly selected
+Overview must retain its mode and framing through that same hide/show cycle;
+these browser actions do not recreate the comparison. Same-subject viewport
+restoration, hidden-mount recovery, preview defaults, and direct graph selection
+during summary-driven resize have additional actual-handler Node coverage; no
+browser coverage is claimed for those narrower cases by this augmentation. Run
+status remains NOT_RUN until a fresh retained execution binds these source and
+replay bytes.

@@ -666,6 +666,55 @@
         }
       }
     },
+    "/api/cases/{case_id}/edit/propose": {
+      "post": {
+        "summary": "Propose Edit",
+        "operationId": "propose_edit_api_cases__case_id__edit_propose_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditPropose"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TypedEditProposal"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/cases/{case_id}/edit/check": {
       "post": {
         "summary": "Edit Check",
@@ -1799,6 +1848,47 @@
         "title": "EditPreview",
         "description": "An uncommitted candidate bound to a captured case revision; no evidence or edit authority."
       },
+      "EditProposalPack": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "digest": {
+            "type": "string",
+            "title": "Digest"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "digest"
+        ],
+        "title": "EditProposalPack"
+      },
+      "EditPropose": {
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Version"
+          },
+          "request": {
+            "type": "string",
+            "maxLength": 6000,
+            "minLength": 1,
+            "title": "Request"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version",
+          "request"
+        ],
+        "title": "EditPropose"
+      },
       "ExecuteCommand": {
         "properties": {
           "operation_id": {
@@ -2291,6 +2381,60 @@
           "forbidden_effects"
         ],
         "title": "Transition"
+      },
+      "TypedEditProposal": {
+        "properties": {
+          "scope": {
+            "type": "string",
+            "const": "typed-edit-proposal",
+            "title": "Scope",
+            "default": "typed-edit-proposal"
+          },
+          "provider": {
+            "type": "string",
+            "const": "offline",
+            "title": "Provider",
+            "default": "offline"
+          },
+          "model": {
+            "type": "string",
+            "const": "typed-edit-fixture-v1",
+            "title": "Model",
+            "default": "typed-edit-fixture-v1"
+          },
+          "live": {
+            "type": "boolean",
+            "const": false,
+            "title": "Live",
+            "default": false
+          },
+          "trust": {
+            "type": "string",
+            "const": "UNTRUSTED_PROPOSAL",
+            "title": "Trust",
+            "default": "UNTRUSTED_PROPOSAL"
+          },
+          "request": {
+            "type": "string",
+            "maxLength": 6000,
+            "minLength": 1,
+            "title": "Request"
+          },
+          "pack": {
+            "$ref": "#/components/schemas/EditProposalPack"
+          },
+          "preview": {
+            "$ref": "#/components/schemas/EditPreview"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request",
+          "pack",
+          "preview"
+        ],
+        "title": "TypedEditProposal"
       },
       "ValidationError": {
         "properties": {

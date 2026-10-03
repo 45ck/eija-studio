@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Protocol, ContextManager, Any, Callable
 from eija_studio.domain.formal import FormalArtifact
 from eija_studio.domain.models import Proposal, Workflow
+from eija_studio.domain.transactions import Transaction
 
 @dataclass(frozen=True)
 class ProviderResult:
@@ -19,6 +20,10 @@ class ProposalProvider(Protocol):
     networked: bool
     def propose(self, request: str, model: Workflow) -> ProviderResult: ...
     def doctor(self) -> dict[str, Any]: ...
+
+class EditProposer(Protocol):
+    """Offline request resolution only; returns an untrusted transaction and performs no IO or persistence."""
+    def propose(self, request: str, model: Workflow, choices: tuple[Transaction, ...]) -> dict[str, Any]: ...
 
 class UnitOfWork(Protocol):
     """All mutations on this port commit together or roll back together."""

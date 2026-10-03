@@ -27,7 +27,10 @@ def _collect(args: argparse.Namespace) -> tuple[dict | None, int]:
         print("NOT_RUN: " + detail)
         return None, NOT_RUN
     try:
-        return journey.collect(repeats=args.repeats, headless=not args.headed, identity=args.identity), 0
+        return journey.collect(
+            repeats=args.repeats, headless=not args.headed, identity=args.identity,
+            inspection_out=Path(args.out) / "inspection",
+        ), 0
     except journey.ReleaseIdentityUnavailable as exc:
         print("NOT_RUN: " + str(exc))
         return None, NOT_RUN
@@ -37,11 +40,13 @@ def _collect(args: argparse.Namespace) -> tuple[dict | None, int]:
 
 
 def lane_status(rep: dict) -> str:
-    """The lane's verdict for quality.metrics.aggregate: FAIL when any budget regressed past its ratchet, else PASS.
+    """FAIL when a budget regressed or a required inspection state lacks successful captured evidence.
 
     A GAP (the ratchet holds but the target is not met) is a documented gap, not a regression; it stays visible per
     budget in the report. This says nothing about usability for people (see docs/hci/README.md)."""
-    return "FAIL" if any(b["status"] == "FAIL" for b in rep["budgets"]) else "PASS"
+    inspection = rep.get("inspection")
+    incomplete = inspection is not None and not inspection["completed"]
+    return "FAIL" if incomplete or any(b["status"] == "FAIL" for b in rep["budgets"]) else "PASS"
 
 
 def write_lane_report(rep: dict, out: Path) -> None:
@@ -65,6 +70,8 @@ def _print_summary(rep: dict, out: Path) -> list[dict]:
     )
     for b in fails:
         print(f"FAIL {b['id']}: {b['value']} {b['unit']} > limit {b['limit']}")
+    for issue in rep.get("inspection", {}).get("issues", []):
+        print("FAIL inspection: " + issue)
     return fails
 
 
@@ -76,7 +83,8 @@ def cmd_run(args: argparse.Namespace) -> int:
     _write_outputs(rep, raw, Path(args.out))
     if args.publish_docs:
         report.publish_docs(rep, raw)
-    return 1 if _print_summary(rep, Path(args.out)) else 0
+    _print_summary(rep, Path(args.out))
+    return 1 if lane_status(rep) == "FAIL" else 0
 
 
 def cmd_rederive(_: argparse.Namespace) -> int:

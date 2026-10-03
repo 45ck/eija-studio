@@ -1,0 +1,3 @@
+# Keep one authored pack tree in the sdist; setup.py projects it into wheel resources.
+include setup.py
+recursive-include packs *.json

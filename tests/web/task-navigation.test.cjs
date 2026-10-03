@@ -80,6 +80,37 @@ function assertCandidateSurface(h,id){
   assert.equal(h.s.inspectorSelection.id,id);assert.equal(h.get("evidence-subject").dataset.displayedModel,"working");assert.equal(h.get("evidence-subject").dataset.caseId,"case-A");assert.equal(h.get("evidence-subject").dataset.revision,"4");
   assert.match(h.get("model-empty").textContent,/Every edit is checked/);assert.equal(h.get("transition-select").focused,true);assert.ok(h.reveals.every(([area])=>area==="model"));
 }
+
+test("read-only model inspection retains values and constraints with a direct return to the working candidate",()=>{
+  for(const view of ["baseline","history"]){
+    const h=subjectHarness();h.s.modelView=view;h.s.renderWorkbench();const original=JSON.stringify(h.s.current);
+    assert.equal(h.get("edit-fields").hidden,true);assert.equal(h.get("inspector-return-working").hidden,false);
+    assert.match(h.get("inspector-model-view").textContent,/read only/);assert.match(h.get("selection-detail").textContent,view==="baseline"?/Before send/:/Earlier send/);
+    assert.match(h.get("transition-details").textContent,/authorized/);
+    assert.equal(h.get("inspector-return-working").onclick(),true);assertCandidateSurface(h,"T");
+    assert.equal(h.get("edit-fields").hidden,false);assert.equal(h.get("inspector-return-working").hidden,true);
+    assert.match(h.get("inspector-model-view").textContent,/Working candidate.*revision 4/);assert.equal(JSON.stringify(h.s.current),original);
+  }
+  for(const stage of ["APPLIED","DISCARDED"]){const h=subjectHarness();h.s.current.case.stage=stage;h.s.modelView="baseline";h.s.renderWorkbench();h.get("inspector-return-working").onclick();assert.equal(h.get("edit-fields").hidden,true);assert.match(h.get("inspector-model-view").textContent,new RegExp(stage+".*read only"));assert.equal(h.get("edit-source").disabled,true);}
+});
+
+test("manual transition tools stay explicitly accessible and do not reopen on unrelated renders",()=>{
+  const h=subjectHarness();h.s.modelView="history";h.s.renderWorkbench();
+  assert.equal(h.get("manual-edit").open,false);assert.match(h.get("manual-edit-summary").textContent,/Manual transition edit/);
+  assert.equal(h.get("manual-select").onclick(),true);assertCandidateSurface(h,"T");assert.equal(h.get("manual-edit").open,true);
+  h.get("manual-edit").open=false;h.s.renderWorkbench();assert.equal(h.get("manual-edit").open,false);
+  const html=fs.readFileSync(path.join(__dirname,"../../src/eija_studio/resources/web/index.html"),"utf8"),manual=html.slice(html.indexOf('<details id="manual-edit"'),html.indexOf('</details>',html.indexOf('<details id="manual-edit"')));
+  assert.match(manual,/<summary id="manual-edit-summary">Manual transition edit<\/summary>/);assert.match(manual,/id="rejection-source"/);assert.match(manual,/id="edit-rule"/);assert.doesNotMatch(manual,/id="save"|id="discard"/);
+});
+
+test("gesture feedback belongs to its rendered canvas and ending it restores the actual view guidance",()=>{
+  const h=subjectHarness();h.s.renderWorkbench();const prior=h.projected.canvas.onGestureStatus;
+  prior("Release to preview Send source: A to B.");assert.match(h.get("model-empty").textContent,/Release to preview/);
+  h.s.renderWorkbench();const active=h.projected.canvas.onGestureStatus;
+  active("Current gesture");prior("Obsolete gesture");prior(null);assert.equal(h.get("model-empty").textContent,"Current gesture");
+  active(null);assert.match(h.get("model-empty").textContent,/Every edit is checked/);
+  h.s.modelView="baseline";h.s.renderWorkbench();active("Obsolete after view switch");assert.match(h.get("model-empty").textContent,/Original baseline.*read only/);
+});
 test("Rules uses the current candidate while historical or original previews remain available",()=>{
   for(const view of ["history","baseline"])for(const id of ["T","NEW"]){
     const h=subjectHarness();h.s.modelView=view;h.s.tab="impact";const before=JSON.stringify([h.s.current,h.historical]);h.s.renderWorkbench();
@@ -156,8 +187,9 @@ test("Run navigation focuses an enabled reset when its action is unavailable",()
   h.s.openComparisonImpact({reference:"runtime:Send"},{case:"case-A",revision:4,kind:"transition",id:"T"});assert.equal(h.get("reset").focused,true);assert.notEqual(h.get("runtime-state").focused,true);
 });
 test("subject regression oracle rejects the original partial switch even when the inspector looks current",()=>{
-  const marker='switchTab("model");renderWorkbench();EijaShell.reveal("inspector");';assert.ok(app.includes(marker));
-  const h=subjectHarness(app.replace(marker,'switchTab("model");renderEditor();renderSelectionDetail();renderCanvas();renderEvidenceContext();EijaShell.reveal("inspector");'));
+  const marker='switchTab("model");renderWorkbench();EijaShell.reveal("inspector");',start=app.indexOf("function inspectWorkingTransition("),end=app.indexOf("function openComparisonImpact(",start),inspector=app.slice(start,end);assert.ok(start>=0&&inspector.includes(marker));
+  const mutation=inspector.replace(marker,'switchTab("model");renderEditor();renderSelectionDetail();renderCanvas();renderEvidenceContext();EijaShell.reveal("inspector");');
+  const h=subjectHarness(app.slice(0,start)+mutation+app.slice(end));
   h.s.modelView="history";h.s.tab="impact";h.s.renderWorkbench();ruleButton(h,"T").onclick();assert.match(h.get("selection-detail").textContent,/A → C/);
   assert.throws(()=>assertCandidateSurface(h,"T"),assert.AssertionError);
 });
