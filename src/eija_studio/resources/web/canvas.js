@@ -3,6 +3,7 @@
 const EijaCanvas = (() => {
   const NS = "http://www.w3.org/2000/svg";
   const width = 190, height = 76, cornerRadius = 12;
+  const dragStops = new WeakMap();
   function paintedPort(point, node) {
     // Dagre clips to rectangular boxes. Project only that endpoint onto the
     // painted rounded outline; interior route points remain Dagre's output.
@@ -83,8 +84,70 @@ const EijaCanvas = (() => {
       if (["Enter", " "].includes(event.key)) { event.preventDefault(); callback(); }
     });
   }
+  function dragMessage(active, end, origin, node, choice) {
+    const subject = `${active.action} ${end}`;
+    if (!node) return `Move ${subject} from ${origin}. Drop on a state to preview.`;
+    const target = node.dataset.state;
+    if (choice?.legal === true) return `Release to preview ${subject}: ${origin} → ${target}.`;
+    if (choice?.legal === false) return `Refused ${subject}: ${origin} → ${target}. Release to inspect.`;
+    return target === origin ? `${subject} is already ${origin}. No change here.` : `No ${end} change is offered for ${target}.`;
+  }
+  function beginDrag(root, board, event, options) {
+    if (event.button !== 0) return;
+    const {end, x, y, active, affordances, onDrop, onNotice, onGestureStatus} = options;
+    dragStops.get(root)?.(); event.preventDefault();
+    const handle = event.currentTarget, pointer = event.pointerId;
+    const available = entries(affordances, active.id, "retarget_" + end);
+    const origin = end === "source" ? active.from_state : active.to_state;
+    const choiceFor = node => node && available.find(choice => choice.target === "state:" + node.dataset.state);
+    const targetAt = e => {
+      const node = document.elementFromPoint(e.clientX, e.clientY)?.closest(".model-node");
+      return node && board.contains(node) ? node : null;
+    };
+    const ghost = svg("line", {x1:x, y1:y, x2:x, y2:y, class:"drag-guide"});
+    let hovered, finished = false;
+    const hover = node => {
+      if (node === hovered) return;
+      hovered?.classList.remove("drop-hover"); hovered = node;
+      hovered?.classList.add("drop-hover");
+      onGestureStatus?.(dragMessage(active, end, origin, node, choiceFor(node)));
+    };
+    const move = e => {
+      if (e.pointerId !== pointer) return;
+      const matrix = board.getScreenCTM(); if (!matrix) return;
+      const point = new DOMPoint(e.clientX, e.clientY).matrixTransform(matrix.inverse());
+      ghost.setAttribute("x2", point.x); ghost.setAttribute("y2", point.y);
+      hover(targetAt(e));
+    };
+    const finish = () => {
+      if (finished) return; finished = true;
+      handle.removeEventListener("pointermove", move); handle.removeEventListener("pointerup", release);
+      handle.removeEventListener("pointercancel", cancel); handle.removeEventListener("lostpointercapture", cancel);
+      if (handle.hasPointerCapture(pointer)) handle.releasePointerCapture(pointer);
+      ghost.remove(); board.classList.remove("drag-active"); handle.classList.remove("drag-active");
+      for (const node of board.querySelectorAll(".model-node")) node.classList.remove("drop-legal", "drop-refused", "drop-neutral", "drop-hover");
+      if (dragStops.get(root) === finish) dragStops.delete(root);
+      onGestureStatus?.(null);
+    };
+    const cancel = e => {if (e.pointerId !== pointer) return; finish(); onNotice("Gesture cancelled; the model is unchanged.");};
+    const release = e => {
+      if (e.pointerId !== pointer) return;
+      const choice = choiceFor(targetAt(e)); finish();
+      if (choice) onDrop(choice); else onNotice("No different state selected; the model is unchanged.");
+    };
+    handle.setPointerCapture(pointer); board.append(ghost);
+    board.classList.add("drag-active"); handle.classList.add("drag-active");
+    for (const node of board.querySelectorAll(".model-node")) {
+      const choice = choiceFor(node);
+      node.classList.add(choice?.legal === true ? "drop-legal" : choice?.legal === false ? "drop-refused" : "drop-neutral");
+    }
+    handle.addEventListener("pointermove", move); handle.addEventListener("pointerup", release);
+    handle.addEventListener("pointercancel", cancel); handle.addEventListener("lostpointercapture", cancel);
+    dragStops.set(root, finish); hover(null);
+  }
   function render(root, options) {
-    const {model, layout, pack, selected, affordances, editable, onSelect, onDrop, onNotice} = options;
+    const {model, layout, pack, selected, affordances, editable, onSelect, onDrop, onNotice, onGestureStatus} = options;
+    dragStops.get(root)?.();
     root.replaceChildren();
     if (!model) return;
     let projection;
@@ -129,43 +192,11 @@ const EijaCanvas = (() => {
         const p = coords[end === "source" ? active.from_state : active.to_state];
         const x = p.x + (end === "source" ? 35 : width - 35), y = p.y + height;
         const handle = svg("g", {class: "edit-handle", "data-end": end, "aria-hidden": "true"});
-        handle.append(svg("circle", {cx: x, cy: y, r: 15}), svg("text", {x, y: y + 32, "text-anchor": "middle"}, end === "source" ? "Source" : "Target"));
-        handle.addEventListener("pointerdown", event => beginDrag(event, end, x, y)); board.append(handle);
+        handle.append(svg("circle", {cx: x, cy: y, r: 15}), svg("text", {x:x + (end === "source" ? -22 : 22), y:y + 5,
+          "text-anchor":end === "source" ? "end" : "start"}, end === "source" ? "Source" : "Target"));
+        handle.addEventListener("pointerdown", event => beginDrag(root, board, event,
+          {end, x, y, active, affordances, onDrop, onNotice, onGestureStatus})); board.append(handle);
       }
-    }
-    function beginDrag(event, end, x, y) {
-      if (event.button !== 0 || !active) return;
-      event.preventDefault();
-      const handle = event.currentTarget;
-      handle.setPointerCapture(event.pointerId);
-      const ghost = svg("line", {x1: x, y1: y, x2: x, y2: y, class: "drag-guide"});
-      board.append(ghost);
-      const available = entries(affordances, active.id, "retarget_" + end);
-      for (const node of board.querySelectorAll(".model-node")) {
-        const choice = available.find(a => a.target === "state:" + node.dataset.state);
-        node.classList.add(choice?.legal ? "drop-legal" : "drop-refused");
-      }
-      const move = e => {
-        const matrix = board.getScreenCTM();
-        if (!matrix) return;
-        const point = new DOMPoint(e.clientX, e.clientY).matrixTransform(matrix.inverse());
-        ghost.setAttribute("x2", point.x); ghost.setAttribute("y2", point.y);
-      };
-      const finish = e => {
-        handle.removeEventListener("pointermove", move); handle.removeEventListener("pointerup", release); handle.removeEventListener("pointercancel", cancel);
-        if (handle.hasPointerCapture(e.pointerId)) handle.releasePointerCapture(e.pointerId);
-        ghost.remove();
-        for (const node of board.querySelectorAll(".model-node")) node.classList.remove("drop-legal", "drop-refused");
-      };
-      const cancel = e => { finish(e); onNotice("Gesture cancelled; the model is unchanged."); };
-      const release = e => {
-        const node = document.elementFromPoint(e.clientX, e.clientY)?.closest(".model-node");
-        const choice = node && available.find(a => a.target === "state:" + node.dataset.state);
-        finish(e); handle.removeEventListener("pointerup", release);
-        if (choice) onDrop(choice);
-        else onNotice("No different state selected; the model is unchanged.");
-      };
-      handle.addEventListener("pointermove", move); handle.addEventListener("pointerup", release, {once: true}); handle.addEventListener("pointercancel", cancel, {once: true});
     }
     root.append(board);
   }

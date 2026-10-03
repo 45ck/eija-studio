@@ -187,3 +187,30 @@ body[data-workspace-chooser="true"] #ide-shell,body[data-workspace-chooser="true
 #agent-edit-status{margin:12px 0;overflow-wrap:anywhere}
 #agent-edit-details{margin-top:12px}
 #agent-edit-details pre{max-height:240px;overflow:auto}
+
+/* Intent keeps one request/result column; manual operations stay directly discoverable. */
+#change>.panel{max-width:1100px;width:100%;box-sizing:border-box}
+#manual-edit>summary{font-weight:600;cursor:pointer;min-height:32px;display:list-item;align-content:center}
+.manual-edit-body{padding-top:10px;display:grid;gap:12px}
+.manual-edit-body>p{margin:0}.manual-edit-body>button{justify-self:start}
+.intent-tools .case-actions{border-top:1px solid var(--border,#2b405c);padding-top:12px;margin-top:12px}
+.agent-edit-change{display:flex;align-items:center;flex-wrap:wrap;gap:12px 18px}
+#agent-edit-summary{font-size:15px;line-height:1.5;overflow-wrap:anywhere}
+#agent-edit-status:not([hidden]){padding:10px 12px;border-left:3px solid #6988af;background:#102036;border-radius:3px}
+#agent-edit-status[data-status=proposed]{border-left-color:#9fc9ff}
+#agent-edit-status[data-status=applied]{border-left-color:#8ed3ad;background:#122e28}
+#agent-edit-status:is([data-status=refused],[data-status=failed],[data-status=stale]){border-left-color:#edb982;background:#32271f}
+.inspector-model-context{border-bottom:1px solid #2b405c;padding-bottom:12px;margin-bottom:16px}
+#inspector-model-view{font-size:12px;font-weight:600;color:#c5d9f0;margin:0 0 8px}
+#inspector-return-working{width:100%;text-align:left}
+
+/* Canvas gesture feedback; append after existing canvas rules. No geometry changes. */
+.model-svg.drag-active,.model-svg.drag-active .edit-handle{cursor:grabbing}
+.model-svg.drag-active .edit-handle:not(.drag-active){opacity:.55}
+.edit-handle.drag-active circle{fill:#ffe2a1;stroke:#fff1ce;stroke-width:4}
+.edit-handle.drag-active text{fill:#fff1ce;font-weight:700}
+.model-svg.drag-active .model-node.drop-neutral .state-box{fill:#182c43;stroke:#527599;stroke-dasharray:none}
+.model-svg.drag-active .model-node.drop-hover .state-box{stroke:#ffe2a1;stroke-width:4;stroke-dasharray:none}
+.model-svg.drag-active .model-node.drop-hover .state-label{font-weight:750;fill:#fff4d9}
+.model-svg.drag-active .drag-guide{stroke:#ffe2a1;stroke-width:3}
+.edit-handle text{stroke-linejoin:round;pointer-events:none}

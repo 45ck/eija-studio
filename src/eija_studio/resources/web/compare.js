@@ -218,16 +218,17 @@ const EijaCompare = (() => {
       "data-source": edge.from_state, "data-target": edge.to_state, "data-status": edge.status,
       "aria-label": `${statusLabel[edge.status]}, ${edge.action}, ${edge.role}, ${edge.from_state} to ${edge.to_state}`});
     group.append(svg("path", {d: path, class: "compare-edge-hit"}), svg("path", {d: path, class: "compare-edge-line", "marker-end": `url(#${markerId})`}),
-      svg("text", {x: edge.label.x, y: edge.label.y - 8, "text-anchor": "middle", class: "compare-edge-label"}, edge.action),
-      svg("text", {x: edge.label.x, y: edge.label.y + 10, "text-anchor": "middle", class: "compare-status-label"}, statusLabel[edge.status]));
+      svg("text", {x: edge.label.x, y: edge.label.y - 8, "text-anchor": "middle", class: "compare-edge-label"}, edge.action));
+    if (edge.status !== "unchanged") group.append(svg("text", {x: edge.label.x, y: edge.label.y + 10, "text-anchor": "middle", class: "compare-status-label"}, statusLabel[edge.status]));
     selectable(s, group, item); board.append(group);
   }
   function drawNode(s, board, node) {
     const item = s.layout.inventory.items.find(value => value.key === `state:${node.id}`), group = svg("g", {class: `compare-node ${node.status}`, "data-state": node.id,
       "data-eija-id": `state:${node.id}`, "data-initial": node.initial, "data-status": node.status, "aria-label": `${node.id}, ${statusLabel[node.status]}${node.initial ? ", initial state" : ""}`});
+    const label = [node.initial ? "● Initial" : "", node.status !== "unchanged" ? statusLabel[node.status] : ""].filter(Boolean).join(" · ");
     group.append(svg("rect", {x: node.x, y: node.y, width: node.width, height: node.height, rx: 12, class: "compare-state-box"}),
-      svg("text", {x: node.x + 12, y: node.y + 29, class: "compare-state-label"}, node.id),
-      svg("text", {x: node.x + 12, y: node.y + 54, class: `compare-status-label${node.initial ? " compare-initial-label" : ""}`}, `${node.initial ? "● Initial · " : ""}${statusLabel[node.status]}`));
+      svg("text", {x: node.x + 12, y: node.y + (label ? 29 : 44), class: "compare-state-label"}, node.id));
+    if (label) group.append(svg("text", {x: node.x + 12, y: node.y + 54, class: `compare-status-label${node.initial ? " compare-initial-label" : ""}`}, label));
     const title = svg("title", {}, node.id); group.append(title); selectable(s, group, item); board.append(group);
   }
   function buildDetails(s) {

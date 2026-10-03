@@ -59,6 +59,7 @@ const EijaAgentEdit = (() => {
     const result = node("div", undefined, "agent-edit-result", "agent-edit-result");
     const summary = node("strong", undefined, "agent-edit-summary");
     const preview = node("button", "Preview proposed edit", "agent-edit-preview", "secondary"); preview.type = "button";
+    const change = node("div", undefined, "agent-edit-change", "agent-edit-change"); change.append(summary, preview);
     const links = node("div", undefined, "agent-edit-actions", "agent-edit-actions");
     const navButtons = [["model", "Open changed transition"], ["changes", "Review UML changes"], ["rules", "Inspect affected rules"]].map(([kind, text]) => {
       const button = node("button", text, "agent-edit-" + kind, "secondary"); button.type = "button";
@@ -67,7 +68,7 @@ const EijaAgentEdit = (() => {
     const details = node("details", undefined, "agent-edit-details");
     const exact = node("pre", undefined, "agent-edit-json"); exact.tabIndex = 0;
     details.append(node("summary", "Exact proposal and captured identity"), exact);
-    form.append(label, input, submit); result.append(summary, preview, links, details);
+    form.append(label, input, submit); result.append(change, links, details);
     root.replaceChildren(heading, scope, form, status, result);
     let caseId = null, attempt = null, sequence = 0, destroyed = false;
     const context = () => getContext();
@@ -87,6 +88,7 @@ const EijaAgentEdit = (() => {
       submit.disabled = !now?.editable || busy || !input.value?.trim();
       form.setAttribute("aria-busy", String(busy));
       status.dataset.status = phase;
+      status.hidden = !attempt && now?.editable === true;
       status.textContent = attempt?.message || (now?.editable ? "Describe one transition edit." : "Working candidate is read only. Your request is retained.");
       result.hidden = !attempt?.response;
       summary.textContent = attempt?.response ? describe(attempt.response) : "";

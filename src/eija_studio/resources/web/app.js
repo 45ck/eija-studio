@@ -661,7 +661,7 @@ function renderEditor() {
       if(!list.childElementCount)list.append(el("li","None declared"));group.append(list);details.append(group);
     }
   } else details.append(el("p", "Select an edge on the canvas or choose a transition above to inspect its guards and effects.", "muted"));
-  $("edit-fields").hidden=!target;
+  $("edit-fields").hidden=!target||!editable();
   for (const id of ["rejection-source", "diagram-source", "model-source"]) fillChoices(id, "retarget_source", target?.from_state);
   fillChoices("target-state", "retarget_target", target?.to_state); fillChoices("transition-role", "set_role", target?.role);
   for (const id of ["edit-rule", "edit-state", "edit-source", "edit-target", "edit-role", "cancel-draft"]) $(id).disabled = !editable() || !target;
@@ -669,11 +669,28 @@ function renderEditor() {
   $("diagram-label").textContent = target ? `${target.action} source state` : "Select a transition in Model first";
   const c=current?.case;
   $("rules-edit-help").textContent=editNeedsRefresh.has(c?.id)?"An edit submission needs reconciliation. Refresh this case before editing the last loaded model.":!c?.candidate?"The baseline is read only. Choose a supported meaning in Intent to create a candidate.":["APPLIED","DISCARDED"].includes(c.stage)?`This case is ${c.stage}; its model is read only. Open another case to make changes.`:modelView!=="working"?"The Model workspace shows a read-only preview. Choose a rule above to open the current candidate before editing.":target?`Editing ${target.action} (${target.id}) in the current candidate · revision ${c.version}. The kernel checks each submitted change.`:"Choose a rule above to select the current candidate transition to edit.";
+  $("manual-edit-summary").textContent=target?`Manual transition edit · ${target.action}`:"Manual transition edit";
+  $("manual-edit-help").textContent=$("rules-edit-help").textContent;
+  $("manual-select").disabled=!c?.candidate;
+  $("inspector-model-view").textContent=modelView==="baseline"?"Original baseline · read only":modelView==="history"?"Historical preview · read only":editNeedsRefresh.has(c?.id)?"Last loaded candidate · refresh required":!c?.candidate?"Loaded baseline · read only":["APPLIED","DISCARDED"].includes(c.stage)?`${c.stage} candidate · read only`:`Working candidate · revision ${c.version}`;
+  $("inspector-return-working").hidden=!c?.candidate||modelView==="working";
+}
+function returnToWorkingModel(){
+  if(!current?.case.candidate)return false;
+  modelView="working";switchTab("model");renderWorkbench();EijaShell.reveal("inspector");
+  ($("transition-inspector").hidden?$("model-version"):$("transition-select")).focus();return true;
+}
+$("inspector-return-working").onclick=returnToWorkingModel;
+$("manual-select").onclick=()=>{if(!returnToWorkingModel())return false;$("manual-edit").open=true;openTransitionPicker();return true;};
+function modelGuidance(){
+  return modelView==="history"?`Read-only historical preview · ${historyLabel}. Choose Working model to return.`:modelView==="baseline"?"Original baseline · read only. Switch to Working model to edit the candidate.":editable()?"Drag an endpoint or use the inspector. Every edit is checked by the kernel.":"Select a transition to inspect it. Start an intent to change the model.";
 }
 function renderCanvas() {
   $("canvas-direction").value=canvasDirection;
+  const surface=$("model-canvas"),gestureOwner={};surface.eijaGestureOwner=gestureOwner;
   EijaCanvas.render($("model-canvas"), {model: workingModel(), layout: current?.case.layout || {}, pack: workbench.pack.id,
-    direction:canvasDirection, selected: editId, affordances: affordanceData?.affordances, editable: editable(), onSelect: selectTransition, onDrop: commitChoice, onNotice: notice});
+    direction:canvasDirection, selected: editId, affordances: affordanceData?.affordances, editable: editable(), onSelect: selectTransition, onDrop: commitChoice, onNotice: notice,
+    onGestureStatus:message=>{if(surface.eijaGestureOwner===gestureOwner)$("model-empty").textContent=message??modelGuidance();}});
   EijaShell.mountCanvas(`${current?.case.id||workbench.pack.id}:${modelView}`);
 }
 function selectTransition(id) {const returnFocus=$("model-canvas").contains(document.activeElement);editId = id || null;inspectorSelection=editId?{kind:"transition",id:editId}:null;EijaShell.reveal("inspector");EijaTree.reveal($("domain-tree"),"transition",editId);renderEditor();renderSelectionDetail();renderCanvas();renderEvidenceContext();renderNavigator();if(returnFocus)$("model-canvas").querySelector(".model-edge.selected")?.focus();}
@@ -773,7 +790,7 @@ function renderWorkbench() {
   $("explorer-pack").textContent = pack.name; $("model-title").textContent = pack.name;
   $("model-revision").textContent = current ? `r${current.case.version} · ${modelView==="history"?"history":modelView==="baseline"?"original":current.case.candidate?"candidate":"baseline"}` : `v${pack.version}`;
   $("model-empty").hidden=false;
-  $("model-empty").textContent=modelView==="history"?`Read-only historical preview · ${historyLabel}. Choose Working model to return.`:modelView==="baseline"?"Original baseline · read only. Switch to Working model to edit the candidate.":editable()?"Drag an endpoint or use the inspector. Every edit is checked by the kernel.":"Select a transition to inspect it. Start an intent to change the model.";
+  $("model-empty").textContent=modelGuidance();
   $("model-version").querySelector('option[value="history"]').hidden=!historyModel;$("model-version").value=modelView;$("model-version").querySelector('option[value="baseline"]').disabled=!current?.case.candidate;
   $("undo-edit").disabled=!caseHistory?.can_undo||!current||editNeedsRefresh.has(current.case.id)||["APPLIED","DISCARDED"].includes(current.case.stage);
   $("redo-edit").disabled=!caseHistory?.can_redo||!current||editNeedsRefresh.has(current.case.id)||["APPLIED","DISCARDED"].includes(current.case.stage);

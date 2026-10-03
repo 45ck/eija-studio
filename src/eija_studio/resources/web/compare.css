@@ -8,6 +8,8 @@
 .paired-compare button:focus-visible,.paired-compare summary:focus-visible,.paired-compare [tabindex]:focus-visible,.compare-navigator button:focus-visible,.compare-navigator summary:focus-visible,.compare-navigator [tabindex]:focus-visible{outline:2px solid #b6d7ff;outline-offset:3px}
 .compare-header{display:flex;align-items:center;flex-wrap:wrap;gap:6px 12px;flex:none;position:relative}
 .compare-header h2{margin-right:auto}.compare-tools{display:flex;gap:4px;align-items:center;flex-wrap:wrap;margin:0}
+/* The edit dialog already supplies this heading; standalone comparisons keep it. */
+#edit-preview-comparison .compare-header h2{display:none}
 .compare-tools button{min-width:36px;text-align:center;padding:5px 9px;background:#182c43;color:#d3e4fa;border-color:#496487;font-weight:500}
 .compare-tools [data-compare-action=focus]{background:#274b74;border-color:#8dbbed;color:#f0f6ff}
 .compare-tools output{font-size:13px;min-width:43px;text-align:center}
@@ -33,6 +35,8 @@
 .compare-edge-line{fill:none;stroke:#9eb7d4;stroke-width:1.7;pointer-events:none}
 .compare-edge-label{font-size:14px;fill:#e6eef9;paint-order:stroke;stroke:#0c1a2a;stroke-width:4;stroke-linejoin:round}
 .compare-status-label{font-size:12px;fill:#bacce1;paint-order:stroke;stroke:#0c1a2a;stroke-width:3;stroke-linejoin:round}
+.compare-svg .changed .compare-edge-label,.compare-svg .compare-edge.selected .compare-edge-label{font-weight:650}
+.compare-svg .changed .compare-status-label,.compare-svg .compare-edge.selected .compare-status-label{font-weight:600;fill:#e6eef9}
 .compare-state-box{fill:#162b42;stroke:#7895b6;stroke-width:1.5}.compare-state-label{font-size:15px;fill:#f0f5fb}
 .compare-node,.compare-edge{cursor:pointer}
 .compare-svg .added .compare-state-box,.compare-svg .added .compare-edge-line{stroke:#9cdec1;stroke-width:2.5}
@@ -54,6 +58,7 @@
 /* One deterministic selected-field summary; ordinary review shares the visual pane height. */
 .compare-selected-fields{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 18px;padding:9px 12px;margin:0 0 10px;border:1px solid #647d9b;border-radius:6px;background:#192d43;color:#eff5fd;font-size:14px;line-height:1.5;overflow-wrap:anywhere}
 .compare-selected-fields .compare-preview-scope{color:#bed0e5;font-size:13px}.paired-compare .compare-selected-fields p{margin:0;white-space:pre-wrap;min-width:0}.compare-selected-fields strong{font-weight:650}
+.compare-selected-fields [data-compare-before]{color:#bed0e5}.compare-selected-fields [data-compare-after]{font-weight:650}
 .compare-change-summary{flex:none;margin:0;gap:4px 18px}
 .compare-summary-heading{display:flex;flex-wrap:wrap;align-items:baseline;gap:3px 14px;flex-basis:100%;min-width:0}
 .paired-compare .compare-summary-heading h3{margin:0}.compare-summary-scope{font-size:13px;color:#bed0e5}
