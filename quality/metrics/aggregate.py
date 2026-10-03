@@ -6,6 +6,7 @@ anything else is reported as UNKNOWN, never promoted to PASS; the formal-report 
 and `result`) and, at the top level or one level down (`summary`, `metrics`,
 `result`, `totals`), a small vocabulary of numeric fields mapped to canonical names. A missing
 directory or file is a NOT_RUN entry with the reason, so an absent lane can never look green.
+The known HCI trace.json observation shape is retained as a hashed input, not a lane verdict.
 
 Verification yield (states explored per technique) is derived only from reports that carry a
 states-explored figure; the runtime-matrix and impact-closure rows are measured by this lane's own
@@ -71,13 +72,34 @@ def _verdict(doc: Any) -> str:
     return next((v.upper() for v in (doc.get(k) for k in VERDICT_FIELDS) if isinstance(v, str)), "")
 
 
-def read_report(path: Path) -> dict:
+def _trace_pass(value: Any, modality: str) -> bool:
+    """Recognise the common observation containers, not the correctness of their contents."""
+    lists = ("steps", "operators", "pointer_targets", "errors", "http_failures")
+    return (isinstance(value, dict) and value.get("modality") == modality
+            and isinstance(value.get("views"), dict)
+            and all(isinstance(value.get(key), list) for key in lists))
+
+
+def _hci_trace(doc: Any) -> bool:
+    """The raw root emitted by quality.hci.journey.collect; verdict-bearing payloads cannot match."""
+    if not isinstance(doc, dict) or set(doc) != {"environment", "pointer_passes", "keyboard_pass"}:
+        return False
+    passes = doc["pointer_passes"]
+    return (isinstance(doc["environment"], dict) and isinstance(passes, list) and bool(passes)
+            and all(_trace_pass(value, "pointer") for value in passes)
+            and _trace_pass(doc["keyboard_pass"], "keyboard"))
+
+
+def read_report(path: Path, *, hci_trace: bool = False) -> dict:
     raw = path.read_bytes()
     entry: dict[str, Any] = {"file": rel(path), "sha256": hashlib.sha256(raw).hexdigest()}
     try:
         doc = json.loads(raw)
     except ValueError as exc:
         return {**entry, "status": "UNREADABLE", "reason": f"invalid JSON: {exc.__class__.__name__}"}
+    if hci_trace and _hci_trace(doc):
+        return {**entry, "kind": "hci_raw_trace",
+                "reason": "Raw HCI observations; the lane verdict belongs to report.json"}
     status = _verdict(doc)
     entry["status"] = status if status in STATUSES else "UNKNOWN"
     if isinstance(doc, dict) and isinstance(doc.get("technique"), str):
@@ -101,8 +123,17 @@ def _group(name: str, pattern: str, lane: str, reports: Path) -> dict:
     if not files:
         return {"group": name, "lane": lane, "status": NOT_RUN,
                 "reason": f"no reports/{pattern} (lane not run on this checkout)", "reports": []}
-    entries = [read_report(f) for f in files]
-    return {"group": name, "lane": lane, "status": _worst(entries), "reports": entries}
+    entries, inputs = [], []
+    for path in files:
+        entry = read_report(path, hci_trace=path.relative_to(reports).as_posix() == "hci/trace.json")
+        target = inputs if entry.get("kind") == "hci_raw_trace" else entries
+        target.append(entry)
+    result = {"group": name, "lane": lane, "status": _worst(entries) if entries else NOT_RUN, "reports": entries}
+    if inputs:
+        result["inputs"] = inputs
+    if not entries:
+        result["reason"] = "raw observations present, but no lane verdict report"
+    return result
 
 
 def collect(reports: Path = REPORTS) -> dict:

@@ -1,5 +1,8 @@
+import hashlib
 import json
 from pathlib import Path
+
+import pytest
 
 from quality.metrics import aggregate, budgets
 from quality.metrics.common import MEASURED, NOT_RUN
@@ -92,3 +95,109 @@ def test_verdict_and_string_result_are_read_verbatim_but_only_from_the_lane_itse
     write(tmp_path / "formal" / "typo.json", {"verdict": "PASSED"})
     by_file = {r["file"].rsplit("/", 1)[-1]: r["status"] for r in group(collect(tmp_path), "formal")["reports"]}
     assert by_file == {"smt.json": "PASS", "tla.json": "PASS", "both.json": "FAIL", "nested.json": "UNKNOWN", "typo.json": "UNKNOWN"}
+
+
+def hci_trace():
+    def observations(modality):
+        return {"modality": modality, "steps": [], "operators": [], "pointer_targets": [],
+                "views": {}, "errors": [], "http_failures": [], "responsive": None}
+    return {"environment": {}, "pointer_passes": [observations("pointer")],
+            "keyboard_pass": observations("keyboard")}
+
+
+def lane_budget(result):
+    return next(row for row in budgets.evaluate({"sections": {"lane_reports": result}}) if row["id"] == "LANE-01")
+
+
+@pytest.mark.parametrize("status", ["PASS", "FAIL"])
+def test_hci_trace_is_hashed_input_and_never_changes_the_lane_verdict(tmp_path, monkeypatch, status):
+    monkeypatch.setattr(aggregate, "rel", lambda p: p.relative_to(tmp_path).as_posix())
+    trace_path = tmp_path / "hci" / "trace.json"
+    trace = hci_trace()
+    trace["pointer_passes"][0]["audit_navigation"] = []  # additive observation fields remain raw data
+    write(trace_path, trace)
+    write(tmp_path / "hci" / "report.json", {"status": status})
+    result = collect(tmp_path)
+    hci = group(result, "hci")
+    assert hci["status"] == lane_budget(result)["status"] == status
+    assert [report["file"] for report in hci["reports"]] == ["hci/report.json"]
+    assert hci["inputs"] == [{"file": "hci/trace.json", "sha256": hashlib.sha256(trace_path.read_bytes()).hexdigest(),
+                              "kind": "hci_raw_trace", "reason": "Raw HCI observations; the lane verdict belongs to report.json"}]
+    assert aggregate.yield_rows(result) == []
+
+
+def test_hci_trace_without_a_verdict_report_is_not_run(tmp_path, monkeypatch):
+    monkeypatch.setattr(aggregate, "rel", lambda p: p.relative_to(tmp_path).as_posix())
+    write(tmp_path / "hci" / "trace.json", hci_trace())
+    result = collect(tmp_path)
+    hci = group(result, "hci")
+    assert hci["status"] == lane_budget(result)["status"] == NOT_RUN
+    assert hci["reports"] == [] and len(hci["inputs"]) == 1
+    assert "no lane verdict report" in hci["reason"]
+
+
+@pytest.mark.parametrize("report", [{"status": "passed"}, {"status": None}, {"unknown": True}, "{not json"])
+def test_raw_trace_cannot_hide_a_malformed_or_unknown_verdict_report(tmp_path, monkeypatch, report):
+    monkeypatch.setattr(aggregate, "rel", lambda p: p.relative_to(tmp_path).as_posix())
+    write(tmp_path / "hci" / "trace.json", hci_trace())
+    write(tmp_path / "hci" / "report.json", report)
+    result = collect(tmp_path)
+    assert group(result, "hci")["status"] == "UNKNOWN"
+    assert lane_budget(result)["status"] == "FAIL"
+    expected = "UNREADABLE" if isinstance(report, str) else "UNKNOWN"
+    assert group(result, "hci")["reports"][0]["status"] == expected
+
+
+@pytest.mark.parametrize("key", ["status", "verdict", "result"])
+@pytest.mark.parametrize("value", ["FAIL", "passed", None, {"status": "PASS"}])
+def test_trace_with_any_verdict_field_remains_a_report(tmp_path, monkeypatch, key, value):
+    monkeypatch.setattr(aggregate, "rel", lambda p: p.relative_to(tmp_path).as_posix())
+    trace = {**hci_trace(), key: value}
+    write(tmp_path / "hci" / "trace.json", trace)
+    write(tmp_path / "hci" / "report.json", {"status": "PASS"})
+    result = collect(tmp_path)
+    hci = group(result, "hci")
+    assert "inputs" not in hci and len(hci["reports"]) == 2
+    assert hci["status"] == ("FAIL" if value == "FAIL" else "UNKNOWN")
+    assert lane_budget(result)["status"] == "FAIL"
+
+
+@pytest.mark.parametrize("path", ["hci/other.json", "formal/trace.json", "testing/trace.json"])
+def test_trace_shape_at_an_unknown_path_remains_an_unknown_report(tmp_path, monkeypatch, path):
+    monkeypatch.setattr(aggregate, "rel", lambda p: p.relative_to(tmp_path).as_posix())
+    write(tmp_path / "hci" / "report.json", {"status": "PASS"})
+    write(tmp_path / path, hci_trace())
+    result = collect(tmp_path)
+    assert group(result, path.split("/")[0])["status"] == "UNKNOWN"
+    assert lane_budget(result)["status"] == "FAIL"
+
+
+@pytest.mark.parametrize("change", ["invalid_json", "missing_key", "extra_key", "environment", "empty_passes",
+                                    "passes_type", "pointer_type", "pointer_modality", "keyboard_type",
+                                    "keyboard_modality", "steps_type", "views_type"])
+def test_malformed_trace_shape_is_not_exempted_from_verdict_handling(tmp_path, monkeypatch, change):
+    monkeypatch.setattr(aggregate, "rel", lambda p: p.relative_to(tmp_path).as_posix())
+    trace = hci_trace()
+    mutations = {
+        "missing_key": lambda: trace.pop("environment"),
+        "extra_key": lambda: trace.update(extra=True),
+        "environment": lambda: trace.update(environment=[]),
+        "empty_passes": lambda: trace.update(pointer_passes=[]),
+        "passes_type": lambda: trace.update(pointer_passes={}),
+        "pointer_type": lambda: trace.update(pointer_passes=[None]),
+        "pointer_modality": lambda: trace["pointer_passes"][0].update(modality="keyboard"),
+        "keyboard_type": lambda: trace.update(keyboard_pass=None),
+        "keyboard_modality": lambda: trace["keyboard_pass"].update(modality="pointer"),
+        "steps_type": lambda: trace["pointer_passes"][0].update(steps={}),
+        "views_type": lambda: trace["keyboard_pass"].update(views=[]),
+    }
+    if change == "invalid_json":
+        trace = "{not json"
+    else:
+        mutations[change]()
+    write(tmp_path / "hci" / "trace.json", trace)
+    write(tmp_path / "hci" / "report.json", {"status": "PASS"})
+    result = collect(tmp_path)
+    hci = group(result, "hci")
+    assert "inputs" not in hci and hci["status"] == "UNKNOWN"
+    assert lane_budget(result)["status"] == "FAIL"

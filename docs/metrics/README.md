@@ -83,6 +83,8 @@ Read-only aggregation of `reports/formal/*.json`, `reports/mutation/summary.json
 
 A group's status is FAIL if any report is FAIL, else UNKNOWN if any is unknown or unreadable, else NOT_RUN if any is NOT_RUN, else PASS. This module never re-verifies another lane's claim.
 
+`reports/hci/trace.json` is the HCI writer's raw observation input, distinct from its verdict-bearing `report.json`. Only that exact relative path with the existing three-key root (`environment`, `pointer_passes`, `keyboard_pass`) and typed observation containers is classified separately. Its path and SHA-256 remain in the group's `inputs`; it supplies no verdict or verification yield. A trace alone leaves the group NOT_RUN. Extra top-level fields (including any verdict field), malformed shapes, invalid JSON, and trace-shaped files at other paths keep ordinary report handling, so unknown or unreadable reports still fail LANE-01. This is input classification, not trace validation or fresh-evidence verification.
+
 ### 5. HTTP latency (`performance`, `perf.py`)
 
 Sources: W. J. Doherty and A. J. Thadani, "The Economic Value of Rapid Response Time", IBM Systems Journal 1982 (the 400 ms threshold below which a user and computer stay in a productive loop); R. B. Miller, "Response time in man-computer conversational transactions", AFIPS 1968 and J. Nielsen, *Usability Engineering* 1993 (about 0.1 s feels instantaneous; about 1 s keeps the flow of thought; 10 s keeps attention).
