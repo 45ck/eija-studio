@@ -31,7 +31,7 @@ IGNORE = shutil.ignore_patterns("__pycache__", "*.pyc", "resources", "web")
 # `contracts/`, ...), so those trees must be in the copy too or the copy reports links the real repository does not have.
 PARTS = ("src/eija_studio", "docs", "quality", "tests", "scripts", "okf", "graph", "verification", "contracts", "demos", "examples",
          "evidence", "design", "provenance", ".githooks", ".github", ".claude")
-ROOT_FILES = ("noxfile.py", "AGENTS.md", "pyproject.toml", "README.md", "NOTICE.md", "MANIFEST.json", "CONTRIBUTING.md", "CHANGELOG.md")
+ROOT_FILES = ("noxfile.py", "setup.py", "AGENTS.md", "pyproject.toml", "README.md", "NOTICE.md", "MANIFEST.json", "CONTRIBUTING.md", "CHANGELOG.md")
 
 
 def _snapshot(root: Path) -> dict[str, bytes]:
