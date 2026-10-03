@@ -1,8 +1,11 @@
 {
-  "scope": "editable showcase replay snapshot",
-  "sha256": "dc7b717b1817e810dfdb48a97221743d03345aa9aeb2589eb0ccb9f88900beaf",
+  "scope": "editable refined showcase replay",
+  "sha256": "1db1d50e2b72346bbfb38eb54b894049f6351a065d5ef1572644d5323f09fa85",
+  "product_commit": "d861d454710e16234b5c8fdbf0881fb2d904a52f",
+  "subject_sha256": "57545ef107e23794e5e0872b6129da67a1c7d224b2d8b8ae5a8cecc0be4c3df6",
+  "static_checks": "AST, 16 parser checks, 5 JavaScript syntax expressions passed; independent static review found no blocker",
+  "browser_status": "REHEARSAL_RUNNING",
   "production_readiness": "NOT_CLAIMED",
   "live_inference": false,
-  "source_rewrite": false,
-  "utc": "2026-10-03T05:28:10.1820457Z"
+  "source_rewrite": false
 }

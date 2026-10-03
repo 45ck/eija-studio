@@ -189,14 +189,18 @@ def run_capture(args, accepted, replay, Recorder, record_take, encode, pr_cli):
             replay.expect(select).to_have_value(value)
             review.assert_view("model")
 
-        def model(self, *, for_drag=False, source_state="SAVED"):
-            self.tab("model")
+        def model(self, *, for_drag=False, source_state="SAVED", recenter=True):
+            if recenter:
+                self.tab("model")
+            else:
+                review.assert_view("model")
             replay.expect(self.page.locator("#transition-select")).to_have_value("TR-VERIFY")
-            if self.page.locator("#canvas-view").get_attribute("open") is None:
+            if recenter:
+                if self.page.locator("#canvas-view").get_attribute("open") is None:
+                    self.click("#canvas-view > summary")
+                self.click("#canvas-readable")
+                replay.expect(self.page.locator("#canvas-zoom")).to_have_text("100%")
                 self.click("#canvas-view > summary")
-            self.click("#canvas-readable")
-            replay.expect(self.page.locator("#canvas-zoom")).to_have_text("100%")
-            self.click("#canvas-view > summary")
             if for_drag:
                 selectors = ['#model-canvas .edit-handle[data-end="source"] circle',
                              '#model-canvas .model-node[data-state="PREVIEW"] .state-box']
@@ -320,6 +324,13 @@ def run_capture(args, accepted, replay, Recorder, record_take, encode, pr_cli):
         review.scene = scene
         review.stage = "disclosed-synthetic-setup"
         review.setup()
+        # Source stays read-only throughout. Fetch the independent oracle before the
+        # filmed sequence; the actual later UI navigation must return this whole value.
+        source_oracle = None
+        if args.story == "hero":
+            connection = review.workbench["connection"]
+            source_oracle = review.get("repository/source?" + urlencode({"reference": accepted.SOURCE, "expected_source_hash": connection["source_hash"]}))
+            review.immutable(review.initial)
         actor = Actor(scene)
         if args.story == "hero":
             clock["start"] = time.monotonic() - clock["origin"]
@@ -328,9 +339,10 @@ def run_capture(args, accepted, replay, Recorder, record_take, encode, pr_cli):
         if args.story == "pr-clip":
             clock["start"] = time.monotonic() - clock["origin"]
         result["setup"] = {"disclosed": "UI-created saved-path synthetic candidate; whole request filled through the real input",
-                           "request_prefilled_before_clip": args.story == "pr-clip",
-                           "case_id": review.case_id, "initial": review.initial}
-        actor.hold("request-ready", 1000 if args.story == "pr-clip" else 1800)
+                            "request_prefilled_before_clip": args.story == "pr-clip",
+                            "independent_read_only_source_oracle_before_story": source_oracle is not None,
+                            "case_id": review.case_id, "initial": review.initial}
+        actor.hold("request-ready", 1000 if args.story == "pr-clip" else 1200)
         review.stage = "real-offline-proposal"
         before = review.edit_preview_snapshot()
         with scene.page.expect_response(lambda response: response.request.method == "POST"
@@ -342,7 +354,7 @@ def run_capture(args, accepted, replay, Recorder, record_take, encode, pr_cli):
         expected = accepted.expected_source(before["view"]["case"]["candidate"], "SAVED")
         review.assert_proposal(before, wrapper, expected, accepted.TRANSACTION)
         replay.expect(scene.page.locator("#edit-preview")).to_be_hidden()
-        actor.hold("offline-proposal-visible", 1200 if args.story == "pr-clip" else 2200)
+        actor.hold("offline-proposal-visible", 1200 if args.story == "pr-clip" else 1800)
         review.stage = "kernel-preview-at-native-scale"
         actor.click("#agent-edit-preview")
         payload = review.inspect_edit_preview(before, expected, accepted.TRANSACTION)
@@ -350,7 +362,7 @@ def run_capture(args, accepted, replay, Recorder, record_take, encode, pr_cli):
         review.painted_preview(payload)
         review.initial_changed_values(payload, viewport[0])
         actor.pair("#edit-preview-comparison", payload, preview=True)
-        actor.hold("readable-proposed-uml", 4000 if args.story == "pr-clip" else 5200)
+        actor.hold("readable-proposed-uml", 4000)
         result["checks"].append({"id": "real-proposal-and-complete-preview", "status": "PASS"})
         if args.story == "pr-clip":
             review.immutable(before)
@@ -369,7 +381,7 @@ def run_capture(args, accepted, replay, Recorder, record_take, encode, pr_cli):
         selected = review.main_comparison().locator(".compare-selection")
         replay.expect(selected).to_have_attribute("data-id", "TR-VERIFY")
         actor.pair("#review-chapters", applied["view"], preview=False)
-        actor.hold("readable-persisted-uml", 5200)
+        actor.hold("readable-persisted-uml", 4000)
         result["checks"].append({"id": "explicit-apply-and-second-native-scale-uml", "status": "PASS"})
 
         review.stage = "linked-model-rules-source"
@@ -377,7 +389,7 @@ def run_capture(args, accepted, replay, Recorder, record_take, encode, pr_cli):
         review.settled()
         review.inspect_working(applied["view"])
         actor.model()
-        actor.hold("same-transition-in-model", 2300)
+        actor.hold("same-transition-in-model", 1800)
         review.stage = "real-baseline-candidate-dropdown-switch"
         before_switch = review.edit_preview_snapshot()
         assert before_switch == applied
@@ -414,7 +426,8 @@ def run_capture(args, accepted, replay, Recorder, record_take, encode, pr_cli):
             actor.click(f'#review-chapters [data-compare-reference="{accepted.SOURCE}"]')
         review.settled()
         connection = review.workbench["connection"]
-        source = review.get("repository/source?" + urlencode({"reference": accepted.SOURCE, "expected_source_hash": connection["source_hash"]}))
+        source = source_oracle
+        assert source is not None
         assert source_response.value.status == 200 and source_response.value.json() == source
         assert parse_qs(urlsplit(source_response.value.url).query)["expected_source_hash"] == [connection["source_hash"]]
         assert source["status"] == "connected" and source["read_only"] is True and source["reference"] == accepted.SOURCE
@@ -440,13 +453,14 @@ def run_capture(args, accepted, replay, Recorder, record_take, encode, pr_cli):
             source_scene.append(measured)
         result["readability"].append({"scene": "declared-source", "labels": source_scene})
         review.source_records.append(source)
-        actor.hold("declared-source-link-source-unchanged", 2400)
+        actor.hold("declared-source-link-source-unchanged", 1200)
         review.immutable(applied)
         result["checks"].append({"id": "same-identity-model-rules-declared-source", "status": "PASS"})
 
         review.stage = "native-scale-endpoint-drag"
         actor.model(for_drag=True)
         before_drag = review.edit_preview_snapshot()
+        resting_guidance = scene.page.locator("#model-empty").text_content()
         target_model = accepted.expected_source(before_drag["view"]["case"]["candidate"], "PREVIEW")
         transaction = {**accepted.TRANSACTION, "state": "PREVIEW"}
         choices = review.get(f"cases/{review.case_id}/affordances")["affordances"]
@@ -464,12 +478,16 @@ def run_capture(args, accepted, replay, Recorder, record_take, encode, pr_cli):
         scene.page.mouse.down()
         guide = scene.page.locator("#model-canvas .drag-guide")
         replay.expect(guide).to_have_count(1)
+        replay.expect(scene.page.locator('#model-canvas .edit-handle[data-end="source"]')).to_have_class(re.compile(r"\bdrag-active\b"))
+        replay.expect(scene.page.locator('#model-canvas .model-node[data-state="SAVED"]')).to_have_class(re.compile(r"\bdrop-neutral\b"))
         replay.expect(scene.page.locator('#model-canvas .model-node[data-state="PREVIEW"]')).to_have_class(re.compile(r"\bdrop-legal\b"))
         if args.record:
             scene._animate_to(end_point["x"], end_point["y"], 700, steps=24)
         else:
             scene.page.mouse.move(**end_point, steps=24)
         replay.expect(guide).to_be_visible()
+        replay.expect(scene.page.locator('#model-canvas .model-node[data-state="PREVIEW"]')).to_have_class(re.compile(r"\bdrop-hover\b"))
+        replay.expect(scene.page.locator("#model-empty")).to_have_text("Release to preview Verify source: SAVED → PREVIEW.")
         geometry = guide.evaluate("""n=>{const m=n.getScreenCTM(),s=getComputedStyle(n),a=new DOMPoint(n.x1.baseVal.value,n.y1.baseVal.value).matrixTransform(m),b=new DOMPoint(n.x2.baseVal.value,n.y2.baseVal.value).matrixTransform(m);return{start:{x:a.x,y:a.y},finish:{x:b.x,y:b.y},length:n.getTotalLength(),stroke:s.stroke,width:parseFloat(s.strokeWidth),opacity:Number(s.strokeOpacity)*Number(s.opacity)}}""")
         assert geometry["length"] > 0 and geometry["width"] > 0 and geometry["opacity"] > 0 and geometry["stroke"] not in {"none", "transparent"}
         for key, point in (("start", start_point), ("finish", end_point)):
@@ -479,6 +497,8 @@ def run_capture(args, accepted, replay, Recorder, record_take, encode, pr_cli):
         with scene.page.expect_response(lambda response: response.request.method == "POST" and urlsplit(response.url).path.endswith("/edit/preview")):
             scene.page.mouse.up()
         replay.expect(guide).to_have_count(0)
+        replay.expect(scene.page.locator("#model-canvas .drag-active, #model-canvas .drop-hover")).to_have_count(0)
+        replay.expect(scene.page.locator("#model-empty")).to_have_text(resting_guidance)
         preview = review.inspect_edit_preview(before_drag, target_model, transaction)
         actor.pair("#edit-preview-comparison", preview, preview=True)
         actor.hold("drag-proposal-still-unsubmitted", 2300)
@@ -487,6 +507,7 @@ def run_capture(args, accepted, replay, Recorder, record_take, encode, pr_cli):
         review.inspect_working(drag_applied["view"])
         actor.hold("direct-candidate-edit-saved", 1200)
         before_undo = review.edit_preview_snapshot()
+        viewport_before_undo = scene.page.locator("#model-canvas svg").get_attribute("viewBox")
         with scene.page.expect_response(lambda response: response.request.method == "POST"
                                         and urlsplit(response.url).path == f"/api/cases/{review.case_id}/undo") as undone:
             actor.click("#undo-edit")
@@ -498,10 +519,13 @@ def run_capture(args, accepted, replay, Recorder, record_take, encode, pr_cli):
         assert restored["view"]["case"]["version"] == before_undo["view"]["case"]["version"] + 1
         assert restored["history"]["cursor"] == before_undo["history"]["cursor"] - 1
         assert restored["edit_posts"] == before_undo["edit_posts"]
-        actor.model()
+        actor.model(recenter=False)
         review.inspect_working(restored["view"])
         assert restored["view"]["case"]["candidate"] == applied["view"]["case"]["candidate"]
-        actor.hold("undo-restores-agent-candidate", 2600)
+        result["undo_viewport"] = {"before": viewport_before_undo,
+                                   "after": scene.page.locator("#model-canvas svg").get_attribute("viewBox"),
+                                   "driver_recentered": False}
+        actor.hold("undo-restores-agent-candidate", 2000)
         review.drag_records.append({"start": start_point, "finish": end_point, "painted_guide": geometry,
                                    "transaction": transaction, "restored_full_candidate": restored["view"]["case"]["candidate"]})
         result["checks"].append({"id": "real-drag-preview-apply-and-kernel-undo", "status": "PASS"})
@@ -519,7 +543,7 @@ def run_capture(args, accepted, replay, Recorder, record_take, encode, pr_cli):
         tx = {"kind": "set_role", "transition": "TR-APPROVE", "role": "Agent"}
         review.assert_proposal(refused_before, refused, None, tx, legal=False, request="Allow Agent to Approve")
         assert "REFERENCE_AUTHORITY:Approve" in refused["preview"]["codes"]
-        actor.hold("kernel-refuses-agent-approval-authority", 3400)
+        actor.hold("kernel-refuses-agent-approval-authority", 2600)
         review.immutable(refused_before)
         result["checks"].append({"id": "meaningful-refusal-zero-write", "status": "PASS"})
         clock["end"] = time.monotonic() - clock["origin"]
