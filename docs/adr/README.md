@@ -18,6 +18,8 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0024](0024-sandboxed-frame-for-mermaid-rendering.md) | Render Mermaid in a sandboxed frame so the Studio page keeps its strict CSP | accepted |
 | [0025](0025-bend-machine-checked-laws.md) | Machine-check protected authority laws with Bend 2 in a pinned container | proposed |
 | [0026](0026-bend-model-generation-controls-conformance.md) | The Bend model is generated from the Workflow; negative controls and conformance accompany every proof | proposed |
+| [0027](0027-tla-plus-specification-and-model-checking.md) | TLA+ specification of the workflow and commit protocol, checked with TLC | accepted |
+| [0028](0028-runtime-conformance-by-graph-comparison-and-trace-validation.md) | Model-to-code conformance by exhaustive graph comparison and TLC trace validation | accepted |
 | [0029](0029-z3-policy-soundness-proof.md) | Z3 proof that the protected policy admits only authority-preserving candidates | accepted |
 | [0030](0030-bounded-model-checking-of-the-real-runtime.md) | Bounded model checking by explicit-state search over the real runtime | accepted |
 | [0035](0035-static-analysis-and-architecture-fitness-functions.md) | Static analysis, architecture fitness functions and ratcheted budgets | accepted |
@@ -56,3 +58,5 @@ Reserving numbers stops parallel lanes from colliding. A lane that needs more re
 | 0057–0088 | HCI-ADRs: research-grounded UI/UX decisions (`ux`, `studio-ux`) |
 | 0089–0112 | Weave: deterministic linked graph, compiler and linter (`weave`) |
 | 0113–0136 | Definition of done, claims ledger, scorecard and evals (`dod`) |
+| 0137–0144 | Wave 2: design patterns shown visually (`patterns`) |
+| 0145–0152 | POC: formal evidence kinds in the kernel (`evidence-kinds`) |
