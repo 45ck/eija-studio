@@ -47,4 +47,8 @@ _No curated notes yet._
 ## Depends on
 
 * [domain.evidence_kinds.KINDS](/symbols/domain/evidence_kinds/KINDS.md) - Constant `KINDS` in `domain/evidence_kinds`.
+
+## Referenced by
+
+* [application.witness_inspection.inspect_verdict](/symbols/application/witness_inspection/inspect_verdict.md) - Project only the deciding receipt, retaining uncertainty and all recorded raw data without writes.
 <!-- okf:generated:end links -->

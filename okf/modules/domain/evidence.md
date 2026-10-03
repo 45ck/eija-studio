@@ -72,6 +72,7 @@ _No curated notes yet._
 * [Assurance](/contexts/assurance.md) - Owns Subject dimensions, verification observations, admissibility and freshness
 * [application.compiler](/modules/application/compiler.md) - Compiler: model → projections + impacts + obligations + computed review packet.
 * [application.formal](/modules/application/formal.md) - Formal evidence in the application layer: seal what an adapter collected, and build the packet view.
+* [application.witness_inspection](/modules/application/witness_inspection.md) - Immutable display projections of the deciding formal record, never new evidence or verdicts.
 * [domain.evidence.FormalVerdict](/symbols/domain/evidence/FormalVerdict.md) - The status of one evidence kind for the current subject, with the receipt that decided it.
 * [domain.evidence.RUNTIME_MATRIX](/symbols/domain/evidence/RUNTIME_MATRIX.md) - Constant `RUNTIME_MATRIX` in `domain/evidence`.
 * [domain.evidence.TECHNICAL_DIMENSIONS](/symbols/domain/evidence/TECHNICAL_DIMENSIONS.md) - Constant `TECHNICAL_DIMENSIONS` in `domain/evidence`.

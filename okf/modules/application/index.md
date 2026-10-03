@@ -14,3 +14,4 @@
 * [application.runtime](runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.
 * [application.service](service.md) - Module `application/service` (no module docstring).
 * [application.verifier](verifier.md) - Bounded synthetic runtime experiments.
+* [application.witness_inspection](witness_inspection.md) - Immutable display projections of the deciding formal record, never new evidence or verdicts.

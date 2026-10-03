@@ -83,3 +83,73 @@ At 1280×800 and 320×800, the scenario verifies the triage's exact blocker inve
 The scenario keeps Model's Verify selection distinct from comparison's Save selection, preserves the case-wide scope and human UNKNOWN, and rechecks every reported technical/formal status plus the complete raw packet after navigation. Independent GETs compare the full case view, observations, packet and semantic history; no write beyond setup is allowed. Navigation/focus geometry, screenshots and independent oracles are retained alongside the existing source manifests and cleanup status.
 
 This is a native keyboard/navigation and data-retention check, not a human comprehension study. It does not claim that every triage row fits simultaneously above the fold on narrow screens: entry screenshots retain that layout for inspection, while each action/destination must be genuinely visible when reached by keyboard. It adds no axe result; the separate opened-raw-diagnostics scenario retains that scope. Malformed packets, duplicate formal records, mismatched statuses and stale callback counterexamples remain explicitly Node-level coverage in `evidence-overview.test.cjs`, not browser fixtures in this group.
+
+## Formal record inspection
+
+These two separate scenarios are **NOT_RUN until executed on the integrated source**. They extend this
+same replay, disposable server and isolated browser; neither is appended to `all` because their setup
+and evidence claims differ. Run serially, using a fresh output directory for each:
+
+```powershell
+$env:PYTHONPATH = (Get-Location).Path + ';' + (Join-Path (Get-Location) 'src')
+.\.venv\Scripts\python.exe -u tests/hci/runtime_evidence_review.py --scenario formal-unavailable --out reports/formal-unavailable-1
+.\.venv\Scripts\python.exe -u tests/hci/runtime_evidence_review.py --scenario formal-recorded --out reports/formal-recorded-1
+```
+
+`formal-unavailable` exercises the ordinary EIJA self-dogfood flow. It creates/selects the offline
+candidate through existing controls, then inspects the actual server's UNKNOWN formal rows at
+1280×800 and 320×800. No deciding receipts means no artifact or records: `NO_DECIDING_RECEIPT`
+must remain visible, with `SOURCE_REVIEW_REQUIRED` unchanged. EIJA's declared `not_run` formal
+verifiers are not promoted to passing results. No writes are permitted after candidate setup.
+
+`formal-recorded` is an explicitly labelled **recorded excursion fixture inspection**, not EIJA
+verification or an external-repository pilot. A callback runs only inside the fresh throw-away
+workspace, before HTTP starts. It uses the normal identity, real `FormalReports` adapters and
+`application.formal.attach` with the workspace signer's public method to seal the existing recorded
+artifacts. It inserts two validated PREVIEW fixture cases: one with those receipts, one without.
+It calls no verify/approve/apply/export endpoint, substitutes no identity/authenticator, inspects no
+private launch token or receipt key, and runs no solver. The server then exposes those cases through
+the ordinary API. Every observed browser request after setup must be GET.
+
+The required recorded reports are:
+
+- `verification/bend/evidence/bend.json`
+- `reports/formal/smt.json`
+- `reports/formal/bmc.json`
+
+The Bend adapter also requires the existing `main.bend`, `LAWS.bend`, `PROOF.bend` and
+`bend_generate.py` under `verification/bend`. These inputs are hashed before and after the run;
+normalized artifact hashes and LF-normalized report hashes are retained in
+`recorded-fixture-provenance.json`. Missing inputs or reports unreadable through their adapters
+produce **NOT_RUN**, exit 2, before HTTP/browser startup. The replay never synthesizes replacement
+reports. The SMT/BMC reports are generated prerequisites, so a fresh checkout without them cannot
+claim this scenario passed. Preparing those reports belongs to their documented verification lanes.
+
+The recorded reports inspected when writing this scenario contain passing positive results and
+negative controls. Bend's first control is the recorded Teacher Submit → Recommend → Approve
+sequence. SMT's first named control removes the Approve role restriction and retains its reduced
+transition witness. This is not a supplied Workflow specimen; its model availability stays
+`not_provided`. BMC's mutation controls retain only `mutant` and `detected`, with no recorded steps;
+both searched models have empty counterexample lists. These controls must not be presented as a
+failure of the current candidate, an executed current-model path, or fresh solver evidence.
+
+Independent authenticated GETs supply the complete case, packet, original receipts and semantic
+history. For every displayed item, the checker resolves its JSON Pointer directly into the deciding
+receipt's artifact and compares raw JSON; it computes the expected control inventory directly from
+that artifact and recomputes its hash. Review case/revision/scope, full subject and pack digest stay
+separate from receipt identity. It compares every ordered step without guessing graph/source
+references. No current-model or source navigation is admitted by this contract.
+
+At both widths, actual Tab traversal reaches native summaries; Enter/Space opens and closes them.
+The first item of each kind, complete artifact, and full review/receipt subjects are inspected via
+focusable raw regions. PageDown is checked only where actual overflow exists, with forward and
+reverse keyboard exit and unchanged JSON. Focus must be visible inside ancestor clipping and page
+overflow is rejected. Case switching while an inspection is open must show the other case's genuine
+absence, with no stale records or open inspection carried back. Full GET case/history/observations
+and all original statuses stay unchanged. Screenshots, keyboard geometry, requests, original
+report identities and GET oracles are retained with the existing source manifests and cleanup proof.
+
+This covers recorded-artifact display, keyboard access and ordinary case isolation. Malformed or
+mismatched inspection payloads remain Node-level counterexamples; this browser run does not fake
+them. Fresh verification, a current-candidate failing trace, full mobile usability, axe/screen-reader
+acceptance and reduced human comprehension burden remain untested by these scenarios.

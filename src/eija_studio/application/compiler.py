@@ -12,6 +12,7 @@ from eija_studio.domain.evidence import aggregate_status, expected_shape, receip
 from eija_studio.domain.pack import Pack, default_pack
 from eija_studio.domain.formal import Context
 from .formal import packet_view
+from .witness_inspection import InspectionContext
 
 
 def subject_for(model: Workflow, layout: dict[str, Any], identity: dict[str, Any]) -> dict[str, Any]:
@@ -37,7 +38,8 @@ def compile_case(
     context = Context(candidate_semantic=model.semantic_hash, baseline_semantic=case.baseline.semantic_hash,
                       runtime=expected_shape(pack, model))
     evidence = aggregate_status(list(case.receipts), subject, authenticator, context)
-    formal = packet_view(list(case.receipts), subject, authenticator, context, policy_errors, pack)
+    formal = packet_view(list(case.receipts), subject, authenticator, context, policy_errors, pack,
+                         review_context=InspectionContext(case_id=case.id, case_version=case.version, scope=scope))
     blockers = []
     if policy_errors:
         blockers.append("POLICY_BLOCKED")

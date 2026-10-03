@@ -43,6 +43,14 @@ The reason unknown fields and operators die at the boundary (acceptance [AC01](/
 ## Referenced by
 
 * [application.edit_preview.EditPreview](/symbols/application/edit_preview/EditPreview.md) - An uncommitted candidate bound to a captured case revision; no evidence or edit authority.
+* [application.witness_inspection.InspectionContext](/symbols/application/witness_inspection/InspectionContext.md) - The case revision and review scope captured by the compiler, not inferred by a browser.
+* [application.witness_inspection.InspectionModel](/symbols/application/witness_inspection/InspectionModel.md) - A supplied specimen, a validated projection of it, or an explicit absence of model data.
+* [application.witness_inspection.InspectionNavigation](/symbols/application/witness_inspection/InspectionNavigation.md) - Current artifacts have no complete witness-reference contract, so no link is emitted.
+* [application.witness_inspection.InspectionReceipt](/symbols/application/witness_inspection/InspectionReceipt.md) - Identity of the exact deciding intact receipt; its seal is deliberately not projected.
+* [application.witness_inspection.InspectionRecord](/symbols/application/witness_inspection/InspectionRecord.md) - One exact JSON-pointer location within the deciding artifact, labelled by its known origin.
+* [application.witness_inspection.InspectionReview](/symbols/application/witness_inspection/InspectionReview.md) - Full review identity; subject_json retains every subject field, including presentation.
+* [application.witness_inspection.InspectionStep](/symbols/application/witness_inspection/InspectionStep.md) - An ordered literal recorded step.
+* [application.witness_inspection.WitnessInspection](/symbols/application/witness_inspection/WitnessInspection.md) - Supplemental record inspection; availability never changes the existing evidence status.
 * [domain.change_case.ChangeCase](/symbols/domain/change_case/ChangeCase.md) - Aggregate boundary: transitions are mediated by the application and CAS store.
 * [domain.laws.When](/symbols/domain/laws/When.md) - Condition under which a law applies.
 * [domain.models.Alternative](/symbols/domain/models/Alternative.md) - `class Alternative(Contract)` in `domain/models`.

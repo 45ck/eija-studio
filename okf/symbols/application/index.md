@@ -14,3 +14,4 @@
 * [runtime](runtime/) - Symbols of application.runtime
 * [service](service/) - Symbols of application.service
 * [verifier](verifier/) - Symbols of application.verifier
+* [witness_inspection](witness_inspection/) - Symbols of application.witness_inspection

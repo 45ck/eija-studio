@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/formal.py
   title: application/formal.py
   hash_method: ast-api-v1
-  sha256: 55bf8b4f32eab657dad11d90bb58dce07cf9f3c97942f3d73b67bcb43d6fe3b5
-notes_baseline: 3be93c009a1f27a7c0f14c40d4870a416a6bbf74dc03ec2b25bdd5bc573edd57
+  sha256: b4fb97437f415e0069783af1e7121021bf60e642e4144693fe95533b9ce138a6
+notes_baseline: d585e142cd0ef76c9cbd7e1ef1ed7c8d446fbf515709afe88aea3b18d49959e9
 ---
 
 # application.formal
@@ -49,6 +49,7 @@ recomputes every verdict. Nothing here reads a status label from an artifact.
 ## Internal imports
 
 * [`application/ports`](/modules/application/ports.md)
+* [`application/witness_inspection`](/modules/application/witness_inspection.md)
 * [`domain/evidence`](/modules/domain/evidence.md)
 * [`domain/evidence_kinds`](/modules/domain/evidence_kinds.md)
 * [`domain/formal`](/modules/domain/formal.md)
@@ -65,6 +66,7 @@ _No curated notes yet._
 ## Imports
 
 * [application.ports](/modules/application/ports.md) - Application-owned ports.
+* [application.witness_inspection](/modules/application/witness_inspection.md) - Immutable display projections of the deciding formal record, never new evidence or verdicts.
 * [domain.evidence](/modules/domain/evidence.md) - Compatibility is computed.
 * [domain.evidence_kinds](/modules/domain/evidence_kinds.md) - The registry of evidence kinds the kernel can assess (ADR-0145).
 * [domain.formal](/modules/domain/formal.md) - Primitives for per-kind admissibility of formal evidence (ADR-0145, ADR-0146).

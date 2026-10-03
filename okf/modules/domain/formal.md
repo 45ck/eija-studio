@@ -78,6 +78,7 @@ _No curated notes yet._
 * [application.formal](/modules/application/formal.md) - Formal evidence in the application layer: seal what an adapter collected, and build the packet view.
 * [application.ports](/modules/application/ports.md) - Application-owned ports.
 * [application.service](/modules/application/service.md) - Module `application/service` (no module docstring).
+* [application.witness_inspection](/modules/application/witness_inspection.md) - Immutable display projections of the deciding formal record, never new evidence or verdicts.
 * [domain.evidence](/modules/domain/evidence.md) - Compatibility is computed.
 * [domain.evidence_kinds](/modules/domain/evidence_kinds.md) - The registry of evidence kinds the kernel can assess (ADR-0145).
 * [domain.formal_bend](/modules/domain/formal_bend.md) - Admissibility of ``bend_proof`` receipts (ADR-0146; lane bend, ADR-0025 and ADR-0026).

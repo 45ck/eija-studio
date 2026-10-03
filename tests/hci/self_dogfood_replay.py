@@ -57,10 +57,10 @@ def require_only_save_role_change(before, after):
 
 
 @contextlib.contextmanager
-def disposable_server(repository_root=None):
-    """Create this script's own offline workspace and loopback server; never attach to a live owner session."""
+def disposable_server(repository_root=None, *, pack_path=None, before_serve=None):
+    """Own offline server. Optional fixture setup runs before HTTP starts, only in this throw-away workspace."""
     repo = Path(__file__).resolve().parents[2]
-    pack = repo / "packs/eija-review-slice"
+    pack = repo / "packs/eija-review-slice" if pack_path is None else Path(pack_path)
     if not (pack / "pack.json").is_file():
         raise RuntimeError("Run this script from an EIJA checkout containing packs/eija-review-slice.")
     scratch_root = repo / ".tmp"
@@ -70,6 +70,8 @@ def disposable_server(repository_root=None):
         if not workspace.is_relative_to(scratch_root.resolve()):
             raise RuntimeError("Disposable workspace escaped the checkout scratch directory.")
         studio = build_studio(workspace, pack=pack, repository_root=repo if repository_root is None else repository_root)
+        if before_serve is not None:
+            before_serve(studio)
         with socket.socket() as sock:
             sock.bind(("127.0.0.1", 0))
             port = sock.getsockname()[1]

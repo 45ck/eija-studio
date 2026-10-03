@@ -42,6 +42,7 @@ This is a bounded semantic/report compiler, not a general source-code compiler.
 ## Internal imports
 
 * [`application/formal`](/modules/application/formal.md)
+* [`application/witness_inspection`](/modules/application/witness_inspection.md)
 * [`domain/change_case`](/modules/domain/change_case.md)
 * [`domain/evidence`](/modules/domain/evidence.md)
 * [`domain/formal`](/modules/domain/formal.md)
@@ -59,6 +60,7 @@ _No curated notes yet._
 ## Imports
 
 * [application.formal](/modules/application/formal.md) - Formal evidence in the application layer: seal what an adapter collected, and build the packet view.
+* [application.witness_inspection](/modules/application/witness_inspection.md) - Immutable display projections of the deciding formal record, never new evidence or verdicts.
 * [domain.change_case](/modules/domain/change_case.md) - Module `domain/change_case` (no module docstring).
 * [domain.evidence](/modules/domain/evidence.md) - Compatibility is computed.
 * [domain.formal](/modules/domain/formal.md) - Primitives for per-kind admissibility of formal evidence (ADR-0145, ADR-0146).

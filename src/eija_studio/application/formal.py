@@ -14,6 +14,7 @@ from eija_studio.domain.models import Workflow, fingerprint
 from eija_studio.domain.pack import Pack
 from eija_studio.domain.policy import what_if
 from .ports import FormalEvidenceSource
+from .witness_inspection import InspectionContext, inspect_verdict
 
 BLOCKING = ("FAIL", "CONFLICT")  # a counterexample stops approval; UNKNOWN, NOT_RUN and STALE never do, and are never green
 
@@ -108,11 +109,14 @@ def _details(spec: KindSpec, verdict: FormalVerdict, authenticator: Callable[[di
         return {"details_unavailable": "the artifact could not be summarised"}
 
 
-def _entry(spec: KindSpec, verdict: FormalVerdict, authenticator: Callable[[dict[str, Any]], bool]) -> dict[str, Any]:
+def _entry(spec: KindSpec, verdict: FormalVerdict, authenticator: Callable[[dict[str, Any]], bool],
+           subject: dict[str, Any], context: Context, pack: Pack | None,
+           review_context: InspectionContext | None) -> dict[str, Any]:
     return {"kind": spec.kind, "claim": spec.claim, "status": verdict.status, "evidence_level": spec.level,
             "receipts": verdict.receipts, "receipt_id": None if verdict.receipt is None else verdict.receipt.get("id"),
             "reasons": list(verdict.reasons), "establishes": spec.establishes,
-            "does_not_establish": list(spec.does_not_establish), "prerequisites": spec.prerequisites} | _details(spec, verdict, authenticator)
+            "does_not_establish": list(spec.does_not_establish), "prerequisites": spec.prerequisites,
+            "inspection": inspect_verdict(verdict, subject, context, authenticator, pack, review_context).model_dump(mode="json")} | _details(spec, verdict, authenticator)
 
 
 def _explanations(receipts: list[dict[str, Any]], authenticator: Callable[[dict[str, Any]], bool],
@@ -134,14 +138,15 @@ def _explanations(receipts: list[dict[str, Any]], authenticator: Callable[[dict[
 
 
 def packet_view(receipts: list[dict[str, Any]], subject: dict[str, Any], authenticator: Callable[[dict[str, Any]], bool],
-                context: Context, policy_errors: list[str], pack: Pack | None = None) -> dict[str, Any]:
+                context: Context, policy_errors: list[str], pack: Pack | None = None,
+                *, review_context: InspectionContext | None = None) -> dict[str, Any]:
     """The formal part of the review packet: per-kind claims, blockers, the full evidence list, explanations, and (with a
     pack) the pack's declared verifiers, so a kind no registered evidence covers (a TLC check) is shown NOT_RUN too."""
     verdicts = {k: aggregate_formal(k, receipts, subject, authenticator, context) for k in KINDS}
     return {"verifiers": [] if pack is None else verifier_view(pack),
             "claims": {f"formal_{k}": v.status for k, v in verdicts.items()},
             "blockers": [f"FORMAL_EVIDENCE_{v.status}:{k}" for k, v in verdicts.items() if v.status in BLOCKING],
-            "evidence": [_entry(KINDS[k], v, authenticator) for k, v in verdicts.items()],
+            "evidence": [_entry(KINDS[k], v, authenticator, subject, context, pack, review_context) for k, v in verdicts.items()],
             "explanations": _explanations(receipts, authenticator, verdicts, tuple(policy_errors)) if policy_errors else []}
 
 

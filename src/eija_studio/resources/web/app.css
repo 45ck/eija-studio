@@ -83,6 +83,9 @@ body{grid-template-rows:auto auto minmax(0,1fr) 26px}
 .formal-item>p,.formal-item>h4,.formal-item>ul,.formal-item>dl{margin:10px 16px}
 .evidence-metadata{display:grid;grid-template-columns:minmax(110px,auto) minmax(0,1fr);gap:6px 16px;overflow-wrap:anywhere}
 .evidence-metadata dt{color:var(--muted)}.evidence-metadata dd{margin:0;white-space:pre-wrap}
+/* Native focus scrolling keeps raw-region borders and outlines inside the clipped editor. */
+#evidence{scroll-padding-block:8px}.formal-inspection-raw{scroll-margin-block:8px}
+.formal-inspection{margin:10px 16px;border:1px solid var(--line);border-radius:5px}.formal-inspection-detail>summary{min-height:40px;padding:10px 12px;cursor:pointer;overflow-wrap:anywhere}.formal-inspection-detail>p,.formal-inspection-detail>h4,.formal-inspection-detail>ul,.formal-inspection-detail>ol,.formal-inspection-detail>dl{margin:8px 12px;overflow-wrap:anywhere}.formal-inspection-detail .formal-inspection-detail{margin:8px 12px;border-top:1px solid var(--line)}.formal-inspection-steps{padding-left:28px;line-height:1.65;white-space:pre-wrap}.formal-inspection-steps li{padding:3px 0;overflow-wrap:anywhere}.formal-inspection-raw{max-height:300px;max-width:100%;margin:8px 12px;overflow:auto;white-space:pre;font-size:13px;line-height:1.55}.formal-inspection-detail>summary:focus-visible,.formal-inspection-raw:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .evidence-identity,.review-decision{margin:12px 0;border:1px solid var(--line);border-radius:5px}
 .evidence-identity>dl,.review-decision>form{margin:12px}
 .review-decision>summary{font-weight:600}

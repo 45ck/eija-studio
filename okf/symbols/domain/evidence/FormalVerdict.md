@@ -53,5 +53,6 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Referenced by
 
+* [application.witness_inspection.inspect_verdict](/symbols/application/witness_inspection/inspect_verdict.md) - Project only the deciding receipt, retaining uncertainty and all recorded raw data without writes.
 * [domain.evidence.aggregate_formal](/symbols/domain/evidence/aggregate_formal.md) - Combine every receipt of one kind.
 <!-- okf:generated:end links -->

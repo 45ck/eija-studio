@@ -9,12 +9,103 @@ import traceback
 from datetime import UTC, datetime
 from pathlib import Path
 from urllib.parse import urlsplit
+from uuid import uuid4
 
 import self_dogfood_replay as replay
 from case_preview_navigation import emit, write_json
 from ide_journey_edges import Journey
 from quality.hci.server import ROOT
 from self_dogfood_subject import capture_subject, compare_subjects, file_identity
+
+from eija_studio.adapters.formal import FormalReports
+from eija_studio.application.compiler import subject_for
+from eija_studio.application.formal import attach
+from eija_studio.domain.change_case import ChangeCase
+from eija_studio.domain.models import fingerprint
+from eija_studio.domain.policy import apply_transactions
+
+
+RECORDED_REPORTS = {
+    "bend_proof": "verification/bend/evidence/bend.json",
+    "smt_proof": "reports/formal/smt.json",
+    "bounded_model_check": "reports/formal/bmc.json",
+}
+RECORDED_INPUTS = (*RECORDED_REPORTS.values(), *("verification/bend/" + name for name in (
+    "main.bend", "LAWS.bend", "PROOF.bend", "bend_generate.py")))
+
+
+class FormalPrerequisiteMissing(RuntimeError):
+    """A recorded report is missing/unreadable; do not replace it or claim execution."""
+
+
+def recorded_inputs():
+    inputs = {}
+    for name in RECORDED_INPUTS:
+        try:
+            inputs[name] = file_identity(ROOT, name)
+        except OSError as error:
+            inputs[name] = {"sha256": None, "bytes": None, "status": "NOT_RUN",
+                            "reason": "required file is absent or unreadable (" + type(error).__name__ + ")"}
+    return inputs
+
+
+class RecordedExcursionFixture:
+    """Pre-server recorded-evidence setup, never an owner command or fresh verification."""
+
+    def __init__(self):
+        self.manifest = {"scope": "recorded excursion controls, not EIJA verification or a fresh solver run",
+                         "inputs": recorded_inputs(), "cases": {}}
+
+    def __call__(self, studio):
+        missing = [name for name, item in self.manifest["inputs"].items() if item["sha256"] is None]
+        if missing:
+            raise FormalPrerequisiteMissing("Recorded artifact prerequisites missing: " + ", ".join(missing))
+        assert studio.pack.id == "excursion"
+        identity = studio.identity_provider()
+        assert identity["trusted_fixture"] is False, "This replay requires the unchanged normal source-review identity"
+        baseline = studio.pack.model
+        meaning = studio.pack.meaning("recommend_only")
+        candidate = apply_transactions(baseline, meaning.transactions, studio.pack)
+        review_subject = subject_for(candidate, {}, identity)
+        collected = FormalReports(ROOT).collect(baseline, candidate)
+        selected = []
+        for kind, origin in RECORDED_REPORTS.items():
+            items = [item for item in collected if item.kind == kind and item.artifact.get("source", {}).get("origin") == origin]
+            if len(items) != 1:
+                raise FormalPrerequisiteMissing("Recorded report was not readable through its real adapter: " + origin)
+            selected.extend(items)
+
+        class RecordedSource:
+            def collect(self, baseline, candidate):
+                return list(selected)
+
+        stamp = datetime.now(UTC).isoformat()
+        receipts = attach(RecordedSource(), baseline, candidate, review_subject, [], studio.signer.seal,
+                          stamp, lambda: uuid4().hex, studio.pack)
+        self.manifest["normalized_artifacts"] = {
+            item.kind: {"origin": item.artifact["source"]["origin"], "artifact_hash": fingerprint(item.artifact),
+                        "report_file_sha256_lf": item.measurements.get("report_file_sha256")}
+            for item in selected}
+        with studio.store.transaction() as unit:
+            for label, attached in (("recorded", receipts), ("unavailable", [])):
+                case = ChangeCase(id=uuid4().hex, version=0, stage="PREVIEW",
+                    request="Recorded excursion inspection fixture: " + label, baseline_version=unit.active()["version"],
+                    baseline=baseline, candidate=candidate, proposal=None, provider_run=None,
+                    selected_meaning=meaning.id, selected_by="disposable-recorded-fixture", transactions=meaning.transactions,
+                    layout={}, receipts=tuple(attached), decision=None, created_at=stamp)
+                unit.insert_case(case.model_dump(mode="json"))
+                self.manifest["cases"][label] = case.id
+        assert recorded_inputs() == self.manifest["inputs"], "Report bytes changed during fixture setup"
+
+
+def artifact_pointer(artifact, pointer):
+    """Independent raw-receipt lookup; do not use the product's inspection projection."""
+    assert pointer.startswith("/"), "Recorded artifact pointer must be absolute"
+    value = artifact
+    for part in pointer[1:].split("/"):
+        key = part.replace("~1", "/").replace("~0", "~")
+        value = value[int(key)] if isinstance(value, list) else value[key]
+    return value
 
 
 def subject():
@@ -43,7 +134,8 @@ class RuntimeReview(Journey):
     def route(self, route):
         request = route.request
         path = urlsplit(request.url).path
-        if request.method != "GET" and path.rsplit("/", 1)[-1] in {"verify", "approve", "apply", "export"}:
+        if request.method != "GET" and (getattr(self, "inspection_read_only", False)
+                or path.rsplit("/", 1)[-1] in {"verify", "approve", "apply", "export"}):
             self.requests.append({"stage": self.stage, "method": request.method, "path": path})
             self.forbidden.append(path)
             route.abort()
@@ -615,12 +707,12 @@ class RuntimeReview(Journey):
                 outlineWidth:parseFloat(s.outlineWidth),documentWidth:document.documentElement.scrollWidth,width:innerWidth};}""")
         assert geometry["focusVisible"] and geometry["outlineStyle"] != "none" and geometry["outlineWidth"] >= 2
         box, clip = geometry["rect"], geometry["clip"]
-        assert box["left"] >= clip["left"] - 1 and box["right"] <= clip["right"] + 1
-        assert box["top"] >= clip["top"] - 1 and box["bottom"] <= clip["bottom"] + 1
+        assert box["left"] >= clip["left"] - 1 and box["right"] <= clip["right"] + 1, json.dumps(geometry)
+        assert box["top"] >= clip["top"] - 1 and box["bottom"] <= clip["bottom"] + 1, json.dumps(geometry)
         assert geometry["documentWidth"] <= geometry["width"] + 1
         return geometry
 
-    def triage_evidence_inventory(self, view):
+    def formal_inventory(self, view):
         packet = view["packet"]
         expected_claims = packet["technical_claims"]
         actual_claims = self.page.locator("#formal details[data-claim]").evaluate_all("""nodes=>nodes.map(n=>({
@@ -634,6 +726,11 @@ class RuntimeReview(Journey):
                             for index, row in enumerate(packet["formal_evidence"])]
         assert actual_records == expected_records, "Triage navigation changed the formal record inventory/order/status"
         assert self.packet() == packet
+        return {"claims": actual_claims, "formal_records": actual_records}
+
+    def triage_evidence_inventory(self, view):
+        inventory = self.formal_inventory(view)
+        packet = view["packet"]
         subject = self.page.locator("#evidence-subject")
         for key, value in {"case-id": view["case"]["id"], "revision": str(view["case"]["version"]),
                            "subject-hash": packet["subject_hash"], "displayed-model": "working",
@@ -644,7 +741,242 @@ class RuntimeReview(Journey):
         replay.expect(subject).to_contain_text("Evidence scope: case-wide")
         replay.expect(self.page.locator("#evidence .human-status")).to_contain_text("Human comprehension: UNKNOWN")
         replay.expect(self.page.locator("#source-status")).to_contain_text("SOURCE_REVIEW_REQUIRED")
-        return {"claims": actual_claims, "formal_records": actual_records}
+        return inventory
+
+    def formal_reach(self, target):
+        """Reach a disclosure/region from Evidence using actual sequential keyboard navigation."""
+        self.tab("evidence")
+        self.page.locator('[data-tab="evidence"]').focus()
+        replay.expect(target).to_have_count(1)
+        trail = []
+        for _ in range(160):
+            self.page.keyboard.press("Tab")
+            trail.append(self.page.evaluate("""()=>({id:document.activeElement.id,tag:document.activeElement.tagName,
+                label:document.activeElement.getAttribute('aria-label'),text:document.activeElement.tagName==='SUMMARY'
+                    ?document.activeElement.textContent:null})"""))
+            if target.evaluate("n=>document.activeElement===n"):
+                return {"trail": trail, "geometry": self.triage_focus_geometry(target)}
+        raise AssertionError("Formal inspection control was not reachable by Tab")
+
+    def formal_toggle(self, disclosure, *, opened, key="Enter"):
+        evidence = self.formal_reach(disclosure.locator(":scope > summary"))
+        if (disclosure.get_attribute("open") is not None) != opened:
+            self.page.keyboard.press(key)
+        assert (disclosure.get_attribute("open") is not None) == opened
+        return evidence
+
+    def formal_raw(self, parent, label, expected):
+        region = parent.locator(f'pre[aria-label="{label}"]')
+        disclosure = region.locator("..")
+        reached = self.formal_toggle(disclosure, opened=True)
+        self.page.keyboard.press("Tab")
+        replay.expect(region).to_be_focused()
+        geometry = self.triage_focus_geometry(region)
+        actual = json.loads(region.text_content())
+        assert actual == expected, label + " differs from independent GET/raw-receipt data"
+        scroll = region.evaluate("n=>({top:n.scrollTop,height:n.clientHeight,content:n.scrollHeight})")
+        if scroll["content"] > scroll["height"] + 2:
+            self.page.keyboard.press("PageDown")
+            self.page.wait_for_function("n=>n.scrollTop>0", arg=region.element_handle())
+        self.page.keyboard.press("Tab")
+        replay.expect(region).not_to_be_focused()
+        self.page.keyboard.press("Shift+Tab")
+        replay.expect(region).to_be_focused()
+        assert json.loads(region.text_content()) == expected
+        self.page.keyboard.press("Shift+Tab")
+        replay.expect(disclosure.locator(":scope > summary")).to_be_focused()
+        self.page.keyboard.press("Enter")
+        replay.expect(disclosure).not_to_have_attribute("open", "")
+        return {"label": label, "entry": reached, "geometry": geometry,
+                "overflow_exercised": scroll["content"] > scroll["height"] + 2, "exact_raw_data": True}
+
+    def formal_identity(self, view, evidence, workbench):
+        packet, case, inspection = view["packet"], view["case"], evidence["inspection"]
+        expected_review = {"case_id": case["id"], "case_version": case["version"], "scope": packet["scope"],
+                           "subject_hash": packet["subject_hash"], "candidate_semantic_hash": packet["subject"]["semantic"],
+                           "pack_id": workbench["pack"]["id"], "pack_digest": workbench["pack"]["digest"]}
+        assert {key: inspection["review"][key] for key in expected_review} == expected_review
+        assert json.loads(inspection["review"]["subject_json"]) == packet["subject"]
+        assert inspection["kind"] == evidence["kind"] and inspection["status"] == evidence["status"]
+        assert inspection["reasons"] == evidence["reasons"]
+        assert inspection["display_only"] is True and inspection["scope"] == "formal-record-inspection"
+        assert inspection["record_count"] == len(inspection["records"])
+        return inspection
+
+    def formal_unavailable_view(self, view, workbench):
+        inventory = self.formal_inventory(view)
+        assert [e["kind"] for e in view["packet"]["formal_evidence"]] == list(RECORDED_REPORTS), "Expected all three formal kinds"
+        for evidence in view["packet"]["formal_evidence"]:
+            inspection = self.formal_identity(view, evidence, workbench)
+            assert evidence["status"] == "UNKNOWN" and evidence["receipts"] == 0
+            assert inspection["availability"] == "unavailable"
+            assert inspection["availability_reasons"] == ["NO_DECIDING_RECEIPT"]
+            assert inspection["records"] == [] and inspection["record_count"] == 0
+            assert inspection["receipt"] is None and inspection["artifact_json"] is None
+            row = self.page.locator(f'#formal details[data-evidence-kind="{evidence["kind"]}"]')
+            self.formal_toggle(row, opened=True)
+            box = row.locator(".formal-inspection")
+            replay.expect(box).to_have_attribute("data-inspection-availability", "unavailable")
+            self.formal_toggle(box, opened=True, key="Space")
+            replay.expect(box).to_contain_text("NO_DECIDING_RECEIPT")
+            replay.expect(box.locator("[data-inspection-path]")).to_have_count(0)
+            self.formal_raw(box, "Raw inspection data", inspection)
+            self.shot(f'formal-unavailable-{view["case"]["id"][:8]}-{evidence["kind"]}-{self.page.viewport_size["width"]}')
+            self.formal_toggle(box, opened=False)
+            self.formal_toggle(row, opened=False)
+        return inventory
+
+    def formal_unavailable(self):
+        """The ordinary EIJA flow has no formal receipt; expose the absence without promoting it."""
+        self.entry()
+        self.create_candidate()
+        view, history = self.view(), self.get(f"cases/{self.case_id}/history")
+        workbench = self.get("workbench")
+        assert workbench["pack"]["id"] == "eija-review-slice"
+        assert view["case"]["receipts"] == [] and "SOURCE_REVIEW_REQUIRED" in view["packet"]["blockers"]
+        writes = [row for row in self.requests if row["method"] != "GET"]
+        self.inspection_read_only = True
+        observations = []
+        for width in (1280, 320):
+            self.page.set_viewport_size({"width": width, "height": 800})
+            self.tab("evidence")
+            observations.append({"width": width, "inventory": self.formal_unavailable_view(view, workbench)})
+            self.shot("formal-eija-unavailable-" + str(width))
+        assert self.view() == view and self.get(f"cases/{self.case_id}/history") == history
+        assert [row for row in self.requests if row["method"] != "GET"] == writes
+        write_json(self.out / "formal-unavailable.json", observations)
+        return {"viewports": observations, "inspection_writes": 0, "scope": "ordinary EIJA no-receipt availability only"}
+
+    def formal_receipt_oracle(self, view, evidence, workbench):
+        inspection = self.formal_identity(view, evidence, workbench)
+        assert inspection["availability"] == "available"
+        matches = [r for r in view["case"]["receipts"] if r["id"] == evidence["receipt_id"]]
+        assert len(matches) == 1
+        receipt = matches[0]
+        artifact = receipt["artifact"]
+        assert inspection["receipt"]["id"] == receipt["id"]
+        assert inspection["receipt"]["artifact_hash"] == receipt["artifact_hash"] == fingerprint(artifact)
+        assert json.loads(inspection["receipt"]["subject_json"]) == receipt["subject"]
+        assert inspection["receipt"]["subject_matches_review"] == (receipt["subject"] == view["packet"]["subject"])
+        assert json.loads(inspection["artifact_json"]) == artifact
+        fields = {"bend_proof": ("/negative_controls", artifact.get("negative_controls")),
+                  "smt_proof": ("/negative_controls/named", artifact.get("negative_controls", {}).get("named")
+                                if isinstance(artifact.get("negative_controls"), dict) else None),
+                  "bounded_model_check": ("/mutation_self_test", artifact.get("mutation_self_test"))}
+        prefix, controls = fields[evidence["kind"]]
+        assert isinstance(controls, list) and controls, "Recorded control fixture has no actual controls"
+        assert [r["artifact_path"] for r in inspection["records"]] == [prefix + "/" + str(i) for i in range(len(controls))]
+        for record in inspection["records"]:
+            original = artifact_pointer(artifact, record["artifact_path"])
+            assert json.loads(record["raw_json"]) == original
+            assert record["origin"] == "negative_control", "This fixture has recorded controls, not a failed current candidate"
+            assert record["model"]["availability"] == "not_provided" and record["model"]["workflow"] is None
+            assert record["navigation"]["current_model"] is None and record["navigation"]["source"] is None
+            supplied_steps = original.get("counterexample", {}).get("steps", []) if evidence["kind"] == "bend_proof" else []
+            assert [json.loads(step["raw_json"]) for step in record["steps"]] == supplied_steps
+            assert [step["index"] for step in record["steps"]] == list(range(len(supplied_steps)))
+        return inspection, receipt
+
+    def formal_recorded(self, fixture):
+        """Inspect actual recorded controls with GET-derived oracles; never run verification or an owner operation."""
+        self.inspection_read_only = True
+        self.entry()
+        self.switch_case(fixture.manifest["cases"]["recorded"])
+        view, history = self.view(), self.get(f"cases/{self.case_id}/history")
+        workbench = self.get("workbench")
+        assert workbench["pack"]["id"] == "excursion" and workbench["source_review_required"] is True
+        assert [e["kind"] for e in view["packet"]["formal_evidence"]] == list(RECORDED_REPORTS), "Expected all three recorded formal kinds"
+        assert "SOURCE_REVIEW_REQUIRED" in view["packet"]["blockers"]
+        assert view["case"]["stage"] == "PREVIEW" and view["case"]["decision"] is None
+        observations = []
+        for width in (1280, 320):
+            self.page.set_viewport_size({"width": width, "height": 800})
+            self.tab("evidence")
+            inventory = self.formal_inventory(view)
+            for evidence in view["packet"]["formal_evidence"]:
+                inspection, receipt = self.formal_receipt_oracle(view, evidence, workbench)
+                kind = evidence["kind"]
+                assert receipt["artifact"]["source"]["origin"] == RECORDED_REPORTS[kind]
+                assert receipt["artifact_hash"] == fixture.manifest["normalized_artifacts"][kind]["artifact_hash"]
+                row = self.page.locator(f'#formal details[data-evidence-kind="{kind}"]')
+                self.formal_toggle(row, opened=True)
+                box = row.locator(".formal-inspection")
+                replay.expect(box).to_have_attribute("data-inspection-availability", "available")
+                self.formal_toggle(box, opened=True)
+                nodes = box.locator("details[data-inspection-path]")
+                actual = nodes.evaluate_all("nodes=>nodes.map(n=>({path:n.dataset.inspectionPath,origin:n.dataset.inspectionOrigin,index:n.dataset.inspectionIndex}))")
+                assert actual == [{"path": r["artifact_path"], "origin": r["origin"], "index": str(i)}
+                                  for i, r in enumerate(inspection["records"])]
+                assert inspection["records"], "Expected real recorded negative controls"
+                for index, record in enumerate(inspection["records"]):
+                    node = nodes.nth(index)
+                    assert json.loads(node.locator('pre[aria-label="Raw recorded item"]').text_content()) == artifact_pointer(
+                        receipt["artifact"], record["artifact_path"])
+                    assert node.locator("[data-step-index]").all_text_contents() == [s["text"] if s["text"] is not None else s["raw_json"] for s in record["steps"]]
+                    replay.expect(node.locator("a,button")).to_have_count(0)
+                first = nodes.first
+                self.formal_toggle(first, opened=True, key="Space")
+                replay.expect(first).to_contain_text("Seeded control; this is not a reported failure of the current candidate.")
+                replay.expect(first).to_contain_text("No Workflow specimen is supplied.")
+                if kind == "bounded_model_check":
+                    assert all(items == [] for items in receipt["artifact"]["counterexamples"].values())
+                    assert receipt["artifact"]["mutation_self_test"][0] == {"mutant": "revocation_ignored", "detected": True}
+                    replay.expect(first).to_contain_text("No recorded steps are supplied.")
+                elif kind == "bend_proof":
+                    assert receipt["artifact"]["negative_controls"][0]["counterexample"]["steps"] == [
+                        ["teacher-assigned", "Submit"], ["teacher-assigned", "Recommend"], ["teacher-assigned", "Approve"]]
+                else:
+                    witness = receipt["artifact"]["negative_controls"]["named"][0]["witness"]
+                    assert next(t for t in witness["transitions"] if t["action"] == "Approve")["role"] == "Teacher"
+                    replay.expect(first).to_contain_text("No recorded steps are supplied.")
+                raw = self.formal_raw(first, "Raw recorded item", artifact_pointer(receipt["artifact"], inspection["records"][0]["artifact_path"]))
+                self.shot(f"formal-recorded-{kind}-{width}")
+                self.formal_toggle(first, opened=False)
+                complete = self.formal_raw(box, "Complete recorded artifact", receipt["artifact"])
+                identities = box.locator(':scope > details').filter(
+                    has=self.page.get_by_text("Review and deciding receipt identity", exact=True))
+                self.formal_toggle(identities, opened=True)
+                shown = identities.locator(':scope > dl').evaluate("""n=>Object.fromEntries(
+                    [...n.querySelectorAll('dt')].map(k=>[k.textContent,k.nextElementSibling.textContent]))""")
+                assert shown == {
+                    "Review case": view["case"]["id"], "Review revision": str(view["case"]["version"]),
+                    "Review scope": view["packet"]["scope"], "Review subject hash": view["packet"]["subject_hash"],
+                    "Current candidate semantic hash": view["packet"]["subject"]["semantic"],
+                    "Pack": workbench["pack"]["id"], "Pack digest": workbench["pack"]["digest"],
+                    "Deciding receipt": receipt["id"], "Artifact hash": receipt["artifact_hash"],
+                    "Producer": receipt["producer"], "Method": receipt["method"],
+                    "Receipt subject matches review": str(receipt["subject"] == view["packet"]["subject"]).lower(),
+                }, "Displayed review/receipt identities differ from the independent GET oracle"
+                subject = self.formal_raw(identities, "Full review subject", view["packet"]["subject"])
+                original = self.formal_raw(identities, "Original receipt subject", receipt["subject"])
+                self.formal_toggle(identities, opened=False)
+                observations.append({"width": width, "kind": kind, "status": evidence["status"], "records": actual,
+                                     "first_raw": raw, "artifact": complete, "review_subject": subject, "receipt_subject": original})
+                self.formal_toggle(box, opened=False)
+                self.formal_toggle(row, opened=False)
+                write_json(self.out / "formal-recorded-observations.json", observations)
+            assert self.formal_inventory(view) == inventory
+            assert self.view() == view and self.get(f"cases/{self.case_id}/history") == history
+            self.formal_toggle(row, opened=True)
+            self.formal_toggle(box, opened=True)
+            self.formal_toggle(box.locator("details[data-inspection-path]").first, opened=True)
+            replay.expect(self.page.locator("#formal .formal-inspection[open]")).to_have_count(1)
+            self.switch_case(fixture.manifest["cases"]["unavailable"])
+            unavailable = self.view()
+            unavailable_history = self.get(f"cases/{self.case_id}/history")
+            self.tab("evidence")
+            replay.expect(self.page.locator("#formal [data-inspection-path]")).to_have_count(0)
+            self.formal_unavailable_view(unavailable, workbench)
+            assert self.view() == unavailable and self.get(f"cases/{self.case_id}/history") == unavailable_history
+            self.switch_case(fixture.manifest["cases"]["recorded"])
+            self.tab("evidence")
+            replay.expect(self.page.locator("#formal .formal-inspection[open]")).to_have_count(0)
+            assert self.formal_inventory(view) == inventory and self.view() == view
+            self.shot("formal-case-isolation-" + str(width))
+        assert not [row for row in self.requests if row["method"] != "GET"], "Recorded inspection sent a write request"
+        assert self.get(f"cases/{self.case_id}/history") == history
+        return {"observations": observations, "case_isolation": True, "inspection_writes": 0,
+                "scope": fixture.manifest["scope"], "no_current_candidate_counterexample_claim": True}
 
     def evidence_triage(self):
         """Actual packet blockers and keyboard destinations; no fabricated check payloads."""
@@ -761,7 +1093,7 @@ def main():
         return 2
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path, required=True)
-    parser.add_argument("--scenario", choices=("baseline", "all", "diagnostics", "triage"), default="baseline")
+    parser.add_argument("--scenario", choices=("baseline", "all", "diagnostics", "triage", "formal-unavailable", "formal-recorded"), default="baseline")
     args = parser.parse_args()
     out = args.out.resolve()
     out.mkdir(parents=True, exist_ok=False)
@@ -775,8 +1107,10 @@ def main():
               "not_run": ["uncertain network/invalid response", "committed then refresh failed", "runtime context isolation",
                           "human usability", "live provider", "owner approval/apply"]}
     review, address = None, None
+    fixture = RecordedExcursionFixture() if args.scenario == "formal-recorded" else None
+    server_options = {} if fixture is None else {"pack_path": ROOT / "packs/excursion", "before_serve": fixture}
     try:
-        with replay.disposable_server() as base:
+        with replay.disposable_server(**server_options) as base:
             endpoint = urlsplit(base)
             address = (endpoint.hostname, endpoint.port)
             with replay.sync_playwright() as playwright:
@@ -804,6 +1138,12 @@ def main():
                         result["not_run"] = ["runtime recovery scenarios", "raw-diagnostic overflow", "axe audit",
                                              "malformed/duplicate/stale packet browser fixtures", "human usability",
                                              "live provider", "owner approval/apply"]
+                    if args.scenario in {"formal-unavailable", "formal-recorded"}:
+                        steps = [(args.scenario, review.formal_unavailable if fixture is None
+                                  else lambda: review.formal_recorded(fixture))]
+                        result["not_run"] = ["fresh solver execution", "current candidate failure replay", "owner verification/approval/apply",
+                                             "runtime recovery scenarios", "axe audit", "malformed inspection browser fixtures",
+                                             "human usability", "live provider"]
                     for name, action in steps:
                         review.stage = name
                         evidence = action()
@@ -824,10 +1164,22 @@ def main():
                     finally:
                         browser.close()
                         result["browser_closed"] = True
+    except FormalPrerequisiteMissing as error:
+        result["status"] = "NOT_RUN"
+        result["prerequisite"] = str(error)
+        result["browser_started"] = False
+        result["server_started"] = False
     except Exception as error:
         result["error"] = {"message": str(error).replace(replay.TEST_CAPABILITY, "[test-capability]"),
                            "traceback": traceback.format_exc().replace(replay.TEST_CAPABILITY, "[test-capability]")}
     finally:
+        if fixture is not None:
+            result["recorded_fixture"] = fixture.manifest
+            result["recorded_inputs_after"] = recorded_inputs()
+            if result["recorded_inputs_after"] != fixture.manifest["inputs"]:
+                result["status"] = "FAIL"
+                result["recorded_input_error"] = "Recorded artifact source bytes changed during the replay"
+            write_json(out / "recorded-fixture-provenance.json", fixture.manifest)
         if address:
             with socket.socket() as sock:
                 sock.settimeout(.2)
@@ -842,13 +1194,14 @@ def main():
         write_json(out / "subject-after.json", after)
         result["subject_preservation"] = compare_subjects(before, after)
         result["subject_content_sha256"] = before["content_sha256"]
-        if result["subject_preservation"]["status"] != "UNCHANGED" or not result["browser_closed"] or not result["server_closed"]:
+        if result["subject_preservation"]["status"] != "UNCHANGED" or (result["status"] != "NOT_RUN"
+                and (not result["browser_closed"] or not result["server_closed"])):
             result["status"] = "FAIL"
         write_json(out / "result.json", result)
         write_json(out / "artifact-manifest.json", {p.relative_to(out).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
                                                    for p in sorted(out.rglob("*")) if p.is_file()})
     emit({key: result[key] for key in ("status", "browser_closed", "server_closed", "checks")})
-    return 0 if result["status"] == "PASS" else 1
+    return 0 if result["status"] == "PASS" else 2 if result["status"] == "NOT_RUN" else 1
 
 
 if __name__ == "__main__":

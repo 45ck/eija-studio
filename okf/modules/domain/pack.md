@@ -110,6 +110,7 @@ _No curated notes yet._
 * [application.runtime](/modules/application/runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.
 * [application.service](/modules/application/service.md) - Module `application/service` (no module docstring).
 * [application.verifier](/modules/application/verifier.md) - Bounded synthetic runtime experiments.
+* [application.witness_inspection](/modules/application/witness_inspection.md) - Immutable display projections of the deciding formal record, never new evidence or verdicts.
 * [bootstrap](/modules/bootstrap.md) - The only composition root: wires application ports to concrete adapters.
 * [domain.affordance](/modules/domain/affordance.md) - Affordance map (WBS 1.3): which single edits the kernel would accept, and why the others are refused.
 * [domain.evidence](/modules/domain/evidence.md) - Compatibility is computed.

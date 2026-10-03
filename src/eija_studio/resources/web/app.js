@@ -177,12 +177,83 @@ function evidenceSummary(row,name,status,scope,issue){
   if(issue)summary.append(el("span",issue,"evidence-warning"));
   row.append(summary);
 }
-function formalDetails(row,e){
+function inspectionDisclosure(parent,label,key,opened){
+  const details=el("details",undefined,"formal-inspection-detail");details.append(el("summary",label));
+  details.dataset.evidenceKey=key;details.open=opened.has(key);parent.append(details);return details;
+}
+function inspectionRaw(parent,label,value,key,opened){
+  const details=inspectionDisclosure(parent,label,key,opened),raw=el("pre",typeof value==="string"?value:JSON.stringify(value,null,2),"formal-inspection-raw");
+  raw.tabIndex=0;raw.setAttribute("role","region");raw.setAttribute("aria-label",label);details.append(raw);return details;
+}
+function inspectionMetadata(parent,fields){
+  const list=el("dl",undefined,"evidence-metadata");
+  for(const [label,value]of fields)list.append(el("dt",label),el("dd",value==null?"Not supplied":evidenceValue(value)));
+  parent.append(list);
+}
+function inspectionIssue(p,e,x){
+  const subjectIssue=evidenceSubjectIssue(p,e);if(subjectIssue)return subjectIssue;
+  if(!x||x.schema_version!=="eija.formal-inspection.v1"||x.display_only!==true||x.scope!=="formal-record-inspection")return "Inspection format is unavailable; retain the raw data without assigning it to this check.";
+  if(x.kind!==e.kind||x.status!==e.status||JSON.stringify(x.reasons)!==JSON.stringify(e.reasons))return "Inspection and formal record differ; no recorded items are assigned to this check.";
+  const review=x.review;
+  if(!review||review.case_id!==current?.case.id||review.case_version!==current?.case.version||review.scope!==p.scope||review.subject_hash!==p.subject_hash||review.candidate_semantic_hash!==p.subject?.semantic)return "Inspection belongs to a different or incomplete review identity; it is not the current check's inspection.";
+  try{if(evidenceSubjectIssue(p,{subject:JSON.parse(review.subject_json)}))return "Inspection subject dimensions do not match this review packet.";}catch{return "Inspection subject is not readable JSON; no current association is made.";}
+  if(workbench?.pack&&(review.pack_id!==workbench.pack.id||review.pack_digest!==workbench.pack.digest))return "Inspection pack identity differs from the loaded pack.";
+  if(!["available","unavailable"].includes(x.availability)||!Array.isArray(x.records)||x.record_count!==x.records.length||!Array.isArray(x.availability_reasons)||!Array.isArray(x.projection_reasons))return "Inspection inventory is incomplete or inconsistent; inspect the retained raw data.";
+  if(x.availability==="available"&&(!x.receipt||typeof x.artifact_json!=="string"))return "Inspection artifact identity is incomplete; inspect the retained raw data.";
+  if(x.availability==="available"&&x.receipt.id!==e.receipt_id)return "Inspection identifies a different deciding receipt; no recorded items are assigned to this check.";
+  if(x.availability==="unavailable"&&(x.records.length||x.artifact_json!==null||x.receipt!==null))return "Unavailable inspection contains conflicting artifact data; no recorded items are assigned to this check.";
+  return "";
+}
+function inspectionRecord(parent,record,index,key,opened){
+  const origins={counterexample:"Counterexample",negative_control:"Negative control",diagnostic:"Diagnostic"};
+  if(!record||!Object.hasOwn(origins,record.origin)||typeof record.artifact_path!=="string"||!Array.isArray(record.steps)||!record.model){
+    const invalid=el("div");invalid.append(el("p",`Record ${index+1} has an unsupported shape; raw data is retained.`,"evidence-warning"));inspectionRaw(invalid,"Raw recorded item",record,key+":invalid:"+index,opened);parent.append(invalid);return;
+  }
+  const recordKey=JSON.stringify([key,record.artifact_path,index]),details=inspectionDisclosure(parent,`${origins[record.origin]} · ${record.label||record.artifact_path}`,recordKey,opened);
+  details.dataset.inspectionPath=record.artifact_path;details.dataset.inspectionOrigin=record.origin;details.dataset.inspectionIndex=String(index);
+  if(record.origin==="negative_control")details.append(el("p","Seeded control; this is not a reported failure of the current candidate.","muted"));
+  if(record.invariant!==null&&record.invariant!==undefined)details.append(el("p","Invariant: "+record.invariant));
+  const steps=el("ol",undefined,"formal-inspection-steps");
+  for(const step of record.steps){const item=el("li",typeof step?.text==="string"?step.text:step?.raw_json??"Recorded step text not supplied");item.dataset.stepIndex=String(step?.index??"");steps.append(item);}
+  if(record.steps.length){details.append(el("p","Recorded steps · literal producer text", "muted"),steps);}else details.append(el("p","No recorded steps are supplied.","muted"));
+  const model=record.model,modelLabels={valid_workflow:"A validated Workflow specimen is supplied; it is separate from the current candidate.",raw_invalid:"The supplied specimen is not a valid Workflow. Its raw data and validation errors are retained.",not_provided:"No Workflow specimen is supplied. The current candidate is not substituted."};
+  details.append(el("p",modelLabels[model.availability]||"Specimen availability is not recognised; raw data is retained.","formal-inspection-model"));
+  formalList(details,"Specimen validation errors",model.validation_errors);
+  details.append(el("p","Model and source navigation are not available in this inspection view.","muted"));
+  const identities=inspectionDisclosure(details,"Record and specimen identity",recordKey+":identity",opened);
+  inspectionMetadata(identities,[["Artifact path",record.artifact_path],["Origin",record.origin],["Model slot",model.slot],["Supplied semantic hash",model.supplied_semantic_hash],["Computed specimen semantic hash",model.computed_semantic_hash],["Model availability",model.availability],["Navigation",record.navigation]]);
+  if(model.raw_json!==null&&model.raw_json!==undefined)inspectionRaw(identities,"Raw model specimen",model.raw_json,recordKey+":model",opened);
+  inspectionRaw(details,"Raw recorded item",record.raw_json,recordKey+":raw",opened);
+}
+function renderFormalInspection(row,e,p,opened){
+  if(e.inspection===undefined)return;
+  const x=e.inspection,issue=inspectionIssue(p,e,x),key=JSON.stringify(["inspection",current?.case.id,current?.case.version,p.subject_hash,x?.review,x?.receipt,e.kind,row.dataset.evidenceIndex]);
+  const box=inspectionDisclosure(row,issue?"Inspection association unavailable":x.availability==="available"?`Inspect recorded evidence · ${x.record_count} records`:"Recorded artifact unavailable",key,opened);
+  box.className+=" formal-inspection";box.dataset.inspectionAvailability=issue?"unassociated":x.availability;
+  if(issue)box.append(el("p",issue,"evidence-warning"));
+  else{
+    box.append(el("p","Display-only inspection of this deciding record; the check status and review scope are unchanged.","muted"));
+    formalList(box,"Artifact availability",x.availability_reasons);
+    if(x.availability==="available"){
+      if(x.receipt.subject_matches_review!==true)box.append(el("p","The deciding receipt subject differs from this review packet. Its recorded items remain separate from the current candidate.","evidence-warning"));
+      if(!x.records.length)box.append(el("p","No structured records are supplied. The retained artifact and verdict reasons remain available."));
+      x.records.forEach((record,index)=>inspectionRecord(box,record,index,key,opened));
+      formalList(box,"Projection limits",x.projection_reasons);
+    }else box.append(el("p","No admitted recorded artifact is available for this inspection. The reported status is unchanged."));
+    const identities=inspectionDisclosure(box,"Review and deciding receipt identity",key+":identity",opened);
+    inspectionMetadata(identities,[["Review case",x.review.case_id],["Review revision",x.review.case_version],["Review scope",x.review.scope],["Review subject hash",x.review.subject_hash],["Current candidate semantic hash",x.review.candidate_semantic_hash],["Pack",x.review.pack_id],["Pack digest",x.review.pack_digest],["Deciding receipt",x.receipt?.id],["Artifact hash",x.receipt?.artifact_hash],["Producer",x.receipt?.producer],["Method",x.receipt?.method],["Receipt subject matches review",x.receipt?.subject_matches_review]]);
+    inspectionRaw(identities,"Full review subject",x.review.subject_json,key+":review",opened);
+    if(x.receipt)inspectionRaw(identities,"Original receipt subject",x.receipt.subject_json,key+":receipt",opened);
+    if(x.artifact_json!==null)inspectionRaw(box,"Complete recorded artifact",x.artifact_json,key+":artifact",opened);
+  }
+  inspectionRaw(box,"Raw inspection data",x,key+":raw",opened);
+}
+function formalDetails(row,e,p,opened){
   if(e.establishes!==undefined)row.append(el("p",evidenceValue(e.establishes)));
-  formalList(row,"Why this status",e.reasons);formalList(row,"Does not establish",e.does_not_establish);formalList(row,"Assumptions",e.assumptions);
+  formalList(row,"Why this status",e.reasons);renderFormalInspection(row,e,p,opened);formalList(row,"Does not establish",e.does_not_establish);formalList(row,"Assumptions",e.assumptions);
   if(e.bounds!==undefined)formalList(row,"Bounds",[evidenceValue(e.bounds)]);
   formalList(row,"Counterexamples",e.counterexamples);row.append(el("p","Needs: "+evidenceValue(e.prerequisites===undefined?"Not reported":e.prerequisites)));
-  const alreadyShown=new Set(["establishes","reasons","does_not_establish","assumptions","bounds","counterexamples","prerequisites"]),metadata=el("dl",undefined,"evidence-metadata");
+  const alreadyShown=new Set(["establishes","reasons","does_not_establish","assumptions","bounds","counterexamples","prerequisites","inspection"]),metadata=el("dl",undefined,"evidence-metadata");
   for(const [name,value]of Object.entries(e))if(!alreadyShown.has(name)||value===null||(Array.isArray(value)&&!value.length))metadata.append(el("dt",name.replaceAll("_"," ")),el("dd",evidenceValue(value)));
   row.append(metadata);
 }
@@ -217,7 +288,7 @@ function renderFormal(p){
     evidenceSummary(d,kind.replaceAll("_"," "),status,`${String(e.evidence_level||"scope not reported").replaceAll("_"," ")} · case-wide`,issue);
     if(paired.has(e))d.append(el("p","Technical claim: "+paired.get(e)));
     else if(note)d.append(el("p",note,"evidence-warning"));
-    formalDetails(d,e);root.append(d);
+    formalDetails(d,e,p,opened);root.append(d);
   });
   if(!entries.length)root.append(el("p","Technical claims: not reported for this packet.","muted"));
   if(!records.length)root.append(el("p","Formal evidence: not reported for this packet.","muted"));

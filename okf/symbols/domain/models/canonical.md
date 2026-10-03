@@ -42,5 +42,6 @@ Everything that is hashed goes through this so that equal meaning gives equal by
 <!-- okf:generated:begin links -->
 ## Referenced by
 
+* [application.witness_inspection.inspect_verdict](/symbols/application/witness_inspection/inspect_verdict.md) - Project only the deciding receipt, retaining uncertainty and all recorded raw data without writes.
 * [domain.models.fingerprint](/symbols/domain/models/fingerprint.md) - `def fingerprint(value: Any) -> str` in `domain/models`.
 <!-- okf:generated:end links -->
