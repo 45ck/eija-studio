@@ -47,4 +47,8 @@ _No curated notes yet._
 * [domain.transactions.TRANSACTION_KINDS](/symbols/domain/transactions/TRANSACTION_KINDS.md) - Constant `TRANSACTION_KINDS` in `domain/transactions`.
 * [domain.transactions.Transaction](/symbols/domain/transactions/Transaction.md) - Type alias `Transaction` in `domain/transactions`.
 * [domain.transactions.TransactionDocument](/symbols/domain/transactions/TransactionDocument.md) - One semantic transaction as a JSON document (contracts/semantic-transaction.schema.json).
+
+## Referenced by
+
+* [application.edit_proposal.propose_edit](/symbols/application/edit_proposal/propose_edit.md) - No persistence or evidence: resolve one request, then use the existing policy-checked projection.
 <!-- okf:generated:end links -->

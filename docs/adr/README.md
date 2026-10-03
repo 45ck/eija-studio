@@ -34,6 +34,7 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0040](0040-hci-budgets-as-ratchets-and-harness-identity.md) | HCI budgets are ratchets, browser tests are opt-in, and the journey runs under the harness identity | accepted |
 | [0041](0041-mcp-server-agent-surface.md) | MCP server as the agent surface: propose and check, never decide | accepted |
 | [0043](0043-readme-truthfulness-and-docs-site.md) | The README is verifiable: generated diagrams, dated status, MkDocs Material docs site | proposed |
+| [0044](0044-bundle-authored-domain-packs.md) | Bundle authored domain packs during distribution builds | proposed |
 | [0045](0045-okf-knowledge-base-linked-to-code.md) | An OKF v0.2 knowledge base deterministically linked to code | proposed |
 | [0046](0046-code-link-hash-methods-and-stale-semantics.md) | Code-link hash methods and STALE semantics | proposed |
 | [0047](0047-hardcoded-scripted-demos-not-demo-machine.md) | Hand-authored scripted demo recordings, not demo-machine | accepted |

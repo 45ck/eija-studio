@@ -47,7 +47,10 @@ function harness(code=app){
 function assertResumes(code=app){const h=harness(code);h.switch("repository-changes");h.switch("model");h.open("review");assert.equal(h.context.tab,"repository-changes");return h;}
 
 test("Changes has one primary tab and two labelled local comparison panels",()=>{
-  const h=harness();assert.deepEqual(h.primary.map(button=>button.dataset.tab),["model","code","change","review","try","evidence"]);assert.deepEqual(h.workspaceButtons.filter(button=>button.dataset.workspaceView).map(button=>button.dataset.workspaceView),["model","change","impact","review","code","try","evidence","visual","source"]);assert.deepEqual(h.comparison.map(button=>button.dataset.comparisonTab),["review","repository-changes"]);
+  const h=harness();assert.deepEqual(h.primary.map(button=>button.dataset.tab),["model","code","change","review","try","evidence"]);
+  assert.deepEqual(h.workspaceButtons.filter(button=>button.dataset.workspaceView).map(button=>button.dataset.workspaceView),["impact","visual","source","model","code","change","review","try","evidence"]);
+  assert.deepEqual(h.workspaceButtons.filter(button=>button.dataset.workspacePanel).map(button=>button.dataset.workspacePanel),["problems-pane","evidence-pane","history-pane"]);
+  assert.deepEqual(h.comparison.map(button=>button.dataset.comparisonTab),["review","repository-changes"]);
   assert.equal(h.get("tab-changes").getAttribute("aria-controls"),"comparison-workspace");assert.equal(h.get("comparison-workspace").getAttribute("aria-labelledby"),"tab-changes");
   for(const [button,panel]of [["comparison-model-tab","review"],["comparison-code-tab","repository-changes"]]){assert.equal(h.get(button).getAttribute("aria-controls"),panel);assert.equal(h.get(panel).getAttribute("aria-labelledby"),button);assert.equal(h.get(panel).classList.contains("comparison-content"),true);assert.equal(h.get(panel).classList.contains("tab-content"),false);}
   assert.ok(html.indexOf('id="comparison-workspace"')<html.indexOf('id="review"')&&html.indexOf('id="review"')<html.indexOf('id="repository-changes"'));

@@ -715,6 +715,7 @@ class ReviewWorkspace(Journey):
         view = self.case_view()
         self.main_comparison().locator('[data-compare-action="overview"]').click()
         overview = self.presentation()
+        # Tab navigation hides/shows the existing comparison; it does not recreate it.
         self.tab("model")
         self.tab("review")
         assert_same_presentation(overview, self.presentation(), "overview")
@@ -787,7 +788,7 @@ class ReviewWorkspace(Journey):
         self.main_comparison().locator('[data-compare-action="focus"]').click()
         self.assert_unchanged(before)
         return {"oracle_controls": controls, "painted_endpoint_negative_control": rejected, "computed_fonts": fonts,
-                "visible_selected_endpoints": visible_focus, "overview_preserved": overview, "manual_resize_and_rerender_preserved": manual,
+                "visible_selected_endpoints": visible_focus, "overview_preserved": overview, "manual_resize_and_hide_show_preserved": manual,
                 "viewboxes_before": old, "viewboxes_after": new,
                 "absent_side_has_no_ghost": True, "case_layout_history_unchanged": True}
 

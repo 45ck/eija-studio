@@ -31,7 +31,7 @@
       "status": "PASS",
       "target": 4,
       "unit": "bits",
-      "value": 3.87
+      "value": 3.952
     },
     {
       "id": "hick.choice_groups_over_7",
@@ -61,10 +61,10 @@
       "limit": 65,
       "note": "modelled, not measured: a regression guard on the journey definition (measured model value 62.7 s), so adding a journey step trips it on purpose; no law defines a threshold, so target = limit",
       "path": "klm.expert_time_pointer_s",
-      "status": "FAIL",
+      "status": "PASS",
       "target": 65,
       "unit": "s",
-      "value": 65.31
+      "value": 64.01
     },
     {
       "id": "doherty.first_feedback_p95",
@@ -75,7 +75,7 @@
       "status": "PASS",
       "target": 400,
       "unit": "ms",
-      "value": 5.1
+      "value": 6.9
     },
     {
       "id": "doherty.settled_p50",
@@ -86,7 +86,7 @@
       "status": "PASS",
       "target": 400,
       "unit": "ms",
-      "value": 92.9
+      "value": 99.9
     },
     {
       "id": "doherty.settled_p95",
@@ -97,7 +97,7 @@
       "status": "GAP",
       "target": 400,
       "unit": "ms",
-      "value": 942.6
+      "value": 891.5
     },
     {
       "id": "wcag.critical_rules",
@@ -182,10 +182,10 @@
       "limit": 27,
       "note": "heuristic proxy; limit raised 26 -> 27 on 2026-09-29: evidence-kinds UI added a group; UI replaced in Phase 2, WP 2.6 re-derives all budgets; accepted by delegated review 2026-09-29",
       "path": "working_memory.summary.max_chunks_viewport",
-      "status": "FAIL",
+      "status": "GAP",
       "target": 9,
       "unit": "chunks",
-      "value": 60
+      "value": 27
     },
     {
       "id": "runtime.js_exceptions",
@@ -203,7 +203,7 @@
   "environment": {
     "axe_core": "4.12.1",
     "axe_playwright_python": "0.1.8",
-    "chrome": "154.0.8037.58",
+    "chrome": "154.0.8037.95",
     "device_scale_factor": 1,
     "headless": true,
     "identity_source": "pytest-harness",
@@ -213,18 +213,19 @@
     "python": "3.12.10",
     "repeats": 3,
     "ui_sha256": {
-      "app.css": "b3a4b536a2bbd063f2a192e945ce79aa857d600bcf0a8b4d2d5cfbc37e04c27b",
-      "app.js": "92c9db7580d8d611e0353cce87d5f661f54fc3e77ee0bfbc63ab84a1eefce0df",
+      "agent-edit.js": "3bf8fe42c6f7707980d8d2ef1a8fc4647880e027e3f7df6c0b8f9f89080cb825",
+      "app.css": "5f627dac29895158c700172819843055488ee0c9f3c9fd611f1f11e7e9b2a8f0",
+      "app.js": "902acc4283e7ed580c5946c713e9d323bfdaeee9f0e29c610a3f6f939ef7a8ef",
       "canvas.js": "e0226d9361d73aa1831e48080f5fc262bb0fcbd8086cd1387461d39de6ca1765",
       "compare.css": "f58ab0861b602c1e39a867ef60aa68e9235fb1360db5173b463ae50d5d6a1d7e",
       "compare.js": "47ff5562ef8ed2c273c726d8381f2d90847a4e2055ed1cbb34490ba16dbf71c5",
-      "index.html": "fec49e4ff52edeec85773e2d75d8395bbd406e5256ff770a68bae05d50568b05",
+      "index.html": "67e3a6d5a7904128af7e007a019ebc7e227c8b8964415bf00c0ce25378e9e185",
       "repository-review.css": "ef87096d5fc1408c8605f50e31db4f9d85579adc3247c1f2e5ff1b4ba9d848bb",
       "repository-review.js": "1a8559475a48f8855c31c3c1ac76ef28fa6cf70421d964e4fc22024bdfeeda02",
       "review.js": "426978e964918a63b8e73ff1ae99b2b126e7a1a4d9429b2151e275cfaf178dee",
-      "shell.js": "29e41c7dd572a03d86375d69d2fdb3bdb17db8f0a936d323dd4e71dd2f73480a",
+      "shell.js": "326b6da0d10e74eb52a90673e00817f76ff362c9c0411353723332493e717613",
       "source.js": "87e72798bfbfeab516923d79ab72495bd72a3086e3a706156ea71627530482a9",
-      "tree.js": "9dd0270ba356262f8b2fa5afdfc2f4ff3c9701030747f500f5e2d8d419bd2c5b",
+      "tree.js": "6f5c5592837de8dd37f59f31349f2130c02426aac51e4d6b3ffd41d7b102dfc2",
       "vendor/dagre-graphlib.LICENSE.txt": "6a349742a6cb219d5a2fc8d0844f6d89a6efc62e20c664450d884fc7ff2d6015",
       "vendor/dagre.LICENSE.txt": "6a349742a6cb219d5a2fc8d0844f6d89a6efc62e20c664450d884fc7ff2d6015",
       "vendor/dagre.VENDOR.json": "9ea8f38b29e9a766e0a413b83b24a2e6238dcb4f8568aad79a1bdb2866eee14d",
@@ -250,17 +251,17 @@
     },
     "summary": {
       "landing_convention_note": "primary D uses the centre of the effective box, which overstates D for wide targets; moves_id_over_4_nearest_edge recomputes D to the nearest edge, so the flag count is a range",
-      "max_id_bits": 3.87,
-      "max_id_step": "open-try",
-      "mean_id_bits": 2.677,
+      "max_id_bits": 3.952,
+      "max_id_step": "create-case",
+      "mean_id_bits": 2.5,
       "moves_id_over_4": 0,
       "moves_id_over_4_nearest_edge": 0,
-      "moves_with_distance": 21,
-      "pointer_targets": 22,
-      "predicted_pointing_time_s": 14.159,
+      "moves_with_distance": 20,
+      "pointer_targets": 21,
+      "predicted_pointing_time_s": 12.898,
       "scrolls_needed": 0,
       "targets_w_under_24": 0,
-      "total_distance_px": 6031.4
+      "total_distance_px": 5420.2
     },
     "targets": [
       {
@@ -280,11 +281,11 @@
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 576.3,
+        "distance_px": 686.0,
         "flags": [],
-        "id_bits": 2.758,
-        "id_bits_nearest_edge": 1.486,
-        "predicted_mt_s": 0.688,
+        "id_bits": 2.975,
+        "id_bits_nearest_edge": 1.339,
+        "predicted_mt_s": 0.724,
         "raw_w_px": 100,
         "scrolled_before": false,
         "selector": "#request",
@@ -295,11 +296,11 @@
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 511.7,
+        "distance_px": 637.0,
         "flags": [],
-        "id_bits": 3.659,
-        "id_bits_nearest_edge": 3.518,
-        "predicted_mt_s": 0.837,
+        "id_bits": 3.952,
+        "id_bits_nearest_edge": 3.84,
+        "predicted_mt_s": 0.886,
         "raw_w_px": 44,
         "scrolled_before": false,
         "selector": "#create",
@@ -310,11 +311,11 @@
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 225.7,
+        "distance_px": 38.4,
         "flags": [],
-        "id_bits": 2.616,
-        "id_bits_nearest_edge": 2.189,
-        "predicted_mt_s": 0.664,
+        "id_bits": 0.906,
+        "id_bits_nearest_edge": 0.277,
+        "predicted_mt_s": 0.38,
         "raw_w_px": 44,
         "scrolled_before": false,
         "selector": "#propose",
@@ -325,14 +326,14 @@
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 433.8,
+        "distance_px": 271.2,
         "flags": [],
-        "id_bits": 3.441,
-        "id_bits_nearest_edge": 3.315,
-        "predicted_mt_s": 0.801,
+        "id_bits": 2.841,
+        "id_bits_nearest_edge": 2.733,
+        "predicted_mt_s": 0.702,
         "raw_w_px": 44,
         "scrolled_before": false,
-        "selector": "#options > article:nth-of-type(1) > button",
+        "selector": "#options > article > button",
         "step": "select-meaning",
         "target": "Select this meaning",
         "via_label": false,
@@ -340,11 +341,11 @@
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 558.3,
+        "distance_px": 493.5,
         "flags": [],
-        "id_bits": 3.87,
-        "id_bits_nearest_edge": 3.803,
-        "predicted_mt_s": 0.872,
+        "id_bits": 3.705,
+        "id_bits_nearest_edge": 3.628,
+        "predicted_mt_s": 0.845,
         "raw_w_px": 41,
         "scrolled_before": false,
         "selector": "#workspace > div:nth-of-type(4) > nav > button:nth-of-type(5)",
@@ -355,11 +356,11 @@
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 128.6,
+        "distance_px": 317.6,
         "flags": [],
-        "id_bits": 1.972,
-        "id_bits_nearest_edge": 1.715,
-        "predicted_mt_s": 0.557,
+        "id_bits": 3.039,
+        "id_bits_nearest_edge": 2.812,
+        "predicted_mt_s": 0.734,
         "raw_w_px": 44,
         "scrolled_before": false,
         "selector": "#reset",
@@ -370,11 +371,11 @@
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 389.3,
+        "distance_px": 144.0,
         "flags": [],
-        "id_bits": 3.3,
-        "id_bits_nearest_edge": 3.159,
-        "predicted_mt_s": 0.778,
+        "id_bits": 2.095,
+        "id_bits_nearest_edge": 1.827,
+        "predicted_mt_s": 0.578,
         "raw_w_px": 44,
         "scrolled_before": false,
         "selector": "#runtime-actions > button:nth-of-type(1)",
@@ -460,11 +461,11 @@
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 451.2,
+        "distance_px": 444.9,
         "flags": [],
-        "id_bits": 3.586,
-        "id_bits_nearest_edge": 3.481,
-        "predicted_mt_s": 0.825,
+        "id_bits": 3.567,
+        "id_bits_nearest_edge": 3.46,
+        "predicted_mt_s": 0.822,
         "raw_w_px": 41,
         "scrolled_before": false,
         "selector": "#workspace > div:nth-of-type(4) > nav > button:nth-of-type(6)",
@@ -487,29 +488,14 @@
         "target": "Run bounded verification",
         "via_label": false,
         "w_px": 44,
-        "wcag_2_5_8": "pass"
+        "wcag_2_5_8": "not-audited"
       },
       {
-        "distance_px": 462.6,
+        "distance_px": 385.5,
         "flags": [],
-        "id_bits": 3.525,
-        "id_bits_nearest_edge": 3.455,
-        "predicted_mt_s": 0.815,
-        "raw_w_px": 44,
-        "scrolled_before": false,
-        "selector": "#review-subject",
-        "step": "open-review-subject",
-        "target": "Review this exact subject · eligible for local review · 37dd",
-        "via_label": false,
-        "w_px": 44,
-        "wcag_2_5_8": "pass"
-      },
-      {
-        "distance_px": 338.7,
-        "flags": [],
-        "id_bits": 3.344,
-        "id_bits_nearest_edge": 2.21,
-        "predicted_mt_s": 0.785,
+        "id_bits": 3.513,
+        "id_bits_nearest_edge": 2.966,
+        "predicted_mt_s": 0.813,
         "raw_w_px": 37,
         "scrolled_before": false,
         "selector": "#q-authority",
@@ -520,11 +506,11 @@
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 282.0,
+        "distance_px": 77.0,
         "flags": [],
-        "id_bits": 3.108,
-        "id_bits_nearest_edge": 3.022,
-        "predicted_mt_s": 0.746,
+        "id_bits": 1.623,
+        "id_bits_nearest_edge": 1.368,
+        "predicted_mt_s": 0.499,
         "raw_w_px": 37,
         "scrolled_before": false,
         "selector": "#q-assignment",
@@ -550,11 +536,11 @@
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 333.8,
+        "distance_px": 459.5,
         "flags": [],
-        "id_bits": 3.102,
+        "id_bits": 3.516,
         "id_bits_nearest_edge": 0.835,
-        "predicted_mt_s": 0.745,
+        "predicted_mt_s": 0.814,
         "raw_w_px": 17,
         "scrolled_before": false,
         "selector": "#acknowledge",
@@ -565,11 +551,11 @@
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 441.7,
+        "distance_px": 567.9,
         "flags": [],
-        "id_bits": 3.465,
-        "id_bits_nearest_edge": 3.121,
-        "predicted_mt_s": 0.805,
+        "id_bits": 3.798,
+        "id_bits_nearest_edge": 3.533,
+        "predicted_mt_s": 0.86,
         "raw_w_px": 44,
         "scrolled_before": false,
         "selector": "#approve",
@@ -577,7 +563,7 @@
         "target": "Authorise exact local revision",
         "via_label": false,
         "w_px": 44,
-        "wcag_2_5_8": "not-audited"
+        "wcag_2_5_8": "pass"
       },
       {
         "distance_px": 194.7,
@@ -599,14 +585,14 @@
   "hick_hyman": {
     "decisions": [
       {
-        "bits": 2.0,
-        "choices": 3,
+        "bits": 1.0,
+        "choices": 1,
         "decision": "choose an interpretation",
         "over_7": false,
-        "predicted_s": 0.3,
-        "screen_controls": 23,
+        "predicted_s": 0.15,
+        "screen_controls": 17,
         "screen_over_7": true,
-        "screen_predicted_s": 0.688,
+        "screen_predicted_s": 0.625,
         "step": "select-meaning"
       },
       {
@@ -615,9 +601,9 @@
         "decision": "choose a work area",
         "over_7": false,
         "predicted_s": 0.45,
-        "screen_controls": 23,
+        "screen_controls": 19,
         "screen_over_7": true,
-        "screen_predicted_s": 0.688,
+        "screen_predicted_s": 0.648,
         "step": "open-try"
       },
       {
@@ -626,9 +612,9 @@
         "decision": "choose a lifecycle action",
         "over_7": false,
         "predicted_s": 0.388,
-        "screen_controls": 25,
+        "screen_controls": 20,
         "screen_over_7": true,
-        "screen_predicted_s": 0.705,
+        "screen_predicted_s": 0.659,
         "step": "submit-teacher"
       },
       {
@@ -637,9 +623,9 @@
         "decision": "choose a lifecycle action",
         "over_7": false,
         "predicted_s": 0.388,
-        "screen_controls": 25,
+        "screen_controls": 20,
         "screen_over_7": true,
-        "screen_predicted_s": 0.705,
+        "screen_predicted_s": 0.659,
         "step": "recommend-teacher"
       },
       {
@@ -648,9 +634,9 @@
         "decision": "choose the acting role",
         "over_7": false,
         "predicted_s": 0.388,
-        "screen_controls": 25,
+        "screen_controls": 20,
         "screen_over_7": true,
-        "screen_predicted_s": 0.705,
+        "screen_predicted_s": 0.659,
         "step": "actor-registrar"
       },
       {
@@ -659,9 +645,9 @@
         "decision": "choose a lifecycle action",
         "over_7": false,
         "predicted_s": 0.388,
-        "screen_controls": 25,
+        "screen_controls": 20,
         "screen_over_7": true,
-        "screen_predicted_s": 0.705,
+        "screen_predicted_s": 0.659,
         "step": "approve-registrar"
       },
       {
@@ -670,9 +656,9 @@
         "decision": "choose the acting role",
         "over_7": false,
         "predicted_s": 0.388,
-        "screen_controls": 25,
+        "screen_controls": 20,
         "screen_over_7": true,
-        "screen_predicted_s": 0.705,
+        "screen_predicted_s": 0.659,
         "step": "actor-unassigned"
       },
       {
@@ -681,9 +667,9 @@
         "decision": "choose a lifecycle action",
         "over_7": false,
         "predicted_s": 0.388,
-        "screen_controls": 25,
+        "screen_controls": 20,
         "screen_over_7": true,
-        "screen_predicted_s": 0.705,
+        "screen_predicted_s": 0.659,
         "step": "denied-recommend"
       },
       {
@@ -692,9 +678,9 @@
         "decision": "choose a work area",
         "over_7": false,
         "predicted_s": 0.45,
-        "screen_controls": 25,
+        "screen_controls": 20,
         "screen_over_7": true,
-        "screen_predicted_s": 0.705,
+        "screen_predicted_s": 0.659,
         "step": "open-evidence"
       }
     ],
@@ -708,7 +694,7 @@
       "choice_points_over_7": 0,
       "decision_points": 9,
       "max_choices": 7,
-      "predicted_choice_time_s": 3.528,
+      "predicted_choice_time_s": 3.378,
       "screen_points_over_7": 9
     }
   },
@@ -792,11 +778,6 @@
         "label": "Run bounded verification"
       },
       {
-        "id": "open-review-subject",
-        "kind": "click",
-        "label": "Open review of this exact subject"
-      },
-      {
         "id": "answer-authority",
         "kind": "type",
         "label": "Answer review question 'authority'"
@@ -829,43 +810,38 @@
     ]
   },
   "keyboard": {
-    "activations": 16,
+    "activations": 15,
     "activations_that_lost_focus": [],
     "completed_journey_keyboard_only": true,
     "focus_lost_count": 0,
-    "focus_order_regression_count": 4,
+    "focus_order_regression_count": 3,
     "focus_order_regressions": [
       {
-        "from": "Persisted audit and simulated outbox",
+        "from": "Attempt details, diagnostic and persisted audit",
         "step": "actor-registrar",
         "to": "Skip to workspace"
       },
       {
-        "from": "Persisted audit and simulated outbox",
+        "from": "Attempt details, diagnostic and persisted audit",
         "step": "actor-unassigned",
         "to": "Skip to workspace"
       },
       {
-        "from": "Persisted audit and simulated outbox",
+        "from": "Attempt details, diagnostic and persisted audit",
         "step": "open-evidence",
         "to": "Skip to workspace"
-      },
-      {
-        "from": "modelled impact closurePASS Case-wide technical claim",
-        "step": "open-review-subject",
-        "to": "bend proofUNKNOWN sealed tool verdict · case-wide"
       }
     ],
-    "max_tab_presses_for_one_target": 25,
+    "max_tab_presses_for_one_target": 20,
     "note": "Real Tab traversal plus Arrow/Home navigation within tablists; every navigation and activation key is recorded; focus indicator = computed outline or box-shadow on the focused element; 'focus lost' = document.activeElement is <body> once the DOM settled after activation",
     "stops_without_indicator_count": 0,
     "stops_without_visible_focus_indicator": [],
     "tab_presses_by_step": {
       "acknowledge": 1,
-      "actor-registrar": 25,
-      "actor-unassigned": 24,
+      "actor-registrar": 20,
+      "actor-unassigned": 19,
       "answer-assignment": 1,
-      "answer-authority": 1,
+      "answer-authority": 0,
       "answer-reject_entry": 1,
       "apply-baseline": 0,
       "approve-exact": 1,
@@ -873,41 +849,34 @@
       "ask-interpretations": 0,
       "create-case": 1,
       "denied-recommend": 2,
-      "open-change": 9,
-      "open-evidence": 22,
-      "open-review-subject": 9,
+      "open-change": 8,
+      "open-evidence": 17,
       "open-try": 5,
       "recommend-teacher": 1,
       "reset-preview": 3,
       "run-verification": 3,
-      "select-meaning": 3,
+      "select-meaning": 2,
       "submit-teacher": 2,
       "type-request": 0
     },
     "tab_presses_spent_after_focus_loss": 0,
-    "tab_presses_total": 117,
-    "unique_focus_stops_seen": 50
+    "tab_presses_total": 90,
+    "unique_focus_stops_seen": 36
   },
   "klm": {
     "citation": "Card, Moran & Newell 1980 (CACM 23(7)); K = average non-secretary typist (~40 wpm)",
-    "expert_time_keyboard_only_s": 69.55,
-    "expert_time_pointer_s": 65.31,
+    "expert_time_keyboard_only_s": 61.71,
+    "expert_time_pointer_s": 64.01,
     "keyboard_only_journey": {
       "fitts_refined_total_s": null,
       "operator_counts": {
         "B": 0,
         "H": 0,
-        "K": 205,
+        "K": 177,
         "M": 9,
         "P": 0
       },
       "operators": [
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "open-change"
-        },
         {
           "note": "Tab",
           "op": "K",
@@ -1221,12 +1190,6 @@
           "step": "select-meaning"
         },
         {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "select-meaning"
-        },
-        {
           "note": "Enter",
           "op": "K",
           "seconds": 0.28,
@@ -1326,36 +1289,6 @@
           "note": "Decide which role must act next",
           "op": "M",
           "seconds": 1.35,
-          "step": "actor-registrar"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "actor-registrar"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "actor-registrar"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "actor-registrar"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "actor-registrar"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
           "step": "actor-registrar"
         },
         {
@@ -1641,36 +1574,6 @@
           "step": "actor-unassigned"
         },
         {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "actor-unassigned"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "actor-unassigned"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "actor-unassigned"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "actor-unassigned"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "actor-unassigned"
-        },
-        {
           "note": "ArrowUp",
           "op": "K",
           "seconds": 0.28,
@@ -1803,36 +1706,6 @@
           "step": "open-evidence"
         },
         {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "open-evidence"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "open-evidence"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "open-evidence"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "open-evidence"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "open-evidence"
-        },
-        {
           "note": "Enter",
           "op": "K",
           "seconds": 0.28,
@@ -1861,77 +1734,11 @@
           "op": "K",
           "seconds": 0.28,
           "step": "run-verification"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "open-review-subject"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "open-review-subject"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "open-review-subject"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "open-review-subject"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "open-review-subject"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "open-review-subject"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "open-review-subject"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "open-review-subject"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "open-review-subject"
-        },
-        {
-          "note": "Enter",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "open-review-subject"
         },
         {
           "note": "Read the question and recall the fixture answer",
           "op": "M",
           "seconds": 1.35,
-          "step": "answer-authority"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
           "step": "answer-authority"
         },
         {
@@ -2189,10 +1996,10 @@
       ],
       "per_step_s": {
         "acknowledge": 1.91,
-        "actor-registrar": 9.19,
-        "actor-unassigned": 8.63,
+        "actor-registrar": 7.79,
+        "actor-unassigned": 7.23,
         "answer-assignment": 3.03,
-        "answer-authority": 4.99,
+        "answer-authority": 4.71,
         "answer-reject_entry": 5.55,
         "apply-baseline": 1.63,
         "approve-exact": 0.56,
@@ -2200,28 +2007,27 @@
         "ask-interpretations": 0.28,
         "create-case": 0.56,
         "denied-recommend": 0.84,
-        "open-change": 2.8,
-        "open-evidence": 6.44,
-        "open-review-subject": 2.8,
+        "open-change": 2.52,
+        "open-evidence": 5.04,
         "open-try": 1.68,
         "recommend-teacher": 0.56,
         "reset-preview": 1.12,
         "run-verification": 1.12,
-        "select-meaning": 2.47,
+        "select-meaning": 2.19,
         "submit-teacher": 0.84,
         "type-request": 11.43
       },
-      "total_s": 69.55
+      "total_s": 61.71
     },
     "placement_rules": "M is placed once per deliberate decision or reading moment (annotated per step in journey.py); H is derived from every mouse<->keyboard switch; a click is P + B + B; Shift counts as its own K; select lists model open and choose as two P+B+B; scrolling and system response R are NOT in the standard total",
     "pointer_journey": {
-      "fitts_refined_total_s": 56.371,
+      "fitts_refined_total_s": 54.909,
       "operator_counts": {
-        "B": 48,
+        "B": 46,
         "H": 8,
         "K": 67,
         "M": 9,
-        "P": 24
+        "P": 23
       },
       "operators": [
         {
@@ -2783,24 +2589,6 @@
           "step": "run-verification"
         },
         {
-          "note": "point at Review this exact subject · eligible for local review · 37dd",
-          "op": "P",
-          "seconds": 1.1,
-          "step": "open-review-subject"
-        },
-        {
-          "note": "button press",
-          "op": "B",
-          "seconds": 0.1,
-          "step": "open-review-subject"
-        },
-        {
-          "note": "button release",
-          "op": "B",
-          "seconds": 0.1,
-          "step": "open-review-subject"
-        },
-        {
           "note": "Read the question and recall the fixture answer",
           "op": "M",
           "seconds": 1.35,
@@ -3176,7 +2964,6 @@
         "denied-recommend": 1.3,
         "open-change": 1.3,
         "open-evidence": 1.3,
-        "open-review-subject": 1.3,
         "open-try": 1.3,
         "recommend-teacher": 1.3,
         "reset-preview": 1.3,
@@ -3185,7 +2972,7 @@
         "submit-teacher": 1.3,
         "type-request": 13.13
       },
-      "total_s": 65.31
+      "total_s": 64.01
     },
     "times_s": {
       "B": 0.1,
@@ -3213,92 +3000,92 @@
     "doherty": {
       "citation": "Doherty & Thadani 1982 (IBM Systems Journal 21(1)); ~400 ms",
       "first_feedback_p50_ms": 0.6,
-      "first_feedback_p95_ms": 5.1,
-      "interactions_measured": 45,
-      "journey_wait_p50_sum_s": 2.058,
-      "keyboard_settled_p50_ms": 87.7,
-      "keyboard_settled_p95_ms": 798.8,
+      "first_feedback_p95_ms": 6.9,
+      "interactions_measured": 42,
+      "journey_wait_p50_sum_s": 2.143,
+      "keyboard_settled_p50_ms": 96.9,
+      "keyboard_settled_p95_ms": 1252.8,
       "method": "nearest-rank percentiles over all repeats; medians and interquartile range are the headline, p95 is the maximum with few samples",
       "native_control_interactions_excluded": [
         "acknowledge"
       ],
       "note": "settled = last DOM mutation before quiescence, from the click event; excludes OS/browser input latency",
-      "settled_max_ms": 3109.7,
-      "settled_p25_ms": 5.7,
-      "settled_p50_ms": 92.9,
-      "settled_p75_ms": 141.7,
-      "settled_p95_ms": 942.6,
+      "settled_max_ms": 1073,
+      "settled_p25_ms": 8.1,
+      "settled_p50_ms": 99.9,
+      "settled_p75_ms": 119.3,
+      "settled_p95_ms": 891.5,
       "steps": [
         {
-          "first_feedback_p50_ms": 4.9,
-          "first_feedback_p95_ms": 5.1,
+          "first_feedback_p50_ms": 5.3,
+          "first_feedback_p95_ms": 6.9,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 4.6,
-          "settled_p50_ms": 4.9,
-          "settled_p75_ms": 5.1,
-          "settled_p95_ms": 5.1,
+          "settled_p25_ms": 5,
+          "settled_p50_ms": 5.3,
+          "settled_p75_ms": 6.9,
+          "settled_p95_ms": 6.9,
           "step": "open-change"
         },
         {
           "first_feedback_p50_ms": 0.5,
-          "first_feedback_p95_ms": 0.5,
+          "first_feedback_p95_ms": 0.8,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 81.3,
-          "settled_p50_ms": 86.5,
-          "settled_p75_ms": 214.9,
-          "settled_p95_ms": 214.9,
+          "settled_p25_ms": 78.3,
+          "settled_p50_ms": 92.5,
+          "settled_p75_ms": 103.5,
+          "settled_p95_ms": 103.5,
           "step": "create-case"
         },
         {
           "first_feedback_p50_ms": 0.5,
-          "first_feedback_p95_ms": 2.1,
+          "first_feedback_p95_ms": 0.6,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 87.5,
-          "settled_p50_ms": 104.3,
-          "settled_p75_ms": 374.1,
-          "settled_p95_ms": 374.1,
+          "settled_p25_ms": 100.1,
+          "settled_p50_ms": 101.4,
+          "settled_p75_ms": 105.1,
+          "settled_p95_ms": 105.1,
           "step": "ask-interpretations"
         },
         {
           "first_feedback_p50_ms": 0.4,
-          "first_feedback_p95_ms": 1.3,
+          "first_feedback_p95_ms": 0.8,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 110.8,
-          "settled_p50_ms": 118.2,
-          "settled_p75_ms": 276.5,
-          "settled_p95_ms": 276.5,
+          "settled_p25_ms": 106.4,
+          "settled_p50_ms": 119.3,
+          "settled_p75_ms": 131.5,
+          "settled_p95_ms": 131.5,
           "step": "select-meaning"
         },
         {
-          "first_feedback_p50_ms": 3.2,
-          "first_feedback_p95_ms": 3.5,
+          "first_feedback_p50_ms": 3.5,
+          "first_feedback_p95_ms": 5.5,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 2.9,
-          "settled_p50_ms": 3.2,
-          "settled_p75_ms": 3.5,
-          "settled_p95_ms": 3.5,
+          "settled_p25_ms": 3.1,
+          "settled_p50_ms": 3.5,
+          "settled_p75_ms": 5.5,
+          "settled_p95_ms": 5.5,
           "step": "open-try"
         },
         {
-          "first_feedback_p50_ms": 0.8,
-          "first_feedback_p95_ms": 1.3,
+          "first_feedback_p50_ms": 0.6,
+          "first_feedback_p95_ms": 0.9,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 92.7,
-          "settled_p50_ms": 111.6,
-          "settled_p75_ms": 141.7,
-          "settled_p95_ms": 141.7,
+          "settled_p25_ms": 84.6,
+          "settled_p50_ms": 99.9,
+          "settled_p75_ms": 100.5,
+          "settled_p95_ms": 100.5,
           "step": "reset-preview"
         },
         {
@@ -3307,11 +3094,83 @@
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 89.2,
-          "settled_p50_ms": 93.5,
-          "settled_p75_ms": 103,
-          "settled_p95_ms": 103,
+          "settled_p25_ms": 85.2,
+          "settled_p50_ms": 88.7,
+          "settled_p75_ms": 97.2,
+          "settled_p95_ms": 97.2,
           "step": "submit-teacher"
+        },
+        {
+          "first_feedback_p50_ms": 0.5,
+          "first_feedback_p95_ms": 0.7,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 89.1,
+          "settled_p50_ms": 94.7,
+          "settled_p75_ms": 102.8,
+          "settled_p95_ms": 102.8,
+          "step": "recommend-teacher"
+        },
+        {
+          "first_feedback_p50_ms": 0.5,
+          "first_feedback_p95_ms": 0.5,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 101,
+          "settled_p50_ms": 101.3,
+          "settled_p75_ms": 101.4,
+          "settled_p95_ms": 101.4,
+          "step": "approve-registrar"
+        },
+        {
+          "first_feedback_p50_ms": 0.7,
+          "first_feedback_p95_ms": 0.7,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 6.9,
+          "settled_p50_ms": 7,
+          "settled_p75_ms": 8.9,
+          "settled_p95_ms": 8.9,
+          "step": "denied-recommend"
+        },
+        {
+          "first_feedback_p50_ms": 7.6,
+          "first_feedback_p95_ms": 8.1,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 6.7,
+          "settled_p50_ms": 7.6,
+          "settled_p75_ms": 8.1,
+          "settled_p95_ms": 8.1,
+          "step": "open-evidence"
+        },
+        {
+          "first_feedback_p50_ms": 0.6,
+          "first_feedback_p95_ms": 0.6,
+          "median_over_400ms": true,
+          "over_400ms": true,
+          "samples": 3,
+          "settled_p25_ms": 891.5,
+          "settled_p50_ms": 1025,
+          "settled_p75_ms": 1073,
+          "settled_p95_ms": 1073,
+          "step": "run-verification"
+        },
+        {
+          "first_feedback_p50_ms": 0.9,
+          "first_feedback_p95_ms": 0.9,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 139.9,
+          "settled_p50_ms": 153.5,
+          "settled_p75_ms": 155.7,
+          "settled_p95_ms": 155.7,
+          "step": "approve-exact"
         },
         {
           "first_feedback_p50_ms": 0.5,
@@ -3319,94 +3178,10 @@
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 92.3,
-          "settled_p50_ms": 99.1,
-          "settled_p75_ms": 114.5,
-          "settled_p95_ms": 114.5,
-          "step": "recommend-teacher"
-        },
-        {
-          "first_feedback_p50_ms": 0.6,
-          "first_feedback_p95_ms": 0.6,
-          "median_over_400ms": false,
-          "over_400ms": false,
-          "samples": 3,
-          "settled_p25_ms": 87.7,
-          "settled_p50_ms": 92.9,
-          "settled_p75_ms": 95.1,
-          "settled_p95_ms": 95.1,
-          "step": "approve-registrar"
-        },
-        {
-          "first_feedback_p50_ms": 0.6,
-          "first_feedback_p95_ms": 0.6,
-          "median_over_400ms": false,
-          "over_400ms": false,
-          "samples": 3,
-          "settled_p25_ms": 5.7,
-          "settled_p50_ms": 6.2,
-          "settled_p75_ms": 6.3,
-          "settled_p95_ms": 6.3,
-          "step": "denied-recommend"
-        },
-        {
-          "first_feedback_p50_ms": 5.6,
-          "first_feedback_p95_ms": 7.4,
-          "median_over_400ms": false,
-          "over_400ms": false,
-          "samples": 3,
-          "settled_p25_ms": 4.9,
-          "settled_p50_ms": 5.6,
-          "settled_p75_ms": 7.4,
-          "settled_p95_ms": 7.4,
-          "step": "open-evidence"
-        },
-        {
-          "first_feedback_p50_ms": 0.6,
-          "first_feedback_p95_ms": 0.7,
-          "median_over_400ms": true,
-          "over_400ms": true,
-          "samples": 3,
-          "settled_p25_ms": 942.6,
-          "settled_p50_ms": 961.7,
-          "settled_p75_ms": 3109.7,
-          "settled_p95_ms": 3109.7,
-          "step": "run-verification"
-        },
-        {
-          "first_feedback_p50_ms": 0.7,
-          "first_feedback_p95_ms": 0.8,
-          "median_over_400ms": false,
-          "over_400ms": false,
-          "samples": 3,
-          "settled_p25_ms": 0.6,
-          "settled_p50_ms": 0.7,
-          "settled_p75_ms": 0.8,
-          "settled_p95_ms": 0.8,
-          "step": "open-review-subject"
-        },
-        {
-          "first_feedback_p50_ms": 0.9,
-          "first_feedback_p95_ms": 1.3,
-          "median_over_400ms": false,
-          "over_400ms": false,
-          "samples": 3,
-          "settled_p25_ms": 139.5,
-          "settled_p50_ms": 150.5,
-          "settled_p75_ms": 197.1,
-          "settled_p95_ms": 197.1,
-          "step": "approve-exact"
-        },
-        {
-          "first_feedback_p50_ms": 0.4,
-          "first_feedback_p95_ms": 0.5,
-          "median_over_400ms": false,
-          "over_400ms": false,
-          "samples": 3,
-          "settled_p25_ms": 211.5,
-          "settled_p50_ms": 219,
-          "settled_p75_ms": 228.2,
-          "settled_p95_ms": 228.2,
+          "settled_p25_ms": 225.2,
+          "settled_p50_ms": 242.9,
+          "settled_p75_ms": 263.6,
+          "settled_p95_ms": 263.6,
           "step": "apply-baseline"
         }
       ],
@@ -3431,11 +3206,11 @@
   "recommendations": [
     {
       "category": "doherty",
-      "change": "First DOM mutation after the click came within 5.1 ms (p95; paint not measured), while completion for the slow steps takes longer than 400 ms. For the slow steps show a determinate progress message, keep the previous result visible until the new one lands, and profile where the time goes before optimising anything.",
+      "change": "First DOM mutation after the click came within 6.9 ms (p95; paint not measured), while completion for the slow steps takes longer than 400 ms. For the slow steps show a determinate progress message, keep the previous result visible until the new one lands, and profile where the time goes before optimising anything.",
       "evidence": {
-        "first_feedback_p95_ms": 5.1,
+        "first_feedback_p95_ms": 6.9,
         "slow_steps": [
-          "run-verification: p50 961.7 / p95 3109.7 ms"
+          "run-verification: p50 1025 / p95 1073 ms"
         ]
       },
       "id": "doherty-completion",
@@ -3448,7 +3223,7 @@
       "rank": 1,
       "rank_saving_s": 0.0,
       "saving_kind": "model difference",
-      "severity": 3,
+      "severity": 4,
       "targets": [
         "run-verification"
       ],
@@ -3459,10 +3234,9 @@
       "change": "Align DOM order with visual order (WCAG 2.4.3).",
       "evidence": {
         "examples": [
-          "Persisted audit and simulated outbox -> Skip to workspace",
-          "Persisted audit and simulated outbox -> Skip to workspace",
-          "Persisted audit and simulated outbox -> Skip to workspace",
-          "modelled impact closurePASS Case-wide technical claim -> bend proofUNKNOWN sealed tool verdict · case-wide"
+          "Attempt details, diagnostic and persisted audit -> Skip to workspace",
+          "Attempt details, diagnostic and persisted audit -> Skip to workspace",
+          "Attempt details, diagnostic and persisted audit -> Skip to workspace"
         ]
       },
       "id": "focus-order-regression",
@@ -3477,7 +3251,7 @@
       "saving_kind": "model difference",
       "severity": 3,
       "targets": [],
-      "title": "4 Tab step(s) move upward on screen"
+      "title": "3 Tab step(s) move upward on screen"
     },
     {
       "category": "klm",
@@ -3485,10 +3259,10 @@
       "evidence": {
         "keyboard_only_journey_tab_presses": {
           "acknowledge": 1,
-          "actor-registrar": 25,
-          "actor-unassigned": 24,
+          "actor-registrar": 20,
+          "actor-unassigned": 19,
           "answer-assignment": 1,
-          "answer-authority": 1,
+          "answer-authority": 0,
           "answer-reject_entry": 1,
           "apply-baseline": 0,
           "approve-exact": 1,
@@ -3496,14 +3270,13 @@
           "ask-interpretations": 0,
           "create-case": 1,
           "denied-recommend": 2,
-          "open-change": 9,
-          "open-evidence": 22,
-          "open-review-subject": 9,
+          "open-change": 8,
+          "open-evidence": 17,
           "open-try": 5,
           "recommend-teacher": 1,
           "reset-preview": 3,
           "run-verification": 3,
-          "select-meaning": 3,
+          "select-meaning": 2,
           "submit-teacher": 2,
           "type-request": 0
         },
@@ -3519,7 +3292,7 @@
         "KLM"
       ],
       "likely_cause": "",
-      "predicted_effect": "model: 3.6 s of 65.3 s expert time (6%)",
+      "predicted_effect": "model: 3.6 s of 64.0 s expert time (6%)",
       "predicted_saving_s": 3.64,
       "rank": 3,
       "rank_saving_s": 3.64,
@@ -3537,10 +3310,10 @@
       "evidence": {
         "tab_presses_by_step": {
           "acknowledge": 1,
-          "actor-registrar": 25,
-          "actor-unassigned": 24,
+          "actor-registrar": 20,
+          "actor-unassigned": 19,
           "answer-assignment": 1,
-          "answer-authority": 1,
+          "answer-authority": 0,
           "answer-reject_entry": 1,
           "apply-baseline": 0,
           "approve-exact": 1,
@@ -3548,14 +3321,13 @@
           "ask-interpretations": 0,
           "create-case": 1,
           "denied-recommend": 2,
-          "open-change": 9,
-          "open-evidence": 22,
-          "open-review-subject": 9,
+          "open-change": 8,
+          "open-evidence": 17,
           "open-try": 5,
           "recommend-teacher": 1,
           "reset-preview": 3,
           "run-verification": 3,
-          "select-meaning": 3,
+          "select-meaning": 2,
           "submit-teacher": 2,
           "type-request": 0
         }
@@ -3573,7 +3345,7 @@
       "saving_kind": "model difference",
       "severity": 2,
       "targets": [],
-      "title": "Reaching one control took 25 Tab presses"
+      "title": "Reaching one control took 20 Tab presses"
     },
     {
       "category": "working-memory",
@@ -3581,25 +3353,25 @@
       "evidence": {
         "label": "HEURISTIC PROXY - counts what is simultaneously visible, not what a person holds in memory",
         "views": [
-          "applied: 37",
-          "change-empty: 29",
-          "change-options: 39",
-          "change-selected: 31",
-          "create-panel: 31",
-          "evidence-approved: 37",
-          "evidence-review-open: 35",
-          "evidence-verified: 39",
-          "impact-tab: 31",
-          "start: 41",
-          "try-denied: 38",
-          "try-draft: 38",
-          "try-idle: 38",
-          "workspace-menu-1440-impact: 60",
-          "workspace-menu-320-impact: 35",
-          "workspace-menu-390-impact: 43"
+          "applied: 26",
+          "change-empty: 22",
+          "change-options: 25",
+          "change-selected: 22",
+          "create-panel: 23",
+          "evidence-approved: 27",
+          "evidence-review-open: 26",
+          "evidence-verified: 26",
+          "impact-tab: 22",
+          "start: 27",
+          "try-denied: 27",
+          "try-draft: 27",
+          "try-idle: 27",
+          "workspace-menu-1440-impact: 17",
+          "workspace-menu-320-impact: 17",
+          "workspace-menu-390-impact: 17"
         ],
-        "worst_chunks": 60,
-        "worst_view": "workspace-menu-1440-impact"
+        "worst_chunks": 27,
+        "worst_view": "evidence-approved"
       },
       "id": "working-memory-proxy",
       "laws": [
@@ -3621,7 +3393,7 @@
       "change": "Keep one visually dominant primary action per view and demote the rest (secondary/text buttons), which lowers effective uncertainty for first-time users (Hyman).",
       "evidence": {
         "max_group_choices": 7,
-        "max_screen_controls": 25,
+        "max_screen_controls": 20,
         "note": "upper bound; the choice groups themselves are all <= 7"
       },
       "id": "hick-screen-load",
@@ -3629,10 +3401,10 @@
         "Hick-Hyman"
       ],
       "likely_cause": "",
-      "predicted_effect": "if a novice searched the whole screen instead of the choice group: +2.78 s (upper bound, model)",
-      "predicted_saving_s": 2.783,
+      "predicted_effect": "if a novice searched the whole screen instead of the choice group: +2.51 s (upper bound, model)",
+      "predicted_saving_s": 2.508,
       "rank": 6,
-      "rank_saving_s": 2.783,
+      "rank_saving_s": 2.508,
       "saving_kind": "model difference",
       "severity": 1,
       "targets": [],
@@ -3642,9 +3414,9 @@
       "category": "klm",
       "change": "Not a defect by itself; use it to decide where shortcuts (tab shortcuts, access keys) pay off.",
       "evidence": {
-        "keyboard_K": 205,
-        "keyboard_total_s": 69.55,
-        "pointer_total_s": 65.31
+        "keyboard_K": 177,
+        "keyboard_total_s": 61.71,
+        "pointer_total_s": 64.01
       },
       "id": "klm-keyboard-vs-pointer",
       "laws": [
@@ -3658,7 +3430,7 @@
       "saving_kind": "model difference",
       "severity": 1,
       "targets": [],
-      "title": "Keyboard-only journey costs 69.5 s vs 65.3 s with the pointer (model)"
+      "title": "Keyboard-only journey costs 61.7 s vs 64.0 s with the pointer (model)"
     },
     {
       "category": "klm",
@@ -3695,19 +3467,19 @@
     "http_error_responses": [
       {
         "method": "POST",
-        "path": "/api/cases/434cace8a11a40c89f3e49fb57fbf654/execute",
+        "path": "/api/cases/b1c39252bba4497c9ec4eed47b5a4728/execute",
         "status": 409,
         "step": "denied-recommend"
       },
       {
         "method": "POST",
-        "path": "/api/cases/cf214e6e43be48938c5c07ba9e759abb/execute",
+        "path": "/api/cases/db6204ddb2464c9ba6b9185b872808eb/execute",
         "status": 409,
         "step": "denied-recommend"
       },
       {
         "method": "POST",
-        "path": "/api/cases/ff6366e529644cf19bc1ce478244ceb2/execute",
+        "path": "/api/cases/dd8ff7543c444bb28da43145668537a7/execute",
         "status": 409,
         "step": "denied-recommend"
       }
@@ -3775,7 +3547,7 @@
       "elements": []
     },
     "target_size_2_5_8": {
-      "controls_audited": 86,
+      "controls_audited": 65,
       "exceptions_not_evaluated": [
         "inline",
         "user-agent controlled",
@@ -3783,12 +3555,12 @@
         "essential"
       ],
       "status_counts": {
-        "pass": 86
+        "pass": 65
       },
       "undersized_or_failing": [
         {
           "effective_px": [
-            1078,
+            1332,
             44
           ],
           "name": "I understand this is a local synthetic demo, with human outc",
@@ -3802,7 +3574,7 @@
         },
         {
           "effective_px": [
-            1104,
+            1358,
             44
           ],
           "name": "I consent to sending this request and synthetic model to the",
@@ -3845,201 +3617,201 @@
     "definition": "chunks = visible controls, including disabled controls (a checkbox and its label are one), + groups of visible static text/heading atoms that share a parent element; viewport = first screen at scroll top, page = whole rendered view. Independent pane overflow clips are intersected; partially visible items still count. Raw layout-box counts and clipped exclusions are retained; absent values identify older traces without this accounting.",
     "label": "HEURISTIC PROXY - counts what is simultaneously visible, not what a person holds in memory",
     "summary": {
-      "max_chunks_viewport": 60,
+      "max_chunks_viewport": 27,
       "views": 16,
       "views_over_miller_9": 16
     },
     "views": [
       {
-        "atoms_viewport": 49,
-        "chunks_page": 37,
-        "chunks_viewport": 37,
-        "content_groups": 10,
-        "controls": 27,
-        "excluded_clipped_chunks": 3,
+        "atoms_viewport": 33,
+        "chunks_page": 26,
+        "chunks_viewport": 26,
+        "content_groups": 5,
+        "controls": 21,
+        "excluded_clipped_chunks": 4,
         "over_cowan_4": true,
         "over_miller_9": true,
-        "raw_chunks_viewport": 40,
+        "raw_chunks_viewport": 30,
         "view": "applied"
       },
       {
-        "atoms_viewport": 41,
-        "chunks_page": 29,
-        "chunks_viewport": 29,
-        "content_groups": 12,
-        "controls": 17,
+        "atoms_viewport": 29,
+        "chunks_page": 22,
+        "chunks_viewport": 22,
+        "content_groups": 6,
+        "controls": 16,
         "excluded_clipped_chunks": 0,
         "over_cowan_4": true,
         "over_miller_9": true,
-        "raw_chunks_viewport": 29,
+        "raw_chunks_viewport": 22,
         "view": "change-empty"
       },
       {
-        "atoms_viewport": 60,
-        "chunks_page": 39,
-        "chunks_viewport": 39,
-        "content_groups": 16,
-        "controls": 23,
-        "excluded_clipped_chunks": 0,
-        "over_cowan_4": true,
-        "over_miller_9": true,
-        "raw_chunks_viewport": 39,
-        "view": "change-options"
-      },
-      {
-        "atoms_viewport": 45,
-        "chunks_page": 31,
-        "chunks_viewport": 31,
-        "content_groups": 13,
-        "controls": 18,
-        "excluded_clipped_chunks": 1,
-        "over_cowan_4": true,
-        "over_miller_9": true,
-        "raw_chunks_viewport": 32,
-        "view": "change-selected"
-      },
-      {
-        "atoms_viewport": 43,
-        "chunks_page": 31,
-        "chunks_viewport": 31,
-        "content_groups": 14,
+        "atoms_viewport": 37,
+        "chunks_page": 25,
+        "chunks_viewport": 25,
+        "content_groups": 8,
         "controls": 17,
         "excluded_clipped_chunks": 0,
         "over_cowan_4": true,
         "over_miller_9": true,
-        "raw_chunks_viewport": 31,
+        "raw_chunks_viewport": 25,
+        "view": "change-options"
+      },
+      {
+        "atoms_viewport": 32,
+        "chunks_page": 22,
+        "chunks_viewport": 22,
+        "content_groups": 8,
+        "controls": 14,
+        "excluded_clipped_chunks": 1,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 23,
+        "view": "change-selected"
+      },
+      {
+        "atoms_viewport": 29,
+        "chunks_page": 23,
+        "chunks_viewport": 23,
+        "content_groups": 7,
+        "controls": 16,
+        "excluded_clipped_chunks": 0,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 23,
         "view": "create-panel"
       },
       {
-        "atoms_viewport": 49,
-        "chunks_page": 37,
-        "chunks_viewport": 37,
-        "content_groups": 10,
-        "controls": 27,
-        "excluded_clipped_chunks": 3,
+        "atoms_viewport": 34,
+        "chunks_page": 27,
+        "chunks_viewport": 27,
+        "content_groups": 5,
+        "controls": 22,
+        "excluded_clipped_chunks": 4,
         "over_cowan_4": true,
         "over_miller_9": true,
-        "raw_chunks_viewport": 40,
+        "raw_chunks_viewport": 31,
         "view": "evidence-approved"
       },
       {
-        "atoms_viewport": 47,
-        "chunks_page": 35,
-        "chunks_viewport": 35,
-        "content_groups": 10,
-        "controls": 25,
-        "excluded_clipped_chunks": 7,
+        "atoms_viewport": 33,
+        "chunks_page": 26,
+        "chunks_viewport": 26,
+        "content_groups": 5,
+        "controls": 21,
+        "excluded_clipped_chunks": 4,
         "over_cowan_4": true,
         "over_miller_9": true,
-        "raw_chunks_viewport": 42,
+        "raw_chunks_viewport": 30,
         "view": "evidence-review-open"
       },
       {
-        "atoms_viewport": 57,
-        "chunks_page": 39,
-        "chunks_viewport": 39,
-        "content_groups": 17,
-        "controls": 22,
-        "excluded_clipped_chunks": 0,
+        "atoms_viewport": 33,
+        "chunks_page": 26,
+        "chunks_viewport": 26,
+        "content_groups": 5,
+        "controls": 21,
+        "excluded_clipped_chunks": 4,
         "over_cowan_4": true,
         "over_miller_9": true,
-        "raw_chunks_viewport": 39,
+        "raw_chunks_viewport": 30,
         "view": "evidence-verified"
       },
       {
-        "atoms_viewport": 45,
-        "chunks_page": 31,
-        "chunks_viewport": 31,
-        "content_groups": 13,
-        "controls": 18,
+        "atoms_viewport": 32,
+        "chunks_page": 22,
+        "chunks_viewport": 22,
+        "content_groups": 8,
+        "controls": 14,
         "excluded_clipped_chunks": 1,
         "over_cowan_4": true,
         "over_miller_9": true,
-        "raw_chunks_viewport": 32,
+        "raw_chunks_viewport": 23,
         "view": "impact-tab"
       },
       {
-        "atoms_viewport": 56,
-        "chunks_page": 41,
-        "chunks_viewport": 41,
-        "content_groups": 18,
-        "controls": 23,
+        "atoms_viewport": 33,
+        "chunks_page": 27,
+        "chunks_viewport": 27,
+        "content_groups": 10,
+        "controls": 17,
         "excluded_clipped_chunks": 0,
         "over_cowan_4": true,
         "over_miller_9": true,
-        "raw_chunks_viewport": 41,
+        "raw_chunks_viewport": 27,
         "view": "start"
       },
       {
-        "atoms_viewport": 54,
-        "chunks_page": 38,
-        "chunks_viewport": 38,
-        "content_groups": 13,
-        "controls": 25,
+        "atoms_viewport": 38,
+        "chunks_page": 27,
+        "chunks_viewport": 27,
+        "content_groups": 7,
+        "controls": 20,
         "excluded_clipped_chunks": 0,
         "over_cowan_4": true,
         "over_miller_9": true,
-        "raw_chunks_viewport": 38,
+        "raw_chunks_viewport": 27,
         "view": "try-denied"
       },
       {
-        "atoms_viewport": 53,
-        "chunks_page": 38,
-        "chunks_viewport": 38,
-        "content_groups": 13,
-        "controls": 25,
+        "atoms_viewport": 37,
+        "chunks_page": 27,
+        "chunks_viewport": 27,
+        "content_groups": 7,
+        "controls": 20,
         "excluded_clipped_chunks": 0,
         "over_cowan_4": true,
         "over_miller_9": true,
-        "raw_chunks_viewport": 38,
+        "raw_chunks_viewport": 27,
         "view": "try-draft"
       },
       {
-        "atoms_viewport": 52,
-        "chunks_page": 38,
-        "chunks_viewport": 38,
-        "content_groups": 13,
-        "controls": 25,
+        "atoms_viewport": 36,
+        "chunks_page": 27,
+        "chunks_viewport": 27,
+        "content_groups": 7,
+        "controls": 20,
         "excluded_clipped_chunks": 0,
         "over_cowan_4": true,
         "over_miller_9": true,
-        "raw_chunks_viewport": 38,
+        "raw_chunks_viewport": 27,
         "view": "try-idle"
       },
       {
-        "atoms_viewport": 81,
-        "chunks_page": 60,
-        "chunks_viewport": 60,
-        "content_groups": 22,
-        "controls": 38,
+        "atoms_viewport": 21,
+        "chunks_page": 17,
+        "chunks_viewport": 17,
+        "content_groups": 6,
+        "controls": 11,
         "excluded_clipped_chunks": 0,
         "over_cowan_4": true,
         "over_miller_9": true,
-        "raw_chunks_viewport": 60,
+        "raw_chunks_viewport": 17,
         "view": "workspace-menu-1440-impact"
       },
       {
-        "atoms_viewport": 40,
-        "chunks_page": 35,
-        "chunks_viewport": 35,
-        "content_groups": 11,
-        "controls": 24,
-        "excluded_clipped_chunks": 1,
+        "atoms_viewport": 20,
+        "chunks_page": 17,
+        "chunks_viewport": 17,
+        "content_groups": 6,
+        "controls": 11,
+        "excluded_clipped_chunks": 0,
         "over_cowan_4": true,
         "over_miller_9": true,
-        "raw_chunks_viewport": 36,
+        "raw_chunks_viewport": 17,
         "view": "workspace-menu-320-impact"
       },
       {
-        "atoms_viewport": 52,
-        "chunks_page": 43,
-        "chunks_viewport": 43,
-        "content_groups": 13,
-        "controls": 30,
-        "excluded_clipped_chunks": 1,
+        "atoms_viewport": 20,
+        "chunks_page": 17,
+        "chunks_viewport": 17,
+        "content_groups": 6,
+        "controls": 11,
+        "excluded_clipped_chunks": 0,
         "over_cowan_4": true,
         "over_miller_9": true,
-        "raw_chunks_viewport": 44,
+        "raw_chunks_viewport": 17,
         "view": "workspace-menu-390-impact"
       }
     ]

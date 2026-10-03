@@ -312,7 +312,7 @@ class RuntimeReview(Journey):
         )
         if self.strict_ux:
             self.feedback("refused", "SelectMeaning")
-            audit = self.page.locator("#runtime-audit")
+            audit = self.page.locator("#runtime-attempt-details")
             assert audit.get_attribute("open") is None, "Runtime audit starts expanded"
             audit.locator(":scope > summary").focus()
             audit.locator(":scope > summary").press("Enter")
@@ -486,11 +486,17 @@ class RuntimeReview(Journey):
                 if region.evaluate("n => document.activeElement === n"):
                     break
         else:
-            disclosure = region.locator("..")
-            summary = disclosure.locator(":scope > summary")
-            summary.focus()
-            if disclosure.get_attribute("open") is None:
-                summary.press("Enter")
+            # XPath locators return ancestors in document order: outer disclosure first.
+            disclosures = region.locator("xpath=ancestor::details")
+            assert disclosures.count(), f"{selector}: raw region has no native disclosure"
+            for disclosure in disclosures.all():
+                summary = disclosure.locator(":scope > summary")
+                replay.expect(summary).to_have_count(1)
+                replay.expect(summary).to_be_visible()
+                summary.focus()
+                if disclosure.get_attribute("open") is None:
+                    summary.press("Enter")
+                replay.expect(disclosure).to_have_attribute("open", "")
             summary.focus()
             self.page.keyboard.press("Tab")
         replay.expect(region).to_be_visible()
@@ -590,7 +596,7 @@ class RuntimeReview(Journey):
             backward_exit = self.page.evaluate("() => document.activeElement.id || document.activeElement.tagName")
         else:
             replay.expect(summary).to_be_focused()
-            backward_exit = "parent summary"
+            backward_exit = "nearest disclosure summary"
         assert region.text_content() == before_text, f"{selector}: navigation changed raw bytes"
         return {"region": selector, "geometry": geometry, "scrollTopAfterPageDown": after_scroll,
                 "forwardExit": forward_exit, "backwardExit": backward_exit, "entryTrail": entry_trail,

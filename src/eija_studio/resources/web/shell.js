@@ -10,13 +10,13 @@ const EijaShell = (() => {
   let revealed = {};
   let compact = false, compactOpen = {explorer:false, inspector:false, panel:false};
   let focusLayout = null, focusReturn = null, workspaceReturn = null;
-  let area="model";
+  let area="model", navigatorPinned=false;
   function preferredOpen(key) {
     const override=paneOverrides.get(area)?.[key];
     if(typeof override==="boolean")return override;
     const legacy=settings[key+"Open"];
     if(typeof legacy==="boolean"&&(key!=="inspector"||["model","code"].includes(area)))return legacy;
-    return key==="explorer";
+    return key==="explorer"&&(navigatorPinned||["model","code","review","repository-changes"].includes(area));
   }
   const normalOpen=key=>revealed[key]===true||preferredOpen(key);
   const paneOpen=key=>focusLayout?focusLayout[key]:compact?compactOpen[key]:normalOpen(key);
@@ -73,6 +73,10 @@ const EijaShell = (() => {
     if(area!==name){area=name;revealed={};compactOpen={explorer:false,inspector:false,panel:false};}
     applySettings();
   }
+  function setNavigatorPinned(pinned){
+    if(navigatorPinned===!!pinned)return;
+    navigatorPinned=!!pinned;applySettings();
+  }
   function resizeMode(matches) {
     if(compact!==matches){compact=matches;compactOpen={explorer:false,inspector:false,panel:false};}
     if(compact&&focusLayout?.explorer&&focusLayout.inspector)focusLayout.inspector=false;
@@ -95,12 +99,14 @@ const EijaShell = (() => {
   }
   function openWorkspace() {
     if(document.querySelector("dialog[open]"))return false;
-    workspaceReturn=document.activeElement;get("workspace-dialog").showModal();
+    workspaceReturn=document.activeElement;
+    get("workspace-context").textContent=[get("pack-name").textContent,get("case-id").textContent,get("case-stage").textContent].filter(Boolean).join(" · ");
+    get("workspace-dialog").showModal();document.body.dataset.workspaceChooser="true";
     get("open-workspace").setAttribute("aria-expanded","true");get("close-workspace").focus();return true;
   }
   function closeWorkspace(restore=true) {
     const dialog=get("workspace-dialog");if(!dialog.open)return;
-    const target=workspaceReturn;workspaceReturn=null;dialog.close();get("open-workspace").setAttribute("aria-expanded","false");
+    const target=workspaceReturn;workspaceReturn=null;delete document.body.dataset.workspaceChooser;dialog.close();get("open-workspace").setAttribute("aria-expanded","false");
     if(restore)visibleFocus(target);
   }
   function focusWorkspace(enabled=true) {
@@ -253,6 +259,8 @@ const EijaShell = (() => {
     get("focus-evidence").onclick=()=>focusWorkspace();get("restore-workspace").onclick=()=>focusWorkspace(false);
     get("focus-problems").onclick=()=>{bottom("problems-pane");document.querySelector('[data-bottom="problems-pane"]').focus();};
     get("open-workspace").onclick=openWorkspace;get("close-workspace").onclick=()=>closeWorkspace();
+    get("open-source").onclick=()=>{closeWorkspace(false);callbacks.openTab("source");};
+    get("doctor").addEventListener("click",()=>closeWorkspace());
     get("workspace-dialog").addEventListener("cancel",event=>{event.preventDefault();closeWorkspace();});
     get("workspace-dialog").addEventListener("keydown",event=>{
       if(event.key==="Escape"){event.preventDefault();event.stopPropagation();closeWorkspace();}
@@ -272,6 +280,6 @@ const EijaShell = (() => {
     document.addEventListener("keydown",event=>{if(document.querySelector("dialog[open]"))return;if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==="b"){event.preventDefault();toggle("explorer");}if(event.key==="Escape"){panHeld=false;get("model-canvas").classList.remove("pan-ready");if(compact&&(paneOpen("explorer")||paneOpen("inspector")))closeDrawers(true);}});
     for(const navigation of [document.querySelector(".editor-navigation"),get("comparison-tabs")])navigation.addEventListener("focusin",()=>{if(compact)closeDrawers();});
   }
-  return {init,openWorkspace,closeWorkspace,toggle,reveal,resetLayout,bottom,mountCanvas,fit,zoom,readable,sourceLines,sourceLoading,sourceError,sourceFreshness,renderSource,renderHistory,renderEvidence,renderImpact,resizeMode,setArea,focusWorkspace,isFocused:()=>!!focusLayout};
+  return {init,openWorkspace,closeWorkspace,toggle,reveal,resetLayout,bottom,mountCanvas,fit,zoom,readable,sourceLines,sourceLoading,sourceError,sourceFreshness,renderSource,renderHistory,renderEvidence,renderImpact,resizeMode,setArea,setNavigatorPinned,focusWorkspace,isFocused:()=>!!focusLayout};
 })();
 if(typeof module!=="undefined")module.exports=EijaShell;

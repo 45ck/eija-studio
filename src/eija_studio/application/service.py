@@ -12,7 +12,7 @@ from eija_studio.domain.policy import apply_transaction, apply_transactions, che
 from eija_studio.domain.affordance import affordances as affordance_map, dry_run
 from eija_studio.domain.transactions import Transaction
 from eija_studio.domain.formal import Context
-from .ports import ProposalProvider, Repository, ReceiptAuthenticator, IdentityProvider, SandboxFactory, UnitOfWork, FormalEvidenceSource
+from .ports import ProposalProvider, Repository, ReceiptAuthenticator, IdentityProvider, SandboxFactory, UnitOfWork, FormalEvidenceSource, EditProposer
 from .formal import attach as attach_formal, packet_view, what_if_model
 from .compiler import compile_case, subject_for
 from .verifier import verify_runtime
@@ -20,6 +20,7 @@ from .runtime import initialise, execute
 from .repository import RepositoryChangeSource, RepositorySource, compare_repository_changes, read_repository_change_file, read_repository_impact, read_repository_source, read_repository_freshness
 from .history import command_event, history_view, replay
 from .edit_preview import preview_edit
+from .edit_proposal import propose_edit
 
 
 def now() -> str:
@@ -39,7 +40,8 @@ def _parse_case(body: dict[str, Any]) -> ChangeCase:
 class Studio:
     def __init__(self, store: Repository, provider: ProposalProvider, signer: ReceiptAuthenticator, identity_provider: IdentityProvider, sandbox: SandboxFactory, *, allow_network: bool = False,
                  formal: FormalEvidenceSource | None = None, pack: Pack | None = None,
-                 repository: RepositorySource | None = None, repository_changes: RepositoryChangeSource | None = None):
+                 repository: RepositorySource | None = None, repository_changes: RepositoryChangeSource | None = None,
+                 edit_proposer: EditProposer | None = None):
         self.pack = pack if pack is not None else default_pack()  # the domain: laws, meanings, fixtures
         self.formal = formal  # optional: without it the formal kinds stay UNKNOWN in the packet, never green
         self.store, self.provider, self.signer = store, provider, signer
@@ -47,6 +49,7 @@ class Studio:
         self.allow_network, self._provider_lock = allow_network, Lock()
         self.repository = repository
         self.repository_changes = repository_changes
+        self.edit_proposer = edit_proposer
 
     def workbench(self) -> dict[str, Any]:
         """Current pack declarations and baseline, with separately labelled read-only repository facts."""
@@ -241,6 +244,15 @@ class Studio:
         with self.store.transaction() as u:
             case = self._case(u, case_id)
         return preview_edit(case, tx, self.pack).model_dump(mode="json")
+
+    def propose_edit(self, case_id: str, expected: int, request: str) -> dict[str, Any]:
+        """Read-only offline proposal; capture and recheck the case revision without granting owner authority."""
+        with self.store.transaction() as u:
+            case = self._case(u, case_id, expected, editable=True)
+        proposal = propose_edit(case, request, self.pack, self.edit_proposer)
+        with self.store.transaction() as u:
+            self._case(u, case_id, expected, editable=True)
+        return proposal.model_dump(mode="json")
 
     def affordances(self, case_id: str) -> dict[str, Any]:
         """Which single edits of the case's working model the kernel would accept (read-only)."""

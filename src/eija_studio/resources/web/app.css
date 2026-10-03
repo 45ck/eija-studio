@@ -141,11 +141,31 @@ body{grid-template-rows:auto auto minmax(0,1fr) 26px}
 /* One case picker; status is visible only for empty, loading or retained-list states. */
 .workspace-toolbar{height:auto;min-height:44px}.workspace-actions{min-width:0;flex-wrap:wrap;justify-content:flex-end}.case-picker{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0;max-width:100%}.workspace-actions #case-switcher{width:clamp(160px,24vw,360px);max-width:100%;text-overflow:ellipsis}.case-picker #case-picker-retry{min-height:36px;font-size:13px}#case-picker-status{flex-basis:100%;max-width:360px;margin:0;color:var(--muted);font-size:12px;overflow-wrap:anywhere}.case-picker [hidden]{display:none}@media(max-width:540px){.case-picker{flex:1 1 160px}.workspace-actions #case-switcher{width:100%}.workspace-actions{flex-wrap:wrap}}
 
-/* Native secondary navigation; all current work views remain direct choices. */
+/* Native secondary navigation retains all destinations and discloses utilities. */
 #workspace-dialog{width:min(660px,calc(100vw - 24px));max-height:calc(100dvh - 24px);padding:20px;background:var(--surface);color:var(--ink);border:1px solid #496487;border-radius:8px;overflow:auto}
 #workspace-dialog::backdrop{background:#030b16b3}.workspace-menu-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}.workspace-menu-header h2{font-size:20px;margin:0}
 .workspace-menu-groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 24px}.workspace-menu-groups h3{font-size:14px;color:var(--muted);margin:0 0 6px}.workspace-menu-groups button{display:block;width:100%;text-align:left;font-size:14px;min-height:44px;padding:8px 12px;background:transparent;color:var(--ink);border:1px solid transparent;font-weight:450}.workspace-menu-groups button:hover,.workspace-menu-groups button[aria-current=page]{background:var(--raised);border-color:#496487}.workspace-menu-groups button:focus-visible{outline-offset:-2px}
 #workspace-destination{color:var(--muted)}
+body[data-workspace-chooser="true"] #ide-shell,body[data-workspace-chooser="true"] #ide-shell *{visibility:hidden!important}
+#workspace-context{overflow-wrap:anywhere;margin:0 0 16px}
+.workspace-menu-groups{grid-template-columns:minmax(0,1fr);gap:12px}
+.workspace-menu-groups summary{font-size:14px;min-height:36px;padding:8px 0;cursor:pointer}
+.canvas-toolbar{flex-wrap:wrap;max-height:50%;overflow:auto}
+.canvas-toolbar>.canvas-tools:first-child{flex:1;flex-basis:auto;justify-content:flex-start;width:auto;min-width:0}
+.canvas-view{position:relative;flex:none}
+.canvas-view[open]{width:100%;min-width:0}
+.canvas-view>summary{padding:7px 10px;border:1px solid #496487;border-radius:4px;cursor:pointer;font-size:13px}
+.canvas-view-options{padding:12px 0 0;min-width:0;background:var(--surface)}
+.canvas-view-options>div:not(.canvas-tools){display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
+.canvas-view-options .canvas-tools{width:auto;justify-content:flex-start}
+.canvas-view-options .canvas-tools select,.canvas-view-options #model-revision{display:inline-block}
+.canvas-tools:has(#undo-edit:disabled):has(#redo-edit:disabled) #undo-edit,.canvas-tools:has(#undo-edit:disabled):has(#redo-edit:disabled) #redo-edit{display:none}
+.status-bar .connection-state{display:inline;border:0;padding:0;font-size:inherit}
+.runtime-state{flex-wrap:wrap}.runtime-state #reset{align-self:flex-start;margin-top:12px}
+#options>details{grid-column:1/-1}
+#options:has(>#proposal-alternatives){grid-template-columns:minmax(0,1fr)}
+#model-empty{display:block;white-space:normal;color:inherit}
+.proposal-boundary{display:block;margin:7px 0;line-height:1.5}
 @media(max-width:540px){
   body{grid-template-rows:auto auto minmax(0,1fr) auto}.status-bar{flex-wrap:wrap;white-space:normal;gap:3px 12px;min-height:28px}.status-bar>span{overflow:visible;text-overflow:clip;overflow-wrap:anywhere}.status-bar #status-evidence{display:block;flex-basis:100%;font-size:11px}.title-actions #open-workspace{min-height:36px;font-size:12px!important;padding:6px 8px;max-width:100%;white-space:normal;text-align:left}
   #workspace-dialog{padding:14px}.workspace-menu-groups,.layout-options{grid-template-columns:minmax(0,1fr)}.workspace-menu-header{align-items:flex-start}.workspace-menu-header button{min-height:44px}
@@ -153,3 +173,17 @@ body{grid-template-rows:auto auto minmax(0,1fr) 26px}
 
 /* Keep populated status text keyboard-readable without an empty focus stop. */
 #notice:empty{display:none}#notice:focus-visible{outline-offset:-2px}
+
+/* The current edit request stays separate from the previously selected intent. */
+#interpretation-summary{font-weight:600;cursor:pointer;padding:4px 0}
+#interpretation-panel[open]>summary{margin-bottom:16px}
+#agent-edit-panel{border-color:var(--accent,#62a8ff);max-width:1100px}
+#agent-edit-panel h2{font-size:20px;margin:0 0 8px}
+.agent-edit-form{display:grid;gap:10px;margin-top:12px}
+.agent-edit-form textarea{width:100%;min-height:80px;resize:vertical}
+.agent-edit-form button{justify-self:start}
+.agent-edit-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.agent-edit-result{margin-top:12px}
+#agent-edit-status{margin:12px 0;overflow-wrap:anywhere}
+#agent-edit-details{margin-top:12px}
+#agent-edit-details pre{max-height:240px;overflow:auto}

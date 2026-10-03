@@ -264,15 +264,38 @@ class Review:
         expect(dialog).to_have_attribute("open", "")
         expect(dialog.locator("button[data-workspace-view]")).to_have_count(len(WORKSPACE_VIEWS))
         for name in WORKSPACE_VIEWS:
-            expect(dialog.locator(f'button[data-workspace-view="{name}"]')).to_be_visible()
+            target = dialog.locator(f'button[data-workspace-view="{name}"]')
+            expect(target).to_have_count(1)
+            if name not in PRIMARY_VIEWS:
+                expect(target).to_be_visible()
+        expect(dialog.locator("#workspace-work-views > summary")).to_be_visible()
+        expect(dialog.locator("#workspace-panels > summary")).to_be_visible()
+        expect(dialog.locator("#workspace-work-views button[data-workspace-view]")).to_have_count(len(PRIMARY_VIEWS))
+        expect(dialog.locator("#workspace-panels button[data-workspace-panel]")).to_have_count(3)
         expect(self.page.locator("button[data-tab]")).to_have_count(len(PRIMARY_VIEWS))
         expect(self.page.locator('[data-tab][role="tab"], [role="tablist"] [data-tab]')).to_have_count(0)
         expect(self.page.locator("[data-tab][aria-selected]")).to_have_count(0)
         return dialog
 
+    def open_disclosure(self, selector):
+        disclosure = self.page.locator("details" + selector)
+        if disclosure.get_attribute("open") is None:
+            self.page.locator(selector + " > summary").click()
+            self.navigation_action("click", selector + " > summary")
+        expect(disclosure).to_have_attribute("open", "")
+        return disclosure
+
+    def canvas_control(self, selector):
+        self.open_disclosure("#canvas-view")
+        control = self.page.locator(selector)
+        expect(control).to_be_visible()
+        return control
+
     def workspace_view(self, name):
         assert name in WORKSPACE_VIEWS, f"Unknown workspace view: {name}"
         dialog = self.open_workspace()
+        if name in PRIMARY_VIEWS:
+            self.open_disclosure("#workspace-work-views")
         selector = f'[data-workspace-view="{name}"]'
         dialog.locator(selector).click()
         self.navigation_action("click", "#workspace-dialog " + selector)
@@ -296,15 +319,37 @@ class Review:
     def workspace_keyboard_routes(self):
         dialog = self.open_workspace()
         expect(self.page.locator("#close-workspace")).to_be_focused()
-        routes = ("model", "change", "impact", "review", "code", "try", "evidence", "visual", "source")
-        for name in routes:
+        routes = []
+        for _ in range(len(WORKSPACE_VIEWS) * 3):
             self.page.keyboard.press("Tab")
             self.navigation_action("key", "#workspace-dialog", "Tab")
+            focus = dialog.evaluate("""dialog => {
+                const active = document.activeElement;
+                return {inside:dialog.contains(active), view:active.dataset.workspaceView,
+                        workSummary:active.matches('#workspace-work-views > summary')};
+            }""")
+            assert focus["inside"], "Keyboard left Workspace before every view was reachable"
+            if focus["workSummary"]:
+                group = dialog.locator("#workspace-work-views")
+                if group.get_attribute("open") is None:
+                    self.page.keyboard.press("Enter")
+                    self.navigation_action("key", "#workspace-work-views > summary", "Enter")
+                expect(group).to_have_attribute("open", "")
+                continue
+            name = focus.get("view")
+            if name is None:
+                continue
+            assert name in WORKSPACE_VIEWS, f"Unexpected workspace route: {name}"
             target = dialog.locator(f'[data-workspace-view="{name}"]')
             expect(target).to_be_focused()
             expect(target).to_be_enabled()
             expect(target).to_be_in_viewport()
             self.assert_view("model")
+            if name not in routes:
+                routes.append(name)
+            if len(routes) == len(WORKSPACE_VIEWS):
+                break
+        assert set(routes) == set(WORKSPACE_VIEWS), f"Workspace views missing from native Tab route: {routes}"
         self.page.keyboard.press("Escape")
         self.navigation_action("key", "#workspace-dialog", "Escape")
         expect(dialog).to_be_hidden()
@@ -320,6 +365,7 @@ class Review:
             self.navigation_action("click", selector)
         else:
             dialog = self.open_workspace()
+            self.open_disclosure("#workspace-panels")
             choice = f'[data-workspace-panel="{panel}"]'
             dialog.locator(choice).click()
             self.navigation_action("click", "#workspace-dialog " + choice)
@@ -512,10 +558,10 @@ class Review:
         before_hash = self.semantic()
         board = self.page.locator("#model-canvas svg")
         before = board.get_attribute("viewBox")
-        self.page.locator("#canvas-zoom-in").click()
+        self.canvas_control("#canvas-zoom-in").click()
         expect(board).not_to_have_attribute("viewBox", before)
         zoomed = board.get_attribute("viewBox")
-        self.page.locator("#canvas-zoom-out").click()
+        self.canvas_control("#canvas-zoom-out").click()
         expect(board).not_to_have_attribute("viewBox", zoomed)
         self.page.locator("#canvas-fit").click()
         fitted = board.get_attribute("viewBox")
@@ -531,7 +577,7 @@ class Review:
         expect(board).not_to_have_attribute("viewBox", fitted)
         self.page.locator("#canvas-fit").click()
         assert self.semantic() == before_hash
-        self.page.locator("#canvas-readable").click()
+        self.canvas_control("#canvas-readable").click()
         return {"zoom_and_pan_changed_viewport": True, "semantic_unchanged": before_hash}
 
     def edit(self):
@@ -789,7 +835,7 @@ class Review:
         results = []
         for width, height in ((1600, 1100), (1280, 800)):
             self.page.set_viewport_size({"width": width, "height": height})
-            self.page.locator("#canvas-readable").click()
+            self.canvas_control("#canvas-readable").click()
             default = self.label_sizes()
             assert default["state_label_min_px"] >= 14
             self.page.screenshot(path=str(self.out / f"readable-{width}.png"))
@@ -799,7 +845,7 @@ class Review:
             results.append({"viewport": [width, height], "readable": default, "overview": overview,
                             "scope": "Overview may shrink labels; use 100% and pan to inspect details."})
         self.page.set_viewport_size({"width": 1600, "height": 1100})
-        self.page.locator("#canvas-readable").click()
+        self.canvas_control("#canvas-readable").click()
         return results
 
     def label_sizes(self):
@@ -822,7 +868,7 @@ class Review:
             self.tab("model")
             keyboard_routes = self.workspace_keyboard_routes()
             expect(self.page.locator("#model-canvas svg")).to_be_visible()
-            self.page.locator("#canvas-readable").click()
+            self.canvas_control("#canvas-readable").click()
             bounds = self.page.locator("body").evaluate("""element => ({
                 body_width: element.scrollWidth, document_width: document.documentElement.scrollWidth,
                 viewport_width: innerWidth
@@ -836,7 +882,7 @@ class Review:
             assert abs(readable["actual_scale"]["x"] - 1) < .005 and abs(readable["actual_scale"]["y"] - 1) < .005
         assert self.semantic() == before and self.revision() == version
         self.page.set_viewport_size({"width": 1600, "height": 1100})
-        self.page.locator("#canvas-readable").click()
+        self.canvas_control("#canvas-readable").click()
         return {"nine_workspace_views_clickable_without_force": True,
                 "six_primary_buttons_clickable_without_force": True, "viewports": results,
                 "candidate_and_revision_unchanged": True, "scope": "320 CSS pixels, not a mobile usability study."}

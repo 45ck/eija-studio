@@ -13,6 +13,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import tomllib
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Literal
@@ -29,7 +30,25 @@ REPO_URI = r"^repo://[A-Za-z0-9_./#:@-]{1,300}$"
 PACK_FILE = "pack.json"
 DEFAULT_FILE = "default.json"
 ENV_PACK = "EIJA_PACK"
-PACKS_ROOT = Path(__file__).resolve().parents[3] / "packs"
+def _source_checkout(package: Path) -> bool:
+    """Recognize the canonical source layout without requiring Git or executing project code."""
+    if (package.parent.name, package.name) != ("src", "eija_studio"):
+        return False
+    try:
+        with (package.parents[1] / "pyproject.toml").open("rb") as metadata:
+            project = tomllib.load(metadata).get("project")
+    except (OSError, UnicodeError, tomllib.TOMLDecodeError):
+        return False
+    return isinstance(project, dict) and project.get("name") == "eija-studio"
+
+
+def _packs_root(package: Path) -> Path:
+    """Only a recognized source checkout may load authored packs outside package resources."""
+    bundled = package / "resources" / "packs"
+    return bundled if bundled.exists() or not _source_checkout(package) else package.parents[1] / "packs"
+
+
+PACKS_ROOT = _packs_root(Path(__file__).resolve().parents[1])
 
 
 class PackInfo(Contract):

@@ -198,13 +198,14 @@ class WorkspaceReview(PreviewNavigation):
         expect(dialog).to_be_visible()
         expect(self.page.locator("#close-workspace")).to_be_focused()
         before = self.page.locator("body").get_attribute("class")
-        seen, panels, trail = set(), set(), []
+        seen, panels, disclosures, trail = set(), set(), set(), []
 
         def observe_focus(key):
             focus = self.page.evaluate("""() => {const n=document.activeElement,d=document.querySelector('#workspace-dialog');return {
-                tag:n.tagName,id:n.id,control:n.id||(n.matches('#workspace-layout > summary')?'workspace-layout-summary':''),
+                tag:n.tagName,id:n.id,control:n.id||(n.matches('#workspace-dialog details > summary')?n.parentElement.id+'-summary':''),
                 inside:d.contains(n),documentHasFocus:document.hasFocus(),
                 dialogOpen:d.open,dialogModal:d.matches(':modal'),outerHTML:n.outerHTML.slice(0,600),
+                disclosure:n.matches('#workspace-work-views > summary, #workspace-panels > summary')?n.parentElement.id:null,
                 view:n.dataset.workspaceView||null,panel:n.dataset.workspacePanel||null};} """)
             trail.append({"key": key, **focus})
             write_json(self.out / (self.stage + "-modal-focus-trail.json"), trail)
@@ -237,16 +238,37 @@ class WorkspaceReview(PreviewNavigation):
             self.page.keyboard.press("Tab")
             focus = observe_focus("Tab")
             if workspace_focus_kind(focus) == "ua_boundary":
-                assert previous["control"] == "workspace-layout-summary", "Browser boundary occurred before the last control"
+                assert previous["control"] == "workspace-connections-summary", "Browser boundary occurred before the last control"
                 self.shot(self.stage + "-modal-forward-ua-boundary")
                 self.page.keyboard.press("Tab")
                 focus = observe_focus("Tab: one same-direction return from browser controls")
                 focus = step_past_scroll_container(focus, "Tab")
                 assert_workspace_reentry(focus, "close-workspace")
+            if focus["disclosure"]:
+                selector = "#" + focus["disclosure"]
+                disclosure = dialog.locator("details" + selector)
+                summary = dialog.locator(selector + " > summary")
+                expect(summary).to_be_focused()
+                expect(summary).to_be_in_viewport()
+                if disclosure.get_attribute("open") is None:
+                    self.page.keyboard.press("Enter")
+                    self.navigation_action("key", selector + " > summary", "Enter")
+                    focus = observe_focus("Enter: open " + focus["disclosure"])
+                    assert_workspace_reentry(focus, selector[1:] + "-summary")
+                expect(disclosure).to_have_attribute("open", "")
+                disclosures.add(selector[1:])
             previous = focus
             if focus["view"]:
+                target = dialog.locator(f'[data-workspace-view="{focus["view"]}"]')
+                expect(target).to_be_focused()
+                expect(target).to_be_enabled()
+                expect(target).to_be_in_viewport()
                 seen.add(focus["view"])
             if focus["panel"]:
+                target = dialog.locator(f'[data-workspace-panel="{focus["panel"]}"]')
+                expect(target).to_be_focused()
+                expect(target).to_be_enabled()
+                expect(target).to_be_in_viewport()
                 panels.add(focus["panel"])
             if focus["id"] == "close-workspace":
                 break
@@ -254,6 +276,7 @@ class WorkspaceReview(PreviewNavigation):
             raise AssertionError("Native Workspace focus cycle did not return to Close")
         assert seen == set(WORKSPACE_VIEWS)
         assert panels == {"problems-pane", "evidence-pane", "history-pane"}
+        assert disclosures == {"workspace-work-views", "workspace-panels"}
         self.page.keyboard.press("Shift+Tab")
         backward = observe_focus("Shift+Tab")
         backward = step_past_scroll_container(backward, "Shift+Tab")
@@ -261,7 +284,7 @@ class WorkspaceReview(PreviewNavigation):
             self.shot(self.stage + "-modal-backward-ua-boundary")
             self.page.keyboard.press("Shift+Tab")
             backward = observe_focus("Shift+Tab: one same-direction return from browser controls")
-        assert_workspace_reentry(backward, "workspace-layout-summary")
+        assert_workspace_reentry(backward, "workspace-connections-summary")
         self.page.keyboard.press("Escape")
         observe_focus("Escape")
         expect(dialog).to_be_hidden()
@@ -275,7 +298,9 @@ class WorkspaceReview(PreviewNavigation):
         for target in ("problems-pane", "evidence-pane", "history-pane"):
             if self.page.locator("#bottom-pane").is_visible():
                 self.page.locator("#collapse-bottom").click()
-            self.open_workspace().locator(f'[data-workspace-panel="{target}"]').click()
+            dialog = self.open_workspace()
+            self.open_disclosure("#workspace-panels")
+            dialog.locator(f'[data-workspace-panel="{target}"]').click()
             expect(self.page.locator("#workspace-dialog")).to_be_hidden()
             expect(self.page.locator(f"#{target}")).to_be_visible()
             expect(self.page.locator(f'[data-bottom="{target}"]')).to_be_focused()

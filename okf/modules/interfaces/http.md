@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/http.py
   title: interfaces/http.py
   hash_method: ast-api-v1
-  sha256: 4321396677f8e0f8d51ba961e089fc77a9bf193be1b754ea036c1ce4a01a39c6
-notes_baseline: c7445473329b21aa4d27b75bc0bf03b83e4dded5ffff41bdac7d4a8828554448
+  sha256: f03683658e7ab8f9880cf910940ee3c4eb1c1c0c104aa9114334a60923043b09
+notes_baseline: 92fa6f869b06a5d66bddfec5dae36db2394a6eb5b9d73ceb8e459aacfb507dfe
 ---
 
 # interfaces.http
@@ -40,6 +40,7 @@ _Symbol pages are generated for the domain and application layers only._
 
 * [`application/diagram_catalog`](/modules/application/diagram_catalog.md)
 * [`application/edit_preview`](/modules/application/edit_preview.md)
+* [`application/edit_proposal`](/modules/application/edit_proposal.md)
 * [`application/repository`](/modules/application/repository.md)
 * [`domain/models`](/modules/domain/models.md)
 * [`domain/pack`](/modules/domain/pack.md)
@@ -55,6 +56,7 @@ _No curated notes yet._
 
 * [application.diagram_catalog](/modules/application/diagram_catalog.md) - Named diagram views over a baseline and an optional candidate Workflow.
 * [application.edit_preview](/modules/application/edit_preview.md) - Read-only edit projection over one captured case, using the same interpreter as owner edits.
+* [application.edit_proposal](/modules/application/edit_proposal.md) - A read-only offline proposal over one captured candidate; owner edits keep their existing boundary.
 * [application.repository](/modules/application/repository.md) - Read-only repository evidence port; this does not grant project execution or approval.
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).

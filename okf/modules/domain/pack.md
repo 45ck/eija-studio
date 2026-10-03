@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/pack.py
   title: domain/pack.py
   hash_method: ast-api-v1
-  sha256: d183d00906ed7e078ca45886325e319d97ecdd69c26476cfa993a418909e3639
-notes_baseline: 2a5027578fe2cfd7c1908194ea28def39bd21e2a0408cd747613c5eb7eb1bb04
+  sha256: 95f86e645f1e6e9c9ac4211307a361c528d633efef3317fcfad06d8f4d6e614d
+notes_baseline: 45944449d454a6b1717b71434632e7ea30bdfbe2a022aaf2ac4c03df199c0e68
 ---
 
 # domain.pack
@@ -105,6 +105,7 @@ _No curated notes yet._
 * [adapters.sqlite_store](/modules/adapters/sqlite_store.md) - Durable local unit of work.
 * [application.compiler](/modules/application/compiler.md) - Compiler: model → projections + impacts + obligations + computed review packet.
 * [application.edit_preview](/modules/application/edit_preview.md) - Read-only edit projection over one captured case, using the same interpreter as owner edits.
+* [application.edit_proposal](/modules/application/edit_proposal.md) - A read-only offline proposal over one captured candidate; owner edits keep their existing boundary.
 * [application.formal](/modules/application/formal.md) - Formal evidence in the application layer: seal what an adapter collected, and build the packet view.
 * [application.history](/modules/application/history.md) - Semantic history is a projection of typed commands, replayed by the existing policy interpreter.
 * [application.runtime](/modules/application/runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.

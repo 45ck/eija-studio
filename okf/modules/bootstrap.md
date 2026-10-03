@@ -38,6 +38,7 @@ _Symbol pages are generated for the domain and application layers only._
 
 ## Internal imports
 
+* [`adapters/edit_proposals`](/modules/adapters/edit_proposals.md)
 * [`adapters/identity`](/modules/adapters/identity.md)
 * [`adapters/receipts`](/modules/adapters/receipts.md)
 * [`adapters/repository`](/modules/adapters/repository.md)
@@ -56,6 +57,7 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Imports
 
+* [adapters.edit_proposals](/modules/adapters/edit_proposals.md) - Bounded offline request fixture: exact model names and complete phrases, never an LLM.
 * [adapters.identity](/modules/adapters/identity.md) - Measured release identity, not a proof of correctness or author authenticity.
 * [adapters.receipts](/modules/adapters/receipts.md) - Local integrity seal.
 * [adapters.repository](/modules/adapters/repository.md) - Repository analysis and bounded source navigation over captured checkout bytes.

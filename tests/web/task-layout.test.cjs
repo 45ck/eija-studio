@@ -2,10 +2,11 @@
 // State and accessibility observations of the real shell; no browser or model/API mutations.
 const {test}=require("node:test"),assert=require("node:assert/strict");
 const {harness,source,normal}=require("./focus-layout.test.cjs");
-const areas=["model","code","source","changes","evidence","try","journeys"];
+const areas=["model","code","change","review","repository-changes","evidence","try","impact","visual","source"];
+const explorerAreas=new Set(["model","code","review","repository-changes"]);
 
 function assertTaskDefaults(h){
-  for(const area of areas){h.shell.setArea(area);h.assertPane("explorer",true);h.assertPane("inspector",false);h.assertPane("panel",false);}
+  for(const area of areas){h.shell.setArea(area);h.assertPane("explorer",explorerAreas.has(area));h.assertPane("inspector",false);h.assertPane("panel",false);}
 }
 function assertTemporaryIsolation(code=source){
   const h=harness({code,stored:{...normal,inspectorOpen:false,panelOpen:false}}),before=h.stored();
@@ -28,6 +29,40 @@ test("absent and invalid saved preferences use task defaults without manufacturi
   for(const stored of [null,"not json","null",{paneOverrides:{model:{inspector:"true",panel:1},evidence:null}}]){
     const h=harness({stored});assertTaskDefaults(h);assert.equal(h.writes.length,0);
   }
+});
+
+test("Domain pinning keeps the explorer available across areas without saving pane preferences",()=>{
+  const h=harness({stored:null});h.shell.setArea("evidence");h.assertPane("explorer",false);
+  h.shell.setNavigatorPinned(true);
+  for(const area of areas){h.shell.setArea(area);h.assertPane("explorer",true);h.assertPane("inspector",false);h.assertPane("panel",false);}
+  assert.equal(h.writes.length,0,"pinning must not manufacture explicit pane overrides");
+  h.shell.setNavigatorPinned(false);assertTaskDefaults(h);assert.equal(h.writes.length,0);
+});
+
+test("an explicit explorer close wins over a Domain pin through navigation and reload",()=>{
+  const h=harness({stored:null});h.shell.setNavigatorPinned(true);h.shell.setArea("evidence");h.assertPane("explorer",true);
+  h.shell.toggle("explorer",false);const saved=h.stored();
+  for(const pinned of [false,true]){h.shell.setNavigatorPinned(pinned);h.shell.setArea("model");h.assertPane("explorer",true);h.shell.setArea("evidence");h.assertPane("explorer",false);}
+  const reloaded=harness({stored:saved});reloaded.shell.setNavigatorPinned(true);reloaded.shell.setArea("evidence");reloaded.assertPane("explorer",false);
+  reloaded.shell.setArea("try");reloaded.assertPane("explorer",true);assert.deepEqual(reloaded.stored(),saved);
+});
+
+test("legacy explorer choices win over pinning while explicit per-area choices keep precedence",()=>{
+  for(const legacy of [false,true]){
+    const preferences={...normal,explorerOpen:legacy},h=harness({stored:preferences});h.shell.setNavigatorPinned(true);
+    for(const area of areas){h.shell.setArea(area);h.assertPane("explorer",legacy);}
+    h.shell.setArea("evidence");h.shell.toggle("explorer",!legacy);const saved=h.stored();
+    h.shell.setNavigatorPinned(false);h.shell.setNavigatorPinned(true);h.assertPane("explorer",!legacy);
+    h.shell.setArea("try");h.assertPane("explorer",legacy);assert.deepEqual(h.stored(),saved);
+  }
+});
+
+test("pin changes preserve temporary focus layout and compact drawer choices",()=>{
+  const h=harness({stored:null});h.shell.setArea("evidence");h.shell.focusWorkspace(true);h.shell.setNavigatorPinned(true);h.assertPane("explorer",false);
+  h.shell.focusWorkspace(false);h.assertPane("explorer",true);
+  h.shell.resizeMode(true);h.assertPane("explorer",false);h.shell.setNavigatorPinned(false);h.shell.setNavigatorPinned(true);h.assertPane("explorer",false);
+  h.shell.reveal("explorer");h.shell.setNavigatorPinned(false);h.assertPane("explorer",true);
+  h.shell.resizeMode(false);h.assertPane("explorer",false);assert.equal(h.writes.length,0);
 });
 
 test("legacy saved booleans retain their scope while new explicit choices persist for one area",()=>{

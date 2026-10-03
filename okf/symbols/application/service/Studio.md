@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio
   title: application/service.py
   hash_method: ast-sig-v1
-  sha256: 82e069eec049dac30908556b342ee1216b85070100377baa66ab7ef861c4b151
+  sha256: 6cda4ca217b393d83aecbe22677e3e0b1011dbde2e8c24e2c985bbeb5b9ac674
 description_override: 'The Studio use cases: create, propose, select, edit, verify, approve, apply and execute over a Change Case.'
-notes_baseline: a4a37d1c16da3a06c765472baba47c5c3b13e9b707e3fcbf8f262bc4335f334b
+notes_baseline: 54a2f367123819b8a1be9b272cddc74625975a5b0493fb239256052ac5941e15
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -54,6 +54,10 @@ verified:
   at: '2026-10-02T20:26:56.4586414+00:00'
   notes_sha256: f4a02da478c415d5bda1e511a72b5f08b82df701d0844c29c022945ae8819f8d
   sources_sha256: a4a37d1c16da3a06c765472baba47c5c3b13e9b707e3fcbf8f262bc4335f334b
+- by: process:codex-typed-edit-proposal
+  at: '2026-10-03T02:38:38Z'
+  notes_sha256: 84af413206c8bd57d7f595b95322bf62e6af1710ce254ca4da7966d4891f47ea
+  sources_sha256: 54a2f367123819b8a1be9b272cddc74625975a5b0493fb239256052ac5941e15
 ---
 
 # application.service.Studio
@@ -87,6 +91,7 @@ _The source carries no docstring._
 * [`history`](/symbols/application/service/Studio.history.md) - `def history(self, case_id: str) -> dict[str, Any]`
 * [`layout`](/symbols/application/service/Studio.layout.md) - `def layout(self, case_id: str, expected: int, change: LayoutChange, principal: Principal) -> dict[str, Any]`
 * [`propose`](/symbols/application/service/Studio.propose.md) - `def propose(self, case_id: str, expected: int, *, consent: bool=False) -> dict[str, Any]`
+* [`propose_edit`](/symbols/application/service/Studio.propose_edit.md) - `def propose_edit(self, case_id: str, expected: int, request: str) -> dict[str, Any]`
 * [`redo`](/symbols/application/service/Studio.redo.md) - `def redo(self, case_id: str, expected: int, principal: Principal) -> dict[str, Any]`
 * [`repository_change`](/symbols/application/service/Studio.repository_change.md) - `def repository_change(self, base: str, head: str) -> dict[str, Any]`
 * [`repository_change_file`](/symbols/application/service/Studio.repository_change_file.md) - `def repository_change_file(self, base: str, head: str, path: str, reference: str \| None=None) -> dict[str, Any]`
@@ -136,9 +141,17 @@ checks as edit. It writes nothing, grants no authority and creates no evidence.
 Applying still uses owner edit and the captured case version; an intervening
 revision makes that expected version stale.
 
+`propose_edit` resolves a complete request through the optional offline `EditProposer`
+port against one captured, selected candidate. It validates the returned transaction
+against that model's edit choices and reuses the existing policy-checked preview.
+The service rechecks the expected case version before returning an explicitly
+untrusted proposal. It writes no case or audit data, grants no capability and
+creates no evidence; owner edit still performs any later candidate mutation.
+
 <!-- okf:generated:begin links -->
 ## Depends on
 
+* [application.ports.EditProposer](/symbols/application/ports/EditProposer.md) - Offline request resolution only; returns an untrusted transaction and performs no IO or persistence.
 * [application.ports.FormalEvidenceSource](/symbols/application/ports/FormalEvidenceSource.md) - Where formal artifacts come from (Docker, Java, z3 or saved reports are adapter prerequisites).
 * [application.ports.IdentityProvider](/symbols/application/ports/IdentityProvider.md) - Type alias `IdentityProvider` in `application/ports`.
 * [application.ports.ProposalProvider](/symbols/application/ports/ProposalProvider.md) - `class ProposalProvider(Protocol)` in `application/ports`.
@@ -170,6 +183,7 @@ revision makes that expected version stale.
 * [application.service.Studio.history](/symbols/application/service/Studio.history.md) - Reconstructed semantic revisions and append-only command audit; never changes the case.
 * [application.service.Studio.layout](/symbols/application/service/Studio.layout.md) - `def layout(self, case_id: str, expected: int, change: LayoutChange, principal: Principal) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.propose](/symbols/application/service/Studio.propose.md) - `def propose(self, case_id: str, expected: int, *, consent: bool=False) -> dict[str, Any]` in `application/service`.
+* [application.service.Studio.propose_edit](/symbols/application/service/Studio.propose_edit.md) - Read-only offline proposal; capture and recheck the case revision without granting owner authority.
 * [application.service.Studio.redo](/symbols/application/service/Studio.redo.md) - Reapply the next undone typed command through the same interpreter and policy checks.
 * [application.service.Studio.repository_change](/symbols/application/service/Studio.repository_change.md) - Compare immutable source revisions; this grants no model or repository write authority.
 * [application.service.Studio.repository_change_file](/symbols/application/service/Studio.repository_change_file.md) - Read bounded historical text and syntax; live source identity remains separate.

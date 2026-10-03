@@ -159,6 +159,11 @@ def test_rendered_endpoints_match_server_and_detect_a_lying_visible_path(endpoin
             authoritative = response.value.json()
             model, pack_id = authoritative["model"], authoritative["pack"]["id"]
             api.expect(page.locator("#model-canvas svg.model-svg")).to_be_visible()
+            canvas_view = page.locator("details#canvas-view")
+            if canvas_view.get_attribute("open") is None:
+                page.locator("#canvas-view > summary").click()
+            api.expect(canvas_view).to_have_attribute("open", "")
+            api.expect(page.locator("#canvas-direction")).to_be_visible()
             page.locator("#canvas-direction").select_option(direction)
             api.expect(page.locator("#model-canvas svg")).to_have_attribute("data-direction", direction)
             before = page.evaluate(OBSERVE)

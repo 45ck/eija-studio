@@ -9,6 +9,7 @@ from fastapi.exceptions import RequestValidationError
 from pydantic import Field
 from eija_studio.application.diagram_catalog import case_diagrams
 from eija_studio.application.edit_preview import EditPreview
+from eija_studio.application.edit_proposal import TypedEditProposal
 from eija_studio.application.repository import COMMIT_OID_PATTERN
 from eija_studio.domain.models import MEANING_ID, Contract, DomainError, OWNER, LayoutChange, ExecuteCommand
 from eija_studio.domain.pack import Pack
@@ -20,7 +21,7 @@ PAGE_CSP = ("default-src 'none'; script-src 'self'; style-src 'self'; connect-sr
             "frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
 FRAME_CSP = ("default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src data:; connect-src 'none'; "
              "frame-ancestors 'self'; base-uri 'none'; form-action 'none'; sandbox allow-scripts")
-WEB_ASSETS = frozenset({"app.js", "app.css", "canvas.js", "tree.js", "review.js", "compare.js", "compare.css", "repository-review.js", "repository-review.css", "source.js", "shell.js", "visual-frame.js", "visual-frame.css"})
+WEB_ASSETS = frozenset({"app.js", "app.css", "canvas.js", "tree.js", "review.js", "compare.js", "compare.css", "repository-review.js", "repository-review.css", "source.js", "shell.js", "agent-edit.js", "visual-frame.js", "visual-frame.css"})
 
 
 class NewCase(Contract):
@@ -31,6 +32,8 @@ class Propose(Version):
     consent: bool = Field(default=False, strict=True)
 class Select(Version):
     interpretation: str = Field(pattern=MEANING_ID)  # a meaning id of the active pack; the service checks it
+class EditPropose(Version):
+    request: str = Field(min_length=1, max_length=6000)
 class EditCheck(Contract):
     transaction: Transaction
 class Edit(Version):
@@ -192,6 +195,10 @@ def create_app(studio, token: str, port: int = 8765) -> FastAPI:
     @app.post("/api/cases/{case_id}/edit")
     def edit(case_id: str, body: Edit):
         return studio.edit(case_id, body.expected_version, body.transaction, OWNER)
+
+    @app.post("/api/cases/{case_id}/edit/propose", response_model=TypedEditProposal)
+    def propose_edit(case_id: str, body: EditPropose):
+        return studio.propose_edit(case_id, body.expected_version, body.request)
 
     @app.post("/api/cases/{case_id}/edit/check")
     def edit_check(case_id: str, body: EditCheck):

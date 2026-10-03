@@ -74,7 +74,7 @@ class Ref:
 class Expect:
     """Post-condition that must hold after the action settles."""
 
-    kind: str  # text_equals | text_contains | visible | enabled | count
+    kind: str  # text_equals | text_contains | visible | enabled | count | review_ready
     css: str
     value: Any = None
 
@@ -149,9 +149,7 @@ def journey() -> list[Step]:
         Step("open-evidence", "Open Evidence & Decision", "click", Ref(css='[data-tab="evidence"]'),
              decision=TABS, expect=Expect("visible", "#verify")),
         Step("run-verification", "Run bounded verification", "click", Ref(css="#verify"),
-             expect=Expect("enabled", "#approve"), view="evidence-verified"),
-        Step("open-review-subject", "Open review of this exact subject", "click", Ref(css="#review-subject"),
-             expect=Expect("visible", "#review-form"), view="evidence-review-open"),
+              expect=Expect("review_ready", "#review-form"), view="evidence-verified"),
     ]
     for key, value in ANSWERS:
         steps.append(Step(f"answer-{key}", f"Answer review question '{key}'", "type", Ref(css=f"#q-{key}"),
@@ -243,6 +241,15 @@ class Runner:
             return self.page.evaluate("(s) => window.__hci.isEnabled(s)", e.css)
         if e.kind == "count":
             return self.page.locator(e.css).count() == e.value
+        if e.kind == "review_ready":
+            return self.page.evaluate("""({form, names}) => {
+                const decision=document.querySelector('#review-decision'), fields=[...document.querySelectorAll('#questions input')];
+                const packet=JSON.parse(document.querySelector('#packet').textContent);
+                return window.__hci.isVisible(form)&&decision.open&&window.__hci.isEnabled('#approve')&&
+                    packet.eligible===true&&Array.isArray(packet.blockers)&&packet.blockers.length===0&&
+                    fields.length===names.length&&names.every((name,index)=>fields[index].name===name&&fields[index].value==='')&&
+                    document.activeElement===fields[0]&&!document.querySelector('#acknowledge').checked;
+            }""", {"form": e.css, "names": [name for name, _ in ANSWERS]})
         raise ValueError(e.kind)
 
     # -- execution
@@ -271,6 +278,9 @@ class Runner:
             self._audit_visit(step.audit_visit)
         if step.view and self.audit:
             self.checkpoint(step.view)
+            if step.id == "run-verification":
+                # The product opens the review form now; retain its audit without a phantom click/operator.
+                self.checkpoint("evidence-review-open")
         self.steps.append(record)
 
     def _record_interaction(self, record: dict) -> None:
@@ -421,7 +431,7 @@ class Runner:
         record["target"] = {"name": info["name"], "selector": info["selector"], "effective": info["effective"], "raw": info["raw"]}
 
     # -- audits
-    def _observe_workspace_choices(self, tab: str) -> None:
+    def _observe_workspace_choices(self, tab: str, *, phase: str = "") -> None:
         """Checkpoint the complete route inventory and the choices actually visible in the open dialog."""
         choices_selector = "#workspace-dialog [data-workspace-view]"
         choices = self.page.locator(choices_selector).evaluate_all(
@@ -436,9 +446,24 @@ class Runner:
                        "inventory_count": len(choices), "n_choices": count,
                        "choices": choices, "view": tab, "geometry": geometry}
         self.audit_navigation.append(observation)
-        checkpoint = f'workspace-menu-{geometry["innerWidth"]}-{tab}'
+        checkpoint = f'workspace-menu-{geometry["innerWidth"]}-{tab}' + ("-" + phase if phase else "")
         self.checkpoint(checkpoint)
         self.views[checkpoint]["work_view_choices"] = observation
+
+    def _open_workspace_work_views(self, tab: str) -> None:
+        """Expose primary work views through the real native disclosure when needed."""
+        if tab not in {"model", "code", "change", "review", "try", "evidence"}:
+            return
+        disclosure = self.page.locator("#workspace-work-views")
+        if disclosure.get_attribute("open") is not None:
+            return
+        selector = "#workspace-work-views > summary"
+        self.page.locator(selector).click()
+        self.audit_navigation.append({"action": "click", "selector": selector, "view": tab})
+        self.settle()
+        if disclosure.get_attribute("open") is None:
+            raise JourneyError("Workspace Work views disclosure did not open")
+        self._observe_workspace_choices(tab, phase="work-views-open")
 
     def _open_audit_tab(self, tab: str) -> None:
         """Record real audit navigation separately from the modelled owner journey."""
@@ -455,6 +480,7 @@ class Runner:
             self._observe_workspace_choices(tab)
             selector = f'[data-workspace-view="{tab}"]'
             target = self.page.locator(selector)
+            self._open_workspace_work_views(tab)
         target.click()
         self.audit_navigation.append({"action": "click", "selector": selector, "view": tab})
         self.settle()
