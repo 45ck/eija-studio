@@ -588,6 +588,141 @@ class RuntimeReview(Journey):
                 "axe_violations": 0, "axe_incomplete": sum(len(audit["incomplete"]) for audit in audits),
                 "scope": "Synthetic accessibility checks; not a human usability study or real oversized server failure."}
 
+    def triage_keyboard_entry(self, selector):
+        """Start at real Evidence navigation, then reach the target only with native Tab."""
+        self.tab("evidence")
+        entry = self.page.locator('[data-tab="evidence"]')
+        entry.focus()
+        target, trail = self.page.locator(selector), []
+        replay.expect(target).to_have_count(1)
+        for _ in range(24):
+            self.page.keyboard.press("Tab")
+            trail.append(self.page.evaluate("""()=>({id:document.activeElement.id,tag:document.activeElement.tagName,
+                blocker:document.activeElement.dataset.blockerCode||null})"""))
+            if target.evaluate("n=>document.activeElement===n"):
+                break
+        replay.expect(target).to_be_focused()
+        return {"selector": selector, "native_tab_trail": trail, "geometry": self.triage_focus_geometry(target)}
+
+    def triage_focus_geometry(self, target):
+        replay.expect(target).to_be_focused()
+        geometry = target.evaluate("""n=>{const r=n.getBoundingClientRect(),s=getComputedStyle(n);
+            let clip={left:0,top:0,right:innerWidth,bottom:innerHeight};
+            for(let p=n.parentElement;p;p=p.parentElement){const c=getComputedStyle(p),b=p.getBoundingClientRect();
+                if(/auto|scroll|hidden|clip/.test(c.overflowX)){clip.left=Math.max(clip.left,b.left);clip.right=Math.min(clip.right,b.right);}
+                if(/auto|scroll|hidden|clip/.test(c.overflowY)){clip.top=Math.max(clip.top,b.top);clip.bottom=Math.min(clip.bottom,b.bottom);}}
+            return {rect:r.toJSON(),clip,focusVisible:n.matches(':focus-visible'),outlineStyle:s.outlineStyle,
+                outlineWidth:parseFloat(s.outlineWidth),documentWidth:document.documentElement.scrollWidth,width:innerWidth};}""")
+        assert geometry["focusVisible"] and geometry["outlineStyle"] != "none" and geometry["outlineWidth"] >= 2
+        box, clip = geometry["rect"], geometry["clip"]
+        assert box["left"] >= clip["left"] - 1 and box["right"] <= clip["right"] + 1
+        assert box["top"] >= clip["top"] - 1 and box["bottom"] <= clip["bottom"] + 1
+        assert geometry["documentWidth"] <= geometry["width"] + 1
+        return geometry
+
+    def triage_evidence_inventory(self, view):
+        packet = view["packet"]
+        expected_claims = packet["technical_claims"]
+        actual_claims = self.page.locator("#formal details[data-claim]").evaluate_all("""nodes=>nodes.map(n=>({
+            name:n.dataset.claim,status:n.querySelector('summary .evidence-status').textContent}))""")
+        assert len(actual_claims) == len(expected_claims)
+        assert {row["name"]: row["status"] for row in actual_claims} == expected_claims
+        actual_records = self.page.locator("#formal details[data-evidence-kind]").evaluate_all("""nodes=>nodes.map(n=>({
+            kind:n.dataset.evidenceKind,index:n.dataset.evidenceIndex,
+            status:n.querySelector('summary .evidence-status').textContent}))""")
+        expected_records = [{"kind": row["kind"], "index": str(index), "status": row["status"]}
+                            for index, row in enumerate(packet["formal_evidence"])]
+        assert actual_records == expected_records, "Triage navigation changed the formal record inventory/order/status"
+        assert self.packet() == packet
+        subject = self.page.locator("#evidence-subject")
+        for key, value in {"case-id": view["case"]["id"], "revision": str(view["case"]["version"]),
+                           "subject-hash": packet["subject_hash"], "displayed-model": "working",
+                           "comparison-case-id": view["case"]["id"], "comparison-revision": str(view["case"]["version"]),
+                           "comparison-kind": "transition", "comparison-id": "TR-SAVE"}.items():
+            replay.expect(subject).to_have_attribute("data-" + key, value)
+        replay.expect(subject).to_contain_text("Model inspector selection: transition · TR-VERIFY")
+        replay.expect(subject).to_contain_text("Evidence scope: case-wide")
+        replay.expect(self.page.locator("#evidence .human-status")).to_contain_text("Human comprehension: UNKNOWN")
+        replay.expect(self.page.locator("#source-status")).to_contain_text("SOURCE_REVIEW_REQUIRED")
+        return {"claims": actual_claims, "formal_records": actual_records}
+
+    def evidence_triage(self):
+        """Actual packet blockers and keyboard destinations; no fabricated check payloads."""
+        if self.page.url == "about:blank":
+            self.entry()
+        self.create_candidate()
+        before = self.view()
+        history = self.get(f"cases/{self.case_id}/history")
+        writes = [row for row in self.requests if row["method"] != "GET"]
+        packet = before["packet"]
+        assert "SOURCE_REVIEW_REQUIRED" in packet["blockers"]
+        assert "RUNTIME_EVIDENCE_UNKNOWN" in packet["blockers"] and packet["technical_claims"]["runtime_matrix"] == "UNKNOWN"
+        assert packet["human_understanding"] == "UNKNOWN" and not packet["eligible"]
+        self.select_transition("TR-VERIFY")
+        self.select_comparison("transition", "TR-SAVE")
+        self.tab("evidence")
+        observations = []
+        try:
+            for width, height in ((1280, 800), (320, 800)):
+                self.page.set_viewport_size({"width": width, "height": height})
+                self.tab("evidence")
+                triage = self.page.locator("#evidence-triage")
+                actual = triage.locator("li[data-blocker-code]").evaluate_all("nodes=>nodes.map(n=>n.dataset.blockerCode)")
+                assert actual == packet["blockers"], "Visible triage inventory/order differs from the actual packet"
+                replay.expect(triage).to_have_attribute("data-case-id", self.case_id)
+                replay.expect(triage).to_have_attribute("data-revision", str(before["case"]["version"]))
+                replay.expect(triage).to_have_attribute("data-subject-hash", packet["subject_hash"])
+                for code in packet["blockers"]:
+                    row = triage.locator(f'li[data-blocker-code="{code}"]')
+                    replay.expect(row).to_be_visible()
+                    assert row.locator("strong").inner_text().strip() and row.locator("p").inner_text().strip()
+                replay.expect(triage).to_contain_text("Runtime evidence · UNKNOWN")
+                replay.expect(triage).to_contain_text("Source review required")
+                inventory = self.triage_evidence_inventory(before)
+                self.shot(f"evidence-triage-entry-{width}")
+                source = self.triage_keyboard_entry('#evidence-triage button[data-blocker-code="SOURCE_REVIEW_REQUIRED"]')
+                self.page.keyboard.press("Enter")
+                target = self.page.locator("#source-review-problem")
+                replay.expect(target).to_be_focused()
+                replay.expect(target).to_be_visible()
+                replay.expect(target).to_have_attribute("data-problem-code", "SOURCE_REVIEW_REQUIRED")
+                replay.expect(self.page.locator("#problems-pane")).to_be_visible()
+                source["focused_diagnostic"] = target.text_content()
+                source["destination_geometry"] = self.triage_focus_geometry(target)
+                self.shot(f"evidence-triage-source-diagnostic-{width}")
+                self.page.locator("#collapse-bottom").click()
+                runtime = self.triage_keyboard_entry('#evidence-triage button[data-blocker-code="RUNTIME_EVIDENCE_UNKNOWN"]')
+                self.page.keyboard.press("Enter")
+                check = self.page.locator('#formal details[data-claim="runtime_matrix"]')
+                replay.expect(check).to_have_count(1)
+                replay.expect(check).to_have_attribute("open", "")
+                replay.expect(check.locator("summary")).to_be_focused()
+                replay.expect(check.locator("summary .evidence-status")).to_have_text(packet["technical_claims"]["runtime_matrix"])
+                runtime["focused_check"] = check.text_content()
+                runtime["destination_geometry"] = self.triage_focus_geometry(check.locator("summary"))
+                self.shot(f"evidence-triage-runtime-check-{width}")
+                codes = self.triage_keyboard_entry(".evidence-blocker-codes > summary")
+                disclosure = self.page.locator(".evidence-blocker-codes")
+                if disclosure.get_attribute("open") is None:
+                    self.page.keyboard.press("Enter")
+                replay.expect(disclosure).to_have_attribute("open", "")
+                replay.expect(self.page.locator("#blockers")).to_be_visible()
+                replay.expect(self.page.locator("#blockers")).to_have_text("Review blocked: " + ", ".join(packet["blockers"]))
+                self.shot(f"evidence-triage-exact-codes-{width}")
+                self.page.keyboard.press("Enter")
+                replay.expect(disclosure).not_to_have_attribute("open", "")
+                assert self.triage_evidence_inventory(before) == inventory
+                assert self.view() == before and self.get(f"cases/{self.case_id}/history") == history
+                assert [row for row in self.requests if row["method"] != "GET"] == writes
+                observations.append({"viewport": [width, height], "actual_blockers": actual, "inventory": inventory,
+                                     "source": source, "runtime": runtime, "raw_codes": codes})
+                write_json(self.out / "evidence-triage-keyboard.json", observations)
+        finally:
+            self.page.set_viewport_size({"width": 1440, "height": 900})
+        return {"viewports": observations, "unchanged_case_history_observations": True, "navigation_writes": 0,
+                "packet_fixture": "real normal-server packet; no verification/runtime command or synthetic response",
+                "coverage_limit": "Malformed/duplicate/stale mapping counterexamples are Node-only; no human or axe claim."}
+
     def busy_keyboard(self):
         setup = self.fresh_preview()
         count = len(self.runtime_posts())
@@ -626,7 +761,7 @@ def main():
         return 2
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path, required=True)
-    parser.add_argument("--scenario", choices=("baseline", "all", "diagnostics"), default="baseline")
+    parser.add_argument("--scenario", choices=("baseline", "all", "diagnostics", "triage"), default="baseline")
     args = parser.parse_args()
     out = args.out.resolve()
     out.mkdir(parents=True, exist_ok=False)
@@ -658,11 +793,17 @@ def main():
                                  ("committed-refresh-failed", review.committed_refresh_failed),
                                  ("context-history-isolation", review.context_isolation),
                                  ("busy-keyboard-no-duplicate", review.busy_keyboard),
-                                 ("raw-diagnostics-keyboard", review.raw_diagnostics_keyboard)]
+                                 ("raw-diagnostics-keyboard", review.raw_diagnostics_keyboard),
+                                 ("evidence-triage-keyboard", review.evidence_triage)]
                         result["not_run"] = ["human usability", "live provider", "owner approval/apply"]
                     if args.scenario == "diagnostics":
                         steps = [("raw-diagnostics-keyboard", review.raw_diagnostics_keyboard)]
                         result["not_run"] = ["other runtime recovery scenarios", "human usability", "live provider", "owner approval/apply"]
+                    if args.scenario == "triage":
+                        steps = [("evidence-triage-keyboard", review.evidence_triage)]
+                        result["not_run"] = ["runtime recovery scenarios", "raw-diagnostic overflow", "axe audit",
+                                             "malformed/duplicate/stale packet browser fixtures", "human usability",
+                                             "live provider", "owner approval/apply"]
                     for name, action in steps:
                         review.stage = name
                         evidence = action()

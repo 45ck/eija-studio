@@ -490,20 +490,25 @@ function previewSummaryHarness(preview = true, alter = text => text) {
     set textContent(value){this.ownText = String(value);this.children=[];},
     append(...nodes){this.children.push(...nodes);},replaceChildren(...nodes){this.ownText="";this.children=[...nodes];},
     setAttribute(name,value){this.attributes[name]=String(value);}});
-  const handlers = {element, itemTitle:item => item.id, statusLabel:{changed:"Modified",added:"Added",removed:"Removed",unchanged:"Unchanged"}};
+  const calls = [];
+  const button = (label, onclick, action) => ({...element("button", label), onclick, dataset:action ? {compareAction:action} : {}});
+  const handlers = {element, button, bindings:compare.bindings, statusLabel:{changed:"Modified",added:"Added",removed:"Removed",unchanged:"Unchanged"}};
   vm.createContext(handlers);
-  for(const [start,end] of [["  const textValue =", "  function engines()"], ["  function fieldTable(", "  function render("], ["  function updateSelection(", "  function buildContext("]]) {
+  for(const [start,end] of [["  const textValue =", "  function engines()"], ["  function itemTitle(", "  function render("], ["  function updateSelection(", "  function buildContext("]]) {
     vm.runInContext(source.slice(source.indexOf(start),source.indexOf(end)),handlers);
   }
   let item;
-  const s={selected:()=>item,buttons:[],groups:[],panes:[],detail:element("section"),announcement:element("p"),shell:element("section"),callbacks:{preview},subject:{case:"A",revision:7},state:{selected:null}};
-  handlers.buildPreviewSummary(s);
-  // The real render appends its visual workspace after this summary; pixel clipping is a browser oracle.
-  const summaryAt=source.indexOf("buildPreviewSummary(session);"), visualAt=source.indexOf('session.visual = element("div"');
-  assert.ok(summaryAt>=0 && summaryAt<visualAt);
-  const visual=element("div",undefined,"compare-visual-workspace");s.shell.append(visual);
-  return {s,visual,select(value){item=value;s.state.selected={kind:item.kind,id:item.id};handlers.updateSelection(s);},
-    row(key){return s.previewSummary?.children.find(node=>node.dataset.field===key);},
+  const visual=element("div",undefined,"compare-visual-workspace");
+  const s={selected:()=>item,buttons:[],groups:[],panes:[],detail:element("section"),announcement:element("p"),shell:element("section"),visual,
+    callbacks:{preview,terms:[],openReference:(...args)=>calls.push(["source",...args]),openEvidence:(...args)=>calls.push(["evidence",...args]),inspectTransition:(...args)=>calls.push(["model",...args])},
+    subject:{case:"A",revision:7},state:{selected:null}};
+  handlers.buildSelectedSummary(s);
+  // Execute the real summary builder; a separate browser oracle must establish painted fit.
+  const summaryAt=source.indexOf("buildSelectedSummary(session);"), pairAt=source.indexOf("buildPair(session);");
+  assert.ok(summaryAt>=0 && summaryAt<pairAt);
+  s.shell.append(visual);
+  return {s,visual,calls,get summary(){return s.previewSummary||s.changeSummary;},select(value){item=value;s.state.selected={kind:item.kind,id:item.id};handlers.updateSelection(s);},
+    row(key){return this.summary?.children.find(node=>node.dataset.field===key);},
     pair(key){const row=this.row(key);return row && [row.children.find(node=>Object.hasOwn(node.dataset,"compareBefore")).textContent,row.children.find(node=>Object.hasOwn(node.dataset,"compareAfter")).textContent];}};
 }
 
@@ -517,7 +522,8 @@ test("preview summary exposes exact selected role and endpoint deltas before the
     assert.deepEqual({...h.s.previewSummary.dataset},{kind:"transition",id:"T"});
     assert.match(h.s.previewSummary.textContent,/Selected element’s changes/);assert.equal(JSON.stringify({base,next}),original);
   }
-  const ordinary=previewSummaryHarness(false);assert.equal(ordinary.s.previewSummary,undefined);assert.deepEqual(ordinary.s.shell.children,[ordinary.visual]);
+  const ordinary=previewSummaryHarness(false);assert.equal(ordinary.s.previewSummary,undefined);
+  assert.deepEqual(ordinary.s.shell.children,[ordinary.visual]);assert.equal(ordinary.visual.children[0],ordinary.s.changeSummary);
 });
 
 test("preview summary preserves multiple array values and distinguishes absent sides, empty arrays and initial changes", () => {
@@ -551,4 +557,69 @@ test("summary value oracle rejects omitted and reversed role consequences", () =
   omitted.select(item);assert.throws(()=>assert.deepEqual(omitted.pair("role"),["Owner","Agent"]),assert.AssertionError);
   const reversed=previewSummaryHarness(true,source=>source.replace('before = element("span", textValue(field.before)), after = element("span", textValue(field.after))','before = element("span", textValue(field.after)), after = element("span", textValue(field.before))'));
   reversed.select(item);assert.deepEqual(reversed.pair("role"),["Agent","Owner"]);assert.throws(()=>assert.deepEqual(reversed.pair("role"),["Owner","Agent"]),assert.AssertionError);
+});
+
+test("ordinary summary presents exact role, source and guard deltas above graphs with current selected subject", () => {
+  const base=freeze({states:["A","B","C"],initial_state:"A",transitions:[transition("T","A","B",{action:"Verify",guards:["active","assigned"]})]});
+  for(const [field,value,expected] of [["role","Agent",["Owner","Agent"]],["from_state","C",["A","C"]],
+    ["guards",["active"],[JSON.stringify(["active","assigned"],null,2),JSON.stringify(["active"],null,2)]]]) {
+    const candidate=freeze({...base,transitions:[{...base.transitions[0],[field]:value}]}), original=JSON.stringify({base,candidate});
+    const h=previewSummaryHarness(false);h.select(compare.inventory(base,candidate).items.find(item=>item.key==="transition:T"));
+    assert.equal(h.visual.children[0],h.summary);assert.equal(h.s.shell.children[0],h.visual);
+    assert.deepEqual({...h.summary.dataset},{kind:"transition",id:"T",case:"A",revision:"7"});
+    assert.deepEqual(h.summary.children.filter(node=>node.dataset.field).map(node=>node.dataset.field),[field]);
+    assert.deepEqual(h.pair(field),expected);assert.match(h.summary.textContent,/Modified · Verify · T/);
+    assert.match(h.summary.textContent,/Before · baseline → After · candidate · revision 7/);
+    assert.doesNotMatch(h.summary.textContent,/Proposed result|Captured before/);
+    assert.equal(JSON.stringify({base,candidate}),original);assert.deepEqual(h.calls,[],"rendering cannot navigate or execute");
+  }
+});
+
+test("ordinary summary retains complete arrays, missing sides and initial identity while replacing old selection", () => {
+  const h=previewSummaryHarness(false),inventory=compare.inventory(before,after),viewport=Object.freeze({cx:100,cy:200,scale:0.75});h.s.state.viewport=viewport;
+  h.select(inventory.items.find(item=>item.key==="transition:T-CHANGE"));
+  assert.deepEqual(h.pair("guards"),[JSON.stringify(["active","assigned"],null,2),JSON.stringify(["active"],null,2)]);
+  assert.deepEqual(h.pair("required_effects"),[JSON.stringify(["audit"],null,2),JSON.stringify(["audit","notify"],null,2)]);
+  assert.deepEqual(h.pair("forbidden_effects"),[JSON.stringify(["publish"],null,2),JSON.stringify(["publish","payment"],null,2)]);
+  h.select(inventory.items.find(item=>item.key==="transition:T-ADD"));assert.deepEqual(h.pair("guards"),["Not present","[] (none declared)"]);
+  h.select(inventory.items.find(item=>item.key==="transition:T-REMOVE"));assert.deepEqual(h.pair("guards"),["[] (none declared)","Not present"]);
+  const initial=compare.inventory(initialBefore,initialAfter);
+  for(const [key,expected] of [["state:Added",["Not present","Present"]],["state:Removed",["Present","Not present"]]]) {
+    h.select(initial.items.find(item=>item.key===key));assert.deepEqual(h.pair("membership"),expected);assert.equal(h.row("role"),undefined);
+  }
+  h.select(initial.items.find(item=>item.kind==="initial"));assert.deepEqual(h.pair("initial_state"),["A","B"]);
+  h.select(inventory.items.find(item=>item.key==="transition:T-KEEP"));
+  assert.equal(h.summary.dataset.id,"T-KEEP");assert.equal(h.summary.children.filter(node=>node.dataset.field).length,0);
+  assert.match(h.summary.textContent,/No changed fields for this selected element/);assert.equal(h.s.state.viewport,viewport);
+});
+
+test("ordinary summary leaves declared source and exact revision navigation intact without inventing a binding", () => {
+  const h=previewSummaryHarness(false),item=compare.inventory(before,after).items.find(item=>item.key==="transition:T-CHANGE");
+  const ref="repo://src/runtime.py#recommend";
+  h.s.callbacks.terms=[{refs:["transition:T-CHANGE"],binds:[ref]}];h.select(item);
+  const all=node=>[node,...node.children.flatMap(all)],controls=all(h.s.detail);
+  assert.deepEqual(h.calls,[]);controls.find(node=>node.dataset.compareReference===ref).onclick();
+  controls.find(node=>node.dataset.compareAction==="evidence").onclick();controls.find(node=>node.dataset.compareAction==="inspect-model").onclick();
+  const subject={case:"A",revision:7,kind:"transition",id:"T-CHANGE"};
+  assert.deepEqual(JSON.parse(JSON.stringify(h.calls)),[["source",ref,subject],["evidence",subject],["model","T-CHANGE",subject]]);
+  h.s.callbacks.terms=[];h.select(item);assert.equal(all(h.s.detail).filter(node=>node.dataset.compareReference).length,0);
+  assert.match(h.s.detail.textContent,/Source binding unknown: no declared binding/);
+});
+
+test("ordinary summary oracle rejects omitted, reversed and retained stale field values", () => {
+  const inventory=compare.inventory(before,after),item=inventory.items.find(item=>item.key==="transition:T-CHANGE");
+  const omitted=previewSummaryHarness(false,source=>source.replace("for (const field of changed) {",'for (const field of changed.filter(value=>value.key!=="role")) {'));
+  omitted.select(item);assert.throws(()=>assert.deepEqual(omitted.pair("role"),["Owner","Agent"]),assert.AssertionError);
+  const reversed=previewSummaryHarness(false,source=>source.replace('before = element("span", textValue(field.before)), after = element("span", textValue(field.after))','before = element("span", textValue(field.after)), after = element("span", textValue(field.before))'));
+  reversed.select(item);assert.throws(()=>assert.deepEqual(reversed.pair("role"),["Owner","Agent"]),assert.AssertionError);
+  const stale=previewSummaryHarness(false,source=>source.replace("summary.replaceChildren(); Object.assign", "Object.assign"));
+  stale.select(item);stale.select(inventory.items.find(value=>value.key==="transition:T-KEEP"));
+  assert.throws(()=>assert.equal(stale.summary.children.filter(node=>node.dataset.field).length,0),assert.AssertionError);
+});
+
+test("ordinary summary preserves distinct literal whitespace values", () => {
+  const base={states:["A","B"],initial_state:"A",transitions:[transition("T","A","B",{role:"Team  Lead"})]};
+  const candidate={...base,transitions:[{...base.transitions[0],role:"Team Lead"}]};
+  const h=previewSummaryHarness(false);h.select(compare.inventory(base,candidate).items.find(item=>item.key==="transition:T"));
+  assert.deepEqual(h.pair("role"),["Team  Lead","Team Lead"]);
 });

@@ -250,8 +250,67 @@ function renderEvidenceContext(){
   for(const [name,value]of Object.entries(p?.subject||{}))identities.append(el("dt",name),el("dd",evidenceValue(value)));
   if(!identities.childElementCount)identities.append(el("dt","Subject"),el("dd","Not available"));
 }
+function evidenceBlockerDescription(code){
+  const known={
+    SOURCE_REVIEW_REQUIRED:["Source review required","Owner review of changed implementation is outstanding."],
+    POLICY_BLOCKED:["Declared policy blocks review","The candidate does not satisfy the declared policy."],
+    IMPACT_INCOMPLETE:["Dependency coverage is incomplete","The model's explicit dependency mapping is incomplete."],
+    MEANING_REQUIRED:["Interpretation required","Choose a supported interpretation before reviewing a candidate."],
+    STALE_BASELINE:["Baseline revision has changed","This case uses an older baseline revision."],
+    HUMAN_FIELD_EVIDENCE_REQUIRED:["Human field evidence required","This review scope requires human field evidence beyond the local demo."],
+    CASE_DISCARDED:["Case is closed","This case is unavailable for review."]
+  };
+  if(Object.hasOwn(known,code))return known[code];
+  if(code.startsWith("RUNTIME_EVIDENCE_"))return ["Runtime evidence · "+code.slice(17),"The packet does not establish a passing runtime matrix."];
+  const formal=code.match(/^FORMAL_EVIDENCE_(FAIL|CONFLICT):(.+)$/);
+  return formal?[`Formal check ${formal[2]} · ${formal[1]}`,"Inspect the reported check, its reasons and scope."]:[code,"The packet reports this review restriction; no specific check is identified."];
+}
+function evidenceBlockerTarget(p,code){
+  if(code==="SOURCE_REVIEW_REQUIRED"){
+    const matches=[...$("problems").children].filter(node=>node.id==="source-review-problem"&&node.dataset.problemCode===code);
+    return matches.length===1?{node:matches[0],kind:"problem",label:"Inspect source restriction"}:null;
+  }
+  if(evidenceSubjectIssue(p,{}))return null;
+  let claim=null,expected=null;
+  if(code==="POLICY_BLOCKED"){claim="schema_policy";expected="FAIL";}
+  if(code==="IMPACT_INCOMPLETE"){claim="modelled_impact_closure";expected="UNKNOWN";}
+  if(code.startsWith("RUNTIME_EVIDENCE_")&&!code.endsWith("_PASS")){claim="runtime_matrix";expected=code.slice(17);}
+  const formal=code.match(/^FORMAL_EVIDENCE_(FAIL|CONFLICT):(.+)$/);
+  if(formal){
+    const records=(p.formal_evidence||[]).filter(record=>record.kind===formal[2]);
+    if(records.length!==1||records[0].status!==formal[1]||evidenceSubjectIssue(p,records[0]))return null;
+    claim="formal_"+formal[2];expected=formal[1];
+  }
+  if(!claim||p.technical_claims?.[claim]!==expected)return null;
+  const matches=[...$("formal").children].filter(node=>node.dataset.claim===claim&&node.dataset.status===expected&&(!formal||node.dataset.evidenceKind===formal[2]));
+  return matches.length===1?{node:matches[0],kind:"check",label:formal?"Inspect "+formal[2].replaceAll("_"," "):claim==="runtime_matrix"?"Inspect runtime check":claim==="schema_policy"?"Inspect policy check":"Inspect dependency check"}:null;
+}
+function openEvidenceBlocker(p,code,identity){
+  const same=JSON.stringify([current?.case.id,current?.case.version,p.subject_hash,p.subject])===identity;
+  const target=same&&current?.packet===p&&p.blockers?.includes(code)?evidenceBlockerTarget(p,code):null;
+  if(!target){notice("Evidence changed. Use the current review restrictions.",true);return false;}
+  if(target.kind==="problem"){
+    EijaShell.bottom("problems-pane",{temporary:true});target.node.tabIndex=-1;target.node.focus();target.node.scrollIntoView({block:"nearest"});
+  }else{
+    switchTab("evidence");target.node.open=true;target.node.querySelector("summary").focus();target.node.scrollIntoView({block:"nearest"});
+  }
+  return true;
+}
+function renderEvidenceTriage(p){
+  const root=$("evidence-triage"),identity=JSON.stringify([current?.case.id,current?.case.version,p.subject_hash,p.subject]);root.replaceChildren();
+  root.dataset.caseId=current?.case.id||"";root.dataset.revision=String(current?.case.version??"");root.dataset.subjectHash=p.subject_hash||"";
+  if(!p.blockers?.length){root.append(el("p",p.eligible?"No blockers are reported for this technical scope. Human authorisation remains separate.":"Review is blocked, but the packet does not identify a reason."));return;}
+  const list=el("ul");
+  for(const code of p.blockers){
+    const [title,reason]=evidenceBlockerDescription(code),row=el("li"),copy=el("div"),target=evidenceBlockerTarget(p,code);
+    row.dataset.blockerCode=code;copy.append(el("strong",title),el("p",reason));row.append(copy);
+    if(target){const button=el("button",target.label,"secondary");button.type="button";button.dataset.blockerCode=code;button.onclick=()=>openEvidenceBlocker(p,code,identity);row.append(button);}
+    list.append(row);
+  }
+  root.append(list);
+}
 function renderEvidencePacket(p){
-  renderFormal(p);renderProblems();renderEvidenceContext();
+  renderFormal(p);renderProblems();renderEvidenceContext();renderEvidenceTriage(p);
   $("blockers").textContent=p.blockers?.length?"Review blocked: "+p.blockers.join(", "):p.eligible?"Technical scope eligible. Human authorisation is still a separate decision.":"Review blocked. No blocker codes were reported.";
   $("packet").textContent=JSON.stringify(p,null,2);
   const decision=$("review-decision"),key=evidenceKey(p),sameSubject=!!key&&decision.dataset.subjectKey===key;
@@ -652,7 +711,7 @@ function renderProblems() {
     for(const code of lastDiagnostic.details.codes||[])add(String(code),null,"Server diagnostic");
   }
   for(const issue of issues.values()){
-    const li=el("li",undefined,"diagnostic");li.dataset.problemCode=issue.code;li.dataset.problemOrigins=JSON.stringify([...issue.origins]);
+    const li=el("li",undefined,"diagnostic");li.dataset.problemCode=issue.code;li.dataset.problemOrigins=JSON.stringify([...issue.origins]);if(issue.code==="SOURCE_REVIEW_REQUIRED")li.id="source-review-problem";
     li.append(el("strong",issue.code));for(const message of issue.messages)li.append(el("span",` · ${message}`));
     const detail=el("details");detail.append(el("summary","Issue origins"),el("p",[...issue.origins].join(" · ")));li.append(detail);
     if(issue.code==="SOURCE_LINK_LINT"){const button=el("button","Inspect source checks","text-button");button.onclick=()=>switchTab("source");li.append(button);}

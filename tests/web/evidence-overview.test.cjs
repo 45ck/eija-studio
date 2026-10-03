@@ -10,6 +10,9 @@ class Element{
   replaceChildren(...nodes){this.ownText="";this.children=[...nodes];}
   get childElementCount(){return this.children.length;}
   querySelectorAll(selector){return descendants(this).filter(node=>selector==="input"?node.tag==="input":selector==="details[data-evidence-key][open]"?node.tag==="details"&&node.dataset.evidenceKey&&node.open:false);}
+  querySelector(selector){return descendants(this).find(node=>node.tag===selector)||null;}
+  focus(){Element.active=this;}
+  scrollIntoView(){this.scrolled=true;}
 }
 const descendants=node=>node.children.flatMap(child=>[child,...descendants(child)]);
 const visibleText=node=>node.tag==="details"&&!node.open?node.children.filter(child=>child.tag==="summary").map(child=>child.textContent).join("\n"):node.ownText+node.children.map(visibleText).join("\n");
@@ -28,11 +31,14 @@ function packet(){return {
   questions:[{id:"authority",question:"Who retains approval?"}],human_understanding:"UNKNOWN"
 };}
 function harness(code=source){
-  const nodes=new Map(),get=id=>{if(!nodes.has(id))nodes.set(id,new Element("div"));return nodes.get(id);};
+  Element.active=null;
+  const events=[],nodes=new Map(),get=id=>{if(!nodes.has(id))nodes.set(id,new Element("div"));return nodes.get(id);};
   const sandbox={impactSequence:0,current:{case:{id:"case-A",version:7,baseline_version:2},packet:null},modelView:"working",historyLabel:"",comparisonSelection:null,inspectorSelection:{kind:"transition",id:"Save"},$ : get,
-    el:(tag,text,cls)=>{const node=new Element(tag);if(text!==undefined)node.textContent=text;if(cls)node.className=cls;return node;},renderProblems:()=>{},api:()=>{throw Error("Presentation must not call transport");}};
+    el:(tag,text,cls)=>{const node=new Element(tag);if(text!==undefined)node.textContent=text;if(cls)node.className=cls;return node;},workbench:null,status:{trusted_fixture:false},lastDiagnostic:null,
+    EijaShell:{renderEvidence:()=>{},bottom:(...args)=>events.push(["bottom",...args])},switchTab:name=>events.push(["view",name]),notice:(...args)=>events.push(["notice",...args]),api:()=>{throw Error("Presentation must not call transport");}};
   vm.createContext(sandbox);const start=code.indexOf("function formalList("),end=code.indexOf("async function load(");assert.ok(start>=0&&end>start);vm.runInContext(code.slice(start,end),sandbox);
-  return {get,sandbox,render:p=>{sandbox.current.packet=p;sandbox.renderEvidencePacket(p);},formal:()=>get("formal").children.filter(node=>node.tag==="details"&&Object.hasOwn(node.dataset,"evidenceKind")),rows:()=>get("formal").children.filter(node=>node.tag==="details")};
+  const problemsStart=code.indexOf("function renderProblems()"),problemsEnd=code.indexOf("let editPreview=",problemsStart);assert.ok(problemsStart>=0&&problemsEnd>problemsStart);vm.runInContext(code.slice(problemsStart,problemsEnd),sandbox);
+  return {get,sandbox,events,active:()=>Element.active,render:p=>{sandbox.current.packet=p;sandbox.renderEvidencePacket(p);},formal:()=>get("formal").children.filter(node=>node.tag==="details"&&Object.hasOwn(node.dataset,"evidenceKind")),rows:()=>get("formal").children.filter(node=>node.tag==="details")};
 }
 function assertEveryClaim(h,p){
   h.render(p);const rows=h.rows().filter(row=>Object.hasOwn(row.dataset,"claim"));
@@ -43,6 +49,79 @@ function assertEveryClaim(h,p){
     assert.equal(status.textContent,value,key);assert.ok(visibleText(row).includes(value));
   }
 }
+
+const triageRows=h=>descendants(h.get("evidence-triage")).filter(node=>node.tag==="li");
+const triageAction=(h,code)=>triageRows(h).find(row=>row.dataset.blockerCode===code)?.querySelector("button");
+test("triage follows the actual blocker inventory and never promotes unrelated unknown records into blockers",()=>{
+  const h=harness(),p=packet();p.blockers=["SOURCE_REVIEW_REQUIRED","RUNTIME_EVIDENCE_UNKNOWN","FORMAL_EVIDENCE_FAIL:smt","UNRECOGNIZED_LIMIT"];p.technical_claims.runtime_matrix="UNKNOWN";
+  const before=JSON.stringify(p);h.render(deepFreeze(p));assert.equal(JSON.stringify(p),before);
+  assert.deepEqual(triageRows(h).map(row=>row.dataset.blockerCode),p.blockers);
+  assert.match(h.get("evidence-triage").textContent,/Owner review.*outstanding/);assert.match(h.get("evidence-triage").textContent,/Runtime evidence · UNKNOWN/);
+  assert.equal(triageAction(h,"UNRECOGNIZED_LIMIT"),null);assert.ok(!triageRows(h).some(row=>row.textContent.includes("tlc")));
+  assert.equal(h.get("blockers").textContent,"Review blocked: "+p.blockers.join(", "));
+  assert.equal(h.get("evidence-triage").dataset.caseId,"case-A");assert.equal(h.get("evidence-triage").dataset.revision,"7");assert.equal(h.get("evidence-triage").dataset.subjectHash,"packet-A");
+});
+test("source restriction activation opens the real Problems diagnostic and focuses that exact rendered item",()=>{
+  const h=harness(),p=packet();h.render(p);const button=triageAction(h,"SOURCE_REVIEW_REQUIRED");assert.ok(button);assert.equal(button.type,"button");
+  const target=h.get("problems").children.find(node=>node.id==="source-review-problem");assert.ok(target);assert.match(target.textContent,/Owner review.*outstanding/);
+  assert.equal(button.onclick(),true);assert.equal(h.events[0][0],"bottom");assert.equal(h.events[0][1],"problems-pane");assert.equal(h.active(),target);assert.equal(target.tabIndex,-1);assert.equal(target.scrolled,true);
+});
+test("runtime and formal blocker actions open only their exact current check and preserve the packet",()=>{
+  const h=harness(),p=packet();p.blockers=["RUNTIME_EVIDENCE_UNKNOWN","FORMAL_EVIDENCE_FAIL:smt"];p.technical_claims.runtime_matrix="UNKNOWN";h.render(deepFreeze(p));
+  for(const [code,claim]of [["RUNTIME_EVIDENCE_UNKNOWN","runtime_matrix"],["FORMAL_EVIDENCE_FAIL:smt","formal_smt"]]){
+    const row=h.rows().find(item=>item.dataset.claim===claim);assert.equal(row.open,false);assert.equal(triageAction(h,code).onclick(),true);assert.equal(row.open,true);assert.equal(h.active(),row.querySelector("summary"));assert.equal(row.scrolled,true);
+  }
+  assert.deepEqual(h.events,[["view","evidence"],["view","evidence"]]);assert.equal(h.formal().length,p.formal_evidence.length);
+});
+test("triage never invents a check destination from ambiguous, inconsistent or unbound evidence",()=>{
+  for(const change of [
+    p=>p.formal_evidence.push({...p.formal_evidence[0]}),
+    p=>{p.formal_evidence[0].status="PASS";},
+    p=>{p.formal_evidence[0].subject_hash="another-packet";},
+    p=>{p.formal_evidence[0].subject={semantic:p.subject.semantic};},
+    p=>{delete p.technical_claims.formal_smt;},
+    p=>{p.formal_evidence[0].kind="SMT";},
+    p=>{delete p.subject_hash;}
+  ]){const h=harness(),p=packet();change(p);h.render(p);assert.equal(triageAction(h,"FORMAL_EVIDENCE_FAIL:smt"),null);assert.equal(h.formal().length,p.formal_evidence.length);}
+  const h=harness(),p=packet();p.blockers=["RUNTIME_EVIDENCE_UNKNOWN"];p.technical_claims.runtime_matrix="PASS";h.render(p);assert.equal(triageAction(h,p.blockers[0]),null);assert.match(h.get("evidence-triage").textContent,/UNKNOWN/);
+});
+test("triage rechecks packet, revision, blocker membership, status and target uniqueness before focus",()=>{
+  for(const mutate of [
+    (h,p)=>{h.sandbox.current.case.id="case-B";},
+    (h,p)=>{h.sandbox.current.case.version++;},
+    (h,p)=>{h.sandbox.current.packet={...p};},
+    (h,p)=>{p.subject.semantic="different-candidate";},
+    (h,p)=>{p.blockers=[];},
+    (h,p)=>{p.technical_claims.runtime_matrix="PASS";},
+    (h,p)=>{h.get("formal").append(h.rows().find(row=>row.dataset.claim==="runtime_matrix"));}
+  ]){
+    const h=harness(),p=packet();p.blockers=["RUNTIME_EVIDENCE_UNKNOWN"];p.technical_claims.runtime_matrix="UNKNOWN";h.render(p);const action=triageAction(h,p.blockers[0]);assert.ok(action);mutate(h,p);assert.equal(action.onclick(),false);assert.equal(h.active(),null);assert.equal(h.events.length,1);assert.equal(h.events[0][0],"notice");
+  }
+});
+test("same-subject update replaces triage actions while leaving formal UNKNOWN and NOT_RUN visible",()=>{
+  const h=harness(),p=packet();h.render(p);p.blockers=["RUNTIME_EVIDENCE_UNKNOWN"];p.technical_claims.runtime_matrix="UNKNOWN";h.render(p);
+  assert.deepEqual(triageRows(h).map(row=>row.dataset.blockerCode),p.blockers);assert.ok(triageAction(h,p.blockers[0]));assert.match(h.get("formal").textContent,/NOT_RUN/);assert.match(h.get("formal").textContent,/UNKNOWN/);
+  p.blockers=[];p.eligible=true;h.render(p);assert.match(h.get("evidence-triage").textContent,/No blockers.*Human authorisation remains separate/);assert.equal(triageRows(h).length,0);
+  p.eligible=false;h.render(p);assert.match(h.get("evidence-triage").textContent,/blocked.*does not identify a reason/);
+});
+test("policy and dependency links retain their exact model claims rather than borrowing a source or runtime explanation",()=>{
+  const h=harness(),p=packet();p.blockers=["POLICY_BLOCKED","IMPACT_INCOMPLETE","STALE_BASELINE","HUMAN_FIELD_EVIDENCE_REQUIRED","CASE_DISCARDED","MEANING_REQUIRED"];p.technical_claims.schema_policy="FAIL";h.render(p);
+  for(const [code,claim]of [["POLICY_BLOCKED","schema_policy"],["IMPACT_INCOMPLETE","modelled_impact_closure"]]){
+    const row=h.rows().find(item=>item.dataset.claim===claim);assert.equal(triageAction(h,code).onclick(),true);assert.equal(h.active(),row.querySelector("summary"));
+  }
+  for(const code of p.blockers.slice(2))assert.equal(triageAction(h,code),null);
+  p.technical_claims.schema_policy="PASS";p.technical_claims.modelled_impact_closure="PASS";h.render(p);assert.equal(triageAction(h,"POLICY_BLOCKED"),null);assert.equal(triageAction(h,"IMPACT_INCOMPLETE"),null);
+});
+test("a source-restriction action resolves a repainted diagnostic and refuses an ambiguous duplicate",()=>{
+  const h=harness(),p=packet();h.render(p);const action=triageAction(h,"SOURCE_REVIEW_REQUIRED"),old=h.get("problems").children.find(node=>node.id==="source-review-problem");
+  h.sandbox.renderProblems();const next=h.get("problems").children.find(node=>node.id==="source-review-problem");assert.notEqual(next,old);assert.equal(action.onclick(),true);assert.equal(h.active(),next);
+  h.get("problems").append(next);Element.active=null;assert.equal(action.onclick(),false);assert.equal(h.active(),null);
+});
+test("the stale-triage oracle rejects a renderer mutation that removes the exact revision guard",()=>{
+  const marker='const same=JSON.stringify([current?.case.id,current?.case.version,p.subject_hash,p.subject])===identity;';assert.ok(source.includes(marker));
+  const h=harness(source.replace(marker,'const same=true;')),p=packet();p.blockers=["RUNTIME_EVIDENCE_UNKNOWN"];p.technical_claims.runtime_matrix="UNKNOWN";h.render(p);const action=triageAction(h,p.blockers[0]);h.sandbox.current.case.version++;
+  assert.throws(()=>assert.equal(action.onclick(),false),assert.AssertionError);
+});
 test("every technical claim is represented once and exact matching formal results share a row",()=>{
   const h=harness(),p=deepFreeze(packet()),before=JSON.stringify(p);assertEveryClaim(h,p);assert.equal(JSON.stringify(p),before);
   assert.equal(h.rows().length,6);assert.equal(h.formal().length,3);
@@ -79,7 +158,7 @@ test("historical and baseline previews cannot borrow current candidate evidence"
 });
 test("selecting a term, role or law while Evidence stays open updates the actual context immediately",()=>{
   const h=harness(),switches=[],opened=[];h.sandbox.workbench={pack:{id:"pack-A"},language:{terms:[{id:"case",label:"Change Case"},{id:"model",label:"Model"}]},roles:[{id:"reviewer",label:"Reviewer"}],laws:[{id:"protected",description:"Protected authority"}]};
-  h.sandbox.workingModel=()=>({states:["Draft"],transitions:[]});h.sandbox.EijaShell={reveal:(...args)=>opened.push(args)};h.sandbox.EijaTree={reveal:()=>{}};h.sandbox.renderNavigator=()=>{};h.sandbox.switchTab=name=>switches.push(name);
+  h.sandbox.workingModel=()=>({states:["Draft"],transitions:[]});h.sandbox.EijaShell={...h.sandbox.EijaShell,reveal:(...args)=>opened.push(args)};h.sandbox.EijaTree={reveal:()=>{}};h.sandbox.renderNavigator=()=>{};h.sandbox.switchTab=name=>switches.push(name);
   vm.runInContext(source.slice(source.indexOf("function selectedConcept()"),source.indexOf("function renderNavigator()")),h.sandbox);
   vm.runInContext(source.slice(source.indexOf("function showSelection("),source.indexOf("function followReference(")),h.sandbox);
   h.render(packet());
@@ -109,7 +188,7 @@ test("packet refresh preserves an explicit review opening but never opens it aut
   h.get("review-decision").open=true;p.eligible=false;p.blockers=["STALE_BASELINE"];h.render(p);assert.equal(h.get("review-decision").open,true);assert.match(h.get("blockers").textContent,/STALE_BASELINE/);assert.match(h.get("review-subject").textContent,/blocked/);
 });
 test("existing error handling still reveals exact Problems and never dismisses the refusal",()=>{
-  const h=harness(),opened=[],notices=[];h.sandbox.notice=(...args)=>notices.push(args);h.sandbox.EijaShell={bottom:id=>opened.push(id)};
+  const h=harness(),opened=[],notices=[];h.sandbox.notice=(...args)=>notices.push(args);h.sandbox.EijaShell={...h.sandbox.EijaShell,bottom:id=>opened.push(id)};
   vm.runInContext(source.slice(source.indexOf("function reportError("),source.indexOf("function clearDiagnostic(")),h.sandbox);
   h.sandbox.reportError({code:"EDIT_REFUSED",message:"Candidate unchanged",details:{codes:["PROTECTED_AUTHORITY"],refs:["transition:Save"]}});
   assert.deepEqual(opened,["problems-pane"]);assert.deepEqual(notices,[["Candidate unchanged · PROTECTED_AUTHORITY",true]]);assert.equal(h.get("error-details").hidden,false);assert.deepEqual(JSON.parse(h.get("error-json").textContent),{code:"EDIT_REFUSED",message:"Candidate unchanged",details:{codes:["PROTECTED_AUTHORITY"],refs:["transition:Save"]}});
@@ -121,7 +200,7 @@ test("status oracle rejects an actual-renderer mutation upgrading an unrun forma
   const marker='status=e.status??"NOT_REPORTED"';assert.ok(source.includes(marker));const h=harness(source.replace(marker,'status="PASS"'));h.render(packet());assert.throws(()=>assert.equal(h.formal().find(row=>row.dataset.evidenceKind==="bend").dataset.status,"NOT_RUN"),assert.AssertionError);
 });
 test("context oracle rejects the original missing refresh after a concept selection",()=>{
-  const h=harness();h.sandbox.workbench={pack:{id:"pack-A"},language:{terms:[{id:"case",label:"Change Case"}]}};h.sandbox.workingModel=()=>({states:[],transitions:[]});h.sandbox.EijaShell={reveal:()=>{}};h.sandbox.EijaTree={reveal:()=>{}};h.sandbox.renderNavigator=()=>{};h.sandbox.switchTab=()=>{};
+  const h=harness();h.sandbox.workbench={pack:{id:"pack-A"},language:{terms:[{id:"case",label:"Change Case"}]}};h.sandbox.workingModel=()=>({states:[],transitions:[]});h.sandbox.EijaShell={...h.sandbox.EijaShell,reveal:()=>{}};h.sandbox.EijaTree={reveal:()=>{}};h.sandbox.renderNavigator=()=>{};h.sandbox.switchTab=()=>{};
   vm.runInContext(source.slice(source.indexOf("function selectedConcept()"),source.indexOf("function renderNavigator()")),h.sandbox);
   const original=source.slice(source.indexOf("function showSelection("),source.indexOf("function followReference("));assert.ok(original.includes("  renderEvidenceContext();"));
   vm.runInContext(original.replace("  renderEvidenceContext();", ""),h.sandbox);h.render(packet());h.sandbox.showSelection("term",{id:"case"});

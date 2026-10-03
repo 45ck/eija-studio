@@ -51,6 +51,11 @@
 @media(max-width:720px){.compare-pair{grid-template-columns:minmax(0,1fr);grid-template-rows:1fr 1fr;min-height:440px}.compare-navigator{padding:6px}.compare-tools{gap:3px}.compare-header{gap:3px 8px}.compare-header h2{font-size:14px}.compare-help p{right:auto;left:0}}
 @media(max-width:540px){#review{padding:8px}.compare-visual-workspace{height:calc(100cqh - 16px)}.compare-selection{padding:9px}.compare-tools button{padding:5px 7px}.compare-fields th,.compare-fields td{padding:8px}.compare-pane>h3{padding:5px 8px 0}}
 
-/* Exact selected-field values precede the preview's diagrams and view controls. */
-.compare-preview-fields{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 18px;padding:9px 12px;margin:0 0 10px;border:1px solid #647d9b;border-radius:6px;background:#192d43;color:#eff5fd;font-size:14px;line-height:1.5;overflow-wrap:anywhere}
-.compare-preview-fields .compare-preview-scope{color:#bed0e5;font-size:13px}.paired-compare .compare-preview-fields p{margin:0;white-space:pre-wrap;min-width:0}.compare-preview-fields strong{font-weight:650}
+/* One deterministic selected-field summary; ordinary review shares the visual pane height. */
+.compare-selected-fields{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 18px;padding:9px 12px;margin:0 0 10px;border:1px solid #647d9b;border-radius:6px;background:#192d43;color:#eff5fd;font-size:14px;line-height:1.5;overflow-wrap:anywhere}
+.compare-selected-fields .compare-preview-scope{color:#bed0e5;font-size:13px}.paired-compare .compare-selected-fields p{margin:0;white-space:pre-wrap;min-width:0}.compare-selected-fields strong{font-weight:650}
+.compare-change-summary{flex:none;margin:0;gap:4px 18px}
+.compare-summary-heading{display:flex;flex-wrap:wrap;align-items:baseline;gap:3px 14px;flex-basis:100%;min-width:0}
+.paired-compare .compare-summary-heading h3{margin:0}.compare-summary-scope{font-size:13px;color:#bed0e5}
+.paired-compare .compare-change-summary p[data-field]{white-space:normal;flex:1 1 280px}
+.compare-change-summary [data-compare-before],.compare-change-summary [data-compare-after]{white-space:pre-wrap}

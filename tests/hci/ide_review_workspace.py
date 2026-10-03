@@ -334,6 +334,124 @@ def assert_visible_selection(expected, observed):
     return observed
 
 
+OBSERVE_SUMMARY = r"""root => {
+    const rect=r=>({left:r.left,top:r.top,right:r.right,bottom:r.bottom,width:r.width,height:r.height});
+    function value(node) {
+        const style=getComputedStyle(node),color=style.webkitTextFillColor||style.color;
+        const clip={left:0,top:0,right:innerWidth,bottom:innerHeight};
+        let painted=color!=='none'&&color!=='transparent'&&!/^rgba\([^,]+,[^,]+,[^,]+,\s*0(?:\.0+)?\s*\)$/.test(color)&&!/\/\s*0(?:\.0+)?\s*\)$/.test(color);
+        for(let el=node;el;el=el.parentElement) {
+            const css=getComputedStyle(el),box=el.getBoundingClientRect();
+            painted&&=css.display!=='none'&&!['hidden','collapse'].includes(css.visibility)&&Number(css.opacity)>0;
+            if(el.tagName==='DETAILS'&&!el.open&&!el.querySelector(':scope > summary')?.contains(node))painted=false;
+            if(/auto|scroll|hidden|clip/.test(css.overflowX)){clip.left=Math.max(clip.left,box.left+el.clientLeft);clip.right=Math.min(clip.right,box.left+el.clientLeft+el.clientWidth);}
+            if(/auto|scroll|hidden|clip/.test(css.overflowY)){clip.top=Math.max(clip.top,box.top+el.clientTop);clip.bottom=Math.min(clip.bottom,box.top+el.clientTop+el.clientHeight);}
+        }
+        const range=document.createRange();range.selectNodeContents(node);
+        const boxes=[...range.getClientRects()].map(rect).filter(box=>box.width>0&&box.height>0);
+        const fullyVisible=painted&&boxes.length>0&&boxes.every(box=>box.left>=clip.left-0.5&&box.right<=clip.right+0.5&&box.top>=clip.top-0.5&&box.bottom<=clip.bottom+0.5&&
+            [0.1,0.5,0.9].every(f=>node.contains(document.elementFromPoint(box.left+box.width*f,box.top+box.height/2))));
+        const whitespace=[];
+        if(node.childNodes.length===1&&node.firstChild.nodeType===Node.TEXT_NODE) {
+            for(const match of node.textContent.matchAll(/ {2,}/g)) {
+                range.setStart(node.firstChild,match.index);range.setEnd(node.firstChild,match.index+match[0].length);
+                const whole=rect(range.getBoundingClientRect());
+                range.setEnd(node.firstChild,match.index+1);
+                whitespace.push({count:match[0].length,whole,first:rect(range.getBoundingClientRect())});
+            }
+        }
+        return {text:node.textContent,white_space:style.whiteSpace,font_size:parseFloat(style.fontSize),painted,
+            boxes,clip,fully_visible:fullyVisible,whitespace};
+    }
+    return {subject:{case:root.dataset.case,revision:root.dataset.revision,kind:root.dataset.kind,id:root.dataset.id},
+        heading:root.querySelector('.compare-summary-heading')?.textContent,
+        rows:[...root.querySelectorAll('[data-field]')].map(row=>({field:row.dataset.field,
+            before:value(row.querySelector('[data-compare-before]')),after:value(row.querySelector('[data-compare-after]'))})),
+        viewport:{width:innerWidth,height:innerHeight},
+        widths:{body:document.body.scrollWidth,document:document.documentElement.scrollWidth}};
+}"""
+
+
+def summary_expectation(view, kind, identity):
+    """Read only independent GET snapshots, never the browser's diff inventory."""
+    case = view["case"]
+    baseline, candidate = case["baseline"], case["candidate"]
+    subject = {"case": case["id"], "revision": str(case["version"]), "kind": kind, "id": identity}
+    if kind == "initial":
+        a, b = baseline["initial_state"], candidate["initial_state"]
+        return {"subject": subject, "fields": {} if a == b else {"initial_state": {"before": a, "after": b}}}
+    if kind == "state":
+        a = "Present" if identity in baseline["states"] else None
+        b = "Present" if identity in candidate["states"] else None
+        assert a is not None or b is not None, "summary_fixture: unknown state"
+        return {"subject": subject, "fields": {} if a == b else {"membership": {"before": a, "after": b}}}
+    assert kind == "transition", "summary_fixture: unsupported kind"
+    a = next((item for item in baseline["transitions"] if item["id"] == identity), {})
+    b = next((item for item in candidate["transitions"] if item["id"] == identity), {})
+    assert a or b, "summary_fixture: unknown transition"
+    fields = {}
+    for field in ("action", "role", "from_state", "to_state", "guards", "required_effects", "forbidden_effects"):
+        before, after = a.get(field), b.get(field)
+        equal = set(before) == set(after) if isinstance(before, list) and isinstance(after, list) else before == after
+        if not equal:
+            fields[field] = {"before": before, "after": after}
+    return {"subject": subject, "fields": fields}
+
+
+def summary_text(value):
+    if value is None:
+        return "Not present"
+    if isinstance(value, list):
+        return json.dumps(value, indent=2, ensure_ascii=False) if value else "[] (none declared)"
+    return str(value)
+
+
+def assert_summary(expected, observed):
+    assert observed["subject"] == expected["subject"], "summary_subject: selection/case/revision mismatch"
+    assert "Before · baseline → After · candidate" in observed["heading"] and f"revision {expected['subject']['revision']}" in observed["heading"], "summary_subject: missing exact comparison scope"
+    fields = [row["field"] for row in observed["rows"]]
+    assert sorted(fields) == sorted(expected["fields"]), "summary_fields: omitted, duplicate or extra changed field"
+    for row in observed["rows"]:
+        for side in ("before", "after"):
+            assert row[side]["text"] == summary_text(expected["fields"][row["field"]][side]), f"summary_value: {row['field']} {side}"
+
+
+def assert_summary_paint(observed, fields):
+    assert max(observed["widths"].values()) <= observed["viewport"]["width"] + 1, "summary_overflow: page-wide horizontal overflow"
+    rows = [row for row in observed["rows"] if row["field"] in fields]
+    assert len(rows) == len(fields), "summary_paint: expected exact requested field rows"
+    for row in rows:
+        for side in ("before", "after"):
+            value = row[side]
+            assert value["fully_visible"] and value["painted"], f"summary_paint: {row['field']} {side} clipped, hidden or occluded"
+            assert value["font_size"] >= 14, f"summary_font: {row['field']} {side} below 14px"
+            assert all(box["height"] >= 14 for box in value["boxes"]), f"summary_font: {row['field']} {side} rendered below 14px"
+            if "\n" in value["text"] or value["whitespace"]:
+                assert value["white_space"] in {"pre", "pre-wrap", "break-spaces"}, "summary_whitespace: exact whitespace collapsed"
+            for run in value["whitespace"]:
+                assert run["first"]["width"] > 0 and run["whole"]["width"] >= run["first"]["width"] * run["count"] - 0.5, "summary_whitespace: literal space run is not painted completely"
+
+
+def summary_negative_controls(expected, observed):
+    assert observed["rows"], "summary_negative_setup: a changed field is required"
+    omitted, reversed_values, stale_revision, stale_selection = (deepcopy(observed) for _ in range(4))
+    omitted["rows"].pop()
+    reversed_values["rows"][0]["before"], reversed_values["rows"][0]["after"] = reversed_values["rows"][0]["after"], reversed_values["rows"][0]["before"]
+    stale_revision["subject"]["revision"] = "stale-revision"
+    stale_selection["subject"]["id"] = "wrong-selected-element"
+    results = []
+    for name, mutated, prefix in (("omitted-field", omitted, "summary_fields:"), ("reversed-values", reversed_values, "summary_value:"),
+                                  ("stale-revision", stale_revision, "summary_subject:"), ("stale-selection", stale_selection, "summary_subject:")):
+        try:
+            assert_summary(expected, mutated)
+        except AssertionError as error:
+            assert str(error).startswith(prefix), f"summary_negative_reason: {name}: {error}"
+            results.append({"name": name, "status": "REJECTED", "reason": str(error)})
+        else:
+            raise AssertionError("summary_negative_missed: " + name)
+    return results
+
+
 class ReviewWorkspace(Journey):
     def __init__(self, page, out, base):
         super().__init__(page, out, base)
@@ -341,6 +459,7 @@ class ReviewWorkspace(Journey):
         self.injected = []
         self.graph_records = []
         self.source_records = []
+        self.summary_records = []
         self.comparison_selection = None
 
     def route(self, route):
@@ -372,7 +491,78 @@ class ReviewWorkspace(Journey):
         detail = self.main_comparison().locator(".compare-selection")
         replay.expect(detail).to_have_attribute("data-kind", kind)
         replay.expect(detail).to_have_attribute("data-id", ident)
+        self.assert_selected_summary(self.case_view(), key)
         return detail
+
+    def assert_selected_summary(self, view, key, *, label="selection"):
+        kind, identity = key.split(":", 1)
+        region = self.main_comparison().locator(".compare-change-summary")
+        replay.expect(region).to_have_count(1)
+        expected = summary_expectation(view, kind, identity)
+        observed = region.evaluate(OBSERVE_SUMMARY)
+        record = {"label": label, "expected": expected, "observed": observed}
+        self.summary_records.append(record)
+        write_json(self.out / "summary-observations.json", self.summary_records)
+        assert_summary(expected, observed)
+        return expected, observed
+
+    def summary_layout(self):
+        before, view = self.snapshot(), self.case_view()
+        writes = [item for item in self.requests if item["method"] != "GET"]
+        evidence = []
+        for width, height in ((1280, 800), (320, 800)):
+            self.page.set_viewport_size({"width": 1600, "height": 1100})
+            self.chosen("transition:TR-VERIFY")
+            self.main_comparison().locator(".compare-change-summary").scroll_into_view_if_needed()
+            self.navigation_action("scroll_into_view", ".compare-change-summary before resizing; explicit reflow setup")
+            self.page.set_viewport_size({"width": width, "height": height})
+            self.page.evaluate("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))")
+            expected, observed = self.assert_selected_summary(view, "transition:TR-VERIFY", label=f"review-top-{width}")
+            assert_summary_paint(observed, set(expected["fields"]))
+            controls = summary_negative_controls(expected, observed)
+            self.shot(f"ordinary-summary-top-{width}")
+            self.page.set_viewport_size({"width": 1600, "height": 1100})
+            self.chosen("transition:TR-SAVE")
+            self.page.set_viewport_size({"width": width, "height": height})
+            long_expected, _ = self.assert_selected_summary(view, "transition:TR-SAVE", label=f"complete-added-fields-{width}")
+            assert any(isinstance(pair["after"], list) and pair["after"] for pair in long_expected["fields"].values()), "summary_fixture: multiline values required"
+            reachable = []
+            for field in long_expected["fields"]:
+                row = self.main_comparison().locator(f'.compare-change-summary [data-field="{field}"]')
+                row.scroll_into_view_if_needed()
+                self.navigation_action("scroll_into_view", ".compare-change-summary field " + field)
+                _, current = self.assert_selected_summary(view, "transition:TR-SAVE", label=f"reachable-{width}-{field}")
+                assert_summary_paint(current, {field})
+                reachable.append(field)
+                if field == "guards":
+                    self.shot(f"ordinary-summary-guards-{width}")
+            evidence.append({"viewport": [width, height], "top": observed, "negative_controls": controls,
+                             "all_added_fields_individually_reachable": reachable})
+        self.page.set_viewport_size({"width": 1600, "height": 1100})
+        self.chosen("transition:TR-VERIFY")
+        expected, observed = self.assert_selected_summary(view, "transition:TR-VERIFY", label="before-painted-omission")
+        row = self.main_comparison().locator('.compare-change-summary [data-field="from_state"]')
+        row.scroll_into_view_if_needed()
+        try:
+            row.evaluate("node => {node.hidden=true;}")
+            _, hidden = self.assert_selected_summary(view, "transition:TR-VERIFY", label="planted-hidden-summary-row")
+            self.shot("ordinary-summary-hidden-row-control")
+            try:
+                assert_summary_paint(hidden, {"from_state"})
+            except AssertionError as error:
+                assert str(error).startswith("summary_paint:"), str(error)
+                rejection = str(error)
+            else:
+                raise AssertionError("summary_negative_missed: visually omitted row accepted")
+        finally:
+            row.evaluate("node => {node.hidden=false;}")
+        _, restored = self.assert_selected_summary(view, "transition:TR-VERIFY", label="painted-omission-restored")
+        assert_summary_paint(restored, {"from_state"})
+        self.assert_unchanged(before)
+        assert self.case_view() == view, "Summary navigation changed authoritative case/evidence/runtime observations"
+        assert [item for item in self.requests if item["method"] != "GET"] == writes, "Summary navigation sent a write"
+        return {"layouts": evidence, "painted_omission_rejected": rejection, "no_write_or_state_change": True,
+                "scope": "GET-derived ordinary values; explicit reached-summary reflow/individual field reachability, not mobile-first creation or all long fields simultaneously visible; arbitrary whitespace scalar names remain Node-only."}
 
     def assert_identity(self, view):
         pair = self.main_comparison().locator(".paired-compare")
@@ -444,6 +634,7 @@ class ReviewWorkspace(Journey):
         before = self.snapshot()
         choice = self.edit_role("TR-SAVE", "Agent")
         self.assert_role_edit(before, "TR-SAVE", "Agent", choice["transaction"])
+        self.chosen("transition:TR-SAVE")  # Record summary before the next authoritative revision.
         view = self.source_edit("TR-VERIFY", "SAVED")
         self.connection = self.get("workbench")["connection"]
         assert self.connection["status"] == "connected"
@@ -452,6 +643,8 @@ class ReviewWorkspace(Journey):
         expected = self.assert_inventory(view)
         detail = self.main_comparison().locator('.compare-selection [data-field="from_state"]')
         assert detail.locator("td").all_text_contents() == ["PREVIEW", "SAVED"]
+        summary_expected, summary_observed = self.assert_selected_summary(view, "transition:TR-VERIFY", label="initial-selected-change")
+        assert_summary_paint(summary_observed, set(summary_expected["fields"]))
         return {"case": self.case_a, "revision": view["case"]["version"], "inventory": expected,
                 "parallel_edges": ["TR-VERIFY", "TR-VERIFY-SAVED"], "source_connection": self.connection["source_hash"]}
 
@@ -1145,7 +1338,8 @@ def main():
                     page = context.new_page()
                     page.set_default_timeout(30000)
                     review = ReviewWorkspace(page, out, base)
-                    for name, action in (("model-to-selected-change", review.prepare), ("paired-graph-truth", review.paired_graphs),
+                    for name, action in (("model-to-selected-change", review.prepare), ("ordinary-summary-layout", review.summary_layout),
+                                         ("paired-graph-truth", review.paired_graphs),
                                          ("exact-source-roundtrip", review.exact_source), ("evidence-focus-error-restore", review.focus_recovery),
                                          ("history-current-subject", review.historical_context), ("self-loop-cross-case", review.loop_and_cross_case),
                                          ("runtime-context", review.runtime_context), ("keyboard-responsive-review", review.keyboard_and_viewports),
@@ -1186,6 +1380,7 @@ def main():
             write_json(out / "authoritative-get-oracles.json", review.oracles)
             write_json(out / "graph-observations.json", review.graph_records)
             write_json(out / "source-observations.json", review.source_records)
+            write_json(out / "summary-observations.json", review.summary_records)
         after = subject_identity()
         write_json(out / "subject-after.json", after)
         result["subject_preservation"] = compare_subjects(before, after)

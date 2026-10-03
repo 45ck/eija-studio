@@ -75,7 +75,7 @@
       "status": "PASS",
       "target": 400,
       "unit": "ms",
-      "value": 5
+      "value": 5.9
     },
     {
       "id": "doherty.settled_p50",
@@ -86,7 +86,7 @@
       "status": "PASS",
       "target": 400,
       "unit": "ms",
-      "value": 81.3
+      "value": 97.5
     },
     {
       "id": "doherty.settled_p95",
@@ -97,7 +97,7 @@
       "status": "GAP",
       "target": 400,
       "unit": "ms",
-      "value": 834.1
+      "value": 863.1
     },
     {
       "id": "wcag.critical_rules",
@@ -213,12 +213,12 @@
     "python": "3.12.10",
     "repeats": 3,
     "ui_sha256": {
-      "app.css": "321f2b8edd7a48e3f3f8774ddc66b1a50dd6651d271be888595e4b7f40673e62",
-      "app.js": "e44c1075084ee467872488c6187c0afa596c9fe6a1f34ccd3f8ae7ee4f6ff180",
+      "app.css": "cf3918caede3448c03aa3f8daa7494f9baa406fd5823f1d05be3aec07a649f30",
+      "app.js": "f0832a7141e683aebd67ded6df715566f5a80dc787acbe9773e88517575880dd",
       "canvas.js": "e0226d9361d73aa1831e48080f5fc262bb0fcbd8086cd1387461d39de6ca1765",
-      "compare.css": "6545e65f92a3c15c680abbbb6de018c76bacb833f6398890899750fb99f24a16",
-      "compare.js": "2007ed3eaf766eadaa9a7d979033789fa2f825eb991b267ab888d9669df8d6bd",
-      "index.html": "a0dc0f5820f912dee7eab888c9270bcb61c101b8c332b2e8fb9ebc158253b90d",
+      "compare.css": "f58ab0861b602c1e39a867ef60aa68e9235fb1360db5173b463ae50d5d6a1d7e",
+      "compare.js": "79fc81137a75c13562f876a02cfa2436506cebfde65c2639210d50d5d9e25b1f",
+      "index.html": "fec49e4ff52edeec85773e2d75d8395bbd406e5256ff770a68bae05d50568b05",
       "repository-review.css": "ef87096d5fc1408c8605f50e31db4f9d85579adc3247c1f2e5ff1b4ba9d848bb",
       "repository-review.js": "1a8559475a48f8855c31c3c1ac76ef28fa6cf70421d964e4fc22024bdfeeda02",
       "review.js": "426978e964918a63b8e73ff1ae99b2b126e7a1a4d9429b2151e275cfaf178dee",
@@ -499,7 +499,7 @@
         "scrolled_before": false,
         "selector": "#review-subject",
         "step": "open-review-subject",
-        "target": "Review this exact subject · eligible for local review · 7fd5",
+        "target": "Review this exact subject · eligible for local review · 586b",
         "via_label": false,
         "w_px": 44,
         "wcag_2_5_8": "pass"
@@ -851,9 +851,9 @@
         "to": "Skip to workspace"
       },
       {
-        "from": "smt proofUNKNOWN sealed tool verdict · case-wide",
+        "from": "modelled impact closurePASS Case-wide technical claim",
         "step": "open-review-subject",
-        "to": "bounded model checkUNKNOWN sealed tool verdict · case-wide"
+        "to": "bend proofUNKNOWN sealed tool verdict · case-wide"
       }
     ],
     "max_tab_presses_for_one_target": 25,
@@ -875,7 +875,7 @@
       "denied-recommend": 2,
       "open-change": 9,
       "open-evidence": 22,
-      "open-review-subject": 8,
+      "open-review-subject": 9,
       "open-try": 5,
       "recommend-teacher": 1,
       "reset-preview": 3,
@@ -885,19 +885,19 @@
       "type-request": 0
     },
     "tab_presses_spent_after_focus_loss": 0,
-    "tab_presses_total": 116,
-    "unique_focus_stops_seen": 49
+    "tab_presses_total": 117,
+    "unique_focus_stops_seen": 50
   },
   "klm": {
     "citation": "Card, Moran & Newell 1980 (CACM 23(7)); K = average non-secretary typist (~40 wpm)",
-    "expert_time_keyboard_only_s": 69.27,
+    "expert_time_keyboard_only_s": 69.55,
     "expert_time_pointer_s": 65.31,
     "keyboard_only_journey": {
       "fitts_refined_total_s": null,
       "operator_counts": {
         "B": 0,
         "H": 0,
-        "K": 204,
+        "K": 205,
         "M": 9,
         "P": 0
       },
@@ -1911,6 +1911,12 @@
           "step": "open-review-subject"
         },
         {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-review-subject"
+        },
+        {
           "note": "Enter",
           "op": "K",
           "seconds": 0.28,
@@ -2196,7 +2202,7 @@
         "denied-recommend": 0.84,
         "open-change": 2.8,
         "open-evidence": 6.44,
-        "open-review-subject": 2.52,
+        "open-review-subject": 2.8,
         "open-try": 1.68,
         "recommend-teacher": 0.56,
         "reset-preview": 1.12,
@@ -2205,7 +2211,7 @@
         "submit-teacher": 0.84,
         "type-request": 11.43
       },
-      "total_s": 69.27
+      "total_s": 69.55
     },
     "placement_rules": "M is placed once per deliberate decision or reading moment (annotated per step in journey.py); H is derived from every mouse<->keyboard switch; a click is P + B + B; Shift counts as its own K; select lists model open and choose as two P+B+B; scrolling and system response R are NOT in the standard total",
     "pointer_journey": {
@@ -2777,7 +2783,7 @@
           "step": "run-verification"
         },
         {
-          "note": "point at Review this exact subject · eligible for local review · 7fd5",
+          "note": "point at Review this exact subject · eligible for local review · 586b",
           "op": "P",
           "seconds": 1.1,
           "step": "open-review-subject"
@@ -3206,34 +3212,46 @@
   "measured": {
     "doherty": {
       "citation": "Doherty & Thadani 1982 (IBM Systems Journal 21(1)); ~400 ms",
-      "first_feedback_p50_ms": 0.6,
-      "first_feedback_p95_ms": 5,
+      "first_feedback_p50_ms": 0.7,
+      "first_feedback_p95_ms": 5.9,
       "interactions_measured": 45,
-      "journey_wait_p50_sum_s": 1.892,
-      "keyboard_settled_p50_ms": 87.8,
-      "keyboard_settled_p95_ms": 1915.4,
+      "journey_wait_p50_sum_s": 1.97,
+      "keyboard_settled_p50_ms": 84,
+      "keyboard_settled_p95_ms": 845.9,
       "method": "nearest-rank percentiles over all repeats; medians and interquartile range are the headline, p95 is the maximum with few samples",
       "native_control_interactions_excluded": [
         "acknowledge"
       ],
       "note": "settled = last DOM mutation before quiescence, from the click event; excludes OS/browser input latency",
-      "settled_max_ms": 899.2,
-      "settled_p25_ms": 5.5,
-      "settled_p50_ms": 81.3,
-      "settled_p75_ms": 116.3,
-      "settled_p95_ms": 834.1,
+      "settled_max_ms": 923,
+      "settled_p25_ms": 6.3,
+      "settled_p50_ms": 97.5,
+      "settled_p75_ms": 110.5,
+      "settled_p95_ms": 863.1,
       "steps": [
         {
-          "first_feedback_p50_ms": 4.8,
-          "first_feedback_p95_ms": 6,
+          "first_feedback_p50_ms": 5.3,
+          "first_feedback_p95_ms": 5.9,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 4.4,
-          "settled_p50_ms": 4.8,
-          "settled_p75_ms": 6,
-          "settled_p95_ms": 6,
+          "settled_p25_ms": 4.7,
+          "settled_p50_ms": 5.3,
+          "settled_p75_ms": 5.9,
+          "settled_p95_ms": 5.9,
           "step": "open-change"
+        },
+        {
+          "first_feedback_p50_ms": 0.6,
+          "first_feedback_p95_ms": 0.6,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 70.2,
+          "settled_p50_ms": 90.1,
+          "settled_p75_ms": 97.5,
+          "settled_p95_ms": 97.5,
+          "step": "create-case"
         },
         {
           "first_feedback_p50_ms": 0.5,
@@ -3241,70 +3259,58 @@
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 63.8,
-          "settled_p50_ms": 78.1,
-          "settled_p75_ms": 87.1,
-          "settled_p95_ms": 87.1,
-          "step": "create-case"
-        },
-        {
-          "first_feedback_p50_ms": 0.4,
-          "first_feedback_p95_ms": 0.5,
-          "median_over_400ms": false,
-          "over_400ms": false,
-          "samples": 3,
-          "settled_p25_ms": 90.6,
-          "settled_p50_ms": 116.3,
-          "settled_p75_ms": 120.2,
-          "settled_p95_ms": 120.2,
+          "settled_p25_ms": 96.4,
+          "settled_p50_ms": 102.9,
+          "settled_p75_ms": 104.4,
+          "settled_p95_ms": 104.4,
           "step": "ask-interpretations"
         },
         {
-          "first_feedback_p50_ms": 0.4,
-          "first_feedback_p95_ms": 0.4,
+          "first_feedback_p50_ms": 0.5,
+          "first_feedback_p95_ms": 0.6,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 84.3,
-          "settled_p50_ms": 96.1,
-          "settled_p75_ms": 101.6,
-          "settled_p95_ms": 101.6,
+          "settled_p25_ms": 102.9,
+          "settled_p50_ms": 110.5,
+          "settled_p75_ms": 114.2,
+          "settled_p95_ms": 114.2,
           "step": "select-meaning"
         },
         {
-          "first_feedback_p50_ms": 3.7,
-          "first_feedback_p95_ms": 4.2,
+          "first_feedback_p50_ms": 3.6,
+          "first_feedback_p95_ms": 4.3,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 3.2,
-          "settled_p50_ms": 3.7,
-          "settled_p75_ms": 4.2,
-          "settled_p95_ms": 4.2,
+          "settled_p25_ms": 3,
+          "settled_p50_ms": 3.6,
+          "settled_p75_ms": 4.3,
+          "settled_p95_ms": 4.3,
           "step": "open-try"
         },
         {
           "first_feedback_p50_ms": 0.8,
-          "first_feedback_p95_ms": 1,
+          "first_feedback_p95_ms": 1.1,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 75.2,
-          "settled_p50_ms": 79,
-          "settled_p75_ms": 89.8,
-          "settled_p95_ms": 89.8,
+          "settled_p25_ms": 98.4,
+          "settled_p50_ms": 98.8,
+          "settled_p75_ms": 101.7,
+          "settled_p95_ms": 101.7,
           "step": "reset-preview"
         },
         {
-          "first_feedback_p50_ms": 0.7,
-          "first_feedback_p95_ms": 1.3,
+          "first_feedback_p50_ms": 0.9,
+          "first_feedback_p95_ms": 1.2,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 76,
-          "settled_p50_ms": 81.3,
-          "settled_p75_ms": 83.1,
-          "settled_p95_ms": 83.1,
+          "settled_p25_ms": 92.3,
+          "settled_p50_ms": 97.5,
+          "settled_p75_ms": 101,
+          "settled_p95_ms": 101,
           "step": "submit-teacher"
         },
         {
@@ -3313,94 +3319,94 @@
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 77.1,
-          "settled_p50_ms": 100.2,
-          "settled_p75_ms": 117.9,
-          "settled_p95_ms": 117.9,
+          "settled_p25_ms": 96.1,
+          "settled_p50_ms": 104.1,
+          "settled_p75_ms": 160.7,
+          "settled_p95_ms": 160.7,
           "step": "recommend-teacher"
         },
         {
-          "first_feedback_p50_ms": 0.4,
-          "first_feedback_p95_ms": 0.7,
-          "median_over_400ms": false,
-          "over_400ms": false,
-          "samples": 3,
-          "settled_p25_ms": 76.8,
-          "settled_p50_ms": 85.1,
-          "settled_p75_ms": 100.5,
-          "settled_p95_ms": 100.5,
-          "step": "approve-registrar"
-        },
-        {
           "first_feedback_p50_ms": 0.6,
-          "first_feedback_p95_ms": 0.7,
-          "median_over_400ms": false,
-          "over_400ms": false,
-          "samples": 3,
-          "settled_p25_ms": 5.2,
-          "settled_p50_ms": 6.5,
-          "settled_p75_ms": 7.6,
-          "settled_p95_ms": 7.6,
-          "step": "denied-recommend"
-        },
-        {
-          "first_feedback_p50_ms": 5,
-          "first_feedback_p95_ms": 5.5,
-          "median_over_400ms": false,
-          "over_400ms": false,
-          "samples": 3,
-          "settled_p25_ms": 4.2,
-          "settled_p50_ms": 5,
-          "settled_p75_ms": 5.5,
-          "settled_p95_ms": 5.5,
-          "step": "open-evidence"
-        },
-        {
-          "first_feedback_p50_ms": 0.5,
-          "first_feedback_p95_ms": 0.5,
-          "median_over_400ms": true,
-          "over_400ms": true,
-          "samples": 3,
-          "settled_p25_ms": 834.1,
-          "settled_p50_ms": 898.3,
-          "settled_p75_ms": 899.2,
-          "settled_p95_ms": 899.2,
-          "step": "run-verification"
-        },
-        {
-          "first_feedback_p50_ms": 0.7,
           "first_feedback_p95_ms": 0.8,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 0.5,
-          "settled_p50_ms": 0.7,
-          "settled_p75_ms": 0.8,
-          "settled_p95_ms": 0.8,
-          "step": "open-review-subject"
+          "settled_p25_ms": 94.8,
+          "settled_p50_ms": 96.4,
+          "settled_p75_ms": 107.9,
+          "settled_p95_ms": 107.9,
+          "step": "approve-registrar"
         },
         {
-          "first_feedback_p50_ms": 1,
-          "first_feedback_p95_ms": 1.2,
+          "first_feedback_p50_ms": 0.6,
+          "first_feedback_p95_ms": 1,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 125.2,
-          "settled_p50_ms": 131,
-          "settled_p75_ms": 135.2,
-          "settled_p95_ms": 135.2,
+          "settled_p25_ms": 6.2,
+          "settled_p50_ms": 6.6,
+          "settled_p75_ms": 9.4,
+          "settled_p95_ms": 9.4,
+          "step": "denied-recommend"
+        },
+        {
+          "first_feedback_p50_ms": 6.3,
+          "first_feedback_p95_ms": 7.6,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 5.1,
+          "settled_p50_ms": 6.3,
+          "settled_p75_ms": 7.6,
+          "settled_p95_ms": 7.6,
+          "step": "open-evidence"
+        },
+        {
+          "first_feedback_p50_ms": 0.4,
+          "first_feedback_p95_ms": 0.4,
+          "median_over_400ms": true,
+          "over_400ms": true,
+          "samples": 3,
+          "settled_p25_ms": 863.1,
+          "settled_p50_ms": 890.3,
+          "settled_p75_ms": 923,
+          "settled_p95_ms": 923,
+          "step": "run-verification"
+        },
+        {
+          "first_feedback_p50_ms": 0.8,
+          "first_feedback_p95_ms": 0.9,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 0.7,
+          "settled_p50_ms": 0.8,
+          "settled_p75_ms": 0.9,
+          "settled_p95_ms": 0.9,
+          "step": "open-review-subject"
+        },
+        {
+          "first_feedback_p50_ms": 0.9,
+          "first_feedback_p95_ms": 1.1,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 143.2,
+          "settled_p50_ms": 143.4,
+          "settled_p75_ms": 147,
+          "settled_p95_ms": 147,
           "step": "approve-exact"
         },
         {
           "first_feedback_p50_ms": 0.5,
-          "first_feedback_p95_ms": 0.5,
+          "first_feedback_p95_ms": 0.6,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 195.8,
-          "settled_p50_ms": 206.2,
-          "settled_p75_ms": 222.9,
-          "settled_p95_ms": 222.9,
+          "settled_p25_ms": 212.1,
+          "settled_p50_ms": 213.1,
+          "settled_p75_ms": 226.9,
+          "settled_p95_ms": 226.9,
           "step": "apply-baseline"
         }
       ],
@@ -3425,11 +3431,11 @@
   "recommendations": [
     {
       "category": "doherty",
-      "change": "First DOM mutation after the click came within 5 ms (p95; paint not measured), while completion for the slow steps takes longer than 400 ms. For the slow steps show a determinate progress message, keep the previous result visible until the new one lands, and profile where the time goes before optimising anything.",
+      "change": "First DOM mutation after the click came within 5.9 ms (p95; paint not measured), while completion for the slow steps takes longer than 400 ms. For the slow steps show a determinate progress message, keep the previous result visible until the new one lands, and profile where the time goes before optimising anything.",
       "evidence": {
-        "first_feedback_p95_ms": 5,
+        "first_feedback_p95_ms": 5.9,
         "slow_steps": [
-          "run-verification: p50 898.3 / p95 899.2 ms"
+          "run-verification: p50 890.3 / p95 923 ms"
         ]
       },
       "id": "doherty-completion",
@@ -3456,7 +3462,7 @@
           "Persisted audit and simulated outbox -> Skip to workspace",
           "Persisted audit and simulated outbox -> Skip to workspace",
           "Persisted audit and simulated outbox -> Skip to workspace",
-          "smt proofUNKNOWN sealed tool verdict · case-wide -> bounded model checkUNKNOWN sealed tool verdict · case-wide"
+          "modelled impact closurePASS Case-wide technical claim -> bend proofUNKNOWN sealed tool verdict · case-wide"
         ]
       },
       "id": "focus-order-regression",
@@ -3492,7 +3498,7 @@
           "denied-recommend": 2,
           "open-change": 9,
           "open-evidence": 22,
-          "open-review-subject": 8,
+          "open-review-subject": 9,
           "open-try": 5,
           "recommend-teacher": 1,
           "reset-preview": 3,
@@ -3544,7 +3550,7 @@
           "denied-recommend": 2,
           "open-change": 9,
           "open-evidence": 22,
-          "open-review-subject": 8,
+          "open-review-subject": 9,
           "open-try": 5,
           "recommend-teacher": 1,
           "reset-preview": 3,
@@ -3582,7 +3588,7 @@
           "create-panel: 31",
           "evidence-approved: 37",
           "evidence-review-open: 35",
-          "evidence-verified: 38",
+          "evidence-verified: 39",
           "impact-tab: 31",
           "start: 41",
           "try-denied: 38",
@@ -3636,8 +3642,8 @@
       "category": "klm",
       "change": "Not a defect by itself; use it to decide where shortcuts (tab shortcuts, access keys) pay off.",
       "evidence": {
-        "keyboard_K": 204,
-        "keyboard_total_s": 69.27,
+        "keyboard_K": 205,
+        "keyboard_total_s": 69.55,
         "pointer_total_s": 65.31
       },
       "id": "klm-keyboard-vs-pointer",
@@ -3652,7 +3658,7 @@
       "saving_kind": "model difference",
       "severity": 1,
       "targets": [],
-      "title": "Keyboard-only journey costs 69.3 s vs 65.3 s with the pointer (model)"
+      "title": "Keyboard-only journey costs 69.5 s vs 65.3 s with the pointer (model)"
     },
     {
       "category": "klm",
@@ -3689,19 +3695,19 @@
     "http_error_responses": [
       {
         "method": "POST",
-        "path": "/api/cases/36719753c7464e39b1e48a0fa06da0bd/execute",
+        "path": "/api/cases/720a845634cc4a0581e875bdae408327/execute",
         "status": 409,
         "step": "denied-recommend"
       },
       {
         "method": "POST",
-        "path": "/api/cases/39638e1f46804968a93330d6afdb7fa4/execute",
+        "path": "/api/cases/b530727c3ae24646a4d9250335f7ef90/execute",
         "status": 409,
         "step": "denied-recommend"
       },
       {
         "method": "POST",
-        "path": "/api/cases/b6552d33e5da4b77b88b55157034e804/execute",
+        "path": "/api/cases/bfa59a0e9b334b44bf3969e8b3e52df3/execute",
         "status": 409,
         "step": "denied-recommend"
       }
@@ -3769,7 +3775,7 @@
       "elements": []
     },
     "target_size_2_5_8": {
-      "controls_audited": 85,
+      "controls_audited": 86,
       "exceptions_not_evaluated": [
         "inline",
         "user-agent controlled",
@@ -3777,7 +3783,7 @@
         "essential"
       ],
       "status_counts": {
-        "pass": 85
+        "pass": 86
       },
       "undersized_or_failing": [
         {
@@ -3922,22 +3928,22 @@
         "chunks_viewport": 35,
         "content_groups": 10,
         "controls": 25,
-        "excluded_clipped_chunks": 5,
+        "excluded_clipped_chunks": 7,
         "over_cowan_4": true,
         "over_miller_9": true,
-        "raw_chunks_viewport": 40,
+        "raw_chunks_viewport": 42,
         "view": "evidence-review-open"
       },
       {
-        "atoms_viewport": 56,
-        "chunks_page": 38,
-        "chunks_viewport": 38,
-        "content_groups": 15,
-        "controls": 23,
+        "atoms_viewport": 57,
+        "chunks_page": 39,
+        "chunks_viewport": 39,
+        "content_groups": 17,
+        "controls": 22,
         "excluded_clipped_chunks": 0,
         "over_cowan_4": true,
         "over_miller_9": true,
-        "raw_chunks_viewport": 38,
+        "raw_chunks_viewport": 39,
         "view": "evidence-verified"
       },
       {

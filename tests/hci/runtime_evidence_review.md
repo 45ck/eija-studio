@@ -64,3 +64,22 @@ checks remain in `axe-open-raw-diagnostics.json`. Viewport and keyboard observat
 `raw-diagnostics-keyboard.json`. A prior seven-stage runtime result does not cover this added
 scenario: use the fresh diagnostics result and its exact source manifest. An absent execution is
 NOT_RUN; automated keyboard/axe observations do not establish human usability or screen-reader acceptance.
+
+## Evidence triage keyboard check
+
+The `triage` scenario is a new, separately source-bound group, also appended to `all`. At authoring it is **NOT_RUN**; earlier runtime and diagnostics records do not validate it. It uses the same normal-identity disposable server and existing UI/GET helpers:
+
+```powershell
+$env:PYTHONPATH = (Get-Location).Path + ';' + (Join-Path (Get-Location) 'src')
+.\.venv\Scripts\python.exe -u tests/hci/runtime_evidence_review.py --scenario triage --out reports/evidence-triage-keyboard-1
+```
+
+The explicit import path includes the checkout-owned `quality` package and `src`.
+
+Setup creates and selects the real saved-path candidate using the ordinary offline controls. It runs no verification, runtime command or owner action. The independently fetched packet must actually report `SOURCE_REVIEW_REQUIRED` and `RUNTIME_EVIDENCE_UNKNOWN`; successful packet or evidence responses are never substituted. The current technical and formal records, their statuses, indices and order are taken from that packet.
+
+At 1280×800 and 320×800, the scenario verifies the triage's exact blocker inventory/order and case/revision/subject. Starting at ordinary Evidence navigation, actual Tab presses must reach each native action; Enter must open Problems and focus its exact source restriction, or open/focus the existing runtime-matrix check. Each reached control and focused destination must show a focus outline and lie inside the actual ancestor-clipped viewport. The native **Exact blocker codes** disclosure is reached with Tab and opened with Enter before its visible text is compared with the server's exact codes. Horizontal page overflow is rejected.
+
+The scenario keeps Model's Verify selection distinct from comparison's Save selection, preserves the case-wide scope and human UNKNOWN, and rechecks every reported technical/formal status plus the complete raw packet after navigation. Independent GETs compare the full case view, observations, packet and semantic history; no write beyond setup is allowed. Navigation/focus geometry, screenshots and independent oracles are retained alongside the existing source manifests and cleanup status.
+
+This is a native keyboard/navigation and data-retention check, not a human comprehension study. It does not claim that every triage row fits simultaneously above the fold on narrow screens: entry screenshots retain that layout for inspection, while each action/destination must be genuinely visible when reached by keyboard. It adds no axe result; the separate opened-raw-diagnostics scenario retains that scope. Malformed packets, duplicate formal records, mismatched statuses and stale callback counterexamples remain explicitly Node-level coverage in `evidence-overview.test.cjs`, not browser fixtures in this group.

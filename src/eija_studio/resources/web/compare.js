@@ -117,12 +117,13 @@ const EijaCompare = (() => {
     }
     const wrap = element("div", undefined, "compare-table-wrap"); wrap.tabIndex = 0; wrap.setAttribute("role", "region"); wrap.setAttribute("aria-label", "Exact before and after values"); wrap.append(table); return wrap;
   }
-  function buildPreviewSummary(s) {
-    if (!s.callbacks.preview) return;
-    s.previewSummary = element("section", undefined, "compare-preview-fields");
-    s.previewSummary.setAttribute("role", "region");
-    s.previewSummary.setAttribute("aria-label", "Selected element changes, captured before to proposed result");
-    s.shell.append(s.previewSummary);
+  function buildSelectedSummary(s) {
+    const preview = s.callbacks.preview, summary = element("section", undefined,
+      "compare-selected-fields " + (preview ? "compare-preview-fields" : "compare-change-summary"));
+    summary.setAttribute("role", "region");
+    summary.setAttribute("aria-label", preview ? "Selected element changes, captured before to proposed result" : "Selected element changes, baseline to candidate");
+    if (preview) {s.previewSummary = summary; s.shell.append(summary);}
+    else {s.changeSummary = summary; s.visual.append(summary);}
   }
   function render(root, current, callbacks = {}) {
     root.replaceChildren();
@@ -144,8 +145,8 @@ const EijaCompare = (() => {
       state.selected = {kind: item.kind, id: item.id}; updateSelection(session); if (focus) focusSelection(session); session.notify();
       callbacks.onSelection?.({...subject, ...state.selected}, item); return true;
     };
-    buildPreviewSummary(session);
-    session.visual = element("div", undefined, "compare-visual-workspace"); shell.append(session.visual);
+    session.visual = element("div", undefined, "compare-visual-workspace");
+    buildSelectedSummary(session); shell.append(session.visual);
     buildHeader(session); buildNavigator(session); buildPair(session); buildDetails(session); buildContext(session);
     updateSelection(session);
     if (!state.viewport || callbacks.state?.viewMode === "focus") focusSelection(session); else if (callbacks.state?.viewMode === "overview") fit(session); else updateViewport(session);
@@ -249,17 +250,25 @@ const EijaCompare = (() => {
     const changed = item.fields.filter(field => field.changed), unchanged = item.fields.filter(field => !field.changed);
     if (changed.length) s.detail.append(fieldTable(changed, s.callbacks.preview));
     if (unchanged.length) {const details = element("details"); details.open = !changed.length; details.append(element("summary", `${unchanged.length} unchanged fields`), fieldTable(unchanged, s.callbacks.preview)); s.detail.append(details);}
-    if (s.callbacks.preview) {
-      if (s.previewSummary) {
-        s.previewSummary.replaceChildren(element("span", "Selected element’s changes", "compare-preview-scope"));
-        Object.assign(s.previewSummary.dataset, {kind: item.kind, id: item.id});
-        for (const field of changed) {
-          const row = element("p"), before = element("span", textValue(field.before)), after = element("span", textValue(field.after));
-          row.dataset.field = field.key; before.dataset.compareBefore = ""; after.dataset.compareAfter = "";
-          row.append(element("strong", `${field.label}: `), before, element("span", " → "), after); s.previewSummary.append(row);
-        }
-        if (!changed.length) s.previewSummary.append(element("p", "No changed fields for this selected element."));
+    const summary = s.previewSummary || s.changeSummary;
+    if (summary) {
+      summary.replaceChildren(); Object.assign(summary.dataset, {kind: item.kind, id: item.id});
+      if (s.callbacks.preview) summary.append(element("span", "Selected element’s changes", "compare-preview-scope"));
+      else {
+        Object.assign(summary.dataset, {case: s.subject.case, revision: String(s.subject.revision)});
+        const heading = element("header", undefined, "compare-summary-heading");
+        heading.append(element("h3", `${statusLabel[item.status]} · ${itemTitle(item)}`),
+          element("span", `Before · baseline → After · candidate · revision ${s.subject.revision}`, "compare-summary-scope"));
+        heading.title = `Case ${s.subject.case} · revision ${s.subject.revision}`; summary.append(heading);
       }
+      for (const field of changed) {
+        const row = element("p"), before = element("span", textValue(field.before)), after = element("span", textValue(field.after));
+        row.dataset.field = field.key; before.dataset.compareBefore = ""; after.dataset.compareAfter = "";
+        row.append(element("strong", `${field.label}: `), before, element("span", " → "), after); summary.append(row);
+      }
+      if (!changed.length) summary.append(element("p", "No changed fields for this selected element."));
+    }
+    if (s.callbacks.preview) {
       s.announcement.textContent = `${statusLabel[item.status]} ${itemTitle(item)} selected. Captured edit comparison for revision ${s.subject.revision}.`; return;
     }
     const related = element("div", undefined, "compare-related"), refs = bindings(item, s.callbacks.terms || []);
