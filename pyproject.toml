@@ -53,8 +53,8 @@ eija_studio = ["resources/**/*", "resources/*.json"]
 [tool.pytest.ini_options]
 pythonpath = ["src", "."]  # "." so tests can import repo-root tooling packages (quality, demos)
 testpaths = ["tests"]
-addopts = "-ra"  # tests/conftest.py keeps pytest temp dirs inside the checkout (slow system temp)
-markers = ["browser: drives a real browser or renderer; skipped (NOT_RUN) unless EIJA_BROWSER_TESTS=1, run by the release session diagrams_syntax"]
+addopts = "-ra -m 'not formal'"  # tests/conftest.py keeps pytest temp dirs inside the checkout (slow system temp)
+markers = ["formal: re-runs a whole proof or model-checking search; deselected by default, selected by the formal_smt and bmc nox sessions", "browser: drives a real browser or renderer; skipped (NOT_RUN) unless EIJA_BROWSER_TESTS=1, run by the release session diagrams_syntax"]
 
 [tool.ruff]
 target-version = "py311"

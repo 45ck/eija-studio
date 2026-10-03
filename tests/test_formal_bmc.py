@@ -1,17 +1,25 @@
-"""Bounded model checking of the real runtime (verification/bmc): checker behaviour and negative controls."""
+"""Bounded model checking of the real runtime (verification/bmc): checker behaviour and negative controls.
+
+Tests marked `formal` run searches that take seconds each, so the default (fast/coverage) pytest run deselects them
+(`-m "not formal"` in pyproject) and the `bmc` session selects them (`pytest -m formal`).
+"""
 import json
 from dataclasses import replace
 from unittest import mock
 
 import pytest
-
 from eija_studio.adapters.sqlite_store import sandbox_factory
-from verification.bmc import mutants as M, report, spec
-from verification.bmc.explorer import Config, explore
-from verification.bmc.snapshot import Observer
 from eija_studio.application import runtime
 from eija_studio.application.runtime import execute, initialise
 from eija_studio.domain.models import DomainError, ExecuteCommand, Workflow
+
+from verification.bmc import __main__ as bmc_cli
+from verification.bmc import mutants as M
+from verification.bmc import report, spec
+from verification.bmc.explorer import Config, explore
+from verification.bmc.snapshot import Observer
+
+formal = pytest.mark.formal
 
 CANDIDATE = report.workflows()["candidate-reject-from-Recommended"]
 BASELINE = report.workflows()["baseline"]
@@ -24,6 +32,7 @@ def sandbox(tmp_path):
     return sandbox_factory(root)
 
 
+@formal
 def test_real_runtime_has_no_violation_within_depth_three(sandbox):
     res = explore("candidate", CANDIDATE, Config(depth=3), sandbox)
     assert res.verdict == "PASS" and not res.findings.first
@@ -56,6 +65,7 @@ def test_time_cap_makes_the_run_inconclusive_never_pass(sandbox):
     assert res.truncated and res.verdict == "INCONCLUSIVE"
 
 
+@formal
 @pytest.mark.parametrize("mutant", M.MUTANTS, ids=lambda m: m.name)
 def test_every_seeded_runtime_fault_is_found_with_a_shortest_trace(sandbox, mutant):
     with mutant.activate() as fn:
@@ -66,6 +76,7 @@ def test_every_seeded_runtime_fault_is_found_with_a_shortest_trace(sandbox, muta
     assert found["length"] <= 2 and len(found["trace"]) == found["length"]
 
 
+@formal
 def test_replay_before_authority_counterexample_is_the_expected_scenario(sandbox):
     mutant = next(m for m in M.MUTANTS if m.name == "replay_before_authority")
     with mutant.activate() as fn:
@@ -138,6 +149,32 @@ def test_committed_statistics_snapshot_is_valid_json_with_the_full_tier_run():
     assert run["config"]["depth"] == 6 and set(run["models"]) == set(report.DEFAULT_MODELS["full"])
 
 
+# ---- a run that could not check everything must not read as a PASS --------------------------------------
+
+@formal
+def test_a_run_without_committed_statistics_is_partial_not_pass(tmp_path):
+    """Depth 2 has no committed statistics: the drift check cannot compare, so the verdict must say so."""
+    doc = report.build_report(Config(depth=2), tmp_path / "w", run_self_test=False, model_names=("baseline",))
+    statuses = {c["id"]: c["status"] for c in doc["checks"]}
+    assert statuses["committed_statistics_have_no_drift"] == "NOT_RUN" and statuses["seeded_runtime_faults_are_detected"] == "NOT_RUN"
+    assert doc["verdict"] == "PARTIAL"
+
+
+def test_a_wall_clock_cap_does_not_disable_the_drift_check():
+    snapshot_config = report.load_snapshot()["runs"]["depth-6"]["config"]
+    assert report.drift(6, {}, {**snapshot_config, "max_seconds": 100.0})[0] is True
+    assert report.drift(6, {}, {**snapshot_config, "stale_versions": snapshot_config["stale_versions"] + 1})[0] is None
+
+
+@pytest.mark.parametrize("verdict", ["FAIL", "INCONCLUSIVE"])
+def test_write_snapshot_is_refused_when_the_run_has_findings(tmp_path, monkeypatch, verdict):
+    monkeypatch.setattr(report, "SNAPSHOT", tmp_path / "expected_statistics.json")
+    doc = {"verdict": verdict, "checks": [], "results": {"models": {}, "counterexamples": {}}, "measurements": {"seconds_total": 0.0}}
+    monkeypatch.setattr(report, "build_report", lambda *a, **k: doc)
+    assert bmc_cli.main(["--depth", "2", "--write-snapshot", "--out", str(tmp_path / "bmc.json")]) != 0
+    assert not (tmp_path / "expected_statistics.json").exists()
+
+
 # ---- unsafe POLICY variants: the state invariants must flag them when the policy gate is bypassed ------------
 # The runtime calls `ensure_policy` on every execute, so an unsafe workflow cannot run at all unless the gate is
 # removed. These controls remove it (in the test only) to show the BMC invariants would catch what the gate blocks.
@@ -159,6 +196,7 @@ def test_the_policy_gate_is_what_blocks_an_unsafe_workflow(sandbox):
     assert blocked.value.code == "POLICY_BLOCKED"
 
 
+@formal
 @pytest.mark.parametrize("label,model,invariant,length", [
     ("teacher may approve", _unsafe(CANDIDATE, "Approve", role="Teacher"), "DECISION-ONLY-BY-REGISTRAR", 3),
     ("approve skips Recommended", _unsafe(CANDIDATE, "Approve", from_state="Submitted"), "APPROVAL-FOLLOWS-RECOMMENDATION", 2),
