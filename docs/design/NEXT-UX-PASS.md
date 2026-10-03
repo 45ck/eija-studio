@@ -1,5 +1,16 @@
 # EIJA next UX pass: focused work and visual change review
 
+## Next pass after ad9394e1 — 3 October
+
+The [published ad9394e1 record](../engineering/2026-10-03-MERGED-IDE-CHECKPOINT.md) contains ten passing browser journeys over identical product bytes, 495 passing JavaScript tests, **22/22 fast sessions PASS** and **18/18 required HCI states captured**. At that checkpoint, unchanged HCI budgets still fail density (50 > 27) and predicted KLM (65.31 > 65 seconds); p95 settled-DOM 825 ms and one focus loss are gaps. Full and release are NOT_RUN on that merge. Subsequent repairs and measurements need their own source-bound record; earlier numeric baselines below retain their historical subjects.
+
+1. Repair the observed focus loss after asking for interpretations, then remeasure that exact path. Inspect the actual high-density states before choosing layout changes: canvas View has 50 visible chunks, pinned Domain/inspector 43 and runtime attempt details 38. Preserve useful context and deliberate opening of owner review; reduce repeated or irrelevant content without hiding necessary evidence or changing the budgets. Use the existing recorder, native controls, Dagre and axe.
+2. Finish the reviewer task across S03/S04/S06/S07: inspect a real semantic change, follow exact source, investigate a failed/limited check and return to the same change or attempt. Formal raw-data context and runtime rule return work in the scoped replays; graphical counterexample correspondence is still incomplete and must never be invented from labels.
+3. Exercise the complete supported P0 stories in more than one order, including first-use, stale/error, long-label, enlarged-text, keyboard and manual accessibility states. Obtain hands-on review beyond the scripted route and repair consequential findings.
+4. Publish the validated integrated checkpoint, reproduce that exact published subject, then capture the usable IDE for the WOW walkthrough, clips and GitHub POC/POF package. Keep the existing `efd33fa7` fresh-clone result labeled as earlier evidence. Live-provider and comparative human claims require their separate observations.
+
+The four personas remain design hypotheses. US13/14 factory coordination and US15 domain refactoring remain planned; the high-fidelity S09 design does not confer working orchestration. Choose external repositories after the first accepted EIJA flow. Reuse existing OSS and adapters before introducing another engine or framework.
+
 **Implementation update, 3 October:** the [new validation checkpoint](2026-10-03-CODE-REVIEW-VALIDATION.md) records the implemented task navigator, paired model comparison, focused evidence and immutable code review. This proposal remains the design rationale. Its earlier density figures are historical; whole-app acceptance is still open.
 
 **2 October 2026 — next build proposal.** This document proposes changes; they are not implemented by this plan. At that proposal checkpoint, density acceptance was **FAIL: 68 > 27** (the earlier captures reviewed below measured 70). The supported product is a model/change workbench with **read-only captured source navigation**; it is not a source-code authoring editor or a working agent factory.
@@ -62,7 +73,7 @@ Retain browser/version, shipped asset hashes, state, viewport and negative contr
 - `docs/design/WHOLE-APP-UX.md`, `WHOLE-APP-STORIES.md`, design README and visual-change/evidence-runtime concept images.
 - Actual `work/ide-browser-qa/final-recording-4/changes-before-after.png` and `evidence-truth.png`; these are prior retained captures, not a new run.
 - Current `review.js`, shell/evidence presentation and HTML navigation. Backend/source/owner capability boundaries remain as already implemented and tested; this document adds no capability claim.
-## Proposed next acceptance order — 3 October
+## Earlier proposed acceptance order — 3 October
 
 The strongest next working benefit is a complete reviewer task: understand a
 specific change, follow its exact source and applicable evidence, detect a seeded
@@ -74,7 +85,7 @@ This sequence is engineering work, not a wizard users must follow.
 
 | Order | User benefit / mapping | Next acceptance |
 | --- | --- | --- |
-| 1 | Reliable current baseline; all personas/H01–10 | Preserve canonical1 and corrected canonical2, both FAIL. The corrected count is 56 > 27, KLM 65.31 > 65 s and p95 747.6 ms GAP. Close real UX/gate failures, new JavaScript line-identity repair and post-refactor checks without relaxing budgets. |
+| 1 | Historical baseline; all personas/H01–10 | At that checkpoint, preserve canonical1 and corrected canonical2, both FAIL. The corrected count is 56 > 27, KLM 65.31 > 65 s and p95 747.6 ms GAP. Close real UX/gate failures, new JavaScript line-identity repair and post-refactor checks without relaxing budgets. |
 | 2 | Reviewer/lead and AI engineer can judge a change; US01/02/04/05/07/10/11, S10/S01/S03/S04/S06 | Complete source-first and review-first journeys through all changes, exact source, property/bounds/unknowns and available counterexamples. Check wrong fields/arrows/subjects, missing bindings, stale capture, failed refresh and cross-case return. Include populated/opened/pinned context. |
 | 3 | Modeller and AI engineer can change, try and recover; US03/06/08/09 plus US02/10/11, S02/S05/S07/S08 | Complete intent or typed-edit entry, supported consequence preview, authoritative redraw/evidence invalidation, allowed/refused runtime actions and history recovery. Preserve unsent work on failure; cancel makes no mutation; stale and duplicate requests cannot silently apply. |
 | 4 | All core personas can use and reproduce the supported IDE; US01–US12, S01–S08/S10 | Complete pointer/keyboard tasks and applicable empty/loading/error/stale variants at desktop, enlarged text and existing reflow sizes. Resolve manual accessibility/incomplete findings; measure paint-aware feedback separately. Reproduce the final published checkout with an independent engineer, then record the actual working product and limits. |
@@ -94,7 +105,7 @@ after the first accepted flow and record actual language/semantic coverage.
 Universal codebase correctness, general factory safety and reduced comprehension
 burden remain unproved. A useful demo and reproducible proof should say so plainly.
 
-The corrected density maximum is Rules & ripple: 31 controls + 25 text-parent
+At that earlier checkpoint, the corrected density maximum was Rules & ripple: 31 controls + 25 text-parent
 groups, not the paired Changes layout. Inspect that actual state before simplifying
 it. Source inspection suggests repeated state-card/rule-table facts and contextual
 transition-edit discovery as candidates; the trace lacks a screenshot and named
