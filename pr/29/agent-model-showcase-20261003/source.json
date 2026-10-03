@@ -1,11 +1,31 @@
 {
   "scope": "editable refined showcase replay",
   "sha256": "1db1d50e2b72346bbfb38eb54b894049f6351a065d5ef1572644d5323f09fa85",
-  "product_commit": "d861d454710e16234b5c8fdbf0881fb2d904a52f",
-  "subject_sha256": "57545ef107e23794e5e0872b6129da67a1c7d224b2d8b8ae5a8cecc0be4c3df6",
-  "static_checks": "AST, 16 parser checks, 5 JavaScript syntax expressions passed; independent static review found no blocker",
-  "browser_status": "REHEARSAL_RUNNING",
+  "product_commit": "79ce22f78d649dd131561955e08044acbd60ffc9",
+  "subject_sha256": "2010c846a8d6ae5b6afec180125336771c26c6019658c0dfac2d48d34b09b190",
+  "static_checks": "AST, 16 parser controls and five JavaScript syntax expressions PASS; independent static review found no blocker",
+  "normal_csp_rehearsal": "5/5 PASS",
+  "recording": "5/5 PASS",
+  "media": {
+    "sha256": "6b877298d0c00f4137f3b76f9b569fb4521938062807d8a5bc4efc66e7b9d952",
+    "bytes": 4747937,
+    "seconds": 86.88,
+    "width": 1920,
+    "height": 1080,
+    "speed": 1,
+    "path": "../agent-model-refined-1080p-20261003.mp4"
+  },
+  "raw_sha256": "6079b677f7a7f84428464f859830412f50f3f7014c591a9f7727447bf912e8a0",
+  "source_preservation": "UNCHANGED",
+  "browser_closed": true,
+  "server_closed": true,
   "production_readiness": "NOT_CLAIMED",
+  "editorial_review": "Recordly final narration and full-speed/audio review pending",
   "live_inference": false,
-  "source_rewrite": false
+  "source_rewrite": false,
+  "frame_review": {
+    "status": "Six actual MP4 key frames reviewed; no critical framing, clipping or legibility blockers at 1920x1080",
+    "limitation": "Still frames do not establish comfortable pacing; final full-speed and audio review remains with Recordly",
+    "minor_note": "Pointer ring covers minor text at two sampled points without obscuring the result"
+  }
 }
