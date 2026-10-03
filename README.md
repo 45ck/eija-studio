@@ -19,7 +19,13 @@ The first acceptance target is **EIJA's own checkout**. External applications co
 
 ## Recorded integration preview
 
-**Workspace navigation checkpoint:** Workspace groups views and layout; one case picker exposes loading/retry states, and raw records support keyboard access. The [pushed checkpoint](https://github.com/45ck/eija-studio/commit/72e0f824f6bdc94203261866ca4151d6194fb9f8) remains in draft PR29; this docs-only update does not add its code to main. The [implementation ledger](docs/design/IMPLEMENTATION-STATUS.md#workspace-navigation-and-keyboard-access) records scoped browser results and the fast-run qualification. HCI still fails density and predicted effort; full retains HCI/metrics failures and release requires source review. Whole-IDE, human-validation and POC/POF goals remain open; the [interactive reference](docs/design/README.md) remains illustrative design.
+**Selected-change review checkpoint (3 October):** Changes now shows exact before/after fields above the model comparison; Evidence groups current blockers with keyboard routes. The [source checkpoint](https://github.com/45ck/eija-studio/commit/bdb7a2836e86cda60a511a7c59f550dab97cd040) remains in draft PR29; this docs-only update does not add it to main. The [implementation ledger](docs/design/IMPLEMENTATION-STATUS.md#selected-change-summary-and-evidence-triage) records passing browser/fast checks, retained HCI failures and release's source-review requirement. Full on these new bytes is NOT_RUN. Whole-IDE, human-validation and POC/POF goals remain open.
+
+![Actual selected-change summary above the model comparison](docs/demos/assets/review-comprehension-20261003/ordinary-summary-top-1280.png)
+
+*Actual 1280×800 capture from draft integration **bdb7a28**, not main's shipped UI. Synthetic QA cases; [source-bound provenance](docs/demos/assets/review-comprehension-20261003/provenance.json).*
+
+**Historical navigation checkpoint (3 October):** The [navigation ledger](docs/design/IMPLEMENTATION-STATUS.md#workspace-navigation-and-keyboard-access) retains `72e0f824`, its scoped passes and HCI/metrics/release limits. Those results describe that earlier implementation.
 
 **Previous workspace checkpoint (3 October):** [Prospective edit review](docs/design/2026-10-03-PROSPECTIVE-EDIT-REVIEW.md) shows the working server-derived comparison before a typed model edit, explicit Apply and no-write Close/Escape. [Watch real preview then Close](https://raw.githubusercontent.com/45ck/eija-studio/8633d7d8e950cc407b458382b5b03ec60be35f30/pr/29/prospective-edit-close-20261003.gif) with zero edit POSTs and unchanged revision/hash. Five final browser runs pass within their declared scopes; fast passes 22/22 sessions and JavaScript 288/288. Full fails HCI and aggregate metrics: 32 successful sessions, two failed, one skipped. Release requires source review despite passing tests. Full US06 gesture parity, ten-surface UX and IDE/POC/POF acceptance remain open. Implementation: **ca95f468206fec706f7a274788faf872877ac4a1**; this docs-only update does not add it to main. The [earlier Run/Evidence record](docs/design/2026-10-03-RUN-EVIDENCE-REVIEW.md) retains its original subjects and recording.
 
@@ -27,7 +33,7 @@ The first acceptance target is **EIJA's own checkout**. External applications co
 
 The [2 October preview and reproduction record](docs/demos/2026-10-02-IDE-PREVIEW.md) shows the working source-connected model IDE from a fresh GitHub checkout: semantic before/after review, captured source, checked model edits, history and recovery. It includes actual screenshots, an unedited browser recording and the exact tested revision. The implementation remains in [draft PR #29](https://github.com/45ck/eija-studio/pull/29); this documentation does not merge that code onto main.
 
-![The running EIJA model workbench](docs/demos/assets/ide-preview-20261002/working-model.png)
+[Historical 2 October model-workbench screenshot](docs/demos/assets/ide-preview-20261002/working-model.png)
 
 At the 2 October checkpoint, fresh Windows installation, real CLI startup and 20 recorded browser checks passed within that preview's declared scope. Full IDE acceptance remains open: the HCI density budget fails, source review is required, and human comprehension and live-provider usefulness are unmeasured. The generated design concepts above describe the target; the linked recording shows the actual product.
 
