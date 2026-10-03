@@ -21,7 +21,8 @@ function slice(code,start,end){const from=code.indexOf(start),to=code.indexOf(en
 function harness(code=source){
   const nodes=new Map(),document={activeElement:null},get=id=>{if(!nodes.has(id))nodes.set(id,new Element(document,id));return nodes.get(id);};document.body=new Element(document,"body");
   const requests=[],queue=[],notices=[],comparisons=[],reloads=[],bottom=[],reload={error:null,pending:null};let clears=0,canvas=0,refreshes=0;
-  const s={current:fixture(),modelView:"working",busy:false,lastDiagnostic:null,instance:{id:"retained-runtime"},token:"test",document,$:get,
+  // No runtime attempt is selected in this edit fixture; load its actual recovery renderers below.
+  const s={runtimeAttempt:null,runtimeRuleInspection:null,current:fixture(),modelView:"working",busy:false,lastDiagnostic:null,instance:{id:"retained-runtime"},token:"test",document,$:get,
     captureTaskFocus:()=>({}),restoreTaskFocus(){},renderProblems(){},EijaShell:{bottom:(...args)=>bottom.push(args)},
     notice:(message,error=false)=>notices.push({message,error}),renderCanvas:()=>{canvas++;},renderEditor(){},refreshCurrentModel:async()=>{refreshes++;},
     clearRuntime:()=>{clears++;s.instance=null;},
@@ -33,6 +34,7 @@ function harness(code=source){
   vm.runInContext(slice(code,"async function task(","async function cases("),s);
   vm.runInContext(slice(code,"function editable()","function selectedTransition()"),s);
   vm.runInContext(slice(code,"let editNeedsRefresh=","let runtimeAttempt="),s);
+  vm.runInContext(slice(code,"function runtimeRuleTarget(","function renderRuntimeFeedback("),s);
   vm.runInContext(slice(code,"let editPreview=null","$(\"transition-select\").onchange"),s);
   get("edit-source").focus();
   return {s,get,requests,notices,comparisons,reloads,bottom,reload,queue,

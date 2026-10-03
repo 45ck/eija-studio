@@ -45,12 +45,15 @@ const EijaCompare = (() => {
     return {items, changes: items.filter(item => item.status !== "unchanged"), diff};
   }
   function project(before, after, options = {}) {
-    const changes = inventory(before, after), variants = [], routeIds = {before: new Map(), after: new Map()};
+    const changes = inventory(before, after), variants = [], labelBoxes = new Map(), routeIds = {before: new Map(), after: new Map()};
     for (const item of changes.diff.transitions) {
       const a = item.before, b = item.after, shared = a && b && a.from_state === b.from_state && a.to_state === b.to_state;
       const add = (t, sides) => {
         const id = `projection-${variants.length}`, longest = [a?.action || "", b?.action || ""].sort((x, y) => y.length - x.length || x.localeCompare(y))[0];
         variants.push({id, from_state: t.from_state, to_state: t.to_state, action: longest});
+        // Reserve the full two-line baseline/stroke envelope; width keeps the existing
+        // font estimate, including a longer status caption and both snapshot actions.
+        labelBoxes.set(id,{width:Math.max(70,longest.length*8+8,item.status==="unchanged"?0:statusLabel[item.status].length*7+8),height:item.status==="unchanged"?24:48});
         for (const side of sides) routeIds[side].set(item.id, id);
       };
       if (shared) add(a, ["before", "after"]);
@@ -58,7 +61,7 @@ const EijaCompare = (() => {
     }
     const union = {states: [...new Set([...before.states, ...after.states])].sort(), transitions: variants};
     // Dagre owns positions and routes. This union is disposable display data, never a Workflow update.
-    const shared = engines().canvas.projectLayout(union, {}, options.direction || "TB", options.viewport || {width: 500, height: 400});
+    const shared = engines().canvas.projectLayout(union, {}, options.direction || "TB", options.viewport || {width: 500, height: 400}, labelBoxes);
     const status = new Map(changes.items.map(item => [item.key, item.status]));
     const side = (model, name) => ({
       nodes: [...model.states].sort().map(id => ({id, ...shared.coords[id], width: nodeWidth, height: nodeHeight, initial: id === model.initial_state, status: status.get(`state:${id}`)})),
@@ -218,16 +221,17 @@ const EijaCompare = (() => {
       "data-source": edge.from_state, "data-target": edge.to_state, "data-status": edge.status,
       "aria-label": `${statusLabel[edge.status]}, ${edge.action}, ${edge.role}, ${edge.from_state} to ${edge.to_state}`});
     group.append(svg("path", {d: path, class: "compare-edge-hit"}), svg("path", {d: path, class: "compare-edge-line", "marker-end": `url(#${markerId})`}),
-      svg("text", {x: edge.label.x, y: edge.label.y - 8, "text-anchor": "middle", class: "compare-edge-label"}, edge.action),
-      svg("text", {x: edge.label.x, y: edge.label.y + 10, "text-anchor": "middle", class: "compare-status-label"}, statusLabel[edge.status]));
+      svg("text", {x: edge.label.x, y: edge.label.y + (edge.status === "unchanged" ? 5 : -8), "text-anchor": "middle", class: "compare-edge-label"}, edge.action));
+    if(edge.status !== "unchanged")group.append(svg("text", {x: edge.label.x, y: edge.label.y + 10, "text-anchor": "middle", class: "compare-status-label"}, statusLabel[edge.status]));
     selectable(s, group, item); board.append(group);
   }
   function drawNode(s, board, node) {
     const item = s.layout.inventory.items.find(value => value.key === `state:${node.id}`), group = svg("g", {class: `compare-node ${node.status}`, "data-state": node.id,
       "data-eija-id": `state:${node.id}`, "data-initial": node.initial, "data-status": node.status, "aria-label": `${node.id}, ${statusLabel[node.status]}${node.initial ? ", initial state" : ""}`});
     group.append(svg("rect", {x: node.x, y: node.y, width: node.width, height: node.height, rx: 12, class: "compare-state-box"}),
-      svg("text", {x: node.x + 12, y: node.y + 29, class: "compare-state-label"}, node.id),
-      svg("text", {x: node.x + 12, y: node.y + 54, class: `compare-status-label${node.initial ? " compare-initial-label" : ""}`}, `${node.initial ? "● Initial · " : ""}${statusLabel[node.status]}`));
+      svg("text", {x: node.x + 12, y: node.y + 29, class: "compare-state-label"}, node.id));
+    const secondary=[node.initial?"● Initial":"",node.status!=="unchanged"?statusLabel[node.status]:""].filter(Boolean).join(" · ");
+    if(secondary)group.append(svg("text", {x: node.x + 12, y: node.y + 54, class: `compare-status-label${node.initial ? " compare-initial-label" : ""}`}, secondary));
     const title = svg("title", {}, node.id); group.append(title); selectable(s, group, item); board.append(group);
   }
   function buildDetails(s) {

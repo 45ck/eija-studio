@@ -15,7 +15,10 @@ from urllib.parse import urlsplit
 import self_dogfood_replay as replay
 from case_preview_navigation import emit, write_json
 from ide_journey_edges import Journey
-from ide_review_workspace import OBSERVE_COMPARE, assert_graph, graph_negative_controls
+from ide_review_workspace import (
+    OBSERVE_COMPARE, OBSERVE_LABEL_CLEARANCE, assert_graph, assert_label_text_separation,
+    assert_label_hierarchy, graph_negative_controls,
+)
 from quality.hci.server import ROOT
 from self_dogfood_subject import capture_subject, compare_subjects, file_identity
 
@@ -122,6 +125,13 @@ class ProspectiveEdit(Journey):
             replay.expect(board).to_be_visible()
             observed[side] = board.evaluate(OBSERVE_COMPARE)
             assert_graph(model, observed[side])
+        assert_label_hierarchy(payload["current"], payload["candidate"], observed)
+        clearance = {side: pair.locator(f'[data-compare-side="{side}"] svg.compare-svg').evaluate(OBSERVE_LABEL_CLEARANCE)
+                     for side in ("before", "after")}
+        write_json(self.out / f"preview-label-clearance-{len(self.graphs)}.json",
+                   {"viewport": self.page.viewport_size, "stage": self.stage, "observed": clearance})
+        for item in clearance.values():
+            assert_label_text_separation(item)
         self.graphs.append({"stage": self.stage, "current": payload["current"], "proposed": payload["candidate"],
                             "observed": observed,
                             "negative_controls": {side: graph_negative_controls(payload[field], observed[side])
@@ -176,7 +186,9 @@ class ProspectiveEdit(Journey):
         self.entry()
         self.fresh_case()
         evidence = []
-        for transition, field, value, escape, width in (("TR-SAVE", "role", "Agent", False, 1440),
+        for transition, field, value, escape, width in (("TR-SAVE", "role", "Agent", False, 1600),
+                                                         ("TR-SAVE", "role", "Agent", False, 1280),
+                                                         ("TR-VERIFY", "source", "SAVED", True, 1600),
                                                          ("TR-VERIFY", "source", "SAVED", True, 1280),
                                                          ("TR-SAVE", "target", "PREVIEW", True, 320)):
             self.page.set_viewport_size({"width": 1440, "height": 900})

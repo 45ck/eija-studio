@@ -35,11 +35,13 @@ function packet(){return {
 function harness(code=source){
   Element.active=null;
   const events=[],nodes=new Map(),get=id=>{if(!nodes.has(id))nodes.set(id,new Element("div"));return nodes.get(id);};
-  const sandbox={impactSequence:0,current:{case:{id:"case-A",version:7,baseline_version:2},packet:null},modelView:"working",historyLabel:"",comparisonSelection:null,inspectorSelection:{kind:"transition",id:"Save"},$ : get,
+  // Evidence fixtures have no selected runtime attempt; use the actual empty-context recovery renderers.
+  const sandbox={runtimeAttempt:null,runtimeRuleInspection:null,impactSequence:0,current:{case:{id:"case-A",version:7,baseline_version:2},packet:null},modelView:"working",historyLabel:"",comparisonSelection:null,inspectorSelection:{kind:"transition",id:"Save"},$ : get,
     el:(tag,text,cls)=>{const node=new Element(tag);if(text!==undefined)node.textContent=text;if(cls)node.className=cls;return node;},workbench:null,status:{trusted_fixture:false},lastDiagnostic:null,
     EijaShell:{renderEvidence:()=>{},bottom:(...args)=>events.push(["bottom",...args])},switchTab:name=>events.push(["view",name]),notice:(...args)=>events.push(["notice",...args]),api:()=>{throw Error("Presentation must not call transport");}};
   vm.createContext(sandbox);const start=code.indexOf("function formalList("),end=code.indexOf("async function load(");assert.ok(start>=0&&end>start);vm.runInContext(code.slice(start,end),sandbox);
   const problemsStart=code.indexOf("function renderProblems()"),problemsEnd=code.indexOf("let editPreview=",problemsStart);assert.ok(problemsStart>=0&&problemsEnd>problemsStart);vm.runInContext(code.slice(problemsStart,problemsEnd),sandbox);
+  const recoveryStart=code.indexOf("function runtimeRuleTarget("),recoveryEnd=code.indexOf("function renderRuntimeFeedback(",recoveryStart);assert.ok(recoveryStart>=0&&recoveryEnd>recoveryStart);vm.runInContext(code.slice(recoveryStart,recoveryEnd),sandbox);
   return {get,sandbox,events,active:()=>Element.active,render:p=>{sandbox.current.packet=p;sandbox.renderEvidencePacket(p);},formal:()=>get("formal").children.filter(node=>node.tag==="details"&&Object.hasOwn(node.dataset,"evidenceKind")),rows:()=>get("formal").children.filter(node=>node.tag==="details")};
 }
 function assertEveryClaim(h,p){
@@ -75,7 +77,7 @@ test("inspection retains every ordered origin and literal step without changing 
   assert.equal(box.dataset.inspectionAvailability,"available");assert.equal(items.length,8);assert.deepEqual(items.map(item=>item.dataset.inspectionPath),x.records.map(record=>record.artifact_path));
   assert.deepEqual(items.map(item=>item.dataset.inspectionOrigin),x.records.map(record=>record.origin));assert.deepEqual(descendants(items[0]).filter(node=>node.dataset.stepIndex!==undefined).map(node=>node.textContent),["revoke actor","actor Save"]);
   assert.equal(row.dataset.status,"FAIL");assert.equal(JSON.stringify(p),before);assert.deepEqual(JSON.parse(h.get("packet").textContent),p);assert.deepEqual(h.events,[]);
-  assert.equal(descendants(box).some(node=>["button","a","svg","canvas"].includes(node.tag)),false);assert.match(items[1].textContent,/Seeded control.*not a reported failure/);
+  assert.equal(descendants(box).some(node=>["a","svg","canvas"].includes(node.tag)),false);assert.ok(descendants(box).filter(node=>node.tag==="button").every(node=>node.dataset.inspectionReturn==="check"));assert.match(items[1].textContent,/Seeded control.*not a reported failure/);
   assert.equal(items[1].children[0].textContent,"Negative control · same-invariant");
 });
 test("UNKNOWN without an admitted artifact remains uncertainty with no invented records or candidate specimen",()=>{
@@ -136,8 +138,8 @@ test("hostile record text and unknown fields remain literal, available raw data"
   assert.ok(box.textContent.includes(hostile));assert.equal(descendants(box).some(node=>["script","img","iframe"].includes(node.tag)),false);assert.deepEqual(JSON.parse(disclosure(box,"Raw inspection data").querySelector("pre").textContent),x);
 });
 test("inspection inventory oracle rejects silently omitting a recorded item",()=>{
-  const marker="x.records.forEach((record,index)=>inspectionRecord(box,record,index,key,opened));";assert.ok(source.includes(marker));
-  const h=harness(source.replace(marker,"x.records.slice(1).forEach((record,index)=>inspectionRecord(box,record,index,key,opened));")),p=inspectedPacket();h.render(p);
+  const marker="x.records.forEach((record,index)=>inspectionRecord(box,record,index,key,opened,context));";assert.ok(source.includes(marker));
+  const h=harness(source.replace(marker,"x.records.slice(1).forEach((record,index)=>inspectionRecord(box,record,index,key,opened,context));")),p=inspectedPacket();h.render(p);
   assert.throws(()=>assert.equal(inspectionItems(h.formal()[0]).length,p.formal_evidence[0].inspection.record_count),assert.AssertionError);
 });
 test("inspection association oracle rejects removing the exact review identity guard",()=>{
@@ -147,6 +149,45 @@ test("inspection association oracle rejects removing the exact review identity g
 test("record origin oracle rejects presenting a seeded control as an actual counterexample",()=>{
   const marker='negative_control:"Negative control"';assert.ok(source.includes(marker));const h=harness(source.replace(marker,'negative_control:"Counterexample"')),p=inspectedPacket();h.render(p);
   assert.throws(()=>assert.equal(inspectionItems(h.formal()[0])[1].children[0].textContent,"Negative control · same-invariant"),assert.AssertionError);
+});
+const returnControl=rawDisclosure=>descendants(rawDisclosure).find(node=>node.dataset.inspectionReturn==="check");
+test("open raw inspection carries its exact reported check and origin without adding closed-disclosure chrome",()=>{
+  const h=harness(),p=inspectedPacket();h.render(deepFreeze(p));const row=h.formal()[0],raw=disclosure(inspectionItems(row)[1],"Raw recorded item");
+  assert.equal(raw.open,false);assert.doesNotMatch(visibleText(raw),/Back to check|smt · FAIL/);raw.open=true;
+  assert.match(visibleText(raw),/smt · FAIL/);assert.match(visibleText(raw),/Negative control · same-invariant/);assert.match(visibleText(raw),/Back to check/);
+  assert.equal(raw.querySelector("pre").textContent,p.formal_evidence[0].inspection.records[1].raw_json);assert.equal(returnControl(raw).type,"button");
+});
+test("Back to check focuses the exact owning summary and leaves selection, unrelated disclosures and authority unchanged",()=>{
+  const h=harness(),p=inspectedPacket();h.sandbox.comparisonSelection={case:"case-A",revision:7,kind:"transition",id:"TR-SAVE"};h.render(deepFreeze(p));
+  const row=h.formal()[0],box=inspectionBox(row),item=inspectionItems(row)[1],raw=disclosure(item,"Raw recorded item"),other=h.formal()[1],button=returnControl(raw);
+  row.open=box.open=item.open=raw.open=other.open=true;raw.querySelector("pre").focus();const state=JSON.stringify([p,h.sandbox.comparisonSelection,h.sandbox.inspectorSelection]);
+  assert.equal(button.onclick(),true);assert.equal(h.active(),row.children[0]);assert.equal(row.children[0].scrolled,true);assert.ok(box.open&&item.open&&raw.open&&other.open);
+  assert.equal(JSON.stringify([p,h.sandbox.comparisonSelection,h.sandbox.inspectorSelection]),state);assert.deepEqual(h.events,[]);
+});
+test("duplicate check kinds return to their own captured row rather than the first matching kind",()=>{
+  const h=harness(),p=inspectedPacket(),extra=structuredClone(p.formal_evidence[0]);extra.receipt_id=extra.inspection.receipt.id="another-receipt";extra.inspection.receipt.artifact_hash="another-artifact";p.formal_evidence.push(extra);h.render(p);
+  const rows=h.formal().filter(row=>row.dataset.evidenceKind==="smt");for(const row of rows){const button=returnControl(disclosure(inspectionItems(row)[0],"Raw recorded item"));assert.equal(button.onclick(),true);assert.equal(h.active(),row.children[0]);}
+  assert.deepEqual(h.events,[]);
+});
+test("stale, replaced, detached or hidden inspection controls refuse focus without requests or a new context",()=>{
+  const changes=[h=>{h.sandbox.current.case.id="case-B";},h=>{h.sandbox.current.case.version++;},(h,p)=>{h.sandbox.current.packet={...p};},(_h,p)=>{p.subject.semantic="another-model";},(_h,p)=>{p.subject_hash="another-subject";},(_h,p)=>{p.formal_evidence[0].inspection.receipt.artifact_hash="other-artifact";},(_h,p)=>{p.formal_evidence[0]={...p.formal_evidence[0]};},h=>{h.get("formal").replaceChildren();},h=>{h.get("evidence").hidden=true;},(h,p)=>h.render(p),h=>{h.formal()[0].children[0]=new Element("summary");}];
+  for(const change of changes){const h=harness(),p=inspectedPacket();h.render(p);const button=returnControl(disclosure(inspectionItems(h.formal()[0])[0],"Raw recorded item"));change(h,p);assert.equal(button.onclick(),false);assert.equal(h.active(),null);assert.deepEqual(h.events,[]);}
+});
+test("repainting a new subject removes parked inspection context and rejects its old return handler",()=>{
+  const h=harness(),p=inspectedPacket();h.render(p);const old=inspectionBox(h.formal()[0]),button=returnControl(disclosure(inspectionItems(old)[0],"Raw recorded item"));old.open=true;
+  const next=packet();next.subject_hash="new-subject";h.render(next);assert.ok(!descendants(h.get("formal")).includes(old));assert.equal(descendants(h.get("formal")).some(node=>node.className==="formal-raw-context"),false);assert.equal(button.onclick(),false);assert.equal(h.active(),null);
+});
+test("exact-owning-check oracle rejects a return implementation redirected to another record",()=>{
+  const marker='row.open=true;summary.focus();';assert.ok(source.includes(marker));const h=harness(source.replace(marker,'row.open=true;[...$("formal").children].find(n=>n.dataset.evidenceKind==="bend").querySelector("summary").focus();')),p=inspectedPacket();h.render(p);const row=h.formal()[0],button=returnControl(disclosure(inspectionItems(row)[0],"Raw recorded item"));button.onclick();
+  assert.throws(()=>assert.equal(h.active(),row.children[0]),assert.AssertionError);
+});
+test("returning from unavailable or unassociated raw data names its reported check without manufacturing records",()=>{
+  for(const missingContext of [false,true]){const h=harness(),p=inspectedPacket(),e=p.formal_evidence[0],x=e.inspection;e.status=x.status="UNKNOWN";p.technical_claims.formal_smt="UNKNOWN";Object.assign(x,{availability:"unavailable",availability_reasons:["NO_DECIDING_RECEIPT"],receipt:null,artifact_json:null,records:[],record_count:0});if(missingContext)x.review.case_version=6;h.render(p);
+    const row=h.formal()[0],raw=disclosure(row,"Raw inspection data");raw.open=true;assert.match(visibleText(raw),/smt · UNKNOWN/);assert.equal(inspectionItems(row).length,0);assert.equal(returnControl(raw).onclick(),true);assert.equal(h.active(),row.children[0]);assert.equal(row.dataset.status,"UNKNOWN");assert.deepEqual(h.events,[]);}
+});
+test("stale-return oracle rejects bypassing its case and subject identity check",()=>{
+  const marker='const same=current?.packet===packet&&packet.formal_evidence?.[index]===record&&inspectionContextIdentity(packet,record)===identity;';assert.ok(source.includes(marker));const h=harness(source.replace(marker,'const same=true;')),p=inspectedPacket();h.render(p);const button=returnControl(disclosure(inspectionItems(h.formal()[0])[0],"Raw recorded item"));h.sandbox.current.case.version++;
+  assert.throws(()=>assert.equal(button.onclick(),false),assert.AssertionError);
 });
 
 const triageRows=h=>descendants(h.get("evidence-triage")).filter(node=>node.tag==="li");

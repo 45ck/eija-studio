@@ -11,29 +11,29 @@ How to read this report. **MEASUREMENT**: recorded from the running Studio (elem
 | Item | Value |
 |---|---|
 | Platform | Windows-11-10.0.26200-SP0 |
-| Browser | Google Chrome 154.0.8037.58 (headless=True) |
+| Browser | Google Chrome 154.0.8037.95 (headless=True) |
 | Playwright / axe | 1.63.0 / axe-core 4.12.1 via axe-playwright-python 0.1.8 |
 | Viewport | 1440x900 @ 1x |
 | Provider | offline (synthetic) |
 | Pointer repeats (timing) | 3 |
-| UI bytes (sha256, first 12) | app.css b3a4b536a2bb, app.js 92c9db7580d8, canvas.js e0226d9361d7, compare.css f58ab0861b60, compare.js 47ff5562ef8e, index.html fec49e4ff52e, repository-review.css ef87096d5fc1, repository-review.js 1a8559475a48, review.js 426978e96491, shell.js 29e41c7dd572, source.js 87e72798bfbf, tree.js 9dd0270ba356, vendor/dagre-graphlib.LICENSE.txt 6a349742a6cb, vendor/dagre.LICENSE.txt 6a349742a6cb, vendor/dagre.VENDOR.json 9ea8f38b29e9, vendor/dagre.min.js c35b8d6f410c, vendor/mermaid.LICENSE.txt ec9fb67dcb25, vendor/mermaid.VENDOR.json 96f346523699, vendor/mermaid.min.js 28fca7ae6ebc, visual-frame.css ca5a74616eff, visual-frame.html 4408ecd716df, visual-frame.js cfda25808b8e |
+| UI bytes (sha256, first 12) | app.css 9235aa276e5b, app.js 76f3795c7d29, canvas.js ad53db5bf8d7, compare.css f58ab0861b60, compare.js a730a32f7b95, index.html 730eee337ead, repository-review.css ef87096d5fc1, repository-review.js 1a8559475a48, review.js 426978e96491, shell.js 29e41c7dd572, source.js 87e72798bfbf, tree.js 9dd0270ba356, vendor/dagre-graphlib.LICENSE.txt 6a349742a6cb, vendor/dagre.LICENSE.txt 6a349742a6cb, vendor/dagre.VENDOR.json 9ea8f38b29e9, vendor/dagre.min.js c35b8d6f410c, vendor/mermaid.LICENSE.txt ec9fb67dcb25, vendor/mermaid.VENDOR.json 96f346523699, vendor/mermaid.min.js 28fca7ae6ebc, visual-frame.css ca5a74616eff, visual-frame.html 4408ecd716df, visual-frame.js cfda25808b8e |
 
 ## Headline
 
 | Evidence | Law / standard | Metric | Value | Threshold | Flag |
 |---|---|---|---|---|---|
-| MEASUREMENT (geometry) | Fitts (Shannon) | pointer moves with ID > 4 bits (centre landing; nearest-edge variant 0) | 0 | 0 | ok |
+| MEASUREMENT (geometry) | Fitts (Shannon) | pointer moves with ID > 4 bits (centre landing; nearest-edge variant 1) | 1 | 0 | FLAG |
 | MEASUREMENT (geometry) | Fitts / WCAG 2.5.8 | pointer targets with W < 24 px | 0 | 0 | ok |
 | MEASUREMENT (DOM counts) | Hick-Hyman | choice groups with n > 7 | 0 | 0 | ok |
 | PREDICTION | KLM-GOMS | expert time, pointer journey (s) | 65.31 | - | info |
-| PREDICTION | KLM-GOMS | expert time, keyboard-only (s) | 69.55 | - | info |
-| MEASUREMENT (wall-clock) | Doherty | click -> settled DOM, median (ms) | 92.9 | 400 | ok |
-| MEASUREMENT (wall-clock) | Doherty | click -> settled DOM, p95 (ms) | 942.6 | 400 | FLAG |
-| MEASUREMENT (wall-clock) | Doherty | click -> first DOM mutation, p95 (ms; excludes paint) | 5.1 | 400 | ok |
+| PREDICTION | KLM-GOMS | expert time, keyboard-only (s) | 70.11 | - | info |
+| MEASUREMENT (wall-clock) | Doherty | click -> settled DOM, median (ms) | 98.6 | 400 | ok |
+| MEASUREMENT (wall-clock) | Doherty | click -> settled DOM, p95 (ms) | 843.2 | 400 | FLAG |
+| MEASUREMENT (wall-clock) | Doherty | click -> first DOM mutation, p95 (ms; excludes paint) | 6.7 | 400 | ok |
 | MEASUREMENT (axe) | WCAG 2.2 AA | violating rules (critical/serious/moderate/minor) | 0 (0/0/0/0) | 0 | ok |
 | MEASUREMENT (geometry) | WCAG 2.5.8 | targets failing minimum size | 0 | 0 | ok |
 | MEASUREMENT (focus) | Keyboard | activations that dropped focus | 0/16 | 0 | ok |
-| MEASUREMENT (proxy) | Working memory | max chunks visible at once | 60 | 9 | FLAG |
+| MEASUREMENT (proxy) | Working memory | max chunks visible at once | 61 | 9 | FLAG |
 
 ## Ranked recommendations
 
@@ -41,19 +41,20 @@ Severity 5 critical WCAG, 4 serious WCAG / focus loss / wait over 1 s, 3 moderat
 
 | # | Sev | Recommendation | Category | Predicted effect |
 |---|---|---|---|---|
-| 1 | 3 | 1 interaction(s) usually take longer than 400 ms to finish | doherty | measured on this machine; wall-clock, sensitive to load from other processes |
+| 1 | 4 | 1 interaction(s) usually take longer than 400 ms to finish | doherty | measured on this machine; wall-clock, sensitive to load from other processes |
 | 2 | 3 | 4 Tab step(s) move upward on screen | keyboard | - |
 | 3 | 2 | Review answers: move between fields with Tab instead of point-click and re-homing | klm | model: 3.6 s of 65.3 s expert time (6%) |
-| 4 | 2 | Reaching one control took 25 Tab presses | keyboard | - |
-| 5 | 2 | 16/16 views show more than 9 chunks at once (proxy) | working-memory | heuristic only: not a measurement of anyone's memory |
-| 6 | 1 | 9/9 decision points have more than 7 visible controls on screen | hick | if a novice searched the whole screen instead of the choice group: +2.78 s (upper bound, model) |
-| 7 | 1 | Keyboard-only journey costs 69.5 s vs 65.3 s with the pointer (model) | klm | - |
-| 8 | 1 | 9 mental operators = 12.2 s (19% of expert time) | klm | informational: M is the irreducible cognitive floor of the journey |
+| 4 | 2 | 1 pointer move(s) exceed 4 bits | fitts | model: halving D and W>=44 px saves 0.17 s of pointing time across the flagged moves |
+| 5 | 2 | Reaching one control took 25 Tab presses | keyboard | - |
+| 6 | 2 | 16/16 views show more than 9 chunks at once (proxy) | working-memory | heuristic only: not a measurement of anyone's memory |
+| 7 | 1 | 9/9 decision points have more than 7 visible controls on screen | hick | if a novice searched the whole screen instead of the choice group: +2.80 s (upper bound, model) |
+| 8 | 1 | Keyboard-only journey costs 70.1 s vs 65.3 s with the pointer (model) | klm | - |
+| 9 | 1 | 9 mental operators = 12.2 s (19% of expert time) | klm | informational: M is the irreducible cognitive floor of the journey |
 
 ### 1. 1 interaction(s) usually take longer than 400 ms to finish
 
-- Change: First DOM mutation after the click came within 5.1 ms (p95; paint not measured), while completion for the slow steps takes longer than 400 ms. For the slow steps show a determinate progress message, keep the previous result visible until the new one lands, and profile where the time goes before optimising anything.
-- Evidence: `{"first_feedback_p95_ms": 5.1, "slow_steps": ["run-verification: p50 961.7 / p95 3109.7 ms"]}`
+- Change: First DOM mutation after the click came within 6.7 ms (p95; paint not measured), while completion for the slow steps takes longer than 400 ms. For the slow steps show a determinate progress message, keep the previous result visible until the new one lands, and profile where the time goes before optimising anything.
+- Evidence: `{"first_feedback_p95_ms": 6.7, "slow_steps": ["run-verification: p50 1099.7 / p95 1502.5 ms"]}`
 - Targets: `run-verification`
 - Likely cause (UNVERIFIED hypothesis; the probe does not establish it): the server-side work per action, possibly the durable SQLite commit path, dominates (hypothesis; no profile was taken)
 - Laws: Doherty threshold; predicted saving (model difference): 0.0 s
@@ -67,36 +68,44 @@ Severity 5 critical WCAG, 4 serious WCAG / focus loss / wait over 1 s, 3 moderat
 ### 3. Review answers: move between fields with Tab instead of point-click and re-homing
 
 - Change: Focus the first question when Evidence opens after verification and make Enter in a field move to the next one (or submit on the last), so the three answers are typed without leaving the keyboard.
-- Evidence: `{"keyboard_only_journey_tab_presses": {"acknowledge": 1, "actor-registrar": 25, "actor-unassigned": 24, "answer-assignment": 1, "answer-authority": 1, "answer-reject_entry": 1, "apply-baseline": 0, "approve-exact": 1, "approve-registrar": 3, "ask-interpretations": 0, "create-case": 1, "denied-recommend": 2, "open-change": 9, "open-evidence": 22, "open-review-subject": 9, "open-try": 5, "recommend-teacher": 1, "reset-preview": 3, "run-verification": 3, "select-meaning": 3, "submit-teacher": 2, "type-request": 0}, "operators_replaced": {"B": 4, "H": 4, "P": 2}, "typed_keystrokes_unchanged": 19}`
+- Evidence: `{"keyboard_only_journey_tab_presses": {"acknowledge": 1, "actor-registrar": 25, "actor-unassigned": 24, "answer-assignment": 1, "answer-authority": 1, "answer-reject_entry": 1, "apply-baseline": 0, "approve-exact": 1, "approve-registrar": 3, "ask-interpretations": 0, "create-case": 1, "denied-recommend": 2, "open-change": 9, "open-evidence": 23, "open-review-subject": 9, "open-try": 5, "recommend-teacher": 1, "reset-preview": 3, "run-verification": 3, "select-meaning": 4, "submit-teacher": 2, "type-request": 0}, "operators_replaced": {"B": 4, "H": 4, "P": 2}, "typed_keystrokes_unchanged": 19}`
 - Targets: `#q-assignment`, `#q-reject_entry`
 - Laws: KLM; predicted saving (model difference): 3.64 s
 
-### 4. Reaching one control took 25 Tab presses
+### 4. 1 pointer move(s) exceed 4 bits
+
+- Change: Place each flagged target closer to the previous one (halve D) and give short targets an effective height of at least 44 px (W >= 44 px). Note the centre-landing convention overstates D for wide targets; see the nearest-edge column.
+- Evidence: `{"moves": ["open-try: D=706.0 px, W=41 px, ID=4.187 bits, MT=0.925 s"]}`
+- Targets: `#workspace > div:nth-of-type(4) > nav > button:nth-of-type(5)`
+- Likely cause (UNVERIFIED hypothesis; the probe does not establish it): primary actions may sit at the far edge of a section while the preceding target is on the other side of the screen (hypothesis from the geometry table, not from the UI code)
+- Laws: Fitts, MacKenzie & Buxton 1992; predicted saving (model difference): 0.168 s
+
+### 5. Reaching one control took 25 Tab presses
 
 - Change: Reduce the Tab distance to the slowest target: group related controls into a single tab stop with arrow-key navigation (WAI-ARIA composite widget pattern with roving tabindex) or provide a skip link past repeated regions.
-- Evidence: `{"tab_presses_by_step": {"acknowledge": 1, "actor-registrar": 25, "actor-unassigned": 24, "answer-assignment": 1, "answer-authority": 1, "answer-reject_entry": 1, "apply-baseline": 0, "approve-exact": 1, "approve-registrar": 3, "ask-interpretations": 0, "create-case": 1, "denied-recommend": 2, "open-change": 9, "open-evidence": 22, "open-review-subject": 9, "open-try": 5, "recommend-teacher": 1, "reset-preview": 3, "run-verification": 3, "select-meaning": 3, "submit-teacher": 2, "type-request": 0}}`
+- Evidence: `{"tab_presses_by_step": {"acknowledge": 1, "actor-registrar": 25, "actor-unassigned": 24, "answer-assignment": 1, "answer-authority": 1, "answer-reject_entry": 1, "apply-baseline": 0, "approve-exact": 1, "approve-registrar": 3, "ask-interpretations": 0, "create-case": 1, "denied-recommend": 2, "open-change": 9, "open-evidence": 23, "open-review-subject": 9, "open-try": 5, "recommend-teacher": 1, "reset-preview": 3, "run-verification": 3, "select-meaning": 4, "submit-teacher": 2, "type-request": 0}}`
 - Likely cause (UNVERIFIED hypothesis; the probe does not establish it): a long run of tab stops before the main content, such as a tab bar or sidebar, precedes the target (hypothesis)
 - Laws: KLM, WCAG 2.1.1; predicted saving (model difference): 0.0 s
 
-### 5. 16/16 views show more than 9 chunks at once (proxy)
+### 6. 16/16 views show more than 9 chunks at once (proxy)
 
 - Change: Reduce what is simultaneously visible in the listed views: move persistent chrome out of the working area once a case is open and collapse raw or secondary content by default, so the work area competes for fewer chunks.
-- Evidence: `{"label": "HEURISTIC PROXY - counts what is simultaneously visible, not what a person holds in memory", "views": ["applied: 37", "change-empty: 29", "change-options: 39", "change-selected: 31", "create-panel: 31", "evidence-approved: 37", "evidence-review-open: 35", "evidence-verified: 39", "impact-tab: 31", "start: 41", "try-denied: 38", "try-draft: 38", "try-idle: 38", "workspace-menu-1440-impact: 60", "workspace-menu-320-impact: 35", "workspace-menu-390-impact: 43"], "worst_chunks": 60, "worst_view": "workspace-menu-1440-impact"}`
+- Evidence: `{"label": "HEURISTIC PROXY - counts what is simultaneously visible, not what a person holds in memory", "views": ["applied: 37", "change-empty: 31", "change-options: 40", "change-selected: 31", "create-panel: 32", "evidence-approved: 37", "evidence-review-open: 35", "evidence-verified: 39", "impact-tab: 31", "start: 41", "try-denied: 40", "try-draft: 38", "try-idle: 38", "workspace-menu-1440-impact: 61", "workspace-menu-320-impact: 35", "workspace-menu-390-impact: 43"], "worst_chunks": 61, "worst_view": "workspace-menu-1440-impact"}`
 - Laws: Miller 1956, Cowan 2001; predicted saving (model difference): 0.0 s
 
-### 6. 9/9 decision points have more than 7 visible controls on screen
+### 7. 9/9 decision points have more than 7 visible controls on screen
 
 - Change: Keep one visually dominant primary action per view and demote the rest (secondary/text buttons), which lowers effective uncertainty for first-time users (Hyman).
-- Evidence: `{"max_group_choices": 7, "max_screen_controls": 25, "note": "upper bound; the choice groups themselves are all <= 7"}`
-- Laws: Hick-Hyman; predicted saving (model difference): 2.783 s
+- Evidence: `{"max_group_choices": 7, "max_screen_controls": 26, "note": "upper bound; the choice groups themselves are all <= 7"}`
+- Laws: Hick-Hyman; predicted saving (model difference): 2.8 s
 
-### 7. Keyboard-only journey costs 69.5 s vs 65.3 s with the pointer (model)
+### 8. Keyboard-only journey costs 70.1 s vs 65.3 s with the pointer (model)
 
 - Change: Not a defect by itself; use it to decide where shortcuts (tab shortcuts, access keys) pay off.
-- Evidence: `{"keyboard_K": 205, "keyboard_total_s": 69.55, "pointer_total_s": 65.31}`
+- Evidence: `{"keyboard_K": 207, "keyboard_total_s": 70.11, "pointer_total_s": 65.31}`
 - Laws: KLM; predicted saving (model difference): 0.0 s
 
-### 8. 9 mental operators = 12.2 s (19% of expert time)
+### 9. 9 mental operators = 12.2 s (19% of expert time)
 
 - Change: Each M is a reading or decision moment (steps listed in the evidence). Keep the wording at those steps short and put the decision-relevant text next to the control (no cross-tab lookup).
 - Evidence: `{"M_by_step": ["acknowledge", "actor-registrar", "actor-unassigned", "answer-assignment", "answer-authority", "answer-reject_entry", "apply-baseline", "select-meaning", "type-request"]}`
@@ -109,14 +118,14 @@ Severity 5 critical WCAG, 4 serious WCAG / focus loss / wait over 1 s, 3 moderat
 | Budget | Law | Value | Target | Limit | Status |
 |---|---|---|---|---|---|
 | fitts.targets_under_24px | Fitts / WCAG 2.5.8 | 0 targets | 0 | 0 | PASS |
-| fitts.moves_over_4_bits | Fitts | 0 moves | 0 | 7 | PASS |
-| fitts.max_id | Fitts | 3.87 bits | 4 | 4.5 | PASS |
+| fitts.moves_over_4_bits | Fitts | 1 moves | 0 | 7 | GAP |
+| fitts.max_id | Fitts | 4.187 bits | 4 | 4.5 | GAP |
 | hick.choice_groups_over_7 | Hick-Hyman | 0 groups | 0 | 0 | PASS |
 | hick.max_choices | Hick-Hyman | 7 alternatives | 7 | 7 | PASS |
 | klm.pointer_expert_time | KLM-GOMS | 65.31 s | 65 | 65 | FAIL |
-| doherty.first_feedback_p95 | Doherty | 5.1 ms | 400 | 400 | PASS |
-| doherty.settled_p50 | Doherty | 92.9 ms | 400 | 400 | PASS |
-| doherty.settled_p95 | Doherty | 942.6 ms | 400 | 4000 | GAP |
+| doherty.first_feedback_p95 | Doherty | 6.7 ms | 400 | 400 | PASS |
+| doherty.settled_p50 | Doherty | 98.6 ms | 400 | 400 | PASS |
+| doherty.settled_p95 | Doherty | 843.2 ms | 400 | 4000 | GAP |
 | wcag.critical_rules | WCAG 2.2 AA | 0 rules | 0 | 0 | PASS |
 | wcag.serious_rules | WCAG 2.2 AA | 0 rules | 0 | 1 | PASS |
 | wcag.moderate_rules | WCAG 2.2 AA | 0 rules | 0 | 0 | PASS |
@@ -124,7 +133,7 @@ Severity 5 critical WCAG, 4 serious WCAG / focus loss / wait over 1 s, 3 moderat
 | wcag.reflow_overflow_views | WCAG 1.4.10 | 0 views | 0 | 0 | PASS |
 | keyboard.focus_lost_activations | WCAG 2.4.3 | 0 activations | 0 | 7 | PASS |
 | keyboard.stops_without_indicator | WCAG 2.4.7 | 0 stops | 0 | 0 | PASS |
-| memory.max_chunks_viewport | Miller / Cowan (proxy) | 60 chunks | 9 | 27 | FAIL |
+| memory.max_chunks_viewport | Miller / Cowan (proxy) | 61 chunks | 9 | 27 | FAIL |
 | runtime.js_exceptions | hygiene | 0 exceptions | 0 | 0 | PASS |
 
 ## Fitts's law (prediction over measured geometry)
@@ -137,8 +146,8 @@ PREDICTION over measured geometry. `MT = a + b*log2(D/W + 1), W = min(width, hei
 | type-request | What should change? | 576.3 | 100 | 2.758 | 0.688 | pass | - | 1.486 |
 | create-case | Create case | 511.7 | 44 | 3.659 | 0.837 | pass | - | 3.518 |
 | ask-interpretations | Get interpretations | 225.7 | 44 | 2.616 | 0.664 | pass | - | 2.189 |
-| select-meaning | Select this meaning | 433.8 | 44 | 3.441 | 0.801 | pass | - | 3.315 |
-| open-try | Run | 558.3 | 41 | 3.87 | 0.872 | pass | - | 3.803 |
+| select-meaning | Select this meaning | 580.8 | 44 | 3.828 | 0.865 | pass | - | 3.744 |
+| open-try | Run | 706.0 | 41 | 4.187 | 0.925 | pass | ID>4 | 4.137 |
 | reset-preview | Start / reset preview | 128.6 | 44 | 1.972 | 0.557 | pass | - | 1.715 |
 | submit-teacher | Submit | 389.3 | 44 | 3.3 | 0.778 | pass | - | 3.159 |
 | recommend-teacher | Recommend | 100.0 | 44 | 1.71 | 0.514 | pass | - | 1.065 |
@@ -156,7 +165,7 @@ PREDICTION over measured geometry. `MT = a + b*log2(D/W + 1), W = min(width, hei
 | approve-exact | Authorise exact local revision | 441.7 | 44 | 3.465 | 0.805 | not-audited | - | 3.121 |
 | apply-baseline | Apply to local baseline | 194.7 | 44 | 2.44 | 0.635 | pass | - | 1.836 |
 
-Mean ID 2.677 bits, hardest move `open-try` (3.87 bits), predicted pointing time 14.159 s over 6031.4 px, 0 scroll(s) needed (not modelled). Moves over 4 bits: 0 with centre landing, 0 with nearest-edge landing.
+Mean ID 2.71 bits, hardest move `open-try` (4.187 bits), predicted pointing time 14.276 s over 6326.1 px, 0 scroll(s) needed (not modelled). Moves over 4 bits: 1 with centre landing, 1 with nearest-edge landing.
 
 ## Hick-Hyman law (prediction over measured counts)
 
@@ -164,7 +173,7 @@ PREDICTION over measured counts. `T = b*log2(n + 1)`, b = 0.15 s/bit (Card, Mora
 
 | Step | Decision | n | bits | T s | n > 7 | Screen controls | Screen T s |
 |---|---|---|---|---|---|---|---|
-| select-meaning | choose an interpretation | 3 | 2.0 | 0.3 | ok | 23 | 0.688 |
+| select-meaning | choose an interpretation | 3 | 2.0 | 0.3 | ok | 24 | 0.697 |
 | open-try | choose a work area | 7 | 3.0 | 0.45 | ok | 23 | 0.688 |
 | submit-teacher | choose a lifecycle action | 5 | 2.585 | 0.388 | ok | 25 | 0.705 |
 | recommend-teacher | choose a lifecycle action | 5 | 2.585 | 0.388 | ok | 25 | 0.705 |
@@ -172,7 +181,7 @@ PREDICTION over measured counts. `T = b*log2(n + 1)`, b = 0.15 s/bit (Card, Mora
 | approve-registrar | choose a lifecycle action | 5 | 2.585 | 0.388 | ok | 25 | 0.705 |
 | actor-unassigned | choose the acting role | 5 | 2.585 | 0.388 | ok | 25 | 0.705 |
 | denied-recommend | choose a lifecycle action | 5 | 2.585 | 0.388 | ok | 25 | 0.705 |
-| open-evidence | choose a work area | 7 | 3.0 | 0.45 | ok | 25 | 0.705 |
+| open-evidence | choose a work area | 7 | 3.0 | 0.45 | ok | 26 | 0.713 |
 
 Predicted total choice time 3.528 s; largest choice group 7.
 
@@ -182,10 +191,10 @@ PREDICTION. Operator times (s): K 0.28, P 1.1, B 0.1, H 0.4, M 1.35 (Card, Moran
 
 | Journey | K | P | B | H | M | Standard total s | Fitts-refined total s |
 |---|---|---|---|---|---|---|---|
-| Pointer + typing | 67 | 24 | 48 | 8 | 9 | 65.31 | 56.371 |
-| Keyboard only (Tab, Enter, Space, arrows) | 205 | 0 | 0 | 0 | 9 | 69.55 | - |
+| Pointer + typing | 67 | 24 | 48 | 8 | 9 | 65.31 | 56.488 |
+| Keyboard only (Tab, Enter, Space, arrows) | 207 | 0 | 0 | 0 | 9 | 70.11 | - |
 
-Expected expert time is 65.31 s pointer-driven (Fitts-refined 56.371 s) and 69.55 s keyboard-only, excluding system response (measured wait, sum of per-step medians: 2.058 s) and scrolling.
+Expected expert time is 65.31 s pointer-driven (Fitts-refined 56.488 s) and 70.11 s keyboard-only, excluding system response (measured wait, sum of per-step medians: 2.246 s) and scrolling.
 
 | Step | KLM s (pointer) | Operators |
 |---|---|---|
@@ -218,23 +227,23 @@ MEASUREMENT, wall-clock. The first-DOM-mutation columns time the first DOM chang
 
 | Step | n | First DOM mutation p50 ms | p95 ms | Settled p25 ms | p50 ms | p75 ms | p95 ms | > 400 ms |
 |---|---|---|---|---|---|---|---|---|
-| open-change | 3 | 4.9 | 5.1 | 4.6 | 4.9 | 5.1 | 5.1 | ok |
-| create-case | 3 | 0.5 | 0.5 | 81.3 | 86.5 | 214.9 | 214.9 | ok |
-| ask-interpretations | 3 | 0.5 | 2.1 | 87.5 | 104.3 | 374.1 | 374.1 | ok |
-| select-meaning | 3 | 0.4 | 1.3 | 110.8 | 118.2 | 276.5 | 276.5 | ok |
-| open-try | 3 | 3.2 | 3.5 | 2.9 | 3.2 | 3.5 | 3.5 | ok |
-| reset-preview | 3 | 0.8 | 1.3 | 92.7 | 111.6 | 141.7 | 141.7 | ok |
-| submit-teacher | 3 | 0.7 | 0.8 | 89.2 | 93.5 | 103 | 103 | ok |
-| recommend-teacher | 3 | 0.5 | 0.6 | 92.3 | 99.1 | 114.5 | 114.5 | ok |
-| approve-registrar | 3 | 0.6 | 0.6 | 87.7 | 92.9 | 95.1 | 95.1 | ok |
-| denied-recommend | 3 | 0.6 | 0.6 | 5.7 | 6.2 | 6.3 | 6.3 | ok |
-| open-evidence | 3 | 5.6 | 7.4 | 4.9 | 5.6 | 7.4 | 7.4 | ok |
-| run-verification | 3 | 0.6 | 0.7 | 942.6 | 961.7 | 3109.7 | 3109.7 | p50 |
-| open-review-subject | 3 | 0.7 | 0.8 | 0.6 | 0.7 | 0.8 | 0.8 | ok |
-| approve-exact | 3 | 0.9 | 1.3 | 139.5 | 150.5 | 197.1 | 197.1 | ok |
-| apply-baseline | 3 | 0.4 | 0.5 | 211.5 | 219 | 228.2 | 228.2 | ok |
+| open-change | 3 | 6.7 | 9 | 5.7 | 6.7 | 9 | 9 | ok |
+| create-case | 3 | 0.5 | 0.6 | 85.5 | 86.6 | 104.7 | 104.7 | ok |
+| ask-interpretations | 3 | 0.7 | 0.8 | 97.2 | 104.2 | 120.9 | 120.9 | ok |
+| select-meaning | 3 | 0.6 | 1.2 | 100.1 | 114.2 | 137.4 | 137.4 | ok |
+| open-try | 3 | 4 | 4.3 | 3.9 | 4 | 4.3 | 4.3 | ok |
+| reset-preview | 3 | 0.8 | 1.6 | 90.1 | 101.6 | 144.5 | 144.5 | ok |
+| submit-teacher | 3 | 0.9 | 1.2 | 97.4 | 98.6 | 124.7 | 124.7 | ok |
+| recommend-teacher | 3 | 0.5 | 0.7 | 94.9 | 115.9 | 127.4 | 127.4 | ok |
+| approve-registrar | 3 | 0.6 | 0.7 | 95.5 | 99.7 | 136 | 136 | ok |
+| denied-recommend | 3 | 1.1 | 1.5 | 6.9 | 7.5 | 13.5 | 13.5 | ok |
+| open-evidence | 3 | 6.7 | 8 | 6.7 | 6.7 | 8 | 8 | ok |
+| run-verification | 3 | 0.6 | 1.2 | 843.2 | 1099.7 | 1502.5 | 1502.5 | p50 |
+| open-review-subject | 3 | 0.8 | 1.6 | 0.7 | 0.8 | 1.6 | 1.6 | ok |
+| approve-exact | 3 | 0.9 | 2.2 | 140.1 | 149.9 | 209.6 | 209.6 | ok |
+| apply-baseline | 3 | 0.7 | 1.6 | 225.5 | 250.1 | 264.4 | 264.4 | ok |
 
-Overall: first DOM mutation p50/p95 0.6/5.1 ms; settled p25/p50/p75 5.7/92.9/141.7 ms, p95 942.6 ms (max 3109.7 ms). Keyboard activations settled p50/p95 87.7/798.8 ms.
+Overall: first DOM mutation p50/p95 0.8/6.7 ms; settled p25/p50/p75 7.5/98.6/136 ms, p95 843.2 ms (max 1502.5 ms). Keyboard activations settled p50/p95 83.6/1004.8 ms.
 
 ## WCAG 2.2 AA (measurement)
 
@@ -244,7 +253,7 @@ No axe violations in the audited views.
 
 Needs manual review (axe `incomplete`): aria-valid-attr-value (critical), color-contrast (serious).
 
-Target size (own audit of 86 controls): {'pass': 86}. Exceptions not evaluated: inline, user-agent controlled, equivalent control, essential.
+Target size (own audit of 88 controls): {'pass': 88}. Exceptions not evaluated: inline, user-agent controlled, equivalent control, essential.
 
 | Control | Status | Effective px | Raw px | Via label |
 |---|---|---|---|---|
@@ -260,7 +269,7 @@ Supplementary heuristic (heuristic; not an axe rule): interactive element styled
 
 ## Keyboard-only traversal (measurement)
 
-MEASUREMENT. The whole journey completed with the keyboard alone: 117 Tab presses; most for one target 25; 50 distinct focus stops seen; 0 of 16 activations dropped focus to the page body (none); 0 Tab presses were spent on steps right after a focus loss; 0 stops without a visible indicator; 4 upward focus moves. Real Tab traversal plus Arrow/Home navigation within tablists; every navigation and activation key is recorded; focus indicator = computed outline or box-shadow on the focused element; 'focus lost' = document.activeElement is <body> once the DOM settled after activation.
+MEASUREMENT. The whole journey completed with the keyboard alone: 119 Tab presses; most for one target 25; 51 distinct focus stops seen; 0 of 16 activations dropped focus to the page body (none); 0 Tab presses were spent on steps right after a focus loss; 0 stops without a visible indicator; 4 upward focus moves. Real Tab traversal plus Arrow/Home navigation within tablists; every navigation and activation key is recorded; focus indicator = computed outline or box-shadow on the focused element; 'focus lost' = document.activeElement is <body> once the DOM settled after activation.
 
 | Step | Tab presses |
 |---|---|
@@ -268,7 +277,7 @@ MEASUREMENT. The whole journey completed with the keyboard alone: 117 Tab presse
 | type-request | 0 |
 | create-case | 1 |
 | ask-interpretations | 0 |
-| select-meaning | 3 |
+| select-meaning | 4 |
 | open-try | 5 |
 | reset-preview | 3 |
 | submit-teacher | 2 |
@@ -277,7 +286,7 @@ MEASUREMENT. The whole journey completed with the keyboard alone: 117 Tab presse
 | approve-registrar | 3 |
 | actor-unassigned | 24 |
 | denied-recommend | 2 |
-| open-evidence | 22 |
+| open-evidence | 23 |
 | run-verification | 3 |
 | open-review-subject | 9 |
 | answer-authority | 1 |
@@ -294,25 +303,25 @@ HEURISTIC PROXY - counts what is simultaneously visible, not what a person holds
 | View | Controls | Content groups | Chunks (viewport) | Chunks (page) | > 9 |
 |---|---|---|---|---|---|
 | applied | 27 | 10 | 37 | 37 | FLAG |
-| change-empty | 17 | 12 | 29 | 29 | FLAG |
-| change-options | 23 | 16 | 39 | 39 | FLAG |
+| change-empty | 18 | 13 | 31 | 31 | FLAG |
+| change-options | 24 | 16 | 40 | 40 | FLAG |
 | change-selected | 18 | 13 | 31 | 31 | FLAG |
-| create-panel | 17 | 14 | 31 | 31 | FLAG |
+| create-panel | 17 | 15 | 32 | 32 | FLAG |
 | evidence-approved | 27 | 10 | 37 | 37 | FLAG |
 | evidence-review-open | 25 | 10 | 35 | 35 | FLAG |
 | evidence-verified | 22 | 17 | 39 | 39 | FLAG |
 | impact-tab | 18 | 13 | 31 | 31 | FLAG |
 | start | 23 | 18 | 41 | 41 | FLAG |
-| try-denied | 25 | 13 | 38 | 38 | FLAG |
+| try-denied | 26 | 14 | 40 | 40 | FLAG |
 | try-draft | 25 | 13 | 38 | 38 | FLAG |
 | try-idle | 25 | 13 | 38 | 38 | FLAG |
-| workspace-menu-1440-impact | 38 | 22 | 60 | 60 | FLAG |
+| workspace-menu-1440-impact | 39 | 22 | 61 | 61 | FLAG |
 | workspace-menu-320-impact | 24 | 11 | 35 | 35 | FLAG |
-| workspace-menu-390-impact | 30 | 13 | 43 | 43 | FLAG |
+| workspace-menu-390-impact | 29 | 14 | 43 | 43 | FLAG |
 
 ## Runtime hygiene
 
-JavaScript exceptions: 0. HTTP error responses: 409 POST /api/cases/434cace8a11a40c89f3e49fb57fbf654/execute during `denied-recommend`; 409 POST /api/cases/cf214e6e43be48938c5c07ba9e759abb/execute during `denied-recommend`; 409 POST /api/cases/ff6366e529644cf19bc1ce478244ceb2/execute during `denied-recommend`.
+JavaScript exceptions: 0. HTTP error responses: 409 POST /api/cases/a0c8e6f4ea8b4984b6e5ca8d39c71058/execute during `denied-recommend`; 409 POST /api/cases/efec1af3f79342e08867f3caf515b7fa/execute during `denied-recommend`; 409 POST /api/cases/fae3461ffc1c4f74b4b963589fb6ba71/execute during `denied-recommend`.
 
 ## Limitations
 

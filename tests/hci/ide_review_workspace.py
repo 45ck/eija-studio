@@ -94,7 +94,10 @@ OBSERVE_COMPARE = r"""board => {
             id:group.getAttribute('data-eija-id'), initial:group.getAttribute('data-initial'),
             initial_labels:[...group.querySelectorAll('text.compare-initial-label')]
                 .map(element=>({status_class:element.classList.contains('compare-status-label'), ...label(element)})),
-            accessible:group.getAttribute('aria-label'), label:label(labels[0]), ...geometry(rects[0])};
+            accessible:group.getAttribute('aria-label'), status:group.getAttribute('data-status'),
+            status_labels:[...group.querySelectorAll('text.compare-status-label')].map(label),
+            position:{x:rects[0].getAttribute('x'),y:rects[0].getAttribute('y')},
+            label:label(labels[0]), ...geometry(rects[0])};
     });
     function contacts(path, distance) {
         const screen = path.getPointAtLength(distance).matrixTransform(matrix(path));
@@ -122,7 +125,9 @@ OBSERVE_COMPARE = r"""board => {
         if(paths.length!==1 || labels.length!==1) throw new Error('Ambiguous compare edge paths/labels');
         const path=paths[0], length=path.getTotalLength();
         return {transition:group.getAttribute('data-transition'), id:group.getAttribute('data-eija-id'),
-            accessible:group.getAttribute('aria-label'), label:label(labels[0]),
+            accessible:group.getAttribute('aria-label'), status:group.getAttribute('data-status'),
+            status_labels:[...group.querySelectorAll('text.compare-status-label')].map(label),
+            label_position:{x:labels[0].getAttribute('x'),y:labels[0].getAttribute('y')}, label:label(labels[0]),
             path_id:path.id, d:path.getAttribute('d'), length, paint:paint(path),
             source:contacts(path,0), target:contacts(path,length), marker:marker(path)};
     });
@@ -222,9 +227,9 @@ def assert_graph(model, observed):
         assert len(initial_labels) == int(state == model["initial_state"]), f"initial_label: wrong node {state}"
         if initial_labels:
             initial_label = initial_labels[0]
-            prefix = "● Initial · "
+            expected_initial = "● Initial" + (" · " + STATUS_TEXT[node["status"]] if node["status"] != "unchanged" else "")
             assert initial_label["status_class"], "initial_label: missing comparison status class"
-            assert initial_label["text"].startswith(prefix) and initial_label["text"][len(prefix):].strip(), "initial_label: missing initial prefix or status"
+            assert initial_label["text"] == expected_initial, "initial_label: incorrect independent Initial marker/status text"
             _assert_label(initial_label, initial_label["text"], "initial_label")
             inner, outer = initial_label["screen_box"], node["screen_box"]
             assert (inner["x"] >= outer["x"] - 1 and inner["y"] >= outer["y"] - 1
@@ -298,6 +303,128 @@ def graph_negative_controls(model, observed):
     return detected
 
 
+STATUS_TEXT = {"added": "+ Added", "removed": "\u2212 Removed", "changed": "◇ Modified", "unchanged": "= Unchanged"}
+
+
+def assert_label_hierarchy(before, after, pair):
+    """Derive every status from the server snapshots, independently of DOM status."""
+    inventory = semantic_inventory(before, after)
+    for side, model in (("before", before), ("after", after)):
+        observed = pair[side]
+        transitions = _workflow_index(model)
+        for node in observed["nodes"]:
+            expected_status = inventory.get("state:" + node["state"], {}).get("status", "unchanged")
+            assert node["status"] == expected_status, "label_hierarchy: node status differs from server snapshots"
+            expected = STATUS_TEXT[expected_status]
+            initial = node["state"] == model["initial_state"]
+            assert node["accessible"] == node["state"] + ", " + expected + (", initial state" if initial else ""), "label_hierarchy: node accessible status lost"
+            captions = [("● Initial" if initial else ""), (expected if expected_status != "unchanged" else "")]
+            caption = " · ".join(text for text in captions if text)
+            assert [item["text"] for item in node["status_labels"]] == ([caption] if caption else []), "label_hierarchy: unexpected node caption"
+            for item in node["status_labels"]:
+                _assert_label(item, caption, "label_hierarchy: node caption")
+        for edge in observed["edges"]:
+            item = transitions[edge["transition"]]
+            expected_status = inventory.get("transition:" + item["id"], {}).get("status", "unchanged")
+            assert edge["status"] == expected_status, "label_hierarchy: edge status differs from server snapshots"
+            status_text = STATUS_TEXT[expected_status]
+            expected_aria = f'{status_text}, {item["action"]}, {item["role"]}, {item["from_state"]} to {item["to_state"]}'
+            assert edge["accessible"] == expected_aria, "label_hierarchy: edge accessible facts lost"
+            captions = [] if expected_status == "unchanged" else [status_text]
+            assert [label["text"] for label in edge["status_labels"]] == captions, "label_hierarchy: unexpected edge caption"
+            for label in edge["status_labels"]:
+                _assert_label(label, status_text, "label_hierarchy: edge caption")
+    left = {node["state"]: node for node in pair["before"]["nodes"]}
+    right = {node["state"]: node for node in pair["after"]["nodes"]}
+    for identity in left.keys() & right.keys():
+        assert left[identity]["position"] == right[identity]["position"], "shared_coordinates: common state moved between sides"
+    left_edges = {edge["transition"]: edge for edge in pair["before"]["edges"]}
+    right_edges = {edge["transition"]: edge for edge in pair["after"]["edges"]}
+    a, b = _workflow_index(before), _workflow_index(after)
+    for identity in left_edges.keys() & right_edges.keys():
+        if (a[identity]["from_state"], a[identity]["to_state"]) == (b[identity]["from_state"], b[identity]["to_state"]):
+            assert left_edges[identity]["d"] == right_edges[identity]["d"], "shared_coordinates: common route moved between sides"
+            assert left_edges[identity]["label_position"] == right_edges[identity]["label_position"], "shared_coordinates: common route label moved"
+
+
+OBSERVE_LABEL_CLEARANCE = r"""board => {
+    const box = el => {const b=el.getBoundingClientRect();return {left:b.left,top:b.top,right:b.right,bottom:b.bottom,width:b.width,height:b.height};};
+    const style=el=>{const s=getComputedStyle(el);return {fill:s.fill,stroke:s.stroke,strokeWidth:s.strokeWidth,
+        paintOrder:s.paintOrder,strokeDasharray:s.strokeDasharray,opacity:s.opacity,visibility:s.visibility,display:s.display};};
+    let clip={left:0,top:0,right:innerWidth,bottom:innerHeight};
+    for(let p=board;p;p=p.parentElement){const s=getComputedStyle(p),b=p.getBoundingClientRect();
+        if(p===board||/auto|scroll|hidden|clip/.test(s.overflowX)){clip.left=Math.max(clip.left,b.left);clip.right=Math.min(clip.right,b.right);}
+        if(p===board||/auto|scroll|hidden|clip/.test(s.overflowY)){clip.top=Math.max(clip.top,b.top);clip.bottom=Math.min(clip.bottom,b.bottom);}}
+    const labels=[...board.querySelectorAll('.compare-edge-label,.compare-edge .compare-status-label')].map(el=>({
+        transition:el.closest('.compare-edge').dataset.transition,
+        kind:el.classList.contains('compare-edge-label')?'action':'status',text:el.textContent,box:box(el),style:style(el)}));
+    const overlap=(a,b)=>a.left<b.right && a.right>b.left && a.top<b.bottom && a.bottom>b.top;
+    const label_intersections=[];
+    for(let i=0;i<labels.length;i++)for(let j=i+1;j<labels.length;j++)if(overlap(labels[i].box,labels[j].box))
+        label_intersections.push({left:labels[i],right:labels[j]});
+    const routes=[...board.querySelectorAll('path.compare-edge-line')].map(path=>{
+        const m=path.getScreenCTM(),length=path.getTotalLength(),s=getComputedStyle(path);
+        // At most .25 CSS px along the transformed path; this reports envelope
+        // intersections, not glyph-pixel intersections or a proof for all curves.
+        const scale=Math.max(Math.hypot(m.a,m.b),Math.hypot(m.c,m.d));
+        const steps=Math.max(1,Math.ceil(length*scale/.25));
+        if(steps>100000)throw new Error('label_clearance: path exceeds bounded observation budget');
+        const radius=parseFloat(s.strokeWidth)*scale/2;
+        const hits=[],points=Array.from({length:steps+1},(_,i)=>path.getPointAtLength(length*i/steps).matrixTransform(m));
+        for(const label of labels){
+            const b=label.box;
+            for(let i=0;i<=steps;i++){
+                const p=points[i];
+                if(p.x>=b.left-radius && p.x<=b.right+radius && p.y>=b.top-radius && p.y<=b.bottom+radius){
+                    hits.push({label,same_transition:label.transition===path.closest('.compare-edge').dataset.transition,
+                        first_sample:{x:p.x,y:p.y},sample:i});break;
+                }
+            }
+        }
+        return {transition:path.closest('.compare-edge').dataset.transition,style:style(path),samples:steps+1,
+            maximum_css_sample_spacing:.25,stroke_radius:radius,hits};
+    });
+    return {labels,label_intersections,routes,clip,board:box(board),
+        route_acceptance:'DIAGNOSTIC_ONLY: actual screenshot review required for halo/dash/occlusion and route legibility'};
+}"""
+
+
+def assert_label_text_separation(observed):
+    """Text envelopes must separate. Route intersections remain visual diagnostics."""
+    assert observed["labels"], "label_clearance: no measured action/status labels"
+    assert not observed["label_intersections"], {"label_clearance": observed["label_intersections"]}
+    return observed
+
+
+def hierarchy_negative_controls(before, after, pair):
+    """Copied-observation sensitivity checks; never presented as browser evidence."""
+    assert_label_hierarchy(before, after, pair)
+    mutations = {}
+    wrong = deepcopy(pair)
+    edge = next(edge for side in wrong.values() for edge in side["edges"] if edge["status"] == "unchanged")
+    edge["status_labels"] = [{**deepcopy(edge["label"]), "text": "= Unchanged"}]
+    mutations["redundant_unchanged_caption"] = wrong
+    wrong = deepcopy(pair)
+    edge = next(edge for side in wrong.values() for edge in side["edges"] if edge["status"] != "unchanged")
+    edge["status_labels"] = []
+    mutations["missing_changed_caption"] = wrong
+    wrong = deepcopy(pair)
+    wrong["after"]["edges"][0]["accessible"] = ""
+    mutations["lost_accessible_facts"] = wrong
+    detected = {}
+    for name, wrong in mutations.items():
+        try:
+            assert_label_hierarchy(before, after, wrong)
+        except AssertionError as error:
+            assert str(error).startswith("label_hierarchy:"), str(error)
+            detected[name] = str(error)
+        else:
+            raise AssertionError("label_hierarchy: mutation survived: " + name)
+    return detected
+
+
+
+
 VISIBLE_SELECTION = r"""(board, expected) => {
     const box = node => {const r=node.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height};};
     const clipped={left:0,top:0,right:innerWidth,bottom:innerHeight};
@@ -340,6 +467,16 @@ def assert_default_readability(record):
     for side in record["panes"]:
         assert math.isclose(side["scale"], 1, abs_tol=0.005), "default_readability: painted scale is not 100%"
         assert side["label_heights"] and min(side["label_heights"]) >= 14, "default_readability: state text below existing 14px floor"
+
+
+def assert_explicit_natural_scale(record):
+    """The user's 100% command preserves its viewport as manual, unlike automatic entry."""
+    assert record["mode"] == "manual", "natural_scale: explicit 100% did not enter manual viewport mode"
+    assert record["displayed_scale"] == "100%", "natural_scale: displayed scale is not 100%"
+    assert len(record["panes"]) == 2, "natural_scale: both comparison panes required"
+    for side in record["panes"]:
+        assert math.isclose(side["scale"], 1, abs_tol=0.005), "natural_scale: painted scale is not 100%"
+        assert side["label_heights"] and min(side["label_heights"]) >= 14, "natural_scale: state text below existing 14px floor"
 
 
 def assert_same_presentation(expected, actual, mode):
@@ -652,6 +789,7 @@ class ReviewWorkspace(Journey):
             observed = board.evaluate(OBSERVE_COMPARE)
             assert_graph(view["case"][field], observed)
             records[side] = observed
+        assert_label_hierarchy(view["case"]["baseline"], view["case"]["candidate"], records)
         # ID collision detection intentionally includes every graph, even the closed preview.
         ids = self.page.locator(".paired-compare svg [id]").evaluate_all("nodes => nodes.map(n => n.id)")
         assert len(ids) == len(set(ids)), "Simultaneous diagrams have colliding SVG IDs."
@@ -791,6 +929,50 @@ class ReviewWorkspace(Journey):
                 "viewboxes_before": old, "viewboxes_after": new,
                 "absent_side_has_no_ghost": True, "case_layout_history_unchanged": True}
 
+    def label_hierarchy_viewports(self):
+        before = self.snapshot()
+        view = self.case_view()
+        observations = []
+        for width, height in ((1280, 800), (1600, 1100)):
+            self.page.set_viewport_size({"width": width, "height": height})
+            for action, mode in (("readable", "natural-100-percent"), ("focus", "fit-selection")):
+                self.main_comparison().locator(f'[data-compare-action="{action}"]').click()
+                self.page.evaluate("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))")
+                pair = self.observe_pair(view, f"label-hierarchy-{width}-{mode}")
+                observation = {"viewport": self.page.viewport_size, "mode": mode, "presentation": self.presentation(),
+                               "scale": self.main_comparison().locator("output[data-compare-scale]").inner_text(),
+                               "negative_controls": hierarchy_negative_controls(view["case"]["baseline"], view["case"]["candidate"], pair),
+                               "sides": {}}
+                for side in ("before", "after"):
+                    board = self.main_comparison().locator(f'[data-compare-side="{side}"] svg.compare-svg')
+                    clearance = board.evaluate(OBSERVE_LABEL_CLEARANCE)
+                    observation["sides"][side] = clearance
+                observations.append(observation)
+                write_json(self.out / "label-hierarchy-paint.json", observations)
+                self.shot(f"label-hierarchy-{width}-{mode}")
+                for clearance in observation["sides"].values():
+                    assert_label_text_separation(clearance)
+                if action == "readable":
+                    natural = {**observation["presentation"], "displayed_scale": observation["scale"]}
+                    for index, side in enumerate(("before", "after")):
+                        natural["panes"][index]["label_heights"] = [
+                            node["label"]["screen_box"]["height"] for node in pair[side]["nodes"]]
+                    observation["natural_scale"] = natural
+                    write_json(self.out / "label-hierarchy-paint.json", observations)
+                    assert_explicit_natural_scale(natural)
+                else:
+                    assert observation["presentation"]["mode"] == "focus", "Fit selection did not enter focus mode"
+                    # Fit may reduce text size. Existing assert_graph already verifies
+                    # positive painted labels; full endpoint/action containment follows.
+                    for side, field in (("before", "baseline"), ("after", "candidate")):
+                        transition = next(t for t in view["case"][field]["transitions"] if t["id"] == "TR-VERIFY")
+                        board = self.main_comparison().locator(f'[data-compare-side="{side}"] svg.compare-svg')
+                        assert_visible_selection(transition, board.evaluate(VISIBLE_SELECTION, transition))
+        self.assert_unchanged(before)
+        return {"observations": observations, "case_history_unchanged": True,
+                "scope": "Real EIJA role/endpoint edits and parallel routes. Text-envelope and sampled route geometry, not human comprehension.",
+                "not_run": ["arbitrary long action names", "before/after action rename", "baseline-only removal", "changed initial state"]}
+
     def exact_source(self):
         before = self.snapshot()
         view = self.case_view()
@@ -847,29 +1029,32 @@ class ReviewWorkspace(Journey):
         human = self.page.locator("#evidence .human-status")
         replay.expect(human).to_be_visible()
         replay.expect(human).to_contain_text("Human comprehension: " + packet["human_understanding"])
-        claim_rows = self.page.locator("#formal details[data-claim]")
+        claim_rows = self.page.locator("#formal > details[data-claim]")
         assert claim_rows.count() == len(packet["technical_claims"])
         for name, status in packet["technical_claims"].items():
-            row = self.page.locator(f'#formal details[data-claim="{name}"]')
+            row = self.page.locator(f'#formal > details[data-claim="{name}"]')
             assert row.count() == 1, "Technical claim was dropped or repeated"
-            replay.expect(row.locator("summary .evidence-status")).to_be_visible()
-            replay.expect(row.locator("summary .evidence-status")).to_have_text(status)
-        formal_rows = self.page.locator("#formal details[data-evidence-kind]")
+            replay.expect(row).to_have_attribute("data-status", status)
+            replay.expect(row.locator(":scope > summary .evidence-status")).to_be_visible()
+            replay.expect(row.locator(":scope > summary .evidence-status")).to_have_text(status)
+        formal_rows = self.page.locator("#formal > details[data-evidence-kind]")
         assert formal_rows.count() == len(packet["formal_evidence"])
         for index, item in enumerate(packet["formal_evidence"]):
             row = formal_rows.nth(index)
             replay.expect(row).to_have_attribute("data-evidence-kind", item["kind"])
-            replay.expect(row.locator("summary .evidence-status")).to_be_visible()
-            replay.expect(row.locator("summary .evidence-status")).to_have_text(item["status"])
-            replay.expect(row.locator("summary .evidence-scope")).to_contain_text(item["evidence_level"].replace("_", " "))
+            replay.expect(row).to_have_attribute("data-evidence-index", str(index))
+            replay.expect(row).to_have_attribute("data-status", item["status"])
+            replay.expect(row.locator(":scope > summary .evidence-status")).to_be_visible()
+            replay.expect(row.locator(":scope > summary .evidence-status")).to_have_text(item["status"])
+            replay.expect(row.locator(":scope > summary .evidence-scope")).to_contain_text(item["evidence_level"].replace("_", " "))
         exact_pairs = {
             "formal_" + item["kind"] for item in packet["formal_evidence"]
             if sum(other["kind"] == item["kind"] for other in packet["formal_evidence"]) == 1
             and packet["technical_claims"].get("formal_" + item["kind"]) == item["status"]
         }
-        paired = self.page.locator("#formal details[data-evidence-kind][data-claim]")
+        paired = self.page.locator("#formal > details[data-evidence-kind][data-claim]")
         assert set(paired.evaluate_all("nodes => nodes.map(n => n.dataset.claim)")) == exact_pairs
-        assert self.page.locator("#formal details").count() == len(packet["technical_claims"]) + len(packet["formal_evidence"]) - len(exact_pairs)
+        assert self.page.locator("#formal > details").count() == len(packet["technical_claims"]) + len(packet["formal_evidence"]) - len(exact_pairs)
         for blocker in packet["blockers"]:
             replay.expect(self.page.locator("#blockers")).to_contain_text(blocker)
         assert self.packet() == packet
@@ -1418,6 +1603,7 @@ def main():
                     review = ReviewWorkspace(page, out, base)
                     for name, action in (("model-to-selected-change", review.prepare), ("ordinary-summary-layout", review.summary_layout),
                                          ("paired-graph-truth", review.paired_graphs),
+                                         ("label-hierarchy-paint", review.label_hierarchy_viewports),
                                          ("exact-source-roundtrip", review.exact_source), ("evidence-focus-error-restore", review.focus_recovery),
                                          ("history-current-subject", review.historical_context), ("self-loop-cross-case", review.loop_and_cross_case),
                                          ("runtime-context", review.runtime_context), ("keyboard-responsive-review", review.keyboard_and_viewports),

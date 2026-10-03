@@ -13,7 +13,13 @@ const EijaCanvas = (() => {
     if (distance <= cornerRadius) return point;
     return {x:node.x + cx + dx * cornerRadius / distance, y:node.y + cy + dy * cornerRadius / distance};
   }
-  function geometry(model, saved = {}, direction = "LR") {
+  function edgeLabelSize(transition, labelBoxes) {
+    const supplied=labelBoxes?.get(transition.id);
+    if(supplied===undefined)return {width:Math.max(70,String(transition.action||"").length*8),height:24};
+    if(![supplied?.width,supplied?.height].every(value=>Number.isFinite(value)&&value>0))throw new Error("Display label dimensions must be finite and positive.");
+    return {width:supplied.width,height:supplied.height};
+  }
+  function geometry(model, saved = {}, direction = "LR", labelBoxes) {
     const engine = globalThis.dagre;
     if (!engine?.graphlib?.Graph || !engine.layout) throw new Error("The bundled Dagre layout engine is unavailable. Use the transition editor while the local asset is restored.");
     // A fresh disposable projection, never the server's Workflow or layout objects.
@@ -25,7 +31,7 @@ const EijaCanvas = (() => {
     for (const state of states) graph.setNode(ids.get(state), {width, height});
     const transitions = [...(model.transitions || [])].sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
     transitions.forEach((transition, index) => graph.setEdge(ids.get(transition.from_state), ids.get(transition.to_state),
-      {width:Math.max(70, String(transition.action || "").length * 8), height:24, labelpos:"c"}, "e" + index));
+      {...edgeLabelSize(transition,labelBoxes),labelpos:"c"}, "e" + index));
     engine.layout(graph);
     const coords = {}, offsets = new Map();
     for (const state of states) {
@@ -54,15 +60,15 @@ const EijaCanvas = (() => {
     return {coords, routes};
   }
   function positions(model, saved = {}) {return geometry(model, saved).coords;}
-  function bounds(projected, model) {
+  function bounds(projected, model, labelBoxes) {
     const points=Object.values(projected.coords).flatMap(p=>[p,{x:p.x+width,y:p.y+height}]);
-    for(const transition of model.transitions||[]){const route=projected.routes[transition.id],half=Math.max(70,String(transition.action||"").length*8)/2;points.push(...route.points,{x:route.label.x-half,y:route.label.y-24},{x:route.label.x+half,y:route.label.y+16});}
+    for(const transition of model.transitions||[]){const route=projected.routes[transition.id],size=edgeLabelSize(transition,labelBoxes),custom=labelBoxes?.get(transition.id)!==undefined;points.push(...route.points,{x:route.label.x-size.width/2,y:route.label.y-(custom?size.height/2:24)},{x:route.label.x+size.width/2,y:route.label.y+(custom?size.height/2:16)});}
     if(!points.length)return {x:0,y:0,width:320,height:240};
     const x=Math.min(...points.map(p=>p.x))-35,y=Math.min(...points.map(p=>p.y))-35;
     return {x,y,width:Math.max(...points.map(p=>p.x))+35-x,height:Math.max(...points.map(p=>p.y))+55-y};
   }
-  function projectLayout(model,saved,direction="AUTO",viewport={width:1000,height:600}) {
-    const project=value=>{const result=geometry(model,saved,value);return {...result,direction:value,bounds:bounds(result,model)};};
+  function projectLayout(model,saved,direction="AUTO",viewport={width:1000,height:600},labelBoxes) {
+    const project=value=>{const result=geometry(model,saved,value,labelBoxes);return {...result,direction:value,bounds:bounds(result,model,labelBoxes)};};
     if(direction==="LR"||direction==="TB")return project(direction);
     const horizontal=project("LR"),vertical=project("TB");
     const scale=p=>Math.min(viewport.width/p.bounds.width,viewport.height/p.bounds.height);

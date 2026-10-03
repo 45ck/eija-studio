@@ -1,12 +1,12 @@
 "use strict";
 // Isolated projection/oracle checks. They do not establish browser or human acceptance.
-// Staged runs set EIJA_WEB_ROOT and EIJA_COMPARE_MODULE to the reviewed source files.
+// Staged runs set EIJA_WEB_ROOT, EIJA_CANVAS_MODULE and EIJA_COMPARE_MODULE to the reviewed files.
 const {test} = require("node:test");
 const assert = require("node:assert/strict");
 const path = require("node:path");
 const web = process.env.EIJA_WEB_ROOT || path.join(__dirname, "../../src/eija_studio/resources/web");
 globalThis.dagre = require(path.join(web, "vendor/dagre.min.js"));
-globalThis.EijaCanvas = require(path.join(web, "canvas.js"));
+globalThis.EijaCanvas = require(process.env.EIJA_CANVAS_MODULE || path.join(web, "canvas.js"));
 globalThis.EijaReview = require(path.join(web, "review.js"));
 const compare = require(process.env.EIJA_COMPARE_MODULE || path.join(web, "compare.js"));
 
@@ -727,5 +727,127 @@ test("hidden explicit fit and overview remain pending through a same-subject rer
     next.host.clientWidth=320;next.host.clientHeight=200;next.handlers.refreshViewport(next.s);
     const box=mode==="overview"?next.s.layout.bounds:compare.selectionBounds(next.s.layout,next.item);
     assertFramed([box],next.s.state.viewport,[{width:320,height:200}]);assert.equal(next.s.shell.dataset.compareView,mode);
+  }
+});
+
+function graphLabelHarness(alter = source => source) {
+  const fs = require("node:fs"), vm = require("node:vm");
+  const source = alter(fs.readFileSync(process.env.EIJA_COMPARE_MODULE || path.join(web, "compare.js"), "utf8"));
+  const svg = (tag, attrs = {}, text) => ({tag, attrs:{...attrs}, textContent:text, children:[], listeners:{},
+    append(...nodes){this.children.push(...nodes);}, setAttribute(key,value){this.attrs[key]=String(value);},
+    addEventListener(name,callback){this.listeners[name]=callback;}});
+  const begin=source.indexOf("  function selectable("), end=source.indexOf("  function buildDetails(",begin);
+  assert.ok(begin>=0 && end>begin);
+  const handlers={svg};vm.createContext(handlers);
+  const labels=source.slice(source.indexOf("  const statusLabel ="),source.indexOf("  let serial ="));
+  vm.runInContext(labels+source.slice(begin,end),handlers);
+  const calls=[], s={layout:compare.project(before,after),groups:[],select:(...args)=>calls.push(args)};
+  const draw=(kind,value)=>{const board=svg("svg");handlers[kind](s,board,value,"arrow");return board.children[0];};
+  return {s,calls,edge:value=>draw("drawEdge",value),node:value=>draw("drawNode",value)};
+}
+
+function assertLabelHierarchy(h) {
+  const edge=h.s.layout.before.edges.find(item=>item.id==="T-KEEP"), painted=h.edge(edge);
+  assert.equal(painted.children.find(node=>node.attrs.class==="compare-edge-label").textContent,"Submit");
+  assert.equal(painted.children.filter(node=>node.attrs.class==="compare-status-label").length,0,"unchanged edge has no redundant visible status");
+  assert.equal(painted.attrs["data-status"],"unchanged");assert.match(painted.attrs["aria-label"],/= Unchanged, Submit, Owner, Draft to Review/);
+  assert.equal(painted.attrs["data-eija-id"],"transition:T-KEEP");
+  const initial=h.node(h.s.layout.before.nodes.find(item=>item.id==="Draft"));
+  const marker=initial.children.find(node=>String(node.attrs.class).includes("compare-initial-label"));
+  assert.equal(marker?.textContent,"● Initial","unchanged initial state must retain its visible start marker");
+  assert.match(initial.attrs["aria-label"],/Unchanged, initial state/);
+  const ordinary=h.node(h.s.layout.before.nodes.find(item=>item.id==="Review"));
+  assert.ok(!ordinary.children.some(node=>String(node.attrs.class).includes("compare-status-label")));
+  assert.equal(ordinary.children.find(node=>node.attrs.class==="compare-state-label").textContent,"Review");
+  for(const [side,id,label] of [["after","T-CHANGE","◇ Modified"],["after","T-ADD","+ Added"],["before","T-REMOVE","− Removed"]]) {
+    const value=h.s.layout[side].edges.find(item=>item.id===id), group=h.edge(value);
+    assert.equal(group.children.find(node=>node.attrs.class==="compare-status-label")?.textContent,label,"changed membership and fields keep a visible status");
+    assert.equal(group.children.find(node=>node.attrs.class==="compare-edge-label").textContent,value.action);
+  }
+  for(const [side,id,label] of [["after","New","+ Added"],["before","Old","− Removed"]]) {
+    const group=h.node(h.s.layout[side].nodes.find(item=>item.id===id));
+    assert.equal(group.children.find(node=>node.attrs.class==="compare-status-label")?.textContent,label);
+  }
+  const nextInitial=h.node({...h.s.layout.after.nodes.find(item=>item.id==="New"),initial:true});
+  assert.equal(nextInitial.children.find(node=>String(node.attrs.class).includes("compare-initial-label"))?.textContent,"● Initial · + Added");
+  return painted;
+}
+
+test("actual painted hierarchy retains names, changes, initial markers and accessible unchanged classification", () => {
+  const h=graphLabelHarness(), group=assertLabelHierarchy(h), original=JSON.stringify(h.s.layout);
+  group.listeners.click();let prevented=0,stopped=0;
+  for(const key of ["Enter"," "])group.listeners.keydown({key,preventDefault:()=>prevented++,stopPropagation:()=>stopped++});
+  group.listeners.keydown({key:"ArrowRight"});
+  assert.equal(h.calls.length,3);assert.equal(prevented,2);assert.equal(stopped,2);
+  assert.ok(h.calls.every(([item,frame])=>item.key==="transition:T-KEEP" && frame===false));
+  assert.equal(JSON.stringify(h.s.layout),original,"selection must not rewrite either projection");
+});
+
+test("label hierarchy oracle detects missing Initial and changed markers", () => {
+  for(const [from,to] of [["node.initial?\"● Initial\":\"\"","\"\""],["if(edge.status !== \"unchanged\")group.append","if(false)group.append"]]) {
+    const h=graphLabelHarness(source=>{assert.ok(source.includes(from),"mutant must modify a real renderer path");return source.replace(from,to);});
+    assert.throws(()=>assertLabelHierarchy(h),assert.AssertionError);
+  }
+});
+
+function captureLabelReservations(operation) {
+  const actualLayout=globalThis.dagre.layout, actualProjection=globalThis.EijaCanvas.projectLayout;
+  const graphLabels=[], requests=[];
+  globalThis.dagre.layout=graph=>{graphLabels.push(graph.edges().map(edge=>({...graph.edge(edge)})));return actualLayout(graph);};
+  globalThis.EijaCanvas.projectLayout=(model,saved,direction,viewport,boxes)=>{
+    requests.push({model:copy(model),boxes:boxes && new Map([...boxes].map(([id,box])=>[id,{...box}]))});
+    return actualProjection(model,saved,direction,viewport,boxes);
+  };
+  try{return {value:operation(),graphLabels,requests};}
+  finally{globalThis.dagre.layout=actualLayout;globalThis.EijaCanvas.projectLayout=actualProjection;}
+}
+
+test("Dagre reserves both snapshot actions and the full changed-label block in the shared union", () => {
+  const longAction="VerifySavedWithLongExactActionName";
+  const a=freeze({states:["A","B","C"],initial_state:"A",transitions:[
+    transition("changed","A","B",{action:longAction}),transition("parallel","A","B",{action:"VerifySaved"})]});
+  const b=freeze({...a,transitions:[{...a.transitions[0],action:"V",to_state:"C"},a.transitions[1],transition("added","A","B",{action:"X"})]});
+  const original=JSON.stringify({a,b});
+  for(const [first,last] of [[a,b],[b,a]])for(const direction of ["LR","TB"]) {
+    const captured=captureLabelReservations(()=>compare.project(first,last,{direction}));
+    const {model,boxes}=captured.requests[0];assert.equal(boxes.size,4,"retargeted before and after retain separate union edges");
+    const longer=model.transitions.filter(item=>item.action===longAction);assert.equal(longer.length,2);
+    for(const item of longer) {
+      assert.ok(boxes.get(item.id).width>=longAction.length*8+8,"both route variants must reserve the longer snapshot label");
+      assert.ok(boxes.get(item.id).height>=48,"two painted baselines and text stroke require more than the legacy 24px slot");
+    }
+    const unchanged=model.transitions.find(item=>item.action==="VerifySaved");assert.equal(boxes.get(unchanged.id).height,24);
+    const addedOrRemoved=model.transitions.find(item=>item.action==="X");assert.ok(boxes.get(addedOrRemoved.id).height>=48);
+    const caption=first===a?"+ Added":"− Removed";
+    assert.ok(boxes.get(addedOrRemoved.id).width>=caption.length*7+8,"short action still reserves its longer visible status caption");
+    assert.deepEqual(captured.graphLabels[0].map(({width,height})=>({width,height})),[...boxes.values()],"actual Dagre receives the union label boxes");
+    assertSide(captured.value.before,first);assertSide(captured.value.after,last);
+    for(const node of captured.value.before.nodes) {
+      const match=captured.value.after.nodes.find(item=>item.id===node.id);
+      if(match)assert.deepEqual([node.x,node.y],[match.x,match.y]);
+    }
+  }
+  assert.equal(JSON.stringify({a,b}),original);
+});
+
+test("optional display metrics preserve legacy defaults and reject invalid sizes before Dagre runs", () => {
+  const model=freeze({states:["A","B"],initial_state:"A",transitions:[transition("T","A","B",{action:"Long exact action"})]});
+  for(const direction of ["LR","TB"]) {
+    const baseline=globalThis.EijaCanvas.projectLayout(model,{},direction);
+    assert.deepEqual(globalThis.EijaCanvas.projectLayout(model,{},direction,undefined,new Map()),baseline);
+    const defaults=captureLabelReservations(()=>globalThis.EijaCanvas.projectLayout(model,{},direction));
+    assert.deepEqual(defaults.graphLabels[0].map(({width,height})=>({width,height})),[{width:136,height:24}]);
+    const boxes=new Map([["T",Object.freeze({width:640,height:120})]]), original=JSON.stringify([...boxes]);
+    const capture=captureLabelReservations(()=>globalThis.EijaCanvas.projectLayout(model,{},direction,undefined,boxes));
+    assert.deepEqual(capture.graphLabels[0].map(({width,height})=>({width,height})),[{width:640,height:120}]);
+    const {bounds,routes}=capture.value,{x,y}=routes.T.label;
+    assert.ok(bounds.x<=x-320 && bounds.y<=y-60 && bounds.x+bounds.width>=x+320 && bounds.y+bounds.height>=y+60,"Fit bounds contain the supplied label rectangle");
+    assert.equal(JSON.stringify([...boxes]),original);
+  }
+  for(const bad of [0,-1,NaN,Infinity,"48",null,undefined])for(const key of ["width","height"]) {
+    const size={width:80,height:48,[key]:bad};let calls=0, actual=globalThis.dagre.layout;
+    globalThis.dagre.layout=graph=>{calls++;return actual(graph);};
+    try{assert.throws(()=>globalThis.EijaCanvas.geometry(model,{},"TB",new Map([["T",size]])),/finite and positive/);assert.equal(calls,0);}
+    finally{globalThis.dagre.layout=actual;}
   }
 });

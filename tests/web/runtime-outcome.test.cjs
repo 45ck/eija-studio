@@ -1,7 +1,7 @@
 "use strict";
 // Actual task, API, lifecycle and Run handlers; controlled HTTP responses, not browser evidence.
 const {test}=require("node:test"),assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path"),vm=require("node:vm");
-const source=fs.readFileSync(path.join(__dirname,"../../src/eija_studio/resources/web/app.js"),"utf8");
+const source=fs.readFileSync(process.env.EIJA_RUNTIME_APP||path.join(__dirname,"../../src/eija_studio/resources/web/app.js"),"utf8");
 class Element{
   constructor(tag="div"){this.tag=tag;this.children=[];this.dataset={};this.attributes={};this.value="";this.textContent="";this.disabled=false;this.hidden=false;}
   append(...items){this.children.push(...items);}replaceChildren(...items){this.children=[...items];this.textContent="";}
@@ -169,4 +169,134 @@ test("counterexample oracle detects the old success-text retention pattern",asyn
   const begin="  renderRuntimeFeedback();return runtimeAttempt;",failure="  renderRuntimeFeedback();reportError(error,{reveal:false});return false;";
   assert.ok(source.includes(begin)&&source.includes(failure));const h=harness(source.replace(begin,"  return runtimeAttempt;").replace(failure,"  reportError(error,{reveal:false});return false;"));
   await succeed(h);h.enqueue({code:"ROLE_DENIED",message:"Wrong role"},409);await h.action("Approve").onclick();assert.match(h.feedback().text,/Committed: Submit/);assert.throws(()=>assert.equal(h.feedback().data.status,"refused"),assert.AssertionError);
+});
+
+// S07/US08: the route identifies the attempted action's model rule, not a solver witness.
+function recoveryHarness(code=source,action="Save"){
+  const h=harness(code),routes=[];
+  h.s.current.case.candidate.transitions=[{id:"save-rule",action,role:"Agent",from_state:"Submitted",to_state:"Recommended",guards:[],required_effects:["Audit"],forbidden_effects:[]}];
+  h.s.status.pack.actions=[action,"Other"];h.server.value=clone(h.s.current);
+  h.s.workbench={pack:{id:"test-pack"},connection:{status:"unavailable"}};h.s.impactSequence=0;
+  h.s.workingModel=()=>h.s.current?.case.candidate;
+  h.s.selectedConcept=()=>h.s.workingModel()?.transitions.find(item=>item.id===h.s.inspectorSelection?.id);
+  h.s.switchTab=name=>{h.s.tab=name;routes.push(["tab",name]);};
+  h.s.EijaShell.reveal=name=>routes.push(["reveal",name]);h.s.EijaTree={reveal:(_,kind,id)=>routes.push(["tree",kind,id])};
+  for(const [start,end]of [["function inspectWorkingTransition(","function openComparisonImpact("],["function renderSelectionDetail()","function followReference("]]){
+    const from=code.indexOf(start),to=code.indexOf(end,from);assert.ok(from>=0&&to>from,start);vm.runInContext(code.slice(from,to),h.s);
+  }
+  h.s.renderWorkbench=()=>h.s.renderSelectionDetail();h.s.renderRuntime();
+  const returnContext=()=>h.get("selection-detail").children.find(node=>node.dataset.runtimeRuleReturn==="true");
+  return Object.assign(h,{routes,returnContext,ruleLink:()=>h.get("runtime-rule-navigation").children.find(node=>node.tag==="button"),backLink:()=>returnContext()?.children.find(node=>node.dataset.runtimeAttempt)});
+}
+async function refusedRule(h,action="Save"){
+  h.enqueue({code:"ROLE_DENIED",message:"Actor has no required role",details:{refs:["law:role"],codes:["ROLE_DENIED"]}},409);
+  await h.action(action).onclick();assert.equal(h.feedback().data.status,"refused");
+}
+function retainedRuntime(h){return JSON.stringify({current:h.s.current,instance:h.s.instance,runtime:h.state(),requests:h.requests,feedback:h.feedback(),diagnostic:h.get("error-json").textContent,attempt:h.get("runtime-attempt-identity").children.map(node=>node.textContent)});}
+
+test("refused action opens its exact working rule and returns focus to the same retained attempt without requests",async()=>{
+  const h=recoveryHarness();await refusedRule(h);const before=retainedRuntime(h),link=h.ruleLink();
+  assert.equal(link.textContent,"Inspect Save rule");assert.equal(link.type,"button");assert.equal(link.dataset.runtimeRule,"save-rule");
+  assert.match(h.get("runtime-rule-navigation").children[1].textContent,/Model rule for the attempted action · revision 7/);
+  h.s.modelView="history";assert.equal(link.onclick(),true);assert.equal(h.s.tab,"model");assert.equal(h.s.modelView,"working");assert.equal(h.s.editId,"save-rule");
+  assert.deepEqual(clone(h.s.inspectorSelection),{kind:"transition",id:"save-rule"});assert.equal(h.get("transition-select").focused,true);
+  assert.deepEqual(h.routes,[["tab","model"],["reveal","inspector"],["tree","transition","save-rule"]]);
+  assert.ok(h.returnContext().children.some(node=>/From the refused Save attempt · revision 7/.test(node.textContent)));
+  const back=h.backLink();assert.equal(back.textContent,"Return to Save attempt");assert.equal(back.dataset.runtimeAttempt,"operation-1");
+  assert.equal(back.onclick(),true);assert.equal(h.s.tab,"try");assert.equal(h.ruleLink().focused,true);assert.equal(retainedRuntime(h),before);
+});
+
+test("recovery label and transition binding use the captured action exactly, not Save or current actor",async()=>{
+  const action="Submit review <candidate>",h=recoveryHarness(source,action);await refusedRule(h,action);h.get("actor").value="different actor";
+  assert.equal(h.ruleLink().textContent,`Inspect ${action} rule`);assert.equal(h.ruleLink().onclick(),true);assert.equal(h.backLink().textContent,`Return to ${action} attempt`);
+  assert.equal(h.state().runtimeAttempt.actorId,"actor-A");assert.equal(h.s.editId,"save-rule");
+});
+
+async function staleRecoveryOracle(code=source){
+  const mutations=[
+    ["case",h=>{h.s.current.case.id="B";}],
+    ["revision",h=>{h.s.current.case.version=8;}],
+    ["semantic",h=>{h.s.current.packet.subject.semantic="semantic-B";}],
+    ["candidate bytes",h=>{h.s.current.case.candidate.transitions[0].role="Owner";}],
+    ["no candidate",h=>{h.s.current.case.candidate=null;}],
+    ["instance identity",h=>{h.s.instance.id="new-instance";}],
+    ["instance version",h=>{h.s.instance.version=4;}],
+    ["instance case",h=>{h.s.instance.case_id="B";}],
+    ["instance semantic",h=>{h.s.instance.model_hash="semantic-B";}],
+    ["pending edit reconciliation",h=>vm.runInContext('editNeedsRefresh.set("A",{})',h.s)],
+    ["changed captured action",h=>vm.runInContext('runtimeAttempt.action="Other"',h.s)]
+  ];
+  for(const [name,mutate]of mutations){
+    const h=recoveryHarness(code);await refusedRule(h);const link=h.ruleLink();assert.equal(link.onclick(),true);const back=h.backLink();mutate(h);
+    const before=retainedRuntime(h),routes=clone(h.routes);assert.equal(link.onclick(),false,name+" forward blocked");assert.equal(back.onclick(),false,name+" return blocked");
+    assert.equal(retainedRuntime(h),before);h.s.renderRuntimeFeedback();assert.equal(h.ruleLink(),undefined,name+" no link");assert.equal(h.get("runtime-rule-navigation").hidden,false);
+    assert.match(h.get("runtime-rule-navigation").children[0].textContent,/Rule navigation unavailable/);assert.deepEqual(h.routes,routes);
+    h.s.renderSelectionDetail();assert.equal(h.backLink(),undefined,name+" old return removed");
+  }
+}
+test("stale or incoherent subject refuses both saved callbacks and removes their rendered routes",()=>staleRecoveryOracle());
+
+async function ambiguousRuleOracle(code=source){
+  const rows=[[],[{id:"one",action:"Save"},{id:"two",action:"Save"}],[{id:"same",action:"Save"},{id:"same",action:"Other"}],[{id:"",action:"Save"}],[{action:"Save"}]];
+  for(const transitions of rows){const h=recoveryHarness(code);h.s.current.case.candidate.transitions=transitions;await refusedRule(h);assert.equal(h.ruleLink(),undefined);assert.match(h.get("runtime-rule-navigation").children[0].textContent,/one unique rule/);assert.equal(h.routes.length,0);}
+  for(const hash of [null,""]){const h=recoveryHarness(code);h.s.current.packet.subject.semantic=hash;h.s.instance.model_hash=hash;h.s.renderRuntime();await refusedRule(h);assert.equal(h.ruleLink(),undefined);}
+}
+test("missing identities and ambiguous action or transition ID never produce a guessed model route",()=>ambiguousRuleOracle());
+
+test("new attempts, reset and case changes invalidate prior recovery controls without hiding raw refusal",async()=>{
+  for(const change of ["new attempt","reset","case switch"]){const h=recoveryHarness();await refusedRule(h);const old=h.ruleLink();old.onclick();const back=h.backLink();
+    if(change==="new attempt"){await refusedRule(h);assert.equal(h.state().runtimeAttempt.requestId,"operation-2");}
+    else if(change==="reset"){h.enqueue(preview("replacement"));await h.get("reset").onclick();}
+    else {h.server.value=fixture("B","semantic-B",1);await h.s.load("B");}
+    const before=retainedRuntime(h),routes=clone(h.routes);assert.equal(old.onclick(),false);assert.equal(back.onclick(),false);assert.equal(retainedRuntime(h),before);assert.deepEqual(h.routes,routes);
+    assert.equal(h.backLink(),undefined,"the old return button is removed without a full inspector render");
+    if(change==="new attempt"){assert.match(h.get("error-json").textContent,/ROLE_DENIED/);assert.match(h.get("runtime-attempt-identity").children.map(node=>node.textContent).join(" "),/ROLE_DENIED/);}
+    else assert.equal(h.get("runtime-rule-navigation").hidden,true);
+  }
+});
+
+test("pending, unknown and acknowledged outcomes do not claim a refusal rule route",async()=>{
+  for(const outcome of ["pending","unknown","committed"]){const h=recoveryHarness();
+    if(outcome==="pending"){const pending=deferred();h.posts.push(()=>pending.promise);const request=h.action("Save").onclick();assert.equal(h.get("runtime-rule-navigation").hidden,true);pending.resolve(response(committed()));await request;}
+    else {if(outcome==="unknown")h.posts.push(()=>Promise.reject(Error("transport unavailable")));else h.enqueue(committed());await h.action("Save").onclick();}
+    assert.equal(h.get("runtime-rule-navigation").hidden,true);assert.equal(h.ruleLink(),undefined);
+  }
+});
+
+test("return belongs to the selected working rule and cannot switch from another inspector context",async()=>{
+  for(const change of [h=>{h.s.inspectorSelection={kind:"state",id:"Draft"};},h=>{h.s.inspectorSelection={kind:"transition",id:"other"};},h=>{h.s.modelView="baseline";}]){
+    const h=recoveryHarness();await refusedRule(h);h.ruleLink().onclick();const back=h.backLink();change(h);const routes=clone(h.routes),before=retainedRuntime(h);assert.equal(back.onclick(),false);assert.equal(retainedRuntime(h),before);assert.deepEqual(h.routes,routes);
+  }
+});
+
+async function pinnedInspectorReturnOracle(code=source){
+  for(const tab of ["code","evidence","try"]){const h=recoveryHarness(code);await refusedRule(h);h.ruleLink().onclick();const back=h.backLink(),before=retainedRuntime(h);
+    h.s.switchTab(tab);assert.equal(h.backLink(),back,"presentation switch retains the visible inspector button");assert.equal(back.onclick(),true,tab);assert.equal(h.s.tab,"try");assert.equal(h.ruleLink().focused,true);assert.equal(retainedRuntime(h),before);
+  }
+}
+test("a pinned inspector return works from other views while retaining the exact selected rule and attempt",()=>pinnedInspectorReturnOracle());
+
+async function scopedInvalidationOracle(code=source){
+  for(const change of ["new attempt","clear","edit reconciliation"]){const h=recoveryHarness(code);await refusedRule(h);h.ruleLink().onclick();const back=h.backLink();
+    const unrelated=new Element("input");unrelated.value="unsent inspector draft";unrelated.focus();h.get("selection-detail").append(unrelated);h.get("edit-role").value="unsent field";
+    h.s.renderRuntimeFeedback();assert.equal(h.backLink(),back,"unchanged recovery context preserves its original button");
+    if(change==="new attempt")await refusedRule(h);
+    else if(change==="clear")h.s.clearRuntime();
+    else {vm.runInContext('editNeedsRefresh.set("A",{caseId:"A",version:7,status:"unknown"})',h.s);h.s.renderEditReconciliation();}
+    assert.equal(h.backLink(),undefined);assert.equal(h.returnContext().hidden,true);assert.equal(back.onclick(),false);
+    assert.ok(h.get("selection-detail").children.includes(unrelated));assert.equal(unrelated.value,"unsent inspector draft");assert.equal(unrelated.focused,true);assert.equal(h.get("edit-role").value,"unsent field");
+  }
+}
+test("attempt invalidation updates only recovery controls and retains unrelated inspector input and focus",()=>scopedInvalidationOracle());
+
+test("recovery oracles reject weak identity guards, dead visible returns and stale inspector controls",async()=>{
+  const mutants=[
+    ["attempt.caseVersion!==current.case.version||","",staleRecoveryOracle],
+    ["JSON.stringify(candidate)!==attempt.candidateJSON||","",staleRecoveryOracle],
+    ['return matches.length===1&&typeof target.id','return matches.length>=1&&typeof target.id',ambiguousRuleOracle],
+    ['&&candidate.transitions.filter(item=>item.id===target.id).length===1',"",ambiguousRuleOracle],
+    ['runtimeRuleInspection!==inspection||modelView','runtimeRuleInspection!==inspection||tab!=="model"||modelView',pinnedInspectorReturnOracle],
+    ['  renderRuntimeRuleNavigation();renderRuntimeRuleReturn($("selection-detail"));\n  $("runtime-last-commit")','  renderRuntimeRuleNavigation();\n  $("runtime-last-commit")',scopedInvalidationOracle]
+  ];
+  for(const [before,after,oracle]of mutants){assert.equal(source.split(before).length,2,before);await assert.rejects(oracle(source.replace(before,after)),assert.AssertionError,before);}
 });

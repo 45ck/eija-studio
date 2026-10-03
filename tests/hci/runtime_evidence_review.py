@@ -130,6 +130,10 @@ class RuntimeReview(Journey):
         self.case_get_diagnostic = None
         self.held_route = None
         self.faults = []
+        self.formal_context_records = []
+        self.inspection_requests = []
+        page.on("request", lambda request: self.inspection_requests.append(
+            {"method": request.method, "path": urlsplit(request.url).path}))
 
     def route(self, route):
         request = route.request
@@ -765,30 +769,133 @@ class RuntimeReview(Journey):
         assert (disclosure.get_attribute("open") is not None) == opened
         return evidence
 
-    def formal_raw(self, parent, label, expected):
+    def formal_context_geometry(self, disclosure, region):
+        """Measure sticky context and raw-region bounds, not assumed scroll margins."""
+        observed = disclosure.evaluate("""n=>{
+            const raw=n.querySelector(':scope > pre'),bar=n.querySelector(':scope > .formal-raw-context');
+            const box=e=>e.getBoundingClientRect().toJSON();
+            let clip={left:0,top:0,right:innerWidth,bottom:innerHeight};
+            for(let p=bar.parentElement;p;p=p.parentElement){const s=getComputedStyle(p),r=p.getBoundingClientRect();
+                if(/auto|scroll|hidden|clip/.test(s.overflowX)){clip.left=Math.max(clip.left,r.left);clip.right=Math.min(clip.right,r.right);}
+                if(/auto|scroll|hidden|clip/.test(s.overflowY)){clip.top=Math.max(clip.top,r.top);clip.bottom=Math.min(clip.bottom,r.bottom);}}
+            return {context:box(bar),raw:box(raw),disclosure:box(n),clip,
+                children:[...bar.children].map(e=>({text:e.textContent,rect:box(e)})),
+                raw_scroll:{left:raw.scrollLeft,top:raw.scrollTop,width:raw.clientWidth,contentWidth:raw.scrollWidth,
+                    height:raw.clientHeight,contentHeight:raw.scrollHeight}};
+        }""")
+        bar, raw, clip = observed["context"], observed["raw"], observed["clip"]
+        assert bar["width"] > 0 and bar["height"] > 0
+        assert bar["left"] >= clip["left"] - 1 and bar["right"] <= clip["right"] + 1, observed
+        assert bar["top"] >= clip["top"] - 1 and bar["bottom"] <= clip["bottom"] + 1, observed
+        assert raw["top"] >= bar["bottom"] - 1, {"context_obscures_raw": observed}
+        for child in observed["children"]:
+            rect = child["rect"]
+            assert rect["left"] >= bar["left"] - 1 and rect["right"] <= bar["right"] + 1, observed
+            assert rect["top"] >= bar["top"] - 1 and rect["bottom"] <= bar["bottom"] + 1, observed
+        self.triage_focus_geometry(region)
+        return observed
+
+    def formal_selection_state(self):
+        return self.page.evaluate("""()=>({case:document.querySelector('#case-switcher').value,
+            comparison:[...document.querySelectorAll('.compare-selection')].map(n=>({...n.dataset})),
+            model:document.querySelector('#transition-select').value,
+            open:[...document.querySelectorAll('#formal details[open]')].map(n=>n.dataset.evidenceKey)})""")
+
+    def formal_old_control(self, button, label):
+        """An adversarial retained handle is not a native keyboard interaction."""
+        requests = list(self.inspection_requests)
+        state = self.formal_selection_state()
+        observed = button.evaluate("""n=>{const before=document.activeElement,connected=n.isConnected;
+            n.click();return {connected,focus_unchanged:before===document.activeElement};}""")
+        self.page.evaluate("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))")
+        assert observed == {"connected": False, "focus_unchanged": True}, observed
+        assert self.inspection_requests == requests, "Detached return dispatched a request"
+        assert self.formal_selection_state() == state, "Detached return changed the workspace"
+        result = {"label": label, "observed": observed, "requests": 0, "workspace_unchanged": True}
+        self.formal_context_records.append(result)
+        write_json(self.out / "formal-context-observations.json", self.formal_context_records)
+        return result
+
+    def formal_raw(self, parent, label, expected, evidence, *, record=None):
         region = parent.locator(f'pre[aria-label="{label}"]')
         disclosure = region.locator("..")
+        row = disclosure.locator("xpath=ancestor::details[@data-evidence-kind][1]")
+        replay.expect(row).to_have_attribute("data-evidence-kind", evidence["kind"])
+        owner = row.locator(":scope > summary")
         reached = self.formal_toggle(disclosure, opened=True)
+        back = disclosure.locator(':scope > .formal-raw-context > [data-inspection-return="check"]')
+        replay.expect(back).to_have_count(1)
+        replay.expect(back).to_have_text("Back to check")
+        replay.expect(disclosure.locator(":scope > .formal-raw-context > .formal-raw-check")).to_have_text(
+            evidence["kind"].replace("_", " ") + " · " + evidence["status"])
+        origin = disclosure.locator(":scope > .formal-raw-context > .formal-raw-origin")
+        if record is None:
+            replay.expect(origin).to_have_count(0)
+        else:
+            # formal_receipt_oracle proves this name and origin against raw artifact
+            # fields. Expected text never comes from the UI itself.
+            replay.expect(origin).to_have_text("Negative control · " + record["label"])
+        self.page.keyboard.press("Tab")
+        replay.expect(back).to_be_focused()
+        back_geometry = self.triage_focus_geometry(back)
         self.page.keyboard.press("Tab")
         replay.expect(region).to_be_focused()
         geometry = self.triage_focus_geometry(region)
-        actual = json.loads(region.text_content())
-        assert actual == expected, label + " differs from independent GET/raw-receipt data"
-        scroll = region.evaluate("n=>({top:n.scrollTop,height:n.clientHeight,content:n.scrollHeight})")
+        context = self.formal_context_geometry(disclosure, region)
+        assert json.loads(region.text_content()) == expected, label + " differs from independent GET/raw-receipt data"
+        scroll = region.evaluate("n=>({top:n.scrollTop,height:n.clientHeight,content:n.scrollHeight,width:n.clientWidth,contentWidth:n.scrollWidth})")
         if scroll["content"] > scroll["height"] + 2:
             self.page.keyboard.press("PageDown")
             self.page.wait_for_function("n=>n.scrollTop>0", arg=region.element_handle())
+        if scroll["contentWidth"] > scroll["width"] + 2:
+            self.page.keyboard.press("ArrowRight")
+            self.page.wait_for_function("n=>n.scrollLeft>0", arg=region.element_handle())
+        scrolled = self.formal_context_geometry(disclosure, region)
+        self.shot(f'formal-context-{evidence["kind"]}-{label.lower().replace(" ", "-")}-{self.page.viewport_size["width"]}')
+        # One open raw context per fixture/viewport. Incomplete checks remain visible.
+        if evidence["kind"] == "bounded_model_check" and label in {"Raw inspection data", "Raw recorded item"}:
+            result = replay.Axe.from_file(replay.AXE_FILE_PATH).run(self.page, options={
+                "runOnly": {"type": "tag", "values": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"]},
+                "resultTypes": ["violations", "incomplete"],
+            }).response
+            audit = {"kind": evidence["kind"], "label": label, "viewport": self.page.viewport_size,
+                     "axe_version": result["testEngine"]["version"], "violations": result["violations"], "incomplete": result["incomplete"]}
+            self.formal_context_records.append({"axe": audit})
+            write_json(self.out / "formal-context-observations.json", self.formal_context_records)
+            assert not audit["violations"], "Open formal context has automated accessibility violations"
         self.page.keyboard.press("Tab")
         replay.expect(region).not_to_be_focused()
         self.page.keyboard.press("Shift+Tab")
         replay.expect(region).to_be_focused()
         assert json.loads(region.text_content()) == expected
         self.page.keyboard.press("Shift+Tab")
+        replay.expect(back).to_be_focused()
+        requests = list(self.inspection_requests)
+        state = self.formal_selection_state()
+        self.page.keyboard.press("Enter")
+        replay.expect(owner).to_be_focused()
+        return_geometry = self.triage_focus_geometry(owner)
+        self.page.evaluate("() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))")
+        assert self.inspection_requests == requests, "Back to check dispatched a request"
+        assert self.formal_selection_state() == state, "Back to check changed selection, case or disclosure state"
+        # Real Tab navigation back into this exact disclosure tests both reverse stops.
+        self.formal_reach(region)
+        self.page.keyboard.press("Shift+Tab")
+        replay.expect(back).to_be_focused()
+        self.page.keyboard.press("Shift+Tab")
         replay.expect(disclosure.locator(":scope > summary")).to_be_focused()
         self.page.keyboard.press("Enter")
         replay.expect(disclosure).not_to_have_attribute("open", "")
-        return {"label": label, "entry": reached, "geometry": geometry,
-                "overflow_exercised": scroll["content"] > scroll["height"] + 2, "exact_raw_data": True}
+        observed = {"label": label, "entry": reached, "geometry": geometry, "context": context,
+                    "scrolled_context": scrolled, "back_geometry": back_geometry, "return_geometry": return_geometry,
+                    "vertical_overflow_exercised": scroll["content"] > scroll["height"] + 2,
+                    "horizontal_overflow_exercised": scroll["contentWidth"] > scroll["width"] + 2,
+                    "exact_raw_data": True, "return_requests": 0, "selection_and_disclosures_preserved": True}
+        self.formal_context_records.append(observed)
+        write_json(self.out / "formal-context-observations.json", self.formal_context_records)
+        return observed
+
+
 
     def formal_identity(self, view, evidence, workbench):
         packet, case, inspection = view["packet"], view["case"], evidence["inspection"]
@@ -820,7 +927,7 @@ class RuntimeReview(Journey):
             self.formal_toggle(box, opened=True, key="Space")
             replay.expect(box).to_contain_text("NO_DECIDING_RECEIPT")
             replay.expect(box.locator("[data-inspection-path]")).to_have_count(0)
-            self.formal_raw(box, "Raw inspection data", inspection)
+            self.formal_raw(box, "Raw inspection data", inspection, evidence)
             self.shot(f'formal-unavailable-{view["case"]["id"][:8]}-{evidence["kind"]}-{self.page.viewport_size["width"]}')
             self.formal_toggle(box, opened=False)
             self.formal_toggle(row, opened=False)
@@ -870,6 +977,9 @@ class RuntimeReview(Journey):
             original = artifact_pointer(artifact, record["artifact_path"])
             assert json.loads(record["raw_json"]) == original
             assert record["origin"] == "negative_control", "This fixture has recorded controls, not a failed current candidate"
+            raw_label_field = {"bounded_model_check": "mutant", "smt_proof": "remove", "bend_proof": "name"}[evidence["kind"]]
+            assert isinstance(original[raw_label_field], str) and original[raw_label_field]
+            assert record["label"] == original[raw_label_field], "Record label differs from the original producer field"
             assert record["model"]["availability"] == "not_provided" and record["model"]["workflow"] is None
             assert record["navigation"]["current_model"] is None and record["navigation"]["source"] is None
             supplied_steps = original.get("counterexample", {}).get("steps", []) if evidence["kind"] == "bend_proof" else []
@@ -913,7 +1023,10 @@ class RuntimeReview(Journey):
                     assert json.loads(node.locator('pre[aria-label="Raw recorded item"]').text_content()) == artifact_pointer(
                         receipt["artifact"], record["artifact_path"])
                     assert node.locator("[data-step-index]").all_text_contents() == [s["text"] if s["text"] is not None else s["raw_json"] for s in record["steps"]]
-                    replay.expect(node.locator("a,button")).to_have_count(0)
+                    replay.expect(node.locator('a,button:not([data-inspection-return="check"])')).to_have_count(0)
+                    buttons = node.locator('[data-inspection-return="check"]')
+                    replay.expect(buttons).to_have_count(node.locator("pre.formal-inspection-raw").count())
+                    assert all(text == "Back to check" for text in buttons.all_text_contents())
                 first = nodes.first
                 self.formal_toggle(first, opened=True, key="Space")
                 replay.expect(first).to_contain_text("Seeded control; this is not a reported failure of the current candidate.")
@@ -929,10 +1042,11 @@ class RuntimeReview(Journey):
                     witness = receipt["artifact"]["negative_controls"]["named"][0]["witness"]
                     assert next(t for t in witness["transitions"] if t["action"] == "Approve")["role"] == "Teacher"
                     replay.expect(first).to_contain_text("No recorded steps are supplied.")
-                raw = self.formal_raw(first, "Raw recorded item", artifact_pointer(receipt["artifact"], inspection["records"][0]["artifact_path"]))
+                raw = self.formal_raw(first, "Raw recorded item", artifact_pointer(receipt["artifact"], inspection["records"][0]["artifact_path"]),
+                                      evidence, record=inspection["records"][0])
                 self.shot(f"formal-recorded-{kind}-{width}")
                 self.formal_toggle(first, opened=False)
-                complete = self.formal_raw(box, "Complete recorded artifact", receipt["artifact"])
+                complete = self.formal_raw(box, "Complete recorded artifact", receipt["artifact"], evidence)
                 identities = box.locator(':scope > details').filter(
                     has=self.page.get_by_text("Review and deciding receipt identity", exact=True))
                 self.formal_toggle(identities, opened=True)
@@ -947,8 +1061,8 @@ class RuntimeReview(Journey):
                     "Producer": receipt["producer"], "Method": receipt["method"],
                     "Receipt subject matches review": str(receipt["subject"] == view["packet"]["subject"]).lower(),
                 }, "Displayed review/receipt identities differ from the independent GET oracle"
-                subject = self.formal_raw(identities, "Full review subject", view["packet"]["subject"])
-                original = self.formal_raw(identities, "Original receipt subject", receipt["subject"])
+                subject = self.formal_raw(identities, "Full review subject", view["packet"]["subject"], evidence)
+                original = self.formal_raw(identities, "Original receipt subject", receipt["subject"], evidence)
                 self.formal_toggle(identities, opened=False)
                 observations.append({"width": width, "kind": kind, "status": evidence["status"], "records": actual,
                                      "first_raw": raw, "artifact": complete, "review_subject": subject, "receipt_subject": original})
@@ -961,11 +1075,18 @@ class RuntimeReview(Journey):
             self.formal_toggle(box, opened=True)
             self.formal_toggle(box.locator("details[data-inspection-path]").first, opened=True)
             replay.expect(self.page.locator("#formal .formal-inspection[open]")).to_have_count(1)
+            old_button = box.locator('[data-inspection-return="check"]').first.element_handle()
+            self.refresh()
+            self.tab("evidence")
+            self.formal_old_control(old_button, "same-subject refresh")
+            assert self.view() == view
+            old_button = box.locator('[data-inspection-return="check"]').first.element_handle()
             self.switch_case(fixture.manifest["cases"]["unavailable"])
             unavailable = self.view()
             unavailable_history = self.get(f"cases/{self.case_id}/history")
             self.tab("evidence")
             replay.expect(self.page.locator("#formal [data-inspection-path]")).to_have_count(0)
+            self.formal_old_control(old_button, "case switch")
             self.formal_unavailable_view(unavailable, workbench)
             assert self.view() == unavailable and self.get(f"cases/{self.case_id}/history") == unavailable_history
             self.switch_case(fixture.manifest["cases"]["recorded"])
@@ -1142,7 +1263,8 @@ def main():
                         steps = [(args.scenario, review.formal_unavailable if fixture is None
                                   else lambda: review.formal_recorded(fixture))]
                         result["not_run"] = ["fresh solver execution", "current candidate failure replay", "owner verification/approval/apply",
-                                             "runtime recovery scenarios", "axe audit", "malformed inspection browser fixtures",
+                                             "runtime recovery scenarios", "malformed inspection browser fixtures", "arbitrary long producer labels",
+                                             "changed receipt/revision stale-control fixture", "hidden-panel stale-control fixture",
                                              "human usability", "live provider"]
                     for name, action in steps:
                         review.stage = name

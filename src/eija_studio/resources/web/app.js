@@ -181,9 +181,25 @@ function inspectionDisclosure(parent,label,key,opened){
   const details=el("details",undefined,"formal-inspection-detail");details.append(el("summary",label));
   details.dataset.evidenceKey=key;details.open=opened.has(key);parent.append(details);return details;
 }
-function inspectionRaw(parent,label,value,key,opened){
+function inspectionReturn(context){
+  const {row,summary,packet,record,index,identity}=context;
+  const same=current?.packet===packet&&packet.formal_evidence?.[index]===record&&inspectionContextIdentity(packet,record)===identity;
+  if(!same||$("evidence").hidden||![...$("formal").children].includes(row)||row.children[0]!==summary)return false;
+  row.open=true;summary.focus();summary.scrollIntoView({block:"nearest"});return true;
+}
+function inspectionContextIdentity(packet,record){
+  return JSON.stringify([current?.case.id,current?.case.version,packet.subject_hash,packet.subject,packet.scope,record.kind,record.status,record.inspection?.review,record.inspection?.receipt]);
+}
+function inspectionRawContext(details,context){
+  if(!context)return;
+  const bar=el("div",undefined,"formal-raw-context"),label=el("span",`${String(context.record.kind||"Kind not reported").replaceAll("_"," ")} · ${context.record.status??"NOT_REPORTED"}`,"formal-raw-check"),back=el("button","Back to check","secondary");
+  back.type="button";back.dataset.inspectionReturn="check";back.onclick=()=>inspectionReturn(context);bar.append(label,back);
+  if(context.itemLabel)bar.append(el("span",context.itemLabel,"formal-raw-origin"));
+  details.append(bar);
+}
+function inspectionRaw(parent,label,value,key,opened,context){
   const details=inspectionDisclosure(parent,label,key,opened),raw=el("pre",typeof value==="string"?value:JSON.stringify(value,null,2),"formal-inspection-raw");
-  raw.tabIndex=0;raw.setAttribute("role","region");raw.setAttribute("aria-label",label);details.append(raw);return details;
+  raw.tabIndex=0;raw.setAttribute("role","region");raw.setAttribute("aria-label",label);inspectionRawContext(details,context);details.append(raw);return details;
 }
 function inspectionMetadata(parent,fields){
   const list=el("dl",undefined,"evidence-metadata");
@@ -204,13 +220,14 @@ function inspectionIssue(p,e,x){
   if(x.availability==="unavailable"&&(x.records.length||x.artifact_json!==null||x.receipt!==null))return "Unavailable inspection contains conflicting artifact data; no recorded items are assigned to this check.";
   return "";
 }
-function inspectionRecord(parent,record,index,key,opened){
+function inspectionRecord(parent,record,index,key,opened,context){
   const origins={counterexample:"Counterexample",negative_control:"Negative control",diagnostic:"Diagnostic"};
   if(!record||!Object.hasOwn(origins,record.origin)||typeof record.artifact_path!=="string"||!Array.isArray(record.steps)||!record.model){
-    const invalid=el("div");invalid.append(el("p",`Record ${index+1} has an unsupported shape; raw data is retained.`,"evidence-warning"));inspectionRaw(invalid,"Raw recorded item",record,key+":invalid:"+index,opened);parent.append(invalid);return;
+    const invalid=el("div");invalid.append(el("p",`Record ${index+1} has an unsupported shape; raw data is retained.`,"evidence-warning"));inspectionRaw(invalid,"Raw recorded item",record,key+":invalid:"+index,opened,{...context,itemLabel:`Record ${index+1} · unsupported shape`});parent.append(invalid);return;
   }
   const recordKey=JSON.stringify([key,record.artifact_path,index]),details=inspectionDisclosure(parent,`${origins[record.origin]} · ${record.label||record.artifact_path}`,recordKey,opened);
   details.dataset.inspectionPath=record.artifact_path;details.dataset.inspectionOrigin=record.origin;details.dataset.inspectionIndex=String(index);
+  const itemContext={...context,itemLabel:`${origins[record.origin]} · ${record.label||record.artifact_path}`};
   if(record.origin==="negative_control")details.append(el("p","Seeded control; this is not a reported failure of the current candidate.","muted"));
   if(record.invariant!==null&&record.invariant!==undefined)details.append(el("p","Invariant: "+record.invariant));
   const steps=el("ol",undefined,"formal-inspection-steps");
@@ -222,12 +239,13 @@ function inspectionRecord(parent,record,index,key,opened){
   details.append(el("p","Model and source navigation are not available in this inspection view.","muted"));
   const identities=inspectionDisclosure(details,"Record and specimen identity",recordKey+":identity",opened);
   inspectionMetadata(identities,[["Artifact path",record.artifact_path],["Origin",record.origin],["Model slot",model.slot],["Supplied semantic hash",model.supplied_semantic_hash],["Computed specimen semantic hash",model.computed_semantic_hash],["Model availability",model.availability],["Navigation",record.navigation]]);
-  if(model.raw_json!==null&&model.raw_json!==undefined)inspectionRaw(identities,"Raw model specimen",model.raw_json,recordKey+":model",opened);
-  inspectionRaw(details,"Raw recorded item",record.raw_json,recordKey+":raw",opened);
+  if(model.raw_json!==null&&model.raw_json!==undefined)inspectionRaw(identities,"Raw model specimen",model.raw_json,recordKey+":model",opened,itemContext);
+  inspectionRaw(details,"Raw recorded item",record.raw_json,recordKey+":raw",opened,itemContext);
 }
 function renderFormalInspection(row,e,p,opened){
   if(e.inspection===undefined)return;
   const x=e.inspection,issue=inspectionIssue(p,e,x),key=JSON.stringify(["inspection",current?.case.id,current?.case.version,p.subject_hash,x?.review,x?.receipt,e.kind,row.dataset.evidenceIndex]);
+  const context={row,summary:row.children[0],packet:p,record:e,index:Number(row.dataset.evidenceIndex),identity:inspectionContextIdentity(p,e)};
   const box=inspectionDisclosure(row,issue?"Inspection association unavailable":x.availability==="available"?`Inspect recorded evidence · ${x.record_count} records`:"Recorded artifact unavailable",key,opened);
   box.className+=" formal-inspection";box.dataset.inspectionAvailability=issue?"unassociated":x.availability;
   if(issue)box.append(el("p",issue,"evidence-warning"));
@@ -237,16 +255,16 @@ function renderFormalInspection(row,e,p,opened){
     if(x.availability==="available"){
       if(x.receipt.subject_matches_review!==true)box.append(el("p","The deciding receipt subject differs from this review packet. Its recorded items remain separate from the current candidate.","evidence-warning"));
       if(!x.records.length)box.append(el("p","No structured records are supplied. The retained artifact and verdict reasons remain available."));
-      x.records.forEach((record,index)=>inspectionRecord(box,record,index,key,opened));
+      x.records.forEach((record,index)=>inspectionRecord(box,record,index,key,opened,context));
       formalList(box,"Projection limits",x.projection_reasons);
     }else box.append(el("p","No admitted recorded artifact is available for this inspection. The reported status is unchanged."));
     const identities=inspectionDisclosure(box,"Review and deciding receipt identity",key+":identity",opened);
     inspectionMetadata(identities,[["Review case",x.review.case_id],["Review revision",x.review.case_version],["Review scope",x.review.scope],["Review subject hash",x.review.subject_hash],["Current candidate semantic hash",x.review.candidate_semantic_hash],["Pack",x.review.pack_id],["Pack digest",x.review.pack_digest],["Deciding receipt",x.receipt?.id],["Artifact hash",x.receipt?.artifact_hash],["Producer",x.receipt?.producer],["Method",x.receipt?.method],["Receipt subject matches review",x.receipt?.subject_matches_review]]);
-    inspectionRaw(identities,"Full review subject",x.review.subject_json,key+":review",opened);
-    if(x.receipt)inspectionRaw(identities,"Original receipt subject",x.receipt.subject_json,key+":receipt",opened);
-    if(x.artifact_json!==null)inspectionRaw(box,"Complete recorded artifact",x.artifact_json,key+":artifact",opened);
+    inspectionRaw(identities,"Full review subject",x.review.subject_json,key+":review",opened,context);
+    if(x.receipt)inspectionRaw(identities,"Original receipt subject",x.receipt.subject_json,key+":receipt",opened,context);
+    if(x.artifact_json!==null)inspectionRaw(box,"Complete recorded artifact",x.artifact_json,key+":artifact",opened,context);
   }
-  inspectionRaw(box,"Raw inspection data",x,key+":raw",opened);
+  inspectionRaw(box,"Raw inspection data",x,key+":raw",opened,context);
 }
 function formalDetails(row,e,p,opened){
   if(e.establishes!==undefined)row.append(el("p",evidenceValue(e.establishes)));
@@ -404,10 +422,11 @@ async function load(id,canPublish=null) {
   if(runtimeAttempt&&runtimeOwns(runtimeAttempt)&&runtimeAttempt.refresh==="failed"){runtimeAttempt.refresh="current";renderRuntimeFeedback();}
   if(editNeedsRefresh.delete(id))render();
   renderEditReconciliation();
-  clearDiagnostic();return true;
+  clearDiagnostic();reconcileProposalRefresh();return true;
 }
 let editNeedsRefresh=new Map();
 function renderEditReconciliation(){
+  renderRuntimeRuleNavigation();renderRuntimeRuleReturn($("selection-detail"));
   const root=$("edit-reconciliation"),pending=editNeedsRefresh.get(current?.case.id);root.hidden=!pending;
   if(!pending){$("edit-reconciliation-status").textContent="";for(const key of ["caseId","revision","status"])delete root.dataset[key];return;}
   Object.assign(root.dataset,{caseId:pending.caseId,revision:String(pending.version),status:pending.status});
@@ -416,10 +435,10 @@ function renderEditReconciliation(){
   for(const id of ["propose","save","discard","move-node","verify","reset","approve","apply","undo-edit","redo-edit","history-undo","history-redo"])$(id).disabled=true;
   for(const button of $("runtime-actions").children)button.disabled=true;
 }
-let runtimeAttempt=null,runtimeCommit=null,runtimeEpoch=0,runtimeUncertain=false;
+let runtimeAttempt=null,runtimeCommit=null,runtimeEpoch=0,runtimeUncertain=false,runtimeRuleInspection=null;
 function runtimeSemantic(data=current){return data?.packet?.subject?.semantic??null;}
 function clearRuntime(){
-  ++runtimeEpoch;runtimeAttempt=null;runtimeCommit=null;runtimeUncertain=false;instance=null;
+  ++runtimeEpoch;runtimeAttempt=null;runtimeCommit=null;runtimeUncertain=false;runtimeRuleInspection=null;instance=null;
   $("runtime-state").textContent="Not started";
   $("runtime-version").textContent="No preview instance has been acknowledged";
   for(const button of $("runtime-actions").children)button.disabled=true;
@@ -438,9 +457,9 @@ function runtimeRefused(error){
   return error instanceof ApiError&&error.responseValid===true&&error.httpStatus===(boundaries[error.code]??(domain.includes(error.code)?409:null));
 }
 function beginRuntimeAttempt(kind,action){
-  const requestId=crypto.randomUUID(),c=current.case;
+  const requestId=crypto.randomUUID(),c=current.case;runtimeRuleInspection=null;
   runtimeAttempt={epoch:++runtimeEpoch,requestId,operationId:kind==="execute"?requestId:null,kind,caseId:c.id,caseVersion:c.version,
-    semanticHash:runtimeSemantic(),subjectHash:current.packet?.subject_hash??null,actorId:kind==="execute"?$("actor").value:null,action,
+    candidateJSON:c.candidate?JSON.stringify(c.candidate):null,semanticHash:runtimeSemantic(),subjectHash:current.packet?.subject_hash??null,actorId:kind==="execute"?$("actor").value:null,action,
     instanceId:instance?.id??null,instanceVersion:instance?.version??null,status:"pending",refresh:"not requested"};
   runtimeAttempt.command=kind==="execute"?{operation_id:requestId,actor_id:runtimeAttempt.actorId,instance_id:runtimeAttempt.instanceId,action,expected_version:runtimeAttempt.instanceVersion}:{expected_version:c.version};
   renderRuntimeFeedback();return runtimeAttempt;
@@ -498,6 +517,51 @@ async function startRuntimePreview(){
   instance=result;runtimeCommit=null;runtimeUncertain=false;attempt.status="preview";attempt.result={instance:result};
   renderRuntime();return refreshRuntime(attempt);
 }
+function runtimeRuleTarget(attempt){
+  const candidate=current?.case.candidate;
+  if(!attempt||attempt.kind!=="execute"||attempt.status!=="refused"||!runtimeOwns(attempt)||
+    attempt.caseVersion!==current.case.version||editNeedsRefresh.has(attempt.caseId)||typeof attempt.semanticHash!=="string"||!attempt.semanticHash||
+    !candidate||JSON.stringify(candidate)!==attempt.candidateJSON||!Array.isArray(candidate.transitions)||
+    instance?.case_id!==attempt.caseId||instance?.model_hash!==attempt.semanticHash||instance?.version!==attempt.instanceVersion||
+    typeof attempt.action!=="string"||!attempt.action||attempt.command?.action!==attempt.action)return null;
+  const matches=candidate.transitions.filter(item=>item.action===attempt.action),target=matches[0];
+  return matches.length===1&&typeof target.id==="string"&&target.id&&candidate.transitions.filter(item=>item.id===target.id).length===1?target:null;
+}
+function inspectRuntimeRule(attempt){
+  const target=runtimeRuleTarget(attempt);if(!target)return false;
+  runtimeRuleInspection={attempt,transitionId:target.id};
+  if(inspectWorkingTransition(target.id,{id:attempt.caseId,version:attempt.caseVersion}))return true;
+  runtimeRuleInspection=null;return false;
+}
+function returnToRuntimeAttempt(inspection){
+  if(!inspection||runtimeRuleInspection!==inspection||modelView!=="working"||inspectorSelection?.kind!=="transition"||inspectorSelection.id!==inspection.transitionId||runtimeRuleTarget(inspection.attempt)?.id!==inspection.transitionId)return false;
+  switchTab("try");renderRuntimeFeedback();
+  const button=[...$("runtime-rule-navigation").children].find(node=>node.dataset.runtimeRule===inspection.transitionId);
+  if(button?.getClientRects().length)button.focus();return true;
+}
+function renderRuntimeRuleNavigation(){
+  const root=$("runtime-rule-navigation"),attempt=runtimeAttempt;root.replaceChildren();root.hidden=!attempt||attempt.kind!=="execute"||attempt.status!=="refused";
+  if(root.hidden)return;
+  const target=runtimeRuleTarget(attempt);
+  if(!target){root.append(el("p","Rule navigation unavailable: this attempt no longer matches one unique rule in the current candidate. Its details and diagnostic are retained.","muted"));return;}
+  const button=el("button",`Inspect ${attempt.action} rule`,"secondary");button.type="button";button.dataset.runtimeRule=target.id;
+  button.onclick=()=>inspectRuntimeRule(attempt);
+  root.append(button,el("span",`Model rule for the attempted action · revision ${attempt.caseVersion}.`,"muted"));
+}
+function renderRuntimeRuleReturn(root){
+  const inspection=runtimeRuleInspection,target=runtimeRuleTarget(inspection?.attempt);
+  let context=[...root.children].find(node=>node.dataset.runtimeRuleReturn==="true");
+  if(!target||target.id!==inspection.transitionId||modelView!=="working"||inspectorSelection?.kind!=="transition"||inspectorSelection.id!==target.id){
+    if(context){context.replaceChildren();context.hidden=true;delete context.dataset.runtimeReturnKey;}return;
+  }
+  const key=JSON.stringify([inspection.attempt.requestId,target.id]);
+  if(context?.dataset.runtimeReturnKey===key)return;
+  if(!context){context=el("div");context.dataset.runtimeRuleReturn="true";root.append(context);}
+  context.replaceChildren();context.hidden=false;context.dataset.runtimeReturnKey=key;
+  const back=el("button",`Return to ${inspection.attempt.action} attempt`,"secondary");back.type="button";back.dataset.runtimeAttempt=inspection.attempt.requestId;
+  back.onclick=()=>returnToRuntimeAttempt(inspection);
+  context.append(el("p",`From the refused ${inspection.attempt.action} attempt · revision ${inspection.attempt.caseVersion}.`,"muted"),back);
+}
 function renderRuntimeFeedback(){
   const root=$("runtime-result"),attempt=runtimeAttempt,identity=$("runtime-attempt-identity");
   root.textContent="";identity.replaceChildren();
@@ -513,6 +577,7 @@ function renderRuntimeFeedback(){
     if(attempt.error)values["Request diagnostic"]=JSON.stringify(attempt.error);if(attempt.refreshError)values[attempt.refresh==="current"?"Earlier refresh diagnostic (later refresh succeeded)":"Refresh diagnostic"]=JSON.stringify(attempt.refreshError);
     for(const [name,value]of Object.entries(values))identity.append(el("dt",name),el("dd",String(value)));
   }
+  renderRuntimeRuleNavigation();renderRuntimeRuleReturn($("selection-detail"));
   $("runtime-last-commit").textContent=runtimeCommit?`Last acknowledged commit: ${runtimeCommit.action} · actor ${runtimeCommit.actorId} · instance ${runtimeCommit.result.instance.id} · version ${runtimeCommit.result.instance.version}. Effects: ${runtimeCommit.result.effects.join(", ")||"none"}. This is separate from the latest attempt.`:"";
 }
 function renderRuntime(){
@@ -524,13 +589,104 @@ function renderRuntime(){
   $("trace").textContent=JSON.stringify(current?.observations??[],null,2);renderRuntimeFeedback();
 }
 
+let proposalAttempt=null;
+function proposalText(value,fallback="Not supplied"){return typeof value==="string"&&value.trim()?value:fallback;}
+function proposalMode(run){
+  if(run?.live===true)return "Live response reported";
+  if(run?.live===false)return run.provider==="offline"&&run.egress===false?"Offline fixture · no model call":"Non-live response reported";
+  return "Run mode not supplied";
+}
+function proposalOwns(attempt){return proposalAttempt===attempt&&current?.case.id===attempt.caseId&&[attempt.version,attempt.acceptedVersion].includes(current.case.version);}
+function proposalEvents(){
+  return (Array.isArray(current?.observations?.events)?current.observations.events:[])
+    .filter(event=>event?.body?.case_id===current.case.id&&Number.isSafeInteger(event.seq)&&["ProviderCallStarted","ProposalReceived","ProviderCallNotAccepted"].includes(event.kind))
+    .sort((left,right)=>left.seq-right.seq);
+}
+function proposalMetadata(root,fields){
+  root.replaceChildren();
+  for(const [label,value]of fields)root.append(el("dt",label),el("dd",String(value)));
+}
+function renderProposalProvenance(){
+  const c=current?.case,root=$("proposal-provenance"),detail=$("proposal-record"),run=c?.proposal&&c.provider_run&&typeof c.provider_run==="object"&&!Array.isArray(c.provider_run)?c.provider_run:null;
+  const configured=proposalText(status?.provider,"Provider not supplied"),network=status?.provider_networked===false?"local provider":status?.provider_networked===true?(status.network_enabled===true?"network enabled":"network disabled"):"network mode not supplied";
+  $("proposal-provider").textContent=`Configured for new requests: ${configured} · ${network}.`;
+  root.hidden=!c;$("proposal-activity").hidden=true;$("proposal-activity").textContent="";
+  for(const key of ["caseId","revision","runId"])delete root.dataset[key];
+  for(const key of ["status","caseId","revision"])delete $("proposal-activity").dataset[key];
+  if(!c)return;
+  Object.assign(root.dataset,{caseId:c.id,revision:String(c.version),runId:proposalText(run?.id,"")});
+  const key=JSON.stringify([c.id,run?.id??null]);if(detail.dataset.proposalKey!==key)detail.open=false;detail.dataset.proposalKey=key;
+  $("proposal-subject").textContent=`Loaded case ${c.id} · revision ${c.version}. Untrusted interpretation; meaning selection and evidence remain separate.`;
+  $("proposal-origin").textContent=!c.proposal?"No proposal loaded for this case.":run?`Loaded proposal: ${proposalText(run.provider,"Provider not supplied")} · ${proposalText(run.model,"Actual model not supplied")} · ${proposalMode(run)}.`:"Loaded proposal: provenance metadata not supplied.";
+  const usage=run?.usage&&typeof run.usage==="object"&&!Array.isArray(run.usage)?run.usage:{},usageFields=[];
+  for(const [name,label]of [["prompt_tokens","Prompt tokens"],["completion_tokens","Completion tokens"],["total_tokens","Total tokens"],["input_tokens","Input tokens"],["output_tokens","Output tokens"],["cached_input_tokens","Cached input tokens"],["cache_read_input_tokens","Cache read input tokens"],["cache_creation_input_tokens","Cache creation input tokens"],["cost","Reported cost (unit not supplied)"]]){
+    if(typeof usage[name]==="number"&&Number.isFinite(usage[name])&&usage[name]>=0)usageFields.push([label,usage[name]]);
+  }
+  if(typeof usage.accounting==="string"&&usage.accounting.trim())usageFields.push(["Accounting note",usage.accounting]);
+  proposalMetadata($("proposal-metadata"),run?[
+    ["Proposal run",proposalText(run.id)],["Provider",proposalText(run.provider)],["Actual model",proposalText(run.model)],["Mode",proposalMode(run)],
+    ["Recorded at",proposalText(run.timestamp)],["Elapsed",typeof run.elapsed_seconds==="number"&&Number.isFinite(run.elapsed_seconds)&&run.elapsed_seconds>=0?`${run.elapsed_seconds} s`:"Not supplied"],
+    ["Request hash",proposalText(run.request_hash)],["Egress",run.egress===true?"Network egress reported":run.egress===false?"No network egress reported":"Not supplied"],
+    ...(usageFields.length?usageFields:[["Usage / accounting","Not supplied"]])
+  ]:[["Provenance",c.proposal?"The loaded proposal has no provider run metadata.":"No accepted proposal is present in this loaded case."]]);
+  const events=proposalEvents(),activity=$("proposal-events");activity.replaceChildren();
+  $("proposal-events-heading").textContent=`Recorded provider activity · ${events.length} event${events.length===1?"":"s"}`;
+  if(!Array.isArray(current.observations?.events))activity.append(el("p","Provider activity is unavailable in this loaded snapshot.","muted"));
+  else if(!events.length)activity.append(el("p","No provider events are recorded in this loaded snapshot.","muted"));
+  else for(const event of events.slice(-5)){
+    const body=event.body,id=proposalText(event.kind==="ProposalReceived"?body.run?.id:body.attempt_id),text=event.kind==="ProviderCallStarted"?`Started · ${proposalText(body.provider)} · completion not implied`:event.kind==="ProposalReceived"?`Proposal received · ${proposalText(body.run?.provider)} · ${proposalMode(body.run)}`:`Attempt not accepted · ${proposalText(body.error_code,"Reason not supplied")}`;
+    const row=el("p",`Event ${event.seq} · ${text} · run ${id}`);row.dataset.eventSeq=String(event.seq);row.dataset.eventKind=event.kind;activity.append(row);
+  }
+  if(events.length>5)activity.append(el("p",`Showing the latest 5 of ${events.length} recorded provider events. Inspect the full loaded audit in Run → Persisted audit and simulated outbox.`,"muted"));
+  const attempt=proposalAttempt&&proposalOwns(proposalAttempt)?proposalAttempt:null;
+  const latest=events.at(-1),feedback=$("proposal-activity");let message="",phase="";
+  $("propose").disabled=!!c.candidate||["APPLIED","DISCARDED"].includes(c.stage)||editNeedsRefresh.has(c.id)||attempt?.status==="pending"||attempt?.refresh==="pending";
+  if(attempt){
+    phase=attempt.status;
+    message=phase==="pending"?"Requesting interpretations. The proposal below remains the last loaded proposal.":phase==="received"?(attempt.refresh==="current"?"Interpretations received. No meaning was selected automatically.":attempt.refresh==="pending"?"Proposal acknowledged. Refreshing the workspace; the proposal below identifies its own loaded run.":"Proposal acknowledged; workspace refresh is incomplete. Use Refresh current model in the command palette to reload this case."):phase==="refused"?`Request refused (${attempt.code}). The last loaded proposal and request are retained.`:`Request outcome unknown (${attempt.code}). The proposal below remains the last loaded proposal; no automatic retry was sent. Use Refresh current model in the command palette before another proposal request.`;
+    message+=` Request began at case revision ${attempt.version}.`;
+    if(phase==="unknown"&&attempt.refresh==="current")message+=" The case was refreshed; this request's outcome is still unconfirmed.";
+  }else if(latest?.kind==="ProviderCallNotAccepted"){
+    phase="recorded-not-accepted";message=`Latest recorded attempt was not accepted (${proposalText(latest.body.error_code,"reason not supplied")}). The loaded proposal below retains its own accepted run metadata.`;
+  }else if(latest?.kind==="ProviderCallStarted"){
+    phase="recorded-unresolved";message="Latest recorded attempt started, but no completion is recorded in this loaded snapshot. Its current outcome is unknown.";
+  }
+  feedback.hidden=!message;feedback.textContent=message;feedback.dataset.status=phase;feedback.dataset.caseId=c.id;feedback.dataset.revision=String(c.version);
+}
+function reconcileProposalRefresh(){
+  const attempt=proposalAttempt;
+  if(!attempt||!proposalOwns(attempt)||!attempt.failedSnapshot||attempt.failedSnapshot===current)return;
+  if(attempt.status==="received"&&attempt.acceptedRunId&&current.case.provider_run?.id===attempt.acceptedRunId)attempt.refresh="current";
+  else if(["refused","unknown"].includes(attempt.status))attempt.refresh="current";
+  renderProposalProvenance();
+}
+async function requestInterpretations(){
+  const c=current?.case;
+  if(!c||c.candidate||["APPLIED","DISCARDED"].includes(c.stage)||editNeedsRefresh.has(c.id))return false;
+  const attempt={caseId:c.id,version:c.version,acceptedVersion:null,status:"pending",refresh:"not requested"};proposalAttempt=attempt;renderProposalProvenance();
+  try{
+    const result=await api(`cases/${c.id}/propose`,{expected_version:c.version,consent:$("egress").checked});
+    if(!proposalOwns(attempt))return false;
+    if(!result||result.id!==c.id||result.version!==c.version+1||result.request!==c.request||result.stage!=="PROPOSED"||result.candidate!=null||result.selected_meaning!=null||!result.proposal||typeof result.proposal!=="object"||Array.isArray(result.proposal))throw new ApiError("RESPONSE_INVALID","The server did not identify the accepted proposal for this case revision.");
+    attempt.acceptedVersion=result.version;attempt.acceptedRunId=proposalText(result.provider_run?.id,"");attempt.status="received";attempt.refresh="pending";renderProposalProvenance();
+    if(!await load(c.id,()=>proposalOwns(attempt))||!proposalOwns(attempt))return false;
+    attempt.refresh="current";renderProposalProvenance();notice("Interpretations received. No meaning was selected automatically.");return true;
+  }catch(error){
+    if(!proposalOwns(attempt))return false;
+    attempt.code=error.code||"REQUEST_FAILED";attempt.failedSnapshot=current;
+    if(attempt.status==="received")attempt.refresh="failed";
+    else attempt.status=error instanceof ApiError&&error.responseValid===true&&error.httpStatus>=400&&error.httpStatus<500?"refused":"unknown";
+    renderProposalProvenance();throw error;
+  }
+}
+
 async function command(action,extra={}){
   const id=current.case.id;
   if(editNeedsRefresh.has(id))throw new ApiError("EDIT_RECONCILIATION_REQUIRED","Refresh this case before changing it or its runtime; the previous edit submission needs reconciliation.",{case_id:id});
   const result=await api(`cases/${id}/${action}`,{expected_version:current.case.version,...extra});
   if(["undo","redo","discard"].includes(action))clearRuntime();await load(id);return result;
 }
-function render(){const c=current.case,p=current.packet,closed=editNeedsRefresh.has(c.id)||["APPLIED","DISCARDED"].includes(c.stage);$("create-panel").hidden=true;$("workspace").hidden=false;$("case-title").textContent=c.request;$("case-id").textContent=`CHANGE CASE ${c.id.slice(0,10)} / REVISION ${c.version} / BASELINE ${c.baseline_version}`;$("case-stage").textContent=c.stage;$("proposal-summary").textContent=c.proposal?.summary||"No interpretation has been requested. Your request is not yet a semantic change.";$("propose").disabled=!!c.candidate||closed;$("options").replaceChildren();
+function render(){const c=current.case,p=current.packet,closed=editNeedsRefresh.has(c.id)||["APPLIED","DISCARDED"].includes(c.stage);$("create-panel").hidden=true;$("workspace").hidden=false;$("case-title").textContent=c.request;$("case-id").textContent=`CHANGE CASE ${c.id.slice(0,10)} / REVISION ${c.version} / BASELINE ${c.baseline_version}`;$("case-stage").textContent=c.stage;$("proposal-summary").textContent=c.proposal?.summary||"No interpretation has been requested. Your request is not yet a semantic change.";$("propose").disabled=!!c.candidate||closed;renderProposalProvenance();$("options").replaceChildren();
 for(const a of c.proposal?.alternatives||[]){const canonical=current.options[a.interpretation],chosen=c.selected_meaning===a.interpretation;const card=el("article",undefined,"option"+(chosen?" selected":""));card.append(el("small",chosen?"SELECTED BY LOCAL OWNER":canonical.supported?"SUPPORTED MEANING":"BLOCKED / OUT OF SCOPE"),el("h3",canonical.label));for(const consequence of canonical.consequences)card.append(el("p",consequence));const d=el("details");d.append(el("summary","Untrusted provider explanation"),el("p",a.explanation));card.append(d);const b=el("button",chosen?"Meaning selected":canonical.supported?"Select this meaning":"Explain boundary",chosen?"secondary":"");b.dataset.meaning=a.interpretation;b.disabled=closed||!!c.candidate;b.onclick=()=>task(async()=>{await command("select",{interpretation:a.interpretation});notice("Meaning selected. The local baseline has not changed.");});card.append(b);$("options").append(card);}
 $("proposal-unknowns").replaceChildren();for(const unknown of c.proposal?.unknowns||[])$("proposal-unknowns").append(el("p","Unresolved: "+unknown,"muted"));$("editor").hidden=!c.candidate;
 for(const id of ["save","discard","edit-rule","edit-state","move-node","verify","reset"])$(id).disabled=!c.candidate||closed;
@@ -538,7 +694,7 @@ renderWorkbench(); renderChanges();
 renderRuntime();
 renderEvidencePacket(p);$("approve").disabled=!p.eligible||closed||c.stage==="APPROVED";$("apply").disabled=c.stage!=="APPROVED"||!p.eligible;$("export").disabled=false;switchTab(tab);}
 $("create").onclick=()=>task(async()=>{const c=await api("cases",{request:$("request").value});tab="change";editId=null;await load(c.id);notice("Case created. No provider call or baseline change has occurred.");});document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>openWorkDestination(b.dataset.tab));
-$("propose").onclick=()=>task(async()=>{await command("propose",{consent:$("egress").checked});notice("Interpretations received. No meaning was selected automatically.");},"Requesting an untrusted proposal…");
+$("propose").onclick=()=>task(requestInterpretations,"Requesting an untrusted proposal…");
 $("save").onclick=()=>task(async()=>{await command("save");notice("Review checkpoint saved; the active baseline is unchanged.");});$("discard").onclick=()=>task(async()=>{await command("discard");clearRuntime();render();notice("Candidate closed. History is retained; the baseline is unchanged.");});
 function edit(source) {return commitChoice(choiceFor("retarget_source", "state:" + source));}
 $("edit-rule").onclick = () => edit($("rejection-source").value);
@@ -556,7 +712,7 @@ function showPack(pack){if(!pack)return;$("pack-name").textContent=pack.name;if(
 task(async () => {
   [status, workbench] = await Promise.all([api("status"), api("workbench")]);
   showPack(status.pack); $("connection").textContent = `${status.provider} · ${status.network_enabled ? "network enabled" : "local / offline"}`;
-  renderWorkbench(); renderProblems(); renderChanges(); switchTab("model"); await cases(); notice("");
+  renderWorkbench(); renderProblems(); renderChanges(); renderProposalProvenance(); switchTab("model"); await cases(); notice("");
 });
 // Visual view: diagram text is generated server-side from the executable model and drawn inside a sandboxed frame
 // (see visual-frame.js and docs/SECURITY_AND_TRUST.md). This page never parses or inserts diagram markup itself.
@@ -746,6 +902,7 @@ function renderSelectionDetail() {
   if(!item){inspectorSelection=null;root.append(el("h3","Explore a concept"),el("p","Select a term, state, role or law in the explorer.","muted"));return;}
   root.dataset.eijaId = `${workbench.pack.id}.detail.${kind}.${item.id}`;
   root.append(el("h3", item.label || item.action || item.id), el("p", kind==="transition"?`${item.from_state} → ${item.to_state}`:item.definition || item.description || `Model ${kind}`));
+  renderRuntimeRuleReturn(root);
   for (const field of ["code", "kind", "role", "state", "action"]) if (item[field]) root.append(el("p", `${field}: ${item[field]}`));
   for (const field of ["refs", "binds"]) if (item[field]?.length) {
     root.append(el("h4", field === "refs" ? "Model references" : "Declared source bindings")); const list = el("ul");

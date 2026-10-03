@@ -49,7 +49,7 @@ function harness({code=source,current=fixture("A")}={}){
     tab:"try",editId:"TR-SUBMIT",inspectorSelection:{kind:"transition",id:"TR-SUBMIT"},
     modelView:"working",historyModel:null,historyLabel:"",canvasDirection:"AUTO",caseHistory:null,affordanceData:null,
     $:get,el:(tag,text)=>{const node=new Element(tag);if(text!==undefined)node.textContent=text;return node;},document,
-    captureTaskFocus:()=>({}),restoreTaskFocus(){},cancelSourceRead(){},renderEditReconciliation(){},
+    captureTaskFocus:()=>({}),restoreTaskFocus(){},cancelSourceRead(){},renderEditReconciliation(){},reconcileProposalRefresh(){},
     reconcileRuntime:next=>reconciliations.push(next.case.id),
     clearDiagnostic:()=>{diagnosticsCleared++;},reportError:error=>errors.push(error),notice:(text,error=false)=>notices.push({text,error}),
     fetch:(url,options)=>new Promise((resolve,reject)=>{
