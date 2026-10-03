@@ -1,0 +1,18 @@
+{
+  "artifact": "agent-proposal-native1280-20261003.gif",
+  "sha256": "b31bc9983d36f2be78be820ddc62e4355e90fe418ded1ab5ecdf03858afef640",
+  "bytes": 4602058,
+  "width": 1280,
+  "height": 1080,
+  "duration_seconds": 18.34,
+  "playback_speed": 1.0,
+  "frames_per_second": 6,
+  "raw_sha256": "5cef335f0de62793dc864c33ac2c14d04671ae9cf3ded988ffb36371996c418c",
+  "product": "EIJA Studio",
+  "recorded_behavior": "A prefilled exact-template request uses the visibly synthetic offline proposer, then opens the real before/proposed UML preview. Apply is unsubmitted in this short clip.",
+  "authority": "Untrusted proposal; no owner approval, baseline apply, source rewrite, live inference, or paid provider call.",
+  "recording": "Actual user browser through existing demos.prgif Recorder; cursor overlay only. Normal-CSP product acceptance is a separate 8/8-pass run.",
+  "export": "Existing encoder filter with external dither=none quality choice; 192 palette colors; setup trimmed, no speed change or semantic tail cut.",
+  "filter": "trim=start=34.984,setpts=(PTS-STARTPTS)/1.0000,fps=6,scale=1280:-2:flags=lanczos,split[a][b];[a]palettegen=max_colors=192:stats_mode=diff[p];[b][p]paletteuse=dither=none:diff_mode=rectangle",
+  "review": "Technical limits passed; independent first/last frame readability and actual result checked. This is not human usability validation."
+}
