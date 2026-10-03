@@ -1,6 +1,24 @@
 # Full IDE / HCI status and traceability
 
+## Selected-change summary and Evidence triage
+
+**3 October — implementation [bdb7a283](https://github.com/45ck/eija-studio/commit/bdb7a2836e86cda60a511a7c59f550dab97cd040); full product acceptance remains open.** Exact selected before/after fields now appear above the model comparison. Evidence groups current review blockers and offers keyboard routes to source restrictions and runtime claims. This supports US04 visual meaning review and the entry portion of US07 evidence inspection, alongside US10 keyboard access; full witness navigation and human comprehension remain open. The [four persona hypotheses/fifteen stories](WHOLE-APP-STORIES.md), [whole-app HCI contract](WHOLE-APP-UX.md) and [ten-surface interactive design](README.md) remain the design and acceptance basis.
+
+The [two actual captures and provenance](../demos/assets/review-comprehension-20261003/provenance.json) identify synthetic QA cases, normal source-review-required identity and separate replay subjects; [Evidence entry](../demos/assets/review-comprehension-20261003/evidence-triage-entry-1280.png) shows actual restrictions, not a passing verification result. Captured source stayed unchanged and browser/server cleanup completed. The documentation does not add this implementation to main.
+
+| Current evidence | Result and scope |
+|---|---|
+| Browser review / triage | **10 / 1 checks PASS**, separately; source-freshness fixture **3 PASS**. No human, live-provider or owner-approval claim. |
+| Fast, workspace gates 3 | **22/22 sessions PASS**, 309.187 s; **2,461 passed, 206 skipped, two expected failures** (pytest 198.51 s). |
+| Canonical HCI, separate `pytest-harness` identity | **15 PASS / one GAP / two FAIL**. Density proxy **60 > 27**; predicted KLM **65.31 s > 65 s**. Settled-DOM p95 **863.1 ms** is a GAP against 400 ms, below the 4,000 ms ratchet. |
+| Release | **Exit 2, SOURCE_REVIEW_REQUIRED**; tests exit 0, **2,461 passed / 206 skipped / two expected failures**. Tests 224.70 s; command 226.844 s. Trusted fixture false; live providers not tested by this script; original evidence restored. |
+| Full on this implementation | **NOT_RUN**. Earlier navigation full/metrics results below remain bound to their original source. |
+
+Release implementation identity: `59190a5d5185240e8de33584c493c12ac418481f00d3f650ad0001a542196f68`. Budgets are unchanged. These scoped checks do not close whole P0, assistive-technology/human validation, full US06 gesture parity or the IDE/WOW/POC/POF goals.
+
 ## Workspace navigation and keyboard access
+
+**Historical navigation checkpoint — 3 October; all figures below retain their original `72e0f824` subject.**
 
 **Code checkpoint: 60c1a5a9a907e47cb01c68a6eb36a506efda63c4; published documentation merged into integration and pushed as 72e0f824f6bdc94203261866ca4151d6194fb9f8.** The checkpoint receipt confirms local HEAD, origin/integrate/all and the remote branch agree, with zero divergence. Implementation remains in draft PR29; these documentation changes do not add it to main. Workspace groups existing views, panels and layout in a native dialog with close/route focus handling. One native case picker shows loading, empty, unavailable and retained-case states, with refresh/retry and per-case context. Opened raw packet/error regions and the visible status notice are named keyboard-focusable areas. Notice focusability is static, not conditional on overflow.
 

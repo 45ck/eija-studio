@@ -1,0 +1,133 @@
+{
+  "schema": "eija.current-review-captures.v1",
+  "scope": "Two actual product screenshots using synthetic QA cases; not a design mockup, human study, or full WOW/IDE acceptance",
+  "publication_code_commit": "bdb7a2836e86cda60a511a7c59f550dab97cd040",
+  "binding_status": "ALL_CAPTURED_FILES_MATCH_IMMUTABLE_CODE_COMMIT",
+  "subject_scope": "Captured src, packs and explicitly included replay helpers; private/generated paths excluded. Dirty capture base is not the tested implementation identity.",
+  "cross_run": {
+    "common_captured_files": 115,
+    "common_file_hashes_equal": true,
+    "shared_src_pack_files": 110,
+    "subject_digests_are_separate": true
+  },
+  "images": [
+    {
+      "file": "ordinary-summary-top-1280.png",
+      "sha256": "176f2ceb8a73c32437f12878f02bfc7e5b223e6b92479c915fc35bee132ac685",
+      "bytes": 101532,
+      "width": 1280,
+      "height": 800,
+      "run": "review",
+      "transformations": "None; copied byte for byte from actual browser capture"
+    },
+    {
+      "file": "evidence-triage-entry-1280.png",
+      "sha256": "7074b586558e8a7c291a02e9b69f8f9da69013bd35ac0def82b733c2e612d87f",
+      "bytes": 101980,
+      "width": 1280,
+      "height": 800,
+      "run": "triage",
+      "transformations": "None; copied byte for byte from actual browser capture"
+    }
+  ],
+  "runs": {
+    "review": {
+      "run_id": "review-comprehension-2/review",
+      "result": "PASS",
+      "checks": 10,
+      "result_sha256": "5bcb1665cef6df1ffa3b74e77e170a6975e77b01b70e7c2d7590d947b08f0f0a",
+      "artifact_manifest_sha256": "e513c5bcdba86bbd2268000d5ec21abd02a33daec074728f28d35696fb3a10a9",
+      "replay_sha256": "4614c5b63e465601129da6ea2a7a64258780e2a329478a48f7e9ae6b0ab9d2c6",
+      "replay_path": "tests/hci/ide_review_workspace.py",
+      "captured_subject_sha256": "333d10eabcfc911d2d50c7585eee1dfec18dbbc686d5a4053269d579580192f2",
+      "captured_files": 116,
+      "subject_before_manifest_sha256": "8488d587d3335f4e0ba8decd6fb11b3af05605d2cd194d76d96bb6c8b8a454ef",
+      "subject_after_manifest_sha256": "a64919a22b8757ce50a1071f63bd261055f15ddab305cb785f77551b110b3c9e",
+      "captured_base_head": "72e0f824f6bdc94203261866ca4151d6194fb9f8",
+      "captured_working_tree_modified": true,
+      "source_preservation": "UNCHANGED",
+      "browser_closed": true,
+      "server_closed": true,
+      "identity": "normal_source_review_required",
+      "provider": "offline",
+      "separate_freshness_fixture": {
+        "result": "PASS",
+        "checks": 3,
+        "fixture_removed": true
+      }
+    },
+    "triage": {
+      "run_id": "review-comprehension-2/triage",
+      "result": "PASS",
+      "checks": 1,
+      "result_sha256": "af60ea2c92994b735452858b3e869b7b76320458c4b40644d43333d9cedf4beb",
+      "artifact_manifest_sha256": "4fde27dad7ebc3894e873dfa561d9623f6f9978f4b3fd2faed70c13ba10a34c3",
+      "replay_sha256": "84ff76f75f7194f880c6ff833c8cbeb9ab2823e3be510f14dcd061b8e8e1b292",
+      "replay_path": "tests/hci/runtime_evidence_review.py",
+      "captured_subject_sha256": "c67c090afd0cb40830a969d0a3d2cb23664538950817ff9861641072b00a8216",
+      "captured_files": 116,
+      "subject_before_manifest_sha256": "0c5470f4d33d0c835b0005377701f4423f1b6980a4b196685ecfa2005ddb562c",
+      "subject_after_manifest_sha256": "fcf5049407edf39430a7b99f741a21772f15024edbf5e2b194b0e7f8689e893d",
+      "captured_base_head": "72e0f824f6bdc94203261866ca4151d6194fb9f8",
+      "captured_working_tree_modified": true,
+      "source_preservation": "UNCHANGED",
+      "browser_closed": true,
+      "server_closed": true,
+      "identity": "normal_source_review_required",
+      "provider": "offline"
+    }
+  },
+  "limits": [
+    "Synthetic offline fixtures; source review required",
+    "No human comprehension, live-provider usefulness or owner approval/apply claim",
+    "Triage run does not include axe, raw overflow, runtime recovery, or malformed/duplicate/stale packet browser fixtures",
+    "Review excludes baseline-only removal and changed initial state through the UI",
+    "Earlier 72e0f824 gate results do not validate these new bytes"
+  ],
+  "commit_match": {
+    "method": "SHA-256 of every captured path read from git show commit:path",
+    "matched_files_per_run": {
+      "review": 116,
+      "triage": 116
+    }
+  },
+  "validation": {
+    "fast": {
+      "sessions_passed": 22,
+      "tests_passed": 2461,
+      "skipped": 206,
+      "expected_failures": 2,
+      "exit_code": 0,
+      "seconds": 309.187
+    },
+    "hci": {
+      "identity": "pytest-harness",
+      "pass": 15,
+      "gap": 1,
+      "fail": 2,
+      "density_proxy_chunks": 60,
+      "density_limit": 27,
+      "predicted_klm_seconds": 65.31,
+      "klm_limit_seconds": 65,
+      "settled_dom_p95_ms": 863.1,
+      "target_ms": 400,
+      "ratchet_ms": 4000
+    },
+    "release": {
+      "exit_code": 2,
+      "tests_exit_code": 0,
+      "source_review": "SOURCE_REVIEW_REQUIRED",
+      "identity": {
+        "implementation": "59190a5d5185240e8de33584c493c12ac418481f00d3f650ad0001a542196f68",
+        "policy": "dab2cd79ad4e9b4c650a795d6a8d834646c020362bac02b863498505c31ba5e6",
+        "harness": "3ff915896e7cac2498435d0dc3d0402cc4c580c2233274b7857d654cd9491efb",
+        "trusted_fixture": false,
+        "environment": "107ba58423d85d6163f5b1d4d623ff8c36dd07394f3fe3df5efcae1aefc77b7f"
+      },
+      "pytest_addopts": "-n 4 --dist loadfile",
+      "seconds": 226.844
+    },
+    "full_on_this_increment": "NOT_RUN",
+    "limits": "Synthetic/headless observations; canonical HCI uses a separate harness identity. Human benefit and full IDE acceptance remain open."
+  }
+}
