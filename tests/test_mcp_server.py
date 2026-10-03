@@ -8,9 +8,11 @@ entry point starts, answers and keeps stdout to JSON-RPC only.
 from __future__ import annotations
 
 import asyncio
+import errno
 import json
 import subprocess
 import sys
+import tempfile
 import threading
 from operator import attrgetter, methodcaller
 from pathlib import Path
@@ -512,38 +514,129 @@ def _rpc(identifier, method, params=None):
 
 def _drive_raw_server(workspace, lines, expected_ids, timeout=90):
     """Run `eija mcp` as a raw subprocess, write JSON-RPC lines, collect EVERY stdout line until all replies arrive."""
-    process = subprocess.Popen([sys.executable, "-m", "eija_studio", "mcp", "--workspace", str(workspace)],  # noqa: S603 - fixed argv: this interpreter, no shell
-                               stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    watchdog = threading.Timer(timeout, process.kill)
-    watchdog.start()
-    stdout_lines: list[str] = []
-    try:
-        for line in lines:
-            process.stdin.write((line + "\n").encode("utf-8"))
-        process.stdin.flush()
-        seen: set = set()
-        while not expected_ids <= seen:
-            raw = process.stdout.readline()
-            if not raw:
-                break
-            stdout_lines.append(raw.decode("utf-8"))
+    # A pipe left unread while collecting stdout can block the child before its next reply.
+    with tempfile.TemporaryFile() as stderr_capture:
+        process = subprocess.Popen([sys.executable, "-m", "eija_studio", "mcp", "--workspace", str(workspace)],  # noqa: S603 - fixed argv: this interpreter, no shell
+                                   stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=stderr_capture)
+        watchdog = threading.Timer(timeout, process.kill)
+        stdout_lines: list[str] = []
+        try:
+            watchdog.start()
+            for line in lines:
+                process.stdin.write((line + "\n").encode("utf-8"))
+            process.stdin.flush()
+            seen: set = set()
+            while not expected_ids <= seen:
+                raw = process.stdout.readline()
+                if not raw:
+                    break
+                stdout_lines.append(raw.decode("utf-8"))
+                try:
+                    message = json.loads(stdout_lines[-1])
+                except ValueError:
+                    continue
+                if isinstance(message, dict) and "id" in message:
+                    seen.add(message["id"])
+            process.stdin.close()
+            rest = process.stdout.read().decode("utf-8")  # anything the server prints after the last reply counts too
+            stdout_lines.extend(part + "\n" for part in rest.split("\n") if part)
+            process.wait(timeout=30)
+            stderr_capture.seek(0)
+            stderr = stderr_capture.read().decode("utf-8", "replace")
+        finally:
+            watchdog.cancel()
             try:
-                message = json.loads(stdout_lines[-1])
-            except ValueError:
-                continue
-            if isinstance(message, dict) and "id" in message:
-                seen.add(message["id"])
-        process.stdin.close()
-        rest = process.stdout.read().decode("utf-8")  # anything the server prints after the last reply counts too
-        stdout_lines.extend(part + "\n" for part in rest.split("\n") if part)
-        process.wait(timeout=30)
-        stderr = process.stderr.read().decode("utf-8", "replace")
-    finally:
-        watchdog.cancel()
-        process.kill()
-        for stream in (process.stdin, process.stdout, process.stderr):
-            stream.close()
+                process.kill()
+                process.wait(timeout=30)
+            finally:
+                try:
+                    process.stdin.close()
+                except OSError as error:
+                    # Match Popen's stdin cleanup: Windows reports EINVAL when the child has closed its pipe.
+                    if error.errno not in (errno.EPIPE, errno.EINVAL):
+                        raise
+                finally:
+                    process.stdout.close()
     return stdout_lines, stderr
+
+
+def _raw_driver_fixture(monkeypatch, workspace, script):
+    """Substitute only the expected server argv with a disposable deterministic child."""
+    popen = subprocess.Popen
+    children, captures = [], []
+
+    def start(argv, **kwargs):
+        assert argv == [sys.executable, "-m", "eija_studio", "mcp", "--workspace", str(workspace)]
+        assert kwargs["stdin"] == kwargs["stdout"] == subprocess.PIPE
+        assert "shell" not in kwargs
+        child = popen([sys.executable, "-u", "-c", script], **kwargs)  # Fixed disposable Python fixture, no shell.
+        children.append(child)
+        captures.append(kwargs["stderr"])
+        return child
+
+    monkeypatch.setattr(subprocess, "Popen", start)
+    return children, captures
+
+
+def test_raw_driver_collects_stderr_without_blocking_stdout(tmp_path, monkeypatch):
+    """Exceed pipe capacity before the final reply; preserve all stdout and exact stderr."""
+    workspace = tmp_path / "raw-fixture"
+    first = '{"jsonrpc":"2.0","id":41,"result":{}}\n'
+    last = '{"jsonrpc":"2.0","id":42,"result":{}}\n'
+    noise, tail = "unrelated stdout before replies\n", "unrelated stdout after replies\n"
+    marker = b"stderr fixture ready\n"
+    script = (
+        "import sys\n"
+        "assert sys.stdin.buffer.readline()\n"
+        f"sys.stderr.buffer.write({marker!r})\n"
+        "sys.stderr.buffer.flush()\n"
+        f"sys.stdout.buffer.write({(noise + first).encode('utf-8')!r})\n"
+        "sys.stdout.flush()\n"
+        "sys.stderr.buffer.write(b'stderr diagnostic\\n' * 131072 + b'\\xff\\n')\n"
+        "sys.stderr.buffer.flush()\n"
+        f"sys.stdout.buffer.write({last.encode('utf-8')!r})\n"
+        "sys.stdout.flush()\n"
+        "assert sys.stdin.buffer.read() == b''\n"
+        f"sys.stdout.buffer.write({tail.encode('utf-8')!r})\n"
+    )
+    children, captures = _raw_driver_fixture(monkeypatch, workspace, script)
+    stdout, stderr = _drive_raw_server(workspace, [_rpc(41, "fixture")], {41, 42}, timeout=3)
+
+    assert stdout == [noise, first, last, tail]
+    expected_stderr = marker + b"stderr diagnostic\n" * 131072 + b"\xff\n"
+    assert stderr == expected_stderr.decode("utf-8", "replace")
+    assert len(children) == len(captures) == 1
+    assert children[0].poll() is not None
+    assert children[0].stdin.closed and children[0].stdout.closed and captures[0].closed
+
+
+def test_raw_driver_preserves_missing_reply_and_unrelated_stdout(tmp_path, monkeypatch):
+    workspace = tmp_path / "raw-missing-reply"
+    first = '{"jsonrpc":"2.0","id":41,"result":{}}\n'
+    noise = "unrelated stdout before exit\n"
+    script = "import sys\nassert sys.stdin.buffer.readline()\n" + f"sys.stdout.buffer.write({(noise + first).encode('utf-8')!r})\n"
+    _raw_driver_fixture(monkeypatch, workspace, script)
+
+    stdout, stderr = _drive_raw_server(workspace, [_rpc(41, "fixture")], {41, 42}, timeout=3)
+
+    assert stdout == [noise, first]  # Missing replies and pollution remain visible to the protocol oracle.
+    assert stderr == ""
+
+
+def test_raw_driver_reaps_child_and_closes_streams_on_input_error(tmp_path, monkeypatch):
+    workspace = tmp_path / "raw-input-error"
+    children, captures = _raw_driver_fixture(monkeypatch, workspace, "import sys; sys.stdin.buffer.read()")
+
+    def broken_lines():
+        yield _rpc(41, "fixture")
+        raise RuntimeError("fixture input failed")
+
+    with pytest.raises(RuntimeError, match="fixture input failed"):
+        _drive_raw_server(workspace, broken_lines(), {41}, timeout=3)
+
+    assert len(children) == len(captures) == 1
+    assert children[0].poll() is not None
+    assert children[0].stdin.closed and children[0].stdout.closed and captures[0].closed
 
 
 _INIT = [
