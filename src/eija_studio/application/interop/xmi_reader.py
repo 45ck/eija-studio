@@ -70,7 +70,7 @@ def _transition(doc: XmiDocument, transition: ET.Element, parsed: Parsed) -> Non
     (a_kind, a), (b_kind, b) = _vertex(doc, doc.ref(transition, "source")), _vertex(doc, doc.ref(transition, "target"))
     where = located(transition)
     if a_kind == "initial" and b_kind == "state":
-        parsed.initial = parsed.initial or b
+        parsed.start(b, where)
     elif a_kind == "state" and b_kind == "final":
         return  # a final state: derived by PlayIDE
     elif a_kind == "state" and b_kind == "state":

@@ -104,6 +104,13 @@ class Parsed:
         if name not in self.states:
             self.states.append(name)
 
+    def start(self, name: str, where: str) -> None:
+        """An arrow from the initial pseudostate. A second one is reported, never silently dropped."""
+        if self.initial not in (None, name):
+            self.skip(where, f"initial -> {name}", f"a second initial state; kept {self.initial}")
+        else:
+            self.initial = name
+
     def klass(self, klass: Klass) -> None:
         if self.classes is None:
             self.classes = []

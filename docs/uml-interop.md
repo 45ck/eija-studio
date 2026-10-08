@@ -59,7 +59,7 @@ These are reported, never guessed:
 | a text attribute without a maximum length | 200, and listed |
 | use case diagrams and final states | derived, so redrawn from the imported model |
 
-XML with a DTD or entities is refused before it is parsed.
+XML with a DTD or entities is refused before it is parsed, and so is a compressed draw.io page that holds one. A compressed page may inflate to at most 8 MB.
 
 ## How it is checked
 

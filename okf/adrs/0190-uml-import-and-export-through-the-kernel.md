@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0190-uml-import-and-export-through-the-kernel.md
   title: 0190-uml-import-and-export-through-the-kernel.md
   hash_method: lf-sha256-v1
-  sha256: c23709a4403a7fb994597f1724876f6022f84ad2e2e870c9927c4879e78f45e8
-notes_baseline: 699333105598d7ee71a365e15ffff20b0df52adb8f328c66bb4d186d1b1754ab
+  sha256: 015eb7b41ef57f319ba5adc60573dc3a3f4591db10c485ece9a9cfff72f63163
+notes_baseline: d94ab141ed8dd32eab5b009ad13e2f58fc0b700614074c1b343032ec0200beb2
 ---
 
 # ADR-0190: UML import and export: XMI, PlantUML, Mermaid and draw.io, with every import judged by the kernel
