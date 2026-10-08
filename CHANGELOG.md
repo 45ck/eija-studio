@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### 8 October 2026: the review view
+
+- `/play?view=review` is a read-only view of PlayIDE for someone who reviews the model: the same UML diagrams, Permissions, Simulate, the run bar and the running app, with the drawing palette, the chat and every edit tool out of view. Approval stays owner-only in the review workbench. See [ADR-0172](docs/adr/0172-review-view-for-reading-the-model.md).
+
 ### 8 October 2026: who can do what
 
 - PlayIDE has a **Permissions** tab: a role by state matrix of who may take which action, each cell tried in the kernel with the pack's fixture actors (who is let through, and why the others are refused). Ask "can a record reach Overdue without a Clerk?" and get a proof (No), a path the kernel committed (Yes) or Not shown. On a previewed plan the same question is asked again and the permissions the plan adds or removes are flagged. See [ADR-0171](docs/adr/0171-permissions-matrix-and-reachability-questions.md).

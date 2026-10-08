@@ -780,7 +780,7 @@
   }
 
   function draftTools(buttons) {
-    const tools = el("div", undefined, { class: "draft-tools" });
+    const tools = el("div", undefined, { class: "draft-tools edit-tools" }); // edit-tools: hidden in the review view (ADR-0172)
     for (const [text, run] of buttons) {
       const b = el("button", text, { type: "button" });
       b.addEventListener("click", run);
