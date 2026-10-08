@@ -92,4 +92,20 @@ The principles below follow from that table and from the research.
 * **Code outside the model.** When PlayIDE connects a repository, some code is generated from the model and checked against the kernel, and some is not. The second kind should be marked "outside the model's guarantees" wherever it appears (the component diagram, a review), so nobody reads a green check as covering it. Today every component PlayIDE draws is generated, so there is nothing to mark yet; this belongs with source-connected review (ADR-0147) when a checkout is shown beside the model.
 * **Diff-first review.** Reviewing an AI change as a diagram diff with a question like A10's beside it, rather than starting from drawing, is the subject of the "Review changes in PlayIDE, not PRs" thread. The reachability route (`/api/play/reach`) is there for it to reuse.
 * **Audience.** The owner kept the audience as people who know UML (8 October 2026): PlayIDE does not teach UML or translate it into captions. But UML is also how non-technical stakeholders sometimes review a design, so `/play?view=review` shows the same diagrams, Permissions, Simulate and the running app with every editing tool out of view (ADR-0172). It is a view, not a permission: nothing in PlayIDE persists a change, and approval stays with the owner in the review workbench.
-* **The sidebar is dense.** Checks, chat, inspector, simulation and the running app share one column. A layout pass (tabs or a resizable split) is worth doing once the run bar and review threads have landed, so it is done once.
+* **The sidebar was dense.** Checks, chat, inspector, simulation and the running app shared one column, and the owner found it "too much going on". ADR-0173 gave each a fixed place in a workbench shell modelled on Visual Studio, VS Code, Cursor and draw.io; see section 7.
+
+## 7. The workbench shell (ADR-0173)
+
+Each region has one job and stays where it is, in the place an engineer from an IDE looks first.
+
+| Region | What it holds | Shown | After |
+|---|---|---|---|
+| Title bar | PlayIDE and the model, the command center (Ctrl+K), toggles for the side bar, the panel and the chat | Always | VS Code's command center; Cursor's title bar |
+| Toolbar | Run bar, Simulate, Build & run; the checks ring opens its list as a popover | Always | Visual Studio's standard and debug toolbars |
+| Left | Model outline above the inspector | By default; Ctrl+B | Visual Studio's Solution Explorer above Properties |
+| Centre | Diagram tabs (state machine, class, use cases, screens, components), then Laws, Permissions and Review; ripple badges on the tabs; the UML palette as a column beside the state machine | Always | VS Code editor tabs; draw.io's shape library |
+| Panel | Run, Simulation, Running app, one at a time, resizable | When one of them has something; Ctrl+J | VS Code's panel; Visual Studio's output windows |
+| Right | Chat in plan mode, full height, with the authority strip and the suggestions | By default (not in the review view); Ctrl+L | Cursor's agent panel; the Codex app's conversation |
+| Status bar | Model, "Previewing a plan", selection, toast, Simulate score, Ctrl K | Always | VS Code and Visual Studio status bars |
+
+What changed for the agentic side: the chat no longer moves or shrinks when a run starts. The fence (A2) and a plan under review stay in view while the plan's effect plays out in the panel below the diagram, so checking a step and watching it run happen side by side (A5). The checks ring stays one click away, and its list no longer pushes the chat down (A6). The layout toggles are in the command palette too (A8).

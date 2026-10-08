@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### 8 October 2026: PlayIDE's workbench shell
+
+- PlayIDE is laid out like Visual Studio, VS Code, Cursor and draw.io (ADR-0173). The model outline sits above the inspector on the left, the diagrams are editor tabs, and the UML palette is a column beside the canvas. The chat is alone on the right. Run, Simulation and Running app share a resizable panel under the diagrams that opens on whatever has just run. The checks list is a popover from the ring, a status bar runs along the bottom, and the title bar has a command center (Ctrl+K). Ctrl+B, Ctrl+J and Ctrl+L hide the side bar, the panel and the chat, and the layout is remembered in the browser.
+
 ### 8 October 2026: the review view
 
 - `/play?view=review` is a read-only view of PlayIDE for someone who reviews the model: the same UML diagrams, Permissions, Simulate, the run bar and the running app, with the drawing palette, the chat and every edit tool out of view. Approval stays owner-only in the review workbench. See [ADR-0172](docs/adr/0172-review-view-for-reading-the-model.md).

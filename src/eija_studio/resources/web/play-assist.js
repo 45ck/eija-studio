@@ -318,6 +318,10 @@
       ["Show the screens", "tab-screens", press("tab-screens")],
       ["Show the components", "tab-components", press("tab-components")],
       ["Show who can do what (permissions)", "tab-access", press("tab-access")],
+      ["Show the laws", "tab-laws", press("tab-laws")],
+      ["Show or hide the model and inspector (Ctrl+B)", "toggle-left", press("toggle-left")],
+      ["Show or hide the run panel (Ctrl+J)", "toggle-dock", press("toggle-dock")],
+      ["Show or hide the chat (Ctrl+L)", "toggle-chat", press("toggle-chat")],
       ["Fit the diagram", "fit", press("fit")],
       ["Show the checks", "health", press("health"), () => $("checks") && $("checks").hidden],
       ["Open the review workbench", null, () => { location.href = "/"; }],
@@ -361,9 +365,9 @@
       }
     });
     dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); });
-    const opener = el("button", undefined, { id: "palette-open", type: "button", class: "quiet palette-open", title: "Commands: every command and element",
+    const opener = el("button", undefined, { id: "palette-open", type: "button", class: "quiet palette-open command-center", title: "Commands: every command and element",
       "aria-label": "Commands", "aria-keyshortcuts": isMac ? "Meta+K" : "Control+K" });
-    opener.append(el("kbd", `${MOD}K`)); // compact: the header also holds the checks ring and the run bar
+    opener.append(el("span", "Search commands, diagrams and elements"), el("kbd", `${MOD}K`)); // the title bar's command center (ADR-0173)
     opener.addEventListener("click", openPalette);
     (document.querySelector(".bar .brand") || document.body).after(opener);
     document.addEventListener("keydown", (event) => {
