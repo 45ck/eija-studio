@@ -1,0 +1,3260 @@
+{
+  "$defs": {
+    "anchor": {
+      "additionalProperties": false,
+      "properties": {
+        "digest": {
+          "$ref": "#/$defs/digest"
+        },
+        "end": {
+          "enum": [
+            "from",
+            "to"
+          ]
+        },
+        "method": {
+          "$ref": "#/$defs/method"
+        }
+      },
+      "required": [
+        "end",
+        "method",
+        "digest"
+      ],
+      "type": "object"
+    },
+    "digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "edge": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "else": {
+            "properties": {
+              "candidates": false
+            }
+          },
+          "if": {
+            "properties": {
+              "prov": {
+                "const": "candidate"
+              }
+            },
+            "required": [
+              "prov"
+            ]
+          },
+          "then": {
+            "required": [
+              "candidates"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "attests"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "class": {
+                      "enum": [
+                        "evidence"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "anchors"
+                  ]
+                }
+              },
+              {
+                "else": {
+                  "properties": {
+                    "attrs": false
+                  }
+                },
+                "if": {
+                  "properties": {
+                    "class": {
+                      "const": "inferred"
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "attrs": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "confidence_permille": {
+                          "maximum": 1000,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "model": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "tool": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "version": {
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "version"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "attrs"
+                  ]
+                }
+              }
+            ],
+            "properties": {
+              "anchors": {
+                "items": false,
+                "maxItems": 1,
+                "minItems": 1,
+                "prefixItems": [
+                  {
+                    "$ref": "#/$defs/anchor",
+                    "properties": {
+                      "end": {
+                        "const": "from"
+                      }
+                    }
+                  }
+                ],
+                "type": "array"
+              },
+              "class": {
+                "enum": [
+                  "evidence",
+                  "inferred"
+                ]
+              },
+              "qualifier": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "calls"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "else": {
+                  "properties": {
+                    "attrs": false
+                  }
+                },
+                "if": {
+                  "properties": {
+                    "class": {
+                      "const": "inferred"
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "attrs": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "confidence_permille": {
+                          "maximum": 1000,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "model": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "tool": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "version": {
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "version"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "attrs"
+                  ]
+                }
+              }
+            ],
+            "properties": {
+              "anchors": false,
+              "class": {
+                "enum": [
+                  "declared",
+                  "derived",
+                  "inferred"
+                ]
+              },
+              "qualifier": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "checked_by"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "class": {
+                      "enum": [
+                        "evidence"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "anchors"
+                  ]
+                }
+              },
+              {
+                "else": {
+                  "properties": {
+                    "attrs": false
+                  }
+                },
+                "if": {
+                  "properties": {
+                    "class": {
+                      "const": "inferred"
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "attrs": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "confidence_permille": {
+                          "maximum": 1000,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "model": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "tool": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "version": {
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "version"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "attrs"
+                  ]
+                }
+              }
+            ],
+            "properties": {
+              "anchors": {
+                "items": false,
+                "maxItems": 1,
+                "minItems": 1,
+                "prefixItems": [
+                  {
+                    "$ref": "#/$defs/anchor",
+                    "properties": {
+                      "end": {
+                        "const": "to"
+                      }
+                    }
+                  }
+                ],
+                "type": "array"
+              },
+              "class": {
+                "enum": [
+                  "evidence",
+                  "inferred"
+                ]
+              },
+              "qualifier": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "conforms_to"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "class": {
+                      "enum": [
+                        "declared"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "anchors"
+                  ]
+                }
+              },
+              {
+                "else": {
+                  "properties": {
+                    "attrs": {
+                      "additionalProperties": false,
+                      "minProperties": 1,
+                      "properties": {
+                        "bounds": {
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  }
+                },
+                "if": {
+                  "properties": {
+                    "class": {
+                      "const": "inferred"
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "attrs": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "bounds": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "confidence_permille": {
+                          "maximum": 1000,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "model": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "tool": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "version": {
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "version"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "attrs"
+                  ]
+                }
+              }
+            ],
+            "properties": {
+              "anchors": {
+                "items": false,
+                "maxItems": 2,
+                "minItems": 2,
+                "prefixItems": [
+                  {
+                    "$ref": "#/$defs/anchor",
+                    "properties": {
+                      "end": {
+                        "const": "from"
+                      }
+                    }
+                  },
+                  {
+                    "$ref": "#/$defs/anchor",
+                    "properties": {
+                      "end": {
+                        "const": "to"
+                      }
+                    }
+                  }
+                ],
+                "type": "array"
+              },
+              "class": {
+                "enum": [
+                  "declared",
+                  "inferred"
+                ]
+              },
+              "qualifier": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "contains"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "else": {
+                  "properties": {
+                    "attrs": false
+                  }
+                },
+                "if": {
+                  "properties": {
+                    "class": {
+                      "const": "inferred"
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "attrs": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "confidence_permille": {
+                          "maximum": 1000,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "model": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "tool": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "version": {
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "version"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "attrs"
+                  ]
+                }
+              }
+            ],
+            "properties": {
+              "anchors": false,
+              "class": {
+                "enum": [
+                  "declared",
+                  "derived",
+                  "inferred"
+                ]
+              },
+              "qualifier": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "covers"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "else": {
+                  "properties": {
+                    "attrs": {
+                      "additionalProperties": false,
+                      "minProperties": 1,
+                      "properties": {
+                        "fault_detection_permille": {
+                          "maximum": 1000,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "tool_pin": {
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  }
+                },
+                "if": {
+                  "properties": {
+                    "class": {
+                      "const": "inferred"
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "attrs": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "confidence_permille": {
+                          "maximum": 1000,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "fault_detection_permille": {
+                          "maximum": 1000,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "model": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "tool": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "tool_pin": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "version": {
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "version"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "attrs"
+                  ]
+                }
+              }
+            ],
+            "properties": {
+              "anchors": false,
+              "class": {
+                "enum": [
+                  "derived",
+                  "inferred"
+                ]
+              },
+              "qualifier": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "decides"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "class": {
+                      "enum": [
+                        "declared"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "anchors"
+                  ]
+                }
+              },
+              {
+                "else": {
+                  "properties": {
+                    "attrs": false
+                  }
+                },
+                "if": {
+                  "properties": {
+                    "class": {
+                      "const": "inferred"
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "attrs": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "confidence_permille": {
+                          "maximum": 1000,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "model": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "tool": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "version": {
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "version"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "attrs"
+                  ]
+                }
+              }
+            ],
+            "properties": {
+              "anchors": {
+                "items": false,
+                "maxItems": 1,
+                "minItems": 1,
+                "prefixItems": [
+                  {
+                    "$ref": "#/$defs/anchor",
+                    "properties": {
+                      "end": {
+                        "const": "to"
+                      }
+                    }
+                  }
+                ],
+                "type": "array"
+              },
+              "class": {
+                "enum": [
+                  "declared",
+                  "inferred"
+                ]
+              },
+              "qualifier": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "defeats"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "else": {
+                  "properties": {
+                    "attrs": false
+                  }
+                },
+                "if": {
+                  "properties": {
+                    "class": {
+                      "const": "inferred"
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "attrs": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "confidence_permille": {
+                          "maximum": 1000,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "model": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "tool": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "version": {
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "version"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "attrs"
+                  ]
+                }
+              }
+            ],
+            "properties": {
+              "anchors": false,
+              "class": {
+                "enum": [
+                  "declared",
+                  "inferred"
+                ]
+              },
+              "qualifier": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "depends_on"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "else": {
+                  "properties": {
+                    "attrs": false
+                  }
+                },
+                "if": {
+                  "properties": {
+                    "class": {
+                      "const": "inferred"
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "attrs": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "confidence_permille": {
+                          "maximum": 1000,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "model": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "tool": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "version": {
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "version"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "attrs"
+                  ]
+                }
+              }
+            ],
+            "properties": {
+              "anchors": false,
+              "class": {
+                "enum": [
+                  "declared",
+                  "derived",
+                  "inferred"
+                ]
+              },
+              "qualifier": {
+                "enum": [
+                  "forbidden",
+                  "required"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "derived_from"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "class": {
+                      "enum": [
+                        "derived"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "anchors"
+                  ]
+                }
+              },
+              {
+                "else": {
+                  "properties": {
+                    "attrs": {
+                      "additionalProperties": false,
+                      "minProperties": 1,
+                      "properties": {
+                        "generator": {
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  }
+                },
+                "if": {
+                  "properties": {
+                    "class": {
+                      "const": "inferred"
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "attrs": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "confidence_permille": {
+                          "maximum": 1000,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "generator": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "model": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "tool": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "version": {
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "version"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "attrs"
+                  ]
+                }
+              }
+            ],
+            "properties": {
+              "anchors": {
+                "items": false,
+                "maxItems": 2,
+                "minItems": 2,
+                "prefixItems": [
+                  {
+                    "$ref": "#/$defs/anchor",
+                    "properties": {
+                      "end": {
+                        "const": "from"
+                      }
+                    }
+                  },
+                  {
+                    "$ref": "#/$defs/anchor",
+                    "properties": {
+                      "end": {
+                        "const": "to"
+                      }
+                    }
+                  }
+                ],
+                "type": "array"
+              },
+              "class": {
+                "enum": [
+                  "derived",
+                  "inferred"
+                ]
+              },
+              "qualifier": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "documents"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "class": {
+                      "enum": [
+                        "declared"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "anchors"
+                  ]
+                }
+              },
+              {
+                "else": {
+                  "properties": {
+                    "attrs": false
+                  }
+                },
+                "if": {
+                  "properties": {
+                    "class": {
+                      "const": "inferred"
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "attrs": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "confidence_permille": {
+                          "maximum": 1000,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "model": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "tool": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "version": {
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "version"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "attrs"
+                  ]
+                }
+              }
+            ],
+            "properties": {
+              "anchors": {
+                "items": false,
+                "maxItems": 1,
+                "minItems": 1,
+                "prefixItems": [
+                  {
+                    "$ref": "#/$defs/anchor",
+                    "properties": {
+                      "end": {
+                        "const": "to"
+                      }
+                    }
+                  }
+                ],
+                "type": "array"
+              },
+              "class": {
+                "enum": [
+                  "declared",
+                  "inferred"
+                ]
+              },
+              "qualifier": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "exercised_by"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "class": {
+                      "enum": [
+                        "declared",
+                        "derived"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "anchors"
+                  ]
+                }
+              },
+              {
+                "else": {
+                  "properties": {
+                    "attrs": false
+                  }
+                },
+                "if": {
+                  "properties": {
+                    "class": {
+                      "const": "inferred"
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "attrs": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "confidence_permille": {
+                          "maximum": 1000,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "model": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "tool": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "version": {
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "version"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "attrs"
+                  ]
+                }
+              }
+            ],
+            "properties": {
+              "anchors": {
+                "items": false,
+                "maxItems": 1,
+                "minItems": 1,
+                "prefixItems": [
+                  {
+                    "$ref": "#/$defs/anchor",
+                    "properties": {
+                      "end": {
+                        "const": "to"
+                      }
+                    }
+                  }
+                ],
+                "type": "array"
+              },
+              "class": {
+                "enum": [
+                  "declared",
+                  "derived",
+                  "inferred"
+                ]
+              },
+              "qualifier": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "exposes"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "else": {
+                  "properties": {
+                    "attrs": false
+                  }
+                },
+                "if": {
+                  "properties": {
+                    "class": {
+                      "const": "inferred"
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "attrs": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "confidence_permille": {
+                          "maximum": 1000,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "model": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "tool": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "version": {
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "version"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "attrs"
+                  ]
+                }
+              }
+            ],
+            "properties": {
+              "anchors": false,
+              "class": {
+                "enum": [
+                  "derived",
+                  "inferred"
+                ]
+              },
+              "qualifier": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "flows_to"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "else": {
+                  "properties": {
+                    "attrs": false
+                  }
+                },
+                "if": {
+                  "properties": {
+                    "class": {
+                      "const": "inferred"
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "attrs": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "confidence_permille": {
+                          "maximum": 1000,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "model": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "tool": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "version": {
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "version"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "attrs"
+                  ]
+                }
+              }
+            ],
+            "properties": {
+              "anchors": false,
+              "class": {
+                "enum": [
+                  "derived",
+                  "inferred"
+                ]
+              },
+              "qualifier": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "formalises"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "class": {
+                      "enum": [
+                        "declared"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "anchors"
+                  ]
+                }
+              },
+              {
+                "else": {
+                  "properties": {
+                    "attrs": false
+                  }
+                },
+                "if": {
+                  "properties": {
+                    "class": {
+                      "const": "inferred"
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "attrs": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "confidence_permille": {
+                          "maximum": 1000,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "model": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "tool": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "version": {
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "version"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "attrs"
+                  ]
+                }
+              }
+            ],
+            "properties": {
+              "anchors": {
+                "items": false,
+                "maxItems": 2,
+                "minItems": 2,
+                "prefixItems": [
+                  {
+                    "$ref": "#/$defs/anchor",
+                    "properties": {
+                      "end": {
+                        "const": "from"
+                      }
+                    }
+                  },
+                  {
+                    "$ref": "#/$defs/anchor",
+                    "properties": {
+                      "end": {
+                        "const": "to"
+                      }
+                    }
+                  }
+                ],
+                "type": "array"
+              },
+              "class": {
+                "enum": [
+                  "declared",
+                  "inferred"
+                ]
+              },
+              "qualifier": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "models"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "class": {
+                      "enum": [
+                        "declared"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "anchors"
+                  ]
+                }
+              },
+              {
+                "else": {
+                  "properties": {
+                    "attrs": false
+                  }
+                },
+                "if": {
+                  "properties": {
+                    "class": {
+                      "const": "inferred"
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "attrs": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "confidence_permille": {
+                          "maximum": 1000,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "model": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "tool": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "version": {
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "version"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "attrs"
+                  ]
+                }
+              }
+            ],
+            "properties": {
+              "anchors": {
+                "items": false,
+                "maxItems": 2,
+                "minItems": 2,
+                "prefixItems": [
+                  {
+                    "$ref": "#/$defs/anchor",
+                    "properties": {
+                      "end": {
+                        "const": "from"
+                      }
+                    }
+                  },
+                  {
+                    "$ref": "#/$defs/anchor",
+                    "properties": {
+                      "end": {
+                        "const": "to"
+                      }
+                    }
+                  }
+                ],
+                "type": "array"
+              },
+              "class": {
+                "enum": [
+                  "declared",
+                  "inferred"
+                ]
+              },
+              "qualifier": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "motivates"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "class": {
+                      "enum": [
+                        "declared"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "anchors"
+                  ]
+                }
+              },
+              {
+                "else": {
+                  "properties": {
+                    "attrs": false
+                  }
+                },
+                "if": {
+                  "properties": {
+                    "class": {
+                      "const": "inferred"
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "attrs": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "confidence_permille": {
+                          "maximum": 1000,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "model": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "tool": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "version": {
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "version"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "attrs"
+                  ]
+                }
+              }
+            ],
+            "properties": {
+              "anchors": {
+                "items": false,
+                "maxItems": 1,
+                "minItems": 1,
+                "prefixItems": [
+                  {
+                    "$ref": "#/$defs/anchor",
+                    "properties": {
+                      "end": {
+                        "const": "from"
+                      }
+                    }
+                  }
+                ],
+                "type": "array"
+              },
+              "class": {
+                "enum": [
+                  "declared",
+                  "inferred"
+                ]
+              },
+              "qualifier": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "names"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "class": {
+                      "enum": [
+                        "declared"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "anchors"
+                  ]
+                }
+              },
+              {
+                "else": {
+                  "properties": {
+                    "attrs": false
+                  }
+                },
+                "if": {
+                  "properties": {
+                    "class": {
+                      "const": "inferred"
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "attrs": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "confidence_permille": {
+                          "maximum": 1000,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "model": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "tool": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "version": {
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "version"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "attrs"
+                  ]
+                }
+              }
+            ],
+            "properties": {
+              "anchors": {
+                "items": false,
+                "maxItems": 2,
+                "minItems": 2,
+                "prefixItems": [
+                  {
+                    "$ref": "#/$defs/anchor",
+                    "properties": {
+                      "end": {
+                        "const": "from"
+                      }
+                    }
+                  },
+                  {
+                    "$ref": "#/$defs/anchor",
+                    "properties": {
+                      "end": {
+                        "const": "to"
+                      }
+                    }
+                  }
+                ],
+                "type": "array"
+              },
+              "class": {
+                "enum": [
+                  "declared",
+                  "inferred"
+                ]
+              },
+              "qualifier": {
+                "enum": [
+                  "aria_name",
+                  "diagram_label",
+                  "docstring",
+                  "identifier",
+                  "label",
+                  "placeholder",
+                  "prose",
+                  "test_name",
+                  "text",
+                  "title"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "proposes"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "class": {
+                      "enum": []
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "anchors"
+                  ]
+                }
+              },
+              {
+                "else": {
+                  "properties": {
+                    "attrs": {
+                      "additionalProperties": false,
+                      "minProperties": 1,
+                      "properties": {
+                        "confidence_permille": {
+                          "maximum": 1000,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "model": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "tool": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "version": {
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  }
+                },
+                "if": {
+                  "properties": {
+                    "class": {
+                      "const": "inferred"
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "attrs": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "confidence_permille": {
+                          "maximum": 1000,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "model": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "tool": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "version": {
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "version"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "attrs"
+                  ]
+                }
+              }
+            ],
+            "properties": {
+              "anchors": {
+                "items": false,
+                "maxItems": 1,
+                "minItems": 1,
+                "prefixItems": [
+                  {
+                    "$ref": "#/$defs/anchor",
+                    "properties": {
+                      "end": {
+                        "const": "from"
+                      }
+                    }
+                  }
+                ],
+                "type": "array"
+              },
+              "class": {
+                "enum": [
+                  "inferred"
+                ]
+              },
+              "qualifier": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "proves"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "class": {
+                      "enum": [
+                        "evidence"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "anchors"
+                  ]
+                }
+              },
+              {
+                "else": {
+                  "properties": {
+                    "attrs": false
+                  }
+                },
+                "if": {
+                  "properties": {
+                    "class": {
+                      "const": "inferred"
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "attrs": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "confidence_permille": {
+                          "maximum": 1000,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "model": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "tool": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "version": {
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "version"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "attrs"
+                  ]
+                }
+              }
+            ],
+            "properties": {
+              "anchors": {
+                "items": false,
+                "maxItems": 2,
+                "minItems": 2,
+                "prefixItems": [
+                  {
+                    "$ref": "#/$defs/anchor",
+                    "properties": {
+                      "end": {
+                        "const": "from"
+                      }
+                    }
+                  },
+                  {
+                    "$ref": "#/$defs/anchor",
+                    "properties": {
+                      "end": {
+                        "const": "to"
+                      }
+                    }
+                  }
+                ],
+                "type": "array"
+              },
+              "class": {
+                "enum": [
+                  "evidence",
+                  "inferred"
+                ]
+              },
+              "qualifier": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "realises"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "class": {
+                      "enum": [
+                        "declared"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "anchors"
+                  ]
+                }
+              },
+              {
+                "else": {
+                  "properties": {
+                    "attrs": false
+                  }
+                },
+                "if": {
+                  "properties": {
+                    "class": {
+                      "const": "inferred"
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "attrs": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "confidence_permille": {
+                          "maximum": 1000,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "model": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "tool": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "version": {
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "version"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "attrs"
+                  ]
+                }
+              }
+            ],
+            "properties": {
+              "anchors": {
+                "items": false,
+                "maxItems": 2,
+                "minItems": 2,
+                "prefixItems": [
+                  {
+                    "$ref": "#/$defs/anchor",
+                    "properties": {
+                      "end": {
+                        "const": "from"
+                      }
+                    }
+                  },
+                  {
+                    "$ref": "#/$defs/anchor",
+                    "properties": {
+                      "end": {
+                        "const": "to"
+                      }
+                    }
+                  }
+                ],
+                "type": "array"
+              },
+              "class": {
+                "enum": [
+                  "declared",
+                  "inferred"
+                ]
+              },
+              "qualifier": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "refines"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "class": {
+                      "enum": [
+                        "declared"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "anchors"
+                  ]
+                }
+              },
+              {
+                "else": {
+                  "properties": {
+                    "attrs": false
+                  }
+                },
+                "if": {
+                  "properties": {
+                    "class": {
+                      "const": "inferred"
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "attrs": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "confidence_permille": {
+                          "maximum": 1000,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "model": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "tool": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "version": {
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "version"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "attrs"
+                  ]
+                }
+              }
+            ],
+            "properties": {
+              "anchors": {
+                "items": false,
+                "maxItems": 1,
+                "minItems": 1,
+                "prefixItems": [
+                  {
+                    "$ref": "#/$defs/anchor",
+                    "properties": {
+                      "end": {
+                        "const": "to"
+                      }
+                    }
+                  }
+                ],
+                "type": "array"
+              },
+              "class": {
+                "enum": [
+                  "declared",
+                  "inferred"
+                ]
+              },
+              "qualifier": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "renamed_to"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "else": {
+                  "properties": {
+                    "attrs": false
+                  }
+                },
+                "if": {
+                  "properties": {
+                    "class": {
+                      "const": "inferred"
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "attrs": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "confidence_permille": {
+                          "maximum": 1000,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "model": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "tool": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "version": {
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "version"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "attrs"
+                  ]
+                }
+              }
+            ],
+            "properties": {
+              "anchors": false,
+              "class": {
+                "enum": [
+                  "declared",
+                  "inferred"
+                ]
+              },
+              "qualifier": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "satisfies"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "class": {
+                      "enum": [
+                        "declared"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "anchors"
+                  ]
+                }
+              },
+              {
+                "else": {
+                  "properties": {
+                    "attrs": false
+                  }
+                },
+                "if": {
+                  "properties": {
+                    "class": {
+                      "const": "inferred"
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "attrs": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "confidence_permille": {
+                          "maximum": 1000,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "model": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "tool": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "version": {
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "version"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "attrs"
+                  ]
+                }
+              }
+            ],
+            "properties": {
+              "anchors": {
+                "items": false,
+                "maxItems": 2,
+                "minItems": 2,
+                "prefixItems": [
+                  {
+                    "$ref": "#/$defs/anchor",
+                    "properties": {
+                      "end": {
+                        "const": "from"
+                      }
+                    }
+                  },
+                  {
+                    "$ref": "#/$defs/anchor",
+                    "properties": {
+                      "end": {
+                        "const": "to"
+                      }
+                    }
+                  }
+                ],
+                "type": "array"
+              },
+              "class": {
+                "enum": [
+                  "declared",
+                  "inferred"
+                ]
+              },
+              "qualifier": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "serves"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "class": {
+                      "enum": [
+                        "declared"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "anchors"
+                  ]
+                }
+              },
+              {
+                "else": {
+                  "properties": {
+                    "attrs": false
+                  }
+                },
+                "if": {
+                  "properties": {
+                    "class": {
+                      "const": "inferred"
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "attrs": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "confidence_permille": {
+                          "maximum": 1000,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "model": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "tool": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "version": {
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "version"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "attrs"
+                  ]
+                }
+              }
+            ],
+            "properties": {
+              "anchors": {
+                "items": false,
+                "maxItems": 1,
+                "minItems": 1,
+                "prefixItems": [
+                  {
+                    "$ref": "#/$defs/anchor",
+                    "properties": {
+                      "end": {
+                        "const": "to"
+                      }
+                    }
+                  }
+                ],
+                "type": "array"
+              },
+              "class": {
+                "enum": [
+                  "declared",
+                  "inferred"
+                ]
+              },
+              "qualifier": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "styled_by"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "class": {
+                      "enum": [
+                        "derived"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "anchors"
+                  ]
+                }
+              },
+              {
+                "else": {
+                  "properties": {
+                    "attrs": false
+                  }
+                },
+                "if": {
+                  "properties": {
+                    "class": {
+                      "const": "inferred"
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "attrs": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "confidence_permille": {
+                          "maximum": 1000,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "model": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "tool": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "version": {
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "version"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "attrs"
+                  ]
+                }
+              }
+            ],
+            "properties": {
+              "anchors": {
+                "items": false,
+                "maxItems": 1,
+                "minItems": 1,
+                "prefixItems": [
+                  {
+                    "$ref": "#/$defs/anchor",
+                    "properties": {
+                      "end": {
+                        "const": "to"
+                      }
+                    }
+                  }
+                ],
+                "type": "array"
+              },
+              "class": {
+                "enum": [
+                  "derived",
+                  "inferred"
+                ]
+              },
+              "qualifier": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "supersedes"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "else": {
+                  "properties": {
+                    "attrs": false
+                  }
+                },
+                "if": {
+                  "properties": {
+                    "class": {
+                      "const": "inferred"
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "attrs": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "confidence_permille": {
+                          "maximum": 1000,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "model": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "tool": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "version": {
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "version"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "attrs"
+                  ]
+                }
+              }
+            ],
+            "properties": {
+              "anchors": false,
+              "class": {
+                "enum": [
+                  "declared",
+                  "inferred"
+                ]
+              },
+              "qualifier": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "supports"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "class": {
+                      "enum": [
+                        "declared"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "anchors"
+                  ]
+                }
+              },
+              {
+                "else": {
+                  "properties": {
+                    "attrs": false
+                  }
+                },
+                "if": {
+                  "properties": {
+                    "class": {
+                      "const": "inferred"
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "attrs": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "confidence_permille": {
+                          "maximum": 1000,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "model": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "tool": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "version": {
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "version"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "attrs"
+                  ]
+                }
+              }
+            ],
+            "properties": {
+              "anchors": {
+                "items": false,
+                "maxItems": 1,
+                "minItems": 1,
+                "prefixItems": [
+                  {
+                    "$ref": "#/$defs/anchor",
+                    "properties": {
+                      "end": {
+                        "const": "from"
+                      }
+                    }
+                  }
+                ],
+                "type": "array"
+              },
+              "class": {
+                "enum": [
+                  "declared",
+                  "inferred"
+                ]
+              },
+              "qualifier": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "verifies"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "class": {
+                      "enum": [
+                        "declared"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "anchors"
+                  ]
+                }
+              },
+              {
+                "else": {
+                  "properties": {
+                    "attrs": false
+                  }
+                },
+                "if": {
+                  "properties": {
+                    "class": {
+                      "const": "inferred"
+                    }
+                  },
+                  "required": [
+                    "class"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "attrs": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "confidence_permille": {
+                          "maximum": 1000,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "model": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "tool": {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        "version": {
+                          "maxLength": 200,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "tool",
+                        "version"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "attrs"
+                  ]
+                }
+              }
+            ],
+            "properties": {
+              "anchors": {
+                "items": false,
+                "maxItems": 2,
+                "minItems": 2,
+                "prefixItems": [
+                  {
+                    "$ref": "#/$defs/anchor",
+                    "properties": {
+                      "end": {
+                        "const": "from"
+                      }
+                    }
+                  },
+                  {
+                    "$ref": "#/$defs/anchor",
+                    "properties": {
+                      "end": {
+                        "const": "to"
+                      }
+                    }
+                  }
+                ],
+                "type": "array"
+              },
+              "class": {
+                "enum": [
+                  "declared",
+                  "inferred"
+                ]
+              },
+              "qualifier": false
+            }
+          }
+        }
+      ],
+      "properties": {
+        "anchors": {
+          "items": {
+            "$ref": "#/$defs/anchor"
+          },
+          "type": "array"
+        },
+        "asserted_in": {
+          "$ref": "#/$defs/path"
+        },
+        "attrs": {
+          "minProperties": 1,
+          "type": "object"
+        },
+        "candidates": {
+          "maximum": 64,
+          "minimum": 2,
+          "type": "integer"
+        },
+        "class": {
+          "enum": [
+            "declared",
+            "derived",
+            "evidence",
+            "inferred"
+          ]
+        },
+        "from": {
+          "$ref": "#/$defs/id"
+        },
+        "kind": {
+          "enum": [
+            "attests",
+            "calls",
+            "checked_by",
+            "conforms_to",
+            "contains",
+            "covers",
+            "decides",
+            "defeats",
+            "depends_on",
+            "derived_from",
+            "documents",
+            "exercised_by",
+            "exposes",
+            "flows_to",
+            "formalises",
+            "models",
+            "motivates",
+            "names",
+            "proposes",
+            "proves",
+            "realises",
+            "refines",
+            "renamed_to",
+            "satisfies",
+            "serves",
+            "styled_by",
+            "supersedes",
+            "supports",
+            "verifies"
+          ]
+        },
+        "prov": {
+          "enum": [
+            "exact",
+            "syntactic",
+            "candidate",
+            "tool-resolved",
+            "unresolved",
+            "partial"
+          ]
+        },
+        "qualifier": {
+          "pattern": "^[a-z][a-z0-9_]{0,31}(?![\\s\\S])",
+          "type": "string"
+        },
+        "to": {
+          "$ref": "#/$defs/id"
+        }
+      },
+      "required": [
+        "kind",
+        "from",
+        "to",
+        "class",
+        "prov",
+        "asserted_in"
+      ],
+      "type": "object"
+    },
+    "id": {
+      "maxLength": 512,
+      "pattern": "^repo://(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)(?:#(?:[A-Za-z0-9._~:-]|%[0-9A-F]{2})+(?:/(?:[A-Za-z0-9._~:-]|%[0-9A-F]{2})+)*)?(?![\\s\\S])",
+      "type": "string"
+    },
+    "method": {
+      "enum": [
+        "ast-v1",
+        "ast-sig-v1",
+        "ast-v2",
+        "ast-api-v1",
+        "lf-sha256-v1",
+        "csv-row-v1",
+        "md-bold-term-v1",
+        "md-table-row-v1",
+        "workflow-semantic-v1",
+        "workflow-element-v1",
+        "json-key-v1",
+        "html-key-v1",
+        "okf-human-v1",
+        "law-block-v1"
+      ]
+    },
+    "path": {
+      "maxLength": 400,
+      "pattern": "^(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+(?:/(?!\\.{1,2}(?:/|$))[A-Za-z0-9._-]+)*)(?![\\s\\S])",
+      "type": "string"
+    }
+  },
+  "$id": "urn:eija:weave:schema:edge:1",
+  "$ref": "#/$defs/edge",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EIJA weave edge (metamodel 1.0.0); generated by build_schemas.py, do not edit"
+}

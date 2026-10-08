@@ -1,8 +1,9 @@
-"""Generic execution algorithm; domain-specific policy stays in domain.policy."""
+"""Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack."""
 from __future__ import annotations
 from typing import Any, Callable
 from uuid import uuid4
 from eija_studio.domain.models import Workflow, ExecuteCommand, DomainError, Transition, fingerprint
+from eija_studio.domain.pack import Pack, default_pack
 from eija_studio.domain.policy import ensure_policy
 from .ports import UnitOfWork
 
@@ -16,8 +17,21 @@ def check_actor(actor: dict[str, Any], transition: Transition, command: ExecuteC
         raise DomainError("ASSIGNMENT_DENIED", "Actor is not assigned in the trusted fixture directory")
 
 
-def initialise(session: UnitOfWork, case_id: str, model: Workflow, *, state: str | None = None) -> dict[str, Any]:
-    ensure_policy(model)
+def _perform(session: UnitOfWork, pack: Pack, effect: str, case_id: str, command: ExecuteCommand, result: dict[str, Any]) -> None:
+    """Run one declared effect through its typed adapter: audit log or outbox. An undeclared effect is refused."""
+    declared = pack.effect(effect)
+    if declared is None:
+        raise DomainError("EFFECT_DENIED", "No adapter exists for this effect")
+    if declared.kind == "audit":
+        session.event(effect, {"case_id": case_id, "operation_id": command.operation_id, "actor_id": command.actor_id,
+                               "instance_id": command.instance_id, "result": result})
+    else:
+        session.enqueue(case_id, command.operation_id, effect, declared.recipient or "")
+
+
+def initialise(session: UnitOfWork, case_id: str, model: Workflow, *, state: str | None = None,
+               pack: Pack | None = None) -> dict[str, Any]:
+    ensure_policy(model, pack)
     state = state or model.initial_state
     if state not in model.states:
         raise DomainError("INVALID_STATE", "State is not in the current model")
@@ -28,9 +42,10 @@ def initialise(session: UnitOfWork, case_id: str, model: Workflow, *, state: str
 
 def execute(
     session: UnitOfWork, case_id: str, model: Workflow, command: ExecuteCommand, *,
-    fault: Callable[[str], None] | None = None,
+    fault: Callable[[str], None] | None = None, pack: Pack | None = None,
 ) -> dict[str, Any]:
-    ensure_policy(model)
+    pack = pack if pack is not None else default_pack()
+    ensure_policy(model, pack)
     row = session.find_instance(command.instance_id, case_id)
     if row is None:
         raise DomainError("NOT_FOUND", "Preview instance not found in this case")
@@ -60,13 +75,7 @@ def execute(
         fault("after_state")
     result = {"duplicate": False, "committed": True, "instance": instance, "effects": list(t.required_effects)}
     for effect in t.required_effects:
-        if effect.startswith("Audit:"):
-            session.event(effect, {"case_id": case_id, "operation_id": command.operation_id, "actor_id": command.actor_id,
-                                   "instance_id": command.instance_id, "result": result})
-        elif effect.startswith("Notification:"):
-            session.enqueue(case_id, command.operation_id, effect)
-        else:
-            raise DomainError("EFFECT_DENIED", "No adapter exists for this effect")
+        _perform(session, pack, effect, case_id, command, result)
     if fault:
         fault("after_effects")
     session.record_operation(command.operation_id, binding, result)

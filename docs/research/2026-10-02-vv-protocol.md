@@ -123,7 +123,7 @@ Use the pilot to estimate variability, task difficulty, ceiling/floor effects, o
 
 ## Practical stop/continue decisions
 
-Ship an engineering preview once the bounded real-repo E2E loop and its required controls pass, with explicit adapter and assurance limits. That demonstrates functioning software.
+Ship the supported engineering preview once the bounded real-repo E2E loop, its required controls and the complete supported IDE engineering/UX acceptance pass, with explicit adapter and assurance limits. A foundation experiment can be published earlier as scoped progress, but does not establish that release readiness.
 
 Continue investing in the product hypothesis if the human pilot shows engineers can correctly explain changes, catch consequential defects and use the flow without excessive setup or interruption. If EIJA merely produces attractive diagrams, raises confidence without accuracy, misses dynamic paths while implying completeness, or consumes the time it purports to save, fix that observed problem before adding another proof backend.
 

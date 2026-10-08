@@ -1,0 +1,375 @@
+{
+  "$schema": "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json",
+  "runs": [
+    {
+      "artifacts": [
+        {
+          "hashes": {
+            "sha-256": "c1514c6cdad166c18aa557dc1d780ba84c0e32df7633235385023eb429377e74"
+          },
+          "location": {
+            "uri": "docs/verification/ACCEPTANCE_MATRIX.csv",
+            "uriBaseId": "SRCROOT"
+          }
+        },
+        {
+          "hashes": {
+            "sha-256": "eef8b9fd5d437dd991ce2695fcce6c416ea3068e5b448963f0a7c3cbd9ad98eb"
+          },
+          "location": {
+            "uri": "graph/links/trace.jsonl",
+            "uriBaseId": "SRCROOT"
+          }
+        },
+        {
+          "hashes": {
+            "sha-256": "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb"
+          },
+          "location": {
+            "uri": "src/eija_studio/domain/a.py",
+            "uriBaseId": "SRCROOT"
+          }
+        }
+      ],
+      "columnKind": "unicodeCodePoints",
+      "invocations": [
+        {
+          "executionSuccessful": false,
+          "toolExecutionNotifications": [
+            {
+              "associatedRule": {
+                "id": "WV-065"
+              },
+              "descriptor": {
+                "id": "EIJA-NOTRUN"
+              },
+              "level": "error",
+              "message": {
+                "text": "NOT_RUN: rule WV-065 was not evaluated: generator eija-diagrams is not installed (pin eija-diagrams==0.0.0 missing)"
+              }
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "eijaProfile": "eija-sarif/v1",
+        "graphRoot": "sha256:889f6f3020a019f5c4cbf28b91eb98c0d64b29bd2428b1d2cddfd32ed25a276a",
+        "verdict": "FAIL",
+        "verdicts": {
+          "WV-001": "PASS",
+          "WV-005": "FAIL",
+          "WV-010": "FAIL",
+          "WV-025": "PASS",
+          "WV-065": "NOT_RUN"
+        }
+      },
+      "results": [
+        {
+          "kind": "open",
+          "locations": [],
+          "message": {
+            "text": "NOT_RUN: generator eija-diagrams is not installed (pin eija-diagrams==0.0.0 missing)"
+          },
+          "partialFingerprints": {
+            "eijaFinding/v1": "ab01e439f807a015236baddfb9897f464f599a35b9a4268ae33986066e2bab41"
+          },
+          "ruleId": "WV-065",
+          "ruleIndex": 3,
+          "suppressions": []
+        },
+        {
+          "kind": "fail",
+          "level": "error",
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "repo://docs/verification/ACCEPTANCE_MATRIX.csv#AC01"
+                }
+              ],
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "docs/verification/ACCEPTANCE_MATRIX.csv",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 2
+                }
+              }
+            }
+          ],
+          "message": {
+            "arguments": [
+              "repo://docs/verification/ACCEPTANCE_MATRIX.csv#AC01",
+              "verifies",
+              "in",
+              "1",
+              "0",
+              "link.verifies into AC01: none"
+            ],
+            "id": "requirement-not-verified",
+            "text": "Requirement repo://docs/verification/ACCEPTANCE_MATRIX.csv#AC01 has 0 covered verifies links (needs 1). Scope searched: link.verifies into AC01: none."
+          },
+          "partialFingerprints": {
+            "eijaFinding/v1": "38354b0926aa0f7fdbd57c5e4a73bcf549b606018b0d958dd03ee9023ba34d91"
+          },
+          "properties": {
+            "witnessKind": "scope"
+          },
+          "ruleId": "WV-010",
+          "ruleIndex": 1,
+          "suppressions": []
+        },
+        {
+          "codeFlows": [
+            {
+              "threadFlows": [
+                {
+                  "locations": [
+                    {
+                      "location": {
+                        "logicalLocations": [
+                          {
+                            "fullyQualifiedName": "repo://tests/graph/test_impact_math_oracles.py#test_closure_is_least_fixed_point"
+                          }
+                        ],
+                        "message": {
+                          "text": "verifier anchored by the link"
+                        }
+                      }
+                    },
+                    {
+                      "location": {
+                        "logicalLocations": [
+                          {
+                            "fullyQualifiedName": "repo://src/eija_studio/domain/impact.py#closure"
+                          }
+                        ],
+                        "message": {
+                          "text": "target whose ast-v1 digest changed"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "kind": "fail",
+          "level": "error",
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "repo://graph/links/trace.jsonl#lnk-0007"
+                }
+              ],
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "graph/links/trace.jsonl",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 7
+                }
+              }
+            }
+          ],
+          "message": {
+            "arguments": [
+              "repo://graph/links/trace.jsonl#lnk-0007",
+              "repo://src/eija_studio/domain/impact.py#closure",
+              "sha256:c06f3b7627dc675d4452d2f81b0d565524192bbdd47fb89cbbdfb24b7afbdcf9",
+              "sha256:57d31403ddf16373607a2aab82f040ee92c20438285ead8cbf4e4793137aca69",
+              "0"
+            ],
+            "id": "suspect-link-direct",
+            "text": "Link repo://graph/links/trace.jsonl#lnk-0007: target repo://src/eija_studio/domain/impact.py#closure changed since the baseline (sha256:c06f3b7627dc675d4452d2f81b0d565524192bbdd47fb89cbbdfb24b7afbdcf9 -> sha256:57d31403ddf16373607a2aab82f040ee92c20438285ead8cbf4e4793137aca69); review, then a human acknowledges."
+          },
+          "partialFingerprints": {
+            "eijaFinding/v1": "6d785ab6d4384cc2d3c7b950db659a01e12bfe08e024f5105c803038207dad77"
+          },
+          "properties": {
+            "witnessKind": "path"
+          },
+          "ruleId": "WV-005",
+          "ruleIndex": 0,
+          "suppressions": []
+        },
+        {
+          "kind": "fail",
+          "level": "warning",
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "repo://src/eija_studio/domain/a.py"
+                },
+                {
+                  "fullyQualifiedName": "repo://src/eija_studio/domain/b.py"
+                }
+              ],
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/eija_studio/domain/a.py",
+                  "uriBaseId": "SRCROOT"
+                },
+                "region": {
+                  "startLine": 1
+                }
+              }
+            }
+          ],
+          "message": {
+            "arguments": [
+              "repo://src/eija_studio/domain/a.py,repo://src/eija_studio/domain/b.py",
+              "2"
+            ],
+            "id": "dependency-cycle",
+            "text": "Modules repo://src/eija_studio/domain/a.py,repo://src/eija_studio/domain/b.py form a dependency cycle of 2."
+          },
+          "partialFingerprints": {
+            "eijaFinding/v1": "1274d356827ba182decc831189aefad28fb03eb85dae0ef06fcc181291378e35"
+          },
+          "properties": {
+            "witnessKind": "path"
+          },
+          "ruleId": "WV-025",
+          "ruleIndex": 2,
+          "suppressions": [
+            {
+              "justification": "cycle removed by ADR-0123; tracked in the baseline",
+              "kind": "external",
+              "location": {
+                "physicalLocation": {
+                  "artifactLocation": {
+                    "uri": "docs/adr/0123-example.md",
+                    "uriBaseId": "SRCROOT"
+                  }
+                }
+              },
+              "status": "accepted"
+            }
+          ]
+        }
+      ],
+      "tool": {
+        "driver": {
+          "name": "eija-graph",
+          "notifications": [
+            {
+              "id": "EIJA-NOTRUN",
+              "name": "NotRun",
+              "shortDescription": {
+                "text": "A prerequisite is missing; the rule was not evaluated. NOT_RUN absorbs PASS."
+              }
+            }
+          ],
+          "rules": [
+            {
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "fullDescription": {
+                "text": "link_status(L, SUSPECT, Direct or Transitive)"
+              },
+              "helpUri": "repo://graph/rules/catalogue.json#WV-005",
+              "id": "WV-005",
+              "messageStrings": {
+                "suspect-link-direct": {
+                  "text": "Link {0}: target {1} changed since the baseline ({2} -> {3}); review, then a human acknowledges."
+                },
+                "suspect-link-transitive": {
+                  "text": "Link {0} depends through {4} hops on a changed target {1}."
+                }
+              },
+              "name": "suspect-link",
+              "properties": {
+                "category": "link-integrity",
+                "soundness": "exact",
+                "stratum": 1
+              },
+              "shortDescription": {
+                "text": "A changed normalised digest means the target changed since a human last accepted the link, not that the link is false."
+              }
+            },
+            {
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "fullDescription": {
+                "text": "node.requirement(N), count(covered_link of kind verifies, incoming, N) < 1"
+              },
+              "helpUri": "repo://graph/rules/catalogue.json#WV-010",
+              "id": "WV-010",
+              "messageStrings": {
+                "requirement-not-verified": {
+                  "text": "Requirement {0} has {4} covered verifies links (needs {3}). Scope searched: {5}."
+                }
+              },
+              "name": "requirement-without-verifier",
+              "properties": {
+                "category": "traceability",
+                "soundness": "exact",
+                "stratum": 2
+              },
+              "shortDescription": {
+                "text": "Every requirement needs a verifier (test, property, model check or witness)."
+              }
+            },
+            {
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "fullDescription": {
+                "text": "scc.depends_on has a component of size > 1"
+              },
+              "helpUri": "repo://graph/rules/catalogue.json#WV-025",
+              "id": "WV-025",
+              "messageStrings": {
+                "dependency-cycle": {
+                  "text": "Modules {0} form a dependency cycle of {1}."
+                }
+              },
+              "name": "import-cycle",
+              "properties": {
+                "category": "architecture",
+                "soundness": "may",
+                "stratum": 0
+              },
+              "shortDescription": {
+                "text": "Cycles are real in this graph; collapse each SCC before any DAG algorithm and report every cycle deterministically."
+              }
+            },
+            {
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "fullDescription": {
+                "text": "derived_from(A, S) generated, regenerated(A) != digest(A)"
+              },
+              "helpUri": "repo://graph/rules/catalogue.json#WV-065",
+              "id": "WV-065",
+              "messageStrings": {
+                "generated-artefact-stale": {
+                  "text": "{0} differs from a fresh run of {1} (first difference at byte {2})."
+                }
+              },
+              "name": "generated-artefact-drift",
+              "properties": {
+                "category": "model-code",
+                "soundness": "exact",
+                "stratum": 0
+              },
+              "shortDescription": {
+                "text": "The GENERATED label is checked by re-running the pinned generator and comparing bytes; hand edits to generated files are rejected, not merged."
+              }
+            }
+          ],
+          "semanticVersion": "0.0.0-design"
+        }
+      }
+    }
+  ],
+  "version": "2.1.0"
+}

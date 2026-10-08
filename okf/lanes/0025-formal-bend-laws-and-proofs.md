@@ -1,0 +1,42 @@
+---
+type: Capability Lane
+title: 'Formal: Bend laws and proofs'
+description: Capability lane with ADR numbers 0025–0026 reserved.
+resource: repo://docs/adr/README.md#0025-0026
+tags:
+- lane
+status: stable
+generated:
+  by: process:eija-okf-sync
+sources:
+- resource: repo://docs/adr/README.md#0025-0026
+  title: docs/adr/README.md
+  hash_method: md-table-row-v1
+  sha256: 716786984d3ec2f01f39e3efaf73370964a0488b07e35e8351bc9eeb84d87851
+notes_baseline: c0c19fc44523a0adc87ee10423d34e75a7750da9f14e2eb620ddd520aca7b247
+---
+
+# Formal: Bend laws and proofs
+
+<!-- okf:generated:begin facts -->
+| | |
+|---|---|
+| Reserved ADR numbers | 0025–0026 |
+| Branch convention | `lane/<name>` (see AGENTS.md, Capability lanes) |
+| Source | `repo://docs/adr/README.md#0025-0026` |
+
+## Landed ADRs
+
+Listed under the generated links below.
+<!-- okf:generated:end facts -->
+
+## Notes
+
+_No curated notes yet._
+
+<!-- okf:generated:begin links -->
+## Landed ADRs
+
+* [ADR-0025: Machine-check protected authority laws with Bend 2 in a pinned container](/adrs/0025-bend-machine-checked-laws.md) - The v0.2 runtime matrix observes one step of the runtime for 125 synthetic cells with a same-author oracle.
+* [ADR-0026: The Bend model is generated from the Workflow; negative controls and conformance accompany every proof](/adrs/0026-bend-model-generation-controls-conformance.md) - A proof is only as meaningful as the model it is about and the specification it proves.
+<!-- okf:generated:end links -->

@@ -7,7 +7,7 @@ import json, os, shutil, sqlite3, time
 from pathlib import Path
 from typing import Literal
 from eija_studio.domain.models import Workflow, DomainError, canonical
-from eija_studio.domain.policy import baseline
+from eija_studio.domain.pack import Pack, default_pack
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS schema_info(version INTEGER NOT NULL);
@@ -18,11 +18,14 @@ CREATE TABLE IF NOT EXISTS instances(id TEXT PRIMARY KEY, case_id TEXT NOT NULL,
 CREATE TABLE IF NOT EXISTS operations(id TEXT PRIMARY KEY, binding TEXT NOT NULL, body TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS audit(seq INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT NOT NULL, body TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS outbox(id TEXT PRIMARY KEY, case_id TEXT NOT NULL, operation_id TEXT NOT NULL, kind TEXT NOT NULL, body TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS pack_info(id INTEGER PRIMARY KEY CHECK(id=1), pack TEXT NOT NULL, digest TEXT NOT NULL);
 """
-FIXTURE_ACTORS = (
-    ("teacher-assigned", "Teacher", 1, 1), ("teacher-unassigned", "Teacher", 1, 0),
-    ("teacher-revoked", "Teacher", 0, 1), ("registrar", "Registrar", 1, 0), ("viewer", "Viewer", 1, 0),
-)
+
+
+def fixture_actors(pack: Pack) -> tuple[tuple[str, str, int, int], ...]:
+    """The pack's synthetic actor directory as seed rows (id, role, active, assigned)."""
+    return tuple((a.id, a.role, int(a.active), int(a.assigned)) for a in pack.fixtures.actors)
+
 
 class Session:
     def __init__(self, connection: sqlite3.Connection):
@@ -82,9 +85,9 @@ class Session:
     def record_operation(self, operation_id: str, binding: str, result: dict) -> None:
         self.db.execute("INSERT INTO operations VALUES(?,?,?)", (operation_id, binding, canonical(result)))
 
-    def enqueue(self, case_id: str, operation_id: str, effect: str) -> None:
+    def enqueue(self, case_id: str, operation_id: str, effect: str, recipient: str) -> None:
         self.db.execute("INSERT INTO outbox VALUES(?,?,?,?,?)", (operation_id + ":" + effect, case_id,
-            operation_id, effect, canonical({"recipient": "registrar", "fixture_only": True})))
+            operation_id, effect, canonical({"recipient": recipient, "fixture_only": True})))
 
     def observations(self, case_id: str) -> dict:
         events = []
@@ -106,26 +109,58 @@ class SQLiteStore:
     verification sandboxes: identical transaction/atomicity semantics, but no per-commit fsync,
     which costs ~150 ms per write on Windows and made a 125-cell verification take ~40 s."""
 
-    def __init__(self, directory: Path, *, durability: Durability = "durable"):
+    def __init__(self, directory: Path, *, durability: Durability = "durable", pack: Pack | None = None):
         if durability not in ("durable", "ephemeral"):
             raise ValueError("Unknown durability profile")
         self.durability = durability
+        self.pack = pack if pack is not None else default_pack()
         self.directory = Path(directory).resolve()
-        self.directory.mkdir(parents=True, exist_ok=True, mode=0o700)
         self.path = self.directory / "studio.sqlite3"
+        self._preflight()
+        self.directory.mkdir(parents=True, exist_ok=True, mode=0o700)
         with self.connection() as db:
             db.executescript(SCHEMA)
             row = db.execute("SELECT version FROM schema_info").fetchone()
-            if row and row[0] != 1:
-                raise DomainError("SCHEMA_MIGRATION_REQUIRED", "Unsupported database version; export before upgrading")
+            if row and row[0] != 2:
+                raise DomainError("SCHEMA_MIGRATION_REQUIRED", "Unsupported database version; source review and explicit migration required")
             if row is None:
-                db.execute("INSERT INTO schema_info VALUES(1)")
-            db.execute("INSERT OR IGNORE INTO active VALUES(1,0,?)", (canonical(baseline()),))
-            db.executemany("INSERT OR IGNORE INTO actors VALUES(?,?,?,?)", FIXTURE_ACTORS)
+                db.execute("INSERT INTO schema_info VALUES(2)")
+            self._seed(db)
         try:
             os.chmod(self.directory, 0o700); os.chmod(self.path, 0o600)
         except OSError:
             pass  # Windows ACLs require a separate platform review.
+
+    def _preflight(self) -> None:
+        """Refuse incompatible identity before schema, seed, journal settings or permission changes.
+
+        Read-only SQLite may create lock sidecars; it must see committed WAL data so the CLI,
+        server and MCP can safely share a workspace. No immutable-mode stale snapshot is used.
+        """
+        if not self.path.exists():
+            return
+        try:
+            with closing(sqlite3.connect(self.path.as_uri() + "?mode=ro", uri=True)) as db:
+                versions = db.execute("SELECT version FROM schema_info").fetchall()
+                if versions != [(2,)]:
+                    raise DomainError("SCHEMA_MIGRATION_REQUIRED", "Workspace lacks a verified pack digest; source review and explicit migration required")
+                self._check_pack(db)
+        except sqlite3.DatabaseError:
+            raise DomainError("SCHEMA_MIGRATION_REQUIRED", "Workspace identity cannot be verified; source review and explicit migration required") from None
+
+    def _check_pack(self, db: sqlite3.Connection) -> None:
+        rows = db.execute("SELECT pack,digest FROM pack_info WHERE id=1").fetchall()
+        if len(rows) != 1 or not rows[0][1]:
+            raise DomainError("SCHEMA_MIGRATION_REQUIRED", "Workspace lacks a verified pack digest; source review and explicit migration required")
+        if tuple(rows[0]) != (self.pack.id, self.pack.digest):
+            raise DomainError("PACK_MISMATCH", "Workspace pack id or contents differ; use the original pack or an explicitly reviewed migration")
+
+    def _seed(self, db: sqlite3.Connection) -> None:
+        """Bind new workspaces to the exact pack before seeding baseline and synthetic actors."""
+        db.execute("INSERT OR IGNORE INTO pack_info VALUES(1,?,?)", (self.pack.id, self.pack.digest))
+        self._check_pack(db)
+        db.execute("INSERT OR IGNORE INTO active VALUES(1,0,?)", (canonical(self.pack.model),))
+        db.executemany("INSERT OR IGNORE INTO actors VALUES(?,?,?,?)", fixture_actors(self.pack))
 
     def _connect(self) -> sqlite3.Connection:
         db = sqlite3.connect(self.path, timeout=10)
@@ -171,7 +206,7 @@ SANDBOX_PREFIX = "eija-check-"
 STALE_SANDBOX_SECONDS = 3600
 
 
-def sandbox_factory(workspace: Path):
+def sandbox_factory(workspace: Path, pack: Pack | None = None):
     """Build the application's SandboxFactory for one workspace.
 
     Sandboxes live in `<workspace>/sandboxes/` (same disk as the workspace, never the system temp
@@ -188,7 +223,7 @@ def sandbox_factory(workspace: Path):
         # ignore_cleanup_errors: on Windows a transiently locked file (antivirus, indexer) must not
         # mask the verification's own outcome or exception.
         with TemporaryDirectory(prefix=SANDBOX_PREFIX, dir=root, ignore_cleanup_errors=True) as directory:
-            yield SQLiteStore(Path(directory), durability="ephemeral")
+            yield SQLiteStore(Path(directory), durability="ephemeral", pack=pack)
 
     return sandbox
 

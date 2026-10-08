@@ -165,7 +165,10 @@ class Scene:
         if self.dry_run:
             return
         self.page.evaluate(
+            # A modal <dialog> paints in the top layer, above the overlay: move caption and cursor into it.
             "(t) => { const c=document.getElementById('__demo_caption'); if(!c) return; "
+            "const host=document.querySelector('dialog[open]:modal') || document.body; "
+            "host.append(c); const k=document.getElementById('__demo_cursor'); if(k) host.append(k); "
             "c.textContent=t; c.classList.add('show'); }",
             text,
         )

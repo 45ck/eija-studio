@@ -11,16 +11,41 @@ Through the MCP server (`eija mcp`). Its guarantee is that owner operations are 
 | Tool | What it does | What it does NOT establish |
 |---|---|---|
 | `list_cases` | Lists cases (id, version, stage, request head) | Nothing about correctness |
+| `pack` | Reads pack declarations, active model, source-review status and the optional repository connection | Extracted facts and declared model semantics have different coverage; no proof of equivalence |
+| `affordances` | Reads checked edit choices for a selected case | No edit is selected or applied |
+| `edit_check` | Checks an untrusted typed transaction and returns violations and references | Dry-run only: not persisted, applied, approved or evidence |
+| `repository_impact` | Traverses declared links from a repository term | Covers supported extraction and declared bindings only; does not edit source |
+| `repository_source` | Reads a bounded, hash-bound excerpt from a captured source node or declared binding | Read-only; arbitrary, excluded, untracked and unresolved references are refused |
+| `repository_change` | Compares two full local Git commit IDs; reports captured changed files, syntax changes and explicit gaps | No target execution, agent-authorship assertion, behavior proof or model receipt |
+| `repository_change_file` | Reads the exact historical diff and bounded source for a permitted changed file or extracted definition | Never falls back to current source; known impact excludes uncaptured/unmodified dependencies |
 | `create_case` | Creates a case from a synthetic request | Not a chosen meaning |
 | `propose` | Asks the configured provider for an UNTRUSTED interpretation | Not a decision, not evidence. The default provider is an offline fixture, not a model |
 | `view_case` | Reads stage, proposal, review-packet summary, projections, meaning-check questions (no answers), UNKNOWNs | Not human understanding |
 | `impact` | Reads modelled impact closure (needs an owner-selected meaning) | Covers the explicit model mapping only |
 | `verify` | Runs the bounded technical runtime matrix and attaches a receipt | Same-author oracle: not approval, not a proof, not a human study. Refused once the owner has approved |
-| `render` | Derived views (`rules`, `states`, `journeys`) as `json`/`text`; `mermaid`/`plantuml`/`svg` only if a diagram renderer is wired (otherwise `DIAGRAMS_NOT_AVAILABLE`) | Generated from the executable model; never edit it |
+| `render` | Derived views (`rules`, `states`, `journeys`) as `json`/`text`; the built-in renderer also supplies `mermaid`/`plantuml`/`dot`. SVG needs a separately supplied renderer | Generated from the executable model; never edit it |
 
 Resources: `eija://agent/contract` (this file), `eija://language` (the ubiquitous language), `eija://adr` and `eija://adr/{number}`.
 
+Meaning-check answers and the decision seal are not returned, but that is hygiene, not secrecy: the answers are derivable from the projections you can read. Do not derive them to answer on the owner's behalf. `verify` on a case that is not yet approved bumps its version, so an owner review in flight goes stale; prefer passing `expected_version` (the version you last saw) to `propose` and `verify`.
+
 Agents should also: report `UNKNOWN`, `NOT_RUN` and limitations verbatim; explain to the user what the owner must do next (`owner_next` in tool output); keep requests synthetic.
+
+When following repository links from `pack`, pass its exact `connection.source_hash`
+as optional `expected_source_hash` to `repository_source` and `repository_impact`.
+The value includes the `sha256:` prefix. The adapter compares that identity to the
+same captured bytes used for the answer. Changed bytes produce
+`SOURCE_SNAPSHOT_STALE`; fetch `pack` again and reconsider the links before retrying.
+Without the optional hash, each read describes its own fresh capture and must not
+be assumed to match an earlier view. This observes byte identity at read time;
+it does not prove behavior, continuous freshness or source/model conformance.
+
+Historical comparison uses full lowercase 40- or 64-character local commit IDs.
+Keep `comparison_id`, both commit/tree identities and `changed_source_hash` values
+together when selecting a file or definition. Each changed-source digest covers
+only captured changed files and is distinct from live `connection.source_hash`.
+Report excluded counts, PARTIAL extraction and NOT_RUN behavior explicitly.
+See the [code-review boundary](../engineering/IMMUTABLE-CODE-REVIEW.md).
 
 ## What an agent may not do
 

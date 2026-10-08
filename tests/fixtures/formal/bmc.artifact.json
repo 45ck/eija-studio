@@ -1,0 +1,182 @@
+{
+ "assumptions": [
+  "The system under test is application.runtime.execute over adapters.sqlite_store (ephemeral profile: same transactions, no per-commit fsync).",
+  "One workflow instance per sandbox; commands are applied one at a time (no concurrent writers, no crash points).",
+  "Actors are the fixture directory (teacher-assigned, teacher-unassigned, teacher-revoked, registrar, viewer) plus one unknown id; roles never change.",
+  "Environment moves flip only the flags listed in bounds.environment_toggles; every other actor flag stays at its fixture value.",
+  "Operation ids are canonical (op0, op1, ...) plus replays of recorded ids; expected_version is the current version or one stale value.",
+  "The reference model in spec.py is a same-author oracle, not an independent one."
+ ],
+ "binding": {
+  "current_sources_sha256_lf": {
+   "adapters/sqlite_store.py": "5f7e4df7836e0a44f3a7d0d9ed123009d7dbf9b40cfbc078806431d7945cf36d",
+   "application/runtime.py": "a0aa8c746b0145ae521c47d2a6096b6f77672ca21466cbbcf0b3cdfd776d7a8c",
+   "domain/models.py": "eae77547d1b9c6d639d48474aaf2415aad3fac207777c55ab88d7dba009884fa",
+   "domain/policy.py": "c868bada2d79bc9277ef37abf0dd33373343666e2873fcf3b6b2a1aec788415e"
+  },
+  "reported_sources_sha256_lf": {
+   "adapters/sqlite_store.py": "5f7e4df7836e0a44f3a7d0d9ed123009d7dbf9b40cfbc078806431d7945cf36d",
+   "application/runtime.py": "a0aa8c746b0145ae521c47d2a6096b6f77672ca21466cbbcf0b3cdfd776d7a8c",
+   "domain/models.py": "eae77547d1b9c6d639d48474aaf2415aad3fac207777c55ab88d7dba009884fa",
+   "domain/policy.py": "c868bada2d79bc9277ef37abf0dd33373343666e2873fcf3b6b2a1aec788415e"
+  }
+ },
+ "bounds": {
+  "actions": [
+   "Submit",
+   "Recommend",
+   "Approve",
+   "Reject",
+   "Revise",
+   "Bogus"
+  ],
+  "actors": [
+   "teacher-assigned",
+   "teacher-unassigned",
+   "teacher-revoked",
+   "registrar",
+   "viewer",
+   "ghost"
+  ],
+  "depth": 6,
+  "environment_toggles": [
+   [
+    "teacher-assigned",
+    "active"
+   ],
+   [
+    "teacher-assigned",
+    "assigned"
+   ],
+   [
+    "registrar",
+    "active"
+   ]
+  ],
+  "max_seconds": null,
+  "replay_conflicts": true,
+  "stale_versions": true,
+  "stop_when_found": []
+ },
+ "claim": "No reachable state or transition within the bound violates a safety invariant when the real runtime is driven by every fixture actor, stale versions, operation-id replays and revocation/assignment changes.",
+ "counterexamples": {
+  "baseline": [],
+  "candidate-reject-from-Recommended": []
+ },
+ "invariants": {
+  "state": [
+   "ONE-INSTANCE",
+   "STATE-IN-MODEL",
+   "VERSION-COUNTS-COMMITS",
+   "AUDIT-TRAIL-IS-A-VALID-RUN",
+   "AUDIT-ACTOR-HOLDS-TRANSITION-ROLE",
+   "PACK-LAWS-HOLD-ON-RUN",
+   "EFFECTS-DECLARED-BY-MODEL",
+   "OUTBOX-MATCHES-COMMITTED-NOTIFICATIONS",
+   "AUDIT-REFERENCES-RECORDED-OPERATION"
+  ],
+  "step": [
+   "AUTHORITY-ON-COMMIT",
+   "AUTHORITY-BEFORE-REPLAY",
+   "CAS-ON-COMMIT",
+   "STATE-GUARD-ON-COMMIT",
+   "EXACTLY-ONCE-OPERATION",
+   "OPERATION-BINDING",
+   "COMMIT-EFFECTS-EXACT",
+   "REPLAY-HAS-NO-EFFECT",
+   "REJECTION-LEAVES-NO-TRACE",
+   "NO-SPURIOUS-DENIAL",
+   "DENIAL-REASON",
+   "NO-UNEXPECTED-EXCEPTION"
+  ]
+ },
+ "limitations": [
+  "Bounded: no violation within depth k is not a proof for depth k+1 (per-depth new-state counts and `exhausted` show whether the reachable set closed).",
+  "Explicit-state search over an executed implementation: it observes behaviour, it does not prove the runtime or SQLite correct.",
+  "Does not explore concurrent interleavings, process crashes or fault injection; tests/test_runtime.py covers those separately.",
+  "Not a human study and not an independent verification: same authorship as the runtime and the verifier oracle."
+ ],
+ "models": {
+  "baseline": {
+   "exhausted": false,
+   "expected_outcomes_unreached": [],
+   "invariant_checks": 14215,
+   "max_depth": 6,
+   "semantic_hash": "5d3ef3a19c31d956a185b9c5ba4b1b79e651d0356e162436c5c67054d2ad4cdf",
+   "states": 224,
+   "transitions": 13992,
+   "truncated": false
+  },
+  "candidate-reject-from-Recommended": {
+   "exhausted": false,
+   "expected_outcomes_unreached": [],
+   "invariant_checks": 9635,
+   "max_depth": 6,
+   "semantic_hash": "b26c9af5ae4cd958099956232721a70e73cb7e6efe1b213ff32417829b588e56",
+   "states": 140,
+   "transitions": 9496,
+   "truncated": false
+  }
+ },
+ "mutation_self_test": [
+  {
+   "detected": true,
+   "mutant": "revocation_ignored"
+  },
+  {
+   "detected": true,
+   "mutant": "assignment_ignored"
+  },
+  {
+   "detected": true,
+   "mutant": "role_ignored"
+  },
+  {
+   "detected": true,
+   "mutant": "replay_before_authority"
+  },
+  {
+   "detected": true,
+   "mutant": "stale_version_accepted"
+  },
+  {
+   "detected": true,
+   "mutant": "replay_reapplies_effects"
+  }
+ ],
+ "protocol": "eija.formal.bounded-model-check/v1",
+ "reported": {
+  "checks": [
+   {
+    "id": "no_invariant_violation_within_bound",
+    "status": "PASS"
+   },
+   {
+    "id": "search_completed_within_time_cap",
+    "status": "PASS"
+   },
+   {
+    "id": "alphabet_reaches_every_outcome_class",
+    "status": "PASS"
+   },
+   {
+    "id": "seeded_runtime_faults_are_detected",
+    "status": "PASS"
+   },
+   {
+    "id": "committed_statistics_have_no_drift",
+    "status": "PASS"
+   }
+  ],
+  "verdict": "PASS"
+ },
+ "source": {
+  "origin": "reports/formal/bmc.json"
+ },
+ "subject_function": "eija_studio.application.runtime.execute",
+ "tier": "full",
+ "tool": {
+  "name": "verification.bmc explicit-state BFS",
+  "system_under_test": "application.runtime.execute + adapters.sqlite_store (ephemeral)"
+ }
+}

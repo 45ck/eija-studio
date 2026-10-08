@@ -1,12 +1,14 @@
 """Bend lane: the generated model, the laws/proofs pairing, the negative controls and the runner logic.
 
-Everything here runs without Docker and states what it checks. The tests that need the pinned Bend
-container are skipped (reported as skipped, never as passed) when Docker is not available; the full
-proof gate is the nox session ``formal_bend``.
+Everything here runs without Docker and states what it checks. The one test that needs the pinned Bend
+container is opt-in (``EIJA_BEND_DOCKER_TESTS=1``) and skipped, never passed, otherwise: the proof gate is
+the nox session ``formal_bend_quick`` (``formal_bend`` for the release tier), which runs the same proof and
+the same seeded fault, so the core suite does not repeat that Docker work.
 """
 from __future__ import annotations
 
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -22,6 +24,7 @@ sys.path.insert(0, str(ROOT))
 import verification.bend.bend_conformance as conformance  # noqa: E402
 import verification.bend.bend_controls as bend_controls  # noqa: E402
 import verification.bend.bend_generate as gen  # noqa: E402
+import verification.bend.bend_policy as bend_policy  # noqa: E402
 import verification.bend.bend_runner as runner  # noqa: E402
 import verification.bend.bend_slicing as slicing  # noqa: E402
 from eija_studio.domain.policy import check_policy  # noqa: E402
@@ -37,6 +40,7 @@ EXPECTED_LAWS = [
 
 
 def docker_ready() -> bool:
+    """Lazy: evaluated inside the one Docker test, never at collection time."""
     docker = shutil.which("docker")
     if docker is None:
         return False
@@ -46,9 +50,6 @@ def docker_ready() -> bool:
         return probe.returncode == 0
     except (subprocess.TimeoutExpired, OSError):
         return False
-
-
-needs_docker = pytest.mark.skipif(not docker_ready(), reason="Docker daemon not available: Bend proofs need the pinned container (NOT_RUN)")
 
 
 # --- generation ---------------------------------------------------------------------------------
@@ -104,6 +105,59 @@ def test_generation_refuses_names_it_cannot_represent_faithfully():
 
 def test_effect_names_cover_the_policys_forbidden_effects():
     assert "PaymentCaptured{}" in MAIN and "ParentDataExported{}" in MAIN
+
+
+# --- the laws restate kernel policy: drift must fail, not silently weaken law 8 -------------------
+
+def test_the_laws_agree_with_the_kernels_forbidden_effects_and_reject_source():
+    bend_policy.check_laws_against_policy(LAWS, gen.default_models())
+
+
+def test_a_forbidden_effect_added_to_the_kernel_fails_the_gate_instead_of_failing_open(monkeypatch):
+    monkeypatch.setattr(bend_policy, "FORBIDDEN", (*bend_policy.FORBIDDEN, "SecretsLeaked"))
+    monkeypatch.setattr(gen, "FORBIDDEN", bend_policy.FORBIDDEN)
+    # The generator would happily add the constructor (that is the fail-open hazard); the law check refuses it.
+    assert "SecretsLeaked{}" in gen.render_main(gen.default_models())
+    with pytest.raises(gen.ModelError, match="SecretsLeaked"):
+        bend_policy.check_laws_against_policy(LAWS, gen.default_models())
+
+
+def test_a_laws_file_that_forgets_a_forbidden_effect_or_uses_a_wildcard_true_is_refused():
+    models = gen.default_models()
+    forgetful = LAWS.replace("    case M.ParentDataExported{}:\n      True{}\n", "")
+    assert forgetful != LAWS
+    with pytest.raises(gen.ModelError, match="forbidden"):
+        bend_policy.check_laws_against_policy(forgetful, models)
+    wildcard = LAWS.replace("    case _:\n      False{}\n\ndef any_forbidden", "    case _:\n      True{}\n\ndef any_forbidden")
+    assert wildcard != LAWS
+    with pytest.raises(gen.ModelError, match="forbidden"):
+        bend_policy.check_laws_against_policy(wildcard, models)
+
+
+def test_a_reject_source_that_disagrees_with_the_workflow_is_refused():
+    wrong = LAWS.replace("case M.Baseline{}:\n      M.Submitted{}", "case M.Baseline{}:\n      M.Draft{}")
+    assert wrong != LAWS
+    with pytest.raises(gen.ModelError, match="reject_source"):
+        bend_policy.check_laws_against_policy(wrong, gen.default_models())
+    with pytest.raises(gen.ModelError, match="no `def"):
+        bend_policy.check_laws_against_policy(LAWS.replace("def reject_source", "def other_source"), gen.default_models())
+
+
+def test_a_guard_the_engine_does_not_model_fails_the_gate(monkeypatch):
+    assert set(bend_policy.get_args(bend_policy.Guard)) == bend_policy.MODELLED_GUARDS, "the kernel's guard vocabulary changed: model it or refuse it"
+    bend_policy.check_guards_are_modelled()
+    monkeypatch.setattr(bend_policy, "MODELLED_GUARDS", bend_policy.MODELLED_GUARDS - {"actor_assigned"})
+    with pytest.raises(gen.ModelError, match="actor_assigned"):
+        bend_policy.check_all()
+
+
+def test_the_policy_checks_pass_on_the_committed_laws_and_are_wired_into_the_gates():
+    bend_policy.check_all()
+    assert bend_policy.main() == 0
+    # The checks live outside bend_generate.py on purpose: that file is hashed into the committed proof evidence.
+    assert "bend_policy" not in (BEND / "bend_generate.py").read_text(encoding="utf-8")
+    assert "verification/bend/bend_policy.py" in (ROOT / "quality" / "sessions" / "formal_bend.py").read_text(encoding="utf-8")
+    assert "check_policy_consistency()" in (BEND / "bend_runner.py").read_text(encoding="utf-8")
 
 
 # --- laws and proofs ----------------------------------------------------------------------------
@@ -220,6 +274,9 @@ def test_classify_only_calls_a_clean_verdict_a_proof():
     assert runner.classify(ok)["result"] == "PROVEN"
     assert runner.classify(runner.Result(1, "ALL PROOFS CHECK\n"))["result"] == "FAILED"  # exit code wins
     assert runner.classify(runner.Result(0, "Use --verdict for mathematical validity.\n"))["result"] == "FAILED"
+    # Real output of plain `bend PROOF.bend`: Bend's front-end check only, never a proof.
+    plain = runner.Result(0, "ALL PROOFS CHECK\nUse --verdict for mathematical validity.\n")
+    assert runner.classify(plain)["result"] == "CHECKED_NO_VERDICT"
     failed = runner.classify(runner.Result(1, "SOME PROOFS FAIL\nError:\n- expected : a\nLocation: Laws.x\n"))
     assert failed["result"] == "FAILED" and failed["location"] == "Laws.x"
     assert runner.classify(runner.Result(0, "SOME PROOFS FAIL\nALL PROOFS CHECK"))["result"] == "FAILED"
@@ -230,6 +287,83 @@ def test_a_missing_job_marker_is_a_failure_never_a_success():
     results = runner.parse_jobs(text, 3)
     assert [r.code for r in results] == [0, 255, 255]
     assert [runner.classify(r)["result"] for r in results] == ["PROVEN", "FAILED", "FAILED"]
+
+
+def test_every_counted_bend_run_uses_the_kernel_verdict():
+    """No per-law or model check may fall back to plain `bend`: the jobs the gate classifies all say --verdict."""
+    seen = []
+
+    class Recorder(runner.Checker):
+        def run_jobs(self, root, jobs):
+            seen.extend(jobs)
+            return [runner.Result(0, "ALL PROOFS CHECK\n") for _ in jobs]
+
+    runner.prove_directory(Recorder(), "pytest-jobs", MAIN, LAWS, PROOF, {})
+    assert len(seen) == 2 + len(EXPECTED_LAWS)
+    assert all("--verdict" in job.args for job in seen)
+
+
+def _docker_double(monkeypatch, *, run_output="", run_code=0, raise_timeout_on_run=False, image_labels=None):
+    """Replace ``docker`` with a recorder; returns the list of argument tuples it saw."""
+    calls = []
+
+    def fake(argv, **kwargs):
+        calls.append(tuple(argv[1:]))
+        verb = argv[1]
+        if verb == "run" and raise_timeout_on_run and "--entrypoint" in argv:
+            raise subprocess.TimeoutExpired(argv, kwargs.get("timeout", 1))
+        if verb == "version":
+            return subprocess.CompletedProcess(argv, 0, "29.0.0\n", "")
+        if verb == "image":
+            labels = json.dumps(image_labels) if image_labels is not None else "null"
+            return subprocess.CompletedProcess(argv, 0 if image_labels is not None else 1, labels, "")
+        if verb == "run":
+            return subprocess.CompletedProcess(argv, run_code, run_output, "")
+        return subprocess.CompletedProcess(argv, 0, "", "")
+
+    monkeypatch.setattr(subprocess, "run", fake)
+    return calls
+
+
+def test_a_proof_run_that_times_out_is_a_fail_and_the_container_is_removed(monkeypatch, tmp_path):
+    calls = _docker_double(monkeypatch, raise_timeout_on_run=True)
+    with pytest.raises(runner.GateFailure, match="timed out"):
+        runner.Checker().run_jobs(tmp_path, [runner.Job("full", ("PROOF.bend", "--verdict"))])
+    run = next(c for c in calls if c[0] == "run")
+    name = run[run.index("--name") + 1]
+    assert ("rm", "-f", name) in calls, "a timed-out container must be removed, not left running"
+
+
+def test_a_container_that_starts_and_dies_is_a_fail_but_one_that_never_starts_is_not_run(monkeypatch, tmp_path):
+    job = [runner.Job("full", ("PROOF.bend", "--verdict"))]
+    _docker_double(monkeypatch, run_output="@@@BEGIN 0\n", run_code=137)  # killed (for example out of memory) mid-proof
+    with pytest.raises(runner.GateFailure, match="died"):
+        runner.Checker().run_jobs(tmp_path, job)
+    _docker_double(monkeypatch, run_output="", run_code=125)  # docker could not start it
+    with pytest.raises(runner.NotRun):
+        runner.Checker().run_jobs(tmp_path, job)
+
+
+def test_a_timeout_during_the_gate_reports_fail_not_a_skipped_session(monkeypatch):
+    _docker_double(monkeypatch, raise_timeout_on_run=True, image_labels={
+        "dev.eija.dockerfile.sha256": runner.sha256_file(runner.DOCKERFILE)})
+    report = runner.build_report(controls=False, conformance_check=False, quick=True)
+    assert report["status"] == "FAIL" and "timed out" in report["reason"]
+
+
+def test_the_image_is_only_built_on_request(monkeypatch):
+    calls = _docker_double(monkeypatch)  # the image is missing
+    with pytest.raises(runner.NotRun, match="--build"):
+        runner.Checker().prerequisites()
+    assert not any(c[0] == "build" for c in calls), "building downloads archives: it must be opt-in"
+    calls.clear()
+    runner.Checker(build=True).prerequisites()
+    assert any(c[0] == "build" for c in calls)
+
+
+def test_the_report_names_the_archive_checksum_as_the_pin():
+    text = (BEND / "Dockerfile").read_text(encoding="utf-8")
+    assert f"--checksum=sha256:{runner._archive_pin()}" in text and "bend-2.0.32-linux-x64.tar.gz" in text
 
 
 def test_a_missing_docker_is_not_run_never_pass(monkeypatch):
@@ -262,7 +396,8 @@ def test_the_committed_evidence_snapshot_describes_the_committed_proofs():
     snapshot = json.loads((BEND / "evidence" / "bend.json").read_text(encoding="utf-8"))
     assert snapshot["kind"] == "bend_proof" and snapshot["status"] == "PASS" and snapshot["mode"] == "complete"
     assert snapshot["platform"] and snapshot["tool"]["bend_version"] == "2.0.32"
-    assert snapshot["tool"]["bend_commit"] == "573002f01ec6c52416d44489543f69a9625facf8"
+    tool = snapshot["tool"]  # `bend_commit` before the review fix, `declared_bend_commit_unverified` after it
+    assert (tool.get("declared_bend_commit_unverified") or tool["bend_commit"]) == "573002f01ec6c52416d44489543f69a9625facf8"
     for name in ("main.bend", "LAWS.bend", "PROOF.bend"):
         assert snapshot["model"]["files"][name] == runner.sha256_file(BEND / name), f"{name} changed since the snapshot: rerun the gate with --snapshot"
     assert snapshot["model"]["semantic_hash"] == {slot: w.semantic_hash for slot, w in gen.default_models().items()}
@@ -276,10 +411,22 @@ def test_the_committed_evidence_snapshot_describes_the_committed_proofs():
     assert snapshot["limits"], "the limits travel with the evidence"
 
 
+@pytest.mark.xfail(strict=True, reason="NOT_RUN: the snapshot predates the review fixes (Dockerfile pin, --verdict per law, archive pin); "
+                   "refresh it with `nox -s formal_bend -- --snapshot` on a Docker host (docs/engineering/FUTURE-WORK.md), then remove this marker")
+def test_the_snapshot_was_produced_by_the_current_gate_and_dockerfile():
+    snapshot = json.loads((BEND / "evidence" / "bend.json").read_text(encoding="utf-8"))
+    assert snapshot["tool"]["bend_archive_sha256"] == runner._archive_pin()
+    assert snapshot["tool"]["dockerfile_sha256"] == runner.sha256_file(BEND / "Dockerfile"), "the Dockerfile changed since the snapshot"
+    assert all("--verdict" in law["basis"] for law in snapshot["proof"]["laws"])
+
+
 # --- with Docker --------------------------------------------------------------------------------
 
-@needs_docker
+@pytest.mark.skipif(os.environ.get("EIJA_BEND_DOCKER_TESTS") != "1",
+                    reason="opt-in (EIJA_BEND_DOCKER_TESTS=1): nox formal_bend_quick / formal_bend run this proof (NOT_RUN here)")
 def test_the_committed_proofs_check_and_a_seeded_fault_fails_them():
+    if not docker_ready():
+        pytest.skip("Docker daemon not available: Bend proofs need the pinned container (NOT_RUN)")
     checker = runner.Checker()
     checker.prerequisites()
     verdicts, _ = runner.prove_directory(checker, "pytest-committed", MAIN, LAWS, PROOF, {}, attribute=False)

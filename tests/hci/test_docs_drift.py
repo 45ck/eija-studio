@@ -66,7 +66,8 @@ def test_editing_the_trace_or_the_snapshot_or_the_markdown_is_caught(docs_copy):
     assert not report.check_docs(**docs_copy)[0]
     md.write_bytes(original)
     snap = json.loads(docs_copy["snapshot_path"].read_text(encoding="utf-8"))
-    snap["fitts"]["summary"]["moves_id_over_4"] = 0
+    # Always alter the observation, including when the current measured value is zero.
+    snap["fitts"]["summary"]["moves_id_over_4"] += 1
     docs_copy["snapshot_path"].write_bytes(report.dumps(snap).encode("utf-8"))
     assert not report.check_docs(**docs_copy)[0]
 

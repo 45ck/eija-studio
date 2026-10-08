@@ -1,0 +1,157 @@
+{"schema":"eija.taskflow.v1","tasks":[
+{"id":"T02","name":"Review an agent's change by meaning","persona":"P1","frequency":"daily","flows":{
+"current":[
+  {"op": "M", "note": "decide to look for what changed"},
+  {"op": "P", "from": "__pointer", "to": "tab-impact", "layout": "current-impact"},
+  {"op": "B", "note": "press"},
+  {"op": "B", "note": "release"},
+  {"op": "R", "ms": 100, "why": "local UI update, 100 ms class"},
+  {"op": "K", "n": 1, "note": "PgDn: the rule table starts at y=1063 and the closure details at y=1557; one page down shows both"},
+  {"op": "M", "note": "rule row 1 of 5: no baseline is shown, compare from memory"},
+  {"op": "M", "note": "rule row 2"},
+  {"op": "M", "note": "rule row 3"},
+  {"op": "M", "note": "rule row 4"},
+  {"op": "M", "note": "rule row 5"},
+  {"op": "P", "from": "table", "to": "summary-2", "note": "post-scroll geometry not modelled, default P"},
+  {"op": "B", "note": "press"},
+  {"op": "B", "note": "release"},
+  {"op": "R", "ms": 100, "why": "local UI update, 100 ms class"},
+  {"op": "M", "note": "read changed_actions in the JSON"},
+  {"op": "M", "note": "read the affected list"},
+  {"op": "M", "note": "read the envelope sentence"}
+],
+"proposed":[
+  {"op": "M", "note": "read the summary line: 4 operations in 2 chapters, 0 hidden edits"},
+  {"op": "M", "note": "read operation 1: before and after"},
+  {"op": "K", "n": 1, "note": "Space: mark Viewed"},
+  {"op": "K", "n": 1, "note": "Down arrow: next operation in the APG tree"},
+  {"op": "R", "ms": 100, "why": "local UI update, 100 ms class"},
+  {"op": "M", "note": "read operation 2: before and after"},
+  {"op": "K", "n": 1, "note": "Space: mark Viewed"},
+  {"op": "K", "n": 1, "note": "Down arrow: next operation in the APG tree"},
+  {"op": "R", "ms": 100, "why": "local UI update, 100 ms class"},
+  {"op": "M", "note": "read operation 3: before and after"},
+  {"op": "K", "n": 1, "note": "Space: mark Viewed"},
+  {"op": "K", "n": 1, "note": "Down arrow: next operation in the APG tree"},
+  {"op": "R", "ms": 100, "why": "local UI update, 100 ms class"},
+  {"op": "M", "note": "read operation 4: before and after"},
+  {"op": "K", "n": 1, "note": "Space: mark Viewed"}
+]
+},"assumptions":[
+  "Start: the change case has a selected meaning and a candidate; current UI on tab 01, proposed UI on the review screen with operation 1 selected. The first pointing operator of every flow starts at the virtual pointer rest position (720,450) used by the layout files.",
+  "The outcomes are NOT equivalent. The current UI shows no before state, so the reviewer learns only which actions changed (3 of the 4 operations; the ADDED state is not listed) from the JSON details. The proposed flow yields all 4 operations with before and after values. The current time is therefore a lower bound for the same question.",
+  "Reading is modelled as M (1.35 s, Card et al. 1980, described as crude by later authors). M counts are analyst judgement: current 9 (1 decision to look for what changed, 5 table rows, 3 JSON chunks), proposed 5 (summary plus one per operation). KLM covers expert, error-free, routine work and not review quality.",
+  "Current geometry is design/layouts/current-impact.json and current-evidence.json, MEASURED by the layout lane in one Chromium at 1440x900. Proposed geometry is a design target, not measured, and lives in Appendix A of docs/hci/design/evidence-and-change-review.md (review-proposed, review-proposed-trace), to be extracted to design/layouts/."
+]},
+{"id":"T03","name":"See the ripple of a change","persona":"P1","frequency":"daily","flows":{
+"current":[
+  {"op": "M", "note": "decide to look at consequences"},
+  {"op": "P", "from": "__pointer", "to": "tab-impact", "layout": "current-impact"},
+  {"op": "B", "note": "press"},
+  {"op": "B", "note": "release"},
+  {"op": "R", "ms": 100, "why": "local UI update, 100 ms class"},
+  {"op": "K", "n": 1, "note": "PgDn: summary line at y~1030 and closure details at y=1557 both come into view"},
+  {"op": "M", "note": "read: 3 changed actions, 20 modelled dependants, closure complete"},
+  {"op": "P", "from": "impact-summary", "to": "summary-2", "note": "post-scroll geometry not modelled, default P"},
+  {"op": "B", "note": "press"},
+  {"op": "B", "note": "release"},
+  {"op": "R", "ms": 100, "why": "local UI update, 100 ms class"},
+  {"op": "M", "note": "locate the graph object in the JSON"},
+  {"op": "M", "note": "count nodes by kind by eye"},
+  {"op": "M", "note": "read the envelope sentence"},
+  {"op": "M", "note": "infer that personas and requirements are not modelled (the UI never says so)"}
+],
+"proposed":[
+  {"op": "M", "note": "read the ripple strip: 6 counts, 2 cells marked ?"},
+  {"op": "M", "note": "read the not-analysed line"},
+  {"op": "P", "from": "__pointer", "to": "ripple-journeys", "layout": "review-proposed", "note": "Fitts 0.588 s. Layout stem is a design target in Appendix A of docs/hci/design/evidence-and-change-review.md and is NOT yet in design/layouts/ (integrator must extract it); not machine-resolvable until then."},
+  {"op": "B", "note": "press"},
+  {"op": "B", "note": "release"},
+  {"op": "R", "ms": 100, "why": "local UI update, 100 ms class"},
+  {"op": "M", "note": "read the 3 affected journey lines"}
+]
+},"assumptions":[
+  "Start: current UI on tab 01; proposed UI on the review screen; the pointer starts at the virtual rest position (720,450).",
+  "The current UI gives one aggregate line and a JSON graph and never states that personas and requirements are not analysed; the M that infers this is added to the current flow as a generous assumption.",
+  "Kernel figures in the example (3 changed actions, 20 dependants across 8 node types) were MEASURED by running the kernel domain code on 2026-09-29 (design document, section 3)."
+]},
+{"id":"T06","name":"Run and read verification evidence","persona":"P4","frequency":"daily","flows":{
+"current":[
+  {"op": "M", "note": "decide to run verification"},
+  {"op": "P", "from": "__pointer", "to": "tab-evidence", "layout": "current-evidence"},
+  {"op": "B", "note": "press"},
+  {"op": "B", "note": "release"},
+  {"op": "R", "ms": 100, "why": "local UI update, 100 ms class"},
+  {"op": "P", "from": "tab-evidence", "to": "verify", "layout": "current-evidence"},
+  {"op": "B", "note": "press"},
+  {"op": "B", "note": "release"},
+  {"op": "R", "ms": 2730, "why": "bounded verification run", "note": "Conservative upper value: slowest of several MEASURED runs of verify_runtime (125 cells; samples 1.0 to 2.7 s across machines and disks); excludes the HTTP round trip and browser rendering"},
+  {"op": "K", "n": 1, "note": "PgDn: the notice box that appears after the run pushes the PASS labels to y~903, just below the fold"},
+  {"op": "M", "note": "read the three claim cards"},
+  {"op": "M", "note": "read the blockers line"},
+  {"op": "M", "note": "read the UNKNOWN box"},
+  {"op": "P", "from": "verify", "to": "summary", "note": "post-scroll geometry not modelled, default P"},
+  {"op": "B", "note": "press"},
+  {"op": "B", "note": "release"},
+  {"op": "R", "ms": 100, "why": "local UI update, 100 ms class"},
+  {"op": "K", "n": 3, "note": "PgDn inside the raw packet pre block (max-height 480 px)"},
+  {"op": "M", "note": "find the limitations array"},
+  {"op": "M", "note": "read 4 limitation strings (the verifier's own 5 limits are not in the packet)"}
+],
+"proposed":[
+  {"op": "P", "from": "__pointer", "to": "verify-button", "layout": "review-proposed", "note": "Fitts 0.992 s. Layout stem is a design target in Appendix A of docs/hci/design/evidence-and-change-review.md and is NOT yet in design/layouts/ (integrator must extract it); not machine-resolvable until then."},
+  {"op": "B", "note": "press"},
+  {"op": "B", "note": "release"},
+  {"op": "R", "ms": 100, "why": "RUNNING state shown", "note": "design budget"},
+  {"op": "R", "ms": 2730, "why": "bounded verification run", "note": "same conservative upper value as the current flow, so it cancels in the comparison; the owner can keep reading operations while it runs"},
+  {"op": "M", "note": "read the roll-up: 1 UNKNOWN, 3 PASS"},
+  {"op": "M", "note": "read the bound and NOT covered lines of the matrix claim"},
+  {"op": "M", "note": "read the UNKNOWN claim"},
+  {"op": "M", "note": "read the policy claim: its NOT covered slot says UNKNOWN"}
+]
+},"assumptions":[
+  "Start: current UI on tab 02 (after review), proposed UI on the review screen; the pointer starts at the virtual rest position (720,450).",
+  "The outcomes are NOT equivalent. The current UI never renders the bound of the runtime matrix (125 cells, one step) or the verifier's limitations; the raw packet shows only 4 kernel-level limitations. The proposed flow shows the bound and the NOT covered slot at level 0.",
+  "The 2.73 s verification time is the slowest of several MEASURED runs of verify_runtime (2.73 s on the D: HDD inside the checkout; 1.88 s and 1.01 s in two audit runs on other disks; 1.41 to 1.52 s in three warm runs). Machine and disk dependence is large; 2.73 s is kept as a conservative upper value in both arms, so it cancels in the comparison but inflates absolute T06 totals. The validation plan measures it as a distribution (n = 20).",
+  "Palette alternative, not modelled: Ctrl+K, 6 typed characters, Enter is 9 keystroke units (1.8 s) plus an M (1.35 s), versus P+B on the visible Verify button (about 1 s)."
+]},
+{"id":"T07","name":"Inspect a counterexample","persona":"P4","frequency":"weekly","flows":{
+"current":[
+  {"op": "M", "note": "no trace view exists: decide to export the case"},
+  {"op": "K", "n": 1, "note": "PgDn to reach Export Change Case at y=1408"},
+  {"op": "P", "from": "verify", "to": "export", "note": "post-scroll geometry not modelled, default P"},
+  {"op": "B", "note": "press"},
+  {"op": "B", "note": "release"},
+  {"op": "R", "ms": 500, "why": "download of the case JSON", "note": "estimate"},
+  {"op": "H", "note": "hands to keyboard"},
+  {"op": "K", "keys": "alt+tab", "note": "switch to an editor"},
+  {"op": "M", "note": "open the downloaded file"},
+  {"op": "K", "keys": "ctrl+f"},
+  {"op": "T", "chars": 24, "note": "search string for a mismatching cell"},
+  {"op": "K", "n": 1, "note": "Enter"},
+  {"op": "M", "note": "read the cell: actor, state, action"},
+  {"op": "M", "note": "read the expected object"},
+  {"op": "M", "note": "read the actual object"},
+  {"op": "M", "note": "compare field by field"},
+  {"op": "M", "note": "look up which rule the action belongs to"}
+],
+"proposed":[
+  {"op": "P", "from": "__pointer", "to": "claim-matrix", "layout": "review-proposed-trace", "note": "Fitts 0.790 s. Layout stem is a design target in Appendix A of docs/hci/design/evidence-and-change-review.md and is NOT yet in design/layouts/ (integrator must extract it); not machine-resolvable until then."},
+  {"op": "B", "note": "press"},
+  {"op": "B", "note": "release"},
+  {"op": "R", "ms": 100, "why": "local UI update, 100 ms class"},
+  {"op": "M", "note": "read title and label: 1 step, minimal, replay token"},
+  {"op": "M", "note": "read the 6 differing variables, expected versus actual"},
+  {"op": "M", "note": "conclude which guard is missing"},
+  {"op": "P", "from": "claim-matrix", "to": "step-jump", "layout": "review-proposed-trace", "note": "Fitts 0.892 s. Layout stem is a design target in Appendix A of docs/hci/design/evidence-and-change-review.md and is NOT yet in design/layouts/ (integrator must extract it); not machine-resolvable until then."},
+  {"op": "B", "note": "press"},
+  {"op": "B", "note": "release"},
+  {"op": "R", "ms": 100, "why": "local UI update, 100 ms class"},
+  {"op": "M", "note": "read the guards of rule TR-RECOMMEND"}
+]
+},"assumptions":[
+  "The current UI cannot show a failing cell: receipts, with all 125 observations, are in the API payload and the export but are never rendered. The current flow is a workaround through the exported JSON and an external editor. Its uncertainty is far larger than the 21 percent KLM band (external tools, file size, search hits) and the comparison is indicative only.",
+  "The example is a SEEDED FIXTURE for design and study: no failing cell exists in the kernel today (0 mismatches in 125). The FAIL row shows a hypothetical cell where an unassigned teacher's Recommend was accepted.",
+  "Multi-step traces (from model checking, ADR-0018) are not modelled; a one-step cell has one step. Step and Play controls are drawn for the general case."
+]}
+]}

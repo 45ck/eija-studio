@@ -12,13 +12,17 @@ python -m venv .venv                      # Python 3.11+
 
 The `agents` extra installs the official [MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk) (`mcp==2.2.0`). The server is `eija mcp --workspace PATH` over stdio; the workspace is a folder that holds the SQLite database and local keys, and is created on first use. It defaults to the offline fixture provider (deterministic, no network, not a model).
 
+Use the same explicit `--pack PATH` and `--repo PATH` for Studio and MCP. `--repo` connects a local Git repository read-only: tracked Python and annotated UI facts, declared bindings, hashes and coverage gaps. It does not execute the target or modify its code. For first self-dogfooding use `--pack packs/eija-review-slice --repo .` with a **fresh** workspace; this pack is a declared reference journey, not a complete extracted specification of EIJA. `--print-config` preserves both paths. Existing workspaces remain bound to the exact pack content; legacy identity requires an explicit migration instead of silent adoption.
+
+Read `pack()` to see domain terms and source connections; use `repository_impact(term)` and `repository_source(reference)` for known links. Once an owner selects a case, `affordances(case_id)` shows available typed edits and `edit_check(case_id, proposal)` checks a proposed edit without persisting or applying it. These tools help an agent explain its intended change while leaving selection and application with the owner.
+
 ## 2. Print the config for your client
 
 ```bash
 .venv/bin/python -m eija_studio mcp --workspace ~/eija-workspace --print-config claude    # or codex | opencode | gemini
 ```
 
-This prints a copy-paste snippet with absolute paths, so it works from any directory. It writes nothing. The snippets below show the same result with placeholders: replace `PY` with the absolute path of your venv's Python and `WS` with the absolute workspace path.
+This prints a copy-paste snippet with absolute paths, so it works from any directory. It writes nothing. The Claude one-liner is quoted for the shell you print it from (every argument in double quotes on Windows for cmd.exe and PowerShell, single quotes elsewhere; on Windows a path containing `$`, a backtick, `%` or a double quote is refused because those still expand inside quotes, so use the `.mcp.json` or another JSON form for such a path); pasting it into a different shell needs its own quoting, or use the `.mcp.json` form below. The snippets below show the same result with placeholders: replace `PY` with the absolute path of your venv's Python and `WS` with the absolute workspace path.
 
 ### Claude Code
 
@@ -112,7 +116,8 @@ Never commit the key or a config file that contains it. If a key was ever writte
 | Client times out at startup | Raise the startup timeout (Codex `startup_timeout_sec`, Gemini `timeout`); check `PY` is absolute |
 | `verify` returns `SOURCE_REVIEW_REQUIRED` | The checkout differs from the owner-stamped release fixture (expected on a modified tree). The owner reviews the source; do not restamp |
 | `verify` returns `MEANING_REQUIRED` | Correct: only the owner selects a meaning, in Studio |
-| `DIAGRAMS_NOT_AVAILABLE` | No diagram renderer is wired into this server yet; use `format=json` or `text` |
+| `DIAGRAMS_NOT_AVAILABLE` | A custom server has no diagram renderer; the CLI server wires text diagram formats by default |
+| `FORMAT_UNSUPPORTED` for SVG | Built-in MCP rendering provides Mermaid, PlantUML and DOT source; use the Studio for visual rendering |
 | Nothing prints to the terminal | Correct: stdout is the protocol channel; logs go to stderr |
 
 ## Verification status of the client syntax (checked 2026-09-29 on this repository's development machine)
@@ -127,6 +132,15 @@ Each snippet printed by `eija mcp --print-config <client>` was fed to the real c
 | Gemini CLI 0.37.1 | `gemini mcp add --scope project` wrote `.gemini/settings.json` | Verified: the CLI writes the same `mcpServers.eija` keys. `gemini mcp list` printed nothing in the scratch directory (likely folder trust), so connection is unverified. `trust: false` matches the documented `--trust` flag |
 
 The environment-passthrough rows above come from each client's documentation, not from a live run.
+
+## What has actually been exercised per client
+
+| Client | Status | Evidence and limit |
+|---|---|---|
+| Claude Code 2.1.284 | Round-trip run once by the lane author: `tools/list` returned the seven tools and `create_case` + `propose` executed | Reported in PR #8 (about US$0.11). The transcript is not committed, so this repository cannot re-check it |
+| OpenCode 1.4.3 | Connected: `opencode mcp list` printed `eija connected` for the generated `opencode.json` (2026-09-29) | Connection and startup only; no tool call was made from OpenCode |
+| Codex CLI 0.144.1 | Config accepted: `codex mcp get eija` showed the entry enabled, stdio, `startup_timeout_sec: 30` | Config parsing only; no connection was made |
+| Gemini CLI 0.37.1 | NOT_RUN | `gemini mcp list` printed nothing with the generated file (inconclusive); the JSON is parse-tested only |
 
 ## Sources for the client syntax
 

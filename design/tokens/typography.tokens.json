@@ -1,0 +1,96 @@
+{
+  "$description": "EIJA Studio typography tokens, DTCG 2025.10 (Final Community Group Report, not a W3C Standard). Proposed by HCI-ADR 0060. Five sizes, two weights, one letter-spacing value (0). The 2025.10 typography type requires fontFamily, fontSize, fontWeight, letterSpacing (a dimension) and lineHeight (a number, a multiplier of fontSize); every text.* token sets all five (spec section 9.8, read 2026-09-29). Colour is not set here; the colour aspect supplies text roles. Every size and line height is a PREDICTION-backed hypothesis until the study in docs/hci/design/typography.md section 10 runs.",
+  "font": {
+    "family": {
+      "$type": "fontFamily",
+      "sans": {
+        "$value": ["EIJA Sans", "EIJA Symbols", "system-ui", "Segoe UI", "Roboto", "Helvetica Neue", "Arial", "sans-serif"],
+        "$description": "UI sans. EIJA Sans is a subset of Noto Sans (OFL-1.1). EIJA Symbols is glyph fallback only (arrows, logic, set symbols) and is never the first family of a computed style. The system tail is the no-font-file fallback and is NOT metric-matched (measured on Windows: the Segoe UI fallback is 6.0% narrower than EIJA Sans on the domain terms at 14 px).",
+        "$extensions": {"com.eija.typography": {"fontsLock": "design/fonts.lock.json", "face": "sans", "numerals": "default digits are tabular in this font (MEASURED, 0.572 em each); still set font-variant-numeric: tabular-nums so a fallback font aligns"}}
+      },
+      "mono": {
+        "$value": ["EIJA Mono", "EIJA Symbols", "ui-monospace", "Cascadia Mono", "Consolas", "SFMono-Regular", "Menlo", "monospace"],
+        "$description": "Mono for literal tokens, code and formal notation. EIJA Mono is a subset of Fira Code (OFL-1.1) with all ligature tables removed at build time; every shipped glyph is one 0.6 em cell (MEASURED). Use font-feature-settings: \"zero\" 1.",
+        "$extensions": {"com.eija.typography": {"fontsLock": "design/fonts.lock.json", "face": "mono", "cellWidthEm": 0.6, "residualNotOnCell": ["U+2032", "U+2033", "U+21A6", "U+21B5", "U+21D0", "U+21D2", "U+21D4", "U+220E", "U+2216", "U+2218", "U+27E6", "U+27E7"]}}
+      }
+    },
+    "weight": {
+      "$type": "fontWeight",
+      "regular": {"$value": 400, "$description": "All body, table, tree, input and code text."},
+      "strong": {"$value": 600, "$description": "Titles, headings, column headers, selected item, decision button label. Never below 14 px (Windows guidance: minimum 14 px Semibold, 12 px Regular). No other weight is used; no italic file ships and font-synthesis is none."}
+    },
+    "size": {
+      "$type": "dimension",
+      "xs": {"$value": {"value": 0.75, "unit": "rem"}, "$description": "12 px at the default root size. Caption and dense-row status words. Weight 400 only.", "$extensions": {"com.eija.typography": {"px": 12}}},
+      "sm": {"$value": {"value": 0.875, "unit": "rem"}, "$description": "14 px. Default UI size: tree rows, table cells, buttons, inputs, code.", "$extensions": {"com.eija.typography": {"px": 14}}},
+      "md": {"$value": {"value": 1, "unit": "rem"}, "$description": "16 px. Explanatory reading text only (AI rationale, refusal reason, help).", "$extensions": {"com.eija.typography": {"px": 16}}},
+      "lg": {"$value": {"value": 1.25, "unit": "rem"}, "$description": "20 px. Section or chapter heading; at weight 600 this is WCAG large text (at least 14 pt bold, about 18.5 px).", "$extensions": {"com.eija.typography": {"px": 20}}},
+      "xl": {"$value": {"value": 1.5, "unit": "rem"}, "$description": "24 px. View title, one per view. WCAG large text at any weight (18 pt is about 24 px).", "$extensions": {"com.eija.typography": {"px": 24}}}
+    },
+    "lineHeight": {
+      "$type": "number",
+      "xs": {"$value": 1.333333, "$description": "16 px line box at 12 px. Exact ratio 4/3; the CSS build emits calc(4 / 3) so the box is 16 px, not 15.9996 px.", "$extensions": {"com.eija.typography": {"px": 16, "cssExact": "calc(4 / 3)"}}},
+      "sm": {"$value": 1.428571, "$description": "20 px line box at 14 px. Exact ratio 10/7; the CSS build emits calc(10 / 7). Row height 28 px with 4 px vertical padding (at least 24 px target, WCAG 2.5.8).", "$extensions": {"com.eija.typography": {"px": 20, "cssExact": "calc(10 / 7)"}}},
+      "md": {"$value": 1.5, "$description": "24 px line box at 16 px. Equals the space-and-a-half of WCAG 1.4.8 (AAA) for prose.", "$extensions": {"com.eija.typography": {"px": 24}}},
+      "lg": {"$value": 1.4, "$description": "28 px line box at 20 px.", "$extensions": {"com.eija.typography": {"px": 28}}},
+      "xl": {"$value": 1.333333, "$description": "32 px line box at 24 px. Exact ratio 4/3; the CSS build emits calc(4 / 3).", "$extensions": {"com.eija.typography": {"px": 32, "cssExact": "calc(4 / 3)"}}}
+    },
+    "letterSpacing": {
+      "$type": "dimension",
+      "none": {"$value": {"value": 0, "unit": "px"}, "$description": "The only letter-spacing value. No tracking on UI text: the baseline declares 7 values (-2.8 to 1.8 px, MEASURED), and kernel enum values are shown as stored, so no positive tracking marks labels and no text-transform is used. This is a design rule of ours, not a requirement of the token format."}
+    },
+    "measure": {
+      "$type": "number",
+      "prose": {"$value": 56, "$description": "Maximum line length for prose, in ch of the sans face. PREDICTION by arithmetic: 56 ch is about 68 characters including spaces (58 non-space) per line on repository README text. Below the 80 characters of WCAG 1.4.8 (AAA) and Primer (around 80 or fewer); at the upper edge of Microsoft guidance (50 to 60 letters, not more than 60 characters), which it meets only if letters means non-space characters. A hypothesis at the edge of one source range; sources disagree on the optimum and no study was run.", "$extensions": {"com.eija.typography": {"unit": "ch", "appliesTo": "text.prose"}}},
+      "code": {"$value": 100, "$description": "Maximum line length for source, JSON and trace text views, in ch of the mono face (1 ch is one 0.6 em cell). Tables and trees have no measure limit.", "$extensions": {"com.eija.typography": {"unit": "ch", "appliesTo": "text.code"}}}
+    }
+  },
+  "text": {
+    "$type": "typography",
+    "title": {
+      "$value": {"fontFamily": "{font.family.sans}", "fontSize": "{font.size.xl}", "fontWeight": "{font.weight.strong}", "letterSpacing": "{font.letterSpacing.none}", "lineHeight": "{font.lineHeight.xl}"},
+      "$description": "View title. At most one per view.",
+      "$extensions": {"com.eija.typography": {"contrastClass": "large-text"}}
+    },
+    "heading": {
+      "$value": {"fontFamily": "{font.family.sans}", "fontSize": "{font.size.lg}", "fontWeight": "{font.weight.strong}", "letterSpacing": "{font.letterSpacing.none}", "lineHeight": "{font.lineHeight.lg}"},
+      "$description": "Section or chapter heading; roll-up counts at level 0.",
+      "$extensions": {"com.eija.typography": {"contrastClass": "large-text", "numerals": "tabular"}}
+    },
+    "prose": {
+      "$value": {"fontFamily": "{font.family.sans}", "fontSize": "{font.size.md}", "fontWeight": "{font.weight.regular}", "letterSpacing": "{font.letterSpacing.none}", "lineHeight": "{font.lineHeight.md}"},
+      "$description": "Explanatory reading text. Measure font.measure.prose. Size rationale: convention (Primer body large 16 px, Primer title small 16 px), to be tested in study B. The fluent-reading floor (0.2 degrees of x-height) is predicted to be reached by 16 px text at 500 and 600 mm and missed by about 8.5% at 710 mm, so the floor flips inside the viewing-distance band and is not evidence for 16 px (PREDICTION, typography.md section 3.2).",
+      "$extensions": {"com.eija.typography": {"contrastClass": "normal", "measure": "{font.measure.prose}"}}
+    },
+    "ui": {
+      "$value": {"fontFamily": "{font.family.sans}", "fontSize": "{font.size.sm}", "fontWeight": "{font.weight.regular}", "letterSpacing": "{font.letterSpacing.none}", "lineHeight": "{font.lineHeight.sm}"},
+      "$description": "Default UI text: tree rows (domain terms), table cells, buttons, inputs, labels.",
+      "$extensions": {"com.eija.typography": {"contrastClass": "normal", "numerals": "tabular", "fontVariantNumeric": "tabular-nums"}}
+    },
+    "ui-strong": {
+      "$value": {"fontFamily": "{font.family.sans}", "fontSize": "{font.size.sm}", "fontWeight": "{font.weight.strong}", "letterSpacing": "{font.letterSpacing.none}", "lineHeight": "{font.lineHeight.sm}"},
+      "$description": "Column headers, selected tree row, the label of the decision button.",
+      "$extensions": {"com.eija.typography": {"contrastClass": "normal", "numerals": "tabular", "fontVariantNumeric": "tabular-nums"}}
+    },
+    "caption": {
+      "$value": {"fontFamily": "{font.family.sans}", "fontSize": "{font.size.xs}", "fontWeight": "{font.weight.regular}", "letterSpacing": "{font.letterSpacing.none}", "lineHeight": "{font.lineHeight.xs}"},
+      "$description": "Timestamps and secondary metadata of at most about five words. Never carries UNKNOWN, a status word, a count or a refusal reason. Never weight 600.",
+      "$extensions": {"com.eija.typography": {"contrastClass": "normal", "maxWords": 5}}
+    },
+    "code": {
+      "$value": {"fontFamily": "{font.family.mono}", "fontSize": "{font.size.sm}", "fontWeight": "{font.weight.regular}", "letterSpacing": "{font.letterSpacing.none}", "lineHeight": "{font.lineHeight.sm}"},
+      "$description": "Literal tokens: ids, hashes, paths, enum values, guard and effect names; source, JSON and trace views; formal notation.",
+      "$extensions": {"com.eija.typography": {"contrastClass": "normal", "fontFeatureSettings": "\"zero\" 1", "fontVariantLigatures": "none", "measure": "{font.measure.code}"}}
+    },
+    "code-strong": {
+      "$value": {"fontFamily": "{font.family.mono}", "fontSize": "{font.size.sm}", "fontWeight": "{font.weight.strong}", "letterSpacing": "{font.letterSpacing.none}", "lineHeight": "{font.lineHeight.sm}"},
+      "$description": "Status words and counts in summaries and on the decision surface (the status aspect chooses which states use it). Never smaller than the size used for PASS in the same context.",
+      "$extensions": {"com.eija.typography": {"contrastClass": "normal", "fontFeatureSettings": "\"zero\" 1", "fontVariantLigatures": "none"}}
+    },
+    "code-small": {
+      "$value": {"fontFamily": "{font.family.mono}", "fontSize": "{font.size.xs}", "fontWeight": "{font.weight.regular}", "letterSpacing": "{font.letterSpacing.none}", "lineHeight": "{font.lineHeight.xs}"},
+      "$description": "Status words in dense rows next to their glyph, hash prefixes in tables. Weight 400 only. The study tests it against code (14 px) for UNKNOWN misreads.",
+      "$extensions": {"com.eija.typography": {"contrastClass": "normal", "fontFeatureSettings": "\"zero\" 1", "fontVariantLigatures": "none"}}
+    }
+  }
+}

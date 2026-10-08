@@ -1,0 +1,930 @@
+{
+  "schema": "eija.taskflow.v1",
+  "tasks": [
+    {
+      "id": "T04-a11y-kbd-cold",
+      "name": "Reconnect the Reject transition source without dragging, keyboard only, from a cold start (WCAG 2.5.7 and 2.1.1)",
+      "persona": "P2",
+      "frequency": "weekly",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "plan: change where Reject starts"
+          },
+          {
+            "op": "K",
+            "n": 6,
+            "note": "Tab x6 from document start: skip link, New case, case row, Check provider, tab 01, tab 02 (MEASURED order in the baseline, Chrome 154, 2026-09-29; method in docs/hci/design/accessibility.md section 1)"
+          },
+          {
+            "op": "K",
+            "keys": "enter",
+            "note": "activate tab 02 / Impact; focus stays on the tab button (MEASURED)"
+          },
+          {
+            "op": "R",
+            "ms": 100,
+            "why": "local view change (client render, assumed 100 ms, unmeasured)"
+          },
+          {
+            "op": "K",
+            "n": 3,
+            "note": "Tab x3: tab 03, tab 04, select#diagram-source (MEASURED order: the tab buttons still precede the panel content)"
+          },
+          {
+            "op": "K",
+            "keys": "down",
+            "note": "change the select value; native select, Chrome on Windows changes the value without opening (assumption for other browsers)"
+          },
+          {
+            "op": "K",
+            "keys": "tab",
+            "note": "to Apply state-view edit"
+          },
+          {
+            "op": "K",
+            "keys": "enter"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50 70 ms server side: POST 18-20 ms + GET case 24 ms + GET cases about 24 ms; from design/tasks/canvas-flows.json; browser render not included)"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "plan: change where Reject starts"
+          },
+          {
+            "op": "K",
+            "keys": "ctrl+k",
+            "note": "open the palette"
+          },
+          {
+            "op": "T",
+            "chars": 6,
+            "note": "typed 'Reject'; the palette searches the scope (case candidate)"
+          },
+          {
+            "op": "K",
+            "keys": "down",
+            "note": "assumed one key to prefer the transition over the state Rejected (same assumption as ia-flows T09)"
+          },
+          {
+            "op": "K",
+            "keys": "enter",
+            "note": "go to the transition: the States lens opens, focus lands on the Reject item in the diagram (design rule to be verified)"
+          },
+          {
+            "op": "R",
+            "ms": 100,
+            "why": "local view change (client render, assumed 100 ms, unmeasured)"
+          },
+          {
+            "op": "K",
+            "keys": "shift+f10",
+            "note": "context menu for the focused item (the Menu key is equivalent)"
+          },
+          {
+            "op": "K",
+            "keys": "enter",
+            "note": "first menu item: Reconnect source..."
+          },
+          {
+            "op": "R",
+            "ms": 100,
+            "why": "chooser lists the states with kernel-checked legality (client-side table, design budget)"
+          },
+          {
+            "op": "K",
+            "keys": "down",
+            "note": "choose Submitted"
+          },
+          {
+            "op": "K",
+            "keys": "enter",
+            "note": "submit the typed request; the kernel accepts or refuses with a reason"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50 70 ms server side: POST 18-20 ms + GET case 24 ms + GET cases about 24 ms; from design/tasks/canvas-flows.json; browser render not included)"
+          }
+        ]
+      },
+      "assumptions": [
+        "KLM constants: K 0.20 s (a chord such as ctrl+k counts 2 K), M 1.35 s, B 0.10 s, H 0.40 s, P 1.10 s when no geometry is stated, T chars x 0.20 s; Card, Moran and Newell 1980 as tabulated at https://en.wikipedia.org/wiki/Keystroke-level_model (opened 2026-09-29). PREDICTION band plus or minus 21 percent (RMS error stated on the same page).",
+        "P ops that carry geometry in the note use Fitts (Shannon form) MT = 0.37 + 0.13 * log2(D/W + 1) s, the mouse menu-pointing profile of Cockburn et al. 2007 (eight participants, R2 = 0.93; https://grouplab.cpsc.ucalgary.ca/grouplab/uploads/Publications/Publications/2007-PredictiveModelMenus.CHI.pdf, opened 2026-09-29). Able-bodied mouse profile: not a prediction for users with tremor or limited dexterity, the population SC 2.5.8 protects. The constants were fitted to vertical menu-item selection (item positions 1 to 16, right-handed computer-science graduate students); 2-D canvas handle and node pointing lies outside that calibration task, so those P times are extrapolations.",
+        "KLM covers expert, error-free, routine use. It does not model listening to a screen reader, reading, learning or errors; the keyboard flows below are key counts for a user who knows the path. A screen-reader user's total time is NOT predicted by these numbers.",
+        "M placement: one M at the start of the unit in both flows (current 1 M, proposed 1 M); no closing M for reading the result (T04 family convention below).",
+        "Kernel round trip R 70 ms is a server-side MEASURED p50 from another aspect; local view change R 100 ms is an assumption. Neither is a browser measurement.",
+        "Convention for the T04 family: no closing M for reading the result, so the totals are comparable with T04 in design/tasks/canvas-flows.json (drag path 3.04 s). For a keyboard or screen-reader user the result is the role=alert announcement, whose listening time is not modelled.",
+        "Start state S0: Studio open on case C1 in its default view, hands on the keyboard, sequential focus at the document start, viewport 1440x900. Current is the baseline keyboard path measured by tabbing through the real assets in Chrome 154 (method in docs/hci/design/accessibility.md section 1); proposed is a design, not built.",
+        "The baseline has no picture to drag; its state-view edit is a form on the Impact tab, so the current keyboard path is short. The proposed keyboard path is NOT predicted to be faster (see the totals in docs/hci/design/accessibility.md): its purpose is parity with the drag path and discoverability in the diagram, and the decision does not rest on speed.",
+        "Ranking in the palette (typed prefix selects the transition as one of two results) is assumed."
+      ]
+    },
+    {
+      "id": "T04-a11y-kbd-warm",
+      "name": "Reconnect the Reject source with the pick-up key path when focus is already on the Reject transition in the diagram",
+      "persona": "P2",
+      "frequency": "weekly",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "plan: change where Reject starts"
+          },
+          {
+            "op": "K",
+            "n": 6,
+            "note": "Tab x6 from document start: skip link, New case, case row, Check provider, tab 01, tab 02 (MEASURED order in the baseline, Chrome 154, 2026-09-29; method in docs/hci/design/accessibility.md section 1)"
+          },
+          {
+            "op": "K",
+            "keys": "enter",
+            "note": "activate tab 02 / Impact; focus stays on the tab button (MEASURED)"
+          },
+          {
+            "op": "R",
+            "ms": 100,
+            "why": "local view change (client render, assumed 100 ms, unmeasured)"
+          },
+          {
+            "op": "K",
+            "n": 3,
+            "note": "Tab x3: tab 03, tab 04, select#diagram-source (MEASURED order: the tab buttons still precede the panel content)"
+          },
+          {
+            "op": "K",
+            "keys": "down",
+            "note": "change the select value; native select, Chrome on Windows changes the value without opening (assumption for other browsers)"
+          },
+          {
+            "op": "K",
+            "keys": "tab",
+            "note": "to Apply state-view edit"
+          },
+          {
+            "op": "K",
+            "keys": "enter"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50 70 ms server side: POST 18-20 ms + GET case 24 ms + GET cases about 24 ms; from design/tasks/canvas-flows.json; browser render not included)"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "plan: change where Reject starts"
+          },
+          {
+            "op": "K",
+            "keys": "space",
+            "note": "pick up the source end of the focused transition; the status region announces the legal targets (kernel-checked or 'unchecked')"
+          },
+          {
+            "op": "K",
+            "keys": "down",
+            "note": "move to the next target in model order: Submitted"
+          },
+          {
+            "op": "K",
+            "keys": "enter",
+            "note": "drop: submit the typed request"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50 70 ms server side: POST 18-20 ms + GET case 24 ms + GET cases about 24 ms; from design/tasks/canvas-flows.json; browser render not included)"
+          }
+        ]
+      },
+      "assumptions": [
+        "KLM constants: K 0.20 s (a chord such as ctrl+k counts 2 K), M 1.35 s, B 0.10 s, H 0.40 s, P 1.10 s when no geometry is stated, T chars x 0.20 s; Card, Moran and Newell 1980 as tabulated at https://en.wikipedia.org/wiki/Keystroke-level_model (opened 2026-09-29). PREDICTION band plus or minus 21 percent (RMS error stated on the same page).",
+        "P ops that carry geometry in the note use Fitts (Shannon form) MT = 0.37 + 0.13 * log2(D/W + 1) s, the mouse menu-pointing profile of Cockburn et al. 2007 (eight participants, R2 = 0.93; https://grouplab.cpsc.ucalgary.ca/grouplab/uploads/Publications/Publications/2007-PredictiveModelMenus.CHI.pdf, opened 2026-09-29). Able-bodied mouse profile: not a prediction for users with tremor or limited dexterity, the population SC 2.5.8 protects. The constants were fitted to vertical menu-item selection (item positions 1 to 16, right-handed computer-science graduate students); 2-D canvas handle and node pointing lies outside that calibration task, so those P times are extrapolations.",
+        "KLM covers expert, error-free, routine use. It does not model listening to a screen reader, reading, learning or errors; the keyboard flows below are key counts for a user who knows the path. A screen-reader user's total time is NOT predicted by these numbers.",
+        "M placement: one M at the start of the unit in both flows (current 1 M, proposed 1 M); no closing M (T04 family convention).",
+        "Kernel round trip R 70 ms is a server-side MEASURED p50 from another aspect; local view change R 100 ms is an assumption. Neither is a browser measurement.",
+        "Convention for the T04 family: no closing M for reading the result (see T04-a11y-kbd-cold).",
+        "Start state: focus is already on the Reject transition item inside the diagram (roving tabindex remembers the last item). Getting there is the cold-start flow above or one Down/Up per item.",
+        "Current repeats the baseline keyboard path because the baseline has no warm state.",
+        "The pick-up key model (Space to pick up, Up/Down to choose a target, Enter to drop, Escape to cancel) is an authored proposal, not taken from a cited product. It must pass the pre-registered keyboard study in docs/hci/design/accessibility.md before it is fixed."
+      ]
+    },
+    {
+      "id": "T04-a11y-outline-cold",
+      "name": "Reconnect the Reject source through the native Outline (option F), keyboard only, from a cold start",
+      "persona": "P2",
+      "frequency": "weekly",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "plan: change where Reject starts"
+          },
+          {
+            "op": "K",
+            "n": 6,
+            "note": "Tab x6 from document start: skip link, New case, case row, Check provider, tab 01, tab 02 (MEASURED order in the baseline, Chrome 154, 2026-09-29; method in docs/hci/design/accessibility.md section 1)"
+          },
+          {
+            "op": "K",
+            "keys": "enter",
+            "note": "activate tab 02 / Impact; focus stays on the tab button (MEASURED)"
+          },
+          {
+            "op": "R",
+            "ms": 100,
+            "why": "local view change (client render, assumed 100 ms, unmeasured)"
+          },
+          {
+            "op": "K",
+            "n": 3,
+            "note": "Tab x3: tab 03, tab 04, select#diagram-source (MEASURED order: the tab buttons still precede the panel content)"
+          },
+          {
+            "op": "K",
+            "keys": "down",
+            "note": "change the select value; native select, Chrome on Windows changes the value without opening (assumption for other browsers)"
+          },
+          {
+            "op": "K",
+            "keys": "tab",
+            "note": "to Apply state-view edit"
+          },
+          {
+            "op": "K",
+            "keys": "enter"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50 70 ms server side: POST 18-20 ms + GET case 24 ms + GET cases about 24 ms; from design/tasks/canvas-flows.json; browser render not included)"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "plan: change where Reject starts"
+          },
+          {
+            "op": "K",
+            "keys": "ctrl+k",
+            "note": "open the palette"
+          },
+          {
+            "op": "T",
+            "chars": 6,
+            "note": "typed 'Reject'"
+          },
+          {
+            "op": "K",
+            "keys": "down",
+            "note": "assumed one key to prefer the transition over the state Rejected (same assumption as T04-a11y-kbd-cold)"
+          },
+          {
+            "op": "K",
+            "keys": "enter",
+            "note": "go to the transition: the States lens opens and focus lands on the Outline button 'Reject: Submitted to Rejected' (design rule to be verified)"
+          },
+          {
+            "op": "R",
+            "ms": 100,
+            "why": "local view change (client render, assumed 100 ms, unmeasured)"
+          },
+          {
+            "op": "K",
+            "keys": "enter",
+            "note": "native button with aria-haspopup=menu: Enter opens the menu with focus on its first item (APG menu button)"
+          },
+          {
+            "op": "K",
+            "keys": "enter",
+            "note": "first menu item: Reconnect source..."
+          },
+          {
+            "op": "R",
+            "ms": 100,
+            "why": "chooser lists the states with kernel-checked legality (client-side table, design budget)"
+          },
+          {
+            "op": "K",
+            "keys": "down",
+            "note": "choose the target state"
+          },
+          {
+            "op": "K",
+            "keys": "enter",
+            "note": "submit the typed request; the kernel accepts or refuses with a reason"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50 70 ms server side: POST 18-20 ms + GET case 24 ms + GET cases about 24 ms; from design/tasks/canvas-flows.json; browser render not included)"
+          }
+        ]
+      },
+      "assumptions": [
+        "KLM constants: K 0.20 s (a chord such as ctrl+k counts 2 K), M 1.35 s, B 0.10 s, H 0.40 s, P 1.10 s when no geometry is stated, T chars x 0.20 s; Card, Moran and Newell 1980 as tabulated at https://en.wikipedia.org/wiki/Keystroke-level_model (opened 2026-09-29). PREDICTION band plus or minus 21 percent (RMS error stated on the same page).",
+        "P ops that carry geometry in the note use Fitts (Shannon form) MT = 0.37 + 0.13 * log2(D/W + 1) s, the mouse menu-pointing profile of Cockburn et al. 2007 (eight participants, R2 = 0.93; https://grouplab.cpsc.ucalgary.ca/grouplab/uploads/Publications/Publications/2007-PredictiveModelMenus.CHI.pdf, opened 2026-09-29). Able-bodied mouse profile: not a prediction for users with tremor or limited dexterity, the population SC 2.5.8 protects. The constants were fitted to vertical menu-item selection (item positions 1 to 16, right-handed computer-science graduate students); 2-D canvas handle and node pointing lies outside that calibration task, so those P times are extrapolations.",
+        "KLM covers expert, error-free, routine use. It does not model listening to a screen reader, reading, learning or errors; the keyboard flows below are key counts for a user who knows the path. A screen-reader user's total time is NOT predicted by these numbers.",
+        "M placement: one M at the start of the unit in both flows (current 1 M, proposed 1 M); no closing M (T04 family convention, see T04-a11y-kbd-cold).",
+        "Kernel round trip R 70 ms is a server-side MEASURED p50 from another aspect; local view change R 100 ms is an assumption. Neither is a browser measurement.",
+        "Same start state S0 and palette-ranking assumption as T04-a11y-kbd-cold. The only difference from that flow is that the focused item is a native menu button (Enter opens its menu, 1 K) instead of a tree item that needs Shift+F10 (2 K).",
+        "Option F of docs/adr/0067-hci-accessibility.md: the Outline is the primary keyboard and screen-reader surface; the picture is pointer-operable and aria-hidden. Not built."
+      ]
+    },
+    {
+      "id": "T04-a11y-outline-warm",
+      "name": "Reconnect the Reject source through the native Outline (option F) when focus is already on the Reject button",
+      "persona": "P2",
+      "frequency": "weekly",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "plan: change where Reject starts"
+          },
+          {
+            "op": "K",
+            "n": 6,
+            "note": "Tab x6 from document start: skip link, New case, case row, Check provider, tab 01, tab 02 (MEASURED order in the baseline, Chrome 154, 2026-09-29; method in docs/hci/design/accessibility.md section 1)"
+          },
+          {
+            "op": "K",
+            "keys": "enter",
+            "note": "activate tab 02 / Impact; focus stays on the tab button (MEASURED)"
+          },
+          {
+            "op": "R",
+            "ms": 100,
+            "why": "local view change (client render, assumed 100 ms, unmeasured)"
+          },
+          {
+            "op": "K",
+            "n": 3,
+            "note": "Tab x3: tab 03, tab 04, select#diagram-source (MEASURED order: the tab buttons still precede the panel content)"
+          },
+          {
+            "op": "K",
+            "keys": "down",
+            "note": "change the select value; native select, Chrome on Windows changes the value without opening (assumption for other browsers)"
+          },
+          {
+            "op": "K",
+            "keys": "tab",
+            "note": "to Apply state-view edit"
+          },
+          {
+            "op": "K",
+            "keys": "enter"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50 70 ms server side: POST 18-20 ms + GET case 24 ms + GET cases about 24 ms; from design/tasks/canvas-flows.json; browser render not included)"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "plan: change where Reject starts"
+          },
+          {
+            "op": "K",
+            "keys": "enter",
+            "note": "open the menu of the focused Outline button"
+          },
+          {
+            "op": "K",
+            "keys": "enter",
+            "note": "Reconnect source..."
+          },
+          {
+            "op": "R",
+            "ms": 100,
+            "why": "chooser lists the states with kernel-checked legality (client-side table, design budget)"
+          },
+          {
+            "op": "K",
+            "keys": "down",
+            "note": "choose the target state"
+          },
+          {
+            "op": "K",
+            "keys": "enter",
+            "note": "submit the typed request"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50 70 ms server side: POST 18-20 ms + GET case 24 ms + GET cases about 24 ms; from design/tasks/canvas-flows.json; browser render not included)"
+          }
+        ]
+      },
+      "assumptions": [
+        "KLM constants: K 0.20 s (a chord such as ctrl+k counts 2 K), M 1.35 s, B 0.10 s, H 0.40 s, P 1.10 s when no geometry is stated, T chars x 0.20 s; Card, Moran and Newell 1980 as tabulated at https://en.wikipedia.org/wiki/Keystroke-level_model (opened 2026-09-29). PREDICTION band plus or minus 21 percent (RMS error stated on the same page).",
+        "P ops that carry geometry in the note use Fitts (Shannon form) MT = 0.37 + 0.13 * log2(D/W + 1) s, the mouse menu-pointing profile of Cockburn et al. 2007 (eight participants, R2 = 0.93; https://grouplab.cpsc.ucalgary.ca/grouplab/uploads/Publications/Publications/2007-PredictiveModelMenus.CHI.pdf, opened 2026-09-29). Able-bodied mouse profile: not a prediction for users with tremor or limited dexterity, the population SC 2.5.8 protects. The constants were fitted to vertical menu-item selection (item positions 1 to 16, right-handed computer-science graduate students); 2-D canvas handle and node pointing lies outside that calibration task, so those P times are extrapolations.",
+        "KLM covers expert, error-free, routine use. It does not model listening to a screen reader, reading, learning or errors; the keyboard flows below are key counts for a user who knows the path. A screen-reader user's total time is NOT predicted by these numbers.",
+        "M placement: one M at the start of the unit in both flows (current 1 M, proposed 1 M); no closing M (T04 family convention, see T04-a11y-kbd-cold).",
+        "Kernel round trip R 70 ms is a server-side MEASURED p50 from another aspect; local view change R 100 ms is an assumption. Neither is a browser measurement.",
+        "Start state: focus is already on the Outline button 'Reject: Submitted to Rejected'. Not like for like with the current flow, which starts at document start; compare it with T04-a11y-kbd-warm (option E pick-up keys, 2.02 s), which has the same start state.",
+        "No authored keys: Enter on a native button, the APG menu button pattern and a chooser dialog."
+      ]
+    },
+    {
+      "id": "T04-a11y-click-click",
+      "name": "Reconnect the Reject source by clicking the handle, then clicking the target (single-pointer alternative to dragging, WCAG 2.5.7)",
+      "persona": "P2",
+      "frequency": "weekly",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "locate the state-view edit control; it is below the fold at 1440x900 (MEASURED y=938 of 900 in canvas-flows.json)"
+          },
+          {
+            "op": "K",
+            "n": 1,
+            "note": "one wheel notch, assumed 100 px, treated as one K; charged in the headline geometry only (in the layout-file geometry the edit control straddles the fold, so no scroll is charged)"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "diagram-source",
+            "note": "headline geometry: D=425 px W=44 px ID=3.41 Fitts 0.814 s; layout-file geometry (current-impact.json): D=454 px W=44 px ID=3.50 Fitts 0.825 s",
+            "layout": "current-impact"
+          },
+          {
+            "op": "B",
+            "note": "press"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "M",
+            "note": "choose the value"
+          },
+          {
+            "op": "P",
+            "from": "diagram-source",
+            "to": "diagram-source-option-Submitted",
+            "note": "native popup row, not in any layout file (no layout key), 22 px rows assumed; D=44 px W=22 px ID=1.58 bits; Fitts 0.576 s (ESTIMATED geometry)"
+          },
+          {
+            "op": "B",
+            "note": "press"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "P",
+            "from": "diagram-source-option-Submitted",
+            "to": "edit-state",
+            "note": "the option id is not in a layout file (no layout key); edit-state is in current-impact.json; D=183 px W=49 px ID=2.24 bits; Fitts 0.662 s"
+          },
+          {
+            "op": "B",
+            "note": "press"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50 70 ms server side: POST 18-20 ms + GET case 24 ms + GET cases about 24 ms; from design/tasks/canvas-flows.json; browser render not included)"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "know where the Reject tail handle is"
+          },
+          {
+            "op": "P",
+            "from": "__pointer",
+            "to": "handle-reject-source",
+            "note": "hit area 24x24 (WCAG 2.5.8 floor); headline geometry: D=175 px W=24 px ID=3.05 Fitts 0.767 s; layout-file geometry (proposed-canvas.json): D=46 px W=24 px ID=1.54 Fitts 0.570 s",
+            "layout": "proposed-canvas"
+          },
+          {
+            "op": "B",
+            "note": "press"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "P",
+            "from": "handle-reject-source",
+            "to": "node-submitted",
+            "note": "legal targets show a glyph and the word 'legal' or 'refused: reason'; headline geometry: D=203 px W=56 px ID=2.21 Fitts 0.657 s; layout-file geometry: D=213 px W=48 px ID=2.44 Fitts 0.688 s",
+            "layout": "proposed-canvas"
+          },
+          {
+            "op": "B",
+            "note": "press"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50 70 ms server side: POST 18-20 ms + GET case 24 ms + GET cases about 24 ms; from design/tasks/canvas-flows.json; browser render not included)"
+          }
+        ]
+      },
+      "assumptions": [
+        "Geometry profiles, identical to design/tasks/canvas-flows.json: headline (D) = current MEASURED on the real Studio, proposed from the canvas design (current 5.62 s, proposed click 3.24 s, drag 3.04 s); layout-file cross-check (L) = design/layouts/current-impact.json and proposed-canvas.json (current 5.43 s, proposed click 3.08 s, drag 2.88 s, from canvas-uml-interaction.md section 11.2). Every P op that carries a layout key uses an id that exists in that layout file; a consumer that recomputes from the layout files gets the L totals. The P ops without a layout key (native select popup rows) are ESTIMATED. Every note gives both Fitts times.",
+        "KLM constants: K 0.20 s (a chord such as ctrl+k counts 2 K), M 1.35 s, B 0.10 s, H 0.40 s, P 1.10 s when no geometry is stated, T chars x 0.20 s; Card, Moran and Newell 1980 as tabulated at https://en.wikipedia.org/wiki/Keystroke-level_model (opened 2026-09-29). PREDICTION band plus or minus 21 percent (RMS error stated on the same page).",
+        "P ops that carry geometry in the note use Fitts (Shannon form) MT = 0.37 + 0.13 * log2(D/W + 1) s, the mouse menu-pointing profile of Cockburn et al. 2007 (eight participants, R2 = 0.93; https://grouplab.cpsc.ucalgary.ca/grouplab/uploads/Publications/Publications/2007-PredictiveModelMenus.CHI.pdf, opened 2026-09-29). Able-bodied mouse profile: not a prediction for users with tremor or limited dexterity, the population SC 2.5.8 protects. The constants were fitted to vertical menu-item selection (item positions 1 to 16, right-handed computer-science graduate students); 2-D canvas handle and node pointing lies outside that calibration task, so those P times are extrapolations.",
+        "KLM covers expert, error-free, routine use. It does not model listening to a screen reader, reading, learning or errors; the keyboard flows below are key counts for a user who knows the path. A screen-reader user's total time is NOT predicted by these numbers.",
+        "M placement: current 2 M (locate the below-the-fold control; choose the value; copied from canvas-flows.json), proposed 1 M (locate the handle); no closing M (T04 family convention). The extra current M is the one that canvas-flows.json section 11.2 removes in its robustness check (4.27 s against 3.24 s).",
+        "Kernel round trip R 70 ms is a server-side MEASURED p50 from another aspect; local view change R 100 ms is an assumption. Neither is a browser measurement.",
+        "Compare with T04 in design/tasks/canvas-flows.json, which models the drag path with the same geometry: the drag has one press and one release around the second P, the click path has two clicks. The difference is 2 B = 0.2 s.",
+        "Escape or a click outside a target aborts the pending reconnect (SC 2.5.2 abort or undo); this is not a KLM operator and adds no time on the success path.",
+        "Current is the baseline pointer path copied from canvas-flows.json (geometry MEASURED there); it uses native select popups."
+      ]
+    },
+    {
+      "id": "T05-a11y-move-kbd",
+      "name": "Move a term to another parent in the language tree using only the keyboard (WCAG 2.5.7 and 2.1.1)",
+      "persona": "P2",
+      "frequency": "weekly",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "decide to move"
+          },
+          {
+            "op": "K",
+            "n": 12,
+            "note": "ESTIMATED workaround in an editor: select the 6 lines of the glossary entry with 6 x shift+down (2 K each)"
+          },
+          {
+            "op": "K",
+            "keys": "ctrl+x"
+          },
+          {
+            "op": "K",
+            "n": 20,
+            "note": "ESTIMATED: Down x20 to the target position (line count assumed; the repository keeps its language as prose in docs)"
+          },
+          {
+            "op": "K",
+            "keys": "ctrl+v"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "decide to move"
+          },
+          {
+            "op": "T",
+            "chars": 4,
+            "note": "tree type-ahead to the source term 'appr' (APG tree: typed character moves focus to the next node whose name starts with it)"
+          },
+          {
+            "op": "K",
+            "keys": "shift+f10",
+            "note": "context menu on the focused tree item"
+          },
+          {
+            "op": "K",
+            "keys": "down",
+            "note": "second item: Move to... (first item assumed Rename...)"
+          },
+          {
+            "op": "K",
+            "keys": "enter"
+          },
+          {
+            "op": "R",
+            "ms": 100,
+            "why": "dialog opens; legal parents are a client-side table (design budget, not a measurement)"
+          },
+          {
+            "op": "M",
+            "note": "the dialog lists only legal parents; refused ones are listed with a reason"
+          },
+          {
+            "op": "T",
+            "chars": 5,
+            "note": "type-ahead to the target parent"
+          },
+          {
+            "op": "K",
+            "keys": "enter",
+            "note": "pick the target"
+          },
+          {
+            "op": "R",
+            "ms": 1000,
+            "why": "kernel dry run; design budget for the flow class (same value as language-flows.json T05-move-menu), not a measurement"
+          },
+          {
+            "op": "M",
+            "note": "read the accept or refusal text and the ripple"
+          },
+          {
+            "op": "K",
+            "keys": "enter",
+            "note": "confirm as a candidate edit"
+          }
+        ]
+      },
+      "assumptions": [
+        "KLM constants: K 0.20 s (a chord such as ctrl+k counts 2 K), M 1.35 s, B 0.10 s, H 0.40 s, P 1.10 s when no geometry is stated, T chars x 0.20 s; Card, Moran and Newell 1980 as tabulated at https://en.wikipedia.org/wiki/Keystroke-level_model (opened 2026-09-29). PREDICTION band plus or minus 21 percent (RMS error stated on the same page).",
+        "P ops that carry geometry in the note use Fitts (Shannon form) MT = 0.37 + 0.13 * log2(D/W + 1) s, the mouse menu-pointing profile of Cockburn et al. 2007 (eight participants, R2 = 0.93; https://grouplab.cpsc.ucalgary.ca/grouplab/uploads/Publications/Publications/2007-PredictiveModelMenus.CHI.pdf, opened 2026-09-29). Able-bodied mouse profile: not a prediction for users with tremor or limited dexterity, the population SC 2.5.8 protects. The constants were fitted to vertical menu-item selection (item positions 1 to 16, right-handed computer-science graduate students); 2-D canvas handle and node pointing lies outside that calibration task, so those P times are extrapolations.",
+        "KLM covers expert, error-free, routine use. It does not model listening to a screen reader, reading, learning or errors; the keyboard flows below are key counts for a user who knows the path. A screen-reader user's total time is NOT predicted by these numbers.",
+        "M placement is NOT the same in both flows: current 1 M (decide to move; the ESTIMATED editor workaround has no result to read), proposed 3 M (decide; scan the legal-parent dialog; read the accept or refusal and the ripple). The two extra M (2.70 s) are charged to the proposed flow only, so the comparison is conservative for the proposed design.",
+        "Kernel round trip R 70 ms is a server-side MEASURED p50 from another aspect; local view change R 100 ms is an assumption. Neither is a browser measurement.",
+        "Start state: focus is on the tree (roving tabindex remembers the last row), keyboard only. Compare with T05-move-drag and T05-move-menu in design/tasks/language-flows.json, which start from the mouse.",
+        "Current is ESTIMATED and low confidence: line counts are assumptions and the baseline Studio has no language surface (same caveat as language-flows.json).",
+        "R 1000 ms for the kernel dry run is copied from language-flows.json so the two files stay comparable; it dominates the proposed total and is a budget, not a measurement.",
+        "Shift convention: this flow charges shift+down as 2 K per press (6 presses = 12 K), unlike the T11 flows, which hold Shift once (n + 1 K). Under the held-Shift convention the current flow is 7 K instead of 12 K: 7.55 s instead of 8.55 s, ratio 8.15/7.55 = 1.08 instead of 0.95. Both ratios are inside the flip range 0.653 to 1.532, so the reading (no evidence of a difference) does not change."
+      ]
+    },
+    {
+      "id": "T08-a11y-decide-kbd",
+      "name": "Approve and then apply the exact revision with the keyboard (deliberately not shortened; acknowledgement per UNKNOWN)",
+      "persona": "P1",
+      "frequency": "daily",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "plan: approve the revision"
+          },
+          {
+            "op": "K",
+            "n": 8,
+            "note": "Tab x8 from document start to tab 04 / Evidence & Decision (MEASURED order)"
+          },
+          {
+            "op": "K",
+            "keys": "enter"
+          },
+          {
+            "op": "R",
+            "ms": 100,
+            "why": "local view change (client render, assumed 100 ms, unmeasured)"
+          },
+          {
+            "op": "K",
+            "n": 5,
+            "note": "Tab x5: Run bounded verification, 3 required text inputs (typing the answers is NOT modelled), acknowledge checkbox"
+          },
+          {
+            "op": "K",
+            "keys": "space",
+            "note": "tick 'I understand this is a local synthetic demo'"
+          },
+          {
+            "op": "K",
+            "keys": "tab",
+            "note": "to Approve exact local revision"
+          },
+          {
+            "op": "K",
+            "keys": "enter"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50 70 ms server side: POST 18-20 ms + GET case 24 ms + GET cases about 24 ms; from design/tasks/canvas-flows.json; browser render not included)"
+          },
+          {
+            "op": "M",
+            "note": "read the result"
+          },
+          {
+            "op": "K",
+            "keys": "tab",
+            "note": "to Apply to local baseline (enabled after approval)"
+          },
+          {
+            "op": "K",
+            "keys": "enter"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50 70 ms server side: POST 18-20 ms + GET case 24 ms + GET cases about 24 ms; from design/tasks/canvas-flows.json; browser render not included)"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "plan: approve the revision"
+          },
+          {
+            "op": "K",
+            "keys": "enter",
+            "note": "'Decide...' button on the card (focus assumed to be there, see assumptions)"
+          },
+          {
+            "op": "R",
+            "ms": 100,
+            "why": "local view change (client render, assumed 100 ms, unmeasured)"
+          },
+          {
+            "op": "M",
+            "note": "focus is on the dialog heading (static element, tabindex -1); read revision id, typed operations and the UNKNOWN list (kept deliberately)"
+          },
+          {
+            "op": "K",
+            "keys": "tab",
+            "note": "to the acknowledgement of the one UNKNOWN today (F7 in ai-interaction.md: human comprehension)"
+          },
+          {
+            "op": "K",
+            "keys": "space",
+            "note": "acknowledge"
+          },
+          {
+            "op": "K",
+            "keys": "tab",
+            "note": "to Approve exact revision"
+          },
+          {
+            "op": "K",
+            "keys": "enter"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50 70 ms server side: POST 18-20 ms + GET case 24 ms + GET cases about 24 ms; from design/tasks/canvas-flows.json; browser render not included)"
+          },
+          {
+            "op": "M",
+            "note": "read the result (role=status, kernel-generated string)"
+          },
+          {
+            "op": "K",
+            "keys": "tab",
+            "note": "to Apply, a separate control"
+          },
+          {
+            "op": "K",
+            "keys": "enter"
+          },
+          {
+            "op": "R",
+            "ms": 70,
+            "why": "kernel commit and reload (MEASURED p50 70 ms server side: POST 18-20 ms + GET case 24 ms + GET cases about 24 ms; from design/tasks/canvas-flows.json; browser render not included)"
+          }
+        ]
+      },
+      "assumptions": [
+        "KLM constants: K 0.20 s (a chord such as ctrl+k counts 2 K), M 1.35 s, B 0.10 s, H 0.40 s, P 1.10 s when no geometry is stated, T chars x 0.20 s; Card, Moran and Newell 1980 as tabulated at https://en.wikipedia.org/wiki/Keystroke-level_model (opened 2026-09-29). PREDICTION band plus or minus 21 percent (RMS error stated on the same page).",
+        "P ops that carry geometry in the note use Fitts (Shannon form) MT = 0.37 + 0.13 * log2(D/W + 1) s, the mouse menu-pointing profile of Cockburn et al. 2007 (eight participants, R2 = 0.93; https://grouplab.cpsc.ucalgary.ca/grouplab/uploads/Publications/Publications/2007-PredictiveModelMenus.CHI.pdf, opened 2026-09-29). Able-bodied mouse profile: not a prediction for users with tremor or limited dexterity, the population SC 2.5.8 protects. The constants were fitted to vertical menu-item selection (item positions 1 to 16, right-handed computer-science graduate students); 2-D canvas handle and node pointing lies outside that calibration task, so those P times are extrapolations.",
+        "KLM covers expert, error-free, routine use. It does not model listening to a screen reader, reading, learning or errors; the keyboard flows below are key counts for a user who knows the path. A screen-reader user's total time is NOT predicted by these numbers.",
+        "M placement is NOT the same in both flows: current 2 M (plan; read the approval result), proposed 3 M (plan; read the dialog heading, operations and UNKNOWN list, kept deliberately; read the approval result). The extra M (1.35 s) is the deliberate reading step (P2).",
+        "Kernel round trip R 70 ms is a server-side MEASURED p50 from another aspect; local view change R 100 ms is an assumption. Neither is a browser measurement.",
+        "Approve and Apply are deliberately not shortened (P2, ADR-0064 D5): this flow counts keys for accountability of the keyboard path, not for speed. Fitts and KLM are not applied to reduce the cost of the decision.",
+        "Start states differ: current starts at the document start; proposed starts with focus on the Decide button of a card (ai-interaction rule that Changes home focuses the first item that needs the owner, to be verified). The totals are therefore not a like-for-like speed comparison.",
+        "The meaning questions are excluded from both flows: the baseline has 3 required free-text inputs, the proposed control type belongs to the decision aspect (A7 in ai-interaction.md). Whether free text is needed at all is an open question raised in docs/hci/design/accessibility.md section 11.",
+        "Initial focus on the dialog heading (not the first control) follows the APG modal dialog guidance for long or consequential content (https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/, opened 2026-09-29)."
+      ]
+    },
+    {
+      "id": "T11-a11y-region-return-tab",
+      "name": "Return from the last content region to the case list or model tree by Shift+Tab only",
+      "persona": "P1",
+      "frequency": "daily",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "plan: go back to the case list"
+          },
+          {
+            "op": "K",
+            "n": 12,
+            "note": "Shift held, Tab x11: from Approve (14th stop, MEASURED, Evidence view) to the case row (3rd stop) = 12 K"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "plan: go back to the model tree"
+          },
+          {
+            "op": "K",
+            "n": 14,
+            "note": "Shift held, Tab x13: from stop 25 (inspector) to the tree (stop 12) = 14 K"
+          }
+        ]
+      },
+      "assumptions": [
+        "KLM constants as in the tasks above; M placement: one M at the start in both flows (current 1 M, proposed 1 M) (K 0.20 s, M 1.35 s, T 0.20 s per char). PREDICTION band plus or minus 21 percent. KLM does not model listening to a screen reader.",
+        "Shift convention: Shift+Tab repeated n times holds Shift once, so n + 1 K. T05-a11y-move-kbd uses the per-press convention (2 K per shift+key) and states its held-Shift alternative; under the per-press convention the T11 Shift+Tab flows give 5.75 s current and 6.55 s proposed (ratio 1.14).",
+        "Tab-stop positions of the proposed default review view are COUNT from docs/hci/design/accessibility.md section 11.3: skip links 1-3, top bar 4-10, sidebar 11-12 (filter, tree), main 13-23, inspector 24-27, status 28-29. The tree is stop 12; stop 25 (second inspector control) is used as the start. The baseline positions are MEASURED (B9: Approve is the 14th stop, the case row the 3rd).",
+        "Palette ranking is assumed: the typed prefix 'tree' puts the command 'Focus tree' first (same kind of assumption as ia-flows T09). The region-cycle chord is undecided (docs/hci/design/accessibility.md Q3), so no flow with a chord exists.",
+        "Purpose: the proposed default view has 29 tab stops against 16 in the baseline Evidence view. Skip links sit at the start of the tab order, so they shorten region reach only from document start. This flow prices the same return without them. Frequency is a hypothesis."
+      ]
+    },
+    {
+      "id": "T11-a11y-region-return-palette",
+      "name": "Return from the inspector to the model tree with the palette command 'Focus tree'",
+      "persona": "P1",
+      "frequency": "daily",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "plan: go back to the case list"
+          },
+          {
+            "op": "K",
+            "n": 12,
+            "note": "Shift held, Tab x11 (baseline has no palette): the same path as T11-a11y-region-return-tab"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "plan: go back to the model tree"
+          },
+          {
+            "op": "K",
+            "keys": "ctrl+k",
+            "note": "open the palette"
+          },
+          {
+            "op": "T",
+            "chars": 4,
+            "note": "typed 'tree'; 'Focus tree' assumed first"
+          },
+          {
+            "op": "K",
+            "keys": "enter",
+            "note": "focus moves to the tree; the last focused item is restored"
+          }
+        ]
+      },
+      "assumptions": [
+        "KLM constants as in the tasks above; M placement: one M at the start in both flows (current 1 M, proposed 1 M) (K 0.20 s, M 1.35 s, T 0.20 s per char). PREDICTION band plus or minus 21 percent. KLM does not model listening to a screen reader.",
+        "Shift convention: Shift+Tab repeated n times holds Shift once, so n + 1 K. T05-a11y-move-kbd uses the per-press convention (2 K per shift+key) and states its held-Shift alternative; under the per-press convention the T11 Shift+Tab flows give 5.75 s current and 6.55 s proposed (ratio 1.14).",
+        "Tab-stop positions of the proposed default review view are COUNT from docs/hci/design/accessibility.md section 11.3: skip links 1-3, top bar 4-10, sidebar 11-12 (filter, tree), main 13-23, inspector 24-27, status 28-29. The tree is stop 12; stop 25 (second inspector control) is used as the start. The baseline positions are MEASURED (B9: Approve is the 14th stop, the case row the 3rd).",
+        "Palette ranking is assumed: the typed prefix 'tree' puts the command 'Focus tree' first (same kind of assumption as ia-flows T09). The region-cycle chord is undecided (docs/hci/design/accessibility.md Q3), so no flow with a chord exists."
+      ]
+    },
+    {
+      "id": "T11-a11y-region-doc-start",
+      "name": "Reach the model tree from document start with a skip link",
+      "persona": "P1",
+      "frequency": "daily",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "plan: reach the case list"
+          },
+          {
+            "op": "K",
+            "n": 3,
+            "note": "Tab x3 from document start: skip link, New case, case row (MEASURED order)"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "plan: reach the model tree"
+          },
+          {
+            "op": "K",
+            "n": 2,
+            "note": "Tab x2: skip links are ordered main, tree, inspector, so the tree link is second (design order, not built)"
+          },
+          {
+            "op": "K",
+            "keys": "enter",
+            "note": "activate the skip link; focus moves to the tree"
+          }
+        ]
+      },
+      "assumptions": [
+        "KLM constants as in the tasks above; M placement: one M at the start in both flows (current 1 M, proposed 1 M) (K 0.20 s, M 1.35 s, T 0.20 s per char). PREDICTION band plus or minus 21 percent. KLM does not model listening to a screen reader.",
+        "Skip-link order main, tree, inspector is the order listed in docs/hci/design/accessibility.md section 4. From document start region reach is Tab x k plus Enter, k = 1, 2, 3 for main, tree, inspector (2, 3, 4 keys), not a fixed 2 keys."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1274 @@
+{
+  "schema": "eija.layout.v1",
+  "ui": "proposed",
+  "screen": "nav",
+  "viewport": {
+    "w": 1440,
+    "h": 900
+  },
+  "note": "Revision 2 (2026-09-29). One file, four views: every element carries \"view\" (changes, review, model, evidence; review-suspect is a state of review and is not counted). Filter by view before counting words or checking overlap. \"changes\" is the launch view (Changes inbox, scope Baseline). Model and Evidence lay out the shell and their tab strips only; their content regions belong to other aspects and are not laid out, so their counts are partial (\"complete\": false). \"words_by_view\" overrides \"words\" where a slot label differs by view. \"selected\" marks a selected fill, counted as a container. \"interactive\" marks a text-role element that is operable (bare button or link). Word convention: every visible token counts, including a count placeholder n, which renders as one number. Values are a design, not a build: PREDICTION for a built page. The extra fields are additive to eija.layout.v1.",
+  "views": {
+    "changes": {
+      "words": 90,
+      "n_placeholders_in_words": 16,
+      "containers": 9,
+      "min_interactive_side_px": 28,
+      "complete": true
+    },
+    "review": {
+      "words": 133,
+      "n_placeholders_in_words": 32,
+      "containers": 11,
+      "min_interactive_side_px": 24,
+      "complete": true
+    },
+    "model": {
+      "words": 91,
+      "n_placeholders_in_words": 16,
+      "containers": 10,
+      "min_interactive_side_px": 24,
+      "complete": false
+    },
+    "evidence": {
+      "words": 58,
+      "n_placeholders_in_words": 8,
+      "containers": 9,
+      "min_interactive_side_px": 24,
+      "complete": false
+    }
+  },
+  "elements": [
+    {
+      "id": "topbar",
+      "role": "panel",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 40,
+      "label": "Top bar",
+      "importance": 0.5,
+      "words": 0,
+      "view": [
+        "changes",
+        "review",
+        "model",
+        "evidence"
+      ]
+    },
+    {
+      "id": "tb-mark",
+      "role": "text",
+      "x": 16,
+      "y": 8,
+      "w": 96,
+      "h": 24,
+      "label": "EIJA Studio",
+      "importance": 0.2,
+      "words": 2,
+      "view": [
+        "changes",
+        "review",
+        "model",
+        "evidence"
+      ]
+    },
+    {
+      "id": "tb-dest-changes",
+      "role": "tab",
+      "x": 128,
+      "y": 0,
+      "w": 88,
+      "h": 40,
+      "label": "Changes",
+      "importance": 0.9,
+      "words": 1,
+      "view": [
+        "changes",
+        "review",
+        "model",
+        "evidence"
+      ]
+    },
+    {
+      "id": "tb-dest-model",
+      "role": "tab",
+      "x": 216,
+      "y": 0,
+      "w": 72,
+      "h": 40,
+      "label": "Model",
+      "importance": 0.9,
+      "words": 1,
+      "view": [
+        "changes",
+        "review",
+        "model",
+        "evidence"
+      ]
+    },
+    {
+      "id": "tb-dest-evidence",
+      "role": "tab",
+      "x": 288,
+      "y": 0,
+      "w": 96,
+      "h": 40,
+      "label": "Evidence",
+      "importance": 0.9,
+      "words": 1,
+      "view": [
+        "changes",
+        "review",
+        "model",
+        "evidence"
+      ]
+    },
+    {
+      "id": "tb-scope",
+      "role": "text",
+      "x": 400,
+      "y": 6,
+      "w": 320,
+      "h": 28,
+      "label": "[bare button] case {id} r{n} (scope, breadcrumb root; menu of Baseline and open cases; Changes view: Baseline v{n})",
+      "importance": 0.7,
+      "words": 3,
+      "view": [
+        "changes",
+        "review",
+        "model",
+        "evidence"
+      ],
+      "words_by_view": {
+        "changes": 2
+      },
+      "interactive": true
+    },
+    {
+      "id": "tb-palette",
+      "role": "input",
+      "x": 736,
+      "y": 6,
+      "w": 400,
+      "h": 28,
+      "label": "Search or run... Ctrl K (palette trigger)",
+      "importance": 0.8,
+      "words": 5,
+      "view": [
+        "changes",
+        "review",
+        "model",
+        "evidence"
+      ]
+    },
+    {
+      "id": "tb-provider",
+      "role": "chip",
+      "x": 1304,
+      "y": 6,
+      "w": 120,
+      "h": 28,
+      "label": "offline (provider and egress state)",
+      "importance": 0.5,
+      "words": 1,
+      "view": [
+        "changes",
+        "review",
+        "model",
+        "evidence"
+      ]
+    },
+    {
+      "id": "sidebar",
+      "role": "panel",
+      "x": 0,
+      "y": 40,
+      "w": 272,
+      "h": 832,
+      "label": "Sidebar: model tree (spine)",
+      "importance": 0.6,
+      "words": 0,
+      "view": [
+        "changes",
+        "review",
+        "model",
+        "evidence"
+      ]
+    },
+    {
+      "id": "sb-filter",
+      "role": "input",
+      "x": 12,
+      "y": 48,
+      "w": 248,
+      "h": 28,
+      "label": "Filter model (three modes)",
+      "importance": 0.6,
+      "words": 2,
+      "view": [
+        "changes",
+        "review",
+        "model",
+        "evidence"
+      ]
+    },
+    {
+      "id": "sb-row-1",
+      "role": "tree-item",
+      "x": 8,
+      "y": 84,
+      "w": 256,
+      "h": 28,
+      "label": "Excursion (context, level 0)",
+      "importance": 0.6,
+      "words": 1,
+      "view": [
+        "review",
+        "model",
+        "evidence"
+      ]
+    },
+    {
+      "id": "sb-row-2",
+      "role": "tree-item",
+      "x": 24,
+      "y": 112,
+      "w": 240,
+      "h": 28,
+      "label": "Draft",
+      "importance": 0.5,
+      "words": 1,
+      "view": [
+        "review",
+        "model",
+        "evidence"
+      ]
+    },
+    {
+      "id": "sb-row-3",
+      "role": "tree-item",
+      "x": 24,
+      "y": 140,
+      "w": 240,
+      "h": 28,
+      "label": "Submitted",
+      "importance": 0.5,
+      "words": 1,
+      "view": [
+        "review",
+        "model",
+        "evidence"
+      ]
+    },
+    {
+      "id": "sb-row-4",
+      "role": "tree-item",
+      "x": 24,
+      "y": 168,
+      "w": 240,
+      "h": 28,
+      "label": "Recommended ADDED (selected row)",
+      "importance": 0.9,
+      "words": 2,
+      "view": [
+        "review",
+        "model",
+        "evidence"
+      ],
+      "selected": true
+    },
+    {
+      "id": "sb-row-5",
+      "role": "tree-item",
+      "x": 24,
+      "y": 196,
+      "w": 240,
+      "h": 28,
+      "label": "Approved",
+      "importance": 0.5,
+      "words": 1,
+      "view": [
+        "review",
+        "model",
+        "evidence"
+      ]
+    },
+    {
+      "id": "sb-row-6",
+      "role": "tree-item",
+      "x": 24,
+      "y": 224,
+      "w": 240,
+      "h": 28,
+      "label": "Rejected",
+      "importance": 0.5,
+      "words": 1,
+      "view": [
+        "review",
+        "model",
+        "evidence"
+      ]
+    },
+    {
+      "id": "sb-row-7",
+      "role": "tree-item",
+      "x": 24,
+      "y": 252,
+      "w": 240,
+      "h": 28,
+      "label": "Teacher",
+      "importance": 0.5,
+      "words": 1,
+      "view": [
+        "review",
+        "model",
+        "evidence"
+      ]
+    },
+    {
+      "id": "sb-row-8",
+      "role": "tree-item",
+      "x": 24,
+      "y": 280,
+      "w": 240,
+      "h": 28,
+      "label": "Registrar",
+      "importance": 0.5,
+      "words": 1,
+      "view": [
+        "review",
+        "model",
+        "evidence"
+      ]
+    },
+    {
+      "id": "sb-row-9",
+      "role": "tree-item",
+      "x": 24,
+      "y": 308,
+      "w": 240,
+      "h": 28,
+      "label": "Audit effects",
+      "importance": 0.5,
+      "words": 2,
+      "view": [
+        "review",
+        "model",
+        "evidence"
+      ]
+    },
+    {
+      "id": "inspector",
+      "role": "panel",
+      "x": 1080,
+      "y": 40,
+      "w": 360,
+      "h": 832,
+      "label": "Inspector: facet lane for the selection",
+      "importance": 0.6,
+      "words": 0,
+      "view": [
+        "changes",
+        "review",
+        "model",
+        "evidence"
+      ]
+    },
+    {
+      "id": "insp-head",
+      "role": "text",
+      "x": 1096,
+      "y": 52,
+      "w": 328,
+      "h": 24,
+      "label": "Recommended state ADDED",
+      "importance": 0.7,
+      "words": 3,
+      "view": [
+        "review",
+        "model"
+      ]
+    },
+    {
+      "id": "insp-lane-persona",
+      "role": "tree-item",
+      "x": 1088,
+      "y": 88,
+      "w": 344,
+      "h": 32,
+      "label": "Persona n",
+      "importance": 0.6,
+      "words": 2,
+      "view": [
+        "review",
+        "model"
+      ]
+    },
+    {
+      "id": "insp-lane-req",
+      "role": "tree-item",
+      "x": 1088,
+      "y": 120,
+      "w": 344,
+      "h": 32,
+      "label": "Requirement n",
+      "importance": 0.6,
+      "words": 2,
+      "view": [
+        "review",
+        "model"
+      ]
+    },
+    {
+      "id": "insp-lane-state",
+      "role": "tree-item",
+      "x": 1088,
+      "y": 152,
+      "w": 344,
+      "h": 32,
+      "label": "State n",
+      "importance": 0.6,
+      "words": 2,
+      "view": [
+        "review",
+        "model"
+      ]
+    },
+    {
+      "id": "insp-lane-journey",
+      "role": "tree-item",
+      "x": 1088,
+      "y": 184,
+      "w": 344,
+      "h": 32,
+      "label": "Journey n",
+      "importance": 0.6,
+      "words": 2,
+      "view": [
+        "review",
+        "model"
+      ]
+    },
+    {
+      "id": "insp-lane-test",
+      "role": "tree-item",
+      "x": 1088,
+      "y": 216,
+      "w": 344,
+      "h": 32,
+      "label": "Test n",
+      "importance": 0.6,
+      "words": 2,
+      "view": [
+        "review",
+        "model"
+      ]
+    },
+    {
+      "id": "insp-lane-code",
+      "role": "tree-item",
+      "x": 1088,
+      "y": 248,
+      "w": 344,
+      "h": 32,
+      "label": "Code n",
+      "importance": 0.6,
+      "words": 2,
+      "view": [
+        "review",
+        "model"
+      ]
+    },
+    {
+      "id": "insp-lane-evidence",
+      "role": "tree-item",
+      "x": 1088,
+      "y": 280,
+      "w": 344,
+      "h": 32,
+      "label": "Evidence n",
+      "importance": 0.6,
+      "words": 2,
+      "view": [
+        "review",
+        "model"
+      ]
+    },
+    {
+      "id": "insp-unknown",
+      "role": "text",
+      "x": 1096,
+      "y": 328,
+      "w": 328,
+      "h": 44,
+      "label": "Not analysed: n items (listed apart from unaffected)",
+      "importance": 0.9,
+      "words": 4,
+      "view": [
+        "review",
+        "model"
+      ]
+    },
+    {
+      "id": "insp-ask",
+      "role": "button",
+      "x": 1096,
+      "y": 388,
+      "w": 328,
+      "h": 32,
+      "label": "Ask AI to propose... provider call",
+      "importance": 0.6,
+      "words": 6,
+      "view": [
+        "review",
+        "model"
+      ]
+    },
+    {
+      "id": "insp-source",
+      "role": "text",
+      "x": 1096,
+      "y": 428,
+      "w": 328,
+      "h": 28,
+      "label": "[bare button] Source view (disclosure level 2)",
+      "importance": 0.3,
+      "words": 2,
+      "view": [
+        "review",
+        "model"
+      ],
+      "interactive": true
+    },
+    {
+      "id": "insp-decide",
+      "role": "button",
+      "x": 1096,
+      "y": 472,
+      "w": 328,
+      "h": 32,
+      "label": "Clear by decision...",
+      "importance": 0.7,
+      "words": 3,
+      "view": [
+        "review-suspect"
+      ]
+    },
+    {
+      "id": "main-title",
+      "role": "text",
+      "x": 288,
+      "y": 48,
+      "w": 608,
+      "h": 32,
+      "label": "Let teachers sign off excursions (Review: case title; Model and Evidence: name of the selected element)",
+      "importance": 0.8,
+      "words": 5,
+      "view": [
+        "review",
+        "model",
+        "evidence"
+      ]
+    },
+    {
+      "id": "main-action",
+      "role": "button",
+      "x": 912,
+      "y": 48,
+      "w": 152,
+      "h": 32,
+      "label": "Decide... (primary action slot: Changes New change..., Review Decide..., Model States Run preview, Evidence Run verification)",
+      "importance": 1.0,
+      "words": 1,
+      "view": [
+        "changes",
+        "review",
+        "model",
+        "evidence"
+      ],
+      "words_by_view": {
+        "changes": 2,
+        "model": 2,
+        "evidence": 2
+      }
+    },
+    {
+      "id": "main-crumb",
+      "role": "text",
+      "x": 288,
+      "y": 88,
+      "w": 264,
+      "h": 24,
+      "label": "Excursion > Recommended (location path of the selection; the ancestor items are links, 24 px tall)",
+      "importance": 0.6,
+      "words": 2,
+      "view": [
+        "review",
+        "model",
+        "evidence"
+      ],
+      "interactive": true
+    },
+    {
+      "id": "main-lens-lang",
+      "role": "tab",
+      "x": 562,
+      "y": 84,
+      "w": 85,
+      "h": 32,
+      "label": "Language",
+      "importance": 0.7,
+      "words": 1,
+      "view": [
+        "model"
+      ]
+    },
+    {
+      "id": "main-lens-states",
+      "role": "tab",
+      "x": 647,
+      "y": 84,
+      "w": 70,
+      "h": 32,
+      "label": "States",
+      "importance": 0.7,
+      "words": 1,
+      "view": [
+        "model"
+      ]
+    },
+    {
+      "id": "main-lens-journeys",
+      "role": "tab",
+      "x": 717,
+      "y": 84,
+      "w": 85,
+      "h": 32,
+      "label": "Journeys",
+      "importance": 0.7,
+      "words": 1,
+      "view": [
+        "model"
+      ]
+    },
+    {
+      "id": "main-lens-req",
+      "role": "tab",
+      "x": 802,
+      "y": 84,
+      "w": 115,
+      "h": 32,
+      "label": "Requirements",
+      "importance": 0.7,
+      "words": 1,
+      "view": [
+        "model"
+      ]
+    },
+    {
+      "id": "main-lens-tests",
+      "role": "tab",
+      "x": 917,
+      "y": 84,
+      "w": 62,
+      "h": 32,
+      "label": "Tests",
+      "importance": 0.7,
+      "words": 1,
+      "view": [
+        "model"
+      ]
+    },
+    {
+      "id": "main-lens-personas",
+      "role": "tab",
+      "x": 979,
+      "y": 84,
+      "w": 85,
+      "h": 32,
+      "label": "Personas",
+      "importance": 0.7,
+      "words": 1,
+      "view": [
+        "model"
+      ]
+    },
+    {
+      "id": "main-seg-claims",
+      "role": "tab",
+      "x": 872,
+      "y": 84,
+      "w": 90,
+      "h": 32,
+      "label": "Claims",
+      "importance": 0.7,
+      "words": 1,
+      "view": [
+        "evidence"
+      ]
+    },
+    {
+      "id": "main-seg-mapping",
+      "role": "tab",
+      "x": 962,
+      "y": 84,
+      "w": 102,
+      "h": 32,
+      "label": "Mapping",
+      "importance": 0.7,
+      "words": 1,
+      "view": [
+        "evidence"
+      ]
+    },
+    {
+      "id": "main-group-1",
+      "role": "text",
+      "x": 288,
+      "y": 128,
+      "w": 776,
+      "h": 24,
+      "label": "Core n (chapter heading)",
+      "importance": 0.7,
+      "words": 2,
+      "view": [
+        "review"
+      ]
+    },
+    {
+      "id": "main-row-1",
+      "role": "tree-item",
+      "x": 280,
+      "y": 156,
+      "w": 792,
+      "h": 40,
+      "label": "ADDED state Recommended, n states, n journeys, n UNKNOWN (selected operation row)",
+      "importance": 0.9,
+      "words": 9,
+      "view": [
+        "review"
+      ],
+      "selected": true
+    },
+    {
+      "id": "main-row-2",
+      "role": "tree-item",
+      "x": 280,
+      "y": 200,
+      "w": 792,
+      "h": 40,
+      "label": "ADDED action Recommend Submitted to Recommended, n states, n journeys, n UNKNOWN",
+      "importance": 0.9,
+      "words": 9,
+      "view": [
+        "review"
+      ]
+    },
+    {
+      "id": "main-group-2",
+      "role": "text",
+      "x": 288,
+      "y": 256,
+      "w": 776,
+      "h": 24,
+      "label": "Follows from core n",
+      "importance": 0.7,
+      "words": 4,
+      "view": [
+        "review"
+      ]
+    },
+    {
+      "id": "main-row-3",
+      "role": "tree-item",
+      "x": 280,
+      "y": 284,
+      "w": 792,
+      "h": 40,
+      "label": "MODIFIED action Approve source Submitted to Recommended, n states, n journeys, n UNKNOWN",
+      "importance": 0.9,
+      "words": 9,
+      "view": [
+        "review"
+      ]
+    },
+    {
+      "id": "main-row-4",
+      "role": "tree-item",
+      "x": 280,
+      "y": 328,
+      "w": 792,
+      "h": 40,
+      "label": "MODIFIED action Reject source Submitted to Recommended, n states, n journeys, n UNKNOWN",
+      "importance": 0.9,
+      "words": 9,
+      "view": [
+        "review"
+      ]
+    },
+    {
+      "id": "main-group-3",
+      "role": "text",
+      "x": 288,
+      "y": 384,
+      "w": 776,
+      "h": 24,
+      "label": "Other n",
+      "importance": 0.4,
+      "words": 2,
+      "view": [
+        "review"
+      ]
+    },
+    {
+      "id": "main-hidden",
+      "role": "text",
+      "x": 288,
+      "y": 412,
+      "w": 776,
+      "h": 24,
+      "label": "n formatting-only edits hidden, show (the word show is a link, 24 px tall)",
+      "importance": 0.6,
+      "words": 5,
+      "view": [
+        "review"
+      ],
+      "interactive": true
+    },
+    {
+      "id": "statusbar",
+      "role": "panel",
+      "x": 0,
+      "y": 872,
+      "w": 1440,
+      "h": 28,
+      "label": "Status bar: evidence roll-up, job, revision",
+      "importance": 0.7,
+      "words": 0,
+      "view": [
+        "changes",
+        "review",
+        "model",
+        "evidence"
+      ]
+    },
+    {
+      "id": "st-unknown",
+      "role": "text",
+      "x": 12,
+      "y": 872,
+      "w": 104,
+      "h": 28,
+      "label": "[bare button] n UNKNOWN (click filters the tree)",
+      "importance": 1.0,
+      "words": 2,
+      "view": [
+        "changes",
+        "review",
+        "model",
+        "evidence"
+      ],
+      "interactive": true
+    },
+    {
+      "id": "st-fail",
+      "role": "text",
+      "x": 116,
+      "y": 872,
+      "w": 72,
+      "h": 28,
+      "label": "[bare button] n FAIL",
+      "importance": 0.9,
+      "words": 2,
+      "view": [
+        "changes",
+        "review",
+        "model",
+        "evidence"
+      ],
+      "interactive": true
+    },
+    {
+      "id": "st-conflict",
+      "role": "text",
+      "x": 188,
+      "y": 872,
+      "w": 104,
+      "h": 28,
+      "label": "[bare button] n CONFLICT",
+      "importance": 0.9,
+      "words": 2,
+      "view": [
+        "changes",
+        "review",
+        "model",
+        "evidence"
+      ],
+      "interactive": true
+    },
+    {
+      "id": "st-stale",
+      "role": "text",
+      "x": 292,
+      "y": 872,
+      "w": 80,
+      "h": 28,
+      "label": "[bare button] n STALE",
+      "importance": 0.9,
+      "words": 2,
+      "view": [
+        "changes",
+        "review",
+        "model",
+        "evidence"
+      ],
+      "interactive": true
+    },
+    {
+      "id": "st-notrun",
+      "role": "text",
+      "x": 372,
+      "y": 872,
+      "w": 96,
+      "h": 28,
+      "label": "[bare button] n NOT_RUN",
+      "importance": 0.8,
+      "words": 2,
+      "view": [
+        "changes",
+        "review",
+        "model",
+        "evidence"
+      ],
+      "interactive": true
+    },
+    {
+      "id": "st-pass",
+      "role": "text",
+      "x": 468,
+      "y": 872,
+      "w": 72,
+      "h": 28,
+      "label": "[bare button] n PASS (least conspicuous)",
+      "importance": 0.5,
+      "words": 2,
+      "view": [
+        "changes",
+        "review",
+        "model",
+        "evidence"
+      ],
+      "interactive": true
+    },
+    {
+      "id": "st-attn",
+      "role": "text",
+      "x": 660,
+      "y": 872,
+      "w": 300,
+      "h": 28,
+      "label": "[bare button] n need you, n running (attention set; opens Changes at the first Needs you row)",
+      "importance": 0.8,
+      "words": 5,
+      "view": [
+        "changes",
+        "review",
+        "model",
+        "evidence"
+      ],
+      "interactive": true
+    },
+    {
+      "id": "st-job",
+      "role": "text",
+      "x": 984,
+      "y": 872,
+      "w": 240,
+      "h": 28,
+      "label": "[bare button] Run verification (RUNNING n of n, Cancel while a job runs)",
+      "importance": 0.7,
+      "words": 2,
+      "view": [
+        "changes",
+        "review",
+        "model",
+        "evidence"
+      ],
+      "interactive": true
+    },
+    {
+      "id": "st-rev",
+      "role": "text",
+      "x": 1240,
+      "y": 872,
+      "w": 188,
+      "h": 28,
+      "label": "VERIFIED (case stage; in Baseline scope: Baseline)",
+      "importance": 0.5,
+      "words": 1,
+      "view": [
+        "changes",
+        "review",
+        "model",
+        "evidence"
+      ]
+    },
+    {
+      "id": "sbb-row-1",
+      "role": "tree-item",
+      "x": 8,
+      "y": 84,
+      "w": 256,
+      "h": 28,
+      "label": "Excursion (context, level 0; baseline tree, no row selected; selecting a row filters the inbox to cases whose diff touches it)",
+      "importance": 0.5,
+      "words": 1,
+      "view": [
+        "changes"
+      ]
+    },
+    {
+      "id": "sbb-row-2",
+      "role": "tree-item",
+      "x": 24,
+      "y": 112,
+      "w": 240,
+      "h": 28,
+      "label": "Draft",
+      "importance": 0.5,
+      "words": 1,
+      "view": [
+        "changes"
+      ]
+    },
+    {
+      "id": "sbb-row-3",
+      "role": "tree-item",
+      "x": 24,
+      "y": 140,
+      "w": 240,
+      "h": 28,
+      "label": "Submitted",
+      "importance": 0.5,
+      "words": 1,
+      "view": [
+        "changes"
+      ]
+    },
+    {
+      "id": "sbb-row-4",
+      "role": "tree-item",
+      "x": 24,
+      "y": 168,
+      "w": 240,
+      "h": 28,
+      "label": "Approved",
+      "importance": 0.5,
+      "words": 1,
+      "view": [
+        "changes"
+      ]
+    },
+    {
+      "id": "sbb-row-5",
+      "role": "tree-item",
+      "x": 24,
+      "y": 196,
+      "w": 240,
+      "h": 28,
+      "label": "Rejected",
+      "importance": 0.5,
+      "words": 1,
+      "view": [
+        "changes"
+      ]
+    },
+    {
+      "id": "sbb-row-6",
+      "role": "tree-item",
+      "x": 24,
+      "y": 224,
+      "w": 240,
+      "h": 28,
+      "label": "Teacher",
+      "importance": 0.5,
+      "words": 1,
+      "view": [
+        "changes"
+      ]
+    },
+    {
+      "id": "sbb-row-7",
+      "role": "tree-item",
+      "x": 24,
+      "y": 252,
+      "w": 240,
+      "h": 28,
+      "label": "Registrar",
+      "importance": 0.5,
+      "words": 1,
+      "view": [
+        "changes"
+      ]
+    },
+    {
+      "id": "sbb-row-8",
+      "role": "tree-item",
+      "x": 24,
+      "y": 280,
+      "w": 240,
+      "h": 28,
+      "label": "Audit effects",
+      "importance": 0.5,
+      "words": 2,
+      "view": [
+        "changes"
+      ]
+    },
+    {
+      "id": "chg-title",
+      "role": "text",
+      "x": 288,
+      "y": 48,
+      "w": 608,
+      "h": 32,
+      "label": "Change cases",
+      "importance": 0.6,
+      "words": 2,
+      "view": [
+        "changes"
+      ]
+    },
+    {
+      "id": "chg-group-1",
+      "role": "text",
+      "x": 288,
+      "y": 96,
+      "w": 776,
+      "h": 24,
+      "label": "Needs you n (attention group)",
+      "importance": 0.7,
+      "words": 3,
+      "view": [
+        "changes"
+      ]
+    },
+    {
+      "id": "chg-row-1",
+      "role": "tree-item",
+      "x": 280,
+      "y": 124,
+      "w": 792,
+      "h": 40,
+      "label": "READY Let teachers sign off excursions fixture base r{n} 4 operations ripple n n UNKNOWN n PASS refused n (row anatomy of HCI-ADR-0064 D2; focused and selected at launch; only non-zero check counts appear, two shown)",
+      "importance": 1.0,
+      "words": 19,
+      "view": [
+        "changes"
+      ],
+      "selected": true
+    },
+    {
+      "id": "chg-group-2",
+      "role": "text",
+      "x": 288,
+      "y": 180,
+      "w": 776,
+      "h": 24,
+      "label": "Working n (attention group; no invented rows)",
+      "importance": 0.5,
+      "words": 2,
+      "view": [
+        "changes"
+      ]
+    },
+    {
+      "id": "chg-group-3",
+      "role": "text",
+      "x": 288,
+      "y": 212,
+      "w": 776,
+      "h": 24,
+      "label": "Ended n (attention group; no invented rows)",
+      "importance": 0.4,
+      "words": 2,
+      "view": [
+        "changes"
+      ]
+    },
+    {
+      "id": "chg-insp-head",
+      "role": "text",
+      "x": 1096,
+      "y": 52,
+      "w": 328,
+      "h": 24,
+      "label": "Let teachers sign off excursions (summary of the focused row)",
+      "importance": 0.6,
+      "words": 5,
+      "view": [
+        "changes"
+      ]
+    },
+    {
+      "id": "chg-insp-ops",
+      "role": "text",
+      "x": 1096,
+      "y": 88,
+      "w": 328,
+      "h": 24,
+      "label": "2 ADDED, 2 MODIFIED operations (COUNT of the fixture diff)",
+      "importance": 0.6,
+      "words": 5,
+      "view": [
+        "changes"
+      ]
+    },
+    {
+      "id": "chg-insp-unknown",
+      "role": "text",
+      "x": 1096,
+      "y": 120,
+      "w": 328,
+      "h": 24,
+      "label": "Not analysed: n items",
+      "importance": 0.8,
+      "words": 4,
+      "view": [
+        "changes"
+      ]
+    },
+    {
+      "id": "chg-insp-open",
+      "role": "text",
+      "x": 1096,
+      "y": 156,
+      "w": 328,
+      "h": 28,
+      "label": "[bare button] Open review",
+      "importance": 0.6,
+      "words": 2,
+      "view": [
+        "changes"
+      ],
+      "interactive": true
+    },
+    {
+      "id": "__pointer",
+      "role": "text",
+      "x": 720,
+      "y": 450,
+      "w": 1,
+      "h": 1,
+      "label": "pointer rest position (virtual, not a UI element)",
+      "importance": 0.0,
+      "words": 0,
+      "view": [
+        "changes",
+        "review",
+        "model",
+        "evidence"
+      ]
+    }
+  ]
+}

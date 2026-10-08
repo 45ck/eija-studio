@@ -28,7 +28,8 @@ def test_journey_is_the_brief_journey_in_order():
     ids = [s.id for s in journey.journey()]
     assert len(ids) == len(set(ids))
     order = ["create-case", "ask-interpretations", "select-meaning", "reset-preview", "submit-teacher", "recommend-teacher",
-             "approve-registrar", "denied-recommend", "run-verification", "acknowledge", "approve-exact", "apply-baseline"]
+             "approve-registrar", "denied-recommend", "run-verification", "open-review-subject",
+             "acknowledge", "approve-exact", "apply-baseline"]
     assert [i for i in ids if i in order] == order
     assert ids.index("actor-unassigned") < ids.index("denied-recommend")
 
@@ -177,3 +178,29 @@ def test_documented_constants_are_the_constants_in_the_code():
         assert re.search(pattern, readme), pattern
     for source in ("MacKenzie", "Card, Moran", "Miller", "Cowan", "Doherty"):
         assert source in readme, source
+
+
+def test_verification_and_deliberate_review_are_distinct_native_journey_actions(monkeypatch):
+    steps = journey.journey()
+    verify_index = next(index for index, step in enumerate(steps) if step.id == "run-verification")
+    verify, review, answer = steps[verify_index:verify_index + 3]
+    assert (verify.kind, verify.ref.css, verify.expect.kind, verify.view) == (
+        "click", "#verify", "verification_ready", "evidence-verified",
+    )
+    assert (review.kind, review.ref.css, review.expect.kind, review.view) == (
+        "click", "#review-subject", "review_ready", "evidence-review-open",
+    )
+    assert answer.id == "answer-authority"
+    assert review.think is None  # A disclosure operation, not an invented additional mental decision.
+
+    page = types.SimpleNamespace(on=lambda *_: None, locator=lambda _: types.SimpleNamespace(count=lambda: 1))
+    runner = journey.Runner(page, "pointer", True)
+    actions, checkpoints = [], []
+    monkeypatch.setattr(runner, "_do_click", lambda step, *_: actions.append(step.id))
+    monkeypatch.setattr(runner, "check", lambda _: None)
+    monkeypatch.setattr(runner, "checkpoint", checkpoints.append)
+    runner._run_step(verify)
+    assert checkpoints == ["evidence-verified"]
+    runner._run_step(review)
+    assert actions == ["run-verification", "open-review-subject"]
+    assert checkpoints == ["evidence-verified", "evidence-review-open"]

@@ -1,0 +1,419 @@
+{
+  "schema": "eija.taskflow.v1",
+  "tasks": [
+    {
+      "id": "T04-motion",
+      "name": "Motion slice: move a state node and commit the layout (baseline numeric X/Y fields versus drag with optimistic position)",
+      "persona": "P2",
+      "frequency": "weekly",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "decide to move a node"
+          },
+          {
+            "op": "P",
+            "from": "layout-node",
+            "to": "layout-node",
+            "note": "open the node select; ids from index.html; geometry not measured, default P applies"
+          },
+          {
+            "op": "B",
+            "note": "press"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "P",
+            "from": "layout-node",
+            "to": "layout-node",
+            "note": "pick the option"
+          },
+          {
+            "op": "B",
+            "note": "press"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "P",
+            "from": "layout-node",
+            "to": "layout-x"
+          },
+          {
+            "op": "B",
+            "note": "press"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "H",
+            "note": "mouse to keyboard"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "x coordinate"
+          },
+          {
+            "op": "H",
+            "note": "keyboard to mouse"
+          },
+          {
+            "op": "P",
+            "from": "layout-x",
+            "to": "layout-y"
+          },
+          {
+            "op": "B",
+            "note": "press"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "H"
+          },
+          {
+            "op": "T",
+            "chars": 3,
+            "note": "y coordinate"
+          },
+          {
+            "op": "H"
+          },
+          {
+            "op": "P",
+            "from": "layout-y",
+            "to": "move-node"
+          },
+          {
+            "op": "B",
+            "note": "press"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "R",
+            "ms": 18,
+            "why": "MEASURED server-side p50 of POST layout, n=20, loopback, 2026-09-29; browser render time not measured",
+            "note": "baseline task() locks the whole page and drops further clicks while the request runs"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "decide to move a node"
+          },
+          {
+            "op": "P",
+            "from": "node",
+            "to": "node",
+            "note": "point at the node on the canvas; geometry belongs to the canvas lane"
+          },
+          {
+            "op": "B",
+            "note": "pointer down: MB-01 acknowledgement within 100 ms limit, 50 ms target"
+          },
+          {
+            "op": "P",
+            "from": "node",
+            "to": "drop-target",
+            "note": "move to the drop position; frames follow MB-09, no waiting"
+          },
+          {
+            "op": "B",
+            "note": "pointer up: position shown immediately with the pending marker (optimistic class O1)"
+          },
+          {
+            "op": "R",
+            "ms": 100,
+            "why": "PREDICTION budget: kernel ack shown; the user can continue while it is pending, so 100 ms is a conservative upper bound",
+            "note": "commit budget target is 300 ms (MB-03); measured server p95 was 26 ms"
+          }
+        ]
+      },
+      "assumptions": [
+        "PREDICTION only. KLM constants K 0.20 s, P 1.1 s, B 0.10 s per press or release, H 0.40 s, M 1.35 s (Card, Moran and Newell 1980 as tabulated at https://en.wikipedia.org/wiki/Keystroke-level_model, opened 2026-09-29); band plus or minus 21 percent (same source). Expert, error-free, routine execution only.",
+        "Click convention: B is 0.10 s per button press or release (https://en.wikipedia.org/wiki/Keystroke-level_model, opened 2026-09-29), so a click is two B ops (press, release) and is written as two B ops. The T04 proposed drag is likewise P B (press) P B (release).",
+        "Task id is suffixed -motion because T02, T04, T06 and T08 are used for different flows in other lanes' files; ids are unique across files this way. The base task (persona, frequency) is the shared task of the same number.",
+        "This file is the motion and performance slice. The interaction shape (drag versus numeric fields) is decided by the interaction and canvas lanes; this aspect contributes only the R operations and the rule that no operation blocks input. The drag is decomposed as P B P B (point, press, move, release) rather than the D operator.",
+        "The current flow has no keyboard-only path; the non-dragging path required by WCAG 2.2 SC 2.5.7 belongs to the interaction lane.",
+        "R in the current flow is server-side only (Python http.client against uvicorn on loopback, n=20, this PC shared with other agents). A browser probe in a hidden tab was discarded as confounded.",
+        "Predicted sums under the two-B convention (PREDICTION, band plus or minus 21 percent): current 10.668 s (8.43 to 12.91); proposed 3.850 s (3.04 to 4.66); gap 6.82 s. R basis is asymmetric on purpose: current uses the MEASURED server p50 of 0.018 s, proposed uses the 0.100 s budget. That is conservative against the proposal; with R = 0.018 s for both, proposed is 3.768 s and the gap 6.90 s. Computed by .tmp/latency/klm.py."
+      ]
+    },
+    {
+      "id": "T06-motion",
+      "name": "Motion slice: run verification and wait for the outcome",
+      "persona": "P4",
+      "frequency": "daily",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "decide to verify"
+          },
+          {
+            "op": "P",
+            "from": "verify",
+            "to": "verify",
+            "note": "id verify in index.html"
+          },
+          {
+            "op": "B",
+            "note": "press"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "R",
+            "ms": 2096,
+            "why": "MEASURED server-side p50 of POST verify (125-cell matrix), n=20, 2026-09-29; p95 2971 ms, max 4165 ms",
+            "note": "feedback is a text notice; no elapsed time, progress or cancel; other clicks are dropped while busy"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "decide to verify"
+          },
+          {
+            "op": "P",
+            "from": "verify",
+            "to": "verify"
+          },
+          {
+            "op": "B",
+            "note": "pending marker within 100 ms (MB-04); static start-time text at 1 s (MB-05, no ticking count); abandon-wait control present from 1 s (press)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "R",
+            "ms": 2096,
+            "why": "kernel work unchanged by this decision; identical to current. A kernel change is a separate lane and is not assumed",
+            "note": "the previous verdict stays visible as STALE while the job runs (MB-07); the user may read it during the wait, which KLM does not model"
+          }
+        ]
+      },
+      "assumptions": [
+        "PREDICTION only; same constants and band as T04. The predicted times are equal by construction: the decision changes what the user sees during the wait, not the wait.",
+        "Click convention: B is 0.10 s per button press or release (https://en.wikipedia.org/wiki/Keystroke-level_model, opened 2026-09-29), so a click is two B ops (press, release) and is written as two B ops. The T04 proposed drag is likewise P B (press) P B (release).",
+        "Task id is suffixed -motion because T02, T04, T06 and T08 are used for different flows in other lanes' files; ids are unique across files this way. The base task (persona, frequency) is the shared task of the same number.",
+        "Reading the outcome is not modelled (KLM does not cover reading).",
+        "Live provider and other long jobs (model check, mutation, TLC) are not measured by this lane; their durations are UNKNOWN.",
+        "Predicted sums (two-B convention): 4.746 s (3.75 to 5.74) in both flows; the 2.096 s wait is 44 percent of it. R is the MEASURED server p50 in both flows."
+      ]
+    },
+    {
+      "id": "T08-motion",
+      "name": "Motion slice: press Approve and see the kernel result",
+      "persona": "P1",
+      "frequency": "daily",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "the deliberate decision itself is not modelled (P2: approval is not shortened)"
+          },
+          {
+            "op": "P",
+            "from": "approve",
+            "to": "approve",
+            "note": "the review form submit button"
+          },
+          {
+            "op": "B",
+            "note": "press"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "R",
+            "ms": 75,
+            "why": "MEASURED server-side p50 of POST approve, n=20, 2026-09-29; p95 214 ms, max 1370 ms"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "the deliberate decision itself is not modelled (P2: approval is not shortened)"
+          },
+          {
+            "op": "P",
+            "from": "approve",
+            "to": "approve"
+          },
+          {
+            "op": "B",
+            "note": "control shows pending with the revision hash; the word APPROVED appears only after the kernel response (MB-16); no artificial delay is added (press)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "R",
+            "ms": 75,
+            "why": "kernel work unchanged; same measured p50"
+          }
+        ]
+      },
+      "assumptions": [
+        "PREDICTION only. Fitts and KLM are deliberately not used to shorten Approve (docs/hci/research/PRINCIPLES.md P2). This slice only records that the decision adds no wait and no cooldown.",
+        "Click convention: B is 0.10 s per button press or release (https://en.wikipedia.org/wiki/Keystroke-level_model, opened 2026-09-29), so a click is two B ops (press, release) and is written as two B ops. The T04 proposed drag is likewise P B (press) P B (release).",
+        "Task id is suffixed -motion because T02, T04, T06 and T08 are used for different flows in other lanes' files; ids are unique across files this way. The base task (persona, frequency) is the shared task of the same number.",
+        "The rubber-stamping risk (vendor-reported 93 percent of prompts approved, https://anthropic.com/engineering/claude-code-auto-mode as cited in docs/hci/research/SYNTHESIS.md V2) is handled by the study arm, not by a delay.",
+        "Predicted sums (two-B convention): 2.725 s (2.15 to 3.30) in both flows. R is the MEASURED server p50 in both flows."
+      ]
+    },
+    {
+      "id": "T02-motion",
+      "name": "Motion slice: open the four chapters of a change review",
+      "persona": "P1",
+      "frequency": "daily",
+      "flows": {
+        "current": [
+          {
+            "op": "M",
+            "note": "decide to inspect the chapters"
+          },
+          {
+            "op": "P",
+            "from": "chapter-1",
+            "to": "chapter-1"
+          },
+          {
+            "op": "B",
+            "note": "baseline has no chapters; a details summary toggles instantly, R 0 (press)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "P",
+            "from": "chapter-1",
+            "to": "chapter-2"
+          },
+          {
+            "op": "B",
+            "note": "press"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "P",
+            "from": "chapter-2",
+            "to": "chapter-3"
+          },
+          {
+            "op": "B",
+            "note": "press"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "P",
+            "from": "chapter-3",
+            "to": "chapter-4"
+          },
+          {
+            "op": "B",
+            "note": "press"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          }
+        ],
+        "proposed": [
+          {
+            "op": "M",
+            "note": "decide to inspect the chapters"
+          },
+          {
+            "op": "P",
+            "from": "chapter-1",
+            "to": "chapter-1"
+          },
+          {
+            "op": "B",
+            "note": "expansion uses motion.transition.continuity (240 ms) and is interruptible, so the next input is processed at once (MB-19); waiting share w = 0 by design (press)"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "P",
+            "from": "chapter-1",
+            "to": "chapter-2"
+          },
+          {
+            "op": "B",
+            "note": "press"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "P",
+            "from": "chapter-2",
+            "to": "chapter-3"
+          },
+          {
+            "op": "B",
+            "note": "press"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          },
+          {
+            "op": "P",
+            "from": "chapter-3",
+            "to": "chapter-4"
+          },
+          {
+            "op": "B",
+            "note": "press"
+          },
+          {
+            "op": "B",
+            "note": "release"
+          }
+        ]
+      },
+      "assumptions": [
+        "PREDICTION only. Both flows are equal in KLM terms because animations are interruptible and no R operation is charged. Sensitivity, computed in docs/adr/0066-hci-motion-performance.md: if each of the four expansions blocked input for its full duration (waiting share w = 1), a 240 ms tween adds 0.96 s and a 400 ms tween adds 1.60 s to the 6.55 s baseline; the point estimate at 400 ms (8.15 s) is 0.22 s above the baseline band's upper edge (7.93 s) but the bands overlap (6.44 to 9.86 s versus 5.17 to 7.93 s), so no time claim is made either way.",
+        "Click convention: B is 0.10 s per button press or release (https://en.wikipedia.org/wiki/Keystroke-level_model, opened 2026-09-29), so a click is two B ops (press, release) and is written as two B ops. The T04 proposed drag is likewise P B (press) P B (release).",
+        "Task id is suffixed -motion because T02, T04, T06 and T08 are used for different flows in other lanes' files; ids are unique across files this way. The base task (persona, frequency) is the shared task of the same number.",
+        "The chapter structure is the review lane's design; this slice only carries the animation waiting cost.",
+        "Predicted sums (two-B convention): 6.55 s (5.17 to 7.93) in both flows without blocking; with blocking tweens (w = 1) 7.51 s at 240 ms and 8.15 s at 400 ms."
+      ]
+    }
+  ]
+}

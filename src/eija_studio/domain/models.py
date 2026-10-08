@@ -8,8 +8,9 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 class DomainError(ValueError):
     """Stable error code: never expose provider secrets or arbitrary exception text."""
-    def __init__(self, code: str, message: str):
-        self.code, self.message = code, message
+    def __init__(self, code: str, message: str, details: dict[str, Any] | None = None):
+        # ``details`` is structured and safe to show: {"codes": [...], "refs": ["law:<id>", "transition:<id>", ...]}.
+        self.code, self.message, self.details = code, message, details
         super().__init__(message)
 
 
@@ -56,8 +57,8 @@ class Transition(Contract):
 
 class Workflow(Contract):
     schema_version: Literal["eija.workflow.v1"] = "eija.workflow.v1"
-    id: Literal["excursion"] = "excursion"
-    initial_state: str = "Draft"
+    id: str = Field(pattern=r"^[a-z][a-z0-9-]{0,39}$")  # the id of the domain pack the workflow belongs to
+    initial_state: str
     states: tuple[str, ...] = Field(min_length=1, max_length=32)
     transitions: tuple[Transition, ...] = Field(min_length=1, max_length=64)
 
@@ -86,11 +87,11 @@ class Workflow(Contract):
         return fingerprint(data)
 
 
-Interpretation = Literal["recommend_only", "final_approval", "confirm_only", "unsupported"]
+MEANING_ID = r"^[a-z][a-z0-9_]{0,39}$"
 
 
 class Alternative(Contract):
-    interpretation: Interpretation
+    interpretation: str = Field(pattern=MEANING_ID)  # a meaning id of the active pack; the service checks it exists
     explanation: str = Field(min_length=1, max_length=1600)
 
 
@@ -110,8 +111,13 @@ class Proposal(Contract):
 
 
 class SemanticTransaction(Contract):
-    kind: Literal["enable_recommendation", "set_rejection_source"]
-    rejection_source: Literal["Submitted", "Recommended"] = "Recommended"
+    """DEPRECATED closed vocabulary, superseded by the open one in ``domain.transactions`` (WBS 1.3).
+
+    Kept for one caller only: verification/bend/bend_generate.py, whose bytes the committed Bend proof binds
+    (changing them turns that evidence non-PASS until Docker regenerates it, WBS 1.4). ``policy.apply_transaction``
+    reads it as "apply the pack's first supported meaning". The service, HTTP, pack meanings and stored cases never
+    accept it: a stored case holding one is refused with ``CASE_SCHEMA_OLD``."""
+    kind: Literal["enable_recommendation"]
 
 
 class LayoutChange(Contract):

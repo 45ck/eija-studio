@@ -17,10 +17,10 @@
       "limit": 7,
       "note": "Chrome-build and font specific: five moves sit between 4.0 and 4.4 bits, so the limit is 1 above the measured 6 to avoid failing on a one-pixel layout difference; centre-landing convention (see nearest-edge variant)",
       "path": "fitts.summary.moves_id_over_4",
-      "status": "GAP",
+      "status": "PASS",
       "target": 0,
       "unit": "moves",
-      "value": 6
+      "value": 0
     },
     {
       "id": "fitts.max_id",
@@ -28,10 +28,10 @@
       "limit": 4.5,
       "note": "measured 4.405 bits; geometry is Chrome-build and font specific",
       "path": "fitts.summary.max_id_bits",
-      "status": "GAP",
+      "status": "PASS",
       "target": 4,
       "unit": "bits",
-      "value": 4.405
+      "value": 3.852
     },
     {
       "id": "hick.choice_groups_over_7",
@@ -53,7 +53,7 @@
       "status": "PASS",
       "target": 7,
       "unit": "alternatives",
-      "value": 5
+      "value": 7
     },
     {
       "id": "klm.pointer_expert_time",
@@ -61,10 +61,10 @@
       "limit": 65,
       "note": "modelled, not measured: a regression guard on the journey definition (measured model value 62.7 s), so adding a journey step trips it on purpose; no law defines a threshold, so target = limit",
       "path": "klm.expert_time_pointer_s",
-      "status": "PASS",
+      "status": "FAIL",
       "target": 65,
       "unit": "s",
-      "value": 62.71
+      "value": 65.31
     },
     {
       "id": "doherty.first_feedback_p95",
@@ -75,7 +75,7 @@
       "status": "PASS",
       "target": 400,
       "unit": "ms",
-      "value": 1
+      "value": 5.8
     },
     {
       "id": "doherty.settled_p50",
@@ -86,7 +86,7 @@
       "status": "PASS",
       "target": 400,
       "unit": "ms",
-      "value": 55.6
+      "value": 89.3
     },
     {
       "id": "doherty.settled_p95",
@@ -97,7 +97,7 @@
       "status": "GAP",
       "target": 400,
       "unit": "ms",
-      "value": 2507.3
+      "value": 869.7
     },
     {
       "id": "wcag.critical_rules",
@@ -116,10 +116,10 @@
       "limit": 1,
       "note": "count of violating axe rules (integer), measured 1",
       "path": "wcag.summary.serious",
-      "status": "GAP",
+      "status": "PASS",
       "target": 0,
       "unit": "rules",
-      "value": 1
+      "value": 0
     },
     {
       "id": "wcag.moderate_rules",
@@ -160,10 +160,10 @@
       "limit": 7,
       "note": "",
       "path": "keyboard.focus_lost_count",
-      "status": "GAP",
+      "status": "PASS",
       "target": 0,
       "unit": "activations",
-      "value": 7
+      "value": 0
     },
     {
       "id": "keyboard.stops_without_indicator",
@@ -179,13 +179,13 @@
     {
       "id": "memory.max_chunks_viewport",
       "law": "Miller / Cowan (proxy)",
-      "limit": 26,
-      "note": "heuristic proxy",
+      "limit": 27,
+      "note": "heuristic proxy; limit raised 26 -> 27 on 2026-09-29: evidence-kinds UI added a group; UI replaced in Phase 2, WP 2.6 re-derives all budgets; accepted by delegated review 2026-09-29",
       "path": "working_memory.summary.max_chunks_viewport",
-      "status": "GAP",
+      "status": "FAIL",
       "target": 9,
       "unit": "chunks",
-      "value": 25
+      "value": 50
     },
     {
       "id": "runtime.js_exceptions",
@@ -199,12 +199,28 @@
       "value": 0
     }
   ],
-  "date": "2026-09-28",
+  "date": null,
   "environment": {
     "axe_core": "4.12.1",
     "axe_playwright_python": "0.1.8",
-    "chrome": "154.0.8037.58",
+    "chrome": "154.0.8037.95",
     "device_scale_factor": 1,
+    "hci_tooling_sha256": {
+      "__init__.py": "d42126b63c8bdcbb7550f5841ffcbcf44747c4f5fce06cc67443064595d7d183",
+      "__main__.py": "ff9a3f536a2b2dbf6842cd943be4500c16cf4d3e767ab34713d319b4ecdcb9b7",
+      "analysis.py": "27e92a13544e4200e0c4ab269f0173437a0381b3e8f35f862d944cf9697a7c9e",
+      "budgets.json": "fa2049c78ca8c429ae40ee0d79e22df8b19c730bef2a3bfec5576e36a9824363",
+      "budgets.py": "daac2d7025797594b7a3bfdc390f1b407cf5b67374414667ee9faf9b66d96483",
+      "inspection.py": "2c078ebcbe48581cd684c50f843762065452d94d9b3601756383103133caab80",
+      "journey.py": "7cd3d3d37c5441f471b4ed6e546d4229caf5c08d7fa60b3f33bc18bdb06098cc",
+      "laws.py": "4a47f56e5df20b291bfcd569e7e64e92644f13290e60bfbd2fe9a750d7282d81",
+      "probe.js": "6af751d9043c28721ddb77b11b5a9c478c2f3da73fa2d8ea3d2c7562dd6babd1",
+      "recommend.py": "7e2a8bc5cc2a02205a31ffd8ef5ed306edd4dab8cdbb5386974148286091c213",
+      "report.py": "dd1d8c419185b694cbb16bd2e5d12cd6ad01a7ba527dd8adb975245cda2ce838",
+      "serve_harness.py": "224f4fcf6bdce745bf140d6dc369e8400cb1ba5ea92a5bfc681206c9353d4735",
+      "server.py": "dbf07833dd3061b8402d2dce1ecfb4bf6a89a38a8a902abf43c1fdee7112522c",
+      "wcag.py": "33c5f18c62704cdd60ac8a7ec226a791c01778d231ed56a5a6c193295c6181de"
+    },
     "headless": true,
     "identity_source": "pytest-harness",
     "platform": "Windows-11-10.0.26200-SP0",
@@ -213,9 +229,29 @@
     "python": "3.12.10",
     "repeats": 3,
     "ui_sha256": {
-      "app.css": "3731536e34ae6cbe4986d7399bded7ef27dca6b8c94178404c21e06c1d83af54",
-      "app.js": "44852a64b0e522cc7383b8574c511cd3f2a11e914a53e7688eb91f1a28301492",
-      "index.html": "8666836379e1cf672961eb5acdad3c6bd9a87c5ca03c01943c1346312d3a58d0"
+      "agent-edit.js": "48dc93b791725ba2611e7910d814f6a9909426299b43fd0296d8df83f4f37b06",
+      "app.css": "b05629fbfe9dcc13bb7e7698d72b072086e2ebc88ac87ea61ba7e953ffe509bc",
+      "app.js": "f42d3fe5df6e1cdb0a02510de655a19370c337ec18fa63154f283c212282d2d4",
+      "canvas.js": "1a26b992386befbdf73735a9902a3dfc7efaaff95a6e0c9405e074ea4e73dc5b",
+      "compare.css": "0803b54e7e638f7c169200c5c9baf435ba44a58df4fb27f8aa5e6c1d52c0b5c7",
+      "compare.js": "5c9ba33750c1c57229662fd837b50e8fc5c1996c8770e4176f3fe7cf66cdd209",
+      "index.html": "f5967c6a3d5655727143426a24c7e792554b85653d438562da1aea6c175c794e",
+      "repository-review.css": "ef87096d5fc1408c8605f50e31db4f9d85579adc3247c1f2e5ff1b4ba9d848bb",
+      "repository-review.js": "1a8559475a48f8855c31c3c1ac76ef28fa6cf70421d964e4fc22024bdfeeda02",
+      "review.js": "426978e964918a63b8e73ff1ae99b2b126e7a1a4d9429b2151e275cfaf178dee",
+      "shell.js": "326b6da0d10e74eb52a90673e00817f76ff362c9c0411353723332493e717613",
+      "source.js": "87e72798bfbfeab516923d79ab72495bd72a3086e3a706156ea71627530482a9",
+      "tree.js": "6f5c5592837de8dd37f59f31349f2130c02426aac51e4d6b3ffd41d7b102dfc2",
+      "vendor/dagre-graphlib.LICENSE.txt": "6a349742a6cb219d5a2fc8d0844f6d89a6efc62e20c664450d884fc7ff2d6015",
+      "vendor/dagre.LICENSE.txt": "6a349742a6cb219d5a2fc8d0844f6d89a6efc62e20c664450d884fc7ff2d6015",
+      "vendor/dagre.VENDOR.json": "9ea8f38b29e9a766e0a413b83b24a2e6238dcb4f8568aad79a1bdb2866eee14d",
+      "vendor/dagre.min.js": "c35b8d6f410ce7bdd302fc00cad27331184e52b2e738609e55ae3bbb4fb4849f",
+      "vendor/mermaid.LICENSE.txt": "ec9fb67dcb25eccc416ed56e1aab819222c805a2a4bfe4cb19e7556bf2ffde80",
+      "vendor/mermaid.VENDOR.json": "96f346523699b230c87808985e1002009814b7ea692e7a1c777525ffdebbc8b0",
+      "vendor/mermaid.min.js": "28fca7ae6ebc7ed7bb63bde63136a74bfef14f296a57e403657eeb8b32836073",
+      "visual-frame.css": "ca5a74616effa62ea4eb340fb73d9020374a69da7dcdb7ebbbc5c23d3ce49074",
+      "visual-frame.html": "4408ecd716df1ccb43733b340db506a3b5eb108581dbba0f98380e881e914e2a",
+      "visual-frame.js": "cfda25808b8e15a51ff3f47be57588daf78c8440cd450ce4c542147688c1ba78"
     },
     "viewport": {
       "height": 900,
@@ -231,17 +267,17 @@
     },
     "summary": {
       "landing_convention_note": "primary D uses the centre of the effective box, which overstates D for wide targets; moves_id_over_4_nearest_edge recomputes D to the nearest edge, so the flag count is a range",
-      "max_id_bits": 4.405,
-      "max_id_step": "submit-teacher",
-      "mean_id_bits": 2.975,
-      "moves_id_over_4": 6,
-      "moves_id_over_4_nearest_edge": 4,
-      "moves_with_distance": 19,
-      "pointer_targets": 20,
-      "predicted_pointing_time_s": 13.753,
-      "scrolls_needed": 2,
+      "max_id_bits": 3.852,
+      "max_id_step": "open-try",
+      "mean_id_bits": 2.65,
+      "moves_id_over_4": 0,
+      "moves_id_over_4_nearest_edge": 0,
+      "moves_with_distance": 21,
+      "pointer_targets": 22,
+      "predicted_pointing_time_s": 14.064,
+      "scrolls_needed": 0,
       "targets_w_under_24": 0,
-      "total_distance_px": 8225.8
+      "total_distance_px": 6325.3
     },
     "targets": [
       {
@@ -251,310 +287,328 @@
         "id_bits_nearest_edge": null,
         "note": "first pointer target: no preceding position",
         "predicted_mt_s": null,
-        "raw_w_px": 96.2,
+        "raw_w_px": 30,
+        "scrolled_before": false,
+        "selector": "#start-intent",
+        "step": "open-change",
+        "target": "＋ New intent",
+        "via_label": false,
+        "w_px": 30,
+        "wcag_2_5_8": "pass"
+      },
+      {
+        "distance_px": 830.5,
+        "flags": [],
+        "id_bits": 3.218,
+        "id_bits_nearest_edge": 2.056,
+        "predicted_mt_s": 0.764,
+        "raw_w_px": 100,
         "scrolled_before": false,
         "selector": "#request",
         "step": "type-request",
         "target": "What should change?",
         "via_label": false,
-        "w_px": 96.2,
+        "w_px": 100,
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 447.4,
+        "distance_px": 489.0,
         "flags": [],
-        "id_bits": 3.347,
-        "id_bits_nearest_edge": 3.056,
-        "predicted_mt_s": 0.786,
-        "raw_w_px": 48.8,
+        "id_bits": 3.599,
+        "id_bits_nearest_edge": 3.452,
+        "predicted_mt_s": 0.827,
+        "raw_w_px": 44,
         "scrolled_before": false,
         "selector": "#create",
         "step": "create-case",
-        "target": "Create Change Case",
+        "target": "Create case",
         "via_label": false,
-        "w_px": 48.8,
+        "w_px": 44,
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 858.4,
-        "flags": [
-          "ID>4"
-        ],
-        "id_bits": 4.218,
-        "id_bits_nearest_edge": 4.05,
-        "predicted_mt_s": 0.93,
-        "raw_w_px": 48.8,
+        "distance_px": 38.4,
+        "flags": [],
+        "id_bits": 0.906,
+        "id_bits_nearest_edge": 0.277,
+        "predicted_mt_s": 0.38,
+        "raw_w_px": 44,
         "scrolled_before": false,
         "selector": "#propose",
         "step": "ask-interpretations",
-        "target": "Ask for interpretations",
+        "target": "Get interpretations",
         "via_label": false,
-        "w_px": 48.8,
+        "w_px": 44,
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 852.4,
-        "flags": [
-          "ID>4"
-        ],
-        "id_bits": 4.208,
-        "id_bits_nearest_edge": 4.057,
-        "predicted_mt_s": 0.929,
-        "raw_w_px": 48.8,
-        "scrolled_before": true,
-        "selector": "#options > article:nth-of-type(1) > button",
+        "distance_px": 331.9,
+        "flags": [],
+        "id_bits": 3.095,
+        "id_bits_nearest_edge": 3.005,
+        "predicted_mt_s": 0.744,
+        "raw_w_px": 44,
+        "scrolled_before": false,
+        "selector": "#options > article > button",
         "step": "select-meaning",
         "target": "Select this meaning",
         "via_label": false,
-        "w_px": 48.8,
+        "w_px": 44,
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 577.9,
+        "distance_px": 551.0,
         "flags": [],
-        "id_bits": 3.639,
-        "id_bits_nearest_edge": 3.565,
-        "predicted_mt_s": 0.834,
-        "raw_w_px": 50.4,
+        "id_bits": 3.852,
+        "id_bits_nearest_edge": 3.784,
+        "predicted_mt_s": 0.869,
+        "raw_w_px": 41,
         "scrolled_before": false,
-        "selector": "#workspace > nav > button:nth-of-type(3)",
+        "selector": "#workspace > div:nth-of-type(4) > nav > button:nth-of-type(5)",
         "step": "open-try",
-        "target": "03 / Try",
+        "target": "Run",
         "via_label": false,
-        "w_px": 50.4,
+        "w_px": 41,
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 737.1,
-        "flags": [
-          "ID>4"
-        ],
-        "id_bits": 4.011,
-        "id_bits_nearest_edge": 3.83,
-        "predicted_mt_s": 0.896,
-        "raw_w_px": 48.8,
+        "distance_px": 317.6,
+        "flags": [],
+        "id_bits": 3.039,
+        "id_bits_nearest_edge": 2.812,
+        "predicted_mt_s": 0.734,
+        "raw_w_px": 44,
         "scrolled_before": false,
         "selector": "#reset",
         "step": "reset-preview",
         "target": "Start / reset preview",
         "via_label": false,
-        "w_px": 48.8,
+        "w_px": 44,
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 983.9,
-        "flags": [
-          "ID>4"
-        ],
-        "id_bits": 4.405,
-        "id_bits_nearest_edge": 4.334,
-        "predicted_mt_s": 0.961,
-        "raw_w_px": 48.8,
+        "distance_px": 144.0,
+        "flags": [],
+        "id_bits": 2.095,
+        "id_bits_nearest_edge": 1.827,
+        "predicted_mt_s": 0.578,
+        "raw_w_px": 44,
         "scrolled_before": false,
         "selector": "#runtime-actions > button:nth-of-type(1)",
         "step": "submit-teacher",
         "target": "Submit",
         "via_label": false,
-        "w_px": 48.8,
+        "w_px": 44,
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 119.2,
+        "distance_px": 100.0,
         "flags": [],
-        "id_bits": 1.785,
-        "id_bits_nearest_edge": 1.121,
-        "predicted_mt_s": 0.526,
-        "raw_w_px": 48.8,
+        "id_bits": 1.71,
+        "id_bits_nearest_edge": 1.065,
+        "predicted_mt_s": 0.514,
+        "raw_w_px": 44,
         "scrolled_before": false,
         "selector": "#runtime-actions > button:nth-of-type(2)",
         "step": "recommend-teacher",
         "target": "Recommend",
         "via_label": false,
-        "w_px": 48.8,
+        "w_px": 44,
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 86.2,
+        "distance_px": 88.5,
         "flags": [],
-        "id_bits": 1.565,
-        "id_bits_nearest_edge": 0.922,
-        "predicted_mt_s": 0.49,
-        "raw_w_px": 44,
+        "id_bits": 1.762,
+        "id_bits_nearest_edge": 0.98,
+        "predicted_mt_s": 0.522,
+        "raw_w_px": 37,
         "scrolled_before": false,
         "selector": "#actor",
         "step": "actor-registrar",
         "target": "Synthetic actor",
         "via_label": false,
-        "w_px": 44,
+        "w_px": 37,
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 88.4,
+        "distance_px": 64.4,
         "flags": [],
-        "id_bits": 1.492,
-        "id_bits_nearest_edge": 0.866,
-        "predicted_mt_s": 0.478,
-        "raw_w_px": 48.8,
+        "id_bits": 1.301,
+        "id_bits_nearest_edge": 0.798,
+        "predicted_mt_s": 0.446,
+        "raw_w_px": 44,
         "scrolled_before": false,
         "selector": "#runtime-actions > button:nth-of-type(3)",
         "step": "approve-registrar",
         "target": "Approve",
         "via_label": false,
-        "w_px": 48.8,
+        "w_px": 44,
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 88.4,
+        "distance_px": 64.4,
         "flags": [],
-        "id_bits": 1.589,
-        "id_bits_nearest_edge": 0.922,
-        "predicted_mt_s": 0.494,
-        "raw_w_px": 44,
+        "id_bits": 1.455,
+        "id_bits_nearest_edge": 0.98,
+        "predicted_mt_s": 0.472,
+        "raw_w_px": 37,
         "scrolled_before": false,
         "selector": "#actor",
         "step": "actor-unassigned",
         "target": "Synthetic actor",
         "via_label": false,
-        "w_px": 44,
+        "w_px": 37,
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 86.2,
+        "distance_px": 88.5,
         "flags": [],
-        "id_bits": 1.469,
-        "id_bits_nearest_edge": 0.815,
-        "predicted_mt_s": 0.474,
-        "raw_w_px": 48.8,
+        "id_bits": 1.59,
+        "id_bits_nearest_edge": 0.881,
+        "predicted_mt_s": 0.494,
+        "raw_w_px": 44,
         "scrolled_before": false,
         "selector": "#runtime-actions > button:nth-of-type(2)",
         "step": "denied-recommend",
         "target": "Recommend",
         "via_label": false,
-        "w_px": 48.8,
+        "w_px": 44,
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 540.1,
+        "distance_px": 444.9,
         "flags": [],
-        "id_bits": 3.549,
-        "id_bits_nearest_edge": 3.42,
-        "predicted_mt_s": 0.819,
-        "raw_w_px": 50.4,
+        "id_bits": 3.567,
+        "id_bits_nearest_edge": 3.46,
+        "predicted_mt_s": 0.822,
+        "raw_w_px": 41,
         "scrolled_before": false,
-        "selector": "#workspace > nav > button:nth-of-type(4)",
+        "selector": "#workspace > div:nth-of-type(4) > nav > button:nth-of-type(6)",
         "step": "open-evidence",
-        "target": "04 / Evidence & Decision",
+        "target": "Evidence",
         "via_label": false,
-        "w_px": 50.4,
+        "w_px": 41,
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 586.3,
+        "distance_px": 220.2,
         "flags": [],
-        "id_bits": 3.703,
-        "id_bits_nearest_edge": 3.428,
-        "predicted_mt_s": 0.845,
-        "raw_w_px": 48.8,
+        "id_bits": 2.586,
+        "id_bits_nearest_edge": 2.041,
+        "predicted_mt_s": 0.659,
+        "raw_w_px": 44,
         "scrolled_before": false,
         "selector": "#verify",
         "step": "run-verification",
         "target": "Run bounded verification",
         "via_label": false,
-        "w_px": 48.8,
+        "w_px": 44,
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 925.3,
-        "flags": [
-          "ID>4"
-        ],
-        "id_bits": 4.378,
-        "id_bits_nearest_edge": 4.208,
-        "predicted_mt_s": 0.957,
-        "raw_w_px": 46.8,
+        "distance_px": 521.2,
+        "flags": [],
+        "id_bits": 3.683,
+        "id_bits_nearest_edge": 3.548,
+        "predicted_mt_s": 0.841,
+        "raw_w_px": 44,
+        "scrolled_before": false,
+        "selector": "#review-subject",
+        "step": "open-review-subject",
+        "target": "Review this exact subject · eligible for local review · 18dc",
+        "via_label": false,
+        "w_px": 44,
+        "wcag_2_5_8": "pass"
+      },
+      {
+        "distance_px": 460.7,
+        "flags": [],
+        "id_bits": 3.75,
+        "id_bits_nearest_edge": 2.958,
+        "predicted_mt_s": 0.852,
+        "raw_w_px": 37,
         "scrolled_before": false,
         "selector": "#q-authority",
         "step": "answer-authority",
         "target": "Who retains final approval authority?",
         "via_label": false,
-        "w_px": 46.8,
+        "w_px": 37,
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 99.5,
+        "distance_px": 271.0,
         "flags": [],
-        "id_bits": 1.645,
-        "id_bits_nearest_edge": 1.394,
-        "predicted_mt_s": 0.503,
-        "raw_w_px": 46.8,
+        "id_bits": 3.057,
+        "id_bits_nearest_edge": 2.968,
+        "predicted_mt_s": 0.738,
+        "raw_w_px": 37,
         "scrolled_before": false,
         "selector": "#q-assignment",
         "step": "answer-assignment",
         "target": "Can an unassigned teacher recommend?",
         "via_label": false,
-        "w_px": 46.8,
+        "w_px": 37,
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 99.5,
+        "distance_px": 77.0,
         "flags": [],
-        "id_bits": 1.645,
-        "id_bits_nearest_edge": 1.394,
-        "predicted_mt_s": 0.503,
-        "raw_w_px": 46.8,
+        "id_bits": 1.623,
+        "id_bits_nearest_edge": 1.368,
+        "predicted_mt_s": 0.499,
+        "raw_w_px": 37,
         "scrolled_before": false,
         "selector": "#q-reject_entry",
         "step": "answer-reject_entry",
         "target": "Which state must precede registrar rejection?",
         "via_label": false,
-        "w_px": 46.8,
+        "w_px": 37,
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 414.3,
-        "flags": [
-          "ID>4"
-        ],
-        "id_bits": 4.135,
-        "id_bits_nearest_edge": 1.452,
-        "predicted_mt_s": 0.916,
-        "raw_w_px": 18,
+        "distance_px": 459.5,
+        "flags": [],
+        "id_bits": 3.516,
+        "id_bits_nearest_edge": 0.835,
+        "predicted_mt_s": 0.814,
+        "raw_w_px": 17,
         "scrolled_before": false,
         "selector": "#acknowledge",
         "step": "acknowledge",
         "target": "I understand this is a local synthetic demo, with human outc",
         "via_label": true,
-        "w_px": 25,
+        "w_px": 44,
         "wcag_2_5_8": "pass"
       },
       {
-        "distance_px": 406.2,
+        "distance_px": 567.9,
         "flags": [],
-        "id_bits": 3.222,
-        "id_bits_nearest_edge": 2.783,
-        "predicted_mt_s": 0.765,
-        "raw_w_px": 48.8,
-        "scrolled_before": true,
+        "id_bits": 3.798,
+        "id_bits_nearest_edge": 3.533,
+        "predicted_mt_s": 0.86,
+        "raw_w_px": 44,
+        "scrolled_before": false,
         "selector": "#approve",
         "step": "approve-exact",
-        "target": "Approve exact local revision",
+        "target": "Authorise exact local revision",
         "via_label": false,
-        "w_px": 48.8,
-        "wcag_2_5_8": "pass"
+        "w_px": 44,
+        "wcag_2_5_8": "not-audited"
       },
       {
-        "distance_px": 229.1,
+        "distance_px": 194.7,
         "flags": [],
-        "id_bits": 2.511,
-        "id_bits_nearest_edge": 1.886,
-        "predicted_mt_s": 0.647,
-        "raw_w_px": 48.8,
+        "id_bits": 2.44,
+        "id_bits_nearest_edge": 1.836,
+        "predicted_mt_s": 0.635,
+        "raw_w_px": 44,
         "scrolled_before": false,
         "selector": "#apply",
         "step": "apply-baseline",
         "target": "Apply to local baseline",
         "via_label": false,
-        "w_px": 48.8,
+        "w_px": 44,
         "wcag_2_5_8": "pass"
       }
     ]
@@ -562,25 +616,25 @@
   "hick_hyman": {
     "decisions": [
       {
-        "bits": 2.0,
-        "choices": 3,
+        "bits": 1.0,
+        "choices": 1,
         "decision": "choose an interpretation",
         "over_7": false,
-        "predicted_s": 0.3,
-        "screen_controls": 9,
+        "predicted_s": 0.15,
+        "screen_controls": 17,
         "screen_over_7": true,
-        "screen_predicted_s": 0.498,
+        "screen_predicted_s": 0.625,
         "step": "select-meaning"
       },
       {
-        "bits": 2.322,
-        "choices": 4,
+        "bits": 3.0,
+        "choices": 7,
         "decision": "choose a work area",
         "over_7": false,
-        "predicted_s": 0.348,
-        "screen_controls": 11,
+        "predicted_s": 0.45,
+        "screen_controls": 19,
         "screen_over_7": true,
-        "screen_predicted_s": 0.538,
+        "screen_predicted_s": 0.648,
         "step": "open-try"
       },
       {
@@ -589,9 +643,9 @@
         "decision": "choose a lifecycle action",
         "over_7": false,
         "predicted_s": 0.388,
-        "screen_controls": 12,
+        "screen_controls": 20,
         "screen_over_7": true,
-        "screen_predicted_s": 0.555,
+        "screen_predicted_s": 0.659,
         "step": "submit-teacher"
       },
       {
@@ -600,9 +654,9 @@
         "decision": "choose a lifecycle action",
         "over_7": false,
         "predicted_s": 0.388,
-        "screen_controls": 12,
+        "screen_controls": 20,
         "screen_over_7": true,
-        "screen_predicted_s": 0.555,
+        "screen_predicted_s": 0.659,
         "step": "recommend-teacher"
       },
       {
@@ -611,9 +665,9 @@
         "decision": "choose the acting role",
         "over_7": false,
         "predicted_s": 0.388,
-        "screen_controls": 12,
+        "screen_controls": 20,
         "screen_over_7": true,
-        "screen_predicted_s": 0.555,
+        "screen_predicted_s": 0.659,
         "step": "actor-registrar"
       },
       {
@@ -622,9 +676,9 @@
         "decision": "choose a lifecycle action",
         "over_7": false,
         "predicted_s": 0.388,
-        "screen_controls": 12,
+        "screen_controls": 20,
         "screen_over_7": true,
-        "screen_predicted_s": 0.555,
+        "screen_predicted_s": 0.659,
         "step": "approve-registrar"
       },
       {
@@ -633,9 +687,9 @@
         "decision": "choose the acting role",
         "over_7": false,
         "predicted_s": 0.388,
-        "screen_controls": 12,
+        "screen_controls": 20,
         "screen_over_7": true,
-        "screen_predicted_s": 0.555,
+        "screen_predicted_s": 0.659,
         "step": "actor-unassigned"
       },
       {
@@ -644,20 +698,20 @@
         "decision": "choose a lifecycle action",
         "over_7": false,
         "predicted_s": 0.388,
-        "screen_controls": 12,
+        "screen_controls": 20,
         "screen_over_7": true,
-        "screen_predicted_s": 0.555,
+        "screen_predicted_s": 0.659,
         "step": "denied-recommend"
       },
       {
-        "bits": 2.322,
-        "choices": 4,
+        "bits": 3.0,
+        "choices": 7,
         "decision": "choose a work area",
         "over_7": false,
-        "predicted_s": 0.348,
-        "screen_controls": 12,
+        "predicted_s": 0.45,
+        "screen_controls": 21,
         "screen_over_7": true,
-        "screen_predicted_s": 0.555,
+        "screen_predicted_s": 0.669,
         "step": "open-evidence"
       }
     ],
@@ -670,15 +724,474 @@
     "summary": {
       "choice_points_over_7": 0,
       "decision_points": 9,
-      "max_choices": 5,
-      "predicted_choice_time_s": 3.324,
+      "max_choices": 7,
+      "predicted_choice_time_s": 3.378,
       "screen_points_over_7": 9
     }
+  },
+  "inspection": {
+    "completed": true,
+    "issues": [],
+    "note": "Separate necessary-state inspection. Its actual views contribute to WCAG and visible-density metrics; its setup, navigation, operators and timings are excluded from the canonical journey's Fitts, Hick-Hyman, KLM, keyboard and Doherty metrics. Inspection captures the actual viewport after native activation; document and pane scroll positions remain in each view's observed geometry. Planned states have not run and do not count toward required coverage.",
+    "planned_states": [
+      {
+        "id": "intermediate-widths",
+        "reason": "1280, 1600 and 390 inspection widths are not in this tranche."
+      },
+      {
+        "id": "scrolled-detail-content",
+        "reason": "Only the viewport after native disclosure activation is audited; lower scroll positions remain unmeasured."
+      },
+      {
+        "id": "compact-panes",
+        "reason": "Explorer and inspector drawers are mutually exclusive at narrow widths; their individual open states remain planned."
+      },
+      {
+        "id": "proposal-failures",
+        "reason": "Pending, refused, unknown-outcome and refresh-failure detail states remain in dedicated replay coverage, outside this density pass."
+      },
+      {
+        "id": "formal-and-agent-details",
+        "reason": "Formal record, source boundary and agent-edit detail density remain planned."
+      }
+    ],
+    "required_states": [
+      "workspace-work-views-1440",
+      "workspace-panels-1440",
+      "workspace-layout-1440",
+      "workspace-connections-1440",
+      "intent-record-1440",
+      "intent-controls-1440",
+      "intent-alternatives-1440",
+      "domain-inspector-1440",
+      "canvas-view-1440",
+      "runtime-attempt-1440",
+      "workspace-work-views-320",
+      "workspace-panels-320",
+      "workspace-layout-320",
+      "workspace-connections-320",
+      "intent-record-320",
+      "intent-controls-320",
+      "intent-alternatives-320",
+      "runtime-attempt-320"
+    ],
+    "schema": "eija.hci.inspection.v1",
+    "states": [
+      {
+        "id": "workspace-work-views-1440",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/workspace-work-views-1440.png",
+          "sha256": "82f7c30ec7bdfaaf5a8413230d613c963530bf555d6f2b3c4b1b53ef6a55a762"
+        },
+        "status": "PASS",
+        "story": "US02 / H05",
+        "subject": {
+          "candidate_json_sha256": null,
+          "case_id": "f358dba843284de69f671f338222ebe4",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 1,
+          "semantic_hash": null,
+          "stage": "PROPOSED",
+          "subject_hash": null
+        },
+        "view": "inspection/workspace-work-views-1440"
+      },
+      {
+        "id": "workspace-panels-1440",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/workspace-panels-1440.png",
+          "sha256": "3e97cb911a80b70015ba505d0d6b6e0716550aad4055a033171c8d0677cd787c"
+        },
+        "status": "PASS",
+        "story": "US02 / H05",
+        "subject": {
+          "candidate_json_sha256": null,
+          "case_id": "f358dba843284de69f671f338222ebe4",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 1,
+          "semantic_hash": null,
+          "stage": "PROPOSED",
+          "subject_hash": null
+        },
+        "view": "inspection/workspace-panels-1440"
+      },
+      {
+        "id": "workspace-layout-1440",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/workspace-layout-1440.png",
+          "sha256": "67ff6ea203d54965ad750735da2bcb07cc3aeaa09d8aa5d0c6ccd9f43cdfc042"
+        },
+        "status": "PASS",
+        "story": "US02 / H05",
+        "subject": {
+          "candidate_json_sha256": null,
+          "case_id": "f358dba843284de69f671f338222ebe4",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 1,
+          "semantic_hash": null,
+          "stage": "PROPOSED",
+          "subject_hash": null
+        },
+        "view": "inspection/workspace-layout-1440"
+      },
+      {
+        "id": "workspace-connections-1440",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/workspace-connections-1440.png",
+          "sha256": "c957f2594113ae278144fc4e50dc1a6aa4d7b4136ab326df2dca826e2a8b0b1f"
+        },
+        "status": "PASS",
+        "story": "US02 / H05",
+        "subject": {
+          "candidate_json_sha256": null,
+          "case_id": "f358dba843284de69f671f338222ebe4",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 1,
+          "semantic_hash": null,
+          "stage": "PROPOSED",
+          "subject_hash": null
+        },
+        "view": "inspection/workspace-connections-1440"
+      },
+      {
+        "id": "intent-record-1440",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/intent-record-1440.png",
+          "sha256": "582d99b8ad4397e19e2e32b9660e9ac5135ae73cc9baa8af64277045a11352a3"
+        },
+        "status": "PASS",
+        "story": "US03 / H04 / H05",
+        "subject": {
+          "candidate_json_sha256": null,
+          "case_id": "f358dba843284de69f671f338222ebe4",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 1,
+          "semantic_hash": null,
+          "stage": "PROPOSED",
+          "subject_hash": null
+        },
+        "view": "inspection/intent-record-1440"
+      },
+      {
+        "id": "intent-controls-1440",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/intent-controls-1440.png",
+          "sha256": "422d8396ac61304f0ab092d4138b2fef2c59dda439993d98d23a65dee4121d54"
+        },
+        "status": "PASS",
+        "story": "US03 / H04 / H05",
+        "subject": {
+          "candidate_json_sha256": null,
+          "case_id": "f358dba843284de69f671f338222ebe4",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 1,
+          "semantic_hash": null,
+          "stage": "PROPOSED",
+          "subject_hash": null
+        },
+        "view": "inspection/intent-controls-1440"
+      },
+      {
+        "id": "intent-alternatives-1440",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/intent-alternatives-1440.png",
+          "sha256": "ff9aeba2bbb8b67cce2bebf9a3f665a496c3edebfc8b0753beb56a2a9181a401"
+        },
+        "status": "PASS",
+        "story": "US03 / H04 / H05",
+        "subject": {
+          "candidate_json_sha256": null,
+          "case_id": "f358dba843284de69f671f338222ebe4",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 1,
+          "semantic_hash": null,
+          "stage": "PROPOSED",
+          "subject_hash": null
+        },
+        "view": "inspection/intent-alternatives-1440"
+      },
+      {
+        "id": "domain-inspector-1440",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/domain-inspector-1440.png",
+          "sha256": "0f0962c23fbf090c4a4833daf2ea06653d0748b27ca884efd0453762736d6287"
+        },
+        "status": "PASS",
+        "story": "US06 / H05",
+        "subject": {
+          "candidate_json_sha256": "1540964f003e1dbbd0a39c297a6c0f959e16365c9e8e0fd8b55c64f2505228fe",
+          "case_id": "f358dba843284de69f671f338222ebe4",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 2,
+          "semantic_hash": "b26c9af5ae4cd958099956232721a70e73cb7e6efe1b213ff32417829b588e56",
+          "stage": "PREVIEW",
+          "subject_hash": "18dcc169cec99370181034e05a783bdc35fd7e3a5fd04e7af9f111dd1ee97e59"
+        },
+        "view": "inspection/domain-inspector-1440"
+      },
+      {
+        "id": "canvas-view-1440",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/canvas-view-1440.png",
+          "sha256": "0d132989bc8d8ce690f3ef38f381bfde32fa77c3ea7f97e98b02866600b99ade"
+        },
+        "status": "PASS",
+        "story": "US06 / H05",
+        "subject": {
+          "candidate_json_sha256": "1540964f003e1dbbd0a39c297a6c0f959e16365c9e8e0fd8b55c64f2505228fe",
+          "case_id": "f358dba843284de69f671f338222ebe4",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 2,
+          "semantic_hash": "b26c9af5ae4cd958099956232721a70e73cb7e6efe1b213ff32417829b588e56",
+          "stage": "PREVIEW",
+          "subject_hash": "18dcc169cec99370181034e05a783bdc35fd7e3a5fd04e7af9f111dd1ee97e59"
+        },
+        "view": "inspection/canvas-view-1440"
+      },
+      {
+        "id": "runtime-attempt-1440",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/runtime-attempt-1440.png",
+          "sha256": "01ff9c8489969536b02789d66473380dd10a7dfb7fc351c5a60d936624e9d8b8"
+        },
+        "status": "PASS",
+        "story": "US08 / H09",
+        "subject": {
+          "candidate_json_sha256": "1540964f003e1dbbd0a39c297a6c0f959e16365c9e8e0fd8b55c64f2505228fe",
+          "case_id": "f358dba843284de69f671f338222ebe4",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 2,
+          "semantic_hash": "b26c9af5ae4cd958099956232721a70e73cb7e6efe1b213ff32417829b588e56",
+          "stage": "PREVIEW",
+          "subject_hash": "18dcc169cec99370181034e05a783bdc35fd7e3a5fd04e7af9f111dd1ee97e59"
+        },
+        "view": "inspection/runtime-attempt-1440"
+      },
+      {
+        "id": "workspace-work-views-320",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/workspace-work-views-320.png",
+          "sha256": "7d698c190ef8ee506000729c0ab98df3e6b7d4c4d6d3649b078dd41fe1054aaf"
+        },
+        "status": "PASS",
+        "story": "US02 / H05",
+        "subject": {
+          "candidate_json_sha256": null,
+          "case_id": "01bb661f519446a49b73da7c15f88e89",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 1,
+          "semantic_hash": null,
+          "stage": "PROPOSED",
+          "subject_hash": null
+        },
+        "view": "inspection/workspace-work-views-320"
+      },
+      {
+        "id": "workspace-panels-320",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/workspace-panels-320.png",
+          "sha256": "3855e567f43acfc151562c35f76073eb9c204ea70eaad065503d2c9f53bedb56"
+        },
+        "status": "PASS",
+        "story": "US02 / H05",
+        "subject": {
+          "candidate_json_sha256": null,
+          "case_id": "01bb661f519446a49b73da7c15f88e89",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 1,
+          "semantic_hash": null,
+          "stage": "PROPOSED",
+          "subject_hash": null
+        },
+        "view": "inspection/workspace-panels-320"
+      },
+      {
+        "id": "workspace-layout-320",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/workspace-layout-320.png",
+          "sha256": "7d4421c4238f3642dc68826e289e7512f831d118496a68aced19505a75258244"
+        },
+        "status": "PASS",
+        "story": "US02 / H05",
+        "subject": {
+          "candidate_json_sha256": null,
+          "case_id": "01bb661f519446a49b73da7c15f88e89",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 1,
+          "semantic_hash": null,
+          "stage": "PROPOSED",
+          "subject_hash": null
+        },
+        "view": "inspection/workspace-layout-320"
+      },
+      {
+        "id": "workspace-connections-320",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/workspace-connections-320.png",
+          "sha256": "13bf96963afd26b7767e78ee70babb1d58805b25d5e2da6978e92be71bd8b420"
+        },
+        "status": "PASS",
+        "story": "US02 / H05",
+        "subject": {
+          "candidate_json_sha256": null,
+          "case_id": "01bb661f519446a49b73da7c15f88e89",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 1,
+          "semantic_hash": null,
+          "stage": "PROPOSED",
+          "subject_hash": null
+        },
+        "view": "inspection/workspace-connections-320"
+      },
+      {
+        "id": "intent-record-320",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/intent-record-320.png",
+          "sha256": "631f97fbec0ae04f1eda5f6c0cab7e00106eeb07991f0d0aecc9de7ed9ca224d"
+        },
+        "status": "PASS",
+        "story": "US03 / H04 / H05",
+        "subject": {
+          "candidate_json_sha256": null,
+          "case_id": "01bb661f519446a49b73da7c15f88e89",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 1,
+          "semantic_hash": null,
+          "stage": "PROPOSED",
+          "subject_hash": null
+        },
+        "view": "inspection/intent-record-320"
+      },
+      {
+        "id": "intent-controls-320",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/intent-controls-320.png",
+          "sha256": "cb858531102b572d030f4183daf45bb392d7529c7b9f970f0ae4adc96613590b"
+        },
+        "status": "PASS",
+        "story": "US03 / H04 / H05",
+        "subject": {
+          "candidate_json_sha256": null,
+          "case_id": "01bb661f519446a49b73da7c15f88e89",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 1,
+          "semantic_hash": null,
+          "stage": "PROPOSED",
+          "subject_hash": null
+        },
+        "view": "inspection/intent-controls-320"
+      },
+      {
+        "id": "intent-alternatives-320",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/intent-alternatives-320.png",
+          "sha256": "481af9ac66aa19ef11f7c79268afe51055d5158459b688e0f9f0a6ca4041212e"
+        },
+        "status": "PASS",
+        "story": "US03 / H04 / H05",
+        "subject": {
+          "candidate_json_sha256": null,
+          "case_id": "01bb661f519446a49b73da7c15f88e89",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 1,
+          "semantic_hash": null,
+          "stage": "PROPOSED",
+          "subject_hash": null
+        },
+        "view": "inspection/intent-alternatives-320"
+      },
+      {
+        "id": "runtime-attempt-320",
+        "observation": "Viewport after native input; no scripted scroll reset",
+        "requests": [],
+        "screenshot": {
+          "path": "inspection/runtime-attempt-320.png",
+          "sha256": "c3db82992fc5ab8a78d5599427de3090d5db93d28099570d6785538b6291008a"
+        },
+        "status": "PASS",
+        "story": "US08 / H09",
+        "subject": {
+          "candidate_json_sha256": "1540964f003e1dbbd0a39c297a6c0f959e16365c9e8e0fd8b55c64f2505228fe",
+          "case_id": "01bb661f519446a49b73da7c15f88e89",
+          "origin": "observed GET /api/cases/{case_id}",
+          "revision": 2,
+          "semantic_hash": "b26c9af5ae4cd958099956232721a70e73cb7e6efe1b213ff32417829b588e56",
+          "stage": "PREVIEW",
+          "subject_hash": "18dcc169cec99370181034e05a783bdc35fd7e3a5fd04e7af9f111dd1ee97e59"
+        },
+        "view": "inspection/runtime-attempt-320"
+      }
+    ],
+    "status": "PASS",
+    "summary": {
+      "observed": 18,
+      "passed": 18,
+      "required": 18
+    },
+    "views_audited": [
+      "inspection/canvas-view-1440",
+      "inspection/domain-inspector-1440",
+      "inspection/intent-alternatives-1440",
+      "inspection/intent-alternatives-320",
+      "inspection/intent-controls-1440",
+      "inspection/intent-controls-320",
+      "inspection/intent-record-1440",
+      "inspection/intent-record-320",
+      "inspection/runtime-attempt-1440",
+      "inspection/runtime-attempt-320",
+      "inspection/workspace-connections-1440",
+      "inspection/workspace-connections-320",
+      "inspection/workspace-layout-1440",
+      "inspection/workspace-layout-320",
+      "inspection/workspace-panels-1440",
+      "inspection/workspace-panels-320",
+      "inspection/workspace-work-views-1440",
+      "inspection/workspace-work-views-320"
+    ]
   },
   "journey": {
     "completed": true,
     "scripted_answers_note": "review answers are scripted fixture text; not a human comprehension measure",
     "steps": [
+      {
+        "id": "open-change",
+        "kind": "click",
+        "label": "Open a new change"
+      },
       {
         "id": "type-request",
         "kind": "type",
@@ -750,6 +1263,11 @@
         "label": "Run bounded verification"
       },
       {
+        "id": "open-review-subject",
+        "kind": "click",
+        "label": "Open review of this exact subject"
+      },
+      {
         "id": "answer-authority",
         "kind": "type",
         "label": "Answer review question 'authority'"
@@ -782,92 +1300,137 @@
     ]
   },
   "keyboard": {
-    "activations": 14,
-    "activations_that_lost_focus": [
-      "create-case",
-      "select-meaning",
-      "submit-teacher",
-      "recommend-teacher",
-      "approve-registrar",
-      "approve-exact",
-      "apply-baseline"
-    ],
+    "activations": 16,
+    "activations_that_lost_focus": [],
     "completed_journey_keyboard_only": true,
-    "focus_lost_count": 7,
-    "focus_order_regression_count": 0,
-    "focus_order_regressions": [],
-    "max_tab_presses_for_one_target": 18,
-    "note": "Real Tab / Shift-free forward traversal; focus indicator = computed outline or box-shadow on the focused element; 'focus lost' = document.activeElement is <body> once the DOM settled after activation",
+    "focus_lost_count": 0,
+    "focus_order_regression_count": 4,
+    "focus_order_regressions": [
+      {
+        "from": "Attempt details, diagnostic and persisted audit",
+        "step": "actor-registrar",
+        "to": "Skip to workspace"
+      },
+      {
+        "from": "Attempt details, diagnostic and persisted audit",
+        "step": "actor-unassigned",
+        "to": "Skip to workspace"
+      },
+      {
+        "from": "Attempt details, diagnostic and persisted audit",
+        "step": "open-evidence",
+        "to": "Skip to workspace"
+      },
+      {
+        "from": "modelled impact closurePASS Case-wide technical claim",
+        "step": "open-review-subject",
+        "to": "bend proofUNKNOWN sealed tool verdict · case-wide"
+      }
+    ],
+    "max_tab_presses_for_one_target": 20,
+    "note": "Real Tab traversal plus Arrow/Home navigation within tablists; every navigation and activation key is recorded; focus indicator = computed outline or box-shadow on the focused element; 'focus lost' = document.activeElement is <body> once the DOM settled after activation",
     "stops_without_indicator_count": 0,
     "stops_without_visible_focus_indicator": [],
     "tab_presses_by_step": {
       "acknowledge": 1,
-      "actor-registrar": 18,
-      "actor-unassigned": 18,
+      "actor-registrar": 20,
+      "actor-unassigned": 19,
       "answer-assignment": 1,
       "answer-authority": 1,
       "answer-reject_entry": 1,
-      "apply-baseline": 1,
+      "apply-baseline": 0,
       "approve-exact": 1,
       "approve-registrar": 3,
-      "ask-interpretations": 5,
+      "ask-interpretations": 0,
       "create-case": 1,
       "denied-recommend": 2,
-      "open-evidence": 14,
-      "open-try": 15,
-      "recommend-teacher": 2,
-      "reset-preview": 2,
-      "run-verification": 1,
-      "select-meaning": 3,
+      "open-change": 8,
+      "open-evidence": 18,
+      "open-review-subject": 9,
+      "open-try": 5,
+      "recommend-teacher": 1,
+      "reset-preview": 3,
+      "run-verification": 3,
+      "select-meaning": 2,
       "submit-teacher": 2,
-      "type-request": 4
+      "type-request": 0
     },
-    "tab_presses_spent_after_focus_loss": 64,
-    "tab_presses_total": 96,
-    "unique_focus_stops_seen": 36
+    "tab_presses_spent_after_focus_loss": 0,
+    "tab_presses_total": 101,
+    "unique_focus_stops_seen": 46
   },
   "klm": {
     "citation": "Card, Moran & Newell 1980 (CACM 23(7)); K = average non-secretary typist (~40 wpm)",
-    "expert_time_keyboard_only_s": 63.11,
-    "expert_time_pointer_s": 62.71,
+    "expert_time_keyboard_only_s": 65.07,
+    "expert_time_pointer_s": 65.31,
     "keyboard_only_journey": {
       "fitts_refined_total_s": null,
       "operator_counts": {
         "B": 0,
         "H": 0,
-        "K": 182,
+        "K": 189,
         "M": 9,
         "P": 0
       },
       "operators": [
         {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-change"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-change"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-change"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-change"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-change"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-change"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-change"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-change"
+        },
+        {
+          "note": "Enter",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-change"
+        },
+        {
           "note": "Recall the change to request (start of the unit task)",
           "op": "M",
           "seconds": 1.35,
-          "step": "type-request"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "type-request"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "type-request"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "type-request"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
           "step": "type-request"
         },
         {
@@ -1099,36 +1662,6 @@
           "step": "create-case"
         },
         {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "ask-interpretations"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "ask-interpretations"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "ask-interpretations"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "ask-interpretations"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "ask-interpretations"
-        },
-        {
           "note": "Enter",
           "op": "K",
           "seconds": 0.28,
@@ -1153,12 +1686,6 @@
           "step": "select-meaning"
         },
         {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "select-meaning"
-        },
-        {
           "note": "Enter",
           "op": "K",
           "seconds": 0.28,
@@ -1195,70 +1722,16 @@
           "step": "open-try"
         },
         {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "open-try"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "open-try"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "open-try"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "open-try"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "open-try"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "open-try"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "open-try"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "open-try"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "open-try"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "open-try"
-        },
-        {
           "note": "Enter",
           "op": "K",
           "seconds": 0.28,
           "step": "open-try"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "reset-preview"
         },
         {
           "note": "Tab",
@@ -1295,12 +1768,6 @@
           "op": "K",
           "seconds": 0.28,
           "step": "submit-teacher"
-        },
-        {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "recommend-teacher"
         },
         {
           "note": "Tab",
@@ -1318,6 +1785,18 @@
           "note": "Decide which role must act next",
           "op": "M",
           "seconds": 1.35,
+          "step": "actor-registrar"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-registrar"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
           "step": "actor-registrar"
         },
         {
@@ -1585,6 +2064,12 @@
           "step": "actor-unassigned"
         },
         {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "actor-unassigned"
+        },
+        {
           "note": "ArrowUp",
           "op": "K",
           "seconds": 0.28,
@@ -1613,6 +2098,30 @@
           "op": "K",
           "seconds": 0.28,
           "step": "denied-recommend"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-evidence"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-evidence"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-evidence"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-evidence"
         },
         {
           "note": "Tab",
@@ -1711,10 +2220,82 @@
           "step": "run-verification"
         },
         {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "run-verification"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "run-verification"
+        },
+        {
           "note": "Enter",
           "op": "K",
           "seconds": 0.28,
           "step": "run-verification"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-review-subject"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-review-subject"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-review-subject"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-review-subject"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-review-subject"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-review-subject"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-review-subject"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-review-subject"
+        },
+        {
+          "note": "Tab",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-review-subject"
+        },
+        {
+          "note": "Enter",
+          "op": "K",
+          "seconds": 0.28,
+          "step": "open-review-subject"
         },
         {
           "note": "Read the question and recall the fixture answer",
@@ -1975,12 +2556,6 @@
           "step": "apply-baseline"
         },
         {
-          "note": "Tab",
-          "op": "K",
-          "seconds": 0.28,
-          "step": "apply-baseline"
-        },
-        {
           "note": "Enter",
           "op": "K",
           "seconds": 0.28,
@@ -1989,39 +2564,59 @@
       ],
       "per_step_s": {
         "acknowledge": 1.91,
-        "actor-registrar": 7.23,
-        "actor-unassigned": 6.95,
+        "actor-registrar": 7.79,
+        "actor-unassigned": 7.23,
         "answer-assignment": 3.03,
         "answer-authority": 4.99,
         "answer-reject_entry": 5.55,
-        "apply-baseline": 1.91,
+        "apply-baseline": 1.63,
         "approve-exact": 0.56,
         "approve-registrar": 1.12,
-        "ask-interpretations": 1.68,
+        "ask-interpretations": 0.28,
         "create-case": 0.56,
         "denied-recommend": 0.84,
-        "open-evidence": 4.2,
-        "open-try": 4.48,
-        "recommend-teacher": 0.84,
-        "reset-preview": 0.84,
-        "run-verification": 0.56,
-        "select-meaning": 2.47,
+        "open-change": 2.52,
+        "open-evidence": 5.32,
+        "open-review-subject": 2.8,
+        "open-try": 1.68,
+        "recommend-teacher": 0.56,
+        "reset-preview": 1.12,
+        "run-verification": 1.12,
+        "select-meaning": 2.19,
         "submit-teacher": 0.84,
-        "type-request": 12.55
+        "type-request": 11.43
       },
-      "total_s": 63.11
+      "total_s": 65.07
     },
     "placement_rules": "M is placed once per deliberate decision or reading moment (annotated per step in journey.py); H is derived from every mouse<->keyboard switch; a click is P + B + B; Shift counts as its own K; select lists model open and choose as two P+B+B; scrolling and system response R are NOT in the standard total",
     "pointer_journey": {
-      "fitts_refined_total_s": 55.562,
+      "fitts_refined_total_s": 56.276,
       "operator_counts": {
-        "B": 44,
+        "B": 48,
         "H": 8,
         "K": 67,
         "M": 9,
-        "P": 22
+        "P": 24
       },
       "operators": [
+        {
+          "note": "point at ＋ New intent",
+          "op": "P",
+          "seconds": 1.1,
+          "step": "open-change"
+        },
+        {
+          "note": "button press",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "open-change"
+        },
+        {
+          "note": "button release",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "open-change"
+        },
         {
           "note": "Recall the change to request (start of the unit task)",
           "op": "M",
@@ -2275,7 +2870,7 @@
           "step": "create-case"
         },
         {
-          "note": "point at Create Change Case",
+          "note": "point at Create case",
           "op": "P",
           "seconds": 1.1,
           "step": "create-case"
@@ -2293,7 +2888,7 @@
           "step": "create-case"
         },
         {
-          "note": "point at Ask for interpretations",
+          "note": "point at Get interpretations",
           "op": "P",
           "seconds": 1.1,
           "step": "ask-interpretations"
@@ -2335,7 +2930,7 @@
           "step": "select-meaning"
         },
         {
-          "note": "point at 03 / Try",
+          "note": "point at Run",
           "op": "P",
           "seconds": 1.1,
           "step": "open-try"
@@ -2527,7 +3122,7 @@
           "step": "denied-recommend"
         },
         {
-          "note": "point at 04 / Evidence & Decision",
+          "note": "point at Evidence",
           "op": "P",
           "seconds": 1.1,
           "step": "open-evidence"
@@ -2561,6 +3156,24 @@
           "op": "B",
           "seconds": 0.1,
           "step": "run-verification"
+        },
+        {
+          "note": "point at Review this exact subject · eligible for local review · 18dc",
+          "op": "P",
+          "seconds": 1.1,
+          "step": "open-review-subject"
+        },
+        {
+          "note": "button press",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "open-review-subject"
+        },
+        {
+          "note": "button release",
+          "op": "B",
+          "seconds": 0.1,
+          "step": "open-review-subject"
         },
         {
           "note": "Read the question and recall the fixture answer",
@@ -2881,7 +3494,7 @@
           "step": "acknowledge"
         },
         {
-          "note": "point at Approve exact local revision",
+          "note": "point at Authorise exact local revision",
           "op": "P",
           "seconds": 1.1,
           "step": "approve-exact"
@@ -2936,7 +3549,9 @@
         "ask-interpretations": 1.3,
         "create-case": 1.7,
         "denied-recommend": 1.3,
+        "open-change": 1.3,
         "open-evidence": 1.3,
+        "open-review-subject": 1.3,
         "open-try": 1.3,
         "recommend-teacher": 1.3,
         "reset-preview": 1.3,
@@ -2945,7 +3560,7 @@
         "submit-teacher": 1.3,
         "type-request": 13.13
       },
-      "total_s": 62.71
+      "total_s": 65.31
     },
     "times_s": {
       "B": 0.1,
@@ -2972,94 +3587,58 @@
   "measured": {
     "doherty": {
       "citation": "Doherty & Thadani 1982 (IBM Systems Journal 21(1)); ~400 ms",
-      "first_feedback_p50_ms": 0.6,
-      "first_feedback_p95_ms": 1,
-      "interactions_measured": 39,
-      "journey_wait_p50_sum_s": 2.356,
-      "keyboard_settled_p50_ms": 56.7,
-      "keyboard_settled_p95_ms": 6246.6,
+      "first_feedback_p50_ms": 0.7,
+      "first_feedback_p95_ms": 5.8,
+      "interactions_measured": 45,
+      "journey_wait_p50_sum_s": 1.901,
+      "keyboard_settled_p50_ms": 100.5,
+      "keyboard_settled_p95_ms": 933.8,
       "method": "nearest-rank percentiles over all repeats; medians and interquartile range are the headline, p95 is the maximum with few samples",
       "native_control_interactions_excluded": [
         "acknowledge"
       ],
       "note": "settled = last DOM mutation before quiescence, from the click event; excludes OS/browser input latency",
-      "settled_max_ms": 3739.1,
-      "settled_p25_ms": 41.5,
-      "settled_p50_ms": 55.6,
-      "settled_p75_ms": 106.5,
-      "settled_p95_ms": 2507.3,
+      "settled_max_ms": 1334.7,
+      "settled_p25_ms": 5.7,
+      "settled_p50_ms": 89.3,
+      "settled_p75_ms": 109.3,
+      "settled_p95_ms": 869.7,
       "steps": [
         {
-          "first_feedback_p50_ms": 0.7,
-          "first_feedback_p95_ms": 0.8,
+          "first_feedback_p50_ms": 5.7,
+          "first_feedback_p95_ms": 7.8,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 56,
-          "settled_p50_ms": 63.2,
-          "settled_p75_ms": 81.1,
-          "settled_p95_ms": 81.1,
+          "settled_p25_ms": 5.2,
+          "settled_p50_ms": 5.7,
+          "settled_p75_ms": 7.8,
+          "settled_p95_ms": 7.8,
+          "step": "open-change"
+        },
+        {
+          "first_feedback_p50_ms": 0.4,
+          "first_feedback_p95_ms": 0.5,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 69.7,
+          "settled_p50_ms": 73.6,
+          "settled_p75_ms": 95,
+          "settled_p95_ms": 95,
           "step": "create-case"
         },
         {
-          "first_feedback_p50_ms": 0.8,
-          "first_feedback_p95_ms": 0.9,
-          "median_over_400ms": false,
-          "over_400ms": true,
-          "samples": 3,
-          "settled_p25_ms": 64.6,
-          "settled_p50_ms": 98.2,
-          "settled_p75_ms": 538.6,
-          "settled_p95_ms": 538.6,
-          "step": "ask-interpretations"
-        },
-        {
-          "first_feedback_p50_ms": 0.6,
-          "first_feedback_p95_ms": 0.8,
-          "median_over_400ms": false,
-          "over_400ms": false,
-          "samples": 3,
-          "settled_p25_ms": 47.1,
-          "settled_p50_ms": 55,
-          "settled_p75_ms": 63,
-          "settled_p95_ms": 63,
-          "step": "select-meaning"
-        },
-        {
-          "first_feedback_p50_ms": 0.2,
-          "first_feedback_p95_ms": 0.3,
-          "median_over_400ms": false,
-          "over_400ms": false,
-          "samples": 3,
-          "settled_p25_ms": 0.2,
-          "settled_p50_ms": 0.2,
-          "settled_p75_ms": 0.3,
-          "settled_p95_ms": 0.3,
-          "step": "open-try"
-        },
-        {
-          "first_feedback_p50_ms": 0.6,
-          "first_feedback_p95_ms": 0.7,
-          "median_over_400ms": false,
-          "over_400ms": false,
-          "samples": 3,
-          "settled_p25_ms": 41.5,
-          "settled_p50_ms": 48.1,
-          "settled_p75_ms": 55.1,
-          "settled_p95_ms": 55.1,
-          "step": "reset-preview"
-        },
-        {
           "first_feedback_p50_ms": 0.7,
           "first_feedback_p95_ms": 0.8,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 47.1,
-          "settled_p50_ms": 48.1,
-          "settled_p75_ms": 55.6,
-          "settled_p95_ms": 55.6,
-          "step": "submit-teacher"
+          "settled_p25_ms": 98,
+          "settled_p50_ms": 106.1,
+          "settled_p75_ms": 109.7,
+          "settled_p95_ms": 109.7,
+          "step": "ask-interpretations"
         },
         {
           "first_feedback_p50_ms": 0.5,
@@ -3067,82 +3646,142 @@
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 48.6,
-          "settled_p50_ms": 49.1,
-          "settled_p75_ms": 102.2,
-          "settled_p95_ms": 102.2,
-          "step": "recommend-teacher"
+          "settled_p25_ms": 104.2,
+          "settled_p50_ms": 106.3,
+          "settled_p75_ms": 116.2,
+          "settled_p95_ms": 116.2,
+          "step": "select-meaning"
         },
         {
-          "first_feedback_p50_ms": 0.6,
-          "first_feedback_p95_ms": 0.6,
+          "first_feedback_p50_ms": 4.2,
+          "first_feedback_p95_ms": 4.3,
           "median_over_400ms": false,
           "over_400ms": false,
           "samples": 3,
-          "settled_p25_ms": 50,
-          "settled_p50_ms": 70.6,
-          "settled_p75_ms": 101.6,
-          "settled_p95_ms": 101.6,
-          "step": "approve-registrar"
-        },
-        {
-          "first_feedback_p50_ms": 0.6,
-          "first_feedback_p95_ms": 0.8,
-          "median_over_400ms": false,
-          "over_400ms": false,
-          "samples": 3,
-          "settled_p25_ms": 7.4,
-          "settled_p50_ms": 7.6,
-          "settled_p75_ms": 7.6,
-          "settled_p95_ms": 7.6,
-          "step": "denied-recommend"
-        },
-        {
-          "first_feedback_p50_ms": 0.1,
-          "first_feedback_p95_ms": 0.2,
-          "median_over_400ms": false,
-          "over_400ms": false,
-          "samples": 3,
-          "settled_p25_ms": 0.1,
-          "settled_p50_ms": 0.1,
-          "settled_p75_ms": 0.2,
-          "settled_p95_ms": 0.2,
-          "step": "open-evidence"
-        },
-        {
-          "first_feedback_p50_ms": 0.6,
-          "first_feedback_p95_ms": 0.6,
-          "median_over_400ms": true,
-          "over_400ms": true,
-          "samples": 3,
-          "settled_p25_ms": 1231.5,
-          "settled_p50_ms": 1529.4,
-          "settled_p75_ms": 1633.6,
-          "settled_p95_ms": 1633.6,
-          "step": "run-verification"
-        },
-        {
-          "first_feedback_p50_ms": 1,
-          "first_feedback_p95_ms": 1.2,
-          "median_over_400ms": false,
-          "over_400ms": true,
-          "samples": 3,
-          "settled_p25_ms": 106.5,
-          "settled_p50_ms": 238.7,
-          "settled_p75_ms": 3739.1,
-          "settled_p95_ms": 3739.1,
-          "step": "approve-exact"
+          "settled_p25_ms": 3.4,
+          "settled_p50_ms": 4.2,
+          "settled_p75_ms": 4.3,
+          "settled_p95_ms": 4.3,
+          "step": "open-try"
         },
         {
           "first_feedback_p50_ms": 0.7,
           "first_feedback_p95_ms": 0.8,
           "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 88.3,
+          "settled_p50_ms": 88.4,
+          "settled_p75_ms": 109.3,
+          "settled_p95_ms": 109.3,
+          "step": "reset-preview"
+        },
+        {
+          "first_feedback_p50_ms": 0.8,
+          "first_feedback_p95_ms": 0.8,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 77.8,
+          "settled_p50_ms": 80.1,
+          "settled_p75_ms": 99.1,
+          "settled_p95_ms": 99.1,
+          "step": "submit-teacher"
+        },
+        {
+          "first_feedback_p50_ms": 0.5,
+          "first_feedback_p95_ms": 0.6,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 90.8,
+          "settled_p50_ms": 91.4,
+          "settled_p75_ms": 102.9,
+          "settled_p95_ms": 102.9,
+          "step": "recommend-teacher"
+        },
+        {
+          "first_feedback_p50_ms": 0.5,
+          "first_feedback_p95_ms": 0.6,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 87.9,
+          "settled_p50_ms": 89.3,
+          "settled_p75_ms": 98.8,
+          "settled_p95_ms": 98.8,
+          "step": "approve-registrar"
+        },
+        {
+          "first_feedback_p50_ms": 0.5,
+          "first_feedback_p95_ms": 0.6,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 5.4,
+          "settled_p50_ms": 5.4,
+          "settled_p75_ms": 5.5,
+          "settled_p95_ms": 5.5,
+          "step": "denied-recommend"
+        },
+        {
+          "first_feedback_p50_ms": 5.8,
+          "first_feedback_p95_ms": 6.2,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 4.9,
+          "settled_p50_ms": 5.8,
+          "settled_p75_ms": 6.2,
+          "settled_p95_ms": 6.2,
+          "step": "open-evidence"
+        },
+        {
+          "first_feedback_p50_ms": 0.4,
+          "first_feedback_p95_ms": 0.5,
+          "median_over_400ms": true,
           "over_400ms": true,
           "samples": 3,
-          "settled_p25_ms": 137.2,
-          "settled_p50_ms": 147.7,
-          "settled_p75_ms": 2507.3,
-          "settled_p95_ms": 2507.3,
+          "settled_p25_ms": 869.7,
+          "settled_p50_ms": 881.9,
+          "settled_p75_ms": 1334.7,
+          "settled_p95_ms": 1334.7,
+          "step": "run-verification"
+        },
+        {
+          "first_feedback_p50_ms": 0.9,
+          "first_feedback_p95_ms": 0.9,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 0.7,
+          "settled_p50_ms": 0.9,
+          "settled_p75_ms": 0.9,
+          "settled_p95_ms": 0.9,
+          "step": "open-review-subject"
+        },
+        {
+          "first_feedback_p50_ms": 0.8,
+          "first_feedback_p95_ms": 0.8,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 145.2,
+          "settled_p50_ms": 146.4,
+          "settled_p75_ms": 180.5,
+          "settled_p95_ms": 180.5,
+          "step": "approve-exact"
+        },
+        {
+          "first_feedback_p50_ms": 0.4,
+          "first_feedback_p95_ms": 0.5,
+          "median_over_400ms": false,
+          "over_400ms": false,
+          "samples": 3,
+          "settled_p25_ms": 209.8,
+          "settled_p50_ms": 215.4,
+          "settled_p75_ms": 219,
+          "settled_p95_ms": 219,
           "step": "apply-baseline"
         }
       ],
@@ -3150,10 +3789,7 @@
         "run-verification"
       ],
       "steps_over_400ms": [
-        "ask-interpretations",
-        "run-verification",
-        "approve-exact",
-        "apply-baseline"
+        "run-verification"
       ],
       "threshold_ms": 400.0
     }
@@ -3169,54 +3805,12 @@
   ],
   "recommendations": [
     {
-      "category": "wcag",
-      "change": "Give each listed scrollable region tabindex=\"0\", role=\"region\" and an accessible name so keyboard users can scroll it, or make it non-scrolling (for example collapse long content by default).",
-      "evidence": {
-        "impact": "serious",
-        "nodes": 1,
-        "reference": "https://dequeuniversity.com/rules/axe/4.12/scrollable-region-focusable?application=axeAPI",
-        "tags": [
-          "EN-301-549",
-          "EN-9.2.1.1",
-          "EN-9.2.1.3",
-          "RGAA-7.3.2",
-          "RGAAv4",
-          "TT4.a",
-          "TTv5",
-          "cat.keyboard",
-          "wcag211",
-          "wcag213",
-          "wcag2a"
-        ],
-        "views": [
-          "try-denied",
-          "try-draft",
-          "try-idle"
-        ]
-      },
-      "id": "a11y-scrollable-region-focusable",
-      "laws": [
-        "WCAG 2.2 AA"
-      ],
-      "likely_cause": "",
-      "predicted_effect": "",
-      "predicted_saving_s": 0.0,
-      "rank": 1,
-      "rank_saving_s": 0.0,
-      "saving_kind": "model difference",
-      "severity": 4,
-      "targets": [
-        "#trace"
-      ],
-      "title": "WCAG: Scrollable region must have keyboard access (scrollable-region-focusable)"
-    },
-    {
       "category": "doherty",
-      "change": "First DOM mutation after the click came within 1 ms (p95; paint not measured), while completion for the slow steps takes longer than 400 ms. For the slow steps show a determinate progress message, keep the previous result visible until the new one lands, and profile where the time goes before optimising anything.",
+      "change": "First DOM mutation after the click came within 5.8 ms (p95; paint not measured), while completion for the slow steps takes longer than 400 ms. For the slow steps show a determinate progress message, keep the previous result visible until the new one lands, and profile where the time goes before optimising anything.",
       "evidence": {
-        "first_feedback_p95_ms": 1,
+        "first_feedback_p95_ms": 5.8,
         "slow_steps": [
-          "run-verification: p50 1529.4 / p95 1633.6 ms"
+          "run-verification: p50 881.9 / p95 1334.7 ms"
         ]
       },
       "id": "doherty-completion",
@@ -3226,10 +3820,10 @@
       "likely_cause": "the server-side work per action, possibly the durable SQLite commit path, dominates (hypothesis; no profile was taken)",
       "predicted_effect": "measured on this machine; wall-clock, sensitive to load from other processes",
       "predicted_saving_s": 0.0,
-      "rank": 2,
+      "rank": 1,
       "rank_saving_s": 0.0,
       "saving_kind": "model difference",
-      "severity": 4,
+      "severity": 3,
       "targets": [
         "run-verification"
       ],
@@ -3237,66 +3831,28 @@
     },
     {
       "category": "keyboard",
-      "change": "Keep or restore keyboard focus across updates: update the activated control in place, or re-focus the same control after the update, and move focus deliberately to new content on tab changes (WCAG 2.4.3 Focus Order, 3.2.2).",
+      "change": "Align DOM order with visual order (WCAG 2.4.3).",
       "evidence": {
-        "max_tab_presses_for_one_target": 18,
-        "steps": [
-          "create-case",
-          "select-meaning",
-          "submit-teacher",
-          "recommend-teacher",
-          "approve-registrar",
-          "approve-exact",
-          "apply-baseline"
-        ],
-        "tab_presses_after_loss": 64
-      },
-      "id": "focus-lost-after-render",
-      "laws": [
-        "WCAG 2.4.3",
-        "KLM"
-      ],
-      "likely_cause": "the render step replaces whole regions of the DOM (for example replaceChildren), destroying the focused element (hypothesis; a code search agrees, the probe does not observe it)",
-      "predicted_effect": "upper bound: 17.9 s is every Tab press on the step after a focus loss, including presses that would be needed anyway; not a difference against a preserved-focus counterfactual",
-      "predicted_saving_s": 17.92,
-      "rank": 3,
-      "rank_saving_s": 0.0,
-      "saving_kind": "upper bound",
-      "severity": 4,
-      "targets": [],
-      "title": "7/14 keyboard activations dropped focus to <body>"
-    },
-    {
-      "category": "wcag",
-      "change": "Expose the state programmatically: aria-current=\"page\" or role=tab + aria-selected on the work-area tabs and aria-current on the selected case in the sidebar (WCAG 1.3.1, 4.1.2).",
-      "evidence": {
-        "elements": [
-          "#case-list > button",
-          "#workspace > nav > button:nth-of-type(1)",
-          "#workspace > nav > button:nth-of-type(2)",
-          "#workspace > nav > button:nth-of-type(3)",
-          "#workspace > nav > button:nth-of-type(4)"
+        "examples": [
+          "Attempt details, diagnostic and persisted audit -> Skip to workspace",
+          "Attempt details, diagnostic and persisted audit -> Skip to workspace",
+          "Attempt details, diagnostic and persisted audit -> Skip to workspace",
+          "modelled impact closurePASS Case-wide technical claim -> bend proofUNKNOWN sealed tool verdict · case-wide"
         ]
       },
-      "id": "state-only-visual",
+      "id": "focus-order-regression",
       "laws": [
-        "WCAG 4.1.2"
+        "WCAG 2.4.3"
       ],
       "likely_cause": "",
       "predicted_effect": "",
       "predicted_saving_s": 0.0,
-      "rank": 4,
+      "rank": 2,
       "rank_saving_s": 0.0,
       "saving_kind": "model difference",
       "severity": 3,
-      "targets": [
-        "#case-list > button",
-        "#workspace > nav > button:nth-of-type(1)",
-        "#workspace > nav > button:nth-of-type(2)",
-        "#workspace > nav > button:nth-of-type(3)",
-        "#workspace > nav > button:nth-of-type(4)"
-      ],
-      "title": "5 control(s) convey their active state only through CSS"
+      "targets": [],
+      "title": "4 Tab step(s) move upward on screen"
     },
     {
       "category": "klm",
@@ -3304,25 +3860,27 @@
       "evidence": {
         "keyboard_only_journey_tab_presses": {
           "acknowledge": 1,
-          "actor-registrar": 18,
-          "actor-unassigned": 18,
+          "actor-registrar": 20,
+          "actor-unassigned": 19,
           "answer-assignment": 1,
           "answer-authority": 1,
           "answer-reject_entry": 1,
-          "apply-baseline": 1,
+          "apply-baseline": 0,
           "approve-exact": 1,
           "approve-registrar": 3,
-          "ask-interpretations": 5,
+          "ask-interpretations": 0,
           "create-case": 1,
           "denied-recommend": 2,
-          "open-evidence": 14,
-          "open-try": 15,
-          "recommend-teacher": 2,
-          "reset-preview": 2,
-          "run-verification": 1,
-          "select-meaning": 3,
+          "open-change": 8,
+          "open-evidence": 18,
+          "open-review-subject": 9,
+          "open-try": 5,
+          "recommend-teacher": 1,
+          "reset-preview": 3,
+          "run-verification": 3,
+          "select-meaning": 2,
           "submit-teacher": 2,
-          "type-request": 4
+          "type-request": 0
         },
         "operators_replaced": {
           "B": 4,
@@ -3336,9 +3894,9 @@
         "KLM"
       ],
       "likely_cause": "",
-      "predicted_effect": "model: 3.6 s of 62.7 s expert time (6%)",
+      "predicted_effect": "model: 3.6 s of 65.3 s expert time (6%)",
       "predicted_saving_s": 3.64,
-      "rank": 5,
+      "rank": 3,
       "rank_saving_s": 3.64,
       "saving_kind": "model difference",
       "severity": 2,
@@ -3349,121 +3907,32 @@
       "title": "Review answers: move between fields with Tab instead of point-click and re-homing"
     },
     {
-      "category": "fitts",
-      "change": "Place each flagged target closer to the previous one (halve D) and give short targets an effective height of at least 44 px (W >= 44 px). Note the centre-landing convention overstates D for wide targets; see the nearest-edge column.",
-      "evidence": {
-        "moves": [
-          "ask-interpretations: D=858.4 px, W=48.8 px, ID=4.218 bits, MT=0.93 s",
-          "select-meaning: D=852.4 px, W=48.8 px, ID=4.208 bits, MT=0.929 s",
-          "reset-preview: D=737.1 px, W=48.8 px, ID=4.011 bits, MT=0.896 s",
-          "submit-teacher: D=983.9 px, W=48.8 px, ID=4.405 bits, MT=0.961 s",
-          "answer-authority: D=925.3 px, W=46.8 px, ID=4.378 bits, MT=0.957 s",
-          "acknowledge: D=414.3 px, W=25 px, ID=4.135 bits, MT=0.916 s"
-        ]
-      },
-      "id": "fitts-id-over-4",
-      "laws": [
-        "Fitts",
-        "MacKenzie & Buxton 1992"
-      ],
-      "likely_cause": "primary actions may sit at the far edge of a section while the preceding target is on the other side of the screen (hypothesis from the geometry table, not from the UI code)",
-      "predicted_effect": "model: halving D and W>=44 px saves 1.04 s of pointing time across the flagged moves",
-      "predicted_saving_s": 1.039,
-      "rank": 6,
-      "rank_saving_s": 1.039,
-      "saving_kind": "model difference",
-      "severity": 2,
-      "targets": [
-        "#acknowledge",
-        "#options > article:nth-of-type(1) > button",
-        "#propose",
-        "#q-authority",
-        "#reset",
-        "#runtime-actions > button:nth-of-type(1)"
-      ],
-      "title": "6 pointer move(s) exceed 4 bits"
-    },
-    {
-      "category": "doherty",
-      "change": "Re-measure with more --repeats before acting; with few samples p95 is the maximum.",
-      "evidence": {
-        "steps": [
-          "ask-interpretations: p50 98.2 / p95 538.6 ms (3 samples)",
-          "approve-exact: p50 238.7 / p95 3739.1 ms (3 samples)",
-          "apply-baseline: p50 147.7 / p95 2507.3 ms (3 samples)"
-        ]
-      },
-      "id": "doherty-tail",
-      "laws": [
-        "Doherty threshold"
-      ],
-      "likely_cause": "tail latency from disk or CPU contention or a first-request cost (hypothesis)",
-      "predicted_effect": "measured; may be machine noise",
-      "predicted_saving_s": 0.0,
-      "rank": 7,
-      "rank_saving_s": 0.0,
-      "saving_kind": "model difference",
-      "severity": 2,
-      "targets": [
-        "apply-baseline",
-        "approve-exact",
-        "ask-interpretations"
-      ],
-      "title": "3 interaction(s) occasionally exceed 400 ms (median under)"
-    },
-    {
-      "category": "fitts",
-      "change": "Keep the journey's targets above the fold (for example make the tab bar and the primary action sticky, or collapse persistent chrome once a case is open).",
-      "evidence": {
-        "steps": [
-          "select-meaning",
-          "approve-exact"
-        ],
-        "viewport": {
-          "height": 900,
-          "width": 1440
-        }
-      },
-      "id": "layout-hero-scroll",
-      "laws": [
-        "Fitts",
-        "KLM"
-      ],
-      "likely_cause": "banner or hero content above the work area pushes it down (hypothesis; the probe did not measure what sits above the fold)",
-      "predicted_effect": "each avoided scroll removes one unmodelled operator (the standard KLM total excludes scrolling); the 0.5 s per scroll is an assumption, not a measurement",
-      "predicted_saving_s": 1.0,
-      "rank": 8,
-      "rank_saving_s": 0.0,
-      "saving_kind": "upper bound",
-      "severity": 2,
-      "targets": [],
-      "title": "2 journey click(s) needed a scroll first at 1440x900"
-    },
-    {
       "category": "keyboard",
       "change": "Reduce the Tab distance to the slowest target: group related controls into a single tab stop with arrow-key navigation (WAI-ARIA composite widget pattern with roving tabindex) or provide a skip link past repeated regions.",
       "evidence": {
         "tab_presses_by_step": {
           "acknowledge": 1,
-          "actor-registrar": 18,
-          "actor-unassigned": 18,
+          "actor-registrar": 20,
+          "actor-unassigned": 19,
           "answer-assignment": 1,
           "answer-authority": 1,
           "answer-reject_entry": 1,
-          "apply-baseline": 1,
+          "apply-baseline": 0,
           "approve-exact": 1,
           "approve-registrar": 3,
-          "ask-interpretations": 5,
+          "ask-interpretations": 0,
           "create-case": 1,
           "denied-recommend": 2,
-          "open-evidence": 14,
-          "open-try": 15,
-          "recommend-teacher": 2,
-          "reset-preview": 2,
-          "run-verification": 1,
-          "select-meaning": 3,
+          "open-change": 8,
+          "open-evidence": 18,
+          "open-review-subject": 9,
+          "open-try": 5,
+          "recommend-teacher": 1,
+          "reset-preview": 3,
+          "run-verification": 3,
+          "select-meaning": 2,
           "submit-teacher": 2,
-          "type-request": 4
+          "type-request": 0
         }
       },
       "id": "tab-cost-high",
@@ -3474,39 +3943,12 @@
       "likely_cause": "a long run of tab stops before the main content, such as a tab bar or sidebar, precedes the target (hypothesis)",
       "predicted_effect": "",
       "predicted_saving_s": 0.0,
-      "rank": 9,
+      "rank": 4,
       "rank_saving_s": 0.0,
       "saving_kind": "model difference",
       "severity": 2,
       "targets": [],
-      "title": "Reaching one control took 18 Tab presses"
-    },
-    {
-      "category": "fitts",
-      "change": "Raise each listed target's effective clickable box (min-height, min-width or hit padding; where a label is the real click area, size the label) to 44 px, so it meets the 44 px guideline (WCAG 2.5.5 AAA) as well as the 24 px minimum.",
-      "evidence": {
-        "targets": [
-          "I understand this is a local synthetic d eff 1041x25 raw 18x18px",
-          "I consent to sending this request and sy eff 1041x25 raw 18x18px"
-        ]
-      },
-      "id": "target-size-marginal",
-      "laws": [
-        "WCAG 2.5.8",
-        "Fitts"
-      ],
-      "likely_cause": "",
-      "predicted_effect": "removes the smallest-W pointing target from the journey",
-      "predicted_saving_s": 0.0,
-      "rank": 10,
-      "rank_saving_s": 0.0,
-      "saving_kind": "model difference",
-      "severity": 2,
-      "targets": [
-        "#acknowledge",
-        "#egress"
-      ],
-      "title": "2 target(s) pass 2.5.8 but are under 44 px"
+      "title": "Reaching one control took 20 Tab presses"
     },
     {
       "category": "working-memory",
@@ -3514,21 +3956,43 @@
       "evidence": {
         "label": "HEURISTIC PROXY - counts what is simultaneously visible, not what a person holds in memory",
         "views": [
-          "applied: 18",
-          "change-empty: 22",
-          "change-options: 22",
-          "change-selected: 25",
-          "create-panel: 16",
-          "evidence-approved: 18",
-          "evidence-verified: 18",
-          "impact-tab: 25",
-          "start: 16",
-          "try-denied: 16",
-          "try-draft: 16",
-          "try-idle: 16"
+          "applied: 26",
+          "change-empty: 25",
+          "change-options: 26",
+          "change-selected: 22",
+          "create-panel: 24",
+          "evidence-approved: 27",
+          "evidence-review-open: 27",
+          "evidence-verified: 30",
+          "impact-tab: 22",
+          "inspection/canvas-view-1440: 50",
+          "inspection/domain-inspector-1440: 43",
+          "inspection/intent-alternatives-1440: 25",
+          "inspection/intent-alternatives-320: 18",
+          "inspection/intent-controls-1440: 27",
+          "inspection/intent-controls-320: 22",
+          "inspection/intent-record-1440: 26",
+          "inspection/intent-record-320: 21",
+          "inspection/runtime-attempt-1440: 38",
+          "inspection/runtime-attempt-320: 22",
+          "inspection/workspace-connections-1440: 20",
+          "inspection/workspace-connections-320: 18",
+          "inspection/workspace-layout-1440: 21",
+          "inspection/workspace-layout-320: 17",
+          "inspection/workspace-panels-1440: 20",
+          "inspection/workspace-panels-320: 18",
+          "inspection/workspace-work-views-1440: 23",
+          "inspection/workspace-work-views-320: 18",
+          "start: 27",
+          "try-denied: 29",
+          "try-draft: 27",
+          "try-idle: 27",
+          "workspace-menu-1440-impact: 17",
+          "workspace-menu-320-impact: 17",
+          "workspace-menu-390-impact: 17"
         ],
-        "worst_chunks": 25,
-        "worst_view": "change-selected"
+        "worst_chunks": 50,
+        "worst_view": "inspection/canvas-view-1440"
       },
       "id": "working-memory-proxy",
       "laws": [
@@ -3538,19 +4002,19 @@
       "likely_cause": "",
       "predicted_effect": "heuristic only: not a measurement of anyone's memory",
       "predicted_saving_s": 0.0,
-      "rank": 11,
+      "rank": 5,
       "rank_saving_s": 0.0,
       "saving_kind": "model difference",
       "severity": 2,
       "targets": [],
-      "title": "12/12 views show more than 9 chunks at once (proxy)"
+      "title": "34/34 views show more than 9 chunks at once (proxy)"
     },
     {
       "category": "hick",
       "change": "Keep one visually dominant primary action per view and demote the rest (secondary/text buttons), which lowers effective uncertainty for first-time users (Hyman).",
       "evidence": {
-        "max_group_choices": 5,
-        "max_screen_controls": 12,
+        "max_group_choices": 7,
+        "max_screen_controls": 21,
         "note": "upper bound; the choice groups themselves are all <= 7"
       },
       "id": "hick-screen-load",
@@ -3558,10 +4022,10 @@
         "Hick-Hyman"
       ],
       "likely_cause": "",
-      "predicted_effect": "if a novice searched the whole screen instead of the choice group: +1.60 s (upper bound, model)",
-      "predicted_saving_s": 1.597,
-      "rank": 12,
-      "rank_saving_s": 1.597,
+      "predicted_effect": "if a novice searched the whole screen instead of the choice group: +2.52 s (upper bound, model)",
+      "predicted_saving_s": 2.518,
+      "rank": 6,
+      "rank_saving_s": 2.518,
       "saving_kind": "model difference",
       "severity": 1,
       "targets": [],
@@ -3571,9 +4035,9 @@
       "category": "klm",
       "change": "Not a defect by itself; use it to decide where shortcuts (tab shortcuts, access keys) pay off.",
       "evidence": {
-        "keyboard_K": 182,
-        "keyboard_total_s": 63.11,
-        "pointer_total_s": 62.71
+        "keyboard_K": 189,
+        "keyboard_total_s": 65.07,
+        "pointer_total_s": 65.31
       },
       "id": "klm-keyboard-vs-pointer",
       "laws": [
@@ -3582,12 +4046,12 @@
       "likely_cause": "",
       "predicted_effect": "",
       "predicted_saving_s": 0.0,
-      "rank": 13,
+      "rank": 7,
       "rank_saving_s": 0.0,
       "saving_kind": "model difference",
       "severity": 1,
       "targets": [],
-      "title": "Keyboard-only journey costs 63.1 s vs 62.7 s with the pointer (model)"
+      "title": "Keyboard-only journey costs 65.1 s vs 65.3 s with the pointer (model)"
     },
     {
       "category": "klm",
@@ -3612,7 +4076,7 @@
       "likely_cause": "",
       "predicted_effect": "informational: M is the irreducible cognitive floor of the journey",
       "predicted_saving_s": 0.0,
-      "rank": 14,
+      "rank": 8,
       "rank_saving_s": 0.0,
       "saving_kind": "model difference",
       "severity": 1,
@@ -3624,19 +4088,31 @@
     "http_error_responses": [
       {
         "method": "POST",
-        "path": "/api/cases/29789376178d4a3e931a794066b95b99/execute",
+        "path": "/api/cases/01bb661f519446a49b73da7c15f88e89/execute",
         "status": 409,
         "step": "denied-recommend"
       },
       {
         "method": "POST",
-        "path": "/api/cases/5caa9737106242c3b224364f5a9e6928/execute",
+        "path": "/api/cases/6c6941874e5149b4827e4d1191e40b9b/execute",
         "status": 409,
         "step": "denied-recommend"
       },
       {
         "method": "POST",
-        "path": "/api/cases/e03f3fcc85e749dab0e30454d0011a52/execute",
+        "path": "/api/cases/7a338943d4af4f21b121e71dcd5169d5/execute",
+        "status": 409,
+        "step": "denied-recommend"
+      },
+      {
+        "method": "POST",
+        "path": "/api/cases/c77488c207234b8481ade33b0d751188/execute",
+        "status": 409,
+        "step": "denied-recommend"
+      },
+      {
+        "method": "POST",
+        "path": "/api/cases/f358dba843284de69f671f338222ebe4/execute",
         "status": 409,
         "step": "denied-recommend"
       }
@@ -3647,7 +4123,66 @@
   "schema": "eija.hci.report.v1",
   "wcag": {
     "engine": "axe-core (tags wcag2a, wcag2aa, wcag21a, wcag21aa, wcag22aa)",
-    "needs_review_rules": [],
+    "needs_review_rules": [
+      {
+        "id": "aria-prohibited-attr",
+        "impact": "serious",
+        "views": [
+          "inspection/canvas-view-1440",
+          "inspection/domain-inspector-1440"
+        ]
+      },
+      {
+        "id": "aria-valid-attr-value",
+        "impact": "critical",
+        "views": [
+          "applied",
+          "change-empty",
+          "change-options",
+          "change-selected",
+          "create-panel",
+          "evidence-approved",
+          "evidence-review-open",
+          "evidence-verified",
+          "impact-tab",
+          "inspection/canvas-view-1440",
+          "inspection/domain-inspector-1440",
+          "inspection/intent-alternatives-1440",
+          "inspection/intent-alternatives-320",
+          "inspection/intent-controls-1440",
+          "inspection/intent-controls-320",
+          "inspection/intent-record-1440",
+          "inspection/intent-record-320",
+          "inspection/runtime-attempt-1440",
+          "inspection/runtime-attempt-320",
+          "inspection/workspace-connections-1440",
+          "inspection/workspace-connections-320",
+          "inspection/workspace-layout-1440",
+          "inspection/workspace-layout-320",
+          "inspection/workspace-panels-1440",
+          "inspection/workspace-panels-320",
+          "inspection/workspace-work-views-1440",
+          "inspection/workspace-work-views-320",
+          "start",
+          "try-denied",
+          "try-draft",
+          "try-idle",
+          "workspace-menu-1440-impact",
+          "workspace-menu-320-impact",
+          "workspace-menu-390-impact"
+        ]
+      },
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "views": [
+          "inspection/canvas-view-1440",
+          "inspection/domain-inspector-1440",
+          "inspection/workspace-connections-320",
+          "start"
+        ]
+      }
+    ],
     "reflow_and_targets_by_viewport": {
       "320x568": {
         "horizontal_overflow_tabs": [],
@@ -3662,25 +4197,19 @@
       "critical": 0,
       "minor": 0,
       "moderate": 0,
-      "nodes": 1,
+      "nodes": 0,
       "reflow_overflow_views": 0,
-      "rules": 1,
-      "serious": 1,
+      "rules": 0,
+      "serious": 0,
       "target_size_failures": 0
     },
     "supplementary_state_only_visual": {
       "authority": "heuristic; not an axe rule",
       "check": "interactive element styled active/selected without aria-current/selected/pressed/checked/expanded",
-      "elements": [
-        "#case-list > button",
-        "#workspace > nav > button:nth-of-type(1)",
-        "#workspace > nav > button:nth-of-type(2)",
-        "#workspace > nav > button:nth-of-type(3)",
-        "#workspace > nav > button:nth-of-type(4)"
-      ]
+      "elements": []
     },
     "target_size_2_5_8": {
-      "controls_audited": 42,
+      "controls_audited": 103,
       "exceptions_not_evaluated": [
         "inline",
         "user-agent controlled",
@@ -3688,18 +4217,18 @@
         "essential"
       ],
       "status_counts": {
-        "pass": 42
+        "pass": 103
       },
       "undersized_or_failing": [
         {
           "effective_px": [
-            1041,
-            25
+            1332,
+            44
           ],
           "name": "I understand this is a local synthetic demo, with human outc",
           "raw_px": [
-            18,
-            18
+            17,
+            17
           ],
           "selector": "#acknowledge",
           "status": "pass",
@@ -3707,13 +4236,13 @@
         },
         {
           "effective_px": [
-            1041,
-            25
+            1058,
+            44
           ],
           "name": "I consent to sending this request and synthetic model to the",
           "raw_px": [
-            18,
-            18
+            17,
+            17
           ],
           "selector": "#egress",
           "status": "pass",
@@ -3728,179 +4257,458 @@
       "change-selected",
       "create-panel",
       "evidence-approved",
+      "evidence-review-open",
       "evidence-verified",
       "impact-tab",
+      "inspection/canvas-view-1440",
+      "inspection/domain-inspector-1440",
+      "inspection/intent-alternatives-1440",
+      "inspection/intent-alternatives-320",
+      "inspection/intent-controls-1440",
+      "inspection/intent-controls-320",
+      "inspection/intent-record-1440",
+      "inspection/intent-record-320",
+      "inspection/runtime-attempt-1440",
+      "inspection/runtime-attempt-320",
+      "inspection/workspace-connections-1440",
+      "inspection/workspace-connections-320",
+      "inspection/workspace-layout-1440",
+      "inspection/workspace-layout-320",
+      "inspection/workspace-panels-1440",
+      "inspection/workspace-panels-320",
+      "inspection/workspace-work-views-1440",
+      "inspection/workspace-work-views-320",
       "start",
       "try-denied",
       "try-draft",
-      "try-idle"
+      "try-idle",
+      "workspace-menu-1440-impact",
+      "workspace-menu-320-impact",
+      "workspace-menu-390-impact"
     ],
-    "violation_rules_by_impact": {
-      "serious": 1
-    },
-    "violations_by_rule": [
-      {
-        "help": "Scrollable region must have keyboard access",
-        "help_url": "https://dequeuniversity.com/rules/axe/4.12/scrollable-region-focusable?application=axeAPI",
-        "id": "scrollable-region-focusable",
-        "impact": "serious",
-        "node_count": 1,
-        "nodes": [
-          "#trace"
-        ],
-        "tags": [
-          "EN-301-549",
-          "EN-9.2.1.1",
-          "EN-9.2.1.3",
-          "RGAA-7.3.2",
-          "RGAAv4",
-          "TT4.a",
-          "TTv5",
-          "cat.keyboard",
-          "wcag211",
-          "wcag213",
-          "wcag2a"
-        ],
-        "views": [
-          "try-denied",
-          "try-draft",
-          "try-idle"
-        ]
-      }
-    ]
+    "violation_rules_by_impact": {},
+    "violations_by_rule": []
   },
   "working_memory": {
     "citations": [
       "Miller 1956 (7 +/- 2)",
       "Cowan 2001 (about 4)"
     ],
-    "definition": "chunks = visible operable controls (a checkbox and its label are one) + groups of visible static text/heading atoms that share a parent element; viewport = first screen at scroll top, page = whole rendered view",
+    "definition": "chunks = visible controls, including disabled controls (a checkbox and its label are one), + groups of visible static text/heading atoms that share a parent element; viewport = first screen at scroll top for canonical journey views; inspection views use the actual viewport after native activation, with document and pane scroll positions retained in view.observed. Page = whole rendered view. Independent pane overflow clips are intersected; partially visible items still count. Raw layout-box counts and clipped exclusions are retained; absent values identify older traces without this accounting.",
     "label": "HEURISTIC PROXY - counts what is simultaneously visible, not what a person holds in memory",
     "summary": {
-      "max_chunks_viewport": 25,
-      "views": 12,
-      "views_over_miller_9": 12
+      "max_chunks_viewport": 50,
+      "views": 34,
+      "views_over_miller_9": 34
     },
     "views": [
       {
-        "atoms_viewport": 23,
-        "chunks_page": 35,
-        "chunks_viewport": 18,
-        "content_groups": 6,
-        "controls": 12,
+        "atoms_viewport": 33,
+        "chunks_page": 26,
+        "chunks_viewport": 26,
+        "content_groups": 5,
+        "controls": 21,
+        "excluded_clipped_chunks": 3,
         "over_cowan_4": true,
         "over_miller_9": true,
+        "raw_chunks_viewport": 29,
         "view": "applied"
       },
       {
-        "atoms_viewport": 31,
-        "chunks_page": 23,
-        "chunks_viewport": 22,
-        "content_groups": 13,
-        "controls": 9,
+        "atoms_viewport": 32,
+        "chunks_page": 25,
+        "chunks_viewport": 25,
+        "content_groups": 8,
+        "controls": 17,
+        "excluded_clipped_chunks": 0,
         "over_cowan_4": true,
         "over_miller_9": true,
+        "raw_chunks_viewport": 25,
         "view": "change-empty"
       },
       {
-        "atoms_viewport": 31,
-        "chunks_page": 36,
-        "chunks_viewport": 22,
-        "content_groups": 13,
-        "controls": 9,
+        "atoms_viewport": 37,
+        "chunks_page": 26,
+        "chunks_viewport": 26,
+        "content_groups": 9,
+        "controls": 17,
+        "excluded_clipped_chunks": 0,
         "over_cowan_4": true,
         "over_miller_9": true,
+        "raw_chunks_viewport": 26,
         "view": "change-options"
       },
       {
-        "atoms_viewport": 60,
-        "chunks_page": 42,
-        "chunks_viewport": 25,
-        "content_groups": 14,
-        "controls": 11,
+        "atoms_viewport": 32,
+        "chunks_page": 22,
+        "chunks_viewport": 22,
+        "content_groups": 8,
+        "controls": 14,
+        "excluded_clipped_chunks": 1,
         "over_cowan_4": true,
         "over_miller_9": true,
+        "raw_chunks_viewport": 23,
         "view": "change-selected"
       },
       {
-        "atoms_viewport": 23,
-        "chunks_page": 16,
-        "chunks_viewport": 16,
-        "content_groups": 12,
-        "controls": 4,
+        "atoms_viewport": 30,
+        "chunks_page": 24,
+        "chunks_viewport": 24,
+        "content_groups": 8,
+        "controls": 16,
+        "excluded_clipped_chunks": 0,
         "over_cowan_4": true,
         "over_miller_9": true,
+        "raw_chunks_viewport": 24,
         "view": "create-panel"
       },
       {
-        "atoms_viewport": 23,
-        "chunks_page": 35,
-        "chunks_viewport": 18,
-        "content_groups": 6,
-        "controls": 12,
+        "atoms_viewport": 34,
+        "chunks_page": 27,
+        "chunks_viewport": 27,
+        "content_groups": 5,
+        "controls": 22,
+        "excluded_clipped_chunks": 3,
         "over_cowan_4": true,
         "over_miller_9": true,
+        "raw_chunks_viewport": 30,
         "view": "evidence-approved"
       },
       {
-        "atoms_viewport": 23,
-        "chunks_page": 35,
-        "chunks_viewport": 18,
+        "atoms_viewport": 34,
+        "chunks_page": 27,
+        "chunks_viewport": 27,
         "content_groups": 6,
-        "controls": 12,
+        "controls": 21,
+        "excluded_clipped_chunks": 5,
         "over_cowan_4": true,
         "over_miller_9": true,
+        "raw_chunks_viewport": 32,
+        "view": "evidence-review-open"
+      },
+      {
+        "atoms_viewport": 43,
+        "chunks_page": 30,
+        "chunks_viewport": 30,
+        "content_groups": 12,
+        "controls": 18,
+        "excluded_clipped_chunks": 0,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 30,
         "view": "evidence-verified"
       },
       {
-        "atoms_viewport": 60,
-        "chunks_page": 42,
-        "chunks_viewport": 25,
-        "content_groups": 14,
-        "controls": 11,
+        "atoms_viewport": 32,
+        "chunks_page": 22,
+        "chunks_viewport": 22,
+        "content_groups": 8,
+        "controls": 14,
+        "excluded_clipped_chunks": 1,
         "over_cowan_4": true,
         "over_miller_9": true,
+        "raw_chunks_viewport": 23,
         "view": "impact-tab"
       },
       {
-        "atoms_viewport": 23,
-        "chunks_page": 16,
-        "chunks_viewport": 16,
-        "content_groups": 12,
-        "controls": 4,
+        "atoms_viewport": 66,
+        "chunks_page": 50,
+        "chunks_viewport": 50,
+        "content_groups": 17,
+        "controls": 33,
+        "excluded_clipped_chunks": 1,
         "over_cowan_4": true,
         "over_miller_9": true,
-        "view": "start"
+        "raw_chunks_viewport": 51,
+        "view": "inspection/canvas-view-1440"
+      },
+      {
+        "atoms_viewport": 57,
+        "chunks_page": 43,
+        "chunks_viewport": 43,
+        "content_groups": 14,
+        "controls": 29,
+        "excluded_clipped_chunks": 1,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 44,
+        "view": "inspection/domain-inspector-1440"
+      },
+      {
+        "atoms_viewport": 36,
+        "chunks_page": 25,
+        "chunks_viewport": 25,
+        "content_groups": 8,
+        "controls": 17,
+        "excluded_clipped_chunks": 2,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 27,
+        "view": "inspection/intent-alternatives-1440"
+      },
+      {
+        "atoms_viewport": 22,
+        "chunks_page": 18,
+        "chunks_viewport": 18,
+        "content_groups": 5,
+        "controls": 13,
+        "excluded_clipped_chunks": 4,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 22,
+        "view": "inspection/intent-alternatives-320"
+      },
+      {
+        "atoms_viewport": 38,
+        "chunks_page": 27,
+        "chunks_viewport": 27,
+        "content_groups": 9,
+        "controls": 18,
+        "excluded_clipped_chunks": 1,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 28,
+        "view": "inspection/intent-controls-1440"
+      },
+      {
+        "atoms_viewport": 26,
+        "chunks_page": 22,
+        "chunks_viewport": 22,
+        "content_groups": 7,
+        "controls": 15,
+        "excluded_clipped_chunks": 1,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 23,
+        "view": "inspection/intent-controls-320"
+      },
+      {
+        "atoms_viewport": 38,
+        "chunks_page": 26,
+        "chunks_viewport": 26,
+        "content_groups": 10,
+        "controls": 16,
+        "excluded_clipped_chunks": 4,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 30,
+        "view": "inspection/intent-record-1440"
+      },
+      {
+        "atoms_viewport": 25,
+        "chunks_page": 21,
+        "chunks_viewport": 21,
+        "content_groups": 8,
+        "controls": 13,
+        "excluded_clipped_chunks": 4,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 25,
+        "view": "inspection/intent-record-320"
+      },
+      {
+        "atoms_viewport": 56,
+        "chunks_page": 38,
+        "chunks_viewport": 38,
+        "content_groups": 14,
+        "controls": 24,
+        "excluded_clipped_chunks": 0,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 38,
+        "view": "inspection/runtime-attempt-1440"
+      },
+      {
+        "atoms_viewport": 27,
+        "chunks_page": 22,
+        "chunks_viewport": 22,
+        "content_groups": 8,
+        "controls": 14,
+        "excluded_clipped_chunks": 3,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 25,
+        "view": "inspection/runtime-attempt-320"
+      },
+      {
+        "atoms_viewport": 24,
+        "chunks_page": 20,
+        "chunks_viewport": 20,
+        "content_groups": 7,
+        "controls": 13,
+        "excluded_clipped_chunks": 0,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 20,
+        "view": "inspection/workspace-connections-1440"
+      },
+      {
+        "atoms_viewport": 21,
+        "chunks_page": 18,
+        "chunks_viewport": 18,
+        "content_groups": 7,
+        "controls": 11,
+        "excluded_clipped_chunks": 0,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 18,
+        "view": "inspection/workspace-connections-320"
+      },
+      {
+        "atoms_viewport": 25,
+        "chunks_page": 21,
+        "chunks_viewport": 21,
+        "content_groups": 6,
+        "controls": 15,
+        "excluded_clipped_chunks": 0,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 21,
+        "view": "inspection/workspace-layout-1440"
       },
       {
         "atoms_viewport": 20,
-        "chunks_page": 31,
-        "chunks_viewport": 16,
-        "content_groups": 4,
-        "controls": 12,
+        "chunks_page": 17,
+        "chunks_viewport": 17,
+        "content_groups": 6,
+        "controls": 11,
+        "excluded_clipped_chunks": 1,
         "over_cowan_4": true,
         "over_miller_9": true,
+        "raw_chunks_viewport": 18,
+        "view": "inspection/workspace-layout-320"
+      },
+      {
+        "atoms_viewport": 24,
+        "chunks_page": 20,
+        "chunks_viewport": 20,
+        "content_groups": 6,
+        "controls": 14,
+        "excluded_clipped_chunks": 0,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 20,
+        "view": "inspection/workspace-panels-1440"
+      },
+      {
+        "atoms_viewport": 21,
+        "chunks_page": 18,
+        "chunks_viewport": 18,
+        "content_groups": 6,
+        "controls": 12,
+        "excluded_clipped_chunks": 0,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 18,
+        "view": "inspection/workspace-panels-320"
+      },
+      {
+        "atoms_viewport": 27,
+        "chunks_page": 23,
+        "chunks_viewport": 23,
+        "content_groups": 6,
+        "controls": 17,
+        "excluded_clipped_chunks": 0,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 23,
+        "view": "inspection/workspace-work-views-1440"
+      },
+      {
+        "atoms_viewport": 21,
+        "chunks_page": 18,
+        "chunks_viewport": 18,
+        "content_groups": 6,
+        "controls": 12,
+        "excluded_clipped_chunks": 1,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 19,
+        "view": "inspection/workspace-work-views-320"
+      },
+      {
+        "atoms_viewport": 33,
+        "chunks_page": 27,
+        "chunks_viewport": 27,
+        "content_groups": 10,
+        "controls": 17,
+        "excluded_clipped_chunks": 0,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 27,
+        "view": "start"
+      },
+      {
+        "atoms_viewport": 40,
+        "chunks_page": 29,
+        "chunks_viewport": 29,
+        "content_groups": 8,
+        "controls": 21,
+        "excluded_clipped_chunks": 0,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 29,
         "view": "try-denied"
       },
       {
-        "atoms_viewport": 19,
-        "chunks_page": 31,
-        "chunks_viewport": 16,
-        "content_groups": 4,
-        "controls": 12,
+        "atoms_viewport": 37,
+        "chunks_page": 27,
+        "chunks_viewport": 27,
+        "content_groups": 7,
+        "controls": 20,
+        "excluded_clipped_chunks": 0,
         "over_cowan_4": true,
         "over_miller_9": true,
+        "raw_chunks_viewport": 27,
         "view": "try-draft"
       },
       {
-        "atoms_viewport": 19,
-        "chunks_page": 31,
-        "chunks_viewport": 16,
-        "content_groups": 4,
-        "controls": 12,
+        "atoms_viewport": 36,
+        "chunks_page": 27,
+        "chunks_viewport": 27,
+        "content_groups": 7,
+        "controls": 20,
+        "excluded_clipped_chunks": 0,
         "over_cowan_4": true,
         "over_miller_9": true,
+        "raw_chunks_viewport": 27,
         "view": "try-idle"
+      },
+      {
+        "atoms_viewport": 21,
+        "chunks_page": 17,
+        "chunks_viewport": 17,
+        "content_groups": 6,
+        "controls": 11,
+        "excluded_clipped_chunks": 0,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 17,
+        "view": "workspace-menu-1440-impact"
+      },
+      {
+        "atoms_viewport": 20,
+        "chunks_page": 17,
+        "chunks_viewport": 17,
+        "content_groups": 6,
+        "controls": 11,
+        "excluded_clipped_chunks": 0,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 17,
+        "view": "workspace-menu-320-impact"
+      },
+      {
+        "atoms_viewport": 20,
+        "chunks_page": 17,
+        "chunks_viewport": 17,
+        "content_groups": 6,
+        "controls": 11,
+        "excluded_clipped_chunks": 0,
+        "over_cowan_4": true,
+        "over_miller_9": true,
+        "raw_chunks_viewport": 17,
+        "view": "workspace-menu-390-impact"
       }
     ]
   }

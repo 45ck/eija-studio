@@ -1,6 +1,7 @@
 """`python -m verification.bmc` -- bounded model check of the real runtime; writes a `bounded_model_check` report.
 
-Exit status: 0 PASS, 1 FAIL (counterexample or failed check), 2 INCONCLUSIVE (time cap hit).
+Exit status: 0 PASS, 1 FAIL (counterexample or failed check), 2 INCONCLUSIVE (time cap hit),
+4 PARTIAL (no violation, but the drift check or the self-test could not run: not a PASS).
 """
 from __future__ import annotations
 
@@ -36,7 +37,10 @@ def main(argv: list[str] | None = None) -> int:
     doc = report.build_report(cfg, args.workdir, run_self_test=not args.no_self_test, self_test_depth=args.self_test_depth,
                               tier=args.tier, model_names=tuple(args.models) if args.models else report.DEFAULT_MODELS[args.tier],
                               check_drift=not args.write_snapshot)
-    if args.write_snapshot:
+    if args.write_snapshot and doc["verdict"] != "PASS":  # the drift check is excluded on purpose here, so PASS means everything else ran
+        print(f"refusing --write-snapshot: the run is {doc['verdict']}; statistics are never recorded over a counterexample, "
+              "a cut-off search, or a run whose self-test did not execute")
+    elif args.write_snapshot:
         stats = report.deterministic_stats(doc["results"]["models"])
         report.write_snapshot(cfg.depth, stats, cfg.describe())
         print(f"wrote {report.SNAPSHOT}")
@@ -47,7 +51,7 @@ def main(argv: list[str] | None = None) -> int:
         for c in cexs:
             print(f"COUNTEREXAMPLE [{name}] {c['invariant']} in {c['length']} moves: {c['detail']}\n  " + "\n  ".join(c["trace"]))
     print(f"{doc['verdict']}  {out}  ({doc['measurements']['seconds_total']} s)")
-    return {"PASS": 0, "FAIL": 1, "INCONCLUSIVE": 2}[doc["verdict"]]
+    return {"PASS": 0, "FAIL": 1, "INCONCLUSIVE": 2, "PARTIAL": 4}[doc["verdict"]]
 
 
 if __name__ == "__main__":

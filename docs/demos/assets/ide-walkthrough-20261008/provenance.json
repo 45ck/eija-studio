@@ -1,0 +1,60 @@
+{
+  "schema": "eija.ide-walkthrough-captures.v1",
+  "scope": "Frames from one scripted real-browser recording of the IDE (offline provider, self-dogfood pack, this checkout connected read-only). Not a design mockup, human study, live-AI run or full IDE/POC acceptance.",
+  "recording": {
+    "scenario": "ide_walkthrough",
+    "manifest": "demos/recordings/ide_walkthrough.json",
+    "raw_video_sha256": "25afe1206d01649e096d3c5b95400ffec799f71169278001554bcccdf10f954c",
+    "raw_video_bytes": 12764838,
+    "status": "PARTIAL",
+    "skipped": [
+      "Verify, approve, apply: the owner has not restamped the release fixture, so verification returns SOURCE_REVIEW_REQUIRED. Agents never stamp; not exercised."
+    ],
+    "platform": "Linux 6.18.44-fc-v80 / Python 3.13.16",
+    "browser": "Playwright bundled Chromium 141.0.7390.37 via the chrome channel (not Google Chrome)"
+  },
+  "published_video": {
+    "file": "eija-ide-walkthrough.mp4",
+    "sha256": "ed8fc75a9cd5d923591e39328e267f918c15f99232c37fea1d085b8935c850f0",
+    "bytes": 7217940,
+    "transformations": "Raw webm trimmed by 6.0 s (startup load before the title card), 0.5 s fade in, 0.8 s fade out, H.264 CRF 20; no cuts within the run"
+  },
+  "images": [
+    {
+      "file": "source-binding.png",
+      "sha256": "46dfbfbb843a24986121af5c16b0cda60607622a1d0f9d67af2875a0f2fcc39c",
+      "bytes": 591777,
+      "width": 1440,
+      "height": 900,
+      "source_time_s": 32,
+      "transformations": "Single frame decoded from the trimmed MP4 below (lossy video frame, not a browser screenshot)"
+    },
+    {
+      "file": "model-change-review.png",
+      "sha256": "99fa39487b08e17cde24717209b4ff1d9edcd1b64f766e914bdc92a3f0d41cb1",
+      "bytes": 499195,
+      "width": 1440,
+      "height": 900,
+      "source_time_s": 74,
+      "transformations": "Single frame decoded from the trimmed MP4 below (lossy video frame, not a browser screenshot)"
+    },
+    {
+      "file": "runtime-refusal.png",
+      "sha256": "ce9de8c4142a1c629b68a17cbfc23c1e52bd961ab2e95e69c211ef829d6cf917",
+      "bytes": 376480,
+      "width": 1440,
+      "height": 900,
+      "source_time_s": 126,
+      "transformations": "Single frame decoded from the trimmed MP4 below (lossy video frame, not a browser screenshot)"
+    },
+    {
+      "file": "verification-blocked.png",
+      "sha256": "245ef543fff26040ad2592d0ba42576b8180dc71096a491379b8fa71305fc52f",
+      "bytes": 481691,
+      "width": 1440,
+      "height": 900,
+      "source_time_s": 146,
+      "transformations": "Single frame decoded from the trimmed MP4 below (lossy video frame, not a browser screenshot)"
+    }
+  ]
+}

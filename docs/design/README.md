@@ -6,6 +6,8 @@ The [whole-application UX contract](WHOLE-APP-UX.md) defines linked screens and 
 
 The [current implementation and HCI ledger](IMPLEMENTATION-STATUS.md) maps all four personas, fifteen stories and ten screens to scoped observations and remaining work, including the exact public-clone preview. It preserves the density failure, latency gap and unmeasured human benefit.
 
+The [next UX build sequence](NEXT-UX-PASS.md) translates observed clutter and the visual-change target into concrete hierarchy, comparison and source/evidence work. Its proposed changes still require implementation and validation.
+
 ## Interactive whole-app reference
 
 The [interactive design reference](interactive/README.md) makes the proposed **ten-surface** workspace inspectable, including selected changes, source/evidence returns, edit preview, history and recovery. It follows the [project mission](../engineering/MISSION.md), [whole-app UX contract](WHOLE-APP-UX.md), [personas and stories](WHOLE-APP-STORIES.md) and [HCI evaluation protocol](../hci/README.md). The four personas—domain engineer/modeller, AI-assisted engineer, reviewer/technical lead and agent-factory operator—remain design hypotheses, not interviewed or validated segments.

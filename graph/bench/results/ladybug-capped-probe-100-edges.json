@@ -1,0 +1,67 @@
+{
+ "caps": {
+  "buffer_pool_mb": 128,
+  "max_db_size_bytes": 1073741824,
+  "max_num_threads": 1,
+  "per_query_timeout_s": 30,
+  "rss_limit_mb": 500
+ },
+ "edges": 100,
+ "environment": {
+  "platform": "Windows 11",
+  "python": "3.12.10"
+ },
+ "ladybug_load_s": 0.173,
+ "ladybug_version": "0.20.4",
+ "max_bfs_depth_of_reference": 2,
+ "nodes": 40,
+ "peak_rss_mb_parent_after_load": 58,
+ "plain_edge_scan_without_order_by_over_3_shuffled_loads": {
+  "distinct_orders": 3,
+  "peak_rss_mb": 60
+ },
+ "propagating_edges": 60,
+ "reference_closure_size": 21,
+ "roots": 5,
+ "rss_mb_before_open": 30,
+ "shortest_bound_3": {
+  "equals_reference_after_adding_roots": true,
+  "extra_vs_reference": 0,
+  "kind": "shortest",
+  "median_s": 0.004,
+  "missing_vs_reference": 0,
+  "peak_rss_mb": 46,
+  "rows": 18,
+  "upper_bound": 3
+ },
+ "shortest_bound_30": {
+  "equals_reference_after_adding_roots": true,
+  "extra_vs_reference": 0,
+  "kind": "shortest",
+  "median_s": 0.0045,
+  "missing_vs_reference": 0,
+  "peak_rss_mb": 49,
+  "rows": 18,
+  "upper_bound": 30
+ },
+ "varlen_default_bound_3": {
+  "equals_reference_after_adding_roots": true,
+  "extra_vs_reference": 0,
+  "kind": "varlen_default",
+  "median_s": 0.0054,
+  "missing_vs_reference": 0,
+  "peak_rss_mb": 49,
+  "rows": 18,
+  "upper_bound": 3
+ },
+ "varlen_default_bound_30": {
+  "equals_reference_after_adding_roots": true,
+  "extra_vs_reference": 0,
+  "kind": "varlen_default",
+  "median_s": 0.0062,
+  "missing_vs_reference": 0,
+  "peak_rss_mb": 49,
+  "rows": 18,
+  "upper_bound": 30
+ }
+}

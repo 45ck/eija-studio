@@ -1,16 +1,17 @@
 from __future__ import annotations
-import argparse, getpass, json, os, secrets, sys
+import argparse, getpass, importlib.util, json, os, secrets, sys
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from pydantic import ValidationError
 from eija_studio import __version__
-from eija_studio.bootstrap import build_studio, KEYED_PROVIDERS, PROVIDER_NAMES
-from eija_studio.domain.models import Workflow, SemanticTransaction, DomainError, OWNER, fingerprint
-from eija_studio.domain.policy import baseline, apply_transaction, check_policy, projections
+from eija_studio.bootstrap import build_studio, resolve_pack, KEYED_PROVIDERS, PROVIDER_NAMES
+from eija_studio.domain.models import Workflow, DomainError, OWNER, fingerprint
+from eija_studio.domain.policy import check_policy, first_supported_meaning, projections
 from eija_studio.domain.impact import model_impact
 from eija_studio.application.compiler import subject_for
 from eija_studio.application.verifier import verify_runtime
 from eija_studio.application.diagram_catalog import FORMATS, VIEWS, VIEW_FORMATS, html_panels, render_view
+from eija_studio.weave.cli import COMMANDS as WEAVE_COMMANDS, add_parsers as add_weave_parsers
 from .agent_config import DEFAULT_MAX_PROVIDER_CALLS, snippet
 
 
@@ -29,10 +30,10 @@ def _render_workflows(args) -> tuple[Workflow, Workflow | None]:
     if (args.case_id is None) == (args.workflow is None):
         raise DomainError("CONFIGURATION", "Give exactly one of CASE_ID or --workflow FILE")
     if args.case_id is None:
-        return baseline(), Workflow.model_validate_json(args.workflow.read_text(encoding="utf-8"))
+        return resolve_pack(args.pack).model, Workflow.model_validate_json(args.workflow.read_text(encoding="utf-8"))
     if not args.workspace.is_dir():
         raise DomainError("NOT_FOUND", "Workspace does not exist; render never creates one")
-    return build_studio(args.workspace).workflows(args.case_id)
+    return build_studio(args.workspace, pack=args.pack).workflows(args.case_id)
 
 
 def _render_text(args, before: Workflow, after: Workflow | None) -> str:
@@ -62,7 +63,7 @@ def render_command(args) -> int:
     cannot mistake it for a routine change. Read-only: it never creates a workspace or a receipt key."""
     before, after = _render_workflows(args)
     _write_render(_render_text(args, before, after).encode("utf-8"), args.out)
-    blocked = check_policy(after if after is not None else before)
+    blocked = check_policy(after if after is not None else before, resolve_pack(args.pack))
     if blocked:
         print("POLICY_BLOCKED: " + "; ".join(blocked) + " (drawn with a marker; the runtime would refuse this workflow)", file=sys.stderr)
         return 2
@@ -81,18 +82,36 @@ def _add_render_parser(subs) -> None:
     render.add_argument("case_id", nargs="?", help="Change Case id; alternatively pass --workflow")
     render.add_argument("--workflow", type=Path, help="Workflow JSON file, drawn as the candidate against the shipped baseline")
     render.add_argument("--workspace", type=Path, default=Path(".eija"))
+    render.add_argument("--pack", type=Path, help="Domain pack directory or JSON file (defaults to EIJA_PACK or packs/default.json)")
     render.add_argument("--view", choices=(*VIEWS, "all"), default="state", help="'all' is for --format html only")
     render.add_argument("--format", choices=(*FORMATS, "html"), default="mermaid", dest="fmt")
     render.add_argument("--action", help="Action for --view sequence")
     render.add_argument("--out", type=Path, help="Write here instead of stdout (LF, UTF-8)")
 
 
-EARLY_COMMANDS = {"check-export": check_export_command, "render": render_command}  # need no workspace, provider or key
+EARLY_COMMANDS = {"check-export": check_export_command, "render": render_command, **WEAVE_COMMANDS}  # need no workspace, provider or key
+
+
+def formal_table(evidence: list) -> str:
+    """One line per formal evidence kind for a human reader (stderr); the full detail is in the JSON packet."""
+    lines = ["formal evidence (recomputed by the kernel from raw artifacts; UNKNOWN and NOT_RUN are never rounded up):"]
+    for e in evidence:
+        why = "" if e["status"] == "PASS" else (e.get("reasons") or [""])[0]
+        lines.append(f"  {e['kind']:<22} {e['status']:<8} {e['evidence_level']}" + (f"  {why}" if why else ""))
+    return "\n".join(lines)
+
+
+def _formal_for_compile(studio, model) -> dict:
+    """Formal evidence and, if the policy blocks the model, the negative-control counterexamples that explain why."""
+    if studio.formal is None:
+        return {}
+    view = studio.formal_view(model)
+    return {"formal_evidence": view["evidence"], "formal_explanations": view["explanations"]}
 
 
 def _report_failure(command: str, exc: Exception) -> None:
     if isinstance(exc, DomainError):
-        failure = {"error": exc.code, "message": exc.message}
+        failure = {"error": exc.code, "message": exc.message} | ({"details": exc.details} if exc.details else {})
     else:
         failure = {"error": "INPUT_OR_ENVIRONMENT_ERROR", "message": "Check the file, schema, permissions and configuration; no raw sensitive input is echoed"}
     if command == "mcp":
@@ -105,7 +124,7 @@ def _report_failure(command: str, exc: Exception) -> None:
 def _run_mcp(args) -> int:
     """`eija mcp`: print client config, or serve the agent-facing MCP server on stdio. Errors here go to stderr."""
     if args.print_config:
-        print(snippet(args.print_config, sys.executable, args.workspace), end="")
+        print(snippet(args.print_config, sys.executable, args.workspace, pack=args.pack, repository=args.repo), end="")
         return 0
     if args.ask_key or (args.provider != "offline" and not (args.allow_network and args.egress_consent)):
         # stdin/stdout are the protocol channel, and network use is the owner's decision made at startup.
@@ -114,11 +133,24 @@ def _run_mcp(args) -> int:
         raise DomainError("CONFIGURATION", "mcp: --max-provider-calls must be 0 or more")
     try:
         from .mcp_server import serve_stdio
-    except ImportError:
-        raise DomainError("MISSING_EXTRA", 'Install the MCP SDK: pip install -e ".[agents]"') from None
-    studio = build_studio(args.workspace, args.provider, args.model, args.allow_network, None)
-    serve_stdio(studio, egress_consent=args.egress_consent, max_provider_calls=args.max_provider_calls)
+    except ImportError as error:
+        if importlib.util.find_spec("mcp") is None:
+            raise DomainError("MISSING_EXTRA", 'Install the MCP SDK: pip install -e ".[agents]"') from error
+        # The SDK is there but unusable (for example mcp<2 has no mcp.server.mcpserver): say so, do not say "install".
+        raise DomainError("MCP_SDK_INCOMPATIBLE", f"The installed MCP SDK cannot be used ({error}); this release expects "
+                                                   'mcp==2.2.0: pip install -e ".[agents]"') from error
+    studio = build_studio(args.workspace, args.provider, args.model, args.allow_network, None, formal=not args.no_formal,
+                          pack=args.pack, repository_root=args.repo)
+    serve_stdio(studio, egress_consent=args.egress_consent, max_provider_calls=args.max_provider_calls,
+                diagram_renderer=_agent_diagram)
     return 0
+
+
+def _agent_diagram(model: Workflow, view: str, fmt: str) -> str:
+    """Reuse the reviewed diagram generators; SVG needs an external renderer and is not silently fabricated."""
+    if fmt not in FORMATS:
+        raise DomainError("FORMAT_UNSUPPORTED", "The built-in MCP renderer emits Mermaid, PlantUML or DOT text")
+    return render_view("journey" if view == "journeys" else "state", fmt, model)
 
 
 def main(argv=None) -> int:
@@ -126,14 +158,17 @@ def main(argv=None) -> int:
     parser.add_argument("--version", action="version", version=__version__)
     common = argparse.ArgumentParser(add_help=False)
     common.add_argument("--workspace", type=Path, default=Path(".eija"))
+    common.add_argument("--pack", type=Path, help="Domain pack directory or JSON file (defaults to EIJA_PACK or packs/default.json)")
     common.add_argument("--provider", choices=PROVIDER_NAMES, default=os.getenv("EIJA_PROVIDER", "offline"))
     common.add_argument("--model", default=os.getenv("EIJA_MODEL", ""))
     common.add_argument("--allow-network", action="store_true", help="Allow explicit provider calls; per-request consent still required")
     common.add_argument("--ask-key", action="store_true", help="Prompt locally for the OpenRouter/Anthropic API key; never persist it")
+    common.add_argument("--no-formal", action="store_true", help="Do not attach formal-lane evidence (Bend, SMT, bounded model check) when verifying")
     subs = parser.add_subparsers(dest="command", required=True)
     for command in ("init", "doctor", "list"):
         subs.add_parser(command, parents=[common])
     serve = subs.add_parser("serve", parents=[common]); serve.add_argument("--port", type=int, default=8765); serve.add_argument("--open", action="store_true")
+    serve.add_argument("--repo", type=Path, help="Explicit local repository to inspect read-only; never executes its code")
     demo = subs.add_parser("demo", parents=[common]); demo.add_argument("--out", type=Path, default=Path("demo-case.json"))
     propose = subs.add_parser("propose", parents=[common]); propose.add_argument("request"); propose.add_argument("--consent", action="store_true")
     verify = subs.add_parser("verify", parents=[common]); verify.add_argument("case_id"); verify.add_argument("--expected-version", type=int, required=True)
@@ -142,7 +177,9 @@ def main(argv=None) -> int:
     compile_p = subs.add_parser("compile", parents=[common]); compile_p.add_argument("file", type=Path); compile_p.add_argument("--out", type=Path, required=True); compile_p.add_argument("--verify", action="store_true")
     check = subs.add_parser("check-export"); check.add_argument("file", type=Path)
     _add_render_parser(subs)
+    add_weave_parsers(subs)
     mcp = subs.add_parser("mcp", parents=[common], help="Serve the agent-facing MCP server on stdio (needs the agents extra)")
+    mcp.add_argument("--repo", type=Path, help="Explicit local repository to inspect read-only; never executes its code")
     mcp.add_argument("--print-config", choices=["claude", "codex", "opencode", "gemini"], help="Print copy-paste client config for this MCP server and exit")
     mcp.add_argument("--egress-consent", action="store_true", help="Owner's STANDING consent: every propose call in this session may send the request to a networked provider; agents cannot grant it")
     mcp.add_argument("--max-provider-calls", type=int, default=DEFAULT_MAX_PROVIDER_CALLS, help="Cap on networked provider calls per MCP session (spend guard; 0 forbids them)")
@@ -157,7 +194,8 @@ def main(argv=None) -> int:
             if args.provider not in KEYED_PROVIDERS:
                 raise DomainError("CONFIGURATION", "--ask-key is only for the OpenRouter and Anthropic API providers")
             key = getpass.getpass(f"{args.provider} API key (not stored): ")
-        studio = build_studio(args.workspace, args.provider, args.model, args.allow_network, key)
+        studio = build_studio(args.workspace, args.provider, args.model, args.allow_network, key, formal=not args.no_formal,
+                              pack=args.pack, repository_root=getattr(args, "repo", None))
         if args.command == "init":
             output({"workspace": str(studio.store.directory), "provider": args.provider, "state": "READY", "data": "synthetic only"})
         elif args.command == "doctor":
@@ -187,7 +225,10 @@ def main(argv=None) -> int:
             c = studio.create(args.request)
             output(studio.propose(c["id"], c["version"], consent=args.consent))
         elif args.command == "verify":
-            studio.verify(args.case_id, args.expected_version); output(studio.view(args.case_id)["packet"])
+            studio.verify(args.case_id, args.expected_version)
+            packet = studio.view(args.case_id)["packet"]
+            output(packet)
+            print(formal_table(packet.get("formal_evidence", [])), file=sys.stderr)
         elif args.command == "export":
             output(studio.export(args.case_id), args.out); print(str(args.out))
         elif args.command == "backup":
@@ -199,10 +240,10 @@ def main(argv=None) -> int:
         elif args.command == "demo":
             if args.provider != "offline":
                 raise DomainError("CONFIGURATION", "demo is deliberately offline; use propose for a live provider test")
-            c = studio.create("Let teachers sign off excursions.")
+            c = studio.create(studio.pack.fixtures.demo_request)
             c = studio.propose(c["id"], c["version"])
-            # Explicit scripted fixture choice, NOT an actual human authorisation.
-            c = studio.select(c["id"], c["version"], "recommend_only", OWNER)
+            # Explicit scripted fixture choice (the pack's first supported meaning), NOT an actual human authorisation.
+            c = studio.select(c["id"], c["version"], first_supported_meaning(studio.pack), OWNER)
             c = studio.verify(c["id"], c["version"])
             data = studio.export(c["id"])
             data["demo_note"] = "Scripted fixture meaning selection. No human approval or baseline application occurred."
@@ -211,13 +252,15 @@ def main(argv=None) -> int:
                     "baseline_applied": False, "human_understanding": "UNKNOWN"})
         elif args.command == "compile":
             model = Workflow.model_validate_json(args.file.read_text(encoding="utf-8"))
-            errors = check_policy(model)
+            errors = check_policy(model, studio.pack)
             identity = studio.identity_provider()
             compiled = {"format": "eija.compilation.v1", "semantic_hash": model.semantic_hash, "policy_errors": errors,
+                        "pack": {"id": studio.pack.id, "version": studio.pack.pack.version, "digest": studio.pack.digest},
                         "source_review_required": not identity["trusted_fixture"], "projections": projections(model),
-                        "impact": model_impact(baseline(), model), "human_understanding": "UNKNOWN", "decision": "NONE"}
+                        "impact": model_impact(studio.pack.model, model), "human_understanding": "UNKNOWN", "decision": "NONE"}
             if args.verify and not errors and identity["trusted_fixture"]:
-                compiled["receipt"] = studio.signer.seal(verify_runtime(model, subject_for(model, {}, identity), studio.sandbox))
+                compiled["receipt"] = studio.signer.seal(verify_runtime(model, subject_for(model, {}, identity), studio.sandbox, studio.pack))
+            compiled |= _formal_for_compile(studio, model)
             output(compiled, args.out / "compiled.json")
             output(model.model_dump(mode="json"), args.out / "model.json")
             print(str(args.out / "compiled.json"))

@@ -1,0 +1,40 @@
+{
+  "bundled_dependencies": [
+    {
+      "license": "MIT",
+      "license_file": "dagre-graphlib.LICENSE.txt",
+      "npm_integrity": "sha512-mepCf/e9+SKYy1d02/UkvSy6+6MoyXhVxP8lLDfA7BPE1X1d4dR0sZznmbM8/XVJ1GPM+Svnx7Xj6ZweByWUkw==",
+      "npm_tarball": "https://registry.npmjs.org/@dagrejs/graphlib/-/graphlib-2.2.4.tgz",
+      "package": "@dagrejs/graphlib",
+      "version": "2.2.4"
+    }
+  ],
+  "files": {
+    "dagre-graphlib.LICENSE.txt": {
+      "bytes": 1062,
+      "sha256": "6a349742a6cb219d5a2fc8d0844f6d89a6efc62e20c664450d884fc7ff2d6015"
+    },
+    "dagre.LICENSE.txt": {
+      "bytes": 1062,
+      "sha256": "6a349742a6cb219d5a2fc8d0844f6d89a6efc62e20c664450d884fc7ff2d6015"
+    },
+    "dagre.min.js": {
+      "bytes": 97200,
+      "sha256": "c35b8d6f410ce7bdd302fc00cad27331184e52b2e738609e55ae3bbb4fb4849f"
+    }
+  },
+  "license": "MIT",
+  "npm_integrity": "sha512-5SEDlndt4W/LaVzPYJW+bSmSEZc9EzTf8rJ20WCKvjS5EAZAN0b+x0Yww7VMT4R3Wootkg+X9bUfUxazYw6Blw==",
+  "npm_tarball": "https://registry.npmjs.org/@dagrejs/dagre/-/dagre-1.1.8.tgz",
+  "package": "@dagrejs/dagre",
+  "runtime_network": "none: served locally, no CDN or runtime install",
+  "selection_note": "Latest 3.1.1 was checked but rejected for this integration: a minimal LR self-loop fixture returned disconnected edge endpoints. The 1.1.8 fixture attaches both endpoints to its node. See docs/engineering/DAGRE-LAYOUT-ADAPTER.md.",
+  "source": "npm pack @dagrejs/dagre@1.1.8 --ignore-scripts; dist/dagre.min.js and LICENSE copied unmodified",
+  "upstream": "https://github.com/dagrejs/dagre",
+  "used_by": [
+    "resources/web/index.html",
+    "resources/web/canvas.js (disposable geometry projection only)"
+  ],
+  "verified": "2026-10-02: official npm tarballs SHA-512 verified against dist.integrity; vendored files byte-identical. Actual bundle exercised in Node with string code generation disabled. Browser CSP verification not run by this vendor step.",
+  "version": "1.1.8"
+}

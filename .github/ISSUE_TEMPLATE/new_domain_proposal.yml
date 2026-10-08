@@ -1,0 +1,44 @@
+name: Proposal for a new domain or lane
+description: Propose a new modelled domain (beyond the excursion workflow) or a new capability lane
+labels: [proposal]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The kernel currently supports one synthetic domain, the excursion workflow. A new domain must arrive with executable semantics, not only a description. Read AGENTS.md ("Every new operator needs ...") first.
+  - type: input
+    id: name
+    attributes:
+      label: Domain or lane name
+    validations:
+      required: true
+  - type: textarea
+    id: language
+    attributes:
+      label: Ubiquitous language
+      description: The domain's core terms (states, roles, operations, invariants) in the words its experts use.
+    validations:
+      required: true
+  - type: textarea
+    id: protected
+    attributes:
+      label: Protected policy
+      description: Which authority, state-entry, assignment and effect rules must never be changed merely to pass a task?
+    validations:
+      required: true
+  - type: textarea
+    id: operators
+    attributes:
+      label: New operators and their evidence
+      description: For each operator - executable semantics, missing-resolver rejection, projection rules, identity effects, a negative oracle and an evidence policy.
+    validations:
+      required: true
+  - type: textarea
+    id: oss
+    attributes:
+      label: Open-source tools checked (ADR-0016)
+  - type: textarea
+    id: adr
+    attributes:
+      label: ADR numbers
+      description: Which reserved block would this use? Ask in this issue if none is free.

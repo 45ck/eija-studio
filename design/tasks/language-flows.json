@@ -1,0 +1,389 @@
+{
+ "schema": "eija.taskflow.v1",
+ "tasks": [
+  {
+   "id": "T05-rename", "name": "Rename a term and see its ripple before accepting (language tree)", "persona": "P2", "frequency": "weekly",
+   "flows": {
+    "current": [
+     {"op":"M","note":"decide to rename"},
+     {"op":"K","keys":"ctrl+shift+h","note":"editor project-wide search and replace"},
+     {"op":"T","chars":20,"note":"old name, for example Semantic Transaction"},
+     {"op":"K","keys":"tab"},
+     {"op":"T","chars":13,"note":"new name"},
+     {"op":"M","note":"scan the matches; number of matches not modelled"},
+     {"op":"K","keys":"ctrl+alt+enter","note":"replace all"},
+     {"op":"K","keys":"alt+tab","note":"to the shell"},
+     {"op":"M","note":"recall the check command"},
+     {"op":"K","n":2,"note":"up, enter: rerun eija compile --verify from shell history; run time not modelled"},
+     {"op":"M","note":"read the result"}
+    ],
+    "proposed": [
+     {"op":"M","note":"decide to rename"},
+     {"op":"P","from":"__pointer","to":"tree-item-recommend","layout":"proposed-language","note":"stand-in row for the term Semantic Transaction"},
+     {"op":"B","note":"press: select the term row"},
+     {"op":"B","note":"release"},
+     {"op":"K","keys":"f2","note":"rename in place"},
+     {"op":"T","chars":13,"note":"new name"},
+     {"op":"K","keys":"enter","note":"request a kernel dry run"},
+     {"op":"R","ms":1000,"why":"kernel dry run; 1 s is the design budget for the flow class, not a measurement"},
+     {"op":"M","note":"read the ripple sheet: at most 4 tier chunks"},
+     {"op":"K","keys":"enter","note":"confirm as a candidate edit; skipped when the ripple has only kernel-derived regenerated views"}
+    ]
+   },
+   "assumptions": [
+    "ESTIMATED: the baseline Studio has no language or DDD surface, so 'current' is the best available workaround in an editor and shell (the way this repository keeps its language today: prose in docs/architecture/ARCHITECTURE.md). It is not like-for-like: the workaround gives no kernel ripple, no status and no UNKNOWN.",
+    "KLM profile: K 0.20 s (average skilled typist), P 1.10 s, B 0.10 s per press or per release, H 0.40 s, M 1.35 s (K, P, H, M and the 21 percent from Card, Moran and Newell 1980; B from a tertiary summary, and two B equal the 1980 paper's one K per button press; H is not inserted in these flows, see ADR-0062 for the H variant), band plus or minus 21 percent (an RMS error, not a confidence interval); expert, error-free, routine use only. A click is two B ops (press, release); a drag is press, P, release, so it carries two B ops as well. M is used for both preparation and a short read; reading many items is NOT modelled, which favours the workaround with long output.",
+    "Layout stems: 'proposed-language' is design/layouts/proposed-language.json (layout lane). Its sample tree differs from this aspect's sample tree, so a tree-item-* id there is a geometry stand-in for the row named in the note. Stems 'language-tree-suspect' and 'language-tree-ai' are defined inline in docs/hci/design/language-and-ddd-tree.md Appendix B (states that no design/layouts file has yet); the integrator should extract them into design/layouts/. '__pointer' is the layout lane's virtual pointer rest position. P ops without a layout stem are steps in an editor or chat window outside the Studio: no layout exists for them, so they use the KLM constant.",
+    "Task ids: brief id plus a variant suffix (T05-rename, T05-move-drag, T05-move-menu, T05-add), following the IA lane's T02-kbd; the shared format shows plain T-ids.",
+    "New name 13 characters; old name 20 characters typed only in the current flow.",
+    "Proposed: term row visible or reached by an earlier step; the mouse-to-keyboard H is omitted in both flows. Sensitivity with H 0.40 s at every device switch (ADR-0062, Quantitative model): current 14.20 (0 H), proposed 8.60 (1 H).",
+    "Rename of a kernel-bound identifier is refused in v0.2 (ADR-003); this flow is for an unbound language term or a display label, which needs a kernel ADR for a language dimension."
+   ]
+  },
+  {
+   "id": "T05-move-drag", "name": "Re-parent a term by dragging its row (language tree)", "persona": "P2", "frequency": "weekly",
+   "flows": {
+    "current": [
+     {"op":"M","note":"decide to move"},
+     {"op":"P","from":"__pointer","to":"ed.glossary.first-line","note":"click first line of the glossary entry"},
+     {"op":"B","note":"press"},
+     {"op":"B","note":"release"},
+     {"op":"P","from":"ed.glossary.first-line","to":"ed.glossary.last-line","note":"shift-click last line"},
+     {"op":"B","note":"press"},
+     {"op":"B","note":"release"},
+     {"op":"K","keys":"ctrl+x"},
+     {"op":"P","from":"ed.glossary.last-line","to":"ed.glossary.target","note":"click target position"},
+     {"op":"B","note":"press"},
+     {"op":"B","note":"release"},
+     {"op":"K","keys":"ctrl+v"}
+    ],
+    "proposed": [
+     {"op":"M","note":"decide to move"},
+     {"op":"P","from":"__pointer","to":"tree-item-approve","layout":"proposed-language","note":"to the source row; stand-in row for a term"},
+     {"op":"B","note":"press on the row"},
+     {"op":"P","from":"tree-item-approve","to":"tree-item-excursion","layout":"proposed-language","note":"drag to the target row; the drop target shows accept or a refusal reason; stand-in row for the target aggregate"},
+     {"op":"B","note":"release"},
+     {"op":"R","ms":100,"why":"local drop feedback; the legal-parent table is client-side; design budget, not a measurement"},
+     {"op":"M","note":"read the accept or refusal text and the ripple"},
+     {"op":"K","keys":"enter","note":"confirm as a candidate edit"}
+    ]
+   },
+   "assumptions": [
+    "ESTIMATED: the baseline Studio has no language or DDD surface, so 'current' is the best available workaround in an editor and shell (the way this repository keeps its language today: prose in docs/architecture/ARCHITECTURE.md). It is not like-for-like: the workaround gives no kernel ripple, no status and no UNKNOWN.",
+    "KLM profile: K 0.20 s (average skilled typist), P 1.10 s, B 0.10 s per press or per release, H 0.40 s, M 1.35 s (K, P, H, M and the 21 percent from Card, Moran and Newell 1980; B from a tertiary summary, and two B equal the 1980 paper's one K per button press; H is not inserted in these flows, see ADR-0062 for the H variant), band plus or minus 21 percent (an RMS error, not a confidence interval); expert, error-free, routine use only. A click is two B ops (press, release); a drag is press, P, release, so it carries two B ops as well. M is used for both preparation and a short read; reading many items is NOT modelled, which favours the workaround with long output.",
+    "Layout stems: 'proposed-language' is design/layouts/proposed-language.json (layout lane). Its sample tree differs from this aspect's sample tree, so a tree-item-* id there is a geometry stand-in for the row named in the note. Stems 'language-tree-suspect' and 'language-tree-ai' are defined inline in docs/hci/design/language-and-ddd-tree.md Appendix B (states that no design/layouts file has yet); the integrator should extract them into design/layouts/. '__pointer' is the layout lane's virtual pointer rest position. P ops without a layout stem are steps in an editor or chat window outside the Studio: no layout exists for them, so they use the KLM constant.",
+    "Task ids: brief id plus a variant suffix (T05-rename, T05-move-drag, T05-move-menu, T05-add), following the IA lane's T02-kbd; the shared format shows plain T-ids.",
+    "Drag is modelled as press (B), P to the target, release (B), because KLM has no drag operator (its D operator is line drawing).",
+    "The current flow excludes finding both places and scrolling, and checks nothing, which favours it."
+   ]
+  },
+  {
+   "id": "T05-move-menu", "name": "Re-parent a term without dragging: Move to (WCAG 2.5.7 path)", "persona": "P2", "frequency": "weekly",
+   "flows": {
+    "current": [
+     {"op":"M","note":"decide to move"},
+     {"op":"P","from":"__pointer","to":"ed.glossary.first-line","note":"click first line of the glossary entry"},
+     {"op":"B","note":"press"},
+     {"op":"B","note":"release"},
+     {"op":"P","from":"ed.glossary.first-line","to":"ed.glossary.last-line","note":"shift-click last line"},
+     {"op":"B","note":"press"},
+     {"op":"B","note":"release"},
+     {"op":"K","keys":"ctrl+x"},
+     {"op":"P","from":"ed.glossary.last-line","to":"ed.glossary.target","note":"click target position"},
+     {"op":"B","note":"press"},
+     {"op":"B","note":"release"},
+     {"op":"K","keys":"ctrl+v"}
+    ],
+    "proposed": [
+     {"op":"M","note":"decide to move"},
+     {"op":"P","from":"__pointer","to":"tree-item-approve","layout":"proposed-language","note":"stand-in row for a term"},
+     {"op":"B","note":"press: select the term row"},
+     {"op":"B","note":"release"},
+     {"op":"K","keys":"ctrl+k"},
+     {"op":"T","chars":4,"note":"command name: move"},
+     {"op":"K","keys":"enter"},
+     {"op":"M","note":"dialog lists only legal parents"},
+     {"op":"T","chars":5,"note":"type-ahead to the target"},
+     {"op":"K","keys":"enter","note":"pick the target"},
+     {"op":"R","ms":1000,"why":"kernel dry run; design budget for the flow class, not a measurement"},
+     {"op":"M","note":"read the accept or refusal text and the ripple"},
+     {"op":"K","keys":"enter","note":"confirm as a candidate edit"}
+    ]
+   },
+   "assumptions": [
+    "ESTIMATED: the baseline Studio has no language or DDD surface, so 'current' is the best available workaround in an editor and shell (the way this repository keeps its language today: prose in docs/architecture/ARCHITECTURE.md). It is not like-for-like: the workaround gives no kernel ripple, no status and no UNKNOWN.",
+    "KLM profile: K 0.20 s (average skilled typist), P 1.10 s, B 0.10 s per press or per release, H 0.40 s, M 1.35 s (K, P, H, M and the 21 percent from Card, Moran and Newell 1980; B from a tertiary summary, and two B equal the 1980 paper's one K per button press; H is not inserted in these flows, see ADR-0062 for the H variant), band plus or minus 21 percent (an RMS error, not a confidence interval); expert, error-free, routine use only. A click is two B ops (press, release); a drag is press, P, release, so it carries two B ops as well. M is used for both preparation and a short read; reading many items is NOT modelled, which favours the workaround with long output.",
+    "Layout stems: 'proposed-language' is design/layouts/proposed-language.json (layout lane). Its sample tree differs from this aspect's sample tree, so a tree-item-* id there is a geometry stand-in for the row named in the note. Stems 'language-tree-suspect' and 'language-tree-ai' are defined inline in docs/hci/design/language-and-ddd-tree.md Appendix B (states that no design/layouts file has yet); the integrator should extract them into design/layouts/. '__pointer' is the layout lane's virtual pointer rest position. P ops without a layout stem are steps in an editor or chat window outside the Studio: no layout exists for them, so they use the KLM constant.",
+    "Task ids: brief id plus a variant suffix (T05-rename, T05-move-drag, T05-move-menu, T05-add), following the IA lane's T02-kbd; the shared format shows plain T-ids.",
+    "Non-dragging path required by WCAG 2.2 SC 2.5.7 (Level AA). A tree picker in a modal follows the Atlassian move-menu guidance for trees.",
+    "The chord for Move to is not fixed by this aspect; the palette route is modelled."
+   ]
+  },
+  {
+   "id": "T05-add", "name": "Add a term with a definition under an aggregate (language tree)", "persona": "P2", "frequency": "weekly",
+   "flows": {
+    "current": [
+     {"op":"M","note":"decide to add"},
+     {"op":"P","from":"__pointer","to":"ed.glossary.insert-point","note":"click the insertion point in the glossary"},
+     {"op":"B","note":"press"},
+     {"op":"B","note":"release"},
+     {"op":"T","chars":84,"note":"entry of the form **Name:** definition: 16 name + 8 markup + 60 definition characters"},
+     {"op":"K","keys":"ctrl+s"}
+    ],
+    "proposed": [
+     {"op":"M","note":"decide to add"},
+     {"op":"P","from":"__pointer","to":"tree-item-excursion","layout":"proposed-language","note":"stand-in row for the aggregate Workflow Definition"},
+     {"op":"B","note":"press: select the aggregate row"},
+     {"op":"B","note":"release"},
+     {"op":"K","keys":"ctrl+k"},
+     {"op":"T","chars":8,"note":"command name: add term"},
+     {"op":"K","keys":"enter"},
+     {"op":"T","chars":16,"note":"name"},
+     {"op":"K","keys":"tab"},
+     {"op":"T","chars":60,"note":"definition; the kernel refuses an empty definition"},
+     {"op":"K","keys":"enter"},
+     {"op":"R","ms":1000,"why":"kernel check of name uniqueness, homonyms and definition; design budget, not a measurement"},
+     {"op":"M","note":"read the result: accepted, homonym note or refusal"}
+    ]
+   },
+   "assumptions": [
+    "ESTIMATED: the baseline Studio has no language or DDD surface, so 'current' is the best available workaround in an editor and shell (the way this repository keeps its language today: prose in docs/architecture/ARCHITECTURE.md). It is not like-for-like: the workaround gives no kernel ripple, no status and no UNKNOWN.",
+    "KLM profile: K 0.20 s (average skilled typist), P 1.10 s, B 0.10 s per press or per release, H 0.40 s, M 1.35 s (K, P, H, M and the 21 percent from Card, Moran and Newell 1980; B from a tertiary summary, and two B equal the 1980 paper's one K per button press; H is not inserted in these flows, see ADR-0062 for the H variant), band plus or minus 21 percent (an RMS error, not a confidence interval); expert, error-free, routine use only. A click is two B ops (press, release); a drag is press, P, release, so it carries two B ops as well. M is used for both preparation and a short read; reading many items is NOT modelled, which favours the workaround with long output.",
+    "Layout stems: 'proposed-language' is design/layouts/proposed-language.json (layout lane). Its sample tree differs from this aspect's sample tree, so a tree-item-* id there is a geometry stand-in for the row named in the note. Stems 'language-tree-suspect' and 'language-tree-ai' are defined inline in docs/hci/design/language-and-ddd-tree.md Appendix B (states that no design/layouts file has yet); the integrator should extract them into design/layouts/. '__pointer' is the layout lane's virtual pointer rest position. P ops without a layout stem are steps in an editor or chat window outside the Studio: no layout exists for them, so they use the KLM constant.",
+    "Task ids: brief id plus a variant suffix (T05-rename, T05-move-drag, T05-move-menu, T05-add), following the IA lane's T02-kbd; the shared format shows plain T-ids.",
+    "Typing dominates both flows; the proposed flow adds command entry and a read of the kernel result by design.",
+    "Expected outcome of the prediction: proposed is slower; that cost buys checked structure (uniqueness, homonym and undefined-term checks)."
+   ]
+  },
+  {
+   "id": "T09-find-term", "name": "Find a term and read its definition (palette)", "persona": "P1", "frequency": "daily",
+   "flows": {
+    "current": [
+     {"op":"M","note":"decide what to look up"},
+     {"op":"K","keys":"ctrl+p","note":"quick open"},
+     {"op":"T","chars":4,"note":"file name prefix: ARCH"},
+     {"op":"K","keys":"enter"},
+     {"op":"K","keys":"ctrl+f"},
+     {"op":"T","chars":20,"note":"term name"},
+     {"op":"K","keys":"enter"},
+     {"op":"M","note":"read the definition in prose"}
+    ],
+    "proposed": [
+     {"op":"M","note":"decide what to look up"},
+     {"op":"K","keys":"ctrl+k","note":"one palette; prefix t for terms"},
+     {"op":"T","chars":8,"note":"fuzzy term name"},
+     {"op":"K","keys":"enter","note":"selects the row and opens the inspector"},
+     {"op":"M","note":"read the definition, status and chips"}
+    ]
+   },
+   "assumptions": [
+    "ESTIMATED: the baseline Studio has no language or DDD surface, so 'current' is the best available workaround in an editor and shell (the way this repository keeps its language today: prose in docs/architecture/ARCHITECTURE.md). It is not like-for-like: the workaround gives no kernel ripple, no status and no UNKNOWN.",
+    "KLM profile: K 0.20 s (average skilled typist), P 1.10 s, B 0.10 s per press or per release, H 0.40 s, M 1.35 s (K, P, H, M and the 21 percent from Card, Moran and Newell 1980; B from a tertiary summary, and two B equal the 1980 paper's one K per button press; H is not inserted in these flows, see ADR-0062 for the H variant), band plus or minus 21 percent (an RMS error, not a confidence interval); expert, error-free, routine use only. A click is two B ops (press, release); a drag is press, P, release, so it carries two B ops as well. M is used for both preparation and a short read; reading many items is NOT modelled, which favours the workaround with long output.",
+    "Layout stems: 'proposed-language' is design/layouts/proposed-language.json (layout lane). Its sample tree differs from this aspect's sample tree, so a tree-item-* id there is a geometry stand-in for the row named in the note. Stems 'language-tree-suspect' and 'language-tree-ai' are defined inline in docs/hci/design/language-and-ddd-tree.md Appendix B (states that no design/layouts file has yet); the integrator should extract them into design/layouts/. '__pointer' is the layout lane's virtual pointer rest position. P ops without a layout stem are steps in an editor or chat window outside the Studio: no layout exists for them, so they use the KLM constant.",
+    "Task ids: brief id plus a variant suffix (T05-rename, T05-move-drag, T05-move-menu, T05-add), following the IA lane's T02-kbd; the shared format shows plain T-ids.",
+    "Palette contents and prefixes belong to the palette aspect; this flow assumes a term prefix and fuzzy match.",
+    "Expected outcome: no time difference beyond the band; the difference is what appears next to the definition (status, chips)."
+   ]
+  },
+  {
+   "id": "T11-clear-suspect", "name": "Resolve three suspect links after a term changed (clear by logged decision)", "persona": "P2", "frequency": "weekly",
+   "flows": {
+    "current": [
+     {"op":"M","note":"decide to review the links"},
+     {"op":"M","note":"open the linked file"},
+     {"op":"K","keys":"ctrl+p"},
+     {"op":"T","chars":20,"note":"file name"},
+     {"op":"K","keys":"enter"},
+     {"op":"M","note":"read"},
+     {"op":"M","note":"decide"},
+     {"op":"M","note":"open the linked file"},
+     {"op":"K","keys":"ctrl+p"},
+     {"op":"T","chars":20,"note":"file name"},
+     {"op":"K","keys":"enter"},
+     {"op":"M","note":"read"},
+     {"op":"M","note":"decide"},
+     {"op":"M","note":"open the linked file"},
+     {"op":"K","keys":"ctrl+p"},
+     {"op":"T","chars":20,"note":"file name"},
+     {"op":"K","keys":"enter"},
+     {"op":"M","note":"read"},
+     {"op":"M","note":"decide"}
+    ],
+    "proposed": [
+     {"op":"M","note":"decide to review the links"},
+     {"op":"P","from":"__pointer","to":"item.suspect.0","layout":"language-tree-suspect","note":"select the suspect link"},
+     {"op":"B","note":"press"},
+     {"op":"B","note":"release"},
+     {"op":"M","note":"read the causing diff"},
+     {"op":"P","from":"item.suspect.0","to":"btn.clear","layout":"language-tree-suspect","note":"Clear"},
+     {"op":"B","note":"press"},
+     {"op":"B","note":"release"},
+     {"op":"P","from":"btn.clear","to":"menu.reason","layout":"language-tree-suspect","note":"one of three closed reasons"},
+     {"op":"B","note":"press"},
+     {"op":"B","note":"release"},
+     {"op":"P","from":"menu.reason","to":"item.suspect.1","layout":"language-tree-suspect","note":"select the suspect link"},
+     {"op":"B","note":"press"},
+     {"op":"B","note":"release"},
+     {"op":"M","note":"read the causing diff"},
+     {"op":"P","from":"item.suspect.1","to":"btn.clear","layout":"language-tree-suspect","note":"Clear"},
+     {"op":"B","note":"press"},
+     {"op":"B","note":"release"},
+     {"op":"P","from":"btn.clear","to":"menu.reason","layout":"language-tree-suspect","note":"one of three closed reasons"},
+     {"op":"B","note":"press"},
+     {"op":"B","note":"release"},
+     {"op":"P","from":"menu.reason","to":"item.suspect.2","layout":"language-tree-suspect","note":"select the suspect link"},
+     {"op":"B","note":"press"},
+     {"op":"B","note":"release"},
+     {"op":"M","note":"read the causing diff"},
+     {"op":"P","from":"item.suspect.2","to":"btn.clear","layout":"language-tree-suspect","note":"Clear"},
+     {"op":"B","note":"press"},
+     {"op":"B","note":"release"},
+     {"op":"P","from":"btn.clear","to":"menu.reason","layout":"language-tree-suspect","note":"one of three closed reasons"},
+     {"op":"B","note":"press"},
+     {"op":"B","note":"release"}
+    ]
+   },
+   "assumptions": [
+    "ESTIMATED: the baseline Studio has no language or DDD surface, so 'current' is the best available workaround in an editor and shell (the way this repository keeps its language today: prose in docs/architecture/ARCHITECTURE.md). It is not like-for-like: the workaround gives no kernel ripple, no status and no UNKNOWN.",
+    "KLM profile: K 0.20 s (average skilled typist), P 1.10 s, B 0.10 s per press or per release, H 0.40 s, M 1.35 s (K, P, H, M and the 21 percent from Card, Moran and Newell 1980; B from a tertiary summary, and two B equal the 1980 paper's one K per button press; H is not inserted in these flows, see ADR-0062 for the H variant), band plus or minus 21 percent (an RMS error, not a confidence interval); expert, error-free, routine use only. A click is two B ops (press, release); a drag is press, P, release, so it carries two B ops as well. M is used for both preparation and a short read; reading many items is NOT modelled, which favours the workaround with long output.",
+    "Layout stems: 'proposed-language' is design/layouts/proposed-language.json (layout lane). Its sample tree differs from this aspect's sample tree, so a tree-item-* id there is a geometry stand-in for the row named in the note. Stems 'language-tree-suspect' and 'language-tree-ai' are defined inline in docs/hci/design/language-and-ddd-tree.md Appendix B (states that no design/layouts file has yet); the integrator should extract them into design/layouts/. '__pointer' is the layout lane's virtual pointer rest position. P ops without a layout stem are steps in an editor or chat window outside the Studio: no layout exists for them, so they use the KLM constant.",
+    "Task ids: brief id plus a variant suffix (T05-rename, T05-move-drag, T05-move-menu, T05-add), following the IA lane's T02-kbd; the shared format shows plain T-ids.",
+    "Three suspect links is an assumption for a worked example; suspect data does not exist in the baseline.",
+    "The workaround leaves no decision record; the proposed flow writes one per link (who, when, cause, reason). Not like-for-like.",
+    "Reasons are a closed list of three (Hick-Hyman not applied: three items in stable order)."
+   ]
+  },
+  {
+   "id": "T12-code-drift", "name": "Map a concept to code and read the drift check (code chip)", "persona": "P1", "frequency": "weekly",
+   "flows": {
+    "current": [
+     {"op":"M","note":"decide what to check"},
+     {"op":"T","chars":38,"note":"git grep -n SemanticTransaction -- src"},
+     {"op":"K","keys":"enter"},
+     {"op":"M","note":"read the matches; number not modelled"},
+     {"op":"M","note":"judge whether names and meaning still agree"}
+    ],
+    "proposed": [
+     {"op":"M","note":"decide what to check"},
+     {"op":"K","keys":"ctrl+k"},
+     {"op":"T","chars":8,"note":"fuzzy term name"},
+     {"op":"K","keys":"enter"},
+     {"op":"M","note":"read the code chip: symbol path, last check result and commit, drift or UNKNOWN"}
+    ]
+   },
+   "assumptions": [
+    "ESTIMATED: the baseline Studio has no language or DDD surface, so 'current' is the best available workaround in an editor and shell (the way this repository keeps its language today: prose in docs/architecture/ARCHITECTURE.md). It is not like-for-like: the workaround gives no kernel ripple, no status and no UNKNOWN.",
+    "KLM profile: K 0.20 s (average skilled typist), P 1.10 s, B 0.10 s per press or per release, H 0.40 s, M 1.35 s (K, P, H, M and the 21 percent from Card, Moran and Newell 1980; B from a tertiary summary, and two B equal the 1980 paper's one K per button press; H is not inserted in these flows, see ADR-0062 for the H variant), band plus or minus 21 percent (an RMS error, not a confidence interval); expert, error-free, routine use only. A click is two B ops (press, release); a drag is press, P, release, so it carries two B ops as well. M is used for both preparation and a short read; reading many items is NOT modelled, which favours the workaround with long output.",
+    "Layout stems: 'proposed-language' is design/layouts/proposed-language.json (layout lane). Its sample tree differs from this aspect's sample tree, so a tree-item-* id there is a geometry stand-in for the row named in the note. Stems 'language-tree-suspect' and 'language-tree-ai' are defined inline in docs/hci/design/language-and-ddd-tree.md Appendix B (states that no design/layouts file has yet); the integrator should extract them into design/layouts/. '__pointer' is the layout lane's virtual pointer rest position. P ops without a layout stem are steps in an editor or chat window outside the Studio: no layout exists for them, so they use the KLM constant.",
+    "Task ids: brief id plus a variant suffix (T05-rename, T05-move-drag, T05-move-menu, T05-add), following the IA lane's T02-kbd; the shared format shows plain T-ids.",
+    "Shell focus assumed for the workaround; no history recall.",
+    "No drift checker exists in the kernel today; the chip needs a mapping table with a last-check result (kernel ADR).",
+    "Not like-for-like: the workaround cannot compute drift, the reader judges it.",
+    "NOT COMPARABLE: no drift checker exists in the kernel; the proposed flow reads a check that has to be built. The ratio is not a speed claim."
+   ]
+  },
+  {
+   "id": "T13-ai-definition", "name": "Ask AI to propose a definition at the selected term (provider call, owner adopts)", "persona": "P3", "frequency": "weekly",
+   "flows": {
+    "current": [
+     {"op":"M","note":"decide to ask"},
+     {"op":"T","chars":60,"note":"ungrounded prompt naming the term"},
+     {"op":"K","keys":"enter"},
+     {"op":"M","note":"read the reply; provider latency not modelled"},
+     {"op":"P","from":"__pointer","to":"chat.reply.start","note":"select the reply"},
+     {"op":"B"},
+     {"op":"P","from":"chat.reply.start","to":"chat.reply.end"},
+     {"op":"B"},
+     {"op":"K","keys":"ctrl+c"},
+     {"op":"K","keys":"alt+tab"},
+     {"op":"P","from":"chat.reply.end","to":"ed.definition","note":"click the definition in the editor"},
+     {"op":"B","note":"press"},
+     {"op":"B","note":"release"},
+     {"op":"K","keys":"ctrl+v"}
+    ],
+    "proposed": [
+     {"op":"M","note":"decide to ask"},
+     {"op":"P","from":"__pointer","to":"tree-item-recommend","layout":"proposed-language","note":"stand-in row for the term Semantic Transaction"},
+     {"op":"B","note":"press: select the term row"},
+     {"op":"B","note":"release"},
+     {"op":"K","keys":"ctrl+k"},
+     {"op":"T","chars":6,"note":"command name: ask ai"},
+     {"op":"K","keys":"enter"},
+     {"op":"P","from":"__pointer","to":"btn.consent","layout":"language-tree-ai","note":"per-request egress consent"},
+     {"op":"B","note":"press"},
+     {"op":"B","note":"release"},
+     {"op":"P","from":"btn.consent","to":"btn.send","layout":"language-tree-ai"},
+     {"op":"B","note":"press: send; marked as a provider call"},
+     {"op":"B","note":"release"},
+     {"op":"M","note":"read the provisional, grounded proposal; provider latency not modelled"},
+     {"op":"P","from":"btn.send","to":"btn.adopt","layout":"language-tree-ai"},
+     {"op":"B","note":"press: adopt as an owner edit; still passes the kernel check"},
+     {"op":"B","note":"release"}
+    ]
+   },
+   "assumptions": [
+    "ESTIMATED: the baseline Studio has no language or DDD surface, so 'current' is the best available workaround in an editor and shell (the way this repository keeps its language today: prose in docs/architecture/ARCHITECTURE.md). It is not like-for-like: the workaround gives no kernel ripple, no status and no UNKNOWN.",
+    "KLM profile: K 0.20 s (average skilled typist), P 1.10 s, B 0.10 s per press or per release, H 0.40 s, M 1.35 s (K, P, H, M and the 21 percent from Card, Moran and Newell 1980; B from a tertiary summary, and two B equal the 1980 paper's one K per button press; H is not inserted in these flows, see ADR-0062 for the H variant), band plus or minus 21 percent (an RMS error, not a confidence interval); expert, error-free, routine use only. A click is two B ops (press, release); a drag is press, P, release, so it carries two B ops as well. M is used for both preparation and a short read; reading many items is NOT modelled, which favours the workaround with long output.",
+    "Layout stems: 'proposed-language' is design/layouts/proposed-language.json (layout lane). Its sample tree differs from this aspect's sample tree, so a tree-item-* id there is a geometry stand-in for the row named in the note. Stems 'language-tree-suspect' and 'language-tree-ai' are defined inline in docs/hci/design/language-and-ddd-tree.md Appendix B (states that no design/layouts file has yet); the integrator should extract them into design/layouts/. '__pointer' is the layout lane's virtual pointer rest position. P ops without a layout stem are steps in an editor or chat window outside the Studio: no layout exists for them, so they use the KLM constant.",
+    "Task ids: brief id plus a variant suffix (T05-rename, T05-move-drag, T05-move-menu, T05-add), following the IA lane's T02-kbd; the shared format shows plain T-ids.",
+    "Provider latency is outside KLM and is a 10 s class job with progress and cancel (P7); no response time is invented here.",
+    "The per-request consent and the adopt step are deliberate costs (I8, I1) and are not shortened."
+   ]
+  },
+  {
+   "id": "T14-gaps", "name": "Find invariants with no test link (eight invariants in the sample tree)", "persona": "P4", "frequency": "weekly",
+   "flows": {
+    "current": [
+     {"op":"M","note":"decide to audit"},
+     {"op":"T","chars":30,"note":"grep for one invariant in tests"},
+     {"op":"K","keys":"enter"},
+     {"op":"M","note":"read"},
+     {"op":"M","note":"next invariant"},
+     {"op":"T","chars":30,"note":"grep for one invariant in tests"},
+     {"op":"K","keys":"enter"},
+     {"op":"M","note":"read"},
+     {"op":"M","note":"next invariant"},
+     {"op":"T","chars":30,"note":"grep for one invariant in tests"},
+     {"op":"K","keys":"enter"},
+     {"op":"M","note":"read"},
+     {"op":"M","note":"next invariant"},
+     {"op":"T","chars":30,"note":"grep for one invariant in tests"},
+     {"op":"K","keys":"enter"},
+     {"op":"M","note":"read"},
+     {"op":"M","note":"next invariant"},
+     {"op":"T","chars":30,"note":"grep for one invariant in tests"},
+     {"op":"K","keys":"enter"},
+     {"op":"M","note":"read"},
+     {"op":"M","note":"next invariant"},
+     {"op":"T","chars":30,"note":"grep for one invariant in tests"},
+     {"op":"K","keys":"enter"},
+     {"op":"M","note":"read"},
+     {"op":"M","note":"next invariant"},
+     {"op":"T","chars":30,"note":"grep for one invariant in tests"},
+     {"op":"K","keys":"enter"},
+     {"op":"M","note":"read"},
+     {"op":"M","note":"next invariant"},
+     {"op":"T","chars":30,"note":"grep for one invariant in tests"},
+     {"op":"K","keys":"enter"},
+     {"op":"M","note":"read"}
+    ],
+    "proposed": [
+     {"op":"M","note":"decide to audit"},
+     {"op":"P","from":"__pointer","to":"st-unknown","layout":"proposed-language","note":"click the gap count in the status bar; filters the tree to rows with the gap; stand-in for the gap count button, which the shell layout does not have yet"},
+     {"op":"B","note":"press"},
+     {"op":"B","note":"release"},
+     {"op":"M","note":"read the filtered rows and the hidden-by-filter counter"}
+    ]
+   },
+   "assumptions": [
+    "ESTIMATED: the baseline Studio has no language or DDD surface, so 'current' is the best available workaround in an editor and shell (the way this repository keeps its language today: prose in docs/architecture/ARCHITECTURE.md). It is not like-for-like: the workaround gives no kernel ripple, no status and no UNKNOWN.",
+    "KLM profile: K 0.20 s (average skilled typist), P 1.10 s, B 0.10 s per press or per release, H 0.40 s, M 1.35 s (K, P, H, M and the 21 percent from Card, Moran and Newell 1980; B from a tertiary summary, and two B equal the 1980 paper's one K per button press; H is not inserted in these flows, see ADR-0062 for the H variant), band plus or minus 21 percent (an RMS error, not a confidence interval); expert, error-free, routine use only. A click is two B ops (press, release); a drag is press, P, release, so it carries two B ops as well. M is used for both preparation and a short read; reading many items is NOT modelled, which favours the workaround with long output.",
+    "Layout stems: 'proposed-language' is design/layouts/proposed-language.json (layout lane). Its sample tree differs from this aspect's sample tree, so a tree-item-* id there is a geometry stand-in for the row named in the note. Stems 'language-tree-suspect' and 'language-tree-ai' are defined inline in docs/hci/design/language-and-ddd-tree.md Appendix B (states that no design/layouts file has yet); the integrator should extract them into design/layouts/. '__pointer' is the layout lane's virtual pointer rest position. P ops without a layout stem are steps in an editor or chat window outside the Studio: no layout exists for them, so they use the KLM constant.",
+    "Task ids: brief id plus a variant suffix (T05-rename, T05-move-drag, T05-move-menu, T05-add), following the IA lane's T02-kbd; the shared format shows plain T-ids.",
+    "N = 8 is the invariant count in the sample tree of the design document (each maps to one acceptance criterion in docs/verification/ACCEPTANCE_MATRIX.csv).",
+    "The workaround greps test names only; it cannot say whether a test is linked by id, and it produces no roll-up.",
+    "NOT COMPARABLE: the proposed flow assumes the required-link rule data (an invariant needs a test) has already been authored; authoring it is a setup cost that is not modelled. The ratio is not a speed claim."
+   ]
+  }
+ ]
+}

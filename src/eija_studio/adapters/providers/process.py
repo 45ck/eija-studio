@@ -272,7 +272,8 @@ def _shim_argv(tail: str, base: Path, shim_name: str) -> list[str]:
         token = (quoted or bare).replace("%dp0%", str(base) + os.sep)
         if "%" in token:
             raise CliShimUnsupported(shim_name)
-        argv.append(os.path.normpath(token) if quoted else token)
+        # npm writes shim paths with backslashes; map them to this platform's separator (a no-op on Windows)
+        argv.append(os.path.normpath(token.replace("\\", os.sep)) if quoted else token)
     scripts = [a for a in argv if not a.startswith("-")]
     if not scripts or not Path(scripts[0]).is_file():
         raise CliShimUnsupported(shim_name)

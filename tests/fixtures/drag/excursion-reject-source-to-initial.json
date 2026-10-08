@@ -1,0 +1,7 @@
+{
+  "description": "Scene 3 drag: move the excursion rejection transition's source onto the initial state (Draft), after the recommend_only meaning is selected. The kernel refuses it at the drop target.",
+  "pack": "excursion",
+  "meaning": "recommend_only",
+  "transaction": {"kind": "retarget_transition", "transition": "TR-REJECT", "end": "source", "state": "Draft"},
+  "expected": {"code": "POLICY_BLOCKED", "codes": ["UNSUPPORTED_REJECTION_SOURCE"], "refs": ["law:reject-source-bounded", "transition:TR-REJECT"]}
+}

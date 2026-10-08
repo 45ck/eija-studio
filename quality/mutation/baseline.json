@@ -1,0 +1,12 @@
+{
+  "engine": "cosmic-ray 8.7.0",
+  "modules": {
+    "src/eija_studio/domain/policy.py": {
+      "score": 1.0,
+      "survived": 0,
+      "total": 205
+    }
+  },
+  "platform": "win32 Windows 11, CPython 3.12.10",
+  "schema": "eija.mutation-baseline.v1"
+}

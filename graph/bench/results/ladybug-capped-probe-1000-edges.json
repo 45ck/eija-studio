@@ -1,0 +1,73 @@
+{
+ "caps": {
+  "buffer_pool_mb": 128,
+  "max_db_size_bytes": 1073741824,
+  "max_num_threads": 1,
+  "per_query_timeout_s": 30,
+  "rss_limit_mb": 500
+ },
+ "edges": 1000,
+ "environment": {
+  "platform": "Windows 11",
+  "python": "3.12.10"
+ },
+ "ladybug_load_s": 0.16,
+ "ladybug_version": "0.20.4",
+ "max_bfs_depth_of_reference": 6,
+ "nodes": 350,
+ "peak_rss_mb_parent_after_load": 59,
+ "plain_edge_scan_without_order_by_over_3_shuffled_loads": {
+  "distinct_orders": 3,
+  "peak_rss_mb": 59
+ },
+ "propagating_edges": 636,
+ "reference_closure_size": 217,
+ "roots": 5,
+ "rss_mb_before_open": 30,
+ "shortest_bound_30": {
+  "equals_reference_after_adding_roots": true,
+  "extra_vs_reference": 0,
+  "kind": "shortest",
+  "median_s": 0.0097,
+  "missing_vs_reference": 0,
+  "peak_rss_mb": 50,
+  "rows": 213,
+  "upper_bound": 30
+ },
+ "shortest_bound_7": {
+  "equals_reference_after_adding_roots": true,
+  "extra_vs_reference": 0,
+  "kind": "shortest",
+  "median_s": 0.0081,
+  "missing_vs_reference": 0,
+  "peak_rss_mb": 50,
+  "rows": 213,
+  "upper_bound": 7
+ },
+ "varlen_default_bound_3": {
+  "equals_reference_after_adding_roots": false,
+  "extra_vs_reference": 0,
+  "kind": "varlen_default",
+  "median_s": 0.0088,
+  "missing_vs_reference": 88,
+  "peak_rss_mb": 50,
+  "rows": 125,
+  "upper_bound": 3
+ },
+ "varlen_default_bound_30": {
+  "error": "RuntimeError: Buffer manager exception: Unable to allocate memory! The buffer pool is full and no memory could be freed!",
+  "kind": "varlen_default",
+  "peak_rss_mb": 165,
+  "upper_bound": 30
+ },
+ "varlen_default_bound_7": {
+  "equals_reference_after_adding_roots": true,
+  "extra_vs_reference": 0,
+  "kind": "varlen_default",
+  "median_s": 0.0258,
+  "missing_vs_reference": 0,
+  "peak_rss_mb": 50,
+  "rows": 213,
+  "upper_bound": 7
+ }
+}

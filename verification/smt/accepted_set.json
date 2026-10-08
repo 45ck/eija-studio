@@ -405,6 +405,18 @@
       "statement": "Reject starts only from Recommended or Submitted."
     },
     {
+      "id": "INV-APPROVE-ENDS-IN-APPROVED",
+      "statement": "Approve ends in Approved."
+    },
+    {
+      "id": "INV-RECOMMEND-STARTS-FROM-SUBMITTED",
+      "statement": "Recommend starts from Submitted."
+    },
+    {
+      "id": "INV-REJECT-FROM-SUBMITTED-WITHOUT-RECOMMENDATION",
+      "statement": "Without the recommendation meaning (no Recommend), Reject starts from Submitted."
+    },
+    {
       "id": "INV-FORBIDDEN-EFFECTS-EXCLUDED",
       "statement": "No transition requires a forbidden effect, and every transition forbids all of them."
     },
@@ -420,9 +432,9 @@
   "schema": "eija.smt-accepted-set/v1",
   "subject": {
     "function": "eija_studio.domain.policy.check_policy",
-    "sources_sha256_lf": {
-      "domain/models.py": "eae77547d1b9c6d639d48474aaf2415aad3fac207777c55ab88d7dba009884fa",
-      "domain/policy.py": "c868bada2d79bc9277ef37abf0dd33373343666e2873fcf3b6b2a1aec788415e"
+    "sources_semantic_sha256": {
+      "domain/models.py": "1313d3b04451b4090015be706a9742b36284f188203cdada8f327d395238fdd5",
+      "domain/policy.py": "0a116a20a3b9f2cba013e9b5a94628f1ff60494b09d466ac07845de1369de755"
     }
   }
 }

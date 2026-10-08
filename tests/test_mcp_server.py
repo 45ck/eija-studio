@@ -1,19 +1,20 @@
 """MCP adapter tests, driven through the SDK's in-memory client/server session.
 
-They prove: the exposed surface is exactly the agent surface; owner operations are absent and
+They prove (the SDK-free lint, config and docs checks are in test_agent_static.py): the exposed surface is exactly the agent surface; owner operations are absent and
 unreachable; kernel domain errors and unexpected errors surface safely; consent and answers cannot be
 supplied by an agent and networked calls are capped; sealed material does not leak; and the real stdio
 entry point starts, answers and keeps stdout to JSON-RPC only.
 """
 from __future__ import annotations
 
-import ast
 import asyncio
+import errno
 import json
 import subprocess
 import sys
+import tempfile
 import threading
-import tomllib
+from operator import attrgetter, methodcaller
 from pathlib import Path
 
 import pytest
@@ -23,13 +24,13 @@ pytest.importorskip("mcp", reason="install the agents extra: pip install -e '.[a
 from mcp import Client, MCPError, StdioServerParameters
 from mcp.server.mcpserver.exceptions import ToolError
 
-from conftest import approve
+from kernel_support import approve
 from eija_studio.application.ports import ProviderResult
-from eija_studio.domain.models import OWNER, DomainError, Proposal, Alternative
-from eija_studio.interfaces import agent_config
-from eija_studio.interfaces.cli import main as cli_main
+from eija_studio.domain.models import AGENT, OWNER, DomainError, Proposal, Alternative
+from eija_studio.application.service import Studio
+from eija_studio.interfaces import agent_policy
 from eija_studio.interfaces.mcp_server import (
-    AGENT_TOOLS, ALLOWED_STUDIO_CALLS, OWNER_ONLY_OPERATIONS, AgentSurface, _owner_next, create_server)
+    AGENT_TOOLS, OWNER_ONLY_OPERATIONS, AgentPort, AgentSurface, StudioAgentPort, _owner_next, create_server)
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUEST = "Let teachers sign off excursions."
@@ -76,40 +77,102 @@ def test_tool_surface_is_exactly_the_agent_surface(studio):
     names = [t.name for t in tools.tools]
     assert sorted(names) == sorted(AGENT_TOOLS)
     for forbidden in OWNER_ONLY_OPERATIONS:
-        assert not any(forbidden in name for name in names), forbidden
+        assert forbidden not in names, forbidden
     # An agent cannot smuggle consent, meaning or answers through a tool argument.
-    smuggled = {"consent", "interpretation", "answers", "subject_hash", "acknowledge_unknowns", "transaction", "principal"}
+    smuggled = {"consent", "interpretation", "answers", "subject_hash", "acknowledge_unknowns", "principal"}
     for tool in tools.tools:
         assert not smuggled & set(tool.input_schema.get("properties", {})), tool.name
+        assert ("proposal" in tool.input_schema.get("properties", {})) == (tool.name == "edit_check")
     hints = {t.name: t.annotations for t in tools.tools}
     assert all(h is not None and h.destructive_hint is False for h in hints.values())
     assert hints["view_case"].read_only_hint is True and hints["verify"].read_only_hint is False
+    assert all(hints[name].read_only_hint is True for name in ("pack", "affordances", "edit_check", "repository_impact", "repository_source"))
 
 
 def test_calling_an_owner_operation_is_an_error_not_a_dispatch(studio):
     async def block(client):
-        for name in ("select", "select_meaning", "edit", "approve", "apply"):
+        for name in ("select", "select_meaning", "edit", "undo", "redo", "approve", "apply"):
             result = await client.call_tool(name, {"case_id": "0" * 32})
             assert result.is_error and "Unknown tool" in result.content[0].text, name
     session(studio)(block)
 
 
-def test_mcp_never_calls_owner_operations_on_studio():
-    source = (ROOT / "src/eija_studio/interfaces/mcp_server.py").read_text(encoding="utf-8")
-    tree = ast.parse(source)
-    called = {n.attr for n in ast.walk(tree) if isinstance(n, ast.Attribute) and isinstance(n.value, ast.Attribute)
-              and n.value.attr == "studio"}
-    assert called <= ALLOWED_STUDIO_CALLS, called - ALLOWED_STUDIO_CALLS
-    assert not called & set(OWNER_ONLY_OPERATIONS)
-    names = {n.id for n in ast.walk(tree) if isinstance(n, ast.Name)}
-    assert "OWNER" not in names, "the MCP adapter must never hold the owner principal"
-
-
-def test_surface_holds_no_principal_so_nothing_pretends_to_enforce_authority(studio):
-    # The guarantee is that owner tools are absent (tests above), not a principal check: the adapter has none.
-    assert not hasattr(AgentSurface(studio), "principal")
+def test_surface_holds_no_principal_and_needs_only_the_five_member_port(studio):
+    # The guarantee is that owner tools are absent (tests above and test_agent_static.py), not a principal check.
+    surface = AgentSurface(StudioAgentPort(studio))
+    assert not hasattr(surface, "principal") and not hasattr(surface, "studio")
     with pytest.raises(TypeError):
-        AgentSurface(studio, principal=OWNER)  # type: ignore[call-arg]
+        AgentSurface(StudioAgentPort(studio), principal=OWNER)  # type: ignore[call-arg]
+
+    class Fake:
+        networked = False
+
+        def list_cases(self):
+            return []
+
+        def create(self, request):
+            return {"id": "a" * 32, "version": 0, "stage": "DRAFT"}
+
+        def view(self, case_id):
+            raise ToolError("not reached")
+
+        propose = verify = view
+    fake_surface = AgentSurface(Fake())  # a five-member fake is enough to drive it: nothing else can be reached
+    assert fake_surface.list_cases() == {"cases": [], "count": 0}
+    assert fake_surface.create_case(REQUEST)["stage"] == "DRAFT"
+    # Assert against the REAL port, not the fake above (which was written without owner names and so proved nothing):
+    # its public attributes are exactly the AgentPort members, and no owner operation is among them.
+    real = StudioAgentPort(studio)
+    public = {name for name in dir(real) if not name.startswith("_")}
+    assert public == agent_policy.port_members(AgentPort)
+    assert not public & set(OWNER_ONLY_OPERATIONS)
+
+
+def _reachable_by_ordinary_names(root, depth=5):
+    """Every object reachable from ``root`` through non-dunder attribute names, the way attrgetter/methodcaller or a
+    dotted path can go. (Dunder walks such as __closure__ are the lint's job, not this test's.)"""
+    seen, stack, found = set(), [(root, 0)], []
+    while stack:
+        obj, level = stack.pop()
+        if id(obj) in seen or level > depth:
+            continue
+        seen.add(id(obj))
+        found.append(obj)
+        for name in dir(obj):
+            if name.startswith("__"):
+                continue
+            try:
+                stack.append((getattr(obj, name), level + 1))
+            except Exception:  # noqa: S112  (a property that raises leads nowhere)
+                continue
+    return found
+
+
+def test_the_narrowed_port_cannot_reach_an_owner_operation_by_any_ordinary_name(studio):
+    """Review of PR #23: `attrgetter`, `methodcaller` and dotted paths must not find approve/apply on the narrowed port."""
+    port = StudioAgentPort(studio)
+    for name in (*OWNER_ONLY_OPERATIONS, "_studio", "studio", "_studio.approve", "studio.apply", "_studio.store.transaction"):
+        with pytest.raises(AttributeError):
+            attrgetter(name)(port)
+    for name in OWNER_ONLY_OPERATIONS:
+        with pytest.raises(AttributeError):
+            methodcaller(name, "0" * 32, 0)(port)
+    reachable = _reachable_by_ordinary_names(AgentSurface(port))
+    assert not any(isinstance(obj, Studio) for obj in reachable), "an ordinary attribute path leads from the surface to the Studio"
+    assert not any(getattr(obj, "__name__", "") in OWNER_ONLY_OPERATIONS for obj in reachable)
+    # negative control: the walk really does find a Studio when one is stored on the port (the old design)
+
+    class Leaky:
+        def __init__(self, held):
+            self._studio = held
+    assert any(isinstance(obj, Studio) for obj in _reachable_by_ordinary_names(Leaky(studio)))
+
+
+def test_the_kernel_still_refuses_an_authority_less_principal_below_the_adapter(studio, selected):
+    """Kernel test, not an adapter test: the adapter is safe because it offers no such tool, not because of this."""
+    with pytest.raises(DomainError) as raised:
+        studio.select(selected["id"], selected["version"], "recommend_only", AGENT)
+    assert raised.value.code == "AUTHORITY_REQUIRED"
 
 
 def test_kernel_domain_errors_reach_the_agent_through_a_tool_path(studio, selected):
@@ -123,7 +186,7 @@ def test_kernel_domain_errors_reach_the_agent_through_a_tool_path(studio, select
 
 
 def test_guarded_translates_domain_errors_and_hides_unexpected_ones(studio):
-    surface = AgentSurface(studio)
+    surface = AgentSurface(StudioAgentPort(studio))
 
     def domain():
         raise DomainError("MEANING_REQUIRED", "select first")
@@ -279,7 +342,7 @@ def test_zero_cap_forbids_live_calls_and_a_negative_cap_is_invalid(studio):
     session(studio, egress_consent=True, max_provider_calls=0)(zero)
     assert stub.calls == 0
     with pytest.raises(ValueError):
-        AgentSurface(studio, max_provider_calls=-1)
+        AgentSurface(StudioAgentPort(studio), max_provider_calls=-1)
 
 
 def test_offline_proposals_do_not_consume_the_cap(studio):
@@ -325,74 +388,107 @@ def test_resources_language_and_adrs(studio):
     session(studio)(block)
 
 
-# ---- CLI and docs ------------------------------------------------------------------------------
-def test_cli_refuses_unsafe_mcp_configuration_on_stderr_never_stdout(tmp_path, capsys):
-    base = ["mcp", "--workspace", str(tmp_path / "w")]
-    unsafe = ([*base, "--provider", "openrouter"],                                        # networked, no flags
-              [*base, "--provider", "openrouter", "--allow-network"],                       # needs owner consent too
-              [*base, "--ask-key", "--provider", "openrouter", "--allow-network", "--egress-consent"],
-              [*base, "--max-provider-calls", "-1"])
-    for argv in unsafe:
-        assert cli_main(argv) == 2
-        captured = capsys.readouterr()
-        assert captured.out == "", "stdout is the MCP protocol channel; startup errors must not go there"
-        assert "CONFIGURATION" in captured.err
-    assert not (tmp_path / "w").exists()  # refused before touching the workspace
+# ---- sealed material: every tool -----------------------------------------------------------------
+SEALED_KEYS = {"expected", "local_signature", "seal", "signature"}
 
 
-def test_missing_extra_is_reported_on_stderr_in_mcp_mode(tmp_path, capsys, monkeypatch):
-    monkeypatch.setitem(sys.modules, "eija_studio.interfaces.mcp_server", None)  # makes the import fail
-    assert cli_main(["mcp", "--workspace", str(tmp_path / "w")]) == 2
-    captured = capsys.readouterr()
-    assert captured.out == "" and "MISSING_EXTRA" in captured.err
+def _walk(value, path=()):
+    """Every (path, key, value) triple of nested dicts and lists."""
+    if isinstance(value, dict):
+        for key, item in value.items():
+            yield path, key, item
+            yield from _walk(item, (*path, key))
+    elif isinstance(value, list):
+        for item in value:
+            yield from _walk(item, path)
 
 
-def test_non_mcp_commands_still_report_errors_on_stdout(tmp_path, capsys):
-    assert cli_main(["verify", "0" * 32, "--expected-version", "0", "--workspace", str(tmp_path / "w")]) == 2
-    captured = capsys.readouterr()
-    assert "NOT_FOUND" in captured.out and captured.err == ""
+def sealed_material_violations(outputs, studio, case_id) -> list[str]:
+    """The real leak scan. Checks structure, not just strings: a substring scan misses a 9-character answer like
+    "Registrar" or a re-labelled key (review of PR #23: `hint: expected` passed the old scan).
+
+    1. no key anywhere is a sealed key (expected answers, seals, signatures);
+    2. every `questions` item has exactly the keys {id, question};
+    3. no dict pairs a question id with its expected value, and no long expected answer appears as text;
+    4. the local signature, and the workspace path, appear nowhere."""
+    decision = studio.view(case_id)["case"]["decision"] or {}
+    expected = {q["id"]: q["expected"] for q in studio.view(case_id)["packet"]["questions"]}
+    problems: list[str] = []
+    for label, result in outputs:
+        content = result.structured_content if result.structured_content is not None else {"text": result.content[0].text}
+        text = json.dumps(content) + result.content[0].text
+        for path, key, value in _walk(content):
+            if key in SEALED_KEYS:
+                problems.append(f"{label}: sealed key {key!r} at {'.'.join(map(str, path)) or '<root>'}")
+            if key == "questions" and isinstance(value, list):
+                problems += [f"{label}: question item has keys {sorted(q)}" for q in value if set(q) != {"id", "question"}]
+            if isinstance(value, dict) and any(isinstance(v, str) and v in expected for v in value.values()):
+                answered = [expected[v] for v in value.values() if isinstance(v, str) and v in expected]
+                if any(v == answer for v in value.values() if isinstance(v, str) for answer in answered):
+                    problems.append(f"{label}: a question id is paired with its expected answer")
+        problems += [f"{label}: {secret!r} in output" for secret in
+                     (decision.get("local_signature"), str(studio.store.directory), *(a for a in expected.values() if len(a) > 12))
+                     if secret and secret in text]
+    return problems
 
 
-@pytest.mark.parametrize("client", agent_config.CLIENTS)
-def test_print_config_is_valid_for_each_client(client, tmp_path, capsys):
-    assert cli_main(["mcp", "--workspace", str(tmp_path / "w"), "--print-config", client]) == 0
-    text = capsys.readouterr().out
-    workspace = str((tmp_path / "w").resolve())
-    if client == "codex":
-        server = tomllib.loads(text)["mcp_servers"]["eija"]
-        assert server["command"] == sys.executable and server["args"][:3] == ["-m", "eija_studio", "mcp"] and server["args"][-1] == workspace
-    elif client == "opencode":
-        server = json.loads(text)["mcp"]["eija"]
-        assert server["type"] == "local" and server["command"][0] == sys.executable and server["command"][-1] == workspace
-    elif client == "gemini":
-        server = json.loads(text)["mcpServers"]["eija"]
-        assert server["command"] == sys.executable and server["args"][-1] == workspace and server["trust"] is False
-    else:
-        assert text.startswith("claude mcp add --scope project eija -- ") and workspace in text
-    assert not (tmp_path / "w").exists()  # printing config creates nothing
-    with pytest.raises(ValueError):
-        agent_config.snippet("unknown", sys.executable, tmp_path)
+async def _all_outputs(client, case_id, created=None):
+    outputs = [("list_cases", await call(client, "list_cases")),
+               ("view_case", await call(client, "view_case", case_id=case_id)),
+               ("impact", await call(client, "impact", case_id=case_id)),
+               ("verify", await call(client, "verify", case_id=case_id))]
+    outputs += [(f"render {view} {fmt}", await call(client, "render", case_id=case_id, view=view, format=fmt))
+                for view in ("rules", "states", "journeys") for fmt in ("json", "text")]
+    outputs += [("pack", await call(client, "pack")),
+                ("affordances", await call(client, "affordances", case_id=case_id)),
+                ("edit_check", await call(client, "edit_check", case_id=case_id,
+                                          proposal={"kind": "retarget_transition", "transition": "TR-REJECT",
+                                                       "end": "source", "state": "Submitted"})),
+                ("repository_impact", await call(client, "repository_impact", term="unknown")),
+                ("repository_source", await call(client, "repository_source", reference="repo://src/unknown.py"))]
+    outputs.append(("create_case", await call(client, "create_case", request=REQUEST)))
+    outputs.append(("propose", await call(client, "propose", case_id=created or case_id)))
+    return outputs
 
 
-def test_docs_name_every_tool_and_forbid_every_owner_operation():
-    contract = (ROOT / "docs/agents/contract.md").read_text(encoding="utf-8")
-    quickstart = (ROOT / "docs/agents/quickstart.md").read_text(encoding="utf-8")
-    for tool in AGENT_TOOLS:
-        assert f"`{tool}`" in contract, tool
-    for operation in ("select", "edit", "approve", "apply"):
-        assert f"`{operation}`" in contract.split("## What an agent may not do")[1], operation
-    for client in ("claude mcp add", "[mcp_servers.eija]", '"mcp"', '"mcpServers"'):
-        assert client in quickstart, client
+def test_no_tool_leaks_sealed_material_after_owner_approval(studio, verified):
+    """Every tool that returns case data, including create_case and propose, scanned after approval."""
+    approved = approve(studio, verified)
+    fresh = studio.create(REQUEST)  # a DRAFT case for propose (an approved case is past proposing)
+
+    async def block(client):
+        outputs = await _all_outputs(client, approved["id"], created=fresh["id"])
+        assert sealed_material_violations(outputs, studio, approved["id"]) == []
+    session(studio)(block)
 
 
-@pytest.mark.parametrize("path", [".agents/skills/eija-studio/SKILL.md", ".claude/skills/eija-studio/SKILL.md"])
-def test_skills_name_every_tool_and_pre_approve_none(path):
-    text = (ROOT / path).read_text(encoding="utf-8")
-    assert text.startswith("---\nname: eija-studio\n")
-    for tool in AGENT_TOOLS:
-        assert tool in text, tool
-    assert "allowed-tools" not in text  # a skill must not silently pre-approve tool calls (some reach networked providers)
-    assert "no select, edit, approve or apply tool" in text
+def test_leak_scan_has_teeth(studio, verified, monkeypatch):
+    """Negative control on the REAL scan: a view_case that hints the expected answers, and a render that returns the
+    sealed decision, must each be reported. (The old scan passed the first one.)"""
+    approved = approve(studio, verified)
+    real_view, real_render = AgentSurface.view_case, AgentSurface.render
+
+    def hinting(self, case_id):
+        out = real_view(self, case_id)
+        expected = {q["id"]: q["expected"] for q in self.port.view(case_id)["packet"]["questions"]}
+        out["questions"] = [{**q, "hint": expected[q["id"]]} for q in out["questions"]]
+        return out
+
+    def sealing(self, case_id, view, fmt):
+        return real_render(self, case_id, view, fmt) | {"x": self.port.view(case_id)["case"]["decision"]}
+
+    async def scan(client):
+        outputs = [("view_case", await call(client, "view_case", case_id=approved["id"])),
+                   ("render", await call(client, "render", case_id=approved["id"], view="rules", format="json"))]
+        return sealed_material_violations(outputs, studio, approved["id"])
+
+    assert session(studio)(scan) == []  # the honest server is clean
+    monkeypatch.setattr(AgentSurface, "view_case", hinting)
+    leaked = session(studio)(scan)
+    assert any("question item has keys" in v for v in leaked), leaked
+    monkeypatch.setattr(AgentSurface, "render", sealing)
+    leaked = session(studio)(scan)
+    assert any("render" in v and ("sealed key" in v or "in output" in v) for v in leaked), leaked
 
 
 def test_real_stdio_server_starts_lists_tools_and_answers(tmp_path):
@@ -418,61 +514,178 @@ def _rpc(identifier, method, params=None):
 
 def _drive_raw_server(workspace, lines, expected_ids, timeout=90):
     """Run `eija mcp` as a raw subprocess, write JSON-RPC lines, collect EVERY stdout line until all replies arrive."""
-    process = subprocess.Popen([sys.executable, "-m", "eija_studio", "mcp", "--workspace", str(workspace)],  # noqa: S603 - fixed argv: this interpreter, no shell
-                               stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    watchdog = threading.Timer(timeout, process.kill)
-    watchdog.start()
-    stdout_lines: list[str] = []
-    try:
-        for line in lines:
-            process.stdin.write((line + "\n").encode("utf-8"))
-        process.stdin.flush()
-        seen: set = set()
-        while not expected_ids <= seen:
-            raw = process.stdout.readline()
-            if not raw:
-                break
-            stdout_lines.append(raw.decode("utf-8"))
+    # A pipe left unread while collecting stdout can block the child before its next reply.
+    with tempfile.TemporaryFile() as stderr_capture:
+        process = subprocess.Popen([sys.executable, "-m", "eija_studio", "mcp", "--workspace", str(workspace)],  # noqa: S603 - fixed argv: this interpreter, no shell
+                                   stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=stderr_capture)
+        watchdog = threading.Timer(timeout, process.kill)
+        stdout_lines: list[str] = []
+        try:
+            watchdog.start()
+            for line in lines:
+                process.stdin.write((line + "\n").encode("utf-8"))
+            process.stdin.flush()
+            seen: set = set()
+            while not expected_ids <= seen:
+                raw = process.stdout.readline()
+                if not raw:
+                    break
+                stdout_lines.append(raw.decode("utf-8"))
+                try:
+                    message = json.loads(stdout_lines[-1])
+                except ValueError:
+                    continue
+                if isinstance(message, dict) and "id" in message:
+                    seen.add(message["id"])
+            process.stdin.close()
+            rest = process.stdout.read().decode("utf-8")  # anything the server prints after the last reply counts too
+            stdout_lines.extend(part + "\n" for part in rest.split("\n") if part)
+            process.wait(timeout=30)
+            stderr_capture.seek(0)
+            stderr = stderr_capture.read().decode("utf-8", "replace")
+        finally:
+            watchdog.cancel()
             try:
-                message = json.loads(stdout_lines[-1])
-            except ValueError:
-                continue
-            if isinstance(message, dict) and "id" in message:
-                seen.add(message["id"])
-        process.stdin.close()
-        rest = process.stdout.read().decode("utf-8")  # anything the server prints after the last reply counts too
-        stdout_lines.extend(part + "\n" for part in rest.split("\n") if part)
-        process.wait(timeout=30)
-        stderr = process.stderr.read().decode("utf-8", "replace")
-    finally:
-        watchdog.cancel()
-        process.kill()
-        for stream in (process.stdin, process.stdout, process.stderr):
-            stream.close()
+                process.kill()
+                process.wait(timeout=30)
+            finally:
+                try:
+                    process.stdin.close()
+                except OSError as error:
+                    # Match Popen's stdin cleanup: Windows reports EINVAL when the child has closed its pipe.
+                    if error.errno not in (errno.EPIPE, errno.EINVAL):
+                        raise
+                finally:
+                    process.stdout.close()
     return stdout_lines, stderr
 
 
+def _raw_driver_fixture(monkeypatch, workspace, script):
+    """Substitute only the expected server argv with a disposable deterministic child."""
+    popen = subprocess.Popen
+    children, captures = [], []
+
+    def start(argv, **kwargs):
+        assert argv == [sys.executable, "-m", "eija_studio", "mcp", "--workspace", str(workspace)]
+        assert kwargs["stdin"] == kwargs["stdout"] == subprocess.PIPE
+        assert "shell" not in kwargs
+        child = popen([sys.executable, "-u", "-c", script], **kwargs)  # Fixed disposable Python fixture, no shell.
+        children.append(child)
+        captures.append(kwargs["stderr"])
+        return child
+
+    monkeypatch.setattr(subprocess, "Popen", start)
+    return children, captures
+
+
+def test_raw_driver_collects_stderr_without_blocking_stdout(tmp_path, monkeypatch):
+    """Exceed pipe capacity before the final reply; preserve all stdout and exact stderr."""
+    workspace = tmp_path / "raw-fixture"
+    first = '{"jsonrpc":"2.0","id":41,"result":{}}\n'
+    last = '{"jsonrpc":"2.0","id":42,"result":{}}\n'
+    noise, tail = "unrelated stdout before replies\n", "unrelated stdout after replies\n"
+    marker = b"stderr fixture ready\n"
+    script = (
+        "import sys\n"
+        "assert sys.stdin.buffer.readline()\n"
+        f"sys.stderr.buffer.write({marker!r})\n"
+        "sys.stderr.buffer.flush()\n"
+        f"sys.stdout.buffer.write({(noise + first).encode('utf-8')!r})\n"
+        "sys.stdout.flush()\n"
+        "sys.stderr.buffer.write(b'stderr diagnostic\\n' * 131072 + b'\\xff\\n')\n"
+        "sys.stderr.buffer.flush()\n"
+        f"sys.stdout.buffer.write({last.encode('utf-8')!r})\n"
+        "sys.stdout.flush()\n"
+        "assert sys.stdin.buffer.read() == b''\n"
+        f"sys.stdout.buffer.write({tail.encode('utf-8')!r})\n"
+    )
+    children, captures = _raw_driver_fixture(monkeypatch, workspace, script)
+    stdout, stderr = _drive_raw_server(workspace, [_rpc(41, "fixture")], {41, 42}, timeout=3)
+
+    assert stdout == [noise, first, last, tail]
+    expected_stderr = marker + b"stderr diagnostic\n" * 131072 + b"\xff\n"
+    assert stderr == expected_stderr.decode("utf-8", "replace")
+    assert len(children) == len(captures) == 1
+    assert children[0].poll() is not None
+    assert children[0].stdin.closed and children[0].stdout.closed and captures[0].closed
+
+
+def test_raw_driver_preserves_missing_reply_and_unrelated_stdout(tmp_path, monkeypatch):
+    workspace = tmp_path / "raw-missing-reply"
+    first = '{"jsonrpc":"2.0","id":41,"result":{}}\n'
+    noise = "unrelated stdout before exit\n"
+    script = "import sys\nassert sys.stdin.buffer.readline()\n" + f"sys.stdout.buffer.write({(noise + first).encode('utf-8')!r})\n"
+    _raw_driver_fixture(monkeypatch, workspace, script)
+
+    stdout, stderr = _drive_raw_server(workspace, [_rpc(41, "fixture")], {41, 42}, timeout=3)
+
+    assert stdout == [noise, first]  # Missing replies and pollution remain visible to the protocol oracle.
+    assert stderr == ""
+
+
+def test_raw_driver_reaps_child_and_closes_streams_on_input_error(tmp_path, monkeypatch):
+    workspace = tmp_path / "raw-input-error"
+    children, captures = _raw_driver_fixture(monkeypatch, workspace, "import sys; sys.stdin.buffer.read()")
+
+    def broken_lines():
+        yield _rpc(41, "fixture")
+        raise RuntimeError("fixture input failed")
+
+    with pytest.raises(RuntimeError, match="fixture input failed"):
+        _drive_raw_server(workspace, broken_lines(), {41}, timeout=3)
+
+    assert len(children) == len(captures) == 1
+    assert children[0].poll() is not None
+    assert children[0].stdin.closed and children[0].stdout.closed and captures[0].closed
+
+
+_INIT = [
+    _rpc(1, "initialize", {"protocolVersion": "2025-06-18", "capabilities": {}, "clientInfo": {"name": "raw-test", "version": "0"}}),
+    _rpc(None, "notifications/initialized"),
+]
+
+
+def _call(identifier, name, **arguments):
+    return _rpc(identifier, "tools/call", {"name": name, "arguments": arguments})
+
+
+def _created_case_id(workspace) -> str:
+    """A case created by a first raw server session, so the second can drive every tool on a real case."""
+    lines, _ = _drive_raw_server(workspace, [*_INIT, _call(2, "create_case", request=REQUEST)], expected_ids={1, 2})
+    reply = next(json.loads(line) for line in lines if json.loads(line).get("id") == 2)
+    return json.loads(reply["result"]["content"][0]["text"])["id"]
+
+
 def test_stdout_of_the_real_server_is_only_json_rpc(tmp_path):
+    case = _created_case_id(tmp_path / "w")
     lines = [
-        _rpc(1, "initialize", {"protocolVersion": "2025-06-18", "capabilities": {}, "clientInfo": {"name": "raw-test", "version": "0"}}),
-        _rpc(None, "notifications/initialized"),
+        *_INIT,
         "this line is not json at all",                       # garbage must not make the server print to stdout
         _rpc(2, "tools/list", {}),
-        _rpc(3, "tools/call", {"name": "create_case", "arguments": {"request": REQUEST}}),
-        _rpc(4, "tools/call", {"name": "view_case", "arguments": {"case_id": "../../etc/passwd"}}),   # tool error path
-        _rpc(5, "tools/call", {"name": "propose", "arguments": {"case_id": "0" * 32}}),               # kernel error path
+        _call(3, "create_case", request=REQUEST),
+        _call(4, "view_case", case_id="../../etc/passwd"),   # tool error path
+        _call(5, "propose", case_id="0" * 32),               # kernel error path
         _rpc(6, "resources/read", {"uri": "eija://adr/9999"}),                                        # protocol error path
         _rpc(7, "tools/call", {"name": "no_such_tool", "arguments": {}}),
+        # the SUCCESS paths of every tool (a print planted in one of these once went unnoticed: review of PR #23)
+        _call(8, "list_cases"), _call(9, "view_case", case_id=case), _call(10, "impact", case_id=case),
+        _call(11, "verify", case_id=case), _call(12, "render", case_id=case, view="rules", format="text"),
+        _call(13, "propose", case_id=case),
     ]
-    stdout_lines, _stderr = _drive_raw_server(tmp_path / "w", lines, expected_ids={1, 2, 3, 4, 5, 6, 7})
+    ids_expected = set(range(1, 14))
+    stdout_lines, _stderr = _drive_raw_server(tmp_path / "w", lines, expected_ids=ids_expected)
     ids = set()
+    replies = {}
     for line in stdout_lines:
         message = json.loads(line)  # every single stdout line must parse
         assert isinstance(message, dict) and message.get("jsonrpc") == "2.0", line
         assert "result" in message or "error" in message or "method" in message, line
         ids.add(message.get("id"))
-    assert {1, 2, 3, 4, 5, 6, 7} <= ids
+        replies[message.get("id")] = message
+    assert ids_expected <= ids
     assert "Traceback" not in "".join(stdout_lines)
+    assert all("result" in replies[i] and not replies[i]["result"].get("isError") for i in (8, 9, 10, 12)), "the read tools succeed on a real case"
+    assert "Traceback" not in "".join(map(str, replies.values()))
 
 
 def test_startup_refusal_of_the_real_server_writes_nothing_to_stdout(tmp_path):

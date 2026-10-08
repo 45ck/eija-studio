@@ -14,7 +14,7 @@ dependencies = ["fastapi==0.128.2", "uvicorn==0.48.0", "pydantic==2.13.4", "http
 
 [project.optional-dependencies]
 # Each extra belongs to one capability lane; see docs/oss/REGISTER.md for why each tool was chosen.
-dev = ["pytest==9.0.2", "nox>=2025.5.1", "tomlkit==0.15.1"]
+dev = ["pytest==9.0.2", "pytest-xdist==3.8.0", "nox>=2025.5.1", "tomlkit==0.15.1"]  # pytest-xdist: quality/tools/parallel.py runs the CPU-bound pytest sessions on 4 workers; absent or EIJA_SERIAL=1 means serial
 lint = [
     "ruff==0.16.9",
     "mypy==2.3.1",
@@ -27,19 +27,22 @@ lint = [
     "pip-audit==2.10.1",
 ]
 formal = []
-testing = []
-mutation = []
-metrics = []
+testing = ["hypothesis==6.168.3", "hypothesis-jsonschema==0.23.1", "jsonschema==4.26.0"]
+mutation = ["cosmic-ray==8.7.0", "parso==0.8.7"]  # parso: imported directly by quality/mutation/eija_operators.py (also a cosmic-ray dependency)
+metrics = ["eija-studio[lint]", "grimp==3.17"]  # radon and coverage pins live once, in the lint extra
 hci = ["playwright==1.63.0", "axe-playwright-python==0.1.8"]  # drives the installed Chrome (channel="chrome"); no browser download
 agents = ["mcp==2.2.0", "anyio==4.15.1"]
 providers = ["psutil==7.2.2"]  # process-tree kill for agent CLIs; adapters degrade to taskkill/killpg without it
-docs = []
+source-analysis = ["tree-sitter==0.26.0", "tree-sitter-javascript==0.25.0"]  # optional syntax facts; isolated worker, never target-code execution
+docs = ["mkdocs==1.6.1", "mkdocs-material==9.7.7", "pymdown-extensions==12.1", "PyYAML==6.0.3"]  # PyYAML: issue-form check in scripts/check_community_files.py
 visual = ["playwright==1.63.0", "pydot==4.0.1"]
 demos = ["playwright==1.63.0"]  # drives the installed system Chrome; no browser download
 ux = []
-graph = []
+graph = ["jsonschema==4.26.0", "rfc8785==0.1.4", "networkx==3.5", "numpy==2.5.3", "scipy==1.18.1"]  # numpy and scipy: networkx.pagerank (the PPR test oracle) imports them lazily
 dod = []
 smt = ["z3-solver==5.1.0.0"]  # lane smt-bmc: Z3 policy-soundness proof
+okf = ["PyYAML==6.0.3", "markdown-it-py==4.0.0"]
+graph-formal = ["hypothesis==6.168.3", "clingo==5.8.2"]  # both optional: absence gives NOT_RUN in tests/graph/formal, never a pass
 
 [project.scripts]
 eija = "eija_studio.interfaces.cli:main"
@@ -53,8 +56,8 @@ eija_studio = ["resources/**/*", "resources/*.json"]
 [tool.pytest.ini_options]
 pythonpath = ["src", "."]  # "." so tests can import repo-root tooling packages (quality, demos)
 testpaths = ["tests"]
-addopts = "-ra"  # tests/conftest.py keeps pytest temp dirs inside the checkout (slow system temp)
-markers = ["browser: drives a real browser or renderer; skipped (NOT_RUN) unless EIJA_BROWSER_TESTS=1, run by the release session diagrams_syntax"]
+addopts = "-ra -m 'not formal and not slow and not timing'"  # tests/conftest.py keeps pytest temp dirs inside the checkout (slow system temp)
+markers = ["formal: re-runs a whole proof or model-checking search; deselected by default, selected by the formal_smt and bmc nox sessions", "slow: starts a real server or a nested pytest; excluded from the default run, run by `nox -s metrics` (`-m slow`)", "timing: asserts on wall-clock measurements and can flake on a busy machine; excluded from the default run", "browser: drives a real browser or renderer; skipped (NOT_RUN) unless EIJA_BROWSER_TESTS=1, run by the release session diagrams_syntax"]
 
 [tool.ruff]
 target-version = "py311"
@@ -88,13 +91,14 @@ known-first-party = ["eija_studio", "quality", "verification"]
 "noxfile.py" = ["E501", "RUF100"]  # shared file owned by the foundation lane; its E402 noqa is now redundant
 # New top-level tooling trees written by lanes: long docstrings and messages are not a defect worth a rewrite.
 "quality/**/*.py" = ["E501"]
-"demos/**/*.py" = ["E501"]
+"demos/**/*.py" = ["E501", "T201"]
 "verification/**/*.py" = ["E501"]
-"graph/**/*.py" = ["E501"]
+"graph/**/*.py" = ["E501", "T201", "S101", "S603", "S607", "PLW1510", "S311"]
 "design/**/*.py" = ["E501"]
 "**/__main__.py" = ["T201"]  # command-line entry points print by design
 # Per-file debt in kernel sources (each names the finding so a fix removes exactly one entry).
 "src/eija_studio/adapters/providers/process.py" = ["S603"]  # subprocess.Popen/run with an argv list and no shell; argv is a resolved executable plus adapter constants
+"quality/metrics/*.py" = ["S603", "S607"]  # measurement tools run git, pytest and coverage with fixed argv lists, no shell
 "src/eija_studio/adapters/sqlite_store.py" = ["S608"]  # false positive: table name comes from a closed literal tuple
 "src/eija_studio/application/service.py" = ["UP017", "RUF001", "RUF005"]
 "src/eija_studio/application/verifier.py" = ["UP017", "PLW2901"]
@@ -105,7 +109,75 @@ known-first-party = ["eija_studio", "quality", "verification"]
 "quality/sessions/*.py" = ["S603"]
 "quality/gates/*.py" = ["T201"]  # command-line tools that report on stdout
 "quality/sessions/quality.py" = ["T201"]  # NOT_RUN banner
-"tests/test_quality_gates.py" = ["S603"]  # runs lint-imports with a fixed argv
+"tests/test_quality_gates.py" = ["S603", "PLC0415"]  # fixed-argv tool runs; imports are lazy so a missing extra skips
+
+# Lane trees merged into integrate/all on 2026-09-29 (weave graph/ references and benches, quality/okf, quality/mutation, demos/prgif,
+# weave research probes). Same ratchet rule as above: named debt with the reason next to it, removed in the commit that next touches
+# the file for a real change. Tree-level entries are idioms of that tree; per-file entries are the residual style debt after every
+# safe and unsafe autofix was applied. Reasons by rule:
+#   S101 assert is the check idiom of tests and reference self-checks; T201 the CLI prints its report; S311 seeded random.Random builds
+#   reproducible fixtures, never secrets; S603/S607/PLW1510 fixed argv lists (git, uv, java), failure is inspected by the caller;
+#   PLC0415 lazy import of an optional tool so a missing prerequisite is NOT_RUN, not an import error; B023 the closure runs inside the
+#   loop iteration that defines it (timing harness); PERF401/PERF403/PLC0206/SIM102/SIM115/B007/E741/PLW2901 loop-shape style in
+#   reference code that other tests compare against, so it is not reshaped for style; RUF001/RUF002 intentional unicode fixtures;
+#   S608 SQL text built from closed identifier lists; S324 sha1 to reproduce git object ids; S102/S110/PLW0603 documented in place.
+"quality/okf/tests/**/*.py" = ["S101", "S603", "S607", "PLW1510"]
+"quality/okf/**/*.py" = ["T201", "S603", "S607", "PLW1510"]
+"quality/mutation/**/*.py" = ["T201", "S101", "S603", "S607", "PLW1510"]
+"docs/weave/research/**/*.py" = ["T201", "E501", "E701", "E702", "E401", "E402"]
+"tests/graph/**/*.py" = ["S311", "S603", "S607"]
+"tests/demo_catalogue/**/*.py" = ["S603", "S607"]
+"demos/prgif/terminal.py" = ["PERF401"]
+"docs/weave/research/code-intelligence-probes/ast_vs_treesitter.py" = ["PERF401"]
+"docs/weave/research/evidence/term_probe.py" = ["B007", "B023", "E741"]
+"graph/bench/agent_interface_checks.py" = ["PERF401", "PLC0415"]
+"graph/bench/bench_closure_engines.py" = ["B023", "PLC0415"]
+"graph/bench/consistency_checks.py" = ["B007", "E741", "PLC0415", "S102"]
+"graph/bench/formal_checks.py" = ["PLC0206", "PLC0415", "RUF001"]
+"graph/bench/foundations_checks.py" = ["PLC0415", "RUF001"]
+"graph/bench/human_views_budgets.py" = ["PERF401", "PLC0415"]
+"graph/bench/identity_checks.py" = ["B023", "PLW0603", "RUF001", "S324"]
+"graph/bench/impact_math_reference.py" = ["B007", "E741"]
+"graph/bench/impact_math_timing.py" = ["B023"]
+"graph/bench/ladybug_probe.py" = ["PLC0415", "SIM115"]
+"graph/bench/metamodel_dogfood.py" = ["PERF401", "PLC0415"]
+"graph/bench/ranking_cochange_eval.py" = ["B023"]
+"graph/bench/rule_language_bench.py" = ["B023", "PLC0415"]
+"graph/bench/storage_query_probe.py" = ["B023", "PLC0206", "PLC0415", "RUF001", "S608"]
+"graph/bench/traceability_staleness.py" = ["B023"]
+"graph/formal/eijaref/asp.py" = ["PERF401"]
+"graph/formal/eijaref/metamodel.py" = ["B007", "E741", "PERF401"]
+"graph/formal/eijaref/rules.py" = ["B023", "S608"]
+"graph/formal/eijaref/suites.py" = ["PLC0415", "RUF001", "S110", "SIM102"]
+"graph/formal/selfcheck.py" = ["PLC0415"]
+"graph/rules/check_catalogue.py" = ["B007", "PERF401"]
+"graph/rules/reference.py" = ["S608"]
+"graph/schema/build_schemas.py" = ["PERF401"]
+"graph/schema/typecheck.py" = ["PERF401", "PLC0206"]
+"quality/mutation/engine.py" = ["PLC0415"]
+"quality/mutation/equivalents.py" = ["PERF401"]
+"quality/mutation/report.py" = ["B023"]
+"quality/okf/codelink.py" = ["RUF002"]
+"quality/okf/crosscheck.py" = ["PERF401"]
+"quality/okf/extract.py" = ["PERF401", "RUF001"]
+"quality/okf/pages.py" = ["PERF403", "PLC0206"]
+"quality/okf/tests/test_okf_bundle.py" = ["PLC0415"]
+"quality/okf/tests/test_okf_codelink.py" = ["RUF001"]
+"tests/graph/formal/test_formal_crosscheck.py" = ["B023", "E741"]
+"tests/graph/formal/test_formal_tools_and_drift.py" = ["PLC0415"]
+"tests/graph/test_agent_interface_contract.py" = ["PLC0415"]
+"tests/graph/test_human_views.py" = ["E741", "PLC0415"]
+"tests/graph/test_impact_math_oracles.py" = ["B023", "E741", "PERF401", "PLC0415"]
+"tests/graph/test_metamodel_identity.py" = ["PLC0415"]
+"tests/graph/test_rules_reference.py" = ["PLC0415"]
+"tests/metrics/test_metrics_perf.py" = ["PLC0415"]
+"tests/property/property_support.py" = ["S608"]
+"tests/test_evidence_oracle.py" = ["B023"]
+"tests/test_mutation_tooling.py" = ["PLC0415", "PLW1510"]
+
+[tool.ruff.lint.flake8-bugbear]
+# Frozen dataclasses: a default instance is immutable, so B008 does not apply.
+extend-immutable-calls = ["demos.prgif.fit.Limits", "demos.prgif.terminal.Pacing"]
 
 [tool.ruff.format]
 # Applied only to files this lane owns (quality/gates, quality/sessions/quality.py); see docs/quality/gates.md.
@@ -168,7 +240,8 @@ data_file = "reports/coverage/.coverage"
 fail_under = 78  # measured 78.72 on 2026-09-28 (win32, py3.12); floor it, then only raise
 show_missing = true
 skip_empty = true
-exclude_also = ["if TYPE_CHECKING:", "raise NotImplementedError", '\.\.\.$']
+# Protocol/abstract stubs only: a `def ...: ...` line or a bare `...` line, never a real statement ending in `...`.
+exclude_also = ["if TYPE_CHECKING:", "raise NotImplementedError", 'def .*:\s*\.\.\.$', '^\s*\.\.\.$']
 
 [tool.coverage.html]
 directory = "reports/coverage/html"
@@ -177,11 +250,15 @@ directory = "reports/coverage/html"
 output = "reports/coverage/coverage.xml"
 
 [tool.deptry]
-known_first_party = ["eija_studio", "quality", "verification"]
-extend_exclude = ['\.tmp', 'reports']
-# Only tool-only extras are dev groups. Feature extras (providers, agents, formal, hci, ...) are optional
+# Sibling modules that graph/ scripts load through sys.path (no package), so deptry would take them for third-party names.
+known_first_party = ["eija_studio", "quality", "verification", "eijaref", "human_views_reference", "storage_query_probe",
+                     "build_schemas", "identity_checks", "typecheck", "run_alloy"]
+# docs/weave/research holds one-off research probes with their own optional tools (tree-sitter, libcst, ...); they are
+# recorded experiments, not part of the package or of any gate, so their imports are not dependency claims.
+extend_exclude = ['\.tmp', 'reports', 'docs/weave/research']
+# Only tool-only extras (dev, lint, docs) are dev groups. Feature extras (providers, agents, formal, hci, ...) are optional
 # RUNTIME dependencies that lane code legitimately imports, so listing them here made every lane fail DEP004.
-optional_dependencies_dev_groups = ["dev", "lint"]
+optional_dependencies_dev_groups = ["dev", "lint", "docs", "testing", "graph-formal"]  # testing and graph-formal (hypothesis) are imported by tests only
 
 [tool.deptry.package_module_name_map]
 # distribution name -> import name, where they differ
@@ -190,26 +267,30 @@ axe-playwright-python = "axe_playwright_python"
 
 [tool.deptry.per_rule_ignores]
 # nox/pytest/radon/tomlkit are dev tools imported by noxfile.py, quality/ and tests/ (dev-only trees deptry
-# cannot tell apart); tomlkit is the merge driver's parser (quality/tools/tomlmerge.py).
-DEP004 = ["nox", "pytest", "radon", "tomlkit"]
+# cannot tell apart); tomlkit is the merge driver's parser (quality/tools/tomlmerge.py); yaml (PyYAML, `docs`
+# extra) parses the issue forms in scripts/check_community_files.py, a dev-only gate.
+DEP004 = ["nox", "pytest", "radon", "tomlkit", "yaml", "clingo"]  # clingo: the ASP oracle in graph/formal/eijaref/asp.py imports it lazily; absent means NOT_RUN
 # scripts/browser_*smoke.py import Playwright lazily; it belongs to the hci extra, and the scripts report
 # NOT_RUN when it is absent. Declaring it here would make a runtime dependency out of a QA tool.
-DEP001 = ["playwright"]
+# graph/bench scripts import their optional comparison engines (duckdb, rustworkx, ladybug, pyshacl, rdflib) inside the function that
+# measures them; a missing engine is reported NOT_RUN. They are not runtime dependencies of anything.
+DEP001 = ["playwright", "duckdb", "rustworkx", "ladybug", "pyshacl", "rdflib"]
+# numpy and scipy are declared for networkx.pagerank (a test oracle) which imports them lazily; nothing of ours imports them.
+DEP002 = ["numpy", "scipy"]
 
 [tool.importlinter]
 root_package = "eija_studio"
 include_external_packages = true
 
 [[tool.importlinter.contracts]]
-name = "Layers: interfaces > bootstrap > adapters > application > domain"
+name = "Layers: interfaces > bootstrap > adapters > weave > application > domain"
 type = "layers"
-layers = [
-    "eija_studio.interfaces",
-    "eija_studio.bootstrap",
-    "eija_studio.adapters",
-    "eija_studio.application",
-    "eija_studio.domain",
-]
+containers = ["eija_studio"]
+layers = ["interfaces", "bootstrap", "adapters", "weave", "application", "domain"]
+# A new subpackage added by another lane must be given a layer (or listed here with a reason), so it can never
+# sit outside the layer order unnoticed. `__main__` is the `python -m eija_studio` entry point.
+exhaustive = true
+exhaustive_ignores = ["__main__", "resources"]
 
 [[tool.importlinter.contracts]]
 name = "Domain and application are free of web, HTTP, database and process vendors"
@@ -217,7 +298,7 @@ type = "forbidden"
 source_modules = ["eija_studio.domain", "eija_studio.application"]
 forbidden_modules = [
     "fastapi", "starlette", "httpx", "uvicorn", "sqlite3", "subprocess",
-    "urllib", "http", "socket", "requests", "aiohttp", "sqlalchemy",
+    "urllib", "http", "socket", "requests", "aiohttp", "sqlalchemy", "ftplib",
 ]
 
 [[tool.importlinter.contracts]]

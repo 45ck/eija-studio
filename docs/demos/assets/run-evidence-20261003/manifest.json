@@ -1,0 +1,48 @@
+{
+  "schema": "eija.run-evidence-assets/v1",
+  "date": "2026-10-03",
+  "kind": "actual disposable browser captures; not generated concepts",
+  "full_ide_acceptance": "OPEN",
+  "assets": [
+    {
+      "file": "allowed-propose.png",
+      "sha256": "a1183a430dda4f2d05fde5a0b928bcef21c02a3b6bad9cf752634e21f183d7c4",
+      "bytes": 95554,
+      "caption": "Acknowledged Propose in the isolated candidate runtime; synthetic Agent actor.",
+      "run": "runtime-evidence-after-3",
+      "result_sha256": "56b5249bb6dc0d117eaee6497b2379ee4ce53b7ce27d366eca249554be6ccd7e",
+      "script_sha256": "6c2f145213277cf24d182bc129b569ee27bd1300f1b3b937f16ac18e86e007ed",
+      "subject_content_sha256": "c0eb6b7c930b01ebaad6883c0f5b34b6d1a204d8aa99a7518478f7e585fccf99"
+    },
+    {
+      "file": "denied-before-refresh.png",
+      "sha256": "8b2599ee86397fcc872d30e3442824ba3e2ed86248356df74912cd9615a447bd",
+      "bytes": 98975,
+      "caption": "Immediate real role refusal after an earlier successful Propose; persisted state unchanged.",
+      "run": "runtime-evidence-after-3",
+      "result_sha256": "56b5249bb6dc0d117eaee6497b2379ee4ce53b7ce27d366eca249554be6ccd7e",
+      "script_sha256": "6c2f145213277cf24d182bc129b569ee27bd1300f1b3b937f16ac18e86e007ed",
+      "subject_content_sha256": "c0eb6b7c930b01ebaad6883c0f5b34b6d1a204d8aa99a7518478f7e585fccf99"
+    },
+    {
+      "file": "committed-refresh-failed-before-retry.png",
+      "sha256": "ded893696983d8ae1b17b09a44ac3ff812408df30b76543970c548fc29cedde2",
+      "bytes": 102260,
+      "caption": "Acknowledged commit and last confirmed state retained after a controlled case GET 503, before manual retry. Problems was already expanded in this multi-step run.",
+      "run": "runtime-evidence-after-3",
+      "result_sha256": "56b5249bb6dc0d117eaee6497b2379ee4ce53b7ce27d366eca249554be6ccd7e",
+      "script_sha256": "6c2f145213277cf24d182bc129b569ee27bd1300f1b3b937f16ac18e86e007ed",
+      "subject_content_sha256": "c0eb6b7c930b01ebaad6883c0f5b34b6d1a204d8aa99a7518478f7e585fccf99"
+    },
+    {
+      "file": "evidence-focus-error-restore.png",
+      "sha256": "bbbf2f7db38f3e7ab56e57a9640402e0a1e7bf97b4a16836f9beb875bdb47f40",
+      "bytes": 136476,
+      "caption": "One Evidence ledger after context recovery; the domain navigator is deliberately pinned and the comparison and inspector selections are distinct.",
+      "run": "review-workspace-runtime-2",
+      "result_sha256": "304a6d35f81206006b3b0966d23d8db55bf71ff6bcf427e0664cd0ec46cddb56",
+      "script_sha256": "1ed0a7ed07d21f49d589b8f0c5da727bbb7b7c18e750cded0dcf50ab2a320008",
+      "subject_content_sha256": "8474aaa1e5a065bc0a2be4602785b529dde5500640d30a9cdfb03a7ec13398fd"
+    }
+  ]
+}

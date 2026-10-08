@@ -74,7 +74,7 @@ class Ref:
 class Expect:
     """Post-condition that must hold after the action settles."""
 
-    kind: str  # text_equals | text_contains | visible | enabled | count
+    kind: str  # text_equals | text_contains | visible | enabled | count | verification_ready | review_ready
     css: str
     value: Any = None
 
@@ -103,7 +103,7 @@ class Step:
 
 ANSWERS = (("authority", "Registrar"), ("assignment", "No"), ("reject_entry", "Recommended"))
 REQUEST = "Let teachers sign off excursions."
-TABS = Decision("choose a work area", (".tabs button",))
+TABS = Decision("choose a work area", (".tabs button", "#open-workspace"))
 ACTION_CHOICE = Decision("choose a lifecycle action", ("#runtime-actions button",))
 ACTOR_CHOICE = Decision("choose the acting role", ("#actor option",))
 
@@ -115,6 +115,8 @@ def _action(name: str) -> Ref:
 def journey() -> list[Step]:
     """The canonical mouse-and-keyboard owner journey. M operators carry their rationale."""
     steps = [
+        Step("open-change", "Open a new change", "click", Ref(css="#start-intent"),
+             expect=Expect("visible", "#request")),
         Step("type-request", "Type the change request", "type", Ref(css="#request"), REQUEST,
              think="Recall the change to request (start of the unit task)", view="create-panel"),
         Step("create-case", "Create Change Case", "click", Ref(css="#create"),
@@ -125,7 +127,7 @@ def journey() -> list[Step]:
              Ref(within=".option", role="button", name="Select this meaning"),
              think="Compare the three interpretations and choose one",
              decision=Decision("choose an interpretation", (".option button",)),
-             expect=Expect("visible", "#editor"), view="change-selected", audit_visit="impact"),
+             expect=Expect("text_equals", "#case-stage", "PREVIEW"), view="change-selected", audit_visit="impact"),
         Step("open-try", "Open the Try tab", "click", Ref(css='[data-tab="try"]'),
              decision=TABS, expect=Expect("visible", "#reset"), view="try-idle"),
         Step("reset-preview", "Start / reset preview", "click", Ref(css="#reset"),
@@ -147,7 +149,9 @@ def journey() -> list[Step]:
         Step("open-evidence", "Open Evidence & Decision", "click", Ref(css='[data-tab="evidence"]'),
              decision=TABS, expect=Expect("visible", "#verify")),
         Step("run-verification", "Run bounded verification", "click", Ref(css="#verify"),
-             expect=Expect("enabled", "#approve"), view="evidence-verified"),
+             expect=Expect("verification_ready", "#review-form"), view="evidence-verified"),
+        Step("open-review-subject", "Open review of this exact subject", "click", Ref(css="#review-subject"),
+             expect=Expect("review_ready", "#review-form"), view="evidence-review-open"),
     ]
     for key, value in ANSWERS:
         steps.append(Step(f"answer-{key}", f"Answer review question '{key}'", "type", Ref(css=f"#q-{key}"),
@@ -181,6 +185,7 @@ class Runner:
         self.pointer_targets: list[dict] = []
         self.steps: list[dict] = []
         self.views: dict[str, dict] = {}
+        self.audit_navigation: list[dict] = []
         self.errors: list[str] = []
         self.http_failures: list[dict] = []
         self.current_step = "load"
@@ -238,6 +243,18 @@ class Runner:
             return self.page.evaluate("(s) => window.__hci.isEnabled(s)", e.css)
         if e.kind == "count":
             return self.page.locator(e.css).count() == e.value
+        if e.kind in ("verification_ready", "review_ready"):
+            return self.page.evaluate("""({form, names, review}) => {
+                const decision=document.querySelector('#review-decision'), fields=[...document.querySelectorAll('#questions input')];
+                const packet=JSON.parse(document.querySelector('#packet').textContent);
+                return decision.open===review&&window.__hci.isVisible(form)===review&&
+                    (!review||window.__hci.isVisible('#review-subject'))&&window.__hci.isEnabled('#approve')&&
+                    document.querySelector('#case-stage').textContent.trim()==='VERIFIED'&&
+                    packet.eligible===true&&Array.isArray(packet.blockers)&&packet.blockers.length===0&&
+                    fields.length===names.length&&names.every((name,index)=>fields[index].name===name&&fields[index].value==='')&&
+                    document.activeElement===document.querySelector(review?'#review-subject':'#verify')&&
+                    !document.querySelector('#acknowledge').checked;
+            }""", {"form": e.css, "names": [name for name, _ in ANSWERS], "review": e.kind == "review_ready"})
         raise ValueError(e.kind)
 
     # -- execution
@@ -311,8 +328,7 @@ class Runner:
             self._press_release(step)
         else:
             self._focus_to(step, locator, record)
-            self.page.keyboard.press("Enter")
-            self.op(step, "K", "Enter")
+            self._keyboard_press(step, "Enter", record)
         self._record_interaction(record)
 
     def _do_check(self, step: Step, locator, record: dict) -> None:
@@ -321,8 +337,7 @@ class Runner:
             self._press_release(step)
         else:
             self._focus_to(step, locator, record)
-            self.page.keyboard.press("Space")
-            self.op(step, "K", "Space")
+            self._keyboard_press(step, "Space", record)
         self._record_interaction(record)
 
     def _type_keys(self, step: Step, text: str) -> None:
@@ -366,34 +381,117 @@ class Runner:
             self._focus_to(step, locator, record)
             key = "ArrowDown" if wanted > current else "ArrowUp"
             for _ in range(abs(wanted - current)):
-                self.page.keyboard.press(key)
-                self.op(step, "K", key)
+                self._keyboard_press(step, key, record)
         if locator.input_value() != step.text:
             raise JourneyError(f"step {step.id}: select holds {locator.input_value()!r}, expected {step.text!r}")
         self.settle()
 
     # keyboard primitive
+    def _keyboard_press(self, step: Step, key: str, record: dict, *, navigation: bool = False) -> None:
+        """Send one real key and retain its operator and resulting focus, including activation keys."""
+        self.page.keyboard.press(key)
+        self.op(step, "K", key)
+        stop = self.page.evaluate("() => window.__hci.focus()")
+        record.setdefault("focus_stops", []).append({"key": key, **{
+            k: stop.get(k) for k in ("name", "selector", "visible_ring", "focus_visible", "lost", "rect")}})
+        if navigation:
+            record["navigation_keys"].append(key)
+            record["tab_presses"] += int(key == "Tab")
+
+    def _tab_position(self, locator) -> dict | None:
+        """Observe composite membership; neither focus nor selection is changed by this probe."""
+        return locator.evaluate("""(el) => {
+            const list = el.closest('[role="tablist"]'), active = document.activeElement;
+            if (el.getAttribute('role') !== 'tab' || !list || active?.closest('[role="tablist"]') !== list) return null;
+            const tabs = [...list.querySelectorAll('[role="tab"]')].filter(tab =>
+                tab.closest('[role="tablist"]') === list && !tab.disabled &&
+                tab.getAttribute('aria-disabled') !== 'true' && tab.getClientRects().length);
+            const current = tabs.indexOf(active), target = tabs.indexOf(el);
+            return current < 0 || target < 0 ? null : {current, target, vertical: list.getAttribute('aria-orientation') === 'vertical'};
+        }""")
+
     def _focus_to(self, step: Step, locator, record: dict) -> None:
-        stops: list[dict] = []
+        record.update(tab_presses=0, navigation_keys=[], focus_stops=[])
+        tried_home = False
         for _ in range(MAX_TABS + 1):
             if locator.evaluate("(el) => el === document.activeElement"):
                 break
-            if len(stops) == MAX_TABS:
-                raise JourneyError(f"step {step.id}: not reachable within {MAX_TABS} Tab presses")
-            self.page.keyboard.press("Tab")
-            self.op(step, "K", "Tab")
-            stops.append(self.page.evaluate("() => window.__hci.focus()"))
-        record["tab_presses"] = len(stops)
-        record["focus_stops"] = [{k: s.get(k) for k in ("name", "selector", "visible_ring", "focus_visible", "lost", "rect")} for s in stops]
+            if len(record["navigation_keys"]) == MAX_TABS:
+                raise JourneyError(f"step {step.id}: not reachable within {MAX_TABS} keyboard navigation presses")
+            position = self._tab_position(locator)
+            key = "Tab"
+            if position:
+                if position["target"] == 0 and not tried_home:
+                    key, tried_home = "Home", True
+                elif position["target"] > position["current"]:
+                    key = "ArrowDown" if position["vertical"] else "ArrowRight"
+                else:
+                    key = "ArrowUp" if position["vertical"] else "ArrowLeft"
+            self._keyboard_press(step, key, record, navigation=True)
         # keep the pointer-free record shape parallel to the pointer run
         info = locator.evaluate("(el) => window.__hci.targetOf(el)")
         record["target"] = {"name": info["name"], "selector": info["selector"], "effective": info["effective"], "raw": info["raw"]}
 
     # -- audits
+    def _observe_workspace_choices(self, tab: str, *, phase: str = "") -> None:
+        """Checkpoint the complete route inventory and the choices actually visible in the open dialog."""
+        choices_selector = "#workspace-dialog [data-workspace-view]"
+        choices = self.page.locator(choices_selector).evaluate_all(
+            "nodes => nodes.map(node => ({view:node.dataset.workspaceView, name:node.textContent.trim(), disabled:node.disabled}))")
+        count = self.page.evaluate("(s) => window.__hci.choices(s)", [choices_selector])
+        expected = {"model", "code", "change", "review", "try", "evidence", "impact", "visual", "source"}
+        if (len(choices) != 9 or {choice["view"] for choice in choices} != expected
+                or any(choice["disabled"] for choice in choices) or not 0 < count <= 9):
+            raise JourneyError("Workspace did not expose all nine work-view choices")
+        geometry = self.page.evaluate("() => window.__hci.geometry()")
+        observation = {"action": "observe_choices", "selectors": [choices_selector],
+                       "inventory_count": len(choices), "n_choices": count,
+                       "choices": choices, "view": tab, "geometry": geometry}
+        self.audit_navigation.append(observation)
+        checkpoint = f'workspace-menu-{geometry["innerWidth"]}-{tab}' + ("-" + phase if phase else "")
+        self.checkpoint(checkpoint)
+        self.views[checkpoint]["work_view_choices"] = observation
+
+    def _open_workspace_work_views(self, tab: str) -> None:
+        """Expose primary work views through the real native disclosure when needed."""
+        if tab not in {"model", "code", "change", "review", "try", "evidence"}:
+            return
+        disclosure = self.page.locator("#workspace-work-views")
+        if disclosure.get_attribute("open") is not None:
+            return
+        selector = "#workspace-work-views > summary"
+        self.page.locator(selector).click()
+        self.audit_navigation.append({"action": "click", "selector": selector, "view": tab})
+        self.settle()
+        if disclosure.get_attribute("open") is None:
+            raise JourneyError("Workspace Work views disclosure did not open")
+        self._observe_workspace_choices(tab, phase="work-views-open")
+
+    def _open_audit_tab(self, tab: str) -> None:
+        """Record real audit navigation separately from the modelled owner journey."""
+        selector = f'[data-tab="{tab}"]'
+        target, dialog = self.page.locator(selector), self.page.locator("#workspace-dialog")
+        via_workspace = dialog.is_visible() or target.count() != 1 or not target.is_visible()
+        if via_workspace:
+            if not dialog.is_visible():
+                self.page.locator("#open-workspace").click()
+                self.audit_navigation.append({"action": "click", "selector": "#open-workspace", "view": tab})
+                self.settle()
+            if not dialog.is_visible():
+                raise JourneyError("Workspace dialog did not open for audit navigation")
+            self._observe_workspace_choices(tab)
+            selector = f'[data-workspace-view="{tab}"]'
+            target = self.page.locator(selector)
+            self._open_workspace_work_views(tab)
+        target.click()
+        self.audit_navigation.append({"action": "click", "selector": selector, "view": tab})
+        self.settle()
+        if via_workspace and dialog.is_visible():
+            raise JourneyError("Workspace dialog stayed open after audit navigation")
+
     def _audit_visit(self, tab: str) -> None:
         """Visit a work area only to audit it (not part of the modelled journey)."""
-        self.page.locator(f'[data-tab="{tab}"]').click()
-        self.settle()
+        self._open_audit_tab(tab)
         self.checkpoint(f"{tab}-tab")
 
     def checkpoint(self, name: str) -> None:
@@ -415,8 +513,7 @@ class Runner:
             self.page.set_viewport_size({"width": width, "height": height})
             rows = {}
             for tab in ("change", "impact", "try", "evidence"):
-                self.page.locator(f'[data-tab="{tab}"]').click()
-                self.settle()
+                self._open_audit_tab(tab)
                 geo = self.page.evaluate("() => window.__hci.geometry()")
                 rows[tab] = {"scroll_width": geo["scrollWidth"], "inner_width": geo["innerWidth"],
                              "controls": self.page.evaluate("() => window.__hci.controls()")}
@@ -490,6 +587,7 @@ def run_pass(browser, modality: str, *, audit: bool, label: str, identity: str =
             return {
                 "modality": modality, "steps": runner.steps, "operators": runner.operators,
                 "pointer_targets": runner.pointer_targets, "views": runner.views,
+                "audit_navigation": runner.audit_navigation,
                 "responsive": responsive, "errors": runner.errors, "http_failures": runner.http_failures,
             }
         finally:
@@ -497,26 +595,55 @@ def run_pass(browser, modality: str, *, audit: bool, label: str, identity: str =
 
 
 def ui_hashes() -> dict[str, str]:
-    return {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(WEB.iterdir()) if p.is_file()}
+    """Hash every shipped web asset using portable paths relative to WEB."""
+    root = WEB.resolve()
+    hashes = {}
+    for path in sorted(WEB.rglob("*"), key=lambda path: path.relative_to(WEB).as_posix()):
+        relative = path.relative_to(WEB).as_posix()
+        if not path.resolve().is_relative_to(root):
+            raise ValueError(f"UI asset resolves outside WEB: {relative}")
+        if path.is_file():
+            hashes[relative] = hashlib.sha256(path.read_bytes()).hexdigest()
+    return hashes
 
 
-def collect(repeats: int = 3, headless: bool = True, identity: str = "harness") -> dict:
-    """Run the pointer journey `repeats` times (first one fully audited) plus one keyboard-only pass."""
+def tooling_hashes(directory: Path | None = None) -> dict[str, str]:
+    """Bind measurement drivers, observe-only probe and derivation code; exclude runtime caches."""
+    root = (directory or Path(__file__).parent).resolve()
+    hashes = {}
+    for path in sorted(root.iterdir()):
+        if path.suffix not in {".py", ".js", ".json"} or not path.is_file():
+            continue
+        if not path.resolve().is_relative_to(root):
+            raise ValueError(f"HCI tooling resolves outside its directory: {path.name}")
+        hashes[path.name] = hashlib.sha256(path.read_bytes()).hexdigest()
+    return hashes
+
+
+def collect(repeats: int = 3, headless: bool = True, identity: str = "harness", *, inspection_out: Path | None = None) -> dict:
+    """Run the owner journeys, then a separate necessary-state inspection without adding owner operators."""
     from playwright.sync_api import sync_playwright
 
+    from .inspection import run_inspection
+
+    tooling = tooling_hashes()
     with sync_playwright() as pw:
         browser = pw.chromium.launch(channel="chrome", headless=headless)
         try:
             passes = [run_pass(browser, "pointer", audit=(i == 0), label=f"pointer{i}", identity=identity) for i in range(repeats)]
             keyboard = run_pass(browser, "keyboard", audit=False, label="keyboard", identity=identity)
+            inspection = run_inspection(browser, out=inspection_out or ROOT / "reports" / "hci" / "inspection", identity=identity)
+            if tooling != tooling_hashes():
+                raise JourneyError("HCI tooling changed during collection; no combined trace was published")
             environment = {
                 "platform": platform.platform(), "python": platform.python_version(), "chrome": browser.version,
                 "playwright": importlib.metadata.version("playwright"),
                 "axe_playwright_python": importlib.metadata.version("axe-playwright-python"),
                 "axe_core": passes[0]["views"]["start"]["axe"]["axe_core"],
                 "viewport": VIEWPORT, "headless": headless, "repeats": repeats, "ui_sha256": ui_hashes(),
+                "hci_tooling_sha256": tooling,
                 "provider": "offline (synthetic)", "identity_source": "pytest-harness" if identity == "harness" else "release (real eija serve)", "device_scale_factor": 1,
             }
         finally:
             browser.close()
-    return {"environment": environment, "pointer_passes": passes, "keyboard_pass": keyboard}
+    return {"environment": environment, "pointer_passes": passes, "keyboard_pass": keyboard, "inspection_pass": inspection}

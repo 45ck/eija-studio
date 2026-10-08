@@ -44,6 +44,12 @@ in a pull request and the drift check (no Docker) makes stale models a fast-tier
 * **Claims.** A `bend_proof` PASS requires: `main.bend` current; full `--verdict` result; per-law results; every control
   failing as designed; conformance agreeing. The report lists what is not proven. No lane text may describe the result
   as a proof of the Python runtime, of SQLite behaviour, or of the completeness of the laws.
+* **Laws that restate kernel policy are checked against it.** `forbidden` (law 8) and `reject_source` (law 7) are
+  hand-written in `LAWS.bend`; `bend_policy.check_laws_against_policy` fails the drift gate when they differ from
+  `policy.FORBIDDEN` and the workflows, so a new forbidden effect cannot leave law 8 failing open, and
+  `check_guards_are_modelled` refuses a kernel guard the engine template does not model. The checks live in
+  `bend_policy.py`, not in `bend_generate.py`, because the generator is hashed into the committed proof evidence and
+  these checks do not change the model.
 * **Generation refuses** state/role/action/effect names that are not valid, unique Bend constructor names or collide with
   the fixed part of the program, rather than emitting a model that means something else.
 

@@ -40,7 +40,7 @@ These are responsibility boundaries inside a deliberately small modular monolith
 
 **Meaning Selection:** a local owner's explicit choice of one canonical supported interpretation. A provider explanation is not this event. Unsupported teacher-final-approval remains blocked rather than being rewritten as recommendation.
 
-**Semantic Transaction:** one typed business-meaning edit. Rule-table and state-view commands produce the same shape. The supported operations are enabling recommendation and changing the registrar rejection source between the declared states.
+**Semantic Transaction:** one typed business-meaning edit. Rule-table, state-view and canvas commands produce the same shape. The open vocabulary (`domain/transactions.py`) adds, renames or removes a state, sets the initial state, adds, retargets or removes a transition, and sets a transition's role, guards or required effects; a pack meaning is a list of them. Whether an edit is allowed is decided by the domain pack's policy and laws, never by the transaction.
 
 **Workflow Definition:** immutable typed states/transitions/roles/guards/effect declarations. A normalized semantic hash treats definition order as non-semantic. Identifiers, states, roles and rules remain meaningful.
 
@@ -105,6 +105,6 @@ The matrix verifier checks complete declared Cartesian coverage, duplicate/missi
 
 ## Extension contract
 
-A new proposal provider implements `ProposalProvider`; no domain service should know its SDK. A new persistence backend must reproduce UnitOfWork/CAS/replay semantics before use. A new domain needs its own typed policy, oracle, guard/effect adapters, threat model and source-review fixture; the current policy intentionally rejects arbitrary domains. A new proof backend would emit a distinct evidence kind with declared assumptions and separately implemented admissibility—not label runtime tests “proof”.
+A new proposal provider implements `ProposalProvider`; no domain service should know its SDK. A new persistence backend must reproduce UnitOfWork/CAS/replay semantics before use. A new domain needs its own typed policy, oracle, guard/effect adapters, threat model and source-review fixture; the current policy intentionally rejects arbitrary domains. A new proof backend would emit a distinct evidence kind with declared assumptions and separately implemented admissibility—not label runtime tests “proof”. That contract now exists: `domain/evidence_kinds.py` registers each kind (Bend, Z3, bounded model check today) with a typed artifact shape and a pure check, the kernel recomputes the verdict from raw content, and a missing prerequisite is `NOT_RUN`. See [evidence kinds](../evidence-kinds.md), ADR-0145 and ADR-0146.
 
 There is no automatic repository ingestion, proof assistant, arbitrary business-rule DSL, plugin execution, model routing optimization or MCP protocol implementation in v0.2.0. The architecture leaves places for those capabilities without claiming they exist.
