@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0185-sequence-diagrams-the-kernel-checks.md
   title: 0185-sequence-diagrams-the-kernel-checks.md
   hash_method: lf-sha256-v1
-  sha256: e50bb558cbae7d39131bebea9b0681096c2b53cda0b10085ce2c68ddd8989e34
-notes_baseline: 4e88d8adf433f22a9440bc0b93d3876a8e06a049e095b3d408e851d199087593
+  sha256: f194b802a66a2d7e3af1dab28ad4033397cf9333d4feef7cae2ae3c81e39e0ae
+notes_baseline: c8c303515d7297831c39c1233ce40c36aea7229c607dbc7fcb6272a83dad0360
 ---
 
 # ADR-0185: Sequence diagrams as scenarios the kernel checks, message by message
@@ -31,7 +31,7 @@ notes_baseline: 4e88d8adf433f22a9440bc0b93d3876a8e06a049e095b3d408e851d199087593
 
 > Chosen option.
 >
-> * `domain/sequences.py` holds the contract `eija.sequences.v1`: interactions with records (lifelines of the record class) and steps. A step is a message (`actor`, a fixture actor id; `action`; `record`) or a combined fragment: `opt [guard]`, `alt [guard] / [guard]` (two to four operands) or `neg` (an invalid trace, optionally with the refusal code it expects). Operands hold messages only; fragments do not nest. The file sits beside `pack.json` with its own digest, like `screens.json`. `packs/library-loan/sequences.json` has three scenarios.
+> * `domain/sequences.py` holds the contract `eija.sequences.v1`: interactions with records (lifelines of the record class) and steps. A step is a message (`actor`, a fixture actor id; `action`; `record`) or a combined fragment: `opt [guard]`, `alt [guard] / [guard]` (two to four operands) or `neg` (an invalid trace, optionally with the refusal code it expects). Operands hold messages only; fragments do not nest. The file sits beside `pack.json` with its own digest, like `screens.json`. The library-loan pack ships three scenarios in its `sequences.json`.
 > * `application/sequences.py`:
 >   * `default_sequences(pack, model)` generates scenarios for a pack without the file: the shortest path to each final state taken by actors the kernel should let through, and one `neg` where someone in another role tries the first step. They are generated from the model in force, so a change is checked against the scenarios it had.
 >   * `check_sequences(pack, model, sequences, base)` unfolds each sequence into its traces (an `opt` doubles them, an `alt` multiplies them, at most 64) and runs every trace on fresh records through `runtime.execute` with an in-memory unit of work (`simulation.MemorySession`). A message is OK when the kernel commits it on every trace that reaches it, and BROKEN when it refuses it on some trace: the refusal code, a sentence and the trace's operand choices say why, and later messages on that trace are NOT_REACHED. A `neg` is tried in place and undone; it HOLDS when the kernel refuses it (with the named code, if any) and is BROKEN when the kernel lets the forbidden trace through. With `base`, every verdict is also worked out on the model in force, each sequence says whether the change `breaks` or `fixes` it, and each message carries its action's status from `ghost_diff`.
@@ -47,12 +47,6 @@ notes_baseline: 4e88d8adf433f22a9440bc0b93d3876a8e06a049e095b3d408e851d199087593
 * Considered options
 * Decision outcome
 * OSS check (required for any custom module)
-
-## Code and docs mentioned
-
-Existence-checked by the gate; not hashed (an ADR is a decision record, not a description of current code).
-
-* `repo://packs/library-loan/sequences.json`
 <!-- okf:generated:end facts -->
 
 ## Notes
