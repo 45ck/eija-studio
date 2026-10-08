@@ -6,6 +6,10 @@
 
 - PlayIDE is no longer limited to the shipped packs. **Systems** in the title bar opens a dialog: **Open** lists recent systems and the ones in your systems home, and **New system** starts one from a sketch or from a template. A sketch is the state machine typed as the diagram labels it, one `From -> To : Action [Role]` per line, and the kernel's pack check runs as you type. **Save** (Ctrl+S) keeps your plan and edited screens as a draft on that system; reopening it restores them and checks every step again. Nothing is applied to the model. Systems live in `~/PlayIDE` (`--systems` or `EIJA_SYSTEMS` to change it), each with its own workspace. `eija new` does the same from the command line. See [ADR-0185](docs/adr/0185-start-open-and-save-your-own-system.md).
 
+### 8 October 2026: PlayIDE adds without dragging
+
+- Adding to the state machine no longer needs a drag (ADR-0174). Pick State, Transition or Initial in the palette and click the diagram, as in draw.io and Visio; a transition is two clicks, the state it leaves and the state it goes to. Double-click empty space for a new state, a state to rename it, or a transition to change who may take it. A small editor opens where you click: Enter adds the step to the plan, Escape drops it, and nothing is modal. Dragging still works and drops into the same editor; Enter on a palette item still opens the full form. The tour and ripple demos place their state this way.
+
 ### 8 October 2026: PlayIDE end-to-end fixes
 
 Found by using every PlayIDE feature together on the workbench shell, as a UML-literate engineer would:

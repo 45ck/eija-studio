@@ -67,6 +67,7 @@ _Symbol pages are generated for the domain and application layers only._
 * [`domain/screens`](/modules/domain/screens.md)
 * [`domain/transactions`](/modules/domain/transactions.md)
 * [`interfaces/app_build`](/modules/interfaces/app_build.md)
+* [`interfaces/play_interop`](/modules/interfaces/play_interop.md)
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -93,6 +94,7 @@ _No curated notes yet._
 * [domain.screens](/modules/domain/screens.md) - Screens: the user interface of a pack's app, designed against its use cases and data model (ADR-0154).
 * [domain.transactions](/modules/domain/transactions.md) - Open change vocabulary (WBS 1.3): the semantic edits an owner (or a pack meaning) may make to a workflow.
 * [interfaces.app_build](/modules/interfaces/app_build.md) - `eija build`: write a runnable app generated from a pack's model, then run its kernel conformance tests (ADR-0150).
+* [interfaces.play_interop](/modules/interfaces/play_interop.md) - PlayIDE routes for UML interchange (ADR-0190): export the model on screen, and read a UML file as a report.
 
 ## Referenced by
 

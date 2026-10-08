@@ -23,7 +23,7 @@ PAGE_CSP = ("default-src 'none'; script-src 'self'; style-src 'self'; connect-sr
             "frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
 FRAME_CSP = ("default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src data:; connect-src 'none'; "
              "frame-ancestors 'self'; base-uri 'none'; form-action 'none'; sandbox allow-scripts")
-WEB_ASSETS = frozenset({"app.js", "app.css", "canvas.js", "tree.js", "review.js", "compare.js", "compare.css", "repository-review.js", "repository-review.css", "source.js", "shell.js", "agent-edit.js", "visual-frame.js", "visual-frame.css", "play.js", "play-run.js", "play.css", "play-laws.js", "play-assist.js", "play-assist.css", "play-review.js", "play-review.css", "play-access.js", "play-access.css", "play-shell.js", "play-shell.css", "play-diff.js", "play-diff.css", "play-tests.js", "play-tests.css", "play-systems.js", "play-systems.css"})
+WEB_ASSETS = frozenset({"app.js", "app.css", "canvas.js", "tree.js", "review.js", "compare.js", "compare.css", "repository-review.js", "repository-review.css", "source.js", "shell.js", "agent-edit.js", "visual-frame.js", "visual-frame.css", "play.js", "play-run.js", "play.css", "play-laws.js", "play-assist.js", "play-assist.css", "play-review.js", "play-review.css", "play-access.js", "play-access.css", "play-shell.js", "play-shell.css", "play-diff.js", "play-diff.css", "play-tests.js", "play-tests.css", "play-interop.js", "play-interop.css", "play-systems.js", "play-systems.css"})
 # PlayIDE frames the app built from the model, which runs as a separate process on its own loopback port (ADR-0151).
 PLAY_CSP = PAGE_CSP.replace("frame-src 'self'", "frame-src 'self' http://127.0.0.1:*")
 

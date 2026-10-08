@@ -109,3 +109,7 @@ Each region has one job and stays where it is, in the place an engineer from an 
 | Status bar | Model, "Previewing a plan", selection, toast, Simulate score, Ctrl K | Always | VS Code and Visual Studio status bars |
 
 What changed for the agentic side: the chat no longer moves or shrinks when a run starts. The fence (A2) and a plan under review stay in view while the plan's effect plays out in the panel below the diagram, so checking a step and watching it run happen side by side (A5). The checks ring stays one click away, and its list no longer pushes the chat down (A6). The layout toggles are in the command palette too (A8).
+
+## 8. Adding and editing on the diagram (ADR-0174)
+
+Dragging was the only pointer way to add an element, and the form it opened sat in the inspector, away from the diagram. Now a palette item is picked and placed with a click, a double-click adds or edits in place, and a small editor opens where you click. Enter adds the step to the plan; Escape drops it. There is no modal, so the plan, its verdict and the chat stay in view while you edit (A5). Every gesture still makes one typed step that the server checks, whether you or the AI made it (A1). The review view ignores all of them.

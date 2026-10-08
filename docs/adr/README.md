@@ -80,10 +80,12 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0171](0171-permissions-matrix-and-reachability-questions.md) | Who can do what, as a matrix the kernel checks, and reachability questions with a proof or a path | accepted |
 | [0172](0172-review-view-for-reading-the-model.md) | A read-only review view of PlayIDE for people who review the model | accepted |
 | [0173](0173-playide-workbench-shell.md) | PlayIDE's workbench shell, after Visual Studio, VS Code, Cursor and draw.io | accepted |
+| [0174](0174-add-without-dragging-and-edit-inline.md) | Add UML elements without dragging, and edit them where they are | accepted |
 | [0175](0175-review-a-change-as-a-uml-diff-you-can-run.md) | Review a change as a UML diff you can run, not as a pull request | accepted |
 | [0176](0176-how-a-uml-change-looks.md) | How a UML change looks: one stable layout, removed parts kept as ghosts, and lenses | accepted for the state machine |
 | [0177](0177-law-files-and-test-cases-in-playide.md) | The law file and the test cases are files PlayIDE opens, edits as drafts and runs | accepted |
 | [0185](0185-start-open-and-save-your-own-system.md) | Start, open and save your own system in PlayIDE | accepted for state-machine systems |
+| [0190](0190-uml-import-and-export-through-the-kernel.md) | UML import and export: XMI, PlantUML, Mermaid and draw.io, with every import judged by the kernel | accepted for state machines and class models |
 <!-- adr-index:end -->
 
 ## Reserved numbers for capability lanes

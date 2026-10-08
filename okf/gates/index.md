@@ -9,6 +9,7 @@
 * [graph](graph/) - Gates defined in quality/sessions/graph.py
 * [hci](hci/) - Gates defined in quality/sessions/hci.py
 * [hygiene](hygiene/) - Gates defined in quality/sessions/hygiene.py
+* [interop](interop/) - Gates defined in quality/sessions/interop.py
 * [metrics](metrics/) - Gates defined in quality/sessions/metrics.py
 * [mutation](mutation/) - Gates defined in quality/sessions/mutation.py
 * [okf](okf/) - Gates defined in quality/sessions/okf.py

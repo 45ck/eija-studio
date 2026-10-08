@@ -173,6 +173,20 @@ class Scene:
             self._animate_to(box["x"] + x, box["y"] + y, 800)
         self.page.drag_and_drop(source, target, target_position={"x": x, "y": y})
 
+    def click_at(self, target: str, position: tuple[float, float]) -> None:
+        """Click inside `target` at `position` (x, y inside its box), e.g. on empty space in a diagram.
+
+        The camera zooms out first, as for drag: page coordinates are only exact on an untransformed page."""
+        self.zoom_out()
+        box = self.page.locator(target).first.bounding_box()
+        if box is None:
+            raise ValueError(f"target has no layout box: {target!r}")
+        x, y = box["x"] + position[0], box["y"] + position[1]
+        if not self.dry_run:
+            self._animate_to(x, y, 700)
+        self._press_feedback()
+        self.page.mouse.click(x, y)
+
     # -- narration and assertions -----------------------------------------------------------------
 
     def highlight(self, target: str, *, duration_ms: int = 900) -> None:

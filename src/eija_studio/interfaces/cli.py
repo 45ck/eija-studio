@@ -19,6 +19,7 @@ from eija_studio.weave.cli import COMMANDS as WEAVE_COMMANDS, add_parsers as add
 from .agent_config import DEFAULT_MAX_PROVIDER_CALLS, snippet
 from .app_build import add_parser as add_build_parser, build as build_app
 from .play_systems import StudioHandle, Systems, add_parser as add_new_parser, default_home, start_system
+from .uml_interop import add_parser as add_uml_parser, uml_command
 
 
 def output(value, path: Path | None = None):
@@ -162,7 +163,8 @@ def scenarios_command(args) -> int:
 
 
 EARLY_COMMANDS = {"check-export": check_export_command, "render": render_command, "build": build_command,
-                  "scxml": scxml_command, "laws": laws_command, "scenarios": scenarios_command, "new": new_command, **WEAVE_COMMANDS}  # need no workspace, provider or key
+                  "scxml": scxml_command, "laws": laws_command, "scenarios": scenarios_command, "new": new_command,
+                  "uml": lambda args: uml_command(args, resolve_pack(args.pack)), **WEAVE_COMMANDS}  # need no workspace, provider or key
 
 
 def formal_table(evidence: list) -> str:
@@ -266,6 +268,7 @@ def main(argv=None) -> int:
     _add_scxml_parser(subs)
     _add_laws_parser(subs)
     _add_scenarios_parser(subs)
+    add_uml_parser(subs)
     add_new_parser(subs)
     add_weave_parsers(subs)
     mcp = subs.add_parser("mcp", parents=[common], help="Serve the agent-facing MCP server on stdio (needs the agents extra)")

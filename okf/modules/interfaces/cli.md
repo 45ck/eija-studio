@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/cli.py
   title: interfaces/cli.py
   hash_method: ast-api-v1
-  sha256: eee81ba4e1c205ac4b396a1533a6fd1ddbfe3c9e9ec37564e0c38aaf2594b6c5
-notes_baseline: 53341beb05a41a251b2e460f72a2a078e0e28d70fbb26b72edeab1daccea67f0
+  sha256: 45347ae6f497cc0c22b552624cd0a53ad73f6317bbc28c1a81012a039bfc3ac4
+notes_baseline: be89727174bb86fd380cc6c7372b00dda3329b726ee22d7371bafb7f9a8172ec
 ---
 
 # interfaces.cli
@@ -50,6 +50,7 @@ _Symbol pages are generated for the domain and application layers only._
 * [`interfaces/agent_config`](/modules/interfaces/agent_config.md)
 * [`interfaces/app_build`](/modules/interfaces/app_build.md)
 * [`interfaces/play_systems`](/modules/interfaces/play_systems.md)
+* [`interfaces/uml_interop`](/modules/interfaces/uml_interop.md)
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -73,4 +74,5 @@ _No curated notes yet._
 * [interfaces.agent_config](/modules/interfaces/agent_config.md) - Copy-paste MCP client configuration for `eija mcp --print-config <client>`.
 * [interfaces.app_build](/modules/interfaces/app_build.md) - `eija build`: write a runnable app generated from a pack's model, then run its kernel conformance tests (ADR-0150).
 * [interfaces.play_systems](/modules/interfaces/play_systems.md) - PlayIDE's systems (ADR-0185): start a new system from a sketch or a template, open one you made before, and save the work in progress to carry on later.
+* [interfaces.uml_interop](/modules/interfaces/uml_interop.md) - `eija uml export` and `eija uml import`: UML interchange from the command line (ADR-0190).
 <!-- okf:generated:end links -->
