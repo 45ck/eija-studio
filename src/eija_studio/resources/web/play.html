@@ -7,9 +7,11 @@
 <link rel="stylesheet" href="/assets/play-assist.css">
 <link rel="stylesheet" href="/assets/play-access.css">
 <link rel="stylesheet" href="/assets/play-review.css">
+<link rel="stylesheet" href="/assets/play-shell.css">
 <link rel="stylesheet" href="/assets/play-diff.css">
 <script src="/assets/vendor/dagre.min.js" defer></script>
 <script src="/assets/vendor/maxgraph.min.js" defer></script>
+<script src="/assets/play-shell.js" defer></script>
 <script src="/assets/play-review.js" defer></script>
 <script src="/assets/play.js" defer></script>
 <script src="/assets/play-run.js" defer></script>
@@ -21,119 +23,158 @@
 <body>
 <header class="bar">
   <div class="brand"><span class="logo" aria-hidden="true">▶</span><strong>PlayIDE</strong><span id="model-name" class="model-name"></span></div>
-  <div class="actions">
-    <button id="health" class="health" type="button" aria-expanded="false" aria-controls="checks" title="Checks you have done on this model">
-      <svg id="health-ring" viewBox="0 0 36 36" width="26" height="26" aria-hidden="true"></svg><span id="health-text">Checks</span></button>
-    <div id="runbar" class="runbar" role="toolbar" aria-label="Run">
-      <button id="run-play" class="run-btn go" type="button" aria-keyshortcuts="F5"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4 2.5v11l9-5.5z"/></svg><span>Run</span></button>
-      <button id="run-pause" class="run-btn" type="button" aria-label="Pause" title="Pause (F6)" aria-keyshortcuts="F6" disabled><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4 2.5h3v11H4zM9 2.5h3v11H9z"/></svg></button>
-      <button id="run-step" class="run-btn" type="button" aria-label="Step" title="Step (F10): one simulated user's next try, decided by the kernel" aria-keyshortcuts="F10"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M2 9a6 6 0 0 1 11-3.3V3h1.5v5h-5V6.5h2.4A4.5 4.5 0 0 0 3.5 9z"/><circle cx="8" cy="12.5" r="1.8"/></svg></button>
-      <button id="run-stop" class="run-btn stop" type="button" aria-label="Stop" title="Stop (Shift+F5): end the run and stop the running app" aria-keyshortcuts="Shift+F5" disabled><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3.5 3.5h9v9h-9z"/></svg></button>
-      <button id="run-restart" class="run-btn" type="button" aria-label="Restart" title="Restart (Ctrl+Shift+F5): the same seed from step 1" aria-keyshortcuts="Control+Shift+F5" disabled><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M8 2.5a5.5 5.5 0 1 0 5.4 6.5h-1.6A4 4 0 1 1 8 4v2.2l3.2-3-3.2-3z"/></svg></button>
-      <label class="visually-hidden" for="run-speed">Speed</label>
-      <select id="run-speed" class="run-speed" title="How fast the run moves"><option value="700">Slow</option><option value="250" selected>Normal</option><option value="40">Fast</option><option value="0">To the next stop</option></select>
-      <span id="run-status" class="run-status" role="status" aria-live="polite">Ready</span>
+  <div class="bar-end">
+    <div class="layout-toggles" role="group" aria-label="Layout">
+      <button id="toggle-left" class="icon-btn" type="button" aria-pressed="true" title="Model and inspector (Ctrl+B)" aria-label="Model and inspector" aria-keyshortcuts="Control+B"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><rect class="fill" x="2.5" y="3.5" width="4" height="9"/></svg></button>
+      <button id="toggle-dock" class="icon-btn" type="button" aria-pressed="false" title="Run, Simulation and Running app panel (Ctrl+Alt+P)" aria-label="Bottom panel" aria-keyshortcuts="Control+Alt+P"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><rect class="fill" x="2.5" y="9" width="11" height="3.5"/></svg></button>
+      <button id="toggle-chat" class="icon-btn" type="button" aria-pressed="true" title="Chat (Ctrl+Alt+C)" aria-label="Chat" aria-keyshortcuts="Control+Alt+C"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><rect class="fill" x="9.5" y="3.5" width="4" height="9"/></svg></button>
     </div>
-    <span id="toast" class="toast" role="status" aria-live="polite"></span>
-    <span id="score" class="score" role="status" aria-live="polite" hidden></span>
-    <button id="simulate" type="button" title="Seeded simulated users act on the model; the kernel decides every step">Simulate</button>
-    <button id="build" class="primary" type="button">Build &amp; run</button>
     <a class="quiet" href="/">Review workbench</a>
   </div>
 </header>
-<main class="layout">
-  <nav class="outline" aria-labelledby="outline-title">
-    <h2 id="outline-title">Model</h2>
-    <h3>States</h3><ul id="outline-states"></ul>
-    <h3>Transitions</h3><ul id="outline-transitions"></ul>
-    <h3>Roles</h3><ul id="outline-roles"></ul>
-    <h3>Classes</h3><ul id="outline-classes"></ul>
-  </nav>
-  <section class="stage" aria-label="State machine diagram">
-    <div class="stage-tools">
-      <div class="tabs" role="tablist" aria-label="Diagram">
-        <button id="tab-states" role="tab" type="button" aria-selected="true" aria-controls="canvas">State machine</button>
-        <button id="tab-classes" role="tab" type="button" aria-selected="false" aria-controls="class-canvas">Class diagram</button>
-        <button id="tab-usecases" role="tab" type="button" aria-selected="false" aria-controls="usecase-canvas">Use cases</button>
-        <button id="tab-screens" role="tab" type="button" aria-selected="false" aria-controls="screens">Screens</button>
-        <button id="tab-components" role="tab" type="button" aria-selected="false" aria-controls="component-canvas">Components</button>
-        <button id="tab-laws" role="tab" type="button" aria-selected="false" aria-controls="laws">Laws</button>
-        <button id="tab-access" role="tab" type="button" aria-selected="false" aria-controls="access-panel">Permissions</button>
-        <button id="tab-review" role="tab" type="button" aria-selected="false" aria-controls="review">Review</button>
-      </div>
-      <button id="fit" type="button" class="quiet">Fit</button>
-      <button id="zoom-in" type="button" class="quiet" aria-label="Zoom in">+</button>
-      <button id="zoom-out" type="button" class="quiet" aria-label="Zoom out">−</button>
-    </div>
-    <div id="plan-banner" class="plan-banner" role="status" hidden><span id="plan-banner-text"></span><span class="plan-banner-tools"><button id="plan-review" type="button" class="quiet">Review the change</button><button id="plan-back" type="button" class="quiet">Back to the model</button></span></div>
-    <div id="draw-palette" class="draw-palette" role="toolbar" aria-label="UML palette: drag onto the diagram, or press">
-      <span class="palette-title">Draw</span>
-      <button type="button" draggable="true" data-kind="state" title="Drag onto the diagram to add a state"><span class="glyph state" aria-hidden="true"></span>State</button>
-      <button type="button" draggable="true" data-kind="transition" title="Drag onto the state it leaves"><span class="glyph" aria-hidden="true">→</span>Transition</button>
-      <button type="button" draggable="true" data-kind="initial" title="Drag onto the state records start in"><span class="glyph initial" aria-hidden="true"></span>Initial</button>
-    </div>
-    <div id="canvas" class="canvas" tabindex="0" aria-describedby="canvas-help" role="tabpanel" aria-labelledby="tab-states"></div>
-    <div id="class-canvas" class="canvas" tabindex="0" role="tabpanel" aria-labelledby="tab-classes" hidden></div>
-    <div id="usecase-canvas" class="canvas" tabindex="0" role="tabpanel" aria-labelledby="tab-usecases" hidden></div>
-    <div id="component-canvas" class="canvas" tabindex="0" role="tabpanel" aria-labelledby="tab-components" hidden></div>
-    <div id="access-panel" class="access" tabindex="0" role="tabpanel" aria-labelledby="tab-access" hidden></div>
-    <div id="diff-view" class="diff-view" role="region" aria-label="The change on the state machine" hidden></div>
-    <div id="screens" class="designer" role="tabpanel" aria-labelledby="tab-screens" hidden>
-      <nav class="screen-list" aria-labelledby="screen-list-title"><h3 id="screen-list-title">Use cases</h3><ul id="screen-list"></ul></nav>
-      <div class="screen-stage">
-        <div id="screen-problems" class="problems" role="status" aria-live="polite"></div>
-        <div id="screen-card" class="screen-card"></div>
-        <div class="screen-tools">
-          <button id="screens-reset" type="button" class="quiet">Reset to the pack's screens</button>
-          <a id="screens-download" class="quiet" download="screens.json">Download screens.json</a>
-        </div>
-      </div>
-      <aside class="palette" aria-labelledby="palette-title"><h3 id="palette-title">Record attributes</h3>
-        <p class="muted small">Drag onto the screen, or press Add.</p><ul id="palette"></ul></aside>
-    </div>
-    <div id="laws" class="laws" role="tabpanel" aria-labelledby="tab-laws" hidden>
-      <div class="laws-head">
-        <div><h2>Laws</h2><p class="muted small">What this model must never do, whatever the diagrams say. The kernel refuses a model that breaks one; here each is also proved over every run the kernel allows.</p></div>
-        <button id="laws-prove" type="button" class="primary">Prove again</button>
-      </div>
-      <p id="laws-summary" class="laws-summary" role="status" aria-live="polite"></p>
-      <ol id="laws-list" class="law-list"></ol>
-      <p id="laws-limits" class="muted small"></p>
-    </div>
-    <div id="review" class="review" role="tabpanel" aria-labelledby="tab-review" hidden>
-      <div class="review-head">
-        <div><h2 id="review-title">Review the change</h2><p id="review-head-text" class="muted small" role="status" aria-live="polite"></p></div>
-        <div class="review-head-tools"><span id="review-progress" class="small" role="status" aria-live="polite"></span>
-          <button id="review-finish" type="button" class="primary" disabled>Finish review</button></div>
-      </div>
-      <div class="review-body">
-        <div id="review-canvas" class="canvas review-canvas" tabindex="0" aria-label="The change on the state machine: added in green, removed dashed in red, changed in amber"></div>
-        <div class="review-list">
-          <div id="review-sim" class="review-sim"></div>
-          <ol id="review-items" class="review-items" aria-labelledby="review-title"></ol>
-          <section id="review-summary" class="review-summary" aria-live="polite" hidden></section>
-        </div>
-      </div>
-    </div>
-    <p id="canvas-help" class="hint"></p>
-  </section>
-  <aside class="side">
+<div class="toolbar">
+  <div id="runbar" class="runbar" role="toolbar" aria-label="Run">
+    <button id="run-play" class="run-btn go" type="button" aria-keyshortcuts="F5"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4 2.5v11l9-5.5z"/></svg><span>Run</span></button>
+    <button id="run-pause" class="run-btn" type="button" aria-label="Pause" title="Pause (F6)" aria-keyshortcuts="F6" disabled><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4 2.5h3v11H4zM9 2.5h3v11H9z"/></svg></button>
+    <button id="run-step" class="run-btn" type="button" aria-label="Step" title="Step (F10): one simulated user's next try, decided by the kernel" aria-keyshortcuts="F10"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M2 9a6 6 0 0 1 11-3.3V3h1.5v5h-5V6.5h2.4A4.5 4.5 0 0 0 3.5 9z"/><circle cx="8" cy="12.5" r="1.8"/></svg></button>
+    <button id="run-stop" class="run-btn stop" type="button" aria-label="Stop" title="Stop (Shift+F5): end the run and stop the running app" aria-keyshortcuts="Shift+F5" disabled><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3.5 3.5h9v9h-9z"/></svg></button>
+    <button id="run-restart" class="run-btn" type="button" aria-label="Restart" title="Restart (Ctrl+Shift+F5): the same seed from step 1" aria-keyshortcuts="Control+Shift+F5" disabled><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M8 2.5a5.5 5.5 0 1 0 5.4 6.5h-1.6A4 4 0 1 1 8 4v2.2l3.2-3-3.2-3z"/></svg></button>
+    <label class="visually-hidden" for="run-speed">Speed</label>
+    <select id="run-speed" class="run-speed" title="How fast the run moves"><option value="700">Slow</option><option value="250" selected>Normal</option><option value="40">Fast</option><option value="0">To the next stop</option></select>
+    <span id="run-status" class="run-status" role="status" aria-live="polite">Ready</span>
+  </div>
+  <span class="sep" aria-hidden="true"></span>
+  <button id="simulate" type="button" title="Seeded simulated users act on the model; the kernel decides every step">Simulate</button>
+  <button id="build" class="primary" type="button">Build &amp; run</button>
+  <span class="spacer"></span>
+  <div class="checks-anchor">
+    <button id="health" class="health" type="button" aria-expanded="false" aria-controls="checks" title="Checks you have done on this model">
+      <svg id="health-ring" viewBox="0 0 36 36" width="26" height="26" aria-hidden="true"></svg><span id="health-text">Checks</span></button>
     <section id="checks" class="checks" aria-labelledby="checks-title" hidden>
       <div class="run-head"><h2 id="checks-title">Checks</h2><span id="points" class="points"></span></div>
       <p class="muted small">Each ring segment is a real check on the model you are looking at. Points come from checking changes, never from making them.</p>
       <ul id="check-list" class="check-list"></ul>
       <h3>Earned</h3><ol id="earned" class="earned"></ol>
     </section>
-    <section id="debug" class="debug" aria-labelledby="debug-title" hidden>
-      <div class="run-head"><h2 id="debug-title">Run</h2><span id="debug-pos" class="pos"></span></div>
-      <div id="debug-now" class="debug-now"></div>
-      <h3>Records</h3><table class="records"><tbody id="debug-records"></tbody></table>
-      <h3>Breakpoints</h3>
-      <label class="check"><input id="break-refusal" type="checkbox"> Break when the kernel refuses</label>
-      <ul id="debug-breakpoints" class="breakpoints"></ul>
-      <h3>Steps so far</h3><ol id="debug-log" class="log"></ol>
-      <p class="muted small" id="debug-limits"></p>
+  </div>
+</div>
+<main class="layout">
+  <aside class="explorer" aria-label="Model and inspector">
+    <nav class="outline" aria-labelledby="outline-title">
+      <h2 id="outline-title" class="pane-title">Model</h2>
+      <h3>States</h3><ul id="outline-states"></ul>
+      <h3>Transitions</h3><ul id="outline-transitions"></ul>
+      <h3>Roles</h3><ul id="outline-roles"></ul>
+      <h3>Classes</h3><ul id="outline-classes"></ul>
+    </nav>
+    <section class="inspector" aria-labelledby="inspector-title">
+      <h2 id="inspector-title" class="pane-title">Inspector</h2>
+      <div id="inspector"><p class="muted">Select a state or transition.</p></div>
     </section>
+  </aside>
+  <div id="split-left" class="split v" role="separator" aria-orientation="vertical" aria-label="Resize the model and inspector" tabindex="0"></div>
+  <div class="workbench">
+    <section class="stage" aria-label="Diagrams">
+      <div class="stage-tools">
+        <div class="tabs" role="tablist" aria-label="Diagram">
+          <button id="tab-states" role="tab" type="button" aria-selected="true" aria-controls="canvas">State machine</button>
+          <button id="tab-classes" role="tab" type="button" aria-selected="false" aria-controls="class-canvas">Class diagram</button>
+          <button id="tab-usecases" role="tab" type="button" aria-selected="false" aria-controls="usecase-canvas">Use cases</button>
+          <button id="tab-screens" role="tab" type="button" aria-selected="false" aria-controls="screens">Screens</button>
+          <button id="tab-components" role="tab" type="button" aria-selected="false" aria-controls="component-canvas">Components</button>
+          <button id="tab-laws" role="tab" type="button" aria-selected="false" aria-controls="laws">Laws</button>
+          <button id="tab-access" role="tab" type="button" aria-selected="false" aria-controls="access-panel">Permissions</button>
+          <button id="tab-review" role="tab" type="button" aria-selected="false" aria-controls="review">Review</button>
+        </div>
+        <button id="fit" type="button" class="quiet">Fit</button>
+        <button id="zoom-in" type="button" class="quiet" aria-label="Zoom in">+</button>
+        <button id="zoom-out" type="button" class="quiet" aria-label="Zoom out">−</button>
+      </div>
+      <div id="plan-banner" class="plan-banner" role="status" hidden><span id="plan-banner-text"></span><span class="plan-banner-tools"><button id="plan-review" type="button" class="quiet">Review the change</button><button id="plan-back" type="button" class="quiet">Back to the model</button></span></div>
+      <div id="draw-palette" class="draw-palette" role="toolbar" aria-label="UML palette: drag onto the diagram, or press">
+        <span class="palette-title">Draw</span>
+        <button type="button" draggable="true" data-kind="state" title="Drag onto the diagram to add a state"><span class="glyph state" aria-hidden="true"></span>State</button>
+        <button type="button" draggable="true" data-kind="transition" title="Drag onto the state it leaves"><span class="glyph" aria-hidden="true">→</span>Transition</button>
+        <button type="button" draggable="true" data-kind="initial" title="Drag onto the state records start in"><span class="glyph initial" aria-hidden="true"></span>Initial</button>
+      </div>
+      <div id="canvas" class="canvas" tabindex="0" aria-describedby="canvas-help" role="tabpanel" aria-labelledby="tab-states"></div>
+      <div id="diff-view" class="diff-view" role="region" aria-label="The change on the state machine" hidden></div>
+      <div id="class-canvas" class="canvas" tabindex="0" role="tabpanel" aria-labelledby="tab-classes" hidden></div>
+      <div id="usecase-canvas" class="canvas" tabindex="0" role="tabpanel" aria-labelledby="tab-usecases" hidden></div>
+      <div id="component-canvas" class="canvas" tabindex="0" role="tabpanel" aria-labelledby="tab-components" hidden></div>
+      <div id="access-panel" class="access" tabindex="0" role="tabpanel" aria-labelledby="tab-access" hidden></div>
+      <div id="screens" class="designer" role="tabpanel" aria-labelledby="tab-screens" hidden>
+        <nav class="screen-list" aria-labelledby="screen-list-title"><h3 id="screen-list-title">Use cases</h3><ul id="screen-list"></ul></nav>
+        <div class="screen-stage">
+          <div id="screen-problems" class="problems" role="status" aria-live="polite"></div>
+          <div id="screen-card" class="screen-card"></div>
+          <div class="screen-tools">
+            <button id="screens-reset" type="button" class="quiet">Reset to the pack's screens</button>
+            <a id="screens-download" class="quiet" download="screens.json">Download screens.json</a>
+          </div>
+        </div>
+        <aside class="palette" aria-labelledby="palette-title"><h3 id="palette-title">Record attributes</h3>
+          <p class="muted small">Drag onto the screen, or press Add.</p><ul id="palette"></ul></aside>
+      </div>
+      <div id="laws" class="laws" role="tabpanel" aria-labelledby="tab-laws" hidden>
+        <div class="laws-head">
+          <div><h2>Laws</h2><p class="muted small">What this model must never do, whatever the diagrams say. The kernel refuses a model that breaks one; here each is also proved over every run the kernel allows.</p></div>
+          <button id="laws-prove" type="button" class="primary">Prove again</button>
+        </div>
+        <p id="laws-summary" class="laws-summary" role="status" aria-live="polite"></p>
+        <ol id="laws-list" class="law-list"></ol>
+        <p id="laws-limits" class="muted small"></p>
+      </div>
+      <div id="review" class="review" role="tabpanel" aria-labelledby="tab-review" hidden>
+        <div class="review-head">
+          <div><h2 id="review-title">Review the change</h2><p id="review-head-text" class="muted small" role="status" aria-live="polite"></p></div>
+          <div class="review-head-tools"><span id="review-progress" class="small" role="status" aria-live="polite"></span>
+            <button id="review-finish" type="button" class="primary" disabled>Finish review</button></div>
+        </div>
+        <div class="review-body">
+          <div id="review-canvas" class="canvas review-canvas" tabindex="0" aria-label="The change on the state machine: added in green, removed dashed in red, changed in amber"></div>
+          <div class="review-list">
+            <div id="review-sim" class="review-sim"></div>
+            <ol id="review-items" class="review-items" aria-labelledby="review-title"></ol>
+            <section id="review-summary" class="review-summary" aria-live="polite" hidden></section>
+          </div>
+        </div>
+      </div>
+      <p id="canvas-help" class="hint"></p>
+    </section>
+    <div id="split-dock" class="split h" role="separator" aria-orientation="horizontal" aria-label="Resize the bottom panel" tabindex="0"></div>
+    <section class="dock" aria-label="Run, simulation and running app">
+      <div class="dock-head"><div id="dock-tabs" class="dock-tabs" role="tablist" aria-label="Panel"></div>
+        <button id="dock-close" class="icon-btn" type="button" title="Hide the panel (Ctrl+Alt+P)" aria-label="Hide the panel">✕</button></div>
+      <div class="dock-body">
+        <section id="debug" class="debug" aria-labelledby="debug-title" hidden>
+          <div class="run-head"><h2 id="debug-title">Run</h2><span id="debug-pos" class="pos"></span></div>
+          <div id="debug-now" class="debug-now"></div>
+          <h3>Records</h3><table class="records"><tbody id="debug-records"></tbody></table>
+          <h3>Breakpoints</h3>
+          <label class="check"><input id="break-refusal" type="checkbox"> Break when the kernel refuses</label>
+          <ul id="debug-breakpoints" class="breakpoints"></ul>
+          <h3>Steps so far</h3><ol id="debug-log" class="log"></ol>
+          <p class="muted small" id="debug-limits"></p>
+        </section>
+        <section id="sim" class="sim" aria-labelledby="sim-title" hidden>
+          <div class="run-head"><h2 id="sim-title">Simulation</h2>
+            <span class="sim-tools"><button id="sim-replay" type="button" class="quiet">Replay</button><button id="sim-clear" type="button" class="quiet">Clear</button></span></div>
+          <p id="sim-summary" class="sim-summary"></p>
+          <div id="sim-codes" class="chips"></div>
+          <h3>Worth a look</h3><ul id="sim-findings" class="findings"></ul>
+          <h3>Run log</h3><ol id="sim-log" class="log"></ol>
+          <p class="muted small" id="sim-limits"></p>
+        </section>
+        <section id="run" class="run" aria-labelledby="run-title" hidden>
+          <div class="run-head"><h2 id="run-title">Running app</h2><a id="run-open" class="quiet" target="_blank" rel="noopener">Open in new tab</a></div>
+          <iframe id="run-frame" title="The app built from this model"></iframe>
+        </section>
+      </div>
+    </section>
+  </div>
+  <div id="split-chat" class="split v" role="separator" aria-orientation="vertical" aria-label="Resize the chat" tabindex="0"></div>
+  <aside class="side">
     <section class="chat" aria-labelledby="chat-title">
       <div class="run-head"><h2 id="chat-title">Chat</h2><span class="mode" title="The AI only proposes. You accept or reject each step; nothing is saved from here.">Plan mode</span></div>
       <ol id="chat-log" class="chat-log" aria-live="polite">
@@ -145,24 +186,17 @@
         <button id="chat-send" type="submit" class="primary">Plan</button>
       </form>
     </section>
-    <section class="inspector" aria-labelledby="inspector-title">
-      <h2 id="inspector-title">Inspector</h2>
-      <div id="inspector"><p class="muted">Select a state or transition.</p></div>
-    </section>
-    <section id="sim" class="sim" aria-labelledby="sim-title" hidden>
-      <div class="run-head"><h2 id="sim-title">Simulation</h2>
-        <span class="sim-tools"><button id="sim-replay" type="button" class="quiet">Replay</button><button id="sim-clear" type="button" class="quiet">Clear</button></span></div>
-      <p id="sim-summary" class="sim-summary"></p>
-      <div id="sim-codes" class="chips"></div>
-      <h3>Worth a look</h3><ul id="sim-findings" class="findings"></ul>
-      <h3>Run log</h3><ol id="sim-log" class="log"></ol>
-      <p class="muted small" id="sim-limits"></p>
-    </section>
-    <section id="run" class="run" aria-labelledby="run-title" hidden>
-      <div class="run-head"><h2 id="run-title">Running app</h2><a id="run-open" class="quiet" target="_blank" rel="noopener">Open in new tab</a></div>
-      <iframe id="run-frame" title="The app built from this model"></iframe>
-    </section>
   </aside>
 </main>
+<footer class="statusbar" aria-label="Status">
+  <span id="status-model"></span>
+  <span id="status-plan" class="plan-chip" hidden>Previewing a plan</span>
+  <span id="status-selection"></span>
+  <span class="end">
+    <span id="toast" class="toast" role="status" aria-live="polite"></span>
+    <span id="score" class="score" role="status" aria-live="polite" hidden></span>
+    <span class="keys"><kbd>Ctrl K</kbd> commands</span>
+  </span>
+</footer>
 </body>
 </html>

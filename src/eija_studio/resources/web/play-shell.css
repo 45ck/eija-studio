@@ -1,0 +1,125 @@
+/* PlayIDE shell (ADR-0173): title bar, toolbar, outline over inspector, diagram tabs, chat, bottom panel, status bar.
+   Loaded after play.css; it only places and dresses regions, so the diagrams, chat and run bar keep their own styles. */
+:root{--left-w:272px;--chat-w:380px;--dock-h:280px;--chrome:#f7f8fb;--tab-line:#3157d5}
+body{display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;height:100vh;overflow:hidden}
+body.resizing{user-select:none}
+body.resizing iframe{pointer-events:none}
+
+/* Title bar: brand, command center, layout toggles (VS Code's title bar, Cursor's) */
+.bar{gap:12px;padding:6px 12px;background:var(--chrome)}
+.bar .brand{flex:1 1 0;min-width:0}
+.bar .model-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-end{flex:1 1 0;display:flex;align-items:center;justify-content:flex-end;gap:6px}
+.palette-open.command-center{display:flex;align-items:center;justify-content:space-between;gap:16px;width:min(440px,36vw);padding:5px 10px;border-radius:8px;background:var(--panel);color:var(--muted);font-size:.84rem}
+.palette-open.command-center:hover{border-color:#b9c2d6}
+.palette-open.command-center kbd{font:inherit;font-size:.74rem;padding:0 6px;border:1px solid var(--line);border-radius:4px;background:var(--bg)}
+.icon-btn{display:inline-grid;place-items:center;width:30px;height:28px;padding:0;border:1px solid transparent;background:transparent;color:var(--muted);border-radius:6px}
+.icon-btn:hover{background:var(--busy-bg);color:var(--ink)}
+.icon-btn[aria-pressed="true"]{color:var(--accent)}
+.icon-btn:disabled{opacity:.35;cursor:default}
+.icon-btn svg{fill:none;stroke:currentColor;stroke-width:1.4}
+.icon-btn[aria-pressed="true"] svg .fill{fill:currentColor;stroke:none}
+.bar a.quiet{padding:5px 10px;font-size:.84rem}
+
+/* Toolbar: run bar, Simulate, Build & run, and the checks ring (Visual Studio's standard and debug toolbars) */
+.toolbar{display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--panel);border-bottom:1px solid var(--line)}
+.toolbar .sep{width:1px;align-self:stretch;margin:2px 4px;background:var(--line)}
+.toolbar .spacer{flex:1}
+.toolbar button:not(.run-btn):not(.health){padding:5px 12px;font-size:.86rem}
+.checks-anchor{position:relative}
+.checks-anchor .checks{position:absolute;top:calc(100% + 8px);right:0;z-index:40;width:min(380px,92vw);max-height:70vh;overflow:auto;background:var(--panel);box-shadow:0 12px 32px rgba(27,33,48,.18)}
+.checks[hidden]{display:none}
+
+/* Workbench: left (outline over inspector), centre (diagrams over the panel), right (chat) */
+.layout{grid-template-columns:var(--left-w) 5px minmax(0,1fr) 5px var(--chat-w);min-height:0}
+body[data-left="closed"] .layout{grid-template-columns:0 0 minmax(0,1fr) 5px var(--chat-w)}
+body[data-chat="closed"] .layout{grid-template-columns:var(--left-w) 5px minmax(0,1fr) 0 0}
+body[data-left="closed"][data-chat="closed"] .layout{grid-template-columns:0 0 minmax(0,1fr) 0 0}
+body[data-left="closed"] .explorer,body[data-left="closed"] #split-left,
+body[data-chat="closed"] .side,body[data-chat="closed"] #split-chat{display:none}
+.split{background:transparent;position:relative;z-index:4;touch-action:none}
+.split::after{content:"";position:absolute;inset:0;transition:background .15s}
+.split:hover::after,.split:focus-visible::after{background:var(--accent);opacity:.45}
+.split.v{cursor:col-resize}
+.split.h{cursor:row-resize;height:5px}
+.explorer{display:grid;grid-template-rows:minmax(0,1.25fr) minmax(0,1fr);min-height:0;background:var(--panel);border-right:1px solid var(--line)}
+.explorer .outline{border:0;padding:10px 12px;overflow:auto}
+.explorer .inspector{border-top:1px solid var(--line);padding:10px 12px;overflow:auto}
+.pane-title{display:flex;align-items:center;justify-content:space-between;font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+.explorer h3{margin:12px 0 4px}
+.outline li button{padding:4px 8px;font-size:.86rem;border-radius:5px}
+.outline li button:hover{background:var(--busy-bg)}
+
+/* Centre: the diagrams, then the bottom panel */
+.workbench{display:grid;grid-template-rows:minmax(0,1fr) auto auto;min-width:0;min-height:0}
+body[data-dock="closed"] #split-dock,body[data-dock="closed"] .dock{display:none}
+.stage{display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr) auto;min-height:0;background:var(--panel)}
+.stage>.stage-tools,.stage>.plan-banner,.stage>.hint{grid-column:1/-1}
+.stage>.stage-tools{grid-row:1}
+.stage>.plan-banner{grid-row:2}
+.stage>.hint{grid-row:4;border-top:1px solid var(--line);font-size:.74rem;padding:4px 12px}
+.stage>.canvas,.stage>.designer,.stage>.access,.stage>.laws,.stage>.review{grid-row:3;grid-column:2;border-top:0;border-bottom:0}
+
+/* Diagram tabs as editor tabs (VS Code, Visual Studio) */
+.stage-tools{padding:0 8px 0 0;gap:2px;background:var(--chrome);border-bottom:1px solid var(--line);flex-wrap:nowrap}
+.stage-tools .tabs{flex:0 1 auto;background:transparent;border-radius:0;padding:0;gap:0;overflow-x:auto;scrollbar-width:thin;min-width:0}
+.stage-tools .tabs button{position:relative;border-radius:0;padding:9px 11px;font-size:.84rem;font-weight:500;color:var(--muted);border-right:1px solid var(--line)}
+.stage-tools .tabs button:hover{color:var(--ink);background:var(--busy-bg)}
+.stage-tools .tabs button[aria-selected="true"]{background:var(--panel);color:var(--ink);box-shadow:none}
+.stage-tools .tabs button[aria-selected="true"]::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--tab-line)}
+.stage-tools .tabs button[aria-selected="true"]::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:var(--panel)}
+.stage-tools .tabs #tab-laws{margin-left:10px;border-left:1px solid var(--line)}
+.stage-tools>button{flex:none;padding:3px 9px;font-size:.82rem;border-color:transparent;background:transparent;color:var(--muted)}
+.stage-tools>button:hover{background:var(--busy-bg);color:var(--ink)}
+
+/* The UML palette as a column beside the canvas (draw.io's shape library) */
+.stage>.draw-palette{grid-row:3;grid-column:1;position:static;flex-direction:column;align-items:stretch;gap:2px;width:92px;padding:8px 6px;border:0;border-right:1px solid var(--line);border-radius:0;box-shadow:none;background:var(--chrome);overflow:auto}
+.stage>.draw-palette .palette-title{padding:0 4px 6px}
+.stage>.draw-palette button{flex-direction:column;gap:6px;padding:10px 4px;font-size:.76rem;text-align:center;border-radius:7px}
+.stage>.draw-palette button .glyph{font-size:1.1rem}
+.stage>.draw-palette button .glyph.state{width:26px;height:17px;border-radius:6px}
+.stage>.draw-palette button .glyph.initial{width:13px;height:13px}
+
+/* Right: the chat alone, full height (Cursor's agent panel) */
+.side{padding:0;gap:0;background:var(--panel)}
+.side>.chat{flex:1;min-height:0;padding:10px 12px 12px}
+.side .chat-log{flex:1;max-height:none;min-height:0}
+.side .chat .run-head{margin-bottom:2px}
+
+/* Bottom panel: Run, Simulation, Running app (VS Code's panel, Visual Studio's output windows) */
+.dock{display:flex;flex-direction:column;height:var(--dock-h);min-height:0;background:var(--panel);border-top:1px solid var(--line)}
+.dock-head{display:flex;align-items:center;gap:4px;padding:0 6px 0 4px;border-bottom:1px solid var(--line);background:var(--chrome)}
+.dock-tabs{display:flex;gap:0;margin-right:auto}
+.dock-tabs button{border:0;border-radius:0;background:transparent;padding:7px 12px;font-size:.74rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);border-bottom:2px solid transparent}
+.dock-tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--tab-line)}
+.dock-tabs button[hidden]{display:none}
+.dock-body{flex:1;min-height:0;overflow:auto;padding:10px 14px}
+.dock-body>section{display:none;border:0;border-radius:0;padding:0;background:transparent}
+.dock-body>section.dock-active:not([hidden]){display:flex}
+.dock-body>.run.dock-active{height:100%;min-height:0}
+.dock-body .log{max-height:none}
+.dock-body .run-head h2{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.dock-body .run-head{justify-content:flex-end;margin-bottom:4px}
+.dock-body .debug.dock-active{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:4px 24px;align-content:start}
+.dock-body .debug>.run-head,.dock-body .debug>.debug-now,.dock-body .debug>#debug-limits{grid-column:1/-1}
+.dock-body .sim.dock-active{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:4px 24px;align-content:start}
+.dock-body .sim>.run-head,.dock-body .sim>.sim-summary,.dock-body .sim>.chips,.dock-body .sim>#sim-limits{grid-column:1/-1}
+
+/* Status bar (VS Code, Visual Studio) */
+.statusbar{display:flex;align-items:center;gap:14px;padding:2px 10px;min-height:24px;background:#24305e;color:#e8ecfb;font-size:.76rem}
+.statusbar .end{margin-left:auto;display:flex;align-items:center;gap:14px}
+.statusbar button{border:0;background:transparent;color:inherit;padding:2px 6px;font-size:inherit;border-radius:4px}
+.statusbar button:hover{background:rgba(255,255,255,.12)}
+.statusbar .plan-chip{padding:1px 8px;border-radius:999px;background:#2f8f5b;color:#fff;font-weight:600}
+.statusbar .plan-chip[hidden]{display:none}
+.statusbar .toast{color:#9ff0c3}
+.statusbar .score{padding:1px 8px;background:rgba(255,255,255,.14);color:inherit}
+.statusbar .score.ok{background:#2f8f5b;color:#fff}
+.statusbar .score.bad{background:#a33b3b;color:#fff}
+.statusbar kbd{font:inherit;padding:0 5px;border:1px solid rgba(255,255,255,.35);border-radius:3px}
+
+/* Review view: no chat column */
+body[data-view="review"] #toggle-chat{display:none}
+
+@media (max-width:1180px){.palette-open.command-center{width:auto}.palette-open.command-center span{display:none}}
+.side .authority span{white-space:normal}
