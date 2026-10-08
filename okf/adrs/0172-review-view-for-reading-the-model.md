@@ -58,4 +58,5 @@ _No curated notes yet._
 ## Referenced by
 
 * [ADR-0173: PlayIDE's workbench shell, after Visual Studio, VS Code, Cursor and draw.io](/adrs/0173-playide-workbench-shell.md) - After watching the recorded tours, the owner said there was "too much going on in sidebar" and that it "feels weird", and asked to "make playIDE really good, c…
+* [ADR-0190: Undo, redo and autosave of the edited document in PlayIDE](/adrs/0190-undo-redo-and-autosave-of-the-edited-document.md) - PlayIDE is meant to be more robust than the UML tools engineers already use, and every one of those has undo.
 <!-- okf:generated:end links -->

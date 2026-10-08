@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/application/runtime.py#execute
   title: application/runtime.py
   hash_method: ast-v2
-  sha256: 8aa81c2abda4233efcff1bbfed7e9681d4a12b17dbd84e2196cce39b408f920d
+  sha256: 5d688ada90b700ecc0b317423ce7279ec4c2709979192f9d86a511f383b44ac4
 description_override: 'Executes one command against a preview instance: authority is checked before replay, versions are compare-and-swap, and audit and outbox commit with the state change.'
-notes_baseline: 3125a6d9934abf25f66651366fd598a356cea8b7c0d7234dbb705443424b942d
+notes_baseline: 873d2643fe7445b3c19bf0d24ea2160e5f314eb805620aa111859af671bf09ed
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -26,6 +26,10 @@ verified:
   at: '2026-09-29T08:20:47Z'
   notes_sha256: 779b0aea4964ffceb958b09cbf1768072f7933ac0520e656e59dc97e391ced99
   sources_sha256: 3125a6d9934abf25f66651366fd598a356cea8b7c0d7234dbb705443424b942d
+- by: process:claude-undo-autosave
+  at: '2026-10-08T23:55:00Z'
+  notes_sha256: d7ed99eb19af019c570df3e501f157e6b7a2759675bb3c3e589bbfab400a3585
+  sources_sha256: 873d2643fe7445b3c19bf0d24ea2160e5f314eb805620aa111859af671bf09ed
 ---
 
 # application.runtime.execute
@@ -47,7 +51,7 @@ _The source carries no docstring._
 ## Notes
 
 The commit sequence, in the order the code performs it:
-1. `ensure_policy` (under the pack) and model-identity check (`STALE_INSTANCE`).
+1. `ensure_policy` (under the pack) and model-identity check (`STALE_INSTANCE`). Both go through [application.memo](/modules/application/memo.md), which asks them once per frozen model and pack object; a refusal still comes from `ensure_policy` itself ([ADR-0191](/adrs/0191-playide-at-the-kernel-limits.md)).
 2. **Authorise first** with [check_actor](/symbols/application/runtime/check_actor.md): active, current role, and assignment where the guard requires it. A cached success is not continuing authority.
 3. Replay: an existing operation id with a different binding is `OPERATION_CONFLICT`; the same binding returns the original result and enqueues nothing again.
 4. Version and source-state guards (`STALE_VERSION`, `STATE_DENIED`), then the state update.
@@ -58,6 +62,8 @@ Success is reported to HTTP only after the enclosing [UnitOfWork](/symbols/appli
 <!-- okf:generated:begin links -->
 ## Depends on
 
+* [application.memo.ensure_conforms](/symbols/application/memo/ensure_conforms.md) - `ensure(model, pack)` (the policy check): a pair it let through is remembered; any other is refused by it again, so the error is always the check's own.
+* [application.memo.model_hash](/symbols/application/memo/model_hash.md) - `model.semantic_hash`, computed once per model object.
 * [application.ports.UnitOfWork](/symbols/application/ports/UnitOfWork.md) - All mutations on this port commit together or roll back together.
 * [application.runtime.check_actor](/symbols/application/runtime/check_actor.md) - `def check_actor(actor: dict[str, Any], transition: Transition, command: ExecuteCommand) -> None` in `application/runtime`.
 * [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.

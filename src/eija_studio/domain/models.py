@@ -1,11 +1,8 @@
 from __future__ import annotations
 
-from collections import OrderedDict
-from collections.abc import Callable
 from hashlib import sha256
 import json
-from threading import Lock
-from typing import Any, Literal, TypeVar
+from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
@@ -29,40 +26,6 @@ def canonical(value: Any) -> str:
 
 def fingerprint(value: Any) -> str:
     return sha256(canonical(value).encode("utf-8")).hexdigest()
-
-
-_T = TypeVar("_T")
-
-
-class IdentityMemo:
-    """A small, bounded memo for pure functions of frozen contracts, keyed by the identity of the arguments (ADR-0191).
-
-    The kernel asks the same question of one unchanged model thousands of times (every oracle case and every explored
-    step checks the policy and hashes the model). A frozen contract never changes after validation, so its answer
-    can be kept while that very object is alive; the memo holds the objects themselves, so an id is never reused
-    for a different object while its entry exists. A copy or an edit is a new object and is computed afresh."""
-
-    def __init__(self, size: int = 128):
-        self._size, self._lock = size, Lock()
-        self._entries: OrderedDict[tuple[int, ...], tuple[tuple[Any, ...], Any]] = OrderedDict()
-
-    def get(self, args: tuple[Any, ...], compute: Callable[[], _T]) -> _T:
-        key = tuple(map(id, args))
-        with self._lock:
-            hit = self._entries.get(key)
-            if hit is not None and all(a is b for a, b in zip(hit[0], args, strict=True)):
-                self._entries.move_to_end(key)
-                return hit[1]
-        value = compute()
-        with self._lock:
-            self._entries[key] = (args, value)
-            self._entries.move_to_end(key)
-            while len(self._entries) > self._size:
-                self._entries.popitem(last=False)
-        return value
-
-
-_HASHES = IdentityMemo()
 
 
 Guard = Literal["actor_active", "role_current", "actor_assigned", "state_equals", "expected_version", "operation_binding"]
@@ -114,9 +77,6 @@ class Workflow(Contract):
 
     @property
     def semantic_hash(self) -> str:
-        return _HASHES.get((self,), self._semantic_hash)
-
-    def _semantic_hash(self) -> str:
         # Order of definitions is non-semantic, but state/action identities are not.
         data = self.model_dump(mode="json")
         data["states"] = sorted(data["states"])

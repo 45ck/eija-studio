@@ -2,6 +2,7 @@
 
 ## 2026-10-08
 
+* **Undo, autosave and the kernel's limits**: synced ADR-0190 and ADR-0191 and the new `application.memo` module and symbol pages; `application.runtime`, `application.appgen`, `application.law_proof` and `interfaces.app_build` refreshed. The `runtime.execute` Notes gained one sentence on the memo; it and `runtime.initialise` were re-read (`review` by process:claude-undo-autosave). Nothing was recorded as verified.
 * **PlayIDE tab overflow**: ADR-0173 page re-synced after its text gained the tab overflow rule. No Notes were hand-edited and nothing was recorded as verified.
 * **A change on every diagram**: re-synced ADR-0176 and `application.ghost_diff` (it now also returns the use case diagram of both models). No Notes were hand-edited and nothing was recorded as verified.
 * **Calmer Changes view**: re-synced ADR-0176 after its "calm by default" update (presentation only, no module or symbol changes). No Notes were hand-edited and nothing was recorded as verified.

@@ -1,24 +1,23 @@
-"""The kernel's memo (ADR-0191) only skips asking the same frozen objects the same question: every answer equals a fresh
-computation, a copy or an edit is computed afresh, callers cannot change what is kept, and the largest model the
-kernel accepts loads."""
+"""The memo in front of the kernel (ADR-0191) only skips asking the same frozen objects the same question: every answer
+equals a fresh computation, a copy or an edit is asked afresh, a refusal still comes from the policy, a built app is
+reused without callers sharing it, and the largest model the kernel accepts loads."""
 from __future__ import annotations
 
 import importlib.util
 from pathlib import Path
 
-from eija_studio.domain.models import IdentityMemo, Workflow
+import pytest
+
+from eija_studio.application.memo import IdentityMemo, ensure_conforms, model_hash
+from eija_studio.domain.models import DomainError, Workflow
 from eija_studio.domain.pack import load_pack
-from eija_studio.domain.policy import check_policy, declared_codes, law_violations
+from eija_studio.domain.policy import check_policy, ensure_policy
 from eija_studio.domain.screens import screens_for
 from eija_studio.domain.data import data_for
 from eija_studio.interfaces.app_build import app_files
 
 ROOT = Path(__file__).resolve().parents[1]
 PACK = load_pack(ROOT / "packs" / "library-loan")
-
-
-def _fresh_policy(model: Workflow) -> list[str]:
-    return sorted(set(declared_codes(model, PACK)) | {v.code for v in law_violations(model, PACK)})
 
 
 def test_the_memo_answers_by_identity_and_holds_its_arguments():
@@ -32,29 +31,27 @@ def test_the_memo_answers_by_identity_and_holds_its_arguments():
     assert calls == ["a", "b", "c", "a"]
 
 
-def test_semantic_hash_and_policy_match_a_fresh_computation_for_copies_and_edits():
-    model = PACK.model
-    assert model.semantic_hash == model._semantic_hash()
-    assert check_policy(model, PACK) == _fresh_policy(model) == []
-    # An edit is a new object, so it is checked afresh: Cancel taken by a Clerk breaks no law, Cancel from OnLoan does.
-    data = model.model_dump(mode="json")
-    moved = next(t for t in data["transitions"] if t["action"] == "Cancel")
-    moved["from_state"] = "OnLoan"
-    edited = Workflow.model_validate(data)
-    assert edited.semantic_hash == edited._semantic_hash() != model.semantic_hash
-    assert check_policy(edited, PACK) == _fresh_policy(edited) != []
-    # A copy with an update is never answered from the original's entry.
-    copy = model.model_copy(update={"initial_state": "OnLoan"})
-    assert copy.semantic_hash == copy._semantic_hash() != model.semantic_hash
-
-
-def test_callers_cannot_change_what_the_memo_keeps():
+def _cancel_from_loan() -> Workflow:
     data = PACK.model.model_dump(mode="json")
     next(t for t in data["transitions"] if t["action"] == "Cancel")["from_state"] = "OnLoan"
-    edited = Workflow.model_validate(data)
-    first = check_policy(edited, PACK)
-    first.append("TAMPERED")
-    assert "TAMPERED" not in check_policy(edited, PACK)
+    return Workflow.model_validate(data)
+
+
+def test_hash_and_policy_match_the_kernel_for_copies_and_edits():
+    model = PACK.model
+    assert model_hash(model) == model.semantic_hash
+    ensure_conforms(model, PACK, ensure_policy)  # conforms: no error, now and when asked again
+    ensure_conforms(model, PACK, ensure_policy)
+    # An edit is a new object, so it is asked afresh, and refused by the policy itself, with its codes and refs.
+    edited = _cancel_from_loan()
+    assert model_hash(edited) == edited.semantic_hash != model_hash(model)
+    for _ in range(2):
+        with pytest.raises(DomainError) as refused:
+            ensure_conforms(edited, PACK, ensure_policy)
+        assert refused.value.code == "POLICY_BLOCKED" and refused.value.details["codes"] == check_policy(edited, PACK) != []
+    # A copy with an update is never answered from the original's entry.
+    copy = model.model_copy(update={"initial_state": "OnLoan"})
+    assert model_hash(copy) == copy.semantic_hash != model_hash(model)
 
 
 def test_a_built_app_is_reused_but_each_caller_gets_its_own_copy():
@@ -75,7 +72,7 @@ def test_the_largest_model_the_kernel_accepts_loads_and_passes_its_policy(tmp_pa
     spec = importlib.util.spec_from_file_location("large_pack", ROOT / "scripts" / "large_pack.py")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    pack = load_pack(module.write_large_pack(tmp_path / "large", states=999, entities=999))
+    pack = load_pack(module.write_large_pack(ROOT / "packs" / "library-loan", tmp_path / "large", states=999, entities=999))
     assert len(pack.model.states) == module.MAX_STATES and len(pack.model.transitions) == module.MAX_TRANSITIONS
     assert len(data_for(pack).entities) == module.MAX_ENTITIES
     assert check_policy(pack.model, pack) == []
