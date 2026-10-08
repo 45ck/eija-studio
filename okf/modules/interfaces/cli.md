@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/cli.py
   title: interfaces/cli.py
   hash_method: ast-api-v1
-  sha256: f8cfb93d359128049f37c39e6057aa28af8d7c469235305d227e5216a077c1d1
-notes_baseline: 026ec4838d7929fd3fdd94b03493ea8191813a45478da8dcb0ff9f8c2a691ca5
+  sha256: ebfd1f8c63c3f0ddd8455aca7aeb6d5b705767a16a63afb9f574b08f917d2f53
+notes_baseline: f1fd2ebe3cc1c7ed299c81b74a59866cb4dae06458db30b71c8930cf9e2cef2e
 ---
 
 # interfaces.cli
@@ -38,6 +38,7 @@ _Symbol pages are generated for the domain and application layers only._
 
 * [`application/compiler`](/modules/application/compiler.md)
 * [`application/diagram_catalog`](/modules/application/diagram_catalog.md)
+* [`application/scxml`](/modules/application/scxml.md)
 * [`application/verifier`](/modules/application/verifier.md)
 * [`bootstrap`](/modules/bootstrap.md)
 * [`domain/impact`](/modules/domain/impact.md)
@@ -56,6 +57,7 @@ _No curated notes yet._
 
 * [application.compiler](/modules/application/compiler.md) - Compiler: model → projections + impacts + obligations + computed review packet.
 * [application.diagram_catalog](/modules/application/diagram_catalog.md) - Named diagram views over a baseline and an optional candidate Workflow.
+* [application.scxml](/modules/application/scxml.md) - The workflow state machine as a W3C SCXML statechart (ADR-0160).
 * [application.verifier](/modules/application/verifier.md) - Bounded synthetic runtime experiments.
 * [bootstrap](/modules/bootstrap.md) - The only composition root: wires application ports to concrete adapters.
 * [domain.impact](/modules/domain/impact.md) - Module `domain/impact` (no module docstring).
