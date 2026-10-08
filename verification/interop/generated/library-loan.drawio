@@ -1,0 +1,210 @@
+<mxfile host="PlayIDE (eija.uml-interop.v1)" agent="pack library-loan 1.0.0, model 3d7336da8fcbbef8c91c916f3740826fdf2393d6be4e82219cf009413477ffa8">
+  <diagram id="page-0" name="State machine">
+    <mxGraphModel grid="1" gridSize="10" page="1" pageWidth="1169" pageHeight="827">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell style="ellipse;html=1;shape=startState;fillColor=#000000;strokeColor=#ff0000;" vertex="1" parent="1" id="initial" value="">
+          <mxGeometry x="40" y="73" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="start" value="" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="initial" target="state-0">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell style="rounded=1;whiteSpace=wrap;html=1;arcSize=40;fontColor=#000080;fillColor=#ffffc0;strokeColor=#ff0000;" vertex="1" parent="1" id="state-0" value="Requested">
+          <mxGeometry x="120" y="60" width="140" height="56" as="geometry" />
+        </mxCell>
+        <mxCell style="rounded=1;whiteSpace=wrap;html=1;arcSize=40;fontColor=#000080;fillColor=#ffffc0;strokeColor=#ff0000;" vertex="1" parent="1" id="state-1" value="OnLoan">
+          <mxGeometry x="360" y="60" width="140" height="56" as="geometry" />
+        </mxCell>
+        <mxCell style="rounded=1;whiteSpace=wrap;html=1;arcSize=40;fontColor=#000080;fillColor=#ffffc0;strokeColor=#ff0000;" vertex="1" parent="1" id="state-2" value="Overdue">
+          <mxGeometry x="600" y="60" width="140" height="56" as="geometry" />
+        </mxCell>
+        <mxCell style="rounded=1;whiteSpace=wrap;html=1;arcSize=40;fontColor=#000080;fillColor=#ffffc0;strokeColor=#ff0000;" vertex="1" parent="1" id="state-3" value="Returned">
+          <mxGeometry x="600" y="200" width="140" height="56" as="geometry" />
+        </mxCell>
+        <mxCell style="rounded=1;whiteSpace=wrap;html=1;arcSize=40;fontColor=#000080;fillColor=#ffffc0;strokeColor=#ff0000;" vertex="1" parent="1" id="state-4" value="Cancelled">
+          <mxGeometry x="360" y="200" width="140" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="transition-0" value="Cancel [role = Member] / Audit:LoanCancelled" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="state-0" target="state-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="transition-1" value="CheckOut [role = Librarian and assigned] / Audit:LoanCheckedOut, Notification:MemberNotified" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="state-0" target="state-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="transition-2" value="MarkOverdue [role = Clerk] / Audit:LoanOverdue, Notification:OverdueNoticeQueued" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="state-1" target="state-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="transition-3" value="Return [role = Librarian] / Audit:LoanReturned" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="state-1" target="state-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="transition-4" value="ReturnLate [role = Librarian] / Audit:LoanReturnedLate" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="state-2" target="state-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell style="ellipse;html=1;shape=endState;fillColor=#000000;strokeColor=#ff0000;" vertex="1" parent="1" id="final-0" value="">
+          <mxGeometry x="780" y="213" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="end-0" value="" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="state-3" target="final-0">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell style="ellipse;html=1;shape=endState;fillColor=#000000;strokeColor=#ff0000;" vertex="1" parent="1" id="final-1" value="">
+          <mxGeometry x="540" y="213" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="end-1" value="" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="state-4" target="final-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="page-1" name="Class model">
+    <mxGraphModel grid="1" gridSize="10" page="1" pageWidth="1169" pageHeight="827">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <UserObject label="&amp;laquo;record&amp;raquo;&lt;br&gt;Loan" tooltip="One member borrowing one copy; it moves through the loan workflow." id="class-0">
+          <mxCell style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+            <mxGeometry x="40" y="60" width="260" height="170" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="class-0" id="class-0.0" value="+ itemTitle : String [1] {maxLength = 200}">
+          <mxGeometry x="0" y="40" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="class-0" id="class-0.1" value="+ memberCard : String [1] {maxLength = 20}">
+          <mxGeometry x="0" y="66" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="class-0" id="class-0.2" value="+ dueDate : Date [1]">
+          <mxGeometry x="0" y="92" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="class-0" id="class-0.3" value="+ format : LoanFormat [1]">
+          <mxGeometry x="0" y="118" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="class-0" id="class-0.4" value="+ renewals : Real [0..1]">
+          <mxGeometry x="0" y="144" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="1" id="class-1" value="Item">
+          <mxGeometry x="340" y="60" width="260" height="92" as="geometry" />
+        </mxCell>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="class-1" id="class-1.0" value="+ title : String [1] {maxLength = 200}">
+          <mxGeometry x="0" y="40" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="class-1" id="class-1.1" value="+ isbn : String [0..1] {maxLength = 17}">
+          <mxGeometry x="0" y="66" width="260" height="26" as="geometry" />
+        </mxCell>
+        <UserObject label="Copy" tooltip="A physical copy of an item on the shelf." id="class-2">
+          <mxCell style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+            <mxGeometry x="640" y="60" width="260" height="92" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="class-2" id="class-2.0" value="+ barcode : String [1] {maxLength = 32}">
+          <mxGeometry x="0" y="40" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="class-2" id="class-2.1" value="+ shelf : String [0..1] {maxLength = 200}">
+          <mxGeometry x="0" y="66" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="1" id="class-3" value="Member">
+          <mxGeometry x="940" y="60" width="260" height="92" as="geometry" />
+        </mxCell>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="class-3" id="class-3.0" value="+ card : String [1] {maxLength = 20}">
+          <mxGeometry x="0" y="40" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="class-3" id="class-3.1" value="+ name : String [1] {maxLength = 200}">
+          <mxGeometry x="0" y="66" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="1" id="enum-0" value="&amp;laquo;enumeration&amp;raquo;&lt;br&gt;LoanFormat">
+          <mxGeometry x="40" y="420" width="260" height="144" as="geometry" />
+        </mxCell>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="enum-0" id="enum-0.0" value="Book">
+          <mxGeometry x="0" y="40" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="enum-0" id="enum-0.1" value="Audiobook">
+          <mxGeometry x="0" y="66" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="enum-0" id="enum-0.2" value="DVD">
+          <mxGeometry x="0" y="92" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="enum-0" id="enum-0.3" value="Magazine">
+          <mxGeometry x="0" y="118" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc-0" value="copies" style="endArrow=open;endFill=0;startArrow=diamondThin;startFill=1;startSize=14;html=1;" edge="1" parent="1" source="class-1" target="class-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc-0.src" value="1" style="edgeLabel;resizable=0;html=1;verticalAlign=bottom;align=left;" vertex="1" connectable="0" parent="assoc-0">
+          <mxGeometry x="-1" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc-0.dst" value="1..*" style="edgeLabel;resizable=0;html=1;verticalAlign=bottom;align=right;" vertex="1" connectable="0" parent="assoc-0">
+          <mxGeometry x="1" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc-1" value="copy" style="endArrow=open;endFill=0;html=1;" edge="1" parent="1" source="class-0" target="class-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc-1.src" value="0..*" style="edgeLabel;resizable=0;html=1;verticalAlign=bottom;align=left;" vertex="1" connectable="0" parent="assoc-1">
+          <mxGeometry x="-1" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc-1.dst" value="1" style="edgeLabel;resizable=0;html=1;verticalAlign=bottom;align=right;" vertex="1" connectable="0" parent="assoc-1">
+          <mxGeometry x="1" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc-2" value="borrower" style="endArrow=open;endFill=0;html=1;" edge="1" parent="1" source="class-0" target="class-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc-2.src" value="0..*" style="edgeLabel;resizable=0;html=1;verticalAlign=bottom;align=left;" vertex="1" connectable="0" parent="assoc-2">
+          <mxGeometry x="-1" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc-2.dst" value="1" style="edgeLabel;resizable=0;html=1;verticalAlign=bottom;align=right;" vertex="1" connectable="0" parent="assoc-2">
+          <mxGeometry x="1" relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="page-2" name="Use cases">
+    <mxGraphModel grid="1" gridSize="10" page="1" pageWidth="1169" pageHeight="827">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <UserObject label="Member" tooltip="Borrows; may cancel a request that has not been checked out." id="actor-0">
+          <mxCell style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" vertex="1" parent="1">
+            <mxGeometry x="40" y="60" width="30" height="60" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Librarian" tooltip="Checks loans out (when assigned to the branch) and takes returns." id="actor-1">
+          <mxCell style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" vertex="1" parent="1">
+            <mxGeometry x="40" y="180" width="30" height="60" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Clerk" tooltip="Flags overdue loans; never takes a return." id="actor-2">
+          <mxCell style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" vertex="1" parent="1">
+            <mxGeometry x="40" y="300" width="30" height="60" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1" id="usecase-0" value="Cancel">
+          <mxGeometry x="360" y="40" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1" id="usecase-1" value="CheckOut">
+          <mxGeometry x="360" y="130" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1" id="usecase-2" value="MarkOverdue">
+          <mxGeometry x="360" y="220" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1" id="usecase-3" value="Return">
+          <mxGeometry x="360" y="310" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1" id="usecase-4" value="ReturnLate">
+          <mxGeometry x="360" y="400" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="performs-0" value="" style="endArrow=none;html=1;" edge="1" parent="1" source="actor-0" target="usecase-0">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="performs-1" value="" style="endArrow=none;html=1;" edge="1" parent="1" source="actor-1" target="usecase-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="performs-2" value="" style="endArrow=none;html=1;" edge="1" parent="1" source="actor-2" target="usecase-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="performs-3" value="" style="endArrow=none;html=1;" edge="1" parent="1" source="actor-1" target="usecase-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="performs-4" value="" style="endArrow=none;html=1;" edge="1" parent="1" source="actor-1" target="usecase-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

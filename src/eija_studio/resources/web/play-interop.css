@@ -1,0 +1,21 @@
+/* UML import and export (ADR-0190): one menu in the title bar, a status line, and the import report dialog. */
+.uml-anchor{position:relative}
+.uml-pop{position:absolute;right:0;top:calc(100% + 6px);z-index:40;width:330px;padding:6px;background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:0 14px 34px rgba(20,30,60,.18)}
+.uml-pop .uml-head{margin:6px 8px 4px;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.uml-pop button{display:flex;flex-direction:column;align-items:flex-start;gap:1px;width:100%;border:0;border-radius:6px;padding:6px 8px;background:transparent;text-align:left}
+.uml-pop button:hover,.uml-pop button:focus-visible{background:var(--state,#eef2fb);outline:none}
+.uml-status{margin:0;padding:4px 18px;background:var(--panel);border-bottom:1px solid var(--line)}
+.uml-dialog{width:min(680px,94vw);max-height:84vh;overflow:auto;border:1px solid var(--line);border-radius:12px;padding:18px 20px;box-shadow:0 20px 50px rgba(20,30,60,.25)}
+.uml-dialog::backdrop{background:rgba(20,26,40,.28)}
+.uml-dialog h2{margin:0 0 8px;font-size:1.05rem}
+.uml-dialog h3{margin:14px 0 4px}
+.uml-verdict{padding:8px 10px;border-radius:8px;background:#eef6ee;color:#0b3d1a}
+.uml-verdict.partial{background:#fff6dc;color:#4a3200}
+.uml-verdict.refused,.uml-verdict.empty{background:#ffe8e8;color:#5c0b12}
+.uml-part p{margin:4px 0}
+.uml-list{margin:8px 0}
+.uml-list summary{cursor:pointer;font-weight:600;font-size:.9rem}
+.uml-list ul{margin:6px 0 0;padding-left:18px;font-size:.86rem}
+.uml-list li{margin:3px 0}
+.uml-list li .small{margin-left:6px}
+.uml-actions{display:flex;justify-content:flex-end;margin-top:14px}

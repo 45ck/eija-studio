@@ -43,6 +43,7 @@ from eija_studio.domain.policy import apply_transactions
 from eija_studio.domain.transactions import parse_transaction
 from eija_studio.domain.screens import Screens, check_screens, parse_screens, screens_for, use_cases
 from .app_build import app_files, build_into
+from .play_interop import register as register_interop
 
 START_TIMEOUT_S = 10.0
 
@@ -291,4 +292,5 @@ def register(app, studio, web: Path) -> AppRunner:
         """The run bar's Stop: stop the built app if one is running."""
         return {"stopped": runner.stop()}
 
+    register_interop(app, studio, resolve, BuildRequest)  # UML export and import (ADR-0190)
     return runner

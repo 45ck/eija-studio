@@ -2,6 +2,7 @@
 
 ## 2026-10-08
 
+* **UML import and export**: synced ADR-0190, the `interop` gate family (`interop_roundtrip`, `interop_mermaid`, `interop_plantuml`) and the new `interfaces.uml_interop` and `interfaces.play_interop` module pages; `interfaces.cli`, `interfaces.http` and `interfaces.play` refreshed for the `eija uml` command, the two web assets and the `/api/play/export` and `/api/play/import` routes. No Notes were hand-edited and nothing was recorded as verified.
 * **PlayIDE tab overflow**: ADR-0173 page re-synced after its text gained the tab overflow rule. No Notes were hand-edited and nothing was recorded as verified.
 * **A change on every diagram**: re-synced ADR-0176 and `application.ghost_diff` (it now also returns the use case diagram of both models). No Notes were hand-edited and nothing was recorded as verified.
 * **Calmer Changes view**: re-synced ADR-0176 after its "calm by default" update (presentation only, no module or symbol changes). No Notes were hand-edited and nothing was recorded as verified.

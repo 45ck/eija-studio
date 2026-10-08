@@ -624,6 +624,80 @@
         }
       }
     },
+    "/api/play/export": {
+      "post": {
+        "summary": "Play Export",
+        "description": "The model on screen as a UML file, with what no UML file carries.",
+        "operationId": "play_export_api_play_export_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/play/import": {
+      "post": {
+        "summary": "Play Import",
+        "description": "A UML file read against the model in force: typed edits, the kernel's verdict and every element's fate.",
+        "operationId": "play_import_api_play_import_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/visual-frame": {
       "get": {
         "summary": "Visual Frame",
@@ -2516,6 +2590,63 @@
         ],
         "title": "ExecuteCommand"
       },
+      "ExportRequest": {
+        "properties": {
+          "case_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Id"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Workflow"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "plan": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array",
+                "maxItems": 12
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plan"
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "xmi",
+              "plantuml",
+              "mermaid",
+              "drawio"
+            ],
+            "title": "Format"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "format"
+        ],
+        "title": "ExportRequest"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -2528,6 +2659,66 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "ImportRequest": {
+        "properties": {
+          "case_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Id"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Workflow"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "filename": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Filename",
+            "default": ""
+          },
+          "format": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "xmi",
+                  "plantuml",
+                  "mermaid",
+                  "drawio"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Format"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 2000000,
+            "minLength": 1,
+            "title": "Text"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "ImportRequest"
       },
       "Layout": {
         "properties": {

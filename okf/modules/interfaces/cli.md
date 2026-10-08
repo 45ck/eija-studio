@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/cli.py
   title: interfaces/cli.py
   hash_method: ast-api-v1
-  sha256: 462537e2403f9f48c7733dcf6ed150fa34c7d96c85ade149e42e33c71a83a6e3
-notes_baseline: ea2b5b470edfa9b759466388c1c7619ff906986fa5fdb56bc6ff3cfd39323d29
+  sha256: a55823e297a3e8349923c683e45b17af3f0358cde16118294cbd752a2d8dd12d
+notes_baseline: 2c9c1498c00f4485a18ae3218182ef4ed2fbd70b61215f0416d6ecd1d3e653ea
 ---
 
 # interfaces.cli
@@ -47,6 +47,7 @@ _Symbol pages are generated for the domain and application layers only._
 * [`domain/policy`](/modules/domain/policy.md)
 * [`interfaces/agent_config`](/modules/interfaces/agent_config.md)
 * [`interfaces/app_build`](/modules/interfaces/app_build.md)
+* [`interfaces/uml_interop`](/modules/interfaces/uml_interop.md)
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -67,4 +68,5 @@ _No curated notes yet._
 * [domain.policy](/modules/domain/policy.md) - Generic policy: coherence with a domain pack's declared action catalog, the pack's laws, and declared effects.
 * [interfaces.agent_config](/modules/interfaces/agent_config.md) - Copy-paste MCP client configuration for `eija mcp --print-config <client>`.
 * [interfaces.app_build](/modules/interfaces/app_build.md) - `eija build`: write a runnable app generated from a pack's model, then run its kernel conformance tests (ADR-0150).
+* [interfaces.uml_interop](/modules/interfaces/uml_interop.md) - `eija uml export` and `eija uml import`: UML interchange from the command line (ADR-0190).
 <!-- okf:generated:end links -->
