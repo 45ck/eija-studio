@@ -12,13 +12,13 @@ from demos.lib import RunningServer, Scene
 
 TITLE = "The PlayIDE showcase: software engineering as play"
 PACK = "packs/library-loan"
-AI_REQUEST = "add state Archived after Returned then allow Member to CheckOut"
+AI_REQUEST = "add Renew from Overdue to OnLoan for Librarian then remove transition ReturnLate"
 BUILD_TIMEOUT_MS = 600_000
+AI_CARD = ".msg.ai:last-child"
 RIPPLE_CARD = ".msg:last-child"  # the chat card that shows a drawn change's ripple (ADR-0158)
 
 # Beats that wait on work still in progress. Each becomes a real act when its feature merges (see the storyboard).
 PENDING = {
-    "review": "beat 6 (review the change as a UML diff in PlayIDE, not a GitHub PR) waits on the in-IDE review view",
     "ship": "beat 8 (verify, approve and apply) waits on the owner's source review and restamp (issue #80)",
 }
 
@@ -46,9 +46,13 @@ def run(scene: Scene, server: RunningServer) -> None:
     _fix_by_dragging(scene, chapter)
     _ripple(scene, chapter)
     _ai_busywork(scene, chapter)
-    scene.skip(PENDING["review"])
+    _review(scene, chapter)
     _prove_it(scene, chapter)
     scene.skip(PENDING["ship"])
+    scene.clear_caption()
+    scene.title_card("Then the owner ships it", "Verify, approve and apply stay with the owner in the review workbench. "
+                     "Not shown yet: they wait on the owner's source review (issue #80).", hold_ms=3600)
+    _stakeholder_view(scene, chapter, server)
     scene.clear_caption()
     scene.zoom_out()
     scene.title_card("Less typing. No diff archaeology.",
@@ -104,6 +108,7 @@ def _press_play(scene: Scene, chapter: _Chapters) -> None:
     scene.zoom("#run", scale=1.3)
     scene.wait(1400)
     scene.zoom_out()
+    scene.click("#dock-close")  # give the diagram the room back; Simulate reopens the panel
     scene.click("#tab-states")
 
 
@@ -157,28 +162,97 @@ def _ripple(scene: Scene, chapter: _Chapters) -> None:
 
 def _ai_busywork(scene: Scene, chapter: _Chapters) -> None:
     chapter("Let the AI do the busywork")
-    scene.caption("Ask for a bigger change in plain words. Offline here: a deterministic phrase reader stands in "
-                  "for a live model.")
+    scene.caption("Ask for a bigger change in plain words: let librarians renew overdue loans. Offline here: a "
+                  "deterministic phrase reader stands in for a live model.")
     scene.type_text("#chat-input", AI_REQUEST)
     scene.click("#chat-send")
-    card = ".msg.ai:last-child"
-    scene.expect_text(f"{card} .plan-verdict", "The policy refuses")
-    scene.caption("It answers with typed UML steps, not a wall of code. The policy already refuses one.")
-    scene.zoom(f"{card} .plan", scale=1.5)
-    scene.wait(1600)
-    scene.caption("Look at each step on the diagram. Points come from checking the AI, never from making changes.")
-    scene.click(f"{card} .plan-steps > li:nth-child(2) .show")
-    scene.expect_text("#inspector", "Let Member take")
-    scene.wait(1000)
-    scene.caption("Untick the step the policy caught. Keep the rest.")
-    scene.click(f"{card} .plan-steps > li:nth-child(2) input")
-    scene.expect_text(f"{card} .plan-verdict", "The policy allows the result")
-    scene.click(f"{card} .plan-tools .primary")
-    scene.expect_text("#plan-banner-text", "Previewing the plan")
+    scene.expect_text(f"{AI_CARD} .plan-verdict", "The policy allows the result")
+    scene.caption("It answers with typed UML steps, not a wall of code, and the policy allows them. Looks fine. Is it?")
+    scene.zoom(f"{AI_CARD} .plan", scale=1.5)
+    scene.wait(1800)
     scene.zoom_out()
-    scene.click(f"{card} .plan-steps > li:nth-child(1) .show")
-    scene.expect_text("#inspector", "State Archived")
+    scene.caption("Look at each step on the diagram. Points come from checking the AI, never from making changes.")
+    for step in (1, 2):
+        scene.click(f"{AI_CARD} .plan-steps > li:nth-child({step}) .show")
+        scene.wait(900)
+    scene.click("#tab-states")
+    scene.click("#show-changes")
+    scene.wait_for(".diff-item", timeout_ms=30_000)
+    scene.caption("Changes draws both models on one layout: added in green, the removed arrow kept as a dashed ghost.")
+    scene.expect_text(".diff-summary", "changes:")
+    scene.zoom("#diff-view", scale=1.3)
+    scene.wait(1800)
+    scene.zoom_out()
+    scene.caption("Step through the changes like hunks in a code review. Compare flips between before and after; nothing moves.")
+    scene.click("#diff-view button[aria-label='Next change']")
+    scene.expect_text("#diff-pos", "Change 1 of")
     scene.wait(900)
+    scene.click("#diff-view button[aria-label='Next change']")
+    scene.wait(900)
+    scene.click("#diff-compare")
+    scene.click(".lens button[data-lens=before]")
+    scene.wait(1100)
+    scene.click(".lens button[data-lens=after]")
+    scene.wait(1100)
+    scene.click(".lens button[data-lens=changes]")
+    scene.wait(700)
+
+
+def _review(scene: Scene, chapter: _Chapters) -> None:
+    chapter("Review the change, not the code")
+    scene.click(f"{AI_CARD} .plan-tools .review-it")
+    scene.expect_text("#review-head-text", "2 changes: 1 high risk")
+    scene.caption("Both models on one diagram: the new path in green, the deleted path dashed in red.")
+    scene.zoom("#review-canvas", scale=1.4)
+    scene.wait(2000)
+    scene.zoom_out()
+    scene.caption("The riskiest change comes first. Before the kernel's answer is shown, predict it: can a librarian "
+                  "still return an overdue loan?")
+    scene.click("#review-item-1 .show")
+    scene.expect_text("#review-item-1", "Remove ReturnLate")
+    scene.click("#review-item-1 .predict-tools button:has-text('Yes')")
+    scene.expect_text("#review-item-1 .answer", "Not what you expected")
+    scene.caption("The kernel says no. The AI quietly deleted late returns, and your wrong guess caught it.")
+    scene.zoom("#review-item-1", scale=1.6)
+    scene.wait(2200)
+    scene.zoom_out()
+    scene.click("#review-item-1 .verdict-tools button:has-text('Needs a change')")
+    scene.type_text("#review-item-1 textarea", "Keep ReturnLate: an overdue loan must still be returnable.")
+    scene.click("#review-item-2 .show")
+    scene.click("#review-item-2 .predict-tools button:has-text('Yes')")
+    scene.expect_text("#review-item-2 .answer", "Right")
+    scene.click("#review-item-2 .verdict-tools button:has-text('Looks right')")
+    scene.click("#review-finish")
+    scene.expect_text("#review-summary", "Changes requested: 1 of 2")
+    scene.caption("Reject the step that deleted late returns. The review runs again on what is left, and it passes.")
+    scene.click(f"{AI_CARD} .plan-steps > li:nth-child(2) input")
+    scene.expect_text("#review-head-text", "1 change: 0 high risk")
+    scene.click("#review-item-1 .show")
+    scene.click("#review-item-1 .predict-tools button:has-text('Yes')")
+    scene.expect_text("#review-item-1 .answer", "Right")
+    scene.click("#review-item-1 .verdict-tools button:has-text('Looks right')")
+    scene.click("#review-finish")
+    scene.expect_text("#review-summary", "Every change looks right")
+    scene.zoom("#review-summary", scale=1.6)
+    scene.wait(1600)
+    scene.zoom_out()
+
+
+def _stakeholder_view(scene: Scene, chapter: _Chapters, server: RunningServer) -> None:
+    chapter("Share it as UML")
+    scene.goto(f"{server.base_url}/play?view=review#{server.token}")
+    scene.wait_for("body[data-ready=true]", timeout_ms=60_000)
+    scene.expect_text("#review-badge", "Review view")
+    scene.caption("A stakeholder opens the same UML read-only: the diagrams, who may do what, and the runs. No "
+                  "editing tools, no chat.")
+    scene.zoom("#review-badge", scale=1.8)
+    scene.wait(1400)
+    scene.zoom_out()
+    scene.click("#tab-access")
+    scene.caption("Permissions answer the question a stakeholder actually asks: who can do what, and from where.")
+    scene.zoom("#access-panel", scale=1.3)
+    scene.wait(2200)
+    scene.zoom_out()
 
 
 def _prove_it(scene: Scene, chapter: _Chapters) -> None:
@@ -192,9 +266,7 @@ def _prove_it(scene: Scene, chapter: _Chapters) -> None:
     scene.click("#tab-laws")
     scene.wait_for("#laws-summary.ok, #laws-summary.bad", timeout_ms=120_000)
     scene.expect_text("#laws-summary", "holds on every run the kernel allows")
-    scene.expect_text("#laws-summary", "Never reached: Archived")
-    scene.caption("Every law holds on every reachable run. It also says what the proof did not reach: the new Archived "
-                  "state.")
+    scene.caption("Every law holds on every reachable run, and the summary says how far the proof searched.")
     scene.zoom("#laws", scale=1.3)
     scene.wait(2200)
     scene.zoom_out()
