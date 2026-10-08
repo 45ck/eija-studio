@@ -17,7 +17,13 @@ python -m demos registry --check                 # catalogue, REGISTRY.md and ma
 python -m demos registry --write                # regenerate REGISTRY.md after editing registry.py
 python -m demos run assurance_loop --dry-run     # same real clicks and assertions, no video, no delays
 python -m demos run assurance_loop               # record demos/output/assurance_loop.webm + its manifest
+python -m demos finish playide_showcase          # frame a take on a 1080p stage: demos/output/<key>.mp4 (ffmpeg)
 ```
+
+`finish` only frames the take (scaled, rounded corners, shadow, gradient stage, H.264). It never cuts, speeds up or
+reorders it, and the `.webm` stays the evidence the manifest hashes. Zooms (`Scene.zoom`), chapter chips
+(`Scene.chapter`) and captions are recorded live by the scenario. The showcase's storyboard is
+[`docs/demos/PLAYIDE-SHOWCASE-STORYBOARD.md`](../docs/demos/PLAYIDE-SHOWCASE-STORYBOARD.md).
 
 Exit codes: `0` PASS or PARTIAL, `1` failure, `2` usage, `3` NOT_RUN (a blocked or unscripted scenario, Playwright not
 installed, or Chrome cannot be launched; never reported as a pass). `--seed` only fixes the typing cadence;
