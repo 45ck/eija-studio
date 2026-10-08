@@ -27,6 +27,7 @@ from fastapi.responses import FileResponse
 from pydantic import Field
 
 from eija_studio.application.components import app_components
+from eija_studio.application.law_proof import prove_laws
 from eija_studio.application.plan import preview_plan, propose_plan
 from eija_studio.application.ripple import check_follow_ons, ripple
 from eija_studio.application.simulation import MAX_BREAKPOINTS, MAX_STEPS, run_log, simulate
@@ -238,6 +239,11 @@ def register(app, studio, web: Path) -> AppRunner:
         """The run bar (ADR-0160): every step of one seeded run, decided by the kernel, and where it stops."""
         return run_log(studio.pack, resolve(body), seed=body.seed, steps=body.steps, breakpoints=body.breakpoints,
                        break_on_refusal=body.break_on_refusal)
+
+    @app.post("/api/play/laws")
+    def play_laws(body: BuildRequest):
+        """The pack's laws, each proved over every run the kernel allows on this model (ADR-0166)."""
+        return prove_laws(studio.pack, resolve(body))
 
     @app.post("/api/play/stop")
     def play_stop():

@@ -10,6 +10,7 @@ from eija_studio.domain.policy import check_policy, first_supported_meaning, pro
 from eija_studio.domain.impact import model_impact
 from eija_studio.application.compiler import subject_for
 from eija_studio.application.verifier import verify_runtime
+from eija_studio.application.law_proof import prove_laws
 from eija_studio.application.scxml import to_scxml
 from eija_studio.application.diagram_catalog import FORMATS, VIEWS, VIEW_FORMATS, html_panels, render_view
 from eija_studio.weave.cli import COMMANDS as WEAVE_COMMANDS, add_parsers as add_weave_parsers
@@ -113,8 +114,24 @@ def scxml_command(args) -> int:
     return 0
 
 
+def _add_laws_parser(subs) -> None:
+    laws = subs.add_parser("laws", help="Prove the pack's laws over every run the kernel allows, by every class of actor")
+    laws.add_argument("--pack", type=Path, help="Domain pack directory or JSON file (defaults to EIJA_PACK or packs/default.json)")
+    laws.add_argument("--workflow", type=Path, help="Prove this workflow JSON instead of the pack's own model")
+    laws.add_argument("--out", type=Path, help="Write the JSON report here instead of stdout")
+
+
+def laws_command(args) -> int:
+    """Every law with its verdict and evidence (ADR-0166). Exit 2 unless every law holds, is inactive or needs evidence."""
+    pack = resolve_pack(args.pack)
+    model = Workflow.model_validate_json(args.workflow.read_text(encoding="utf-8")) if args.workflow else pack.model
+    report = prove_laws(pack, model)
+    output(report, args.out)
+    return 0 if report["status"] == "HOLDS" else 2
+
+
 EARLY_COMMANDS = {"check-export": check_export_command, "render": render_command, "build": build_command,
-                  "scxml": scxml_command, **WEAVE_COMMANDS}  # need no workspace, provider or key
+                  "scxml": scxml_command, "laws": laws_command, **WEAVE_COMMANDS}  # need no workspace, provider or key
 
 
 def formal_table(evidence: list) -> str:
@@ -204,6 +221,7 @@ def main(argv=None) -> int:
     _add_render_parser(subs)
     add_build_parser(subs)
     _add_scxml_parser(subs)
+    _add_laws_parser(subs)
     add_weave_parsers(subs)
     mcp = subs.add_parser("mcp", parents=[common], help="Serve the agent-facing MCP server on stdio (needs the agents extra)")
     mcp.add_argument("--repo", type=Path, help="Explicit local repository to inspect read-only; never executes its code")

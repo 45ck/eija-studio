@@ -88,6 +88,23 @@ The change vocabulary is closed too. Each kind is a typed record the policy chec
 
 `tests/test_executable_uml_profile.py` fails if a guard or change kind exists in the code without a row here.
 
+## Laws: the layer above the UML
+
+The diagrams say what the system does. The laws say what it must never do, whatever any diagram says. They are typed records in each pack's `pack.json` (`domain/laws.py`), for example "only a librarian checks a loan out", "every path to Returned passes through OnLoan" and "a returned loan is closed". They are checked three ways, from cheapest to deepest ([ADR-0166](../adr/0166-laws-proved-over-every-run-for-any-pack.md)):
+
+1. **On the table, on every edit.** The protected policy refuses a model or edit that breaks a law and names it. The AI's plan steps and drawn edits pass through it.
+2. **Over every run, for any pack.** `eija laws` and PlayIDE's **Laws** tab explore every configuration a new record can reach. They try every action by every kind of actor through the kernel, and judge every run with the laws' own evaluator. Each law gets a verdict:
+   - HOLDS
+   - BROKEN, with the shortest run that breaks it, shown on the state machine
+   - VACUOUS, when nothing ever reaches what the law is about
+   - INACTIVE, when it does not apply to this model
+   - EVIDENCE, when review evidence judges it
+3. **Deep, independent proofs where they exist.** For the excursion pack, `verification/bend/LAWS.bend` states the laws and `PROOF.bend` proves them for all actors, states and command sequences. TLA+/TLC, Z3 and a bounded model check of the runtime check it too. See [docs/formal](../formal/bend.md).
+
+```console
+eija laws --pack packs/library-loan     # every law, its verdict and its evidence
+```
+
 ## Why there is no action language
 
 xtUML and fUML made UML executable by adding an action language (OAL, Alf). That made models precise, and it also made them programs in a different syntax, which is where model-driven architecture stalled: writing a precise model by hand cost as much as writing the code, and the code had better tools.
@@ -134,5 +151,6 @@ eija scxml --pack packs/library-loan --out loan.scxml        # the statechart, f
 pip install -e ".[xuml]"                                     # python-statemachine, for the differential
 python -m verification.scxml.differential                    # every pack: kernel vs SCXML engine
 nox -s scxml_drift scxml_differential                        # the gates
+eija laws --pack packs/library-loan                          # every law proved over every run
 eija build --pack packs/library-loan --out build/loan        # the runnable app and its conformance run
 ```

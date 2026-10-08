@@ -9,6 +9,7 @@
 <script src="/assets/vendor/maxgraph.min.js" defer></script>
 <script src="/assets/play.js" defer></script>
 <script src="/assets/play-run.js" defer></script>
+<script src="/assets/play-laws.js" defer></script>
 <script src="/assets/play-assist.js" defer></script>
 </head>
 <body>
@@ -50,6 +51,7 @@
         <button id="tab-usecases" role="tab" type="button" aria-selected="false" aria-controls="usecase-canvas">Use cases</button>
         <button id="tab-screens" role="tab" type="button" aria-selected="false" aria-controls="screens">Screens</button>
         <button id="tab-components" role="tab" type="button" aria-selected="false" aria-controls="component-canvas">Components</button>
+        <button id="tab-laws" role="tab" type="button" aria-selected="false" aria-controls="laws">Laws</button>
       </div>
       <button id="fit" type="button" class="quiet">Fit</button>
       <button id="zoom-in" type="button" class="quiet" aria-label="Zoom in">+</button>
@@ -78,6 +80,15 @@
       </div>
       <aside class="palette" aria-labelledby="palette-title"><h3 id="palette-title">Record attributes</h3>
         <p class="muted small">Drag onto the screen, or press Add.</p><ul id="palette"></ul></aside>
+    </div>
+    <div id="laws" class="laws" role="tabpanel" aria-labelledby="tab-laws" hidden>
+      <div class="laws-head">
+        <div><h2>Laws</h2><p class="muted small">What this model must never do, whatever the diagrams say. The kernel refuses a model that breaks one; here each is also proved over every run the kernel allows.</p></div>
+        <button id="laws-prove" type="button" class="primary">Prove again</button>
+      </div>
+      <p id="laws-summary" class="laws-summary" role="status" aria-live="polite"></p>
+      <ol id="laws-list" class="law-list"></ol>
+      <p id="laws-limits" class="muted small"></p>
     </div>
     <p id="canvas-help" class="hint"></p>
   </section>

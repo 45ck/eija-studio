@@ -48,6 +48,7 @@ _Symbol pages are generated for the domain and application layers only._
 ## Internal imports
 
 * [`application/components`](/modules/application/components.md)
+* [`application/law_proof`](/modules/application/law_proof.md)
 * [`application/plan`](/modules/application/plan.md)
 * [`application/ripple`](/modules/application/ripple.md)
 * [`application/simulation`](/modules/application/simulation.md)
@@ -68,6 +69,7 @@ _No curated notes yet._
 ## Imports
 
 * [application.components](/modules/application/components.md) - The component diagram of an app built from the model (ADR-0155), extracted from the generated files themselves.
+* [application.law_proof](/modules/application/law_proof.md) - Prove a pack's laws over every run the kernel allows (ADR-0166).
 * [application.plan](/modules/application/plan.md) - Plan mode for the PlayIDE chat (ADR-0156): an AI proposes a change as numbered typed steps; the person accepts or rejects each one and sees what the accepted o…
 * [application.ripple](/modules/application/ripple.md) - Ripple (ADR-0158): what one change to the state machine does to every other diagram of the same system, and the follow-on edits that would keep them in agreeme…
 * [application.simulation](/modules/application/simulation.md) - Seeded simulation of people using the app built from a model (ADR-0152).
