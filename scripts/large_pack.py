@@ -1,4 +1,4 @@
-"""Write a large, valid PlayIDE pack for measuring how the page copes with a big model (ADR-0191).
+"""Write a large, valid PlayIDE pack for measuring how the page copes with a big model (ADR-0199).
 
 The pack is a given pack grown by a generated, numbered workflow: extra states reached from its initial state, each left
 by a forward action, a skip ahead and sometimes a step back, held by the pack's roles in turn, plus extra classes in

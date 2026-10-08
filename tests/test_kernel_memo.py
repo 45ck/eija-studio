@@ -1,4 +1,4 @@
-"""The memo in front of the kernel (ADR-0191) only skips asking the same frozen objects the same question: every answer
+"""The memo in front of the kernel (ADR-0199) only skips asking the same frozen objects the same question: every answer
 equals a fresh computation, a copy or an edit is asked afresh, a refusal still comes from the policy, a built app is
 reused without callers sharing it, and the largest model the kernel accepts loads."""
 from __future__ import annotations

@@ -1,0 +1,251 @@
+"""PlantUML: the pack as three `@startuml` blocks (state machine, class model, use cases), and back (ADR-0190).
+
+PlantUML is the text UML most engineers already keep beside their code, so this is the first format. The export is
+faithful: every state, transition (as a UML label, `trigger [guard] / effects`), class, attribute with its type,
+multiplicity and maximum length, enumeration, association with its kind, ends and role, the record class
+(`<<record>>`) and every description (as notes) is in the text. The reader takes the same subset back, plus the
+common variants people write by hand, and records every other line it meets as not imported.
+"""
+from __future__ import annotations
+
+import re
+from dataclasses import replace
+from typing import Any
+
+from eija_studio.domain.data import DataModel, Entity
+from eija_studio.domain.models import Workflow
+from eija_studio.domain.pack import Pack
+
+from .model import (GENERATOR, Parsed, attribute_type, enumerations, export_report, multiplicity, terminals,
+                    transition_label, use_case_links)
+from .textual import read_body, read_relation, read_transition
+
+_PLAIN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+_ESCAPE = {"%": "<U+0025>", "<": "<U+003C>", "[[": "<U+005B>["}
+_PRESENTATION = re.compile(r"^(title|skinparam|hide|show|left to right direction|top to bottom direction|scale|header|"
+                           r"footer|caption|legend|endlegend|autonumber|!|allowmixing|set namespaceseparator)\b", re.IGNORECASE)
+
+
+def _text(text: str) -> str:
+    """Creole and the preprocessor would read `<`, `[[` and `%`; PlantUML documents `<U+XXXX>` for literal characters."""
+    plain = " ".join(text.split()).replace('"', "'")
+    return re.sub(r"%|<|\[\[", lambda m: _ESCAPE[m.group()], plain)
+
+
+def unescape(text: str) -> str:
+    return re.sub(r"<U\+([0-9A-Fa-f]{4,6})>", lambda m: chr(int(m.group(1), 16)), text)
+
+
+def _alias(name: str, prefix: str) -> str:
+    return name if _PLAIN.match(name) else prefix + name.encode("utf-8").hex()
+
+
+def _states(pack: Pack, model: Workflow) -> list[str]:
+    out = ["@startuml " + model.id + "-states", f"title {_text(pack.pack.name)}: state machine", "hide empty description"]
+    out += [f'state "{_text(s)}" as {_alias(s, "S_")}' if not _PLAIN.match(s) else f"state {s}" for s in model.states]
+    out.append(f"[*] --> {_alias(model.initial_state, 'S_')}")
+    for t in sorted(model.transitions, key=lambda t: t.id):
+        out.append(f"{_alias(t.from_state, 'S_')} --> {_alias(t.to_state, 'S_')} : {_text(transition_label(t))}")
+    out += [f"{_alias(s, 'S_')} --> [*]" for s in terminals(model)]
+    return [*out, "@enduml"]
+
+
+def _class(entity: Entity, record: bool, enums: dict[tuple[str, str], str], notes: list[str]) -> list[str]:
+    """A class box; its descriptions are added to `notes`, which go after every class."""
+    out = [f"class {entity.name}" + (" <<record>>" if record else "") + " {"]
+    for a in entity.attributes:
+        bound = f" {{maxLength = {a.max_length}}}" if a.type == "text" else ""
+        out.append(f"  +{a.name} : {attribute_type(entity.name, a, enums)} [{multiplicity(a)}]{bound}")
+        if a.description:
+            notes.append(f"note right of {entity.name}::{a.name} : {_text(a.description)}")
+    if entity.description:
+        notes.append(f"note top of {entity.name} : {_text(entity.description)}")
+    return [*out, "}"]
+
+
+def _classes(pack: Pack, data: DataModel) -> list[str]:
+    enums = enumerations(data)
+    out = ["@startuml " + data.id + "-classes", f"title {_text(pack.pack.name)}: class model"]
+    notes: list[str] = []
+    for entity in data.entities:
+        out += _class(entity, entity.name == data.record, enums, notes)
+    for (entity_name, attribute), name in sorted(enums.items(), key=lambda kv: kv[1]):
+        choices = next(a.choices for a in data.entity(entity_name).attributes if a.name == attribute)
+        out += [f"enum {name} {{", *(f"  {_text(c)}" for c in choices), "}"]
+    arrows = {"composition": "*--", "aggregation": "o--", "association": "-->"}
+    for link in data.associations:
+        role = f" : {_text(link.role)}" if link.role else ""
+        out.append(f'{link.source} "{link.source_multiplicity}" {arrows[link.kind]} "{link.target_multiplicity}" {link.target}{role}')
+    return [*out, *notes, "@enduml"]
+
+
+def _use_cases(pack: Pack, model: Workflow) -> list[str]:
+    out = ["@startuml " + model.id + "-use-cases", f"title {_text(pack.pack.name)}: use cases", "left to right direction"]
+    out += [f'actor "{_text(r.id)}" as A_{r.id.encode().hex()}' for r in pack.roles]
+    actions = sorted({t.action for t in model.transitions})
+    out += [f'usecase "{_text(a)}" as UC_{a.encode().hex()}' for a in actions]
+    out += [f"A_{role.encode().hex()} -- UC_{action.encode().hex()}" for role, action in use_case_links(model)]
+    return [*out, "@enduml"]
+
+
+def export(pack: Pack, model: Workflow, data: DataModel | None) -> tuple[str, dict[str, Any]]:
+    head = [f"' GENERATED by {GENERATOR} from pack {pack.id} {pack.pack.version}, model {model.semantic_hash}.",
+            "' The use case diagram is derived from the state machine; PlayIDE reads the other two back."]
+    blocks = [_states(pack, model)] + ([_classes(pack, data)] if data else []) + [_use_cases(pack, model)]
+    text = "\n\n".join("\n".join(b) for b in blocks)
+    return "\n".join(head) + "\n" + text + "\n", export_report("plantuml", pack, model, data)
+
+
+# ---- reading ------------------------------------------------------------------------------------------------
+
+def _lines(text: str) -> list[tuple[str, str]]:
+    """The non-blank lines that are not comments, with their line numbers (block comments keep the numbering)."""
+    text = re.sub(r"/'.*?'/", lambda m: "\n" * m.group().count("\n"), text, flags=re.DOTALL)
+    stripped = ((raw.strip(), f"line {n}") for n, raw in enumerate(text.splitlines(), 1))
+    return [(line, where) for line, where in stripped if line and not line.startswith("'")]
+
+
+def _blocks(text: str) -> list[list[tuple[str, str]]]:
+    """(line, where) lists, one per `@startuml ... @enduml` (the whole file when it has no markers)."""
+    blocks: list[list[tuple[str, str]]] = []
+    current: list[tuple[str, str]] | None = None
+    for line, where in _lines(text):
+        marker = line.lower()
+        if marker.startswith("@startuml"):
+            current = []
+        elif marker.startswith("@enduml"):
+            blocks.append(current or [])
+            current = None
+        elif current is not None:
+            current.append((line, where))
+        elif not blocks:
+            current = [(line, where)]
+    if current:
+        blocks.append(current)
+    return blocks
+
+
+def _kind(block: list[tuple[str, str]]) -> str:
+    lines = [line.lower() for line, _ in block]
+    if any(re.match(r"^(actor|usecase)\b", x) or re.match(r"^\(.*\)", x) for x in lines):
+        return "usecase"
+    if any(re.match(r"^(abstract\s+class|class|enum|interface|entity)\b", x) for x in lines):
+        return "class"
+    return "state"
+
+
+_STATE_DECL = re.compile(r'^state\s+(?:"(?P<label>[^"]+)"\s+as\s+(?P<alias>\S+)|(?P<name>[^\s{:<]+))\s*(?P<rest>.*)$')
+
+
+def _state_decl(found: re.Match[str], line: str, where: str, parsed: Parsed, aliases: dict[str, str],
+                depth: list[int]) -> None:
+    name = unescape(found.group("label")) if found.group("label") else found.group("name")
+    if found.group("alias"):
+        aliases[found.group("alias")] = name
+    rest = found.group("rest")
+    if "<<" in rest:
+        parsed.skip(where, line, "pseudostates (choice, fork, join, history) are not in PlayIDE's state vocabulary")
+    elif rest.startswith("{"):
+        depth[0] += 1
+        parsed.skip(where, f"composite state {name}", "composite states are planned (issue #93); its contents are not imported")
+    else:
+        parsed.state(name)
+        if rest.startswith(":"):
+            parsed.skip(where, f"{name}: {rest[1:].strip()}", "state descriptions are not carried")
+
+
+def _state_line(line: str, where: str, parsed: Parsed, aliases: dict[str, str], depth: list[int]) -> None:
+    found = _STATE_DECL.match(line)
+    if found is not None:
+        _state_decl(found, line, where, parsed, aliases, depth)
+        return
+    if read_transition(line, where, parsed, aliases, unescape):
+        return
+    if line.startswith("note") or line == "end note":
+        parsed.skip(where, line, "notes on a state machine are not carried")
+    elif not _PRESENTATION.match(line) and line not in ("}", "--", "||"):
+        parsed.skip(where, line, "not a PlayIDE state machine element")
+
+
+def _read_states(block: list[tuple[str, str]], parsed: Parsed) -> None:
+    aliases: dict[str, str] = {}
+    depth = [0]
+    if parsed.states is None:
+        parsed.states = []
+    for line, where in block:
+        if depth[0]:
+            depth[0] += line.count("{") - line.count("}")
+            continue
+        _state_line(line, where, parsed, aliases, depth)
+
+
+_CLASS = re.compile(r"^(?P<kw>abstract\s+class|class|enum|interface|entity)\s+(?:\"[^\"]*\"\s+as\s+)?(?P<name>[\w.]+)"
+                    r"\s*(?P<stereo><<[^>]*>>)?\s*(?P<open>\{)?\s*(?P<close>\})?\s*$")
+_NOTE = re.compile(r"^note\s+(?:top|bottom|left|right)\s+of\s+(?P<target>[\w.]+(?:::\w+)?)\s*:\s*(?P<text>.*)$")
+
+
+def _class_decl(found: re.Match[str], body: list[tuple[str, str]], where: str, parsed: Parsed) -> None:
+    keyword, name = found.group("kw").lower(), found.group("name")
+    if keyword in ("interface", "abstract class"):
+        parsed.skip(where, f"{keyword} {name}", "interfaces and abstract classes are not in PlayIDE's data vocabulary")
+        return
+    stereo = (found.group("stereo") or "").lower()
+    body = [(unescape(line), at) for line, at in body]
+    read_body(name, [(f"<<{stereo.strip('<>')}>>", where), *body] if stereo else body, parsed,
+              record="record" in stereo, enum=keyword == "enum")
+
+
+def _apply_notes(notes: list[tuple[str, str, str]], parsed: Parsed) -> None:
+    classes = {k.name: i for i, k in enumerate(parsed.classes or [])}
+    for target, text, where in notes:
+        owner, _, member = target.partition("::")
+        if owner not in classes or parsed.classes is None:
+            parsed.skip(where, f"note on {target}", "it is not attached to an imported class")
+            continue
+        klass = parsed.classes[classes[owner]]
+        if member:
+            attrs = tuple(replace(a, description=text) if a.name == member else a for a in klass.attributes)
+            parsed.classes[classes[owner]] = replace(klass, attributes=attrs)
+        else:
+            parsed.classes[classes[owner]] = replace(klass, description=text)
+
+
+def _body(block: list[tuple[str, str]], i: int, found: re.Match[str]) -> tuple[list[tuple[str, str]], int]:
+    """The lines of a `class X {` body from line `i`, and the index after its closing brace."""
+    if not found.group("open") or found.group("close"):
+        return [], i
+    end = next((j for j in range(i, len(block)) if block[j][0] == "}"), len(block))
+    return block[i:end], end + 1
+
+
+def _read_classes(block: list[tuple[str, str]], parsed: Parsed) -> None:
+    if parsed.classes is None:
+        parsed.classes = []
+    notes: list[tuple[str, str, str]] = []
+    i = 0
+    while i < len(block):
+        line, where = block[i]
+        found = _CLASS.match(line)
+        i += 1
+        if found is not None:
+            body, i = _body(block, i, found)
+            _class_decl(found, body, where, parsed)
+        elif (note := _NOTE.match(line)) is not None:
+            notes.append((note.group("target"), unescape(note.group("text")).strip(), where))
+        elif not read_relation(line, where, parsed) and not _PRESENTATION.match(line):
+            parsed.skip(where, line, "not a PlayIDE class model element")
+    _apply_notes(notes, parsed)
+
+
+def parse(text: str) -> Parsed:
+    parsed = Parsed()
+    for block in _blocks(text):
+        kind = _kind(block)
+        if kind == "usecase":
+            where = block[0][1] if block else ""
+            parsed.derive(where, "use case diagram")
+        elif kind == "class":
+            _read_classes(block, parsed)
+        else:
+            _read_states(block, parsed)
+    return parsed

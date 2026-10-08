@@ -1,0 +1,103 @@
+<mxfile host="PlayIDE (eija.uml-interop.v1)" agent="pack eija-review-slice 0.1.0, model c99a2396d0064ebb12624e2ecea732088762b82c0ffe31061f262e9eb4b60876">
+  <diagram id="page-0" name="State machine">
+    <mxGraphModel grid="1" gridSize="10" page="1" pageWidth="1169" pageHeight="827">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell style="ellipse;html=1;shape=startState;fillColor=#000000;strokeColor=#ff0000;" vertex="1" parent="1" id="initial" value="">
+          <mxGeometry x="40" y="73" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="start" value="" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="initial" target="state-0">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell style="rounded=1;whiteSpace=wrap;html=1;arcSize=40;fontColor=#000080;fillColor=#ffffc0;strokeColor=#ff0000;" vertex="1" parent="1" id="state-0" value="DRAFT">
+          <mxGeometry x="120" y="60" width="140" height="56" as="geometry" />
+        </mxCell>
+        <mxCell style="rounded=1;whiteSpace=wrap;html=1;arcSize=40;fontColor=#000080;fillColor=#ffffc0;strokeColor=#ff0000;" vertex="1" parent="1" id="state-1" value="PROPOSED">
+          <mxGeometry x="360" y="60" width="140" height="56" as="geometry" />
+        </mxCell>
+        <mxCell style="rounded=1;whiteSpace=wrap;html=1;arcSize=40;fontColor=#000080;fillColor=#ffffc0;strokeColor=#ff0000;" vertex="1" parent="1" id="state-2" value="PREVIEW">
+          <mxGeometry x="600" y="60" width="140" height="56" as="geometry" />
+        </mxCell>
+        <mxCell style="rounded=1;whiteSpace=wrap;html=1;arcSize=40;fontColor=#000080;fillColor=#ffffc0;strokeColor=#ff0000;" vertex="1" parent="1" id="state-3" value="VERIFIED">
+          <mxGeometry x="840" y="60" width="140" height="56" as="geometry" />
+        </mxCell>
+        <mxCell style="rounded=1;whiteSpace=wrap;html=1;arcSize=40;fontColor=#000080;fillColor=#ffffc0;strokeColor=#ff0000;" vertex="1" parent="1" id="state-4" value="APPROVED">
+          <mxGeometry x="1080" y="60" width="140" height="56" as="geometry" />
+        </mxCell>
+        <mxCell style="rounded=1;whiteSpace=wrap;html=1;arcSize=40;fontColor=#000080;fillColor=#ffffc0;strokeColor=#ff0000;" vertex="1" parent="1" id="state-5" value="APPLIED">
+          <mxGeometry x="1320" y="60" width="140" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="transition-0" value="Apply [role = Owner] / Audit:ReferenceApply" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="state-4" target="state-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="transition-1" value="Approve [role = Owner] / Audit:ReferenceApprove" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="state-3" target="state-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="transition-2" value="Propose [role = Agent] / Audit:ReferencePropose" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="state-0" target="state-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="transition-3" value="SelectMeaning [role = Owner] / Audit:ReferenceSelectMeaning" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="state-1" target="state-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="transition-4" value="Verify [role = Agent] / Audit:ReferenceVerify" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="state-2" target="state-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell style="ellipse;html=1;shape=endState;fillColor=#000000;strokeColor=#ff0000;" vertex="1" parent="1" id="final-0" value="">
+          <mxGeometry x="1500" y="73" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="end-0" value="" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="state-5" target="final-0">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="page-1" name="Use cases">
+    <mxGraphModel grid="1" gridSize="10" page="1" pageWidth="1169" pageHeight="827">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <UserObject label="Agent" tooltip="Synthetic proposer/verifier actor; not an OS security boundary." id="actor-0">
+          <mxCell style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" vertex="1" parent="1">
+            <mxGeometry x="40" y="60" width="30" height="60" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Owner" tooltip="Synthetic reviewer actor; real Principal checks remain in source." id="actor-1">
+          <mxCell style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" vertex="1" parent="1">
+            <mxGeometry x="40" y="180" width="30" height="60" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1" id="usecase-0" value="Apply">
+          <mxGeometry x="360" y="40" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1" id="usecase-1" value="Approve">
+          <mxGeometry x="360" y="130" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1" id="usecase-2" value="Propose">
+          <mxGeometry x="360" y="220" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1" id="usecase-3" value="SelectMeaning">
+          <mxGeometry x="360" y="310" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1" id="usecase-4" value="Verify">
+          <mxGeometry x="360" y="400" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="performs-0" value="" style="endArrow=none;html=1;" edge="1" parent="1" source="actor-1" target="usecase-0">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="performs-1" value="" style="endArrow=none;html=1;" edge="1" parent="1" source="actor-1" target="usecase-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="performs-2" value="" style="endArrow=none;html=1;" edge="1" parent="1" source="actor-0" target="usecase-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="performs-3" value="" style="endArrow=none;html=1;" edge="1" parent="1" source="actor-1" target="usecase-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="performs-4" value="" style="endArrow=none;html=1;" edge="1" parent="1" source="actor-0" target="usecase-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

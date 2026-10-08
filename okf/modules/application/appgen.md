@@ -74,7 +74,7 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Imports
 
-* [application.memo](/modules/application/memo.md) - Ask the kernel the same question of the same frozen model once (ADR-0191).
+* [application.memo](/modules/application/memo.md) - Ask the kernel the same question of the same frozen model once (ADR-0199).
 * [application.runtime](/modules/application/runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.
 * [domain.data](/modules/domain/data.md) - The data model of a pack, shown as a UML class diagram (ADR-0153): entities, typed attributes and associations.
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).

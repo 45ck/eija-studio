@@ -19,7 +19,7 @@
   const base = {}; // each cell's own style and label, so overlays can be cleared
   const hooks = { redraw: [], inspect: [], laws: [], tab: [], changeSelect: [], edit: [] }; // the run bar (play-run.js) redraws its marks and adds inspector tools; play-laws.js and play-access.js draw their tabs
   // the Changes view (play-diff.js, ADR-0176) closes when another tab is shown and answers current() while open;
-  // edit hears every undoable edit (ADR-0190)
+  // edit hears every undoable edit (ADR-0198)
 
   async function api(path, body) {
     const options = { headers: { Authorization: "Bearer " + token } };
@@ -178,7 +178,7 @@
     } else {
       const t = transition(id.slice(11));
       box.append(el("h3", `${t.action} (${t.id})`));
-      row(dl, "From → to", `${t.from_state} → ${t.to_state}`);
+      row(dl, "Path", `${t.from_state} → ${t.to_state}`);
       row(dl, "Who", t.role);
       row(dl, "Guards", t.guards.join(", "));
       row(dl, "Effects", t.required_effects.join(", ") || "none");
@@ -259,7 +259,7 @@
 
   // Every vertex here is placed at a fixed size, so the browser need not measure it: maxGraph asks the SVG for each
   // shape's box (getBBox) and for each attribute or literal row's text, and at the kernel's limits (40 classes of up
-  // to 40 attributes) those measurements were most of the time a diagram took to draw (ADR-0191).
+  // to 40 attributes) those measurements were most of the time a diagram took to draw (ADR-0199).
   function lean(g) {
     const renderer = g.cellRenderer, createShape = renderer.createShape.bind(renderer), createLabel = renderer.createLabel.bind(renderer);
     renderer.createShape = (state) => {
@@ -501,7 +501,8 @@
   function planCard() {
     const box = el("div", undefined, { class: "plan" });
     box.append(el("p", plan.summary || "A plan", { class: "plan-summary" }),
-      el("p", plan.scope === "plan-draft" ? "Drawn by you on the diagram · checked by the server like any plan"
+      el("p", plan.scope === "plan-draft" ? (plan.provider === "imported" ? "Imported from a UML file · checked by the server like any plan"
+        : "Drawn by you on the diagram · checked by the server like any plan")
         : `${plan.provider}${plan.live ? "" : " · offline fixture, not a live model"} · untrusted until you check it`, { class: "muted small" }));
     cards += 1;
     const list = el("ol", undefined, { class: "plan-steps" });
@@ -563,10 +564,12 @@
     const verdict = plan.card.querySelector(".plan-verdict");
     verdict.className = "plan-verdict " + (result.legal ? "ok" : "bad");
     verdict.textContent = !result.accepted ? "No step accepted: nothing would change."
-      : result.legal ? `${result.accepted} of ${plan.steps.length} steps accepted. The policy allows the result: ${changes(result.diff)}.`
+      : result.legal ? `${result.accepted} of ${plan.steps.length} step${plan.steps.length === 1 ? "" : "s"} accepted. The policy allows the result: ${changes(result.diff)}.`
       : result.codes.includes("PLAN_STEP_DOES_NOT_APPLY")
         ? `Step ${result.steps.findIndex((x) => x.status === "does_not_apply") + 1} does not apply after the steps you kept (${result.steps.find((x) => x.status === "does_not_apply").message}).`
-        : `The policy refuses the accepted steps: ${result.codes.join(", ") || result.message}.`;
+        : (result.laws && result.laws.length
+          ? `The policy refuses the accepted steps. They would break: ${result.laws.join(" ")} (${result.codes.join(", ")})`
+          : `The policy refuses the accepted steps: ${result.codes.join(", ") || result.message}.`);
     plan.card.querySelector(".plan-tools .primary").disabled = !result.legal && !plan.previewing;
     plan.card.querySelector(".plan-tools .review-it").disabled = !result.legal;
     renderHealth();
@@ -838,6 +841,20 @@
     const result = await refreshPlan();
     if (result && result.legal && !plan.previewing) enterPreview();
     plan.card.scrollIntoView({ block: "nearest" });
+  }
+
+  // An imported UML file's edits (ADR-0190) become the plan, as the person's own steps like drawn edits: the server
+  // re-checks each one and previews them through the policy, and nothing is saved from here.
+  async function importPlan(transactions, summary) {
+    retire();
+    plan = { scope: "plan-draft", provider: "imported", live: false, summary, meaning: null, request: "", model: "draft",
+      steps: transactions.map((transaction, i) => ({ n: i + 1, transaction, text: "", why: "", author: "you", checked: false, caught: false })),
+      accepted: transactions.map(() => true), previewing: false, card: null, rewarded: new Set() };
+    plan.card = say("draft", planCard());
+    const result = await refreshPlan();
+    if (result && result.legal && !plan.previewing) enterPreview();
+    plan.card.scrollIntoView({ block: "nearest" });
+    return result;
   }
 
   async function toggleStep(i, on) {
@@ -1723,7 +1740,7 @@
     }
   }
 
-  // Undo, redo and autosave (ADR-0190). What a person edits in PlayIDE is a document of two parts: the plan (its typed
+  // Undo, redo and autosave (ADR-0198). What a person edits in PlayIDE is a document of two parts: the plan (its typed
   // steps, AI or drawn, and which are accepted) and the screens edited in the designer. The model in force is never
   // edited here, so every edit (drawing on the diagram, the inspector's tools, the palette, the Delete key, an AI plan,
   // ticking a step, taking a follow-on, any screen edit) is one snapshot of that document. Undo and redo move between
@@ -1990,11 +2007,11 @@
   const changeLook = (status, part) => (window.PlayDiff && shownChange ? window.PlayDiff.look(status, part) : {});
 
   window.PlayIDE = {
-    api, el, hooks, about, viewKey, label, restyle, clearSim, select, showTab, fit,
+    api, el, hooks, about, viewKey, label, restyle, clearSim, select, showTab, fit, importPlan,
     graph: () => graph, tab: () => tab, model: () => model, selected: () => selected, pack: () => packInfo, base: () => baseModel,
     planned: () => (plan && plan.result && plan.result.legal ? accepted() : null), // the change the Changes view draws (ADR-0176)
     setChanges, diagram: (key) => ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: componentGraph })[key],
-    // Undo, redo and the edited document (ADR-0190): document() is what a save writes; restore(doc, label) opens one as
+    // Undo, redo and the edited document (ADR-0198): document() is what a save writes; restore(doc, label) opens one as
     // an undoable edit, checked by the server like any other.
     undo, redo, document: documentNow, history: () => ({ at: edits.at, labels: edits.stack.map((e) => e.label) }),
     restore: async (doc, label = "open a saved document") => {

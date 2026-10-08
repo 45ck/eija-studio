@@ -62,6 +62,14 @@ body[data-dock="closed"] #split-dock,body[data-dock="closed"] .dock{display:none
 .stage>.plan-banner{grid-row:2}
 .stage>.hint{grid-row:4;border-top:1px solid var(--line);font-size:.74rem;padding:4px 12px}
 .stage>.canvas,.stage>.designer,.stage>.access,.stage>.laws,.stage>.review{grid-row:3;grid-column:2;border-top:0;border-bottom:0}
+/* The screen designer's three columns need about 880px; with the side bar and the chat open, the record attributes go
+   under the screen instead of squeezing it, and on a narrower stage the use cases go above it too. */
+.stage{container:stage/inline-size}
+.designer>.screen-list{grid-area:list}.designer>.screen-stage{grid-area:screen}.designer>.palette{grid-area:attrs}
+.designer{grid-template-areas:"list screen attrs";align-content:start}
+.screen-tools{flex-wrap:wrap}.screen-tools>*{white-space:nowrap}
+@container stage (max-width:880px){.designer{grid-template-columns:170px minmax(0,1fr);grid-template-areas:"list screen" "list attrs"}}
+@container stage (max-width:600px){.designer{grid-template-columns:minmax(0,1fr);grid-template-areas:"list" "screen" "attrs"}}
 
 /* Diagram tabs as editor tabs (VS Code, Visual Studio) */
 .stage-tools{padding:0 8px 0 0;gap:2px;background:var(--chrome);border-bottom:1px solid var(--line);flex-wrap:nowrap}

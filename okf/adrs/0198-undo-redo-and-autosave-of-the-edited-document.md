@@ -1,8 +1,8 @@
 ---
 type: Architecture Decision Record
-title: 'ADR-0190: Undo, redo and autosave of the edited document in PlayIDE'
+title: 'ADR-0198: Undo, redo and autosave of the edited document in PlayIDE'
 description: PlayIDE is meant to be more robust than the UML tools engineers already use, and every one of those has undo.
-resource: repo://docs/adr/0190-undo-redo-and-autosave-of-the-edited-document.md
+resource: repo://docs/adr/0198-undo-redo-and-autosave-of-the-edited-document.md
 tags:
 - adr
 - accepted
@@ -10,14 +10,14 @@ status: stable
 generated:
   by: process:eija-okf-sync
 sources:
-- resource: repo://docs/adr/0190-undo-redo-and-autosave-of-the-edited-document.md
-  title: 0190-undo-redo-and-autosave-of-the-edited-document.md
+- resource: repo://docs/adr/0198-undo-redo-and-autosave-of-the-edited-document.md
+  title: 0198-undo-redo-and-autosave-of-the-edited-document.md
   hash_method: lf-sha256-v1
-  sha256: 1d9a6e8c4cfaa8f3545f10bff06c45cdc8110adb00b5d25590db6b328615bc28
-notes_baseline: 272f049b73b69bd1353bdf6bedfbce3ff0eb1c36fe9d4eec157d23f19f74c208
+  sha256: 3ac50884ba7abb26807801e10f1637c8db7fcf131da575afd0edca78e9a23f90
+notes_baseline: a17759df70bc4de2c7ceedb021bcf85951bd2cecd186a594bd9044225e788f27
 ---
 
-# ADR-0190: Undo, redo and autosave of the edited document in PlayIDE
+# ADR-0198: Undo, redo and autosave of the edited document in PlayIDE
 
 <!-- okf:generated:begin facts -->
 | | |
@@ -25,7 +25,7 @@ notes_baseline: 272f049b73b69bd1353bdf6bedfbce3ff0eb1c36fe9d4eec157d23f19f74c208
 | Status | accepted |
 | Date | 2026-10-08 |
 | Lane | PlayIDE (owner direction, 8 October 2026: beat existing UML tools on robustness) |
-| Source | `repo://docs/adr/0190-undo-redo-and-autosave-of-the-edited-document.md` |
+| Source | `repo://docs/adr/0198-undo-redo-and-autosave-of-the-edited-document.md` |
 
 ## Decision outcome (verbatim)
 

@@ -43,7 +43,7 @@ def add_parser(subs) -> None:
 
 
 # The same app is asked for again and again while a change is edited: the ripple builds the model in force beside the
-# candidate on every edit, then the component diagram and Build & run build the candidate once more (ADR-0191). The
+# candidate on every edit, then the component diagram and Build & run build the candidate once more (ADR-0199). The
 # app is a function of the pack, the model, the data model and the screens, so the last few are kept by their hashes.
 # The model's key is its exact content, order included, not its semantic hash, since the files follow the order.
 _BUILT: OrderedDict[tuple[int, str, str, str], tuple[Any, dict[str, str], dict]] = OrderedDict()

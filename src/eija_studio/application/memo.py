@@ -1,4 +1,4 @@
-"""Ask the kernel the same question of the same frozen model once (ADR-0191).
+"""Ask the kernel the same question of the same frozen model once (ADR-0199).
 
 Building an app's oracle or proving a pack's laws runs `runtime.execute` tens of thousands of times on one unchanged
 model, and every run checked the whole model against the policy and hashed it again: over 95 % of the time at the

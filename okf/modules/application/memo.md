@@ -1,7 +1,7 @@
 ---
 type: Module
 title: application.memo
-description: Ask the kernel the same question of the same frozen model once (ADR-0191).
+description: Ask the kernel the same question of the same frozen model once (ADR-0199).
 resource: repo://src/eija_studio/application/memo.py
 tags:
 - module
@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/memo.py
   title: application/memo.py
   hash_method: ast-api-v1
-  sha256: 7cc2ffb30f9dcccbbb9d02560f1468335cb75007a94ce198a1bed779b91cb6bd
-notes_baseline: 3a144f7f792a3d2d6fe909045406e3d18fc84f14adbb6e3d1402077fce429508
+  sha256: 1c5e35654e02c9739eb55d280287246f2a1f0f646808fcf1a93b1161bf00c977
+notes_baseline: 8813f5c4d0d2f8148f802e1fa32ad2dbd4a4cbd2cd6920124e014511435ad47e
 ---
 
 # application.memo
@@ -29,7 +29,7 @@ notes_baseline: 3a144f7f792a3d2d6fe909045406e3d18fc84f14adbb6e3d1402077fce429508
 ## Module docstring
 
 ~~~text
-Ask the kernel the same question of the same frozen model once (ADR-0191).
+Ask the kernel the same question of the same frozen model once (ADR-0199).
 
 Building an app's oracle or proving a pack's laws runs `runtime.execute` tens of thousands of times on one unchanged
 model, and every run checked the whole model against the policy and hashed it again: over 95 % of the time at the

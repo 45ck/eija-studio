@@ -79,7 +79,7 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Imports
 
-* [application.memo](/modules/application/memo.md) - Ask the kernel the same question of the same frozen model once (ADR-0191).
+* [application.memo](/modules/application/memo.md) - Ask the kernel the same question of the same frozen model once (ADR-0199).
 * [application.simulation](/modules/application/simulation.md) - Seeded simulation of people using the app built from a model (ADR-0152).
 * [domain.laws](/modules/domain/laws.md) - Typed law DSL of a domain pack: what a workflow may never do, stated as data (WBS 1.1/1.2).
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).

@@ -63,7 +63,7 @@ The generic execution algorithm. Policy, laws and typed effects come from the do
 <!-- okf:generated:begin links -->
 ## Imports
 
-* [application.memo](/modules/application/memo.md) - Ask the kernel the same question of the same frozen model once (ADR-0191).
+* [application.memo](/modules/application/memo.md) - Ask the kernel the same question of the same frozen model once (ADR-0199).
 * [application.ports](/modules/application/ports.md) - Application-owned ports.
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).

@@ -1,4 +1,4 @@
-"""PlayIDE undo, redo and autosave (ADR-0190): every edit is one undoable step, and the work survives a reload.
+"""PlayIDE undo, redo and autosave (ADR-0198): every edit is one undoable step, and the work survives a reload.
 
 The browser test is marked `browser`: it runs only with EIJA_BROWSER_TESTS=1 (NOT_RUN otherwise). It uses the installed
 Chrome, or the Chromium at EIJA_CHROMIUM, and never downloads a browser.

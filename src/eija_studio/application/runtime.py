@@ -46,7 +46,7 @@ def execute(
     fault: Callable[[str], None] | None = None, pack: Pack | None = None,
 ) -> dict[str, Any]:
     pack = pack if pack is not None else default_pack()
-    ensure_conforms(model, pack, ensure_policy)  # the policy check, asked once per model and pack object (ADR-0191)
+    ensure_conforms(model, pack, ensure_policy)  # the policy check, asked once per model and pack object (ADR-0199)
     row = session.find_instance(command.instance_id, case_id)
     if row is None:
         raise DomainError("NOT_FOUND", "Preview instance not found in this case")

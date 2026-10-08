@@ -1,4 +1,4 @@
-# ADR-0191: PlayIDE at the kernel's limits: measured, and the kernel's repeated questions memoised
+# ADR-0199: PlayIDE at the kernel's limits: measured, and the kernel's repeated questions memoised
 
 * Status: accepted
 * Date: 2026-10-08

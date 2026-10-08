@@ -1,8 +1,8 @@
 ---
 type: Architecture Decision Record
-title: 'ADR-0191: PlayIDE at the kernel''s limits: measured, and the kernel''s repeated questions memoised'
+title: 'ADR-0199: PlayIDE at the kernel''s limits: measured, and the kernel''s repeated questions memoised'
 description: The packs PlayIDE was built and demonstrated on have five or six states.
-resource: repo://docs/adr/0191-playide-at-the-kernel-limits.md
+resource: repo://docs/adr/0199-playide-at-the-kernel-limits.md
 tags:
 - adr
 - accepted
@@ -10,14 +10,14 @@ status: stable
 generated:
   by: process:eija-okf-sync
 sources:
-- resource: repo://docs/adr/0191-playide-at-the-kernel-limits.md
-  title: 0191-playide-at-the-kernel-limits.md
+- resource: repo://docs/adr/0199-playide-at-the-kernel-limits.md
+  title: 0199-playide-at-the-kernel-limits.md
   hash_method: lf-sha256-v1
-  sha256: a2f4e680cf9211ef6f4999807492646a4bc458a8f27e487da773a3ac941129c5
-notes_baseline: 9ddf6c968e81e178394f8b5797b78709cac228df6b185a89f8b9e6f341cbba89
+  sha256: b08136ac5a4ec3fac9d80a685cf2ed05d4142f83e4325d879e08f957f1cb299e
+notes_baseline: 5b02a8de83978ef4e3e06befe084a79516c44584cadd4f81b2923e55565f132b
 ---
 
-# ADR-0191: PlayIDE at the kernel's limits: measured, and the kernel's repeated questions memoised
+# ADR-0199: PlayIDE at the kernel's limits: measured, and the kernel's repeated questions memoised
 
 <!-- okf:generated:begin facts -->
 | | |
@@ -25,7 +25,7 @@ notes_baseline: 9ddf6c968e81e178394f8b5797b78709cac228df6b185a89f8b9e6f341cbba89
 | Status | accepted |
 | Date | 2026-10-08 |
 | Lane | PlayIDE (owner direction, 8 October 2026: stay fast on large models) |
-| Source | `repo://docs/adr/0191-playide-at-the-kernel-limits.md` |
+| Source | `repo://docs/adr/0199-playide-at-the-kernel-limits.md` |
 
 ## Decision outcome (verbatim)
 

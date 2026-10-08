@@ -51,7 +51,7 @@ _The source carries no docstring._
 ## Notes
 
 The commit sequence, in the order the code performs it:
-1. `ensure_policy` (under the pack) and model-identity check (`STALE_INSTANCE`). Both go through [application.memo](/modules/application/memo.md), which asks them once per frozen model and pack object; a refusal still comes from `ensure_policy` itself ([ADR-0191](/adrs/0191-playide-at-the-kernel-limits.md)).
+1. `ensure_policy` (under the pack) and model-identity check (`STALE_INSTANCE`). Both go through [application.memo](/modules/application/memo.md), which asks them once per frozen model and pack object; a refusal still comes from `ensure_policy` itself ([ADR-0199](/adrs/0199-playide-at-the-kernel-limits.md)).
 2. **Authorise first** with [check_actor](/symbols/application/runtime/check_actor.md): active, current role, and assignment where the guard requires it. A cached success is not continuing authority.
 3. Replay: an existing operation id with a different binding is `OPERATION_CONFLICT`; the same binding returns the original result and enqueues nothing again.
 4. Version and source-state guards (`STALE_VERSION`, `STATE_DENIED`), then the state update.

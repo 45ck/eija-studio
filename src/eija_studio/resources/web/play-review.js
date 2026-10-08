@@ -220,6 +220,7 @@
 
   function empty(text) {
     if (graph) { graph.destroy(); graph = null; }
+    $("review").dataset.empty = "true";  // nothing beside the message: it takes the whole tab
     $("review-canvas").replaceChildren(el("p", text, { class: "muted empty" }));
     $("review-items").replaceChildren();
     $("review-head-text").textContent = "Nothing to review";
@@ -234,12 +235,13 @@
   async function show() {
     const about = ide.about();
     if (!about.case_id && !about.plan) {
-      empty("No change to review. Ask the chat for a change or draw one, then preview it; or open a change case (?case=).");
+      empty("No change to review. Ask the chat for a change or draw one, then preview it; or open a change case from the review workbench.");
       review = null;
       return;
     }
     // Always ask the server: it refuses (MODEL_CHANGED) a model edited elsewhere since the page loaded, so a review is
     // never shown or written for an obsolete change. What was checked is kept per exact pair of models.
+    delete $("review").dataset.empty;
     $("review-head-text").textContent = "Running both models through the kernel…";
     let result;
     try {

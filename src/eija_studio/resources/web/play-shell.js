@@ -160,7 +160,9 @@
     plan();
     document.addEventListener("playide:select", (event) => {
       const id = event.detail || "";
-      $("status-selection").textContent = id ? id.replace(":", " ") : "";
+      // Name it as the outline does (its action and role), not by its id; an element with no outline entry keeps the id.
+      const entry = id && [...document.querySelectorAll(".outline button[data-id]")].find((b) => b.dataset.id === id);
+      $("status-selection").textContent = !id ? "" : id.split(":")[0] + " " + (entry ? entry.textContent : id.slice(id.indexOf(":") + 1));
     });
   }
 

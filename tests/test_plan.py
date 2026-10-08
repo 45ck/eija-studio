@@ -45,6 +45,8 @@ def test_rejecting_a_step_that_another_needs_says_so():
 def test_the_policy_still_decides():
     preview = plan("allow Member to CheckOut")["preview"]  # a protected authority: proposing it does not make it allowed
     assert not preview["legal"] and any(code.startswith("PROTECTED_AUTHORITY") for code in preview["codes"])
+    # The refusal says, in the pack's words, which laws the plan would break.
+    assert "Only a librarian checks a loan out." in preview["laws"]
 
 
 def test_a_described_change_the_pack_models_becomes_its_meanings_steps():
