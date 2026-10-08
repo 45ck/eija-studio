@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/cli.py
   title: interfaces/cli.py
   hash_method: ast-api-v1
-  sha256: 0c9d388105f054ae1d1541130082a0cdcab1118c5cb8f5a1d112894cc27adbee
-notes_baseline: 3de30a9fb015d13d15dd81e896d14b18302d1c9766ee77e5d0087051a7f21e3e
+  sha256: babe4328ab3064081ebac9a9552171a27632b92c06b1dfeb42310b3b3129c475
+notes_baseline: 6c89f69c7ab0f4e37129e55bac36c72fb870b063978c4701720bd17d817c9fb2
 ---
 
 # interfaces.cli
@@ -44,6 +44,7 @@ _Symbol pages are generated for the domain and application layers only._
 * [`domain/models`](/modules/domain/models.md)
 * [`domain/policy`](/modules/domain/policy.md)
 * [`interfaces/agent_config`](/modules/interfaces/agent_config.md)
+* [`interfaces/app_build`](/modules/interfaces/app_build.md)
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -61,4 +62,5 @@ _No curated notes yet._
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.policy](/modules/domain/policy.md) - Generic policy: coherence with a domain pack's declared action catalog, the pack's laws, and declared effects.
 * [interfaces.agent_config](/modules/interfaces/agent_config.md) - Copy-paste MCP client configuration for `eija mcp --print-config <client>`.
+* [interfaces.app_build](/modules/interfaces/app_build.md) - `eija build`: write a runnable app generated from a pack's model, then run its kernel conformance tests (ADR-0150).
 <!-- okf:generated:end links -->

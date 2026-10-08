@@ -2,6 +2,7 @@
 
 # Modules
 
+* [application.appgen](appgen.md) - App generation: a reviewed workflow model becomes the spec and the conformance oracle of a runnable app (ADR-0150).
 * [application.compiler](compiler.md) - Compiler: model → projections + impacts + obligations + computed review packet.
 * [application.diagram_catalog](diagram_catalog.md) - Named diagram views over a baseline and an optional candidate Workflow.
 * [application.diagram_emitters](diagram_emitters.md) - Text emitters for the diagram models in `application.diagrams`: Mermaid, PlantUML and Graphviz DOT.

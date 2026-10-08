@@ -4,7 +4,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from pydantic import ValidationError
 from eija_studio import __version__
-from eija_studio.bootstrap import build_studio, resolve_pack, KEYED_PROVIDERS, PROVIDER_NAMES
+from eija_studio.bootstrap import build_studio, resolve_pack, source_identity, KEYED_PROVIDERS, PROVIDER_NAMES
 from eija_studio.domain.models import Workflow, DomainError, OWNER, fingerprint
 from eija_studio.domain.policy import check_policy, first_supported_meaning, projections
 from eija_studio.domain.impact import model_impact
@@ -13,6 +13,7 @@ from eija_studio.application.verifier import verify_runtime
 from eija_studio.application.diagram_catalog import FORMATS, VIEWS, VIEW_FORMATS, html_panels, render_view
 from eija_studio.weave.cli import COMMANDS as WEAVE_COMMANDS, add_parsers as add_weave_parsers
 from .agent_config import DEFAULT_MAX_PROVIDER_CALLS, snippet
+from .app_build import add_parser as add_build_parser, build as build_app
 
 
 def output(value, path: Path | None = None):
@@ -89,7 +90,14 @@ def _add_render_parser(subs) -> None:
     render.add_argument("--out", type=Path, help="Write here instead of stdout (LF, UTF-8)")
 
 
-EARLY_COMMANDS = {"check-export": check_export_command, "render": render_command, **WEAVE_COMMANDS}  # need no workspace, provider or key
+def build_command(args) -> int:
+    """Generate an app from the model and check it against the kernel (ADR-0150). Needs no workspace or key."""
+    code, summary = build_app(args, resolve_pack(args.pack), source_identity)
+    output(summary)
+    return code
+
+
+EARLY_COMMANDS = {"check-export": check_export_command, "render": render_command, "build": build_command, **WEAVE_COMMANDS}  # need no workspace, provider or key
 
 
 def formal_table(evidence: list) -> str:
@@ -177,6 +185,7 @@ def main(argv=None) -> int:
     compile_p = subs.add_parser("compile", parents=[common]); compile_p.add_argument("file", type=Path); compile_p.add_argument("--out", type=Path, required=True); compile_p.add_argument("--verify", action="store_true")
     check = subs.add_parser("check-export"); check.add_argument("file", type=Path)
     _add_render_parser(subs)
+    add_build_parser(subs)
     add_weave_parsers(subs)
     mcp = subs.add_parser("mcp", parents=[common], help="Serve the agent-facing MCP server on stdio (needs the agents extra)")
     mcp.add_argument("--repo", type=Path, help="Explicit local repository to inspect read-only; never executes its code")

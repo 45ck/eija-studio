@@ -65,3 +65,4 @@
 * [ADR-0147: Source-connected self-dogfooding with explicit coverage](0147-source-connected-self-dogfood.md) - ADR-0147: Source-connected self-dogfooding with explicit coverage
 * [ADR-0148: Semantic undo and redo by replaying existing typed commands](0148-semantic-history-by-replay.md) - ADR-0148: Semantic undo and redo by replaying existing typed commands
 * [ADR-0149: Preview a semantic edit from one captured case revision](0149-read-only-edit-preview.md) - ADR-0149: Preview a semantic edit from one captured case revision
+* [ADR-0150: Build runnable apps from the model, checked against the kernel as oracle](0150-build-apps-from-the-model-with-a-kernel-oracle.md) - The owner's goal, stated on 8 October 2026, is "UML you can trust to build apps".

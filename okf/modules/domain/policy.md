@@ -90,6 +90,7 @@ The protected generic policy: coherence with the pack's declared action catalog 
 ## Referenced by
 
 * [Execution](/contexts/execution.md) - Owns Trusted fixture actor state, preview instances, command replay, committed effect intents
+* [application.appgen](/modules/application/appgen.md) - App generation: a reviewed workflow model becomes the spec and the conformance oracle of a runnable app (ADR-0150).
 * [application.compiler](/modules/application/compiler.md) - Compiler: model → projections + impacts + obligations + computed review packet.
 * [application.diagram_catalog](/modules/application/diagram_catalog.md) - Named diagram views over a baseline and an optional candidate Workflow.
 * [application.diagrams](/modules/application/diagrams.md) - Diagram models derived from the executable Workflow (ADR-0019, ADR-0023).

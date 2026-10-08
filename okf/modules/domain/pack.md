@@ -103,6 +103,7 @@ _No curated notes yet._
 * [adapters.repository_changes](/modules/adapters/repository_changes.md) - Read-only, bounded comparison of two local Git commits.
 * [adapters.self_facts](/modules/adapters/self_facts.md) - Syntactic facts about EIJA's own review implementation, never a conformance proof.
 * [adapters.sqlite_store](/modules/adapters/sqlite_store.md) - Durable local unit of work.
+* [application.appgen](/modules/application/appgen.md) - App generation: a reviewed workflow model becomes the spec and the conformance oracle of a runnable app (ADR-0150).
 * [application.compiler](/modules/application/compiler.md) - Compiler: model → projections + impacts + obligations + computed review packet.
 * [application.edit_preview](/modules/application/edit_preview.md) - Read-only edit projection over one captured case, using the same interpreter as owner edits.
 * [application.edit_proposal](/modules/application/edit_proposal.md) - A read-only offline proposal over one captured candidate; owner edits keep their existing boundary.
