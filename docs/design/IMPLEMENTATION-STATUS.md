@@ -1,5 +1,9 @@
 # Full IDE / HCI status and traceability
 
+
+## On main: e0649f7 (8 October)
+
+[#78](https://github.com/45ck/eija-studio/pull/78) merged #29 and #76 onto `main`. It also moved the canvas drag handles off the selected transition's label and placed the inspector's Change buttons beside their selects. On Linux with Chromium 141, the hci session keeps 39 passes and the same two budget FAILs (density 52 > 27, KLM 65.31 > 65 s; re-derivation is in [#79](https://github.com/45ck/eija-studio/issues/79)). Four browser journeys pass. The new [IDE walkthrough recording](../demos/2026-10-08-IDE-WALKTHROUGH.md) is PARTIAL pending source review ([#80](https://github.com/45ck/eija-studio/issues/80)). Details are in the [IDE-on-main record](../engineering/2026-10-08-IDE-ON-MAIN.md). Sections below keep their own pinned subjects.
 ## Published merged IDE checkpoint: ad9394e1
 
 **3 October — ten browser journeys PASS on one published merged product; full acceptance remains open.** The [dated engineering record](../engineering/2026-10-03-MERGED-IDE-CHECKPOINT.md) binds all ten journeys to the same **114 files under `src/` and `packs/`** in [`ad9394e1`](https://github.com/45ck/eija-studio/commit/ad9394e1d4ae93259ee43ce8448b60c96a826a40), the merge of `efd33fa7` and `d861d454` on [draft PR76](https://github.com/45ck/eija-studio/pull/76). Browser helpers retain their individual manifests. A separate JavaScript run passed **495 tests**. Publication confirmed 510 committed files match the passing fast manifest, clean branch state and zero remote divergence. The published predecessor `efd33fa7` has separate fresh-clone Windows proof. This section remains pinned to `ad9394e1`; later work needs its own observations.
