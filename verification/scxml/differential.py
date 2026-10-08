@@ -19,7 +19,6 @@ Exit codes: 0 PASS, 1 FAIL, 3 NOT_RUN (python-statemachine is not installed). NO
 from __future__ import annotations
 
 import argparse
-import importlib
 import json
 import sys
 from hashlib import sha256
@@ -31,6 +30,11 @@ from eija_studio.application.appgen import oracle_cases
 from eija_studio.application.scxml import event_data, scxml_id, to_scxml
 from eija_studio.domain.models import Workflow
 from eija_studio.domain.pack import Pack, load_pack
+
+try:  # optional (the `xuml` extra): run() reports NOT_RUN when it is missing
+    from statemachine.io import load
+except ImportError:  # pragma: no cover - exercised only without the extra
+    load = None
 
 FORMAT = "eija.scxml-differential.v1"
 ROOT = Path(__file__).resolve().parents[2]
@@ -77,7 +81,8 @@ def _observed(chart: Any, case: dict[str, Any], actors: dict[str, dict[str, Any]
 
 def compare(pack: Pack, model: Workflow | None = None, document: str | None = None) -> dict[str, Any]:
     """Run every oracle case on the chart (`document`, by default the export of `model`) and on the kernel."""
-    load = importlib.import_module("statemachine.io").load  # optional: run() reports NOT_RUN when it is missing
+    if load is None:
+        raise RuntimeError(f"{ENGINE} is not installed")
     model = model if model is not None else pack.model
     document = document if document is not None else to_scxml(pack, model)
     chart = load(document, format="scxml", trusted=False, name="Chart")
