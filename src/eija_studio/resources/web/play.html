@@ -4,9 +4,12 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>PlayIDE</title>
 <link rel="stylesheet" href="/assets/play.css">
+<link rel="stylesheet" href="/assets/play-assist.css">
 <script src="/assets/vendor/dagre.min.js" defer></script>
 <script src="/assets/vendor/maxgraph.min.js" defer></script>
 <script src="/assets/play.js" defer></script>
+<script src="/assets/play-run.js" defer></script>
+<script src="/assets/play-assist.js" defer></script>
 </head>
 <body>
 <header class="bar">
@@ -14,6 +17,16 @@
   <div class="actions">
     <button id="health" class="health" type="button" aria-expanded="false" aria-controls="checks" title="Checks you have done on this model">
       <svg id="health-ring" viewBox="0 0 36 36" width="26" height="26" aria-hidden="true"></svg><span id="health-text">Checks</span></button>
+    <div id="runbar" class="runbar" role="toolbar" aria-label="Run">
+      <button id="run-play" class="run-btn go" type="button" aria-keyshortcuts="F5"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4 2.5v11l9-5.5z"/></svg><span>Run</span></button>
+      <button id="run-pause" class="run-btn" type="button" aria-label="Pause" title="Pause (F6)" aria-keyshortcuts="F6" disabled><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4 2.5h3v11H4zM9 2.5h3v11H9z"/></svg></button>
+      <button id="run-step" class="run-btn" type="button" aria-label="Step" title="Step (F10): one simulated user's next try, decided by the kernel" aria-keyshortcuts="F10"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M2 9a6 6 0 0 1 11-3.3V3h1.5v5h-5V6.5h2.4A4.5 4.5 0 0 0 3.5 9z"/><circle cx="8" cy="12.5" r="1.8"/></svg></button>
+      <button id="run-stop" class="run-btn stop" type="button" aria-label="Stop" title="Stop (Shift+F5): end the run and stop the running app" aria-keyshortcuts="Shift+F5" disabled><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3.5 3.5h9v9h-9z"/></svg></button>
+      <button id="run-restart" class="run-btn" type="button" aria-label="Restart" title="Restart (Ctrl+Shift+F5): the same seed from step 1" aria-keyshortcuts="Control+Shift+F5" disabled><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M8 2.5a5.5 5.5 0 1 0 5.4 6.5h-1.6A4 4 0 1 1 8 4v2.2l3.2-3-3.2-3z"/></svg></button>
+      <label class="visually-hidden" for="run-speed">Speed</label>
+      <select id="run-speed" class="run-speed" title="How fast the run moves"><option value="700">Slow</option><option value="250" selected>Normal</option><option value="40">Fast</option><option value="0">To the next stop</option></select>
+      <span id="run-status" class="run-status" role="status" aria-live="polite">Ready</span>
+    </div>
     <span id="toast" class="toast" role="status" aria-live="polite"></span>
     <span id="score" class="score" role="status" aria-live="polite" hidden></span>
     <button id="simulate" type="button" title="Seeded simulated users act on the model; the kernel decides every step">Simulate</button>
@@ -74,6 +87,16 @@
       <p class="muted small">Each ring segment is a real check on the model you are looking at. Points come from checking changes, never from making them.</p>
       <ul id="check-list" class="check-list"></ul>
       <h3>Earned</h3><ol id="earned" class="earned"></ol>
+    </section>
+    <section id="debug" class="debug" aria-labelledby="debug-title" hidden>
+      <div class="run-head"><h2 id="debug-title">Run</h2><span id="debug-pos" class="pos"></span></div>
+      <div id="debug-now" class="debug-now"></div>
+      <h3>Records</h3><table class="records"><tbody id="debug-records"></tbody></table>
+      <h3>Breakpoints</h3>
+      <label class="check"><input id="break-refusal" type="checkbox"> Break when the kernel refuses</label>
+      <ul id="debug-breakpoints" class="breakpoints"></ul>
+      <h3>Steps so far</h3><ol id="debug-log" class="log"></ol>
+      <p class="muted small" id="debug-limits"></p>
     </section>
     <section class="chat" aria-labelledby="chat-title">
       <div class="run-head"><h2 id="chat-title">Chat</h2><span class="mode" title="The AI only proposes. You accept or reject each step; nothing is saved from here.">Plan mode</span></div>

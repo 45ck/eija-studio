@@ -39,7 +39,5 @@ _The source carries no docstring._
 _No curated notes yet._
 
 <!-- okf:generated:begin links -->
-## Referenced by
-
-* [application.simulation.simulate](/symbols/application/simulation/simulate.md) - Run `steps` seeded attempts by the pack's fixture actors through the kernel and report where they went.
+_No generated cross-references._
 <!-- okf:generated:end links -->

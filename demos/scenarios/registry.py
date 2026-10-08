@@ -82,6 +82,11 @@ SCENARIOS: tuple[Scenario, ...] = (
              "ripples into a new use case, a default screen and regenerated components, and the app is built. Then an "
              "AI-proposed removal strands a screen so the app cannot be built; the AI's follow-on removes it, the design "
              "check confirms, and the app builds with the checks ring showing that the diagrams agree."),
+    Scenario("playide_showcase", "The PlayIDE showcase: software engineering as play", "recorded-partial", (),
+             "The storyboarded showcase (docs/demos/PLAYIDE-SHOWCASE-STORYBOARD.md): the model is the program; press "
+             "play and watch seeded users run through it; fix it by dragging; let the AI propose the busywork and check "
+             "it step by step; prove it with conformance and simulation. Beats whose feature has not merged are "
+             "skipped and named in the manifest."),
     Scenario("agent_change_review","Reviewing an agent's change by meaning, not by diff", "unscripted",
              ("agents", "providers", "visual"),
              "An agent (Claude Code, Codex, OpenCode or Gemini via MCP) proposes; the developer sees the "

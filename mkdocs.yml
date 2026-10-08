@@ -56,6 +56,7 @@ nav:
   - PlayIDE: playide.md
   - Architecture:
       - Architecture and ubiquitous language: architecture/ARCHITECTURE.md
+      - Executable UML on the EIJA engine: architecture/executable-uml.md
       - Technical lead review: TECHNICAL_LEAD_REVIEW.md
       - Security and trust: SECURITY_AND_TRUST.md
       - Operations: OPERATIONS.md

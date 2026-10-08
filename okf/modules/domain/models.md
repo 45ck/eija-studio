@@ -82,6 +82,7 @@ _No curated notes yet._
 * [application.repository](/modules/application/repository.md) - Read-only repository evidence port; this does not grant project execution or approval.
 * [application.ripple](/modules/application/ripple.md) - Ripple (ADR-0158): what one change to the state machine does to every other diagram of the same system, and the follow-on edits that would keep them in agreeme…
 * [application.runtime](/modules/application/runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.
+* [application.scxml](/modules/application/scxml.md) - The workflow state machine as a W3C SCXML statechart (ADR-0165).
 * [application.service](/modules/application/service.md) - Module `application/service` (no module docstring).
 * [application.simulation](/modules/application/simulation.md) - Seeded simulation of people using the app built from a model (ADR-0152).
 * [application.verifier](/modules/application/verifier.md) - Bounded synthetic runtime experiments.

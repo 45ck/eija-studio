@@ -13,6 +13,7 @@ import sys
 import time
 from pathlib import Path
 
+from demos.finish import FfmpegMissingError, finish
 from demos.lib import BrowserUnavailableError, Recorder, ephemeral_eija_server
 from demos.manifest import build_manifest, write_manifest
 from demos.prgif import cli as pr_gif
@@ -40,6 +41,8 @@ def main(argv: list[str] | None = None) -> int:
         return _registry(check=args.check)
     if args.command == "pr-gif":
         return pr_gif.run(args)
+    if args.command == "finish":
+        return _finish(args.key)
     return _run(args.key, dry_run=args.dry_run, headed=args.headed, seed=args.seed)
 
 
@@ -62,6 +65,8 @@ def _parser() -> argparse.ArgumentParser:
         help="seeds the typing cadence ONLY; recordings are not otherwise repeatable "
              "(timing, encoder and Studio state vary)",
     )
+    fin = sub.add_parser("finish", help="frame a recorded take as a 1080p MP4 (demos/output/<key>.mp4)")
+    fin.add_argument("key")
     pr_gif.add_parser(sub)  # GIFs for pull requests (ADR-0142, docs/engineering/PR-STANDARD.md)
     return parser
 
@@ -83,6 +88,20 @@ def _registry(*, check: bool) -> int:
     if not problems:
         print(f"OK {len(SCENARIOS)} scenarios consistent with the code")
     return EXIT_FAIL if problems else 0
+
+
+def _finish(key: str) -> int:
+    """Frame demos/output/<key>.webm on a stage as demos/output/<key>.mp4. The take is not altered."""
+    source = OUTPUT / f"{key}.webm"
+    if not source.is_file():
+        print(f"FAIL no take at {source.relative_to(ROOT)}; record it with `python -m demos run {key}`")
+        return EXIT_FAIL
+    try:
+        out = finish(source, OUTPUT / f"{key}.mp4")
+    except FfmpegMissingError as error:
+        return _not_run(f"{key}: prerequisite missing ({error})")
+    print(f"wrote {out.relative_to(ROOT)}")
+    return 0
 
 
 def _move_replacing(source: Path, destination: Path, *, attempts: int = 20, delay_s: float = 0.5) -> None:

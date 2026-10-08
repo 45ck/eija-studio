@@ -6,6 +6,9 @@
 
 - A change to PlayIDE's state machine now shows its effect on every other diagram: the class diagram (the record's state enumeration), use cases, screens, components and the number of conformance cases. Each tab gets a badge, and the affected elements are marked. For each warning or problem, such as an unreachable state or a screen stranded by a removed action, the AI proposes a follow-on edit, and the server checks it again before you can add it. The checks ring has a fifth part, "Diagrams agree". New route `POST /api/play/ripple`. See [ADR-0158](docs/adr/0158-ripple-across-diagrams-with-checked-follow-ons.md).
 - New recorded demo `playide_ripple` (PASS, 2:07), see [the write-up](docs/demos/2026-10-08-PLAYIDE-RIPPLE.md). The PlayIDE tour was re-recorded with the five-part ring (PASS, 2:40).
+### 8 October 2026: PlayIDE assist (UI, HCI and agentic HCI)
+
+- PlayIDE's chat says who does what (the AI proposes, you check, the owner approves), offers the requests it can read as buttons, about the selected state or transition with its name filled in, and completes exact model names as you type. Ctrl+K (⌘K) opens a palette of every command and element, and an AI plan can be reviewed from the keyboard (J/K, S, Space, P). The reasoning is in [PlayIDE: UML, HCI and agentic HCI](docs/hci/design/playide-ahci.md). See [ADR-0170](docs/adr/0170-playide-assist-ask-complete-palette-review.md).
 
 ### 8 October 2026: PlayIDE tour recording
 

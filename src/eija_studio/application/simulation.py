@@ -19,6 +19,7 @@ from .runtime import execute, initialise
 
 CASE = "simulation"
 MAX_STEPS = 5000
+MAX_BREAKPOINTS = 64
 TRACE_LIMIT = 60  # steps kept in order for the run log and the sequence view
 NEW_RECORD = 0.2  # chance a step starts a new record instead of acting on an open one
 SLIP = 0.1  # chance a user tries a declared action that does not leave the record's state
@@ -86,8 +87,8 @@ class _Dice:
 class _Run:
     """Tallies for one simulation; `report` turns them into plain data."""
 
-    def __init__(self, model: Workflow):
-        self.model = model
+    def __init__(self, model: Workflow, limit: int = TRACE_LIMIT):
+        self.model, self.limit = model, limit
         self.labels: dict[str, str] = {}  # kernel ids are random; the report names records R1, R2, ... in creation order
         self.commits: Counter[str] = Counter()
         self.refusals: dict[str, Counter[str]] = defaultdict(Counter)
@@ -96,7 +97,7 @@ class _Run:
         self.trace: list[dict[str, Any]] = []
 
     def log(self, step: dict[str, Any]) -> None:
-        if len(self.trace) < TRACE_LIMIT:
+        if len(self.trace) < self.limit:
             self.trace.append(step)
 
 
@@ -119,9 +120,9 @@ def _attempt(session: MemorySession, pack: Pack, model: Workflow, run: _Run, rng
     version = item["version"] - 1 if item["version"] > 0 and rng.chance(STALE) else item["version"]
     command = ExecuteCommand(operation_id=f"sim-{n}", actor_id=actor["id"], instance_id=record, action=action,
                              expected_version=version)
-    step = {"step": n, "actor": actor["id"], "role": actor["role"], "record": run.labels[record], "action": action,
-            "from": item["state"]}
     transition = next(t for t in model.transitions if t.action == action)
+    step = {"step": n, "actor": actor["id"], "role": actor["role"], "record": run.labels[record], "action": action,
+            "transition": transition.id, "from": item["state"]}
     try:
         result = execute(session, CASE, model, command, pack=pack)  # type: ignore[arg-type]  # duck-typed port
     except DomainError as refused:
@@ -137,6 +138,11 @@ def _attempt(session: MemorySession, pack: Pack, model: Workflow, run: _Run, rng
 
 def simulate(pack: Pack, model: Workflow, *, seed: int = 1, steps: int = 500) -> dict[str, Any]:
     """Run `steps` seeded attempts by the pack's fixture actors through the kernel and report where they went."""
+    session, run = _play(pack, model, seed, steps, _Run(model))
+    return _report(pack, model, seed, steps, session, run)
+
+
+def _play(pack: Pack, model: Workflow, seed: int, steps: int, run: _Run) -> tuple[MemorySession, _Run]:
     if model.id != pack.id:
         raise DomainError("WORKFLOW_PACK_MISMATCH", "The workflow belongs to a different pack")
     if not 1 <= steps <= MAX_STEPS:
@@ -144,10 +150,57 @@ def simulate(pack: Pack, model: Workflow, *, seed: int = 1, steps: int = 500) ->
     actors = [a.model_dump() for a in pack.fixtures.actors]
     if not actors:
         raise DomainError("NO_ACTORS", "The pack has no fixture actors to simulate")
-    rng, session, run = _Dice(seed), MemorySession(pack), _Run(model)
+    rng, session = _Dice(seed), MemorySession(pack)
     for n in range(1, steps + 1):
         _step(session, pack, model, run, rng, n, rng.choice(actors))
-    return _report(pack, model, seed, steps, session, run)
+    return session, run
+
+
+
+def run_log(pack: Pack, model: Workflow, *, seed: int = 1, steps: int = 500, breakpoints: list[str] | None = None,
+            break_on_refusal: bool = False) -> dict[str, Any]:
+    """Every step of the seeded run in order, and where a run with these breakpoints stops (ADR-0160).
+
+    The run bar's play, pause, step and restart move through this log; nothing runs in the page. A breakpoint is a
+    diagram element: `state:<name>` stops when a record enters that state, `transition:<id>` when someone tries that
+    transition, whatever the kernel answers. `break_on_refusal` also stops at every attempt the kernel refuses. A stop
+    comes after the kernel has decided the step, so the person sees its answer. The same seed and model always give
+    the same log and the same stops, which is what makes pausing and stepping a faithful replay of one live run."""
+    marks = _breakpoints(model, breakpoints or [])
+    session, run = _play(pack, model, seed, steps, _Run(model, limit=steps))
+    trace = run.trace
+    return {
+        "format": "eija.run.v1", "pack": pack.id, "model": model.semantic_hash, "seed": seed, "steps": steps,
+        "breakpoints": marks, "break_on_refusal": break_on_refusal, "trace": trace,
+        "stops": [stop for entry in trace if (stop := _stop(entry, marks, break_on_refusal))],
+        "records": {run.labels[r]: item["state"] for r, item in session.instances.items()},
+        "limits": ["Simulated users are the pack's fixture actors acting at random, not measured human behaviour.",
+                   "Each attempt is decided by the kernel against in-memory storage; no effect leaves the process."],
+    }
+
+
+def _breakpoints(model: Workflow, breakpoints: list[str]) -> list[str]:
+    """The breakpoints, sorted and unique, each an element of this model."""
+    marks = sorted(set(breakpoints))
+    if len(marks) > MAX_BREAKPOINTS:
+        raise DomainError("TOO_MANY_BREAKPOINTS", f"Set at most {MAX_BREAKPOINTS} breakpoints")
+    known = {"state:" + s for s in model.states} | {"transition:" + t.id for t in model.transitions}
+    unknown = [m for m in marks if m not in known]
+    if unknown:
+        raise DomainError("UNKNOWN_BREAKPOINT", f"Not an element of this model: {', '.join(unknown)}")
+    return marks
+
+
+def _stop(entry: dict[str, Any], marks: list[str], break_on_refusal: bool) -> dict[str, Any] | None:
+    """Where a step stops the run, if it does, named in the Debug Adapter Protocol's stop reasons."""
+    entered = entry.get("to") if entry["outcome"] in ("CREATED", "COMMITTED") else None
+    hits = [m for m in marks if m == "state:" + str(entered) or m == "transition:" + str(entry.get("transition"))]
+    if hits:
+        return {"step": entry["step"], "reason": "breakpoint", "elements": hits}
+    if break_on_refusal and entry["outcome"] == "REFUSED":
+        return {"step": entry["step"], "reason": "exception", "elements": ["transition:" + entry["transition"]],
+                "code": entry["code"]}
+    return None
 
 
 def _step(session: MemorySession, pack: Pack, model: Workflow, run: _Run, rng: _Dice, n: int, actor: dict[str, Any]) -> None:

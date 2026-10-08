@@ -16,6 +16,7 @@
   const earned = [];
   let screens = null, screensEdited = false, useCase = null, checkTimer = 0, problems = [], useCaseList = [];
   const base = {}; // each cell's own style and label, so overlays can be cleared
+  const hooks = { redraw: [], inspect: [] }; // the run bar (play-run.js) redraws its marks and adds inspector tools
 
   async function api(path, body) {
     const options = { headers: { Authorization: "Bearer " + token } };
@@ -86,6 +87,7 @@
       select(cell ? cell.id : "", false);
     });
     fit();
+    for (const f of hooks.redraw) f();
   }
 
   function tooltip(cell) {
@@ -151,6 +153,7 @@
       row(dl, "Leaves by", out.map(label).join(", ") || "nothing (an end state)");
       row(dl, "Entered by", into.map(label).join(", ") || (s === model.initial_state ? "creation" : "nothing (unreachable)"));
       box.append(dl, stateTools(s));
+      for (const f of hooks.inspect) f(id, box);
       return;
     } else {
       const t = transition(id.slice(11));
@@ -161,6 +164,7 @@
       row(dl, "Effects", t.required_effects.join(", ") || "none");
       row(dl, "Never", t.forbidden_effects.join(", ") || "nothing listed");
       box.append(dl, screenLink(t.action), transitionTools(t));
+      for (const f of hooks.inspect) f(id, box);
       return;
     }
     box.append(dl);
@@ -170,6 +174,7 @@
     selected = id;
     for (const b of document.querySelectorAll(".outline button")) b.setAttribute("aria-current", String(b.dataset.id === id));
     inspect(id);
+    document.dispatchEvent(new CustomEvent("playide:select", { detail: id }));
     if (fromOutline) {
       showTab(id.startsWith("class:") ? "classes" : "states");
       const target = current(), cell = target && target.getDataModel().getCell(id);
@@ -1519,7 +1524,16 @@
     $("canvas-help").textContent = HINTS.states;
     window.addEventListener("resize", fit);
     document.body.dataset.ready = "true";
+    document.dispatchEvent(new CustomEvent("playide:ready"));
   }
+
+  // What the run bar (play-run.js, ADR-0160) may use. It holds no rules either: it moves through the server's run log.
+  // The assist layer (play-assist.js, ADR-0170) reads only base(), pack() and selected(): base() is the model a chat
+  // request is planned against, not a previewed candidate.
+  window.PlayIDE = {
+    api, el, hooks, about, viewKey, label, restyle, clearSim, select,
+    graph: () => graph, model: () => model, selected: () => selected, pack: () => packInfo, base: () => baseModel,
+  };
 
   start().catch((error) => {
     $("inspector").replaceChildren(el("p", `Could not load the model (${error.code || "ERROR"}): ${error.message}. If the session expired, open PlayIDE from the private launch link.`, { class: "muted" }));

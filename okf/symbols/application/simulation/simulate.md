@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/simulation.py#simulate
   title: application/simulation.py
   hash_method: ast-v2
-  sha256: 8527cba86fb9b45dc6a92f3a19348060e669caf06bd3b8dd09b58f31da1e6e65
-notes_baseline: 0845d103bcf60ff57013feb272794498aabc6af3ddcaa05018e9bdea64cdb4b0
+  sha256: fb7bdbe0d3632913f786c61f52d8c970fd085099657283c7c80ed8f8e824432b
+notes_baseline: 6c899954324effde59cf3f546f4609ed2f16baa22749f772a42dad1279ccfea8
 ---
 
 # application.simulation.simulate
@@ -43,9 +43,6 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [application.simulation.MAX_STEPS](/symbols/application/simulation/MAX_STEPS.md) - Constant `MAX_STEPS` in `application/simulation`.
-* [application.simulation.MemorySession](/symbols/application/simulation/MemorySession.md) - The kernel's unit-of-work port over plain dictionaries, keeping every record, operation and effect.
-* [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
 <!-- okf:generated:end links -->
