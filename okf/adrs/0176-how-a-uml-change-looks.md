@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0176-how-a-uml-change-looks.md
   title: 0176-how-a-uml-change-looks.md
   hash_method: lf-sha256-v1
-  sha256: 5407b2d21cf110d1771993c522f1c6ad849ddf7fa77da6c81618693cfeee9f86
-notes_baseline: 1ec6b9f60d6749b58c6196cc43a1b8f92ab2acf36f43a6721b9b1e405e980129
+  sha256: e62bdd5bc0038b8dd5e6c2a1470aa0b1f7c69790649783550d63ed005cade688
+notes_baseline: b6f028483fb2fd77d42fedc8f73948cce5ab8a35b4438f5fe4c32f07cf7e2804
 ---
 
 # ADR-0176: How a UML change looks: one stable layout, removed parts kept as ghosts, and lenses

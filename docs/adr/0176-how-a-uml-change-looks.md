@@ -69,6 +69,10 @@ Chosen option.
 * Bad: a layout of both models is a compromise for each. A large change can place the model in force slightly differently from its own layout.
 * Revisit when: the class or use case diagrams become editable (then they need ghosts too), or a reviewer study shows which lens people actually use.
 
+### Update: calm by default
+
+The owner found the drawing right but the view around it too busy: two toolbars of lenses, a slider and a checkbox, a legend, a list strip and an inspector all at once. The view now opens in one default, the Changes lens with unchanged parts faded. Above the diagram sit one summary line (the counts in their colours, which also serves as the legend), `‹ Change n of N ›`, and **Compare**. Compare reveals the lenses, the onion skin and Fade unchanged. The change list moves into the inspector, so there is one place to read the change, and the before and after table opens under a change only when it has changed fields or a route. The drawing, the keys and the server are unchanged.
+
 ## OSS check (required for any custom module)
 
 | OSS checked | Why adapter/dependency use was insufficient | Replacement or fork path |
