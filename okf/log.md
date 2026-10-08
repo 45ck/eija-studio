@@ -2,6 +2,7 @@
 
 ## 2026-10-08
 
+* **Add without dragging**: synced the new ADR-0174 page; ADR-0156, 0157, 0170, 0172 and 0173 changed only in generated backlinks (presentation only, no module or symbol changes). No Notes were hand-edited and nothing was recorded as verified.
 * **Law files and test cases in PlayIDE**: synced ADR-0177, the new `domain.scenarios` and `application.scenario_run` modules and symbol pages, and `application.law_proof` (`with_laws`, `compare_laws`); `interfaces.cli` (`scenarios`), `interfaces.play` (`/api/play/laws` with a draft law file, `/api/play/tests`, `/api/play/tests/try`) and `interfaces.http` (the `play-tests.js` and `play-tests.css` assets) refreshed. Pages linking to `models`, `pack`, `policy` and `simulation` changed only in generated references. No Notes were hand-edited and nothing was recorded as verified.
 * **PlayIDE end-to-end fixes**: re-synced `application.plan` (`describe` names a transition by its action when given the model) and `application.ripple`; `domain.models.Workflow` changed only in generated references. No Notes were hand-edited and nothing was recorded as verified.
 * **PlayIDE tab overflow**: ADR-0173 page re-synced after its text gained the tab overflow rule. No Notes were hand-edited and nothing was recorded as verified.
