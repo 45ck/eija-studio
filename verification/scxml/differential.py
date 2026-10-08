@@ -1,4 +1,4 @@
-"""Differential check: the exported SCXML chart, run by an independent SCXML engine, agrees with the kernel (ADR-0160).
+"""Differential check: the exported SCXML chart, run by an independent SCXML engine, agrees with the kernel (ADR-0165).
 
 For every case of the app oracle (`appgen.oracle_cases`: every state x action x fixture actor x expected version, plus
 an undeclared action and an unknown actor), the kernel's answer is compared with what python-statemachine (MIT) does

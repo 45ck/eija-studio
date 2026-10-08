@@ -1,4 +1,4 @@
-# ADR-0160: Executable UML on the EIJA kernel: one interpreter, a closed action vocabulary, SCXML as the standard cross-check
+# ADR-0165: Executable UML on the EIJA kernel: one interpreter, a closed action vocabulary, SCXML as the standard cross-check
 
 * Status: accepted for the state-machine slice
 * Date: 2026-10-08

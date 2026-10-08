@@ -143,3 +143,22 @@ def test_plan_mode_proposes_previews_and_tries_but_never_saves(client, studio):
     assert refused.json()["code"] == "PLAN_REQUEST_UNSUPPORTED"
     with studio.store.transaction() as u:
         assert u.active()["model"] == before  # nothing was saved or applied
+
+
+def test_the_run_bar_gets_the_shown_models_run_log_and_stop_ends_the_app(client, studio):
+    """ADR-0160: Run, Pause and Step move through a kernel-decided log; Stop ends the running app."""
+    assert client.get("/assets/play-run.js").status_code == 200
+    with studio.store.transaction() as u:
+        shown = u.active()["model"]
+    state = studio.pack.model.states[1]
+    log = client.post("/api/play/run", json={"model": shown, "steps": 80, "breakpoints": ["state:" + state],
+                                              "break_on_refusal": True}, headers=HEADERS).json()
+    assert log["format"] == "eija.run.v1" and len(log["trace"]) == 80 and log["stops"]
+    assert log["model"] == Workflow.model_validate(shown).semantic_hash
+    refused = client.post("/api/play/run", json={"breakpoints": ["state:Nowhere"]}, headers=HEADERS)
+    assert refused.json()["code"] == "UNKNOWN_BREAKPOINT"
+    assert client.post("/api/play/run", json={}, headers={"Origin": HEADERS["Origin"]}).status_code == 401
+    assert client.post("/api/play/stop", json={}, headers=HEADERS).json() == {"stopped": False}
+    assert client.post("/api/play/build", json={}, headers=HEADERS).json()["url"]
+    assert client.post("/api/play/stop", json={}, headers=HEADERS).json() == {"stopped": True}
+    assert client.post("/api/play/stop", json={}, headers=HEADERS).json() == {"stopped": False}

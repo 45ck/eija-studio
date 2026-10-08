@@ -1,4 +1,4 @@
-"""The executable UML semantics table (docs/architecture/executable-uml.md, ADR-0160) names every guard and change kind.
+"""The executable UML semantics table (docs/architecture/executable-uml.md, ADR-0165) names every guard and change kind.
 
 A guard or transaction kind added to the code without a row stating its meaning when it runs fails here, so the
 supported semantics stay explicit.

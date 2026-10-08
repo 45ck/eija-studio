@@ -1,4 +1,4 @@
-"""The workflow state machine as a W3C SCXML statechart (ADR-0160).
+"""The workflow state machine as a W3C SCXML statechart (ADR-0165).
 
 SCXML is the W3C standard for executable state machines, with a normative interpretation algorithm. Exporting the
 model to it does two things. Any SCXML engine can run the state diagram, so the model is not locked to EIJA. And an

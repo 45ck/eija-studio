@@ -1,6 +1,6 @@
 # Executable UML on the EIJA engine
 
-How the diagrams you draw in PlayIDE become a system that runs, with EIJA as the deterministic engine underneath. Decision record: [ADR-0160](../adr/0160-executable-uml-on-the-eija-kernel.md).
+How the diagrams you draw in PlayIDE become a system that runs, with EIJA as the deterministic engine underneath. Decision record: [ADR-0165](../adr/0165-executable-uml-on-the-eija-kernel.md).
 
 ## The short answer
 
@@ -9,7 +9,7 @@ A UML model is executable when every element has one precise meaning when it run
 - **The AI writes the model.** Chat plan mode and drawn edits produce typed transactions (`domain.transactions`), never free text.
 - **The kernel decides what the model means.** The policy accepts or refuses each change and names the law it breaks. At run time the kernel commits or refuses each action.
 - **Conformance proves the app matches.** A built app runs the kernel itself and is checked case by case against the kernel's own answers (ADR-0150).
-- **A standard engine agrees.** The state machine exports to W3C SCXML, and an independent SCXML engine gives the same outcome as the kernel on every one of those cases (ADR-0160).
+- **A standard engine agrees.** The state machine exports to W3C SCXML, and an independent SCXML engine gives the same outcome as the kernel on every one of those cases (ADR-0165).
 
 ## The layers
 
@@ -109,7 +109,7 @@ The cost is expressiveness. A construct is executable only after it has been add
 Two independent checks stand on the same set of cases, `appgen.oracle_cases`: every state, every action plus one undeclared action, every fixture actor plus one unknown actor, and expected versions 0 and 1.
 
 1. **The built app against the kernel** (ADR-0150). The app's storage, transactions and effects must keep the kernel's answer for every case, and replays must be idempotent.
-2. **An independent SCXML engine against the kernel** (ADR-0160). `eija scxml` writes the model as a W3C SCXML statechart. [python-statemachine](https://github.com/fgmacedo/python-statemachine) (MIT), which EIJA did not write, runs it, and must reach the same state, version and effects as the kernel on every case. On 2026-10-08: 960 cases over three packs, 0 disagreements. Nine deliberately broken charts each disagree, so the check is not vacuous.
+2. **An independent SCXML engine against the kernel** (ADR-0165). `eija scxml` writes the model as a W3C SCXML statechart. [python-statemachine](https://github.com/fgmacedo/python-statemachine) (MIT), which EIJA did not write, runs it, and must reach the same state, version and effects as the kernel on every case. On 2026-10-08: 960 cases over three packs, 0 disagreements. Nine deliberately broken charts each disagree, so the check is not vacuous.
 
 What the SCXML chart contains, for one transition of the library loan pack:
 

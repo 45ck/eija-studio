@@ -1,7 +1,7 @@
 ---
 type: Module
 title: application.scxml
-description: The workflow state machine as a W3C SCXML statechart (ADR-0160).
+description: The workflow state machine as a W3C SCXML statechart (ADR-0165).
 resource: repo://src/eija_studio/application/scxml.py
 tags:
 - module
@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/scxml.py
   title: application/scxml.py
   hash_method: ast-api-v1
-  sha256: 36ec6ea6de530d14026f47bdbbda0470db7c6009b1977339f233438c3ed18ebb
-notes_baseline: dde3bb8f05fedc4832ee116a19bf224acfbd028ae44383a16c5a8e7945890c0d
+  sha256: e1ce5c4188a3113d33978b21ff126e6784901539a5e66cc68d04fa1824e0bfb0
+notes_baseline: 86db1e501d2902f54eea92add2ab07f12a8bf6508d0c2357e53a961d0ba6efd0
 ---
 
 # application.scxml
@@ -29,7 +29,7 @@ notes_baseline: dde3bb8f05fedc4832ee116a19bf224acfbd028ae44383a16c5a8e7945890c0d
 ## Module docstring
 
 ~~~text
-The workflow state machine as a W3C SCXML statechart (ADR-0160).
+The workflow state machine as a W3C SCXML statechart (ADR-0165).
 
 SCXML is the W3C standard for executable state machines, with a normative interpretation algorithm. Exporting the
 model to it does two things. Any SCXML engine can run the state diagram, so the model is not locked to EIJA. And an

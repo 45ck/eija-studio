@@ -1,4 +1,4 @@
-"""Executable UML lane gate (ADR-0160): the SCXML export of every pack, and the differential against the kernel.
+"""Executable UML lane gate (ADR-0165): the SCXML export of every pack, and the differential against the kernel.
 
 `scxml_drift` is pure Python: the committed charts in verification/scxml/generated/ match a fresh export.
 `scxml_differential` runs every app-oracle case on python-statemachine (the `xuml` extra) and on the kernel and fails

@@ -348,6 +348,60 @@
         }
       }
     },
+    "/api/play/run": {
+      "post": {
+        "summary": "Play Run",
+        "description": "The run bar (ADR-0160): every step of one seeded run, decided by the kernel, and where it stops.",
+        "operationId": "play_run_api_play_run_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/play/stop": {
+      "post": {
+        "summary": "Play Stop",
+        "description": "The run bar's Stop: stop the built app if one is running.",
+        "operationId": "play_stop_api_play_stop_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
     "/visual-frame": {
       "get": {
         "summary": "Visual Frame",
@@ -2617,6 +2671,89 @@
         ],
         "title": "RetargetTransition",
         "description": "Move one end of a transition to another state (the drag-and-drop edit)."
+      },
+      "RunRequest": {
+        "properties": {
+          "case_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Id"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Workflow"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "screens": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Screens"
+          },
+          "plan": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array",
+                "maxItems": 12
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plan"
+          },
+          "seed": {
+            "type": "integer",
+            "maximum": 2147483647.0,
+            "minimum": 0.0,
+            "title": "Seed",
+            "default": 1
+          },
+          "steps": {
+            "type": "integer",
+            "maximum": 5000.0,
+            "minimum": 1.0,
+            "title": "Steps",
+            "default": 500
+          },
+          "breakpoints": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 64,
+            "title": "Breakpoints"
+          },
+          "break_on_refusal": {
+            "type": "boolean",
+            "title": "Break On Refusal",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "RunRequest"
       },
       "Select": {
         "properties": {

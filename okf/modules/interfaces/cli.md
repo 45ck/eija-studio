@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/cli.py
   title: interfaces/cli.py
   hash_method: ast-api-v1
-  sha256: ebfd1f8c63c3f0ddd8455aca7aeb6d5b705767a16a63afb9f574b08f917d2f53
-notes_baseline: f1fd2ebe3cc1c7ed299c81b74a59866cb4dae06458db30b71c8930cf9e2cef2e
+  sha256: ee2382c45217a8f2369f883be168bb07ebaa25db6b2baf215a9fddbeffb0320c
+notes_baseline: 42fe535320bf2f833e01f26ab03528f0c318456290d691caa19d2adb9998960f
 ---
 
 # interfaces.cli
@@ -57,7 +57,7 @@ _No curated notes yet._
 
 * [application.compiler](/modules/application/compiler.md) - Compiler: model → projections + impacts + obligations + computed review packet.
 * [application.diagram_catalog](/modules/application/diagram_catalog.md) - Named diagram views over a baseline and an optional candidate Workflow.
-* [application.scxml](/modules/application/scxml.md) - The workflow state machine as a W3C SCXML statechart (ADR-0160).
+* [application.scxml](/modules/application/scxml.md) - The workflow state machine as a W3C SCXML statechart (ADR-0165).
 * [application.verifier](/modules/application/verifier.md) - Bounded synthetic runtime experiments.
 * [bootstrap](/modules/bootstrap.md) - The only composition root: wires application ports to concrete adapters.
 * [domain.impact](/modules/domain/impact.md) - Module `domain/impact` (no module docstring).

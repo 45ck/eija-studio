@@ -1,8 +1,8 @@
 ---
 type: Architecture Decision Record
-title: 'ADR-0160: Executable UML on the EIJA kernel: one interpreter, a closed action vocabulary, SCXML as the standard cross-check'
+title: 'ADR-0165: Executable UML on the EIJA kernel: one interpreter, a closed action vocabulary, SCXML as the standard cross-check'
 description: PlayIDE draws six UML views (state machine, class, use case, screens, component, sequence) over one model (ADR-0093), and `eija build` turns the model into a running app checked against the kernel (ADR-0150).
-resource: repo://docs/adr/0160-executable-uml-on-the-eija-kernel.md
+resource: repo://docs/adr/0165-executable-uml-on-the-eija-kernel.md
 tags:
 - adr
 - accepted
@@ -10,14 +10,14 @@ status: stable
 generated:
   by: process:eija-okf-sync
 sources:
-- resource: repo://docs/adr/0160-executable-uml-on-the-eija-kernel.md
-  title: 0160-executable-uml-on-the-eija-kernel.md
+- resource: repo://docs/adr/0165-executable-uml-on-the-eija-kernel.md
+  title: 0165-executable-uml-on-the-eija-kernel.md
   hash_method: lf-sha256-v1
-  sha256: 9f0be230a493f265e63c22db78b5e1efd0a61b8ab1d58d42c1e091e9fe7f70b2
-notes_baseline: 383a11b03a86e549ebd391641c881f503d796edeeb6d921391ff99f84741420d
+  sha256: 5412173a0b0391f9d3d920626d226dd454d682871d390172d3cc85fbe6deddf9
+notes_baseline: cfcf056b504e04537a8c691f37bbd89a5e3291cfedfb4ef74e19c794beb887bd
 ---
 
-# ADR-0160: Executable UML on the EIJA kernel: one interpreter, a closed action vocabulary, SCXML as the standard cross-check
+# ADR-0165: Executable UML on the EIJA kernel: one interpreter, a closed action vocabulary, SCXML as the standard cross-check
 
 <!-- okf:generated:begin facts -->
 | | |
@@ -25,7 +25,7 @@ notes_baseline: 383a11b03a86e549ebd391641c881f503d796edeeb6d921391ff99f84741420d
 | Status | accepted for the state-machine slice |
 | Date | 2026-10-08 |
 | Lane | executable UML (owner direction, 8 October 2026: "how UML is executable and then runnable, with EIJA as the system underneath") |
-| Source | `repo://docs/adr/0160-executable-uml-on-the-eija-kernel.md` |
+| Source | `repo://docs/adr/0165-executable-uml-on-the-eija-kernel.md` |
 
 ## Decision outcome (verbatim)
 

@@ -15,6 +15,7 @@
   const earned = [];
   let screens = null, screensEdited = false, useCase = null, checkTimer = 0, problems = [], useCaseList = [];
   const base = {}; // each cell's own style and label, so overlays can be cleared
+  const hooks = { redraw: [], inspect: [] }; // the run bar (play-run.js) redraws its marks and adds inspector tools
 
   async function api(path, body) {
     const options = { headers: { Authorization: "Bearer " + token } };
@@ -85,6 +86,7 @@
       select(cell ? cell.id : "", false);
     });
     fit();
+    for (const f of hooks.redraw) f();
   }
 
   function tooltip(cell) {
@@ -146,6 +148,7 @@
       row(dl, "Leaves by", out.map(label).join(", ") || "nothing (an end state)");
       row(dl, "Entered by", into.map(label).join(", ") || (s === model.initial_state ? "creation" : "nothing (unreachable)"));
       box.append(dl, stateTools(s));
+      for (const f of hooks.inspect) f(id, box);
       return;
     } else {
       const t = transition(id.slice(11));
@@ -156,6 +159,7 @@
       row(dl, "Effects", t.required_effects.join(", ") || "none");
       row(dl, "Never", t.forbidden_effects.join(", ") || "nothing listed");
       box.append(dl, screenLink(t.action), transitionTools(t));
+      for (const f of hooks.inspect) f(id, box);
       return;
     }
     box.append(dl);
@@ -1324,6 +1328,12 @@
     window.addEventListener("resize", fit);
     document.body.dataset.ready = "true";
   }
+
+  // What the run bar (play-run.js, ADR-0160) may use. It holds no rules either: it moves through the server's run log.
+  window.PlayIDE = {
+    api, el, hooks, about, viewKey, label, restyle, clearSim, select,
+    graph: () => graph, model: () => model, selected: () => selected,
+  };
 
   start().catch((error) => {
     $("inspector").replaceChildren(el("p", `Could not load the model (${error.code || "ERROR"}): ${error.message}. If the session expired, open PlayIDE from the private launch link.`, { class: "muted" }));

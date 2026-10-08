@@ -1,4 +1,4 @@
-"""SCXML export and the differential check against the kernel (ADR-0160).
+"""SCXML export and the differential check against the kernel (ADR-0165).
 
 The export is checked here without any engine. The differential needs python-statemachine (the `xuml` extra); without
 it those tests are skipped and the gate reports NOT_RUN, never PASS. Each negative control breaks the exported chart

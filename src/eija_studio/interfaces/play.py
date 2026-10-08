@@ -1,7 +1,8 @@
 """PlayIDE routes: the visual UML canvas page, Build & run of the model as a live app beside it (ADR-0151), and
 Simulate, seeded simulated users whose every step the kernel decides (ADR-0152), the screen designer's check and
-build of designed screens (ADR-0154), the component diagram read from the files the app is built from (ADR-0155), and the chat's plan mode, whose accepted
-steps can be previewed, built and simulated but never saved or applied from here (ADR-0156).
+build of designed screens (ADR-0154), the component diagram read from the files the app is built from (ADR-0155), the chat's plan mode, whose accepted
+steps can be previewed, built and simulated but never saved or applied from here (ADR-0156), and the run bar's seeded
+run log with breakpoints and Stop (ADR-0160).
 
 Build & run reuses `eija build` (ADR-0150): the app is generated into the workspace, its kernel conformance tests run,
 and only a PASSing app is started, as a separate local process on a free loopback port. One app runs at a time; a new
@@ -26,7 +27,7 @@ from pydantic import Field
 
 from eija_studio.application.components import app_components
 from eija_studio.application.plan import preview_plan, propose_plan
-from eija_studio.application.simulation import MAX_STEPS, simulate
+from eija_studio.application.simulation import MAX_BREAKPOINTS, MAX_STEPS, run_log, simulate
 from eija_studio.domain.data import data_for
 from eija_studio.domain.models import Contract, DomainError, Workflow
 from eija_studio.domain.pack import Pack
@@ -57,6 +58,11 @@ class PlanPreviewRequest(BuildRequest):
 class SimulateRequest(BuildRequest):
     seed: int = Field(default=1, ge=0, le=2**31 - 1)
     steps: int = Field(default=500, ge=1, le=MAX_STEPS)
+
+
+class RunRequest(SimulateRequest):
+    breakpoints: list[str] = Field(default_factory=list, max_length=MAX_BREAKPOINTS)
+    break_on_refusal: bool = False
 
 
 def _free_port() -> int:
@@ -123,9 +129,12 @@ class AppRunner:
                 self.process.kill()
         self.process, self.running = None, None
 
-    def stop(self) -> None:
+    def stop(self) -> bool:
+        """Stop the running app, if any; say whether one was running."""
         with self.lock:
+            was = self.process is not None and self.process.poll() is None
             self._stop()
+            return was
 
 
 def register(app, studio, web: Path) -> AppRunner:
@@ -200,5 +209,16 @@ def register(app, studio, web: Path) -> AppRunner:
     @app.post("/api/play/simulate")
     def play_simulate(body: SimulateRequest):
         return simulate(studio.pack, resolve(body), seed=body.seed, steps=body.steps)
+
+    @app.post("/api/play/run")
+    def play_run(body: RunRequest):
+        """The run bar (ADR-0160): every step of one seeded run, decided by the kernel, and where it stops."""
+        return run_log(studio.pack, resolve(body), seed=body.seed, steps=body.steps, breakpoints=body.breakpoints,
+                       break_on_refusal=body.break_on_refusal)
+
+    @app.post("/api/play/stop")
+    def play_stop():
+        """The run bar's Stop: stop the built app if one is running."""
+        return {"stopped": runner.stop()}
 
     return runner

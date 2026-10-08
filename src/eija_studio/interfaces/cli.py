@@ -106,7 +106,7 @@ def _add_scxml_parser(subs) -> None:
 
 
 def scxml_command(args) -> int:
-    """The model as SCXML (ADR-0160). Read-only; a model the protected policy refuses is not exported (exit 2)."""
+    """The model as SCXML (ADR-0165). Read-only; a model the protected policy refuses is not exported (exit 2)."""
     pack = resolve_pack(args.pack)
     model = Workflow.model_validate_json(args.workflow.read_text(encoding="utf-8")) if args.workflow else pack.model
     _write_render(to_scxml(pack, model).encode("utf-8"), args.out)

@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/play.py
   title: interfaces/play.py
   hash_method: ast-api-v1
-  sha256: 41a2e4bb3fd54e7c77404010331e5e3b63fbfd41e4ec182d1fe78b3680e1a790
-notes_baseline: 653e224c6f482c617b70c5b33b4d3c1b417de08e8a3ada0f803a6c29c864128c
+  sha256: e150bc1869459fc2f58492a334223bcb08715dadecef3e3ba948f364ca4adfda
+notes_baseline: c4060f866e4c2df424110b95af1eac23e446f65f397c53ae1de150dd6072879d
 ---
 
 # interfaces.play
@@ -31,8 +31,9 @@ notes_baseline: 653e224c6f482c617b70c5b33b4d3c1b417de08e8a3ada0f803a6c29c864128c
 ~~~text
 PlayIDE routes: the visual UML canvas page, Build & run of the model as a live app beside it (ADR-0151), and
 Simulate, seeded simulated users whose every step the kernel decides (ADR-0152), the screen designer's check and
-build of designed screens (ADR-0154), the component diagram read from the files the app is built from (ADR-0155), and the chat's plan mode, whose accepted
-steps can be previewed, built and simulated but never saved or applied from here (ADR-0156).
+build of designed screens (ADR-0154), the component diagram read from the files the app is built from (ADR-0155), the chat's plan mode, whose accepted
+steps can be previewed, built and simulated but never saved or applied from here (ADR-0156), and the run bar's seeded
+run log with breakpoints and Stop (ADR-0160).
 
 Build & run reuses `eija build` (ADR-0150): the app is generated into the workspace, its kernel conformance tests run,
 and only a PASSing app is started, as a separate local process on a free loopback port. One app runs at a time; a new
