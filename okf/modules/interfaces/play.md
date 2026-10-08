@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/play.py
   title: interfaces/play.py
   hash_method: ast-api-v1
-  sha256: 7ffaef19b97907ee0c274e2aa2b44af58e9517279216cab9aa0647e3ed654e79
-notes_baseline: bfed6cb5b979e6a88e564fa43f57ffdb0b3de91ab79578700e3848fa08c4b8e2
+  sha256: 2bbb6dc5719990e813ff271dd4fdea0893155a6afc2745be03a37768629e58ea
+notes_baseline: e60d387ce4be41a879dfb077dfe5349a8f3e4f7566acf80bea119b54ea6eb07c
 ---
 
 # interfaces.play
@@ -33,9 +33,9 @@ PlayIDE routes: the visual UML canvas page, Build & run of the model as a live a
 Simulate, seeded simulated users whose every step the kernel decides (ADR-0152), the screen designer's check and
 build of designed screens (ADR-0154), the component diagram read from the files the app is built from (ADR-0155), the chat's plan mode, whose accepted
 steps can be previewed, built and simulated but never saved or applied from here (ADR-0156), the ripple of a plan
-across every diagram with the follow-on edits the proposer suggests, each re-checked (ADR-0158), and the run bar's
-seeded run log with breakpoints and Stop (ADR-0160), and the review of a change as a UML diff whose behaviour
-the kernel runs on both sides (ADR-0175).
+across every diagram with the follow-on edits the proposer suggests, each re-checked (ADR-0158), the run bar's
+seeded run log with breakpoints and Stop (ADR-0160), who can do what with reachability questions (ADR-0171), and the
+review of a change as a UML diff whose behaviour the kernel runs on both sides (ADR-0175).
 
 Build & run reuses `eija build` (ADR-0150): the app is generated into the workspace, its kernel conformance tests run,
 and only a PASSing app is started, as a separate local process on a free loopback port. One app runs at a time; a new
@@ -48,6 +48,7 @@ _Symbol pages are generated for the domain and application layers only._
 
 ## Internal imports
 
+* [`application/access`](/modules/application/access.md)
 * [`application/components`](/modules/application/components.md)
 * [`application/law_proof`](/modules/application/law_proof.md)
 * [`application/plan`](/modules/application/plan.md)
@@ -70,6 +71,7 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Imports
 
+* [application.access](/modules/application/access.md) - Who can do what (ADR-0171): the model's permissions as a role by state matrix, each cell checked by the kernel, and reachability questions such as "can a recor…
 * [application.components](/modules/application/components.md) - The component diagram of an app built from the model (ADR-0155), extracted from the generated files themselves.
 * [application.law_proof](/modules/application/law_proof.md) - Prove a pack's laws over every run the kernel allows (ADR-0166).
 * [application.plan](/modules/application/plan.md) - Plan mode for the PlayIDE chat (ADR-0156): an AI proposes a change as numbered typed steps; the person accepts or rejects each one and sees what the accepted o…

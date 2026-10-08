@@ -2,6 +2,9 @@
 
 ## 2026-10-08
 
+* **Merge of main into the permissions branch** (twice, the second bringing ADR-0175): re-synced `interfaces.play` and `interfaces.http` (both laws/ripple and access/reach routes) and ADR-0172 links. No Notes were hand-edited and nothing was recorded as verified.
+* **Review view**: synced ADR-0172 (presentation only, no module changes). No Notes were hand-edited and nothing was recorded as verified.
+* **Who can do what**: synced ADR-0171 and the new `application.access` module and symbol pages; `interfaces.play` (`/api/play/access`, `/api/play/reach`) and `interfaces.http` refreshed, and pages linking to `runtime`, `simulation`, `models` and `pack` changed only in generated references. No Notes were hand-edited and nothing was recorded as verified.
 * **Review a change in PlayIDE**: synced ADR-0175 and the new `application.review` module and symbol pages; `interfaces.play`, `interfaces.http` and the pages that link to them refreshed. No Notes were hand-edited and nothing was recorded as verified.
 * **Laws proved over every run**: synced ADR-0166 and the new `application.law_proof` module and symbol pages; `interfaces.cli` (`laws`), `interfaces.play` (`/api/play/laws`) and `interfaces.http` (the `play-laws.js` asset) refreshed. No Notes were hand-edited and nothing was recorded as verified.
 * **Ripple across diagrams**: synced ADR-0158, the new `application.ripple` module, `domain.screens.default_screen`, `application.ports.PlanProposer.follow_on`, `adapters.plan_proposals` and `interfaces.play` pages. No Notes were hand-edited and nothing was recorded as verified. The new `playide_ripple` demo was recorded and the PlayIDE tour re-recorded.

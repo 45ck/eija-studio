@@ -25,3 +25,9 @@ kbd{font:inherit;font-size:.75rem;padding:1px 6px;border:1px solid var(--line);b
 .palette-dialog ul{max-height:50vh;overflow:auto;padding:6px}
 .palette-dialog .empty{cursor:default}
 .palette-keys{margin:0;padding:8px 16px;border-top:1px solid var(--line)}
+/* The review view (ADR-0172): every editing tool out of view; diagrams, Permissions, Simulate and Build & run stay. */
+body[data-view="review"] #draw-palette,body[data-view="review"] .side .chat,body[data-view="review"] .edit-tools,
+body[data-view="review"] #screens .palette,body[data-view="review"] #screens-reset{display:none!important}
+.view-badge{display:inline-flex;align-items:center;gap:6px;max-width:520px;padding:4px 10px;border-radius:8px;background:#efe7fb;color:#3d1f73;font-size:.78rem;line-height:1.3}
+.view-badge strong{white-space:nowrap}
+.view-badge a.quiet{padding:2px 8px;font-size:.78rem}

@@ -16,7 +16,7 @@
   const earned = [];
   let screens = null, screensEdited = false, useCase = null, checkTimer = 0, problems = [], useCaseList = [];
   const base = {}; // each cell's own style and label, so overlays can be cleared
-  const hooks = { redraw: [], inspect: [], laws: [] }; // the run bar (play-run.js) redraws its marks and adds inspector tools
+  const hooks = { redraw: [], inspect: [], laws: [], tab: [] }; // the run bar (play-run.js) redraws its marks and adds inspector tools; play-laws.js and play-access.js draw their tabs
 
   async function api(path, body) {
     const options = { headers: { Authorization: "Bearer " + token } };
@@ -102,7 +102,7 @@
   function transition(id) { return model.transitions.find((t) => t.id === id); }
 
   const current = () => ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: componentGraph, review: PlayReview.graph() })[tab];
-  const PANELS = { states: "canvas", classes: "class-canvas", usecases: "usecase-canvas", screens: "screens", components: "component-canvas", laws: "laws", review: "review" };
+  const PANELS = { states: "canvas", classes: "class-canvas", usecases: "usecase-canvas", screens: "screens", components: "component-canvas", laws: "laws", review: "review", access: "access-panel" };
   const HINTS = {
     states: "Drag from the palette to draw a state, a transition or the initial state; select an element to change or remove it. Drawn changes join the plan for you to preview; nothing is saved.",
     classes: "Select a class to see its attributes and associations.",
@@ -110,6 +110,7 @@
     screens: "Design each use case's screen. The design check runs as you edit; Build & run uses these screens.",
     components: "The built app's components, read from its generated files: every line is an import, a route or a file read.",
     laws: "The pack's laws: what this model must never do, whatever is drawn. Each is proved over every run the kernel allows, by every kind of actor.",
+    access: "Who can do what, from each state. Every cell is tried in the kernel with the pack's fixture actors; a previewed plan's changes are flagged.",
     review: "Review the change shown against the model in force: look at each change, predict what the kernel does, then decide. Nothing is approved from here.",
   };
 
@@ -359,8 +360,10 @@
       $(panel).hidden = which !== name;
     }
     $("canvas-help").textContent = HINTS[which];
-    for (const id of ["fit", "zoom-in", "zoom-out"]) $(id).hidden = which === "screens" || which === "laws";
+    for (const id of ["fit", "zoom-in", "zoom-out"]) $(id).hidden = which === "screens" || which === "laws" || which === "access";
     $("draw-palette").hidden = which !== "states";
+    for (const f of hooks.tab) f(which);
+    if (which === "access") return;
     if (which === "screens") { renderDesigner(); return; }
     if (which === "laws") { for (const show of hooks.laws) show(); return; }
     if (which === "usecases") drawUseCases();
@@ -978,7 +981,7 @@
   }
 
   function draftTools(buttons) {
-    const tools = el("div", undefined, { class: "draft-tools" });
+    const tools = el("div", undefined, { class: "draft-tools edit-tools" }); // edit-tools: hidden in the review view (ADR-0172)
     for (const [text, run] of buttons) {
       const b = el("button", text, { type: "button" });
       b.addEventListener("click", run);
@@ -1518,6 +1521,7 @@
     $("tab-screens").addEventListener("click", () => showTab("screens"));
     $("tab-components").addEventListener("click", () => showTab("components"));
     $("tab-laws").addEventListener("click", () => showTab("laws"));
+    $("tab-access").addEventListener("click", () => showTab("access"));
     $("chat-form").addEventListener("submit", ask);
     for (const key of Object.keys(DIAGRAMS)) $("tab-" + key).append(el("span", "", { class: "badge", hidden: "" }));
     startDrawing();
@@ -1543,7 +1547,7 @@
   // request is planned against, not a previewed candidate.
   window.PlayIDE = {
     api, el, hooks, about, viewKey, label, restyle, clearSim, select, showTab, fit,
-    graph: () => graph, model: () => model, selected: () => selected, pack: () => packInfo, base: () => baseModel,
+    graph: () => graph, tab: () => tab, model: () => model, selected: () => selected, pack: () => packInfo, base: () => baseModel,
   };
 
   start().catch((error) => {

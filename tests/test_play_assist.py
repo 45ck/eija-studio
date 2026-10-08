@@ -118,3 +118,41 @@ def test_ask_complete_palette_and_keyboard_review_in_a_real_browser():
             assert errors == []
         finally:
             chrome.close()
+
+
+@pytest.mark.browser
+@pytest.mark.slow
+@browser
+def test_the_review_view_keeps_diagrams_and_simulate_and_hides_every_editing_tool():
+    api = pytest.importorskip("playwright.sync_api", reason="NOT_RUN: install the hci or demos extra")
+    from demos.lib import ephemeral_eija_server  # noqa: PLC0415 - demos start a real server; only this opt-in test needs it
+
+    with (
+        ephemeral_eija_server(pack=ROOT / "packs/library-loan") as server,
+        api.sync_playwright() as playwright,
+    ):
+        chrome = _launch(api, playwright)
+        try:
+            page = chrome.new_page(viewport={"width": 1600, "height": 900})
+            errors: list[str] = []
+            page.on("pageerror", lambda error: errors.append(str(error)))
+            page.goto(f"{server.base_url}/play?view=review#{server.token}")
+            page.wait_for_selector("body[data-assist=ready]", timeout=60_000)
+            assert "Review view" in page.inner_text("#review-badge")
+            for hidden in ("#draw-palette", ".side .chat"):
+                assert not page.is_visible(hidden)
+            page.click('.outline button[data-id="state:Overdue"]')
+            assert page.locator("#inspector .edit-tools").count() == 1 and not page.is_visible("#inspector .edit-tools")
+            page.keyboard.press("Delete")  # would add a removal to a plan in the editing view
+            assert page.locator("#chat-log .plan").count() == 0
+            page.click("#tab-screens")
+            assert page.evaluate("document.getElementById('screen-card').inert") and not page.is_visible("#screens .palette")
+            page.click("#tab-states")
+            page.click("#simulate")
+            page.wait_for_selector("#sim-summary:has-text('refused by the kernel')", timeout=60_000)
+            page.keyboard.press("Control+k")
+            page.keyboard.type("ai")
+            assert "Ask the AI" not in page.inner_text("#palette-list")
+            assert errors == []
+        finally:
+            chrome.close()

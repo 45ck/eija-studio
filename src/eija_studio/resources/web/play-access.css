@@ -1,0 +1,33 @@
+/* PlayIDE permissions (ADR-0171): the reachability question and the role by state matrix. */
+.access{flex:1;min-height:0;overflow:auto;padding:14px 18px;background:#fbfcfe;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.access[hidden]{display:none}
+.reach{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:12px;background:var(--panel);border:1px solid var(--line);border-radius:10px;font-size:.92rem}
+.reach select{font:inherit;font-size:.9rem;padding:5px 8px;border:1px solid var(--line);border-radius:7px;background:var(--panel)}
+.reach-answer{flex-basis:100%}
+.reach-answer .verdict{margin:4px 0;font-size:.9rem}
+.reach-answer .verdict strong{display:inline-block;padding:1px 9px;border-radius:999px;margin-right:4px}
+.verdict.ok strong{background:var(--ok-bg);color:var(--ok)}
+.verdict.bad strong{background:var(--bad-bg);color:var(--bad)}
+.verdict.warn strong{background:#fdf4e3;color:#8a5a00}
+.reach-path{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 0;padding:0;list-style:none;counter-reset:step}
+.reach-path li{display:flex;align-items:center;gap:4px}
+.reach-path button{padding:3px 9px;font-size:.82rem}
+.access-changes h3{margin-top:14px}
+.access-changes li{font-size:.88rem;padding:2px 0}
+.access-changes li.added{color:var(--ok)}
+.access-changes li.removed{color:var(--bad)}
+.access-grid{border-collapse:separate;border-spacing:0;margin-top:14px;min-width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.access-grid caption{caption-side:top;text-align:left;font-size:.8rem;color:var(--muted);padding:0 4px 6px}
+.access-grid th,.access-grid td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:8px 10px;vertical-align:top;text-align:left;font-size:.86rem}
+.access-grid tr>*:last-child{border-right:0}
+.access-grid tr:last-child>*{border-bottom:0}
+.access-grid thead th,.access-grid tr:first-child th{background:var(--bg);font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.perm{margin-bottom:6px}
+.perm.added{background:var(--ok-bg);border-radius:6px;padding:4px}
+.perm.removed{color:var(--bad);text-decoration:line-through;font-size:.84rem}
+.perm-name{border:0;background:transparent;padding:0;font-weight:600;color:var(--state-line);cursor:pointer}
+.perm .tag{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-left:6px;padding:1px 6px;border-radius:999px;background:var(--busy-bg);color:var(--muted)}
+.perm .tag.new{background:var(--ok);color:#fff}
+.who-can{margin:2px 0 0;padding:0;list-style:none;font-size:.76rem}
+.who-can .yes{color:var(--ok)}
+.who-can .no{color:var(--muted)}

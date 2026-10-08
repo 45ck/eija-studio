@@ -8,6 +8,7 @@
   const HOLE = /‹[^›]+›/; // a blank the person still has to fill, written ‹state›, ‹role›, ‹action› or ‹new name›
   const isMac = /Mac|iPhone|iPad/.test(navigator.platform);
   const MOD = isMac ? "⌘" : "Ctrl+";
+  const REVIEW = new URLSearchParams(location.search).get("view") === "review"; // the read-only review view (ADR-0172)
 
   function el(tag, text, attrs = {}) {
     const node = document.createElement(tag);
@@ -263,6 +264,37 @@
     if (card) card.querySelector(".plan-steps input").focus();
   }
 
+  // ---- The review view ----------------------------------------------------------------------------------------------
+  // ?view=review: the same UML diagrams, Permissions, Simulate, the run bar and Build & run, with every editing tool out
+  // of view, for someone who reviews the model rather than changes it. It is a view, not a permission: edits in PlayIDE
+  // are never saved anyway, and approving or applying a change stays with the owner in the review workbench.
+  const viewUrl = (review) => {
+    const query = new URLSearchParams(location.search);
+    if (review) query.set("view", "review"); else query.delete("view");
+    return location.pathname + (query.toString() ? "?" + query : "");
+  };
+
+  function reviewView() {
+    if (!REVIEW) return;
+    document.body.dataset.view = "review";
+    $("screen-card").inert = true; // read the screens, change nothing
+    const badge = el("span", undefined, { id: "review-badge", class: "view-badge", role: "note",
+      title: "Read, simulate and check. Nothing here can change the model; the owner approves in the review workbench." });
+    const leave = el("a", "Edit", { href: viewUrl(false), class: "quiet", title: "Leave the review view" });
+    badge.append(el("strong", "Review view"), " read only ", leave);
+    (document.querySelector(".bar .brand") || document.body).after(badge);
+    // The state machine's hint talks about drawing; say what this view is for instead.
+    const hint = $("canvas-help"), reword = () => {
+      if (hint.textContent.startsWith("Drag from the palette")) hint.textContent = "Select an element to inspect it. Simulate and the run bar show how records move; Permissions shows who can do what.";
+    };
+    new MutationObserver(reword).observe(hint, { childList: true });
+    reword();
+    // Delete on the canvas would add a removal to a plan; there is no plan in this view.
+    document.addEventListener("keydown", (event) => {
+      if ((event.key === "Delete" || event.key === "Backspace") && event.target.closest && event.target.closest(".canvas")) event.stopImmediatePropagation();
+    }, true);
+  }
+
   // ---- One palette for every command and every element -------------------------------------------------------------
   // Ctrl+K (⌘K). Commands press the page's own buttons, so the palette can do nothing a click could not.
   function commands() {
@@ -285,11 +317,15 @@
       ["Show the use cases", "tab-usecases", press("tab-usecases")],
       ["Show the screens", "tab-screens", press("tab-screens")],
       ["Show the components", "tab-components", press("tab-components")],
+      ["Show who can do what (permissions)", "tab-access", press("tab-access")],
       ["Fit the diagram", "fit", press("fit")],
       ["Show the checks", "health", press("health"), () => $("checks") && $("checks").hidden],
       ["Open the review workbench", null, () => { location.href = "/"; }],
     ];
+    items.push(REVIEW ? ["Leave the review view (edit)", null, () => { location.href = viewUrl(false); }]
+      : ["Open the review view (read-only)", null, () => { location.href = viewUrl(true); }]);
     return items.filter(([, id, , when]) => (!id || usable($(id))) && (!when || when()))
+      .filter(([label]) => !REVIEW || !/AI|plan/.test(label))
       .map(([label, , run]) => ({ label, group: "Command", run }));
   }
 
@@ -298,7 +334,7 @@
     return [...document.querySelectorAll(".outline button[data-id]")].flatMap((b) => {
       const kind = kinds[b.dataset.id.split(":")[0]], go = () => b.click();
       const items = [{ label: b.textContent, group: kind, run: go }];
-      if (kind !== "Class") items.push({ label: `Ask the AI about ${b.textContent.replace(/ \(initial\)$/, "")}`, group: "Ask", run: () => { go(); $("chat-input").focus(); } });
+      if (kind !== "Class" && !REVIEW) items.push({ label: `Ask the AI about ${b.textContent.replace(/ \(initial\)$/, "")}`, group: "Ask", run: () => { go(); $("chat-input").focus(); } });
       return items;
     });
   }
@@ -376,6 +412,7 @@
   function start() {
     if (!view() || document.body.dataset.ready !== "true" || document.body.dataset.assist) return;
     document.body.dataset.assist = "ready";
+    reviewView();
     authority();
     composer();
     palette();
