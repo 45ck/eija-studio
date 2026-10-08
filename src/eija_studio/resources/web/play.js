@@ -11,6 +11,8 @@
   let graph, model, selected = "", sim = null, replayTimer = 0, data = null, classGraph = null, useCaseGraph = null, tab = "states";
   let components = null, componentGraph = null, lastBuild = null;
   let baseModel = null, plan = null; // the server's model, and the chat plan being previewed on top of it (if any)
+  let packInfo = null, points = 0, simKey = null, cards = 0, problemsFor = null; // the pack's actions and roles; check points; what was simulated
+  const earned = [];
   let screens = null, screensEdited = false, useCase = null, checkTimer = 0, problems = [], useCaseList = [];
   const base = {}; // each cell's own style and label, so overlays can be cleared
 
@@ -99,7 +101,7 @@
   const current = () => ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: componentGraph })[tab];
   const PANELS = { states: "canvas", classes: "class-canvas", usecases: "usecase-canvas", screens: "screens", components: "component-canvas" };
   const HINTS = {
-    states: "Drag states to arrange them. Select an element to inspect it. Arrangement is not saved yet.",
+    states: "Drag from the palette to draw a state, a transition or the initial state; select an element to change or remove it. Drawn changes join the plan for you to preview; nothing is saved.",
     classes: "Select a class to see its attributes and associations.",
     usecases: "Select a use case to inspect it. Double-click one to design its screen.",
     screens: "Design each use case's screen. The design check runs as you edit; Build & run uses these screens.",
@@ -143,6 +145,8 @@
       row(dl, "Initial", s === model.initial_state ? "yes" : "no");
       row(dl, "Leaves by", out.map(label).join(", ") || "nothing (an end state)");
       row(dl, "Entered by", into.map(label).join(", ") || (s === model.initial_state ? "creation" : "nothing (unreachable)"));
+      box.append(dl, stateTools(s));
+      return;
     } else {
       const t = transition(id.slice(11));
       box.append(el("h3", `${t.action} (${t.id})`));
@@ -151,7 +155,7 @@
       row(dl, "Guards", t.guards.join(", "));
       row(dl, "Effects", t.required_effects.join(", ") || "none");
       row(dl, "Never", t.forbidden_effects.join(", ") || "nothing listed");
-      box.append(dl, screenLink(t.action));
+      box.append(dl, screenLink(t.action), transitionTools(t));
       return;
     }
     box.append(dl);
@@ -332,6 +336,7 @@
     }
     $("canvas-help").textContent = HINTS[which];
     for (const id of ["fit", "zoom-in", "zoom-out"]) $(id).hidden = which === "screens";
+    $("draw-palette").hidden = which !== "states";
     if (which === "screens") { renderDesigner(); return; }
     if (which === "usecases") drawUseCases();
     if (which === "components") { drawComponents(); return; }
@@ -368,7 +373,8 @@
     try {
       const result = await api("/api/play/plan", { case_id: caseId, model: baseModel, request: text });
       retire();
-      plan = { ...result, accepted: result.steps.map(() => true), previewing: false, card: null };
+      plan = { ...result, steps: result.steps.map((step) => ({ ...step, author: "ai", checked: false, caught: false })),
+        accepted: result.steps.map(() => true), previewing: false, card: null, rewarded: new Set() };
       plan.card = say("ai", planCard());
       renderPlan(result.preview);
     } catch (error) {
@@ -390,15 +396,21 @@
   function planCard() {
     const box = el("div", undefined, { class: "plan" });
     box.append(el("p", plan.summary || "A plan", { class: "plan-summary" }),
-      el("p", `${plan.provider}${plan.live ? "" : " · offline fixture, not a live model"} · untrusted until you check it`, { class: "muted small" }));
+      el("p", plan.scope === "plan-draft" ? "Drawn by you on the diagram · checked by the server like any plan"
+        : `${plan.provider}${plan.live ? "" : " · offline fixture, not a live model"} · untrusted until you check it`, { class: "muted small" }));
+    cards += 1;
     const list = el("ol", undefined, { class: "plan-steps" });
     plan.steps.forEach((step, i) => {
-      const li = el("li"), id = `plan-${plan.model.slice(0, 6)}-${i}`, check = el("input", undefined, { type: "checkbox", id });
+      const li = el("li"), id = `plan-${cards}-${i}`, check = el("input", undefined, { type: "checkbox", id });
       check.checked = plan.accepted[i];
-      check.addEventListener("change", () => { plan.accepted[i] = check.checked; refreshPlan(); });
-      const text = el("label", step.text, { for: id });
+      check.addEventListener("change", () => toggleStep(i, check.checked));
+      const text = el("label", undefined, { for: id });
+      text.append(el("span", step.author === "ai" ? "AI" : "You", { class: "who " + step.author }), el("span", step.text, { class: "step-text" }));
+      const show = el("button", "Show me", { type: "button", class: "quiet show", title: "Show this step on the diagram" });
+      show.addEventListener("click", () => showStep(i));
       li.append(check, text, el("span", "", { class: "step-status" }));
       if (step.why) li.append(el("p", step.why, { class: "muted small why" }));
+      li.append(show);
       list.append(li);
     });
     const verdict = el("p", "", { class: "plan-verdict", role: "status" });
@@ -406,7 +418,7 @@
     const preview = el("button", "Preview on the diagram", { type: "button", class: "primary" });
     preview.addEventListener("click", () => (plan.previewing ? leavePreview() : enterPreview()));
     tools.append(preview);
-    if (plan.meaning) {
+    if (plan.meaning && plan.steps.every((step) => step.author === "ai")) {
       const keep = el("button", "Make it a change case", { type: "button" });
       keep.addEventListener("click", makeCase);
       tools.append(keep);
@@ -419,11 +431,13 @@
     const mine = plan, seq = (mine.seq = (mine.seq || 0) + 1); // only the answer for the latest ticks is shown
     try {
       const result = await api("/api/play/plan/preview", { case_id: caseId, model: baseModel, steps: mine.steps.map((s) => s.transaction), accepted: [...mine.accepted] });
-      if (mine !== plan || seq !== mine.seq) return;
+      if (mine !== plan || seq !== mine.seq) return null;
       renderPlan(result);
       if (plan.previewing) (result.legal ? enterPreview : leavePreview)();
+      return result;
     } catch (error) {
       if (mine === plan && seq === mine.seq) plan.card.querySelector(".plan-verdict").textContent = `${error.code || "ERROR"}: ${error.message}`;
+      return null;
     }
   }
 
@@ -432,7 +446,9 @@
     const marks = { applies: "✓", rejected: "–", does_not_apply: "✗" };
     plan.card.querySelectorAll(".plan-steps > li").forEach((li, i) => {
       const s = result.steps[i];
-      li.className = s.status;
+      plan.steps[i].text = s.text;
+      li.querySelector(".step-text").textContent = s.text;
+      li.className = s.status + (plan.steps[i].checked ? " checked" : "");
       li.querySelector(".step-status").textContent = marks[s.status] + (s.code ? ` ${s.code}` : "");
       li.querySelector(".step-status").title = s.message || "";
     });
@@ -444,6 +460,7 @@
         ? `Step ${result.steps.findIndex((x) => x.status === "does_not_apply") + 1} does not apply after the steps you kept (${result.steps.find((x) => x.status === "does_not_apply").message}).`
         : `The policy refuses the accepted steps: ${result.codes.join(", ") || result.message}.`;
     plan.card.querySelector(".plan-tools .primary").disabled = !result.legal && !plan.previewing;
+    renderHealth();
   }
 
   function changes(diff) {
@@ -516,6 +533,270 @@
     } catch (error) {
       say("ai", el("p", `${error.code || "ERROR"}: ${error.message}`, { class: "refusal" }));
     }
+  }
+
+  // Drawing and checks (ADR-0157). The palette and the inspector turn mouse gestures into typed steps of your own,
+  // added to the plan beside any AI steps: the server checks and previews them exactly like the AI's, and nothing is
+  // saved from here. The checks ring fills only from real results on the model you are looking at (the screen design
+  // check, a conformance pass, a simulation, every AI step looked at), and points come from checking AI steps, never
+  // from making changes.
+  const viewKey = () => JSON.stringify([about().plan, screensEdited ? screens : null]);
+  const screensKey = () => JSON.stringify([about().plan, screens]); // what the last design check was about
+  const KINDS = { state: "a state", transition: "a transition", initial: "the initial state", rename: "a new name", move: "a moved transition" };
+
+  async function addStep(transaction) {
+    if (!plan) {
+      plan = { scope: "plan-draft", provider: "drawn by you", live: false, summary: "Your changes", meaning: null, request: "",
+        model: "draft", steps: [], accepted: [], previewing: false, card: null, rewarded: new Set() };
+      plan.card = say("draft", el("div"));
+    }
+    plan.steps.push({ n: plan.steps.length + 1, transaction, text: "", why: "", author: "you", checked: false, caught: false });
+    plan.accepted.push(true);
+    plan.card.replaceChildren(planCard());
+    const result = await refreshPlan();
+    if (result && result.legal && !plan.previewing) enterPreview();
+    plan.card.scrollIntoView({ block: "nearest" });
+  }
+
+  async function toggleStep(i, on) {
+    const was = plan.result, step = plan.steps[i];
+    plan.accepted[i] = on;
+    const now = await refreshPlan();
+    if (now && step.author === "ai" && !on && !step.caught && was && was.accepted && !was.legal && now.legal) {
+      step.caught = true;
+      earn(3, `Caught AI step ${i + 1}: without it the policy allows the plan`);
+    }
+  }
+
+  function cellOf(tx) {
+    if (tx.kind === "rename_state") return "state:" + (plan.previewing ? tx.to : tx.state);
+    if (tx.state && tx.kind !== "retarget_transition") return "state:" + tx.state;
+    return "transition:" + (tx.kind === "add_transition" ? tx.id : tx.transition);
+  }
+
+  function stepNote(i) {
+    const step = plan.steps[i], status = plan.result && plan.result.steps[i], note = el("div", undefined, { class: "step-note" });
+    const head = el("p");
+    head.append(el("strong", `Step ${i + 1} (${step.author === "ai" ? "AI" : "you"}): `), document.createTextNode(step.text));
+    note.append(head);
+    if (step.why) note.append(el("p", step.why, { class: "muted" }));
+    const where = !status ? "" : status.status === "rejected" ? "You rejected this step."
+      : status.status === "does_not_apply" ? `It does not apply: ${status.message}`
+      : plan.previewing ? "The diagram shows the plan with this step applied."
+      : plan.result.legal ? "Shown on the model, marked in red: the plan removes it."
+      : "It applies, but the policy refuses the accepted steps together: see the plan's verdict.";
+    note.append(el("p", where));
+    return note;
+  }
+
+  function showStep(i) {
+    const step = plan.steps[i];
+    if (!plan.previewing && plan.result && plan.result.legal) enterPreview();
+    if (tab !== "states") showTab("states");
+    const id = cellOf(step.transaction);
+    let cell = graph.getDataModel().getCell(id);
+    if (!cell && plan.previewing) { // a removal: the element is gone from the preview, so show it on the model
+      leavePreview();
+      cell = graph.getDataModel().getCell(id);
+      if (cell) restyle(id, { strokeColor: "#a12f2f", dashed: true, strokeWidth: 3 });
+    }
+    if (cell) {
+      graph.setSelectionCell(cell);
+      graph.scrollCellToVisible(cell, true);
+    } else {
+      graph.clearSelection();
+      inspect("");
+    }
+    const note = stepNote(i);
+    if (!cell) note.append(el("p", "Its element is not on the diagram: preview a plan the policy allows to see it.", { class: "muted" }));
+    $("inspector").prepend(note);
+    if (cell && step.author === "ai" && !step.checked) { // credit only for a step actually shown
+      step.checked = true;
+      earn(1, `Looked at AI step ${i + 1} on the diagram`);
+    }
+    if (plan.result) renderPlan(plan.result);
+  }
+
+  // `ran` is the view the build or simulation was of: nothing is earned if the view changed while it ran.
+  function rewardTrying(kind, n, why, ran) {
+    if (ran !== viewKey() || !plan || !plan.previewing || !plan.steps.some((s, i) => s.author === "ai" && plan.accepted[i])) return;
+    const key = kind + ran;
+    if (plan.rewarded.has(key)) return;
+    plan.rewarded.add(key);
+    earn(n, why);
+  }
+
+  function earn(n, why) {
+    points += n;
+    earned.unshift({ n, why });
+    const toast = $("toast");
+    toast.textContent = `+${n} ${why}`;
+    toast.classList.add("show");
+    clearTimeout(earn.timer);
+    earn.timer = setTimeout(() => toast.classList.remove("show"), 2600);
+    renderHealth();
+  }
+
+  function checksNow() {
+    const key = viewKey(), ai = plan ? plan.steps.filter((s) => s.author === "ai") : [];
+    const seen = ai.filter((s) => s.checked).length, built = lastBuild && lastBuild.key === key ? lastBuild : null;
+    const simulated = sim && simKey === key ? sim : null;
+    return [
+      { name: "AI steps checked", ok: seen === ai.length, detail: ai.length ? `${seen} of ${ai.length} AI steps looked at on the diagram` : "No AI plan to check" },
+      { name: "Screens pass the design check", ok: problemsFor === screensKey() && !problems.length,
+        detail: problemsFor !== screensKey() ? "Checking the screens…" : problems.length ? `${problems.length} design problem(s): see Screens` : "Every screen can be built" },
+      { name: "Conformance", ok: Boolean(built) && built.conformance.status === "PASS",
+        detail: built ? `${built.conformance.status}: ${built.cases} cases checked against the kernel` : "Not built since the last change: press Build & run" },
+      { name: "Simulated", ok: Boolean(simulated),
+        detail: simulated ? `${simulated.attempts} attempts, ${simulated.refused} refused by the kernel` : "Not simulated since the last change: press Simulate" },
+    ];
+  }
+
+  function renderHealth() {
+    const checks = checksNow(), done = checks.filter((c) => c.ok).length, ring = $("health-ring"), ns = "http://www.w3.org/2000/svg";
+    const r = 14, length = 2 * Math.PI * r, part = length / checks.length;
+    ring.replaceChildren(...checks.map((c, i) => {
+      const arc = document.createElementNS(ns, "circle");
+      const attrs = { cx: 18, cy: 18, r, stroke: c.ok ? "#17734a" : "#dfe3ea", "stroke-dasharray": `${part - 2} ${length - part + 2}`,
+        "stroke-dashoffset": String(-i * part), transform: "rotate(-90 18 18)" };
+      for (const [k, v] of Object.entries(attrs)) arc.setAttribute(k, v);
+      return arc;
+    }));
+    $("health-text").textContent = `${done}/${checks.length} checks · ${points} pts`;
+    $("health").title = checks.map((c) => `${c.ok ? "✓" : "○"} ${c.name}: ${c.detail}`).join("\n");
+    $("points").textContent = `${points} pts`;
+    $("check-list").replaceChildren(...checks.map((c) => {
+      const li = el("li", undefined, { class: c.ok ? "ok" : "" });
+      li.append(el("span", c.ok ? "✓" : "○", { class: "mark" }), el("span", c.name), el("span", c.detail, { class: "detail" }));
+      return li;
+    }));
+    $("earned").replaceChildren(...(earned.length ? earned.slice(0, 20).map((e) => {
+      const li = el("li");
+      li.append(el("strong", `+${e.n}`), document.createTextNode(e.why));
+      return li;
+    }) : [el("li", "Nothing yet. Look at an AI step on the diagram, untick one the policy refuses, or build and simulate an AI change.")]));
+  }
+
+  function startDrawing() {
+    const box = $("canvas");
+    for (const b of $("draw-palette").querySelectorAll("button")) {
+      b.addEventListener("dragstart", (event) => { event.dataTransfer.setData("text/x-eija-kind", b.dataset.kind); event.dataTransfer.effectAllowed = "copy"; });
+      b.addEventListener("click", () => drawForm(b.dataset.kind, null));
+    }
+    box.addEventListener("dragover", (event) => {
+      if (!event.dataTransfer.types.includes("text/x-eija-kind")) return;
+      event.preventDefault();
+      event.dataTransfer.dropEffect = "copy";
+      box.classList.add("drop-over");
+    });
+    box.addEventListener("dragleave", () => box.classList.remove("drop-over"));
+    box.addEventListener("drop", (event) => {
+      const kind = event.dataTransfer.getData("text/x-eija-kind");
+      box.classList.remove("drop-over");
+      if (!kind) return;
+      event.preventDefault();
+      const r = box.getBoundingClientRect(), cell = graph.getCellAt(event.clientX - r.left + box.scrollLeft, event.clientY - r.top + box.scrollTop);
+      drawForm(kind, cell && cell.id && cell.id.startsWith("state:") ? cell.id.slice(6) : null);
+    });
+    box.addEventListener("keydown", (event) => {
+      if (event.key !== "Delete" && event.key !== "Backspace") return;
+      if (selected.startsWith("state:")) addStep({ kind: "remove_state", state: selected.slice(6) });
+      else if (selected.startsWith("transition:")) addStep({ kind: "remove_transition", transition: selected.slice(11) });
+      else return;
+      event.preventDefault();
+    });
+  }
+
+  function choose(values, chosen, text = (v) => v) {
+    const select = el("select");
+    for (const v of values) {
+      const option = el("option", text(v), { value: v });
+      option.selected = v === chosen;
+      select.append(option);
+    }
+    return select;
+  }
+
+  function field(text, control) {
+    const wrap = el("label", text);
+    wrap.append(control);
+    return wrap;
+  }
+
+  function newId(action) {
+    const stem = "TR-" + action.toUpperCase().replace(/[^A-Z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+    const taken = new Set([...model.transitions.map((t) => t.id), ...(plan ? plan.steps.map((s) => s.transaction.id).filter(Boolean) : [])]);
+    let n = 0;
+    while (taken.has(stem + (n || ""))) n += 1;
+    return stem + (n || "");
+  }
+
+  // Each form: its fields (label, control) and the typed step it makes from them.
+  function formFor(kind, at) {
+    const used = new Set(model.transitions.map((t) => t.action)), t = at && kind === "move" ? transition(at) : null;
+    if (kind === "state") {
+      const name = el("input", undefined, { required: "", maxlength: "60", placeholder: "Name, e.g. Archived" });
+      const after = choose(["", ...model.states], at || "", (v) => v || "(at the end)");
+      return { fields: [["Name", name], ["Place after", after]], make: () => ({ kind: "add_state", state: name.value.trim(), after: after.value || null }) };
+    }
+    if (kind === "rename") {
+      const name = el("input", undefined, { required: "", maxlength: "60", value: at });
+      return { fields: [[`Rename ${at} to`, name]], make: () => ({ kind: "rename_state", state: at, to: name.value.trim() }) };
+    }
+    if (kind === "initial") {
+      const state = choose(model.states, at || model.initial_state);
+      return { fields: [["Records start in", state]], make: () => ({ kind: "set_initial", state: state.value }) };
+    }
+    if (kind === "move") {
+      const end = choose(["target", "source"], "target"), state = choose(model.states, t.to_state);
+      return { fields: [[`Move ${t.action}'s`, end], ["to state", state]], make: () => ({ kind: "retarget_transition", transition: t.id, end: end.value, state: state.value }) };
+    }
+    const from = choose(model.states, at || model.states[0]), to = choose(model.states, at || model.states[0]);
+    const action = choose(packInfo.actions, packInfo.actions.find((a) => !used.has(a)) || packInfo.actions[0], (a) => a + (used.has(a) ? " (already used)" : ""));
+    const role = choose(packInfo.roles, packInfo.roles[0]);
+    return { fields: [["From", from], ["To", to], ["Action", action], ["Who may take it", role]],
+      make: () => ({ kind: "add_transition", id: newId(action.value), action: action.value, from_state: from.value, to_state: to.value, role: role.value }) };
+  }
+
+  function drawForm(kind, at) {
+    if (tab !== "states") showTab("states");
+    const box = $("inspector"), form = el("form", undefined, { class: "draft-form" }), spec = formFor(kind, at);
+    for (const [text, control] of spec.fields) form.append(field(text, control));
+    const tools = el("div", undefined, { class: "draft-tools" }), cancel = el("button", "Never mind", { type: "button", class: "quiet" });
+    cancel.addEventListener("click", () => inspect(selected));
+    tools.append(el("button", "Add to the plan", { type: "submit", class: "primary" }), cancel);
+    form.append(tools, el("p", "It joins the plan as your step. The server checks it and the diagram previews it; nothing is saved.", { class: "muted small" }));
+    form.addEventListener("submit", (event) => { event.preventDefault(); addStep(spec.make()); });
+    box.replaceChildren(el("h3", "Draw " + KINDS[kind]), form);
+    form.querySelector("input, select").focus();
+  }
+
+  function draftTools(buttons) {
+    const tools = el("div", undefined, { class: "draft-tools" });
+    for (const [text, run] of buttons) {
+      const b = el("button", text, { type: "button" });
+      b.addEventListener("click", run);
+      tools.append(b);
+    }
+    return tools;
+  }
+
+  function stateTools(s) {
+    return draftTools([
+      ["Add a transition from here", () => drawForm("transition", s)],
+      ...(s === model.initial_state ? [] : [["Start records here", () => addStep({ kind: "set_initial", state: s })]]),
+      ["Rename…", () => drawForm("rename", s)],
+      ["Remove", () => addStep({ kind: "remove_state", state: s })],
+    ]);
+  }
+
+  function transitionTools(t) {
+    const others = packInfo.roles.filter((r) => r !== t.role);
+    return draftTools([
+      ...others.map((r) => [`Let ${r} take it`, () => addStep({ kind: "set_role", transition: t.id, role: r })]),
+      ["Move an end…", () => drawForm("move", t.id)],
+      ["Remove", () => addStep({ kind: "remove_transition", transition: t.id })],
+    ]);
   }
 
   // Component diagram (ADR-0155): the app this model builds, read by the server from the generated files. Components
@@ -680,10 +961,15 @@
 
   // With edits, only the problems come back into the page: the designer keeps editing its own objects.
   async function loadScreens(edited) {
+    const planAt = JSON.stringify(about().plan), sent = edited ? JSON.stringify(edited) : null;
     const result = await api("/api/play/screens", { ...about(), screens: edited || null });
+    // A newer model or design replaced the one checked: its own check is on the way, so this answer is not shown.
+    if (JSON.stringify(about().plan) !== planAt || (sent !== null && JSON.stringify(screens) !== sent)) return result;
     if (!edited) screens = result.screens;
     problems = result.problems;
+    problemsFor = screensKey();
     useCaseList = result.use_cases;
+    renderHealth();
     return result;
   }
 
@@ -694,14 +980,18 @@
     components = null;
     renderDesigner();
     clearTimeout(checkTimer);
+    problemsFor = null; // pending until the check of this design answers
+    renderHealth();
     checkTimer = setTimeout(async () => {
       try {
-        problems = (await loadScreens(screens)).problems;
+        await loadScreens(screens);
       } catch (error) {
         problems = [{ code: error.code || "ERROR", use_case: useCase, text: error.message }];
+        problemsFor = screensKey();
       }
       renderProblems();
       renderScreenList();
+      renderHealth();
     }, 250);
   }
 
@@ -855,9 +1145,12 @@
     score.textContent = "Building and checking against the kernel…";
     try {
       // Send the model on screen; the server refuses (MODEL_CHANGED) if it is no longer the one it would build.
+      const key = viewKey();
       const result = await api("/api/play/build", { ...about(), screens: screensEdited ? screens : null });
       const pass = result.conformance.status === "PASS";
-      lastBuild = result;
+      lastBuild = { ...result, key };
+      if (pass) rewardTrying("build", 3, `Built the AI's change and ran its ${result.cases} conformance cases`, key);
+      renderHealth();
       restyleComponents();
       score.className = "score " + (pass ? "ok" : "bad");
       score.textContent = pass ? `✓ ${result.cases}/${result.cases} cases match the kernel` : `✗ Conformance ${result.conformance.status}: not started`;
@@ -907,6 +1200,7 @@
     clearInterval(replayTimer);
     sim = null;
     $("sim").hidden = true;
+    renderHealth();
   }
 
   function clearSim() {
@@ -971,7 +1265,11 @@
     const button = $("simulate");
     button.disabled = true;
     try {
+      const key = viewKey();
       showSim(await api("/api/play/simulate", { ...about(), seed: 1, steps: 500 }));
+      simKey = key;
+      rewardTrying("simulate", 2, "Simulated users on the AI's change", key);
+      renderHealth();
     } catch (error) {
       $("sim").hidden = false;
       $("sim-summary").textContent = error.code === "MODEL_CHANGED"
@@ -992,6 +1290,7 @@
     baseModel = model;
     const status = await api("/api/status");
     $("model-name").textContent = status.pack.name + (caseId ? " · change case" : "");
+    packInfo = status.pack;
     data = (await api("/api/play/data")).data;
     await loadScreens(null);
     outline();
@@ -1012,6 +1311,13 @@
     $("tab-screens").addEventListener("click", () => showTab("screens"));
     $("tab-components").addEventListener("click", () => showTab("components"));
     $("chat-form").addEventListener("submit", ask);
+    startDrawing();
+    $("health").addEventListener("click", () => {
+      const open = $("checks").hidden;
+      $("checks").hidden = !open;
+      $("health").setAttribute("aria-expanded", String(open));
+    });
+    renderHealth();
     $("plan-back").addEventListener("click", leavePreview);
     $("screens-reset").addEventListener("click", async () => { screensEdited = false; lastBuild = null; restyleComponents(); components = null; await loadScreens(null); renderDesigner(); });
     $("canvas-help").textContent = HINTS.states;

@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### 8 October 2026: PlayIDE tour recording
+
+- New scripted demo `playide_tour`, recorded (PASS, 2:38): diagrams, screens, Build & run, components, Simulate, drawing with the palette, and checking an offline AI proposal. See [the write-up](docs/demos/2026-10-08-PLAYIDE-TOUR.md).
+
+### 8 October 2026: drawing and the checks ring
+
+- PlayIDE's state machine has a drag-and-drop UML palette (State, Transition, Initial), and selected elements can be renamed, moved, given another role or removed. Drawn changes join the plan as your steps and are previewed through the same server check as the AI's. A checks ring in the header shows four real checks on the model being shown, and points reward checking AI steps, never making changes. See [ADR-0157](docs/adr/0157-drawn-edits-and-checks-ring.md).
+
 ### 8 October 2026: chat plan mode
 
 - PlayIDE has a chat in plan mode. It proposes a change as numbered typed steps; you accept or reject each, and preview the result on every diagram, with Build & run and Simulate on the candidate. The policy checks the accepted steps like an owner's edit, and nothing is saved from the chat. The default proposer is an offline phrase reader (`offline-plan-fixture-v1`), not an AI. See [ADR-0156](docs/adr/0156-chat-plan-mode-proposes-typed-steps.md).

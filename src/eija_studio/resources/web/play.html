@@ -12,6 +12,9 @@
 <header class="bar">
   <div class="brand"><span class="logo" aria-hidden="true">▶</span><strong>PlayIDE</strong><span id="model-name" class="model-name"></span></div>
   <div class="actions">
+    <button id="health" class="health" type="button" aria-expanded="false" aria-controls="checks" title="Checks you have done on this model">
+      <svg id="health-ring" viewBox="0 0 36 36" width="26" height="26" aria-hidden="true"></svg><span id="health-text">Checks</span></button>
+    <span id="toast" class="toast" role="status" aria-live="polite"></span>
     <span id="score" class="score" role="status" aria-live="polite" hidden></span>
     <button id="simulate" type="button" title="Seeded simulated users act on the model; the kernel decides every step">Simulate</button>
     <button id="build" class="primary" type="button">Build &amp; run</button>
@@ -40,6 +43,12 @@
       <button id="zoom-out" type="button" class="quiet" aria-label="Zoom out">−</button>
     </div>
     <div id="plan-banner" class="plan-banner" role="status" hidden><span id="plan-banner-text"></span><button id="plan-back" type="button" class="quiet">Back to the model</button></div>
+    <div id="draw-palette" class="draw-palette" role="toolbar" aria-label="UML palette: drag onto the diagram, or press">
+      <span class="palette-title">Draw</span>
+      <button type="button" draggable="true" data-kind="state" title="Drag onto the diagram to add a state"><span class="glyph state" aria-hidden="true"></span>State</button>
+      <button type="button" draggable="true" data-kind="transition" title="Drag onto the state it leaves"><span class="glyph" aria-hidden="true">→</span>Transition</button>
+      <button type="button" draggable="true" data-kind="initial" title="Drag onto the state records start in"><span class="glyph initial" aria-hidden="true"></span>Initial</button>
+    </div>
     <div id="canvas" class="canvas" tabindex="0" aria-describedby="canvas-help" role="tabpanel" aria-labelledby="tab-states"></div>
     <div id="class-canvas" class="canvas" tabindex="0" role="tabpanel" aria-labelledby="tab-classes" hidden></div>
     <div id="usecase-canvas" class="canvas" tabindex="0" role="tabpanel" aria-labelledby="tab-usecases" hidden></div>
@@ -60,6 +69,12 @@
     <p id="canvas-help" class="hint"></p>
   </section>
   <aside class="side">
+    <section id="checks" class="checks" aria-labelledby="checks-title" hidden>
+      <div class="run-head"><h2 id="checks-title">Checks</h2><span id="points" class="points"></span></div>
+      <p class="muted small">Each ring segment is a real check on the model you are looking at. Points come from checking changes, never from making them.</p>
+      <ul id="check-list" class="check-list"></ul>
+      <h3>Earned</h3><ol id="earned" class="earned"></ol>
+    </section>
     <section class="chat" aria-labelledby="chat-title">
       <div class="run-head"><h2 id="chat-title">Chat</h2><span class="mode" title="The AI only proposes. You accept or reject each step; nothing is saved from here.">Plan mode</span></div>
       <ol id="chat-log" class="chat-log" aria-live="polite">

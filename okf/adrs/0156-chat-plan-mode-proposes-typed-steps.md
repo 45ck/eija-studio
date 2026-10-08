@@ -51,5 +51,7 @@ notes_baseline: 11a3097175161e1e4bf08b4307f8b00a861e1359dd444c691811c894b0e42b1c
 _No curated notes yet._
 
 <!-- okf:generated:begin links -->
-_No generated cross-references._
+## Referenced by
+
+* [ADR-0157: Drawn edits join the plan, and a checks ring rewards checking](/adrs/0157-drawn-edits-and-checks-ring.md) - The owner wants PlayIDE to be visual and mouse-driven ("drag and drop, design then test in place") and to feel rewarding, "tied to real checks".
 <!-- okf:generated:end links -->

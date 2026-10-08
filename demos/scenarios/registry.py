@@ -71,6 +71,11 @@ SCENARIOS: tuple[Scenario, ...] = (
              "concept into its exact source, turns a plain-language request into an owner-selected meaning, reviews "
              "the before/after model change, previews a kernel-checked edit without writing it, exercises the rules "
              "as an agent and the owner, and shows verification blocked until the owner reviews changed source."),
+    Scenario("playide_tour", "The PlayIDE tour: design, build, simulate and check an AI's change", "recorded", (),
+             "On the library-loan pack, PlayIDE shows the state machine, class, use case and component diagrams and the "
+             "screen designer; builds and runs the app with its conformance cases; simulates users; draws a state and a "
+             "transition from the palette; and checks an offline AI proposal step by step, rejecting the step the "
+             "policy refuses, before building and simulating the result."),
     Scenario("agent_change_review","Reviewing an agent's change by meaning, not by diff", "unscripted",
              ("agents", "providers", "visual"),
              "An agent (Claude Code, Codex, OpenCode or Gemini via MCP) proposes; the developer sees the "

@@ -1,0 +1,67 @@
+{
+  "schema": "eija.ide-walkthrough-captures.v1",
+  "scope": "Frames from one scripted real-browser recording of PlayIDE (offline plan proposer, library-loan pack). Not a design mockup, human study, live-AI run or full IDE acceptance.",
+  "recording": {
+    "scenario": "playide_tour",
+    "manifest": "demos/recordings/playide_tour.json",
+    "raw_video_sha256": "640f240614ad548bb15bf330ac2bd356a396dd75f098dce6835ea65e0ca1a6ec",
+    "raw_video_bytes": 12131323,
+    "status": "PASS",
+    "skipped": [],
+    "platform": "Linux 6.18.44-fc-v80 / Python 3.13.16",
+    "browser": "Playwright bundled Chromium via the chrome channel (not Google Chrome)"
+  },
+  "published_video": {
+    "file": "playide-tour.mp4",
+    "sha256": "e36ac900059309447cbca4be7274648bb6ada0e575dbb08f9332c019ce924b63",
+    "bytes": 7523628,
+    "transformations": "Raw webm re-encoded to H.264 CRF 22; no trims, cuts or fades"
+  },
+  "images": [
+    {
+      "file": "state-machine.png",
+      "sha256": "e04f2dc389a6e70759a1760b06768e62e5f0056670c10d251dcf4efeb5e524b3",
+      "bytes": 491524,
+      "width": 1440,
+      "height": 900,
+      "source_time_s": 4,
+      "transformations": "Single frame decoded from the raw webm (lossy video frame, not a browser screenshot)"
+    },
+    {
+      "file": "build-and-run.png",
+      "sha256": "40648522af78708021c15c06fb1e9e0978a08696c3287a041d7158782625fbe0",
+      "bytes": 523733,
+      "width": 1440,
+      "height": 900,
+      "source_time_s": 40,
+      "transformations": "Single frame decoded from the raw webm (lossy video frame, not a browser screenshot)"
+    },
+    {
+      "file": "drawn-change.png",
+      "sha256": "d5507d5e7f9fcfec8ae73954148ff1098bd2fcb252ddae0d5aa338b32f9c6959",
+      "bytes": 529490,
+      "width": 1440,
+      "height": 900,
+      "source_time_s": 100,
+      "transformations": "Single frame decoded from the raw webm (lossy video frame, not a browser screenshot)"
+    },
+    {
+      "file": "ai-step-refused.png",
+      "sha256": "81899f764ac79c0916ea3d7e0f6031872bb265e7ae731c561dd778c506be5b70",
+      "bytes": 513404,
+      "width": 1440,
+      "height": 900,
+      "source_time_s": 120,
+      "transformations": "Single frame decoded from the raw webm (lossy video frame, not a browser screenshot)"
+    },
+    {
+      "file": "checks.png",
+      "sha256": "3d98c828f13347eca8dff10efc6272820103a2560c8497c0644149e4e0e8e23e",
+      "bytes": 606033,
+      "width": 1440,
+      "height": 900,
+      "source_time_s": "last 8 s",
+      "transformations": "Single frame decoded from the raw webm (lossy video frame, not a browser screenshot)"
+    }
+  ]
+}

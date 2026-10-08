@@ -71,6 +71,7 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0154](0154-use-cases-and-screens-designed-against-the-model.md) | Use case diagrams, and screens designed against the model | accepted |
 | [0155](0155-component-diagrams-read-from-the-generated-code.md) | Component diagrams read from the generated code | accepted |
 | [0156](0156-chat-plan-mode-proposes-typed-steps.md) | Chat plan mode proposes typed steps the person accepts or rejects | accepted |
+| [0157](0157-drawn-edits-and-checks-ring.md) | Drawn edits join the plan, and a checks ring rewards checking | accepted |
 <!-- adr-index:end -->
 
 ## Reserved numbers for capability lanes

@@ -133,6 +133,8 @@ def test_plan_mode_proposes_previews_and_tries_but_never_saves(client, studio):
     first = studio.pack.model.states[0]
     proposed = client.post("/api/play/plan", json={"request": f"add state Lost after {first}"}, headers=HEADERS).json()
     assert proposed.get("code") is None, proposed
+    roles = client.get("/api/status", headers=HEADERS).json()["pack"]["roles"]
+    assert roles == [r.id for r in studio.pack.roles]  # the palette offers the pack's declared roles
     assert proposed["trust"] == "UNTRUSTED_PROPOSAL" and proposed["steps"][0]["transaction"]["kind"] == "add_state"
     steps = [s["transaction"] for s in proposed["steps"]]
     preview = client.post("/api/play/plan/preview", json={"steps": steps, "accepted": [False]}, headers=HEADERS).json()
