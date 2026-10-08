@@ -17,8 +17,9 @@
   const earned = [];
   let screens = null, screensEdited = false, useCase = null, checkTimer = 0, problems = [], useCaseList = [];
   const base = {}; // each cell's own style and label, so overlays can be cleared
-  const hooks = { redraw: [], inspect: [], laws: [], tab: [], changeSelect: [] }; // the run bar (play-run.js) redraws its marks and adds inspector tools; play-laws.js and play-access.js draw their tabs
-  // the Changes view (play-diff.js, ADR-0176) closes when another tab is shown and answers current() while open
+  const hooks = { redraw: [], inspect: [], laws: [], tab: [], changeSelect: [], edit: [] }; // the run bar (play-run.js) redraws its marks and adds inspector tools; play-laws.js and play-access.js draw their tabs
+  // the Changes view (play-diff.js, ADR-0176) closes when another tab is shown and answers current() while open;
+  // edit hears every undoable edit (ADR-0190)
 
   async function api(path, body) {
     const options = { headers: { Authorization: "Bearer " + token } };
@@ -241,6 +242,22 @@
     return (name) => { const n = g.node(name); return [n.x - n.width / 2, n.y - n.height / 2, n.width, n.height]; };
   }
 
+  // Every vertex here is placed at a fixed size, so the browser need not measure it: maxGraph asks the SVG for each
+  // shape's box (getBBox) and for each attribute or literal row's text, and at the kernel's limits (40 classes of up
+  // to 40 attributes) those measurements were most of the time a diagram took to draw (ADR-0191).
+  function lean(g) {
+    const renderer = g.cellRenderer, createShape = renderer.createShape.bind(renderer), createLabel = renderer.createLabel.bind(renderer);
+    renderer.createShape = (state) => {
+      const shape = createShape(state);
+      if (shape && state.cell.isVertex()) shape.useSvgBoundingBox = false;
+      return shape;
+    };
+    renderer.createLabel = (state, value) => {
+      createLabel(state, value);
+      if (state.text && /^(attr|literal):/.test(state.cell.id || "")) state.text.ignoreStringSize = true;
+    };
+  }
+
   function drawClasses() {
     if (classGraph || !data) return;
     const { Graph, InternalEvent, Point } = maxgraph;
@@ -254,6 +271,7 @@
     classGraph.setCellsResizable(false);
     classGraph.setDropEnabled(false);
     classGraph.setPanning(true);
+    lean(classGraph);
     const parent = classGraph.getDefaultParent(), at = classLayout(), cells = {};
     const font = { fontFamily: "system-ui, sans-serif", fontColor: "#1b2130" };
     classGraph.batchUpdate(() => {
@@ -438,8 +456,9 @@
       const result = await api("/api/play/plan", { case_id: caseId, model: baseModel, request: text });
       retire();
       plan = { ...result, steps: result.steps.map((step) => ({ ...step, author: "ai", checked: false, caught: false })),
-        accepted: result.steps.map(() => true), previewing: false, card: null, rewarded: new Set() };
+        accepted: result.steps.map(() => true), previewing: false, card: null, rewarded: new Set(), uid: ++planUid };
       plan.card = say("ai", planCard());
+      commit(`take the AI's plan: ${result.summary || text}`);
       renderPlan(result.preview);
       refreshRipple();
     } catch (error) {
@@ -684,6 +703,7 @@
     if (f.transaction) {
       plan.steps.push({ n: plan.steps.length + 1, transaction: f.transaction, text: f.text, why: f.why, author: "ai", checked: false, caught: false, followOn: true });
       plan.accepted.push(true);
+      commit(`add the AI follow-on: ${f.text}`);
       plan.card.replaceChildren(planCard());
       const result = await refreshPlan();
       if (result && result.legal && !plan.previewing) enterPreview();
@@ -693,7 +713,7 @@
     screensEdited = true;
     useCase = f.screen_step.op === "add" ? f.screen_step.screen.use_case : null;
     if (!plan.previewing) enterPreview();
-    changed();
+    changed(`add the AI follow-on: ${f.text}`);
   }
 
   function cellsFor(key, ref) {
@@ -792,11 +812,12 @@
   async function addStep(transaction) {
     if (!plan) {
       plan = { scope: "plan-draft", provider: "drawn by you", live: false, summary: "Your changes", meaning: null, request: "",
-        model: "draft", steps: [], accepted: [], previewing: false, card: null, rewarded: new Set() };
+        model: "draft", steps: [], accepted: [], previewing: false, card: null, rewarded: new Set(), uid: ++planUid };
       plan.card = say("draft", el("div"));
     }
     plan.steps.push({ n: plan.steps.length + 1, transaction, text: "", why: "", author: "you", checked: false, caught: false });
     plan.accepted.push(true);
+    commit(stepLabel(transaction));
     plan.card.replaceChildren(planCard());
     const result = await refreshPlan();
     if (result && result.legal && !plan.previewing) enterPreview();
@@ -806,6 +827,7 @@
   async function toggleStep(i, on) {
     const was = plan.result, step = plan.steps[i];
     plan.accepted[i] = on;
+    commit(`${on ? "accept" : "reject"} step ${i + 1}`);
     const now = await refreshPlan();
     if (now && step.author === "ai" && !on && !step.caught && was && was.accepted && !was.legal && now.legal) {
       step.caught = true;
@@ -1219,8 +1241,9 @@
     return result;
   }
 
-  function changed() {
+  function changed(label = "edit a screen") {
     screensEdited = true;
+    commit(label);
     lastBuild = null; // the last build was of other screens
     restyleComponents();
     components = null;
@@ -1276,7 +1299,7 @@
     const fields = [...screen.fields];
     fields.splice(at === undefined ? fields.length : at, 0, { attribute: name, label: "" });
     screen.fields = fields;
-    changed();
+    changed(`add ${name} to the ${screen.title} screen`);
   }
 
   function moveField(from, to) {
@@ -1284,7 +1307,7 @@
     const [moved] = fields.splice(from, 1);
     fields.splice(to > from ? to - 1 : to, 0, moved);
     screen.fields = fields;
-    changed();
+    changed(`move ${moved.attribute} on the ${screen.title} screen`);
   }
 
   function input(value, label, onChange) {
@@ -1298,14 +1321,14 @@
     const li = el("li", undefined, { class: "screen-field", draggable: "true", "data-index": String(i) });
     li.addEventListener("dragstart", (event) => event.dataTransfer.setData("text/eija-field", String(i)));
     const grip = el("span", "⠿", { class: "grip", "aria-hidden": "true" });
-    const name = input(f.label, `Label for ${f.attribute}`, (v) => { f.label = v; changed(); });
+    const name = input(f.label, `Label for ${f.attribute}`, (v) => { f.label = v; changed(`relabel ${f.attribute}`); });
     name.placeholder = f.attribute;
     const preview = el("span", a ? (a.type === "choice" ? `one of ${a.choices.join(", ")}` : a.type) + (a.required ? " · required" : "") : "not in the record", { class: "muted small" });
     const up = el("button", "↑", { type: "button", class: "quiet", "aria-label": `Move ${f.attribute} up` });
     up.disabled = i === 0;
     up.addEventListener("click", () => moveField(i, i - 1));
     const remove = el("button", "×", { type: "button", class: "quiet", "aria-label": `Remove ${f.attribute}` });
-    remove.addEventListener("click", () => { screen.fields = screen.fields.filter((_, j) => j !== i); changed(); });
+    remove.addEventListener("click", () => { screen.fields = screen.fields.filter((_, j) => j !== i); changed(`remove ${f.attribute} from the ${screen.title} screen`); });
     li.append(grip, el("code", f.attribute), name, preview, up, remove);
     return li;
   }
@@ -1332,7 +1355,7 @@
       const add = el("button", "Give it a screen", { type: "button" });
       add.addEventListener("click", () => {
         screens.screens = [...screens.screens, { use_case: useCase, title: useCase, fields: [], button: useCase }];
-        changed();
+        changed(`give ${useCase} a screen`);
       });
       card.append(el("p", `${useCase} has no screen yet.`, { class: "muted" }), add);
       return;
@@ -1340,18 +1363,18 @@
     const t = model.transitions.find((x) => x.action === useCase);
     if (useCase !== null && !t) {
       const remove = el("button", "Remove this screen", { type: "button" });
-      remove.addEventListener("click", () => { screens.screens = screens.screens.filter((x) => x !== screen); useCase = null; changed(); });
+      remove.addEventListener("click", () => { screens.screens = screens.screens.filter((x) => x !== screen); useCase = null; changed(`remove the ${screen.title} screen`); });
       card.append(el("p", `The model has no use case ${useCase}, so this screen cannot be built.`, { class: "muted" }), remove);
       return;
     }
     card.append(el("p", useCase === null ? "Starts a record · any actor" : `${t.from_state} → ${t.to_state} · ${t.role}`, { class: "muted small" }));
-    card.append(input(screen.title, "Screen title", (v) => { screen.title = v || screen.title; changed(); }));
+    card.append(input(screen.title, "Screen title", (v) => { screen.title = v || screen.title; changed("retitle a screen"); }));
     card.lastChild.classList.add("screen-title");
     const list = el("ul", undefined, { class: "screen-fields", "aria-label": "Fields on this screen" });
     screen.fields.forEach((f, i) => list.append(fieldRow(screen, f, i)));
     if (!screen.fields.length) list.append(el("li", "Drop record attributes here.", { class: "muted drop-hint" }));
     dropZone(list);
-    const button = input(screen.button, "Button label", (v) => { screen.button = v; changed(); });
+    const button = input(screen.button, "Button label", (v) => { screen.button = v; changed(`relabel the ${screen.title} button`); });
     button.placeholder = useCase === null ? "Create" : useCase;
     button.classList.add("screen-button");
     card.append(list, button);
@@ -1527,6 +1550,196 @@
     }
   }
 
+  // Undo, redo and autosave (ADR-0190). What a person edits in PlayIDE is a document of two parts: the plan (its typed
+  // steps, AI or drawn, and which are accepted) and the screens edited in the designer. The model in force is never
+  // edited here, so every edit (drawing on the diagram, the inspector's tools, the palette, the Delete key, an AI plan,
+  // ticking a step, taking a follow-on, any screen edit) is one snapshot of that document. Undo and redo move between
+  // snapshots and ask the server to check the restored plan again, as for any other edit: nothing is trusted from the
+  // edits. Each snapshot is also written to this browser's storage as it is made, so a crash or a reload loses
+  // nothing; on the next load the work comes back, with its history. Saving a system to a file is not this: it is
+  // the document's job of another feature, which reads document() and listens for "playide:edit".
+  const REVIEW_VIEW = new URLSearchParams(location.search).get("view") === "review"; // read-only: no history, no draft
+  const HISTORY_LIMIT = 100, STORED = 30; // snapshots kept in the page, and in storage beside the current one
+  const edits = { stack: [], at: -1 }; // the snapshots, and the one shown
+  let restoring = false, planUid = 0;
+  const clone = (value) => (value == null ? null : JSON.parse(JSON.stringify(value)));
+  const draftKey = () => `playide.draft.v1:${packInfo.id}:${caseId || ""}`;
+  // A short fingerprint of the model in force, so a restored draft can say when it was made on another model.
+  const modelPrint = () => { let h = 2166136261; for (const c of JSON.stringify(baseModel)) h = Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0; return h.toString(16); };
+
+  function documentNow() {
+    let kept = null;
+    if (plan) {
+      const { card, result, seq, rewarded, preview, previewing, ...rest } = plan; // view state stays out of the document
+      kept = clone(rest);
+    }
+    return { plan: kept, screens: screensEdited ? clone(screens) : null };
+  }
+
+  function stepLabel(tx) {
+    const t = tx.transition && model.transitions.find((x) => x.id === tx.transition), name = t ? t.action : tx.transition;
+    return ({
+      add_state: () => `add state ${tx.state}`, remove_state: () => `remove state ${tx.state}`, rename_state: () => `rename ${tx.state} to ${tx.to}`,
+      set_initial: () => `start records in ${tx.state}`, add_transition: () => `add ${tx.action}`, remove_transition: () => `remove ${name}`,
+      set_role: () => `let ${tx.role} take ${name}`, retarget_transition: () => `move ${name}'s ${tx.end} to ${tx.state}`,
+    }[tx.kind] || (() => tx.kind.replace(/_/g, " ")))();
+  }
+
+  function commit(label) {
+    if (restoring || REVIEW_VIEW || edits.at < 0) return;
+    edits.stack.splice(edits.at + 1);
+    edits.stack.push({ label, doc: documentNow(), card: plan && plan.card, at: Date.now() });
+    if (edits.stack.length > HISTORY_LIMIT) edits.stack.shift();
+    edits.at = edits.stack.length - 1;
+    persist();
+    renderHistory();
+    for (const f of hooks.edit) f(label);
+    document.dispatchEvent(new CustomEvent("playide:edit", { detail: { label } }));
+  }
+
+  function renderHistory() {
+    const back = edits.stack[edits.at], next = edits.stack[edits.at + 1];
+    $("undo").disabled = edits.at <= 0;
+    $("redo").disabled = !next;
+    $("undo").title = edits.at > 0 ? `Undo ${back.label} (Ctrl+Z)` : "Nothing to undo (Ctrl+Z)";
+    $("redo").title = next ? `Redo ${next.label} (Ctrl+Shift+Z)` : "Nothing to redo (Ctrl+Shift+Z)";
+  }
+
+  function notify(text) {
+    const toast = $("toast");
+    toast.textContent = text;
+    toast.classList.add("show");
+    clearTimeout(earn.timer);
+    earn.timer = setTimeout(() => toast.classList.remove("show"), 2600);
+  }
+
+  async function undo() {
+    if (edits.at <= 0) return;
+    const undone = edits.stack[edits.at];
+    edits.at -= 1;
+    notify(`Undid: ${undone.label}`);
+    await restore(edits.stack[edits.at]);
+  }
+
+  async function redo() {
+    if (edits.at + 1 >= edits.stack.length) return;
+    edits.at += 1;
+    notify(`Redid: ${edits.stack[edits.at].label}`);
+    await restore(edits.stack[edits.at]);
+  }
+
+  // A plan card that leaves the document: a drawn draft disappears from the chat; an AI plan stays as a record.
+  function setAside(gone) {
+    if (gone.scope === "plan-draft") { gone.card.remove(); return; }
+    for (const control of gone.card.querySelectorAll("input, button")) control.disabled = true;
+    gone.card.firstChild.append(el("p", "Undone.", { class: "muted small" }));
+  }
+
+  async function restore(entry) {
+    persist();
+    renderHistory();
+    restoring = true;
+    let pending = null;
+    try {
+      const doc = entry.doc, old = plan;
+      if (old && old.previewing) leavePreview();
+      ripple = null;
+      rippleSeq += 1;
+      if (old && (!doc.plan || doc.plan.uid !== old.uid)) setAside(old);
+      if (!doc.plan) {
+        plan = null;
+      } else {
+        const same = old && doc.plan.uid === old.uid;
+        plan = { ...clone(doc.plan), previewing: false, result: null, card: same ? old.card : entry.card || null, rewarded: same ? old.rewarded : new Set() };
+        if (plan.card && !plan.card.isConnected) $("chat-log").append(plan.card);
+        if (!plan.card) plan.card = say(plan.scope === "plan-draft" ? "draft" : "ai", el("div"));
+        plan.card.replaceChildren(planCard());
+        pending = plan;
+      }
+      renderBadges();
+      renderHealth();
+      document.dispatchEvent(new CustomEvent("playide:plan"));
+      if (doc.screens) { screens = clone(doc.screens); changed(); }
+      else if (screensEdited) await resetScreens();
+    } finally {
+      restoring = false;
+    }
+    if (pending && pending === plan) {
+      const result = await refreshPlan();
+      if (result && result.legal && result.accepted && pending === plan && !plan.previewing) enterPreview();
+    }
+  }
+
+  // Every snapshot is written as it is made, so a crash loses nothing. Storage can be full or blocked: the page still
+  // works, and the status bar says the work is not kept.
+  function persist() {
+    if (REVIEW_VIEW || !packInfo) return;
+    const now = edits.stack[edits.at], empty = !now || (!now.doc.plan && !now.doc.screens); // nothing to keep
+    const status = $("status-saved");
+    try {
+      if (empty) { localStorage.removeItem(draftKey()); status.textContent = ""; return; }
+      const from = Math.max(0, edits.at - STORED), keep = edits.stack.slice(from, edits.at + STORED + 1);
+      const draft = { v: 1, model: modelPrint(), saved: Date.now(), at: edits.at - from, stack: keep.map(({ label, doc, at }) => ({ label, doc, at })) };
+      try { localStorage.setItem(draftKey(), JSON.stringify(draft)); } catch {
+        localStorage.setItem(draftKey(), JSON.stringify({ ...draft, at: 0, stack: [keep[edits.at - from]] })); // the current work, without its history
+      }
+      status.className = "saved";
+      status.textContent = "Saved in this browser";
+      status.title = `Your plan and screen edits are kept in this browser as you work (${new Date(draft.saved).toLocaleTimeString()}). Nothing is applied.`;
+    } catch {
+      status.className = "saved bad";
+      status.textContent = "Not saved: browser storage is unavailable";
+      status.title = "Undo still works, but a reload or crash would lose these edits.";
+    }
+  }
+
+  // On load: the draft this browser kept for this model, if any, comes back with its history. The server checks the
+  // restored plan again; a step that no longer applies (the model in force changed) is shown as such.
+  async function recover() {
+    edits.stack = [{ label: "open the model", doc: { plan: null, screens: null }, card: null, at: Date.now() }];
+    edits.at = 0;
+    renderHistory();
+    if (REVIEW_VIEW) return;
+    let draft = null;
+    try { draft = JSON.parse(localStorage.getItem(draftKey()) || "null"); } catch { draft = null; }
+    if (!draft || draft.v !== 1 || !Array.isArray(draft.stack) || !draft.stack[draft.at]) return;
+    planUid = Math.max(0, ...draft.stack.map((e) => (e.doc.plan && e.doc.plan.uid) || 0));
+    edits.stack = [...(draft.stack[0].doc.plan || draft.stack[0].doc.screens ? [edits.stack[0]] : []), ...draft.stack.map((e) => ({ ...e, card: null }))];
+    edits.at = edits.stack.length - draft.stack.length + draft.at;
+    const entry = edits.stack[edits.at], steps = entry.doc.plan ? entry.doc.plan.steps.length : 0;
+    const note = el("p", `Recovered your unsaved work from ${new Date(draft.saved).toLocaleString()}: ${steps} plan step${steps === 1 ? "" : "s"}${entry.doc.screens ? " and screen edits" : ""}. Undo still steps back through it.`);
+    if (draft.model !== modelPrint()) note.append(el("span", " The model in force has changed since, so every step is checked against it again.", { class: "muted" }));
+    const discard = el("button", "Discard it", { type: "button", class: "quiet" });
+    discard.addEventListener("click", async () => {
+      discard.disabled = true;
+      await restore({ doc: { plan: null, screens: null }, card: null });
+      commit("discard the recovered work"); // undoable, like any edit
+    });
+    note.append(" ", discard);
+    say("ai", note).classList.add("recovered");
+    await restore(entry);
+  }
+
+  async function resetScreens() {
+    screensEdited = false;
+    lastBuild = null;
+    restyleComponents();
+    components = null;
+    await loadScreens(null);
+    renderDesigner();
+    if (plan) refreshRipple();
+  }
+
+  function historyKeys(event) {
+    if (!(event.ctrlKey || event.metaKey) || event.altKey || event.defaultPrevented || REVIEW_VIEW) return;
+    const key = event.key.toLowerCase(), target = event.target;
+    if (key !== "z" && key !== "y") return;
+    // Text boxes keep the browser's own undo for the text being typed.
+    if (target && (target.closest("input, textarea, select, [contenteditable=true]"))) return;
+    event.preventDefault();
+    if (key === "y" || event.shiftKey) redo(); else undo();
+  }
+
   async function start() {
     if (caseId) {
       const view = await api(`/api/cases/${encodeURIComponent(caseId)}`);
@@ -1572,9 +1785,13 @@
     $("plan-review").addEventListener("click", () => showTab("review"));
     $("tab-review").addEventListener("click", () => showTab("review"));
     PlayReview.init({ api, about, earn, el });
-    $("screens-reset").addEventListener("click", async () => { screensEdited = false; lastBuild = null; restyleComponents(); components = null; await loadScreens(null); renderDesigner(); if (plan) refreshRipple(); });
+    $("screens-reset").addEventListener("click", async () => { await resetScreens(); commit("reset the screens"); });
+    $("undo").addEventListener("click", undo);
+    $("redo").addEventListener("click", redo);
+    document.addEventListener("keydown", historyKeys);
     $("canvas-help").textContent = HINTS.states;
     window.addEventListener("resize", fit);
+    await recover();
     document.body.dataset.ready = "true";
     document.dispatchEvent(new CustomEvent("playide:ready"));
   }
@@ -1597,6 +1814,15 @@
     graph: () => graph, tab: () => tab, model: () => model, selected: () => selected, pack: () => packInfo, base: () => baseModel,
     planned: () => (plan && plan.result && plan.result.legal ? accepted() : null), // the change the Changes view draws (ADR-0176)
     setChanges, diagram: (key) => ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: componentGraph })[key],
+    // Undo, redo and the edited document (ADR-0190): document() is what a save writes; restore(doc, label) opens one as
+    // an undoable edit, checked by the server like any other.
+    undo, redo, document: documentNow, history: () => ({ at: edits.at, labels: edits.stack.map((e) => e.label) }),
+    restore: async (doc, label = "open a saved document") => {
+      const opened = { plan: clone(doc.plan || null), screens: clone(doc.screens || null) };
+      if (opened.plan) opened.plan.uid = ++planUid; // a new plan in this page, whatever it was where it was saved
+      await restore({ doc: opened, card: null });
+      commit(label);
+    },
   };
 
   start().catch((error) => {
