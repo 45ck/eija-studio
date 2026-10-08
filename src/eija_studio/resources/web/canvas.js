@@ -181,7 +181,10 @@ const EijaCanvas = (() => {
         "aria-label": `${transition.action}, ${transition.role}, ${transition.from_state} to ${transition.to_state}. Select transition.`,
         "aria-pressed": transition.id === selected, "data-eija-id": `${pack}.transition.${transition.id}`});
       group.append(svg("path", {d: path, class: "edge-hit"}), svg("path", {d: path, class: "edge-line", "marker-end": "url(#model-arrow)"}));
-      const label = svg("text", {x: route.label.x, y: route.label.y - 8, class: "edge-label", "text-anchor": "middle"}, transition.action);
+      // A selected edge shows drag handles on its ends; set its label beside the line so neither covers the other.
+      const beside = transition.id === selected && editable;
+      const label = svg("text", {x: route.label.x + (beside ? 14 : 0), y: route.label.y - (beside ? 0 : 8), class: "edge-label",
+        "text-anchor": beside ? "start" : "middle"}, transition.action);
       group.append(label); activate(group, () => onSelect(transition.id)); board.append(group);
     }
     for (const state of model.states) {
@@ -195,8 +198,8 @@ const EijaCanvas = (() => {
     const active = model.transitions.find(t => t.id === selected);
     if (active && editable) {
       for (const end of ["source", "target"]) {
-        const p = coords[end === "source" ? active.from_state : active.to_state];
-        const x = p.x + (end === "source" ? 35 : width - 35), y = p.y + height;
+        // Handles sit on the routed line's own ends, so each one marks the arrow end it moves.
+        const points = routes[active.id].points, {x, y} = end === "source" ? points[0] : points[points.length - 1];
         const handle = svg("g", {class: "edit-handle", "data-end": end, "aria-hidden": "true"});
         handle.append(svg("circle", {cx: x, cy: y, r: 15}), svg("text", {x:x + (end === "source" ? -22 : 22), y:y + 5,
           "text-anchor":end === "source" ? "end" : "start"}, end === "source" ? "Source" : "Target"));
