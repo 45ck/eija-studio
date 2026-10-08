@@ -1,7 +1,8 @@
 """PlayIDE features working together on the workbench shell, in a real browser: the chat's own example plan passes
 the policy for the open pack, a paused run keeps who tried what in view, a role in the outline opens the Permissions
 tab, the plan banner does not offer to open the Review tab while it is open, asking whether a
-state can be reached at all treats Yes as expected, and the status bar names the selection as the outline does.
+state can be reached at all treats Yes as expected, the status bar names the selection as the outline does,
+an empty Review tab uses the whole tab, and the screen designer fits a laptop screen.
 
 Marked `browser`: it runs only with EIJA_BROWSER_TESTS=1 (NOT_RUN otherwise). It uses the installed Chrome, or the
 Chromium at EIJA_CHROMIUM, and never downloads a browser.
@@ -74,6 +75,13 @@ def test_playide_features_fit_together_in_a_real_browser(pack):
             page.wait_for_selector("#run-status:has-text('Paused')", timeout=60_000)
             now, body = page.locator("#debug-now").bounding_box(), page.locator(".dock-body").bounding_box()
             assert now and body and body["y"] <= now["y"] < body["y"] + body["height"]
+            # On a laptop screen with the side bar and the chat open, the screen designer stacks the record attributes
+            # under the screen rather than squeezing it, so nothing spills sideways.
+            page.set_viewport_size({"width": 1280, "height": 800})
+            page.click("#tab-screens")
+            page.wait_for_selector("#screen-card .screen-field")
+            assert page.evaluate("""() => { const d = document.getElementById('screens');
+                return d.scrollWidth <= d.clientWidth && document.getElementById('screen-card').clientWidth >= 360; }""")
             assert errors == []
         finally:
             chrome.close()
