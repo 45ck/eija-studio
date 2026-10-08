@@ -94,3 +94,17 @@ def test_an_untrusted_plan_is_rechecked(document):
 def test_a_proposer_cannot_name_a_meaning_the_pack_lacks():
     result = plan("x", Rogue({"meaning": "approve_everything", "steps": [{"transaction": {"kind": "add_state", "state": "X"}}]}))
     assert result["meaning"] is None
+
+
+def test_drawn_steps_are_checked_and_described_by_the_server():
+    """ADR-0157: steps drawn with the palette are typed transactions like the AI's; the server words them, so the page
+    never has to, and checks them the same way."""
+    drawn = [parse_transaction(t) for t in (
+        {"kind": "add_state", "state": "Lost", "after": None},
+        {"kind": "set_initial", "state": "Lost"},
+        {"kind": "remove_transition", "transition": "NOT-THERE"},
+    )]
+    preview = preview_plan(LOAN.model, LOAN, drawn, [True, False, True])
+    assert [s["text"] for s in preview["steps"]] == ["Add state Lost", "Start records in Lost", "Remove transition NOT-THERE"]
+    assert [s["status"] for s in preview["steps"]] == ["applies", "rejected", "does_not_apply"]
+    assert not preview["legal"] and preview["candidate"] is None

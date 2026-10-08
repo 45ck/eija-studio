@@ -53,19 +53,19 @@ def _steps(document: Any) -> list[tuple[Transaction, str]]:
 
 
 def _statuses(model: Workflow, pack: Pack, transactions: list[Transaction], accepted: list[bool]) -> list[dict[str, Any]]:
-    """Whether each accepted step applies after the accepted steps before it."""
+    """Whether each accepted step applies after the accepted steps before it, with the step in words."""
     kept: list[Transaction] = []
     status: list[dict[str, Any]] = []
     for tx, keep in zip(transactions, accepted, strict=True):
         if not keep:
-            status.append({"status": "rejected"})
+            status.append({"status": "rejected", "text": describe(tx)})
             continue
         try:
             apply_structural_all(model, [*kept, tx], pack)
             kept.append(tx)
-            status.append({"status": "applies"})
+            status.append({"status": "applies", "text": describe(tx)})
         except DomainError as error:
-            status.append({"status": "does_not_apply", "code": error.code, "message": error.message})
+            status.append({"status": "does_not_apply", "text": describe(tx), "code": error.code, "message": error.message})
     return status
 
 

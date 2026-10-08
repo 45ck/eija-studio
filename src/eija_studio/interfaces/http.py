@@ -63,9 +63,9 @@ def _set_security_headers(response, path: str) -> None:
 
 def pack_summary(pack: Pack) -> dict[str, object]:
     """What the page needs to name the domain without hardcoding it: the pack's name, demo request, declared actions
-    (in declaration order) and synthetic fixture actors."""
+    (in declaration order), declared roles and synthetic fixture actors."""
     return {"id": pack.id, "name": pack.pack.name, "version": pack.pack.version, "demo_request": pack.fixtures.demo_request,
-            "actions": [a.id for a in pack.actions],
+            "actions": [a.id for a in pack.actions], "roles": [r.id for r in pack.roles],
             "actors": [{"id": a.id, "role": a.role, "active": a.active, "assigned": a.assigned} for a in pack.fixtures.actors]}
 
 
