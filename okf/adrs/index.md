@@ -70,3 +70,4 @@
 * [ADR-0152: Simulate seeded users through the kernel and paint where they went](0152-simulate-seeded-users-through-the-kernel.md) - The owner asked for PlayIDE to feel like a simulation game for software engineers: build a system, watch it run and find problems fast.
 * [ADR-0153: Data models as UML class diagrams, checked in the built app](0153-data-models-as-uml-class-diagrams.md) - Until now, records in a built app (ADR-0150) carried only a title, because the model had no data.
 * [ADR-0154: Use case diagrams, and screens designed against the model](0154-use-cases-and-screens-designed-against-the-model.md) - PlayIDE shows the workflow as a state machine (ADR-0151) and the data as a class diagram (ADR-0153).
+* [ADR-0155: Component diagrams read from the generated code](0155-component-diagrams-read-from-the-generated-code.md) - The owner's roadmap asks for component diagrams after use cases and screens.

@@ -9,6 +9,7 @@
   if (location.hash) { sessionStorage.setItem("eija-session", token); history.replaceState(null, "", location.pathname + location.search); }
   const STATE = { width: 150, height: 54 }, INITIAL = 22;
   let graph, model, selected = "", sim = null, replayTimer = 0, data = null, classGraph = null, useCaseGraph = null, tab = "states";
+  let components = null, componentGraph = null, lastBuild = null;
   let screens = null, screensEdited = false, useCase = null, checkTimer = 0, problems = [], useCaseList = [];
   const base = {}; // each cell's own style and label, so overlays can be cleared
 
@@ -94,13 +95,14 @@
 
   function transition(id) { return model.transitions.find((t) => t.id === id); }
 
-  const current = () => ({ states: graph, classes: classGraph, usecases: useCaseGraph })[tab];
-  const PANELS = { states: "canvas", classes: "class-canvas", usecases: "usecase-canvas", screens: "screens" };
+  const current = () => ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: componentGraph })[tab];
+  const PANELS = { states: "canvas", classes: "class-canvas", usecases: "usecase-canvas", screens: "screens", components: "component-canvas" };
   const HINTS = {
     states: "Drag states to arrange them. Select an element to inspect it. Arrangement is not saved yet.",
     classes: "Select a class to see its attributes and associations.",
     usecases: "Select a use case to inspect it. Double-click one to design its screen.",
     screens: "Design each use case's screen. The design check runs as you edit; Build & run uses these screens.",
+    components: "The built app's components, read from its generated files: every line is an import, a route or a file read.",
   };
 
   function fit() {
@@ -122,6 +124,10 @@
     const dl = el("dl");
     if (id.startsWith("class:")) {
       inspectClass(id.slice(6), box);
+      return;
+    }
+    if (id.startsWith("component:")) {
+      inspectComponent(id.slice(10), box);
       return;
     }
     if (id === "usecase:create") {
@@ -327,11 +333,155 @@
     for (const id of ["fit", "zoom-in", "zoom-out"]) $(id).hidden = which === "screens";
     if (which === "screens") { renderDesigner(); return; }
     if (which === "usecases") drawUseCases();
+    if (which === "components") { drawComponents(); return; }
     if (which === "classes") {
       if (!data) { $("class-canvas").replaceChildren(el("p", "This pack has no data model yet. Add a data.json beside its pack.json.", { class: "muted empty" })); return; }
       drawClasses();
     }
     fit();
+  }
+
+  // Component diagram (ADR-0155): the app this model builds, read by the server from the generated files. Components
+  // are modules, the EIJA modules they import, infrastructure and generated files; each dependency is a real import,
+  // route or file read. A provider's interface (the lollipop) lists the names its users import from it.
+  const COMPONENT_FILL = { component: "#eef2ff", executable: "#eef2ff", test: "#e5f5ec", browser: "#fff7e6", kernel: "#dfe6ff",
+    database: "#f1f3f7", framework: "#f1f3f7", artifact: "#ffffff" };
+  const shortNames = (names) => names.length > 2 ? names.slice(0, 2).join(", ") + ` +${names.length - 2}` : names.join(", ");
+  const isLollipop = (d) => !d.names.some((n) => n === "reads" || n === "serves") && d.names.length > 0;
+
+  // Build evidence belongs to the exact model and screens it was built from; the structure of other screens gets none.
+  const evidence = () => (lastBuild && components && lastBuild.model === components.model && lastBuild.screens === components.screens ? lastBuild : null);
+
+  function componentLabel(c) {
+    const lastBuild = evidence();
+    const badge = c.id.startsWith("tests.") && lastBuild ? `\n${lastBuild.conformance.status === "PASS" ? "✓" : "✗"} ${lastBuild.cases} cases`
+      : c.id === "app.server" && lastBuild && lastBuild.url ? "\n● running" : "";
+    return `«${c.stereotype}»\n${c.name}${badge}`;
+  }
+
+  // Kernel modules sit in the installed package, generated documents in a package of their own (UML packages).
+  const RANK = { browser: 0, executable: 1, component: 2, framework: 3, database: 4, test: 5, kernel: 6, artifact: 7 };
+  const GROUPS = { kernel: ["pkg:eija", "eija_studio (installed package)"], artifact: ["pkg:files", "Generated model files"] };
+
+  // Columns by depth of use (a user sits left of what it uses; the page's "serves" back-edge is ignored), stacked in
+  // id order within a column, with each package's members kept together. Deterministic and compact, no layout engine.
+  function componentLayout() {
+    const COLUMN = 300, GAP = 18, PACKAGE_HEAD = 30, edges = components.dependencies.filter((d) => !d.names.includes("serves"));
+    const depth = {}, visit = (id, seen = new Set()) => {
+      if (depth[id] !== undefined) return depth[id];
+      if (seen.has(id)) return 0;
+      seen.add(id);
+      const users = edges.filter((d) => d.target === id).map((d) => d.source);
+      return (depth[id] = users.length ? 1 + Math.max(...users.map((u) => visit(u, seen))) : 0);
+    };
+    const size = (c) => [Math.min(220, Math.max(150, c.name.length * 7 + 30)), c.stereotype === "artifact" ? 38 : 54];
+    const boxes = {}, columns = {};
+    // A package's members share one column, the deepest of theirs, so the package is one box.
+    const deepest = {};
+    for (const c of components.components) if (GROUPS[c.stereotype]) deepest[c.stereotype] = Math.max(deepest[c.stereotype] || 0, visit(c.id));
+    for (const c of components.components) (columns[GROUPS[c.stereotype] ? deepest[c.stereotype] : visit(c.id)] ||= []).push(c);
+    for (const [col, members] of Object.entries(columns)) {
+      let y = 20;
+      const x = 40 + Number(col) * COLUMN;
+      const order = [...members].sort((a, b) => (GROUPS[a.stereotype] ? 1 : 0) - (GROUPS[b.stereotype] ? 1 : 0) || RANK[a.stereotype] - RANK[b.stereotype] || a.id.localeCompare(b.id));
+      let open = null;
+      for (const c of order) {
+        const group = GROUPS[c.stereotype];
+        if (group && open !== group[0]) {
+          if (open) y += GAP;
+          boxes[group[0]] = [x - 12, y, 0, 0];
+          y += PACKAGE_HEAD;
+          open = group[0];
+        }
+        const [w, h] = size(c);
+        boxes[c.id] = [x, y, w, h];
+        if (group) { const b = boxes[group[0]]; b[2] = Math.max(b[2], w + 24); b[3] = y + h + 12 - b[1]; }
+        y += h + GAP;
+      }
+    }
+    return (id) => {
+      if (id.startsWith("iface:")) { const [x, y, , h] = boxes[id.slice(6)]; return [x - 34, y + h / 2 - 8, 16, 16]; } // the ball, left of its provider
+      return boxes[id] || [0, 0, 0, 0];
+    };
+  }
+
+  async function drawComponents() {
+    const box = $("component-canvas");
+    if (!components) {
+      try {
+        components = await api("/api/play/components", { case_id: caseId, model, screens: screensEdited ? screens : null });
+      } catch (error) {
+        box.replaceChildren(el("p", `Could not read the app's components (${error.code || "ERROR"}): ${error.message}`, { class: "muted empty" }));
+        return;
+      }
+    }
+    if (componentGraph) { restyleComponents(); fit(); return; }
+    const { Graph, InternalEvent } = maxgraph;
+    InternalEvent.disableContextMenu(box);
+    componentGraph = new Graph(box);
+    componentGraph.options.foldingEnabled = false; // packages are not collapsible, and the fold icon is not shipped
+    for (const setting of ["setConnectable", "setCellsEditable", "setCellsDisconnectable", "setCellsResizable", "setDropEnabled"]) componentGraph[setting](false);
+    componentGraph.setPanning(true);
+    const root = componentGraph.getDefaultParent(), at = componentLayout(), cells = {}, groups = {};
+    const font = { fontFamily: "system-ui, sans-serif", fontColor: "#1b2130", fontSize: 12 };
+    componentGraph.batchUpdate(() => {
+      for (const [stereotype, [id, name]] of Object.entries(GROUPS)) {
+        if (!components.components.some((c) => c.stereotype === stereotype)) continue;
+        const [x, y, w, h] = at(id);
+        groups[stereotype] = { cell: componentGraph.insertVertex({ parent: root, id, value: name, position: [x, y], size: [w, h],
+          style: { ...font, shape: "swimlane", startSize: 24, fontStyle: 1, fillColor: "#f4f5f8", swimlaneFillColor: "#fbfcfe",
+            strokeColor: "#9aa3b5", collapsible: false, movable: false, selectable: false } }), x, y };
+      }
+      for (const c of components.components) {
+        let [x, y, w, h] = at(c.id), parent = root;
+        if (groups[c.stereotype]) { parent = groups[c.stereotype].cell; x -= groups[c.stereotype].x; y -= groups[c.stereotype].y; }
+        cells[c.id] = componentGraph.insertVertex({ parent, id: "component:" + c.id, value: componentLabel(c), position: [x, y], size: [w, h],
+          style: { ...font, shape: c.stereotype === "database" ? "cylinder" : "rectangle", fillColor: COMPONENT_FILL[c.stereotype],
+            strokeColor: c.stereotype === "kernel" ? "#3157d5" : "#5b74d6", dashed: c.stereotype === "artifact", whiteSpace: "wrap" } });
+      }
+      for (const i of components.interfaces) {
+        if (!components.dependencies.some((d) => d.target === i.provider && isLollipop(d))) continue;
+        const [x, y, w, h] = at("iface:" + i.provider);
+        cells["iface:" + i.provider] = componentGraph.insertVertex({ parent: root, id: "iface:" + i.provider, value: shortNames(i.names), position: [x, y], size: [w, h],
+          style: { ...font, shape: "ellipse", fillColor: "#ffffff", strokeColor: "#1b2130", fontSize: 9,
+            verticalLabelPosition: "top", verticalAlign: "bottom", labelBackgroundColor: "#fbfcfe" } });
+        componentGraph.insertEdge({ parent: root, source: cells[i.provider], target: cells["iface:" + i.provider], style: { strokeColor: "#1b2130", endArrow: "none" } });
+      }
+      for (const d of components.dependencies) {
+        const lollipop = isLollipop(d), target = cells[lollipop ? "iface:" + d.target : d.target];
+        componentGraph.insertEdge({ parent: root, source: cells[d.source], target, value: lollipop ? "" : `«${d.names[0] === "reads" ? "read" : d.names[0] === "serves" ? "serve" : "use"}»`,
+          style: { ...font, fontSize: 10, strokeColor: "#4a5568", dashed: true, endArrow: "open", labelBackgroundColor: "#fbfcfe" } });
+      }
+    });
+    componentGraph.getSelectionModel().addListener(InternalEvent.CHANGE, () => {
+      const cell = componentGraph.getSelectionCell();
+      const id = cell && cell.id ? (cell.id.startsWith("iface:") ? "component:" + cell.id.slice(6) : cell.id) : "";
+      select(id.startsWith("component:") ? id : "", false);
+    });
+    fit();
+  }
+
+  function restyleComponents() {
+    if (!componentGraph) return;
+    componentGraph.batchUpdate(() => {
+      for (const c of components.components) {
+        const cell = componentGraph.getDataModel().getCell("component:" + c.id);
+        if (cell) componentGraph.getDataModel().setValue(cell, componentLabel(c));
+      }
+    });
+  }
+
+  function inspectComponent(id, box) {
+    const c = components.components.find((x) => x.id === id), dl = el("dl");
+    box.append(el("h3", `«${c.stereotype}» ${c.name}`));
+    if (c.files.length) row(dl, "Files", `${c.files.join(", ")}${c.lines ? ` (${c.lines} lines)` : ""}`);
+    const provides = components.interfaces.find((i) => i.provider === id);
+    if (provides && provides.names.length) row(dl, "Provides", provides.names.join(", "));
+    for (const d of components.dependencies.filter((x) => x.source === id)) row(dl, "Uses " + d.target, d.names.join(", ") || "(imported)");
+    for (const d of components.dependencies.filter((x) => x.target === id)) row(dl, "Used by", `${d.source}: ${d.names.join(", ") || "(imported)"}`);
+    box.append(dl);
+    if (c.stereotype === "kernel") box.append(el("p", "The installed EIJA package: the app asks it for every decision, so there is no second interpreter.", { class: "muted" }));
+    if (components.not_drawn.length) box.append(el("p", `Not drawn (utility imports): ${components.not_drawn.join(", ")}.`, { class: "muted small" }));
   }
 
   // Screen designer (ADR-0154): each use case's screen, bound to the record class's attributes. The server's design
@@ -362,6 +512,9 @@
 
   function changed() {
     screensEdited = true;
+    lastBuild = null; // the last build was of other screens
+    restyleComponents();
+    components = null;
     renderDesigner();
     clearTimeout(checkTimer);
     checkTimer = setTimeout(async () => {
@@ -527,6 +680,8 @@
       // Send the model on screen; the server refuses (MODEL_CHANGED) if it is no longer the one it would build.
       const result = await api("/api/play/build", { case_id: caseId, model, screens: screensEdited ? screens : null });
       const pass = result.conformance.status === "PASS";
+      lastBuild = result;
+      restyleComponents();
       score.className = "score " + (pass ? "ok" : "bad");
       score.textContent = pass ? `✓ ${result.cases}/${result.cases} cases match the kernel` : `✗ Conformance ${result.conformance.status}: not started`;
       score.title = `Model ${result.model.slice(0, 12)} · ${result.files} files · kernel source review: ${result.kernel_source_review}`;
@@ -670,7 +825,8 @@
     $("tab-classes").addEventListener("click", () => showTab("classes"));
     $("tab-usecases").addEventListener("click", () => showTab("usecases"));
     $("tab-screens").addEventListener("click", () => showTab("screens"));
-    $("screens-reset").addEventListener("click", async () => { screensEdited = false; await loadScreens(null); renderDesigner(); });
+    $("tab-components").addEventListener("click", () => showTab("components"));
+    $("screens-reset").addEventListener("click", async () => { screensEdited = false; lastBuild = null; restyleComponents(); components = null; await loadScreens(null); renderDesigner(); });
     $("canvas-help").textContent = HINTS.states;
     window.addEventListener("resize", fit);
     document.body.dataset.ready = "true";

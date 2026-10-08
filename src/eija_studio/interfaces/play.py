@@ -1,6 +1,6 @@
 """PlayIDE routes: the visual UML canvas page, Build & run of the model as a live app beside it (ADR-0151), and
-Simulate, seeded simulated users whose every step the kernel decides (ADR-0152), and the screen designer's check and
-build of designed screens (ADR-0154).
+Simulate, seeded simulated users whose every step the kernel decides (ADR-0152), the screen designer's check and
+build of designed screens (ADR-0154), and the component diagram read from the files the app is built from (ADR-0155).
 
 Build & run reuses `eija build` (ADR-0150): the app is generated into the workspace, its kernel conformance tests run,
 and only a PASSing app is started, as a separate local process on a free loopback port. One app runs at a time; a new
@@ -23,12 +23,13 @@ from fastapi.responses import FileResponse
 
 from pydantic import Field
 
+from eija_studio.application.components import app_components
 from eija_studio.application.simulation import MAX_STEPS, simulate
 from eija_studio.domain.data import data_for
 from eija_studio.domain.models import Contract, DomainError, Workflow
 from eija_studio.domain.pack import Pack
 from eija_studio.domain.screens import Screens, check_screens, parse_screens, screens_for, use_cases
-from .app_build import build_into
+from .app_build import app_files, build_into
 
 START_TIMEOUT_S = 10.0
 
@@ -150,6 +151,14 @@ def register(app, studio, web: Path) -> AppRunner:
         screens, data = screens_of(body, model), data_for(studio.pack)
         return {"screens": screens.model_dump(mode="json"), "digest": screens.digest, "use_cases": use_cases(model),
                 "problems": check_screens(screens, model, data)}
+
+    @app.post("/api/play/components")
+    def play_components(body: BuildRequest):
+        """The component diagram of the app this model and these screens would build, read from its files (ADR-0155)."""
+        model = resolve(body)
+        screens = screens_of(body, model)
+        files, manifest = app_files(studio.pack, model, screens)
+        return app_components(files) | {"model": model.semantic_hash, "screens": screens.digest, "cases": manifest["oracle"]["cases"]}
 
     @app.post("/api/play/build")
     def play_build(body: BuildRequest):

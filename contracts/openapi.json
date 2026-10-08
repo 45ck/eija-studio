@@ -165,6 +165,43 @@
         }
       }
     },
+    "/api/play/components": {
+      "post": {
+        "summary": "Play Components",
+        "description": "The component diagram of the app this model and these screens would build, read from its files (ADR-0155).",
+        "operationId": "play_components_api_play_components_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuildRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/play/build": {
       "post": {
         "summary": "Play Build",
