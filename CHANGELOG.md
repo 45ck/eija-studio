@@ -6,6 +6,19 @@
 
 - PlayIDE has a **Sequences** tab: the pack's scenarios (the Tests tab's `scenarios.json`) drawn in UML sequence notation (lifelines, calls, refusal replies, state invariants, effects as asynchronous messages, and a `neg` fragment around each step that must be refused), each step run through the kernel. A step the model can't do is flagged with the kernel's reason. Edit in the tab (the same draft the Tests tab shows), export as Mermaid or PlantUML, or download `scenarios.json`. A plan's ripple lists the scenarios it breaks. New route `POST /api/play/sequences`. See [ADR-0185](docs/adr/0185-sequence-diagrams-the-kernel-checks.md).
 
+### 8 October 2026: PlayIDE polish
+
+- A plan the policy refuses now says which laws it would break, in the pack's own words ("Only a librarian checks a loan out."), with the policy codes after them.
+- On the Permissions tab, "Can a record reach this state at all?" shows Yes as a good answer and No as a bad one. The red Yes is kept for "without this role" questions, where it means the role can be bypassed.
+- With nothing to review, the Review tab's message spans the tab instead of sitting beside an empty column, and it points to the review workbench rather than a URL parameter.
+- The screen designer fits a laptop screen with the side bar and the chat open: the record attributes move under the screen instead of squeezing it until its fields spilled over them.
+- Step counts read "1 step" rather than "1 step(s)", and PlayIDE has a tab icon (the page had asked for a missing favicon).
+- The status bar names the selection as the outline does ("transition CheckOut", not its id), and the inspector labels a transition's states "Path".
+
+### 8 October 2026: PlayIDE adds without dragging
+
+- Adding to the state machine no longer needs a drag (ADR-0174). Pick State, Transition or Initial in the palette and click the diagram, as in draw.io and Visio; a transition is two clicks, the state it leaves and the state it goes to. Double-click empty space for a new state, a state to rename it, or a transition to change who may take it. A small editor opens where you click: Enter adds the step to the plan, Escape drops it, and nothing is modal. Dragging still works and drops into the same editor; Enter on a palette item still opens the full form. The tour and ripple demos place their state this way.
+
 ### 8 October 2026: PlayIDE end-to-end fixes
 
 Found by using every PlayIDE feature together on the workbench shell, as a UML-literate engineer would:
