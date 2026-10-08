@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py#LIMITS
   title: application/appgen.py
   hash_method: ast-v2
-  sha256: 834df626db0591a18f0ef42515d843408cd4489d83b8fcb5b5537d14693bc48d
-notes_baseline: 9649336da48c167901b194db97a0e9f393234548545f2d61ed66794dd5c87840
+  sha256: 654cbb178449937b5fc266bec99d21494592d10313fe6a653433d28eb97aa59e
+notes_baseline: c4442f24665d0b867e77f4974998737bc220988174a8734201c7555799a69095
 ---
 
 # application.appgen.LIMITS
@@ -25,7 +25,7 @@ notes_baseline: 9649336da48c167901b194db97a0e9f393234548545f2d61ed66794dd5c87840
 |---|---|
 | Kind | constant |
 | Module | [`application/appgen`](/modules/application/appgen.md) |
-| Signature | `LIMITS = ("The app implements the workflow's states, roles, guards and declared effects. Records carry a title only; entities and fields are not modelled yet."…` |
+| Signature | `LIMITS = ('The app runs the EIJA kernel itself (eija-studio must be installed). Records carry a title only; entities and fields are not modelled yet. Records c…` |
 | Code | `repo://src/eija_studio/application/appgen.py#LIMITS` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 

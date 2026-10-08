@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/app_build.py
   title: interfaces/app_build.py
   hash_method: ast-api-v1
-  sha256: b9491b73b3e990edac84abe283b7202ee5ddcf4e7d07ead5138e33d15de8a977
-notes_baseline: 871ea73bc112db2fccc6700006ba0e6c6bda441cdc9a5aa8487109518bc6302e
+  sha256: 5edd09201c601937ca2c5abb3f3d8707d946b82583ef60afdc7baa281587aa3a
+notes_baseline: 747d532c5ba90dd35e4c1a120b86b8caf39e9b6b6ad5d4522b8deaf4487e0e0c
 ---
 
 # interfaces.app_build
@@ -50,7 +50,7 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Imports
 
-* [application.appgen](/modules/application/appgen.md) - App generation: a reviewed workflow model becomes the spec and the conformance oracle of a runnable app (ADR-0150).
+* [application.appgen](/modules/application/appgen.md) - App generation: a reviewed workflow model becomes a runnable app and its conformance oracle (ADR-0150).
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
 

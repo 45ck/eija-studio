@@ -65,7 +65,7 @@ async function renderDetail() {
   if (!state.selected) return;
   const view = await api(`/api/records/${state.selected}?actor=${encodeURIComponent(state.actor)}`);
   $("detail-title").textContent = view.record.title;
-  $("stranded").hidden = view.record.known_state;
+  $("stranded").hidden = view.record.current_model;
   const flow = $("flow");
   flow.replaceChildren();
   for (const s of state.app.states) flow.append(el("li", s, s === view.record.state ? { "aria-current": "step" } : {}));
@@ -83,7 +83,7 @@ async function renderDetail() {
   if (!view.options.length) options.append(el("p", `Nothing leaves ${view.record.state}.`, { class: "muted" }));
   const history = $("history");
   history.replaceChildren();
-  for (const h of view.history) history.append(el("li", `${h.action} by ${h.actor}: ${h.from_state} → ${h.to_state}`));
+  for (const h of view.history) history.append(el("li", `${h.effect} by ${h.actor}, now ${h.state}`));
   if (!view.history.length) history.append(el("li", "Created"));
 }
 

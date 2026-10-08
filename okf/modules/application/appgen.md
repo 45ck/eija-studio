@@ -1,7 +1,7 @@
 ---
 type: Module
 title: application.appgen
-description: 'App generation: a reviewed workflow model becomes the spec and the conformance oracle of a runnable app (ADR-0150).'
+description: 'App generation: a reviewed workflow model becomes a runnable app and its conformance oracle (ADR-0150).'
 resource: repo://src/eija_studio/application/appgen.py
 tags:
 - module
@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py
   title: application/appgen.py
   hash_method: ast-api-v1
-  sha256: 9ee28884d029b7516f3dd33377a3458e5bb0a76961dc236d0add45faf62bf492
-notes_baseline: e2a437196729e8ec6a260fb54cebc237e2646f7ef0b4d42a04efc3972626c910
+  sha256: 58be340172ac0169b12bae5e8cd2ecdbd2ea44331719ef573b685365ab05631b
+notes_baseline: 758610c8053d2ba4310500f09f8199c057d78850dee95393b28a3da4258d34b0
 ---
 
 # application.appgen
@@ -29,12 +29,12 @@ notes_baseline: e2a437196729e8ec6a260fb54cebc237e2646f7ef0b4d42a04efc3972626c910
 ## Module docstring
 
 ~~~text
-App generation: a reviewed workflow model becomes the spec and the conformance oracle of a runnable app (ADR-0150).
+App generation: a reviewed workflow model becomes a runnable app and its conformance oracle (ADR-0150).
 
-The generated app's runtime is a fixed template (`resources/appgen/`); what changes per model is `app/spec.py`, written
-here as plain Python literals that read like the diagram, and `tests/oracle.json`. The oracle is not this module's
-reading of the model: every case is answered by the kernel's own `runtime.execute` against an in-memory session, so the
-generated app passes its tests only if it refuses and commits exactly where the kernel does.
+The generated app is storage, HTTP and a page from fixed templates (`resources/appgen/`). It has no rules of its own: it
+calls the kernel's `runtime.execute` and `runtime.initialise` through a SQLite unit of work, on the `app/model.json` and
+`app/pack.json` written here. `tests/oracle.json` holds the kernel's answer for every case on an in-memory session, so
+the app passes only if its storage, transactions and effects keep the kernel's behaviour end to end.
 
 Pure: no IO, no clock, no randomness. The same pack and model always give byte-identical files.
 ~~~
@@ -45,10 +45,10 @@ Pure: no IO, no clock, no randomness. The same pack and model always give byte-i
 * [`LIMITS`](/symbols/application/appgen/LIMITS.md) (constant) - no docstring
 * [`UNDECLARED_ACTION`](/symbols/application/appgen/UNDECLARED_ACTION.md) (constant) - no docstring
 * [`UNKNOWN_ACTOR`](/symbols/application/appgen/UNKNOWN_ACTOR.md) (constant) - no docstring
+* [`absent`](/symbols/application/appgen/absent.md) (function) - A name guaranteed not to be in `taken`, so a negative case can never collide with a declared one.
 * [`generate`](/symbols/application/appgen/generate.md) (function) - Return the per-model files and the build manifest (without file hashes or test results).
 * [`oracle_cases`](/symbols/application/appgen/oracle_cases.md) (function) - Every state x action x actor x expected version, then the same request replayed.
 * [`readme`](/symbols/application/appgen/readme.md) (function) - no docstring
-* [`spec_source`](/symbols/application/appgen/spec_source.md) (function) - no docstring
 
 ## Internal imports
 
@@ -77,8 +77,8 @@ _No curated notes yet._
 * [application.appgen.LIMITS](/symbols/application/appgen/LIMITS.md) - Constant `LIMITS` in `application/appgen`.
 * [application.appgen.UNDECLARED_ACTION](/symbols/application/appgen/UNDECLARED_ACTION.md) - Constant `UNDECLARED_ACTION` in `application/appgen`.
 * [application.appgen.UNKNOWN_ACTOR](/symbols/application/appgen/UNKNOWN_ACTOR.md) - Constant `UNKNOWN_ACTOR` in `application/appgen`.
+* [application.appgen.absent](/symbols/application/appgen/absent.md) - A name guaranteed not to be in `taken`, so a negative case can never collide with a declared one.
 * [application.appgen.generate](/symbols/application/appgen/generate.md) - Return the per-model files and the build manifest (without file hashes or test results).
 * [application.appgen.oracle_cases](/symbols/application/appgen/oracle_cases.md) - Every state x action x actor x expected version, then the same request replayed.
 * [application.appgen.readme](/symbols/application/appgen/readme.md) - `def readme(pack: Pack, model: Workflow, cases: int) -> str` in `application/appgen`.
-* [application.appgen.spec_source](/symbols/application/appgen/spec_source.md) - `def spec_source(pack: Pack, model: Workflow) -> str` in `application/appgen`.
 <!-- okf:generated:end links -->

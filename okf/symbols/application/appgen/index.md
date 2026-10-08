@@ -9,7 +9,7 @@
 
 # Functions
 
+* [application.appgen.absent](absent.md) - A name guaranteed not to be in `taken`, so a negative case can never collide with a declared one.
 * [application.appgen.generate](generate.md) - Return the per-model files and the build manifest (without file hashes or test results).
 * [application.appgen.oracle_cases](oracle_cases.md) - Every state x action x actor x expected version, then the same request replayed.
 * [application.appgen.readme](readme.md) - `def readme(pack: Pack, model: Workflow, cases: int) -> str` in `application/appgen`.
-* [application.appgen.spec_source](spec_source.md) - `def spec_source(pack: Pack, model: Workflow) -> str` in `application/appgen`.

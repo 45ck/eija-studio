@@ -1,16 +1,15 @@
-"""App generation: a reviewed workflow model becomes the spec and the conformance oracle of a runnable app (ADR-0150).
+"""App generation: a reviewed workflow model becomes a runnable app and its conformance oracle (ADR-0150).
 
-The generated app's runtime is a fixed template (`resources/appgen/`); what changes per model is `app/spec.py`, written
-here as plain Python literals that read like the diagram, and `tests/oracle.json`. The oracle is not this module's
-reading of the model: every case is answered by the kernel's own `runtime.execute` against an in-memory session, so the
-generated app passes its tests only if it refuses and commits exactly where the kernel does.
+The generated app is storage, HTTP and a page from fixed templates (`resources/appgen/`). It has no rules of its own: it
+calls the kernel's `runtime.execute` and `runtime.initialise` through a SQLite unit of work, on the `app/model.json` and
+`app/pack.json` written here. `tests/oracle.json` holds the kernel's answer for every case on an in-memory session, so
+the app passes only if its storage, transactions and effects keep the kernel's behaviour end to end.
 
 Pure: no IO, no clock, no randomness. The same pack and model always give byte-identical files.
 """
 from __future__ import annotations
 
-from itertools import product
-from pprint import pformat
+from itertools import count, product
 from typing import Any
 
 from eija_studio.domain.models import DomainError, ExecuteCommand, Workflow, canonical, fingerprint
@@ -22,8 +21,8 @@ FORMAT = "eija.app-build.v1"
 UNDECLARED_ACTION = "UndeclaredAction"
 UNKNOWN_ACTOR = "unknown-actor"
 LIMITS = (
-    "The app implements the workflow's states, roles, guards and declared effects. Records carry a title only; "
-    "entities and fields are not modelled yet.",
+    "The app runs the EIJA kernel itself (eija-studio must be installed). Records carry a title only; entities and "
+    "fields are not modelled yet. Records created under an earlier model are refused with STALE_INSTANCE.",
     "Actors are the pack's fixture directory chosen in the UI. That is not authentication.",
     "Notifications are written to an outbox table; nothing is sent.",
     "Conformance covers every state x action x fixture actor x version case, plus replays, against the kernel. "
@@ -74,10 +73,20 @@ def _kernel(pack: Pack, model: Workflow, session: _OracleSession, actor: str, ac
     return {"outcome": "COMMITTED", "state": result["instance"]["state"], "effects": result["effects"]}
 
 
+def absent(base: str, taken: set[str]) -> str:
+    """A name guaranteed not to be in `taken`, so a negative case can never collide with a declared one."""
+    return next(name for name in (base if n == 0 else f"{base}{n}" for n in count()) if name not in taken)
+
+
 def oracle_cases(pack: Pack, model: Workflow) -> list[dict[str, Any]]:
-    """Every state x action x actor x expected version, then the same request replayed. The kernel answers each."""
-    actions = [*sorted(t.action for t in model.transitions), UNDECLARED_ACTION]
-    actors = [*sorted(a.id for a in pack.fixtures.actors), UNKNOWN_ACTOR]
+    """Every state x action x actor x expected version, then the same request replayed. The kernel answers each.
+
+    One undeclared action and one unknown actor, both proven absent from this model and fixture directory, are the
+    negative controls for the missing-resolver refusals (ACTION_DENIED, UNKNOWN_ACTOR)."""
+    declared_actions = {t.action for t in model.transitions} | {a.id for a in pack.actions}
+    declared_actors = {a.id for a in pack.fixtures.actors}
+    actions = [*sorted(t.action for t in model.transitions), absent(UNDECLARED_ACTION, declared_actions)]
+    actors = [*sorted(declared_actors), absent(UNKNOWN_ACTOR, declared_actors)]
     cases = []
     for state, action, actor, version in product(sorted(model.states), actions, actors, (0, 1)):
         session = _OracleSession(pack, model, state)
@@ -87,34 +96,6 @@ def oracle_cases(pack: Pack, model: Workflow) -> list[dict[str, Any]]:
             case["replay"] = _kernel(pack, model, session, actor, action, version)
         cases.append(case)
     return cases
-
-
-def _spec(pack: Pack, model: Workflow) -> dict[str, Any]:
-    effects = {e.id: {"kind": e.kind, "recipient": e.recipient or ""} for e in pack.effects.catalog}
-    return {
-        "APP_NAME": pack.pack.name,
-        "APP_DESCRIPTION": pack.pack.description,
-        "PACK_ID": pack.id,
-        "PACK_VERSION": pack.pack.version,
-        "MODEL_HASH": model.semantic_hash,
-        "INITIAL_STATE": model.initial_state,
-        "STATES": tuple(model.states),
-        "TRANSITIONS": {t.action: {"id": t.id, "from": t.from_state, "to": t.to_state, "role": t.role,
-                                   "guards": tuple(t.guards), "effects": tuple(t.required_effects)}
-                        for t in model.transitions},
-        "ROLES": {r.id: r.description for r in pack.roles},
-        "ACTORS": {a.id: {"role": a.role, "active": a.active, "assigned": a.assigned} for a in pack.fixtures.actors},
-        "EFFECTS": {e: effects[e] for e in sorted({e for t in model.transitions for e in t.required_effects})},
-    }
-
-
-def spec_source(pack: Pack, model: Workflow) -> str:
-    lines = [f'"""Generated by EIJA Studio from model {model.semantic_hash[:12]} ({pack.id} {pack.pack.version}).',
-             "", "Do not edit. Change the model in EIJA Studio and run `eija build` again; the conformance tests in",
-             'tests/ fail if this file and the model disagree."""', ""]
-    for name, value in _spec(pack, model).items():
-        lines.append(f"{name} = {pformat(value, width=110, sort_dicts=False)}")
-    return "\n".join(lines) + "\n"
 
 
 def readme(pack: Pack, model: Workflow, cases: int) -> str:
@@ -134,7 +115,7 @@ python run.py            # http://127.0.0.1:8000, data in data/app.sqlite3
 python -m unittest       # {cases} conformance cases against the EIJA kernel's answers
 ```
 
-It needs Python 3.11 or newer and nothing else.
+Run it with a Python that has `eija-studio` installed: the app's rules are the EIJA kernel itself.
 
 ## What it does
 
@@ -153,6 +134,8 @@ def generate(pack: Pack, model: Workflow | None = None) -> tuple[dict[str, str],
 
     Refuses a model the protected policy blocks: an app is never built from a workflow the kernel would refuse."""
     model = model if model is not None else pack.model
+    if model.id != pack.id:
+        raise DomainError("WORKFLOW_PACK_MISMATCH", f"Workflow {model.id!r} does not belong to pack {pack.id!r}")
     errors = check_policy(model, pack)
     if errors:
         raise DomainError("POLICY_BLOCKED", "The protected policy refuses this workflow; no app is built",
@@ -160,8 +143,8 @@ def generate(pack: Pack, model: Workflow | None = None) -> tuple[dict[str, str],
     cases = oracle_cases(pack, model)
     oracle = {"format": "eija.app-oracle.v1", "model_hash": model.semantic_hash, "source": "eija_studio runtime.execute",
               "cases": cases}
-    files = {"app/spec.py": spec_source(pack, model), "tests/oracle.json": canonical(oracle) + "\n",
-             "README.md": readme(pack, model, len(cases))}
+    files = {"app/model.json": canonical(model) + "\n", "app/pack.json": canonical(pack) + "\n",
+             "tests/oracle.json": canonical(oracle) + "\n", "README.md": readme(pack, model, len(cases))}
     manifest = {"format": FORMAT, "pack": {"id": pack.id, "version": pack.pack.version, "digest": pack.digest},
                 "model_semantic_hash": model.semantic_hash, "oracle": {"cases": len(cases), "hash": fingerprint(oracle)},
                 "limits": list(LIMITS)}

@@ -7,8 +7,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from . import spec
-from .service import Refused, Service
+from .service import MODEL, PACK, Refused, Service
 
 WEB = Path(__file__).resolve().parent / "web"
 STATIC = {"/": ("index.html", "text/html"), "/app.js": ("app.js", "text/javascript"), "/app.css": ("app.css", "text/css")}
@@ -19,9 +18,11 @@ MAX_BODY = 16_384
 
 
 def describe() -> dict:
-    return {"name": spec.APP_NAME, "description": spec.APP_DESCRIPTION, "model_hash": spec.MODEL_HASH,
-            "initial_state": spec.INITIAL_STATE, "states": list(spec.STATES), "roles": spec.ROLES,
-            "transitions": spec.TRANSITIONS, "actors": spec.ACTORS}
+    return {"name": PACK.pack.name, "description": PACK.pack.description, "model_hash": MODEL.semantic_hash,
+            "initial_state": MODEL.initial_state, "states": list(MODEL.states),
+            "roles": {r.id: r.description for r in PACK.roles},
+            "transitions": {t.action: {"from": t.from_state, "to": t.to_state, "role": t.role} for t in MODEL.transitions},
+            "actors": {a.id: {"role": a.role, "active": a.active} for a in PACK.fixtures.actors}}
 
 
 def handler_for(service: Service):
@@ -104,7 +105,7 @@ def handler_for(service: Service):
 def serve(database: str, port: int) -> None:
     service = Service(database)
     server = ThreadingHTTPServer(("127.0.0.1", port), handler_for(service))
-    print(f"{spec.APP_NAME}: http://127.0.0.1:{port}/  (model {spec.MODEL_HASH[:12]}; Ctrl+C to stop)", flush=True)
+    print(f"{PACK.pack.name}: http://127.0.0.1:{port}/  (model {MODEL.semantic_hash[:12]}; Ctrl+C to stop)", flush=True)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py#oracle_cases
   title: application/appgen.py
   hash_method: ast-v2
-  sha256: a00962b9cd9d515652593fb12d4da4bdd0176464c93c9b20102da8aab74df8cb
-notes_baseline: 556290fb5a65ae2bf8eeec4c6a32f15fb1deea1bfa1c604194a5e76dc2f39d40
+  sha256: b18e7b2b49f744e4034186c84a8b99285aa9a9fb473d88d28d9da69085dbbfc0
+notes_baseline: c986c1d8c2e82f92a74ad077e640c5ada71996af70ac5cdf98f6a410a09f1b2d
 ---
 
 # application.appgen.oracle_cases
@@ -33,6 +33,9 @@ notes_baseline: 556290fb5a65ae2bf8eeec4c6a32f15fb1deea1bfa1c604194a5e76dc2f39d40
 
 ~~~text
 Every state x action x actor x expected version, then the same request replayed. The kernel answers each.
+
+One undeclared action and one unknown actor, both proven absent from this model and fixture directory, are the
+negative controls for the missing-resolver refusals (ACTION_DENIED, UNKNOWN_ACTOR).
 ~~~
 <!-- okf:generated:end facts -->
 
@@ -45,6 +48,7 @@ _No curated notes yet._
 
 * [application.appgen.UNDECLARED_ACTION](/symbols/application/appgen/UNDECLARED_ACTION.md) - Constant `UNDECLARED_ACTION` in `application/appgen`.
 * [application.appgen.UNKNOWN_ACTOR](/symbols/application/appgen/UNKNOWN_ACTOR.md) - Constant `UNKNOWN_ACTOR` in `application/appgen`.
+* [application.appgen.absent](/symbols/application/appgen/absent.md) - A name guaranteed not to be in `taken`, so a negative case can never collide with a declared one.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
 

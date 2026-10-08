@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-from eija_studio.application.appgen import UNDECLARED_ACTION, UNKNOWN_ACTOR, generate, oracle_cases
+from eija_studio.application.appgen import UNDECLARED_ACTION, UNKNOWN_ACTOR, absent, generate, oracle_cases
 from eija_studio.domain.models import DomainError, Workflow
 from eija_studio.domain.pack import load_pack
 from eija_studio.interfaces.app_build import conformance
@@ -50,6 +50,18 @@ def test_the_oracle_is_the_kernel_answering_each_case():
     assert case(cases, state="Draft", action="Approve", actor="registrar", expected_version=0)["expect"]["code"] == "STATE_DENIED"
 
 
+def test_negative_sentinels_never_collide_with_declared_names():
+    assert absent("UndeclaredAction", {"UndeclaredAction", "UndeclaredAction1"}) == "UndeclaredAction2"
+    assert absent(UNKNOWN_ACTOR, {"registrar"}) == UNKNOWN_ACTOR
+
+
+def test_a_workflow_from_another_pack_is_refused():
+    other = load_pack(ROOT / "packs" / "library-loan").model
+    with pytest.raises(DomainError) as refused:
+        generate(EXCURSION, other)
+    assert refused.value.code == "WORKFLOW_PACK_MISMATCH"
+
+
 def test_a_workflow_the_policy_refuses_is_never_built():
     unsafe = Workflow.model_validate_json((ROOT / "examples" / "unsafe-teacher-final-approval.json").read_text(encoding="utf-8"))
     with pytest.raises(DomainError) as refused:
@@ -67,12 +79,18 @@ def test_every_pack_builds_an_app_that_passes_its_kernel_conformance(tmp_path, p
         assert sha256((out / relative).read_bytes()).hexdigest() == digest
 
 
-MUTANTS = {  # negative controls: each breaks one rule in the generated app; the conformance run must catch it
-    "assignment guard dropped": ("library-loan", "app/service.py", 'and not who["assigned"]', "and False"),
-    "role check dropped": ("excursion", "app/service.py", 'if who["role"] != step["role"]:', "if False:"),
-    "version check dropped": ("excursion", "app/service.py", 'if record["version"] != expected_version:', "if False:"),
-    "approval handed to teachers": ("excursion", "app/spec.py", "'role': 'Registrar'", "'role': 'Teacher'"),
-    "effect not written": ("excursion", "app/service.py", "for effect in step[\"effects\"]:", "for effect in ():"),
+MUTANTS = {  # negative controls: each breaks the app's storage or its built-in model; the conformance run must catch it
+    "operation not recorded": ("excursion", "app/service.py",
+                               'self.db.execute("INSERT INTO operations VALUES(?,?,?)", (operation_id, binding, canonical(result)))',
+                               "return None"),
+    "audit effect not written": ("excursion", "app/service.py",
+                                 'self.db.execute("INSERT INTO audit(kind, body) VALUES(?,?)", (kind, canonical(body)))',
+                                 "return None"),
+    "notification not queued": ("library-loan", "app/service.py",
+                                'self.db.execute("INSERT INTO outbox VALUES(?,?,?,?)", (operation_id + ":" + effect, case_id, effect, recipient))',
+                                "return None"),
+    "approval handed to teachers": ("excursion", "app/model.json", '"role":"Registrar"', '"role":"Teacher"'),
+    "unassigned actor treated as assigned": ("library-loan", "app/pack.json", '"assigned":false', '"assigned":true'),
 }
 
 
@@ -93,6 +111,15 @@ def test_build_never_overwrites_a_directory_it_did_not_write(tmp_path):
     (out / "notes.txt").write_text("mine", encoding="utf-8")
     assert build(tmp_path, "excursion", "--no-test")[0] == 2
     assert (out / "notes.txt").read_text(encoding="utf-8") == "mine" and not (out / "BUILD.json").exists()
+
+
+def test_a_fake_manifest_does_not_make_a_directory_ours(tmp_path):
+    out = tmp_path / "excursion"
+    (out / "app").mkdir(parents=True)
+    (out / "app" / "notes.py").write_text("mine", encoding="utf-8")
+    (out / "BUILD.json").write_text(json.dumps({"format": "eija.app-build.v1", "files": {"README.md": "x"}}), encoding="utf-8")
+    assert build(tmp_path, "excursion", "--no-test")[0] == 2
+    assert (out / "app" / "notes.py").read_text(encoding="utf-8") == "mine"
 
 
 def test_rebuild_replaces_generated_files_and_keeps_data(tmp_path):
@@ -144,7 +171,7 @@ def test_the_running_app_enforces_the_model_over_http(running_app):
     assert (status, stale["code"]) == (409, "STALE_VERSION")
     status, view, _ = call(running_app, f"/api/records/{record['id']}?actor=registrar")
     assert [o["action"] for o in view["options"] if o["allowed"]] == ["Approve", "Reject"]
-    assert [h["action"] for h in view["history"]] == ["Submit"]
+    assert [(h["effect"], h["actor"], h["state"]) for h in view["history"]] == [("Audit:ExcursionSubmitted", "teacher-assigned", "Submitted")]
 
 
 def test_the_app_refuses_non_json_posts(running_app):

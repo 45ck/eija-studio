@@ -201,10 +201,10 @@ The block above is not hand-drawn: `python scripts/gen_readme_diagram.py --check
 
 ```console
 eija build --pack packs/excursion --out myapp
-python myapp/run.py   # http://127.0.0.1:8000
+python myapp/run.py   # http://127.0.0.1:8000, needs eija-studio installed
 ```
 
-The check is exhaustive only for the modelled cases and the pack's fixture actors. Records carry only a title until entities and fields are modelled. See [Build an app from the model](docs/build-an-app.md) and [ADR-0150](docs/adr/0150-build-apps-from-the-model-with-a-kernel-oracle.md).
+The app calls EIJA's kernel for every decision. The check is exhaustive only for the modelled cases and the pack's fixture actors. Records carry only a title until entities and fields are modelled. See [Build an app from the model](docs/build-an-app.md) and [ADR-0150](docs/adr/0150-build-apps-from-the-model-with-a-kernel-oracle.md).
 
 ## Try the connected IDE preview
 

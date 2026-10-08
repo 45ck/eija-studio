@@ -70,7 +70,7 @@ The generic execution algorithm. Policy, laws and typed effects come from the do
 ## Referenced by
 
 * [Execution](/contexts/execution.md) - Owns Trusted fixture actor state, preview instances, command replay, committed effect intents
-* [application.appgen](/modules/application/appgen.md) - App generation: a reviewed workflow model becomes the spec and the conformance oracle of a runnable app (ADR-0150).
+* [application.appgen](/modules/application/appgen.md) - App generation: a reviewed workflow model becomes a runnable app and its conformance oracle (ADR-0150).
 * [application.service](/modules/application/service.md) - Module `application/service` (no module docstring).
 * [application.verifier](/modules/application/verifier.md) - Bounded synthetic runtime experiments.
 * [application.runtime.check_actor](/symbols/application/runtime/check_actor.md) - `def check_actor(actor: dict[str, Any], transition: Transition, command: ExecuteCommand) -> None` in `application/runtime`.

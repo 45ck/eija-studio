@@ -11,14 +11,14 @@ from pathlib import Path
 from typing import Any, Callable
 
 from eija_studio import __version__
-from eija_studio.application.appgen import generate
+from eija_studio.application.appgen import FORMAT, generate
 from eija_studio.domain.models import DomainError, Workflow
 from eija_studio.domain.pack import Pack
 
 MANIFEST = "BUILD.json"
 TEMPLATES = {  # resource template -> path in the generated app
     "init.py.tmpl": "app/__init__.py",
-    "service.py.tmpl": "app/service.py",
+    "service.py.tmpl": "app/service.py",  # storage only: rules come from the installed kernel
     "server.py.tmpl": "app/server.py",
     "web/index.html.tmpl": "app/web/index.html",
     "web/app.js.tmpl": "app/web/app.js",
@@ -44,15 +44,37 @@ def app_files(pack, model: Workflow) -> tuple[dict[str, str], dict]:
     return static | {"tests/__init__.py": ""} | generated, manifest
 
 
+KEPT = ("data", "__pycache__")  # the app's records, and bytecode from running it, are never treated as foreign files
+
+
+def _manifest_files(out: Path) -> set[str] | None:
+    """The relative paths a previous build's BUILD.json lists, or None if it is not one of ours."""
+    try:
+        manifest = json.loads((out / MANIFEST).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    if not isinstance(manifest, dict) or manifest.get("format") != FORMAT:
+        return None
+    listed = manifest.get("files")
+    if not isinstance(listed, dict) or not listed:
+        return None
+    return {p for p in listed if isinstance(p, str) and ".." not in Path(p).parts and not Path(p).is_absolute()}
+
+
+def _present(out: Path) -> set[str]:
+    relative = (p.relative_to(out) for p in out.rglob("*") if p.is_file())
+    return {r.as_posix() for r in relative if not any(part in KEPT for part in r.parts)}
+
+
 def _previous(out: Path) -> list[str]:
-    """Files a previous build wrote. Anything else in a non-empty directory means it is not ours to overwrite."""
+    """Files a previous build wrote. The directory must hold nothing else (apart from `data/` and bytecode); any
+    other file means it is not ours to overwrite, whatever its BUILD.json says."""
     if not out.exists() or not any(out.iterdir()):
         return []
-    try:
-        listed = json.loads((out / MANIFEST).read_text(encoding="utf-8"))["files"]
-    except (OSError, ValueError, KeyError, TypeError) as exc:
-        raise DomainError("OUTPUT_EXISTS", "The output directory is not empty and is not a previous build") from exc
-    return [p for p in listed if isinstance(p, str) and ".." not in Path(p).parts and not Path(p).is_absolute()]
+    owned = _manifest_files(out)
+    if owned is None or _present(out) - owned - {MANIFEST}:
+        raise DomainError("OUTPUT_EXISTS", "The output directory is not empty and is not exactly a previous build")
+    return sorted(owned)
 
 
 def write(out: Path, files: dict[str, str]) -> dict[str, str]:

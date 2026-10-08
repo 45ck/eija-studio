@@ -3,6 +3,7 @@
 ## 2026-10-08
 
 * **App generation**: synced ADR-0150, `application.appgen` (pure spec writer and kernel-answered oracle), `interfaces.app_build` (`eija build`) and `bootstrap.source_identity`. Other pages changed only in generated reference links. No Notes were hand-edited and nothing was recorded as verified. The conformance and negative-control results are execution evidence in `tests/test_appgen.py`, not knowledge-base review.
+* **App generation review fixes**: the generated app now calls the kernel itself, so `appgen.spec_source` was removed (its page deleted rather than deprecated, since it never reached `main`) and `appgen.absent` added. Added the `appgen` gate page for the new nox session. ADR-0150 was re-synced after its decision text changed. No Notes were hand-edited and nothing was recorded as verified.
 
 ## 2026-10-03
 

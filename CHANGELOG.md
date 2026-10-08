@@ -4,7 +4,7 @@
 
 ### 8 October 2026: build an app from the model
 
-- New `eija build --pack P --out DIR`. It writes a runnable app (web page, API and SQLite database) from the workflow model, plus `tests/oracle.json` with the kernel's answer for every state, action, actor and version. It runs the app's conformance tests and records the result in `BUILD.json`, and exits 2 if they fail. All three packs pass: excursion 240 cases, library-loan and eija-review-slice 360 each. Five mutated apps are each caught. See [Build an app from the model](docs/build-an-app.md) and [ADR-0150](docs/adr/0150-build-apps-from-the-model-with-a-kernel-oracle.md).
+- New `eija build --pack P --out DIR`. It writes a runnable app (web page, API and SQLite database) from the workflow model, plus `tests/oracle.json` with the kernel's answer for every state, action, actor and version. It runs the app's conformance tests and records the result in `BUILD.json`, and exits 2 if they fail. All three packs pass: excursion 240 cases, library-loan and eija-review-slice 360 each. The app stores records in SQLite and calls the kernel for every decision, so there is no second interpreter. Five broken apps (storage and built-in model mutants) are each caught, and the `appgen` nox session builds all three packs. See [Build an app from the model](docs/build-an-app.md) and [ADR-0150](docs/adr/0150-build-apps-from-the-model-with-a-kernel-oracle.md).
 
 ### 8 October 2026: the source-connected IDE on main (#78)
 
