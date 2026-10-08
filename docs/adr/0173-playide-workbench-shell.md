@@ -40,6 +40,7 @@ Chosen option. Sources, all patterns only (no code copied):
 * Ctrl+B hides the left side, as in VS Code; Ctrl+Alt+P the panel and Ctrl+Alt+C the chat. VS Code's Ctrl+J and Cursor's Ctrl+L are kept by the browser (Downloads and the address bar in Chrome), so a web page cannot use them. The three splitters are keyboard resizable. Sizes and hidden regions are kept in the browser (`localStorage`), and the page works the same when storage is blocked.
 * The review view (ADR-0172) has no chat column and no chat toggle.
 * The code is `play-shell.js` and `play-shell.css`. `play.html` moves the regions; the shell script only watches `hidden` on the panel's sections and on the plan banner, sets layout attributes on `body`, and mirrors the model name and the selection into the status bar. A section another script shows comes to the front of the panel.
+* Diagram tabs that do not fit behave as in VS Code: the strip scrolls (the mouse wheel scrolls it sideways), the edge that hides tabs fades, the chosen tab is scrolled into view, and a **More tabs** button (») lists every tab, marking those out of view. Buttons beside the strip (Fit, zoom, and any a view adds) never cover it. Checked at 1280, 1440, 1600 and 1920 pixels wide, with the chat open and closed.
 * The side columns give way before the diagram does: the centre keeps at least 520 pixels, and the chat narrows first.
 
 ### Consequences

@@ -194,7 +194,7 @@ def _check_transaction(step: Any, base: Workflow, plan: list[Transaction], pack:
         tx = parse_transaction(step)
     except DomainError as error:
         return {"status": "does_not_apply", "text": "A state-machine step", "code": error.code, "message": error.message}
-    shown = {"text": describe(tx), "transaction": tx.model_dump(mode="json")}
+    shown = {"text": describe(tx, base), "transaction": tx.model_dump(mode="json")}
     try:
         candidate, after = apply_transactions(base, plan, pack), apply_transactions(base, [*plan, tx], pack)
     except DomainError as error:

@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/plan.py#describe
   title: application/plan.py
   hash_method: ast-v2
-  sha256: b7d83ecd43b3669c7c7cdc0707d7f45818c6f1d080c27d1439a32e5203a0c2bd
-notes_baseline: 6255679d46286a6eea390e0dd3119fa3d3931c8c9c20706f86555f1092328c90
+  sha256: d66ce7cd9609d2743151b14133faf312859e00342237230381813d62e4dd899b
+notes_baseline: 04151ff06c0314e4ff6e2275f727942c24287b7508ad570c4ec7ba5ce2ad6859
 ---
 
 # application.plan.describe
@@ -25,14 +25,15 @@ notes_baseline: 6255679d46286a6eea390e0dd3119fa3d3931c8c9c20706f86555f1092328c90
 |---|---|
 | Kind | function |
 | Module | [`application/plan`](/modules/application/plan.md) |
-| Signature | `def describe(tx: Transaction) -> str` |
+| Signature | `def describe(tx: Transaction, model: Workflow \| None=None) -> str` |
 | Code | `repo://src/eija_studio/application/plan.py#describe` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
 ~~~text
-One line a person can check against the diagram.
+One line a person can check against the diagram. A transition is named by its action, as the diagram labels it,
+when `model` has it; one the same plan adds keeps its id.
 ~~~
 <!-- okf:generated:end facts -->
 
@@ -43,6 +44,7 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
+* [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.transactions.Transaction](/symbols/domain/transactions/Transaction.md) - Type alias `Transaction` in `domain/transactions`.
 
 ## Referenced by

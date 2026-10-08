@@ -16,4 +16,4 @@
 * [application.new_system.sketch_documents](sketch_documents.md) - `pack.json` and `data.json` for a system started from a sketch, checked by the kernel's pack check.
 * [application.new_system.summary](summary.md) - What the new system has, for the form to say before it is created.
 * [application.new_system.system_id](system_id.md) - A pack id for a new system called `name`, unlike every id in `taken`.
-* [application.new_system.template_documents](template_documents.md) - A copy of a template's documents as a new system: new id and name, the same model, rules and screens.
+* [application.new_system.template_documents](template_documents.md) - A copy of a template's documents as a new system: new id and name, the same model, rules, laws, screens and test cases (`scenarios.json`).

@@ -87,9 +87,35 @@ def test_the_shell_reveals_hides_and_remembers_its_regions_in_a_real_browser():
                 page.keyboard.press(key)
                 page.wait_for_selector(f'body[data-{attr}="closed"]')
             assert page.is_hidden("#chat-input") and page.is_hidden("#outline-states")
+            # A hidden region leaves its column empty: the diagrams keep the width and nothing slides into it.
+            assert page.evaluate("document.querySelector('.stage').clientWidth") > 1400
             page.keyboard.press("Control+Alt+KeyC")
             page.wait_for_selector('body[data-chat="open"]')
             assert page.evaluate("document.activeElement.id") == "chat-input"
+            assert page.evaluate("document.querySelector('.side').getBoundingClientRect().left") > 1100  # still on the right
+            # Tabs that do not fit scroll, and More tabs lists them; picking one scrolls it into view and nothing in the
+            # tool bar covers the strip.
+            page.set_viewport_size({"width": 1100, "height": 800})
+            page.wait_for_selector("#tabs-more:not([hidden])")
+            page.click("#tabs-more")
+            page.keyboard.press("Tab")  # focus leaves the menu, so it closes
+            page.wait_for_selector("#tabs-menu", state="hidden")
+            assert page.get_attribute("#tabs-more", "aria-expanded") == "false"
+            page.click("#tabs-more")
+            page.click("#tabs-menu button:has-text('Permissions')")
+            page.wait_for_selector('#tab-access[aria-selected="true"]')
+            in_view = """() => { const s = document.querySelector('.stage-tools .tabs'), t = document.getElementById('tab-access');
+                return t.offsetLeft >= s.scrollLeft - 1 && t.offsetLeft + t.offsetWidth <= s.scrollLeft + s.clientWidth + 1; }"""
+            for _ in range(20):  # the strip scrolls smoothly; the page's CSP rules out wait_for_function with a string
+                if page.evaluate(in_view):
+                    break
+                page.wait_for_timeout(100)
+            assert page.evaluate(in_view)
+            assert page.evaluate("""() => { const r = document.querySelector('.stage-tools .tabs').getBoundingClientRect();
+                return [...document.querySelectorAll('.stage-tools > :not(.tabs):not(.tabs-menu)')].filter((e) => e.offsetParent)
+                    .every((e) => e.getBoundingClientRect().left >= r.right - 0.5); }""")
+            page.set_viewport_size({"width": 1600, "height": 900})
+            page.click("#tab-states")
             # The layout is kept in this browser.
             page.reload()
             page.wait_for_selector("body[data-ready=true]", timeout=60_000)

@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/play_systems.py
   title: interfaces/play_systems.py
   hash_method: ast-api-v1
-  sha256: c7f22fa12e4ecb770a58f0386504ec48544a4437b0f6474935103523e2e5bb5c
-notes_baseline: 0d849a4c7e0abe465e0f720df9189f9afec10e0c663e8f41f7db6cb8f62b3d70
+  sha256: 11f6ec52722455b31be9c9bcbd5b071b0ad2121668ae532357c496df286bf4a4
+notes_baseline: 0a6aeceaeb769a26c816d762b0037962baf6e19229ac582c0b0b1d6e270fda0c
 ---
 
 # interfaces.play_systems

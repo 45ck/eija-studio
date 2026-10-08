@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0173-playide-workbench-shell.md
   title: 0173-playide-workbench-shell.md
   hash_method: lf-sha256-v1
-  sha256: d4d35264e7d7d6ab6142de8c011d766df2ba15b82e25c2d84b44d6d2e8836e18
-notes_baseline: 0818d608d137ddb74200350454fcfb3046bb7f33cf828c60624e5a5691d48526
+  sha256: be04794b2df48baeb8fdb479a9a605e67a3ab3829c12faaa1c59e43c0225ae43
+notes_baseline: 620ad40338c63bde27e469cf0456dc4639d5042324908c9987a382771c835c9a
 ---
 
 # ADR-0173: PlayIDE's workbench shell, after Visual Studio, VS Code, Cursor and draw.io
@@ -44,6 +44,7 @@ notes_baseline: 0818d608d137ddb74200350454fcfb3046bb7f33cf828c60624e5a5691d48526
 > * Ctrl+B hides the left side, as in VS Code; Ctrl+Alt+P the panel and Ctrl+Alt+C the chat. VS Code's Ctrl+J and Cursor's Ctrl+L are kept by the browser (Downloads and the address bar in Chrome), so a web page cannot use them. The three splitters are keyboard resizable. Sizes and hidden regions are kept in the browser (`localStorage`), and the page works the same when storage is blocked.
 > * The review view (ADR-0172) has no chat column and no chat toggle.
 > * The code is `play-shell.js` and `play-shell.css`. `play.html` moves the regions; the shell script only watches `hidden` on the panel's sections and on the plan banner, sets layout attributes on `body`, and mirrors the model name and the selection into the status bar. A section another script shows comes to the front of the panel.
+> * Diagram tabs that do not fit behave as in VS Code: the strip scrolls (the mouse wheel scrolls it sideways), the edge that hides tabs fades, the chosen tab is scrolled into view, and a **More tabs** button (») lists every tab, marking those out of view. Buttons beside the strip (Fit, zoom, and any a view adds) never cover it. Checked at 1280, 1440, 1600 and 1920 pixels wide, with the chat open and closed.
 > * The side columns give way before the diagram does: the centre keeps at least 520 pixels, and the chat narrows first.
 
 ## Sections

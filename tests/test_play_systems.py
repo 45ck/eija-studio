@@ -77,10 +77,11 @@ def test_ids_are_slugs_that_never_collide():
 
 def test_a_template_copy_keeps_the_model_and_drops_what_was_the_templates_own():
     folder = PACKS_ROOT / "excursion"
-    documents = {n: json.loads((folder / n).read_text(encoding="utf-8")) for n in ("pack.json", "data.json") if (folder / n).is_file()}
+    documents = {n: json.loads((folder / n).read_text(encoding="utf-8")) for n in ("pack.json", "data.json", "scenarios.json") if (folder / n).is_file()}
     copied = template_documents(load_pack(folder), documents, "Field trips", "field-trips")
     pack = copied["pack.json"]
-    assert pack["pack"]["id"] == pack["model"]["id"] == copied["data.json"]["id"] == "field-trips"
+    assert pack["pack"]["id"] == pack["model"]["id"] == copied["data.json"]["id"] == copied["scenarios.json"]["id"] == "field-trips"
+    assert pack["laws"] == documents["pack.json"]["laws"]  # a copy keeps every law; nothing is loosened on the way
     assert pack["model"]["transitions"] == documents["pack.json"]["model"]["transitions"]
     assert all(not t["binds"] for t in pack["language"]["terms"])
     assert all(v["mode"] != "hand_encoded" for v in pack["verifiers"])
@@ -112,9 +113,11 @@ def test_a_new_system_is_created_opened_and_runs_through_the_kernel(served):
 
 
 def test_a_template_system_and_reopening_the_one_the_server_started_with(served):
-    client, _systems, _tmp = served
+    client, _systems, tmp = served
     first = post(client, "/api/play/systems/new", {"name": "Trips", "template": "excursion"}).json()
-    assert first["opened"]["id"] == "trips"
+    assert first["opened"]["id"] == "trips" and (tmp / "home" / "trips" / "scenarios.json").is_file()
+    tests = post(client, "/api/play/tests", {}).json()
+    assert tests["status"] == "PASS"  # the template's test cases run on the copy
     listing = client.get("/api/play/systems", headers=HEADERS).json()
     assert listing["current"]["id"] == "trips"
     assert [e["id"] for e in listing["recent"]] == ["library-loan"]  # the one the server started with, one click away

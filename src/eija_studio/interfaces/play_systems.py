@@ -26,7 +26,7 @@ from eija_studio.domain.screens import parse_screens
 from eija_studio.domain.transactions import parse_transaction
 
 BLANK = "blank"
-TEMPLATE_FILES = ("pack.json", "data.json", "screens.json")
+TEMPLATE_FILES = ("pack.json", "data.json", "screens.json", "scenarios.json")
 
 
 class StudioHandle:

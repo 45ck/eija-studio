@@ -1,6 +1,6 @@
 """Start a new system (ADR-0185): the pack documents for a system started from a sketch or copied from a template.
 
-A system is a pack: `pack.json`, with `data.json` and `screens.json` beside it when it has them. This module only
+A system is a pack: `pack.json`, with `data.json`, `screens.json` and `scenarios.json` beside it when it has them. This module only
 writes documents; the kernel's own pack check (`parse_pack`) decides whether they are a system at all, and the
 caller saves them. A sketch is one transition per line in the state machine's own label notation,
 `From -> To : Action [Role]`, so what you type is what the diagram draws. Nothing here infers laws, effects
@@ -15,6 +15,7 @@ from typing import Any
 from eija_studio.domain.data import parse_data
 from eija_studio.domain.models import BASE_GUARDS, DomainError
 from eija_studio.domain.pack import Pack, PackError, parse_pack
+from eija_studio.domain.scenarios import parse_scenarios
 from eija_studio.domain.screens import parse_screens
 
 NAME = r"[A-Za-z][A-Za-z0-9_]{0,39}"  # states, actions and roles: names the built app's code can use as they are
@@ -141,7 +142,8 @@ def sketch_documents(name: str, record: str, sketch: str, pack_id: str) -> dict[
 
 
 def template_documents(template: Pack, documents: dict[str, dict[str, Any]], name: str, pack_id: str) -> dict[str, dict[str, Any]]:
-    """A copy of a template's documents as a new system: new id and name, the same model, rules and screens.
+    """A copy of a template's documents as a new system: new id and name, the same model, rules, laws, screens and
+    test cases (`scenarios.json`).
 
     What belonged only to the template is dropped: its language terms' `repo://` bindings, and any claim of a
     hand-written formal model, which was written for the template's id and is not this system's."""
@@ -156,7 +158,7 @@ def template_documents(template: Pack, documents: dict[str, dict[str, Any]], nam
                           "reason": f"The hand-written formal model belongs to the {template.pack.name} pack, not this copy."}
                          for v in pack.get("verifiers", [])]
     copied = {"pack.json": pack}
-    for file in ("data.json", "screens.json"):
+    for file in ("data.json", "screens.json", "scenarios.json"):
         if file in documents:
             copied[file] = copy.deepcopy(documents[file]) | {"id": pack_id}
     return _checked(copied)
@@ -170,6 +172,8 @@ def _checked(documents: dict[str, dict[str, Any]]) -> dict[str, dict[str, Any]]:
             parse_data(documents["data.json"], pack.id)
         if "screens.json" in documents:
             parse_screens(documents["screens.json"], pack.id)
+        if "scenarios.json" in documents:
+            parse_scenarios(documents["scenarios.json"], pack.id)
     except DomainError as error:
         raise PackError([error.message]) from None
     return documents

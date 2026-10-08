@@ -49,5 +49,6 @@ _No curated notes yet._
 
 ## Referenced by
 
+* [application.law_proof.with_laws](/symbols/application/law_proof/with_laws.md) - The pack with its law file replaced by `laws` (a draft edited in PlayIDE), checked as the pack loader checks it.
 * [application.new_system.summary](/symbols/application/new_system/summary.md) - What the new system has, for the form to say before it is created.
 <!-- okf:generated:end links -->

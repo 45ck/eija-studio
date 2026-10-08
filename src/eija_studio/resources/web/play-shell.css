@@ -37,12 +37,15 @@ body[data-chat="closed"] .layout{grid-template-columns:var(--left-w) 5px minmax(
 body[data-left="closed"][data-chat="closed"] .layout{grid-template-columns:0 0 minmax(0,1fr) 0 0}
 body[data-left="closed"] .explorer,body[data-left="closed"] #split-left,
 body[data-chat="closed"] .side,body[data-chat="closed"] #split-chat{display:none}
+/* Each region keeps its own column: a hidden region leaves its column empty instead of letting the next one slide in. */
+.layout>.explorer{grid-column:1}.layout>#split-left{grid-column:2}.layout>.workbench{grid-column:3}.layout>#split-chat{grid-column:4}.layout>.side{grid-column:5}
+.layout>*{grid-row:1;min-width:0}
 .split{background:transparent;position:relative;z-index:4;touch-action:none}
 .split::after{content:"";position:absolute;inset:0;transition:background .15s}
 .split:hover::after,.split:focus-visible::after{background:var(--accent);opacity:.45}
 .split.v{cursor:col-resize}
 .split.h{cursor:row-resize;height:5px}
-.explorer{display:grid;grid-template-rows:minmax(0,1.25fr) minmax(0,1fr);min-height:0;background:var(--panel);border-right:1px solid var(--line)}
+.explorer{display:grid;grid-template-rows:minmax(0,max-content) minmax(40%,1fr);min-height:0;background:var(--panel);border-right:1px solid var(--line)}
 .explorer .outline{border:0;padding:10px 12px;overflow:auto}
 .explorer .inspector{border-top:1px solid var(--line);padding:10px 12px;overflow:auto}
 .pane-title{display:flex;align-items:center;justify-content:space-between;font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
@@ -62,15 +65,31 @@ body[data-dock="closed"] #split-dock,body[data-dock="closed"] .dock{display:none
 
 /* Diagram tabs as editor tabs (VS Code, Visual Studio) */
 .stage-tools{padding:0 8px 0 0;gap:2px;background:var(--chrome);border-bottom:1px solid var(--line);flex-wrap:nowrap}
-.stage-tools .tabs{flex:0 1 auto;background:transparent;border-radius:0;padding:0;gap:0;overflow-x:auto;scrollbar-width:thin;min-width:0}
+.stage-tools{position:relative}
+.stage-tools .tabs{flex:0 1 auto;margin-right:auto;background:transparent;border-radius:0;padding:0;gap:0;overflow-x:auto;scrollbar-width:none;min-width:0;scroll-behavior:smooth}
+.stage-tools .tabs::-webkit-scrollbar{display:none}
+.stage-tools .tabs.fade-end{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent)}
+.stage-tools .tabs.fade-start{-webkit-mask-image:linear-gradient(to right,transparent,#000 28px);mask-image:linear-gradient(to right,transparent,#000 28px)}
+.stage-tools .tabs.fade-start.fade-end{-webkit-mask-image:linear-gradient(to right,transparent,#000 28px,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(to right,transparent,#000 28px,#000 calc(100% - 28px),transparent)}
+.stage-tools .tabs button{flex:none}
 .stage-tools .tabs button{position:relative;border-radius:0;padding:9px 11px;font-size:.84rem;font-weight:500;color:var(--muted);border-right:1px solid var(--line)}
 .stage-tools .tabs button:hover{color:var(--ink);background:var(--busy-bg)}
 .stage-tools .tabs button[aria-selected="true"]{background:var(--panel);color:var(--ink);box-shadow:none}
 .stage-tools .tabs button[aria-selected="true"]::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--tab-line)}
 .stage-tools .tabs button[aria-selected="true"]::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:var(--panel)}
 .stage-tools .tabs #tab-laws{margin-left:10px;border-left:1px solid var(--line)}
+.stage-tools>:not(.tabs):not(.tabs-menu){flex:none}
 .stage-tools>button{flex:none;padding:3px 9px;font-size:.82rem;border-color:transparent;background:transparent;color:var(--muted)}
 .stage-tools>button:hover{background:var(--busy-bg);color:var(--ink)}
+#tabs-more{font-weight:700;padding:3px 8px}
+#tabs-more[hidden]{display:none}
+#tabs-more[aria-expanded="true"]{background:var(--busy-bg);color:var(--ink)}
+.tabs-menu{position:absolute;top:100%;left:auto;right:8px;z-index:30;display:flex;flex-direction:column;min-width:200px;padding:4px;background:var(--panel);border:1px solid var(--line);border-radius:8px;box-shadow:0 10px 28px rgba(27,33,48,.16)}
+.tabs-menu[hidden]{display:none}
+.tabs-menu button{text-align:left;border:0;background:transparent;padding:6px 10px;font-size:.86rem;border-radius:5px}
+.tabs-menu button:hover,.tabs-menu button:focus-visible{background:var(--busy-bg)}
+.tabs-menu button[aria-checked="true"]{font-weight:600;color:var(--accent)}
+.tabs-menu button.hidden-tab::after{content:"  · out of view";color:var(--muted);font-weight:400;font-size:.76rem}
 
 /* The UML palette as a column beside the canvas (draw.io's shape library) */
 .stage>.draw-palette{grid-row:3;grid-column:1;position:static;flex-direction:column;align-items:stretch;gap:2px;width:92px;padding:8px 6px;border:0;border-right:1px solid var(--line);border-radius:0;box-shadow:none;background:var(--chrome);overflow:auto}
@@ -97,13 +116,24 @@ body[data-dock="closed"] #split-dock,body[data-dock="closed"] .dock{display:none
 .dock-body>section{display:none;border:0;border-radius:0;padding:0;background:transparent}
 .dock-body>section.dock-active:not([hidden]){display:flex}
 .dock-body>.run.dock-active{height:100%;min-height:0}
-.dock-body .log{max-height:none}
+.dock-body .log{max-height:12.5em}
 .dock-body .run-head h2{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .dock-body .run-head{justify-content:flex-end;margin-bottom:4px}
-.dock-body .debug.dock-active{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:4px 24px;align-content:start}
+.dock-body>section.debug.dock-active:not([hidden]){display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:4px 24px;align-content:start}
 .dock-body .debug>.run-head,.dock-body .debug>.debug-now,.dock-body .debug>#debug-limits{grid-column:1/-1}
-.dock-body .sim.dock-active{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:4px 24px;align-content:start}
+/* Paused, the panel reads like a debugger: records and breakpoints on the left, the steps so far on the right */
+.dock-body .debug.dock-active{grid-auto-flow:row dense}
+.dock-body .debug>h3,.dock-body .debug>.records,.dock-body .debug>.check,.dock-body .debug>.breakpoints{grid-column:1}
+.dock-body .debug>h3:nth-of-type(3){grid-column:2;grid-row:3}
+.dock-body .debug>#debug-log{grid-column:2;grid-row:4/span 4;align-self:start}
+.dock-body .records{width:auto;min-width:50%}
+.dock-body .debug>#debug-limits{grid-row:8}
+.dock-body>section.sim.dock-active:not([hidden]){display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:4px 24px;align-content:start}
 .dock-body .sim>.run-head,.dock-body .sim>.sim-summary,.dock-body .sim>.chips,.dock-body .sim>#sim-limits{grid-column:1/-1}
+/* What is worth a look on the left, the run log beside it */
+.dock-body .sim>h3:nth-of-type(1){grid-area:4/1}.dock-body .sim>#sim-findings{grid-area:5/1}
+.dock-body .sim>h3:nth-of-type(2){grid-area:4/2}.dock-body .sim>#sim-log{grid-area:5/2}
+.dock-body .sim>#sim-limits{grid-row:6}
 
 /* Status bar (VS Code, Visual Studio) */
 .statusbar{display:flex;align-items:center;gap:14px;padding:2px 10px;min-height:24px;background:#24305e;color:#e8ecfb;font-size:.76rem}
