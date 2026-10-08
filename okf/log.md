@@ -2,8 +2,11 @@
 
 ## 2026-10-08
 
+* **Merge of main into the permissions branch**: re-synced `interfaces.play` and `interfaces.http` (both laws/ripple and access/reach routes) and ADR-0172 links. No Notes were hand-edited and nothing was recorded as verified.
 * **Review view**: synced ADR-0172 (presentation only, no module changes). No Notes were hand-edited and nothing was recorded as verified.
 * **Who can do what**: synced ADR-0171 and the new `application.access` module and symbol pages; `interfaces.play` (`/api/play/access`, `/api/play/reach`) and `interfaces.http` refreshed, and pages linking to `runtime`, `simulation`, `models` and `pack` changed only in generated references. No Notes were hand-edited and nothing was recorded as verified.
+* **Laws proved over every run**: synced ADR-0166 and the new `application.law_proof` module and symbol pages; `interfaces.cli` (`laws`), `interfaces.play` (`/api/play/laws`) and `interfaces.http` (the `play-laws.js` asset) refreshed. No Notes were hand-edited and nothing was recorded as verified.
+* **Ripple across diagrams**: synced ADR-0158, the new `application.ripple` module, `domain.screens.default_screen`, `application.ports.PlanProposer.follow_on`, `adapters.plan_proposals` and `interfaces.play` pages. No Notes were hand-edited and nothing was recorded as verified. The new `playide_ripple` demo was recorded and the PlayIDE tour re-recorded.
 * **PlayIDE assist**: synced ADR-0170 (and its review fixes); `interfaces.http` refreshed (`WEB_ASSETS` allows `play-assist.js` and `play-assist.css`). The ADR-0064, ADR-0156, ADR-0157 and ADR-0160 pages changed only in generated backlinks. No Notes were hand-edited and nothing was recorded as verified.
 * **Executable UML and SCXML**: synced ADR-0165, the new `application.scxml` module and symbol pages, the `xuml` gate pages (`scxml_drift`, `scxml_differential`) and `interfaces.cli`; ADRs that link to ADR-0165 refreshed. No Notes were hand-edited and nothing was recorded as verified.
 * **Run bar**: synced ADR-0160 and the new `application.simulation.run_log` and `MAX_BREAKPOINTS` symbol pages; `application.simulation` (steps name their transition), `interfaces.play` (`/api/play/run`, `/api/play/stop`) and `interfaces.http` (the `play-run.js` asset) refreshed. No Notes were hand-edited and nothing was recorded as verified.

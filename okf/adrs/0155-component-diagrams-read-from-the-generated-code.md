@@ -55,5 +55,7 @@ notes_baseline: 7b8699ea230bb4fb7eb99e33f9ada5f200882895641465ab87bc02b554db4fb7
 _No curated notes yet._
 
 <!-- okf:generated:begin links -->
-_No generated cross-references._
+## Referenced by
+
+* [ADR-0158: A change ripples across every diagram, and the AI's follow-on edits are re-checked](/adrs/0158-ripple-across-diagrams-with-checked-follow-ons.md) - PlayIDE draws five diagrams of one system: the state machine, the class diagram, the use cases, the screens and the components of the built app.
 <!-- okf:generated:end links -->

@@ -76,6 +76,12 @@ SCENARIOS: tuple[Scenario, ...] = (
              "screen designer; builds and runs the app with its conformance cases; simulates users; draws a state and a "
              "transition from the palette; and checks an offline AI proposal step by step, rejecting the step the "
              "policy refuses, before building and simulating the result."),
+    Scenario("playide_ripple", "PlayIDE ripple: change one diagram, see the others follow", "recorded", (),
+             "On the library-loan pack, a state dragged onto the state machine ripples into the class diagram's state "
+             "enumeration and is flagged unreachable; the offline AI's follow-on transition, re-checked by the policy, "
+             "ripples into a new use case, a default screen and regenerated components, and the app is built. Then an "
+             "AI-proposed removal strands a screen so the app cannot be built; the AI's follow-on removes it, the design "
+             "check confirms, and the app builds with the checks ring showing that the diagrams agree."),
     Scenario("playide_showcase", "The PlayIDE showcase: software engineering as play", "recorded-partial", (),
              "The storyboarded showcase (docs/demos/PLAYIDE-SHOWCASE-STORYBOARD.md): the model is the program; press "
              "play and watch seeded users run through it; fix it by dragging; let the AI propose the busywork and check "

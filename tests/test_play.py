@@ -145,6 +145,25 @@ def test_plan_mode_proposes_previews_and_tries_but_never_saves(client, studio):
         assert u.active()["model"] == before  # nothing was saved or applied
 
 
+def test_the_ripple_of_a_plan_reaches_every_diagram_and_saves_nothing(tmp_path):
+    studio = harness_studio(tmp_path / "loan", pack=Path(__file__).resolve().parents[1] / "packs" / "library-loan")
+    client = TestClient(create_app(studio, SESSION), base_url=HEADERS["Origin"])
+    with studio.store.transaction() as u:
+        before = u.active()["model"]
+    plan = [{"kind": "add_state", "state": "Lost", "after": studio.pack.model.states[-1]}]
+    result = client.post("/api/play/ripple", json={"plan": plan}, headers=HEADERS).json()
+    assert result.get("code") is None, result
+    assert result["format"] == "eija.ripple.v1" and set(result["diagrams"]) == {"states", "classes", "usecases", "screens", "components"}
+    assert "Adds state Lost" in [i["text"] for i in result["diagrams"]["states"]]
+    assert [p["code"] for p in result["problems"]] == ["STATE_UNREACHABLE"]  # nothing leads into the new state yet
+    assert result["live"] is False and [s["fixes"] for s in result["follow_ons"]] == ["STATE_UNREACHABLE"]
+    assert result["conformance"]["cases_after"] > 0 and result["diagrams"]["classes"]  # the record's state enumeration
+    nothing = client.post("/api/play/ripple", json={}, headers=HEADERS).json()
+    assert all(items == [] for items in nothing["diagrams"].values()) and nothing["follow_ons"] == []
+    with studio.store.transaction() as u:
+        assert u.active()["model"] == before
+
+
 def test_the_run_bar_gets_the_shown_models_run_log_and_stop_ends_the_app(client, studio):
     """ADR-0160: Run, Pause and Step move through a kernel-decided log; Stop ends the running app."""
     assert client.get("/assets/play-run.js").status_code == 200
@@ -162,3 +181,13 @@ def test_the_run_bar_gets_the_shown_models_run_log_and_stop_ends_the_app(client,
     assert client.post("/api/play/build", json={}, headers=HEADERS).json()["url"]
     assert client.post("/api/play/stop", json={}, headers=HEADERS).json() == {"stopped": True}
     assert client.post("/api/play/stop", json={}, headers=HEADERS).json() == {"stopped": False}
+
+
+def test_laws_are_proved_on_the_shown_model(client, studio):
+    """The Laws tab (ADR-0166): every law of the pack with its verdict, on the model on screen."""
+    assert client.post("/api/play/laws", json={}, headers={"Origin": HEADERS["Origin"]}).status_code == 401
+    report = client.post("/api/play/laws", json={}, headers=HEADERS).json()
+    assert report["format"] == "eija.law-proof.v1" and report["status"] == "HOLDS"
+    assert [law["id"] for law in report["laws"]] == [law.id for law in studio.pack.laws]
+    assert report["search"]["status"] == "COMPLETE"
+    assert "/assets/play-laws.js" in client.get("/play").text and client.get("/assets/play-laws.js").status_code == 200

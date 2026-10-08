@@ -1,0 +1,11 @@
+{
+  "mode": "record",
+  "platform": "Linux 6.18.44-fc-v80 / Python 3.13.16",
+  "scenario": "playide_ripple",
+  "scenario_sha256": "e969a34bc82c492e9948f5fc225ce17c90330694b2ad45353f850ebf3e803d2e",
+  "skipped": [],
+  "status": "PASS",
+  "video": "demos/output/playide_ripple.webm",
+  "video_bytes": 10529592,
+  "video_sha256": "cabcd35d7bc354e58742c7a1973ee1d2d361e4fb996931de65ddb2d38f186206"
+}

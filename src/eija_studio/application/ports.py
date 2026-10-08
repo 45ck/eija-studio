@@ -31,6 +31,9 @@ class PlanProposer(Protocol):
     name: str
     live: bool
     def propose(self, request: str, model: Workflow, pack: Pack) -> dict[str, Any]: ...
+    def follow_on(self, ripple: dict[str, Any], model: Workflow, pack: Pack) -> dict[str, Any]:
+        """Follow-on steps for a ripple's problems (ADR-0158): {steps: [{transaction | screen, why, fixes}]}."""
+        ...
 
 class UnitOfWork(Protocol):
     """All mutations on this port commit together or roll back together."""

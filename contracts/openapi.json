@@ -276,6 +276,43 @@
         }
       }
     },
+    "/api/play/ripple": {
+      "post": {
+        "summary": "Play Ripple",
+        "description": "What the plan does to every diagram, and the proposer's follow-on edits, each re-checked (ADR-0158).",
+        "operationId": "play_ripple_api_play_ripple_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuildRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/play/build": {
       "post": {
         "summary": "Play Build",
@@ -358,6 +395,43 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/RunRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/play/laws": {
+      "post": {
+        "summary": "Play Laws",
+        "description": "The pack's laws, each proved over every run the kernel allows on this model (ADR-0166).",
+        "operationId": "play_laws_api_play_laws_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuildRequest"
               }
             }
           },
