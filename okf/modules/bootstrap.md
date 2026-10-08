@@ -70,6 +70,5 @@ _No curated notes yet._
 
 ## Referenced by
 
-* [interfaces.app_build](/modules/interfaces/app_build.md) - `eija build`: write a runnable app generated from a pack's model, then run its kernel conformance tests (ADR-0150).
 * [interfaces.cli](/modules/interfaces/cli.md) - Module `interfaces/cli` (no module docstring).
 <!-- okf:generated:end links -->

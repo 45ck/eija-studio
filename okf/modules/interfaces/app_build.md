@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/app_build.py
   title: interfaces/app_build.py
   hash_method: ast-api-v1
-  sha256: 30d1ea28aabfe7316b66e08b623f719a881b3b6017e6618fce0f15152306d486
-notes_baseline: b9fc69c8fdaa11b91555ff6dddb034f29662c119bbee8374f028dd3316a1fc36
+  sha256: b9491b73b3e990edac84abe283b7202ee5ddcf4e7d07ead5138e33d15de8a977
+notes_baseline: 871ea73bc112db2fccc6700006ba0e6c6bda441cdc9a5aa8487109518bc6302e
 ---
 
 # interfaces.app_build
@@ -39,8 +39,8 @@ _Symbol pages are generated for the domain and application layers only._
 ## Internal imports
 
 * [`application/appgen`](/modules/application/appgen.md)
-* [`bootstrap`](/modules/bootstrap.md)
 * [`domain/models`](/modules/domain/models.md)
+* [`domain/pack`](/modules/domain/pack.md)
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -51,8 +51,8 @@ _No curated notes yet._
 ## Imports
 
 * [application.appgen](/modules/application/appgen.md) - App generation: a reviewed workflow model becomes the spec and the conformance oracle of a runnable app (ADR-0150).
-* [bootstrap](/modules/bootstrap.md) - The only composition root: wires application ports to concrete adapters.
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
+* [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
 
 ## Referenced by
 
