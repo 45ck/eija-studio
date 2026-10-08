@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0177-law-files-and-test-cases-in-playide.md
   title: 0177-law-files-and-test-cases-in-playide.md
   hash_method: lf-sha256-v1
-  sha256: e690f4e4cf9359e29e532f9cd6494992411b3711abbc9961025645f5f00bed86
-notes_baseline: a1bee255363e25411f7754028590d28557e54beee86158bc34976bd75121b0f5
+  sha256: 90c96a2f1f26411348fab20c9f170cf7d23d9409ed4fbfbe93e09809cb8ed183
+notes_baseline: 6b7675724d70b5abae1879c6462384ad96893afe03ebaaff4dab909418fa74d5
 ---
 
 # ADR-0177: The law file and the test cases are files PlayIDE opens, edits as drafts and runs
@@ -37,7 +37,7 @@ notes_baseline: a1bee255363e25411f7754028590d28557e54beee86158bc34976bd75121b0f5
 >    * `eija scenarios --pack P [--file DIR] [--workflow F]` exits 2 unless every scenario passes.
 >    * `POST /api/play/tests` runs the pack's scenarios, or a draft, on the model on screen, with a previewed plan included.
 >    * `POST /api/play/tests/try` records steps.
->    * PlayIDE's new **Tests** tab lists every scenario as Given/When/Then with pass or fail per step. **Show on diagram** paints the passing steps green and the failing one red. **New test** lets you pick who and what, one step at a time, and keep the result. **Edit scenarios.json** edits the file as JSON. A draft is marked "Draft, not saved" and can be downloaded.
+>    * PlayIDE's new **Tests** tab lists every scenario as Given/When/Then with pass or fail per step. **Show on diagram** paints the passing steps green and the failing one red. **New test** lets you pick who and what, one step at a time, and keep the result. **Edit scenarios.json** edits the file as JSON. A draft is marked "Edited, not saved" and can be downloaded.
 > 4. **The law file in the Laws tab.**
 >    * **Edit the law file** opens the laws exactly as `pack.json` holds them. **Prove the draft** checks the draft as the pack loader does (`law_proof.with_laws`, which calls `parse_pack`) and proves it over every run. It lists the laws added, changed and removed (`compare_laws`) and warns that removing or changing a law can loosen what the kernel refuses.
 >    * The draft pack can be downloaded. Replacing `pack.json` with it stays the owner's reviewed step.
