@@ -19,7 +19,7 @@ Design it in UML, press play, watch it run, fix it by dragging, let the AI do th
 | 4 | Watch it ripple | The drag badges every diagram tab it touches and warns that nothing leads into the new state. The class diagram gains the enum literal. The AI's follow-on (a way in) is re-checked by the server and ripples into a new use case and screen | ADR-0158; offline proposer, labelled | Recorded |
 | 5 | Let the AI do the busywork | A plain-language request becomes typed UML steps. The policy refuses one, the viewer looks at each step, unticks the refused one and keeps the rest | ADR-0156. The offline phrase reader is labelled on screen | Recorded |
 | 6 | Review it as a model, not a PR | The change as a UML diff you can run and approve in PlayIDE | Thread "Review changes in PlayIDE, not PRs". The owner suggested a short moment where a non-technical stakeholder reads the same UML diff (not a plain-language translation) | Skipped until it merges |
-| 7 | Prove it, then play again | Build the changed system, run conformance and simulate again. The checks ring fills to 4 of 4 | ADR-0157 | Recorded |
+| 7 | Prove it, then play again | Build the changed system, run conformance and simulate again. The Laws tab proves every law over every reachable run and names what it never reached. The checks ring fills to 5 of 5 | ADR-0157, ADR-0158, ADR-0166 | Recorded |
 | 8 | Ship it | Verify, approve and apply | Waits on the owner's source review and restamp (issue #80) | Skipped |
 | 9 | End card | "Less typing. No diff archaeology." | A title card | Recorded |
 
