@@ -184,17 +184,24 @@ def _check_screen(step: Any, candidate: Workflow, screens: Screens, data: DataMo
             **({} if status == "applies" else {"code": "FOLLOW_ON_FIXES_NOTHING", "message": "It does not fix a design problem"})}
 
 
+def _state_warnings(base: Workflow, model: Workflow) -> int:
+    return sum(1 for item in _state_items(base, model) if item["change"] == "warning")
+
+
 def _check_transaction(step: Any, base: Workflow, plan: list[Transaction], pack: Pack) -> dict[str, Any]:
+    """Applies only if the policy allows it on top of the plan and it leaves fewer state-machine warnings."""
     try:
         tx = parse_transaction(step)
     except DomainError as error:
         return {"status": "does_not_apply", "text": "A state-machine step", "code": error.code, "message": error.message}
     shown = {"text": describe(tx), "transaction": tx.model_dump(mode="json")}
     try:
-        apply_transactions(base, [*plan, tx], pack)
+        candidate, after = apply_transactions(base, plan, pack), apply_transactions(base, [*plan, tx], pack)
     except DomainError as error:
         codes = (error.details or {}).get("codes", [error.code])
         return shown | {"status": "does_not_apply", "code": ", ".join(codes), "message": error.message}
+    if _state_warnings(base, after) >= _state_warnings(base, candidate):
+        return shown | {"status": "does_not_apply", "code": "FOLLOW_ON_FIXES_NOTHING", "message": "It does not fix a state-machine warning"}
     return shown | {"status": "applies"}
 
 

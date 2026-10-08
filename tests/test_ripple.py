@@ -108,11 +108,12 @@ def test_follow_ons_are_untrusted_and_rechecked():
     proposed = {"steps": [
         {"transaction": {"kind": "set_role", "transition": "TR-CHECKOUT", "role": "Member"}, "why": "protected"},
         {"transaction": {"kind": "nonsense"}},
+        {"transaction": {"kind": "set_role", "transition": "TR-CANCEL", "role": "Librarian"}},  # allowed, but fixes nothing
         {"screen": {"op": "remove", "use_case": "Nowhere"}},
         {"screen": {"op": "add", "screen": {"use_case": "Cancel", "title": "Again"}}},  # a second screen fixes nothing
         "not a step",
     ]}
     checked = check_follow_ons(proposed, LOAN.model, [ADD_LOST], LOAN, candidate, after, DATA)
-    assert [s["status"] for s in checked] == ["does_not_apply"] * 5
+    assert [s["status"] for s in checked] == ["does_not_apply"] * 6
     assert "PROTECTED_AUTHORITY" in checked[0]["code"]
-    assert checked[3]["code"] == "FOLLOW_ON_FIXES_NOTHING"
+    assert checked[2]["code"] == checked[4]["code"] == "FOLLOW_ON_FIXES_NOTHING"

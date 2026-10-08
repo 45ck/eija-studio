@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0158-ripple-across-diagrams-with-checked-follow-ons.md
   title: 0158-ripple-across-diagrams-with-checked-follow-ons.md
   hash_method: lf-sha256-v1
-  sha256: cd96beb1a51b13bfc5bd0a0eb20b78a69232906934ea9869c3084e88b2d7c6f4
-notes_baseline: ab1aa0c4351cbaa80edd65b9c9466a807b19ff2b46618c58ace6b9801228784b
+  sha256: 878728c82abe606c2c8f498ab61d8ef6b419af6ca1260bde03aee4783d2e6a69
+notes_baseline: da0826447ea68a2fead77dd25cf461be25b10a2f9693302618976cbc600a34a8
 ---
 
 # ADR-0158: A change ripples across every diagram, and the AI's follow-on edits are re-checked
@@ -39,7 +39,7 @@ notes_baseline: ab1aa0c4351cbaa80edd65b9c9466a807b19ff2b46618c58ace6b9801228784b
 >   * **Components:** each drawn component whose generated files differ between the two builds, and `SCREENS_BLOCKED` when the plan's version cannot be built.
 >   * **Conformance:** the number of oracle cases before and after.
 >   A plan *agrees* when it has no `problem`; warnings are shown but do not block.
-> * **Follow-ons.** When the ripple has warnings or problems, the server asks the plan proposer (the `PlanProposer` port gains `follow_on`) for follow-on steps: a state-machine transaction, or a screen step that adds or removes one screen. `check_follow_ons` re-checks each one on its own: a transaction with the plan through the policy (`apply_transactions`), a screen step by the design check. A screen step that does not reduce the design problems is refused (`FOLLOW_ON_FIXES_NOTHING`). The offline proposer (`offline-plan-fixture-v1`) uses fixed rules:
+> * **Follow-ons.** When the ripple has warnings or problems, the server asks the plan proposer (the `PlanProposer` port gains `follow_on`) for follow-on steps: a state-machine transaction, or a screen step that adds or removes one screen. `check_follow_ons` re-checks each one on its own: a transaction with the plan through the policy (`apply_transactions`), a screen step by the design check. A step must also fix something: a transaction that does not reduce the state-machine warnings, or a screen step that does not reduce the design problems, is refused (`FOLLOW_ON_FIXES_NOTHING`). The offline proposer (`offline-plan-fixture-v1`) uses fixed rules:
 >   * a default screen for a use case without one, and no screen for a use case that is gone;
 >   * for an unreachable state, a transition into it from the nearest reachable state before it, using a declared action the model does not use yet;
 >   * for a state with no way out, a transition to an end state its neighbours lead to.
