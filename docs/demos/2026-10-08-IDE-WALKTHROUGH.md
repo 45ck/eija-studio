@@ -47,7 +47,7 @@ The committed manifest is [`demos/recordings/ide_walkthrough.json`](../../demos/
 
 ## Checks on the recorded source
 
-These ran on Linux with Python 3.13.16. The browser was Playwright's bundled Chromium 141 through the `chrome` channel, not Google Chrome.
+These ran on Linux with Python 3.13.16. The browser was Playwright's bundled Chromium 141, launched through the `chrome` channel because this container's `/opt/google/chrome/chrome` was a symlink to it. It was not Google Chrome.
 
 - `nox -t fast`: 22/22 sessions pass.
 - JavaScript: 503/503 pass.

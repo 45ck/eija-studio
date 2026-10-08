@@ -106,7 +106,7 @@ A complete supported IDE experience does not require pretending to offer univers
 
 ## Run record
 
-**8 October 2026, merged to main:** the [IDE-on-main record](2026-10-08-IDE-ON-MAIN.md) covers merge commit `e0649f7`, run on Linux with Python 3.13.16 and Chromium 141. Fast passes 22/22. Release verification passes 2,672 tests with `SOURCE_REVIEW_REQUIRED`. Full fails only on two HCI budgets ([#79](https://github.com/45ck/eija-studio/issues/79)). Four browser journeys pass, and the [IDE walkthrough recording](../demos/2026-10-08-IDE-WALKTHROUGH.md) is PARTIAL. SD01–SD12 and UX01–UX08 were not individually re-run. This is an integration checkpoint, not acceptance.
+**8 October 2026, merged to main:** the [IDE-on-main record](2026-10-08-IDE-ON-MAIN.md) covers merge commit `e0649f7`, run on Linux with Python 3.13.16 and Chromium 141. Fast passes 22/22. Release verification passes 2,672 tests with `SOURCE_REVIEW_REQUIRED`. Full fails in `hci` and `metrics`, both from two HCI budgets ([#79](https://github.com/45ck/eija-studio/issues/79)). Four browser journeys pass, and the [IDE walkthrough recording](../demos/2026-10-08-IDE-WALKTHROUGH.md) is PARTIAL. SD01–SD12 and UX01–UX08 were not individually re-run. This is an integration checkpoint, not acceptance.
 
 **Current integration: partially exercised; acceptance remains open.** The [2 October browser evidence](2026-10-02-IDE-SELF-DOGFOOD.md) retains the 20-check normal-identity replay, failed runs and their repairs, HCI observations and explicit acceptance gaps. It is an implementation checkpoint, not completion of the contract below. The final combined gate record, additional recovery journeys, clean-install proof and owner acceptance remain separate observations.
 

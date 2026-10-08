@@ -8,7 +8,7 @@
 - Canvas drag handles sit on the line's ends and no longer cover the selected transition's label. Inspector Change buttons sit beside their selects.
 - Linux gate fixes: the vocabulary gate skips gitignored `*.egg-info`, and npm shim paths are separator-normalised.
 - New demo scenario `ide_walkthrough`, recorded PARTIAL, with the [walkthrough record](docs/demos/2026-10-08-IDE-WALKTHROUGH.md). The demo harness can connect a repository and pick a pack, and keeps captions visible over modal dialogs.
-- Still open: HCI budget re-derivation ([#79](https://github.com/45ck/eija-studio/issues/79)) and owner source review and restamp ([#80](https://github.com/45ck/eija-studio/issues/80)). Verify, approve and apply return `SOURCE_REVIEW_REQUIRED` until #80 is done.
+- Still open: HCI budget re-derivation ([#79](https://github.com/45ck/eija-studio/issues/79)) and owner source review and restamp ([#80](https://github.com/45ck/eija-studio/issues/80)). Until #80 is done, verify returns `SOURCE_REVIEW_REQUIRED`, and approve and apply are blocked by source review (`GATE_BLOCKED`).
 
 Summary of the open-source foundation since 0.2.0. Nothing here changes kernel behaviour except where stated.
 

@@ -13,7 +13,7 @@ eija serve --pack packs/eija-review-slice --repo . --open   # EIJA on its own ch
 eija serve --open                                            # synthetic excursion example
 ```
 
-Use **New intent** to start a change case, then move freely between Model, Source, Intent, Changes, Run and Evidence. The offline provider is a deterministic fixture, not a live model. The repository connection never writes to or executes the checkout. While `SOURCE_REVIEW_REQUIRED` is shown, Verify, Approve and Apply are refused (see [#80](https://github.com/45ck/eija-studio/issues/80)).
+Use **New intent** to start a change case, then move freely between Model, Source, Intent, Changes, Run and Evidence. The offline provider is a deterministic fixture, not a live model. The repository connection never writes to or executes the checkout. While `SOURCE_REVIEW_REQUIRED` is shown, Verify is refused with that code, and Approve and Apply are blocked (`GATE_BLOCKED`, with the source review listed among the packet's blockers) (see [#80](https://github.com/45ck/eija-studio/issues/80)).
 
 ## What #78 added on top of #29 and #76
 
@@ -28,14 +28,14 @@ Use **New intent** to start a change case, then move freely between Model, Sourc
 
 ## Checks on the merged head
 
-These ran on Linux with Python 3.13.16. The browser was Playwright's bundled Chromium 141.0.7390.37 through the `chrome` channel, not Google Chrome. The earlier Windows results recorded on #76 remain bound to their own subject.
+These ran on Linux with Python 3.13.16. The browser was Playwright's bundled Chromium 141.0.7390.37, launched through the `chrome` channel because this container's `/opt/google/chrome/chrome` was a symlink to it. It was not Google Chrome. The earlier Windows results recorded on #76 remain bound to their own subject.
 
 | Check | Result |
 |---|---|
 | `nox -t fast` | 22/22 sessions pass |
 | JavaScript (`node --test tests/web/*.test.cjs`) | 503 pass, 0 fail |
 | `python scripts/verify_release.py` | 2,672 passed, 172 skipped, 2 xfailed; `source_review: SOURCE_REVIEW_REQUIRED` (expected, not stamped) |
-| `nox -t full` | Fails only on `hci`, with 39 tests passing and two budget FAILs: KLM 65.31 > 65 s and density 52 > 27. `metrics` LANE-01 repeats that FAIL. `formal_bend_quick` and `graph_formal_full` are NOT_RUN (no Docker, no Alloy jar). |
+| `nox -t full` | Two sessions fail, `hci` and `metrics`, from the same two HCI budget results. `hci` has 39 tests passing and two budget FAILs (KLM 65.31 > 65 s and density 52 > 27), and `metrics` LANE-01 fails because it reads that HCI report. `formal_bend_quick` and `graph_formal_full` are NOT_RUN (no Docker, no Alloy jar). |
 | Browser journeys | `native_gesture_parity`, `agent_edit_review`, `prospective_edit_review` and `source_first_review` PASS |
 | Demo dry runs | `assurance_loop` and `ide_walkthrough` are PARTIAL: verify, approve and apply are blocked by source review |
 
