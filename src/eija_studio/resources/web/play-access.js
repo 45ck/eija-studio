@@ -36,9 +36,9 @@
     const form = P.el("form", undefined, { class: "reach", "aria-label": "Reachability question" });
     if (!result.states.includes(question.target)) question.target = result.states[result.states.length - 1];
     const target = select(result.states.map((s) => [s, s]), question.target, "State");
-    const without = select([["", "anyone at all"], ...result.roles.map((r) => [r, `a ${r}`])], question.without, "Without role");
+    const without = select([["", "at all"], ...result.roles.map((r) => [r, `without a ${r}`])], question.without, "Without role");
     const answer = P.el("div", undefined, { id: "reach-answer", class: "reach-answer", role: "status", "aria-live": "polite" });
-    form.append(P.el("span", "Can a record reach"), target, P.el("span", "without"), without, P.el("span", "?"),
+    form.append(P.el("span", "Can a record reach"), target, without, P.el("span", "?"),
       P.el("button", "Ask the kernel", { type: "submit", class: "primary" }), answer);
     const run = async (event) => {
       if (event) { event.preventDefault(); asked = true; }

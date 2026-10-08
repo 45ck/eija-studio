@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0171-permissions-matrix-and-reachability-questions.md
   title: 0171-permissions-matrix-and-reachability-questions.md
   hash_method: lf-sha256-v1
-  sha256: 690782fde0c55fe3f6ed3a98971f73d74e7ebfb6d3a534e05792f61ead1a5352
-notes_baseline: 075a6ea32c2b34c1f55ade834285070e1e0abfa8ed012eb32f20908e0d7aba79
+  sha256: 0656dae0701904848f59ec2b2cded66d96a29c523b0425369277150e9183db76
+notes_baseline: 8d0ce716e2e20ef1747cbcb77de08f2428fecfb829255dbfe617797eb1094960
 ---
 
 # ADR-0171: Who can do what, as a matrix the kernel checks, and reachability questions with a proof or a path
@@ -39,7 +39,7 @@ notes_baseline: 075a6ea32c2b34c1f55ade834285070e1e0abfa8ed012eb32f20908e0d7aba79
 >     * **REACHABLE.** It searches the transitions some fixture actor can take in the kernel, then replays the shortest path on one record, step by step. The answer carries that path and the actors.
 >     * **NOT_SHOWN.** The model has a path, but the fixture actors could not take it in the kernel. Other actors might.
 > * `POST /api/play/access` and `POST /api/play/reach` take the same request as Build & run and Simulate. With accepted plan steps, they answer for the previewed candidate, recomputed on the server. `access` then flags the changes against the base model.
-> * The **Permissions** tab (`play-access.js`, `play-access.css`) shows the question as a sentence ("Can a record reach [Overdue] without [a Clerk]? Ask the kernel"), the answer with its path (each step selects its transition on the state machine), the plan's permission changes, and the matrix. Added permissions are marked new; removed ones are struck through. A question once asked is asked again whenever a plan is previewed or left. The command palette (ADR-0170) has "Show who can do what".
+> * The **Permissions** tab (`play-access.js`, `play-access.css`) shows the question as a sentence ("Can a record reach [Overdue] [without a Clerk]? Ask the kernel", or [at all] for no exclusion), the answer with its path (each step selects its transition on the state machine), the plan's permission changes, and the matrix. Added permissions are marked new; removed ones are struck through. A question once asked is asked again whenever a plan is previewed or left. The command palette (ADR-0170) has "Show who can do what".
 
 ## Sections
 

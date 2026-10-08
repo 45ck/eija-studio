@@ -34,7 +34,7 @@ Chosen option.
     * **REACHABLE.** It searches the transitions some fixture actor can take in the kernel, then replays the shortest path on one record, step by step. The answer carries that path and the actors.
     * **NOT_SHOWN.** The model has a path, but the fixture actors could not take it in the kernel. Other actors might.
 * `POST /api/play/access` and `POST /api/play/reach` take the same request as Build & run and Simulate. With accepted plan steps, they answer for the previewed candidate, recomputed on the server. `access` then flags the changes against the base model.
-* The **Permissions** tab (`play-access.js`, `play-access.css`) shows the question as a sentence ("Can a record reach [Overdue] without [a Clerk]? Ask the kernel"), the answer with its path (each step selects its transition on the state machine), the plan's permission changes, and the matrix. Added permissions are marked new; removed ones are struck through. A question once asked is asked again whenever a plan is previewed or left. The command palette (ADR-0170) has "Show who can do what".
+* The **Permissions** tab (`play-access.js`, `play-access.css`) shows the question as a sentence ("Can a record reach [Overdue] [without a Clerk]? Ask the kernel", or [at all] for no exclusion), the answer with its path (each step selects its transition on the state machine), the plan's permission changes, and the matrix. Added permissions are marked new; removed ones are struck through. A question once asked is asked again whenever a plan is previewed or left. The command palette (ADR-0170) has "Show who can do what".
 
 ### Consequences
 
