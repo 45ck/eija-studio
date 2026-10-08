@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### 8 October 2026: PlayIDE polish, round 3
+
+- The Tests tab's **Run all** is no longer cut off at the right edge on a laptop screen: when the header's text and buttons do not fit side by side, the buttons go under the text, on the Laws tab too.
+- The review view's title bar keeps **Import / Export** and **Review workbench** on one line, and the layout toggles side by side, beside the read-only badge.
+
 ### 8 October 2026: PlayIDE polish
 
 - A plan the policy refuses now says which laws it would break, in the pack's own words ("Only a librarian checks a loan out."), with the policy codes after them.
