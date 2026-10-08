@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/plan.py
   title: application/plan.py
   hash_method: ast-api-v1
-  sha256: 668c03a901e5ed6e93c30dc0c3163184b164e6a7ec821c72a2d732245eb614f6
-notes_baseline: 8939b26c1ea971bcef7977abbe667537a50712349719bee2c50b0cab3a4f7a03
+  sha256: b01886f5fe5894886e044c04f634bbf0d445c0b3d016f03d4d52561563b39a3a
+notes_baseline: 525d16b601880fd7558dde072698c93f5f0610acb2297e00456f3cf62d128da8
 ---
 
 # application.plan

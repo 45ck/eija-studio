@@ -2,6 +2,7 @@
 
 ## 2026-10-08
 
+* **PlayIDE end-to-end fixes**: re-synced `application.plan` (`describe` names a transition by its action when given the model) and `application.ripple`; `domain.models.Workflow` changed only in generated references. No Notes were hand-edited and nothing was recorded as verified.
 * **PlayIDE tab overflow**: ADR-0173 page re-synced after its text gained the tab overflow rule. No Notes were hand-edited and nothing was recorded as verified.
 * **A change on every diagram**: re-synced ADR-0176 and `application.ghost_diff` (it now also returns the use case diagram of both models). No Notes were hand-edited and nothing was recorded as verified.
 * **Calmer Changes view**: re-synced ADR-0176 after its "calm by default" update (presentation only, no module or symbol changes). No Notes were hand-edited and nothing was recorded as verified.
