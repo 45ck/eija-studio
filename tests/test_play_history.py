@@ -66,10 +66,13 @@ def test_undo_redo_and_recovery_after_a_reload_in_a_real_browser():
             page.goto(f"{server.base_url}/play#{server.token}")
             page.wait_for_selector("body[data-ready=true]", timeout=60_000)
             assert page.is_disabled("#undo") and page.is_disabled("#redo")
-            # The palette draws a state: a step of your own, which the diagram previews.
-            page.click('#draw-palette button[data-kind="state"]')
-            page.fill("#inspector .draft-form input", "Archived")
-            page.click('#inspector .draft-form button[type="submit"]')
+            # The palette places a state (pick it, click empty space, name it): a step of your own, previewed.
+            page.click('#draw-palette [data-kind="state"]')
+            box = page.locator("#canvas").bounding_box()
+            page.mouse.click(box["x"] + 12, box["y"] + 12)
+            page.wait_for_selector(".inline-edit input:focus")
+            page.keyboard.type("Archived")
+            page.keyboard.press("Enter")
             page.wait_for_selector("#plan-banner:not([hidden])")
             assert page.get_attribute("#undo", "title") == "Undo add state Archived (Ctrl+Z)"
             # Ctrl+Z on the diagram: the drawn plan is gone and the model is back.
