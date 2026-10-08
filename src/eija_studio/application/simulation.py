@@ -13,7 +13,7 @@ from collections import Counter, defaultdict
 from hashlib import sha256
 from typing import Any
 
-from eija_studio.domain.models import DomainError, ExecuteCommand, Workflow
+from eija_studio.domain.models import DomainError, ExecuteCommand, Transition, Workflow
 from eija_studio.domain.pack import Pack
 from .runtime import execute, initialise
 
@@ -100,16 +100,22 @@ class _Run:
             self.trace.append(step)
 
 
+def _ordered(model: Workflow) -> list[Transition]:
+    """Transitions by id. Their order in the document is not semantic (the semantic hash sorts them), so seeded
+    choices must not depend on it: the same seed and model hash always give the same run."""
+    return sorted(model.transitions, key=lambda t: t.id)
+
+
 def _actions_for(model: Workflow, actor: dict[str, Any], state: str) -> list[str]:
     """The actions a user in this role would expect to take from `state`: what the app offers their role."""
-    return [t.action for t in model.transitions if t.from_state == state and t.role == actor["role"]]
+    return [t.action for t in _ordered(model) if t.from_state == state and t.role == actor["role"]]
 
 
 def _attempt(session: MemorySession, pack: Pack, model: Workflow, run: _Run, rng: _Dice, n: int,
              actor: dict[str, Any], record: str) -> None:
     item = session.instances[record]
     mine = _actions_for(model, actor, item["state"])
-    action = rng.choice([t.action for t in model.transitions]) if not mine or rng.chance(SLIP) else rng.choice(mine)
+    action = rng.choice([t.action for t in _ordered(model)]) if not mine or rng.chance(SLIP) else rng.choice(mine)
     version = item["version"] - 1 if item["version"] > 0 and rng.chance(STALE) else item["version"]
     command = ExecuteCommand(operation_id=f"sim-{n}", actor_id=actor["id"], instance_id=record, action=action,
                              expected_version=version)
@@ -170,18 +176,18 @@ def _stuck(model: Workflow, run: _Run, state: str) -> bool:
 
 def _state_findings(model: Workflow, run: _Run, occupancy: Counter[str]) -> list[dict[str, str]]:
     """States no record reached, and non-final states holding records that no action ever moved on."""
-    unreached = [_finding("warning", "state:" + s, f"No record reached {s}") for s in model.states if run.entered[s] == 0]
+    unreached = [_finding("warning", "state:" + s, f"No record reached {s}") for s in sorted(model.states) if run.entered[s] == 0]
     stuck = [_finding("warning", "state:" + s, f"{occupancy[s]} record(s) got stuck in {s}: nobody could move them on")
-             for s in model.states if occupancy[s] and _stuck(model, run, s)]
+             for s in sorted(model.states) if occupancy[s] and _stuck(model, run, s)]
     return unreached + stuck
 
 
 def _findings(model: Workflow, run: _Run, occupancy: Counter[str]) -> list[dict[str, str]]:
     """Things worth a look, worst first. Each names the element it is about so the IDE can select it."""
     never = [_finding("warning", "transition:" + t.id, f"{t.action} never succeeded in this run")
-             for t in model.transitions if run.commits[t.id] == 0]
+             for t in _ordered(model) if run.commits[t.id] == 0]
     refused = []
-    for t in sorted(model.transitions, key=lambda t: -sum(run.refusals.get(t.id, Counter()).values())):
+    for t in sorted(_ordered(model), key=lambda t: -sum(run.refusals.get(t.id, Counter()).values())):
         codes = run.refusals.get(t.id)
         if codes:
             code, count = codes.most_common(1)[0]

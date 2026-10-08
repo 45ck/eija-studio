@@ -248,6 +248,7 @@
   function replay() {
     if (!sim) return;
     clearInterval(replayTimer);
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) { paint(sim); return; } // no animation: the log has every step
     const rows = [...$("sim-log").children];
     let i = 0;
     replayTimer = setInterval(() => {
@@ -264,7 +265,7 @@
         if (at) restyle("state:" + at, { strokeColor: entry.outcome === "REFUSED" ? "#a12f2f" : "#3157d5", strokeWidth: 4 }, graph.getDataModel().getCell("state:" + at).value);
       });
       i += 1;
-    }, matchMedia("(prefers-reduced-motion: reduce)").matches ? 40 : 450);
+    }, 450);
   }
 
   async function simulate() {

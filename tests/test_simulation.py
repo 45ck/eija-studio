@@ -77,3 +77,12 @@ def test_bad_requests_are_refused():
     with pytest.raises(DomainError) as refused:
         simulate(p, other.model)
     assert refused.value.code == "WORKFLOW_PACK_MISMATCH"
+
+
+def test_transition_order_in_the_document_does_not_change_a_run():
+    p = pack("library-loan")
+    shuffled = p.model.model_copy(update={"transitions": tuple(reversed(p.model.transitions)),
+                                          "states": tuple(reversed(p.model.states))})
+    assert shuffled.semantic_hash == p.model.semantic_hash
+    for steps in (5, 300):  # a short run has never-succeeded findings, a long one ties among refusals
+        assert simulate(p, shuffled, seed=4, steps=steps) == simulate(p, p.model, seed=4, steps=steps)
