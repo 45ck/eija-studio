@@ -2,13 +2,12 @@
   "mode": "record",
   "platform": "Linux 6.18.44-fc-v80 / Python 3.13.16",
   "scenario": "playide_showcase",
-  "scenario_sha256": "09d06803318a07af73e0c6b8aa053f30bdb4e107edcd00ab8b9eb90b2fceb3b4",
+  "scenario_sha256": "860979632914d9c29b370e728e708c3e852411fb1f5a2f1eb86d393e66e58f75",
   "skipped": [
-    "beat 6 (review the change as a UML diff in PlayIDE, not a GitHub PR) waits on the in-IDE review view",
     "beat 8 (verify, approve and apply) waits on the owner's source review and restamp (issue #80)"
   ],
   "status": "PARTIAL",
   "video": "demos/output/playide_showcase.webm",
-  "video_bytes": 25979933,
-  "video_sha256": "e3f367076b163e232b1ddcd515cb45e329e0791a4f3a4e3dd7b09f7027416c89"
+  "video_bytes": 37732845,
+  "video_sha256": "3586a6540fdb8627de03a25df384fbccaea30393fee93821a957e2184c56e65a"
 }

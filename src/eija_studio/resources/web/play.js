@@ -12,11 +12,12 @@
   let components = null, componentGraph = null, lastBuild = null;
   let baseModel = null, plan = null; // the server's model, and the chat plan being previewed on top of it (if any)
   let packInfo = null, points = 0, simKey = null, cards = 0, problemsFor = null; // the pack's actions and roles; check points; what was simulated
+  let shownChange = null; // while the Changes view is on: the union of the model in force and the change (ADR-0176), drawn on the class and use case diagrams too
   let ripple = null, rippleSeq = 0; // what the accepted plan does to every diagram, with the proposer's follow-ons (ADR-0158)
   const earned = [];
   let screens = null, screensEdited = false, useCase = null, checkTimer = 0, problems = [], useCaseList = [];
   const base = {}; // each cell's own style and label, so overlays can be cleared
-  const hooks = { redraw: [], inspect: [], laws: [], tab: [] }; // the run bar (play-run.js) redraws its marks and adds inspector tools; play-laws.js and play-access.js draw their tabs
+  const hooks = { redraw: [], inspect: [], laws: [], tab: [], changeSelect: [] }; // the run bar (play-run.js) redraws its marks and adds inspector tools; play-laws.js and play-access.js draw their tabs
   // the Changes view (play-diff.js, ADR-0176) closes when another tab is shown and answers current() while open
 
   async function api(path, body) {
@@ -223,6 +224,8 @@
   const attributeLine = (a) => `${a.name}: ${a.type === "choice" ? `{${a.choices.join(", ")}}` : typeName[a.type]}${a.required ? "" : " [0..1]"}`;
   const ROW = 20, HEAD = 34;
   const enumName = () => data.record + "State"; // the record's states as a UML enumeration, read from the state machine
+  // The enumeration's literals: the states, or while the Changes view is on, the states of both models with their status.
+  const literalsOf = () => (shownChange ? shownChange.states.map((x) => [x.name, x.status]) : model.states.map((x) => [x, "same"]));
   const widthOf = (e) => Math.max(200, e.name.length * 9 + 60, ...e.attributes.map((a) => attributeLine(a).length * 7 + 24));
 
   function classLayout() {
@@ -231,7 +234,8 @@
     g.setDefaultEdgeLabel(() => ({}));
     for (const e of data.entities) g.setNode(e.name, { width: widthOf(e), height: HEAD + ROW * Math.max(1, e.attributes.length) + 8 });
     data.associations.forEach((a, i) => g.setEdge(a.source, a.target, { width: 90, height: 20 }, "a" + i));
-    g.setNode(enumName(), { width: Math.max(200, ...model.states.map((x) => x.length * 8 + 30)), height: HEAD + ROW * model.states.length + 8 });
+    const literals = literalsOf();
+    g.setNode(enumName(), { width: Math.max(200, ...literals.map(([x]) => x.length * 8 + 30)), height: HEAD + ROW * literals.length + 8 });
     g.setEdge(data.record, enumName(), { width: 90, height: 20 }, "state");
     dagre.layout(g);
     return (name) => { const n = g.node(name); return [n.x - n.width / 2, n.y - n.height / 2, n.width, n.height]; };
@@ -266,8 +270,9 @@
         const literals = cells[enumName()] = classGraph.insertVertex({ parent, id: "enum:" + enumName(), value: `«enumeration»\n${enumName()}`,
           position: [ex, ey], size: [ew, eh], style: { ...font, shape: "swimlane", startSize: HEAD, horizontal: true, fontStyle: 1, fontSize: 13,
             fillColor: "#f4f1ff", swimlaneFillColor: "#ffffff", strokeColor: "#7a5bd6", rounded: false, collapsible: false } });
-        model.states.forEach((x, i) => classGraph.insertVertex({ parent: literals, id: "literal:" + x, value: x, position: [8, HEAD + 4 + i * ROW],
-          size: [ew - 16, ROW], style: { ...font, fontSize: 12, align: "left", strokeColor: "none", fillColor: "none", movable: false, selectable: false } }));
+        literalsOf().forEach(([x, status], i) => classGraph.insertVertex({ parent: literals, id: "literal:" + x, value: changeMark(status) + x,
+          position: [8, HEAD + 4 + i * ROW], size: [ew - 16, ROW], style: { ...font, fontSize: 12, align: "left", strokeColor: "none", fillColor: "none",
+            movable: false, selectable: false, ...changeLook(status, "text") } }));
       classGraph.insertEdge({ parent, id: "enum-edge", value: "state", source: cells[data.record], target: literals,
         style: { ...font, fontSize: 12, strokeColor: "#7a5bd6", endArrow: "open", labelBackgroundColor: "#fbfcfe" } });
       data.associations.forEach((a, i) => {
@@ -315,6 +320,19 @@
     return [...order, ...model.transitions.filter((t) => !order.includes(t))];
   }
 
+  // What the use case diagram draws: the model's use cases, or while the Changes view is on, the server's union of both
+  // models (ADR-0176), where a use case or actor the change removes stays as a ghost and a moved association keeps its old line.
+  function useCaseShape() {
+    if (!shownChange) {
+      const flow = workflowOrder();
+      return { cases: flow.map((t) => ({ ...t, status: "same" })), actors: [...new Set(flow.map((t) => t.role))].map((name) => ({ name, status: "same" })),
+        links: flow.map((t) => ({ role: t.role, case: t.id, status: "same" })) };
+    }
+    const order = workflowOrder().map((t) => t.action), rank = (c) => (order.includes(c.action) ? order.indexOf(c.action) : order.length);
+    const u = shownChange.use_cases;
+    return { cases: [...u.cases].sort((a, b) => rank(a) - rank(b)), actors: u.actors, links: u.links };
+  }
+
   function drawUseCases() {
     if (useCaseGraph) return;
     const { Graph, InternalEvent } = maxgraph;
@@ -323,10 +341,11 @@
     useCaseGraph = new Graph(box);
     for (const setting of ["setConnectable", "setCellsEditable", "setCellsDisconnectable", "setCellsResizable", "setDropEnabled"]) useCaseGraph[setting](false);
     useCaseGraph.setPanning(true);
-    const parent = useCaseGraph.getDefaultParent(), flow = workflowOrder();
-    const roles = [...new Set(flow.map((t) => t.role))];
+    const parent = useCaseGraph.getDefaultParent(), shape = useCaseShape();
+    const roles = shape.actors.map((a) => a.name), actorStatus = Object.fromEntries(shape.actors.map((a) => [a.name, a.status]));
     // Group each role's use cases together, in workflow order, and put the actor beside its group: no line crosses a use case.
-    const cases = roles.flatMap((role) => flow.filter((t) => t.role === role));
+    // A use case whose association moves sits with its new actor; a removed one with the actor it had.
+    const cases = roles.flatMap((role) => shape.cases.filter((t) => t.role === role));
     const font = { fontFamily: "system-ui, sans-serif", fontColor: "#1b2130" };
     const GAP = 76, TOP = 70, boundary = { x: 260, w: 360 }, height = TOP + (cases.length + 1) * GAP;
     const rowY = (i) => TOP + (i + 1) * GAP - 4;
@@ -339,28 +358,30 @@
       useCaseGraph.insertVertex({ parent, id: "uc:create", value: `Create ${data ? data.record : "record"}`, position: [boundary.x + 60, TOP - 4],
         size: [boundary.w - 120, 48], style: { ...font, shape: "ellipse", fillColor: "#ffffff", strokeColor: "#5b74d6", fontSize: 13 } });
       cases.forEach((t, i) => {
-        cells[t.id] = useCaseGraph.insertVertex({ parent, id: "uc:" + t.id, value: t.action, position: [boundary.x + 60, rowY(i)],
-          size: [boundary.w - 120, 48], style: { ...font, shape: "ellipse", fillColor: "#eef2ff", strokeColor: "#5b74d6", fontSize: 13 } });
+        cells[t.id] = useCaseGraph.insertVertex({ parent, id: "uc:" + t.id, value: changeMark(t.status) + t.action, position: [boundary.x + 60, rowY(i)],
+          size: [boundary.w - 120, 48], style: { ...font, shape: "ellipse", fillColor: "#eef2ff", strokeColor: "#5b74d6", fontSize: 13, ...changeLook(t.status, "box") } });
       });
       roles.forEach((role, i) => {
         const mine = cases.map((t, j) => [t, j]).filter(([t]) => t.role === role);
-        const y = mine.reduce((sum, [, j]) => sum + rowY(j), 0) / mine.length - 8;
+        const near = mine.length ? mine : cases.map((t, j) => [t, j]).filter(([t]) => t.was_role === role); // an actor left with only a moved line
+        const y = near.reduce((sum, [, j]) => sum + rowY(j), 0) / Math.max(1, near.length) - 8;
         const left = i % 2 === 0;
         const actor = useCaseGraph.insertVertex({ parent, id: "role:" + role, value: role, position: [left ? 90 : boundary.x + boundary.w + 120, y],
           size: [36, 64], style: { ...font, shape: "actor", fillColor: "#ffffff", strokeColor: "#1b2130", verticalLabelPosition: "bottom",
-            verticalAlign: "top", fontSize: 13 } });
-        for (const [t] of mine) {
-          useCaseGraph.insertEdge({ parent, source: actor, target: cells[t.id], style: { strokeColor: "#4a5568", endArrow: "none" } });
+            verticalAlign: "top", fontSize: 13, ...changeLook(actorStatus[role], "actor") } });
+        for (const link of shape.links.filter((l) => l.role === role)) {
+          useCaseGraph.insertEdge({ parent, source: actor, target: cells[link.case], style: { strokeColor: "#4a5568", endArrow: "none", ...changeLook(link.status, "line") } });
         }
       });
     });
     useCaseGraph.getSelectionModel().addListener(InternalEvent.CHANGE, () => {
       const cell = useCaseGraph.getSelectionCell(), id = cell && cell.id && cell.id.startsWith("uc:") ? cell.id.slice(3) : "";
+      if (shownChange) { for (const f of hooks.changeSelect) f(cell ? cell.id : ""); return; } // the Changes view reads its own cells
       select(id === "create" ? "usecase:create" : id ? "transition:" + id : "", false);
     });
     useCaseGraph.addListener(InternalEvent.DOUBLE_CLICK, (_sender, event) => {
       const cell = event.getProperty("cell");
-      if (!cell || !cell.id.startsWith("uc:")) return;
+      if (!cell || !cell.id.startsWith("uc:") || shownChange) return;
       const id = cell.id.slice(3);
       openScreen(id === "create" ? null : transition(id).action);
     });
@@ -685,7 +706,7 @@
 
   function markRipple(key) {
     const g = { states: graph, classes: classGraph, usecases: useCaseGraph, components: componentGraph }[key];
-    if (!g || !ripple || ripple.error || !plan) return;
+    if (!g || !ripple || ripple.error || !plan || (shownChange && key !== "components")) return; // the Changes view draws its own marks
     // The preview shows what the plan adds and changes; the model without it shows, in red, what the plan removes.
     const shown = (item) => item.ref && (item.change === "removed") !== plan.previewing;
     const literal = { fontColor: "#17734a", fontStyle: 1, strokeColor: "none", fillColor: "#e5f5ec" };
@@ -1561,10 +1582,21 @@
   // What the run bar (play-run.js, ADR-0160) may use. It holds no rules either: it moves through the server's run log.
   // The assist layer (play-assist.js, ADR-0170) reads only base(), pack() and selected(): base() is the model a chat
   // request is planned against, not a previewed candidate.
+  // The Changes view (play-diff.js, ADR-0176) hands over the union to draw on the class and use case diagrams, or null.
+  function setChanges(ghost) {
+    if (ghost === shownChange) return;
+    shownChange = ghost;
+    for (const [g, box] of [[classGraph, "class-canvas"], [useCaseGraph, "usecase-canvas"]]) if (g) { g.destroy(); $(box).replaceChildren(); }
+    classGraph = useCaseGraph = null;
+  }
+  const changeMark = (status) => (window.PlayDiff && status !== "same" ? window.PlayDiff.mark(status) : "");
+  const changeLook = (status, part) => (window.PlayDiff && shownChange ? window.PlayDiff.look(status, part) : {});
+
   window.PlayIDE = {
     api, el, hooks, about, viewKey, label, restyle, clearSim, select, showTab, fit,
     graph: () => graph, tab: () => tab, model: () => model, selected: () => selected, pack: () => packInfo, base: () => baseModel,
     planned: () => (plan && plan.result && plan.result.legal ? accepted() : null), // the change the Changes view draws (ADR-0176)
+    setChanges, diagram: (key) => ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: componentGraph })[key],
   };
 
   start().catch((error) => {

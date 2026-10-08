@@ -172,7 +172,20 @@
     return lines.join("\n");
   }
 
-  window.PlayDiff = { mount, layout };
+  // The same marks and colours for the other diagrams (class and use case), which draw the union themselves: `part` is
+  // box (a use case), actor, line (an association) or text (an enumeration literal). Unchanged parts fade back.
+  function look(status, part) {
+    const l = LOOK[status], ghostly = status === "removed", quiet = status === "same";
+    if (part === "text") return quiet ? { textOpacity: 50 } : { fontColor: l.text, fontStyle: BOLD | (ghostly ? STRIKE : 0), textOpacity: ghostly ? 70 : 100 };
+    const opacity = quiet ? 40 : ghostly ? 55 : 100;
+    const base = { strokeColor: quiet ? undefined : l.stroke, strokeWidth: quiet ? undefined : 2.5, dashed: ghostly, dashPattern: "6 4", opacity, textOpacity: opacity };
+    if (part === "line") return base;
+    const text = quiet ? {} : { fontColor: l.text, fontStyle: BOLD | (ghostly ? STRIKE : 0) };
+    return part === "actor" ? { ...base, ...text } : { ...base, ...text, fillColor: quiet ? undefined : l.fill };
+  }
+  const markOf = (status) => LOOK[status].mark;
+
+  window.PlayDiff = { mount, layout, look, mark: markOf };
 
   // ---- The Changes view, on the state machine tab ---------------------------------------------------------------
   // A toggle beside Fit, shown while there is a change, swaps the editable canvas for the change drawn as above.-
@@ -194,8 +207,12 @@
     }
     if (mine !== seq) return; // a newer plan asked again
     ghost = result.error ? null : result;
+    if (open && ghost && !ghost.changes.length) toggle(false); // nothing left to show
     badge(result);
-    if (open) render(result);
+    if (!open) return;
+    const tab = ide().tab();
+    if (tab === "states") render(result);
+    else if (DRAWN.includes(tab)) ide().showTab(tab);
   }
 
   function badge(result) {
@@ -309,13 +326,32 @@
   function mark(i) {
     at = i;
     for (const b of document.querySelectorAll(".diff-item")) b.setAttribute("aria-current", String(+b.dataset.n === ghost.changes[i].n));
-    $("diff-pos").textContent = `Change ${i + 1} of ${ghost.changes.length}`;
+    if ($("diff-pos")) $("diff-pos").textContent = `Change ${i + 1} of ${ghost.changes.length}`;
   }
 
   function go(i) {
-    if (!view || !ghost.changes.length) return;
+    if (!ghost || !ghost.changes.length) return;
     mark((i + ghost.changes.length) % ghost.changes.length);
-    view.show(ghost.changes[at]);
+    if (view) view.show(ghost.changes[at]); // the state machine
+    else { showOn(ide().tab(), ghost.changes[at]); detail(ghost.changes[at]); }
+  }
+
+  // Where a change shows on the class and use case diagrams: a state is a literal of the record's enumeration, and an
+  // action is a use case.
+  function cellsOn(tab, change) {
+    const refs = [change.ref, change.was].filter(Boolean);
+    if (tab === "classes") return refs.filter((r) => r.startsWith("state:")).map((r) => "literal:" + r.slice(6));
+    if (tab === "usecases") return refs.filter((r) => r.startsWith("t:") || r.startsWith("was:")).map((r) => "uc:" + r.slice(r.indexOf(":") + 1));
+    return [];
+  }
+
+  function showOn(tab, change) {
+    const g = ide().diagram(tab);
+    if (!g) return;
+    const found = cellsOn(tab, change).map((id) => g.getDataModel().getCell(id)).filter(Boolean);
+    const pick = found.map((c) => (c.id.startsWith("literal:") ? c.parent : c)); // a literal is not selectable; its enumeration is
+    g.setSelectionCells(pick);
+    if (pick[0]) g.scrollCellToVisible(pick[0], false);
   }
 
   const step = (by) => go(at < 0 ? (by > 0 ? 0 : -1) : at + by);
@@ -323,7 +359,7 @@
   // What one change is, opened under its line in the list: each changed field before and after, when it has any.
   function detail(change) {
     for (const old of document.querySelectorAll(".diff-detail")) old.remove();
-    const item = view.item(change.ref), t = item && item.kind === "transition" ? item.data : null;
+    const t = ghost.transitions.find((x) => x.key === change.ref);
     if (!t || !((t.fields && t.fields.length) || t.was)) return;
     const table = el("table", undefined, { class: "diff-fields diff-detail" });
     const head = el("tr");
@@ -348,19 +384,45 @@
     else if (lens) { event.preventDefault(); view.setLens(lens, lens === "before" ? 0 : lens === "after" ? 1 : view.onion); }
   }
 
+  const DRAWN = ["states", "classes", "usecases"]; // the diagrams that draw a change; the others are left as they are
+  const HELP = {
+    states: "Green is added, amber changed or moved, and faded dashes are what the change removes. [ and ] step through the changes.",
+    classes: "The record's states are its enumeration's literals: green is added, struck through is what the change removes.",
+    usecases: "Green is added, amber changed, and faded dashes are what the change removes: use cases, actors and who takes which.",
+  };
+
+  // Changes is a mode across the diagrams: it stays on while you flip tabs, and each diagram shows the same change.
+  function apply(tab) {
+    const states = tab === "states", on = open && states;
+    $("diff-view").hidden = !on;
+    $("canvas").hidden = on || !states;
+    $("draw-palette").hidden = on || !states;
+    ide().setChanges(open && ghost && DRAWN.includes(tab) ? ghost : null);
+    if (on) render(ghost);
+    else if (view) { view.destroy(); view = null; }
+    if (open && DRAWN.includes(tab)) {
+      $("canvas-help").textContent = HELP[tab];
+      if (!states) list();
+    }
+  }
+
+  // The change list in the inspector, for diagrams other than the state machine (whose view puts it there itself).
+  function list() {
+    if (!ghost || !ghost.changes.length) return;
+    $("inspector").replaceChildren(el("h3", "Changes"), changeList(ghost.changes),
+      el("p", "Read-only: the change is not saved, approved or applied here.", { class: "muted small" }));
+    at = -1;
+  }
+
   function toggle(on) {
     open = on;
     $("show-changes").setAttribute("aria-pressed", String(on));
-    $("diff-view").hidden = !on;
-    const states = ide().tab() === "states"; // closing because another tab was shown leaves that tab's panels alone
-    $("canvas").hidden = on || !states;
-    $("draw-palette").hidden = on || !states;
-    if (on) $("canvas-help").textContent = "Green is added, amber changed or moved, and faded dashes are what the change removes. [ and ] step through the changes.";
-    if (on) { render(ghost); if (!ghost) refresh(); }
-    else {
-      if (view) { view.destroy(); view = null; }
-      $("inspector").replaceChildren(el("p", "Select a state or transition.", { class: "muted" }));
-    }
+    const tab = ide().tab();
+    if (on && !DRAWN.includes(tab)) { ide().showTab("states"); return; } // showTab calls apply through the tab hook
+    if (DRAWN.includes(tab) && tab !== "states") ide().showTab(tab); // redraw that diagram with or without the change
+    else apply(tab);
+    if (!on) $("inspector").replaceChildren(el("p", "Select a state or transition.", { class: "muted" }));
+    if (on && !ghost) refresh();
     badge(ghost);
   }
 
@@ -368,12 +430,13 @@
     const button = el("button", "Changes", { id: "show-changes", type: "button", class: "quiet show-changes", "aria-pressed": "false", "aria-controls": "diff-view", hidden: "" });
     button.append(el("span", "0", { class: "badge" }));
     $("fit").before(button);
-    button.addEventListener("click", () => {
-      if (open) { ide().showTab("states"); return; } // back to the editable diagram
-      if (document.querySelector('#tab-states[aria-selected="false"]')) ide().showTab("states");
-      toggle(true);
+    button.addEventListener("click", () => toggle(!open));
+    ide().hooks.tab.push((which) => apply(which));
+    ide().hooks.changeSelect.push((id) => {
+      if (!ghost) return;
+      const i = ghost.changes.findIndex((c) => cellsOn(ide().tab(), c).includes(id));
+      if (i >= 0 && i !== at) { mark(i); detail(ghost.changes[i]); }
     });
-    ide().hooks.tab.push(() => { if (open) toggle(false); });
     ide().hooks.diffGraph = () => (open && view ? view.graph : null);
     document.addEventListener("playide:plan", () => { ghost = null; refresh(); });
     refresh();

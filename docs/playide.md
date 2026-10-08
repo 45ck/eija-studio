@@ -31,6 +31,8 @@ The server prints two private links. Open the PlayIDE one (it ends in `/play#…
   - **Changes** shows added elements in green, changed ones in amber, a moved arrow in amber with its old route dashed, and removed ones kept as faded, struck-through ghosts. Unchanged elements fade back as context.
   - **Compare** opens **Before** and **After**, which show one side each, and an onion-skin slider that fades between them. No state moves when you switch.
 
+  Changes stays on while you flip tabs. The use case diagram shows added and removed use cases and actors, and a moved association with its old line as a ghost. The class diagram shows the record's state enumeration gaining and losing literals.
+
   One line above the diagram counts the change ("4 changes: 2 added, 1 moved, 1 removed"). The inspector lists each change in a sentence. `[` and `]` step through it, and a change with changed fields opens its before and after under its line. Previewing a plan also keeps every state in place now, and a removed state leaves its gap.
 - **Checks.** The ring in the toolbar has five parts, each a real check on the model you are looking at:
   - every AI step looked at;

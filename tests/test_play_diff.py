@@ -145,7 +145,19 @@ def test_the_changes_view_in_a_real_browser():
             assert lost is False and page.get_attribute(".lens button[data-lens=before]", "aria-checked") == "true"
             page.keyboard.press("a")
             assert page.evaluate("() => window.PlayIDE.hooks.diffGraph().getDataModel().getCell('was:TR-CANCEL').visible") is False
-            page.click("#tab-classes")  # another tab closes the view and gives the state machine back
+            # Changes stays on across the diagrams: the class diagram and the use cases show the same change.
+            page.click("#tab-classes")
+            lost = page.evaluate("() => window.PlayIDE.diagram('classes').getDataModel().getCell('literal:Lost').value")
+            assert lost == "+ Lost" and page.locator("#inspector .diff-item").count() == 4
+            page.click("#tab-usecases")
+            cells = page.evaluate("""() => { const m = window.PlayIDE.diagram('usecases').getDataModel();
+                return ['uc:TR-CANCEL', 'uc:TR-RENEW', 'role:Clerk'].map((id) => { const c = m.getCell(id); return c && [c.value, !!c.style.dashed]; }); }""")
+            assert cells == [["\u2212 Cancel", True], ["+ Renew", False], ["Clerk", False]]  # Clerk keeps MarkOverdue in this plan
+            page.click("#inspector .diff-item.removed")
+            assert page.evaluate("() => window.PlayIDE.diagram('usecases').getSelectionCell().id") == "uc:TR-CANCEL"
+            page.click("#show-changes")  # off: every diagram is the model again
+            plain = page.evaluate("() => window.PlayIDE.diagram('usecases').getDataModel().getCell('uc:TR-CANCEL').value")
+            assert plain == "Cancel" and page.get_attribute("#show-changes", "aria-pressed") == "false"
             page.click("#tab-states")
             assert page.is_visible("#canvas") and page.is_hidden("#diff-view") and page.locator("#inspector .diff-item").count() == 0
             assert errors == []
