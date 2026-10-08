@@ -36,6 +36,8 @@ def run(scene: Scene, server: RunningServer) -> None:
     scene.expect_text("#options", "Teacher recommends")
 
     scene.caption("Final approval is blocked by policy - not quietly downgraded to something else.")
+    # Unsupported interpretations sit behind their own disclosure; open it through its public summary.
+    scene.click("#proposal-alternatives > summary")
     scene.highlight('#options article:has-text("Teacher grants final approval")', duration_ms=1600)
 
     scene.caption("The owner - not the AI - selects the meaning.")
