@@ -72,8 +72,10 @@ def test_playide_features_fit_together_in_a_real_browser(pack):
             assert page.text_content("#status-selection") == "transition " + page.locator("#outline-transitions button").first.text_content()
             page.locator("#outline-states button").nth(1).click()
             page.keyboard.press("F9")
+            before = page.locator("#simulate").bounding_box()
             page.click("#run-play")
             page.wait_for_selector("#run-status:has-text('Paused')", timeout=60_000)
+            assert page.locator("#simulate").bounding_box()["x"] == before["x"]  # the run status does not push the tool bar
             now, body = page.locator("#debug-now").bounding_box(), page.locator(".dock-body").bounding_box()
             assert now and body and body["y"] <= now["y"] < body["y"] + body["height"]
             # On a laptop screen with the side bar and the chat open, the screen designer stacks the record attributes

@@ -5,6 +5,8 @@
 ### 8 October 2026: PlayIDE polish, round 3
 
 - The Tests tab's **Run all** is no longer cut off at the right edge on a laptop screen: when the header's text and buttons do not fit side by side, the buttons go under the text, on the Laws tab too.
+- Starting or pausing a run no longer shifts **Simulate** and **Build & run** to the right: the run status has a fixed width, with the full text in its tooltip, and the Run button keeps room for "Continue".
+- Simulation findings say "refused once" and "refused 12 times", not "time(s)".
 - The review view's title bar keeps **Import / Export** and **Review workbench** on one line, and the layout toggles side by side, beside the read-only badge.
 
 ### 8 October 2026: PlayIDE polish
