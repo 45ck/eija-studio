@@ -21,6 +21,7 @@
 * [application.review](review.md) - Review a model change in PlayIDE instead of a pull request (ADR-0175).
 * [application.ripple](ripple.md) - Ripple (ADR-0158): what one change to the state machine does to every other diagram of the same system, and the follow-on edits that would keep them in agreement.
 * [application.runtime](runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.
+* [application.scenario_run](scenario_run.md) - Run a pack's scenarios (its test cases) through the kernel, and record new ones (ADR-0177).
 * [application.scxml](scxml.md) - The workflow state machine as a W3C SCXML statechart (ADR-0165).
 * [application.sequence_layout](sequence_layout.md) - Where a checked sequence is drawn, and its export (ADR-0185).
 * [application.sequences](sequences.md) - Sequence diagrams the kernel checks (ADR-0185): can this model produce this interaction?

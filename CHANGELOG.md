@@ -6,6 +6,18 @@
 
 - PlayIDE has a **Sequences** tab: scenarios in UML sequence notation (lifelines, calls, refusal replies, state invariants, effects as asynchronous messages, `opt`, `alt` and `neg` fragments), each message run through the kernel. A message the model can't produce is flagged with the kernel's reason, and a `neg` must be refused. Edit in the tab, export as Mermaid or PlantUML, or download `sequences.json` to keep beside the pack (library-loan ships three). A plan's ripple lists the scenarios it breaks. New route `POST /api/play/sequences`. See [ADR-0185](docs/adr/0185-sequence-diagrams-the-kernel-checks.md).
 
+### 8 October 2026: PlayIDE end-to-end fixes
+
+Found by using every PlayIDE feature together on the workbench shell, as a UML-literate engineer would:
+
+- The chat's example request now works when sent as it stands. On the model in force it is the pack's demo request (for example "Let teachers sign off excursions."), which becomes the change the pack models. Before, the example on Library loan reused an action that already had a transition and was refused. The chat's plan proposer now reads the pack's proposal rules the way the review workbench's offline provider does, so "loans" and "excursions" match the rules' "loan" and "excursion".
+- When a run pauses, the Run panel keeps who tried what and the kernel's answer in view. The step log and the simulation log scroll on their own instead of scrolling the whole panel.
+- Roles in the outline are buttons that open the Permissions tab, like the other outline entries. The outline grows to fit before the inspector takes the rest.
+- The plan banner hides "Review the change" while the Review tab is open, and the Laws tab's "Prove again" button no longer wraps.
+- The Run and Simulation panels use their width as intended: when paused, records and breakpoints sit beside the steps so far, and the simulation's "Worth a look" sits beside its run log. A more specific panel rule had kept them in one column.
+- Plan steps name a transition by its action, as the diagram does ("Let Member take CheckOut", not "TR-CHECKOUT").
+- Choosing a class in the outline clears a stale selection on the state machine, and the other way round.
+
 ### 8 October 2026: PlayIDE tabs that do not fit
 
 - When the diagram tabs do not fit, the strip scrolls, the edge that hides tabs fades, and a **More tabs** button lists every tab, as in VS Code. Buttons beside the strip no longer cover a tab label. Hiding the left side no longer pushes the diagrams into its empty column.

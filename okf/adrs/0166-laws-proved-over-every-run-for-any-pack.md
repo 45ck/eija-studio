@@ -77,5 +77,5 @@ _No curated notes yet._
 
 ## Referenced by
 
-* [ADR-0185: Sequence diagrams as scenarios the kernel checks, message by message](/adrs/0185-sequence-diagrams-the-kernel-checks.md) - Engineers who read UML expect sequence diagrams beside the state machine, class, use case and component diagrams.
+* [ADR-0177: The law file and the test cases are files PlayIDE opens, edits as drafts and runs](/adrs/0177-law-files-and-test-cases-in-playide.md) - The owner asked where the formal law files and the test cases are.
 <!-- okf:generated:end links -->

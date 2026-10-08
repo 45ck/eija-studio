@@ -320,6 +320,7 @@
       ["Show the components", "tab-components", press("tab-components")],
       ["Show who can do what (permissions)", "tab-access", press("tab-access")],
       ["Show the laws", "tab-laws", press("tab-laws")],
+      ["Show the tests (scenarios)", "tab-tests", press("tab-tests")],
       ["Show or hide the model and inspector (Ctrl+B)", "toggle-left", press("toggle-left")],
       ["Show or hide the run panel (Ctrl+Alt+P)", "toggle-dock", press("toggle-dock")],
       ["Show or hide the chat (Ctrl+Alt+C)", "toggle-chat", press("toggle-chat")],

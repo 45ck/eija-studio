@@ -5,7 +5,10 @@ from eija_studio.domain.pack import Pack, ProposalRule, default_pack
 from eija_studio.application.ports import ProviderResult
 
 
-def _matches(rule: ProposalRule, text: str) -> bool:
+def matches_rule(rule: ProposalRule, text: str) -> bool:
+    """The rule's reading of a request: the lower-cased text contains every ``all`` word and one ``any`` word (so a
+    plural or a longer word still counts). The chat's plan proposer reads the same rules the same way."""
+    text = text.lower()
     return all(w in text for w in rule.all) and (not rule.any or any(w in text for w in rule.any))
 
 
@@ -20,7 +23,7 @@ class OfflineProvider:
 
     def propose(self, request: str, model: Workflow) -> ProviderResult:
         fixture, text = self.pack.fixtures.proposals, request.lower()
-        rule = next((r for r in fixture.rules if _matches(r, text)), None)
+        rule = next((r for r in fixture.rules if matches_rule(r, text)), None)
         alternatives = rule.alternatives if rule is not None else fixture.fallback
         return ProviderResult(Proposal(summary=fixture.summary, alternatives=alternatives, unknowns=fixture.unknowns),
                               self.name, "fixture-v1", {}, False)

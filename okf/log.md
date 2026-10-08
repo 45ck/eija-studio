@@ -2,7 +2,8 @@
 
 ## 2026-10-08
 
-* **Sequence diagrams**: synced ADR-0185 and the new `domain.sequences`, `application.sequences` and `application.sequence_layout` module and symbol pages; `application.ripple` (sequence items), `application.diagrams` and `application.diagram_emitters` (alt and neg fragments), `interfaces.play` (`/api/play/sequences`) and `interfaces.http` (the `play-sequence.js` and `play-sequence.css` assets) refreshed. Other pages changed only in generated backlinks. No Notes were hand-edited and nothing was recorded as verified.
+* **Law files and test cases in PlayIDE**: synced ADR-0177, the new `domain.scenarios` and `application.scenario_run` modules and symbol pages, and `application.law_proof` (`with_laws`, `compare_laws`); `interfaces.cli` (`scenarios`), `interfaces.play` (`/api/play/laws` with a draft law file, `/api/play/tests`, `/api/play/tests/try`) and `interfaces.http` (the `play-tests.js` and `play-tests.css` assets) refreshed. Pages linking to `models`, `pack`, `policy` and `simulation` changed only in generated references. No Notes were hand-edited and nothing was recorded as verified.
+* **PlayIDE end-to-end fixes**: re-synced `application.plan` (`describe` names a transition by its action when given the model) and `application.ripple`; `domain.models.Workflow` changed only in generated references. No Notes were hand-edited and nothing was recorded as verified.
 * **PlayIDE tab overflow**: ADR-0173 page re-synced after its text gained the tab overflow rule. No Notes were hand-edited and nothing was recorded as verified.
 * **A change on every diagram**: re-synced ADR-0176 and `application.ghost_diff` (it now also returns the use case diagram of both models). No Notes were hand-edited and nothing was recorded as verified.
 * **Calmer Changes view**: re-synced ADR-0176 after its "calm by default" update (presentation only, no module or symbol changes). No Notes were hand-edited and nothing was recorded as verified.

@@ -11,4 +11,6 @@
 # Functions
 
 * [application.law_proof.actor_classes](actor_classes.md) - One actor per role (declared or used) and per combination of `active` and `assigned`, and an outsider.
+* [application.law_proof.compare_laws](compare_laws.md) - Which laws a draft adds, removes or changes.
 * [application.law_proof.prove_laws](prove_laws.md) - Every law of the pack, judged on `model` (the pack's own by default), with the evidence for each verdict.
+* [application.law_proof.with_laws](with_laws.md) - The pack with its law file replaced by `laws` (a draft edited in PlayIDE), checked as the pack loader checks it.

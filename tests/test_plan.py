@@ -108,3 +108,12 @@ def test_drawn_steps_are_checked_and_described_by_the_server():
     assert [s["text"] for s in preview["steps"]] == ["Add state Lost", "Start records in Lost", "Remove transition NOT-THERE"]
     assert [s["status"] for s in preview["steps"]] == ["applies", "rejected", "does_not_apply"]
     assert not preview["legal"] and preview["candidate"] is None
+
+
+@pytest.mark.parametrize("pack_dir", ["excursion", "library-loan", "eija-review-slice"])
+def test_the_packs_own_demo_request_is_a_plan_the_policy_allows(pack_dir):
+    # The chat offers the demo request as its example, so sent as it stands it has to read as the pack's meaning. The
+    # rules are read as the review workbench's offline provider reads them: "loans" and "excursions" count.
+    pack = load_pack(ROOT / "packs" / pack_dir)
+    result = propose_plan(pack.fixtures.demo_request, pack.model, pack, OfflinePlanProposer())
+    assert result["meaning"] is not None and result["preview"]["legal"], result["preview"]["codes"]

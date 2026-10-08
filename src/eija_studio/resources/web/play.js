@@ -117,7 +117,7 @@
 
   const current = () => (hooks.diffGraph && hooks.diffGraph()) || ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: componentGraph, review: PlayReview.graph(),
     sequences: hooks.sequenceGraph && hooks.sequenceGraph() })[tab];
-  const PANELS = { states: "canvas", sequences: "sequences", classes: "class-canvas", usecases: "usecase-canvas", screens: "screens", components: "component-canvas", laws: "laws", review: "review", access: "access-panel" };
+  const PANELS = { states: "canvas", sequences: "sequences", classes: "class-canvas", usecases: "usecase-canvas", screens: "screens", components: "component-canvas", laws: "laws", tests: "tests", review: "review", access: "access-panel" };
   const HINTS = {
     states: "Drag from the palette to draw a state, a transition or the initial state; select an element to change or remove it. Drawn changes join the plan for you to preview; nothing is saved.",
     sequences: "Each message is run through the kernel: a message the model can't produce is red with the kernel's reason. Select one to change it; neg fragments must be refused.",
@@ -126,6 +126,7 @@
     screens: "Design each use case's screen. The design check runs as you edit; Build & run uses these screens.",
     components: "The built app's components, read from its generated files: every line is an import, a route or a file read.",
     laws: "The pack's laws: what this model must never do, whatever is drawn. Each is proved over every run the kernel allows, by every kind of actor.",
+    tests: "The pack's test cases: scenarios of who does what and what must happen, each step run by the kernel on the model shown.",
     access: "Who can do what, from each state. Every cell is tried in the kernel with the pack's fixture actors; a previewed plan's changes are flagged.",
     review: "Review the change shown against the model in force: look at each change, predict what the kernel does, then decide. Nothing is approved from here.",
   };
@@ -190,6 +191,12 @@
   }
 
   function select(id, fromOutline) {
+    // Choosing in the outline moves the selection: the other diagram lets go of what it had, so going back to it shows
+    // nothing selected rather than a stale handle beside an inspector that says something else.
+    if (fromOutline) {
+      const other = id.startsWith("class:") ? graph : classGraph;
+      if (other && !other.isSelectionEmpty()) other.clearSelection();
+    }
     selected = id;
     for (const b of document.querySelectorAll(".outline button")) b.setAttribute("aria-current", String(b.dataset.id === id));
     inspect(id);
@@ -216,7 +223,14 @@
     fill("outline-transitions", model.transitions.map((t) => ["transition:" + t.id, label(t)]));
     fill("outline-classes", data ? data.entities.map((e) => ["class:" + e.name, e.name + (e.name === data.record ? " «record»" : "")]) : []);
     if (!data) $("outline-classes").replaceChildren(el("li", "No data model yet", { class: "muted" }));
-    $("outline-roles").replaceChildren(...[...new Set(model.transitions.map((t) => t.role))].map((r) => el("li", r, { class: "muted" })));
+    // A role is not a diagram element; what it may do is the Permissions tab's column, so that is where a role opens.
+    $("outline-roles").replaceChildren(...[...new Set(model.transitions.map((t) => t.role))].map((r) => {
+      const button = el("button", r, { type: "button", title: `What ${r} may do, on the Permissions tab` });
+      button.addEventListener("click", () => showTab("access"));
+      const li = el("li");
+      li.append(button);
+      return li;
+    }));
   }
 
   // Class diagram (ADR-0153): the pack's data model in UML class notation. The record class is what moves through
@@ -396,10 +410,11 @@
       $(panel).hidden = which !== name;
     }
     $("canvas-help").textContent = HINTS[which];
-    for (const id of ["fit", "zoom-in", "zoom-out"]) $(id).hidden = which === "screens" || which === "laws" || which === "access";
+    for (const id of ["fit", "zoom-in", "zoom-out"]) $(id).hidden = which === "screens" || which === "laws" || which === "tests" || which === "access";
     $("draw-palette").hidden = which !== "states";
+    $("plan-review").hidden = which === "review";
     for (const f of hooks.tab) f(which);
-    if (which === "access" || which === "sequences") return; // drawn by play-access.js and play-sequence.js through the tab hook
+    if (which === "access" || which === "tests" || which === "sequences") return; // play-access.js, play-tests.js and play-sequence.js draw these on hooks.tab
     if (which === "screens") { renderDesigner(); return; }
     if (which === "laws") { for (const show of hooks.laws) show(); return; }
     if (which === "usecases") drawUseCases();
@@ -1500,7 +1515,8 @@
       if (i >= sim.trace.length) { clearInterval(replayTimer); paint(sim); return; }
       const entry = sim.trace[i];
       rows[i].classList.add("current");
-      rows[i].scrollIntoView({ block: "nearest" });
+      const log = $("sim-log"); // scroll the log alone, so the panel keeps its summary in view
+      log.scrollTop = Math.max(0, rows[i].offsetTop - log.clientHeight / 2);
       paint(sim);
       graph.batchUpdate(() => {
         const t = entry.action && model.transitions.find((x) => x.action === entry.action);
@@ -1548,7 +1564,13 @@
     draw(model);
     inspect("");
     const t = model.transitions[model.transitions.length - 1];
-    if (t) $("chat-example").textContent = `add state Archived after ${t.to_state} then add ${t.action} from ${t.to_state} to Archived for ${t.role}`;
+    // The example has to pass as it stands. On the model in force that is the pack's own demo request, a change the pack
+    // models. On a change case's candidate, typed steps: an action names one transition, so the second step takes a
+    // declared action no transition uses yet, and it leaves a state that already has a way out (a pack's laws may keep
+    // its end states closed).
+    const free = t && packInfo.actions.find((a) => !model.transitions.some((u) => u.action === a));
+    if (!caseId && packInfo.demo_request) $("chat-example").textContent = packInfo.demo_request.replace(/[.\s]+$/, "");
+    else if (t) $("chat-example").textContent = `add state Archived after ${t.from_state}` + (free ? ` then add ${free} from ${t.from_state} to Archived for ${t.role}` : "");
     $("build").addEventListener("click", build);
     $("simulate").addEventListener("click", simulate);
     $("sim-replay").addEventListener("click", replay);
@@ -1563,6 +1585,7 @@
     $("tab-screens").addEventListener("click", () => showTab("screens"));
     $("tab-components").addEventListener("click", () => showTab("components"));
     $("tab-laws").addEventListener("click", () => showTab("laws"));
+    $("tab-tests").addEventListener("click", () => showTab("tests"));
     $("tab-access").addEventListener("click", () => showTab("access"));
     $("chat-form").addEventListener("submit", ask);
     for (const key of Object.keys(DIAGRAMS)) $("tab-" + key).append(el("span", "", { class: "badge", hidden: "" }));
