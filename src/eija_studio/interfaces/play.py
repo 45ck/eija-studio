@@ -5,7 +5,8 @@ steps can be previewed, built and simulated but never saved or applied from here
 across every diagram with the follow-on edits the proposer suggests, each re-checked (ADR-0158), the run bar's
 seeded run log with breakpoints and Stop (ADR-0160), who can do what with reachability questions (ADR-0171), and the
 review of a change as a UML diff whose behaviour the kernel runs on both sides (ADR-0175), and how a change looks:
-the model in force and the change on one state machine, removed elements kept as ghosts (ADR-0176).
+the model in force and the change on one state machine, removed elements kept as ghosts (ADR-0176), and the law file
+and the scenarios (test cases) as files a person can read, edit as a draft and run here, never saved from here (ADR-0177).
 
 Build & run reuses `eija build` (ADR-0150): the app is generated into the workspace, its kernel conformance tests run,
 and only a PASSing app is started, as a separate local process on a free loopback port. One app runs at a time; a new
@@ -30,15 +31,17 @@ from pydantic import Field
 
 from eija_studio.application.access import access, reach
 from eija_studio.application.components import app_components
-from eija_studio.application.law_proof import prove_laws
+from eija_studio.application.law_proof import compare_laws, prove_laws, with_laws
 from eija_studio.application.ghost_diff import ghost_diff
 from eija_studio.application.plan import preview_plan, propose_plan
 from eija_studio.application.review import review_change
 from eija_studio.application.ripple import check_follow_ons, ripple
+from eija_studio.application.scenario_run import record_steps, run_scenarios
 from eija_studio.application.simulation import MAX_BREAKPOINTS, MAX_STEPS, run_log, simulate
 from eija_studio.domain.data import data_for
 from eija_studio.domain.models import Contract, DomainError, Workflow
 from eija_studio.domain.pack import Pack
+from eija_studio.domain.scenarios import parse_scenarios, scenarios_for
 from eija_studio.domain.policy import apply_transactions
 from eija_studio.domain.transactions import parse_transaction
 from eija_studio.domain.screens import Screens, check_screens, parse_screens, screens_for, use_cases
@@ -71,6 +74,19 @@ class SimulateRequest(BuildRequest):
 class ReachRequest(BuildRequest):
     target: str = Field(min_length=1, max_length=60)
     without: str | None = Field(default=None, min_length=1, max_length=60)
+
+
+class LawsRequest(BuildRequest):
+    laws: list[dict[str, Any]] | None = Field(default=None, max_length=200)  # a draft of the law file; None is the pack's
+
+
+class ScenariosRequest(BuildRequest):
+    scenarios: dict[str, Any] | None = None  # a draft of scenarios.json (eija.scenarios.v1); None is the pack's
+
+
+class TryRequest(BuildRequest):
+    start: str | None = Field(default=None, min_length=1, max_length=60)
+    steps: list[tuple[str, str]] = Field(min_length=1, max_length=40)  # (fixture actor, action) in turn
 
 
 class RunRequest(SimulateRequest):
@@ -271,9 +287,33 @@ def register(app, studio, web: Path) -> AppRunner:
                        break_on_refusal=body.break_on_refusal)
 
     @app.post("/api/play/laws")
-    def play_laws(body: BuildRequest):
-        """The pack's laws, each proved over every run the kernel allows on this model (ADR-0166)."""
-        return prove_laws(studio.pack, resolve(body))
+    def play_laws(body: LawsRequest):
+        """The pack's laws, each proved over every run the kernel allows on this model (ADR-0166). With a draft of the
+        law file, the draft is checked and proved instead, and what it changes is listed; nothing is saved (ADR-0177)."""
+        pack = studio.pack if body.laws is None else with_laws(studio.pack, body.laws)
+        report = prove_laws(pack, resolve(body))
+        file: dict[str, Any] = {"path": f"packs/{studio.pack.id}/pack.json", "section": "laws",
+                "laws": [law.model_dump(mode="json", exclude_none=True) for law in studio.pack.laws],
+                "verifiers": [v.model_dump(mode="json", exclude_none=True) for v in studio.pack.verifiers]}
+        if body.laws is not None:
+            file |= {"draft": compare_laws(studio.pack, pack), "draft_pack": pack.model_dump(mode="json", exclude_none=True)}
+        return report | {"file": file}
+
+    def scenarios_of(body: ScenariosRequest):
+        return parse_scenarios(body.scenarios, studio.pack.id) if body.scenarios is not None else scenarios_for(studio.pack)
+
+    @app.post("/api/play/tests")
+    def play_tests(body: ScenariosRequest):
+        """The pack's scenarios (or a draft of them), each run by the kernel on the model shown (ADR-0177)."""
+        scenarios = scenarios_of(body)
+        return run_scenarios(studio.pack, resolve(body), scenarios) | {
+            "file": {"path": f"packs/{studio.pack.id}/scenarios.json", "document": scenarios.model_dump(mode="json", exclude_none=True)},
+            "actors": [a.model_dump(mode="json") for a in studio.pack.fixtures.actors]}
+
+    @app.post("/api/play/tests/try")
+    def play_tests_try(body: TryRequest):
+        """What the kernel does for these steps, written as scenario steps that expect it: how a test is added."""
+        return {"steps": record_steps(studio.pack, resolve(body), body.start, body.steps)}
 
     @app.post("/api/play/access")
     def play_access(body: BuildRequest):

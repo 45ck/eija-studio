@@ -117,7 +117,7 @@
   function transition(id) { return model.transitions.find((t) => t.id === id); }
 
   const current = () => (hooks.diffGraph && hooks.diffGraph()) || ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: componentGraph, review: PlayReview.graph() })[tab];
-  const PANELS = { states: "canvas", classes: "class-canvas", usecases: "usecase-canvas", screens: "screens", components: "component-canvas", laws: "laws", review: "review", access: "access-panel" };
+  const PANELS = { states: "canvas", classes: "class-canvas", usecases: "usecase-canvas", screens: "screens", components: "component-canvas", laws: "laws", tests: "tests", review: "review", access: "access-panel" };
   const HINTS = {
     states: "Pick State, Transition or Initial in the palette, then click the diagram (or drag it there). Double-click empty space for a new state, a state to rename it. Changes join the plan for you to preview; nothing is saved.",
     classes: "Select a class to see its attributes and associations.",
@@ -125,6 +125,7 @@
     screens: "Design each use case's screen. The design check runs as you edit; Build & run uses these screens.",
     components: "The built app's components, read from its generated files: every line is an import, a route or a file read.",
     laws: "The pack's laws: what this model must never do, whatever is drawn. Each is proved over every run the kernel allows, by every kind of actor.",
+    tests: "The pack's test cases: scenarios of who does what and what must happen, each step run by the kernel on the model shown.",
     access: "Who can do what, from each state. Every cell is tried in the kernel with the pack's fixture actors; a previewed plan's changes are flagged.",
     review: "Review the change shown against the model in force: look at each change, predict what the kernel does, then decide. Nothing is approved from here.",
   };
@@ -408,11 +409,11 @@
       $(panel).hidden = which !== name;
     }
     $("canvas-help").textContent = HINTS[which];
-    for (const id of ["fit", "zoom-in", "zoom-out"]) $(id).hidden = which === "screens" || which === "laws" || which === "access";
+    for (const id of ["fit", "zoom-in", "zoom-out"]) $(id).hidden = which === "screens" || which === "laws" || which === "tests" || which === "access";
     $("draw-palette").hidden = which !== "states";
     $("plan-review").hidden = which === "review";
     for (const f of hooks.tab) f(which);
-    if (which === "access") return;
+    if (which === "access" || which === "tests") return; // play-access.js and play-tests.js draw these on hooks.tab
     if (which === "screens") { renderDesigner(); return; }
     if (which === "laws") { for (const show of hooks.laws) show(); return; }
     if (which === "usecases") drawUseCases();
@@ -1736,6 +1737,7 @@
     $("tab-screens").addEventListener("click", () => showTab("screens"));
     $("tab-components").addEventListener("click", () => showTab("components"));
     $("tab-laws").addEventListener("click", () => showTab("laws"));
+    $("tab-tests").addEventListener("click", () => showTab("tests"));
     $("tab-access").addEventListener("click", () => showTab("access"));
     $("chat-form").addEventListener("submit", ask);
     for (const key of Object.keys(DIAGRAMS)) $("tab-" + key).append(el("span", "", { class: "badge", hidden: "" }));

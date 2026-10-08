@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/law_proof.py
   title: application/law_proof.py
   hash_method: ast-api-v1
-  sha256: edcd9b83df281f7c0021ce6f6df95186f7fe1649a53184552a1eaeee4bad738d
-notes_baseline: 276d7a5782c53e154647862d15b8dfe8ffffcf88e3f2b6a57b9140693e8ee52b
+  sha256: 66b15d95224d43e4def559690bb82db69b99ef77d3b47c1df71138d1dc483321
+notes_baseline: 8519eae51402ef3a17882ccd1bee6f221a3e5d81ea5d8c77e95b606ed3157ec9
 ---
 
 # application.law_proof
@@ -58,7 +58,9 @@ Pure: no IO, no clock, no randomness. The same pack and model always give the sa
 * [`MAX_CONFIGURATIONS`](/symbols/application/law_proof/MAX_CONFIGURATIONS.md) (constant) - no docstring
 * [`OUTSIDER`](/symbols/application/law_proof/OUTSIDER.md) (constant) - no docstring
 * [`actor_classes`](/symbols/application/law_proof/actor_classes.md) (function) - One actor per role (declared or used) and per combination of `active` and `assigned`, and an outsider.
+* [`compare_laws`](/symbols/application/law_proof/compare_laws.md) (function) - Which laws a draft adds, removes or changes.
 * [`prove_laws`](/symbols/application/law_proof/prove_laws.md) (function) - Every law of the pack, judged on `model` (the pack's own by default), with the evidence for each verdict.
+* [`with_laws`](/symbols/application/law_proof/with_laws.md) (function) - The pack with its law file replaced by `laws` (a draft edited in PlayIDE), checked as the pack loader checks it.
 
 ## Internal imports
 
@@ -92,5 +94,7 @@ _No curated notes yet._
 * [application.law_proof.MAX_CONFIGURATIONS](/symbols/application/law_proof/MAX_CONFIGURATIONS.md) - Constant `MAX_CONFIGURATIONS` in `application/law_proof`.
 * [application.law_proof.OUTSIDER](/symbols/application/law_proof/OUTSIDER.md) - Constant `OUTSIDER` in `application/law_proof`.
 * [application.law_proof.actor_classes](/symbols/application/law_proof/actor_classes.md) - One actor per role (declared or used) and per combination of `active` and `assigned`, and an outsider.
+* [application.law_proof.compare_laws](/symbols/application/law_proof/compare_laws.md) - Which laws a draft adds, removes or changes.
 * [application.law_proof.prove_laws](/symbols/application/law_proof/prove_laws.md) - Every law of the pack, judged on `model` (the pack's own by default), with the evidence for each verdict.
+* [application.law_proof.with_laws](/symbols/application/law_proof/with_laws.md) - The pack with its law file replaced by `laws` (a draft edited in PlayIDE), checked as the pack loader checks it.
 <!-- okf:generated:end links -->

@@ -1,0 +1,133 @@
+{
+  "schema_version": "eija.scenarios.v1",
+  "id": "excursion",
+  "scenarios": [
+    {
+      "id": "submit-and-approve",
+      "title": "A teacher submits and the registrar approves",
+      "steps": [
+        {
+          "actor": "teacher-assigned",
+          "action": "Submit",
+          "then": {
+            "state": "Submitted"
+          }
+        },
+        {
+          "actor": "registrar",
+          "action": "Approve",
+          "then": {
+            "state": "Approved"
+          }
+        }
+      ]
+    },
+    {
+      "id": "reject-and-revise",
+      "title": "A rejected request goes back to draft and is submitted again",
+      "steps": [
+        {
+          "actor": "teacher-assigned",
+          "action": "Submit",
+          "then": {
+            "state": "Submitted"
+          }
+        },
+        {
+          "actor": "registrar",
+          "action": "Reject",
+          "then": {
+            "state": "Rejected"
+          }
+        },
+        {
+          "actor": "teacher-assigned",
+          "action": "Revise",
+          "then": {
+            "state": "Draft"
+          }
+        },
+        {
+          "actor": "teacher-assigned",
+          "action": "Submit",
+          "then": {
+            "state": "Submitted"
+          }
+        }
+      ]
+    },
+    {
+      "id": "teacher-cannot-approve",
+      "title": "A teacher can never approve",
+      "steps": [
+        {
+          "actor": "teacher-assigned",
+          "action": "Submit",
+          "then": {
+            "state": "Submitted"
+          }
+        },
+        {
+          "actor": "teacher-assigned",
+          "action": "Approve",
+          "then": {
+            "refused": "ROLE_DENIED"
+          }
+        }
+      ]
+    },
+    {
+      "id": "viewer-reads-only",
+      "title": "A viewer cannot submit",
+      "steps": [
+        {
+          "actor": "viewer",
+          "action": "Submit",
+          "then": {
+            "refused": "ROLE_DENIED"
+          }
+        }
+      ]
+    },
+    {
+      "id": "revoked-teacher",
+      "title": "A revoked teacher cannot submit",
+      "steps": [
+        {
+          "actor": "teacher-revoked",
+          "action": "Submit",
+          "then": {
+            "refused": "ACTOR_REVOKED"
+          }
+        }
+      ]
+    },
+    {
+      "id": "approved-is-final",
+      "title": "An approved request cannot be rejected afterwards",
+      "steps": [
+        {
+          "actor": "teacher-assigned",
+          "action": "Submit",
+          "then": {
+            "state": "Submitted"
+          }
+        },
+        {
+          "actor": "registrar",
+          "action": "Approve",
+          "then": {
+            "state": "Approved"
+          }
+        },
+        {
+          "actor": "registrar",
+          "action": "Reject",
+          "then": {
+            "refused": "STATE_DENIED"
+          }
+        }
+      ]
+    }
+  ]
+}
