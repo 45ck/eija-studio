@@ -28,6 +28,7 @@ START_TIMEOUT_S = 10.0
 
 class BuildRequest(Contract):
     case_id: str | None = None  # None builds the active baseline; a case builds its candidate (or baseline if none yet)
+    model: Workflow | None = None  # the model the page shows; if given, it must still be the one that would be built
 
 
 def _free_port() -> int:
@@ -112,6 +113,8 @@ def register(app, studio, web: Path) -> AppRunner:
         else:
             baseline, candidate = studio.workflows(body.case_id)
             model = candidate or baseline
+        if body.model is not None and body.model.semantic_hash != model.semantic_hash:
+            raise DomainError("MODEL_CHANGED", "The model changed since the page loaded; reload and build again")
         return runner.build_and_run(studio.pack, model, studio.identity_provider())
 
     return runner

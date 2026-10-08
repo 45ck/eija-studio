@@ -74,3 +74,13 @@ def test_the_vendored_diagram_engine_is_the_recorded_release():
         data = (web / name).read_bytes()
         assert (len(data), hashlib.sha256(data).hexdigest()) == (facts["bytes"], facts["sha256"])
     assert record["license"] == "Apache-2.0" and record["version"] == "0.25.0"
+
+
+def test_build_refuses_a_model_the_page_no_longer_shows(client, studio):
+    with studio.store.transaction() as u:
+        shown = u.active()["model"]
+    assert client.post("/api/play/build", json={"model": shown}, headers=HEADERS).json()["conformance"]["status"] == "PASS"
+    changed = Workflow.model_validate(shown).model_dump(mode="json")
+    changed["transitions"] = changed["transitions"][:-1]
+    refused = client.post("/api/play/build", json={"model": changed}, headers=HEADERS)
+    assert (refused.status_code, refused.json()["code"]) == (409, "MODEL_CHANGED")

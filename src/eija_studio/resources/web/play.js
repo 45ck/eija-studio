@@ -3,9 +3,10 @@
 "use strict";
 (() => {
   const $ = (id) => document.getElementById(id);
-  let token = location.hash.slice(1) || sessionStorage.getItem("eija-session") || "";
-  if (location.hash) { sessionStorage.setItem("eija-session", token); history.replaceState(null, "", location.pathname); }
   const caseId = new URLSearchParams(location.search).get("case");
+  let token = location.hash.slice(1) || sessionStorage.getItem("eija-session") || "";
+  // Drop the token from the address bar but keep ?case=, so a reload still shows the same model.
+  if (location.hash) { sessionStorage.setItem("eija-session", token); history.replaceState(null, "", location.pathname + location.search); }
   const STATE = { width: 150, height: 54 }, INITIAL = 22;
   let graph, model, selected = "";
 
@@ -159,7 +160,8 @@
     score.className = "score";
     score.textContent = "Building and checking against the kernel…";
     try {
-      const result = await api("/api/play/build", caseId ? { case_id: caseId } : {});
+      // Send the model on screen; the server refuses (MODEL_CHANGED) if it is no longer the one it would build.
+      const result = await api("/api/play/build", { case_id: caseId, model });
       const pass = result.conformance.status === "PASS";
       score.className = "score " + (pass ? "ok" : "bad");
       score.textContent = pass ? `✓ ${result.cases}/${result.cases} cases match the kernel` : `✗ Conformance ${result.conformance.status}: not started`;
@@ -171,7 +173,9 @@
       }
     } catch (error) {
       score.className = "score bad";
-      score.textContent = `Build refused (${error.code || "ERROR"}): ${error.message}`;
+      score.textContent = error.code === "MODEL_CHANGED"
+        ? "The model changed since this page loaded. Reload to see it, then build again."
+        : `Build refused (${error.code || "ERROR"}): ${error.message}`;
     } finally {
       button.disabled = false;
     }

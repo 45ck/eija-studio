@@ -1639,6 +1639,16 @@
               }
             ],
             "title": "Case Id"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Workflow"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,
