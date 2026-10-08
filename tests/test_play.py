@@ -84,3 +84,15 @@ def test_build_refuses_a_model_the_page_no_longer_shows(client, studio):
     changed["transitions"] = changed["transitions"][:-1]
     refused = client.post("/api/play/build", json={"model": changed}, headers=HEADERS)
     assert (refused.status_code, refused.json()["code"]) == (409, "MODEL_CHANGED")
+
+
+def test_simulate_runs_the_shown_model_and_refuses_a_stale_one(client, studio):
+    with studio.store.transaction() as u:
+        shown = u.active()["model"]
+    run = client.post("/api/play/simulate", json={"model": shown, "seed": 2, "steps": 120}, headers=HEADERS).json()
+    assert run["format"] == "eija.simulation.v1" and run["steps"] == 120
+    assert run["model"] == Workflow.model_validate(shown).semantic_hash
+    changed = Workflow.model_validate(shown).model_dump(mode="json")
+    changed["transitions"] = changed["transitions"][:-1]
+    assert client.post("/api/play/simulate", json={"model": changed}, headers=HEADERS).json()["code"] == "MODEL_CHANGED"
+    assert client.post("/api/play/simulate", json={"steps": 0}, headers=HEADERS).status_code == 422

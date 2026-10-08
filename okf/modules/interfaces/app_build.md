@@ -57,5 +57,5 @@ _No curated notes yet._
 ## Referenced by
 
 * [interfaces.cli](/modules/interfaces/cli.md) - Module `interfaces/cli` (no module docstring).
-* [interfaces.play](/modules/interfaces/play.md) - PlayIDE routes: the visual UML canvas page, and Build & run of the model as a live app beside it (ADR-0151).
+* [interfaces.play](/modules/interfaces/play.md) - PlayIDE routes: the visual UML canvas page, Build & run of the model as a live app beside it (ADR-0151), and Simulate, seeded simulated users whose every step…
 <!-- okf:generated:end links -->

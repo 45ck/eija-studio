@@ -62,5 +62,5 @@ _No curated notes yet._
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
 * [domain.transactions](/modules/domain/transactions.md) - Open change vocabulary (WBS 1.3): the semantic edits an owner (or a pack meaning) may make to a workflow.
-* [interfaces.play](/modules/interfaces/play.md) - PlayIDE routes: the visual UML canvas page, and Build & run of the model as a live app beside it (ADR-0151).
+* [interfaces.play](/modules/interfaces/play.md) - PlayIDE routes: the visual UML canvas page, Build & run of the model as a live app beside it (ADR-0151), and Simulate, seeded simulated users whose every step…
 <!-- okf:generated:end links -->

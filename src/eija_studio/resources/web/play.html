@@ -13,6 +13,7 @@
   <div class="brand"><span class="logo" aria-hidden="true">▶</span><strong>PlayIDE</strong><span id="model-name" class="model-name"></span></div>
   <div class="actions">
     <span id="score" class="score" role="status" aria-live="polite" hidden></span>
+    <button id="simulate" type="button" title="Seeded simulated users act on the model; the kernel decides every step">Simulate</button>
     <button id="build" class="primary" type="button">Build &amp; run</button>
     <a class="quiet" href="/">Review workbench</a>
   </div>
@@ -38,6 +39,15 @@
     <section class="inspector" aria-labelledby="inspector-title">
       <h2 id="inspector-title">Inspector</h2>
       <div id="inspector"><p class="muted">Select a state or transition.</p></div>
+    </section>
+    <section id="sim" class="sim" aria-labelledby="sim-title" hidden>
+      <div class="run-head"><h2 id="sim-title">Simulation</h2>
+        <span class="sim-tools"><button id="sim-replay" type="button" class="quiet">Replay</button><button id="sim-clear" type="button" class="quiet">Clear</button></span></div>
+      <p id="sim-summary" class="sim-summary"></p>
+      <div id="sim-codes" class="chips"></div>
+      <h3>Worth a look</h3><ul id="sim-findings" class="findings"></ul>
+      <h3>Run log</h3><ol id="sim-log" class="log"></ol>
+      <p class="muted small" id="sim-limits"></p>
     </section>
     <section id="run" class="run" aria-labelledby="run-title" hidden>
       <div class="run-head"><h2 id="run-title">Running app</h2><a id="run-open" class="quiet" target="_blank" rel="noopener">Open in new tab</a></div>
