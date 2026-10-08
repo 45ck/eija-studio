@@ -104,8 +104,8 @@ Each region has one job and stays where it is, in the place an engineer from an 
 | Toolbar | Run bar, Simulate, Build & run; the checks ring opens its list as a popover | Always | Visual Studio's standard and debug toolbars |
 | Left | Model outline above the inspector | By default; Ctrl+B | Visual Studio's Solution Explorer above Properties |
 | Centre | Diagram tabs (state machine, class, use cases, screens, components), then Laws, Permissions and Review; ripple badges on the tabs; the UML palette as a column beside the state machine | Always | VS Code editor tabs; draw.io's shape library |
-| Panel | Run, Simulation, Running app, one at a time, resizable | When one of them has something; Ctrl+J | VS Code's panel; Visual Studio's output windows |
-| Right | Chat in plan mode, full height, with the authority strip and the suggestions | By default (not in the review view); Ctrl+L | Cursor's agent panel; the Codex app's conversation |
+| Panel | Run, Simulation, Running app, one at a time, resizable | When one of them has something; Ctrl+Alt+P | VS Code's panel; Visual Studio's output windows |
+| Right | Chat in plan mode, full height, with the authority strip and the suggestions | By default (not in the review view); Ctrl+Alt+C | Cursor's agent panel; the Codex app's conversation |
 | Status bar | Model, "Previewing a plan", selection, toast, Simulate score, Ctrl K | Always | VS Code and Visual Studio status bars |
 
 What changed for the agentic side: the chat no longer moves or shrinks when a run starts. The fence (A2) and a plan under review stay in view while the plan's effect plays out in the panel below the diagram, so checking a step and watching it run happen side by side (A5). The checks ring stays one click away, and its list no longer pushes the chat down (A6). The layout toggles are in the command palette too (A8).

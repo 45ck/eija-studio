@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0173-playide-workbench-shell.md
   title: 0173-playide-workbench-shell.md
   hash_method: lf-sha256-v1
-  sha256: 186ca074b8630b9da5311d9229f68a59016d4189907539e336a3bc780cd45d5a
-notes_baseline: 1d683973e437be997fe733bf30888e3359b80d3af056ee133e3f2232f5aefa30
+  sha256: d4d35264e7d7d6ab6142de8c011d766df2ba15b82e25c2d84b44d6d2e8836e18
+notes_baseline: 0818d608d137ddb74200350454fcfb3046bb7f33cf828c60624e5a5691d48526
 ---
 
 # ADR-0173: PlayIDE's workbench shell, after Visual Studio, VS Code, Cursor and draw.io
@@ -41,7 +41,7 @@ notes_baseline: 1d683973e437be997fe733bf30888e3359b80d3af056ee133e3f2232f5aefa30
 > | Right | The chat alone, full height, in plan mode with its authority strip (ADR-0156, ADR-0170) | Cursor's agent panel; the Codex app's conversation beside the work |
 > | Status bar | The model, "Previewing a plan" while a plan is shown, the selection, the last toast, the Simulate score and Ctrl K | VS Code and Visual Studio status bars |
 >
-> * Ctrl+B hides the left side, Ctrl+J the panel and Ctrl+L the chat, as in VS Code and Cursor. The three splitters are keyboard resizable. Sizes and hidden regions are kept in the browser (`localStorage`), and the page works the same when storage is blocked.
+> * Ctrl+B hides the left side, as in VS Code; Ctrl+Alt+P the panel and Ctrl+Alt+C the chat. VS Code's Ctrl+J and Cursor's Ctrl+L are kept by the browser (Downloads and the address bar in Chrome), so a web page cannot use them. The three splitters are keyboard resizable. Sizes and hidden regions are kept in the browser (`localStorage`), and the page works the same when storage is blocked.
 > * The review view (ADR-0172) has no chat column and no chat toggle.
 > * The code is `play-shell.js` and `play-shell.css`. `play.html` moves the regions; the shell script only watches `hidden` on the panel's sections and on the plan banner, sets layout attributes on `body`, and mirrors the model name and the selection into the status bar. A section another script shows comes to the front of the panel.
 > * The side columns give way before the diagram does: the centre keeps at least 520 pixels, and the chat narrows first.

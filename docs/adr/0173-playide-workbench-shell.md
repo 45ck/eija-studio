@@ -37,7 +37,7 @@ Chosen option. Sources, all patterns only (no code copied):
 | Right | The chat alone, full height, in plan mode with its authority strip (ADR-0156, ADR-0170) | Cursor's agent panel; the Codex app's conversation beside the work |
 | Status bar | The model, "Previewing a plan" while a plan is shown, the selection, the last toast, the Simulate score and Ctrl K | VS Code and Visual Studio status bars |
 
-* Ctrl+B hides the left side, Ctrl+J the panel and Ctrl+L the chat, as in VS Code and Cursor. The three splitters are keyboard resizable. Sizes and hidden regions are kept in the browser (`localStorage`), and the page works the same when storage is blocked.
+* Ctrl+B hides the left side, as in VS Code; Ctrl+Alt+P the panel and Ctrl+Alt+C the chat. VS Code's Ctrl+J and Cursor's Ctrl+L are kept by the browser (Downloads and the address bar in Chrome), so a web page cannot use them. The three splitters are keyboard resizable. Sizes and hidden regions are kept in the browser (`localStorage`), and the page works the same when storage is blocked.
 * The review view (ADR-0172) has no chat column and no chat toggle.
 * The code is `play-shell.js` and `play-shell.css`. `play.html` moves the regions; the shell script only watches `hidden` on the panel's sections and on the plan banner, sets layout attributes on `body`, and mirrors the model name and the selection into the status bar. A section another script shows comes to the front of the panel.
 * The side columns give way before the diagram does: the centre keeps at least 520 pixels, and the chat narrows first.

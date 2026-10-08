@@ -3,7 +3,8 @@
 // UML palette beside the canvas (draw.io). Right, the chat on its own (Cursor's agent panel). Below the diagrams, one
 // panel whose tabs are the run, the simulation and the running app (VS Code's panel); it opens on whichever has just
 // started. Along the foot, a status bar. Layout only: it decides nothing, and every id stays where the page's
-// scripts look for it. Each region can be hidden (Ctrl+B, Ctrl+J, Ctrl+L) and the choice is kept in this browser.
+// scripts look for it. Each region can be hidden (Ctrl+B, Ctrl+Alt+P, Ctrl+Alt+C) and the choice is kept in this browser.
+// Ctrl+J and Ctrl+L, VS Code's and Cursor's keys, belong to the browser (Downloads, the address bar), so they are not used.
 "use strict";
 (() => {
   const $ = (id) => document.getElementById(id);
@@ -46,6 +47,13 @@
     const over = window.innerWidth - CENTRE - (state.chat ? chat : 0);
     if (state.left && left > over) left = Math.max(LIMITS.leftWidth[0], over);
     return [left, chat];
+  }
+
+  // The size a region is drawn at, which can be less than the size kept when the window is narrow; a drag or a key
+  // starts from what the person sees.
+  function rendered(key) {
+    const [left, chat] = fitted();
+    return { leftWidth: left, chatWidth: chat }[key] ?? state[key];
   }
 
   function apply() {
@@ -112,7 +120,7 @@
     bar.addEventListener("pointerdown", (event) => {
       event.preventDefault();
       bar.setPointerCapture(event.pointerId);
-      const start = axis === "x" ? event.clientX : event.clientY, from = state[key];
+      const start = axis === "x" ? event.clientX : event.clientY, from = rendered(key);
       const move = (e) => set(from + sign * ((axis === "x" ? e.clientX : e.clientY) - start));
       const up = () => { bar.removeEventListener("pointermove", move); bar.removeEventListener("pointerup", up); document.body.classList.remove("resizing"); };
       document.body.classList.add("resizing");
@@ -124,7 +132,7 @@
       const delta = { ArrowLeft: -step, ArrowUp: -step, ArrowRight: step, ArrowDown: step }[event.key];
       if (delta === undefined) return;
       event.preventDefault();
-      set(state[key] + sign * delta);
+      set(rendered(key) + sign * delta);
     });
   }
 
@@ -168,8 +176,9 @@
     });
     if (REVIEW) $("toggle-chat").hidden = true;
     document.addEventListener("keydown", (event) => {
-      if (!(event.ctrlKey || event.metaKey) || event.altKey || event.shiftKey) return;
-      const id = { b: "toggle-left", j: "toggle-dock", l: "toggle-chat" }[event.key.toLowerCase()];
+      if (!(event.ctrlKey || event.metaKey) || event.shiftKey) return;
+      const keys = event.altKey ? { KeyP: "toggle-dock", KeyC: "toggle-chat" } : { KeyB: "toggle-left" };
+      const id = keys[event.code];
       if (!id || $(id).hidden) return;
       event.preventDefault();
       if (!$(id).disabled) $(id).click();

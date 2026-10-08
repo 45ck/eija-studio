@@ -1,5 +1,5 @@
 """PlayIDE shell (ADR-0173): the assets are served and every region the page's scripts address is on the page, and in a
-real browser the bottom panel opens on what has just run, the regions hide and come back from the keyboard, the
+real browser the bottom panel opens on what has just run, the regions hide and come back from the keyboard (with keys the browser does not keep), the
 choice survives a reload, the checks open as a popover and the review view has no chat.
 
 The browser test is marked `browser`: it runs only with EIJA_BROWSER_TESTS=1 (NOT_RUN otherwise). It uses the installed
@@ -80,13 +80,14 @@ def test_the_shell_reveals_hides_and_remembers_its_regions_in_a_real_browser():
             assert page.is_visible("#check-list")
             page.keyboard.press("Escape")
             page.wait_for_selector("#checks", state="hidden")
-            # VS Code's keys: Ctrl+J the panel, Ctrl+B the side bar, Ctrl+L the chat (which takes focus when it opens).
+            # Ctrl+Alt+P the panel, Ctrl+B the side bar, Ctrl+Alt+C the chat (which takes focus when it opens). Ctrl+J and
+            # Ctrl+L belong to the browser, so they are not used.
             page.click("#canvas")
-            for key, attr in (("j", "dock"), ("b", "left"), ("l", "chat")):
-                page.keyboard.press(f"Control+{key}")
+            for key, attr in (("Control+Alt+KeyP", "dock"), ("Control+KeyB", "left"), ("Control+Alt+KeyC", "chat")):
+                page.keyboard.press(key)
                 page.wait_for_selector(f'body[data-{attr}="closed"]')
             assert page.is_hidden("#chat-input") and page.is_hidden("#outline-states")
-            page.keyboard.press("Control+l")
+            page.keyboard.press("Control+Alt+KeyC")
             page.wait_for_selector('body[data-chat="open"]')
             assert page.evaluate("document.activeElement.id") == "chat-input"
             # The layout is kept in this browser.
