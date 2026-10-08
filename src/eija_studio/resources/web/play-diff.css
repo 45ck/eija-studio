@@ -1,6 +1,7 @@
 /* PlayIDE Changes (ADR-0176): the model in force and the change on one diagram, with lenses and a change list. */
 .diff-view{flex:1;min-height:0;display:flex;flex-direction:column;border-top:1px solid var(--line)}
 .diff-view[hidden]{display:none}
+.stage>.diff-view{grid-row:3;grid-column:1/-1;min-width:0;border-top:0} /* the canvas cell of the workbench (ADR-0173), palette included */
 .diff-tools{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:6px 12px;background:var(--panel);border-bottom:1px solid var(--line)}
 .lens{display:flex;gap:2px;background:var(--busy-bg);border-radius:8px;padding:2px}
 .lens button{border:0;background:transparent;padding:4px 12px;font-size:.84rem;font-weight:600}
