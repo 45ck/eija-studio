@@ -7,6 +7,7 @@
 # Constants
 
 * [application.simulation.CASE](CASE.md) - Constant `CASE` in `application/simulation`.
+* [application.simulation.MAX_BREAKPOINTS](MAX_BREAKPOINTS.md) - Constant `MAX_BREAKPOINTS` in `application/simulation`.
 * [application.simulation.MAX_STEPS](MAX_STEPS.md) - Constant `MAX_STEPS` in `application/simulation`.
 * [application.simulation.NEW_RECORD](NEW_RECORD.md) - Constant `NEW_RECORD` in `application/simulation`.
 * [application.simulation.SLIP](SLIP.md) - Constant `SLIP` in `application/simulation`.
@@ -15,6 +16,7 @@
 
 # Functions
 
+* [application.simulation.run_log](run_log.md) - Every step of the seeded run in order, and where a run with these breakpoints stops (ADR-0160).
 * [application.simulation.simulate](simulate.md) - Run `steps` seeded attempts by the pack's fixture actors through the kernel and report where they went.
 
 # Methods

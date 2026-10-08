@@ -148,3 +148,28 @@ dd{margin:0}
 .earned li strong{color:var(--ok);margin-right:6px}
 @media (prefers-reduced-motion:reduce){.toast{transition:none}}
 .palette-title{font-size:.7rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding:0 6px}
+.runbar{display:flex;align-items:center;gap:2px;padding:2px;border:1px solid var(--line);border-radius:9px;background:var(--busy-bg)}
+.run-btn{display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border:0;background:transparent;border-radius:6px}
+.run-btn svg{fill:currentColor}
+.run-btn:hover:not(:disabled){background:var(--panel)}
+.run-btn:disabled{opacity:.35;cursor:default}
+.run-btn.go{color:var(--ok);font-weight:600}
+.run-btn.go span{color:var(--ink)}
+.run-btn.stop{color:var(--bad)}
+.run-speed{font:inherit;font-size:.8rem;border:0;background:transparent;color:var(--muted);padding:4px}
+.run-status{font-size:.8rem;color:var(--muted);padding:0 8px 0 4px;min-width:9em;max-width:26em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+body[data-run="running"] .run-status{color:var(--ok)}
+body[data-run="paused"] .run-status{color:#8a6100;font-weight:600}
+.debug{border:1px solid #f0d58a;border-radius:10px;padding:10px 12px;background:#fffbea;display:flex;flex-direction:column;gap:4px}
+.debug[hidden]{display:none}
+.debug h3{margin-top:10px}
+.pos{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.debug-now{font-size:.86rem}
+.records{border-collapse:collapse;font-size:.82rem;font-variant-numeric:tabular-nums}
+.records th{text-align:left;font-weight:600;padding:1px 12px 1px 4px}
+.records tr.now{background:#fff0b3}
+button.link{border:0;background:transparent;padding:1px 4px;color:var(--accent);font-size:inherit;text-align:left}
+.breakpoints li{display:flex;align-items:center;gap:6px;font-size:.84rem}
+.breakpoints .dot{width:10px;height:10px;border-radius:50%;background:#e51400;flex:none}
+.breakpoints button.small{padding:1px 8px;font-size:.75rem;margin-left:auto}
+.check{display:flex;align-items:center;gap:6px;font-size:.84rem}

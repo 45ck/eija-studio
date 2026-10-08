@@ -59,4 +59,8 @@ _No curated notes yet._
 ## Related decisions
 
 * [ADR-0151: PlayIDE canvas with Build & run of the live app](/adrs/0151-playide-canvas-and-build-and-run.md) - The owner wants EIJA to feel like "UML you can trust to build apps": a visual, mouse-driven IDE (named PlayIDE) where a UML-literate engineer designs a system…
+
+## Referenced by
+
+* [ADR-0160: A run bar with breakpoints, over one seeded run the kernel decides](/adrs/0160-run-bar-with-breakpoints-over-a-seeded-run.md) - The owner asked for "a similar thing to Visual Studio where it has play and stop etc": run the system, pause it, step through it and stop it, from inside PlayI…
 <!-- okf:generated:end links -->

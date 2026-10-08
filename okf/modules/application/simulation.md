@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/simulation.py
   title: application/simulation.py
   hash_method: ast-api-v1
-  sha256: 3930b9e8f9f69eb0b49be1fbf27d761451da8e8dfb8b0531b2e7ede40abe678d
-notes_baseline: cfb6335f36cfee0021a1913efd95d517edefe8554f478325fe96c2cf95e428d9
+  sha256: 1e11c5b0f0a494ed017b0478b8f2e75469bf148443d4fce7a1178e551097e774
+notes_baseline: 98fd2cb698be5d02e283de8e97a99fc3b5be2edd76010400c1f43fbd95df5163
 ---
 
 # application.simulation
@@ -42,12 +42,14 @@ gives the same run. Nothing persists and no effect leaves the process.
 ## Public symbols
 
 * [`CASE`](/symbols/application/simulation/CASE.md) (constant) - no docstring
+* [`MAX_BREAKPOINTS`](/symbols/application/simulation/MAX_BREAKPOINTS.md) (constant) - no docstring
 * [`MAX_STEPS`](/symbols/application/simulation/MAX_STEPS.md) (constant) - no docstring
 * [`MemorySession`](/symbols/application/simulation/MemorySession.md) (class) - The kernel's unit-of-work port over plain dictionaries, keeping every record, operation and effect.
 * [`NEW_RECORD`](/symbols/application/simulation/NEW_RECORD.md) (constant) - no docstring
 * [`SLIP`](/symbols/application/simulation/SLIP.md) (constant) - no docstring
 * [`STALE`](/symbols/application/simulation/STALE.md) (constant) - no docstring
 * [`TRACE_LIMIT`](/symbols/application/simulation/TRACE_LIMIT.md) (constant) - no docstring
+* [`run_log`](/symbols/application/simulation/run_log.md) (function) - Every step of the seeded run in order, and where a run with these breakpoints stops (ADR-0160).
 * [`simulate`](/symbols/application/simulation/simulate.md) (function) - Run `steps` seeded attempts by the pack's fixture actors through the kernel and report where they went.
 
 ## Internal imports
@@ -72,6 +74,7 @@ _No curated notes yet._
 
 * [interfaces.play](/modules/interfaces/play.md) - PlayIDE routes: the visual UML canvas page, Build & run of the model as a live app beside it (ADR-0151), and Simulate, seeded simulated users whose every step…
 * [application.simulation.CASE](/symbols/application/simulation/CASE.md) - Constant `CASE` in `application/simulation`.
+* [application.simulation.MAX_BREAKPOINTS](/symbols/application/simulation/MAX_BREAKPOINTS.md) - Constant `MAX_BREAKPOINTS` in `application/simulation`.
 * [application.simulation.MAX_STEPS](/symbols/application/simulation/MAX_STEPS.md) - Constant `MAX_STEPS` in `application/simulation`.
 * [application.simulation.MemorySession.actor](/symbols/application/simulation/MemorySession.actor.md) - `def actor(self, actor_id: str) -> dict[str, Any]` in `application/simulation`.
 * [application.simulation.MemorySession.create_instance](/symbols/application/simulation/MemorySession.create_instance.md) - `def create_instance(self, item: dict[str, Any]) -> None` in `application/simulation`.
@@ -86,5 +89,6 @@ _No curated notes yet._
 * [application.simulation.SLIP](/symbols/application/simulation/SLIP.md) - Constant `SLIP` in `application/simulation`.
 * [application.simulation.STALE](/symbols/application/simulation/STALE.md) - Constant `STALE` in `application/simulation`.
 * [application.simulation.TRACE_LIMIT](/symbols/application/simulation/TRACE_LIMIT.md) - Constant `TRACE_LIMIT` in `application/simulation`.
+* [application.simulation.run_log](/symbols/application/simulation/run_log.md) - Every step of the seeded run in order, and where a run with these breakpoints stops (ADR-0160).
 * [application.simulation.simulate](/symbols/application/simulation/simulate.md) - Run `steps` seeded attempts by the pack's fixture actors through the kernel and report where they went.
 <!-- okf:generated:end links -->
