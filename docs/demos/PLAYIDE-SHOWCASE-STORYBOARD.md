@@ -15,11 +15,11 @@ Design it in UML, press play, watch it run, fix it by dragging, let the AI do th
 | 0 | Title | "Software engineering, played." | A title card | Recorded |
 | 1 | The model is the program | The library-loan state machine, then the class, use case and screen views drawn from the same model | ADR-0151, 0153, 0154. The design check passes | Recorded |
 | 2 | Press play | A breakpoint on a state (F9), then Run (F5): seeded users act, the kernel decides every step, and the run pauses on the breakpoint and then on the kernel's refusals, marked on the diagram. Build & run then starts the real app beside the model | ADR-0160 (run bar), ADR-0150 | Recorded |
-| 3 | Fix it by dragging, not typing | A state dragged from the palette and a transition added with three choices. The policy checks each as a typed step | ADR-0157 | Recorded |
-| 4 | See the ripple | The drawn change badges the class, use case, screen and component views it affects. The AI proposes the follow-on edits and the kernel re-checks them | Thread "Help me work out a plan for a project" | Skipped until it merges |
+| 3 | Fix it by dragging, not typing | A state dragged from the palette. The policy checks it at once as a typed step | ADR-0157 | Recorded |
+| 4 | Watch it ripple | The drag badges every diagram tab it touches and warns that nothing leads into the new state. The class diagram gains the enum literal. The AI's follow-on (a way in) is re-checked by the server and ripples into a new use case and screen | ADR-0158; offline proposer, labelled | Recorded |
 | 5 | Let the AI do the busywork | A plain-language request becomes typed UML steps. The policy refuses one, the viewer looks at each step, unticks the refused one and keeps the rest | ADR-0156. The offline phrase reader is labelled on screen | Recorded |
 | 6 | Review it as a model, not a PR | The change as a UML diff you can run and approve in PlayIDE | Thread "Review changes in PlayIDE, not PRs". The owner suggested a short moment where a non-technical stakeholder reads the same UML diff (not a plain-language translation) | Skipped until it merges |
-| 7 | Prove it, then play again | Build the changed system, run conformance and simulate again. The checks ring fills to 4 of 4 | ADR-0157 | Recorded |
+| 7 | Prove it, then play again | Build the changed system, run conformance and simulate again. The Laws tab proves every law over every reachable run and names what it never reached. The checks ring fills to 5 of 5 | ADR-0157, ADR-0158, ADR-0166 | Recorded |
 | 8 | Ship it | Verify, approve and apply | Waits on the owner's source review and restamp (issue #80) | Skipped |
 | 9 | End card | "Less typing. No diff archaeology." | A title card | Recorded |
 
