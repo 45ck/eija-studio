@@ -10,6 +10,7 @@
   const STATE = { width: 150, height: 54 }, INITIAL = 22;
   let graph, model, selected = "", sim = null, replayTimer = 0, data = null, classGraph = null, useCaseGraph = null, tab = "states";
   let components = null, componentGraph = null, lastBuild = null;
+  let baseModel = null, plan = null; // the server's model, and the chat plan being previewed on top of it (if any)
   let screens = null, screensEdited = false, useCase = null, checkTimer = 0, problems = [], useCaseList = [];
   const base = {}; // each cell's own style and label, so overlays can be cleared
 
@@ -341,6 +342,182 @@
     fit();
   }
 
+  // Chat in plan mode (ADR-0156). The AI only proposes: a plan of typed steps the person accepts or rejects one by
+  // one. The server re-checks every step and previews the accepted ones through the policy; while a plan is
+  // previewed, every view (diagrams, screens, components, Build & run, Simulate) shows the model with those steps
+  // applied. Nothing is saved: a plan from a modelled meaning can become a change case, decided in the review workbench.
+  const accepted = () => (plan ? plan.steps.filter((_, i) => plan.accepted[i]).map((s) => s.transaction) : []);
+  const about = () => ({ case_id: caseId, model: baseModel, plan: plan && plan.previewing ? accepted() : null });
+
+  function say(who, node) {
+    const li = el("li", undefined, { class: "msg " + who });
+    li.append(node);
+    $("chat-log").append(li);
+    li.scrollIntoView({ block: "nearest" });
+    return li;
+  }
+
+  async function ask(event) {
+    event.preventDefault();
+    const input = $("chat-input"), text = input.value.trim();
+    if (!text) return;
+    input.value = "";
+    say("you", el("p", text));
+    const button = $("chat-send");
+    button.disabled = true;
+    try {
+      const result = await api("/api/play/plan", { case_id: caseId, model: baseModel, request: text });
+      retire();
+      plan = { ...result, accepted: result.steps.map(() => true), previewing: false, card: null };
+      plan.card = say("ai", planCard());
+      renderPlan(result.preview);
+    } catch (error) {
+      say("ai", el("p", `${error.code || "ERROR"}: ${error.message}`, { class: "refusal" }));
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  // A newer plan replaces this one: its card stays in the chat as a record, with every control disabled, so no tick or
+  // button on it can act on the newer plan.
+  function retire() {
+    if (!plan) return;
+    leavePreview();
+    for (const control of plan.card.querySelectorAll("input, button")) control.disabled = true;
+    plan.card.firstChild.append(el("p", "Replaced by the newer plan below.", { class: "muted small" }));
+  }
+
+  function planCard() {
+    const box = el("div", undefined, { class: "plan" });
+    box.append(el("p", plan.summary || "A plan", { class: "plan-summary" }),
+      el("p", `${plan.provider}${plan.live ? "" : " · offline fixture, not a live model"} · untrusted until you check it`, { class: "muted small" }));
+    const list = el("ol", undefined, { class: "plan-steps" });
+    plan.steps.forEach((step, i) => {
+      const li = el("li"), id = `plan-${plan.model.slice(0, 6)}-${i}`, check = el("input", undefined, { type: "checkbox", id });
+      check.checked = plan.accepted[i];
+      check.addEventListener("change", () => { plan.accepted[i] = check.checked; refreshPlan(); });
+      const text = el("label", step.text, { for: id });
+      li.append(check, text, el("span", "", { class: "step-status" }));
+      if (step.why) li.append(el("p", step.why, { class: "muted small why" }));
+      list.append(li);
+    });
+    const verdict = el("p", "", { class: "plan-verdict", role: "status" });
+    const tools = el("div", undefined, { class: "plan-tools" });
+    const preview = el("button", "Preview on the diagram", { type: "button", class: "primary" });
+    preview.addEventListener("click", () => (plan.previewing ? leavePreview() : enterPreview()));
+    tools.append(preview);
+    if (plan.meaning) {
+      const keep = el("button", "Make it a change case", { type: "button" });
+      keep.addEventListener("click", makeCase);
+      tools.append(keep);
+    }
+    box.append(list, verdict, tools);
+    return box;
+  }
+
+  async function refreshPlan() {
+    const mine = plan, seq = (mine.seq = (mine.seq || 0) + 1); // only the answer for the latest ticks is shown
+    try {
+      const result = await api("/api/play/plan/preview", { case_id: caseId, model: baseModel, steps: mine.steps.map((s) => s.transaction), accepted: [...mine.accepted] });
+      if (mine !== plan || seq !== mine.seq) return;
+      renderPlan(result);
+      if (plan.previewing) (result.legal ? enterPreview : leavePreview)();
+    } catch (error) {
+      if (mine === plan && seq === mine.seq) plan.card.querySelector(".plan-verdict").textContent = `${error.code || "ERROR"}: ${error.message}`;
+    }
+  }
+
+  function renderPlan(result) {
+    plan.result = result;
+    const marks = { applies: "✓", rejected: "–", does_not_apply: "✗" };
+    plan.card.querySelectorAll(".plan-steps > li").forEach((li, i) => {
+      const s = result.steps[i];
+      li.className = s.status;
+      li.querySelector(".step-status").textContent = marks[s.status] + (s.code ? ` ${s.code}` : "");
+      li.querySelector(".step-status").title = s.message || "";
+    });
+    const verdict = plan.card.querySelector(".plan-verdict");
+    verdict.className = "plan-verdict " + (result.legal ? "ok" : "bad");
+    verdict.textContent = !result.accepted ? "No step accepted: nothing would change."
+      : result.legal ? `${result.accepted} of ${plan.steps.length} steps accepted. The policy allows the result: ${changes(result.diff)}.`
+      : result.codes.includes("PLAN_STEP_DOES_NOT_APPLY")
+        ? `Step ${result.steps.findIndex((x) => x.status === "does_not_apply") + 1} does not apply after the steps you kept (${result.steps.find((x) => x.status === "does_not_apply").message}).`
+        : `The policy refuses the accepted steps: ${result.codes.join(", ") || result.message}.`;
+    plan.card.querySelector(".plan-tools .primary").disabled = !result.legal && !plan.previewing;
+  }
+
+  function changes(diff) {
+    const parts = [];
+    if (diff.added_states.length) parts.push(`adds ${diff.added_states.join(", ")}`);
+    if (diff.removed_states.length) parts.push(`removes ${diff.removed_states.join(", ")}`);
+    if (diff.added_actions.length) parts.push(`adds ${diff.added_actions.join(", ")}`);
+    if (diff.removed_actions.length) parts.push(`removes ${diff.removed_actions.join(", ")}`);
+    const changed = Object.keys(diff.changed_actions);
+    if (changed.length) parts.push(`changes ${changed.join(", ")}`);
+    if (diff.initial_state) parts.push(`starts in ${diff.initial_state.after || diff.initial_state}`);
+    return parts.join("; ") || "no visible change";
+  }
+
+  function redrawAll(workflow) {
+    model = workflow;
+    for (const g of [graph, useCaseGraph, componentGraph]) if (g) g.destroy();
+    $("canvas").replaceChildren();
+    $("usecase-canvas").replaceChildren();
+    $("component-canvas").replaceChildren();
+    useCaseGraph = componentGraph = components = null;
+    for (const key of Object.keys(base)) delete base[key];
+    clearSimPanel();
+    outline();
+    draw(model);
+    inspect("");
+    const kept = screensEdited ? screens : null; // screen edits survive a preview: they are re-checked against the shown model
+    loadScreens(kept).then(() => { screensEdited = Boolean(kept); if (tab === "screens") renderDesigner(); });
+    if (tab !== "states") showTab(tab);
+  }
+
+  function enterPreview() {
+    if (!plan || !plan.result || !plan.result.legal) return;
+    plan.previewing = true;
+    redrawAll(plan.result.candidate);
+    highlight(plan.result.diff);
+    $("plan-banner").hidden = false;
+    $("plan-banner-text").textContent = `Previewing the plan: ${changes(plan.result.diff)}. Nothing is saved.`;
+    plan.card.querySelector(".plan-tools .primary").textContent = "Back to the model";
+  }
+
+  function leavePreview() {
+    if (!plan || !plan.previewing) return;
+    plan.previewing = false;
+    redrawAll(baseModel);
+    $("plan-banner").hidden = true;
+    plan.card.querySelector(".plan-tools .primary").textContent = "Preview on the diagram";
+    renderPlan(plan.result);
+  }
+
+  function highlight(diff) {
+    const added = { fillColor: "#e5f5ec", strokeColor: "#17734a", strokeWidth: 2.5 };
+    graph.batchUpdate(() => {
+      for (const s of diff.added_states) restyle("state:" + s, added);
+      for (const t of model.transitions) {
+        if (diff.added_actions.includes(t.action)) restyle("transition:" + t.id, { strokeColor: "#17734a", strokeWidth: 3 });
+        else if (diff.changed_actions[t.action]) restyle("transition:" + t.id, { strokeColor: "#c27c0e", strokeWidth: 3 });
+      }
+      if (diff.initial_state) restyle("initial-edge", { strokeColor: "#c27c0e", strokeWidth: 3 });
+    });
+  }
+
+  async function makeCase() {
+    try {
+      const created = await api("/api/cases", { request: plan.request });
+      const link = el("a", "Open it in PlayIDE", { href: `/play?case=${encodeURIComponent(created.id)}` });
+      const note = el("p", `Change case created. In the review workbench, ask for a proposal and choose “${plan.summary}”: that is where the meaning is chosen, checked and approved. `);
+      note.append(link);
+      say("ai", note);
+    } catch (error) {
+      say("ai", el("p", `${error.code || "ERROR"}: ${error.message}`, { class: "refusal" }));
+    }
+  }
+
   // Component diagram (ADR-0155): the app this model builds, read by the server from the generated files. Components
   // are modules, the EIJA modules they import, infrastructure and generated files; each dependency is a real import,
   // route or file read. A provider's interface (the lollipop) lists the names its users import from it.
@@ -409,7 +586,7 @@
     const box = $("component-canvas");
     if (!components) {
       try {
-        components = await api("/api/play/components", { case_id: caseId, model, screens: screensEdited ? screens : null });
+        components = await api("/api/play/components", { ...about(), screens: screensEdited ? screens : null });
       } catch (error) {
         box.replaceChildren(el("p", `Could not read the app's components (${error.code || "ERROR"}): ${error.message}`, { class: "muted empty" }));
         return;
@@ -503,7 +680,7 @@
 
   // With edits, only the problems come back into the page: the designer keeps editing its own objects.
   async function loadScreens(edited) {
-    const result = await api("/api/play/screens", { case_id: caseId, model, screens: edited || null });
+    const result = await api("/api/play/screens", { ...about(), screens: edited || null });
     if (!edited) screens = result.screens;
     problems = result.problems;
     useCaseList = result.use_cases;
@@ -678,7 +855,7 @@
     score.textContent = "Building and checking against the kernel…";
     try {
       // Send the model on screen; the server refuses (MODEL_CHANGED) if it is no longer the one it would build.
-      const result = await api("/api/play/build", { case_id: caseId, model, screens: screensEdited ? screens : null });
+      const result = await api("/api/play/build", { ...about(), screens: screensEdited ? screens : null });
       const pass = result.conformance.status === "PASS";
       lastBuild = result;
       restyleComponents();
@@ -726,11 +903,16 @@
     });
   }
 
-  function clearSim() {
+  function clearSimPanel() {
     clearInterval(replayTimer);
     sim = null;
     $("sim").hidden = true;
+  }
+
+  function clearSim() {
+    clearSimPanel();
     graph.batchUpdate(() => { for (const id of Object.keys(base)) restyle(id, {}); });
+    if (plan && plan.previewing) highlight(plan.result.diff);
   }
 
   function step(entry) {
@@ -789,7 +971,7 @@
     const button = $("simulate");
     button.disabled = true;
     try {
-      showSim(await api("/api/play/simulate", { case_id: caseId, model, seed: 1, steps: 500 }));
+      showSim(await api("/api/play/simulate", { ...about(), seed: 1, steps: 500 }));
     } catch (error) {
       $("sim").hidden = false;
       $("sim-summary").textContent = error.code === "MODEL_CHANGED"
@@ -807,6 +989,7 @@
     } else {
       model = (await api("/api/status")).baseline;
     }
+    baseModel = model;
     const status = await api("/api/status");
     $("model-name").textContent = status.pack.name + (caseId ? " · change case" : "");
     data = (await api("/api/play/data")).data;
@@ -814,6 +997,8 @@
     outline();
     draw(model);
     inspect("");
+    const t = model.transitions[model.transitions.length - 1];
+    if (t) $("chat-example").textContent = `add state Archived after ${t.to_state} then add ${t.action} from ${t.to_state} to Archived for ${t.role}`;
     $("build").addEventListener("click", build);
     $("simulate").addEventListener("click", simulate);
     $("sim-replay").addEventListener("click", replay);
@@ -826,6 +1011,8 @@
     $("tab-usecases").addEventListener("click", () => showTab("usecases"));
     $("tab-screens").addEventListener("click", () => showTab("screens"));
     $("tab-components").addEventListener("click", () => showTab("components"));
+    $("chat-form").addEventListener("submit", ask);
+    $("plan-back").addEventListener("click", leavePreview);
     $("screens-reset").addEventListener("click", async () => { screensEdited = false; lastBuild = null; restyleComponents(); components = null; await loadScreens(null); renderDesigner(); });
     $("canvas-help").textContent = HINTS.states;
     window.addEventListener("resize", fit);

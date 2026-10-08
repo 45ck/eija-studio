@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### 8 October 2026: chat plan mode
+
+- PlayIDE has a chat in plan mode. It proposes a change as numbered typed steps; you accept or reject each, and preview the result on every diagram, with Build & run and Simulate on the candidate. The policy checks the accepted steps like an owner's edit, and nothing is saved from the chat. The default proposer is an offline phrase reader (`offline-plan-fixture-v1`), not an AI. See [ADR-0156](docs/adr/0156-chat-plan-mode-proposes-typed-steps.md).
+
 ### 8 October 2026: component diagrams
 
 - PlayIDE has a **Components** tab: the UML component diagram of the app the model builds, read from its generated files. Components are the app's modules, the EIJA kernel modules they import, SQLite, the browser page and the generated files. Every dependency is an import, a route or a file read in the code, and each interface lists the names its users import. After Build & run, the conformance score and the running server show on the diagram. See [ADR-0155](docs/adr/0155-component-diagrams-read-from-the-generated-code.md).

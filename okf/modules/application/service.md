@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/service.py
   title: application/service.py
   hash_method: ast-api-v1
-  sha256: 7fb598ebcc9cfd051d4824e964752d0287de1971b0577816d00fdd3fa529f4f7
-notes_baseline: 8cc5fb3cb7bae68e1333ef16642c5c358d4d51267a72a8bd7df68134e603d611
+  sha256: cc3fc5a2552eea3b3be5ed02ec8095d3bf45fe73d6fc4de8f012a40e5640fd1a
+notes_baseline: ea043d1f3a14f847cfb07bc6d5629eb8c194ad9543b9db057e4b290d8aa814e8
 ---
 
 # application.service
