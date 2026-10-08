@@ -164,6 +164,67 @@
     });
   }
 
+  // ---- Diagram tabs that do not fit ---------------------------------------------------------------------------------
+  // As in VS Code: the strip scrolls (the wheel scrolls it sideways), the chosen tab is scrolled into view, an edge that
+  // hides tabs fades, and a "More tabs" button lists every tab, the hidden ones marked, whenever any is out of view.
+  function tabOverflow() {
+    const strip = document.querySelector(".stage-tools .tabs");
+    if (!strip) return;
+    const more = Object.assign(document.createElement("button"), { id: "tabs-more", type: "button", textContent: "»", hidden: true,
+      title: "More tabs" });
+    more.setAttribute("aria-label", "More tabs");
+    more.setAttribute("aria-haspopup", "menu");
+    more.setAttribute("aria-expanded", "false");
+    const menu = Object.assign(document.createElement("div"), { id: "tabs-menu", className: "tabs-menu", hidden: true });
+    menu.setAttribute("role", "menu");
+    menu.setAttribute("aria-label", "Diagram tabs");
+    strip.after(more, menu);
+    const tabs = () => [...strip.querySelectorAll('[role="tab"]')].filter((t) => !t.hidden);
+    const outOfView = (t) => t.offsetLeft < strip.scrollLeft - 1 || t.offsetLeft + t.offsetWidth > strip.scrollLeft + strip.clientWidth + 1;
+    const update = () => {
+      const over = strip.scrollWidth > strip.clientWidth + 1;
+      more.hidden = !over;
+      strip.classList.toggle("fade-start", over && strip.scrollLeft > 1);
+      strip.classList.toggle("fade-end", over && strip.scrollLeft + strip.clientWidth < strip.scrollWidth - 1);
+      if (!over) close();
+    };
+    const close = () => { menu.hidden = true; more.setAttribute("aria-expanded", "false"); };
+    const open = () => {
+      menu.replaceChildren(...tabs().map((t) => {
+        const item = Object.assign(document.createElement("button"), { type: "button", textContent: t.firstChild ? t.firstChild.textContent : t.textContent });
+        item.setAttribute("role", "menuitemradio");
+        item.setAttribute("aria-checked", t.getAttribute("aria-selected") || "false");
+        if (outOfView(t)) item.classList.add("hidden-tab");
+        item.addEventListener("click", () => { close(); t.click(); t.focus(); });
+        return item;
+      }));
+      menu.hidden = false;
+      more.setAttribute("aria-expanded", "true");
+      (menu.querySelector('[aria-checked="true"]') || menu.firstChild).focus();
+    };
+    more.addEventListener("click", () => (menu.hidden ? open() : close()));
+    menu.addEventListener("keydown", (event) => {
+      const items = [...menu.children], at = items.indexOf(document.activeElement);
+      const next = { ArrowDown: at + 1, ArrowUp: at - 1, Home: 0, End: items.length - 1 }[event.key];
+      if (event.key === "Escape") { event.preventDefault(); close(); more.focus(); }
+      else if (next !== undefined) { event.preventDefault(); items[(next + items.length) % items.length].focus(); }
+    });
+    document.addEventListener("pointerdown", (event) => { if (!menu.hidden && !event.target.closest("#tabs-menu, #tabs-more")) close(); });
+    strip.addEventListener("wheel", (event) => {
+      if (Math.abs(event.deltaY) <= Math.abs(event.deltaX) || strip.scrollWidth <= strip.clientWidth) return;
+      event.preventDefault();
+      strip.scrollLeft += event.deltaY;
+    }, { passive: false });
+    strip.addEventListener("scroll", update);
+    new ResizeObserver(update).observe(strip);
+    new MutationObserver((changes) => {
+      const chosen = changes.find((c) => c.attributeName === "aria-selected" && c.target.getAttribute("aria-selected") === "true");
+      if (chosen && outOfView(chosen.target)) chosen.target.scrollIntoView({ block: "nearest", inline: "nearest" });
+      update();
+    }).observe(strip, { attributes: true, attributeFilter: ["aria-selected", "hidden"], childList: true, subtree: true, characterData: true });
+    update();
+  }
+
   // ---- Toggles and keys --------------------------------------------------------------------------------------------
   function toggles() {
     const flip = (key) => () => { state[key] = !state[key]; apply(); };
@@ -194,6 +255,7 @@
     checksPopover();
     statusBar();
     toggles();
+    tabOverflow();
     window.addEventListener("resize", apply);
     apply();
   }
