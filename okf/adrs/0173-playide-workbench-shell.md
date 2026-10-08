@@ -71,4 +71,8 @@ _No curated notes yet._
 * [ADR-0160: A run bar with breakpoints, over one seeded run the kernel decides](/adrs/0160-run-bar-with-breakpoints-over-a-seeded-run.md) - The owner asked for "a similar thing to Visual Studio where it has play and stop etc": run the system, pause it, step through it and stop it, from inside PlayI…
 * [ADR-0170: PlayIDE asks about the selection, completes exact names, has a command palette and keyboard plan review](/adrs/0170-playide-assist-ask-complete-palette-review.md) - PlayIDE's chat proposes typed steps (ADR-0156) and rewards checking them (ADR-0157).
 * [ADR-0172: A read-only review view of PlayIDE for people who review the model](/adrs/0172-review-view-for-reading-the-model.md) - The owner set the audience as people who know UML, and noted that UML "is meant for non technical people to review it sometimes".
+
+## Referenced by
+
+* [ADR-0174: Add UML elements without dragging, and edit them where they are](/adrs/0174-add-without-dragging-and-edit-inline.md) - After watching the showcase cut, the owner said "dragging sucks kind of" and asked whether to "use a modal when dragging or not even just edit inline?".
 <!-- okf:generated:end links -->

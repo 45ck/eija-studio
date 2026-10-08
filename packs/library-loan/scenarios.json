@@ -1,0 +1,125 @@
+{
+  "schema_version": "eija.scenarios.v1",
+  "id": "library-loan",
+  "scenarios": [
+    {
+      "id": "lend-and-return",
+      "title": "A librarian lends a book and takes it back",
+      "steps": [
+        {
+          "actor": "librarian-assigned",
+          "action": "CheckOut",
+          "then": {
+            "state": "OnLoan"
+          }
+        },
+        {
+          "actor": "librarian-unassigned",
+          "action": "Return",
+          "then": {
+            "state": "Returned"
+          }
+        }
+      ]
+    },
+    {
+      "id": "overdue-then-late-return",
+      "title": "An overdue loan is marked by the clerk and returned late",
+      "steps": [
+        {
+          "actor": "librarian-assigned",
+          "action": "CheckOut",
+          "then": {
+            "state": "OnLoan"
+          }
+        },
+        {
+          "actor": "clerk",
+          "action": "MarkOverdue",
+          "then": {
+            "state": "Overdue"
+          }
+        },
+        {
+          "actor": "librarian-assigned",
+          "action": "ReturnLate",
+          "then": {
+            "state": "Returned"
+          }
+        }
+      ]
+    },
+    {
+      "id": "member-cannot-lend",
+      "title": "A member cannot check a book out to themselves",
+      "steps": [
+        {
+          "actor": "member-a",
+          "action": "CheckOut",
+          "then": {
+            "refused": "ROLE_DENIED"
+          }
+        }
+      ]
+    },
+    {
+      "id": "checkout-needs-assignment",
+      "title": "A librarian not assigned to the loan cannot check it out",
+      "steps": [
+        {
+          "actor": "librarian-unassigned",
+          "action": "CheckOut",
+          "then": {
+            "refused": "ASSIGNMENT_DENIED"
+          }
+        }
+      ]
+    },
+    {
+      "id": "revoked-librarian",
+      "title": "A revoked librarian cannot check a book out",
+      "steps": [
+        {
+          "actor": "librarian-revoked",
+          "action": "CheckOut",
+          "then": {
+            "refused": "ACTOR_REVOKED"
+          }
+        }
+      ]
+    },
+    {
+      "id": "no-return-before-loan",
+      "title": "Nothing is returned that was never lent",
+      "steps": [
+        {
+          "actor": "librarian-assigned",
+          "action": "Return",
+          "then": {
+            "refused": "STATE_DENIED"
+          }
+        }
+      ]
+    },
+    {
+      "id": "member-cancels",
+      "title": "A member cancels a request, and it stays cancelled",
+      "steps": [
+        {
+          "actor": "member-a",
+          "action": "Cancel",
+          "then": {
+            "state": "Cancelled"
+          }
+        },
+        {
+          "actor": "librarian-assigned",
+          "action": "CheckOut",
+          "then": {
+            "refused": "STATE_DENIED"
+          }
+        }
+      ]
+    }
+  ]
+}

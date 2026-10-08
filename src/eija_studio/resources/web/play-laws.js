@@ -1,6 +1,7 @@
 // PlayIDE Laws tab (ADR-0166): the pack's laws, the layer above the UML, each with the server's verdict on the model on
 // screen. The server proves every law over every run the kernel allows; this page only lists the verdicts and paints
-// a law's subject, or the shortest run that breaks it, on the state machine.
+// a law's subject, or the shortest run that breaks it, on the state machine. The law file can be edited here as a
+// draft, which the server checks and proves; nothing is saved, and the draft pack can be downloaded (ADR-0177).
 "use strict";
 (() => {
   const $ = (id) => document.getElementById(id);
@@ -20,9 +21,10 @@
   };
   const PATH = { strokeColor: "#a12f2f", strokeWidth: 3.5, dashed: 0 };
   const SUBJECT = { strokeColor: "#3157d5", strokeWidth: 3 };
-  let P = null, report = null, key = null;
+  const MODES = { kernel: "the kernel itself", hand_encoded: "written by hand", generated: "generated from the laws", not_run: "not run" };
+  let P = null, report = null, key = null, draft = null, download = null;
 
-  const now = () => P.viewKey() + JSON.stringify(P.model()); // the model on screen, plan and screens included
+  const now = () => P.viewKey() + JSON.stringify(P.model()) + JSON.stringify(draft); // the model on screen and any draft
   const transitionFor = (action) => P.model().transitions.find((t) => t.action === action);
 
   function cellsOf(subject) {
@@ -79,12 +81,36 @@
     return item;
   }
 
+  function renderFile() {
+    const file = report.file;
+    $("laws-file").textContent = `${file.path} › ${file.section}`;
+    const changes = file.draft;
+    $("laws-draft").hidden = !changes;
+    if (changes) {
+      const said = [["added", "added"], ["changed", "changed"], ["removed", "removed"]].filter(([k]) => changes[k].length).map(([k, w]) => `${changes[k].length} ${w}`);
+      $("laws-draft").textContent = `Edited, not saved${said.length ? ": " + said.join(", ") : ""}`;
+      $("laws-draft").title = changes.removed.length || changes.changed.length ? "Removing or changing a law can loosen what the kernel refuses. Review it before you replace pack.json." : "";
+    }
+    if (download) URL.revokeObjectURL(download);
+    download = file.draft_pack ? URL.createObjectURL(new Blob([JSON.stringify(file.draft_pack, null, 2) + "\n"], { type: "application/json" })) : null;
+    $("laws-download").hidden = !download;
+    if (download) $("laws-download").href = download;
+    $("laws-verifiers").replaceChildren(...file.verifiers.map((v) => {
+      const item = P.el("li", undefined, { class: "verifier " + v.mode });
+      item.append(P.el("strong", v.kind.replaceAll("_", " ")), P.el("span", MODES[v.mode] || v.mode, { class: "law-badge" }));
+      if (v.reason) item.append(P.el("p", v.reason, { class: "muted small" }));
+      return item;
+    }));
+    if ($("laws-editor").hidden || !$("laws-source").value) $("laws-source").value = JSON.stringify(draft || file.laws, null, 2);
+  }
+
   function render() {
     if (!report) return;
+    renderFile();
     const count = (status) => report.laws.filter((l) => l.status === status).length;
     const parts = ["HOLDS", "BROKEN", "VACUOUS", "INACTIVE", "EVIDENCE", "UNKNOWN"].filter(count).map((s) => `${count(s)} ${BADGE[s][0].toLowerCase()}`);
     const search = report.search;
-    const scope = search.status === "NOT_RUN" ? search.why
+    const scope = search.status === "NOT_RUN" ? (report.status === "REFUSED" ? "" : search.why)
       : `Searched ${search.configurations} reachable configurations with ${search.actor_classes} kinds of actor` +
         (search.status === "COMPLETE" ? ", every one." : ", then stopped.") +
         (search.unreached.length ? ` Never reached: ${search.unreached.join(", ")}.` : "");
@@ -100,12 +126,19 @@
     $("laws-summary").className = "laws-summary";
     $("laws-summary").textContent = "Proving every law over every run…";
     try {
-      const result = await P.api("/api/play/laws", P.about());
+      const result = await P.api("/api/play/laws", draft ? { ...P.about(), laws: draft } : P.about());
       if (asked !== now()) return; // the model changed while proving; the next look proves again
       report = result;
       key = asked;
+      $("laws-problems").textContent = "";
       render();
     } catch (error) {
+      if (error.code === "LAWS_INVALID") {
+        $("laws-problems").textContent = `The draft is not a valid law file: ${error.message}`;
+        $("laws-summary").className = "laws-summary bad";
+        $("laws-summary").textContent = "The draft law file has problems; nothing was proved.";
+        return;
+      }
       $("laws-summary").className = "laws-summary bad";
       $("laws-summary").textContent = `Could not prove the laws (${error.code || "ERROR"}): ${error.message}`;
     } finally {
@@ -122,11 +155,42 @@
     if (!$("laws").hidden) shown();
   }
 
+  function toggleEditor() {
+    const open = $("laws-editor").hidden;
+    $("laws-editor").hidden = !open;
+    $("laws-edit").setAttribute("aria-expanded", String(open));
+    if (open && report) { $("laws-source").value = JSON.stringify(draft || report.file.laws, null, 2); $("laws-source").focus(); }
+  }
+
+  function tryDraft() {
+    let laws;
+    try {
+      laws = JSON.parse($("laws-source").value);
+    } catch (error) {
+      $("laws-problems").textContent = `The draft is not JSON: ${error.message}`;
+      return;
+    }
+    if (!Array.isArray(laws)) { $("laws-problems").textContent = "The law file is a JSON list of laws."; return; }
+    draft = laws;
+    prove();
+  }
+
+  function reset() {
+    draft = null;
+    if (report) $("laws-source").value = JSON.stringify(report.file.laws, null, 2);
+    $("laws-problems").textContent = "";
+    prove();
+  }
+
   function init(bridge) {
     P = bridge;
     P.hooks.laws.push(shown);
     P.hooks.redraw.push(redrawn);
     $("laws-prove").addEventListener("click", prove);
+    $("laws-edit").addEventListener("click", toggleEditor);
+    $("laws-try").addEventListener("click", tryDraft);
+    $("laws-reset").addEventListener("click", reset);
+    $("laws-source").addEventListener("keydown", (event) => { if ((event.ctrlKey || event.metaKey) && event.key === "Enter") { event.preventDefault(); tryDraft(); } });
   }
 
   if (window.PlayIDE) init(window.PlayIDE);
