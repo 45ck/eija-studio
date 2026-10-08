@@ -15,7 +15,7 @@ from typing import Any
 from eija_studio.domain.pack import Pack
 from eija_studio.domain.scenarios import Scenario
 from .diagram_emitters import emit
-from .diagrams import Fragment as DiagramFragment, Message as DiagramMessage, Participant, Sequence
+from .diagrams import Fragment as DiagramFragment, Message as DiagramMessage, Note, Participant, Sequence
 
 # Layout, in pixels: lifeline columns and the height of each kind of row.
 COLUMN, LEFT, HEAD_Y, HEAD_H = 180, 100, 16, 46
@@ -101,15 +101,24 @@ def place(pack: Pack, scenario: Scenario, start: str, steps: list[dict[str, Any]
             "head": {"y": HEAD_Y, "height": HEAD_H}}
 
 
-def export(title: str, placed: dict[str, Any]) -> dict[str, str]:
-    """The sequence as Mermaid and PlantUML text, through `diagram_emitters` (Mermaid has no neg: it is written as opt)."""
-    ids = {ll["id"]: re.sub(r"[^A-Za-z0-9_]", "_", ll["name"]) for ll in placed["lifelines"]}
-    by_ref: dict[str, list[DiagramMessage]] = {}
+def _rows(placed: dict[str, Any], ids: dict[str, str]) -> dict[str, list[DiagramMessage | Note]]:
+    """Each step's arrows and its state invariants (as notes on the record's lifeline), top to bottom, by reference."""
+    rows: dict[str, list[tuple[int, DiagramMessage | Note]]] = {}
     for kind in ("messages", "replies", "effects"):
         for m in placed[kind]:
-            by_ref.setdefault(m["ref"], []).append(DiagramMessage(ids[m["from"]], ids[m["to"]], m["label"], reply=kind == "replies"))
+            rows.setdefault(m["ref"], []).append((m["y"], DiagramMessage(ids[m["from"]], ids[m["to"]], m["label"], reply=kind == "replies")))
+    for v in placed["invariants"]:
+        rows.setdefault(v["ref"], []).append((v["y"], Note((ids[v["lifeline"]],), v["text"])))
+    return {ref: [item for _, item in sorted(items, key=lambda r: r[0])] for ref, items in rows.items()}
+
+
+def export(title: str, placed: dict[str, Any]) -> dict[str, str]:
+    """The sequence as Mermaid and PlantUML text, through `diagram_emitters`, state invariants as notes (Mermaid has no
+    neg: it is written as opt)."""
+    ids = {ll["id"]: re.sub(r"[^A-Za-z0-9_]", "_", ll["name"]) for ll in placed["lifelines"]}
+    by_ref = _rows(placed, ids)
     negs = {f["ref"]: f for f in placed["fragments"]}
-    steps = list[Any]()
+    steps = list[Any](by_ref.get("start", []))
     for m in placed["messages"]:
         drawn = tuple(by_ref[m["ref"]])
         steps += [DiagramFragment(negs[m["ref"]]["operands"][0]["guard"], drawn, operator="neg")] if m["ref"] in negs else list(drawn)

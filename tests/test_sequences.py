@@ -122,6 +122,8 @@ def test_sequences_export_through_the_existing_mermaid_and_plantuml_emitters():
     mermaid, plantuml = sequence["export"]["mermaid"], sequence["export"]["plantuml"]
     assert "member_a->>loan: Cancel()" in mermaid and "opt neg: refused#58; STATE_DENIED" in mermaid
     assert "group neg [refused: STATE_DENIED]" in plantuml and "loan --> librarian_assigned : refused: STATE_DENIED" in plantuml
+    assert "note over loan : {Requested}" in plantuml and "note over loan : {Cancelled}" in plantuml  # the invariants the canvas draws
+    assert plantuml.index("{Requested}") < plantuml.index("Cancel()") < plantuml.index("{Cancelled}")
 
 
 def test_scenarios_of_another_pack_are_refused():
@@ -187,6 +189,7 @@ def test_the_sequences_tab_draws_flags_and_edits_in_a_real_browser():
             page.wait_for_selector(".seq-verdict.ok")
             page.click("#seq-list li:nth-child(2) button")
             assert page.evaluate("PlaySequence.result().sequences.length") == 7
+            assert page.evaluate("Boolean(PlayIDE.diagram('sequences'))")  # the Changes view navigates on this graph
             page.select_option("#seq-actor", "librarian-assigned")
             page.select_option("#seq-action", "Renew")
             page.click("#seq-add button")  # the new step expects what the kernel does: Renew is refused, drawn as a neg

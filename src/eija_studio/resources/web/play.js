@@ -1799,7 +1799,7 @@
     graph: () => graph, tab: () => tab, model: () => model, selected: () => selected, pack: () => packInfo, base: () => baseModel,
     planned: () => (plan && plan.result && plan.result.legal ? accepted() : null), // the change the Changes view draws (ADR-0176)
     changes: () => shownChange, // the union while the Changes view is on (ADR-0176), else null
-    setChanges, diagram: (key) => ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: componentGraph })[key],
+    setChanges, diagram: (key) => ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: componentGraph, sequences: hooks.sequenceGraph && hooks.sequenceGraph() })[key],
   };
 
   start().catch((error) => {
