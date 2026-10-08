@@ -16,6 +16,7 @@
 * [ports](ports/) - Symbols of application.ports
 * [repository](repository/) - Symbols of application.repository
 * [runtime](runtime/) - Symbols of application.runtime
+* [scxml](scxml/) - Symbols of application.scxml
 * [service](service/) - Symbols of application.service
 * [simulation](simulation/) - Symbols of application.simulation
 * [verifier](verifier/) - Symbols of application.verifier

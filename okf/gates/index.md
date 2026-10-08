@@ -21,3 +21,4 @@
 * [tla](tla/) - Gates defined in quality/sessions/tla.py
 * [visual](visual/) - Gates defined in quality/sessions/visual.py
 * [vocabulary](vocabulary/) - Gates defined in quality/sessions/vocabulary.py
+* [xuml](xuml/) - Gates defined in quality/sessions/xuml.py

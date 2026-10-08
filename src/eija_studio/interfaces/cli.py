@@ -10,6 +10,7 @@ from eija_studio.domain.policy import check_policy, first_supported_meaning, pro
 from eija_studio.domain.impact import model_impact
 from eija_studio.application.compiler import subject_for
 from eija_studio.application.verifier import verify_runtime
+from eija_studio.application.scxml import to_scxml
 from eija_studio.application.diagram_catalog import FORMATS, VIEWS, VIEW_FORMATS, html_panels, render_view
 from eija_studio.weave.cli import COMMANDS as WEAVE_COMMANDS, add_parsers as add_weave_parsers
 from .agent_config import DEFAULT_MAX_PROVIDER_CALLS, snippet
@@ -97,7 +98,23 @@ def build_command(args) -> int:
     return code
 
 
-EARLY_COMMANDS = {"check-export": check_export_command, "render": render_command, "build": build_command, **WEAVE_COMMANDS}  # need no workspace, provider or key
+def _add_scxml_parser(subs) -> None:
+    scxml = subs.add_parser("scxml", help="Export the state machine as a W3C SCXML statechart any SCXML engine can run")
+    scxml.add_argument("--pack", type=Path, help="Domain pack directory or JSON file (defaults to EIJA_PACK or packs/default.json)")
+    scxml.add_argument("--workflow", type=Path, help="Export this workflow JSON instead of the pack's own model")
+    scxml.add_argument("--out", type=Path, help="Write here instead of stdout (LF, UTF-8)")
+
+
+def scxml_command(args) -> int:
+    """The model as SCXML (ADR-0165). Read-only; a model the protected policy refuses is not exported (exit 2)."""
+    pack = resolve_pack(args.pack)
+    model = Workflow.model_validate_json(args.workflow.read_text(encoding="utf-8")) if args.workflow else pack.model
+    _write_render(to_scxml(pack, model).encode("utf-8"), args.out)
+    return 0
+
+
+EARLY_COMMANDS = {"check-export": check_export_command, "render": render_command, "build": build_command,
+                  "scxml": scxml_command, **WEAVE_COMMANDS}  # need no workspace, provider or key
 
 
 def formal_table(evidence: list) -> str:
@@ -186,6 +203,7 @@ def main(argv=None) -> int:
     check = subs.add_parser("check-export"); check.add_argument("file", type=Path)
     _add_render_parser(subs)
     add_build_parser(subs)
+    _add_scxml_parser(subs)
     add_weave_parsers(subs)
     mcp = subs.add_parser("mcp", parents=[common], help="Serve the agent-facing MCP server on stdio (needs the agents extra)")
     mcp.add_argument("--repo", type=Path, help="Explicit local repository to inspect read-only; never executes its code")

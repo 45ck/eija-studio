@@ -2,6 +2,7 @@
 
 ## 2026-10-08
 
+* **Executable UML and SCXML**: synced ADR-0165, the new `application.scxml` module and symbol pages, the `xuml` gate pages (`scxml_drift`, `scxml_differential`) and `interfaces.cli`; ADRs that link to ADR-0165 refreshed. No Notes were hand-edited and nothing was recorded as verified.
 * **Run bar**: synced ADR-0160 and the new `application.simulation.run_log` and `MAX_BREAKPOINTS` symbol pages; `application.simulation` (steps name their transition), `interfaces.play` (`/api/play/run`, `/api/play/stop`) and `interfaces.http` (the `play-run.js` asset) refreshed. No Notes were hand-edited and nothing was recorded as verified.
 * **Drawing and checks ring**: synced ADR-0157 and refreshed `application.plan` (preview steps carry their text) and `interfaces.http` (`pack_summary` lists roles). No Notes were hand-edited and nothing was recorded as verified.
 * **Chat plan mode, review fixes**: refreshed `adapters.plan_proposals` (a request falls back to a modelled meaning only when no clause was read). No Notes were hand-edited and nothing was recorded as verified.
