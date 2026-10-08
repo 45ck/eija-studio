@@ -49,11 +49,11 @@ _OVERLAY_CSS = """
 #__demo_card.show h1,#__demo_card.show p{animation:__demo_rise .7s cubic-bezier(.2,.7,.2,1) both}
 #__demo_card.show p{animation-delay:.18s}
 @keyframes __demo_rise{from{transform:translateY(18px);opacity:0}to{transform:none}}
-#__demo_chapter{position:fixed;z-index:2147483646;left:50%;top:14px;display:flex;align-items:center;gap:12px;
+#__demo_chapter{position:fixed;z-index:2147483646;left:24px;bottom:30px;display:flex;align-items:center;gap:12px;
   padding:9px 18px 9px 10px;border-radius:999px;background:rgba(20,38,31,.92);color:#fff;
   font:600 17px/1 system-ui,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.35);pointer-events:none;
-  opacity:0;transform:translate(-50%,-14px);transition:opacity .35s ease,transform .45s cubic-bezier(.2,.7,.2,1)}
-#__demo_chapter.show{opacity:1;transform:translate(-50%,0)}
+  opacity:0;transform:translateY(14px);transition:opacity .35s ease,transform .45s cubic-bezier(.2,.7,.2,1)}
+#__demo_chapter.show{opacity:1;transform:none}
 #__demo_chapter b{display:inline-grid;place-items:center;min-width:30px;height:30px;border-radius:50%;
   background:#ffb020;color:#14261f;font-size:15px}
 body.__demo_camera{transform-origin:0 0;transition:transform var(--demo-zoom-ms,900ms) cubic-bezier(.65,0,.35,1)}
@@ -223,7 +223,7 @@ class Scene:
         self._camera = None
 
     def chapter(self, number: int, title: str) -> None:
-        """Show a chapter chip (top centre) that stays until the next chapter: where the story is."""
+        """Show a chapter chip (bottom left) that stays until the next chapter: where the story is."""
         if not title.strip():
             raise ValueError("chapter title must not be empty")
         if self.dry_run:
