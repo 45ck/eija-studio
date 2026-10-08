@@ -96,3 +96,25 @@ def test_no_change_has_nothing_to_show_and_a_moved_start_is_one_change():
     assert ghost["initial"] == {"before": "Requested", "after": "OnLoan"}
     assert ghost["changes"][0] == {"n": 1, "ref": "initial-edge", "change": "moved", "was": "was:initial-edge",
                                    "text": "Records now start in OnLoan, not Requested"}
+
+
+def test_the_use_case_diagram_of_both_models_keeps_what_goes_as_ghosts():
+    ghost = ghost_diff(LOAN.model, changed())
+    uc = ghost["use_cases"]
+    cases = {c["action"]: c for c in uc["cases"]}
+    assert cases["Renew"]["status"] == "added" and cases["Cancel"]["status"] == "removed"
+    assert cases["ReturnLate"]["status"] == "same"  # a moved arrow is still the same use case
+    assert cases["MarkOverdue"]["status"] == "changed" and cases["MarkOverdue"]["was_role"] == "Clerk"
+    mark = [(link["role"], link["status"]) for link in uc["links"] if link["case"] == "TR-MARKOVERDUE"]
+    assert mark == [("Clerk", "removed"), ("Member", "added")]  # the association moves; the old one stays as a ghost
+    assert {a["name"]: a["status"] for a in uc["actors"]} == {"Clerk": "removed", "Librarian": "same", "Member": "same"}
+
+
+def test_the_use_case_union_agrees_with_the_ripple():
+    from eija_studio.application.ripple import _use_case_items  # noqa: PLC0415 - the ripple's own reading of the same change
+
+    before, after = LOAN.model, changed()
+    uc, items = ghost_diff(before, after)["use_cases"], _use_case_items(before, after)
+    assert sorted(c["action"] for c in uc["cases"] if c["status"] == "added") == sorted(i["ref"][7:] for i in items if i["text"].startswith("New use case"))
+    assert sorted(c["action"] for c in uc["cases"] if c["status"] == "removed") == sorted(i["ref"][7:] for i in items if i["text"].startswith("Use case"))
+    assert sorted(a["name"] for a in uc["actors"] if a["status"] == "removed") == sorted(i["ref"][5:] for i in items if i["text"].startswith("Actor"))

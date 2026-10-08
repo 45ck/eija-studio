@@ -2,6 +2,7 @@
 
 ## 2026-10-08
 
+* **A change on every diagram**: re-synced ADR-0176 and `application.ghost_diff` (it now also returns the use case diagram of both models). No Notes were hand-edited and nothing was recorded as verified.
 * **Calmer Changes view**: re-synced ADR-0176 after its "calm by default" update (presentation only, no module or symbol changes). No Notes were hand-edited and nothing was recorded as verified.
 * **How a UML change looks**: synced ADR-0176 and the new `application.ghost_diff` module and symbol pages; `interfaces.play` (`/api/play/diff`, and `/api/play/review` returns the union for the Review canvas) and `interfaces.http` (the `play-diff.js` and `play-diff.css` assets) refreshed. Other pages changed only in generated backlinks. No Notes were hand-edited and nothing was recorded as verified.
 * **PlayIDE workbench shell**: synced ADR-0173 (presentation only, no module or symbol changes; `interfaces.http` refreshed for the two new web assets). No Notes were hand-edited and nothing was recorded as verified.
