@@ -12,7 +12,7 @@ from eija_studio.domain.policy import apply_transaction, apply_transactions, che
 from eija_studio.domain.affordance import affordances as affordance_map, dry_run
 from eija_studio.domain.transactions import Transaction
 from eija_studio.domain.formal import Context
-from .ports import ProposalProvider, Repository, ReceiptAuthenticator, IdentityProvider, SandboxFactory, UnitOfWork, FormalEvidenceSource, EditProposer
+from .ports import ProposalProvider, Repository, ReceiptAuthenticator, IdentityProvider, SandboxFactory, UnitOfWork, FormalEvidenceSource, EditProposer, PlanProposer
 from .formal import attach as attach_formal, packet_view, what_if_model
 from .compiler import compile_case, subject_for
 from .verifier import verify_runtime
@@ -41,7 +41,7 @@ class Studio:
     def __init__(self, store: Repository, provider: ProposalProvider, signer: ReceiptAuthenticator, identity_provider: IdentityProvider, sandbox: SandboxFactory, *, allow_network: bool = False,
                  formal: FormalEvidenceSource | None = None, pack: Pack | None = None,
                  repository: RepositorySource | None = None, repository_changes: RepositoryChangeSource | None = None,
-                 edit_proposer: EditProposer | None = None):
+                 edit_proposer: EditProposer | None = None, plan_proposer: PlanProposer | None = None):
         self.pack = pack if pack is not None else default_pack()  # the domain: laws, meanings, fixtures
         self.formal = formal  # optional: without it the formal kinds stay UNKNOWN in the packet, never green
         self.store, self.provider, self.signer = store, provider, signer
@@ -50,6 +50,7 @@ class Studio:
         self.repository = repository
         self.repository_changes = repository_changes
         self.edit_proposer = edit_proposer
+        self.plan_proposer = plan_proposer  # the PlayIDE chat's plan mode (ADR-0156); untrusted, read-only
 
     def workbench(self) -> dict[str, Any]:
         """Current pack declarations and baseline, with separately labelled read-only repository facts."""

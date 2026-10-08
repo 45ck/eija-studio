@@ -39,6 +39,7 @@
       <button id="zoom-in" type="button" class="quiet" aria-label="Zoom in">+</button>
       <button id="zoom-out" type="button" class="quiet" aria-label="Zoom out">−</button>
     </div>
+    <div id="plan-banner" class="plan-banner" role="status" hidden><span id="plan-banner-text"></span><button id="plan-back" type="button" class="quiet">Back to the model</button></div>
     <div id="canvas" class="canvas" tabindex="0" aria-describedby="canvas-help" role="tabpanel" aria-labelledby="tab-states"></div>
     <div id="class-canvas" class="canvas" tabindex="0" role="tabpanel" aria-labelledby="tab-classes" hidden></div>
     <div id="usecase-canvas" class="canvas" tabindex="0" role="tabpanel" aria-labelledby="tab-usecases" hidden></div>
@@ -59,6 +60,17 @@
     <p id="canvas-help" class="hint"></p>
   </section>
   <aside class="side">
+    <section class="chat" aria-labelledby="chat-title">
+      <div class="run-head"><h2 id="chat-title">Chat</h2><span class="mode" title="The AI only proposes. You accept or reject each step; nothing is saved from here.">Plan mode</span></div>
+      <ol id="chat-log" class="chat-log" aria-live="polite">
+        <li class="msg ai"><p>Ask for a change and I'll propose a plan of steps. You accept or reject each one and preview it before anything changes. For example: <em id="chat-example">add state Archived after a state</em>.</p></li>
+      </ol>
+      <form id="chat-form" class="chat-form">
+        <label for="chat-input" class="visually-hidden">Ask for a change</label>
+        <textarea id="chat-input" rows="2" maxlength="2000" placeholder="Ask for a change…"></textarea>
+        <button id="chat-send" type="submit" class="primary">Plan</button>
+      </form>
+    </section>
     <section class="inspector" aria-labelledby="inspector-title">
       <h2 id="inspector-title">Inspector</h2>
       <div id="inspector"><p class="muted">Select a state or transition.</p></div>

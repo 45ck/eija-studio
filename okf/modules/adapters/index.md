@@ -4,6 +4,7 @@
 
 * [adapters.edit_proposals](edit_proposals.md) - Bounded offline request fixture: exact model names and complete phrases, never an LLM.
 * [adapters.identity](identity.md) - Measured release identity, not a proof of correctness or author authenticity.
+* [adapters.plan_proposals](plan_proposals.md) - Offline plan proposer for the PlayIDE chat (ADR-0156): a bounded phrase grammar and the pack's modelled meanings, never an LLM.
 * [adapters.receipts](receipts.md) - Local integrity seal.
 * [adapters.repository](repository.md) - Repository analysis and bounded source navigation over captured checkout bytes.
 * [adapters.repository_analysis](repository_analysis.md) - Captured-byte syntax and partial impact adapted to existing Weave primitives.

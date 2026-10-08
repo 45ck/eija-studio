@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio
   title: application/service.py
   hash_method: ast-sig-v1
-  sha256: 6cda4ca217b393d83aecbe22677e3e0b1011dbde2e8c24e2c985bbeb5b9ac674
+  sha256: 416fa1dd78e1129aa5920ca6b4a2bb562c13ec9801956d61e81d2d0d58b78925
 description_override: 'The Studio use cases: create, propose, select, edit, verify, approve, apply and execute over a Change Case.'
-notes_baseline: 54a2f367123819b8a1be9b272cddc74625975a5b0493fb239256052ac5941e15
+notes_baseline: 2f7e0d1e444142661245db6bca9ff24e01955997b1a5a79ca4de89bf8e6c6480
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -58,6 +58,10 @@ verified:
   at: '2026-10-03T02:38:38Z'
   notes_sha256: 84af413206c8bd57d7f595b95322bf62e6af1710ce254ca4da7966d4891f47ea
   sources_sha256: 54a2f367123819b8a1be9b272cddc74625975a5b0493fb239256052ac5941e15
+- by: process:claude-thread-t2fetl
+  at: '2026-10-08T12:00:00Z'
+  notes_sha256: f51b13eee1fbfff154fd0c51929bf594c629036713c7d18f1b352dce3b3de03a
+  sources_sha256: 2f7e0d1e444142661245db6bca9ff24e01955997b1a5a79ca4de89bf8e6c6480
 ---
 
 # application.service.Studio
@@ -148,12 +152,17 @@ The service rechecks the expected case version before returning an explicitly
 untrusted proposal. It writes no case or audit data, grants no capability and
 creates no evidence; owner edit still performs any later candidate mutation.
 
+`plan_proposer` holds the optional `PlanProposer` port used by PlayIDE's chat plan mode
+(ADR-0156). Studio stores it and does not call it; `application.plan` re-parses and
+policy-checks each proposed step and previews a candidate without writing anything.
+
 <!-- okf:generated:begin links -->
 ## Depends on
 
 * [application.ports.EditProposer](/symbols/application/ports/EditProposer.md) - Offline request resolution only; returns an untrusted transaction and performs no IO or persistence.
 * [application.ports.FormalEvidenceSource](/symbols/application/ports/FormalEvidenceSource.md) - Where formal artifacts come from (Docker, Java, z3 or saved reports are adapter prerequisites).
 * [application.ports.IdentityProvider](/symbols/application/ports/IdentityProvider.md) - Type alias `IdentityProvider` in `application/ports`.
+* [application.ports.PlanProposer](/symbols/application/ports/PlanProposer.md) - Turns a chat request into {summary, meaning, steps: [{transaction, why}]}.
 * [application.ports.ProposalProvider](/symbols/application/ports/ProposalProvider.md) - `class ProposalProvider(Protocol)` in `application/ports`.
 * [application.ports.ReceiptAuthenticator](/symbols/application/ports/ReceiptAuthenticator.md) - `class ReceiptAuthenticator(Protocol)` in `application/ports`.
 * [application.ports.Repository](/symbols/application/ports/Repository.md) - `class Repository(Protocol)` in `application/ports`.

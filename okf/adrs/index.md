@@ -71,3 +71,4 @@
 * [ADR-0153: Data models as UML class diagrams, checked in the built app](0153-data-models-as-uml-class-diagrams.md) - Until now, records in a built app (ADR-0150) carried only a title, because the model had no data.
 * [ADR-0154: Use case diagrams, and screens designed against the model](0154-use-cases-and-screens-designed-against-the-model.md) - PlayIDE shows the workflow as a state machine (ADR-0151) and the data as a class diagram (ADR-0153).
 * [ADR-0155: Component diagrams read from the generated code](0155-component-diagrams-read-from-the-generated-code.md) - The owner's roadmap asks for component diagrams after use cases and screens.
+* [ADR-0156: Chat plan mode proposes typed steps the person accepts or rejects](0156-chat-plan-mode-proposes-typed-steps.md) - The owner's roadmap asks for an AI chat sidebar "like T3 Code, with plan mode prominent", in which the AI proposes changes to the UML and the person accepts or rejects them.

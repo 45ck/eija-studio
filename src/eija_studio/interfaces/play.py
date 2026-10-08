@@ -1,6 +1,7 @@
 """PlayIDE routes: the visual UML canvas page, Build & run of the model as a live app beside it (ADR-0151), and
 Simulate, seeded simulated users whose every step the kernel decides (ADR-0152), the screen designer's check and
-build of designed screens (ADR-0154), and the component diagram read from the files the app is built from (ADR-0155).
+build of designed screens (ADR-0154), the component diagram read from the files the app is built from (ADR-0155), and the chat's plan mode, whose accepted
+steps can be previewed, built and simulated but never saved or applied from here (ADR-0156).
 
 Build & run reuses `eija build` (ADR-0150): the app is generated into the workspace, its kernel conformance tests run,
 and only a PASSing app is started, as a separate local process on a free loopback port. One app runs at a time; a new
@@ -24,10 +25,13 @@ from fastapi.responses import FileResponse
 from pydantic import Field
 
 from eija_studio.application.components import app_components
+from eija_studio.application.plan import preview_plan, propose_plan
 from eija_studio.application.simulation import MAX_STEPS, simulate
 from eija_studio.domain.data import data_for
 from eija_studio.domain.models import Contract, DomainError, Workflow
 from eija_studio.domain.pack import Pack
+from eija_studio.domain.policy import apply_transactions
+from eija_studio.domain.transactions import parse_transaction
 from eija_studio.domain.screens import Screens, check_screens, parse_screens, screens_for, use_cases
 from .app_build import app_files, build_into
 
@@ -38,6 +42,16 @@ class BuildRequest(Contract):
     case_id: str | None = None  # None builds the active baseline; a case builds its candidate (or baseline if none yet)
     model: Workflow | None = None  # the model the page shows; if given, it must still be the one that would be built
     screens: dict[str, Any] | None = None  # screens edited in the designer (eija.screens.v1); None uses the pack's
+    plan: list[dict[str, Any]] | None = Field(default=None, max_length=12)  # accepted chat-plan steps, tried on top
+
+
+class PlanRequest(BuildRequest):
+    request: str = Field(min_length=1, max_length=2000)
+
+
+class PlanPreviewRequest(BuildRequest):
+    steps: list[dict[str, Any]] = Field(min_length=1, max_length=12)
+    accepted: list[bool] = Field(min_length=1, max_length=12)
 
 
 class SimulateRequest(BuildRequest):
@@ -131,6 +145,8 @@ def register(app, studio, web: Path) -> AppRunner:
             model = candidate or baseline
         if body.model is not None and body.model.semantic_hash != model.semantic_hash:
             raise DomainError("MODEL_CHANGED", "The model changed since the page loaded; reload and try again")
+        if body.plan:  # trying accepted plan steps: applied here, through the policy, never taken from the page
+            model = apply_transactions(model, [parse_transaction(step) for step in body.plan], studio.pack)
         return model
 
     @app.get("/api/play/data")
@@ -151,6 +167,22 @@ def register(app, studio, web: Path) -> AppRunner:
         screens, data = screens_of(body, model), data_for(studio.pack)
         return {"screens": screens.model_dump(mode="json"), "digest": screens.digest, "use_cases": use_cases(model),
                 "problems": check_screens(screens, model, data)}
+
+    def proposer():
+        if studio.plan_proposer is None:
+            raise DomainError("PLAN_UNAVAILABLE", "No plan proposer is configured")
+        return studio.plan_proposer
+
+    @app.post("/api/play/plan")
+    def play_plan(body: PlanRequest):
+        """Plan mode (ADR-0156): an untrusted plan of typed steps for the request, previewed with every step accepted."""
+        return propose_plan(body.request, resolve(body.model_copy(update={"plan": None})), studio.pack, proposer())
+
+    @app.post("/api/play/plan/preview")
+    def play_plan_preview(body: PlanPreviewRequest):
+        """What the accepted steps would make of the model. Nothing is saved or applied."""
+        model = resolve(body.model_copy(update={"plan": None}))
+        return preview_plan(model, studio.pack, [parse_transaction(step) for step in body.steps], body.accepted)
 
     @app.post("/api/play/components")
     def play_components(body: BuildRequest):

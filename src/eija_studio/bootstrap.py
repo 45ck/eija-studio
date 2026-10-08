@@ -7,6 +7,7 @@ from .adapters.identity import identity
 from .adapters.providers import create_provider, KEYED_PROVIDERS, PROVIDER_NAMES  # noqa: F401 - re-exported for interfaces
 from .adapters.formal import FormalReports
 from .adapters.edit_proposals import OfflineEditProposer
+from .adapters.plan_proposals import OfflinePlanProposer
 from .adapters.repository import RepositoryConnection
 from .adapters.repository_changes import RepositoryChanges
 from .adapters.repository_analysis import syntax_reader
@@ -36,6 +37,6 @@ def build_studio(workspace: Path, provider="offline", model="", allow_network=Fa
     store = SQLiteStore(workspace, pack=domain)
     return Studio(store, proposal_provider, ReceiptSigner(store.directory), partial(identity, domain), sandbox_factory(store.directory, domain),
                   allow_network=allow_network, formal=FormalReports() if formal else None, pack=domain,
-                  edit_proposer=OfflineEditProposer(),
+                  edit_proposer=OfflineEditProposer(), plan_proposer=OfflinePlanProposer(),
                   repository=RepositoryConnection(repository_root, domain, source_facts=source_profile(domain)) if repository_root is not None else None,
                   repository_changes=RepositoryChanges(repository_root, domain, syntax_reader=syntax_reader) if repository_root is not None else None)

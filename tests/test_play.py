@@ -125,3 +125,19 @@ def test_the_component_diagram_is_read_from_the_app_the_model_builds(client):
     diagram = client.post("/api/play/components", json={}, headers=HEADERS).json()
     assert diagram["format"] == "eija.components.v1" and diagram["cases"] > 0
     assert any(d["source"] == "app.service" and d["target"] == "eija_studio.application.runtime" for d in diagram["dependencies"])
+
+
+def test_plan_mode_proposes_previews_and_tries_but_never_saves(client, studio):
+    with studio.store.transaction() as u:
+        before = u.active()["model"]
+    first = studio.pack.model.states[0]
+    proposed = client.post("/api/play/plan", json={"request": f"add state Lost after {first}"}, headers=HEADERS).json()
+    assert proposed.get("code") is None, proposed
+    assert proposed["trust"] == "UNTRUSTED_PROPOSAL" and proposed["steps"][0]["transaction"]["kind"] == "add_state"
+    steps = [s["transaction"] for s in proposed["steps"]]
+    preview = client.post("/api/play/plan/preview", json={"steps": steps, "accepted": [False]}, headers=HEADERS).json()
+    assert preview["accepted"] == 0 and preview["candidate"] is None
+    refused = client.post("/api/play/plan", json={"request": "make it better"}, headers=HEADERS)
+    assert refused.json()["code"] == "PLAN_REQUEST_UNSUPPORTED"
+    with studio.store.transaction() as u:
+        assert u.active()["model"] == before  # nothing was saved or applied
