@@ -19,6 +19,7 @@ from typing import Any
 from eija_studio.domain.laws import reachable
 from eija_studio.domain.models import DomainError, Workflow
 from eija_studio.domain.pack import Pack
+from .providers.offline import matches_rule
 
 SPLIT = re.compile(r"\s*(?:;|\n|,?\s+then\s+|,?\s+and then\s+)\s*", re.IGNORECASE)
 NAME = r"([A-Za-z][\w-]*)"
@@ -115,9 +116,8 @@ class _Clause:
 
 def _meaning_plan(request: str, pack: Pack) -> dict[str, Any] | None:
     """The first supported meaning with transactions among the pack's proposal rules that match the request."""
-    words = set(re.findall(r"[a-z]+", request.casefold()))
     for rule in pack.fixtures.proposals.rules:
-        if set(rule.all) <= words and (not rule.any or words & set(rule.any)):
+        if matches_rule(rule, request):
             for alternative in rule.alternatives:
                 meaning = pack.meaning(alternative.interpretation)
                 if meaning is not None and meaning.supported and meaning.transactions:

@@ -21,9 +21,13 @@ MAX_STEPS = 12
 MAX_REQUEST = 2000
 
 
-def describe(tx: Transaction) -> str:
-    """One line a person can check against the diagram."""
+def describe(tx: Transaction, model: Workflow | None = None) -> str:
+    """One line a person can check against the diagram. A transition is named by its action, as the diagram labels it,
+    when `model` has it; one the same plan adds keeps its id."""
     d = tx.model_dump()
+    actions = {t.id: t.action for t in model.transitions} if model is not None else {}
+    if "transition" in d:
+        d["transition"] = actions.get(d["transition"], d["transition"])
     texts = {
         "add_state": lambda: f"Add state {d['state']}" + (f" after {d['after']}" if d.get("after") else ""),
         "rename_state": lambda: f"Rename state {d['state']} to {d['to']}",
@@ -58,14 +62,14 @@ def _statuses(model: Workflow, pack: Pack, transactions: list[Transaction], acce
     status: list[dict[str, Any]] = []
     for tx, keep in zip(transactions, accepted, strict=True):
         if not keep:
-            status.append({"status": "rejected", "text": describe(tx)})
+            status.append({"status": "rejected", "text": describe(tx, model)})
             continue
         try:
             apply_structural_all(model, [*kept, tx], pack)
             kept.append(tx)
-            status.append({"status": "applies", "text": describe(tx)})
+            status.append({"status": "applies", "text": describe(tx, model)})
         except DomainError as error:
-            status.append({"status": "does_not_apply", "text": describe(tx), "code": error.code, "message": error.message})
+            status.append({"status": "does_not_apply", "text": describe(tx, model), "code": error.code, "message": error.message})
     return status
 
 
@@ -101,7 +105,7 @@ def propose_plan(request: str, model: Workflow, pack: Pack, proposer: PlanPropos
         "scope": "plan-proposal", "trust": "UNTRUSTED_PROPOSAL", "request": request, "provider": proposer.name,
         "live": proposer.live, "model": model.semantic_hash, "summary": str(document.get("summary", ""))[:300],
         "meaning": document.get("meaning") if pack.meaning(str(document.get("meaning"))) else None,
-        "steps": [{"n": n, "transaction": tx.model_dump(mode="json"), "text": describe(tx), "why": why}
+        "steps": [{"n": n, "transaction": tx.model_dump(mode="json"), "text": describe(tx, model), "why": why}
                   for n, (tx, why) in enumerate(steps, 1)],
         "preview": preview_plan(model, pack, transactions, [True] * len(transactions)),
     }

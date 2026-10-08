@@ -47,7 +47,7 @@ dd{margin:0}
 .chip{font-size:.75rem;padding:2px 8px;border-radius:999px;background:var(--bad-bg);color:var(--bad);font-variant-numeric:tabular-nums}
 .findings li button{width:100%;text-align:left;border:0;border-left:3px solid var(--line);border-radius:0 6px 6px 0;padding:5px 8px;background:var(--busy-bg);margin-bottom:4px;font-size:.84rem}
 .findings li.warning button{border-left-color:#c27c0e;background:#fdf4e3}
-.log{margin:0;padding:0;list-style:none;max-height:220px;overflow:auto;font-size:.8rem;font-variant-numeric:tabular-nums}
+.log{position:relative;margin:0;padding:0;list-style:none;max-height:220px;overflow:auto;font-size:.8rem;font-variant-numeric:tabular-nums}
 .log li{padding:3px 6px;border-radius:5px;display:grid;grid-template-columns:2.6em 1fr;gap:6px}
 .log li .n{color:var(--muted)}
 .log li.refused{color:var(--bad)}
@@ -198,6 +198,7 @@ button.link{border:0;background:transparent;padding:1px 4px;color:var(--accent);
 .laws{flex:1;min-height:0;overflow:auto;padding:16px 18px;border-top:1px solid var(--line);background:#fbfcfe}
 .laws[hidden]{display:none}
 .laws-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.laws-head>button{flex:none;white-space:nowrap}
 .laws-summary{margin:10px 0 14px;padding:8px 12px;border-radius:8px;background:var(--busy-bg);font-size:.88rem}
 .laws-summary.ok{background:var(--ok-bg);color:var(--ok)}
 .laws-summary.bad{background:var(--bad-bg);color:var(--bad)}
