@@ -74,6 +74,7 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0157](0157-drawn-edits-and-checks-ring.md) | Drawn edits join the plan, and a checks ring rewards checking | accepted |
 | [0160](0160-run-bar-with-breakpoints-over-a-seeded-run.md) | A run bar with breakpoints, over one seeded run the kernel decides | accepted |
 | [0165](0165-executable-uml-on-the-eija-kernel.md) | Executable UML on the EIJA kernel: one interpreter, a closed action vocabulary, SCXML as the standard cross-check | accepted for the state-machine slice |
+| [0166](0166-laws-proved-over-every-run-for-any-pack.md) | Laws as the layer above the UML, proved over every run for any pack, with a Laws tab in PlayIDE | accepted for the current law kinds |
 <!-- adr-index:end -->
 
 ## Reserved numbers for capability lanes

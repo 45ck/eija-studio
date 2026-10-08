@@ -385,6 +385,43 @@
         }
       }
     },
+    "/api/play/laws": {
+      "post": {
+        "summary": "Play Laws",
+        "description": "The pack's laws, each proved over every run the kernel allows on this model (ADR-0166).",
+        "operationId": "play_laws_api_play_laws_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuildRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/play/stop": {
       "post": {
         "summary": "Play Stop",

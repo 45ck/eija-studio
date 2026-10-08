@@ -15,7 +15,7 @@
   const earned = [];
   let screens = null, screensEdited = false, useCase = null, checkTimer = 0, problems = [], useCaseList = [];
   const base = {}; // each cell's own style and label, so overlays can be cleared
-  const hooks = { redraw: [], inspect: [] }; // the run bar (play-run.js) redraws its marks and adds inspector tools
+  const hooks = { redraw: [], inspect: [], laws: [] }; // the run bar (play-run.js) redraws its marks and adds inspector tools
 
   async function api(path, body) {
     const options = { headers: { Authorization: "Bearer " + token } };
@@ -101,13 +101,14 @@
   function transition(id) { return model.transitions.find((t) => t.id === id); }
 
   const current = () => ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: componentGraph })[tab];
-  const PANELS = { states: "canvas", classes: "class-canvas", usecases: "usecase-canvas", screens: "screens", components: "component-canvas" };
+  const PANELS = { states: "canvas", classes: "class-canvas", usecases: "usecase-canvas", screens: "screens", components: "component-canvas", laws: "laws" };
   const HINTS = {
     states: "Drag from the palette to draw a state, a transition or the initial state; select an element to change or remove it. Drawn changes join the plan for you to preview; nothing is saved.",
     classes: "Select a class to see its attributes and associations.",
     usecases: "Select a use case to inspect it. Double-click one to design its screen.",
     screens: "Design each use case's screen. The design check runs as you edit; Build & run uses these screens.",
     components: "The built app's components, read from its generated files: every line is an import, a route or a file read.",
+    laws: "The pack's laws: what this model must never do, whatever is drawn. Each is proved over every run the kernel allows, by every kind of actor.",
   };
 
   function fit() {
@@ -339,9 +340,10 @@
       $(panel).hidden = which !== name;
     }
     $("canvas-help").textContent = HINTS[which];
-    for (const id of ["fit", "zoom-in", "zoom-out"]) $(id).hidden = which === "screens";
+    for (const id of ["fit", "zoom-in", "zoom-out"]) $(id).hidden = which === "screens" || which === "laws";
     $("draw-palette").hidden = which !== "states";
     if (which === "screens") { renderDesigner(); return; }
+    if (which === "laws") { for (const show of hooks.laws) show(); return; }
     if (which === "usecases") drawUseCases();
     if (which === "components") { drawComponents(); return; }
     if (which === "classes") {
@@ -1314,6 +1316,7 @@
     $("tab-usecases").addEventListener("click", () => showTab("usecases"));
     $("tab-screens").addEventListener("click", () => showTab("screens"));
     $("tab-components").addEventListener("click", () => showTab("components"));
+    $("tab-laws").addEventListener("click", () => showTab("laws"));
     $("chat-form").addEventListener("submit", ask);
     startDrawing();
     $("health").addEventListener("click", () => {
@@ -1331,7 +1334,7 @@
 
   // What the run bar (play-run.js, ADR-0160) may use. It holds no rules either: it moves through the server's run log.
   window.PlayIDE = {
-    api, el, hooks, about, viewKey, label, restyle, clearSim, select,
+    api, el, hooks, about, viewKey, label, restyle, clearSim, select, showTab, fit,
     graph: () => graph, model: () => model, selected: () => selected,
   };
 

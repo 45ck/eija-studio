@@ -12,6 +12,7 @@
 * [edit_proposal](edit_proposal/) - Symbols of application.edit_proposal
 * [formal](formal/) - Symbols of application.formal
 * [history](history/) - Symbols of application.history
+* [law_proof](law_proof/) - Symbols of application.law_proof
 * [plan](plan/) - Symbols of application.plan
 * [ports](ports/) - Symbols of application.ports
 * [repository](repository/) - Symbols of application.repository

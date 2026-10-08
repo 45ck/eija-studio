@@ -162,3 +162,13 @@ def test_the_run_bar_gets_the_shown_models_run_log_and_stop_ends_the_app(client,
     assert client.post("/api/play/build", json={}, headers=HEADERS).json()["url"]
     assert client.post("/api/play/stop", json={}, headers=HEADERS).json() == {"stopped": True}
     assert client.post("/api/play/stop", json={}, headers=HEADERS).json() == {"stopped": False}
+
+
+def test_laws_are_proved_on_the_shown_model(client, studio):
+    """The Laws tab (ADR-0166): every law of the pack with its verdict, on the model on screen."""
+    assert client.post("/api/play/laws", json={}, headers={"Origin": HEADERS["Origin"]}).status_code == 401
+    report = client.post("/api/play/laws", json={}, headers=HEADERS).json()
+    assert report["format"] == "eija.law-proof.v1" and report["status"] == "HOLDS"
+    assert [law["id"] for law in report["laws"]] == [law.id for law in studio.pack.laws]
+    assert report["search"]["status"] == "COMPLETE"
+    assert "/assets/play-laws.js" in client.get("/play").text and client.get("/assets/play-laws.js").status_code == 200
