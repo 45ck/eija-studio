@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/bootstrap.py
   title: bootstrap.py
   hash_method: ast-api-v1
-  sha256: 2326f02a459d9df3471e986a8133c5c8aa631bdb78a6dab44adb566771b49f31
-notes_baseline: 8bc47825fdd7490cb764652bcc0f93045152e2eb3c9d5dbb2e2ded1c67b9b5be
+  sha256: 529fded9fd77de98155f8c9bf6bd7248e5b052c76b3baa25fe17f8d4a95ebdb8
+notes_baseline: 8a9685cbfba5e1c9aaf12731818ccdea6515594b59cb72248308d45c3e258212
 ---
 
 # bootstrap

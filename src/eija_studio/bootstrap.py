@@ -22,6 +22,11 @@ def resolve_pack(pack: Pack | str | Path | None) -> Pack:
     return pack if isinstance(pack, Pack) else load_pack(pack)
 
 
+def source_identity(pack: Pack | str | Path | None = None) -> dict:
+    """The implementation identity the Studio reports, including whether it matches the owner-stamped fixture."""
+    return identity(resolve_pack(pack))
+
+
 def build_studio(workspace: Path, provider="offline", model="", allow_network=False, key=None, formal=False,
                  pack: Pack | str | Path | None = None, repository_root: Path | None = None) -> Studio:
     """``formal=True`` attaches formal-lane evidence (Bend, SMT, bounded model check) to ``verify``; off by default so library and test

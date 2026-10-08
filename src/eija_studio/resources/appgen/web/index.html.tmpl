@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Generated app</title>
+  <link rel="stylesheet" href="/app.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header class="bar">
+    <div>
+      <h1 id="app-name">Loading</h1>
+      <p class="sub">Built by EIJA Studio from model <code id="model-hash"></code></p>
+    </div>
+    <label class="actor">Acting as
+      <select id="actor"></select>
+    </label>
+  </header>
+  <main class="layout">
+    <section class="panel" aria-labelledby="records-title">
+      <h2 id="records-title">Records</h2>
+      <form id="create" class="create">
+        <label for="title" class="visually-hidden">Title</label>
+        <input id="title" maxlength="200" placeholder="New record title" required>
+        <button type="submit">Create</button>
+      </form>
+      <ul id="records" class="records"></ul>
+      <p id="empty" class="muted">No records yet. Create one to start.</p>
+    </section>
+    <section class="panel detail" aria-labelledby="detail-title">
+      <h2 id="detail-title">Select a record</h2>
+      <ol id="flow" class="flow" aria-label="States"></ol>
+      <div id="stranded" class="notice warn" hidden>This record was created under an earlier model. The kernel refuses actions on it (STALE_INSTANCE).</div>
+      <h3>What you can do</h3>
+      <div id="options" class="options"></div>
+      <p id="result" class="notice" role="status" aria-live="polite" hidden></p>
+      <h3>History</h3>
+      <ol id="history" class="history"></ol>
+    </section>
+    <aside class="panel" aria-labelledby="rules-title">
+      <h2 id="rules-title">Rules from the model</h2>
+      <table class="rules">
+        <thead><tr><th>Action</th><th>From</th><th>To</th><th>Who</th></tr></thead>
+        <tbody id="rules"></tbody>
+      </table>
+      <h3>Outbox</h3>
+      <ul id="outbox" class="outbox"></ul>
+      <p class="muted small">Notifications are recorded here, not sent. Actors come from a fixture directory, not a login.</p>
+    </aside>
+  </main>
+</body>
+</html>

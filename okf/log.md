@@ -1,5 +1,10 @@
 # Update log
 
+## 2026-10-08
+
+* **App generation**: synced ADR-0150, `application.appgen` (pure spec writer and kernel-answered oracle), `interfaces.app_build` (`eija build`) and `bootstrap.source_identity`. Other pages changed only in generated reference links. No Notes were hand-edited and nothing was recorded as verified. The conformance and negative-control results are execution evidence in `tests/test_appgen.py`, not knowledge-base review.
+* **App generation review fixes**: the generated app now calls the kernel itself, so `appgen.spec_source` was removed (its page deleted rather than deprecated, since it never reached `main`) and `appgen.absent` added. Added the `appgen` gate page for the new nox session. ADR-0150 was re-synced after its decision text changed. No Notes were hand-edited and nothing was recorded as verified.
+
 ## 2026-10-03
 
 * **Installed fixture location**: refreshed ADR-0044 after moving the explicit domain-specific installation probe to `tests/installation/candidate_wheel_probe.py`. The generic runner reads only that fixed repository fixture path; the independently expected assertions remain in the test fixture. Re-read the ADR and recorded `process:codex-installation-fixture-layout`. This is an explicit installation check, not automatic pytest collection; no vocabulary exception, release stamp or execution-success claim was added.

@@ -2,6 +2,7 @@
 
 # Sections
 
+* [appgen](appgen/) - Symbols of application.appgen
 * [compiler](compiler/) - Symbols of application.compiler
 * [diagram_catalog](diagram_catalog/) - Symbols of application.diagram_catalog
 * [diagram_emitters](diagram_emitters/) - Symbols of application.diagram_emitters

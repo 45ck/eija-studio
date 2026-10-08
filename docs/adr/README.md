@@ -64,6 +64,7 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0147](0147-source-connected-self-dogfood.md) | Source-connected self-dogfooding with explicit coverage | accepted for the local development slice |
 | [0148](0148-semantic-history-by-replay.md) | Semantic undo and redo by replaying existing typed commands | accepted for the local owner workbench |
 | [0149](0149-read-only-edit-preview.md) | Preview a semantic edit from one captured case revision | accepted for the local owner workbench |
+| [0150](0150-build-apps-from-the-model-with-a-kernel-oracle.md) | Build runnable apps from the model, checked against the kernel as oracle | accepted for the local workflow-app slice |
 <!-- adr-index:end -->
 
 ## Reserved numbers for capability lanes
