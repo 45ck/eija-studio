@@ -102,18 +102,24 @@ def conformance(out: Path) -> dict:
     return {"status": "PASS" if run.returncode == 0 else "FAIL", "detail": " | ".join(tail)}
 
 
-def build(args, pack: Pack, identity_of: Callable[[Pack], dict[str, Any]]) -> tuple[int, dict[str, Any]]:
-    """Write, test and record one build. Returns the exit code and a summary for the caller to print."""
-    model = Workflow.model_validate_json(args.workflow.read_text(encoding="utf-8")) if args.workflow else pack.model
+def build_into(out: Path, pack: Pack, model: Workflow, identity: dict[str, Any], *, run_tests: bool = True) -> dict:
+    """Write one app into `out`, run its conformance tests unless told not to, and record BUILD.json."""
     files, manifest = app_files(pack, model)
-    out = args.out.resolve()
     hashes = write(out, files)
-    result = conformance(out) if not args.no_test else {"status": "NOT_RUN", "detail": "--no-test"}
-    identity = identity_of(pack)
+    result = conformance(out) if run_tests else {"status": "NOT_RUN", "detail": "--no-test"}
     manifest |= {"generator": f"eija-studio {__version__}", "files": hashes, "conformance": result,
                  "kernel_source_review": "RELEASE_FIXTURE_MATCH" if identity["trusted_fixture"] else "SOURCE_REVIEW_REQUIRED"}
     (out / MANIFEST).write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    summary = {"app": str(out), "run": f"python {out / 'run.py'}", "conformance": result["status"],
+    return manifest
+
+
+def build(args, pack: Pack, identity_of: Callable[[Pack], dict[str, Any]]) -> tuple[int, dict[str, Any]]:
+    """Write, test and record one build. Returns the exit code and a summary for the caller to print."""
+    model = Workflow.model_validate_json(args.workflow.read_text(encoding="utf-8")) if args.workflow else pack.model
+    out = args.out.resolve()
+    manifest = build_into(out, pack, model, identity_of(pack), run_tests=not args.no_test)
+    status = manifest["conformance"]["status"]
+    summary = {"app": str(out), "run": f"python {out / 'run.py'}", "conformance": status,
                "cases": manifest["oracle"]["cases"], "model": manifest["model_semantic_hash"][:12],
                "kernel_source_review": manifest["kernel_source_review"]}
-    return 2 if result["status"] == "FAIL" else 0, summary
+    return 2 if status == "FAIL" else 0, summary

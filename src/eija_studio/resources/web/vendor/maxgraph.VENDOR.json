@@ -1,0 +1,26 @@
+{
+  "files": {
+    "maxgraph.LICENSE.txt": {
+      "bytes": 11357,
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    "maxgraph.min.js": {
+      "bytes": 623805,
+      "sha256": "1b4485e141ebfe0ba3afb7c7bcb26c798a62ac957a70c6fcaf0d278bc254ceae"
+    }
+  },
+  "license": "Apache-2.0",
+  "npm_integrity": "sha512-RzIewujF2xt2Z1hJhFeEKil203P8Zss08SfFpuZqQD01oSNcZWlaxdicc8pelNHwndGdHAvm5Cuh/nkaG7OH8Q==",
+  "npm_tarball": "https://registry.npmjs.org/@maxgraph/core/-/core-0.25.0.tgz",
+  "package": "@maxgraph/core",
+  "runtime_network": "none: served locally, no CDN or runtime install",
+  "selection_note": "Chosen in the 2026-10-08 PlayIDE OSS survey: draw.io's engine, Apache-2.0, plain TypeScript with no framework. Pre-1.0, so the version is pinned. The bundle contains one `eval` helper (expression codec); PlayIDE never calls it and the page CSP has no 'unsafe-eval'.",
+  "source": "npm install @maxgraph/core@0.25.0 --ignore-scripts; bundled unmodified with esbuild 0.25.10: `esbuild entry.js --bundle --minify --format=iife --global-name=maxgraph --target=es2020 --legal-comments=none` where entry.js is `export * from \"@maxgraph/core\";`",
+  "upstream": "https://github.com/maxGraph/maxGraph",
+  "used_by": [
+    "resources/web/play.html",
+    "resources/web/play.js (PlayIDE canvas)"
+  ],
+  "verified": "2026-10-08: rendered under the Studio's strict page CSP (no unsafe-inline, no unsafe-eval) in Chromium 141 with no CSP violations from the library.",
+  "version": "0.25.0"
+}
