@@ -2,6 +2,7 @@
 
 # Modules
 
+* [application.access](access.md) - Who can do what (ADR-0171): the model's permissions as a role by state matrix, each cell checked by the kernel, and reachability questions such as "can a record reach this state without that role ever acting?".
 * [application.appgen](appgen.md) - App generation: a reviewed workflow model becomes a runnable app and its conformance oracle (ADR-0150).
 * [application.compiler](compiler.md) - Compiler: model → projections + impacts + obligations + computed review packet.
 * [application.components](components.md) - The component diagram of an app built from the model (ADR-0155), extracted from the generated files themselves.
@@ -17,6 +18,7 @@
 * [application.plan](plan.md) - Plan mode for the PlayIDE chat (ADR-0156): an AI proposes a change as numbered typed steps; the person accepts or rejects each one and sees what the accepted ones would do.
 * [application.ports](ports.md) - Application-owned ports.
 * [application.repository](repository.md) - Read-only repository evidence port; this does not grant project execution or approval.
+* [application.review](review.md) - Review a model change in PlayIDE instead of a pull request (ADR-0175).
 * [application.ripple](ripple.md) - Ripple (ADR-0158): what one change to the state machine does to every other diagram of the same system, and the follow-on edits that would keep them in agreement.
 * [application.runtime](runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.
 * [application.scxml](scxml.md) - The workflow state machine as a W3C SCXML statechart (ADR-0165).

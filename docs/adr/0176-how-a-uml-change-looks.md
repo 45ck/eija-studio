@@ -58,7 +58,7 @@ Chosen option.
 
   No state moves between lenses. The change list under the diagram says each change in a sentence. `[` and `]` (or the arrows) step through it, and the inspector shows the change with a before and after table for each changed field. `B`, `C` and `A` pick a lens while focus is in the view. Another tab, or pressing **Changes** again, returns to the editable diagram.
 * **Stable preview.** While a plan can be previewed, the state machine tab lays out the model in force and the candidate together, in a fixed order. Preview and Back to the model no longer move any state, and a removed state leaves its gap.
-* **For other views of a change.** The renderer is `window.PlayDiff.mount(box, ghost, options)`. It returns lenses, the onion skin, `show(change)` and `fit()`, so a review flow can draw a change the same way.
+* **One renderer for every view of a change.** The renderer is `window.PlayDiff.mount(box, ghost, options)`. It returns lenses, the onion skin, `show(change)` and `fit()`. The Review tab (ADR-0175) now draws its canvas with it: `POST /api/play/review` also returns the union, the canvas lays it out top to bottom, and the review's knock-on states are tinted amber. There is one way a change is drawn, not two.
 
 ### Consequences
 

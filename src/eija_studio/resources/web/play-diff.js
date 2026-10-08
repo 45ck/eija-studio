@@ -33,9 +33,10 @@
   }
 
   // ---- The renderer --------------------------------------------------------------------------------------------
-  function layout(ghost) {
+  function layout(ghost, direction = "LR") {
     const g = new dagre.graphlib.Graph({ multigraph: true });
-    g.setGraph({ rankdir: "LR", nodesep: 60, ranksep: 120, edgesep: 30, marginx: 30, marginy: 30 }); // as the state machine tab
+    g.setGraph(direction === "TB" ? { rankdir: "TB", nodesep: 70, ranksep: 90, edgesep: 30, marginx: 30, marginy: 30 }
+      : { rankdir: "LR", nodesep: 60, ranksep: 120, edgesep: 30, marginx: 30, marginy: 30 }); // LR as the state machine tab
     g.setDefaultEdgeLabel(() => ({}));
     g.setNode("__initial", { width: INITIAL, height: INITIAL });
     for (const s of ghost.states) g.setNode(s.name, { ...STATE });
@@ -57,14 +58,16 @@
     for (const off of ["setConnectable", "setCellsEditable", "setCellsDisconnectable", "setDropEnabled", "setCellsMovable", "setCellsResizable"]) graph[off](false);
     graph.setPanning(true);
     graph.setTooltips(true);
-    const place = layout(ghost), parent = graph.getDefaultParent(), cells = {}, items = {};
+    const place = layout(ghost, options.direction), knockOn = new Set(options.knockOn || []), parent = graph.getDefaultParent(), cells = {}, items = {};
     graph.batchUpdate(() => {
       const initial = graph.insertVertex({ parent, id: "initial", position: place.at("__initial"), size: [INITIAL, INITIAL],
         style: { shape: "ellipse", fillColor: INK, strokeColor: INK } });
       for (const s of ghost.states) {
         cells[s.name] = graph.insertVertex({ parent, id: "state:" + s.name, value: LOOK[s.status].mark + s.name, position: place.at(s.name),
           size: [STATE.width, STATE.height], style: { ...FONT, rounded: true, arcSize: 22, fontSize: 14 } });
-        items[cells[s.name].id] = { status: s.status, touched: s.touched, kind: "state", data: s, text: s.name };
+        // A state the change affects without editing it (a knock-on the caller names) is drawn as changed.
+        const status = s.status === "same" && knockOn.has(s.name) ? "changed" : s.status;
+        items[cells[s.name].id] = { status, touched: s.touched || status !== s.status, kind: "state", data: s, text: s.name };
       }
       const moved = ghost.initial.before !== ghost.initial.after;
       const start = graph.insertEdge({ parent, id: "initial-edge", source: initial, target: cells[ghost.initial.after],
@@ -335,9 +338,10 @@
     open = on;
     $("show-changes").setAttribute("aria-pressed", String(on));
     $("diff-view").hidden = !on;
-    $("canvas").hidden = on;
-    $("draw-palette").hidden = on;
-    $("canvas-help").textContent = on ? "The model in force and the change on one diagram. Removed parts stay as faded ghosts. [ and ] step through the changes; B, C and A pick a lens." : "";
+    const states = ide().tab() === "states"; // closing because another tab was shown leaves that tab's panels alone
+    $("canvas").hidden = on || !states;
+    $("draw-palette").hidden = on || !states;
+    if (on) $("canvas-help").textContent = "The model in force and the change on one diagram. Removed parts stay as faded ghosts. [ and ] step through the changes; B, C and A pick a lens.";
     if (on) { render(ghost); if (!ghost) refresh(); }
     else if (view) { view.destroy(); view = null; }
     badge(ghost);

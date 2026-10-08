@@ -2,6 +2,7 @@
 
 # Sections
 
+* [access](access/) - Symbols of application.access
 * [appgen](appgen/) - Symbols of application.appgen
 * [compiler](compiler/) - Symbols of application.compiler
 * [components](components/) - Symbols of application.components
@@ -17,6 +18,7 @@
 * [plan](plan/) - Symbols of application.plan
 * [ports](ports/) - Symbols of application.ports
 * [repository](repository/) - Symbols of application.repository
+* [review](review/) - Symbols of application.review
 * [ripple](ripple/) - Symbols of application.ripple
 * [runtime](runtime/) - Symbols of application.runtime
 * [scxml](scxml/) - Symbols of application.scxml

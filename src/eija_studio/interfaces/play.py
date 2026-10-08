@@ -2,9 +2,10 @@
 Simulate, seeded simulated users whose every step the kernel decides (ADR-0152), the screen designer's check and
 build of designed screens (ADR-0154), the component diagram read from the files the app is built from (ADR-0155), the chat's plan mode, whose accepted
 steps can be previewed, built and simulated but never saved or applied from here (ADR-0156), the ripple of a plan
-across every diagram with the follow-on edits the proposer suggests, each re-checked (ADR-0158), and the run bar's
-seeded run log with breakpoints and Stop (ADR-0160), and how a change looks: the model in force and the change on
-one state machine, removed elements kept as ghosts (ADR-0176).
+across every diagram with the follow-on edits the proposer suggests, each re-checked (ADR-0158), the run bar's
+seeded run log with breakpoints and Stop (ADR-0160), who can do what with reachability questions (ADR-0171), and the
+review of a change as a UML diff whose behaviour the kernel runs on both sides (ADR-0175), and how a change looks:
+the model in force and the change on one state machine, removed elements kept as ghosts (ADR-0176).
 
 Build & run reuses `eija build` (ADR-0150): the app is generated into the workspace, its kernel conformance tests run,
 and only a PASSing app is started, as a separate local process on a free loopback port. One app runs at a time; a new
@@ -27,10 +28,12 @@ from fastapi.responses import FileResponse
 
 from pydantic import Field
 
+from eija_studio.application.access import access, reach
 from eija_studio.application.components import app_components
 from eija_studio.application.law_proof import prove_laws
 from eija_studio.application.ghost_diff import ghost_diff
 from eija_studio.application.plan import preview_plan, propose_plan
+from eija_studio.application.review import review_change
 from eija_studio.application.ripple import check_follow_ons, ripple
 from eija_studio.application.simulation import MAX_BREAKPOINTS, MAX_STEPS, run_log, simulate
 from eija_studio.domain.data import data_for
@@ -63,6 +66,11 @@ class PlanPreviewRequest(BuildRequest):
 class SimulateRequest(BuildRequest):
     seed: int = Field(default=1, ge=0, le=2**31 - 1)
     steps: int = Field(default=500, ge=1, le=MAX_STEPS)
+
+
+class ReachRequest(BuildRequest):
+    target: str = Field(min_length=1, max_length=60)
+    without: str | None = Field(default=None, min_length=1, max_length=60)
 
 
 class RunRequest(SimulateRequest):
@@ -227,8 +235,8 @@ def register(app, studio, web: Path) -> AppRunner:
         return report | {"provider": proposer().name, "live": proposer().live,
                          "follow_ons": check_follow_ons(document, base, body.plan or [], studio.pack, candidate, after, data)}
 
-    def in_force(body: BuildRequest) -> Workflow:
-        """The model in force: the active baseline, or the case's baseline. A change is drawn against it."""
+    def baseline(body: BuildRequest) -> Workflow:
+        """The model in force: the active baseline, or the case's baseline. A change is reviewed against it."""
         if body.case_id is None:
             with studio.store.transaction() as u:
                 return Workflow.model_validate(u.active()["model"])
@@ -238,7 +246,14 @@ def register(app, studio, web: Path) -> AppRunner:
     def play_diff(body: BuildRequest):
         """How the change shown looks (ADR-0176): a case's candidate and any accepted plan steps, against the model in
         force, as one union of both state machines. Read-only."""
-        return ghost_diff(in_force(body), resolve(body))
+        return ghost_diff(baseline(body), resolve(body))
+
+    @app.post("/api/play/review")
+    def play_review(body: BuildRequest):
+        """Review the change shown (a case's candidate and any accepted plan steps) against the model in force (ADR-0175).
+        Read-only: nothing is saved, approved or applied."""
+        before, after = baseline(body), resolve(body)
+        return review_change(studio.pack, before, after) | {"ghost": ghost_diff(before, after)}  # drawn as in ADR-0176
 
     @app.post("/api/play/build")
     def play_build(body: BuildRequest):
@@ -259,6 +274,17 @@ def register(app, studio, web: Path) -> AppRunner:
     def play_laws(body: BuildRequest):
         """The pack's laws, each proved over every run the kernel allows on this model (ADR-0166)."""
         return prove_laws(studio.pack, resolve(body))
+
+    @app.post("/api/play/access")
+    def play_access(body: BuildRequest):
+        """Who can do what (ADR-0171): role by state, each cell tried in the kernel; with a plan, what it changes."""
+        model = resolve(body)
+        return access(studio.pack, model, resolve(body.model_copy(update={"plan": None})) if body.plan else None)
+
+    @app.post("/api/play/reach")
+    def play_reach(body: ReachRequest):
+        """Can a record reach a state without a role? A proof, a kernel-replayed path, or NOT_SHOWN (ADR-0171)."""
+        return reach(studio.pack, resolve(body), body.target, body.without)
 
     @app.post("/api/play/stop")
     def play_stop():

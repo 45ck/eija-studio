@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0176-how-a-uml-change-looks.md
   title: 0176-how-a-uml-change-looks.md
   hash_method: lf-sha256-v1
-  sha256: 3a4223159fb7b25a1d3c25a9428558bb94f7f039f004d6874e973d17a74e2c2f
-notes_baseline: c909a6a80d1f6e5d2b62a0da343e368cbda882c5e86d1ae9283af35c5c51e9e3
+  sha256: 5407b2d21cf110d1771993c522f1c6ad849ddf7fa77da6c81618693cfeee9f86
+notes_baseline: 1ec6b9f60d6749b58c6196cc43a1b8f92ab2acf36f43a6721b9b1e405e980129
 ---
 
 # ADR-0176: How a UML change looks: one stable layout, removed parts kept as ghosts, and lenses
@@ -45,7 +45,7 @@ notes_baseline: c909a6a80d1f6e5d2b62a0da343e368cbda882c5e86d1ae9283af35c5c51e9e3
 >
 >   No state moves between lenses. The change list under the diagram says each change in a sentence. `[` and `]` (or the arrows) step through it, and the inspector shows the change with a before and after table for each changed field. `B`, `C` and `A` pick a lens while focus is in the view. Another tab, or pressing **Changes** again, returns to the editable diagram.
 > * **Stable preview.** While a plan can be previewed, the state machine tab lays out the model in force and the candidate together, in a fixed order. Preview and Back to the model no longer move any state, and a removed state leaves its gap.
-> * **For other views of a change.** The renderer is `window.PlayDiff.mount(box, ghost, options)`. It returns lenses, the onion skin, `show(change)` and `fit()`, so a review flow can draw a change the same way.
+> * **One renderer for every view of a change.** The renderer is `window.PlayDiff.mount(box, ghost, options)`. It returns lenses, the onion skin, `show(change)` and `fit()`. The Review tab (ADR-0175) now draws its canvas with it: `POST /api/play/review` also returns the union, the canvas lays it out top to bottom, and the review's knock-on states are tinted amber. There is one way a change is drawn, not two.
 
 ## Sections
 
@@ -66,4 +66,5 @@ _No curated notes yet._
 
 * [ADR-0156: Chat plan mode proposes typed steps the person accepts or rejects](/adrs/0156-chat-plan-mode-proposes-typed-steps.md) - The owner's roadmap asks for an AI chat sidebar "like T3 Code, with plan mode prominent", in which the AI proposes changes to the UML and the person accepts or…
 * [ADR-0158: A change ripples across every diagram, and the AI's follow-on edits are re-checked](/adrs/0158-ripple-across-diagrams-with-checked-follow-ons.md) - PlayIDE draws five diagrams of one system: the state machine, the class diagram, the use cases, the screens and the components of the built app.
+* [ADR-0175: Review a change as a UML diff you can run, not as a pull request](/adrs/0175-review-a-change-as-a-uml-diff-you-can-run.md) - The owner wants engineers to stop "reviewing changes in a GitHub PR when you can do it through the IDE in a much better, fun, quicker way that is more accurate…
 <!-- okf:generated:end links -->

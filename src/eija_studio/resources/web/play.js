@@ -16,7 +16,7 @@
   const earned = [];
   let screens = null, screensEdited = false, useCase = null, checkTimer = 0, problems = [], useCaseList = [];
   const base = {}; // each cell's own style and label, so overlays can be cleared
-  const hooks = { redraw: [], inspect: [], laws: [], tab: [] }; // the run bar (play-run.js) redraws its marks and adds inspector tools;
+  const hooks = { redraw: [], inspect: [], laws: [], tab: [] }; // the run bar (play-run.js) redraws its marks and adds inspector tools; play-laws.js and play-access.js draw their tabs
   // the Changes view (play-diff.js, ADR-0176) closes when another tab is shown and answers current() while open
 
   async function api(path, body) {
@@ -114,8 +114,8 @@
 
   function transition(id) { return model.transitions.find((t) => t.id === id); }
 
-  const current = () => (hooks.diffGraph && hooks.diffGraph()) || ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: componentGraph })[tab];
-  const PANELS = { states: "canvas", classes: "class-canvas", usecases: "usecase-canvas", screens: "screens", components: "component-canvas", laws: "laws" };
+  const current = () => (hooks.diffGraph && hooks.diffGraph()) || ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: componentGraph, review: PlayReview.graph() })[tab];
+  const PANELS = { states: "canvas", classes: "class-canvas", usecases: "usecase-canvas", screens: "screens", components: "component-canvas", laws: "laws", review: "review", access: "access-panel" };
   const HINTS = {
     states: "Drag from the palette to draw a state, a transition or the initial state; select an element to change or remove it. Drawn changes join the plan for you to preview; nothing is saved.",
     classes: "Select a class to see its attributes and associations.",
@@ -123,6 +123,8 @@
     screens: "Design each use case's screen. The design check runs as you edit; Build & run uses these screens.",
     components: "The built app's components, read from its generated files: every line is an import, a route or a file read.",
     laws: "The pack's laws: what this model must never do, whatever is drawn. Each is proved over every run the kernel allows, by every kind of actor.",
+    access: "Who can do what, from each state. Every cell is tried in the kernel with the pack's fixture actors; a previewed plan's changes are flagged.",
+    review: "Review the change shown against the model in force: look at each change, predict what the kernel does, then decide. Nothing is approved from here.",
   };
 
   function fit() {
@@ -366,18 +368,20 @@
 
   function showTab(which) {
     tab = which;
-    for (const f of hooks.tab) f(which);
     for (const [name, panel] of Object.entries(PANELS)) {
       $("tab-" + name).setAttribute("aria-selected", String(which === name));
       $(panel).hidden = which !== name;
     }
     $("canvas-help").textContent = HINTS[which];
-    for (const id of ["fit", "zoom-in", "zoom-out"]) $(id).hidden = which === "screens" || which === "laws";
+    for (const id of ["fit", "zoom-in", "zoom-out"]) $(id).hidden = which === "screens" || which === "laws" || which === "access";
     $("draw-palette").hidden = which !== "states";
+    for (const f of hooks.tab) f(which);
+    if (which === "access") return;
     if (which === "screens") { renderDesigner(); return; }
     if (which === "laws") { for (const show of hooks.laws) show(); return; }
     if (which === "usecases") drawUseCases();
     if (which === "components") { drawComponents().then(() => markRipple("components")); return; }
+    if (which === "review") { PlayReview.show(); return; }
     if (which === "classes") {
       if (!data) { $("class-canvas").replaceChildren(el("p", "This pack has no data model yet. Add a data.json beside its pack.json.", { class: "muted empty" })); return; }
       drawClasses();
@@ -462,7 +466,9 @@
     const tools = el("div", undefined, { class: "plan-tools" });
     const preview = el("button", "Preview on the diagram", { type: "button", class: "primary" });
     preview.addEventListener("click", () => (plan.previewing ? leavePreview() : enterPreview()));
-    tools.append(preview);
+    const review = el("button", "Review it", { type: "button", class: "review-it", title: "Review the previewed change: what changed, how risky, what the kernel does differently" });
+    review.addEventListener("click", () => { if (!plan.previewing) enterPreview(); if (plan.previewing) showTab("review"); });
+    tools.append(preview, review);
     if (plan.meaning && plan.steps.every((step) => step.author === "ai" && !step.followOn)) {
       const keep = el("button", "Make it a change case", { type: "button" });
       keep.addEventListener("click", makeCase);
@@ -506,6 +512,7 @@
         ? `Step ${result.steps.findIndex((x) => x.status === "does_not_apply") + 1} does not apply after the steps you kept (${result.steps.find((x) => x.status === "does_not_apply").message}).`
         : `The policy refuses the accepted steps: ${result.codes.join(", ") || result.message}.`;
     plan.card.querySelector(".plan-tools .primary").disabled = !result.legal && !plan.previewing;
+    plan.card.querySelector(".plan-tools .review-it").disabled = !result.legal;
     renderHealth();
     document.dispatchEvent(new CustomEvent("playide:plan")); // the change shown is different now (ADR-0176)
   }
@@ -990,7 +997,7 @@
   }
 
   function draftTools(buttons) {
-    const tools = el("div", undefined, { class: "draft-tools" });
+    const tools = el("div", undefined, { class: "draft-tools edit-tools" }); // edit-tools: hidden in the review view (ADR-0172)
     for (const [text, run] of buttons) {
       const b = el("button", text, { type: "button" });
       b.addEventListener("click", run);
@@ -1530,6 +1537,7 @@
     $("tab-screens").addEventListener("click", () => showTab("screens"));
     $("tab-components").addEventListener("click", () => showTab("components"));
     $("tab-laws").addEventListener("click", () => showTab("laws"));
+    $("tab-access").addEventListener("click", () => showTab("access"));
     $("chat-form").addEventListener("submit", ask);
     for (const key of Object.keys(DIAGRAMS)) $("tab-" + key).append(el("span", "", { class: "badge", hidden: "" }));
     startDrawing();
@@ -1540,6 +1548,9 @@
     });
     renderHealth();
     $("plan-back").addEventListener("click", leavePreview);
+    $("plan-review").addEventListener("click", () => showTab("review"));
+    $("tab-review").addEventListener("click", () => showTab("review"));
+    PlayReview.init({ api, about, earn, el });
     $("screens-reset").addEventListener("click", async () => { screensEdited = false; lastBuild = null; restyleComponents(); components = null; await loadScreens(null); renderDesigner(); if (plan) refreshRipple(); });
     $("canvas-help").textContent = HINTS.states;
     window.addEventListener("resize", fit);
@@ -1552,8 +1563,8 @@
   // request is planned against, not a previewed candidate.
   window.PlayIDE = {
     api, el, hooks, about, viewKey, label, restyle, clearSim, select, showTab, fit,
-    graph: () => graph, model: () => model, selected: () => selected, pack: () => packInfo, base: () => baseModel,
-    planned: () => (plan && plan.result && plan.result.legal ? accepted() : null), showTab, // the change the Changes view draws (ADR-0176)
+    graph: () => graph, tab: () => tab, model: () => model, selected: () => selected, pack: () => packInfo, base: () => baseModel,
+    planned: () => (plan && plan.result && plan.result.legal ? accepted() : null), // the change the Changes view draws (ADR-0176)
   };
 
   start().catch((error) => {
