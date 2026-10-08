@@ -65,7 +65,7 @@ Chosen option.
 * Good: a deleted path stays visible as a ghost in the merged view, so a reviewer sees what goes away as well as what arrives.
 * Good: flipping lenses and previewing a plan move nothing, so a change can be seen as motion between two otherwise identical pictures.
 * Good: the view needs no new rules on the page. It styles what the server returns.
-* Bad: only the state machine is drawn this way. Other diagrams keep the ripple badges and marks of ADR-0158.
+* Bad: the component diagram keeps the ripple marks of ADR-0158 (regenerated components in amber). Its components are read from the built files, and a state-machine change regenerates them rather than adding or removing them.
 * Bad: a layout of both models is a compromise for each. A large change can place the model in force slightly differently from its own layout.
 * Revisit when: the class or use case diagrams become editable (then they need ghosts too), or a reviewer study shows which lens people actually use.
 
@@ -82,3 +82,11 @@ The owner found the drawing right but the view around it too busy: two toolbars 
 | LemonTree (proprietary) | Closed source, Enterprise Architect only | Pattern only: green and orange status colours |
 | GitHub image view modes, webdiff (MIT) | Compare pixels, not elements | Pattern only: onion skin |
 | N2G (MIT) draw.io graph compare | Python library that marks changes on draw.io XML from graph data; no lenses and no UML state machine notation | Adopt for a draw.io export of the diff |
+
+### Update: the same change on the class and use case diagrams
+
+**Changes** is now a mode across the diagram tabs rather than a view of the state machine only. While it is on, the class and use case diagrams draw the same change as the state machine, in the same colours and marks. Flipping tabs keeps it on, and pressing **Changes** again turns it off on every diagram.
+
+* **Use cases.** `ghost_diff` also returns `use_cases`, the use case diagram of both models (ADR-0153). It has a use case per action, an actor per role, and who takes which, each with a status. A removed use case or actor stays as a dashed, struck-through ghost. A role change keeps the use case (amber) and moves its association, with the old line as a ghost. A moved arrow is the same use case. A test checks that it names the same new and gone use cases and actors as the ripple.
+* **Classes.** The record's state enumeration lists the states of both models. Added literals are green, removed ones struck through, and the rest faded.
+* The change list stays in the inspector on each diagram. Picking a change selects its use case, or the enumeration that holds its literal.
