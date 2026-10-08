@@ -16,5 +16,6 @@
 * [domain.models](models.md) - Module `domain/models` (no module docstring).
 * [domain.pack](pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
 * [domain.policy](policy.md) - Generic policy: coherence with a domain pack's declared action catalog, the pack's laws, and declared effects.
+* [domain.scenarios](scenarios.md) - Scenarios: a pack's test cases, written as stories a person can read and the kernel can run (ADR-0177).
 * [domain.screens](screens.md) - Screens: the user interface of a pack's app, designed against its use cases and data model (ADR-0154).
 * [domain.transactions](transactions.md) - Open change vocabulary (WBS 1.3): the semantic edits an owner (or a pack meaning) may make to a workflow.
