@@ -87,6 +87,8 @@ def test_the_shell_reveals_hides_and_remembers_its_regions_in_a_real_browser():
                 page.keyboard.press(key)
                 page.wait_for_selector(f'body[data-{attr}="closed"]')
             assert page.is_hidden("#chat-input") and page.is_hidden("#outline-states")
+            # With the side regions hidden the diagrams take the whole width; a hidden region's track never swallows them.
+            assert page.evaluate("document.querySelector('.workbench').getBoundingClientRect().width") > 1500
             page.keyboard.press("Control+Alt+KeyC")
             page.wait_for_selector('body[data-chat="open"]')
             assert page.evaluate("document.activeElement.id") == "chat-input"

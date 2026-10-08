@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+### 8 October 2026: PlayIDE end-to-end fixes
+
+Found by using every PlayIDE feature together on the workbench shell, as a UML-literate engineer would:
+
+- The chat's example request now works when sent as it stands. On the model in force it is the pack's demo request (for example "Let teachers sign off excursions."), which becomes the change the pack models. Before, the example on Library loan reused an action that already had a transition and was refused. The chat's plan proposer now reads the pack's proposal rules the way the review workbench's offline provider does, so "loans" and "excursions" match the rules' "loan" and "excursion".
+- Hiding the side bar (Ctrl+B) no longer squeezes the diagrams into the empty side column. Each region keeps its own grid column, so the diagrams fill the window with either side hidden.
+- When a run pauses, the Run panel keeps who tried what and the kernel's answer in view. The step log and the simulation log scroll on their own instead of scrolling the whole panel.
+- Roles in the outline are buttons that open the Permissions tab, like the other outline entries. The outline grows to fit before the inspector takes the rest.
+- The plan banner hides "Review the change" while the Review tab is open, and the Laws tab's "Prove again" button no longer wraps.
+- The Run and Simulation panels use their width as intended: when paused, records and breakpoints sit beside the steps so far, and the simulation's "Worth a look" sits beside its run log. A more specific panel rule had kept them in one column.
+- Plan steps name a transition by its action, as the diagram does ("Let Member take CheckOut", not "TR-CHECKOUT").
+- Choosing a class in the outline clears a stale selection on the state machine, and the other way round.
+
 ### 8 October 2026: PlayIDE's workbench shell
 
 - PlayIDE is laid out like Visual Studio, VS Code, Cursor and draw.io (ADR-0173). The model outline sits above the inspector on the left, the diagrams are editor tabs, and the UML palette is a column beside the canvas. The chat is alone on the right. Run, Simulation and Running app share a resizable panel under the diagrams that opens on whatever has just run. The checks list is a popover from the ring, a status bar runs along the bottom, and the title bar has a command center (Ctrl+K). Ctrl+B, Ctrl+Alt+P and Ctrl+Alt+C hide the side bar, the panel and the chat, and the layout is remembered in the browser.
