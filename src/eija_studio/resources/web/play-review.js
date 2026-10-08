@@ -38,7 +38,8 @@
     }
     const knock = new Set(r.items.filter((i) => !i.edited).flatMap((i) => i.states));
     const statusOf = (s) => !before.states.includes(s) ? "added" : !after.states.includes(s) ? "removed" : knock.has(s) ? "changed" : "same";
-    return { states: states.map((s) => ({ id: s, status: statusOf(s) })), edges, initial: after.initial_state };
+    const moved = before.initial_state !== after.initial_state ? before.initial_state : null; // drawn too, dashed
+    return { states: states.map((s) => ({ id: s, status: statusOf(s) })), edges, initial: after.initial_state, oldInitial: moved };
   }
 
   function draw(r) {
@@ -56,6 +57,7 @@
     g.setNode("__initial", { width: INITIAL, height: INITIAL });
     for (const s of shape.states) g.setNode(s.id, { ...STATE });
     g.setEdge("__initial", shape.initial);
+    if (shape.oldInitial) { g.setNode("__old_initial", { width: INITIAL, height: INITIAL }); g.setEdge("__old_initial", shape.oldInitial); }
     for (const e of shape.edges) g.setEdge(e.t.from_state, e.t.to_state, { width: 140, height: 20 }, e.id);
     dagre.layout(g);
     const at = (id) => { const n = g.node(id); return [n.x - n.width / 2, n.y - n.height / 2]; };
@@ -70,8 +72,14 @@
           style: { ...font, rounded: true, arcSize: 22, fillColor: c.fill, strokeColor: c.stroke, strokeWidth: s.status === "same" ? 1.5 : 2.5,
             dashed: s.status === "removed", fontSize: 14, fontStyle: 1 } });
       }
-      graph.insertEdge({ parent, id: "initial-edge", source: initial, target: cells[shape.initial],
-        style: { strokeColor: r.diff.initial_state ? COLOURS.changed.stroke : "#1b2130", endArrow: "open", endSize: 8, strokeWidth: r.diff.initial_state ? 3 : 1 } });
+      graph.insertEdge({ parent, id: "initial-edge", value: shape.oldInitial ? "+ start" : "", source: initial, target: cells[shape.initial],
+        style: { ...font, fontSize: 11, fontColor: COLOURS.added.stroke, strokeColor: shape.oldInitial ? COLOURS.added.stroke : "#1b2130", endArrow: "open", endSize: 8, strokeWidth: shape.oldInitial ? 3 : 1 } });
+      if (shape.oldInitial) { // where records used to start: kept on the diagram, dashed in red, like any removed element
+        const old = graph.insertVertex({ parent, id: "initial-old", position: at("__old_initial"), size: [INITIAL, INITIAL],
+          style: { shape: "ellipse", fillColor: COLOURS.removed.fill, strokeColor: COLOURS.removed.stroke, dashed: true, strokeWidth: 2 } });
+        graph.insertEdge({ parent, id: "initial-old-edge", value: "− start", source: old, target: cells[shape.oldInitial],
+          style: { ...font, fontSize: 11, fontColor: COLOURS.removed.stroke, strokeColor: COLOURS.removed.stroke, dashed: true, endArrow: "open", endSize: 8, strokeWidth: 3 } });
+      }
       for (const e of shape.edges) {
         const colour = e.status === "same" ? "#4a5568" : COLOURS[e.status].stroke;
         const edge = graph.insertEdge({ parent, id: e.id, value: `${mark[e.status]}${e.t.action} [${e.t.role}]`, source: cells[e.t.from_state], target: cells[e.t.to_state],
@@ -92,7 +100,7 @@
 
   function cellsOf(item) {
     const ids = item.change === "removed" && item.element.startsWith("transition:") ? ["removed:" + item.element.slice(11)]
-      : item.element === "initial" ? ["initial-edge"] : [item.element];
+      : item.element === "initial" ? ["initial-edge", "initial-old-edge"] : [item.element];
     return ids.map((id) => graph.getDataModel().getCell(id)).filter(Boolean);
   }
 
@@ -288,23 +296,26 @@
   }
 
   async function show() {
-    const about = ide.about(), key = keyOf(about);
+    const about = ide.about();
     if (!about.case_id && !about.plan) {
       empty("No change to review. Ask the chat for a change or draw one, then preview it; or open a change case (?case=).");
       review = null;
       return;
     }
-    if (!reviews.has(key)) {
-      $("review-head-text").textContent = "Running both models through the kernel…";
-      try {
-        const result = await ide.api("/api/play/review", about);
-        reviews.set(key, { result, state: Object.fromEntries(result.items.map((i) => [i.n, { looked: false, predicted: null, verdict: null, note: "" }])), finished: false });
-      } catch (error) {
-        empty(`The review could not run (${error.code || "ERROR"}): ${error.message}`);
-        return;
-      }
-      if (keyOf(ide.about()) !== key) return; // the change shown moved on while the kernel ran
+    // Always ask the server: it refuses (MODEL_CHANGED) a model edited elsewhere since the page loaded, so a review is
+    // never shown or written for an obsolete change. What was checked is kept per exact pair of models.
+    $("review-head-text").textContent = "Running both models through the kernel…";
+    let result;
+    try {
+      result = await ide.api("/api/play/review", about);
+    } catch (error) {
+      empty(error.code === "MODEL_CHANGED" ? "The model changed since this page loaded. Reload to review the current change."
+        : `The review could not run (${error.code || "ERROR"}): ${error.message}`);
+      return;
     }
+    if (keyOf(ide.about()) !== keyOf(about)) return; // the change shown moved on while the kernel ran
+    const key = keyOf(about) + result.before + result.after;
+    if (!reviews.has(key)) reviews.set(key, { result, state: Object.fromEntries(result.items.map((i) => [i.n, { looked: false, predicted: null, verdict: null, note: "" }])), finished: false });
     review = reviews.get(key);
     const r = review.result;
     if (!r.changed || !r.items.length) { empty("The model shown is the model in force: nothing changed."); return; }
