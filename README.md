@@ -28,6 +28,12 @@ The first acceptance target is **EIJA's own checkout**. External applications co
 
 ## Recorded integration preview
 
+**The IDE is on main (8 October):** [PR #78](https://github.com/45ck/eija-studio/pull/78) merged the source-connected IDE from #29 and #76 onto `main`. Run it with `eija serve --pack packs/eija-review-slice --repo . --open` (see [Try the connected IDE](#try-the-connected-ide-preview)). The [IDE walkthrough](docs/demos/2026-10-08-IDE-WALKTHROUGH.md) is a 2:34 real-browser recording of EIJA reviewing a change to its own review journey, with stills, provenance and reproduction steps. It is **PARTIAL**: verification is refused with `SOURCE_REVIEW_REQUIRED` until the owner reviews the changed source ([#80](https://github.com/45ck/eija-studio/issues/80)). The [merge record](docs/engineering/2026-10-08-IDE-ON-MAIN.md) lists what landed and the checks run. Fast passes 22/22 and 2,672 tests pass. Full fails in `hci` and `metrics`, both from two HCI budgets awaiting owner re-derivation ([#79](https://github.com/45ck/eija-studio/issues/79)). Full IDE acceptance, live-provider and human-benefit claims remain open. The checkpoints below are earlier, dated records.
+
+![EIJA followed into its own captured source](docs/demos/assets/ide-walkthrough-20261008/source-binding.png)
+
+*Frame from the recorded walkthrough on Linux/Chromium 141 ([provenance](docs/demos/assets/ide-walkthrough-20261008/provenance.json)).*
+
 **Published merged IDE checkpoint (3 October):** [`ad9394e1`](https://github.com/45ck/eija-studio/commit/ad9394e1d4ae93259ee43ce8448b60c96a826a40) in [draft PR76](https://github.com/45ck/eija-studio/pull/76) combines explicit offline edit proposals, readable paired model changes, exact captured source, formal-evidence context and runtime refusal → rule → return. Its [checkpoint record](docs/engineering/2026-10-03-MERGED-IDE-CHECKPOINT.md) binds **ten offline browser journeys PASS to the same 114 product files**, plus **495 JavaScript tests PASS**. The committed source matches the tested merge of `efd33fa7` and `d861d454`; these results stay bound to `ad9394e1` as subsequent work continues.
 
 The [checkpoint HCI report](https://github.com/45ck/eija-studio/blob/ad9394e1d4ae93259ee43ce8448b60c96a826a40/docs/hci/REPORT.md) captures **18/18 required opened/pinned work states**, while its unchanged budgets retain **two FAILs** (density 50 > 27; predicted KLM 65.31 > 65 seconds) and **two GAPs** (settled-DOM p95 825 ms; one lost-focus activation). **Fast passes 22/22 sessions; full and release are NOT_RUN on this merge.** The published predecessor `efd33fa7` separately passed a fresh GitHub clone, new Python environment, installed CLI startup and four scoped Windows replays; that earlier proof does not cover `ad9394e1`. The [whole-app design](docs/design/README.md), manual accessibility and hands-on UX acceptance remain the bar before the WOW recording and final POC/POF package.
@@ -191,7 +197,7 @@ The block above is not hand-drawn: `python scripts/gen_readme_diagram.py --check
 
 ## Try the connected IDE preview
 
-The connected IDE is developed on [`integrate/all`](https://github.com/45ck/eija-studio/tree/integrate/all), tracked in [PR #29](https://github.com/45ck/eija-studio/pull/29). From that checkout, create and activate a Python virtual environment as below, then run:
+The connected IDE is on `main` since [PR #78](https://github.com/45ck/eija-studio/pull/78) (8 October). From a checkout of `main`, create and activate a Python virtual environment as below, then run:
 
 ```console
 python -m pip install -e ".[dev,hci,source-analysis]"

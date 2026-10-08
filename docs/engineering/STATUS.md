@@ -1,5 +1,7 @@
 # Where we are (paused 2026-09-29)
 
+> **Superseded, 8 October 2026:** the IDE from `integrate/all` and #76 is now on `main` ([#78](https://github.com/45ck/eija-studio/pull/78)). See the [IDE-on-main record](2026-10-08-IDE-ON-MAIN.md) for current state and open items. The rest of this page is the 29 September snapshot.
+
 Work is paused on purpose so the plan is saved and the repository is ready to continue. This page is the picture; [the tracker issue #30](https://github.com/45ck/eija-studio/issues/30) is the live checklist; [WBS.md](WBS.md) is the plan; [FUTURE-WORK.md](FUTURE-WORK.md) holds what we chose not to build yet.
 
 **One branch holds everything:** `integrate/all` (draft [PR #29](https://github.com/45ck/eija-studio/pull/29)), 144 commits and about 1,170 files ahead of `main`. `main` is still the last-known-good version and is untouched. This branch is a working snapshot: Phase 0 is gated, Phase 1 is partly built and has **not** had a full gate run on the combined tree.

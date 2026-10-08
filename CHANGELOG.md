@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### 8 October 2026: the source-connected IDE on main (#78)
+
+- The IDE from `integrate/all` (#29) and #76 is merged onto `main`. Run it with `eija serve --pack packs/eija-review-slice --repo . --open`. The lane PRs it contained (#12, #14, #16, #22, #23, #24, #25) are recorded as merged. See the [IDE-on-main record](docs/engineering/2026-10-08-IDE-ON-MAIN.md).
+- Canvas drag handles sit on the line's ends and no longer cover the selected transition's label. Inspector Change buttons sit beside their selects.
+- Linux gate fixes: the vocabulary gate skips gitignored `*.egg-info`, and npm shim paths are separator-normalised.
+- New demo scenario `ide_walkthrough`, recorded PARTIAL, with the [walkthrough record](docs/demos/2026-10-08-IDE-WALKTHROUGH.md). The demo harness can connect a repository and pick a pack, and keeps captions visible over modal dialogs.
+- Still open: HCI budget re-derivation ([#79](https://github.com/45ck/eija-studio/issues/79)) and owner source review and restamp ([#80](https://github.com/45ck/eija-studio/issues/80)). Until #80 is done, verify returns `SOURCE_REVIEW_REQUIRED`, and approve and apply are blocked by source review (`GATE_BLOCKED`).
+
 Summary of the open-source foundation since 0.2.0. Nothing here changes kernel behaviour except where stated.
 
 ### Added
