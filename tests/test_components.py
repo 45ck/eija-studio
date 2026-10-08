@@ -55,3 +55,10 @@ def test_interfaces_list_what_users_import():
     diagram = app_components(files_of("excursion"))
     runtime = next(i for i in diagram["interfaces"] if i["provider"] == "eija_studio.application.runtime")
     assert runtime["names"] == ["check_actor", "execute", "initialise"]
+
+
+def test_only_imported_names_are_provided_interfaces():
+    diagram = app_components(files_of("library-loan"))
+    providers = {i["provider"] for i in diagram["interfaces"]}
+    assert "app/data.json" not in providers and "app/web" not in providers  # read and served, not imported
+    assert all("reads" not in i["names"] and "serves" not in i["names"] for i in diagram["interfaces"])

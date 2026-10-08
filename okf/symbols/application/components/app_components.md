@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/components.py#app_components
   title: application/components.py
   hash_method: ast-v2
-  sha256: 60e3a9c0b129223436fe92332ac15960933002d0dfbaf68e0e9d3a336d3af2cf
-notes_baseline: bf2b63f246b6524d77b8a06817dffa96747f6de483b4b8b682d1feebc7be8185
+  sha256: ead35989817cccae2f3729fc4bd23fabac00244412aae3eb11e4d318f0fb97f4
+notes_baseline: 587ac1c2bbb42027ea07a606227606b1f5631d797670bde64f31b43207111b0e
 ---
 
 # application.components.app_components

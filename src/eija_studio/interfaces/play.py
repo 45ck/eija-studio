@@ -156,8 +156,9 @@ def register(app, studio, web: Path) -> AppRunner:
     def play_components(body: BuildRequest):
         """The component diagram of the app this model and these screens would build, read from its files (ADR-0155)."""
         model = resolve(body)
-        files, manifest = app_files(studio.pack, model, screens_of(body, model))
-        return app_components(files) | {"model": model.semantic_hash, "cases": manifest["oracle"]["cases"]}
+        screens = screens_of(body, model)
+        files, manifest = app_files(studio.pack, model, screens)
+        return app_components(files) | {"model": model.semantic_hash, "screens": screens.digest, "cases": manifest["oracle"]["cases"]}
 
     @app.post("/api/play/build")
     def play_build(body: BuildRequest):

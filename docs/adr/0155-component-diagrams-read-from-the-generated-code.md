@@ -34,7 +34,7 @@ Chosen option: `application/components.py`, `app_components(files)`.
   * the server serving the page.
 * A provider's interface is the set of names its users import. It is drawn as a lollipop (ball) beside the provider, and each user has a dashed «use» dependency to it. File reads are «read» and serving is «serve».
 * Routes the page calls that the server does not serve are listed as `unserved_routes`. Utility imports that are not drawn (json, re, pathlib, ...) are listed as `not_drawn`, so the omission is visible.
-* `POST /api/play/components` builds the app's files in memory for the shown model and screens (`app_files`, nothing is written) and returns the diagram. The **Components** tab draws it in columns by depth of use, with UML packages for the installed EIJA package and the generated model files. Selecting a component shows its files, line count, what it provides, uses and is used by. After **Build & run**, the conformance suite shows its score and the server shows that it is running.
+* `POST /api/play/components` builds the app's files in memory for the shown model and screens (`app_files`, nothing is written) and returns the diagram. The **Components** tab draws it in columns by depth of use, with UML packages for the installed EIJA package and the generated model files. Selecting a component shows its files, line count, what it provides, uses and is used by. After **Build & run**, the conformance suite shows its score and the server shows that it is running, but only while the diagram is of the same model and screens digest the build was made from; any screen edit clears that evidence. File reads and serving are dependencies, not provided interfaces. A package's members share one column, so each package is one box.
 
 ### Consequences
 

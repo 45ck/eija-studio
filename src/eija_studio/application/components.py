@@ -122,7 +122,9 @@ def app_components(files: dict[str, str]) -> dict[str, Any]:
     _artifacts(diagram, files)
     provided: dict[str, set[str]] = {}
     for (_, target), names in diagram.uses.items():
-        provided.setdefault(target, set()).update(names)
+        imported = names - {"reads", "serves"}  # file reads and serving are dependencies, not provided interfaces
+        if imported:
+            provided.setdefault(target, set()).update(imported)
     return {
         "format": FORMAT,
         "components": sorted(diagram.components.values(), key=lambda c: c["id"]),

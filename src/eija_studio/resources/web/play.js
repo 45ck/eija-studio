@@ -349,7 +349,11 @@
   const shortNames = (names) => names.length > 2 ? names.slice(0, 2).join(", ") + ` +${names.length - 2}` : names.join(", ");
   const isLollipop = (d) => !d.names.some((n) => n === "reads" || n === "serves") && d.names.length > 0;
 
+  // Build evidence belongs to the exact model and screens it was built from; the structure of other screens gets none.
+  const evidence = () => (lastBuild && components && lastBuild.model === components.model && lastBuild.screens === components.screens ? lastBuild : null);
+
   function componentLabel(c) {
+    const lastBuild = evidence();
     const badge = c.id.startsWith("tests.") && lastBuild ? `\n${lastBuild.conformance.status === "PASS" ? "✓" : "✗"} ${lastBuild.cases} cases`
       : c.id === "app.server" && lastBuild && lastBuild.url ? "\n● running" : "";
     return `«${c.stereotype}»\n${c.name}${badge}`;
@@ -372,7 +376,10 @@
     };
     const size = (c) => [Math.min(220, Math.max(150, c.name.length * 7 + 30)), c.stereotype === "artifact" ? 38 : 54];
     const boxes = {}, columns = {};
-    for (const c of components.components) (columns[visit(c.id)] ||= []).push(c);
+    // A package's members share one column, the deepest of theirs, so the package is one box.
+    const deepest = {};
+    for (const c of components.components) if (GROUPS[c.stereotype]) deepest[c.stereotype] = Math.max(deepest[c.stereotype] || 0, visit(c.id));
+    for (const c of components.components) (columns[GROUPS[c.stereotype] ? deepest[c.stereotype] : visit(c.id)] ||= []).push(c);
     for (const [col, members] of Object.entries(columns)) {
       let y = 20;
       const x = 40 + Number(col) * COLUMN;
@@ -505,6 +512,8 @@
 
   function changed() {
     screensEdited = true;
+    lastBuild = null; // the last build was of other screens
+    restyleComponents();
     components = null;
     renderDesigner();
     clearTimeout(checkTimer);
@@ -817,7 +826,7 @@
     $("tab-usecases").addEventListener("click", () => showTab("usecases"));
     $("tab-screens").addEventListener("click", () => showTab("screens"));
     $("tab-components").addEventListener("click", () => showTab("components"));
-    $("screens-reset").addEventListener("click", async () => { screensEdited = false; await loadScreens(null); renderDesigner(); });
+    $("screens-reset").addEventListener("click", async () => { screensEdited = false; lastBuild = null; restyleComponents(); components = null; await loadScreens(null); renderDesigner(); });
     $("canvas-help").textContent = HINTS.states;
     window.addEventListener("resize", fit);
     document.body.dataset.ready = "true";
