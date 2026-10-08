@@ -3,7 +3,8 @@ Simulate, seeded simulated users whose every step the kernel decides (ADR-0152),
 build of designed screens (ADR-0154), the component diagram read from the files the app is built from (ADR-0155), the chat's plan mode, whose accepted
 steps can be previewed, built and simulated but never saved or applied from here (ADR-0156), the ripple of a plan
 across every diagram with the follow-on edits the proposer suggests, each re-checked (ADR-0158), and the run bar's
-seeded run log with breakpoints and Stop (ADR-0160).
+seeded run log with breakpoints and Stop (ADR-0160), and how a change looks: the model in force and the change on
+one state machine, removed elements kept as ghosts (ADR-0176).
 
 Build & run reuses `eija build` (ADR-0150): the app is generated into the workspace, its kernel conformance tests run,
 and only a PASSing app is started, as a separate local process on a free loopback port. One app runs at a time; a new
@@ -28,6 +29,7 @@ from pydantic import Field
 
 from eija_studio.application.components import app_components
 from eija_studio.application.law_proof import prove_laws
+from eija_studio.application.ghost_diff import ghost_diff
 from eija_studio.application.plan import preview_plan, propose_plan
 from eija_studio.application.ripple import check_follow_ons, ripple
 from eija_studio.application.simulation import MAX_BREAKPOINTS, MAX_STEPS, run_log, simulate
@@ -224,6 +226,19 @@ def register(app, studio, web: Path) -> AppRunner:
         document = proposer().follow_on(report, candidate, studio.pack) if report["problems"] else {"steps": []}
         return report | {"provider": proposer().name, "live": proposer().live,
                          "follow_ons": check_follow_ons(document, base, body.plan or [], studio.pack, candidate, after, data)}
+
+    def in_force(body: BuildRequest) -> Workflow:
+        """The model in force: the active baseline, or the case's baseline. A change is drawn against it."""
+        if body.case_id is None:
+            with studio.store.transaction() as u:
+                return Workflow.model_validate(u.active()["model"])
+        return studio.workflows(body.case_id)[0]
+
+    @app.post("/api/play/diff")
+    def play_diff(body: BuildRequest):
+        """How the change shown looks (ADR-0176): a case's candidate and any accepted plan steps, against the model in
+        force, as one union of both state machines. Read-only."""
+        return ghost_diff(in_force(body), resolve(body))
 
     @app.post("/api/play/build")
     def play_build(body: BuildRequest):

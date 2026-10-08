@@ -77,6 +77,7 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0165](0165-executable-uml-on-the-eija-kernel.md) | Executable UML on the EIJA kernel: one interpreter, a closed action vocabulary, SCXML as the standard cross-check | accepted for the state-machine slice |
 | [0166](0166-laws-proved-over-every-run-for-any-pack.md) | Laws as the layer above the UML, proved over every run for any pack, with a Laws tab in PlayIDE | accepted for the current law kinds |
 | [0170](0170-playide-assist-ask-complete-palette-review.md) | PlayIDE asks about the selection, completes exact names, has a command palette and keyboard plan review | accepted |
+| [0176](0176-how-a-uml-change-looks.md) | How a UML change looks: one stable layout, removed parts kept as ghosts, and lenses | accepted for the state machine |
 <!-- adr-index:end -->
 
 ## Reserved numbers for capability lanes

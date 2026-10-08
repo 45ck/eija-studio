@@ -11,6 +11,7 @@
 * [edit_preview](edit_preview/) - Symbols of application.edit_preview
 * [edit_proposal](edit_proposal/) - Symbols of application.edit_proposal
 * [formal](formal/) - Symbols of application.formal
+* [ghost_diff](ghost_diff/) - Symbols of application.ghost_diff
 * [history](history/) - Symbols of application.history
 * [law_proof](law_proof/) - Symbols of application.law_proof
 * [plan](plan/) - Symbols of application.plan

@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/play.py
   title: interfaces/play.py
   hash_method: ast-api-v1
-  sha256: 6a3b2fdaa82682fda0a72a89c7827181ddbc94430e584b7f0c2cd0a09a0cd222
-notes_baseline: 2110e6d94fab150493ec81cc31dac5857db9e3c04f738571e4f1edf1efee1ed0
+  sha256: 4aa2007f166bb031deb17fb966fbf5ca1d7a772ef24cec3ec80853c10572e831
+notes_baseline: b9b041401c903897387752aa412b842ed15f97b47cdea0a42b341bfbb2b34093
 ---
 
 # interfaces.play
@@ -34,7 +34,8 @@ Simulate, seeded simulated users whose every step the kernel decides (ADR-0152),
 build of designed screens (ADR-0154), the component diagram read from the files the app is built from (ADR-0155), the chat's plan mode, whose accepted
 steps can be previewed, built and simulated but never saved or applied from here (ADR-0156), the ripple of a plan
 across every diagram with the follow-on edits the proposer suggests, each re-checked (ADR-0158), and the run bar's
-seeded run log with breakpoints and Stop (ADR-0160).
+seeded run log with breakpoints and Stop (ADR-0160), and how a change looks: the model in force and the change on
+one state machine, removed elements kept as ghosts (ADR-0176).
 
 Build & run reuses `eija build` (ADR-0150): the app is generated into the workspace, its kernel conformance tests run,
 and only a PASSing app is started, as a separate local process on a free loopback port. One app runs at a time; a new
@@ -48,6 +49,7 @@ _Symbol pages are generated for the domain and application layers only._
 ## Internal imports
 
 * [`application/components`](/modules/application/components.md)
+* [`application/ghost_diff`](/modules/application/ghost_diff.md)
 * [`application/law_proof`](/modules/application/law_proof.md)
 * [`application/plan`](/modules/application/plan.md)
 * [`application/ripple`](/modules/application/ripple.md)
@@ -69,6 +71,7 @@ _No curated notes yet._
 ## Imports
 
 * [application.components](/modules/application/components.md) - The component diagram of an app built from the model (ADR-0155), extracted from the generated files themselves.
+* [application.ghost_diff](/modules/application/ghost_diff.md) - How a change looks on the state machine: both models on one canvas, with nothing hidden (ADR-0176).
 * [application.law_proof](/modules/application/law_proof.md) - Prove a pack's laws over every run the kernel allows (ADR-0166).
 * [application.plan](/modules/application/plan.md) - Plan mode for the PlayIDE chat (ADR-0156): an AI proposes a change as numbered typed steps; the person accepts or rejects each one and sees what the accepted o…
 * [application.ripple](/modules/application/ripple.md) - Ripple (ADR-0158): what one change to the state machine does to every other diagram of the same system, and the follow-on edits that would keep them in agreeme…

@@ -1,0 +1,51 @@
+/* PlayIDE Changes (ADR-0176): the model in force and the change on one diagram, with lenses and a change list. */
+.diff-view{flex:1;min-height:0;display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.diff-view[hidden]{display:none}
+.diff-tools{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:6px 12px;background:var(--panel);border-bottom:1px solid var(--line)}
+.lens{display:flex;gap:2px;background:var(--busy-bg);border-radius:8px;padding:2px}
+.lens button{border:0;background:transparent;padding:4px 12px;font-size:.84rem;font-weight:600}
+.lens button[aria-checked="true"]{background:var(--panel);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.onion{display:flex;align-items:center;gap:6px;color:var(--muted)}
+.onion input{width:110px}
+.diff-view[data-lens="onion"] .onion{color:var(--ink)}
+.focus-toggle{display:flex;align-items:center;gap:4px;color:var(--muted)}
+.diff-nav{display:flex;align-items:center;gap:4px;margin-left:auto}
+.diff-nav button{padding:3px 10px;font-size:1rem;line-height:1}
+.diff-nav span{min-width:7.5em;text-align:center;font-variant-numeric:tabular-nums}
+.diff-body{flex:1;min-height:0;display:flex;flex-direction:column}
+.diff-canvas{flex:1;border:0;min-height:0}
+.diff-side{max-height:38%;overflow:auto;padding:2px 12px 10px;border-top:1px solid var(--line);background:var(--panel)}
+.diff-side.collapsed>:not(.diff-side-head){display:none}
+.diff-side-head{display:flex;align-items:center;gap:14px;margin:6px 0}
+.diff-side-head h3{margin:0}
+.diff-side-head button{margin-left:auto}
+.diff-side-head button{padding:2px 8px;font-size:.75rem}
+.diff-legend{display:flex;flex-wrap:wrap;gap:4px 10px;margin:0;color:var(--muted)}
+.diff-legend .key{display:inline-flex;align-items:center;gap:4px}
+.swatch{display:inline-grid;place-items:center;width:1.3em;height:1.3em;border-radius:4px;font-weight:700;border:1.5px solid currentColor}
+.key.added,.diff-item.added .mark{color:var(--ok)}
+.key.changed,.key.moved,.diff-item.changed .mark,.diff-item.moved .mark{color:#8a5a08}
+.key.removed,.diff-item.removed .mark{color:var(--bad)}
+.key.removed .swatch{border-style:dashed}
+.diff-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:4px}
+.diff-list li{display:flex}
+.diff-item{width:100%;align-content:start;display:grid;grid-template-columns:1.4em 1fr;gap:4px;text-align:left;padding:5px 8px;font-size:.84rem;border:0;border-left:3px solid var(--line);border-radius:0 6px 6px 0;background:var(--busy-bg)}
+.diff-item.added{border-left-color:var(--ok)}
+.diff-item.changed,.diff-item.moved{border-left-color:#c27c0e}
+.diff-item.removed{border-left-color:var(--bad)}
+.diff-item.removed span:last-child{text-decoration:line-through;text-decoration-color:rgba(161,47,47,.5)}
+.diff-item[aria-current="true"]{background:var(--state);box-shadow:inset 0 0 0 1.5px var(--state-line)}
+.diff-item .mark{font-weight:700}
+.diff-note{margin:0 0 8px;padding:6px 8px;border-left:3px solid var(--line);background:var(--busy-bg);border-radius:0 6px 6px 0;font-size:.88rem}
+.diff-note.added{border-left-color:var(--ok)}
+.diff-note.changed,.diff-note.moved{border-left-color:#c27c0e}
+.diff-note.removed{border-left-color:var(--bad)}
+.diff-fields{border-collapse:collapse;font-size:.84rem;margin:0 0 8px;width:100%}
+.diff-fields th,.diff-fields td{padding:3px 6px;text-align:left;border-bottom:1px solid var(--line)}
+.diff-fields th{color:var(--muted);font-weight:600}
+.diff-fields td.before{color:var(--bad);text-decoration:line-through;text-decoration-color:rgba(161,47,47,.5)}
+.diff-fields td.after{color:var(--ok)}
+.show-changes{display:inline-flex;align-items:center;gap:2px}
+.show-changes[hidden]{display:none}
+.show-changes[aria-pressed="true"]{background:var(--state);border-color:var(--state-line)}
+.show-changes .badge{display:inline-block;min-width:1.3em;margin-left:5px;padding:0 5px;border-radius:999px;background:#fdf1dc;color:#8a5a08;font-size:.7rem;line-height:1.35em;text-align:center}

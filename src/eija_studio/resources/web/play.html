@@ -5,12 +5,14 @@
 <title>PlayIDE</title>
 <link rel="stylesheet" href="/assets/play.css">
 <link rel="stylesheet" href="/assets/play-assist.css">
+<link rel="stylesheet" href="/assets/play-diff.css">
 <script src="/assets/vendor/dagre.min.js" defer></script>
 <script src="/assets/vendor/maxgraph.min.js" defer></script>
 <script src="/assets/play.js" defer></script>
 <script src="/assets/play-run.js" defer></script>
 <script src="/assets/play-laws.js" defer></script>
 <script src="/assets/play-assist.js" defer></script>
+<script src="/assets/play-diff.js" defer></script>
 </head>
 <body>
 <header class="bar">
@@ -68,6 +70,7 @@
     <div id="class-canvas" class="canvas" tabindex="0" role="tabpanel" aria-labelledby="tab-classes" hidden></div>
     <div id="usecase-canvas" class="canvas" tabindex="0" role="tabpanel" aria-labelledby="tab-usecases" hidden></div>
     <div id="component-canvas" class="canvas" tabindex="0" role="tabpanel" aria-labelledby="tab-components" hidden></div>
+    <div id="diff-view" class="diff-view" role="region" aria-label="The change on the state machine" hidden></div>
     <div id="screens" class="designer" role="tabpanel" aria-labelledby="tab-screens" hidden>
       <nav class="screen-list" aria-labelledby="screen-list-title"><h3 id="screen-list-title">Use cases</h3><ul id="screen-list"></ul></nav>
       <div class="screen-stage">

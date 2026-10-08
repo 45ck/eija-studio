@@ -2,6 +2,7 @@
 
 ## 2026-10-08
 
+* **How a UML change looks**: synced ADR-0176 and the new `application.ghost_diff` module and symbol pages; `interfaces.play` (`/api/play/diff`) and `interfaces.http` (the `play-diff.js` and `play-diff.css` assets) refreshed. Other pages changed only in generated backlinks. No Notes were hand-edited and nothing was recorded as verified.
 * **Laws proved over every run**: synced ADR-0166 and the new `application.law_proof` module and symbol pages; `interfaces.cli` (`laws`), `interfaces.play` (`/api/play/laws`) and `interfaces.http` (the `play-laws.js` asset) refreshed. No Notes were hand-edited and nothing was recorded as verified.
 * **Ripple across diagrams**: synced ADR-0158, the new `application.ripple` module, `domain.screens.default_screen`, `application.ports.PlanProposer.follow_on`, `adapters.plan_proposals` and `interfaces.play` pages. No Notes were hand-edited and nothing was recorded as verified. The new `playide_ripple` demo was recorded and the PlayIDE tour re-recorded.
 * **PlayIDE assist**: synced ADR-0170 (and its review fixes); `interfaces.http` refreshed (`WEB_ASSETS` allows `play-assist.js` and `play-assist.css`). The ADR-0064, ADR-0156, ADR-0157 and ADR-0160 pages changed only in generated backlinks. No Notes were hand-edited and nothing was recorded as verified.

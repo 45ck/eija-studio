@@ -11,6 +11,7 @@
 * [application.edit_preview](edit_preview.md) - Read-only edit projection over one captured case, using the same interpreter as owner edits.
 * [application.edit_proposal](edit_proposal.md) - A read-only offline proposal over one captured candidate; owner edits keep their existing boundary.
 * [application.formal](formal.md) - Formal evidence in the application layer: seal what an adapter collected, and build the packet view.
+* [application.ghost_diff](ghost_diff.md) - How a change looks on the state machine: both models on one canvas, with nothing hidden (ADR-0176).
 * [application.history](history.md) - Semantic history is a projection of typed commands, replayed by the existing policy interpreter.
 * [application.law_proof](law_proof.md) - Prove a pack's laws over every run the kernel allows (ADR-0166).
 * [application.plan](plan.md) - Plan mode for the PlayIDE chat (ADR-0156): an AI proposes a change as numbered typed steps; the person accepts or rejects each one and sees what the accepted ones would do.
