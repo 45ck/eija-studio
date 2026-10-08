@@ -172,7 +172,20 @@
     return lines.join("\n");
   }
 
-  window.PlayDiff = { mount, layout };
+  // The same marks and colours for the other diagrams (class and use case), which draw the union themselves: `part` is
+  // box (a use case), actor, line (an association) or text (an enumeration literal). Unchanged parts fade back.
+  function look(status, part) {
+    const l = LOOK[status], ghostly = status === "removed", quiet = status === "same";
+    if (part === "text") return quiet ? { textOpacity: 50 } : { fontColor: l.text, fontStyle: BOLD | (ghostly ? STRIKE : 0), textOpacity: ghostly ? 70 : 100 };
+    const opacity = quiet ? 40 : ghostly ? 55 : 100;
+    const base = { strokeColor: quiet ? undefined : l.stroke, strokeWidth: quiet ? undefined : 2.5, dashed: ghostly, dashPattern: "6 4", opacity, textOpacity: opacity };
+    if (part === "line") return base;
+    const text = quiet ? {} : { fontColor: l.text, fontStyle: BOLD | (ghostly ? STRIKE : 0) };
+    return part === "actor" ? { ...base, ...text } : { ...base, ...text, fillColor: quiet ? undefined : l.fill };
+  }
+  const markOf = (status) => LOOK[status].mark;
+
+  window.PlayDiff = { mount, layout, look, mark: markOf };
 
   // ---- The Changes view, on the state machine tab ---------------------------------------------------------------
   // A toggle beside Fit, shown while there is a change, swaps the editable canvas for the change drawn as above.-
@@ -194,8 +207,12 @@
     }
     if (mine !== seq) return; // a newer plan asked again
     ghost = result.error ? null : result;
+    if (open && ghost && !ghost.changes.length) toggle(false); // nothing left to show
     badge(result);
-    if (open) render(result);
+    if (!open) return;
+    const tab = ide().tab();
+    if (tab === "states") render(result);
+    else if (DRAWN.includes(tab)) ide().showTab(tab);
   }
 
   function badge(result) {
@@ -207,8 +224,31 @@
       : "No change to show";
   }
 
-  function lensBar() {
-    const bar = el("div", undefined, { class: "diff-tools", role: "toolbar", "aria-label": "How to show the change" });
+  // One calm row: what changed, in a sentence, and stepping. Lenses, the onion skin and Fade unchanged wait behind Compare.
+  function toolbar(counts) {
+    const bar = el("div", undefined, { class: "diff-tools", role: "toolbar", "aria-label": "The change" });
+    bar.append(summary(counts));
+    const nav = el("div", undefined, { class: "diff-nav" });
+    const prev = el("button", "‹", { type: "button", class: "quiet", "aria-label": "Previous change", title: "Previous change ([)", "aria-keyshortcuts": "[" });
+    const next = el("button", "›", { type: "button", class: "quiet", "aria-label": "Next change", title: "Next change (])", "aria-keyshortcuts": "]" });
+    prev.addEventListener("click", () => step(-1));
+    next.addEventListener("click", () => step(1));
+    nav.append(prev, el("span", "", { id: "diff-pos", class: "small", role: "status", "aria-live": "polite" }), next);
+    const compare = el("button", "Compare", { type: "button", id: "diff-compare", class: "quiet", "aria-pressed": "false", "aria-controls": "diff-compare-tools",
+      title: "Before, after, and a slider between them" });
+    const tools = compareTools();
+    compare.addEventListener("click", () => {
+      const on = tools.hidden;
+      tools.hidden = !on;
+      compare.setAttribute("aria-pressed", String(on));
+      if (!on) view.setLens("changes");
+    });
+    bar.append(nav, compare);
+    return [bar, tools];
+  }
+
+  function compareTools() {
+    const bar = el("div", undefined, { class: "diff-tools diff-compare", id: "diff-compare-tools", role: "toolbar", "aria-label": "Compare before and after", hidden: "" });
     const group = el("div", undefined, { class: "lens", role: "radiogroup", "aria-label": "Lens" });
     for (const [lens, text, title] of [["before", "Before", "The model in force"], ["changes", "Changes", "Both, with removed elements as ghosts"],
       ["after", "After", "The model with the change"]]) {
@@ -225,27 +265,21 @@
     box.checked = true;
     box.addEventListener("change", () => view.setFocus(box.checked));
     focus.append(box, " Fade unchanged");
-    const nav = el("div", undefined, { class: "diff-nav" });
-    const prev = el("button", "‹", { type: "button", class: "quiet", "aria-label": "Previous change", title: "Previous change ([)", "aria-keyshortcuts": "[" });
-    const next = el("button", "›", { type: "button", class: "quiet", "aria-label": "Next change", title: "Next change (])", "aria-keyshortcuts": "]" });
-    prev.addEventListener("click", () => step(-1));
-    next.addEventListener("click", () => step(1));
-    nav.append(prev, el("span", "", { id: "diff-pos", class: "small", role: "status", "aria-live": "polite" }), next);
-    bar.append(group, onionLabel, focus, nav);
+    bar.append(group, onionLabel, focus);
     return bar;
   }
 
-  function legend(counts) {
-    const box = el("p", undefined, { class: "diff-legend small" });
-    for (const [status, text] of [["added", "added"], ["changed", "changed"], ["moved", "moved (old route dashed)"], ["removed", "removed (ghost)"]]) {
-      if (!counts[status]) continue;
-      const part = el("span", undefined, { class: "key " + status });
-      part.append(el("span", LOOK[status].mark.trim(), { class: "swatch" }), `${counts[status]} ${text}`);
-      box.append(part);
-    }
+  // "4 changes: 2 added, 1 moved, 1 removed", each count in its colour: the legend and the count in one line.
+  function summary(counts) {
+    const total = Object.values(counts).reduce((a, b) => a + b, 0);
+    const box = el("p", undefined, { class: "diff-summary" });
+    box.append(el("strong", `${total} change${total === 1 ? "" : "s"}`));
+    const parts = [["added", "added"], ["changed", "changed"], ["moved", "moved"], ["removed", "removed"]].filter(([s]) => counts[s]);
+    parts.forEach(([status, text], i) => box.append(i ? ", " : ": ", el("span", `${counts[status]} ${text}`, { class: "key " + status })));
     return box;
   }
 
+  // The list lives in the inspector: one place to read the change. The open change shows its before and after under it.
   function changeList(changes) {
     const list = el("ol", undefined, { class: "diff-list", "aria-label": "Changes" });
     changes.forEach((c, i) => {
@@ -256,6 +290,7 @@
       li.append(b);
       list.append(li);
     });
+    list.addEventListener("keydown", keys);
     return list;
   }
 
@@ -270,13 +305,9 @@
       return;
     }
     const canvas = el("div", undefined, { class: "canvas diff-canvas", tabindex: "0", "aria-label": "The change on the state machine" });
-    const side = el("aside", undefined, { class: "diff-side" });
-    const head = el("div", undefined, { class: "diff-side-head" }), hide = el("button", "Hide", { type: "button", class: "quiet", "aria-expanded": "true" });
-    hide.addEventListener("click", () => { const shut = side.classList.toggle("collapsed"); hide.textContent = shut ? "Show" : "Hide"; hide.setAttribute("aria-expanded", String(!shut)); view.fit(); });
-    head.append(el("h3", "Changes"), legend(result.counts), hide);
-    side.append(head, changeList(result.changes));
-    host.append(lensBar(), el("div", undefined, { class: "diff-body" }));
-    host.lastChild.append(canvas, side);
+    host.append(...toolbar(result.counts), canvas);
+    $("inspector").replaceChildren(el("h3", "Changes"), changeList(result.changes),
+      el("p", "Read-only: the change is not saved, approved or applied here.", { class: "muted small" }));
     view = mount(canvas, result, {
       onLens: (lens, onion) => {
         for (const b of host.querySelectorAll(".lens button")) b.setAttribute("aria-checked", String(b.dataset.lens === lens));
@@ -284,49 +315,65 @@
         host.dataset.lens = lens;
       },
       onShow: (change) => detail(change),
-      onSelect: (item, id) => { const i = result.changes.findIndex((c) => c.ref === id || c.was === id); if (i >= 0 && i !== at) mark(i); },
+      onSelect: (item, id) => { const i = result.changes.findIndex((c) => c.ref === id || c.was === id); if (i >= 0 && i !== at) { mark(i); detail(result.changes[i]); } },
     });
     view.setLens("changes");
     at = -1;
-    $("diff-pos").textContent = `${result.changes.length} change${result.changes.length === 1 ? "" : "s"}`;
+    $("diff-pos").textContent = "";
     canvas.addEventListener("keydown", keys);
-    side.addEventListener("keydown", keys);
   }
 
   function mark(i) {
     at = i;
     for (const b of document.querySelectorAll(".diff-item")) b.setAttribute("aria-current", String(+b.dataset.n === ghost.changes[i].n));
-    $("diff-pos").textContent = `Change ${i + 1} of ${ghost.changes.length}`;
+    if ($("diff-pos")) $("diff-pos").textContent = `Change ${i + 1} of ${ghost.changes.length}`;
   }
 
   function go(i) {
-    if (!view || !ghost.changes.length) return;
+    if (!ghost || !ghost.changes.length) return;
     mark((i + ghost.changes.length) % ghost.changes.length);
-    view.show(ghost.changes[at]);
+    if (view) view.show(ghost.changes[at]); // the state machine
+    else { showOn(ide().tab(), ghost.changes[at]); detail(ghost.changes[at]); }
+  }
+
+  // Where a change shows on the class and use case diagrams: a state is a literal of the record's enumeration, and an
+  // action is a use case.
+  function cellsOn(tab, change) {
+    const refs = [change.ref, change.was].filter(Boolean);
+    if (tab === "classes") return refs.filter((r) => r.startsWith("state:")).map((r) => "literal:" + r.slice(6));
+    if (tab === "usecases") return refs.filter((r) => r.startsWith("t:") || r.startsWith("was:")).map((r) => "uc:" + r.slice(r.indexOf(":") + 1));
+    return [];
+  }
+
+  function showOn(tab, change) {
+    const g = ide().diagram(tab);
+    if (!g) return;
+    const found = cellsOn(tab, change).map((id) => g.getDataModel().getCell(id)).filter(Boolean);
+    const pick = found.map((c) => (c.id.startsWith("literal:") ? c.parent : c)); // a literal is not selectable; its enumeration is
+    g.setSelectionCells(pick);
+    if (pick[0]) g.scrollCellToVisible(pick[0], false);
   }
 
   const step = (by) => go(at < 0 ? (by > 0 ? 0 : -1) : at + by);
 
-  // What one change is, in the inspector: the sentence, and each changed field before and after.
+  // What one change is, opened under its line in the list: each changed field before and after, when it has any.
   function detail(change) {
-    const box = $("inspector");
-    box.replaceChildren(el("h3", `Change ${change.n}: ${change.change}`), el("p", change.text, { class: "diff-note " + change.change }));
-    const item = view.item(change.ref), t = item && item.kind === "transition" ? item.data : null;
-    if (t && ((t.fields && t.fields.length) || t.was)) {
-      const table = el("table", undefined, { class: "diff-fields" });
-      const head = el("tr");
-      head.append(el("th", ""), el("th", "Before"), el("th", "After"));
-      table.append(head);
-      const rowOf = (name, before, after) => {
-        const tr = el("tr");
-        tr.append(el("th", name), el("td", before, { class: "before" }), el("td", after, { class: "after" }));
-        table.append(tr);
-      };
-      if (t.was) rowOf("route", `${t.was.from_state} → ${t.was.to_state}`, `${t.from_state} → ${t.to_state}`);
-      for (const f of t.fields || []) rowOf(f.field, [].concat(f.before).join(", ") || "none", [].concat(f.after).join(", ") || "none");
-      box.append(table);
-    }
-    box.append(el("p", "Read-only: the change is not saved, approved or applied here.", { class: "muted small" }));
+    for (const old of document.querySelectorAll(".diff-detail")) old.remove();
+    const t = ghost.transitions.find((x) => x.key === change.ref);
+    if (!t || !((t.fields && t.fields.length) || t.was)) return;
+    const table = el("table", undefined, { class: "diff-fields diff-detail" });
+    const head = el("tr");
+    head.append(el("th", ""), el("th", "Before"), el("th", "After"));
+    table.append(head);
+    const rowOf = (name, before, after) => {
+      const tr = el("tr");
+      tr.append(el("th", name), el("td", before, { class: "before" }), el("td", after, { class: "after" }));
+      table.append(tr);
+    };
+    if (t.was) rowOf("route", `${t.was.from_state} → ${t.was.to_state}`, `${t.from_state} → ${t.to_state}`);
+    for (const f of t.fields || []) rowOf(f.field, [].concat(f.before).join(", ") || "none", [].concat(f.after).join(", ") || "none");
+    const li = document.querySelector(`.diff-item[data-n="${change.n}"]`);
+    if (li) li.parentElement.append(table);
   }
 
   // [ and ] step through the changes; b, c and a pick a lens. Single keys act only while focus is in the Changes tab.
@@ -337,16 +384,45 @@
     else if (lens) { event.preventDefault(); view.setLens(lens, lens === "before" ? 0 : lens === "after" ? 1 : view.onion); }
   }
 
+  const DRAWN = ["states", "classes", "usecases"]; // the diagrams that draw a change; the others are left as they are
+  const HELP = {
+    states: "Green is added, amber changed or moved, and faded dashes are what the change removes. [ and ] step through the changes.",
+    classes: "The record's states are its enumeration's literals: green is added, struck through is what the change removes.",
+    usecases: "Green is added, amber changed, and faded dashes are what the change removes: use cases, actors and who takes which.",
+  };
+
+  // Changes is a mode across the diagrams: it stays on while you flip tabs, and each diagram shows the same change.
+  function apply(tab) {
+    const states = tab === "states", on = open && states;
+    $("diff-view").hidden = !on;
+    $("canvas").hidden = on || !states;
+    $("draw-palette").hidden = on || !states;
+    ide().setChanges(open && ghost && DRAWN.includes(tab) ? ghost : null);
+    if (on) render(ghost);
+    else if (view) { view.destroy(); view = null; }
+    if (open && DRAWN.includes(tab)) {
+      $("canvas-help").textContent = HELP[tab];
+      if (!states) list();
+    }
+  }
+
+  // The change list in the inspector, for diagrams other than the state machine (whose view puts it there itself).
+  function list() {
+    if (!ghost || !ghost.changes.length) return;
+    $("inspector").replaceChildren(el("h3", "Changes"), changeList(ghost.changes),
+      el("p", "Read-only: the change is not saved, approved or applied here.", { class: "muted small" }));
+    at = -1;
+  }
+
   function toggle(on) {
     open = on;
     $("show-changes").setAttribute("aria-pressed", String(on));
-    $("diff-view").hidden = !on;
-    const states = ide().tab() === "states"; // closing because another tab was shown leaves that tab's panels alone
-    $("canvas").hidden = on || !states;
-    $("draw-palette").hidden = on || !states;
-    if (on) $("canvas-help").textContent = "The model in force and the change on one diagram. Removed parts stay as faded ghosts. [ and ] step through the changes; B, C and A pick a lens.";
-    if (on) { render(ghost); if (!ghost) refresh(); }
-    else if (view) { view.destroy(); view = null; }
+    const tab = ide().tab();
+    if (on && !DRAWN.includes(tab)) { ide().showTab("states"); return; } // showTab calls apply through the tab hook
+    if (DRAWN.includes(tab) && tab !== "states") ide().showTab(tab); // redraw that diagram with or without the change
+    else apply(tab);
+    if (!on) $("inspector").replaceChildren(el("p", "Select a state or transition.", { class: "muted" }));
+    if (on && !ghost) refresh();
     badge(ghost);
   }
 
@@ -354,12 +430,13 @@
     const button = el("button", "Changes", { id: "show-changes", type: "button", class: "quiet show-changes", "aria-pressed": "false", "aria-controls": "diff-view", hidden: "" });
     button.append(el("span", "0", { class: "badge" }));
     $("fit").before(button);
-    button.addEventListener("click", () => {
-      if (open) { ide().showTab("states"); return; } // back to the editable diagram
-      if (document.querySelector('#tab-states[aria-selected="false"]')) ide().showTab("states");
-      toggle(true);
+    button.addEventListener("click", () => toggle(!open));
+    ide().hooks.tab.push((which) => apply(which));
+    ide().hooks.changeSelect.push((id) => {
+      if (!ghost) return;
+      const i = ghost.changes.findIndex((c) => cellsOn(ide().tab(), c).includes(id));
+      if (i >= 0 && i !== at) { mark(i); detail(ghost.changes[i]); }
     });
-    ide().hooks.tab.push(() => { if (open) toggle(false); });
     ide().hooks.diffGraph = () => (open && view ? view.graph : null);
     document.addEventListener("playide:plan", () => { ghost = null; refresh(); });
     refresh();

@@ -129,17 +129,37 @@ def test_the_changes_view_in_a_real_browser():
             tip = page.evaluate("""() => { const g = window.PlayIDE.hooks.diffGraph(), t = g.getTooltipForCell(g.getDataModel().getCell('t:TR-RENEW'));
                 return [t instanceof HTMLElement, t.children.length, t.textContent]; }""")
             assert tip[:2] == [True, 0] and "Renew" in tip[2]  # a text node: model names are never parsed as HTML
+            # Calm by default: one summary line and stepping; the lenses and slider wait behind Compare, the list is in the inspector.
+            assert page.inner_text(".diff-summary") == "4 changes: 2 added, 1 moved, 1 removed"
+            assert page.is_hidden("#diff-compare-tools") and page.locator("#inspector .diff-item").count() == 4
             page.focus(".diff-canvas")
             page.keyboard.press("]")
-            assert page.inner_text("#diff-pos") == "Change 1 of 4" and "Adds state Lost" in page.inner_text("#inspector")
+            assert page.inner_text("#diff-pos") == "Change 1 of 4" and page.locator(".diff-detail").count() == 0  # nothing to tabulate
+            page.click("#inspector .diff-item.moved")
+            assert "Overdue → Returned" in page.inner_text(".diff-detail")  # the moved arrow opens its route before and after
+            page.click("#diff-compare")
+            assert page.is_visible(".lens button[data-lens=after]")
+            page.focus(".diff-canvas")
             page.keyboard.press("b")  # Before hides what the change adds, and drops the marks
             lost = page.evaluate("() => window.PlayIDE.hooks.diffGraph().getDataModel().getCell('state:Lost').visible")
             assert lost is False and page.get_attribute(".lens button[data-lens=before]", "aria-checked") == "true"
             page.keyboard.press("a")
             assert page.evaluate("() => window.PlayIDE.hooks.diffGraph().getDataModel().getCell('was:TR-CANCEL').visible") is False
-            page.click("#tab-classes")  # another tab closes the view and gives the state machine back
+            # Changes stays on across the diagrams: the class diagram and the use cases show the same change.
+            page.click("#tab-classes")
+            lost = page.evaluate("() => window.PlayIDE.diagram('classes').getDataModel().getCell('literal:Lost').value")
+            assert lost == "+ Lost" and page.locator("#inspector .diff-item").count() == 4
+            page.click("#tab-usecases")
+            cells = page.evaluate("""() => { const m = window.PlayIDE.diagram('usecases').getDataModel();
+                return ['uc:TR-CANCEL', 'uc:TR-RENEW', 'role:Clerk'].map((id) => { const c = m.getCell(id); return c && [c.value, !!c.style.dashed]; }); }""")
+            assert cells == [["\u2212 Cancel", True], ["+ Renew", False], ["Clerk", False]]  # Clerk keeps MarkOverdue in this plan
+            page.click("#inspector .diff-item.removed")
+            assert page.evaluate("() => window.PlayIDE.diagram('usecases').getSelectionCell().id") == "uc:TR-CANCEL"
+            page.click("#show-changes")  # off: every diagram is the model again
+            plain = page.evaluate("() => window.PlayIDE.diagram('usecases').getDataModel().getCell('uc:TR-CANCEL').value")
+            assert plain == "Cancel" and page.get_attribute("#show-changes", "aria-pressed") == "false"
             page.click("#tab-states")
-            assert page.is_visible("#canvas") and page.is_hidden("#diff-view")
+            assert page.is_visible("#canvas") and page.is_hidden("#diff-view") and page.locator("#inspector .diff-item").count() == 0
             assert errors == []
         finally:
             chrome.close()

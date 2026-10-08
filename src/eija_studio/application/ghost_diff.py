@@ -99,6 +99,36 @@ def _changes(before: Workflow, after: Workflow, states: list[dict[str, Any]], ed
     return [{"n": i + 1, **c} for i, c in enumerate(changes)]
 
 
+def _case(edge: dict[str, Any]) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    """One use case (an action) and its associations. A role change keeps the use case and moves its association."""
+    role = next((f for f in edge.get("fields", []) if f["field"] == "role"), None)
+    status = edge["status"] if edge["status"] in ("added", "removed") else "changed" if role else "same"
+    case = {"id": edge["id"], "action": edge["action"], "role": edge["role"], "status": status,
+            "was_role": role["before"] if role else None}
+    if role:
+        return case, [{"role": role["before"], "case": edge["id"], "status": "removed"}, {"role": edge["role"], "case": edge["id"], "status": "added"}]
+    return case, [{"role": edge["role"], "case": edge["id"], "status": status}]
+
+
+def _use_cases(edges: list[dict[str, Any]]) -> dict[str, Any]:
+    """The use case diagram of both models (ADR-0153): a use case per action, an actor per role, and who takes which,
+    each with a status, so the use case diagram can show a change the way the state machine does."""
+    cases, links = [], []
+    for edge in edges:
+        if edge["status"] != "was":  # a moved arrow's old route is the same use case
+            case, case_links = _case(edge)
+            cases.append(case)
+            links += case_links
+    return {"cases": sorted(cases, key=lambda c: (c["action"], c["id"])), "actors": _actors(links), "links": links}
+
+
+def _actors(links: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """An actor is added or removed when every one of its associations is."""
+    had = {link["role"] for link in links if link["status"] != "added"}
+    has = {link["role"] for link in links if link["status"] != "removed"}
+    return [{"name": r, "status": "same" if r in had and r in has else "added" if r in has else "removed"} for r in sorted(had | has)]
+
+
 def ghost_diff(before: Workflow, after: Workflow) -> dict[str, Any]:
     """The union of two state machines, each element with its status, and the ordered list of changes."""
     a, b = {t.action: t for t in before.transitions}, {t.action: t for t in after.transitions}
@@ -109,4 +139,4 @@ def ghost_diff(before: Workflow, after: Workflow) -> dict[str, Any]:
     counts = {k: sum(c["change"] == k for c in changes) for k in ("added", "removed", "changed", "moved")}
     return {"format": FORMAT, "before": before.semantic_hash, "after": after.semantic_hash,
             "initial": {"before": before.initial_state, "after": after.initial_state},
-            "states": states, "transitions": edges, "changes": changes, "counts": counts}
+            "states": states, "transitions": edges, "use_cases": _use_cases(edges), "changes": changes, "counts": counts}

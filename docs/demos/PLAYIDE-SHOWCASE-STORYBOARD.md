@@ -17,17 +17,18 @@ Design it in UML, press play, watch it run, fix it by dragging, let the AI do th
 | 2 | Press play | A breakpoint on a state (F9), then Run (F5): seeded users act, the kernel decides every step, and the run pauses on the breakpoint and then on the kernel's refusals, marked on the diagram. Build & run then starts the real app beside the model | ADR-0160 (run bar), ADR-0150 | Recorded |
 | 3 | Fix it by dragging, not typing | A state dragged from the palette. The policy checks it at once as a typed step | ADR-0157 | Recorded |
 | 4 | Watch it ripple | The drag badges every diagram tab it touches and warns that nothing leads into the new state. The class diagram gains the enum literal. The AI's follow-on (a way in) is re-checked by the server and ripples into a new use case and screen | ADR-0158; offline proposer, labelled | Recorded |
-| 5 | Let the AI do the busywork | A plain-language request becomes typed UML steps. The policy refuses one, the viewer looks at each step, unticks the refused one and keeps the rest | ADR-0156. The offline phrase reader is labelled on screen | Recorded |
-| 6 | Review it as a model, not a PR | The change as a UML diff you can run and approve in PlayIDE | Thread "Review changes in PlayIDE, not PRs". The owner suggested a short moment where a non-technical stakeholder reads the same UML diff (not a plain-language translation) | Skipped until it merges |
+| 5 | Let the AI do the busywork | A plain-language request (let librarians renew overdue loans) becomes two typed UML steps. The policy allows them, and the viewer looks at each on the diagram | ADR-0156. The offline phrase reader is labelled on screen | Recorded |
+| 6 | Review the change, not the code | The Review tab draws both models on one diagram (new path green, deleted path dashed red). Before each answer the reviewer predicts what the kernel will do. A wrong prediction catches that the AI quietly deleted late returns. The step is rejected, and the review runs again and passes | ADR-0175 | Recorded |
 | 7 | Prove it, then play again | Build the changed system, run conformance and simulate again. The Laws tab proves every law over every reachable run and names what it never reached. The checks ring fills to 5 of 5 | ADR-0157, ADR-0158, ADR-0166 | Recorded |
 | 8 | Ship it | Verify, approve and apply | Waits on the owner's source review and restamp (issue #80) | Skipped |
+| 8a | Share it as UML | The same page opened as `/play?view=review`: read-only diagrams, Permissions and runs, with no editing tools and no chat, for a stakeholder who reads UML | ADR-0172, ADR-0171 | Recorded |
 | 9 | End card | "Less typing. No diff archaeology." | A title card | Recorded |
 
 Chapter chips number only the beats that are shown, so a skipped beat leaves no gap.
 
 Candidate beat, not yet scripted: on an approvals or claims workflow, the AI's change quietly lets a clerk approve their own claim, and the diagram diff and permission check catch it. It needs a pack with that workflow. Wording to keep: "review the change, not the code" and "the app cannot disobey the model". Wording to avoid: "generate apps from UML", "compliant" and "replaces PRs".
 
-Two other threads change how beats look rather than adding beats. "Executable UML on the EIJA engine" may add a run of a sequence or class behaviour to beat 1. "PlayIDE UX, HCI and agentic HCI" may change the layout every beat is filmed on. The script's selectors are updated when either merges.
+Every beat is filmed on the workbench shell (ADR-0173): outline and inspector on the left, diagram tabs in the middle, chat on the right, and Run, Simulation and the app in a bottom panel. The UML change view (ADR-0176) restyles the review diagram when it merges.
 
 ## How it is filmed
 
