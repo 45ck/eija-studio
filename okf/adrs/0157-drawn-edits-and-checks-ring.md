@@ -63,4 +63,8 @@ _No curated notes yet._
 ## Related decisions
 
 * [ADR-0156: Chat plan mode proposes typed steps the person accepts or rejects](/adrs/0156-chat-plan-mode-proposes-typed-steps.md) - The owner's roadmap asks for an AI chat sidebar "like T3 Code, with plan mode prominent", in which the AI proposes changes to the UML and the person accepts or…
+
+## Referenced by
+
+* [ADR-0158: PlayIDE asks about the selection, completes exact names, has a command palette and keyboard plan review](/adrs/0158-playide-assist-ask-complete-palette-review.md) - PlayIDE's chat proposes typed steps (ADR-0156) and rewards checking them (ADR-0157).
 <!-- okf:generated:end links -->

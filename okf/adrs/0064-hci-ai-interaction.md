@@ -67,5 +67,6 @@ _No curated notes yet._
 * [HCI-ADR-0057: Information architecture, navigation and command palette: three destinations, a stable frame, one palette, hash deep links](/adrs/0057-hci-ia-navigation.md) - HCI-ADR-0057: Information architecture, navigation and command palette: three destinations, a stable frame, one palette, hash deep links
 * [HCI-ADR-0065: Content, microcopy and sample-first onboarding for the Studio](/adrs/0065-hci-content-onboarding.md) - HCI-ADR-0065: Content, microcopy and sample-first onboarding for the Studio
 * [HCI-ADR-0067: Accessibility architecture](/adrs/0067-hci-accessibility.md) - HCI-ADR-0067: Accessibility architecture
+* [ADR-0158: PlayIDE asks about the selection, completes exact names, has a command palette and keyboard plan review](/adrs/0158-playide-assist-ask-complete-palette-review.md) - PlayIDE's chat proposes typed steps (ADR-0156) and rewards checking them (ADR-0157).
 * [HCI-ADRs: research-grounded UI/UX decisions (`ux`, `studio-ux`)](/lanes/0057-hci-adrs-research-grounded-ui-ux.md) - Capability lane with ADR numbers 0057–0088 reserved.
 <!-- okf:generated:end links -->

@@ -2,6 +2,7 @@
 
 ## 2026-10-08
 
+* **PlayIDE assist**: synced ADR-0158; `interfaces.http` refreshed (`WEB_ASSETS` allows `play-assist.js` and `play-assist.css`). The ADR-0064, ADR-0156 and ADR-0157 pages changed only in generated backlinks. No Notes were hand-edited and nothing was recorded as verified.
 * **Drawing and checks ring**: synced ADR-0157 and refreshed `application.plan` (preview steps carry their text) and `interfaces.http` (`pack_summary` lists roles). No Notes were hand-edited and nothing was recorded as verified.
 * **Chat plan mode, review fixes**: refreshed `adapters.plan_proposals` (a request falls back to a modelled meaning only when no clause was read). No Notes were hand-edited and nothing was recorded as verified.
 * **Chat plan mode**: synced ADR-0156, the new `application.plan` module, `application.ports.PlanProposer` and `interfaces.play` pages. Added a Notes paragraph on `Studio.plan_proposer` and re-read it (process review). Nothing was recorded as verified.

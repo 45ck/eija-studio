@@ -54,4 +54,5 @@ _No curated notes yet._
 ## Referenced by
 
 * [ADR-0157: Drawn edits join the plan, and a checks ring rewards checking](/adrs/0157-drawn-edits-and-checks-ring.md) - The owner wants PlayIDE to be visual and mouse-driven ("drag and drop, design then test in place") and to feel rewarding, "tied to real checks".
+* [ADR-0158: PlayIDE asks about the selection, completes exact names, has a command palette and keyboard plan review](/adrs/0158-playide-assist-ask-complete-palette-review.md) - PlayIDE's chat proposes typed steps (ADR-0156) and rewards checking them (ADR-0157).
 <!-- okf:generated:end links -->

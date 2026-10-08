@@ -165,6 +165,7 @@
     selected = id;
     for (const b of document.querySelectorAll(".outline button")) b.setAttribute("aria-current", String(b.dataset.id === id));
     inspect(id);
+    document.dispatchEvent(new CustomEvent("playide:select", { detail: id }));
     if (fromOutline) {
       showTab(id.startsWith("class:") ? "classes" : "states");
       const target = current(), cell = target && target.getDataModel().getCell(id);
@@ -1322,7 +1323,10 @@
     $("screens-reset").addEventListener("click", async () => { screensEdited = false; lastBuild = null; restyleComponents(); components = null; await loadScreens(null); renderDesigner(); });
     $("canvas-help").textContent = HINTS.states;
     window.addEventListener("resize", fit);
+    // A read-only view for the assist layer (play-assist.js, ADR-0158): it reads names and presses the page's own controls.
+    window.PlayIDE = Object.freeze({ model: () => model, pack: () => packInfo, selected: () => selected });
     document.body.dataset.ready = "true";
+    document.dispatchEvent(new CustomEvent("playide:ready"));
   }
 
   start().catch((error) => {
