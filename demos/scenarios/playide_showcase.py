@@ -53,7 +53,7 @@ def run(scene: Scene, server: RunningServer) -> None:
     scene.clear_caption()
     scene.zoom_out()
     scene.title_card("Less typing. No diff archaeology.",
-                     "The model is the program. The kernel decides what it means. You decide what ships. "
+                     "Review the change, not the code. The app cannot disobey the model. You decide what ships. "
                      "PlayIDE, built on EIJA Studio (Apache-2.0)", hold_ms=4200)
 
 
@@ -73,24 +73,39 @@ def _model_is_the_program(scene: Scene, chapter: _Chapters) -> None:
 
 def _press_play(scene: Scene, chapter: _Chapters) -> None:
     chapter("Press play")
-    scene.caption("Build & run generates the app and checks every case against the kernel before it starts.")
+    scene.caption("Debug the design, not the code. Select a state and set a breakpoint on it, as you would on a line.")
+    scene.click("#outline-states button:has-text('Overdue')")
+    scene.click("#inspector button:has-text('Add breakpoint')")
+    scene.select_option("#run-speed", "40")
+    scene.caption("Press Run. Seeded users act on the model, and the kernel decides every step.")
+    scene.click("#run-play")
+    scene.expect_text("#run-status", "Paused at step", timeout_ms=60_000)
+    scene.caption("It stops where you asked. The current step is marked on the diagram, with who did what and why.")
+    scene.zoom("#canvas", scale=1.7)
+    scene.wait(1800)
+    scene.zoom("#debug", scale=1.5)
+    scene.wait(1800)
+    scene.zoom_out()
+    scene.caption("Now break whenever the kernel refuses, like breaking on exceptions, and continue.")
+    scene.check("#break-refusal")
+    scene.click("#run-play")
+    scene.expect_text("#run-status", "Paused at step", timeout_ms=60_000)
+    scene.caption("Thick lines are busy paths. The red step is where someone got stuck, and the kernel says why.")
+    scene.zoom("#canvas", scale=1.7)
+    scene.wait(1800)
+    scene.zoom_out()
+    scene.click("#run-stop")
+    scene.expect_text("#run-status", "Stopped the run")
+    scene.caption("Build & run generates the real app and checks every case against the kernel before it starts.")
     scene.click("#build")
     scene.expect_text("#score", "cases match the kernel", timeout_ms=BUILD_TIMEOUT_MS)
     scene.zoom("#score", scale=1.7)
     scene.wait(900)
-    scene.caption("The real app runs beside the model. Every decision it makes is the kernel's.")
+    scene.caption("The app runs beside the model, and it cannot disobey it: every decision it makes is the kernel's.")
     scene.zoom("#run", scale=1.3)
     scene.wait(1400)
     scene.zoom_out()
     scene.click("#tab-states")
-    scene.caption("Now let people use it. Simulate sends seeded users through the kernel, like traffic in a city sim.")
-    scene.click("#simulate")
-    scene.expect_text("#sim-summary", "refused by the kernel", timeout_ms=60_000)
-    scene.caption("Thick lines are busy paths. Refusals show exactly where people got stuck.")
-    scene.zoom("#sim", scale=1.3)
-    scene.wait(1800)
-    scene.zoom_out()
-    scene.click("#sim-clear")
 
 
 def _fix_by_dragging(scene: Scene, chapter: _Chapters) -> None:
