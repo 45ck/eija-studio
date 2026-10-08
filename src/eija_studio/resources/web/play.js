@@ -985,6 +985,11 @@
       box.focus({ preventScroll: true });
       addStep(step);
     });
+    // The editor lives inside the canvas: keep its pointer gestures (selecting a word with a double-click, opening a
+    // select) away from the diagram, which would otherwise pan or treat them as clicks on empty space.
+    for (const type of ["pointerdown", "pointermove", "pointerup", "mousedown", "mousemove", "mouseup", "click", "dblclick", "touchstart", "touchmove", "touchend", "wheel"]) {
+      form.addEventListener(type, (event) => event.stopPropagation());
+    }
     form.addEventListener("keydown", (event) => {
       event.stopPropagation(); // Delete and Backspace edit the name, not the diagram
       if (event.key === "Escape") { event.preventDefault(); closeEditor(); box.focus({ preventScroll: true }); }
@@ -1033,7 +1038,7 @@
   }
 
   function onCanvasClick(cell, event) {
-    if (!tool || !event || reviewing()) return;
+    if (!tool || !event || reviewing() || (event.target && event.target.closest && event.target.closest(".inline-edit"))) return;
     const [x, y] = pointIn(event), s = stateAt(cell);
     if (tool === "state") {
       arm(null);
@@ -1056,7 +1061,7 @@
   }
 
   function onCanvasDoubleClick(cell, event) {
-    if (tool || !event || reviewing()) return;
+    if (tool || !event || reviewing() || (event.target && event.target.closest && event.target.closest(".inline-edit"))) return;
     if (!cell) {
       const [x, y] = pointIn(event);
       newState(x, y, null);

@@ -88,6 +88,11 @@ def test_pick_then_click_double_click_and_edit_inline_in_a_real_browser():
             page.wait_for_selector(".inline-edit input:focus")
             assert page.get_attribute(state, "aria-pressed") == "false"  # one placement, then the tool is put down
             page.keyboard.type("Lost")
+            page.dblclick(".inline-edit input")  # selecting the word keeps the editor and what was typed
+            page.dblclick(".inline-edit .inline-title")
+            page.click(".inline-edit input")
+            assert page.locator(".inline-edit").count() == 1 and page.input_value(".inline-edit input") == "Lost"
+            page.keyboard.press("End")
             page.keyboard.press("Enter")
             page.wait_for_selector(".inline-edit", state="detached")
             _steps(page, 1)
