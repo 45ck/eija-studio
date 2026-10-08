@@ -13,6 +13,7 @@ from typing import Any, Callable
 from eija_studio import __version__
 from eija_studio.application.appgen import FORMAT, generate
 from eija_studio.domain.data import data_for
+from eija_studio.domain.screens import Screens, screens_for
 from eija_studio.domain.models import DomainError, Workflow
 from eija_studio.domain.pack import Pack
 
@@ -38,8 +39,10 @@ def add_parser(subs) -> None:
     build.add_argument("--no-test", action="store_true", help="Skip the conformance run (reported as NOT_RUN)")
 
 
-def app_files(pack, model: Workflow) -> tuple[dict[str, str], dict]:
-    generated, manifest = generate(pack, model, data_for(pack))  # the data model beside pack.json, if any
+def app_files(pack, model: Workflow, screens: Screens | None = None) -> tuple[dict[str, str], dict]:
+    """The app's files. The data model and screens beside pack.json are used unless other screens are given."""
+    data = data_for(pack)
+    generated, manifest = generate(pack, model, data, screens if screens is not None else screens_for(pack, model, data))
     root = resource_files("eija_studio.resources").joinpath("appgen")
     static = {target: root.joinpath(source).read_text(encoding="utf-8") for source, target in TEMPLATES.items()}
     return static | {"tests/__init__.py": ""} | generated, manifest
@@ -103,9 +106,10 @@ def conformance(out: Path) -> dict:
     return {"status": "PASS" if run.returncode == 0 else "FAIL", "detail": " | ".join(tail)}
 
 
-def build_into(out: Path, pack: Pack, model: Workflow, identity: dict[str, Any], *, run_tests: bool = True) -> dict:
+def build_into(out: Path, pack: Pack, model: Workflow, identity: dict[str, Any], *, run_tests: bool = True,
+               screens: Screens | None = None) -> dict:
     """Write one app into `out`, run its conformance tests unless told not to, and record BUILD.json."""
-    files, manifest = app_files(pack, model)
+    files, manifest = app_files(pack, model, screens)
     hashes = write(out, files)
     result = conformance(out) if run_tests else {"status": "NOT_RUN", "detail": "--no-test"}
     manifest |= {"generator": f"eija-studio {__version__}", "files": hashes, "conformance": result,

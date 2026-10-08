@@ -16,6 +16,7 @@ from eija_studio.application.runtime import check_actor, execute, initialise
 from eija_studio.domain.data import DataModel, check_values
 from eija_studio.domain.models import DomainError, ExecuteCommand, Workflow, canonical
 from eija_studio.domain.pack import parse_pack
+from eija_studio.domain.screens import Screens
 
 HERE = Path(__file__).resolve().parent
 PACK = parse_pack(json.loads((HERE / "pack.json").read_text(encoding="utf-8")))
@@ -25,6 +26,7 @@ ACTORS = {a.id: a.model_dump() for a in PACK.fixtures.actors}
 DATA = DataModel.model_validate_json((HERE / "data.json").read_text(encoding="utf-8")) if (HERE / "data.json").exists() else None
 RECORD = DATA.entity(DATA.record) if DATA else None  # the class whose instances move through the workflow
 DATA_DIGEST = DATA.digest if DATA else ""  # each record keeps the digest of the data model that checked its values
+SCREENS = Screens.model_validate_json((HERE / "screens.json").read_text(encoding="utf-8"))  # how the page looks, not rules
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS records(id TEXT PRIMARY KEY, case_id TEXT NOT NULL, model_hash TEXT NOT NULL,

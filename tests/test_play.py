@@ -101,3 +101,21 @@ def test_simulate_runs_the_shown_model_and_refuses_a_stale_one(client, studio):
 def test_the_class_diagram_reads_the_packs_data_model(client):
     body = client.get("/api/play/data", headers=HEADERS).json()
     assert body["data"]["record"] == "Excursion" and len(body["digest"]) == 64
+
+
+def test_the_screen_designer_checks_and_builds_edited_screens(client, studio):
+    shown = client.post("/api/play/screens", json={}, headers=HEADERS).json()
+    assert shown["problems"] == [] and shown["use_cases"][0] is None
+    screens = json.loads(json.dumps(shown["screens"]))
+    create = next(s for s in screens["screens"] if s["use_case"] is None)
+    create["fields"] = create["fields"][1:]  # drop a required attribute: nobody could create a record
+    checked = client.post("/api/play/screens", json={"screens": screens}, headers=HEADERS).json()
+    assert [p["code"] for p in checked["problems"]] == ["SCREEN_MISSING_REQUIRED"]
+    refused = client.post("/api/play/build", json={"screens": screens}, headers=HEADERS)
+    assert refused.status_code >= 400 and refused.json()["code"] == "SCREENS_BLOCKED"
+    create["fields"] = next(s for s in shown["screens"]["screens"] if s["use_case"] is None)["fields"]
+    create["title"] = "Start one"
+    built = client.post("/api/play/build", json={"screens": screens}, headers=HEADERS).json()
+    assert built["conformance"]["status"] == "PASS" and built["screens"] != shown["digest"]
+    foreign = client.post("/api/play/screens", json={"screens": screens | {"id": "elsewhere"}}, headers=HEADERS)
+    assert foreign.json()["code"] == "SCREENS_PACK_MISMATCH"

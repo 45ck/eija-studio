@@ -95,6 +95,7 @@ MUTANTS = {  # negative controls: each breaks the app's storage or its built-in 
                                   "values = dict(fields or {})"),
     "a required attribute made optional": ("excursion", "app/data.json", '"name":"destination","required":true',
                                            '"name":"destination","required":false'),
+    "screens swapped after the build": ("library-loan", "app/screens.json", '"title":"Request a loan"', '"title":"Borrow"'),
 }
 
 

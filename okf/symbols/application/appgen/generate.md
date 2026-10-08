@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py#generate
   title: application/appgen.py
   hash_method: ast-v2
-  sha256: c7cc4c89651c33a86ff1a4b30077cace453744e0dac7d7350a4fd5ba8111867f
-notes_baseline: 0024b0d38e1a5e0e0867a79b6b20ef72619c348f8a96c1725f7cd5d7057e599f
+  sha256: eb42d32492be8f88b7a8feacbde8132f9f267ab065fccc3ce0eb3f33b17594b0
+notes_baseline: c528b86d51daf3e178669e99dd679ba0f144dd670e52f88f46d38d11c4710680
 ---
 
 # application.appgen.generate
@@ -25,7 +25,7 @@ notes_baseline: 0024b0d38e1a5e0e0867a79b6b20ef72619c348f8a96c1725f7cd5d7057e599f
 |---|---|
 | Kind | function |
 | Module | [`application/appgen`](/modules/application/appgen.md) |
-| Signature | `def generate(pack: Pack, model: Workflow \| None=None, data: DataModel \| None=None) -> tuple[dict[str, str], dict[str, Any]]` |
+| Signature | `def generate(pack: Pack, model: Workflow \| None=None, data: DataModel \| None=None, screens: Screens \| None=None) -> tuple[dict[str, str], dict[str, Any]]` |
 | Code | `repo://src/eija_studio/application/appgen.py#generate` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
@@ -34,7 +34,8 @@ notes_baseline: 0024b0d38e1a5e0e0867a79b6b20ef72619c348f8a96c1725f7cd5d7057e599f
 ~~~text
 Return the per-model files and the build manifest (without file hashes or test results).
 
-Refuses a model the protected policy blocks: an app is never built from a workflow the kernel would refuse.
+Refuses a model the protected policy blocks: an app is never built from a workflow the kernel would refuse. Nor from
+screens with design problems (ADR-0154); without screens, each use case gets a default one.
 ~~~
 <!-- okf:generated:end facts -->
 
@@ -57,4 +58,7 @@ _No curated notes yet._
 * [domain.models.fingerprint](/symbols/domain/models/fingerprint.md) - `def fingerprint(value: Any) -> str` in `domain/models`.
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
 * [domain.policy.check_policy](/symbols/domain/policy/check_policy.md) - Sorted, de-duplicated policy codes of ``model`` under the pack (empty means the model conforms).
+* [domain.screens.Screens](/symbols/domain/screens/Screens.md) - `class Screens(Contract)` in `domain/screens`.
+* [domain.screens.default_screens](/symbols/domain/screens/default_screens.md) - One screen per use case: `create` asks for every record attribute; an action shows the required ones.
+* [domain.screens.require_buildable](/symbols/domain/screens/require_buildable.md) - `def require_buildable(screens: Screens, model: Workflow, data: DataModel | None) -> None` in `domain/screens`.
 <!-- okf:generated:end links -->

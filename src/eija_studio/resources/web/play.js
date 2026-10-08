@@ -8,7 +8,8 @@
   // Drop the token from the address bar but keep ?case=, so a reload still shows the same model.
   if (location.hash) { sessionStorage.setItem("eija-session", token); history.replaceState(null, "", location.pathname + location.search); }
   const STATE = { width: 150, height: 54 }, INITIAL = 22;
-  let graph, model, selected = "", sim = null, replayTimer = 0, data = null, classGraph = null, tab = "states";
+  let graph, model, selected = "", sim = null, replayTimer = 0, data = null, classGraph = null, useCaseGraph = null, tab = "states";
+  let screens = null, screensEdited = false, useCase = null, checkTimer = 0, problems = [], useCaseList = [];
   const base = {}; // each cell's own style and label, so overlays can be cleared
 
   async function api(path, body) {
@@ -93,7 +94,14 @@
 
   function transition(id) { return model.transitions.find((t) => t.id === id); }
 
-  const current = () => (tab === "classes" ? classGraph : graph);
+  const current = () => ({ states: graph, classes: classGraph, usecases: useCaseGraph })[tab];
+  const PANELS = { states: "canvas", classes: "class-canvas", usecases: "usecase-canvas", screens: "screens" };
+  const HINTS = {
+    states: "Drag states to arrange them. Select an element to inspect it. Arrangement is not saved yet.",
+    classes: "Select a class to see its attributes and associations.",
+    usecases: "Select a use case to inspect it. Double-click one to design its screen.",
+    screens: "Design each use case's screen. The design check runs as you edit; Build & run uses these screens.",
+  };
 
   function fit() {
     if (!current()) return;
@@ -116,6 +124,11 @@
       inspectClass(id.slice(6), box);
       return;
     }
+    if (id === "usecase:create") {
+      box.append(el("h3", "Use case: create a record"), el("p", `Any fixture actor may start a record. It starts in ${model.initial_state}.`, { class: "muted" }));
+      box.append(screenLink(null));
+      return;
+    }
     if (id.startsWith("state:")) {
       const s = id.slice(6);
       const out = model.transitions.filter((t) => t.from_state === s), into = model.transitions.filter((t) => t.to_state === s);
@@ -131,6 +144,8 @@
       row(dl, "Guards", t.guards.join(", "));
       row(dl, "Effects", t.required_effects.join(", ") || "none");
       row(dl, "Never", t.forbidden_effects.join(", ") || "nothing listed");
+      box.append(dl, screenLink(t.action));
+      return;
     }
     box.append(dl);
   }
@@ -237,17 +252,269 @@
     if (name === data.record) box.append(el("p", "Records of this class move through the state machine. Its attributes are the built app's form, checked on the server.", { class: "muted" }));
   }
 
+  // Use case diagram: a view of the same workflow. Each role is an actor; each transition's action is a use case
+  // inside the system boundary, associated with the role allowed to take it. Nothing here is a second source.
+  function workflowOrder() {
+    const order = [], seen = new Set([model.initial_state]), queue = [model.initial_state];
+    while (queue.length) {
+      const s = queue.shift();
+      for (const t of model.transitions.filter((x) => x.from_state === s).sort((a, b) => a.id.localeCompare(b.id))) {
+        order.push(t);
+        if (!seen.has(t.to_state)) { seen.add(t.to_state); queue.push(t.to_state); }
+      }
+    }
+    return [...order, ...model.transitions.filter((t) => !order.includes(t))];
+  }
+
+  function drawUseCases() {
+    if (useCaseGraph) return;
+    const { Graph, InternalEvent } = maxgraph;
+    const box = $("usecase-canvas");
+    InternalEvent.disableContextMenu(box);
+    useCaseGraph = new Graph(box);
+    for (const setting of ["setConnectable", "setCellsEditable", "setCellsDisconnectable", "setCellsResizable", "setDropEnabled"]) useCaseGraph[setting](false);
+    useCaseGraph.setPanning(true);
+    const parent = useCaseGraph.getDefaultParent(), flow = workflowOrder();
+    const roles = [...new Set(flow.map((t) => t.role))];
+    // Group each role's use cases together, in workflow order, and put the actor beside its group: no line crosses a use case.
+    const cases = roles.flatMap((role) => flow.filter((t) => t.role === role));
+    const font = { fontFamily: "system-ui, sans-serif", fontColor: "#1b2130" };
+    const GAP = 76, TOP = 70, boundary = { x: 260, w: 360 }, height = TOP + (cases.length + 1) * GAP;
+    const rowY = (i) => TOP + (i + 1) * GAP - 4;
+    useCaseGraph.batchUpdate(() => {
+      useCaseGraph.insertVertex({ parent, id: "system", value: document.getElementById("model-name").textContent.split(" · ")[0],
+        position: [boundary.x, 10], size: [boundary.w, height], style: { ...font, verticalAlign: "top", fontStyle: 1, fontSize: 13,
+          fillColor: "#fbfcfe", strokeColor: "#4a5568", selectable: false, movable: false } });
+      const cells = {};
+      // Starting a record is a use case too; any fixture actor may start one, so it has no association.
+      useCaseGraph.insertVertex({ parent, id: "uc:create", value: `Create ${data ? data.record : "record"}`, position: [boundary.x + 60, TOP - 4],
+        size: [boundary.w - 120, 48], style: { ...font, shape: "ellipse", fillColor: "#ffffff", strokeColor: "#5b74d6", fontSize: 13 } });
+      cases.forEach((t, i) => {
+        cells[t.id] = useCaseGraph.insertVertex({ parent, id: "uc:" + t.id, value: t.action, position: [boundary.x + 60, rowY(i)],
+          size: [boundary.w - 120, 48], style: { ...font, shape: "ellipse", fillColor: "#eef2ff", strokeColor: "#5b74d6", fontSize: 13 } });
+      });
+      roles.forEach((role, i) => {
+        const mine = cases.map((t, j) => [t, j]).filter(([t]) => t.role === role);
+        const y = mine.reduce((sum, [, j]) => sum + rowY(j), 0) / mine.length - 8;
+        const left = i % 2 === 0;
+        const actor = useCaseGraph.insertVertex({ parent, id: "role:" + role, value: role, position: [left ? 90 : boundary.x + boundary.w + 120, y],
+          size: [36, 64], style: { ...font, shape: "actor", fillColor: "#ffffff", strokeColor: "#1b2130", verticalLabelPosition: "bottom",
+            verticalAlign: "top", fontSize: 13 } });
+        for (const [t] of mine) {
+          useCaseGraph.insertEdge({ parent, source: actor, target: cells[t.id], style: { strokeColor: "#4a5568", endArrow: "none" } });
+        }
+      });
+    });
+    useCaseGraph.getSelectionModel().addListener(InternalEvent.CHANGE, () => {
+      const cell = useCaseGraph.getSelectionCell(), id = cell && cell.id && cell.id.startsWith("uc:") ? cell.id.slice(3) : "";
+      select(id === "create" ? "usecase:create" : id ? "transition:" + id : "", false);
+    });
+    useCaseGraph.addListener(InternalEvent.DOUBLE_CLICK, (_sender, event) => {
+      const cell = event.getProperty("cell");
+      if (!cell || !cell.id.startsWith("uc:")) return;
+      const id = cell.id.slice(3);
+      openScreen(id === "create" ? null : transition(id).action);
+    });
+  }
+
   function showTab(which) {
     tab = which;
-    $("tab-states").setAttribute("aria-selected", String(which === "states"));
-    $("tab-classes").setAttribute("aria-selected", String(which === "classes"));
-    $("canvas").hidden = which !== "states";
-    $("class-canvas").hidden = which !== "classes";
+    for (const [name, panel] of Object.entries(PANELS)) {
+      $("tab-" + name).setAttribute("aria-selected", String(which === name));
+      $(panel).hidden = which !== name;
+    }
+    $("canvas-help").textContent = HINTS[which];
+    for (const id of ["fit", "zoom-in", "zoom-out"]) $(id).hidden = which === "screens";
+    if (which === "screens") { renderDesigner(); return; }
+    if (which === "usecases") drawUseCases();
     if (which === "classes") {
       if (!data) { $("class-canvas").replaceChildren(el("p", "This pack has no data model yet. Add a data.json beside its pack.json.", { class: "muted empty" })); return; }
       drawClasses();
     }
     fit();
+  }
+
+  // Screen designer (ADR-0154): each use case's screen, bound to the record class's attributes. The server's design
+  // check (`check_screens`) runs on every edit; Build & run builds the app with these screens. Screens decide how the
+  // app looks, never what it may do: the kernel still decides every action.
+  function screenLink(action) {
+    const button = el("button", "Design its screen", { type: "button", class: "quiet" });
+    button.addEventListener("click", () => openScreen(action));
+    return button;
+  }
+
+  function openScreen(action) {
+    useCase = action;
+    showTab("screens");
+  }
+
+  const record = () => (data ? data.entities.find((e) => e.name === data.record) : null);
+  const screenOf = (name) => screens.screens.find((s) => s.use_case === name);
+
+  // With edits, only the problems come back into the page: the designer keeps editing its own objects.
+  async function loadScreens(edited) {
+    const result = await api("/api/play/screens", { case_id: caseId, model, screens: edited || null });
+    if (!edited) screens = result.screens;
+    problems = result.problems;
+    useCaseList = result.use_cases;
+    return result;
+  }
+
+  function changed() {
+    screensEdited = true;
+    renderDesigner();
+    clearTimeout(checkTimer);
+    checkTimer = setTimeout(async () => {
+      try {
+        problems = (await loadScreens(screens)).problems;
+      } catch (error) {
+        problems = [{ code: error.code || "ERROR", use_case: useCase, text: error.message }];
+      }
+      renderProblems();
+      renderScreenList();
+    }, 250);
+  }
+
+  function renderProblems() {
+    const box = $("screen-problems");
+    box.replaceChildren();
+    box.className = "problems " + (problems.length ? "bad" : "ok");
+    if (!problems.length) { box.append(el("span", "✓ Design check passed: every screen can be built.")); return; }
+    for (const p of problems) {
+      const b = el("button", `${p.code}: ${p.text}`, { type: "button" });
+      b.addEventListener("click", () => { useCase = p.use_case; renderDesigner(); });
+      box.append(b);
+    }
+  }
+
+  function renderScreenList() {
+    const list = $("screen-list");
+    list.replaceChildren();
+    // Every use case of the model, then any screen for a use case the model no longer has.
+    const names = [...useCaseList, ...screens.screens.map((x) => x.use_case).filter((u) => !useCaseList.includes(u))];
+    for (const name of names) {
+      const bad = problems.some((p) => p.use_case === name);
+      const b = el("button", undefined, { type: "button", "aria-current": String(name === useCase) });
+      b.append(el("span", name === null ? "Create" : name), el("span", bad ? "⚠" : "✓", { class: bad ? "mark bad" : "mark ok" }));
+      b.addEventListener("click", () => { useCase = name; renderDesigner(); });
+      const li = el("li");
+      li.append(b);
+      list.append(li);
+    }
+  }
+
+  function addField(name, at) {
+    const screen = screenOf(useCase);
+    if (!screen || screen.fields.some((f) => f.attribute === name)) return;
+    const fields = [...screen.fields];
+    fields.splice(at === undefined ? fields.length : at, 0, { attribute: name, label: "" });
+    screen.fields = fields;
+    changed();
+  }
+
+  function moveField(from, to) {
+    const screen = screenOf(useCase), fields = [...screen.fields];
+    const [moved] = fields.splice(from, 1);
+    fields.splice(to > from ? to - 1 : to, 0, moved);
+    screen.fields = fields;
+    changed();
+  }
+
+  function input(value, label, onChange) {
+    const node = el("input", undefined, { type: "text", value, "aria-label": label, maxlength: "60" });
+    node.addEventListener("change", () => onChange(node.value));
+    return node;
+  }
+
+  function fieldRow(screen, f, i) {
+    const a = record() && record().attributes.find((x) => x.name === f.attribute);
+    const li = el("li", undefined, { class: "screen-field", draggable: "true", "data-index": String(i) });
+    li.addEventListener("dragstart", (event) => event.dataTransfer.setData("text/eija-field", String(i)));
+    const grip = el("span", "⠿", { class: "grip", "aria-hidden": "true" });
+    const name = input(f.label, `Label for ${f.attribute}`, (v) => { f.label = v; changed(); });
+    name.placeholder = f.attribute;
+    const preview = el("span", a ? (a.type === "choice" ? `one of ${a.choices.join(", ")}` : a.type) + (a.required ? " · required" : "") : "not in the record", { class: "muted small" });
+    const up = el("button", "↑", { type: "button", class: "quiet", "aria-label": `Move ${f.attribute} up` });
+    up.disabled = i === 0;
+    up.addEventListener("click", () => moveField(i, i - 1));
+    const remove = el("button", "×", { type: "button", class: "quiet", "aria-label": `Remove ${f.attribute}` });
+    remove.addEventListener("click", () => { screen.fields = screen.fields.filter((_, j) => j !== i); changed(); });
+    li.append(grip, el("code", f.attribute), name, preview, up, remove);
+    return li;
+  }
+
+  function dropZone(list) {
+    list.addEventListener("dragover", (event) => { event.preventDefault(); list.classList.add("over"); });
+    list.addEventListener("dragleave", () => list.classList.remove("over"));
+    list.addEventListener("drop", (event) => {
+      event.preventDefault();
+      list.classList.remove("over");
+      const rows = [...list.querySelectorAll(".screen-field")];
+      const target = rows.findIndex((r) => event.clientY < r.getBoundingClientRect().top + r.offsetHeight / 2);
+      const at = target === -1 ? rows.length : target;
+      const moving = event.dataTransfer.getData("text/eija-field"), adding = event.dataTransfer.getData("text/eija-attribute");
+      if (moving !== "") moveField(Number(moving), at);
+      else if (adding) addField(adding, at);
+    });
+  }
+
+  function renderCard() {
+    const card = $("screen-card"), screen = screenOf(useCase);
+    card.replaceChildren();
+    if (!screen) {
+      const add = el("button", "Give it a screen", { type: "button" });
+      add.addEventListener("click", () => {
+        screens.screens = [...screens.screens, { use_case: useCase, title: useCase, fields: [], button: useCase }];
+        changed();
+      });
+      card.append(el("p", `${useCase} has no screen yet.`, { class: "muted" }), add);
+      return;
+    }
+    const t = model.transitions.find((x) => x.action === useCase);
+    if (useCase !== null && !t) {
+      const remove = el("button", "Remove this screen", { type: "button" });
+      remove.addEventListener("click", () => { screens.screens = screens.screens.filter((x) => x !== screen); useCase = null; changed(); });
+      card.append(el("p", `The model has no use case ${useCase}, so this screen cannot be built.`, { class: "muted" }), remove);
+      return;
+    }
+    card.append(el("p", useCase === null ? "Starts a record · any actor" : `${t.from_state} → ${t.to_state} · ${t.role}`, { class: "muted small" }));
+    card.append(input(screen.title, "Screen title", (v) => { screen.title = v || screen.title; changed(); }));
+    card.lastChild.classList.add("screen-title");
+    const list = el("ul", undefined, { class: "screen-fields", "aria-label": "Fields on this screen" });
+    screen.fields.forEach((f, i) => list.append(fieldRow(screen, f, i)));
+    if (!screen.fields.length) list.append(el("li", "Drop record attributes here.", { class: "muted drop-hint" }));
+    dropZone(list);
+    const button = input(screen.button, "Button label", (v) => { screen.button = v; changed(); });
+    button.placeholder = useCase === null ? "Create" : useCase;
+    button.classList.add("screen-button");
+    card.append(list, button);
+  }
+
+  function renderPalette() {
+    const list = $("palette"), screen = screenOf(useCase);
+    list.replaceChildren();
+    if (!record()) { list.append(el("li", "This pack has no data model, so screens have no fields.", { class: "muted" })); return; }
+    for (const a of record().attributes) {
+      const used = screen && screen.fields.some((f) => f.attribute === a.name);
+      const li = el("li", undefined, { class: "chip-row", draggable: String(!used) });
+      li.addEventListener("dragstart", (event) => event.dataTransfer.setData("text/eija-attribute", a.name));
+      const add = el("button", used ? "On screen" : "Add", { type: "button", class: "quiet" });
+      add.disabled = used;
+      add.addEventListener("click", () => addField(a.name));
+      li.append(el("span", attributeLine(a)), add);
+      list.append(li);
+    }
+  }
+
+  function renderDesigner() {
+    if (!screens) return;
+    renderScreenList();
+    renderProblems();
+    renderCard();
+    renderPalette();
+    const link = $("screens-download");
+    if (link.href.startsWith("blob:")) URL.revokeObjectURL(link.href);
+    link.href = URL.createObjectURL(new Blob([JSON.stringify(screens, null, 2) + "\n"], { type: "application/json" }));
   }
 
   async function build() {
@@ -258,7 +525,7 @@
     score.textContent = "Building and checking against the kernel…";
     try {
       // Send the model on screen; the server refuses (MODEL_CHANGED) if it is no longer the one it would build.
-      const result = await api("/api/play/build", { case_id: caseId, model });
+      const result = await api("/api/play/build", { case_id: caseId, model, screens: screensEdited ? screens : null });
       const pass = result.conformance.status === "PASS";
       score.className = "score " + (pass ? "ok" : "bad");
       score.textContent = pass ? `✓ ${result.cases}/${result.cases} cases match the kernel` : `✗ Conformance ${result.conformance.status}: not started`;
@@ -388,6 +655,7 @@
     const status = await api("/api/status");
     $("model-name").textContent = status.pack.name + (caseId ? " · change case" : "");
     data = (await api("/api/play/data")).data;
+    await loadScreens(null);
     outline();
     draw(model);
     inspect("");
@@ -400,6 +668,10 @@
     $("zoom-out").addEventListener("click", () => current() && current().zoomOut());
     $("tab-states").addEventListener("click", () => showTab("states"));
     $("tab-classes").addEventListener("click", () => showTab("classes"));
+    $("tab-usecases").addEventListener("click", () => showTab("usecases"));
+    $("tab-screens").addEventListener("click", () => showTab("screens"));
+    $("screens-reset").addEventListener("click", async () => { screensEdited = false; await loadScreens(null); renderDesigner(); });
+    $("canvas-help").textContent = HINTS.states;
     window.addEventListener("resize", fit);
     document.body.dataset.ready = "true";
   }

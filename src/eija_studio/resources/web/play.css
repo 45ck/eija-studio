@@ -57,3 +57,29 @@ dd{margin:0}
 .tabs button[aria-selected="true"]{background:var(--panel);box-shadow:0 1px 2px rgba(0,0,0,.08)}
 .canvas[hidden]{display:none}
 .empty{padding:24px}
+.designer{display:grid;grid-template-columns:170px minmax(0,1fr) 230px;gap:14px;padding:14px;overflow:auto;background:#fbfcfe;border-top:1px solid var(--line);border-bottom:1px solid var(--line);min-height:0}
+.designer[hidden]{display:none}
+.screen-list li button{width:100%;display:flex;justify-content:space-between;text-align:left;border:0;padding:5px 8px;background:transparent}
+.screen-list li button[aria-current="true"]{background:var(--state)}
+.mark.ok{color:var(--ok)}
+.mark.bad{color:#c27c0e}
+.screen-stage{display:flex;flex-direction:column;gap:10px;min-width:0}
+.problems{display:flex;flex-direction:column;gap:4px;font-size:.84rem;padding:8px 10px;border-radius:8px}
+.problems.ok{background:var(--ok-bg);color:var(--ok)}
+.problems.bad{background:#fdf4e3}
+.problems button{text-align:left;border:0;background:transparent;padding:2px 0;font-size:.84rem;color:var(--ink)}
+.screen-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:0 2px 8px rgba(27,33,48,.06);display:flex;flex-direction:column;gap:10px;max-width:560px}
+.screen-card input{font:inherit;font-size:.9rem;border:1px solid var(--line);border-radius:6px;padding:5px 8px;min-width:0}
+.screen-card .screen-title{font-size:1.05rem;font-weight:600}
+.screen-card .screen-button{align-self:flex-start;background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.screen-card .screen-button::placeholder{color:#dfe6ff}
+.screen-fields{display:flex;flex-direction:column;gap:6px;min-height:56px;padding:6px;border:1px dashed var(--line);border-radius:8px}
+.screen-fields.over{border-color:var(--accent);background:var(--state)}
+.screen-field{display:grid;grid-template-columns:auto auto minmax(80px,1fr) auto auto auto;align-items:center;gap:8px;padding:4px 6px;border-radius:6px;background:var(--busy-bg);cursor:grab}
+.screen-field code{font-size:.8rem}
+.screen-field button{padding:2px 8px}
+.grip{color:var(--muted)}
+.drop-hint{padding:12px;text-align:center}
+.screen-tools{display:flex;gap:8px}
+.palette .chip-row{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:5px 8px;margin-bottom:5px;border:1px solid var(--line);border-radius:7px;background:var(--panel);font-size:.8rem;cursor:grab}
+.palette .chip-row button{padding:2px 8px;font-size:.75rem}

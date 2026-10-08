@@ -12,6 +12,7 @@ import unittest
 from pathlib import Path
 
 from app import service
+from eija_studio.domain.screens import check_screens
 
 ORACLE = json.loads((Path(__file__).resolve().parent / "oracle.json").read_text(encoding="utf-8"))
 
@@ -46,6 +47,11 @@ class Conformance(unittest.TestCase):
                 self.assertEqual(observe(svc, record_id, case), case["expect"])
                 if "replay" in case:
                     self.assertEqual(observe(svc, record_id, case), case["replay"])
+
+    def test_screens_pass_the_design_check(self):
+        """The screens built in are the ones the oracle was made with, and every use case's screen can be used."""
+        self.assertEqual(service.SCREENS.digest, ORACLE["screens_digest"])
+        self.assertEqual(check_screens(service.SCREENS, service.MODEL, service.DATA), [])
 
     def test_record_values_are_checked_by_the_data_model(self):
         """Each data case through the app's create: kept exactly as the data model cleans it, or refused with its code."""

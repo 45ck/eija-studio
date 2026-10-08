@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py
   title: application/appgen.py
   hash_method: ast-api-v1
-  sha256: 44c0d6d43065d8dd4a9108cb55699cd1770117de1a63d15d25cf5000b84b6dd0
-notes_baseline: 7026d8bb67b6e52a55ad6a5b3c38577b009c2aac3093343a0c554a57102f0ac1
+  sha256: b3b7128768ba15d153c3eb945d02dfa31c8d6bff882364cb2691e670d8e5c945
+notes_baseline: 3ef559e5507ef9d783ee87093b32d754c0532d8b29c892a0192b93114b265210
 ---
 
 # application.appgen
@@ -63,6 +63,7 @@ Pure: no IO, no clock, no randomness. The same pack and model always give byte-i
 * [`domain/models`](/modules/domain/models.md)
 * [`domain/pack`](/modules/domain/pack.md)
 * [`domain/policy`](/modules/domain/policy.md)
+* [`domain/screens`](/modules/domain/screens.md)
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -77,6 +78,7 @@ _No curated notes yet._
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
 * [domain.policy](/modules/domain/policy.md) - Generic policy: coherence with a domain pack's declared action catalog, the pack's laws, and declared effects.
+* [domain.screens](/modules/domain/screens.md) - Screens: the user interface of a pack's app, designed against its use cases and data model (ADR-0154).
 
 ## Referenced by
 

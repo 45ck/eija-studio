@@ -1,7 +1,7 @@
 ---
 type: Module
 title: interfaces.play
-description: 'PlayIDE routes: the visual UML canvas page, Build & run of the model as a live app beside it (ADR-0151), and Simulate, seeded simulated users whose every step the kernel decides (ADR-0152).'
+description: 'PlayIDE routes: the visual UML canvas page, Build & run of the model as a live app beside it (ADR-0151), and Simulate, seeded simulated users whose every step the kernel decides (ADR-0152), and the screen designer''s che…'
 resource: repo://src/eija_studio/interfaces/play.py
 tags:
 - module
@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/play.py
   title: interfaces/play.py
   hash_method: ast-api-v1
-  sha256: 3a295fa36e7ae59cf268e09f3f05208248ecaa047629f8a37b1d72c11362fb93
-notes_baseline: d0c21377e29ec8a740a6442411d8dea7c17571ef2dd5c236519d5e7273238350
+  sha256: 95c3ddfd226ddaceed908d96322a14467d49201d0fbd98e653568da22d2a137d
+notes_baseline: f0863d7a16e8b66d0fd855d0a54f734079bea86f344d503ff977c26546ee44f4
 ---
 
 # interfaces.play
@@ -30,7 +30,8 @@ notes_baseline: d0c21377e29ec8a740a6442411d8dea7c17571ef2dd5c236519d5e7273238350
 
 ~~~text
 PlayIDE routes: the visual UML canvas page, Build & run of the model as a live app beside it (ADR-0151), and
-Simulate, seeded simulated users whose every step the kernel decides (ADR-0152).
+Simulate, seeded simulated users whose every step the kernel decides (ADR-0152), and the screen designer's check and
+build of designed screens (ADR-0154).
 
 Build & run reuses `eija build` (ADR-0150): the app is generated into the workspace, its kernel conformance tests run,
 and only a PASSing app is started, as a separate local process on a free loopback port. One app runs at a time; a new
@@ -47,6 +48,7 @@ _Symbol pages are generated for the domain and application layers only._
 * [`domain/data`](/modules/domain/data.md)
 * [`domain/models`](/modules/domain/models.md)
 * [`domain/pack`](/modules/domain/pack.md)
+* [`domain/screens`](/modules/domain/screens.md)
 * [`interfaces/app_build`](/modules/interfaces/app_build.md)
 <!-- okf:generated:end facts -->
 
@@ -61,6 +63,7 @@ _No curated notes yet._
 * [domain.data](/modules/domain/data.md) - The data model of a pack, shown as a UML class diagram (ADR-0153): entities, typed attributes and associations.
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
+* [domain.screens](/modules/domain/screens.md) - Screens: the user interface of a pack's app, designed against its use cases and data model (ADR-0154).
 * [interfaces.app_build](/modules/interfaces/app_build.md) - `eija build`: write a runnable app generated from a pack's model, then run its kernel conformance tests (ADR-0150).
 
 ## Referenced by

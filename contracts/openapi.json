@@ -128,6 +128,43 @@
         }
       }
     },
+    "/api/play/screens": {
+      "post": {
+        "summary": "Play Screens",
+        "description": "The screens for the designer (the request's, else the pack's or the defaults) and their design problems.",
+        "operationId": "play_screens_api_play_screens_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuildRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/play/build": {
       "post": {
         "summary": "Play Build",
@@ -1702,6 +1739,18 @@
                 "type": "null"
               }
             ]
+          },
+          "screens": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Screens"
           }
         },
         "additionalProperties": false,
@@ -2462,6 +2511,18 @@
                 "type": "null"
               }
             ]
+          },
+          "screens": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Screens"
           },
           "seed": {
             "type": "integer",

@@ -1,0 +1,21 @@
+{
+  "schema_version": "eija.screens.v1",
+  "id": "library-loan",
+  "screens": [
+    {
+      "title": "Request a loan",
+      "fields": [
+        {"attribute": "itemTitle", "label": "Title"},
+        {"attribute": "format", "label": "Format"},
+        {"attribute": "memberCard", "label": "Member card"},
+        {"attribute": "dueDate", "label": "Due back"}
+      ],
+      "button": "Request loan"
+    },
+    {"use_case": "CheckOut", "title": "Check out", "fields": [{"attribute": "itemTitle", "label": "Title"}, {"attribute": "memberCard", "label": "Member card"}], "button": "Check out"},
+    {"use_case": "Cancel", "title": "Cancel the request", "fields": [{"attribute": "itemTitle", "label": "Title"}], "button": "Cancel request"},
+    {"use_case": "MarkOverdue", "title": "Mark overdue", "fields": [{"attribute": "dueDate", "label": "Due back"}], "button": "Mark overdue"},
+    {"use_case": "Return", "title": "Return", "fields": [{"attribute": "itemTitle", "label": "Title"}], "button": "Return"},
+    {"use_case": "ReturnLate", "title": "Late return", "fields": [{"attribute": "dueDate", "label": "Due back"}], "button": "Return late"}
+  ]
+}
