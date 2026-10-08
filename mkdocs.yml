@@ -53,6 +53,7 @@ nav:
   - Home: index.md
   - Getting started: getting-started.md
   - Build an app from the model: build-an-app.md
+  - PlayIDE: playide.md
   - Architecture:
       - Architecture and ubiquitous language: architecture/ARCHITECTURE.md
       - Technical lead review: TECHNICAL_LEAD_REVIEW.md

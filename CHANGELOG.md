@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### 8 October 2026: PlayIDE canvas and Build & run
+
+- New PlayIDE page at `/play` (its private link is printed by `eija serve`). It draws the model as a UML state machine on maxGraph 0.25.0 (Apache-2.0, vendored), with an outline and inspector. **Build & run** builds the app with `eija build`, shows the kernel conformance score and starts the app beside the diagram only if it passes. See [PlayIDE](docs/playide.md) and [ADR-0151](docs/adr/0151-playide-canvas-and-build-and-run.md).
+
 ### 8 October 2026: build an app from the model
 
 - New `eija build --pack P --out DIR`. It writes a runnable app (web page, API and SQLite database) from the workflow model, plus `tests/oracle.json` with the kernel's answer for every state, action, actor and version. It runs the app's conformance tests and records the result in `BUILD.json`, and exits 2 if they fail. All three packs pass: excursion 240 cases, library-loan and eija-review-slice 360 each. The app stores records in SQLite and calls the kernel for every decision, so there is no second interpreter. Five broken apps (storage and built-in model mutants) are each caught, and the `appgen` nox session builds all three packs. See [Build an app from the model](docs/build-an-app.md) and [ADR-0150](docs/adr/0150-build-apps-from-the-model-with-a-kernel-oracle.md).

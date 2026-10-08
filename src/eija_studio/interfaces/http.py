@@ -14,6 +14,7 @@ from eija_studio.application.repository import COMMIT_OID_PATTERN
 from eija_studio.domain.models import MEANING_ID, Contract, DomainError, OWNER, LayoutChange, ExecuteCommand
 from eija_studio.domain.pack import Pack
 from eija_studio.domain.transactions import Transaction
+from .play import register as register_play
 
 # The Studio page keeps this policy. Only /visual-frame, a static document with no API access, relaxes styles
 # (Mermaid writes inline style attributes) and is sandboxed; docs/SECURITY_AND_TRUST.md and ADR-0023 record why.
@@ -21,7 +22,9 @@ PAGE_CSP = ("default-src 'none'; script-src 'self'; style-src 'self'; connect-sr
             "frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
 FRAME_CSP = ("default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src data:; connect-src 'none'; "
              "frame-ancestors 'self'; base-uri 'none'; form-action 'none'; sandbox allow-scripts")
-WEB_ASSETS = frozenset({"app.js", "app.css", "canvas.js", "tree.js", "review.js", "compare.js", "compare.css", "repository-review.js", "repository-review.css", "source.js", "shell.js", "agent-edit.js", "visual-frame.js", "visual-frame.css"})
+WEB_ASSETS = frozenset({"app.js", "app.css", "canvas.js", "tree.js", "review.js", "compare.js", "compare.css", "repository-review.js", "repository-review.css", "source.js", "shell.js", "agent-edit.js", "visual-frame.js", "visual-frame.css", "play.js", "play.css"})
+# PlayIDE frames the app built from the model, which runs as a separate process on its own loopback port (ADR-0151).
+PLAY_CSP = PAGE_CSP.replace("frame-src 'self'", "frame-src 'self' http://127.0.0.1:*")
 
 
 class NewCase(Contract):
@@ -55,7 +58,7 @@ def _set_security_headers(response, path: str) -> None:
     cache = "private, max-age=3600" if path == "/assets/vendor/mermaid.min.js" and response.status_code == 200 else "no-store"
     response.headers.update({"Cache-Control": cache, "X-Content-Type-Options": "nosniff",
         "Referrer-Policy": "no-referrer", "X-Frame-Options": "SAMEORIGIN" if framed else "DENY",
-        "Content-Security-Policy": FRAME_CSP if framed else PAGE_CSP})
+        "Content-Security-Policy": FRAME_CSP if framed else PLAY_CSP if path == "/play" else PAGE_CSP})
 
 
 def pack_summary(pack: Pack) -> dict[str, object]:
@@ -120,9 +123,11 @@ def create_app(studio, token: str, port: int = 8765) -> FastAPI:
 
     @app.get("/assets/vendor/{name}")
     def vendored(name: str):
-        if name not in {"mermaid.min.js", "dagre.min.js"}:  # exact allowlist; licenses are kept with the assets
+        if name not in {"mermaid.min.js", "dagre.min.js", "maxgraph.min.js"}:  # exact allowlist; licenses are kept with the assets
             return JSONResponse({"code": "NOT_FOUND"}, status_code=404)
         return FileResponse(web / "vendor" / name)
+
+    app.state.play = register_play(app, studio, web)
 
     @app.get("/visual-frame")
     def visual_frame():

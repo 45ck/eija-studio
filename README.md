@@ -206,6 +206,10 @@ python myapp/run.py   # http://127.0.0.1:8000, needs eija-studio installed
 
 The app calls EIJA's kernel for every decision. The check is exhaustive only for the modelled cases and the pack's fixture actors. Records carry only a title until entities and fields are modelled. See [Build an app from the model](docs/build-an-app.md) and [ADR-0150](docs/adr/0150-build-apps-from-the-model-with-a-kernel-oracle.md).
 
+## PlayIDE: see the model, build it, run it
+
+`eija serve --pack packs/excursion --open` also prints a PlayIDE link (`/play`). It shows the model as a UML state machine and has a **Build & run** button that builds the app, checks it against the kernel and runs it beside the diagram. See [PlayIDE](docs/playide.md).
+
 ## Try the connected IDE preview
 
 The connected IDE is on `main` since [PR #78](https://github.com/45ck/eija-studio/pull/78) (8 October). From a checkout of `main`, create and activate a Python virtual environment as below, then run:

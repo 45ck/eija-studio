@@ -1,0 +1,86 @@
+"""PlayIDE (ADR-0151): the canvas page and Build & run, which starts only an app whose kernel conformance PASSes."""
+from __future__ import annotations
+
+import hashlib
+import http.client
+import json
+from pathlib import Path
+from urllib.parse import urlsplit
+
+import pytest
+from fastapi.testclient import TestClient
+
+from eija_studio.domain.models import Workflow
+from eija_studio.interfaces import play
+from eija_studio.interfaces.http import create_app
+from kernel_support import harness_studio
+
+SESSION = "synthetic-play-test"
+HEADERS = {"Authorization": "Bearer " + SESSION, "Origin": "http://127.0.0.1:8765"}
+
+
+@pytest.fixture
+def studio(tmp_path):
+    return harness_studio(tmp_path / "workspace")
+
+
+@pytest.fixture
+def client(studio):
+    app = create_app(studio, SESSION)
+    yield TestClient(app, base_url=HEADERS["Origin"])
+    app.state.play.stop()
+
+
+def test_the_page_may_frame_only_loopback_apps(client):
+    page = client.get("/play")
+    csp = page.headers["Content-Security-Policy"]
+    assert page.status_code == 200 and "PlayIDE" in page.text
+    assert "frame-src 'self' http://127.0.0.1:*" in csp and "frame-ancestors 'none'" in csp
+    assert "http://127.0.0.1:*" not in client.get("/").headers["Content-Security-Policy"]
+    assert client.get("/assets/vendor/maxgraph.min.js").status_code == 200
+
+
+def test_build_needs_the_session_token(client):
+    assert client.post("/api/play/build", json={}, headers={"Origin": HEADERS["Origin"]}).status_code == 401
+
+
+def test_build_and_run_starts_the_active_model_as_a_live_app(client, studio):
+    result = client.post("/api/play/build", json={}, headers=HEADERS).json()
+    assert result["conformance"]["status"] == "PASS" and result["cases"] > 0
+    with studio.store.transaction() as u:
+        assert result["model"] == Workflow.model_validate(u.active()["model"]).semantic_hash
+    url = urlsplit(result["url"])
+    assert url.hostname == "127.0.0.1"
+    connection = http.client.HTTPConnection("127.0.0.1", url.port, timeout=10)
+    connection.request("GET", "/api/app")
+    described = json.loads(connection.getresponse().read())
+    connection.close()
+    assert described["model_hash"] == result["model"]
+    again = client.post("/api/play/build", json={}, headers=HEADERS).json()
+    assert again["url"] == result["url"]  # the same model keeps the same running app
+
+
+def test_a_failing_app_is_never_started(client, monkeypatch):
+    monkeypatch.setattr(play, "build_into", lambda *a, **k: {"oracle": {"cases": 1}, "files": {}, "kernel_source_review": "X",
+                                                              "conformance": {"status": "FAIL", "detail": "planted"}})
+    result = client.post("/api/play/build", json={}, headers=HEADERS).json()
+    assert result["conformance"]["status"] == "FAIL" and result["url"] is None
+
+
+def test_the_vendored_diagram_engine_is_the_recorded_release():
+    web = Path(play.__file__).resolve().parents[1] / "resources" / "web" / "vendor"
+    record = json.loads((web / "maxgraph.VENDOR.json").read_text(encoding="utf-8"))
+    for name, facts in record["files"].items():
+        data = (web / name).read_bytes()
+        assert (len(data), hashlib.sha256(data).hexdigest()) == (facts["bytes"], facts["sha256"])
+    assert record["license"] == "Apache-2.0" and record["version"] == "0.25.0"
+
+
+def test_build_refuses_a_model_the_page_no_longer_shows(client, studio):
+    with studio.store.transaction() as u:
+        shown = u.active()["model"]
+    assert client.post("/api/play/build", json={"model": shown}, headers=HEADERS).json()["conformance"]["status"] == "PASS"
+    changed = Workflow.model_validate(shown).model_dump(mode="json")
+    changed["transitions"] = changed["transitions"][:-1]
+    refused = client.post("/api/play/build", json={"model": changed}, headers=HEADERS)
+    assert (refused.status_code, refused.json()["code"]) == (409, "MODEL_CHANGED")

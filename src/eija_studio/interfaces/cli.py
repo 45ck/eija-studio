@@ -221,7 +221,8 @@ def main(argv=None) -> int:
             from .http import create_app
             token = secrets.token_urlsafe(32)
             url = f"http://127.0.0.1:{args.port}/#{token}"
-            print("EIJA Studio — local single-owner session. Do not share this private link.\n" + url, flush=True)
+            print("EIJA Studio — local single-owner session. Do not share these private links.\n" + url, flush=True)
+            print(f"PlayIDE (visual model, Build & run): http://127.0.0.1:{args.port}/play#{token}", flush=True)
             if args.provider != "offline":
                 print("External inference requires configured credentials and explicit per-request consent.", flush=True)
             if args.open:

@@ -8,4 +8,5 @@
 * [interfaces.cli](cli.md) - Module `interfaces/cli` (no module docstring).
 * [interfaces.http](http.md) - Loopback-only local adapter.
 * [interfaces.mcp_server](mcp_server.md) - MCP (Model Context Protocol) adapter: the agent-facing face of EIJA Studio.
+* [interfaces.play](play.md) - PlayIDE routes: the visual UML canvas page, and Build & run of the model as a live app beside it (ADR-0151).
 * [interfaces.render_html](render_html.md) - Self-contained HTML for `eija render --format html`: generated Mermaid text plus the vendored renderer.

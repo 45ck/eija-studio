@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/app_build.py
   title: interfaces/app_build.py
   hash_method: ast-api-v1
-  sha256: 5edd09201c601937ca2c5abb3f3d8707d946b82583ef60afdc7baa281587aa3a
-notes_baseline: 747d532c5ba90dd35e4c1a120b86b8caf39e9b6b6ad5d4522b8deaf4487e0e0c
+  sha256: 6f0b387ddd98bb5770067d0b6e311e70242637c192317ae8777ca2a250d04421
+notes_baseline: 747a904209a9d032b29946b2f6e3d2f85bf1db91689360354e45080ffa875ad6
 ---
 
 # interfaces.app_build
@@ -57,4 +57,5 @@ _No curated notes yet._
 ## Referenced by
 
 * [interfaces.cli](/modules/interfaces/cli.md) - Module `interfaces/cli` (no module docstring).
+* [interfaces.play](/modules/interfaces/play.md) - PlayIDE routes: the visual UML canvas page, and Build & run of the model as a live app beside it (ADR-0151).
 <!-- okf:generated:end links -->

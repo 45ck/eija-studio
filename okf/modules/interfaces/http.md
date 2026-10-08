@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/http.py
   title: interfaces/http.py
   hash_method: ast-api-v1
-  sha256: f03683658e7ab8f9880cf910940ee3c4eb1c1c0c104aa9114334a60923043b09
-notes_baseline: 92fa6f869b06a5d66bddfec5dae36db2394a6eb5b9d73ceb8e459aacfb507dfe
+  sha256: 967486ca515575de5948bb5d275c4c219a8837c14db8d8901db28bfe76310854
+notes_baseline: f8347f0c60a1322a771f8ec8aaf940a09e422f4c8f9c5193a8a9f8873704b9fe
 ---
 
 # interfaces.http
@@ -45,6 +45,7 @@ _Symbol pages are generated for the domain and application layers only._
 * [`domain/models`](/modules/domain/models.md)
 * [`domain/pack`](/modules/domain/pack.md)
 * [`domain/transactions`](/modules/domain/transactions.md)
+* [`interfaces/play`](/modules/interfaces/play.md)
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -61,4 +62,5 @@ _No curated notes yet._
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
 * [domain.transactions](/modules/domain/transactions.md) - Open change vocabulary (WBS 1.3): the semantic edits an owner (or a pack meaning) may make to a workflow.
+* [interfaces.play](/modules/interfaces/play.md) - PlayIDE routes: the visual UML canvas page, and Build & run of the model as a live app beside it (ADR-0151).
 <!-- okf:generated:end links -->
