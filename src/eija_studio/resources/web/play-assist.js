@@ -285,6 +285,7 @@
       ["Show the use cases", "tab-usecases", press("tab-usecases")],
       ["Show the screens", "tab-screens", press("tab-screens")],
       ["Show the components", "tab-components", press("tab-components")],
+      ["Show who can do what (permissions)", "tab-access", press("tab-access")],
       ["Fit the diagram", "fit", press("fit")],
       ["Show the checks", "health", press("health"), () => $("checks") && $("checks").hidden],
       ["Open the review workbench", null, () => { location.href = "/"; }],

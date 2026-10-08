@@ -75,6 +75,7 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0160](0160-run-bar-with-breakpoints-over-a-seeded-run.md) | A run bar with breakpoints, over one seeded run the kernel decides | accepted |
 | [0165](0165-executable-uml-on-the-eija-kernel.md) | Executable UML on the EIJA kernel: one interpreter, a closed action vocabulary, SCXML as the standard cross-check | accepted for the state-machine slice |
 | [0170](0170-playide-assist-ask-complete-palette-review.md) | PlayIDE asks about the selection, completes exact names, has a command palette and keyboard plan review | accepted |
+| [0171](0171-permissions-matrix-and-reachability-questions.md) | Who can do what, as a matrix the kernel checks, and reachability questions with a proof or a path | accepted |
 <!-- adr-index:end -->
 
 ## Reserved numbers for capability lanes

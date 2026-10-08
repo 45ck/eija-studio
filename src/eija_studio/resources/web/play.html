@@ -5,11 +5,13 @@
 <title>PlayIDE</title>
 <link rel="stylesheet" href="/assets/play.css">
 <link rel="stylesheet" href="/assets/play-assist.css">
+<link rel="stylesheet" href="/assets/play-access.css">
 <script src="/assets/vendor/dagre.min.js" defer></script>
 <script src="/assets/vendor/maxgraph.min.js" defer></script>
 <script src="/assets/play.js" defer></script>
 <script src="/assets/play-run.js" defer></script>
 <script src="/assets/play-assist.js" defer></script>
+<script src="/assets/play-access.js" defer></script>
 </head>
 <body>
 <header class="bar">
@@ -50,6 +52,7 @@
         <button id="tab-usecases" role="tab" type="button" aria-selected="false" aria-controls="usecase-canvas">Use cases</button>
         <button id="tab-screens" role="tab" type="button" aria-selected="false" aria-controls="screens">Screens</button>
         <button id="tab-components" role="tab" type="button" aria-selected="false" aria-controls="component-canvas">Components</button>
+        <button id="tab-access" role="tab" type="button" aria-selected="false" aria-controls="access-panel">Permissions</button>
       </div>
       <button id="fit" type="button" class="quiet">Fit</button>
       <button id="zoom-in" type="button" class="quiet" aria-label="Zoom in">+</button>
@@ -66,6 +69,7 @@
     <div id="class-canvas" class="canvas" tabindex="0" role="tabpanel" aria-labelledby="tab-classes" hidden></div>
     <div id="usecase-canvas" class="canvas" tabindex="0" role="tabpanel" aria-labelledby="tab-usecases" hidden></div>
     <div id="component-canvas" class="canvas" tabindex="0" role="tabpanel" aria-labelledby="tab-components" hidden></div>
+    <div id="access-panel" class="access" tabindex="0" role="tabpanel" aria-labelledby="tab-access" hidden></div>
     <div id="screens" class="designer" role="tabpanel" aria-labelledby="tab-screens" hidden>
       <nav class="screen-list" aria-labelledby="screen-list-title"><h3 id="screen-list-title">Use cases</h3><ul id="screen-list"></ul></nav>
       <div class="screen-stage">

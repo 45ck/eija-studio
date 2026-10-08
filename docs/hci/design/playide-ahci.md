@@ -1,6 +1,6 @@
 # PlayIDE: UML, HCI and agentic HCI
 
-How working with UML in PlayIDE should feel for a person, how the person and the AI share the work, and which parts of that the product already does. Decision record: [ADR-0170](../../adr/0170-playide-assist-ask-complete-palette-review.md). Earlier aspect decisions this builds on: [HCI-ADR-0064](../../adr/0064-hci-ai-interaction.md) (proposal cards and the delegation fence), [ADR-0156](../../adr/0156-chat-plan-mode-proposes-typed-steps.md) (plan mode) and [ADR-0157](../../adr/0157-drawn-edits-and-checks-ring.md) (drawing and the checks ring).
+How working with UML in PlayIDE should feel for a person, how the person and the AI share the work, and which parts of that the product already does. Decision records: [ADR-0170](../../adr/0170-playide-assist-ask-complete-palette-review.md) (the assist layer) and [ADR-0171](../../adr/0171-permissions-matrix-and-reachability-questions.md) (who can do what). Earlier aspect decisions this builds on: [HCI-ADR-0064](../../adr/0064-hci-ai-interaction.md) (proposal cards and the delegation fence), [ADR-0156](../../adr/0156-chat-plan-mode-proposes-typed-steps.md) (plan mode) and [ADR-0157](../../adr/0157-drawn-edits-and-checks-ring.md) (drawing and the checks ring).
 
 **Status of the claims here.** This is a design argument from published research and from the product as built. Nobody has been measured using PlayIDE. Where a principle cites a study, the study is about AI-assisted decisions in general, not about this product. A usability study is still owed (see the last section).
 
@@ -21,6 +21,7 @@ Every PlayIDE tab is a view of **one** model (ADR-0093: one source per fact). No
 | Use cases | Who may do what: each role's actions, and the screens they get | Derived from the workflow's transitions |
 | Screens | The UI: one screen per use case, checked against the record class | The screen designer, bound to use cases |
 | Components | The code structure of the generated app | Read from the generated files, not drawn |
+| Permissions | Who may take which action from which state, and who the kernel actually lets through | Projected from the transitions; every cell tried in the kernel |
 | Sequence (Simulate) | What seeded users actually did, step by step | Traces from the kernel during Simulate |
 
 This is what "executable UML" means here: the state machine is not a specification someone later implements. The kernel runs it, `eija build` generates an app from it, and every build is checked case by case against the kernel before it starts (ADR-0150, ADR-0151). Executable UML and MDA stalled on expressiveness. PlayIDE's answer is to support a bounded set of semantics explicitly and to refuse what it cannot run, rather than to draw what it cannot run.
@@ -65,6 +66,8 @@ The principles below follow from that table and from the research.
 
 **A9. Keyboard shortcuts must not ambush.** Single-key shortcuts act only while focus is inside the plan being reviewed (WCAG 2.1.4, focus-only). Space is the checkbox's own toggle, so nothing ticks a step on the person's behalf.
 
+**A10. Let people ask the model questions, not only look at it.** A diagram shows structure; an engineer reviewing a change wants to know what it allows. The questions reviewers and auditors ask first are about access: who can do what, and can anything happen without the right person. PlayIDE answers "can a record reach Overdue without a Clerk?" with a proof over the model (No), a path the kernel committed step by step (Yes), or Not shown when the fixture actors could not take the path. A previewed AI plan gets the same question asked again, beside the permissions it adds and removes. This is the review-by-meaning idea of HCI-ADR-0063 applied to access rules, where AI-written apps most often go wrong.
+
 ## 5. What PlayIDE does today
 
 | Principle | In the product | Where |
@@ -78,6 +81,7 @@ The principles below follow from that table and from the research.
 | A7 | Nothing saved; Back to the model; retired plans | ADR-0156 |
 | A8 | Command palette, Ctrl+K / ⌘K, native `<dialog>` | ADR-0170 |
 | A9 | Focus-only review keys | ADR-0170 |
+| A10 | Permissions tab: role by state matrix tried in the kernel, reachability questions, a plan's permission changes flagged | ADR-0171 |
 
 ## 6. Not done yet, and what would change it
 
@@ -85,4 +89,7 @@ The principles below follow from that table and from the research.
 * **The proposer is a fixture.** A live model behind the same `PlanProposer` port needs the owner's permission for network and spend. When it arrives, A3 and A4 matter more, not less: the selection becomes the context sent with the request.
 * **The ripple across diagrams** (a change on one view and the follow-on changes it needs on the others) is being built in a separate thread; it belongs in the same plan card, as AI-proposed follow-on steps the person checks like any other.
 * **Run controls** landed as the run bar (ADR-0160); the palette lists Run, Pause, Step, Stop and Restart whenever their buttons are usable. **Model-level review** (reviewing a change case in PlayIDE instead of a pull request) is a separate thread; the palette will reach its controls the same way, by pressing the page's buttons.
+* **Code outside the model.** When PlayIDE connects a repository, some code is generated from the model and checked against the kernel, and some is not. The second kind should be marked "outside the model's guarantees" wherever it appears (the component diagram, a review), so nobody reads a green check as covering it. Today every component PlayIDE draws is generated, so there is nothing to mark yet; this belongs with source-connected review (ADR-0147) when a checkout is shown beside the model.
+* **Diff-first review.** Reviewing an AI change as a diagram diff with a question like A10's beside it, rather than starting from drawing, is the subject of the "Review changes in PlayIDE, not PRs" thread. The reachability route (`/api/play/reach`) is there for it to reuse.
+* **Audience.** The owner kept the audience as engineers who already know UML (8 October 2026). A reader mode for non-coders and a UML-teaching angle were considered and not adopted.
 * **The sidebar is dense.** Checks, chat, inspector, simulation and the running app share one column. A layout pass (tabs or a resizable split) is worth doing once the run bar and review threads have landed, so it is done once.

@@ -2,7 +2,7 @@
 Simulate, seeded simulated users whose every step the kernel decides (ADR-0152), the screen designer's check and
 build of designed screens (ADR-0154), the component diagram read from the files the app is built from (ADR-0155), the chat's plan mode, whose accepted
 steps can be previewed, built and simulated but never saved or applied from here (ADR-0156), and the run bar's seeded
-run log with breakpoints and Stop (ADR-0160).
+run log with breakpoints and Stop (ADR-0160), and who can do what with reachability questions (ADR-0171).
 
 Build & run reuses `eija build` (ADR-0150): the app is generated into the workspace, its kernel conformance tests run,
 and only a PASSing app is started, as a separate local process on a free loopback port. One app runs at a time; a new
@@ -25,6 +25,7 @@ from fastapi.responses import FileResponse
 
 from pydantic import Field
 
+from eija_studio.application.access import access, reach
 from eija_studio.application.components import app_components
 from eija_studio.application.plan import preview_plan, propose_plan
 from eija_studio.application.simulation import MAX_BREAKPOINTS, MAX_STEPS, run_log, simulate
@@ -58,6 +59,11 @@ class PlanPreviewRequest(BuildRequest):
 class SimulateRequest(BuildRequest):
     seed: int = Field(default=1, ge=0, le=2**31 - 1)
     steps: int = Field(default=500, ge=1, le=MAX_STEPS)
+
+
+class ReachRequest(BuildRequest):
+    target: str = Field(min_length=1, max_length=60)
+    without: str | None = Field(default=None, min_length=1, max_length=60)
 
 
 class RunRequest(SimulateRequest):
@@ -215,6 +221,17 @@ def register(app, studio, web: Path) -> AppRunner:
         """The run bar (ADR-0160): every step of one seeded run, decided by the kernel, and where it stops."""
         return run_log(studio.pack, resolve(body), seed=body.seed, steps=body.steps, breakpoints=body.breakpoints,
                        break_on_refusal=body.break_on_refusal)
+
+    @app.post("/api/play/access")
+    def play_access(body: BuildRequest):
+        """Who can do what (ADR-0171): role by state, each cell tried in the kernel; with a plan, what it changes."""
+        model = resolve(body)
+        return access(studio.pack, model, resolve(body.model_copy(update={"plan": None})) if body.plan else None)
+
+    @app.post("/api/play/reach")
+    def play_reach(body: ReachRequest):
+        """Can a record reach a state without a role? A proof, a kernel-replayed path, or NOT_SHOWN (ADR-0171)."""
+        return reach(studio.pack, resolve(body), body.target, body.without)
 
     @app.post("/api/play/stop")
     def play_stop():

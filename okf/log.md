@@ -2,6 +2,7 @@
 
 ## 2026-10-08
 
+* **Who can do what**: synced ADR-0171 and the new `application.access` module and symbol pages; `interfaces.play` (`/api/play/access`, `/api/play/reach`) and `interfaces.http` refreshed, and pages linking to `runtime`, `simulation`, `models` and `pack` changed only in generated references. No Notes were hand-edited and nothing was recorded as verified.
 * **PlayIDE assist**: synced ADR-0170 (and its review fixes); `interfaces.http` refreshed (`WEB_ASSETS` allows `play-assist.js` and `play-assist.css`). The ADR-0064, ADR-0156, ADR-0157 and ADR-0160 pages changed only in generated backlinks. No Notes were hand-edited and nothing was recorded as verified.
 * **Executable UML and SCXML**: synced ADR-0165, the new `application.scxml` module and symbol pages, the `xuml` gate pages (`scxml_drift`, `scxml_differential`) and `interfaces.cli`; ADRs that link to ADR-0165 refreshed. No Notes were hand-edited and nothing was recorded as verified.
 * **Run bar**: synced ADR-0160 and the new `application.simulation.run_log` and `MAX_BREAKPOINTS` symbol pages; `application.simulation` (steps name their transition), `interfaces.play` (`/api/play/run`, `/api/play/stop`) and `interfaces.http` (the `play-run.js` asset) refreshed. No Notes were hand-edited and nothing was recorded as verified.

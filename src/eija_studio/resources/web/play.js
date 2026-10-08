@@ -15,7 +15,7 @@
   const earned = [];
   let screens = null, screensEdited = false, useCase = null, checkTimer = 0, problems = [], useCaseList = [];
   const base = {}; // each cell's own style and label, so overlays can be cleared
-  const hooks = { redraw: [], inspect: [] }; // the run bar (play-run.js) redraws its marks and adds inspector tools
+  const hooks = { redraw: [], inspect: [], tab: [] }; // the run bar (play-run.js) redraws its marks and adds inspector tools; play-access.js draws its tab
 
   async function api(path, body) {
     const options = { headers: { Authorization: "Bearer " + token } };
@@ -101,13 +101,14 @@
   function transition(id) { return model.transitions.find((t) => t.id === id); }
 
   const current = () => ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: componentGraph })[tab];
-  const PANELS = { states: "canvas", classes: "class-canvas", usecases: "usecase-canvas", screens: "screens", components: "component-canvas" };
+  const PANELS = { states: "canvas", classes: "class-canvas", usecases: "usecase-canvas", screens: "screens", components: "component-canvas", access: "access-panel" };
   const HINTS = {
     states: "Drag from the palette to draw a state, a transition or the initial state; select an element to change or remove it. Drawn changes join the plan for you to preview; nothing is saved.",
     classes: "Select a class to see its attributes and associations.",
     usecases: "Select a use case to inspect it. Double-click one to design its screen.",
     screens: "Design each use case's screen. The design check runs as you edit; Build & run uses these screens.",
     components: "The built app's components, read from its generated files: every line is an import, a route or a file read.",
+    access: "Who can do what, from each state. Every cell is tried in the kernel with the pack's fixture actors; a previewed plan's changes are flagged.",
   };
 
   function fit() {
@@ -340,8 +341,10 @@
       $(panel).hidden = which !== name;
     }
     $("canvas-help").textContent = HINTS[which];
-    for (const id of ["fit", "zoom-in", "zoom-out"]) $(id).hidden = which === "screens";
+    for (const id of ["fit", "zoom-in", "zoom-out"]) $(id).hidden = which === "screens" || which === "access";
     $("draw-palette").hidden = which !== "states";
+    for (const f of hooks.tab) f(which);
+    if (which === "access") return;
     if (which === "screens") { renderDesigner(); return; }
     if (which === "usecases") drawUseCases();
     if (which === "components") { drawComponents(); return; }
@@ -1315,6 +1318,7 @@
     $("tab-usecases").addEventListener("click", () => showTab("usecases"));
     $("tab-screens").addEventListener("click", () => showTab("screens"));
     $("tab-components").addEventListener("click", () => showTab("components"));
+    $("tab-access").addEventListener("click", () => showTab("access"));
     $("chat-form").addEventListener("submit", ask);
     startDrawing();
     $("health").addEventListener("click", () => {
@@ -1336,7 +1340,7 @@
   // request is planned against, not a previewed candidate.
   window.PlayIDE = {
     api, el, hooks, about, viewKey, label, restyle, clearSim, select,
-    graph: () => graph, model: () => model, selected: () => selected, pack: () => packInfo, base: () => baseModel,
+    graph: () => graph, tab: () => tab, model: () => model, selected: () => selected, pack: () => packInfo, base: () => baseModel,
   };
 
   start().catch((error) => {

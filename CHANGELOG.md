@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### 8 October 2026: who can do what
+
+- PlayIDE has a **Permissions** tab: a role by state matrix of who may take which action, each cell tried in the kernel with the pack's fixture actors (who is let through, and why the others are refused). Ask "can a record reach Overdue without a Clerk?" and get a proof (No), a path the kernel committed (Yes) or Not shown. On a previewed plan the same question is asked again and the permissions the plan adds or removes are flagged. See [ADR-0171](docs/adr/0171-permissions-matrix-and-reachability-questions.md).
+
 ### 8 October 2026: PlayIDE assist (UI, HCI and agentic HCI)
 
 - PlayIDE's chat says who does what (the AI proposes, you check, the owner approves), offers the requests it can read as buttons, about the selected state or transition with its name filled in, and completes exact model names as you type. Ctrl+K (⌘K) opens a palette of every command and element, and an AI plan can be reviewed from the keyboard (J/K, S, Space, P). The reasoning is in [PlayIDE: UML, HCI and agentic HCI](docs/hci/design/playide-ahci.md). See [ADR-0170](docs/adr/0170-playide-assist-ask-complete-palette-review.md).

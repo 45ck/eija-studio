@@ -72,6 +72,7 @@ _No curated notes yet._
 
 ## Referenced by
 
+* [application.access](/modules/application/access.md) - Who can do what (ADR-0171): the model's permissions as a role by state matrix, each cell checked by the kernel, and reachability questions such as "can a recor…
 * [interfaces.play](/modules/interfaces/play.md) - PlayIDE routes: the visual UML canvas page, Build & run of the model as a live app beside it (ADR-0151), and Simulate, seeded simulated users whose every step…
 * [application.simulation.CASE](/symbols/application/simulation/CASE.md) - Constant `CASE` in `application/simulation`.
 * [application.simulation.MAX_BREAKPOINTS](/symbols/application/simulation/MAX_BREAKPOINTS.md) - Constant `MAX_BREAKPOINTS` in `application/simulation`.

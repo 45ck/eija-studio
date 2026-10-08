@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/play.py
   title: interfaces/play.py
   hash_method: ast-api-v1
-  sha256: e150bc1869459fc2f58492a334223bcb08715dadecef3e3ba948f364ca4adfda
-notes_baseline: c4060f866e4c2df424110b95af1eac23e446f65f397c53ae1de150dd6072879d
+  sha256: ada5e41d01d8d70b8954407f75f7385b6e7e650d09e4fd1d3d34ae1c48c4308d
+notes_baseline: 4baf86611996b62ca3467778d73080dc7daad9ba4a670fbce7834c0593dba63f
 ---
 
 # interfaces.play
@@ -33,7 +33,7 @@ PlayIDE routes: the visual UML canvas page, Build & run of the model as a live a
 Simulate, seeded simulated users whose every step the kernel decides (ADR-0152), the screen designer's check and
 build of designed screens (ADR-0154), the component diagram read from the files the app is built from (ADR-0155), the chat's plan mode, whose accepted
 steps can be previewed, built and simulated but never saved or applied from here (ADR-0156), and the run bar's seeded
-run log with breakpoints and Stop (ADR-0160).
+run log with breakpoints and Stop (ADR-0160), and who can do what with reachability questions (ADR-0171).
 
 Build & run reuses `eija build` (ADR-0150): the app is generated into the workspace, its kernel conformance tests run,
 and only a PASSing app is started, as a separate local process on a free loopback port. One app runs at a time; a new
@@ -46,6 +46,7 @@ _Symbol pages are generated for the domain and application layers only._
 
 ## Internal imports
 
+* [`application/access`](/modules/application/access.md)
 * [`application/components`](/modules/application/components.md)
 * [`application/plan`](/modules/application/plan.md)
 * [`application/simulation`](/modules/application/simulation.md)
@@ -65,6 +66,7 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Imports
 
+* [application.access](/modules/application/access.md) - Who can do what (ADR-0171): the model's permissions as a role by state matrix, each cell checked by the kernel, and reachability questions such as "can a recor…
 * [application.components](/modules/application/components.md) - The component diagram of an app built from the model (ADR-0155), extracted from the generated files themselves.
 * [application.plan](/modules/application/plan.md) - Plan mode for the PlayIDE chat (ADR-0156): an AI proposes a change as numbered typed steps; the person accepts or rejects each one and sees what the accepted o…
 * [application.simulation](/modules/application/simulation.md) - Seeded simulation of people using the app built from a model (ADR-0152).
