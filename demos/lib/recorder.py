@@ -140,6 +140,18 @@ class Scene:
         self._press_feedback()
         self.page.locator(target).first.check()
 
+    def drag(self, source: str, target: str, *, position: tuple[float, float] | None = None) -> None:
+        """Drag `source` onto `target` with HTML5 drag and drop, at `position` (x, y inside the target) or its centre."""
+        self.move_to(source)
+        self._press_feedback()
+        box = self.page.locator(target).first.bounding_box()
+        if box is None:
+            raise ValueError(f"target has no layout box: {target!r}")
+        x, y = position if position is not None else (box["width"] / 2, box["height"] / 2)
+        if not self.dry_run:
+            self._animate_to(box["x"] + x, box["y"] + y, 800)
+        self.page.drag_and_drop(source, target, target_position={"x": x, "y": y})
+
     # -- narration and assertions -----------------------------------------------------------------
 
     def highlight(self, target: str, *, duration_ms: int = 900) -> None:
