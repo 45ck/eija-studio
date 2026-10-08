@@ -2,6 +2,7 @@
 
 ## 2026-10-08
 
+* **PlayIDE tab overflow**: ADR-0173 page re-synced after its text gained the tab overflow rule. No Notes were hand-edited and nothing was recorded as verified.
 * **PlayIDE workbench shell**: synced ADR-0173 (presentation only, no module or symbol changes; `interfaces.http` refreshed for the two new web assets). No Notes were hand-edited and nothing was recorded as verified.
 * **Merge of main into the permissions branch** (twice, the second bringing ADR-0175): re-synced `interfaces.play` and `interfaces.http` (both laws/ripple and access/reach routes) and ADR-0172 links. No Notes were hand-edited and nothing was recorded as verified.
 * **Review view**: synced ADR-0172 (presentation only, no module changes). No Notes were hand-edited and nothing was recorded as verified.

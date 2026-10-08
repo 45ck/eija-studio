@@ -37,6 +37,9 @@ body[data-chat="closed"] .layout{grid-template-columns:var(--left-w) 5px minmax(
 body[data-left="closed"][data-chat="closed"] .layout{grid-template-columns:0 0 minmax(0,1fr) 0 0}
 body[data-left="closed"] .explorer,body[data-left="closed"] #split-left,
 body[data-chat="closed"] .side,body[data-chat="closed"] #split-chat{display:none}
+/* Each region keeps its own column: a hidden region leaves its column empty instead of letting the next one slide in. */
+.layout>.explorer{grid-column:1}.layout>#split-left{grid-column:2}.layout>.workbench{grid-column:3}.layout>#split-chat{grid-column:4}.layout>.side{grid-column:5}
+.layout>*{grid-row:1;min-width:0}
 .split{background:transparent;position:relative;z-index:4;touch-action:none}
 .split::after{content:"";position:absolute;inset:0;transition:background .15s}
 .split:hover::after,.split:focus-visible::after{background:var(--accent);opacity:.45}
