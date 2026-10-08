@@ -1,0 +1,13 @@
+{
+  "mode": "record",
+  "platform": "Linux 6.18.44-fc-v80 / Python 3.13.16",
+  "scenario": "ide_walkthrough",
+  "scenario_sha256": "1994a8726168e9baf03e955c0b7937ccba5cdc81b91e7a54d7a2494a1050e9af",
+  "skipped": [
+    "Verify, approve, apply: the owner has not restamped the release fixture, so verification returns SOURCE_REVIEW_REQUIRED. Agents never stamp; not exercised."
+  ],
+  "status": "PARTIAL",
+  "video": "demos/output/ide_walkthrough.webm",
+  "video_bytes": 12764838,
+  "video_sha256": "25afe1206d01649e096d3c5b95400ffec799f71169278001554bcccdf10f954c"
+}

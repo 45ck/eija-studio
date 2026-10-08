@@ -66,7 +66,12 @@ SCENARIOS: tuple[Scenario, ...] = (
              "A vague request becomes explicit meanings; the owner selects one; the rule is exercised as "
              "different synthetic actors (including denials); evidence is computed; the owner approves the "
              "exact revision, then separately applies it. Needs no other lane: it is the shipped v0.2 flow."),
-    Scenario("agent_change_review", "Reviewing an agent's change by meaning, not by diff", "unscripted",
+    Scenario("ide_walkthrough", "The IDE walkthrough: EIJA reviews a change to itself", "recorded-partial", (),
+             "Connected read-only to its own checkout, EIJA shows the model of its review workflow, follows a "
+             "concept into its exact source, turns a plain-language request into an owner-selected meaning, reviews "
+             "the before/after model change, previews a kernel-checked edit without writing it, exercises the rules "
+             "as an agent and the owner, and shows verification blocked until the owner reviews changed source."),
+    Scenario("agent_change_review","Reviewing an agent's change by meaning, not by diff", "unscripted",
              ("agents", "providers", "visual"),
              "An agent (Claude Code, Codex, OpenCode or Gemini via MCP) proposes; the developer sees the "
              "meaning, the ripple into other models and the evidence - and the agent cannot approve."),

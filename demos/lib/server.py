@@ -60,8 +60,13 @@ class RunningServer:
 
 
 @contextmanager
-def ephemeral_eija_server(*, workspace: Path | None = None) -> Iterator[RunningServer]:
+def ephemeral_eija_server(
+    *, workspace: Path | None = None, repo: Path | None = None, pack: Path | None = None
+) -> Iterator[RunningServer]:
     """Start `eija serve` on an ephemeral loopback port against a throwaway (or given) workspace.
+
+    `repo` connects a local checkout read-only (`--repo`); the Studio never executes its code. `pack` selects a
+    domain pack (`--pack`) instead of the default.
 
     The provider is forced to `offline` so an `EIJA_PROVIDER` in the developer's shell can never change what a
     scenario shows (a demo must not spend money or reach a network)."""
@@ -78,6 +83,10 @@ def ephemeral_eija_server(*, workspace: Path | None = None) -> Iterator[RunningS
     env["PYTHONPATH"] = str(ROOT / "src")
     argv = [sys.executable, "-m", "eija_studio", "serve", "--provider", "offline",
             "--workspace", str(workspace), "--port", str(port)]
+    if repo is not None:
+        argv += ["--repo", str(repo)]
+    if pack is not None:
+        argv += ["--pack", str(pack)]
     process: subprocess.Popen[bytes] | None = None
     try:
         with log_path.open("w+", encoding="utf-8") as log:

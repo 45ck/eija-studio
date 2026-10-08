@@ -158,7 +158,10 @@ def _execute(scenario: Scenario, *, dry_run: bool, headed: bool, seed: int) -> t
     module = importlib.import_module(scenario.module)
     out_dir = OUTPUT / scenario.key  # created only when recording: a dry run leaves no files behind
     before = set(out_dir.glob("*.webm")) if out_dir.exists() else set()
-    with ephemeral_eija_server() as server, Recorder(headless=not headed).session(
+    # A scenario that tours source navigation sets CONNECT_REPOSITORY (this checkout, read-only) and may name a PACK.
+    repo = ROOT if getattr(module, "CONNECT_REPOSITORY", False) else None
+    pack = ROOT / module.PACK if getattr(module, "PACK", None) else None
+    with ephemeral_eija_server(repo=repo, pack=pack) as server, Recorder(headless=not headed).session(
         out_dir, dry_run=dry_run, seed=seed
     ) as scene:
         module.run(scene, server)

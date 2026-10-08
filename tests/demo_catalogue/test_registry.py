@@ -110,4 +110,6 @@ def test_the_registry_table_lists_only_unlanded_lanes_and_never_claims_a_recordi
     row = {s.key: next(line for line in text.splitlines() if line.startswith(f"| `{s.key}`")) for s in SCENARIOS}
     assert "| nothing |" in row["formal_vv_tour"] and "`bend`" not in row["formal_vv_tour"]
     assert "`uml-editor` (wave 2)" in row["uml_drag_and_drop"] and "`visual`" not in row["uml_drag_and_drop"]
-    assert [s.key for s in SCENARIOS if s.status.startswith("recorded")] == ["assurance_loop"]  # recorded only where a manifest says so
+    recorded = [s for s in SCENARIOS if s.status.startswith("recorded")]
+    assert [s.key for s in recorded] == ["assurance_loop", "ide_walkthrough"]
+    assert all(s.manifest().is_file() for s in recorded)  # recorded only where a manifest says so
