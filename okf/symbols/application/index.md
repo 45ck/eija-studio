@@ -16,6 +16,7 @@
 * [plan](plan/) - Symbols of application.plan
 * [ports](ports/) - Symbols of application.ports
 * [repository](repository/) - Symbols of application.repository
+* [review](review/) - Symbols of application.review
 * [ripple](ripple/) - Symbols of application.ripple
 * [runtime](runtime/) - Symbols of application.runtime
 * [scxml](scxml/) - Symbols of application.scxml

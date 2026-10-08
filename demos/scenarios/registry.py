@@ -87,6 +87,11 @@ SCENARIOS: tuple[Scenario, ...] = (
              "play and watch seeded users run through it; fix it by dragging; let the AI propose the busywork and check "
              "it step by step; prove it with conformance and simulation. Beats whose feature has not merged are "
              "skipped and named in the manifest."),
+    Scenario("playide_review", "Review an AI's change in PlayIDE, not in a pull request", "recorded", (),
+             "On the library-loan pack, an offline AI plan adds a renewal and quietly deletes late returns. The Review tab "
+             "draws both models on one UML diagram, ranks each change by risk and shows what the kernel does differently "
+             "for every fixture user. The reviewer predicts before each answer, catches the deleted path, asks for a "
+             "change, rejects the step, reviews again and builds the result. Nothing is approved or applied."),
     Scenario("agent_change_review","Reviewing an agent's change by meaning, not by diff", "unscripted",
              ("agents", "providers", "visual"),
              "An agent (Claude Code, Codex, OpenCode or Gemini via MCP) proposes; the developer sees the "
