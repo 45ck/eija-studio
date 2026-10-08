@@ -56,7 +56,10 @@
   }
 
   function showAnswer(box, r) {
-    const [word, tone] = VERDICTS[r.verdict];
+    let [word, tone] = VERDICTS[r.verdict];
+    // Reaching a state without a role is the worrying answer; reaching it at all is the expected one, and a state no
+    // run reaches is the problem.
+    if (!question.without && r.verdict !== "NOT_SHOWN") tone = r.verdict === "REACHABLE" ? "ok" : "bad";
     const head = P.el("p", undefined, { class: "verdict " + tone });
     head.append(P.el("strong", word), ` ${r.why}`);
     box.replaceChildren(head);
