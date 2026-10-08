@@ -126,6 +126,9 @@ def test_the_changes_view_in_a_real_browser():
             assert page.is_hidden("#canvas") and page.get_attribute("#show-changes", "aria-pressed") == "true"
             ghost = page.evaluate("() => window.PlayIDE.hooks.diffGraph().getDataModel().getCell('was:TR-CANCEL').style")
             assert ghost["dashed"] and ghost["opacity"] < 100  # the removed arrow is a ghost, not gone
+            tip = page.evaluate("""() => { const g = window.PlayIDE.hooks.diffGraph(), t = g.getTooltipForCell(g.getDataModel().getCell('t:TR-RENEW'));
+                return [t instanceof HTMLElement, t.children.length, t.textContent]; }""")
+            assert tip[:2] == [True, 0] and "Renew" in tip[2]  # a text node: model names are never parsed as HTML
             page.focus(".diff-canvas")
             page.keyboard.press("]")
             assert page.inner_text("#diff-pos") == "Change 1 of 4" and "Adds state Lost" in page.inner_text("#inspector")

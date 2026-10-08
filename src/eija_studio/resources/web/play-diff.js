@@ -85,7 +85,10 @@
         items[t.key] = { status: t.status, touched: t.status !== "same", kind: "transition", data: t, text: `${t.action} [${t.role}]` };
       }
     });
-    graph.getTooltipForCell = (cell) => tooltip(items[cell && cell.id]);
+    graph.getTooltipForCell = (cell) => { // a node, not a string: maxGraph puts string tooltips into innerHTML
+      const text = tooltip(items[cell && cell.id]);
+      return text ? el("div", text, { class: "diff-tip" }) : "";
+    };
     const view = { graph, ghost, lens: "changes", onion: 0.5, focus: true };
 
     // How one element looks in a lens. `share` is how present it is: 1 drawn, 0 hidden, in between for the onion.
