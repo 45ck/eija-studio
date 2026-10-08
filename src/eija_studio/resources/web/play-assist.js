@@ -326,6 +326,9 @@
       ["Fit the diagram", "fit", press("fit")],
       ["Show the checks", "health", press("health"), () => $("checks") && $("checks").hidden],
       ["Open the review workbench", null, () => { location.href = "/"; }],
+      ...[["xmi", "XMI"], ["plantuml", "PlantUML"], ["mermaid", "Mermaid"], ["drawio", "draw.io"]].map(([f, name]) => // ADR-0190
+        [`Export the model as ${name}`, null, () => $(`uml-export-${f}`).click(), () => Boolean($(`uml-export-${f}`))]),
+      ["Import a UML file (XMI, PlantUML, Mermaid, draw.io)", null, () => $("uml-import").click(), () => Boolean($("uml-import"))],
     ];
     items.push(REVIEW ? ["Leave the review view (edit)", null, () => { location.href = viewUrl(false); }]
       : ["Open the review view (read-only)", null, () => { location.href = viewUrl(true); }]);

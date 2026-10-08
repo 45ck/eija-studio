@@ -482,7 +482,8 @@
   function planCard() {
     const box = el("div", undefined, { class: "plan" });
     box.append(el("p", plan.summary || "A plan", { class: "plan-summary" }),
-      el("p", plan.scope === "plan-draft" ? "Drawn by you on the diagram · checked by the server like any plan"
+      el("p", plan.scope === "plan-draft" ? (plan.provider === "imported" ? "Imported from a UML file · checked by the server like any plan"
+        : "Drawn by you on the diagram · checked by the server like any plan")
         : `${plan.provider}${plan.live ? "" : " · offline fixture, not a live model"} · untrusted until you check it`, { class: "muted small" }));
     cards += 1;
     const list = el("ol", undefined, { class: "plan-steps" });
@@ -817,6 +818,20 @@
     const result = await refreshPlan();
     if (result && result.legal && !plan.previewing) enterPreview();
     plan.card.scrollIntoView({ block: "nearest" });
+  }
+
+  // An imported UML file's edits (ADR-0190) become the plan, as the person's own steps like drawn edits: the server
+  // re-checks each one and previews them through the policy, and nothing is saved from here.
+  async function importPlan(transactions, summary) {
+    retire();
+    plan = { scope: "plan-draft", provider: "imported", live: false, summary, meaning: null, request: "", model: "draft",
+      steps: transactions.map((transaction, i) => ({ n: i + 1, transaction, text: "", why: "", author: "you", checked: false, caught: false })),
+      accepted: transactions.map(() => true), previewing: false, card: null, rewarded: new Set() };
+    plan.card = say("draft", planCard());
+    const result = await refreshPlan();
+    if (result && result.legal && !plan.previewing) enterPreview();
+    plan.card.scrollIntoView({ block: "nearest" });
+    return result;
   }
 
   async function toggleStep(i, on) {
@@ -1773,7 +1788,7 @@
   const changeLook = (status, part) => (window.PlayDiff && shownChange ? window.PlayDiff.look(status, part) : {});
 
   window.PlayIDE = {
-    api, el, hooks, about, viewKey, label, restyle, clearSim, select, showTab, fit,
+    api, el, hooks, about, viewKey, label, restyle, clearSim, select, showTab, fit, importPlan,
     graph: () => graph, tab: () => tab, model: () => model, selected: () => selected, pack: () => packInfo, base: () => baseModel,
     planned: () => (plan && plan.result && plan.result.legal ? accepted() : null), // the change the Changes view draws (ADR-0176)
     setChanges, diagram: (key) => ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: componentGraph })[key],
