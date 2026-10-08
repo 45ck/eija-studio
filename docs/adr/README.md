@@ -81,6 +81,7 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0172](0172-review-view-for-reading-the-model.md) | A read-only review view of PlayIDE for people who review the model | accepted |
 | [0173](0173-playide-workbench-shell.md) | PlayIDE's workbench shell, after Visual Studio, VS Code, Cursor and draw.io | accepted |
 | [0175](0175-review-a-change-as-a-uml-diff-you-can-run.md) | Review a change as a UML diff you can run, not as a pull request | accepted |
+| [0176](0176-how-a-uml-change-looks.md) | How a UML change looks: one stable layout, removed parts kept as ghosts, and lenses | accepted for the state machine |
 <!-- adr-index:end -->
 
 ## Reserved numbers for capability lanes

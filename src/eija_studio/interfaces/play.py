@@ -4,7 +4,8 @@ build of designed screens (ADR-0154), the component diagram read from the files 
 steps can be previewed, built and simulated but never saved or applied from here (ADR-0156), the ripple of a plan
 across every diagram with the follow-on edits the proposer suggests, each re-checked (ADR-0158), the run bar's
 seeded run log with breakpoints and Stop (ADR-0160), who can do what with reachability questions (ADR-0171), and the
-review of a change as a UML diff whose behaviour the kernel runs on both sides (ADR-0175).
+review of a change as a UML diff whose behaviour the kernel runs on both sides (ADR-0175), and how a change looks:
+the model in force and the change on one state machine, removed elements kept as ghosts (ADR-0176).
 
 Build & run reuses `eija build` (ADR-0150): the app is generated into the workspace, its kernel conformance tests run,
 and only a PASSing app is started, as a separate local process on a free loopback port. One app runs at a time; a new
@@ -30,6 +31,7 @@ from pydantic import Field
 from eija_studio.application.access import access, reach
 from eija_studio.application.components import app_components
 from eija_studio.application.law_proof import prove_laws
+from eija_studio.application.ghost_diff import ghost_diff
 from eija_studio.application.plan import preview_plan, propose_plan
 from eija_studio.application.review import review_change
 from eija_studio.application.ripple import check_follow_ons, ripple
@@ -240,11 +242,18 @@ def register(app, studio, web: Path) -> AppRunner:
                 return Workflow.model_validate(u.active()["model"])
         return studio.workflows(body.case_id)[0]
 
+    @app.post("/api/play/diff")
+    def play_diff(body: BuildRequest):
+        """How the change shown looks (ADR-0176): a case's candidate and any accepted plan steps, against the model in
+        force, as one union of both state machines. Read-only."""
+        return ghost_diff(baseline(body), resolve(body))
+
     @app.post("/api/play/review")
     def play_review(body: BuildRequest):
         """Review the change shown (a case's candidate and any accepted plan steps) against the model in force (ADR-0175).
         Read-only: nothing is saved, approved or applied."""
-        return review_change(studio.pack, baseline(body), resolve(body))
+        before, after = baseline(body), resolve(body)
+        return review_change(studio.pack, before, after) | {"ghost": ghost_diff(before, after)}  # drawn as in ADR-0176
 
     @app.post("/api/play/build")
     def play_build(body: BuildRequest):

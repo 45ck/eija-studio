@@ -17,6 +17,7 @@
   let screens = null, screensEdited = false, useCase = null, checkTimer = 0, problems = [], useCaseList = [];
   const base = {}; // each cell's own style and label, so overlays can be cleared
   const hooks = { redraw: [], inspect: [], laws: [], tab: [] }; // the run bar (play-run.js) redraws its marks and adds inspector tools; play-laws.js and play-access.js draw their tabs
+  // the Changes view (play-diff.js, ADR-0176) closes when another tab is shown and answers current() while open
 
   async function api(path, body) {
     const options = { headers: { Authorization: "Bearer " + token } };
@@ -34,14 +35,26 @@
     return node;
   }
 
+  // While a plan can be previewed, both models are laid out together, in a fixed order, so Preview and Back to the
+  // model move nothing: every state keeps its place, and a removed one leaves its gap (ADR-0176).
+  function basis(workflow) {
+    const models = plan && plan.result && plan.result.legal ? [baseModel, plan.result.candidate] : [workflow];
+    const seen = new Set(), transitions = [];
+    for (const t of models.flatMap((w) => w.transitions)) {
+      const key = `${t.id} ${t.from_state} ${t.to_state}`;
+      if (!seen.has(key)) { seen.add(key); transitions.push(t); }
+    }
+    return { states: [...new Set(models.flatMap((w) => w.states))], initials: [...new Set(models.map((w) => w.initial_state))], transitions };
+  }
+
   function layout(workflow) {
-    const g = new dagre.graphlib.Graph({ multigraph: true });
+    const g = new dagre.graphlib.Graph({ multigraph: true }), shape = basis(workflow);
     g.setGraph({ rankdir: "LR", nodesep: 60, ranksep: 120, edgesep: 30, marginx: 30, marginy: 30 });
     g.setDefaultEdgeLabel(() => ({}));
     g.setNode("__initial", { width: INITIAL, height: INITIAL });
-    for (const s of workflow.states) g.setNode(s, { ...STATE });
-    g.setEdge("__initial", workflow.initial_state);
-    for (const t of workflow.transitions) g.setEdge(t.from_state, t.to_state, { width: 120, height: 20 }, t.id);
+    for (const s of shape.states) g.setNode(s, { ...STATE });
+    for (const s of shape.initials) g.setEdge("__initial", s, {}, s);
+    for (const t of shape.transitions) g.setEdge(t.from_state, t.to_state, { width: 120, height: 20 }, t.id);
     dagre.layout(g);
     const at = (id) => { const n = g.node(id); return [n.x - n.width / 2, n.y - n.height / 2]; };
     // dagre's bend points, without the two ends maxGraph attaches to the state borders itself.
@@ -101,7 +114,7 @@
 
   function transition(id) { return model.transitions.find((t) => t.id === id); }
 
-  const current = () => ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: componentGraph, review: PlayReview.graph() })[tab];
+  const current = () => (hooks.diffGraph && hooks.diffGraph()) || ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: componentGraph, review: PlayReview.graph() })[tab];
   const PANELS = { states: "canvas", classes: "class-canvas", usecases: "usecase-canvas", screens: "screens", components: "component-canvas", laws: "laws", review: "review", access: "access-panel" };
   const HINTS = {
     states: "Drag from the palette to draw a state, a transition or the initial state; select an element to change or remove it. Drawn changes join the plan for you to preview; nothing is saved.",
@@ -425,6 +438,8 @@
     leavePreview();
     for (const control of plan.card.querySelectorAll("input, button")) control.disabled = true;
     plan.card.firstChild.append(el("p", "Replaced by the newer plan below.", { class: "muted small" }));
+    plan = null;
+    document.dispatchEvent(new CustomEvent("playide:plan"));
   }
 
   function planCard() {
@@ -499,6 +514,7 @@
     plan.card.querySelector(".plan-tools .primary").disabled = !result.legal && !plan.previewing;
     plan.card.querySelector(".plan-tools .review-it").disabled = !result.legal;
     renderHealth();
+    document.dispatchEvent(new CustomEvent("playide:plan")); // the change shown is different now (ADR-0176)
   }
 
   function changes(diff) {
@@ -1548,6 +1564,7 @@
   window.PlayIDE = {
     api, el, hooks, about, viewKey, label, restyle, clearSim, select, showTab, fit,
     graph: () => graph, tab: () => tab, model: () => model, selected: () => selected, pack: () => packInfo, base: () => baseModel,
+    planned: () => (plan && plan.result && plan.result.legal ? accepted() : null), // the change the Changes view draws (ADR-0176)
   };
 
   start().catch((error) => {
