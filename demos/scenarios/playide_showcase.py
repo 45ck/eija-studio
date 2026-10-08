@@ -165,7 +165,7 @@ def _prove_it(scene: Scene, chapter: _Chapters) -> None:
     scene.click("#simulate")
     scene.expect_text("#sim-summary", "refused by the kernel", timeout_ms=60_000)
     scene.click("#health")
-    scene.expect_text("#health-text", "4/4 checks")
+    scene.expect_text("#health-text", "5/5 checks")
     scene.caption("The ring fills only from real checks on what you are looking at. That is the score.")
     scene.zoom("#checks", scale=1.6)
     scene.wait(2400)

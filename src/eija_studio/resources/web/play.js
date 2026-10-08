@@ -12,6 +12,7 @@
   let components = null, componentGraph = null, lastBuild = null;
   let baseModel = null, plan = null; // the server's model, and the chat plan being previewed on top of it (if any)
   let packInfo = null, points = 0, simKey = null, cards = 0, problemsFor = null; // the pack's actions and roles; check points; what was simulated
+  let ripple = null, rippleSeq = 0; // what the accepted plan does to every diagram, with the proposer's follow-ons (ADR-0158)
   const earned = [];
   let screens = null, screensEdited = false, useCase = null, checkTimer = 0, problems = [], useCaseList = [];
   const base = {}; // each cell's own style and label, so overlays can be cleared
@@ -131,6 +132,10 @@
       inspectClass(id.slice(6), box);
       return;
     }
+    if (id.startsWith("enum:")) {
+      box.append(el("h3", `«enumeration» ${id.slice(5)}`), el("p", `The states a ${data.record} can be in: ${model.states.join(", ")}. Read from the state machine, so a state you draw there appears here.`, { class: "muted" }));
+      return;
+    }
     if (id.startsWith("component:")) {
       inspectComponent(id.slice(10), box);
       return;
@@ -201,6 +206,7 @@
   // UML attribute notation: name: Type [multiplicity]; an optional value is [0..1], a choice lists its literals.
   const attributeLine = (a) => `${a.name}: ${a.type === "choice" ? `{${a.choices.join(", ")}}` : typeName[a.type]}${a.required ? "" : " [0..1]"}`;
   const ROW = 20, HEAD = 34;
+  const enumName = () => data.record + "State"; // the record's states as a UML enumeration, read from the state machine
   const widthOf = (e) => Math.max(200, e.name.length * 9 + 60, ...e.attributes.map((a) => attributeLine(a).length * 7 + 24));
 
   function classLayout() {
@@ -209,6 +215,8 @@
     g.setDefaultEdgeLabel(() => ({}));
     for (const e of data.entities) g.setNode(e.name, { width: widthOf(e), height: HEAD + ROW * Math.max(1, e.attributes.length) + 8 });
     data.associations.forEach((a, i) => g.setEdge(a.source, a.target, { width: 90, height: 20 }, "a" + i));
+    g.setNode(enumName(), { width: Math.max(200, ...model.states.map((x) => x.length * 8 + 30)), height: HEAD + ROW * model.states.length + 8 });
+    g.setEdge(data.record, enumName(), { width: 90, height: 20 }, "state");
     dagre.layout(g);
     return (name) => { const n = g.node(name); return [n.x - n.width / 2, n.y - n.height / 2, n.width, n.height]; };
   }
@@ -219,6 +227,7 @@
     const box = $("class-canvas");
     InternalEvent.disableContextMenu(box);
     classGraph = new Graph(box);
+    classGraph.options.foldingEnabled = false; // classes are not collapsible, and the fold icon is not shipped
     classGraph.setConnectable(false);
     classGraph.setCellsEditable(false);
     classGraph.setCellsDisconnectable(false);
@@ -237,6 +246,14 @@
           position: [8, HEAD + 4 + i * ROW], size: [w - 16, ROW], style: { ...font, fontSize: 12, align: "left", strokeColor: "none",
             fillColor: "none", movable: false, selectable: false } }));
       }
+      const [ex, ey, ew, eh] = at(enumName());
+        const literals = cells[enumName()] = classGraph.insertVertex({ parent, id: "enum:" + enumName(), value: `«enumeration»\n${enumName()}`,
+          position: [ex, ey], size: [ew, eh], style: { ...font, shape: "swimlane", startSize: HEAD, horizontal: true, fontStyle: 1, fontSize: 13,
+            fillColor: "#f4f1ff", swimlaneFillColor: "#ffffff", strokeColor: "#7a5bd6", rounded: false, collapsible: false } });
+        model.states.forEach((x, i) => classGraph.insertVertex({ parent: literals, id: "literal:" + x, value: x, position: [8, HEAD + 4 + i * ROW],
+          size: [ew - 16, ROW], style: { ...font, fontSize: 12, align: "left", strokeColor: "none", fillColor: "none", movable: false, selectable: false } }));
+      classGraph.insertEdge({ parent, id: "enum-edge", value: "state", source: cells[data.record], target: literals,
+        style: { ...font, fontSize: 12, strokeColor: "#7a5bd6", endArrow: "open", labelBackgroundColor: "#fbfcfe" } });
       data.associations.forEach((a, i) => {
         const diamond = a.kind === "association" ? {} : { startArrow: "diamond", startSize: 14, startFill: a.kind === "composition" };
         const edge = classGraph.insertEdge({ parent, id: "assoc:" + i, value: a.role, source: cells[a.source], target: cells[a.target],
@@ -251,7 +268,7 @@
     classGraph.getSelectionModel().addListener(InternalEvent.CHANGE, () => {
       const cell = classGraph.getSelectionCell();
       const id = cell && cell.id && cell.id.startsWith("assoc:") ? "class:" + data.associations[+cell.id.slice(6)].source : cell ? cell.id : "";
-      select(id && id.startsWith("class:") ? id : "", false);
+      select(id && (id.startsWith("class:") || id.startsWith("enum:")) ? id : "", false);
     });
   }
 
@@ -344,11 +361,12 @@
     $("draw-palette").hidden = which !== "states";
     if (which === "screens") { renderDesigner(); return; }
     if (which === "usecases") drawUseCases();
-    if (which === "components") { drawComponents(); return; }
+    if (which === "components") { drawComponents().then(() => markRipple("components")); return; }
     if (which === "classes") {
       if (!data) { $("class-canvas").replaceChildren(el("p", "This pack has no data model yet. Add a data.json beside its pack.json.", { class: "muted empty" })); return; }
       drawClasses();
     }
+    markRipple(which);
     fit();
   }
 
@@ -382,6 +400,7 @@
         accepted: result.steps.map(() => true), previewing: false, card: null, rewarded: new Set() };
       plan.card = say("ai", planCard());
       renderPlan(result.preview);
+      refreshRipple();
     } catch (error) {
       say("ai", el("p", `${error.code || "ERROR"}: ${error.message}`, { class: "refusal" }));
     } finally {
@@ -393,6 +412,9 @@
   // button on it can act on the newer plan.
   function retire() {
     if (!plan) return;
+    ripple = null;
+    rippleSeq += 1;
+    renderBadges();
     leavePreview();
     for (const control of plan.card.querySelectorAll("input, button")) control.disabled = true;
     plan.card.firstChild.append(el("p", "Replaced by the newer plan below.", { class: "muted small" }));
@@ -423,12 +445,12 @@
     const preview = el("button", "Preview on the diagram", { type: "button", class: "primary" });
     preview.addEventListener("click", () => (plan.previewing ? leavePreview() : enterPreview()));
     tools.append(preview);
-    if (plan.meaning && plan.steps.every((step) => step.author === "ai")) {
+    if (plan.meaning && plan.steps.every((step) => step.author === "ai" && !step.followOn)) {
       const keep = el("button", "Make it a change case", { type: "button" });
       keep.addEventListener("click", makeCase);
       tools.append(keep);
     }
-    box.append(list, verdict, tools);
+    box.append(list, verdict, el("div", undefined, { class: "ripple", "aria-live": "polite" }), tools);
     return box;
   }
 
@@ -438,6 +460,7 @@
       const result = await api("/api/play/plan/preview", { case_id: caseId, model: baseModel, steps: mine.steps.map((s) => s.transaction), accepted: [...mine.accepted] });
       if (mine !== plan || seq !== mine.seq) return null;
       renderPlan(result);
+      refreshRipple(); // first, so the redrawn preview is not marked with the previous ripple
       if (plan.previewing) (result.legal ? enterPreview : leavePreview)();
       return result;
     } catch (error) {
@@ -482,11 +505,9 @@
 
   function redrawAll(workflow) {
     model = workflow;
-    for (const g of [graph, useCaseGraph, componentGraph]) if (g) g.destroy();
-    $("canvas").replaceChildren();
-    $("usecase-canvas").replaceChildren();
-    $("component-canvas").replaceChildren();
-    useCaseGraph = componentGraph = components = null;
+    for (const g of [graph, classGraph, useCaseGraph, componentGraph]) if (g) g.destroy();
+    for (const box of ["canvas", "class-canvas", "usecase-canvas", "component-canvas"]) $(box).replaceChildren();
+    classGraph = useCaseGraph = componentGraph = components = null;
     for (const key of Object.keys(base)) delete base[key];
     clearSimPanel();
     outline();
@@ -502,6 +523,7 @@
     plan.previewing = true;
     redrawAll(plan.result.candidate);
     highlight(plan.result.diff);
+    for (const which of Object.keys(DIAGRAMS)) markRipple(which);
     $("plan-banner").hidden = false;
     $("plan-banner-text").textContent = `Previewing the plan: ${changes(plan.result.diff)}. Nothing is saved.`;
     plan.card.querySelector(".plan-tools .primary").textContent = "Back to the model";
@@ -511,6 +533,7 @@
     if (!plan || !plan.previewing) return;
     plan.previewing = false;
     redrawAll(baseModel);
+    for (const which of Object.keys(DIAGRAMS)) markRipple(which);
     $("plan-banner").hidden = true;
     plan.card.querySelector(".plan-tools .primary").textContent = "Preview on the diagram";
     renderPlan(plan.result);
@@ -526,6 +549,176 @@
       }
       if (diff.initial_state) restyle("initial-edge", { strokeColor: "#c27c0e", strokeWidth: 3 });
     });
+  }
+
+  // Ripple (ADR-0158). The diagrams are views of one system, so a change to the state machine changes the others: a
+  // new action is a new use case that needs a screen, a removed one strands its screen, a new state is a new literal of
+  // the record's state enumeration, and the generated code changes. The server works out what the accepted steps do
+  // to every diagram and asks the proposer for follow-on edits, each re-checked by the policy or the screen design
+  // check. Tabs carry a badge; the affected elements are marked on each diagram while the plan is previewed.
+  const DIAGRAMS = { states: "State machine", classes: "Class diagram", usecases: "Use cases", screens: "Screens", components: "Components" };
+  const MARK = { added: "+", removed: "−", changed: "~", warning: "⚠", problem: "✗" };
+  const TINT = { added: { strokeColor: "#17734a", fillColor: "#e5f5ec", strokeWidth: 2.5 }, changed: { strokeColor: "#c27c0e", strokeWidth: 2.5 },
+    warning: { strokeColor: "#c27c0e", dashed: true, strokeWidth: 2.5 }, problem: { strokeColor: "#a12f2f", strokeWidth: 3 },
+    removed: { strokeColor: "#a12f2f", dashed: true, strokeWidth: 3 } };
+  const rippleKey = () => JSON.stringify([accepted(), screensEdited ? screens : null]);
+
+  async function refreshRipple() {
+    const mine = plan, seq = (rippleSeq += 1), key = rippleKey();
+    ripple = null;
+    renderRipple();
+    renderBadges();
+    renderHealth();
+    if (!mine || !mine.result || !mine.result.legal) return;
+    let result;
+    try {
+      result = await api("/api/play/ripple", { case_id: caseId, model: baseModel, plan: accepted(), screens: screensEdited ? screens : null });
+    } catch (error) {
+      result = { error };
+    }
+    if (seq !== rippleSeq || mine !== plan) return; // a newer change asked again
+    ripple = { ...result, key };
+    renderRipple();
+    renderBadges();
+    renderHealth();
+    for (const which of Object.keys(DIAGRAMS)) markRipple(which);
+  }
+
+  function renderRipple() {
+    const box = plan && plan.card && plan.card.querySelector(".ripple");
+    if (!box) return;
+    box.replaceChildren();
+    if (!ripple) {
+      if (plan.result && plan.result.legal) box.append(el("p", "Working out what this does to the other diagrams…", { class: "muted small" }));
+      return;
+    }
+    if (ripple.error) { box.append(el("p", `${ripple.error.code || "ERROR"}: ${ripple.error.message}`, { class: "refusal" })); return; }
+    box.append(el("h4", ripple.agree ? "Ripple: every diagram still agrees" : "Ripple: the diagrams no longer agree", { class: ripple.agree ? "ok" : "bad" }));
+    const list = el("ul", undefined, { class: "ripple-list" });
+    for (const [key, name] of Object.entries(DIAGRAMS)) {
+      for (const item of ripple.diagrams[key]) {
+        const b = el("button", undefined, { type: "button", class: "ripple-item " + item.change, title: item.code || "" });
+        b.append(el("span", MARK[item.change], { class: "mark" }), el("span", name, { class: "where" }), el("span", item.text, { class: "what" }));
+        b.addEventListener("click", () => showRipple(key, item));
+        const li = el("li");
+        li.append(b);
+        list.append(li);
+      }
+    }
+    const c = ripple.conformance;
+    list.append(el("li", `Conformance cases: ${c.cases_before ?? "none"} → ${c.cases_after ?? "none, the app cannot be built"}`, { class: "muted small cases" }));
+    box.append(list);
+    if (ripple.follow_ons.length) box.append(followOnList());
+    else if (ripple.problems.length) box.append(el("p", "The AI has no follow-on for these. Change the model yourself, or untick a step.", { class: "muted small" }));
+  }
+
+  function followOnList() {
+    const wrap = el("div", undefined, { class: "follow-ons" });
+    wrap.append(el("h4", "AI follow-ons"),
+      el("p", `${ripple.provider}${ripple.live ? "" : " · offline fixture, not a live model"} · each re-checked by the server`, { class: "muted small" }));
+    const list = el("ol");
+    for (const f of ripple.follow_ons) {
+      const li = el("li", undefined, { class: f.status }), take = el("button", f.status === "applies" ? "Add" : "Refused", { type: "button", class: "quiet" });
+      take.disabled = f.status !== "applies";
+      take.addEventListener("click", () => takeFollowOn(f, take));
+      li.append(el("span", "AI", { class: "who ai" }), el("span", f.text, { class: "step-text" }), take);
+      if (f.why) li.append(el("p", f.why, { class: "muted small why" }));
+      if (f.status !== "applies") li.append(el("p", `${f.code}: ${f.message}`, { class: "muted small" }));
+      list.append(li);
+    }
+    wrap.append(list);
+    return wrap;
+  }
+
+  // A state-machine follow-on joins the plan as an AI step; a screen follow-on changes the designer's screens. Either
+  // way the server checks the result again, and the ripple is worked out afresh.
+  async function takeFollowOn(f, button) {
+    button.disabled = true;
+    if (f.transaction) {
+      plan.steps.push({ n: plan.steps.length + 1, transaction: f.transaction, text: f.text, why: f.why, author: "ai", checked: false, caught: false, followOn: true });
+      plan.accepted.push(true);
+      plan.card.replaceChildren(planCard());
+      const result = await refreshPlan();
+      if (result && result.legal && !plan.previewing) enterPreview();
+      return;
+    }
+    screens = f.screens;
+    screensEdited = true;
+    useCase = f.screen_step.op === "add" ? f.screen_step.screen.use_case : null;
+    if (!plan.previewing) enterPreview();
+    changed();
+  }
+
+  function cellsFor(key, ref) {
+    const kind = ref.slice(0, ref.indexOf(":")), name = ref.slice(ref.indexOf(":") + 1);
+    const of = (prefix) => model.transitions.filter((t) => t.action === name).map((t) => prefix + t.id);
+    if (kind === "action" && key === "states") return of("transition:");
+    if (kind === "action" && key === "usecases") return of("uc:");
+    return [ref];
+  }
+
+  function markRipple(key) {
+    const g = { states: graph, classes: classGraph, usecases: useCaseGraph, components: componentGraph }[key];
+    if (!g || !ripple || ripple.error || !plan) return;
+    // The preview shows what the plan adds and changes; the model without it shows, in red, what the plan removes.
+    const shown = (item) => item.ref && (item.change === "removed") !== plan.previewing;
+    const literal = { fontColor: "#17734a", fontStyle: 1, strokeColor: "none", fillColor: "#e5f5ec" };
+    g.batchUpdate(() => {
+      for (const item of ripple.diagrams[key]) {
+        if (!shown(item)) continue;
+        for (const id of cellsFor(key, item.ref)) {
+          const cell = g.getDataModel().getCell(id);
+          const extra = id.startsWith("literal:") ? (item.change === "removed" ? { fontColor: "#a12f2f", fontStyle: 4 } : literal) : {};
+          if (cell) g.getDataModel().setStyle(cell, { ...cell.style, ...TINT[item.change], ...extra });
+        }
+      }
+    });
+  }
+
+  function showRipple(key, item) {
+    if (item.change === "removed") leavePreview(); // gone from the preview, so it is shown, in red, on the model
+    else if (!plan.previewing && plan.result && plan.result.legal) enterPreview();
+    if (key === "screens") {
+      const name = item.ref ? item.ref.slice(7) : "None", known = screens.screens.some((x) => x.use_case === name) || useCaseList.includes(name);
+      useCase = name !== "None" && known ? name : null;
+    }
+    showTab(key);
+    const g = current(), ids = key === "screens" || !item.ref ? [] : cellsFor(key, item.ref);
+    const cell = g && ids.map((id) => g.getDataModel().getCell(id)).find(Boolean);
+    if (cell && cell.isVertex() && !cell.id.startsWith("literal:")) g.setSelectionCell(cell);
+    else if (cell && cell.isEdge()) g.setSelectionCell(cell);
+    if (cell) g.scrollCellToVisible(cell, true);
+    const note = el("div", undefined, { class: "step-note" });
+    note.append(el("p", `${DIAGRAMS[key]}: ${item.text}`, { class: "ripple-note " + item.change }));
+    if (item.change === "removed") note.append(el("p", "Shown on the model, marked in red: the plan removes it.", { class: "muted" }));
+    $("inspector").prepend(note);
+    const seen = `ripple:${key}:${ripple.key}`; // checking, not making: once per diagram for each version of the plan
+    if (key !== "states" && !plan.rewarded.has(seen)) {
+      plan.rewarded.add(seen);
+      earn(1, `Checked the ripple on the ${DIAGRAMS[key].toLowerCase()}`);
+    }
+  }
+
+  function renderBadges() {
+    for (const key of Object.keys(DIAGRAMS)) {
+      const badge = $("tab-" + key).querySelector(".badge");
+      if (!badge) continue;
+      const items = ripple && !ripple.error ? ripple.diagrams[key] : [];
+      badge.hidden = !items.length;
+      badge.textContent = String(items.length);
+      badge.className = "badge" + (items.some((i) => i.change === "problem") ? " bad" : items.some((i) => i.change === "warning") ? " warn" : "");
+      badge.title = items.map((i) => `${MARK[i.change]} ${i.text}`).join("\n");
+    }
+  }
+
+  function rippleCheck() {
+    const name = "Diagrams agree";
+    if (!plan || !plan.steps.length) return { name, ok: true, detail: "No change, so nothing ripples" };
+    if (!plan.result || !plan.result.legal) return { name, ok: false, detail: "The plan is refused or empty: nothing to ripple" };
+    if (!ripple || ripple.key !== rippleKey()) return { name, ok: false, detail: "Working out the ripple…" };
+    if (ripple.error) return { name, ok: false, detail: `${ripple.error.code || "ERROR"}: ${ripple.error.message}` };
+    const bad = ripple.problems.filter((p) => p.change === "problem").length, warn = ripple.problems.length - bad;
+    return { name, ok: ripple.agree, detail: bad ? `${bad} diagram(s) out of step: see the plan's ripple` : warn ? `They agree; ${warn} warning(s) to look at` : "Every diagram agrees with the change" };
   }
 
   async function makeCase() {
@@ -652,6 +845,7 @@
         detail: problemsFor !== screensKey() ? "Checking the screens…" : problems.length ? `${problems.length} design problem(s): see Screens` : "Every screen can be built" },
       { name: "Conformance", ok: Boolean(built) && built.conformance.status === "PASS",
         detail: built ? `${built.conformance.status}: ${built.cases} cases checked against the kernel` : "Not built since the last change: press Build & run" },
+      rippleCheck(),
       { name: "Simulated", ok: Boolean(simulated),
         detail: simulated ? `${simulated.attempts} attempts, ${simulated.refused} refused by the kernel` : "Not simulated since the last change: press Simulate" },
     ];
@@ -997,6 +1191,7 @@
       renderProblems();
       renderScreenList();
       renderHealth();
+      if (plan) refreshRipple();
     }, 250);
   }
 
@@ -1316,6 +1511,7 @@
     $("tab-screens").addEventListener("click", () => showTab("screens"));
     $("tab-components").addEventListener("click", () => showTab("components"));
     $("chat-form").addEventListener("submit", ask);
+    for (const key of Object.keys(DIAGRAMS)) $("tab-" + key).append(el("span", "", { class: "badge", hidden: "" }));
     startDrawing();
     $("health").addEventListener("click", () => {
       const open = $("checks").hidden;
@@ -1324,7 +1520,7 @@
     });
     renderHealth();
     $("plan-back").addEventListener("click", leavePreview);
-    $("screens-reset").addEventListener("click", async () => { screensEdited = false; lastBuild = null; restyleComponents(); components = null; await loadScreens(null); renderDesigner(); });
+    $("screens-reset").addEventListener("click", async () => { screensEdited = false; lastBuild = null; restyleComponents(); components = null; await loadScreens(null); renderDesigner(); if (plan) refreshRipple(); });
     $("canvas-help").textContent = HINTS.states;
     window.addEventListener("resize", fit);
     document.body.dataset.ready = "true";

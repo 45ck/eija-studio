@@ -63,4 +63,5 @@ _No curated notes yet._
 * [domain.screens.Screen.unique](/symbols/domain/screens/Screen.unique.md) - `def unique(self) -> Screen` in `domain/screens`.
 * [domain.screens.Screens](/symbols/domain/screens/Screens.md) - `class Screens(Contract)` in `domain/screens`.
 * [domain.screens.Screens.screen](/symbols/domain/screens/Screens.screen.md) - `def screen(self, use_case: str | None) -> Screen | None` in `domain/screens`.
+* [domain.screens.default_screen](/symbols/domain/screens/default_screen.md) - The screen a use case gets when nobody designed one: `create` asks for every record attribute; an action shows the required ones.
 <!-- okf:generated:end links -->

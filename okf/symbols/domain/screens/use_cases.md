@@ -49,5 +49,5 @@ _No curated notes yet._
 ## Referenced by
 
 * [domain.screens.check_screens](/symbols/domain/screens/check_screens.md) - Design problems, each with a stable code and the use case it is about.
-* [domain.screens.default_screens](/symbols/domain/screens/default_screens.md) - One screen per use case: `create` asks for every record attribute; an action shows the required ones.
+* [domain.screens.default_screens](/symbols/domain/screens/default_screens.md) - One default screen per use case.
 <!-- okf:generated:end links -->
