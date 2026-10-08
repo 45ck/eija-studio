@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### 8 October 2026: use cases and the screen designer
+
+- PlayIDE has a **Use cases** tab that draws the workflow as a UML use case diagram: actors per role, a use case per action plus creating a record, inside the system boundary. Double-click a use case to design its screen.
+- The **Screens** tab designs one screen per use case against the record class: drag attributes onto it, reorder them, rename labels, title and button. A design check (`check_screens`) runs on every edit, and no app is built from screens it rejects, for example a create screen that leaves out a required attribute. **Build & run** builds the app with the designed screens, and its form and buttons follow them. Packs can keep screens in `screens.json` beside `pack.json`; library-loan has one. See [ADR-0154](docs/adr/0154-use-cases-and-screens-designed-against-the-model.md).
+
 ### 8 October 2026: class diagrams for data
 
 - Packs can have a data model, `data.json` beside `pack.json`, with classes, typed attributes, associations and a «record» class. PlayIDE shows it as a UML class diagram. Built apps get a form from the record class, and every value is checked by `check_values` on the server. The conformance oracle gains data cases, and two new broken apps are caught. The excursion and library-loan packs have data models; pack digests are unchanged. See [ADR-0153](docs/adr/0153-data-models-as-uml-class-diagrams.md).

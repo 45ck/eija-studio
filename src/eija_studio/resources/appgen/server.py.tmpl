@@ -7,7 +7,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from .service import DATA, MODEL, PACK, Refused, Service
+from .service import DATA, MODEL, PACK, SCREENS, Refused, Service
 from .service import RECORD as RECORD_CLASS
 
 WEB = Path(__file__).resolve().parent / "web"
@@ -24,7 +24,8 @@ def describe() -> dict:
             "roles": {r.id: r.description for r in PACK.roles},
             "transitions": {t.action: {"from": t.from_state, "to": t.to_state, "role": t.role} for t in MODEL.transitions},
             "actors": {a.id: {"role": a.role, "active": a.active} for a in PACK.fixtures.actors},
-            "record": RECORD_CLASS.model_dump(mode="json") if RECORD_CLASS else None, "data_digest": DATA.digest if DATA else None}
+            "record": RECORD_CLASS.model_dump(mode="json") if RECORD_CLASS else None, "data_digest": DATA.digest if DATA else None,
+            "screens": {s.use_case: s.model_dump(mode="json") for s in SCREENS.screens}}
 
 
 def handler_for(service: Service):

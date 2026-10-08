@@ -40,12 +40,27 @@ function renderRules() {
 }
 
 // The record's attributes come from the data model (class diagram); the server checks every value.
+// Which ones the form asks for, in what order and under what label, comes from the create screen (ADR-0154).
+function attribute(name) {
+  return state.app.record.attributes.find((a) => a.name === name);
+}
+
+function screenFields(useCase) {
+  const screen = state.app.screens[useCase];
+  if (!state.app.record || !screen) return [];
+  return screen.fields.map((f) => ({ ...attribute(f.attribute), label: f.label || f.attribute }));
+}
+
 function renderFields() {
   const box = $("fields");
   box.replaceChildren();
-  if (!state.app.record) return;
-  for (const a of state.app.record.attributes) {
-    const id = "field-" + a.name, label = el("label", a.name + (a.required ? " *" : ""), { for: id });
+  const create = state.app.screens.create;
+  if (create) {
+    $("create-title").textContent = create.title;
+    $("create-button").textContent = create.button || "Create";
+  }
+  for (const a of screenFields("create")) {
+    const id = "field-" + a.name, label = el("label", a.label + (a.required ? " *" : ""), { for: id });
     let input;
     if (a.type === "choice") {
       input = el("select", undefined, { id });
@@ -64,7 +79,7 @@ function renderFields() {
 
 function fieldValues() {
   const values = {};
-  for (const a of (state.app.record ? state.app.record.attributes : [])) {
+  for (const a of screenFields("create")) {
     const input = $("field-" + a.name);
     if (a.type === "boolean") values[a.name] = input.checked;
     else if (input.value === "") continue;
@@ -110,7 +125,8 @@ async function renderDetail() {
   options.replaceChildren();
   for (const o of view.options) {
     const row = el("div", undefined, { class: "option" });
-    const button = el("button", `${o.action} → ${o.to}`, { type: "button" });
+    const screen = state.app.screens[o.action];
+    const button = el("button", `${(screen && screen.button) || o.action} → ${o.to}`, { type: "button", title: o.action });
     button.disabled = !o.allowed;
     button.addEventListener("click", () => act(o.action, view.record.version));
     row.append(button);

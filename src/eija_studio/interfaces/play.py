@@ -1,5 +1,6 @@
 """PlayIDE routes: the visual UML canvas page, Build & run of the model as a live app beside it (ADR-0151), and
-Simulate, seeded simulated users whose every step the kernel decides (ADR-0152).
+Simulate, seeded simulated users whose every step the kernel decides (ADR-0152), and the screen designer's check and
+build of designed screens (ADR-0154).
 
 Build & run reuses `eija build` (ADR-0150): the app is generated into the workspace, its kernel conformance tests run,
 and only a PASSing app is started, as a separate local process on a free loopback port. One app runs at a time; a new
@@ -26,6 +27,7 @@ from eija_studio.application.simulation import MAX_STEPS, simulate
 from eija_studio.domain.data import data_for
 from eija_studio.domain.models import Contract, DomainError, Workflow
 from eija_studio.domain.pack import Pack
+from eija_studio.domain.screens import Screens, check_screens, parse_screens, screens_for, use_cases
 from .app_build import build_into
 
 START_TIMEOUT_S = 10.0
@@ -34,6 +36,7 @@ START_TIMEOUT_S = 10.0
 class BuildRequest(Contract):
     case_id: str | None = None  # None builds the active baseline; a case builds its candidate (or baseline if none yet)
     model: Workflow | None = None  # the model the page shows; if given, it must still be the one that would be built
+    screens: dict[str, Any] | None = None  # screens edited in the designer (eija.screens.v1); None uses the pack's
 
 
 class SimulateRequest(BuildRequest):
@@ -63,13 +66,13 @@ class AppRunner:
         self.running: dict[str, Any] | None = None
         atexit.register(self.stop)
 
-    def build_and_run(self, pack: Pack, model: Workflow, identity: dict[str, Any]) -> dict[str, Any]:
+    def build_and_run(self, pack: Pack, model: Workflow, identity: dict[str, Any], screens: Screens) -> dict[str, Any]:
         with self.lock:
-            data = data_for(pack)  # the same model with another data model is another app
-            key = model.semantic_hash[:12] + (f"-{data.digest[:8]}" if data else "")
+            data = data_for(pack)  # the same model with another data model or other screens is another app
+            key = model.semantic_hash[:12] + (f"-{data.digest[:8]}" if data else "") + f"-{screens.digest[:8]}"
             out = self.root() / key
-            manifest = build_into(out, pack, model, identity)
-            result = {"model": model.semantic_hash, "cases": manifest["oracle"]["cases"],
+            manifest = build_into(out, pack, model, identity, screens=screens)
+            result = {"model": model.semantic_hash, "screens": screens.digest, "cases": manifest["oracle"]["cases"],
                       "conformance": manifest["conformance"], "kernel_source_review": manifest["kernel_source_review"],
                       "files": len(manifest["files"]), "url": None}
             if manifest["conformance"]["status"] != "PASS":
@@ -135,9 +138,23 @@ def register(app, studio, web: Path) -> AppRunner:
         data = data_for(studio.pack)
         return {"data": data.model_dump(mode="json") if data else None, "digest": data.digest if data else None}
 
+    def screens_of(body: BuildRequest, model: Workflow) -> Screens:
+        if body.screens is not None:
+            return parse_screens(body.screens, studio.pack.id)
+        return screens_for(studio.pack, model, data_for(studio.pack))
+
+    @app.post("/api/play/screens")
+    def play_screens(body: BuildRequest):
+        """The screens for the designer (the request's, else the pack's or the defaults) and their design problems."""
+        model = resolve(body)
+        screens, data = screens_of(body, model), data_for(studio.pack)
+        return {"screens": screens.model_dump(mode="json"), "digest": screens.digest, "use_cases": use_cases(model),
+                "problems": check_screens(screens, model, data)}
+
     @app.post("/api/play/build")
     def play_build(body: BuildRequest):
-        return runner.build_and_run(studio.pack, resolve(body), studio.identity_provider())
+        model = resolve(body)
+        return runner.build_and_run(studio.pack, model, studio.identity_provider(), screens_of(body, model))
 
     @app.post("/api/play/simulate")
     def play_simulate(body: SimulateRequest):

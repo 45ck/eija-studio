@@ -31,6 +31,8 @@
       <div class="tabs" role="tablist" aria-label="Diagram">
         <button id="tab-states" role="tab" type="button" aria-selected="true" aria-controls="canvas">State machine</button>
         <button id="tab-classes" role="tab" type="button" aria-selected="false" aria-controls="class-canvas">Class diagram</button>
+        <button id="tab-usecases" role="tab" type="button" aria-selected="false" aria-controls="usecase-canvas">Use cases</button>
+        <button id="tab-screens" role="tab" type="button" aria-selected="false" aria-controls="screens">Screens</button>
       </div>
       <button id="fit" type="button" class="quiet">Fit</button>
       <button id="zoom-in" type="button" class="quiet" aria-label="Zoom in">+</button>
@@ -38,7 +40,21 @@
     </div>
     <div id="canvas" class="canvas" tabindex="0" aria-describedby="canvas-help" role="tabpanel" aria-labelledby="tab-states"></div>
     <div id="class-canvas" class="canvas" tabindex="0" role="tabpanel" aria-labelledby="tab-classes" hidden></div>
-    <p id="canvas-help" class="hint">Drag states to arrange them. Select an element to inspect it. Arrangement is not saved yet.</p>
+    <div id="usecase-canvas" class="canvas" tabindex="0" role="tabpanel" aria-labelledby="tab-usecases" hidden></div>
+    <div id="screens" class="designer" role="tabpanel" aria-labelledby="tab-screens" hidden>
+      <nav class="screen-list" aria-labelledby="screen-list-title"><h3 id="screen-list-title">Use cases</h3><ul id="screen-list"></ul></nav>
+      <div class="screen-stage">
+        <div id="screen-problems" class="problems" role="status" aria-live="polite"></div>
+        <div id="screen-card" class="screen-card"></div>
+        <div class="screen-tools">
+          <button id="screens-reset" type="button" class="quiet">Reset to the pack's screens</button>
+          <a id="screens-download" class="quiet" download="screens.json">Download screens.json</a>
+        </div>
+      </div>
+      <aside class="palette" aria-labelledby="palette-title"><h3 id="palette-title">Record attributes</h3>
+        <p class="muted small">Drag onto the screen, or press Add.</p><ul id="palette"></ul></aside>
+    </div>
+    <p id="canvas-help" class="hint"></p>
   </section>
   <aside class="side">
     <section class="inspector" aria-labelledby="inspector-title">

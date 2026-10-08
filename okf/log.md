@@ -2,6 +2,7 @@
 
 ## 2026-10-08
 
+* **Use cases and the screen designer**: synced ADR-0154 and the new `domain.screens` module and symbol pages; `application.appgen` (`generate`), `interfaces.app_build`, `interfaces.play` and the pages that link to them refreshed. No Notes were hand-edited and nothing was recorded as verified.
 * **Class diagrams for data, review fixes**: refreshed `domain.data` (`Attribute` choice literals), `application.appgen` (`LIMITS`, `data_cases`) and `domain.models.DomainError` pages after `STALE_DATA`, `NO_ACTIVE_ACTOR` and non-empty choices. No Notes were hand-edited and nothing was recorded as verified.
 * **Class diagrams for data**: synced ADR-0153 and the new `domain.data` module and symbol pages; `domain.pack` (`pack_directory`), `application.appgen` (`data_cases`, `limits`) and `interfaces.play` refreshed. No Notes were hand-edited and nothing was recorded as verified.
 * **PlayIDE Simulate**: synced ADR-0152 and the new `application.simulation` module and symbol pages; `interfaces.play` refreshed. No Notes were hand-edited and nothing was recorded as verified.

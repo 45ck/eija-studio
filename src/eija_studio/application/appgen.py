@@ -16,6 +16,7 @@ from eija_studio.domain.data import Attribute, DataModel, Entity, check_values
 from eija_studio.domain.models import DomainError, ExecuteCommand, Workflow, canonical, fingerprint
 from eija_studio.domain.pack import Pack
 from eija_studio.domain.policy import check_policy
+from eija_studio.domain.screens import Screens, default_screens, require_buildable
 from .runtime import execute
 
 FORMAT = "eija.app-build.v1"
@@ -179,10 +180,12 @@ Run it with a Python that has `eija-studio` installed: the app's rules are the E
 """
 
 
-def generate(pack: Pack, model: Workflow | None = None, data: DataModel | None = None) -> tuple[dict[str, str], dict[str, Any]]:
+def generate(pack: Pack, model: Workflow | None = None, data: DataModel | None = None,
+             screens: Screens | None = None) -> tuple[dict[str, str], dict[str, Any]]:
     """Return the per-model files and the build manifest (without file hashes or test results).
 
-    Refuses a model the protected policy blocks: an app is never built from a workflow the kernel would refuse."""
+    Refuses a model the protected policy blocks: an app is never built from a workflow the kernel would refuse. Nor from
+    screens with design problems (ADR-0154); without screens, each use case gets a default one."""
     model = model if model is not None else pack.model
     if model.id != pack.id:
         raise DomainError("WORKFLOW_PACK_MISMATCH", f"Workflow {model.id!r} does not belong to pack {pack.id!r}")
@@ -192,10 +195,15 @@ def generate(pack: Pack, model: Workflow | None = None, data: DataModel | None =
                           {"codes": sorted(errors)})
     if data is not None and data.id != pack.id:
         raise DomainError("DATA_PACK_MISMATCH", f"Data model {data.id!r} does not belong to pack {pack.id!r}")
+    screens = screens if screens is not None else default_screens(pack, model, data)
+    if screens.id != pack.id:
+        raise DomainError("SCREENS_PACK_MISMATCH", f"Screens {screens.id!r} do not belong to pack {pack.id!r}")
+    require_buildable(screens, model, data)
     cases = oracle_cases(pack, model)
     oracle: dict[str, Any] = {"format": "eija.app-oracle.v1", "model_hash": model.semantic_hash,
-                              "source": "eija_studio runtime.execute", "cases": cases}
+                              "source": "eija_studio runtime.execute", "cases": cases, "screens_digest": screens.digest}
     files = {"app/model.json": canonical(model) + "\n", "app/pack.json": canonical(pack) + "\n",
+             "app/screens.json": canonical(screens) + "\n",
              "README.md": readme(pack, model, len(cases), data)}
     if data is not None:
         oracle |= {"data_digest": data.digest, "data_cases": data_cases(pack, data)}
@@ -204,5 +212,6 @@ def generate(pack: Pack, model: Workflow | None = None, data: DataModel | None =
     total = len(cases) + len(oracle.get("data_cases", []))
     manifest = {"format": FORMAT, "pack": {"id": pack.id, "version": pack.pack.version, "digest": pack.digest},
                 "model_semantic_hash": model.semantic_hash, "oracle": {"cases": total, "hash": fingerprint(oracle)},
-                "data": {"digest": data.digest, "record": data.record} if data else None, "limits": app_limits(data)}
+                "data": {"digest": data.digest, "record": data.record} if data else None,
+                "screens": {"digest": screens.digest, "count": len(screens.screens)}, "limits": app_limits(data)}
     return files, manifest
