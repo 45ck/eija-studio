@@ -222,3 +222,6 @@ body[data-workspace-chooser="true"] #ide-shell,body[data-workspace-chooser="true
    sticky identity and return control. Container units follow resized panes. */
 .formal-inspection-raw{max-height:min(300px,max(40px,calc(100cqh - 152px)))}
 @media(max-width:850px){.source-status{white-space:normal;overflow-wrap:anywhere}}
+/* Inspector declutter: each field's apply button sits beside its select; bindings read as a plain list. */
+#edit-fields{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:8px;align-items:center}#edit-fields>label,#edit-fields>#cancel-draft{grid-column:1/-1}#edit-fields>button.secondary{margin-top:0}#edit-fields>#cancel-draft{justify-self:start;margin-top:12px}
+#selection-detail ul{list-style:none;padding-left:0}#selection-detail li>.text-button{text-align:left}
