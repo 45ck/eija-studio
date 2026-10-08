@@ -2,6 +2,7 @@
 
 ## 2026-10-08
 
+* **Screens, review fixes**: refreshed `domain.screens` pages (`CREATE` is now null, `screens_for` completes authored screens, `_coverage` split from `check_screens`) and ADR-0154. No Notes were hand-edited and nothing was recorded as verified.
 * **Use cases and the screen designer**: synced ADR-0154 and the new `domain.screens` module and symbol pages; `application.appgen` (`generate`), `interfaces.app_build`, `interfaces.play` and the pages that link to them refreshed. No Notes were hand-edited and nothing was recorded as verified.
 * **Class diagrams for data, review fixes**: refreshed `domain.data` (`Attribute` choice literals), `application.appgen` (`LIMITS`, `data_cases`) and `domain.models.DomainError` pages after `STALE_DATA`, `NO_ACTIVE_ACTOR` and non-empty choices. No Notes were hand-edited and nothing was recorded as verified.
 * **Class diagrams for data**: synced ADR-0153 and the new `domain.data` module and symbol pages; `domain.pack` (`pack_directory`), `application.appgen` (`data_cases`, `limits`) and `interfaces.play` refreshed. No Notes were hand-edited and nothing was recorded as verified.

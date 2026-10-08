@@ -9,7 +9,7 @@
   if (location.hash) { sessionStorage.setItem("eija-session", token); history.replaceState(null, "", location.pathname + location.search); }
   const STATE = { width: 150, height: 54 }, INITIAL = 22;
   let graph, model, selected = "", sim = null, replayTimer = 0, data = null, classGraph = null, useCaseGraph = null, tab = "states";
-  let screens = null, screensEdited = false, useCase = "create", checkTimer = 0, problems = [];
+  let screens = null, screensEdited = false, useCase = null, checkTimer = 0, problems = [], useCaseList = [];
   const base = {}; // each cell's own style and label, so overlays can be cleared
 
   async function api(path, body) {
@@ -126,7 +126,7 @@
     }
     if (id === "usecase:create") {
       box.append(el("h3", "Use case: create a record"), el("p", `Any fixture actor may start a record. It starts in ${model.initial_state}.`, { class: "muted" }));
-      box.append(screenLink("create"));
+      box.append(screenLink(null));
       return;
     }
     if (id.startsWith("state:")) {
@@ -313,7 +313,7 @@
       const cell = event.getProperty("cell");
       if (!cell || !cell.id.startsWith("uc:")) return;
       const id = cell.id.slice(3);
-      openScreen(id === "create" ? "create" : transition(id).action);
+      openScreen(id === "create" ? null : transition(id).action);
     });
   }
 
@@ -356,6 +356,7 @@
     const result = await api("/api/play/screens", { case_id: caseId, model, screens: edited || null });
     if (!edited) screens = result.screens;
     problems = result.problems;
+    useCaseList = result.use_cases;
     return result;
   }
 
@@ -389,11 +390,13 @@
   function renderScreenList() {
     const list = $("screen-list");
     list.replaceChildren();
-    for (const s of screens.screens) {
-      const bad = problems.some((p) => p.use_case === s.use_case);
-      const b = el("button", undefined, { type: "button", "aria-current": String(s.use_case === useCase) });
-      b.append(el("span", s.use_case === "create" ? "Create" : s.use_case), el("span", bad ? "⚠" : "✓", { class: bad ? "mark bad" : "mark ok" }));
-      b.addEventListener("click", () => { useCase = s.use_case; renderDesigner(); });
+    // Every use case of the model, then any screen for a use case the model no longer has.
+    const names = [...useCaseList, ...screens.screens.map((x) => x.use_case).filter((u) => !useCaseList.includes(u))];
+    for (const name of names) {
+      const bad = problems.some((p) => p.use_case === name);
+      const b = el("button", undefined, { type: "button", "aria-current": String(name === useCase) });
+      b.append(el("span", name === null ? "Create" : name), el("span", bad ? "⚠" : "✓", { class: bad ? "mark bad" : "mark ok" }));
+      b.addEventListener("click", () => { useCase = name; renderDesigner(); });
       const li = el("li");
       li.append(b);
       list.append(li);
@@ -458,9 +461,23 @@
   function renderCard() {
     const card = $("screen-card"), screen = screenOf(useCase);
     card.replaceChildren();
-    if (!screen) { card.append(el("p", "This use case has no screen.", { class: "muted" })); return; }
+    if (!screen) {
+      const add = el("button", "Give it a screen", { type: "button" });
+      add.addEventListener("click", () => {
+        screens.screens = [...screens.screens, { use_case: useCase, title: useCase, fields: [], button: useCase }];
+        changed();
+      });
+      card.append(el("p", `${useCase} has no screen yet.`, { class: "muted" }), add);
+      return;
+    }
     const t = model.transitions.find((x) => x.action === useCase);
-    card.append(el("p", useCase === "create" ? "Starts a record · any actor" : `${t.from_state} → ${t.to_state} · ${t.role}`, { class: "muted small" }));
+    if (useCase !== null && !t) {
+      const remove = el("button", "Remove this screen", { type: "button" });
+      remove.addEventListener("click", () => { screens.screens = screens.screens.filter((x) => x !== screen); useCase = null; changed(); });
+      card.append(el("p", `The model has no use case ${useCase}, so this screen cannot be built.`, { class: "muted" }), remove);
+      return;
+    }
+    card.append(el("p", useCase === null ? "Starts a record · any actor" : `${t.from_state} → ${t.to_state} · ${t.role}`, { class: "muted small" }));
     card.append(input(screen.title, "Screen title", (v) => { screen.title = v || screen.title; changed(); }));
     card.lastChild.classList.add("screen-title");
     const list = el("ul", undefined, { class: "screen-fields", "aria-label": "Fields on this screen" });
@@ -468,7 +485,7 @@
     if (!screen.fields.length) list.append(el("li", "Drop record attributes here.", { class: "muted drop-hint" }));
     dropZone(list);
     const button = input(screen.button, "Button label", (v) => { screen.button = v; changed(); });
-    button.placeholder = useCase === "create" ? "Create" : useCase;
+    button.placeholder = useCase === null ? "Create" : useCase;
     button.classList.add("screen-button");
     card.append(list, button);
   }

@@ -1,7 +1,7 @@
 ---
 type: Function
 title: domain.screens.use_cases
-description: '`create`, then each distinct action in transition-id order: the ellipses of the use case diagram.'
+description: 'Creating a record (None), then each distinct action in transition-id order: the ellipses of the use case diagram.'
 resource: repo://src/eija_studio/domain/screens.py#use_cases
 tags:
 - symbol
@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/screens.py#use_cases
   title: domain/screens.py
   hash_method: ast-v2
-  sha256: e0fbd0fcc2078752d007dbb93664d844b2c0ec63de6c059b2be307a2cf1f6e69
-notes_baseline: f1c942fb0c9998e9c112c5b16fb5d36a5102aa8f2783a205d443610250ff7c5f
+  sha256: 1dd539390f7cd270ba6a08707272ba9b186323cf947580eaeb6ffdd17640f744
+notes_baseline: f6155e7884001cfafd7e54d72ad99fc1cc09b0ea4984fe78527aec6c2be2d5af
 ---
 
 # domain.screens.use_cases
@@ -25,14 +25,14 @@ notes_baseline: f1c942fb0c9998e9c112c5b16fb5d36a5102aa8f2783a205d443610250ff7c5f
 |---|---|
 | Kind | function |
 | Module | [`domain/screens`](/modules/domain/screens.md) |
-| Signature | `def use_cases(model: Workflow) -> list[str]` |
+| Signature | `def use_cases(model: Workflow) -> list[str \| None]` |
 | Code | `repo://src/eija_studio/domain/screens.py#use_cases` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
 ~~~text
-`create`, then each distinct action in transition-id order: the ellipses of the use case diagram.
+Creating a record (None), then each distinct action in transition-id order: the ellipses of the use case diagram.
 ~~~
 <!-- okf:generated:end facts -->
 

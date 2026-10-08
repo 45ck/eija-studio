@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/screens.py
   title: domain/screens.py
   hash_method: ast-api-v1
-  sha256: bc86d55957ed01a1832750f3ac164bb17d452052e2a7eaef630f22c4752f3138
-notes_baseline: 2a2c0337ebd8382a625d81d553b9e9c828bdc94700d05a73dd4e4c051fa15f0f
+  sha256: 907336984e7d6e0a1c9644e81f1aa64b3e0645acb60555a06e147b47f771ef59
+notes_baseline: 512944a0291ce99eb8470b9dd4128c0ce20f426e92194f46a5cae525c7b09c58
 ---
 
 # domain.screens
@@ -31,11 +31,13 @@ notes_baseline: 2a2c0337ebd8382a625d81d553b9e9c828bdc94700d05a73dd4e4c051fa15f0f
 ~~~text
 Screens: the user interface of a pack's app, designed against its use cases and data model (ADR-0154).
 
-A screen belongs to one use case: `create` (starting a record) or an action of the workflow. It lists the record
+A screen belongs to one use case: creating a record (`use_case` null, so no workflow action, whatever its name, can
+collide with it) or an action of the workflow. It lists the record
 attributes it shows, in order and with their labels, and names its button. Screens decide how the app looks, never
 what it may do: who may act, when and with what effect stays with the kernel. They live in an optional
 `screens.json` beside the pack's `pack.json` with their own digest; a pack without one gets `default_screens`.
-`check_screens` is the design check PlayIDE runs as you edit, and an app is never built from screens it rejects.
+Authored screens are completed with a default screen for each use case they leave out, so a new action always has
+one. `check_screens` is the design check PlayIDE runs as you edit, and an app is never built from screens it rejects.
 ~~~
 
 ## Public symbols
@@ -50,8 +52,8 @@ what it may do: who may act, when and with what effect stays with the kernel. Th
 * [`load_screens`](/symbols/domain/screens/load_screens.md) (function) - The pack's screens, or None when the pack has no `screens.json`.
 * [`parse_screens`](/symbols/domain/screens/parse_screens.md) (function) - no docstring
 * [`require_buildable`](/symbols/domain/screens/require_buildable.md) (function) - no docstring
-* [`screens_for`](/symbols/domain/screens/screens_for.md) (function) - The screens beside this pack's `pack.json`, or the default ones.
-* [`use_cases`](/symbols/domain/screens/use_cases.md) (function) - `create`, then each distinct action in transition-id order: the ellipses of the use case diagram.
+* [`screens_for`](/symbols/domain/screens/screens_for.md) (function) - The screens beside this pack's `pack.json`, each use case they leave out given its default screen; or the defaults.
+* [`use_cases`](/symbols/domain/screens/use_cases.md) (function) - Creating a record (None), then each distinct action in transition-id order: the ellipses of the use case diagram.
 
 ## Internal imports
 
@@ -83,12 +85,12 @@ _No curated notes yet._
 * [domain.screens.ScreenField](/symbols/domain/screens/ScreenField.md) - `class ScreenField(Contract)` in `domain/screens`.
 * [domain.screens.Screens.digest](/symbols/domain/screens/Screens.digest.md) - `def digest(self) -> str` in `domain/screens`.
 * [domain.screens.Screens](/symbols/domain/screens/Screens.md) - `class Screens(Contract)` in `domain/screens`.
-* [domain.screens.Screens.screen](/symbols/domain/screens/Screens.screen.md) - `def screen(self, use_case: str) -> Screen | None` in `domain/screens`.
+* [domain.screens.Screens.screen](/symbols/domain/screens/Screens.screen.md) - `def screen(self, use_case: str | None) -> Screen | None` in `domain/screens`.
 * [domain.screens.check_screens](/symbols/domain/screens/check_screens.md) - Design problems, each with a stable code and the use case it is about.
 * [domain.screens.default_screens](/symbols/domain/screens/default_screens.md) - One screen per use case: `create` asks for every record attribute; an action shows the required ones.
 * [domain.screens.load_screens](/symbols/domain/screens/load_screens.md) - The pack's screens, or None when the pack has no `screens.json`.
 * [domain.screens.parse_screens](/symbols/domain/screens/parse_screens.md) - `def parse_screens(document: Any, pack_id: str) -> Screens` in `domain/screens`.
 * [domain.screens.require_buildable](/symbols/domain/screens/require_buildable.md) - `def require_buildable(screens: Screens, model: Workflow, data: DataModel | None) -> None` in `domain/screens`.
-* [domain.screens.screens_for](/symbols/domain/screens/screens_for.md) - The screens beside this pack's `pack.json`, or the default ones.
-* [domain.screens.use_cases](/symbols/domain/screens/use_cases.md) - `create`, then each distinct action in transition-id order: the ellipses of the use case diagram.
+* [domain.screens.screens_for](/symbols/domain/screens/screens_for.md) - The screens beside this pack's `pack.json`, each use case they leave out given its default screen; or the defaults.
+* [domain.screens.use_cases](/symbols/domain/screens/use_cases.md) - Creating a record (None), then each distinct action in transition-id order: the ellipses of the use case diagram.
 <!-- okf:generated:end links -->

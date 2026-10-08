@@ -51,5 +51,5 @@ _No curated notes yet._
 
 ## Referenced by
 
-* [domain.screens.screens_for](/symbols/domain/screens/screens_for.md) - The screens beside this pack's `pack.json`, or the default ones.
+* [domain.screens.screens_for](/symbols/domain/screens/screens_for.md) - The screens beside this pack's `pack.json`, each use case they leave out given its default screen; or the defaults.
 <!-- okf:generated:end links -->

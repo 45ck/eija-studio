@@ -25,7 +25,8 @@ def describe() -> dict:
             "transitions": {t.action: {"from": t.from_state, "to": t.to_state, "role": t.role} for t in MODEL.transitions},
             "actors": {a.id: {"role": a.role, "active": a.active} for a in PACK.fixtures.actors},
             "record": RECORD_CLASS.model_dump(mode="json") if RECORD_CLASS else None, "data_digest": DATA.digest if DATA else None,
-            "screens": {s.use_case: s.model_dump(mode="json") for s in SCREENS.screens}}
+            "screens": {"create": SCREENS.screen(None).model_dump(mode="json"),
+                        "actions": {s.use_case: s.model_dump(mode="json") for s in SCREENS.screens if s.use_case is not None}}}
 
 
 def handler_for(service: Service):

@@ -105,15 +105,15 @@ def test_the_class_diagram_reads_the_packs_data_model(client):
 
 def test_the_screen_designer_checks_and_builds_edited_screens(client, studio):
     shown = client.post("/api/play/screens", json={}, headers=HEADERS).json()
-    assert shown["problems"] == [] and shown["use_cases"][0] == "create"
+    assert shown["problems"] == [] and shown["use_cases"][0] is None
     screens = json.loads(json.dumps(shown["screens"]))
-    create = next(s for s in screens["screens"] if s["use_case"] == "create")
+    create = next(s for s in screens["screens"] if s["use_case"] is None)
     create["fields"] = create["fields"][1:]  # drop a required attribute: nobody could create a record
     checked = client.post("/api/play/screens", json={"screens": screens}, headers=HEADERS).json()
     assert [p["code"] for p in checked["problems"]] == ["SCREEN_MISSING_REQUIRED"]
     refused = client.post("/api/play/build", json={"screens": screens}, headers=HEADERS)
     assert refused.status_code >= 400 and refused.json()["code"] == "SCREENS_BLOCKED"
-    create["fields"] = next(s for s in shown["screens"]["screens"] if s["use_case"] == "create")["fields"]
+    create["fields"] = next(s for s in shown["screens"]["screens"] if s["use_case"] is None)["fields"]
     create["title"] = "Start one"
     built = client.post("/api/play/build", json={"screens": screens}, headers=HEADERS).json()
     assert built["conformance"]["status"] == "PASS" and built["screens"] != shown["digest"]

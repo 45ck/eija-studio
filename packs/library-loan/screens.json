@@ -3,7 +3,6 @@
   "id": "library-loan",
   "screens": [
     {
-      "use_case": "create",
       "title": "Request a loan",
       "fields": [
         {"attribute": "itemTitle", "label": "Title"},

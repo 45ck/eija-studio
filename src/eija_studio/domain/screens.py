@@ -1,10 +1,12 @@
 """Screens: the user interface of a pack's app, designed against its use cases and data model (ADR-0154).
 
-A screen belongs to one use case: `create` (starting a record) or an action of the workflow. It lists the record
+A screen belongs to one use case: creating a record (`use_case` null, so no workflow action, whatever its name, can
+collide with it) or an action of the workflow. It lists the record
 attributes it shows, in order and with their labels, and names its button. Screens decide how the app looks, never
 what it may do: who may act, when and with what effect stays with the kernel. They live in an optional
 `screens.json` beside the pack's `pack.json` with their own digest; a pack without one gets `default_screens`.
-`check_screens` is the design check PlayIDE runs as you edit, and an app is never built from screens it rejects.
+Authored screens are completed with a default screen for each use case they leave out, so a new action always has
+one. `check_screens` is the design check PlayIDE runs as you edit, and an app is never built from screens it rejects.
 """
 from __future__ import annotations
 
@@ -19,7 +21,7 @@ from .models import Contract, DomainError, Workflow, fingerprint
 from .pack import Pack, pack_directory
 
 SCREENS_FILE = "screens.json"
-CREATE = "create"  # the use case that starts a record; every other use case is a workflow action
+CREATE = None  # the use case that starts a record; every other use case is a workflow action, named by the action
 
 
 class ScreenField(Contract):
@@ -28,7 +30,7 @@ class ScreenField(Contract):
 
 
 class Screen(Contract):
-    use_case: str = Field(min_length=1, max_length=60)
+    use_case: str | None = Field(default=CREATE, min_length=1, max_length=60)
     title: str = Field(min_length=1, max_length=60)
     fields: tuple[ScreenField, ...] = Field(default=(), max_length=40)
     button: str = Field(default="", max_length=40)  # empty shows the use case's name
@@ -50,7 +52,7 @@ class Screens(Contract):
     def digest(self) -> str:
         return fingerprint(self)
 
-    def screen(self, use_case: str) -> Screen | None:
+    def screen(self, use_case: str | None) -> Screen | None:
         return next((s for s in self.screens if s.use_case == use_case), None)
 
 
@@ -76,8 +78,8 @@ def load_screens(pack_directory: str | Path, pack_id: str) -> Screens | None:
     return parse_screens(document, pack_id)
 
 
-def use_cases(model: Workflow) -> list[str]:
-    """`create`, then each distinct action in transition-id order: the ellipses of the use case diagram."""
+def use_cases(model: Workflow) -> list[str | None]:
+    """Creating a record (None), then each distinct action in transition-id order: the ellipses of the use case diagram."""
     actions: list[str] = []
     for t in sorted(model.transitions, key=lambda t: t.id):
         if t.action not in actions:
@@ -85,10 +87,10 @@ def use_cases(model: Workflow) -> list[str]:
     return [CREATE, *actions]
 
 
-def _default_screen(case: str, attributes: tuple[Attribute, ...], record: str) -> Screen:
-    shown = attributes if case == CREATE else tuple(a for a in attributes if a.required)
-    return Screen(use_case=case, title=f"New {record}" if case == CREATE else case,
-                  fields=tuple(ScreenField(attribute=a.name) for a in shown), button="Create" if case == CREATE else case)
+def _default_screen(case: str | None, attributes: tuple[Attribute, ...], record: str) -> Screen:
+    shown = attributes if case is CREATE else tuple(a for a in attributes if a.required)
+    return Screen(use_case=case, title=f"New {record}" if case is CREATE else str(case),
+                  fields=tuple(ScreenField(attribute=a.name) for a in shown), button="Create" if case is CREATE else str(case))
 
 
 def default_screens(pack: Pack, model: Workflow, data: DataModel | None) -> Screens:
@@ -99,44 +101,53 @@ def default_screens(pack: Pack, model: Workflow, data: DataModel | None) -> Scre
 
 
 def screens_for(pack: Pack, model: Workflow, data: DataModel | None) -> Screens:
-    """The screens beside this pack's `pack.json`, or the default ones."""
+    """The screens beside this pack's `pack.json`, each use case they leave out given its default screen; or the defaults."""
+    defaults = default_screens(pack, model, data)
     directory = pack_directory(pack)
     found = load_screens(directory, pack.id) if directory is not None else None
-    return found if found is not None else default_screens(pack, model, data)
+    if found is None:
+        return defaults
+    missing = [s for s in defaults.screens if found.screen(s.use_case) is None]
+    return Screens(id=pack.id, screens=(*found.screens, *missing))
 
 
-def _problem(code: str, use_case: str, text: str) -> dict[str, str]:
+def _problem(code: str, use_case: str | None, text: str) -> dict[str, Any]:
     return {"code": code, "use_case": use_case, "text": text}
 
 
-def _screen_problems(screen: Screen, known: set[str], required: set[str]) -> list[dict[str, str]]:
+def _screen_problems(screen: Screen, known: set[str], required: set[str]) -> list[dict[str, Any]]:
     shown = {f.attribute for f in screen.fields}
     problems = [_problem("SCREEN_UNKNOWN_ATTRIBUTE", screen.use_case, f"{screen.title} shows {name}, which the record does not have")
                 for name in sorted(shown - known)]
-    if screen.use_case == CREATE:
+    if screen.use_case is CREATE:
         problems += [_problem("SCREEN_MISSING_REQUIRED", screen.use_case,
                               f"{screen.title} does not ask for {name}, which is required: nobody could create a record")
                      for name in sorted(required - shown)]
     return problems
 
 
-def check_screens(screens: Screens, model: Workflow, data: DataModel | None) -> list[dict[str, str]]:
-    """Design problems, each with a stable code and the use case it is about. Empty means the screens can be built."""
-    cases = use_cases(model)
-    attributes = data.entity(data.record).attributes if data else ()
-    known, required = {a.name for a in attributes}, {a.name for a in attributes if a.required}
-    problems: list[dict[str, str]] = []
-    seen: set[str] = set()
+def _coverage(screens: Screens, cases: list[str | None]) -> list[dict[str, Any]]:
+    """Screens for use cases the model lacks, second screens for one use case, and use cases without a screen."""
+    problems: list[dict[str, Any]] = []
+    seen: set[str | None] = set()
     for screen in screens.screens:
         if screen.use_case not in cases:
             problems.append(_problem("SCREEN_UNKNOWN_USE_CASE", screen.use_case, f"{screen.title} is for {screen.use_case}, which the model does not have"))
         elif screen.use_case in seen:
-            problems.append(_problem("SCREEN_DUPLICATE_USE_CASE", screen.use_case, f"{screen.use_case} has more than one screen"))
+            problems.append(_problem("SCREEN_DUPLICATE_USE_CASE", screen.use_case, f"{screen.use_case or 'Creating a record'} has more than one screen"))
         seen.add(screen.use_case)
-        problems += _screen_problems(screen, known, required)
     if CREATE not in seen:
         problems.append(_problem("SCREEN_MISSING_CREATE", CREATE, "There is no screen to create a record"))
-    return problems
+    return problems + [_problem("SCREEN_MISSING_USE_CASE", case, f"{case} has no screen")
+                       for case in cases if case is not CREATE and case not in seen]
+
+
+def check_screens(screens: Screens, model: Workflow, data: DataModel | None) -> list[dict[str, Any]]:
+    """Design problems, each with a stable code and the use case it is about. Empty means the screens can be built."""
+    attributes = data.entity(data.record).attributes if data else ()
+    known, required = {a.name for a in attributes}, {a.name for a in attributes if a.required}
+    fields = [p for screen in screens.screens for p in _screen_problems(screen, known, required)]
+    return _coverage(screens, use_cases(model)) + fields
 
 
 def require_buildable(screens: Screens, model: Workflow, data: DataModel | None) -> None:

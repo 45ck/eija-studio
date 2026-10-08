@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/screens.py#CREATE
   title: domain/screens.py
   hash_method: ast-v2
-  sha256: abe18947e339f47858be99dc4d6e71bca00b97205a167dff7304f665fa043278
-notes_baseline: 47bf8b32988d51ce2c8f90c8b2ef11b9bea8dd9f48a1115addec7ebb17bd9c56
+  sha256: f3a3f642956551afd3be5dafaecac1f2826b8e127e57aaefc56bbdc71a380bbc
+notes_baseline: 6b25c98f98795627fe531d43c425b421144dc83f741d48455dbde186e6c0e2d0
 ---
 
 # domain.screens.CREATE
@@ -25,7 +25,7 @@ notes_baseline: 47bf8b32988d51ce2c8f90c8b2ef11b9bea8dd9f48a1115addec7ebb17bd9c56
 |---|---|
 | Kind | constant |
 | Module | [`domain/screens`](/modules/domain/screens.md) |
-| Signature | `CREATE = 'create'` |
+| Signature | `CREATE = None` |
 | Code | `repo://src/eija_studio/domain/screens.py#CREATE` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
@@ -41,6 +41,6 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Referenced by
 
-* [domain.screens.check_screens](/symbols/domain/screens/check_screens.md) - Design problems, each with a stable code and the use case it is about.
-* [domain.screens.use_cases](/symbols/domain/screens/use_cases.md) - `create`, then each distinct action in transition-id order: the ellipses of the use case diagram.
+* [domain.screens.Screen](/symbols/domain/screens/Screen.md) - `class Screen(Contract)` in `domain/screens`.
+* [domain.screens.use_cases](/symbols/domain/screens/use_cases.md) - Creating a record (None), then each distinct action in transition-id order: the ellipses of the use case diagram.
 <!-- okf:generated:end links -->

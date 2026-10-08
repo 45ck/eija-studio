@@ -1,7 +1,7 @@
 ---
 type: Function
 title: domain.screens.screens_for
-description: The screens beside this pack's `pack.json`, or the default ones.
+description: The screens beside this pack's `pack.json`, each use case they leave out given its default screen; or the defaults.
 resource: repo://src/eija_studio/domain/screens.py#screens_for
 tags:
 - symbol
@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/screens.py#screens_for
   title: domain/screens.py
   hash_method: ast-v2
-  sha256: 6964eaaa5662d2be390ef7d4550f1c19707851eedb58cb755a19364ff20da982
-notes_baseline: 34c6f3f065fdc37a5449399d6d55faa9c771c60b1f8de5abd1f958155a0d56bb
+  sha256: 8f3eb35045ee32177583dabb0bbff51dc07cfdddc383c0d66c75e61724191700
+notes_baseline: 34591a44c389c6b8bdd44fca5a2f74d120790020d9b3d55e0e395bbfb92fddd9
 ---
 
 # domain.screens.screens_for
@@ -32,7 +32,7 @@ notes_baseline: 34c6f3f065fdc37a5449399d6d55faa9c771c60b1f8de5abd1f958155a0d56bb
 ## Docstring
 
 ~~~text
-The screens beside this pack's `pack.json`, or the default ones.
+The screens beside this pack's `pack.json`, each use case they leave out given its default screen; or the defaults.
 ~~~
 <!-- okf:generated:end facts -->
 

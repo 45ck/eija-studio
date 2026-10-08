@@ -30,7 +30,7 @@ def edited(screens: Screens, which: str, **change) -> Screens:
     return Screens.model_validate(document)
 
 
-def test_use_cases_are_create_then_each_action():
+def test_use_cases_are_creating_a_record_then_each_action():
     assert use_cases(LOAN.model) == [CREATE, *dict.fromkeys(t.action for t in sorted(LOAN.model.transitions, key=lambda t: t.id))]
 
 
@@ -56,8 +56,8 @@ def test_design_problems_have_stable_codes():
     create = screens.screen(CREATE)
     assert codes(edited(screens, CREATE, fields=[f.model_dump() for f in create.fields[1:]])) == ["SCREEN_MISSING_REQUIRED"]
     assert codes(edited(screens, "Return", fields=[{"attribute": "colour"}])) == ["SCREEN_UNKNOWN_ATTRIBUTE"]
-    assert codes(edited(screens, "Return", use_case="Renew")) == ["SCREEN_UNKNOWN_USE_CASE"]
-    assert codes(edited(screens, "Return", use_case="Cancel")) == ["SCREEN_DUPLICATE_USE_CASE"]
+    assert codes(edited(screens, "Return", use_case="Renew")) == ["SCREEN_MISSING_USE_CASE", "SCREEN_UNKNOWN_USE_CASE"]
+    assert codes(edited(screens, "Return", use_case="Cancel")) == ["SCREEN_DUPLICATE_USE_CASE", "SCREEN_MISSING_USE_CASE"]
     assert codes(edited(screens, CREATE, use_case="Return")) == ["SCREEN_DUPLICATE_USE_CASE", "SCREEN_MISSING_CREATE"]
 
 
@@ -93,3 +93,21 @@ def test_screens_are_built_into_the_app_and_its_oracle():
     relabelled = edited(screens, CREATE, title="Borrow")
     _, other = generate(LOAN, LOAN.model, data_for(LOAN), relabelled)
     assert other["oracle"]["hash"] != manifest["oracle"]["hash"]  # other screens are another build
+
+
+def test_every_action_gets_a_screen_and_a_missing_one_is_a_problem():
+    screens = screens_for(LOAN, LOAN.model, data_for(LOAN))
+    without = Screens(id=LOAN.id, screens=tuple(s for s in screens.screens if s.use_case != "Return"))
+    assert codes(without) == ["SCREEN_MISSING_USE_CASE"]
+    renamed = LOAN.model.model_copy(update={"transitions": tuple(
+        t.model_copy(update={"action": "Renew"}) if t.action == "Return" else t for t in LOAN.model.transitions)})
+    completed = screens_for(LOAN, renamed, data_for(LOAN))  # authored screens, plus a default one for the new action
+    assert completed.screen("Renew").title == "Renew" and completed.screen(CREATE).title == "Request a loan"
+    assert [p["code"] for p in check_screens(completed, renamed, data_for(LOAN))] == ["SCREEN_UNKNOWN_USE_CASE"]  # Return is gone
+
+
+def test_an_action_named_create_is_its_own_use_case():
+    named = EXCURSION.model.model_copy(update={"transitions": tuple(
+        t.model_copy(update={"action": "create"}) if i == 0 else t for i, t in enumerate(EXCURSION.model.transitions))})
+    screens = default_screens(EXCURSION, named, data_for(EXCURSION))
+    assert screens.screen(CREATE) != screens.screen("create") and codes(screens, EXCURSION.model_copy(update={"model": named})) == []

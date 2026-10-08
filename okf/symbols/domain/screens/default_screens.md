@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/screens.py#default_screens
   title: domain/screens.py
   hash_method: ast-v2
-  sha256: 73d6f4d2d67f2b507700da002bd75ba7707bfc46d5a2e05f00a75f8a20f737f4
-notes_baseline: 2aced915e731af577df40abdda8cfc8e33a4eddc4f420c4ad83aa002ac0aa8fe
+  sha256: 1f7f073bee4c512c3514a8b7d8e4ea2705676e2876e2988d8da2e616827d400d
+notes_baseline: 9efc60cf0df532024f4d60c6cac255fd179da90aa7c1f7c2cdadd23de6e162fc
 ---
 
 # domain.screens.default_screens
@@ -47,10 +47,10 @@ _No curated notes yet._
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
 * [domain.screens.Screens](/symbols/domain/screens/Screens.md) - `class Screens(Contract)` in `domain/screens`.
-* [domain.screens.use_cases](/symbols/domain/screens/use_cases.md) - `create`, then each distinct action in transition-id order: the ellipses of the use case diagram.
+* [domain.screens.use_cases](/symbols/domain/screens/use_cases.md) - Creating a record (None), then each distinct action in transition-id order: the ellipses of the use case diagram.
 
 ## Referenced by
 
 * [application.appgen.generate](/symbols/application/appgen/generate.md) - Return the per-model files and the build manifest (without file hashes or test results).
-* [domain.screens.screens_for](/symbols/domain/screens/screens_for.md) - The screens beside this pack's `pack.json`, or the default ones.
+* [domain.screens.screens_for](/symbols/domain/screens/screens_for.md) - The screens beside this pack's `pack.json`, each use case they leave out given its default screen; or the defaults.
 <!-- okf:generated:end links -->

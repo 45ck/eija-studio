@@ -45,10 +45,28 @@ function attribute(name) {
   return state.app.record.attributes.find((a) => a.name === name);
 }
 
-function screenFields(useCase) {
-  const screen = state.app.screens[useCase];
+function screenFields(screen) {
   if (!state.app.record || !screen) return [];
   return screen.fields.map((f) => ({ ...attribute(f.attribute), label: f.label || f.attribute }));
+}
+
+// Each action has its own screen: its title, the record values it shows (in its order, under its labels) and its
+// button. Choosing an action opens it; the action runs only when its button is pressed, and the kernel decides.
+function openAction(option, record) {
+  const screen = state.app.screens.actions[option.action] || { title: option.action, fields: [], button: option.action };
+  const box = $("action-screen");
+  box.hidden = false;
+  box.replaceChildren(el("h3", screen.title));
+  const values = el("dl", undefined, { class: "values" });
+  for (const a of screenFields(screen)) values.append(el("dt", a.label), el("dd", a.name in record.fields ? String(record.fields[a.name]) : "—"));
+  const go = el("button", `${screen.button || option.action} → ${option.to}`, { type: "button" });
+  go.addEventListener("click", () => { box.hidden = true; act(option.action, record.version); });
+  const cancel = el("button", "Cancel", { type: "button", class: "quiet" });
+  cancel.addEventListener("click", () => { box.hidden = true; });
+  const row = el("div", undefined, { class: "option" });
+  row.append(go, cancel);
+  box.append(values, row);
+  go.focus();
 }
 
 function renderFields() {
@@ -59,7 +77,7 @@ function renderFields() {
     $("create-title").textContent = create.title;
     $("create-button").textContent = create.button || "Create";
   }
-  for (const a of screenFields("create")) {
+  for (const a of screenFields(create)) {
     const id = "field-" + a.name, label = el("label", a.label + (a.required ? " *" : ""), { for: id });
     let input;
     if (a.type === "choice") {
@@ -79,7 +97,7 @@ function renderFields() {
 
 function fieldValues() {
   const values = {};
-  for (const a of screenFields("create")) {
+  for (const a of screenFields(state.app.screens.create)) {
     const input = $("field-" + a.name);
     if (a.type === "boolean") values[a.name] = input.checked;
     else if (input.value === "") continue;
@@ -116,7 +134,9 @@ async function renderDetail() {
   $("detail-title").textContent = view.record.title;
   const values = $("detail-fields");
   values.replaceChildren();
-  for (const [name, value] of Object.entries(view.record.fields || {})) values.append(el("dt", name), el("dd", String(value)));
+  const labels = Object.fromEntries(screenFields(state.app.screens.create).map((a) => [a.name, a.label]));
+  for (const [name, value] of Object.entries(view.record.fields || {})) values.append(el("dt", labels[name] || name), el("dd", String(value)));
+  $("action-screen").hidden = true;
   $("stranded").hidden = view.record.current_model;
   const flow = $("flow");
   flow.replaceChildren();
@@ -125,10 +145,10 @@ async function renderDetail() {
   options.replaceChildren();
   for (const o of view.options) {
     const row = el("div", undefined, { class: "option" });
-    const screen = state.app.screens[o.action];
-    const button = el("button", `${(screen && screen.button) || o.action} → ${o.to}`, { type: "button", title: o.action });
+    const screen = state.app.screens.actions[o.action];
+    const button = el("button", `${(screen && screen.title) || o.action} → ${o.to}`, { type: "button", title: o.action });
     button.disabled = !o.allowed;
-    button.addEventListener("click", () => act(o.action, view.record.version));
+    button.addEventListener("click", () => openAction(o, view.record));
     row.append(button);
     if (!o.allowed) row.append(el("span", o.reason, { class: "why" }));
     options.append(row);
