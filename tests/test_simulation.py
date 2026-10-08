@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from eija_studio.application.simulation import MemorySession, simulate
+from eija_studio.application.simulation import MemorySession, run_log, simulate
 from eija_studio.application.runtime import execute, initialise
 from eija_studio.domain.models import DomainError, ExecuteCommand
 from eija_studio.domain.pack import load_pack
@@ -86,3 +86,40 @@ def test_transition_order_in_the_document_does_not_change_a_run():
     assert shuffled.semantic_hash == p.model.semantic_hash
     for steps in (5, 300):  # a short run has never-succeeded findings, a long one ties among refusals
         assert simulate(p, shuffled, seed=4, steps=steps) == simulate(p, p.model, seed=4, steps=steps)
+
+
+@pytest.mark.parametrize("name", PACKS)
+def test_the_run_log_is_the_whole_simulated_run_step_by_step(name):
+    """The run bar (ADR-0160) moves through this log: every step, the same steps Simulate counts, the same each time."""
+    p = pack(name)
+    log, report = run_log(p, p.model, seed=11, steps=300), simulate(p, p.model, seed=11, steps=300)
+    assert log == run_log(p, p.model, seed=11, steps=300) and log["format"] == "eija.run.v1"
+    assert [e["step"] for e in log["trace"]] == list(range(1, 301))
+    assert log["trace"][:60] == report["trace"]
+    assert sum(e["outcome"] == "COMMITTED" for e in log["trace"]) == report["committed"]
+    assert sum(e["outcome"] == "REFUSED" for e in log["trace"]) == report["refused"]
+    assert log["stops"] == [] and len(log["records"]) == report["records"]
+
+
+def test_breakpoints_stop_where_the_element_is_reached_and_refusals_when_asked():
+    p = pack("library-loan")
+    state, transition = p.model.states[2], p.model.transitions[0]
+    marks = ["state:" + state, "transition:" + transition.id]
+    log = run_log(p, p.model, seed=3, steps=400, breakpoints=marks)
+    expected = [e["step"] for e in log["trace"]
+                if e.get("transition") == transition.id or (e["outcome"] != "REFUSED" and e.get("to") == state)]
+    assert expected and [s["step"] for s in log["stops"]] == expected
+    assert {s["reason"] for s in log["stops"]} == {"breakpoint"} and log["breakpoints"] == sorted(marks)
+    refusals = run_log(p, p.model, seed=3, steps=400, break_on_refusal=True)["stops"]
+    assert [s["step"] for s in refusals] == [e["step"] for e in log["trace"] if e["outcome"] == "REFUSED"]
+    assert all(s["reason"] == "exception" and s["code"] for s in refusals)
+    assert run_log(p, p.model, seed=3, steps=400, breakpoints=marks)["trace"] == log["trace"]  # stops never change the run
+
+
+def test_a_breakpoint_must_be_an_element_of_the_model():
+    p = pack("excursion")
+    for marks, code in ((["state:Nowhere"], "UNKNOWN_BREAKPOINT"), (["transition:TR-NONE"], "UNKNOWN_BREAKPOINT"),
+                        ([f"state:{s}-{i}" for s in p.model.states for i in range(20)], "TOO_MANY_BREAKPOINTS")):
+        with pytest.raises(DomainError) as refused:
+            run_log(p, p.model, breakpoints=marks)
+        assert refused.value.code == code
