@@ -27,6 +27,11 @@ The server prints two private links. Open the PlayIDE one (it ends in `/play#…
   - a state nothing leads into is unreachable.
 
   Click an effect to open that diagram at that element. Added and changed elements are marked on the preview, and removed ones in red on the model. For each warning or problem, the AI proposes a follow-on edit, such as removing the stranded screen or adding a transition into the new state. The server checks each one again, through the policy or the screen design check, before you can **Add** it. The default proposer is an offline rule set, not a live model.
+- **See a change.** Whenever a plan or a change case differs from the model in force, a **Changes** button with a count appears on the state machine tab ([ADR-0176](adr/0176-how-a-uml-change-looks.md)). It draws both models on one layout:
+  - **Changes** shows added elements in green, changed ones in amber, a moved arrow in amber with its old route dashed, and removed ones kept as faded, struck-through ghosts. Unchanged elements fade back as context.
+  - **Before** and **After** show one side each, and the onion-skin slider fades between them. No state moves when you switch.
+
+  The list under the diagram says each change in a sentence. `[` and `]` step through it, and the inspector shows each changed field before and after. Previewing a plan also keeps every state in place now, and a removed state leaves its gap.
 - **Checks.** The ring in the toolbar has five parts, each a real check on the model you are looking at:
   - every AI step looked at;
   - the screens' design check;

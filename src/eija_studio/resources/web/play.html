@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="/assets/play-access.css">
 <link rel="stylesheet" href="/assets/play-review.css">
 <link rel="stylesheet" href="/assets/play-shell.css">
+<link rel="stylesheet" href="/assets/play-diff.css">
 <script src="/assets/vendor/dagre.min.js" defer></script>
 <script src="/assets/vendor/maxgraph.min.js" defer></script>
 <script src="/assets/play-shell.js" defer></script>
@@ -17,6 +18,7 @@
 <script src="/assets/play-laws.js" defer></script>
 <script src="/assets/play-assist.js" defer></script>
 <script src="/assets/play-access.js" defer></script>
+<script src="/assets/play-diff.js" defer></script>
 </head>
 <body>
 <header class="bar">
@@ -96,6 +98,7 @@
         <button type="button" draggable="true" data-kind="initial" title="Drag onto the state records start in"><span class="glyph initial" aria-hidden="true"></span>Initial</button>
       </div>
       <div id="canvas" class="canvas" tabindex="0" aria-describedby="canvas-help" role="tabpanel" aria-labelledby="tab-states"></div>
+      <div id="diff-view" class="diff-view" role="region" aria-label="The change on the state machine" hidden></div>
       <div id="class-canvas" class="canvas" tabindex="0" role="tabpanel" aria-labelledby="tab-classes" hidden></div>
       <div id="usecase-canvas" class="canvas" tabindex="0" role="tabpanel" aria-labelledby="tab-usecases" hidden></div>
       <div id="component-canvas" class="canvas" tabindex="0" role="tabpanel" aria-labelledby="tab-components" hidden></div>

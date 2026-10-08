@@ -7,11 +7,6 @@
 "use strict";
 (() => {
   const $ = (id) => document.getElementById(id);
-  const STATE = { width: 150, height: 54 }, INITIAL = 22;
-  const COLOURS = {
-    added: { fill: "#e5f5ec", stroke: "#17734a" }, removed: { fill: "#fbe9e9", stroke: "#a12f2f" },
-    changed: { fill: "#fdf4e3", stroke: "#c27c0e" }, same: { fill: "#eef2ff", stroke: "#5b74d6" },
-  };
   const RISK_TEXT = { high: "High risk", medium: "Medium", low: "Low" };
   const CHANGE_TEXT = { added: "added", removed: "removed", changed: "changed", unreachable: "knock-on", dead_end: "knock-on" };
   const reviews = new Map(); // one review per change shown, so going back to a change keeps what was checked
@@ -20,74 +15,14 @@
   const el = (...args) => ide.el(...args);
   const keyOf = (about) => JSON.stringify([about.case_id, about.plan]);
 
-  // The diagram: both models on one canvas. Removed elements stay, dashed in red, so a deleted path is seen, not missed.
-  function union(r) {
-    const before = r.before_model, after = r.after_model;
-    const a = Object.fromEntries(before.transitions.map((t) => [t.action, t]));
-    const b = Object.fromEntries(after.transitions.map((t) => [t.action, t]));
-    const states = [...new Set([...before.states, ...after.states])];
-    const edges = [];
-    for (const action of [...new Set([...Object.keys(a), ...Object.keys(b)])]) {
-      const old = a[action], now = b[action];
-      if (old && now && old.from_state === now.from_state && old.to_state === now.to_state) {
-        edges.push({ id: "transition:" + now.id, t: now, status: r.diff.changed_actions[action] ? "changed" : "same" });
-      } else {
-        if (old) edges.push({ id: "removed:" + old.id, t: old, status: "removed" });
-        if (now) edges.push({ id: "transition:" + now.id, t: now, status: "added" });
-      }
-    }
-    const knock = new Set(r.items.filter((i) => !i.edited).flatMap((i) => i.states));
-    const statusOf = (s) => !before.states.includes(s) ? "added" : !after.states.includes(s) ? "removed" : knock.has(s) ? "changed" : "same";
-    const moved = before.initial_state !== after.initial_state ? before.initial_state : null; // drawn too, dashed
-    return { states: states.map((s) => ({ id: s, status: statusOf(s) })), edges, initial: after.initial_state, oldInitial: moved };
-  }
-
+  // The diagram: both models on one canvas, drawn by the shared change renderer (play-diff.js, ADR-0176) from the
+  // server's union of the two. Removed elements stay as ghosts, so a deleted path is seen, not missed; states nobody
+  // edited but the change affects (knock-on items) are tinted amber. The lenses (Before, Changes, After, onion skin)
+  // stay off here: the review asks about one picture of the change.
   function draw(r) {
-    const { Graph, InternalEvent } = maxgraph;
-    const box = $("review-canvas");
     if (graph) graph.destroy();
-    box.replaceChildren();
-    InternalEvent.disableContextMenu(box);
-    graph = new Graph(box);
-    for (const off of ["setConnectable", "setCellsEditable", "setCellsDisconnectable", "setDropEnabled", "setCellsMovable"]) graph[off](false);
-    graph.setPanning(true);
-    const shape = union(r), g = new dagre.graphlib.Graph({ multigraph: true });
-    g.setGraph({ rankdir: "TB", nodesep: 70, ranksep: 90, edgesep: 30, marginx: 30, marginy: 30 }); // the review canvas is tall
-    g.setDefaultEdgeLabel(() => ({}));
-    g.setNode("__initial", { width: INITIAL, height: INITIAL });
-    for (const s of shape.states) g.setNode(s.id, { ...STATE });
-    g.setEdge("__initial", shape.initial);
-    if (shape.oldInitial) { g.setNode("__old_initial", { width: INITIAL, height: INITIAL }); g.setEdge("__old_initial", shape.oldInitial); }
-    for (const e of shape.edges) g.setEdge(e.t.from_state, e.t.to_state, { width: 140, height: 20 }, e.id);
-    dagre.layout(g);
-    const at = (id) => { const n = g.node(id); return [n.x - n.width / 2, n.y - n.height / 2]; };
-    const parent = graph.getDefaultParent(), cells = {}, font = { fontFamily: "system-ui, sans-serif", fontColor: "#1b2130" };
-    const mark = { added: "+ ", removed: "− ", changed: "~ ", same: "" };
-    graph.batchUpdate(() => {
-      const initial = graph.insertVertex({ parent, id: "initial", position: at("__initial"), size: [INITIAL, INITIAL],
-        style: { shape: "ellipse", fillColor: "#1b2130", strokeColor: "#1b2130" } });
-      for (const s of shape.states) {
-        const c = COLOURS[s.status];
-        cells[s.id] = graph.insertVertex({ parent, id: "state:" + s.id, value: mark[s.status] + s.id, position: at(s.id), size: [STATE.width, STATE.height],
-          style: { ...font, rounded: true, arcSize: 22, fillColor: c.fill, strokeColor: c.stroke, strokeWidth: s.status === "same" ? 1.5 : 2.5,
-            dashed: s.status === "removed", fontSize: 14, fontStyle: 1 } });
-      }
-      graph.insertEdge({ parent, id: "initial-edge", value: shape.oldInitial ? "+ start" : "", source: initial, target: cells[shape.initial],
-        style: { ...font, fontSize: 11, fontColor: COLOURS.added.stroke, strokeColor: shape.oldInitial ? COLOURS.added.stroke : "#1b2130", endArrow: "open", endSize: 8, strokeWidth: shape.oldInitial ? 3 : 1 } });
-      if (shape.oldInitial) { // where records used to start: kept on the diagram, dashed in red, like any removed element
-        const old = graph.insertVertex({ parent, id: "initial-old", position: at("__old_initial"), size: [INITIAL, INITIAL],
-          style: { shape: "ellipse", fillColor: COLOURS.removed.fill, strokeColor: COLOURS.removed.stroke, dashed: true, strokeWidth: 2 } });
-        graph.insertEdge({ parent, id: "initial-old-edge", value: "− start", source: old, target: cells[shape.oldInitial],
-          style: { ...font, fontSize: 11, fontColor: COLOURS.removed.stroke, strokeColor: COLOURS.removed.stroke, dashed: true, endArrow: "open", endSize: 8, strokeWidth: 3 } });
-      }
-      for (const e of shape.edges) {
-        const colour = e.status === "same" ? "#4a5568" : COLOURS[e.status].stroke;
-        const edge = graph.insertEdge({ parent, id: e.id, value: `${mark[e.status]}${e.t.action} [${e.t.role}]`, source: cells[e.t.from_state], target: cells[e.t.to_state],
-          style: { ...font, fontSize: 12, strokeColor: colour, strokeWidth: e.status === "same" ? 1.2 : 3, dashed: e.status === "removed",
-            endArrow: "open", endSize: 9, curved: true, labelBackgroundColor: "#fbfcfe", fontColor: e.status === "same" ? "#1b2130" : colour } });
-        edge.geometry.points = g.edge(e.t.from_state, e.t.to_state, e.id).points.slice(1, -1).map((p) => new maxgraph.Point(p.x, p.y));
-      }
-    });
+    const knock = r.items.filter((i) => !i.edited).flatMap((i) => i.states);
+    graph = window.PlayDiff.mount($("review-canvas"), r.ghost, { direction: "TB", knockOn: knock }).graph; // the review canvas is tall
     fit();
   }
 
@@ -98,9 +33,10 @@
     plugin.fitCenter({ margin: 24 });
   }
 
-  function cellsOf(item) {
-    const ids = item.change === "removed" && item.element.startsWith("transition:") ? ["removed:" + item.element.slice(11)]
-      : item.element === "initial" ? ["initial-edge", "initial-old-edge"] : [item.element];
+  function cellsOf(item) { // the renderer keys a transition by its side: t:<id> as it is now, was:<id> as it was
+    const id = item.element.startsWith("transition:") ? item.element.slice(11) : null;
+    const ids = id ? (item.change === "removed" ? ["was:" + id] : ["t:" + id, "was:" + id])
+      : item.element === "initial" ? ["initial-edge", "was:initial-edge"] : [item.element];
     return ids.map((id) => graph.getDataModel().getCell(id)).filter(Boolean);
   }
 
