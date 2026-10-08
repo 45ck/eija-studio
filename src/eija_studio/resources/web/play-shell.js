@@ -193,6 +193,7 @@
       menu.replaceChildren(...tabs().map((t) => {
         const item = Object.assign(document.createElement("button"), { type: "button", textContent: t.firstChild ? t.firstChild.textContent : t.textContent });
         item.setAttribute("role", "menuitemradio");
+        item.tabIndex = -1; // arrows move within the menu; Tab leaves it
         item.setAttribute("aria-checked", t.getAttribute("aria-selected") || "false");
         if (outOfView(t)) item.classList.add("hidden-tab");
         item.addEventListener("click", () => { close(); t.click(); t.focus(); });
@@ -207,9 +208,12 @@
       const items = [...menu.children], at = items.indexOf(document.activeElement);
       const next = { ArrowDown: at + 1, ArrowUp: at - 1, Home: 0, End: items.length - 1 }[event.key];
       if (event.key === "Escape") { event.preventDefault(); close(); more.focus(); }
+      else if (event.key === "Tab") close();
       else if (next !== undefined) { event.preventDefault(); items[(next + items.length) % items.length].focus(); }
     });
     document.addEventListener("pointerdown", (event) => { if (!menu.hidden && !event.target.closest("#tabs-menu, #tabs-more")) close(); });
+    // Tab out of the menu closes it, as the pointer does; focus moving to the button that opened it does not.
+    menu.addEventListener("focusout", (event) => { if (!menu.contains(event.relatedTarget) && event.relatedTarget !== more) close(); });
     strip.addEventListener("wheel", (event) => {
       if (Math.abs(event.deltaY) <= Math.abs(event.deltaX) || strip.scrollWidth <= strip.clientWidth) return;
       event.preventDefault();

@@ -98,6 +98,10 @@ def test_the_shell_reveals_hides_and_remembers_its_regions_in_a_real_browser():
             page.set_viewport_size({"width": 1100, "height": 800})
             page.wait_for_selector("#tabs-more:not([hidden])")
             page.click("#tabs-more")
+            page.keyboard.press("Tab")  # focus leaves the menu, so it closes
+            page.wait_for_selector("#tabs-menu", state="hidden")
+            assert page.get_attribute("#tabs-more", "aria-expanded") == "false"
+            page.click("#tabs-more")
             page.click("#tabs-menu button:has-text('Permissions')")
             page.wait_for_selector('#tab-access[aria-selected="true"]')
             in_view = """() => { const s = document.querySelector('.stage-tools .tabs'), t = document.getElementById('tab-access');
