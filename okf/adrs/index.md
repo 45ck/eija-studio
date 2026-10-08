@@ -67,3 +67,4 @@
 * [ADR-0149: Preview a semantic edit from one captured case revision](0149-read-only-edit-preview.md) - ADR-0149: Preview a semantic edit from one captured case revision
 * [ADR-0150: Build runnable apps from the model, checked against the kernel as oracle](0150-build-apps-from-the-model-with-a-kernel-oracle.md) - The owner's goal, stated on 8 October 2026, is "UML you can trust to build apps".
 * [ADR-0151: PlayIDE canvas with Build & run of the live app](0151-playide-canvas-and-build-and-run.md) - The owner wants EIJA to feel like "UML you can trust to build apps": a visual, mouse-driven IDE (named PlayIDE) where a UML-literate engineer designs a system and immediately runs and tests it in place.
+* [ADR-0152: Simulate seeded users through the kernel and paint where they went](0152-simulate-seeded-users-through-the-kernel.md) - The owner asked for PlayIDE to feel like a simulation game for software engineers: build a system, watch it run and find problems fast.

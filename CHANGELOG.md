@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### 8 October 2026: PlayIDE Simulate
+
+- PlayIDE's **Simulate** runs 500 seeded actions by the pack's fixture actors through the kernel and paints the result on the diagram: commits as line width, never-used transitions dashed, records per state as fill. It lists findings (never succeeded, never reached, stuck, most refused) and a run log you can replay. The same seed replays exactly. See [ADR-0152](docs/adr/0152-simulate-seeded-users-through-the-kernel.md).
+
 ### 8 October 2026: PlayIDE canvas and Build & run
 
 - New PlayIDE page at `/play` (its private link is printed by `eija serve`). It draws the model as a UML state machine on maxGraph 0.25.0 (Apache-2.0, vendored), with an outline and inspector. **Build & run** builds the app with `eija build`, shows the kernel conformance score and starts the app beside the diagram only if it passes. See [PlayIDE](docs/playide.md) and [ADR-0151](docs/adr/0151-playide-canvas-and-build-and-run.md).

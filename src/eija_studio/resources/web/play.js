@@ -8,7 +8,8 @@
   // Drop the token from the address bar but keep ?case=, so a reload still shows the same model.
   if (location.hash) { sessionStorage.setItem("eija-session", token); history.replaceState(null, "", location.pathname + location.search); }
   const STATE = { width: 150, height: 54 }, INITIAL = 22;
-  let graph, model, selected = "";
+  let graph, model, selected = "", sim = null, replayTimer = 0;
+  const base = {}; // each cell's own style and label, so overlays can be cleared
 
   async function api(path, body) {
     const options = { headers: { Authorization: "Bearer " + token } };
@@ -73,6 +74,7 @@
         edge.geometry.points = place.bends(t).map((p) => new maxgraph.Point(p.x, p.y));
       }
     });
+    for (const cell of Object.values(graph.getDataModel().cells)) if (cell.id) base[cell.id] = { style: { ...cell.style }, value: cell.value };
     graph.getSelectionModel().addListener(InternalEvent.CHANGE, () => {
       const cell = graph.getSelectionCell();
       select(cell ? cell.id : "", false);
@@ -181,6 +183,105 @@
     }
   }
 
+  // Simulate (ADR-0152): the server runs seeded fixture users through the kernel; the page only paints the counts.
+  function restyle(id, extra, value) {
+    const cell = graph.getDataModel().getCell(id);
+    if (!cell || !base[id]) return;
+    graph.getDataModel().setStyle(cell, { ...base[id].style, ...extra });
+    graph.getDataModel().setValue(cell, value === undefined ? base[id].value : value);
+  }
+
+  function paint(result) {
+    const maxCommits = Math.max(1, ...Object.values(result.transitions).map((t) => t.committed));
+    const maxNow = Math.max(1, ...Object.values(result.states).map((s) => s.now));
+    graph.batchUpdate(() => {
+      for (const t of model.transitions) {
+        const r = result.transitions[t.id], refused = Object.values(r.refused).reduce((a, b) => a + b, 0);
+        const width = 1 + 5 * (r.committed / maxCommits);
+        restyle("transition:" + t.id, { strokeWidth: width, strokeColor: r.committed ? "#2f6f4f" : "#c27c0e", dashed: !r.committed },
+          `${label(t)}\n✓ ${r.committed}${refused ? `  ✗ ${refused}` : ""}`);
+      }
+      for (const s of model.states) {
+        const r = result.states[s], heat = r.now / maxNow;
+        const fill = r.entered ? `rgba(49,87,213,${(0.08 + 0.42 * heat).toFixed(2)})` : "#fdf4e3";
+        restyle("state:" + s, { fillColor: fill, strokeColor: r.entered ? "#5b74d6" : "#c27c0e" }, `${s}\n${r.now} here · ${r.entered} in`);
+      }
+    });
+  }
+
+  function clearSim() {
+    clearInterval(replayTimer);
+    sim = null;
+    $("sim").hidden = true;
+    graph.batchUpdate(() => { for (const id of Object.keys(base)) restyle(id, {}); });
+  }
+
+  function step(entry) {
+    const parts = [entry.actor, entry.outcome === "CREATED" ? `created ${entry.record}` : `${entry.action} on ${entry.record}`];
+    if (entry.outcome === "COMMITTED") parts.push(`→ ${entry.to}`);
+    if (entry.outcome === "REFUSED") parts.push(`refused: ${entry.code}`);
+    return parts.join(" ");
+  }
+
+  function showSim(result) {
+    sim = result;
+    $("sim").hidden = false;
+    $("sim-summary").replaceChildren(el("strong", String(result.attempts)), document.createTextNode(" attempts by simulated users on "),
+      el("strong", String(result.records)), document.createTextNode(" records: "), el("strong", String(result.committed)),
+      document.createTextNode(" went through, "), el("strong", String(result.refused)), document.createTextNode(" refused by the kernel."));
+    $("sim-codes").replaceChildren(...Object.entries(result.codes).map(([code, n]) => el("span", `${code} ${n}`, { class: "chip" })));
+    $("sim-findings").replaceChildren(...(result.findings.length ? result.findings.map((f) => {
+      const li = el("li", undefined, { class: f.severity }), b = el("button", f.text, { type: "button" });
+      b.addEventListener("click", () => select(f.element, true));
+      li.append(b);
+      return li;
+    }) : [el("li", "Nothing stood out in this run.", { class: "muted" })]));
+    $("sim-log").replaceChildren(...result.trace.map((entry) => {
+      const li = el("li", undefined, { class: entry.outcome.toLowerCase() });
+      li.append(el("span", String(entry.step), { class: "n" }), el("span", step(entry)));
+      return li;
+    }));
+    $("sim-limits").textContent = `Seed ${result.seed}, ${result.steps} steps. ` + result.limits.join(" ");
+    paint(result);
+  }
+
+  function replay() {
+    if (!sim) return;
+    clearInterval(replayTimer);
+    const rows = [...$("sim-log").children];
+    let i = 0;
+    replayTimer = setInterval(() => {
+      rows.forEach((row) => row.classList.remove("current"));
+      if (i >= sim.trace.length) { clearInterval(replayTimer); paint(sim); return; }
+      const entry = sim.trace[i];
+      rows[i].classList.add("current");
+      rows[i].scrollIntoView({ block: "nearest" });
+      paint(sim);
+      graph.batchUpdate(() => {
+        const t = entry.action && model.transitions.find((x) => x.action === entry.action);
+        if (t) restyle("transition:" + t.id, { strokeColor: entry.outcome === "REFUSED" ? "#a12f2f" : "#3157d5", strokeWidth: 6 }, graph.getDataModel().getCell("transition:" + t.id).value);
+        const at = entry.outcome === "REFUSED" ? entry.from : entry.to;
+        if (at) restyle("state:" + at, { strokeColor: entry.outcome === "REFUSED" ? "#a12f2f" : "#3157d5", strokeWidth: 4 }, graph.getDataModel().getCell("state:" + at).value);
+      });
+      i += 1;
+    }, matchMedia("(prefers-reduced-motion: reduce)").matches ? 40 : 450);
+  }
+
+  async function simulate() {
+    const button = $("simulate");
+    button.disabled = true;
+    try {
+      showSim(await api("/api/play/simulate", { case_id: caseId, model, seed: 1, steps: 500 }));
+    } catch (error) {
+      $("sim").hidden = false;
+      $("sim-summary").textContent = error.code === "MODEL_CHANGED"
+        ? "The model changed since this page loaded. Reload to see it, then simulate again."
+        : `Simulation refused (${error.code || "ERROR"}): ${error.message}`;
+    } finally {
+      button.disabled = false;
+    }
+  }
+
   async function start() {
     if (caseId) {
       const view = await api(`/api/cases/${encodeURIComponent(caseId)}`);
@@ -194,6 +295,9 @@
     draw(model);
     inspect("");
     $("build").addEventListener("click", build);
+    $("simulate").addEventListener("click", simulate);
+    $("sim-replay").addEventListener("click", replay);
+    $("sim-clear").addEventListener("click", clearSim);
     $("fit").addEventListener("click", fit);
     $("zoom-in").addEventListener("click", () => graph.zoomIn());
     $("zoom-out").addEventListener("click", () => graph.zoomOut());

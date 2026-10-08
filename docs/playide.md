@@ -14,12 +14,15 @@ The server prints two private links. Open the PlayIDE one (it ends in `/play#…
 - **Inspect.** Select a state or transition on the canvas or in the outline to see who may take it, its guards, the effects it must write and the effects it must never write.
 - **Build & run.** One click builds the app with [`eija build`](build-an-app.md), checks it against the kernel and shows the score, for example `240/240 cases match the kernel`. Only an app that passes is started. It opens beside the diagram, where you can act as each fixture user and watch the model's rules being enforced.
 
+- **Simulate.** Simulated users, the pack's fixture actors, try 500 seeded actions, and the kernel decides every one. The diagram lights up: thicker lines carried more successful actions, dashed amber lines never succeeded, and darker states hold more records now. **Worth a look** lists the transitions that never succeeded, the states nobody reached or got stuck in, and the most-refused actions; click one to select it. **Replay** steps through the run log on the diagram. The same seed always gives the same run. See [ADR-0152](adr/0152-simulate-seeded-users-through-the-kernel.md).
+
 ## Limits
 
+- Simulated users act at random within their roles. A run shows where the model lets people through and where it blocks them. It is not a measurement of real people, time or load.
 - The canvas does not edit the model yet. Change the model in the review workbench, then build again.
 - One built app runs at a time, on a free loopback port. It stops when you build another model or stop the server.
 - Everything in [Build an app from the model](build-an-app.md#why-you-can-trust-it-and-how-far) about how far the conformance check goes applies here too.
 
 ## Coming next
 
-Simulated users running through the app with traffic and hotspot overlays, class diagrams for data, use case diagrams with a screen designer, component diagrams, an AI chat sidebar with plan mode (the AI only proposes), drag-and-drop UML palettes, and a health ring tied to real checks.
+Class diagrams for data, use case diagrams with a screen designer, component diagrams, an AI chat sidebar with plan mode (the AI only proposes), drag-and-drop UML palettes, and a health ring tied to real checks.

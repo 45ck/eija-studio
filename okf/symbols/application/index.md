@@ -15,5 +15,6 @@
 * [repository](repository/) - Symbols of application.repository
 * [runtime](runtime/) - Symbols of application.runtime
 * [service](service/) - Symbols of application.service
+* [simulation](simulation/) - Symbols of application.simulation
 * [verifier](verifier/) - Symbols of application.verifier
 * [witness_inspection](witness_inspection/) - Symbols of application.witness_inspection

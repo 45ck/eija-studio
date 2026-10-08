@@ -66,6 +66,7 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0149](0149-read-only-edit-preview.md) | Preview a semantic edit from one captured case revision | accepted for the local owner workbench |
 | [0150](0150-build-apps-from-the-model-with-a-kernel-oracle.md) | Build runnable apps from the model, checked against the kernel as oracle | accepted for the local workflow-app slice |
 | [0151](0151-playide-canvas-and-build-and-run.md) | PlayIDE canvas with Build & run of the live app | accepted for the state-machine slice |
+| [0152](0152-simulate-seeded-users-through-the-kernel.md) | Simulate seeded users through the kernel and paint where they went | accepted for the state-machine slice |
 <!-- adr-index:end -->
 
 ## Reserved numbers for capability lanes

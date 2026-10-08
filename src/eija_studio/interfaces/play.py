@@ -1,4 +1,5 @@
-"""PlayIDE routes: the visual UML canvas page, and Build & run of the model as a live app beside it (ADR-0151).
+"""PlayIDE routes: the visual UML canvas page, Build & run of the model as a live app beside it (ADR-0151), and
+Simulate, seeded simulated users whose every step the kernel decides (ADR-0152).
 
 Build & run reuses `eija build` (ADR-0150): the app is generated into the workspace, its kernel conformance tests run,
 and only a PASSing app is started, as a separate local process on a free loopback port. One app runs at a time; a new
@@ -19,6 +20,9 @@ from typing import Any
 
 from fastapi.responses import FileResponse
 
+from pydantic import Field
+
+from eija_studio.application.simulation import MAX_STEPS, simulate
 from eija_studio.domain.models import Contract, DomainError, Workflow
 from eija_studio.domain.pack import Pack
 from .app_build import build_into
@@ -29,6 +33,11 @@ START_TIMEOUT_S = 10.0
 class BuildRequest(Contract):
     case_id: str | None = None  # None builds the active baseline; a case builds its candidate (or baseline if none yet)
     model: Workflow | None = None  # the model the page shows; if given, it must still be the one that would be built
+
+
+class SimulateRequest(BuildRequest):
+    seed: int = Field(default=1, ge=0, le=2**31 - 1)
+    steps: int = Field(default=500, ge=1, le=MAX_STEPS)
 
 
 def _free_port() -> int:
@@ -105,8 +114,8 @@ def register(app, studio, web: Path) -> AppRunner:
     def play_page():
         return FileResponse(web / "play.html")
 
-    @app.post("/api/play/build")
-    def play_build(body: BuildRequest):
+    def resolve(body: BuildRequest) -> Workflow:
+        """The model the request is about: the active baseline, or a case's candidate (its baseline if none yet)."""
         if body.case_id is None:
             with studio.store.transaction() as u:
                 model = Workflow.model_validate(u.active()["model"])
@@ -114,7 +123,15 @@ def register(app, studio, web: Path) -> AppRunner:
             baseline, candidate = studio.workflows(body.case_id)
             model = candidate or baseline
         if body.model is not None and body.model.semantic_hash != model.semantic_hash:
-            raise DomainError("MODEL_CHANGED", "The model changed since the page loaded; reload and build again")
-        return runner.build_and_run(studio.pack, model, studio.identity_provider())
+            raise DomainError("MODEL_CHANGED", "The model changed since the page loaded; reload and try again")
+        return model
+
+    @app.post("/api/play/build")
+    def play_build(body: BuildRequest):
+        return runner.build_and_run(studio.pack, resolve(body), studio.identity_provider())
+
+    @app.post("/api/play/simulate")
+    def play_simulate(body: SimulateRequest):
+        return simulate(studio.pack, resolve(body), seed=body.seed, steps=body.steps)
 
     return runner
