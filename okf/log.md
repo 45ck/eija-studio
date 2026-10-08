@@ -2,6 +2,7 @@
 
 ## 2026-10-08
 
+* **Add without dragging**: synced the new ADR-0174 page; ADR-0156, 0157, 0170, 0172 and 0173 changed only in generated backlinks (presentation only, no module or symbol changes). No Notes were hand-edited and nothing was recorded as verified.
 * **PlayIDE tab overflow**: ADR-0173 page re-synced after its text gained the tab overflow rule. No Notes were hand-edited and nothing was recorded as verified.
 * **A change on every diagram**: re-synced ADR-0176 and `application.ghost_diff` (it now also returns the use case diagram of both models). No Notes were hand-edited and nothing was recorded as verified.
 * **Calmer Changes view**: re-synced ADR-0176 after its "calm by default" update (presentation only, no module or symbol changes). No Notes were hand-edited and nothing was recorded as verified.

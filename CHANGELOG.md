@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### 8 October 2026: PlayIDE adds without dragging
+
+- Adding to the state machine no longer needs a drag (ADR-0174). Pick State, Transition or Initial in the palette and click the diagram, as in draw.io and Visio; a transition is two clicks, the state it leaves and the state it goes to. Double-click empty space for a new state, a state to rename it, or a transition to change who may take it. A small editor opens where you click: Enter adds the step to the plan, Escape drops it, and nothing is modal. Dragging still works and drops into the same editor; Enter on a palette item still opens the full form. The tour and ripple demos place their state this way.
+
 ### 8 October 2026: PlayIDE tabs that do not fit
 
 - When the diagram tabs do not fit, the strip scrolls, the edge that hides tabs fades, and a **More tabs** button lists every tab, as in VS Code. Buttons beside the strip no longer cover a tab label. Hiding the left side no longer pushes the diagrams into its empty column.

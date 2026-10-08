@@ -124,6 +124,15 @@ dd{margin:0}
 .draft-form label{display:flex;flex-direction:column;gap:3px;font-size:.84rem;color:var(--muted)}
 .draft-form input,.draft-form select{font:inherit;font-size:.9rem;border:1px solid var(--line);border-radius:6px;padding:5px 8px;color:var(--ink);background:var(--panel)}
 .draft-tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+/* Adding without dragging (ADR-0174): an armed palette tool, and the small editor that opens where you click */
+.draw-palette button{cursor:pointer}
+.draw-palette button[aria-pressed="true"]{background:var(--state);color:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent)}
+.canvas.placing,.canvas.placing svg *{cursor:crosshair !important}
+.inline-edit{position:absolute;z-index:6;width:230px;gap:6px;padding:10px;background:var(--panel);border:1px solid var(--accent);border-radius:8px;box-shadow:0 10px 28px rgba(27,33,48,.2)}
+.inline-edit .inline-title{margin:0;font-size:.8rem;font-weight:600;color:var(--ink)}
+.inline-edit .draft-tools{margin-top:2px;flex-wrap:nowrap}
+.inline-edit .draft-tools .primary{flex:1;padding:4px 8px;font-size:.82rem}
+.inline-edit .draft-tools .quiet{padding:4px 9px}
 .msg.draft{background:var(--busy-bg);padding:9px 11px;border-radius:12px;font-size:.88rem;border:1px dashed var(--state-line)}
 .who{font-size:.68rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:1px 6px;border-radius:999px;margin-right:6px}
 .who.ai{background:#efe7fb;color:#5b2ea6}

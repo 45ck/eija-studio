@@ -100,6 +100,7 @@
       const cell = graph.getSelectionCell();
       select(cell ? cell.id : "", false);
     });
+    wireCanvas(graph);
     fit();
     for (const f of hooks.redraw) f();
   }
@@ -118,7 +119,7 @@
   const current = () => (hooks.diffGraph && hooks.diffGraph()) || ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: componentGraph, review: PlayReview.graph() })[tab];
   const PANELS = { states: "canvas", classes: "class-canvas", usecases: "usecase-canvas", screens: "screens", components: "component-canvas", laws: "laws", review: "review", access: "access-panel" };
   const HINTS = {
-    states: "Drag from the palette to draw a state, a transition or the initial state; select an element to change or remove it. Drawn changes join the plan for you to preview; nothing is saved.",
+    states: "Pick State, Transition or Initial in the palette, then click the diagram (or drag it there). Double-click empty space for a new state, a state to rename it. Changes join the plan for you to preview; nothing is saved.",
     classes: "Select a class to see its attributes and associations.",
     usecases: "Select a use case to inspect it. Double-click one to design its screen.",
     screens: "Design each use case's screen. The design check runs as you edit; Build & run uses these screens.",
@@ -923,11 +924,147 @@
     }) : [el("li", "Nothing yet. Look at an AI step on the diagram, untick one the policy refuses, or build and simulate an AI change.")]));
   }
 
+  // Adding without dragging (ADR-0174), after draw.io and Visio: click a palette item, then the diagram, to place it;
+  // double-click empty space for a state, a state to rename it, a transition to change who may take it. Each opens a
+  // small editor where it happens: Enter adds the step to the plan, Escape drops it. Dragging from the palette still works.
+  let tool = null, toolFrom = null, editor = null;
+  const reviewing = () => document.body.dataset.view === "review";
+  const TOOL_HINTS = { state: "Click the diagram to place a state, or a state to put it after that one.",
+    transition: "Click the state the transition leaves.", initial: "Click the state records start in." };
+
+  function arm(kind) {
+    if (reviewing()) return;
+    closeEditor();
+    tool = tool === kind ? null : kind;
+    toolFrom = null;
+    for (const b of $("draw-palette").querySelectorAll("button")) b.setAttribute("aria-pressed", String(b.dataset.kind === tool));
+    $("canvas").classList.toggle("placing", Boolean(tool));
+    $("canvas-help").textContent = tool ? TOOL_HINTS[tool] + " Escape cancels." : HINTS.states;
+    if (tool) {
+      if (tab !== "states") showTab("states");
+      $("canvas").focus({ preventScroll: true });
+    }
+  }
+
+  function closeEditor() {
+    if (!editor) return;
+    editor.remove();
+    editor = null;
+    if (!tool) $("canvas-help").textContent = HINTS.states;
+  }
+
+  // The editor sits over the diagram at (x, y), in the canvas's own pixels. `show` names the fields of formFor's spec to
+  // show; the others keep their values.
+  function inlineEdit(title, spec, x, y, show = spec.fields.map(([text]) => text)) {
+    closeEditor();
+    const box = $("canvas"), form = el("form", undefined, { class: "draft-form inline-edit", "aria-label": title });
+    form.append(el("p", title, { class: "inline-title" }));
+    for (const [text, control] of spec.fields) if (show.includes(text)) form.append(field(text, control));
+    const tools = el("div", undefined, { class: "draft-tools" }), cancel = el("button", "×", { type: "button", class: "quiet", "aria-label": "Drop it", title: "Drop it (Escape)" });
+    tools.append(el("button", "Add to the plan", { type: "submit", class: "primary" }), cancel);
+    form.append(tools);
+    cancel.addEventListener("click", () => { closeEditor(); box.focus({ preventScroll: true }); });
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const step = spec.make();
+      closeEditor();
+      box.focus({ preventScroll: true });
+      addStep(step);
+    });
+    form.addEventListener("keydown", (event) => {
+      event.stopPropagation(); // Delete and Backspace edit the name, not the diagram
+      if (event.key === "Escape") { event.preventDefault(); closeEditor(); box.focus({ preventScroll: true }); }
+      else if (event.key === "Enter" && event.target.tagName === "SELECT") { event.preventDefault(); form.requestSubmit(); }
+    });
+    box.append(form);
+    editor = form;
+    const w = form.offsetWidth, h = form.offsetHeight;
+    form.style.left = Math.max(6, Math.min(x, box.clientWidth - w - 6)) + "px";
+    form.style.top = Math.max(6, Math.min(y, box.clientHeight - h - 6)) + "px";
+    $("canvas-help").textContent = "Enter adds it to the plan; Escape cancels. The plan previews it; nothing is saved.";
+    const first = form.querySelector("input, select");
+    first.focus();
+    if (first.select) first.select();
+  }
+
+  function stateAt(cell) { return cell && cell.id && cell.id.startsWith("state:") ? cell.id.slice(6) : null; }
+
+  function cellBox(cell) {
+    const s = graph.view.getState(cell);
+    return s ? { x: s.x, y: s.y, width: s.width, height: s.height } : null;
+  }
+
+  function pointIn(event) {
+    const r = $("canvas").getBoundingClientRect();
+    return [event.clientX - r.left, event.clientY - r.top];
+  }
+
+  function newState(x, y, after) {
+    const spec = formFor("state", after);
+    inlineEdit(after ? `New state after ${after}` : "New state", spec, x, y, ["Name"]);
+  }
+
+  function renameState(cell) {
+    const s = stateAt(cell), b = cellBox(cell);
+    if (!s || !b) return;
+    inlineEdit(`Rename ${s}`, formFor("rename", s), b.x, b.y + b.height + 4);
+  }
+
+  function changeRole(cell) {
+    const t = transition(cell.id.slice(11)), [x, y] = cellBox(cell) ? [cellBox(cell).x, cellBox(cell).y] : [20, 20];
+    if (!t) return; // drawn in this plan: change it in the plan instead
+    const role = choose(packInfo.roles, t.role);
+    inlineEdit(`Who may take ${t.action}`, { fields: [["Who may take it", role]], make: () => ({ kind: "set_role", transition: t.id, role: role.value }) },
+      x + 8, y + 8);
+  }
+
+  function onCanvasClick(cell, event) {
+    if (!tool || !event || reviewing()) return;
+    const [x, y] = pointIn(event), s = stateAt(cell);
+    if (tool === "state") {
+      arm(null);
+      newState(x, y, s);
+    } else if (tool === "initial") {
+      if (!s) return;
+      arm(null);
+      addStep({ kind: "set_initial", state: s });
+    } else if (!s) {
+      $("canvas-help").textContent = (toolFrom ? `From ${toolFrom}: click the state it goes to.` : TOOL_HINTS.transition) + " Escape cancels.";
+    } else if (!toolFrom) {
+      toolFrom = s;
+      $("canvas-help").textContent = `From ${s}: now click the state it goes to (the same state for a self-transition). Escape cancels.`;
+    } else {
+      const from = toolFrom, spec = formFor("transition", s), b = cellBox(cell); // below the target, leaving it in view
+      spec.fields[0][1].value = from;
+      arm(null);
+      inlineEdit(`Transition ${from} → ${s}`, spec, b ? b.x : x, b ? b.y + b.height + 6 : y, ["Action", "Who may take it"]);
+    }
+  }
+
+  function onCanvasDoubleClick(cell, event) {
+    if (tool || !event || reviewing()) return;
+    if (!cell) {
+      const [x, y] = pointIn(event);
+      newState(x, y, null);
+    } else if (stateAt(cell)) renameState(cell);
+    else if (cell.id && cell.id.startsWith("transition:")) changeRole(cell);
+    else return;
+    event.preventDefault();
+  }
+
+  function wireCanvas(g) {
+    const { InternalEvent } = maxgraph;
+    g.addListener(InternalEvent.CLICK, (_sender, evt) => onCanvasClick(evt.getProperty("cell"), evt.getProperty("event")));
+    g.addListener(InternalEvent.DOUBLE_CLICK, (_sender, evt) => onCanvasDoubleClick(evt.getProperty("cell"), evt.getProperty("event")));
+  }
+
   function startDrawing() {
     const box = $("canvas");
     for (const b of $("draw-palette").querySelectorAll("button")) {
-      b.addEventListener("dragstart", (event) => { event.dataTransfer.setData("text/x-eija-kind", b.dataset.kind); event.dataTransfer.effectAllowed = "copy"; });
-      b.addEventListener("click", () => drawForm(b.dataset.kind, null));
+      b.setAttribute("aria-pressed", "false");
+      b.addEventListener("dragstart", (event) => { arm(null); event.dataTransfer.setData("text/x-eija-kind", b.dataset.kind); event.dataTransfer.effectAllowed = "copy"; });
+      // A pointer click arms the tool; Enter or Space on the button opens the full form, so the keyboard needs no pointing.
+      b.addEventListener("click", (event) => (event.detail > 0 ? arm(b.dataset.kind) : drawForm(b.dataset.kind, null)));
     }
     box.addEventListener("dragover", (event) => {
       if (!event.dataTransfer.types.includes("text/x-eija-kind")) return;
@@ -941,16 +1078,31 @@
       box.classList.remove("drop-over");
       if (!kind) return;
       event.preventDefault();
-      const r = box.getBoundingClientRect(), cell = graph.getCellAt(event.clientX - r.left + box.scrollLeft, event.clientY - r.top + box.scrollTop);
-      drawForm(kind, cell && cell.id && cell.id.startsWith("state:") ? cell.id.slice(6) : null);
+      const [x, y] = pointIn(event), s = stateAt(graph.getCellAt(x, y));
+      if (kind === "state") newState(x, y, s);
+      else if (kind === "initial" && s) addStep({ kind: "set_initial", state: s });
+      else if (kind === "transition" && s) { // dropped on the state it leaves: now pick where it goes
+        arm("transition");
+        onCanvasClick(graph.getCellAt(x, y), event);
+      } else drawForm(kind, s);
     });
     box.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && (tool || editor)) {
+        arm(null);
+        closeEditor();
+        event.preventDefault();
+        return;
+      }
       if (event.key !== "Delete" && event.key !== "Backspace") return;
       if (selected.startsWith("state:")) addStep({ kind: "remove_state", state: selected.slice(6) });
       else if (selected.startsWith("transition:")) addStep({ kind: "remove_transition", transition: selected.slice(11) });
       else return;
       event.preventDefault();
     });
+    // Clicking elsewhere drops an empty editor; one with something typed stays until Enter or Escape.
+    document.addEventListener("pointerdown", (event) => {
+      if (editor && !editor.contains(event.target) && !editor.querySelector("input")?.value.trim()) closeEditor();
+    }, true);
   }
 
   function choose(values, chosen, text = (v) => v) {

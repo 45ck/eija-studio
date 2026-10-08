@@ -285,7 +285,7 @@
     (document.querySelector(".bar .brand") || document.body).after(badge);
     // The state machine's hint talks about drawing; say what this view is for instead.
     const hint = $("canvas-help"), reword = () => {
-      if (hint.textContent.startsWith("Drag from the palette")) hint.textContent = "Select an element to inspect it. Simulate and the run bar show how records move; Permissions shows who can do what.";
+      if (hint.textContent.startsWith("Pick State, Transition")) hint.textContent = "Select an element to inspect it. Simulate and the run bar show how records move; Permissions shows who can do what.";
     };
     new MutationObserver(reword).observe(hint, { childList: true });
     reword();
