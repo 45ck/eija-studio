@@ -26,12 +26,13 @@ def run(scene: Scene, server: RunningServer) -> None:
 
 
 def _draw_a_state(scene: Scene) -> None:
-    scene.caption("A library loan as a UML state machine. Drag a new state onto it.")
+    scene.caption("A library loan as a UML state machine. Pick State, click the diagram, name it.")
     canvas = scene.page.locator("#canvas").bounding_box()
     width, height = (canvas["width"], canvas["height"]) if canvas else (800.0, 600.0)
-    scene.drag('#draw-palette [data-kind="state"]', "#canvas", position=(width * 0.82, height * 0.82))
-    scene.type_text(".draft-form input", "Lost")
-    scene.click('.draft-form button[type="submit"]')
+    scene.click('#draw-palette [data-kind="state"]')
+    scene.click_at("#canvas", (width * 0.82, height * 0.82))
+    scene.type_text(".inline-edit input", "Lost")
+    scene.click('.inline-edit button[type="submit"]')
     scene.expect_text(f"{CARD} .ripple", "LoanState gains the literal Lost", timeout_ms=60_000)
     scene.caption("The change ripples. Every tab shows how many of its elements it touches.")
     scene.highlight(".tabs", duration_ms=1800)

@@ -96,11 +96,11 @@
         <button id="zoom-out" type="button" class="quiet" aria-label="Zoom out">−</button>
       </div>
       <div id="plan-banner" class="plan-banner" role="status" hidden><span id="plan-banner-text"></span><span class="plan-banner-tools"><button id="plan-review" type="button" class="quiet">Review the change</button><button id="plan-back" type="button" class="quiet">Back to the model</button></span></div>
-      <div id="draw-palette" class="draw-palette" role="toolbar" aria-label="UML palette: drag onto the diagram, or press">
+      <div id="draw-palette" class="draw-palette" role="toolbar" aria-label="UML palette: pick one, then click the diagram, or drag it there">
         <span class="palette-title">Draw</span>
-        <button type="button" draggable="true" data-kind="state" title="Drag onto the diagram to add a state"><span class="glyph state" aria-hidden="true"></span>State</button>
-        <button type="button" draggable="true" data-kind="transition" title="Drag onto the state it leaves"><span class="glyph" aria-hidden="true">→</span>Transition</button>
-        <button type="button" draggable="true" data-kind="initial" title="Drag onto the state records start in"><span class="glyph initial" aria-hidden="true"></span>Initial</button>
+        <button type="button" draggable="true" data-kind="state" title="Click, then click the diagram to place a state (or drag it there)"><span class="glyph state" aria-hidden="true"></span>State</button>
+        <button type="button" draggable="true" data-kind="transition" title="Click, then click the state it leaves and the state it goes to"><span class="glyph" aria-hidden="true">→</span>Transition</button>
+        <button type="button" draggable="true" data-kind="initial" title="Click, then click the state records start in"><span class="glyph initial" aria-hidden="true"></span>Initial</button>
       </div>
       <div id="canvas" class="canvas" tabindex="0" aria-describedby="canvas-help" role="tabpanel" aria-labelledby="tab-states"></div>
       <div id="diff-view" class="diff-view" role="region" aria-label="The change on the state machine" hidden></div>

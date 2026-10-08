@@ -58,12 +58,13 @@ def _build_and_simulate(scene: Scene) -> None:
 
 
 def _draw(scene: Scene) -> None:
-    scene.caption("Design in place. Drag a state from the palette onto the diagram.")
+    scene.caption("Design in place. Pick State in the palette, click the diagram and name it there.")
     canvas = scene.page.locator("#canvas").bounding_box()
     width, height = (canvas["width"], canvas["height"]) if canvas else (800.0, 600.0)
-    scene.drag('#draw-palette [data-kind="state"]', "#canvas", position=(width * 0.82, height * 0.82))
-    scene.type_text(".draft-form input", "Lost")
-    scene.click('.draft-form button[type="submit"]')
+    scene.click('#draw-palette [data-kind="state"]')
+    scene.click_at("#canvas", (width * 0.82, height * 0.82))
+    scene.type_text(".inline-edit input", "Lost")
+    scene.click('.inline-edit button[type="submit"]')
     scene.expect_text(".plan-verdict", "The policy allows the result")
     scene.caption("Then a transition: who may take it, and where it goes.")
     scene.click("#outline-states button:has-text('Overdue')")
