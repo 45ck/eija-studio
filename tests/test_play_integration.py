@@ -1,6 +1,7 @@
 """PlayIDE features working together on the workbench shell, in a real browser: the chat's own example plan passes
 the policy for the open pack, a paused run keeps who tried what in view, a role in the outline opens the Permissions
-tab, and the plan banner does not offer to open the Review tab while it is open.
+tab, the plan banner does not offer to open the Review tab while it is open, asking whether a
+state can be reached at all treats Yes as expected, and the status bar names the selection as the outline does.
 
 Marked `browser`: it runs only with EIJA_BROWSER_TESTS=1 (NOT_RUN otherwise). It uses the installed Chrome, or the
 Chromium at EIJA_CHROMIUM, and never downloads a browser.
@@ -53,8 +54,14 @@ def test_playide_features_fit_together_in_a_real_browser(pack):
             # A role is not a diagram element: it opens what that role may do.
             page.locator("#outline-roles button").first.click()
             page.wait_for_selector("#access-panel:not([hidden])")
+            # Asked whether a record can reach a state at all, Yes is the expected answer, not a warning.
+            page.click(".reach button.primary")
+            page.wait_for_selector(".reach-answer .verdict.ok")
             page.click("#tab-states")
             # Paused on a breakpoint, the panel shows who tried what, not only the foot of the log.
+            page.locator("#outline-transitions button").first.click()
+            # The status bar names the selection as the outline does, not by its id.
+            assert page.text_content("#status-selection") == "transition " + page.locator("#outline-transitions button").first.text_content()
             page.locator("#outline-states button").nth(1).click()
             page.keyboard.press("F9")
             page.click("#run-play")

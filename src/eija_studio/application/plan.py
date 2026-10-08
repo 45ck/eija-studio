@@ -73,6 +73,15 @@ def _statuses(model: Workflow, pack: Pack, transactions: list[Transaction], acce
     return status
 
 
+def _refusal(error: DomainError, pack: Pack) -> dict[str, Any]:
+    """Why the policy refused the accepted steps, with the pack's own words for each law they would break."""
+    details = error.details or {}
+    refs = details.get("refs", [])
+    laws = {f"law:{law.id}": law.description for law in pack.laws}
+    return {"codes": details.get("codes", [error.code]), "refs": refs, "message": error.message,
+            "laws": [laws[r] for r in refs if r in laws]}
+
+
 def preview_plan(model: Workflow, pack: Pack, transactions: list[Transaction], accepted: list[bool]) -> dict[str, Any]:
     """What the accepted steps would make of `model`. Each step reports whether it applies after the accepted ones
     before it; the accepted steps together are then checked against the policy as one change."""
@@ -87,8 +96,7 @@ def preview_plan(model: Workflow, pack: Pack, transactions: list[Transaction], a
     try:
         candidate = apply_transactions(model, chosen, pack)
     except DomainError as error:
-        details = error.details or {}
-        return result | {"codes": details.get("codes", [error.code]), "refs": details.get("refs", []), "message": error.message}
+        return result | _refusal(error, pack)
     return result | {"legal": True, "candidate": candidate.model_dump(mode="json"),
                      "candidate_semantic_hash": candidate.semantic_hash, "diff": diff_summary(model, candidate)}
 

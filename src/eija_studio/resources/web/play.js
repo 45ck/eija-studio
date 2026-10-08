@@ -175,7 +175,7 @@
     } else {
       const t = transition(id.slice(11));
       box.append(el("h3", `${t.action} (${t.id})`));
-      row(dl, "From → to", `${t.from_state} → ${t.to_state}`);
+      row(dl, "Path", `${t.from_state} → ${t.to_state}`);
       row(dl, "Who", t.role);
       row(dl, "Guards", t.guards.join(", "));
       row(dl, "Effects", t.required_effects.join(", ") || "none");
@@ -545,7 +545,9 @@
       : result.legal ? `${result.accepted} of ${plan.steps.length} steps accepted. The policy allows the result: ${changes(result.diff)}.`
       : result.codes.includes("PLAN_STEP_DOES_NOT_APPLY")
         ? `Step ${result.steps.findIndex((x) => x.status === "does_not_apply") + 1} does not apply after the steps you kept (${result.steps.find((x) => x.status === "does_not_apply").message}).`
-        : `The policy refuses the accepted steps: ${result.codes.join(", ") || result.message}.`;
+        : (result.laws && result.laws.length
+          ? `The policy refuses the accepted steps. They would break: ${result.laws.join(" ")} (${result.codes.join(", ")})`
+          : `The policy refuses the accepted steps: ${result.codes.join(", ") || result.message}.`);
     plan.card.querySelector(".plan-tools .primary").disabled = !result.legal && !plan.previewing;
     plan.card.querySelector(".plan-tools .review-it").disabled = !result.legal;
     renderHealth();

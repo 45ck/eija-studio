@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### 8 October 2026: PlayIDE polish
+
+- A plan the policy refuses now says which laws it would break, in the pack's own words ("Only a librarian checks a loan out."), with the policy codes after them.
+- On the Permissions tab, "Can a record reach this state at all?" shows Yes as a good answer and No as a bad one. The red Yes is kept for "without this role" questions, where it means the role can be bypassed.
+- The status bar names the selection as the outline does ("transition CheckOut", not its id), and the inspector labels a transition's states "Path".
+
 ### 8 October 2026: PlayIDE end-to-end fixes
 
 Found by using every PlayIDE feature together on the workbench shell, as a UML-literate engineer would:
