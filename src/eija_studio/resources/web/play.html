@@ -5,8 +5,10 @@
 <title>PlayIDE</title>
 <link rel="stylesheet" href="/assets/play.css">
 <link rel="stylesheet" href="/assets/play-assist.css">
+<link rel="stylesheet" href="/assets/play-review.css">
 <script src="/assets/vendor/dagre.min.js" defer></script>
 <script src="/assets/vendor/maxgraph.min.js" defer></script>
+<script src="/assets/play-review.js" defer></script>
 <script src="/assets/play.js" defer></script>
 <script src="/assets/play-run.js" defer></script>
 <script src="/assets/play-laws.js" defer></script>
@@ -52,12 +54,13 @@
         <button id="tab-screens" role="tab" type="button" aria-selected="false" aria-controls="screens">Screens</button>
         <button id="tab-components" role="tab" type="button" aria-selected="false" aria-controls="component-canvas">Components</button>
         <button id="tab-laws" role="tab" type="button" aria-selected="false" aria-controls="laws">Laws</button>
+        <button id="tab-review" role="tab" type="button" aria-selected="false" aria-controls="review">Review</button>
       </div>
       <button id="fit" type="button" class="quiet">Fit</button>
       <button id="zoom-in" type="button" class="quiet" aria-label="Zoom in">+</button>
       <button id="zoom-out" type="button" class="quiet" aria-label="Zoom out">−</button>
     </div>
-    <div id="plan-banner" class="plan-banner" role="status" hidden><span id="plan-banner-text"></span><button id="plan-back" type="button" class="quiet">Back to the model</button></div>
+    <div id="plan-banner" class="plan-banner" role="status" hidden><span id="plan-banner-text"></span><span class="plan-banner-tools"><button id="plan-review" type="button" class="quiet">Review the change</button><button id="plan-back" type="button" class="quiet">Back to the model</button></span></div>
     <div id="draw-palette" class="draw-palette" role="toolbar" aria-label="UML palette: drag onto the diagram, or press">
       <span class="palette-title">Draw</span>
       <button type="button" draggable="true" data-kind="state" title="Drag onto the diagram to add a state"><span class="glyph state" aria-hidden="true"></span>State</button>
@@ -89,6 +92,21 @@
       <p id="laws-summary" class="laws-summary" role="status" aria-live="polite"></p>
       <ol id="laws-list" class="law-list"></ol>
       <p id="laws-limits" class="muted small"></p>
+    </div>
+    <div id="review" class="review" role="tabpanel" aria-labelledby="tab-review" hidden>
+      <div class="review-head">
+        <div><h2 id="review-title">Review the change</h2><p id="review-head-text" class="muted small" role="status" aria-live="polite"></p></div>
+        <div class="review-head-tools"><span id="review-progress" class="small" role="status" aria-live="polite"></span>
+          <button id="review-finish" type="button" class="primary" disabled>Finish review</button></div>
+      </div>
+      <div class="review-body">
+        <div id="review-canvas" class="canvas review-canvas" tabindex="0" aria-label="The change on the state machine: added in green, removed dashed in red, changed in amber"></div>
+        <div class="review-list">
+          <div id="review-sim" class="review-sim"></div>
+          <ol id="review-items" class="review-items" aria-labelledby="review-title"></ol>
+          <section id="review-summary" class="review-summary" aria-live="polite" hidden></section>
+        </div>
+      </div>
     </div>
     <p id="canvas-help" class="hint"></p>
   </section>

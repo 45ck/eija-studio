@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/play.py
   title: interfaces/play.py
   hash_method: ast-api-v1
-  sha256: 6a3b2fdaa82682fda0a72a89c7827181ddbc94430e584b7f0c2cd0a09a0cd222
-notes_baseline: 2110e6d94fab150493ec81cc31dac5857db9e3c04f738571e4f1edf1efee1ed0
+  sha256: 7ffaef19b97907ee0c274e2aa2b44af58e9517279216cab9aa0647e3ed654e79
+notes_baseline: bfed6cb5b979e6a88e564fa43f57ffdb0b3de91ab79578700e3848fa08c4b8e2
 ---
 
 # interfaces.play
@@ -34,7 +34,8 @@ Simulate, seeded simulated users whose every step the kernel decides (ADR-0152),
 build of designed screens (ADR-0154), the component diagram read from the files the app is built from (ADR-0155), the chat's plan mode, whose accepted
 steps can be previewed, built and simulated but never saved or applied from here (ADR-0156), the ripple of a plan
 across every diagram with the follow-on edits the proposer suggests, each re-checked (ADR-0158), and the run bar's
-seeded run log with breakpoints and Stop (ADR-0160).
+seeded run log with breakpoints and Stop (ADR-0160), and the review of a change as a UML diff whose behaviour
+the kernel runs on both sides (ADR-0175).
 
 Build & run reuses `eija build` (ADR-0150): the app is generated into the workspace, its kernel conformance tests run,
 and only a PASSing app is started, as a separate local process on a free loopback port. One app runs at a time; a new
@@ -50,6 +51,7 @@ _Symbol pages are generated for the domain and application layers only._
 * [`application/components`](/modules/application/components.md)
 * [`application/law_proof`](/modules/application/law_proof.md)
 * [`application/plan`](/modules/application/plan.md)
+* [`application/review`](/modules/application/review.md)
 * [`application/ripple`](/modules/application/ripple.md)
 * [`application/simulation`](/modules/application/simulation.md)
 * [`domain/data`](/modules/domain/data.md)
@@ -71,6 +73,7 @@ _No curated notes yet._
 * [application.components](/modules/application/components.md) - The component diagram of an app built from the model (ADR-0155), extracted from the generated files themselves.
 * [application.law_proof](/modules/application/law_proof.md) - Prove a pack's laws over every run the kernel allows (ADR-0166).
 * [application.plan](/modules/application/plan.md) - Plan mode for the PlayIDE chat (ADR-0156): an AI proposes a change as numbered typed steps; the person accepts or rejects each one and sees what the accepted o…
+* [application.review](/modules/application/review.md) - Review a model change in PlayIDE instead of a pull request (ADR-0175).
 * [application.ripple](/modules/application/ripple.md) - Ripple (ADR-0158): what one change to the state machine does to every other diagram of the same system, and the follow-on edits that would keep them in agreeme…
 * [application.simulation](/modules/application/simulation.md) - Seeded simulation of people using the app built from a model (ADR-0152).
 * [domain.data](/modules/domain/data.md) - The data model of a pack, shown as a UML class diagram (ADR-0153): entities, typed attributes and associations.
