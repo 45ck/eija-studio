@@ -140,7 +140,7 @@ class OfflinePlanProposer:
         resolver = _Clause(model, pack)
         steps = [resolver.resolve(c) for c in clauses]
         if all(steps):
-            return {"summary": f"{len(steps)} step(s) from your request", "meaning": None,
+            return {"summary": f"{len(steps)} step{'' if len(steps) == 1 else 's'} from your request", "meaning": None,
                     "steps": [{"transaction": s, "why": f"You asked: “{c}”"} for s, c in zip(steps, clauses, strict=True)]}
         planned = _meaning_plan(request, pack) if not any(steps) else None  # never drop clauses that were read
         if planned is None:
