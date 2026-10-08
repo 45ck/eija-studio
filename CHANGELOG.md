@@ -6,6 +6,8 @@
 
 - A plan the policy refuses now says which laws it would break, in the pack's own words ("Only a librarian checks a loan out."), with the policy codes after them.
 - On the Permissions tab, "Can a record reach this state at all?" shows Yes as a good answer and No as a bad one. The red Yes is kept for "without this role" questions, where it means the role can be bypassed.
+- With nothing to review, the Review tab's message spans the tab instead of sitting beside an empty column, and it points to the review workbench rather than a URL parameter.
+- Step counts read "1 step" rather than "1 step(s)", and PlayIDE has a tab icon (the page had asked for a missing favicon).
 - The status bar names the selection as the outline does ("transition CheckOut", not its id), and the inspector labels a transition's states "Path".
 
 ### 8 October 2026: PlayIDE end-to-end fixes

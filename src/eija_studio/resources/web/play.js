@@ -542,7 +542,7 @@
     const verdict = plan.card.querySelector(".plan-verdict");
     verdict.className = "plan-verdict " + (result.legal ? "ok" : "bad");
     verdict.textContent = !result.accepted ? "No step accepted: nothing would change."
-      : result.legal ? `${result.accepted} of ${plan.steps.length} steps accepted. The policy allows the result: ${changes(result.diff)}.`
+      : result.legal ? `${result.accepted} of ${plan.steps.length} step${plan.steps.length === 1 ? "" : "s"} accepted. The policy allows the result: ${changes(result.diff)}.`
       : result.codes.includes("PLAN_STEP_DOES_NOT_APPLY")
         ? `Step ${result.steps.findIndex((x) => x.status === "does_not_apply") + 1} does not apply after the steps you kept (${result.steps.find((x) => x.status === "does_not_apply").message}).`
         : (result.laws && result.laws.length

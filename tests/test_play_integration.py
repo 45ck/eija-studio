@@ -37,6 +37,11 @@ def test_playide_features_fit_together_in_a_real_browser(pack):
             page.on("pageerror", lambda error: errors.append(str(error)))
             page.goto(f"{server.base_url}/play#{server.token}")
             page.wait_for_selector("body[data-ready=true]", timeout=60_000)
+            # With nothing to review, the Review tab's message takes the whole tab rather than leaving an empty column.
+            page.click("#tab-review")
+            page.wait_for_selector("#review[data-empty] .review-canvas .empty")
+            assert page.is_hidden("#review .review-list")
+            page.click("#tab-states")
             # The example the chat offers is a plan the policy accepts, sent exactly as shown.
             page.fill("#chat-input", page.text_content("#chat-example"))
             page.click("#chat-send")
@@ -49,6 +54,7 @@ def test_playide_features_fit_together_in_a_real_browser(pack):
             page.click("#plan-review")
             page.wait_for_selector("#review:not([hidden])")
             assert page.is_hidden("#plan-review")  # already there
+            page.wait_for_selector("#review:not([data-empty]) .review-list")
             page.click("#plan-back")
             page.click("#tab-states")
             # A role is not a diagram element: it opens what that role may do.
