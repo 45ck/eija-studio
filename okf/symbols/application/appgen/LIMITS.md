@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py#LIMITS
   title: application/appgen.py
   hash_method: ast-v2
-  sha256: e5b57fe7f8ed6749a17a0685c15b6935fb67be2de3c6b4df48e3aaac15e4b61c
-notes_baseline: 1095c7c6d8da677a8c4e9fbed77c0d4eb01b6ecfa0757664e756b0e93d01758c
+  sha256: 988f6e4af934ba48137f400613ee2c88b62bdb5024e94338212378f81c52ffd0
+notes_baseline: 80752003c3a7d83ea841f29436d1a6d77b57bb5ca8afadad1db62ea4ba7f67c7
 ---
 
 # application.appgen.LIMITS
@@ -25,7 +25,7 @@ notes_baseline: 1095c7c6d8da677a8c4e9fbed77c0d4eb01b6ecfa0757664e756b0e93d01758c
 |---|---|
 | Kind | constant |
 | Module | [`application/appgen`](/modules/application/appgen.md) |
-| Signature | `LIMITS = ('The app runs the EIJA kernel itself (eija-studio must be installed). Records created under an earlier model are refused with STALE_INSTANCE.', "Acto…` |
+| Signature | `LIMITS = ('The app runs the EIJA kernel itself (eija-studio must be installed). Records created under an earlier model are refused with STALE_INSTANCE, and und…` |
 | Code | `repo://src/eija_studio/application/appgen.py#LIMITS` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 

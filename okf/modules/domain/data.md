@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/data.py
   title: domain/data.py
   hash_method: ast-api-v1
-  sha256: b8a4dd405b869d5aace90e3d8666889f973c9e86ee8ccdb6225a7866af76f266
-notes_baseline: d190b793893acdfab2834dc2df5e03c4f232f519e54f373a44e9a8cdc249a5f6
+  sha256: 909e8067e61a1d93934143c7751a723a67d67545007d5502abd67640cf9a00f0
+notes_baseline: 5947c6b707e41160b0f1339dccdb4e2a6e4724c8601539dc658849979aaffb6c
 ---
 
 # domain.data

@@ -11,7 +11,7 @@ import json
 import re
 from datetime import date
 from pathlib import Path
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
 from pydantic import Field, ValidationError, model_validator
 
@@ -29,7 +29,7 @@ class Attribute(Contract):
     name: str = Field(pattern=ATTRIBUTE_NAME)
     type: FieldType
     required: bool = False
-    choices: tuple[str, ...] = Field(default=(), max_length=32)  # only for type "choice"
+    choices: tuple[Annotated[str, Field(min_length=1, max_length=60)], ...] = Field(default=(), max_length=32)  # only for "choice"; "" means unset
     max_length: int = Field(default=200, ge=1, le=5000)  # only for type "text"
     description: str = Field(default="", max_length=300)
 

@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from eija_studio.application.appgen import data_cases
 from eija_studio.domain.data import DataModel, check_values, data_for, load_data, parse_data
 from eija_studio.domain.models import DomainError
 from eija_studio.domain.pack import load_pack
@@ -53,12 +54,21 @@ def test_incoherent_data_models_are_refused():
         with pytest.raises(DomainError) as error:
             parse_data(change(dict(document)), "library-loan")
         assert error.value.code == code
-    bad_choice = {"name": "x", "type": "choice"}
-    with pytest.raises(ValueError):
-        DataModel.model_validate({"id": "a", "record": "A", "entities": [{"name": "A", "attributes": [bad_choice]}]})
+    for bad_choice in ({"name": "x", "type": "choice"}, {"name": "x", "type": "choice", "choices": ["", "B"]}):
+        with pytest.raises(ValueError):  # no choices, or an empty literal: "" means unset, so it could never be chosen
+            DataModel.model_validate({"id": "a", "record": "A", "entities": [{"name": "A", "attributes": [bad_choice]}]})
 
 
 def test_the_digest_changes_with_the_data_model():
     data = loan()
     renamed = DataModel.model_validate(data.model_dump() | {"record": "Item"})
     assert data.digest != renamed.digest and data.digest == loan().digest
+
+
+def test_no_app_is_built_when_no_fixture_actor_could_create_a_record():
+    pack = load_pack(ROOT / "packs" / "library-loan")
+    actors = [a.model_copy(update={"active": False}) for a in pack.fixtures.actors]
+    idle = pack.model_copy(update={"fixtures": pack.fixtures.model_copy(update={"actors": tuple(actors)})})
+    with pytest.raises(DomainError) as error:
+        data_cases(idle, loan())
+    assert error.value.code == "NO_ACTIVE_ACTOR"

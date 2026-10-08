@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/data.py#Attribute
   title: domain/data.py
   hash_method: ast-sig-v1
-  sha256: dcc5bdc68dfd6f0e0ce4308dcfe587eeeb610a2f233430401d770f97e3e3fe1a
-notes_baseline: 371bf540ec15eb009b81ee6922b30b675fc281173152224445fca6a6101a664e
+  sha256: 9b66e77d11a3c7a3162a996904dbe15eb9d6000b2563174a5daac0c7fe354a1c
+notes_baseline: e6b4c50cf90dd8304d74378a6dba3f62be7426011a4797ac5c67188e5018d995
 ---
 
 # domain.data.Attribute
@@ -40,7 +40,7 @@ _The source carries no docstring._
 | `name` | `str` | `Field(pattern=ATTRIBUTE_NAME)` |
 | `type` | `FieldType` |  |
 | `required` | `bool` | `False` |
-| `choices` | `tuple[str, ...]` | `Field(default=(), max_length=32)` |
+| `choices` | `tuple[Annotated[str, Field(min_length=1, max_length=60)], ...]` | `Field(default=(), max_length=32)` |
 | `max_length` | `int` | `Field(default=200, ge=1, le=5000)` |
 | `description` | `str` | `Field(default='', max_length=300)` |
 

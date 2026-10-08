@@ -23,7 +23,7 @@ UNDECLARED_ACTION = "UndeclaredAction"
 UNKNOWN_ACTOR = "unknown-actor"
 LIMITS = (
     "The app runs the EIJA kernel itself (eija-studio must be installed). Records created under an earlier model are "
-    "refused with STALE_INSTANCE.",
+    "refused with STALE_INSTANCE, and under an earlier data model with STALE_DATA.",
     "Actors are the pack's fixture directory chosen in the UI. That is not authentication.",
     "Notifications are written to an outbox table; nothing is sent.",
     "Conformance covers every state x action x fixture actor x version case, plus replays, against the kernel. "
@@ -119,7 +119,9 @@ def data_cases(pack: Pack, data: DataModel) -> list[dict[str, object]]:
     """Record values to create with, and `check_values`' answer for each: a valid record, then each required value
     missing, each value of the wrong type, each text one character too long, an undeclared choice and an unknown field."""
     entity = data.entity(data.record)
-    creator = next((a.id for a in pack.fixtures.actors if a.active), "")
+    creator = next((a.id for a in pack.fixtures.actors if a.active), None)
+    if creator is None:
+        raise DomainError("NO_ACTIVE_ACTOR", "No fixture actor is active, so nobody could create a record; no app is built")
     valid = {a.name: _sample(a) for a in entity.attributes}
     tries = [("valid", valid), *(bad for a in entity.attributes for bad in _breaks(a, valid)),
              ("unknown field", valid | {absent("extra", {a.name for a in entity.attributes}): "x"})]

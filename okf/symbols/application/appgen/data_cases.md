@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py#data_cases
   title: application/appgen.py
   hash_method: ast-v2
-  sha256: 7ac57ab6ceda84c27b70983cbdc97c14a796842f26d5ca692d839c4913b5761e
-notes_baseline: 3f022638ad05db7c5e0d54679443a06cb4bc888a0ec6184777dac0c3c161d889
+  sha256: 652d520a8df9f66541ca323bddd5dc4531d101eae2b5657e427fc4dbfbbe69e5
+notes_baseline: 85237abfa83c97e379881d5bc9ccbc0ee14aba32c78c5c597992fd3190b53e30
 ---
 
 # application.appgen.data_cases
@@ -46,6 +46,7 @@ _No curated notes yet._
 
 * [application.appgen.absent](/symbols/application/appgen/absent.md) - A name guaranteed not to be in `taken`, so a negative case can never collide with a declared one.
 * [domain.data.DataModel](/symbols/domain/data/DataModel.md) - `class DataModel(Contract)` in `domain/data`.
+* [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
 
 ## Referenced by

@@ -18,8 +18,8 @@ ORACLE = json.loads((Path(__file__).resolve().parent / "oracle.json").read_text(
 
 def seed(svc: service.Service, state: str) -> str:
     """A record already in `state`, written directly so the case starts exactly where the oracle's did."""
-    svc.db.execute("INSERT INTO records(id,case_id,model_hash,state,version) VALUES('r1',?,?,?,0)",
-                   (service.CASE, service.MODEL.semantic_hash, state))
+    svc.db.execute("INSERT INTO records(id,case_id,model_hash,state,version,data_digest) VALUES('r1',?,?,?,0,?)",
+                   (service.CASE, service.MODEL.semantic_hash, state, service.DATA_DIGEST))
     return "r1"
 
 
@@ -60,6 +60,15 @@ class Conformance(unittest.TestCase):
                 else:
                     self.assertEqual({"outcome": "CREATED", "fields": record["fields"]}, case["expect"])
                     self.assertEqual(svc.records()[0]["fields"], case["expect"]["fields"])
+
+    def test_records_from_another_data_model_are_refused(self):
+        """A record whose values another data model checked is never acted on: its values may not fit this one."""
+        case = next(c for c in ORACLE["cases"] if c["expect"]["outcome"] == "COMMITTED")
+        svc = service.Service()
+        record_id = seed(svc, case["state"])
+        svc.db.execute("UPDATE records SET data_digest='an-earlier-data-model' WHERE id=?", (record_id,))
+        self.assertFalse(svc.view(record_id, case["actor"])["record"]["current_model"])
+        self.assertEqual(observe(svc, record_id, case), {"outcome": "REFUSED", "code": "STALE_DATA"})
 
     def test_effects_are_written_once(self):
         for case in ORACLE["cases"]:

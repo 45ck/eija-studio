@@ -24,15 +24,19 @@ CASE = "app"  # the kernel scopes instances and operation bindings to a case; th
 ACTORS = {a.id: a.model_dump() for a in PACK.fixtures.actors}
 DATA = DataModel.model_validate_json((HERE / "data.json").read_text(encoding="utf-8")) if (HERE / "data.json").exists() else None
 RECORD = DATA.entity(DATA.record) if DATA else None  # the class whose instances move through the workflow
+DATA_DIGEST = DATA.digest if DATA else ""  # each record keeps the digest of the data model that checked its values
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS records(id TEXT PRIMARY KEY, case_id TEXT NOT NULL, model_hash TEXT NOT NULL,
     state TEXT NOT NULL, version INTEGER NOT NULL, title TEXT NOT NULL DEFAULT '', created_by TEXT NOT NULL DEFAULT '',
-    fields TEXT NOT NULL DEFAULT '{}');
+    fields TEXT NOT NULL DEFAULT '{}', data_digest TEXT NOT NULL DEFAULT '');
 CREATE TABLE IF NOT EXISTS operations(id TEXT PRIMARY KEY, binding TEXT NOT NULL, result TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS audit(seq INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT NOT NULL, body TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS outbox(id TEXT PRIMARY KEY, record_id TEXT NOT NULL, effect TEXT NOT NULL, recipient TEXT NOT NULL);
 """
+
+MIGRATIONS = {"fields": "ALTER TABLE records ADD COLUMN fields TEXT NOT NULL DEFAULT '{}'",
+              "data_digest": "ALTER TABLE records ADD COLUMN data_digest TEXT NOT NULL DEFAULT ''"}
 
 Refused = DomainError  # what the kernel raises; `code` is its stable refusal code
 
@@ -101,8 +105,10 @@ class Service:
         self.db.row_factory = sqlite3.Row
         self.lock = threading.Lock()
         self.db.executescript(SCHEMA)
-        if "fields" not in {row["name"] for row in self.db.execute("PRAGMA table_info(records)")}:  # data from an older build
-            self.db.execute("ALTER TABLE records ADD COLUMN fields TEXT NOT NULL DEFAULT '{}'")
+        columns = {row["name"] for row in self.db.execute("PRAGMA table_info(records)")}
+        for column, statement in MIGRATIONS.items():  # data from an older build; its records stay stale
+            if column not in columns:
+                self.db.execute(statement)
 
     def _write(self, work):
         with self.lock:
@@ -121,7 +127,7 @@ class Service:
             raise DomainError("NOT_FOUND", "No such record")
         record = dict(row)
         record["fields"] = json.loads(record["fields"])
-        record["current_model"] = record["model_hash"] == MODEL.semantic_hash
+        record["current_model"] = record["model_hash"] == MODEL.semantic_hash and record["data_digest"] == DATA_DIGEST
         return record
 
     def create(self, title: str, actor_id: str, fields: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -139,8 +145,8 @@ class Service:
 
         def work(session: Session) -> dict[str, Any]:
             item = initialise(session, CASE, MODEL, pack=PACK)
-            self.db.execute("UPDATE records SET title=?, created_by=?, fields=? WHERE id=?",
-                            (title, actor_id, canonical(values), item["id"]))
+            self.db.execute("UPDATE records SET title=?, created_by=?, fields=?, data_digest=? WHERE id=?",
+                            (title, actor_id, canonical(values), DATA_DIGEST, item["id"]))
             return self._record(item["id"])
         return self._write(work)
 
@@ -168,6 +174,9 @@ class Service:
     def act(self, record_id: str, actor_id: str, action: str, expected_version: int, operation_id: str) -> dict[str, Any]:
         command = ExecuteCommand(operation_id=operation_id, actor_id=actor_id, instance_id=record_id, action=action,
                                  expected_version=expected_version)
+        row = self.db.execute("SELECT data_digest FROM records WHERE id=?", (record_id,)).fetchone()
+        if row is not None and row["data_digest"] != DATA_DIGEST:  # values never checked by this data model
+            raise DomainError("STALE_DATA", "This record was created under an earlier data model; actions on it are refused")
 
         def work(session: Session) -> dict[str, Any]:
             result = execute(session, CASE, MODEL, command, pack=PACK)
