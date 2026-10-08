@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/sequences.py#LIMITS
   title: application/sequences.py
   hash_method: ast-v2
-  sha256: 357a639385aa663eb5319596c2cd3b6183edcb4c405affda28d8e14b1a0d61a0
-notes_baseline: 013c55af400f8a999df25ac0f6699e5f56cfe61a9d69fab80e263eea8d472471
+  sha256: 5bc01056c05d9b64e385e057bed96f34a96af31d0e0ef7cb86e947c63d2a3180
+notes_baseline: a5bb8f093482fd150bee8e62fca7afee00c8542068afcb9c18bcccea784e1534
 ---
 
 # application.sequences.LIMITS
@@ -25,7 +25,7 @@ notes_baseline: 013c55af400f8a999df25ac0f6699e5f56cfe61a9d69fab80e263eea8d472471
 |---|---|
 | Kind | constant |
 | Module | [`application/sequences`](/modules/application/sequences.md) |
-| Signature | `LIMITS = ["Each sequence is one scenario run by the pack's fixture actors: it shows what those actors can do, not every real actor.", 'Operands hold messages o…` |
+| Signature | `LIMITS = ["Each sequence is a scenario from the pack's scenarios.json (the Tests tab's test cases), run by the pack's fixture actors on one record.", 'A step t…` |
 | Code | `repo://src/eija_studio/application/sequences.py#LIMITS` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
@@ -41,5 +41,5 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Referenced by
 
-* [application.sequences.check_sequences](/symbols/application/sequences/check_sequences.md) - Every sequence checked by the kernel on `model`; with `base` (the model in force) also on it, for the change.
+* [application.sequences.check_sequences](/symbols/application/sequences/check_sequences.md) - Every scenario drawn as a sequence and checked by the kernel on `model`; with `base` (the model in force) also on it, for the change.
 <!-- okf:generated:end links -->

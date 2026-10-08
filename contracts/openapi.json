@@ -390,13 +390,13 @@
     "/api/play/sequences": {
       "post": {
         "summary": "Play Sequences",
-        "description": "The sequence diagrams (the request's, else the pack's, else scenarios from the model in force), each message\nrun through the kernel on the shown model and, when it differs, on the model in force (ADR-0185). Read-only.",
+        "description": "The pack's scenarios (or a draft of them, shared with the Tests tab) drawn as sequence diagrams, each step run\nthrough the kernel on the shown model and, when it differs, on the model in force (ADR-0185). Read-only.",
         "operationId": "play_sequences_api_play_sequences_post",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SequencesRequest"
+                "$ref": "#/components/schemas/ScenariosRequest"
               }
             }
           },
@@ -3326,74 +3326,6 @@
           "interpretation"
         ],
         "title": "Select"
-      },
-      "SequencesRequest": {
-        "properties": {
-          "case_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Case Id"
-          },
-          "model": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/Workflow"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "screens": {
-            "anyOf": [
-              {
-                "additionalProperties": true,
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Screens"
-          },
-          "plan": {
-            "anyOf": [
-              {
-                "items": {
-                  "additionalProperties": true,
-                  "type": "object"
-                },
-                "type": "array",
-                "maxItems": 12
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Plan"
-          },
-          "sequences": {
-            "anyOf": [
-              {
-                "additionalProperties": true,
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Sequences"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "title": "SequencesRequest"
       },
       "SetEffects": {
         "properties": {

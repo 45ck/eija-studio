@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/play.py
   title: interfaces/play.py
   hash_method: ast-api-v1
-  sha256: 6f55956ef828323599e45d9a7ee00bc91d2da7e870a3df13f12c55ea7cb5040c
-notes_baseline: 9edd02e94456fb6c216fb1d790226816efaed555a280c2fb4880adbb108cbbf1
+  sha256: 62d7056d63a314ab70a11e718b701f14e40954d230d13de7318aed024f599b82
+notes_baseline: d2e6b8ef570d96b5e873be7bbb13047389260e5818fd81364bbdf7636fd251dd
 ---
 
 # interfaces.play
@@ -37,7 +37,8 @@ across every diagram with the follow-on edits the proposer suggests, each re-che
 seeded run log with breakpoints and Stop (ADR-0160), who can do what with reachability questions (ADR-0171), and the
 review of a change as a UML diff whose behaviour the kernel runs on both sides (ADR-0175), and how a change looks:
 the model in force and the change on one state machine, removed elements kept as ghosts (ADR-0176), and the law file
-and the scenarios (test cases) as files a person can read, edit as a draft and run here, never saved from here (ADR-0177).
+and the scenarios (test cases) as files a person can read, edit as a draft and run here, never saved from here (ADR-0177), and
+the same scenarios drawn as UML sequence diagrams, every message run on the shown model and on the model in force (ADR-0185).
 
 Build & run reuses `eija build` (ADR-0150): the app is generated into the workspace, its kernel conformance tests run,
 and only a PASSing app is started, as a separate local process on a free loopback port. One app runs at a time; a new
@@ -58,6 +59,7 @@ _Symbol pages are generated for the domain and application layers only._
 * [`application/review`](/modules/application/review.md)
 * [`application/ripple`](/modules/application/ripple.md)
 * [`application/scenario_run`](/modules/application/scenario_run.md)
+* [`application/sequences`](/modules/application/sequences.md)
 * [`application/simulation`](/modules/application/simulation.md)
 * [`domain/data`](/modules/domain/data.md)
 * [`domain/models`](/modules/domain/models.md)
@@ -84,6 +86,7 @@ _No curated notes yet._
 * [application.review](/modules/application/review.md) - Review a model change in PlayIDE instead of a pull request (ADR-0175).
 * [application.ripple](/modules/application/ripple.md) - Ripple (ADR-0158): what one change to the state machine does to every other diagram of the same system, and the follow-on edits that would keep them in agreeme…
 * [application.scenario_run](/modules/application/scenario_run.md) - Run a pack's scenarios (its test cases) through the kernel, and record new ones (ADR-0177).
+* [application.sequences](/modules/application/sequences.md) - The pack's scenarios drawn as UML sequence diagrams the kernel checks (ADR-0185).
 * [application.simulation](/modules/application/simulation.md) - Seeded simulation of people using the app built from a model (ADR-0152).
 * [domain.data](/modules/domain/data.md) - The data model of a pack, shown as a UML class diagram (ADR-0153): entities, typed attributes and associations.
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).

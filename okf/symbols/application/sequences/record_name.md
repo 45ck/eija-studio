@@ -1,7 +1,7 @@
 ---
 type: Function
 title: application.sequences.record_name
-description: 'The record lifeline''s default name and its class: `loan : Loan` when the pack has a data model.'
+description: 'The record lifeline''s name and its class: `loan : Loan` when the pack has a data model.'
 resource: repo://src/eija_studio/application/sequences.py#record_name
 tags:
 - symbol
@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/sequences.py#record_name
   title: application/sequences.py
   hash_method: ast-v2
-  sha256: 145a4767abd970801e594971402c010dbb911fd2907d13c2e67673e7ac096341
-notes_baseline: 3b074059129102af9fdb649777b4fa002c74fd5c0170d5b245d4c628527d35c5
+  sha256: f6e9e1395dd3de9f2f3b302f353771a9e831216475633591462110d757328f6e
+notes_baseline: f179a653faeb56af93f8465e0b4078d57ee301655874f595ea93c11c507fcce1
 ---
 
 # application.sequences.record_name
@@ -32,7 +32,7 @@ notes_baseline: 3b074059129102af9fdb649777b4fa002c74fd5c0170d5b245d4c628527d35c5
 ## Docstring
 
 ~~~text
-The record lifeline's default name and its class: `loan : Loan` when the pack has a data model.
+The record lifeline's name and its class: `loan : Loan` when the pack has a data model.
 ~~~
 <!-- okf:generated:end facts -->
 
@@ -48,6 +48,5 @@ _No curated notes yet._
 
 ## Referenced by
 
-* [application.sequences.check_sequences](/symbols/application/sequences/check_sequences.md) - Every sequence checked by the kernel on `model`; with `base` (the model in force) also on it, for the change.
-* [application.sequences.default_sequences](/symbols/application/sequences/default_sequences.md) - Scenarios for a pack with no `sequences.json`: one per final state, and one `neg`.
+* [application.sequences.check_sequences](/symbols/application/sequences/check_sequences.md) - Every scenario drawn as a sequence and checked by the kernel on `model`; with `base` (the model in force) also on it, for the change.
 <!-- okf:generated:end links -->

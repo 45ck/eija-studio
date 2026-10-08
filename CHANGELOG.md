@@ -4,7 +4,7 @@
 
 ### 8 October 2026: sequence diagrams
 
-- PlayIDE has a **Sequences** tab: scenarios in UML sequence notation (lifelines, calls, refusal replies, state invariants, effects as asynchronous messages, `opt`, `alt` and `neg` fragments), each message run through the kernel. A message the model can't produce is flagged with the kernel's reason, and a `neg` must be refused. Edit in the tab, export as Mermaid or PlantUML, or download `sequences.json` to keep beside the pack (library-loan ships three). A plan's ripple lists the scenarios it breaks. New route `POST /api/play/sequences`. See [ADR-0185](docs/adr/0185-sequence-diagrams-the-kernel-checks.md).
+- PlayIDE has a **Sequences** tab: the pack's scenarios (the Tests tab's `scenarios.json`) drawn in UML sequence notation (lifelines, calls, refusal replies, state invariants, effects as asynchronous messages, and a `neg` fragment around each step that must be refused), each step run through the kernel. A step the model can't do is flagged with the kernel's reason. Edit in the tab (the same draft the Tests tab shows), export as Mermaid or PlantUML, or download `scenarios.json`. A plan's ripple lists the scenarios it breaks. New route `POST /api/play/sequences`. See [ADR-0185](docs/adr/0185-sequence-diagrams-the-kernel-checks.md).
 
 ### 8 October 2026: PlayIDE end-to-end fixes
 

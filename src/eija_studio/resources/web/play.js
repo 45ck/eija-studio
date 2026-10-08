@@ -120,7 +120,7 @@
   const PANELS = { states: "canvas", sequences: "sequences", classes: "class-canvas", usecases: "usecase-canvas", screens: "screens", components: "component-canvas", laws: "laws", tests: "tests", review: "review", access: "access-panel" };
   const HINTS = {
     states: "Drag from the palette to draw a state, a transition or the initial state; select an element to change or remove it. Drawn changes join the plan for you to preview; nothing is saved.",
-    sequences: "Each message is run through the kernel: a message the model can't produce is red with the kernel's reason. Select one to change it; neg fragments must be refused.",
+    sequences: "The Tests tab's scenarios as UML sequences, each step run through the kernel: a step the model can't do is red with the kernel's reason. Select one to change it; a step in a neg must be refused.",
     classes: "Select a class to see its attributes and associations.",
     usecases: "Select a use case to inspect it. Double-click one to design its screen.",
     screens: "Design each use case's screen. The design check runs as you edit; Build & run uses these screens.",

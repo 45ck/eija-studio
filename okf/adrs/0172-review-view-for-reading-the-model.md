@@ -58,5 +58,5 @@ _No curated notes yet._
 ## Referenced by
 
 * [ADR-0173: PlayIDE's workbench shell, after Visual Studio, VS Code, Cursor and draw.io](/adrs/0173-playide-workbench-shell.md) - After watching the recorded tours, the owner said there was "too much going on in sidebar" and that it "feels weird", and asked to "make playIDE really good, c…
-* [ADR-0185: Sequence diagrams as scenarios the kernel checks, message by message](/adrs/0185-sequence-diagrams-the-kernel-checks.md) - Engineers who read UML expect sequence diagrams beside the state machine, class, use case and component diagrams.
+* [ADR-0185: Sequence diagrams are the pack's scenarios, drawn in UML and checked by the kernel step by step](/adrs/0185-sequence-diagrams-the-kernel-checks.md) - Engineers who read UML expect sequence diagrams beside the state machine, class, use case and component diagrams.
 <!-- okf:generated:end links -->

@@ -50,7 +50,6 @@ _No curated notes yet._
 
 ## Referenced by
 
-* [application.sequences.sequences_for](/symbols/application/sequences/sequences_for.md) - The sequences beside the pack's `pack.json` ("pack"), or scenarios generated from the model in force ("default").
 * [domain.data.data_for](/symbols/domain/data/data_for.md) - The data model beside this pack's `pack.json`, if it has one.
 * [domain.data.load_data](/symbols/domain/data/load_data.md) - The pack's data model, or None when the pack has no `data.json`.
 * [domain.scenarios.scenarios_for](/symbols/domain/scenarios/scenarios_for.md) - The scenarios beside this pack's `pack.json`, or none.

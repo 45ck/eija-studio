@@ -18,5 +18,4 @@
 * [domain.policy](policy.md) - Generic policy: coherence with a domain pack's declared action catalog, the pack's laws, and declared effects.
 * [domain.scenarios](scenarios.md) - Scenarios: a pack's test cases, written as stories a person can read and the kernel can run (ADR-0177).
 * [domain.screens](screens.md) - Screens: the user interface of a pack's app, designed against its use cases and data model (ADR-0154).
-* [domain.sequences](sequences.md) - Sequences: UML interactions between the pack's actors and its records, kept beside the pack (ADR-0185).
 * [domain.transactions](transactions.md) - Open change vocabulary (WBS 1.3): the semantic edits an owner (or a pack meaning) may make to a workflow.

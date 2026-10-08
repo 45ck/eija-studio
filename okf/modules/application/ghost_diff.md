@@ -71,7 +71,7 @@ _No curated notes yet._
 
 ## Referenced by
 
-* [application.sequences](/modules/application/sequences.md) - Sequence diagrams the kernel checks (ADR-0185): can this model produce this interaction?
+* [application.sequences](/modules/application/sequences.md) - The pack's scenarios drawn as UML sequence diagrams the kernel checks (ADR-0185).
 * [interfaces.play](/modules/interfaces/play.md) - PlayIDE routes: the visual UML canvas page, Build & run of the model as a live app beside it (ADR-0151), and Simulate, seeded simulated users whose every step…
 * [application.ghost_diff.FIELD_TEXT](/symbols/application/ghost_diff/FIELD_TEXT.md) - Constant `FIELD_TEXT` in `application/ghost_diff`.
 * [application.ghost_diff.FORMAT](/symbols/application/ghost_diff/FORMAT.md) - Constant `FORMAT` in `application/ghost_diff`.

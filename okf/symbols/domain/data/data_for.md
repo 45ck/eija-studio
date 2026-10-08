@@ -50,5 +50,5 @@ _No curated notes yet._
 
 ## Referenced by
 
-* [application.sequences.record_name](/symbols/application/sequences/record_name.md) - The record lifeline's default name and its class: `loan : Loan` when the pack has a data model.
+* [application.sequences.record_name](/symbols/application/sequences/record_name.md) - The record lifeline's name and its class: `loan : Loan` when the pack has a data model.
 <!-- okf:generated:end links -->

@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/diagrams.py#Fragment
   title: application/diagrams.py
   hash_method: ast-sig-v1
-  sha256: c5356556d6e9dd672cc382ab597d2a78addbc5bb642f735c5191567718e1beaf
-notes_baseline: bcdac63c7fe57cee6c2719d6bf29189793cbf12163ac7cd0b41edfb366f32bb4
+  sha256: 97abccd1b15543520af8f54539ecd1898fb05a0fc4f2c39d32b3448cc34380db
+notes_baseline: 52637451c19f139541e22d438e479a3d5c7e4be329fddefb2bbc6c9a65a67265
 ---
 
 # application.diagrams.Fragment
@@ -32,8 +32,8 @@ notes_baseline: bcdac63c7fe57cee6c2719d6bf29189793cbf12163ac7cd0b41edfb366f32bb4
 ## Docstring
 
 ~~~text
-A combined fragment. `opt` (the default): the steps happen only when `label` holds. `alt`: the steps under
-`label`, else each of `alternatives` (label, steps). `neg`: the steps are an invalid trace.
+A combined fragment. `opt` (the default): the steps happen only when `label` holds. `neg`: the steps are an
+invalid trace, one that must not happen.
 ~~~
 
 ## Fields
@@ -42,8 +42,7 @@ A combined fragment. `opt` (the default): the steps happen only when `label` hol
 |---|---|---|
 | `label` | `str` |  |
 | `steps` | `tuple[Step, ...]` |  |
-| `operator` | `Literal['opt', 'alt', 'neg']` | `'opt'` |
-| `alternatives` | `tuple[tuple[str, tuple[Step, ...]], ...]` | `()` |
+| `operator` | `Literal['opt', 'neg']` | `'opt'` |
 <!-- okf:generated:end facts -->
 
 ## Notes

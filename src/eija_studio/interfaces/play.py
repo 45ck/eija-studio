@@ -38,7 +38,7 @@ from eija_studio.application.plan import preview_plan, propose_plan
 from eija_studio.application.review import review_change
 from eija_studio.application.ripple import check_follow_ons, ripple
 from eija_studio.application.scenario_run import record_steps, run_scenarios
-from eija_studio.application.sequences import check_sequences, sequences_for
+from eija_studio.application.sequences import check_sequences
 from eija_studio.application.simulation import MAX_BREAKPOINTS, MAX_STEPS, run_log, simulate
 from eija_studio.domain.data import data_for
 from eija_studio.domain.models import Contract, DomainError, Workflow
@@ -47,7 +47,6 @@ from eija_studio.domain.scenarios import parse_scenarios, scenarios_for
 from eija_studio.domain.policy import apply_transactions
 from eija_studio.domain.transactions import parse_transaction
 from eija_studio.domain.screens import Screens, check_screens, parse_screens, screens_for, use_cases
-from eija_studio.domain.sequences import parse_sequences
 from .app_build import app_files, build_into
 
 START_TIMEOUT_S = 10.0
@@ -249,7 +248,7 @@ def register(app, studio, web: Path) -> AppRunner:
         before, after = screens_for(studio.pack, base, data_for(studio.pack)), screens_of(body, candidate)
         (old, _), (new, components) = built(base, before), built(candidate, after)
         data = data_for(studio.pack)
-        scenarios = check_sequences(studio.pack, candidate, sequences_for(studio.pack, base)[0], base)
+        scenarios = check_sequences(studio.pack, candidate, scenarios_for(studio.pack), base)
         report = ripple(base, candidate, data, (before, after), (old, new), components, scenarios)
         document = proposer().follow_on(report, candidate, studio.pack) if report["problems"] else {"steps": []}
         return report | {"provider": proposer().name, "live": proposer().live,
@@ -276,15 +275,11 @@ def register(app, studio, web: Path) -> AppRunner:
         return review_change(studio.pack, before, after) | {"ghost": ghost_diff(before, after)}  # drawn as in ADR-0176
 
     @app.post("/api/play/sequences")
-    def play_sequences(body: SequencesRequest):
-        """The sequence diagrams (the request's, else the pack's, else scenarios from the model in force), each message
-        run through the kernel on the shown model and, when it differs, on the model in force (ADR-0185). Read-only."""
+    def play_sequences(body: ScenariosRequest):
+        """The pack's scenarios (or a draft of them, shared with the Tests tab) drawn as sequence diagrams, each step run
+        through the kernel on the shown model and, when it differs, on the model in force (ADR-0185). Read-only."""
         before, after = baseline(body), resolve(body)
-        if body.sequences is not None:
-            document, source = parse_sequences(body.sequences, studio.pack.id), "edited"
-        else:
-            document, source = sequences_for(studio.pack, before)
-        return check_sequences(studio.pack, after, document, before) | {"source": source}
+        return check_sequences(studio.pack, after, scenarios_of(body), before) | {"source": "edited" if body.scenarios is not None else "pack"}
 
     @app.post("/api/play/build")
     def play_build(body: BuildRequest):

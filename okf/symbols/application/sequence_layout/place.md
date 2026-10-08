@@ -1,7 +1,7 @@
 ---
 type: Function
 title: application.sequence_layout.place
-description: '`def place(pack: Pack, model: Workflow, interaction: Interaction, verdicts: dict[str, dict[str, Any]], cls: st…` in `application/sequence_layout`.'
+description: '`def place(pack: Pack, scenario: Scenario, start: str, steps: list[dict[str, Any]], record: tuple[str, str]) -…` in `application/sequence_layout`.'
 resource: repo://src/eija_studio/application/sequence_layout.py#place
 tags:
 - symbol
@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/sequence_layout.py#place
   title: application/sequence_layout.py
   hash_method: ast-v2
-  sha256: 39e3f50a8f019b555a5525b93e0b7f6c4b2dbc97f0ace99ad4df749e41ffe6c7
-notes_baseline: 400663d92de3e2fe782664f6b3e06466fc2b2dee3a904d7d1ca91990f8b56469
+  sha256: c9e3a9d468b4d8bc88310415ca84f404ef1c8d03acd4e008d7b46504fd3f12de
+notes_baseline: 4df9d35d85c9e01d7db9e4e20b96b7a1e4d7d37f68e52b36e9b4c59df28ca7f1
 ---
 
 # application.sequence_layout.place
@@ -25,7 +25,7 @@ notes_baseline: 400663d92de3e2fe782664f6b3e06466fc2b2dee3a904d7d1ca91990f8b56469
 |---|---|
 | Kind | function |
 | Module | [`application/sequence_layout`](/modules/application/sequence_layout.md) |
-| Signature | `def place(pack: Pack, model: Workflow, interaction: Interaction, verdicts: dict[str, dict[str, Any]], cls: str) -> dict[str, Any]` |
+| Signature | `def place(pack: Pack, scenario: Scenario, start: str, steps: list[dict[str, Any]], record: tuple[str, str]) -> dict[str, Any]` |
 | Code | `repo://src/eija_studio/application/sequence_layout.py#place` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
@@ -42,8 +42,6 @@ _No curated notes yet._
 ## Depends on
 
 * [application.sequence_layout.ROW](/symbols/application/sequence_layout/ROW.md) - Constant `ROW` in `application/sequence_layout`.
-* [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
-* [domain.sequences.Interaction](/symbols/domain/sequences/Interaction.md) - `class Interaction(Contract)` in `domain/sequences`.
-* [domain.sequences.Message](/symbols/domain/sequences/Message.md) - `class Message(Contract)` in `domain/sequences`.
+* [domain.scenarios.Scenario](/symbols/domain/scenarios/Scenario.md) - `class Scenario(Contract)` in `domain/scenarios`.
 <!-- okf:generated:end links -->

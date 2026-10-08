@@ -208,6 +208,8 @@
     $("rec-title").addEventListener("input", renderSteps);
     $("rec-keep").addEventListener("click", keep);
     $("rec-cancel").addEventListener("click", closeRecorder);
+    // The Sequences tab (ADR-0185) draws the same scenarios and edits this one draft.
+    window.PlayTests = { draft: () => draft, edit: (next) => { if (next) setDraft(next); else { draft = null; $("tests-problems").textContent = ""; run(); } } };
   }
 
   if (window.PlayIDE) init(window.PlayIDE);

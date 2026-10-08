@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/diagrams.py
   title: application/diagrams.py
   hash_method: ast-api-v1
-  sha256: a5d33121186172e87386a16c3451f2854ff6071a20f96227764c3edf9215e3eb
-notes_baseline: b64ec8446326641548ba72029de323d2592e67b5bfbbf186b472718799c771a3
+  sha256: 46f22e4685795eb38be1189d114ba9829faff6b6ba3d456519a8a55608ea39a8
+notes_baseline: 6d6163469d03e60c5c9868ad69e69dee5bdc6dad30cd963492fc06f57fa461bf
 ---
 
 # application.diagrams
@@ -108,7 +108,7 @@ _No curated notes yet._
 * [application.plan](/modules/application/plan.md) - Plan mode for the PlayIDE chat (ADR-0156): an AI proposes a change as numbered typed steps; the person accepts or rejects each one and sees what the accepted o…
 * [application.review](/modules/application/review.md) - Review a model change in PlayIDE instead of a pull request (ADR-0175).
 * [application.ripple](/modules/application/ripple.md) - Ripple (ADR-0158): what one change to the state machine does to every other diagram of the same system, and the follow-on edits that would keep them in agreeme…
-* [application.sequence_layout](/modules/application/sequence_layout.md) - Where a checked sequence is drawn, and its export (ADR-0185).
+* [application.sequence_layout](/modules/application/sequence_layout.md) - Where a scenario's sequence diagram is drawn, and its export (ADR-0185).
 * [application.diagrams.BLOCKED_ID](/symbols/application/diagrams/BLOCKED_ID.md) - Constant `BLOCKED_ID` in `application/diagrams`.
 * [application.diagrams.CONTRACTS](/symbols/application/diagrams/CONTRACTS.md) - Constant `CONTRACTS` in `application/diagrams`.
 * [application.diagrams.ClassModel](/symbols/application/diagrams/ClassModel.md) - `class ClassModel` in `application/diagrams`.

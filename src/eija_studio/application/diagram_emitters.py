@@ -173,11 +173,7 @@ def _mm_steps(steps: tuple[Step, ...], indent: str) -> list[str]:
         elif isinstance(s, Note):
             out.append(f"{indent}Note over {','.join(s.over)}: {_mm(s.text)}")
         else:  # Mermaid has no neg operator: it is written as an opt whose label says neg
-            head = f"alt {_mm(s.label)}" if s.operator == "alt" else f"opt {'neg: ' if s.operator == 'neg' else ''}{_mm(s.label)}"
-            out += [f"{indent}{head}", *_mm_steps(s.steps, indent + "    ")]
-            for label, steps in s.alternatives:
-                out += [f"{indent}else {_mm(label)}", *_mm_steps(steps, indent + "    ")]
-            out.append(f"{indent}end")
+            out += [f"{indent}opt {'neg: ' if s.operator == 'neg' else ''}{_mm(s.label)}", *_mm_steps(s.steps, indent + "    "), f"{indent}end"]
     return out
 
 
@@ -261,11 +257,8 @@ def _pu_steps(steps: tuple[Step, ...], indent: str) -> list[str]:
         elif isinstance(s, Note):
             out.append(f"{indent}note over {','.join(s.over)} : {_puml(s.text)}")
         else:
-            head = f"group neg [{_puml(s.label)}]" if s.operator == "neg" else f"{s.operator} {_puml(s.label)}"
-            out += [f"{indent}{head}", *_pu_steps(s.steps, indent + "  ")]
-            for label, steps in s.alternatives:
-                out += [f"{indent}else {_puml(label)}", *_pu_steps(steps, indent + "  ")]
-            out.append(f"{indent}end")
+            head = f"group neg [{_puml(s.label)}]" if s.operator == "neg" else f"opt {_puml(s.label)}"
+            out += [f"{indent}{head}", *_pu_steps(s.steps, indent + "  "), f"{indent}end"]
     return out
 
 

@@ -1,6 +1,6 @@
 ---
 type: Architecture Decision Record
-title: 'ADR-0185: Sequence diagrams as scenarios the kernel checks, message by message'
+title: 'ADR-0185: Sequence diagrams are the pack''s scenarios, drawn in UML and checked by the kernel step by step'
 description: Engineers who read UML expect sequence diagrams beside the state machine, class, use case and component diagrams.
 resource: repo://docs/adr/0185-sequence-diagrams-the-kernel-checks.md
 tags:
@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0185-sequence-diagrams-the-kernel-checks.md
   title: 0185-sequence-diagrams-the-kernel-checks.md
   hash_method: lf-sha256-v1
-  sha256: f194b802a66a2d7e3af1dab28ad4033397cf9333d4feef7cae2ae3c81e39e0ae
-notes_baseline: c8c303515d7297831c39c1233ce40c36aea7229c607dbc7fcb6272a83dad0360
+  sha256: 96a072e686c12ab90407a1a9d97d1966a28bc8fdd2301b1e5f633a666fb1e8cc
+notes_baseline: 9936aa41fa8cebfa2f7daed580a343ae3c54ed6510524b5afbca800ab62c3c2f
 ---
 
 # ADR-0185: Sequence diagrams as scenarios the kernel checks, message by message
@@ -31,14 +31,16 @@ notes_baseline: c8c303515d7297831c39c1233ce40c36aea7229c607dbc7fcb6272a83dad0360
 
 > Chosen option.
 >
-> * `domain/sequences.py` holds the contract `eija.sequences.v1`: interactions with records (lifelines of the record class) and steps. A step is a message (`actor`, a fixture actor id; `action`; `record`) or a combined fragment: `opt [guard]`, `alt [guard] / [guard]` (two to four operands) or `neg` (an invalid trace, optionally with the refusal code it expects). Operands hold messages only; fragments do not nest. The file sits beside `pack.json` with its own digest, like `screens.json`. The library-loan pack ships three scenarios in its `sequences.json`.
-> * `application/sequences.py`:
->   * `default_sequences(pack, model)` generates scenarios for a pack without the file: the shortest path to each final state taken by actors the kernel should let through, and one `neg` where someone in another role tries the first step. They are generated from the model in force, so a change is checked against the scenarios it had.
->   * `check_sequences(pack, model, sequences, base)` unfolds each sequence into its traces (an `opt` doubles them, an `alt` multiplies them, at most 64) and runs every trace on fresh records through `runtime.execute` with an in-memory unit of work (`simulation.MemorySession`). A message is OK when the kernel commits it on every trace that reaches it, and BROKEN when it refuses it on some trace: the refusal code, a sentence and the trace's operand choices say why, and later messages on that trace are NOT_REACHED. A `neg` is tried in place and undone; it HOLDS when the kernel refuses it (with the named code, if any) and is BROKEN when the kernel lets the forbidden trace through. With `base`, every verdict is also worked out on the model in force, each sequence says whether the change `breaks` or `fixes` it, and each message carries its action's status from `ghost_diff`.
->   * `application/sequence_layout.py` computes the layout: lifeline columns in order of first use (actors, records, effect channels) and rows top to bottom. The page draws boxes and arrows at those coordinates.
->   * It also exports each sequence as Mermaid and PlantUML through the existing `diagram_emitters`. `diagrams.Fragment` gains `operator` (`opt`, `alt`, `neg`) and `alternatives`; Mermaid has no `neg`, so it is written as an `opt` labelled `neg:`, and PlantUML as `group neg`.
-> * `POST /api/play/sequences` takes the request Build & run takes, plus an optional edited document. The ripple (`POST /api/play/ripple`) lists the pack's scenarios a plan breaks (warning `SEQUENCE_BROKEN`) or fixes.
-> * The **Sequences** tab (`play-sequence.js`, `play-sequence.css`) lists the sequences with their verdicts and draws the selected one: actors as stick figures, the record and effect channels as boxes, dashed lifelines, filled-arrow calls, dashed refusal replies (red when unexpected, green when a `neg` expects them), `{State}` invariants on the record's lifeline after each message, effects as open-arrow asynchronous messages, and fragments as frames with the UML pentagon tab and guards. A message the model can't produce is red, with the kernel's reason in the verdict line, the tooltip and the inspector. While a plan or change case is shown, a message says what it was on the model in force; with the Changes view on, messages whose action the change adds, changes or removes take that view's colours. Editing is in the add-message row and the inspector: change a message's actor, action or record, move or delete it, wrap it in `opt`, `alt` or `neg`, edit guards and the expected refusal, add or delete sequences. Every edit is checked again on the server. Nothing is saved: **Export** copies Mermaid or PlantUML, or downloads `sequences.json` to keep beside the pack. The review view (ADR-0172) hides the editing tools.
+> * `application/sequences.py` `check_sequences(pack, model, scenarios, base)` runs each scenario with `scenario_run.run_scenario`, the runner the Tests tab and `eija scenarios` use, so every step is `runtime.execute`'s answer on an in-memory session. Each step becomes a message with a verdict:
+>   * OK: the kernel did what the step expects, and the record moved to the state it names.
+>   * HOLDS: a step that expects a refusal, refused with that code.
+>   * BROKEN: the kernel did something else. The step's sentence and the kernel's reason in words (from the refusal code, the actor's role and the transition's) say what.
+>   * NOT_REACHED: an earlier step was broken.
+>   A scenario is PRODUCIBLE when no step is BROKEN. With `base`, the model in force, each scenario also runs there, so a change says which scenarios it `breaks` or `fixes`, and each message carries its action's status from `ghost_diff`.
+> * The UML mapping: the step's actor and the record are lifelines (`loan : Loan` from the data model), each step is a synchronous call, the record's start state and its state after each committed step are state invariants, the transition's required effects are asynchronous messages to `«effect»` lifelines, a refusal is a dashed reply, and a step that expects a refusal sits in a `neg` combined fragment, the UML for a trace that must not happen, labelled with the code it expects.
+> * `application/sequence_layout.py` computes the layout: lifeline columns in order of first use and rows top to bottom. The page draws boxes and arrows at those coordinates. It also exports each sequence as Mermaid and PlantUML through the existing `diagram_emitters`; `diagrams.Fragment` gains `operator` (`opt` or `neg`). Mermaid has no `neg`, so it is written as an `opt` labelled `neg:`, and PlantUML as `group neg`.
+> * `POST /api/play/sequences` takes the request the Tests tab's route takes (an optional draft of `scenarios.json`). The ripple (`POST /api/play/ripple`) lists the pack's scenarios a plan breaks (warning `SEQUENCE_BROKEN`) or fixes.
+> * The **Sequences** tab (`play-sequence.js`, `play-sequence.css`) lists the scenarios with their verdicts and draws the selected one. A step the model can't do is red, with the kernel's reason in the verdict line, the tooltip and the inspector. While a plan or change case is shown, a message says what it was on the model in force; with the Changes view on, messages whose action the change adds, changes or removes take that view's colours. Editing works on the one draft the Tests tab keeps (`window.PlayTests`): add a step in the row under the diagram (it expects what the kernel does now, through `/api/play/tests/try`, so a refused step arrives inside a `neg`), change a step's actor, action or expectation, take the kernel's outcome as the expectation, move or delete a step, set the title and start state, add or delete scenarios. Every edit is checked again on the server. Nothing is saved: **Export** copies Mermaid or PlantUML, or downloads `scenarios.json`. The review view (ADR-0172) hides the editing tools.
 
 ## Sections
 
@@ -61,4 +63,5 @@ _No curated notes yet._
 * [ADR-0166: Laws as the layer above the UML, proved over every run for any pack, with a Laws tab in PlayIDE](/adrs/0166-laws-proved-over-every-run-for-any-pack.md) - Every pack already states its laws as typed data in `pack.json` (`domain/laws.py`, twelve kinds): "only a librarian checks a loan out", "every path to Returned…
 * [ADR-0172: A read-only review view of PlayIDE for people who review the model](/adrs/0172-review-view-for-reading-the-model.md) - The owner set the audience as people who know UML, and noted that UML "is meant for non technical people to review it sometimes".
 * [ADR-0176: How a UML change looks: one stable layout, removed parts kept as ghosts, and lenses](/adrs/0176-how-a-uml-change-looks.md) - The owner asked how a change can be reviewed as a UML change instead of a pull request, and "how you even view a UML change (ghost UI/UX?)".
+* [ADR-0177: The law file and the test cases are files PlayIDE opens, edits as drafts and runs](/adrs/0177-law-files-and-test-cases-in-playide.md) - The owner asked where the formal law files and the test cases are.
 <!-- okf:generated:end links -->

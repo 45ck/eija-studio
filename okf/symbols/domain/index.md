@@ -18,5 +18,4 @@
 * [policy](policy/) - Symbols of domain.policy
 * [scenarios](scenarios/) - Symbols of domain.scenarios
 * [screens](screens/) - Symbols of domain.screens
-* [sequences](sequences/) - Symbols of domain.sequences
 * [transactions](transactions/) - Symbols of domain.transactions

@@ -1,10 +1,11 @@
-// PlayIDE sequence diagrams (ADR-0185): UML interactions between the pack's actors and its records, each message run
-// through the kernel on the server. Lifelines, call arrows, refusal replies, state invariants on the record's lifeline,
-// effects as asynchronous messages, and opt, alt and neg combined fragments, drawn on maxGraph at the coordinates the
-// server lays out. Editing changes the sequences document only (add, change, move, delete, wrap in a fragment); every
-// edit is checked again by the server. Nothing is saved: Download gives the sequences.json to keep beside the pack.
-// A message the model can't produce is red with the kernel's reason; while a plan or change is shown, each message
-// says what it was on the model in force, and the Changes view (ADR-0176) colours the actions the change touches.
+// PlayIDE sequence diagrams (ADR-0185): the pack's scenarios (scenarios.json, the Tests tab's test cases, ADR-0177)
+// drawn as UML interactions between the actors and the record, each step run through the kernel on the server.
+// Lifelines, call arrows, refusal replies, state invariants on the record's lifeline, effects as asynchronous messages,
+// and a neg combined fragment around each step that must be refused, drawn on maxGraph at the coordinates the server
+// lays out. Edits change the one scenarios draft the Tests tab also shows (add, change, move, delete a step, change
+// what it expects); every edit is checked again by the server. Nothing is saved: Download gives scenarios.json.
+// A step the model can't do is red with the kernel's reason; while a plan or change is shown, each message says what
+// it was on the model in force, and the Changes view (ADR-0176) colours the actions the change touches.
 "use strict";
 (() => {
   const $ = (id) => document.getElementById(id);
@@ -12,16 +13,19 @@
   const FONT = { fontFamily: "system-ui, sans-serif", fontColor: INK };
   const REFUSALS = ["ROLE_DENIED", "STATE_DENIED", "ASSIGNMENT_DENIED", "ACTOR_REVOKED", "ACTION_DENIED", "UNKNOWN_ACTOR"];
   const REVIEW = new URLSearchParams(location.search).get("view") === "review";
-  let P = null, graph = null, result = null, doc = null, edited = false, at = 0, picked = "", seq = 0, kept = null;
+  let P = null, graph = null, result = null, doc = null, at = 0, picked = "", seq = 0, kept = null, asked = "";
 
-  const shown = () => (result ? result.sequences[Math.min(at, result.sequences.length - 1)] : null);
-  const authored = () => (doc ? doc.sequences[Math.min(at, doc.sequences.length - 1)] : null);
+  const shown = () => (result && result.sequences.length ? result.sequences[Math.min(at, result.sequences.length - 1)] : null);
+  const authored = () => (doc && doc.scenarios.length ? doc.scenarios[Math.min(at, doc.scenarios.length - 1)] : null);
+  const draft = () => (window.PlayTests ? window.PlayTests.draft() : null);
+  const edited = () => Boolean(draft());
 
   // ---- The check ----------------------------------------------------------------------------------------------------
   async function check() {
     const mine = ++seq;
+    asked = JSON.stringify(draft());
     try {
-      const r = await P.api("/api/play/sequences", { ...P.about(), sequences: edited ? doc : null });
+      const r = await P.api("/api/play/sequences", draft() ? { ...P.about(), scenarios: draft() } : P.about());
       if (mine !== seq) return; // a newer edit or preview asked again
       result = r;
       doc = r.document;
@@ -33,12 +37,22 @@
     }
   }
 
-  function edit(change) {
-    doc = structuredClone(doc);
-    change(authored());
-    tidy(authored());
-    edited = true;
+  // One draft for both tabs: the Tests tab keeps it and runs it; this tab draws and checks it.
+  function save(next) {
+    doc = next;
+    window.PlayTests.edit(next);
     check();
+  }
+
+  function edit(change) {
+    const next = structuredClone(doc);
+    change(next.scenarios[Math.min(at, next.scenarios.length - 1)], next);
+    save(next);
+  }
+
+  // What the kernel does for these (actor, action) steps from `start`: a new step expects exactly that.
+  async function tried(start, steps) {
+    return (await P.api("/api/play/tests/try", { ...P.about(), start: start || null, steps })).steps;
   }
 
   function badge() {
@@ -47,14 +61,21 @@
     b.hidden = !n;
     b.className = "badge" + (n ? " bad" : "");
     b.textContent = n ? `✗ ${n}` : "";
-    $("tab-sequences").title = n ? `${n} sequence${n === 1 ? "" : "s"} the model can't produce` : "Every sequence can be produced by the model";
+    $("tab-sequences").title = n ? `${n} scenario${n === 1 ? "" : "s"} the model can't produce` : "The model produces every scenario";
   }
 
   // ---- The page -----------------------------------------------------------------------------------------------------
   function render() {
     const s = shown();
-    if (!s) return;
     list();
+    if (!s) {
+      $("seq-verdict").className = "seq-verdict";
+      $("seq-verdict").textContent = "This pack has no scenarios yet. Press New scenario to add one.";
+      if (graph) { graph.destroy(); graph = null; }
+      $("sequence-canvas").replaceChildren();
+      $("inspector").replaceChildren();
+      return;
+    }
     verdict(s);
     composer();
     draw(s);
@@ -64,7 +85,7 @@
 
   function list() {
     $("seq-list").replaceChildren(...result.sequences.map((s, i) => {
-      const b = P.el("button", undefined, { type: "button", "aria-current": String(i === at), title: s.first_problem || "The kernel can produce this sequence" });
+      const b = P.el("button", undefined, { type: "button", "aria-current": String(i === at), title: s.first_problem || "The kernel does every step as written" });
       b.append(P.el("span", s.verdict === "BROKEN" ? "✗" : "✓", { class: "seq-mark " + (s.verdict === "BROKEN" ? "bad" : "ok"), "aria-hidden": "true" }), P.el("span", s.title));
       if (s.change && s.change !== "same") b.append(P.el("span", s.change, { class: "tag " + (s.change === "breaks" ? "bad" : "ok") }));
       b.addEventListener("click", () => { at = i; picked = ""; kept = null; render(); });
@@ -77,11 +98,11 @@
   function verdict(s) {
     const line = $("seq-verdict"), bad = s.verdict === "BROKEN";
     line.className = "seq-verdict " + (bad ? "bad" : "ok");
-    const text = bad ? `The model can't produce this sequence: ${s.first_problem}.` : "The kernel produced every message, and refused every neg.";
+    const text = bad ? `The model can't produce this scenario: ${s.first_problem}.` : "The kernel did every step as written, and refused every neg.";
     line.replaceChildren(P.el("strong", s.title), " ", text);
     if (s.change === "breaks") line.append(P.el("span", " The change shown breaks it; the model in force produces it.", { class: "small" }));
     if (s.change === "fixes") line.append(P.el("span", " The change shown fixes it; the model in force can't produce it.", { class: "small" }));
-    if (edited) line.append(P.el("span", " Edited here, not saved.", { class: "muted small" }));
+    if (edited()) line.append(P.el("span", " Edited, not saved (the Tests tab shows the same draft).", { class: "muted small" }));
   }
 
   function select(node, options, value) {
@@ -90,18 +111,16 @@
   }
 
   function composer() {
-    const a = authored(), actors = result.actors.map((x) => [x.id, `${x.id} : ${x.role}`]);
+    const actors = result.actors.map((x) => [x.id, `${x.id} : ${x.role}`]);
     select($("seq-actor"), actors, $("seq-actor").value || (actors[0] || [""])[0]);
     select($("seq-action"), result.actions.map((x) => [x, x]), $("seq-action").value || result.actions[0]);
-    select($("seq-record"), a.records.map((r) => [r, r]), $("seq-record").value);
-    $("seq-record").hidden = a.records.length < 2;
   }
 
   function exports(s) {
     const link = $("seq-download");
     if (link.href.startsWith("blob:")) URL.revokeObjectURL(link.href);
     link.href = URL.createObjectURL(new Blob([JSON.stringify(doc, null, 2) + "\n"], { type: "application/json" }));
-    $("seq-reset").disabled = !edited;
+    $("seq-reset").disabled = !edited();
     $("seq-copy-mermaid").dataset.text = s.export.mermaid;
     $("seq-copy-plantuml").dataset.text = s.export.plantuml;
   }
@@ -134,10 +153,10 @@
     const changes = P.changes(), status = m.change || "same";
     let style = { strokeColor: LINE, strokeWidth: 1.5, endArrow: "block", endFill: true, endSize: 8 };
     if (m.verdict === "BROKEN") style = { ...style, strokeColor: BAD, fontColor: BAD, strokeWidth: 2.5, fontStyle: 1 };
-    if (m.verdict === "NOT_REACHED" || m.verdict === "NOT_TRIED") style = { ...style, strokeColor: FAINT, fontColor: FAINT, dashed: true };
+    if (m.verdict === "NOT_REACHED") style = { ...style, strokeColor: FAINT, fontColor: FAINT, dashed: true };
     if (changes && window.PlayDiff && status !== "same") style = { ...style, ...window.PlayDiff.look(status, "line"), fontColor: style.fontColor };
     const mark = changes && window.PlayDiff && status !== "same" ? window.PlayDiff.mark(status) : "";
-    const was = m.was && m.was !== m.verdict ? `  (was ${m.was === "OK" ? "produced" : m.was.toLowerCase().replace("_", " ")})` : "";
+    const was = m.was && m.was !== m.verdict ? `  (was ${{ OK: "produced", HOLDS: "refused" }[m.was] || m.was.toLowerCase().replace("_", " ")})` : "";
     return { style, value: (m.verdict === "BROKEN" ? "✗ " : "") + mark + m.label + was };
   }
 
@@ -161,7 +180,8 @@
       for (const l of s.lifelines) lifeline(parent, l, s);
       for (const v of s.invariants) {
         graph.insertVertex({ parent, id: `inv:${v.ref}`, value: v.text, position: [x[v.lifeline] - 60, v.y - 13], size: [120, 26],
-          style: { ...FONT, fontSize: 12, rounded: true, arcSize: 40, fillColor: "#eef2ff", strokeColor: "#5b74d6", selectable: false } });
+          style: { ...FONT, fontSize: 12, rounded: true, arcSize: 40, selectable: false,
+            ...(v.tone === "bad" ? { fillColor: "#fdecec", strokeColor: BAD, fontColor: BAD } : { fillColor: "#eef2ff", strokeColor: "#5b74d6" }) } });
       }
       for (const m of s.messages) {
         const { style, value } = messageLook(m);
@@ -234,18 +254,12 @@
     if (!cell || !cell.id) return "";
     const s = shown(), ref = cell.id.split(":")[1];
     const m = s.messages.find((x) => x.ref === ref);
-    if ((cell.id.startsWith("msg:") || cell.id.startsWith("reply:")) && m) return `${m.actor} → ${m.record}: ${m.action}\n${m.why}`;
+    if ((cell.id.startsWith("msg:") || cell.id.startsWith("reply:")) && m) return `${m.actor} → ${m.to.slice(7)}: ${m.action}\n${m.why}`;
     const f = s.fragments.find((x) => x.ref === ref);
     return f && f.why ? `${f.operator}: ${f.why}` : "";
   }
 
   // ---- The inspector: what the kernel said, and the edits -------------------------------------------------------
-  function locate(a, ref) {
-    const p = ref.split(".").map(Number);
-    if (p.length === 1) return { list: a.steps, i: p[0], top: true };
-    return { list: a.steps[p[0]].operands[p[1]].steps, i: p[2], top: false, fragment: a.steps[p[0]] };
-  }
-
   function button(text, run, attrs = {}) {
     const b = P.el("button", text, { type: "button", class: "quiet", ...attrs });
     b.addEventListener("click", run);
@@ -270,122 +284,105 @@
     return dl;
   }
 
+  const said = (then) => (then.state ? `moves to ${then.state}` : `is refused (${then.refused})`);
+
+  // One choice for what a step must do: the state it moves the record to, or the refusal it gets.
+  function expectation(then, label) {
+    const options = [...result.states.map((x) => [`state:${x}`, `moves to ${x}`]), ...REFUSALS.map((c) => [`refused:${c}`, `is refused (${c})`])];
+    return select(P.el("select", undefined, { "aria-label": label }), options, then.state ? `state:${then.state}` : `refused:${then.refused}`);
+  }
+
   function messagePane(m) {
-    const verdictText = { OK: `Produced: the record is ${(m.states || []).join(" or ")} after it`, BROKEN: `Can't be produced: ${m.code}`,
-      REFUSED: `Refused by the kernel (${m.code}), as the neg asks`, COMMITTED: "Committed inside a neg: the kernel let it through",
-      NOT_REACHED: "Not reached", NOT_TRIED: "Not tried" }[m.verdict];
-    const out = [P.el("h3", "Message"), facts([["From", `${m.actor}`], ["To", m.record], ["Calls", m.label], ["Kernel", verdictText],
-      ["Why", m.why], ["Before the change", m.was && m.was !== m.verdict ? m.was : ""]])];
+    const verdictText = { OK: `Produced: the record is ${m.states.join(" or ")} after it`, BROKEN: `Can't be produced${m.code ? `: ${m.code}` : ""}`,
+      HOLDS: `Refused by the kernel (${m.code}), as the neg asks`, NOT_REACHED: "Not reached" }[m.verdict];
+    const out = [P.el("h3", "Message"), facts([["From", `${m.actor}${m.role ? ` : ${m.role}` : ""}`], ["To", m.to.slice(7)], ["Calls", m.label],
+      ["Expects", `It ${said(m.expect)}`], ["Kernel", verdictText], ["Why", m.why], ["Before the change", m.was && m.was !== m.verdict ? m.was : ""]])];
     if (m.transition) out.push(button("Show on the state machine", () => P.select("transition:" + m.transition, true)));
     if (REVIEW) return out;
-    const a = authored(), where = locate(a, m.ref), msg = where.list[where.i];
+    const i = Number(m.ref), steps = authored().steps, now = steps[i];
     const form = P.el("div", undefined, { class: "seq-form" });
-    const actor = select(P.el("select", undefined, { "aria-label": "From actor" }), result.actors.map((x) => [x.id, `${x.id} : ${x.role}`]), msg.actor);
-    const action = select(P.el("select", undefined, { "aria-label": "Action" }), [...new Set([...result.actions, msg.action])].map((x) => [x, x]), msg.action);
-    actor.addEventListener("change", () => edit((b) => { locate(b, m.ref).list[where.i].actor = actor.value; }));
-    action.addEventListener("change", () => edit((b) => { locate(b, m.ref).list[where.i].action = action.value; }));
-    form.append(P.el("label", "From"), actor, P.el("label", "Action"), action);
-    if (a.records.length > 1) {
-      const record = select(P.el("select", undefined, { "aria-label": "To record" }), a.records.map((r) => [r, r]), msg.record || a.records[0]);
-      record.addEventListener("change", () => edit((b) => { locate(b, m.ref).list[where.i].record = record.value; }));
-      form.append(P.el("label", "To"), record);
-    }
+    const actor = select(P.el("select", undefined, { "aria-label": "From actor" }), result.actors.map((x) => [x.id, `${x.id} : ${x.role}`]), now.actor);
+    const action = select(P.el("select", undefined, { "aria-label": "Action" }), [...new Set([...result.actions, now.action])].map((x) => [x, x]), now.action);
+    const then = expectation(now.then, "What it must do");
+    actor.addEventListener("change", () => edit((a) => { a.steps[i].actor = actor.value; }));
+    action.addEventListener("change", () => edit((a) => { a.steps[i].action = action.value; }));
+    then.addEventListener("change", () => edit((a) => { const [k, v] = then.value.split(":"); a.steps[i].then = { [k]: v }; }));
+    form.append(P.el("label", "From"), actor, P.el("label", "Action"), action, P.el("label", "It must"), then);
     const tools = P.el("div", undefined, { class: "seq-tools" });
-    const move = (by) => edit((b) => { const w = locate(b, m.ref); const [x] = w.list.splice(w.i, 1); w.list.splice(w.i + by, 0, x); picked = ""; });
-    tools.append(button("Move up", () => move(-1), where.i ? {} : { disabled: "" }), button("Move down", () => move(1), where.i < where.list.length - 1 ? {} : { disabled: "" }),
-      button("Delete", () => edit((b) => { const w = locate(b, m.ref); w.list.splice(w.i, 1); picked = ""; }), shown().messages.length > 1 ? {} : { disabled: "" }));
-    if (where.top) {
-      for (const op of ["opt", "alt", "neg"]) {
-        tools.append(button(`Wrap in ${op}`, () => edit((b) => {
-          const w = locate(b, m.ref), x = w.list[w.i];
-          const operands = op === "alt" ? [{ guard: "", steps: [x] }, { guard: "else", steps: [structuredClone(x)] }] : [{ guard: "", steps: [x] }];
-          w.list[w.i] = { fragment: op, operands, refused: null };
-          picked = "frame:" + m.ref;
-        })));
-      }
-    }
+    const move = (by) => edit((a) => { const [x] = a.steps.splice(i, 1); a.steps.splice(i + by, 0, x); picked = `msg:${i + by}`; });
+    const actual = m.verdict === "BROKEN" && (m.code || m.states.length) ? (m.code ? { refused: m.code } : { state: m.states[0] }) : null;
+    if (actual) tools.append(button("Expect what the kernel does", () => edit((a) => { a.steps[i].then = actual; }), { title: `It ${said(actual)}` }));
+    tools.append(button("Move up", () => move(-1), i ? {} : { disabled: "" }), button("Move down", () => move(1), i < steps.length - 1 ? {} : { disabled: "" }),
+      button("Delete", () => edit((a) => { a.steps.splice(i, 1); picked = ""; }), steps.length > 1 ? {} : { disabled: "" }));
     return [...out, P.el("h3", "Change it"), form, tools];
   }
 
   function fragmentPane(f) {
-    const out = [P.el("h3", `${f.operator} fragment`), facts([["Kernel", f.verdict ? `${f.verdict}${f.code ? ` (${f.code})` : ""}` : "Each operand is checked as its own trace"],
-      ["Why", f.why || ""], ["Before the change", f.was && f.was !== f.verdict ? f.was : ""]])];
+    const m = shown().messages.find((x) => x.ref === f.ref);
+    const kernel = { HOLDS: `Refused (${m.code})`, BROKEN: m.code ? `Refused with ${m.code} instead` : "Let through", NOT_REACHED: "Not reached" }[f.verdict];
+    const out = [P.el("h3", "neg fragment"), P.el("p", "A trace that must not happen: the kernel has to refuse this step.", { class: "muted small" }),
+      facts([["Refused with", f.refused], ["Kernel", kernel], ["Why", f.why || ""], ["Before the change", m.was && m.was !== m.verdict ? m.was : ""]])];
     if (REVIEW) return out;
-    const a = authored(), i = Number(f.ref), frag = a.steps[i], form = P.el("div", undefined, { class: "seq-form" });
-    frag.operands.forEach((o, k) => {
-      const input = P.el("input", undefined, { type: "text", maxlength: "60", "aria-label": `Guard of operand ${k + 1}`, value: o.guard });
-      input.addEventListener("change", () => edit((b) => { b.steps[i].operands[k].guard = input.value.trim(); }));
-      form.append(P.el("label", k ? `Operand ${k + 1}` : "Guard"), input);
-    });
-    if (frag.fragment === "neg") {
-      const code = select(P.el("select", undefined, { "aria-label": "Refusal expected" }), [["", "any refusal"], ...REFUSALS.map((c) => [c, c])], frag.refused || "");
-      code.addEventListener("change", () => edit((b) => { b.steps[i].refused = code.value || null; }));
-      form.append(P.el("label", "Refused with"), code);
-    }
+    const i = Number(f.ref), form = P.el("div", undefined, { class: "seq-form" });
+    const code = select(P.el("select", undefined, { "aria-label": "Refusal expected" }), REFUSALS.map((c) => [c, c]), f.refused);
+    code.addEventListener("change", () => edit((a) => { a.steps[i].then = { refused: code.value }; }));
+    form.append(P.el("label", "Refused with"), code);
     const tools = P.el("div", undefined, { class: "seq-tools" });
-    if (frag.fragment === "alt" && frag.operands.length < 4) {
-      tools.append(button("Add alternative", () => edit((b) => { b.steps[i].operands.push({ guard: "else", steps: [structuredClone(b.steps[i].operands[0].steps[0])] }); })));
-    }
-    tools.append(button("Unwrap", () => edit((b) => { b.steps.splice(i, 1, ...b.steps[i].operands[0].steps); picked = ""; })),
-      button("Delete", () => edit((b) => { b.steps.splice(i, 1); picked = ""; }), a.steps.length > 1 ? {} : { disabled: "" }));
+    if (m.states.length) tools.append(button(`Unwrap: it moves to ${m.states[0]}`, () => edit((a) => { a.steps[i].then = { state: m.states[0] }; picked = `msg:${i}`; })));
+    tools.append(button("Delete", () => edit((a) => { a.steps.splice(i, 1); picked = ""; }), authored().steps.length > 1 ? {} : { disabled: "" }));
     return [...out, P.el("h3", "Change it"), form, tools];
   }
 
   function overview() {
-    const s = shown(), out = [P.el("h3", "Sequence"), facts([["Messages", String(s.messages)], ["Kernel", s.verdict === "BROKEN" ? s.first_problem : "Every message produced"],
-      ["Source", { pack: "the pack's sequences.json", default: "generated from the model in force", edited: "edited here, not saved" }[result.source]]])];
-    out.push(P.el("p", "Select a message or a fragment to see what the kernel said about it.", { class: "muted small" }));
+    const s = shown(), a = authored();
+    const out = [P.el("h3", "Scenario"), facts([["Steps", String(s.steps)], ["Starts in", s.invariants[0].text],
+      ["Kernel", s.verdict === "BROKEN" ? s.first_problem : "Every step does what it says"],
+      ["Source", result.source === "edited" ? "a draft of scenarios.json, not saved" : "the pack's scenarios.json"]])];
+    out.push(P.el("p", "Select a message or a neg fragment to see what the kernel said about it. The Tests tab runs the same scenarios.", { class: "muted small" }));
     if (REVIEW) return out;
-    const title = P.el("input", undefined, { type: "text", maxlength: "80", "aria-label": "Title", value: authored().title });
+    const title = P.el("input", undefined, { type: "text", maxlength: "120", "aria-label": "Title", value: a.title });
     title.addEventListener("change", () => title.value.trim() && edit((b) => { b.title = title.value.trim(); }));
+    const start = select(P.el("select", undefined, { "aria-label": "Start state" }), [["", `${result.initial} (where a new record starts)`],
+      ...result.states.filter((x) => x !== result.initial).map((x) => [x, x])], a.start || "");
+    start.addEventListener("change", () => edit((b) => { if (start.value) b.start = start.value; else delete b.start; }));
     const form = P.el("div", undefined, { class: "seq-form" });
-    form.append(P.el("label", "Title"), title);
-    const remove = button("Delete this sequence", () => { doc = structuredClone(doc); doc.sequences.splice(at, 1); at = 0; edited = true; check(); },
-      doc.sequences.length > 1 ? {} : { disabled: "" });
+    form.append(P.el("label", "Title"), title, P.el("label", "Starts in"), start);
+    const remove = button("Delete this scenario", () => { const next = structuredClone(doc); next.scenarios.splice(at, 1); at = 0; picked = ""; save(next); },
+      doc.scenarios.length > 1 ? {} : { disabled: "" });
     return [...out, form, remove];
   }
 
-  // Fragments left with no operand go; an alt left with one operand becomes an opt; only a neg names a refusal.
-  function tidy(a) {
-    a.steps = a.steps.filter((step) => {
-      if (!step.fragment) return true;
-      step.operands = step.operands.filter((o) => o.steps.length);
-      if (step.fragment === "alt" && step.operands.length === 1) step.fragment = "opt";
-      if (step.fragment !== "neg") step.refused = null;
-      return step.operands.length > 0;
-    });
-  }
-
   // ---- Adding ---------------------------------------------------------------------------------------------------
-  function add(event) {
-    event.preventDefault();
-    const message = { actor: $("seq-actor").value, action: $("seq-action").value, record: $("seq-record").hidden ? "" : $("seq-record").value };
-    edit((a) => {
-      if (picked.startsWith("msg:")) {
-        const w = locate(a, picked.slice(4));
-        w.list.splice(w.i + 1, 0, message);
-        const p = picked.slice(4).split(".");
-        p[p.length - 1] = String(w.i + 1);
-        picked = "msg:" + p.join(".");
-      } else {
-        a.steps.push(message);
-        picked = "msg:" + (a.steps.length - 1);
-      }
-    });
+  function failed(error) {
+    $("seq-verdict").replaceChildren(P.el("span", `${error.code || "ERROR"}: ${error.message}`, { class: "refusal" }));
   }
 
-  function addSequence() {
-    doc = structuredClone(doc);
-    const taken = new Set(doc.sequences.map((s) => s.id));
-    let n = doc.sequences.length + 1;
-    while (taken.has(`sequence-${n}`)) n += 1;
-    const first = result.sequences[0].messages[0];
-    doc.sequences.push({ id: `sequence-${n}`, title: `New sequence ${n}`, records: [authored().records[0]],
-      steps: [{ actor: first ? first.actor : result.actors[0].id, action: first ? first.action : result.actions[0], record: "" }] });
-    at = doc.sequences.length - 1;
+  // A new step expects what the kernel does now, after the steps before it; the inspector changes that expectation.
+  async function add(event) {
+    event.preventDefault();
+    const a = authored(), after = picked.startsWith("msg:") ? Number(picked.slice(4)) + 1 : a.steps.length;
+    const steps = [...a.steps.slice(0, after).map((x) => [x.actor, x.action]), [$("seq-actor").value, $("seq-action").value]];
+    try {
+      const made = (await tried(a.start, steps)).at(-1);
+      edit((b) => { b.steps.splice(after, 0, made); picked = `msg:${after}`; });
+    } catch (error) {
+      failed(error);
+    }
+  }
+
+  async function addSequence() {
+    const next = structuredClone(doc), taken = new Set(next.scenarios.map((s) => s.id));
+    let n = next.scenarios.length + 1;
+    while (taken.has(`scenario-${n}`)) n += 1;
+    try {
+      next.scenarios.push({ id: `scenario-${n}`, title: `New scenario ${n}`, steps: await tried(null, [[$("seq-actor").value, $("seq-action").value]]) });
+    } catch (error) {
+      failed(error);
+      return;
+    }
+    at = next.scenarios.length - 1;
     picked = "";
-    edited = true;
-    check();
+    save(next);
   }
 
   function copy(id) {
@@ -403,12 +400,12 @@
     P.hooks.tab.push((which) => {
       if (which !== "sequences") return;
       kept = null;
-      if (result) render(); else check();
+      if (result && asked === JSON.stringify(draft())) render(); else check(); // the Tests tab may have changed the draft
     });
     P.hooks.redraw.push(() => { picked = ""; check(); }); // a preview entered or left: check the same sequences on the shown model
     $("seq-add").addEventListener("submit", add);
     $("seq-new").addEventListener("click", addSequence);
-    $("seq-reset").addEventListener("click", () => { edited = false; picked = ""; at = 0; check(); });
+    $("seq-reset").addEventListener("click", () => { picked = ""; at = 0; window.PlayTests.edit(null); check(); });
     $("seq-copy-mermaid").addEventListener("click", () => copy("seq-copy-mermaid"));
     $("seq-copy-plantuml").addEventListener("click", () => copy("seq-copy-plantuml"));
     if (REVIEW) for (const node of document.querySelectorAll(".seq-edit")) node.hidden = true;

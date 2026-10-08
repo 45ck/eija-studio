@@ -1,47 +1,42 @@
-"""Sequence diagrams the kernel checks (ADR-0185): every message of a scenario is run through `runtime.execute`, so a
-sequence the model can't produce is flagged at the message the kernel refuses, a neg must be refused, and a change shows
-the scenarios it breaks or fixes. Negative oracles included: refused messages, a neg the kernel lets through, a wrong
-refusal code, an unreachable message, and malformed documents."""
+"""The pack's scenarios drawn as sequence diagrams the kernel checks (ADR-0185): one source, `scenarios.json`
+(ADR-0177), one runner, `scenario_run`. A step the model can't do is flagged at that message with the kernel's reason,
+a step that expects a refusal is a neg fragment that must be refused, and a change shows the scenarios it breaks or
+fixes. Negative oracles included: refused messages, a neg the kernel lets through, a wrong refusal code, a wrong
+state, an unreachable message, and malformed drafts."""
 from __future__ import annotations
 
-import copy
-import json
 import os
 from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
 
-from eija_studio.application.sequences import MAX_PATHS, check_sequences, default_sequences, sequences_for
+from eija_studio.application.sequences import check_sequences
 from eija_studio.domain.models import DomainError
 from eija_studio.domain.pack import load_pack
 from eija_studio.domain.policy import apply_transactions
-from eija_studio.domain.sequences import parse_sequences
+from eija_studio.domain.scenarios import parse_scenarios, scenarios_for
 from eija_studio.domain.transactions import parse_transaction
 from eija_studio.interfaces.http import create_app
 from kernel_support import harness_studio
 
 ROOT = Path(__file__).resolve().parents[1]
 LOAN = load_pack(ROOT / "packs" / "library-loan")
-DOCUMENT = json.loads((ROOT / "packs" / "library-loan" / "sequences.json").read_text(encoding="utf-8"))
 SESSION = "synthetic-sequences-test"
 HEADERS = {"Authorization": "Bearer " + SESSION, "Origin": "http://127.0.0.1:8765"}
 
 
-def one(steps, records=("loan",)):
-    return parse_sequences({"id": "library-loan", "sequences": [{"id": "s", "title": "S", "records": list(records), "steps": steps}]}, "library-loan")
+def step(actor, action, state=None, refused=None):
+    return {"actor": actor, "action": action, "then": {"state": state} if state else {"refused": refused}}
 
 
-def msg(actor, action, record=""):
-    return {"actor": actor, "action": action, "record": record}
+def one(*steps, start=None):
+    scenario = {"id": "s", "title": "S", "steps": list(steps)} | ({"start": start} if start else {})
+    return parse_scenarios({"id": "library-loan", "scenarios": [scenario]}, "library-loan")
 
 
-def neg(*steps, refused=None):
-    return {"fragment": "neg", "refused": refused, "operands": [{"guard": "", "steps": list(steps)}]}
-
-
-def checked(document, model=LOAN.model, base=None):
-    return check_sequences(LOAN, model, document, base)
+def checked(scenarios, model=LOAN.model, base=None):
+    return check_sequences(LOAN, model, scenarios, base)
 
 
 def by_ref(sequence):
@@ -53,115 +48,86 @@ def clerk_returns_late():
     return apply_transactions(LOAN.model, [parse_transaction({"kind": "set_role", "transition": t.id, "role": "Clerk"})], LOAN)
 
 
-def test_the_packs_sequences_are_produced_by_the_kernel_with_states_effects_and_refused_negs():
-    document, source = sequences_for(LOAN, LOAN.model)
-    report = checked(document)
-    assert source == "pack" and report["status"] == "PRODUCIBLE" and report["counts"] == {"producible": 3, "broken": 0}
-    lend = by_ref(report["sequences"][0])
-    assert [(r, m["verdict"], m["states"]) for r, m in lend.items()] == [
-        ("0", "OK", ["OnLoan"]), ("1.0.0", "OK", ["Returned"]), ("1.1.0", "OK", ["Overdue"]), ("1.1.1", "OK", ["Returned"])]
-    assert lend["0"]["effects"] == ["Audit:LoanCheckedOut", "Notification:MemberNotified"]  # the kernel's own effects
-    who = report["sequences"][1]
-    assert [(f["verdict"], f["code"]) for f in who["fragments"]] == [
-        ("HOLDS", "ROLE_DENIED"), ("HOLDS", "ASSIGNMENT_DENIED"), ("HOLDS", "ACTOR_REVOKED"), ("HOLDS", "ROLE_DENIED")]
-    assert [r["label"] for r in who["replies"]] == ["refused: ROLE_DENIED", "refused: ASSIGNMENT_DENIED", "refused: ACTOR_REVOKED", "refused: ROLE_DENIED"]
+def test_every_packs_scenarios_are_drawn_and_produced_by_the_kernel():
+    for name in ("library-loan", "excursion", "eija-review-slice"):
+        pack = load_pack(ROOT / "packs" / name)
+        report = check_sequences(pack, pack.model, scenarios_for(pack))
+        assert report["status"] == "PRODUCIBLE" and len(report["sequences"]) == len(scenarios_for(pack).scenarios), name
+    report = checked(scenarios_for(LOAN))
+    late = report["sequences"][1]
+    assert [(m["verdict"], m["states"], m["transition"]) for m in late["messages"]] == [
+        ("OK", ["OnLoan"], "TR-CHECKOUT"), ("OK", ["Overdue"], "TR-MARKOVERDUE"), ("OK", ["Returned"], "TR-RETURNLATE")]
+    assert [v["text"] for v in late["invariants"]] == ["{Requested}", "{OnLoan}", "{Overdue}", "{Returned}"]
+    assert [e["label"] for e in late["effects"] if e["ref"] == "0"] == ["LoanCheckedOut", "MemberNotified"]  # the transition's effects
+    cancels = report["sequences"][6]
+    assert [(f["operator"], f["verdict"], f["refused"]) for f in cancels["fragments"]] == [("neg", "HOLDS", "STATE_DENIED")]
+    assert [(r["label"], r["tone"]) for r in cancels["replies"]] == [("refused: STATE_DENIED", "expected")]
 
 
-def test_a_message_the_model_cant_produce_is_flagged_where_the_kernel_refuses_it_and_the_rest_is_not_reached():
-    for message, code, why in [
-        (msg("librarian-assigned", "Renew"), "ACTION_DENIED", "Renew is not in the model"),
-        (msg("member-a", "CheckOut"), "ROLE_DENIED", "member-a is a Member; CheckOut is for a Librarian"),
-        (msg("librarian-assigned", "Return"), "STATE_DENIED", "Return does not leave Requested"),
-        (msg("nobody", "CheckOut"), "UNKNOWN_ACTOR", "nobody is not one of the pack's actors"),
+def test_a_step_the_model_cant_do_is_flagged_where_the_kernel_refuses_it_and_the_rest_is_not_reached():
+    for first, code, why in [
+        (step("librarian-assigned", "Renew", "OnLoan"), "ACTION_DENIED", "Renew is not in the model"),
+        (step("member-a", "CheckOut", "OnLoan"), "ROLE_DENIED", "member-a is a Member; CheckOut is for a Librarian"),
+        (step("librarian-assigned", "Return", "Returned"), "STATE_DENIED", "Return does not leave Requested"),
+        (step("nobody", "CheckOut", "OnLoan"), "UNKNOWN_ACTOR", "nobody is not one of the pack's actors"),
     ]:
-        sequence = checked(one([message, msg("librarian-assigned", "CheckOut")]))["sequences"][0]
-        first, second = by_ref(sequence)["0"], by_ref(sequence)["1"]
-        assert (sequence["verdict"], first["verdict"], first["code"], first["why"]) == ("BROKEN", "BROKEN", code, why)
-        assert second["verdict"] == "NOT_REACHED" and sequence["first_problem"] == why
-        assert sequence["replies"][0]["tone"] == "bad" and not sequence["invariants"]
+        sequence = checked(one(first, step("librarian-assigned", "CheckOut", "OnLoan")))["sequences"][0]
+        a, b = by_ref(sequence)["0"], by_ref(sequence)["1"]
+        assert (sequence["verdict"], a["verdict"], a["code"]) == ("BROKEN", "BROKEN", code)
+        assert a["why"].endswith(why) and a["why"].startswith("Expected it moves to") and sequence["first_problem"] == a["why"]
+        assert b["verdict"] == "NOT_REACHED" and sequence["replies"][0]["tone"] == "bad"
+        assert [v["ref"] for v in sequence["invariants"]] == ["start"]
 
 
-def test_a_neg_the_kernel_lets_through_or_refuses_for_another_reason_is_broken():
-    allowed = checked(one([neg(msg("librarian-assigned", "CheckOut"))]))["sequences"][0]
+def test_a_neg_the_kernel_lets_through_refuses_for_another_reason_or_a_wrong_state_is_broken():
+    allowed = checked(one(step("librarian-assigned", "CheckOut", refused="ROLE_DENIED")))["sequences"][0]
     assert allowed["verdict"] == "BROKEN" and allowed["fragments"][0]["verdict"] == "BROKEN"
-    assert by_ref(allowed)["0.0.0"]["verdict"] == "COMMITTED"
-    wrong = checked(one([neg(msg("member-a", "CheckOut"), refused="STATE_DENIED")]))["sequences"][0]["fragments"][0]
-    assert (wrong["verdict"], wrong["code"]) == ("BROKEN", "ROLE_DENIED")
-    # A neg is undone: what it tried does not move the record, so the next message starts where it was.
-    after = checked(one([neg(msg("librarian-assigned", "CheckOut"), msg("clerk", "Return")), msg("librarian-assigned", "CheckOut")]))
-    assert by_ref(after["sequences"][0])["1"]["verdict"] == "OK"
+    assert allowed["invariants"][-1] | {"y": 0} == {"ref": "0", "lifeline": "record:loan", "y": 0, "text": "{OnLoan}", "tone": "bad"}
+    wrong = checked(one(step("member-a", "CheckOut", refused="STATE_DENIED")))["sequences"][0]
+    assert (wrong["fragments"][0]["verdict"], wrong["messages"][0]["code"]) == ("BROKEN", "ROLE_DENIED")
+    assert "member-a is a Member" in wrong["first_problem"]
+    elsewhere = checked(one(step("member-a", "Cancel", "Returned")))["sequences"][0]["messages"][0]
+    assert (elsewhere["verdict"], elsewhere["states"]) == ("BROKEN", ["Cancelled"])
+    nowhere = checked(one(step("member-a", "Cancel", "Cancelled"), start="Lost"))["sequences"][0]
+    assert nowhere["verdict"] == "BROKEN" and "Lost" in nowhere["first_problem"] and nowhere["messages"][0]["verdict"] == "NOT_REACHED"
 
 
-def test_alt_and_opt_are_checked_on_every_trace_and_a_failure_names_its_trace():
-    late = {"fragment": "alt", "operands": [{"guard": "on time", "steps": [msg("librarian-assigned", "Return")]},
-                                             {"guard": "late", "steps": [msg("clerk", "MarkOverdue")]}]}
-    sequence = checked(one([msg("librarian-assigned", "CheckOut"), late, msg("librarian-assigned", "ReturnLate")]))["sequences"][0]
-    last = by_ref(sequence)["2"]
-    assert (last["verdict"], last["code"]) == ("BROKEN", "STATE_DENIED") and last["via"] == ["alt [on time]"]
-    assert "on the trace alt [on time]" in last["why"]
-    optional = {"fragment": "opt", "operands": [{"guard": "overdue", "steps": [msg("clerk", "MarkOverdue")]}]}
-    skipped = checked(one([msg("librarian-assigned", "CheckOut"), optional, msg("librarian-assigned", "Return")]))["sequences"][0]
-    assert by_ref(skipped)["2"]["via"] == ["opt [overdue]"]  # Return works without the opt, not after it
-
-
-def test_a_change_shows_the_scenarios_it_breaks_and_fixes_and_ripples():
-    report = checked(sequences_for(LOAN, LOAN.model)[0], clerk_returns_late(), LOAN.model)
-    lend = report["sequences"][0]
-    assert report["changed"] and (lend["verdict"], lend["was"], lend["change"]) == ("BROKEN", "PRODUCIBLE", "breaks")
-    late = by_ref(lend)["1.1.1"]
-    assert (late["verdict"], late["was"], late["change"], late["code"]) == ("BROKEN", "OK", "changed", "ROLE_DENIED")
-    assert by_ref(lend)["0"]["change"] == "same"
-    renew = one([msg("librarian-assigned", "CheckOut"), msg("clerk", "MarkOverdue"), msg("librarian-assigned", "Renew")])
-    t = next(t for t in LOAN.model.transitions if t.action == "MarkOverdue")
+def test_a_change_shows_the_scenarios_it_breaks_and_fixes():
+    report = checked(scenarios_for(LOAN), clerk_returns_late(), LOAN.model)
+    late = report["sequences"][1]
+    assert report["changed"] and (late["verdict"], late["was"], late["change"]) == ("BROKEN", "PRODUCIBLE", "breaks")
+    third = by_ref(late)["2"]
+    assert (third["verdict"], third["was"], third["change"], third["code"]) == ("BROKEN", "OK", "changed", "ROLE_DENIED")
+    assert by_ref(late)["0"]["change"] == "same"
+    assert [s["change"] for s in report["sequences"]].count("same") == len(report["sequences"]) - 1
+    renew = one(step("librarian-assigned", "CheckOut", "OnLoan"), step("clerk", "MarkOverdue", "Overdue"), step("librarian-assigned", "Renew", "OnLoan"))
     renewing = apply_transactions(LOAN.model, [parse_transaction({"kind": "add_transition", "id": "TR-RENEW", "action": "Renew",
-                                                                   "from_state": t.to_state, "to_state": "OnLoan", "role": "Librarian"})], LOAN)
+                                                                   "from_state": "Overdue", "to_state": "OnLoan", "role": "Librarian"})], LOAN)
     fixed = checked(renew, renewing, LOAN.model)["sequences"][0]
     assert (fixed["verdict"], fixed["was"], fixed["change"], by_ref(fixed)["2"]["change"]) == ("PRODUCIBLE", "BROKEN", "fixes", "added")
 
 
-def test_every_pack_gets_producible_default_scenarios_from_its_model():
-    for name in ("library-loan", "excursion", "eija-review-slice"):
-        pack = load_pack(ROOT / "packs" / name)
-        first, again = default_sequences(pack, pack.model), default_sequences(pack, pack.model)
-        assert first == again and first.sequences  # deterministic
-        report = check_sequences(pack, pack.model, first)
-        assert report["status"] == "PRODUCIBLE", report["sequences"]
-        assert any(f["operator"] == "neg" and f["verdict"] == "HOLDS" for s in report["sequences"] for f in s["fragments"])
-
-
 def test_the_layout_puts_lifelines_in_columns_and_rows_top_to_bottom():
-    sequence = checked(sequences_for(LOAN, LOAN.model)[0])["sequences"][0]
+    sequence = checked(scenarios_for(LOAN))["sequences"][6]
     xs = [lifeline["x"] for lifeline in sequence["lifelines"]]
-    assert xs == sorted(set(xs)) and [lifeline["kind"] for lifeline in sequence["lifelines"]] == ["actor", "actor", "record", "effect", "effect"]
+    assert xs == sorted(set(xs)) and [lifeline["kind"] for lifeline in sequence["lifelines"]] == ["actor", "actor", "record", "effect"]
     ys = [m["y"] for m in sequence["messages"]]
     assert ys == sorted(ys) and len(set(ys)) == len(ys) and max(ys) < sequence["height"]
-    frame = sequence["fragments"][0]
-    inside = [m for m in sequence["messages"] if m["ref"].startswith("1.")]
-    assert all(frame["y0"] < m["y"] < frame["y1"] for m in inside) and frame["operands"][1]["y"] > inside[0]["y"]
+    frame, inside = sequence["fragments"][0], by_ref(sequence)["1"]
+    assert frame["y0"] < inside["y"] < frame["y1"] and frame["y0"] > by_ref(sequence)["0"]["y"]
 
 
 def test_sequences_export_through_the_existing_mermaid_and_plantuml_emitters():
-    sequences = checked(sequences_for(LOAN, LOAN.model)[0])["sequences"]
-    mermaid, plantuml = sequences[0]["export"]["mermaid"], sequences[1]["export"]["plantuml"]
-    assert "alt returned on time" in mermaid and "else kept too long" in mermaid and "librarian_assigned->>loan: CheckOut()" in mermaid
-    assert "group neg [a member lends to themselves]" in plantuml and "loan --> member_a : refused: ROLE_DENIED" in plantuml
+    sequence = checked(scenarios_for(LOAN))["sequences"][6]
+    mermaid, plantuml = sequence["export"]["mermaid"], sequence["export"]["plantuml"]
+    assert "member_a->>loan: Cancel()" in mermaid and "opt neg: refused#58; STATE_DENIED" in mermaid
+    assert "group neg [refused: STATE_DENIED]" in plantuml and "loan --> librarian_assigned : refused: STATE_DENIED" in plantuml
 
 
-def test_malformed_documents_are_refused_with_stable_codes():
-    bad = copy.deepcopy(DOCUMENT)
-    bad["sequences"][0]["steps"][1]["operands"].pop()  # an alt with one operand
-    for document, code in [(bad, "SEQUENCES_INVALID"), (DOCUMENT | {"id": "excursion"}, "SEQUENCES_PACK_MISMATCH"),
-                           (DOCUMENT | {"sequences": DOCUMENT["sequences"] * 2}, "SEQUENCES_INVALID")]:
-        with pytest.raises(DomainError) as refused:
-            parse_sequences(document, "library-loan")
-        assert refused.value.code == code
-    with pytest.raises(DomainError) as unknown:
-        one([msg("member-a", "Cancel", "book")])
-    assert unknown.value.code == "SEQUENCES_INVALID" and "book" in unknown.value.message
-    branchy = {"fragment": "opt", "operands": [{"guard": "", "steps": [msg("member-a", "Cancel")]}]}
-    with pytest.raises(DomainError) as many:
-        checked(one([branchy] * 7))  # 2^7 traces
-    assert many.value.code == "SEQUENCE_TOO_BRANCHY" and MAX_PATHS < 2 ** 7
+def test_scenarios_of_another_pack_are_refused():
+    with pytest.raises(DomainError) as refused:
+        check_sequences(LOAN, LOAN.model, parse_scenarios({"id": "excursion", "scenarios": []}, "excursion"))
+    assert refused.value.code == "SCENARIOS_PACK_MISMATCH"
 
 
 @pytest.fixture
@@ -182,11 +148,12 @@ def test_the_route_checks_the_shown_model_against_the_model_in_force_and_saves_n
     t = next(t for t in LOAN.model.transitions if t.action == "ReturnLate")
     plan = [{"kind": "set_role", "transition": t.id, "role": "Clerk"}]
     planned = client.post("/api/play/sequences", json={"plan": plan}, headers=HEADERS).json()
-    assert planned["changed"] and planned["sequences"][0]["change"] == "breaks"
-    edited = client.post("/api/play/sequences", json={"sequences": one([msg("librarian-assigned", "Renew")]).model_dump(mode="json")}, headers=HEADERS).json()
+    assert planned["changed"] and planned["sequences"][1]["change"] == "breaks"
+    draft = one(step("librarian-assigned", "Renew", "OnLoan")).model_dump(mode="json", exclude_none=True)
+    edited = client.post("/api/play/sequences", json={"scenarios": draft}, headers=HEADERS).json()
     assert (edited["source"], edited["status"]) == ("edited", "BROKEN")
-    malformed = client.post("/api/play/sequences", json={"sequences": {"id": "library-loan", "sequences": []}}, headers=HEADERS).json()
-    assert malformed["code"] == "SEQUENCES_INVALID"
+    malformed = client.post("/api/play/sequences", json={"scenarios": {"id": "library-loan", "scenarios": [{"id": "x"}]}}, headers=HEADERS).json()
+    assert malformed["code"] == "SCENARIOS_INVALID"
     ripple = client.post("/api/play/ripple", json={"plan": plan}, headers=HEADERS).json()
     assert [i["code"] for i in ripple["diagrams"]["sequences"]] == ["SEQUENCE_BROKEN"]
     with studio.store.transaction() as u:
@@ -218,14 +185,21 @@ def test_the_sequences_tab_draws_flags_and_edits_in_a_real_browser():
             page.wait_for_selector("body[data-ready=true]", timeout=60_000)
             page.click("#tab-sequences")
             page.wait_for_selector(".seq-verdict.ok")
-            assert page.evaluate("PlaySequence.result().sequences.length") == 3
+            page.click("#seq-list li:nth-child(2) button")
+            assert page.evaluate("PlaySequence.result().sequences.length") == 7
             page.select_option("#seq-actor", "librarian-assigned")
             page.select_option("#seq-action", "Renew")
-            page.click("#seq-add button")
-            page.wait_for_selector(".seq-verdict.bad")  # Renew is not in the model: flagged where the kernel refused it
+            page.click("#seq-add button")  # the new step expects what the kernel does: Renew is refused, drawn as a neg
+            for _ in range(100):  # the page's CSP has no unsafe-eval, so poll rather than wait_for_function
+                if page.evaluate("PlaySequence.result().sequences[1].steps") == 4:
+                    break
+                page.wait_for_timeout(100)
+            assert page.evaluate("PlaySequence.result().sequences[1].fragments.map((f) => f.verdict)") == ["HOLDS"]
+            page.select_option("#inspector select[aria-label='What it must do']", "state:OnLoan")
+            page.wait_for_selector(".seq-verdict.bad")  # now it expects a move the model can't make: flagged with the reason
             assert "Renew is not in the model" in page.inner_text("#seq-verdict")
             assert page.inner_text("#tab-sequences .badge") == "✗ 1"
-            assert "Can't be produced: ACTION_DENIED" in page.inner_text("#inspector")
+            assert page.evaluate("PlayTests.draft().scenarios[1].steps.length") == 4  # one draft, shared with the Tests tab
             assert errors == []
         finally:
             chrome.close()
