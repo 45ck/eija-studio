@@ -2,14 +2,13 @@
   "mode": "record",
   "platform": "Linux 6.18.44-fc-v80 / Python 3.13.16",
   "scenario": "playide_showcase",
-  "scenario_sha256": "f8b1bf4724401f49ab15f322724775409dcacaac9a609d1469f45d6a9dae59c4",
+  "scenario_sha256": "2aeb77f6ac1d8016ce844b6ef6e449aed80633fbebb5400fd0c1339a4c919330",
   "skipped": [
-    "beat 4 (one change ripples across the diagrams, AI proposes the follow-on edits) waits on the cross-diagram impact feature",
     "beat 6 (review the change as a UML diff in PlayIDE, not a GitHub PR) waits on the in-IDE review view",
     "beat 8 (verify, approve and apply) waits on the owner's source review and restamp (issue #80)"
   ],
   "status": "PARTIAL",
   "video": "demos/output/playide_showcase.webm",
-  "video_bytes": 18470104,
-  "video_sha256": "32d40fc14096d13059d1db9ab2e5228e1d4f70da889e00f3ef5c56ee02b54d68"
+  "video_bytes": 23834670,
+  "video_sha256": "8a490cc1fb8c8cc4e899434aa3d6c299e631039f065e1de87fa584eff3ccb5be"
 }

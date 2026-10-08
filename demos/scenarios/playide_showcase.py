@@ -14,11 +14,10 @@ TITLE = "The PlayIDE showcase: software engineering as play"
 PACK = "packs/library-loan"
 AI_REQUEST = "add state Archived after Returned then allow Member to CheckOut"
 BUILD_TIMEOUT_MS = 600_000
+RIPPLE_CARD = ".msg:last-child"  # the chat card that shows a drawn change's ripple (ADR-0158)
 
 # Beats that wait on work still in progress. Each becomes a real act when its feature merges (see the storyboard).
 PENDING = {
-    "ripple": "beat 4 (one change ripples across the diagrams, AI proposes the follow-on edits) waits on the "
-              "cross-diagram impact feature",
     "review": "beat 6 (review the change as a UML diff in PlayIDE, not a GitHub PR) waits on the in-IDE review view",
     "ship": "beat 8 (verify, approve and apply) waits on the owner's source review and restamp (issue #80)",
 }
@@ -45,7 +44,7 @@ def run(scene: Scene, server: RunningServer) -> None:
     _model_is_the_program(scene, chapter)
     _press_play(scene, chapter)
     _fix_by_dragging(scene, chapter)
-    scene.skip(PENDING["ripple"])
+    _ripple(scene, chapter)
     _ai_busywork(scene, chapter)
     scene.skip(PENDING["review"])
     _prove_it(scene, chapter)
@@ -116,19 +115,44 @@ def _fix_by_dragging(scene: Scene, chapter: _Chapters) -> None:
     scene.drag('#draw-palette [data-kind="state"]', "#canvas", position=(width * 0.82, height * 0.82))
     scene.type_text(".draft-form input", "Lost")
     scene.click('.draft-form button[type="submit"]')
-    scene.expect_text(".plan-verdict", "The policy allows the result")
-    scene.caption("Connect it: pick where it goes and who may take it. Three choices, no code.")
-    scene.click("#outline-states button:has-text('Overdue')")
-    scene.click("#inspector button:has-text('Add a transition from here')")
-    scene.select_option(".draft-form label:has-text('To') select", "Lost")
-    scene.select_option(".draft-form label:has-text('Action') select", "Renew")
-    scene.select_option(".draft-form label:has-text('Who may take it') select", "Librarian")
-    scene.click('.draft-form button[type="submit"]')
-    scene.expect_text(".plan-verdict", "adds Renew")
+    scene.expect_text(f"{RIPPLE_CARD} .ripple", "LoanState gains the literal Lost", timeout_ms=60_000)
     scene.caption("Each gesture is a typed step the policy checks at once. The diagram previews it; nothing is saved.")
     scene.zoom("#canvas", scale=1.8)
-    scene.wait(2200)
+    scene.wait(1800)
     scene.zoom_out()
+
+
+def _ripple(scene: Scene, chapter: _Chapters) -> None:
+    chapter("Watch it ripple")
+    scene.caption("One change ripples through the whole model. Every tab counts the elements it touches.")
+    scene.zoom(".tabs", scale=1.8)
+    scene.wait(1600)
+    scene.zoom_out()
+    scene.caption("And it catches what you missed: nothing leads into Lost yet, so no record could ever get there.")
+    scene.zoom(f"{RIPPLE_CARD} .ripple-list", scale=1.5)
+    scene.wait(1800)
+    scene.zoom_out()
+    scene.click(f"{RIPPLE_CARD} .ripple-item:has-text('LoanState gains')")
+    scene.expect_text("#inspector", "Class diagram: LoanState gains the literal Lost")
+    scene.caption("On the class diagram, the record's state enumeration gains the new literal.")
+    scene.zoom("#class-canvas", scale=1.4)
+    scene.wait(1600)
+    scene.zoom_out()
+    scene.caption("The AI proposes the follow-on: a way into Lost. Offline here, and the server re-checks it.")
+    scene.zoom(f"{RIPPLE_CARD} .follow-ons", scale=1.5)
+    scene.wait(1400)
+    scene.zoom_out()
+    scene.click(f"{RIPPLE_CARD} .follow-ons li.applies button")
+    scene.expect_text(f"{RIPPLE_CARD} .plan-verdict", "adds Renew", timeout_ms=60_000)
+    scene.expect_text(f"{RIPPLE_CARD} .ripple", "New use case Renew", timeout_ms=60_000)
+    scene.caption("That ripples too: Renew becomes a use case for the Librarian, with its own screen.")
+    scene.click(f"{RIPPLE_CARD} .ripple-item:has-text('New use case Renew')")
+    scene.zoom("#usecase-canvas", scale=1.3)
+    scene.wait(1600)
+    scene.zoom_out()
+    scene.click(f"{RIPPLE_CARD} .ripple-item:has-text('gets a default screen')")
+    scene.highlight("#screen-card", duration_ms=1400)
+    scene.click("#tab-states")
 
 
 def _ai_busywork(scene: Scene, chapter: _Chapters) -> None:
