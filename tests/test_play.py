@@ -143,3 +143,22 @@ def test_plan_mode_proposes_previews_and_tries_but_never_saves(client, studio):
     assert refused.json()["code"] == "PLAN_REQUEST_UNSUPPORTED"
     with studio.store.transaction() as u:
         assert u.active()["model"] == before  # nothing was saved or applied
+
+
+def test_the_ripple_of_a_plan_reaches_every_diagram_and_saves_nothing(tmp_path):
+    studio = harness_studio(tmp_path / "loan", pack=Path(__file__).resolve().parents[1] / "packs" / "library-loan")
+    client = TestClient(create_app(studio, SESSION), base_url=HEADERS["Origin"])
+    with studio.store.transaction() as u:
+        before = u.active()["model"]
+    plan = [{"kind": "add_state", "state": "Lost", "after": studio.pack.model.states[-1]}]
+    result = client.post("/api/play/ripple", json={"plan": plan}, headers=HEADERS).json()
+    assert result.get("code") is None, result
+    assert result["format"] == "eija.ripple.v1" and set(result["diagrams"]) == {"states", "classes", "usecases", "screens", "components"}
+    assert "Adds state Lost" in [i["text"] for i in result["diagrams"]["states"]]
+    assert [p["code"] for p in result["problems"]] == ["STATE_UNREACHABLE"]  # nothing leads into the new state yet
+    assert result["live"] is False and [s["fixes"] for s in result["follow_ons"]] == ["STATE_UNREACHABLE"]
+    assert result["conformance"]["cases_after"] > 0 and result["diagrams"]["classes"]  # the record's state enumeration
+    nothing = client.post("/api/play/ripple", json={}, headers=HEADERS).json()
+    assert all(items == [] for items in nothing["diagrams"].values()) and nothing["follow_ons"] == []
+    with studio.store.transaction() as u:
+        assert u.active()["model"] == before

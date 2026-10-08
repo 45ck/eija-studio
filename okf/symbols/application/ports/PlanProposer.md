@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/ports.py#PlanProposer
   title: application/ports.py
   hash_method: ast-sig-v1
-  sha256: 95c06725a076c12c8e5398d6ba858b03bf8895e7dabc9bbd10f4b84f40637d75
-notes_baseline: e89f2354d1ea13818543f15c37620584a157dfb8f1e10fa8b9285e8c95b39a2c
+  sha256: 792d36912e1e5b3454c5f962ebe5652d198e460f99bfe738880666e5dfa8499f
+notes_baseline: b300d1274dbaf7430aded666bb18f5d6d79370fb3e0b0654252180d8045e24b4
 ---
 
 # application.ports.PlanProposer
@@ -47,6 +47,7 @@ Turns a chat request into {summary, meaning, steps: [{transaction, why}]}. Untru
 Structural interface implemented by adapters; not a class to instantiate.
 
 * `def propose(self, request: str, model: Workflow, pack: Pack) -> dict[str, Any]`
+* `def follow_on(self, ripple: dict[str, Any], model: Workflow, pack: Pack) -> dict[str, Any]`
 <!-- okf:generated:end facts -->
 
 ## Notes

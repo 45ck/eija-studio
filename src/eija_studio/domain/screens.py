@@ -93,11 +93,15 @@ def _default_screen(case: str | None, attributes: tuple[Attribute, ...], record:
                   fields=tuple(ScreenField(attribute=a.name) for a in shown), button="Create" if case is CREATE else str(case))
 
 
+def default_screen(case: str | None, data: DataModel | None) -> Screen:
+    """The screen a use case gets when nobody designed one: `create` asks for every record attribute; an action shows
+    the required ones."""
+    return _default_screen(case, data.entity(data.record).attributes if data else (), data.record if data else "record")
+
+
 def default_screens(pack: Pack, model: Workflow, data: DataModel | None) -> Screens:
-    """One screen per use case: `create` asks for every record attribute; an action shows the required ones."""
-    attributes = data.entity(data.record).attributes if data else ()
-    record = data.record if data else "record"
-    return Screens(id=pack.id, screens=tuple(_default_screen(case, attributes, record) for case in use_cases(model)))
+    """One default screen per use case."""
+    return Screens(id=pack.id, screens=tuple(default_screen(case, data) for case in use_cases(model)))
 
 
 def screens_for(pack: Pack, model: Workflow, data: DataModel | None) -> Screens:

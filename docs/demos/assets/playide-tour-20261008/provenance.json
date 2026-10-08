@@ -4,8 +4,8 @@
   "recording": {
     "scenario": "playide_tour",
     "manifest": "demos/recordings/playide_tour.json",
-    "raw_video_sha256": "640f240614ad548bb15bf330ac2bd356a396dd75f098dce6835ea65e0ca1a6ec",
-    "raw_video_bytes": 12131323,
+    "raw_video_sha256": "ace032ad5343f3314d4416cce657cd01bdbabd0a08bf654529a054eb5e55d878",
+    "raw_video_bytes": 12874096,
     "status": "PASS",
     "skipped": [],
     "platform": "Linux 6.18.44-fc-v80 / Python 3.13.16",
@@ -13,15 +13,15 @@
   },
   "published_video": {
     "file": "playide-tour.mp4",
-    "sha256": "e36ac900059309447cbca4be7274648bb6ada0e575dbb08f9332c019ce924b63",
-    "bytes": 7523628,
+    "sha256": "aef0ccc70b3602348362d2fa99396c97de3294b13a0f28a3fec938a118fd3f0b",
+    "bytes": 7826800,
     "transformations": "Raw webm re-encoded to H.264 CRF 22; no trims, cuts or fades"
   },
   "images": [
     {
       "file": "state-machine.png",
-      "sha256": "e04f2dc389a6e70759a1760b06768e62e5f0056670c10d251dcf4efeb5e524b3",
-      "bytes": 491524,
+      "sha256": "b0f934c87ff7b206ba7a3970adb763479693a270e6b1d38761f5f4dc7a0f743a",
+      "bytes": 479180,
       "width": 1440,
       "height": 900,
       "source_time_s": 4,
@@ -29,8 +29,8 @@
     },
     {
       "file": "build-and-run.png",
-      "sha256": "40648522af78708021c15c06fb1e9e0978a08696c3287a041d7158782625fbe0",
-      "bytes": 523733,
+      "sha256": "553b75a0696a82c203b37a776a5e980b8484a0e56b239d6c7a06756784bf472f",
+      "bytes": 522356,
       "width": 1440,
       "height": 900,
       "source_time_s": 40,
@@ -38,8 +38,8 @@
     },
     {
       "file": "drawn-change.png",
-      "sha256": "d5507d5e7f9fcfec8ae73954148ff1098bd2fcb252ddae0d5aa338b32f9c6959",
-      "bytes": 529490,
+      "sha256": "fd72e4566f1913ee1573eb064e4f6a8d34e9879f492c857487f3dea867f197cf",
+      "bytes": 529679,
       "width": 1440,
       "height": 900,
       "source_time_s": 100,
@@ -47,8 +47,8 @@
     },
     {
       "file": "ai-step-refused.png",
-      "sha256": "81899f764ac79c0916ea3d7e0f6031872bb265e7ae731c561dd778c506be5b70",
-      "bytes": 513404,
+      "sha256": "d3fa8f5171c5f5effcc32e4ee31c9a0096b82465d3e13aff4e877e431ea9ba26",
+      "bytes": 500375,
       "width": 1440,
       "height": 900,
       "source_time_s": 120,
@@ -56,11 +56,11 @@
     },
     {
       "file": "checks.png",
-      "sha256": "3d98c828f13347eca8dff10efc6272820103a2560c8497c0644149e4e0e8e23e",
-      "bytes": 606033,
+      "sha256": "ee75e016559bd07a7dcb09e64c4dcfc5eab9a7ef19167bdcd35a5ab629110320",
+      "bytes": 575156,
       "width": 1440,
       "height": 900,
-      "source_time_s": "last 8 s",
+      "source_time_s": 154,
       "transformations": "Single frame decoded from the raw webm (lossy video frame, not a browser screenshot)"
     }
   ]

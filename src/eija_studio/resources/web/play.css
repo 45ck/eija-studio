@@ -148,3 +148,25 @@ dd{margin:0}
 .earned li strong{color:var(--ok);margin-right:6px}
 @media (prefers-reduced-motion:reduce){.toast{transition:none}}
 .palette-title{font-size:.7rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding:0 6px}
+/* Ripple (ADR-0158): what a change does to the other diagrams, and the AI's follow-ons */
+.tabs .badge{display:inline-block;min-width:1.3em;margin-left:5px;padding:0 5px;border-radius:999px;background:#e5f5ec;color:var(--ok);font-size:.7rem;line-height:1.35em;text-align:center}
+.tabs .badge.warn{background:#fdf1dc;color:#8a5a08}
+.tabs .badge.bad{background:#fbe3e3;color:var(--bad)}
+.tabs .badge[hidden]{display:none}
+.ripple h4,.follow-ons h4{margin:4px 0;font-size:.82rem}
+.ripple h4.ok{color:var(--ok)}
+.ripple h4.bad{color:var(--bad)}
+.ripple-list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:2px}
+.ripple-item{display:grid;grid-template-columns:1.1em auto 1fr;gap:6px;width:100%;text-align:left;border:0;background:transparent;padding:3px 4px;border-radius:5px;font-size:.8rem}
+.ripple-item:hover{background:var(--busy-bg)}
+.ripple-item .where{color:var(--muted);font-weight:600;white-space:nowrap}
+.ripple-item.added .mark{color:var(--ok)}
+.ripple-item.changed .mark,.ripple-item.warning .mark{color:#a86b06}
+.ripple-item.removed .mark,.ripple-item.problem .mark,.ripple-item.problem .what{color:var(--bad)}
+.ripple-list .cases{padding:3px 4px}
+.follow-ons ol{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px}
+.follow-ons li{display:grid;grid-template-columns:auto 1fr auto;gap:2px 6px;align-items:center;background:#faf7ff;border:1px dashed #c9b6ef;border-radius:7px;padding:5px 8px;font-size:.82rem}
+.follow-ons li.does_not_apply{border-color:#e7b4b4;background:var(--panel)}
+.follow-ons li .why,.follow-ons li p{grid-column:2/4;margin:0}
+.follow-ons li button{padding:2px 10px;font-size:.75rem}
+.ripple-note.problem{color:var(--bad)}

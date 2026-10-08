@@ -15,6 +15,7 @@
 * [plan](plan/) - Symbols of application.plan
 * [ports](ports/) - Symbols of application.ports
 * [repository](repository/) - Symbols of application.repository
+* [ripple](ripple/) - Symbols of application.ripple
 * [runtime](runtime/) - Symbols of application.runtime
 * [service](service/) - Symbols of application.service
 * [simulation](simulation/) - Symbols of application.simulation

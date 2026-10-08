@@ -2,6 +2,7 @@
 
 ## 2026-10-08
 
+* **Ripple across diagrams**: synced ADR-0158, the new `application.ripple` module, `domain.screens.default_screen`, `application.ports.PlanProposer.follow_on`, `adapters.plan_proposals` and `interfaces.play` pages. No Notes were hand-edited and nothing was recorded as verified. The new `playide_ripple` demo was recorded and the PlayIDE tour re-recorded.
 * **Drawing and checks ring**: synced ADR-0157 and refreshed `application.plan` (preview steps carry their text) and `interfaces.http` (`pack_summary` lists roles). No Notes were hand-edited and nothing was recorded as verified.
 * **Chat plan mode, review fixes**: refreshed `adapters.plan_proposals` (a request falls back to a modelled meaning only when no clause was read). No Notes were hand-edited and nothing was recorded as verified.
 * **Chat plan mode**: synced ADR-0156, the new `application.plan` module, `application.ports.PlanProposer` and `interfaces.play` pages. Added a Notes paragraph on `Studio.plan_proposer` and re-read it (process review). Nothing was recorded as verified.

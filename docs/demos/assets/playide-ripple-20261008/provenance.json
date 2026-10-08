@@ -1,0 +1,67 @@
+{
+  "schema": "eija.ide-walkthrough-captures.v1",
+  "scope": "Frames from one scripted real-browser recording of PlayIDE's ripple across diagrams (offline rule-based follow-on proposer, library-loan pack). Not a design mockup, human study, live-AI run or full IDE acceptance.",
+  "recording": {
+    "scenario": "playide_ripple",
+    "manifest": "demos/recordings/playide_ripple.json",
+    "raw_video_sha256": "cabcd35d7bc354e58742c7a1973ee1d2d361e4fb996931de65ddb2d38f186206",
+    "raw_video_bytes": 10529592,
+    "status": "PASS",
+    "skipped": [],
+    "platform": "Linux 6.18.44-fc-v80 / Python 3.13.16",
+    "browser": "Playwright bundled Chromium via the chrome channel (not Google Chrome)"
+  },
+  "published_video": {
+    "file": "playide-ripple.mp4",
+    "sha256": "747e72d6fe4e8d7c60a7093ebbca260710762846e89d80bfa3ff2e7efcd62b60",
+    "bytes": 6921011,
+    "transformations": "Raw webm re-encoded to H.264 CRF 22; no trims, cuts or fades"
+  },
+  "images": [
+    {
+      "file": "state-ripple.png",
+      "sha256": "0c35be59731668d9f90f784ad80a8b82176696ba3cf84b2bb1aa2ba85e2d9161",
+      "bytes": 490205,
+      "width": 1440,
+      "height": 900,
+      "source_time_s": 18,
+      "transformations": "Single frame decoded from the raw webm (lossy video frame, not a browser screenshot)"
+    },
+    {
+      "file": "class-enumeration.png",
+      "sha256": "0b57bd8a7d50f6783d904833d3c68f043c3267f9bc76553f3b018287c0f80d2c",
+      "bytes": 563465,
+      "width": 1440,
+      "height": 900,
+      "source_time_s": 30,
+      "transformations": "Single frame decoded from the raw webm (lossy video frame, not a browser screenshot)"
+    },
+    {
+      "file": "use-case-ripple.png",
+      "sha256": "56366513e0052faa63932623dbf2c3989e45ab6f8e4f0bd0767b3d8da6904609",
+      "bytes": 653800,
+      "width": 1440,
+      "height": 900,
+      "source_time_s": 52,
+      "transformations": "Single frame decoded from the raw webm (lossy video frame, not a browser screenshot)"
+    },
+    {
+      "file": "stranded-screen.png",
+      "sha256": "283f9fa68b18361f5014807eccd2c55dc6eaf729c1f00b7058d2f89ab6506dc0",
+      "bytes": 608423,
+      "width": 1440,
+      "height": 900,
+      "source_time_s": 100,
+      "transformations": "Single frame decoded from the raw webm (lossy video frame, not a browser screenshot)"
+    },
+    {
+      "file": "checks.png",
+      "sha256": "f30ab001de1709590756c239a673c558b4ef3ad1088a8b6f35e9be9542a9bf10",
+      "bytes": 589437,
+      "width": 1440,
+      "height": 900,
+      "source_time_s": 122,
+      "transformations": "Single frame decoded from the raw webm (lossy video frame, not a browser screenshot)"
+    }
+  ]
+}

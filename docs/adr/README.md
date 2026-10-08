@@ -72,6 +72,7 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0155](0155-component-diagrams-read-from-the-generated-code.md) | Component diagrams read from the generated code | accepted |
 | [0156](0156-chat-plan-mode-proposes-typed-steps.md) | Chat plan mode proposes typed steps the person accepts or rejects | accepted |
 | [0157](0157-drawn-edits-and-checks-ring.md) | Drawn edits join the plan, and a checks ring rewards checking | accepted |
+| [0158](0158-ripple-across-diagrams-with-checked-follow-ons.md) | A change ripples across every diagram, and the AI's follow-on edits are re-checked | accepted |
 <!-- adr-index:end -->
 
 ## Reserved numbers for capability lanes

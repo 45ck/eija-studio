@@ -1,7 +1,8 @@
 """PlayIDE routes: the visual UML canvas page, Build & run of the model as a live app beside it (ADR-0151), and
 Simulate, seeded simulated users whose every step the kernel decides (ADR-0152), the screen designer's check and
 build of designed screens (ADR-0154), the component diagram read from the files the app is built from (ADR-0155), and the chat's plan mode, whose accepted
-steps can be previewed, built and simulated but never saved or applied from here (ADR-0156).
+steps can be previewed, built and simulated but never saved or applied from here (ADR-0156), and the ripple of a plan
+across every diagram with the follow-on edits the proposer suggests, each re-checked (ADR-0158).
 
 Build & run reuses `eija build` (ADR-0150): the app is generated into the workspace, its kernel conformance tests run,
 and only a PASSing app is started, as a separate local process on a free loopback port. One app runs at a time; a new
@@ -26,6 +27,7 @@ from pydantic import Field
 
 from eija_studio.application.components import app_components
 from eija_studio.application.plan import preview_plan, propose_plan
+from eija_studio.application.ripple import check_follow_ons, ripple
 from eija_studio.application.simulation import MAX_STEPS, simulate
 from eija_studio.domain.data import data_for
 from eija_studio.domain.models import Contract, DomainError, Workflow
@@ -191,6 +193,27 @@ def register(app, studio, web: Path) -> AppRunner:
         screens = screens_of(body, model)
         files, manifest = app_files(studio.pack, model, screens)
         return app_components(files) | {"model": model.semantic_hash, "screens": screens.digest, "cases": manifest["oracle"]["cases"]}
+
+    def built(model: Workflow, screens: Screens) -> tuple[tuple[dict[str, str], int] | DomainError, list[dict[str, Any]]]:
+        try:
+            files, manifest = app_files(studio.pack, model, screens)
+        except DomainError as error:
+            return error, []
+        return (files, manifest["oracle"]["cases"]), app_components(files)["components"]
+
+    @app.post("/api/play/ripple")
+    def play_ripple(body: BuildRequest):
+        """What the plan does to every diagram, and the proposer's follow-on edits, each re-checked (ADR-0158)."""
+        base = resolve(body.model_copy(update={"plan": None}))
+        candidate = resolve(body)
+        # Before is the saved system with its pack's screens; screens edited in the designer are part of the change.
+        before, after = screens_for(studio.pack, base, data_for(studio.pack)), screens_of(body, candidate)
+        (old, _), (new, components) = built(base, before), built(candidate, after)
+        data = data_for(studio.pack)
+        report = ripple(base, candidate, data, (before, after), (old, new), components)
+        document = proposer().follow_on(report, candidate, studio.pack) if report["problems"] else {"steps": []}
+        return report | {"provider": proposer().name, "live": proposer().live,
+                         "follow_ons": check_follow_ons(document, base, body.plan or [], studio.pack, candidate, after, data)}
 
     @app.post("/api/play/build")
     def play_build(body: BuildRequest):
