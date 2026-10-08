@@ -96,3 +96,8 @@ def test_simulate_runs_the_shown_model_and_refuses_a_stale_one(client, studio):
     changed["transitions"] = changed["transitions"][:-1]
     assert client.post("/api/play/simulate", json={"model": changed}, headers=HEADERS).json()["code"] == "MODEL_CHANGED"
     assert client.post("/api/play/simulate", json={"steps": 0}, headers=HEADERS).status_code == 422
+
+
+def test_the_class_diagram_reads_the_packs_data_model(client):
+    body = client.get("/api/play/data", headers=HEADERS).json()
+    assert body["data"]["record"] == "Excursion" and len(body["digest"]) == 64

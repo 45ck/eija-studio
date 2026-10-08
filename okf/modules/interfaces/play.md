@@ -44,6 +44,7 @@ _Symbol pages are generated for the domain and application layers only._
 ## Internal imports
 
 * [`application/simulation`](/modules/application/simulation.md)
+* [`domain/data`](/modules/domain/data.md)
 * [`domain/models`](/modules/domain/models.md)
 * [`domain/pack`](/modules/domain/pack.md)
 * [`interfaces/app_build`](/modules/interfaces/app_build.md)
@@ -57,6 +58,7 @@ _No curated notes yet._
 ## Imports
 
 * [application.simulation](/modules/application/simulation.md) - Seeded simulation of people using the app built from a model (ADR-0152).
+* [domain.data](/modules/domain/data.md) - The data model of a pack, shown as a UML class diagram (ADR-0153): entities, typed attributes and associations.
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
 * [interfaces.app_build](/modules/interfaces/app_build.md) - `eija build`: write a runnable app generated from a pack's model, then run its kernel conformance tests (ADR-0150).

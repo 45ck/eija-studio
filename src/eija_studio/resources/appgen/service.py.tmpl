@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 from eija_studio.application.runtime import check_actor, execute, initialise
+from eija_studio.domain.data import DataModel, check_values
 from eija_studio.domain.models import DomainError, ExecuteCommand, Workflow, canonical
 from eija_studio.domain.pack import parse_pack
 
@@ -21,10 +22,13 @@ PACK = parse_pack(json.loads((HERE / "pack.json").read_text(encoding="utf-8")))
 MODEL = Workflow.model_validate_json((HERE / "model.json").read_text(encoding="utf-8"))
 CASE = "app"  # the kernel scopes instances and operation bindings to a case; the app is one case
 ACTORS = {a.id: a.model_dump() for a in PACK.fixtures.actors}
+DATA = DataModel.model_validate_json((HERE / "data.json").read_text(encoding="utf-8")) if (HERE / "data.json").exists() else None
+RECORD = DATA.entity(DATA.record) if DATA else None  # the class whose instances move through the workflow
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS records(id TEXT PRIMARY KEY, case_id TEXT NOT NULL, model_hash TEXT NOT NULL,
-    state TEXT NOT NULL, version INTEGER NOT NULL, title TEXT NOT NULL DEFAULT '', created_by TEXT NOT NULL DEFAULT '');
+    state TEXT NOT NULL, version INTEGER NOT NULL, title TEXT NOT NULL DEFAULT '', created_by TEXT NOT NULL DEFAULT '',
+    fields TEXT NOT NULL DEFAULT '{}');
 CREATE TABLE IF NOT EXISTS operations(id TEXT PRIMARY KEY, binding TEXT NOT NULL, result TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS audit(seq INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT NOT NULL, body TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS outbox(id TEXT PRIMARY KEY, record_id TEXT NOT NULL, effect TEXT NOT NULL, recipient TEXT NOT NULL);
@@ -97,6 +101,8 @@ class Service:
         self.db.row_factory = sqlite3.Row
         self.lock = threading.Lock()
         self.db.executescript(SCHEMA)
+        if "fields" not in {row["name"] for row in self.db.execute("PRAGMA table_info(records)")}:  # data from an older build
+            self.db.execute("ALTER TABLE records ADD COLUMN fields TEXT NOT NULL DEFAULT '{}'")
 
     def _write(self, work):
         with self.lock:
@@ -114,19 +120,27 @@ class Service:
         if row is None:
             raise DomainError("NOT_FOUND", "No such record")
         record = dict(row)
+        record["fields"] = json.loads(record["fields"])
         record["current_model"] = record["model_hash"] == MODEL.semantic_hash
         return record
 
-    def create(self, title: str, actor_id: str) -> dict[str, Any]:
+    def create(self, title: str, actor_id: str, fields: dict[str, Any] | None = None) -> dict[str, Any]:
         title = title.strip()
         if not 1 <= len(title) <= 200:
             raise DomainError("INVALID_TITLE", "Give a title of 1 to 200 characters")
         if not Session(self.db).actor(actor_id)["active"]:
             raise DomainError("ACTOR_REVOKED", "Actor is not active")
+        if RECORD is not None:
+            values = check_values(RECORD, fields or {})  # the data model's own check, from eija_studio
+        elif fields:
+            raise DomainError("UNKNOWN_FIELD", "This app's model has no record attributes")
+        else:
+            values = {}
 
         def work(session: Session) -> dict[str, Any]:
             item = initialise(session, CASE, MODEL, pack=PACK)
-            self.db.execute("UPDATE records SET title=?, created_by=? WHERE id=?", (title, actor_id, item["id"]))
+            self.db.execute("UPDATE records SET title=?, created_by=?, fields=? WHERE id=?",
+                            (title, actor_id, canonical(values), item["id"]))
             return self._record(item["id"])
         return self._write(work)
 

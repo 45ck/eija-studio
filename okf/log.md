@@ -2,6 +2,7 @@
 
 ## 2026-10-08
 
+* **Class diagrams for data**: synced ADR-0153 and the new `domain.data` module and symbol pages; `domain.pack` (`pack_directory`), `application.appgen` (`data_cases`, `limits`) and `interfaces.play` refreshed. No Notes were hand-edited and nothing was recorded as verified.
 * **PlayIDE Simulate**: synced ADR-0152 and the new `application.simulation` module and symbol pages; `interfaces.play` refreshed. No Notes were hand-edited and nothing was recorded as verified.
 * **PlayIDE canvas and Build & run**: synced ADR-0151 and the new `interfaces.play` module page; `interfaces.http` and `interfaces.app_build` pages refreshed for the `/play` routes and `build_into`. No Notes were hand-edited and nothing was recorded as verified.
 * **App generation**: synced ADR-0150, `application.appgen` (pure spec writer and kernel-answered oracle), `interfaces.app_build` (`eija build`) and `bootstrap.source_identity`. Other pages changed only in generated reference links. No Notes were hand-edited and nothing was recorded as verified. The conformance and negative-control results are execution evidence in `tests/test_appgen.py`, not knowledge-base review.

@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py
   title: application/appgen.py
   hash_method: ast-api-v1
-  sha256: 58be340172ac0169b12bae5e8cd2ecdbd2ea44331719ef573b685365ab05631b
-notes_baseline: 758610c8053d2ba4310500f09f8199c057d78850dee95393b28a3da4258d34b0
+  sha256: a172dda3a599f788322865bb2dcbe826ad87831968fef4ee896a6e51e1138a6e
+notes_baseline: 3e8b1fb14b679e3393eaa12fb538f8511472829a81ac0eb0ffd5e7088a827fa7
 ---
 
 # application.appgen
@@ -43,9 +43,15 @@ Pure: no IO, no clock, no randomness. The same pack and model always give byte-i
 
 * [`FORMAT`](/symbols/application/appgen/FORMAT.md) (constant) - no docstring
 * [`LIMITS`](/symbols/application/appgen/LIMITS.md) (constant) - no docstring
+* [`NO_DATA`](/symbols/application/appgen/NO_DATA.md) (constant) - no docstring
+* [`SAMPLES`](/symbols/application/appgen/SAMPLES.md) (constant) - no docstring
 * [`UNDECLARED_ACTION`](/symbols/application/appgen/UNDECLARED_ACTION.md) (constant) - no docstring
 * [`UNKNOWN_ACTOR`](/symbols/application/appgen/UNKNOWN_ACTOR.md) (constant) - no docstring
+* [`WITH_DATA`](/symbols/application/appgen/WITH_DATA.md) (constant) - no docstring
+* [`WRONG`](/symbols/application/appgen/WRONG.md) (constant) - no docstring
 * [`absent`](/symbols/application/appgen/absent.md) (function) - A name guaranteed not to be in `taken`, so a negative case can never collide with a declared one.
+* [`app_limits`](/symbols/application/appgen/app_limits.md) (function) - no docstring
+* [`data_cases`](/symbols/application/appgen/data_cases.md) (function) - Record values to create with, and `check_values`' answer for each: a valid record, then each required value missing, ea…
 * [`generate`](/symbols/application/appgen/generate.md) (function) - Return the per-model files and the build manifest (without file hashes or test results).
 * [`oracle_cases`](/symbols/application/appgen/oracle_cases.md) (function) - Every state x action x actor x expected version, then the same request replayed.
 * [`readme`](/symbols/application/appgen/readme.md) (function) - no docstring
@@ -53,6 +59,7 @@ Pure: no IO, no clock, no randomness. The same pack and model always give byte-i
 ## Internal imports
 
 * [`application/runtime`](/modules/application/runtime.md)
+* [`domain/data`](/modules/domain/data.md)
 * [`domain/models`](/modules/domain/models.md)
 * [`domain/pack`](/modules/domain/pack.md)
 * [`domain/policy`](/modules/domain/policy.md)
@@ -66,6 +73,7 @@ _No curated notes yet._
 ## Imports
 
 * [application.runtime](/modules/application/runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.
+* [domain.data](/modules/domain/data.md) - The data model of a pack, shown as a UML class diagram (ADR-0153): entities, typed attributes and associations.
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
 * [domain.policy](/modules/domain/policy.md) - Generic policy: coherence with a domain pack's declared action catalog, the pack's laws, and declared effects.
@@ -75,10 +83,16 @@ _No curated notes yet._
 * [interfaces.app_build](/modules/interfaces/app_build.md) - `eija build`: write a runnable app generated from a pack's model, then run its kernel conformance tests (ADR-0150).
 * [application.appgen.FORMAT](/symbols/application/appgen/FORMAT.md) - Constant `FORMAT` in `application/appgen`.
 * [application.appgen.LIMITS](/symbols/application/appgen/LIMITS.md) - Constant `LIMITS` in `application/appgen`.
+* [application.appgen.NO_DATA](/symbols/application/appgen/NO_DATA.md) - Constant `NO_DATA` in `application/appgen`.
+* [application.appgen.SAMPLES](/symbols/application/appgen/SAMPLES.md) - Constant `SAMPLES` in `application/appgen`.
 * [application.appgen.UNDECLARED_ACTION](/symbols/application/appgen/UNDECLARED_ACTION.md) - Constant `UNDECLARED_ACTION` in `application/appgen`.
 * [application.appgen.UNKNOWN_ACTOR](/symbols/application/appgen/UNKNOWN_ACTOR.md) - Constant `UNKNOWN_ACTOR` in `application/appgen`.
+* [application.appgen.WITH_DATA](/symbols/application/appgen/WITH_DATA.md) - Constant `WITH_DATA` in `application/appgen`.
+* [application.appgen.WRONG](/symbols/application/appgen/WRONG.md) - Constant `WRONG` in `application/appgen`.
 * [application.appgen.absent](/symbols/application/appgen/absent.md) - A name guaranteed not to be in `taken`, so a negative case can never collide with a declared one.
+* [application.appgen.app_limits](/symbols/application/appgen/app_limits.md) - `def app_limits(data: DataModel | None) -> list[str]` in `application/appgen`.
+* [application.appgen.data_cases](/symbols/application/appgen/data_cases.md) - Record values to create with, and `check_values`' answer for each: a valid record, then each required value missing, each value of the wrong type, each text on…
 * [application.appgen.generate](/symbols/application/appgen/generate.md) - Return the per-model files and the build manifest (without file hashes or test results).
 * [application.appgen.oracle_cases](/symbols/application/appgen/oracle_cases.md) - Every state x action x actor x expected version, then the same request replayed.
-* [application.appgen.readme](/symbols/application/appgen/readme.md) - `def readme(pack: Pack, model: Workflow, cases: int) -> str` in `application/appgen`.
+* [application.appgen.readme](/symbols/application/appgen/readme.md) - `def readme(pack: Pack, model: Workflow, cases: int, data: DataModel | None=None) -> str` in `application/appgen`.
 <!-- okf:generated:end links -->

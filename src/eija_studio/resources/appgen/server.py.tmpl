@@ -7,12 +7,13 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from .service import MODEL, PACK, Refused, Service
+from .service import DATA, MODEL, PACK, Refused, Service
+from .service import RECORD as RECORD_CLASS
 
 WEB = Path(__file__).resolve().parent / "web"
 STATIC = {"/": ("index.html", "text/html"), "/app.js": ("app.js", "text/javascript"), "/app.css": ("app.css", "text/css")}
 FORBIDDEN = {"UNKNOWN_ACTOR", "ACTOR_REVOKED", "ROLE_DENIED", "ASSIGNMENT_DENIED"}
-INVALID = {"BAD_REQUEST", "INVALID_TITLE"}
+INVALID = {"BAD_REQUEST", "INVALID_TITLE", "FIELD_REQUIRED", "FIELD_TYPE", "FIELD_TOO_LONG", "FIELD_CHOICE", "UNKNOWN_FIELD"}
 RECORD = re.compile(r"^/api/records/([0-9a-f]{1,32})(/act)?$")
 MAX_BODY = 16_384
 
@@ -22,7 +23,8 @@ def describe() -> dict:
             "initial_state": MODEL.initial_state, "states": list(MODEL.states),
             "roles": {r.id: r.description for r in PACK.roles},
             "transitions": {t.action: {"from": t.from_state, "to": t.to_state, "role": t.role} for t in MODEL.transitions},
-            "actors": {a.id: {"role": a.role, "active": a.active} for a in PACK.fixtures.actors}}
+            "actors": {a.id: {"role": a.role, "active": a.active} for a in PACK.fixtures.actors},
+            "record": RECORD_CLASS.model_dump(mode="json") if RECORD_CLASS else None, "data_digest": DATA.digest if DATA else None}
 
 
 def handler_for(service: Service):
@@ -85,7 +87,10 @@ def handler_for(service: Service):
             try:
                 body = self._body()
                 if url.path == "/api/records":
-                    return self._json(201, service.create(str(body.get("title", "")), str(body.get("actor", ""))))
+                    fields = body.get("fields", {})
+                    if not isinstance(fields, dict):
+                        raise Refused("BAD_REQUEST", "fields must be a JSON object")
+                    return self._json(201, service.create(str(body.get("title", "")), str(body.get("actor", "")), fields))
                 match = RECORD.match(url.path)
                 if match and match.group(2):
                     version = body.get("expected_version")

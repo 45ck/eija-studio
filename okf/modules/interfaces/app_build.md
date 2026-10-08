@@ -39,6 +39,7 @@ _Symbol pages are generated for the domain and application layers only._
 ## Internal imports
 
 * [`application/appgen`](/modules/application/appgen.md)
+* [`domain/data`](/modules/domain/data.md)
 * [`domain/models`](/modules/domain/models.md)
 * [`domain/pack`](/modules/domain/pack.md)
 <!-- okf:generated:end facts -->
@@ -51,6 +52,7 @@ _No curated notes yet._
 ## Imports
 
 * [application.appgen](/modules/application/appgen.md) - App generation: a reviewed workflow model becomes a runnable app and its conformance oracle (ADR-0150).
+* [domain.data](/modules/domain/data.md) - The data model of a pack, shown as a UML class diagram (ADR-0153): entities, typed attributes and associations.
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
 

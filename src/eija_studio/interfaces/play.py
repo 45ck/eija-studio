@@ -23,6 +23,7 @@ from fastapi.responses import FileResponse
 from pydantic import Field
 
 from eija_studio.application.simulation import MAX_STEPS, simulate
+from eija_studio.domain.data import data_for
 from eija_studio.domain.models import Contract, DomainError, Workflow
 from eija_studio.domain.pack import Pack
 from .app_build import build_into
@@ -125,6 +126,12 @@ def register(app, studio, web: Path) -> AppRunner:
         if body.model is not None and body.model.semantic_hash != model.semantic_hash:
             raise DomainError("MODEL_CHANGED", "The model changed since the page loaded; reload and try again")
         return model
+
+    @app.get("/api/play/data")
+    def play_data():
+        """The pack's data model for the class diagram, or null when the pack has none (ADR-0153)."""
+        data = data_for(studio.pack)
+        return {"data": data.model_dump(mode="json") if data else None, "digest": data.digest if data else None}
 
     @app.post("/api/play/build")
     def play_build(body: BuildRequest):

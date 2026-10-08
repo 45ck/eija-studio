@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### 8 October 2026: class diagrams for data
+
+- Packs can have a data model, `data.json` beside `pack.json`, with classes, typed attributes, associations and a «record» class. PlayIDE shows it as a UML class diagram. Built apps get a form from the record class, and every value is checked by `check_values` on the server. The conformance oracle gains data cases, and two new broken apps are caught. The excursion and library-loan packs have data models; pack digests are unchanged. See [ADR-0153](docs/adr/0153-data-models-as-uml-class-diagrams.md).
+
 ### 8 October 2026: PlayIDE Simulate
 
 - PlayIDE's **Simulate** runs 500 seeded actions by the pack's fixture actors through the kernel and paints the result on the diagram: commits as line width, never-used transitions dashed, records per state as fill. It lists findings (never succeeded, never reached, stuck, most refused) and a run log you can replay. The same seed replays exactly. See [ADR-0152](docs/adr/0152-simulate-seeded-users-through-the-kernel.md).

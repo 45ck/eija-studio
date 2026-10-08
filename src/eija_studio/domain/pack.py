@@ -341,6 +341,7 @@ def _read(path: Path) -> Any:
 
 _LOADED: dict[tuple[str, str], Pack] = {}
 _SOURCES: dict[Path, str] = {}
+_DIRECTORIES: dict[tuple[str, str], Path] = {}  # where each snapshot was last read, for files beside pack.json
 
 
 def load_pack(location: str | Path) -> Pack:
@@ -350,7 +351,18 @@ def load_pack(location: str | Path) -> Pack:
     pack = _cached(_read_text(path), path.name)
     _LOADED[pack.id, pack.digest] = pack
     _SOURCES[path] = pack.id
+    _DIRECTORIES[pack.id, pack.digest] = path.parent
     return pack
+
+
+def pack_directory(pack: Pack) -> Path | None:
+    """The directory this exact pack snapshot was read from, or its authored directory, so optional files beside
+    `pack.json` (such as `data.json`) are read from the same place as the pack."""
+    found = _DIRECTORIES.get((pack.id, pack.digest))
+    if found is not None:
+        return found
+    authored = PACKS_ROOT / pack.id
+    return authored if (authored / PACK_FILE).is_file() else None
 
 
 def _refresh_sources(pack_id: str) -> None:

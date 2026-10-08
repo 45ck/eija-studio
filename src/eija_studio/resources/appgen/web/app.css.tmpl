@@ -21,7 +21,7 @@ button:disabled{background:transparent;color:var(--muted);border-color:var(--lin
 .layout{display:grid;grid-template-columns:minmax(220px,1fr) minmax(320px,2fr) minmax(240px,1.2fr);gap:16px;padding:16px 24px}
 @media (max-width:900px){.layout{grid-template-columns:1fr;padding:12px 16px}}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
-.create{display:flex;gap:8px;margin-bottom:12px}
+.create{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
 .create input{flex:1;min-width:0}
 .records{list-style:none;margin:0;padding:0}
 .records button{width:100%;display:flex;justify-content:space-between;gap:8px;background:transparent;color:var(--ink);
@@ -43,3 +43,8 @@ button:disabled{background:transparent;color:var(--muted);border-color:var(--lin
 .rules{width:100%;border-collapse:collapse;font-size:.85rem}
 .rules th,.rules td{text-align:left;padding:6px 4px;border-bottom:1px solid var(--line)}
 .visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.fields{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;align-items:center;flex-basis:100%;font-size:.88rem}
+.fields input[type=checkbox]{justify-self:start}
+.values{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;font-size:.88rem;margin:0 0 8px}
+.values dt{color:#5f687a}
+.values dd{margin:0}

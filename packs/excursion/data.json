@@ -1,0 +1,38 @@
+{
+  "schema_version": "eija.data.v1",
+  "id": "excursion",
+  "record": "Excursion",
+  "entities": [
+    {
+      "name": "Excursion",
+      "description": "One proposed school trip; it moves through the approval workflow.",
+      "attributes": [
+        {"name": "destination", "type": "text", "required": true, "max_length": 120},
+        {"name": "tripDate", "type": "date", "required": true},
+        {"name": "yearGroup", "type": "choice", "required": true, "choices": ["Year 7", "Year 8", "Year 9", "Year 10", "Year 11"]},
+        {"name": "studentCount", "type": "number", "required": true},
+        {"name": "overnight", "type": "boolean"},
+        {"name": "riskNotes", "type": "text", "max_length": 2000}
+      ]
+    },
+    {
+      "name": "Venue",
+      "attributes": [
+        {"name": "name", "type": "text", "required": true},
+        {"name": "address", "type": "text"}
+      ]
+    },
+    {
+      "name": "Supervisor",
+      "description": "A staff member accompanying the trip.",
+      "attributes": [
+        {"name": "name", "type": "text", "required": true},
+        {"name": "firstAidTrained", "type": "boolean"}
+      ]
+    }
+  ],
+  "associations": [
+    {"source": "Excursion", "target": "Venue", "role": "venue", "source_multiplicity": "0..*", "target_multiplicity": "1"},
+    {"source": "Excursion", "target": "Supervisor", "kind": "aggregation", "role": "supervisors", "source_multiplicity": "0..*", "target_multiplicity": "1..*"}
+  ]
+}

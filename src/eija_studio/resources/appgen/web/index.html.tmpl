@@ -23,6 +23,7 @@
       <form id="create" class="create">
         <label for="title" class="visually-hidden">Title</label>
         <input id="title" maxlength="200" placeholder="New record title" required>
+        <div id="fields" class="fields"></div>
         <button type="submit">Create</button>
       </form>
       <ul id="records" class="records"></ul>
@@ -30,6 +31,7 @@
     </section>
     <section class="panel detail" aria-labelledby="detail-title">
       <h2 id="detail-title">Select a record</h2>
+      <dl id="detail-fields" class="values"></dl>
       <ol id="flow" class="flow" aria-label="States"></ol>
       <div id="stranded" class="notice warn" hidden>This record was created under an earlier model. The kernel refuses actions on it (STALE_INSTANCE).</div>
       <h3>What you can do</h3>

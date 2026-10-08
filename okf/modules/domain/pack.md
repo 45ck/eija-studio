@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/pack.py
   title: domain/pack.py
   hash_method: ast-api-v1
-  sha256: 95f86e645f1e6e9c9ac4211307a361c528d633efef3317fcfad06d8f4d6e614d
-notes_baseline: 45944449d454a6b1717b71434632e7ea30bdfbe2a022aaf2ac4c03df199c0e68
+  sha256: 6e460d0b465273b4cde1c4193dec2993385df299ef3923f65e0aaf7ad889c90b
+notes_baseline: 5d9ffafcc4ee8b94613914af60c5c58f1f392f102f7f2e5b3eadd59ff97c9dd6
 ---
 
 # domain.pack
@@ -72,6 +72,7 @@ action or effect) becomes ``PackError`` (code ``PACK_INVALID``) with SORTED diag
 * [`find_pack`](/symbols/domain/pack/find_pack.md) (function) - Resolve a loaded snapshot by digest, or an unambiguous id after refreshing its sources.
 * [`load_pack`](/symbols/domain/pack/load_pack.md) (function) - Read current file contents and retain an immutable, digest-addressed pack snapshot.
 * [`meaning_ids`](/symbols/domain/pack/meaning_ids.md) (function) - The meaning ids of the pack a workflow belongs to, or None when no such pack can be found.
+* [`pack_directory`](/symbols/domain/pack/pack_directory.md) (function) - The directory this exact pack snapshot was read from, or its authored directory, so optional files beside `pack.json` (…
 * [`parse_pack`](/symbols/domain/pack/parse_pack.md) (function) - Validate a decoded JSON document as a pack.
 * [`state_sets`](/symbols/domain/pack/state_sets.md) (function) - The state sets a workflow of this pack can have: the baseline's, and the baseline's after each supported meaning (state…
 * [`ui_key`](/symbols/domain/pack/ui_key.md) (function) - The derived UI/UML key of a pack element: ``data-eija-id="<pack>.<kind>.<id>"``.
@@ -116,6 +117,7 @@ _No curated notes yet._
 * [application.witness_inspection](/modules/application/witness_inspection.md) - Immutable display projections of the deciding formal record, never new evidence or verdicts.
 * [bootstrap](/modules/bootstrap.md) - The only composition root: wires application ports to concrete adapters.
 * [domain.affordance](/modules/domain/affordance.md) - Affordance map (WBS 1.3): which single edits the kernel would accept, and why the others are refused.
+* [domain.data](/modules/domain/data.md) - The data model of a pack, shown as a UML class diagram (ADR-0153): entities, typed attributes and associations.
 * [domain.evidence](/modules/domain/evidence.md) - Compatibility is computed.
 * [domain.policy](/modules/domain/policy.md) - Generic policy: coherence with a domain pack's declared action catalog, the pack's laws, and declared effects.
 * [interfaces.app_build](/modules/interfaces/app_build.md) - `eija build`: write a runnable app generated from a pack's model, then run its kernel conformance tests (ADR-0150).
@@ -157,6 +159,7 @@ _No curated notes yet._
 * [domain.pack.find_pack](/symbols/domain/pack/find_pack.md) - Resolve a loaded snapshot by digest, or an unambiguous id after refreshing its sources.
 * [domain.pack.load_pack](/symbols/domain/pack/load_pack.md) - Read current file contents and retain an immutable, digest-addressed pack snapshot.
 * [domain.pack.meaning_ids](/symbols/domain/pack/meaning_ids.md) - The meaning ids of the pack a workflow belongs to, or None when no such pack can be found.
+* [domain.pack.pack_directory](/symbols/domain/pack/pack_directory.md) - The directory this exact pack snapshot was read from, or its authored directory, so optional files beside `pack.json` (such as `data.json`) are read from the s…
 * [domain.pack.parse_pack](/symbols/domain/pack/parse_pack.md) - Validate a decoded JSON document as a pack.
 * [domain.pack.state_sets](/symbols/domain/pack/state_sets.md) - The state sets a workflow of this pack can have: the baseline's, and the baseline's after each supported meaning (states its transactions add or remove).
 * [domain.pack.ui_key](/symbols/domain/pack/ui_key.md) - The derived UI/UML key of a pack element: ``data-eija-id="<pack>.<kind>.<id>"``.

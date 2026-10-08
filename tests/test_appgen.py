@@ -91,6 +91,10 @@ MUTANTS = {  # negative controls: each breaks the app's storage or its built-in 
                                 "return None"),
     "approval handed to teachers": ("excursion", "app/model.json", '"role":"Registrar"', '"role":"Teacher"'),
     "unassigned actor treated as assigned": ("library-loan", "app/pack.json", '"assigned":false', '"assigned":true'),
+    "record values not checked": ("library-loan", "app/service.py", "values = check_values(RECORD, fields or {})",
+                                  "values = dict(fields or {})"),
+    "a required attribute made optional": ("excursion", "app/data.json", '"name":"destination","required":true',
+                                           '"name":"destination","required":false'),
 }
 
 
@@ -149,6 +153,9 @@ def running_app(tmp_path):
             del sys.modules[module]
 
 
+TRIP = {"destination": "Museum", "tripDate": "2026-11-20", "yearGroup": "Year 8", "studentCount": 28}  # excursion data.json
+
+
 def call(port, path, body=None, kind="application/json"):
     connection = http.client.HTTPConnection("127.0.0.1", port, timeout=10)
     data = body if isinstance(body, bytes) else None if body is None else json.dumps(body).encode()
@@ -160,7 +167,7 @@ def call(port, path, body=None, kind="application/json"):
 
 
 def test_the_running_app_enforces_the_model_over_http(running_app):
-    status, record, headers = call(running_app, "/api/records", {"title": "Museum trip", "actor": "teacher-assigned"})
+    status, record, headers = call(running_app, "/api/records", {"title": "Museum trip", "actor": "teacher-assigned", "fields": TRIP})
     assert status == 201 and record["state"] == "Draft" and "default-src 'self'" in headers["Content-Security-Policy"]
     act = f"/api/records/{record['id']}/act"
     status, refused, _ = call(running_app, act, {"action": "Submit", "actor": "registrar", "expected_version": 0, "operation_id": "a"})
@@ -172,6 +179,17 @@ def test_the_running_app_enforces_the_model_over_http(running_app):
     status, view, _ = call(running_app, f"/api/records/{record['id']}?actor=registrar")
     assert [o["action"] for o in view["options"] if o["allowed"]] == ["Approve", "Reject"]
     assert [(h["effect"], h["actor"], h["state"]) for h in view["history"]] == [("Audit:ExcursionSubmitted", "teacher-assigned", "Submitted")]
+
+
+def test_the_running_app_checks_record_values_against_the_data_model(running_app):
+    fields = TRIP
+    status, record, _ = call(running_app, "/api/records", {"title": "Trip", "actor": "teacher-assigned", "fields": fields})
+    assert status == 201 and record["fields"] == fields
+    status, refused, _ = call(running_app, "/api/records", {"title": "Trip", "actor": "teacher-assigned",
+                                                             "fields": fields | {"yearGroup": "Year 13"}})
+    assert (status, refused["code"]) == (400, "FIELD_CHOICE")
+    status, described, _ = call(running_app, "/api/app")
+    assert described["record"]["name"] == "Excursion" and described["data_digest"]
 
 
 def test_the_app_refuses_non_json_posts(running_app):

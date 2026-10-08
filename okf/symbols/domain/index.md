@@ -4,6 +4,7 @@
 
 * [affordance](affordance/) - Symbols of domain.affordance
 * [change_case](change_case/) - Symbols of domain.change_case
+* [data](data/) - Symbols of domain.data
 * [evidence](evidence/) - Symbols of domain.evidence
 * [evidence_kinds](evidence_kinds/) - Symbols of domain.evidence_kinds
 * [formal](formal/) - Symbols of domain.formal

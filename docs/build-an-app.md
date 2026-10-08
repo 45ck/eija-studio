@@ -15,6 +15,7 @@ Use `--workflow FILE` to build a candidate workflow (for example one exported fr
 | Path | What it is |
 |---|---|
 | `app/model.json`, `app/pack.json` | The canonical workflow model (states, transitions, roles, guards, effects) and pack (actors, policy) the app was built from |
+| `app/data.json` | The pack's data model, when it has a `data.json`: the record class's attributes become the app's form, and every value is checked by EIJA's `check_values` |
 | `app/service.py` | SQLite storage for the kernel. Creating a record calls `runtime.initialise` and each action calls `runtime.execute`; each request commits in a single transaction. |
 | `app/server.py`, `app/web/` | A local HTTP API and page: pick an actor, create records and take the actions the model allows, with reasons for those it refuses |
 | `tests/oracle.json` | The kernel's answer for every state × action × actor × version, plus replays |
@@ -23,13 +24,13 @@ Use `--workflow FILE` to build a candidate workflow (for example one exported fr
 
 ## Why you can trust it, and how far
 
-The oracle is not the generator's reading of the model. The build asks EIJA's own runtime what should happen in every case, then runs the generated app's tests in a separate process. If the app commits or refuses anywhere the kernel does not, the build reports `FAIL` and exits 2. The repository's tests break the app on purpose five ways (operations not recorded, audit not written, notifications not queued, a role changed in `app/model.json`, an assignment changed in `app/pack.json`) and require each break to be caught.
+The oracle is not the generator's reading of the model. The build asks EIJA's own runtime what should happen in every case, then runs the generated app's tests in a separate process. If the app commits or refuses anywhere the kernel does not, the build reports `FAIL` and exits 2. The repository's tests break the app on purpose five ways (operations not recorded, audit not written, notifications not queued, a role changed in `app/model.json`, an assignment changed in `app/pack.json`) and two more for the data model (values stored unchecked, a required attribute made optional), and require each break to be caught.
 
 The build does **not** establish:
 
 - correctness for actors or inputs outside the pack's fixture directory. The check is exhaustive for the modelled cases only.
 - that the kernel itself is reviewed. While `kernel_source_review` is `SOURCE_REVIEW_REQUIRED`, the app agrees with unreviewed kernel source.
-- anything about data the model does not describe. Records carry a title only, because entities and fields are not modelled yet.
+- anything about data the model does not describe. Without a `data.json`, records carry a title only. With one, only the record class is stored; other classes are drawn but not stored yet.
 - authentication. The actor picker selects from a fixture directory.
 - delivery of notifications. They are written to an outbox table.
 

@@ -39,6 +39,40 @@ function renderRules() {
   }
 }
 
+// The record's attributes come from the data model (class diagram); the server checks every value.
+function renderFields() {
+  const box = $("fields");
+  box.replaceChildren();
+  if (!state.app.record) return;
+  for (const a of state.app.record.attributes) {
+    const id = "field-" + a.name, label = el("label", a.name + (a.required ? " *" : ""), { for: id });
+    let input;
+    if (a.type === "choice") {
+      input = el("select", undefined, { id });
+      input.append(el("option", "", { value: "" }), ...a.choices.map((c) => el("option", c, { value: c })));
+    } else if (a.type === "boolean") {
+      input = el("input", undefined, { id, type: "checkbox" });
+    } else {
+      input = el("input", undefined, { id, type: { number: "number", date: "date" }[a.type] || "text" });
+      if (a.type === "text") input.maxLength = a.max_length;
+      if (a.type === "number") input.step = "any";
+    }
+    if (a.required && a.type !== "boolean") input.required = true;
+    box.append(label, input);
+  }
+}
+
+function fieldValues() {
+  const values = {};
+  for (const a of (state.app.record ? state.app.record.attributes : [])) {
+    const input = $("field-" + a.name);
+    if (a.type === "boolean") values[a.name] = input.checked;
+    else if (input.value === "") continue;
+    else values[a.name] = a.type === "number" ? Number(input.value) : input.value;
+  }
+  return values;
+}
+
 async function renderRecords() {
   const records = await api("/api/records");
   const list = $("records");
@@ -65,6 +99,9 @@ async function renderDetail() {
   if (!state.selected) return;
   const view = await api(`/api/records/${state.selected}?actor=${encodeURIComponent(state.actor)}`);
   $("detail-title").textContent = view.record.title;
+  const values = $("detail-fields");
+  values.replaceChildren();
+  for (const [name, value] of Object.entries(view.record.fields || {})) values.append(el("dt", name), el("dd", String(value)));
   $("stranded").hidden = view.record.current_model;
   const flow = $("flow");
   flow.replaceChildren();
@@ -125,8 +162,8 @@ async function start() {
   $("create").addEventListener("submit", async (event) => {
     event.preventDefault();
     try {
-      const record = await api("/api/records", { title: $("title").value, actor: state.actor });
-      $("title").value = "";
+      const record = await api("/api/records", { title: $("title").value, actor: state.actor, fields: fieldValues() });
+      $("create").reset();
       await select(record.id);
       say(`Created in ${record.state}.`, "ok");
     } catch (error) {
@@ -134,6 +171,7 @@ async function start() {
     }
   });
   renderRules();
+  renderFields();
   await refresh();
 }
 
