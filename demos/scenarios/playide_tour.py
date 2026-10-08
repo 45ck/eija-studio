@@ -104,6 +104,6 @@ def _ai_change(scene: Scene) -> None:
     scene.click("#simulate")
     scene.expect_text("#sim-summary", "refused by the kernel", timeout_ms=60_000)
     scene.click("#health")
-    scene.expect_text("#health-text", "4/4 checks")
+    scene.expect_text("#health-text", "5/5 checks")
     scene.caption("Every part of the ring is a real check on what you are looking at.")
     scene.highlight("#checks", duration_ms=2600)

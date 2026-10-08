@@ -1,7 +1,7 @@
 ---
 type: Function
 title: domain.screens.default_screens
-description: 'One screen per use case: `create` asks for every record attribute; an action shows the required ones.'
+description: One default screen per use case.
 resource: repo://src/eija_studio/domain/screens.py#default_screens
 tags:
 - symbol
@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/screens.py#default_screens
   title: domain/screens.py
   hash_method: ast-v2
-  sha256: 1f7f073bee4c512c3514a8b7d8e4ea2705676e2876e2988d8da2e616827d400d
-notes_baseline: 9efc60cf0df532024f4d60c6cac255fd179da90aa7c1f7c2cdadd23de6e162fc
+  sha256: 33130bb64aea068555d8ca86337b1135924e0a45feb26a4ee1617186f4d7ff65
+notes_baseline: c500e6761124f6b3dace4cb3ff9cbe07bf526f340a24e38912d87e002a5d2fa5
 ---
 
 # domain.screens.default_screens
@@ -32,7 +32,7 @@ notes_baseline: 9efc60cf0df532024f4d60c6cac255fd179da90aa7c1f7c2cdadd23de6e162fc
 ## Docstring
 
 ~~~text
-One screen per use case: `create` asks for every record attribute; an action shows the required ones.
+One default screen per use case.
 ~~~
 <!-- okf:generated:end facts -->
 
@@ -47,6 +47,7 @@ _No curated notes yet._
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
 * [domain.screens.Screens](/symbols/domain/screens/Screens.md) - `class Screens(Contract)` in `domain/screens`.
+* [domain.screens.default_screen](/symbols/domain/screens/default_screen.md) - The screen a use case gets when nobody designed one: `create` asks for every record attribute; an action shows the required ones.
 * [domain.screens.use_cases](/symbols/domain/screens/use_cases.md) - Creating a record (None), then each distinct action in transition-id order: the ellipses of the use case diagram.
 
 ## Referenced by

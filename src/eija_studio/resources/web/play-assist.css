@@ -1,0 +1,27 @@
+/* PlayIDE assist (ADR-0170): who does what, phrases about the selection, name completion, the command palette. */
+.authority{display:flex;flex-wrap:wrap;gap:4px 10px;margin:-4px 0 0;font-size:.76rem;color:var(--muted)}
+.authority span{white-space:nowrap}
+.authority strong{color:var(--ink);font-weight:600}
+.suggest{display:flex;flex-direction:column;gap:4px}
+.suggest-title{font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.suggest-row{display:flex;flex-wrap:wrap;gap:4px}
+.suggest-row button{padding:3px 9px;font-size:.78rem;border-radius:999px;background:var(--state);border-color:transparent;color:var(--state-line);min-height:24px}
+.suggest-row button:hover{border-color:var(--state-line)}
+.chat-form.with-complete{position:relative}
+.complete{position:absolute;left:0;right:70px;bottom:100%;margin-bottom:4px;background:var(--panel);border:1px solid var(--line);border-radius:8px;box-shadow:0 6px 18px rgba(20,30,60,.12);padding:4px;z-index:5;max-height:220px;overflow:auto}
+.complete[hidden]{display:none}
+.complete li,.palette-dialog li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:5px 8px;border-radius:6px;font-size:.86rem;cursor:pointer;min-height:24px}
+.complete li[aria-selected="true"],.palette-dialog li[aria-selected="true"]{background:var(--state)}
+.kind-tag{font-size:.68rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.chat-hint{margin:0;min-height:0}
+.chat-hint:empty{display:none}
+.review-keys{margin:4px 0 0}
+.plan-steps input:focus-visible{outline-offset:3px}
+.palette-open{display:inline-flex;align-items:center;padding:5px 8px;color:var(--muted);white-space:nowrap}
+kbd{font:inherit;font-size:.75rem;padding:1px 6px;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;background:var(--bg);color:var(--ink)}
+.palette-dialog{width:min(560px,92vw);padding:0;border:1px solid var(--line);border-radius:12px;box-shadow:0 20px 50px rgba(20,30,60,.25);margin-top:12vh}
+.palette-dialog::backdrop{background:rgba(20,26,40,.28)}
+.palette-dialog input{width:100%;border:0;border-bottom:1px solid var(--line);padding:14px 16px;font:inherit;font-size:1rem;outline:none}
+.palette-dialog ul{max-height:50vh;overflow:auto;padding:6px}
+.palette-dialog .empty{cursor:default}
+.palette-keys{margin:0;padding:8px 16px;border-top:1px solid var(--line)}
