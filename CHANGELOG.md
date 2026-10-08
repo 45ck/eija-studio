@@ -4,7 +4,7 @@
 
 ### 8 October 2026: PlayIDE tour recording
 
-- New scripted demo `playide_tour`, recorded (PASS, 2:37): diagrams, screens, Build & run, components, Simulate, drawing with the palette, and checking an offline AI proposal. See [the write-up](docs/demos/2026-10-08-PLAYIDE-TOUR.md).
+- New scripted demo `playide_tour`, recorded (PASS, 2:38): diagrams, screens, Build & run, components, Simulate, drawing with the palette, and checking an offline AI proposal. See [the write-up](docs/demos/2026-10-08-PLAYIDE-TOUR.md).
 
 ### 8 October 2026: drawing and the checks ring
 

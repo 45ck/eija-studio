@@ -2,10 +2,10 @@
   "mode": "record",
   "platform": "Linux 6.18.44-fc-v80 / Python 3.13.16",
   "scenario": "playide_tour",
-  "scenario_sha256": "f7f990634a555448338d761905b79eb7c4d9c5f068323d2ef34d846a96b5dbdf",
+  "scenario_sha256": "b629c22c39804abd07824d6c95340f6fa66d5e8988c282668129013787551c97",
   "skipped": [],
   "status": "PASS",
   "video": "demos/output/playide_tour.webm",
-  "video_bytes": 12085996,
-  "video_sha256": "6862d3c668612d391d7ff69a47f641ada830b23ebe6a66b12528c59d913cc577"
+  "video_bytes": 12131323,
+  "video_sha256": "640f240614ad548bb15bf330ac2bd356a396dd75f098dce6835ea65e0ca1a6ec"
 }

@@ -11,7 +11,7 @@
   let graph, model, selected = "", sim = null, replayTimer = 0, data = null, classGraph = null, useCaseGraph = null, tab = "states";
   let components = null, componentGraph = null, lastBuild = null;
   let baseModel = null, plan = null; // the server's model, and the chat plan being previewed on top of it (if any)
-  let packInfo = null, points = 0, simKey = null, cards = 0; // the pack's actions and roles; check points; what was simulated
+  let packInfo = null, points = 0, simKey = null, cards = 0, problemsFor = null; // the pack's actions and roles; check points; what was simulated
   const earned = [];
   let screens = null, screensEdited = false, useCase = null, checkTimer = 0, problems = [], useCaseList = [];
   const base = {}; // each cell's own style and label, so overlays can be cleared
@@ -541,6 +541,7 @@
   // check, a conformance pass, a simulation, every AI step looked at), and points come from checking AI steps, never
   // from making changes.
   const viewKey = () => JSON.stringify([about().plan, screensEdited ? screens : null]);
+  const screensKey = () => JSON.stringify([about().plan, screens]); // what the last design check was about
   const KINDS = { state: "a state", transition: "a transition", initial: "the initial state", rename: "a new name", move: "a moved transition" };
 
   async function addStep(transaction) {
@@ -581,7 +582,9 @@
     if (step.why) note.append(el("p", step.why, { class: "muted" }));
     const where = !status ? "" : status.status === "rejected" ? "You rejected this step."
       : status.status === "does_not_apply" ? `It does not apply: ${status.message}`
-      : plan.previewing ? "The diagram shows the plan with this step applied." : "It applies, but the policy refuses the accepted steps together: see the plan's verdict.";
+      : plan.previewing ? "The diagram shows the plan with this step applied."
+      : plan.result.legal ? "Shown on the model, marked in red: the plan removes it."
+      : "It applies, but the policy refuses the accepted steps together: see the plan's verdict.";
     note.append(el("p", where));
     return note;
   }
@@ -590,7 +593,13 @@
     const step = plan.steps[i];
     if (!plan.previewing && plan.result && plan.result.legal) enterPreview();
     if (tab !== "states") showTab("states");
-    const id = cellOf(step.transaction), cell = graph.getDataModel().getCell(id);
+    const id = cellOf(step.transaction);
+    let cell = graph.getDataModel().getCell(id);
+    if (!cell && plan.previewing) { // a removal: the element is gone from the preview, so show it on the model
+      leavePreview();
+      cell = graph.getDataModel().getCell(id);
+      if (cell) restyle(id, { strokeColor: "#a12f2f", dashed: true, strokeWidth: 3 });
+    }
     if (cell) {
       graph.setSelectionCell(cell);
       graph.scrollCellToVisible(cell, true);
@@ -598,17 +607,20 @@
       graph.clearSelection();
       inspect("");
     }
-    $("inspector").prepend(stepNote(i));
-    if (step.author === "ai" && !step.checked) {
+    const note = stepNote(i);
+    if (!cell) note.append(el("p", "Its element is not on the diagram: preview a plan the policy allows to see it.", { class: "muted" }));
+    $("inspector").prepend(note);
+    if (cell && step.author === "ai" && !step.checked) { // credit only for a step actually shown
       step.checked = true;
       earn(1, `Looked at AI step ${i + 1} on the diagram`);
     }
     if (plan.result) renderPlan(plan.result);
   }
 
-  function rewardTrying(kind, n, why) {
-    if (!plan || !plan.previewing || !plan.steps.some((s, i) => s.author === "ai" && plan.accepted[i])) return;
-    const key = kind + viewKey();
+  // `ran` is the view the build or simulation was of: nothing is earned if the view changed while it ran.
+  function rewardTrying(kind, n, why, ran) {
+    if (ran !== viewKey() || !plan || !plan.previewing || !plan.steps.some((s, i) => s.author === "ai" && plan.accepted[i])) return;
+    const key = kind + ran;
     if (plan.rewarded.has(key)) return;
     plan.rewarded.add(key);
     earn(n, why);
@@ -631,7 +643,8 @@
     const simulated = sim && simKey === key ? sim : null;
     return [
       { name: "AI steps checked", ok: seen === ai.length, detail: ai.length ? `${seen} of ${ai.length} AI steps looked at on the diagram` : "No AI plan to check" },
-      { name: "Screens pass the design check", ok: !problems.length, detail: problems.length ? `${problems.length} design problem(s): see Screens` : "Every screen can be built" },
+      { name: "Screens pass the design check", ok: problemsFor === screensKey() && !problems.length,
+        detail: problemsFor !== screensKey() ? "Checking the screens…" : problems.length ? `${problems.length} design problem(s): see Screens` : "Every screen can be built" },
       { name: "Conformance", ok: Boolean(built) && built.conformance.status === "PASS",
         detail: built ? `${built.conformance.status}: ${built.cases} cases checked against the kernel` : "Not built since the last change: press Build & run" },
       { name: "Simulated", ok: Boolean(simulated),
@@ -948,9 +961,13 @@
 
   // With edits, only the problems come back into the page: the designer keeps editing its own objects.
   async function loadScreens(edited) {
+    const planAt = JSON.stringify(about().plan), sent = edited ? JSON.stringify(edited) : null;
     const result = await api("/api/play/screens", { ...about(), screens: edited || null });
+    // A newer model or design replaced the one checked: its own check is on the way, so this answer is not shown.
+    if (JSON.stringify(about().plan) !== planAt || (sent !== null && JSON.stringify(screens) !== sent)) return result;
     if (!edited) screens = result.screens;
     problems = result.problems;
+    problemsFor = screensKey();
     useCaseList = result.use_cases;
     renderHealth();
     return result;
@@ -963,11 +980,14 @@
     components = null;
     renderDesigner();
     clearTimeout(checkTimer);
+    problemsFor = null; // pending until the check of this design answers
+    renderHealth();
     checkTimer = setTimeout(async () => {
       try {
-        problems = (await loadScreens(screens)).problems;
+        await loadScreens(screens);
       } catch (error) {
         problems = [{ code: error.code || "ERROR", use_case: useCase, text: error.message }];
+        problemsFor = screensKey();
       }
       renderProblems();
       renderScreenList();
@@ -1129,7 +1149,7 @@
       const result = await api("/api/play/build", { ...about(), screens: screensEdited ? screens : null });
       const pass = result.conformance.status === "PASS";
       lastBuild = { ...result, key };
-      if (pass) rewardTrying("build", 3, `Built the AI's change and ran its ${result.cases} conformance cases`);
+      if (pass) rewardTrying("build", 3, `Built the AI's change and ran its ${result.cases} conformance cases`, key);
       renderHealth();
       restyleComponents();
       score.className = "score " + (pass ? "ok" : "bad");
@@ -1248,7 +1268,7 @@
       const key = viewKey();
       showSim(await api("/api/play/simulate", { ...about(), seed: 1, steps: 500 }));
       simKey = key;
-      rewardTrying("simulate", 2, "Simulated users on the AI's change");
+      rewardTrying("simulate", 2, "Simulated users on the AI's change", key);
       renderHealth();
     } catch (error) {
       $("sim").hidden = false;

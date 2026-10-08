@@ -1,6 +1,6 @@
 # PlayIDE tour: design, build, simulate and check an AI's change (8 October 2026)
 
-This is a scripted recording of the real PlayIDE page (`/play`) on the library-loan pack. Every click is a real browser action against a real `eija serve`, and every step asserts text the page actually rendered. `python -m demos run playide_tour --dry-run` repeats the same clicks and assertions without video. The take is **PASS**, with no act skipped. It runs 2 minutes 37 seconds.
+This is a scripted recording of the real PlayIDE page (`/play`) on the library-loan pack. Every click is a real browser action against a real `eija serve`, and every step asserts text the page actually rendered. `python -m demos run playide_tour --dry-run` repeats the same clicks and assertions without video. The take is **PASS**, with no act skipped. It runs 2 minutes 38 seconds.
 
 The chat's proposer is the offline phrase reader (`offline-plan-fixture-v1`), not a live model, and the video says so.
 
