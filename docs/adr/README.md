@@ -82,6 +82,7 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0173](0173-playide-workbench-shell.md) | PlayIDE's workbench shell, after Visual Studio, VS Code, Cursor and draw.io | accepted |
 | [0175](0175-review-a-change-as-a-uml-diff-you-can-run.md) | Review a change as a UML diff you can run, not as a pull request | accepted |
 | [0176](0176-how-a-uml-change-looks.md) | How a UML change looks: one stable layout, removed parts kept as ghosts, and lenses | accepted for the state machine |
+| [0177](0177-law-files-and-test-cases-in-playide.md) | The law file and the test cases are files PlayIDE opens, edits as drafts and runs | accepted |
 | [0190](0190-uml-import-and-export-through-the-kernel.md) | UML import and export: XMI, PlantUML, Mermaid and draw.io, with every import judged by the kernel | accepted for state machines and class models |
 <!-- adr-index:end -->
 

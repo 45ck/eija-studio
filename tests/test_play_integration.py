@@ -1,0 +1,66 @@
+"""PlayIDE features working together on the workbench shell, in a real browser: the chat's own example plan passes
+the policy for the open pack, a paused run keeps who tried what in view, a role in the outline opens the Permissions
+tab, and the plan banner does not offer to open the Review tab while it is open.
+
+Marked `browser`: it runs only with EIJA_BROWSER_TESTS=1 (NOT_RUN otherwise). It uses the installed Chrome, or the
+Chromium at EIJA_CHROMIUM, and never downloads a browser.
+"""
+from __future__ import annotations
+
+import os
+from pathlib import Path
+
+import pytest
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+@pytest.mark.browser
+@pytest.mark.slow
+@pytest.mark.skipif(os.environ.get("EIJA_BROWSER_TESTS") != "1", reason="NOT_RUN: real-browser check; set EIJA_BROWSER_TESTS=1")
+@pytest.mark.parametrize("pack", ["library-loan", "excursion"])
+def test_playide_features_fit_together_in_a_real_browser(pack):
+    api = pytest.importorskip("playwright.sync_api", reason="NOT_RUN: install the hci or demos extra")
+    from demos.lib import ephemeral_eija_server  # noqa: PLC0415 - demos start a real server; only this opt-in test needs it
+
+    with ephemeral_eija_server(pack=ROOT / "packs" / pack) as server, api.sync_playwright() as playwright:
+        try:
+            executable = os.environ.get("EIJA_CHROMIUM")
+            chrome = (playwright.chromium.launch(headless=True, executable_path=executable) if executable
+                      else playwright.chromium.launch(channel="chrome", headless=True))
+        except api.Error as exc:
+            pytest.skip(f"NOT_RUN: Chrome unavailable: {str(exc).splitlines()[0]}")
+        try:
+            page = chrome.new_page(viewport={"width": 1600, "height": 900})
+            errors: list[str] = []
+            page.on("pageerror", lambda error: errors.append(str(error)))
+            page.goto(f"{server.base_url}/play#{server.token}")
+            page.wait_for_selector("body[data-ready=true]", timeout=60_000)
+            # The example the chat offers is a plan the policy accepts, sent exactly as shown.
+            page.fill("#chat-input", page.text_content("#chat-example"))
+            page.click("#chat-send")
+            preview = page.get_by_role("button", name="Preview on the diagram").first
+            preview.wait_for(timeout=30_000)
+            assert preview.is_enabled(), page.text_content("#chat-log")
+            preview.click()
+            page.wait_for_selector("#plan-banner:not([hidden])")
+            assert page.is_visible("#plan-review")
+            page.click("#plan-review")
+            page.wait_for_selector("#review:not([hidden])")
+            assert page.is_hidden("#plan-review")  # already there
+            page.click("#plan-back")
+            page.click("#tab-states")
+            # A role is not a diagram element: it opens what that role may do.
+            page.locator("#outline-roles button").first.click()
+            page.wait_for_selector("#access-panel:not([hidden])")
+            page.click("#tab-states")
+            # Paused on a breakpoint, the panel shows who tried what, not only the foot of the log.
+            page.locator("#outline-states button").nth(1).click()
+            page.keyboard.press("F9")
+            page.click("#run-play")
+            page.wait_for_selector("#run-status:has-text('Paused')", timeout=60_000)
+            now, body = page.locator("#debug-now").bounding_box(), page.locator(".dock-body").bounding_box()
+            assert now and body and body["y"] <= now["y"] < body["y"] + body["height"]
+            assert errors == []
+        finally:
+            chrome.close()

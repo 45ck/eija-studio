@@ -46,4 +46,8 @@ _No curated notes yet._
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
 * [domain.pack.PackError](/symbols/domain/pack/PackError.md) - A pack that cannot be used.
 * [domain.pack.coherence_problems](/symbols/domain/pack/coherence_problems.md) - Every cross-reference defect of a structurally valid pack, sorted.
+
+## Referenced by
+
+* [application.law_proof.with_laws](/symbols/application/law_proof/with_laws.md) - The pack with its law file replaced by `laws` (a draft edited in PlayIDE), checked as the pack loader checks it.
 <!-- okf:generated:end links -->
