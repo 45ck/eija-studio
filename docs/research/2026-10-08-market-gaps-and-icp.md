@@ -1,5 +1,7 @@
 # PlayIDE: market gaps and ideal customer profile
 
+Status: **reference only.** On 8 October 2026 the owner kept the recorded audience (engineers who already know UML) after reading this review. Its proposal to drop UML knowledge as an entry requirement is not adopted; the gap findings and product ideas remain background for the owner to draw on.
+
 Research date: **8 October 2026**. Desk research from public surveys, studies and press coverage; no customer has been interviewed. Figures marked *vendor* come from a company that sells a related product. Figures marked *secondary* were read in coverage, not in the original report, and should be checked before quoting. Everything under "Inference" is a reading of the evidence, not a finding. The designed version of this report is published at <https://claude.ai/artifact/QQZ9VJb6ps81GcxFpnPKsy>. It builds on the earlier comparison [PlayIDE vs the field](https://claude.ai/code/artifact/dc30591f-f632-404b-b271-64ec152bbe9e), which covers competitors, AI pull-request acceptance, comprehension debt and cognitive surrender, so those are not repeated here.
 
 ## Summary
@@ -102,4 +104,4 @@ Ordered by value to the primary customer.
 4. An expressiveness test on one real workflow app from a design partner.
 5. A willingness-to-pay check: what the buyer spends today on review, audits or rework for that system.
 
-Until these run, this profile is a hypothesis and the [product thesis](../engineering/PRODUCT-THESIS.md) audience decision stands as the owner recorded it.
+The [product thesis](../engineering/PRODUCT-THESIS.md) audience decision stands as the owner recorded it.
