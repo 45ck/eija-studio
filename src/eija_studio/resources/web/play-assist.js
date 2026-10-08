@@ -16,7 +16,7 @@
     return node;
   }
 
-  const view = () => window.PlayIDE; // the view play.js exposes; the assist layer only reads model(), pack() and selected()
+  const view = () => window.PlayIDE; // the view play.js exposes; the assist layer only reads base(), pack() and selected()
   const usable = (node) => node && !node.hidden && !node.disabled && !node.closest("[hidden]");
 
   // ---- Who does what --------------------------------------------------------------------------------------------
@@ -59,7 +59,7 @@
   };
 
   function suggestions(id) {
-    const box = $("chat-suggest"), model = view() && view().model();
+    const box = $("chat-suggest"), model = view() && view().base();
     if (!box || !model) return;
     let title = "Try", phrases = PHRASES.none;
     if (id && id.startsWith("state:") && model.states.includes(id.slice(6))) {
@@ -102,9 +102,10 @@
   // The proposer wants exact model names. The box offers them: the kind follows a selected blank (‹state› offers
   // states), otherwise any state, action or role that starts with the word being typed. A combobox list (WAI-ARIA APG).
   let options = [], active = -1, span = null;
+  let slot = null; // the blank being filled: its kind still applies after its marker has been typed over
 
   function names() {
-    const v = view(), model = v && v.model(), pack = v && v.pack();
+    const v = view(), model = v && v.base(), pack = v && v.pack();
     if (!model || !pack) return [];
     // States this request adds itself are offered too, since a later clause may use them.
     const planned = [...$("chat-input").value.matchAll(/\b(?:add state|rename [\w-]+ to) ([A-Za-z][\w-]*)/gi)].map((m) => m[1]).filter((n) => !model.states.includes(n));
@@ -118,12 +119,16 @@
     if (HOLE.test(hole) && HOLE.exec(hole)[0] === hole) {
       kind = /role/.test(hole) ? "role" : /action/.test(hole) ? "action" : /new/.test(hole) ? null : "state";
       span = [a, b];
+      slot = { kind, start: a };
       if (!kind) return close(); // a new name is the person's to choose
     } else {
       const word = /[A-Za-z][\w-]*$/.exec(value.slice(0, a));
       if (!word || a !== b) return close();
       prefix = word[0];
       span = [a - prefix.length, a];
+      if (slot && slot.start === span[0]) kind = slot.kind;
+      else slot = null;
+      if (slot && !kind) return close();
     }
     const lower = prefix.toLowerCase();
     options = names().filter(([n, k]) => (!kind || k === kind || (kind === "state" && k === "new state")) && n.toLowerCase().startsWith(lower) && n !== prefix).slice(0, 8);
@@ -155,6 +160,7 @@
 
   function accept(i) {
     const input = $("chat-input"), [a, b] = span, name = options[i][0];
+    slot = null;
     input.value = input.value.slice(0, a) + name + input.value.slice(b);
     input.focus();
     close();
@@ -174,7 +180,10 @@
       if (event.key === "Escape") { event.preventDefault(); return close(); }
     }
     if (event.key === "Tab" && !event.shiftKey && HOLE.test(input.value)) { event.preventDefault(); nextHole(input, input.selectionEnd); complete(); return; }
-    if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) { event.preventDefault(); $("chat-form").requestSubmit(); }
+    if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+      event.preventDefault();
+      if (!$("chat-send").disabled) $("chat-form").requestSubmit(); // the same rule as the button: one plan request at a time
+    }
   }
 
   // A request with an unfilled blank would only be refused; say which blank instead of sending it.

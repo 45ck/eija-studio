@@ -44,7 +44,7 @@ def test_the_assist_layer_only_reads_the_page_view_and_never_calls_the_api():
     source = (ROOT / "src/eija_studio/resources/web/play-assist.js").read_text(encoding="utf-8")
     assert "fetch(" not in source and "/api/" not in source  # it presses the page's controls; the server decides
     play = (ROOT / "src/eija_studio/resources/web/play.js").read_text(encoding="utf-8")
-    assert "pack: () => packInfo" in play and 'new CustomEvent("playide:select"' in play
+    assert "base: () => baseModel" in play and 'new CustomEvent("playide:select"' in play
 
 
 browser = pytest.mark.skipif(os.environ.get("EIJA_BROWSER_TESTS") != "1",
@@ -92,6 +92,9 @@ def test_ask_complete_palette_and_keyboard_review_in_a_real_browser():
             page.keyboard.press("Control+Enter")
             assert page.inner_text("#chat-hint") == f"Fill in {blank('role')} first."
             assert not page.query_selector("#chat-log .plan")  # held, not sent
+            page.keyboard.type("C")  # typed over the role blank: only roles are offered, not CheckOut or Cancel
+            assert page.inner_text("#chat-complete").split() == ["Clerk", "ROLE"]
+            page.keyboard.press("Backspace")
             page.keyboard.type("Librarian")
             page.keyboard.press("Control+Enter")
             page.wait_for_selector("#chat-log .plan .plan-verdict.ok", timeout=30_000)

@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0170-playide-assist-ask-complete-palette-review.md
   title: 0170-playide-assist-ask-complete-palette-review.md
   hash_method: lf-sha256-v1
-  sha256: 5e11d79278afff7873937f042f5f322ebe630b6d1a3f9034fb9b91b8d94cd4f1
-notes_baseline: ae6fb72bd25cfb4247c6e6a51b29ce0df061df9f28a146c00b191db8677f2fcb
+  sha256: 9c4f799a3c5155bdaf7fe69ad92c1fc8896c537926c197683ebdb3641b7ed822
+notes_baseline: 9dbda3683bddcc800cd872a8b458c205fa0b0bbbf7cfb2f5585b0d0d2dc0a213
 ---
 
 # ADR-0170: PlayIDE asks about the selection, completes exact names, has a command palette and keyboard plan review
@@ -33,10 +33,10 @@ notes_baseline: ae6fb72bd25cfb4247c6e6a51b29ce0df061df9f28a146c00b191db8677f2fcb
 >
 > * **Who does what.** A line under the chat heading: "AI proposes steps · You check, preview and try them · Owner approves and applies in the review workbench".
 > * **Ask about the selection.** Phrase buttons above the chat box show requests the offline proposer reads. With nothing selected they are templates with blanks (‹state›, ‹role›, ‹action›, ‹new name›). With a state or transition selected they are about it, its exact name filled in ("About Overdue: Add a state after, Rename, Add a transition from here, Start records here, Remove"). Pressing one while the box has text adds it as the next clause with "then". The first blank is selected so typing replaces it; Tab moves to the next.
-> * **Exact names.** The chat box is a combobox (WAI-ARIA APG). A selected blank offers names of its kind; otherwise the word being typed is completed from the model's states, the pack's actions and roles, and states the request itself adds. Arrow keys move, Enter or Tab accepts, Escape closes. Ctrl+Enter (⌘Enter) sends. A request with an unfilled blank is held, with "Fill in ‹role› first."
+> * **Exact names.** The chat box is a combobox (WAI-ARIA APG). A selected blank offers names of its kind; and keeps that kind while you type over it; otherwise the word being typed is completed from the model's states, the pack's actions and roles, and states the request itself adds. Arrow keys move, Enter or Tab accepts, Escape closes. Ctrl+Enter (⌘Enter) sends. A request with an unfilled blank is held, with "Fill in ‹role› first."
 > * **Command palette.** Ctrl+K (⌘K), or the **Commands** button, opens a native modal `<dialog>`. It lists the page's commands that are available now (Build & run, Simulate, the run bar's Run, Pause, Step, Stop and Restart, the tabs, Fit, Show the checks, Ask the AI, Review the AI plan, Preview the plan, Back to the model, the review workbench), every state, transition and class, and "Ask the AI about …" for each state and transition. Words filter it. Each command presses the page's own button, so the palette can do nothing a click could not.
 > * **Keyboard plan review.** While focus is in the current plan: J/K or the arrow keys move between steps, S or Enter shows the step on the diagram, Space (the checkbox's own) accepts or rejects, P turns the preview on or off. Each plan card says so.
-> * **Hooks into play.js.** play.js dispatches `playide:select` when the selection changes and `playide:ready` when the model has loaded, and its `window.PlayIDE` bridge (shared with the run bar, ADR-0160) gains `pack()`. The assist layer reads only `model()`, `pack()` and `selected()`. Nothing else in play.js changed.
+> * **Hooks into play.js.** play.js dispatches `playide:select` when the selection changes and `playide:ready` when the model has loaded, and its `window.PlayIDE` bridge (shared with the run bar, ADR-0160) gains `pack()` and `base()`. The assist layer reads only `base()` (the model a request is planned against, never a previewed candidate), `pack()` and `selected()`. Nothing else in play.js changed.
 
 ## Sections
 

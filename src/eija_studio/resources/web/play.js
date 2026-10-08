@@ -1332,10 +1332,11 @@
   }
 
   // What the run bar (play-run.js, ADR-0160) may use. It holds no rules either: it moves through the server's run log.
-  // The assist layer (play-assist.js, ADR-0170) reads only model(), pack() and selected().
+  // The assist layer (play-assist.js, ADR-0170) reads only base(), pack() and selected(): base() is the model a chat
+  // request is planned against, not a previewed candidate.
   window.PlayIDE = {
     api, el, hooks, about, viewKey, label, restyle, clearSim, select,
-    graph: () => graph, model: () => model, selected: () => selected, pack: () => packInfo,
+    graph: () => graph, model: () => model, selected: () => selected, pack: () => packInfo, base: () => baseModel,
   };
 
   start().catch((error) => {
