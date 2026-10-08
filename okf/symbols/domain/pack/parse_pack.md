@@ -46,4 +46,8 @@ _No curated notes yet._
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
 * [domain.pack.PackError](/symbols/domain/pack/PackError.md) - A pack that cannot be used.
 * [domain.pack.coherence_problems](/symbols/domain/pack/coherence_problems.md) - Every cross-reference defect of a structurally valid pack, sorted.
+
+## Referenced by
+
+* [application.new_system.summary](/symbols/application/new_system/summary.md) - What the new system has, for the form to say before it is created.
 <!-- okf:generated:end links -->

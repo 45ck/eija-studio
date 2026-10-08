@@ -2,6 +2,7 @@
 
 ## 2026-10-08
 
+* **Your own systems in PlayIDE**: synced ADR-0185 and the new `application.new_system`, `adapters.system_library` and `interfaces.play_systems` module and symbol pages; `interfaces.http`, `interfaces.cli` and the pages that link to the reused domain symbols (`parse_pack`, `PackError`, `BASE_GUARDS`, `parse_data`, `parse_screens`, `parse_transaction`, the plan `MAX_STEPS`) refreshed. No Notes were hand-edited and nothing was recorded as verified.
 * **A change on every diagram**: re-synced ADR-0176 and `application.ghost_diff` (it now also returns the use case diagram of both models). No Notes were hand-edited and nothing was recorded as verified.
 * **Calmer Changes view**: re-synced ADR-0176 after its "calm by default" update (presentation only, no module or symbol changes). No Notes were hand-edited and nothing was recorded as verified.
 * **How a UML change looks**: synced ADR-0176 and the new `application.ghost_diff` module and symbol pages; `interfaces.play` (`/api/play/diff`, and `/api/play/review` returns the union for the Review canvas) and `interfaces.http` (the `play-diff.js` and `play-diff.css` assets) refreshed. Other pages changed only in generated backlinks. No Notes were hand-edited and nothing was recorded as verified.

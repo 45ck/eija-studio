@@ -9,4 +9,5 @@
 * [interfaces.http](http.md) - Loopback-only local adapter.
 * [interfaces.mcp_server](mcp_server.md) - MCP (Model Context Protocol) adapter: the agent-facing face of EIJA Studio.
 * [interfaces.play](play.md) - PlayIDE routes: the visual UML canvas page, Build & run of the model as a live app beside it (ADR-0151), and Simulate, seeded simulated users whose every step the kernel decides (ADR-0152), the screen designer's check a…
+* [interfaces.play_systems](play_systems.md) - PlayIDE's systems (ADR-0185): start a new system from a sketch or a template, open one you made before, and save the work in progress to carry on later.
 * [interfaces.render_html](render_html.md) - Self-contained HTML for `eija render --format html`: generated Mermaid text plus the vendored renderer.

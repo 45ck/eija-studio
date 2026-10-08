@@ -15,6 +15,7 @@
 * [ghost_diff](ghost_diff/) - Symbols of application.ghost_diff
 * [history](history/) - Symbols of application.history
 * [law_proof](law_proof/) - Symbols of application.law_proof
+* [new_system](new_system/) - Symbols of application.new_system
 * [plan](plan/) - Symbols of application.plan
 * [ports](ports/) - Symbols of application.ports
 * [repository](repository/) - Symbols of application.repository

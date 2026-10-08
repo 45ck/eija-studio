@@ -15,6 +15,7 @@ from eija_studio.domain.models import MEANING_ID, Contract, DomainError, OWNER, 
 from eija_studio.domain.pack import Pack
 from eija_studio.domain.transactions import Transaction
 from .play import register as register_play
+from .play_systems import register as register_systems
 
 # The Studio page keeps this policy. Only /visual-frame, a static document with no API access, relaxes styles
 # (Mermaid writes inline style attributes) and is sandboxed; docs/SECURITY_AND_TRUST.md and ADR-0023 record why.
@@ -22,7 +23,7 @@ PAGE_CSP = ("default-src 'none'; script-src 'self'; style-src 'self'; connect-sr
             "frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
 FRAME_CSP = ("default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src data:; connect-src 'none'; "
              "frame-ancestors 'self'; base-uri 'none'; form-action 'none'; sandbox allow-scripts")
-WEB_ASSETS = frozenset({"app.js", "app.css", "canvas.js", "tree.js", "review.js", "compare.js", "compare.css", "repository-review.js", "repository-review.css", "source.js", "shell.js", "agent-edit.js", "visual-frame.js", "visual-frame.css", "play.js", "play-run.js", "play.css", "play-laws.js", "play-assist.js", "play-assist.css", "play-review.js", "play-review.css", "play-access.js", "play-access.css", "play-shell.js", "play-shell.css", "play-diff.js", "play-diff.css"})
+WEB_ASSETS = frozenset({"app.js", "app.css", "canvas.js", "tree.js", "review.js", "compare.js", "compare.css", "repository-review.js", "repository-review.css", "source.js", "shell.js", "agent-edit.js", "visual-frame.js", "visual-frame.css", "play.js", "play-run.js", "play.css", "play-laws.js", "play-assist.js", "play-assist.css", "play-review.js", "play-review.css", "play-access.js", "play-access.css", "play-shell.js", "play-shell.css", "play-diff.js", "play-diff.css", "play-systems.js", "play-systems.css"})
 # PlayIDE frames the app built from the model, which runs as a separate process on its own loopback port (ADR-0151).
 PLAY_CSP = PAGE_CSP.replace("frame-src 'self'", "frame-src 'self' http://127.0.0.1:*")
 
@@ -69,7 +70,8 @@ def pack_summary(pack: Pack) -> dict[str, object]:
             "actors": [{"id": a.id, "role": a.role, "active": a.active, "assigned": a.assigned} for a in pack.fixtures.actors]}
 
 
-def create_app(studio, token: str, port: int = 8765) -> FastAPI:
+def create_app(studio, token: str, port: int = 8765, systems=None) -> FastAPI:
+    """`systems` (ADR-0185), when given, lets PlayIDE start and open systems; `studio` is then its `StudioHandle`."""
     app = FastAPI(title="EIJA Studio", version="0.2.0", docs_url=None, redoc_url=None, openapi_url=None)
     web = Path(__file__).resolve().parents[1] / "resources" / "web"
     allowed_hosts = {f"127.0.0.1:{port}", f"localhost:{port}"}
@@ -128,6 +130,9 @@ def create_app(studio, token: str, port: int = 8765) -> FastAPI:
         return FileResponse(web / "vendor" / name)
 
     app.state.play = register_play(app, studio, web)
+    if systems is not None:
+        systems.on_switch = app.state.play.stop
+        register_systems(app, systems)
 
     @app.get("/visual-frame")
     def visual_frame():

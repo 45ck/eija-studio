@@ -8,6 +8,37 @@ eija serve --pack packs/excursion --open
 
 The server prints two private links. Open the PlayIDE one (it ends in `/play#…`). To look at a change case's candidate model, add `?case=<case id>` before the `#`.
 
+## Start your own system
+
+PlayIDE is not limited to the packs that ship with EIJA ([ADR-0185](adr/0185-start-open-and-save-your-own-system.md)). Press **Systems** in the title bar.
+
+- **New system** starts one in a few lines. Give it a name, then choose a starting point:
+  - **Blank, from a sketch.** Name the record class (for example `Ticket`) and type the state machine as the diagram labels it, one transition per line:
+
+    ```text
+    Open -> Triaged : Triage [Agent]
+    Triaged -> Resolved : Resolve [Agent]
+    Triaged -> Escalated : Escalate [Agent]
+    Escalated -> Resolved : Fix [Engineer]
+    actions: Reopen
+    ```
+
+    The first line's source is the initial state. An `actions:` or `roles:` line declares ones you will draw later; a drawn transition can only use a declared action, and each action labels one transition.
+  - **A template.** One of the shipped packs (Library loan, School excursion approval, EIJA review reference journey), copied with your name and a new id.
+
+  The kernel's pack check runs as you type and says what will be created, or what is wrong, line by line. **Create and open** saves it and opens it. A new system gets one audit effect per action and one user per role (and a revoked one, so a simulation meets a refusal). It has no laws until you add them.
+- **Open** lists the systems you opened recently and the others in your systems home. The one the server started with stays one click away.
+- **Save** (Ctrl+S) keeps your work in progress on this system: the plan's steps, which ones are ticked, and your screens if you edited them. "Unsaved changes" shows beside it until you save. When you open the system again, the plan comes back and the server checks every step again, like any plan. Saving never applies anything to the model in force; that still happens in the review workbench.
+
+Systems live in `~/PlayIDE`, one folder each, with the system's own workspace (`.eija/`) inside it. Start the server with `--systems <folder>`, or set `EIJA_SYSTEMS`, to keep them somewhere else. The same can be done from the command line:
+
+```console
+eija new "Support desk" --sketch desk.txt --record Ticket
+eija new "Field trips" --from excursion
+```
+
+Each prints the `eija serve` line that opens it.
+
 ## What you can do now
 
 - **Find your way around.** PlayIDE is laid out like the IDEs you know ([ADR-0173](adr/0173-playide-workbench-shell.md)). The model outline and the inspector are on the left, the diagrams are tabs in the middle, and the chat is on the right. Run, Simulation and Running app open in a panel under the diagrams when they have something to show, and a status bar runs along the bottom. Ctrl+K searches every command and element. Ctrl+B, Ctrl+Alt+P and Ctrl+Alt+C hide or show the left side, the panel and the chat. Drag the edges to resize them; PlayIDE remembers the layout in your browser.
@@ -60,7 +91,8 @@ The server prints two private links. Open the PlayIDE one (it ends in `/play#…
 ## Limits
 
 - Simulated users act at random within their roles. A run shows where the model lets people through and where it blocks them. It is not a measurement of real people, time or load.
-- Drawn changes and plans are previewed, built and simulated, but not saved (issue #89). Change the saved model in the review workbench. The screen designer does not save into the pack: download `screens.json` and commit it.
+- Drawn changes and plans are previewed, built and simulated, and **Save** keeps them as a draft on the system, but they are never applied (issue #89). Change the saved model in the review workbench. The screen designer's design is kept in the draft, not in the pack: download `screens.json` and commit it to make it the system's own.
+- A system's actions and roles are fixed when it is created. Declare spare ones in the sketch; editing them in PlayIDE is follow-up work. A draft holds at most 12 steps.
 - Screens choose which attributes a use case shows, in what order and under what label. They never change who may act or what an action does; the kernel decides that.
 - One built app runs at a time, on a free loopback port. It stops when you build another model or stop the server.
 - Everything in [Build an app from the model](build-an-app.md#why-you-can-trust-it-and-how-far) about how far the conformance check goes applies here too.

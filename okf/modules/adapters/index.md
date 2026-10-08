@@ -15,3 +15,4 @@
 * [adapters.repository_javascript](repository_javascript.md) - Crash-isolated JavaScript syntax extraction; reuse the bounded process runner.
 * [adapters.self_facts](self_facts.md) - Syntactic facts about EIJA's own review implementation, never a conformance proof.
 * [adapters.sqlite_store](sqlite_store.md) - Durable local unit of work.
+* [adapters.system_library](system_library.md) - Where a person's own systems live on disk (ADR-0185): one folder per system under a systems home, the recent list, and the saved draft of the work in progress.
