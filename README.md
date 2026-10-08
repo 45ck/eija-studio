@@ -208,7 +208,7 @@ The app calls EIJA's kernel for every decision. The check is exhaustive only for
 
 ## PlayIDE: see the model, build it, run it
 
-`eija serve --pack packs/excursion --open` also prints a PlayIDE link (`/play`). It shows the model as a UML state machine and has a **Build & run** button that builds the app, checks it against the kernel and runs it beside the diagram. The **Class diagram** tab shows the pack's data model in UML, and its record class becomes the app's form. The **Use cases** tab draws the use case diagram, and the **Screens** tab designs each use case's screen against the record class, with a design check as you edit. **Simulate** sends seeded simulated users through the kernel and shows on the diagram where they got through and where they were refused. See [PlayIDE](docs/playide.md).
+`eija serve --pack packs/excursion --open` also prints a PlayIDE link (`/play`). It shows the model as a UML state machine and has a **Build & run** button that builds the app, checks it against the kernel and runs it beside the diagram. The **Class diagram** tab shows the pack's data model in UML, and its record class becomes the app's form. The **Use cases** tab draws the use case diagram, and the **Screens** tab designs each use case's screen against the record class, with a design check as you edit. The **Components** tab is the built app's UML component diagram, read from its generated code. **Simulate** sends seeded simulated users through the kernel and shows on the diagram where they got through and where they were refused. See [PlayIDE](docs/playide.md).
 
 ## Try the connected IDE preview
 

@@ -119,3 +119,9 @@ def test_the_screen_designer_checks_and_builds_edited_screens(client, studio):
     assert built["conformance"]["status"] == "PASS" and built["screens"] != shown["digest"]
     foreign = client.post("/api/play/screens", json={"screens": screens | {"id": "elsewhere"}}, headers=HEADERS)
     assert foreign.json()["code"] == "SCREENS_PACK_MISMATCH"
+
+
+def test_the_component_diagram_is_read_from_the_app_the_model_builds(client):
+    diagram = client.post("/api/play/components", json={}, headers=HEADERS).json()
+    assert diagram["format"] == "eija.components.v1" and diagram["cases"] > 0
+    assert any(d["source"] == "app.service" and d["target"] == "eija_studio.application.runtime" for d in diagram["dependencies"])

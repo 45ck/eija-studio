@@ -69,6 +69,7 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0152](0152-simulate-seeded-users-through-the-kernel.md) | Simulate seeded users through the kernel and paint where they went | accepted for the state-machine slice |
 | [0153](0153-data-models-as-uml-class-diagrams.md) | Data models as UML class diagrams, checked in the built app | accepted for record attributes; other classes are diagram-only |
 | [0154](0154-use-cases-and-screens-designed-against-the-model.md) | Use case diagrams, and screens designed against the model | accepted |
+| [0155](0155-component-diagrams-read-from-the-generated-code.md) | Component diagrams read from the generated code | accepted |
 <!-- adr-index:end -->
 
 ## Reserved numbers for capability lanes

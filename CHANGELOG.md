@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### 8 October 2026: component diagrams
+
+- PlayIDE has a **Components** tab: the UML component diagram of the app the model builds, read from its generated files. Components are the app's modules, the EIJA kernel modules they import, SQLite, the browser page and the generated files. Every dependency is an import, a route or a file read in the code, and each interface lists the names its users import. After Build & run, the conformance score and the running server show on the diagram. See [ADR-0155](docs/adr/0155-component-diagrams-read-from-the-generated-code.md).
+
 ### 8 October 2026: use cases and the screen designer
 
 - PlayIDE has a **Use cases** tab that draws the workflow as a UML use case diagram: actors per role, a use case per action plus creating a record, inside the system boundary. Double-click a use case to design its screen.
