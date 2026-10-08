@@ -1,0 +1,33 @@
+/* PlayIDE law file and Tests tab (ADR-0177). The cards reuse the Laws tab's .law styles in play.css. */
+.head-tools{display:flex;gap:6px;flex:none;align-items:center}
+.file-line{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0 0}
+.file-line>*{white-space:nowrap}
+.file-chip{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.78rem;padding:2px 8px;border-radius:6px;background:var(--state);color:var(--accent)}
+.draft-chip{font-size:.74rem;font-weight:600;padding:2px 8px;border-radius:999px;background:#fdf4e3;color:#8a5a0a}
+.draft-chip[hidden]{display:none}
+.file-editor,.recorder{margin:12px 0;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+.file-editor[hidden],.recorder[hidden]{display:none}
+.file-editor .source{width:100%;box-sizing:border-box;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.8rem;line-height:1.45;padding:8px;border:1px solid var(--line);border-radius:6px;resize:vertical;tab-size:2}
+.file-problems{margin:6px 0;color:var(--bad);font-size:.84rem;white-space:pre-wrap}
+.file-problems:empty{display:none}
+.file-tools{display:flex;gap:6px;align-items:center;margin:8px 0 0}
+.formal{margin-top:18px}
+.verifiers{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:6px}
+.verifier{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel);font-size:.86rem}
+.verifier p{flex-basis:100%;margin:0}
+.verifier.not_run .law-badge{background:#fdf4e3;color:#8a5a0a}
+.verifier.hand_encoded .law-badge,.verifier.generated .law-badge,.verifier.kernel .law-badge{background:var(--ok-bg);color:var(--ok)}
+.test-story{list-style:none;margin:6px 0 0;padding:0;font-size:.86rem}
+.test-story li,.rec-steps li{padding:2px 0}
+.test-given{color:var(--muted)}
+.test-step .mark{display:inline-block;width:1.2em;font-weight:700}
+.test-step.pass .mark{color:var(--ok)}
+.test-step.fail{color:var(--bad)}
+.test-step.not_run{color:var(--muted)}
+.test-why{margin:2px 0 0 1.2em;color:var(--bad)}
+.rec-title{display:flex;gap:8px;align-items:center;font-size:.86rem}
+.rec-title input{flex:1;padding:4px 8px}
+.rec-steps{list-style:none;margin:8px 0;padding:0;font-size:.86rem}
+.rec-add{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:.86rem}
+.file-line a[hidden]{display:none}
+.file-line a{font-size:.8rem}

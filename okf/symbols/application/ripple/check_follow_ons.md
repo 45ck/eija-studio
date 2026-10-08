@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/ripple.py#check_follow_ons
   title: application/ripple.py
   hash_method: ast-v2
-  sha256: 89baa7c89d46dc6f6030fd3c4b202f3a54df25ef494f084bcd0c57d6473e2c40
-notes_baseline: f7417ccae4b0d424743be47c2acaa4ccdf0c5f41b0ff56b87691d9482099339c
+  sha256: 3e55b425575fc22402eb5ac6efc99dc91f1e549b4b732a9b468220acc8cd3c67
+notes_baseline: 366a638528a60f84c8dd90ac17c9d10308179c0abf16155906ab75e712855a1f
 ---
 
 # application.ripple.check_follow_ons

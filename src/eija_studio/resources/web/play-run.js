@@ -178,8 +178,8 @@
       li.append(P.el("span", String(e.step), { class: "n" }), P.el("span", describe(e)));
       return li;
     }));
-    const last = $("debug-log").lastElementChild;
-    if (last) last.scrollIntoView({ block: "nearest" });
+    // The newest step shows at the foot of the log; the log scrolls, not the panel, so who tried what stays in view.
+    $("debug-log").scrollTop = $("debug-log").scrollHeight;
   }
 
   // Like Simulate's paint, but mid-run: a transition nobody has taken yet is only not taken yet, not a finding.

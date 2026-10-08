@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="/assets/play-review.css">
 <link rel="stylesheet" href="/assets/play-shell.css">
 <link rel="stylesheet" href="/assets/play-diff.css">
+<link rel="stylesheet" href="/assets/play-tests.css">
 <script src="/assets/vendor/dagre.min.js" defer></script>
 <script src="/assets/vendor/maxgraph.min.js" defer></script>
 <script src="/assets/play-shell.js" defer></script>
@@ -16,6 +17,7 @@
 <script src="/assets/play.js" defer></script>
 <script src="/assets/play-run.js" defer></script>
 <script src="/assets/play-laws.js" defer></script>
+<script src="/assets/play-tests.js" defer></script>
 <script src="/assets/play-assist.js" defer></script>
 <script src="/assets/play-access.js" defer></script>
 <script src="/assets/play-diff.js" defer></script>
@@ -88,6 +90,7 @@
           <button id="tab-screens" role="tab" type="button" aria-selected="false" aria-controls="screens">Screens</button>
           <button id="tab-components" role="tab" type="button" aria-selected="false" aria-controls="component-canvas">Components</button>
           <button id="tab-laws" role="tab" type="button" aria-selected="false" aria-controls="laws">Laws</button>
+          <button id="tab-tests" role="tab" type="button" aria-selected="false" aria-controls="tests">Tests</button>
           <button id="tab-access" role="tab" type="button" aria-selected="false" aria-controls="access-panel">Permissions</button>
           <button id="tab-review" role="tab" type="button" aria-selected="false" aria-controls="review">Review</button>
         </div>
@@ -96,11 +99,11 @@
         <button id="zoom-out" type="button" class="quiet" aria-label="Zoom out">−</button>
       </div>
       <div id="plan-banner" class="plan-banner" role="status" hidden><span id="plan-banner-text"></span><span class="plan-banner-tools"><button id="plan-review" type="button" class="quiet">Review the change</button><button id="plan-back" type="button" class="quiet">Back to the model</button></span></div>
-      <div id="draw-palette" class="draw-palette" role="toolbar" aria-label="UML palette: drag onto the diagram, or press">
+      <div id="draw-palette" class="draw-palette" role="toolbar" aria-label="UML palette: pick one, then click the diagram, or drag it there">
         <span class="palette-title">Draw</span>
-        <button type="button" draggable="true" data-kind="state" title="Drag onto the diagram to add a state"><span class="glyph state" aria-hidden="true"></span>State</button>
-        <button type="button" draggable="true" data-kind="transition" title="Drag onto the state it leaves"><span class="glyph" aria-hidden="true">→</span>Transition</button>
-        <button type="button" draggable="true" data-kind="initial" title="Drag onto the state records start in"><span class="glyph initial" aria-hidden="true"></span>Initial</button>
+        <button type="button" draggable="true" data-kind="state" title="Click, then click the diagram to place a state (or drag it there)"><span class="glyph state" aria-hidden="true"></span>State</button>
+        <button type="button" draggable="true" data-kind="transition" title="Click, then click the state it leaves and the state it goes to"><span class="glyph" aria-hidden="true">→</span>Transition</button>
+        <button type="button" draggable="true" data-kind="initial" title="Click, then click the state records start in"><span class="glyph initial" aria-hidden="true"></span>Initial</button>
       </div>
       <div id="canvas" class="canvas" tabindex="0" aria-describedby="canvas-help" role="tabpanel" aria-labelledby="tab-states"></div>
       <div id="diff-view" class="diff-view" role="region" aria-label="The change on the state machine" hidden></div>
@@ -123,12 +126,52 @@
       </div>
       <div id="laws" class="laws" role="tabpanel" aria-labelledby="tab-laws" hidden>
         <div class="laws-head">
-          <div><h2>Laws</h2><p class="muted small">What this model must never do, whatever the diagrams say. The kernel refuses a model that breaks one; here each is also proved over every run the kernel allows.</p></div>
-          <button id="laws-prove" type="button" class="primary">Prove again</button>
+          <div><h2>Laws</h2><p class="muted small">What this model must never do, whatever the diagrams say. The kernel refuses a model that breaks one; here each is also proved over every run the kernel allows.</p>
+            <p class="file-line small"><span id="laws-file" class="file-chip"></span><span id="laws-draft" class="draft-chip" hidden>Edited, not saved</span><a id="laws-download" class="quiet" download="pack.json" hidden>Download pack.json</a></p></div>
+          <div class="head-tools"><button id="laws-edit" type="button" class="quiet" aria-expanded="false" aria-controls="laws-editor">Edit the law file</button>
+            <button id="laws-prove" type="button" class="primary">Prove again</button></div>
         </div>
+        <section id="laws-editor" class="file-editor" aria-label="The law file" hidden>
+          <p class="muted small">The laws exactly as <code>pack.json</code> holds them. Edit them and press Prove the draft: the draft is checked the way the pack loader checks it, then proved over every run. Nothing is saved from here. Download the pack to keep the draft, and review a removed or loosened law before you replace the file.</p>
+          <label class="visually-hidden" for="laws-source">The laws, as JSON</label>
+          <textarea id="laws-source" class="source" spellcheck="false" rows="16"></textarea>
+          <p id="laws-problems" class="file-problems" role="status" aria-live="polite"></p>
+          <div class="file-tools"><button id="laws-try" type="button" class="primary">Prove the draft</button>
+            <button id="laws-reset" type="button" class="quiet">Back to the pack's laws</button></div>
+        </section>
         <p id="laws-summary" class="laws-summary" role="status" aria-live="polite"></p>
         <ol id="laws-list" class="law-list"></ol>
+        <section class="formal" aria-labelledby="laws-formal-title"><h3 id="laws-formal-title">Formal checks for this pack</h3>
+          <p class="muted small">The pack declares how deeper checkers cover it: written by hand, generated from the laws, or not run yet.</p>
+          <ul id="laws-verifiers" class="verifiers"></ul></section>
         <p id="laws-limits" class="muted small"></p>
+      </div>
+      <div id="tests" class="laws tests" role="tabpanel" aria-labelledby="tab-tests" hidden>
+        <div class="laws-head">
+          <div><h2>Tests</h2><p class="muted small">Scenarios: who does what, and what must happen. The kernel runs every step on the model shown, so a change that alters what the app does fails a test, and the test shows where.</p>
+            <p class="file-line small"><span id="tests-file" class="file-chip"></span><span id="tests-draft" class="draft-chip" hidden>Edited, not saved</span><a id="tests-download" class="quiet" download="scenarios.json" hidden>Download scenarios.json</a></p></div>
+          <div class="head-tools"><button id="tests-edit" type="button" class="quiet" aria-expanded="false" aria-controls="tests-editor">Edit scenarios.json</button>
+            <button id="tests-new" type="button" class="quiet" aria-expanded="false" aria-controls="tests-recorder">New test</button>
+            <button id="tests-run" type="button" class="primary">Run all</button></div>
+        </div>
+        <section id="tests-recorder" class="recorder" aria-label="New test" hidden>
+          <p class="muted small">Pick who acts and what they do, one step at a time. The kernel answers each step; keep the test when what happened is what should happen.</p>
+          <label class="rec-title">Title <input id="rec-title" type="text" maxlength="120" placeholder="A librarian lends a book"></label>
+          <ol id="rec-steps" class="rec-steps"></ol>
+          <div class="rec-add"><label>Who <select id="rec-actor"></select></label><label>Does <select id="rec-action"></select></label>
+            <button id="rec-step" type="button">Try this step</button><button id="rec-undo" type="button" class="quiet" disabled>Undo the last step</button></div>
+          <div class="file-tools"><button id="rec-keep" type="button" class="primary" disabled>Keep as a test</button><button id="rec-cancel" type="button" class="quiet">Discard</button></div>
+        </section>
+        <section id="tests-editor" class="file-editor" aria-label="The scenarios file" hidden>
+          <p class="muted small">The scenarios exactly as <code>scenarios.json</code> holds them. Edit them and press Run the draft. Nothing is saved from here; download the file to keep it.</p>
+          <label class="visually-hidden" for="tests-source">The scenarios, as JSON</label>
+          <textarea id="tests-source" class="source" spellcheck="false" rows="16"></textarea>
+          <p id="tests-problems" class="file-problems" role="status" aria-live="polite"></p>
+          <div class="file-tools"><button id="tests-try" type="button" class="primary">Run the draft</button>
+            <button id="tests-reset" type="button" class="quiet">Back to the pack's tests</button></div>
+        </section>
+        <p id="tests-summary" class="laws-summary" role="status" aria-live="polite"></p>
+        <ol id="tests-list" class="law-list"></ol>
       </div>
       <div id="review" class="review" role="tabpanel" aria-labelledby="tab-review" hidden>
         <div class="review-head">

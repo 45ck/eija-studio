@@ -47,7 +47,7 @@ dd{margin:0}
 .chip{font-size:.75rem;padding:2px 8px;border-radius:999px;background:var(--bad-bg);color:var(--bad);font-variant-numeric:tabular-nums}
 .findings li button{width:100%;text-align:left;border:0;border-left:3px solid var(--line);border-radius:0 6px 6px 0;padding:5px 8px;background:var(--busy-bg);margin-bottom:4px;font-size:.84rem}
 .findings li.warning button{border-left-color:#c27c0e;background:#fdf4e3}
-.log{margin:0;padding:0;list-style:none;max-height:220px;overflow:auto;font-size:.8rem;font-variant-numeric:tabular-nums}
+.log{position:relative;margin:0;padding:0;list-style:none;max-height:220px;overflow:auto;font-size:.8rem;font-variant-numeric:tabular-nums}
 .log li{padding:3px 6px;border-radius:5px;display:grid;grid-template-columns:2.6em 1fr;gap:6px}
 .log li .n{color:var(--muted)}
 .log li.refused{color:var(--bad)}
@@ -124,6 +124,15 @@ dd{margin:0}
 .draft-form label{display:flex;flex-direction:column;gap:3px;font-size:.84rem;color:var(--muted)}
 .draft-form input,.draft-form select{font:inherit;font-size:.9rem;border:1px solid var(--line);border-radius:6px;padding:5px 8px;color:var(--ink);background:var(--panel)}
 .draft-tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+/* Adding without dragging (ADR-0174): an armed palette tool, and the small editor that opens where you click */
+.draw-palette button{cursor:pointer}
+.draw-palette button[aria-pressed="true"]{background:var(--state);color:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent)}
+.canvas.placing,.canvas.placing svg *{cursor:crosshair !important}
+.inline-edit{position:absolute;z-index:6;width:230px;gap:6px;padding:10px;background:var(--panel);border:1px solid var(--accent);border-radius:8px;box-shadow:0 10px 28px rgba(27,33,48,.2)}
+.inline-edit .inline-title{margin:0;font-size:.8rem;font-weight:600;color:var(--ink)}
+.inline-edit .draft-tools{margin-top:2px;flex-wrap:nowrap}
+.inline-edit .draft-tools .primary{flex:1;padding:4px 8px;font-size:.82rem}
+.inline-edit .draft-tools .quiet{padding:4px 9px}
 .msg.draft{background:var(--busy-bg);padding:9px 11px;border-radius:12px;font-size:.88rem;border:1px dashed var(--state-line)}
 .who{font-size:.68rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:1px 6px;border-radius:999px;margin-right:6px}
 .who.ai{background:#efe7fb;color:#5b2ea6}
@@ -198,6 +207,7 @@ button.link{border:0;background:transparent;padding:1px 4px;color:var(--accent);
 .laws{flex:1;min-height:0;overflow:auto;padding:16px 18px;border-top:1px solid var(--line);background:#fbfcfe}
 .laws[hidden]{display:none}
 .laws-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.laws-head>button{flex:none;white-space:nowrap}
 .laws-summary{margin:10px 0 14px;padding:8px 12px;border-radius:8px;background:var(--busy-bg);font-size:.88rem}
 .laws-summary.ok{background:var(--ok-bg);color:var(--ok)}
 .laws-summary.bad{background:var(--bad-bg);color:var(--bad)}

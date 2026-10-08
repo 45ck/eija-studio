@@ -26,7 +26,7 @@ from typing import Any
 
 from eija_studio.domain.laws import LAW_KINDS, PathRequires, Step, applies, evaluate_run, evaluate_table
 from eija_studio.domain.models import DomainError, ExecuteCommand, Workflow
-from eija_studio.domain.pack import Pack
+from eija_studio.domain.pack import Pack, PackError, parse_pack
 from eija_studio.domain.policy import check_policy
 from . import runtime
 from .memo import model_hash
@@ -210,3 +210,21 @@ def prove_laws(pack: Pack, model: Workflow | None = None) -> dict[str, Any]:
     report = {"format": FORMAT, "pack": pack.id, "model": model.semantic_hash, "status": _overall(refused, verdicts),
               "laws": verdicts, "search": _summary(model, search), "limits": list(LIMITS)}
     return report | ({"policy": sorted(refused)} if refused else {})
+
+
+def with_laws(pack: Pack, laws: list[Any]) -> Pack:
+    """The pack with its law file replaced by `laws` (a draft edited in PlayIDE), checked as the pack loader checks it.
+
+    Nothing is saved: the draft is proved and shown, and the person decides whether to write it into `pack.json`."""
+    document = pack.model_dump(mode="json") | {"laws": laws}
+    try:
+        return parse_pack(document)
+    except PackError as error:
+        raise DomainError("LAWS_INVALID", "; ".join(error.diagnostics), {"problems": list(error.diagnostics)}) from None
+
+
+def compare_laws(before: Pack, after: Pack) -> dict[str, list[str]]:
+    """Which laws a draft adds, removes or changes. Removing or changing a law can loosen what the kernel refuses."""
+    old, new = {law.id: law for law in before.laws}, {law.id: law for law in after.laws}
+    return {"added": sorted(set(new) - set(old)), "removed": sorted(set(old) - set(new)),
+            "changed": sorted(i for i in set(old) & set(new) if old[i] != new[i])}
