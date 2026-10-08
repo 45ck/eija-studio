@@ -52,3 +52,8 @@ dd{margin:0}
 .log li.refused{color:var(--bad)}
 .log li.current{background:var(--state)}
 .small{font-size:.75rem}
+.tabs{display:flex;gap:2px;margin-right:auto;background:var(--busy-bg);border-radius:8px;padding:2px}
+.tabs button{border:0;background:transparent;padding:5px 12px;font-weight:600;font-size:.85rem}
+.tabs button[aria-selected="true"]{background:var(--panel);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.canvas[hidden]{display:none}
+.empty{padding:24px}

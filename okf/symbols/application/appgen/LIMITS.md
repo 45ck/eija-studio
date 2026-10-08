@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py#LIMITS
   title: application/appgen.py
   hash_method: ast-v2
-  sha256: 654cbb178449937b5fc266bec99d21494592d10313fe6a653433d28eb97aa59e
-notes_baseline: c4442f24665d0b867e77f4974998737bc220988174a8734201c7555799a69095
+  sha256: 988f6e4af934ba48137f400613ee2c88b62bdb5024e94338212378f81c52ffd0
+notes_baseline: 80752003c3a7d83ea841f29436d1a6d77b57bb5ca8afadad1db62ea4ba7f67c7
 ---
 
 # application.appgen.LIMITS
@@ -25,7 +25,7 @@ notes_baseline: c4442f24665d0b867e77f4974998737bc220988174a8734201c7555799a69095
 |---|---|
 | Kind | constant |
 | Module | [`application/appgen`](/modules/application/appgen.md) |
-| Signature | `LIMITS = ('The app runs the EIJA kernel itself (eija-studio must be installed). Records carry a title only; entities and fields are not modelled yet. Records c…` |
+| Signature | `LIMITS = ('The app runs the EIJA kernel itself (eija-studio must be installed). Records created under an earlier model are refused with STALE_INSTANCE, and und…` |
 | Code | `repo://src/eija_studio/application/appgen.py#LIMITS` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
@@ -41,6 +41,5 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Referenced by
 
-* [application.appgen.generate](/symbols/application/appgen/generate.md) - Return the per-model files and the build manifest (without file hashes or test results).
-* [application.appgen.readme](/symbols/application/appgen/readme.md) - `def readme(pack: Pack, model: Workflow, cases: int) -> str` in `application/appgen`.
+* [application.appgen.app_limits](/symbols/application/appgen/app_limits.md) - `def app_limits(data: DataModel | None) -> list[str]` in `application/appgen`.
 <!-- okf:generated:end links -->

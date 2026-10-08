@@ -23,6 +23,7 @@ from fastapi.responses import FileResponse
 from pydantic import Field
 
 from eija_studio.application.simulation import MAX_STEPS, simulate
+from eija_studio.domain.data import data_for
 from eija_studio.domain.models import Contract, DomainError, Workflow
 from eija_studio.domain.pack import Pack
 from .app_build import build_into
@@ -64,7 +65,9 @@ class AppRunner:
 
     def build_and_run(self, pack: Pack, model: Workflow, identity: dict[str, Any]) -> dict[str, Any]:
         with self.lock:
-            out = self.root() / model.semantic_hash[:12]
+            data = data_for(pack)  # the same model with another data model is another app
+            key = model.semantic_hash[:12] + (f"-{data.digest[:8]}" if data else "")
+            out = self.root() / key
             manifest = build_into(out, pack, model, identity)
             result = {"model": model.semantic_hash, "cases": manifest["oracle"]["cases"],
                       "conformance": manifest["conformance"], "kernel_source_review": manifest["kernel_source_review"],
@@ -72,11 +75,11 @@ class AppRunner:
             if manifest["conformance"]["status"] != "PASS":
                 self._stop()  # never leave an older app running as if it were this model's
                 return result
-            return result | {"url": self._start(out, model.semantic_hash)}
+            return result | {"url": self._start(out, key)}
 
-    def _start(self, out: Path, model_hash: str) -> str:
+    def _start(self, out: Path, key: str) -> str:
         alive = self.process is not None and self.process.poll() is None
-        if alive and self.running and self.running["model"] == model_hash:
+        if alive and self.running and self.running["key"] == key:
             return self.running["url"]
         self._stop()
         port = _free_port()
@@ -90,7 +93,7 @@ class AppRunner:
                 self._stop()
                 raise DomainError("APP_START_FAILED", "The built app did not start")
             time.sleep(0.05)
-        self.running = {"model": model_hash, "url": f"http://127.0.0.1:{port}/"}
+        self.running = {"key": key, "url": f"http://127.0.0.1:{port}/"}
         return self.running["url"]
 
     def _stop(self) -> None:
@@ -125,6 +128,12 @@ def register(app, studio, web: Path) -> AppRunner:
         if body.model is not None and body.model.semantic_hash != model.semantic_hash:
             raise DomainError("MODEL_CHANGED", "The model changed since the page loaded; reload and try again")
         return model
+
+    @app.get("/api/play/data")
+    def play_data():
+        """The pack's data model for the class diagram, or null when the pack has none (ADR-0153)."""
+        data = data_for(studio.pack)
+        return {"data": data.model_dump(mode="json") if data else None, "digest": data.digest if data else None}
 
     @app.post("/api/play/build")
     def play_build(body: BuildRequest):

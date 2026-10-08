@@ -85,6 +85,7 @@ _No curated notes yet._
 * [application.witness_inspection](/modules/application/witness_inspection.md) - Immutable display projections of the deciding formal record, never new evidence or verdicts.
 * [domain.affordance](/modules/domain/affordance.md) - Affordance map (WBS 1.3): which single edits the kernel would accept, and why the others are refused.
 * [domain.change_case](/modules/domain/change_case.md) - Module `domain/change_case` (no module docstring).
+* [domain.data](/modules/domain/data.md) - The data model of a pack, shown as a UML class diagram (ADR-0153): entities, typed attributes and associations.
 * [domain.evidence](/modules/domain/evidence.md) - Compatibility is computed.
 * [domain.impact](/modules/domain/impact.md) - Module `domain/impact` (no module docstring).
 * [domain.laws](/modules/domain/laws.md) - Typed law DSL of a domain pack: what a workflow may never do, stated as data (WBS 1.1/1.2).

@@ -67,6 +67,7 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0150](0150-build-apps-from-the-model-with-a-kernel-oracle.md) | Build runnable apps from the model, checked against the kernel as oracle | accepted for the local workflow-app slice |
 | [0151](0151-playide-canvas-and-build-and-run.md) | PlayIDE canvas with Build & run of the live app | accepted for the state-machine slice |
 | [0152](0152-simulate-seeded-users-through-the-kernel.md) | Simulate seeded users through the kernel and paint where they went | accepted for the state-machine slice |
+| [0153](0153-data-models-as-uml-class-diagrams.md) | Data models as UML class diagrams, checked in the built app | accepted for record attributes; other classes are diagram-only |
 <!-- adr-index:end -->
 
 ## Reserved numbers for capability lanes

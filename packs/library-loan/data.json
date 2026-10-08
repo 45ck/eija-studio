@@ -1,0 +1,45 @@
+{
+  "schema_version": "eija.data.v1",
+  "id": "library-loan",
+  "record": "Loan",
+  "entities": [
+    {
+      "name": "Loan",
+      "description": "One member borrowing one copy; it moves through the loan workflow.",
+      "attributes": [
+        {"name": "itemTitle", "type": "text", "required": true, "max_length": 200},
+        {"name": "memberCard", "type": "text", "required": true, "max_length": 20},
+        {"name": "dueDate", "type": "date", "required": true},
+        {"name": "format", "type": "choice", "required": true, "choices": ["Book", "Audiobook", "DVD", "Magazine"]},
+        {"name": "renewals", "type": "number"}
+      ]
+    },
+    {
+      "name": "Item",
+      "attributes": [
+        {"name": "title", "type": "text", "required": true},
+        {"name": "isbn", "type": "text", "max_length": 17}
+      ]
+    },
+    {
+      "name": "Copy",
+      "description": "A physical copy of an item on the shelf.",
+      "attributes": [
+        {"name": "barcode", "type": "text", "required": true, "max_length": 32},
+        {"name": "shelf", "type": "text"}
+      ]
+    },
+    {
+      "name": "Member",
+      "attributes": [
+        {"name": "card", "type": "text", "required": true, "max_length": 20},
+        {"name": "name", "type": "text", "required": true}
+      ]
+    }
+  ],
+  "associations": [
+    {"source": "Item", "target": "Copy", "kind": "composition", "role": "copies", "source_multiplicity": "1", "target_multiplicity": "1..*"},
+    {"source": "Loan", "target": "Copy", "role": "copy", "source_multiplicity": "0..*", "target_multiplicity": "1"},
+    {"source": "Loan", "target": "Member", "role": "borrower", "source_multiplicity": "0..*", "target_multiplicity": "1"}
+  ]
+}

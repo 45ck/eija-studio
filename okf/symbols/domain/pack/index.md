@@ -38,6 +38,7 @@
 * [domain.pack.find_pack](find_pack.md) - Resolve a loaded snapshot by digest, or an unambiguous id after refreshing its sources.
 * [domain.pack.load_pack](load_pack.md) - Read current file contents and retain an immutable, digest-addressed pack snapshot.
 * [domain.pack.meaning_ids](meaning_ids.md) - The meaning ids of the pack a workflow belongs to, or None when no such pack can be found.
+* [domain.pack.pack_directory](pack_directory.md) - The directory this exact pack snapshot was read from, or its authored directory, so optional files beside `pack.json` (such as `data.json`) are read from the same place as the pack.
 * [domain.pack.parse_pack](parse_pack.md) - Validate a decoded JSON document as a pack.
 * [domain.pack.state_sets](state_sets.md) - The state sets a workflow of this pack can have: the baseline's, and the baseline's after each supported meaning (states its transactions add or remove).
 * [domain.pack.ui_key](ui_key.md) - The derived UI/UML key of a pack element: ``data-eija-id="<pack>.<kind>.<id>"``.

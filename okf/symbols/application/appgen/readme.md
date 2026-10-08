@@ -1,7 +1,7 @@
 ---
 type: Function
 title: application.appgen.readme
-description: '`def readme(pack: Pack, model: Workflow, cases: int) -> str` in `application/appgen`.'
+description: '`def readme(pack: Pack, model: Workflow, cases: int, data: DataModel | None=None) -> str` in `application/appgen`.'
 resource: repo://src/eija_studio/application/appgen.py#readme
 tags:
 - symbol
@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py#readme
   title: application/appgen.py
   hash_method: ast-v2
-  sha256: d4e6f92fba6d039f2638600c8c36f387a20e23461c1a2bbd906b87a550426966
-notes_baseline: 5468057891eeb96feaf725b0ae1c277ca3bc1f71bb5f4b263b41f4f0e44ca2e9
+  sha256: 0c4a208463a9eef1549636304963c89102d74441b86b4c50e4dfe71c2a813c6c
+notes_baseline: 8a445f3213bd48a78095e74ea61cf92aad4f2dc5458246bf888b929e8fc04227
 ---
 
 # application.appgen.readme
@@ -25,7 +25,7 @@ notes_baseline: 5468057891eeb96feaf725b0ae1c277ca3bc1f71bb5f4b263b41f4f0e44ca2e9
 |---|---|
 | Kind | function |
 | Module | [`application/appgen`](/modules/application/appgen.md) |
-| Signature | `def readme(pack: Pack, model: Workflow, cases: int) -> str` |
+| Signature | `def readme(pack: Pack, model: Workflow, cases: int, data: DataModel \| None=None) -> str` |
 | Code | `repo://src/eija_studio/application/appgen.py#readme` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
@@ -41,7 +41,8 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [application.appgen.LIMITS](/symbols/application/appgen/LIMITS.md) - Constant `LIMITS` in `application/appgen`.
+* [application.appgen.app_limits](/symbols/application/appgen/app_limits.md) - `def app_limits(data: DataModel | None) -> list[str]` in `application/appgen`.
+* [domain.data.DataModel](/symbols/domain/data/DataModel.md) - `class DataModel(Contract)` in `domain/data`.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
 

@@ -111,6 +111,23 @@
         }
       }
     },
+    "/api/play/data": {
+      "get": {
+        "summary": "Play Data",
+        "description": "The pack's data model for the class diagram, or null when the pack has none (ADR-0153).",
+        "operationId": "play_data_api_play_data_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/play/build": {
       "post": {
         "summary": "Play Build",

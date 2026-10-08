@@ -12,6 +12,7 @@ from typing import Any, Callable
 
 from eija_studio import __version__
 from eija_studio.application.appgen import FORMAT, generate
+from eija_studio.domain.data import data_for
 from eija_studio.domain.models import DomainError, Workflow
 from eija_studio.domain.pack import Pack
 
@@ -38,7 +39,7 @@ def add_parser(subs) -> None:
 
 
 def app_files(pack, model: Workflow) -> tuple[dict[str, str], dict]:
-    generated, manifest = generate(pack, model)
+    generated, manifest = generate(pack, model, data_for(pack))  # the data model beside pack.json, if any
     root = resource_files("eija_studio.resources").joinpath("appgen")
     static = {target: root.joinpath(source).read_text(encoding="utf-8") for source, target in TEMPLATES.items()}
     return static | {"tests/__init__.py": ""} | generated, manifest

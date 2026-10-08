@@ -24,15 +24,20 @@
     <h3>States</h3><ul id="outline-states"></ul>
     <h3>Transitions</h3><ul id="outline-transitions"></ul>
     <h3>Roles</h3><ul id="outline-roles"></ul>
+    <h3>Classes</h3><ul id="outline-classes"></ul>
   </nav>
   <section class="stage" aria-label="State machine diagram">
     <div class="stage-tools">
-      <span class="kind">State machine</span>
+      <div class="tabs" role="tablist" aria-label="Diagram">
+        <button id="tab-states" role="tab" type="button" aria-selected="true" aria-controls="canvas">State machine</button>
+        <button id="tab-classes" role="tab" type="button" aria-selected="false" aria-controls="class-canvas">Class diagram</button>
+      </div>
       <button id="fit" type="button" class="quiet">Fit</button>
       <button id="zoom-in" type="button" class="quiet" aria-label="Zoom in">+</button>
       <button id="zoom-out" type="button" class="quiet" aria-label="Zoom out">−</button>
     </div>
-    <div id="canvas" class="canvas" tabindex="0" aria-describedby="canvas-help"></div>
+    <div id="canvas" class="canvas" tabindex="0" aria-describedby="canvas-help" role="tabpanel" aria-labelledby="tab-states"></div>
+    <div id="class-canvas" class="canvas" tabindex="0" role="tabpanel" aria-labelledby="tab-classes" hidden></div>
     <p id="canvas-help" class="hint">Drag states to arrange them. Select an element to inspect it. Arrangement is not saved yet.</p>
   </section>
   <aside class="side">

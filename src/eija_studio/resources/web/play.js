@@ -8,7 +8,7 @@
   // Drop the token from the address bar but keep ?case=, so a reload still shows the same model.
   if (location.hash) { sessionStorage.setItem("eija-session", token); history.replaceState(null, "", location.pathname + location.search); }
   const STATE = { width: 150, height: 54 }, INITIAL = 22;
-  let graph, model, selected = "", sim = null, replayTimer = 0;
+  let graph, model, selected = "", sim = null, replayTimer = 0, data = null, classGraph = null, tab = "states";
   const base = {}; // each cell's own style and label, so overlays can be cleared
 
   async function api(path, body) {
@@ -93,9 +93,11 @@
 
   function transition(id) { return model.transitions.find((t) => t.id === id); }
 
+  const current = () => (tab === "classes" ? classGraph : graph);
+
   function fit() {
-    if (!graph) return;
-    const plugin = graph.getPlugin("fit");
+    if (!current()) return;
+    const plugin = current().getPlugin("fit");
     plugin.maxFitScale = 1.4;
     plugin.fitCenter({ margin: 24 });
   }
@@ -110,6 +112,10 @@
       return;
     }
     const dl = el("dl");
+    if (id.startsWith("class:")) {
+      inspectClass(id.slice(6), box);
+      return;
+    }
     if (id.startsWith("state:")) {
       const s = id.slice(6);
       const out = model.transitions.filter((t) => t.from_state === s), into = model.transitions.filter((t) => t.to_state === s);
@@ -133,9 +139,10 @@
     selected = id;
     for (const b of document.querySelectorAll(".outline button")) b.setAttribute("aria-current", String(b.dataset.id === id));
     inspect(id);
-    if (fromOutline && graph) {
-      const cell = graph.getDataModel().getCell(id);
-      if (cell) graph.setSelectionCell(cell);
+    if (fromOutline) {
+      showTab(id.startsWith("class:") ? "classes" : "states");
+      const target = current(), cell = target && target.getDataModel().getCell(id);
+      if (cell) target.setSelectionCell(cell);
     }
   }
 
@@ -152,7 +159,95 @@
     };
     fill("outline-states", model.states.map((s) => ["state:" + s, s + (s === model.initial_state ? " (initial)" : "")]));
     fill("outline-transitions", model.transitions.map((t) => ["transition:" + t.id, label(t)]));
+    fill("outline-classes", data ? data.entities.map((e) => ["class:" + e.name, e.name + (e.name === data.record ? " «record»" : "")]) : []);
+    if (!data) $("outline-classes").replaceChildren(el("li", "No data model yet", { class: "muted" }));
     $("outline-roles").replaceChildren(...[...new Set(model.transitions.map((t) => t.role))].map((r) => el("li", r, { class: "muted" })));
+  }
+
+  // Class diagram (ADR-0153): the pack's data model in UML class notation. The record class is what moves through
+  // the state machine; its attributes become the built app's form, checked by the data model on the server.
+  const typeName = { text: "String", number: "Number", date: "Date", boolean: "Boolean" };
+  // UML attribute notation: name: Type [multiplicity]; an optional value is [0..1], a choice lists its literals.
+  const attributeLine = (a) => `${a.name}: ${a.type === "choice" ? `{${a.choices.join(", ")}}` : typeName[a.type]}${a.required ? "" : " [0..1]"}`;
+  const ROW = 20, HEAD = 34;
+  const widthOf = (e) => Math.max(200, e.name.length * 9 + 60, ...e.attributes.map((a) => attributeLine(a).length * 7 + 24));
+
+  function classLayout() {
+    const g = new dagre.graphlib.Graph({ multigraph: true });
+    g.setGraph({ rankdir: "LR", nodesep: 50, ranksep: 140, marginx: 30, marginy: 30 });
+    g.setDefaultEdgeLabel(() => ({}));
+    for (const e of data.entities) g.setNode(e.name, { width: widthOf(e), height: HEAD + ROW * Math.max(1, e.attributes.length) + 8 });
+    data.associations.forEach((a, i) => g.setEdge(a.source, a.target, { width: 90, height: 20 }, "a" + i));
+    dagre.layout(g);
+    return (name) => { const n = g.node(name); return [n.x - n.width / 2, n.y - n.height / 2, n.width, n.height]; };
+  }
+
+  function drawClasses() {
+    if (classGraph || !data) return;
+    const { Graph, InternalEvent, Point } = maxgraph;
+    const box = $("class-canvas");
+    InternalEvent.disableContextMenu(box);
+    classGraph = new Graph(box);
+    classGraph.setConnectable(false);
+    classGraph.setCellsEditable(false);
+    classGraph.setCellsDisconnectable(false);
+    classGraph.setCellsResizable(false);
+    classGraph.setDropEnabled(false);
+    classGraph.setPanning(true);
+    const parent = classGraph.getDefaultParent(), at = classLayout(), cells = {};
+    const font = { fontFamily: "system-ui, sans-serif", fontColor: "#1b2130" };
+    classGraph.batchUpdate(() => {
+      for (const e of data.entities) {
+        const [x, y, w, h] = at(e.name), record = e.name === data.record;
+        const box = cells[e.name] = classGraph.insertVertex({ parent, id: "class:" + e.name, value: (record ? "«record»\n" : "") + e.name,
+          position: [x, y], size: [w, h], style: { ...font, shape: "swimlane", startSize: HEAD, horizontal: true, fontStyle: 1, fontSize: 13,
+            fillColor: record ? "#dfe6ff" : "#eef2ff", swimlaneFillColor: "#ffffff", strokeColor: "#5b74d6", rounded: false, collapsible: false } });
+        e.attributes.forEach((a, i) => classGraph.insertVertex({ parent: box, id: `attr:${e.name}.${a.name}`, value: attributeLine(a),
+          position: [8, HEAD + 4 + i * ROW], size: [w - 16, ROW], style: { ...font, fontSize: 12, align: "left", strokeColor: "none",
+            fillColor: "none", movable: false, selectable: false } }));
+      }
+      data.associations.forEach((a, i) => {
+        const diamond = a.kind === "association" ? {} : { startArrow: "diamond", startSize: 14, startFill: a.kind === "composition" };
+        const edge = classGraph.insertEdge({ parent, id: "assoc:" + i, value: a.role, source: cells[a.source], target: cells[a.target],
+          style: { ...font, fontSize: 12, strokeColor: "#4a5568", endArrow: "none", labelBackgroundColor: "#fbfcfe", ...diamond } });
+        for (const [where, text] of [[-0.8, a.source_multiplicity], [0.8, a.target_multiplicity]]) {
+          const end = classGraph.insertVertex({ parent: edge, value: text, position: [where, 0], size: [0, 0], relative: true,
+            style: { ...font, fontSize: 11, labelBackgroundColor: "#fbfcfe", selectable: false, movable: false } });
+          end.geometry.offset = new Point(0, -12);
+        }
+      });
+    });
+    classGraph.getSelectionModel().addListener(InternalEvent.CHANGE, () => {
+      const cell = classGraph.getSelectionCell();
+      const id = cell && cell.id && cell.id.startsWith("assoc:") ? "class:" + data.associations[+cell.id.slice(6)].source : cell ? cell.id : "";
+      select(id && id.startsWith("class:") ? id : "", false);
+    });
+  }
+
+  function inspectClass(name, box) {
+    const e = data.entities.find((x) => x.name === name);
+    box.append(el("h3", `Class ${name}${name === data.record ? " «record»" : ""}`));
+    if (e.description) box.append(el("p", e.description, { class: "muted" }));
+    const dl = el("dl");
+    for (const a of e.attributes) row(dl, a.name, `${a.type === "choice" ? "one of " + a.choices.join(", ") : a.type}${a.required ? ", required" : ""}${a.type === "text" ? `, ≤ ${a.max_length}` : ""}`);
+    for (const a of data.associations.filter((x) => x.source === name || x.target === name)) {
+      row(dl, a.kind, `${a.source} [${a.source_multiplicity}] — ${a.role || ""} → ${a.target} [${a.target_multiplicity}]`);
+    }
+    box.append(dl);
+    if (name === data.record) box.append(el("p", "Records of this class move through the state machine. Its attributes are the built app's form, checked on the server.", { class: "muted" }));
+  }
+
+  function showTab(which) {
+    tab = which;
+    $("tab-states").setAttribute("aria-selected", String(which === "states"));
+    $("tab-classes").setAttribute("aria-selected", String(which === "classes"));
+    $("canvas").hidden = which !== "states";
+    $("class-canvas").hidden = which !== "classes";
+    if (which === "classes") {
+      if (!data) { $("class-canvas").replaceChildren(el("p", "This pack has no data model yet. Add a data.json beside its pack.json.", { class: "muted empty" })); return; }
+      drawClasses();
+    }
+    fit();
   }
 
   async function build() {
@@ -292,6 +387,7 @@
     }
     const status = await api("/api/status");
     $("model-name").textContent = status.pack.name + (caseId ? " · change case" : "");
+    data = (await api("/api/play/data")).data;
     outline();
     draw(model);
     inspect("");
@@ -300,8 +396,10 @@
     $("sim-replay").addEventListener("click", replay);
     $("sim-clear").addEventListener("click", clearSim);
     $("fit").addEventListener("click", fit);
-    $("zoom-in").addEventListener("click", () => graph.zoomIn());
-    $("zoom-out").addEventListener("click", () => graph.zoomOut());
+    $("zoom-in").addEventListener("click", () => current() && current().zoomIn());
+    $("zoom-out").addEventListener("click", () => current() && current().zoomOut());
+    $("tab-states").addEventListener("click", () => showTab("states"));
+    $("tab-classes").addEventListener("click", () => showTab("classes"));
     window.addEventListener("resize", fit);
     document.body.dataset.ready = "true";
   }
