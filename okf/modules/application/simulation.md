@@ -70,6 +70,7 @@ _No curated notes yet._
 
 ## Referenced by
 
+* [application.review](/modules/application/review.md) - Review a model change in PlayIDE instead of a pull request (ADR-0158).
 * [interfaces.play](/modules/interfaces/play.md) - PlayIDE routes: the visual UML canvas page, Build & run of the model as a live app beside it (ADR-0151), and Simulate, seeded simulated users whose every step…
 * [application.simulation.CASE](/symbols/application/simulation/CASE.md) - Constant `CASE` in `application/simulation`.
 * [application.simulation.MAX_STEPS](/symbols/application/simulation/MAX_STEPS.md) - Constant `MAX_STEPS` in `application/simulation`.

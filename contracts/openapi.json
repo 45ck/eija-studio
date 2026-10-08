@@ -276,6 +276,43 @@
         }
       }
     },
+    "/api/play/review": {
+      "post": {
+        "summary": "Play Review",
+        "description": "Review the change shown (a case's candidate and any accepted plan steps) against the model in force (ADR-0158).\nRead-only: nothing is saved, approved or applied.",
+        "operationId": "play_review_api_play_review_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuildRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/play/build": {
       "post": {
         "summary": "Play Build",

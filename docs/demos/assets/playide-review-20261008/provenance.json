@@ -1,0 +1,58 @@
+{
+  "schema": "eija.ide-walkthrough-captures.v1",
+  "scope": "Frames from one scripted real-browser recording of the PlayIDE Review tab (offline plan proposer, library-loan pack). Not a design mockup, human study, live-AI run or full IDE acceptance.",
+  "recording": {
+    "scenario": "playide_review",
+    "manifest": "demos/recordings/playide_review.json",
+    "raw_video_sha256": "2f2edf378d452afa28deff5620967faaa909dd0f1aea5e1296aa7271617fbc85",
+    "raw_video_bytes": 11103461,
+    "status": "PASS",
+    "skipped": [],
+    "platform": "Linux 6.18.44-fc-v80 / Python 3.13.16",
+    "browser": "Playwright bundled Chromium via the chrome channel (not Google Chrome)"
+  },
+  "published_video": {
+    "file": "playide-review.mp4",
+    "sha256": "52d51cfe567ad7cabc13c0b3bc55ccaa5e75c5adb4c7bf2af1a67bdb25084125",
+    "bytes": 6920200,
+    "transformations": "Raw webm re-encoded to H.264 CRF 22; no trims, cuts or fades"
+  },
+  "images": [
+    {
+      "file": "diff-diagram.png",
+      "sha256": "2f9ce74bac1f0ffaca9bdccc6cca4e7fcfcea75dab2801bca34b4e0739627e99",
+      "bytes": 742825,
+      "width": 1440,
+      "height": 900,
+      "source_time_s": 40,
+      "transformations": "Single frame decoded from the raw webm (lossy video frame, not a browser screenshot)"
+    },
+    {
+      "file": "surprise.png",
+      "sha256": "adca3ff42556cb9676e5ce4682fb7c456f53c4cc041789465e6ad3f9d0550576",
+      "bytes": 713406,
+      "width": 1440,
+      "height": 900,
+      "source_time_s": 58,
+      "transformations": "Single frame decoded from the raw webm (lossy video frame, not a browser screenshot)"
+    },
+    {
+      "file": "changes-requested.png",
+      "sha256": "ec6e26f3ddc5acbcccc0e73ef0ce6fe4e266b00b5a9d512f90c578d2e270b8c0",
+      "bytes": 729344,
+      "width": 1440,
+      "height": 900,
+      "source_time_s": 102,
+      "transformations": "Single frame decoded from the raw webm (lossy video frame, not a browser screenshot)"
+    },
+    {
+      "file": "looks-right-and-built.png",
+      "sha256": "8de9fce0e91f4e7eb5d0d641d460e09c1ba9cdf8d73e23279bddcdd9202bdf50",
+      "bytes": 768276,
+      "width": 1440,
+      "height": 900,
+      "source_time_s": "last 6 s",
+      "transformations": "Single frame decoded from the raw webm (lossy video frame, not a browser screenshot)"
+    }
+  ]
+}

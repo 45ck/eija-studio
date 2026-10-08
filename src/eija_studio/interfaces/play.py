@@ -1,7 +1,8 @@
 """PlayIDE routes: the visual UML canvas page, Build & run of the model as a live app beside it (ADR-0151), and
 Simulate, seeded simulated users whose every step the kernel decides (ADR-0152), the screen designer's check and
 build of designed screens (ADR-0154), the component diagram read from the files the app is built from (ADR-0155), and the chat's plan mode, whose accepted
-steps can be previewed, built and simulated but never saved or applied from here (ADR-0156).
+steps can be previewed, built and simulated but never saved or applied from here (ADR-0156), and the review of a
+change as a UML diff whose behaviour the kernel runs on both sides (ADR-0158).
 
 Build & run reuses `eija build` (ADR-0150): the app is generated into the workspace, its kernel conformance tests run,
 and only a PASSing app is started, as a separate local process on a free loopback port. One app runs at a time; a new
@@ -26,6 +27,7 @@ from pydantic import Field
 
 from eija_studio.application.components import app_components
 from eija_studio.application.plan import preview_plan, propose_plan
+from eija_studio.application.review import review_change
 from eija_studio.application.simulation import MAX_STEPS, simulate
 from eija_studio.domain.data import data_for
 from eija_studio.domain.models import Contract, DomainError, Workflow
@@ -191,6 +193,19 @@ def register(app, studio, web: Path) -> AppRunner:
         screens = screens_of(body, model)
         files, manifest = app_files(studio.pack, model, screens)
         return app_components(files) | {"model": model.semantic_hash, "screens": screens.digest, "cases": manifest["oracle"]["cases"]}
+
+    def baseline(body: BuildRequest) -> Workflow:
+        """The model in force: the active baseline, or the case's baseline. A change is reviewed against it."""
+        if body.case_id is None:
+            with studio.store.transaction() as u:
+                return Workflow.model_validate(u.active()["model"])
+        return studio.workflows(body.case_id)[0]
+
+    @app.post("/api/play/review")
+    def play_review(body: BuildRequest):
+        """Review the change shown (a case's candidate and any accepted plan steps) against the model in force (ADR-0158).
+        Read-only: nothing is saved, approved or applied."""
+        return review_change(studio.pack, baseline(body), resolve(body))
 
     @app.post("/api/play/build")
     def play_build(body: BuildRequest):

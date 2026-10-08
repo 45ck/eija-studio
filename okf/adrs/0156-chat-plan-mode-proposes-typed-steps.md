@@ -54,4 +54,5 @@ _No curated notes yet._
 ## Referenced by
 
 * [ADR-0157: Drawn edits join the plan, and a checks ring rewards checking](/adrs/0157-drawn-edits-and-checks-ring.md) - The owner wants PlayIDE to be visual and mouse-driven ("drag and drop, design then test in place") and to feel rewarding, "tied to real checks".
+* [ADR-0158: Review a change as a UML diff you can run, not as a pull request](/adrs/0158-review-a-change-as-a-uml-diff-you-can-run.md) - The owner wants engineers to stop "reviewing changes in a GitHub PR when you can do it through the IDE in a much better, fun, quicker way that is more accurate…
 <!-- okf:generated:end links -->

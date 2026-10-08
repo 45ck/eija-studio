@@ -98,14 +98,15 @@
 
   function transition(id) { return model.transitions.find((t) => t.id === id); }
 
-  const current = () => ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: componentGraph })[tab];
-  const PANELS = { states: "canvas", classes: "class-canvas", usecases: "usecase-canvas", screens: "screens", components: "component-canvas" };
+  const current = () => ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: componentGraph, review: PlayReview.graph() })[tab];
+  const PANELS = { states: "canvas", classes: "class-canvas", usecases: "usecase-canvas", screens: "screens", components: "component-canvas", review: "review" };
   const HINTS = {
     states: "Drag from the palette to draw a state, a transition or the initial state; select an element to change or remove it. Drawn changes join the plan for you to preview; nothing is saved.",
     classes: "Select a class to see its attributes and associations.",
     usecases: "Select a use case to inspect it. Double-click one to design its screen.",
     screens: "Design each use case's screen. The design check runs as you edit; Build & run uses these screens.",
     components: "The built app's components, read from its generated files: every line is an import, a route or a file read.",
+    review: "Review the change shown against the model in force: look at each change, predict what the kernel does, then decide. Nothing is approved from here.",
   };
 
   function fit() {
@@ -340,6 +341,7 @@
     if (which === "screens") { renderDesigner(); return; }
     if (which === "usecases") drawUseCases();
     if (which === "components") { drawComponents(); return; }
+    if (which === "review") { PlayReview.show(); return; }
     if (which === "classes") {
       if (!data) { $("class-canvas").replaceChildren(el("p", "This pack has no data model yet. Add a data.json beside its pack.json.", { class: "muted empty" })); return; }
       drawClasses();
@@ -417,7 +419,9 @@
     const tools = el("div", undefined, { class: "plan-tools" });
     const preview = el("button", "Preview on the diagram", { type: "button", class: "primary" });
     preview.addEventListener("click", () => (plan.previewing ? leavePreview() : enterPreview()));
-    tools.append(preview);
+    const review = el("button", "Review it", { type: "button", class: "review-it", title: "Review the previewed change: what changed, how risky, what the kernel does differently" });
+    review.addEventListener("click", () => { if (!plan.previewing) enterPreview(); if (plan.previewing) showTab("review"); });
+    tools.append(preview, review);
     if (plan.meaning && plan.steps.every((step) => step.author === "ai")) {
       const keep = el("button", "Make it a change case", { type: "button" });
       keep.addEventListener("click", makeCase);
@@ -460,6 +464,7 @@
         ? `Step ${result.steps.findIndex((x) => x.status === "does_not_apply") + 1} does not apply after the steps you kept (${result.steps.find((x) => x.status === "does_not_apply").message}).`
         : `The policy refuses the accepted steps: ${result.codes.join(", ") || result.message}.`;
     plan.card.querySelector(".plan-tools .primary").disabled = !result.legal && !plan.previewing;
+    plan.card.querySelector(".plan-tools .review-it").disabled = !result.legal;
     renderHealth();
   }
 
@@ -1319,6 +1324,9 @@
     });
     renderHealth();
     $("plan-back").addEventListener("click", leavePreview);
+    $("plan-review").addEventListener("click", () => showTab("review"));
+    $("tab-review").addEventListener("click", () => showTab("review"));
+    PlayReview.init({ api, about, earn, el });
     $("screens-reset").addEventListener("click", async () => { screensEdited = false; lastBuild = null; restyleComponents(); components = null; await loadScreens(null); renderDesigner(); });
     $("canvas-help").textContent = HINTS.states;
     window.addEventListener("resize", fit);

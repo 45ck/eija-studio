@@ -76,6 +76,11 @@ SCENARIOS: tuple[Scenario, ...] = (
              "screen designer; builds and runs the app with its conformance cases; simulates users; draws a state and a "
              "transition from the palette; and checks an offline AI proposal step by step, rejecting the step the "
              "policy refuses, before building and simulating the result."),
+    Scenario("playide_review", "Review an AI's change in PlayIDE, not in a pull request", "recorded", (),
+             "On the library-loan pack, an offline AI plan adds a renewal and quietly deletes late returns. The Review tab "
+             "draws both models on one UML diagram, ranks each change by risk and shows what the kernel does differently "
+             "for every fixture user. The reviewer predicts before each answer, catches the deleted path, asks for a "
+             "change, rejects the step, reviews again and builds the result. Nothing is approved or applied."),
     Scenario("agent_change_review","Reviewing an agent's change by meaning, not by diff", "unscripted",
              ("agents", "providers", "visual"),
              "An agent (Claude Code, Codex, OpenCode or Gemini via MCP) proposes; the developer sees the "

@@ -11,6 +11,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from eija_studio.domain.models import Workflow
+from eija_studio.domain.pack import load_pack
 from eija_studio.interfaces import play
 from eija_studio.interfaces.http import create_app
 from kernel_support import harness_studio
@@ -143,3 +144,31 @@ def test_plan_mode_proposes_previews_and_tries_but_never_saves(client, studio):
     assert refused.json()["code"] == "PLAN_REQUEST_UNSUPPORTED"
     with studio.store.transaction() as u:
         assert u.active()["model"] == before  # nothing was saved or applied
+
+
+
+@pytest.fixture
+def loan_client(tmp_path):
+    studio = harness_studio(tmp_path / "loan", pack=load_pack(Path(__file__).resolve().parents[1] / "packs" / "library-loan"))
+    app = create_app(studio, SESSION)
+    yield TestClient(app, base_url=HEADERS["Origin"]), studio
+    app.state.play.stop()
+
+
+def test_review_compares_the_shown_change_with_the_model_in_force_and_saves_nothing(loan_client):
+    client, studio = loan_client
+    with studio.store.transaction() as u:
+        before = u.active()["model"]
+    request = "add Renew from Overdue to OnLoan for Librarian then remove transition ReturnLate"
+    steps = [s["transaction"] for s in client.post("/api/play/plan", json={"request": request}, headers=HEADERS).json()["steps"]]
+    review = client.post("/api/play/review", json={"plan": steps}, headers=HEADERS).json()
+    assert review.get("code") is None, review
+    assert review["changed"] and review["before"] == Workflow.model_validate(before).semantic_hash
+    assert [(i["risk"], i["change"]) for i in review["items"]] == [("high", "removed"), ("medium", "added")]
+    nothing = client.post("/api/play/review", json={}, headers=HEADERS).json()
+    assert not nothing["changed"] and nothing["items"] == []
+    assert client.post("/api/play/review", json={"plan": steps}, headers={"Origin": HEADERS["Origin"]}).status_code == 401
+    stale = client.post("/api/play/review", json={"plan": steps, "model": review["after_model"]}, headers=HEADERS).json()
+    assert stale["code"] == "MODEL_CHANGED"  # a page showing another base model is told to reload
+    with studio.store.transaction() as u:
+        assert u.active()["model"] == before  # a review saves, approves and applies nothing

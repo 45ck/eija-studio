@@ -63,4 +63,8 @@ _No curated notes yet._
 ## Related decisions
 
 * [ADR-0156: Chat plan mode proposes typed steps the person accepts or rejects](/adrs/0156-chat-plan-mode-proposes-typed-steps.md) - The owner's roadmap asks for an AI chat sidebar "like T3 Code, with plan mode prominent", in which the AI proposes changes to the UML and the person accepts or…
+
+## Referenced by
+
+* [ADR-0158: Review a change as a UML diff you can run, not as a pull request](/adrs/0158-review-a-change-as-a-uml-diff-you-can-run.md) - The owner wants engineers to stop "reviewing changes in a GitHub PR when you can do it through the IDE in a much better, fun, quicker way that is more accurate…
 <!-- okf:generated:end links -->

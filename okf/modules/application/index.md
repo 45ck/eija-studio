@@ -15,6 +15,7 @@
 * [application.plan](plan.md) - Plan mode for the PlayIDE chat (ADR-0156): an AI proposes a change as numbered typed steps; the person accepts or rejects each one and sees what the accepted ones would do.
 * [application.ports](ports.md) - Application-owned ports.
 * [application.repository](repository.md) - Read-only repository evidence port; this does not grant project execution or approval.
+* [application.review](review.md) - Review a model change in PlayIDE instead of a pull request (ADR-0158).
 * [application.runtime](runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.
 * [application.service](service.md) - Module `application/service` (no module docstring).
 * [application.simulation](simulation.md) - Seeded simulation of people using the app built from a model (ADR-0152).
