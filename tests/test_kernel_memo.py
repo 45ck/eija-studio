@@ -4,6 +4,7 @@ reused without callers sharing it, and the largest model the kernel accepts load
 from __future__ import annotations
 
 import importlib.util
+import json
 from pathlib import Path
 
 import pytest
@@ -76,3 +77,19 @@ def test_the_largest_model_the_kernel_accepts_loads_and_passes_its_policy(tmp_pa
     assert len(pack.model.states) == module.MAX_STATES and len(pack.model.transitions) == module.MAX_TRANSITIONS
     assert len(data_for(pack).entities) == module.MAX_ENTITIES
     assert check_policy(pack.model, pack) == []
+
+
+
+def test_a_base_near_the_state_limit_is_grown_only_to_the_limit(tmp_path):
+    spec = importlib.util.spec_from_file_location("large_pack", ROOT / "scripts" / "large_pack.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    full = module.write_large_pack(ROOT / "packs" / "library-loan", tmp_path / "full", entities=0)
+    with pytest.raises(ValueError, match="no room"):  # already at the limit: refused, not grown past it
+        module.large_pack(full)
+    near = json.loads((full / "pack.json").read_text(encoding="utf-8"))
+    last = near["model"]["states"].pop()
+    near["model"]["transitions"] = [t for t in near["model"]["transitions"] if last not in (t["from_state"], t["to_state"])]
+    (full / "pack.json").write_text(json.dumps(near), encoding="utf-8", newline="\n")
+    pack, _, _ = module.large_pack(full, states=2)  # one place left: one state, not the two a chain would like
+    assert len(pack["model"]["states"]) == module.MAX_STATES

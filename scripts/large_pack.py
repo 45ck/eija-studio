@@ -38,7 +38,9 @@ def large_pack(base: Path, states: int = MAX_STATES, entities: int = MAX_ENTITIE
     data = json.loads((base / "data.json").read_text(encoding="utf-8"))
     screens = json.loads((base / "screens.json").read_text(encoding="utf-8"))
     model, roles, forbidden = pack["model"], [r["id"] for r in pack["roles"]], list(pack["effects"]["forbidden"])
-    states = max(2, min(states, MAX_STATES - len(model["states"])))
+    if len(model["states"]) >= MAX_STATES:
+        raise ValueError(f"{base} already has {len(model['states'])} states, the kernel's limit; there is no room to grow it")
+    states = max(1, min(states, MAX_STATES - len(model["states"])))
     entities = max(0, min(entities, MAX_ENTITIES - len(data["entities"])))
     room = min(MAX_TRANSITIONS - len(model["transitions"]), MAX_SCREENS - len(screens["screens"]))
     generated = [{"id": f"TR-GEN{n:04d}", "action": f"Gen{n:04d}", "from_state": a, "to_state": b, "role": roles[n % len(roles)],
