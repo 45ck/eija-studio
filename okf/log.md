@@ -2,6 +2,7 @@
 
 ## 2026-10-08
 
+* **Law files and test cases in PlayIDE**: synced ADR-0177, the new `domain.scenarios` and `application.scenario_run` modules and symbol pages, and `application.law_proof` (`with_laws`, `compare_laws`); `interfaces.cli` (`scenarios`), `interfaces.play` (`/api/play/laws` with a draft law file, `/api/play/tests`, `/api/play/tests/try`) and `interfaces.http` (the `play-tests.js` and `play-tests.css` assets) refreshed. Pages linking to `models`, `pack`, `policy` and `simulation` changed only in generated references. No Notes were hand-edited and nothing was recorded as verified.
 * **A change on every diagram**: re-synced ADR-0176 and `application.ghost_diff` (it now also returns the use case diagram of both models). No Notes were hand-edited and nothing was recorded as verified.
 * **Calmer Changes view**: re-synced ADR-0176 after its "calm by default" update (presentation only, no module or symbol changes). No Notes were hand-edited and nothing was recorded as verified.
 * **How a UML change looks**: synced ADR-0176 and the new `application.ghost_diff` module and symbol pages; `interfaces.play` (`/api/play/diff`, and `/api/play/review` returns the union for the Review canvas) and `interfaces.http` (the `play-diff.js` and `play-diff.css` assets) refreshed. Other pages changed only in generated backlinks. No Notes were hand-edited and nothing was recorded as verified.

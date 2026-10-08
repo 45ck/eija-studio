@@ -105,6 +105,25 @@ The diagrams say what the system does. The laws say what it must never do, whate
 eija laws --pack packs/library-loan     # every law, its verdict and its evidence
 ```
 
+In PlayIDE, **Edit the law file** opens the laws exactly as `pack.json` holds them. A draft is checked as the pack loader checks it and proved over every run before anything is kept. Nothing is saved from the IDE, and loosening a law stays the owner's reviewed step. **Formal checks for this pack** lists which deeper checkers cover the pack and how ([ADR-0177](../adr/0177-law-files-and-test-cases-in-playide.md)).
+
+## Test cases: scenarios the kernel runs
+
+Laws say what must never happen. Test cases say what should happen, as stories. Each pack keeps them in `scenarios.json` beside `pack.json`. A scenario is a start state and steps, and each step is a fixture actor taking an action, with either the state the record must reach or the refusal code the kernel must give. The kernel runs every step, so a scenario can never disagree with the model it tests; when the model changes, a scenario that no longer holds fails at the step where behaviour changed ([ADR-0177](../adr/0177-law-files-and-test-cases-in-playide.md)).
+
+The tests a pack has, from narrowest to widest:
+
+| Tests | Written by | Where | Run by |
+|---|---|---|---|
+| Scenarios | People, in PlayIDE's **Tests** tab or by hand | `packs/<pack>/scenarios.json` | `eija scenarios`, the Tests tab, `tests/test_scenarios.py` |
+| Conformance cases: every state, action, fixture actor and version | Generated (`appgen.oracle_cases`) | The built app's `tests/` | `eija build`, then `python -m unittest` in the app |
+| The same cases on a second engine | Generated | `verification/scxml/` | `python -m verification.scxml.differential` |
+| Every run, by every kind of actor, against the laws | Generated | none (searched on demand) | `eija laws`, the Laws tab |
+
+```console
+eija scenarios --pack packs/library-loan   # every scenario, step by step; exit 2 if one fails
+```
+
 ## Why there is no action language
 
 xtUML and fUML made UML executable by adding an action language (OAL, Alf). That made models precise, and it also made them programs in a different syntax, which is where model-driven architecture stalled: writing a precise model by hand cost as much as writing the code, and the code had better tools.
@@ -152,5 +171,6 @@ pip install -e ".[xuml]"                                     # python-statemachi
 python -m verification.scxml.differential                    # every pack: kernel vs SCXML engine
 nox -s scxml_drift scxml_differential                        # the gates
 eija laws --pack packs/library-loan                          # every law proved over every run
+eija scenarios --pack packs/library-loan                     # the pack's test cases, run by the kernel
 eija build --pack packs/library-loan --out build/loan        # the runnable app and its conformance run
 ```

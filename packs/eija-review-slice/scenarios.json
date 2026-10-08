@@ -1,0 +1,176 @@
+{
+  "schema_version": "eija.scenarios.v1",
+  "id": "eija-review-slice",
+  "scenarios": [
+    {
+      "id": "agent-to-applied",
+      "title": "The agent proposes and verifies; the owner selects, approves and applies",
+      "steps": [
+        {
+          "actor": "agent-active",
+          "action": "Propose",
+          "then": {
+            "state": "PROPOSED"
+          }
+        },
+        {
+          "actor": "owner-active",
+          "action": "SelectMeaning",
+          "then": {
+            "state": "PREVIEW"
+          }
+        },
+        {
+          "actor": "agent-active",
+          "action": "Verify",
+          "then": {
+            "state": "VERIFIED"
+          }
+        },
+        {
+          "actor": "owner-active",
+          "action": "Approve",
+          "then": {
+            "state": "APPROVED"
+          }
+        },
+        {
+          "actor": "owner-active",
+          "action": "Apply",
+          "then": {
+            "state": "APPLIED"
+          }
+        }
+      ]
+    },
+    {
+      "id": "agent-cannot-approve",
+      "title": "The agent can never approve its own change",
+      "steps": [
+        {
+          "actor": "agent-active",
+          "action": "Propose",
+          "then": {
+            "state": "PROPOSED"
+          }
+        },
+        {
+          "actor": "owner-active",
+          "action": "SelectMeaning",
+          "then": {
+            "state": "PREVIEW"
+          }
+        },
+        {
+          "actor": "agent-active",
+          "action": "Verify",
+          "then": {
+            "state": "VERIFIED"
+          }
+        },
+        {
+          "actor": "agent-active",
+          "action": "Approve",
+          "then": {
+            "refused": "ROLE_DENIED"
+          }
+        }
+      ]
+    },
+    {
+      "id": "agent-cannot-apply",
+      "title": "The agent can never apply",
+      "steps": [
+        {
+          "actor": "agent-active",
+          "action": "Propose",
+          "then": {
+            "state": "PROPOSED"
+          }
+        },
+        {
+          "actor": "owner-active",
+          "action": "SelectMeaning",
+          "then": {
+            "state": "PREVIEW"
+          }
+        },
+        {
+          "actor": "agent-active",
+          "action": "Verify",
+          "then": {
+            "state": "VERIFIED"
+          }
+        },
+        {
+          "actor": "owner-active",
+          "action": "Approve",
+          "then": {
+            "state": "APPROVED"
+          }
+        },
+        {
+          "actor": "agent-active",
+          "action": "Apply",
+          "then": {
+            "refused": "ROLE_DENIED"
+          }
+        }
+      ]
+    },
+    {
+      "id": "revoked-owner",
+      "title": "A revoked owner cannot approve",
+      "steps": [
+        {
+          "actor": "agent-active",
+          "action": "Propose",
+          "then": {
+            "state": "PROPOSED"
+          }
+        },
+        {
+          "actor": "owner-active",
+          "action": "SelectMeaning",
+          "then": {
+            "state": "PREVIEW"
+          }
+        },
+        {
+          "actor": "agent-active",
+          "action": "Verify",
+          "then": {
+            "state": "VERIFIED"
+          }
+        },
+        {
+          "actor": "owner-revoked",
+          "action": "Approve",
+          "then": {
+            "refused": "ACTOR_REVOKED"
+          }
+        }
+      ]
+    },
+    {
+      "id": "no-apply-before-approval",
+      "title": "Nothing is applied before it is approved",
+      "steps": [
+        {
+          "actor": "agent-active",
+          "action": "Propose",
+          "then": {
+            "state": "PROPOSED"
+          }
+        },
+        {
+          "actor": "owner-active",
+          "action": "Apply",
+          "then": {
+            "refused": "STATE_DENIED"
+          }
+        }
+      ]
+    }
+  ]
+}
