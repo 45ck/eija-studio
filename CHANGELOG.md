@@ -6,6 +6,15 @@
 
 - PlayIDE is no longer limited to the shipped packs. **Systems** in the title bar opens a dialog: **Open** lists recent systems and the ones in your systems home, and **New system** starts one from a sketch or from a template. A sketch is the state machine typed as the diagram labels it, one `From -> To : Action [Role]` per line, and the kernel's pack check runs as you type. **Save** (Ctrl+S) keeps your plan and edited screens as a draft on that system; reopening it restores them and checks every step again. Nothing is applied to the model. Systems live in `~/PlayIDE` (`--systems` or `EIJA_SYSTEMS` to change it), each with its own workspace. `eija new` does the same from the command line. See [ADR-0185](docs/adr/0185-start-open-and-save-your-own-system.md).
 
+### 8 October 2026: PlayIDE polish
+
+- A plan the policy refuses now says which laws it would break, in the pack's own words ("Only a librarian checks a loan out."), with the policy codes after them.
+- On the Permissions tab, "Can a record reach this state at all?" shows Yes as a good answer and No as a bad one. The red Yes is kept for "without this role" questions, where it means the role can be bypassed.
+- With nothing to review, the Review tab's message spans the tab instead of sitting beside an empty column, and it points to the review workbench rather than a URL parameter.
+- The screen designer fits a laptop screen with the side bar and the chat open: the record attributes move under the screen instead of squeezing it until its fields spilled over them.
+- Step counts read "1 step" rather than "1 step(s)", and PlayIDE has a tab icon (the page had asked for a missing favicon).
+- The status bar names the selection as the outline does ("transition CheckOut", not its id), and the inspector labels a transition's states "Path".
+
 ### 8 October 2026: PlayIDE adds without dragging
 
 - Adding to the state machine no longer needs a drag (ADR-0174). Pick State, Transition or Initial in the palette and click the diagram, as in draw.io and Visio; a transition is two clicks, the state it leaves and the state it goes to. Double-click empty space for a new state, a state to rename it, or a transition to change who may take it. A small editor opens where you click: Enter adds the step to the plan, Escape drops it, and nothing is modal. Dragging still works and drops into the same editor; Enter on a palette item still opens the full form. The tour and ripple demos place their state this way.
