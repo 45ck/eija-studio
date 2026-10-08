@@ -1,4 +1,4 @@
-/* PlayIDE Changes (ADR-0176): the model in force and the change on one diagram, with lenses and a change list. */
+/* PlayIDE Changes (ADR-0176): the model in force and the change on one diagram, calm by default: a summary line and stepping, with lenses behind Compare and the list in the inspector. */
 .diff-view{flex:1;min-height:0;display:flex;flex-direction:column;border-top:1px solid var(--line)}
 .diff-view[hidden]{display:none}
 .stage>.diff-view{grid-row:3;grid-column:1/-1;min-width:0;border-top:0} /* the canvas cell of the workbench (ADR-0173), palette included */
@@ -13,22 +13,20 @@
 .diff-nav{display:flex;align-items:center;gap:4px;margin-left:auto}
 .diff-nav button{padding:3px 10px;font-size:1rem;line-height:1}
 .diff-nav span{min-width:7.5em;text-align:center;font-variant-numeric:tabular-nums}
-.diff-body{flex:1;min-height:0;display:flex;flex-direction:column}
 .diff-canvas{flex:1;border:0;min-height:0}
-.diff-side{max-height:38%;overflow:auto;padding:2px 12px 10px;border-top:1px solid var(--line);background:var(--panel)}
-.diff-side.collapsed>:not(.diff-side-head){display:none}
-.diff-side-head{display:flex;align-items:center;gap:14px;margin:6px 0}
-.diff-side-head h3{margin:0}
-.diff-side-head button{margin-left:auto}
-.diff-side-head button{padding:2px 8px;font-size:.75rem}
-.diff-legend{display:flex;flex-wrap:wrap;gap:4px 10px;margin:0;color:var(--muted)}
-.diff-legend .key{display:inline-flex;align-items:center;gap:4px}
-.swatch{display:inline-grid;place-items:center;width:1.3em;height:1.3em;border-radius:4px;font-weight:700;border:1.5px solid currentColor}
+.diff-summary{margin:0;font-size:.86rem;color:var(--muted)}
+.diff-summary strong{color:var(--ink)}
+.diff-compare{background:var(--busy-bg)}
+.diff-compare[hidden]{display:none}
+#diff-compare{padding:3px 10px;font-size:.84rem}
+#diff-compare[aria-pressed="true"]{background:var(--state);border-color:var(--state-line)}
+.diff-list li{flex-direction:column}
+.diff-fields.diff-detail{width:auto;margin:2px 0 6px 1.6em;font-size:.8rem}
+.key{font-weight:600}
 .key.added,.diff-item.added .mark{color:var(--ok)}
 .key.changed,.key.moved,.diff-item.changed .mark,.diff-item.moved .mark{color:#8a5a08}
 .key.removed,.diff-item.removed .mark{color:var(--bad)}
-.key.removed .swatch{border-style:dashed}
-.diff-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:4px}
+.diff-list{list-style:none;margin:0 0 8px;padding:0;display:grid;gap:4px}
 .diff-list li{display:flex}
 .diff-item{width:100%;align-content:start;display:grid;grid-template-columns:1.4em 1fr;gap:4px;text-align:left;padding:5px 8px;font-size:.84rem;border:0;border-left:3px solid var(--line);border-radius:0 6px 6px 0;background:var(--busy-bg)}
 .diff-item.added{border-left-color:var(--ok)}
@@ -37,10 +35,6 @@
 .diff-item.removed span:last-child{text-decoration:line-through;text-decoration-color:rgba(161,47,47,.5)}
 .diff-item[aria-current="true"]{background:var(--state);box-shadow:inset 0 0 0 1.5px var(--state-line)}
 .diff-item .mark{font-weight:700}
-.diff-note{margin:0 0 8px;padding:6px 8px;border-left:3px solid var(--line);background:var(--busy-bg);border-radius:0 6px 6px 0;font-size:.88rem}
-.diff-note.added{border-left-color:var(--ok)}
-.diff-note.changed,.diff-note.moved{border-left-color:#c27c0e}
-.diff-note.removed{border-left-color:var(--bad)}
 .diff-fields{border-collapse:collapse;font-size:.84rem;margin:0 0 8px;width:100%}
 .diff-fields th,.diff-fields td{padding:3px 6px;text-align:left;border-bottom:1px solid var(--line)}
 .diff-fields th{color:var(--muted);font-weight:600}
