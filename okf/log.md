@@ -2,6 +2,7 @@
 
 ## 2026-10-08
 
+* **Chat plan mode, review fixes**: refreshed `adapters.plan_proposals` (a request falls back to a modelled meaning only when no clause was read). No Notes were hand-edited and nothing was recorded as verified.
 * **Chat plan mode**: synced ADR-0156, the new `application.plan` module, `application.ports.PlanProposer` and `interfaces.play` pages. Added a Notes paragraph on `Studio.plan_proposer` and re-read it (process review). Nothing was recorded as verified.
 * **Component diagrams**: synced ADR-0155 and the new `application.components` module and symbol pages; `interfaces.play` refreshed. No Notes were hand-edited and nothing was recorded as verified.
 * **Screens, review fixes**: refreshed `domain.screens` pages (`CREATE` is now null, `screens_for` completes authored screens, `_coverage` split from `check_screens`) and ADR-0154. No Notes were hand-edited and nothing was recorded as verified.

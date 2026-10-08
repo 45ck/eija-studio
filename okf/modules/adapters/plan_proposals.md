@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/adapters/plan_proposals.py
   title: adapters/plan_proposals.py
   hash_method: ast-api-v1
-  sha256: c506a1f370d23860cbb5ae5a3d340a7f1532939213295c633611ce8a714f78be
-notes_baseline: cc8143d8e2abd6d3b277fab9f1465074da19c43886a7a0cdbb5185cbe2b1fa1d
+  sha256: 7cb3cee1448d0a52fcea12926d6306d64f5c6ce5e9b0d6a271f70155b2614da5
+notes_baseline: aba19a1f5ad38298fb99db985a5a0260a4b8a604ec32d764ac6c4d133fa27595
 ---
 
 # adapters.plan_proposals
@@ -33,8 +33,8 @@ Offline plan proposer for the PlayIDE chat (ADR-0156): a bounded phrase grammar 
 never an LLM. Its plans are untrusted proposals like any other; the application re-checks every step.
 
 A request is split into clauses ("then", ";", new lines). Each clause must be one complete phrase using exact model
-names, for example "add state Archived after <state>" or "add <action> from <state> to Archived for <role>". A request that
-matches none of the phrases is matched against the pack's proposal rules, and a supported meaning with transactions
+names, for example "add state Archived after <state>" or "add <action> from <state> to Archived for <role>". A request
+none of whose clauses match a phrase is matched against the pack's proposal rules, and a supported meaning with transactions
 becomes the plan. Anything else is refused with the phrases it understands.
 ~~~
 

@@ -367,7 +367,7 @@
     button.disabled = true;
     try {
       const result = await api("/api/play/plan", { case_id: caseId, model: baseModel, request: text });
-      leavePreview();
+      retire();
       plan = { ...result, accepted: result.steps.map(() => true), previewing: false, card: null };
       plan.card = say("ai", planCard());
       renderPlan(result.preview);
@@ -376,6 +376,15 @@
     } finally {
       button.disabled = false;
     }
+  }
+
+  // A newer plan replaces this one: its card stays in the chat as a record, with every control disabled, so no tick or
+  // button on it can act on the newer plan.
+  function retire() {
+    if (!plan) return;
+    leavePreview();
+    for (const control of plan.card.querySelectorAll("input, button")) control.disabled = true;
+    plan.card.firstChild.append(el("p", "Replaced by the newer plan below.", { class: "muted small" }));
   }
 
   function planCard() {
@@ -407,12 +416,14 @@
   }
 
   async function refreshPlan() {
+    const mine = plan, seq = (mine.seq = (mine.seq || 0) + 1); // only the answer for the latest ticks is shown
     try {
-      const result = await api("/api/play/plan/preview", { case_id: caseId, model: baseModel, steps: plan.steps.map((s) => s.transaction), accepted: plan.accepted });
+      const result = await api("/api/play/plan/preview", { case_id: caseId, model: baseModel, steps: mine.steps.map((s) => s.transaction), accepted: [...mine.accepted] });
+      if (mine !== plan || seq !== mine.seq) return;
       renderPlan(result);
       if (plan.previewing) (result.legal ? enterPreview : leavePreview)();
     } catch (error) {
-      plan.card.querySelector(".plan-verdict").textContent = `${error.code || "ERROR"}: ${error.message}`;
+      if (mine === plan && seq === mine.seq) plan.card.querySelector(".plan-verdict").textContent = `${error.code || "ERROR"}: ${error.message}`;
     }
   }
 
@@ -459,7 +470,8 @@
     outline();
     draw(model);
     inspect("");
-    loadScreens(null).then(() => { screensEdited = false; if (tab === "screens") renderDesigner(); });
+    const kept = screensEdited ? screens : null; // screen edits survive a preview: they are re-checked against the shown model
+    loadScreens(kept).then(() => { screensEdited = Boolean(kept); if (tab === "screens") renderDesigner(); });
     if (tab !== "states") showTab(tab);
   }
 

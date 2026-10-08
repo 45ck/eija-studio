@@ -56,6 +56,7 @@ def test_a_described_change_the_pack_models_becomes_its_meanings_steps():
 @pytest.mark.parametrize(("request_text", "code"), [
     ("make it better", "PLAN_REQUEST_UNSUPPORTED"),
     ("add state Lost then frobnicate", "PLAN_REQUEST_UNSUPPORTED"),
+    ("Members should be able to renew a loan then add state Lost", "PLAN_REQUEST_UNSUPPORTED"),  # no clause is dropped
     ("remove state Nowhere", "PLAN_UNKNOWN_NAME"),
     ("add Teleport from OnLoan to Returned for Librarian", "PLAN_UNKNOWN_NAME"),
     ("   ", "PLAN_REQUEST_INVALID"),

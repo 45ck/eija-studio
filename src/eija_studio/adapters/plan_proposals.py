@@ -2,8 +2,8 @@
 never an LLM. Its plans are untrusted proposals like any other; the application re-checks every step.
 
 A request is split into clauses ("then", ";", new lines). Each clause must be one complete phrase using exact model
-names, for example "add state Archived after <state>" or "add <action> from <state> to Archived for <role>". A request that
-matches none of the phrases is matched against the pack's proposal rules, and a supported meaning with transactions
+names, for example "add state Archived after <state>" or "add <action> from <state> to Archived for <role>". A request
+none of whose clauses match a phrase is matched against the pack's proposal rules, and a supported meaning with transactions
 becomes the plan. Anything else is refused with the phrases it understands.
 """
 from __future__ import annotations
@@ -118,6 +118,10 @@ def _meaning_plan(request: str, pack: Pack) -> dict[str, Any] | None:
     return None
 
 
+def _first_unread(clauses: list[str], steps: list[dict[str, Any] | None]) -> str:
+    return next(c for c, step in zip(clauses, steps, strict=True) if step is None)
+
+
 class OfflinePlanProposer:
     name, live = "offline-plan-fixture-v1", False
 
@@ -130,8 +134,7 @@ class OfflinePlanProposer:
         if all(steps):
             return {"summary": f"{len(steps)} step(s) from your request", "meaning": None,
                     "steps": [{"transaction": s, "why": f"You asked: “{c}”"} for s, c in zip(steps, clauses, strict=True)]}
-        planned = _meaning_plan(request, pack)
+        planned = _meaning_plan(request, pack) if not any(steps) else None  # never drop clauses that were read
         if planned is None:
-            unread = next(c for c, step in zip(clauses, steps, strict=True) if step is None)
-            raise DomainError("PLAN_REQUEST_UNSUPPORTED", f"I could not read “{unread}”. {HELP}")
+            raise DomainError("PLAN_REQUEST_UNSUPPORTED", f"I could not read “{_first_unread(clauses, steps)}”. {HELP}")
         return planned
