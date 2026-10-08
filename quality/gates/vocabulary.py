@@ -229,6 +229,7 @@ def files(root: Path = ROOT, scanned: Iterable[str] = SCANNED) -> Iterator[Path]
                 path.is_file()
                 and path.suffix in SUFFIXES
                 and not parts & {"__pycache__", "node_modules", ".pytest_cache"}
+                and not any(part.endswith(".egg-info") for part in parts)  # gitignored install metadata
             ):
                 yield path
 
