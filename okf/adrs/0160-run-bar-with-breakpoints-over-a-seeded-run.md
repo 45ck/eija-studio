@@ -63,4 +63,8 @@ _No curated notes yet._
 ## Related decisions
 
 * [ADR-0152: Simulate seeded users through the kernel and paint where they went](/adrs/0152-simulate-seeded-users-through-the-kernel.md) - The owner asked for PlayIDE to feel like a simulation game for software engineers: build a system, watch it run and find problems fast.
+
+## Referenced by
+
+* [ADR-0170: PlayIDE asks about the selection, completes exact names, has a command palette and keyboard plan review](/adrs/0170-playide-assist-ask-complete-palette-review.md) - PlayIDE's chat proposes typed steps (ADR-0156) and rewards checking them (ADR-0157).
 <!-- okf:generated:end links -->

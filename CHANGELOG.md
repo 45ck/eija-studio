@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### 8 October 2026: PlayIDE assist (UI, HCI and agentic HCI)
+
+- PlayIDE's chat says who does what (the AI proposes, you check, the owner approves), offers the requests it can read as buttons, about the selected state or transition with its name filled in, and completes exact model names as you type. Ctrl+K (⌘K) opens a palette of every command and element, and an AI plan can be reviewed from the keyboard (J/K, S, Space, P). The reasoning is in [PlayIDE: UML, HCI and agentic HCI](docs/hci/design/playide-ahci.md). See [ADR-0170](docs/adr/0170-playide-assist-ask-complete-palette-review.md).
+
 ### 8 October 2026: PlayIDE tour recording
 
 - New scripted demo `playide_tour`, recorded (PASS, 2:38): diagrams, screens, Build & run, components, Simulate, drawing with the palette, and checking an offline AI proposal. See [the write-up](docs/demos/2026-10-08-PLAYIDE-TOUR.md).

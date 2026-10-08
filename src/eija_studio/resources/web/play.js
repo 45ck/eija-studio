@@ -169,6 +169,7 @@
     selected = id;
     for (const b of document.querySelectorAll(".outline button")) b.setAttribute("aria-current", String(b.dataset.id === id));
     inspect(id);
+    document.dispatchEvent(new CustomEvent("playide:select", { detail: id }));
     if (fromOutline) {
       showTab(id.startsWith("class:") ? "classes" : "states");
       const target = current(), cell = target && target.getDataModel().getCell(id);
@@ -1327,12 +1328,15 @@
     $("canvas-help").textContent = HINTS.states;
     window.addEventListener("resize", fit);
     document.body.dataset.ready = "true";
+    document.dispatchEvent(new CustomEvent("playide:ready"));
   }
 
   // What the run bar (play-run.js, ADR-0160) may use. It holds no rules either: it moves through the server's run log.
+  // The assist layer (play-assist.js, ADR-0170) reads only base(), pack() and selected(): base() is the model a chat
+  // request is planned against, not a previewed candidate.
   window.PlayIDE = {
     api, el, hooks, about, viewKey, label, restyle, clearSim, select,
-    graph: () => graph, model: () => model, selected: () => selected,
+    graph: () => graph, model: () => model, selected: () => selected, pack: () => packInfo, base: () => baseModel,
   };
 
   start().catch((error) => {
