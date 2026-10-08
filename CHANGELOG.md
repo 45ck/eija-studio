@@ -6,6 +6,10 @@
 
 - PlayIDE has a **Sequences** tab: scenarios in UML sequence notation (lifelines, calls, refusal replies, state invariants, effects as asynchronous messages, `opt`, `alt` and `neg` fragments), each message run through the kernel. A message the model can't produce is flagged with the kernel's reason, and a `neg` must be refused. Edit in the tab, export as Mermaid or PlantUML, or download `sequences.json` to keep beside the pack (library-loan ships three). A plan's ripple lists the scenarios it breaks. New route `POST /api/play/sequences`. See [ADR-0185](docs/adr/0185-sequence-diagrams-the-kernel-checks.md).
 
+### 8 October 2026: PlayIDE tabs that do not fit
+
+- When the diagram tabs do not fit, the strip scrolls, the edge that hides tabs fades, and a **More tabs** button lists every tab, as in VS Code. Buttons beside the strip no longer cover a tab label. Hiding the left side no longer pushes the diagrams into its empty column.
+
 ### 8 October 2026: PlayIDE's workbench shell
 
 - PlayIDE is laid out like Visual Studio, VS Code, Cursor and draw.io (ADR-0173). The model outline sits above the inspector on the left, the diagrams are editor tabs, and the UML palette is a column beside the canvas. The chat is alone on the right. Run, Simulation and Running app share a resizable panel under the diagrams that opens on whatever has just run. The checks list is a popover from the ring, a status bar runs along the bottom, and the title bar has a command center (Ctrl+K). Ctrl+B, Ctrl+Alt+P and Ctrl+Alt+C hide the side bar, the panel and the chat, and the layout is remembered in the browser.
