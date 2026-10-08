@@ -6,7 +6,7 @@ Research date: **8 October 2026**. Desk research from public surveys, studies an
 
 ## Summary
 
-- **The shared gap.** Enterprise teams, small companies and vibe coders all go from intent (prompts, tickets, chat) straight to code. Nothing between them is both readable by people and binding on the running app. Each group fails in that gap in a different way: enterprise teams in review, small teams in continuity, vibe coders in correctness.
+- **The shared gap.** Enterprise teams, small companies and vibe coders all go from intent (prompts, tickets, chat) straight to code. In their usual workflow, nothing between them is both readable by people and binding on the running app. Tools that do combine the two exist (Stately/XState for statecharts, MPS/mbeddr for domain models; see [current alternatives](2026-10-02-current-alternatives.md)), so the gap is one of adoption and coverage in everyday AI-assisted work, not missing technology. Each group fails in that gap in a different way: enterprise teams in review, small teams in continuity, vibe coders in correctness.
 - **The ideal customer.** The tech lead who owns a rules-heavy workflow system (approvals, claims, bookings, onboarding, case handling) that AI agents now edit, at a 20 to 500 person company or in an internal-tools team of a regulated firm.
 - **The current audience statement.** Keep "software engineers". Drop "who already know UML" as the entry requirement, and add non-coders (PMs, analysts, ops leads, auditors) as a second seat who read and sign off on the model.
 
@@ -80,7 +80,7 @@ In Petre's interviews with 50 professional engineers in 50 companies, 35 used no
 | "Who already know UML" | Change | Too small a gate (Petre), and the state machine, PlayIDE's strongest view, is one many engineers have never drawn. Target engineers who think in states and roles, and show them UML they can read. |
 | "Startups and enterprise" | Narrow | Choose by system type (rules-heavy workflow apps) and company size (20 to 500) first. |
 | "System design plus frontend design" | Keep, reorder | Lead with behaviour and permissions; the screen designer matters because screens are bound to the rules, not as a Figma competitor. |
-| "Beats other tools on robustness" | Make concrete | The app cannot disobey the model; an AI change shows as a diagram diff; permission questions get exact answers. |
+| "Beats other tools on robustness" | Make concrete | For generated workflow apps, every decision is asked of the kernel and conformance tests compare the app with it ([ADR-0150](../adr/0150-build-apps-from-the-model-with-a-kernel-oracle.md) scope; code outside the model has no such guarantee); an AI change shows as a diagram diff; permission questions get exact answers. |
 | Non-technical users | Add as second seat | A growing share of AI-builder users and the group whose apps fail on access rules. They can read a diagram but not code. |
 
 ## Inference: product consequences
