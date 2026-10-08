@@ -1,7 +1,7 @@
 ---
 type: Class
 title: application.diagrams.Fragment
-description: 'A conditional block (`opt`): the steps happen only when `label` holds.'
+description: A combined fragment.
 resource: repo://src/eija_studio/application/diagrams.py#Fragment
 tags:
 - symbol
@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/diagrams.py#Fragment
   title: application/diagrams.py
   hash_method: ast-sig-v1
-  sha256: 08bc90a3c3a0f4425636811226f232de12fe617c75d32e4206586c91dd36243d
-notes_baseline: 929a0d9d92fd1b1da0f3ae6a2832e4f3551e405ca1d372e0aecaffa836fb1794
+  sha256: c5356556d6e9dd672cc382ab597d2a78addbc5bb642f735c5191567718e1beaf
+notes_baseline: bcdac63c7fe57cee6c2719d6bf29189793cbf12163ac7cd0b41edfb366f32bb4
 ---
 
 # application.diagrams.Fragment
@@ -32,7 +32,8 @@ notes_baseline: 929a0d9d92fd1b1da0f3ae6a2832e4f3551e405ca1d372e0aecaffa836fb1794
 ## Docstring
 
 ~~~text
-A conditional block (`opt`): the steps happen only when `label` holds.
+A combined fragment. `opt` (the default): the steps happen only when `label` holds. `alt`: the steps under
+`label`, else each of `alternatives` (label, steps). `neg`: the steps are an invalid trace.
 ~~~
 
 ## Fields
@@ -41,6 +42,8 @@ A conditional block (`opt`): the steps happen only when `label` holds.
 |---|---|---|
 | `label` | `str` |  |
 | `steps` | `tuple[Step, ...]` |  |
+| `operator` | `Literal['opt', 'alt', 'neg']` | `'opt'` |
+| `alternatives` | `tuple[tuple[str, tuple[Step, ...]], ...]` | `()` |
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -55,4 +58,5 @@ _No curated notes yet._
 ## Referenced by
 
 * [application.diagrams.Step](/symbols/application/diagrams/Step.md) - Type alias `Step` in `application/diagrams`.
+* [application.sequence_layout.export](/symbols/application/sequence_layout/export.md) - The sequence as Mermaid and PlantUML text, through `diagram_emitters` (Mermaid has no neg: it is written as opt).
 <!-- okf:generated:end links -->

@@ -86,6 +86,11 @@ The reason unknown fields and operators die at the boundary (acceptance [AC01](/
 * [domain.screens.Screen](/symbols/domain/screens/Screen.md) - `class Screen(Contract)` in `domain/screens`.
 * [domain.screens.ScreenField](/symbols/domain/screens/ScreenField.md) - `class ScreenField(Contract)` in `domain/screens`.
 * [domain.screens.Screens](/symbols/domain/screens/Screens.md) - `class Screens(Contract)` in `domain/screens`.
+* [domain.sequences.Fragment](/symbols/domain/sequences/Fragment.md) - `class Fragment(Contract)` in `domain/sequences`.
+* [domain.sequences.Interaction](/symbols/domain/sequences/Interaction.md) - `class Interaction(Contract)` in `domain/sequences`.
+* [domain.sequences.Message](/symbols/domain/sequences/Message.md) - `class Message(Contract)` in `domain/sequences`.
+* [domain.sequences.Operand](/symbols/domain/sequences/Operand.md) - `class Operand(Contract)` in `domain/sequences`.
+* [domain.sequences.Sequences](/symbols/domain/sequences/Sequences.md) - `class Sequences(Contract)` in `domain/sequences`.
 * [domain.transactions.AddState](/symbols/domain/transactions/AddState.md) - `class AddState(Contract)` in `domain/transactions`.
 * [domain.transactions.AddTransition](/symbols/domain/transactions/AddTransition.md) - A transition performing a declared action; its guards and effects are the action's declared ones.
 * [domain.transactions.RemoveState](/symbols/domain/transactions/RemoveState.md) - `class RemoveState(Contract)` in `domain/transactions`.

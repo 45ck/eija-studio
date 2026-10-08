@@ -68,4 +68,8 @@ _No curated notes yet._
 * [ADR-0156: Chat plan mode proposes typed steps the person accepts or rejects](/adrs/0156-chat-plan-mode-proposes-typed-steps.md) - The owner's roadmap asks for an AI chat sidebar "like T3 Code, with plan mode prominent", in which the AI proposes changes to the UML and the person accepts or…
 * [ADR-0158: A change ripples across every diagram, and the AI's follow-on edits are re-checked](/adrs/0158-ripple-across-diagrams-with-checked-follow-ons.md) - PlayIDE draws five diagrams of one system: the state machine, the class diagram, the use cases, the screens and the components of the built app.
 * [ADR-0175: Review a change as a UML diff you can run, not as a pull request](/adrs/0175-review-a-change-as-a-uml-diff-you-can-run.md) - The owner wants engineers to stop "reviewing changes in a GitHub PR when you can do it through the IDE in a much better, fun, quicker way that is more accurate…
+
+## Referenced by
+
+* [ADR-0185: Sequence diagrams as scenarios the kernel checks, message by message](/adrs/0185-sequence-diagrams-the-kernel-checks.md) - Engineers who read UML expect sequence diagrams beside the state machine, class, use case and component diagrams.
 <!-- okf:generated:end links -->

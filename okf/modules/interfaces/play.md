@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/play.py
   title: interfaces/play.py
   hash_method: ast-api-v1
-  sha256: a58ab0f92d6d41791f839f6de91e4fb41e2b7b7673db7143ccaaa63e081c08a3
-notes_baseline: a17183cd685c2c4e433ada265663d67169ae64d016a8e5da77cd6d5b332e71d7
+  sha256: 50b6e11d71bcff819ea5bbca98dfdb3b638670f33370411e4b49df6841b2740b
+notes_baseline: 760bdb59f5353758b7f37e8640f0d6f3a117beb826b85a58e9e21c3fecf6bb10
 ---
 
 # interfaces.play
@@ -35,8 +35,9 @@ build of designed screens (ADR-0154), the component diagram read from the files 
 steps can be previewed, built and simulated but never saved or applied from here (ADR-0156), the ripple of a plan
 across every diagram with the follow-on edits the proposer suggests, each re-checked (ADR-0158), the run bar's
 seeded run log with breakpoints and Stop (ADR-0160), who can do what with reachability questions (ADR-0171), and the
-review of a change as a UML diff whose behaviour the kernel runs on both sides (ADR-0175), and how a change looks:
-the model in force and the change on one state machine, removed elements kept as ghosts (ADR-0176).
+review of a change as a UML diff whose behaviour the kernel runs on both sides (ADR-0175), how a change looks:
+the model in force and the change on one state machine, removed elements kept as ghosts (ADR-0176), and sequence
+diagrams whose every message the kernel runs, on the shown model and on the model in force (ADR-0185).
 
 Build & run reuses `eija build` (ADR-0150): the app is generated into the workspace, its kernel conformance tests run,
 and only a PASSing app is started, as a separate local process on a free loopback port. One app runs at a time; a new
@@ -56,12 +57,14 @@ _Symbol pages are generated for the domain and application layers only._
 * [`application/plan`](/modules/application/plan.md)
 * [`application/review`](/modules/application/review.md)
 * [`application/ripple`](/modules/application/ripple.md)
+* [`application/sequences`](/modules/application/sequences.md)
 * [`application/simulation`](/modules/application/simulation.md)
 * [`domain/data`](/modules/domain/data.md)
 * [`domain/models`](/modules/domain/models.md)
 * [`domain/pack`](/modules/domain/pack.md)
 * [`domain/policy`](/modules/domain/policy.md)
 * [`domain/screens`](/modules/domain/screens.md)
+* [`domain/sequences`](/modules/domain/sequences.md)
 * [`domain/transactions`](/modules/domain/transactions.md)
 * [`interfaces/app_build`](/modules/interfaces/app_build.md)
 <!-- okf:generated:end facts -->
@@ -80,12 +83,14 @@ _No curated notes yet._
 * [application.plan](/modules/application/plan.md) - Plan mode for the PlayIDE chat (ADR-0156): an AI proposes a change as numbered typed steps; the person accepts or rejects each one and sees what the accepted o…
 * [application.review](/modules/application/review.md) - Review a model change in PlayIDE instead of a pull request (ADR-0175).
 * [application.ripple](/modules/application/ripple.md) - Ripple (ADR-0158): what one change to the state machine does to every other diagram of the same system, and the follow-on edits that would keep them in agreeme…
+* [application.sequences](/modules/application/sequences.md) - Sequence diagrams the kernel checks (ADR-0185): can this model produce this interaction?
 * [application.simulation](/modules/application/simulation.md) - Seeded simulation of people using the app built from a model (ADR-0152).
 * [domain.data](/modules/domain/data.md) - The data model of a pack, shown as a UML class diagram (ADR-0153): entities, typed attributes and associations.
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
 * [domain.policy](/modules/domain/policy.md) - Generic policy: coherence with a domain pack's declared action catalog, the pack's laws, and declared effects.
 * [domain.screens](/modules/domain/screens.md) - Screens: the user interface of a pack's app, designed against its use cases and data model (ADR-0154).
+* [domain.sequences](/modules/domain/sequences.md) - Sequences: UML interactions between the pack's actors and its records, kept beside the pack (ADR-0185).
 * [domain.transactions](/modules/domain/transactions.md) - Open change vocabulary (WBS 1.3): the semantic edits an owner (or a pack meaning) may make to a workflow.
 * [interfaces.app_build](/modules/interfaces/app_build.md) - `eija build`: write a runnable app generated from a pack's model, then run its kernel conformance tests (ADR-0150).
 

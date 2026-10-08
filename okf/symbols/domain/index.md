@@ -17,4 +17,5 @@
 * [pack](pack/) - Symbols of domain.pack
 * [policy](policy/) - Symbols of domain.policy
 * [screens](screens/) - Symbols of domain.screens
+* [sequences](sequences/) - Symbols of domain.sequences
 * [transactions](transactions/) - Symbols of domain.transactions

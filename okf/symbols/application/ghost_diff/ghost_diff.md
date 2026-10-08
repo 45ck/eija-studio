@@ -45,4 +45,8 @@ _No curated notes yet._
 
 * [application.ghost_diff.FORMAT](/symbols/application/ghost_diff/FORMAT.md) - Constant `FORMAT` in `application/ghost_diff`.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
+
+## Referenced by
+
+* [application.sequences.check_sequences](/symbols/application/sequences/check_sequences.md) - Every sequence checked by the kernel on `model`; with `base` (the model in force) also on it, for the change.
 <!-- okf:generated:end links -->

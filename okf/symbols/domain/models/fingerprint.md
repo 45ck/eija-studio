@@ -60,4 +60,5 @@ Deterministic because [canonical](/symbols/domain/models/canonical.md) sorts key
 * [domain.models.Workflow.semantic_hash](/symbols/domain/models/Workflow.semantic_hash.md) - `def semantic_hash(self) -> str` in `domain/models`.
 * [domain.pack.Pack.digest](/symbols/domain/pack/Pack.digest.md) - `def digest(self) -> str` in `domain/pack`.
 * [domain.screens.Screens.digest](/symbols/domain/screens/Screens.digest.md) - `def digest(self) -> str` in `domain/screens`.
+* [domain.sequences.Sequences.digest](/symbols/domain/sequences/Sequences.digest.md) - `def digest(self) -> str` in `domain/sequences`.
 <!-- okf:generated:end links -->

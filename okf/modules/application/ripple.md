@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/ripple.py
   title: application/ripple.py
   hash_method: ast-api-v1
-  sha256: 12d350dfc0c55fbdc6af92388a18a7705183f415fd5de9cb8b9f6a10cf7b10b9
-notes_baseline: 60712d793c7b57db4d7591d3eebe028aa0723f7f8f0f64faef6e6aee6e3e0f74
+  sha256: e060d2cfacaf2b9d034023ebe49a5758b7a5fab40eb657e598532bb0479c46f3
+notes_baseline: a40195215aaad68ff43ea2495506564a6d7f3d0692283134d975e6163ed406d2
 ---
 
 # application.ripple
@@ -33,7 +33,7 @@ Ripple (ADR-0158): what one change to the state machine does to every other diag
 follow-on edits that would keep them in agreement.
 
 PlayIDE draws five diagrams of one system: the state machine, the class diagram, the use cases, the screens and the
-components of the built app. Only the state machine, the data model and the screens are authored; the others are
+components of the built app, beside the sequence diagrams that are its scenarios (ADR-0185). Only the state machine, the data model and the screens are authored; the others are
 read from them (ADR-0153 to ADR-0155). So a change to the state machine ripples: a new action is a new use case and
 needs a screen, a removed one leaves its screen pointing at nothing (and the app can no longer be built), a new state
 is a new literal of the record's state enumeration, and the generated code changes. `ripple` computes all of it

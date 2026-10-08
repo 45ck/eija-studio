@@ -87,6 +87,8 @@ _No curated notes yet._
 * [application.ripple](/modules/application/ripple.md) - Ripple (ADR-0158): what one change to the state machine does to every other diagram of the same system, and the follow-on edits that would keep them in agreeme…
 * [application.runtime](/modules/application/runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.
 * [application.scxml](/modules/application/scxml.md) - The workflow state machine as a W3C SCXML statechart (ADR-0165).
+* [application.sequence_layout](/modules/application/sequence_layout.md) - Where a checked sequence is drawn, and its export (ADR-0185).
+* [application.sequences](/modules/application/sequences.md) - Sequence diagrams the kernel checks (ADR-0185): can this model produce this interaction?
 * [application.service](/modules/application/service.md) - Module `application/service` (no module docstring).
 * [application.simulation](/modules/application/simulation.md) - Seeded simulation of people using the app built from a model (ADR-0152).
 * [application.verifier](/modules/application/verifier.md) - Bounded synthetic runtime experiments.
@@ -100,6 +102,7 @@ _No curated notes yet._
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
 * [domain.policy](/modules/domain/policy.md) - Generic policy: coherence with a domain pack's declared action catalog, the pack's laws, and declared effects.
 * [domain.screens](/modules/domain/screens.md) - Screens: the user interface of a pack's app, designed against its use cases and data model (ADR-0154).
+* [domain.sequences](/modules/domain/sequences.md) - Sequences: UML interactions between the pack's actors and its records, kept beside the pack (ADR-0185).
 * [domain.transactions](/modules/domain/transactions.md) - Open change vocabulary (WBS 1.3): the semantic edits an owner (or a pack meaning) may make to a workflow.
 * [interfaces.agent_config](/modules/interfaces/agent_config.md) - Copy-paste MCP client configuration for `eija mcp --print-config <client>`.
 * [interfaces.app_build](/modules/interfaces/app_build.md) - `eija build`: write a runnable app generated from a pack's model, then run its kernel conformance tests (ADR-0150).

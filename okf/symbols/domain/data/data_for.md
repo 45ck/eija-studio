@@ -47,4 +47,8 @@ _No curated notes yet._
 * [domain.data.load_data](/symbols/domain/data/load_data.md) - The pack's data model, or None when the pack has no `data.json`.
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
 * [domain.pack.pack_directory](/symbols/domain/pack/pack_directory.md) - The directory this exact pack snapshot was read from, or its authored directory, so optional files beside `pack.json` (such as `data.json`) are read from the s…
+
+## Referenced by
+
+* [application.sequences.record_name](/symbols/application/sequences/record_name.md) - The record lifeline's default name and its class: `loan : Loan` when the pack has a data model.
 <!-- okf:generated:end links -->

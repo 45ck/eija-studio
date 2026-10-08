@@ -22,6 +22,8 @@
 * [ripple](ripple/) - Symbols of application.ripple
 * [runtime](runtime/) - Symbols of application.runtime
 * [scxml](scxml/) - Symbols of application.scxml
+* [sequence_layout](sequence_layout/) - Symbols of application.sequence_layout
+* [sequences](sequences/) - Symbols of application.sequences
 * [service](service/) - Symbols of application.service
 * [simulation](simulation/) - Symbols of application.simulation
 * [verifier](verifier/) - Symbols of application.verifier

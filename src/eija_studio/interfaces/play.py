@@ -4,8 +4,9 @@ build of designed screens (ADR-0154), the component diagram read from the files 
 steps can be previewed, built and simulated but never saved or applied from here (ADR-0156), the ripple of a plan
 across every diagram with the follow-on edits the proposer suggests, each re-checked (ADR-0158), the run bar's
 seeded run log with breakpoints and Stop (ADR-0160), who can do what with reachability questions (ADR-0171), and the
-review of a change as a UML diff whose behaviour the kernel runs on both sides (ADR-0175), and how a change looks:
-the model in force and the change on one state machine, removed elements kept as ghosts (ADR-0176).
+review of a change as a UML diff whose behaviour the kernel runs on both sides (ADR-0175), how a change looks:
+the model in force and the change on one state machine, removed elements kept as ghosts (ADR-0176), and sequence
+diagrams whose every message the kernel runs, on the shown model and on the model in force (ADR-0185).
 
 Build & run reuses `eija build` (ADR-0150): the app is generated into the workspace, its kernel conformance tests run,
 and only a PASSing app is started, as a separate local process on a free loopback port. One app runs at a time; a new
@@ -35,6 +36,7 @@ from eija_studio.application.ghost_diff import ghost_diff
 from eija_studio.application.plan import preview_plan, propose_plan
 from eija_studio.application.review import review_change
 from eija_studio.application.ripple import check_follow_ons, ripple
+from eija_studio.application.sequences import check_sequences, sequences_for
 from eija_studio.application.simulation import MAX_BREAKPOINTS, MAX_STEPS, run_log, simulate
 from eija_studio.domain.data import data_for
 from eija_studio.domain.models import Contract, DomainError, Workflow
@@ -42,6 +44,7 @@ from eija_studio.domain.pack import Pack
 from eija_studio.domain.policy import apply_transactions
 from eija_studio.domain.transactions import parse_transaction
 from eija_studio.domain.screens import Screens, check_screens, parse_screens, screens_for, use_cases
+from eija_studio.domain.sequences import parse_sequences
 from .app_build import app_files, build_into
 
 START_TIMEOUT_S = 10.0
@@ -71,6 +74,10 @@ class SimulateRequest(BuildRequest):
 class ReachRequest(BuildRequest):
     target: str = Field(min_length=1, max_length=60)
     without: str | None = Field(default=None, min_length=1, max_length=60)
+
+
+class SequencesRequest(BuildRequest):
+    sequences: dict[str, Any] | None = None  # sequences edited in the tab (eija.sequences.v1); None uses the pack's
 
 
 class RunRequest(SimulateRequest):
@@ -230,7 +237,8 @@ def register(app, studio, web: Path) -> AppRunner:
         before, after = screens_for(studio.pack, base, data_for(studio.pack)), screens_of(body, candidate)
         (old, _), (new, components) = built(base, before), built(candidate, after)
         data = data_for(studio.pack)
-        report = ripple(base, candidate, data, (before, after), (old, new), components)
+        scenarios = check_sequences(studio.pack, candidate, sequences_for(studio.pack, base)[0], base)
+        report = ripple(base, candidate, data, (before, after), (old, new), components, scenarios)
         document = proposer().follow_on(report, candidate, studio.pack) if report["problems"] else {"steps": []}
         return report | {"provider": proposer().name, "live": proposer().live,
                          "follow_ons": check_follow_ons(document, base, body.plan or [], studio.pack, candidate, after, data)}
@@ -254,6 +262,17 @@ def register(app, studio, web: Path) -> AppRunner:
         Read-only: nothing is saved, approved or applied."""
         before, after = baseline(body), resolve(body)
         return review_change(studio.pack, before, after) | {"ghost": ghost_diff(before, after)}  # drawn as in ADR-0176
+
+    @app.post("/api/play/sequences")
+    def play_sequences(body: SequencesRequest):
+        """The sequence diagrams (the request's, else the pack's, else scenarios from the model in force), each message
+        run through the kernel on the shown model and, when it differs, on the model in force (ADR-0185). Read-only."""
+        before, after = baseline(body), resolve(body)
+        if body.sequences is not None:
+            document, source = parse_sequences(body.sequences, studio.pack.id), "edited"
+        else:
+            document, source = sequences_for(studio.pack, before)
+        return check_sequences(studio.pack, after, document, before) | {"source": source}
 
     @app.post("/api/play/build")
     def play_build(body: BuildRequest):

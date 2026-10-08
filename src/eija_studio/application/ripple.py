@@ -2,7 +2,7 @@
 follow-on edits that would keep them in agreement.
 
 PlayIDE draws five diagrams of one system: the state machine, the class diagram, the use cases, the screens and the
-components of the built app. Only the state machine, the data model and the screens are authored; the others are
+components of the built app, beside the sequence diagrams that are its scenarios (ADR-0185). Only the state machine, the data model and the screens are authored; the others are
 read from them (ADR-0153 to ADR-0155). So a change to the state machine ripples: a new action is a new use case and
 needs a screen, a removed one leaves its screen pointing at nothing (and the app can no longer be built), a new state
 is a new literal of the record's state enumeration, and the generated code changes. `ripple` computes all of it
@@ -131,10 +131,22 @@ def _component_items(before: Build, after: Build, owners: dict[str, str]) -> lis
     return items + ([_item("changed", f"Also regenerated: {', '.join(loose)}")] if loose else [])
 
 
+def _sequence_items(checked: dict[str, Any] | None) -> list[dict[str, Any]]:
+    """The scenarios the change stops the kernel producing (a warning: the app still builds) or starts producing."""
+    items = []
+    for s in (checked or {}).get("sequences", []):
+        if s.get("change") == "breaks":
+            items.append(_item("warning", f"Breaks the sequence \u201c{s['title']}\u201d: {s['first_problem']}", "sequence:" + s["id"], "SEQUENCE_BROKEN"))
+        elif s.get("change") == "fixes":
+            items.append(_item("changed", f"The kernel now produces the sequence \u201c{s['title']}\u201d", "sequence:" + s["id"]))
+    return items
+
+
 def ripple(base: Workflow, candidate: Workflow, data: DataModel | None, screens: tuple[Screens, Screens],
-           builds: tuple[Build, Build], components: Iterable[dict[str, Any]]) -> dict[str, Any]:
+           builds: tuple[Build, Build], components: Iterable[dict[str, Any]], sequences: dict[str, Any] | None = None) -> dict[str, Any]:
     """Every diagram's effects of going from `base` to `candidate`. `screens` and `builds` are each (before, after);
-    `components` are the after build's components (each with its `files`), naming whose files changed."""
+    `components` are the after build's components (each with its `files`), naming whose files changed; `sequences` is
+    `application.sequences.check_sequences` of the scenarios on `candidate` against `base`."""
     before, after = screens
     diagrams = {
         "states": _state_items(base, candidate),
@@ -142,6 +154,7 @@ def ripple(base: Workflow, candidate: Workflow, data: DataModel | None, screens:
         "usecases": _use_case_items(base, candidate),
         "screens": _screen_items(before, after, base, candidate, data),
         "components": _component_items(builds[0], builds[1], _owners(components)),
+        "sequences": _sequence_items(sequences),
     }
     cases = [None if isinstance(b, DomainError) else b[1] for b in builds]
     problems = [i for items in diagrams.values() for i in items if i["change"] in ("problem", "warning")]
