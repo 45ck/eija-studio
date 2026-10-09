@@ -2,6 +2,7 @@
 
 ## 2026-10-09
 
+* **Readable with Simulate open, new actions on the canvas**: re-synced ADR-0174 (fitting keeps labels readable, #139; the transition editor takes a new action or role on your own system) and ADR-0201 (its canvas gap resolved). No Notes were hand-edited and nothing was recorded as verified.
 * **See and run the app as each role**: synced ADR-0215 and `interfaces.http` (`pack_summary` adds `role_notes`); ADR-0154 and ADR-0171 gained the back-link. No Notes were hand-edited and nothing was recorded as verified.
 * **Kind-path law on the initial state**: re-synced `domain.laws` after `path_requires_kind` began judging steps back into the initial state on the table. No Notes were hand-edited and nothing was recorded as verified.
 * **Actors that are not people**: synced ADR-0210 and the new `domain.laws` symbols (`RoleKind`, `ROLE_KINDS`, `OnlyKindHolds`, `OnlyKindEnters`, `PathRequiresKind`, `KIND_LAWS`) and `application.law_proof.Passed`; `domain.pack` (`Role.kind`, kind-law binding, `coherence_problems`), `domain.laws` (`Law`, `LAW_KINDS`, `evaluate_table`, `evaluate_run`), `application.law_proof` and `application.simulation` (`by_kind`) refreshed. No Notes were hand-edited and nothing was recorded as verified.

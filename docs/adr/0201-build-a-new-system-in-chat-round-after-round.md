@@ -58,7 +58,7 @@ Chosen option.
 * Good: a system can be built from a sketch in many small asks, and every ask is checked by the kernel, previewed, built and simulated with the earlier ones. The generated app passes conformance after each round (`tests/test_play_greenfield.py`).
 * Good: nothing new is trusted. A grown action has exactly the guards and effects a sketch would give it, and the laws and tests are the pack's own.
 * Bad: the draft is still not the model in force. A grown vocabulary lives only in the draft, so it cannot become a change case until #89 decides how a chat plan becomes one, and verify, approve and apply wait on #80.
-* Bad: the data model is still the sketch's: the record has one attribute, `title`, and chat cannot add attributes (since resolved by [ADR-0202](0202-grow-the-class-diagram-in-chat.md)). Drawing a transition on the canvas still offers only declared actions (the canvas belongs to the UX thread).
+* Bad: the data model is still the sketch's: the record has one attribute, `title`, and chat cannot add attributes (since resolved by [ADR-0202](0202-grow-the-class-diagram-in-chat.md)). Drawing a transition on the canvas offered only declared actions (since resolved: on your own system the transition editor takes a new action or role, ADR-0174 amendment).
 * Neutral: on a shipped pack nothing changes.
 * Revisit when: #89 is decided (a round could become a change case), or chat can edit the data model.
 

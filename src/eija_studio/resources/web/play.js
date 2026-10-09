@@ -290,11 +290,21 @@
     review: "Review the change shown against the model in force: look at each change, predict what the kernel does, then decide. Nothing is approved from here.",
   };
 
-  function fit() {
-    if (!current()) return;
-    const plugin = current().getPlugin("fit");
+  // Fitting never shrinks a diagram below READABLE (labels of about 10px and up): when the canvas is short, as with the
+  // Simulation panel open, the diagram keeps that size and starts at its top left (where the initial state is), and the
+  // rest is a drag away. Only the Fit button, asked for "all of it", may go smaller (#139).
+  const READABLE = 0.8, MARGIN = 24;
+  function fit(all) {
+    const g = current();
+    if (!g) return;
+    const plugin = g.getPlugin("fit");
     plugin.maxFitScale = 1.4;
-    plugin.fitCenter({ margin: 24 });
+    const scale = plugin.fitCenter({ margin: MARGIN });
+    if (all === true || !(scale < READABLE)) return;
+    const v = g.view, b = g.getGraphBounds(), box = g.container, k = READABLE;
+    const w = b.width / v.scale, h = b.height / v.scale, x0 = b.x / v.scale - v.translate.x, y0 = b.y / v.scale - v.translate.y;
+    const along = (room, size, start) => (size * k <= room - 2 * MARGIN ? (room / k - size) / 2 - start : MARGIN / k - start);
+    v.scaleAndTranslate(k, along(box.clientWidth, w, x0), along(box.clientHeight, h, y0));
   }
 
   function row(dl, term, value) { dl.append(el("dt", term), el("dd", value)); }
@@ -1529,6 +1539,25 @@
     return select;
   }
 
+  // On a system you started (ADR-0201), an action or role can be one it declares or a new name, which the step then
+  // declares as a sketch would: a text box that suggests the declared names and says when a name is new.
+  function named(values, value, what, used = new Set()) {
+    const id = `names-${what}-${++named.n}`, list = el("datalist", undefined, { id });
+    for (const v of values) list.append(el("option", undefined, { value: v, label: used.has(v) ? `${v} (already used)` : v }));
+    const input = el("input", undefined, { list: id, value, required: "", maxlength: "40", pattern: "[A-Za-z][A-Za-z0-9_]{0,39}",
+      placeholder: `A ${what}, or a new name`, autocomplete: "off", title: "Letters, digits and _; starts with a letter" });
+    const note = el("span", "", { class: "muted small new-name" });
+    const say = () => { const v = input.value.trim(); note.textContent = v && !values.includes(v) ? `New ${what}: the step declares ${v}` : ""; };
+    input.addEventListener("input", say);
+    say();
+    const wrap = el("span", undefined, { class: "named" });
+    wrap.append(input, list, note);
+    Object.defineProperty(wrap, "value", { get: () => input.value.trim(), set: (v) => { input.value = v; say(); } });
+    wrap.focus = () => input.focus();
+    return wrap;
+  }
+  named.n = 0;
+
   function field(text, control) {
     const wrap = el("label", text);
     wrap.append(control);
@@ -1564,8 +1593,10 @@
       return { fields: [[`Move ${t.action}'s`, end], ["to state", state]], make: () => ({ kind: "retarget_transition", transition: t.id, end: end.value, state: state.value }) };
     }
     const from = choose(model.states, at || model.states[0]), to = choose(model.states, at || model.states[0]);
-    const action = choose(packInfo.actions, packInfo.actions.find((a) => !used.has(a)) || packInfo.actions[0], (a) => a + (used.has(a) ? " (already used)" : ""));
-    const role = choose(packInfo.roles, packInfo.roles[0]);
+    const fresh = packInfo.actions.find((a) => !used.has(a));
+    const action = packInfo.own_system ? named(packInfo.actions, fresh || "", "action", used) // your own system can name a new one
+      : choose(packInfo.actions, fresh || packInfo.actions[0], (a) => a + (used.has(a) ? " (already used)" : ""));
+    const role = packInfo.own_system ? named(packInfo.roles, packInfo.roles[0], "role") : choose(packInfo.roles, packInfo.roles[0]);
     return { fields: [["From", from], ["To", to], ["Action", action], ["Who may take it", role]],
       make: () => ({ kind: "add_transition", id: newId(action.value), action: action.value, from_state: from.value, to_state: to.value, role: role.value }) };
   }
@@ -2368,7 +2399,7 @@
     $("simulate").addEventListener("click", simulate);
     $("sim-replay").addEventListener("click", replay);
     $("sim-clear").addEventListener("click", clearSim);
-    $("fit").addEventListener("click", fit);
+    $("fit").addEventListener("click", () => fit(true));
     $("tidy").addEventListener("click", tidy);
     $("zoom-in").addEventListener("click", () => current() && current().zoomIn());
     $("zoom-out").addEventListener("click", () => current() && current().zoomOut());
