@@ -40,10 +40,19 @@ label.role-kind select{font:inherit}
 /* The screen flow: every screen as a wireframe, arrows labelled with the state the record is then in. */
 .flow-toggle{margin-left:auto;padding:4px 12px;border-radius:999px;font-size:.84rem}
 .flow-toggle[aria-pressed="true"]{background:var(--state);border-color:var(--state-line);color:var(--state-line);font-weight:600}
-.screen-flow{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 10px;overflow:auto;max-height:420px}
+.screen-flow{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 10px;max-height:460px;display:flex;flex-direction:column;min-width:0}
 .screen-flow[hidden]{display:none}
-.screen-flow>p{margin:0 0 6px}
-.flow-canvas{position:relative}
+.flow-canvas{position:relative;transform-origin:0 0}
+.flow-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.flow-bar>p{margin:0 0 6px}
+.flow-fit{flex:none;font-size:.78rem}
+.flow-fit[aria-pressed=true]{background:var(--state);border-color:var(--state-line)}
+.flow-view{position:relative;overflow:auto;min-height:0}
+.flow-sizer{position:relative;overflow:hidden}
+.flow-frame{position:relative;min-height:0;display:flex;flex-direction:column}
+.flow-cue{position:absolute;right:6px;bottom:10px;z-index:2;font-size:.78rem;padding:4px 10px;border-radius:999px;
+  border:1px solid var(--state-line);background:var(--panel);color:var(--ink);box-shadow:-16px 0 16px 6px var(--panel)}
+.flow-cue[hidden]{display:none}
 .flow-canvas>svg{position:absolute;left:0;top:0;overflow:visible}
 .flow-edge{fill:none;stroke:#8a94a8;stroke-width:1.4}
 #flow-arrow path{fill:#8a94a8}

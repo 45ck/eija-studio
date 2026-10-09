@@ -245,7 +245,7 @@
   // (control, required mark, limits), and an arrow from a screen to the screens the record can reach next, labelled with
   // the state it is then in. It is read from the state machine and the screens, never drawn by hand: a transition you
   // add on the state machine adds an arrow here. Under "See the app as", the chosen role's screens stand out.
-  let flowOpen = false, flowTimer = 0;
+  let flowOpen = false, flowTimer = 0, flowFit = null; // null: fit when the screens stay readable, else full size
   const SVG = "http://www.w3.org/2000/svg";
   const CARD_W = 180, MAX_ROWS = 6;
 
@@ -319,7 +319,12 @@
     g.setDefaultEdgeLabel(() => ({}));
     // Each card is drawn first and measured, so a long title that wraps still gets the room it takes.
     const canvas = P.el("div", undefined, { class: "flow-canvas" }), nodes = new Map();
-    panel.replaceChildren(canvas);
+    const view = P.el("div", undefined, { class: "flow-view" }), sizer = P.el("div", undefined, { class: "flow-sizer" });
+    sizer.append(canvas);
+    view.append(sizer);
+    const frame = P.el("div", undefined, { class: "flow-frame" });
+    frame.append(view);
+    panel.replaceChildren(frame);
     for (const n of screens) {
       const screen = designed.screens.find((s) => s.use_case === n.action);
       const node = card(n, screen, (mine !== null && n.action !== null && !mine.has(n.action)) || Boolean(lens && machine(lens)));
@@ -367,9 +372,39 @@
       node.style.top = `${Math.round(at.y - at.height / 2)}px`;
       node.style.width = `${at.width}px`;
     }
-    panel.prepend(P.el("p", lens && !machine(lens)
+    const head = P.el("div", undefined, { class: "flow-bar" }), fit = P.el("button", "Fit to width", { type: "button", class: "quiet flow-fit", "aria-pressed": "false",
+      title: "Show every screen at once, or at full size with a scroll bar" });
+    fit.addEventListener("click", () => { flowFit = fit.getAttribute("aria-pressed") !== "true"; renderFlow(); });
+    head.append(P.el("p", lens && !machine(lens)
       ? `The app's screens in the order a record meets them. ${article(lens)}'s screens stand out; the others are another role's turn.`
-      : "The app's screens in the order a record meets them, each arrow labelled with the state the record is then in. Choose a screen to design it.", { class: "muted small" }));
+      : "The app's screens in the order a record meets them, each arrow labelled with the state the record is then in. Choose a screen to design it.", { class: "muted small" }), fit);
+    panel.prepend(head);
+    fit.setAttribute("aria-pressed", String(fitFlow(view, sizer, canvas, size, screens.length)));
+  }
+
+  // A flow wider than the panel (ai-ops is about 2,500px) is fitted to its width while the cards stay readable (half
+  // size or more); wider still, it stays full size and scrolls, with a cue on the right edge saying how many screens are
+  // still out of view. "Fit to width" turns the overview on or off by hand. Returns whether the flow is fitted.
+  function fitFlow(view, sizer, canvas, size, count) {
+    const room = view.clientWidth, fits = Math.min(1, room / size.width);
+    const scale = (flowFit === null ? fits >= 0.5 : flowFit) ? fits : 1;
+    canvas.style.transform = scale < 1 ? `scale(${scale})` : "";
+    sizer.style.width = `${Math.ceil(size.width * scale)}px`;
+    sizer.style.height = `${Math.ceil(size.height * scale)}px`;
+    view.classList.toggle("fitted", scale < 1);
+    const cue = P.el("button", "", { type: "button", class: "flow-cue", hidden: "" });
+    cue.addEventListener("click", () => view.scrollBy({ left: room * 0.8, behavior: "smooth" }));
+    view.parentNode.append(cue);
+    const update = () => {
+      const hiddenRight = view.scrollWidth - view.clientWidth - view.scrollLeft;
+      if (hiddenRight <= 4) { cue.hidden = true; return; }
+      const shown = Math.max(1, Math.round(count * (view.scrollLeft + view.clientWidth) / view.scrollWidth));
+      cue.hidden = false;
+      cue.textContent = `${Math.max(1, count - shown)} more screen${count - shown === 1 ? "" : "s"} →`;
+    };
+    view.addEventListener("scroll", update, { passive: true });
+    update();
+    return scale < 1;
   }
 
   function scheduleFlow() {
