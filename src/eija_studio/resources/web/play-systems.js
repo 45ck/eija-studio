@@ -41,9 +41,15 @@
   async function reopen() {
     const { draft, moved } = await P.api("/api/play/draft");
     if (!draft || ((!draft.steps || !draft.steps.length) && !draft.screens)) { saved = JSON.stringify(P.draft()); return; }
+    savedAt = draft.saved;
+    if (P.recovered && P.recovered()) {
+      // Newer work this browser kept came back instead (ADR-0198); compare it with the saved draft, not with itself.
+      saved = JSON.stringify({ steps: draft.steps.map((s) => ({ transaction: s.transaction, author: s.author === "ai" ? "ai" : "you" })),
+        accepted: draft.accepted || draft.steps.map(() => true), screens: draft.screens || null });
+      return;
+    }
     const result = await P.restoreDraft(draft);
     saved = JSON.stringify(P.draft());
-    savedAt = draft.saved;
     const parts = [];
     if (draft.steps.length) parts.push(`${draft.steps.length} step${draft.steps.length === 1 ? "" : "s"}`);
     if (draft.screens) parts.push("your screens");

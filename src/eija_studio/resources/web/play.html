@@ -48,6 +48,11 @@
   </div>
 </header>
 <div class="toolbar">
+  <div id="history" class="runbar edit-tools" role="toolbar" aria-label="Edit history">
+    <button id="undo" class="run-btn" type="button" aria-label="Undo" title="Undo (Ctrl+Z)" aria-keyshortcuts="Control+Z" disabled><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M5.5 3 1.5 7l4 4V8.2h4a3 3 0 0 1 0 6H8v1.5h1.5a4.5 4.5 0 0 0 0-9h-4z"/></svg></button>
+    <button id="redo" class="run-btn" type="button" aria-label="Redo" title="Redo (Ctrl+Shift+Z)" aria-keyshortcuts="Control+Shift+Z Control+Y" disabled><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M10.5 3l4 4-4 4V8.2h-4a3 3 0 0 0 0 6H8v1.5H6.5a4.5 4.5 0 0 1 0-9h4z"/></svg></button>
+  </div>
+  <span class="sep edit-tools" aria-hidden="true"></span>
   <div id="runbar" class="runbar" role="toolbar" aria-label="Run">
     <button id="run-play" class="run-btn go" type="button" aria-keyshortcuts="F5"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4 2.5v11l9-5.5z"/></svg><span>Run</span></button>
     <button id="run-pause" class="run-btn" type="button" aria-label="Pause" title="Pause (F6)" aria-keyshortcuts="F6" disabled><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4 2.5h3v11H4zM9 2.5h3v11H9z"/></svg></button>
@@ -266,6 +271,7 @@
   <span id="status-model"></span>
   <span id="status-plan" class="plan-chip" hidden>Previewing a plan</span>
   <span id="status-selection"></span>
+  <span id="status-saved" class="saved" role="status" aria-live="polite"></span>
   <span class="end">
     <span id="toast" class="toast" role="status" aria-live="polite"></span>
     <span id="score" class="score" role="status" aria-live="polite" hidden></span>

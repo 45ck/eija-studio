@@ -15,6 +15,7 @@
 * [application.ghost_diff](ghost_diff.md) - How a change looks on the state machine: both models on one canvas, with nothing hidden (ADR-0176).
 * [application.history](history.md) - Semantic history is a projection of typed commands, replayed by the existing policy interpreter.
 * [application.law_proof](law_proof.md) - Prove a pack's laws over every run the kernel allows (ADR-0166).
+* [application.memo](memo.md) - Ask the kernel the same question of the same frozen model once (ADR-0199).
 * [application.new_system](new_system.md) - Start a new system (ADR-0185): the pack documents for a system started from a sketch or copied from a template.
 * [application.plan](plan.md) - Plan mode for the PlayIDE chat (ADR-0156): an AI proposes a change as numbered typed steps; the person accepts or rejects each one and sees what the accepted ones would do.
 * [application.ports](ports.md) - Application-owned ports.

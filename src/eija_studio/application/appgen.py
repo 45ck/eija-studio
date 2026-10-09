@@ -17,6 +17,7 @@ from eija_studio.domain.models import DomainError, ExecuteCommand, Workflow, can
 from eija_studio.domain.pack import Pack
 from eija_studio.domain.policy import check_policy
 from eija_studio.domain.screens import Screens, default_screens, require_buildable
+from .memo import model_hash
 from .runtime import execute
 
 FORMAT = "eija.app-build.v1"
@@ -37,7 +38,7 @@ class _OracleSession:
 
     def __init__(self, pack: Pack, model: Workflow, state: str):
         self.actors = {a.id: a.model_dump() for a in pack.fixtures.actors}
-        self.item = {"id": "r1", "case_id": "app", "model_hash": model.semantic_hash, "state": state, "version": 0}
+        self.item = {"id": "r1", "case_id": "app", "model_hash": model_hash(model), "state": state, "version": 0}
         self.operations: dict[str, dict[str, Any]] = {}
 
     def find_instance(self, instance_id: str, case_id: str) -> dict[str, Any] | None:
