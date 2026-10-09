@@ -16,16 +16,16 @@ The spine stays (Calvin, 2026-10-09 02:50): how easy it is to understand a UML c
 |---|---|---|---|---|
 | 0 | Title | "Design the whole system. Then play it." | Title card | Scripted |
 | 1 | The model is the program | The library-loan state machine, then the class, use case, sequence and screen views drawn from the same model | ADR-0151, 0153, 0154 | Recorded in v3 |
-| 2 | Press play | A breakpoint on Overdue, then Run: seeded users act, the kernel decides every step, and each decided step moves along its transition as a dot, green through and red stopped with a cross | ADR-0160; traffic from #162 (ADR-0208) | Waits on #162 for the traffic |
+| 2 | Press play | A breakpoint on Overdue, then Run: seeded users act, the kernel decides every step, and each decided step moves along its transition as a dot, green through and red stopped with a cross | ADR-0160; traffic from #162 (ADR-0208) | Traffic from #162 |
 | 3 | Your change, at a glance | Drop a state where you want it, name it inline. The Changes view tags it You, and To consider lists the warning, the laws, the other diagrams and the tests it adds | ADR-0157, #128 | Recorded in v3 |
 | 4 | The AI's change, at a glance | A plain request becomes typed UML steps. The same view tags each AI, keeps the removed arrow as a ghost, and To consider says it breaks the late-return sequence | ADR-0156, #128 | Recorded in v3 |
-| 5 | What to consider before you accept | A wrong prediction catches the deleted late return. Tests paints the broken step, Sequences ends in the kernel's refusal. Untick the step: "Caught it" | ADR-0175, 0177, 0195; Caught it from #162 | Waits on #162 for Caught it |
-| 6 | Prove it, then play again | Build and run (the ring pops "373 cases checked"), Simulate as traffic, every law proved, all 7 tests pass, and the ring turns green once: "Every check passes" | ADR-0157, 0158, 0166; ring moments from #162 | Waits on #162 for the ring moments |
+| 5 | What to consider before you accept | A wrong prediction catches the deleted late return. Tests paints the broken step, Sequences ends in the kernel's refusal. Untick the step, and the review passes | ADR-0175, 0177, 0195 | Recorded in v3 |
+| 6 | Prove it, then play again | Build and run, Simulate replayed as traffic on the state machine, every law proved, all 7 tests pass, and the ring turns green once: "Every check passes" | ADR-0157, 0158, 0166; ring moments from #162 | Ring moments from #162 |
 | 7 | People: who sees what | Screens, See the app as Clerk: "A Clerk sees 2 of 6 screens", the rest struck through. The Librarian actor lists what the kernel lets it do ("assigned only" where a guard narrows it) and Run as opens the built app acting as that person | #160 (ADR-0215) | Scripted |
 | 8 | Software: the whole system | Components, System lens: "4 workflows · 12 actors · 2 disagree". The shared Member class is marked where two class diagrams disagree | #155 (ADR-0203), #168 | Scripted |
 | 9 | Share it as UML | `/play?view=review`: read-only diagrams, Permissions and runs for a stakeholder who reads UML | ADR-0172 | Recorded in v3 |
 | 10 | Bring your own UML tools | PlantUML edited elsewhere comes back as one typed edit with the laws holding; a support desk from another tool becomes a new system with a report of what was not carried | ADR-0190 | Recorded in v3 |
-| 11 | AI agents, timers and systems, in real sectors | Systems, New system: the templates (building permit, card payment, parcel delivery, SaaS subscription, specialist referral, refund desk). Open Refund desk: «agent», «timer» and «system» actors beside the people. Ask `allow SupportAgent to ApproveRefund`: three person-in-the-loop laws refuse it. Ask the AI to let the agent approve itself: it offers the safe hand-off to a supervisor instead, and the policy allows that. Sequences draws the test where the agent's ApproveRefund() call is answered "refused: ROLE_DENIED". Simulate: what people, agents, timers and systems tried, and what the kernel refused | #159, #161 (ADR-0210), #172 | Scripted |
+| 11 | AI agents, timers and systems, in real sectors | Systems, New system: the templates (building permit, card payment, parcel delivery, SaaS subscription, specialist referral, refund desk). Open Refund desk: «agent», «timer» and «system» actors beside the people. Ask for a hand-off to a supervisor and slip in `allow SupportAgent to ApproveRefund`: three person-in-the-loop laws refuse the plan. Untick that step and the ring says "Caught it"; the hand-off alone is allowed. Sequences draws the test where the agent's ApproveRefund() call is answered "refused: ROLE_DENIED". Simulate: what people, agents, timers and systems tried, and what the kernel refused | #159, #161 (ADR-0210), #172 | Scripted |
 | 12 | Start your own | Describe an app in a sentence; every view is drawn from it and "What's missing" lists what to do next | Greenfield thread | Waits on its merge; v3's three-line sketch until then |
 | 13 | Ship it | Verify, approve and apply | Issue #80 | Placeholder card |
 | 14 | End card | "Design the people, the agents and the software. Then play it." | Title card | Scripted |
@@ -38,7 +38,7 @@ Every beat is filmed on the workbench shell (ADR-0173): outline and inspector on
 
 ## The highlights cut (v4)
 
-About two and a half minutes, its own unedited take: the title, your change at a glance, the AI's change and the catch, people (see the app as a Clerk), an agent stopped by a law on Refund desk, and the proof as traffic ending in "Every check passes". It runs at `scene.pace = 0.75`.
+About two and a half minutes, its own unedited take: the title, your change at a glance, the AI's change and the catch, the proof as traffic ending in "Every check passes", people (see the app as a Clerk), and an agent stopped by a law on Refund desk and caught. It runs at `scene.pace = 0.75`.
 
 ## How it is filmed
 

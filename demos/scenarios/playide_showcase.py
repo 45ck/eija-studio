@@ -18,8 +18,7 @@ AI_REQUEST = "add Renew from Overdue to OnLoan for Librarian then remove transit
 BUILD_TIMEOUT_MS = 600_000
 AI_CARD = ".msg.ai:last-child"
 APP = "#run-frame >> internal:control=enter-frame >>"  # inside the built app's frame
-AGENT_RISKY = "allow SupportAgent to ApproveRefund"
-AGENT_ASK = "Let the support agent approve refunds itself"
+AGENT_RISKY = "add HandOff from Assessed to WithSupervisor for SupportAgent then allow SupportAgent to ApproveRefund"
 RIPPLE_CARD = ".msg:last-child"  # the chat card that shows a drawn change's ripple (ADR-0158)
 ROOT = Path(__file__).resolve().parents[2]
 EXPORTED = ROOT / "verification/interop/generated/library-loan.puml"  # what PlayIDE exports for the pack (ADR-0190)
@@ -335,8 +334,15 @@ def _prove_it(scene: Scene, chapter: _Chapters) -> None:
     scene.caption("Build the changed system, run its conformance cases, and send the users through again.")
     scene.click("#build")
     scene.expect_text("#score", "cases match the kernel", timeout_ms=BUILD_TIMEOUT_MS)
+    scene.click("#tab-states")  # the traffic runs along the state machine's transitions
+    if scene.page.get_attribute("#show-changes", "aria-pressed") == "true":
+        scene.click("#show-changes")
     scene.click("#simulate")
     scene.expect_text("#sim-summary", "refused by the kernel", timeout_ms=60_000)
+    scene.caption("Simulate replays as traffic: green dots went through, red ones stop where the kernel refused them.")
+    scene.zoom("#canvas", scale=1.5)
+    scene.wait(2600)
+    scene.zoom_out()
     scene.caption("Then prove the laws: every rule the policy states, checked over every run the kernel allows.")
     scene.click("#tab-laws")
     scene.wait_for("#laws-summary.ok, #laws-summary.bad", timeout_ms=120_000)
@@ -352,6 +358,7 @@ def _prove_it(scene: Scene, chapter: _Chapters) -> None:
     scene.click("#tab-states")
     scene.click("#health")
     scene.expect_text("#health-text", "5/5 checks")
+    scene.expect_text("#check-next", "Every check passes")
     scene.caption("The ring fills only from real checks on what you are looking at. That is the score.")
     scene.zoom("#checks", scale=1.6)
     scene.wait(2400)
@@ -442,7 +449,7 @@ def _agents(scene: Scene, chapter: _Chapters) -> None:
     scene.zoom("#usecase-canvas", scale=1.2)
     scene.wait(2400)
     scene.zoom_out()
-    scene.caption("Now ask for something risky: let the agent approve refunds.")
+    scene.caption("Ask for a hand-off to a supervisor, and slip in letting the agent approve refunds too.")
     scene.type_text("#chat-input", AGENT_RISKY)
     scene.click("#chat-send")
     scene.expect_text(f"{AI_CARD} .plan-verdict.bad", "Only a person approves a refund", timeout_ms=30_000)
@@ -452,17 +459,13 @@ def _agents(scene: Scene, chapter: _Chapters) -> None:
     scene.zoom(f"{AI_CARD} .plan-verdict", scale=1.5)
     scene.wait(2600)
     scene.zoom_out()
-    scene.caption("Ask the AI in plain words instead, and it offers the safe version.")
-    scene.type_text("#chat-input", AGENT_ASK)
-    scene.click("#chat-send")
-    scene.expect_text(
-        f"{AI_CARD} .plan-verdict", "The policy allows the result: adds HandOff", timeout_ms=30_000
-    )
-    scene.caption(
-        "The agent hands what it cannot settle to a supervisor. A person still approves every refund."
-    )
-    scene.zoom(f"{AI_CARD} .plan-steps", scale=1.5)
-    scene.wait(2000)
+    scene.caption("Untick the step that hands the agent the approval: caught. The hand-off alone is allowed, and a person "
+                  "still approves every refund.")
+    scene.click(f"{AI_CARD} .plan-steps > li:nth-child(2) input")
+    scene.expect_text("#game-notes", "Caught it", timeout_ms=30_000)  # the ring's biggest note (ADR-0208)
+    scene.expect_text(f"{AI_CARD} .plan-verdict", "The policy allows the result: adds HandOff")
+    scene.zoom("#health", scale=1.8)
+    scene.wait(1600)
     scene.zoom_out()
     scene.click("#tab-sequences")
     scene.click("#seq-list li:has-text('cannot approve the refund it proposed') button")
