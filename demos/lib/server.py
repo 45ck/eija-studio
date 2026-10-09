@@ -81,6 +81,7 @@ def ephemeral_eija_server(
 
     env = os.environ.copy()
     env["PYTHONPATH"] = str(ROOT / "src")
+    env["EIJA_SYSTEMS"] = str(tmp_dir / "systems")  # systems started in a demo are throwaway, never ~/PlayIDE
     argv = [sys.executable, "-m", "eija_studio", "serve", "--provider", "offline",
             "--workspace", str(workspace), "--port", str(port)]
     if repo is not None:

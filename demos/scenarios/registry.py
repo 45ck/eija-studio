@@ -84,9 +84,14 @@ SCENARIOS: tuple[Scenario, ...] = (
              "check confirms, and the app builds with the checks ring showing that the diagrams agree."),
     Scenario("playide_showcase", "The PlayIDE showcase: software engineering as play", "recorded-partial", (),
              "The storyboarded showcase (docs/demos/PLAYIDE-SHOWCASE-STORYBOARD.md): the model is the program; press "
-             "play and watch seeded users run through it; fix it by dragging; let the AI propose the busywork and check "
+             "play and watch seeded users run through it; fix it in place; let the AI propose the busywork and check "
              "it step by step; prove it with conformance and simulation. Beats whose feature has not merged are "
              "skipped and named in the manifest."),
+    Scenario("playide_highlights", "The PlayIDE highlights: the showcase in two minutes", "recorded-partial", (),
+             "The showcase's story at README length, recorded as its own unedited take: the model is the program, "
+             "press play to a breakpoint, edit in place and watch it ripple, let the offline AI propose a change, "
+             "catch the step that deletes late returns with a prediction and a failing scenario test, then prove it "
+             "with conformance, simulation, the laws and the scenario tests. Verify, approve and apply wait on #80."),
     Scenario("playide_review", "Review an AI's change in PlayIDE, not in a pull request", "recorded", (),
              "On the library-loan pack, an offline AI plan adds a renewal and quietly deletes late returns. The Review tab "
              "draws both models on one UML diagram, ranks each change by risk and shows what the kernel does differently "

@@ -27,7 +27,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from playwright.sync_api import Page
+    from playwright.sync_api import FloatRect, Page
 
 # Injected once per page. Deliberately asset-free so a scenario needs nothing beyond Playwright.
 _OVERLAY_CSS = """
@@ -56,6 +56,18 @@ _OVERLAY_CSS = """
 #__demo_chapter.show{opacity:1;transform:none}
 #__demo_chapter b{display:inline-grid;place-items:center;min-width:30px;height:30px;border-radius:50%;
   background:#ffb020;color:#14261f;font-size:15px}
+#__demo_bumper{position:fixed;inset:0;z-index:2147483645;display:grid;place-items:center;pointer-events:none;
+  opacity:0;background:rgba(11,21,17,.5);backdrop-filter:blur(7px)}
+#__demo_bumper.show{animation:__demo_bfade 1.7s ease both}
+#__demo_bumper .bar{display:flex;align-items:center;gap:22px;padding:22px 40px 22px 22px;border-radius:18px;
+  background:linear-gradient(110deg,#14261f,#24493b);color:#fff;font:700 44px/1.1 system-ui,sans-serif;
+  letter-spacing:-.02em;box-shadow:0 18px 60px rgba(0,0,0,.45);transform-origin:0 50%}
+#__demo_bumper.show .bar{animation:__demo_wipe .55s cubic-bezier(.2,.8,.2,1) both}
+#__demo_bumper b{display:inline-grid;place-items:center;width:64px;height:64px;border-radius:50%;background:#ffb020;
+  color:#14261f;font-size:32px}
+#__demo_bumper.show b,#__demo_bumper.show span{animation:__demo_rise .6s .18s cubic-bezier(.2,.7,.2,1) both}
+@keyframes __demo_bfade{0%{opacity:0}14%{opacity:1}82%{opacity:1}100%{opacity:0}}
+@keyframes __demo_wipe{from{transform:scaleX(.08);opacity:0}to{transform:none;opacity:1}}
 body.__demo_camera{transform-origin:0 0;transition:transform var(--demo-zoom-ms,900ms) cubic-bezier(.65,0,.35,1)}
 #__demo_cursor.__demo_glide{transition:transform .12s ease,left var(--demo-zoom-ms,900ms) cubic-bezier(.65,0,.35,1),
   top var(--demo-zoom-ms,900ms) cubic-bezier(.65,0,.35,1)}
@@ -69,7 +81,7 @@ body.__demo_camera{transform-origin:0 0;transition:transform var(--demo-zoom-ms,
 # The overlay lives on <html>, outside <body>, so a camera zoom (a transform on <body>) moves the app but never
 # the cursor, captions or cards.
 _OVERLAY_JS = (
-    "() => { for (const id of ['__demo_cursor','__demo_caption','__demo_card','__demo_chapter']) { "
+    "() => { for (const id of ['__demo_cursor','__demo_caption','__demo_card','__demo_chapter','__demo_bumper']) { "
     "if (!document.getElementById(id)) { const d=document.createElement('div'); d.id=id; "
     "document.documentElement.appendChild(d); } } }"
 )
@@ -83,6 +95,7 @@ class Scene:
     page: Page
     dry_run: bool
     seed: int = 0
+    pace: float = 1.0  # < 1 tightens holds and motion for a shorter cut; it never skips an act or an assertion
     skipped: list[str] = field(default_factory=list)
     _cursor: tuple[float, float] = (0.0, 0.0)
     _camera: tuple[float, float, float] | None = None  # (tx, ty, scale) while zoomed
@@ -103,6 +116,15 @@ class Scene:
             self.page.add_style_tag(content=_OVERLAY_CSS)
             self.page.evaluate(_OVERLAY_JS)
 
+    def reattach(self, ready: str, *, timeout_ms: int = 60_000) -> None:
+        """After the app reloads its own page (e.g. on opening another system), wait for `ready` and reinstall the
+        overlay, which the reload discarded."""
+        self.page.wait_for_selector(ready, state="attached", timeout=timeout_ms)
+        self._camera = None
+        if not self.dry_run:
+            self.page.add_style_tag(content=_OVERLAY_CSS)
+            self.page.evaluate(_OVERLAY_JS)
+
     def wait_for(self, selector: str, *, timeout_ms: int = _VISIBLE_TIMEOUT_MS) -> None:
         """Wait (in both modes) until `selector` matches, e.g. until startup requests have finished."""
         self.page.wait_for_selector(selector, state="attached", timeout=timeout_ms)
@@ -119,12 +141,14 @@ class Scene:
         locator.wait_for(state="visible", timeout=_VISIBLE_TIMEOUT_MS)
         if self.dry_run:
             return
-        locator.evaluate("el => el.scrollIntoView({behavior: 'smooth', block: 'center'})")
-        self.page.wait_for_timeout(650)  # let the smooth scroll settle before measuring
         box = locator.bounding_box()
+        if box is None or not self._on_screen(box):
+            locator.evaluate("el => el.scrollIntoView({behavior: 'smooth', block: 'center'})")
+            self.page.wait_for_timeout(650)  # let the smooth scroll settle before measuring
+            box = locator.bounding_box()
         if box is None:
             raise ValueError(f"target has no layout box: {target!r}")
-        self._animate_to(box["x"] + box["width"] / 2, box["y"] + box["height"] / 2, duration_ms)
+        self._animate_to(box["x"] + box["width"] / 2, box["y"] + box["height"] / 2, self._paced(duration_ms))
 
     def click(self, target: str, *, duration_ms: int = 550) -> None:
         self.move_to(target, duration_ms=duration_ms)
@@ -146,7 +170,7 @@ class Scene:
         low, high = delay_range_ms
         for char in text:
             locator.press_sequentially(char, delay=0)
-            time.sleep(self._rng.uniform(low, high) / 1000)
+            time.sleep(self._rng.uniform(low, high) * self.pace / 1000)
 
     def select_option(self, target: str, value: str) -> None:
         self.move_to(target)
@@ -183,7 +207,7 @@ class Scene:
             raise ValueError(f"target has no layout box: {target!r}")
         x, y = box["x"] + position[0], box["y"] + position[1]
         if not self.dry_run:
-            self._animate_to(x, y, 700)
+            self._animate_to(x, y, self._paced(700))
         self._press_feedback()
         self.page.mouse.click(x, y)
 
@@ -213,6 +237,7 @@ class Scene:
         locator.wait_for(state="visible", timeout=_VISIBLE_TIMEOUT_MS)
         if self.dry_run:
             return
+        duration_ms = self._paced(duration_ms)
         self.zoom_out(duration_ms=duration_ms)  # measure on the untransformed page
         box = locator.bounding_box()
         if box is None:
@@ -232,16 +257,29 @@ class Scene:
             return
         tx, ty, scale = self._camera
         x, y = self._cursor
+        duration_ms = self._paced(duration_ms)
         self._glide_cursor((x - tx) / scale, (y - ty) / scale, duration_ms)
         self._set_camera("none", duration_ms)
         self._camera = None
 
-    def chapter(self, number: int, title: str) -> None:
-        """Show a chapter chip (bottom left) that stays until the next chapter: where the story is."""
+    def chapter(self, number: int, title: str, *, card: bool = False) -> None:
+        """Show a chapter chip (bottom left) that stays until the next chapter: where the story is.
+
+        With `card`, a short motion-graphic bumper (number and title over the blurred, still-live app) plays first."""
         if not title.strip():
             raise ValueError("chapter title must not be empty")
         if self.dry_run:
             return
+        if card:
+            self.clear_caption()
+            self.page.evaluate(
+                "([n, t]) => { const c=document.getElementById('__demo_bumper'); if(!c) return; "
+                "c.classList.remove('show'); const bar=document.createElement('div'); bar.className='bar'; "
+                "const b=document.createElement('b'); b.textContent=String(n); const s=document.createElement('span'); "
+                "s.textContent=t; bar.append(b, s); c.replaceChildren(bar); void c.offsetWidth; c.classList.add('show'); }",
+                [number, title],
+            )
+            self.wait(1750)
         self.page.evaluate(
             "([n, t]) => { const c=document.getElementById('__demo_chapter'); if(!c) return; "
             "c.classList.remove('show'); c.replaceChildren(); const b=document.createElement('b'); "
@@ -280,6 +318,7 @@ class Scene:
         if self.dry_run:
             return
         self.clear_caption()
+        self.page.evaluate("() => document.getElementById('__demo_chapter')?.classList.remove('show')")
         self.page.evaluate(
             "([t, s]) => { const c=document.getElementById('__demo_card'); if(!c) return; "
             "c.replaceChildren(); const h=document.createElement('h1'); h.textContent=t; c.append(h); "
@@ -299,9 +338,16 @@ class Scene:
 
     def wait(self, ms: int) -> None:
         if not self.dry_run:
-            self.page.wait_for_timeout(ms)
+            self.page.wait_for_timeout(self._paced(ms))
 
     # -- internals --------------------------------------------------------------------------------
+
+    def _paced(self, ms: int) -> int:
+        return max(1, round(ms * self.pace))
+
+    def _on_screen(self, box: FloatRect) -> bool:
+        width, height = self.page.viewport_size["width"], self.page.viewport_size["height"]  # type: ignore[index]
+        return box["x"] >= 0 and box["y"] >= 0 and box["x"] + box["width"] <= width and box["y"] + box["height"] <= height
 
     def _animate_to(self, x: float, y: float, duration_ms: int, *, steps: int = 18) -> None:
         start_x, start_y = self._cursor
