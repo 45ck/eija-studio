@@ -7,6 +7,7 @@
   const query = new URLSearchParams(location.search);
   const EXAMPLE = "Open -> Triaged : Triage [Agent]\nTriaged -> Resolved : Resolve [Agent]\nTriaged -> Escalated : Escalate [Agent]\nEscalated -> Resolved : Fix [Engineer]";
   let P = null, listing = null, leaving = false, notice = "", saved = "", savedAt = 0, checkTimer = 0, checkSeq = 0, choice = "blank";
+  let sketch; // the sketch box, found once
   let umlFile = { name: "", text: "" }; // "From a UML file" (ADR-0190): the file chosen, read in the page and checked by the server
   const canSave = () => !query.get("case") && query.get("view") !== "review";
 
@@ -83,6 +84,7 @@
 
   function renderNew() {
     const list = $("systems-templates");
+    sketch = sketch || $("systems-sketch-box"); // kept across renders: it lives inside the list, so clearing the list detaches it
     list.replaceChildren();
     const options = [{ id: "blank", name: "Blank, from a sketch", description: "Type the state machine as the diagram labels it; the kernel checks it as you type." },
       { id: "uml", name: "From a UML file", description: "XMI, PlantUML, Mermaid or draw.io. Its state machine and class model are checked by the kernel, and what it cannot import is listed." },
@@ -96,21 +98,21 @@
       label.append(radio, text);
       list.append(label);
     }
-    list.firstChild.after($("systems-sketch-box")); // the sketch sits under its own option
+    list.firstChild.after(sketch); // the sketch sits under its own option
     list.children[2].after(umlBox()); // and the file under "From a UML file"
     $("systems-sketch-help").textContent = listing.sketch_help + ". Optional: actions: A, B and roles: C, for ones you will draw later.";
     showChoice();
   }
 
   function showChoice() {
-    $("systems-sketch-box").hidden = choice !== "blank";
-    $("systems-uml-box").hidden = choice !== "uml";
+    sketch.hidden = choice !== "blank";
+    umlBox().hidden = choice !== "uml";
   }
 
+  let uml; // kept across renders like the sketch box
   function umlBox() {
-    let box = $("systems-uml-box");
-    if (box) return box;
-    box = P.el("div", undefined, { id: "systems-uml-box", class: "systems-uml-box" });
+    if (uml) return uml;
+    const box = uml = P.el("div", undefined, { id: "systems-uml-box", class: "systems-uml-box" });
     const input = P.el("input", undefined, { id: "systems-uml-file", type: "file", "aria-label": "UML file",
       accept: ".xmi,.uml,.xml,.puml,.plantuml,.pu,.iuml,.wsd,.mmd,.mermaid,.md,.drawio,.dio" });
     input.addEventListener("change", async () => {

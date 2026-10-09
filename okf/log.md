@@ -1,5 +1,9 @@
 # Update log
 
+## 2026-10-09
+
+* **Your own systems, two fixes**: re-synced `application.new_system.sketch_documents` after roles that slug alike got unique user ids. No Notes were hand-edited and nothing was recorded as verified.
+
 ## 2026-10-08
 
 * **Sequence diagrams**: synced ADR-0195 (renumbered from 0185, which "Start, open and save your own system" took) and the new `application.sequences` and `application.sequence_layout` modules and symbol pages (the pack's scenarios drawn as UML sequences, checked through `scenario_run`, exported with their state invariants as notes); `application.diagrams.Fragment` (`operator`), `application.diagram_emitters`, `application.ripple` (`SEQUENCE_BROKEN`), `interfaces.play` (`/api/play/sequences`) and `interfaces.http` (the `play-sequence.js` and `play-sequence.css` assets) refreshed. Other pages changed only in generated backlinks. No Notes were hand-edited and nothing was recorded as verified.
