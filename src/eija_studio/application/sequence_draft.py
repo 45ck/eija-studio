@@ -74,7 +74,11 @@ def draft_scenarios(pack: Pack, model: Workflow) -> Scenarios:
     outsider = _outsider(pack, model)
     if outsider:
         drafts.append(outsider)
-    scenarios = [{"id": sid, "title": title, "steps": record_steps(pack, model, None, steps)} for title, sid, steps in drafts[:MAX_DRAFTS]]
+    seen: dict[str, int] = {}
+    scenarios = []
+    for title, sid, steps in drafts[:MAX_DRAFTS]:
+        seen[sid] = seen.get(sid, 0) + 1  # two states can share a slug (Done_A, Done__A): ids must stay unique
+        scenarios.append({"id": sid if seen[sid] == 1 else f"{sid}-{seen[sid]}", "title": title, "steps": record_steps(pack, model, None, steps)})
     return parse_scenarios({"id": pack.id, "scenarios": scenarios}, pack.id)
 
 

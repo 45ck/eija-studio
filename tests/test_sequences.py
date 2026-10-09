@@ -148,6 +148,9 @@ def test_a_system_without_scenarios_gets_a_draft_whose_expectations_the_kernel_w
     assert drafted.scenarios[2].steps[0].then.refused == "ROLE_DENIED"  # what the kernel answered, not a guess
     assert check_sequences(pack, pack.model, drafted)["status"] == "PRODUCIBLE"
     assert scenarios_or_draft(LOAN, scenarios_for(LOAN), LOAN.model)[1] == "pack"  # a pack's own scenarios win
+    clash = parse_pack(sketch_documents("Clash", "Job", "Open -> Done_A : Finish [Clerk]\nOpen -> Done__A : Close [Clerk]", "clash")["pack.json"])
+    ids = [s.id for s in draft_scenarios(clash, clash.model).scenarios]  # two end states, one slug
+    assert ids[:2] == ["reach-done-a", "reach-done-a-2"] and len(set(ids)) == len(ids)
 
 
 def test_scenarios_of_another_pack_are_refused():

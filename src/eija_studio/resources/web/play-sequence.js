@@ -125,7 +125,8 @@
         P.el("span", m ? `Step ${Number(m.ref) + 1}, ${m.action}: ${m.why}.` : `${s.first_problem}.`, { class: "seq-problem-why" }));
       const tools = P.el("span", undefined, { class: "seq-problem-tools" });
       if (m) tools.append(button("Show the step", () => { at = i; picked = `msg:${m.ref}`; kept = null; render(); }));
-      if (!REVIEW) tools.append(button("Expect what the model does now", () => rerecord(i), { title: "Rewrite this scenario's expectations from what the kernel does on the model shown" }));
+      // Only a failing step can be re-recorded: a scenario whose start state the model no longer has is fixed in Tests.
+      if (m && !REVIEW) tools.append(button("Expect what the model does now", () => rerecord(i), { title: "Rewrite this scenario's expectations from what the kernel does on the model shown" }));
       li.append(tools);
       box.lastChild.append(li);
     }

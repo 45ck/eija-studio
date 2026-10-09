@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/sequence_draft.py#draft_scenarios
   title: application/sequence_draft.py
   hash_method: ast-v2
-  sha256: 19578f3117cfbd5cfd564e8cc11b870438a5a9c7d42689a934e4ac09d041424a
-notes_baseline: 932c6a7350ec70fd12ce9cf5913442dd52b794c3faa3816369e76b2060e1ae91
+  sha256: 73f1c718223195e5be4915afb162f187e2da95e7b7a5860241e40e27f531c409
+notes_baseline: 542710f09d181994f421603636cc9d1942a263095a272d0b3806c9987b7c481b
 ---
 
 # application.sequence_draft.draft_scenarios
