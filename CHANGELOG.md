@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### 9 October 2026: the Sequences header puts the scenario's title on its own line
+
+- On a wide screen the selected scenario's title no longer runs into the kernel's verdict on one line; it sits above it, as it already did on a laptop.
+
 ### 9 October 2026: PlayIDE keeps the diagram on camera
 
 - The state machine stays inside the canvas as it changes size (ADR-0174 amendment). First load at 1280 by 800 no longer clips its foot by 3 pixels. The plan banner no longer pushes the initial dot under it after you drop a state, and a diagram that fitted before still fits. With Run or Simulation open, Run and Replay pan to keep the current step on screen, so a state near the foot such as Returned is not cut off.
