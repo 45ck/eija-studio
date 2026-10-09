@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/plan.py
   title: application/plan.py
   hash_method: ast-api-v1
-  sha256: 38999b1109d0efea2eec8bd6e518ca36ecaea863a34f60b42689701347bd7f91
-notes_baseline: e1361e6622e63bac9d7200b8825e995179839923d0eefbd4027d69e334af8b24
+  sha256: 36dd0d9c4ad4ce7cf17d27fe1176c956e8d7283f472fcb6cc2549ae831fd7a28
+notes_baseline: 97e696ddd808e5f677413132502fa8cf7e298bb636aed01a3ec6e502531f552f
 ---
 
 # application.plan
@@ -50,9 +50,11 @@ choose meaning, approve or apply: making a change real still goes through the ch
 
 ## Internal imports
 
+* [`application/data_steps`](/modules/application/data_steps.md)
 * [`application/diagrams`](/modules/application/diagrams.md)
 * [`application/new_system`](/modules/application/new_system.md)
 * [`application/ports`](/modules/application/ports.md)
+* [`domain/data`](/modules/domain/data.md)
 * [`domain/models`](/modules/domain/models.md)
 * [`domain/pack`](/modules/domain/pack.md)
 * [`domain/policy`](/modules/domain/policy.md)
@@ -66,9 +68,11 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Imports
 
+* [application.data_steps](/modules/application/data_steps.md) - Data-model steps in a chat plan (ADR-0202): add an attribute to a class, remove one, or make one required or optional.
 * [application.diagrams](/modules/application/diagrams.md) - Diagram models derived from the executable Workflow (ADR-0019, ADR-0023).
 * [application.new_system](/modules/application/new_system.md) - Start a new system (ADR-0185): the pack documents for a system started from a sketch or copied from a template.
 * [application.ports](/modules/application/ports.md) - Application-owned ports.
+* [domain.data](/modules/domain/data.md) - The data model of a pack, shown as a UML class diagram (ADR-0153): entities, typed attributes and associations.
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
 * [domain.policy](/modules/domain/policy.md) - Generic policy: coherence with a domain pack's declared action catalog, the pack's laws, and declared effects.

@@ -42,7 +42,8 @@ def register(app, studio, resolve: Callable[[Any], Workflow], request_type: type
     def play_export(body: ExportRequest):
         """The model on screen as a UML file, with what no UML file carries."""
         model = resolve(request_type(case_id=body.case_id, model=body.model, plan=body.plan))
-        text, report = export_model(body.format, pack_of(body.plan) or studio.pack, model, data_for(studio.pack))
+        pack = pack_of(body.plan) or studio.pack
+        text, report = export_model(body.format, pack, model, data_for(pack))
         name = f"{studio.pack.id}{EXTENSIONS[body.format]}"
         return {"filename": name, "media_type": MEDIA_TYPES[body.format], "text": text, "report": report}
 

@@ -18,7 +18,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any, Literal
 
-from pydantic import Field, ValidationError
+from pydantic import Field, PrivateAttr, ValidationError
 
 from .laws import Law
 from .models import MEANING_ID, Alternative, Contract, DomainError, Guard, Workflow, fingerprint
@@ -166,6 +166,9 @@ class Pack(Contract):
     fixtures: Fixtures
     verifiers: tuple[Verifier, ...] = ()
     journey: Journey = Journey()
+    # Files beside `pack.json` that a draft holds in memory instead of reading them from its folder (ADR-0202). Not a
+    # field: the pack's document and digest are unchanged, and each held file has its own digest, as on disk.
+    _held: dict[str, Any] = PrivateAttr(default_factory=dict)
 
     @property
     def id(self) -> str:
@@ -357,13 +360,29 @@ def load_pack(location: str | Path) -> Pack:
 
 def derive(pack: Pack, document: Any) -> Pack:
     """A draft of `pack` held in memory (`document`, checked as `parse_pack` checks any pack), whose files beside
-    `pack.json` (`data.json`, `screens.json`, `scenarios.json`) are read from where `pack` was read. A draft is never a
-    loaded snapshot: `find_pack` cannot resolve it, so no change case or receipt can name it."""
+    `pack.json` (`data.json`, `screens.json`, `scenarios.json`) are read from where `pack` was read, or are the ones it
+    holds (`hold`). A draft is never a loaded snapshot: `find_pack` cannot resolve it, so no change case or receipt can
+    name it."""
     draft = parse_pack(document)
     folder = pack_directory(pack)
     if folder is not None and draft.id == pack.id:
         _DIRECTORIES[draft.id, draft.digest] = folder
+    draft._held = dict(pack._held)
     return draft
+
+
+def hold(pack: Pack, name: str, content: Any) -> Pack:
+    """A draft of `pack` that holds `content` in memory as its file `name` beside `pack.json` (such as a draft data
+    model for `data.json`, ADR-0202). The pack document and its digest are the same; nothing is written, and the
+    other files are still read from where `pack` was read."""
+    draft = pack.model_copy()
+    draft._held = {**pack._held, name: content}
+    return draft
+
+
+def held(pack: Pack, name: str) -> Any | None:
+    """What a draft holds as its file `name` (see `hold`), or None to read the file from the pack's folder."""
+    return pack._held.get(name)
 
 
 def pack_directory(pack: Pack) -> Path | None:

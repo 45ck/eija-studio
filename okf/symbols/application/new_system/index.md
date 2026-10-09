@@ -2,6 +2,7 @@
 
 # Constants
 
+* [application.new_system.FIELD](FIELD.md) - Constant `FIELD` in `application/new_system`.
 * [application.new_system.LINE](LINE.md) - Constant `LINE` in `application/new_system`.
 * [application.new_system.LIST](LIST.md) - Constant `LIST` in `application/new_system`.
 * [application.new_system.MAX_LINES](MAX_LINES.md) - Constant `MAX_LINES` in `application/new_system`.
@@ -12,6 +13,7 @@
 
 # Functions
 
+* [application.new_system.classes](classes.md) - A system's record class and each class's attribute names, for naming data-model steps (ADR-0202); None when the system has no class diagram.
 * [application.new_system.declare](declare.md) - `pack` with every action and role `transactions` name but it does not declare yet, declared exactly as a sketch declares them (ADR-0201): an action gets the base guards and one audit entry, a role one active, assigned f…
 * [application.new_system.new_names](new_names.md) - The actions and roles `transactions` name that `pack` does not declare, in order of first use.
 * [application.new_system.parse_sketch](parse_sketch.md) - The transitions, extra actions and extra roles of a sketch, or `PackError` naming each bad line.

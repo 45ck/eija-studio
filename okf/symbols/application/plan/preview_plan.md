@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/plan.py#preview_plan
   title: application/plan.py
   hash_method: ast-v2
-  sha256: 0cf4c57472ce8e4229004567385fd62a1e8e169e0b2e376d155e6f42cef3c269
-notes_baseline: c9702d9cae6f3811d68380d5527bf8519fe3e5389fbcd8580bab1205ac40715f
+  sha256: 0df2fd67d1fb0f9fb58f8f5e21f47923bc4da0eed0aaee3ce81829d617015120
+notes_baseline: f13ee64d21d827dd75ea67e56ff0600d2b56589d745427f467c72a937d937865
 ---
 
 # application.plan.preview_plan
@@ -25,7 +25,7 @@ notes_baseline: c9702d9cae6f3811d68380d5527bf8519fe3e5389fbcd8580bab1205ac40715f
 |---|---|
 | Kind | function |
 | Module | [`application/plan`](/modules/application/plan.md) |
-| Signature | `def preview_plan(model: Workflow, pack: Pack, transactions: list[Transaction], accepted: list[bool], grows: bool=False) -> dict[str, Any]` |
+| Signature | `def preview_plan(model: Workflow, pack: Pack, transactions: list[Step], accepted: list[bool], grows: bool=False) -> dict[str, Any]` |
 | Code | `repo://src/eija_studio/application/plan.py#preview_plan` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
@@ -34,7 +34,8 @@ notes_baseline: c9702d9cae6f3811d68380d5527bf8519fe3e5389fbcd8580bab1205ac40715f
 ~~~text
 What the accepted steps would make of `model`. Each step reports whether it applies after the accepted ones
 before it; the accepted steps together are then checked against the policy as one change. When the system `grows`
-(one you started, ADR-0201), an action or role the accepted steps name is declared as a sketch declares it.
+(one you started, ADR-0201), an action or role the accepted steps name is declared as a sketch declares it, and its
+data-model steps change a draft of its class diagram (ADR-0202): `data` is that draft and `data_changes` what changed.
 ~~~
 <!-- okf:generated:end facts -->
 
@@ -45,11 +46,13 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [application.new_system.declare](/symbols/application/new_system/declare.md) - `pack` with every action and role `transactions` name but it does not declare yet, declared exactly as a sketch declares them (ADR-0201): an action gets the ba…
+* [application.data_steps.Step](/symbols/application/data_steps/Step.md) - Type alias `Step` in `application/data_steps`.
+* [application.data_steps.draft_pack](/symbols/application/data_steps/draft_pack.md) - `pack` as these plan steps would have it, held in memory: on a system the person started (`grows`), the actions and roles they name are declared (ADR-0201) and…
+* [application.data_steps.is_data](/symbols/application/data_steps/is_data.md) - `def is_data(step: Step) -> bool` in `application/data_steps`.
+* [application.data_steps.split](/symbols/application/data_steps/split.md) - The kernel transactions and the data-model steps, each in plan order.
 * [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
-* [domain.transactions.Transaction](/symbols/domain/transactions/Transaction.md) - Type alias `Transaction` in `domain/transactions`.
 
 ## Referenced by
 

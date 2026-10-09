@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0201-build-a-new-system-in-chat-round-after-round.md
   title: 0201-build-a-new-system-in-chat-round-after-round.md
   hash_method: lf-sha256-v1
-  sha256: c4c392d87b5fc66fca662b9652abd50b5c77aa0df6c58da97ed92852f38f172a
-notes_baseline: 45d58ca6acc8c9b22c6a68052efa57357e722c08e08f182be4e4cfb899ccb8e3
+  sha256: 2790a25b8f52d98ed22c0cbb6d2ae56456458054ed4cbfdb5a659cd17a6a70be
+notes_baseline: 896ba91f33b8ae7df27a0ea9b47197ab7d307c11e71610a09bd9bc1c43e76d09
 ---
 
 # ADR-0201: Build a new system in chat, round after round
@@ -66,4 +66,9 @@ _No curated notes yet._
 * [ADR-0185: Start, open and save your own system in PlayIDE](/adrs/0185-start-open-and-save-your-own-system.md) - PlayIDE could only show the pack the server was started with (`eija serve --pack …`), and every pack was one that ships with EIJA.
 * [ADR-0190: UML import and export: XMI, PlantUML, Mermaid and draw.io, with every import judged by the kernel](/adrs/0190-uml-import-and-export-through-the-kernel.md) - PlayIDE's users already know UML and already keep UML somewhere else: XMI in Enterprise Architect, Cameo, Papyrus or Visual Paradigm; PlantUML beside the code;…
 * [ADR-0198: Undo, redo and autosave of the edited document in PlayIDE](/adrs/0198-undo-redo-and-autosave-of-the-edited-document.md) - PlayIDE is meant to be more robust than the UML tools engineers already use, and every one of those has undo.
+* [ADR-0202: Grow the class diagram in chat](/adrs/0202-grow-the-class-diagram-in-chat.md) - ADR-0201 let a system started from a sketch grow its state machine round after round in chat.
+
+## Referenced by
+
+* [ADR-0202: Grow the class diagram in chat](/adrs/0202-grow-the-class-diagram-in-chat.md) - ADR-0201 let a system started from a sketch grow its state machine round after round in chat.
 <!-- okf:generated:end links -->

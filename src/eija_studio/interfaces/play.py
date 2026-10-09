@@ -34,7 +34,7 @@ from eija_studio.application.access import access, reach
 from eija_studio.application.components import app_components
 from eija_studio.application.law_proof import compare_laws, prove_laws, with_laws
 from eija_studio.application.ghost_diff import ghost_diff
-from eija_studio.application.new_system import declare
+from eija_studio.application.data_steps import data_changes, draft_pack, parse_step, split
 from eija_studio.application.plan import MAX_DRAFT_STEPS, preview_plan, propose_plan
 from eija_studio.application.review import review_change
 from eija_studio.application.ripple import check_follow_ons, ripple
@@ -46,7 +46,6 @@ from eija_studio.domain.models import Contract, DomainError, Workflow
 from eija_studio.domain.pack import Pack, pack_directory
 from eija_studio.domain.scenarios import parse_scenarios, scenarios_for
 from eija_studio.domain.policy import apply_transactions
-from eija_studio.domain.transactions import parse_transaction
 from eija_studio.domain.screens import Screens, check_screens, parse_screens, screens_for, use_cases
 from .app_build import app_files, build_into
 from .play_interop import register as register_interop
@@ -200,10 +199,11 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
 
     def pack_of(steps: list[dict[str, Any]] | None) -> Pack:
         """The open system's pack, with what these plan steps name but it does not declare yet declared as a sketch
-        declares it, on a system the person started (ADR-0201); a draft held in memory, never written."""
-        if not steps or not own():
+        declares it, and their data-model steps applied to its class diagram, on a system the person started (ADR-0201,
+        ADR-0202); a draft held in memory, never written."""
+        if not steps:
             return studio.pack
-        return declare(studio.pack, [parse_transaction(step) for step in steps])
+        return draft_pack(studio.pack, [parse_step(step) for step in steps], own())
 
     def resolve(body: BuildRequest) -> Workflow:
         """The model the request is about: the active baseline, or a case's candidate (its baseline if none yet)."""
@@ -216,7 +216,8 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
         if body.model is not None and body.model.semantic_hash != model.semantic_hash:
             raise DomainError("MODEL_CHANGED", "The model changed since the page loaded; reload and try again")
         if body.plan:  # trying accepted plan steps: applied here, through the policy, never taken from the page
-            model = apply_transactions(model, [parse_transaction(step) for step in body.plan], pack_of(body.plan))
+            transactions = split([parse_step(step) for step in body.plan])[0]
+            model = apply_transactions(model, transactions, pack_of(body.plan)) if transactions else model
         return model
 
     @app.get("/api/play/data")
@@ -228,13 +229,13 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
     def screens_of(body: BuildRequest, model: Workflow) -> Screens:
         if body.screens is not None:
             return parse_screens(body.screens, studio.pack.id)
-        return screens_for(studio.pack, model, data_for(studio.pack))  # the files beside pack.json, as for any draft
+        return screens_for(studio.pack, model, data_for(pack_of(body.plan)))  # the files beside pack.json, as for any draft
 
     @app.post("/api/play/screens")
     def play_screens(body: BuildRequest):
         """The screens for the designer (the request's, else the pack's or the defaults) and their design problems."""
         model = resolve(body)
-        screens, data = screens_of(body, model), data_for(studio.pack)
+        screens, data = screens_of(body, model), data_for(pack_of(body.plan))
         return {"screens": screens.model_dump(mode="json"), "digest": screens.digest, "use_cases": use_cases(model),
                 "problems": check_screens(screens, model, data)}
 
@@ -256,7 +257,7 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
     def play_plan_preview(body: PlanPreviewRequest):
         """What the accepted steps would make of the model. Nothing is saved or applied."""
         model = resolve(body.model_copy(update={"plan": None}))
-        return preview_plan(model, studio.pack, [parse_transaction(step) for step in body.steps], body.accepted, grows=own())
+        return preview_plan(model, studio.pack, [parse_step(step) for step in body.steps], body.accepted, grows=own())
 
     @app.post("/api/play/components")
     def play_components(body: BuildRequest):
@@ -285,12 +286,12 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
         candidate = resolve(body)
         start = base if body.since is None else before_of(body)
         # Before is the saved system with its pack's screens; screens edited in the designer are part of the change.
-        before, after = screens_for(studio.pack, start, data_for(studio.pack)), screens_of(body, candidate)
-        pack = pack_of(body.plan)
-        (old, _), (new, components) = built(pack_of(body.since), start, before), built(pack, candidate, after)
-        data = data_for(studio.pack)
+        pack, earlier = pack_of(body.plan), pack_of(body.since)
+        data, data_before = data_for(pack), data_for(earlier)
+        before, after = screens_for(studio.pack, start, data_before), screens_of(body, candidate)
+        (old, _), (new, components) = built(earlier, start, before), built(pack, candidate, after)
         scenarios = check_sequences(pack, candidate, scenarios_for(studio.pack), start)
-        report = ripple(start, candidate, data, (before, after), (old, new), components, scenarios)
+        report = ripple(start, candidate, data, (before, after), (old, new), components, scenarios, data_changes(data_before, data))
         document = proposer().follow_on(report, candidate, pack) if report["problems"] else {"steps": []}
         return report | {"provider": proposer().name, "live": proposer().live,
                          "follow_ons": check_follow_ons(document, base, body.plan or [], pack, candidate, after, data)}
