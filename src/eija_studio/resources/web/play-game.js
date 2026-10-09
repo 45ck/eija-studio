@@ -22,14 +22,39 @@
   const still = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   // A short note that rises from the ring: what just passed, or what was earned. It is also read out (role=status).
-  function note(text, kind) {
+  // One note at a time, on one line, in the free space left of the ring, so it never covers another panel (#179).
+  // The whole sentence is its tooltip. Where the toolbar has no room, the status bar says it instead.
+  const queue = [];
+  let showing = false;
+  function note(text, kind, detail = text) {
     if (!pop) return;
-    const item = document.createElement("span");
-    item.className = "game-note " + kind;
-    item.textContent = text;
-    pop.append(item);
-    while (pop.children.length > 3) pop.firstChild.remove();
-    setTimeout(() => item.remove(), still() ? 4000 : 3200);
+    queue.push({ text, kind, detail });
+    while (queue.length > 4) queue.splice(Math.max(0, queue.findIndex((q) => q.kind === "pass" || q.kind === "earn")), 1);
+    if (!showing) shownext();
+  }
+
+  function shownext() {
+    const next = queue.shift();
+    if (!next) { showing = false; pop.replaceChildren(); return; }
+    showing = true;
+    const room = pop.parentElement.previousElementSibling ? pop.parentElement.previousElementSibling.getBoundingClientRect().width - 12 : 0;
+    if (room < 140) { // a narrow window: the status bar's toast has the room
+      pop.replaceChildren();
+      const toast = $("toast");
+      toast.textContent = next.detail;
+      toast.classList.add("show");
+      clearTimeout(note.toast);
+      note.toast = setTimeout(() => toast.classList.remove("show"), 2600);
+    } else {
+      const item = document.createElement("span");
+      item.className = "game-note " + next.kind;
+      item.textContent = next.text;
+      item.title = next.detail;
+      pop.style.maxWidth = `${Math.min(420, room)}px`;
+      pop.replaceChildren(item);
+    }
+    const least = still() ? 2500 : 1400, most = still() ? 4000 : 3000;
+    setTimeout(() => (queue.length ? shownext() : setTimeout(shownext, most - least)), least);
   }
 
   function flash(element, cls) {
@@ -52,13 +77,14 @@
         const was = last.checks.find((x) => x.id === c.id);
         if (!was || was.ok === c.ok || !c.ok) return;
         flash(ring && ring.children[i], "game-pop");
-        if (!was.detail.endsWith("…")) note(`✓ ${c.name}. ${c.detail}`, "pass"); // not for a check that was only still working
+        if (!was.detail.endsWith("…")) note(`✓ ${c.name}`, "pass", `${c.name}: ${c.detail}`); // not for a check that was only still working
       });
     } else if (live && last) { // the view changed: the build and the simulation were of something else
       const lost = now.filter((c) => !c.ok && STALE[c.id] && last.checks.some((x) => x.id === c.id && x.ok));
       if (lost.length) {
         flash(health, "game-drain");
-        note(`Changed since the last ${lost.map((c) => (c.id === "conformance" ? "build" : "simulation")).join(" and ")}: run ${lost.length > 1 ? "them" : "it"} again`, "stale");
+        const again = lost.map((c) => (c.id === "conformance" ? "build" : "simulate")).join(" and ");
+        note(`Changed: ${again} again`, "stale", `Changed since the last ${lost.map((c) => (c.id === "conformance" ? "build" : "simulation")).join(" and ")}: run ${lost.length > 1 ? "them" : "it"} again`);
       }
     }
     for (const [id, button] of Object.entries(STALE)) {
@@ -70,7 +96,7 @@
       readyFor = key;
       if (live) { // not on load: only a check the person ran makes the moment
         flash(health, "game-burst");
-        note(event.detail.plan ? "Every check passes on this change" : "Every check passes on this model", "ready");
+        note("Every check passes", "ready", event.detail.plan ? "Every check passes on this change" : "Every check passes on this model");
       }
     }
     if (!all && readyFor === key) readyFor = null;
@@ -112,7 +138,7 @@
     const { n, why, kind } = event.detail;
     flash($("health"), "game-bump");
     if (kind === "caught") {
-      note(`Caught it: ${why.replace(/^Caught /, "")} (+${n})`, "caught");
+      note(`Caught it (+${n})`, "caught", `Caught it: ${why.replace(/^Caught /, "")} (+${n})`);
       const card = document.querySelector("#chat-log .plan:last-of-type");
       flash(card, "game-caught");
     } else {
@@ -202,7 +228,9 @@
     }
     const dot = token(entry, refused ? REFUSED : GO);
     pane.append(dot);
-    const start = performance.now(), end = refused ? 0.5 : 1;
+    // A refusal stops at the door: just past the state it would leave, well clear of the edge's label midway (#179).
+    const length = points.slice(1).reduce((sum, p, i) => sum + Math.hypot(p[0] - points[i][0], p[1] - points[i][1]), 0);
+    const start = performance.now(), end = refused ? Math.min(0.3, 22 / Math.max(1, length)) : 1;
     const frame = (t) => {
       const f = Math.min(1, (t - start) / ms), eased = 1 - (1 - f) * (1 - f);
       const [x, y] = at(points, eased * end);
@@ -277,7 +305,8 @@
     const agent = kinds.agent;
     if (!live || !agent || !agent.refused) return;
     const top = Object.entries(agent.codes || {}).sort((a, b) => b[1] - a[1])[0];
-    note(`The kernel stopped AI agents ${agent.refused} time${agent.refused === 1 ? "" : "s"} in this run${top ? `, mostly ${top[0]}` : ""}`, "guard");
+    note(`Kernel stopped AI agents ${agent.refused}×`, "guard",
+      `The kernel stopped AI agents ${agent.refused} time${agent.refused === 1 ? "" : "s"} in this run${top ? `, mostly ${top[0]}` : ""}`);
   }
 
   // The system's class diagrams (ADR-0203): a disagreement resolved is progress; none left is a moment.
@@ -285,8 +314,8 @@
   function landscape(event) {
     const { warning = 0 } = event.detail || {}, pack = (P.pack() && P.pack().id) || "";
     if (system && system.pack === pack && live) {
-      if (system.warning > 0 && warning === 0) { note("The system's class diagrams agree now", "ready"); flash($("health"), "game-burst"); }
-      else if (warning < system.warning) note(`✓ ${system.warning - warning} disagreement${system.warning - warning === 1 ? "" : "s"} resolved, ${warning} left`, "pass");
+      if (system.warning > 0 && warning === 0) { note("The system agrees now", "ready", "The system's class diagrams agree now"); flash($("health"), "game-burst"); }
+      else if (warning < system.warning) note(`✓ ${system.warning - warning} resolved, ${warning} left`, "pass", `${system.warning - warning} class-diagram disagreement${system.warning - warning === 1 ? "" : "s"} resolved, ${warning} left`);
     }
     system = { pack, warning };
   }
@@ -298,7 +327,7 @@
     const { key = "", items = [] } = event.detail || {}, ids = new Set(items.map((x) => x.id));
     if (missing && missing.key === key && live) {
       for (const was of missing.items) if (!ids.has(was.id)) note(`✓ ${was.text}`, "pass");
-      if (missing.items.length && !items.length) { note("Nothing missing: ready to build", "ready"); flash($("health"), "game-burst"); }
+      if (missing.items.length && !items.length) { note("Nothing missing: build it", "ready", "Nothing missing: ready to build"); flash($("health"), "game-burst"); }
     }
     missing = { key, items: items.map((x) => ({ id: x.id, text: x.text })) };
     if (shownChecks) nextCheck(shownChecks);

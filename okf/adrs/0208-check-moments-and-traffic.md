@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0208-check-moments-and-traffic.md
   title: 0208-check-moments-and-traffic.md
   hash_method: lf-sha256-v1
-  sha256: 80e61b71c472ca3ee7d6ee02024983a1d39c031036dfe327721227c898984eca
-notes_baseline: cb0ca681b47eb432fccc89429a2204e1b8bf989ed33eb9cda8e520a8a1aecdab
+  sha256: 8393c6ee9f3d84cf63a602f1b56fc5a224083fbefd26b979aeabf20e3a2674a1
+notes_baseline: c73d7636e7c794fa84e5c814ada41b9247df9ecd3e81b60e62bf78f1511d306e
 ---
 
 # ADR-0208: Moments for real checks, and the run as traffic on the diagram
@@ -31,12 +31,12 @@ notes_baseline: cb0ca681b47eb432fccc89429a2204e1b8bf989ed33eb9cda8e520a8a1aecdab
 
 > Chosen option. `play.js` sends `playide:checks` (each check with a stable id: `ai`, `screens`, `conformance`, `ripple`, `simulated`), `playide:earn` (with a `caught` kind for a step the policy caught), `playide:simulated` and, during Replay, `playide:step`. The run bar sends `playide:step` for each single step forward; a jump straight to the next stop draws no traffic for the steps it skips. `play-game.js` listens:
 >
-> * **A check passes.** Its ring part pops, and a note rises under the ring: "✓ Conformance. PASS: 373 cases checked against the kernel".
+> * **A check passes.** Its ring part pops, and a note appears beside the ring: "✓ Conformance. PASS: 373 cases checked against the kernel".
 > * **Every check passes on the view.** The ring turns green with one pulse, and the note says "Every check passes on this model" (or "on this change"). This happens once for each view, and never on page load.
 > * **A change makes a build or simulation stale.** The ring flashes amber, and the note says "Changed since the last build and simulation: run them again". **Build & run** and **Simulate** glow until they are run. A button glows only for a check that passed earlier in this page, so a fresh page does not nag.
 > * **The next check.** The checks panel opens with "Next:" and names the first failing check, with the page's own button where there is one ("Build & run", "Simulate", "Open Screens"). Once every check passes, it says "Ready."
 > * **Caught it.** When unticking an AI step turns a refused plan into one the policy allows (+3, ADR-0157), the note is larger and amber with a shield, and the plan's card pulses.
-> * **Traffic.** For each step the kernel decided in the run bar or in Replay, a dot travels along the drawn transition, green when the step went through and blue when a record is created. A refused step stops halfway with a red cross. A try from a state the transition does not leave flashes that state in red. After Simulate, the run's first 120 steps go by in about four seconds as overlapping traffic, and the summary counts count up. The traffic stops if the simulation is cleared or the view changes, so a dot is never drawn on a model it was not run on. These are the real log, sped up.
+> * **Traffic.** For each step the kernel decided in the run bar or in Replay, a dot travels along the drawn transition, green when the step went through and blue when a record is created. A refused step stops just past the state it would leave, with a red cross. A try from a state the transition does not leave flashes that state in red. After Simulate, the run's first 120 steps go by in about four seconds as overlapping traffic, and the summary counts count up. The traffic stops if the simulation is cleared or the view changes, so a dot is never drawn on a model it was not run on. These are the real log, sped up.
 
 ## Sections
 
