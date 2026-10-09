@@ -5,6 +5,7 @@ fixes. Negative oracles included: refused messages, a neg the kernel lets throug
 state, an unreachable message, and malformed drafts."""
 from __future__ import annotations
 
+import itertools
 import os
 from pathlib import Path
 
@@ -125,7 +126,7 @@ def test_lifeline_heads_never_overlap_however_long_the_names():
         pack = load_pack(ROOT / "packs" / name)
         for sequence in check_sequences(pack, pack.model, scenarios_for(pack))["sequences"]:
             heads = sorted((ll["x"] - ll["width"] / 2, ll["x"] + ll["width"] / 2) for ll in sequence["lifelines"] if ll["kind"] != "effect")
-            assert all(right <= left for (_, right), (left, _) in zip(heads, heads[1:])), (name, sequence["id"])
+            assert all(right <= left for (_, right), (left, _) in itertools.pairwise(heads)), (name, sequence["id"])
             assert all(len(line) * 7 <= ll["width"] for ll in sequence["lifelines"] for line in ll["head"].split("\n") if ll["kind"] != "effect")
 
 

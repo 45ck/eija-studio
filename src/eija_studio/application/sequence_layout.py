@@ -113,8 +113,8 @@ def place(pack: Pack, scenario: Scenario, start: str, steps: list[dict[str, Any]
                                           "operands": [{"guard": f"refused: {refused}", "y": top + ROW["frame"] - 8}], "refused": refused,
                                           "verdict": v["verdict"], "why": v["why"]})
     lost = any(ll["kind"] == "effect" for ll in layout.lifelines.values())
-    record = layout.lifelines[layout.record]
-    width = layout.right + LEFT + (LOST - (record["width"] + 16) // 2 + 70 if lost else 0)
+    column = int(layout.lifelines[layout.record]["width"]) + 16
+    width = layout.right + LEFT + (LOST - column // 2 + 70 if lost else 0)
     return {"lifelines": list(layout.lifelines.values()), **layout.items, "width": width, "height": layout.y + 30,
             "head": {"y": HEAD_Y, "height": HEAD_H}}
 
