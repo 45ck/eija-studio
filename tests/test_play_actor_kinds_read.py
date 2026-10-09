@@ -53,7 +53,14 @@ def test_agents_timers_and_systems_look_the_same_in_every_view():
             page.click("#tab-components")
             page.click("#component-lens [data-lens=system]")
             page.wait_for_selector("#landscape-summary:not(:empty)")
-            assert page.evaluate(LOOKS, ["components", "system:actor:"]) == usecases
+            # Workflows beside this one may declare a role too (card-payment shares the refund class): where they agree, the
+            # lens draws the role as here; where they differ, it is a box naming each kind.
+            lens = page.evaluate(LOOKS, ["components", "system:actor:"])
+            kinds = page.evaluate("() => Object.fromEntries(window.PlayLandscape.result().actors.map((a) => [a.name, a.kinds]))")
+            assert all(lens[role] == look for role, look in usecases.items() if len(kinds[role]) == 1), (lens, usecases, kinds)
+            for role in (r for r in usecases if len(kinds[r]) > 1):
+                label = page.evaluate("(id) => window.PlayIDE.diagram('components').getDataModel().getCell(id).value", "system:actor:" + role)
+                assert label.startswith("«" + " | ".join(kinds[role]) + "»"), label
             bar, top = page.evaluate(UNDER_BAR)
             assert top >= bar, f"a shape at {top} is under the lens bar, which ends at {bar}"
             page.click("#component-lens [data-lens=app]")
