@@ -9,6 +9,7 @@ from fastapi.testclient import TestClient
 
 from eija_studio.adapters.system_library import SystemLibrary
 from eija_studio.application.new_system import parse_sketch, sketch_documents, system_id, template_documents
+from eija_studio.application.plan import MAX_DRAFT_STEPS
 from eija_studio.domain.data import data_for
 from eija_studio.domain.pack import PACKS_ROOT, PackError, load_pack
 from eija_studio.interfaces.http import create_app
@@ -189,7 +190,7 @@ def test_a_malformed_draft_step_or_screen_is_refused(served):
     client, _systems, _tmp = served
     assert post(client, "/api/play/draft", {"steps": [{"transaction": {"kind": "rm_rf"}}]}).status_code == 409
     assert post(client, "/api/play/draft", {"screens": {"schema_version": "eija.screens.v1", "id": "other", "screens": []}}).status_code == 409
-    assert post(client, "/api/play/draft", {"steps": [{"transaction": {"kind": "add_state", "state": f"S{i}"}} for i in range(13)]}).status_code == 422
+    assert post(client, "/api/play/draft", {"steps": [{"transaction": {"kind": "add_state", "state": f"S{i}"}} for i in range(MAX_DRAFT_STEPS + 1)]}).status_code == 422
 
 
 def test_the_page_loads_the_systems_controls(served):

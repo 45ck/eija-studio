@@ -14,9 +14,10 @@ from typing import Any
 
 from eija_studio.domain.data import parse_data
 from eija_studio.domain.models import BASE_GUARDS, DomainError
-from eija_studio.domain.pack import Pack, PackError, parse_pack
+from eija_studio.domain.pack import Pack, PackError, derive, parse_pack
 from eija_studio.domain.scenarios import parse_scenarios
 from eija_studio.domain.screens import parse_screens
+from eija_studio.domain.transactions import AddTransition, SetRole, Transaction
 
 NAME = r"[A-Za-z][A-Za-z0-9_]{0,39}"  # states, actions and roles: names the built app's code can use as they are
 LINE = re.compile(rf"^\s*({NAME})\s*->\s*({NAME})\s*:\s*({NAME})\s*\[\s*({NAME})\s*\]\s*$")
@@ -213,3 +214,50 @@ def summary(documents: dict[str, dict[str, Any]]) -> dict[str, Any]:
     return {"id": pack.id, "name": pack.pack.name, "initial": pack.model.initial_state, "states": list(pack.model.states),
             "transitions": len(pack.model.transitions), "roles": [r.id for r in pack.roles],
             "actions": [a.id for a in pack.actions], "record": documents.get("data.json", {}).get("record")}
+
+
+def new_names(pack: Pack, transactions: list[Transaction]) -> tuple[list[str], list[str]]:
+    """The actions and roles `transactions` name that `pack` does not declare, in order of first use."""
+    actions, roles = {a.id for a in pack.actions}, {r.id for r in pack.roles}
+    named_actions = [tx.action for tx in transactions if isinstance(tx, AddTransition)]
+    named_roles = [tx.role for tx in transactions if isinstance(tx, AddTransition | SetRole)]
+    return _missing(named_actions, actions), _missing(named_roles, roles)
+
+
+def _missing(names: list[str], declared: set[str]) -> list[str]:
+    return list(dict.fromkeys(n for n in names if n not in declared))
+
+
+def _names_problems(pack: Pack, actions: list[str], roles: list[str]) -> list[str]:
+    """New names the built app cannot use, or that differ only in case from a name the pack has."""
+    bad = [f"{name!r} is not a name the built app can use (letters, digits and _, starting with a letter)"
+           for name in [*actions, *roles] if not re.fullmatch(NAME, name)]
+    return bad + _one_spelling("action", [a.id for a in pack.actions] + actions) + _one_spelling("role", [r.id for r in pack.roles] + roles)
+
+
+def _declared_document(pack: Pack, actions: list[str], roles: list[str]) -> dict[str, Any]:
+    document = pack.model_dump(mode="json", exclude_none=True)
+    document["actions"] += [{"id": a, "guards": list(BASE_GUARDS), "required_effects": [f"Audit:{a}"]} for a in actions]
+    taken = {e["id"] for e in document["effects"]["catalog"]}
+    document["effects"]["catalog"] += [{"id": f"Audit:{a}", "kind": "audit"} for a in actions if f"Audit:{a}" not in taken]
+    document["roles"] += [{"id": r} for r in roles]
+    stems = {a["id"].rsplit("-", 1)[0] for a in document["fixtures"]["actors"]}
+    document["fixtures"]["actors"] += [{"id": f"{_role_actor(r, stems)}-1", "role": r, "active": True, "assigned": True} for r in roles]
+    return document
+
+
+def declare(pack: Pack, transactions: list[Transaction]) -> Pack:
+    """`pack` with every action and role `transactions` name but it does not declare yet, declared exactly as a sketch
+    declares them (ADR-0201): an action gets the base guards and one audit entry, a role one active, assigned fixture
+    actor. The result is a draft held in memory, checked by the kernel's pack check; nothing is written, and the laws,
+    meanings and tests are the pack's own. `pack` itself when nothing is new."""
+    actions, roles = new_names(pack, transactions)
+    if not actions and not roles:
+        return pack
+    problems = _names_problems(pack, actions, roles)
+    if problems:
+        raise DomainError("PLAN_NAME_INVALID", "; ".join(problems))
+    try:
+        return derive(pack, _declared_document(pack, actions, roles))
+    except PackError as error:
+        raise DomainError("PLAN_NAME_INVALID", error.message, {"problems": list(error.diagnostics)}) from None

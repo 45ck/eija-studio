@@ -103,6 +103,8 @@ dd{margin:0}
 .plan-steps>li.rejected label{color:var(--muted);text-decoration:line-through}
 .plan-steps>li.does_not_apply{border-color:#e7b4b4}
 .plan-steps .why{grid-column:2/4}
+.plan-steps>li.round-start{margin-top:8px}
+.plan-steps .round-head{grid-column:1/-1;margin:0 0 2px;font-size:.74rem;font-weight:600;color:var(--muted);overflow-wrap:anywhere}
 .step-status{font-size:.75rem;color:var(--ok)}
 .does_not_apply .step-status{color:var(--bad)}
 .rejected .step-status{color:var(--muted)}

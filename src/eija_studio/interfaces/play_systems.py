@@ -20,7 +20,7 @@ from pydantic import Field
 
 from eija_studio.application.interop import MAX_CHARS, detect_format, start_from_file
 from eija_studio.application.new_system import SKETCH_HELP, sketch_documents, summary, system_id, template_documents
-from eija_studio.application.plan import MAX_STEPS
+from eija_studio.application.plan import MAX_DRAFT_STEPS, MAX_REQUEST
 from eija_studio.domain.models import Contract, DomainError, Workflow
 from eija_studio.domain.pack import PACK_FILE, PACKS_ROOT, PackError, load_pack
 from eija_studio.domain.screens import parse_screens
@@ -64,11 +64,13 @@ class OpenSystem(Contract):
 class DraftStep(Contract):
     transaction: dict[str, Any]
     author: Literal["you", "ai"] = "you"
+    round: int | None = Field(default=None, ge=1, le=MAX_DRAFT_STEPS)  # which chat round added it (ADR-0201)
+    request: str | None = Field(default=None, max_length=MAX_REQUEST)  # what was asked in that round, in your words
 
 
 class SavedWork(Contract):
-    steps: list[DraftStep] = Field(default_factory=list, max_length=MAX_STEPS)
-    accepted: list[bool] = Field(default_factory=list, max_length=MAX_STEPS)
+    steps: list[DraftStep] = Field(default_factory=list, max_length=MAX_DRAFT_STEPS)
+    accepted: list[bool] = Field(default_factory=list, max_length=MAX_DRAFT_STEPS)
     screens: dict[str, Any] | None = None
 
 

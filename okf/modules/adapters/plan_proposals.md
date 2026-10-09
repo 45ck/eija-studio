@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/adapters/plan_proposals.py
   title: adapters/plan_proposals.py
   hash_method: ast-api-v1
-  sha256: 0b616e279d38651bd500520f747702abb89455efa3733e67607cfa3e1be7bff6
-notes_baseline: 6552f5542163e8cfae40b78f76ba68e672a59b7bf8fa2e7bf754e43fd562e02a
+  sha256: 5d9f16506ed3c90b354121cb3b73d07fe87967c801d5d395b4d3042cae21f419
+notes_baseline: 416de0a425bc9749a7b04db35bf6ddb3ea2a228d903cafac88208ab3cba0f927
 ---
 
 # adapters.plan_proposals
@@ -48,6 +48,7 @@ _Symbol pages are generated for the domain and application layers only._
 
 ## Internal imports
 
+* [`application/new_system`](/modules/application/new_system.md)
 * [`domain/laws`](/modules/domain/laws.md)
 * [`domain/models`](/modules/domain/models.md)
 * [`domain/pack`](/modules/domain/pack.md)
@@ -60,6 +61,7 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Imports
 
+* [application.new_system](/modules/application/new_system.md) - Start a new system (ADR-0185): the pack documents for a system started from a sketch or copied from a template.
 * [domain.laws](/modules/domain/laws.md) - Typed law DSL of a domain pack: what a workflow may never do, stated as data (WBS 1.1/1.2).
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).

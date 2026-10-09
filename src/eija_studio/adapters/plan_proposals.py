@@ -16,6 +16,7 @@ import re
 from collections.abc import Callable
 from typing import Any
 
+from eija_studio.application.new_system import NAME as IDENTIFIER
 from eija_studio.domain.laws import reachable
 from eija_studio.domain.models import DomainError, Workflow
 from eija_studio.domain.pack import Pack
@@ -37,13 +38,24 @@ def _normalise(text: str) -> str:
     return " ".join(text.strip().rstrip(".!").split())
 
 
+Step = dict[str, Any] | list[dict[str, Any]]  # one clause reads as one step, or as the few steps it needs (grows only)
+
+
+def _from_clauses(steps: list[Step], clauses: list[str]) -> dict[str, Any]:
+    planned = [(tx, c) for s, c in zip(steps, clauses, strict=True) for tx in (s if isinstance(s, list) else [s])]
+    return {"summary": f"{len(planned)} step{'' if len(planned) == 1 else 's'} from your request", "meaning": None,
+            "steps": [{"transaction": tx, "why": f"You asked: “{c}”"} for tx, c in planned]}
+
+
 class _Clause:
     """Resolves one clause against the model and pack, or returns None when it is not one of the phrases."""
 
-    def __init__(self, model: Workflow, pack: Pack):
-        self.model, self.pack = model, pack
+    def __init__(self, model: Workflow, pack: Pack, grows: bool = False):
+        self.model, self.pack, self.grows = model, pack, grows
         self.planned: list[str] = []  # states added or renamed by earlier clauses of the same plan
-        self.patterns: list[tuple[re.Pattern[str], Callable[..., dict[str, Any]]]] = [
+        self.named: list[str] = []  # actions and roles this plan names that the pack does not declare (grows only)
+        self.removed: set[str] = set()  # transitions an earlier clause of this plan removes
+        self.patterns: list[tuple[re.Pattern[str], Callable[..., Step]]] = [
             (re.compile(rf"^add state {NAME}(?: after {NAME})?$", re.I), self._add_state),
             (re.compile(rf"^rename (?:state )?{NAME} to {NAME}$", re.I), self._rename),
             (re.compile(rf"^(?:remove|delete) state {NAME}$", re.I), self._remove_state),
@@ -69,36 +81,73 @@ class _Clause:
     def role(self, name: str) -> str:
         found = next((r.id for r in self.pack.roles if r.id.casefold() == name.casefold()), None)
         if found is None:
+            if self.grows:
+                return self._new_name("role", name)
             raise DomainError("PLAN_UNKNOWN_NAME", f"The pack has no role {name}")
         return found
+
+    def _new_name(self, kind: str, name: str) -> str:
+        """A name this system does not have yet, spelled as an earlier clause of the same plan spelled it."""
+        earlier = next((n for n in self.named if n.casefold() == name.casefold()), None)
+        if earlier is not None:
+            return earlier
+        if not re.fullmatch(IDENTIFIER, name):
+            raise DomainError("PLAN_UNKNOWN_NAME", f"A new {kind} is named with letters, digits and _ (not {name})")
+        self.named.append(name)
+        return name
 
     def _add_state(self, state: str, after: str | None) -> dict[str, Any]:
         self.planned.append(state)
         return {"kind": "add_state", "state": state, "after": self.state(after) if after else None}
 
+    def known(self, name: str) -> bool:
+        return any(s.casefold() == name.casefold() for s in (*self.model.states, *self.planned))
+
     def _rename(self, state: str, to: str) -> dict[str, Any]:
         self.planned.append(to)
         return {"kind": "rename_state", "state": self.state(state), "to": to}
 
-    def _remove_state(self, state: str) -> dict[str, Any]:
-        return {"kind": "remove_state", "state": self.state(state)}
+    def _remove_state(self, state: str) -> dict[str, Any] | list[dict[str, Any]]:
+        found = self.state(state)
+        step = {"kind": "remove_state", "state": found}
+        using = [t.id for t in self.model.transitions if found in (t.from_state, t.to_state) and t.id not in self.removed]
+        if not self.grows or not using:
+            return step
+        self.removed.update(using)
+        return [*({"kind": "remove_transition", "transition": t} for t in using), step]
 
     def _initial(self, state: str) -> dict[str, Any]:
         return {"kind": "set_initial", "state": self.state(state)}
 
-    def _add_transition(self, action: str, source: str, target: str, role: str) -> dict[str, Any]:
+    def _add_transition(self, action: str, source: str, target: str, role: str) -> Step:
         declared = next((a.id for a in self.pack.actions if a.id.casefold() == action.casefold()), None)
-        if declared is None:
+        if declared is None and not self.grows:
             raise DomainError("PLAN_UNKNOWN_NAME", f"The pack declares no action {action}; its actions are {', '.join(a.id for a in self.pack.actions)}")
-        return {"kind": "add_transition", "id": _transition_id(self.model, declared), "action": declared, "from_state": self._state_or_new(source),
+        declared = declared or self._new_name("action", action)
+        before = self._new_states(source, target)
+        step = {"kind": "add_transition", "id": _transition_id(self.model, declared), "action": declared, "from_state": self._state_or_new(source),
                 "to_state": self._state_or_new(target), "role": self.role(role)}
+        return [*before, step] if before else step
+
+    def _new_states(self, *names: str) -> list[dict[str, Any]]:
+        """On a system that grows, a step adding each state a transition names that nothing has yet, first."""
+        if not self.grows:
+            return []
+        steps = []
+        for state in dict.fromkeys(n for n in names if not self.known(n)):
+            if not re.fullmatch(IDENTIFIER, state):
+                raise DomainError("PLAN_UNKNOWN_NAME", f"A new state is named with letters, digits and _ (not {state})")
+            steps.append(self._add_state(state, None))
+        return steps
 
     def _state_or_new(self, name: str) -> str:
         """A state added earlier in the same plan is not in the model yet; the application checks it exists by then."""
-        return next((s for s in self.model.states if s.casefold() == name.casefold()), name)
+        return next((s for s in (*self.model.states, *self.planned) if s.casefold() == name.casefold()), name)
 
     def _remove_transition(self, name: str) -> dict[str, Any]:
-        return {"kind": "remove_transition", "transition": self.transition(name)}
+        found = self.transition(name)
+        self.removed.add(found)
+        return {"kind": "remove_transition", "transition": found}
 
     def _role(self, role: str, name: str) -> dict[str, Any]:
         return {"kind": "set_role", "transition": self.transition(name), "role": self.role(role)}
@@ -106,7 +155,7 @@ class _Clause:
     def _retarget(self, name: str, end: str, state: str) -> dict[str, Any]:
         return {"kind": "retarget_transition", "transition": self.transition(name), "end": end.lower(), "state": self._state_or_new(state)}
 
-    def resolve(self, clause: str) -> dict[str, Any] | None:
+    def resolve(self, clause: str) -> Step | None:
         for pattern, build in self.patterns:
             match = pattern.match(clause)
             if match:
@@ -126,22 +175,22 @@ def _meaning_plan(request: str, pack: Pack) -> dict[str, Any] | None:
     return None
 
 
-def _first_unread(clauses: list[str], steps: list[dict[str, Any] | None]) -> str:
+def _first_unread(clauses: list[str], steps: list[Step | None]) -> str:
     return next(c for c, step in zip(clauses, steps, strict=True) if step is None)
 
 
 class OfflinePlanProposer:
     name, live = "offline-plan-fixture-v1", False
 
-    def propose(self, request: str, model: Workflow, pack: Pack) -> dict[str, Any]:
+    def propose(self, request: str, model: Workflow, pack: Pack, *, grows: bool = False) -> dict[str, Any]:
         clauses = [_normalise(c) for c in SPLIT.split(request) if _normalise(c)]
         if not clauses:
             raise DomainError("PLAN_REQUEST_UNSUPPORTED", HELP)
-        resolver = _Clause(model, pack)
+        resolver = _Clause(model, pack, grows)
         steps = [resolver.resolve(c) for c in clauses]
-        if all(steps):
-            return {"summary": f"{len(steps)} step{'' if len(steps) == 1 else 's'} from your request", "meaning": None,
-                    "steps": [{"transaction": s, "why": f"You asked: “{c}”"} for s, c in zip(steps, clauses, strict=True)]}
+        read = [s for s in steps if s]
+        if len(read) == len(steps):
+            return _from_clauses(read, clauses)
         planned = _meaning_plan(request, pack) if not any(steps) else None  # never drop clauses that were read
         if planned is None:
             raise DomainError("PLAN_REQUEST_UNSUPPORTED", f"I could not read “{_first_unread(clauses, steps)}”. {HELP}")
@@ -151,12 +200,11 @@ class OfflinePlanProposer:
         return follow_ons(ripple, model, pack)
 
 
-def _spare_action(model: Workflow, pack: Pack, source: str) -> str:
-    """A declared action the model does not use yet, else one already leaving `source`, else the first declared."""
+def _spare_action(model: Workflow, pack: Pack) -> str | None:
+    """A declared action the model does not use yet. Each action labels one transition, so there is no other choice:
+    when every declared action is in use, no follow-on is proposed rather than one the policy is sure to refuse."""
     used = {t.action for t in model.transitions}
-    spare = [a.id for a in pack.actions if a.id not in used]
-    leaving = [t.action for t in model.transitions if t.from_state == source]
-    return (spare or leaving or [pack.actions[0].id])[0]
+    return next((a.id for a in pack.actions if a.id not in used), None)
 
 
 def _role_for(model: Workflow, pack: Pack, action: str) -> str:
@@ -165,13 +213,15 @@ def _role_for(model: Workflow, pack: Pack, action: str) -> str:
     return max(sorted(set(takes)), key=takes.count) if takes else pack.roles[0].id
 
 
-def _transition(model: Workflow, pack: Pack, source: str, target: str) -> dict[str, Any]:
-    action = _spare_action(model, pack, source)
+def _transition(model: Workflow, pack: Pack, source: str, target: str) -> dict[str, Any] | None:
+    action = _spare_action(model, pack)
+    if action is None:
+        return None
     return {"kind": "add_transition", "id": _transition_id(model, action), "action": action, "from_state": source,
             "to_state": target, "role": _role_for(model, pack, action)}
 
 
-def _into(model: Workflow, pack: Pack, state: str) -> dict[str, Any]:
+def _into(model: Workflow, pack: Pack, state: str) -> dict[str, Any] | None:
     """A transition into `state` from the nearest reachable state before it that records can already leave."""
     edges = [(t.from_state, t.to_state) for t in model.transitions]
     live = [s for s in model.states if s in reachable(edges, model.initial_state) and s in {a for a, _ in edges}]
@@ -201,7 +251,8 @@ def _out_of(model: Workflow, pack: Pack, state: str) -> dict[str, Any] | None:
 
 def _state_follow_on(code: str, model: Workflow, pack: Pack, name: str) -> dict[str, Any] | None:
     if code == "STATE_UNREACHABLE":
-        return {"transaction": _into(model, pack, name), "why": f"So records can reach {name}"}
+        step = _into(model, pack, name)
+        return {"transaction": step, "why": f"So records can reach {name}"} if step else None
     step = _out_of(model, pack, name) if code == "STATE_NO_EXIT" else None
     return {"transaction": step, "why": f"So records in {name} can move on"} if step else None
 

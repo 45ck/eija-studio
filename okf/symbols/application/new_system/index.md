@@ -12,6 +12,8 @@
 
 # Functions
 
+* [application.new_system.declare](declare.md) - `pack` with every action and role `transactions` name but it does not declare yet, declared exactly as a sketch declares them (ADR-0201): an action gets the base guards and one audit entry, a role one active, assigned f…
+* [application.new_system.new_names](new_names.md) - The actions and roles `transactions` name that `pack` does not declare, in order of first use.
 * [application.new_system.parse_sketch](parse_sketch.md) - The transitions, extra actions and extra roles of a sketch, or `PackError` naming each bad line.
 * [application.new_system.sketch_documents](sketch_documents.md) - `pack.json` and `data.json` for a system started from a sketch, checked by the kernel's pack check.
 * [application.new_system.summary](summary.md) - What the new system has, for the form to say before it is created.

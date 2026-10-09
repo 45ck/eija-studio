@@ -56,13 +56,13 @@ def test_the_diff_refuses_a_model_the_page_no_longer_shows_and_a_plan_the_policy
     assert refused.status_code >= 400 and refused.json()["code"] == "POLICY_BLOCKED"
 
 
-def test_the_page_loads_the_changes_view_after_play_js_and_it_only_asks_for_the_diff_and_the_laws(client):
+def test_the_page_loads_the_changes_view_after_play_js_and_it_only_asks_for_the_diff_the_laws_and_a_rounds_ripple(client):
     page = client.get("/play").text
     assert page.index("/assets/play.js") < page.index("/assets/play-diff.js") and "/assets/play-diff.css" in page
     for name in ("play-diff.js", "play-diff.css"):
         assert client.get(f"/assets/{name}").status_code == 200
     source = (WEB / "play-diff.js").read_text(encoding="utf-8")
-    assert "fetch(" not in source and set(__import__("re").findall(r'"(/api/[^"]+)"', source)) == {"/api/play/diff", "/api/play/laws"}
+    assert "fetch(" not in source and set(__import__("re").findall(r'"(/api/[^"]+)"', source)) == {"/api/play/diff", "/api/play/laws", "/api/play/ripple"}  # the ripple: one round's To consider (ADR-0201)
 
 
 def test_the_state_machine_keeps_every_state_in_place_between_preview_and_the_model():

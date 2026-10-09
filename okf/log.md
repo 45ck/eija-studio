@@ -2,6 +2,7 @@
 
 ## 2026-10-09
 
+* **Build a new system in chat, round after round**: synced ADR-0201 and the new `application.new_system.declare` and `new_names`, `domain.pack.derive` and `application.plan.MAX_DRAFT_STEPS` symbols; `application.plan` (`describe`, `preview_plan`, `propose_plan` grow with the plan), `application.ports.PlanProposer` (`grows`), `adapters.plan_proposals`, `interfaces.play` (`ChangeRequest.since`, `on_top`), `interfaces.play_interop` and `interfaces.play_systems` (`DraftStep.round` and `.request`) refreshed. No Notes were hand-edited and nothing was recorded as verified.
 * **Shapes land where you put them**: re-synced ADR-0174 after its amendment (presentation only, no module or symbol changes). No Notes were hand-edited and nothing was recorded as verified.
 * **Your changes and the AI's**: re-synced ADR-0176 after its "what to consider" update (presentation only). No Notes were hand-edited and nothing was recorded as verified.
 * **Sketch names that differ only in case**: re-synced `application.new_system.sketch_documents` and ADR-0185 after a sketch began refusing states, actions or roles that differ only in case. No Notes were hand-edited and nothing was recorded as verified.

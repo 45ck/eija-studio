@@ -355,6 +355,17 @@ def load_pack(location: str | Path) -> Pack:
     return pack
 
 
+def derive(pack: Pack, document: Any) -> Pack:
+    """A draft of `pack` held in memory (`document`, checked as `parse_pack` checks any pack), whose files beside
+    `pack.json` (`data.json`, `screens.json`, `scenarios.json`) are read from where `pack` was read. A draft is never a
+    loaded snapshot: `find_pack` cannot resolve it, so no change case or receipt can name it."""
+    draft = parse_pack(document)
+    folder = pack_directory(pack)
+    if folder is not None and draft.id == pack.id:
+        _DIRECTORIES[draft.id, draft.digest] = folder
+    return draft
+
+
 def pack_directory(pack: Pack) -> Path | None:
     """The directory this exact pack snapshot was read from, or its authored directory, so optional files beside
     `pack.json` (such as `data.json`) are read from the same place as the pack."""

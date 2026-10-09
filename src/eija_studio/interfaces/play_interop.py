@@ -11,6 +11,7 @@ from typing import Any, Literal
 
 from pydantic import Field
 
+from eija_studio.application.plan import MAX_DRAFT_STEPS
 from eija_studio.application.interop import EXTENSIONS, MAX_CHARS, MEDIA_TYPES, detect_format, export_model, import_model
 from eija_studio.domain.data import data_for
 from eija_studio.domain.models import Contract, Workflow
@@ -21,7 +22,7 @@ Format = Literal["xmi", "plantuml", "mermaid", "drawio"]
 class ExportRequest(Contract):
     case_id: str | None = None
     model: Workflow | None = None
-    plan: list[dict[str, Any]] | None = Field(default=None, max_length=12)  # a previewed plan exports the model it shows
+    plan: list[dict[str, Any]] | None = Field(default=None, max_length=MAX_DRAFT_STEPS)  # a previewed plan exports the model it shows
     format: Format
 
 
@@ -33,13 +34,15 @@ class ImportRequest(Contract):
     text: str = Field(min_length=1, max_length=MAX_CHARS)
 
 
-def register(app, studio, resolve: Callable[[Any], Workflow], request_type: type) -> None:
-    """`resolve` is PlayIDE's own: it reads `request_type` (its build request) as the model the page is about."""
+def register(app, studio, resolve: Callable[[Any], Workflow], request_type: type,
+             pack_of: Callable[[Any], Any] = lambda _: None) -> None:
+    """`resolve` is PlayIDE's own: it reads `request_type` (its build request) as the model the page is about, and
+    `pack_of` the pack a plan's steps make of the open system's (ADR-0201)."""
     @app.post("/api/play/export")
     def play_export(body: ExportRequest):
         """The model on screen as a UML file, with what no UML file carries."""
         model = resolve(request_type(case_id=body.case_id, model=body.model, plan=body.plan))
-        text, report = export_model(body.format, studio.pack, model, data_for(studio.pack))
+        text, report = export_model(body.format, pack_of(body.plan) or studio.pack, model, data_for(studio.pack))
         name = f"{studio.pack.id}{EXTENSIONS[body.format]}"
         return {"filename": name, "media_type": MEDIA_TYPES[body.format], "text": text, "report": report}
 

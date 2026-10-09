@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/play.py
   title: interfaces/play.py
   hash_method: ast-api-v1
-  sha256: fd99047b62471c678ff670bf39ee9f5bc8ad9156d0e24dc50c503b81d8b97f76
-notes_baseline: d2e79c74b7af647223645ed0066d501f87910e6c0a7bb00d1c05e15fcc060873
+  sha256: cd9a6aee03012c559a2431b310efac18a95bbaa8d86cfa3358f4684ceab50ce4
+notes_baseline: ce52149fecc6465afdc362cab6f043d1769ebdeb3d285070657a5c01569d5e23
 ---
 
 # interfaces.play
@@ -55,6 +55,7 @@ _Symbol pages are generated for the domain and application layers only._
 * [`application/components`](/modules/application/components.md)
 * [`application/ghost_diff`](/modules/application/ghost_diff.md)
 * [`application/law_proof`](/modules/application/law_proof.md)
+* [`application/new_system`](/modules/application/new_system.md)
 * [`application/plan`](/modules/application/plan.md)
 * [`application/review`](/modules/application/review.md)
 * [`application/ripple`](/modules/application/ripple.md)
@@ -83,6 +84,7 @@ _No curated notes yet._
 * [application.components](/modules/application/components.md) - The component diagram of an app built from the model (ADR-0155), extracted from the generated files themselves.
 * [application.ghost_diff](/modules/application/ghost_diff.md) - How a change looks on the state machine: both models on one canvas, with nothing hidden (ADR-0176).
 * [application.law_proof](/modules/application/law_proof.md) - Prove a pack's laws over every run the kernel allows (ADR-0166).
+* [application.new_system](/modules/application/new_system.md) - Start a new system (ADR-0185): the pack documents for a system started from a sketch or copied from a template.
 * [application.plan](/modules/application/plan.md) - Plan mode for the PlayIDE chat (ADR-0156): an AI proposes a change as numbered typed steps; the person accepts or rejects each one and sees what the accepted o…
 * [application.review](/modules/application/review.md) - Review a model change in PlayIDE instead of a pull request (ADR-0175).
 * [application.ripple](/modules/application/ripple.md) - Ripple (ADR-0158): what one change to the state machine does to every other diagram of the same system, and the follow-on edits that would keep them in agreeme…
