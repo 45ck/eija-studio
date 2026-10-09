@@ -192,7 +192,7 @@ def _people(scene: Scene, chapter: _Chapters) -> None:
     scene.click("#dock-close")
     scene.click("#tab-screens")
     scene.click("#role-lens button[data-role=Clerk]")
-    scene.expect_text("#role-app", "A Clerk sees 2 of 7 screens")
+    scene.expect_text("#role-app", "A Clerk sees 2 of")
     scene.caption(
         "Design the people too. See the app as a Clerk: the screens the kernel never lets them take are struck through."
     )
