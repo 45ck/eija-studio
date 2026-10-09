@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### 9 October 2026: PlayIDE keeps transition labels apart
+
+- The labels of a back-and-forth pair of transitions no longer sit on top of each other (#153): RequestRefund and RejectRefund on Card payment, FailPayout and RetryPayout on Refund desk, RequestInfo and SupplyInfo on Building permit, MissPayment and PayOverdue on SaaS subscription. The layout now leaves room for each label at its real size, centred on its edge, and the label is drawn there instead of halfway along the line. A state you drag still takes its lines straight again, with their labels halfway along.
+
 ### 9 October 2026: PlayIDE says who holds a role, and lets you change it
 
 - Choose an actor and the inspector shows **Held by**: a person, an AI agent, a timer or an external system. Change it and the step joins the plan, checked against the laws about kinds of actor like any edit, and nothing is saved. On **Refund desk**, making the Supervisor an AI agent is refused, naming "Only a person approves a refund". "Who may take it" now names each role's kind, for example *SupportAgent (AI agent)*. See the amendment to [ADR-0210](docs/adr/0210-actors-that-are-not-people.md) (issue #156).
