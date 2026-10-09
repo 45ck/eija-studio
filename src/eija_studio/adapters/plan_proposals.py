@@ -16,12 +16,11 @@ import re
 from collections.abc import Callable
 from typing import Any
 
-from eija_studio.application.new_system import FIELD as FIELD_NAME
-from eija_studio.application.new_system import classes
 from eija_studio.application.new_system import NAME as IDENTIFIER
 from eija_studio.domain.laws import reachable
 from eija_studio.domain.models import DomainError, Workflow
 from eija_studio.domain.pack import Pack
+from .plan_data_phrases import FIELD, KIND, DataPhrases
 from .providers.offline import matches_rule
 
 SPLIT = re.compile(r"\s*(?:;|\n|,?\s+then\s+|,?\s+and then\s+)\s*", re.IGNORECASE)
@@ -29,10 +28,8 @@ NAME = r"([A-Za-z][\w-]*)"
 HELP = ("Use one change per clause, with exact model names, joined by 'then': add state <S> [after <T>]; rename state <A> "
         "to <B>; remove state <S>; start in <S>; add <action> from <A> to <B> for <role>; remove <action>; allow <role> "
         "to <action>; move <action> source|target to <S>. On a system you started, also: add field <name> [as "
-        "text|number|date|boolean|choice <A>, <B>] [required]; remove field <name>; make <field> required|optional. "
+        "text|number|date|boolean|choice <A>, <B>] [required]; remove field <name>; make <field> required|optional; make <role> an AI agent|a timer|an external system|a person. "
         "Or describe a change the pack models.")
-TYPES = {"text": "text", "number": "number", "date": "date", "boolean": "boolean", "yes/no": "boolean", "choice": "choice"}
-FIELD = r"(?:field|attribute)"
 
 
 def _transition_id(model: Workflow, action: str) -> str:
@@ -44,7 +41,6 @@ def _normalise(text: str) -> str:
     return " ".join(text.strip().rstrip(".!").split())
 
 
-Classes = tuple[str, dict[str, list[str]]]  # the record class, and each class's attribute names
 Step = dict[str, Any] | list[dict[str, Any]]  # one clause reads as one step, or as the few steps it needs (grows only)
 
 
@@ -54,7 +50,7 @@ def _from_clauses(steps: list[Step], clauses: list[str]) -> dict[str, Any]:
             "steps": [{"transaction": tx, "why": f"You asked: “{c}”"} for tx, c in planned]}
 
 
-class _Clause:
+class _Clause(DataPhrases):
     """Resolves one clause against the model and pack, or returns None when it is not one of the phrases."""
 
     def __init__(self, model: Workflow, pack: Pack, grows: bool = False):
@@ -67,6 +63,7 @@ class _Clause:
             (re.compile(rf"^add state {NAME}(?: after {NAME})?$", re.I), self._add_state),
             (re.compile(rf"^rename (?:state )?{NAME} to {NAME}$", re.I), self._rename),
             (re.compile(rf"^(?:remove|delete) state {NAME}$", re.I), self._remove_state),
+            (re.compile(rf"^(?:make {NAME}|{NAME} is)(?: held by)? (?:an? )?{KIND}$", re.I), self._kind),
             (re.compile(rf"^(?:start (?:records )?in|make) {NAME}(?: the initial state)?$", re.I), self._initial),
             (re.compile(rf"^add (?:transition )?{NAME} from {NAME} to {NAME} for {NAME}$", re.I), self._add_transition),
             (re.compile(rf"^(?:remove|delete) (?:transition )?{NAME}$", re.I), self._remove_transition),
@@ -166,55 +163,6 @@ class _Clause:
 
     def _retarget(self, name: str, end: str, state: str) -> dict[str, Any]:
         return {"kind": "retarget_transition", "transition": self.transition(name), "end": end.lower(), "state": self._state_or_new(state)}
-
-    def _data(self) -> Classes:
-        """The class diagram a data-model phrase changes: only on a system you started (ADR-0202)."""
-        if not self.grows:
-            raise DomainError("PLAN_DATA_FIXED", "This system's class diagram is its owner's; chat adds fields only on a system you started")
-        data = classes(self.pack)
-        if data is None:
-            raise DomainError("PLAN_UNKNOWN_NAME", "This system has no class diagram to add a field to")
-        return data
-
-    def _class(self, data: Classes, name: str | None) -> str:
-        if name is None:
-            return data[0]
-        found = next((e for e in data[1] if e.casefold() == name.casefold()), None)
-        if found is None:
-            raise DomainError("PLAN_UNKNOWN_NAME", f"The class diagram has no class {name}")
-        return found
-
-    def _field(self, data: Classes, entity: str, name: str) -> str:
-        names = data[1][entity] + self.fields
-        found = next((n for n in names if n.casefold() == name.casefold()), None)
-        if found is None:
-            raise DomainError("PLAN_UNKNOWN_NAME", f"{entity} has no field {name}")
-        return found
-
-    def _add_field(self, first: str | None, name: str, entity: str | None, kind: str | None, options: str | None,
-                   last: str | None) -> dict[str, Any]:
-        data = self._data()
-        field = name[:1].lower() + name[1:]
-        if not re.fullmatch(FIELD_NAME, field):
-            raise DomainError("PLAN_UNKNOWN_NAME", f"A field is named with letters, digits and _ (not {name})")
-        type_ = TYPES[(kind or "text").lower()]
-        choices = [c.strip() for c in re.split(r",|\bor\b", options or "") if c.strip()]
-        if (type_ == "choice") != bool(choices):
-            raise DomainError("PLAN_UNKNOWN_NAME", "A choice field lists its choices, for example: as choice Small, Medium, Large")
-        self.fields.append(field)
-        required = "required" in f"{first or ''} {last or ''}".lower()
-        attribute = {"name": field, "type": type_, "required": required} | ({"choices": choices} if choices else {})
-        return {"kind": "add_attribute", "entity": self._class(data, entity), "attribute": attribute}
-
-    def _remove_field(self, name: str, entity: str | None) -> dict[str, Any]:
-        data = self._data()
-        found = self._class(data, entity)
-        return {"kind": "remove_attribute", "entity": found, "name": self._field(data, found, name)}
-
-    def _require(self, name: str, how: str) -> dict[str, Any]:
-        data = self._data()
-        return {"kind": "set_required", "entity": data[0], "name": self._field(data, data[0], name),
-                "required": how.lower() == "required"}
 
     def resolve(self, clause: str) -> Step | None:
         for pattern, build in self.patterns:

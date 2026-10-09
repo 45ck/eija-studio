@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/new_system.py
   title: application/new_system.py
   hash_method: ast-api-v1
-  sha256: 0732b7e48c7e1a7cb523d6adc9b81e7454f82ba3580dc182d4048d23d99203a0
-notes_baseline: 7ac43de570e0fdd0f3eec3bba3925c71e26ae35df9117798de6128a2f470cdc7
+  sha256: 851b92e6ad55850c1fbd385ddcfccb464d394e99c350b43baa54c8992be900ea
+notes_baseline: 585e2c53c3840d640b2678f09e21dec3796670829cfb380f11bc9994713cf7d8
 ---
 
 # application.new_system
@@ -41,6 +41,7 @@ beyond one audit entry per action, or meanings the person did not write.
 ## Public symbols
 
 * [`FIELD`](/symbols/application/new_system/FIELD.md) (constant) - no docstring
+* [`KIND_LISTS`](/symbols/application/new_system/KIND_LISTS.md) (constant) - no docstring
 * [`LINE`](/symbols/application/new_system/LINE.md) (constant) - no docstring
 * [`LIST`](/symbols/application/new_system/LIST.md) (constant) - no docstring
 * [`MAX_LINES`](/symbols/application/new_system/MAX_LINES.md) (constant) - no docstring
@@ -84,12 +85,14 @@ _No curated notes yet._
 
 ## Referenced by
 
+* [adapters.plan_data_phrases](/modules/adapters/plan_data_phrases.md) - The data-model and role-kind phrases of the offline plan proposer (ADR-0202, #156): add a field to a class, remove one, make one required or optional, and say…
 * [adapters.plan_proposals](/modules/adapters/plan_proposals.md) - Offline plan proposer for the PlayIDE chat (ADR-0156): a bounded phrase grammar and the pack's modelled meanings, never an LLM.
 * [application.data_steps](/modules/application/data_steps.md) - Data-model steps in a chat plan (ADR-0202): add an attribute to a class, remove one, or make one required or optional.
-* [application.describe_system](/modules/application/describe_system.md) - Describe your app (ADR-0203): a new system from one description, like starting an app in Lovable or Replit.
+* [application.describe_system](/modules/application/describe_system.md) - Describe your app (ADR-0216): a new system from one description, like starting an app in Lovable or Replit.
 * [application.plan](/modules/application/plan.md) - Plan mode for the PlayIDE chat (ADR-0156): an AI proposes a change as numbered typed steps; the person accepts or rejects each one and sees what the accepted o…
 * [interfaces.play_systems](/modules/interfaces/play_systems.md) - PlayIDE's systems (ADR-0185): start a new system from a sketch or a template, open one you made before, and save the work in progress to carry on later.
 * [application.new_system.FIELD](/symbols/application/new_system/FIELD.md) - Constant `FIELD` in `application/new_system`.
+* [application.new_system.KIND_LISTS](/symbols/application/new_system/KIND_LISTS.md) - Constant `KIND_LISTS` in `application/new_system`.
 * [application.new_system.LINE](/symbols/application/new_system/LINE.md) - Constant `LINE` in `application/new_system`.
 * [application.new_system.LIST](/symbols/application/new_system/LIST.md) - Constant `LIST` in `application/new_system`.
 * [application.new_system.MAX_LINES](/symbols/application/new_system/MAX_LINES.md) - Constant `MAX_LINES` in `application/new_system`.

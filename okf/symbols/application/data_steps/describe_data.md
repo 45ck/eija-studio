@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/data_steps.py#describe_data
   title: application/data_steps.py
   hash_method: ast-v2
-  sha256: f422db3ecf6ca4b25bab9852d41e59bd7475d1f82adbb24ce3778356eb486105
-notes_baseline: 7f1f27552fd9b831d0f092b2703bb0bbdd3ba16781c290311d83e2fd7a9a257f
+  sha256: 7a77a8ad12730384717ba656e67afd9802b6896ef6bc0ba3a9c941fddec3f5fd
+notes_baseline: f4fa3f6c7d27ba7abddbef27fa55e1f8719df0cff5f478669b3be33a08fa9906
 ---
 
 # application.data_steps.describe_data
@@ -45,7 +45,9 @@ _No curated notes yet._
 
 * [application.data_steps.AddAttribute](/symbols/application/data_steps/AddAttribute.md) - `class AddAttribute(Contract)` in `application/data_steps`.
 * [application.data_steps.DataEdit](/symbols/application/data_steps/DataEdit.md) - Type alias `DataEdit` in `application/data_steps`.
+* [application.data_steps.KIND_NAMES](/symbols/application/data_steps/KIND_NAMES.md) - Constant `KIND_NAMES` in `application/data_steps`.
 * [application.data_steps.RemoveAttribute](/symbols/application/data_steps/RemoveAttribute.md) - `class RemoveAttribute(Contract)` in `application/data_steps`.
+* [application.data_steps.SetRoleKind](/symbols/application/data_steps/SetRoleKind.md) - `class SetRoleKind(Contract)` in `application/data_steps`.
 
 ## Referenced by
 

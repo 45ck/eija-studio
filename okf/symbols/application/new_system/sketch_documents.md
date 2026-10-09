@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/new_system.py#sketch_documents
   title: application/new_system.py
   hash_method: ast-v2
-  sha256: b6ae902bbff27400b8e658d53908d34292147969299538e09332a18f2e9ca1ef
-notes_baseline: 0c54392d7cfe262ab0d20555c732e6f1d18316065e2a8f9c5436424680206acf
+  sha256: 0cefd4dc2d315cb291170bc2cfa9e22d896dc88a24d3e2274bfb15a131cac1e1
+notes_baseline: fad272ea8b54105a2aadfafe012b2a5babb2fcc705fb0e2b7ebfb64d6b1f542b
 ---
 
 # application.new_system.sketch_documents

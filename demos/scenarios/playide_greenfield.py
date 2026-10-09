@@ -222,7 +222,7 @@ def _run_it(scene: Scene, chapter: _Chapters) -> None:
     scene.expect_text("#sim-summary", "refused by the kernel", timeout_ms=60_000)
     scene.caption("Save keeps every round, with what you asked, to carry on later. Nothing is applied.")
     scene.click("#system-save")
-    scene.expect_text("#system-saved", "Saved", timeout_ms=30_000)
+    scene.expect_text("#status-saved", "Saved", timeout_ms=30_000)
     scene.zoom("#system-controls", scale=1.6)
     scene.wait(1300)
     scene.zoom_out()

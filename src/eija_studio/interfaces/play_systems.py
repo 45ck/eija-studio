@@ -29,7 +29,7 @@ from eija_studio.domain.screens import parse_screens
 
 BLANK = "blank"
 UML = "uml"  # start from a UML file (ADR-0190)
-DESCRIBE = "describe"  # start from a description of the app (ADR-0203)
+DESCRIBE = "describe"  # start from a description of the app (ADR-0216)
 TEMPLATE_FILES = ("pack.json", "data.json", "screens.json", "scenarios.json")
 
 
@@ -135,7 +135,7 @@ def _described(library: Any, body: NewSystem, describer: Any) -> tuple[str, dict
 
 class Systems:
     """The systems home and the system the server has open. `describer` reads a description of an app for "Describe
-    your app" (ADR-0203); the offline one unless another is given."""
+    your app" (ADR-0216); the offline one unless another is given."""
 
     def __init__(self, handle: StudioHandle, library: Any, opener: Callable[[Path, Path], Any],
                  pack: Path, workspace: Path, on_switch: Callable[[], Any] = lambda: None, describer: Any = None):

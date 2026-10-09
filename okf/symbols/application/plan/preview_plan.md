@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/plan.py#preview_plan
   title: application/plan.py
   hash_method: ast-v2
-  sha256: 0df2fd67d1fb0f9fb58f8f5e21f47923bc4da0eed0aaee3ce81829d617015120
-notes_baseline: f13ee64d21d827dd75ea67e56ff0600d2b56589d745427f467c72a937d937865
+  sha256: fbfc2bb5733d0c20a643fd921cc9614eccb340d3a436c75d5b270d2c3a93ec40
+notes_baseline: 0fae4f95bc8ead001d1cc82c60f9340a6fa2e27f9fea0fc6f3c1fd16e73d58b9
 ---
 
 # application.plan.preview_plan

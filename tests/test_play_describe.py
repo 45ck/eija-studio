@@ -1,4 +1,4 @@
-"""Describe your app (ADR-0203): one description makes a whole system, every view of it derived or recorded by the
+"""Describe your app (ADR-0216): one description makes a whole system, every view of it derived or recorded by the
 kernel, and "What's missing" lists what each view still lacks."""
 from __future__ import annotations
 
@@ -99,3 +99,30 @@ def test_offline_shapes(text, record, template):
     documents, reading = describe_documents(text, "", lambda name: "sys", OfflineSystemDescriber())
     assert documents["data.json"]["record"] == record and reading["template"] == template
     assert documents["scenarios.json"]["scenarios"]
+
+
+def test_an_ai_agent_a_timer_and_an_external_system_become_roles_of_their_kind(served):
+    """ADR-0210 kinds from the describe box (#156): the verb picks the transition, and one with no matching action is
+    still a role of its kind, which What's missing reports as taking no action."""
+    client, systems = served
+    text = ("A support desk. Customers raise tickets, an AI agent triages them, engineers fix escalated ones. "
+            "A webhook reports outages.")
+    created = post(client, "/api/play/systems/new", {"template": "describe", "description": text, "name": "Desk"})
+    assert created["created"] and created["system"]["kinds"] == {"AiAgent": "agent", "ExternalSystem": "system"}
+    pack = systems.handle.pack
+    assert next(t.role for t in pack.model.transitions if t.action == "Triage") == "AiAgent"
+    assert pack.role_kind("AiAgent") == "agent" and pack.role_kind("Customer") == "human"
+    assert any("AiAgent is an AI agent, taking Triage" in line for line in created["described"]["reading"])
+    ready = post(client, "/api/play/ready", {})
+    roles = next(v for v in ready["views"] if v["view"] == "usecases")
+    assert [i["text"] for i in roles["items"]] == ["ExternalSystem takes no action"]
+
+
+def test_a_sketch_declares_the_kind_of_a_role(served):
+    client, _ = served
+    sketch = "Open -> Triaged : Triage [Bot]\nTriaged -> Closed : Close [Lead]\nagents: Bot\ntimers: Sweeper"
+    checked = post(client, "/api/play/systems/new", {"template": "blank", "name": "Kinds", "record": "Case", "sketch": sketch, "check_only": True})
+    assert not checked["problems"] and checked["system"]["kinds"] == {"Bot": "agent", "Sweeper": "timer"}
+    clash = post(client, "/api/play/systems/new", {"template": "blank", "name": "Kinds", "record": "Case",
+                                                   "sketch": sketch + "\nsystems: Bot", "check_only": True})
+    assert clash["problems"] == ["line 5: Bot is already listed as another kind of actor"]

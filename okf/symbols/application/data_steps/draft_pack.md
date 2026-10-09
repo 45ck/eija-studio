@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/data_steps.py#draft_pack
   title: application/data_steps.py
   hash_method: ast-v2
-  sha256: 167d24dd9b9ca6d1bf3abdab686962d7cacd6d6a7fa83f1f959b9b07c514769c
-notes_baseline: 2eee3e6729838aaa63ad9725bc72b949c2019de9ae90924ef379b87d0815faec
+  sha256: 3c2d0e6b8c61f83d2aa57d1d57072f702a2b46a56ef0b19aa4f80879f7735b15
+notes_baseline: 5c3de0c1c4e6b9b013c20a80793330a060155544c27299dedc1ba21501b26c28
 ---
 
 # application.data_steps.draft_pack
@@ -49,6 +49,7 @@ _No curated notes yet._
 * [application.data_steps.Step](/symbols/application/data_steps/Step.md) - Type alias `Step` in `application/data_steps`.
 * [application.data_steps.apply_data](/symbols/application/data_steps/apply_data.md) - `data` with the data-model steps applied in turn, checked by the data model's own contract; `data` when none.
 * [application.data_steps.split](/symbols/application/data_steps/split.md) - The kernel transactions and the data-model steps, each in plan order.
+* [application.data_steps.with_kinds](/symbols/application/data_steps/with_kinds.md) - `pack` with the roles' kinds these steps set, a draft held in memory; `PLAN_KIND_FIXED` on a system with a law about kinds, and `EDIT_INVALID` for a role the p…
 * [application.new_system.declare](/symbols/application/new_system/declare.md) - `pack` with every action and role `transactions` name but it does not declare yet, declared exactly as a sketch declares them (ADR-0201): an action gets the ba…
 * [domain.data.DATA_FILE](/symbols/domain/data/DATA_FILE.md) - Constant `DATA_FILE` in `domain/data`.
 * [domain.data.data_for](/symbols/domain/data/data_for.md) - The data model beside this pack's `pack.json`, if it has one: the one a draft holds (ADR-0202), else `data.json`.

@@ -6,7 +6,7 @@ resource: repo://docs/adr/0203-describe-your-app-and-whats-missing.md
 tags:
 - adr
 - accepted
-status: stable
+status: deprecated
 generated:
   by: process:eija-okf-sync
 sources:

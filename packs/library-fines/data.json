@@ -1,0 +1,86 @@
+{
+  "schema_version": "eija.data.v1",
+  "id": "library-fines",
+  "record": "Fine",
+  "entities": [
+    {
+      "name": "Fine",
+      "description": "One fine on one loan; it moves through the fines workflow.",
+      "attributes": [
+        {
+          "name": "amount",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": "choice",
+          "required": true,
+          "choices": [
+            "Overdue",
+            "Damaged",
+            "Lost"
+          ]
+        },
+        {
+          "name": "issuedOn",
+          "type": "date",
+          "required": true
+        },
+        {
+          "name": "note",
+          "type": "text",
+          "max_length": 500
+        }
+      ]
+    },
+    {
+      "name": "Loan",
+      "description": "The loan the fine is for. The library-loan workflow moves it.",
+      "attributes": [
+        {
+          "name": "dueDate",
+          "type": "date",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "Member",
+      "attributes": [
+        {
+          "name": "card",
+          "type": "text",
+          "required": true,
+          "max_length": 32
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "email",
+          "type": "text",
+          "max_length": 120
+        }
+      ]
+    }
+  ],
+  "associations": [
+    {
+      "source": "Fine",
+      "target": "Loan",
+      "role": "loan",
+      "source_multiplicity": "0..*",
+      "target_multiplicity": "1"
+    },
+    {
+      "source": "Fine",
+      "target": "Member",
+      "role": "debtor",
+      "source_multiplicity": "0..*",
+      "target_multiplicity": "1"
+    }
+  ]
+}

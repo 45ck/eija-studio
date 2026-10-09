@@ -1,7 +1,7 @@
 ---
 type: Class
 title: application.ports.SystemDescriber
-description: Turns a description of an app into {name, record, sketch, fields, reading} for "Describe your app" (ADR-0203).
+description: Turns a description of an app into {name, record, sketch, fields, reading} for "Describe your app" (ADR-0216).
 resource: repo://src/eija_studio/application/ports.py#SystemDescriber
 tags:
 - symbol
@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/ports.py#SystemDescriber
   title: application/ports.py
   hash_method: ast-sig-v1
-  sha256: 7e82055712710feda9169c170fd273b16c5faccd36fbe5d3de7f1bca36bf31d7
-notes_baseline: 97cab1761d0a176d6d8eae69ab1a1af1d601c26a1886c2fe00db5f192fe9e49c
+  sha256: 9e516f7eeedd383fe2568f881bd1c681d5897b03cd3d82fea55b1b342ddd6e52
+notes_baseline: a57fcaf5f63feae0f2fda02e460062b501d401cdbe93471f857b4c4dff42142e
 ---
 
 # application.ports.SystemDescriber
@@ -32,7 +32,7 @@ notes_baseline: 97cab1761d0a176d6d8eae69ab1a1af1d601c26a1886c2fe00db5f192fe9e49c
 ## Docstring
 
 ~~~text
-Turns a description of an app into {name, record, sketch, fields, reading} for "Describe your app" (ADR-0203).
+Turns a description of an app into {name, record, sketch, fields, reading} for "Describe your app" (ADR-0216).
 Untrusted; no IO or persistence. `sketch` is in the state machine's label notation, `fields` are data-model
 attributes, and `reading` says in words what was read and assumed.
 ~~~

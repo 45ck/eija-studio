@@ -18,9 +18,9 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any, Literal
 
-from pydantic import Field, PrivateAttr, ValidationError
+from pydantic import Field, PrivateAttr, SerializerFunctionWrapHandler, ValidationError, model_serializer, model_validator
 
-from .laws import Law
+from .laws import KIND_LAWS, Law, RoleKind
 from .models import MEANING_ID, Alternative, Contract, DomainError, Guard, Workflow, fingerprint
 from .transactions import AddState, RemoveState, Transaction
 
@@ -59,8 +59,19 @@ class PackInfo(Contract):
 
 
 class Role(Contract):
+    """A role and the kind of actor that holds it (ADR-0210): a person by default, or an AI agent, a timer or an
+    external system. The kernel authorises every kind alike; laws such as ``only_kind_holds`` tell them apart."""
     id: str = Field(min_length=1, max_length=60)
     description: str = Field(default="", max_length=400)
+    kind: RoleKind = "human"
+
+    @model_serializer(mode="wrap")
+    def _omit_default_kind(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        """A person is the default kind and is not written out, so a pack that names no kinds keeps its digest."""
+        data: dict[str, Any] = handler(self)
+        if data.get("kind") == "human":
+            del data["kind"]
+        return data
 
 
 class ActionSpec(Contract):
@@ -170,6 +181,19 @@ class Pack(Contract):
     # field: the pack's document and digest are unchanged, and each held file has its own digest, as on disk.
     _held: dict[str, Any] = PrivateAttr(default_factory=dict)
 
+    @model_validator(mode="after")
+    def _bind_kind_laws(self) -> Pack:
+        """Laws about kinds of actor are bound to the roles of those kinds (see ``laws._KindLaw``)."""
+        kinds = {r.id: r.kind for r in self.roles}
+        for law in self.laws:
+            if isinstance(law, KIND_LAWS):
+                law.resolve(kinds)
+        return self
+
+    def role_kind(self, role: str) -> str | None:
+        """The kind of actor holding `role`, or None for a role this pack does not declare."""
+        return next((r.kind for r in self.roles if r.id == role), None)
+
     @property
     def id(self) -> str:
         return self.pack.id
@@ -266,7 +290,14 @@ def _law_problems(pack: Pack) -> list[str]:
     known = {"state": _known_states(pack), "role": {r.id for r in pack.roles}, "action": {a.id for a in pack.actions},
              "effect": set(pack.effects.forbidden) | {e.id for e in pack.effects.catalog}}
     return [f"laws[{law.id}]: {category} {name!r} is not declared" for law in pack.laws
-            for category, name in _law_refs(law) if name not in known[category]]
+            for category, name in _law_refs(law) if name not in known[category]] + _kind_law_problems(pack)
+
+
+def _kind_law_problems(pack: Pack) -> list[str]:
+    """A law about kinds of actor needs at least one declared role of its kinds (ADR-0210), or it can never be met."""
+    kinds = {r.kind for r in pack.roles}
+    return [f"laws[{law.id}]: no declared role is of kind {' or '.join(law.role_kinds)}" for law in pack.laws
+            if isinstance(law, KIND_LAWS) and not kinds & set(law.role_kinds)]
 
 
 def _identity_problems(pack: Pack) -> list[str]:

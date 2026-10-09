@@ -1,0 +1,223 @@
+{
+  "schema_version": "eija.scenarios.v1",
+  "id": "refund-desk",
+  "scenarios": [
+    {
+      "id": "agent-proposes-person-approves",
+      "title": "The agent proposes, a supervisor approves, the payment system pays",
+      "steps": [
+        {
+          "actor": "support-bot",
+          "action": "AssessRequest",
+          "then": {
+            "state": "Assessed"
+          }
+        },
+        {
+          "actor": "support-bot",
+          "action": "ProposeRefund",
+          "then": {
+            "state": "AwaitingApproval"
+          }
+        },
+        {
+          "actor": "supervisor-on-shift",
+          "action": "ApproveRefund",
+          "then": {
+            "state": "Approved"
+          }
+        },
+        {
+          "actor": "payment-gateway",
+          "action": "ConfirmPayout",
+          "then": {
+            "state": "Paid"
+          }
+        }
+      ]
+    },
+    {
+      "id": "agent-cannot-approve",
+      "title": "The AI agent cannot approve the refund it proposed",
+      "steps": [
+        {
+          "actor": "support-bot",
+          "action": "AssessRequest",
+          "then": {
+            "state": "Assessed"
+          }
+        },
+        {
+          "actor": "support-bot",
+          "action": "ProposeRefund",
+          "then": {
+            "state": "AwaitingApproval"
+          }
+        },
+        {
+          "actor": "support-bot",
+          "action": "ApproveRefund",
+          "then": {
+            "refused": "ROLE_DENIED"
+          }
+        }
+      ]
+    },
+    {
+      "id": "timer-escalates",
+      "title": "Nobody decides in time, the timer escalates and a supervisor resolves it",
+      "steps": [
+        {
+          "actor": "support-bot",
+          "action": "AssessRequest",
+          "then": {
+            "state": "Assessed"
+          }
+        },
+        {
+          "actor": "support-bot",
+          "action": "ProposeRefund",
+          "then": {
+            "state": "AwaitingApproval"
+          }
+        },
+        {
+          "actor": "sla-clock",
+          "action": "EscalateStale",
+          "then": {
+            "state": "WithSupervisor"
+          }
+        },
+        {
+          "actor": "supervisor-on-shift",
+          "action": "ResolveEscalation",
+          "then": {
+            "state": "Approved"
+          }
+        }
+      ]
+    },
+    {
+      "id": "paused-agent-is-stopped",
+      "title": "A paused agent is refused at once (its kill switch)",
+      "steps": [
+        {
+          "actor": "support-bot-paused",
+          "action": "AssessRequest",
+          "then": {
+            "refused": "ACTOR_REVOKED"
+          }
+        }
+      ]
+    },
+    {
+      "id": "off-shift-cannot-approve",
+      "title": "A supervisor off shift cannot approve",
+      "steps": [
+        {
+          "actor": "support-bot",
+          "action": "AssessRequest",
+          "then": {
+            "state": "Assessed"
+          }
+        },
+        {
+          "actor": "support-bot",
+          "action": "ProposeRefund",
+          "then": {
+            "state": "AwaitingApproval"
+          }
+        },
+        {
+          "actor": "supervisor-off-shift",
+          "action": "ApproveRefund",
+          "then": {
+            "refused": "ASSIGNMENT_DENIED"
+          }
+        }
+      ]
+    },
+    {
+      "id": "payout-fails-then-retried",
+      "title": "The payment system reports a failure and the supervisor retries",
+      "steps": [
+        {
+          "actor": "support-bot",
+          "action": "AssessRequest",
+          "then": {
+            "state": "Assessed"
+          }
+        },
+        {
+          "actor": "support-bot",
+          "action": "ProposeRefund",
+          "then": {
+            "state": "AwaitingApproval"
+          }
+        },
+        {
+          "actor": "supervisor-on-shift",
+          "action": "ApproveRefund",
+          "then": {
+            "state": "Approved"
+          }
+        },
+        {
+          "actor": "payment-gateway",
+          "action": "FailPayout",
+          "then": {
+            "state": "PayoutFailed"
+          }
+        },
+        {
+          "actor": "supervisor-off-shift",
+          "action": "RetryPayout",
+          "then": {
+            "state": "Approved"
+          }
+        },
+        {
+          "actor": "payment-gateway",
+          "action": "ConfirmPayout",
+          "then": {
+            "state": "Paid"
+          }
+        }
+      ]
+    },
+    {
+      "id": "nobody-types-paid",
+      "title": "A supervisor cannot mark a refund paid by hand",
+      "steps": [
+        {
+          "actor": "support-bot",
+          "action": "AssessRequest",
+          "then": {
+            "state": "Assessed"
+          }
+        },
+        {
+          "actor": "support-bot",
+          "action": "ProposeRefund",
+          "then": {
+            "state": "AwaitingApproval"
+          }
+        },
+        {
+          "actor": "supervisor-on-shift",
+          "action": "ApproveRefund",
+          "then": {
+            "state": "Approved"
+          }
+        },
+        {
+          "actor": "supervisor-on-shift",
+          "action": "ConfirmPayout",
+          "then": {
+            "refused": "ROLE_DENIED"
+          }
+        }
+      ]
+    }
+  ]
+}

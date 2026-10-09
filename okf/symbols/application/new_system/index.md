@@ -3,6 +3,7 @@
 # Constants
 
 * [application.new_system.FIELD](FIELD.md) - Constant `FIELD` in `application/new_system`.
+* [application.new_system.KIND_LISTS](KIND_LISTS.md) - Constant `KIND_LISTS` in `application/new_system`.
 * [application.new_system.LINE](LINE.md) - Constant `LINE` in `application/new_system`.
 * [application.new_system.LIST](LIST.md) - Constant `LIST` in `application/new_system`.
 * [application.new_system.MAX_LINES](MAX_LINES.md) - Constant `MAX_LINES` in `application/new_system`.

@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/new_system.py#LIST
   title: application/new_system.py
   hash_method: ast-v2
-  sha256: 13f82bfcd4c3f39fd4252076c3597ff379b49c70909ed9fcfa423af258356139
-notes_baseline: 37c7be597f77d55bfe30a4bcc0526b31ef8172d075cf68e271bf2ef0c337d39e
+  sha256: 8199ba2c5e16e597d20079a9e783bc2730bfa37d12bc0e4e3a9af8ca134f0050
+notes_baseline: 10e1732d91cda9070f30c72b4279fc98e70cd4f6ba798aee5332eaea46969233
 ---
 
 # application.new_system.LIST
@@ -25,7 +25,7 @@ notes_baseline: 37c7be597f77d55bfe30a4bcc0526b31ef8172d075cf68e271bf2ef0c337d39e
 |---|---|
 | Kind | constant |
 | Module | [`application/new_system`](/modules/application/new_system.md) |
-| Signature | `LIST = re.compile('^\\s*(actions\|roles)\\s*:\\s*(.*)$', re.IGNORECASE)` |
+| Signature | `LIST = re.compile('^\\s*(actions\|roles\|people\|agents\|timers\|systems)\\s*:\\s*(.*)$', re.IGNORECASE)` |
 | Code | `repo://src/eija_studio/application/new_system.py#LIST` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 

@@ -71,5 +71,5 @@ _No curated notes yet._
 ## Referenced by
 
 * [ADR-0202: Grow the class diagram in chat](/adrs/0202-grow-the-class-diagram-in-chat.md) - ADR-0201 let a system started from a sketch grow its state machine round after round in chat.
-* [ADR-0203: Describe your app, and what's missing](/adrs/0203-describe-your-app-and-whats-missing.md) - Until now a new system started from three sketch lines, a template or a UML file (ADR-0185, ADR-0190), and then grew in chat (ADR-0201, ADR-0202).
+* [ADR-0216: Describe your app, and what's missing](/adrs/0216-describe-your-app-and-whats-missing.md) - Until now a new system started from three sketch lines, a template or a UML file (ADR-0185, ADR-0190), and then grew in chat (ADR-0201, ADR-0202).
 <!-- okf:generated:end links -->

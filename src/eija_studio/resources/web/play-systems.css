@@ -46,7 +46,7 @@
 .systems-import{margin-top:6px}
 .systems-import details{margin-top:4px}
 .systems-import li{margin:2px 0}
-/* Describe your app (ADR-0203) */
+/* Describe your app (ADR-0216) */
 .systems-describe-box{display:flex;flex-direction:column;gap:4px}
 .systems-describe-box textarea{font:inherit;font-size:.95rem;min-height:5.5em;resize:vertical}
 .systems-describe-box p{margin:0}

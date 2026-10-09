@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/play_systems.py
   title: interfaces/play_systems.py
   hash_method: ast-api-v1
-  sha256: acf0afa4d54c5dc968bef479ef700b0f5e07e7c92c6cd30299a2beaffa31ff10
-notes_baseline: e302bd08a7c12f3c303b5087b45314ec6e7ad3f090dd0aee3d30307b544bf7a0
+  sha256: 60c1968e35c7269ececf79af1b4405a0ef0494f174f2f885c0b2a54acec0c842
+notes_baseline: 879517ab5d79655ae6b5d5ca4951490734e975e0c9139e59b892227fa6a28623
 ---
 
 # interfaces.play_systems
@@ -61,7 +61,7 @@ _No curated notes yet._
 ## Imports
 
 * [application.data_steps](/modules/application/data_steps.md) - Data-model steps in a chat plan (ADR-0202): add an attribute to a class, remove one, or make one required or optional.
-* [application.describe_system](/modules/application/describe_system.md) - Describe your app (ADR-0203): a new system from one description, like starting an app in Lovable or Replit.
+* [application.describe_system](/modules/application/describe_system.md) - Describe your app (ADR-0216): a new system from one description, like starting an app in Lovable or Replit.
 * [application.new_system](/modules/application/new_system.md) - Start a new system (ADR-0185): the pack documents for a system started from a sketch or copied from a template.
 * [application.plan](/modules/application/plan.md) - Plan mode for the PlayIDE chat (ADR-0156): an AI proposes a change as numbered typed steps; the person accepts or rejects each one and sees what the accepted o…
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).

@@ -237,7 +237,7 @@ button.link{border:0;background:transparent;padding:1px 4px;color:var(--accent);
 .law-run{margin:4px 0 0;padding-left:20px;font-size:.84rem}
 .law-tools{display:flex;gap:6px;margin-top:8px}
 .law-tools button{padding:3px 10px;font-size:.8rem}
-/* What's missing (ADR-0203): every view's row, ready or what it still lacks */
+/* What's missing (ADR-0216): every view's row, ready or what it still lacks */
 .explorer{grid-template-rows:minmax(0,max-content) minmax(0,max-content) minmax(36%,1fr)}
 .explorer .missing{padding:10px 12px;border-bottom:1px solid var(--line);max-height:34vh;overflow:auto}
 .missing .pane-title{margin-bottom:2px}
@@ -253,3 +253,14 @@ button.link{border:0;background:transparent;padding:1px 4px;color:var(--accent);
 .missing-items li{display:flex;flex-direction:column}
 .missing-items li.problem>span:first-child{color:var(--bad)}
 .missing-items .fix{font-size:.76rem}
+.sim-kinds[hidden]{display:none}
+.sim-kinds{list-style:none;margin:6px 0 0;padding:0;font-size:.8rem;display:grid;gap:3px}
+.sim-kinds li{padding:2px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-left:3px solid var(--line);border-radius:3px}
+.sim-kinds .kind-agent{border-color:#6b46c1}.sim-kinds .kind-timer{border-color:#b7791f}.sim-kinds .kind-system{border-color:#4a5568}
+/* In the docked panel the kinds take a full-width row above "Worth a look", only when shown, so other systems keep their layout. */
+.dock-body section.sim:has(>#sim-kinds:not([hidden]))>#sim-kinds{grid-column:1/-1;grid-row:4}
+.dock-body section.sim:has(>#sim-kinds:not([hidden]))>h3:nth-of-type(1){grid-area:5/1}
+.dock-body section.sim:has(>#sim-kinds:not([hidden]))>h3:nth-of-type(2){grid-area:5/2}
+.dock-body section.sim:has(>#sim-kinds:not([hidden]))>#sim-findings{grid-area:6/1}
+.dock-body section.sim:has(>#sim-kinds:not([hidden]))>#sim-log{grid-area:6/2}
+.dock-body section.sim:has(>#sim-kinds:not([hidden]))>#sim-limits{grid-row:7}

@@ -5,12 +5,14 @@
 * [application.data_steps.AddAttribute](AddAttribute.md) - `class AddAttribute(Contract)` in `application/data_steps`.
 * [application.data_steps.RemoveAttribute](RemoveAttribute.md) - `class RemoveAttribute(Contract)` in `application/data_steps`.
 * [application.data_steps.SetRequired](SetRequired.md) - `class SetRequired(Contract)` in `application/data_steps`.
+* [application.data_steps.SetRoleKind](SetRoleKind.md) - `class SetRoleKind(Contract)` in `application/data_steps`.
 
 # Constants
 
 * [application.data_steps.DATA_EDITS](DATA_EDITS.md) - Constant `DATA_EDITS` in `application/data_steps`.
 * [application.data_steps.DATA_STEP_KINDS](DATA_STEP_KINDS.md) - Constant `DATA_STEP_KINDS` in `application/data_steps`.
 * [application.data_steps.FIXED](FIXED.md) - Constant `FIXED` in `application/data_steps`.
+* [application.data_steps.KIND_NAMES](KIND_NAMES.md) - Constant `KIND_NAMES` in `application/data_steps`.
 
 # Functions
 
@@ -21,6 +23,7 @@
 * [application.data_steps.is_data](is_data.md) - `def is_data(step: Step) -> bool` in `application/data_steps`.
 * [application.data_steps.parse_step](parse_step.md) - A plan step: a data-model step, or else a kernel transaction (`parse_transaction`).
 * [application.data_steps.split](split.md) - The kernel transactions and the data-model steps, each in plan order.
+* [application.data_steps.with_kinds](with_kinds.md) - `pack` with the roles' kinds these steps set, a draft held in memory; `PLAN_KIND_FIXED` on a system with a law about kinds, and `EDIT_INVALID` for a role the pack does not declare.
 
 # Type Aliases
 

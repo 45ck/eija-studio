@@ -93,7 +93,7 @@ SCENARIOS: tuple[Scenario, ...] = (
              "catch the step that deletes late returns with a prediction and the broken sequence diagram, then prove it "
              "with conformance, simulation, the laws and the scenario tests. Verify, approve and apply wait on #80."),
     Scenario("playide_greenfield", "Greenfield in PlayIDE: describe an app, get every view, then build it in chat and on the canvas", "recorded", (),
-             "A coffee shop described in one box becomes a whole system (ADR-0203): state machine, class diagram with its "
+             "A coffee shop described in one box becomes a whole system (ADR-0216): state machine, class diagram with its "
              "fields, use cases, screens, tests recorded by the kernel and their sequence diagrams; no laws, which are the "
              "person's. Five rounds mix offline chat asks with a state drawn on the canvas, the form's fields (ADR-0202), a "
              "rename and a new role, and going back on a decision (ADR-0201), with What's missing across every view after "

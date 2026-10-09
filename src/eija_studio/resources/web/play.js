@@ -17,6 +17,12 @@
   const earned = [];
   let screens = null, screensEdited = false, useCase = null, checkTimer = 0, problems = [], useCaseList = [];
   const base = {}; // each cell's own style and label, so overlays can be cleared
+  // The kind of actor holding each role (ADR-0210). UML draws all four as actors; a person keeps the stick figure, the
+  // others are drawn as an actor classifier with their keyword, as UML allows.
+  let roleKinds = {}, savedKinds = {};
+  const ACTOR_KINDS = { human: "person", agent: "AI agent", timer: "timer", system: "external system" };
+  const ACTOR_GROUPS = { human: "People", agent: "AI agents", timer: "Timers", system: "External systems" };
+  const roleKind = (role) => roleKinds[role] || "human";
   const hooks = { redraw: [], inspect: [], laws: [], tab: [], changeSelect: [], edit: [] }; // the run bar (play-run.js) redraws its marks and adds inspector tools; play-laws.js and play-access.js draw their tabs
   // the Changes view (play-diff.js, ADR-0176) closes when another tab is shown and answers current() while open;
   // edit hears every undoable edit (ADR-0198)
@@ -267,7 +273,8 @@
 
   function transition(id) { return model.transitions.find((t) => t.id === id); }
 
-  const current = () => (hooks.diffGraph && hooks.diffGraph()) || ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: componentGraph, review: PlayReview.graph(),
+  const current = () => (hooks.diffGraph && hooks.diffGraph()) || ({ states: graph, classes: classGraph, usecases: useCaseGraph, review: PlayReview.graph(),
+    components: (hooks.componentGraph && hooks.componentGraph()) || componentGraph, // the System lens (play-landscape.js, ADR-0203)
     sequences: hooks.sequenceGraph && hooks.sequenceGraph() })[tab];
   const PANELS = { states: "canvas", sequences: "sequences", classes: "class-canvas", usecases: "usecase-canvas", screens: "screens", components: "component-canvas", laws: "laws", tests: "tests", review: "review", access: "access-panel" };
   const HINTS = {
@@ -277,7 +284,7 @@
     usecases: "Select a use case to inspect it. Double-click one to design its screen.",
     screens: "Design each use case's screen. The design check runs as you edit; Build & run uses these screens.",
     components: "The built app's components, read from its generated files: every line is an import, a route or a file read.",
-    laws: "The pack's laws: what this model must never do, whatever is drawn. Each is proved over every run the kernel allows, by every kind of actor.",
+    laws: "The pack's laws: what this model must never do, whatever is drawn. Each is proved over every run the kernel allows, by every class of actor (each role, active or not, assigned or not).",
     tests: "The pack's test cases: scenarios of who does what and what must happen, each step run by the kernel on the model shown.",
     access: "Who can do what, from each state. Every cell is tried in the kernel with the pack's fixture actors; a previewed plan's changes are flagged.",
     review: "Review the change shown against the model in force: look at each change, predict what the kernel does, then decide. Nothing is approved from here.",
@@ -306,6 +313,10 @@
     }
     if (id.startsWith("enum:")) {
       box.append(el("h3", `«enumeration» ${id.slice(5)}`), el("p", `The states a ${data.record} can be in: ${model.states.join(", ")}. Read from the state machine, so a state you draw there appears here.`, { class: "muted" }));
+      return;
+    }
+    if (id.startsWith("system:") && window.PlayLandscape) { // the System lens of the Components tab (ADR-0203)
+      window.PlayLandscape.inspect(id.slice(7), box);
       return;
     }
     if (id.startsWith("component:")) {
@@ -530,6 +541,9 @@
     return { cases: [...u.cases].sort((a, b) => rank(a) - rank(b)), actors: u.actors, links: u.links };
   }
 
+  const ACTOR_LOOK = { human: {}, agent: { fill: "#f3edff", stroke: "#6b46c1" }, timer: { fill: "#fff7e6", stroke: "#b7791f" },
+    system: { fill: "#eef2f6", stroke: "#4a5568" } };
+
   function drawUseCases() {
     if (useCaseGraph) return;
     const { Graph, InternalEvent } = maxgraph;
@@ -562,10 +576,14 @@
         const mine = cases.map((t, j) => [t, j]).filter(([t]) => t.role === role);
         const near = mine.length ? mine : cases.map((t, j) => [t, j]).filter(([t]) => t.was_role === role); // an actor left with only a moved line
         const y = near.reduce((sum, [, j]) => sum + rowY(j), 0) / Math.max(1, near.length) - 8;
-        const left = i % 2 === 0;
-        const actor = useCaseGraph.insertVertex({ parent, id: "role:" + role, value: role, position: [left ? 90 : boundary.x + boundary.w + 120, y],
-          size: [36, 64], style: { ...font, shape: "actor", fillColor: "#ffffff", strokeColor: "#1b2130", verticalLabelPosition: "bottom",
-            verticalAlign: "top", fontSize: 13, ...changeLook(actorStatus[role], "actor") } });
+        const left = i % 2 === 0, kind = roleKind(role), look = ACTOR_LOOK[kind];
+        const actor = kind === "human"
+          ? useCaseGraph.insertVertex({ parent, id: "role:" + role, value: role, position: [left ? 90 : boundary.x + boundary.w + 120, y],
+            size: [36, 64], style: { ...font, shape: "actor", fillColor: "#ffffff", strokeColor: "#1b2130", verticalLabelPosition: "bottom",
+              verticalAlign: "top", fontSize: 13, ...changeLook(actorStatus[role], "actor") } })
+          : useCaseGraph.insertVertex({ parent, id: "role:" + role, value: `«${kind}»\n${role}`, position: [left ? 40 : boundary.x + boundary.w + 70, y + 8],
+            size: [136, 48], style: { ...font, shape: "rectangle", rounded: kind === "agent", whiteSpace: "wrap", fillColor: look.fill,
+              strokeColor: look.stroke, fontSize: 12, ...changeLook(actorStatus[role], "actor") } });
         for (const link of shape.links.filter((l) => l.role === role)) {
           useCaseGraph.insertEdge({ parent, source: actor, target: cells[link.case], style: { strokeColor: "#4a5568", endArrow: "none", ...changeLook(link.status, "line") } });
         }
@@ -820,6 +838,7 @@
     if (!plan || !plan.result || !plan.result.legal) return;
     plan.previewing = true;
     data = plan.result.data || savedData; // the class diagram as the plan's data-model steps leave it (ADR-0202)
+    roleKinds = plan.result.kinds || savedKinds; // and who holds each role, as its kind steps leave it (#156)
     redrawAll(plan.result.candidate);
     highlight(plan.result.diff);
     for (const which of Object.keys(DIAGRAMS)) markRipple(which);
@@ -832,6 +851,7 @@
     if (!plan || !plan.previewing) return;
     plan.previewing = false;
     data = savedData;
+    roleKinds = savedKinds;
     redrawAll(baseModel);
     for (const which of Object.keys(DIAGRAMS)) markRipple(which);
     $("plan-banner").hidden = true;
@@ -1143,6 +1163,15 @@
 
   const DATA_STEPS = ["add_attribute", "remove_attribute", "set_required"];
 
+  // A step that says who holds a role (#156) is shown on the use case diagram, on that actor.
+  function showRoleStep(i) {
+    showTab("usecases");
+    const cell = useCaseGraph && useCaseGraph.getDataModel().getCell("role:" + plan.steps[i].transaction.role);
+    if (cell) { useCaseGraph.setSelectionCell(cell); useCaseGraph.scrollCellToVisible(cell, true); }
+    $("inspector").prepend(stepNote(i));
+    if (plan.result) renderPlan(plan.result);
+  }
+
   // A data-model step is shown on the class diagram, on the class it changes (ADR-0202).
   function showClassStep(i) {
     const step = plan.steps[i];
@@ -1158,6 +1187,7 @@
     const step = plan.steps[i];
     if (!plan.previewing && plan.result && plan.result.legal) enterPreview();
     if (DATA_STEPS.includes(step.transaction.kind)) { showClassStep(i); return; }
+    if (step.transaction.kind === "set_role_kind") { showRoleStep(i); return; }
     if (tab !== "states") showTab("states");
     const id = cellOf(step.transaction);
     let cell = graph.getDataModel().getCell(id);
@@ -2015,7 +2045,7 @@
   }
 
   function step(entry) {
-    const parts = [entry.actor, entry.outcome === "CREATED" ? `created ${entry.record}` : `${entry.action} on ${entry.record}`];
+    const kind = roleKind(entry.role), parts = [entry.actor + (kind === "human" ? "" : ` (${ACTOR_KINDS[kind]})`), entry.outcome === "CREATED" ? `created ${entry.record}` : `${entry.action} on ${entry.record}`];
     if (entry.outcome === "COMMITTED") parts.push(`→ ${entry.to}`);
     if (entry.outcome === "REFUSED") parts.push(`refused: ${entry.code}`);
     return parts.join(" ");
@@ -2028,6 +2058,7 @@
       el("strong", String(result.records)), document.createTextNode(" records: "), el("strong", String(result.committed)),
       document.createTextNode(" went through, "), el("strong", String(result.refused)), document.createTextNode(" refused by the kernel."));
     $("sim-codes").replaceChildren(...Object.entries(result.codes).map(([code, n]) => el("span", `${code} ${n}`, { class: "chip" })));
+    showKinds(result.by_kind || {});
     $("sim-findings").replaceChildren(...(result.findings.length ? result.findings.map((f) => {
       const li = el("li", undefined, { class: f.severity }), b = el("button", f.text, { type: "button" });
       b.addEventListener("click", () => select(f.element, true));
@@ -2041,6 +2072,21 @@
     }));
     $("sim-limits").textContent = `Seed ${result.seed}, ${result.steps} steps. ` + result.limits.join(" ");
     paint(result);
+  }
+
+  // Who acted, by kind of actor (ADR-0210): what the AI agents, timers and external systems tried and what the kernel
+  // said, beside the people. Shown only when the system has an actor that is not a person.
+  function showKinds(byKind) {
+    const kinds = Object.keys(byKind), box = $("sim-kinds");
+    box.hidden = !kinds.some((k) => k !== "human");
+    box.replaceChildren(...(box.hidden ? [] : kinds.map((kind) => {
+      const k = byKind[kind], row = el("li", undefined, { class: "kind-" + kind });
+      const codes = Object.entries(k.codes).slice(0, 2).map(([code, n]) => `${code} ${n}`).join(", ");
+      row.title = Object.entries(k.codes).map(([code, n]) => `${code} ${n}`).join(", ");
+      row.append(el("strong", ACTOR_GROUPS[kind]), el("span", ` (${k.roles.join(", ")}) `, { class: "muted" }),
+        document.createTextNode(`${k.attempts} tries · ${k.committed} went through · ${k.refused} refused` + (codes ? `: ${codes}` : "")));
+      return row;
+    })));
   }
 
   function replay() {
@@ -2208,25 +2254,34 @@
 
   // Every snapshot is written as it is made, so a crash loses nothing. Storage can be full or blocked: the page still
   // works, and the status bar says the work is not kept.
+  // The status bar is the one place that states the save state: the system's own save (play-systems.js, which
+  // dispatches playide:savestate) and the browser's kept-edits note, joined with a separator.
+  let browserNote = { bad: false, text: "", title: "" };
+  function renderSaveStatus() {
+    const status = $("status-saved");
+    if (!status) return;
+    const system = $("system-saved")?.textContent || "";
+    status.textContent = [system, browserNote.text].filter(Boolean).join(" · ");
+    status.className = browserNote.bad ? "saved bad" : "saved";
+    status.title = [browserNote.title, system && "Save your work on this system with Save (Ctrl+S)."].filter(Boolean).join(" ");
+  }
+  document.addEventListener("playide:savestate", renderSaveStatus);
+
   function persist() {
     if (REVIEW_VIEW || !packInfo) return;
     const now = edits.stack[edits.at], empty = !now || (!now.doc.plan && !now.doc.screens); // nothing to keep
-    const status = $("status-saved");
     try {
-      if (empty) { localStorage.removeItem(draftKey()); status.textContent = ""; return; }
+      if (empty) { localStorage.removeItem(draftKey()); browserNote = { bad: false, text: "", title: "" }; renderSaveStatus(); return; }
       const from = Math.max(0, edits.at - STORED), keep = edits.stack.slice(from, edits.at + STORED + 1);
       const draft = { v: 1, model: modelPrint(), saved: Date.now(), at: edits.at - from, stack: keep.map(({ label, doc, at }) => ({ label, doc, at })) };
       try { localStorage.setItem(draftKey(), JSON.stringify(draft)); } catch {
         localStorage.setItem(draftKey(), JSON.stringify({ ...draft, at: 0, stack: [keep[edits.at - from]] })); // the current work, without its history
       }
-      status.className = "saved";
-      status.textContent = "Saved in this browser";
-      status.title = `Your plan and screen edits are kept in this browser as you work (${new Date(draft.saved).toLocaleTimeString()}). Nothing is applied.`;
+      browserNote = { bad: false, text: "Edits kept in this browser", title: `Your plan and screen edits are kept in this browser as you work (${new Date(draft.saved).toLocaleTimeString()}). Nothing is applied.` };
     } catch {
-      status.className = "saved bad";
-      status.textContent = "Not saved: browser storage is unavailable";
-      status.title = "Undo still works, but a reload or crash would lose these edits.";
+      browserNote = { bad: true, text: "Not kept: browser storage is unavailable", title: "Undo still works, but a reload or crash would lose these edits." };
     }
+    renderSaveStatus();
   }
 
   // On load: the draft this browser kept for this model, if any, comes back with its history. The server checks the
@@ -2289,6 +2344,7 @@
     $("model-name").textContent = status.pack.name + (caseId ? " · change case" : "");
     packInfo = status.pack;
     data = savedData = (await api("/api/play/data")).data;
+    roleKinds = savedKinds = Object.fromEntries((await api("/api/play/roles")).roles.map((r) => [r.id, r.kind]));
     await loadScreens(null);
     outline();
     draw(model);
@@ -2356,7 +2412,7 @@
   const changeLook = (status, part) => (window.PlayDiff && shownChange ? window.PlayDiff.look(status, part) : {});
 
   window.PlayIDE = {
-    api, el, hooks, about, viewKey, label, restyle, clearSim, select, showTab, fit, importPlan,
+    api, el, hooks, about, roleKind, kinds: ACTOR_KINDS, viewKey, label, restyle, clearSim, select, showTab, fit, importPlan,
     graph: () => graph, tab: () => tab, model: () => model, selected: () => selected, pack: () => packInfo, base: () => baseModel,
     direction: () => direction || "LR", // the state machine's layout, which the Changes view follows
     planned: () => (plan && plan.result && plan.result.legal ? accepted() : null), // the change the Changes view draws (ADR-0176)
@@ -2374,7 +2430,7 @@
     // What the Changes view says about the change: who made each accepted step, and the ripple for exactly these steps.
     steps: () => (plan && plan.result && plan.result.legal ? plan.steps.filter((_, i) => plan.accepted[i]).map((x) => ({ author: x.author, transaction: x.transaction })) : []),
     ripple: () => (ripple && !ripple.error && ripple.key === rippleKey() ? ripple : null), diagramNames: RIPPLE,
-    setChanges, diagram: (key) => ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: componentGraph, sequences: hooks.sequenceGraph && hooks.sequenceGraph() })[key],
+    setChanges, diagram: (key) => ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: (hooks.componentGraph && hooks.componentGraph()) || componentGraph, sequences: hooks.sequenceGraph && hooks.sequenceGraph() })[key],
     // Undo, redo and the edited document (ADR-0198): document() is what a save writes; restore(doc, label) opens one as
     // an undoable edit, checked by the server like any other.
     undo, redo, document: documentNow, history: () => ({ at: edits.at, labels: edits.stack.map((e) => e.label) }),

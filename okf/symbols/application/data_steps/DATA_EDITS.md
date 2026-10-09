@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/data_steps.py#DATA_EDITS
   title: application/data_steps.py
   hash_method: ast-v2
-  sha256: 09275356c73393ddc029c606f3e3c627a833076f59966795d1914c30c6c4c852
-notes_baseline: df927ed229cb91af33e34a0f987898404c84853dfafc59575e0d34985277f9e5
+  sha256: 6ca902b5438957dd5d32b4189e4963fd6b7d6aafda22684ed1e2ee0619801434
+notes_baseline: 2b079da3193aa1a1bc4cac3b71748ab7bde884cebcafab6e6a75c08688685457
 ---
 
 # application.data_steps.DATA_EDITS
@@ -25,7 +25,7 @@ notes_baseline: df927ed229cb91af33e34a0f987898404c84853dfafc59575e0d34985277f9e5
 |---|---|
 | Kind | constant |
 | Module | [`application/data_steps`](/modules/application/data_steps.md) |
-| Signature | `DATA_EDITS = (AddAttribute, RemoveAttribute, SetRequired)` |
+| Signature | `DATA_EDITS = (AddAttribute, RemoveAttribute, SetRequired, SetRoleKind)` |
 | Code | `repo://src/eija_studio/application/data_steps.py#DATA_EDITS` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
@@ -44,6 +44,7 @@ _No curated notes yet._
 * [application.data_steps.AddAttribute](/symbols/application/data_steps/AddAttribute.md) - `class AddAttribute(Contract)` in `application/data_steps`.
 * [application.data_steps.RemoveAttribute](/symbols/application/data_steps/RemoveAttribute.md) - `class RemoveAttribute(Contract)` in `application/data_steps`.
 * [application.data_steps.SetRequired](/symbols/application/data_steps/SetRequired.md) - `class SetRequired(Contract)` in `application/data_steps`.
+* [application.data_steps.SetRoleKind](/symbols/application/data_steps/SetRoleKind.md) - `class SetRoleKind(Contract)` in `application/data_steps`.
 
 ## Referenced by
 

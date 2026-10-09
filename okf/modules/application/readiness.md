@@ -1,7 +1,7 @@
 ---
 type: Module
 title: application.readiness
-description: 'What''s missing (ADR-0203): one list across every model and view of what is not ready yet, so a system built in chat or on the canvas says what it still lacks instead of the person having to look in each tab.'
+description: 'What''s missing (ADR-0216): one list across every model and view of what is not ready yet, so a system built in chat or on the canvas says what it still lacks instead of the person having to look in each tab.'
 resource: repo://src/eija_studio/application/readiness.py
 tags:
 - module
@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/readiness.py
   title: application/readiness.py
   hash_method: ast-api-v1
-  sha256: bf30465bf956c43af4ea293ee4ac710d5445eb5b493f206bc160ab04383ea039
-notes_baseline: 59ca808b0bdd00420553f0dd38971546a3b0d4afb35682b9f26b4568736bc431
+  sha256: 2f348c1537ac572c5facf785d93407635559e0cc4a1870b3dd64f27c6e59268f
+notes_baseline: 24751aba0a064cb27c5a607f7e13fc55a66ec7b8a3a991fcb5c8471df1670827
 ---
 
 # application.readiness
@@ -29,7 +29,7 @@ notes_baseline: 59ca808b0bdd00420553f0dd38971546a3b0d4afb35682b9f26b4568736bc431
 ## Module docstring
 
 ~~~text
-What's missing (ADR-0203): one list across every model and view of what is not ready yet, so a system built in
+What's missing (ADR-0216): one list across every model and view of what is not ready yet, so a system built in
 chat or on the canvas says what it still lacks instead of the person having to look in each tab.
 
 Each view gets a row: ready, or the things it is missing, each in words with where to fix it. Nothing here decides

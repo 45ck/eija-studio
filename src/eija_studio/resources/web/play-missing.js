@@ -1,4 +1,4 @@
-// What's missing (ADR-0203): one list across every model and view of what the system shown still lacks, so whether
+// What's missing (ADR-0216): one list across every model and view of what the system shown still lacks, so whether
 // you built it in chat, on the canvas or both, it says what is not ready yet. The server works it out from checks the
 // IDE already runs (the screens' design check, the tests and laws run by the kernel, reachability, who takes what);
 // the page only shows it. It reads the plan's accepted steps when the policy allows them, previewed or not, since

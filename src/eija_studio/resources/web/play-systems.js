@@ -22,6 +22,7 @@
     if (dirty) notice = ""; // a reopening note lasts until the next change
     state.textContent = dirty ? "Unsaved changes" : notice || (savedAt ? `Saved ${when(savedAt)}` : "");
     state.dataset.dirty = String(dirty);
+    document.dispatchEvent(new CustomEvent("playide:savestate"));
   }
 
   async function save() {
@@ -33,6 +34,7 @@
       savedAt = result.saved;
     } catch (error) {
       $("system-saved").textContent = `Not saved (${error.code || "ERROR"}): ${error.message}`;
+      document.dispatchEvent(new CustomEvent("playide:savestate"));
       return;
     }
     setSaveState();
@@ -107,7 +109,7 @@
     }
     list.children[1].after(sketch); // the sketch sits under its own option
     list.children[3].after(umlBox()); // and the file under "From a UML file"
-    $("systems-sketch-help").textContent = listing.sketch_help + ". Optional: actions: A, B and roles: C, for ones you will draw later.";
+    $("systems-sketch-help").textContent = listing.sketch_help + ". Optional: actions: A, B and roles: C, for ones you will draw later; agents:, timers: or systems: for roles held by an AI agent, a timer or an external system.";
     showChoice();
   }
 
@@ -116,7 +118,10 @@
     box.hidden = !describing;
     $("systems-templates").classList.toggle("compact", describing); // the description is the start; the rest are one line each
     const form = $("systems-form"), verdict = $("systems-check"), actions = form.querySelector(".systems-actions");
-    if (describing) $("systems-name").after(verdict, actions); // what you will get sits right under what you typed, like Lovable
+    // What you will get, or why the kernel refuses it, sits right under what you typed, so it is never below the fold (#138)
+    const chosen = form.querySelector(`input[name="system-template"][value="${choice}"]`);
+    const under = describing ? $("systems-name") : choice === "blank" ? sketch : choice === "uml" ? umlBox() : chosen && chosen.closest("label");
+    if (under) under.after(verdict, actions);
     else form.append(verdict, actions);
     $("systems-name").placeholder = choice === "describe" ? "Named for you if you leave it empty" : "Support desk";
     sketch.hidden = choice !== "blank";
@@ -185,18 +190,21 @@
       }
       const s = result.system;
       if (result.described) { verdict.append(described(s, result.described)); return; }
-      verdict.append(P.el("p", `Checked: ${s.states.length} states (starts in ${s.initial}), ${s.transitions} transitions, roles ${s.roles.join(", ")}${s.record ? `, record class ${s.record}` : ""}. It will be saved as ${s.id}.`));
+      verdict.append(P.el("p", `Checked: ${s.states.length} states (starts in ${s.initial}), ${s.transitions} transitions, roles ${roles(s).join(", ")}${s.record ? `, record class ${s.record}` : ""}. It will be saved as ${s.id}.`));
       if (result.import) verdict.append(importReport(result.import));
     }, 250);
   }
 
   // What a description becomes, view by view, before anything is created; and what the offline reader assumed.
+  // A role held by an AI agent, a timer or an external system says so, as the use case diagram's actor does (ADR-0210)
+  const roles = (s) => s.roles.map((r) => (s.kinds && s.kinds[r] ? `${r} «${s.kinds[r]}»` : r));
+
   function described(s, read) {
     const box = P.el("div", undefined, { class: "systems-described", id: "systems-described" });
     box.append(P.el("p", `Checked by the kernel. ${s.name} will be saved as ${s.id}:`));
     const views = [["State machine", `${s.states.length} states from ${s.initial}: ${s.states.join(", ")}`],
       ["Class diagram", `${s.record} with ${s.fields.join(", ")}`],
-      ["Use cases", `${s.actions.join(", ")}, by ${s.roles.join(" and ")}`],
+      ["Use cases", `${s.actions.join(", ")}, by ${roles(s).join(" and ")}`],
       ["Screens", `one per use case, with ${s.record}'s fields`],
       ["Tests and sequences", s.tests.length ? `${s.tests.length} recorded by the kernel: ${s.tests.join("; ")}` : "none yet"],
       ["Laws", "none yet: laws are yours to write"]];

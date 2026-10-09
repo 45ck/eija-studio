@@ -5,6 +5,10 @@ Building such a system in chat (ADR-0201) also means growing that form, so a pla
 well as the state machine. These steps are not kernel transactions: the data model is not governed by the policy or
 the laws, and has its own contract (`domain.data.DataModel`), which checks every result here. A step changes a draft
 held in memory (`domain.pack.hold`); nothing is written, and a shipped pack's data model stays its owner's.
+
+A step may also say what kind of actor holds a role (#156, ADR-0210): a person, an AI agent, a timer or an external
+system. Kinds change what a law about kinds means, so the step is refused on a system with such a law: a plan cannot
+pass a law by renaming who holds a role. On any other system kinds change no rule, only how the role is drawn and run.
 """
 from __future__ import annotations
 
@@ -15,7 +19,8 @@ from pydantic import Field, ValidationError
 
 from eija_studio.domain.data import ATTRIBUTE_NAME, DATA_FILE, NAME, Attribute, DataModel, Entity, data_for, parse_data
 from eija_studio.domain.models import Contract, DomainError
-from eija_studio.domain.pack import Pack, hold
+from eija_studio.domain.laws import KIND_LAWS, RoleKind
+from eija_studio.domain.pack import Pack, PackError, derive, hold
 from eija_studio.domain.transactions import Transaction, parse_transaction
 
 from .new_system import declare
@@ -40,11 +45,17 @@ class SetRequired(Contract):
     required: bool
 
 
-DataStep = Annotated[Union[AddAttribute, RemoveAttribute, SetRequired], Field(discriminator="kind")]  # noqa: UP007
-DATA_STEP_KINDS = ("add_attribute", "remove_attribute", "set_required")
-DataEdit = AddAttribute | RemoveAttribute | SetRequired
+class SetRoleKind(Contract):
+    kind: Literal["set_role_kind"]
+    role: str = Field(pattern=NAME)
+    role_kind: RoleKind
+
+
+DataStep = Annotated[Union[AddAttribute, RemoveAttribute, SetRequired, SetRoleKind], Field(discriminator="kind")]  # noqa: UP007
+DATA_STEP_KINDS = ("add_attribute", "remove_attribute", "set_required", "set_role_kind")
+DataEdit = AddAttribute | RemoveAttribute | SetRequired | SetRoleKind
 Step = Transaction | DataEdit
-FIXED = "This system's data model is its owner's: chat changes the class diagram only on a system you started"
+FIXED = "This system's data model and roles are its owner's: chat changes the class diagram and who holds a role only on a system you started"
 
 
 class _StepDocument(Contract):
@@ -61,7 +72,8 @@ def parse_step(data: Any) -> Step:
         raise DomainError("EDIT_INVALID", "Data-model step fields are invalid", details={"codes": ["EDIT_INVALID"], "refs": []}) from None
 
 
-DATA_EDITS = (AddAttribute, RemoveAttribute, SetRequired)
+DATA_EDITS = (AddAttribute, RemoveAttribute, SetRequired, SetRoleKind)
+KIND_NAMES = {"human": "a person", "agent": "an AI agent", "timer": "a timer", "system": "an external system"}
 
 
 def is_data(step: Step) -> bool:
@@ -98,7 +110,7 @@ def _attribute(entity: dict[str, Any], name: str) -> dict[str, Any]:
     return found
 
 
-def _apply(document: dict[str, Any], step: DataEdit) -> None:
+def _apply(document: dict[str, Any], step: AddAttribute | RemoveAttribute | SetRequired) -> None:
     entity = _entity(document, step.entity)
     if isinstance(step, AddAttribute):
         if any(a["name"].casefold() == step.attribute.name.casefold() for a in entity["attributes"]):
@@ -113,16 +125,43 @@ def _apply(document: dict[str, Any], step: DataEdit) -> None:
 
 def apply_data(data: DataModel | None, steps: Sequence[DataEdit]) -> DataModel | None:
     """`data` with the data-model steps applied in turn, checked by the data model's own contract; `data` when none."""
-    if not steps:
+    edits = [s for s in steps if not isinstance(s, SetRoleKind)]  # a role's kind is the pack's, not the data model's
+    if not edits:
         return data
     if data is None:
         raise _refused("EDIT_INVALID", "This system has no class diagram (data.json) to change", "class:")
     document = data.model_dump(mode="json")
-    for step in steps:
-        _apply(document, step)
+    for edit in edits:
+        _apply(document, edit)
     try:
         return parse_data(document, data.id)
     except DomainError as error:
+        raise DomainError("EDIT_INVALID", error.message, details={"codes": ["EDIT_INVALID"], "refs": []}) from None
+
+
+def _no_kind_law(pack: Pack) -> None:
+    law = next((law for law in pack.laws if isinstance(law, KIND_LAWS)), None)
+    if law is not None:
+        raise _refused("PLAN_KIND_FIXED", f"Law {law.id} is about kinds of actor, so who holds a role is the owner's to "
+                       "change in pack.json, not a plan's", "law:" + law.id)
+
+
+def with_kinds(pack: Pack, steps: Sequence[DataEdit]) -> Pack:
+    """`pack` with the roles' kinds these steps set, a draft held in memory; `PLAN_KIND_FIXED` on a system with a law
+    about kinds, and `EDIT_INVALID` for a role the pack does not declare."""
+    kinds = [s for s in steps if isinstance(s, SetRoleKind)]
+    if not kinds:
+        return pack
+    _no_kind_law(pack)
+    document = pack.model_dump(mode="json", exclude_none=True)
+    for step in kinds:
+        role = next((r for r in document["roles"] if r["id"] == step.role), None)
+        if role is None:
+            raise _refused("EDIT_INVALID", f"This system has no role {step.role}", "role:" + step.role)
+        role["kind"] = step.role_kind
+    try:
+        return derive(pack, document)
+    except PackError as error:
         raise DomainError("EDIT_INVALID", error.message, details={"codes": ["EDIT_INVALID"], "refs": []}) from None
 
 
@@ -135,7 +174,7 @@ def draft_pack(pack: Pack, steps: Sequence[Step], grows: bool) -> Pack:
         raise DomainError("PLAN_DATA_FIXED", FIXED, details={"codes": ["PLAN_DATA_FIXED"], "refs": []})
     if not grows:
         return pack
-    working = declare(pack, transactions)
+    working = with_kinds(declare(pack, transactions), data_steps)
     return hold(working, DATA_FILE, apply_data(data_for(pack), data_steps)) if data_steps else working
 
 
@@ -150,6 +189,8 @@ def describe_data(step: DataEdit) -> str:
         return f"Add attribute {a['name']}: {_type(a)} to {step.entity}" + (", required" if a["required"] else "")
     if isinstance(step, RemoveAttribute):
         return f"Remove attribute {step.name} from {step.entity}"
+    if isinstance(step, SetRoleKind):
+        return f"{step.role} is held by {KIND_NAMES[step.role_kind]}"
     return f"Make {step.entity}.{step.name} {'required' if step.required else 'optional'}"
 
 

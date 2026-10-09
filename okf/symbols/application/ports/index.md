@@ -9,7 +9,7 @@
 * [application.ports.ProviderResult](ProviderResult.md) - `class ProviderResult` in `application/ports`.
 * [application.ports.ReceiptAuthenticator](ReceiptAuthenticator.md) - `class ReceiptAuthenticator(Protocol)` in `application/ports`.
 * [application.ports.Repository](Repository.md) - `class Repository(Protocol)` in `application/ports`.
-* [application.ports.SystemDescriber](SystemDescriber.md) - Turns a description of an app into {name, record, sketch, fields, reading} for "Describe your app" (ADR-0203).
+* [application.ports.SystemDescriber](SystemDescriber.md) - Turns a description of an app into {name, record, sketch, fields, reading} for "Describe your app" (ADR-0216).
 * [application.ports.UnitOfWork](UnitOfWork.md) - The application-owned persistence port: all mutations on it commit together or roll back together.
 
 # Type Aliases

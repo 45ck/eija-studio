@@ -4,6 +4,7 @@
 
 * [adapters.edit_proposals](edit_proposals.md) - Bounded offline request fixture: exact model names and complete phrases, never an LLM.
 * [adapters.identity](identity.md) - Measured release identity, not a proof of correctness or author authenticity.
+* [adapters.plan_data_phrases](plan_data_phrases.md) - The data-model and role-kind phrases of the offline plan proposer (ADR-0202, #156): add a field to a class, remove one, make one required or optional, and say what kind of actor holds a role.
 * [adapters.plan_proposals](plan_proposals.md) - Offline plan proposer for the PlayIDE chat (ADR-0156): a bounded phrase grammar and the pack's modelled meanings, never an LLM.
 * [adapters.receipts](receipts.md) - Local integrity seal.
 * [adapters.repository](repository.md) - Repository analysis and bounded source navigation over captured checkout bytes.
@@ -15,5 +16,5 @@
 * [adapters.repository_javascript](repository_javascript.md) - Crash-isolated JavaScript syntax extraction; reuse the bounded process runner.
 * [adapters.self_facts](self_facts.md) - Syntactic facts about EIJA's own review implementation, never a conformance proof.
 * [adapters.sqlite_store](sqlite_store.md) - Durable local unit of work.
-* [adapters.system_describer](system_describer.md) - Offline system describer for PlayIDE's "Describe your app" start (ADR-0203): a fixed library of app shapes and a small reader for the fields and roles a description names, never an LLM.
+* [adapters.system_describer](system_describer.md) - Offline system describer for PlayIDE's "Describe your app" start (ADR-0216): a fixed library of app shapes and a small reader for the fields and roles a description names, never an LLM.
 * [adapters.system_library](system_library.md) - Where a person's own systems live on disk (ADR-0185): one folder per system under a systems home, the recent list, and the saved draft of the work in progress.

@@ -1,4 +1,4 @@
-"""What's missing (ADR-0203): one list across every model and view of what is not ready yet, so a system built in
+"""What's missing (ADR-0216): one list across every model and view of what is not ready yet, so a system built in
 chat or on the canvas says what it still lacks instead of the person having to look in each tab.
 
 Each view gets a row: ready, or the things it is missing, each in words with where to fix it. Nothing here decides

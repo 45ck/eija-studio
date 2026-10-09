@@ -1,4 +1,4 @@
-# ADR-0203: Describe your app, and what's missing
+# ADR-0216: Describe your app, and what's missing
 
 * Status: accepted
 * Date: 2026-10-09
@@ -49,6 +49,11 @@ Chosen option.
   * `scenarios.json`, with one test per end state (the shortest way there) and one refusal (the first step taken by a role that may not take it), each step written as what the kernel did (`record_steps`).
 
   Every document passes the same checks as any new system (`checked_documents`). Use cases, screens, sequences, components and permissions are derived from these documents, as for any system. Before anything is created, the form says what each view will have. Nothing is written until Create and open.
+* **Kinds of actor (#156, ADR-0210).**
+  * The describer reads "an AI agent", "a timer", "a payment provider" and similar phrases from the data file. The verb after the phrase picks the transition that role takes.
+  * A sketch line `agents:`, `timers:`, `systems:` or `people:` gives a role its kind.
+  * In chat, `make <role> an AI agent|a timer|an external system|a person` is a plan step on a system you started (`data_steps.SetRoleKind`), shown on the use case diagram. It is refused (`PLAN_KIND_FIXED`) on a system with a law about kinds, since changing who holds a role would change what that law lets through.
+* **The kernel's answer stays in view (#138).** The dialog's check result and its Create button sit right under the option being filled in (the description, the sketch, the UML file or the chosen template), so a refusal is never below the fold.
 * **No laws are generated.** What's missing says there are none, gives an example from the model ("Collected is final") and says laws are the person's to set.
 * **What's missing.** `POST /api/play/ready` returns a row per view: state machine, class diagram, use cases and permissions, screens, tests and sequences, and laws. Each row is either ready or lists what is missing or wrong, with where to fix it. It reads the work in progress: the plan's accepted steps when the policy allows them, previewed or not. The checks behind the rows are:
   * a state nothing reaches;
@@ -70,11 +75,13 @@ Chosen option.
 
 ## Verification
 
-* `tests/test_play_describe.py` checks four things:
+* `tests/test_play_describe.py` checks these things:
   * a coffee-shop description through the HTTP routes: the summary of every view, creation, three tests passing in the kernel, Build & run conformance, three sequences, and What's missing showing laws as missing, with a new unreachable state appearing in it;
   * a describer whose fields the data model refuses is rejected;
   * an empty description is refused;
   * four descriptions map to the expected shapes.
+  * an AI agent and a webhook become roles of their kinds, and a sketch's `agents:` and `timers:` lines declare kinds, refusing a role listed as two kinds;
+* `tests/test_play_data_steps.py` checks that chat sets a role's kind on a system you started, and refuses it on a shipped pack or under a law about kinds.
 * A manual Chromium run checked `/play?new=describe`: the summary under the box, creation, the What's missing panel, the class and sequence diagrams, and a chat round that the panel follows.
 * The greenfield demo starts from a description (`demos/scenarios/playide_greenfield.py`).
 

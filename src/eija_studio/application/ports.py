@@ -37,7 +37,7 @@ class PlanProposer(Protocol):
         ...
 
 class SystemDescriber(Protocol):
-    """Turns a description of an app into {name, record, sketch, fields, reading} for "Describe your app" (ADR-0203).
+    """Turns a description of an app into {name, record, sketch, fields, reading} for "Describe your app" (ADR-0216).
     Untrusted; no IO or persistence. `sketch` is in the state machine's label notation, `fields` are data-model
     attributes, and `reading` says in words what was read and assumed."""
     name: str

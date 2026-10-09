@@ -15,7 +15,7 @@ from eija_studio.domain.models import DomainError, Workflow
 from eija_studio.domain.pack import Pack
 from eija_studio.domain.policy import apply_structural_all, apply_transactions
 from eija_studio.domain.transactions import AddTransition, Transaction
-from .data_steps import DATA_EDITS, FIXED, Step, apply_data, data_changes, describe_data, draft_pack, is_data, parse_step, split
+from .data_steps import DATA_EDITS, DataEdit, FIXED, Step, apply_data, data_changes, describe_data, draft_pack, is_data, parse_step, split, with_kinds, SetRoleKind
 from .diagrams import diff_summary
 from .new_system import new_names
 from .ports import PlanProposer
@@ -100,6 +100,7 @@ def _statuses(model: Workflow, pack: Pack, transactions: list[Step], accepted: l
 def _try(model: Workflow, pack: Pack, steps: list[Step], step: Step) -> None:
     transactions, data_steps = split(steps)
     if is_data(step):
+        with_kinds(pack, data_steps)
         apply_data(data_for(pack), data_steps)
     else:
         apply_structural_all(model, transactions, pack)
@@ -151,12 +152,21 @@ def _checked(model: Workflow, pack: Pack, chosen: list[Step], result: dict[str, 
         candidate = apply_transactions(model, transactions, pack) if transactions else model
     except DomainError as error:
         return result | _refusal(error, pack)
+    result = result | _drafted(pack, data_steps)
+    return result | {"legal": True, "candidate": candidate.model_dump(mode="json"),
+                     "candidate_semantic_hash": candidate.semantic_hash, "diff": diff_summary(model, candidate)}
+
+
+def _drafted(pack: Pack, data_steps: list[DataEdit]) -> dict[str, Any]:
+    """The class diagram as the plan's data-model steps leave it, and who holds each role as its kind steps leave it."""
+    found: dict[str, Any] = {}
     before = data_for(pack)
     after = apply_data(before, data_steps)
     if data_steps and after is not None:
-        result = result | {"data": after.model_dump(mode="json"), "data_changes": data_changes(before, after)}
-    return result | {"legal": True, "candidate": candidate.model_dump(mode="json"),
-                     "candidate_semantic_hash": candidate.semantic_hash, "diff": diff_summary(model, candidate)}
+        found |= {"data": after.model_dump(mode="json"), "data_changes": data_changes(before, after)}
+    if any(isinstance(s, SetRoleKind) for s in data_steps):
+        found["kinds"] = {r.id: r.kind for r in with_kinds(pack, data_steps).roles}  # #156
+    return found
 
 
 def _declared(before: Pack, after: Pack) -> dict[str, list[str]] | None:

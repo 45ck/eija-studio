@@ -1,421 +1,466 @@
 {
- "schema_version": "eija.describe-shapes.v1",
- "about": "App shapes the offline describer reads a description as (ADR-0203). Data, not code: each shape is a record class, sketch lines in the state machine's label notation, roles with the nouns a description may use for them, and fields the record always has besides its title.",
- "shapes": [
-  {
-   "id": "orders",
-   "name": "Orders",
-   "keywords": [
-    "order",
-    "coffee",
-    "cafe",
-    "café",
-    "shop",
-    "restaurant",
-    "food",
-    "menu",
-    "takeaway",
-    "bakery"
-   ],
-   "record": "Order",
-   "lines": [
-    "Placed -> Preparing : Start [Staff]",
-    "Preparing -> Ready : Finish [Staff]",
-    "Ready -> Collected : Collect [Customer]",
-    "Placed -> Cancelled : Cancel [Customer]"
-   ],
-   "roles": {
-    "Staff": [
-     "barista",
-     "chef",
-     "cook",
-     "staff",
-     "kitchen",
-     "waiter",
-     "baker"
-    ],
-    "Customer": [
-     "customer",
-     "guest",
-     "diner",
-     "buyer"
-    ]
-   },
-   "fields": []
-  },
-  {
-   "id": "tickets",
-   "name": "Support desk",
-   "keywords": [
-    "ticket",
-    "support",
-    "helpdesk",
-    "help desk",
-    "issue",
-    "complaint",
-    "customer service"
-   ],
-   "record": "Ticket",
-   "lines": [
-    "Open -> Triaged : Triage [Agent]",
-    "Triaged -> Resolved : Resolve [Agent]",
-    "Triaged -> Escalated : Escalate [Agent]",
-    "Escalated -> Resolved : Fix [Engineer]",
-    "Resolved -> Closed : Close [Requester]"
-   ],
-   "roles": {
-    "Agent": [
-     "agent",
-     "support",
-     "operator"
-    ],
-    "Engineer": [
-     "engineer",
-     "developer",
-     "specialist"
-    ],
-    "Requester": [
-     "requester",
-     "customer",
-     "user",
-     "client"
-    ]
-   },
-   "fields": [
+  "schema_version": "eija.describe-shapes.v1",
+  "about": "App shapes the offline describer reads a description as (ADR-0216). Data, not code: each shape is a record class, sketch lines in the state machine's label notation, roles with the nouns a description may use for them, and fields the record always has besides its title. Actors are the phrases that name a role held by an AI agent, a timer or an external system (ADR-0210), with the role they become.",
+  "shapes": [
     {
-     "name": "priority",
-     "type": "choice",
-     "choices": [
-      "Low",
-      "Normal",
-      "High"
-     ],
-     "required": true
-    }
-   ]
-  },
-  {
-   "id": "bookings",
-   "name": "Bookings",
-   "keywords": [
-    "booking",
-    "reservation",
-    "reserve",
-    "appointment",
-    "room",
-    "table",
-    "slot",
-    "class"
-   ],
-   "record": "Booking",
-   "lines": [
-    "Requested -> Confirmed : Confirm [Host]",
-    "Confirmed -> CheckedIn : CheckIn [Guest]",
-    "CheckedIn -> Completed : Complete [Host]",
-    "Requested -> Declined : Decline [Host]",
-    "Confirmed -> Cancelled : Cancel [Guest]"
-   ],
-   "roles": {
-    "Host": [
-     "host",
-     "staff",
-     "receptionist",
-     "owner",
-     "trainer",
-     "provider"
-    ],
-    "Guest": [
-     "guest",
-     "customer",
-     "client",
-     "patient",
-     "member"
-    ]
-   },
-   "fields": [
+      "id": "orders",
+      "name": "Orders",
+      "keywords": [
+        "order",
+        "coffee",
+        "cafe",
+        "café",
+        "shop",
+        "restaurant",
+        "food",
+        "menu",
+        "takeaway",
+        "bakery"
+      ],
+      "record": "Order",
+      "lines": [
+        "Placed -> Preparing : Start [Staff]",
+        "Preparing -> Ready : Finish [Staff]",
+        "Ready -> Collected : Collect [Customer]",
+        "Placed -> Cancelled : Cancel [Customer]"
+      ],
+      "roles": {
+        "Staff": [
+          "barista",
+          "chef",
+          "cook",
+          "staff",
+          "kitchen",
+          "waiter",
+          "baker"
+        ],
+        "Customer": [
+          "customer",
+          "guest",
+          "diner",
+          "buyer"
+        ]
+      },
+      "fields": []
+    },
     {
-     "name": "date",
-     "type": "date",
-     "required": true
-    }
-   ]
-  },
-  {
-   "id": "approvals",
-   "name": "Approvals",
-   "keywords": [
-    "approval",
-    "approve",
-    "expense",
-    "leave",
-    "holiday",
-    "purchase",
-    "request",
-    "reimburse"
-   ],
-   "record": "Request",
-   "lines": [
-    "Draft -> Submitted : Submit [Employee]",
-    "Submitted -> Approved : Approve [Manager]",
-    "Submitted -> Rejected : Reject [Manager]",
-    "Approved -> Paid : Pay [Finance]"
-   ],
-   "roles": {
-    "Employee": [
-     "employee",
-     "staff",
-     "requester",
-     "worker"
-    ],
-    "Manager": [
-     "manager",
-     "approver",
-     "lead",
-     "supervisor"
-    ],
-    "Finance": [
-     "finance",
-     "accounts",
-     "payroll"
-    ]
-   },
-   "fields": [
+      "id": "tickets",
+      "name": "Support desk",
+      "keywords": [
+        "ticket",
+        "support",
+        "helpdesk",
+        "help desk",
+        "issue",
+        "complaint",
+        "customer service"
+      ],
+      "record": "Ticket",
+      "lines": [
+        "Open -> Triaged : Triage [Agent]",
+        "Triaged -> Resolved : Resolve [Agent]",
+        "Triaged -> Escalated : Escalate [Agent]",
+        "Escalated -> Resolved : Fix [Engineer]",
+        "Resolved -> Closed : Close [Requester]"
+      ],
+      "roles": {
+        "Agent": [
+          "agent",
+          "support",
+          "operator"
+        ],
+        "Engineer": [
+          "engineer",
+          "developer",
+          "specialist"
+        ],
+        "Requester": [
+          "requester",
+          "customer",
+          "user",
+          "client"
+        ]
+      },
+      "fields": [
+        {
+          "name": "priority",
+          "type": "choice",
+          "choices": [
+            "Low",
+            "Normal",
+            "High"
+          ],
+          "required": true
+        }
+      ]
+    },
     {
-     "name": "amount",
-     "type": "number",
-     "required": true
-    }
-   ]
-  },
-  {
-   "id": "loans",
-   "name": "Loans",
-   "keywords": [
-    "loan",
-    "borrow",
-    "library",
-    "lend",
-    "rental",
-    "rent",
-    "equipment",
-    "book"
-   ],
-   "record": "Loan",
-   "lines": [
-    "Requested -> OnLoan : Lend [Librarian]",
-    "OnLoan -> Returned : Return [Borrower]",
-    "OnLoan -> Overdue : MarkOverdue [Librarian]",
-    "Overdue -> Returned : ReturnLate [Borrower]"
-   ],
-   "roles": {
-    "Librarian": [
-     "librarian",
-     "staff",
-     "lender",
-     "owner"
-    ],
-    "Borrower": [
-     "borrower",
-     "member",
-     "student",
-     "renter",
-     "customer"
-    ]
-   },
-   "fields": [
+      "id": "bookings",
+      "name": "Bookings",
+      "keywords": [
+        "booking",
+        "reservation",
+        "reserve",
+        "appointment",
+        "room",
+        "table",
+        "slot",
+        "class"
+      ],
+      "record": "Booking",
+      "lines": [
+        "Requested -> Confirmed : Confirm [Host]",
+        "Confirmed -> CheckedIn : CheckIn [Guest]",
+        "CheckedIn -> Completed : Complete [Host]",
+        "Requested -> Declined : Decline [Host]",
+        "Confirmed -> Cancelled : Cancel [Guest]"
+      ],
+      "roles": {
+        "Host": [
+          "host",
+          "staff",
+          "receptionist",
+          "owner",
+          "trainer",
+          "provider"
+        ],
+        "Guest": [
+          "guest",
+          "customer",
+          "client",
+          "patient",
+          "member"
+        ]
+      },
+      "fields": [
+        {
+          "name": "date",
+          "type": "date",
+          "required": true
+        }
+      ]
+    },
     {
-     "name": "dueDate",
-     "type": "date",
-     "required": true
-    }
-   ]
-  },
-  {
-   "id": "hiring",
-   "name": "Hiring",
-   "keywords": [
-    "hire",
-    "hiring",
-    "candidate",
-    "applicant",
-    "job",
-    "recruit",
-    "interview",
-    "application"
-   ],
-   "record": "Application",
-   "lines": [
-    "Applied -> Screened : Screen [Recruiter]",
-    "Screened -> Interviewing : Invite [Recruiter]",
-    "Interviewing -> Offered : Offer [HiringManager]",
-    "Offered -> Hired : Accept [Candidate]",
-    "Screened -> Rejected : Reject [Recruiter]"
-   ],
-   "roles": {
-    "Recruiter": [
-     "recruiter",
-     "hr"
-    ],
-    "HiringManager": [
-     "hiring manager",
-     "manager"
-    ],
-    "Candidate": [
-     "candidate",
-     "applicant"
-    ]
-   },
-   "fields": [
+      "id": "approvals",
+      "name": "Approvals",
+      "keywords": [
+        "approval",
+        "approve",
+        "expense",
+        "leave",
+        "holiday",
+        "purchase",
+        "request",
+        "reimburse"
+      ],
+      "record": "Request",
+      "lines": [
+        "Draft -> Submitted : Submit [Employee]",
+        "Submitted -> Approved : Approve [Manager]",
+        "Submitted -> Rejected : Reject [Manager]",
+        "Approved -> Paid : Pay [Finance]"
+      ],
+      "roles": {
+        "Employee": [
+          "employee",
+          "staff",
+          "requester",
+          "worker"
+        ],
+        "Manager": [
+          "manager",
+          "approver",
+          "lead",
+          "supervisor"
+        ],
+        "Finance": [
+          "finance",
+          "accounts",
+          "payroll"
+        ]
+      },
+      "fields": [
+        {
+          "name": "amount",
+          "type": "number",
+          "required": true
+        }
+      ]
+    },
     {
-     "name": "role",
-     "type": "text",
-     "required": true
-    }
-   ]
-  },
-  {
-   "id": "deliveries",
-   "name": "Deliveries",
-   "keywords": [
-    "delivery",
-    "deliver",
-    "parcel",
-    "package",
-    "shipment",
-    "ship",
-    "courier",
-    "dispatch"
-   ],
-   "record": "Delivery",
-   "lines": [
-    "Booked -> PickedUp : PickUp [Courier]",
-    "PickedUp -> InTransit : Dispatch [Courier]",
-    "InTransit -> Delivered : Deliver [Courier]",
-    "InTransit -> Failed : FailDelivery [Courier]",
-    "Failed -> InTransit : Retry [Dispatcher]"
-   ],
-   "roles": {
-    "Courier": [
-     "courier",
-     "driver",
-     "rider"
-    ],
-    "Dispatcher": [
-     "dispatcher",
-     "operator",
-     "warehouse"
-    ]
-   },
-   "fields": [
+      "id": "loans",
+      "name": "Loans",
+      "keywords": [
+        "loan",
+        "borrow",
+        "library",
+        "lend",
+        "rental",
+        "rent",
+        "equipment",
+        "book"
+      ],
+      "record": "Loan",
+      "lines": [
+        "Requested -> OnLoan : Lend [Librarian]",
+        "OnLoan -> Returned : Return [Borrower]",
+        "OnLoan -> Overdue : MarkOverdue [Librarian]",
+        "Overdue -> Returned : ReturnLate [Borrower]"
+      ],
+      "roles": {
+        "Librarian": [
+          "librarian",
+          "staff",
+          "lender",
+          "owner"
+        ],
+        "Borrower": [
+          "borrower",
+          "member",
+          "student",
+          "renter",
+          "customer"
+        ]
+      },
+      "fields": [
+        {
+          "name": "dueDate",
+          "type": "date",
+          "required": true
+        }
+      ]
+    },
     {
-     "name": "address",
-     "type": "text",
-     "required": true
-    }
-   ]
-  },
-  {
-   "id": "publishing",
-   "name": "Publishing",
-   "keywords": [
-    "article",
-    "post",
-    "blog",
-    "publish",
-    "content",
-    "editor",
-    "newsletter",
-    "draft"
-   ],
-   "record": "Article",
-   "lines": [
-    "Drafting -> InReview : SubmitForReview [Author]",
-    "InReview -> Drafting : RequestChanges [Editor]",
-    "InReview -> Published : Publish [Editor]",
-    "Published -> Archived : Archive [Editor]"
-   ],
-   "roles": {
-    "Author": [
-     "author",
-     "writer",
-     "contributor"
-    ],
-    "Editor": [
-     "editor",
-     "reviewer",
-     "publisher"
-    ]
-   },
-   "fields": []
-  },
-  {
-   "id": "bugs",
-   "name": "Bug tracker",
-   "keywords": [
-    "bug",
-    "defect",
-    "tracker",
-    "sprint",
-    "task",
-    "kanban",
-    "backlog"
-   ],
-   "record": "Issue",
-   "lines": [
-    "Backlog -> InProgress : Start [Developer]",
-    "InProgress -> InReview : RequestReview [Developer]",
-    "InReview -> Done : Approve [Reviewer]",
-    "InReview -> InProgress : Reopen [Reviewer]"
-   ],
-   "roles": {
-    "Developer": [
-     "developer",
-     "engineer",
-     "dev"
-    ],
-    "Reviewer": [
-     "reviewer",
-     "lead",
-     "qa",
-     "tester"
-    ]
-   },
-   "fields": [
+      "id": "hiring",
+      "name": "Hiring",
+      "keywords": [
+        "hire",
+        "hiring",
+        "candidate",
+        "applicant",
+        "job",
+        "recruit",
+        "interview",
+        "application"
+      ],
+      "record": "Application",
+      "lines": [
+        "Applied -> Screened : Screen [Recruiter]",
+        "Screened -> Interviewing : Invite [Recruiter]",
+        "Interviewing -> Offered : Offer [HiringManager]",
+        "Offered -> Hired : Accept [Candidate]",
+        "Screened -> Rejected : Reject [Recruiter]"
+      ],
+      "roles": {
+        "Recruiter": [
+          "recruiter",
+          "hr"
+        ],
+        "HiringManager": [
+          "hiring manager",
+          "manager"
+        ],
+        "Candidate": [
+          "candidate",
+          "applicant"
+        ]
+      },
+      "fields": [
+        {
+          "name": "role",
+          "type": "text",
+          "required": true
+        }
+      ]
+    },
     {
-     "name": "severity",
-     "type": "choice",
-     "choices": [
-      "Minor",
-      "Major",
-      "Critical"
-     ],
-     "required": false
+      "id": "deliveries",
+      "name": "Deliveries",
+      "keywords": [
+        "delivery",
+        "deliver",
+        "parcel",
+        "package",
+        "shipment",
+        "ship",
+        "courier",
+        "dispatch"
+      ],
+      "record": "Delivery",
+      "lines": [
+        "Booked -> PickedUp : PickUp [Courier]",
+        "PickedUp -> InTransit : Dispatch [Courier]",
+        "InTransit -> Delivered : Deliver [Courier]",
+        "InTransit -> Failed : FailDelivery [Courier]",
+        "Failed -> InTransit : Retry [Dispatcher]"
+      ],
+      "roles": {
+        "Courier": [
+          "courier",
+          "driver",
+          "rider"
+        ],
+        "Dispatcher": [
+          "dispatcher",
+          "operator",
+          "warehouse"
+        ]
+      },
+      "fields": [
+        {
+          "name": "address",
+          "type": "text",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "publishing",
+      "name": "Publishing",
+      "keywords": [
+        "article",
+        "post",
+        "blog",
+        "publish",
+        "content",
+        "editor",
+        "newsletter",
+        "draft"
+      ],
+      "record": "Article",
+      "lines": [
+        "Drafting -> InReview : SubmitForReview [Author]",
+        "InReview -> Drafting : RequestChanges [Editor]",
+        "InReview -> Published : Publish [Editor]",
+        "Published -> Archived : Archive [Editor]"
+      ],
+      "roles": {
+        "Author": [
+          "author",
+          "writer",
+          "contributor"
+        ],
+        "Editor": [
+          "editor",
+          "reviewer",
+          "publisher"
+        ]
+      },
+      "fields": []
+    },
+    {
+      "id": "bugs",
+      "name": "Bug tracker",
+      "keywords": [
+        "bug",
+        "defect",
+        "tracker",
+        "sprint",
+        "task",
+        "kanban",
+        "backlog"
+      ],
+      "record": "Issue",
+      "lines": [
+        "Backlog -> InProgress : Start [Developer]",
+        "InProgress -> InReview : RequestReview [Developer]",
+        "InReview -> Done : Approve [Reviewer]",
+        "InReview -> InProgress : Reopen [Reviewer]"
+      ],
+      "roles": {
+        "Developer": [
+          "developer",
+          "engineer",
+          "dev"
+        ],
+        "Reviewer": [
+          "reviewer",
+          "lead",
+          "qa",
+          "tester"
+        ]
+      },
+      "fields": [
+        {
+          "name": "severity",
+          "type": "choice",
+          "choices": [
+            "Minor",
+            "Major",
+            "Critical"
+          ],
+          "required": false
+        }
+      ]
     }
-   ]
-  }
- ],
- "plain": {
-  "id": "plain",
-  "name": "Requests",
-  "keywords": [],
-  "record": "Item",
-  "lines": [
-   "Draft -> Submitted : Submit [Member]",
-   "Submitted -> Accepted : Accept [Reviewer]",
-   "Submitted -> Declined : Decline [Reviewer]"
   ],
-  "roles": {
-   "Member": [
-    "member",
-    "user",
-    "customer"
-   ],
-   "Reviewer": [
-    "reviewer",
-    "admin",
-    "manager"
-   ]
+  "plain": {
+    "id": "plain",
+    "name": "Requests",
+    "keywords": [],
+    "record": "Item",
+    "lines": [
+      "Draft -> Submitted : Submit [Member]",
+      "Submitted -> Accepted : Accept [Reviewer]",
+      "Submitted -> Declined : Decline [Reviewer]"
+    ],
+    "roles": {
+      "Member": [
+        "member",
+        "user",
+        "customer"
+      ],
+      "Reviewer": [
+        "reviewer",
+        "admin",
+        "manager"
+      ]
+    },
+    "fields": []
   },
-  "fields": []
- }
+  "actors": [
+    {
+      "kind": "agent",
+      "role": "AiAgent",
+      "label": "an AI agent",
+      "phrases": [
+        "ai agent",
+        "ai assistant",
+        "llm agent",
+        "chatbot",
+        "bot"
+      ]
+    },
+    {
+      "kind": "timer",
+      "role": "Timer",
+      "label": "a timer",
+      "phrases": [
+        "timer",
+        "scheduled job",
+        "scheduler",
+        "cron job"
+      ]
+    },
+    {
+      "kind": "system",
+      "role": "PaymentGateway",
+      "label": "an external system",
+      "phrases": [
+        "payment provider",
+        "payment gateway",
+        "payment system"
+      ]
+    },
+    {
+      "kind": "system",
+      "role": "ExternalSystem",
+      "label": "an external system",
+      "phrases": [
+        "external system",
+        "webhook",
+        "third-party system"
+      ]
+    }
+  ]
 }

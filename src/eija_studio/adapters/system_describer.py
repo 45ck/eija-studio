@@ -1,4 +1,4 @@
-"""Offline system describer for PlayIDE's "Describe your app" start (ADR-0203): a fixed library of app shapes and a
+"""Offline system describer for PlayIDE's "Describe your app" start (ADR-0216): a fixed library of app shapes and a
 small reader for the fields and roles a description names, never an LLM. Its answer is untrusted, like any proposal;
 the application builds the system's documents from it and the kernel's pack check decides whether they are a system.
 
@@ -27,7 +27,7 @@ SHAPES_FILE = PACKS_ROOT / "describe-shapes.json"  # the shapes are data beside 
 @lru_cache(maxsize=1)
 def _library() -> dict[str, Any]:
     document = json.loads(SHAPES_FILE.read_text(encoding="utf-8"))
-    return {"shapes": tuple(document["shapes"]), "plain": document["plain"]}
+    return {"shapes": tuple(document["shapes"]), "plain": document["plain"], "actors": tuple(document.get("actors", ()))}
 
 
 NUMBER = ("price", "cost", "amount", "total", "quantity", "qty", "count", "number", "age", "rating", "score", "budget", "hours", "weight")
@@ -150,6 +150,46 @@ def _sketch(shape: dict[str, Any], roles: dict[str, str]) -> str:
     return "\n".join(rename(line) for line in shape["lines"])
 
 
+def _stems(verb: str) -> list[str]:
+    """`triages` as the stems an action name may start with: triages, triage, triag."""
+    return [s for s in (verb, verb[:-1] if verb.endswith("s") else "", verb[:-2] if verb.endswith("es") else "") if len(s) >= 4]
+
+
+def _taker(lines: list[str], verb: str, taken: set[int]) -> int | None:
+    """The first sketch line whose action the verb names, that no other actor has taken."""
+    for n, line in enumerate(lines):
+        action = line.split(":", 1)[1].split("[", 1)[0].strip()
+        if n not in taken and any(action.lower().startswith(s) for s in _stems(verb)):
+            return n
+    return None
+
+
+def _actors(text: str, lines: list[str]) -> tuple[list[str], list[str]]:
+    """The sketch with a role for each AI agent, timer or external system the description names (ADR-0210). "An AI
+    agent triages tickets" gives the AI agent the Triage transition; one whose verb names no action is still a role of
+    its kind, with no action yet, so What's missing says so. Returns the sketch lines and what was read."""
+    lines = list(lines)
+    extra: dict[str, list[str]] = {}
+    reading: list[str] = []
+    taken: set[int] = set()
+    for actor in _library()["actors"]:
+        phrases = "|".join(re.escape(p) for p in sorted(actor["phrases"], key=len, reverse=True))
+        found = re.search(rf"\b(?:{phrases})s?\b(?:\s+(?:that|which|who|will|can|to))?\s+([a-z]+)", text, re.I)
+        if not found and not re.search(rf"\b(?:{phrases})s?\b", text, re.I):
+            continue
+        n = _taker(lines, found.group(1).lower(), taken) if found else None
+        if n is None:
+            extra.setdefault(actor["kind"] + "s", []).append(actor["role"])
+            reading.append(f"{actor['role']} is {actor['label']} with no action yet.")
+            continue
+        taken.add(n)
+        head = lines[n].rsplit("[", 1)[0]
+        lines[n] = f"{head}[{actor['role']}]"
+        extra.setdefault(actor["kind"] + "s", []).append(actor["role"])
+        reading.append(f"{actor['role']} is {actor['label']}, taking {head.split(':', 1)[1].strip()}.")
+    return lines + [f"{kind}: {', '.join(dict.fromkeys(roles))}" for kind, roles in extra.items()], reading
+
+
 class OfflineSystemDescriber:
     name, live = "offline-describe-fixture-v1", False
 
@@ -162,8 +202,9 @@ class OfflineSystemDescriber:
         thing = THING.search(text) if shape["id"] == "plain" else None
         if thing:
             record, name = _camel(thing.group(1)), _camel(thing.group(1)) + "s"
-        return {"name": name, "record": record, "sketch": _sketch(shape, roles), "fields": fields,
-                "template": shape["id"], "reading": _reading(shape, roles, own)}
+        lines, actors = _actors(text, _sketch(shape, roles).split("\n"))
+        return {"name": name, "record": record, "sketch": "\n".join(lines), "fields": fields,
+                "template": shape["id"], "reading": _reading(shape, roles, own) + actors}
 
 
 def _reading(shape: dict[str, Any], roles: dict[str, str], own: list[dict[str, Any]]) -> list[str]:

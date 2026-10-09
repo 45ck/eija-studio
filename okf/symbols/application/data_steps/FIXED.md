@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/data_steps.py#FIXED
   title: application/data_steps.py
   hash_method: ast-v2
-  sha256: 422707cdeae91e4d5379c8f56f98e6f815ed03c7f0de76202e79ff601e23eebb
-notes_baseline: d8dd7f89577dab460ce5817487567125f75b96f137a633c831de9ef1c323b04b
+  sha256: f38ef90c26b8c46e806f8ff157b7f7f30719abe9d094b85d759f57fb7a542828
+notes_baseline: d14071453c32172ac13065d70abd52a3ea5fda33a6bb2669de001e92b09cc2c2
 ---
 
 # application.data_steps.FIXED
@@ -25,7 +25,7 @@ notes_baseline: d8dd7f89577dab460ce5817487567125f75b96f137a633c831de9ef1c323b04b
 |---|---|
 | Kind | constant |
 | Module | [`application/data_steps`](/modules/application/data_steps.md) |
-| Signature | `FIXED = "This system's data model is its owner's: chat changes the class diagram only on a system you started"` |
+| Signature | `FIXED = "This system's data model and roles are its owner's: chat changes the class diagram and who holds a role only on a system you started"` |
 | Code | `repo://src/eija_studio/application/data_steps.py#FIXED` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 

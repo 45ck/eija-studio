@@ -1,7 +1,7 @@
 ---
 type: Module
 title: application.describe_system
-description: 'Describe your app (ADR-0203): a new system from one description, like starting an app in Lovable or Replit.'
+description: 'Describe your app (ADR-0216): a new system from one description, like starting an app in Lovable or Replit.'
 resource: repo://src/eija_studio/application/describe_system.py
 tags:
 - module
@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/describe_system.py
   title: application/describe_system.py
   hash_method: ast-api-v1
-  sha256: e533ccab2b96a0048164dc166035b7fa8256c6c9c8107825306335c8ed1baec0
-notes_baseline: 3586ce9e1cd559441adfcceece999d424874fcac34d6b65419732d3434862e30
+  sha256: f5e565888a102c0d6f155cb2e18a9aa08c1b7a010bb71761fe62ac783320e57d
+notes_baseline: 424dbb33fa92dbb4b8518519eadc27e2eb18588e72ff3c1d2da42bd559c52310
 ---
 
 # application.describe_system
@@ -29,7 +29,7 @@ notes_baseline: 3586ce9e1cd559441adfcceece999d424874fcac34d6b65419732d3434862e30
 ## Module docstring
 
 ~~~text
-Describe your app (ADR-0203): a new system from one description, like starting an app in Lovable or Replit.
+Describe your app (ADR-0216): a new system from one description, like starting an app in Lovable or Replit.
 
 A describer (an application port; offline here) reads the description as an app shape: a record class, a state
 machine in the sketch's label notation, roles and the record's fields. Nothing it says is trusted. The documents are

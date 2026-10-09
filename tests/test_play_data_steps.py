@@ -139,3 +139,26 @@ def test_a_held_data_model_leaves_the_pack_and_its_digest_alone():
     assert draft.digest == pack.digest and draft is not pack
     assert data_changes(data, data_for(draft)) == [f"{data.record} gains colour"]
     assert data_for(pack).digest == data.digest  # the loaded pack still reads its own data.json
+
+
+def test_chat_says_who_holds_a_role_on_a_system_you_started(served):
+    """#156 (ADR-0210): "make Barista an AI agent" is a step on a system you started; the plan shows the kind, and the
+    simulated draft pack has it. A shipped pack's roles stay its owner's, and a law about kinds keeps kinds fixed."""
+    client, systems = served
+    new_system(client, systems)
+    steps, asked = ask(client, "make Barista an AI agent then Customer is a person", [])
+    assert steps[0] == {"kind": "set_role_kind", "role": "Barista", "role_kind": "agent"}
+    assert [s["text"] for s in asked["steps"]] == ["Barista is held by an AI agent", "Customer is held by a person"]
+    assert asked["preview"]["legal"] and asked["preview"]["kinds"] == {"Barista": "agent", "Customer": "human"}
+    pack = draft_pack(systems.handle.pack, [parse_step(s) for s in steps], True)
+    assert pack.role_kind("Barista") == "agent"
+    _, unknown = ask(client, "make Nobody a timer", [])
+    assert unknown["preview"]["codes"] == ["PLAN_STEP_DOES_NOT_APPLY"]  # the system has no role Nobody
+
+    refund = load_pack(PACKS_ROOT / "refund-desk")
+    with pytest.raises(DomainError) as refused:
+        draft_pack(refund, [parse_step({"kind": "set_role_kind", "role": "SupportAgent", "role_kind": "human"})], True)
+    assert refused.value.code == "PLAN_KIND_FIXED"
+    with pytest.raises(DomainError) as fixed:
+        draft_pack(refund, [parse_step({"kind": "set_role_kind", "role": "SupportAgent", "role_kind": "human"})], False)
+    assert fixed.value.code == "PLAN_DATA_FIXED"

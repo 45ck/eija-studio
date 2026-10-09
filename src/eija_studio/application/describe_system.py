@@ -1,4 +1,4 @@
-"""Describe your app (ADR-0203): a new system from one description, like starting an app in Lovable or Replit.
+"""Describe your app (ADR-0216): a new system from one description, like starting an app in Lovable or Replit.
 
 A describer (an application port; offline here) reads the description as an app shape: a record class, a state
 machine in the sketch's label notation, roles and the record's fields. Nothing it says is trusted. The documents are
