@@ -2,6 +2,7 @@
 
 ## 2026-10-09
 
+* **API contract of each built app**: synced ADR-0207 and the new `application.api_contract` module (`api_contract`, `REFUSALS`); `interfaces.play` (`/api/play/api-contract`) refreshed. No Notes were hand-edited and nothing was recorded as verified.
 * **Diagram on camera**: re-synced ADR-0174 after its "diagram stays on camera" amendment (fit, holdStill and follow in PlayIDE). No Notes were hand-edited and nothing was recorded as verified.
 * **No record gets stuck (#151)**: synced ADR-0221 and the new `domain.laws` symbols `CanReachEnd` and `stuck_states`; `LAW_KINDS`, `Law`, `evaluate_table`, `evaluate_run` and `application.law_proof` (method `reach`) refreshed. No Notes were hand-edited and nothing was recorded as verified.
 * **Sequence diagrams that read well**: synced ADR-0195 and the new `application.sequence_draft` module (`draft_scenarios`, `scenarios_or_draft`, `MAX_DRAFTS`) and `application.sequence_layout.WIDTH` and `CHAR` (a lifeline column widens to fit its head); `sequence_layout` (`place` adds activations, lost-message effects and two-line heads) and `interfaces.play` (drafted scenarios on the sequences route and the ripple) refreshed. No Notes were hand-edited and nothing was recorded as verified.

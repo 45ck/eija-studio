@@ -67,5 +67,6 @@ _No curated notes yet._
 
 * [ADR-0204: The ripple reaches the other workflows of the system](/adrs/0204-the-ripple-reaches-the-other-workflows-of-the-system.md) - The ripple (ADR-0158) shows what a change does to every diagram of one workflow.
 * [ADR-0206: A deployment view read from the built app's files](/adrs/0206-a-deployment-view-read-from-the-built-apps-files.md) - PlayIDE had no deployment view.
+* [ADR-0207: Each built app's API contract, written from the model](/adrs/0207-each-built-apps-api-contract-written-from-the-model.md) - The System lens (ADR-0203) draws each workflow's provided interface as its actions.
 * [ADR-0208: Moments for real checks, and the run as traffic on the diagram](/adrs/0208-check-moments-and-traffic.md) - ADR-0157 gave PlayIDE a checks ring and points that reward checking, never producing.
 <!-- okf:generated:end links -->

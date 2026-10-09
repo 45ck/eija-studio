@@ -293,6 +293,43 @@
         }
       }
     },
+    "/api/play/api-contract": {
+      "post": {
+        "summary": "Play Api Contract",
+        "description": "The OpenAPI 3.1 document of the app this model builds (ADR-0207): its routes, request bodies and refusals.",
+        "operationId": "play_api_contract_api_play_api_contract_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuildRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/play/ripple": {
       "post": {
         "summary": "Play Ripple",
