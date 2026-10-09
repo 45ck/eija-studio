@@ -154,6 +154,13 @@ class PathRequiresKind(_KindLaw):
     state: Name
 
 
+class CanReachEnd(_Law):
+    """From every state a record can get to, some run still reaches one of ``states`` (its ends): no record is left
+    in a dead end or a loop with no way out. A liveness law about the whole table, judged on no single run (ADR-0221)."""
+    kind: Literal["can_reach_end"]
+    states: tuple[Name, ...] = Field(min_length=1)
+
+
 class RequiresEvidence(_Law):
     """A review needs evidence of this kind; judged by the evidence matrix, never by the table."""
     kind: Literal["requires_evidence"]
@@ -162,11 +169,11 @@ class RequiresEvidence(_Law):
 
 Law = Annotated[Union[ClosedShape, OnlyRoleHolds, RoleNeverHolds, RoleNeverEnters, StateOnlyVia, ActionTarget,  # noqa: UP007
                       ActionSourceIn, ActionRequiresGuard, ForbiddenEffects, StateFinal, PathRequires, OnlyKindHolds,
-                      OnlyKindEnters, PathRequiresKind, RequiresEvidence],
+                      OnlyKindEnters, PathRequiresKind, CanReachEnd, RequiresEvidence],
                 Field(discriminator="kind")]
 LAW_KINDS = ("closed_shape", "only_role_holds", "role_never_holds", "role_never_enters", "state_only_via", "action_target",
              "action_source_in", "action_requires_guard", "forbidden_effects", "state_final", "path_requires",
-             "only_kind_holds", "only_kind_enters", "path_requires_kind", "requires_evidence")
+             "only_kind_holds", "only_kind_enters", "path_requires_kind", "can_reach_end", "requires_evidence")
 KIND_LAWS = (OnlyKindHolds, OnlyKindEnters, PathRequiresKind)
 
 
@@ -292,7 +299,21 @@ def _kind_path_breaks(law: PathRequiresKind, model: Workflow) -> bool:
     return any(source in before and target == law.state for source, target in edges)
 
 
+def stuck_states(law: CanReachEnd, edges: Iterable[tuple[str, str]], initial: str) -> list[str]:
+    """The states a record can get to from ``initial`` along ``edges`` from which no end of ``law`` can be reached."""
+    edges = list(edges)
+    ends = set(law.states)
+    return sorted(s for s in reachable(edges, initial) if not reachable(edges, s) & ends)
+
+
+def _stuck_violation(law: CanReachEnd, model: Workflow) -> Violation | None:
+    stuck = stuck_states(law, ((t.from_state, t.to_state) for t in model.transitions), model.initial_state)
+    return Violation(law.id, law.code, ("law:" + law.id, *("state:" + s for s in stuck))) if stuck else None
+
+
 def _table_violation(law: _Law, model: Workflow) -> Violation | None:
+    if isinstance(law, CanReachEnd):
+        return _stuck_violation(law, model)
     if isinstance(law, ClosedShape) and _shape_breaks(law, model):
         return Violation(law.id, law.code, ("law:" + law.id,))
     if isinstance(law, PathRequiresKind) and _kind_path_breaks(law, model):
@@ -344,8 +365,8 @@ def evaluate_run(laws: Sequence[_Law], initial: str, steps: Sequence[Step], acti
     """Violations by one executed run: per-step laws on every step, sequence laws on the whole run.
 
     ``actions`` is the action set of the workflow the run executed (for ``when`` conditions). Structural laws
-    (``closed_shape``, ``action_requires_guard``) and evidence requirements are about the table, not a run, and are
-    not judged here. Only
+    (``closed_shape``, ``action_requires_guard``), ``can_reach_end`` (about every run a record could still take) and
+    evidence requirements are about the table, not a run, and are not judged here. Only
     a step's REQUIRED effects are known, so the ``forbidden_effects`` law judges that nothing forbidden ran."""
     found: list[Violation] = []
     for law in laws:

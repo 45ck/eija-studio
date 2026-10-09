@@ -2,6 +2,8 @@
 
 ## 2026-10-09
 
+* **No record gets stuck (#151)**: synced ADR-0221 and the new `domain.laws` symbols `CanReachEnd` and `stuck_states`; `LAW_KINDS`, `Law`, `evaluate_table`, `evaluate_run` and `application.law_proof` (method `reach`) refreshed. No Notes were hand-edited and nothing was recorded as verified.
+* **Sequence diagrams that read well**: synced ADR-0195 and the new `application.sequence_draft` module (`draft_scenarios`, `scenarios_or_draft`, `MAX_DRAFTS`) and `application.sequence_layout.WIDTH` and `CHAR` (a lifeline column widens to fit its head); `sequence_layout` (`place` adds activations, lost-message effects and two-line heads) and `interfaces.play` (drafted scenarios on the sequences route and the ripple) refreshed. No Notes were hand-edited and nothing was recorded as verified.
 * **Accessibility check**: synced ADR-0218 and the new `application.screen_access` module (the WCAG 2.2 AA check on the generated screens); `interfaces.play` (`/api/play/screens` returns `accessibility`) refreshed. No Notes were hand-edited and nothing was recorded as verified.
 * **Screen flow fit**: re-synced ADR-0215 after the fit-to-width amendment (presentation only). No Notes were hand-edited and nothing was recorded as verified.
 * **Deployment view**: synced ADR-0206 and the new `application.deployment` module and `app_deployment` symbol (where a built app runs, read from `run.py`, `app/server.py` and the page); `interfaces.play` (`/api/play/components` returns `deployment`) and `interfaces.http` (the `play-deployment.js` asset) refreshed. No Notes were hand-edited and nothing was recorded as verified.

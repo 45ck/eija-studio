@@ -30,6 +30,7 @@ from .encoding import Clause, Invariant, SymTransition, SymWorkflow
 OTHER = "<other>"
 TRUE, FALSE = z3.BoolVal(True), z3.BoolVal(False)
 NOT_ENCODED = {"path_requires": "a reachability law: its inductive proof is deferred (docs/engineering/FUTURE-WORK.md)",
+               "can_reach_end": "a liveness law: judged by the law proof over the kernel's committed steps, not encoded (ADR-0221)",
                "path_requires_kind": "a reachability law: its inductive proof is deferred (docs/engineering/FUTURE-WORK.md)",
                "requires_evidence": "judged by the evidence matrix, not by the transition table"}
 _ids = count()

@@ -41,5 +41,7 @@ States reachable from ``start`` without passing through ``blocked`` (cycle-safe)
 _No curated notes yet._
 
 <!-- okf:generated:begin links -->
-_No generated cross-references._
+## Referenced by
+
+* [domain.laws.stuck_states](/symbols/domain/laws/stuck_states.md) - The states a record can get to from ``initial`` along ``edges`` from which no end of ``law`` can be reached.
 <!-- okf:generated:end links -->

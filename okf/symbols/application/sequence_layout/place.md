@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/sequence_layout.py#place
   title: application/sequence_layout.py
   hash_method: ast-v2
-  sha256: 20211c8c13bac80ed28756d2bbb54a8a5d0384d8a258f6b779f5e9c5a8f62c2a
-notes_baseline: 4f97aa52db2bd2acd240ffc474f5550d4a8420674dd76d8fa074ddefffbf412c
+  sha256: d9f383daeb5903b0fcec3b36e03a37e661db160dfd2a3fc4569ff9344dceaa83
+notes_baseline: 96361c58f906eebecabc0b4f43bad1a35c647661a0df3c1a0afe31ac10a6baf6
 ---
 
 # application.sequence_layout.place

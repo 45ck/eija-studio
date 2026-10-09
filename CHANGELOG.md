@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### 9 October 2026: PlayIDE polish, round 11 (the New system dialog fits the screen)
+
+- Systems, New system lists every sector template two to a row, and the kernel's verdict and Create and open stay at the bottom of the dialog while the list scrolls. Before, the list ran past the bottom of the dialog on a 1080p screen, so Create and open was off screen and the last template was cut. The blank sketch and a UML file still take the full width under their own option.
+
+### 9 October 2026: sequence diagrams that read well
+
+- The Sequences tab is legible at laptop and recording size: lifeline names wrap onto two lines, labels are larger, steps are numbered as in the Tests tab, the record shows an activation bar for each call, and effects are UML lost messages instead of a column each. It never scales below 80%.
+- When scenarios fail, a panel above the diagram names each one, the failing step and why, with **Show the step** and **Expect what the model does now**.
+- A system with no scenarios yet (one started from a sketch) gets scenarios drafted from the model, so the tab is never empty. See [ADR-0195](docs/adr/0195-sequence-diagrams-the-kernel-checks.md).
+
 ### 9 October 2026: PlayIDE keeps transition labels apart
 
 - The labels of a back-and-forth pair of transitions no longer sit on top of each other (#153): RequestRefund and RejectRefund on Card payment, FailPayout and RetryPayout on Refund desk, RequestInfo and SupplyInfo on Building permit, MissPayment and PayOverdue on SaaS subscription. The layout now leaves room for each label at its real size, centred on its edge, and the label is drawn there instead of halfway along the line, on the state machine and in the Changes view. A state you drag still takes its lines straight again, with their labels halfway along.

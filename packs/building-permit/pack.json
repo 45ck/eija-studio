@@ -444,6 +444,20 @@
         "Audit:PermitLapsed",
         "Notification:LapseNotice"
       ]
+    },
+    {
+      "id": "HoldApplication",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding",
+        "actor_assigned"
+      ],
+      "required_effects": [
+        "Audit:ApplicationHeld"
+      ]
     }
   ],
   "effects": {
@@ -535,6 +549,10 @@
         "id": "Notification:LapseNotice",
         "kind": "notification",
         "recipient": "applicant"
+      },
+      {
+        "id": "Audit:ApplicationHeld",
+        "kind": "audit"
       }
     ],
     "forbidden": [
@@ -643,6 +661,18 @@
       "state": "Withdrawn"
     },
     {
+      "id": "no-application-stuck",
+      "kind": "can_reach_end",
+      "code": "APPLICATION_STUCK",
+      "description": "Every application can still be finished: certified, refused, withdrawn or lapsed. None is left in a dead end or a loop with no way out.",
+      "states": [
+        "Completed",
+        "PermitRefused",
+        "Withdrawn",
+        "Lapsed"
+      ]
+    },
+    {
       "id": "no-forbidden-effects",
       "kind": "forbidden_effects",
       "code": "EFFECT_POLICY:forbidden",
@@ -700,6 +730,29 @@
           "from_state": "Registered",
           "to_state": "Approved",
           "role": "PermitManager"
+        }
+      ]
+    },
+    {
+      "id": "hold_application",
+      "label": "Put an application on hold during review",
+      "supported": false,
+      "consequences": [
+        "The reviewer parks an application on hold, but no step takes it off hold; blocked by this pack's law that every application can still be finished."
+      ],
+      "transactions": [
+        {
+          "kind": "add_state",
+          "state": "OnHold",
+          "after": "InReview"
+        },
+        {
+          "kind": "add_transition",
+          "id": "TR-HOLD",
+          "action": "HoldApplication",
+          "from_state": "InReview",
+          "to_state": "OnHold",
+          "role": "PlanReviewer"
         }
       ]
     },
@@ -840,12 +893,26 @@
               "explanation": "The manager may lapse an issued permit whose work never started."
             }
           ]
+        },
+        {
+          "all": [],
+          "any": [
+            "on hold",
+            "park",
+            "pause"
+          ],
+          "alternatives": [
+            {
+              "interpretation": "hold_application",
+              "explanation": "Parks an application with no way back. The pack's law that every application can still be finished blocks this."
+            }
+          ]
         }
       ],
       "fallback": [
         {
           "interpretation": "unsupported",
-          "explanation": "This offline fixture only demonstrates fast-tracking and lapsing."
+          "explanation": "This offline fixture only demonstrates fast-tracking, lapsing and putting an application on hold."
         }
       ],
       "unknowns": [

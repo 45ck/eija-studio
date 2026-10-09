@@ -22,7 +22,7 @@ What each sector shows that the older packs don't:
 - **Card payment.** A system actor (the gateway) holding most transitions, four final states, and money authority kept with finance: support can turn a refund down but never issue one.
 - **Parcel delivery.** A customs hold that loops back to the hub, a retry loop after a missed delivery, and two path laws (nothing delivered without a hub scan, nothing returned without a failed attempt).
 - **SaaS subscription.** Dunning (past due, suspended, reactivated), automated suspension as a protected authority, and a trust-and-safety freeze the owner can never touch.
-- **Building permit.** A request-for-information loop with the applicant, a delegated decision maker for the area, and three path laws that chain review, approval, issue, inspection and certificate.
+- **Building permit.** A request-for-information loop with the applicant, a delegated decision maker for the area, three path laws that chain review, approval, issue, inspection and certificate, and a law that no application gets stuck (`no-application-stuck`, ADR-0221): from anywhere an application can get to, it can still be certified, refused, withdrawn or lapsed. Type `add state OnHold after InReview then add HoldApplication from InReview to OnHold for PlanReviewer` in the chat and the policy refuses the plan with `APPLICATION_STUCK`, because nothing takes an application off hold.
 
 ## What the model cannot say yet
 
@@ -32,8 +32,8 @@ Writing these packs as a real team would turned up the following gaps. Each pack
 |---|---|---|
 | An action labels only one transition | Withdraw, cancel or "lost" from several states | [#148](https://github.com/45ck/eija-studio/issues/148) |
 | No separation of duties between actors | Maker-checker refunds, reviewer vs decision maker | [#149](https://github.com/45ck/eija-studio/issues/149) |
-| One notification per action | A decision goes to the applicant and the objectors | [#150](https://github.com/45ck/eija-studio/issues/150) |
-| Law kinds: bounded repetition, conditional paths, reaching an end | Three delivery attempts; customs only for international parcels | [#151](https://github.com/45ck/eija-studio/issues/151) |
+| One notification per action | A decision goes to the applicant and the objectors. The runtime and `eija build` already cope; the Verify receipt check (a trusted kernel file) admits one outbox row per step, so it waits on the source review in #80 | [#150](https://github.com/45ck/eija-studio/issues/150) |
+| Law kinds: bounded repetition, conditional paths | Three delivery attempts; customs only for international parcels | [#151](https://github.com/45ck/eija-studio/issues/151) |
 | Value guards, timers, composite states | Refund ≤ captured; trial and statutory deadlines; billing and abuse as independent regions | [#93](https://github.com/45ck/eija-studio/issues/93) |
 | Who may start a record | Only a GP creates a referral | [#142](https://github.com/45ck/eija-studio/issues/142) |
 
