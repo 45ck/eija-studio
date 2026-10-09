@@ -808,6 +808,7 @@
     renderBadges();
     renderHealth();
     for (const which of Object.keys(DIAGRAMS)) markRipple(which);
+    document.dispatchEvent(new CustomEvent("playide:ripple")); // the Changes view lists what to consider (ADR-0176)
   }
 
   function renderRipple() {
@@ -2264,6 +2265,9 @@
     changes: () => shownChange, // the union while the Changes view is on (ADR-0176), else null
     draft, restoreDraft, // saving and reopening the work in progress (ADR-0185)
     recovered: () => recoveredWork, // work this browser kept came back on load, so the saved draft was not opened over it
+    // What the Changes view says about the change: who made each accepted step, and the ripple for exactly these steps.
+    steps: () => (plan && plan.result && plan.result.legal ? plan.steps.filter((_, i) => plan.accepted[i]).map((x) => ({ author: x.author, transaction: x.transaction })) : []),
+    ripple: () => (ripple && !ripple.error && ripple.key === rippleKey() ? ripple : null), diagramNames: RIPPLE,
     setChanges, diagram: (key) => ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: componentGraph, sequences: hooks.sequenceGraph && hooks.sequenceGraph() })[key],
     // Undo, redo and the edited document (ADR-0198): document() is what a save writes; restore(doc, label) opens one as
     // an undoable edit, checked by the server like any other.
