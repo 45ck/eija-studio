@@ -1,0 +1,91 @@
+{
+  "schema_version": "eija.data.v1",
+  "id": "ai-ops",
+  "record": "DeployRequest",
+  "entities": [
+    {
+      "name": "DeployRequest",
+      "description": "One change the agent wants in production; it moves through the deploy workflow.",
+      "attributes": [
+        {
+          "name": "service",
+          "type": "choice",
+          "required": true,
+          "choices": [
+            "checkout",
+            "search",
+            "accounts",
+            "billing"
+          ]
+        },
+        {
+          "name": "commitSha",
+          "type": "text",
+          "required": true,
+          "max_length": 40
+        },
+        {
+          "name": "summary",
+          "type": "text",
+          "required": true,
+          "max_length": 200
+        },
+        {
+          "name": "agentRationale",
+          "type": "text",
+          "max_length": 1000
+        },
+        {
+          "name": "window",
+          "type": "date"
+        }
+      ]
+    },
+    {
+      "name": "Microservice",
+      "attributes": [
+        {
+          "name": "name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "owner",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "name": "BuildRun",
+      "description": "One CI run for the change.",
+      "attributes": [
+        {
+          "name": "number",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "passed",
+          "type": "boolean"
+        }
+      ]
+    }
+  ],
+  "associations": [
+    {
+      "source": "DeployRequest",
+      "target": "Microservice",
+      "role": "target",
+      "source_multiplicity": "0..*",
+      "target_multiplicity": "1"
+    },
+    {
+      "source": "DeployRequest",
+      "target": "BuildRun",
+      "kind": "composition",
+      "role": "builds",
+      "source_multiplicity": "1",
+      "target_multiplicity": "0..*"
+    }
+  ]
+}

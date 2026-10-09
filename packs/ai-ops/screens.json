@@ -1,0 +1,150 @@
+{
+  "schema_version": "eija.screens.v1",
+  "id": "ai-ops",
+  "screens": [
+    {
+      "title": "Open a deploy request",
+      "fields": [
+        {
+          "attribute": "service",
+          "label": "Service"
+        },
+        {
+          "attribute": "commitSha",
+          "label": "Commit"
+        },
+        {
+          "attribute": "summary",
+          "label": "Summary"
+        },
+        {
+          "attribute": "agentRationale",
+          "label": "Agent's rationale"
+        }
+      ],
+      "button": "Open request"
+    },
+    {
+      "use_case": "StartBuild",
+      "title": "Start the build (AI agent)",
+      "fields": [
+        {
+          "attribute": "commitSha",
+          "label": "Commit"
+        }
+      ],
+      "button": "Start build"
+    },
+    {
+      "use_case": "ReportGreen",
+      "title": "Build passed (CI)",
+      "fields": [
+        {
+          "attribute": "commitSha",
+          "label": "Commit"
+        }
+      ],
+      "button": "Record green"
+    },
+    {
+      "use_case": "ReportRed",
+      "title": "Build failed (CI)",
+      "fields": [
+        {
+          "attribute": "commitSha",
+          "label": "Commit"
+        }
+      ],
+      "button": "Record red"
+    },
+    {
+      "use_case": "PatchAndRetry",
+      "title": "Patch and retry (AI agent)",
+      "fields": [
+        {
+          "attribute": "commitSha",
+          "label": "New commit"
+        },
+        {
+          "attribute": "agentRationale",
+          "label": "Agent's rationale"
+        }
+      ],
+      "button": "Push patch"
+    },
+    {
+      "use_case": "AbandonChange",
+      "title": "Abandon the change",
+      "fields": [
+        {
+          "attribute": "summary",
+          "label": "Summary"
+        }
+      ],
+      "button": "Abandon"
+    },
+    {
+      "use_case": "SignOffDeploy",
+      "title": "Sign the deploy off",
+      "fields": [
+        {
+          "attribute": "summary",
+          "label": "Summary"
+        },
+        {
+          "attribute": "agentRationale",
+          "label": "Agent's rationale"
+        },
+        {
+          "attribute": "window",
+          "label": "Window"
+        }
+      ],
+      "button": "Sign off"
+    },
+    {
+      "use_case": "TurnDown",
+      "title": "Turn the deploy down",
+      "fields": [
+        {
+          "attribute": "summary",
+          "label": "Summary"
+        }
+      ],
+      "button": "Turn down"
+    },
+    {
+      "use_case": "OpenWindow",
+      "title": "Deploy window opens (timer)",
+      "fields": [
+        {
+          "attribute": "window",
+          "label": "Window"
+        }
+      ],
+      "button": "Start rollout"
+    },
+    {
+      "use_case": "ConfirmHealthy",
+      "title": "Rollout healthy (monitor)",
+      "fields": [
+        {
+          "attribute": "service",
+          "label": "Service"
+        }
+      ],
+      "button": "Confirm healthy"
+    },
+    {
+      "use_case": "AutoRollback",
+      "title": "Roll back (monitor)",
+      "fields": [
+        {
+          "attribute": "service",
+          "label": "Service"
+        }
+      ],
+      "button": "Roll back"
+    }
+  ]
+}
