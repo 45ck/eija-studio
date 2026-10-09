@@ -9,7 +9,8 @@ body.resizing iframe{pointer-events:none}
 .bar{gap:12px;padding:6px 12px;background:var(--chrome)}
 .bar .brand{flex:1 1 0;min-width:0}
 .bar .model-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bar-end{flex:1 1 0;display:flex;align-items:center;justify-content:flex-end;gap:6px}
+.bar-end{flex:1 1 0;display:flex;align-items:center;justify-content:flex-end;gap:6px;min-width:max-content}  /* never wrap its buttons: the brand gives way first */
+.bar-end>*{white-space:nowrap}
 .palette-open.command-center{display:flex;align-items:center;justify-content:space-between;gap:16px;width:min(440px,36vw);padding:5px 10px;border-radius:8px;background:var(--panel);color:var(--muted);font-size:.84rem}
 .palette-open.command-center:hover{border-color:#b9c2d6}
 .palette-open.command-center kbd{font:inherit;font-size:.74rem;padding:0 6px;border:1px solid var(--line);border-radius:4px;background:var(--bg)}
