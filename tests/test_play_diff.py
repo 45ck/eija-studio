@@ -56,13 +56,13 @@ def test_the_diff_refuses_a_model_the_page_no_longer_shows_and_a_plan_the_policy
     assert refused.status_code >= 400 and refused.json()["code"] == "POLICY_BLOCKED"
 
 
-def test_the_page_loads_the_changes_view_after_play_js_and_it_only_asks_for_the_diff(client):
+def test_the_page_loads_the_changes_view_after_play_js_and_it_only_asks_for_the_diff_and_the_laws(client):
     page = client.get("/play").text
     assert page.index("/assets/play.js") < page.index("/assets/play-diff.js") and "/assets/play-diff.css" in page
     for name in ("play-diff.js", "play-diff.css"):
         assert client.get(f"/assets/{name}").status_code == 200
     source = (WEB / "play-diff.js").read_text(encoding="utf-8")
-    assert "fetch(" not in source and set(__import__("re").findall(r'"(/api/[^"]+)"', source)) == {"/api/play/diff"}
+    assert "fetch(" not in source and set(__import__("re").findall(r'"(/api/[^"]+)"', source)) == {"/api/play/diff", "/api/play/laws"}
 
 
 def test_the_state_machine_keeps_every_state_in_place_between_preview_and_the_model():
@@ -160,6 +160,52 @@ def test_the_changes_view_in_a_real_browser():
             assert plain == "Cancel" and page.get_attribute("#show-changes", "aria-pressed") == "false"
             page.click("#tab-states")
             assert page.is_visible("#canvas") and page.is_hidden("#diff-view") and page.locator("#inspector .diff-item").count() == 0
+            assert errors == []
+        finally:
+            chrome.close()
+
+
+@pytest.mark.browser
+@pytest.mark.slow
+@browser
+def test_your_own_change_and_the_ais_read_the_same_way_with_what_to_consider():
+    api = pytest.importorskip("playwright.sync_api", reason="NOT_RUN: install the hci or demos extra")
+    from demos.lib import ephemeral_eija_server  # noqa: PLC0415 - demos start a real server; only this opt-in test needs it
+
+    with ephemeral_eija_server(pack=LOAN) as server, api.sync_playwright() as playwright:
+        chrome = _launch(api, playwright)
+        try:
+            page = chrome.new_page(viewport={"width": 1600, "height": 900})
+            errors: list[str] = []
+            page.on("pageerror", lambda error: errors.append(str(error)))
+            page.goto(f"{server.base_url}/play#{server.token}")
+            page.wait_for_selector("body[data-ready=true]", timeout=60_000)
+            page.fill("#chat-input", "add Renew from Overdue to OnLoan for Librarian then remove Cancel")
+            page.click("#chat-send")
+            page.wait_for_selector("#chat-log .plan .plan-verdict.ok", timeout=30_000)
+            box = page.locator("#canvas").bounding_box()
+            spot = {"x": box["width"] * 0.5, "y": box["height"] * 0.85}
+            page.drag_and_drop("#draw-palette button[data-kind=state]", "#canvas", target_position=spot)
+            page.wait_for_selector(".inline-edit input")
+            page.keyboard.type("Lost")
+            page.keyboard.press("Enter")
+            page.wait_for_selector("#show-changes:not([hidden]) .badge:text('3')", timeout=30_000)
+            # The state you drew is where you dropped it, not wherever the layout would put it.
+            lost = page.evaluate("""() => { const g = window.PlayIDE.graph(), c = g.getDataModel().getCell('state:Lost'), s = g.view.getState(c);
+                return [s.getCenterX(), s.getCenterY()]; }""")
+            assert abs(lost[0] - spot["x"]) < 60 and abs(lost[1] - spot["y"]) < 60, (lost, spot)
+
+            page.click("#show-changes")
+            page.wait_for_selector("#diff-consider li.ok, #diff-consider li.bad", timeout=30_000)
+            tags = page.eval_on_selector_all("#inspector .diff-item", "items => items.map((b) => [b.querySelector('.who') && b.querySelector('.who').textContent, b.textContent])")
+            assert [t[0] for t in tags] == ["You", "AI", "AI"] and "Adds state Lost" in tags[0][1]
+            consider = page.inner_text("#diff-consider")
+            assert "problem" in consider and "No law is broken" in consider and "Also changes: " in consider
+            assert page.get_attribute("#diff-flags", "open") is None  # the details wait behind one line of counts
+            page.click("#diff-flags summary")
+            assert "No record can ever reach Lost" in page.inner_text("#diff-flags")
+            page.click("#diff-consider button.link >> text=Use cases")
+            assert page.get_attribute("#tab-usecases", "aria-selected") == "true"
             assert errors == []
         finally:
             chrome.close()
