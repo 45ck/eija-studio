@@ -329,6 +329,7 @@
       ["Show or hide the run panel (Ctrl+Alt+P)", "toggle-dock", press("toggle-dock")],
       ["Show or hide the chat (Ctrl+Alt+C)", "toggle-chat", press("toggle-chat")],
       ["Fit the diagram", "fit", press("fit")],
+      ["Tidy the diagram (forget where shapes were put)", "tidy", press("tidy"), () => Boolean($("tidy")) && !$("tidy").hidden],
       ["Show the checks", "health", press("health"), () => $("checks") && $("checks").hidden],
       ["Open the review workbench", null, () => { location.href = "/"; }],
       ...[["xmi", "XMI"], ["plantuml", "PlantUML"], ["mermaid", "Mermaid"], ["drawio", "draw.io"]].map(([f, name]) => // ADR-0190
