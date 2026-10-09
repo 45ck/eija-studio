@@ -8,6 +8,8 @@ It is recorded from the real running product, like every EIJA demo ([ADR-0047](.
 
 Each step clicks the real `/play` page of an ephemeral `eija serve` and asserts text the page renders. The describer (`offline-describe-fixture-v1`) and the chat's proposer (`offline-plan-fixture-v1`) are offline readers, and the video says so.
 
+The README embeds the cut as [`assets/playide-showcase/playide-greenfield.mp4`](assets/playide-showcase/playide-greenfield.mp4), a 1280-wide H.264 re-encode of the take recorded on main ([manifest](../../demos/recordings/playide_greenfield.json)), with a [poster](assets/playide-showcase/playide-greenfield-poster.png) from the describe box. Re-encode both after a new take, as the [showcase storyboard](PLAYIDE-SHOWCASE-STORYBOARD.md) describes.
+
 ## The story in one line
 
 Describe it in one box, get every view, then ask and drag. Read each round in UML along with what is still missing, and run the app.

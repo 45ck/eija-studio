@@ -24,6 +24,22 @@ What each sector shows that the older packs don't:
 - **SaaS subscription.** Dunning (past due, suspended, reactivated), automated suspension as a protected authority, and a trust-and-safety freeze the owner can never touch.
 - **Building permit.** A request-for-information loop with the applicant, a delegated decision maker for the area, three path laws that chain review, approval, issue, inspection and certificate, and a law that no application gets stuck (`no-application-stuck`, ADR-0221): from anywhere an application can get to, it can still be certified, refused, withdrawn or lapsed. Type `add state OnHold after InReview then add HoldApplication from InReview to OnHold for PlanReviewer` in the chat and the policy refuses the plan with `APPLICATION_STUCK`, because nothing takes an application off hold.
 
+## Screens
+
+Captured on 9 October 2026 from the real `/play` page (Linux, Chromium) while the packs were written; PlayIDE has been polished since, so details differ from today's screens. For each pack: the state machine, the use case diagram, a scenario as a sequence diagram, a Simulate run, and a previewed plan.
+
+| Pack | Screens |
+|---|---|
+| Specialist referral | [states](demos/assets/sector-packs-20261009/specialist-referral-states.png) · [usecases](demos/assets/sector-packs-20261009/specialist-referral-usecases.png) · [sequences](demos/assets/sector-packs-20261009/specialist-referral-sequences.png) · [simulate](demos/assets/sector-packs-20261009/specialist-referral-simulate.png) · [preview](demos/assets/sector-packs-20261009/specialist-referral-preview.png) |
+| Card payment | [states](demos/assets/sector-packs-20261009/card-payment-states.png) · [usecases](demos/assets/sector-packs-20261009/card-payment-usecases.png) · [sequences](demos/assets/sector-packs-20261009/card-payment-sequences.png) · [simulate](demos/assets/sector-packs-20261009/card-payment-simulate.png) · [preview](demos/assets/sector-packs-20261009/card-payment-preview.png) |
+| Parcel delivery | [states](demos/assets/sector-packs-20261009/parcel-delivery-states.png) · [usecases](demos/assets/sector-packs-20261009/parcel-delivery-usecases.png) · [sequences](demos/assets/sector-packs-20261009/parcel-delivery-sequences.png) · [simulate](demos/assets/sector-packs-20261009/parcel-delivery-simulate.png) · [preview](demos/assets/sector-packs-20261009/parcel-delivery-preview.png) |
+| SaaS subscription | [states](demos/assets/sector-packs-20261009/saas-subscription-states.png) · [usecases](demos/assets/sector-packs-20261009/saas-subscription-usecases.png) · [sequences](demos/assets/sector-packs-20261009/saas-subscription-sequences.png) · [simulate](demos/assets/sector-packs-20261009/saas-subscription-simulate.png) · [preview](demos/assets/sector-packs-20261009/saas-subscription-preview.png) |
+| Building permit | [states](demos/assets/sector-packs-20261009/building-permit-states.png) · [usecases](demos/assets/sector-packs-20261009/building-permit-usecases.png) · [sequences](demos/assets/sector-packs-20261009/building-permit-sequences.png) · [simulate](demos/assets/sector-packs-20261009/building-permit-simulate.png) · [preview](demos/assets/sector-packs-20261009/building-permit-preview.png) |
+
+The building permit's law that every application can still be finished, refusing a plan that adds an on-hold state with no way out:
+
+![Building permit: the plan is refused because an application on hold could never be finished](demos/assets/sector-packs-20261009/permit-no-application-stuck.png)
+
 ## What the model cannot say yet
 
 Writing these packs as a real team would turned up the following gaps. Each pack also lists its own in `fixtures.proposals.unknowns`.
