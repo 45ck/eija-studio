@@ -8,6 +8,7 @@
 * [compiler](compiler/) - Symbols of application.compiler
 * [components](components/) - Symbols of application.components
 * [data_steps](data_steps/) - Symbols of application.data_steps
+* [deployment](deployment/) - Symbols of application.deployment
 * [diagram_catalog](diagram_catalog/) - Symbols of application.diagram_catalog
 * [diagram_emitters](diagram_emitters/) - Symbols of application.diagram_emitters
 * [diagrams](diagrams/) - Symbols of application.diagrams
@@ -27,6 +28,7 @@
 * [ripple](ripple/) - Symbols of application.ripple
 * [runtime](runtime/) - Symbols of application.runtime
 * [scenario_run](scenario_run/) - Symbols of application.scenario_run
+* [screen_access](screen_access/) - Symbols of application.screen_access
 * [scxml](scxml/) - Symbols of application.scxml
 * [sequence_draft](sequence_draft/) - Symbols of application.sequence_draft
 * [sequence_layout](sequence_layout/) - Symbols of application.sequence_layout

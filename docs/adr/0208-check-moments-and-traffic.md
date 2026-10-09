@@ -48,7 +48,7 @@ Chosen option. `play.js` sends `playide:checks` (each check with a stable id: `a
 
 ### Round 2: actors that are not people, the system, and what a new system still needs
 
-* **Who acted.** A dot's shape shows the kind of actor that took the step (ADR-0210): a circle for a person, a diamond for an AI agent, a square for a timer or an external system. Its colour is still the kernel's answer. When a run includes actors that are not people, the Simulation panel shows a key under the summary.
+* **Who acted.** A dot's shape shows the kind of actor that took the step (ADR-0210): a circle for a person, a diamond for an AI agent, a clock ring for a timer and a square for an external system, so no two kinds differ only by colour. Its colour is still the kernel's answer. When a run includes actors that are not people, the Simulation panel shows a key under the summary.
 * **The guardrail held.** When the kernel refused AI agents in a simulation, a violet note gives the count and the most common refusal code, from the run's own per-kind counts ("The kernel stopped AI agents 71 times in this run, mostly ACTOR_REVOKED").
 * **The system agrees.** The System lens (ADR-0203) sends `playide:landscape` with its count of class-diagram disagreements each time it is drawn. When that count goes down for the same system, a note says how many were resolved and how many are left. When it reaches none, the ring pulses and a note says "The system's class diagrams agree now".
 * **What's missing.** The greenfield start flow owns its list of what a new system still needs. It sends `playide:missing` (`key`, and `items`, each with a stable `id` and its `text`) every time the list is recomputed, and each item comes from a real check. When an item goes away under the same key, a note ticks it off. When the list empties, the ready moment says "Nothing missing: ready to build". While the list has items, the checks panel's "Next" names the first of them. There is no second list.
@@ -73,3 +73,8 @@ Chosen option. `play.js` sends `playide:checks` (each check with a stable id: `a
 | canvas-confetti (ISC), anime.js (MIT), Lottie (MIT) | Not needed for a few keyframes; confetti is the wrong register | Web Animations or CSS keyframes (browser standard) |
 | SVG `getTotalLength`/`getPointAtLength` (browser standard) | Adopted | — |
 | maxGraph overlay pane (Apache-2.0, already vendored) | Adopted: the dots are drawn in maxGraph's own overlay layer, on the drawn edge path | — |
+
+## Round 3 (#184)
+
+* **Labels stay readable.** A moving dot fades to a ghost while it crosses any transition label (the label's box, padded 6px), then comes back. A run uses the same transitions again and again, and a solid dot sat on labels such as "Cancel [Member]" and their counts every time.
+* **Timer and external system differ by shape.** A timer is a clock ring (a white ring in the outcome colour with a hand); an external system keeps the square. The key reads "◷ a timer" and "■ an external system".
