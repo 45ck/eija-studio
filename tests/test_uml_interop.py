@@ -121,8 +121,9 @@ def test_an_undeclared_role_or_a_missing_trigger_is_not_imported():
     reasons = {u["element"]: u["reason"] for u in report["unmapped"]}
     assert reasons["transition CheckOut"] == "role Robot is not declared by pack library-loan"
     assert "trigger" in reasons["Requested -> Cancelled"]
-    # what the file no longer has is removed, through the kernel, and the result is judged
-    assert {"kind": "remove_transition", "transition": "TR-RETURN"} in report["state_machine"]["transactions"]
+    # the file was not read in full, so nothing it lacks is removed (issue #165), and the report says so
+    assert not any(s["kind"].startswith("remove") for s in report["state_machine"]["transactions"])
+    assert "removes nothing" in reasons["removing transition Return"]
 
 
 def test_a_tool_written_xmi_is_read_whatever_its_namespace_version():
@@ -266,3 +267,17 @@ def test_http_export_and_import_save_nothing(tmp_path):
     with studio.store.transaction() as u:
         assert u.active()["model"] == before
     app.state.play.stop()
+
+
+def test_a_partly_read_file_removes_nothing_and_says_so():
+    """Issue #165: a renamed transition is not read, so its old one must not be removed by the plan."""
+    pack, data = loan()
+    text, _ = export_model("plantuml", pack, None, data)
+    report = import_model("plantuml", text.replace("CheckOut [", "CheckOutItem [", 1), pack, None, data)
+    assert report["status"] == "PARTIAL" and report["state_machine"]["transactions"] == []
+    lost = {u["element"]: u["reason"] for u in report["unmapped"]}
+    assert "action CheckOutItem is not declared" in lost["transition CheckOutItem"]
+    assert "removes nothing" in lost["removing transition CheckOut"]
+    # a file read in full still removes what it no longer has, through the kernel, and the result is judged
+    whole = import_model("plantuml", "\n".join(x for x in text.splitlines() if "Return [" not in x), pack, None, data)
+    assert {"kind": "remove_transition", "transition": "TR-RETURN"} in whole["state_machine"]["transactions"]

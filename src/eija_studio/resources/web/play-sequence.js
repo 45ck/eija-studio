@@ -220,15 +220,14 @@
 
   function lifeline(parent, l, s) {
     const top = s.head.y, h = s.head.height;
-    // A person is a stick figure; an AI agent, a timer or an external system is a box, as on the use case diagram. Either
-    // way the name and the role take a line each, so a long one stays inside its column.
-    const role = l.kind === "actor" && (result.actors.find((x) => x.id === l.name) || {}).role;
-    const kind = l.kind === "actor" ? P.roleKind(role) : "", look = kind && P.actorLook[kind];
+    // A person is a stick figure; an AI agent, a timer or an external system (ADR-0210) is a box with its keyword, as on
+    // the use case diagram. Either way the name and the role take a line each, so a long one stays inside its column.
+    const kind = l.kind === "actor" ? l.actor_kind || "human" : "", look = kind && P.actorLook[kind];
     if (kind === "human") {
       graph.insertVertex({ parent, id: `head:${l.id}`, value: l.label.replace(" : ", " :\n"), position: [l.x - 14, top - 4], size: [28, h - 8],
         style: { ...FONT, shape: "actor", fillColor: "#ffffff", strokeColor: INK, verticalLabelPosition: "bottom", verticalAlign: "top", fontSize: 12, selectable: false } });
     } else if (kind) {
-      graph.insertVertex({ parent, id: `head:${l.id}`, value: `«${kind}»\n${l.label.replace(" : ", " :\n")}`, position: [l.x - 80, top - 4], size: [160, h],
+      graph.insertVertex({ parent, id: `head:${l.id}`, value: l.label.replace(/^(«\w+») /, "$1\n").replace(" : ", " :\n"), position: [l.x - 80, top - 4], size: [160, h],
         style: { ...FONT, rounded: kind === "agent", fillColor: look.fill, strokeColor: look.stroke, fontSize: 11, selectable: false } });
     } else {
       graph.insertVertex({ parent, id: `head:${l.id}`, value: l.label, position: [l.x - 80, top], size: [160, h - 6],

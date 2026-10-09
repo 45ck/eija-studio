@@ -66,13 +66,25 @@ Declare the kind on the role in `pack.json`. A role without `kind` is a person.
 
 1. **Use cases** tab: the Supervisor and Customer are stick figures; SupportAgent, SlaTimer and PaymentGateway are «agent», «timer» and «system» boxes.
 2. **Chat**: `allow SupportAgent to ApproveRefund`. The plan is refused and names `only-people-approve`, `approved-by-people` and `person-in-the-loop`. Ask `Let the support agent approve refunds itself` and the offline proposer offers the hand-off instead (the agent escalates to a supervisor), which the policy allows.
-3. **Simulate**: under the totals, one line each for People, AI agents, Timers and External systems: what they tried, what went through and the kernel's refusals (the paused agent's `ACTOR_REVOKED`, an agent's slip at `ApproveRefund` as `ROLE_DENIED`).
-4. **Laws** tab: every law holds over every run, with the kind laws named in plain language.
-5. **Tests** tab: `The AI agent cannot approve the refund it proposed` passes because the kernel refuses the step.
+3. **Sequences**: select *The AI agent cannot approve the refund it proposed*. The «agent» lifeline calls `ApproveRefund()` inside a `neg` fragment and the record answers `refused: ROLE_DENIED`.
+4. **Simulate**: under the totals, one line each for People, AI agents, Timers and External systems: what they tried, what went through and the kernel's refusals (the paused agent's `ACTOR_REVOKED`, an agent's slip at `ApproveRefund` as `ROLE_DENIED`).
+5. **Laws** tab: every law holds over every run, with the kind laws named in plain language.
+6. **Tests** tab: `The AI agent cannot approve the refund it proposed` passes because the kernel refuses the step.
+7. **Inspector**: choose the Supervisor (outline or diagram) and set **Held by** to *AI agent*. The step "Make Supervisor an AI agent" joins the plan and is refused, naming the same laws. "Who may take it" lists each role with its kind, for example *SupportAgent (AI agent)*.
+
+## A second example: AI ops deploys
+
+`packs/ai-ops` is the same pattern in another domain. An AI ops agent opens a change and asks for a build. The CI server («system») reports green or red, the engineer on call signs the deploy off (when on the rota), the deploy window («timer») starts the rollout, and the health monitor («system») confirms it or rolls it back on its own.
+
+- `only-on-call-signs-off` and `scheduled-by-people` keep the decision to ship with a person; `person-before-production` says no run reaches production without one.
+- `ci-reports-green` (`only_kind_holds` with `role_kinds: ["system"]`) means the agent cannot mark its own build as passing.
+- Rolling back needs no person: machines may always move toward safety. Kind laws are directional; write them only where a decision has to stay with a person.
+
+In the **Sequences** tab, «agent», «timer» and «system» lifelines are drawn as actor boxes with their keyword, and the step the kernel refuses (the agent signing off) is a `neg` fragment with the kernel's reply.
 
 ## Not modelled yet
 
 - **Amounts.** "The agent may approve refunds under 50" needs value guards in the kernel (issue #93). Today a law keeps the whole decision with a person.
 - **Elapsed time.** A timer is an actor that acts when run, not `after(48h)`; time triggers are issue #93.
 - **Agents talking to agents, or to other records.** Messages and cross-object actions are issue #93; one record moves through one state machine.
-- **Declaring a kind from a sketch, the chat or a UML import.** A system started in PlayIDE gets people as roles; set `kind` in its `pack.json`.
+- **Declaring a kind from a sketch or the chat.** A system started in PlayIDE gets people as roles. Change one with **Held by** in the inspector (step 7 above), bring it in from a UML file, or set `kind` in its `pack.json`.

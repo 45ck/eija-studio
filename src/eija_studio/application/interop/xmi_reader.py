@@ -176,6 +176,25 @@ def _skip_other_kinds(root: ET.Element, parsed: Parsed) -> None:
             parsed.skip(located(element), f"{kind} {element.get('name')}", f"a UML {kind} is not in PlayIDE's model")
 
 
+def _base(element: ET.Element) -> str | None:
+    """The element a stereotype application extends: `base_Actor` as an attribute or as an `xmi:idref` child."""
+    found = next((v for k, v in element.attrib.items() if local(k) == "base_Actor"), None)
+    child = next((c for c in element if local(c.tag) == "base_Actor"), None)
+    return found or (xattr(child, "idref") if child is not None else None)
+
+
+def _actors(root: ET.Element, parsed: Parsed) -> None:
+    """Each `Actor` with the stereotypes applied to it (ADR-0210): an application is any element whose `base_Actor`
+    names the actor, whatever profile namespace the tool wrote, so «agent», «timer» and «system» read back by name."""
+    applied: dict[str, list[str]] = {}
+    for element in root.iter():
+        base = _base(element)
+        if base:
+            applied.setdefault(base, []).append(local(element.tag))
+    for actor in of_type(root, "Actor"):
+        parsed.actor(" ".join((actor.get("name") or "").split()), applied.get(xattr(actor, "id") or "", []), located(actor))
+
+
 def parse(text: str) -> Parsed:
     root = xml_root(text, "An XMI file")
     doc, parsed = XmiDocument(root), Parsed()
@@ -184,4 +203,5 @@ def parse(text: str) -> Parsed:
     for kind in ("Actor", "UseCase"):
         if any(uml_type(e) == kind for e in root.iter()):
             parsed.derive(kind, f"{kind}s")
+    _actors(root, parsed)
     return parsed

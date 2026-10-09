@@ -59,6 +59,13 @@ Chosen option: a role kind and three kind laws, because they say the thing engin
 * Bad: "an agent may approve refunds under 50" needs value guards (issue #93); today a law can only keep the whole decision with a person.
 * Revisit when: value guards or timers land in the kernel, or a sketch, UML import or chat needs to declare a role's kind.
 
+## Amendment, 9 October 2026: change a role's kind in the inspector (issue #156)
+
+* The actor inspector shows **Held by** as a choice of the four kinds. Changing it adds the plan step `set_role_kind` (role, kind), labelled You like any drawn edit and undoable. It is not a kernel transaction: like a data-model step (ADR-0202) it changes a draft of the pack held in memory (`application.data_steps.set_kinds`), checked as any pack is, so the kind laws are bound to the draft's kinds. The policy then judges the plan's model with that draft, so making the only approver an AI agent is refused and names the laws, as the chat's `allow SupportAgent to ApproveRefund` is. A draft in which a kind law can no longer be met by any role is refused (`ROLE_KIND_INVALID`), and so is a role the pack does not declare. Nothing is written: as for a law edit, making it real goes through review (#80).
+* The step is allowed on every pack, not only on a system you started, because it is only ever checked, never applied.
+* "Who may take it" (the transition editor, the inspector's row and its "Let … take it" tools) names each role's kind when it is not a person, for example *SupportAgent (AI agent)*. An accepted kind step shows on the use case diagram as the plan would have it.
+* Still open in issue #156: kinds in a sketch and a chat phrase (other lanes). UML import and export carry kinds since #175.
+
 ## OSS check (required for any custom module)
 
 | OSS checked | Why adapter/dependency use was insufficient | Replacement or fork path |
