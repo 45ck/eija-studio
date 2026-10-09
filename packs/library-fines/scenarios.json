@@ -1,0 +1,65 @@
+{
+  "schema_version": "eija.scenarios.v1",
+  "id": "library-fines",
+  "scenarios": [
+    {
+      "id": "pay-a-fine",
+      "title": "A member pays a fine",
+      "steps": [
+        {
+          "actor": "member-1",
+          "action": "Pay",
+          "then": {
+            "state": "Paid"
+          }
+        }
+      ]
+    },
+    {
+      "id": "dispute-then-waive",
+      "title": "A member disputes a fine and a librarian concedes the dispute",
+      "steps": [
+        {
+          "actor": "member-1",
+          "action": "Dispute",
+          "then": {
+            "state": "Disputed"
+          }
+        },
+        {
+          "actor": "librarian-1",
+          "action": "Concede",
+          "then": {
+            "state": "Waived"
+          }
+        }
+      ]
+    },
+    {
+      "id": "member-cannot-waive",
+      "title": "A member cannot waive their own fine",
+      "steps": [
+        {
+          "actor": "member-1",
+          "action": "Waive",
+          "then": {
+            "refused": "ROLE_DENIED"
+          }
+        }
+      ]
+    },
+    {
+      "id": "revoked-member-cannot-pay",
+      "title": "A revoked member cannot act on a fine",
+      "steps": [
+        {
+          "actor": "member-revoked",
+          "action": "Pay",
+          "then": {
+            "refused": "ACTOR_REVOKED"
+          }
+        }
+      ]
+    }
+  ]
+}

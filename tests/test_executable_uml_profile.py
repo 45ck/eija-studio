@@ -1,4 +1,5 @@
-"""The executable UML semantics table (docs/architecture/executable-uml.md, ADR-0165) names every guard and change kind.
+"""The executable UML semantics table (docs/architecture/executable-uml.md, ADR-0165) names every guard, change kind and
+kind of actor (ADR-0210).
 
 A guard or transaction kind added to the code without a row stating its meaning when it runs fails here, so the
 supported semantics stay explicit.
@@ -8,6 +9,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import get_args
 
+from eija_studio.domain.laws import ROLE_KINDS
 from eija_studio.domain.models import Guard
 from eija_studio.domain.transactions import TRANSACTION_KINDS
 
@@ -25,4 +27,9 @@ def test_every_guard_has_a_stated_meaning():
 
 def test_every_change_kind_has_a_stated_meaning():
     missing = [k for k in TRANSACTION_KINDS if f"| `{k}` |" not in _rows()]
+    assert missing == []
+
+
+def test_every_kind_of_actor_has_a_stated_meaning():
+    missing = [k for k in ROLE_KINDS if f"| Actor «{k}»" not in _rows()]
     assert missing == []

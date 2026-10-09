@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### 9 October 2026: AI agents, timers and external systems in the model
+
+- A role can now be held by a person (the default), an AI agent, a timer or an external system. The use case diagram draws a person as a stick figure and the others as «agent», «timer» and «system» actor boxes ([ADR-0210](docs/adr/0210-actors-that-are-not-people.md)).
+- Three new laws are about the kind of actor rather than one role: only a person takes an action, only a person moves a record into a state, and a person acted on every record before it reached a state. They hold for agent roles added later, and a role nobody declared never counts as a person. The policy, the law proof and the generated SMT check judge them.
+- A new example pack, **Refund desk**: an AI agent triages and proposes refunds, a timer escalates, the payment system confirms or fails a payout, and only a supervisor on shift approves. Ask the chat to `allow SupportAgent to ApproveRefund` and the plan is refused, naming the three laws.
+- **Simulate** reports what the people, agents, timers and external systems each tried and what the kernel answered. How to model them: [Model AI agents, timers and external systems](docs/modelling-agents.md).
+
 ### 9 October 2026: PlayIDE polish, round 7 (readable on a laptop)
 
 - The state machine is laid out top to bottom when that draws it clearly larger, as on a laptop with the side bar and the chat open. Before, Library loan was shrunk to a third of its size in one long row, with 5-pixel labels; at 1280 pixels it is now drawn at full size. The direction is chosen once, when the diagram is first drawn, so an edit or a preview never turns it. The Changes view follows the same direction.

@@ -66,11 +66,16 @@ Every view has one of three standings. **Executable**: the kernel runs it. **Che
 | Class diagram | «record» class and its attributes | executable | Values a record is created with, checked by type, choice, length and required-ness (`FIELD_*` codes). | `domain/data.py` `check_values` |
 | Class diagram | Other classes and associations | derived design | Drawn and kept with the model; not stored or checked by the app yet. | `domain/data.py` |
 | Use cases | Actor, use case, association | checked design | Roles and actions read from the state machine, plus "Create" for the record. They are the same facts, drawn another way. | `domain/screens.py` `use_cases` |
+| Use cases | Actor «human» (stick figure, the default) | checked design | A role held by a person. The kernel authorises it like any role; kind laws count it for `role_kinds: ["human"]` (ADR-0210). | `domain/pack.py` `Role.kind` |
+| Use cases | Actor «agent» | checked design | A role held by an AI agent. Authorised like any role (an agent is refused `ROLE_DENIED` for a step it does not hold, `ACTOR_REVOKED` once paused); never counts as a person for a kind law. | `domain/pack.py` `Role.kind` |
+| Use cases | Actor «timer» | checked design | A role held by a scheduled job. It acts when it is run, like any actor; elapsed-time triggers are not modelled yet (issue #93). | `domain/pack.py` `Role.kind` |
+| Use cases | Actor «system» | checked design | A role held by an external system calling in (a payment provider's callback). Authorised like any role. | `domain/pack.py` `Role.kind` |
 | Screens | Screen, field, button | checked design | Which attributes a use case shows, in what order. `check_screens` refuses a create screen missing a required attribute or a field the record lacks; no app is built from screens it refuses. | `domain/screens.py` |
 | Sequence | Commit sequence | derived | The order of calls in one `execute`, drawn from the algorithm. | `application/diagrams.py` |
 | Sequence | Simulate trace | derived | What seeded users did, step by step, as the kernel decided it. | `application/simulation.py` |
 | Sequence | Scenario (`scenarios.json`): lifelines, messages, state invariants, `neg` fragments | checked design | Each step is run through `execute` by `scenario_run` with the pack's fixture actors; one the model can't do is flagged with the kernel's refusal, and a step drawn in a `neg` must be refused (ADR-0177, ADR-0195). | `application/sequences.py` |
 | Component | Components, interfaces | derived | Read from the generated app's code: it shows the app asking the kernel for every decision. | `application/components.py` |
+| Component | System landscape: workflows, provided actions, actors, shared classes | checked design | The packs beside the open one that share a class with it. The owner of a class is the workflow whose record it is, and disagreeing copies of a shared class are flagged. Links are design dependencies; workflows do not message each other yet (ADR-0203). | `application/landscape.py` |
 
 The change vocabulary is closed too. Each kind is a typed record the policy checks before anyone accepts it:
 
@@ -87,14 +92,14 @@ The change vocabulary is closed too. Each kind is a typed record the policy chec
 | `set_guards` | Change a transition's guards; the base guards can never be removed. |
 | `set_effects` | Change a transition's required effects; the policy holds them to the action's declaration. |
 
-`tests/test_executable_uml_profile.py` fails if a guard or change kind exists in the code without a row here.
+`tests/test_executable_uml_profile.py` fails if a guard, change kind or kind of actor exists in the code without a row here.
 
 ## Laws: the layer above the UML
 
 The diagrams say what the system does. The laws say what it must never do, whatever any diagram says. They are typed records in each pack's `pack.json` (`domain/laws.py`), for example "only a librarian checks a loan out", "every path to Returned passes through OnLoan" and "a returned loan is closed". They are checked three ways, from cheapest to deepest ([ADR-0166](../adr/0166-laws-proved-over-every-run-for-any-pack.md)):
 
 1. **On the table, on every edit.** The protected policy refuses a model or edit that breaks a law and names it. The AI's plan steps and drawn edits pass through it.
-2. **Over every run, for any pack.** `eija laws` and PlayIDE's **Laws** tab explore every configuration a new record can reach. They try every action by every kind of actor through the kernel, and judge every run with the laws' own evaluator. Each law gets a verdict:
+2. **Over every run, for any pack.** `eija laws` and PlayIDE's **Laws** tab explore every configuration a new record can reach. They try every action by every class of actor through the kernel, and judge every run with the laws' own evaluator. Each law gets a verdict:
    - HOLDS
    - BROKEN, with the shortest run that breaks it, shown on the state machine
    - VACUOUS, when nothing ever reaches what the law is about
@@ -104,6 +109,12 @@ The diagrams say what the system does. The laws say what it must never do, whate
 
 ```console
 eija laws --pack packs/library-loan     # every law, its verdict and its evidence
+```
+
+Three laws are about the kind of actor holding a role rather than one named role, so they still bite when an agent role is added later ([ADR-0210](../adr/0210-actors-that-are-not-people.md)): `only_kind_holds` (only a person approves), `only_kind_enters` (only a person moves a record into a state) and `path_requires_kind` (a person acted on every record before it reached a state). A role the pack does not declare has no kind and never counts, so they fail closed.
+
+```console
+eija laws --pack packs/refund-desk      # an AI agent, a timer and a payment system, with a person in the loop
 ```
 
 In PlayIDE, **Edit the law file** opens the laws exactly as `pack.json` holds them. A draft is checked as the pack loader checks it and proved over every run before anything is kept. Nothing is saved from the IDE, and loosening a law stays the owner's reviewed step. **Formal checks for this pack** lists which deeper checkers cover the pack and how ([ADR-0177](../adr/0177-law-files-and-test-cases-in-playide.md)).
@@ -119,7 +130,7 @@ The tests a pack has, from narrowest to widest:
 | Scenarios | People, in PlayIDE's **Tests** tab or by hand | `packs/<pack>/scenarios.json` | `eija scenarios`, the Tests tab, `tests/test_scenarios.py` |
 | Conformance cases: every state, action, fixture actor and version | Generated (`appgen.oracle_cases`) | The built app's `tests/` | `eija build`, then `python -m unittest` in the app |
 | The same cases on a second engine | Generated | `verification/scxml/` | `python -m verification.scxml.differential` |
-| Every run, by every kind of actor, against the laws | Generated | none (searched on demand) | `eija laws`, the Laws tab |
+| Every run, by every class of actor, against the laws | Generated | none (searched on demand) | `eija laws`, the Laws tab |
 
 ```console
 eija scenarios --pack packs/library-loan   # every scenario, step by step; exit 2 if one fails

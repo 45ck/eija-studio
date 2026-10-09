@@ -22,6 +22,7 @@
     if (dirty) notice = ""; // a reopening note lasts until the next change
     state.textContent = dirty ? "Unsaved changes" : notice || (savedAt ? `Saved ${when(savedAt)}` : "");
     state.dataset.dirty = String(dirty);
+    document.dispatchEvent(new CustomEvent("playide:savestate"));
   }
 
   async function save() {
@@ -33,6 +34,7 @@
       savedAt = result.saved;
     } catch (error) {
       $("system-saved").textContent = `Not saved (${error.code || "ERROR"}): ${error.message}`;
+      document.dispatchEvent(new CustomEvent("playide:savestate"));
       return;
     }
     setSaveState();

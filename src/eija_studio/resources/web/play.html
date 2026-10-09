@@ -14,6 +14,7 @@
 <link rel="stylesheet" href="/assets/play-systems.css">
 <link rel="stylesheet" href="/assets/play-tests.css">
 <link rel="stylesheet" href="/assets/play-interop.css">
+<link rel="stylesheet" href="/assets/play-landscape.css">
 <script src="/assets/vendor/dagre.min.js" defer></script>
 <script src="/assets/vendor/maxgraph.min.js" defer></script>
 <script src="/assets/play-shell.js" defer></script>
@@ -28,6 +29,7 @@
 <script src="/assets/play-sequence.js" defer></script>
 <script src="/assets/play-systems.js" defer></script>
 <script src="/assets/play-interop.js" defer></script>
+<script src="/assets/play-landscape.js" defer></script>
 </head>
 <body>
 <header class="bar">
@@ -35,7 +37,7 @@
     <span id="system-controls" class="system-controls" hidden>
       <button id="system-menu" class="quiet system-menu" type="button" aria-haspopup="dialog" aria-controls="systems-dialog" title="Open another system or start a new one">Systems</button>
       <button id="system-save" class="quiet" type="button" aria-keyshortcuts="Control+S" title="Save your work in progress on this system (Ctrl+S). Nothing is applied to the model." disabled>Save</button>
-      <span id="system-saved" class="system-saved muted small" role="status" aria-live="polite"></span>
+      <span id="system-saved" class="system-saved muted small" hidden></span>  <!-- its text is shown in the status bar (one place for save state) -->
     </span>
   </div>
   <div class="bar-end">
@@ -141,7 +143,15 @@
       </div>
       <div id="class-canvas" class="canvas" tabindex="0" role="tabpanel" aria-labelledby="tab-classes" hidden></div>
       <div id="usecase-canvas" class="canvas" tabindex="0" role="tabpanel" aria-labelledby="tab-usecases" hidden></div>
+      <div id="component-bar" class="component-bar" hidden>
+        <div id="component-lens" class="lens" role="group" aria-label="Component diagram of">
+          <button type="button" data-lens="system" aria-pressed="false" title="The workflows this one forms a system with, and where their class diagrams disagree">System</button>
+          <button type="button" data-lens="app" aria-pressed="true" title="The app this model builds, read from its generated files">This app's code</button>
+        </div>
+        <p id="landscape-summary" class="landscape-summary" role="status" aria-live="polite"></p>
+      </div>
       <div id="component-canvas" class="canvas" tabindex="0" role="tabpanel" aria-labelledby="tab-components" hidden></div>
+      <div id="landscape" class="canvas" tabindex="0" role="region" aria-label="System: the workflows as one component diagram" hidden></div>
       <div id="access-panel" class="access" tabindex="0" role="tabpanel" aria-labelledby="tab-access" hidden></div>
       <div id="screens" class="designer" role="tabpanel" aria-labelledby="tab-screens" hidden>
         <nav class="screen-list" aria-labelledby="screen-list-title"><h3 id="screen-list-title">Use cases</h3><ul id="screen-list"></ul></nav>
@@ -242,6 +252,7 @@
             <span class="sim-tools"><button id="sim-replay" type="button" class="quiet">Replay</button><button id="sim-clear" type="button" class="quiet">Clear</button></span></div>
           <p id="sim-summary" class="sim-summary"></p>
           <div id="sim-codes" class="chips"></div>
+          <ul id="sim-kinds" class="sim-kinds" aria-label="Who acted, by kind of actor" hidden></ul>
           <h3>Worth a look</h3><ul id="sim-findings" class="findings"></ul>
           <h3>Run log</h3><ol id="sim-log" class="log"></ol>
           <p class="muted small" id="sim-limits"></p>

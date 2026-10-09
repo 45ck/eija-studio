@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/laws.py
   title: domain/laws.py
   hash_method: ast-api-v1
-  sha256: 3b6790cf48320e851fafa1ec44c57f02cdd739312cff69fc4554ba453898a775
-notes_baseline: da85625c81c5b015d58d3e0889e960981185132f878e5ea7e79b52a0c9467bfb
+  sha256: b0369d14040baf88fef2588950434c38337acfd6520632fea32a5e46b61740b3
+notes_baseline: 503bac2f4d60a6d4e4b23735db6bc760e0cac55a680f08c3b56b7577c41e3cf7
 ---
 
 # domain.laws
@@ -47,13 +47,19 @@ Nothing here names a domain: every state, role, action and effect comes from the
 * [`CODE`](/symbols/domain/laws/CODE.md) (constant) - no docstring
 * [`ClosedShape`](/symbols/domain/laws/ClosedShape.md) (class) - The workflow has exactly these states and actions and this initial state.
 * [`ForbiddenEffects`](/symbols/domain/laws/ForbiddenEffects.md) (class) - No transition requires any of ``effects`` and every transition declares them forbidden.
+* [`KIND_LAWS`](/symbols/domain/laws/KIND_LAWS.md) (constant) - no docstring
 * [`LAW_ID`](/symbols/domain/laws/LAW_ID.md) (constant) - no docstring
 * [`LAW_KINDS`](/symbols/domain/laws/LAW_KINDS.md) (constant) - no docstring
 * [`Law`](/symbols/domain/laws/Law.md) (type-alias) - no docstring
 * [`Name`](/symbols/domain/laws/Name.md) (type-alias) - no docstring
+* [`OnlyKindEnters`](/symbols/domain/laws/OnlyKindEnters.md) (class) - Every transition entering ``state`` is held by a role of one of ``role_kinds``.
+* [`OnlyKindHolds`](/symbols/domain/laws/OnlyKindHolds.md) (class) - Every transition performing ``action`` is held by a role of one of ``role_kinds`` (e.g.
 * [`OnlyRoleHolds`](/symbols/domain/laws/OnlyRoleHolds.md) (class) - Every transition performing ``action`` is held by ``role``.
 * [`PathRequires`](/symbols/domain/laws/PathRequires.md) (class) - Every path from the initial state to ``state`` passes through ``via`` (a sequence law).
+* [`PathRequiresKind`](/symbols/domain/laws/PathRequiresKind.md) (class) - Every path from the initial state to ``state`` includes a step by a role of one of ``role_kinds``, the step entering ``…
+* [`ROLE_KINDS`](/symbols/domain/laws/ROLE_KINDS.md) (constant) - no docstring
 * [`RequiresEvidence`](/symbols/domain/laws/RequiresEvidence.md) (class) - A review needs evidence of this kind; judged by the evidence matrix, never by the table.
+* [`RoleKind`](/symbols/domain/laws/RoleKind.md) (type-alias) - no docstring
 * [`RoleNeverEnters`](/symbols/domain/laws/RoleNeverEnters.md) (class) - No transition held by ``role`` enters ``state``.
 * [`RoleNeverHolds`](/symbols/domain/laws/RoleNeverHolds.md) (class) - No transition performing ``action`` is held by ``role``.
 * [`StateFinal`](/symbols/domain/laws/StateFinal.md) (class) - No transition leaves ``state``.
@@ -85,6 +91,7 @@ _No curated notes yet._
 * [adapters.plan_proposals](/modules/adapters/plan_proposals.md) - Offline plan proposer for the PlayIDE chat (ADR-0156): a bounded phrase grammar and the pack's modelled meanings, never an LLM.
 * [application.law_proof](/modules/application/law_proof.md) - Prove a pack's laws over every run the kernel allows (ADR-0166).
 * [application.ripple](/modules/application/ripple.md) - Ripple (ADR-0158): what one change to the state machine does to every other diagram of the same system, and the follow-on edits that would keep them in agreeme…
+* [application.simulation](/modules/application/simulation.md) - Seeded simulation of people using the app built from a model (ADR-0152).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
 * [domain.policy](/modules/domain/policy.md) - Generic policy: coherence with a domain pack's declared action catalog, the pack's laws, and declared effects.
 * [domain.laws.ActionRequiresGuard](/symbols/domain/laws/ActionRequiresGuard.md) - Every transition performing ``action`` carries at least ``guards``.
@@ -93,13 +100,19 @@ _No curated notes yet._
 * [domain.laws.CODE](/symbols/domain/laws/CODE.md) - Constant `CODE` in `domain/laws`.
 * [domain.laws.ClosedShape](/symbols/domain/laws/ClosedShape.md) - The workflow has exactly these states and actions and this initial state.
 * [domain.laws.ForbiddenEffects](/symbols/domain/laws/ForbiddenEffects.md) - No transition requires any of ``effects`` and every transition declares them forbidden.
+* [domain.laws.KIND_LAWS](/symbols/domain/laws/KIND_LAWS.md) - Constant `KIND_LAWS` in `domain/laws`.
 * [domain.laws.LAW_ID](/symbols/domain/laws/LAW_ID.md) - Constant `LAW_ID` in `domain/laws`.
 * [domain.laws.LAW_KINDS](/symbols/domain/laws/LAW_KINDS.md) - Constant `LAW_KINDS` in `domain/laws`.
 * [domain.laws.Law](/symbols/domain/laws/Law.md) - Type alias `Law` in `domain/laws`.
 * [domain.laws.Name](/symbols/domain/laws/Name.md) - Type alias `Name` in `domain/laws`.
+* [domain.laws.OnlyKindEnters](/symbols/domain/laws/OnlyKindEnters.md) - Every transition entering ``state`` is held by a role of one of ``role_kinds``.
+* [domain.laws.OnlyKindHolds](/symbols/domain/laws/OnlyKindHolds.md) - Every transition performing ``action`` is held by a role of one of ``role_kinds`` (e.g.
 * [domain.laws.OnlyRoleHolds](/symbols/domain/laws/OnlyRoleHolds.md) - Every transition performing ``action`` is held by ``role``.
 * [domain.laws.PathRequires](/symbols/domain/laws/PathRequires.md) - Every path from the initial state to ``state`` passes through ``via`` (a sequence law).
+* [domain.laws.PathRequiresKind](/symbols/domain/laws/PathRequiresKind.md) - Every path from the initial state to ``state`` includes a step by a role of one of ``role_kinds``, the step entering ``state`` included: a human in the loop be…
+* [domain.laws.ROLE_KINDS](/symbols/domain/laws/ROLE_KINDS.md) - Constant `ROLE_KINDS` in `domain/laws`.
 * [domain.laws.RequiresEvidence](/symbols/domain/laws/RequiresEvidence.md) - A review needs evidence of this kind; judged by the evidence matrix, never by the table.
+* [domain.laws.RoleKind](/symbols/domain/laws/RoleKind.md) - Type alias `RoleKind` in `domain/laws`.
 * [domain.laws.RoleNeverEnters](/symbols/domain/laws/RoleNeverEnters.md) - No transition held by ``role`` enters ``state``.
 * [domain.laws.RoleNeverHolds](/symbols/domain/laws/RoleNeverHolds.md) - No transition performing ``action`` is held by ``role``.
 * [domain.laws.StateFinal](/symbols/domain/laws/StateFinal.md) - No transition leaves ``state``.
