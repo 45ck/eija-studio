@@ -230,7 +230,8 @@
     },
     {
       "id": "BillingSystem",
-      "description": "The billing system: ends trials, records failed payments and suspends."
+      "kind": "system",
+      "description": "The external billing system: ends trials, records failed payments and suspends."
     },
     {
       "id": "SuccessManager",

@@ -113,3 +113,45 @@ def test_see_the_app_as_a_role_and_inspect_an_actor_in_a_real_browser():
             assert errors == []
         finally:
             chrome.close()
+
+
+def test_run_as_reuses_a_build_only_while_its_app_still_runs():
+    play = (WEB / "play.js").read_text(encoding="utf-8")
+    assert '!$("run").hidden && $("run-frame").src.startsWith(lastBuild.url)' in play  # Stop blanks the frame: build again
+
+
+def test_the_generated_app_knows_which_actors_are_not_people():
+    assert '"kinds": {r.id: r.kind for r in PACK.roles}' in (ROOT / "src/eija_studio/resources/appgen/server.py.tmpl").read_text(encoding="utf-8")
+    assert "you stand in for its API calls" in (APP / "app.js.tmpl").read_text(encoding="utf-8")
+
+
+@pytest.mark.browser
+@pytest.mark.slow
+@browser
+def test_an_ai_agent_has_no_screens_only_calls_in_a_real_browser():
+    api = pytest.importorskip("playwright.sync_api", reason="NOT_RUN: install the hci or demos extra")
+    from demos.lib import ephemeral_eija_server  # noqa: PLC0415 - demos start a real server; only this opt-in test needs it
+
+    with ephemeral_eija_server(pack=ROOT / "packs/refund-desk") as server, api.sync_playwright() as playwright:
+        chrome = _launch(api, playwright)
+        try:
+            page = chrome.new_page(viewport={"width": 1600, "height": 900})
+            errors: list[str] = []
+            page.on("pageerror", lambda error: errors.append(str(error)))
+            page.goto(f"{server.base_url}/play#{server.token}")
+            page.wait_for_selector("body[data-ready=true]", timeout=60_000)
+            page.click("#tab-screens")
+            page.click(".lens-role[data-role=SupportAgent]")
+            page.wait_for_selector("#role-app .role-calls")
+            assert "An AI agent (SupportAgent) has no screens." in page.inner_text("#role-app")
+            calls = page.inner_text("#role-app .role-calls")
+            assert '"action":"AssessRequest","actor":"support-bot"' in calls and '"action":"ProposeRefund"' in calls
+            assert "ApproveRefund" not in calls  # only a person approves (ADR-0210)
+            assert page.locator("#screen-list li").count() == page.locator("#screen-list li.not-theirs").count()
+            assert page.inner_text("#role-app .run-as.primary") == "▶ Stand in for support-bot"
+            page.click('.outline button[data-id="role:SlaTimer"]')
+            page.wait_for_selector("#inspector .role-calls")
+            assert "«timer»" in page.inner_text("#inspector") and "EscalateStale" in page.inner_text("#inspector .role-calls")
+            assert errors == []
+        finally:
+            chrome.close()

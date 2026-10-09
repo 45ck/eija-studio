@@ -149,7 +149,11 @@ function optionRow(o, record) {
 // Who is acting: the role, and a warning when the actor is inactive, since the kernel refuses every step it tries.
 function renderActor() {
   const actor = state.app.actors[state.actor];
-  $("actor-role").textContent = actor ? `${actor.role}${actor.active ? "" : " · inactive: every step is refused"}` : "";
+  // An AI agent, a timer or an external system has no screens (ADR-0210): it calls this app's API. Acting as one here
+  // stands in for those calls, and the server decides them exactly as it decides a click.
+  const kind = actor && (state.app.kinds || {})[actor.role], stand = { agent: "AI agent", timer: "timer", system: "external system" }[kind];
+  const notes = [actor && !actor.active ? "inactive: every step is refused" : "", stand ? `${stand}: you stand in for its API calls` : ""].filter(Boolean);
+  $("actor-role").textContent = actor ? [actor.role, ...notes].join(" · ") : "";
   $("actor-role").className = "role" + (actor && !actor.active ? " warn" : "");
   for (const row of $("rules").children) row.classList.toggle("mine", row.dataset.role === actorRole());
 }

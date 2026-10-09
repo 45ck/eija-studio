@@ -89,6 +89,7 @@ class Parsed:
     links: list[Link] = field(default_factory=list)
     skipped: list[dict[str, str]] = field(default_factory=list)
     derived: list[dict[str, str]] = field(default_factory=list)
+    actors: dict[str, tuple[str, str]] | None = None  # actor -> (kind, where); None when the file draws no actors
 
     def skip(self, where: str, element: str, reason: str) -> None:
         self.skipped.append({"where": where, "element": element, "reason": reason})
@@ -111,10 +112,33 @@ class Parsed:
         else:
             self.initial = name
 
+    def actor(self, name: str, stereotypes: set[str] | list[str] | tuple[str, ...], where: str) -> None:
+        """A use case actor and the kind its stereotype says (ADR-0210): «agent», «timer», «system», else a person."""
+        if self.actors is None:
+            self.actors = {}
+        if name and name not in self.actors:
+            self.actors[name] = (actor_kind(stereotypes), where)
+
     def klass(self, klass: Klass) -> None:
         if self.classes is None:
             self.classes = []
         self.classes.append(klass)
+
+
+# ---- actors -------------------------------------------------------------------------------------------------
+
+ACTOR_KINDS = ("agent", "timer", "system")  # a person ("human") is the plain stick figure and carries no stereotype
+PERSON_STEREOTYPES = ("actor", "human", "person")  # stereotypes some tools put on a person, read as no kind
+
+
+def actor_kind(stereotypes: set[str] | list[str] | tuple[str, ...]) -> str:
+    """The kind of actor a use case actor's stereotypes say: the first of «agent», «timer», «system», else a person."""
+    found = {s.strip().lower() for s in stereotypes}
+    return next((k for k in ACTOR_KINDS if k in found), "human")
+
+
+def kind_label(kind: str) -> str:
+    return "a person" if kind == "human" else f"«{kind}»"
 
 
 # ---- labels -------------------------------------------------------------------------------------------------

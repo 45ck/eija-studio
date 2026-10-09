@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+### 9 October 2026: PlayIDE polish, round 9 (agents, timers and systems look the same everywhere)
+
+- An AI agent, a timer or an external system is drawn the same way on the System lens as on the use case diagram: a box marked «agent», «timer» or «system» in the use case diagram's colours. Before, the Components tab's System lens drew every role as a stick figure, so Refund desk's payment gateway looked like a person. A person is still a stick figure.  The System lens takes each actor's kind from every workflow that declares it, and a role that is a person in one workflow and an agent in another is drawn as a box naming both.
+- The Permissions tab tags each role that is not a person ("AI agent", "timer", "external system") under its name, in the same colours.
+- A lifeline's name and role take a line each on the Sequences tab, so long ones ("supervisor-on-shift : Supervisor") no longer run into the next lifeline.
+- The Components tab's lens bar no longer covers the top of either diagram, and a system of one workflow is drawn at its real size rather than blown up to 140 percent.
+
+### 9 October 2026: PlayIDE says who holds a role, and lets you change it
+
+- Choose an actor and the inspector shows **Held by**: a person, an AI agent, a timer or an external system. Change it and the step joins the plan, checked against the laws about kinds of actor like any edit, and nothing is saved. On **Refund desk**, making the Supervisor an AI agent is refused, naming "Only a person approves a refund". "Who may take it" now names each role's kind, for example *SupportAgent (AI agent)*. See the amendment to [ADR-0210](docs/adr/0210-actors-that-are-not-people.md) (issue #156).
+
+### 9 October 2026: agents in sequence diagrams, and an AI ops example
+
+- In the **Sequences** tab, an AI agent, a timer or an external system is drawn as an actor box with «agent», «timer» or «system» (copied exports carry the keyword too). People stay stick figures.
+- A second agent-heavy example pack, **AI ops deploys**: an AI agent opens and patches changes, the CI server reports the build, the person on call signs the deploy off, a deploy window starts the rollout and the health monitor confirms it or rolls it back. The agent can neither sign its own deploy off nor report its own build green.
+- A kind-path law on the initial state now also judges steps back into that state, on the table as on every run (found by review of the first agents change).
+
 ### 9 October 2026: PlayIDE keeps the diagram readable with Simulate open, and a drawn transition can name a new action
 
 - Opening Simulate no longer shrinks the state machine until its labels are about 7 pixels high (#139). When the canvas is short, fitting stops at a readable size and starts at the top left, where the initial state is, and the rest is a drag away. The **Fit** button still fits the whole diagram, however small. Before, Library loan went to about half size at 1280 by 800 with the panel open.

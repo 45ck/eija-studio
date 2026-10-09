@@ -40,6 +40,7 @@ eija laws --pack packs/library-loan --workflow candidate/workflow.json
 - The class whose instances move through the state machine is `«record»`. In XMI it owns the state machine as its classifier behaviour.
 - Associations keep their kind (composition, aggregation or plain), both multiplicities and the target's role name.
 - Final states are drawn after every state no transition leaves, and the use case diagram has one actor per role and one use case per action.
+- An actor that is not a person ([ADR-0210](adr/0210-actors-that-are-not-people.md)) carries its kind as a stereotype: `«agent»`, `«timer»` or `«system»`. PlantUML writes `actor "SupportAgent" as A_… <<agent>>`. draw.io draws it as a classifier box with the keyword over the name, and a person stays a stick figure. XMI includes a small `PlayIDE actors` profile, with one stereotype per kind extending the `Actor` metaclass, and applies it to each such actor (`<PlayIDE:agent base_Actor="actor.SupportAgent"/>`), which is how UML tools exchange stereotypes. A pack whose roles are all people exports exactly as before. Mermaid has no use case diagram, so its export report lists the kinds as not carried.
 
 ## What an import does
 
@@ -58,6 +59,9 @@ These are reported, never guessed:
 | `Integer`, `DateTime` | read as `Real` and `Date`, and listed |
 | a text attribute without a maximum length | 200, and listed |
 | use case diagrams and final states | derived, so redrawn from the imported model |
+| a transition or composite state that could not be read (a renamed action, say) | nothing in the model is removed by that import: each removal the file implies is listed as kept, so a partly read file never offers a plan that drops what it failed to read (issue #165) |
+| an actor's kind (`«agent»`, `«timer»`, `«system»`, else a person) | read and compared with its role's; a different kind is not imported, because kind laws read it: change it in the pack's roles |
+| any other stereotype on an actor (`«robot»`) | not imported; the actor is read as a person |
 
 XML with a DTD or entities is refused before it is parsed, and so is a compressed draw.io page that holds one. A compressed page may inflate to at most 8 MB.
 
@@ -68,6 +72,7 @@ XML with a DTD or entities is refused before it is parsed, and so is a compresse
 - each trigger becomes a declared action and each `role = X` a declared role; `and assigned` adds the assigned-actor guard;
 - `Audit:Name` and `Notification:Name` effects are kept (at most one of each per action, as the runtime records them); a notification's recipient is not in UML, so it is the transition's role, and the report says so; an action with no effects gets one audit entry;
 - a transition with no role is done by `User`, and the report says so;
+- each actor's stereotype on the use case diagram sets its role's kind: `«agent»`, `«timer»` or `«system»`, else a person. An actor that performs no transition is still declared as a role. A file with no use case diagram (Mermaid) makes every role a person, and the report says so;
 - the class model becomes `data.json`, and its `«record»` class (else the first) is the record. With no class model the record is a class with one `title` attribute;
 - a name the built app's code cannot use (with spaces, say), a second transition for the same action, a value guard and a state with no imported transition are not imported, each with the reason.
 

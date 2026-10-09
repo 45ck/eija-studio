@@ -48,6 +48,6 @@ _No curated notes yet._
 ## Referenced by
 
 * [application.data_steps.is_data](/symbols/application/data_steps/is_data.md) - `def is_data(step: Step) -> bool` in `application/data_steps`.
-* [application.data_steps.split](/symbols/application/data_steps/split.md) - The kernel transactions and the data-model steps, each in plan order.
+* [application.data_steps.split](/symbols/application/data_steps/split.md) - The kernel transactions and the data-model steps, each in plan order (role-kind steps are in neither).
 * [application.plan.describe](/symbols/application/plan/describe.md) - One line a person can check against the diagram.
 <!-- okf:generated:end links -->

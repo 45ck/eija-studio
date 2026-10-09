@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/plan.py#preview_plan
   title: application/plan.py
   hash_method: ast-v2
-  sha256: 22ac7bf870018e342dd540c3bb634efe1a77c935129ea3435decfd6a4d113afb
-notes_baseline: 8100f118f586dad6ba14f2d4a5c2ed82405496aefdd3d47f680e1fd508e7bf5f
+  sha256: b99adaaceb3764fc664340e4b367430508b0f6d60c9321818b4463f8025c6dd0
+notes_baseline: af8613db9d2c2b84dd2c4b24b0df071f98a17d3a357c7fb3ecae69de70c19d13
 ---
 
 # application.plan.preview_plan
@@ -49,7 +49,8 @@ _No curated notes yet._
 * [application.data_steps.Step](/symbols/application/data_steps/Step.md) - Type alias `Step` in `application/data_steps`.
 * [application.data_steps.draft_pack](/symbols/application/data_steps/draft_pack.md) - `pack` as these plan steps would have it, held in memory: on a system the person started (`grows`), the actions and roles they name are declared (ADR-0201) and…
 * [application.data_steps.is_data](/symbols/application/data_steps/is_data.md) - `def is_data(step: Step) -> bool` in `application/data_steps`.
-* [application.data_steps.split](/symbols/application/data_steps/split.md) - The kernel transactions and the data-model steps, each in plan order.
+* [application.data_steps.kind_steps](/symbols/application/data_steps/kind_steps.md) - The role-kind steps, in plan order.
+* [application.data_steps.split](/symbols/application/data_steps/split.md) - The kernel transactions and the data-model steps, each in plan order (role-kind steps are in neither).
 * [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
