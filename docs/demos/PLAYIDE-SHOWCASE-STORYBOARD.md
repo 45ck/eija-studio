@@ -48,7 +48,7 @@ About two and a half minutes, its own unedited take: the title, your change at a
 - **Captions** say what is real and what is not. The offline AI is called an offline phrase reader on screen.
 - **Finishing.** `python -m demos finish playide_showcase` frames the take on a 1080p stage with rounded corners and a shadow. It is encoded as H.264 MP4. Nothing is cut, sped up or reordered.
 
-The README embeds the highlights cut as [`assets/playide-showcase/playide-highlights.mp4`](assets/playide-showcase/playide-highlights.mp4), a 1280-wide H.264 re-encode (`ffmpeg -vf scale=1280:-2 -crf 30 -an -movflags +faststart`) of the finished take, with a poster frame from the "Your change, at a glance" chapter. The full cut sits below it the same way, as [`assets/playide-showcase/playide-showcase.mp4`](assets/playide-showcase/playide-showcase.mp4) with a poster from "The AI's change, at a glance". Re-encode the video and poster after each new take of either cut.
+The README embeds the highlights cut as [`assets/playide-showcase/playide-highlights.mp4`](assets/playide-showcase/playide-highlights.mp4), a 1280-wide H.264 re-encode (`ffmpeg -vf scale=1280:-2 -crf 30 -an -movflags +faststart`) of the finished take, with a poster frame from the "Your change, at a glance" chapter. The full cut sits below it the same way, as [`assets/playide-showcase/playide-showcase.mp4`](assets/playide-showcase/playide-showcase.mp4) with a poster from "Software: the whole system" (the deployment diagram). Re-encode the video and poster after each new take of either cut.
 
 ## Record it
 
