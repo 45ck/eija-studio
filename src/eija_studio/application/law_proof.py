@@ -10,8 +10,9 @@ on an in-memory session); the laws are judged by `laws.evaluate_run` itself, so 
 * Actors: every class the kernel can tell apart. `check_actor` reads only `active`, `role` and `assigned`, so one
   actor per role and per combination of the two flags, plus one actor holding a role the pack does not declare,
   stands for every possible actor.
-* Configurations: the record's state plus the set of path-law waypoints (`path_requires.via`) it has passed. Every
-  other law kind is judged per step, so this product is complete for the current law kinds; `LAW_HANDLING` names
+* Configurations: the record's state plus the set of path-law waypoints (`path_requires.via`) it has passed and of
+  the `path_requires_kind` laws whose kind of actor has already taken a step (ADR-0210). Every other law kind is
+  judged per step, so this product is complete for the current law kinds; `LAW_HANDLING` names
   how each kind is judged and a test fails if a new kind is not classified.
 * Each configuration is reached first by a shortest run, so a counterexample is the shortest run that breaks the law.
 * A law about a state that is never reached, or an action that never commits, holds vacuously; that is reported.
@@ -24,7 +25,7 @@ from collections import deque
 from dataclasses import dataclass, field
 from typing import Any
 
-from eija_studio.domain.laws import LAW_KINDS, PathRequires, Step, applies, evaluate_run, evaluate_table
+from eija_studio.domain.laws import LAW_KINDS, PathRequires, PathRequiresKind, Step, applies, evaluate_run, evaluate_table
 from eija_studio.domain.models import DomainError, ExecuteCommand, Workflow
 from eija_studio.domain.pack import Pack, PackError, parse_pack
 from eija_studio.domain.policy import check_policy
@@ -35,12 +36,13 @@ from .simulation import MemorySession
 FORMAT = "eija.law-proof.v1"
 MAX_CONFIGURATIONS = 20_000
 OUTSIDER = "(undeclared role)"
+Passed = str | tuple[str, str]  # in a configuration: a waypoint state passed, or ("law", id) of a path_requires_kind law met
 LAW_HANDLING = {  # how each law kind is judged here
     "closed_shape": "table", "action_requires_guard": "table",  # about the table, not a run (evaluate_run skips them)
     "requires_evidence": "evidence",  # judged by the evidence matrix of a review
     "only_role_holds": "run", "role_never_holds": "run", "role_never_enters": "run", "state_only_via": "run",
     "action_target": "run", "action_source_in": "run", "forbidden_effects": "run", "state_final": "run",
-    "path_requires": "run",
+    "path_requires": "run", "only_kind_holds": "run", "only_kind_enters": "run", "path_requires_kind": "run",
 }
 assert set(LAW_HANDLING) == set(LAW_KINDS), "classify every law kind"  # noqa: S101 - a module invariant
 LIMITS = (
@@ -94,7 +96,7 @@ def _step_view(step: Step) -> dict[str, Any]:
 class _Search:
     """What the breadth-first search found: configurations, what was reached and the first run breaking each law."""
     actors: int
-    runs: dict[tuple[str, frozenset[str]], list[Step]] = field(default_factory=dict)
+    runs: dict[tuple[str, frozenset[Passed]], list[Step]] = field(default_factory=dict)
     broken: dict[str, list[Step]] = field(default_factory=dict)
     reached: set[str] = field(default_factory=set)
     committed: set[str] = field(default_factory=set)
@@ -108,15 +110,22 @@ def _steps_from(pack: Pack, model: Workflow, actors: list[dict[str, Any]], state
     return [step for step in tried if step is not None]
 
 
-def _record(search: _Search, node: tuple[str, frozenset[str]], step: Step, laws: list[Any], model: Workflow,
-            waypoints: set[str]) -> tuple[str, frozenset[str]] | None:
+def _passed(step: Step, waypoints: set[str], signers: list[PathRequiresKind]) -> set[Passed]:
+    """What this step adds to a configuration: the waypoint (a state name) it enters, and a ("law", id) mark for each
+    `path_requires_kind` law whose kind of actor took it."""
+    marks: set[Passed] = {("law", law.id) for law in signers if law.counts(step.role)}
+    return marks | ({step.target} & waypoints)
+
+
+def _record(search: _Search, node: tuple[str, frozenset[Passed]], step: Step, laws: list[Any], model: Workflow,
+            waypoints: set[str]) -> tuple[str, frozenset[Passed]] | None:
     """Judge the run that ends in `step`; return the configuration it leads to if it is new and may be explored."""
     search.committed.add(step.action)
     search.reached.add(step.target)
     run = [*search.runs[node], step]
     for violation in evaluate_run(laws, model.initial_state, run, {t.action for t in model.transitions}):
         search.broken.setdefault(violation.law, run)
-    following = (step.target, node[1] | ({step.target} & waypoints))
+    following = (step.target, node[1] | _passed(step, waypoints, [x for x in laws if isinstance(x, PathRequiresKind)]))
     if following in search.runs:
         return None
     if len(search.runs) >= MAX_CONFIGURATIONS:
@@ -131,7 +140,7 @@ def _explore(pack: Pack, model: Workflow) -> _Search:
     laws = [law for law in pack.laws if LAW_HANDLING[law.kind] == "run"]
     waypoints = {law.via for law in laws if isinstance(law, PathRequires)}
     actors = actor_classes(pack, model)
-    start = (model.initial_state, frozenset({model.initial_state} & waypoints))
+    start: tuple[str, frozenset[Passed]] = (model.initial_state, frozenset({model.initial_state} & waypoints))
     search = _Search(actors=len(actors), runs={start: []}, reached={model.initial_state})
     queue = deque([start])
     while queue and search.complete:

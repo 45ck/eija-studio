@@ -93,7 +93,7 @@ def test_undo_redo_and_recovery_after_a_reload_in_a_real_browser():
             page.uncheck("#chat-log .plan .plan-steps > li:nth-child(1) input")
             page.wait_for_selector("#chat-log .plan .plan-steps > li:nth-child(1).rejected")
             assert page.get_attribute("#undo", "title").startswith("Undo reject step 1")
-            assert page.text_content("#status-saved") == "Saved in this browser"
+            assert page.text_content("#status-saved").endswith("Edits kept in this browser")
             # A screen edit is undoable too.
             page.click("#tab-screens")
             page.wait_for_selector("#screen-card .screen-title")
@@ -164,7 +164,7 @@ def test_a_saved_draft_opens_as_an_undoable_edit_and_newer_kept_work_wins_in_a_r
             page.click("#chat-send")
             page.wait_for_selector("#chat-log .msg.ai .plan .plan-verdict")
             page.click("#system-save")
-            page.wait_for_selector("#system-saved[data-dirty=false]")
+            page.wait_for_selector("#system-saved[data-dirty=false]", state="attached")
             # Without this browser's copy, a reload opens the saved draft, and opening it is one undoable edit.
             page.evaluate("() => localStorage.clear()")
             page.reload()
@@ -180,10 +180,10 @@ def test_a_saved_draft_opens_as_an_undoable_edit_and_newer_kept_work_wins_in_a_r
             page.wait_for_selector("#chat-log .recovered")
             page.wait_for_selector("#chat-log .plan .plan-steps > li:nth-child(1).rejected")
             page.wait_for_timeout(1000)  # the Save mark refreshes on a timer
-            assert page.text_content("#system-saved") == "Unsaved changes"
+            assert page.text_content("#status-saved").startswith("Unsaved changes · ")
             # Saving it makes the two agree again.
             page.click("#system-save")
-            page.wait_for_selector("#system-saved[data-dirty=false]")
+            page.wait_for_selector("#system-saved[data-dirty=false]", state="attached")
             assert errors == []
         finally:
             chrome.close()

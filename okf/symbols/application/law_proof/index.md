@@ -14,3 +14,7 @@
 * [application.law_proof.compare_laws](compare_laws.md) - Which laws a draft adds, removes or changes.
 * [application.law_proof.prove_laws](prove_laws.md) - Every law of the pack, judged on `model` (the pack's own by default), with the evidence for each verdict.
 * [application.law_proof.with_laws](with_laws.md) - The pack with its law file replaced by `laws` (a draft edited in PlayIDE), checked as the pack loader checks it.
+
+# Type Aliases
+
+* [application.law_proof.Passed](Passed.md) - Type alias `Passed` in `application/law_proof`.
