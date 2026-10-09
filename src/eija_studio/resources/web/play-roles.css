@@ -31,3 +31,7 @@
 .role-inspect .inspector-tools{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 6px}
 .access-grid th .role-head{border:0;background:transparent;padding:0;font:inherit;color:var(--state-line);text-transform:inherit;letter-spacing:inherit;cursor:pointer;text-decoration:underline dotted}
 .role-kind{margin:0 0 4px;font-size:.82rem;color:var(--state-line);font-weight:600}
+.lens-role.machine{border-style:dashed}
+.role-calls{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px;font-size:.8rem}
+.role-calls code{font-size:.78rem;white-space:normal;overflow-wrap:anywhere;background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:1px 6px}
+.role-calls code.body{color:var(--muted)}

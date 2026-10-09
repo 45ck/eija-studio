@@ -21,7 +21,7 @@ MAX_BODY = 16_384
 def describe() -> dict:
     return {"name": PACK.pack.name, "description": PACK.pack.description, "model_hash": MODEL.semantic_hash,
             "initial_state": MODEL.initial_state, "states": list(MODEL.states),
-            "roles": {r.id: r.description for r in PACK.roles},
+            "roles": {r.id: r.description for r in PACK.roles}, "kinds": {r.id: r.kind for r in PACK.roles},
             "transitions": {t.action: {"from": t.from_state, "to": t.to_state, "role": t.role} for t in MODEL.transitions},
             "actors": {a.id: {"role": a.role, "active": a.active} for a in PACK.fixtures.actors},
             "record": RECORD_CLASS.model_dump(mode="json") if RECORD_CLASS else None, "data_digest": DATA.digest if DATA else None,

@@ -2,6 +2,7 @@
 
 ## 2026-10-09
 
+* **Roles that are not people, and Run as after Stop**: re-synced ADR-0215 after its amendment (non-human actors have no screens, only API calls; Run as builds again after Stop) and ADR-0210's back-link. No Notes were hand-edited and nothing was recorded as verified.
 * **See and run the app as each role**: synced ADR-0215 and `interfaces.http` (`pack_summary` adds `role_notes`); ADR-0154 and ADR-0171 gained the back-link. No Notes were hand-edited and nothing was recorded as verified.
 * **Kind-path law on the initial state**: re-synced `domain.laws` after `path_requires_kind` began judging steps back into the initial state on the table. No Notes were hand-edited and nothing was recorded as verified.
 * **Actors that are not people**: synced ADR-0210 and the new `domain.laws` symbols (`RoleKind`, `ROLE_KINDS`, `OnlyKindHolds`, `OnlyKindEnters`, `PathRequiresKind`, `KIND_LAWS`) and `application.law_proof.Passed`; `domain.pack` (`Role.kind`, kind-law binding, `coherence_problems`), `domain.laws` (`Law`, `LAW_KINDS`, `evaluate_table`, `evaluate_run`), `application.law_proof` and `application.simulation` (`by_kind`) refreshed. No Notes were hand-edited and nothing was recorded as verified.

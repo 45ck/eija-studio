@@ -1979,7 +1979,9 @@
 
   // Run the app as one fixture actor: the last build when it is of the model and screens on show, else a new one.
   async function runAs(actor) {
-    if (lastBuild && lastBuild.url && lastBuild.key === viewKey() && lastBuild.conformance.status === "PASS") showRun(lastBuild.url, actor);
+    // Reuse it only while its app still runs in the frame: the run bar's Stop ends the process and blanks the frame.
+    const running = Boolean(lastBuild && lastBuild.url) && !$("run").hidden && $("run-frame").src.startsWith(lastBuild.url);
+    if (running && lastBuild.key === viewKey() && lastBuild.conformance.status === "PASS") showRun(lastBuild.url, actor);
     else await build(actor);
   }
 
