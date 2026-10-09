@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### 9 October 2026: PlayIDE polish, round 9 (agents, timers and systems look the same everywhere)
+
+- An AI agent, a timer or an external system is drawn the same way on the System lens as on the use case diagram: a box marked «agent», «timer» or «system» in the use case diagram's colours. Before, the Components tab's System lens drew every role as a stick figure, so Refund desk's payment gateway looked like a person. A person is still a stick figure.  The System lens takes each actor's kind from every workflow that declares it, and a role that is a person in one workflow and an agent in another is drawn as a box naming both.
+- The Permissions tab tags each role that is not a person ("AI agent", "timer", "external system") under its name, in the same colours.
+- A lifeline's name and role take a line each on the Sequences tab, so long ones ("supervisor-on-shift : Supervisor") no longer run into the next lifeline.
+- The Components tab's lens bar no longer covers the top of either diagram, and a system of one workflow is drawn at its real size rather than blown up to 140 percent.
+
 ### 9 October 2026: PlayIDE says who holds a role, and lets you change it
 
 - Choose an actor and the inspector shows **Held by**: a person, an AI agent, a timer or an external system. Change it and the step joins the plan, checked against the laws about kinds of actor like any edit, and nothing is saved. On **Refund desk**, making the Supervisor an AI agent is refused, naming "Only a person approves a refund". "Who may take it" now names each role's kind, for example *SupportAgent (AI agent)*. See the amendment to [ADR-0210](docs/adr/0210-actors-that-are-not-people.md) (issue #156).

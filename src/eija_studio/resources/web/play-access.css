@@ -31,3 +31,7 @@
 .who-can{margin:2px 0 0;padding:0;list-style:none;font-size:.76rem}
 .who-can .yes{color:var(--ok)}
 .who-can .no{color:var(--muted)}
+.access-grid th .actor-kind{display:block;width:max-content;margin-top:3px;padding:0 6px;border:1px solid;border-radius:4px;font-size:.7rem;font-weight:500}
+.access-grid th .actor-kind.agent{background:#f3edff;border-color:#6b46c1;color:#553c9a;border-radius:999px}  /* the use case diagram's actor colours (play.js) */
+.access-grid th .actor-kind.timer{background:#fff7e6;border-color:#b7791f;color:#8a5a12}
+.access-grid th .actor-kind.system{background:#eef2f6;border-color:#4a5568;color:#2d3748}

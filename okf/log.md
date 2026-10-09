@@ -2,6 +2,7 @@
 
 ## 2026-10-09
 
+* **Actor kinds in the system landscape**: re-synced `application.landscape.landscape` after each workflow began reporting its roles' kinds and each actor the kinds its workflows declare. No Notes were hand-edited and nothing was recorded as verified.
 * **Change who holds a role**: synced the new `application.data_steps` symbols `SetRoleKind`, `kind_steps`, `set_kinds` and `ACTOR_WORDS`, re-synced ADR-0210 after its amendment (#156), and refreshed the pages that link `data_steps` and `plan`. No Notes were hand-edited and nothing was recorded as verified.
 * **Roles that are not people, and Run as after Stop**: re-synced ADR-0215 after its amendment (non-human actors have no screens, only API calls; Run as builds again after Stop) and ADR-0210's back-link. No Notes were hand-edited and nothing was recorded as verified.
 * **Agents in sequence diagrams**: re-synced `application.sequence_layout.place` (actor lifelines carry `actor_kind` and a «kind» label). No Notes were hand-edited and nothing was recorded as verified.

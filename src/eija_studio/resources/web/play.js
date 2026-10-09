@@ -306,12 +306,16 @@
     const g = current();
     if (!g) return;
     const plugin = g.getPlugin("fit");
-    plugin.maxFitScale = 1.4;
-    const scale = plugin.fitCenter({ margin: MARGIN });
+    // The Components tab's lens bar floats over the top of its diagram: leave room for it, and draw a small system no
+    // larger than life, so one workflow is not blown up beside the other tabs.
+    const bar = tab === "components" && !$("component-bar").hidden ? $("component-bar").offsetHeight + 16 : 0;
+    const margin = Math.max(MARGIN, bar);
+    plugin.maxFitScale = bar ? 1 : 1.4;
+    const scale = plugin.fitCenter({ margin });
     if (all === true || !(scale < READABLE)) return;
     const v = g.view, b = g.getGraphBounds(), box = g.container, k = READABLE;
     const w = b.width / v.scale, h = b.height / v.scale, x0 = b.x / v.scale - v.translate.x, y0 = b.y / v.scale - v.translate.y;
-    const along = (room, size, start) => (size * k <= room - 2 * MARGIN ? (room / k - size) / 2 - start : MARGIN / k - start);
+    const along = (room, size, start) => (size * k <= room - 2 * margin ? (room / k - size) / 2 - start : margin / k - start);
     v.scaleAndTranslate(k, along(box.clientWidth, w, x0), along(box.clientHeight, h, y0));
   }
 
@@ -2499,7 +2503,7 @@
   const changeLook = (status, part) => (window.PlayDiff && shownChange ? window.PlayDiff.look(status, part) : {});
 
   window.PlayIDE = {
-    api, el, hooks, about, roleKind, kinds: ACTOR_KINDS, inForce: (role) => roleKinds[role] || "human",
+    api, el, hooks, about, roleKind, kinds: ACTOR_KINDS, actorLook: ACTOR_LOOK, inForce: (role) => roleKinds[role] || "human",
     // Change who holds a role: a step in the plan like any drawn edit, checked by the server against the laws about
     // kinds of actor; nothing is saved (#156). The review view changes nothing.
     setKind: (role, to) => (REVIEW_VIEW ? null : addStep({ kind: "set_role_kind", role, to })), reviewing: () => REVIEW_VIEW, viewKey, label, restyle, clearSim, select, showTab, fit, importPlan, runAs, openScreen,
