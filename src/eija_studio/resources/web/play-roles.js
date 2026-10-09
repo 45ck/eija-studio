@@ -101,12 +101,27 @@
     return box;
   }
 
+  // Who holds the role, as a choice: changing it adds a step to the plan, which the server checks against the laws about
+  // kinds of actor (only a person approves, ...), like any drawn edit. Nothing is saved (ADR-0210, #156).
+  function kindPicker(role, kind) {
+    const label = P.el("label", "Held by ", { class: "role-kind" }), select = P.el("select", undefined, { "aria-label": `Who holds ${role}` });
+    for (const [k, words] of Object.entries(P.kinds)) {
+      const option = P.el("option", words + (k === kind && k !== P.inForce(role) ? " (in the plan)" : ""), { value: k });
+      option.selected = k === kind;
+      select.append(option);
+    }
+    select.addEventListener("change", () => P.setKind(role, select.value));
+    label.append(select);
+    return label;
+  }
+
   // ---- The inspector for an actor -----------------------------------------------------------------------------------
   async function inspectRole(id, box) {
     if (!id.startsWith("role:")) return;
     const role = id.slice(5), notes = (P.pack() && P.pack().role_notes) || {};
     const kind = P.roleKind ? P.roleKind(role) : "human"; // a person, an AI agent, a timer or an external system (ADR-0210)
     if (kind !== "human" && P.kinds) box.append(P.el("p", `«${P.kinds[kind]}»`, { class: "role-kind" }));
+    if (P.setKind && P.kinds && !P.reviewing()) box.append(kindPicker(role, kind));
     if (notes[role]) box.append(P.el("p", notes[role], { class: "muted" }));
     const body = P.el("div", undefined, { class: "role-inspect", "aria-live": "polite" });
     body.append(P.el("p", "Asking the kernel…", { class: "muted small" }));

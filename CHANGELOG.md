@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### 9 October 2026: PlayIDE says who holds a role, and lets you change it
+
+- Choose an actor and the inspector shows **Held by**: a person, an AI agent, a timer or an external system. Change it and the step joins the plan, checked against the laws about kinds of actor like any edit, and nothing is saved. On **Refund desk**, making the Supervisor an AI agent is refused, naming "Only a person approves a refund". "Who may take it" now names each role's kind, for example *SupportAgent (AI agent)*. See the amendment to [ADR-0210](docs/adr/0210-actors-that-are-not-people.md) (issue #156).
+
 ### 9 October 2026: agents in sequence diagrams, and an AI ops example
 
 - In the **Sequences** tab, an AI agent, a timer or an external system is drawn as an actor box with «agent», «timer» or «system» (copied exports carry the keyword too). People stay stick figures.

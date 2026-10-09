@@ -21,8 +21,16 @@
   // others are drawn as an actor classifier with their keyword, as UML allows.
   let roleKinds = {};
   const ACTOR_KINDS = { human: "person", agent: "AI agent", timer: "timer", system: "external system" };
+  const A_KIND = { human: "a person", agent: "an AI agent", timer: "a timer", system: "an external system" };
   const ACTOR_GROUPS = { human: "People", agent: "AI agents", timer: "Timers", system: "External systems" };
-  const roleKind = (role) => roleKinds[role] || "human";
+  // A role's kind as the plan would have it, while the plan is previewed (and so allowed): an accepted "make X an AI
+  // agent" step shows on every diagram (#156). Back on the model, the kind in force.
+  const roleKind = (role) => {
+    const shown = plan && plan.previewing && plan.result && plan.result.legal;
+    const step = shown ? accepted().filter((t) => t.kind === "set_role_kind" && t.role === role).at(-1) : null;
+    return step ? step.to : roleKinds[role] || "human";
+  };
+  const kindNote = (role) => (roleKind(role) === "human" ? "" : ` (${ACTOR_KINDS[roleKind(role)]})`); // "Who may take it" says who
   const hooks = { redraw: [], inspect: [], laws: [], tab: [], changeSelect: [], edit: [], screens: [] }; // the run bar (play-run.js) redraws its marks and adds inspector tools; play-laws.js and play-access.js draw their tabs
   // the Changes view (play-diff.js, ADR-0176) closes when another tab is shown and answers current() while open;
   // edit hears every undoable edit (ADR-0198); screens hears the screen designer redraw its list and card (play-roles.js)
@@ -357,7 +365,7 @@
       const t = transition(id.slice(11));
       box.append(el("h3", `${t.action} (${t.id})`));
       row(dl, "Path", `${t.from_state} → ${t.to_state}`);
-      row(dl, "Who", t.role);
+      row(dl, "Who", t.role + kindNote(t.role));
       row(dl, "Guards", t.guards.join(", "));
       row(dl, "Effects", t.required_effects.join(", ") || "none");
       row(dl, "Never", t.forbidden_effects.join(", ") || "nothing listed");
@@ -823,7 +831,8 @@
 
   // The state machine's changes, then the class diagram's (ADR-0202).
   function changesOf(result) {
-    const states = changes(result.diff), classes = (result.data_changes || []).join("; ");
+    const kinds = accepted().filter((t) => t.kind === "set_role_kind").map((t) => `makes ${t.role} ${A_KIND[t.to]}`);
+    const states = changes(result.diff), classes = [...(result.data_changes || []), ...kinds].join("; ");
     return states === "no visible change" && classes ? classes : [states, classes].filter(Boolean).join("; ");
   }
 
@@ -1196,10 +1205,20 @@
     if (plan.result) renderPlan(plan.result);
   }
 
+  // A role-kind step is shown on the use case diagram, on the actor it changes (ADR-0210, #156).
+  function showRoleStep(i) {
+    showTab("usecases");
+    select("role:" + plan.steps[i].transaction.role, false);
+    $("inspector").prepend(stepNote(i));
+    if (plan.steps[i].author === "ai" && !plan.steps[i].checked) { plan.steps[i].checked = true; earn(1, `Looked at AI step ${i + 1} on the diagram`); }
+    if (plan.result) renderPlan(plan.result);
+  }
+
   function showStep(i) {
     const step = plan.steps[i];
     if (!plan.previewing && plan.result && plan.result.legal) enterPreview();
     if (DATA_STEPS.includes(step.transaction.kind)) { showClassStep(i); return; }
+    if (step.transaction.kind === "set_role_kind") { showRoleStep(i); return; }
     if (tab !== "states") showTab("states");
     const id = cellOf(step.transaction);
     let cell = graph.getDataModel().getCell(id);
@@ -1403,7 +1422,7 @@
   function changeRole(cell) {
     const t = transition(cell.id.slice(11)), [x, y] = cellBox(cell) ? [cellBox(cell).x, cellBox(cell).y] : [20, 20];
     if (!t) return; // drawn in this plan: change it in the plan instead
-    const role = choose(packInfo.roles, t.role);
+    const role = choose(packInfo.roles, t.role, (r) => r + kindNote(r));
     inlineEdit(`Who may take ${t.action}`, { fields: [["Who may take it", role]], make: () => ({ kind: "set_role", transition: t.id, role: role.value }) },
       x + 8, y + 8);
   }
@@ -1553,7 +1572,7 @@
   // declares as a sketch would: a text box that suggests the declared names and says when a name is new.
   function named(values, value, what, used = new Set()) {
     const id = `names-${what}-${++named.n}`, list = el("datalist", undefined, { id });
-    for (const v of values) list.append(el("option", undefined, { value: v, label: used.has(v) ? `${v} (already used)` : v }));
+    for (const v of values) list.append(el("option", undefined, { value: v, label: used.has(v) ? `${v} (already used)` : what === "role" ? v + kindNote(v) : v }));
     const input = el("input", undefined, { list: id, value, required: "", maxlength: "40", pattern: "[A-Za-z][A-Za-z0-9_]{0,39}",
       placeholder: `A ${what}, or a new name`, autocomplete: "off", title: "Letters, digits and _; starts with a letter" });
     const note = el("span", "", { class: "muted small new-name" });
@@ -1606,7 +1625,7 @@
     const fresh = packInfo.actions.find((a) => !used.has(a));
     const action = packInfo.own_system ? named(packInfo.actions, fresh || "", "action", used) // your own system can name a new one
       : choose(packInfo.actions, fresh || packInfo.actions[0], (a) => a + (used.has(a) ? " (already used)" : ""));
-    const role = packInfo.own_system ? named(packInfo.roles, packInfo.roles[0], "role") : choose(packInfo.roles, packInfo.roles[0]);
+    const role = packInfo.own_system ? named(packInfo.roles, packInfo.roles[0], "role") : choose(packInfo.roles, packInfo.roles[0], (r) => r + kindNote(r));
     return { fields: [["From", from], ["To", to], ["Action", action], ["Who may take it", role]],
       make: () => ({ kind: "add_transition", id: newId(action.value), action: action.value, from_state: from.value, to_state: to.value, role: role.value }) };
   }
@@ -1646,7 +1665,7 @@
   function transitionTools(t) {
     const others = packInfo.roles.filter((r) => r !== t.role);
     return draftTools([
-      ...others.map((r) => [`Let ${r} take it`, () => addStep({ kind: "set_role", transition: t.id, role: r })]),
+      ...others.map((r) => [`Let ${r}${kindNote(r)} take it`, () => addStep({ kind: "set_role", transition: t.id, role: r })]),
       ["Move an end…", () => drawForm("move", t.id)],
       ["Remove", () => addStep({ kind: "remove_transition", transition: t.id })],
     ]);
@@ -2231,7 +2250,7 @@
     return ({
       add_state: () => `add state ${tx.state}`, remove_state: () => `remove state ${tx.state}`, rename_state: () => `rename ${tx.state} to ${tx.to}`,
       set_initial: () => `start records in ${tx.state}`, add_transition: () => `add ${tx.action}`, remove_transition: () => `remove ${name}`,
-      set_role: () => `let ${tx.role} take ${name}`, retarget_transition: () => `move ${name}'s ${tx.end} to ${tx.state}`,
+      set_role: () => `let ${tx.role} take ${name}`, set_role_kind: () => `make ${tx.role} ${A_KIND[tx.to]}`, retarget_transition: () => `move ${name}'s ${tx.end} to ${tx.state}`,
     }[tx.kind] || (() => tx.kind.replace(/_/g, " ")))();
   }
 
@@ -2480,7 +2499,10 @@
   const changeLook = (status, part) => (window.PlayDiff && shownChange ? window.PlayDiff.look(status, part) : {});
 
   window.PlayIDE = {
-    api, el, hooks, about, roleKind, kinds: ACTOR_KINDS, viewKey, label, restyle, clearSim, select, showTab, fit, importPlan, runAs, openScreen,
+    api, el, hooks, about, roleKind, kinds: ACTOR_KINDS, inForce: (role) => roleKinds[role] || "human",
+    // Change who holds a role: a step in the plan like any drawn edit, checked by the server against the laws about
+    // kinds of actor; nothing is saved (#156). The review view changes nothing.
+    setKind: (role, to) => (REVIEW_VIEW ? null : addStep({ kind: "set_role_kind", role, to })), reviewing: () => REVIEW_VIEW, viewKey, label, restyle, clearSim, select, showTab, fit, importPlan, runAs, openScreen,
     screens: () => screens, data: () => data, // the screen designer's screens and the class diagram (play-roles.js reads them)
     graph: () => graph, tab: () => tab, model: () => model, selected: () => selected, pack: () => packInfo, base: () => baseModel,
     direction: () => direction || "LR", // the state machine's layout, which the Changes view follows
