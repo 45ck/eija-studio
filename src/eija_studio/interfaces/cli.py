@@ -4,7 +4,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from pydantic import ValidationError
 from eija_studio import __version__
-from eija_studio.bootstrap import build_studio, resolve_pack, source_identity, KEYED_PROVIDERS, PROVIDER_NAMES
+from eija_studio.bootstrap import build_studio, resolve_pack, source_identity, KEYED_PROVIDERS, PROVIDER_NAMES, SystemLibrary
 from eija_studio.domain.models import Workflow, DomainError, OWNER, fingerprint
 from eija_studio.domain.policy import check_policy, first_supported_meaning, projections
 from eija_studio.domain.impact import model_impact
@@ -18,6 +18,7 @@ from eija_studio.application.diagram_catalog import FORMATS, VIEWS, VIEW_FORMATS
 from eija_studio.weave.cli import COMMANDS as WEAVE_COMMANDS, add_parsers as add_weave_parsers
 from .agent_config import DEFAULT_MAX_PROVIDER_CALLS, snippet
 from .app_build import add_parser as add_build_parser, build as build_app
+from .play_systems import StudioHandle, Systems, add_parser as add_new_parser, default_home, start_system
 from .uml_interop import add_parser as add_uml_parser, uml_command
 
 
@@ -133,6 +134,14 @@ def laws_command(args) -> int:
     return 0 if report["status"] == "HOLDS" else 2
 
 
+def new_command(args) -> int:
+    """`eija new` (ADR-0185): start a system from a sketch or a template in the systems home."""
+    sketch = args.sketch.read_text(encoding="utf-8") if args.sketch else ""
+    code, result = start_system(SystemLibrary(args.systems or default_home()), args.name, args.template, args.record, sketch)
+    output(result)
+    return code
+
+
 def _add_scenarios_parser(subs) -> None:
     run = subs.add_parser("scenarios", help="Run the pack's scenarios (its test cases, scenarios.json) through the kernel")
     run.add_argument("--pack", type=Path, help="Domain pack directory or JSON file (defaults to EIJA_PACK or packs/default.json)")
@@ -154,7 +163,7 @@ def scenarios_command(args) -> int:
 
 
 EARLY_COMMANDS = {"check-export": check_export_command, "render": render_command, "build": build_command,
-                  "scxml": scxml_command, "laws": laws_command, "scenarios": scenarios_command,
+                  "scxml": scxml_command, "laws": laws_command, "scenarios": scenarios_command, "new": new_command,
                   "uml": lambda args: uml_command(args, resolve_pack(args.pack)), **WEAVE_COMMANDS}  # need no workspace, provider or key
 
 
@@ -219,6 +228,17 @@ def _agent_diagram(model: Workflow, view: str, fmt: str) -> str:
     return render_view("journey" if view == "journeys" else "state", fmt, model)
 
 
+def _systems(studio, args, key=None):
+    """PlayIDE's systems (ADR-0185): the studio behind a handle that opening another system swaps, and the systems home.
+    Another system gets a studio like this one (same provider and settings) on its own workspace, without `--repo`."""
+    from eija_studio.domain.pack import default_location
+    handle = StudioHandle(studio)
+    opener = lambda pack, workspace: build_studio(workspace, args.provider, args.model, args.allow_network, key,  # noqa: E731
+                                                  formal=not args.no_formal, pack=pack)
+    launched = Path(args.pack) if args.pack else default_location()
+    return handle, Systems(handle, SystemLibrary(args.systems or default_home()), opener, launched, args.workspace)
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="eija", description="EIJA Studio — bounded local assurance POC")
     parser.add_argument("--version", action="version", version=__version__)
@@ -235,6 +255,7 @@ def main(argv=None) -> int:
         subs.add_parser(command, parents=[common])
     serve = subs.add_parser("serve", parents=[common]); serve.add_argument("--port", type=int, default=8765); serve.add_argument("--open", action="store_true")
     serve.add_argument("--repo", type=Path, help="Explicit local repository to inspect read-only; never executes its code")
+    serve.add_argument("--systems", type=Path, default=None, help="Where systems started in PlayIDE are kept (default EIJA_SYSTEMS or ~/PlayIDE)")
     demo = subs.add_parser("demo", parents=[common]); demo.add_argument("--out", type=Path, default=Path("demo-case.json"))
     propose = subs.add_parser("propose", parents=[common]); propose.add_argument("request"); propose.add_argument("--consent", action="store_true")
     verify = subs.add_parser("verify", parents=[common]); verify.add_argument("case_id"); verify.add_argument("--expected-version", type=int, required=True)
@@ -248,6 +269,7 @@ def main(argv=None) -> int:
     _add_laws_parser(subs)
     _add_scenarios_parser(subs)
     add_uml_parser(subs)
+    add_new_parser(subs)
     add_weave_parsers(subs)
     mcp = subs.add_parser("mcp", parents=[common], help="Serve the agent-facing MCP server on stdio (needs the agents extra)")
     mcp.add_argument("--repo", type=Path, help="Explicit local repository to inspect read-only; never executes its code")
@@ -290,7 +312,8 @@ def main(argv=None) -> int:
             if args.open:
                 # Browser may briefly arrive before the listener; refresh if necessary.
                 webbrowser.open(url)
-            uvicorn.run(create_app(studio, token, args.port), host="127.0.0.1", port=args.port, access_log=False, log_level="warning")
+            handle, systems = _systems(studio, args, key)
+            uvicorn.run(create_app(handle, token, args.port, systems=systems), host="127.0.0.1", port=args.port, access_log=False, log_level="warning")
         elif args.command == "list":
             output([{k: c[k] for k in ("id", "stage", "version", "request")} for c in studio.store.list_cases()])
         elif args.command == "propose":

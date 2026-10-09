@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="/assets/play-review.css">
 <link rel="stylesheet" href="/assets/play-shell.css">
 <link rel="stylesheet" href="/assets/play-diff.css">
+<link rel="stylesheet" href="/assets/play-systems.css">
 <link rel="stylesheet" href="/assets/play-tests.css">
 <link rel="stylesheet" href="/assets/play-interop.css">
 <script src="/assets/vendor/dagre.min.js" defer></script>
@@ -23,11 +24,18 @@
 <script src="/assets/play-assist.js" defer></script>
 <script src="/assets/play-access.js" defer></script>
 <script src="/assets/play-diff.js" defer></script>
+<script src="/assets/play-systems.js" defer></script>
 <script src="/assets/play-interop.js" defer></script>
 </head>
 <body>
 <header class="bar">
-  <div class="brand"><span class="logo" aria-hidden="true">▶</span><strong>PlayIDE</strong><span id="model-name" class="model-name"></span></div>
+  <div class="brand"><span class="logo" aria-hidden="true">▶</span><strong>PlayIDE</strong><span id="model-name" class="model-name"></span>
+    <span id="system-controls" class="system-controls" hidden>
+      <button id="system-menu" class="quiet system-menu" type="button" aria-haspopup="dialog" aria-controls="systems-dialog" title="Open another system or start a new one">Systems</button>
+      <button id="system-save" class="quiet" type="button" aria-keyshortcuts="Control+S" title="Save your work in progress on this system (Ctrl+S). Nothing is applied to the model." disabled>Save</button>
+      <span id="system-saved" class="system-saved muted small" role="status" aria-live="polite"></span>
+    </span>
+  </div>
   <div class="bar-end">
     <div class="layout-toggles" role="group" aria-label="Layout">
       <button id="toggle-left" class="icon-btn" type="button" aria-pressed="true" title="Model and inspector (Ctrl+B)" aria-label="Model and inspector" aria-keyshortcuts="Control+B"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><rect class="fill" x="2.5" y="3.5" width="4" height="9"/></svg></button>
@@ -222,7 +230,7 @@
   <div id="split-chat" class="split v" role="separator" aria-orientation="vertical" aria-label="Resize the chat" tabindex="0"></div>
   <aside class="side">
     <section class="chat" aria-labelledby="chat-title">
-      <div class="run-head"><h2 id="chat-title">Chat</h2><span class="mode" title="The AI only proposes. You accept or reject each step; nothing is saved from here.">Plan mode</span></div>
+      <div class="run-head"><h2 id="chat-title">Chat</h2><span class="mode" title="The AI only proposes. You accept or reject each step; nothing is applied to the model from here.">Plan mode</span></div>
       <ol id="chat-log" class="chat-log" aria-live="polite">
         <li class="msg ai"><p>Ask for a change and I'll propose a plan of steps. You accept or reject each one and preview it before anything changes. For example: <em id="chat-example">add state Archived after a state</em>.</p></li>
       </ol>
@@ -244,5 +252,29 @@
     <span class="keys"><kbd>Ctrl K</kbd> commands</span>
   </span>
 </footer>
+<dialog id="systems-dialog" class="systems-dialog" aria-labelledby="systems-title">
+  <div class="systems-head"><h2 id="systems-title">Systems</h2><button id="systems-close" class="icon-btn" type="button" aria-label="Close">✕</button></div>
+  <div class="tabs" role="tablist" aria-label="Systems">
+    <button id="systems-tab-open" role="tab" type="button" aria-selected="true" aria-controls="systems-open-pane">Open</button>
+    <button id="systems-tab-new" role="tab" type="button" aria-selected="false" aria-controls="systems-new-pane">New system</button>
+  </div>
+  <section id="systems-open-pane" role="tabpanel" aria-labelledby="systems-tab-open"></section>
+  <section id="systems-new-pane" role="tabpanel" aria-labelledby="systems-tab-new" hidden>
+    <form id="systems-form">
+      <label for="systems-name">Name</label>
+      <input id="systems-name" type="text" maxlength="80" placeholder="Support desk" autocomplete="off">
+      <fieldset><legend>Start from</legend><div id="systems-templates" class="systems-templates"></div></fieldset>
+      <div id="systems-sketch-box">
+        <label for="systems-record">Record class</label>
+        <input id="systems-record" type="text" maxlength="40" value="Ticket" autocomplete="off">
+        <label for="systems-sketch">State machine</label>
+        <textarea id="systems-sketch" rows="7" spellcheck="false"></textarea>
+        <p id="systems-sketch-help" class="muted small"></p>
+      </div>
+      <div id="systems-check" class="systems-check" role="status" aria-live="polite"></div>
+      <div class="systems-actions"><button id="systems-create" class="primary" type="submit" disabled>Create and open</button></div>
+    </form>
+  </section>
+</dialog>
 </body>
 </html>

@@ -105,6 +105,7 @@ _No curated notes yet._
 * [adapters.repository_changes](/modules/adapters/repository_changes.md) - Read-only, bounded comparison of two local Git commits.
 * [adapters.self_facts](/modules/adapters/self_facts.md) - Syntactic facts about EIJA's own review implementation, never a conformance proof.
 * [adapters.sqlite_store](/modules/adapters/sqlite_store.md) - Durable local unit of work.
+* [adapters.system_library](/modules/adapters/system_library.md) - Where a person's own systems live on disk (ADR-0185): one folder per system under a systems home, the recent list, and the saved draft of the work in progress.
 * [application.access](/modules/application/access.md) - Who can do what (ADR-0171): the model's permissions as a role by state matrix, each cell checked by the kernel, and reachability questions such as "can a recor…
 * [application.appgen](/modules/application/appgen.md) - App generation: a reviewed workflow model becomes a runnable app and its conformance oracle (ADR-0150).
 * [application.compiler](/modules/application/compiler.md) - Compiler: model → projections + impacts + obligations + computed review packet.
@@ -113,6 +114,7 @@ _No curated notes yet._
 * [application.formal](/modules/application/formal.md) - Formal evidence in the application layer: seal what an adapter collected, and build the packet view.
 * [application.history](/modules/application/history.md) - Semantic history is a projection of typed commands, replayed by the existing policy interpreter.
 * [application.law_proof](/modules/application/law_proof.md) - Prove a pack's laws over every run the kernel allows (ADR-0166).
+* [application.new_system](/modules/application/new_system.md) - Start a new system (ADR-0185): the pack documents for a system started from a sketch or copied from a template.
 * [application.plan](/modules/application/plan.md) - Plan mode for the PlayIDE chat (ADR-0156): an AI proposes a change as numbered typed steps; the person accepts or rejects each one and sees what the accepted o…
 * [application.ports](/modules/application/ports.md) - Application-owned ports.
 * [application.review](/modules/application/review.md) - Review a model change in PlayIDE instead of a pull request (ADR-0175).
@@ -134,6 +136,7 @@ _No curated notes yet._
 * [interfaces.app_build](/modules/interfaces/app_build.md) - `eija build`: write a runnable app generated from a pack's model, then run its kernel conformance tests (ADR-0150).
 * [interfaces.http](/modules/interfaces/http.md) - Loopback-only local adapter.
 * [interfaces.play](/modules/interfaces/play.md) - PlayIDE routes: the visual UML canvas page, Build & run of the model as a live app beside it (ADR-0151), and Simulate, seeded simulated users whose every step…
+* [interfaces.play_systems](/modules/interfaces/play_systems.md) - PlayIDE's systems (ADR-0185): start a new system from a sketch or a template, open one you made before, and save the work in progress to carry on later.
 * [interfaces.uml_interop](/modules/interfaces/uml_interop.md) - `eija uml export` and `eija uml import`: UML interchange from the command line (ADR-0190).
 * [domain.pack.ActionSpec](/symbols/domain/pack/ActionSpec.md) - The declared guards and required effects of one action; the policy holds every transition to them.
 * [domain.pack.Actor](/symbols/domain/pack/Actor.md) - `class Actor(Contract)` in `domain/pack`.

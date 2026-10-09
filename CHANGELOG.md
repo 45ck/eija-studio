@@ -9,6 +9,10 @@
 - Simulation findings say "refused once" and "refused 12 times", not "time(s)".
 - The review view's title bar keeps **Import / Export** and **Review workbench** on one line, and the layout toggles side by side, beside the read-only badge.
 
+### 8 October 2026: your own systems in PlayIDE
+
+- PlayIDE is no longer limited to the shipped packs. **Systems** in the title bar opens a dialog: **Open** lists recent systems and the ones in your systems home, and **New system** starts one from a sketch or from a template. A sketch is the state machine typed as the diagram labels it, one `From -> To : Action [Role]` per line, and the kernel's pack check runs as you type. **Save** (Ctrl+S) keeps your plan and edited screens as a draft on that system; reopening it restores them and checks every step again. Nothing is applied to the model. Systems live in `~/PlayIDE` (`--systems` or `EIJA_SYSTEMS` to change it), each with its own workspace. `eija new` does the same from the command line. See [ADR-0185](docs/adr/0185-start-open-and-save-your-own-system.md).
+
 ### 8 October 2026: PlayIDE polish
 
 - A plan the policy refuses now says which laws it would break, in the pack's own words ("Only a librarian checks a loan out."), with the policy codes after them.
