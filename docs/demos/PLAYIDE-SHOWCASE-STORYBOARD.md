@@ -26,11 +26,12 @@ The spine stays (Calvin, 2026-10-09 02:50): how easy it is to understand a UML c
 | 9 | Share it as UML | `/play?view=review`: read-only diagrams, Permissions and runs for a stakeholder who reads UML | ADR-0172 | Recorded in v3 |
 | 10 | Bring your own UML tools | PlantUML edited elsewhere comes back as one typed edit with the laws holding; a support desk from another tool becomes a new system with a report of what was not carried | ADR-0190 | Recorded in v3 |
 | 11 | AI agents, timers and systems, in real sectors | Systems, New system: the templates (building permit, card payment, parcel delivery, SaaS subscription, specialist referral, refund desk). Open Refund desk: «agent», «timer» and «system» actors beside the people. Ask for a hand-off to a supervisor and slip in `allow SupportAgent to ApproveRefund`: three person-in-the-loop laws refuse the plan. Untick that step and the ring says "Caught it"; the hand-off alone is allowed. Sequences draws the test where the agent's ApproveRefund() call is answered "refused: ROLE_DENIED". Simulate: what people, agents, timers and systems tried, and what the kernel refused | #159, #161 (ADR-0210), #172 | Scripted |
-| 12 | Start your own | Describe an app in a sentence; every view is drawn from it and "What's missing" lists what to do next | Greenfield thread | Waits on its merge; v3's three-line sketch until then |
-| 13 | Ship it | Verify, approve and apply | Issue #80 | Placeholder card |
-| 14 | End card | "Design the people, the agents and the software. Then play it." | Title card | Scripted |
+| 12 | No record gets stuck | Systems, New system, Building permit. Ask `add state OnHold after InReview then add HoldApplication from InReview to OnHold for PlanReviewer`: the plan is refused (APPLICATION_STUCK), because an application on hold could never be certified, refused, withdrawn or lapsed. Laws lists "Every application can still be finished", proved over every run | #191 (ADR-0221) | Scripted |
+| 13 | Start your own | Describe an app in a sentence; every view is drawn from it and "What's missing" lists what to do next | Greenfield thread | Waits on its merge; v3's three-line sketch until then |
+| 14 | Ship it | Verify, approve and apply | Issue #80 | Placeholder card |
+| 15 | End card | "Design the people, the agents and the software. Then play it." | Title card | Scripted |
 
-Chapter chips number only the beats that are shown, so a skipped beat leaves no gap. The AI is the offline phrase reader (`offline-plan-fixture-v1`) throughout, and every chat card says so on screen. Beats 11 and 12 open another system from the Systems dialog, so the page reloads on it; the systems are throwaway (`EIJA_SYSTEMS` is a temporary folder).
+Chapter chips number only the beats that are shown, so a skipped beat leaves no gap. The AI is the offline phrase reader (`offline-plan-fixture-v1`) throughout, and every chat card says so on screen. Beats 11, 12 and 13 open another system from the Systems dialog, so the page reloads on it; the systems are throwaway (`EIJA_SYSTEMS` is a temporary folder).
 
 Wording to keep: "review the change, not the code" and "the app cannot disobey the model". Wording to avoid: "generate apps from UML", "compliant" and "replaces PRs".
 
@@ -59,4 +60,4 @@ python -m demos finish playide_showcase          # demos/output/playide_showcase
 python -m demos run playide_highlights && python -m demos finish playide_highlights
 ```
 
-When a pending feature merges, replace its `scene.skip(PENDING[...])` line with the real act and record again. The take becomes `recorded` (no skipped beats) only when beat 8 runs, which needs issue #80.
+When a pending feature merges, replace its `scene.skip(PENDING[...])` line with the real act and record again. The take becomes `recorded` (no skipped beats) only when the ship beat (14) runs, which needs issue #80.

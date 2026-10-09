@@ -18,6 +18,7 @@ AI_REQUEST = "add Renew from Overdue to OnLoan for Librarian then remove transit
 BUILD_TIMEOUT_MS = 600_000
 AI_CARD = ".msg.ai:last-child"
 APP = "#run-frame >> internal:control=enter-frame >>"  # inside the built app's frame
+PERMIT_HOLD = "add state OnHold after InReview then add HoldApplication from InReview to OnHold for PlanReviewer"
 AGENT_RISKY = "add HandOff from Assessed to WithSupervisor for SupportAgent then allow SupportAgent to ApproveRefund"
 RIPPLE_CARD = ".msg:last-child"  # the chat card that shows a drawn change's ripple (ADR-0158)
 ROOT = Path(__file__).resolve().parents[2]
@@ -80,6 +81,7 @@ def run(scene: Scene, server: RunningServer) -> None:
     _stakeholder_view(scene, chapter, server)
     _bring_your_own_uml(scene, chapter, server)
     _agents(scene, chapter)
+    _no_record_stuck(scene, chapter)
     _start_your_own(scene, chapter)
     scene.skip(PENDING["ship"])
     scene.clear_caption()
@@ -89,6 +91,18 @@ def run(scene: Scene, server: RunningServer) -> None:
     scene.title_card("Design the people, the agents and the software. Then play it.",
                      "Review the change, not the code. The app cannot disobey the model. You decide what ships. "
                      "PlayIDE, built on EIJA Studio (Apache-2.0)", hold_ms=4600)
+
+
+def _create_system(scene: Scene) -> None:
+    """Create the system in the Systems dialog; the page reloads on it. A plan still open asks before leaving: yes."""
+    def leave(dialog) -> None:  # the plan on screen is a throwaway
+        dialog.accept()
+
+    scene.page.on("dialog", leave)
+    with scene.page.expect_navigation(timeout=60_000):
+        scene.click("#systems-create")
+    scene.page.remove_listener("dialog", leave)
+    scene.reattach("body[data-ready=true]")
 
 
 def _model_is_the_program(scene: Scene, chapter: _Chapters) -> None:
@@ -443,10 +457,7 @@ def _agents(scene: Scene, chapter: _Chapters) -> None:
     scene.zoom_out()
     scene.click("#systems-templates input[value=refund-desk]")
     scene.type_text("#systems-name", "Refund desk", clear=True)
-    scene.page.once("dialog", lambda dialog: dialog.accept())  # the imported plan is a throwaway: leave it
-    with scene.page.expect_navigation(timeout=60_000):
-        scene.click("#systems-create")
-    scene.reattach("body[data-ready=true]")
+    _create_system(scene)
     scene.expect_text("#outline-states", "WithSupervisor")
     scene.chapter(
         chapter.n, "AI agents in the model"
@@ -535,6 +546,37 @@ def _bring_your_own_uml(scene: Scene, chapter: _Chapters, server: RunningServer)
     scene.click("#systems-close")
 
 
+def _no_record_stuck(scene: Scene, chapter: _Chapters) -> None:
+    """The building permit's "every application can still be finished" law refuses a dead end (#151, ADR-0221)."""
+    chapter("No record gets stuck")
+    scene.caption("A building permit, from another template. Every application must still be able to finish.")
+    scene.click("#system-menu")
+    scene.click("#systems-tab-new")
+    scene.click("#systems-templates input[value=building-permit]")
+    scene.type_text("#systems-name", "Building permit", clear=True)
+    _create_system(scene)
+    scene.expect_text("#outline-states", "InReview")
+    scene.chapter(chapter.n, "No record gets stuck")  # the reload dropped the chip: show it again, same number
+    scene.click("#tab-states")
+    scene.caption("Ask to put an application on hold during plan review, with no way back out.")
+    scene.type_text("#chat-input", PERMIT_HOLD)
+    scene.click("#chat-send")
+    scene.expect_text(f"{AI_CARD} .plan-verdict.bad", "APPLICATION_STUCK", timeout_ms=30_000)
+    scene.caption(
+        "Refused: an application put on hold could never be certified, refused, withdrawn or lapsed. A dead end."
+    )
+    scene.zoom(f"{AI_CARD} .plan-verdict", scale=1.5)
+    scene.wait(2800)
+    scene.zoom_out()
+    scene.click("#tab-laws")
+    scene.expect_text("#laws", "Every application can still be finished")
+    scene.caption("It is one of the permit's laws, proved over every run the kernel allows.")
+    scene.zoom("#laws", scale=1.2)
+    scene.wait(2200)
+    scene.zoom_out()
+    scene.click("#tab-states")
+
+
 def _start_your_own(scene: Scene, chapter: _Chapters) -> None:
     chapter("Start your own system")
     scene.caption("Start your own: name it, name its record, and sketch the state machine one line at a time.")
@@ -550,11 +592,7 @@ def _start_your_own(scene: Scene, chapter: _Chapters) -> None:
     scene.zoom("#systems-check", scale=1.5)
     scene.wait(1600)
     scene.zoom_out()
-    # The imported plan is still open (PlayIDE keeps work in progress), so it asks before leaving: yes, it is a throwaway.
-    scene.page.once("dialog", lambda dialog: dialog.accept())
-    with scene.page.expect_navigation(timeout=60_000):
-        scene.click("#systems-create")
-    scene.reattach("body[data-ready=true]")
+    _create_system(scene)
     scene.expect_text("#outline-states", "Triaged")
     scene.chapter(chapter.n, "Start your own system")  # the reload dropped the chip: show it again, same number
     scene.caption("Support desk, live: the state machine, classes, use cases and screens, all from that sketch.")
