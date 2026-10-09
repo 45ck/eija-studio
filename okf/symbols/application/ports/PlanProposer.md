@@ -62,6 +62,7 @@ _No curated notes yet._
 
 ## Referenced by
 
+* [application.plan.example_passes](/symbols/application/plan/example_passes.md) - Whether `request`, sent to the chat as it stands, becomes a plan the policy allows on `model`.
 * [application.plan.propose_plan](/symbols/application/plan/propose_plan.md) - Ask the proposer for a plan, re-check it, and preview it with every step accepted.
 * [application.service.Studio](/symbols/application/service/Studio.md) - `class Studio` in `application/service`.
 <!-- okf:generated:end links -->

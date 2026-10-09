@@ -1,5 +1,9 @@
 # Update log
 
+## 2026-10-09
+
+* **PlayIDE polish, round 4**: synced the new `application.plan.example_passes` symbol, `interfaces.http` (`/api/status` reports `demo_modelled`) and `interfaces.play` (`pack_file` names the pack's own folder for the Laws and Tests files). No Notes were hand-edited and nothing was recorded as verified.
+
 ## 2026-10-08
 
 * **PlayIDE polish, round 3**: re-synced `application.simulation.simulate` (refusal findings say "once" or "N times"). No Notes were hand-edited and nothing was recorded as verified.

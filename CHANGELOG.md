@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### 9 October 2026: PlayIDE polish, round 4 (your own systems)
+
+- On a system you started in PlayIDE, the chat's example is a typed step the chat reads ("add state Archived after Escalated"). Before, it offered the system's demo request, which a new system does not model, so sending the example as shown was refused. `/api/status` says whether the demo request passes as it stands (`demo_modelled`); only an offline proposer is asked, so a live one is never called on page load.
+- The Laws tab on a system with no laws says so, instead of "Every law in force holds… ." with a stray full stop.
+- The Laws and Tests tabs name the system's own files (`~/PlayIDE/support-desk/pack.json`), not `packs/support-desk/…`, which does not exist. Shipped packs still read `packs/library-loan/…`.
+
 ### 8 October 2026: PlayIDE polish, round 3
 
 - The Tests tab's **Run all** is no longer cut off at the right edge on a laptop screen: when the header's text and buttons do not fit side by side, the buttons go under the text, on the Laws tab too.

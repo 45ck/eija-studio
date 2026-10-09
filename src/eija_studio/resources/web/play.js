@@ -1759,12 +1759,12 @@
     draw(model);
     inspect("");
     const t = model.transitions[model.transitions.length - 1];
-    // The example has to pass as it stands. On the model in force that is the pack's own demo request, a change the pack
-    // models. On a change case's candidate, typed steps: an action names one transition, so the second step takes a
+    // The example has to pass as it stands. On the model in force that is the pack's own demo request, when the pack
+    // models it (a system started here has no modelled changes yet). Otherwise, and on a change case's candidate, typed steps: an action names one transition, so the second step takes a
     // declared action no transition uses yet, and it leaves a state that already has a way out (a pack's laws may keep
     // its end states closed).
     const free = t && packInfo.actions.find((a) => !model.transitions.some((u) => u.action === a));
-    if (!caseId && packInfo.demo_request) $("chat-example").textContent = packInfo.demo_request.replace(/[.\s]+$/, "");
+    if (!caseId && packInfo.demo_request && packInfo.demo_modelled) $("chat-example").textContent = packInfo.demo_request.replace(/[.\s]+$/, "");
     else if (t) $("chat-example").textContent = `add state Archived after ${t.from_state}` + (free ? ` then add ${free} from ${t.from_state} to Archived for ${t.role}` : "");
     $("build").addEventListener("click", build);
     $("simulate").addEventListener("click", simulate);

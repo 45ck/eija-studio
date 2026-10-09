@@ -114,8 +114,10 @@
       : `Searched ${search.configurations} reachable configurations with ${search.actor_classes} kinds of actor` +
         (search.status === "COMPLETE" ? ", every one." : ", then stopped.") +
         (search.unreached.length ? ` Never reached: ${search.unreached.join(", ")}.` : "");
-    $("laws-summary").className = "laws-summary " + (report.status === "HOLDS" ? "ok" : "bad");
-    $("laws-summary").textContent = `${OVERALL[report.status]} ${parts.join(", ")}. ${scope}`;
+    $("laws-summary").className = "laws-summary " + (!report.laws.length ? "" : report.status === "HOLDS" ? "ok" : "bad");
+    // With no laws there is nothing to hold: say so rather than "every law holds".
+    $("laws-summary").textContent = !report.laws.length ? `This system has no laws yet. Press Edit the law file to add one. ${scope}`
+      : `${OVERALL[report.status]} ${parts.join(", ")}. ${scope}`;
     $("laws-list").replaceChildren(...report.laws.map(card));
     $("laws-limits").textContent = report.limits.join(" ");
   }
