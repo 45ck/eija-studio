@@ -42,8 +42,8 @@ class Ticket <<record>> {
 }
 @enduml
 """
-NEW_SYSTEM_SKETCH = ("Open -> Triaged : Triage [Agent]\nTriaged -> Resolved : Resolve [Agent]\n"
-                     "Resolved -> Closed : Close [Customer]")
+DESCRIPTION = ("A coffee shop app. Customers order drinks, baristas make them, then customers collect them. "
+               "Orders have a size (small, medium, large) and notes.")
 
 # Beats that wait on work still in progress. Each becomes a real act when its feature merges (see the storyboard).
 PENDING = {
@@ -451,6 +451,8 @@ def _whole_system(scene: Scene, chapter: _Chapters) -> None:
     # The process node sits inside the device: the first click selects the device, the second the process.
     label = scene.page.locator("#deployment text:has-text('conformance cases')").bounding_box()
     canvas = scene.page.locator("#deployment").bounding_box()
+    if label is None or canvas is None:
+        raise RuntimeError("the deployment diagram has no process label to click")
     inside = (label["x"] - canvas["x"] + label["width"] + 50, label["y"] - canvas["y"] + label["height"] / 2)
     scene.click_at("#deployment", inside)
     scene.click_at("#deployment", inside)
@@ -599,27 +601,32 @@ def _no_record_stuck(scene: Scene, chapter: _Chapters) -> None:
 
 
 def _start_your_own(scene: Scene, chapter: _Chapters) -> None:
-    chapter("Start your own system")
-    scene.caption("Start your own: name it, name its record, and sketch the state machine one line at a time.")
-    scene.click("#system-menu")
-    scene.click("#systems-tab-new")
-    scene.click("#systems-templates input[value=blank]")
-    scene.type_text("#systems-name", "Support desk", clear=True)
-    scene.type_text("#systems-record", "Ticket", clear=True)
-    scene.type_text("#systems-sketch", NEW_SYSTEM_SKETCH, clear=True, delay_range_ms=(20, 60))
-    scene.wait_for("#systems-check.ok", timeout_ms=30_000)
-    scene.expect_text("#systems-check", "4 states (starts in Open)")
-    scene.caption("The kernel checks the sketch as you type. Then it opens as a system like any other.")
-    scene.zoom("#systems-check", scale=1.5)
-    scene.wait(1600)
+    chapter("Start your own: describe it")
+    scene.caption("Start your own the way you would in Lovable or Replit: say what the app is for and who does what.")
+    scene.click("#system-new")
+    scene.wait_for("#systems-describe", timeout_ms=30_000)
+    scene.type_text("#systems-describe", DESCRIPTION, clear=True, delay_range_ms=(12, 35))
+    scene.type_text("#systems-name", "Coffee shop", clear=True)
+    scene.wait_for("#systems-described", timeout_ms=30_000)
+    scene.expect_text("#systems-described", "3 recorded by the kernel")
+    scene.caption("Before anything is made: every view it will have, checked by the kernel. The reader is offline, "
+                  "a fixed set of app shapes, and it says what it assumed.")
+    scene.zoom("#systems-check", scale=1.35)
+    scene.wait(2600)
     scene.zoom_out()
     _create_system(scene)
-    scene.expect_text("#outline-states", "Triaged")
-    scene.chapter(chapter.n, "Start your own system")  # the reload dropped the chip: show it again, same number
-    scene.caption("Support desk, live: the state machine, classes, use cases and screens, all from that sketch.")
-    scene.zoom("#canvas", scale=1.6)
-    scene.wait(2000)
+    scene.expect_text("#outline-states", "Collected")
+    scene.chapter(chapter.n, "Start your own: describe it")
+    scene.caption("A running system: the state machine, the class diagram with your fields, and tests the kernel recorded.")
+    scene.zoom("#canvas", scale=1.35)
+    scene.wait(1600)
     scene.zoom_out()
+    scene.expect_text("#missing", "No laws", timeout_ms=60_000)
+    scene.caption("What's missing, across every view, says what to do next. Laws are yours to write.")
+    scene.zoom("#missing", scale=1.6)
+    scene.wait(2200)
+    scene.zoom_out()
+
 
 
 def _broken_sequence(scene: Scene) -> None:
