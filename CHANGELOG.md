@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### 9 October 2026: your own systems, two fixes
+
+- The Systems dialog opens again after you close it. Before, a second open did nothing until the page was reloaded.
+- A sketch whose roles differ only in case or punctuation (`Agent` and `agent`) now gets one user per role instead of being refused for duplicate user ids.
+
 ### 8 October 2026: PlayIDE polish, round 3
 
 - The Tests tab's **Run all** is no longer cut off at the right edge on a laptop screen: when the header's text and buttons do not fit side by side, the buttons go under the text, on the Laws tab too.
