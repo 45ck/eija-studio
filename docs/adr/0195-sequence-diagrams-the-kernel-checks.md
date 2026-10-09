@@ -1,4 +1,4 @@
-# ADR-0185: Sequence diagrams are the pack's scenarios, drawn in UML and checked by the kernel step by step
+# ADR-0195: Sequence diagrams are the pack's scenarios, drawn in UML and checked by the kernel step by step
 
 * Status: accepted
 * Date: 2026-10-08

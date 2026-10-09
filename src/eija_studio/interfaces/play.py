@@ -7,7 +7,7 @@ seeded run log with breakpoints and Stop (ADR-0160), who can do what with reacha
 review of a change as a UML diff whose behaviour the kernel runs on both sides (ADR-0175), and how a change looks:
 the model in force and the change on one state machine, removed elements kept as ghosts (ADR-0176), and the law file
 and the scenarios (test cases) as files a person can read, edit as a draft and run here, never saved from here (ADR-0177), and
-the same scenarios drawn as UML sequence diagrams, every message run on the shown model and on the model in force (ADR-0185).
+the same scenarios drawn as UML sequence diagrams, every message run on the shown model and on the model in force (ADR-0195).
 
 Build & run reuses `eija build` (ADR-0150): the app is generated into the workspace, its kernel conformance tests run,
 and only a PASSing app is started, as a separate local process on a free loopback port. One app runs at a time; a new
@@ -278,7 +278,7 @@ def register(app, studio, web: Path) -> AppRunner:
     @app.post("/api/play/sequences")
     def play_sequences(body: ScenariosRequest):
         """The pack's scenarios (or a draft of them, shared with the Tests tab) drawn as sequence diagrams, each step run
-        through the kernel on the shown model and, when it differs, on the model in force (ADR-0185). Read-only."""
+        through the kernel on the shown model and, when it differs, on the model in force (ADR-0195). Read-only."""
         before, after = baseline(body), resolve(body)
         return check_sequences(studio.pack, after, scenarios_of(body), before) | {"source": "edited" if body.scenarios is not None else "pack"}
 

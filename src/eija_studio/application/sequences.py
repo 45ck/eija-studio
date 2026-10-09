@@ -1,4 +1,4 @@
-"""The pack's scenarios drawn as UML sequence diagrams the kernel checks (ADR-0185).
+"""The pack's scenarios drawn as UML sequence diagrams the kernel checks (ADR-0195).
 
 There is one source of scenarios: `scenarios.json` (`domain.scenarios`, ADR-0177), run by `scenario_run`. A sequence
 diagram is a view of one scenario: the actors and the record are lifelines, each step is a call from its actor to the

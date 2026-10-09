@@ -1,7 +1,7 @@
 ---
 type: Module
 title: application.sequence_layout
-description: Where a scenario's sequence diagram is drawn, and its export (ADR-0185).
+description: Where a scenario's sequence diagram is drawn, and its export (ADR-0195).
 resource: repo://src/eija_studio/application/sequence_layout.py
 tags:
 - module
@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/sequence_layout.py
   title: application/sequence_layout.py
   hash_method: ast-api-v1
-  sha256: eda3fdac4357a269b971ca4dd3004fa55a222a49060b8f53aa09186c9dc97a30
-notes_baseline: 10498131864f18f71ad8ce1a4242fe83c415b02faf4162af8ebdc6d2a09891f9
+  sha256: ac42d682989218df2510dd9b774c59ab59df10c08f810b13b309260381ca40bb
+notes_baseline: c1b49eb81a1fed81b638dfda326c357b31741dfe22b36694eb1d5b4a542e0dd9
 ---
 
 # application.sequence_layout
@@ -29,7 +29,7 @@ notes_baseline: 10498131864f18f71ad8ce1a4242fe83c415b02faf4162af8ebdc6d2a09891f9
 ## Module docstring
 
 ~~~text
-Where a scenario's sequence diagram is drawn, and its export (ADR-0185).
+Where a scenario's sequence diagram is drawn, and its export (ADR-0195).
 
 `place` lays a checked scenario out deterministically (`application.sequences`): lifeline columns in order of first
 use (actors, then the record, then effect channels) and rows top to bottom, so the page only draws boxes and arrows at
@@ -67,7 +67,7 @@ _No curated notes yet._
 
 ## Referenced by
 
-* [application.sequences](/modules/application/sequences.md) - The pack's scenarios drawn as UML sequence diagrams the kernel checks (ADR-0185).
+* [application.sequences](/modules/application/sequences.md) - The pack's scenarios drawn as UML sequence diagrams the kernel checks (ADR-0195).
 * [application.sequence_layout.ROW](/symbols/application/sequence_layout/ROW.md) - Constant `ROW` in `application/sequence_layout`.
 * [application.sequence_layout.export](/symbols/application/sequence_layout/export.md) - The sequence as Mermaid and PlantUML text, through `diagram_emitters`, state invariants as notes (Mermaid has no neg: it is written as opt).
 * [application.sequence_layout.place](/symbols/application/sequence_layout/place.md) - `def place(pack: Pack, scenario: Scenario, start: str, steps: list[dict[str, Any]], record: tuple[str, str]) -…` in `application/sequence_layout`.

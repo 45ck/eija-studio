@@ -2,7 +2,7 @@
 follow-on edits that would keep them in agreement.
 
 PlayIDE draws five diagrams of one system: the state machine, the class diagram, the use cases, the screens and the
-components of the built app, beside the sequence diagrams that are its scenarios (ADR-0185). Only the state machine, the data model and the screens are authored; the others are
+components of the built app, beside the sequence diagrams that are its scenarios (ADR-0195). Only the state machine, the data model and the screens are authored; the others are
 read from them (ADR-0153 to ADR-0155). So a change to the state machine ripples: a new action is a new use case and
 needs a screen, a removed one leaves its screen pointing at nothing (and the app can no longer be built), a new state
 is a new literal of the record's state enumeration, and the generated code changes. `ripple` computes all of it

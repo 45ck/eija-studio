@@ -1,4 +1,4 @@
-/* PlayIDE sequence diagrams (ADR-0185): the list of sequences beside the diagram, a one-line kernel verdict, and the
+/* PlayIDE sequence diagrams (ADR-0195): the list of sequences beside the diagram, a one-line kernel verdict, and the
    add-message row under it. The diagram itself is drawn on the shared maxGraph canvas. */
 .sequences{display:grid;grid-template-columns:minmax(180px,220px) minmax(0,1fr);flex:1;min-height:0}
 .stage>.sequences{grid-row:3;grid-column:2}

@@ -1,7 +1,7 @@
 ---
 type: Module
 title: application.sequences
-description: The pack's scenarios drawn as UML sequence diagrams the kernel checks (ADR-0185).
+description: The pack's scenarios drawn as UML sequence diagrams the kernel checks (ADR-0195).
 resource: repo://src/eija_studio/application/sequences.py
 tags:
 - module
@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/sequences.py
   title: application/sequences.py
   hash_method: ast-api-v1
-  sha256: 199abe38e9024c9e3e8a8a6a68e1473e9795cbdfec0ff5c8f2f450d986232188
-notes_baseline: 53a7225e6eb70ec366f118bdb313239cbd0f469b97ce2c26074f7e753322696d
+  sha256: 9c8a14539594b0fd107c857dee1df1fc278ffb2f369125488895e6eafbaf7174
+notes_baseline: 39550b3071c74bcc1f599992d3dfb106956b7753f51faa2968fedc7b2d8c75bd
 ---
 
 # application.sequences
@@ -29,7 +29,7 @@ notes_baseline: 53a7225e6eb70ec366f118bdb313239cbd0f469b97ce2c26074f7e753322696d
 ## Module docstring
 
 ~~~text
-The pack's scenarios drawn as UML sequence diagrams the kernel checks (ADR-0185).
+The pack's scenarios drawn as UML sequence diagrams the kernel checks (ADR-0195).
 
 There is one source of scenarios: `scenarios.json` (`domain.scenarios`, ADR-0177), run by `scenario_run`. A sequence
 diagram is a view of one scenario: the actors and the record are lifelines, each step is a call from its actor to the
@@ -77,7 +77,7 @@ _No curated notes yet._
 
 * [application.ghost_diff](/modules/application/ghost_diff.md) - How a change looks on the state machine: both models on one canvas, with nothing hidden (ADR-0176).
 * [application.scenario_run](/modules/application/scenario_run.md) - Run a pack's scenarios (its test cases) through the kernel, and record new ones (ADR-0177).
-* [application.sequence_layout](/modules/application/sequence_layout.md) - Where a scenario's sequence diagram is drawn, and its export (ADR-0185).
+* [application.sequence_layout](/modules/application/sequence_layout.md) - Where a scenario's sequence diagram is drawn, and its export (ADR-0195).
 * [domain.data](/modules/domain/data.md) - The data model of a pack, shown as a UML class diagram (ADR-0153): entities, typed attributes and associations.
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).

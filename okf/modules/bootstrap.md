@@ -47,6 +47,7 @@ _Symbol pages are generated for the domain and application layers only._
 * [`adapters/repository_changes`](/modules/adapters/repository_changes.md)
 * [`adapters/self_facts`](/modules/adapters/self_facts.md)
 * [`adapters/sqlite_store`](/modules/adapters/sqlite_store.md)
+* [`adapters/system_library`](/modules/adapters/system_library.md)
 * [`application/service`](/modules/application/service.md)
 * [`domain/pack`](/modules/domain/pack.md)
 <!-- okf:generated:end facts -->
@@ -67,6 +68,7 @@ _No curated notes yet._
 * [adapters.repository_changes](/modules/adapters/repository_changes.md) - Read-only, bounded comparison of two local Git commits.
 * [adapters.self_facts](/modules/adapters/self_facts.md) - Syntactic facts about EIJA's own review implementation, never a conformance proof.
 * [adapters.sqlite_store](/modules/adapters/sqlite_store.md) - Durable local unit of work.
+* [adapters.system_library](/modules/adapters/system_library.md) - Where a person's own systems live on disk (ADR-0185): one folder per system under a systems home, the recent list, and the saved draft of the work in progress.
 * [application.service](/modules/application/service.md) - Module `application/service` (no module docstring).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
 

@@ -1,4 +1,4 @@
-"""The pack's scenarios drawn as sequence diagrams the kernel checks (ADR-0185): one source, `scenarios.json`
+"""The pack's scenarios drawn as sequence diagrams the kernel checks (ADR-0195): one source, `scenarios.json`
 (ADR-0177), one runner, `scenario_run`. A step the model can't do is flagged at that message with the kernel's reason,
 a step that expects a refusal is a neg fragment that must be refused, and a change shows the scenarios it breaks or
 fixes. Negative oracles included: refused messages, a neg the kernel lets through, a wrong refusal code, a wrong

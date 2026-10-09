@@ -1,4 +1,4 @@
-"""Where a scenario's sequence diagram is drawn, and its export (ADR-0185).
+"""Where a scenario's sequence diagram is drawn, and its export (ADR-0195).
 
 `place` lays a checked scenario out deterministically (`application.sequences`): lifeline columns in order of first
 use (actors, then the record, then effect channels) and rows top to bottom, so the page only draws boxes and arrows at

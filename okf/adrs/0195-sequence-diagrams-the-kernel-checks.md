@@ -1,8 +1,8 @@
 ---
 type: Architecture Decision Record
-title: 'ADR-0185: Sequence diagrams are the pack''s scenarios, drawn in UML and checked by the kernel step by step'
+title: 'ADR-0195: Sequence diagrams are the pack''s scenarios, drawn in UML and checked by the kernel step by step'
 description: Engineers who read UML expect sequence diagrams beside the state machine, class, use case and component diagrams.
-resource: repo://docs/adr/0185-sequence-diagrams-the-kernel-checks.md
+resource: repo://docs/adr/0195-sequence-diagrams-the-kernel-checks.md
 tags:
 - adr
 - accepted
@@ -10,14 +10,14 @@ status: stable
 generated:
   by: process:eija-okf-sync
 sources:
-- resource: repo://docs/adr/0185-sequence-diagrams-the-kernel-checks.md
-  title: 0185-sequence-diagrams-the-kernel-checks.md
+- resource: repo://docs/adr/0195-sequence-diagrams-the-kernel-checks.md
+  title: 0195-sequence-diagrams-the-kernel-checks.md
   hash_method: lf-sha256-v1
-  sha256: 96a072e686c12ab90407a1a9d97d1966a28bc8fdd2301b1e5f633a666fb1e8cc
-notes_baseline: 9936aa41fa8cebfa2f7daed580a343ae3c54ed6510524b5afbca800ab62c3c2f
+  sha256: 16f66cda934ec9e9aee495f67e779464944f1e3a67baee3b3c69c51c8998cfe3
+notes_baseline: 808e0fa253a419eab0893933f2761566fc2c5d5af25df2570f277b1feb4970bd
 ---
 
-# ADR-0185: Sequence diagrams as scenarios the kernel checks, message by message
+# ADR-0195: Sequence diagrams are the pack's scenarios, drawn in UML and checked by the kernel step by step
 
 <!-- okf:generated:begin facts -->
 | | |
@@ -25,7 +25,7 @@ notes_baseline: 9936aa41fa8cebfa2f7daed580a343ae3c54ed6510524b5afbca800ab62c3c2f
 | Status | accepted |
 | Date | 2026-10-08 |
 | Lane | PlayIDE (owner direction, 8 October 2026: users are UML-literate engineers who expect several diagram kinds in proper notation, each tied to the kernel) |
-| Source | `repo://docs/adr/0185-sequence-diagrams-the-kernel-checks.md` |
+| Source | `repo://docs/adr/0195-sequence-diagrams-the-kernel-checks.md` |
 
 ## Decision outcome (verbatim)
 

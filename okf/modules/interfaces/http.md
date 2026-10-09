@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/http.py
   title: interfaces/http.py
   hash_method: ast-api-v1
-  sha256: 85d5e84f2891482c862d6e3e3d5d01b68a4c5dd0e36a94a1d066efb2e4dbd644
-notes_baseline: 588c9c9103adb09bdf633be37bc194af829a7d4704beb8c76d57de06c0347d90
+  sha256: 7eb6af53b6f6a3eae01283338440397c8a488749be11698977e158a433ba85b1
+notes_baseline: 24f4a0db8de0a9e5df980cac1bb2e076b65ca80bbfcd395d25f167e27e671971
 ---
 
 # interfaces.http
@@ -46,6 +46,7 @@ _Symbol pages are generated for the domain and application layers only._
 * [`domain/pack`](/modules/domain/pack.md)
 * [`domain/transactions`](/modules/domain/transactions.md)
 * [`interfaces/play`](/modules/interfaces/play.md)
+* [`interfaces/play_systems`](/modules/interfaces/play_systems.md)
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -63,4 +64,5 @@ _No curated notes yet._
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
 * [domain.transactions](/modules/domain/transactions.md) - Open change vocabulary (WBS 1.3): the semantic edits an owner (or a pack meaning) may make to a workflow.
 * [interfaces.play](/modules/interfaces/play.md) - PlayIDE routes: the visual UML canvas page, Build & run of the model as a live app beside it (ADR-0151), and Simulate, seeded simulated users whose every step…
+* [interfaces.play_systems](/modules/interfaces/play_systems.md) - PlayIDE's systems (ADR-0185): start a new system from a sketch or a template, open one you made before, and save the work in progress to carry on later.
 <!-- okf:generated:end links -->

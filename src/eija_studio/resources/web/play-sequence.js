@@ -1,4 +1,4 @@
-// PlayIDE sequence diagrams (ADR-0185): the pack's scenarios (scenarios.json, the Tests tab's test cases, ADR-0177)
+// PlayIDE sequence diagrams (ADR-0195): the pack's scenarios (scenarios.json, the Tests tab's test cases, ADR-0177)
 // drawn as UML interactions between the actors and the record, each step run through the kernel on the server.
 // Lifelines, call arrows, refusal replies, state invariants on the record's lifeline, effects as asynchronous messages,
 // and a neg combined fragment around each step that must be refused, drawn on maxGraph at the coordinates the server
