@@ -35,7 +35,7 @@ class DataPhrases:
         """Who holds a role (#156, ADR-0210): only on a system you started, like the class diagram."""
         if not self.grows:
             raise DomainError("PLAN_DATA_FIXED", "This system's roles are its owner's; chat says who holds one only on a system you started")
-        return {"kind": "set_role_kind", "role": self.role(made or named or ""), "role_kind": KINDS[kind.lower()]}
+        return {"kind": "set_role_kind", "role": self.role(made or named or ""), "to": KINDS[kind.lower()]}
 
     def _data(self) -> Classes:
         """The class diagram a data-model phrase changes: only on a system you started (ADR-0202)."""

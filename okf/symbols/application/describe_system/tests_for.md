@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/describe_system.py#tests_for
   title: application/describe_system.py
   hash_method: ast-v2
-  sha256: 1413e0a67c32200430a10edf7be7a77dbf46d677cddb28299624b69f2a05db12
-notes_baseline: 51349a0c69b7374c9671e50d7630504ef3e50f4b6b7632ca04a82cbe93c36407
+  sha256: f12db5d3d54d3c694dd8a7370f8d65061aba64fde51152fe2d6da7f8451d2f88
+notes_baseline: 51226ffcc2def1501bca3f7e23fb6c58ecb2fae37823234dc8117e61313ae4a5
 ---
 
 # application.describe_system.tests_for

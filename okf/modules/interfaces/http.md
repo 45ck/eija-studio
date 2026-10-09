@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/http.py
   title: interfaces/http.py
   hash_method: ast-api-v1
-  sha256: 35072c94c5bcd9a14483468ba283f44fbecd4d1891a64ac0e786b2a78cce311f
-notes_baseline: ea81c318d2c3c33283bb40d031b7f1a8b329d0921403bd53895863cecd0ea77d
+  sha256: 09b90bf6d712e70e2d64e951866282753d9ecd145bf6a521cd93a88bc25b934d
+notes_baseline: cc857b45ba8503f871ecd07b40103f734eacdc34f5d79470551140d915ea002a
 ---
 
 # interfaces.http

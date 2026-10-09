@@ -1,7 +1,7 @@
 ---
 type: Class
 title: application.data_steps.SetRoleKind
-description: '`class SetRoleKind(Contract)` in `application/data_steps`.'
+description: Make the actor holding `role` a person, an AI agent, a timer or an external system (ADR-0210).
 resource: repo://src/eija_studio/application/data_steps.py#SetRoleKind
 tags:
 - symbol
@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/data_steps.py#SetRoleKind
   title: application/data_steps.py
   hash_method: ast-sig-v1
-  sha256: 0ed231971d953c20f59254e68f6e072484e664e92ad00ed781e13bd78bce0b5b
-notes_baseline: dd4d38bbebc5b514dfdd0b628e1899cfac3bc57faa6aeb80955647fcf6b75ca4
+  sha256: 4deadb95b03bc51c48dc726f2e74d615722fb76fe9d22975bb2db49068abd126
+notes_baseline: cd0b5bd4a161504e1d90876898e1cce38a0775a6748d1b624c7e7347d1c692ca
 ---
 
 # application.data_steps.SetRoleKind
@@ -31,15 +31,19 @@ notes_baseline: dd4d38bbebc5b514dfdd0b628e1899cfac3bc57faa6aeb80955647fcf6b75ca4
 
 ## Docstring
 
-_The source carries no docstring._
+~~~text
+Make the actor holding `role` a person, an AI agent, a timer or an external system (ADR-0210). Not a kernel
+transaction and not a data-model step: it changes a draft of the pack's roles, which is protected policy input
+(the kind laws count roles by kind), so the policy judges the plan with the draft's kinds, and nothing is written.
+~~~
 
 ## Fields
 
 | Field | Annotation | Default |
 |---|---|---|
 | `kind` | `Literal['set_role_kind']` |  |
-| `role` | `str` | `Field(pattern=NAME)` |
-| `role_kind` | `RoleKind` |  |
+| `role` | `str` | `Field(min_length=1, max_length=60)` |
+| `to` | `RoleKind` |  |
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -49,16 +53,16 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [domain.data.NAME](/symbols/domain/data/NAME.md) - Constant `NAME` in `domain/data`.
 * [domain.laws.RoleKind](/symbols/domain/laws/RoleKind.md) - Type alias `RoleKind` in `domain/laws`.
 * [domain.models.Contract](/symbols/domain/models/Contract.md) - `class Contract(BaseModel)` in `domain/models`.
 
 ## Referenced by
 
-* [application.data_steps.DATA_EDITS](/symbols/application/data_steps/DATA_EDITS.md) - Constant `DATA_EDITS` in `application/data_steps`.
-* [application.data_steps.DataEdit](/symbols/application/data_steps/DataEdit.md) - Type alias `DataEdit` in `application/data_steps`.
 * [application.data_steps.DataStep](/symbols/application/data_steps/DataStep.md) - Type alias `DataStep` in `application/data_steps`.
-* [application.data_steps.apply_data](/symbols/application/data_steps/apply_data.md) - `data` with the data-model steps applied in turn, checked by the data model's own contract; `data` when none.
-* [application.data_steps.describe_data](/symbols/application/data_steps/describe_data.md) - One line a person can check against the class diagram.
-* [application.data_steps.with_kinds](/symbols/application/data_steps/with_kinds.md) - `pack` with the roles' kinds these steps set, a draft held in memory; `PLAN_KIND_FIXED` on a system with a law about kinds, and `EDIT_INVALID` for a role the p…
+* [application.data_steps.Step](/symbols/application/data_steps/Step.md) - Type alias `Step` in `application/data_steps`.
+* [application.data_steps.describe_data](/symbols/application/data_steps/describe_data.md) - One line a person can check against the class diagram, or the use case diagram for a role's kind.
+* [application.data_steps.kind_steps](/symbols/application/data_steps/kind_steps.md) - The role-kind steps, in plan order.
+* [application.data_steps.set_kinds](/symbols/application/data_steps/set_kinds.md) - `pack` with each role-kind step applied in turn: a draft held in memory, checked as any pack is, so the kind laws are bound to the new kinds.
+* [application.data_steps.split](/symbols/application/data_steps/split.md) - The kernel transactions and the data-model steps, each in plan order (role-kind steps are in neither).
+* [application.plan.describe](/symbols/application/plan/describe.md) - One line a person can check against the diagram.
 <!-- okf:generated:end links -->

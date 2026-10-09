@@ -12,7 +12,6 @@ system.
 from __future__ import annotations
 
 import re
-from collections import deque
 from collections.abc import Callable
 from typing import Any
 
@@ -24,6 +23,7 @@ from eija_studio.domain.scenarios import Scenarios, parse_scenarios
 from .new_system import RECORD, checked_documents, sketch_documents, summary
 from .ports import SystemDescriber
 from .scenario_run import record_steps, run_scenarios
+from .sequence_draft import journeys
 
 MAX_DESCRIPTION = 4000
 
@@ -38,38 +38,6 @@ def _fields(raw: Any) -> list[dict[str, Any]]:
         raise PackError([f"field: {error}"]) from None
 
 
-def _arrivals(model: Workflow) -> dict[str, Any]:
-    """For each reachable state, the transition that first reaches it breadth-first (None for the initial state)."""
-    came: dict[str, Any] = {model.initial_state: None}
-    queue = deque([model.initial_state])
-    while queue:
-        state = queue.popleft()
-        for t in model.transitions:
-            if t.from_state == state and t.to_state not in came:
-                came[t.to_state] = t
-                queue.append(t.to_state)
-    return came
-
-
-def _paths(model: Workflow) -> list[list[Any]]:
-    """The shortest path of transitions from the initial state to each end state (one nothing leaves), in model order."""
-    leaves = {t.from_state for t in model.transitions}
-    came = _arrivals(model)
-    paths = []
-    for end in (s for s in model.states if s not in leaves and s != model.initial_state and s in came):
-        path: list[Any] = []
-        at = end
-        while came[at] is not None:
-            path.insert(0, came[at])
-            at = came[at].from_state
-        paths.append(path)
-    return paths
-
-
-def _actor(pack: Pack, role: str) -> str | None:
-    return next((a.id for a in pack.fixtures.actors if a.role == role and a.active and a.assigned), None)
-
-
 def _slug(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")[:50] or "case"
 
@@ -79,7 +47,8 @@ def _case(pack: Pack, model: Workflow, title: str, steps: list[tuple[str, str]])
 
 
 def _refusal(pack: Pack, model: Workflow) -> dict[str, Any] | None:
-    """The first step out of the initial state, taken by an actor whose role may not take it."""
+    """The first step out of the initial state in the model's own order (the one a person reads first), taken by an
+    actor whose role may not take it."""
     first = next((t for t in model.transitions if t.from_state == model.initial_state), None)
     if first is None:
         return None
@@ -88,13 +57,8 @@ def _refusal(pack: Pack, model: Workflow) -> dict[str, Any] | None:
 
 
 def _end_cases(pack: Pack, record: str, model: Workflow) -> list[dict[str, Any]]:
-    """The way to each end state, recorded by the kernel."""
-    cases = []
-    for path in _paths(model):
-        steps = [(_actor(pack, t.role) or "", t.action) for t in path]
-        if path and all(actor for actor, _ in steps):
-            cases.append(_case(pack, model, f"{record} reaches {path[-1].to_state}", steps))
-    return cases
+    """The way to each end state (`sequence_draft.journeys`, the drafting the Sequences tab uses), recorded by the kernel."""
+    return [_case(pack, model, f"{record} reaches {state}", steps) for state, steps in journeys(pack, model)]
 
 
 def tests_for(pack: Pack, record: str, model: Workflow | None = None) -> dict[str, Any]:

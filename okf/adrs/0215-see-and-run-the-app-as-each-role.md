@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0215-see-and-run-the-app-as-each-role.md
   title: 0215-see-and-run-the-app-as-each-role.md
   hash_method: lf-sha256-v1
-  sha256: a63db47c6a7706ae399646180abed3cdc27619b9101151caf46d77a14bbd5a87
-notes_baseline: 813a8e9f5d33aecde539acf3673578f8e499701b7e7e3a97789169090126b736
+  sha256: 0860ca04dba74b424eacb84a454bf841cf71ba4a28564b35f84fc0e937cad4f5
+notes_baseline: 7d63d33043e9da69c4a00bbe09b59f90859223072b1a714ac9a5aae6fec3374c
 ---
 
 # ADR-0215: See and run the app as each role
@@ -38,6 +38,8 @@ notes_baseline: 813a8e9f5d33aecde539acf3673578f8e499701b7e7e3a97789169090126b736
 >
 > * **Actors that are not people** (amended 2026-10-09, after [ADR-0210](repo://docs/adr/0210-actors-that-are-not-people.md)). An AI agent, a timer or an external system has no screens. Choosing one in **See the app as** says so, strikes through every screen and lists the calls it makes as the built app's own endpoints (`POST /api/records/{id}/act` with its action and actor, and `POST /api/records` to start a record). The open screen says that the role takes that use case by an API call, and that the screen is what a person standing in for it sees. The inspector shows the kind («agent», «timer», «system») and the same calls. Its buttons say **Stand in for**, and the built app names the kind beside the picker (`describe()` now serves `kinds`).
 > * **Run as after Stop.** Run as reuses the last build only while its app still runs in the frame. The run bar's Stop ends the process and blanks the frame, so the next Run as builds again rather than opening a dead address.
+>
+> * **Screen flow** (amended 2026-10-09). **Screen flow** on the Screens tab draws every screen as a wireframe and lays them out left to right in the order a record meets them. An arrow goes from a screen to each screen the record can reach next, labelled with the state it is then in, and an end state is an end node. The wireframe is drawn from the screen and the record class: the create screen shows an input per field, shaped by the attribute's type (a choice shows its first literal and ▾, a date shows dd/mm/yyyy) with * for required. Its tooltip gives the rule the server checks ("text, up to 120, required"). An action screen shows the values it displays. Nothing in it is drawn by hand: a transition added on the state machine adds an arrow, and an edit in the designer redraws the card. Under **See the app as**, the other roles' screens fade, so the hand-offs between roles show. Choosing a card opens that screen in the designer. The layout uses the vendored dagre, as the state machine does, and each card is measured before layout so a wrapped title keeps its room. A flow wider than the panel is scaled to fit while the cards stay at half size or more; wider still (ai-ops is about 2,500px), it stays full size and scrolls, and a cue on the right edge says how many screens are still out of view. **Fit to width** toggles the overview by hand.
 
 ## Sections
 
@@ -58,4 +60,8 @@ _No curated notes yet._
 * [ADR-0154: Use case diagrams, and screens designed against the model](/adrs/0154-use-cases-and-screens-designed-against-the-model.md) - PlayIDE shows the workflow as a state machine (ADR-0151) and the data as a class diagram (ADR-0153).
 * [ADR-0171: Who can do what, as a matrix the kernel checks, and reachability questions with a proof or a path](/adrs/0171-permissions-matrix-and-reachability-questions.md) - Access rules are what AI-written apps most often get wrong, and they are what reviewers and auditors ask about first: who can do what, from which state, and ca…
 * [ADR-0210: Actors that are not people: AI agents, timers and external systems in the model](/adrs/0210-actors-that-are-not-people.md) - Systems people design now have AI agents in them: a support bot that triages tickets and proposes refunds, a scheduled job that escalates what nobody handled,…
+
+## Referenced by
+
+* [ADR-0218: An accessibility check on the generated screens](/adrs/0218-accessibility-check-on-the-generated-screens.md) - PlayIDE designs the screens of the app it builds (ADR-0154) and the role lens shows them as each role (ADR-0215).
 <!-- okf:generated:end links -->

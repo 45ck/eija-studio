@@ -15,14 +15,22 @@
   let shownChange = null; // while the Changes view is on: the union of the model in force and the change (ADR-0176), drawn on the class and use case diagrams too
   let ripple = null, rippleSeq = 0; // what the accepted plan does to every diagram, with the proposer's follow-ons (ADR-0158)
   const earned = [];
-  let screens = null, screensEdited = false, useCase = null, checkTimer = 0, problems = [], useCaseList = [];
+  let screens = null, screensEdited = false, useCase = null, checkTimer = 0, problems = [], useCaseList = [], a11y = null;
   const base = {}; // each cell's own style and label, so overlays can be cleared
   // The kind of actor holding each role (ADR-0210). UML draws all four as actors; a person keeps the stick figure, the
   // others are drawn as an actor classifier with their keyword, as UML allows.
-  let roleKinds = {}, savedKinds = {};
+  let roleKinds = {};
   const ACTOR_KINDS = { human: "person", agent: "AI agent", timer: "timer", system: "external system" };
+  const A_KIND = { human: "a person", agent: "an AI agent", timer: "a timer", system: "an external system" };
   const ACTOR_GROUPS = { human: "People", agent: "AI agents", timer: "Timers", system: "External systems" };
-  const roleKind = (role) => roleKinds[role] || "human";
+  // A role's kind as the plan would have it, while the plan is previewed (and so allowed): an accepted "make X an AI
+  // agent" step shows on every diagram (#156). Back on the model, the kind in force.
+  const roleKind = (role) => {
+    const shown = plan && plan.previewing && plan.result && plan.result.legal;
+    const step = shown ? accepted().filter((t) => t.kind === "set_role_kind" && t.role === role).at(-1) : null;
+    return step ? step.to : roleKinds[role] || "human";
+  };
+  const kindNote = (role) => (roleKind(role) === "human" ? "" : ` (${ACTOR_KINDS[roleKind(role)]})`); // "Who may take it" says who
   const hooks = { redraw: [], inspect: [], laws: [], tab: [], changeSelect: [], edit: [], screens: [] }; // the run bar (play-run.js) redraws its marks and adds inspector tools; play-laws.js and play-access.js draw their tabs
   // the Changes view (play-diff.js, ADR-0176) closes when another tab is shown and answers current() while open;
   // edit hears every undoable edit (ADR-0198); screens hears the screen designer redraw its list and card (play-roles.js)
@@ -80,9 +88,37 @@
     g.setNode("__initial", { width: INITIAL, height: INITIAL });
     for (const s of shape.states) g.setNode(s, { ...STATE });
     for (const s of shape.initials) g.setEdge("__initial", s, {}, s);
-    for (const t of shape.transitions) g.setEdge(t.from_state, t.to_state, { width: 120, height: 20 }, t.id);
+    // Each label is laid out at its real size, centred on its edge, so dagre leaves room for it: the labels of a
+    // back-and-forth pair, or of two transitions between the same states, never overlap (#153). liftLabels puts
+    // each label in that room.
+    for (const t of shape.transitions) g.setEdge(t.from_state, t.to_state, { width: textWidth(label(t)) + 16, height: 28, labelpos: "c" }, t.id);
     dagre.layout(g);
     return g;
+  }
+
+  // maxGraph puts an edge's label halfway along the line, which is not where the layout left room for it: move each
+  // transition's label to its middle bend, the point dagre routed the edge through for the label (#153).
+  // The Changes view (play-diff.js) uses it too, for its own transitions.
+  function liftLabels(g, isTransition = (cell) => cell.id.startsWith("transition:")) {
+    const v = g.view, m = g.getDataModel(), { Point } = maxgraph;
+    g.batchUpdate(() => {
+      for (const cell of Object.values(m.cells)) {
+        if (!cell.id || !isTransition(cell) || !cell.geometry) continue;
+        const points = cell.geometry.points || [], state = v.getState(cell);
+        if (!points.length || !state || !state.absoluteOffset) continue;
+        const room = points[Math.floor(points.length / 2)], was = cell.geometry.offset || { x: 0, y: 0 };
+        const geo = cell.geometry.clone();
+        geo.offset = new Point((room.x + v.translate.x) - state.absoluteOffset.x / v.scale + was.x,
+          (room.y + v.translate.y) - state.absoluteOffset.y / v.scale + was.y);
+        m.setGeometry(cell, geo);
+      }
+    });
+  }
+
+  let measure = null;
+  function textWidth(text) { // as drawn on the state machine: 12px system-ui
+    if (!measure) { measure = document.createElement("canvas").getContext("2d"); measure.font = "12px system-ui, sans-serif"; }
+    return Math.ceil(measure.measureText(text).width);
   }
 
   // Where you put a state is where it stays (ADR-0174). The first gesture on the diagram (placing, moving, renaming,
@@ -151,15 +187,26 @@
 
   // The plan banner (and the panel below) change where the canvas sits on the page. Keep the drawing still on the
   // screen when that happens, so a state you just placed does not slide away from where you put it.
-  let canvasTop = null;
+  let canvasTop = null, canvasSize = null;
   function holdStill() {
     if (!$("canvas").offsetParent) return; // hidden behind another tab: nothing on screen to hold
-    const top = $("canvas").getBoundingClientRect().top;
-    if (graph && graph.view && canvasTop !== null && top !== canvasTop) {
-      const v = graph.view;
+    const top = $("canvas").getBoundingClientRect().top, size = `${$("canvas").clientWidth} ${$("canvas").clientHeight}`;
+    // Nobody placed a shape or moved the view since it was fitted: fit the canvas as it is now (the plan banner or a
+    // panel made it shorter), so neither the top nor the foot of the diagram is cut off.
+    const untouched = graph && graph.view && tab === "states" && !Object.keys(placed).length && fitted.view === viewOf(graph);
+    if (untouched && canvasSize !== null && size !== canvasSize && top === canvasTop) fit(); // grew where it stands, as on first load
+    else if (graph && graph.view && canvasTop !== null && top !== canvasTop) {
+      const v = graph.view, was = graph.getGraphBounds(), before = was.y, high = +canvasSize.split(" ")[1];
       v.setTranslate(v.translate.x, v.translate.y - (top - canvasTop) / v.scale);
+      // ... and holding still never slides the top of the diagram (the initial state) under the banner that moved it.
+      const after = graph.getGraphBounds().y, floor = Math.min(before, MARGIN);
+      if (before >= 0 && after < floor) v.setTranslate(v.translate.x, v.translate.y + (floor - after) / v.scale);
+      // A diagram that was all on screen stays all on screen: when the banner leaves too little room, it is fitted again.
+      const now = graph.getGraphBounds(), tall = $("canvas").clientHeight;
+      if (was.y >= 0 && was.y + was.height <= high && (now.y < 0 || now.y + now.height > tall)) fit();
     }
     canvasTop = top;
+    canvasSize = size;
   }
 
   // The class, use case and component diagrams are drawn from the model, but a shape you drag there stays where you
@@ -171,6 +218,7 @@
       if (!cell.isEdge() || !(inside(cell.source) || inside(cell.target)) || !cell.geometry) continue;
       const geo = cell.geometry.clone();
       geo.points = [];
+      if (cell.id && cell.id.startsWith("transition:")) geo.offset = null; // a straight line's label sits halfway again
       g.getDataModel().setGeometry(cell, geo);
     }
   }
@@ -249,6 +297,7 @@
         edge.geometry.points = place.bends(t).map((p) => new maxgraph.Point(p.x, p.y));
       }
     });
+    liftLabels(graph);
     for (const cell of Object.values(graph.getDataModel().cells)) if (cell.id) base[cell.id] = { style: { ...cell.style }, value: cell.value };
     graph.getSelectionModel().addListener(InternalEvent.CHANGE, () => {
       const cell = graph.getSelectionCell();
@@ -259,6 +308,7 @@
     else fit();
     lastView = null;
     canvasTop = box.offsetParent ? box.getBoundingClientRect().top : null; // the drawing is placed for where the canvas is now
+    canvasSize = box.offsetParent ? `${box.clientWidth} ${box.clientHeight}` : null;
     for (const f of hooks.redraw) f();
   }
 
@@ -280,7 +330,7 @@
   const HINTS = {
     states: "Pick State, Transition or Initial in the palette, then click the diagram (or drag it there). Double-click empty space for a new state, a state to rename it. Changes join the plan for you to preview; nothing is saved.",
     sequences: "The Tests tab's scenarios as UML sequences, each step run through the kernel: a step the model can't do is red with the kernel's reason. Select one to change it; a step in a neg must be refused.",
-    classes: "Select a class to see its attributes and associations.",
+    classes: "Select a class to see its attributes and associations. Only the «record» class is built: its attributes are the app's form. Grey classes and the associations are drawn, not built. An amber attribute stands in for an association: the app checks its value, not that the other object exists.",
     usecases: "Select a use case to inspect it. Double-click one to design its screen.",
     screens: "Design each use case's screen. The design check runs as you edit; Build & run uses these screens.",
     components: "The built app's components, read from its generated files: every line is an import, a route or a file read.",
@@ -297,14 +347,43 @@
   function fit(all) {
     const g = current();
     if (!g) return;
-    const plugin = g.getPlugin("fit");
-    plugin.maxFitScale = 1.4;
-    const scale = plugin.fitCenter({ margin: MARGIN });
-    if (all === true || !(scale < READABLE)) return;
-    const v = g.view, b = g.getGraphBounds(), box = g.container, k = READABLE;
-    const w = b.width / v.scale, h = b.height / v.scale, x0 = b.x / v.scale - v.translate.x, y0 = b.y / v.scale - v.translate.y;
-    const along = (room, size, start) => (size * k <= room - 2 * MARGIN ? (room / k - size) / 2 - start : MARGIN / k - start);
-    v.scaleAndTranslate(k, along(box.clientWidth, w, x0), along(box.clientHeight, h, y0));
+    // The Components tab's lens bar floats over the top of its diagram: leave room for it, and draw a small system no
+    // larger than life, so one workflow is not blown up beside the other tabs.
+    const bar = tab === "components" && !$("component-bar").hidden ? $("component-bar").offsetHeight + 16 : 0;
+    const margin = Math.max(MARGIN, bar), most = bar ? 1 : 1.4, v = g.view, box = g.container;
+    // Measured, not maxGraph's fitCenter: labels do not scale exactly with the view, so measure again after scaling
+    // and take off what still overflows (a 1280-pixel screen clipped the foot of the state machine by 3 pixels).
+    const floor = all === true ? 0 : Math.min(READABLE, most);
+    for (let pass = 0; pass < 2; pass++) {
+      const b = g.getGraphBounds();
+      if (!b.width || !b.height) return;
+      const w = b.width / v.scale, h = b.height / v.scale, x0 = b.x / v.scale - v.translate.x, y0 = b.y / v.scale - v.translate.y;
+      const wide = box.clientWidth - 2 * margin, high = box.clientHeight - 2 * margin;
+      const k = Math.max(floor, pass ? v.scale * Math.min(1, wide / b.width, high / b.height) : Math.min(most, wide / w, high / h));
+      if (pass && k === v.scale) break;
+      const along = (space, size, start) => (size * k <= space - 2 * margin ? (space / k - size) / 2 - start : margin / k - start);
+      v.scaleAndTranslate(k, along(box.clientWidth, w, x0), along(box.clientHeight, h, y0));
+    }
+    fitted.view = g === graph ? viewOf(g) : null;
+  }
+  const fitted = { view: null }; // the state machine's view as fit() left it, so holdStill can tell a view nobody moved
+  const viewOf = (g) => `${g.view.scale.toFixed(4)} ${g.view.translate.x.toFixed(2)} ${g.view.translate.y.toFixed(2)}`;
+
+  // Bring cells into view, as a debugger follows the current line: the view pans (never zooms) only when one is outside
+  // the canvas, so a short canvas (the Run or Simulation panel open) still shows what the run is doing (play-run.js).
+  function follow(ids) {
+    if (!graph || !$("canvas").offsetParent) return;
+    const v = graph.view, box = graph.container, m = graph.getDataModel(), pad = 16;
+    const boxes = ids.map((id) => m.getCell(id)).filter(Boolean).map((c) => v.getState(c)).filter(Boolean).map((st) => st.text && st.cell.isEdge() ? st.text.boundingBox || st : st);
+    if (!boxes.length) return;
+    // Keep them all in view; when they do not fit together, the first (the current state) wins over the line taken.
+    const shift = (lo, hi, size) => (lo >= pad && hi <= size - pad ? 0 : lo < pad ? pad - lo : size - pad - hi);
+    const along = (start, length, size) => {
+      const lo = Math.min(...boxes.map((b) => b[start])), hi = Math.max(...boxes.map((b) => b[start] + b[length]));
+      return hi - lo <= size - 2 * pad ? shift(lo, hi, size) : shift(boxes[0][start], boxes[0][start] + boxes[0][length], size);
+    };
+    const dx = along("x", "width", box.clientWidth), dy = along("y", "height", box.clientHeight);
+    if (dx || dy) v.setTranslate(v.translate.x + dx / v.scale, v.translate.y + dy / v.scale);
   }
 
   function row(dl, term, value) { dl.append(el("dt", term), el("dd", value)); }
@@ -327,6 +406,10 @@
     }
     if (id.startsWith("system:") && window.PlayLandscape) { // the System lens of the Components tab (ADR-0203)
       window.PlayLandscape.inspect(id.slice(7), box);
+      return;
+    }
+    if (id.startsWith("deploy:") && window.PlayDeployment) { // the Deployment lens of the Components tab (ADR-0206)
+      window.PlayDeployment.inspect(id.slice(7), box);
       return;
     }
     if (id.startsWith("component:")) {
@@ -357,7 +440,7 @@
       const t = transition(id.slice(11));
       box.append(el("h3", `${t.action} (${t.id})`));
       row(dl, "Path", `${t.from_state} → ${t.to_state}`);
-      row(dl, "Who", t.role);
+      row(dl, "Who", t.role + kindNote(t.role));
       row(dl, "Guards", t.guards.join(", "));
       row(dl, "Effects", t.required_effects.join(", ") || "none");
       row(dl, "Never", t.forbidden_effects.join(", ") || "nothing listed");
@@ -432,6 +515,11 @@
   }
   const ROW_LOOK = { added: { fontColor: "#17734a", fontStyle: 1 }, changed: { fontColor: "#a35f00", fontStyle: 1 }, removed: { fontColor: "#8a94a6", fontStyle: 8 } };
   const ROW_MARK = { added: "+ ", changed: "~ ", removed: "− " };
+  // What the built app does with the class diagram (#145): the server says which classes and associations are drawn but
+  // not built, and which record attributes stand in for an association. A previewed plan carries its own report.
+  let savedBuild = null;
+  const classBuild = () => (plan && plan.previewing && plan.result.class_build) || (data === savedData ? savedBuild : null);
+  const standsIn = (name) => ((classBuild() || {}).findings || []).filter((f) => f.subject[1] === "attribute:" + name);
   const widthOf = (e) => Math.max(200, e.name.length * 9 + 60, ...rowsOf(e).map(([a]) => attributeLine(a).length * 7 + 40));
 
   function classLayout() {
@@ -477,17 +565,20 @@
     classGraph.setDropEnabled(false);
     classGraph.setPanning(true);
     lean(classGraph);
-    const parent = classGraph.getDefaultParent(), at = classLayout(), cells = {};
+    const parent = classGraph.getDefaultParent(), at = classLayout(), cells = {}, drawnOnly = new Set((classBuild() || {}).drawn_only || []);
     const font = { fontFamily: "system-ui, sans-serif", fontColor: "#1b2130" };
+    const DRAWN_ONLY = { fillColor: "#f4f5f8", strokeColor: "#9aa3b5", fontColor: "#4a5568" }; // drawn, not built
     classGraph.batchUpdate(() => {
       for (const e of data.entities) {
         const [x, y, w, h] = at(e.name), record = e.name === data.record;
         const box = cells[e.name] = classGraph.insertVertex({ parent, id: "class:" + e.name, value: (record ? "«record»\n" : "") + e.name,
           position: [x, y], size: [w, h], style: { ...font, shape: "swimlane", startSize: HEAD, horizontal: true, fontStyle: 1, fontSize: 13,
-            fillColor: record ? "#dfe6ff" : "#eef2ff", swimlaneFillColor: "#ffffff", strokeColor: "#5b74d6", rounded: false, collapsible: false } });
+            fillColor: record ? "#dfe6ff" : "#eef2ff", swimlaneFillColor: "#ffffff", strokeColor: "#5b74d6", rounded: false, collapsible: false,
+            ...(drawnOnly.has(e.name) ? DRAWN_ONLY : {}) } });
         rowsOf(e).forEach(([a, status], i) => classGraph.insertVertex({ parent: box, id: `attr:${e.name}.${a.name}`, value: (ROW_MARK[status] || "") + attributeLine(a),
           position: [8, HEAD + 4 + i * ROW], size: [w - 16, ROW], style: { ...font, fontSize: 12, align: "left", strokeColor: "none",
-            fillColor: "none", movable: false, selectable: false, ...(ROW_LOOK[status] || {}) } }));
+            fillColor: "none", movable: false, selectable: false, ...(status === "same" && standsIn(`${e.name}.${a.name}`).length ? { fontColor: "#a35f00" } : {}),
+            ...(ROW_LOOK[status] || {}) } }));
       }
       const [ex, ey, ew, eh] = at(enumName());
         const literals = cells[enumName()] = classGraph.insertVertex({ parent, id: "enum:" + enumName(), value: `«enumeration»\n${enumName()}`,
@@ -528,6 +619,13 @@
     }
     box.append(dl);
     if (name === data.record) box.append(el("p", "Records of this class move through the state machine. Its attributes are the built app's form, checked on the server.", { class: "muted" }));
+    const build = classBuild();
+    if (!build) return;
+    for (const f of build.findings.filter((x) => x.subject[0] === "class:" + name)) box.insertBefore(el("p", "To consider: " + f.message, { class: "consider" }), dl);
+    if (build.drawn_only.includes(name)) box.append(el("p", `Drawn, not built: the app stores ${data.record} records only, so it never stores or looks up a ${name}.`, { class: "muted" }));
+    const links = build.associations.filter((a) => a.source === name || a.target === name);
+    if (links.length) box.append(el("p", links.map((a) => a.message).join(" "), { class: "muted small" }));
+    box.append(el("p", build.limits.join(" "), { class: "muted small" }));
   }
 
   // Use case diagram: a view of the same workflow. Each role is an actor; each transition's action is a use case
@@ -823,7 +921,8 @@
 
   // The state machine's changes, then the class diagram's (ADR-0202).
   function changesOf(result) {
-    const states = changes(result.diff), classes = (result.data_changes || []).join("; ");
+    const kinds = accepted().filter((t) => t.kind === "set_role_kind").map((t) => `makes ${t.role} ${A_KIND[t.to]}`);
+    const states = changes(result.diff), classes = [...(result.data_changes || []), ...kinds].join("; ");
     return states === "no visible change" && classes ? classes : [states, classes].filter(Boolean).join("; ");
   }
 
@@ -859,7 +958,6 @@
     if (!plan || !plan.result || !plan.result.legal) return;
     plan.previewing = true;
     data = plan.result.data || savedData; // the class diagram as the plan's data-model steps leave it (ADR-0202)
-    roleKinds = plan.result.kinds || savedKinds; // and who holds each role, as its kind steps leave it (#156)
     redrawAll(plan.result.candidate);
     highlight(plan.result.diff);
     for (const which of Object.keys(DIAGRAMS)) markRipple(which);
@@ -872,7 +970,6 @@
     if (!plan || !plan.previewing) return;
     plan.previewing = false;
     data = savedData;
-    roleKinds = savedKinds;
     redrawAll(baseModel);
     for (const which of Object.keys(DIAGRAMS)) markRipple(which);
     $("plan-banner").hidden = true;
@@ -1191,15 +1288,6 @@
 
   const DATA_STEPS = ["add_attribute", "remove_attribute", "set_required"];
 
-  // A step that says who holds a role (#156) is shown on the use case diagram, on that actor.
-  function showRoleStep(i) {
-    showTab("usecases");
-    const cell = useCaseGraph && useCaseGraph.getDataModel().getCell("role:" + plan.steps[i].transaction.role);
-    if (cell) { useCaseGraph.setSelectionCell(cell); useCaseGraph.scrollCellToVisible(cell, true); }
-    $("inspector").prepend(stepNote(i));
-    if (plan.result) renderPlan(plan.result);
-  }
-
   // A data-model step is shown on the class diagram, on the class it changes (ADR-0202).
   function showClassStep(i) {
     const step = plan.steps[i];
@@ -1208,6 +1296,15 @@
     if (cell) { classGraph.setSelectionCell(cell); classGraph.scrollCellToVisible(cell, true); }
     $("inspector").prepend(stepNote(i));
     if (cell && step.author === "ai" && !step.checked) { step.checked = true; earn(1, `Looked at AI step ${i + 1} on the diagram`); }
+    if (plan.result) renderPlan(plan.result);
+  }
+
+  // A role-kind step is shown on the use case diagram, on the actor it changes (ADR-0210, #156).
+  function showRoleStep(i) {
+    showTab("usecases");
+    select("role:" + plan.steps[i].transaction.role, false);
+    $("inspector").prepend(stepNote(i));
+    if (plan.steps[i].author === "ai" && !plan.steps[i].checked) { plan.steps[i].checked = true; earn(1, `Looked at AI step ${i + 1} on the diagram`); }
     if (plan.result) renderPlan(plan.result);
   }
 
@@ -1270,8 +1367,9 @@
     const simulated = sim && simKey === key ? sim : null;
     return [
       { id: "ai", name: "AI steps checked", ok: seen === ai.length, detail: ai.length ? `${seen} of ${ai.length} AI steps looked at on the diagram` : "No AI plan to check" },
-      { id: "screens", name: "Screens pass the design check", ok: problemsFor === screensKey() && !problems.length,
-        detail: problemsFor !== screensKey() ? "Checking the screens…" : problems.length ? `${problems.length} design problem(s): see Screens` : "Every screen can be built" },
+      { id: "screens", name: "Screens pass the design check", ok: problemsFor === screensKey() && !problems.length && Boolean(a11y) && !a11y.failed,
+        detail: problemsFor !== screensKey() ? "Checking the screens…" : problems.length ? `${problems.length} design problem(s): see Screens`
+          : a11y && a11y.failed ? `${a11y.failed} accessibility check(s) fail: see Screens` : "Every screen can be built and meets the accessibility checks" },
       { id: "conformance", name: "Conformance", ok: Boolean(built) && built.conformance.status === "PASS",
         detail: built ? `${built.conformance.status}: ${built.cases} cases checked against the kernel` : "Not built since the last change: press Build & run" },
       rippleCheck(),
@@ -1419,7 +1517,7 @@
   function changeRole(cell) {
     const t = transition(cell.id.slice(11)), [x, y] = cellBox(cell) ? [cellBox(cell).x, cellBox(cell).y] : [20, 20];
     if (!t) return; // drawn in this plan: change it in the plan instead
-    const role = choose(packInfo.roles, t.role);
+    const role = choose(packInfo.roles, t.role, (r) => r + kindNote(r));
     inlineEdit(`Who may take ${t.action}`, { fields: [["Who may take it", role]], make: () => ({ kind: "set_role", transition: t.id, role: role.value }) },
       x + 8, y + 8);
   }
@@ -1569,7 +1667,7 @@
   // declares as a sketch would: a text box that suggests the declared names and says when a name is new.
   function named(values, value, what, used = new Set()) {
     const id = `names-${what}-${++named.n}`, list = el("datalist", undefined, { id });
-    for (const v of values) list.append(el("option", undefined, { value: v, label: used.has(v) ? `${v} (already used)` : v }));
+    for (const v of values) list.append(el("option", undefined, { value: v, label: used.has(v) ? `${v} (already used)` : what === "role" ? v + kindNote(v) : v }));
     const input = el("input", undefined, { list: id, value, required: "", maxlength: "40", pattern: "[A-Za-z][A-Za-z0-9_]{0,39}",
       placeholder: `A ${what}, or a new name`, autocomplete: "off", title: "Letters, digits and _; starts with a letter" });
     const note = el("span", "", { class: "muted small new-name" });
@@ -1622,7 +1720,7 @@
     const fresh = packInfo.actions.find((a) => !used.has(a));
     const action = packInfo.own_system ? named(packInfo.actions, fresh || "", "action", used) // your own system can name a new one
       : choose(packInfo.actions, fresh || packInfo.actions[0], (a) => a + (used.has(a) ? " (already used)" : ""));
-    const role = packInfo.own_system ? named(packInfo.roles, packInfo.roles[0], "role") : choose(packInfo.roles, packInfo.roles[0]);
+    const role = packInfo.own_system ? named(packInfo.roles, packInfo.roles[0], "role") : choose(packInfo.roles, packInfo.roles[0], (r) => r + kindNote(r));
     return { fields: [["From", from], ["To", to], ["Action", action], ["Who may take it", role]],
       make: () => ({ kind: "add_transition", id: newId(action.value), action: action.value, from_state: from.value, to_state: to.value, role: role.value }) };
   }
@@ -1662,7 +1760,7 @@
   function transitionTools(t) {
     const others = packInfo.roles.filter((r) => r !== t.role);
     return draftTools([
-      ...others.map((r) => [`Let ${r} take it`, () => addStep({ kind: "set_role", transition: t.id, role: r })]),
+      ...others.map((r) => [`Let ${r}${kindNote(r)} take it`, () => addStep({ kind: "set_role", transition: t.id, role: r })]),
       ["Move an end…", () => drawForm("move", t.id)],
       ["Remove", () => addStep({ kind: "remove_transition", transition: t.id })],
     ]);
@@ -1748,11 +1846,18 @@
     for (let tries = 0; tries < 60 && hits([b[0] - 120, b[1] - 16, b[2] + 150, b[3] + 22]); tries++) b[1] += 18;
   }
 
+  // The components report of the model on screen, read once per view: the component diagram and the deployment
+  // diagram (ADR-0206) are both read from it.
+  async function loadComponents() {
+    if (!components) components = await api("/api/play/components", { ...about(), screens: screensEdited ? screens : null });
+    return components;
+  }
+
   async function drawComponents() {
     const box = $("component-canvas");
     if (!components) {
       try {
-        components = await api("/api/play/components", { ...about(), screens: screensEdited ? screens : null });
+        await loadComponents();
       } catch (error) {
         box.replaceChildren(el("p", `Could not read the app's components (${error.code || "ERROR"}): ${error.message}`, { class: "muted empty" }));
         return;
@@ -1806,6 +1911,7 @@
   }
 
   function restyleComponents() {
+    if (window.PlayDeployment) window.PlayDeployment.restyle(); // the deployment diagram shows the same build evidence
     if (!componentGraph) return;
     componentGraph.batchUpdate(() => {
       for (const c of components.components) {
@@ -1853,6 +1959,7 @@
     if (JSON.stringify(about().plan) !== planAt || (sent !== null && JSON.stringify(screens) !== sent)) return result;
     if (!edited) screens = result.screens;
     problems = result.problems;
+    a11y = result.accessibility;
     problemsFor = screensKey();
     useCaseList = result.use_cases;
     renderHealth();
@@ -1874,9 +1981,11 @@
         await loadScreens(screens);
       } catch (error) {
         problems = [{ code: error.code || "ERROR", use_case: useCase, text: error.message }];
+        a11y = null;
         problemsFor = screensKey();
       }
       renderProblems();
+      renderAccessibility();
       renderScreenList();
       renderHealth();
       if (plan) refreshRipple();
@@ -1893,6 +2002,40 @@
       b.addEventListener("click", () => { useCase = p.use_case; renderDesigner(); });
       box.append(b);
     }
+  }
+
+  // The accessibility check (ADR-0218): the server judges the screens and the built app's page against WCAG 2.2 AA
+  // success criteria; each check shows its criteria, its verdict and, for contrast, the measured ratios.
+  function renderAccessibility() {
+    const box = $("screen-a11y");
+    if (!box) return;
+    if (!a11y) { box.hidden = true; return; }
+    const warned = a11y.checks.filter((c) => c.status === "WARN").length;
+    box.hidden = false;
+    box.className = "a11y " + (a11y.failed ? "bad" : warned ? "warn" : "ok");
+    box.open = Boolean(a11y.failed) || box.open;
+    const summary = el("summary");
+    summary.append(el("span", a11y.failed ? "✗" : "✓", { class: "a11y-mark" }),
+      el("span", `Accessibility (${a11y.standard}): ${a11y.passed} of ${a11y.checks.length} checks pass` + (a11y.failed ? `, ${a11y.failed} fail` : "") + (warned ? `, ${warned} to look at` : "")));
+    const list = el("ul", undefined, { class: "a11y-checks" });
+    for (const c of a11y.checks) {
+      const li = el("li", undefined, { class: "a11y-" + c.status.toLowerCase(), "data-check": c.check });
+      li.append(el("span", c.status, { class: "a11y-status" }), el("span", c.text), el("span", `SC ${c.wcag}`, { class: "a11y-sc muted" }));
+      if (c.detail && c.detail.pairs) {
+        const pairs = el("ul", undefined, { class: "a11y-pairs" });
+        for (const p of c.detail.pairs) {
+          const swatch = el("span", "Aa", { class: "a11y-swatch", "aria-hidden": "true" });
+          swatch.style.color = p.foreground;
+          swatch.style.background = p.background;
+          const row = el("li", undefined, { class: p.ratio < 4.5 ? "low" : "" });
+          row.append(swatch, el("span", `${p.what}: ${p.ratio}:1`));
+          pairs.append(row);
+        }
+        li.append(pairs);
+      }
+      list.append(li);
+    }
+    box.replaceChildren(summary, list, el("p", a11y.limits, { class: "muted small" }));
   }
 
   function renderScreenList() {
@@ -2035,6 +2178,7 @@
     if (!screens) return;
     renderScreenList();
     renderProblems();
+    renderAccessibility();
     renderCard();
     renderPalette();
     const link = $("screens-download");
@@ -2193,6 +2337,8 @@
         if (at) restyle("state:" + at, { strokeColor: entry.outcome === "REFUSED" ? "#a12f2f" : "#3157d5", strokeWidth: 4 }, graph.getDataModel().getCell("state:" + at).value);
         document.dispatchEvent(new CustomEvent("playide:step", { detail: { ...entry, transition: t ? t.id : null, ms: 450 } }));
       });
+      const here = entry.outcome === "REFUSED" ? entry.from : entry.to, step = entry.action && model.transitions.find((x) => x.action === entry.action);
+      if (here) follow(["state:" + here, ...(step ? ["transition:" + step.id] : [])]); // the state and the line taken, as Run does
       i += 1;
     }, 450);
   }
@@ -2248,7 +2394,7 @@
     return ({
       add_state: () => `add state ${tx.state}`, remove_state: () => `remove state ${tx.state}`, rename_state: () => `rename ${tx.state} to ${tx.to}`,
       set_initial: () => `start records in ${tx.state}`, add_transition: () => `add ${tx.action}`, remove_transition: () => `remove ${name}`,
-      set_role: () => `let ${tx.role} take ${name}`, retarget_transition: () => `move ${name}'s ${tx.end} to ${tx.state}`,
+      set_role: () => `let ${tx.role} take ${name}`, set_role_kind: () => `make ${tx.role} ${A_KIND[tx.to]}`, retarget_transition: () => `move ${name}'s ${tx.end} to ${tx.state}`,
     }[tx.kind] || (() => tx.kind.replace(/_/g, " ")))();
   }
 
@@ -2429,8 +2575,10 @@
     const status = await api("/api/status");
     $("model-name").textContent = status.pack.name + (caseId ? " · change case" : "");
     packInfo = status.pack;
-    data = savedData = (await api("/api/play/data")).data;
-    roleKinds = savedKinds = Object.fromEntries((await api("/api/play/roles")).roles.map((r) => [r.id, r.kind]));
+    const dataDoc = await api("/api/play/data");
+    data = savedData = dataDoc.data;
+    savedBuild = dataDoc.build;
+    roleKinds = Object.fromEntries((await api("/api/play/roles")).roles.map((r) => [r.id, r.kind]));
     await loadScreens(null);
     outline();
     draw(model);
@@ -2498,7 +2646,11 @@
   const changeLook = (status, part) => (window.PlayDiff && shownChange ? window.PlayDiff.look(status, part) : {});
 
   window.PlayIDE = {
-    api, el, hooks, about, roleKind, kinds: ACTOR_KINDS, viewKey, label, restyle, clearSim, select, showTab, fit, importPlan, runAs, openScreen,
+    api, el, hooks, about, textWidth, liftLabels, follow, roleKind, kinds: ACTOR_KINDS, actorLook: ACTOR_LOOK, inForce: (role) => roleKinds[role] || "human",
+    // Change who holds a role: a step in the plan like any drawn edit, checked by the server against the laws about
+    // kinds of actor; nothing is saved (#156). The review view changes nothing.
+    setKind: (role, to) => (REVIEW_VIEW ? null : addStep({ kind: "set_role_kind", role, to })), reviewing: () => REVIEW_VIEW, viewKey, label, restyle, clearSim, select, showTab, fit, importPlan, runAs, openScreen,
+    components: loadComponents, buildEvidence: () => evidence(), // the deployment lens (ADR-0206) reads both
     screens: () => screens, data: () => data, editedScreens: () => (screensEdited ? screens : null), // the screen designer's screens and the class diagram (play-roles.js reads them)
     graph: () => graph, tab: () => tab, model: () => model, selected: () => selected, pack: () => packInfo, base: () => baseModel,
     direction: () => direction || "LR", // the state machine's layout, which the Changes view follows

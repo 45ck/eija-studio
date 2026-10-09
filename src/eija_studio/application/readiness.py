@@ -62,8 +62,8 @@ def _screens(screens: Screens, model: Workflow, data: DataModel | None) -> list[
 
 def _tests(pack: Pack, model: Workflow, scenarios: Scenarios) -> list[dict[str, str]]:
     if not scenarios.scenarios:
-        return [_item("no-tests", "No test cases, so no sequence diagram and nothing pins down what the kernel does",
-                      "Record one in Tests: try the steps, keep what should happen")]
+        return [_item("no-tests", "No test cases saved; Sequences shows a draft until you keep one",
+                      "Update the tests to record the way to each end, or record one in Tests", action=UPDATE_TESTS)]
     run = run_scenarios(pack, model, scenarios)
     items = [_item(f"test-fails:{s['id']}", f"Test “{s['title']}” fails: {s.get('why') or 'a step does something else now'}",
                    "Update the tests to record what the kernel does now, or change the model back", "problem", UPDATE_TESTS)

@@ -3,10 +3,13 @@
 # Modules
 
 * [application.access](access.md) - Who can do what (ADR-0171): the model's permissions as a role by state matrix, each cell checked by the kernel, and reachability questions such as "can a record reach this state without that role ever acting?".
+* [application.api_contract](api_contract.md) - The API contract of an app built from a workflow (ADR-0207): an OpenAPI 3.1 document of what the generated server serves, written from the model, the pack and the data model rather than by hand.
 * [application.appgen](appgen.md) - App generation: a reviewed workflow model becomes a runnable app and its conformance oracle (ADR-0150).
+* [application.class_build](class_build.md) - What the built app does with each part of the class diagram (#145, ADR-0205): the record class is built and checked; the other classes and the associations are drawn but not built.
 * [application.compiler](compiler.md) - Compiler: model → projections + impacts + obligations + computed review packet.
 * [application.components](components.md) - The component diagram of an app built from the model (ADR-0155), extracted from the generated files themselves.
-* [application.data_steps](data_steps.md) - Data-model steps in a chat plan (ADR-0202): add an attribute to a class, remove one, or make one required or optional.
+* [application.data_steps](data_steps.md) - Data-model steps in a chat plan (ADR-0202): add an attribute to a class, remove one, or make one required or optional; and the step that changes the kind of actor holding a role (ADR-0210, issue #156).
+* [application.deployment](deployment.md) - The deployment diagram of an app built from the model (ADR-0206), read from the generated files themselves.
 * [application.describe_system](describe_system.md) - Describe your app (ADR-0216): a new system from one description, like starting an app in Lovable or Replit.
 * [application.diagram_catalog](diagram_catalog.md) - Named diagram views over a baseline and an optional candidate Workflow.
 * [application.diagram_emitters](diagram_emitters.md) - Text emitters for the diagram models in `application.diagrams`: Mermaid, PlantUML and Graphviz DOT.
@@ -28,7 +31,9 @@
 * [application.ripple](ripple.md) - Ripple (ADR-0158): what one change to the state machine does to every other diagram of the same system, and the follow-on edits that would keep them in agreement.
 * [application.runtime](runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.
 * [application.scenario_run](scenario_run.md) - Run a pack's scenarios (its test cases) through the kernel, and record new ones (ADR-0177).
+* [application.screen_access](screen_access.md) - Accessibility of the generated screens (ADR-0218): what can be checked without a browser, checked every time.
 * [application.scxml](scxml.md) - The workflow state machine as a W3C SCXML statechart (ADR-0165).
+* [application.sequence_draft](sequence_draft.md) - Scenarios drafted from the model, for a system that has none yet (ADR-0195).
 * [application.sequence_layout](sequence_layout.md) - Where a scenario's sequence diagram is drawn, and its export (ADR-0195).
 * [application.sequences](sequences.md) - The pack's scenarios drawn as UML sequence diagrams the kernel checks (ADR-0195).
 * [application.service](service.md) - Module `application/service` (no module docstring).

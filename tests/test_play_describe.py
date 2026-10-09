@@ -155,3 +155,16 @@ def test_update_the_tests_records_the_stale_ones_again_on_the_model_shown(served
     saved = post(client, "/api/play/draft", {"steps": [], "accepted": [], "scenarios": updated["document"]})
     assert saved["saved"]
     assert client.get("/api/play/draft", headers=HEADERS).json()["draft"]["scenarios"] == updated["document"]
+
+
+def test_a_system_with_no_tests_can_have_them_recorded(served):
+    """A sketch's system has no tests yet: What's missing says Sequences shows a draft, and "Update the tests" records
+    the way to each end with the same drafting the Sequences tab uses (`sequence_draft.journeys`)."""
+    client, _ = served
+    sketch = "Open -> Doing : Start [Worker]\nDoing -> Done : Finish [Worker]"
+    post(client, "/api/play/systems/new", {"template": "blank", "name": "Jobs", "record": "Job", "sketch": sketch})
+    tests = next(v for v in post(client, "/api/play/ready", {})["views"] if v["view"] == "tests")
+    assert tests["items"][0]["id"] == "no-tests" and tests["items"][0]["action"] == "update-tests"
+    assert "Sequences shows a draft" in tests["items"][0]["text"]
+    updated = post(client, "/api/play/tests/update", {})
+    assert updated["changes"] == [{"change": "added", "title": "Job reaches Done"}]

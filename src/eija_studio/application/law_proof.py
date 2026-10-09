@@ -14,6 +14,8 @@ on an in-memory session); the laws are judged by `laws.evaluate_run` itself, so 
   the `path_requires_kind` laws whose kind of actor has already taken a step (ADR-0210). Every other law kind is
   judged per step, so this product is complete for the current law kinds; `LAW_HANDLING` names
   how each kind is judged and a test fails if a new kind is not classified.
+* `can_reach_end` is about the runs a record could still take, not one run: it is judged on the steps the kernel
+  committed during the search, so a record is stuck only where the kernel itself leaves no way to an end (ADR-0221).
 * Each configuration is reached first by a shortest run, so a counterexample is the shortest run that breaks the law.
 * A law about a state that is never reached, or an action that never commits, holds vacuously; that is reported.
 
@@ -25,7 +27,8 @@ from collections import deque
 from dataclasses import dataclass, field
 from typing import Any
 
-from eija_studio.domain.laws import LAW_KINDS, PathRequires, PathRequiresKind, Step, applies, evaluate_run, evaluate_table
+from eija_studio.domain.laws import (LAW_KINDS, CanReachEnd, PathRequires, PathRequiresKind, Step, applies, evaluate_run,
+                                     evaluate_table, stuck_states)
 from eija_studio.domain.models import DomainError, ExecuteCommand, Workflow
 from eija_studio.domain.pack import Pack, PackError, parse_pack
 from eija_studio.domain.policy import check_policy
@@ -40,6 +43,7 @@ Passed = str | tuple[str, str]  # in a configuration: a waypoint state passed, o
 LAW_HANDLING = {  # how each law kind is judged here
     "closed_shape": "table", "action_requires_guard": "table",  # about the table, not a run (evaluate_run skips them)
     "requires_evidence": "evidence",  # judged by the evidence matrix of a review
+    "can_reach_end": "reach",  # judged on every step the kernel committed in the search
     "only_role_holds": "run", "role_never_holds": "run", "role_never_enters": "run", "state_only_via": "run",
     "action_target": "run", "action_source_in": "run", "forbidden_effects": "run", "state_final": "run",
     "path_requires": "run", "only_kind_holds": "run", "only_kind_enters": "run", "path_requires_kind": "run",
@@ -83,8 +87,9 @@ def _try(pack: Pack, model: Workflow, actors: list[dict[str, Any]], state: str, 
 
 
 def _subject(law: Any) -> list[str]:
-    """The model elements a law is about: its state, its waypoint and its action, where it names them."""
+    """The model elements a law is about: its state, its waypoint, its ends and its action, where it names them."""
     refs = [f"state:{getattr(law, name)}" for name in ("state", "via") if isinstance(getattr(law, name, None), str)]
+    refs += [f"state:{end}" for end in law.states] if isinstance(law, CanReachEnd) else []
     return refs + ([f"action:{law.action}"] if isinstance(getattr(law, "action", None), str) else [])
 
 
@@ -100,6 +105,7 @@ class _Search:
     broken: dict[str, list[Step]] = field(default_factory=dict)
     reached: set[str] = field(default_factory=set)
     committed: set[str] = field(default_factory=set)
+    edges: set[tuple[str, str]] = field(default_factory=set)
     complete: bool = True
 
 
@@ -121,6 +127,7 @@ def _record(search: _Search, node: tuple[str, frozenset[Passed]], step: Step, la
             waypoints: set[str]) -> tuple[str, frozenset[Passed]] | None:
     """Judge the run that ends in `step`; return the configuration it leads to if it is new and may be explored."""
     search.committed.add(step.action)
+    search.edges.add((step.source, step.target))
     search.reached.add(step.target)
     run = [*search.runs[node], step]
     for violation in evaluate_run(laws, model.initial_state, run, {t.action for t in model.transitions}):
@@ -178,7 +185,18 @@ def _run_verdict(law: Any, subject: list[str], search: _Search) -> dict[str, Any
     return {"status": "HOLDS", "why": f"No run breaks it ({len(search.runs)} configurations searched)."}
 
 
-def _verdict(law: Any, table: set[str], search: _Search | None, actions: set[str]) -> dict[str, Any]:
+def _reach_verdict(law: CanReachEnd, search: _Search, initial: str) -> dict[str, Any]:
+    if not search.complete:
+        return {"status": "UNKNOWN", "why": f"The search stopped at {MAX_CONFIGURATIONS} configurations."}
+    stuck = stuck_states(law, search.edges, initial)
+    if not stuck:
+        return {"status": "HOLDS", "why": f"From each of the {len(search.reached)} reachable states a run still reaches an end."}
+    run = min((r for (state, _), r in search.runs.items() if state == stuck[0]), key=len)
+    return {"status": "BROKEN", "why": "A record can get stuck in " + ", ".join(stuck) + ": no step from there leads to an end.",
+            "counterexample": [_step_view(s) for s in run], "stuck": stuck}
+
+
+def _verdict(law: Any, table: set[str], search: _Search | None, actions: set[str], initial: str = "") -> dict[str, Any]:
     entry: dict[str, Any] = {"id": law.id, "kind": law.kind, "code": law.code, "description": law.description,
                              "method": LAW_HANDLING[law.kind], "subject": _subject(law)}
     if not applies(law, actions):
@@ -187,6 +205,8 @@ def _verdict(law: Any, table: set[str], search: _Search | None, actions: set[str
         return entry | {"status": "EVIDENCE", "why": "Judged by the evidence a review collects, not by runs."}
     if entry["method"] == "run" and search is not None:
         return entry | _run_verdict(law, entry["subject"], search)
+    if entry["method"] == "reach" and search is not None:
+        return entry | _reach_verdict(law, search, initial)
     if law.id in table:
         return entry | {"status": "BROKEN", "why": "The transition table breaks it."}
     return entry | {"status": "HOLDS", "why": "Checked on the transition table."}
@@ -215,7 +235,7 @@ def prove_laws(pack: Pack, model: Workflow | None = None) -> dict[str, Any]:
     refused = check_policy(model, pack)
     search = None if refused else _explore(pack, model)
     actions = {t.action for t in model.transitions}
-    verdicts = [_verdict(law, table, search, actions) for law in pack.laws]
+    verdicts = [_verdict(law, table, search, actions, model.initial_state) for law in pack.laws]
     report = {"format": FORMAT, "pack": pack.id, "model": model.semantic_hash, "status": _overall(refused, verdicts),
               "laws": verdicts, "search": _summary(model, search), "limits": list(LIMITS)}
     return report | ({"policy": sorted(refused)} if refused else {})

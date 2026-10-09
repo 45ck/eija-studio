@@ -21,6 +21,12 @@
   };
 
   // ---- Lens ------------------------------------------------------------------------------------------------------
+  // The Deployment lens (ADR-0206) is drawn by play-deployment.js; this file switches between the three.
+  const HELP = {
+    system: "The workflows this one forms a system with: they share a class on their class diagrams. Each provides its actions to the roles that hold them; a marked shape is where their class diagrams disagree.",
+    app: "The built app's components, read from its generated files: every line is an import, a route or a file read.",
+    deployment: "Where the built app runs, read from its generated files: the processes, the files deployed on them, the database file, and the routes and connection between them.",
+  };
   function setLens(next) {
     lens = next;
     for (const b of document.querySelectorAll("#component-lens button")) b.setAttribute("aria-pressed", String(b.dataset.lens === lens));
@@ -28,16 +34,16 @@
     $("component-canvas").hidden = lens !== "app";
     $("landscape").hidden = lens !== "system";
     $("landscape-summary").hidden = lens !== "system";
-    $("canvas-help").textContent = lens === "system"
-      ? "The workflows this one forms a system with: they share a class on their class diagrams. Each provides its actions to the roles that hold them; a marked shape is where their class diagrams disagree."
-      : "The built app's components, read from its generated files: every line is an import, a route or a file read.";
+    $("deployment").hidden = lens !== "deployment";
+    $("canvas-help").textContent = HELP[lens];
     if (lens === "system") draw();
+    else if (lens === "deployment" && window.PlayDeployment) window.PlayDeployment.draw();
     else P.fit();
   }
 
   function onTab(which) {
     $("component-bar").hidden = which !== "components";
-    if (which !== "components") { $("landscape").hidden = true; return; }
+    if (which !== "components") { $("landscape").hidden = $("deployment").hidden = true; return; }
     setLens(lens);
   }
 
@@ -71,7 +77,12 @@
     const line = $("landscape-summary");
     line.textContent = parts.join(" · ");
     line.className = "landscape-summary" + (c.warning ? " warn" : "");
+    document.dispatchEvent(new CustomEvent("playide:landscape", { detail: { warning: c.warning || 0, consider: c.consider || 0 } })); // play-game.js (ADR-0208)
   }
+
+  // The kind of actor holding a role, as the workflows declaring it say: "mixed" where they differ (a person in one, an
+  // AI agent in another), drawn as a box naming each.
+  const kindOf = (a) => (a.kinds.length === 1 ? a.kinds[0] : a.kinds.length ? "mixed" : "human");
 
   // Actors on the left, workflows stacked in the middle with their interface balls, shared classes on the right.
   function layout() {
@@ -84,7 +95,9 @@
     const level = (a) => { const used = Object.keys(a.workflows).filter((w) => w in row); return used.reduce((s, w) => s + row[w], 0) / Math.max(1, used.length); };
     const actors = [...result.actors].sort((a, b) => level(a) - level(b) || a.name.localeCompare(b.name));
     const actorStep = step(actors.length, height - 70);
-    actors.forEach((a, i) => { at["actor:" + a.name] = [40, 30 + i * actorStep + (result.actors.length === 1 ? height / 2 - 40 : 0), 36, 64]; });
+    // A person is a stick figure; an AI agent, a timer or an external system is a box, as on the use case diagram.
+    actors.forEach((a, i) => { at["actor:" + a.name] = kindOf(a) === "human" ? [40, 30 + i * actorStep + (result.actors.length === 1 ? height / 2 - 40 : 0), 36, 64]
+      : [-10, 38 + i * actorStep + (result.actors.length === 1 ? height / 2 - 40 : 0), 136, 48]; });
     const loose = result.classes.filter((c) => !c.owner), classStep = step(loose.length, height - 60);
     loose.forEach((c, i) => { at["class:" + c.name] = [WF_X + WF_W + 150, 30 + i * classStep + (loose.length === 1 ? height / 2 - 30 : 0), 150, 56]; });
     return at;
@@ -116,8 +129,12 @@
       }
       for (const a of result.actors) {
         const id = "actor:" + a.name, [x, y, wd, h] = at[id];
-        cells[id] = graph.insertVertex({ parent: root, id: "system:" + id, value: a.name, position: [x, y], size: [wd, h],
-          style: { ...FONT, shape: "actor", fillColor: "#ffffff", strokeColor: INK, verticalLabelPosition: "bottom", verticalAlign: "top" } });
+        const kind = kindOf(a), look = P.actorLook[kind] || P.actorLook.system;
+        cells[id] = kind === "human"
+          ? graph.insertVertex({ parent: root, id: "system:" + id, value: a.name, position: [x, y], size: [wd, h],
+            style: { ...FONT, shape: "actor", fillColor: "#ffffff", strokeColor: INK, verticalLabelPosition: "bottom", verticalAlign: "top" } })
+          : graph.insertVertex({ parent: root, id: "system:" + id, value: `«${kind === "mixed" ? a.kinds.join(" | ") : kind}»\n${a.name}`, position: [x, y], size: [wd, h],
+            style: { ...FONT, shape: "rectangle", rounded: kind === "agent", whiteSpace: "wrap", fillColor: look.fill, strokeColor: look.stroke } });
         for (const [wid, actions] of Object.entries(a.workflows)) if (actions.length) edge(cells[id], cells["iface:" + wid], "«use»");
       }
       for (const c of result.classes.filter((x) => !x.owner)) {
@@ -176,6 +193,7 @@
       if (uses.length) row(dl, "Uses", uses.map((l) => `${l.target} (${l.class})`).join(", "));
       if (used.length) row(dl, "Used by", used.map((l) => `${l.source} (${l.class})`).join(", "));
       box.append(dl);
+      if (w.id === result.focus && window.PlayDeployment) box.append(window.PlayDeployment.contractButton()); // its interface as an API (ADR-0207)
       findings(box, about(id));
     } else if (id.startsWith("class:")) {
       const c = result.classes.find((x) => x.name === id.slice(6));
@@ -199,9 +217,10 @@
     if (P || !window.PlayIDE) return;
     P = window.PlayIDE;
     P.hooks.tab.push(onTab);
-    P.hooks.componentGraph = () => (lens === "system" ? graph : null);
+    P.hooks.componentGraph = () => (lens === "system" ? graph : lens === "deployment" && window.PlayDeployment ? window.PlayDeployment.graph() : null);
     for (const b of document.querySelectorAll("#component-lens button")) b.addEventListener("click", () => setLens(b.dataset.lens));
-    if (new URLSearchParams(location.search).get("lens") === "system") lens = "system";
+    const asked = new URLSearchParams(location.search).get("lens");
+    if (asked === "system" || asked === "deployment") lens = asked;
   }
 
   window.PlayLandscape = { inspect, lens: () => lens, result: () => result, setLens: (next) => setLens(next), focus: select };

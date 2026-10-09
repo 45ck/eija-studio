@@ -36,7 +36,7 @@ On a system you start in PlayIDE (#156, [ADR-0216](adr/0216-describe-your-app-an
 
 * **Describe it.** "An AI agent triages tickets" gives the role `AiAgent`, of kind `agent`, the Triage transition. A timer, a scheduled job, a payment provider or a webhook works the same way. If the verb names no action, the role still gets its kind, and What's missing says it takes no action yet.
 * **Sketch it.** Add a line `agents: Bot`, `timers: Sweeper`, `systems: Gateway` or `people: Lead`. The role may also label transitions.
-* **Ask in chat.** Type `make Bot an AI agent` or `Lead is a person`. The step appears on the use case diagram. Chat refuses it on a shipped pack, and on any system that has a law about kinds: such a law decides who may act, so a plan cannot pass it by changing who holds a role.
+* **Ask in chat.** Type `make Bot an AI agent` or `Lead is a person`. It is the same plan step as **Held by** in the inspector, shown on the use case diagram. The laws about kinds judge the plan again with the kinds it leaves, so a plan cannot pass such a law by changing who holds a role.
 
 ## Patterns
 
@@ -78,6 +78,7 @@ On a system you start in PlayIDE (#156, [ADR-0216](adr/0216-describe-your-app-an
 4. **Simulate**: under the totals, one line each for People, AI agents, Timers and External systems: what they tried, what went through and the kernel's refusals (the paused agent's `ACTOR_REVOKED`, an agent's slip at `ApproveRefund` as `ROLE_DENIED`).
 5. **Laws** tab: every law holds over every run, with the kind laws named in plain language.
 6. **Tests** tab: `The AI agent cannot approve the refund it proposed` passes because the kernel refuses the step.
+7. **Inspector**: choose the Supervisor (outline or diagram) and set **Held by** to *AI agent*. The step "Make Supervisor an AI agent" joins the plan and is refused, naming the same laws. "Who may take it" lists each role with its kind, for example *SupportAgent (AI agent)*.
 
 ## A second example: AI ops deploys
 
@@ -94,4 +95,4 @@ In the **Sequences** tab, «agent», «timer» and «system» lifelines are draw
 - **Amounts.** "The agent may approve refunds under 50" needs value guards in the kernel (issue #93). Today a law keeps the whole decision with a person.
 - **Elapsed time.** A timer is an actor that acts when run, not `after(48h)`; time triggers are issue #93.
 - **Agents talking to agents, or to other records.** Messages and cross-object actions are issue #93; one record moves through one state machine.
-- **Declaring a kind from a UML import.** An imported system gets people as roles; set `kind` in its `pack.json`.
+- **Declaring a kind from a description, a sketch or the chat.** A system started in PlayIDE gets people as roles unless the description or sketch names another kind (see above). Change one with **Held by** in the inspector (step 7 above), in chat, bring it in from a UML file, or set `kind` in its `pack.json`.

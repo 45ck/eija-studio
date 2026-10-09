@@ -23,6 +23,7 @@ import subprocess
 import sys
 import threading
 import time
+from importlib.resources import files as resource_files
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -32,7 +33,11 @@ from fastapi.responses import FileResponse
 from pydantic import Field
 
 from eija_studio.application.access import access, reach
+from eija_studio import __version__
+from eija_studio.application.api_contract import api_contract
+from eija_studio.application.class_build import class_build
 from eija_studio.application.components import app_components
+from eija_studio.application.deployment import app_deployment
 from eija_studio.application.landscape import landscape
 from eija_studio.application.law_proof import compare_laws, prove_laws, with_laws
 from eija_studio.application.ghost_diff import ghost_diff
@@ -43,6 +48,8 @@ from eija_studio.application.readiness import missing
 from eija_studio.application.review import review_change
 from eija_studio.application.ripple import check_follow_ons, ripple
 from eija_studio.application.scenario_run import record_steps, run_scenarios
+from eija_studio.application.screen_access import check_accessibility
+from eija_studio.application.sequence_draft import scenarios_or_draft
 from eija_studio.application.sequences import check_sequences
 from eija_studio.application.simulation import MAX_BREAKPOINTS, MAX_STEPS, run_log, simulate
 from eija_studio.domain.data import data_for
@@ -232,12 +239,20 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
     def play_data():
         """The pack's data model for the class diagram, or null when the pack has none (ADR-0153)."""
         data = data_for(studio.pack)
-        return {"data": data.model_dump(mode="json") if data else None, "digest": data.digest if data else None}
+        return {"data": data.model_dump(mode="json") if data else None, "digest": data.digest if data else None,
+                "build": class_build(data) if data else None}
 
     @app.get("/api/play/roles")
     def play_roles():
         """Each role with the kind of actor that holds it (ADR-0210): a person, an AI agent, a timer or an external system."""
         return {"roles": [{"id": r.id, "kind": r.kind, "description": r.description} for r in studio.pack.roles]}
+
+    def accessibility(screens: Screens, model: Workflow, data: Any) -> dict[str, Any]:
+        page = resource_files("eija_studio.resources").joinpath("appgen", "web")
+        def read(name: str) -> str:
+            return page.joinpath(name).read_text(encoding="utf-8")
+        return check_accessibility(screens, model, data, theme_css=read("app.css.tmpl"), page_js=read("app.js.tmpl"),
+                                   page_html=read("index.html.tmpl"))
 
     def screens_of(body: BuildRequest, model: Workflow) -> Screens:
         if body.screens is not None:
@@ -250,7 +265,7 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
         model = resolve(body)
         screens, data = screens_of(body, model), data_for(pack_of(body.plan))
         return {"screens": screens.model_dump(mode="json"), "digest": screens.digest, "use_cases": use_cases(model),
-                "problems": check_screens(screens, model, data)}
+                "problems": check_screens(screens, model, data), "accessibility": accessibility(screens, model, data)}
 
     def proposer():
         if studio.plan_proposer is None:
@@ -278,7 +293,14 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
         model = resolve(body)
         screens = screens_of(body, model)
         files, manifest = app_files(pack_of(body.plan), model, screens)
-        return app_components(files) | {"model": model.semantic_hash, "screens": screens.digest, "cases": manifest["oracle"]["cases"]}
+        return app_components(files) | {"model": model.semantic_hash, "screens": screens.digest, "cases": manifest["oracle"]["cases"],
+                                        "deployment": app_deployment(files, __version__)}
+
+    @app.post("/api/play/api-contract")
+    def play_api_contract(body: BuildRequest):
+        """The OpenAPI 3.1 document of the app this model builds (ADR-0207): its routes, request bodies and refusals."""
+        model, pack = resolve(body), pack_of(body.plan)
+        return api_contract(pack, model, data_for(pack))
 
     def built(pack: Pack, model: Workflow, screens: Screens) -> tuple[tuple[dict[str, str], int] | DomainError, list[dict[str, Any]]]:
         try:
@@ -303,11 +325,11 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
         data, data_before = data_for(pack), data_for(earlier)
         before, after = screens_for(studio.pack, start, data_before), screens_of(body, candidate)
         (old, _), (new, components) = built(earlier, start, before), built(pack, candidate, after)
-        tests = parse_scenarios(body.scenarios, studio.pack.id) if body.scenarios is not None else scenarios_for(studio.pack)
-        scenarios = check_sequences(pack, candidate, tests, start)
+        pack_tests = parse_scenarios(body.scenarios, studio.pack.id) if body.scenarios is not None else scenarios_for(studio.pack)
+        scenarios = check_sequences(pack, candidate, scenarios_or_draft(pack, pack_tests, start)[0], start)
         others, _ = siblings(pack.id)  # the system this workflow is part of, before and after (ADR-0203, #146)
         system = (landscape(pack.id, [(earlier, data_before, start), *others]), landscape(pack.id, [(pack, data, candidate), *others])) if others else None
-        report = ripple(start, candidate, data, (before, after), (old, new), components, scenarios, data_changes(data_before, data), system)
+        report = ripple(start, candidate, data, (before, after), (old, new), components, scenarios, data_changes(data_before, data), system, data_before)
         document = proposer().follow_on(report, candidate, pack) if report["problems"] else {"steps": []}
         return report | {"provider": proposer().name, "live": proposer().live,
                          "follow_ons": check_follow_ons(document, base, body.plan or [], pack, candidate, after, data)}
@@ -353,7 +375,11 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
         """The pack's scenarios (or a draft of them, shared with the Tests tab) drawn as sequence diagrams, each step run
         through the kernel on the shown model and, when it differs, on the model in force (ADR-0195). Read-only."""
         before, after = baseline(body), resolve(body)
-        return check_sequences(pack_of(body.plan), after, scenarios_of(body), before) | {"source": "edited" if body.scenarios is not None else "pack"}
+        pack = pack_of(body.plan)
+        if body.scenarios is not None:
+            return check_sequences(pack, after, scenarios_of(body), before) | {"source": "edited"}
+        scenarios, source = scenarios_or_draft(pack, scenarios_for(studio.pack), before)
+        return check_sequences(pack, after, scenarios, before) | {"source": source}
 
     @app.post("/api/play/build")
     def play_build(body: BuildRequest):

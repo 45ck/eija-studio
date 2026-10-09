@@ -45,7 +45,7 @@ The reason unknown fields and operators die at the boundary (acceptance [AC01](/
 * [application.data_steps.AddAttribute](/symbols/application/data_steps/AddAttribute.md) - `class AddAttribute(Contract)` in `application/data_steps`.
 * [application.data_steps.RemoveAttribute](/symbols/application/data_steps/RemoveAttribute.md) - `class RemoveAttribute(Contract)` in `application/data_steps`.
 * [application.data_steps.SetRequired](/symbols/application/data_steps/SetRequired.md) - `class SetRequired(Contract)` in `application/data_steps`.
-* [application.data_steps.SetRoleKind](/symbols/application/data_steps/SetRoleKind.md) - `class SetRoleKind(Contract)` in `application/data_steps`.
+* [application.data_steps.SetRoleKind](/symbols/application/data_steps/SetRoleKind.md) - Make the actor holding `role` a person, an AI agent, a timer or an external system (ADR-0210).
 * [application.edit_preview.EditPreview](/symbols/application/edit_preview/EditPreview.md) - An uncommitted candidate bound to a captured case revision; no evidence or edit authority.
 * [application.edit_proposal.EditProposalPack](/symbols/application/edit_proposal/EditProposalPack.md) - `class EditProposalPack(Contract)` in `application/edit_proposal`.
 * [application.edit_proposal.TypedEditProposal](/symbols/application/edit_proposal/TypedEditProposal.md) - `class TypedEditProposal(Contract)` in `application/edit_proposal`.

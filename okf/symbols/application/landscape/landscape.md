@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/landscape.py#landscape
   title: application/landscape.py
   hash_method: ast-v2
-  sha256: 739e2507787446f58fef421de0a03ae721f655c9f9ec1bcf3cf759b2838a9fc9
-notes_baseline: 1f6dad3fa549654e3416d0db3818badc2d653e4979ba35542e465fbe7dc30ec2
+  sha256: b75097ff26a03b5348fd23287375483e0595fc06cd3c5648b8699857f4980f3f
+notes_baseline: 87fe5aaed37fbf62eaca52c501d9b579ba6d7279a1848abf900f13485da3d0aa
 ---
 
 # application.landscape.landscape

@@ -100,7 +100,7 @@
       { id: "uml", name: "From a UML file", description: "XMI, PlantUML, Mermaid or draw.io. Its state machine and class model are checked by the kernel, and what it cannot import is listed." },
       ...listing.templates];
     for (const t of options) {
-      const label = P.el("label", undefined, { class: "template" }), radio = P.el("input", undefined, { type: "radio", name: "system-template", value: t.id });
+      const label = P.el("label", undefined, { class: t.states === undefined ? "template start" : "template" }), radio = P.el("input", undefined, { type: "radio", name: "system-template", value: t.id });
       radio.checked = t.id === choice;
       radio.addEventListener("change", () => { choice = t.id; showChoice(); check(); });
       const text = P.el("span");

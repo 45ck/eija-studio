@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0216-describe-your-app-and-whats-missing.md
   title: 0216-describe-your-app-and-whats-missing.md
   hash_method: lf-sha256-v1
-  sha256: 9e189b47a6fcded962beebcd7d7f4c64410e60a8d35fcfd2569f77107ab04f7d
-notes_baseline: b58e6dbbe972bb06ce35ee2d75233c3513302d2be91bd1929d2a9d620cf47816
+  sha256: 9f89113cba342643147fc489edd49586e0cd904c25a74dc6ad25e645d05f0db1
+notes_baseline: b03ca14c75199680c7e03cc7cc4c0c9ea693775982d04d4dbffcbe5ccc929aa0
 ---
 
 # ADR-0216: Describe your app, and what's missing
@@ -43,7 +43,7 @@ notes_baseline: b58e6dbbe972bb06ce35ee2d75233c3513302d2be91bd1929d2a9d620cf47816
 > * **Kinds of actor (#156, ADR-0210).**
 >   * The describer reads "an AI agent", "a timer", "a payment provider" and similar phrases from the data file. The verb after the phrase picks the transition that role takes.
 >   * A sketch line `agents:`, `timers:`, `systems:` or `people:` gives a role its kind.
->   * In chat, `make <role> an AI agent|a timer|an external system|a person` is a plan step on a system you started (`data_steps.SetRoleKind`), shown on the use case diagram. It is refused (`PLAN_KIND_FIXED`) on a system with a law about kinds, since changing who holds a role would change what that law lets through.
+>   * In chat, `make <role> an AI agent|a timer|an external system|a person` reads as the same role-kind plan step the inspector's **Held by** makes (`data_steps.SetRoleKind`, ADR-0210). The laws about kinds judge the plan again with the kinds it leaves.
 > * **The kernel's answer stays in view (#138).** The dialog's check result and its Create button sit right under the option being filled in (the description, the sketch, the UML file or the chosen template), so a refusal is never below the fold.
 > * **No laws are generated.** What's missing says there are none, gives an example from the model ("Collected is final") and says laws are the person's to set.
 > * **What's missing.** `POST /api/play/ready` returns a row per view: state machine, class diagram, use cases and permissions, screens, tests and sequences, and laws. Each row is either ready or lists what is missing or wrong, with where to fix it. It reads the work in progress: the plan's accepted steps when the policy allows them, previewed or not. The checks behind the rows are:

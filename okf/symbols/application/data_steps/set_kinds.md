@@ -1,8 +1,8 @@
 ---
 type: Function
-title: application.data_steps.with_kinds
-description: '`pack` with the roles'' kinds these steps set, a draft held in memory; `PLAN_KIND_FIXED` on a system with a law about kinds, and `EDIT_INVALID` for a role the pack does not declare.'
-resource: repo://src/eija_studio/application/data_steps.py#with_kinds
+title: application.data_steps.set_kinds
+description: '`pack` with each role-kind step applied in turn: a draft held in memory, checked as any pack is, so the kind laws are bound to the new kinds.'
+resource: repo://src/eija_studio/application/data_steps.py#set_kinds
 tags:
 - symbol
 - application
@@ -11,29 +11,30 @@ status: stable
 generated:
   by: process:eija-okf-sync
 sources:
-- resource: repo://src/eija_studio/application/data_steps.py#with_kinds
+- resource: repo://src/eija_studio/application/data_steps.py#set_kinds
   title: application/data_steps.py
   hash_method: ast-v2
-  sha256: ba72a24735595cefb473fa98963676a6a57f03b1acc8740c0a882f52386b3d44
-notes_baseline: 80b8fc8080a7d2280cc024954ebd0d149fef12c5474523a387558993f367d555
+  sha256: 2dace2a149233290d83200384d9dde3b7557f0481d695201416d6186b3a0f2f4
+notes_baseline: 9f9c8373e543fb9b95315f49abd129bc22b88d6171c6e0f3418ac2c1b9ddcd2a
 ---
 
-# application.data_steps.with_kinds
+# application.data_steps.set_kinds
 
 <!-- okf:generated:begin facts -->
 | | |
 |---|---|
 | Kind | function |
 | Module | [`application/data_steps`](/modules/application/data_steps.md) |
-| Signature | `def with_kinds(pack: Pack, steps: Sequence[DataEdit]) -> Pack` |
-| Code | `repo://src/eija_studio/application/data_steps.py#with_kinds` |
+| Signature | `def set_kinds(pack: Pack, steps: Sequence[SetRoleKind]) -> Pack` |
+| Code | `repo://src/eija_studio/application/data_steps.py#set_kinds` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
 ~~~text
-`pack` with the roles' kinds these steps set, a draft held in memory; `PLAN_KIND_FIXED` on a system with a law
-about kinds, and `EDIT_INVALID` for a role the pack does not declare.
+`pack` with each role-kind step applied in turn: a draft held in memory, checked as any pack is, so the kind laws
+are bound to the new kinds. A role the pack does not declare is refused, and so is a draft in which a kind law can
+no longer be met by any role. `pack` itself when there are none.
 ~~~
 <!-- okf:generated:end facts -->
 
@@ -44,8 +45,7 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [application.data_steps.DataEdit](/symbols/application/data_steps/DataEdit.md) - Type alias `DataEdit` in `application/data_steps`.
-* [application.data_steps.SetRoleKind](/symbols/application/data_steps/SetRoleKind.md) - `class SetRoleKind(Contract)` in `application/data_steps`.
+* [application.data_steps.SetRoleKind](/symbols/application/data_steps/SetRoleKind.md) - Make the actor holding `role` a person, an AI agent, a timer or an external system (ADR-0210).
 * [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
 * [domain.pack.PackError](/symbols/domain/pack/PackError.md) - A pack that cannot be used.

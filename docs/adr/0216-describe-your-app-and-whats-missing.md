@@ -52,7 +52,7 @@ Chosen option.
 * **Kinds of actor (#156, ADR-0210).**
   * The describer reads "an AI agent", "a timer", "a payment provider" and similar phrases from the data file. The verb after the phrase picks the transition that role takes.
   * A sketch line `agents:`, `timers:`, `systems:` or `people:` gives a role its kind.
-  * In chat, `make <role> an AI agent|a timer|an external system|a person` is a plan step on a system you started (`data_steps.SetRoleKind`), shown on the use case diagram. It is refused (`PLAN_KIND_FIXED`) on a system with a law about kinds, since changing who holds a role would change what that law lets through.
+  * In chat, `make <role> an AI agent|a timer|an external system|a person` reads as the same role-kind plan step the inspector's **Held by** makes (`data_steps.SetRoleKind`, ADR-0210). The laws about kinds judge the plan again with the kinds it leaves.
 * **The kernel's answer stays in view (#138).** The dialog's check result and its Create button sit right under the option being filled in (the description, the sketch, the UML file or the chosen template), so a refusal is never below the fold.
 * **No laws are generated.** What's missing says there are none, gives an example from the model ("Collected is final") and says laws are the person's to set.
 * **What's missing.** `POST /api/play/ready` returns a row per view: state machine, class diagram, use cases and permissions, screens, tests and sequences, and laws. Each row is either ready or lists what is missing or wrong, with where to fix it. It reads the work in progress: the plan's accepted steps when the policy allows them, previewed or not. The checks behind the rows are:
@@ -89,7 +89,7 @@ Chosen option.
   * four descriptions map to the expected shapes.
   * an AI agent and a webhook become roles of their kinds, and a sketch's `agents:` and `timers:` lines declare kinds, refusing a role listed as two kinds;
   * Update the tests records a stale test again on the model shown, drops one whose end is gone, leaves the pack's file untouched, and the result survives Save.
-* `tests/test_play_data_steps.py` checks that chat sets a role's kind on a system you started, and refuses it on a shipped pack or under a law about kinds.
+* `tests/test_play_data_steps.py` checks that chat reads a role's kind as a plan step, that the draft pack has it, and that a round which only sets a kind builds and runs another app.
 * A manual Chromium run checked `/play?new=describe`: the summary under the box, creation, the What's missing panel, the class and sequence diagrams, and a chat round that the panel follows.
 * The greenfield demo starts from a description (`demos/scenarios/playide_greenfield.py`).
 
