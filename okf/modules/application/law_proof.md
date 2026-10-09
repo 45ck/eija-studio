@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/law_proof.py
   title: application/law_proof.py
   hash_method: ast-api-v1
-  sha256: 66b15d95224d43e4def559690bb82db69b99ef77d3b47c1df71138d1dc483321
-notes_baseline: 8519eae51402ef3a17882ccd1bee6f221a3e5d81ea5d8c77e95b606ed3157ec9
+  sha256: f9b356d481cb39f01db702838985e1584cb9b905be18123a6770bbdca1eee8d6
+notes_baseline: ab5909d5c39132a9ab5436f360ae3b321aa1a1d08f9dd1917574c4e5e26b42ac
 ---
 
 # application.law_proof
@@ -41,8 +41,9 @@ on an in-memory session); the laws are judged by `laws.evaluate_run` itself, so 
 * Actors: every class the kernel can tell apart. `check_actor` reads only `active`, `role` and `assigned`, so one
   actor per role and per combination of the two flags, plus one actor holding a role the pack does not declare,
   stands for every possible actor.
-* Configurations: the record's state plus the set of path-law waypoints (`path_requires.via`) it has passed. Every
-  other law kind is judged per step, so this product is complete for the current law kinds; `LAW_HANDLING` names
+* Configurations: the record's state plus the set of path-law waypoints (`path_requires.via`) it has passed and of
+  the `path_requires_kind` laws whose kind of actor has already taken a step (ADR-0210). Every other law kind is
+  judged per step, so this product is complete for the current law kinds; `LAW_HANDLING` names
   how each kind is judged and a test fails if a new kind is not classified.
 * Each configuration is reached first by a shortest run, so a counterexample is the shortest run that breaks the law.
 * A law about a state that is never reached, or an action that never commits, holds vacuously; that is reported.
@@ -57,6 +58,7 @@ Pure: no IO, no clock, no randomness. The same pack and model always give the sa
 * [`LIMITS`](/symbols/application/law_proof/LIMITS.md) (constant) - no docstring
 * [`MAX_CONFIGURATIONS`](/symbols/application/law_proof/MAX_CONFIGURATIONS.md) (constant) - no docstring
 * [`OUTSIDER`](/symbols/application/law_proof/OUTSIDER.md) (constant) - no docstring
+* [`Passed`](/symbols/application/law_proof/Passed.md) (type-alias) - no docstring
 * [`actor_classes`](/symbols/application/law_proof/actor_classes.md) (function) - One actor per role (declared or used) and per combination of `active` and `assigned`, and an outsider.
 * [`compare_laws`](/symbols/application/law_proof/compare_laws.md) (function) - Which laws a draft adds, removes or changes.
 * [`prove_laws`](/symbols/application/law_proof/prove_laws.md) (function) - Every law of the pack, judged on `model` (the pack's own by default), with the evidence for each verdict.
@@ -95,6 +97,7 @@ _No curated notes yet._
 * [application.law_proof.LIMITS](/symbols/application/law_proof/LIMITS.md) - Constant `LIMITS` in `application/law_proof`.
 * [application.law_proof.MAX_CONFIGURATIONS](/symbols/application/law_proof/MAX_CONFIGURATIONS.md) - Constant `MAX_CONFIGURATIONS` in `application/law_proof`.
 * [application.law_proof.OUTSIDER](/symbols/application/law_proof/OUTSIDER.md) - Constant `OUTSIDER` in `application/law_proof`.
+* [application.law_proof.Passed](/symbols/application/law_proof/Passed.md) - Type alias `Passed` in `application/law_proof`.
 * [application.law_proof.actor_classes](/symbols/application/law_proof/actor_classes.md) - One actor per role (declared or used) and per combination of `active` and `assigned`, and an outsider.
 * [application.law_proof.compare_laws](/symbols/application/law_proof/compare_laws.md) - Which laws a draft adds, removes or changes.
 * [application.law_proof.prove_laws](/symbols/application/law_proof/prove_laws.md) - Every law of the pack, judged on `model` (the pack's own by default), with the evidence for each verdict.

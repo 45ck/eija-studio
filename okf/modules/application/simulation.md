@@ -55,6 +55,7 @@ gives the same run. Nothing persists and no effect leaves the process.
 ## Internal imports
 
 * [`application/runtime`](/modules/application/runtime.md)
+* [`domain/laws`](/modules/domain/laws.md)
 * [`domain/models`](/modules/domain/models.md)
 * [`domain/pack`](/modules/domain/pack.md)
 <!-- okf:generated:end facts -->
@@ -67,6 +68,7 @@ _No curated notes yet._
 ## Imports
 
 * [application.runtime](/modules/application/runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.
+* [domain.laws](/modules/domain/laws.md) - Typed law DSL of a domain pack: what a workflow may never do, stated as data (WBS 1.1/1.2).
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
 

@@ -13,6 +13,7 @@ from collections import Counter, defaultdict
 from hashlib import sha256
 from typing import Any
 
+from eija_studio.domain.laws import ROLE_KINDS
 from eija_studio.domain.models import DomainError, ExecuteCommand, Transition, Workflow
 from eija_studio.domain.pack import Pack
 from .runtime import execute, initialise
@@ -94,6 +95,7 @@ class _Run:
         self.refusals: dict[str, Counter[str]] = defaultdict(Counter)
         self.codes: Counter[str] = Counter()
         self.entered: Counter[str] = Counter()
+        self.by_role: dict[str, Counter[str]] = defaultdict(Counter)  # per role: "committed" and each refusal code
         self.trace: list[dict[str, Any]] = []
 
     def log(self, step: dict[str, Any]) -> None:
@@ -128,10 +130,12 @@ def _attempt(session: MemorySession, pack: Pack, model: Workflow, run: _Run, rng
     except DomainError as refused:
         run.refusals[transition.id][refused.code] += 1
         run.codes[refused.code] += 1
+        run.by_role[actor["role"]][refused.code] += 1
         run.log(step | {"outcome": "REFUSED", "code": refused.code})
         return
     to = result["instance"]["state"]
     run.commits[transition.id] += 1
+    run.by_role[actor["role"]]["committed"] += 1
     run.entered[to] += 1
     run.log(step | {"outcome": "COMMITTED", "to": to, "effects": result["effects"]})
 
@@ -253,6 +257,21 @@ def _findings(model: Workflow, run: _Run, occupancy: Counter[str]) -> list[dict[
     return never + _state_findings(model, run, occupancy) + refused
 
 
+def _by_kind(pack: Pack, run: _Run) -> dict[str, dict[str, Any]]:
+    """What each kind of actor (ADR-0210: people, AI agents, timers, external systems) tried and what the kernel said."""
+    out: dict[str, dict[str, Any]] = {}
+    for role in sorted(run.by_role):
+        tally = run.by_role[role]
+        entry = out.setdefault(pack.role_kind(role) or "human", {"roles": [], "attempts": 0, "committed": 0, "refused": 0, "codes": {}})
+        refused = {code: n for code, n in tally.items() if code != "committed"}
+        entry["roles"].append(role)
+        entry["committed"] += tally["committed"]
+        entry["refused"] += sum(refused.values())
+        entry["attempts"] = entry["committed"] + entry["refused"]
+        entry["codes"] = dict(sorted((Counter(entry["codes"]) + Counter(refused)).items(), key=lambda kv: (-kv[1], kv[0])))
+    return {kind: out[kind] for kind in ROLE_KINDS if kind in out}
+
+
 def _report(pack: Pack, model: Workflow, seed: int, steps: int, session: MemorySession, run: _Run) -> dict[str, Any]:
     occupancy = Counter(item["state"] for item in session.instances.values())
     attempts = sum(run.commits.values()) + sum(run.codes.values())
@@ -263,7 +282,7 @@ def _report(pack: Pack, model: Workflow, seed: int, steps: int, session: MemoryS
         "transitions": {t.id: {"committed": run.commits[t.id], "refused": dict(run.refusals.get(t.id, {}))} for t in model.transitions},
         "states": {s: {"entered": run.entered[s], "now": occupancy[s]} for s in model.states},
         "effects": {"audit": dict(Counter(session.audit)), "outbox": dict(Counter(session.outbox))},
-        "findings": _findings(model, run, occupancy), "trace": run.trace,
+        "by_kind": _by_kind(pack, run), "findings": _findings(model, run, occupancy), "trace": run.trace,
         "limits": ["Simulated users are the pack's fixture actors acting at random, not measured human behaviour.",
                    "Each attempt is decided by the kernel against in-memory storage; no effect leaves the process."],
     }
