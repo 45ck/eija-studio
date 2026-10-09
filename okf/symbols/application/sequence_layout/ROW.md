@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/sequence_layout.py#ROW
   title: application/sequence_layout.py
   hash_method: ast-v2
-  sha256: b8698ac5827e91486455d3430f752e25204f699ae05b93310a4969775e186227
-notes_baseline: 625886c5d896e67ac93be542cd04945e7217fb3c701aed70ab709b873e9bfa76
+  sha256: 1a6466cfa123de68a4d110f9fd26b0a241511e83170acd306266bbe6f2a72d65
+notes_baseline: 0f5309f3705a9ed36f3d1fa3e5b894852e9ba504c27244ac2bec36d747941542
 ---
 
 # application.sequence_layout.ROW
@@ -25,7 +25,7 @@ notes_baseline: 625886c5d896e67ac93be542cd04945e7217fb3c701aed70ab709b873e9bfa76
 |---|---|
 | Kind | constant |
 | Module | [`application/sequence_layout`](/modules/application/sequence_layout.md) |
-| Signature | `ROW = {'message': 40, 'reply': 30, 'invariant': 36, 'effect': 28, 'frame': 34, 'end': 16}` |
+| Signature | `ROW = {'message': 40, 'reply': 30, 'invariant': 36, 'effect': 26, 'frame': 34, 'end': 16}` |
 | Code | `repo://src/eija_studio/application/sequence_layout.py#ROW` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 

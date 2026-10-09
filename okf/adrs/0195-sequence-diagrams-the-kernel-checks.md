@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0195-sequence-diagrams-the-kernel-checks.md
   title: 0195-sequence-diagrams-the-kernel-checks.md
   hash_method: lf-sha256-v1
-  sha256: 16f66cda934ec9e9aee495f67e779464944f1e3a67baee3b3c69c51c8998cfe3
-notes_baseline: 808e0fa253a419eab0893933f2761566fc2c5d5af25df2570f277b1feb4970bd
+  sha256: 8be0f63384cecf1ca2c9bac643e44e907b949eb3071be1535e7b6708a8688c0d
+notes_baseline: 8446444804dcdc6cfc9dcf5be0cd256117d81bc1c3fbbe7b5e96db66da6a0763
 ---
 
 # ADR-0195: Sequence diagrams are the pack's scenarios, drawn in UML and checked by the kernel step by step
@@ -37,10 +37,14 @@ notes_baseline: 808e0fa253a419eab0893933f2761566fc2c5d5af25df2570f277b1feb4970bd
 >   * BROKEN: the kernel did something else. The step's sentence and the kernel's reason in words (from the refusal code, the actor's role and the transition's) say what.
 >   * NOT_REACHED: an earlier step was broken.
 >   A scenario is PRODUCIBLE when no step is BROKEN. With `base`, the model in force, each scenario also runs there, so a change says which scenarios it `breaks` or `fixes`, and each message carries its action's status from `ghost_diff`.
-> * The UML mapping: the step's actor and the record are lifelines (`loan : Loan` from the data model), each step is a synchronous call, the record's start state and its state after each committed step are state invariants, the transition's required effects are asynchronous messages to `«effect»` lifelines, a refusal is a dashed reply, and a step that expects a refusal sits in a `neg` combined fragment, the UML for a trace that must not happen, labelled with the code it expects.
+> * The UML mapping: the step's actor and the record are lifelines (`loan : Loan` from the data model), each step is a numbered synchronous call (numbered as the Tests tab numbers steps) that activates the record until its outcome, the record's start state and its state after each committed step are state invariants, the transition's required effects are lost messages (an arrow ending in a filled dot, to the world outside the system, with no lifeline of its own), a refusal is a dashed reply, and a step that expects a refusal sits in a `neg` combined fragment, the UML for a trace that must not happen, labelled with the code it expects.
 > * `application/sequence_layout.py` computes the layout: lifeline columns in order of first use and rows top to bottom. The page draws boxes and arrows at those coordinates. It also exports each sequence as Mermaid and PlantUML through the existing `diagram_emitters`; `diagrams.Fragment` gains `operator` (`opt` or `neg`). Mermaid has no `neg`, so it is written as an `opt` labelled `neg:`, and PlantUML as `group neg`.
 > * `POST /api/play/sequences` takes the request the Tests tab's route takes (an optional draft of `scenarios.json`). The ripple (`POST /api/play/ripple`) lists the pack's scenarios a plan breaks (warning `SEQUENCE_BROKEN`) or fixes.
 > * The **Sequences** tab (`play-sequence.js`, `play-sequence.css`) lists the scenarios with their verdicts and draws the selected one. A step the model can't do is red, with the kernel's reason in the verdict line, the tooltip and the inspector. While a plan or change case is shown, a message says what it was on the model in force; with the Changes view on, messages whose action the change adds, changes or removes take that view's colours. Editing works on the one draft the Tests tab keeps (`window.PlayTests`): add a step in the row under the diagram (it expects what the kernel does now, through `/api/play/tests/try`, so a refused step arrives inside a `neg`), change a step's actor, action or expectation, take the kernel's outcome as the expectation, move or delete a step, set the title and start state, add or delete scenarios. Every edit is checked again on the server. Nothing is saved: **Export** copies Mermaid or PlantUML, or downloads `scenarios.json`. The review view (ADR-0172) hides the editing tools.
+>
+> * A system with no `scenarios.json` (one started from a sketch) gets scenarios drafted from the model in force (`application/sequence_draft.py`): the shortest path to each final state, taken by fixture actors in the right roles, and one step someone in another role must be refused. What each step must do comes from `scenario_run.record_steps`, the kernel's answer, so a draft never guesses. The tab says the scenarios are drafted; editing one makes it the shared draft, and nothing is saved.
+> * A red tab lists every failing scenario above the diagram: its title, the step that fails and why, **Show the step**, and **Expect what the model does now** (the scenario's actors and actions kept, its expectations rewritten from what the kernel does on the model shown, for when the change is intended).
+> * Updated 9 October 2026 after the owner found the tab hard to read in a recording: lifeline names wrap onto two lines, labels are 12 to 13 px, the stage never scales below 80%, and effects no longer add a column each.
 
 ## Sections
 
