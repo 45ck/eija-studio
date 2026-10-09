@@ -70,6 +70,8 @@ _No curated notes yet._
 
 ## Referenced by
 
+* [application.describe_system](/modules/application/describe_system.md) - Describe your app (ADR-0203): a new system from one description, like starting an app in Lovable or Replit.
+* [application.readiness](/modules/application/readiness.md) - What's missing (ADR-0203): one list across every model and view of what is not ready yet, so a system built in chat or on the canvas says what it still lacks i…
 * [application.sequences](/modules/application/sequences.md) - The pack's scenarios drawn as UML sequence diagrams the kernel checks (ADR-0195).
 * [interfaces.cli](/modules/interfaces/cli.md) - Module `interfaces/cli` (no module docstring).
 * [interfaces.play](/modules/interfaces/play.md) - PlayIDE routes: the visual UML canvas page, Build & run of the model as a live app beside it (ADR-0151), and Simulate, seeded simulated users whose every step…

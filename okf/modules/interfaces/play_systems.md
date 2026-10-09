@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/play_systems.py
   title: interfaces/play_systems.py
   hash_method: ast-api-v1
-  sha256: 16dea03b9027178d8236f1633de0ee52d75045211a6df6c36edbf616f758a9e0
-notes_baseline: f99d5ac984058f4849a4711cecea673c0ba7dd672865a05013241c57b24c1b8f
+  sha256: acf0afa4d54c5dc968bef479ef700b0f5e07e7c92c6cd30299a2beaffa31ff10
+notes_baseline: e302bd08a7c12f3c303b5087b45314ec6e7ad3f090dd0aee3d30307b544bf7a0
 ---
 
 # interfaces.play_systems
@@ -45,6 +45,7 @@ _Symbol pages are generated for the domain and application layers only._
 ## Internal imports
 
 * [`application/data_steps`](/modules/application/data_steps.md)
+* [`application/describe_system`](/modules/application/describe_system.md)
 * [`application/new_system`](/modules/application/new_system.md)
 * [`application/plan`](/modules/application/plan.md)
 * [`domain/models`](/modules/domain/models.md)
@@ -60,6 +61,7 @@ _No curated notes yet._
 ## Imports
 
 * [application.data_steps](/modules/application/data_steps.md) - Data-model steps in a chat plan (ADR-0202): add an attribute to a class, remove one, or make one required or optional.
+* [application.describe_system](/modules/application/describe_system.md) - Describe your app (ADR-0203): a new system from one description, like starting an app in Lovable or Replit.
 * [application.new_system](/modules/application/new_system.md) - Start a new system (ADR-0185): the pack documents for a system started from a sketch or copied from a template.
 * [application.plan](/modules/application/plan.md) - Plan mode for the PlayIDE chat (ADR-0156): an AI proposes a change as numbered typed steps; the person accepts or rejects each one and sees what the accepted o…
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).

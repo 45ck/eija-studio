@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/ports.py
   title: application/ports.py
   hash_method: ast-api-v1
-  sha256: 39da5cc875d28da7b66cd5c5970f7a2e913288f6749bfe82873b004a8077323b
-notes_baseline: c32a78598100c00f0905bab66c29fa97292c86150a7e24de3aa86244f1f8c691
+  sha256: 054ac985f3164885dd33a0e5b60e3e1c2f6f95af2af90ce2ed8fe0b7ccf8de3c
+notes_baseline: 55e90f15ea77b0031246897470fe4536547be9f734a6b6af68ffc77da47eb87f
 ---
 
 # application.ports
@@ -43,6 +43,7 @@ Application-owned ports. Domain/application never depend on vendor or SQL types.
 * [`ReceiptAuthenticator`](/symbols/application/ports/ReceiptAuthenticator.md) (class) - no docstring
 * [`Repository`](/symbols/application/ports/Repository.md) (class) - no docstring
 * [`SandboxFactory`](/symbols/application/ports/SandboxFactory.md) (type-alias) - no docstring
+* [`SystemDescriber`](/symbols/application/ports/SystemDescriber.md) (class) - Turns a description of an app into {name, record, sketch, fields, reading} for "Describe your app" (ADR-0203).
 * [`UnitOfWork`](/symbols/application/ports/UnitOfWork.md) (class) - All mutations on this port commit together or roll back together.
 
 ## Internal imports
@@ -67,6 +68,7 @@ _No curated notes yet._
 
 ## Referenced by
 
+* [application.describe_system](/modules/application/describe_system.md) - Describe your app (ADR-0203): a new system from one description, like starting an app in Lovable or Replit.
 * [application.edit_proposal](/modules/application/edit_proposal.md) - A read-only offline proposal over one captured candidate; owner edits keep their existing boundary.
 * [application.formal](/modules/application/formal.md) - Formal evidence in the application layer: seal what an adapter collected, and build the packet view.
 * [application.plan](/modules/application/plan.md) - Plan mode for the PlayIDE chat (ADR-0156): an AI proposes a change as numbered typed steps; the person accepts or rejects each one and sees what the accepted o…
@@ -82,5 +84,6 @@ _No curated notes yet._
 * [application.ports.ReceiptAuthenticator](/symbols/application/ports/ReceiptAuthenticator.md) - `class ReceiptAuthenticator(Protocol)` in `application/ports`.
 * [application.ports.Repository](/symbols/application/ports/Repository.md) - `class Repository(Protocol)` in `application/ports`.
 * [application.ports.SandboxFactory](/symbols/application/ports/SandboxFactory.md) - Type alias `SandboxFactory` in `application/ports`.
+* [application.ports.SystemDescriber](/symbols/application/ports/SystemDescriber.md) - Turns a description of an app into {name, record, sketch, fields, reading} for "Describe your app" (ADR-0203).
 * [application.ports.UnitOfWork](/symbols/application/ports/UnitOfWork.md) - All mutations on this port commit together or roll back together.
 <!-- okf:generated:end links -->

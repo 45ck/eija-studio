@@ -92,3 +92,4 @@
 * [ADR-0199: PlayIDE at the kernel's limits: measured, and the kernel's repeated questions memoised](0199-playide-at-the-kernel-limits.md) - The packs PlayIDE was built and demonstrated on have five or six states.
 * [ADR-0201: Build a new system in chat, round after round](0201-build-a-new-system-in-chat-round-after-round.md) - The showcase changes a pack that already exists (Library loan).
 * [ADR-0202: Grow the class diagram in chat](0202-grow-the-class-diagram-in-chat.md) - ADR-0201 let a system started from a sketch grow its state machine round after round in chat.
+* [ADR-0203: Describe your app, and what's missing](0203-describe-your-app-and-whats-missing.md) - Until now a new system started from three sketch lines, a template or a UML file (ADR-0185, ADR-0190), and then grew in chat (ADR-0201, ADR-0202).

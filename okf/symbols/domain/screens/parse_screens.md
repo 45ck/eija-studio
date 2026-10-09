@@ -46,5 +46,6 @@ _No curated notes yet._
 
 ## Referenced by
 
+* [application.new_system.checked_documents](/symbols/application/new_system/checked_documents.md) - The documents, if the kernel's checks accept them; `PackError` with every problem otherwise.
 * [domain.screens.load_screens](/symbols/domain/screens/load_screens.md) - The pack's screens, or None when the pack has no `screens.json`.
 <!-- okf:generated:end links -->

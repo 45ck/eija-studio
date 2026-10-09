@@ -57,6 +57,7 @@ _Symbol pages are generated for the domain and application layers only._
 * [`application/ghost_diff`](/modules/application/ghost_diff.md)
 * [`application/law_proof`](/modules/application/law_proof.md)
 * [`application/plan`](/modules/application/plan.md)
+* [`application/readiness`](/modules/application/readiness.md)
 * [`application/review`](/modules/application/review.md)
 * [`application/ripple`](/modules/application/ripple.md)
 * [`application/scenario_run`](/modules/application/scenario_run.md)
@@ -85,6 +86,7 @@ _No curated notes yet._
 * [application.ghost_diff](/modules/application/ghost_diff.md) - How a change looks on the state machine: both models on one canvas, with nothing hidden (ADR-0176).
 * [application.law_proof](/modules/application/law_proof.md) - Prove a pack's laws over every run the kernel allows (ADR-0166).
 * [application.plan](/modules/application/plan.md) - Plan mode for the PlayIDE chat (ADR-0156): an AI proposes a change as numbered typed steps; the person accepts or rejects each one and sees what the accepted o…
+* [application.readiness](/modules/application/readiness.md) - What's missing (ADR-0203): one list across every model and view of what is not ready yet, so a system built in chat or on the canvas says what it still lacks i…
 * [application.review](/modules/application/review.md) - Review a model change in PlayIDE instead of a pull request (ADR-0175).
 * [application.ripple](/modules/application/ripple.md) - Ripple (ADR-0158): what one change to the state machine does to every other diagram of the same system, and the follow-on edits that would keep them in agreeme…
 * [application.scenario_run](/modules/application/scenario_run.md) - Run a pack's scenarios (its test cases) through the kernel, and record new ones (ADR-0177).

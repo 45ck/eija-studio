@@ -6,7 +6,7 @@
   const $ = (id) => document.getElementById(id);
   const query = new URLSearchParams(location.search);
   const EXAMPLE = "Open -> Triaged : Triage [Agent]\nTriaged -> Resolved : Resolve [Agent]\nTriaged -> Escalated : Escalate [Agent]\nEscalated -> Resolved : Fix [Engineer]";
-  let P = null, listing = null, leaving = false, notice = "", saved = "", savedAt = 0, checkTimer = 0, checkSeq = 0, choice = "blank";
+  let P = null, listing = null, leaving = false, notice = "", saved = "", savedAt = 0, checkTimer = 0, checkSeq = 0, choice = "describe";
   let sketch; // the sketch box, found once
   let umlFile = { name: "", text: "" }; // "From a UML file" (ADR-0190): the file chosen, read in the page and checked by the server
   const canSave = () => !query.get("case") && query.get("view") !== "review";
@@ -92,7 +92,8 @@
     const list = $("systems-templates");
     sketch = sketch || $("systems-sketch-box"); // kept across renders: it lives inside the list, so clearing the list detaches it
     list.replaceChildren();
-    const options = [{ id: "blank", name: "Blank, from a sketch", description: "Type the state machine as the diagram labels it; the kernel checks it as you type." },
+    const options = [{ id: "describe", name: "Describe it", description: "Say what the app is for, who does what and what it records. Every model and view is made from it, and the kernel checks it." },
+      { id: "blank", name: "Blank, from a sketch", description: "Type the state machine as the diagram labels it; the kernel checks it as you type." },
       { id: "uml", name: "From a UML file", description: "XMI, PlantUML, Mermaid or draw.io. Its state machine and class model are checked by the kernel, and what it cannot import is listed." },
       ...listing.templates];
     for (const t of options) {
@@ -104,13 +105,20 @@
       label.append(radio, text);
       list.append(label);
     }
-    list.firstChild.after(sketch); // the sketch sits under its own option
-    list.children[2].after(umlBox()); // and the file under "From a UML file"
+    list.children[1].after(sketch); // the sketch sits under its own option
+    list.children[3].after(umlBox()); // and the file under "From a UML file"
     $("systems-sketch-help").textContent = listing.sketch_help + ". Optional: actions: A, B and roles: C, for ones you will draw later.";
     showChoice();
   }
 
   function showChoice() {
+    const describing = choice === "describe", box = $("systems-describe-box");
+    box.hidden = !describing;
+    $("systems-templates").classList.toggle("compact", describing); // the description is the start; the rest are one line each
+    const form = $("systems-form"), verdict = $("systems-check"), actions = form.querySelector(".systems-actions");
+    if (describing) $("systems-name").after(verdict, actions); // what you will get sits right under what you typed, like Lovable
+    else form.append(verdict, actions);
+    $("systems-name").placeholder = choice === "describe" ? "Named for you if you leave it empty" : "Support desk";
     sketch.hidden = choice !== "blank";
     umlBox().hidden = choice !== "uml";
   }
@@ -143,7 +151,8 @@
     return box;
   }
 
-  const body = (checkOnly) => ({ name: $("systems-name").value.trim() || "My system", template: choice,
+  const body = (checkOnly) => ({ name: $("systems-name").value.trim() || (choice === "describe" ? "" : "My system"), template: choice,
+    description: choice === "describe" ? $("systems-describe").value : "",
     record: $("systems-record").value.trim() || "Record", sketch: $("systems-sketch").value, check_only: checkOnly,
     ...(choice === "uml" ? { uml: umlFile.text, filename: umlFile.name } : {}) });
 
@@ -151,6 +160,12 @@
     clearTimeout(checkTimer);
     checkTimer = setTimeout(async () => {
       const seq = (checkSeq += 1), verdict = $("systems-check");
+      if (choice === "describe" && !$("systems-describe").value.trim()) {
+        verdict.className = "systems-check";
+        verdict.replaceChildren(P.el("p", "Describe the app: what it is for, who does what, and what each record has.", { class: "muted" }));
+        $("systems-create").disabled = true;
+        return;
+      }
       let result;
       try {
         result = await P.api("/api/play/systems/new", body(true));
@@ -162,20 +177,44 @@
       $("systems-create").disabled = result.problems.length > 0;
       verdict.className = "systems-check " + (result.problems.length ? "bad" : "ok");
       if (result.problems.length) {
-        verdict.append(P.el("p", "The kernel's pack check refuses this:"));
+        verdict.append(P.el("p", choice === "describe" ? "That description does not make a system the kernel accepts:" : "The kernel's pack check refuses this:"));
         const ul = P.el("ul");
         for (const p of result.problems.slice(0, 8)) ul.append(P.el("li", p));
         verdict.append(ul);
         return;
       }
       const s = result.system;
+      if (result.described) { verdict.append(described(s, result.described)); return; }
       verdict.append(P.el("p", `Checked: ${s.states.length} states (starts in ${s.initial}), ${s.transitions} transitions, roles ${s.roles.join(", ")}${s.record ? `, record class ${s.record}` : ""}. It will be saved as ${s.id}.`));
       if (result.import) verdict.append(importReport(result.import));
     }, 250);
   }
 
+  // What a description becomes, view by view, before anything is created; and what the offline reader assumed.
+  function described(s, read) {
+    const box = P.el("div", undefined, { class: "systems-described", id: "systems-described" });
+    box.append(P.el("p", `Checked by the kernel. ${s.name} will be saved as ${s.id}:`));
+    const views = [["State machine", `${s.states.length} states from ${s.initial}: ${s.states.join(", ")}`],
+      ["Class diagram", `${s.record} with ${s.fields.join(", ")}`],
+      ["Use cases", `${s.actions.join(", ")}, by ${s.roles.join(" and ")}`],
+      ["Screens", `one per use case, with ${s.record}'s fields`],
+      ["Tests and sequences", s.tests.length ? `${s.tests.length} recorded by the kernel: ${s.tests.join("; ")}` : "none yet"],
+      ["Laws", "none yet: laws are yours to write"]];
+    const dl = P.el("dl", undefined, { class: "systems-views" });
+    for (const [k, v] of views) dl.append(P.el("dt", k), P.el("dd", v));
+    box.append(dl);
+    for (const line of read.reading) box.append(P.el("p", line, { class: "muted small" }));
+    return box;
+  }
+
   const unsaved = () => canSave() && $("system-save") && !$("system-save").disabled;
-  const leave = () => { leaving = true; location.reload(); }; // the server now serves the other system; the hash keeps the session
+  const leave = () => { // the server now serves the other system; the hash keeps the session
+    leaving = true;
+    if (!query.has("new")) { location.reload(); return; }
+    const url = new URL(location.href);
+    url.searchParams.delete("new"); // opened on "Describe your app": the new system opens on its diagrams
+    location.replace(url.href);
+  };
 
   async function create(event) {
     event.preventDefault();
@@ -209,7 +248,7 @@
     renderNew();
     showPane(pane);
     $("systems-dialog").showModal();
-    if (pane === "new") { $("systems-name").focus(); check(); }
+    if (pane === "new") { (choice === "describe" ? $("systems-describe") : $("systems-name")).focus(); check(); }
   }
 
   function showPane(pane) {
@@ -229,11 +268,12 @@
     }
     $("system-controls").hidden = false;
     $("system-menu").addEventListener("click", () => showDialog("open"));
+    $("system-new").addEventListener("click", () => showDialog("new", "describe"));
     $("systems-close").addEventListener("click", () => $("systems-dialog").close());
     $("systems-tab-open").addEventListener("click", () => showPane("open"));
     $("systems-tab-new").addEventListener("click", () => { showPane("new"); $("systems-name").focus(); check(); });
     $("systems-sketch").value = EXAMPLE;
-    for (const id of ["systems-name", "systems-record", "systems-sketch"]) $(id).addEventListener("input", check);
+    for (const id of ["systems-name", "systems-record", "systems-sketch", "systems-describe"]) $(id).addEventListener("input", check);
     $("systems-form").addEventListener("submit", create);
     if (!canSave()) { $("system-save").hidden = true; return; }
     $("system-save").addEventListener("click", save);
@@ -242,6 +282,7 @@
     });
     await reopen();
     setSaveState();
+    if (query.get("new") === "describe") showDialog("new", "describe"); // start like Lovable or Replit: one box
     setInterval(setSaveState, 800);
     window.addEventListener("beforeunload", (event) => { if (!leaving && unsaved()) event.preventDefault(); });
   }

@@ -168,7 +168,7 @@ def sketch_documents(name: str, record: str, sketch: str, pack_id: str) -> dict[
     data = {"schema_version": "eija.data.v1", "id": pack_id, "record": record,
             "entities": [{"name": record, "description": f"One {record}; it moves through the state machine.",
                           "attributes": [{"name": "title", "type": "text", "required": True, "max_length": 200}]}]}
-    return _checked({"pack.json": pack, "data.json": data})
+    return checked_documents({"pack.json": pack, "data.json": data})
 
 
 def template_documents(template: Pack, documents: dict[str, dict[str, Any]], name: str, pack_id: str) -> dict[str, dict[str, Any]]:
@@ -191,10 +191,10 @@ def template_documents(template: Pack, documents: dict[str, dict[str, Any]], nam
     for file in ("data.json", "screens.json", "scenarios.json"):
         if file in documents:
             copied[file] = copy.deepcopy(documents[file]) | {"id": pack_id}
-    return _checked(copied)
+    return checked_documents(copied)
 
 
-def _checked(documents: dict[str, dict[str, Any]]) -> dict[str, dict[str, Any]]:
+def checked_documents(documents: dict[str, dict[str, Any]]) -> dict[str, dict[str, Any]]:
     """The documents, if the kernel's checks accept them; `PackError` with every problem otherwise."""
     pack = parse_pack(documents["pack.json"])
     try:

@@ -350,6 +350,43 @@
         }
       }
     },
+    "/api/play/ready": {
+      "post": {
+        "summary": "Play Ready",
+        "description": "What's missing (ADR-0203): every view's row, ready or what it lacks, for the model shown with any accepted plan\nsteps. Read-only.",
+        "operationId": "play_ready_api_play_ready_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuildRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/play/review": {
       "post": {
         "summary": "Play Review",

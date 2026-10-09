@@ -7,6 +7,7 @@
 * [compiler](compiler/) - Symbols of application.compiler
 * [components](components/) - Symbols of application.components
 * [data_steps](data_steps/) - Symbols of application.data_steps
+* [describe_system](describe_system/) - Symbols of application.describe_system
 * [diagram_catalog](diagram_catalog/) - Symbols of application.diagram_catalog
 * [diagram_emitters](diagram_emitters/) - Symbols of application.diagram_emitters
 * [diagrams](diagrams/) - Symbols of application.diagrams
@@ -20,6 +21,7 @@
 * [new_system](new_system/) - Symbols of application.new_system
 * [plan](plan/) - Symbols of application.plan
 * [ports](ports/) - Symbols of application.ports
+* [readiness](readiness/) - Symbols of application.readiness
 * [repository](repository/) - Symbols of application.repository
 * [review](review/) - Symbols of application.review
 * [ripple](ripple/) - Symbols of application.ripple

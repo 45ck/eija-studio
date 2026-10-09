@@ -1,31 +1,37 @@
 # PlayIDE greenfield: storyboard and recording script
 
-The showcase changes a system that already exists. This cut answers the other question (Calvin, 2026-10-09): what about a new app, built fast with an AI and changed again and again? It starts from three lines and builds a coffee-order system, form included, in six chat asks, reading each round as it goes.
+The showcase changes a system that already exists. This cut answers the other question, put by Calvin on 2026-10-09: what about a new app, built fast with an AI and changed again and again? He described it this way: "it should start off like loveable or replit a box to type in than it makes all uml and u edit it … or drag it like drawio … usually its a mix of both … if something is missing it lets you know".
 
-It is recorded from the real running product, like every EIJA demo ([ADR-0047](../adr/0047-hardcoded-scripted-demos-not-demo-machine.md)). The script is [`demos/scenarios/playide_greenfield.py`](../../demos/scenarios/playide_greenfield.py); what it relies on is [ADR-0201](../adr/0201-build-a-new-system-in-chat-round-after-round.md) and [ADR-0202](../adr/0202-grow-the-class-diagram-in-chat.md). Each step clicks the real `/play` page of an ephemeral `eija serve` and asserts text the page renders. The chat's proposer is the offline phrase reader (`offline-plan-fixture-v1`), and the video says so.
+So the cut starts from one description of a coffee shop and gets every model and view. It then builds the app in five rounds that mix chat asks with a state drawn by hand, and it reads What's missing after each round.
+
+It is recorded from the real running product, like every EIJA demo ([ADR-0047](../adr/0047-hardcoded-scripted-demos-not-demo-machine.md)). The script is [`demos/scenarios/playide_greenfield.py`](../../demos/scenarios/playide_greenfield.py). What it relies on is set out in [ADR-0201](../adr/0201-build-a-new-system-in-chat-round-after-round.md), [ADR-0202](../adr/0202-grow-the-class-diagram-in-chat.md) and [ADR-0203](../adr/0203-describe-your-app-and-whats-missing.md).
+
+Each step clicks the real `/play` page of an ephemeral `eija serve` and asserts text the page renders. The describer (`offline-describe-fixture-v1`) and the chat's proposer (`offline-plan-fixture-v1`) are offline readers, and the video says so.
 
 ## The story in one line
 
-Sketch it in three lines, ask for one thing at a time, read each round in UML with what to consider, change your mind, and run the app after every round.
+Describe it in one box, get every view, then ask and drag. Read each round in UML along with what is still missing, and run the app.
 
 ## Beats
 
 | # | Beat | What the viewer sees | What is real |
 |---|---|---|---|
 | 0 | Title | "Greenfield, in UML" | A title card |
-| 1 | Start from three lines | Systems, New system: Coffee orders, record class Order, three sketch lines. The kernel checks the sketch as it is typed, and the page reopens on the new system | ADR-0185 |
-| 2 | Round 1: a feature | "add Cancel from Placed to Cancelled for Customer" becomes two steps: Add state Cancelled, then Add Cancel (new action Cancel). Previewed on the diagram | ADR-0201: a new state as its own step, a new action declared as a sketch declares one |
-| 3 | Round 2: the record's fields | "add field size as choice Small, Medium, Large required then add field notes". The verdict says Order gains size and notes; the class diagram marks the new rows with + | ADR-0202: data-model steps on a draft data model, checked by its own contract |
-| 4 | Round 3: a new requirement | Customers pay before brewing. The plan card says 3 rounds and heads each with what was asked. The Changes view's Round 3 shows only this round: Paid and Pay added, Start moved with its old route as a ghost, and To consider for this round | ADR-0201 (`since`), ADR-0176 |
-| 5 | Rounds 4 and 5 | A rename that every transition follows; then a manager may cancel too, a new role with a test user, and the verdict names what is new. The Permissions tab shows who can do what | ADR-0201, ADR-0171 |
-| 6 | Round 6: change your mind | "remove state Cancelled" removes the Cancel transition first, as its own step. Round 6 alone shows the ghosts; All 6 rounds shows the whole system against the sketch | ADR-0201, ADR-0176 |
-| 7 | Run it, every round | Build & run, with size and notes on the app's form: every conformance case matches the kernel and the app runs beside the model. Simulate. Save keeps every round with its ask | ADR-0150, ADR-0152, ADR-0185 |
-| 8 | End card | "Vibe-code it. Then read it." Offline proposer; nothing applied | A title card |
+| 1 | Describe it | "＋ New" opens the Describe box. A coffee shop is described in two sentences. Before anything is created, the form lists every view: state machine, class diagram, use cases, screens, 3 tests recorded by the kernel, and no laws. It also lists what the offline reader assumed. | ADR-0203 |
+| 2 | Every model and view | The state machine with Barista and Customer. The class diagram with size and notes. The recorded tests as sequence diagrams. What's missing: no laws yet, because laws are yours to set. | ADR-0203, ADR-0153, ADR-0195 |
+| 3 | Round 1: a new requirement | In chat, customers pay before brewing. The plan adds Paid and Pay, and Start moves. What's missing follows the plan: no test takes Pay, and the recorded way to Collected now fails because paying comes first. | ADR-0201 |
+| 4 | Round 2: draw it, then ask | A state is dragged onto the diagram and named Refunded. What's missing says Refunded cannot be reached. A chat ask adds Refund into it, and the plan shows You and AI steps together. | ADR-0174, ADR-0201, ADR-0203 |
+| 5 | Round 3: the form | "add field pickupTime as text then make size required". The class diagram marks pickupTime with +. | ADR-0202 |
+| 6 | Round 4: rename, and a new role | Ready becomes AwaitingPickup, and a manager may cancel. The verdict names what is new. The Changes view shows this round alone. | ADR-0201, ADR-0176 |
+| 7 | Round 5: change your mind | "remove state Cancelled" removes its transition first. What's missing reports that the recorded cancelling test fails too. The Changes view shows every round together. | ADR-0201, ADR-0203 |
+| 8 | Run it | Build & run passes every conformance case. Simulate runs, and Save keeps every round. | ADR-0150, ADR-0152, ADR-0185 |
+| 9 | End card | "Vibe-code it. Then read it." The describer and proposer are offline, and nothing is applied. | A title card |
 
 ## Not shown, and why
 
-* **Making the rounds the model in force.** A plan, however many rounds, is a draft. How a chat plan becomes a change case is issue #89, and verify, approve and apply wait on issue #80.
-* **New classes and associations.** Chat adds, removes and requires attributes of a class; it cannot add a class or an association yet (ADR-0202).
+* **Making the rounds the model in force.** A plan, however many rounds it has, is a draft. How a chat plan becomes a change case is issue #89, and verify, approve and apply wait on issue #80.
+* **Writing a law.** The cut shows that none is generated. Writing one is the Laws tab's job (ADR-0177).
+* **A live describer.** The owner chose an offline proposer. A live one would be another adapter behind the same port.
 
 ## Record it
 
@@ -36,4 +42,4 @@ python -m demos finish playide_greenfield          # 1080p MP4 on the stage, dem
 python -m demos registry --write
 ```
 
-In a cloud container, first link Playwright's Chromium where the recorder looks for Chrome: `/opt/pw-browsers/chromium-1194/chrome-linux/chrome` to `/opt/google/chrome/chrome`.
+In a cloud container, first link Playwright's Chromium to the path where the recorder looks for Chrome: `/opt/pw-browsers/chromium-1194/chrome-linux/chrome` to `/opt/google/chrome/chrome`.

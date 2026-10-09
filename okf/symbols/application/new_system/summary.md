@@ -44,4 +44,8 @@ _No curated notes yet._
 ## Depends on
 
 * [domain.pack.parse_pack](/symbols/domain/pack/parse_pack.md) - Validate a decoded JSON document as a pack.
+
+## Referenced by
+
+* [application.describe_system.described_summary](/symbols/application/describe_system/described_summary.md) - What a described system has in every view, for the form to say before it is created.
 <!-- okf:generated:end links -->

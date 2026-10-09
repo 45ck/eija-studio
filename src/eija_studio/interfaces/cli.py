@@ -4,7 +4,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from pydantic import ValidationError
 from eija_studio import __version__
-from eija_studio.bootstrap import build_studio, resolve_pack, source_identity, KEYED_PROVIDERS, PROVIDER_NAMES, SystemLibrary
+from eija_studio.bootstrap import build_studio, resolve_pack, source_identity, KEYED_PROVIDERS, PROVIDER_NAMES, SystemLibrary, OfflineSystemDescriber
 from eija_studio.domain.models import Workflow, DomainError, OWNER, fingerprint
 from eija_studio.domain.policy import check_policy, first_supported_meaning, projections
 from eija_studio.domain.impact import model_impact
@@ -236,7 +236,8 @@ def _systems(studio, args, key=None):
     opener = lambda pack, workspace: build_studio(workspace, args.provider, args.model, args.allow_network, key,  # noqa: E731
                                                   formal=not args.no_formal, pack=pack)
     launched = Path(args.pack) if args.pack else default_location()
-    return handle, Systems(handle, SystemLibrary(args.systems or default_home()), opener, launched, args.workspace)
+    return handle, Systems(handle, SystemLibrary(args.systems or default_home()), opener, launched, args.workspace,
+                           describer=OfflineSystemDescriber())
 
 
 def main(argv=None) -> int:

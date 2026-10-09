@@ -36,6 +36,7 @@ from eija_studio.application.law_proof import compare_laws, prove_laws, with_law
 from eija_studio.application.ghost_diff import ghost_diff
 from eija_studio.application.data_steps import data_changes, draft_pack, parse_step, split
 from eija_studio.application.plan import MAX_DRAFT_STEPS, preview_plan, propose_plan
+from eija_studio.application.readiness import missing
 from eija_studio.application.review import review_change
 from eija_studio.application.ripple import check_follow_ons, ripple
 from eija_studio.application.scenario_run import record_steps, run_scenarios
@@ -309,6 +310,13 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
         force (or, with `since`, the last round against the rounds before it, ADR-0201), as one union of both state
         machines. Read-only."""
         return ghost_diff(before_of(body), resolve(body))
+
+    @app.post("/api/play/ready")
+    def play_ready(body: BuildRequest):
+        """What's missing (ADR-0203): every view's row, ready or what it lacks, for the model shown with any accepted plan
+        steps. Read-only."""
+        model, pack = resolve(body), pack_of(body.plan)
+        return missing(pack, model, data_for(pack), screens_of(body, model), scenarios_for(studio.pack))
 
     @app.post("/api/play/review")
     def play_review(body: BuildRequest):

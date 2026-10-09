@@ -57,4 +57,5 @@ _No curated notes yet._
 ## Referenced by
 
 * [ADR-0201: Build a new system in chat, round after round](/adrs/0201-build-a-new-system-in-chat-round-after-round.md) - The showcase changes a pack that already exists (Library loan).
+* [ADR-0203: Describe your app, and what's missing](/adrs/0203-describe-your-app-and-whats-missing.md) - Until now a new system started from three sketch lines, a template or a UML file (ADR-0185, ADR-0190), and then grew in chat (ADR-0201, ADR-0202).
 <!-- okf:generated:end links -->

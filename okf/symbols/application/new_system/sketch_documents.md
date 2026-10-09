@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/new_system.py#sketch_documents
   title: application/new_system.py
   hash_method: ast-v2
-  sha256: fc2e9382854da056cd0015e707d4c11478872a3a32460bcf0b9ad7fd0f82eea9
-notes_baseline: 553916bf86b7f17657fa9eb3bc68f8ab962df4be26ce4b8a48fb3de91e66ba7c
+  sha256: b6ae902bbff27400b8e658d53908d34292147969299538e09332a18f2e9ca1ef
+notes_baseline: 0c54392d7cfe262ab0d20555c732e6f1d18316065e2a8f9c5436424680206acf
 ---
 
 # application.new_system.sketch_documents
@@ -45,7 +45,12 @@ _No curated notes yet._
 
 * [application.new_system.RECORD](/symbols/application/new_system/RECORD.md) - Constant `RECORD` in `application/new_system`.
 * [application.new_system.UNSUPPORTED](/symbols/application/new_system/UNSUPPORTED.md) - Constant `UNSUPPORTED` in `application/new_system`.
+* [application.new_system.checked_documents](/symbols/application/new_system/checked_documents.md) - The documents, if the kernel's checks accept them; `PackError` with every problem otherwise.
 * [application.new_system.parse_sketch](/symbols/application/new_system/parse_sketch.md) - The transitions, extra actions and extra roles of a sketch, or `PackError` naming each bad line.
 * [domain.models.BASE_GUARDS](/symbols/domain/models/BASE_GUARDS.md) - Constant `BASE_GUARDS` in `domain/models`.
 * [domain.pack.PackError](/symbols/domain/pack/PackError.md) - A pack that cannot be used.
+
+## Referenced by
+
+* [application.describe_system.describe_documents](/symbols/application/describe_system/describe_documents.md) - The documents of a new system described in `text`, checked by the kernel, and what the describer read.
 <!-- okf:generated:end links -->
