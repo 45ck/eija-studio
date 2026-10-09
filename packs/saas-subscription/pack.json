@@ -1,0 +1,794 @@
+{
+  "schema_version": "eija.pack.v1",
+  "pack": {
+    "id": "saas-subscription",
+    "name": "SaaS workspace subscription",
+    "version": "1.0.0",
+    "description": "SaaS: a workspace is signed up, verified into a trial, subscribed, and then lives through failed payments (past due, suspended), reactivation by customer success, cancellation by its owner or a trust-and-safety freeze. The billing system is an actor; suspension stays automated."
+  },
+  "model": {
+    "schema_version": "eija.workflow.v1",
+    "id": "saas-subscription",
+    "initial_state": "SignedUp",
+    "states": [
+      "SignedUp",
+      "Trialing",
+      "Paying",
+      "PastDue",
+      "Suspended",
+      "Cancelled",
+      "FrozenForAbuse"
+    ],
+    "transitions": [
+      {
+        "id": "TR-VERIFY",
+        "action": "VerifyEmail",
+        "from_state": "SignedUp",
+        "to_state": "Trialing",
+        "role": "WorkspaceOwner",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding",
+          "actor_assigned"
+        ],
+        "required_effects": [
+          "Audit:EmailVerified",
+          "Notification:WelcomeSent"
+        ],
+        "forbidden_effects": [
+          "CardDataStored",
+          "DataDeletedWithoutExport"
+        ]
+      },
+      {
+        "id": "TR-SUBSCRIBE",
+        "action": "Subscribe",
+        "from_state": "Trialing",
+        "to_state": "Paying",
+        "role": "WorkspaceOwner",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding",
+          "actor_assigned"
+        ],
+        "required_effects": [
+          "Audit:SubscriptionStarted",
+          "Notification:FirstInvoiceSent"
+        ],
+        "forbidden_effects": [
+          "CardDataStored",
+          "DataDeletedWithoutExport"
+        ]
+      },
+      {
+        "id": "TR-ENDTRIAL",
+        "action": "EndTrial",
+        "from_state": "Trialing",
+        "to_state": "Cancelled",
+        "role": "BillingSystem",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:TrialEnded",
+          "Notification:TrialEndedEmail"
+        ],
+        "forbidden_effects": [
+          "CardDataStored",
+          "DataDeletedWithoutExport"
+        ]
+      },
+      {
+        "id": "TR-MISSPAYMENT",
+        "action": "MissPayment",
+        "from_state": "Paying",
+        "to_state": "PastDue",
+        "role": "BillingSystem",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:PaymentFailed",
+          "Notification:DunningEmail"
+        ],
+        "forbidden_effects": [
+          "CardDataStored",
+          "DataDeletedWithoutExport"
+        ]
+      },
+      {
+        "id": "TR-PAYOVERDUE",
+        "action": "PayOverdue",
+        "from_state": "PastDue",
+        "to_state": "Paying",
+        "role": "WorkspaceOwner",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding",
+          "actor_assigned"
+        ],
+        "required_effects": [
+          "Audit:PaymentRecovered"
+        ],
+        "forbidden_effects": [
+          "CardDataStored",
+          "DataDeletedWithoutExport"
+        ]
+      },
+      {
+        "id": "TR-SUSPEND",
+        "action": "Suspend",
+        "from_state": "PastDue",
+        "to_state": "Suspended",
+        "role": "BillingSystem",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:WorkspaceSuspended",
+          "Notification:SuspensionNotice"
+        ],
+        "forbidden_effects": [
+          "CardDataStored",
+          "DataDeletedWithoutExport"
+        ]
+      },
+      {
+        "id": "TR-REACTIVATE",
+        "action": "Reactivate",
+        "from_state": "Suspended",
+        "to_state": "Paying",
+        "role": "SuccessManager",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding",
+          "actor_assigned"
+        ],
+        "required_effects": [
+          "Audit:WorkspaceReactivated",
+          "Notification:ReactivatedEmail"
+        ],
+        "forbidden_effects": [
+          "CardDataStored",
+          "DataDeletedWithoutExport"
+        ]
+      },
+      {
+        "id": "TR-CANCEL",
+        "action": "CancelSubscription",
+        "from_state": "Paying",
+        "to_state": "Cancelled",
+        "role": "WorkspaceOwner",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding",
+          "actor_assigned"
+        ],
+        "required_effects": [
+          "Audit:SubscriptionCancelled",
+          "Notification:DataExportOffered"
+        ],
+        "forbidden_effects": [
+          "CardDataStored",
+          "DataDeletedWithoutExport"
+        ]
+      },
+      {
+        "id": "TR-FREEZE",
+        "action": "FreezeForAbuse",
+        "from_state": "Paying",
+        "to_state": "FrozenForAbuse",
+        "role": "TrustAndSafety",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:AbuseFreeze"
+        ],
+        "forbidden_effects": [
+          "CardDataStored",
+          "DataDeletedWithoutExport"
+        ]
+      }
+    ]
+  },
+  "roles": [
+    {
+      "id": "WorkspaceOwner",
+      "description": "The customer's workspace owner; acts only on their own workspace."
+    },
+    {
+      "id": "BillingSystem",
+      "description": "The billing system: ends trials, records failed payments and suspends."
+    },
+    {
+      "id": "SuccessManager",
+      "description": "Customer success; reactivates suspended workspaces on their own accounts."
+    },
+    {
+      "id": "TrustAndSafety",
+      "description": "Freezes a workspace for abuse."
+    }
+  ],
+  "actions": [
+    {
+      "id": "VerifyEmail",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding",
+        "actor_assigned"
+      ],
+      "required_effects": [
+        "Audit:EmailVerified",
+        "Notification:WelcomeSent"
+      ]
+    },
+    {
+      "id": "Subscribe",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding",
+        "actor_assigned"
+      ],
+      "required_effects": [
+        "Audit:SubscriptionStarted",
+        "Notification:FirstInvoiceSent"
+      ]
+    },
+    {
+      "id": "EndTrial",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:TrialEnded",
+        "Notification:TrialEndedEmail"
+      ]
+    },
+    {
+      "id": "MissPayment",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:PaymentFailed",
+        "Notification:DunningEmail"
+      ]
+    },
+    {
+      "id": "PayOverdue",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding",
+        "actor_assigned"
+      ],
+      "required_effects": [
+        "Audit:PaymentRecovered"
+      ]
+    },
+    {
+      "id": "Suspend",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:WorkspaceSuspended",
+        "Notification:SuspensionNotice"
+      ]
+    },
+    {
+      "id": "Reactivate",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding",
+        "actor_assigned"
+      ],
+      "required_effects": [
+        "Audit:WorkspaceReactivated",
+        "Notification:ReactivatedEmail"
+      ]
+    },
+    {
+      "id": "CancelSubscription",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding",
+        "actor_assigned"
+      ],
+      "required_effects": [
+        "Audit:SubscriptionCancelled",
+        "Notification:DataExportOffered"
+      ]
+    },
+    {
+      "id": "FreezeForAbuse",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:AbuseFreeze"
+      ]
+    },
+    {
+      "id": "Downgrade",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding",
+        "actor_assigned"
+      ],
+      "required_effects": [
+        "Audit:DowngradedToFree"
+      ]
+    }
+  ],
+  "effects": {
+    "catalog": [
+      {
+        "id": "Audit:EmailVerified",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:WelcomeSent",
+        "kind": "notification",
+        "recipient": "owner"
+      },
+      {
+        "id": "Audit:SubscriptionStarted",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:FirstInvoiceSent",
+        "kind": "notification",
+        "recipient": "owner"
+      },
+      {
+        "id": "Audit:TrialEnded",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:TrialEndedEmail",
+        "kind": "notification",
+        "recipient": "owner"
+      },
+      {
+        "id": "Audit:PaymentFailed",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:DunningEmail",
+        "kind": "notification",
+        "recipient": "owner"
+      },
+      {
+        "id": "Audit:PaymentRecovered",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:WorkspaceSuspended",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:SuspensionNotice",
+        "kind": "notification",
+        "recipient": "owner"
+      },
+      {
+        "id": "Audit:WorkspaceReactivated",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:ReactivatedEmail",
+        "kind": "notification",
+        "recipient": "owner"
+      },
+      {
+        "id": "Audit:SubscriptionCancelled",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:DataExportOffered",
+        "kind": "notification",
+        "recipient": "owner"
+      },
+      {
+        "id": "Audit:AbuseFreeze",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:DowngradedToFree",
+        "kind": "audit"
+      }
+    ],
+    "forbidden": [
+      "CardDataStored",
+      "DataDeletedWithoutExport"
+    ]
+  },
+  "laws": [
+    {
+      "id": "active-after-verification",
+      "kind": "path_requires",
+      "code": "ACTIVE_WITHOUT_VERIFICATION",
+      "description": "Every path to Paying passes through Trialing: no workspace is billed before its email is verified.",
+      "state": "Paying",
+      "via": "Trialing"
+    },
+    {
+      "id": "suspended-only-by-billing",
+      "kind": "state_only_via",
+      "code": "PROTECTED_STATE:Suspended",
+      "description": "Only the billing system's suspension suspends a workspace.",
+      "state": "Suspended",
+      "actions": [
+        "Suspend"
+      ]
+    },
+    {
+      "id": "billing-suspends",
+      "kind": "only_role_holds",
+      "code": "PROTECTED_AUTHORITY:Suspend",
+      "description": "Suspension is automated: only the billing system suspends.",
+      "action": "Suspend",
+      "role": "BillingSystem"
+    },
+    {
+      "id": "success-reactivates",
+      "kind": "only_role_holds",
+      "code": "PROTECTED_AUTHORITY:Reactivate",
+      "description": "Only customer success reactivates a suspended workspace.",
+      "action": "Reactivate",
+      "role": "SuccessManager"
+    },
+    {
+      "id": "reactivate-own-accounts",
+      "kind": "action_requires_guard",
+      "code": "GUARD_POLICY:Reactivate",
+      "description": "A success manager reactivates only accounts assigned to them.",
+      "action": "Reactivate",
+      "guards": [
+        "actor_assigned"
+      ]
+    },
+    {
+      "id": "owner-never-unfreezes",
+      "kind": "role_never_enters",
+      "code": "PROTECTED_AUTHORITY:FrozenForAbuse",
+      "description": "An owner never moves their own workspace into or out of a freeze.",
+      "role": "WorkspaceOwner",
+      "state": "FrozenForAbuse"
+    },
+    {
+      "id": "success-never-freezes",
+      "kind": "role_never_holds",
+      "code": "PROTECTED_AUTHORITY:FreezeForAbuse",
+      "description": "Customer success never freezes a workspace.",
+      "action": "FreezeForAbuse",
+      "role": "SuccessManager"
+    },
+    {
+      "id": "cancel-when-active",
+      "kind": "action_source_in",
+      "code": "PROTECTED_STATE:CancelSubscription",
+      "description": "An owner cancels a running subscription; a trial just ends.",
+      "action": "CancelSubscription",
+      "states": [
+        "Paying"
+      ]
+    },
+    {
+      "id": "cancelled-final",
+      "kind": "state_final",
+      "code": "FINAL_STATE_LEFT:Cancelled",
+      "description": "A cancelled workspace is closed.",
+      "state": "Cancelled"
+    },
+    {
+      "id": "frozen-final",
+      "kind": "state_final",
+      "code": "FINAL_STATE_LEFT:FrozenForAbuse",
+      "description": "A frozen workspace stays frozen until an investigation outside this workflow.",
+      "state": "FrozenForAbuse"
+    },
+    {
+      "id": "no-forbidden-effects",
+      "kind": "forbidden_effects",
+      "code": "EFFECT_POLICY:forbidden",
+      "description": "No transition stores card data or deletes a workspace's data without offering an export.",
+      "effects": [
+        "CardDataStored",
+        "DataDeletedWithoutExport"
+      ]
+    },
+    {
+      "id": "runtime-evidence",
+      "kind": "requires_evidence",
+      "code": "EVIDENCE_REQUIRED:runtime_matrix",
+      "description": "A change is reviewed with the runtime matrix.",
+      "evidence": "runtime_matrix"
+    }
+  ],
+  "meanings": [
+    {
+      "id": "downgrade_to_free",
+      "label": "Owners downgrade to a free plan instead of cancelling",
+      "supported": true,
+      "consequences": [
+        "An owner may move their active workspace to a free plan; their data stays.",
+        "Suspension stays automated."
+      ],
+      "transactions": [
+        {
+          "kind": "add_state",
+          "state": "Free",
+          "after": "Paying"
+        },
+        {
+          "kind": "add_transition",
+          "id": "TR-DOWNGRADE",
+          "action": "Downgrade",
+          "from_state": "Paying",
+          "to_state": "Free",
+          "role": "WorkspaceOwner"
+        }
+      ]
+    },
+    {
+      "id": "owner_unsuspends",
+      "label": "Owners reactivate their own suspended workspace",
+      "supported": false,
+      "consequences": [
+        "Lets an owner lift a suspension without paying; blocked by this pack's laws (only customer success reactivates)."
+      ],
+      "transactions": [
+        {
+          "kind": "set_role",
+          "transition": "TR-REACTIVATE",
+          "role": "WorkspaceOwner"
+        }
+      ]
+    },
+    {
+      "id": "unsupported",
+      "label": "Outside the modelled scope",
+      "supported": false,
+      "consequences": [
+        "Requires domain and source-level engineering; no automatic application."
+      ]
+    }
+  ],
+  "language": {
+    "terms": [
+      {
+        "id": "workspace",
+        "label": "Workspace",
+        "definition": "One customer's tenant, billed as one subscription; the workflow instance.",
+        "binds": [
+          "repo://packs/saas-subscription/pack.json"
+        ],
+        "refs": [
+          "state:Paying"
+        ]
+      },
+      {
+        "id": "past-due",
+        "label": "Past due",
+        "definition": "A renewal payment failed; dunning emails go out before suspension.",
+        "binds": [
+          "repo://packs/saas-subscription/pack.json"
+        ],
+        "refs": [
+          "state:PastDue",
+          "transition:TR-MISSPAYMENT"
+        ]
+      },
+      {
+        "id": "freeze",
+        "label": "Freeze",
+        "definition": "Trust and safety stops a workspace for abuse.",
+        "binds": [
+          "repo://packs/saas-subscription/pack.json"
+        ],
+        "refs": [
+          "state:FrozenForAbuse",
+          "law:owner-never-unfreezes"
+        ]
+      }
+    ]
+  },
+  "fixtures": {
+    "actors": [
+      {
+        "id": "owner-a",
+        "role": "WorkspaceOwner",
+        "active": true,
+        "assigned": true
+      },
+      {
+        "id": "owner-b",
+        "role": "WorkspaceOwner",
+        "active": true,
+        "assigned": false
+      },
+      {
+        "id": "billing-system",
+        "role": "BillingSystem",
+        "active": true,
+        "assigned": false
+      },
+      {
+        "id": "csm-account",
+        "role": "SuccessManager",
+        "active": true,
+        "assigned": true
+      },
+      {
+        "id": "csm-other",
+        "role": "SuccessManager",
+        "active": true,
+        "assigned": false
+      },
+      {
+        "id": "csm-revoked",
+        "role": "SuccessManager",
+        "active": false,
+        "assigned": true
+      },
+      {
+        "id": "trust-safety",
+        "role": "TrustAndSafety",
+        "active": true,
+        "assigned": false
+      }
+    ],
+    "demo_request": "Let owners downgrade to a free plan instead of cancelling.",
+    "proposals": {
+      "summary": "Deterministic demonstration; no model inference was used.",
+      "rules": [
+        {
+          "all": [],
+          "any": [
+            "downgrade",
+            "free plan",
+            "free"
+          ],
+          "alternatives": [
+            {
+              "interpretation": "downgrade_to_free",
+              "explanation": "An owner may move to a free plan; suspension stays automated."
+            }
+          ]
+        },
+        {
+          "all": [],
+          "any": [
+            "unsuspend",
+            "reactivate",
+            "lift"
+          ],
+          "alternatives": [
+            {
+              "interpretation": "owner_unsuspends",
+              "explanation": "Owners would lift their own suspension. The pack's laws block this."
+            }
+          ]
+        }
+      ],
+      "fallback": [
+        {
+          "interpretation": "unsupported",
+          "explanation": "This offline fixture only demonstrates downgrades and reactivation authority."
+        }
+      ],
+      "unknowns": [
+        "Trial length and dunning schedule (time) are not modelled.",
+        "Plans, seats and entitlements are not modelled.",
+        "Reviewer comprehension has not been measured."
+      ]
+    }
+  },
+  "verifiers": [
+    {
+      "kind": "runtime_matrix",
+      "mode": "kernel"
+    },
+    {
+      "kind": "smt_proof",
+      "mode": "generated",
+      "reason": "The generated-law proof runs in the gate (python -m verification.smt.laws); binding its report into the review packet is WBS 1.7."
+    },
+    {
+      "kind": "bounded_model_check",
+      "mode": "generated",
+      "reason": "The BMC law property is the pack's laws judged by evaluate_run; a BMC search over this pack's runtime is not wired yet (WBS 1.7)."
+    },
+    {
+      "kind": "bend_proof",
+      "mode": "not_run",
+      "reason": "Generating Bend laws is deferred (docs/engineering/FUTURE-WORK.md)."
+    },
+    {
+      "kind": "tlc",
+      "mode": "not_run",
+      "reason": "Generating TLA+ laws is deferred (docs/engineering/FUTURE-WORK.md)."
+    }
+  ],
+  "journey": {
+    "questions": [
+      {
+        "id": "suspend_authority",
+        "question": "Who may suspend a workspace?",
+        "expected": "BillingSystem"
+      },
+      {
+        "id": "active_entry",
+        "question": "Which state must a workspace pass through before it is active?",
+        "expected": "Trialing"
+      }
+    ]
+  }
+}

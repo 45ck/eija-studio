@@ -54,6 +54,7 @@ nav:
   - Getting started: getting-started.md
   - Build an app from the model: build-an-app.md
   - PlayIDE: playide.md
+  - Sector packs: sector-packs.md
   - UML import and export: uml-interop.md
   - Architecture:
       - Architecture and ubiquitous language: architecture/ARCHITECTURE.md
