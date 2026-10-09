@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### 9 October 2026: PlayIDE keeps the diagram readable with Simulate open, and a drawn transition can name a new action
+
+- Opening Simulate no longer shrinks the state machine until its labels are about 7 pixels high (#139). When the canvas is short, fitting stops at a readable size and starts at the top left, where the initial state is, and the rest is a drag away. The **Fit** button still fits the whole diagram, however small. Before, Library loan went to about half size at 1280 by 800 with the panel open.
+- On a system you started yourself, a transition drawn on the canvas can name a new action or role: type it, and the editor says "New action: the step declares" it. Before, the editor offered only actions the model already had, so a new action needed the chat ([ADR-0201](docs/adr/0201-build-a-new-system-in-chat-round-after-round.md)). Template and sample models still offer only their own actions.
+
 ### 9 October 2026: PlayIDE polish, round 7 (readable on a laptop)
 
 - The state machine is laid out top to bottom when that draws it clearly larger, as on a laptop with the side bar and the chat open. Before, Library loan was shrunk to a third of its size in one long row, with 5-pixel labels; at 1280 pixels it is now drawn at full size. The direction is chosen once, when the diagram is first drawn, so an edit or a preview never turns it. The Changes view follows the same direction.

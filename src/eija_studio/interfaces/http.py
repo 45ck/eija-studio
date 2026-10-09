@@ -149,7 +149,8 @@ def create_app(studio, token: str, port: int = 8765, systems=None) -> FastAPI:
             "provider_networked": studio.provider.networked, "baseline_version": active["version"], "baseline": active["model"],
             "trusted_fixture": identity["trusted_fixture"], "identity_boundary": "Single local owner; synthetic actors only",
             "pack": pack_summary(studio.pack) | {"demo_modelled": example_passes(
-                studio.pack.fixtures.demo_request, Workflow.model_validate(active["model"]), studio.pack, studio.plan_proposer)}}
+                studio.pack.fixtures.demo_request, Workflow.model_validate(active["model"]), studio.pack, studio.plan_proposer),
+                "own_system": own()}}  # a system you started: a drawn step may name a new action or role (ADR-0201)
 
     @app.get("/api/doctor")
     def doctor():
