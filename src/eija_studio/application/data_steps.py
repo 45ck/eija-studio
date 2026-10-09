@@ -47,7 +47,7 @@ class SetRoleKind(Contract):
     transaction and not a data-model step: it changes a draft of the pack's roles, which is protected policy input
     (the kind laws count roles by kind), so the policy judges the plan with the draft's kinds, and nothing is written."""
     kind: Literal["set_role_kind"]
-    role: str = Field(pattern=NAME)
+    role: str = Field(min_length=1, max_length=60)  # any role id a pack may declare (`domain.pack.Role`); set_kinds checks it is one
     to: RoleKind
 
 

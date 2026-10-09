@@ -48,6 +48,11 @@ def test_a_draft_where_a_kind_law_can_no_longer_be_met_is_refused():
     assert "no declared role is of kind system" in result["message"]
 
 
+def test_any_declared_role_id_can_change_kind():
+    step = parse_step({"kind": "set_role_kind", "role": "Field_agent", "to": "agent"})
+    assert step.role == "Field_agent"  # a system you start may name roles with lowercase letters and _
+
+
 def test_an_undeclared_role_or_kind_is_refused():
     result = _kind(DESK, "AutoApprover", "agent")
     assert result["steps"][0]["code"] == "EDIT_INVALID" and not result["legal"]
@@ -108,6 +113,8 @@ def test_see_and_change_who_holds_a_role_in_a_real_browser():
             assert "makes Customer an AI agent" in page.inner_text("#chat-log")
             assert page.evaluate("window.PlayIDE.roleKind('Customer')") == "agent"
             assert page.evaluate("window.PlayIDE.inForce('Customer')") == "human"
+            page.click("#plan-back")  # back on the model, the kind in force
+            assert page.evaluate("window.PlayIDE.roleKind('Customer')") == "human"
             assert errors == []
         finally:
             chrome.close()

@@ -23,9 +23,11 @@
   const ACTOR_KINDS = { human: "person", agent: "AI agent", timer: "timer", system: "external system" };
   const A_KIND = { human: "a person", agent: "an AI agent", timer: "a timer", system: "an external system" };
   const ACTOR_GROUPS = { human: "People", agent: "AI agents", timer: "Timers", system: "External systems" };
-  // A role's kind as the plan would have it: an accepted "make X an AI agent" step shows on every diagram (#156).
+  // A role's kind as the plan would have it, while the plan is previewed (and so allowed): an accepted "make X an AI
+  // agent" step shows on every diagram (#156). Back on the model, the kind in force.
   const roleKind = (role) => {
-    const step = plan ? accepted().filter((t) => t.kind === "set_role_kind" && t.role === role).at(-1) : null;
+    const shown = plan && plan.previewing && plan.result && plan.result.legal;
+    const step = shown ? accepted().filter((t) => t.kind === "set_role_kind" && t.role === role).at(-1) : null;
     return step ? step.to : roleKinds[role] || "human";
   };
   const kindNote = (role) => (roleKind(role) === "human" ? "" : ` (${ACTOR_KINDS[roleKind(role)]})`); // "Who may take it" says who
