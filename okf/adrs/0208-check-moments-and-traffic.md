@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0208-check-moments-and-traffic.md
   title: 0208-check-moments-and-traffic.md
   hash_method: lf-sha256-v1
-  sha256: d805ebc68328ade059d4b1b1f92b68e18dceca5a1c98c64fa5e82488542721a6
-notes_baseline: 24a13ee273c34f76671968d6f755ad6284498a58a78e6dd7782157c1237faa6b
+  sha256: 80e61b71c472ca3ee7d6ee02024983a1d39c031036dfe327721227c898984eca
+notes_baseline: cb0ca681b47eb432fccc89429a2204e1b8bf989ed33eb9cda8e520a8a1aecdab
 ---
 
 # ADR-0208: Moments for real checks, and the run as traffic on the diagram
@@ -56,4 +56,6 @@ _No curated notes yet._
 ## Related decisions
 
 * [ADR-0157: Drawn edits join the plan, and a checks ring rewards checking](/adrs/0157-drawn-edits-and-checks-ring.md) - The owner wants PlayIDE to be visual and mouse-driven ("drag and drop, design then test in place") and to feel rewarding, "tied to real checks".
+* [ADR-0203: A system landscape of the workflows that share classes](/adrs/0203-system-landscape-of-workflows-that-share-classes.md) - PlayIDE edits one workflow at a time: one state machine moving one record class, with its class diagram, use cases, screens and laws.
+* [ADR-0210: Actors that are not people: AI agents, timers and external systems in the model](/adrs/0210-actors-that-are-not-people.md) - Systems people design now have AI agents in them: a support bot that triages tickets and proposes refunds, a scheduled job that escalates what nobody handled,…
 <!-- okf:generated:end links -->

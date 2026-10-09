@@ -71,6 +71,7 @@
     const line = $("landscape-summary");
     line.textContent = parts.join(" · ");
     line.className = "landscape-summary" + (c.warning ? " warn" : "");
+    document.dispatchEvent(new CustomEvent("playide:landscape", { detail: { warning: c.warning || 0, consider: c.consider || 0 } })); // play-game.js (ADR-0208)
   }
 
   // Actors on the left, workflows stacked in the middle with their interface balls, shared classes on the right.

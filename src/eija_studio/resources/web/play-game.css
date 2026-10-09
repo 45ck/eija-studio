@@ -18,6 +18,8 @@
 .game-note.ready{background:var(--ok);color:#fff;border-color:var(--ok);font-size:.86rem}
 .game-note.caught{background:#fff4dc;color:#7a4b00;border-color:#e8c174;font-size:.86rem}
 .game-note.caught::before{content:"\1F6E1\FE0F  "}
+.game-note.guard{background:#f1edff;color:#4a3a8c;border-color:#c9bdf2}
+.game-legend{margin:2px 0 6px}
 .game-note.stale{color:#8a5a00;border-color:#efd39b}
 @keyframes game-note{0%{opacity:0;transform:translateY(-6px)}10%,80%{opacity:1;transform:none}100%{opacity:0;transform:translateY(4px)}}
 #build.game-stale,#simulate.game-stale{box-shadow:0 0 0 2px #f0b44c;animation:game-stale 1.8s ease-in-out infinite}

@@ -46,6 +46,14 @@ Chosen option. `play.js` sends `playide:checks` (each check with a stable id: `a
 * **Caught it.** When unticking an AI step turns a refused plan into one the policy allows (+3, ADR-0157), the note is larger and amber with a shield, and the plan's card pulses.
 * **Traffic.** For each step the kernel decided in the run bar or in Replay, a dot travels along the drawn transition, green when the step went through and blue when a record is created. A refused step stops halfway with a red cross. A try from a state the transition does not leave flashes that state in red. After Simulate, the run's first 120 steps go by in about four seconds as overlapping traffic, and the summary counts count up. The traffic stops if the simulation is cleared or the view changes, so a dot is never drawn on a model it was not run on. These are the real log, sped up.
 
+### Round 2: actors that are not people, the system, and what a new system still needs
+
+* **Who acted.** A dot's shape shows the kind of actor that took the step (ADR-0210): a circle for a person, a diamond for an AI agent, a square for a timer or an external system. Its colour is still the kernel's answer. When a run includes actors that are not people, the Simulation panel shows a key under the summary.
+* **The guardrail held.** When the kernel refused AI agents in a simulation, a violet note gives the count and the most common refusal code, from the run's own per-kind counts ("The kernel stopped AI agents 71 times in this run, mostly ACTOR_REVOKED").
+* **The system agrees.** The System lens (ADR-0203) sends `playide:landscape` with its count of class-diagram disagreements each time it is drawn. When that count goes down for the same system, a note says how many were resolved and how many are left. When it reaches none, the ring pulses and a note says "The system's class diagrams agree now".
+* **What's missing.** The greenfield start flow owns its list of what a new system still needs. It sends `playide:missing` (`key`, and `items`, each with a stable `id` and its `text`) every time the list is recomputed, and each item comes from a real check. When an item goes away under the same key, a note ticks it off. When the list empties, the ready moment says "Nothing missing: ready to build". While the list has items, the checks panel's "Next" names the first of them. There is no second list.
+* A refusal from a state the transition does not leave is a small cross on the state's corner, not a ring around the whole state, so a run with many refusals does not cover the diagram.
+
 ### Consequences
 
 * Good: what was checked, what is stale and what to run next can be seen without opening the panel. The biggest feedback goes to catching an AI step.
