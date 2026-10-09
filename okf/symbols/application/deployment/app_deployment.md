@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/deployment.py#app_deployment
   title: application/deployment.py
   hash_method: ast-v2
-  sha256: cbadbbc655e3db8e885db677fbf2a6e827bd16f9b1f8267df043f51d7dc991e1
-notes_baseline: f0e8fa99d754f36debd594385ffc6fea3bf23f9b956950d2f969a636b5f72c27
+  sha256: a6c7771e3b3e84bbd17ae61951d09dbe6ddeb058430a75d04963bb939e8971c8
+notes_baseline: 80ecd1a74162af650f1e3dda82dfa7fa3f33ae163e379c2f5dca770168e2a53b
 ---
 
 # application.deployment.app_deployment

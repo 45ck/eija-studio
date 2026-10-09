@@ -27,12 +27,17 @@ def _literal(node: ast.expr | None) -> str | None:
     if isinstance(node, ast.Constant):
         return str(node.value)
     if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Div):
-        anchor = not isinstance(node.left, ast.BinOp) and "__file__" in ast.unparse(node.left)  # the folder of run.py
-        parts = [None if anchor else _literal(node.left), _literal(node.right)]
-        return "/".join(p for p in parts if p)
+        return _joined(node)
     if isinstance(node, ast.Call):
         return next((v for v in map(_literal, reversed(node.args)) if v is not None), None)
     return None
+
+
+def _joined(node: ast.BinOp) -> str:
+    """A path built with `/`, leaving out the folder of run.py it starts from."""
+    anchor = not isinstance(node.left, ast.BinOp) and "__file__" in ast.unparse(node.left)
+    parts = [None if anchor else _literal(node.left), _literal(node.right)]
+    return "/".join(p for p in parts if p)
 
 
 def _environment(node: ast.expr | None) -> str | None:
@@ -55,23 +60,31 @@ def _group(files: dict[str, str], prefix: str, suffix: str) -> list[str]:
     return sorted(p for p in files if p.startswith(prefix) and p.endswith(suffix) and files[p].strip())
 
 
-def _nodes(files: dict[str, str], options: dict[str, dict[str, str | None]], kernel: str) -> list[dict[str, Any]]:
+def _process(files: dict[str, str], options: dict[str, dict[str, str | None]], kernel: str) -> dict[str, Any]:
     host = HOST.search(files.get("app/server.py", ""))
-    port, data = options.get("--port", {}), options.get("--data", {})
+    port = options.get("--port", {})
+    return {"id": "node:process", "name": "Python process", "stereotype": "executionEnvironment",
+            "address": f"{host.group(1) if host else 'unknown host'}:{port.get('default') or 'unknown port'}",
+            "set_by": [x for x in ("--port", port.get("environment")) if x and "--port" in options],
+            "artifacts": [{"name": "run.py", "files": ["run.py"]},
+                          {"name": "app (generated package)", "files": [p for p in _group(files, "app/", ".py") if not p.startswith(PAGE)]},
+                          {"name": "model files", "files": _group(files, "app/", ".json")},
+                          {"name": f"eija_studio {kernel} (installed)", "files": []}]}
+
+
+def _database(options: dict[str, dict[str, str | None]]) -> dict[str, Any]:
+    path = options.get("--data", {}).get("default")
+    return {"id": "node:database", "name": (path or "database").rsplit("/", 1)[-1], "stereotype": "artifact", "address": path,
+            "set_by": ["--data"] if "--data" in options else [], "artifacts": []}
+
+
+def _nodes(files: dict[str, str], options: dict[str, dict[str, str | None]], kernel: str) -> list[dict[str, Any]]:
     page = _group(files, PAGE + "/", "")
-    process = {"id": "node:process", "name": "Python process", "stereotype": "executionEnvironment",
-               "address": f"{host.group(1) if host else 'unknown host'}:{port.get('default') or 'unknown port'}",
-               "set_by": [x for x in ("--port", port.get("environment")) if x and "--port" in options],
-               "artifacts": [{"name": "run.py", "files": ["run.py"]},
-                             {"name": "app (generated package)", "files": [p for p in _group(files, "app/", ".py") if not p.startswith(PAGE)]},
-                             {"name": "model files", "files": _group(files, "app/", ".json")},
-                             {"name": f"eija_studio {kernel} (installed)", "files": []}]}
-    nodes = [{"id": "node:browser", "name": "Web browser", "stereotype": "executionEnvironment", "address": None, "set_by": [],
-              "artifacts": [{"name": "Web page", "files": page}]}] if page else []
-    nodes.append(process)
+    nodes: list[dict[str, Any]] = [{"id": "node:browser", "name": "Web browser", "stereotype": "executionEnvironment", "address": None,
+                                    "set_by": [], "artifacts": [{"name": "Web page", "files": page}]}] if page else []
+    nodes.append(_process(files, options, kernel))
     if any("import sqlite3" in text for text in files.values()):
-        nodes.append({"id": "node:database", "name": (data.get("default") or "database").rsplit("/", 1)[-1], "stereotype": "artifact",
-                      "address": data.get("default"), "set_by": ["--data"] if "--data" in options else [], "artifacts": []})
+        nodes.append(_database(options))
     return nodes
 
 
