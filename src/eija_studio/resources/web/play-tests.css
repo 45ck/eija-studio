@@ -1,5 +1,7 @@
 /* PlayIDE law file and Tests tab (ADR-0177). The cards reuse the Laws tab's .law styles in play.css. */
-.head-tools{display:flex;gap:6px;flex:none;align-items:center}
+.head-tools{display:flex;gap:6px;flex:none;align-items:center;margin-left:auto}
+/* When the text and the buttons do not fit side by side, the buttons go under the text instead of off the edge. */
+.laws-head{flex-wrap:wrap}.laws-head>div:first-child{flex:1 1 280px;min-width:0}.head-tools>button{white-space:nowrap}
 .file-line{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0 0}
 .file-line>*{white-space:nowrap}
 .file-chip{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.78rem;padding:2px 8px;border-radius:6px;background:var(--state);color:var(--accent)}

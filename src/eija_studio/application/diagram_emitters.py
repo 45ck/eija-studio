@@ -172,8 +172,8 @@ def _mm_steps(steps: tuple[Step, ...], indent: str) -> list[str]:
             out.append(f"{indent}{s.source}{'-->>' if s.reply else '->>'}{s.target}: {_mm(s.text)}")
         elif isinstance(s, Note):
             out.append(f"{indent}Note over {','.join(s.over)}: {_mm(s.text)}")
-        else:
-            out += [f"{indent}opt {_mm(s.label)}", *_mm_steps(s.steps, indent + "    "), f"{indent}end"]
+        else:  # Mermaid has no neg operator: it is written as an opt whose label says neg
+            out += [f"{indent}opt {'neg: ' if s.operator == 'neg' else ''}{_mm(s.label)}", *_mm_steps(s.steps, indent + "    "), f"{indent}end"]
     return out
 
 
@@ -257,7 +257,8 @@ def _pu_steps(steps: tuple[Step, ...], indent: str) -> list[str]:
         elif isinstance(s, Note):
             out.append(f"{indent}note over {','.join(s.over)} : {_puml(s.text)}")
         else:
-            out += [f"{indent}opt {_puml(s.label)}", *_pu_steps(s.steps, indent + "  "), f"{indent}end"]
+            head = f"group neg [{_puml(s.label)}]" if s.operator == "neg" else f"opt {_puml(s.label)}"
+            out += [f"{indent}{head}", *_pu_steps(s.steps, indent + "  "), f"{indent}end"]
     return out
 
 

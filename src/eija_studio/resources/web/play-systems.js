@@ -7,6 +7,8 @@
   const query = new URLSearchParams(location.search);
   const EXAMPLE = "Open -> Triaged : Triage [Agent]\nTriaged -> Resolved : Resolve [Agent]\nTriaged -> Escalated : Escalate [Agent]\nEscalated -> Resolved : Fix [Engineer]";
   let P = null, listing = null, leaving = false, notice = "", saved = "", savedAt = 0, checkTimer = 0, checkSeq = 0, choice = "blank";
+  let sketch; // the sketch box, found once
+  let umlFile = { name: "", text: "" }; // "From a UML file" (ADR-0190): the file chosen, read in the page and checked by the server
   const canSave = () => !query.get("case") && query.get("view") !== "review";
 
   const when = (seconds) => new Date(seconds * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -82,24 +84,62 @@
 
   function renderNew() {
     const list = $("systems-templates");
+    sketch = sketch || $("systems-sketch-box"); // kept across renders: it lives inside the list, so clearing the list detaches it
     list.replaceChildren();
-    const options = [{ id: "blank", name: "Blank, from a sketch", description: "Type the state machine as the diagram labels it; the kernel checks it as you type." }, ...listing.templates];
+    const options = [{ id: "blank", name: "Blank, from a sketch", description: "Type the state machine as the diagram labels it; the kernel checks it as you type." },
+      { id: "uml", name: "From a UML file", description: "XMI, PlantUML, Mermaid or draw.io. Its state machine and class model are checked by the kernel, and what it cannot import is listed." },
+      ...listing.templates];
     for (const t of options) {
       const label = P.el("label", undefined, { class: "template" }), radio = P.el("input", undefined, { type: "radio", name: "system-template", value: t.id });
       radio.checked = t.id === choice;
-      radio.addEventListener("change", () => { choice = t.id; $("systems-sketch-box").hidden = choice !== "blank"; check(); });
+      radio.addEventListener("change", () => { choice = t.id; showChoice(); check(); });
       const text = P.el("span");
-      text.append(P.el("strong", t.name), P.el("span", t.id === "blank" ? t.description : `${t.states} states, ${t.transitions} transitions, ${t.roles} roles. ${t.description}`, { class: "muted small" }));
+      text.append(P.el("strong", t.name), P.el("span", t.states === undefined ? t.description : `${t.states} states, ${t.transitions} transitions, ${t.roles} roles. ${t.description}`, { class: "muted small" }));
       label.append(radio, text);
       list.append(label);
     }
-    list.firstChild.after($("systems-sketch-box")); // the sketch sits under its own option
+    list.firstChild.after(sketch); // the sketch sits under its own option
+    list.children[2].after(umlBox()); // and the file under "From a UML file"
     $("systems-sketch-help").textContent = listing.sketch_help + ". Optional: actions: A, B and roles: C, for ones you will draw later.";
-    $("systems-sketch-box").hidden = choice !== "blank";
+    showChoice();
+  }
+
+  function showChoice() {
+    sketch.hidden = choice !== "blank";
+    umlBox().hidden = choice !== "uml";
+  }
+
+  let uml; // kept across renders like the sketch box
+  function umlBox() {
+    if (uml) return uml;
+    const box = uml = P.el("div", undefined, { id: "systems-uml-box", class: "systems-uml-box" });
+    const input = P.el("input", undefined, { id: "systems-uml-file", type: "file", "aria-label": "UML file",
+      accept: ".xmi,.uml,.xml,.puml,.plantuml,.pu,.iuml,.wsd,.mmd,.mermaid,.md,.drawio,.dio" });
+    input.addEventListener("change", async () => {
+      const file = input.files[0];
+      umlFile = file && file.size <= 2_000_000 ? { name: file.name, text: await file.text() } : { name: file ? file.name : "", text: "" };
+      if (file && !$("systems-name").value.trim()) $("systems-name").value = file.name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ").replace(/^./, (c) => c.toUpperCase());
+      check();
+    });
+    box.append(input, P.el("p", "Nothing is created until you choose Create and open. The file is not kept.", { class: "muted small" }));
+    return box;
+  }
+
+  // What the server read from a UML file: the same report as Import / Export, so nothing is dropped unseen.
+  function importReport(report) {
+    const box = P.el("div", undefined, { class: "systems-import", id: "systems-import" });
+    const counts = [["read", report.mapped], ["kept or filled in", report.defaulted], ["not imported", report.unmapped]]
+      .map(([what, list]) => `${list.length} ${what}`).join(", ");
+    box.append(P.el("p", `Read as ${report.from}: ${counts}.`));
+    const lists = window.PlayInterop ? [window.PlayInterop.entries("Not imported", report.unmapped, true),
+      window.PlayInterop.entries("Kept or filled in by PlayIDE", report.defaulted, false)] : [];
+    for (const list of lists) if (list) box.append(list);
+    return box;
   }
 
   const body = (checkOnly) => ({ name: $("systems-name").value.trim() || "My system", template: choice,
-    record: $("systems-record").value.trim() || "Record", sketch: $("systems-sketch").value, check_only: checkOnly });
+    record: $("systems-record").value.trim() || "Record", sketch: $("systems-sketch").value, check_only: checkOnly,
+    ...(choice === "uml" ? { uml: umlFile.text, filename: umlFile.name } : {}) });
 
   function check() {
     clearTimeout(checkTimer);
@@ -124,6 +164,7 @@
       }
       const s = result.system;
       verdict.append(P.el("p", `Checked: ${s.states.length} states (starts in ${s.initial}), ${s.transitions} transitions, roles ${s.roles.join(", ")}${s.record ? `, record class ${s.record}` : ""}. It will be saved as ${s.id}.`));
+      if (result.import) verdict.append(importReport(result.import));
     }, 250);
   }
 
@@ -155,7 +196,8 @@
     }
   }
 
-  async function showDialog(pane) {
+  async function showDialog(pane, start) {
+    if (start) choice = start;
     listing = await P.api("/api/play/systems");
     renderOpen();
     renderNew();
@@ -199,7 +241,7 @@
   }
 
   // Commands for the palette and the demos.
-  window.PlaySystems = { open: () => showDialog("open"), new: () => showDialog("new"), save };
+  window.PlaySystems = { open: () => showDialog("open"), new: (start) => showDialog("new", start), save };
   document.addEventListener("playide:ready", () => init(window.PlayIDE));
   if (document.body && document.body.dataset.ready === "true" && window.PlayIDE) init(window.PlayIDE);
 })();

@@ -342,6 +342,7 @@
     const refs = [change.ref, change.was].filter(Boolean);
     if (tab === "classes") return refs.filter((r) => r.startsWith("state:")).map((r) => "literal:" + r.slice(6));
     if (tab === "usecases") return refs.filter((r) => r.startsWith("t:") || r.startsWith("was:")).map((r) => "uc:" + r.slice(r.indexOf(":") + 1));
+    if (tab === "sequences" && window.PlaySequence) return window.PlaySequence.cellsFor(refs.filter((r) => r.startsWith("t:")).map((r) => r.slice(2)));
     return [];
   }
 
@@ -384,11 +385,12 @@
     else if (lens) { event.preventDefault(); view.setLens(lens, lens === "before" ? 0 : lens === "after" ? 1 : view.onion); }
   }
 
-  const DRAWN = ["states", "classes", "usecases"]; // the diagrams that draw a change; the others are left as they are
+  const DRAWN = ["states", "classes", "usecases", "sequences"]; // the diagrams that draw a change; the others are left as they are
   const HELP = {
     states: "Green is added, amber changed or moved, and faded dashes are what the change removes. [ and ] step through the changes.",
     classes: "The record's states are its enumeration's literals: green is added, struck through is what the change removes.",
     usecases: "Green is added, amber changed, and faded dashes are what the change removes: use cases, actors and who takes which.",
+    sequences: "Messages whose action the change adds are green, changes amber, removes dashed red; a message the kernel now refuses says what it was before.",
   };
 
   // Changes is a mode across the diagrams: it stays on while you flip tabs, and each diagram shows the same change.

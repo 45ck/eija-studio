@@ -217,6 +217,10 @@ def _step(session: MemorySession, pack: Pack, model: Workflow, run: _Run, rng: _
              "outcome": "CREATED", "to": model.initial_state})
 
 
+def _times(n: int) -> str:
+    return "once" if n == 1 else f"{n} times"
+
+
 def _finding(severity: str, element: str, text: str) -> dict[str, str]:
     return {"severity": severity, "element": element, "text": text}
 
@@ -245,7 +249,7 @@ def _findings(model: Workflow, run: _Run, occupancy: Counter[str]) -> list[dict[
         if codes:
             code, count = codes.most_common(1)[0]
             refused.append(_finding("info", "transition:" + t.id,
-                                    f"{t.action} refused {sum(codes.values())} time(s), mostly {code} ({count})"))
+                                    f"{t.action} refused {_times(sum(codes.values()))}, mostly {code} ({count})"))
     return never + _state_findings(model, run, occupancy) + refused
 
 

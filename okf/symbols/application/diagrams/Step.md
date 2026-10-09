@@ -41,12 +41,12 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [application.diagrams.Fragment](/symbols/application/diagrams/Fragment.md) - A conditional block (`opt`): the steps happen only when `label` holds.
+* [application.diagrams.Fragment](/symbols/application/diagrams/Fragment.md) - A combined fragment.
 * [application.diagrams.Message](/symbols/application/diagrams/Message.md) - `class Message` in `application/diagrams`.
 * [application.diagrams.Note](/symbols/application/diagrams/Note.md) - `class Note` in `application/diagrams`.
 
 ## Referenced by
 
-* [application.diagrams.Fragment](/symbols/application/diagrams/Fragment.md) - A conditional block (`opt`): the steps happen only when `label` holds.
+* [application.diagrams.Fragment](/symbols/application/diagrams/Fragment.md) - A combined fragment.
 * [application.diagrams.Sequence](/symbols/application/diagrams/Sequence.md) - `class Sequence` in `application/diagrams`.
 <!-- okf:generated:end links -->
