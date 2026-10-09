@@ -32,8 +32,10 @@ from fastapi.responses import FileResponse
 from pydantic import Field
 
 from eija_studio.application.access import access, reach
+from eija_studio import __version__
 from eija_studio.application.class_build import class_build
 from eija_studio.application.components import app_components
+from eija_studio.application.deployment import app_deployment
 from eija_studio.application.landscape import landscape
 from eija_studio.application.law_proof import compare_laws, prove_laws, with_laws
 from eija_studio.application.ghost_diff import ghost_diff
@@ -282,7 +284,8 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
         model = resolve(body)
         screens = screens_of(body, model)
         files, manifest = app_files(pack_of(body.plan), model, screens)
-        return app_components(files) | {"model": model.semantic_hash, "screens": screens.digest, "cases": manifest["oracle"]["cases"]}
+        return app_components(files) | {"model": model.semantic_hash, "screens": screens.digest, "cases": manifest["oracle"]["cases"],
+                                        "deployment": app_deployment(files, __version__)}
 
     def built(pack: Pack, model: Workflow, screens: Screens) -> tuple[tuple[dict[str, str], int] | DomainError, list[dict[str, Any]]]:
         try:

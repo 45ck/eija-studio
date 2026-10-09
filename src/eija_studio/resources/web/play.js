@@ -371,6 +371,10 @@
       window.PlayLandscape.inspect(id.slice(7), box);
       return;
     }
+    if (id.startsWith("deploy:") && window.PlayDeployment) { // the Deployment lens of the Components tab (ADR-0206)
+      window.PlayDeployment.inspect(id.slice(7), box);
+      return;
+    }
     if (id.startsWith("component:")) {
       inspectComponent(id.slice(10), box);
       return;
@@ -1801,11 +1805,18 @@
     for (let tries = 0; tries < 60 && hits([b[0] - 120, b[1] - 16, b[2] + 150, b[3] + 22]); tries++) b[1] += 18;
   }
 
+  // The components report of the model on screen, read once per view: the component diagram and the deployment
+  // diagram (ADR-0206) are both read from it.
+  async function loadComponents() {
+    if (!components) components = await api("/api/play/components", { ...about(), screens: screensEdited ? screens : null });
+    return components;
+  }
+
   async function drawComponents() {
     const box = $("component-canvas");
     if (!components) {
       try {
-        components = await api("/api/play/components", { ...about(), screens: screensEdited ? screens : null });
+        await loadComponents();
       } catch (error) {
         box.replaceChildren(el("p", `Could not read the app's components (${error.code || "ERROR"}): ${error.message}`, { class: "muted empty" }));
         return;
@@ -1859,6 +1870,7 @@
   }
 
   function restyleComponents() {
+    if (window.PlayDeployment) window.PlayDeployment.restyle(); // the deployment diagram shows the same build evidence
     if (!componentGraph) return;
     componentGraph.batchUpdate(() => {
       for (const c of components.components) {
@@ -2593,6 +2605,7 @@
     // Change who holds a role: a step in the plan like any drawn edit, checked by the server against the laws about
     // kinds of actor; nothing is saved (#156). The review view changes nothing.
     setKind: (role, to) => (REVIEW_VIEW ? null : addStep({ kind: "set_role_kind", role, to })), reviewing: () => REVIEW_VIEW, viewKey, label, restyle, clearSim, select, showTab, fit, importPlan, runAs, openScreen,
+    components: loadComponents, buildEvidence: () => evidence(), // the deployment lens (ADR-0206) reads both
     screens: () => screens, data: () => data, // the screen designer's screens and the class diagram (play-roles.js reads them)
     graph: () => graph, tab: () => tab, model: () => model, selected: () => selected, pack: () => packInfo, base: () => baseModel,
     direction: () => direction || "LR", // the state machine's layout, which the Changes view follows
