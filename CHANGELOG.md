@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### 9 October 2026: your own systems, two fixes
+
+- The Systems dialog opens again after you close it. Before, a second open did nothing until the page was reloaded.
+- A sketch whose roles differ only in case or punctuation (`Agent` and `agent`) now gets one user per role instead of being refused for duplicate user ids.
+
 ### 8 October 2026: your own systems in PlayIDE
 
 - PlayIDE is no longer limited to the shipped packs. **Systems** in the title bar opens a dialog: **Open** lists recent systems and the ones in your systems home, and **New system** starts one from a sketch or from a template. A sketch is the state machine typed as the diagram labels it, one `From -> To : Action [Role]` per line, and the kernel's pack check runs as you type. **Save** (Ctrl+S) keeps your plan and edited screens as a draft on that system; reopening it restores them and checks every step again. Nothing is applied to the model. Systems live in `~/PlayIDE` (`--systems` or `EIJA_SYSTEMS` to change it), each with its own workspace. `eija new` does the same from the command line. See [ADR-0185](docs/adr/0185-start-open-and-save-your-own-system.md).

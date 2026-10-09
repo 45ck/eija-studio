@@ -1,5 +1,9 @@
 # Update log
 
+## 2026-10-09
+
+* **Your own systems, two fixes**: re-synced `application.new_system.sketch_documents` after roles that slug alike got unique user ids. No Notes were hand-edited and nothing was recorded as verified.
+
 ## 2026-10-08
 
 * **Your own systems in PlayIDE**: synced ADR-0185 and the new `application.new_system`, `adapters.system_library` and `interfaces.play_systems` module and symbol pages; `interfaces.http`, `interfaces.cli` and the pages that link to the reused domain symbols (`parse_pack`, `PackError`, `BASE_GUARDS`, `parse_data`, `parse_screens`, `parse_transaction`, the plan `MAX_STEPS`) refreshed. After merging main (ADR-0177), re-synced for template copies that also carry `scenarios.json` (`domain.scenarios.parse_scenarios`). No Notes were hand-edited and nothing was recorded as verified.

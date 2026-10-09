@@ -81,21 +81,21 @@
   }
 
   function renderNew() {
-    const list = $("systems-templates");
+    const list = $("systems-templates"), sketch = $("systems-sketch-box"); // kept across renders: it lives inside the list
     list.replaceChildren();
     const options = [{ id: "blank", name: "Blank, from a sketch", description: "Type the state machine as the diagram labels it; the kernel checks it as you type." }, ...listing.templates];
     for (const t of options) {
       const label = P.el("label", undefined, { class: "template" }), radio = P.el("input", undefined, { type: "radio", name: "system-template", value: t.id });
       radio.checked = t.id === choice;
-      radio.addEventListener("change", () => { choice = t.id; $("systems-sketch-box").hidden = choice !== "blank"; check(); });
+      radio.addEventListener("change", () => { choice = t.id; sketch.hidden = choice !== "blank"; check(); });
       const text = P.el("span");
       text.append(P.el("strong", t.name), P.el("span", t.id === "blank" ? t.description : `${t.states} states, ${t.transitions} transitions, ${t.roles} roles. ${t.description}`, { class: "muted small" }));
       label.append(radio, text);
       list.append(label);
     }
-    list.firstChild.after($("systems-sketch-box")); // the sketch sits under its own option
+    list.firstChild.after(sketch); // the sketch sits under its own option
     $("systems-sketch-help").textContent = listing.sketch_help + ". Optional: actions: A, B and roles: C, for ones you will draw later.";
-    $("systems-sketch-box").hidden = choice !== "blank";
+    sketch.hidden = choice !== "blank";
   }
 
   const body = (checkOnly) => ({ name: $("systems-name").value.trim() || "My system", template: choice,
