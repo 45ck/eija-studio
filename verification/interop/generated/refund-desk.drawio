@@ -200,9 +200,9 @@
             <mxGeometry x="40" y="60" width="30" height="60" as="geometry" />
           </mxCell>
         </UserObject>
-        <UserObject label="SupportAgent" tooltip="An AI agent: triages requests and proposes a refund. It never decides one." id="actor-1">
-          <mxCell style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" vertex="1" parent="1">
-            <mxGeometry x="40" y="180" width="30" height="60" as="geometry" />
+        <UserObject label="&amp;laquo;agent&amp;raquo;&lt;br&gt;&lt;b&gt;SupportAgent&lt;/b&gt;" tooltip="An AI agent: triages requests and proposes a refund. It never decides one." id="actor-1">
+          <mxCell style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+            <mxGeometry x="10" y="180" width="120" height="60" as="geometry" />
           </mxCell>
         </UserObject>
         <UserObject label="Supervisor" tooltip="A person on the support desk: approves or declines a proposed refund when on shift (assigned)." id="actor-2">
@@ -210,14 +210,14 @@
             <mxGeometry x="40" y="300" width="30" height="60" as="geometry" />
           </mxCell>
         </UserObject>
-        <UserObject label="SlaTimer" tooltip="A scheduled job: escalates a proposal nobody decided within the service level." id="actor-3">
-          <mxCell style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" vertex="1" parent="1">
-            <mxGeometry x="40" y="420" width="30" height="60" as="geometry" />
+        <UserObject label="&amp;laquo;timer&amp;raquo;&lt;br&gt;&lt;b&gt;SlaTimer&lt;/b&gt;" tooltip="A scheduled job: escalates a proposal nobody decided within the service level." id="actor-3">
+          <mxCell style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+            <mxGeometry x="10" y="420" width="120" height="60" as="geometry" />
           </mxCell>
         </UserObject>
-        <UserObject label="PaymentGateway" tooltip="The external payment system: calls back when a payout settles or fails." id="actor-4">
-          <mxCell style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" vertex="1" parent="1">
-            <mxGeometry x="40" y="540" width="30" height="60" as="geometry" />
+        <UserObject label="&amp;laquo;system&amp;raquo;&lt;br&gt;&lt;b&gt;PaymentGateway&lt;/b&gt;" tooltip="The external payment system: calls back when a payout settles or fails." id="actor-4">
+          <mxCell style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+            <mxGeometry x="10" y="540" width="120" height="60" as="geometry" />
           </mxCell>
         </UserObject>
         <mxCell style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1" id="usecase-0" value="ApproveRefund">

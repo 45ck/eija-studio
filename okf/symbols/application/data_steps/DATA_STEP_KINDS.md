@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/data_steps.py#DATA_STEP_KINDS
   title: application/data_steps.py
   hash_method: ast-v2
-  sha256: ca7b760a2bd82ebac1ab4cae6be498c3522ce28cf826064e43dec54281f2d74e
-notes_baseline: 5bc2e235fb15b8bbb1eace89306163d79bd6863d296de5cc312426df3ddedf11
+  sha256: 2a4748d7cbe154f9129aecba95a26bb9748dcaea4eb99d0d838bdcebb18f36bd
+notes_baseline: acce2640c7f502ea687accb1c1500935fee7c162f2f4dc2486d294b477badb11
 ---
 
 # application.data_steps.DATA_STEP_KINDS
@@ -25,7 +25,7 @@ notes_baseline: 5bc2e235fb15b8bbb1eace89306163d79bd6863d296de5cc312426df3ddedf11
 |---|---|
 | Kind | constant |
 | Module | [`application/data_steps`](/modules/application/data_steps.md) |
-| Signature | `DATA_STEP_KINDS = ('add_attribute', 'remove_attribute', 'set_required')` |
+| Signature | `DATA_STEP_KINDS = ('add_attribute', 'remove_attribute', 'set_required', 'set_role_kind')` |
 | Code | `repo://src/eija_studio/application/data_steps.py#DATA_STEP_KINDS` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 

@@ -66,6 +66,7 @@ def _workflow(pack: Pack, data: DataModel | None, model: Workflow) -> dict[str, 
         "publishes": [{"effect": e.id, "recipient": e.recipient} for e in pack.effects.catalog
                       if e.kind == "notification" and e.id in _emitted(model)],
         "roles": sorted(r.id for r in pack.roles),
+        "kinds": {r.id: r.kind for r in sorted(pack.roles, key=lambda r: r.id)},
         "classes": sorted(e.name for e in data.entities) if data else [],
         "model": model.semantic_hash,
     }
@@ -167,6 +168,11 @@ def _actors(workflows: list[dict[str, Any]]) -> dict[str, dict[str, list[str]]]:
     return dict(sorted(actors.items()))
 
 
+def _kinds(role: str, workflows: list[dict[str, Any]]) -> list[str]:
+    """The kind of actor holding `role`, from each workflow that declares it: one kind, or several where they differ."""
+    return sorted({w["kinds"][role] for w in workflows if role in w["kinds"]})
+
+
 def _links(shared: dict[str, dict[str, Entity]], owners: dict[str, list[str]]) -> list[dict[str, str]]:
     """A workflow that names a class another workflow owns uses that workflow, through that class."""
     return [{"source": user, "target": owner, "class": name} for name, found in shared.items()
@@ -194,7 +200,7 @@ def landscape(focus: str, systems: Iterable[tuple[Pack, DataModel | None, Workfl
     findings = _findings(shared, owners, workflows, set(actors))
     return {
         "format": FORMAT, "focus": focus, "workflows": workflows,
-        "actors": [{"name": name, "workflows": held} for name, held in actors.items()],
+        "actors": [{"name": name, "workflows": held, "kinds": _kinds(name, workflows)} for name, held in actors.items()],
         "links": _links(shared, owners),
         "classes": [{"name": name, "owner": _owner(owners, name), "in": sorted(found)} for name, found in shared.items()],
         "findings": findings,

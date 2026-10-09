@@ -102,6 +102,7 @@ def test_simulate_runs_the_shown_model_and_refuses_a_stale_one(client, studio):
 def test_the_class_diagram_reads_the_packs_data_model(client):
     body = client.get("/api/play/data", headers=HEADERS).json()
     assert body["data"]["record"] == "Excursion" and len(body["digest"]) == 64
+    assert body["build"]["built"] == ["Excursion"] and body["build"]["format"] == "eija.class-build.v1"
 
 
 def test_the_screen_designer_checks_and_builds_edited_screens(client, studio):

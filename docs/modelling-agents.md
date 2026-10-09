@@ -70,6 +70,7 @@ Declare the kind on the role in `pack.json`. A role without `kind` is a person.
 4. **Simulate**: under the totals, one line each for People, AI agents, Timers and External systems: what they tried, what went through and the kernel's refusals (the paused agent's `ACTOR_REVOKED`, an agent's slip at `ApproveRefund` as `ROLE_DENIED`).
 5. **Laws** tab: every law holds over every run, with the kind laws named in plain language.
 6. **Tests** tab: `The AI agent cannot approve the refund it proposed` passes because the kernel refuses the step.
+7. **Inspector**: choose the Supervisor (outline or diagram) and set **Held by** to *AI agent*. The step "Make Supervisor an AI agent" joins the plan and is refused, naming the same laws. "Who may take it" lists each role with its kind, for example *SupportAgent (AI agent)*.
 
 ## A second example: AI ops deploys
 
@@ -86,4 +87,4 @@ In the **Sequences** tab, «agent», «timer» and «system» lifelines are draw
 - **Amounts.** "The agent may approve refunds under 50" needs value guards in the kernel (issue #93). Today a law keeps the whole decision with a person.
 - **Elapsed time.** A timer is an actor that acts when run, not `after(48h)`; time triggers are issue #93.
 - **Agents talking to agents, or to other records.** Messages and cross-object actions are issue #93; one record moves through one state machine.
-- **Declaring a kind from a sketch, the chat or a UML import.** A system started in PlayIDE gets people as roles; set `kind` in its `pack.json`.
+- **Declaring a kind from a sketch or the chat.** A system started in PlayIDE gets people as roles. Change one with **Held by** in the inspector (step 7 above), bring it in from a UML file, or set `kind` in its `pack.json`.
