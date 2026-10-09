@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### 9 October 2026: PlayIDE says who holds a role, and lets you change it
+
+- Choose an actor and the inspector shows **Held by**: a person, an AI agent, a timer or an external system. Change it and the step joins the plan, checked against the laws about kinds of actor like any edit, and nothing is saved. On **Refund desk**, making the Supervisor an AI agent is refused, naming "Only a person approves a refund". "Who may take it" now names each role's kind, for example *SupportAgent (AI agent)*. See the amendment to [ADR-0210](docs/adr/0210-actors-that-are-not-people.md) (issue #156).
+
 ### 9 October 2026: PlayIDE keeps the diagram readable with Simulate open, and a drawn transition can name a new action
 
 - Opening Simulate no longer shrinks the state machine until its labels are about 7 pixels high (#139). When the canvas is short, fitting stops at a readable size and starts at the top left, where the initial state is, and the rest is a drag away. The **Fit** button still fits the whole diagram, however small. Before, Library loan went to about half size at 1280 by 800 with the panel open.

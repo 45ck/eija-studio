@@ -41,5 +41,6 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Referenced by
 
+* [application.data_steps.SetRoleKind](/symbols/application/data_steps/SetRoleKind.md) - Make the actor holding `role` a person, an AI agent, a timer or an external system (ADR-0210).
 * [domain.pack.Role](/symbols/domain/pack/Role.md) - A role and the kind of actor that holds it (ADR-0210): a person by default, or an AI agent, a timer or an external system.
 <!-- okf:generated:end links -->
