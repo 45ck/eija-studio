@@ -2208,25 +2208,34 @@
 
   // Every snapshot is written as it is made, so a crash loses nothing. Storage can be full or blocked: the page still
   // works, and the status bar says the work is not kept.
+  // The status bar is the one place that states the save state: the system's own save (play-systems.js, which
+  // dispatches playide:savestate) and the browser's kept-edits note, joined with a separator.
+  let browserNote = { bad: false, text: "", title: "" };
+  function renderSaveStatus() {
+    const status = $("status-saved");
+    if (!status) return;
+    const system = $("system-saved")?.textContent || "";
+    status.textContent = [system, browserNote.text].filter(Boolean).join(" · ");
+    status.className = browserNote.bad ? "saved bad" : "saved";
+    status.title = [browserNote.title, system && "Save your work on this system with Save (Ctrl+S)."].filter(Boolean).join(" ");
+  }
+  document.addEventListener("playide:savestate", renderSaveStatus);
+
   function persist() {
     if (REVIEW_VIEW || !packInfo) return;
     const now = edits.stack[edits.at], empty = !now || (!now.doc.plan && !now.doc.screens); // nothing to keep
-    const status = $("status-saved");
     try {
-      if (empty) { localStorage.removeItem(draftKey()); status.textContent = ""; return; }
+      if (empty) { localStorage.removeItem(draftKey()); browserNote = { bad: false, text: "", title: "" }; renderSaveStatus(); return; }
       const from = Math.max(0, edits.at - STORED), keep = edits.stack.slice(from, edits.at + STORED + 1);
       const draft = { v: 1, model: modelPrint(), saved: Date.now(), at: edits.at - from, stack: keep.map(({ label, doc, at }) => ({ label, doc, at })) };
       try { localStorage.setItem(draftKey(), JSON.stringify(draft)); } catch {
         localStorage.setItem(draftKey(), JSON.stringify({ ...draft, at: 0, stack: [keep[edits.at - from]] })); // the current work, without its history
       }
-      status.className = "saved";
-      status.textContent = "Saved in this browser";
-      status.title = `Your plan and screen edits are kept in this browser as you work (${new Date(draft.saved).toLocaleTimeString()}). Nothing is applied.`;
+      browserNote = { bad: false, text: "Edits kept in this browser", title: `Your plan and screen edits are kept in this browser as you work (${new Date(draft.saved).toLocaleTimeString()}). Nothing is applied.` };
     } catch {
-      status.className = "saved bad";
-      status.textContent = "Not saved: browser storage is unavailable";
-      status.title = "Undo still works, but a reload or crash would lose these edits.";
+      browserNote = { bad: true, text: "Not kept: browser storage is unavailable", title: "Undo still works, but a reload or crash would lose these edits." };
     }
+    renderSaveStatus();
   }
 
   // On load: the draft this browser kept for this model, if any, comes back with its history. The server checks the
