@@ -3,7 +3,8 @@ the policy for the open pack, a paused run keeps who tried what in view, a role 
 tab, the plan banner does not offer to open the Review tab while it is open, asking whether a
 state can be reached at all treats Yes as expected, the status bar names the selection as the outline does,
 an empty Review tab uses the whole tab, the screen designer fits a laptop screen,
-and the Tests tab's buttons and the review view's title bar fit too.
+the Tests tab's buttons and the review view's title bar fit too,
+and Ctrl+K reaches Systems but offers nothing that edits in the review view.
 
 Marked `browser`: it runs only with EIJA_BROWSER_TESTS=1 (NOT_RUN otherwise). It uses the installed Chrome, or the
 Chromium at EIJA_CHROMIUM, and never downloads a browser.
@@ -91,10 +92,20 @@ def test_playide_features_fit_together_in_a_real_browser(pack):
             assert page.evaluate("""() => { const t = document.getElementById('tests'), r = t.getBoundingClientRect();
                 return t.scrollWidth <= t.clientWidth
                     && [...t.querySelectorAll('.head-tools button')].every((b) => b.getBoundingClientRect().right <= r.right - 8); }""")
+            # Ctrl+K reaches Systems; in the review view it offers nothing that changes the model.
+            options = """() => [...document.querySelectorAll('.palette-dialog [role=option]')].map((e) => e.textContent)"""
+            page.keyboard.press("Control+k")
+            page.keyboard.type("system")
+            assert any("Open another system" in o for o in page.evaluate(options))
+            page.keyboard.press("Escape")
             page.goto(f"{server.base_url}/play?view=review#{server.token}")
             page.wait_for_selector("body[data-ready=true]", timeout=60_000)
             assert page.evaluate("""() => { const tops = [...document.querySelectorAll('.bar-end > *')].filter((e) => e.offsetParent)
                 .map((e) => e.getBoundingClientRect()); return tops.every((r) => r.height < 40 && Math.abs(r.top - tops[0].top) < 8); }""")
+            page.keyboard.press("Control+k")
+            page.keyboard.type("undo")
+            assert not any("Undo" in o for o in page.evaluate(options))
+            page.keyboard.press("Escape")
             assert errors == []
         finally:
             chrome.close()

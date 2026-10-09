@@ -305,6 +305,10 @@
       ["Preview the plan on the diagram", null, () => livePlan().querySelector(".plan-tools .primary").click(),
         () => { const p = livePlan(), b = p && p.querySelector(".plan-tools .primary"); return usable(b) && /Preview/.test(b.textContent); }],
       ["Back to the model", "plan-back", press("plan-back")],
+      ["Undo (Ctrl+Z)", "undo", press("undo")],
+      ["Redo (Ctrl+Shift+Z)", "redo", press("redo")],
+      ["Save the work on this system", "system-save", press("system-save")],
+      ["Open another system or start a new one", "system-menu", press("system-menu")],
       ["Build & run", "build", press("build")],
       ["Simulate", "simulate", press("simulate")],
       ["Run the simulation (F5)", "run-play", press("run-play")],
@@ -334,7 +338,7 @@
     items.push(REVIEW ? ["Leave the review view (edit)", null, () => { location.href = viewUrl(false); }]
       : ["Open the review view (read-only)", null, () => { location.href = viewUrl(true); }]);
     return items.filter(([, id, , when]) => (!id || usable($(id))) && (!when || when()))
-      .filter(([label]) => !REVIEW || !/AI|plan/.test(label))
+      .filter(([label]) => !REVIEW || !/AI|plan|Undo|Redo|Save/.test(label))  // nothing in the review view changes the model
       .map(([label, , run]) => ({ label, group: "Command", run }));
   }
 
