@@ -26,17 +26,19 @@ The first acceptance target is **EIJA's own checkout**. External applications co
 
 [IDE design reference](docs/design/README.md): an interactive ten-surface/state handoff plus generated visual concepts, all explicitly design-only. Prepared examples and concepts are not product execution evidence. Showcase recordings use the real application.
 
-## PlayIDE in two minutes
+## PlayIDE in three minutes
 
-[![PlayIDE highlights: drag a state onto a UML state machine and see what to consider before you accept it](docs/demos/assets/playide-showcase/playide-highlights-poster.png)](docs/demos/assets/playide-showcase/playide-highlights.mp4)
+[![PlayIDE highlights: add a state to a UML state machine and see what to consider before you accept it](docs/demos/assets/playide-showcase/playide-highlights-poster.png)](docs/demos/assets/playide-showcase/playide-highlights.mp4)
 
 PlayIDE is the visual workbench on top of EIJA. You design a system in UML, press play, and review every change to it, your own or an AI's, on the diagrams you already know. Each change comes with what to consider before you accept it: the warnings, whether every law still holds, the other diagrams it changes and the tests it adds. Review the change, not the code. The app is built from the model and checked against it, so it cannot disobey the model.
 
-**The full tour (8:43)** goes further: sequence diagrams, tests, permissions, a review-only view for stakeholders, UML import and export with PlantUML, XMI, Mermaid and draw.io, and starting a system of your own.
+The highlights also show the people who use the app (see it as a Clerk) and an AI agent on a refund desk that the laws stop from approving refunds itself.
 
-[![The full PlayIDE tour: stepping through the AI's change to a UML state machine, with what to consider beside it](docs/demos/assets/playide-showcase/playide-showcase-poster.png)](docs/demos/assets/playide-showcase/playide-showcase.mp4)
+**The full tour (13:03)** goes further: sequence diagrams, tests, permissions, the accessibility check on the generated screens, the whole system as UML components and a deployment diagram of the running app with its API contract, a review-only view for stakeholders, UML import and export with PlantUML, XMI, Mermaid and draw.io, real-sector templates (a building permit whose laws refuse a dead end), and starting a system of your own.
 
-Each video is one unedited take of the real `/play` page (Linux/Chromium). The chat's proposer is an offline phrase reader rather than a live model, and the videos say so. Verify, approve and apply are not shown yet; they wait on the owner's source review ([#80](https://github.com/45ck/eija-studio/issues/80)). The [storyboard](docs/demos/PLAYIDE-SHOWCASE-STORYBOARD.md) lists every beat and how to re-record both. See [PlayIDE](docs/playide.md).
+[![The full PlayIDE tour: a UML deployment diagram of the running app, read from what was built](docs/demos/assets/playide-showcase/playide-showcase-poster.png)](docs/demos/assets/playide-showcase/playide-showcase.mp4)
+
+Each video is one unedited take of the real `/play` page (Linux/Chromium). The chat's proposer is an offline phrase reader rather than a live model, and the videos say so. Verify, approve and apply are not shown yet; they wait on the owner's source review ([#80](https://github.com/45ck/eija-studio/issues/80)). The tour starts a new system from a short typed sketch; describing an app in a sentence comes in a later take. The [storyboard](docs/demos/PLAYIDE-SHOWCASE-STORYBOARD.md) lists every beat and how to re-record both. See [PlayIDE](docs/playide.md).
 
 ## Recorded integration preview
 
