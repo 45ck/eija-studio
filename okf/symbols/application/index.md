@@ -3,6 +3,7 @@
 # Sections
 
 * [access](access/) - Symbols of application.access
+* [api_contract](api_contract/) - Symbols of application.api_contract
 * [appgen](appgen/) - Symbols of application.appgen
 * [class_build](class_build/) - Symbols of application.class_build
 * [compiler](compiler/) - Symbols of application.compiler

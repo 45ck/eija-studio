@@ -318,7 +318,7 @@
   const HINTS = {
     states: "Pick State, Transition or Initial in the palette, then click the diagram (or drag it there). Double-click empty space for a new state, a state to rename it. Changes join the plan for you to preview; nothing is saved.",
     sequences: "The Tests tab's scenarios as UML sequences, each step run through the kernel: a step the model can't do is red with the kernel's reason. Select one to change it; a step in a neg must be refused.",
-    classes: "Select a class to see its attributes and associations. Only the «record» class is built: its attributes are the app's form. Grey classes and the associations are drawn, not built.",
+    classes: "Select a class to see its attributes and associations. Only the «record» class is built: its attributes are the app's form. Grey classes and the associations are drawn, not built. An amber attribute stands in for an association: the app checks its value, not that the other object exists.",
     usecases: "Select a use case to inspect it. Double-click one to design its screen.",
     screens: "Design each use case's screen. The design check runs as you edit; Build & run uses these screens.",
     components: "The built app's components, read from its generated files: every line is an import, a route or a file read.",
