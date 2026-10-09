@@ -75,6 +75,7 @@ _No curated notes yet._
 * [application.ripple.check_follow_ons](/symbols/application/ripple/check_follow_ons.md) - The proposer's follow-on steps, each re-checked on its own on top of the plan: a state-machine step through the policy (`base` with `plan` and the step), a scr…
 * [application.ripple.enumeration](/symbols/application/ripple/enumeration.md) - The name of the record's state enumeration on the class diagram: its literals are the state machine's states.
 * [application.ripple.ripple](/symbols/application/ripple/ripple.md) - Every diagram's effects of going from `base` to `candidate`.
+* [application.screen_access.check_accessibility](/symbols/application/screen_access/check_accessibility.md) - Each check with its WCAG success criteria and PASS, WARN (advice) or FAIL, the design's first.
 * [domain.data.DataModel.coherent](/symbols/domain/data/DataModel.coherent.md) - `def coherent(self) -> DataModel` in `domain/data`.
 * [domain.data.DataModel.digest](/symbols/domain/data/DataModel.digest.md) - `def digest(self) -> str` in `domain/data`.
 * [domain.data.DataModel.entity](/symbols/domain/data/DataModel.entity.md) - `def entity(self, name: str) -> Entity` in `domain/data`.

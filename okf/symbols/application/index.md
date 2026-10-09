@@ -27,6 +27,7 @@
 * [ripple](ripple/) - Symbols of application.ripple
 * [runtime](runtime/) - Symbols of application.runtime
 * [scenario_run](scenario_run/) - Symbols of application.scenario_run
+* [screen_access](screen_access/) - Symbols of application.screen_access
 * [scxml](scxml/) - Symbols of application.scxml
 * [sequence_layout](sequence_layout/) - Symbols of application.sequence_layout
 * [sequences](sequences/) - Symbols of application.sequences

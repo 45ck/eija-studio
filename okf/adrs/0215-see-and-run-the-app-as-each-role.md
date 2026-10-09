@@ -60,4 +60,8 @@ _No curated notes yet._
 * [ADR-0154: Use case diagrams, and screens designed against the model](/adrs/0154-use-cases-and-screens-designed-against-the-model.md) - PlayIDE shows the workflow as a state machine (ADR-0151) and the data as a class diagram (ADR-0153).
 * [ADR-0171: Who can do what, as a matrix the kernel checks, and reachability questions with a proof or a path](/adrs/0171-permissions-matrix-and-reachability-questions.md) - Access rules are what AI-written apps most often get wrong, and they are what reviewers and auditors ask about first: who can do what, from which state, and ca…
 * [ADR-0210: Actors that are not people: AI agents, timers and external systems in the model](/adrs/0210-actors-that-are-not-people.md) - Systems people design now have AI agents in them: a support bot that triages tickets and proposes refunds, a scheduled job that escalates what nobody handled,…
+
+## Referenced by
+
+* [ADR-0218: An accessibility check on the generated screens](/adrs/0218-accessibility-check-on-the-generated-screens.md) - PlayIDE designs the screens of the app it builds (ADR-0154) and the role lens shows them as each role (ADR-0215).
 <!-- okf:generated:end links -->

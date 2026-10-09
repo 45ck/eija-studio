@@ -60,4 +60,5 @@ _No curated notes yet._
 ## Referenced by
 
 * [ADR-0215: See and run the app as each role](/adrs/0215-see-and-run-the-app-as-each-role.md) - PlayIDE already models the human side of a system: roles and fixture actors in the pack, a use case diagram (ADR-0154), one screen per use case, and a Permissi…
+* [ADR-0218: An accessibility check on the generated screens](/adrs/0218-accessibility-check-on-the-generated-screens.md) - PlayIDE designs the screens of the app it builds (ADR-0154) and the role lens shows them as each role (ADR-0215).
 <!-- okf:generated:end links -->

@@ -2,6 +2,7 @@
 
 ## 2026-10-09
 
+* **Accessibility check**: synced ADR-0218 and the new `application.screen_access` module (the WCAG 2.2 AA check on the generated screens); `interfaces.play` (`/api/play/screens` returns `accessibility`) refreshed. No Notes were hand-edited and nothing was recorded as verified.
 * **Screen flow**: re-synced ADR-0215 after its screen flow amendment (presentation only). No Notes were hand-edited and nothing was recorded as verified.
 * **What the class diagram builds**: synced ADR-0205 and the new `application.class_build` module and `class_build` symbol (the built record class, the classes and associations drawn only, and record attributes that stand in for an association); `application.ripple` (`ripple` takes `data_before`), `application.plan` (`class_build` in the preview) and `interfaces.play` (`/api/play/data` returns `build`) refreshed. No Notes were hand-edited and nothing was recorded as verified.
 * **Actor kinds in the system landscape**: re-synced `application.landscape.landscape` after each workflow began reporting its roles' kinds and each actor the kinds its workflows declare. No Notes were hand-edited and nothing was recorded as verified.

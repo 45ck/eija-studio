@@ -22,6 +22,7 @@ import subprocess
 import sys
 import threading
 import time
+from importlib.resources import files as resource_files
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -41,6 +42,7 @@ from eija_studio.application.plan import MAX_DRAFT_STEPS, preview_plan, propose_
 from eija_studio.application.review import review_change
 from eija_studio.application.ripple import check_follow_ons, ripple
 from eija_studio.application.scenario_run import record_steps, run_scenarios
+from eija_studio.application.screen_access import check_accessibility
 from eija_studio.application.sequences import check_sequences
 from eija_studio.application.simulation import MAX_BREAKPOINTS, MAX_STEPS, run_log, simulate
 from eija_studio.domain.data import data_for
@@ -234,6 +236,13 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
         """Each role with the kind of actor that holds it (ADR-0210): a person, an AI agent, a timer or an external system."""
         return {"roles": [{"id": r.id, "kind": r.kind, "description": r.description} for r in studio.pack.roles]}
 
+    def accessibility(screens: Screens, model: Workflow, data: Any) -> dict[str, Any]:
+        page = resource_files("eija_studio.resources").joinpath("appgen", "web")
+        def read(name: str) -> str:
+            return page.joinpath(name).read_text(encoding="utf-8")
+        return check_accessibility(screens, model, data, theme_css=read("app.css.tmpl"), page_js=read("app.js.tmpl"),
+                                   page_html=read("index.html.tmpl"))
+
     def screens_of(body: BuildRequest, model: Workflow) -> Screens:
         if body.screens is not None:
             return parse_screens(body.screens, studio.pack.id)
@@ -245,7 +254,7 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
         model = resolve(body)
         screens, data = screens_of(body, model), data_for(pack_of(body.plan))
         return {"screens": screens.model_dump(mode="json"), "digest": screens.digest, "use_cases": use_cases(model),
-                "problems": check_screens(screens, model, data)}
+                "problems": check_screens(screens, model, data), "accessibility": accessibility(screens, model, data)}
 
     def proposer():
         if studio.plan_proposer is None:

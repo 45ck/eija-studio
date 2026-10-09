@@ -62,6 +62,7 @@ _No curated notes yet._
 * [application.appgen.generate](/symbols/application/appgen/generate.md) - Return the per-model files and the build manifest (without file hashes or test results).
 * [application.ripple.check_follow_ons](/symbols/application/ripple/check_follow_ons.md) - The proposer's follow-on steps, each re-checked on its own on top of the plan: a state-machine step through the policy (`base` with `plan` and the step), a scr…
 * [application.ripple.ripple](/symbols/application/ripple/ripple.md) - Every diagram's effects of going from `base` to `candidate`.
+* [application.screen_access.check_accessibility](/symbols/application/screen_access/check_accessibility.md) - Each check with its WCAG success criteria and PASS, WARN (advice) or FAIL, the design's first.
 * [domain.screens.Screens.digest](/symbols/domain/screens/Screens.digest.md) - `def digest(self) -> str` in `domain/screens`.
 * [domain.screens.Screens.screen](/symbols/domain/screens/Screens.screen.md) - `def screen(self, use_case: str | None) -> Screen | None` in `domain/screens`.
 * [domain.screens.check_screens](/symbols/domain/screens/check_screens.md) - Design problems, each with a stable code and the use case it is about.
