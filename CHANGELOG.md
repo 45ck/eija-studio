@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### 9 October 2026: PlayIDE polish, round 11 (the New system dialog fits the screen)
+
+- Systems, New system lists every sector template two to a row, and the kernel's verdict and Create and open stay at the bottom of the dialog while the list scrolls. Before, the list ran past the bottom of the dialog on a 1080p screen, so Create and open was off screen and the last template was cut. The blank sketch and a UML file still take the full width under their own option.
+
 ### 9 October 2026: sequence diagrams that read well
 
 - The Sequences tab is legible at laptop and recording size: lifeline names wrap onto two lines, labels are larger, steps are numbered as in the Tests tab, the record shows an activation bar for each call, and effects are UML lost messages instead of a column each. It never scales below 80%.
