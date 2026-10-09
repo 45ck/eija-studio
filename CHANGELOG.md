@@ -8,6 +8,11 @@
 - A second agent-heavy example pack, **AI ops deploys**: an AI agent opens and patches changes, the CI server reports the build, the person on call signs the deploy off, a deploy window starts the rollout and the health monitor confirms it or rolls it back. The agent can neither sign its own deploy off nor report its own build green.
 - A kind-path law on the initial state now also judges steps back into that state, on the table as on every run (found by review of the first agents change).
 
+### 9 October 2026: PlayIDE polish, round 8 (tabs and screen fields on a laptop)
+
+- A diagram tab is never shown cut off at the edge of the tab strip. At 1280 pixels the strip ended on "Use" or "Scre", which reads as another tab; a tab the edge would cut now leaves a gap, and More tabs (») still lists every tab (#141).
+- On the Screens tab, a field shows its whole label ("Member card", not "Member c"), and its type and whether it is required sit on the line beneath, taking two lines at most rather than four (#140).
+
 ### 9 October 2026: AI agents, timers and external systems in the model
 
 - A role can now be held by a person (the default), an AI agent, a timer or an external system. The use case diagram draws a person as a stick figure and the others as «agent», «timer» and «system» actor boxes ([ADR-0210](docs/adr/0210-actors-that-are-not-people.md)).

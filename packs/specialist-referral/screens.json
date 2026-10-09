@@ -1,0 +1,136 @@
+{
+  "schema_version": "eija.screens.v1",
+  "id": "specialist-referral",
+  "screens": [
+    {
+      "title": "Refer a patient",
+      "fields": [
+        {
+          "attribute": "patientNumber",
+          "label": "Patient number"
+        },
+        {
+          "attribute": "specialty",
+          "label": "Specialty"
+        },
+        {
+          "attribute": "urgency",
+          "label": "Urgency"
+        },
+        {
+          "attribute": "reason",
+          "label": "Reason for referral"
+        },
+        {
+          "attribute": "consentToShare",
+          "label": "Patient consents to sharing"
+        }
+      ],
+      "button": "Create referral"
+    },
+    {
+      "use_case": "Submit",
+      "title": "Send to the clinic",
+      "fields": [
+        {
+          "attribute": "specialty",
+          "label": "Specialty"
+        },
+        {
+          "attribute": "urgency",
+          "label": "Urgency"
+        }
+      ],
+      "button": "Submit referral"
+    },
+    {
+      "use_case": "VetReferral",
+      "title": "VetReferral",
+      "fields": [
+        {
+          "attribute": "reason",
+          "label": "Reason for referral"
+        },
+        {
+          "attribute": "urgency",
+          "label": "Urgency"
+        }
+      ],
+      "button": "Accept for clinic"
+    },
+    {
+      "use_case": "Decline",
+      "title": "Decline",
+      "fields": [
+        {
+          "attribute": "reason",
+          "label": "Reason for referral"
+        }
+      ],
+      "button": "Decline referral"
+    },
+    {
+      "use_case": "Withdraw",
+      "title": "Withdraw",
+      "fields": [
+        {
+          "attribute": "patientNumber",
+          "label": "Patient number"
+        }
+      ],
+      "button": "Withdraw referral"
+    },
+    {
+      "use_case": "Book",
+      "title": "Book appointment",
+      "fields": [
+        {
+          "attribute": "appointmentDate",
+          "label": "Appointment date"
+        },
+        {
+          "attribute": "urgency",
+          "label": "Urgency"
+        }
+      ],
+      "button": "Book"
+    },
+    {
+      "use_case": "RecordNoShow",
+      "title": "Did not attend",
+      "fields": [
+        {
+          "attribute": "appointmentDate",
+          "label": "Appointment date"
+        }
+      ],
+      "button": "Record no-show"
+    },
+    {
+      "use_case": "SeePatient",
+      "title": "Clinic visit",
+      "fields": [
+        {
+          "attribute": "patientNumber",
+          "label": "Patient number"
+        },
+        {
+          "attribute": "reason",
+          "label": "Reason for referral"
+        }
+      ],
+      "button": "Record visit"
+    },
+    {
+      "use_case": "Discharge",
+      "title": "Discharge",
+      "fields": [
+        {
+          "attribute": "patientNumber",
+          "label": "Patient number"
+        }
+      ],
+      "button": "Discharge and write to GP"
+    }
+  ]
+}
