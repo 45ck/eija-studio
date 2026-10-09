@@ -71,7 +71,12 @@
     const line = $("landscape-summary");
     line.textContent = parts.join(" · ");
     line.className = "landscape-summary" + (c.warning ? " warn" : "");
+    document.dispatchEvent(new CustomEvent("playide:landscape", { detail: { warning: c.warning || 0, consider: c.consider || 0 } })); // play-game.js (ADR-0208)
   }
+
+  // The kind of actor holding a role, as the workflows declaring it say: "mixed" where they differ (a person in one, an
+  // AI agent in another), drawn as a box naming each.
+  const kindOf = (a) => (a.kinds.length === 1 ? a.kinds[0] : a.kinds.length ? "mixed" : "human");
 
   // Actors on the left, workflows stacked in the middle with their interface balls, shared classes on the right.
   function layout() {
@@ -84,7 +89,9 @@
     const level = (a) => { const used = Object.keys(a.workflows).filter((w) => w in row); return used.reduce((s, w) => s + row[w], 0) / Math.max(1, used.length); };
     const actors = [...result.actors].sort((a, b) => level(a) - level(b) || a.name.localeCompare(b.name));
     const actorStep = step(actors.length, height - 70);
-    actors.forEach((a, i) => { at["actor:" + a.name] = [40, 30 + i * actorStep + (result.actors.length === 1 ? height / 2 - 40 : 0), 36, 64]; });
+    // A person is a stick figure; an AI agent, a timer or an external system is a box, as on the use case diagram.
+    actors.forEach((a, i) => { at["actor:" + a.name] = kindOf(a) === "human" ? [40, 30 + i * actorStep + (result.actors.length === 1 ? height / 2 - 40 : 0), 36, 64]
+      : [-10, 38 + i * actorStep + (result.actors.length === 1 ? height / 2 - 40 : 0), 136, 48]; });
     const loose = result.classes.filter((c) => !c.owner), classStep = step(loose.length, height - 60);
     loose.forEach((c, i) => { at["class:" + c.name] = [WF_X + WF_W + 150, 30 + i * classStep + (loose.length === 1 ? height / 2 - 30 : 0), 150, 56]; });
     return at;
@@ -116,8 +123,12 @@
       }
       for (const a of result.actors) {
         const id = "actor:" + a.name, [x, y, wd, h] = at[id];
-        cells[id] = graph.insertVertex({ parent: root, id: "system:" + id, value: a.name, position: [x, y], size: [wd, h],
-          style: { ...FONT, shape: "actor", fillColor: "#ffffff", strokeColor: INK, verticalLabelPosition: "bottom", verticalAlign: "top" } });
+        const kind = kindOf(a), look = P.actorLook[kind] || P.actorLook.system;
+        cells[id] = kind === "human"
+          ? graph.insertVertex({ parent: root, id: "system:" + id, value: a.name, position: [x, y], size: [wd, h],
+            style: { ...FONT, shape: "actor", fillColor: "#ffffff", strokeColor: INK, verticalLabelPosition: "bottom", verticalAlign: "top" } })
+          : graph.insertVertex({ parent: root, id: "system:" + id, value: `«${kind === "mixed" ? a.kinds.join(" | ") : kind}»\n${a.name}`, position: [x, y], size: [wd, h],
+            style: { ...FONT, shape: "rectangle", rounded: kind === "agent", whiteSpace: "wrap", fillColor: look.fill, strokeColor: look.stroke } });
         for (const [wid, actions] of Object.entries(a.workflows)) if (actions.length) edge(cells[id], cells["iface:" + wid], "«use»");
       }
       for (const c of result.classes.filter((x) => !x.owner)) {

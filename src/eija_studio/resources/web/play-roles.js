@@ -179,6 +179,10 @@
       b.addEventListener("click", () => { lens = role; renderLens(); });
       bar.append(b);
     }
+    const toggle = P.el("button", "Screen flow", { type: "button", id: "screen-flow-toggle", class: "flow-toggle", "aria-pressed": String(flowOpen),
+      "aria-controls": "screen-flow", title: "Every screen as a wireframe, in the order a record meets them" });
+    toggle.addEventListener("click", () => { flowOpen = !flowOpen; renderFlow(); });
+    bar.append(toggle);
     strip.replaceChildren();
     strip.hidden = !lens;
     if (lens && machine(lens)) {
@@ -207,6 +211,7 @@
       strip.append(runTools(lens));
     }
     decorate();
+    renderFlow();
   }
 
   // Dim the screens the chosen role never sees, and say on the card who sees the one open.
@@ -235,9 +240,147 @@
     card.prepend(P.el("p", text, { class: "role-note " + (!machine(lens) && (open === null || mine.has(open)) ? "ok" : "warn") }));
   }
 
+  // ---- The screen flow ----------------------------------------------------------------------------------------------
+  // The app's screens as a storyboard: each screen a wireframe drawn from its fields and the record class's attributes
+  // (control, required mark, limits), and an arrow from a screen to the screens the record can reach next, labelled with
+  // the state it is then in. It is read from the state machine and the screens, never drawn by hand: a transition you
+  // add on the state machine adds an arrow here. Under "See the app as", the chosen role's screens stand out.
+  let flowOpen = false, flowTimer = 0;
+  const SVG = "http://www.w3.org/2000/svg";
+  const CARD_W = 180, MAX_ROWS = 6;
+
+  function flowShape() {
+    const model = P.model(), byAction = new Map();
+    for (const t of model.transitions) {
+      const n = byAction.get(t.action) || { id: "uc:" + t.action, action: t.action, role: t.role, steps: [] };
+      n.steps.push(t);
+      byAction.set(t.action, n);
+    }
+    const screens = [{ id: "uc:create", action: null, role: "", steps: [{ to_state: model.initial_state }] }, ...byAction.values()];
+    const leaving = new Set(model.transitions.map((t) => t.from_state)), edges = [], ends = new Set(), seen = new Set();
+    for (const from of screens) {
+      for (const step of from.steps) {
+        const state = step.to_state, next = screens.filter((n) => n.action !== null && n.steps.some((t) => t.from_state === state));
+        if (!leaving.has(state)) { ends.add(state); next.push({ id: "end:" + state }); }
+        for (const to of next) {
+          const key = `${from.id}|${to.id}|${state}`;
+          if (!seen.has(key)) { seen.add(key); edges.push({ from: from.id, to: to.id, state }); }
+        }
+      }
+    }
+    return { screens, ends: [...ends], edges };
+  }
+
+  function attributeOf(name) {
+    const data = P.data(), record = data && data.entities.find((e) => e.name === data.record);
+    return record ? record.attributes.find((x) => x.name === name) : null;
+  }
+
+  // What the built app's control will be for a field, and the rule the server checks (ADR-0153).
+  function control(attr) {
+    if (!attr) return ["missing", "not in the record"];
+    const rule = attr.type === "choice" ? `one of ${attr.choices.join(", ")}` : attr.type === "text" ? `text, up to ${attr.max_length}` : attr.type;
+    const hint = { text: "", number: "0", date: "dd/mm/yyyy", boolean: "☐", choice: `${attr.choices[0]} ▾` }[attr.type];
+    return [hint, rule + (attr.required ? ", required" : ", optional")];
+  }
+
+  function card(n, screen, fade) {
+    const box = P.el("button", undefined, { type: "button", class: "flow-card" + (fade ? " faded" : ""), "data-use-case": n.action === null ? "" : n.action,
+      title: n.action === null ? "Starts a record: open its screen" : `${n.action}: open its screen` });
+    const head = P.el("span", undefined, { class: "flow-head" });
+    head.append(P.el("span", screen ? screen.title : n.action || "Create", { class: "flow-title" }),
+      P.el("span", n.action === null ? "any active actor" : n.role + (machine(n.role) ? ` «${kindOf(n.role)}»` : ""), { class: "flow-role" }));
+    box.append(head);
+    const fields = screen ? screen.fields : [];
+    for (const f of fields.slice(0, MAX_ROWS)) {
+      const attr = attributeOf(f.attribute), [hint, rule] = control(attr);
+      const row = P.el("span", undefined, { class: "flow-field", title: rule });
+      row.append(P.el("span", (f.label || f.attribute) + (attr && attr.required && n.action === null ? " *" : ""), { class: "flow-label" }),
+        P.el("span", n.action === null ? hint : "value", { class: "flow-ctl " + (n.action === null ? "input " + (attr ? attr.type : "missing") : "shown") }));
+      box.append(row);
+    }
+    if (fields.length > MAX_ROWS) box.append(P.el("span", `+ ${fields.length - MAX_ROWS} more`, { class: "flow-more" }));
+    if (!fields.length) box.append(P.el("span", "No fields", { class: "flow-more" }));
+    box.append(P.el("span", (screen && screen.button) || (n.action === null ? "Create" : n.action), { class: "flow-button" }));
+    box.addEventListener("click", () => P.openScreen(n.action));
+    return box;
+  }
+
+  function renderFlow() {
+    const panel = $("screen-flow"), toggle = $("screen-flow-toggle");
+    if (toggle) toggle.setAttribute("aria-pressed", String(flowOpen));
+    if (!panel) return;
+    panel.hidden = !flowOpen;
+    if (!flowOpen || !P.screens() || !window.dagre) return;
+    const { screens, ends, edges } = flowShape(), designed = P.screens();
+    const result = current(), mine = result && lens && !machine(lens) ? theirs(result, lens) : null;
+    const g = new dagre.graphlib.Graph({ multigraph: true });
+    g.setGraph({ rankdir: "LR", nodesep: 18, ranksep: 56, marginx: 12, marginy: 12 });
+    g.setDefaultEdgeLabel(() => ({}));
+    // Each card is drawn first and measured, so a long title that wraps still gets the room it takes.
+    const canvas = P.el("div", undefined, { class: "flow-canvas" }), nodes = new Map();
+    panel.replaceChildren(canvas);
+    for (const n of screens) {
+      const screen = designed.screens.find((s) => s.use_case === n.action);
+      const node = card(n, screen, (mine !== null && n.action !== null && !mine.has(n.action)) || Boolean(lens && machine(lens)));
+      node.style.width = `${CARD_W}px`;
+      canvas.append(node);
+      nodes.set(n.id, node);
+    }
+    for (const state of ends) {
+      const node = P.el("span", `Ends in ${state}`, { class: "flow-end" });
+      canvas.append(node);
+      nodes.set("end:" + state, node);
+    }
+    for (const [id, node] of nodes) g.setNode(id, { width: Math.max(id.startsWith("end:") ? 120 : CARD_W, node.offsetWidth), height: node.offsetHeight });
+    edges.forEach((e, i) => g.setEdge(e.from, e.to, { label: e.state, width: 60, height: 16 }, "e" + i));
+    dagre.layout(g);
+    const size = g.graph();
+    canvas.style.width = `${Math.ceil(size.width)}px`;
+    canvas.style.height = `${Math.ceil(size.height)}px`;
+    const svg = document.createElementNS(SVG, "svg");
+    svg.setAttribute("width", String(Math.ceil(size.width)));
+    svg.setAttribute("height", String(Math.ceil(size.height)));
+    svg.setAttribute("aria-hidden", "true");
+    const defs = document.createElementNS(SVG, "defs"), marker = document.createElementNS(SVG, "marker"), tip = document.createElementNS(SVG, "path");
+    for (const [k, v] of Object.entries({ id: "flow-arrow", viewBox: "0 0 10 10", refX: "9", refY: "5", markerWidth: "7", markerHeight: "7", orient: "auto-start-reverse" })) marker.setAttribute(k, v);
+    tip.setAttribute("d", "M0 0 L10 5 L0 10 z");
+    marker.append(tip);
+    defs.append(marker);
+    svg.append(defs);
+    for (const e of g.edges()) {
+      const edge = g.edge(e), line = document.createElementNS(SVG, "polyline");
+      line.setAttribute("points", edge.points.map((pt) => `${pt.x},${pt.y}`).join(" "));
+      line.setAttribute("class", "flow-edge");
+      line.setAttribute("marker-end", "url(#flow-arrow)");
+      const label = document.createElementNS(SVG, "text");
+      label.setAttribute("x", String(edge.x));
+      label.setAttribute("y", String(edge.y + 4));
+      label.setAttribute("class", "flow-state");
+      label.textContent = edge.label;
+      svg.append(line, label);
+    }
+    canvas.prepend(svg);
+    for (const [id, node] of nodes) {
+      const at = g.node(id);
+      node.style.left = `${Math.round(at.x - at.width / 2)}px`;
+      node.style.top = `${Math.round(at.y - at.height / 2)}px`;
+      node.style.width = `${at.width}px`;
+    }
+    panel.prepend(P.el("p", lens && !machine(lens)
+      ? `The app's screens in the order a record meets them. ${article(lens)}'s screens stand out; the others are another role's turn.`
+      : "The app's screens in the order a record meets them, each arrow labelled with the state the record is then in. Choose a screen to design it.", { class: "muted small" }));
+  }
+
+  function scheduleFlow() {
+    clearTimeout(flowTimer);
+    flowTimer = setTimeout(renderFlow, 120);
+  }
+
   function onScreens(event) {
     if (event.card) lastCard = event;
     decorate(event);
+    if (flowOpen) scheduleFlow(); // an edit to a screen redraws its wireframe
   }
 
   function init() {

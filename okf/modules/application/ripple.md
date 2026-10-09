@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/ripple.py
   title: application/ripple.py
   hash_method: ast-api-v1
-  sha256: e238a4a73a823aa54bc0be270c6b5c1be491f62fb1544777234df92aaaecd9d7
-notes_baseline: a7e94f0851d6644208bf2be8decfe01a015c6a0003dd91d34601af9f8fb9f25e
+  sha256: 6ea0785d0cfbf11cae3e8e3cd19807aa55d4537e3ddc44eb49a1c326cd76a2a4
+notes_baseline: d6a5dd672779966af5e98c2f589c034f87c7876bc1699f6699436950f450a082
 ---
 
 # application.ripple
@@ -55,6 +55,7 @@ one: a state-machine step through the policy, a screen step through the screen d
 
 ## Internal imports
 
+* [`application/class_build`](/modules/application/class_build.md)
 * [`application/data_steps`](/modules/application/data_steps.md)
 * [`application/diagrams`](/modules/application/diagrams.md)
 * [`application/plan`](/modules/application/plan.md)
@@ -74,6 +75,7 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Imports
 
+* [application.class_build](/modules/application/class_build.md) - What the built app does with each part of the class diagram (#145, ADR-0205): the record class is built and checked; the other classes and the associations are…
 * [application.data_steps](/modules/application/data_steps.md) - Data-model steps in a chat plan (ADR-0202): add an attribute to a class, remove one, or make one required or optional; and the step that changes the kind of ac…
 * [application.diagrams](/modules/application/diagrams.md) - Diagram models derived from the executable Workflow (ADR-0019, ADR-0023).
 * [application.plan](/modules/application/plan.md) - Plan mode for the PlayIDE chat (ADR-0156): an AI proposes a change as numbered typed steps; the person accepts or rejects each one and sees what the accepted o…

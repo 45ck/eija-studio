@@ -220,19 +220,21 @@
 
   function lifeline(parent, l, s) {
     const top = s.head.y, h = s.head.height;
-    const look = { agent: ["#f3edff", "#6b46c1"], timer: ["#fff7e6", "#b7791f"], system: ["#eef2f6", "#4a5568"] }[l.actor_kind];
-    if (l.kind === "actor" && look) { // an AI agent, timer or external system (ADR-0210): an actor box with its keyword
-      graph.insertVertex({ parent, id: `head:${l.id}`, value: l.label.replace(/^(«\w+») /, "$1\n"), position: [l.x - 80, top], size: [160, h - 6],
-        style: { ...FONT, fillColor: look[0], strokeColor: look[1], rounded: l.actor_kind === "agent", whiteSpace: "wrap", fontSize: 12, selectable: false } });
-    } else if (l.kind === "actor") {
-      graph.insertVertex({ parent, id: `head:${l.id}`, value: l.label, position: [l.x - 14, top - 4], size: [28, h - 8],
+    // A person is a stick figure; an AI agent, a timer or an external system (ADR-0210) is a box with its keyword, as on
+    // the use case diagram. Either way the name and the role take a line each, so a long one stays inside its column.
+    const kind = l.kind === "actor" ? l.actor_kind || "human" : "", look = kind && P.actorLook[kind];
+    if (kind === "human") {
+      graph.insertVertex({ parent, id: `head:${l.id}`, value: l.label.replace(" : ", " :\n"), position: [l.x - 14, top - 4], size: [28, h - 8],
         style: { ...FONT, shape: "actor", fillColor: "#ffffff", strokeColor: INK, verticalLabelPosition: "bottom", verticalAlign: "top", fontSize: 12, selectable: false } });
+    } else if (kind) {
+      graph.insertVertex({ parent, id: `head:${l.id}`, value: l.label.replace(/^(«\w+») /, "$1\n").replace(" : ", " :\n"), position: [l.x - 80, top - 4], size: [160, h],
+        style: { ...FONT, rounded: kind === "agent", fillColor: look.fill, strokeColor: look.stroke, fontSize: 11, selectable: false } });
     } else {
       graph.insertVertex({ parent, id: `head:${l.id}`, value: l.label, position: [l.x - 80, top], size: [160, h - 6],
         style: { ...FONT, fillColor: l.kind === "record" ? "#eef2ff" : "#f4f5f8", strokeColor: l.kind === "record" ? "#5b74d6" : "#8a93a6",
           fontSize: 12, fontStyle: l.kind === "record" ? 1 : 0, selectable: false } });
     }
-    line(parent, `ll:${l.id}`, "", [l.x, top + h + (l.kind === "actor" && !look ? 14 : 0)], [l.x, s.height],
+    line(parent, `ll:${l.id}`, "", [l.x, top + h + (kind === "human" ? 28 : 0)], [l.x, s.height],
       { strokeColor: "#9aa3b5", dashed: true, dashPattern: "4 4", endArrow: "none", startArrow: "none", selectable: false });
   }
 
