@@ -464,6 +464,14 @@ def _agents(scene: Scene, chapter: _Chapters) -> None:
     scene.zoom(f"{AI_CARD} .plan-steps", scale=1.5)
     scene.wait(2000)
     scene.zoom_out()
+    scene.click("#tab-sequences")
+    scene.click("#seq-list li:has-text('cannot approve the refund it proposed') button")
+    scene.expect_text("#sequence-canvas", "ROLE_DENIED", timeout_ms=30_000)
+    scene.caption("A scenario test as a UML sequence diagram: the agent's ApproveRefund() call, refused by the kernel.")
+    scene.zoom("#sequence-canvas", scale=1.3)
+    scene.wait(2400)
+    scene.zoom_out()
+    scene.click("#tab-states")
     scene.caption(
         "Simulate: people, agents, timers and systems act, and the kernel refuses what the model forbids."
     )
