@@ -440,6 +440,27 @@ def _whole_system(scene: Scene, chapter: _Chapters) -> None:
     scene.zoom("#landscape", scale=1.25)
     scene.wait(2200)
     scene.zoom_out()
+    scene.click("#component-lens button[data-lens=deployment]")
+    scene.expect_text("#deployment", "conformance cases", timeout_ms=30_000)
+    scene.caption(
+        "And where it runs, as a UML deployment diagram read from the built app: browser, Python process, SQLite file."
+    )
+    scene.zoom("#deployment", scale=1.35)
+    scene.wait(2400)
+    scene.zoom_out()
+    # The process node sits inside the device: the first click selects the device, the second the process.
+    label = scene.page.locator("#deployment text:has-text('conformance cases')").bounding_box()
+    canvas = scene.page.locator("#deployment").bounding_box()
+    inside = (label["x"] - canvas["x"] + label["width"] + 50, label["y"] - canvas["y"] + label["height"] / 2)
+    scene.click_at("#deployment", inside)
+    scene.click_at("#deployment", inside)
+    scene.expect_text("#inspector", "Download the API contract")
+    scene.caption("The live process passes every conformance case. Its API contract is written from the model too.")
+    scene.click("#inspector button:has-text('Download the API contract')")
+    scene.expect_text("#inspector", "Downloaded: ")
+    scene.zoom("#inspector", scale=1.5)
+    scene.wait(2200)
+    scene.zoom_out()
     scene.click("#component-lens button[data-lens=app]")
     scene.click("#tab-states")
 
