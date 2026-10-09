@@ -68,6 +68,7 @@ _No curated notes yet._
 * [application.appgen.data_cases](/symbols/application/appgen/data_cases.md) - Record values to create with, and `check_values`' answer for each: a valid record, then each required value missing, each value of the wrong type, each text on…
 * [application.appgen.generate](/symbols/application/appgen/generate.md) - Return the per-model files and the build manifest (without file hashes or test results).
 * [application.appgen.readme](/symbols/application/appgen/readme.md) - `def readme(pack: Pack, model: Workflow, cases: int, data: DataModel | None=None) -> str` in `application/appgen`.
+* [application.class_build.class_build](/symbols/application/class_build/class_build.md) - Which classes and associations the built app stores and checks, and what to consider about the rest.
 * [application.data_steps.apply_data](/symbols/application/data_steps/apply_data.md) - `data` with the data-model steps applied in turn, checked by the data model's own contract; `data` when none.
 * [application.data_steps.data_changes](/symbols/application/data_steps/data_changes.md) - What changed on the class diagram, in words: attributes gained and lost, and required ones made optional or back.
 * [application.landscape.landscape](/symbols/application/landscape/landscape.md) - The system the workflow `focus` is part of: its workflows, actors, links and findings (ADR-0203).

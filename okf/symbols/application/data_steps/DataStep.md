@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/data_steps.py#DataStep
   title: application/data_steps.py
   hash_method: ast-v2
-  sha256: 0f3998e29cfa15305a6b695c716f5debfe5a42f665556f3ff8acd2fe9cce8676
-notes_baseline: 30d56e1c9fabe8ac8d6d32476c9285b3f0d776eaca04687564865b33df5af0b7
+  sha256: 9678bd96a5c48f3502669594d42b4df30cd13c89130e0e6b798bbc764dac385b
+notes_baseline: e805a6dd2f9b08ba1d9ab6696f064af29d9672a2678b1cc8b79e1f4bcda68e55
 ---
 
 # application.data_steps.DataStep
@@ -25,7 +25,7 @@ notes_baseline: 30d56e1c9fabe8ac8d6d32476c9285b3f0d776eaca04687564865b33df5af0b7
 |---|---|
 | Kind | type-alias |
 | Module | [`application/data_steps`](/modules/application/data_steps.md) |
-| Signature | `DataStep = Annotated[Union[AddAttribute, RemoveAttribute, SetRequired], Field(discriminator='kind')]` |
+| Signature | `DataStep = Annotated[Union[AddAttribute, RemoveAttribute, SetRequired, SetRoleKind], Field(discriminator='kind')]` |
 | Code | `repo://src/eija_studio/application/data_steps.py#DataStep` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
@@ -44,4 +44,5 @@ _No curated notes yet._
 * [application.data_steps.AddAttribute](/symbols/application/data_steps/AddAttribute.md) - `class AddAttribute(Contract)` in `application/data_steps`.
 * [application.data_steps.RemoveAttribute](/symbols/application/data_steps/RemoveAttribute.md) - `class RemoveAttribute(Contract)` in `application/data_steps`.
 * [application.data_steps.SetRequired](/symbols/application/data_steps/SetRequired.md) - `class SetRequired(Contract)` in `application/data_steps`.
+* [application.data_steps.SetRoleKind](/symbols/application/data_steps/SetRoleKind.md) - Make the actor holding `role` a person, an AI agent, a timer or an external system (ADR-0210).
 <!-- okf:generated:end links -->

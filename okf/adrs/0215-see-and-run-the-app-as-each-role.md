@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0215-see-and-run-the-app-as-each-role.md
   title: 0215-see-and-run-the-app-as-each-role.md
   hash_method: lf-sha256-v1
-  sha256: de45d93747d978e4c8ff312c2575a4e090d2699b9f108d629580c89a8b1d1dbf
-notes_baseline: 3f88851b7d29aa2836f96b48460282e6fa4805bcc9243c28b81523dfa2c54cd2
+  sha256: a63db47c6a7706ae399646180abed3cdc27619b9101151caf46d77a14bbd5a87
+notes_baseline: 813a8e9f5d33aecde539acf3673578f8e499701b7e7e3a97789169090126b736
 ---
 
 # ADR-0215: See and run the app as each role
@@ -35,6 +35,9 @@ notes_baseline: 3f88851b7d29aa2836f96b48460282e6fa4805bcc9243c28b81523dfa2c54cd2
 > * **See the app as.** The Screens tab has a role bar above the designer. Choosing a role strikes through the screens it never sees, notes on the open screen whether the role sees it (and if not, which role does), and lists the role's screens in order, the ones it never sees, and **Run as** buttons. Starting a record counts for every role, because the kernel lets any active actor start one.
 > * **Run as.** `PlayIDE.runAs(actor)` reuses the last build when it is of the model and screens on show and passed conformance, and builds otherwise. The running app opens at `#actor=<id>`.
 > * **The built app puts the acting role first.** The generated page honours `#actor=<id>` (and later changes to it), shows the acting role beside the picker and flags an inactive actor, lists the acting role's actions first with the kernel's refusal where a guard applies, folds the other roles' actions under *For other roles*, and highlights the role's rows in the rules table. The screen's dismiss button says Close. The server still decides every option and every action.
+>
+> * **Actors that are not people** (amended 2026-10-09, after [ADR-0210](repo://docs/adr/0210-actors-that-are-not-people.md)). An AI agent, a timer or an external system has no screens. Choosing one in **See the app as** says so, strikes through every screen and lists the calls it makes as the built app's own endpoints (`POST /api/records/{id}/act` with its action and actor, and `POST /api/records` to start a record). The open screen says that the role takes that use case by an API call, and that the screen is what a person standing in for it sees. The inspector shows the kind («agent», «timer», «system») and the same calls. Its buttons say **Stand in for**, and the built app names the kind beside the picker (`describe()` now serves `kinds`).
+> * **Run as after Stop.** Run as reuses the last build only while its app still runs in the frame. The run bar's Stop ends the process and blanks the frame, so the next Run as builds again rather than opening a dead address.
 
 ## Sections
 
@@ -54,4 +57,5 @@ _No curated notes yet._
 
 * [ADR-0154: Use case diagrams, and screens designed against the model](/adrs/0154-use-cases-and-screens-designed-against-the-model.md) - PlayIDE shows the workflow as a state machine (ADR-0151) and the data as a class diagram (ADR-0153).
 * [ADR-0171: Who can do what, as a matrix the kernel checks, and reachability questions with a proof or a path](/adrs/0171-permissions-matrix-and-reachability-questions.md) - Access rules are what AI-written apps most often get wrong, and they are what reviewers and auditors ask about first: who can do what, from which state, and ca…
+* [ADR-0210: Actors that are not people: AI agents, timers and external systems in the model](/adrs/0210-actors-that-are-not-people.md) - Systems people design now have AI agents in them: a support bot that triages tickets and proposes refunds, a scheduled job that escalates what nobody handled,…
 <!-- okf:generated:end links -->

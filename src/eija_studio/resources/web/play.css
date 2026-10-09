@@ -249,3 +249,4 @@ button.link{border:0;background:transparent;padding:1px 4px;color:var(--accent);
 .dock-body section.sim:has(>#sim-kinds:not([hidden]))>#sim-findings{grid-area:6/1}
 .dock-body section.sim:has(>#sim-kinds:not([hidden]))>#sim-log{grid-area:6/2}
 .dock-body section.sim:has(>#sim-kinds:not([hidden]))>#sim-limits{grid-row:7}
+#inspector p.consider{border-left:3px solid #c27c0e;background:#fdf4e3;padding:6px 8px;color:#5c3d05}

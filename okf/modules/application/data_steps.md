@@ -1,7 +1,7 @@
 ---
 type: Module
 title: application.data_steps
-description: 'Data-model steps in a chat plan (ADR-0202): add an attribute to a class, remove one, or make one required or optional.'
+description: 'Data-model steps in a chat plan (ADR-0202): add an attribute to a class, remove one, or make one required or optional; and the step that changes the kind of actor holding a role (ADR-0210, issue #156).'
 resource: repo://src/eija_studio/application/data_steps.py
 tags:
 - module
@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/data_steps.py
   title: application/data_steps.py
   hash_method: ast-api-v1
-  sha256: 739e1a0f22cc018585d0ecc1fda31e5d54e87733349b72e61513331162628540
-notes_baseline: 18f421216899ddaf4a81ffef590ba32a9785ece604dddf03d29b204aa0ba9334
+  sha256: 275280c1c15ce2537e21e469d2f69d61c5b914d93ba1b6875ce8ad5452fce52a
+notes_baseline: 727e08d77c32c8f5301e63d88c407643318a5252875fa89cc9ce6c3ced1d49a1
 ---
 
 # application.data_steps
@@ -29,7 +29,8 @@ notes_baseline: 18f421216899ddaf4a81ffef590ba32a9785ece604dddf03d29b204aa0ba9334
 ## Module docstring
 
 ~~~text
-Data-model steps in a chat plan (ADR-0202): add an attribute to a class, remove one, or make one required or optional.
+Data-model steps in a chat plan (ADR-0202): add an attribute to a class, remove one, or make one required or optional;
+and the step that changes the kind of actor holding a role (ADR-0210, issue #156).
 
 A system started in PlayIDE has a class diagram (`data.json`, ADR-0153) whose record class is the built app's form.
 Building such a system in chat (ADR-0201) also means growing that form, so a plan step may change the data model as
@@ -40,6 +41,7 @@ held in memory (`domain.pack.hold`); nothing is written, and a shipped pack's da
 
 ## Public symbols
 
+* [`ACTOR_WORDS`](/symbols/application/data_steps/ACTOR_WORDS.md) (constant) - no docstring
 * [`AddAttribute`](/symbols/application/data_steps/AddAttribute.md) (class) - no docstring
 * [`DATA_EDITS`](/symbols/application/data_steps/DATA_EDITS.md) (constant) - no docstring
 * [`DATA_STEP_KINDS`](/symbols/application/data_steps/DATA_STEP_KINDS.md) (constant) - no docstring
@@ -48,19 +50,23 @@ held in memory (`domain.pack.hold`); nothing is written, and a shipped pack's da
 * [`FIXED`](/symbols/application/data_steps/FIXED.md) (constant) - no docstring
 * [`RemoveAttribute`](/symbols/application/data_steps/RemoveAttribute.md) (class) - no docstring
 * [`SetRequired`](/symbols/application/data_steps/SetRequired.md) (class) - no docstring
+* [`SetRoleKind`](/symbols/application/data_steps/SetRoleKind.md) (class) - Make the actor holding `role` a person, an AI agent, a timer or an external system (ADR-0210).
 * [`Step`](/symbols/application/data_steps/Step.md) (type-alias) - no docstring
 * [`apply_data`](/symbols/application/data_steps/apply_data.md) (function) - `data` with the data-model steps applied in turn, checked by the data model's own contract; `data` when none.
 * [`data_changes`](/symbols/application/data_steps/data_changes.md) (function) - What changed on the class diagram, in words: attributes gained and lost, and required ones made optional or back.
-* [`describe_data`](/symbols/application/data_steps/describe_data.md) (function) - One line a person can check against the class diagram.
+* [`describe_data`](/symbols/application/data_steps/describe_data.md) (function) - One line a person can check against the class diagram, or the use case diagram for a role's kind.
 * [`draft_pack`](/symbols/application/data_steps/draft_pack.md) (function) - `pack` as these plan steps would have it, held in memory: on a system the person started (`grows`), the actions and rol…
 * [`is_data`](/symbols/application/data_steps/is_data.md) (function) - no docstring
+* [`kind_steps`](/symbols/application/data_steps/kind_steps.md) (function) - The role-kind steps, in plan order.
 * [`parse_step`](/symbols/application/data_steps/parse_step.md) (function) - A plan step: a data-model step, or else a kernel transaction (`parse_transaction`).
-* [`split`](/symbols/application/data_steps/split.md) (function) - The kernel transactions and the data-model steps, each in plan order.
+* [`set_kinds`](/symbols/application/data_steps/set_kinds.md) (function) - `pack` with each role-kind step applied in turn: a draft held in memory, checked as any pack is, so the kind laws are b…
+* [`split`](/symbols/application/data_steps/split.md) (function) - The kernel transactions and the data-model steps, each in plan order (role-kind steps are in neither).
 
 ## Internal imports
 
 * [`application/new_system`](/modules/application/new_system.md)
 * [`domain/data`](/modules/domain/data.md)
+* [`domain/laws`](/modules/domain/laws.md)
 * [`domain/models`](/modules/domain/models.md)
 * [`domain/pack`](/modules/domain/pack.md)
 * [`domain/transactions`](/modules/domain/transactions.md)
@@ -75,6 +81,7 @@ _No curated notes yet._
 
 * [application.new_system](/modules/application/new_system.md) - Start a new system (ADR-0185): the pack documents for a system started from a sketch or copied from a template.
 * [domain.data](/modules/domain/data.md) - The data model of a pack, shown as a UML class diagram (ADR-0153): entities, typed attributes and associations.
+* [domain.laws](/modules/domain/laws.md) - Typed law DSL of a domain pack: what a workflow may never do, stated as data (WBS 1.1/1.2).
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
 * [domain.transactions](/modules/domain/transactions.md) - Open change vocabulary (WBS 1.3): the semantic edits an owner (or a pack meaning) may make to a workflow.
@@ -85,6 +92,7 @@ _No curated notes yet._
 * [application.ripple](/modules/application/ripple.md) - Ripple (ADR-0158): what one change to the state machine does to every other diagram of the same system, and the follow-on edits that would keep them in agreeme…
 * [interfaces.play](/modules/interfaces/play.md) - PlayIDE routes: the visual UML canvas page, Build & run of the model as a live app beside it (ADR-0151), and Simulate, seeded simulated users whose every step…
 * [interfaces.play_systems](/modules/interfaces/play_systems.md) - PlayIDE's systems (ADR-0185): start a new system from a sketch or a template, open one you made before, and save the work in progress to carry on later.
+* [application.data_steps.ACTOR_WORDS](/symbols/application/data_steps/ACTOR_WORDS.md) - Constant `ACTOR_WORDS` in `application/data_steps`.
 * [application.data_steps.AddAttribute](/symbols/application/data_steps/AddAttribute.md) - `class AddAttribute(Contract)` in `application/data_steps`.
 * [application.data_steps.DATA_EDITS](/symbols/application/data_steps/DATA_EDITS.md) - Constant `DATA_EDITS` in `application/data_steps`.
 * [application.data_steps.DATA_STEP_KINDS](/symbols/application/data_steps/DATA_STEP_KINDS.md) - Constant `DATA_STEP_KINDS` in `application/data_steps`.
@@ -93,12 +101,15 @@ _No curated notes yet._
 * [application.data_steps.FIXED](/symbols/application/data_steps/FIXED.md) - Constant `FIXED` in `application/data_steps`.
 * [application.data_steps.RemoveAttribute](/symbols/application/data_steps/RemoveAttribute.md) - `class RemoveAttribute(Contract)` in `application/data_steps`.
 * [application.data_steps.SetRequired](/symbols/application/data_steps/SetRequired.md) - `class SetRequired(Contract)` in `application/data_steps`.
+* [application.data_steps.SetRoleKind](/symbols/application/data_steps/SetRoleKind.md) - Make the actor holding `role` a person, an AI agent, a timer or an external system (ADR-0210).
 * [application.data_steps.Step](/symbols/application/data_steps/Step.md) - Type alias `Step` in `application/data_steps`.
 * [application.data_steps.apply_data](/symbols/application/data_steps/apply_data.md) - `data` with the data-model steps applied in turn, checked by the data model's own contract; `data` when none.
 * [application.data_steps.data_changes](/symbols/application/data_steps/data_changes.md) - What changed on the class diagram, in words: attributes gained and lost, and required ones made optional or back.
-* [application.data_steps.describe_data](/symbols/application/data_steps/describe_data.md) - One line a person can check against the class diagram.
+* [application.data_steps.describe_data](/symbols/application/data_steps/describe_data.md) - One line a person can check against the class diagram, or the use case diagram for a role's kind.
 * [application.data_steps.draft_pack](/symbols/application/data_steps/draft_pack.md) - `pack` as these plan steps would have it, held in memory: on a system the person started (`grows`), the actions and roles they name are declared (ADR-0201) and…
 * [application.data_steps.is_data](/symbols/application/data_steps/is_data.md) - `def is_data(step: Step) -> bool` in `application/data_steps`.
+* [application.data_steps.kind_steps](/symbols/application/data_steps/kind_steps.md) - The role-kind steps, in plan order.
 * [application.data_steps.parse_step](/symbols/application/data_steps/parse_step.md) - A plan step: a data-model step, or else a kernel transaction (`parse_transaction`).
-* [application.data_steps.split](/symbols/application/data_steps/split.md) - The kernel transactions and the data-model steps, each in plan order.
+* [application.data_steps.set_kinds](/symbols/application/data_steps/set_kinds.md) - `pack` with each role-kind step applied in turn: a draft held in memory, checked as any pack is, so the kind laws are bound to the new kinds.
+* [application.data_steps.split](/symbols/application/data_steps/split.md) - The kernel transactions and the data-model steps, each in plan order (role-kind steps are in neither).
 <!-- okf:generated:end links -->

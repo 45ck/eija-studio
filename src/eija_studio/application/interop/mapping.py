@@ -29,7 +29,8 @@ from eija_studio.domain.policy import apply_structural_all, check_policy
 from eija_studio.domain.transactions import Transaction, parse_transaction
 from eija_studio.application.law_proof import prove_laws
 
-from .model import DEFAULT_MAX_LENGTH, MULTIPLICITIES, READ_TYPES, WIDENED, Attr, Edge, Klass, Label, Link, Parsed, parse_label
+from .model import (DEFAULT_MAX_LENGTH, MULTIPLICITIES, READ_TYPES, WIDENED, Attr, Edge, Klass, Label, Link, Parsed, kind_label,
+                    parse_label)
 
 FORMAT = "eija.uml-import.v1"
 
@@ -358,11 +359,27 @@ def _status(machine: dict[str, Any], classes: dict[str, Any], report: ImportRepo
     return "PARTIAL" if report.unmapped else "CLEAN"
 
 
+def import_actor_kinds(pack: Pack, parsed: Parsed, report: ImportReport) -> None:
+    """Each actor's kind against its role's (ADR-0210). A kind is never changed by an import: kind laws read it, so a
+    different kind is reported, to be changed in the pack's roles where the protected policy sees it."""
+    for name, (kind, where) in (parsed.actors or {}).items():
+        declared = pack.role_kind(name)
+        if declared is None:
+            report.add("unmapped", where, f"actor {name}", f"role {name} is not declared by pack {pack.id}")
+        elif declared == kind:
+            report.add("mapped", where, f"actor {name} ({kind_label(kind)})")
+        else:
+            report.add("unmapped", where, f"actor {name} kind",
+                       f"the file draws {kind_label(kind)}; the pack declares {kind_label(declared)}. Kind laws read a "
+                       "role's kind, so it is changed in the pack's roles, not by an import")
+
+
 def import_parsed(fmt: str, parsed: Parsed, pack: Pack, model: Workflow, data: DataModel | None) -> dict[str, Any]:
     """The import report: the typed edits the kernel applied, its verdict, the candidate models and every element's fate."""
     report = ImportReport(parsed.skipped, parsed.derived)
     machine = import_state_machine(pack, model, parsed, report)
     classes = import_class_model(pack, data, parsed, report)
+    import_actor_kinds(pack, parsed, report)
     return {"format": FORMAT, "from": fmt, "pack": pack.id, "model": model.semantic_hash,
             "status": _status(machine, classes, report), "state_machine": machine, "class_model": classes,
             "mapped": report.mapped, "defaulted": report.defaulted, "unmapped": report.unmapped, "derived": report.derived}

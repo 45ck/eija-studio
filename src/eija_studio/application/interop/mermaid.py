@@ -80,6 +80,9 @@ def export(pack: Pack, model: Workflow, data: DataModel | None) -> tuple[str, di
     if data is not None:
         parts += ["", "## Class model", "", "```mermaid", *_classes(data), "```"]
     extra = ["the use case diagram (Mermaid has none; export PlantUML, XMI or draw.io for it)"]
+    others = [f"{r.id} «{r.kind}»" for r in pack.roles if r.kind != "human"]
+    if others:  # ADR-0210: the kinds live on the use case diagram's actors
+        extra.append("the kinds of actor that are not people, " + ", ".join(others) + " (they are on the use case diagram)")
     if data is not None and any(a.description for e in data.entities for a in e.attributes):
         extra.append("attribute descriptions (Mermaid has no notes on attributes)")
     return "\n".join(parts) + "\n", export_report("mermaid", pack, model, data, *extra)

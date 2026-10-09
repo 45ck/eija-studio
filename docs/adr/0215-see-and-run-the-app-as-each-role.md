@@ -30,6 +30,9 @@ Chosen option: `resources/web/play-roles.js` and `play-roles.css`.
 * **Run as.** `PlayIDE.runAs(actor)` reuses the last build when it is of the model and screens on show and passed conformance, and builds otherwise. The running app opens at `#actor=<id>`.
 * **The built app puts the acting role first.** The generated page honours `#actor=<id>` (and later changes to it), shows the acting role beside the picker and flags an inactive actor, lists the acting role's actions first with the kernel's refusal where a guard applies, folds the other roles' actions under *For other roles*, and highlights the role's rows in the rules table. The screen's dismiss button says Close. The server still decides every option and every action.
 
+* **Actors that are not people** (amended 2026-10-09, after [ADR-0210](0210-actors-that-are-not-people.md)). An AI agent, a timer or an external system has no screens. Choosing one in **See the app as** says so, strikes through every screen and lists the calls it makes as the built app's own endpoints (`POST /api/records/{id}/act` with its action and actor, and `POST /api/records` to start a record). The open screen says that the role takes that use case by an API call, and that the screen is what a person standing in for it sees. The inspector shows the kind («agent», «timer», «system») and the same calls. Its buttons say **Stand in for**, and the built app names the kind beside the picker (`describe()` now serves `kinds`).
+* **Run as after Stop.** Run as reuses the last build only while its app still runs in the frame. The run bar's Stop ends the process and blanks the frame, so the next Run as builds again rather than opening a dead address.
+
 ### Consequences
 
 * Good: a reviewer can check a role-based design the way it will be used: pick a role, see its screens, run the app as it.

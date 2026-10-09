@@ -1,7 +1,7 @@
 ---
 type: Function
 title: application.data_steps.split
-description: The kernel transactions and the data-model steps, each in plan order.
+description: The kernel transactions and the data-model steps, each in plan order (role-kind steps are in neither).
 resource: repo://src/eija_studio/application/data_steps.py#split
 tags:
 - symbol
@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/data_steps.py#split
   title: application/data_steps.py
   hash_method: ast-v2
-  sha256: 1cde3a568c9e2b4ef3dec0fdcaa935a956994d4273b29525997a25397f29793e
-notes_baseline: 32ae6c92ced2b4f2ea46ff758dbae6881c8d06ad60f4ee99ffb831798abb7747
+  sha256: a85d5b9244b4211119d2849fae8fdbe39fac492eaaddd5a3d52d770b47c60bd4
+notes_baseline: a51b051e3c09e0c4dbf1df91d8c7fa98a77854833968cd56a61b61c887385453
 ---
 
 # application.data_steps.split
@@ -32,7 +32,7 @@ notes_baseline: 32ae6c92ced2b4f2ea46ff758dbae6881c8d06ad60f4ee99ffb831798abb7747
 ## Docstring
 
 ~~~text
-The kernel transactions and the data-model steps, each in plan order.
+The kernel transactions and the data-model steps, each in plan order (role-kind steps are in neither).
 ~~~
 <!-- okf:generated:end facts -->
 
@@ -45,6 +45,7 @@ _No curated notes yet._
 
 * [application.data_steps.DATA_EDITS](/symbols/application/data_steps/DATA_EDITS.md) - Constant `DATA_EDITS` in `application/data_steps`.
 * [application.data_steps.DataEdit](/symbols/application/data_steps/DataEdit.md) - Type alias `DataEdit` in `application/data_steps`.
+* [application.data_steps.SetRoleKind](/symbols/application/data_steps/SetRoleKind.md) - Make the actor holding `role` a person, an AI agent, a timer or an external system (ADR-0210).
 * [application.data_steps.Step](/symbols/application/data_steps/Step.md) - Type alias `Step` in `application/data_steps`.
 * [domain.transactions.Transaction](/symbols/domain/transactions/Transaction.md) - Type alias `Transaction` in `domain/transactions`.
 
