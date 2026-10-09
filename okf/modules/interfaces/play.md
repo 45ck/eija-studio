@@ -55,6 +55,7 @@ _Symbol pages are generated for the domain and application layers only._
 * [`application/class_build`](/modules/application/class_build.md)
 * [`application/components`](/modules/application/components.md)
 * [`application/data_steps`](/modules/application/data_steps.md)
+* [`application/deployment`](/modules/application/deployment.md)
 * [`application/ghost_diff`](/modules/application/ghost_diff.md)
 * [`application/landscape`](/modules/application/landscape.md)
 * [`application/law_proof`](/modules/application/law_proof.md)
@@ -62,6 +63,8 @@ _Symbol pages are generated for the domain and application layers only._
 * [`application/review`](/modules/application/review.md)
 * [`application/ripple`](/modules/application/ripple.md)
 * [`application/scenario_run`](/modules/application/scenario_run.md)
+* [`application/screen_access`](/modules/application/screen_access.md)
+* [`application/sequence_draft`](/modules/application/sequence_draft.md)
 * [`application/sequences`](/modules/application/sequences.md)
 * [`application/simulation`](/modules/application/simulation.md)
 * [`domain/data`](/modules/domain/data.md)
@@ -85,6 +88,7 @@ _No curated notes yet._
 * [application.class_build](/modules/application/class_build.md) - What the built app does with each part of the class diagram (#145, ADR-0205): the record class is built and checked; the other classes and the associations are…
 * [application.components](/modules/application/components.md) - The component diagram of an app built from the model (ADR-0155), extracted from the generated files themselves.
 * [application.data_steps](/modules/application/data_steps.md) - Data-model steps in a chat plan (ADR-0202): add an attribute to a class, remove one, or make one required or optional; and the step that changes the kind of ac…
+* [application.deployment](/modules/application/deployment.md) - The deployment diagram of an app built from the model (ADR-0206), read from the generated files themselves.
 * [application.ghost_diff](/modules/application/ghost_diff.md) - How a change looks on the state machine: both models on one canvas, with nothing hidden (ADR-0176).
 * [application.landscape](/modules/application/landscape.md) - The system landscape (ADR-0203): the workflows that make up one system, drawn as a UML component diagram, and the places where their class diagrams disagree.
 * [application.law_proof](/modules/application/law_proof.md) - Prove a pack's laws over every run the kernel allows (ADR-0166).
@@ -92,6 +96,8 @@ _No curated notes yet._
 * [application.review](/modules/application/review.md) - Review a model change in PlayIDE instead of a pull request (ADR-0175).
 * [application.ripple](/modules/application/ripple.md) - Ripple (ADR-0158): what one change to the state machine does to every other diagram of the same system, and the follow-on edits that would keep them in agreeme…
 * [application.scenario_run](/modules/application/scenario_run.md) - Run a pack's scenarios (its test cases) through the kernel, and record new ones (ADR-0177).
+* [application.screen_access](/modules/application/screen_access.md) - Accessibility of the generated screens (ADR-0218): what can be checked without a browser, checked every time.
+* [application.sequence_draft](/modules/application/sequence_draft.md) - Scenarios drafted from the model, for a system that has none yet (ADR-0195).
 * [application.sequences](/modules/application/sequences.md) - The pack's scenarios drawn as UML sequence diagrams the kernel checks (ADR-0195).
 * [application.simulation](/modules/application/simulation.md) - Seeded simulation of people using the app built from a model (ADR-0152).
 * [domain.data](/modules/domain/data.md) - The data model of a pack, shown as a UML class diagram (ADR-0153): entities, typed attributes and associations.

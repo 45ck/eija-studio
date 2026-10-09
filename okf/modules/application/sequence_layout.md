@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/sequence_layout.py
   title: application/sequence_layout.py
   hash_method: ast-api-v1
-  sha256: ac42d682989218df2510dd9b774c59ab59df10c08f810b13b309260381ca40bb
-notes_baseline: c1b49eb81a1fed81b638dfda326c357b31741dfe22b36694eb1d5b4a542e0dd9
+  sha256: 9b192e2eb8a27e0ee5c1b290a832221cb3bdde191bb9d7861fceaf6c755a7d14
+notes_baseline: 3128e9d73eee972b95b91db05daaa3fd895567b851d23074afd559b36a766c34
 ---
 
 # application.sequence_layout
@@ -41,7 +41,9 @@ existing `diagram_emitters`.
 
 ## Public symbols
 
+* [`CHAR`](/symbols/application/sequence_layout/CHAR.md) (constant) - no docstring
 * [`ROW`](/symbols/application/sequence_layout/ROW.md) (constant) - no docstring
+* [`WIDTH`](/symbols/application/sequence_layout/WIDTH.md) (constant) - no docstring
 * [`export`](/symbols/application/sequence_layout/export.md) (function) - The sequence as Mermaid and PlantUML text, through `diagram_emitters`, state invariants as notes (Mermaid has no neg: i…
 * [`place`](/symbols/application/sequence_layout/place.md) (function) - no docstring
 
@@ -68,7 +70,9 @@ _No curated notes yet._
 ## Referenced by
 
 * [application.sequences](/modules/application/sequences.md) - The pack's scenarios drawn as UML sequence diagrams the kernel checks (ADR-0195).
+* [application.sequence_layout.CHAR](/symbols/application/sequence_layout/CHAR.md) - Constant `CHAR` in `application/sequence_layout`.
 * [application.sequence_layout.ROW](/symbols/application/sequence_layout/ROW.md) - Constant `ROW` in `application/sequence_layout`.
+* [application.sequence_layout.WIDTH](/symbols/application/sequence_layout/WIDTH.md) - Constant `WIDTH` in `application/sequence_layout`.
 * [application.sequence_layout.export](/symbols/application/sequence_layout/export.md) - The sequence as Mermaid and PlantUML text, through `diagram_emitters`, state invariants as notes (Mermaid has no neg: it is written as opt).
 * [application.sequence_layout.place](/symbols/application/sequence_layout/place.md) - `def place(pack: Pack, scenario: Scenario, start: str, steps: list[dict[str, Any]], record: tuple[str, str]) -…` in `application/sequence_layout`.
 <!-- okf:generated:end links -->

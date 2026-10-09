@@ -94,9 +94,11 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0203](0203-system-landscape-of-workflows-that-share-classes.md) | A system landscape of the workflows that share classes | accepted for workflows in one folder |
 | [0204](0204-the-ripple-reaches-the-other-workflows-of-the-system.md) | The ripple reaches the other workflows of the system | accepted |
 | [0205](0205-the-class-diagram-says-what-is-drawn-and-what-is-built.md) | The class diagram says what is drawn and what is built | accepted |
+| [0206](0206-a-deployment-view-read-from-the-built-apps-files.md) | A deployment view read from the built app's files | accepted |
 | [0208](0208-check-moments-and-traffic.md) | Moments for real checks, and the run as traffic on the diagram | accepted |
 | [0210](0210-actors-that-are-not-people.md) | Actors that are not people: AI agents, timers and external systems in the model | accepted |
 | [0215](0215-see-and-run-the-app-as-each-role.md) | See and run the app as each role | accepted |
+| [0218](0218-accessibility-check-on-the-generated-screens.md) | An accessibility check on the generated screens | accepted |
 | [0221](0221-every-record-can-reach-an-end.md) | A law that every record can still reach an end | accepted |
 <!-- adr-index:end -->
 

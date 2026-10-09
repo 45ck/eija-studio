@@ -8,6 +8,7 @@
 * [application.compiler](compiler.md) - Compiler: model → projections + impacts + obligations + computed review packet.
 * [application.components](components.md) - The component diagram of an app built from the model (ADR-0155), extracted from the generated files themselves.
 * [application.data_steps](data_steps.md) - Data-model steps in a chat plan (ADR-0202): add an attribute to a class, remove one, or make one required or optional; and the step that changes the kind of actor holding a role (ADR-0210, issue #156).
+* [application.deployment](deployment.md) - The deployment diagram of an app built from the model (ADR-0206), read from the generated files themselves.
 * [application.diagram_catalog](diagram_catalog.md) - Named diagram views over a baseline and an optional candidate Workflow.
 * [application.diagram_emitters](diagram_emitters.md) - Text emitters for the diagram models in `application.diagrams`: Mermaid, PlantUML and Graphviz DOT.
 * [application.diagrams](diagrams.md) - Diagram models derived from the executable Workflow (ADR-0019, ADR-0023).
@@ -27,7 +28,9 @@
 * [application.ripple](ripple.md) - Ripple (ADR-0158): what one change to the state machine does to every other diagram of the same system, and the follow-on edits that would keep them in agreement.
 * [application.runtime](runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.
 * [application.scenario_run](scenario_run.md) - Run a pack's scenarios (its test cases) through the kernel, and record new ones (ADR-0177).
+* [application.screen_access](screen_access.md) - Accessibility of the generated screens (ADR-0218): what can be checked without a browser, checked every time.
 * [application.scxml](scxml.md) - The workflow state machine as a W3C SCXML statechart (ADR-0165).
+* [application.sequence_draft](sequence_draft.md) - Scenarios drafted from the model, for a system that has none yet (ADR-0195).
 * [application.sequence_layout](sequence_layout.md) - Where a scenario's sequence diagram is drawn, and its export (ADR-0195).
 * [application.sequences](sequences.md) - The pack's scenarios drawn as UML sequence diagrams the kernel checks (ADR-0195).
 * [application.service](service.md) - Module `application/service` (no module docstring).
