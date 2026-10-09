@@ -43,7 +43,7 @@ Each prints the `eija serve` line that opens it.
 ## What you can do now
 
 - **Find your way around.** PlayIDE is laid out like the IDEs you know ([ADR-0173](adr/0173-playide-workbench-shell.md)). The model outline and the inspector are on the left, the diagrams are tabs in the middle, and the chat is on the right. Run, Simulation and Running app open in a panel under the diagrams when they have something to show, and a status bar runs along the bottom. Ctrl+K searches every command and element. Ctrl+B, Ctrl+Alt+P and Ctrl+Alt+C hide or show the left side, the panel and the chat. Drag the edges to resize them; PlayIDE remembers the layout in your browser.
-- **Read the model as a UML state machine.** States, the initial pseudostate and transitions labelled `action [role]`, laid out automatically. Pan, zoom, fit, and drag states to rearrange them. The arrangement is not saved yet.
+- **Read the model as a UML state machine.** States, the initial pseudostate and transitions labelled `action [role]`, laid out automatically: left to right, or top to bottom when that draws the diagram larger, as on a laptop screen with the side bar and the chat open. Pan, zoom, fit, and drag states to rearrange them. The arrangement is not saved yet.
 - **Inspect.** Select a state or transition on the canvas or in the outline to see who may take it, its guards, the effects it must write and the effects it must never write.
 - **Build & run.** One click builds the app with [`eija build`](build-an-app.md), checks it against the kernel and shows the score, for example `240/240 cases match the kernel`. Only an app that passes is started. It opens beside the diagram, where you can act as each fixture user and watch the model's rules being enforced.
 
