@@ -137,7 +137,7 @@ def laws_command(args) -> int:
 def new_command(args) -> int:
     """`eija new` (ADR-0185): start a system from a sketch or a template in the systems home."""
     sketch = args.sketch.read_text(encoding="utf-8") if args.sketch else ""
-    code, result = start_system(SystemLibrary(args.systems or default_home()), args.name, args.template, args.record, sketch)
+    code, result = start_system(SystemLibrary(args.systems or default_home()), args.name, args.template, args.record, sketch, args.uml)
     output(result)
     return code
 
