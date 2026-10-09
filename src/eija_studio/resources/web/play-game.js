@@ -41,10 +41,12 @@
     if (room < 140) { // a narrow window: the status bar's toast has the room
       pop.replaceChildren();
       const toast = $("toast");
-      toast.textContent = next.detail;
-      toast.classList.add("show");
-      clearTimeout(note.toast);
-      note.toast = setTimeout(() => toast.classList.remove("show"), 2600);
+      if (!toast.classList.contains("show")) { // feedback on something the person just did (an undo, an award) wins
+        toast.textContent = next.detail;
+        toast.classList.add("show");
+        clearTimeout(note.toast);
+        note.toast = setTimeout(() => { if (toast.textContent === next.detail) toast.classList.remove("show"); }, 2600);
+      }
     } else {
       const item = document.createElement("span");
       item.className = "game-note " + next.kind;
