@@ -2,7 +2,9 @@
 
 # Constants
 
+* [application.sequence_layout.CHAR](CHAR.md) - Constant `CHAR` in `application/sequence_layout`.
 * [application.sequence_layout.ROW](ROW.md) - Constant `ROW` in `application/sequence_layout`.
+* [application.sequence_layout.WIDTH](WIDTH.md) - Constant `WIDTH` in `application/sequence_layout`.
 
 # Functions
 

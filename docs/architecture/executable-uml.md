@@ -113,6 +113,8 @@ eija laws --pack packs/library-loan     # every law, its verdict and its evidenc
 
 Three laws are about the kind of actor holding a role rather than one named role, so they still bite when an agent role is added later ([ADR-0210](../adr/0210-actors-that-are-not-people.md)): `only_kind_holds` (only a person approves), `only_kind_enters` (only a person moves a record into a state) and `path_requires_kind` (a person acted on every record before it reached a state). A role the pack does not declare has no kind and never counts, so they fail closed.
 
+`can_reach_end` names a workflow's end states and says no record gets stuck: from every state a record can get to, some end is still reachable, so there is no dead end and no loop with no way out ([ADR-0221](../adr/0221-every-record-can-reach-an-end.md)). The policy refuses a change that strands a reachable state and names the stuck states; the law proof judges it on the steps the kernel committed in its search.
+
 ```console
 eija laws --pack packs/refund-desk      # an AI agent, a timer and a payment system, with a person in the loop
 ```

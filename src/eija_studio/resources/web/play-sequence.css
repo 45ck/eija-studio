@@ -35,3 +35,13 @@
 .seq-form select,.seq-form input{font:inherit;font-size:.84rem;padding:4px 6px;border:1px solid var(--line);border-radius:6px;min-width:0}
 .seq-tools{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
 .seq-tools button{padding:4px 10px;font-size:.8rem}
+.seq-problems{margin:0 12px 6px;padding:8px 12px;border:1px solid #f0c4c4;border-left:4px solid var(--bad);border-radius:8px;background:var(--bad-bg);font-size:.84rem;max-height:30%;overflow:auto}
+.seq-problems-head{margin:0 0 6px;color:var(--ink)}
+.seq-problems-head strong{color:var(--bad)}
+.seq-problems ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.seq-problems li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;align-items:center}
+.seq-problem-title{font-weight:600;grid-column:1}
+.seq-problem-why{grid-column:1;color:var(--ink)}
+.seq-problem-tools{grid-column:2;grid-row:1/span 2;display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.seq-problem-tools button{padding:3px 9px;font-size:.78rem;background:var(--panel)}
+.seq-drafted{margin:0 0 4px;padding:6px 8px;border-radius:6px;background:var(--state);font-size:.78rem;line-height:1.35;color:var(--ink)}

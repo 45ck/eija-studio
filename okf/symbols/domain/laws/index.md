@@ -5,6 +5,7 @@
 * [domain.laws.ActionRequiresGuard](ActionRequiresGuard.md) - Every transition performing ``action`` carries at least ``guards``.
 * [domain.laws.ActionSourceIn](ActionSourceIn.md) - Every transition performing ``action`` starts in one of ``states``.
 * [domain.laws.ActionTarget](ActionTarget.md) - Every transition performing ``action`` ends in ``state``.
+* [domain.laws.CanReachEnd](CanReachEnd.md) - From every state a record can get to, some run still reaches one of ``states`` (its ends): no record is left in a dead end or a loop with no way out.
 * [domain.laws.ClosedShape](ClosedShape.md) - The workflow has exactly these states and actions and this initial state.
 * [domain.laws.ForbiddenEffects](ForbiddenEffects.md) - No transition requires any of ``effects`` and every transition declares them forbidden.
 * [domain.laws.OnlyKindEnters](OnlyKindEnters.md) - Every transition entering ``state`` is held by a role of one of ``role_kinds``.
@@ -35,6 +36,7 @@
 * [domain.laws.evaluate_run](evaluate_run.md) - Violations by one executed run: per-step laws on every step, sequence laws on the whole run.
 * [domain.laws.evaluate_table](evaluate_table.md) - Every violation of the applicable laws by the workflow's transition table, in law order.
 * [domain.laws.reachable](reachable.md) - States reachable from ``start`` without passing through ``blocked`` (cycle-safe).
+* [domain.laws.stuck_states](stuck_states.md) - The states a record can get to from ``initial`` along ``edges`` from which no end of ``law`` can be reached.
 
 # Type Aliases
 
