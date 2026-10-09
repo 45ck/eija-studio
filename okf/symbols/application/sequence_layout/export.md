@@ -1,7 +1,7 @@
 ---
 type: Function
 title: application.sequence_layout.export
-description: 'The sequence as Mermaid and PlantUML text, through `diagram_emitters` (Mermaid has no neg: it is written as opt).'
+description: 'The sequence as Mermaid and PlantUML text, through `diagram_emitters`, state invariants as notes (Mermaid has no neg: it is written as opt).'
 resource: repo://src/eija_studio/application/sequence_layout.py#export
 tags:
 - symbol
@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/sequence_layout.py#export
   title: application/sequence_layout.py
   hash_method: ast-v2
-  sha256: 41401be6dcedd68dbf7b684add47818fea982c1d94403815e40fbe12601fe3a3
-notes_baseline: c8e5dc742aa6186e70b9503d2889e667bc8503b2e815b59bd39ecb597aab559f
+  sha256: 018a0196c97bcb95bbc3009b0417b45d63e981290390e2b5a03e52ef407d66c9
+notes_baseline: 13b82bfc325dcb714695780dc9435b1c7ce77927e31333d5edea4562f3253b74
 ---
 
 # application.sequence_layout.export
@@ -32,7 +32,8 @@ notes_baseline: c8e5dc742aa6186e70b9503d2889e667bc8503b2e815b59bd39ecb597aab559f
 ## Docstring
 
 ~~~text
-The sequence as Mermaid and PlantUML text, through `diagram_emitters` (Mermaid has no neg: it is written as opt).
+The sequence as Mermaid and PlantUML text, through `diagram_emitters`, state invariants as notes (Mermaid has no
+neg: it is written as opt).
 ~~~
 <!-- okf:generated:end facts -->
 
@@ -45,7 +46,6 @@ _No curated notes yet._
 
 * [application.diagram_emitters.emit](/symbols/application/diagram_emitters/emit.md) - Serialise a diagram model.
 * [application.diagrams.Fragment](/symbols/application/diagrams/Fragment.md) - A combined fragment.
-* [application.diagrams.Message](/symbols/application/diagrams/Message.md) - `class Message` in `application/diagrams`.
 * [application.diagrams.Participant](/symbols/application/diagrams/Participant.md) - `class Participant` in `application/diagrams`.
 * [application.diagrams.Sequence](/symbols/application/diagrams/Sequence.md) - `class Sequence` in `application/diagrams`.
 <!-- okf:generated:end links -->

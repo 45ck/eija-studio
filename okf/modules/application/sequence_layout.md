@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/sequence_layout.py
   title: application/sequence_layout.py
   hash_method: ast-api-v1
-  sha256: a3e98c02049ec3849ebee826a458f55f9698f790e2a8ffe6c73e0694beaa1f6e
-notes_baseline: e854423ce284524d1d4faae461a3c461081ab9cd1c94175de9a8682ff6037f83
+  sha256: eda3fdac4357a269b971ca4dd3004fa55a222a49060b8f53aa09186c9dc97a30
+notes_baseline: 10498131864f18f71ad8ce1a4242fe83c415b02faf4162af8ebdc6d2a09891f9
 ---
 
 # application.sequence_layout
@@ -42,7 +42,7 @@ existing `diagram_emitters`.
 ## Public symbols
 
 * [`ROW`](/symbols/application/sequence_layout/ROW.md) (constant) - no docstring
-* [`export`](/symbols/application/sequence_layout/export.md) (function) - The sequence as Mermaid and PlantUML text, through `diagram_emitters` (Mermaid has no neg: it is written as opt).
+* [`export`](/symbols/application/sequence_layout/export.md) (function) - The sequence as Mermaid and PlantUML text, through `diagram_emitters`, state invariants as notes (Mermaid has no neg: i…
 * [`place`](/symbols/application/sequence_layout/place.md) (function) - no docstring
 
 ## Internal imports
@@ -69,6 +69,6 @@ _No curated notes yet._
 
 * [application.sequences](/modules/application/sequences.md) - The pack's scenarios drawn as UML sequence diagrams the kernel checks (ADR-0185).
 * [application.sequence_layout.ROW](/symbols/application/sequence_layout/ROW.md) - Constant `ROW` in `application/sequence_layout`.
-* [application.sequence_layout.export](/symbols/application/sequence_layout/export.md) - The sequence as Mermaid and PlantUML text, through `diagram_emitters` (Mermaid has no neg: it is written as opt).
+* [application.sequence_layout.export](/symbols/application/sequence_layout/export.md) - The sequence as Mermaid and PlantUML text, through `diagram_emitters`, state invariants as notes (Mermaid has no neg: it is written as opt).
 * [application.sequence_layout.place](/symbols/application/sequence_layout/place.md) - `def place(pack: Pack, scenario: Scenario, start: str, steps: list[dict[str, Any]], record: tuple[str, str]) -…` in `application/sequence_layout`.
 <!-- okf:generated:end links -->

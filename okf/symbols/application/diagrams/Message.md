@@ -51,5 +51,4 @@ _No curated notes yet._
 ## Referenced by
 
 * [application.diagrams.Step](/symbols/application/diagrams/Step.md) - Type alias `Step` in `application/diagrams`.
-* [application.sequence_layout.export](/symbols/application/sequence_layout/export.md) - The sequence as Mermaid and PlantUML text, through `diagram_emitters` (Mermaid has no neg: it is written as opt).
 <!-- okf:generated:end links -->
