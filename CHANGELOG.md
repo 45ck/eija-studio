@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### 9 October 2026: PlayIDE keeps the diagram on camera
+
+- The state machine stays inside the canvas as it changes size (ADR-0174 amendment). First load at 1280 by 800 no longer clips its foot by 3 pixels. The plan banner no longer pushes the initial dot under it after you drop a state, and a diagram that fitted before still fits. With Run or Simulation open, Run and Replay pan to keep the current step on screen, so a state near the foot such as Returned is not cut off.
+
 ### 9 October 2026: PlayIDE keeps transition labels apart
 
 - The labels of a back-and-forth pair of transitions no longer sit on top of each other (#153): RequestRefund and RejectRefund on Card payment, FailPayout and RetryPayout on Refund desk, RequestInfo and SupplyInfo on Building permit, MissPayment and PayOverdue on SaaS subscription. The layout now leaves room for each label at its real size, centred on its edge, and the label is drawn there instead of halfway along the line, on the state machine and in the Changes view. A state you drag still takes its lines straight again, with their labels halfway along.

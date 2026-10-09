@@ -168,6 +168,8 @@
       else P.restyle("initial-edge", { strokeColor: NOW, strokeWidth: 4 });
       P.restyle("state:" + at, { strokeColor: colour, strokeWidth: 4, fillColor: "#fff6d6" }, graph.getDataModel().getCell("state:" + at).value);
     });
+    const here = now.outcome === "REFUSED" ? now.from : now.to; // keep the current step on screen with the panel open
+    if (P.follow) P.follow(["state:" + here, now.transition ? "transition:" + now.transition : "initial"]);
     $("debug-pos").textContent = `Step ${pos} of ${log.trace.length}`;
     $("debug-now").replaceChildren(current(now));
     $("debug-records").replaceChildren(...Object.entries(records).map(([r, s]) => {

@@ -187,15 +187,26 @@
 
   // The plan banner (and the panel below) change where the canvas sits on the page. Keep the drawing still on the
   // screen when that happens, so a state you just placed does not slide away from where you put it.
-  let canvasTop = null;
+  let canvasTop = null, canvasSize = null;
   function holdStill() {
     if (!$("canvas").offsetParent) return; // hidden behind another tab: nothing on screen to hold
-    const top = $("canvas").getBoundingClientRect().top;
-    if (graph && graph.view && canvasTop !== null && top !== canvasTop) {
-      const v = graph.view;
+    const top = $("canvas").getBoundingClientRect().top, size = `${$("canvas").clientWidth} ${$("canvas").clientHeight}`;
+    // Nobody placed a shape or moved the view since it was fitted: fit the canvas as it is now (the plan banner or a
+    // panel made it shorter), so neither the top nor the foot of the diagram is cut off.
+    const untouched = graph && graph.view && tab === "states" && !Object.keys(placed).length && fitted.view === viewOf(graph);
+    if (untouched && canvasSize !== null && size !== canvasSize && top === canvasTop) fit(); // grew where it stands, as on first load
+    else if (graph && graph.view && canvasTop !== null && top !== canvasTop) {
+      const v = graph.view, was = graph.getGraphBounds(), before = was.y, high = +canvasSize.split(" ")[1];
       v.setTranslate(v.translate.x, v.translate.y - (top - canvasTop) / v.scale);
+      // ... and holding still never slides the top of the diagram (the initial state) under the banner that moved it.
+      const after = graph.getGraphBounds().y, floor = Math.min(before, MARGIN);
+      if (before >= 0 && after < floor) v.setTranslate(v.translate.x, v.translate.y + (floor - after) / v.scale);
+      // A diagram that was all on screen stays all on screen: when the banner leaves too little room, it is fitted again.
+      const now = graph.getGraphBounds(), tall = $("canvas").clientHeight;
+      if (was.y >= 0 && was.y + was.height <= high && (now.y < 0 || now.y + now.height > tall)) fit();
     }
     canvasTop = top;
+    canvasSize = size;
   }
 
   // The class, use case and component diagrams are drawn from the model, but a shape you drag there stays where you
@@ -297,6 +308,7 @@
     else fit();
     lastView = null;
     canvasTop = box.offsetParent ? box.getBoundingClientRect().top : null; // the drawing is placed for where the canvas is now
+    canvasSize = box.offsetParent ? `${box.clientWidth} ${box.clientHeight}` : null;
     for (const f of hooks.redraw) f();
   }
 
@@ -335,18 +347,40 @@
   function fit(all) {
     const g = current();
     if (!g) return;
-    const plugin = g.getPlugin("fit");
     // The Components tab's lens bar floats over the top of its diagram: leave room for it, and draw a small system no
     // larger than life, so one workflow is not blown up beside the other tabs.
     const bar = tab === "components" && !$("component-bar").hidden ? $("component-bar").offsetHeight + 16 : 0;
-    const margin = Math.max(MARGIN, bar);
-    plugin.maxFitScale = bar ? 1 : 1.4;
-    const scale = plugin.fitCenter({ margin });
-    if (all === true || !(scale < READABLE)) return;
-    const v = g.view, b = g.getGraphBounds(), box = g.container, k = READABLE;
-    const w = b.width / v.scale, h = b.height / v.scale, x0 = b.x / v.scale - v.translate.x, y0 = b.y / v.scale - v.translate.y;
-    const along = (room, size, start) => (size * k <= room - 2 * margin ? (room / k - size) / 2 - start : margin / k - start);
-    v.scaleAndTranslate(k, along(box.clientWidth, w, x0), along(box.clientHeight, h, y0));
+    const margin = Math.max(MARGIN, bar), most = bar ? 1 : 1.4, v = g.view, box = g.container;
+    // Measured, not maxGraph's fitCenter: labels do not scale exactly with the view, so measure again after scaling
+    // and take off what still overflows (a 1280-pixel screen clipped the foot of the state machine by 3 pixels).
+    const floor = all === true ? 0 : Math.min(READABLE, most);
+    for (let pass = 0; pass < 2; pass++) {
+      const b = g.getGraphBounds();
+      if (!b.width || !b.height) return;
+      const w = b.width / v.scale, h = b.height / v.scale, x0 = b.x / v.scale - v.translate.x, y0 = b.y / v.scale - v.translate.y;
+      const wide = box.clientWidth - 2 * margin, high = box.clientHeight - 2 * margin;
+      const k = Math.max(floor, pass ? v.scale * Math.min(1, wide / b.width, high / b.height) : Math.min(most, wide / w, high / h));
+      if (pass && k === v.scale) break;
+      const along = (space, size, start) => (size * k <= space - 2 * margin ? (space / k - size) / 2 - start : margin / k - start);
+      v.scaleAndTranslate(k, along(box.clientWidth, w, x0), along(box.clientHeight, h, y0));
+    }
+    fitted.view = g === graph ? viewOf(g) : null;
+  }
+  const fitted = { view: null }; // the state machine's view as fit() left it, so holdStill can tell a view nobody moved
+  const viewOf = (g) => `${g.view.scale.toFixed(4)} ${g.view.translate.x.toFixed(2)} ${g.view.translate.y.toFixed(2)}`;
+
+  // Bring cells into view, as a debugger follows the current line: the view pans (never zooms) only when one is outside
+  // the canvas, so a short canvas (the Run or Simulation panel open) still shows what the run is doing (play-run.js).
+  function follow(ids) {
+    if (!graph || !$("canvas").offsetParent) return;
+    const v = graph.view, box = graph.container, m = graph.getDataModel(), pad = 16;
+    const boxes = ids.map((id) => m.getCell(id)).filter(Boolean).map((c) => v.getState(c)).filter(Boolean).map((st) => st.text && st.cell.isEdge() ? st.text.boundingBox || st : st);
+    if (!boxes.length) return;
+    const x1 = Math.min(...boxes.map((b) => b.x)), y1 = Math.min(...boxes.map((b) => b.y));
+    const x2 = Math.max(...boxes.map((b) => b.x + b.width)), y2 = Math.max(...boxes.map((b) => b.y + b.height));
+    const shift = (lo, hi, size) => (lo >= pad && hi <= size - pad ? 0 : hi - lo > size - 2 * pad ? pad - lo : lo < pad ? pad - lo : size - pad - hi);
+    const dx = shift(x1, x2, box.clientWidth), dy = shift(y1, y2, box.clientHeight);
+    if (dx || dy) v.setTranslate(v.translate.x + dx / v.scale, v.translate.y + dy / v.scale);
   }
 
   function row(dl, term, value) { dl.append(el("dt", term), el("dd", value)); }
@@ -2245,6 +2279,8 @@
         if (at) restyle("state:" + at, { strokeColor: entry.outcome === "REFUSED" ? "#a12f2f" : "#3157d5", strokeWidth: 4 }, graph.getDataModel().getCell("state:" + at).value);
         document.dispatchEvent(new CustomEvent("playide:step", { detail: { ...entry, transition: t ? t.id : null, ms: 450 } }));
       });
+      const here = entry.outcome === "REFUSED" ? entry.from : entry.to;
+      if (here) follow(["state:" + here]);
       i += 1;
     }, 450);
   }
@@ -2550,7 +2586,7 @@
   const changeLook = (status, part) => (window.PlayDiff && shownChange ? window.PlayDiff.look(status, part) : {});
 
   window.PlayIDE = {
-    api, el, hooks, about, textWidth, liftLabels, roleKind, kinds: ACTOR_KINDS, actorLook: ACTOR_LOOK, inForce: (role) => roleKinds[role] || "human",
+    api, el, hooks, about, textWidth, liftLabels, follow, roleKind, kinds: ACTOR_KINDS, actorLook: ACTOR_LOOK, inForce: (role) => roleKinds[role] || "human",
     // Change who holds a role: a step in the plan like any drawn edit, checked by the server against the laws about
     // kinds of actor; nothing is saved (#156). The review view changes nothing.
     setKind: (role, to) => (REVIEW_VIEW ? null : addStep({ kind: "set_role_kind", role, to })), reviewing: () => REVIEW_VIEW, viewKey, label, restyle, clearSim, select, showTab, fit, importPlan, runAs, openScreen,
