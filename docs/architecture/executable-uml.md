@@ -75,6 +75,7 @@ Every view has one of three standings. **Executable**: the kernel runs it. **Che
 | Sequence | Simulate trace | derived | What seeded users did, step by step, as the kernel decided it. | `application/simulation.py` |
 | Sequence | Scenario (`scenarios.json`): lifelines, messages, state invariants, `neg` fragments | checked design | Each step is run through `execute` by `scenario_run` with the pack's fixture actors; one the model can't do is flagged with the kernel's refusal, and a step drawn in a `neg` must be refused (ADR-0177, ADR-0195). | `application/sequences.py` |
 | Component | Components, interfaces | derived | Read from the generated app's code: it shows the app asking the kernel for every decision. | `application/components.py` |
+| Component | System landscape: workflows, provided actions, actors, shared classes | checked design | The packs beside the open one that share a class with it. The owner of a class is the workflow whose record it is, and disagreeing copies of a shared class are flagged. Links are design dependencies; workflows do not message each other yet (ADR-0203). | `application/landscape.py` |
 
 The change vocabulary is closed too. Each kind is a typed record the policy checks before anyone accepts it:
 

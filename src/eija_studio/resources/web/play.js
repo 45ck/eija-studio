@@ -273,7 +273,8 @@
 
   function transition(id) { return model.transitions.find((t) => t.id === id); }
 
-  const current = () => (hooks.diffGraph && hooks.diffGraph()) || ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: componentGraph, review: PlayReview.graph(),
+  const current = () => (hooks.diffGraph && hooks.diffGraph()) || ({ states: graph, classes: classGraph, usecases: useCaseGraph, review: PlayReview.graph(),
+    components: (hooks.componentGraph && hooks.componentGraph()) || componentGraph, // the System lens (play-landscape.js, ADR-0203)
     sequences: hooks.sequenceGraph && hooks.sequenceGraph() })[tab];
   const PANELS = { states: "canvas", sequences: "sequences", classes: "class-canvas", usecases: "usecase-canvas", screens: "screens", components: "component-canvas", laws: "laws", tests: "tests", review: "review", access: "access-panel" };
   const HINTS = {
@@ -312,6 +313,10 @@
     }
     if (id.startsWith("enum:")) {
       box.append(el("h3", `«enumeration» ${id.slice(5)}`), el("p", `The states a ${data.record} can be in: ${model.states.join(", ")}. Read from the state machine, so a state you draw there appears here.`, { class: "muted" }));
+      return;
+    }
+    if (id.startsWith("system:") && window.PlayLandscape) { // the System lens of the Components tab (ADR-0203)
+      window.PlayLandscape.inspect(id.slice(7), box);
       return;
     }
     if (id.startsWith("component:")) {
@@ -2413,7 +2418,7 @@
     // What the Changes view says about the change: who made each accepted step, and the ripple for exactly these steps.
     steps: () => (plan && plan.result && plan.result.legal ? plan.steps.filter((_, i) => plan.accepted[i]).map((x) => ({ author: x.author, transaction: x.transaction })) : []),
     ripple: () => (ripple && !ripple.error && ripple.key === rippleKey() ? ripple : null), diagramNames: RIPPLE,
-    setChanges, diagram: (key) => ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: componentGraph, sequences: hooks.sequenceGraph && hooks.sequenceGraph() })[key],
+    setChanges, diagram: (key) => ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: (hooks.componentGraph && hooks.componentGraph()) || componentGraph, sequences: hooks.sequenceGraph && hooks.sequenceGraph() })[key],
     // Undo, redo and the edited document (ADR-0198): document() is what a save writes; restore(doc, label) opens one as
     // an undoable edit, checked by the server like any other.
     undo, redo, document: documentNow, history: () => ({ at: edits.at, labels: edits.stack.map((e) => e.label) }),

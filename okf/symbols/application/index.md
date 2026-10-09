@@ -15,6 +15,7 @@
 * [formal](formal/) - Symbols of application.formal
 * [ghost_diff](ghost_diff/) - Symbols of application.ghost_diff
 * [history](history/) - Symbols of application.history
+* [landscape](landscape/) - Symbols of application.landscape
 * [law_proof](law_proof/) - Symbols of application.law_proof
 * [memo](memo/) - Symbols of application.memo
 * [new_system](new_system/) - Symbols of application.new_system

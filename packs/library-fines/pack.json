@@ -1,0 +1,345 @@
+{
+  "schema_version": "eija.pack.v1",
+  "pack": {
+    "id": "library-fines",
+    "name": "Library fines",
+    "version": "0.1.0",
+    "description": "Fines the library issues on late, damaged or lost loans: a member pays or disputes, a librarian upholds or waives. It shares the Loan and Member classes with the library-loan workflow, so PlayIDE draws the two as one system."
+  },
+  "model": {
+    "schema_version": "eija.workflow.v1",
+    "id": "library-fines",
+    "initial_state": "Issued",
+    "states": [
+      "Issued",
+      "Paid",
+      "Disputed",
+      "Waived"
+    ],
+    "transitions": [
+      {
+        "id": "TR-PAY",
+        "action": "Pay",
+        "from_state": "Issued",
+        "to_state": "Paid",
+        "role": "Member",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:FinePaid"
+        ],
+        "forbidden_effects": [
+          "FineWaivedSilently"
+        ]
+      },
+      {
+        "id": "TR-DISPUTE",
+        "action": "Dispute",
+        "from_state": "Issued",
+        "to_state": "Disputed",
+        "role": "Member",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:FineDisputed"
+        ],
+        "forbidden_effects": [
+          "FineWaivedSilently"
+        ]
+      },
+      {
+        "id": "TR-UPHOLD",
+        "action": "Uphold",
+        "from_state": "Disputed",
+        "to_state": "Issued",
+        "role": "Librarian",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:FineUpheld",
+          "Notification:MemberNotified"
+        ],
+        "forbidden_effects": [
+          "FineWaivedSilently"
+        ]
+      },
+      {
+        "id": "TR-CONCEDE",
+        "action": "Concede",
+        "from_state": "Disputed",
+        "to_state": "Waived",
+        "role": "Librarian",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:DisputeConceded",
+          "Notification:MemberNotified"
+        ],
+        "forbidden_effects": [
+          "FineWaivedSilently"
+        ]
+      },
+      {
+        "id": "TR-WAIVE",
+        "action": "Waive",
+        "from_state": "Issued",
+        "to_state": "Waived",
+        "role": "Librarian",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:FineWaived",
+          "Notification:MemberNotified"
+        ],
+        "forbidden_effects": [
+          "FineWaivedSilently"
+        ]
+      }
+    ]
+  },
+  "roles": [
+    {
+      "id": "Member",
+      "description": "A library member who owes the fine."
+    },
+    {
+      "id": "Librarian",
+      "description": "Staff who decide disputes and waivers."
+    }
+  ],
+  "actions": [
+    {
+      "id": "Pay",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:FinePaid"
+      ]
+    },
+    {
+      "id": "Dispute",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:FineDisputed"
+      ]
+    },
+    {
+      "id": "Uphold",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:FineUpheld",
+        "Notification:MemberNotified"
+      ]
+    },
+    {
+      "id": "Concede",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:DisputeConceded",
+        "Notification:MemberNotified"
+      ]
+    },
+    {
+      "id": "Waive",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:FineWaived",
+        "Notification:MemberNotified"
+      ]
+    }
+  ],
+  "effects": {
+    "catalog": [
+      {
+        "id": "Audit:FinePaid",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:FineDisputed",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:FineUpheld",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:MemberNotified",
+        "kind": "notification",
+        "recipient": "member"
+      },
+      {
+        "id": "Audit:DisputeConceded",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:FineWaived",
+        "kind": "audit"
+      }
+    ],
+    "forbidden": [
+      "FineWaivedSilently"
+    ]
+  },
+  "laws": [
+    {
+      "id": "paid-final",
+      "kind": "state_final",
+      "code": "FINAL_STATE_LEFT:Paid",
+      "description": "A paid fine is closed.",
+      "state": "Paid"
+    },
+    {
+      "id": "waived-final",
+      "kind": "state_final",
+      "code": "FINAL_STATE_LEFT:Waived",
+      "description": "A waived fine is closed.",
+      "state": "Waived"
+    },
+    {
+      "id": "waive-held-by-librarian",
+      "kind": "only_role_holds",
+      "code": "PROTECTED_AUTHORITY:Waive",
+      "description": "Only a librarian waives a fine.",
+      "action": "Waive",
+      "role": "Librarian"
+    },
+    {
+      "id": "member-never-waives",
+      "kind": "role_never_enters",
+      "code": "PROTECTED_AUTHORITY:Waived",
+      "description": "A member never moves a fine to Waived.",
+      "role": "Member",
+      "state": "Waived"
+    }
+  ],
+  "meanings": [
+    {
+      "id": "unsupported",
+      "label": "Outside the modelled scope",
+      "supported": false,
+      "consequences": [
+        "This system has no modelled change requests yet; change it on the diagram."
+      ]
+    }
+  ],
+  "language": {
+    "terms": []
+  },
+  "fixtures": {
+    "actors": [
+      {
+        "id": "member-1",
+        "role": "Member",
+        "active": true,
+        "assigned": true
+      },
+      {
+        "id": "librarian-1",
+        "role": "Librarian",
+        "active": true,
+        "assigned": true
+      },
+      {
+        "id": "member-revoked",
+        "role": "Member",
+        "active": false,
+        "assigned": true
+      }
+    ],
+    "proposals": {
+      "summary": "Offline: this system has no modelled change requests; no model inference was used.",
+      "rules": [],
+      "fallback": [
+        {
+          "interpretation": "unsupported",
+          "explanation": "This system has no modelled change requests yet."
+        }
+      ],
+      "unknowns": []
+    },
+    "demo_request": "Add a review step before Waived."
+  },
+  "verifiers": [
+    {
+      "kind": "runtime_matrix",
+      "mode": "kernel"
+    },
+    {
+      "kind": "smt_proof",
+      "mode": "generated",
+      "reason": "The generated-law proof runs in the gate (python -m verification.smt.laws); binding its report into the review packet is WBS 1.7."
+    },
+    {
+      "kind": "bounded_model_check",
+      "mode": "generated",
+      "reason": "The BMC law property is the pack's laws judged by evaluate_run; a BMC search over this pack's runtime is not wired yet (WBS 1.7)."
+    },
+    {
+      "kind": "bend_proof",
+      "mode": "not_run",
+      "reason": "Generating Bend laws is deferred (docs/engineering/FUTURE-WORK.md)."
+    },
+    {
+      "kind": "tlc",
+      "mode": "not_run",
+      "reason": "Generating TLA+ laws is deferred (docs/engineering/FUTURE-WORK.md)."
+    }
+  ],
+  "journey": {
+    "questions": []
+  }
+}
