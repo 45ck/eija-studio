@@ -63,8 +63,8 @@ def run(scene: Scene, server: RunningServer) -> None:
     scene.goto(f"{server.base_url}/play#{server.token}")
     scene.wait_for("body[data-ready=true]", timeout_ms=60_000)
     scene.title_card("Software engineering, played.",
-                     "Design it in UML. Press play. Watch it run. Let the AI do the busywork, and check it.",
-                     hold_ms=3400)
+                     "Design it in UML. Press play. Understand every change, yours and the AI's, before you accept it.",
+                     hold_ms=3600)
     chapter = _Chapters(scene)
     _model_is_the_program(scene, chapter)
     _press_play(scene, chapter)
@@ -164,7 +164,15 @@ def _fix_in_place(scene: Scene, chapter: _Chapters) -> None:
 
 
 def _ripple(scene: Scene, chapter: _Chapters) -> None:
-    chapter("Watch it ripple")
+    chapter("Your change: what to consider")
+    scene.click("#show-changes")
+    scene.wait_for(".diff-item", timeout_ms=30_000)
+    scene.expect_text(".diff-summary", "1 change")
+    scene.caption("Your own edit reads like any change: what is new is green, on the diagram you already know.")
+    scene.zoom("#diff-view", scale=1.4)
+    scene.wait(1600)
+    scene.zoom_out()
+    scene.click("#show-changes")  # back to the diagram
     scene.caption("One change ripples through the whole model. Every tab counts the elements it touches.")
     scene.zoom(".tabs", scale=1.8)
     scene.wait(1600)
@@ -197,7 +205,7 @@ def _ripple(scene: Scene, chapter: _Chapters) -> None:
 
 
 def _ai_busywork(scene: Scene, chapter: _Chapters) -> None:
-    chapter("Let the AI do the busywork")
+    chapter("The AI's change, at a glance")
     scene.caption("Ask for a bigger change in plain words: let librarians renew overdue loans. Offline here: a "
                   "deterministic phrase reader stands in for a live model.")
     scene.type_text("#chat-input", AI_REQUEST)
@@ -235,7 +243,7 @@ def _ai_busywork(scene: Scene, chapter: _Chapters) -> None:
 
 
 def _review(scene: Scene, chapter: _Chapters) -> None:
-    chapter("Review the change, not the code")
+    chapter("What to consider before you accept")
     scene.click(f"{AI_CARD} .plan-tools .review-it")
     scene.expect_text("#review-head-text", "2 changes: 1 high risk")
     scene.caption("Both models on one diagram: the new path in green, the deleted path dashed in red.")

@@ -10,6 +10,8 @@ Design it in UML, press play, watch it run, fix it in place, let the AI do the f
 
 ## Beats
 
+The spine (Calvin, 2026-10-09): how easy it is to understand a UML change, your own and the AI's, and what to consider before accepting it. Beat 4 shows your own edit in the Changes view and its ripple as the things to consider; beat 5 shows the AI's change in the same view; beat 6 is what to consider before you accept it. The highlights cut is built on those three beats.
+
 | # | Beat | What the viewer sees | What is real | Status |
 |---|---|---|---|---|
 | 0 | Title | "Software engineering, played." | A title card | Recorded |
