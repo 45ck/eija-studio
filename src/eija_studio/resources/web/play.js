@@ -1016,13 +1016,13 @@
   }
 
   function rippleCheck() {
-    const name = "Diagrams agree";
-    if (!plan || !plan.steps.length) return { name, ok: true, detail: "No change, so nothing ripples" };
-    if (!plan.result || !plan.result.legal) return { name, ok: false, detail: "The plan is refused or empty: nothing to ripple" };
-    if (!ripple || ripple.key !== rippleKey()) return { name, ok: false, detail: "Working out the ripple…" };
-    if (ripple.error) return { name, ok: false, detail: `${ripple.error.code || "ERROR"}: ${ripple.error.message}` };
+    const name = "Diagrams agree", id = "ripple";
+    if (!plan || !plan.steps.length) return { id, name, ok: true, detail: "No change, so nothing ripples" };
+    if (!plan.result || !plan.result.legal) return { id, name, ok: false, detail: "The plan is refused or empty: nothing to ripple" };
+    if (!ripple || ripple.key !== rippleKey()) return { id, name, ok: false, detail: "Working out the ripple…" };
+    if (ripple.error) return { id, name, ok: false, detail: `${ripple.error.code || "ERROR"}: ${ripple.error.message}` };
     const bad = ripple.problems.filter((p) => p.change === "problem").length, warn = ripple.problems.length - bad;
-    return { name, ok: ripple.agree, detail: bad ? `${bad} diagram(s) out of step: see the plan's ripple` : warn ? `They agree; ${warn} warning(s) to look at` : "Every diagram agrees with the change" };
+    return { id, name, ok: ripple.agree, detail: bad ? `${bad} diagram(s) out of step: see the plan's ripple` : warn ? `They agree; ${warn} warning(s) to look at` : "Every diagram agrees with the change" };
   }
 
   async function makeCase() {
@@ -1116,7 +1116,7 @@
     const now = await refreshPlan();
     if (now && step.author === "ai" && !on && !step.caught && was && was.accepted && !was.legal && now.legal) {
       step.caught = true;
-      earn(3, `Caught AI step ${i + 1}: without it the policy allows the plan`);
+      earn(3, `Caught AI step ${i + 1}: without it the policy allows the plan`, "caught");
     }
   }
 
@@ -1192,9 +1192,12 @@
     earn(n, why);
   }
 
-  function earn(n, why) {
+  // The game layer (play-game.js, ADR-0208) hears every award and every change to the checks; it adds motion and the
+  // next check to run, and awards nothing itself.
+  function earn(n, why, kind = "") {
     points += n;
     earned.unshift({ n, why });
+    document.dispatchEvent(new CustomEvent("playide:earn", { detail: { n, why, kind, points } }));
     const toast = $("toast");
     toast.textContent = `+${n} ${why}`;
     toast.classList.add("show");
@@ -1208,13 +1211,13 @@
     const seen = ai.filter((s) => s.checked).length, built = lastBuild && lastBuild.key === key ? lastBuild : null;
     const simulated = sim && simKey === key ? sim : null;
     return [
-      { name: "AI steps checked", ok: seen === ai.length, detail: ai.length ? `${seen} of ${ai.length} AI steps looked at on the diagram` : "No AI plan to check" },
-      { name: "Screens pass the design check", ok: problemsFor === screensKey() && !problems.length,
+      { id: "ai", name: "AI steps checked", ok: seen === ai.length, detail: ai.length ? `${seen} of ${ai.length} AI steps looked at on the diagram` : "No AI plan to check" },
+      { id: "screens", name: "Screens pass the design check", ok: problemsFor === screensKey() && !problems.length,
         detail: problemsFor !== screensKey() ? "Checking the screens…" : problems.length ? `${problems.length} design problem(s): see Screens` : "Every screen can be built" },
-      { name: "Conformance", ok: Boolean(built) && built.conformance.status === "PASS",
+      { id: "conformance", name: "Conformance", ok: Boolean(built) && built.conformance.status === "PASS",
         detail: built ? `${built.conformance.status}: ${built.cases} cases checked against the kernel` : "Not built since the last change: press Build & run" },
       rippleCheck(),
-      { name: "Simulated", ok: Boolean(simulated),
+      { id: "simulated", name: "Simulated", ok: Boolean(simulated),
         detail: simulated ? `${simulated.attempts} attempts, ${simulated.refused} refused by the kernel` : "Not simulated since the last change: press Simulate" },
     ];
   }
@@ -1222,13 +1225,12 @@
   function renderHealth() {
     const checks = checksNow(), done = checks.filter((c) => c.ok).length, ring = $("health-ring"), ns = "http://www.w3.org/2000/svg";
     const r = 14, length = 2 * Math.PI * r, part = length / checks.length;
-    ring.replaceChildren(...checks.map((c, i) => {
-      const arc = document.createElementNS(ns, "circle");
+    if (ring.children.length !== checks.length) ring.replaceChildren(...checks.map(() => document.createElementNS(ns, "circle")));
+    checks.forEach((c, i) => { // the same arcs are kept, so a part filling or emptying can be animated
       const attrs = { cx: 18, cy: 18, r, stroke: c.ok ? "#17734a" : "#dfe3ea", "stroke-dasharray": `${part - 2} ${length - part + 2}`,
-        "stroke-dashoffset": String(-i * part), transform: "rotate(-90 18 18)" };
-      for (const [k, v] of Object.entries(attrs)) arc.setAttribute(k, v);
-      return arc;
-    }));
+        "stroke-dashoffset": String(-i * part), transform: "rotate(-90 18 18)", "data-check": c.id || "" };
+      for (const [k, v] of Object.entries(attrs)) ring.children[i].setAttribute(k, v);
+    });
     $("health-text").textContent = `${done}/${checks.length} checks · ${points} pts`;
     $("health").title = checks.map((c) => `${c.ok ? "✓" : "○"} ${c.name}: ${c.detail}`).join("\n");
     $("points").textContent = `${points} pts`;
@@ -1242,6 +1244,7 @@
       li.append(el("strong", `+${e.n}`), document.createTextNode(e.why));
       return li;
     }) : [el("li", "Nothing yet. Look at an AI step on the diagram, untick one the policy refuses, or build and simulate an AI change.")]));
+    document.dispatchEvent(new CustomEvent("playide:checks", { detail: { checks, points, key: viewKey(), plan: Boolean(plan && plan.steps.length) } }));
   }
 
   // Adding without dragging (ADR-0174), after draw.io and Visio: click a palette item, then the diagram, to place it;
@@ -2041,6 +2044,7 @@
     }));
     $("sim-limits").textContent = `Seed ${result.seed}, ${result.steps} steps. ` + result.limits.join(" ");
     paint(result);
+    document.dispatchEvent(new CustomEvent("playide:simulated", { detail: result }));
   }
 
   function replay() {
@@ -2062,6 +2066,7 @@
         if (t) restyle("transition:" + t.id, { strokeColor: entry.outcome === "REFUSED" ? "#a12f2f" : "#3157d5", strokeWidth: 6 }, graph.getDataModel().getCell("transition:" + t.id).value);
         const at = entry.outcome === "REFUSED" ? entry.from : entry.to;
         if (at) restyle("state:" + at, { strokeColor: entry.outcome === "REFUSED" ? "#a12f2f" : "#3157d5", strokeWidth: 4 }, graph.getDataModel().getCell("state:" + at).value);
+        document.dispatchEvent(new CustomEvent("playide:step", { detail: { ...entry, transition: t ? t.id : null, ms: 450 } }));
       });
       i += 1;
     }, 450);

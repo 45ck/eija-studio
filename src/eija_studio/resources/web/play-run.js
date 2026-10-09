@@ -10,6 +10,7 @@
   const NOW = "#d99a00", REFUSED = "#a12f2f"; // the current step, as a debugger marks the current line
   let P = null, log = null, logKey = null, pos = 0, timer = 0, mode = "idle", stopNote = "", fetching = null;
   const marks = new Set(), overlays = new Map();
+  let shownPos = 0; // the step last drawn
 
   const name = (id) => (id.startsWith("state:") ? id.slice(6) : (P.model().transitions.find((t) => "transition:" + t.id === id) || {}).action || id);
   const exists = (id) => (id.startsWith("state:") ? P.model().states.includes(id.slice(6)) : P.model().transitions.some((t) => "transition:" + t.id === id));
@@ -148,6 +149,7 @@
     $("debug").hidden = !shown && !marks.size;
     breakpointList();
     if (!shown) {
+      shownPos = 0;
       $("debug-pos").textContent = "";
       $("debug-now").replaceChildren(document.createTextNode("Press Run (F5) or Step (F10) to start."));
       $("debug-records").replaceChildren();
@@ -155,6 +157,9 @@
       return;
     }
     const now = log.trace[pos - 1], { records, ...counts } = sofar(), graph = P.graph();
+    // The game layer (play-game.js, ADR-0208) moves a dot along this step's transition, once per step forward.
+    if (pos !== shownPos && pos > 0) document.dispatchEvent(new CustomEvent("playide:step", { detail: { ...now, ms: Number($("run-speed").value) } }));
+    shownPos = pos;
     graph.batchUpdate(() => {
       paint(counts);
       const t = now.transition, at = now.outcome === "REFUSED" ? now.from : now.to, colour = now.outcome === "REFUSED" ? REFUSED : NOW;

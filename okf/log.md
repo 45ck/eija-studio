@@ -2,6 +2,7 @@
 
 ## 2026-10-09
 
+* **Moments for real checks, and traffic**: synced ADR-0208 and `interfaces.http` (the `play-game.js` and `play-game.css` assets); ADR-0157 gained a backlink. No Notes were hand-edited and nothing was recorded as verified.
 * **Grow the class diagram in chat**: synced ADR-0202 and the new `application.data_steps` module (`parse_step`, `draft_pack`, `apply_data`, `data_changes`) and `domain.pack.hold`/`held`; `domain.data.data_for` (reads a held data model), `application.plan`, `application.ripple`, `adapters.plan_proposals` and `interfaces.play` refreshed. No Notes were hand-edited and nothing was recorded as verified.
 * **Build a new system in chat, round after round**: synced ADR-0201 and the new `application.new_system.declare` and `new_names`, `domain.pack.derive` and `application.plan.MAX_DRAFT_STEPS` symbols; `application.plan` (`describe`, `preview_plan`, `propose_plan` grow with the plan), `application.ports.PlanProposer` (`grows`), `adapters.plan_proposals`, `interfaces.play` (`ChangeRequest.since`, `on_top`), `interfaces.play_interop` and `interfaces.play_systems` (`DraftStep.round` and `.request`) refreshed. No Notes were hand-edited and nothing was recorded as verified.
 * **Shapes land where you put them**: re-synced ADR-0174 after its amendment (presentation only, no module or symbol changes). No Notes were hand-edited and nothing was recorded as verified.
