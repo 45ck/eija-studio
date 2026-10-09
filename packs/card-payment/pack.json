@@ -1,0 +1,835 @@
+{
+  "schema_version": "eija.pack.v1",
+  "pack": {
+    "id": "card-payment",
+    "name": "Card payment and refund",
+    "version": "1.0.0",
+    "description": "Payments: a card payment is authorised and captured by the payment gateway, can be voided before capture, refunded on a finance approval, or disputed by the cardholder's bank. Four final states, a system actor (the gateway), and refund authority kept away from support."
+  },
+  "model": {
+    "schema_version": "eija.workflow.v1",
+    "id": "card-payment",
+    "initial_state": "Initiated",
+    "states": [
+      "Initiated",
+      "Authorised",
+      "FundsCaptured",
+      "RefundRequested",
+      "Refunded",
+      "Disputed",
+      "ChargedBack",
+      "Declined",
+      "Voided"
+    ],
+    "transitions": [
+      {
+        "id": "TR-AUTHORISE",
+        "action": "AuthoriseCard",
+        "from_state": "Initiated",
+        "to_state": "Authorised",
+        "role": "Gateway",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:PaymentAuthorised"
+        ],
+        "forbidden_effects": [
+          "CardNumberLogged",
+          "RefundToAnotherCard"
+        ]
+      },
+      {
+        "id": "TR-DECLINE",
+        "action": "DeclineCard",
+        "from_state": "Initiated",
+        "to_state": "Declined",
+        "role": "Gateway",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:PaymentDeclined",
+          "Notification:CustomerToldDeclined"
+        ],
+        "forbidden_effects": [
+          "CardNumberLogged",
+          "RefundToAnotherCard"
+        ]
+      },
+      {
+        "id": "TR-VOID",
+        "action": "VoidAuthorisation",
+        "from_state": "Authorised",
+        "to_state": "Voided",
+        "role": "SupportAgent",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:AuthorisationVoided",
+          "Notification:CustomerToldVoided"
+        ],
+        "forbidden_effects": [
+          "CardNumberLogged",
+          "RefundToAnotherCard"
+        ]
+      },
+      {
+        "id": "TR-CAPTURE",
+        "action": "CaptureFunds",
+        "from_state": "Authorised",
+        "to_state": "FundsCaptured",
+        "role": "Gateway",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:FundsCaptured",
+          "Notification:ReceiptSent"
+        ],
+        "forbidden_effects": [
+          "CardNumberLogged",
+          "RefundToAnotherCard"
+        ]
+      },
+      {
+        "id": "TR-REQUESTREFUND",
+        "action": "RequestRefund",
+        "from_state": "FundsCaptured",
+        "to_state": "RefundRequested",
+        "role": "Customer",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding",
+          "actor_assigned"
+        ],
+        "required_effects": [
+          "Audit:RefundRequested"
+        ],
+        "forbidden_effects": [
+          "CardNumberLogged",
+          "RefundToAnotherCard"
+        ]
+      },
+      {
+        "id": "TR-APPROVEREFUND",
+        "action": "ApproveRefund",
+        "from_state": "RefundRequested",
+        "to_state": "Refunded",
+        "role": "FinanceApprover",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding",
+          "actor_assigned"
+        ],
+        "required_effects": [
+          "Audit:RefundIssued",
+          "Notification:RefundConfirmed"
+        ],
+        "forbidden_effects": [
+          "CardNumberLogged",
+          "RefundToAnotherCard"
+        ]
+      },
+      {
+        "id": "TR-REJECTREFUND",
+        "action": "RejectRefund",
+        "from_state": "RefundRequested",
+        "to_state": "FundsCaptured",
+        "role": "SupportAgent",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:RefundRejected",
+          "Notification:CustomerToldRefundRejected"
+        ],
+        "forbidden_effects": [
+          "CardNumberLogged",
+          "RefundToAnotherCard"
+        ]
+      },
+      {
+        "id": "TR-DISPUTE",
+        "action": "OpenDispute",
+        "from_state": "FundsCaptured",
+        "to_state": "Disputed",
+        "role": "Gateway",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:DisputeOpened",
+          "Notification:FinanceAlerted"
+        ],
+        "forbidden_effects": [
+          "CardNumberLogged",
+          "RefundToAnotherCard"
+        ]
+      },
+      {
+        "id": "TR-WINDISPUTE",
+        "action": "WinDispute",
+        "from_state": "Disputed",
+        "to_state": "FundsCaptured",
+        "role": "FinanceApprover",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding",
+          "actor_assigned"
+        ],
+        "required_effects": [
+          "Audit:DisputeWon"
+        ],
+        "forbidden_effects": [
+          "CardNumberLogged",
+          "RefundToAnotherCard"
+        ]
+      },
+      {
+        "id": "TR-LOSEDISPUTE",
+        "action": "LoseDispute",
+        "from_state": "Disputed",
+        "to_state": "ChargedBack",
+        "role": "FinanceApprover",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding",
+          "actor_assigned"
+        ],
+        "required_effects": [
+          "Audit:ChargebackAccepted",
+          "Notification:MerchantToldChargeback"
+        ],
+        "forbidden_effects": [
+          "CardNumberLogged",
+          "RefundToAnotherCard"
+        ]
+      }
+    ]
+  },
+  "roles": [
+    {
+      "id": "Customer",
+      "description": "Pays, and may ask for a refund of their own captured payment."
+    },
+    {
+      "id": "Gateway",
+      "description": "The payment gateway: authorises, declines, captures and reports disputes."
+    },
+    {
+      "id": "SupportAgent",
+      "description": "Voids an authorisation and turns down refund requests; never issues money."
+    },
+    {
+      "id": "FinanceApprover",
+      "description": "Approves refunds and settles disputes; must be assigned to the merchant account."
+    }
+  ],
+  "actions": [
+    {
+      "id": "AuthoriseCard",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:PaymentAuthorised"
+      ]
+    },
+    {
+      "id": "DeclineCard",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:PaymentDeclined",
+        "Notification:CustomerToldDeclined"
+      ]
+    },
+    {
+      "id": "VoidAuthorisation",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:AuthorisationVoided",
+        "Notification:CustomerToldVoided"
+      ]
+    },
+    {
+      "id": "CaptureFunds",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:FundsCaptured",
+        "Notification:ReceiptSent"
+      ]
+    },
+    {
+      "id": "RequestRefund",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding",
+        "actor_assigned"
+      ],
+      "required_effects": [
+        "Audit:RefundRequested"
+      ]
+    },
+    {
+      "id": "ApproveRefund",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding",
+        "actor_assigned"
+      ],
+      "required_effects": [
+        "Audit:RefundIssued",
+        "Notification:RefundConfirmed"
+      ]
+    },
+    {
+      "id": "RejectRefund",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:RefundRejected",
+        "Notification:CustomerToldRefundRejected"
+      ]
+    },
+    {
+      "id": "OpenDispute",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:DisputeOpened",
+        "Notification:FinanceAlerted"
+      ]
+    },
+    {
+      "id": "WinDispute",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding",
+        "actor_assigned"
+      ],
+      "required_effects": [
+        "Audit:DisputeWon"
+      ]
+    },
+    {
+      "id": "LoseDispute",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding",
+        "actor_assigned"
+      ],
+      "required_effects": [
+        "Audit:ChargebackAccepted",
+        "Notification:MerchantToldChargeback"
+      ]
+    },
+    {
+      "id": "WithdrawRefundRequest",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding",
+        "actor_assigned"
+      ],
+      "required_effects": [
+        "Audit:RefundRequestWithdrawn"
+      ]
+    }
+  ],
+  "effects": {
+    "catalog": [
+      {
+        "id": "Audit:PaymentAuthorised",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:PaymentDeclined",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:CustomerToldDeclined",
+        "kind": "notification",
+        "recipient": "customer"
+      },
+      {
+        "id": "Audit:AuthorisationVoided",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:CustomerToldVoided",
+        "kind": "notification",
+        "recipient": "customer"
+      },
+      {
+        "id": "Audit:FundsCaptured",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:ReceiptSent",
+        "kind": "notification",
+        "recipient": "customer"
+      },
+      {
+        "id": "Audit:RefundRequested",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:RefundIssued",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:RefundConfirmed",
+        "kind": "notification",
+        "recipient": "customer"
+      },
+      {
+        "id": "Audit:RefundRejected",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:CustomerToldRefundRejected",
+        "kind": "notification",
+        "recipient": "customer"
+      },
+      {
+        "id": "Audit:DisputeOpened",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:FinanceAlerted",
+        "kind": "notification",
+        "recipient": "finance"
+      },
+      {
+        "id": "Audit:DisputeWon",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:ChargebackAccepted",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:MerchantToldChargeback",
+        "kind": "notification",
+        "recipient": "merchant"
+      },
+      {
+        "id": "Audit:RefundRequestWithdrawn",
+        "kind": "audit"
+      }
+    ],
+    "forbidden": [
+      "CardNumberLogged",
+      "RefundToAnotherCard"
+    ]
+  },
+  "laws": [
+    {
+      "id": "refund-needs-capture",
+      "kind": "path_requires",
+      "code": "REFUND_WITHOUT_CAPTURE",
+      "description": "Every path to Refunded passes through FundsCaptured: nothing is refunded that was never taken.",
+      "state": "Refunded",
+      "via": "FundsCaptured"
+    },
+    {
+      "id": "refunded-only-by-approval",
+      "kind": "state_only_via",
+      "code": "PROTECTED_STATE:Refunded",
+      "description": "Only a finance approval refunds money.",
+      "state": "Refunded",
+      "actions": [
+        "ApproveRefund"
+      ]
+    },
+    {
+      "id": "finance-approves-refunds",
+      "kind": "only_role_holds",
+      "code": "PROTECTED_AUTHORITY:ApproveRefund",
+      "description": "Only finance approves a refund.",
+      "action": "ApproveRefund",
+      "role": "FinanceApprover"
+    },
+    {
+      "id": "support-never-refunds",
+      "kind": "role_never_holds",
+      "code": "SUPPORT_NEVER_REFUNDS:ApproveRefund",
+      "description": "Support never issues a refund.",
+      "action": "ApproveRefund",
+      "role": "SupportAgent"
+    },
+    {
+      "id": "refund-needs-assignment",
+      "kind": "action_requires_guard",
+      "code": "GUARD_POLICY:ApproveRefund",
+      "description": "A refund is approved only by finance assigned to the merchant account.",
+      "action": "ApproveRefund",
+      "guards": [
+        "actor_assigned"
+      ]
+    },
+    {
+      "id": "customer-never-refunds-self",
+      "kind": "role_never_enters",
+      "code": "PROTECTED_AUTHORITY:Refunded",
+      "description": "A customer never moves money back to themselves.",
+      "role": "Customer",
+      "state": "Refunded"
+    },
+    {
+      "id": "capture-by-gateway",
+      "kind": "only_role_holds",
+      "code": "PROTECTED_AUTHORITY:CaptureFunds",
+      "description": "Only the gateway captures funds.",
+      "action": "CaptureFunds",
+      "role": "Gateway"
+    },
+    {
+      "id": "void-before-capture",
+      "kind": "action_source_in",
+      "code": "PROTECTED_STATE:VoidAuthorisation",
+      "description": "An authorisation is voided only before capture; after capture it is a refund.",
+      "action": "VoidAuthorisation",
+      "states": [
+        "Authorised"
+      ]
+    },
+    {
+      "id": "refunded-final",
+      "kind": "state_final",
+      "code": "FINAL_STATE_LEFT:Refunded",
+      "description": "A refunded payment is closed.",
+      "state": "Refunded"
+    },
+    {
+      "id": "chargedback-final",
+      "kind": "state_final",
+      "code": "FINAL_STATE_LEFT:ChargedBack",
+      "description": "A charged-back payment is closed.",
+      "state": "ChargedBack"
+    },
+    {
+      "id": "declined-final",
+      "kind": "state_final",
+      "code": "FINAL_STATE_LEFT:Declined",
+      "description": "A declined payment is closed.",
+      "state": "Declined"
+    },
+    {
+      "id": "voided-final",
+      "kind": "state_final",
+      "code": "FINAL_STATE_LEFT:Voided",
+      "description": "A voided payment is closed.",
+      "state": "Voided"
+    },
+    {
+      "id": "no-forbidden-effects",
+      "kind": "forbidden_effects",
+      "code": "EFFECT_POLICY:forbidden",
+      "description": "No transition logs a card number or refunds to a different card than the one charged.",
+      "effects": [
+        "CardNumberLogged",
+        "RefundToAnotherCard"
+      ]
+    },
+    {
+      "id": "runtime-evidence",
+      "kind": "requires_evidence",
+      "code": "EVIDENCE_REQUIRED:runtime_matrix",
+      "description": "A change is reviewed with the runtime matrix.",
+      "evidence": "runtime_matrix"
+    }
+  ],
+  "meanings": [
+    {
+      "id": "withdraw_refund_request",
+      "label": "Customers can take back a refund request",
+      "supported": true,
+      "consequences": [
+        "A customer may withdraw their own refund request; the payment stays captured.",
+        "Only finance still approves refunds."
+      ],
+      "transactions": [
+        {
+          "kind": "add_transition",
+          "id": "TR-WITHDRAWREFUND",
+          "action": "WithdrawRefundRequest",
+          "from_state": "RefundRequested",
+          "to_state": "FundsCaptured",
+          "role": "Customer"
+        }
+      ]
+    },
+    {
+      "id": "support_issues_refunds",
+      "label": "Support agents issue refunds themselves",
+      "supported": false,
+      "consequences": [
+        "Moves money authority to support; blocked by this pack's laws (only finance approves a refund, support never issues one)."
+      ],
+      "transactions": [
+        {
+          "kind": "set_role",
+          "transition": "TR-APPROVEREFUND",
+          "role": "SupportAgent"
+        }
+      ]
+    },
+    {
+      "id": "unsupported",
+      "label": "Outside the modelled scope",
+      "supported": false,
+      "consequences": [
+        "Requires domain and source-level engineering; no automatic application."
+      ]
+    }
+  ],
+  "language": {
+    "terms": [
+      {
+        "id": "authorisation",
+        "label": "Authorisation",
+        "definition": "The card issuer holds the funds; nothing has moved yet and it can still be voided.",
+        "binds": [
+          "repo://packs/card-payment/pack.json"
+        ],
+        "refs": [
+          "state:Authorised",
+          "law:void-before-capture"
+        ]
+      },
+      {
+        "id": "capture",
+        "label": "CaptureFunds",
+        "definition": "The held funds are taken; from here money only comes back as a refund or a chargeback.",
+        "binds": [
+          "repo://packs/card-payment/pack.json"
+        ],
+        "refs": [
+          "state:FundsCaptured"
+        ]
+      },
+      {
+        "id": "chargeback",
+        "label": "Chargeback",
+        "definition": "The cardholder's bank reverses the payment after a lost dispute.",
+        "binds": [
+          "repo://packs/card-payment/pack.json"
+        ],
+        "refs": [
+          "state:ChargedBack",
+          "transition:TR-LOSEDISPUTE"
+        ]
+      }
+    ]
+  },
+  "fixtures": {
+    "actors": [
+      {
+        "id": "customer-a",
+        "role": "Customer",
+        "active": true,
+        "assigned": true
+      },
+      {
+        "id": "customer-b",
+        "role": "Customer",
+        "active": true,
+        "assigned": false
+      },
+      {
+        "id": "gateway",
+        "role": "Gateway",
+        "active": true,
+        "assigned": false
+      },
+      {
+        "id": "support-agent",
+        "role": "SupportAgent",
+        "active": true,
+        "assigned": false
+      },
+      {
+        "id": "finance-merchant",
+        "role": "FinanceApprover",
+        "active": true,
+        "assigned": true
+      },
+      {
+        "id": "finance-other",
+        "role": "FinanceApprover",
+        "active": true,
+        "assigned": false
+      },
+      {
+        "id": "finance-revoked",
+        "role": "FinanceApprover",
+        "active": false,
+        "assigned": true
+      }
+    ],
+    "demo_request": "Let customers take back a refund request.",
+    "proposals": {
+      "summary": "Deterministic demonstration; no model inference was used.",
+      "rules": [
+        {
+          "all": [
+            "refund"
+          ],
+          "any": [
+            "support-agent",
+            "agent",
+            "withdraw",
+            "take back",
+            "cancel"
+          ],
+          "alternatives": [
+            {
+              "interpretation": "support_issues_refunds",
+              "explanation": "Support would move money. The pack's laws block this: only finance approves a refund."
+            },
+            {
+              "interpretation": "withdraw_refund_request",
+              "explanation": "A customer may withdraw their own refund request; only finance still approves refunds."
+            }
+          ]
+        }
+      ],
+      "fallback": [
+        {
+          "interpretation": "unsupported",
+          "explanation": "This offline fixture only demonstrates refund authority."
+        }
+      ],
+      "unknowns": [
+        "Refund amounts and partial refunds are not modelled.",
+        "Authorisation expiry (a hold lapses after days) is not modelled.",
+        "Reviewer comprehension has not been measured."
+      ]
+    }
+  },
+  "verifiers": [
+    {
+      "kind": "runtime_matrix",
+      "mode": "kernel"
+    },
+    {
+      "kind": "smt_proof",
+      "mode": "generated",
+      "reason": "The generated-law proof runs in the gate (python -m verification.smt.laws); binding its report into the review packet is WBS 1.7."
+    },
+    {
+      "kind": "bounded_model_check",
+      "mode": "generated",
+      "reason": "The BMC law property is the pack's laws judged by evaluate_run; a BMC search over this pack's runtime is not wired yet (WBS 1.7)."
+    },
+    {
+      "kind": "bend_proof",
+      "mode": "not_run",
+      "reason": "Generating Bend laws is deferred (docs/engineering/FUTURE-WORK.md)."
+    },
+    {
+      "kind": "tlc",
+      "mode": "not_run",
+      "reason": "Generating TLA+ laws is deferred (docs/engineering/FUTURE-WORK.md)."
+    }
+  ],
+  "journey": {
+    "questions": [
+      {
+        "id": "refund_authority",
+        "question": "Who may approve a refund?",
+        "expected": "FinanceApprover"
+      },
+      {
+        "id": "refund_entry",
+        "question": "Which state must a payment have passed through before it can be refunded?",
+        "expected": "FundsCaptured"
+      }
+    ]
+  }
+}

@@ -1,0 +1,131 @@
+{
+  "schema_version": "eija.screens.v1",
+  "id": "saas-subscription",
+  "screens": [
+    {
+      "title": "Start a workspace",
+      "fields": [
+        {
+          "attribute": "name",
+          "label": "Workspace name"
+        },
+        {
+          "attribute": "ownerEmail",
+          "label": "Your email"
+        },
+        {
+          "attribute": "plan",
+          "label": "Plan"
+        },
+        {
+          "attribute": "seats",
+          "label": "Seats"
+        }
+      ],
+      "button": "Sign up"
+    },
+    {
+      "use_case": "VerifyEmail",
+      "title": "Verify your email",
+      "fields": [
+        {
+          "attribute": "ownerEmail",
+          "label": "Email"
+        }
+      ],
+      "button": "Verify"
+    },
+    {
+      "use_case": "Subscribe",
+      "title": "Choose a plan",
+      "fields": [
+        {
+          "attribute": "plan",
+          "label": "Plan"
+        },
+        {
+          "attribute": "seats",
+          "label": "Seats"
+        }
+      ],
+      "button": "Subscribe"
+    },
+    {
+      "use_case": "EndTrial",
+      "title": "End trial",
+      "fields": [
+        {
+          "attribute": "trialEnds",
+          "label": "Trial ended"
+        }
+      ],
+      "button": "End trial"
+    },
+    {
+      "use_case": "MissPayment",
+      "title": "Payment failed",
+      "fields": [
+        {
+          "attribute": "renewsOn",
+          "label": "Renewal date"
+        }
+      ],
+      "button": "Mark past due"
+    },
+    {
+      "use_case": "PayOverdue",
+      "title": "Pay now",
+      "fields": [
+        {
+          "attribute": "plan",
+          "label": "Plan"
+        }
+      ],
+      "button": "Pay"
+    },
+    {
+      "use_case": "Suspend",
+      "title": "Suspend",
+      "fields": [
+        {
+          "attribute": "renewsOn",
+          "label": "Renewal date"
+        }
+      ],
+      "button": "Suspend workspace"
+    },
+    {
+      "use_case": "Reactivate",
+      "title": "Reactivate",
+      "fields": [
+        {
+          "attribute": "name",
+          "label": "Workspace"
+        }
+      ],
+      "button": "Reactivate"
+    },
+    {
+      "use_case": "CancelSubscription",
+      "title": "Cancel subscription",
+      "fields": [
+        {
+          "attribute": "cancelReason",
+          "label": "Why are you leaving?"
+        }
+      ],
+      "button": "Cancel"
+    },
+    {
+      "use_case": "FreezeForAbuse",
+      "title": "Freeze for abuse",
+      "fields": [
+        {
+          "attribute": "name",
+          "label": "Workspace"
+        }
+      ],
+      "button": "Freeze"
+    }
+  ]
+}

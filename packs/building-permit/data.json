@@ -1,0 +1,160 @@
+{
+  "schema_version": "eija.data.v1",
+  "id": "building-permit",
+  "record": "Application",
+  "entities": [
+    {
+      "name": "Application",
+      "description": "One building permit application for one site.",
+      "attributes": [
+        {
+          "name": "reference",
+          "type": "text",
+          "required": true,
+          "max_length": 20
+        },
+        {
+          "name": "siteAddress",
+          "type": "text",
+          "required": true,
+          "max_length": 400
+        },
+        {
+          "name": "workType",
+          "type": "choice",
+          "required": true,
+          "choices": [
+            "NewDwelling",
+            "Extension",
+            "Alteration",
+            "Demolition",
+            "MinorWorks"
+          ]
+        },
+        {
+          "name": "estimatedCost",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "feePaid",
+          "type": "boolean"
+        },
+        {
+          "name": "decisionReasons",
+          "type": "text",
+          "max_length": 4000
+        },
+        {
+          "name": "decidedOn",
+          "type": "date"
+        }
+      ]
+    },
+    {
+      "name": "Applicant",
+      "attributes": [
+        {
+          "name": "name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "email",
+          "type": "text",
+          "required": true,
+          "max_length": 254
+        }
+      ]
+    },
+    {
+      "name": "Site",
+      "attributes": [
+        {
+          "name": "lotNumber",
+          "type": "text",
+          "required": true,
+          "max_length": 20
+        },
+        {
+          "name": "zone",
+          "type": "text",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "Plan",
+      "attributes": [
+        {
+          "name": "title",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "revision",
+          "type": "text",
+          "required": true,
+          "max_length": 4
+        }
+      ]
+    },
+    {
+      "name": "Inspection",
+      "attributes": [
+        {
+          "name": "stage",
+          "type": "choice",
+          "required": true,
+          "choices": [
+            "Footings",
+            "Frame",
+            "Final"
+          ]
+        },
+        {
+          "name": "on",
+          "type": "date",
+          "required": true
+        },
+        {
+          "name": "passed",
+          "type": "boolean",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "associations": [
+    {
+      "source": "Application",
+      "target": "Applicant",
+      "role": "applicant",
+      "source_multiplicity": "0..*",
+      "target_multiplicity": "1"
+    },
+    {
+      "source": "Application",
+      "target": "Site",
+      "role": "site",
+      "source_multiplicity": "0..*",
+      "target_multiplicity": "1"
+    },
+    {
+      "source": "Application",
+      "target": "Plan",
+      "kind": "composition",
+      "role": "plans",
+      "source_multiplicity": "1",
+      "target_multiplicity": "1..*"
+    },
+    {
+      "source": "Application",
+      "target": "Inspection",
+      "kind": "composition",
+      "role": "inspections",
+      "source_multiplicity": "1",
+      "target_multiplicity": "0..*"
+    }
+  ]
+}

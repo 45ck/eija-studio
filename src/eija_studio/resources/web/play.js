@@ -1869,7 +1869,7 @@
     const grip = el("span", "⠿", { class: "grip", "aria-hidden": "true" });
     const name = input(f.label, `Label for ${f.attribute}`, (v) => { f.label = v; changed(`relabel ${f.attribute}`); });
     name.placeholder = f.attribute;
-    const preview = el("span", a ? (a.type === "choice" ? `one of ${a.choices.join(", ")}` : a.type) + (a.required ? " · required" : "") : "not in the record", { class: "muted small" });
+    const preview = el("span", a ? (a.type === "choice" ? `one of ${a.choices.join(", ")}` : a.type) + (a.required ? " · required" : "") : "not in the record", { class: "muted small field-meta" });
     const up = el("button", "↑", { type: "button", class: "quiet", "aria-label": `Move ${f.attribute} up` });
     up.disabled = i === 0;
     up.addEventListener("click", () => moveField(i, i - 1));

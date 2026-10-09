@@ -54,6 +54,7 @@ nav:
   - Getting started: getting-started.md
   - Build an app from the model: build-an-app.md
   - PlayIDE: playide.md
+  - Sector packs: sector-packs.md
   - Model AI agents, timers and external systems: modelling-agents.md
   - UML import and export: uml-interop.md
   - Architecture:

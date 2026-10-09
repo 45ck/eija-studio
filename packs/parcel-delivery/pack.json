@@ -1,0 +1,853 @@
+{
+  "schema_version": "eija.pack.v1",
+  "pack": {
+    "id": "parcel-delivery",
+    "name": "Parcel delivery",
+    "version": "1.0.0",
+    "description": "Logistics: a booked parcel is collected by a driver on its route, scanned in at the hub, may be held by customs, goes out for delivery and is delivered with proof, or returned to the sender after a failed attempt. Customs authority stays with customs officers."
+  },
+  "model": {
+    "schema_version": "eija.workflow.v1",
+    "id": "parcel-delivery",
+    "initial_state": "Booked",
+    "states": [
+      "Booked",
+      "Collected",
+      "AtHub",
+      "HeldByCustoms",
+      "OutForDelivery",
+      "Delivered",
+      "AttemptFailed",
+      "ReturnedToSender",
+      "Cancelled"
+    ],
+    "transitions": [
+      {
+        "id": "TR-CANCEL",
+        "action": "CancelBooking",
+        "from_state": "Booked",
+        "to_state": "Cancelled",
+        "role": "Shipper",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:BookingCancelled"
+        ],
+        "forbidden_effects": [
+          "SignatureForged",
+          "RecipientAddressShared"
+        ]
+      },
+      {
+        "id": "TR-COLLECT",
+        "action": "CollectParcel",
+        "from_state": "Booked",
+        "to_state": "Collected",
+        "role": "Driver",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding",
+          "actor_assigned"
+        ],
+        "required_effects": [
+          "Audit:ParcelCollected",
+          "Notification:ShipperToldCollected"
+        ],
+        "forbidden_effects": [
+          "SignatureForged",
+          "RecipientAddressShared"
+        ]
+      },
+      {
+        "id": "TR-SCANIN",
+        "action": "ScanIn",
+        "from_state": "Collected",
+        "to_state": "AtHub",
+        "role": "HubOperator",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:HubScanIn"
+        ],
+        "forbidden_effects": [
+          "SignatureForged",
+          "RecipientAddressShared"
+        ]
+      },
+      {
+        "id": "TR-HOLD",
+        "action": "HoldForCustoms",
+        "from_state": "AtHub",
+        "to_state": "HeldByCustoms",
+        "role": "CustomsOfficer",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:CustomsHold",
+          "Notification:RecipientToldDutyDue"
+        ],
+        "forbidden_effects": [
+          "SignatureForged",
+          "RecipientAddressShared"
+        ]
+      },
+      {
+        "id": "TR-CLEAR",
+        "action": "ClearCustoms",
+        "from_state": "HeldByCustoms",
+        "to_state": "AtHub",
+        "role": "CustomsOfficer",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:CustomsCleared"
+        ],
+        "forbidden_effects": [
+          "SignatureForged",
+          "RecipientAddressShared"
+        ]
+      },
+      {
+        "id": "TR-LOAD",
+        "action": "LoadVan",
+        "from_state": "AtHub",
+        "to_state": "OutForDelivery",
+        "role": "Driver",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding",
+          "actor_assigned"
+        ],
+        "required_effects": [
+          "Audit:LoadedForDelivery",
+          "Notification:RecipientToldEta"
+        ],
+        "forbidden_effects": [
+          "SignatureForged",
+          "RecipientAddressShared"
+        ]
+      },
+      {
+        "id": "TR-DELIVER",
+        "action": "Deliver",
+        "from_state": "OutForDelivery",
+        "to_state": "Delivered",
+        "role": "Driver",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding",
+          "actor_assigned"
+        ],
+        "required_effects": [
+          "Audit:ProofOfDelivery",
+          "Notification:ShipperToldDelivered"
+        ],
+        "forbidden_effects": [
+          "SignatureForged",
+          "RecipientAddressShared"
+        ]
+      },
+      {
+        "id": "TR-MISS",
+        "action": "RecordMissedDelivery",
+        "from_state": "OutForDelivery",
+        "to_state": "AttemptFailed",
+        "role": "Driver",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding",
+          "actor_assigned"
+        ],
+        "required_effects": [
+          "Audit:DeliveryAttemptFailed",
+          "Notification:RecipientToldMissed"
+        ],
+        "forbidden_effects": [
+          "SignatureForged",
+          "RecipientAddressShared"
+        ]
+      },
+      {
+        "id": "TR-REATTEMPT",
+        "action": "ScheduleReattempt",
+        "from_state": "AttemptFailed",
+        "to_state": "AtHub",
+        "role": "HubOperator",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:ReattemptScheduled"
+        ],
+        "forbidden_effects": [
+          "SignatureForged",
+          "RecipientAddressShared"
+        ]
+      },
+      {
+        "id": "TR-RETURN",
+        "action": "ReturnToSender",
+        "from_state": "AttemptFailed",
+        "to_state": "ReturnedToSender",
+        "role": "HubOperator",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:ReturnedToSender",
+          "Notification:ShipperToldReturned"
+        ],
+        "forbidden_effects": [
+          "SignatureForged",
+          "RecipientAddressShared"
+        ]
+      }
+    ]
+  },
+  "roles": [
+    {
+      "id": "Shipper",
+      "description": "Books the parcel; may cancel it before collection."
+    },
+    {
+      "id": "Driver",
+      "description": "Collects and delivers; must be assigned to the route."
+    },
+    {
+      "id": "HubOperator",
+      "description": "Scans parcels in and out of the hub and schedules another attempt or a return."
+    },
+    {
+      "id": "CustomsOfficer",
+      "description": "Holds and clears parcels crossing a border."
+    },
+    {
+      "id": "Addressee",
+      "description": "Receives notices; takes no action on the parcel."
+    }
+  ],
+  "actions": [
+    {
+      "id": "CancelBooking",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:BookingCancelled"
+      ]
+    },
+    {
+      "id": "CollectParcel",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding",
+        "actor_assigned"
+      ],
+      "required_effects": [
+        "Audit:ParcelCollected",
+        "Notification:ShipperToldCollected"
+      ]
+    },
+    {
+      "id": "ScanIn",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:HubScanIn"
+      ]
+    },
+    {
+      "id": "HoldForCustoms",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:CustomsHold",
+        "Notification:RecipientToldDutyDue"
+      ]
+    },
+    {
+      "id": "ClearCustoms",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:CustomsCleared"
+      ]
+    },
+    {
+      "id": "LoadVan",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding",
+        "actor_assigned"
+      ],
+      "required_effects": [
+        "Audit:LoadedForDelivery",
+        "Notification:RecipientToldEta"
+      ]
+    },
+    {
+      "id": "Deliver",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding",
+        "actor_assigned"
+      ],
+      "required_effects": [
+        "Audit:ProofOfDelivery",
+        "Notification:ShipperToldDelivered"
+      ]
+    },
+    {
+      "id": "RecordMissedDelivery",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding",
+        "actor_assigned"
+      ],
+      "required_effects": [
+        "Audit:DeliveryAttemptFailed",
+        "Notification:RecipientToldMissed"
+      ]
+    },
+    {
+      "id": "ScheduleReattempt",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:ReattemptScheduled"
+      ]
+    },
+    {
+      "id": "ReturnToSender",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:ReturnedToSender",
+        "Notification:ShipperToldReturned"
+      ]
+    },
+    {
+      "id": "LeaveInSafePlace",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding",
+        "actor_assigned"
+      ],
+      "required_effects": [
+        "Audit:LeftInSafePlace",
+        "Notification:RecipientToldSafePlace"
+      ]
+    }
+  ],
+  "effects": {
+    "catalog": [
+      {
+        "id": "Audit:BookingCancelled",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:ParcelCollected",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:ShipperToldCollected",
+        "kind": "notification",
+        "recipient": "shipper"
+      },
+      {
+        "id": "Audit:HubScanIn",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:CustomsHold",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:RecipientToldDutyDue",
+        "kind": "notification",
+        "recipient": "recipient"
+      },
+      {
+        "id": "Audit:CustomsCleared",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:LoadedForDelivery",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:RecipientToldEta",
+        "kind": "notification",
+        "recipient": "recipient"
+      },
+      {
+        "id": "Audit:ProofOfDelivery",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:ShipperToldDelivered",
+        "kind": "notification",
+        "recipient": "shipper"
+      },
+      {
+        "id": "Audit:DeliveryAttemptFailed",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:RecipientToldMissed",
+        "kind": "notification",
+        "recipient": "recipient"
+      },
+      {
+        "id": "Audit:ReattemptScheduled",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:ReturnedToSender",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:ShipperToldReturned",
+        "kind": "notification",
+        "recipient": "shipper"
+      },
+      {
+        "id": "Audit:LeftInSafePlace",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:RecipientToldSafePlace",
+        "kind": "notification",
+        "recipient": "recipient"
+      }
+    ],
+    "forbidden": [
+      "SignatureForged",
+      "RecipientAddressShared"
+    ]
+  },
+  "laws": [
+    {
+      "id": "delivered-via-hub",
+      "kind": "path_requires",
+      "code": "DELIVERED_WITHOUT_HUB_SCAN",
+      "description": "Every path to Delivered passes through AtHub: nothing is delivered that the hub never scanned.",
+      "state": "Delivered",
+      "via": "AtHub"
+    },
+    {
+      "id": "returned-after-attempt",
+      "kind": "path_requires",
+      "code": "RETURNED_WITHOUT_ATTEMPT",
+      "description": "A parcel goes back to the sender only after a failed delivery attempt.",
+      "state": "ReturnedToSender",
+      "via": "AttemptFailed"
+    },
+    {
+      "id": "delivered-only-via-deliver",
+      "kind": "state_only_via",
+      "code": "PROTECTED_STATE:Delivered",
+      "description": "Only a delivery with proof ends as Delivered.",
+      "state": "Delivered",
+      "actions": [
+        "Deliver"
+      ]
+    },
+    {
+      "id": "driver-delivers",
+      "kind": "only_role_holds",
+      "code": "PROTECTED_AUTHORITY:Deliver",
+      "description": "Only a driver delivers.",
+      "action": "Deliver",
+      "role": "Driver"
+    },
+    {
+      "id": "deliver-on-route",
+      "kind": "action_requires_guard",
+      "code": "GUARD_POLICY:Deliver",
+      "description": "A driver delivers only parcels on their assigned route.",
+      "action": "Deliver",
+      "guards": [
+        "actor_assigned"
+      ]
+    },
+    {
+      "id": "customs-clears",
+      "kind": "only_role_holds",
+      "code": "PROTECTED_AUTHORITY:ClearCustoms",
+      "description": "Only a customs officer clears a held parcel.",
+      "action": "ClearCustoms",
+      "role": "CustomsOfficer"
+    },
+    {
+      "id": "hub-never-clears",
+      "kind": "role_never_holds",
+      "code": "HUB_NEVER_CLEARS:ClearCustoms",
+      "description": "The hub never releases a parcel from customs.",
+      "action": "ClearCustoms",
+      "role": "HubOperator"
+    },
+    {
+      "id": "recipient-acts-on-nothing",
+      "kind": "role_never_enters",
+      "code": "PROTECTED_AUTHORITY:Delivered",
+      "description": "A recipient never marks their own parcel delivered.",
+      "role": "Addressee",
+      "state": "Delivered"
+    },
+    {
+      "id": "cancel-before-collection",
+      "kind": "action_source_in",
+      "code": "PROTECTED_STATE:CancelBooking",
+      "description": "A booking is cancelled only before the driver collects it.",
+      "action": "CancelBooking",
+      "states": [
+        "Booked"
+      ]
+    },
+    {
+      "id": "delivered-final",
+      "kind": "state_final",
+      "code": "FINAL_STATE_LEFT:Delivered",
+      "description": "A delivered parcel is closed.",
+      "state": "Delivered"
+    },
+    {
+      "id": "returned-final",
+      "kind": "state_final",
+      "code": "FINAL_STATE_LEFT:ReturnedToSender",
+      "description": "A returned parcel is closed.",
+      "state": "ReturnedToSender"
+    },
+    {
+      "id": "cancelled-final",
+      "kind": "state_final",
+      "code": "FINAL_STATE_LEFT:Cancelled",
+      "description": "A cancelled booking is closed.",
+      "state": "Cancelled"
+    },
+    {
+      "id": "no-forbidden-effects",
+      "kind": "forbidden_effects",
+      "code": "EFFECT_POLICY:forbidden",
+      "description": "No transition forges a signature or shares the recipient's address outside delivery.",
+      "effects": [
+        "SignatureForged",
+        "RecipientAddressShared"
+      ]
+    },
+    {
+      "id": "runtime-evidence",
+      "kind": "requires_evidence",
+      "code": "EVIDENCE_REQUIRED:runtime_matrix",
+      "description": "A change is reviewed with the runtime matrix.",
+      "evidence": "runtime_matrix"
+    }
+  ],
+  "meanings": [
+    {
+      "id": "safe_place",
+      "label": "Drivers leave a parcel in a safe place",
+      "supported": true,
+      "consequences": [
+        "A driver on the route may leave the parcel in a safe place and tell the recipient.",
+        "It is not Delivered: Delivered still needs proof of delivery.",
+        "Nothing leaves the hub uncleared."
+      ],
+      "transactions": [
+        {
+          "kind": "add_state",
+          "state": "LeftInSafePlace",
+          "after": "Delivered"
+        },
+        {
+          "kind": "add_transition",
+          "id": "TR-SAFEPLACE",
+          "action": "LeaveInSafePlace",
+          "from_state": "OutForDelivery",
+          "to_state": "LeftInSafePlace",
+          "role": "Driver"
+        }
+      ]
+    },
+    {
+      "id": "hub_clears_customs",
+      "label": "The hub releases parcels from customs",
+      "supported": false,
+      "consequences": [
+        "Moves customs authority to the hub; blocked by this pack's laws."
+      ],
+      "transactions": [
+        {
+          "kind": "set_role",
+          "transition": "TR-CLEAR",
+          "role": "HubOperator"
+        }
+      ]
+    },
+    {
+      "id": "unsupported",
+      "label": "Outside the modelled scope",
+      "supported": false,
+      "consequences": [
+        "Requires domain and source-level engineering; no automatic application."
+      ]
+    }
+  ],
+  "language": {
+    "terms": [
+      {
+        "id": "parcel",
+        "label": "Parcel",
+        "definition": "One booked consignment moving from shipper to recipient; the workflow instance.",
+        "binds": [
+          "repo://packs/parcel-delivery/pack.json"
+        ],
+        "refs": [
+          "state:Booked"
+        ]
+      },
+      {
+        "id": "proof-of-delivery",
+        "label": "Proof of delivery",
+        "definition": "The driver's signed, photographed handover; the only way to Delivered.",
+        "binds": [
+          "repo://packs/parcel-delivery/pack.json"
+        ],
+        "refs": [
+          "state:Delivered",
+          "law:delivered-only-via-deliver"
+        ]
+      },
+      {
+        "id": "customs-hold",
+        "label": "Customs hold",
+        "definition": "A parcel crossing a border waits for customs to clear it.",
+        "binds": [
+          "repo://packs/parcel-delivery/pack.json"
+        ],
+        "refs": [
+          "state:HeldByCustoms"
+        ]
+      }
+    ]
+  },
+  "fixtures": {
+    "actors": [
+      {
+        "id": "shipper-a",
+        "role": "Shipper",
+        "active": true,
+        "assigned": false
+      },
+      {
+        "id": "driver-route",
+        "role": "Driver",
+        "active": true,
+        "assigned": true
+      },
+      {
+        "id": "driver-other-route",
+        "role": "Driver",
+        "active": true,
+        "assigned": false
+      },
+      {
+        "id": "driver-revoked",
+        "role": "Driver",
+        "active": false,
+        "assigned": true
+      },
+      {
+        "id": "hub",
+        "role": "HubOperator",
+        "active": true,
+        "assigned": false
+      },
+      {
+        "id": "customs",
+        "role": "CustomsOfficer",
+        "active": true,
+        "assigned": false
+      },
+      {
+        "id": "recipient-a",
+        "role": "Addressee",
+        "active": true,
+        "assigned": false
+      }
+    ],
+    "demo_request": "Let drivers leave a parcel in a safe place when nobody is home.",
+    "proposals": {
+      "summary": "Deterministic demonstration; no model inference was used.",
+      "rules": [
+        {
+          "all": [],
+          "any": [
+            "safe place",
+            "safe",
+            "nobody",
+            "doorstep"
+          ],
+          "alternatives": [
+            {
+              "interpretation": "safe_place",
+              "explanation": "A driver on the route may leave it in a safe place; Delivered still needs proof."
+            }
+          ]
+        },
+        {
+          "all": [
+            "customs"
+          ],
+          "any": [
+            "hub",
+            "release",
+            "clear"
+          ],
+          "alternatives": [
+            {
+              "interpretation": "hub_clears_customs",
+              "explanation": "The hub would clear customs. The pack's laws block this."
+            }
+          ]
+        }
+      ],
+      "fallback": [
+        {
+          "interpretation": "unsupported",
+          "explanation": "This offline fixture only demonstrates safe-place delivery and customs authority."
+        }
+      ],
+      "unknowns": [
+        "How many attempts are made before a return is not modelled.",
+        "Multi-parcel shipments are not modelled.",
+        "Reviewer comprehension has not been measured."
+      ]
+    }
+  },
+  "verifiers": [
+    {
+      "kind": "runtime_matrix",
+      "mode": "kernel"
+    },
+    {
+      "kind": "smt_proof",
+      "mode": "generated",
+      "reason": "The generated-law proof runs in the gate (python -m verification.smt.laws); binding its report into the review packet is WBS 1.7."
+    },
+    {
+      "kind": "bounded_model_check",
+      "mode": "generated",
+      "reason": "The BMC law property is the pack's laws judged by evaluate_run; a BMC search over this pack's runtime is not wired yet (WBS 1.7)."
+    },
+    {
+      "kind": "bend_proof",
+      "mode": "not_run",
+      "reason": "Generating Bend laws is deferred (docs/engineering/FUTURE-WORK.md)."
+    },
+    {
+      "kind": "tlc",
+      "mode": "not_run",
+      "reason": "Generating TLA+ laws is deferred (docs/engineering/FUTURE-WORK.md)."
+    }
+  ],
+  "journey": {
+    "questions": [
+      {
+        "id": "deliver_authority",
+        "question": "Who may deliver a parcel?",
+        "expected": "Driver"
+      },
+      {
+        "id": "delivered_entry",
+        "question": "Which state must a parcel pass through before it is delivered?",
+        "expected": "AtHub"
+      }
+    ]
+  }
+}
