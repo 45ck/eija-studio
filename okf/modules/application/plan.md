@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/plan.py
   title: application/plan.py
   hash_method: ast-api-v1
-  sha256: 76dc34d8bc85b79e17b149da9f8aaf900a62145796646251d5146a516841b384
-notes_baseline: f24166563e7c9db3e1d64641aab0c5638fcf2167d32a12ff0c19f11c7237aea7
+  sha256: 38999b1109d0efea2eec8bd6e518ca36ecaea863a34f60b42689701347bd7f91
+notes_baseline: e1361e6622e63bac9d7200b8825e995179839923d0eefbd4027d69e334af8b24
 ---
 
 # application.plan
@@ -40,6 +40,7 @@ choose meaning, approve or apply: making a change real still goes through the ch
 
 ## Public symbols
 
+* [`MAX_DRAFT_STEPS`](/symbols/application/plan/MAX_DRAFT_STEPS.md) (constant) - no docstring
 * [`MAX_REQUEST`](/symbols/application/plan/MAX_REQUEST.md) (constant) - no docstring
 * [`MAX_STEPS`](/symbols/application/plan/MAX_STEPS.md) (constant) - no docstring
 * [`describe`](/symbols/application/plan/describe.md) (function) - One line a person can check against the diagram.
@@ -50,6 +51,7 @@ choose meaning, approve or apply: making a change real still goes through the ch
 ## Internal imports
 
 * [`application/diagrams`](/modules/application/diagrams.md)
+* [`application/new_system`](/modules/application/new_system.md)
 * [`application/ports`](/modules/application/ports.md)
 * [`domain/models`](/modules/domain/models.md)
 * [`domain/pack`](/modules/domain/pack.md)
@@ -65,6 +67,7 @@ _No curated notes yet._
 ## Imports
 
 * [application.diagrams](/modules/application/diagrams.md) - Diagram models derived from the executable Workflow (ADR-0019, ADR-0023).
+* [application.new_system](/modules/application/new_system.md) - Start a new system (ADR-0185): the pack documents for a system started from a sketch or copied from a template.
 * [application.ports](/modules/application/ports.md) - Application-owned ports.
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
@@ -76,7 +79,9 @@ _No curated notes yet._
 * [application.ripple](/modules/application/ripple.md) - Ripple (ADR-0158): what one change to the state machine does to every other diagram of the same system, and the follow-on edits that would keep them in agreeme…
 * [interfaces.http](/modules/interfaces/http.md) - Loopback-only local adapter.
 * [interfaces.play](/modules/interfaces/play.md) - PlayIDE routes: the visual UML canvas page, Build & run of the model as a live app beside it (ADR-0151), and Simulate, seeded simulated users whose every step…
+* [interfaces.play_interop](/modules/interfaces/play_interop.md) - PlayIDE routes for UML interchange (ADR-0190): export the model on screen, and read a UML file as a report.
 * [interfaces.play_systems](/modules/interfaces/play_systems.md) - PlayIDE's systems (ADR-0185): start a new system from a sketch or a template, open one you made before, and save the work in progress to carry on later.
+* [application.plan.MAX_DRAFT_STEPS](/symbols/application/plan/MAX_DRAFT_STEPS.md) - Constant `MAX_DRAFT_STEPS` in `application/plan`.
 * [application.plan.MAX_REQUEST](/symbols/application/plan/MAX_REQUEST.md) - Constant `MAX_REQUEST` in `application/plan`.
 * [application.plan.MAX_STEPS](/symbols/application/plan/MAX_STEPS.md) - Constant `MAX_STEPS` in `application/plan`.
 * [application.plan.describe](/symbols/application/plan/describe.md) - One line a person can check against the diagram.

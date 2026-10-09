@@ -615,6 +615,13 @@
     return li;
   }
 
+  // Building a system in chat (ADR-0201): each ask is a round planned on top of the steps accepted so far, so the
+  // work grows round after round instead of each plan replacing the last. The card moves under the latest ask and
+  // lists every round with what was asked; going back on an earlier round is unticking its steps or asking again.
+  const roundOf = (step) => step.round || 1;
+  const rounds = () => (plan ? new Set(plan.steps.map(roundOf)).size : 0);
+  const lastRound = () => (plan && plan.steps.length ? Math.max(...plan.steps.map(roundOf)) : 1); // a drawn step joins the round it follows
+
   async function ask(event) {
     event.preventDefault();
     const input = $("chat-input"), text = input.value.trim();
@@ -623,10 +630,12 @@
     say("you", el("p", text));
     const button = $("chat-send");
     button.disabled = true;
+    const earlier = plan && plan.result && plan.result.legal && plan.result.accepted ? plan : null;
     try {
-      const result = await api("/api/play/plan", { case_id: caseId, model: baseModel, request: text });
+      const result = await api("/api/play/plan", { case_id: caseId, model: baseModel, request: text, plan: earlier ? accepted() : null });
+      if (result.on_top && earlier && earlier === plan) { await addRound(result, text); return; }
       retire();
-      plan = { ...result, steps: result.steps.map((step) => ({ ...step, author: "ai", checked: false, caught: false })),
+      plan = { ...result, steps: result.steps.map((step) => ({ ...step, author: "ai", checked: false, caught: false, round: 1, request: text })),
         accepted: result.steps.map(() => true), previewing: false, card: null, rewarded: new Set(), uid: ++planUid };
       plan.card = say("ai", planCard());
       commit(`take the AI's plan: ${result.summary || text}`);
@@ -637,6 +646,23 @@
     } finally {
       button.disabled = false;
     }
+  }
+
+  // A round's steps join the plan; the card is redrawn and moved below the ask, and the server checks every step again.
+  async function addRound(result, text) {
+    const n = lastRound() + 1;
+    for (const step of result.steps) {
+      plan.steps.push({ ...step, n: plan.steps.length + 1, author: "ai", checked: false, caught: false, round: n, request: text });
+      plan.accepted.push(true);
+    }
+    Object.assign(plan, { meaning: null, scope: "plan-proposal", provider: result.provider, live: result.live });
+    commit(`round ${n}: ${result.summary || text}`);
+    plan.card.className = "msg ai";
+    $("chat-log").append(plan.card);
+    plan.card.replaceChildren(planCard());
+    plan.card.scrollIntoView({ block: "nearest" });
+    const checked = await refreshPlan();
+    if (checked && checked.legal && !plan.previewing) enterPreview();
   }
 
   // A newer plan replaces this one: its card stays in the chat as a record, with every control disabled, so no tick or
@@ -654,11 +680,12 @@
   }
 
   function planCard() {
-    const box = el("div", undefined, { class: "plan" });
-    box.append(el("p", plan.summary || "A plan", { class: "plan-summary" }),
+    const box = el("div", undefined, { class: "plan" }), many = rounds() > 1;
+    const both = plan.steps.some((s) => s.author === "ai") && plan.steps.some((s) => s.author === "you");
+    box.append(el("p", many ? `The plan so far: ${rounds()} rounds, ${plan.steps.length} steps` : plan.summary || "A plan", { class: "plan-summary" }),
       el("p", plan.saved ? "Saved on this system · checked by the server again, like any plan" : plan.scope === "plan-draft" ? (plan.provider === "imported" ? "Imported from a UML file · checked by the server like any plan"
         : "Drawn by you on the diagram · checked by the server like any plan")
-        : `${plan.provider}${plan.live ? "" : " · offline fixture, not a live model"} · untrusted until you check it`, { class: "muted small" }));
+        : `${plan.provider}${plan.live ? "" : " · offline fixture, not a live model"}${both ? " · with your own steps" : ""} · untrusted until you check it`, { class: "muted small" }));
     cards += 1;
     const list = el("ol", undefined, { class: "plan-steps" });
     plan.steps.forEach((step, i) => {
@@ -669,8 +696,13 @@
       text.append(el("span", step.author === "ai" ? "AI" : "You", { class: "who " + step.author }), el("span", step.text, { class: "step-text" }));
       const show = el("button", "Show me", { type: "button", class: "quiet show", title: "Show this step on the diagram" });
       show.addEventListener("click", () => showStep(i));
+      if (many && (i === 0 || roundOf(plan.steps[i - 1]) !== roundOf(step))) { // each round opens with what was asked
+        li.classList.add("round-start");
+        li.append(el("p", `Round ${roundOf(step)}${step.request ? `: “${step.request}”` : step.author === "you" ? ": drawn on the diagram" : ""}`, { class: "round-head" }));
+      }
       li.append(check, text, el("span", "", { class: "step-status" }));
-      if (step.why) li.append(el("p", step.why, { class: "muted small why" }));
+      const echo = many && step.why === `You asked: “${step.request}”`; // the round's heading already says it
+      if (step.why && !echo) li.append(el("p", step.why, { class: "muted small why" }));
       li.append(show);
       list.append(li);
     });
@@ -712,14 +744,14 @@
       const s = result.steps[i];
       plan.steps[i].text = s.text;
       li.querySelector(".step-text").textContent = s.text;
-      li.className = s.status + (plan.steps[i].checked ? " checked" : "");
+      li.className = s.status + (plan.steps[i].checked ? " checked" : "") + (li.querySelector(".round-head") ? " round-start" : "");
       li.querySelector(".step-status").textContent = marks[s.status] + (s.code ? ` ${s.code}` : "");
       li.querySelector(".step-status").title = s.message || "";
     });
     const verdict = plan.card.querySelector(".plan-verdict");
     verdict.className = "plan-verdict " + (result.legal ? "ok" : "bad");
     verdict.textContent = !result.accepted ? "No step accepted: nothing would change."
-      : result.legal ? `${result.accepted} of ${plan.steps.length} step${plan.steps.length === 1 ? "" : "s"} accepted. The policy allows the result: ${changes(result.diff)}.`
+      : result.legal ? `${result.accepted} of ${plan.steps.length} step${plan.steps.length === 1 ? "" : "s"} accepted. The policy allows the result: ${changes(result.diff)}.${declaredText(result.declared)}`
       : result.codes.includes("PLAN_STEP_DOES_NOT_APPLY")
         ? `Step ${result.steps.findIndex((x) => x.status === "does_not_apply") + 1} does not apply after the steps you kept (${result.steps.find((x) => x.status === "does_not_apply").message}).`
         : (result.laws && result.laws.length
@@ -729,6 +761,13 @@
     plan.card.querySelector(".plan-tools .review-it").disabled = !result.legal;
     renderHealth();
     document.dispatchEvent(new CustomEvent("playide:plan")); // the change shown is different now (ADR-0176)
+  }
+
+  // What the accepted steps add to the system's vocabulary (ADR-0201): declared as a sketch declares them, in the draft only.
+  function declaredText(declared) {
+    if (!declared) return "";
+    const parts = [...declared.actions.map((a) => `action ${a}`), ...declared.roles.map((r) => `role ${r}`)];
+    return ` New in this system: ${parts.join(", ")} (base guards and an audit entry, as a sketch declares them).`;
   }
 
   function changes(diff) {
@@ -878,7 +917,7 @@
   async function takeFollowOn(f, button) {
     button.disabled = true;
     if (f.transaction) {
-      plan.steps.push({ n: plan.steps.length + 1, transaction: f.transaction, text: f.text, why: f.why, author: "ai", checked: false, caught: false, followOn: true });
+      plan.steps.push({ n: plan.steps.length + 1, transaction: f.transaction, text: f.text, why: f.why, author: "ai", checked: false, caught: false, followOn: true, round: lastRound() });
       plan.accepted.push(true);
       commit(`add the AI follow-on: ${f.text}`);
       plan.card.replaceChildren(planCard());
@@ -995,7 +1034,7 @@
         model: "draft", steps: [], accepted: [], previewing: false, card: null, rewarded: new Set(), uid: ++planUid };
       plan.card = say("draft", el("div"));
     }
-    plan.steps.push({ n: plan.steps.length + 1, transaction, text: "", why: "", author: "you", checked: false, caught: false });
+    plan.steps.push({ n: plan.steps.length + 1, transaction, text: "", why: "", author: "you", checked: false, caught: false, round: lastRound() });
     plan.accepted.push(true);
     commit(stepLabel(transaction));
     plan.card.replaceChildren(planCard());
@@ -1008,7 +1047,8 @@
   // transactions with who wrote them, and the screens if edited. Restoring it rebuilds the plan and asks the server to
   // check every step again, exactly as if it had just been drawn: a saved step is never trusted for having been saved.
   function draft() {
-    return { steps: plan ? plan.steps.map((s) => ({ transaction: s.transaction, author: s.author === "ai" ? "ai" : "you" })) : [],
+    return { steps: plan ? plan.steps.map((s) => ({ transaction: s.transaction, author: s.author === "ai" ? "ai" : "you",
+      ...(s.round ? { round: s.round } : {}), ...(s.request ? { request: s.request } : {}) })) : [],
       accepted: plan ? [...plan.accepted] : [], screens: screensEdited ? screens : null };
   }
 
@@ -1023,7 +1063,8 @@
       model: "draft", steps: [], accepted: [], previewing: false, card: null, rewarded: new Set(), saved: true, uid: ++planUid };
     plan.card = say("draft", el("div"));
     saved.steps.forEach((step, i) => {
-      plan.steps.push({ n: i + 1, transaction: step.transaction, text: "", why: "", author: step.author === "ai" ? "ai" : "you", checked: false, caught: false });
+      plan.steps.push({ n: i + 1, transaction: step.transaction, text: "", why: "", author: step.author === "ai" ? "ai" : "you", checked: false, caught: false,
+        round: step.round || undefined, request: step.request || undefined });
       plan.accepted.push(saved.accepted && i < saved.accepted.length ? Boolean(saved.accepted[i]) : true);
     });
     commit("open the saved work");
@@ -2285,6 +2326,14 @@
     graph: () => graph, tab: () => tab, model: () => model, selected: () => selected, pack: () => packInfo, base: () => baseModel,
     direction: () => direction || "LR", // the state machine's layout, which the Changes view follows
     planned: () => (plan && plan.result && plan.result.legal ? accepted() : null), // the change the Changes view draws (ADR-0176)
+    // The rounds of a system built in chat (ADR-0201): how many, and the accepted steps before the last one, so the
+    // Changes view can show the last round alone. Null with fewer than two rounds.
+    rounds: () => {
+      if (!plan || !plan.result || !plan.result.legal || rounds() < 2) return null;
+      const last = lastRound(), ask = plan.steps.find((x) => roundOf(x) === last && x.request);
+      return { count: rounds(), last, request: ask ? ask.request : "",
+        since: plan.steps.filter((x, i) => plan.accepted[i] && roundOf(x) < last).map((x) => x.transaction) };
+    },
     changes: () => shownChange, // the union while the Changes view is on (ADR-0176), else null
     draft, restoreDraft, // saving and reopening the work in progress (ADR-0185)
     recovered: () => recoveredWork, // work this browser kept came back on load, so the saved draft was not opened over it

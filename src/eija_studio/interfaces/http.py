@@ -130,7 +130,8 @@ def create_app(studio, token: str, port: int = 8765, systems=None) -> FastAPI:
             return JSONResponse({"code": "NOT_FOUND"}, status_code=404)
         return FileResponse(web / "vendor" / name)
 
-    app.state.play = register_play(app, studio, web)
+    own = (lambda: systems.library.contains(Path(systems.current["pack"]))) if systems is not None else (lambda: False)
+    app.state.play = register_play(app, studio, web, own)
     if systems is not None:
         systems.on_switch = app.state.play.stop
         register_systems(app, systems)

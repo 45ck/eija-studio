@@ -60,5 +60,7 @@ _No curated notes yet._
 
 ## Referenced by
 
+* [application.new_system.new_names](/symbols/application/new_system/new_names.md) - The actions and roles `transactions` name that `pack` does not declare, in order of first use.
+* [application.plan.describe](/symbols/application/plan/describe.md) - One line a person can check against the diagram.
 * [domain.transactions.Transaction](/symbols/domain/transactions/Transaction.md) - Type alias `Transaction` in `domain/transactions`.
 <!-- okf:generated:end links -->

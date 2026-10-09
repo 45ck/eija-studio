@@ -191,10 +191,42 @@
   // A toggle beside Fit, shown while there is a change, swaps the editable canvas for the change drawn as above.-
   const ide = () => window.PlayIDE;
   let view = null, ghost = null, at = -1, seq = 0, open = false;
+  let scope = "all"; // a system built in chat (ADR-0201): "round" shows the last round alone, "all" the whole change
 
   function request() {
-    const about = ide().about(), planned = ide().planned();
-    return { case_id: about.case_id, model: ide().base(), plan: planned && planned.length ? planned : null };
+    const about = ide().about(), planned = ide().planned(), rounds = ide().rounds();
+    const since = scope === "round" && rounds ? { since: rounds.since } : {};
+    return { case_id: about.case_id, model: ide().base(), plan: planned && planned.length ? planned : null, ...since };
+  }
+
+  const whole = () => { const r = request(); delete r.since; return r; }; // the laws are proved on the model with every step
+
+  // The last round's ripple, for To consider while the Changes view shows that round alone.
+  let roundRipple = null, roundFor = "";
+  async function askRoundRipple() {
+    const key = JSON.stringify(request());
+    if (roundFor === key) return;
+    roundFor = key;
+    roundRipple = null;
+    let result;
+    try { result = await ide().api("/api/play/ripple", request()); } catch (error) { result = null; }
+    if (roundFor !== key) return;
+    roundRipple = result;
+    redrawConsider();
+  }
+
+  // This round or every round: one toggle, shown only when the plan has more than one round.
+  function scopeTools() {
+    const rounds = ide().rounds();
+    if (!rounds) { scope = "all"; return []; }
+    const group = el("div", undefined, { class: "lens diff-scope", role: "radiogroup", "aria-label": "Which change" });
+    for (const [which, text, title] of [["round", `Round ${rounds.last}`, `Only what round ${rounds.last} changes${rounds.request ? `: “${rounds.request}”` : ""}`],
+      ["all", `All ${rounds.count} rounds`, "Everything the plan changes, against the model in force"]]) {
+      const b = el("button", text, { type: "button", role: "radio", "data-scope": which, title, "aria-checked": String(scope === which) });
+      b.addEventListener("click", () => { if (scope !== which) { scope = which; ghost = null; refresh(); } });
+      group.append(b);
+    }
+    return [group];
   }
 
   async function refresh() {
@@ -207,7 +239,7 @@
     }
     if (mine !== seq) return; // a newer plan asked again
     ghost = result.error ? null : result;
-    if (open && ghost && !ghost.changes.length) toggle(false); // nothing left to show
+    if (open && ghost && !ghost.changes.length && scope === "all") toggle(false); // nothing left to show
     badge(result);
     if (!open) return;
     const tab = ide().tab();
@@ -227,7 +259,7 @@
   // One calm row: what changed, in a sentence, and stepping. Lenses, the onion skin and Fade unchanged wait behind Compare.
   function toolbar(counts) {
     const bar = el("div", undefined, { class: "diff-tools", role: "toolbar", "aria-label": "The change" });
-    bar.append(summary(counts));
+    bar.append(...scopeTools(), summary(counts));
     const nav = el("div", undefined, { class: "diff-nav" });
     const prev = el("button", "‹", { type: "button", class: "quiet", "aria-label": "Previous change", title: "Previous change ([)", "aria-keyshortcuts": "[" });
     const next = el("button", "›", { type: "button", class: "quiet", "aria-label": "Next change", title: "Next change (])", "aria-keyshortcuts": "]" });
@@ -296,7 +328,9 @@
     const box = el("section", undefined, { id: "diff-consider", class: "diff-consider", "aria-label": "What to consider" });
     box.append(el("h3", "To consider"));
     const list = el("ul");
-    const ripple = ide().ripple();
+    const round = scope === "round" && ide().rounds();
+    if (round) askRoundRipple();
+    const ripple = round ? roundRipple : ide().ripple();
     if (!ripple) list.append(el("li", "Working out what else it changes…", { class: "muted" }));
     else {
       if (ripple.problems.length) list.append(flags(ripple.problems));
@@ -313,6 +347,7 @@
       }
       const c = ripple.conformance;
       if (c && c.cases_before !== null && c.cases_after !== null) list.append(line("", `Conformance tests: ${c.cases_before} → ${c.cases_after} cases, generated from the model`));
+      if (round) list.append(line("muted", `Read against the system after round ${round.last - 1}; the laws are proved on the whole plan.`));
     }
     box.append(list);
     return box;
@@ -334,7 +369,7 @@
   function line(kind, text) { return el("li", text, kind ? { class: kind } : {}); }
 
   function lawLine() {
-    if (!laws || lawsFor !== JSON.stringify(request())) { proveLaws(); return line("muted", "Proving the laws on the changed model…"); }
+    if (!laws || lawsFor !== JSON.stringify(whole())) { proveLaws(); return line("muted", "Proving the laws on the changed model…"); }
     if (laws.error) return line("warn", `Laws not proved: ${laws.error.message}`);
     const broken = laws.laws.filter((l) => l.status === "BROKEN");
     if (!laws.laws.length) return line("muted", "This system has no laws to check.");
@@ -344,11 +379,11 @@
 
   let proving = "";
   async function proveLaws() {
-    const key = JSON.stringify(request());
+    const key = JSON.stringify(whole());
     if (proving === key) return;
     proving = key;
     let result;
-    try { result = await ide().api("/api/play/laws", request()); } catch (error) { result = { error }; }
+    try { result = await ide().api("/api/play/laws", whole()); } catch (error) { result = { error }; }
     if (proving !== key) return;
     proving = "";
     laws = result.error ? result : result.report || result;
@@ -385,7 +420,7 @@
     if (!result) { host.append(el("p", "Working out the change…", { class: "muted empty" })); return; }
     if (result.error) { host.append(el("p", `${result.error.code || "ERROR"}: ${result.error.message}`, { class: "muted empty" })); return; }
     if (!result.changes.length) {
-      host.append(el("p", "No change to show. Ask the chat for a plan, draw on the state machine, or open a change case: its difference from the model in force appears here.", { class: "muted empty" }));
+      host.append(...scopeTools(), el("p", scope === "round" ? "This round changes nothing the state machine draws." : "No change to show. Ask the chat for a plan, draw on the state machine, or open a change case: its difference from the model in force appears here.", { class: "muted empty" }));
       return;
     }
     const canvas = el("div", undefined, { class: "canvas diff-canvas", tabindex: "0", "aria-label": "The change on the state machine" });

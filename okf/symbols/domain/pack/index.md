@@ -35,6 +35,7 @@
 * [domain.pack.coherence_problems](coherence_problems.md) - Every cross-reference defect of a structurally valid pack, sorted.
 * [domain.pack.default_location](default_location.md) - ``$EIJA_PACK`` if set, else the pack named by ``packs/default.json``.
 * [domain.pack.default_pack](default_pack.md) - The configured pack, reread on every call and validated from a content-keyed cache.
+* [domain.pack.derive](derive.md) - A draft of `pack` held in memory (`document`, checked as `parse_pack` checks any pack), whose files beside `pack.json` (`data.json`, `screens.json`, `scenarios.json`) are read from where `pack` was read.
 * [domain.pack.find_pack](find_pack.md) - Resolve a loaded snapshot by digest, or an unambiguous id after refreshing its sources.
 * [domain.pack.load_pack](load_pack.md) - Read current file contents and retain an immutable, digest-addressed pack snapshot.
 * [domain.pack.meaning_ids](meaning_ids.md) - The meaning ids of the pack a workflow belongs to, or None when no such pack can be found.

@@ -90,3 +90,4 @@
 * [ADR-0195: Sequence diagrams are the pack's scenarios, drawn in UML and checked by the kernel step by step](0195-sequence-diagrams-the-kernel-checks.md) - Engineers who read UML expect sequence diagrams beside the state machine, class, use case and component diagrams.
 * [ADR-0198: Undo, redo and autosave of the edited document in PlayIDE](0198-undo-redo-and-autosave-of-the-edited-document.md) - PlayIDE is meant to be more robust than the UML tools engineers already use, and every one of those has undo.
 * [ADR-0199: PlayIDE at the kernel's limits: measured, and the kernel's repeated questions memoised](0199-playide-at-the-kernel-limits.md) - The packs PlayIDE was built and demonstrated on have five or six states.
+* [ADR-0201: Build a new system in chat, round after round](0201-build-a-new-system-in-chat-round-after-round.md) - The showcase changes a pack that already exists (Library loan).

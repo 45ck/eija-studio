@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/plan.py#propose_plan
   title: application/plan.py
   hash_method: ast-v2
-  sha256: e44af635dd4d9254966128d2646158e59a5fc4f5e7781693c30fa3125648da4c
-notes_baseline: 2d6889a78ff3157dce4195cc638d8c183a2ef8c0a42cf84900721ef132cce193
+  sha256: b20e6d096aaaed756ae8e857e70d54023cf47c8228ba15c9f629c180e8e3a3e6
+notes_baseline: ef8a7f849e2484b68e1e5500664556e0cfbb13d071940da55163332f272169ef
 ---
 
 # application.plan.propose_plan
@@ -25,14 +25,16 @@ notes_baseline: 2d6889a78ff3157dce4195cc638d8c183a2ef8c0a42cf84900721ef132cce193
 |---|---|
 | Kind | function |
 | Module | [`application/plan`](/modules/application/plan.md) |
-| Signature | `def propose_plan(request: str, model: Workflow, pack: Pack, proposer: PlanProposer) -> dict[str, Any]` |
+| Signature | `def propose_plan(request: str, model: Workflow, pack: Pack, proposer: PlanProposer, grows: bool=False) -> dict[str, Any]` |
 | Code | `repo://src/eija_studio/application/plan.py#propose_plan` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
 ~~~text
-Ask the proposer for a plan, re-check it, and preview it with every step accepted.
+Ask the proposer for a plan, re-check it, and preview it with every step accepted. `model` may already carry
+earlier rounds of the same work in progress (ADR-0201): the new steps are planned on top of it. When the system
+`grows`, the proposer may name new states, actions and roles, and the preview declares them.
 ~~~
 <!-- okf:generated:end facts -->
 

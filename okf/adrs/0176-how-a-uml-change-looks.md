@@ -73,4 +73,5 @@ _No curated notes yet._
 ## Referenced by
 
 * [ADR-0195: Sequence diagrams are the pack's scenarios, drawn in UML and checked by the kernel step by step](/adrs/0195-sequence-diagrams-the-kernel-checks.md) - Engineers who read UML expect sequence diagrams beside the state machine, class, use case and component diagrams.
+* [ADR-0201: Build a new system in chat, round after round](/adrs/0201-build-a-new-system-in-chat-round-after-round.md) - The showcase changes a pack that already exists (Library loan).
 <!-- okf:generated:end links -->

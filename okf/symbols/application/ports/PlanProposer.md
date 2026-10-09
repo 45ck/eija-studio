@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/ports.py#PlanProposer
   title: application/ports.py
   hash_method: ast-sig-v1
-  sha256: 792d36912e1e5b3454c5f962ebe5652d198e460f99bfe738880666e5dfa8499f
-notes_baseline: b300d1274dbaf7430aded666bb18f5d6d79370fb3e0b0654252180d8045e24b4
+  sha256: be31c95fdddd1374cd3511a1d7e65f9c370379ecf2a8685459cd381c4d17e115
+notes_baseline: 23a738b968486f8a1f3066db0c47631f83697ac983c9ab532cfdea5f4cdd882c
 ---
 
 # application.ports.PlanProposer
@@ -33,6 +33,7 @@ notes_baseline: b300d1274dbaf7430aded666bb18f5d6d79370fb3e0b0654252180d8045e24b4
 
 ~~~text
 Turns a chat request into {summary, meaning, steps: [{transaction, why}]}. Untrusted; no IO or persistence.
+With `grows`, the system is one the person started, so a step may name a state, action or role it lacks (ADR-0201).
 ~~~
 
 ## Fields
@@ -46,7 +47,7 @@ Turns a chat request into {summary, meaning, steps: [{transaction, why}]}. Untru
 
 Structural interface implemented by adapters; not a class to instantiate.
 
-* `def propose(self, request: str, model: Workflow, pack: Pack) -> dict[str, Any]`
+* `def propose(self, request: str, model: Workflow, pack: Pack, *, grows: bool=False) -> dict[str, Any]`
 * `def follow_on(self, ripple: dict[str, Any], model: Workflow, pack: Pack) -> dict[str, Any]`
 <!-- okf:generated:end facts -->
 

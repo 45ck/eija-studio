@@ -27,10 +27,11 @@ class EditProposer(Protocol):
     def propose(self, request: str, model: Workflow, choices: tuple[Transaction, ...]) -> dict[str, Any]: ...
 
 class PlanProposer(Protocol):
-    """Turns a chat request into {summary, meaning, steps: [{transaction, why}]}. Untrusted; no IO or persistence."""
+    """Turns a chat request into {summary, meaning, steps: [{transaction, why}]}. Untrusted; no IO or persistence.
+    With `grows`, the system is one the person started, so a step may name a state, action or role it lacks (ADR-0201)."""
     name: str
     live: bool
-    def propose(self, request: str, model: Workflow, pack: Pack) -> dict[str, Any]: ...
+    def propose(self, request: str, model: Workflow, pack: Pack, *, grows: bool = False) -> dict[str, Any]: ...
     def follow_on(self, ripple: dict[str, Any], model: Workflow, pack: Pack) -> dict[str, Any]:
         """Follow-on steps for a ripple's problems (ADR-0158): {steps: [{transaction | screen, why, fixes}]}."""
         ...

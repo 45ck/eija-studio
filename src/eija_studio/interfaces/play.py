@@ -34,7 +34,8 @@ from eija_studio.application.access import access, reach
 from eija_studio.application.components import app_components
 from eija_studio.application.law_proof import compare_laws, prove_laws, with_laws
 from eija_studio.application.ghost_diff import ghost_diff
-from eija_studio.application.plan import preview_plan, propose_plan
+from eija_studio.application.new_system import declare
+from eija_studio.application.plan import MAX_DRAFT_STEPS, preview_plan, propose_plan
 from eija_studio.application.review import review_change
 from eija_studio.application.ripple import check_follow_ons, ripple
 from eija_studio.application.scenario_run import record_steps, run_scenarios
@@ -57,7 +58,13 @@ class BuildRequest(Contract):
     case_id: str | None = None  # None builds the active baseline; a case builds its candidate (or baseline if none yet)
     model: Workflow | None = None  # the model the page shows; if given, it must still be the one that would be built
     screens: dict[str, Any] | None = None  # screens edited in the designer (eija.screens.v1); None uses the pack's
-    plan: list[dict[str, Any]] | None = Field(default=None, max_length=12)  # accepted chat-plan steps, tried on top
+    plan: list[dict[str, Any]] | None = Field(default=None, max_length=MAX_DRAFT_STEPS)  # accepted chat-plan steps, tried on top
+
+
+class ChangeRequest(BuildRequest):
+    # The steps of the rounds before the last (ADR-0201): given, the change shown is the last round's alone, from the
+    # model with those steps to the model with every accepted step; None is the whole change from the model in force.
+    since: list[dict[str, Any]] | None = Field(default=None, max_length=MAX_DRAFT_STEPS)
 
 
 class PlanRequest(BuildRequest):
@@ -65,8 +72,8 @@ class PlanRequest(BuildRequest):
 
 
 class PlanPreviewRequest(BuildRequest):
-    steps: list[dict[str, Any]] = Field(min_length=1, max_length=12)
-    accepted: list[bool] = Field(min_length=1, max_length=12)
+    steps: list[dict[str, Any]] = Field(min_length=1, max_length=MAX_DRAFT_STEPS)
+    accepted: list[bool] = Field(min_length=1, max_length=MAX_DRAFT_STEPS)
 
 
 class SimulateRequest(BuildRequest):
@@ -182,12 +189,21 @@ def pack_file(pack: Pack, name: str) -> str:
     return path.as_posix()
 
 
-def register(app, studio, web: Path) -> AppRunner:
+def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) -> AppRunner:
+    """`own` says whether the system open now is one the person started (in the systems home): its vocabulary grows
+    as a plan names new actions and roles (ADR-0201). A shipped pack's vocabulary is fixed."""
     runner = AppRunner(lambda: Path(studio.store.directory) / "apps")
 
     @app.get("/play")
     def play_page():
         return FileResponse(web / "play.html")
+
+    def pack_of(steps: list[dict[str, Any]] | None) -> Pack:
+        """The open system's pack, with what these plan steps name but it does not declare yet declared as a sketch
+        declares it, on a system the person started (ADR-0201); a draft held in memory, never written."""
+        if not steps or not own():
+            return studio.pack
+        return declare(studio.pack, [parse_transaction(step) for step in steps])
 
     def resolve(body: BuildRequest) -> Workflow:
         """The model the request is about: the active baseline, or a case's candidate (its baseline if none yet)."""
@@ -200,7 +216,7 @@ def register(app, studio, web: Path) -> AppRunner:
         if body.model is not None and body.model.semantic_hash != model.semantic_hash:
             raise DomainError("MODEL_CHANGED", "The model changed since the page loaded; reload and try again")
         if body.plan:  # trying accepted plan steps: applied here, through the policy, never taken from the page
-            model = apply_transactions(model, [parse_transaction(step) for step in body.plan], studio.pack)
+            model = apply_transactions(model, [parse_transaction(step) for step in body.plan], pack_of(body.plan))
         return model
 
     @app.get("/api/play/data")
@@ -212,7 +228,7 @@ def register(app, studio, web: Path) -> AppRunner:
     def screens_of(body: BuildRequest, model: Workflow) -> Screens:
         if body.screens is not None:
             return parse_screens(body.screens, studio.pack.id)
-        return screens_for(studio.pack, model, data_for(studio.pack))
+        return screens_for(studio.pack, model, data_for(studio.pack))  # the files beside pack.json, as for any draft
 
     @app.post("/api/play/screens")
     def play_screens(body: BuildRequest):
@@ -230,43 +246,54 @@ def register(app, studio, web: Path) -> AppRunner:
     @app.post("/api/play/plan")
     def play_plan(body: PlanRequest):
         """Plan mode (ADR-0156): an untrusted plan of typed steps for the request, previewed with every step accepted."""
-        return propose_plan(body.request, resolve(body.model_copy(update={"plan": None})), studio.pack, proposer())
+        # On a system you started, earlier rounds of the work in progress (body.plan) are kept and the new steps are
+        # planned on top of them (ADR-0201); on a shipped pack a new plan replaces the last, as before.
+        grows = own()
+        on_top = body if grows else body.model_copy(update={"plan": None})
+        return propose_plan(body.request, resolve(on_top), pack_of(on_top.plan), proposer(), grows=grows) | {"on_top": bool(grows and body.plan)}
 
     @app.post("/api/play/plan/preview")
     def play_plan_preview(body: PlanPreviewRequest):
         """What the accepted steps would make of the model. Nothing is saved or applied."""
         model = resolve(body.model_copy(update={"plan": None}))
-        return preview_plan(model, studio.pack, [parse_transaction(step) for step in body.steps], body.accepted)
+        return preview_plan(model, studio.pack, [parse_transaction(step) for step in body.steps], body.accepted, grows=own())
 
     @app.post("/api/play/components")
     def play_components(body: BuildRequest):
         """The component diagram of the app this model and these screens would build, read from its files (ADR-0155)."""
         model = resolve(body)
         screens = screens_of(body, model)
-        files, manifest = app_files(studio.pack, model, screens)
+        files, manifest = app_files(pack_of(body.plan), model, screens)
         return app_components(files) | {"model": model.semantic_hash, "screens": screens.digest, "cases": manifest["oracle"]["cases"]}
 
-    def built(model: Workflow, screens: Screens) -> tuple[tuple[dict[str, str], int] | DomainError, list[dict[str, Any]]]:
+    def built(pack: Pack, model: Workflow, screens: Screens) -> tuple[tuple[dict[str, str], int] | DomainError, list[dict[str, Any]]]:
         try:
-            files, manifest = app_files(studio.pack, model, screens)
+            files, manifest = app_files(pack, model, screens)
         except DomainError as error:
             return error, []
         return (files, manifest["oracle"]["cases"]), app_components(files)["components"]
 
+    def before_of(body: ChangeRequest) -> Workflow:
+        """What the change shown is read against: the model in force, or with `since` the earlier rounds applied."""
+        return baseline(body) if body.since is None else resolve(body.model_copy(update={"plan": body.since}))
+
     @app.post("/api/play/ripple")
-    def play_ripple(body: BuildRequest):
-        """What the plan does to every diagram, and the proposer's follow-on edits, each re-checked (ADR-0158)."""
+    def play_ripple(body: ChangeRequest):
+        """What the plan does to every diagram, and the proposer's follow-on edits, each re-checked (ADR-0158). With
+        `since`, what its last round does (ADR-0201); the follow-ons are still for the whole plan."""
         base = resolve(body.model_copy(update={"plan": None}))
         candidate = resolve(body)
+        start = base if body.since is None else before_of(body)
         # Before is the saved system with its pack's screens; screens edited in the designer are part of the change.
-        before, after = screens_for(studio.pack, base, data_for(studio.pack)), screens_of(body, candidate)
-        (old, _), (new, components) = built(base, before), built(candidate, after)
+        before, after = screens_for(studio.pack, start, data_for(studio.pack)), screens_of(body, candidate)
+        pack = pack_of(body.plan)
+        (old, _), (new, components) = built(pack_of(body.since), start, before), built(pack, candidate, after)
         data = data_for(studio.pack)
-        scenarios = check_sequences(studio.pack, candidate, scenarios_for(studio.pack), base)
-        report = ripple(base, candidate, data, (before, after), (old, new), components, scenarios)
-        document = proposer().follow_on(report, candidate, studio.pack) if report["problems"] else {"steps": []}
+        scenarios = check_sequences(pack, candidate, scenarios_for(studio.pack), start)
+        report = ripple(start, candidate, data, (before, after), (old, new), components, scenarios)
+        document = proposer().follow_on(report, candidate, pack) if report["problems"] else {"steps": []}
         return report | {"provider": proposer().name, "live": proposer().live,
-                         "follow_ons": check_follow_ons(document, base, body.plan or [], studio.pack, candidate, after, data)}
+                         "follow_ons": check_follow_ons(document, base, body.plan or [], pack, candidate, after, data)}
 
     def baseline(body: BuildRequest) -> Workflow:
         """The model in force: the active baseline, or the case's baseline. A change is reviewed against it."""
@@ -276,51 +303,53 @@ def register(app, studio, web: Path) -> AppRunner:
         return studio.workflows(body.case_id)[0]
 
     @app.post("/api/play/diff")
-    def play_diff(body: BuildRequest):
+    def play_diff(body: ChangeRequest):
         """How the change shown looks (ADR-0176): a case's candidate and any accepted plan steps, against the model in
-        force, as one union of both state machines. Read-only."""
-        return ghost_diff(baseline(body), resolve(body))
+        force (or, with `since`, the last round against the rounds before it, ADR-0201), as one union of both state
+        machines. Read-only."""
+        return ghost_diff(before_of(body), resolve(body))
 
     @app.post("/api/play/review")
     def play_review(body: BuildRequest):
         """Review the change shown (a case's candidate and any accepted plan steps) against the model in force (ADR-0175).
         Read-only: nothing is saved, approved or applied."""
         before, after = baseline(body), resolve(body)
-        return review_change(studio.pack, before, after) | {"ghost": ghost_diff(before, after)}  # drawn as in ADR-0176
+        return review_change(pack_of(body.plan), before, after) | {"ghost": ghost_diff(before, after)}  # drawn as in ADR-0176
 
     @app.post("/api/play/sequences")
     def play_sequences(body: ScenariosRequest):
         """The pack's scenarios (or a draft of them, shared with the Tests tab) drawn as sequence diagrams, each step run
         through the kernel on the shown model and, when it differs, on the model in force (ADR-0195). Read-only."""
         before, after = baseline(body), resolve(body)
-        return check_sequences(studio.pack, after, scenarios_of(body), before) | {"source": "edited" if body.scenarios is not None else "pack"}
+        return check_sequences(pack_of(body.plan), after, scenarios_of(body), before) | {"source": "edited" if body.scenarios is not None else "pack"}
 
     @app.post("/api/play/build")
     def play_build(body: BuildRequest):
         model = resolve(body)
-        return runner.build_and_run(studio.pack, model, studio.identity_provider(), screens_of(body, model))
+        return runner.build_and_run(pack_of(body.plan), model, studio.identity_provider(), screens_of(body, model))
 
     @app.post("/api/play/simulate")
     def play_simulate(body: SimulateRequest):
-        return simulate(studio.pack, resolve(body), seed=body.seed, steps=body.steps)
+        return simulate(pack_of(body.plan), resolve(body), seed=body.seed, steps=body.steps)
 
     @app.post("/api/play/run")
     def play_run(body: RunRequest):
         """The run bar (ADR-0160): every step of one seeded run, decided by the kernel, and where it stops."""
-        return run_log(studio.pack, resolve(body), seed=body.seed, steps=body.steps, breakpoints=body.breakpoints,
+        return run_log(pack_of(body.plan), resolve(body), seed=body.seed, steps=body.steps, breakpoints=body.breakpoints,
                        break_on_refusal=body.break_on_refusal)
 
     @app.post("/api/play/laws")
     def play_laws(body: LawsRequest):
         """The pack's laws, each proved over every run the kernel allows on this model (ADR-0166). With a draft of the
         law file, the draft is checked and proved instead, and what it changes is listed; nothing is saved (ADR-0177)."""
-        pack = studio.pack if body.laws is None else with_laws(studio.pack, body.laws)
+        grown = pack_of(body.plan)
+        pack = grown if body.laws is None else with_laws(grown, body.laws)
         report = prove_laws(pack, resolve(body))
         file: dict[str, Any] = {"path": pack_file(studio.pack, "pack.json"), "section": "laws",
                 "laws": [law.model_dump(mode="json", exclude_none=True) for law in studio.pack.laws],
                 "verifiers": [v.model_dump(mode="json", exclude_none=True) for v in studio.pack.verifiers]}
         if body.laws is not None:
-            file |= {"draft": compare_laws(studio.pack, pack), "draft_pack": pack.model_dump(mode="json", exclude_none=True)}
+            file |= {"draft": compare_laws(grown, pack), "draft_pack": pack.model_dump(mode="json", exclude_none=True)}
         return report | {"file": file}
 
     def scenarios_of(body: ScenariosRequest):
@@ -330,30 +359,31 @@ def register(app, studio, web: Path) -> AppRunner:
     def play_tests(body: ScenariosRequest):
         """The pack's scenarios (or a draft of them), each run by the kernel on the model shown (ADR-0177)."""
         scenarios = scenarios_of(body)
-        return run_scenarios(studio.pack, resolve(body), scenarios) | {
+        pack = pack_of(body.plan)
+        return run_scenarios(pack, resolve(body), scenarios) | {
             "file": {"path": pack_file(studio.pack, "scenarios.json"), "document": scenarios.model_dump(mode="json", exclude_none=True)},
-            "actors": [a.model_dump(mode="json") for a in studio.pack.fixtures.actors]}
+            "actors": [a.model_dump(mode="json") for a in pack.fixtures.actors]}
 
     @app.post("/api/play/tests/try")
     def play_tests_try(body: TryRequest):
         """What the kernel does for these steps, written as scenario steps that expect it: how a test is added."""
-        return {"steps": record_steps(studio.pack, resolve(body), body.start, body.steps)}
+        return {"steps": record_steps(pack_of(body.plan), resolve(body), body.start, body.steps)}
 
     @app.post("/api/play/access")
     def play_access(body: BuildRequest):
         """Who can do what (ADR-0171): role by state, each cell tried in the kernel; with a plan, what it changes."""
         model = resolve(body)
-        return access(studio.pack, model, resolve(body.model_copy(update={"plan": None})) if body.plan else None)
+        return access(pack_of(body.plan), model, resolve(body.model_copy(update={"plan": None})) if body.plan else None)
 
     @app.post("/api/play/reach")
     def play_reach(body: ReachRequest):
         """Can a record reach a state without a role? A proof, a kernel-replayed path, or NOT_SHOWN (ADR-0171)."""
-        return reach(studio.pack, resolve(body), body.target, body.without)
+        return reach(pack_of(body.plan), resolve(body), body.target, body.without)
 
     @app.post("/api/play/stop")
     def play_stop():
         """The run bar's Stop: stop the built app if one is running."""
         return {"stopped": runner.stop()}
 
-    register_interop(app, studio, resolve, BuildRequest)  # UML export and import (ADR-0190)
+    register_interop(app, studio, resolve, BuildRequest, pack_of)  # UML export and import (ADR-0190)
     return runner

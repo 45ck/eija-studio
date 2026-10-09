@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/play_interop.py
   title: interfaces/play_interop.py
   hash_method: ast-api-v1
-  sha256: 021b99caf41fe1a79129db1ba1605793c62079416426a96f7c86041fb3071534
-notes_baseline: 363e8d09d37621c6a0e6979cf6d50f60be1f57e1e669cca543c33444bc6f053a
+  sha256: d2ee80435aa4da47b0b4a49fac3fbb7529f344b74b0c5f800b17cf022f34296e
+notes_baseline: 50d5f9862a703815c4636ef41a3aaf0b5f4ca6f81fc5555ea9c8267911cabeea
 ---
 
 # interfaces.play_interop
@@ -42,6 +42,7 @@ _Symbol pages are generated for the domain and application layers only._
 
 ## Internal imports
 
+* [`application/plan`](/modules/application/plan.md)
 * [`domain/data`](/modules/domain/data.md)
 * [`domain/models`](/modules/domain/models.md)
 <!-- okf:generated:end facts -->
@@ -53,6 +54,7 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Imports
 
+* [application.plan](/modules/application/plan.md) - Plan mode for the PlayIDE chat (ADR-0156): an AI proposes a change as numbered typed steps; the person accepts or rejects each one and sees what the accepted o…
 * [domain.data](/modules/domain/data.md) - The data model of a pack, shown as a UML class diagram (ADR-0153): entities, typed attributes and associations.
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 

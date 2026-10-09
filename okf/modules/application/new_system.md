@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/new_system.py
   title: application/new_system.py
   hash_method: ast-api-v1
-  sha256: 2cc213e9e2abb9a23951f2810dc909bb34ef42f9c7a4a49b41f07a590d9f1841
-notes_baseline: d53dfb0226609f2bd4e1baf00ff31c7b5c3d7c828ca9695548d0512056986c33
+  sha256: 28b03ed546987b38d633bdab9dbc92d0c1530c6dfb508c47d853d3570c94b254
+notes_baseline: 72fe3d2bbfafc60edab483b441c6c17cfab06769ebaa71650067bba21728517d
 ---
 
 # application.new_system
@@ -47,6 +47,8 @@ beyond one audit entry per action, or meanings the person did not write.
 * [`RECORD`](/symbols/application/new_system/RECORD.md) (constant) - no docstring
 * [`SKETCH_HELP`](/symbols/application/new_system/SKETCH_HELP.md) (constant) - no docstring
 * [`UNSUPPORTED`](/symbols/application/new_system/UNSUPPORTED.md) (constant) - no docstring
+* [`declare`](/symbols/application/new_system/declare.md) (function) - `pack` with every action and role `transactions` name but it does not declare yet, declared exactly as a sketch declare…
+* [`new_names`](/symbols/application/new_system/new_names.md) (function) - The actions and roles `transactions` name that `pack` does not declare, in order of first use.
 * [`parse_sketch`](/symbols/application/new_system/parse_sketch.md) (function) - The transitions, extra actions and extra roles of a sketch, or `PackError` naming each bad line.
 * [`sketch_documents`](/symbols/application/new_system/sketch_documents.md) (function) - `pack.json` and `data.json` for a system started from a sketch, checked by the kernel's pack check.
 * [`summary`](/symbols/application/new_system/summary.md) (function) - What the new system has, for the form to say before it is created.
@@ -60,6 +62,7 @@ beyond one audit entry per action, or meanings the person did not write.
 * [`domain/pack`](/modules/domain/pack.md)
 * [`domain/scenarios`](/modules/domain/scenarios.md)
 * [`domain/screens`](/modules/domain/screens.md)
+* [`domain/transactions`](/modules/domain/transactions.md)
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -74,9 +77,13 @@ _No curated notes yet._
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
 * [domain.scenarios](/modules/domain/scenarios.md) - Scenarios: a pack's test cases, written as stories a person can read and the kernel can run (ADR-0177).
 * [domain.screens](/modules/domain/screens.md) - Screens: the user interface of a pack's app, designed against its use cases and data model (ADR-0154).
+* [domain.transactions](/modules/domain/transactions.md) - Open change vocabulary (WBS 1.3): the semantic edits an owner (or a pack meaning) may make to a workflow.
 
 ## Referenced by
 
+* [adapters.plan_proposals](/modules/adapters/plan_proposals.md) - Offline plan proposer for the PlayIDE chat (ADR-0156): a bounded phrase grammar and the pack's modelled meanings, never an LLM.
+* [application.plan](/modules/application/plan.md) - Plan mode for the PlayIDE chat (ADR-0156): an AI proposes a change as numbered typed steps; the person accepts or rejects each one and sees what the accepted o…
+* [interfaces.play](/modules/interfaces/play.md) - PlayIDE routes: the visual UML canvas page, Build & run of the model as a live app beside it (ADR-0151), and Simulate, seeded simulated users whose every step…
 * [interfaces.play_systems](/modules/interfaces/play_systems.md) - PlayIDE's systems (ADR-0185): start a new system from a sketch or a template, open one you made before, and save the work in progress to carry on later.
 * [application.new_system.LINE](/symbols/application/new_system/LINE.md) - Constant `LINE` in `application/new_system`.
 * [application.new_system.LIST](/symbols/application/new_system/LIST.md) - Constant `LIST` in `application/new_system`.
@@ -85,6 +92,8 @@ _No curated notes yet._
 * [application.new_system.RECORD](/symbols/application/new_system/RECORD.md) - Constant `RECORD` in `application/new_system`.
 * [application.new_system.SKETCH_HELP](/symbols/application/new_system/SKETCH_HELP.md) - Constant `SKETCH_HELP` in `application/new_system`.
 * [application.new_system.UNSUPPORTED](/symbols/application/new_system/UNSUPPORTED.md) - Constant `UNSUPPORTED` in `application/new_system`.
+* [application.new_system.declare](/symbols/application/new_system/declare.md) - `pack` with every action and role `transactions` name but it does not declare yet, declared exactly as a sketch declares them (ADR-0201): an action gets the ba…
+* [application.new_system.new_names](/symbols/application/new_system/new_names.md) - The actions and roles `transactions` name that `pack` does not declare, in order of first use.
 * [application.new_system.parse_sketch](/symbols/application/new_system/parse_sketch.md) - The transitions, extra actions and extra roles of a sketch, or `PackError` naming each bad line.
 * [application.new_system.sketch_documents](/symbols/application/new_system/sketch_documents.md) - `pack.json` and `data.json` for a system started from a sketch, checked by the kernel's pack check.
 * [application.new_system.summary](/symbols/application/new_system/summary.md) - What the new system has, for the form to say before it is created.

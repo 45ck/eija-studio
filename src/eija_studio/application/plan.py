@@ -13,21 +13,36 @@ from typing import Any
 from eija_studio.domain.models import DomainError, Workflow
 from eija_studio.domain.pack import Pack
 from eija_studio.domain.policy import apply_structural_all, apply_transactions
-from eija_studio.domain.transactions import Transaction, parse_transaction
+from eija_studio.domain.transactions import AddTransition, Transaction, parse_transaction
 from .diagrams import diff_summary
+from .new_system import declare, new_names
 from .ports import PlanProposer
 
-MAX_STEPS = 12
+MAX_STEPS = 12  # steps in one proposal
+MAX_DRAFT_STEPS = 64  # steps in the work in progress: every round of a system being built in chat (ADR-0201)
 MAX_REQUEST = 2000
 
 
-def describe(tx: Transaction, model: Workflow | None = None) -> str:
+def describe(tx: Transaction, model: Workflow | None = None, pack: Pack | None = None,
+             plan: list[Transaction] | None = None) -> str:
     """One line a person can check against the diagram. A transition is named by its action, as the diagram labels it,
-    when `model` has it; one the same plan adds keeps its id."""
+    when `model` has it or a step of the same `plan` adds it. An action or role `pack` does not declare yet is
+    called new, so a person sees when a step grows the system's vocabulary (ADR-0201)."""
     d = tx.model_dump()
     actions = {t.id: t.action for t in model.transitions} if model is not None else {}
+    actions |= {step.id: step.action for step in plan or [] if isinstance(step, AddTransition)}
     if "transition" in d:
         d["transition"] = actions.get(d["transition"], d["transition"])
+    return _text(d) + (_new(tx, pack) if pack is not None else "")
+
+
+def _new(tx: Transaction, pack: Pack) -> str:
+    actions, roles = new_names(pack, [tx])
+    names = [f"new action {a}" for a in actions] + [f"new role {r}" for r in roles]
+    return f" ({', '.join(names)})" if names else ""
+
+
+def _text(d: dict[str, Any]) -> str:
     texts = {
         "add_state": lambda: f"Add state {d['state']}" + (f" after {d['after']}" if d.get("after") else ""),
         "rename_state": lambda: f"Rename state {d['state']} to {d['to']}",
@@ -56,20 +71,23 @@ def _steps(document: Any) -> list[tuple[Transaction, str]]:
     return steps
 
 
-def _statuses(model: Workflow, pack: Pack, transactions: list[Transaction], accepted: list[bool]) -> list[dict[str, Any]]:
-    """Whether each accepted step applies after the accepted steps before it, with the step in words."""
+def _statuses(model: Workflow, pack: Pack, transactions: list[Transaction], accepted: list[bool],
+              named: Pack | None) -> list[dict[str, Any]]:
+    """Whether each accepted step applies after the accepted steps before it, with the step in words. `named` is the
+    pack the words call names new against, when the plan may grow the vocabulary."""
     kept: list[Transaction] = []
     status: list[dict[str, Any]] = []
     for tx, keep in zip(transactions, accepted, strict=True):
+        text = describe(tx, model, named, transactions)
         if not keep:
-            status.append({"status": "rejected", "text": describe(tx, model)})
+            status.append({"status": "rejected", "text": text})
             continue
         try:
             apply_structural_all(model, [*kept, tx], pack)
             kept.append(tx)
-            status.append({"status": "applies", "text": describe(tx, model)})
+            status.append({"status": "applies", "text": text})
         except DomainError as error:
-            status.append({"status": "does_not_apply", "text": describe(tx, model), "code": error.code, "message": error.message})
+            status.append({"status": "does_not_apply", "text": text, "code": error.code, "message": error.message})
     return status
 
 
@@ -82,15 +100,27 @@ def _refusal(error: DomainError, pack: Pack) -> dict[str, Any]:
             "laws": [laws[r] for r in refs if r in laws]}
 
 
-def preview_plan(model: Workflow, pack: Pack, transactions: list[Transaction], accepted: list[bool]) -> dict[str, Any]:
+def preview_plan(model: Workflow, pack: Pack, transactions: list[Transaction], accepted: list[bool],
+                 grows: bool = False) -> dict[str, Any]:
     """What the accepted steps would make of `model`. Each step reports whether it applies after the accepted ones
-    before it; the accepted steps together are then checked against the policy as one change."""
+    before it; the accepted steps together are then checked against the policy as one change. When the system `grows`
+    (one you started, ADR-0201), an action or role the accepted steps name is declared as a sketch declares it."""
     if len(accepted) != len(transactions):
         raise DomainError("PLAN_INVALID", "Accept or reject each step")
-    status = _statuses(model, pack, transactions, accepted)
     chosen = [tx for tx, keep in zip(transactions, accepted, strict=True) if keep]
-    result: dict[str, Any] = {"steps": status, "accepted": sum(accepted), "legal": False, "codes": [], "refs": [],
-                              "candidate": None, "candidate_semantic_hash": None, "diff": None}
+    result: dict[str, Any] = {"steps": [], "accepted": sum(accepted), "legal": False, "codes": [], "refs": [],
+                              "candidate": None, "candidate_semantic_hash": None, "diff": None, "declared": None}
+    try:
+        working = declare(pack, chosen) if grows else pack
+    except DomainError as error:
+        return result | {"steps": _statuses(model, pack, transactions, accepted, pack), "codes": [error.code], "message": error.message}
+    status = _statuses(model, working, transactions, accepted, pack if grows else None)
+    return _checked(model, working, chosen, result | {"steps": status, "declared": _declared(pack, working)})
+
+
+def _checked(model: Workflow, pack: Pack, chosen: list[Transaction], result: dict[str, Any]) -> dict[str, Any]:
+    """The preview once every step has its status: the accepted steps together, checked by the policy as one change."""
+    status = result["steps"]
     if not chosen or any(s["status"] == "does_not_apply" for s in status):
         return result | {"codes": [] if not chosen else ["PLAN_STEP_DOES_NOT_APPLY"]}
     try:
@@ -99,6 +129,13 @@ def preview_plan(model: Workflow, pack: Pack, transactions: list[Transaction], a
         return result | _refusal(error, pack)
     return result | {"legal": True, "candidate": candidate.model_dump(mode="json"),
                      "candidate_semantic_hash": candidate.semantic_hash, "diff": diff_summary(model, candidate)}
+
+
+def _declared(before: Pack, after: Pack) -> dict[str, list[str]] | None:
+    """The actions and roles `after` declares that `before` does not."""
+    actions = [a.id for a in after.actions if before.action(a.id) is None]
+    roles = [r.id for r in after.roles if r.id not in {x.id for x in before.roles}]
+    return {"actions": actions, "roles": roles} if actions or roles else None
 
 
 def example_passes(request: str, model: Workflow, pack: Pack, proposer: PlanProposer | None) -> bool:
@@ -112,19 +149,21 @@ def example_passes(request: str, model: Workflow, pack: Pack, proposer: PlanProp
         return False
 
 
-def propose_plan(request: str, model: Workflow, pack: Pack, proposer: PlanProposer) -> dict[str, Any]:
-    """Ask the proposer for a plan, re-check it, and preview it with every step accepted."""
+def propose_plan(request: str, model: Workflow, pack: Pack, proposer: PlanProposer, grows: bool = False) -> dict[str, Any]:
+    """Ask the proposer for a plan, re-check it, and preview it with every step accepted. `model` may already carry
+    earlier rounds of the same work in progress (ADR-0201): the new steps are planned on top of it. When the system
+    `grows`, the proposer may name new states, actions and roles, and the preview declares them."""
     request = request.strip()
     if not 1 <= len(request) <= MAX_REQUEST:
         raise DomainError("PLAN_REQUEST_INVALID", f"Ask in 1 to {MAX_REQUEST} characters")
-    document = proposer.propose(request, model, pack)
+    document = proposer.propose(request, model, pack, grows=True) if grows else proposer.propose(request, model, pack)
     steps = _steps(document)
     transactions = [tx for tx, _ in steps]
     return {
         "scope": "plan-proposal", "trust": "UNTRUSTED_PROPOSAL", "request": request, "provider": proposer.name,
         "live": proposer.live, "model": model.semantic_hash, "summary": str(document.get("summary", ""))[:300],
         "meaning": document.get("meaning") if pack.meaning(str(document.get("meaning"))) else None,
-        "steps": [{"n": n, "transaction": tx.model_dump(mode="json"), "text": describe(tx, model), "why": why}
-                  for n, (tx, why) in enumerate(steps, 1)],
-        "preview": preview_plan(model, pack, transactions, [True] * len(transactions)),
+        "steps": [{"n": n, "transaction": tx.model_dump(mode="json"), "text": describe(tx, model, pack if grows else None, transactions),
+                   "why": why} for n, (tx, why) in enumerate(steps, 1)],
+        "preview": preview_plan(model, pack, transactions, [True] * len(transactions), grows),
     }

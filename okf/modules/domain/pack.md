@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/pack.py
   title: domain/pack.py
   hash_method: ast-api-v1
-  sha256: 6e460d0b465273b4cde1c4193dec2993385df299ef3923f65e0aaf7ad889c90b
-notes_baseline: 5d9ffafcc4ee8b94613914af60c5c58f1f392f102f7f2e5b3eadd59ff97c9dd6
+  sha256: 151b6a75fe7ca2e9322b27f5539e8280882ace4a32b136c22a3f9e10f550e768
+notes_baseline: 5c6125357c03069b4e64571285af4c70b85816877c377f608c3938bcf499e588
 ---
 
 # domain.pack
@@ -69,6 +69,7 @@ action or effect) becomes ``PackError`` (code ``PACK_INVALID``) with SORTED diag
 * [`coherence_problems`](/symbols/domain/pack/coherence_problems.md) (function) - Every cross-reference defect of a structurally valid pack, sorted.
 * [`default_location`](/symbols/domain/pack/default_location.md) (function) - ``$EIJA_PACK`` if set, else the pack named by ``packs/default.json``.
 * [`default_pack`](/symbols/domain/pack/default_pack.md) (function) - The configured pack, reread on every call and validated from a content-keyed cache.
+* [`derive`](/symbols/domain/pack/derive.md) (function) - A draft of `pack` held in memory (`document`, checked as `parse_pack` checks any pack), whose files beside `pack.json`…
 * [`find_pack`](/symbols/domain/pack/find_pack.md) (function) - Resolve a loaded snapshot by digest, or an unambiguous id after refreshing its sources.
 * [`load_pack`](/symbols/domain/pack/load_pack.md) (function) - Read current file contents and retain an immutable, digest-addressed pack snapshot.
 * [`meaning_ids`](/symbols/domain/pack/meaning_ids.md) (function) - The meaning ids of the pack a workflow belongs to, or None when no such pack can be found.
@@ -174,6 +175,7 @@ _No curated notes yet._
 * [domain.pack.coherence_problems](/symbols/domain/pack/coherence_problems.md) - Every cross-reference defect of a structurally valid pack, sorted.
 * [domain.pack.default_location](/symbols/domain/pack/default_location.md) - ``$EIJA_PACK`` if set, else the pack named by ``packs/default.json``.
 * [domain.pack.default_pack](/symbols/domain/pack/default_pack.md) - The configured pack, reread on every call and validated from a content-keyed cache.
+* [domain.pack.derive](/symbols/domain/pack/derive.md) - A draft of `pack` held in memory (`document`, checked as `parse_pack` checks any pack), whose files beside `pack.json` (`data.json`, `screens.json`, `scenarios…
 * [domain.pack.find_pack](/symbols/domain/pack/find_pack.md) - Resolve a loaded snapshot by digest, or an unambiguous id after refreshing its sources.
 * [domain.pack.load_pack](/symbols/domain/pack/load_pack.md) - Read current file contents and retain an immutable, digest-addressed pack snapshot.
 * [domain.pack.meaning_ids](/symbols/domain/pack/meaning_ids.md) - The meaning ids of the pack a workflow belongs to, or None when no such pack can be found.

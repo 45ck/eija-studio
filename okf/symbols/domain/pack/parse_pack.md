@@ -51,4 +51,5 @@ _No curated notes yet._
 
 * [application.law_proof.with_laws](/symbols/application/law_proof/with_laws.md) - The pack with its law file replaced by `laws` (a draft edited in PlayIDE), checked as the pack loader checks it.
 * [application.new_system.summary](/symbols/application/new_system/summary.md) - What the new system has, for the form to say before it is created.
+* [domain.pack.derive](/symbols/domain/pack/derive.md) - A draft of `pack` held in memory (`document`, checked as `parse_pack` checks any pack), whose files beside `pack.json` (`data.json`, `screens.json`, `scenarios…
 <!-- okf:generated:end links -->

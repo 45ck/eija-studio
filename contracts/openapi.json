@@ -279,13 +279,13 @@
     "/api/play/ripple": {
       "post": {
         "summary": "Play Ripple",
-        "description": "What the plan does to every diagram, and the proposer's follow-on edits, each re-checked (ADR-0158).",
+        "description": "What the plan does to every diagram, and the proposer's follow-on edits, each re-checked (ADR-0158). With\n`since`, what its last round does (ADR-0201); the follow-ons are still for the whole plan.",
         "operationId": "play_ripple_api_play_ripple_post",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/BuildRequest"
+                "$ref": "#/components/schemas/ChangeRequest"
               }
             }
           },
@@ -316,13 +316,13 @@
     "/api/play/diff": {
       "post": {
         "summary": "Play Diff",
-        "description": "How the change shown looks (ADR-0176): a case's candidate and any accepted plan steps, against the model in\nforce, as one union of both state machines. Read-only.",
+        "description": "How the change shown looks (ADR-0176): a case's candidate and any accepted plan steps, against the model in\nforce (or, with `since`, the last round against the rounds before it, ADR-0201), as one union of both state\nmachines. Read-only.",
         "operationId": "play_diff_api_play_diff_post",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/BuildRequest"
+                "$ref": "#/components/schemas/ChangeRequest"
               }
             }
           },
@@ -2332,7 +2332,7 @@
                   "type": "object"
                 },
                 "type": "array",
-                "maxItems": 12
+                "maxItems": 64
               },
               {
                 "type": "null"
@@ -2344,6 +2344,78 @@
         "additionalProperties": false,
         "type": "object",
         "title": "BuildRequest"
+      },
+      "ChangeRequest": {
+        "properties": {
+          "case_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Id"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Workflow"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "screens": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Screens"
+          },
+          "plan": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array",
+                "maxItems": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plan"
+          },
+          "since": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array",
+                "maxItems": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Since"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ChangeRequest"
       },
       "Edit": {
         "properties": {
@@ -2732,7 +2804,7 @@
                   "type": "object"
                 },
                 "type": "array",
-                "maxItems": 12
+                "maxItems": 64
               },
               {
                 "type": "null"
@@ -2874,7 +2946,7 @@
                   "type": "object"
                 },
                 "type": "array",
-                "maxItems": 12
+                "maxItems": 64
               },
               {
                 "type": "null"
@@ -3011,7 +3083,7 @@
                   "type": "object"
                 },
                 "type": "array",
-                "maxItems": 12
+                "maxItems": 64
               },
               {
                 "type": "null"
@@ -3025,7 +3097,7 @@
               "type": "object"
             },
             "type": "array",
-            "maxItems": 12,
+            "maxItems": 64,
             "minItems": 1,
             "title": "Steps"
           },
@@ -3034,7 +3106,7 @@
               "type": "boolean"
             },
             "type": "array",
-            "maxItems": 12,
+            "maxItems": 64,
             "minItems": 1,
             "title": "Accepted"
           }
@@ -3090,7 +3162,7 @@
                   "type": "object"
                 },
                 "type": "array",
-                "maxItems": 12
+                "maxItems": 64
               },
               {
                 "type": "null"
@@ -3201,7 +3273,7 @@
                   "type": "object"
                 },
                 "type": "array",
-                "maxItems": 12
+                "maxItems": 64
               },
               {
                 "type": "null"
@@ -3389,7 +3461,7 @@
                   "type": "object"
                 },
                 "type": "array",
-                "maxItems": 12
+                "maxItems": 64
               },
               {
                 "type": "null"
@@ -3472,7 +3544,7 @@
                   "type": "object"
                 },
                 "type": "array",
-                "maxItems": 12
+                "maxItems": 64
               },
               {
                 "type": "null"
@@ -3682,7 +3754,7 @@
                   "type": "object"
                 },
                 "type": "array",
-                "maxItems": 12
+                "maxItems": 64
               },
               {
                 "type": "null"
@@ -3827,7 +3899,7 @@
                   "type": "object"
                 },
                 "type": "array",
-                "maxItems": 12
+                "maxItems": 64
               },
               {
                 "type": "null"
