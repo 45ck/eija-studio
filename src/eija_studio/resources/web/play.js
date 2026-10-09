@@ -1636,7 +1636,11 @@
     // A package's members share one column, the deepest of theirs, so the package is one box.
     const deepest = {};
     for (const c of components.components) if (GROUPS[c.stereotype]) deepest[c.stereotype] = Math.max(deepest[c.stereotype] || 0, visit(c.id));
-    for (const c of components.components) (columns[GROUPS[c.stereotype] ? deepest[c.stereotype] : visit(c.id)] ||= []).push(c);
+    // The framework a module runs on sits under that module, out of the way of the module's own uses (a framework in
+    // the next column stood under every edge that column sends on).
+    const runsOn = (c) => Math.min(...edges.filter((d) => d.target === c.id).map((d) => visit(d.source)));
+    const column = (c) => GROUPS[c.stereotype] ? deepest[c.stereotype] : c.stereotype === "framework" && visit(c.id) > 0 ? runsOn(c) : visit(c.id);
+    for (const c of components.components) (columns[column(c)] ||= []).push(c);
     for (const [col, members] of Object.entries(columns)) {
       let y = 20;
       const x = 40 + Number(col) * COLUMN;
@@ -1656,10 +1660,22 @@
         y += h + GAP;
       }
     }
+    for (const c of components.components) if (c.stereotype === "framework") clearOfLines(c.id, boxes, edges);
     return (id) => {
       if (id.startsWith("iface:")) { const [x, y, , h] = boxes[id.slice(6)]; return [x - 34, y + h / 2 - 8, 16, 16]; } // the ball, left of its provider
       return boxes[id] || [0, 0, 0, 0];
     };
+  }
+
+  // Moves a box (and its interface ball and label, to its left) down until no other line crosses it or another box.
+  function clearOfLines(id, boxes, edges) {
+    const centre = (key) => { const [x, y, w, h] = boxes[key]; return [x + w / 2, y + h / 2]; };
+    const lines = edges.filter((d) => d.source !== id && d.target !== id && boxes[d.source] && boxes[d.target]).map((d) => [centre(d.source), centre(d.target)]);
+    const others = Object.entries(boxes).filter(([key]) => key !== id && !key.startsWith("pkg:")).map(([, b]) => b);
+    const b = boxes[id], hits = ([x, y, w, h]) => others.some(([ox, oy, ow, oh]) => ox < x + w && x < ox + ow && oy < y + h && y < oy + oh)
+      || lines.some(([[x1, y1], [x2, y2]]) => Array.from({ length: 41 }, (_, i) => [x1 + (x2 - x1) * i / 40, y1 + (y2 - y1) * i / 40])
+        .some(([px, py]) => px > x && px < x + w && py > y && py < y + h));
+    for (let tries = 0; tries < 60 && hits([b[0] - 120, b[1] - 16, b[2] + 150, b[3] + 22]); tries++) b[1] += 18;
   }
 
   async function drawComponents() {
