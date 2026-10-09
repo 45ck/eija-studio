@@ -238,6 +238,25 @@ button.link{border:0;background:transparent;padding:1px 4px;color:var(--accent);
 .law-run{margin:4px 0 0;padding-left:20px;font-size:.84rem}
 .law-tools{display:flex;gap:6px;margin-top:8px}
 .law-tools button{padding:3px 10px;font-size:.8rem}
+/* What's missing (ADR-0216): every view's row, ready or what it still lacks */
+.explorer{grid-template-rows:minmax(0,max-content) minmax(0,max-content) minmax(36%,1fr)}
+.explorer .missing{padding:10px 12px;border-bottom:1px solid var(--line);max-height:34vh;overflow:auto}
+.missing .pane-title{margin-bottom:2px}
+.missing>p{margin:0 0 6px}
+.missing-list,.missing-items{list-style:none;margin:0;padding:0}
+.missing-view{margin:0 0 2px}
+.missing-head{display:grid;grid-template-columns:16px 1fr auto;gap:6px;width:100%;text-align:left;border:0;background:transparent;padding:3px 4px;font-size:.84rem;border-radius:5px}
+.missing-head:hover{background:var(--state)}
+.missing-view.ready .mark{color:var(--ok)}
+.missing-view.todo .mark{color:#a35f00}
+.missing-n{color:var(--muted);font-size:.78rem}
+.missing-items{margin:0 0 6px 22px;display:flex;flex-direction:column;gap:3px;font-size:.8rem}
+.missing-items li{display:flex;flex-direction:column}
+.missing-items li.problem>span:first-child{color:var(--bad)}
+.missing-items .fix{font-size:.76rem}
+.missing-fix{margin:2px 0 4px 22px;padding:3px 10px;font-size:.8rem;border:1px solid var(--accent,#2f5bd3);color:var(--accent,#2f5bd3);background:transparent;border-radius:5px}
+.missing-fix:hover{background:var(--state)}
+.missing-note{margin:4px 0 0}.missing-updated{margin:0;color:var(--ok)}
 .sim-kinds[hidden]{display:none}
 .sim-kinds{list-style:none;margin:6px 0 0;padding:0;font-size:.8rem;display:grid;gap:3px}
 .sim-kinds li{padding:2px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-left:3px solid var(--line);border-radius:3px}

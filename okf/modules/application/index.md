@@ -10,6 +10,7 @@
 * [application.components](components.md) - The component diagram of an app built from the model (ADR-0155), extracted from the generated files themselves.
 * [application.data_steps](data_steps.md) - Data-model steps in a chat plan (ADR-0202): add an attribute to a class, remove one, or make one required or optional; and the step that changes the kind of actor holding a role (ADR-0210, issue #156).
 * [application.deployment](deployment.md) - The deployment diagram of an app built from the model (ADR-0206), read from the generated files themselves.
+* [application.describe_system](describe_system.md) - Describe your app (ADR-0216): a new system from one description, like starting an app in Lovable or Replit.
 * [application.diagram_catalog](diagram_catalog.md) - Named diagram views over a baseline and an optional candidate Workflow.
 * [application.diagram_emitters](diagram_emitters.md) - Text emitters for the diagram models in `application.diagrams`: Mermaid, PlantUML and Graphviz DOT.
 * [application.diagrams](diagrams.md) - Diagram models derived from the executable Workflow (ADR-0019, ADR-0023).
@@ -24,6 +25,7 @@
 * [application.new_system](new_system.md) - Start a new system (ADR-0185): the pack documents for a system started from a sketch or copied from a template.
 * [application.plan](plan.md) - Plan mode for the PlayIDE chat (ADR-0156): an AI proposes a change as numbered typed steps; the person accepts or rejects each one and sees what the accepted ones would do.
 * [application.ports](ports.md) - Application-owned ports.
+* [application.readiness](readiness.md) - What's missing (ADR-0216): one list across every model and view of what is not ready yet, so a system built in chat or on the canvas says what it still lacks instead of the person having to look in each tab.
 * [application.repository](repository.md) - Read-only repository evidence port; this does not grant project execution or approval.
 * [application.review](review.md) - Review a model change in PlayIDE instead of a pull request (ADR-0175).
 * [application.ripple](ripple.md) - Ripple (ADR-0158): what one change to the state machine does to every other diagram of the same system, and the follow-on edits that would keep them in agreement.

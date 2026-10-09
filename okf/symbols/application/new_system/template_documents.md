@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/new_system.py#template_documents
   title: application/new_system.py
   hash_method: ast-v2
-  sha256: 296d214c7c4a5dd0e4810d31f3fc02a8737cd7f4562093d9a2d274d52184e532
-notes_baseline: 43a4834816db3798efa4e8c4b260249b6e6645c719e21fef920ede69830cd6e0
+  sha256: ccd75f898837ad3565fb99a2822b599f72123048f9a9e5d342130ea91383d8aa
+notes_baseline: bb1672f9d8629ca55166db787d5459a7d3ed53f4f672fc689602e6ef37047a23
 ---
 
 # application.new_system.template_documents
@@ -47,5 +47,6 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
+* [application.new_system.checked_documents](/symbols/application/new_system/checked_documents.md) - The documents, if the kernel's checks accept them; `PackError` with every problem otherwise.
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
 <!-- okf:generated:end links -->

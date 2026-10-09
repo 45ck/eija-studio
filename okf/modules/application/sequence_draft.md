@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/sequence_draft.py
   title: application/sequence_draft.py
   hash_method: ast-api-v1
-  sha256: 2df82bd10b6c9475e37a42507efb91e5f980f0ce07bccd63afa2d28de3b92769
-notes_baseline: 135eeacb034efd84c973ff18047fcc6338b29da106c1f9fe68064f51af1c18bd
+  sha256: 90d0ffc09a7a924e7b8caba6626ba01875ae0cfe47e96f661a7d0547b95b4a23
+notes_baseline: da724a481b81466b76c2b84a90d0e5b545d11354861245abd51391cfe5c1b87a
 ---
 
 # application.sequence_draft
@@ -42,6 +42,8 @@ It is a draft, never saved: the person keeps it by editing or downloading `scena
 
 * [`MAX_DRAFTS`](/symbols/application/sequence_draft/MAX_DRAFTS.md) (constant) - no docstring
 * [`draft_scenarios`](/symbols/application/sequence_draft/draft_scenarios.md) (function) - Scenarios for a system with none: each step's expectation is what the kernel does on `model`.
+* [`journeys`](/symbols/application/sequence_draft/journeys.md) (function) - Each end state the model can reach with the pack's fixture actors, and the (actor, action) steps that reach it.
+* [`outsider`](/symbols/application/sequence_draft/outsider.md) (function) - Someone active in another role tries the first step: the kernel must refuse it.
 * [`scenarios_or_draft`](/symbols/application/sequence_draft/scenarios_or_draft.md) (function) - The pack's scenarios ("pack"), or a draft from the model in force when it has none ("drafted").
 
 ## Internal imports
@@ -66,8 +68,11 @@ _No curated notes yet._
 
 ## Referenced by
 
+* [application.describe_system](/modules/application/describe_system.md) - Describe your app (ADR-0216): a new system from one description, like starting an app in Lovable or Replit.
 * [interfaces.play](/modules/interfaces/play.md) - PlayIDE routes: the visual UML canvas page, Build & run of the model as a live app beside it (ADR-0151), and Simulate, seeded simulated users whose every step…
 * [application.sequence_draft.MAX_DRAFTS](/symbols/application/sequence_draft/MAX_DRAFTS.md) - Constant `MAX_DRAFTS` in `application/sequence_draft`.
 * [application.sequence_draft.draft_scenarios](/symbols/application/sequence_draft/draft_scenarios.md) - Scenarios for a system with none: each step's expectation is what the kernel does on `model`.
+* [application.sequence_draft.journeys](/symbols/application/sequence_draft/journeys.md) - Each end state the model can reach with the pack's fixture actors, and the (actor, action) steps that reach it.
+* [application.sequence_draft.outsider](/symbols/application/sequence_draft/outsider.md) - Someone active in another role tries the first step: the kernel must refuse it.
 * [application.sequence_draft.scenarios_or_draft](/symbols/application/sequence_draft/scenarios_or_draft.md) - The pack's scenarios ("pack"), or a draft from the model in force when it has none ("drafted").
 <!-- okf:generated:end links -->

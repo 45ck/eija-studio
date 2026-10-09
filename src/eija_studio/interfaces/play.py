@@ -16,6 +16,7 @@ model's build replaces it and the IDE stops it on exit. The generated app has no
 from __future__ import annotations
 
 import atexit
+import hashlib
 import os
 import socket
 import subprocess
@@ -40,8 +41,10 @@ from eija_studio.application.deployment import app_deployment
 from eija_studio.application.landscape import landscape
 from eija_studio.application.law_proof import compare_laws, prove_laws, with_laws
 from eija_studio.application.ghost_diff import ghost_diff
+from eija_studio.application.describe_system import update_tests
 from eija_studio.application.data_steps import data_changes, draft_pack, parse_step, split
 from eija_studio.application.plan import MAX_DRAFT_STEPS, preview_plan, propose_plan
+from eija_studio.application.readiness import missing
 from eija_studio.application.review import review_change
 from eija_studio.application.ripple import check_follow_ons, ripple
 from eija_studio.application.scenario_run import record_steps, run_scenarios
@@ -72,6 +75,7 @@ class ChangeRequest(BuildRequest):
     # The steps of the rounds before the last (ADR-0201): given, the change shown is the last round's alone, from the
     # model with those steps to the model with every accepted step; None is the whole change from the model in force.
     since: list[dict[str, Any]] | None = Field(default=None, max_length=MAX_DRAFT_STEPS)
+    scenarios: dict[str, Any] | None = None  # the Tests tab's draft (eija.scenarios.v1); None is the pack's (ADR-0216)
 
 
 class PlanRequest(BuildRequest):
@@ -137,6 +141,9 @@ class AppRunner:
         with self.lock:
             data = data_for(pack)  # the same model with another data model or other screens is another app
             key = model.semantic_hash[:12] + (f"-{data.digest[:8]}" if data else "") + f"-{screens.digest[:8]}"
+            # Who holds each role is part of the app too (ADR-0215): a round that only sets a role's kind is another app.
+            kinds = "".join(sorted(f"{r.id}={r.kind};" for r in pack.roles))
+            key += "-" + hashlib.sha256(kinds.encode()).hexdigest()[:8]
             out = self.root() / key
             manifest = build_into(out, pack, model, identity, screens=screens)
             result = {"model": model.semantic_hash, "screens": screens.digest, "cases": manifest["oracle"]["cases"],
@@ -318,7 +325,8 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
         data, data_before = data_for(pack), data_for(earlier)
         before, after = screens_for(studio.pack, start, data_before), screens_of(body, candidate)
         (old, _), (new, components) = built(earlier, start, before), built(pack, candidate, after)
-        scenarios = check_sequences(pack, candidate, scenarios_or_draft(pack, scenarios_for(studio.pack), start)[0], start)
+        pack_tests = parse_scenarios(body.scenarios, studio.pack.id) if body.scenarios is not None else scenarios_for(studio.pack)
+        scenarios = check_sequences(pack, candidate, scenarios_or_draft(pack, pack_tests, start)[0], start)
         others, _ = siblings(pack.id)  # the system this workflow is part of, before and after (ADR-0203, #146)
         system = (landscape(pack.id, [(earlier, data_before, start), *others]), landscape(pack.id, [(pack, data, candidate), *others])) if others else None
         report = ripple(start, candidate, data, (before, after), (old, new), components, scenarios, data_changes(data_before, data), system, data_before)
@@ -339,6 +347,21 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
         force (or, with `since`, the last round against the rounds before it, ADR-0201), as one union of both state
         machines. Read-only."""
         return ghost_diff(before_of(body), resolve(body))
+
+    @app.post("/api/play/ready")
+    def play_ready(body: ScenariosRequest):
+        """What's missing (ADR-0216): every view's row, ready or what it lacks, for the model shown with any accepted plan
+        steps and the Tests tab's draft. Read-only."""
+        model, pack = resolve(body), pack_of(body.plan)
+        return missing(pack, model, data_for(pack), screens_of(body, model), scenarios_of(body))
+
+    @app.post("/api/play/tests/update")
+    def play_tests_update(body: ScenariosRequest):
+        """The tests recorded again on the model shown (ADR-0216): failing ones re-recorded or dropped, new ways to an end
+        state added. A draft for the Tests tab; nothing is written."""
+        model, pack = resolve(body), pack_of(body.plan)
+        data = data_for(pack)
+        return update_tests(pack, model, scenarios_of(body), data.record if data is not None else "Record")
 
     @app.post("/api/play/review")
     def play_review(body: BuildRequest):

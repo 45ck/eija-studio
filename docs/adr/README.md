@@ -99,6 +99,7 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0208](0208-check-moments-and-traffic.md) | Moments for real checks, and the run as traffic on the diagram | accepted |
 | [0210](0210-actors-that-are-not-people.md) | Actors that are not people: AI agents, timers and external systems in the model | accepted |
 | [0215](0215-see-and-run-the-app-as-each-role.md) | See and run the app as each role | accepted |
+| [0216](0216-describe-your-app-and-whats-missing.md) | Describe your app, and what's missing | accepted |
 | [0218](0218-accessibility-check-on-the-generated-screens.md) | An accessibility check on the generated screens | accepted |
 | [0221](0221-every-record-can-reach-an-end.md) | A law that every record can still reach an end | accepted |
 <!-- adr-index:end -->

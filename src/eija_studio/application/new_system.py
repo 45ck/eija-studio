@@ -21,7 +21,8 @@ from eija_studio.domain.transactions import AddTransition, SetRole, Transaction
 
 NAME = r"[A-Za-z][A-Za-z0-9_]{0,39}"  # states, actions and roles: names the built app's code can use as they are
 LINE = re.compile(rf"^\s*({NAME})\s*->\s*({NAME})\s*:\s*({NAME})\s*\[\s*({NAME})\s*\]\s*$")
-LIST = re.compile(r"^\s*(actions|roles)\s*:\s*(.*)$", re.IGNORECASE)
+LIST = re.compile(r"^\s*(actions|roles|people|agents|timers|systems)\s*:\s*(.*)$", re.IGNORECASE)
+KIND_LISTS = {"people": "human", "agents": "agent", "timers": "timer", "systems": "system"}  # ADR-0210 kinds of actor
 FIELD = ATTRIBUTE_NAME  # an attribute's name, for a data-model step (ADR-0202): what the built app's form can use
 RECORD = re.compile(r"^[A-Z][A-Za-z0-9]{0,39}$")
 MAX_LINES = 64
@@ -43,11 +44,18 @@ def _names(text: str) -> list[str]:
     return [part.strip() for part in text.split(",") if part.strip()]
 
 
-def _list_line(n: int, kind: str, text: str, extra: dict[str, list[str]]) -> list[str]:
-    """An `actions:` or `roles:` line: names to declare without a transition yet."""
-    names = _names(text)
-    extra[kind.lower()] += [x for x in names if re.fullmatch(NAME, x)]
-    return [f"line {n}: {x!r} is not a name (letters, digits and _)" for x in names if not re.fullmatch(NAME, x)]
+def _list_line(n: int, kind: str, text: str, extra: dict[str, Any]) -> list[str]:
+    """An `actions:` or `roles:` line: names to declare without a transition yet. `agents:`, `timers:`, `systems:` and
+    `people:` lines are roles of that kind of actor (ADR-0210), and may also be roles the transitions name."""
+    names, kind = _names(text), kind.lower()
+    good = [x for x in names if re.fullmatch(NAME, x)]
+    problems = [f"line {n}: {x!r} is not a name (letters, digits and _)" for x in names if not re.fullmatch(NAME, x)]
+    if kind not in KIND_LISTS:
+        extra[kind] += good
+        return problems
+    extra["roles"] += good
+    return problems + [f"line {n}: {role} is already listed as another kind of actor"
+                       for role in good if extra["kinds"].setdefault(role, KIND_LISTS[kind]) != KIND_LISTS[kind]]
 
 
 def _transition_line(n: int, line: str, used: dict[str, int], transitions: list[tuple[str, ...]]) -> list[str]:
@@ -69,7 +77,7 @@ def parse_sketch(text: str) -> dict[str, Any]:
     if len(lines) > MAX_LINES:
         raise PackError([f"sketch: at most {MAX_LINES} lines"])
     transitions: list[tuple[str, ...]] = []
-    extra: dict[str, list[str]] = {"actions": [], "roles": []}
+    extra: dict[str, Any] = {"actions": [], "roles": [], "kinds": {}}
     used: dict[str, int] = {}
     problems: list[str] = []
     for n, line in enumerate(lines, 1):
@@ -138,6 +146,11 @@ def _vocabulary(parsed: dict[str, Any]) -> tuple[list[str], list[str], list[str]
     return states, actions, roles
 
 
+def _kind(parsed: dict[str, Any], role: str) -> dict[str, str]:
+    kind = parsed.get("kinds", {}).get(role, "human")
+    return {} if kind == "human" else {"kind": kind}  # a person is the default and is not written (ADR-0210)
+
+
 def sketch_documents(name: str, record: str, sketch: str, pack_id: str) -> dict[str, dict[str, Any]]:
     """`pack.json` and `data.json` for a system started from a sketch, checked by the kernel's pack check."""
     if not RECORD.match(record):
@@ -154,7 +167,7 @@ def sketch_documents(name: str, record: str, sketch: str, pack_id: str) -> dict[
                  "description": f"Started in PlayIDE from a sketch: one {record} moving through {len(states)} states."},
         "model": {"schema_version": "eija.workflow.v1", "id": pack_id, "initial_state": parsed["transitions"][0][0],
                   "states": states, "transitions": transitions},
-        "roles": [{"id": role} for role in roles],
+        "roles": [{"id": role} | _kind(parsed, role) for role in roles],
         "actions": [{"id": action, "guards": list(BASE_GUARDS), "required_effects": [f"Audit:{action}"]} for action in actions],
         "effects": {"catalog": [{"id": f"Audit:{action}", "kind": "audit"} for action in actions], "forbidden": []},
         "laws": [],
@@ -168,7 +181,7 @@ def sketch_documents(name: str, record: str, sketch: str, pack_id: str) -> dict[
     data = {"schema_version": "eija.data.v1", "id": pack_id, "record": record,
             "entities": [{"name": record, "description": f"One {record}; it moves through the state machine.",
                           "attributes": [{"name": "title", "type": "text", "required": True, "max_length": 200}]}]}
-    return _checked({"pack.json": pack, "data.json": data})
+    return checked_documents({"pack.json": pack, "data.json": data})
 
 
 def template_documents(template: Pack, documents: dict[str, dict[str, Any]], name: str, pack_id: str) -> dict[str, dict[str, Any]]:
@@ -191,10 +204,10 @@ def template_documents(template: Pack, documents: dict[str, dict[str, Any]], nam
     for file in ("data.json", "screens.json", "scenarios.json"):
         if file in documents:
             copied[file] = copy.deepcopy(documents[file]) | {"id": pack_id}
-    return _checked(copied)
+    return checked_documents(copied)
 
 
-def _checked(documents: dict[str, dict[str, Any]]) -> dict[str, dict[str, Any]]:
+def checked_documents(documents: dict[str, dict[str, Any]]) -> dict[str, dict[str, Any]]:
     """The documents, if the kernel's checks accept them; `PackError` with every problem otherwise."""
     pack = parse_pack(documents["pack.json"])
     try:
@@ -214,7 +227,8 @@ def summary(documents: dict[str, dict[str, Any]]) -> dict[str, Any]:
     pack = parse_pack(documents["pack.json"])
     return {"id": pack.id, "name": pack.pack.name, "initial": pack.model.initial_state, "states": list(pack.model.states),
             "transitions": len(pack.model.transitions), "roles": [r.id for r in pack.roles],
-            "actions": [a.id for a in pack.actions], "record": documents.get("data.json", {}).get("record")}
+            "actions": [a.id for a in pack.actions], "record": documents.get("data.json", {}).get("record"),
+            "kinds": {r.id: r.kind for r in pack.roles if r.kind != "human"}}
 
 
 def new_names(pack: Pack, transactions: list[Transaction]) -> tuple[list[str], list[str]]:

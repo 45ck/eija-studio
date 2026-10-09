@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/new_system.py#summary
   title: application/new_system.py
   hash_method: ast-v2
-  sha256: 13ab02dfa057a6bccec184c78a7f68021a854c302586d78e2c730516ffc8b9eb
-notes_baseline: ef512717790c99275aa7b67217d16debdcc7808bd6b10da4b5ecbb10bf1ea894
+  sha256: 2e2077e2f9b4d939bcafdfafa62f05a74442504509608f968cdca4482c94e8c3
+notes_baseline: 498c96c8d251dee575c9b479bf39950e176b9b6e5847f18ad37d50e56e09df86
 ---
 
 # application.new_system.summary
@@ -44,4 +44,8 @@ _No curated notes yet._
 ## Depends on
 
 * [domain.pack.parse_pack](/symbols/domain/pack/parse_pack.md) - Validate a decoded JSON document as a pack.
+
+## Referenced by
+
+* [application.describe_system.described_summary](/symbols/application/describe_system/described_summary.md) - What a described system has in every view, for the form to say before it is created.
 <!-- okf:generated:end links -->

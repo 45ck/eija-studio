@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/new_system.py
   title: application/new_system.py
   hash_method: ast-api-v1
-  sha256: 5592f7cdf4bfcc47d66a733c2a901dc49e12f01124a9990bbd9e94130731d655
-notes_baseline: b379831e1b9788d60750c57d34a594ae4ceffbc0126f0ece1084d3d2df8df42f
+  sha256: 851b92e6ad55850c1fbd385ddcfccb464d394e99c350b43baa54c8992be900ea
+notes_baseline: 585e2c53c3840d640b2678f09e21dec3796670829cfb380f11bc9994713cf7d8
 ---
 
 # application.new_system
@@ -41,6 +41,7 @@ beyond one audit entry per action, or meanings the person did not write.
 ## Public symbols
 
 * [`FIELD`](/symbols/application/new_system/FIELD.md) (constant) - no docstring
+* [`KIND_LISTS`](/symbols/application/new_system/KIND_LISTS.md) (constant) - no docstring
 * [`LINE`](/symbols/application/new_system/LINE.md) (constant) - no docstring
 * [`LIST`](/symbols/application/new_system/LIST.md) (constant) - no docstring
 * [`MAX_LINES`](/symbols/application/new_system/MAX_LINES.md) (constant) - no docstring
@@ -48,6 +49,7 @@ beyond one audit entry per action, or meanings the person did not write.
 * [`RECORD`](/symbols/application/new_system/RECORD.md) (constant) - no docstring
 * [`SKETCH_HELP`](/symbols/application/new_system/SKETCH_HELP.md) (constant) - no docstring
 * [`UNSUPPORTED`](/symbols/application/new_system/UNSUPPORTED.md) (constant) - no docstring
+* [`checked_documents`](/symbols/application/new_system/checked_documents.md) (function) - The documents, if the kernel's checks accept them; `PackError` with every problem otherwise.
 * [`classes`](/symbols/application/new_system/classes.md) (function) - A system's record class and each class's attribute names, for naming data-model steps (ADR-0202); None when the system…
 * [`declare`](/symbols/application/new_system/declare.md) (function) - `pack` with every action and role `transactions` name but it does not declare yet, declared exactly as a sketch declare…
 * [`new_names`](/symbols/application/new_system/new_names.md) (function) - The actions and roles `transactions` name that `pack` does not declare, in order of first use.
@@ -83,11 +85,14 @@ _No curated notes yet._
 
 ## Referenced by
 
+* [adapters.plan_data_phrases](/modules/adapters/plan_data_phrases.md) - The data-model and role-kind phrases of the offline plan proposer (ADR-0202, #156): add a field to a class, remove one, make one required or optional, and say…
 * [adapters.plan_proposals](/modules/adapters/plan_proposals.md) - Offline plan proposer for the PlayIDE chat (ADR-0156): a bounded phrase grammar and the pack's modelled meanings, never an LLM.
 * [application.data_steps](/modules/application/data_steps.md) - Data-model steps in a chat plan (ADR-0202): add an attribute to a class, remove one, or make one required or optional; and the step that changes the kind of ac…
+* [application.describe_system](/modules/application/describe_system.md) - Describe your app (ADR-0216): a new system from one description, like starting an app in Lovable or Replit.
 * [application.plan](/modules/application/plan.md) - Plan mode for the PlayIDE chat (ADR-0156): an AI proposes a change as numbered typed steps; the person accepts or rejects each one and sees what the accepted o…
 * [interfaces.play_systems](/modules/interfaces/play_systems.md) - PlayIDE's systems (ADR-0185): start a new system from a sketch or a template, open one you made before, and save the work in progress to carry on later.
 * [application.new_system.FIELD](/symbols/application/new_system/FIELD.md) - Constant `FIELD` in `application/new_system`.
+* [application.new_system.KIND_LISTS](/symbols/application/new_system/KIND_LISTS.md) - Constant `KIND_LISTS` in `application/new_system`.
 * [application.new_system.LINE](/symbols/application/new_system/LINE.md) - Constant `LINE` in `application/new_system`.
 * [application.new_system.LIST](/symbols/application/new_system/LIST.md) - Constant `LIST` in `application/new_system`.
 * [application.new_system.MAX_LINES](/symbols/application/new_system/MAX_LINES.md) - Constant `MAX_LINES` in `application/new_system`.
@@ -95,6 +100,7 @@ _No curated notes yet._
 * [application.new_system.RECORD](/symbols/application/new_system/RECORD.md) - Constant `RECORD` in `application/new_system`.
 * [application.new_system.SKETCH_HELP](/symbols/application/new_system/SKETCH_HELP.md) - Constant `SKETCH_HELP` in `application/new_system`.
 * [application.new_system.UNSUPPORTED](/symbols/application/new_system/UNSUPPORTED.md) - Constant `UNSUPPORTED` in `application/new_system`.
+* [application.new_system.checked_documents](/symbols/application/new_system/checked_documents.md) - The documents, if the kernel's checks accept them; `PackError` with every problem otherwise.
 * [application.new_system.classes](/symbols/application/new_system/classes.md) - A system's record class and each class's attribute names, for naming data-model steps (ADR-0202); None when the system has no class diagram.
 * [application.new_system.declare](/symbols/application/new_system/declare.md) - `pack` with every action and role `transactions` name but it does not declare yet, declared exactly as a sketch declares them (ADR-0201): an action gets the ba…
 * [application.new_system.new_names](/symbols/application/new_system/new_names.md) - The actions and roles `transactions` name that `pack` does not declare, in order of first use.

@@ -92,6 +92,7 @@ _No curated notes yet._
 
 ## Referenced by
 
+* [application.readiness](/modules/application/readiness.md) - What's missing (ADR-0216): one list across every model and view of what is not ready yet, so a system built in chat or on the canvas says what it still lacks i…
 * [interfaces.cli](/modules/interfaces/cli.md) - Module `interfaces/cli` (no module docstring).
 * [interfaces.play](/modules/interfaces/play.md) - PlayIDE routes: the visual UML canvas page, Build & run of the model as a live app beside it (ADR-0151), and Simulate, seeded simulated users whose every step…
 * [application.law_proof.FORMAT](/symbols/application/law_proof/FORMAT.md) - Constant `FORMAT` in `application/law_proof`.

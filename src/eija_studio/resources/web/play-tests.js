@@ -114,7 +114,10 @@
     draft = next;
     $("tests-source").value = JSON.stringify(next, null, 2);
     run();
+    changed();
   }
+
+  const changed = () => document.dispatchEvent(new CustomEvent("playide:tests")); // What's missing and Save follow the draft
 
   // ---- the file editor -------------------------------------------------------------------------------------------
 
@@ -203,7 +206,7 @@
     $("tests-edit").addEventListener("click", () => { if (toggle("tests-editor", "tests-edit")) { $("tests-source").value = JSON.stringify(document_(), null, 2); $("tests-source").focus(); } });
     $("tests-new").addEventListener("click", () => { if (toggle("tests-recorder", "tests-new")) { fillRecorder(); renderSteps(); $("rec-title").focus(); } });
     $("tests-try").addEventListener("click", tryDraft);
-    $("tests-reset").addEventListener("click", () => { draft = null; $("tests-problems").textContent = ""; run(); });
+    $("tests-reset").addEventListener("click", () => { draft = null; $("tests-problems").textContent = ""; run(); changed(); });
     $("tests-source").addEventListener("keydown", (event) => { if ((event.ctrlKey || event.metaKey) && event.key === "Enter") { event.preventDefault(); tryDraft(); } });
     $("rec-step").addEventListener("click", tryStep);
     $("rec-undo").addEventListener("click", () => { steps = steps.slice(0, -1); renderSteps(); });
@@ -211,7 +214,7 @@
     $("rec-keep").addEventListener("click", keep);
     $("rec-cancel").addEventListener("click", closeRecorder);
     // The Sequences tab (ADR-0195) draws the same scenarios and edits this one draft.
-    window.PlayTests = { draft: () => draft, edit: (next) => { if (next) setDraft(next); else { draft = null; $("tests-problems").textContent = ""; run(); } } };
+    window.PlayTests = { draft: () => draft, edit: (next) => { if (next) setDraft(next); else { draft = null; $("tests-problems").textContent = ""; run(); changed(); } } };
   }
 
   if (window.PlayIDE) init(window.PlayIDE);

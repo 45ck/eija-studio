@@ -2,10 +2,10 @@
   "mode": "record",
   "platform": "Linux 6.18.44-fc-v80 / Python 3.13.16",
   "scenario": "playide_greenfield",
-  "scenario_sha256": "ddd7ed3363c48d7a265f5222a03355a95e13f54c060fedc3da329708297711fe",
+  "scenario_sha256": "894bbb6e25ece3ca6fb3abefbdf49a616fdb4414d0e68a14f11b91455fb3eae5",
   "skipped": [],
   "status": "PASS",
   "video": "demos/output/playide_greenfield.webm",
-  "video_bytes": 19223358,
-  "video_sha256": "056398fbb32f8d476e2ac97cbe91e72080db13f3e5534844dc90f4935b4c75c3"
+  "video_bytes": 33551067,
+  "video_sha256": "cfd6f86af9a324490232d3452546b64be7d820d130a8eb417db90d3a42c2fd21"
 }

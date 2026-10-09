@@ -30,6 +30,14 @@ Declare the kind on the role in `pack.json`. A role without `kind` is a person.
 ]
 ```
 
+## Kinds on a system you start in PlayIDE
+
+On a system you start in PlayIDE (#156, [ADR-0216](adr/0216-describe-your-app-and-whats-missing.md)) you can set kinds without editing `pack.json`:
+
+* **Describe it.** "An AI agent triages tickets" gives the role `AiAgent`, of kind `agent`, the Triage transition. A timer, a scheduled job, a payment provider or a webhook works the same way. If the verb names no action, the role still gets its kind, and What's missing says it takes no action yet.
+* **Sketch it.** Add a line `agents: Bot`, `timers: Sweeper`, `systems: Gateway` or `people: Lead`. The role may also label transitions.
+* **Ask in chat.** Type `make Bot an AI agent` or `Lead is a person`. It is the same plan step as **Held by** in the inspector, shown on the use case diagram. The laws about kinds judge the plan again with the kinds it leaves, so a plan cannot pass such a law by changing who holds a role.
+
 ## Patterns
 
 **The agent proposes, a person decides.** Give the agent the steps that prepare a decision (`AssessRequest`, `ProposeRefund`) and a person the step that makes it (`ApproveRefund`). Then state who decides as a law about kinds, not about one role:
@@ -87,4 +95,4 @@ In the **Sequences** tab, «agent», «timer» and «system» lifelines are draw
 - **Amounts.** "The agent may approve refunds under 50" needs value guards in the kernel (issue #93). Today a law keeps the whole decision with a person.
 - **Elapsed time.** A timer is an actor that acts when run, not `after(48h)`; time triggers are issue #93.
 - **Agents talking to agents, or to other records.** Messages and cross-object actions are issue #93; one record moves through one state machine.
-- **Declaring a kind from a sketch or the chat.** A system started in PlayIDE gets people as roles. Change one with **Held by** in the inspector (step 7 above), bring it in from a UML file, or set `kind` in its `pack.json`.
+- **Declaring a kind from a description, a sketch or the chat.** A system started in PlayIDE gets people as roles unless the description or sketch names another kind (see above). Change one with **Held by** in the inspector (step 7 above), in chat, bring it in from a UML file, or set `kind` in its `pack.json`.

@@ -27,6 +27,7 @@
 <script src="/assets/play-tests.js" defer></script>
 <script src="/assets/play-assist.js" defer></script>
 <script src="/assets/play-access.js" defer></script>
+<script src="/assets/play-missing.js" defer></script>
 <script src="/assets/play-diff.js" defer></script>
 <script src="/assets/play-sequence.js" defer></script>
 <script src="/assets/play-systems.js" defer></script>
@@ -40,6 +41,7 @@
 <header class="bar">
   <div class="brand"><span class="logo" aria-hidden="true">▶</span><strong>PlayIDE</strong><span id="model-name" class="model-name"></span>
     <span id="system-controls" class="system-controls" hidden>
+      <button id="system-new" class="quiet system-new" type="button" aria-haspopup="dialog" aria-controls="systems-dialog" title="New app: describe it and get every model and view of it">＋ New</button>
       <button id="system-menu" class="quiet system-menu" type="button" aria-haspopup="dialog" aria-controls="systems-dialog" title="Open another system or start a new one">Systems</button>
       <button id="system-save" class="quiet" type="button" aria-keyshortcuts="Control+S" title="Save your work in progress on this system (Ctrl+S). Nothing is applied to the model." disabled>Save</button>
       <span id="system-saved" class="system-saved muted small" hidden></span>  <!-- its text is shown in the status bar (one place for save state) -->
@@ -87,6 +89,11 @@
 </div>
 <main class="layout">
   <aside class="explorer" aria-label="Model and inspector">
+    <section id="missing" class="missing" aria-labelledby="missing-title">
+      <h2 id="missing-title" class="pane-title">What's missing</h2>
+      <p id="missing-count" class="muted small" role="status" aria-live="polite">Checking every view…</p>
+      <ul id="missing-list" class="missing-list"></ul>
+    </section>
     <nav class="outline" aria-labelledby="outline-title">
       <h2 id="outline-title" class="pane-title">Model</h2>
       <h3>States</h3><ul id="outline-states"></ul>
@@ -313,6 +320,11 @@
   <section id="systems-open-pane" role="tabpanel" aria-labelledby="systems-tab-open"></section>
   <section id="systems-new-pane" role="tabpanel" aria-labelledby="systems-tab-new" hidden>
     <form id="systems-form">
+      <div id="systems-describe-box" class="systems-describe-box">
+        <label for="systems-describe">Describe your app</label>
+        <textarea id="systems-describe" rows="4" maxlength="4000" placeholder="A coffee shop app. Customers order drinks, baristas make them, customers collect them. Orders have a size (small, medium, large), notes and a price."></textarea>
+        <p class="muted small">You get every model and view of it: state machine, class diagram, use cases, screens, tests and sequences, components and permissions. Then change it in chat or on the diagrams. The reader here is offline: a fixed set of app shapes, not a live model.</p>
+      </div>
       <label for="systems-name">Name</label>
       <input id="systems-name" type="text" maxlength="80" placeholder="Support desk" autocomplete="off">
       <fieldset><legend>Start from</legend><div id="systems-templates" class="systems-templates"></div></fieldset>

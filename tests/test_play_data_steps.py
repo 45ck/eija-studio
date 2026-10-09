@@ -139,3 +139,30 @@ def test_a_held_data_model_leaves_the_pack_and_its_digest_alone():
     assert draft.digest == pack.digest and draft is not pack
     assert data_changes(data, data_for(draft)) == [f"{data.record} gains colour"]
     assert data_for(pack).digest == data.digest  # the loaded pack still reads its own data.json
+
+
+def test_chat_says_who_holds_a_role(served):
+    """#156 (ADR-0210, ADR-0216): "make Barista an AI agent" in chat is the same role-kind plan step the use case
+    diagram makes; the simulated draft pack has the kind, and a role the system does not have is refused."""
+    client, systems = served
+    new_system(client, systems)
+    steps, asked = ask(client, "make Barista an AI agent then Customer is a person", [])
+    assert steps == [{"kind": "set_role_kind", "role": "Barista", "to": "agent"},
+                     {"kind": "set_role_kind", "role": "Customer", "to": "human"}]
+    assert asked["preview"]["legal"]
+    pack = draft_pack(systems.handle.pack, [parse_step(s) for s in steps], True)
+    assert pack.role_kind("Barista") == "agent" and systems.handle.pack.role_kind("Barista") == "human"
+    _, unknown = ask(client, "make Nobody a timer", [])
+    assert not unknown["preview"]["legal"]  # the system has no role Nobody
+
+
+def test_a_round_that_only_sets_a_kind_builds_and_runs_another_app(served):
+    """A role's kind is part of the built app (ADR-0215), so the running app is not reused when only a kind changed."""
+    client, systems = served
+    new_system(client, systems)
+    play = client.app.state.play
+    first = post(client, "/api/play/build", {})
+    key = play.running["key"]
+    steps, _ = ask(client, "make Barista an AI agent", [])
+    second = post(client, "/api/play/build", {"plan": steps})
+    assert first["url"] and second["url"] and play.running["key"] != key

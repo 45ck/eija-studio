@@ -36,6 +36,14 @@ class PlanProposer(Protocol):
         """Follow-on steps for a ripple's problems (ADR-0158): {steps: [{transaction | screen, why, fixes}]}."""
         ...
 
+class SystemDescriber(Protocol):
+    """Turns a description of an app into {name, record, sketch, fields, reading} for "Describe your app" (ADR-0216).
+    Untrusted; no IO or persistence. `sketch` is in the state machine's label notation, `fields` are data-model
+    attributes, and `reading` says in words what was read and assumed."""
+    name: str
+    live: bool
+    def describe(self, text: str) -> dict[str, Any]: ...
+
 class UnitOfWork(Protocol):
     """All mutations on this port commit together or roll back together."""
     def load_case(self, case_id: str) -> dict[str, Any]: ...

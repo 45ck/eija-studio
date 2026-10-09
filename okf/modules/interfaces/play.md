@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/play.py
   title: interfaces/play.py
   hash_method: ast-api-v1
-  sha256: cd9a6aee03012c559a2431b310efac18a95bbaa8d86cfa3358f4684ceab50ce4
-notes_baseline: ce52149fecc6465afdc362cab6f043d1769ebdeb3d285070657a5c01569d5e23
+  sha256: 86fbec70890991cc82e2194af63bd93c7bf0cbb011b4676c2f38e2218e8f3681
+notes_baseline: b25dce8c22be111b1742d09cdd633f8fe6244ba0c26a840b860414a426b4d8f5
 ---
 
 # interfaces.play
@@ -57,10 +57,12 @@ _Symbol pages are generated for the domain and application layers only._
 * [`application/components`](/modules/application/components.md)
 * [`application/data_steps`](/modules/application/data_steps.md)
 * [`application/deployment`](/modules/application/deployment.md)
+* [`application/describe_system`](/modules/application/describe_system.md)
 * [`application/ghost_diff`](/modules/application/ghost_diff.md)
 * [`application/landscape`](/modules/application/landscape.md)
 * [`application/law_proof`](/modules/application/law_proof.md)
 * [`application/plan`](/modules/application/plan.md)
+* [`application/readiness`](/modules/application/readiness.md)
 * [`application/review`](/modules/application/review.md)
 * [`application/ripple`](/modules/application/ripple.md)
 * [`application/scenario_run`](/modules/application/scenario_run.md)
@@ -91,10 +93,12 @@ _No curated notes yet._
 * [application.components](/modules/application/components.md) - The component diagram of an app built from the model (ADR-0155), extracted from the generated files themselves.
 * [application.data_steps](/modules/application/data_steps.md) - Data-model steps in a chat plan (ADR-0202): add an attribute to a class, remove one, or make one required or optional; and the step that changes the kind of ac…
 * [application.deployment](/modules/application/deployment.md) - The deployment diagram of an app built from the model (ADR-0206), read from the generated files themselves.
+* [application.describe_system](/modules/application/describe_system.md) - Describe your app (ADR-0216): a new system from one description, like starting an app in Lovable or Replit.
 * [application.ghost_diff](/modules/application/ghost_diff.md) - How a change looks on the state machine: both models on one canvas, with nothing hidden (ADR-0176).
 * [application.landscape](/modules/application/landscape.md) - The system landscape (ADR-0203): the workflows that make up one system, drawn as a UML component diagram, and the places where their class diagrams disagree.
 * [application.law_proof](/modules/application/law_proof.md) - Prove a pack's laws over every run the kernel allows (ADR-0166).
 * [application.plan](/modules/application/plan.md) - Plan mode for the PlayIDE chat (ADR-0156): an AI proposes a change as numbered typed steps; the person accepts or rejects each one and sees what the accepted o…
+* [application.readiness](/modules/application/readiness.md) - What's missing (ADR-0216): one list across every model and view of what is not ready yet, so a system built in chat or on the canvas says what it still lacks i…
 * [application.review](/modules/application/review.md) - Review a model change in PlayIDE instead of a pull request (ADR-0175).
 * [application.ripple](/modules/application/ripple.md) - Ripple (ADR-0158): what one change to the state machine does to every other diagram of the same system, and the follow-on edits that would keep them in agreeme…
 * [application.scenario_run](/modules/application/scenario_run.md) - Run a pack's scenarios (its test cases) through the kernel, and record new ones (ADR-0177).

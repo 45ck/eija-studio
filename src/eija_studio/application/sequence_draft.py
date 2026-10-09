@@ -49,7 +49,8 @@ def _ends(model: Workflow) -> list[str]:
     return finals or [s for s in model.states if s != model.initial_state]
 
 
-def _journeys(pack: Pack, model: Workflow) -> list[tuple[str, list[tuple[str, str]]]]:
+def journeys(pack: Pack, model: Workflow) -> list[tuple[str, list[tuple[str, str]]]]:
+    """Each end state the model can reach with the pack's fixture actors, and the (actor, action) steps that reach it."""
     paths, found = _shortest(model), []
     for state in _ends(model):
         path = paths.get(state)
@@ -59,7 +60,7 @@ def _journeys(pack: Pack, model: Workflow) -> list[tuple[str, list[tuple[str, st
     return found
 
 
-def _outsider(pack: Pack, model: Workflow) -> tuple[str, str, list[tuple[str, str]]] | None:
+def outsider(pack: Pack, model: Workflow) -> tuple[str, str, list[tuple[str, str]]] | None:
     """Someone active in another role tries the first step: the kernel must refuse it."""
     first = next((t for t in sorted(model.transitions, key=lambda t: t.id) if t.from_state == model.initial_state), None)
     other = next((a for a in pack.fixtures.actors if first and a.active and a.role != first.role), None)
@@ -70,10 +71,10 @@ def _outsider(pack: Pack, model: Workflow) -> tuple[str, str, list[tuple[str, st
 
 def draft_scenarios(pack: Pack, model: Workflow) -> Scenarios:
     """Scenarios for a system with none: each step's expectation is what the kernel does on `model`."""
-    drafts = [(f"{model.initial_state} to {state}", f"reach-{_slug(state)}", steps) for state, steps in _journeys(pack, model)]
-    outsider = _outsider(pack, model)
-    if outsider:
-        drafts.append(outsider)
+    drafts = [(f"{model.initial_state} to {state}", f"reach-{_slug(state)}", steps) for state, steps in journeys(pack, model)]
+    refusal = outsider(pack, model)
+    if refusal:
+        drafts.append(refusal)
     seen: dict[str, int] = {}
     scenarios = []
     for title, sid, steps in drafts[:MAX_DRAFTS]:

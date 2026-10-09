@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/sequence_draft.py#draft_scenarios
   title: application/sequence_draft.py
   hash_method: ast-v2
-  sha256: 73f1c718223195e5be4915afb162f187e2da95e7b7a5860241e40e27f531c409
-notes_baseline: 542710f09d181994f421603636cc9d1942a263095a272d0b3806c9987b7c481b
+  sha256: 1c7e3cea6cb712e5c322866bea3e7d993f1bd4111cf38984499f5091945cb66c
+notes_baseline: 6a3ca428775317b7743eb7e888e1ea9191b0c902008d496cb2ae0859ca0284e1
 ---
 
 # application.sequence_draft.draft_scenarios
@@ -45,6 +45,8 @@ _No curated notes yet._
 
 * [application.scenario_run.record_steps](/symbols/application/scenario_run/record_steps.md) - What the kernel does for each (actor, action) in turn, written as scenario steps that expect exactly that.
 * [application.sequence_draft.MAX_DRAFTS](/symbols/application/sequence_draft/MAX_DRAFTS.md) - Constant `MAX_DRAFTS` in `application/sequence_draft`.
+* [application.sequence_draft.journeys](/symbols/application/sequence_draft/journeys.md) - Each end state the model can reach with the pack's fixture actors, and the (actor, action) steps that reach it.
+* [application.sequence_draft.outsider](/symbols/application/sequence_draft/outsider.md) - Someone active in another role tries the first step: the kernel must refuse it.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
 * [domain.scenarios.Scenarios](/symbols/domain/scenarios/Scenarios.md) - `class Scenarios(Contract)` in `domain/scenarios`.

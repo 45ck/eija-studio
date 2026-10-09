@@ -1,28 +1,31 @@
-"""Greenfield in PlayIDE: a new app built in chat, round after round (ADR-0201).
+"""Greenfield in PlayIDE: describe an app, get every view, then build it with chat and the canvas (ADR-0201..0203).
 
 The storyboard is docs/demos/PLAYIDE-GREENFIELD-STORYBOARD.md. This script drives the real PlayIDE page (`/play`) of
-an ephemeral `eija serve`, offline, starts a new system from a three-line sketch, and builds it in five asks: a new
-feature, the record's fields, a new requirement, a rename, a new role, and going back on the first decision. After every round it reads the
-change in the Changes view (that round alone, then every round), and at the end builds the app and runs it. Every
-step asserts what the page renders, so the take doubles as an end-to-end check. The chat's proposer is the offline
-phrase reader (`offline-plan-fixture-v1`), and the video says so. Nothing is approved or applied.
+an ephemeral `eija serve`, offline. It starts the way Lovable or Replit do: one box to describe the app, which makes
+every model and view (state machine, class diagram, use cases, screens, tests and sequences, components). Then it mixes
+chat asks with direct edits on the diagram: a new requirement, a state drawn by hand, the fields the form needs, a
+rename and a role, and going back on a decision. What's missing, across every view, says what is not ready after each
+round, and "Update the tests" records the tests a round made stale again, so the sequence diagrams follow the model.
+Laws are left to the person. It ends by building the app and running it. Every step asserts what the page renders, so the take doubles as an
+end-to-end check. The describer and the chat's proposer are the offline readers, and the video says so. Nothing is
+approved or applied.
 """
 from __future__ import annotations
 
 from demos.lib import RunningServer, Scene
 
-TITLE = "Greenfield in PlayIDE: build a new app in chat, round after round"
+TITLE = "Greenfield in PlayIDE: describe an app, get every view, then build it in chat and on the canvas"
 PACE = 0.8
-SKETCH = "Placed -> Brewing : Start [Barista]\nBrewing -> Ready : Finish [Barista]\nReady -> Collected : Collect [Customer]"
+DESCRIPTION = ("A coffee shop app. Customers order drinks, baristas make them, then customers collect them. "
+               "Orders have a size (small, medium, large) and notes.")
 CARD = ".msg.ai:last-child"  # the plan card moves under the latest ask
 BUILD_TIMEOUT_MS = 600_000
 ROUNDS = (
-    "add Cancel from Placed to Cancelled for Customer",
-    "add field size as choice Small, Medium, Large required then add field notes",
     "add Pay from Placed to Paid for Customer then move Start source to Paid",
-    "rename state Ready to AwaitingPickup",
-    "allow Manager to Cancel",
-    "remove state Cancelled",
+    "add Refund from Paid to Refunded for Barista",
+    "add field pickupTime as text then make size required",
+    "rename state Ready to AwaitingPickup then allow Manager to Cancel",
+    "remove state Cancelled then allow Manager to Refund",
 )
 __all__ = ["TITLE", "run"]
 
@@ -40,25 +43,59 @@ def run(scene: Scene, server: RunningServer) -> None:
     scene.pace = PACE
     scene.goto(f"{server.base_url}/play#{server.token}")
     scene.wait_for("body[data-ready=true]", timeout_ms=60_000)
-    scene.title_card("Greenfield, in UML", "A new app from three lines, built in chat one small ask at a time. "
-                     "Every round is checked by the kernel, and you can read each one.", hold_ms=3600)
+    scene.title_card("Greenfield, in UML", "Describe an app in one box and get every model and view of it. Then change "
+                     "it in chat or on the diagram, and see what is still missing.", hold_ms=3600)
     chapter = _Chapters(scene)
-    _sketch(scene, chapter)
-    _feature(scene, chapter)
-    _fields(scene, chapter)
+    _describe(scene, chapter)
+    _every_view(scene, chapter)
     _requirement(scene, chapter)
+    _by_hand(scene, chapter)
+    _fields(scene, chapter)
     _rename_and_role(scene, chapter)
     _change_your_mind(scene, chapter)
+    _laws(scene, chapter)
     _run_it(scene, chapter)
     scene.zoom_out()
-    scene.title_card("Vibe-code it. Then read it.", "Fast asks, typed UML steps, the kernel's verdict on every round. "
-                     "Offline proposer; nothing is applied until the owner says so. PlayIDE, built on EIJA Studio "
-                     "(Apache-2.0)", hold_ms=4600)
+    scene.title_card("Vibe-code it. Then read it.", "Describe it, ask, drag, and read every round in UML with what is "
+                     "missing. Offline describer and proposer; nothing is applied until the owner says so. PlayIDE, built "
+                     "on EIJA Studio (Apache-2.0)", hold_ms=4600)
 
 
 def _ask(scene: Scene, text: str) -> None:
     scene.type_text("#chat-input", text, clear=True)
     scene.click("#chat-send")
+
+
+def _missing(scene: Scene, text: str, caption: str, scale: float = 1.6) -> None:
+    scene.expect_text("#missing", text, timeout_ms=60_000)
+    scene.caption(caption)
+    scene.zoom("#missing", scale=scale)
+    scene.wait(2400)
+    scene.zoom_out()
+
+
+def _update_tests(scene: Scene, change: str, caption: str) -> None:
+    """What's missing's one-click fix: the kernel records the stale tests again on the model shown, into the draft."""
+    scene.click("#missing-update-tests")
+    scene.expect_text("#missing", change, timeout_ms=60_000)
+    scene.wait_for('#missing [data-view="tests"].ready', timeout_ms=60_000)
+    scene.caption(caption)
+    scene.zoom("#missing", scale=1.6)
+    scene.wait(2600)
+    scene.zoom_out()
+
+
+def _sequence(scene: Scene, title: str, caption: str, text: str = "") -> None:
+    """Open the Sequences tab on one test and read it close up."""
+    scene.click("#tab-sequences")
+    scene.click(f'#seq-list button:has-text("{title}")')
+    scene.expect_text("#seq-verdict", title, timeout_ms=30_000)
+    if text:
+        scene.expect_text("#sequence-canvas", text, timeout_ms=30_000)
+    scene.caption(caption)
+    scene.zoom("#sequence-canvas", scale=1.5)
+    scene.wait(2800)
+    scene.zoom_out()
 
 
 def _changes(scene: Scene, scope: str) -> None:
@@ -76,135 +113,149 @@ def _close_changes(scene: Scene) -> None:
         scene.click("#show-changes")
 
 
-def _sketch(scene: Scene, chapter: _Chapters) -> None:
-    chapter("Start from three lines")
-    scene.caption("A coffee order, sketched in the state machine's own label notation: From -> To : Action [Role].")
-    scene.click("#system-menu")
-    scene.click("#systems-tab-new")
-    scene.click("#systems-templates input[value=blank]")
-    scene.type_text("#systems-name", "Coffee orders", clear=True)
-    scene.type_text("#systems-record", "Order", clear=True)
-    scene.type_text("#systems-sketch", SKETCH, clear=True, delay_range_ms=(20, 55))
-    scene.wait_for("#systems-check.ok", timeout_ms=30_000)
-    scene.expect_text("#systems-check", "4 states (starts in Placed)")
-    scene.caption("The kernel checks the sketch as you type.")
-    scene.zoom("#systems-check", scale=1.5)
-    scene.wait(1300)
+def _describe(scene: Scene, chapter: _Chapters) -> None:
+    chapter("Describe it")
+    scene.caption("Start like Lovable or Replit: say what the app is for, who does what, and what it records.")
+    scene.click("#system-new")
+    scene.wait_for("#systems-describe", timeout_ms=30_000)
+    scene.type_text("#systems-describe", DESCRIPTION, clear=True, delay_range_ms=(12, 35))
+    scene.type_text("#systems-name", "Coffee shop", clear=True)
+    scene.wait_for("#systems-described", timeout_ms=30_000)
+    scene.expect_text("#systems-described", "3 recorded by the kernel")
+    scene.caption("Before anything is made, every view it will have, checked by the kernel. The reader is offline: "
+                  "a fixed set of app shapes, and it says what it assumed.")
+    scene.zoom("#systems-check", scale=1.35)
+    scene.wait(2600)
     scene.zoom_out()
     with scene.page.expect_navigation(timeout=60_000):
         scene.click("#systems-create")
     scene.reattach("body[data-ready=true]")
     scene.expect_text("#outline-states", "Collected")
-    scene.chapter(chapter.n, "Start from three lines")  # the reload dropped the chip: show it again
-    scene.caption("That is a running system already: a state machine, a record class, use cases and an app.")
-    scene.zoom("#canvas", scale=1.5)
-    scene.wait(1200)
-    scene.zoom_out()
+    scene.chapter(chapter.n, "Describe it")  # the reload dropped the chip: show it again
 
 
-def _feature(scene: Scene, chapter: _Chapters) -> None:
-    chapter("Round 1: a feature")
-    scene.caption("Ask for what the system lacks. Offline here: a phrase reader stands in for a live model.")
-    _ask(scene, ROUNDS[0])
-    scene.expect_text(f"{CARD} .plan-verdict", "The policy allows the result")
-    scene.expect_text(f"{CARD} .plan-steps", "new action Cancel")
-    scene.caption("Two typed UML steps: the state it needs, then the transition. Cancel is a new action, declared the "
-                  "way a sketch declares one.")
-    scene.zoom(CARD, scale=1.4)
-    scene.wait(1800)
-    scene.zoom_out()
-    scene.click(f"{CARD} .plan-tools .primary")  # preview it on the diagram
-    scene.wait_for("#plan-banner:not([hidden])", timeout_ms=30_000)
-    scene.zoom("#canvas", scale=1.5)
-    scene.wait(1200)
-    scene.zoom_out()
-
-
-def _fields(scene: Scene, chapter: _Chapters) -> None:
-    chapter("Round 2: the record's fields")
-    scene.caption("The sketch gave Order one attribute, its title. Ask for the fields the app's form needs.")
-    _ask(scene, ROUNDS[1])
-    scene.expect_text(f"{CARD} .plan-summary", "2 rounds")
-    scene.expect_text(f"{CARD} .plan-steps", "Add attribute size: one of Small, Medium, Large to Order, required")
-    scene.expect_text(f"{CARD} .plan-verdict", "Order gains size")
-    scene.zoom(f"{CARD} .plan-steps", scale=1.4)
-    scene.wait(1500)
+def _every_view(scene: Scene, chapter: _Chapters) -> None:
+    chapter("Every model and view")
+    scene.caption("A running system already: the state machine, from the shape it read and the roles you named.")
+    scene.zoom("#canvas", scale=1.35)
+    scene.wait(2400)
     scene.zoom_out()
     scene.click("#tab-classes")
     scene.wait_for("#class-canvas svg", timeout_ms=30_000)
-    scene.expect_text("#class-canvas", "+ size")
-    scene.caption("The class diagram shows the draft: size and notes are new. The built app's form follows it.")
+    scene.expect_text("#class-canvas", "size")
+    scene.caption("The class diagram, with the fields you described: the built app's form.")
     scene.zoom("#class-canvas", scale=1.4)
-    scene.wait(1800)
+    scene.wait(2400)
+    scene.zoom_out()
+    _sequence(scene, "Order reaches Collected", "Test cases recorded by the kernel, drawn as UML sequence diagrams: "
+              "who calls the order, each state it reaches, and the audit entry each step writes.", "Collect")
+    _sequence(scene, "Customer cannot Start", "A refusal is a test too: a customer may not start brewing, so the kernel "
+              "must refuse it. UML draws it as a neg fragment.", "neg")
+    scene.click("#tab-states")
+    _missing(scene, "No laws", "What's missing, across every view. No law is written for you: laws are yours to set.")
+
+
+def _requirement(scene: Scene, chapter: _Chapters) -> None:
+    chapter("Round 1: a new requirement")
+    scene.caption("Customers pay before brewing starts. Ask in chat. Offline here: a phrase reader stands in for a live model.")
+    _ask(scene, ROUNDS[0])
+    scene.expect_text(f"{CARD} .plan-verdict", "The policy allows the result")
+    scene.expect_text(f"{CARD} .plan-steps", "new action Pay")
+    scene.zoom(CARD, scale=1.35)
+    scene.wait(2400)
+    scene.zoom_out()
+    scene.click(f"{CARD} .plan-tools .primary")  # preview it on the diagram
+    scene.wait_for("#plan-banner:not([hidden])", timeout_ms=30_000)
+    scene.expect_text("#missing", "No test takes Pay", timeout_ms=60_000)
+    _missing(scene, "Order reaches Collected” fails", "What's missing follows the work in progress: no test takes Pay yet, and the "
+             "recorded way to Collected now fails, because paying comes first. Tests pin down what the kernel did.")
+    _update_tests(scene, "Order reaches Collected recorded again", "Update the tests: the kernel records the way to "
+                  "Collected again on the new model. A draft you keep with Save, never written behind your back.")
+    _sequence(scene, "Order reaches Collected", "The sequence now pays first. Tests, sequences and the list agree.", "Pay")
+    scene.click("#tab-states")
+
+
+def _by_hand(scene: Scene, chapter: _Chapters) -> None:
+    chapter("Round 2: draw it, then ask")
+    scene.caption("Or drag a state onto the diagram, like draw.io, and type its name.")
+    canvas = scene.page.locator("#canvas").bounding_box()
+    width, height = (canvas["width"], canvas["height"]) if canvas else (800.0, 600.0)
+    scene.drag('#draw-palette [data-kind="state"]', "#canvas", position=(width * 0.84, height * 0.55))
+    scene.type_text(".inline-edit input", "Refunded")
+    scene.click('.inline-edit button[type="submit"]')
+    _missing(scene, "Refunded cannot be reached", "Nothing leads into Refunded yet, and the list says so.")
+    _ask(scene, ROUNDS[1])
+    scene.expect_text(f"{CARD} .plan-steps", "new action Refund")
+    scene.expect_text("#missing", "No test takes Refund", timeout_ms=60_000)
+    scene.caption("Mixed: your drawn state and the AI's transition, each tagged You or AI. The reachability problem is gone.")
+    scene.zoom(CARD, scale=1.3)
+    scene.wait(2200)
+    scene.zoom_out()
+    _update_tests(scene, "Order reaches Refunded added", "Refunded is a new end, so updating the tests adds the way "
+                  "there, and Refund is tested.")
+
+
+def _fields(scene: Scene, chapter: _Chapters) -> None:
+    chapter("Round 3: the form")
+    _ask(scene, ROUNDS[2])
+    scene.expect_text(f"{CARD} .plan-verdict", "Order gains pickupTime")
+    scene.click("#tab-classes")
+    scene.wait_for("#class-canvas svg", timeout_ms=30_000)
+    scene.expect_text("#class-canvas", "+ pickupTime")
+    scene.caption("The class diagram shows the draft: pickupTime is new, size is now required. The built app's form follows.")
+    scene.zoom("#class-canvas", scale=1.4)
+    scene.wait(2400)
     scene.zoom_out()
     scene.click("#tab-states")
 
 
-def _requirement(scene: Scene, chapter: _Chapters) -> None:
-    chapter("Round 3: a new requirement")
-    scene.caption("Customers pay before brewing starts. The ask is planned on top of the rounds before, not instead of them.")
-    _ask(scene, ROUNDS[2])
-    scene.expect_text(f"{CARD} .plan-summary", "3 rounds")
-    scene.expect_text(f"{CARD} .plan-verdict", "The policy allows the result")
-    scene.zoom(f"{CARD} .round-head >> nth=-1", scale=1.5)
-    scene.wait(1000)
+def _rename_and_role(scene: Scene, chapter: _Chapters) -> None:
+    chapter("Round 4: rename, and a new role")
+    _ask(scene, ROUNDS[3])
+    scene.expect_text(f"{CARD} .plan-steps", "new role Manager")
+    scene.expect_text(f"{CARD} .plan-verdict", "role Manager")
+    scene.caption("Every transition follows the rename. Manager is a new role with a test user, and the verdict says what is new.")
+    scene.zoom(f"{CARD} .plan-verdict", scale=1.6)
+    scene.wait(2400)
     scene.zoom_out()
     _changes(scene, "round")
-    scene.expect_text(".diff-summary", "3 changes")
-    scene.caption("Read this round alone: Paid is new, Pay is new, and Start moved. Its old route stays as a ghost.")
-    scene.zoom("#diff-view", scale=1.3)
-    scene.wait(2000)
-    scene.zoom_out()
-    scene.caption("And what to consider about this round: the other diagrams it changes and the tests it adds.")
-    scene.zoom("#diff-consider", scale=1.6)
-    scene.wait(1800)
+    scene.caption("Read this round alone in the Changes view, with what to consider.")
+    scene.zoom("#diff-view", scale=1.25)
+    scene.wait(2400)
     scene.zoom_out()
     _close_changes(scene)
 
 
-def _rename_and_role(scene: Scene, chapter: _Chapters) -> None:
-    chapter("Rounds 4 and 5: rename, and a new role")
-    _ask(scene, ROUNDS[3])
-    scene.expect_text(f"{CARD} .plan-summary", "4 rounds")
-    scene.caption("Rename a state. Every transition that touches it follows.")
-    _ask(scene, ROUNDS[4])
-    scene.expect_text(f"{CARD} .plan-steps", "new role Manager")
-    scene.expect_text(f"{CARD} .plan-verdict", "New in this system: actions Cancel, Pay; role Manager")
-    scene.caption("A manager may cancel too. Manager is a new role, with a test user, and the verdict says what is new.")
-    scene.zoom(f"{CARD} .plan-verdict", scale=1.6)
-    scene.wait(1800)
-    scene.zoom_out()
-    scene.click("#tab-access")
-    scene.wait_for("#access-panel table", timeout_ms=60_000)
-    scene.caption("Who can do what, from each state, every cell tried in the kernel.")
-    scene.zoom("#access-panel", scale=1.3)
-    scene.wait(1500)
-    scene.zoom_out()
-    scene.click("#tab-states")
-
-
 def _change_your_mind(scene: Scene, chapter: _Chapters) -> None:
-    chapter("Round 6: change your mind")
-    scene.caption("No cancelling after all. Removing a state that is in use removes its transition first, as its own step.")
-    _ask(scene, ROUNDS[5])
-    scene.expect_text(f"{CARD} .plan-summary", "6 rounds")
+    chapter("Round 5: change your mind")
+    scene.caption("No cancelling after all, and a manager approves refunds. Removing a state in use removes its transition "
+                  "first, as its own step.")
+    _ask(scene, ROUNDS[4])
+    scene.expect_text(f"{CARD} .plan-summary", "rounds")
     scene.expect_text(f"{CARD} .plan-verdict", "The policy allows the result")
-    _changes(scene, "round")
-    scene.expect_text(".diff-summary", "removed")
-    scene.caption("This round removes Cancelled and Cancel: drawn as faded ghosts, never just gone.")
-    scene.zoom("#diff-view", scale=1.3)
-    scene.wait(1800)
-    scene.zoom_out()
+    _missing(scene, "Order reaches Cancelled” fails", "Cancelling is gone, so its recorded test fails, and the way to "
+             "Refunded is now the manager's. The list says both.")
+    _update_tests(scene, "Order reaches Cancelled removed", "Update the tests: the way to Refunded is recorded again "
+                  "with the manager, and the test for an end that is gone is dropped. Every view but laws is ready.")
     _changes(scene, "all")
-    scene.caption("Every round together, against the sketch you started from: the system you built.")
+    scene.caption("Every round together, against what you described: the system you built.")
     scene.zoom("#diff-view", scale=1.25)
     scene.wait(2000)
     scene.zoom_out()
     _close_changes(scene)
-    scene.caption("Each step stays in the plan, tagged AI or You. Untick any one and everything is checked again.")
-    scene.zoom(CARD, scale=1.25)
-    scene.wait(1500)
+
+
+def _laws(scene: Scene, chapter: _Chapters) -> None:
+    chapter("Laws are yours")
+    scene.click('#missing [data-view="laws"] .missing-head')
+    scene.wait_for("#laws:not([hidden])", timeout_ms=30_000)
+    scene.expect_text("#laws", "no laws yet", timeout_ms=60_000)
+    scene.caption("One row is left on purpose. A law is what the system must never do, and PlayIDE never writes one for "
+                  "you: you write it, and the kernel proves it over every run.")
+    scene.zoom("#laws", scale=1.3)
+    scene.wait(2800)
     scene.zoom_out()
+    scene.click("#tab-states")
 
 
 def _run_it(scene: Scene, chapter: _Chapters) -> None:
@@ -214,7 +265,7 @@ def _run_it(scene: Scene, chapter: _Chapters) -> None:
     scene.expect_text("#score", "cases match the kernel", timeout_ms=BUILD_TIMEOUT_MS)
     scene.wait_for("#run-frame", timeout_ms=60_000)
     scene.zoom("#run", scale=1.3)
-    scene.wait(1800)
+    scene.wait(2400)
     scene.zoom_out()
     scene.click("#simulate")
     scene.expect_text("#sim-summary", "refused by the kernel", timeout_ms=60_000)
@@ -222,5 +273,5 @@ def _run_it(scene: Scene, chapter: _Chapters) -> None:
     scene.click("#system-save")
     scene.expect_text("#status-saved", "Saved", timeout_ms=30_000)
     scene.zoom("#system-controls", scale=1.6)
-    scene.wait(1300)
+    scene.wait(2400)
     scene.zoom_out()

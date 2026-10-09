@@ -19,15 +19,18 @@ from typing import Any, Literal
 from pydantic import Field
 
 from eija_studio.application.data_steps import parse_step
+from eija_studio.application.describe_system import MAX_DESCRIPTION, describe_documents, described_summary
 from eija_studio.application.interop import MAX_CHARS, detect_format, start_from_file
 from eija_studio.application.new_system import SKETCH_HELP, sketch_documents, summary, system_id, template_documents
 from eija_studio.application.plan import MAX_DRAFT_STEPS, MAX_REQUEST
 from eija_studio.domain.models import Contract, DomainError, Workflow
 from eija_studio.domain.pack import PACK_FILE, PACKS_ROOT, PackError, load_pack
+from eija_studio.domain.scenarios import parse_scenarios
 from eija_studio.domain.screens import parse_screens
 
 BLANK = "blank"
 UML = "uml"  # start from a UML file (ADR-0190)
+DESCRIBE = "describe"  # start from a description of the app (ADR-0216)
 TEMPLATE_FILES = ("pack.json", "data.json", "screens.json", "scenarios.json")
 
 
@@ -48,12 +51,13 @@ class StudioHandle:
 
 
 class NewSystem(Contract):
-    name: str = Field(min_length=1, max_length=80)
+    name: str = Field(default="", max_length=80)  # may be empty only when describing: the describer names it
     template: str = Field(default=BLANK, pattern=r"^[a-z][a-z0-9-]{0,39}$")
     record: str = Field(default="Record", max_length=40)
     sketch: str = Field(default="", max_length=6000)
     uml: str = Field(default="", max_length=MAX_CHARS)  # for template "uml": the file's text
     filename: str = Field(default="", max_length=200)  # for template "uml": its name, which says its format
+    description: str = Field(default="", max_length=MAX_DESCRIPTION)  # for template "describe": the app in your words
     check_only: bool = False  # say what would be created, or what is wrong, and write nothing
 
 
@@ -72,6 +76,7 @@ class SavedWork(Contract):
     steps: list[DraftStep] = Field(default_factory=list, max_length=MAX_DRAFT_STEPS)
     accepted: list[bool] = Field(default_factory=list, max_length=MAX_DRAFT_STEPS)
     screens: dict[str, Any] | None = None
+    scenarios: dict[str, Any] | None = None  # the Tests tab's draft (eija.scenarios.v1), kept with the work (ADR-0216)
 
 
 def templates() -> list[dict[str, Any]]:
@@ -93,33 +98,51 @@ def _documents(folder: Path) -> dict[str, dict[str, Any]]:
     return {name: json.loads((folder / name).read_text(encoding="utf-8")) for name in TEMPLATE_FILES if (folder / name).is_file()}
 
 
-def new_documents(library: Any, body: NewSystem) -> tuple[str, dict[str, dict[str, Any]], dict[str, Any] | None]:
+def new_documents(library: Any, body: NewSystem, describer: Any = None) -> tuple[str, dict[str, dict[str, Any]], dict[str, Any] | None]:
     """The new system's id, its documents checked by the kernel, and for a UML file the import report (what was read,
-    kept, filled in or not imported); `PackError` with every problem otherwise."""
+    kept, filled in or not imported), or for a description what the describer read; `PackError` with every problem
+    otherwise."""
+    if body.template == DESCRIBE:
+        return _described(library, body, describer)
+    if not body.name.strip():
+        raise PackError(["name: give the system a name"])
     pack_id = system_id(body.name, library.ids())
     if body.template == BLANK:
         return pack_id, sketch_documents(body.name.strip(), body.record.strip() or "Record", body.sketch, pack_id), None
     if body.template == UML:
-        if not body.uml.strip():
-            raise PackError(["choose a UML file: XMI, PlantUML, Mermaid or draw.io"])
-        try:
-            fmt = detect_format(body.filename, body.uml)
-            documents, report = start_from_file(fmt, body.uml, body.name.strip(), pack_id, body.record.strip() or "Record")
-        except DomainError as error:
-            raise PackError([error.message]) from None
-        return pack_id, documents, report
+        return _from_uml(body, pack_id)
     template = next((t for t in templates() if t["id"] == body.template), None)
     if template is None:
         raise DomainError("NOT_FOUND", "No such template")
     return pack_id, template_documents(load_pack(template["folder"]), _documents(template["folder"]), body.name.strip(), pack_id), None
 
 
+def _from_uml(body: NewSystem, pack_id: str) -> tuple[str, dict[str, dict[str, Any]], dict[str, Any]]:
+    if not body.uml.strip():
+        raise PackError(["choose a UML file: XMI, PlantUML, Mermaid or draw.io"])
+    try:
+        fmt = detect_format(body.filename, body.uml)
+        documents, report = start_from_file(fmt, body.uml, body.name.strip(), pack_id, body.record.strip() or "Record")
+    except DomainError as error:
+        raise PackError([error.message]) from None
+    return pack_id, documents, report
+
+
+def _described(library: Any, body: NewSystem, describer: Any) -> tuple[str, dict[str, dict[str, Any]], dict[str, Any]]:
+    if describer is None:
+        raise DomainError("DESCRIBER_UNAVAILABLE", "No describer is configured")
+    documents, reading = describe_documents(body.description, body.name, lambda name: system_id(name, library.ids()), describer)
+    return documents["pack.json"]["pack"]["id"], documents, reading
+
+
 class Systems:
-    """The systems home and the system the server has open."""
+    """The systems home and the system the server has open. `describer` reads a description of an app for "Describe
+    your app" (ADR-0216); the offline one unless another is given."""
 
     def __init__(self, handle: StudioHandle, library: Any, opener: Callable[[Path, Path], Any],
-                 pack: Path, workspace: Path, on_switch: Callable[[], Any] = lambda: None):
+                 pack: Path, workspace: Path, on_switch: Callable[[], Any] = lambda: None, describer: Any = None):
         self.handle, self.library, self.opener, self.on_switch = handle, library, opener, on_switch
+        self.describer = describer
         self.lock = threading.Lock()
         self.current = self._entry(handle.pack, Path(pack), Path(workspace))
         self.launched = dict(self.current)
@@ -182,10 +205,14 @@ def register(app, systems: Systems) -> None:
     def play_new_system(body: NewSystem):
         """Start a new system from a sketch or a template; with `check_only`, only say what it would be."""
         try:
-            pack_id, documents, report = new_documents(systems.library, body)
+            pack_id, documents, report = new_documents(systems.library, body, systems.describer)
         except PackError as error:
             return {"created": False, "problems": list(error.diagnostics)}
-        found = {"system": summary(documents)} | ({"import": report} if report is not None else {})
+        found: dict[str, Any]
+        if body.template == DESCRIBE:
+            found = {"system": described_summary(documents), "described": report}
+        else:
+            found = {"system": summary(documents)} | ({"import": report} if report is not None else {})
         if body.check_only:
             return {"created": False, "problems": []} | found
         folder = systems.library.create(pack_id, documents)
@@ -214,11 +241,13 @@ def register(app, systems: Systems) -> None:
 
     @app.post("/api/play/draft")
     def play_save_draft(body: SavedWork):
-        """Save the work in progress: the plan's steps as typed transactions, and edited screens. Nothing is applied."""
+        """Save the work in progress: the plan's steps as typed transactions, edited screens and the tests draft. Nothing is applied."""
         for step in body.steps:
             parse_step(step.transaction)  # a malformed step is refused here, not on reopening
         if body.screens is not None:
             parse_screens(body.screens, systems.handle.pack.id)
+        if body.scenarios is not None:
+            parse_scenarios(body.scenarios, systems.handle.pack.id)
         saved = body.model_dump(mode="json") | {"saved": int(time.time()), "system": systems.current["id"], "model": in_force()}
         systems.library.write_draft(workspace(), saved)
         return {"saved": saved["saved"]}

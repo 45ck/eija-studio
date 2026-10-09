@@ -1001,7 +1001,8 @@
   const TINT = { added: { strokeColor: "#17734a", fillColor: "#e5f5ec", strokeWidth: 2.5 }, changed: { strokeColor: "#c27c0e", strokeWidth: 2.5 },
     warning: { strokeColor: "#c27c0e", dashed: true, strokeWidth: 2.5 }, problem: { strokeColor: "#a12f2f", strokeWidth: 3 },
     removed: { strokeColor: "#a12f2f", dashed: true, strokeWidth: 3 } };
-  const rippleKey = () => JSON.stringify([accepted(), screensEdited ? screens : null]);
+  const rippleKey = () => JSON.stringify([accepted(), screensEdited ? screens : null, window.PlayTests ? window.PlayTests.draft() : null]);
+  document.addEventListener("playide:tests", () => { if (plan && plan.result && plan.result.legal) refreshRipple(); }); // updated tests
 
   async function refreshRipple() {
     const mine = plan, seq = (rippleSeq += 1), key = rippleKey();
@@ -1012,7 +1013,8 @@
     if (!mine || !mine.result || !mine.result.legal) return;
     let result;
     try {
-      result = await api("/api/play/ripple", { case_id: caseId, model: baseModel, plan: accepted(), screens: screensEdited ? screens : null });
+      const tests = window.PlayTests ? window.PlayTests.draft() : null; // the sequences are the Tests tab's draft, if edited
+      result = await api("/api/play/ripple", { case_id: caseId, model: baseModel, plan: accepted(), screens: screensEdited ? screens : null, ...(tests ? { scenarios: tests } : {}) });
     } catch (error) {
       result = { error };
     }
@@ -1210,7 +1212,8 @@
   function draft() {
     return { steps: plan ? plan.steps.map((s) => ({ transaction: s.transaction, author: s.author === "ai" ? "ai" : "you",
       ...(s.round ? { round: s.round } : {}), ...(s.request ? { request: s.request } : {}) })) : [],
-      accepted: plan ? [...plan.accepted] : [], screens: screensEdited ? screens : null };
+      accepted: plan ? [...plan.accepted] : [], screens: screensEdited ? screens : null,
+      scenarios: window.PlayTests ? window.PlayTests.draft() : null }; // the Tests tab's draft too (ADR-0216)
   }
 
   // Work this browser kept since (ADR-0198) is newer than any save: every edit is kept as it is made, and a save
@@ -1218,6 +1221,7 @@
   async function restoreDraft(saved) {
     if (recoveredWork) return null;
     if (saved.screens) { screens = saved.screens; changed("open the saved screens"); }
+    if (saved.scenarios && window.PlayTests) window.PlayTests.edit(saved.scenarios);
     if (!saved.steps || !saved.steps.length) return null;
     retire();
     plan = { scope: "plan-draft", provider: "drawn by you", live: false, summary: "Your saved changes", meaning: null, request: "",
@@ -2381,7 +2385,8 @@
       const { card, result, seq, rewarded, preview, previewing, ...rest } = plan; // view state stays out of the document
       kept = clone(rest);
     }
-    return { plan: kept, screens: screensEdited ? clone(screens) : null };
+    const tests = window.PlayTests ? window.PlayTests.draft() : null; // the Tests tab's draft is part of the work (ADR-0216)
+    return { plan: kept, screens: screensEdited ? clone(screens) : null, ...(tests ? { tests: clone(tests) } : {}) };
   }
 
   function stepLabel(tx) {
@@ -2469,6 +2474,7 @@
       document.dispatchEvent(new CustomEvent("playide:plan"));
       if (doc.screens) { screens = clone(doc.screens); changed(); }
       else if (screensEdited) await resetScreens();
+      if (window.PlayTests && JSON.stringify(doc.tests || null) !== JSON.stringify(window.PlayTests.draft())) window.PlayTests.edit(clone(doc.tests || null));
     } finally {
       restoring = false;
     }
@@ -2495,7 +2501,7 @@
 
   function persist() {
     if (REVIEW_VIEW || !packInfo) return;
-    const now = edits.stack[edits.at], empty = !now || (!now.doc.plan && !now.doc.screens); // nothing to keep
+    const now = edits.stack[edits.at], empty = !now || (!now.doc.plan && !now.doc.screens && !now.doc.tests); // nothing to keep
     try {
       if (empty) { localStorage.removeItem(draftKey()); browserNote = { bad: false, text: "", title: "" }; renderSaveStatus(); return; }
       const from = Math.max(0, edits.at - STORED), keep = edits.stack.slice(from, edits.at + STORED + 1);
@@ -2521,10 +2527,10 @@
     try { draft = JSON.parse(localStorage.getItem(draftKey()) || "null"); } catch { draft = null; }
     if (!draft || draft.v !== 1 || !Array.isArray(draft.stack) || !draft.stack[draft.at]) return;
     planUid = Math.max(0, ...draft.stack.map((e) => (e.doc.plan && e.doc.plan.uid) || 0));
-    edits.stack = [...(draft.stack[0].doc.plan || draft.stack[0].doc.screens ? [edits.stack[0]] : []), ...draft.stack.map((e) => ({ ...e, card: null }))];
+    edits.stack = [...(draft.stack[0].doc.plan || draft.stack[0].doc.screens || draft.stack[0].doc.tests ? [edits.stack[0]] : []), ...draft.stack.map((e) => ({ ...e, card: null }))];
     edits.at = edits.stack.length - draft.stack.length + draft.at;
     const entry = edits.stack[edits.at], steps = entry.doc.plan ? entry.doc.plan.steps.length : 0;
-    const note = el("p", `Recovered your unsaved work from ${new Date(draft.saved).toLocaleString()}: ${steps} plan step${steps === 1 ? "" : "s"}${entry.doc.screens ? " and screen edits" : ""}. Undo still steps back through it.`);
+    const note = el("p", `Recovered your unsaved work from ${new Date(draft.saved).toLocaleString()}: ${steps} plan step${steps === 1 ? "" : "s"}${entry.doc.screens ? " and screen edits" : ""}${entry.doc.tests ? " and your tests" : ""}. Undo still steps back through it.`);
     if (draft.model !== modelPrint()) note.append(el("span", " The model in force has changed since, so every step is checked against it again.", { class: "muted" }));
     const discard = el("button", "Discard it", { type: "button", class: "quiet" });
     discard.addEventListener("click", async () => {
@@ -2645,7 +2651,7 @@
     // kinds of actor; nothing is saved (#156). The review view changes nothing.
     setKind: (role, to) => (REVIEW_VIEW ? null : addStep({ kind: "set_role_kind", role, to })), reviewing: () => REVIEW_VIEW, viewKey, label, restyle, clearSim, select, showTab, fit, importPlan, runAs, openScreen,
     components: loadComponents, buildEvidence: () => evidence(), // the deployment lens (ADR-0206) reads both
-    screens: () => screens, data: () => data, // the screen designer's screens and the class diagram (play-roles.js reads them)
+    screens: () => screens, data: () => data, editedScreens: () => (screensEdited ? screens : null), // the screen designer's screens and the class diagram (play-roles.js reads them)
     graph: () => graph, tab: () => tab, model: () => model, selected: () => selected, pack: () => packInfo, base: () => baseModel,
     direction: () => direction || "LR", // the state machine's layout, which the Changes view follows
     planned: () => (plan && plan.result && plan.result.legal ? accepted() : null), // the change the Changes view draws (ADR-0176)
@@ -2659,6 +2665,7 @@
     },
     changes: () => shownChange, // the union while the Changes view is on (ADR-0176), else null
     draft, restoreDraft, // saving and reopening the work in progress (ADR-0185)
+    commit: (label) => commit(label), // an edit another part of the page made (the tests draft, ADR-0216), undoable like any
     recovered: () => recoveredWork, // work this browser kept came back on load, so the saved draft was not opened over it
     // What the Changes view says about the change: who made each accepted step, and the ripple for exactly these steps.
     steps: () => (plan && plan.result && plan.result.legal ? plan.steps.filter((_, i) => plan.accepted[i]).map((x) => ({ author: x.author, transaction: x.transaction })) : []),

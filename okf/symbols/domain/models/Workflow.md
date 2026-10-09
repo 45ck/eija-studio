@@ -77,6 +77,8 @@ The executable model behind [Workflow Definition](/language/workflow-definition.
 * [application.appgen.oracle_cases](/symbols/application/appgen/oracle_cases.md) - Every state x action x actor x expected version, then the same request replayed.
 * [application.appgen.readme](/symbols/application/appgen/readme.md) - `def readme(pack: Pack, model: Workflow, cases: int, data: DataModel | None=None) -> str` in `application/appgen`.
 * [application.compiler.subject_for](/symbols/application/compiler/subject_for.md) - `def subject_for(model: Workflow, layout: dict[str, Any], identity: dict[str, Any]) -> dict[str, Any]` in `application/compiler`.
+* [application.describe_system.tests_for](/symbols/application/describe_system/tests_for.md) - Test cases for a new system, recorded by the kernel: the way to each end state, and the first step taken by a role that may not take it.
+* [application.describe_system.update_tests](/symbols/application/describe_system/update_tests.md) - The tests brought up to date with `model`, for the person to keep or not (What's missing's "Update the tests", ADR-0216).
 * [application.diagram_catalog.case_diagrams](/symbols/application/diagram_catalog/case_diagrams.md) - Every view for one change case as one JSON-friendly payload.
 * [application.diagram_catalog.demo_pair](/symbols/application/diagram_catalog/demo_pair.md) - Baseline and the demo candidate: the default pack's baseline with its first supported meaning applied.
 * [application.diagram_catalog.html_panels](/symbols/application/diagram_catalog/html_panels.md) - (heading, note, Mermaid text) for `eija render --format html`.
@@ -109,6 +111,7 @@ The executable model behind [Workflow Definition](/language/workflow-definition.
 * [application.ports.PlanProposer](/symbols/application/ports/PlanProposer.md) - Turns a chat request into {summary, meaning, steps: [{transaction, why}]}.
 * [application.ports.ProposalProvider](/symbols/application/ports/ProposalProvider.md) - `class ProposalProvider(Protocol)` in `application/ports`.
 * [application.ports.UnitOfWork](/symbols/application/ports/UnitOfWork.md) - All mutations on this port commit together or roll back together.
+* [application.readiness.missing](/symbols/application/readiness/missing.md) - Every view's row: what it is missing or what is wrong with it, or nothing when it is ready.
 * [application.review.behaviour_diff](/symbols/application/review/behaviour_diff.md) - Every fixture actor tries every action from every state on both models; the attempts whose outcome differs.
 * [application.review.review_change](/symbols/application/review/review_change.md) - Everything a reviewer needs to check a change: what changed, how risky, and what the kernel does differently.
 * [application.ripple.check_follow_ons](/symbols/application/ripple/check_follow_ons.md) - The proposer's follow-on steps, each re-checked on its own on top of the plan: a state-machine step through the policy (`base` with `plan` and the step), a scr…
@@ -121,6 +124,8 @@ The executable model behind [Workflow Definition](/language/workflow-definition.
 * [application.screen_access.check_accessibility](/symbols/application/screen_access/check_accessibility.md) - Each check with its WCAG success criteria and PASS, WARN (advice) or FAIL, the design's first.
 * [application.scxml.to_scxml](/symbols/application/scxml/to_scxml.md) - The model as an SCXML document.
 * [application.sequence_draft.draft_scenarios](/symbols/application/sequence_draft/draft_scenarios.md) - Scenarios for a system with none: each step's expectation is what the kernel does on `model`.
+* [application.sequence_draft.journeys](/symbols/application/sequence_draft/journeys.md) - Each end state the model can reach with the pack's fixture actors, and the (actor, action) steps that reach it.
+* [application.sequence_draft.outsider](/symbols/application/sequence_draft/outsider.md) - Someone active in another role tries the first step: the kernel must refuse it.
 * [application.sequence_draft.scenarios_or_draft](/symbols/application/sequence_draft/scenarios_or_draft.md) - The pack's scenarios ("pack"), or a draft from the model in force when it has none ("drafted").
 * [application.sequences.check_sequences](/symbols/application/sequences/check_sequences.md) - Every scenario drawn as a sequence and checked by the kernel on `model`; with `base` (the model in force) also on it, for the change.
 * [application.service.Studio.create](/symbols/application/service/Studio.create.md) - `def create(self, request: str) -> dict[str, Any]` in `application/service`.

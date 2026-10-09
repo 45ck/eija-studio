@@ -73,4 +73,5 @@ _No curated notes yet._
 
 * [ADR-0174: Add UML elements without dragging, and edit them where they are](/adrs/0174-add-without-dragging-and-edit-inline.md) - After watching the showcase cut, the owner said "dragging sucks kind of" and asked whether to "use a modal when dragging or not even just edit inline?".
 * [ADR-0202: Grow the class diagram in chat](/adrs/0202-grow-the-class-diagram-in-chat.md) - ADR-0201 let a system started from a sketch grow its state machine round after round in chat.
+* [ADR-0216: Describe your app, and what's missing](/adrs/0216-describe-your-app-and-whats-missing.md) - Until now a new system started from three sketch lines, a template or a UML file (ADR-0185, ADR-0190), and then grew in chat (ADR-0201, ADR-0202).
 <!-- okf:generated:end links -->
