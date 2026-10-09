@@ -15,6 +15,8 @@
   const who = (step) => step.role ? `${step.actor} (${step.role})` : step.actor;
 
   function showOnDiagram(result) {
+    const changes = $("show-changes"); // the Changes view hides the canvas: leave it, or the painted path is never seen
+    if (changes && changes.getAttribute("aria-pressed") === "true") changes.click();
     P.showTab("states");
     P.clearSim();
     P.graph().batchUpdate(() => {
