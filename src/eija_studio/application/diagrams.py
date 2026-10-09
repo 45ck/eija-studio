@@ -95,9 +95,11 @@ class Note:
 
 @dataclass(frozen=True)
 class Fragment:
-    """A conditional block (`opt`): the steps happen only when `label` holds."""
+    """A combined fragment. `opt` (the default): the steps happen only when `label` holds. `neg`: the steps are an
+    invalid trace, one that must not happen."""
     label: str
     steps: tuple[Step, ...]
+    operator: Literal["opt", "neg"] = "opt"
 
 
 Step = Message | Note | Fragment

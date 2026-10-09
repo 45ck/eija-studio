@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="/assets/play-review.css">
 <link rel="stylesheet" href="/assets/play-shell.css">
 <link rel="stylesheet" href="/assets/play-diff.css">
+<link rel="stylesheet" href="/assets/play-sequence.css">
 <link rel="stylesheet" href="/assets/play-systems.css">
 <link rel="stylesheet" href="/assets/play-tests.css">
 <link rel="stylesheet" href="/assets/play-interop.css">
@@ -24,6 +25,7 @@
 <script src="/assets/play-assist.js" defer></script>
 <script src="/assets/play-access.js" defer></script>
 <script src="/assets/play-diff.js" defer></script>
+<script src="/assets/play-sequence.js" defer></script>
 <script src="/assets/play-systems.js" defer></script>
 <script src="/assets/play-interop.js" defer></script>
 </head>
@@ -91,6 +93,7 @@
       <div class="stage-tools">
         <div class="tabs" role="tablist" aria-label="Diagram">
           <button id="tab-states" role="tab" type="button" aria-selected="true" aria-controls="canvas">State machine</button>
+          <button id="tab-sequences" role="tab" type="button" aria-selected="false" aria-controls="sequences">Sequences</button>
           <button id="tab-classes" role="tab" type="button" aria-selected="false" aria-controls="class-canvas">Class diagram</button>
           <button id="tab-usecases" role="tab" type="button" aria-selected="false" aria-controls="usecase-canvas">Use cases</button>
           <button id="tab-screens" role="tab" type="button" aria-selected="false" aria-controls="screens">Screens</button>
@@ -113,6 +116,23 @@
       </div>
       <div id="canvas" class="canvas" tabindex="0" aria-describedby="canvas-help" role="tabpanel" aria-labelledby="tab-states"></div>
       <div id="diff-view" class="diff-view" role="region" aria-label="The change on the state machine" hidden></div>
+      <div id="sequences" class="sequences" role="tabpanel" aria-labelledby="tab-sequences" hidden>
+        <nav class="seq-list" aria-labelledby="seq-list-title"><h3 id="seq-list-title">Scenarios</h3><ul id="seq-list"></ul>
+          <button id="seq-new" type="button" class="quiet seq-edit">New scenario</button></nav>
+        <div class="seq-stage">
+          <div class="seq-head"><p id="seq-verdict" class="seq-verdict" role="status" aria-live="polite"></p>
+            <details class="seq-export"><summary class="quiet">Export</summary><div class="seq-export-menu">
+              <button id="seq-copy-mermaid" type="button" class="quiet">Copy as Mermaid</button>
+              <button id="seq-copy-plantuml" type="button" class="quiet">Copy as PlantUML</button>
+              <a id="seq-download" class="quiet" download="scenarios.json">Download scenarios.json</a>
+              <button id="seq-reset" type="button" class="quiet seq-edit">Reset to the pack's scenarios</button></div></details></div>
+          <div id="sequence-canvas" class="canvas" tabindex="0" aria-label="Sequence diagram"></div>
+          <form id="seq-add" class="seq-add seq-edit" aria-label="Add a message">
+            <span>Add message</span><select id="seq-actor" aria-label="From actor"></select><span aria-hidden="true">→</span>
+            <select id="seq-action" aria-label="Action"></select>
+            <button type="submit" class="primary">Add</button></form>
+        </div>
+      </div>
       <div id="class-canvas" class="canvas" tabindex="0" role="tabpanel" aria-labelledby="tab-classes" hidden></div>
       <div id="usecase-canvas" class="canvas" tabindex="0" role="tabpanel" aria-labelledby="tab-usecases" hidden></div>
       <div id="component-canvas" class="canvas" tabindex="0" role="tabpanel" aria-labelledby="tab-components" hidden></div>

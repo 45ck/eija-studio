@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/diagram_emitters.py#emit
   title: application/diagram_emitters.py
   hash_method: ast-v2
-  sha256: 032ce5968e67da351e387e214f05bbbd00e89592c3dfcbf001b72cccca330cdc
-notes_baseline: 5534b25c5979ce628b8902877aec8ac9a8ef1bf4a2f6d0c4ad5c2592f149855c
+  sha256: d089fb1d005369cd8bdf367d04e8e876f76527aa8dfc1338da538d674b6ffdba
+notes_baseline: b84c221b32fa762c032643141b824c1ea27052ded4fa6a796a8eaa51cdf79a20
 ---
 
 # application.diagram_emitters.emit
@@ -53,4 +53,5 @@ _No curated notes yet._
 ## Referenced by
 
 * [application.diagram_catalog.render_view](/symbols/application/diagram_catalog/render_view.md) - Generated diagram text for one view.
+* [application.sequence_layout.export](/symbols/application/sequence_layout/export.md) - The sequence as Mermaid and PlantUML text, through `diagram_emitters`, state invariants as notes (Mermaid has no neg: it is written as opt).
 <!-- okf:generated:end links -->
