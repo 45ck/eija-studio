@@ -16,6 +16,7 @@ from demos.scenarios.playide_showcase import (
     PACK,
     PENDING,
     RIPPLE_CARD,
+    _test_renew,
 )
 
 PACE = 0.75  # tighter holds and motion than the full showcase; every act and assertion still runs
@@ -159,6 +160,7 @@ def _catch(scene: Scene, chapter: _Chapters) -> None:
 
 def _prove(scene: Scene, chapter: _Chapters) -> None:
     chapter("Prove it")
+    _test_renew(scene)
     scene.caption("Build the changed app, check every conformance case, and simulate the users again.")
     scene.click("#build")
     scene.expect_text("#score", "cases match the kernel", timeout_ms=BUILD_TIMEOUT_MS)
@@ -176,7 +178,7 @@ def _prove(scene: Scene, chapter: _Chapters) -> None:
     scene.expect_text("#laws-summary", "holds on every run the kernel allows")
     scene.caption("Every law holds on every run the kernel allows.")
     scene.click("#tab-tests")
-    scene.expect_text("#tests-summary", "All 7 tests pass", timeout_ms=60_000)
+    scene.expect_text("#tests-summary", "All 8 tests pass", timeout_ms=60_000)
     scene.click("#tab-states")
     scene.click("#health")
     scene.expect_text("#health-text", "5/5 checks")
