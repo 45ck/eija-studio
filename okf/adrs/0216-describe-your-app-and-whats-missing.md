@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0216-describe-your-app-and-whats-missing.md
   title: 0216-describe-your-app-and-whats-missing.md
   hash_method: lf-sha256-v1
-  sha256: 8c99e8326c85c61de74c1c6b374dff892ce185d5ff85a0552bd18816fd270028
-notes_baseline: c3c38c402e0e2975563cba4d62c68dd6898db12eb0b53b9e284b735cc97323d2
+  sha256: 9e189b47a6fcded962beebcd7d7f4c64410e60a8d35fcfd2569f77107ab04f7d
+notes_baseline: b58e6dbbe972bb06ce35ee2d75233c3513302d2be91bd1929d2a9d620cf47816
 ---
 
 # ADR-0216: Describe your app, and what's missing

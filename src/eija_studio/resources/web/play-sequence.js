@@ -98,7 +98,10 @@
   function verdict(s) {
     const line = $("seq-verdict"), bad = s.verdict === "BROKEN";
     line.className = "seq-verdict " + (bad ? "bad" : "ok");
-    const text = bad ? `The model can't produce this scenario: ${s.first_problem}.` : "The kernel did every step as written, and refused every neg.";
+    const negs = (s.fragments || []).filter((f) => f.operator === "neg").length;
+    const text = bad ? `The model can't produce this scenario: ${s.first_problem}.`
+      : negs ? `The kernel did every step as written, and refused ${negs === 1 ? "the step" : "each step"} in neg, as the test expects.`
+      : "The kernel did every step as written.";
     line.replaceChildren(P.el("strong", s.title), " ", text);
     if (s.change === "breaks") line.append(P.el("span", " The change shown breaks it; the model in force produces it.", { class: "small" }));
     if (s.change === "fixes") line.append(P.el("span", " The change shown fixes it; the model in force can't produce it.", { class: "small" }));

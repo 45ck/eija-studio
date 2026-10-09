@@ -18,14 +18,15 @@ Describe it in one box, get every view, then ask and drag. Read each round in UM
 |---|---|---|---|
 | 0 | Title | "Greenfield, in UML" | A title card |
 | 1 | Describe it | "＋ New" opens the Describe box. A coffee shop is described in two sentences. Before anything is created, the form lists every view: state machine, class diagram, use cases, screens, 3 tests recorded by the kernel, and no laws. It also lists what the offline reader assumed. | ADR-0216 |
-| 2 | Every model and view | The state machine with Barista and Customer. The class diagram with size and notes. The recorded tests as sequence diagrams. What's missing: no laws yet, because laws are yours to set. | ADR-0216, ADR-0153, ADR-0195 |
-| 3 | Round 1: a new requirement | In chat, customers pay before brewing. The plan adds Paid and Pay, and Start moves. What's missing follows the plan: no test takes Pay, and the recorded way to Collected now fails because paying comes first. | ADR-0201 |
-| 4 | Round 2: draw it, then ask | A state is dragged onto the diagram and named Refunded. What's missing says Refunded cannot be reached. A chat ask adds Refund into it, and the plan shows You and AI steps together. | ADR-0174, ADR-0201, ADR-0216 |
+| 2 | Every model and view | The state machine with Barista and Customer. The class diagram with size and notes. Two recorded tests as sequence diagrams, zoomed: the way to Collected, and the kernel refusing a Customer's Start, as the test expects. What's missing: no laws yet, because laws are yours to set. | ADR-0216, ADR-0153, ADR-0195 |
+| 3 | Round 1: a new requirement | In chat, customers pay before brewing. The plan adds Paid and Pay, and Start moves. What's missing follows the plan: the recorded way to Collected now fails, because paying comes first. "Update the tests" records it again, and its sequence now starts with Pay. | ADR-0201, ADR-0216 |
+| 4 | Round 2: draw it, then ask | A state is dragged onto the diagram and named Refunded. What's missing says Refunded cannot be reached. A chat ask adds Refund into it, the plan shows You and AI steps together, and updating the tests adds a way to Refunded. | ADR-0174, ADR-0201, ADR-0216 |
 | 5 | Round 3: the form | "add field pickupTime as text then make size required". The class diagram marks pickupTime with +. | ADR-0202 |
 | 6 | Round 4: rename, and a new role | Ready becomes AwaitingPickup, and a manager may cancel. The verdict names what is new. The Changes view shows this round alone. | ADR-0201, ADR-0176 |
-| 7 | Round 5: change your mind | "remove state Cancelled" removes its transition first. What's missing reports that the recorded cancelling test fails too. The Changes view shows every round together. | ADR-0201, ADR-0216 |
-| 8 | Run it | Build & run passes every conformance case. Simulate runs, and Save keeps every round. | ADR-0150, ADR-0152, ADR-0185 |
-| 9 | End card | "Vibe-code it. Then read it." The describer and proposer are offline, and nothing is applied. | A title card |
+| 7 | Round 5: change your mind | "remove state Cancelled then allow Manager to Refund". Its transition goes first. What's missing reports that the recorded cancelling test fails, and updating the tests removes it. The Changes view shows every round together. | ADR-0201, ADR-0216 |
+| 8 | Laws are yours | The laws row of What's missing opens the Laws tab: no laws yet, and none is generated. | ADR-0177, ADR-0216 |
+| 9 | Run it | Build & run passes every conformance case. Simulate runs, and Save keeps every round and the updated tests. | ADR-0150, ADR-0152, ADR-0185 |
+| 10 | End card | "Vibe-code it. Then read it." The describer and proposer are offline, and nothing is applied. | A title card |
 
 ## Not shown, and why
 

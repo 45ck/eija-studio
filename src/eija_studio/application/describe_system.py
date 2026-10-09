@@ -19,10 +19,11 @@ from typing import Any
 from eija_studio.domain.data import Attribute
 from eija_studio.domain.models import DomainError, Workflow
 from eija_studio.domain.pack import Pack, PackError, parse_pack
+from eija_studio.domain.scenarios import Scenarios, parse_scenarios
 
 from .new_system import RECORD, checked_documents, sketch_documents, summary
 from .ports import SystemDescriber
-from .scenario_run import record_steps
+from .scenario_run import record_steps, run_scenarios
 
 MAX_DESCRIPTION = 4000
 
@@ -73,29 +74,36 @@ def _slug(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")[:50] or "case"
 
 
-def _case(pack: Pack, title: str, steps: list[tuple[str, str]]) -> dict[str, Any]:
-    return {"id": _slug(title), "title": title, "steps": record_steps(pack, pack.model, None, steps)}
+def _case(pack: Pack, model: Workflow, title: str, steps: list[tuple[str, str]]) -> dict[str, Any]:
+    return {"id": _slug(title), "title": title, "steps": record_steps(pack, model, None, steps)}
 
 
-def _refusal(pack: Pack) -> dict[str, Any] | None:
+def _refusal(pack: Pack, model: Workflow) -> dict[str, Any] | None:
     """The first step out of the initial state, taken by an actor whose role may not take it."""
-    model = pack.model
     first = next((t for t in model.transitions if t.from_state == model.initial_state), None)
     if first is None:
         return None
     other = next((a for a in pack.fixtures.actors if a.role != first.role and a.active and a.assigned), None)
-    return None if other is None else _case(pack, f"{other.role} cannot {first.action}", [(other.id, first.action)])
+    return None if other is None else _case(pack, model, f"{other.role} cannot {first.action}", [(other.id, first.action)])
 
 
-def tests_for(pack: Pack, record: str) -> dict[str, Any]:
-    """Test cases for a new system, recorded by the kernel: the way to each end state, and the first step taken by a
-    role that may not take it. They pin down what the kernel does now, so a later change that alters it shows."""
-    scenarios = []
-    for path in _paths(pack.model):
+def _end_cases(pack: Pack, record: str, model: Workflow) -> list[dict[str, Any]]:
+    """The way to each end state, recorded by the kernel."""
+    cases = []
+    for path in _paths(model):
         steps = [(_actor(pack, t.role) or "", t.action) for t in path]
         if path and all(actor for actor, _ in steps):
-            scenarios.append(_case(pack, f"{record} reaches {path[-1].to_state}", steps))
-    refusal = _refusal(pack)
+            cases.append(_case(pack, model, f"{record} reaches {path[-1].to_state}", steps))
+    return cases
+
+
+def tests_for(pack: Pack, record: str, model: Workflow | None = None) -> dict[str, Any]:
+    """Test cases for a new system, recorded by the kernel: the way to each end state, and the first step taken by a
+    role that may not take it. They pin down what the kernel does now, so a later change that alters it shows.
+    `model` is the model to record on (the pack's own when None)."""
+    model = pack.model if model is None else model
+    scenarios = _end_cases(pack, record, model)
+    refusal = _refusal(pack, model)
     return {"schema_version": "eija.scenarios.v1", "id": pack.id, "scenarios": scenarios + ([refusal] if refusal else [])}
 
 
@@ -134,3 +142,29 @@ def described_summary(documents: dict[str, dict[str, Any]]) -> dict[str, Any]:
     record = documents["data.json"]["entities"][0]
     return base | {"fields": [a["name"] for a in record["attributes"]],
                    "tests": [s["title"] for s in documents["scenarios.json"]["scenarios"]], "laws": 0}
+
+
+def update_tests(pack: Pack, model: Workflow, scenarios: Scenarios, record: str) -> dict[str, Any]:
+    """The tests brought up to date with `model`, for the person to keep or not (What's missing's "Update the tests",
+    ADR-0216). A test that still passes stays as it is. A failing one is recorded again by the kernel when the model
+    still has its way (the same id from `tests_for`), and is dropped when it has none: its end state or step is gone.
+    The way to a new end state is added. Nothing is saved: the result is a draft of `scenarios.json`."""
+    run = {s["id"]: s["status"] for s in run_scenarios(pack, model, scenarios)["scenarios"]}
+    fresh = {s["id"]: s for s in _end_cases(pack, record, model)}
+    kept, changes = [], []
+    for scenario in scenarios.model_dump(mode="json", exclude_none=True)["scenarios"]:
+        if run.get(scenario["id"]) != "FAIL":
+            kept.append(scenario)
+        elif scenario["id"] in fresh:
+            kept.append(fresh[scenario["id"]] | {"title": scenario["title"]})
+            changes.append({"change": "recorded again", "title": scenario["title"]})
+        else:
+            changes.append({"change": "removed", "title": scenario["title"]})
+    ids = {s["id"] for s in kept}
+    for scenario in fresh.values():
+        if scenario["id"] not in ids and scenario["id"] not in run:
+            kept.append(scenario)
+            changes.append({"change": "added", "title": scenario["title"]})
+    document = {"schema_version": "eija.scenarios.v1", "id": pack.id, "scenarios": kept}
+    parse_scenarios(document, pack.id)  # the kernel's own check of the file, as for any draft
+    return {"document": document, "changes": changes}

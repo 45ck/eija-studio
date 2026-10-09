@@ -126,3 +126,32 @@ def test_a_sketch_declares_the_kind_of_a_role(served):
     clash = post(client, "/api/play/systems/new", {"template": "blank", "name": "Kinds", "record": "Case",
                                                    "sketch": sketch + "\nsystems: Bot", "check_only": True})
     assert clash["problems"] == ["line 5: Bot is already listed as another kind of actor"]
+
+
+def test_update_the_tests_records_the_stale_ones_again_on_the_model_shown(served):
+    """What's missing's "Update the tests" (ADR-0216): a recorded test a round made stale is recorded again by the
+    kernel, a new way to an end state is added, one whose end is gone is dropped; nothing is written to the pack."""
+    client, systems = served
+    post(client, "/api/play/systems/new", {"template": "describe", "description": COFFEE, "name": "Coffee shop"})
+    plan = [{"kind": "add_state", "state": "Paid"},
+            {"kind": "add_transition", "id": "TR-PAY", "action": "Pay", "from_state": "Placed", "to_state": "Paid", "role": "Customer"},
+            {"kind": "retarget_transition", "transition": "TR-START", "end": "source", "state": "Paid"},
+            {"kind": "remove_transition", "transition": "TR-CANCEL"}, {"kind": "remove_state", "state": "Cancelled"}]
+    ready = post(client, "/api/play/ready", {"plan": plan})
+    tests = next(v for v in ready["views"] if v["view"] == "tests")
+    ids = [i["id"] for i in tests["items"]]
+    assert ids == ["test-fails:order-reaches-collected", "test-fails:order-reaches-cancelled", "untested:Pay"]
+    assert {i.get("action") for i in tests["items"]} == {"update-tests"}
+
+    updated = post(client, "/api/play/tests/update", {"plan": plan})
+    assert updated["changes"] == [{"change": "recorded again", "title": "Order reaches Collected"},
+                                  {"change": "removed", "title": "Order reaches Cancelled"}]
+    collected = next(s for s in updated["document"]["scenarios"] if s["id"] == "order-reaches-collected")
+    assert [s["action"] for s in collected["steps"]] == ["Pay", "Start", "Finish", "Collect"]
+    after = post(client, "/api/play/ready", {"plan": plan, "scenarios": updated["document"]})
+    assert next(v for v in after["views"] if v["view"] == "tests")["ready"]
+    assert len(scenarios_for(systems.handle.pack).scenarios) == 3  # the pack's own file is untouched
+
+    saved = post(client, "/api/play/draft", {"steps": [], "accepted": [], "scenarios": updated["document"]})
+    assert saved["saved"]
+    assert client.get("/api/play/draft", headers=HEADERS).json()["draft"]["scenarios"] == updated["document"]

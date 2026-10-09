@@ -63,14 +63,21 @@ Chosen option.
   * no tests, a failing test, or an action no test takes;
   * no laws, or a law the kernel finds broken or cannot decide.
 
-  The panel sits at the top of the left sidebar, and each row opens its view.
+  The panel sits at the top of the left sidebar, and each row opens its view. Every row has a stable id (`unreachable:<state>`, `test-fails:<test>`, `untested:<action>`, `law:<law>` and so on), and each recompute fires a `playide:missing` event on the page with the view key and the rows, so other panels can follow the list without polling.
+* **Update the tests.** A round can make a recorded test stale: paying before brewing breaks the recorded way to Collected. The tests row then offers "Update the tests". `POST /api/play/tests/update` (`describe_system.update_tests`) asks the kernel again, on the model shown:
+  * a passing test is kept as it is;
+  * a failing test whose end state can still be reached is recorded again by the kernel, under its old title;
+  * a failing test whose end state is gone is dropped;
+  * a new end state gets its own test.
+
+  The result is the Tests draft, which the Sequences tab, the ripple and What's missing all read. It is never written to the pack's file: Save keeps it with the plan, and Reset in Tests drops it. Undo and the page's recovery copy include it.
 
 ### Consequences
 
 * Good: a new app starts from one sentence, with every view populated and checked, and the person sees at once what is left to do.
 * Good: nothing new is trusted. The describer's answer is checked like a sketch, the tests are the kernel's own behaviour, and laws stay the person's.
 * Bad: the offline describer recognises only the shapes in its data file. Anything else becomes the plain shape, with fields read from the description. A live describer would be another adapter behind the same port, after the owner says yes.
-* Bad: the recorded tests pin down today's behaviour. A later change that alters it makes them fail. That is their purpose, but a person has to re-record them on purpose.
+* Bad: the recorded tests pin down today's behaviour. A later change that alters it makes them fail. That is their purpose, so re-recording them is one deliberate click ("Update the tests"), which says what it recorded again, added and removed.
 * Neutral: shipped packs and the sketch, template and UML starts are unchanged.
 
 ## Verification
@@ -81,6 +88,7 @@ Chosen option.
   * an empty description is refused;
   * four descriptions map to the expected shapes.
   * an AI agent and a webhook become roles of their kinds, and a sketch's `agents:` and `timers:` lines declare kinds, refusing a role listed as two kinds;
+  * Update the tests records a stale test again on the model shown, drops one whose end is gone, leaves the pack's file untouched, and the result survives Save.
 * `tests/test_play_data_steps.py` checks that chat sets a role's kind on a system you started, and refuses it on a shipped pack or under a law about kinds.
 * A manual Chromium run checked `/play?new=describe`: the summary under the box, creation, the What's missing panel, the class and sequence diagrams, and a chat round that the panel follows.
 * The greenfield demo starts from a description (`demos/scenarios/playide_greenfield.py`).

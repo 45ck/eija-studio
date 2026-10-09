@@ -42,12 +42,12 @@
 
   async function reopen() {
     const { draft, moved } = await P.api("/api/play/draft");
-    if (!draft || ((!draft.steps || !draft.steps.length) && !draft.screens)) { saved = JSON.stringify(P.draft()); return; }
+    if (!draft || ((!draft.steps || !draft.steps.length) && !draft.screens && !draft.scenarios)) { saved = JSON.stringify(P.draft()); return; }
     savedAt = draft.saved;
     if (P.recovered && P.recovered()) {
       // Newer work this browser kept came back instead (ADR-0198); compare it with the saved draft, not with itself.
       saved = JSON.stringify({ steps: draft.steps.map((s) => ({ transaction: s.transaction, author: s.author === "ai" ? "ai" : "you" })),
-        accepted: draft.accepted || draft.steps.map(() => true), screens: draft.screens || null });
+        accepted: draft.accepted || draft.steps.map(() => true), screens: draft.screens || null, scenarios: draft.scenarios || null });
       return;
     }
     const result = await P.restoreDraft(draft);
@@ -55,6 +55,7 @@
     const parts = [];
     if (draft.steps.length) parts.push(`${draft.steps.length} step${draft.steps.length === 1 ? "" : "s"}`);
     if (draft.screens) parts.push("your screens");
+    if (draft.scenarios) parts.push("your tests");
     const verdict = !result ? "" : result.legal ? " The policy allows them again." : " The policy now refuses them; see the plan.";
     const since = moved ? " The model in force has changed since." : "";
     notice = `Reopened ${parts.join(" and ")} saved ${when(draft.saved)}.${since}${verdict}`;

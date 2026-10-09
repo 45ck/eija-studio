@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/play_systems.py
   title: interfaces/play_systems.py
   hash_method: ast-api-v1
-  sha256: 60c1968e35c7269ececf79af1b4405a0ef0494f174f2f885c0b2a54acec0c842
-notes_baseline: 879517ab5d79655ae6b5d5ca4951490734e975e0c9139e59b892227fa6a28623
+  sha256: 620920428406c5f9418bec920636d5ad9138bca84b85e5d9b11247eface72587
+notes_baseline: 8e9e10b556e8b249599f86e805fefcd246a7ff4ad68246a44f002fd082476ad6
 ---
 
 # interfaces.play_systems
@@ -50,6 +50,7 @@ _Symbol pages are generated for the domain and application layers only._
 * [`application/plan`](/modules/application/plan.md)
 * [`domain/models`](/modules/domain/models.md)
 * [`domain/pack`](/modules/domain/pack.md)
+* [`domain/scenarios`](/modules/domain/scenarios.md)
 * [`domain/screens`](/modules/domain/screens.md)
 <!-- okf:generated:end facts -->
 
@@ -66,6 +67,7 @@ _No curated notes yet._
 * [application.plan](/modules/application/plan.md) - Plan mode for the PlayIDE chat (ADR-0156): an AI proposes a change as numbered typed steps; the person accepts or rejects each one and sees what the accepted o…
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
+* [domain.scenarios](/modules/domain/scenarios.md) - Scenarios: a pack's test cases, written as stories a person can read and the kernel can run (ADR-0177).
 * [domain.screens](/modules/domain/screens.md) - Screens: the user interface of a pack's app, designed against its use cases and data model (ADR-0154).
 
 ## Referenced by

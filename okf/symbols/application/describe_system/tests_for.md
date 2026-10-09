@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/describe_system.py#tests_for
   title: application/describe_system.py
   hash_method: ast-v2
-  sha256: a56e30b61125b41957d49c4dfc013667d7e0d8cde38045b293abe048058929e4
-notes_baseline: 37aea50ef04e284a48eb69df26f97cf0ee9e6cbebf99a6cf7a7635dec482ab93
+  sha256: 1413e0a67c32200430a10edf7be7a77dbf46d677cddb28299624b69f2a05db12
+notes_baseline: 51349a0c69b7374c9671e50d7630504ef3e50f4b6b7632ca04a82cbe93c36407
 ---
 
 # application.describe_system.tests_for
@@ -25,7 +25,7 @@ notes_baseline: 37aea50ef04e284a48eb69df26f97cf0ee9e6cbebf99a6cf7a7635dec482ab93
 |---|---|
 | Kind | function |
 | Module | [`application/describe_system`](/modules/application/describe_system.md) |
-| Signature | `def tests_for(pack: Pack, record: str) -> dict[str, Any]` |
+| Signature | `def tests_for(pack: Pack, record: str, model: Workflow \| None=None) -> dict[str, Any]` |
 | Code | `repo://src/eija_studio/application/describe_system.py#tests_for` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
@@ -34,6 +34,7 @@ notes_baseline: 37aea50ef04e284a48eb69df26f97cf0ee9e6cbebf99a6cf7a7635dec482ab93
 ~~~text
 Test cases for a new system, recorded by the kernel: the way to each end state, and the first step taken by a
 role that may not take it. They pin down what the kernel does now, so a later change that alters it shows.
+`model` is the model to record on (the pack's own when None).
 ~~~
 <!-- okf:generated:end facts -->
 
@@ -44,6 +45,7 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
+* [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
 
 ## Referenced by

@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/describe_system.py
   title: application/describe_system.py
   hash_method: ast-api-v1
-  sha256: f5e565888a102c0d6f155cb2e18a9aa08c1b7a010bb71761fe62ac783320e57d
-notes_baseline: 424dbb33fa92dbb4b8518519eadc27e2eb18588e72ff3c1d2da42bd559c52310
+  sha256: 044812041f69a1282bf2469fd449329c049022813575e777c4c0726346e001b4
+notes_baseline: c7214bb0aa44b9f48389f9dcb1c6c51ef1b28c78b37c9a622d6c4cfb2ca0d073
 ---
 
 # application.describe_system
@@ -47,6 +47,7 @@ system.
 * [`describe_documents`](/symbols/application/describe_system/describe_documents.md) (function) - The documents of a new system described in `text`, checked by the kernel, and what the describer read.
 * [`described_summary`](/symbols/application/describe_system/described_summary.md) (function) - What a described system has in every view, for the form to say before it is created.
 * [`tests_for`](/symbols/application/describe_system/tests_for.md) (function) - Test cases for a new system, recorded by the kernel: the way to each end state, and the first step taken by a role that…
+* [`update_tests`](/symbols/application/describe_system/update_tests.md) (function) - The tests brought up to date with `model`, for the person to keep or not (What's missing's "Update the tests", ADR-0216…
 
 ## Internal imports
 
@@ -56,6 +57,7 @@ system.
 * [`domain/data`](/modules/domain/data.md)
 * [`domain/models`](/modules/domain/models.md)
 * [`domain/pack`](/modules/domain/pack.md)
+* [`domain/scenarios`](/modules/domain/scenarios.md)
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -71,12 +73,15 @@ _No curated notes yet._
 * [domain.data](/modules/domain/data.md) - The data model of a pack, shown as a UML class diagram (ADR-0153): entities, typed attributes and associations.
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
+* [domain.scenarios](/modules/domain/scenarios.md) - Scenarios: a pack's test cases, written as stories a person can read and the kernel can run (ADR-0177).
 
 ## Referenced by
 
+* [interfaces.play](/modules/interfaces/play.md) - PlayIDE routes: the visual UML canvas page, Build & run of the model as a live app beside it (ADR-0151), and Simulate, seeded simulated users whose every step…
 * [interfaces.play_systems](/modules/interfaces/play_systems.md) - PlayIDE's systems (ADR-0185): start a new system from a sketch or a template, open one you made before, and save the work in progress to carry on later.
 * [application.describe_system.MAX_DESCRIPTION](/symbols/application/describe_system/MAX_DESCRIPTION.md) - Constant `MAX_DESCRIPTION` in `application/describe_system`.
 * [application.describe_system.describe_documents](/symbols/application/describe_system/describe_documents.md) - The documents of a new system described in `text`, checked by the kernel, and what the describer read.
 * [application.describe_system.described_summary](/symbols/application/describe_system/described_summary.md) - What a described system has in every view, for the form to say before it is created.
 * [application.describe_system.tests_for](/symbols/application/describe_system/tests_for.md) - Test cases for a new system, recorded by the kernel: the way to each end state, and the first step taken by a role that may not take it.
+* [application.describe_system.update_tests](/symbols/application/describe_system/update_tests.md) - The tests brought up to date with `model`, for the person to keep or not (What's missing's "Update the tests", ADR-0216).
 <!-- okf:generated:end links -->

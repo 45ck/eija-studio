@@ -35,6 +35,7 @@ from eija_studio.application.components import app_components
 from eija_studio.application.landscape import landscape
 from eija_studio.application.law_proof import compare_laws, prove_laws, with_laws
 from eija_studio.application.ghost_diff import ghost_diff
+from eija_studio.application.describe_system import update_tests
 from eija_studio.application.data_steps import data_changes, draft_pack, parse_step, split
 from eija_studio.application.plan import MAX_DRAFT_STEPS, preview_plan, propose_plan
 from eija_studio.application.readiness import missing
@@ -66,6 +67,7 @@ class ChangeRequest(BuildRequest):
     # The steps of the rounds before the last (ADR-0201): given, the change shown is the last round's alone, from the
     # model with those steps to the model with every accepted step; None is the whole change from the model in force.
     since: list[dict[str, Any]] | None = Field(default=None, max_length=MAX_DRAFT_STEPS)
+    scenarios: dict[str, Any] | None = None  # the Tests tab's draft (eija.scenarios.v1); None is the pack's (ADR-0216)
 
 
 class PlanRequest(BuildRequest):
@@ -297,7 +299,8 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
         data, data_before = data_for(pack), data_for(earlier)
         before, after = screens_for(studio.pack, start, data_before), screens_of(body, candidate)
         (old, _), (new, components) = built(earlier, start, before), built(pack, candidate, after)
-        scenarios = check_sequences(pack, candidate, scenarios_for(studio.pack), start)
+        tests = parse_scenarios(body.scenarios, studio.pack.id) if body.scenarios is not None else scenarios_for(studio.pack)
+        scenarios = check_sequences(pack, candidate, tests, start)
         others, _ = siblings(pack.id)  # the system this workflow is part of, before and after (ADR-0203, #146)
         system = (landscape(pack.id, [(earlier, data_before, start), *others]), landscape(pack.id, [(pack, data, candidate), *others])) if others else None
         report = ripple(start, candidate, data, (before, after), (old, new), components, scenarios, data_changes(data_before, data), system)
@@ -320,11 +323,19 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
         return ghost_diff(before_of(body), resolve(body))
 
     @app.post("/api/play/ready")
-    def play_ready(body: BuildRequest):
+    def play_ready(body: ScenariosRequest):
         """What's missing (ADR-0216): every view's row, ready or what it lacks, for the model shown with any accepted plan
-        steps. Read-only."""
+        steps and the Tests tab's draft. Read-only."""
         model, pack = resolve(body), pack_of(body.plan)
-        return missing(pack, model, data_for(pack), screens_of(body, model), scenarios_for(studio.pack))
+        return missing(pack, model, data_for(pack), screens_of(body, model), scenarios_of(body))
+
+    @app.post("/api/play/tests/update")
+    def play_tests_update(body: ScenariosRequest):
+        """The tests recorded again on the model shown (ADR-0216): failing ones re-recorded or dropped, new ways to an end
+        state added. A draft for the Tests tab; nothing is written."""
+        model, pack = resolve(body), pack_of(body.plan)
+        data = data_for(pack)
+        return update_tests(pack, model, scenarios_of(body), data.record if data is not None else "Record")
 
     @app.post("/api/play/review")
     def play_review(body: BuildRequest):

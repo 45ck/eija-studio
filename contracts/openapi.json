@@ -370,13 +370,50 @@
     "/api/play/ready": {
       "post": {
         "summary": "Play Ready",
-        "description": "What's missing (ADR-0216): every view's row, ready or what it lacks, for the model shown with any accepted plan\nsteps. Read-only.",
+        "description": "What's missing (ADR-0216): every view's row, ready or what it lacks, for the model shown with any accepted plan\nsteps and the Tests tab's draft. Read-only.",
         "operationId": "play_ready_api_play_ready_post",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/BuildRequest"
+                "$ref": "#/components/schemas/ScenariosRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/play/tests/update": {
+      "post": {
+        "summary": "Play Tests Update",
+        "description": "The tests recorded again on the model shown (ADR-0216): failing ones re-recorded or dropped, new ways to an end\nstate added. A draft for the Tests tab; nothing is written.",
+        "operationId": "play_tests_update_api_play_tests_update_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScenariosRequest"
               }
             }
           },
@@ -2502,6 +2539,18 @@
               }
             ],
             "title": "Since"
+          },
+          "scenarios": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scenarios"
           }
         },
         "additionalProperties": false,

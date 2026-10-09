@@ -2,6 +2,7 @@
 
 # Constants
 
+* [application.readiness.UPDATE_TESTS](UPDATE_TESTS.md) - Constant `UPDATE_TESTS` in `application/readiness`.
 * [application.readiness.VIEWS](VIEWS.md) - Constant `VIEWS` in `application/readiness`.
 
 # Functions

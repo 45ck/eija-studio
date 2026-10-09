@@ -5,7 +5,8 @@ an ephemeral `eija serve`, offline. It starts the way Lovable or Replit do: one 
 every model and view (state machine, class diagram, use cases, screens, tests and sequences, components). Then it mixes
 chat asks with direct edits on the diagram: a new requirement, a state drawn by hand, the fields the form needs, a
 rename and a role, and going back on a decision. What's missing, across every view, says what is not ready after each
-round. It ends by building the app and running it. Every step asserts what the page renders, so the take doubles as an
+round, and "Update the tests" records the tests a round made stale again, so the sequence diagrams follow the model.
+Laws are left to the person. It ends by building the app and running it. Every step asserts what the page renders, so the take doubles as an
 end-to-end check. The describer and the chat's proposer are the offline readers, and the video says so. Nothing is
 approved or applied.
 """
@@ -24,7 +25,7 @@ ROUNDS = (
     "add Refund from Paid to Refunded for Barista",
     "add field pickupTime as text then make size required",
     "rename state Ready to AwaitingPickup then allow Manager to Cancel",
-    "remove state Cancelled",
+    "remove state Cancelled then allow Manager to Refund",
 )
 __all__ = ["TITLE", "run"]
 
@@ -52,6 +53,7 @@ def run(scene: Scene, server: RunningServer) -> None:
     _fields(scene, chapter)
     _rename_and_role(scene, chapter)
     _change_your_mind(scene, chapter)
+    _laws(scene, chapter)
     _run_it(scene, chapter)
     scene.zoom_out()
     scene.title_card("Vibe-code it. Then read it.", "Describe it, ask, drag, and read every round in UML with what is "
@@ -68,7 +70,31 @@ def _missing(scene: Scene, text: str, caption: str, scale: float = 1.6) -> None:
     scene.expect_text("#missing", text, timeout_ms=60_000)
     scene.caption(caption)
     scene.zoom("#missing", scale=scale)
-    scene.wait(1700)
+    scene.wait(2400)
+    scene.zoom_out()
+
+
+def _update_tests(scene: Scene, change: str, caption: str) -> None:
+    """What's missing's one-click fix: the kernel records the stale tests again on the model shown, into the draft."""
+    scene.click("#missing-update-tests")
+    scene.expect_text("#missing", change, timeout_ms=60_000)
+    scene.wait_for('#missing [data-view="tests"].ready', timeout_ms=60_000)
+    scene.caption(caption)
+    scene.zoom("#missing", scale=1.6)
+    scene.wait(2600)
+    scene.zoom_out()
+
+
+def _sequence(scene: Scene, title: str, caption: str, text: str = "") -> None:
+    """Open the Sequences tab on one test and read it close up."""
+    scene.click("#tab-sequences")
+    scene.click(f'#seq-list button:has-text("{title}")')
+    scene.expect_text("#seq-verdict", title, timeout_ms=30_000)
+    if text:
+        scene.expect_text("#sequence-canvas", text, timeout_ms=30_000)
+    scene.caption(caption)
+    scene.zoom("#sequence-canvas", scale=1.5)
+    scene.wait(2800)
     scene.zoom_out()
 
 
@@ -112,19 +138,19 @@ def _every_view(scene: Scene, chapter: _Chapters) -> None:
     chapter("Every model and view")
     scene.caption("A running system already: the state machine, from the shape it read and the roles you named.")
     scene.zoom("#canvas", scale=1.35)
-    scene.wait(1300)
+    scene.wait(2400)
     scene.zoom_out()
     scene.click("#tab-classes")
     scene.wait_for("#class-canvas svg", timeout_ms=30_000)
     scene.expect_text("#class-canvas", "size")
     scene.caption("The class diagram, with the fields you described: the built app's form.")
     scene.zoom("#class-canvas", scale=1.4)
-    scene.wait(1300)
+    scene.wait(2400)
     scene.zoom_out()
-    scene.click("#tab-sequences")
-    scene.expect_text("body", "Order reaches Collected", timeout_ms=30_000)
-    scene.caption("Test cases recorded by the kernel, drawn as sequence diagrams: the way to each end, and one refusal.")
-    scene.wait(1800)
+    _sequence(scene, "Order reaches Collected", "Test cases recorded by the kernel, drawn as UML sequence diagrams: "
+              "who calls the order, each state it reaches, and the audit entry each step writes.", "Collect")
+    _sequence(scene, "Customer cannot Start", "A refusal is a test too: a customer may not start brewing, so the kernel "
+              "must refuse it. UML draws it as a neg fragment.", "neg")
     scene.click("#tab-states")
     _missing(scene, "No laws", "What's missing, across every view. No law is written for you: laws are yours to set.")
 
@@ -136,13 +162,17 @@ def _requirement(scene: Scene, chapter: _Chapters) -> None:
     scene.expect_text(f"{CARD} .plan-verdict", "The policy allows the result")
     scene.expect_text(f"{CARD} .plan-steps", "new action Pay")
     scene.zoom(CARD, scale=1.35)
-    scene.wait(1500)
+    scene.wait(2400)
     scene.zoom_out()
     scene.click(f"{CARD} .plan-tools .primary")  # preview it on the diagram
     scene.wait_for("#plan-banner:not([hidden])", timeout_ms=30_000)
     scene.expect_text("#missing", "No test takes Pay", timeout_ms=60_000)
     _missing(scene, "Order reaches Collected” fails", "What's missing follows the work in progress: no test takes Pay yet, and the "
              "recorded way to Collected now fails, because paying comes first. Tests pin down what the kernel did.")
+    _update_tests(scene, "Order reaches Collected recorded again", "Update the tests: the kernel records the way to "
+                  "Collected again on the new model. A draft you keep with Save, never written behind your back.")
+    _sequence(scene, "Order reaches Collected", "The sequence now pays first. Tests, sequences and the list agree.", "Pay")
+    scene.click("#tab-states")
 
 
 def _by_hand(scene: Scene, chapter: _Chapters) -> None:
@@ -159,8 +189,10 @@ def _by_hand(scene: Scene, chapter: _Chapters) -> None:
     scene.expect_text("#missing", "No test takes Refund", timeout_ms=60_000)
     scene.caption("Mixed: your drawn state and the AI's transition, each tagged You or AI. The reachability problem is gone.")
     scene.zoom(CARD, scale=1.3)
-    scene.wait(1600)
+    scene.wait(2200)
     scene.zoom_out()
+    _update_tests(scene, "Order reaches Refunded added", "Refunded is a new end, so updating the tests adds the way "
+                  "there, and Refund is tested.")
 
 
 def _fields(scene: Scene, chapter: _Chapters) -> None:
@@ -172,7 +204,7 @@ def _fields(scene: Scene, chapter: _Chapters) -> None:
     scene.expect_text("#class-canvas", "+ pickupTime")
     scene.caption("The class diagram shows the draft: pickupTime is new, size is now required. The built app's form follows.")
     scene.zoom("#class-canvas", scale=1.4)
-    scene.wait(1700)
+    scene.wait(2400)
     scene.zoom_out()
     scene.click("#tab-states")
 
@@ -184,29 +216,46 @@ def _rename_and_role(scene: Scene, chapter: _Chapters) -> None:
     scene.expect_text(f"{CARD} .plan-verdict", "role Manager")
     scene.caption("Every transition follows the rename. Manager is a new role with a test user, and the verdict says what is new.")
     scene.zoom(f"{CARD} .plan-verdict", scale=1.6)
-    scene.wait(1600)
+    scene.wait(2400)
     scene.zoom_out()
     _changes(scene, "round")
     scene.caption("Read this round alone in the Changes view, with what to consider.")
     scene.zoom("#diff-view", scale=1.25)
-    scene.wait(1600)
+    scene.wait(2400)
     scene.zoom_out()
     _close_changes(scene)
 
 
 def _change_your_mind(scene: Scene, chapter: _Chapters) -> None:
     chapter("Round 5: change your mind")
-    scene.caption("No cancelling after all. Removing a state that is in use removes its transition first, as its own step.")
+    scene.caption("No cancelling after all, and a manager approves refunds. Removing a state in use removes its transition "
+                  "first, as its own step.")
     _ask(scene, ROUNDS[4])
     scene.expect_text(f"{CARD} .plan-summary", "rounds")
     scene.expect_text(f"{CARD} .plan-verdict", "The policy allows the result")
-    _missing(scene, "Order reaches Cancelled” fails", "Cancelling is gone, so its recorded test fails too. The list points you to Tests.")
+    _missing(scene, "Order reaches Cancelled” fails", "Cancelling is gone, so its recorded test fails, and the way to "
+             "Refunded is now the manager's. The list says both.")
+    _update_tests(scene, "Order reaches Cancelled removed", "Update the tests: the way to Refunded is recorded again "
+                  "with the manager, and the test for an end that is gone is dropped. Every view but laws is ready.")
     _changes(scene, "all")
     scene.caption("Every round together, against what you described: the system you built.")
     scene.zoom("#diff-view", scale=1.25)
     scene.wait(2000)
     scene.zoom_out()
     _close_changes(scene)
+
+
+def _laws(scene: Scene, chapter: _Chapters) -> None:
+    chapter("Laws are yours")
+    scene.click('#missing [data-view="laws"] .missing-head')
+    scene.wait_for("#laws:not([hidden])", timeout_ms=30_000)
+    scene.expect_text("#laws", "no laws yet", timeout_ms=60_000)
+    scene.caption("One row is left on purpose. A law is what the system must never do, and PlayIDE never writes one for "
+                  "you: you write it, and the kernel proves it over every run.")
+    scene.zoom("#laws", scale=1.3)
+    scene.wait(2800)
+    scene.zoom_out()
+    scene.click("#tab-states")
 
 
 def _run_it(scene: Scene, chapter: _Chapters) -> None:
@@ -216,7 +265,7 @@ def _run_it(scene: Scene, chapter: _Chapters) -> None:
     scene.expect_text("#score", "cases match the kernel", timeout_ms=BUILD_TIMEOUT_MS)
     scene.wait_for("#run-frame", timeout_ms=60_000)
     scene.zoom("#run", scale=1.3)
-    scene.wait(1800)
+    scene.wait(2400)
     scene.zoom_out()
     scene.click("#simulate")
     scene.expect_text("#sim-summary", "refused by the kernel", timeout_ms=60_000)
@@ -224,5 +273,5 @@ def _run_it(scene: Scene, chapter: _Chapters) -> None:
     scene.click("#system-save")
     scene.expect_text("#status-saved", "Saved", timeout_ms=30_000)
     scene.zoom("#system-controls", scale=1.6)
-    scene.wait(1300)
+    scene.wait(2400)
     scene.zoom_out()

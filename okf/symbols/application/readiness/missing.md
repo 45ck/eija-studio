@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/readiness.py#missing
   title: application/readiness.py
   hash_method: ast-v2
-  sha256: 900e2d12a2e7b131a0bcfd3d7f911efb116aaf6e51def9440b375a6bce050b3d
-notes_baseline: b3eccbf3fda6e43cc1969e1a1cf0f3d9cc86559ac42b6406107c63e208de1c89
+  sha256: b244773b6deef4eac0d431aa74081cd15aa882748734c81f4b397b454b10673b
+notes_baseline: e76738453082c9dc3450e7927f890249be8bcbc8a952dc2c7117b039c68a3eb8
 ---
 
 # application.readiness.missing

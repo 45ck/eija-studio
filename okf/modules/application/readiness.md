@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/readiness.py
   title: application/readiness.py
   hash_method: ast-api-v1
-  sha256: 2f348c1537ac572c5facf785d93407635559e0cc4a1870b3dd64f27c6e59268f
-notes_baseline: 24751aba0a064cb27c5a607f7e13fc55a66ec7b8a3a991fcb5c8471df1670827
+  sha256: aca41bdf12a8fe440320da987976460cc5b6593b1e48cfc51a01b482a76a4885
+notes_baseline: 6b9497b7542ee0882544b62493d906088fb123d33e16de971407c771db1a7148
 ---
 
 # application.readiness
@@ -40,6 +40,7 @@ no test is "missing", not failing: an empty file proves nothing, and the list sa
 
 ## Public symbols
 
+* [`UPDATE_TESTS`](/symbols/application/readiness/UPDATE_TESTS.md) (constant) - no docstring
 * [`VIEWS`](/symbols/application/readiness/VIEWS.md) (constant) - no docstring
 * [`missing`](/symbols/application/readiness/missing.md) (function) - Every view's row: what it is missing or what is wrong with it, or nothing when it is ready.
 
@@ -74,6 +75,7 @@ _No curated notes yet._
 ## Referenced by
 
 * [interfaces.play](/modules/interfaces/play.md) - PlayIDE routes: the visual UML canvas page, Build & run of the model as a live app beside it (ADR-0151), and Simulate, seeded simulated users whose every step…
+* [application.readiness.UPDATE_TESTS](/symbols/application/readiness/UPDATE_TESTS.md) - Constant `UPDATE_TESTS` in `application/readiness`.
 * [application.readiness.VIEWS](/symbols/application/readiness/VIEWS.md) - Constant `VIEWS` in `application/readiness`.
 * [application.readiness.missing](/symbols/application/readiness/missing.md) - Every view's row: what it is missing or what is wrong with it, or nothing when it is ready.
 <!-- okf:generated:end links -->

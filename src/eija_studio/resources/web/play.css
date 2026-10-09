@@ -254,6 +254,9 @@ button.link{border:0;background:transparent;padding:1px 4px;color:var(--accent);
 .missing-items li{display:flex;flex-direction:column}
 .missing-items li.problem>span:first-child{color:var(--bad)}
 .missing-items .fix{font-size:.76rem}
+.missing-fix{margin:2px 0 4px 22px;padding:3px 10px;font-size:.8rem;border:1px solid var(--accent,#2f5bd3);color:var(--accent,#2f5bd3);background:transparent;border-radius:5px}
+.missing-fix:hover{background:var(--state)}
+.missing-note{margin:4px 0 0}.missing-updated{margin:0;color:var(--ok)}
 .sim-kinds[hidden]{display:none}
 .sim-kinds{list-style:none;margin:6px 0 0;padding:0;font-size:.8rem;display:grid;gap:3px}
 .sim-kinds li{padding:2px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-left:3px solid var(--line);border-radius:3px}
