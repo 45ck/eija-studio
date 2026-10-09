@@ -766,8 +766,9 @@
   // What the accepted steps add to the system's vocabulary (ADR-0201): declared as a sketch declares them, in the draft only.
   function declaredText(declared) {
     if (!declared) return "";
-    const parts = [...declared.actions.map((a) => `action ${a}`), ...declared.roles.map((r) => `role ${r}`)];
-    return ` New in this system: ${parts.join(", ")} (base guards and an audit entry, as a sketch declares them).`;
+    const named = (one, list) => (list.length ? `${one}${list.length > 1 ? "s" : ""} ${list.join(", ")}` : "");
+    const parts = [named("action", declared.actions), named("role", declared.roles)].filter(Boolean);
+    return ` New in this system: ${parts.join("; ")}, declared as a sketch declares them.`;
   }
 
   function changes(diff) {

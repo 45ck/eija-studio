@@ -430,7 +430,7 @@
     view = mount(canvas, result, {
       direction: ide().direction(), // laid out the way the state machine is, so the change reads in the same places
       onLens: (lens, onion) => {
-        for (const b of host.querySelectorAll(".lens button")) b.setAttribute("aria-checked", String(b.dataset.lens === lens));
+        for (const b of host.querySelectorAll(".lens button[data-lens]")) b.setAttribute("aria-checked", String(b.dataset.lens === lens));
         $("diff-onion").value = String(Math.round(onion * 100));
         host.dataset.lens = lens;
       },
