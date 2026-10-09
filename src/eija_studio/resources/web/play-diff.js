@@ -279,12 +279,96 @@
     return box;
   }
 
+  // Who made a change: the accepted steps that name its element (a state, a transition, or the start).
+  function authors(change) {
+    const ref = change.ref || "", name = ref.slice(ref.indexOf(":") + 1);
+    const names = (t) => [t.state, t.to, t.transition, t.id].filter(Boolean);
+    const hit = (t) => (ref === "initial-edge" ? t.kind === "set_initial" : names(t).includes(name));
+    return [...new Set(ide().steps().filter((x) => hit(x.transaction)).map((x) => x.author))].sort();
+  }
+
+  // What to consider about the change, in a few lines above the list: what the kernel and the diagrams flag, whether
+  // the laws still hold, which other diagrams it changes, and the conformance tests. Everything comes from the server
+  // (the ripple, ADR-0158, and the law proofs, ADR-0166); nothing here judges.
+  let laws = null, lawsFor = "";
+
+  function consider() {
+    const box = el("section", undefined, { id: "diff-consider", class: "diff-consider", "aria-label": "What to consider" });
+    box.append(el("h3", "To consider"));
+    const list = el("ul");
+    const ripple = ide().ripple();
+    if (!ripple) list.append(el("li", "Working out what else it changes…", { class: "muted" }));
+    else {
+      if (ripple.problems.length) list.append(flags(ripple.problems));
+      list.append(lawLine());
+      const names = ide().diagramNames, others = Object.entries(ripple.diagrams).filter(([k, items]) => k !== "states" && items.length);
+      if (others.length) {
+        const li = line("", "Also changes: ");
+        others.forEach(([k, items], i) => {
+          const go = el("button", `${names[k] || k} (${items.length})`, { type: "button", class: "link" });
+          go.addEventListener("click", () => ide().showTab(k));
+          li.append(i ? ", " : "", go);
+        });
+        list.append(li);
+      }
+      const c = ripple.conformance;
+      if (c && c.cases_before !== null && c.cases_after !== null) list.append(line("", `Conformance tests: ${c.cases_before} → ${c.cases_after} cases, generated from the model`));
+    }
+    box.append(list);
+    return box;
+  }
+
+  // What the kernel and the other diagrams flag, as one line of counts that opens to the details: problems first.
+  function flags(problems) {
+    const bad = problems.filter((p) => p.change === "problem"), warn = problems.filter((p) => p.change !== "problem");
+    const li = el("li", undefined, { class: bad.length ? "bad" : "warn" }), more = el("details", undefined, { id: "diff-flags" });
+    const said = [bad.length ? `✗ ${bad.length} problem${bad.length === 1 ? "" : "s"}` : "", warn.length ? `⚠ ${warn.length} warning${warn.length === 1 ? "" : "s"}` : ""];
+    more.append(el("summary", said.filter(Boolean).join(", ") + " to look at"));
+    const ul = el("ul");
+    for (const p of [...bad, ...warn]) ul.append(line(p.change === "problem" ? "bad" : "warn", p.text));
+    more.append(ul);
+    li.append(more);
+    return li;
+  }
+
+  function line(kind, text) { return el("li", text, kind ? { class: kind } : {}); }
+
+  function lawLine() {
+    if (!laws || lawsFor !== JSON.stringify(request())) { proveLaws(); return line("muted", "Proving the laws on the changed model…"); }
+    if (laws.error) return line("warn", `Laws not proved: ${laws.error.message}`);
+    const broken = laws.laws.filter((l) => l.status === "BROKEN");
+    if (!laws.laws.length) return line("muted", "This system has no laws to check.");
+    if (broken.length) return line("bad", `✗ Breaks ${broken.length === 1 ? "the law" : broken.length + " laws"}: ${broken.map((l) => l.description || l.id).join("; ")}`);
+    return line("ok", `✓ No law is broken (${laws.laws.length} proved on the changed model)`);
+  }
+
+  let proving = "";
+  async function proveLaws() {
+    const key = JSON.stringify(request());
+    if (proving === key) return;
+    proving = key;
+    let result;
+    try { result = await ide().api("/api/play/laws", request()); } catch (error) { result = { error }; }
+    if (proving !== key) return;
+    proving = "";
+    laws = result.error ? result : result.report || result;
+    lawsFor = key;
+    redrawConsider();
+  }
+
+  function redrawConsider() {
+    const old = $("diff-consider");
+    if (old && open) old.replaceWith(consider());
+  }
+
   // The list lives in the inspector: one place to read the change. The open change shows its before and after under it.
   function changeList(changes) {
     const list = el("ol", undefined, { class: "diff-list", "aria-label": "Changes" });
     changes.forEach((c, i) => {
       const b = el("button", undefined, { type: "button", class: "diff-item " + c.change, "data-n": String(c.n) });
-      b.append(el("span", LOOK[c.change].mark.trim(), { class: "mark", "aria-hidden": "true" }), el("span", c.text));
+      const who = authors(c), text = el("span", c.text);
+      for (const a of who) text.prepend(el("span", a === "ai" ? "AI" : "You", { class: "who " + a, title: a === "ai" ? "Proposed by the AI" : "Drawn or typed by you" }));
+      b.append(el("span", LOOK[c.change].mark.trim(), { class: "mark", "aria-hidden": "true" }), text);
       b.addEventListener("click", () => go(i));
       const li = el("li");
       li.append(b);
@@ -306,7 +390,7 @@
     }
     const canvas = el("div", undefined, { class: "canvas diff-canvas", tabindex: "0", "aria-label": "The change on the state machine" });
     host.append(...toolbar(result.counts), canvas);
-    $("inspector").replaceChildren(el("h3", "Changes"), changeList(result.changes),
+    $("inspector").replaceChildren(consider(), el("h3", "Changes"), changeList(result.changes),
       el("p", "Read-only: the change is not saved, approved or applied here.", { class: "muted small" }));
     view = mount(canvas, result, {
       direction: ide().direction(), // laid out the way the state machine is, so the change reads in the same places
@@ -412,7 +496,7 @@
   // The change list in the inspector, for diagrams other than the state machine (whose view puts it there itself).
   function list() {
     if (!ghost || !ghost.changes.length) return;
-    $("inspector").replaceChildren(el("h3", "Changes"), changeList(ghost.changes),
+    $("inspector").replaceChildren(consider(), el("h3", "Changes"), changeList(ghost.changes),
       el("p", "Read-only: the change is not saved, approved or applied here.", { class: "muted small" }));
     at = -1;
   }
@@ -442,6 +526,7 @@
     });
     ide().hooks.diffGraph = () => (open && view ? view.graph : null);
     document.addEventListener("playide:plan", () => { ghost = null; refresh(); });
+    document.addEventListener("playide:ripple", redrawConsider);
     refresh();
   }
 

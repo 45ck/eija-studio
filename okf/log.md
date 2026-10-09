@@ -2,6 +2,8 @@
 
 ## 2026-10-09
 
+* **Shapes land where you put them**: re-synced ADR-0174 after its amendment (presentation only, no module or symbol changes). No Notes were hand-edited and nothing was recorded as verified.
+* **Your changes and the AI's**: re-synced ADR-0176 after its "what to consider" update (presentation only). No Notes were hand-edited and nothing was recorded as verified.
 * **Sketch names that differ only in case**: re-synced `application.new_system.sketch_documents` and ADR-0185 after a sketch began refusing states, actions or roles that differ only in case. No Notes were hand-edited and nothing was recorded as verified.
 * **PlayIDE polish, round 4**: synced the new `application.plan.example_passes` symbol, `interfaces.http` (`/api/status` reports `demo_modelled`) and `interfaces.play` (`pack_file` names the pack's own folder for the Laws and Tests files). No Notes were hand-edited and nothing was recorded as verified.
 * **Your own systems, two fixes**: re-synced `application.new_system.sketch_documents` after roles that slug alike got unique user ids. No Notes were hand-edited and nothing was recorded as verified.

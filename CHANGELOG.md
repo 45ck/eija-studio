@@ -7,6 +7,10 @@
 - The state machine is laid out top to bottom when that draws it clearly larger, as on a laptop with the side bar and the chat open. Before, Library loan was shrunk to a third of its size in one long row, with 5-pixel labels; at 1280 pixels it is now drawn at full size. The direction is chosen once, when the diagram is first drawn, so an edit or a preview never turns it. The Changes view follows the same direction.
 - On a 1280-pixel laptop screen, an edit no longer scrolls the whole page sideways. "Unsaved changes" in the title bar had made the page 42 pixels wider than the window; the title bar now gives way inside the window instead.
 
+### 9 October 2026: PlayIDE puts shapes where you put them
+
+- A state you place on the state machine now lands exactly where you click or drop it, at any zoom. A dashed outline shows where before you commit, and a transition shows a line from the state it leaves to the pointer. Nothing else on the diagram moves when the plan redraws, and a state you drag stays where you let go. Before, every step laid the diagram out again, and the plan banner pushed it down. Shapes dragged on the class, use case and component diagrams stay put too, and pressing on a class's attribute row takes hold of the class. **Tidy** (beside Fit, and in Ctrl+K) lays the diagrams out again. On the Screens tab, a line shows where a dragged field will go. See the amendment to [ADR-0174](docs/adr/0174-add-without-dragging-and-edit-inline.md).
+
 ### 9 October 2026: PlayIDE polish, round 6 (the Import / Export menu)
 
 - The Import / Export menu wraps its longer lines again. Since round 3 kept the title bar's buttons on one line, the menu inherited that, and the XMI line ("Enterprise Architect, Cameo, …, StarUML") ran past the menu's edge into the chat panel.
