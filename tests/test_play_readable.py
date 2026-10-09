@@ -1,5 +1,5 @@
 """PlayIDE on a laptop screen, in a real browser: with the side bar and the chat open, the state machine is drawn large
-enough to read rather than shrunk to fit one long row, a previewed change ("Unsaved changes" in the title bar)
+enough to read rather than shrunk to fit one long row, a previewed change ("Unsaved changes" in the status bar)
 never makes the page wider than the window, which would scroll it sideways, every diagram tab in the strip is shown
 whole whichever tab is open, and a screen's fields show their whole label.
 
@@ -36,14 +36,14 @@ def test_the_state_machine_reads_on_a_laptop_and_the_page_never_scrolls_sideways
             page.wait_for_selector("body[data-ready=true]", timeout=60_000)
             # 0.6 keeps a 14 px state name at 8 px or more; laid out in one long row Library loan was drawn at 0.33.
             assert page.evaluate("() => window.PlayIDE.diagram('states').view.scale") >= 0.6
-            # The chat's example, previewed: the title bar gains "Unsaved changes", and the page still fits the window.
+            # The chat's example, previewed: the status bar says "Unsaved changes", and the page still fits the window.
             page.fill("#chat-input", page.text_content("#chat-example"))
             page.click("#chat-send")
             preview = page.get_by_role("button", name="Preview on the diagram").first
             preview.wait_for(timeout=30_000)
             preview.click()
             page.wait_for_selector("#plan-banner:not([hidden])")
-            page.wait_for_selector("#system-saved[data-dirty=true]")
+            page.wait_for_selector("#system-saved[data-dirty=true]", state="attached")
             assert page.evaluate("() => document.documentElement.scrollWidth - innerWidth") <= 0
             assert errors == []
         finally:

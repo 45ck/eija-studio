@@ -92,3 +92,4 @@
 * [ADR-0199: PlayIDE at the kernel's limits: measured, and the kernel's repeated questions memoised](0199-playide-at-the-kernel-limits.md) - The packs PlayIDE was built and demonstrated on have five or six states.
 * [ADR-0201: Build a new system in chat, round after round](0201-build-a-new-system-in-chat-round-after-round.md) - The showcase changes a pack that already exists (Library loan).
 * [ADR-0202: Grow the class diagram in chat](0202-grow-the-class-diagram-in-chat.md) - ADR-0201 let a system started from a sketch grow its state machine round after round in chat.
+* [ADR-0203: A system landscape of the workflows that share classes](0203-system-landscape-of-workflows-that-share-classes.md) - PlayIDE edits one workflow at a time: one state machine moving one record class, with its class diagram, use cases, screens and laws.
