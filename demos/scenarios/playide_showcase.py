@@ -382,8 +382,11 @@ def _people(scene: Scene, chapter: _Chapters) -> None:
     scene.zoom_out()
     scene.click("#role-lens button[data-role='']")
     scene.click("#screen-a11y summary")
-    scene.expect_text("#screen-a11y", "9 of 9 checks pass")
-    scene.caption("The screens are checked like the model: labels, contrast and keyboard order, against WCAG 2.2 AA.")
+    scene.expect_text("#screen-a11y", "8 of 9 checks pass")
+    scene.expect_text("#screen-a11y", "Renew: itemTitle")
+    scene.caption(
+        "The screens are checked like the model, against WCAG 2.2 AA. The AI's new Renew screen still needs field labels."
+    )
     scene.zoom("#screen-a11y", scale=1.5)
     scene.wait(2000)
     scene.zoom_out()
