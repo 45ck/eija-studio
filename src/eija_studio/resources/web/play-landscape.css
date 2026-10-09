@@ -1,0 +1,16 @@
+/* The Components tab's System lens (ADR-0203): which diagram the tab shows, the system's one-line summary, and the
+   findings where the workflows' class diagrams disagree. */
+.lens{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.lens button{border:0;border-radius:0;padding:4px 10px;background:var(--panel);font-size:.82rem}
+.lens button+button{border-left:1px solid var(--line)}
+.lens button[aria-pressed="true"]{background:var(--state);font-weight:600}
+.lens[hidden]{display:none}
+/* Floats over the top left of the diagram, in the stage's canvas cell (play-shell.css lays the stage out as a grid). */
+.component-bar{display:flex;align-items:center;gap:12px;padding:4px 10px 4px 4px;background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:8px;box-shadow:0 1px 3px rgba(27,33,48,.08)}
+.stage>.component-bar{grid-row:3;grid-column:2;align-self:start;justify-self:start;margin:8px;z-index:6}
+.component-bar[hidden],.landscape-summary[hidden]{display:none}
+.landscape-summary{margin:0;font-size:.82rem;color:var(--muted)}
+.landscape-summary.warn{color:#8a5a12}
+.landscape-findings{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:.84rem}
+.landscape-findings li{padding:6px 8px;border-left:3px solid #3157d5;background:#f3f6ff;border-radius:4px}
+.landscape-findings li.warning{border-left-color:#b7791f;background:#fff7e6}
