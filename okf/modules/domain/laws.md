@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/laws.py
   title: domain/laws.py
   hash_method: ast-api-v1
-  sha256: b0369d14040baf88fef2588950434c38337acfd6520632fea32a5e46b61740b3
-notes_baseline: 503bac2f4d60a6d4e4b23735db6bc760e0cac55a680f08c3b56b7577c41e3cf7
+  sha256: f85333de7a6ab488097dc522e286783755ba3b11b9409b78bb762572324f11be
+notes_baseline: 58f08202e8f877ccdf5e819031061425b2a99b86677e8cc381e89258b90ae133
 ---
 
 # domain.laws
@@ -45,6 +45,7 @@ Nothing here names a domain: every state, role, action and effect comes from the
 * [`ActionSourceIn`](/symbols/domain/laws/ActionSourceIn.md) (class) - Every transition performing ``action`` starts in one of ``states``.
 * [`ActionTarget`](/symbols/domain/laws/ActionTarget.md) (class) - Every transition performing ``action`` ends in ``state``.
 * [`CODE`](/symbols/domain/laws/CODE.md) (constant) - no docstring
+* [`CanReachEnd`](/symbols/domain/laws/CanReachEnd.md) (class) - From every state a record can get to, some run still reaches one of ``states`` (its ends): no record is left in a dead…
 * [`ClosedShape`](/symbols/domain/laws/ClosedShape.md) (class) - The workflow has exactly these states and actions and this initial state.
 * [`ForbiddenEffects`](/symbols/domain/laws/ForbiddenEffects.md) (class) - No transition requires any of ``effects`` and every transition declares them forbidden.
 * [`KIND_LAWS`](/symbols/domain/laws/KIND_LAWS.md) (constant) - no docstring
@@ -71,6 +72,7 @@ Nothing here names a domain: every state, role, action and effect comes from the
 * [`evaluate_run`](/symbols/domain/laws/evaluate_run.md) (function) - Violations by one executed run: per-step laws on every step, sequence laws on the whole run.
 * [`evaluate_table`](/symbols/domain/laws/evaluate_table.md) (function) - Every violation of the applicable laws by the workflow's transition table, in law order.
 * [`reachable`](/symbols/domain/laws/reachable.md) (function) - States reachable from ``start`` without passing through ``blocked`` (cycle-safe).
+* [`stuck_states`](/symbols/domain/laws/stuck_states.md) (function) - The states a record can get to from ``initial`` along ``edges`` from which no end of ``law`` can be reached.
 
 ## Internal imports
 
@@ -99,6 +101,7 @@ _No curated notes yet._
 * [domain.laws.ActionSourceIn](/symbols/domain/laws/ActionSourceIn.md) - Every transition performing ``action`` starts in one of ``states``.
 * [domain.laws.ActionTarget](/symbols/domain/laws/ActionTarget.md) - Every transition performing ``action`` ends in ``state``.
 * [domain.laws.CODE](/symbols/domain/laws/CODE.md) - Constant `CODE` in `domain/laws`.
+* [domain.laws.CanReachEnd](/symbols/domain/laws/CanReachEnd.md) - From every state a record can get to, some run still reaches one of ``states`` (its ends): no record is left in a dead end or a loop with no way out.
 * [domain.laws.ClosedShape](/symbols/domain/laws/ClosedShape.md) - The workflow has exactly these states and actions and this initial state.
 * [domain.laws.ForbiddenEffects](/symbols/domain/laws/ForbiddenEffects.md) - No transition requires any of ``effects`` and every transition declares them forbidden.
 * [domain.laws.KIND_LAWS](/symbols/domain/laws/KIND_LAWS.md) - Constant `KIND_LAWS` in `domain/laws`.
@@ -125,4 +128,5 @@ _No curated notes yet._
 * [domain.laws.evaluate_run](/symbols/domain/laws/evaluate_run.md) - Violations by one executed run: per-step laws on every step, sequence laws on the whole run.
 * [domain.laws.evaluate_table](/symbols/domain/laws/evaluate_table.md) - Every violation of the applicable laws by the workflow's transition table, in law order.
 * [domain.laws.reachable](/symbols/domain/laws/reachable.md) - States reachable from ``start`` without passing through ``blocked`` (cycle-safe).
+* [domain.laws.stuck_states](/symbols/domain/laws/stuck_states.md) - The states a record can get to from ``initial`` along ``edges`` from which no end of ``law`` can be reached.
 <!-- okf:generated:end links -->

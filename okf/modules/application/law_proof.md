@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/law_proof.py
   title: application/law_proof.py
   hash_method: ast-api-v1
-  sha256: f9b356d481cb39f01db702838985e1584cb9b905be18123a6770bbdca1eee8d6
-notes_baseline: ab5909d5c39132a9ab5436f360ae3b321aa1a1d08f9dd1917574c4e5e26b42ac
+  sha256: 280326154b79700f0adb19ab2c717a16e34c85b74572ee60c5381c360d597af4
+notes_baseline: 491127e2ed9019eb75b30070012849d2177980dd0eb5060a6662c1b536a497dc
 ---
 
 # application.law_proof
@@ -45,6 +45,8 @@ on an in-memory session); the laws are judged by `laws.evaluate_run` itself, so 
   the `path_requires_kind` laws whose kind of actor has already taken a step (ADR-0210). Every other law kind is
   judged per step, so this product is complete for the current law kinds; `LAW_HANDLING` names
   how each kind is judged and a test fails if a new kind is not classified.
+* `can_reach_end` is about the runs a record could still take, not one run: it is judged on the steps the kernel
+  committed during the search, so a record is stuck only where the kernel itself leaves no way to an end (ADR-0221).
 * Each configuration is reached first by a shortest run, so a counterexample is the shortest run that breaks the law.
 * A law about a state that is never reached, or an action that never commits, holds vacuously; that is reported.
 
