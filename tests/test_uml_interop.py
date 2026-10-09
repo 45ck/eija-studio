@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import base64
 import json
+import re
 import zlib
 from pathlib import Path
 
@@ -15,7 +16,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from eija_studio.application.interop import FORMATS, detect_format, export_model, import_model
-from eija_studio.domain.data import data_for
+from eija_studio.domain.data import DataModel, data_for
 from eija_studio.domain.models import DomainError
 from eija_studio.domain.pack import load_pack
 from eija_studio.interfaces.cli import main
@@ -170,6 +171,57 @@ def test_a_compressed_drawio_page_is_read():
     packed = base64.b64encode(deflate.compress(xml.encode()) + deflate.flush()).decode()
     report = import_model("drawio", f'<mxfile><diagram id="d" name="States">{packed}</diagram></mxfile>', pack, None, data)
     assert report["status"] == "CLEAN" and report["state_machine"]["transactions"] == []
+
+
+def _packed(xml: str) -> str:
+    deflate = zlib.compressobj(9, zlib.DEFLATED, -15)
+    return base64.b64encode(deflate.compress(xml.encode()) + deflate.flush()).decode()
+
+
+def test_a_compressed_drawio_page_gets_the_files_refusals():
+    pack, data = loan()
+    dtd = '<!DOCTYPE x [<!ENTITY a "aaaa">]><mxGraphModel><root>&a;</root></mxGraphModel>'
+    with pytest.raises(DomainError) as error:
+        import_model("drawio", f'<mxfile><diagram name="p">{_packed(dtd)}</diagram></mxfile>', pack, None, data)
+    assert error.value.code == "IMPORT_INVALID"
+    bomb = "<mxGraphModel><root>" + " " * 9_000_000 + "</root></mxGraphModel>"  # a few kB compressed
+    with pytest.raises(DomainError) as error:
+        import_model("drawio", f'<mxfile><diagram name="p">{_packed(bomb)}</diagram></mxfile>', pack, None, data)
+    assert error.value.code == "IMPORT_TOO_LARGE"
+
+
+@pytest.mark.parametrize("fmt", FORMATS)
+def test_a_second_initial_state_is_reported_not_dropped(fmt):
+    pack, data = loan()
+    text, _ = export_model(fmt, pack, None, data)
+    second = {"plantuml": ("[*] --> Requested", "[*] --> Requested\n[*] --> OnLoan"),
+              "mermaid": ("[*] --> Requested", "[*] --> Requested\n    [*] --> OnLoan")}
+    if fmt in second:
+        text = text.replace(*second[fmt], 1)
+    elif fmt == "xmi":  # a copy of the initial arrow, after it, pointing at OnLoan
+        start = re.search(r'<transition xmi:type="uml:Transition" xmi:id="([^"]+)" source="[^"]+" target="([^"]+)" />', text)
+        onloan = re.search(r'xmi:id="([^"]+)" name="OnLoan"', text).group(1)
+        copy = start.group(0).replace(start.group(1), start.group(1) + "-2").replace(start.group(2), onloan)
+        text = text.replace(start.group(0), start.group(0) + copy, 1)
+    else:
+        onloan = re.search(r'id="(state-\d+)" value="OnLoan"', text).group(1)
+        arrow = f'<mxCell id="start-2" edge="1" parent="1" source="initial" target="{onloan}" style="" />'
+        text = text.replace("</root>", arrow + "</root>", 1)
+    report = import_model(fmt, text, pack, None, data)
+    assert report["status"] == "PARTIAL" and "initial -> OnLoan" in unmapped(report), report["unmapped"]
+    assert report["state_machine"]["transactions"] == []  # the first initial state is kept
+
+
+@pytest.mark.parametrize("fmt", FORMATS)
+def test_a_class_with_no_attributes_round_trips(fmt):
+    pack, data = loan()
+    doc = data.model_dump(mode="json")
+    doc["entities"].append({"name": "Branch", "attributes": []})
+    plain = DataModel.model_validate(doc)
+    text, _ = export_model(fmt, pack, None, plain)
+    back = import_model(fmt, text, pack, None, plain)
+    assert back["status"] == "CLEAN", back["unmapped"]
+    assert back["class_model"]["candidate"] == plain.model_dump(mode="json")
 
 
 @pytest.mark.parametrize("fmt", ["xmi", "drawio"])
