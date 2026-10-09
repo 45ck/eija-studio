@@ -382,9 +382,10 @@
     fit.setAttribute("aria-pressed", String(fitFlow(view, sizer, canvas, size, screens.length)));
   }
 
-  // A flow wider than the panel (ai-ops is about 2,500px) is fitted to its width while the cards stay readable (half
-  // size or more); wider still, it stays full size and scrolls, with a cue on the right edge saying how many screens are
-  // still out of view. "Fit to width" turns the overview on or off by hand. Returns whether the flow is fitted.
+  // A flow wider than the panel (a pack with a dozen screens runs to 2,500px) is fitted to its width while the cards
+  // stay readable (half size or more); wider still, it stays full size and scrolls, with a cue on the right edge saying
+  // how many screens are still out of view. "Fit to width" turns the overview on or off by hand. Returns whether the
+  // flow is fitted.
   function fitFlow(view, sizer, canvas, size, count) {
     const room = view.clientWidth, fits = Math.min(1, room / size.width);
     const scale = (flowFit === null ? fits >= 0.5 : flowFit) ? fits : 1;
