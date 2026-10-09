@@ -63,6 +63,7 @@ _No curated notes yet._
 ## Referenced by
 
 * [application.diagram_catalog](/modules/application/diagram_catalog.md) - Named diagram views over a baseline and an optional candidate Workflow.
+* [application.sequence_layout](/modules/application/sequence_layout.md) - Where a scenario's sequence diagram is drawn, and its export (ADR-0195).
 * [application.diagram_emitters.FORMATS](/symbols/application/diagram_emitters/FORMATS.md) - Constant `FORMATS` in `application/diagram_emitters`.
 * [application.diagram_emitters.PALETTE](/symbols/application/diagram_emitters/PALETTE.md) - Constant `PALETTE` in `application/diagram_emitters`.
 * [application.diagram_emitters.emit](/symbols/application/diagram_emitters/emit.md) - Serialise a diagram model.

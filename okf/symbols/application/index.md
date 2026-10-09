@@ -25,6 +25,8 @@
 * [runtime](runtime/) - Symbols of application.runtime
 * [scenario_run](scenario_run/) - Symbols of application.scenario_run
 * [scxml](scxml/) - Symbols of application.scxml
+* [sequence_layout](sequence_layout/) - Symbols of application.sequence_layout
+* [sequences](sequences/) - Symbols of application.sequences
 * [service](service/) - Symbols of application.service
 * [simulation](simulation/) - Symbols of application.simulation
 * [verifier](verifier/) - Symbols of application.verifier

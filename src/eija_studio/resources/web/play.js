@@ -117,10 +117,12 @@
 
   function transition(id) { return model.transitions.find((t) => t.id === id); }
 
-  const current = () => (hooks.diffGraph && hooks.diffGraph()) || ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: componentGraph, review: PlayReview.graph() })[tab];
-  const PANELS = { states: "canvas", classes: "class-canvas", usecases: "usecase-canvas", screens: "screens", components: "component-canvas", laws: "laws", tests: "tests", review: "review", access: "access-panel" };
+  const current = () => (hooks.diffGraph && hooks.diffGraph()) || ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: componentGraph, review: PlayReview.graph(),
+    sequences: hooks.sequenceGraph && hooks.sequenceGraph() })[tab];
+  const PANELS = { states: "canvas", sequences: "sequences", classes: "class-canvas", usecases: "usecase-canvas", screens: "screens", components: "component-canvas", laws: "laws", tests: "tests", review: "review", access: "access-panel" };
   const HINTS = {
     states: "Pick State, Transition or Initial in the palette, then click the diagram (or drag it there). Double-click empty space for a new state, a state to rename it. Changes join the plan for you to preview; nothing is saved.",
+    sequences: "The Tests tab's scenarios as UML sequences, each step run through the kernel: a step the model can't do is red with the kernel's reason. Select one to change it; a step in a neg must be refused.",
     classes: "Select a class to see its attributes and associations.",
     usecases: "Select a use case to inspect it. Double-click one to design its screen.",
     screens: "Design each use case's screen. The design check runs as you edit; Build & run uses these screens.",
@@ -431,7 +433,7 @@
     $("draw-palette").hidden = which !== "states";
     $("plan-review").hidden = which === "review";
     for (const f of hooks.tab) f(which);
-    if (which === "access" || which === "tests") return; // play-access.js and play-tests.js draw these on hooks.tab
+    if (which === "access" || which === "tests" || which === "sequences") return; // play-access.js, play-tests.js and play-sequence.js draw these on hooks.tab
     if (which === "screens") { renderDesigner(); return; }
     if (which === "laws") { for (const show of hooks.laws) show(); return; }
     if (which === "usecases") drawUseCases();
@@ -642,6 +644,7 @@
   // to every diagram and asks the proposer for follow-on edits, each re-checked by the policy or the screen design
   // check. Tabs carry a badge; the affected elements are marked on each diagram while the plan is previewed.
   const DIAGRAMS = { states: "State machine", classes: "Class diagram", usecases: "Use cases", screens: "Screens", components: "Components" };
+  const RIPPLE = { ...DIAGRAMS, sequences: "Sequences" }; // sequence diagrams are listed in the ripple; play-sequence.js marks its own tab
   const MARK = { added: "+", removed: "−", changed: "~", warning: "⚠", problem: "✗" };
   const TINT = { added: { strokeColor: "#17734a", fillColor: "#e5f5ec", strokeWidth: 2.5 }, changed: { strokeColor: "#c27c0e", strokeWidth: 2.5 },
     warning: { strokeColor: "#c27c0e", dashed: true, strokeWidth: 2.5 }, problem: { strokeColor: "#a12f2f", strokeWidth: 3 },
@@ -680,8 +683,8 @@
     if (ripple.error) { box.append(el("p", `${ripple.error.code || "ERROR"}: ${ripple.error.message}`, { class: "refusal" })); return; }
     box.append(el("h4", ripple.agree ? "Ripple: every diagram still agrees" : "Ripple: the diagrams no longer agree", { class: ripple.agree ? "ok" : "bad" }));
     const list = el("ul", undefined, { class: "ripple-list" });
-    for (const [key, name] of Object.entries(DIAGRAMS)) {
-      for (const item of ripple.diagrams[key]) {
+    for (const [key, name] of Object.entries(RIPPLE)) {
+      for (const item of ripple.diagrams[key] || []) {
         const b = el("button", undefined, { type: "button", class: "ripple-item " + item.change, title: item.code || "" });
         b.append(el("span", MARK[item.change], { class: "mark" }), el("span", name, { class: "where" }), el("span", item.text, { class: "what" }));
         b.addEventListener("click", () => showRipple(key, item));
@@ -768,6 +771,7 @@
       const name = item.ref ? item.ref.slice(7) : "None", known = screens.screens.some((x) => x.use_case === name) || useCaseList.includes(name);
       useCase = name !== "None" && known ? name : null;
     }
+    if (key === "sequences" && item.ref && window.PlaySequence) window.PlaySequence.open(item.ref.slice(9));
     showTab(key);
     const g = current(), ids = key === "screens" || !item.ref ? [] : cellsFor(key, item.ref);
     const cell = g && ids.map((id) => g.getDataModel().getCell(id)).find(Boolean);
@@ -775,13 +779,13 @@
     else if (cell && cell.isEdge()) g.setSelectionCell(cell);
     if (cell) g.scrollCellToVisible(cell, true);
     const note = el("div", undefined, { class: "step-note" });
-    note.append(el("p", `${DIAGRAMS[key]}: ${item.text}`, { class: "ripple-note " + item.change }));
+    note.append(el("p", `${RIPPLE[key]}: ${item.text}`, { class: "ripple-note " + item.change }));
     if (item.change === "removed") note.append(el("p", "Shown on the model, marked in red: the plan removes it.", { class: "muted" }));
     $("inspector").prepend(note);
     const seen = `ripple:${key}:${ripple.key}`; // checking, not making: once per diagram for each version of the plan
     if (key !== "states" && !plan.rewarded.has(seen)) {
       plan.rewarded.add(seen);
-      earn(1, `Checked the ripple on the ${DIAGRAMS[key].toLowerCase()}`);
+      earn(1, `Checked the ripple on the ${RIPPLE[key].toLowerCase()}`);
     }
   }
 
@@ -1993,6 +1997,7 @@
     $("zoom-in").addEventListener("click", () => current() && current().zoomIn());
     $("zoom-out").addEventListener("click", () => current() && current().zoomOut());
     $("tab-states").addEventListener("click", () => showTab("states"));
+    $("tab-sequences").addEventListener("click", () => showTab("sequences"));
     $("tab-classes").addEventListener("click", () => showTab("classes"));
     $("tab-usecases").addEventListener("click", () => showTab("usecases"));
     $("tab-screens").addEventListener("click", () => showTab("screens"));
@@ -2041,9 +2046,10 @@
     api, el, hooks, about, viewKey, label, restyle, clearSim, select, showTab, fit, importPlan,
     graph: () => graph, tab: () => tab, model: () => model, selected: () => selected, pack: () => packInfo, base: () => baseModel,
     planned: () => (plan && plan.result && plan.result.legal ? accepted() : null), // the change the Changes view draws (ADR-0176)
+    changes: () => shownChange, // the union while the Changes view is on (ADR-0176), else null
     draft, restoreDraft, // saving and reopening the work in progress (ADR-0185)
     recovered: () => recoveredWork, // work this browser kept came back on load, so the saved draft was not opened over it
-    setChanges, diagram: (key) => ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: componentGraph })[key],
+    setChanges, diagram: (key) => ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: componentGraph, sequences: hooks.sequenceGraph && hooks.sequenceGraph() })[key],
     // Undo, redo and the edited document (ADR-0198): document() is what a save writes; restore(doc, label) opens one as
     // an undoable edit, checked by the server like any other.
     undo, redo, document: documentNow, history: () => ({ at: edits.at, labels: edits.stack.map((e) => e.label) }),

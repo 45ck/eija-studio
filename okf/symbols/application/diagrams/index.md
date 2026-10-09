@@ -6,7 +6,7 @@
 * [application.diagrams.ClassNode](ClassNode.md) - `class ClassNode` in `application/diagrams`.
 * [application.diagrams.Cluster](Cluster.md) - `class Cluster` in `application/diagrams`.
 * [application.diagrams.Edge](Edge.md) - `class Edge` in `application/diagrams`.
-* [application.diagrams.Fragment](Fragment.md) - A conditional block (`opt`): the steps happen only when `label` holds.
+* [application.diagrams.Fragment](Fragment.md) - A combined fragment.
 * [application.diagrams.Graph](Graph.md) - A state machine (`kind="state"`) or a flow (`kind="flow"`) of labelled nodes and edges.
 * [application.diagrams.Member](Member.md) - `class Member` in `application/diagrams`.
 * [application.diagrams.Message](Message.md) - `class Message` in `application/diagrams`.

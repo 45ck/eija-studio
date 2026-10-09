@@ -25,6 +25,8 @@
 * [application.runtime](runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.
 * [application.scenario_run](scenario_run.md) - Run a pack's scenarios (its test cases) through the kernel, and record new ones (ADR-0177).
 * [application.scxml](scxml.md) - The workflow state machine as a W3C SCXML statechart (ADR-0165).
+* [application.sequence_layout](sequence_layout.md) - Where a scenario's sequence diagram is drawn, and its export (ADR-0195).
+* [application.sequences](sequences.md) - The pack's scenarios drawn as UML sequence diagrams the kernel checks (ADR-0195).
 * [application.service](service.md) - Module `application/service` (no module docstring).
 * [application.simulation](simulation.md) - Seeded simulation of people using the app built from a model (ADR-0152).
 * [application.verifier](verifier.md) - Bounded synthetic runtime experiments.

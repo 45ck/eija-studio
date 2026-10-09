@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### 8 October 2026: sequence diagrams
+
+- PlayIDE has a **Sequences** tab: the pack's scenarios (the Tests tab's `scenarios.json`) drawn in UML sequence notation (lifelines, calls, refusal replies, state invariants, effects as asynchronous messages, and a `neg` fragment around each step that must be refused), each step run through the kernel. A step the model can't do is flagged with the kernel's reason. Edit in the tab (the same draft the Tests tab shows), export as Mermaid or PlantUML, or download `scenarios.json`. A plan's ripple lists the scenarios it breaks. New route `POST /api/play/sequences`. See [ADR-0195](docs/adr/0195-sequence-diagrams-the-kernel-checks.md).
+
 ### 9 October 2026: your own systems, two fixes
 
 - The Systems dialog opens again after you close it. Before, a second open did nothing until the page was reloaded.

@@ -56,5 +56,6 @@ _No curated notes yet._
 ## Referenced by
 
 * [ADR-0023: Generated UML and visual diff, with Mermaid as the primary renderer](/adrs/0023-generated-uml-and-visual-diff.md) - ADR-0019 decided that diagrams are generated projections of the executable model.
+* [ADR-0195: Sequence diagrams are the pack's scenarios, drawn in UML and checked by the kernel step by step](/adrs/0195-sequence-diagrams-the-kernel-checks.md) - Engineers who read UML expect sequence diagrams beside the state machine, class, use case and component diagrams.
 * [Visual model: UML/diagram generation and visual diff](/lanes/0023-visual-model-uml-diagram-generation.md) - Capability lane with ADR numbers 0023–0024 reserved.
 <!-- okf:generated:end links -->
