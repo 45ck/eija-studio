@@ -681,6 +681,43 @@
         }
       }
     },
+    "/api/play/landscape": {
+      "post": {
+        "summary": "Play Landscape",
+        "description": "The system this workflow is part of (ADR-0203): the packs beside it that share a class with it, as one UML\ncomponent diagram, and where their class diagrams disagree. The open one is the model and data model shown.",
+        "operationId": "play_landscape_api_play_landscape_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuildRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/play/reach": {
       "post": {
         "summary": "Play Reach",
