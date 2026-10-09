@@ -6,6 +6,7 @@
 
 - The state machine is laid out top to bottom when that draws it clearly larger, as on a laptop with the side bar and the chat open. Before, Library loan was shrunk to a third of its size in one long row, with 5-pixel labels; at 1280 pixels it is now drawn at full size. The direction is chosen once, when the diagram is first drawn, so an edit or a preview never turns it. The Changes view follows the same direction.
 - On a 1280-pixel laptop screen, an edit no longer scrolls the whole page sideways. "Unsaved changes" in the title bar had made the page 42 pixels wider than the window; the title bar now gives way inside the window instead.
+- A state dragged near the edge of the state machine stays where you let go. maxGraph used to slide the view to show all of it, so it settled a few pixels away from the pointer.
 
 ### 9 October 2026: PlayIDE puts shapes where you put them
 
