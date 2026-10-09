@@ -178,6 +178,20 @@
     return state ? [state.getCenterX(), state.getCenterY(), state.width, state.height] : null;
   }
 
+  // Where the transition labels are drawn, padded a little. A dot fades to a ghost while it crosses one, so a moving
+  // dot never hides a label such as "Cancel [Member]" or its counts (#184).
+  function labels() {
+    const graph = P.graph(), boxes = [];
+    if (!graph) return boxes;
+    for (const cell of Object.values(graph.getDataModel().cells)) {
+      const state = cell.isEdge && cell.isEdge() ? graph.getView().getState(cell) : null;
+      const box = state && state.text && state.text.boundingBox;
+      if (box && box.width > 0) boxes.push([box.x - 6, box.y - 6, box.x + box.width + 6, box.y + box.height + 6]);
+    }
+    return boxes;
+  }
+  const over = (boxes, x, y) => boxes.some((b) => x >= b[0] && x <= b[2] && y >= b[1] && y <= b[3]);
+
   function at(points, f) {
     const x = Math.max(0, Math.min(1, f)) * (points.length - 1), i = Math.min(points.length - 2, Math.floor(x)), t = x - i;
     return [points[i][0] + (points[i + 1][0] - points[i][0]) * t, points[i][1] + (points[i + 1][1] - points[i][1]) * t];
@@ -232,11 +246,12 @@
     pane.append(dot);
     // A refusal stops at the door: just past the state it would leave, well clear of the edge's label midway (#179).
     const length = points.slice(1).reduce((sum, p, i) => sum + Math.hypot(p[0] - points[i][0], p[1] - points[i][1]), 0);
-    const start = performance.now(), end = refused ? Math.min(0.3, 22 / Math.max(1, length)) : 1;
+    const start = performance.now(), end = refused ? Math.min(0.3, 22 / Math.max(1, length)) : 1, boxes = labels();
     const frame = (t) => {
       const f = Math.min(1, (t - start) / ms), eased = 1 - (1 - f) * (1 - f);
       const [x, y] = at(points, eased * end);
       dot.setAttribute("transform", `translate(${x.toFixed(1)} ${y.toFixed(1)})`);
+      dot.setAttribute("opacity", over(boxes, x, y) ? "0.12" : "1");
       if (f < 1) { requestAnimationFrame(frame); return; }
       dot.remove();
       if (refused) { cross(pane, x, y); return; }
@@ -247,13 +262,16 @@
     requestAnimationFrame(frame);
   }
 
-  // The dot's shape says who acted (ADR-0210): a circle for a person, a diamond for an AI agent, a square for a timer
-  // or an external system. Its colour is the kernel's answer.
+  // The dot's shape says who acted (ADR-0210): a circle for a person, a diamond for an AI agent, a clock ring for a
+  // timer and a square for an external system. Its colour is the kernel's answer.
   const kindOf = (entry) => (P.roleKind && entry.role ? P.roleKind(entry.role) : "human");
   function token(entry, fill) {
     const kind = kindOf(entry), g = shape("g", {}), paint = { fill, stroke: "#fff", "stroke-width": 1.5 };
     if (kind === "agent") g.append(shape("path", { d: "M0-7.5L7.5 0 0 7.5-7.5 0z", ...paint }));
-    else if (kind === "timer" || kind === "system") g.append(shape("rect", { x: -5.5, y: -5.5, width: 11, height: 11, rx: 2, ...paint }));
+    else if (kind === "timer") {
+      g.append(shape("circle", { r: 6, fill: "#fff", stroke: fill, "stroke-width": 2.5, class: "game-timer" }),
+        shape("path", { d: "M0-3.4V0H2.8", fill: "none", stroke: fill, "stroke-width": 1.6, "stroke-linecap": "round" }));
+    } else if (kind === "system") g.append(shape("rect", { x: -5.5, y: -5.5, width: 11, height: 11, rx: 2, ...paint }));
     else g.append(shape("circle", { r: 5.5, ...paint }));
     g.setAttribute("transform", "translate(-99 -99)");
     return g;
@@ -298,7 +316,7 @@
     const others = Object.keys(kinds).filter((k) => k !== "human");
     line.hidden = !others.length;
     if (!others.length) return;
-    const names = { agent: "◆ an AI agent", timer: "■ a timer", system: "■ an external system" };
+    const names = { agent: "◆ an AI agent", timer: "◷ a timer", system: "■ an external system" };
     line.textContent = `On the diagram: ● a person, ${others.map((k) => names[k] || k).join(", ")}. Red stops where the kernel refused.`;
   }
 

@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0208-check-moments-and-traffic.md
   title: 0208-check-moments-and-traffic.md
   hash_method: lf-sha256-v1
-  sha256: 8393c6ee9f3d84cf63a602f1b56fc5a224083fbefd26b979aeabf20e3a2674a1
-notes_baseline: c73d7636e7c794fa84e5c814ada41b9247df9ecd3e81b60e62bf78f1511d306e
+  sha256: c451a18f63bcc5252217ca25900891d67f47665fdb822dc1acf6f7d1b210e7f9
+notes_baseline: 06722d125f29a5f9cf86c25936360c2c952ff8cf8a7548b100d21903e2b5d1ef
 ---
 
 # ADR-0208: Moments for real checks, and the run as traffic on the diagram
@@ -46,6 +46,7 @@ notes_baseline: c73d7636e7c794fa84e5c814ada41b9247df9ecd3e81b60e62bf78f1511d306e
 * Considered options
 * Decision outcome
 * OSS check (required for any custom module)
+* Round 3 (#184)
 <!-- okf:generated:end facts -->
 
 ## Notes
