@@ -15,7 +15,7 @@
   let shownChange = null; // while the Changes view is on: the union of the model in force and the change (ADR-0176), drawn on the class and use case diagrams too
   let ripple = null, rippleSeq = 0; // what the accepted plan does to every diagram, with the proposer's follow-ons (ADR-0158)
   const earned = [];
-  let screens = null, screensEdited = false, useCase = null, checkTimer = 0, problems = [], useCaseList = [];
+  let screens = null, screensEdited = false, useCase = null, checkTimer = 0, problems = [], useCaseList = [], a11y = null;
   const base = {}; // each cell's own style and label, so overlays can be cleared
   // The kind of actor holding each role (ADR-0210). UML draws all four as actors; a person keeps the stick figure, the
   // others are drawn as an actor classifier with their keyword, as UML allows.
@@ -369,6 +369,10 @@
     }
     if (id.startsWith("system:") && window.PlayLandscape) { // the System lens of the Components tab (ADR-0203)
       window.PlayLandscape.inspect(id.slice(7), box);
+      return;
+    }
+    if (id.startsWith("deploy:") && window.PlayDeployment) { // the Deployment lens of the Components tab (ADR-0206)
+      window.PlayDeployment.inspect(id.slice(7), box);
       return;
     }
     if (id.startsWith("component:")) {
@@ -1322,8 +1326,9 @@
     const simulated = sim && simKey === key ? sim : null;
     return [
       { id: "ai", name: "AI steps checked", ok: seen === ai.length, detail: ai.length ? `${seen} of ${ai.length} AI steps looked at on the diagram` : "No AI plan to check" },
-      { id: "screens", name: "Screens pass the design check", ok: problemsFor === screensKey() && !problems.length,
-        detail: problemsFor !== screensKey() ? "Checking the screens…" : problems.length ? `${problems.length} design problem(s): see Screens` : "Every screen can be built" },
+      { id: "screens", name: "Screens pass the design check", ok: problemsFor === screensKey() && !problems.length && Boolean(a11y) && !a11y.failed,
+        detail: problemsFor !== screensKey() ? "Checking the screens…" : problems.length ? `${problems.length} design problem(s): see Screens`
+          : a11y && a11y.failed ? `${a11y.failed} accessibility check(s) fail: see Screens` : "Every screen can be built and meets the accessibility checks" },
       { id: "conformance", name: "Conformance", ok: Boolean(built) && built.conformance.status === "PASS",
         detail: built ? `${built.conformance.status}: ${built.cases} cases checked against the kernel` : "Not built since the last change: press Build & run" },
       rippleCheck(),
@@ -1800,11 +1805,18 @@
     for (let tries = 0; tries < 60 && hits([b[0] - 120, b[1] - 16, b[2] + 150, b[3] + 22]); tries++) b[1] += 18;
   }
 
+  // The components report of the model on screen, read once per view: the component diagram and the deployment
+  // diagram (ADR-0206) are both read from it.
+  async function loadComponents() {
+    if (!components) components = await api("/api/play/components", { ...about(), screens: screensEdited ? screens : null });
+    return components;
+  }
+
   async function drawComponents() {
     const box = $("component-canvas");
     if (!components) {
       try {
-        components = await api("/api/play/components", { ...about(), screens: screensEdited ? screens : null });
+        await loadComponents();
       } catch (error) {
         box.replaceChildren(el("p", `Could not read the app's components (${error.code || "ERROR"}): ${error.message}`, { class: "muted empty" }));
         return;
@@ -1858,6 +1870,7 @@
   }
 
   function restyleComponents() {
+    if (window.PlayDeployment) window.PlayDeployment.restyle(); // the deployment diagram shows the same build evidence
     if (!componentGraph) return;
     componentGraph.batchUpdate(() => {
       for (const c of components.components) {
@@ -1905,6 +1918,7 @@
     if (JSON.stringify(about().plan) !== planAt || (sent !== null && JSON.stringify(screens) !== sent)) return result;
     if (!edited) screens = result.screens;
     problems = result.problems;
+    a11y = result.accessibility;
     problemsFor = screensKey();
     useCaseList = result.use_cases;
     renderHealth();
@@ -1926,9 +1940,11 @@
         await loadScreens(screens);
       } catch (error) {
         problems = [{ code: error.code || "ERROR", use_case: useCase, text: error.message }];
+        a11y = null;
         problemsFor = screensKey();
       }
       renderProblems();
+      renderAccessibility();
       renderScreenList();
       renderHealth();
       if (plan) refreshRipple();
@@ -1945,6 +1961,40 @@
       b.addEventListener("click", () => { useCase = p.use_case; renderDesigner(); });
       box.append(b);
     }
+  }
+
+  // The accessibility check (ADR-0218): the server judges the screens and the built app's page against WCAG 2.2 AA
+  // success criteria; each check shows its criteria, its verdict and, for contrast, the measured ratios.
+  function renderAccessibility() {
+    const box = $("screen-a11y");
+    if (!box) return;
+    if (!a11y) { box.hidden = true; return; }
+    const warned = a11y.checks.filter((c) => c.status === "WARN").length;
+    box.hidden = false;
+    box.className = "a11y " + (a11y.failed ? "bad" : warned ? "warn" : "ok");
+    box.open = Boolean(a11y.failed) || box.open;
+    const summary = el("summary");
+    summary.append(el("span", a11y.failed ? "✗" : "✓", { class: "a11y-mark" }),
+      el("span", `Accessibility (${a11y.standard}): ${a11y.passed} of ${a11y.checks.length} checks pass` + (a11y.failed ? `, ${a11y.failed} fail` : "") + (warned ? `, ${warned} to look at` : "")));
+    const list = el("ul", undefined, { class: "a11y-checks" });
+    for (const c of a11y.checks) {
+      const li = el("li", undefined, { class: "a11y-" + c.status.toLowerCase(), "data-check": c.check });
+      li.append(el("span", c.status, { class: "a11y-status" }), el("span", c.text), el("span", `SC ${c.wcag}`, { class: "a11y-sc muted" }));
+      if (c.detail && c.detail.pairs) {
+        const pairs = el("ul", undefined, { class: "a11y-pairs" });
+        for (const p of c.detail.pairs) {
+          const swatch = el("span", "Aa", { class: "a11y-swatch", "aria-hidden": "true" });
+          swatch.style.color = p.foreground;
+          swatch.style.background = p.background;
+          const row = el("li", undefined, { class: p.ratio < 4.5 ? "low" : "" });
+          row.append(swatch, el("span", `${p.what}: ${p.ratio}:1`));
+          pairs.append(row);
+        }
+        li.append(pairs);
+      }
+      list.append(li);
+    }
+    box.replaceChildren(summary, list, el("p", a11y.limits, { class: "muted small" }));
   }
 
   function renderScreenList() {
@@ -2087,6 +2137,7 @@
     if (!screens) return;
     renderScreenList();
     renderProblems();
+    renderAccessibility();
     renderCard();
     renderPalette();
     const link = $("screens-download");
@@ -2554,6 +2605,7 @@
     // Change who holds a role: a step in the plan like any drawn edit, checked by the server against the laws about
     // kinds of actor; nothing is saved (#156). The review view changes nothing.
     setKind: (role, to) => (REVIEW_VIEW ? null : addStep({ kind: "set_role_kind", role, to })), reviewing: () => REVIEW_VIEW, viewKey, label, restyle, clearSim, select, showTab, fit, importPlan, runAs, openScreen,
+    components: loadComponents, buildEvidence: () => evidence(), // the deployment lens (ADR-0206) reads both
     screens: () => screens, data: () => data, // the screen designer's screens and the class diagram (play-roles.js reads them)
     graph: () => graph, tab: () => tab, model: () => model, selected: () => selected, pack: () => packInfo, base: () => baseModel,
     direction: () => direction || "LR", // the state machine's layout, which the Changes view follows
