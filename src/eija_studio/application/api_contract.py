@@ -31,13 +31,14 @@ REFUSALS = {
 
 def _field(attribute: Attribute) -> dict[str, Any]:
     """What `check_values` accepts for one attribute. An empty or null value counts as missing."""
-    schema: dict[str, Any] = {
+    types: dict[str, dict[str, Any]] = {
         "text": {"type": "string", "maxLength": attribute.max_length},
         "number": {"type": "number"},
         "boolean": {"type": "boolean"},
         "date": {"type": "string", "format": "date", "pattern": r"^\d{4}-\d{2}-\d{2}$"},
         "choice": {"enum": list(attribute.choices)},
-    }[attribute.type]
+    }
+    schema = types[attribute.type]
     if attribute.required and attribute.type == "text":
         schema = schema | {"minLength": 1}
     if not attribute.required:
@@ -64,22 +65,25 @@ def _ok(description: str, schema: dict[str, Any]) -> dict[str, Any]:
     return {"description": description, "content": {"application/json": {"schema": schema}}}
 
 
+def _body(ref: str) -> dict[str, Any]:
+    return {"required": True, "content": {"application/json": {"schema": {"$ref": ref}}}}
+
+
 def _paths(model: Workflow) -> dict[str, Any]:
     record_id = {"name": "id", "in": "path", "required": True, "schema": {"type": "string", "pattern": "^[0-9a-f]{1,32}$"}}
     actor = {"name": "actor", "in": "query", "required": False, "description": "Whose options to list", "schema": {"$ref": "#/components/schemas/Actor"}}
-    body = lambda ref: {"required": True, "content": {"application/json": {"schema": {"$ref": ref}}}}  # noqa: E731
     obj, many = {"type": "object"}, {"type": "array", "items": {"type": "object"}}
     return {
         "/api/app": {"get": {"operationId": "describeApp", "summary": "The workflow: states, roles, actions, actors and the record class",
                              "responses": {"200": _ok("The app's description", obj)}}},
         "/api/records": {
             "get": {"operationId": "listRecords", "summary": "Every record, newest first", "responses": {"200": _ok("The records", many)}},
-            "post": {"operationId": "createRecord", "summary": f"Create a record in {model.initial_state}", "requestBody": body("#/components/schemas/NewRecord"),
+            "post": {"operationId": "createRecord", "summary": f"Create a record in {model.initial_state}", "requestBody": _body("#/components/schemas/NewRecord"),
                      "responses": {"201": _ok("The new record", obj), "400": _error("400"), "403": _error("403")}}},
         "/api/records/{id}": {"get": {"operationId": "viewRecord", "summary": "A record, its history and the actions the actor may take",
                                       "parameters": [record_id, actor], "responses": {"200": _ok("The record", obj), "404": _error("404")}}},
         "/api/records/{id}/act": {"post": {"operationId": "act", "summary": "Take an action on a record; the kernel decides",
-                                           "parameters": [record_id], "requestBody": body("#/components/schemas/Act"),
+                                           "parameters": [record_id], "requestBody": _body("#/components/schemas/Act"),
                                            "responses": {"200": _ok("The step the kernel took", obj), **{s: _error(s) for s in ("400", "403", "404", "409")}}}},
         "/api/outbox": {"get": {"operationId": "outbox", "summary": "Notifications written by actions; nothing is sent",
                                 "responses": {"200": _ok("The outbox", many)}}},

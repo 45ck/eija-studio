@@ -260,7 +260,7 @@ known_first_party = ["eija_studio", "quality", "verification", "eijaref", "human
 extend_exclude = ['\.tmp', 'reports', 'docs/weave/research']
 # Only tool-only extras (dev, lint, docs) are dev groups. Feature extras (providers, agents, formal, hci, ...) are optional
 # RUNTIME dependencies that lane code legitimately imports, so listing them here made every lane fail DEP004.
-optional_dependencies_dev_groups = ["dev", "lint", "docs", "testing", "graph-formal"]  # testing and graph-formal (hypothesis) are imported by tests only
+optional_dependencies_dev_groups = ["dev", "lint", "docs", "testing", "graph-formal", "interop-api"]  # testing, graph-formal (hypothesis) and interop-api (openapi-spec-validator) are imported by tests only
 
 [tool.deptry.package_module_name_map]
 # distribution name -> import name, where they differ

@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/api_contract.py#api_contract
   title: application/api_contract.py
   hash_method: ast-v2
-  sha256: af2c38c57a9bf2fd3c9b11cbe361de7bdbeec4885da5cee11895cb8be61de989
-notes_baseline: bfedc2b7c06f91f17e568b3a61439a5193e7177e8264da73d4d28838258b6d0b
+  sha256: 7c713a1c18036a4d546055d4ebb6c36b8334cbd674dc9bb97b6b18f4d4452e56
+notes_baseline: b19e06f86626ff443b77bbd3d072bfdb70c43651c7631714477c0b6030806ef9
 ---
 
 # application.api_contract.api_contract

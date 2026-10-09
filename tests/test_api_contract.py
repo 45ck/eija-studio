@@ -6,6 +6,7 @@ from __future__ import annotations
 import ast
 import re
 
+import jsonschema
 import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
@@ -16,6 +17,11 @@ from eija_studio.domain.data import check_values, data_for
 from eija_studio.domain.models import DomainError
 from eija_studio.domain.pack import PACKS_ROOT, load_pack
 from eija_studio.interfaces.app_build import app_files
+
+try:  # the interop-api extra: the oracle that the document is valid OpenAPI 3.1
+    import openapi_spec_validator
+except ImportError:  # pragma: no cover - NOT_RUN without the extra
+    openapi_spec_validator = None
 
 PACKS = sorted(p.parent.name for p in PACKS_ROOT.glob("*/data.json"))
 
@@ -81,8 +87,6 @@ def test_every_record_the_field_schema_allows_passes_check_values(pack_id):
 @settings(max_examples=60, deadline=None, suppress_health_check=list(HealthCheck))
 @given(st.sampled_from(["memberCard", "dueDate", "format", "renewals"]), st.sampled_from([True, 3, "x" * 21, "2026-13-40", "Scroll"]))
 def test_a_value_the_schema_refuses_is_refused_by_check_values_too(name, value):
-    import jsonschema
-
     pack, document = contract()
     record = data_for(pack).entity(data_for(pack).record)
     values = {"itemTitle": "Dune", "memberCard": "M-1", "dueDate": "2026-11-01", "format": "Book", name: value}
@@ -97,6 +101,7 @@ def test_a_value_the_schema_refuses_is_refused_by_check_values_too(name, value):
 
 
 def test_the_document_is_valid_openapi_3_1():
-    validator = pytest.importorskip("openapi_spec_validator", reason="NOT_RUN: install the interop-api extra")
+    if openapi_spec_validator is None:
+        pytest.skip("NOT_RUN: install the interop-api extra (openapi-spec-validator)")
     for pack_id in PACKS:
-        validator.validate(contract(pack_id)[1])
+        openapi_spec_validator.validate(contract(pack_id)[1])
