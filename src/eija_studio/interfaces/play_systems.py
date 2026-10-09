@@ -18,6 +18,7 @@ from typing import Any, Literal
 
 from pydantic import Field
 
+from eija_studio.application.interop import MAX_CHARS, detect_format, start_from_file
 from eija_studio.application.new_system import SKETCH_HELP, sketch_documents, summary, system_id, template_documents
 from eija_studio.application.plan import MAX_STEPS
 from eija_studio.domain.models import Contract, DomainError, Workflow
@@ -26,6 +27,7 @@ from eija_studio.domain.screens import parse_screens
 from eija_studio.domain.transactions import parse_transaction
 
 BLANK = "blank"
+UML = "uml"  # start from a UML file (ADR-0190)
 TEMPLATE_FILES = ("pack.json", "data.json", "screens.json", "scenarios.json")
 
 
@@ -50,6 +52,8 @@ class NewSystem(Contract):
     template: str = Field(default=BLANK, pattern=r"^[a-z][a-z0-9-]{0,39}$")
     record: str = Field(default="Record", max_length=40)
     sketch: str = Field(default="", max_length=6000)
+    uml: str = Field(default="", max_length=MAX_CHARS)  # for template "uml": the file's text
+    filename: str = Field(default="", max_length=200)  # for template "uml": its name, which says its format
     check_only: bool = False  # say what would be created, or what is wrong, and write nothing
 
 
@@ -87,15 +91,25 @@ def _documents(folder: Path) -> dict[str, dict[str, Any]]:
     return {name: json.loads((folder / name).read_text(encoding="utf-8")) for name in TEMPLATE_FILES if (folder / name).is_file()}
 
 
-def new_documents(library: Any, body: NewSystem) -> tuple[str, dict[str, dict[str, Any]]]:
-    """The new system's id and its documents, checked by the kernel; `PackError` with every problem otherwise."""
+def new_documents(library: Any, body: NewSystem) -> tuple[str, dict[str, dict[str, Any]], dict[str, Any] | None]:
+    """The new system's id, its documents checked by the kernel, and for a UML file the import report (what was read,
+    kept, filled in or not imported); `PackError` with every problem otherwise."""
     pack_id = system_id(body.name, library.ids())
     if body.template == BLANK:
-        return pack_id, sketch_documents(body.name.strip(), body.record.strip() or "Record", body.sketch, pack_id)
+        return pack_id, sketch_documents(body.name.strip(), body.record.strip() or "Record", body.sketch, pack_id), None
+    if body.template == UML:
+        if not body.uml.strip():
+            raise PackError(["choose a UML file: XMI, PlantUML, Mermaid or draw.io"])
+        try:
+            fmt = detect_format(body.filename, body.uml)
+            documents, report = start_from_file(fmt, body.uml, body.name.strip(), pack_id, body.record.strip() or "Record")
+        except DomainError as error:
+            raise PackError([error.message]) from None
+        return pack_id, documents, report
     template = next((t for t in templates() if t["id"] == body.template), None)
     if template is None:
         raise DomainError("NOT_FOUND", "No such template")
-    return pack_id, template_documents(load_pack(template["folder"]), _documents(template["folder"]), body.name.strip(), pack_id)
+    return pack_id, template_documents(load_pack(template["folder"]), _documents(template["folder"]), body.name.strip(), pack_id), None
 
 
 class Systems:
@@ -166,13 +180,14 @@ def register(app, systems: Systems) -> None:
     def play_new_system(body: NewSystem):
         """Start a new system from a sketch or a template; with `check_only`, only say what it would be."""
         try:
-            pack_id, documents = new_documents(systems.library, body)
+            pack_id, documents, report = new_documents(systems.library, body)
         except PackError as error:
             return {"created": False, "problems": list(error.diagnostics)}
+        found = {"system": summary(documents)} | ({"import": report} if report is not None else {})
         if body.check_only:
-            return {"created": False, "problems": [], "system": summary(documents)}
+            return {"created": False, "problems": []} | found
         folder = systems.library.create(pack_id, documents)
-        return {"created": True, "problems": [], "system": summary(documents), "opened": systems.open(folder, systems.library.workspace(folder))}
+        return {"created": True, "problems": []} | found | {"opened": systems.open(folder, systems.library.workspace(folder))}
 
     @app.post("/api/play/systems/open")
     def play_open_system(body: OpenSystem):
@@ -223,15 +238,19 @@ def add_parser(subs) -> None:
     new.add_argument("--from", dest="template", default=BLANK, help="The id of a shipped pack to copy (GET /api/play/systems lists them); default blank")
     new.add_argument("--sketch", type=Path, help="For blank: a file with one transition per line, From -> To : Action [Role]")
     new.add_argument("--record", default="Record", help="For blank: the UML class of the record that moves (UpperCamelCase)")
+    new.add_argument("--uml", type=Path, help="Start from this UML file (XMI, PlantUML, Mermaid or draw.io); its import report is printed")
     new.add_argument("--systems", type=Path, default=None, help="The systems home (default EIJA_SYSTEMS or ~/PlayIDE)")
 
 
-def start_system(library: Any, name: str, template: str = BLANK, record: str = "Record", sketch: str = "") -> tuple[int, dict[str, Any]]:
+def start_system(library: Any, name: str, template: str = BLANK, record: str = "Record", sketch: str = "",
+                 uml: Path | None = None) -> tuple[int, dict[str, Any]]:
     """`eija new`: create the system in `library` and say where it is (0), or the problems the kernel's pack check found (2)."""
+    body = NewSystem(name=name, template=UML if uml else template, record=record, sketch=sketch,
+                     uml=uml.read_text(encoding="utf-8") if uml else "", filename=uml.name if uml else "")
     try:
-        pack_id, documents = new_documents(library, NewSystem(name=name, template=template, record=record, sketch=sketch))
+        pack_id, documents, report = new_documents(library, body)
     except PackError as error:
         return 2, {"created": False, "problems": list(error.diagnostics)}
     folder = library.create(pack_id, documents)
     return 0, {"created": True, "system": summary(documents), "pack": str(folder),
-               "serve": f"eija serve --pack {folder} --workspace {library.workspace(folder)}"}
+               "serve": f"eija serve --pack {folder} --workspace {library.workspace(folder)}"} | ({"import": report} if report else {})

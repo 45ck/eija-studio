@@ -17,6 +17,7 @@ from eija_studio.domain.pack import Pack
 from . import drawio, drawio_reader, mermaid, plantuml, xmi, xmi_reader
 from .mapping import import_parsed
 from .model import Parsed
+from .start import start_documents
 
 FORMATS = ("xmi", "plantuml", "mermaid", "drawio")
 EXTENSIONS = {"xmi": ".xmi", "plantuml": ".puml", "mermaid": ".md", "drawio": ".drawio"}
@@ -72,3 +73,8 @@ def import_model(fmt: str, text: str, pack: Pack, model: Workflow | None = None,
     """The import report for `text` against the model in force (`model`, else the pack's own) and its class model."""
     model = model if model is not None else pack.model
     return import_parsed(fmt, parse_file(fmt, text), pack, model, data)
+
+
+def start_from_file(fmt: str, text: str, name: str, pack_id: str, record: str = "Record") -> tuple[dict[str, Any], dict[str, Any]]:
+    """A new system's documents from a UML file, and the import report (`PackError` when the kernel refuses them)."""
+    return start_documents(fmt, parse_file(fmt, text), name, pack_id, record)
