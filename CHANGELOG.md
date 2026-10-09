@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### 9 October 2026: PlayIDE polish, round 9 (agents, timers and systems look the same everywhere)
+
+- An AI agent, a timer or an external system is drawn the same way in every view: a box marked «agent», «timer» or «system» in the use case diagram's colours. Before, the Components tab's System lens and the Sequences tab drew every role as a stick figure, so Refund desk's payment gateway looked like a person. A person is still a stick figure.
+- The Permissions tab tags each role that is not a person ("AI agent", "timer", "external system") under its name, in the same colours.
+- A lifeline's name and role take a line each on the Sequences tab, so long ones ("supervisor-on-shift : Supervisor") no longer run into the next lifeline.
+- The Components tab's lens bar no longer covers the top of either diagram, and a system of one workflow is drawn at its real size rather than blown up to 140 percent.
+
 ### 9 October 2026: PlayIDE polish, round 8 (tabs and screen fields on a laptop)
 
 - A diagram tab is never shown cut off at the edge of the tab strip. At 1280 pixels the strip ended on "Use" or "Scre", which reads as another tab; a tab the edge would cut now leaves a gap, and More tabs (») still lists every tab (#141).

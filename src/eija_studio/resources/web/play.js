@@ -293,8 +293,11 @@
   function fit() {
     if (!current()) return;
     const plugin = current().getPlugin("fit");
-    plugin.maxFitScale = 1.4;
-    plugin.fitCenter({ margin: 24 });
+    // The Components tab's lens bar floats over the top of its diagram: leave room for it, and draw a small system no
+    // larger than life, so one workflow is not blown up beside the other tabs.
+    const bar = tab === "components" && !$("component-bar").hidden ? $("component-bar").offsetHeight + 16 : 0;
+    plugin.maxFitScale = bar ? 1 : 1.4;
+    plugin.fitCenter({ margin: Math.max(24, bar) });
   }
 
   function row(dl, term, value) { dl.append(el("dt", term), el("dd", value)); }
@@ -2400,7 +2403,7 @@
   const changeLook = (status, part) => (window.PlayDiff && shownChange ? window.PlayDiff.look(status, part) : {});
 
   window.PlayIDE = {
-    api, el, hooks, about, roleKind, kinds: ACTOR_KINDS, viewKey, label, restyle, clearSim, select, showTab, fit, importPlan,
+    api, el, hooks, about, roleKind, kinds: ACTOR_KINDS, actorLook: ACTOR_LOOK, viewKey, label, restyle, clearSim, select, showTab, fit, importPlan,
     graph: () => graph, tab: () => tab, model: () => model, selected: () => selected, pack: () => packInfo, base: () => baseModel,
     direction: () => direction || "LR", // the state machine's layout, which the Changes view follows
     planned: () => (plan && plan.result && plan.result.legal ? accepted() : null), // the change the Changes view draws (ADR-0176)

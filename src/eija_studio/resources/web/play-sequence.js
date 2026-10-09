@@ -220,15 +220,21 @@
 
   function lifeline(parent, l, s) {
     const top = s.head.y, h = s.head.height;
-    if (l.kind === "actor") {
-      graph.insertVertex({ parent, id: `head:${l.id}`, value: l.label, position: [l.x - 14, top - 4], size: [28, h - 8],
+    // A person is a stick figure; an AI agent, a timer or an external system is a box, as on the use case diagram. Either
+    // way the name and the role take a line each, so a long one stays inside its column.
+    const kind = l.kind === "actor" ? P.roleKind(l.label.split(" : ")[1]) : "", look = kind && P.actorLook[kind];
+    if (kind === "human") {
+      graph.insertVertex({ parent, id: `head:${l.id}`, value: l.label.replace(" : ", " :\n"), position: [l.x - 14, top - 4], size: [28, h - 8],
         style: { ...FONT, shape: "actor", fillColor: "#ffffff", strokeColor: INK, verticalLabelPosition: "bottom", verticalAlign: "top", fontSize: 12, selectable: false } });
+    } else if (kind) {
+      graph.insertVertex({ parent, id: `head:${l.id}`, value: `«${kind}»\n${l.label.replace(" : ", " :\n")}`, position: [l.x - 80, top - 4], size: [160, h],
+        style: { ...FONT, rounded: kind === "agent", fillColor: look.fill, strokeColor: look.stroke, fontSize: 11, selectable: false } });
     } else {
       graph.insertVertex({ parent, id: `head:${l.id}`, value: l.label, position: [l.x - 80, top], size: [160, h - 6],
         style: { ...FONT, fillColor: l.kind === "record" ? "#eef2ff" : "#f4f5f8", strokeColor: l.kind === "record" ? "#5b74d6" : "#8a93a6",
           fontSize: 12, fontStyle: l.kind === "record" ? 1 : 0, selectable: false } });
     }
-    line(parent, `ll:${l.id}`, "", [l.x, top + h + (l.kind === "actor" ? 14 : 0)], [l.x, s.height],
+    line(parent, `ll:${l.id}`, "", [l.x, top + h + (kind === "human" ? 28 : 0)], [l.x, s.height],
       { strokeColor: "#9aa3b5", dashed: true, dashPattern: "4 4", endArrow: "none", startArrow: "none", selectable: false });
   }
 
