@@ -149,3 +149,19 @@ def test_the_page_reads_each_roles_kind(tmp_path):
         assert {r["id"]: r["kind"] for r in roles}["SlaTimer"] == "timer"
     finally:
         app.state.play.stop()
+
+
+def test_a_kind_path_law_on_the_initial_state_judges_steps_back_into_it():
+    """A new record in the initial state took no step; a machine step back into it breaks the law, on the table as on
+    the run, so the policy never allows a model whose runs break the law."""
+    raw = document(DESK)
+    raw["laws"].append({"id": "people-reopen", "kind": "path_requires_kind", "code": "HUMAN_IN_THE_LOOP:Requested",
+                        "role_kinds": ["human"], "state": "Requested"})
+    pack = parse_pack(raw)
+    law = next(x for x in pack.laws if x.id == "people-reopen")
+    assert evaluate_table([law], pack.model) == []
+    reopened = apply_structural_all(pack.model, [parse_transaction(
+        {"kind": "add_transition", "id": "TR-HANDOFF", "action": "HandOff", "from_state": "Assessed", "to_state": "Requested", "role": "SupportAgent"})], pack)
+    run = [Step("AssessRequest", "SupportAgent", "Requested", "Assessed"), Step("HandOff", "SupportAgent", "Assessed", "Requested")]
+    assert [v.law for v in evaluate_table([law], reopened)] == ["people-reopen"]
+    assert [v.law for v in evaluate_run([law], "Requested", run, {"HandOff"})] == ["people-reopen"]
