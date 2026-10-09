@@ -32,6 +32,7 @@ from pydantic import Field
 
 from eija_studio.application.access import access, reach
 from eija_studio.application.components import app_components
+from eija_studio.application.landscape import landscape
 from eija_studio.application.law_proof import compare_laws, prove_laws, with_laws
 from eija_studio.application.ghost_diff import ghost_diff
 from eija_studio.application.data_steps import data_changes, draft_pack, parse_step, split
@@ -43,7 +44,7 @@ from eija_studio.application.sequences import check_sequences
 from eija_studio.application.simulation import MAX_BREAKPOINTS, MAX_STEPS, run_log, simulate
 from eija_studio.domain.data import data_for
 from eija_studio.domain.models import Contract, DomainError, Workflow
-from eija_studio.domain.pack import Pack, pack_directory
+from eija_studio.domain.pack import PACK_FILE, Pack, load_pack, pack_directory
 from eija_studio.domain.scenarios import parse_scenarios, scenarios_for
 from eija_studio.domain.policy import apply_transactions
 from eija_studio.domain.screens import Screens, check_screens, parse_screens, screens_for, use_cases
@@ -375,6 +376,28 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
         """Who can do what (ADR-0171): role by state, each cell tried in the kernel; with a plan, what it changes."""
         model = resolve(body)
         return access(pack_of(body.plan), model, resolve(body.model_copy(update={"plan": None})) if body.plan else None)
+
+    @app.post("/api/play/landscape")
+    def play_landscape(body: BuildRequest):
+        """The system this workflow is part of (ADR-0203): the packs beside it that share a class with it, as one UML
+        component diagram, and where their class diagrams disagree. The open one is the model and data model shown."""
+        pack = pack_of(body.plan)
+        found: list[tuple[Pack, Any, Workflow]] = [(pack, data_for(pack), resolve(body))]
+        unreadable: list[str] = []
+        folder = pack_directory(studio.pack)
+        for sibling in sorted(folder.parent.iterdir()) if folder is not None else ():
+            if sibling == folder or not (sibling / PACK_FILE).is_file():
+                continue
+            try:
+                other = load_pack(sibling)
+            except (DomainError, OSError):
+                unreadable.append(sibling.name)
+                continue
+            if any(other.id == known.id for known, _, _ in found):  # two folders, one id: which is meant is ambiguous
+                unreadable.append(f"{sibling.name} (its id {other.id} is taken)")
+            else:
+                found.append((other, data_for(other), other.model))
+        return landscape(pack.id, found, unreadable)
 
     @app.post("/api/play/reach")
     def play_reach(body: ReachRequest):
