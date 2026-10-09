@@ -88,9 +88,37 @@
     g.setNode("__initial", { width: INITIAL, height: INITIAL });
     for (const s of shape.states) g.setNode(s, { ...STATE });
     for (const s of shape.initials) g.setEdge("__initial", s, {}, s);
-    for (const t of shape.transitions) g.setEdge(t.from_state, t.to_state, { width: 120, height: 20 }, t.id);
+    // Each label is laid out at its real size, centred on its edge, so dagre leaves room for it: the labels of a
+    // back-and-forth pair, or of two transitions between the same states, never overlap (#153). liftLabels puts
+    // each label in that room.
+    for (const t of shape.transitions) g.setEdge(t.from_state, t.to_state, { width: textWidth(label(t)) + 16, height: 28, labelpos: "c" }, t.id);
     dagre.layout(g);
     return g;
+  }
+
+  // maxGraph puts an edge's label halfway along the line, which is not where the layout left room for it: move each
+  // transition's label to its middle bend, the point dagre routed the edge through for the label (#153).
+  // The Changes view (play-diff.js) uses it too, for its own transitions.
+  function liftLabels(g, isTransition = (cell) => cell.id.startsWith("transition:")) {
+    const v = g.view, m = g.getDataModel(), { Point } = maxgraph;
+    g.batchUpdate(() => {
+      for (const cell of Object.values(m.cells)) {
+        if (!cell.id || !isTransition(cell) || !cell.geometry) continue;
+        const points = cell.geometry.points || [], state = v.getState(cell);
+        if (!points.length || !state || !state.absoluteOffset) continue;
+        const room = points[Math.floor(points.length / 2)], was = cell.geometry.offset || { x: 0, y: 0 };
+        const geo = cell.geometry.clone();
+        geo.offset = new Point((room.x + v.translate.x) - state.absoluteOffset.x / v.scale + was.x,
+          (room.y + v.translate.y) - state.absoluteOffset.y / v.scale + was.y);
+        m.setGeometry(cell, geo);
+      }
+    });
+  }
+
+  let measure = null;
+  function textWidth(text) { // as drawn on the state machine: 12px system-ui
+    if (!measure) { measure = document.createElement("canvas").getContext("2d"); measure.font = "12px system-ui, sans-serif"; }
+    return Math.ceil(measure.measureText(text).width);
   }
 
   // Where you put a state is where it stays (ADR-0174). The first gesture on the diagram (placing, moving, renaming,
@@ -179,6 +207,7 @@
       if (!cell.isEdge() || !(inside(cell.source) || inside(cell.target)) || !cell.geometry) continue;
       const geo = cell.geometry.clone();
       geo.points = [];
+      if (cell.id && cell.id.startsWith("transition:")) geo.offset = null; // a straight line's label sits halfway again
       g.getDataModel().setGeometry(cell, geo);
     }
   }
@@ -257,6 +286,7 @@
         edge.geometry.points = place.bends(t).map((p) => new maxgraph.Point(p.x, p.y));
       }
     });
+    liftLabels(graph);
     for (const cell of Object.values(graph.getDataModel().cells)) if (cell.id) base[cell.id] = { style: { ...cell.style }, value: cell.value };
     graph.getSelectionModel().addListener(InternalEvent.CHANGE, () => {
       const cell = graph.getSelectionCell();
@@ -2559,7 +2589,7 @@
   const changeLook = (status, part) => (window.PlayDiff && shownChange ? window.PlayDiff.look(status, part) : {});
 
   window.PlayIDE = {
-    api, el, hooks, about, roleKind, kinds: ACTOR_KINDS, actorLook: ACTOR_LOOK, inForce: (role) => roleKinds[role] || "human",
+    api, el, hooks, about, textWidth, liftLabels, roleKind, kinds: ACTOR_KINDS, actorLook: ACTOR_LOOK, inForce: (role) => roleKinds[role] || "human",
     // Change who holds a role: a step in the plan like any drawn edit, checked by the server against the laws about
     // kinds of actor; nothing is saved (#156). The review view changes nothing.
     setKind: (role, to) => (REVIEW_VIEW ? null : addStep({ kind: "set_role_kind", role, to })), reviewing: () => REVIEW_VIEW, viewKey, label, restyle, clearSim, select, showTab, fit, importPlan, runAs, openScreen,

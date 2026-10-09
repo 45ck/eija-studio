@@ -105,7 +105,7 @@ def test_moments_follow_real_results_in_a_real_browser():
                 setTimeout(() => { clearInterval(watch); done({ most, notes }); }, 4000);
             })""")
             assert seen["most"] > 0  # the run's real steps went by as traffic
-            assert "Every check passes on this model" in seen["notes"]
+            assert "Every check passes" in seen["notes"]
             page.wait_for_selector("#health.game-ready", timeout=10_000)
             assert "Ready." in page.inner_text("#check-next")
 
@@ -119,6 +119,82 @@ def test_moments_follow_real_results_in_a_real_browser():
             assert "game-stale" not in (page.get_attribute("#build", "class") or "")  # still looking at the model that was built
             page.click(f"{CARD} .plan-tools .primary:has-text('Preview on the diagram')")
             page.wait_for_selector("#build.game-stale", timeout=30_000)  # the build was of the model, not of this change
+            assert errors == []
+        finally:
+            chrome.close()
+
+
+@pytest.mark.browser
+@pytest.mark.slow
+@browser
+def test_agents_show_as_diamonds_and_gaps_and_disagreements_count_down_in_a_real_browser():
+    api = pytest.importorskip("playwright.sync_api", reason="NOT_RUN: install the hci or demos extra")
+    from demos.lib import ephemeral_eija_server  # noqa: PLC0415 - demos start a real server; only this opt-in test needs it
+
+    with ephemeral_eija_server(pack=ROOT / "packs/refund-desk") as server, api.sync_playwright() as playwright:
+        chrome = _launch(api, playwright)
+        try:
+            page = chrome.new_page(viewport={"width": 1280, "height": 900})
+            errors: list[str] = []
+            page.on("pageerror", lambda error: errors.append(str(error)))
+            page.goto(f"{server.base_url}/play#{server.token}")
+            page.wait_for_selector("body[data-assist=ready]", timeout=60_000)
+            seen = page.evaluate("""() => new Promise((done) => {
+                let diamonds = 0, squares = 0, rings = 0, notes = '', overlaps = [], onLabel = 0, faded = 0;
+                const graph = window.PlayIDE.graph(), view = graph.getView(), boxes = [];
+                for (const cell of Object.values(graph.getDataModel().cells)) {
+                  const b = cell.isEdge() && view.getState(cell) && view.getState(cell).text && view.getState(cell).text.boundingBox;
+                  if (b && b.width > 0) boxes.push(b);
+                }
+                const box = (e) => e.getBoundingClientRect(), cross = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+                const others = ['#simulate', '#build', 'aside.side', '#chat-title', '.tabs', '#run-status'].map((s) => document.querySelector(s)).filter(Boolean);
+                const watch = setInterval(() => {
+                  for (const n of document.querySelectorAll('#game-notes .game-note'))
+                    for (const o of others) if (cross(box(n), box(o))) overlaps.push(o.id || o.className);
+                  diamonds = Math.max(diamonds, document.querySelectorAll('g.game-traffic > path[d^="M0-7.5"]').length);
+                  squares = Math.max(squares, document.querySelectorAll('g.game-traffic > rect').length);
+                  rings = Math.max(rings, document.querySelectorAll('g.game-traffic > circle.game-timer').length);
+                  for (const dot of document.querySelectorAll('g.game-traffic[opacity]')) {
+                    const m = /translate\\(([-\\d.]+) ([-\\d.]+)\\)/.exec(dot.getAttribute('transform') || '');
+                    const inside = m && boxes.some((b) => +m[1] >= b.x && +m[1] <= b.x + b.width && +m[2] >= b.y && +m[2] <= b.y + b.height);
+                    if (inside && dot.getAttribute('opacity') === '1') onLabel += 1;
+                    if (dot.getAttribute('opacity') !== '1') faded += 1;
+                  }
+                  notes += document.getElementById('game-notes').innerText;
+                }, 30);
+                document.getElementById('simulate').click();
+                setTimeout(() => { clearInterval(watch); done({ diamonds, squares, rings, notes, overlaps, onLabel, faded }); }, 4000);
+            })""")
+            assert seen["overlaps"] == []  # #179: at 1280 a note sits in the toolbar's free space, over no other panel
+            assert seen["diamonds"] > 0 and seen["squares"] > 0  # the support agent, and the payment system
+            assert seen["rings"] > 0  # the timer: a clock ring, not the payment system's square
+            assert seen["onLabel"] == 0 and seen["faded"] > 0  # #184: a dot crossing a label fades and never covers it
+            assert "Kernel stopped AI agents" in seen["notes"]
+            assert "AI agents" in page.inner_text("#sim")  # the same count Simulate reports per kind
+            assert "an AI agent" in page.inner_text("#game-legend")
+
+            # The game layer's side of the greenfield list and the System lens: an item going away and the list
+            # emptying, and disagreements going down to none. The events carry what those views computed.
+            notes = page.evaluate("""() => new Promise((done) => {
+                let text = '';
+                const watch = setInterval(() => { text += document.getElementById('game-notes').innerText + '|'; }, 30);
+                const send = (name, detail) => document.dispatchEvent(new CustomEvent(name, { detail }));
+                send('playide:missing', { key: 'k', items: [{ id: 'a', text: 'A screen for Approve' }, { id: 'b', text: 'A way into Paid' }] });
+                send('playide:missing', { key: 'k', items: [{ id: 'b', text: 'A way into Paid' }] });
+                send('playide:missing', { key: 'k', items: [] });
+                setTimeout(() => { clearInterval(watch); done(text); }, 6000);
+            })""")
+            assert "A screen for Approve" in notes and "Nothing missing" in notes
+            notes = page.evaluate("""() => new Promise((done) => {
+                let text = '';
+                const watch = setInterval(() => { text += document.getElementById('game-notes').innerText + '|'; }, 30);
+                const send = (name, detail) => document.dispatchEvent(new CustomEvent(name, { detail }));
+                send('playide:landscape', { warning: 2 });
+                send('playide:landscape', { warning: 1 });
+                send('playide:landscape', { warning: 0 });
+                setTimeout(() => { clearInterval(watch); done(text); }, 6000);
+            })""")
+            assert "1 resolved, 1 left" in notes and "agrees now" in notes
             assert errors == []
         finally:
             chrome.close()

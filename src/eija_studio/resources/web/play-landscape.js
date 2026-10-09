@@ -71,6 +71,7 @@
     const line = $("landscape-summary");
     line.textContent = parts.join(" · ");
     line.className = "landscape-summary" + (c.warning ? " warn" : "");
+    document.dispatchEvent(new CustomEvent("playide:landscape", { detail: { warning: c.warning || 0, consider: c.consider || 0 } })); // play-game.js (ADR-0208)
   }
 
   // The kind of actor holding a role, as the workflows declaring it say: "mixed" where they differ (a person in one, an

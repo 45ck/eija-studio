@@ -16,20 +16,47 @@
     simulated: { say: "Simulate sends seeded users through the kernel on this view.", button: "simulate", label: "Simulate" },
   };
   const STALE = { conformance: "build", simulated: "simulate" }; // the checks a button re-runs
-  let P = null, live = false, last = null, readyFor = null, pop = null, flowTimer = 0;
+  let P = null, shownChecks = null, live = false, last = null, readyFor = null, pop = null, flowTimer = 0;
   const everPassed = new Set(); // checks that passed on some view in this page, so a stale one is worth a nudge
 
   const still = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   // A short note that rises from the ring: what just passed, or what was earned. It is also read out (role=status).
-  function note(text, kind) {
+  // One note at a time, on one line, in the free space left of the ring, so it never covers another panel (#179).
+  // The whole sentence is its tooltip. Where the toolbar has no room, the status bar says it instead.
+  const queue = [];
+  let showing = false;
+  function note(text, kind, detail = text) {
     if (!pop) return;
-    const item = document.createElement("span");
-    item.className = "game-note " + kind;
-    item.textContent = text;
-    pop.append(item);
-    while (pop.children.length > 3) pop.firstChild.remove();
-    setTimeout(() => item.remove(), still() ? 4000 : 3200);
+    queue.push({ text, kind, detail });
+    while (queue.length > 4) queue.splice(Math.max(0, queue.findIndex((q) => q.kind === "pass" || q.kind === "earn")), 1);
+    if (!showing) shownext();
+  }
+
+  function shownext() {
+    const next = queue.shift();
+    if (!next) { showing = false; pop.replaceChildren(); return; }
+    showing = true;
+    const room = pop.parentElement.previousElementSibling ? pop.parentElement.previousElementSibling.getBoundingClientRect().width - 12 : 0;
+    if (room < 140) { // a narrow window: the status bar's toast has the room
+      pop.replaceChildren();
+      const toast = $("toast");
+      if (!toast.classList.contains("show")) { // feedback on something the person just did (an undo, an award) wins
+        toast.textContent = next.detail;
+        toast.classList.add("show");
+        clearTimeout(note.toast);
+        note.toast = setTimeout(() => { if (toast.textContent === next.detail) toast.classList.remove("show"); }, 2600);
+      }
+    } else {
+      const item = document.createElement("span");
+      item.className = "game-note " + next.kind;
+      item.textContent = next.text;
+      item.title = next.detail;
+      pop.style.maxWidth = `${Math.min(420, room)}px`;
+      pop.replaceChildren(item);
+    }
+    const least = still() ? 2500 : 1400, most = still() ? 4000 : 3000;
+    setTimeout(() => (queue.length ? shownext() : setTimeout(shownext, most - least)), least);
   }
 
   function flash(element, cls) {
@@ -52,13 +79,14 @@
         const was = last.checks.find((x) => x.id === c.id);
         if (!was || was.ok === c.ok || !c.ok) return;
         flash(ring && ring.children[i], "game-pop");
-        if (!was.detail.endsWith("…")) note(`✓ ${c.name}. ${c.detail}`, "pass"); // not for a check that was only still working
+        if (!was.detail.endsWith("…")) note(`✓ ${c.name}`, "pass", `${c.name}: ${c.detail}`); // not for a check that was only still working
       });
     } else if (live && last) { // the view changed: the build and the simulation were of something else
       const lost = now.filter((c) => !c.ok && STALE[c.id] && last.checks.some((x) => x.id === c.id && x.ok));
       if (lost.length) {
         flash(health, "game-drain");
-        note(`Changed since the last ${lost.map((c) => (c.id === "conformance" ? "build" : "simulation")).join(" and ")}: run ${lost.length > 1 ? "them" : "it"} again`, "stale");
+        const again = lost.map((c) => (c.id === "conformance" ? "build" : "simulate")).join(" and ");
+        note(`Changed: ${again} again`, "stale", `Changed since the last ${lost.map((c) => (c.id === "conformance" ? "build" : "simulation")).join(" and ")}: run ${lost.length > 1 ? "them" : "it"} again`);
       }
     }
     for (const [id, button] of Object.entries(STALE)) {
@@ -70,7 +98,7 @@
       readyFor = key;
       if (live) { // not on load: only a check the person ran makes the moment
         flash(health, "game-burst");
-        note(event.detail.plan ? "Every check passes on this change" : "Every check passes on this model", "ready");
+        note("Every check passes", "ready", event.detail.plan ? "Every check passes on this change" : "Every check passes on this model");
       }
     }
     if (!all && readyFor === key) readyFor = null;
@@ -82,6 +110,12 @@
   function nextCheck(now) {
     const box = $("check-next");
     if (!box) return;
+    shownChecks = now;
+    if (missing && missing.items.length) { // a new system's gaps come before its checks
+      box.className = "check-next";
+      box.replaceChildren(P.el("strong", `Next (${missing.items.length} missing): `), document.createTextNode(missing.items[0].text));
+      return;
+    }
     const todo = now.find((c) => !c.ok);
     if (!todo) {
       box.className = "check-next done";
@@ -106,7 +140,7 @@
     const { n, why, kind } = event.detail;
     flash($("health"), "game-bump");
     if (kind === "caught") {
-      note(`Caught it: ${why.replace(/^Caught /, "")} (+${n})`, "caught");
+      note(`Caught it (+${n})`, "caught", `Caught it: ${why.replace(/^Caught /, "")} (+${n})`);
       const card = document.querySelector("#chat-log .plan:last-of-type");
       flash(card, "game-caught");
     } else {
@@ -143,6 +177,20 @@
     const state = cell && graph.getView().getState(cell);
     return state ? [state.getCenterX(), state.getCenterY(), state.width, state.height] : null;
   }
+
+  // Where the transition labels are drawn, padded a little. A dot fades to a ghost while it crosses one, so a moving
+  // dot never hides a label such as "Cancel [Member]" or its counts (#184).
+  function labels() {
+    const graph = P.graph(), boxes = [];
+    if (!graph) return boxes;
+    for (const cell of Object.values(graph.getDataModel().cells)) {
+      const state = cell.isEdge && cell.isEdge() ? graph.getView().getState(cell) : null;
+      const box = state && state.text && state.text.boundingBox;
+      if (box && box.width > 0) boxes.push([box.x - 6, box.y - 6, box.x + box.width + 6, box.y + box.height + 6]);
+    }
+    return boxes;
+  }
+  const over = (boxes, x, y) => boxes.some((b) => x >= b[0] && x <= b[2] && y >= b[1] && y <= b[3]);
 
   function at(points, f) {
     const x = Math.max(0, Math.min(1, f)) * (points.length - 1), i = Math.min(points.length - 2, Math.floor(x)), t = x - i;
@@ -187,18 +235,23 @@
     if (!points) { // a create with no initial arrow drawn, or a try from a state the transition does not leave
       const c = centre("state:" + (entry.outcome === "CREATED" ? entry.to : entry.from));
       if (!c) return;
-      if (refused) cross(pane, c[0] + c[2] / 2 - 6, c[1] - c[3] / 2 + 6);
-      ripple(pane, c[0], c[1], refused ? REFUSED : GO, Math.max(c[2], c[3]) / 2);
+      if (refused) { // a small mark on the state's corner: many of these in a run must not hide the diagram
+        const x = c[0] + c[2] / 2 - 6, y = c[1] - c[3] / 2 + 6;
+        cross(pane, x, y);
+        ripple(pane, x, y, REFUSED, 10);
+      } else ripple(pane, c[0], c[1], GO, Math.max(c[2], c[3]) / 2);
       return;
     }
-    const dot = shape("circle", { r: 5.5, fill: refused ? REFUSED : GO, stroke: "#fff", "stroke-width": 1.5 });
+    const dot = token(entry, refused ? REFUSED : GO);
     pane.append(dot);
-    const start = performance.now(), end = refused ? 0.5 : 1;
+    // A refusal stops at the door: just past the state it would leave, well clear of the edge's label midway (#179).
+    const length = points.slice(1).reduce((sum, p, i) => sum + Math.hypot(p[0] - points[i][0], p[1] - points[i][1]), 0);
+    const start = performance.now(), end = refused ? Math.min(0.3, 22 / Math.max(1, length)) : 1, boxes = labels();
     const frame = (t) => {
       const f = Math.min(1, (t - start) / ms), eased = 1 - (1 - f) * (1 - f);
       const [x, y] = at(points, eased * end);
-      dot.setAttribute("cx", x.toFixed(1));
-      dot.setAttribute("cy", y.toFixed(1));
+      dot.setAttribute("transform", `translate(${x.toFixed(1)} ${y.toFixed(1)})`);
+      dot.setAttribute("opacity", over(boxes, x, y) ? "0.12" : "1");
       if (f < 1) { requestAnimationFrame(frame); return; }
       dot.remove();
       if (refused) { cross(pane, x, y); return; }
@@ -207,6 +260,21 @@
       if (to) flashState(entry.to);
     };
     requestAnimationFrame(frame);
+  }
+
+  // The dot's shape says who acted (ADR-0210): a circle for a person, a diamond for an AI agent, a clock ring for a
+  // timer and a square for an external system. Its colour is the kernel's answer.
+  const kindOf = (entry) => (P.roleKind && entry.role ? P.roleKind(entry.role) : "human");
+  function token(entry, fill) {
+    const kind = kindOf(entry), g = shape("g", {}), paint = { fill, stroke: "#fff", "stroke-width": 1.5 };
+    if (kind === "agent") g.append(shape("path", { d: "M0-7.5L7.5 0 0 7.5-7.5 0z", ...paint }));
+    else if (kind === "timer") {
+      g.append(shape("circle", { r: 6, fill: "#fff", stroke: fill, "stroke-width": 2.5, class: "game-timer" }),
+        shape("path", { d: "M0-3.4V0H2.8", fill: "none", stroke: fill, "stroke-width": 1.6, "stroke-linecap": "round" }));
+    } else if (kind === "system") g.append(shape("rect", { x: -5.5, y: -5.5, width: 11, height: 11, rx: 2, ...paint }));
+    else g.append(shape("circle", { r: 5.5, ...paint }));
+    g.setAttribute("transform", "translate(-99 -99)");
+    return g;
   }
 
   function flashState(name) {
@@ -226,6 +294,8 @@
     const result = event.detail;
     clearInterval(flowTimer);
     countUp();
+    legend(result.by_kind || {});
+    guarded(result.by_kind || {});
     if (still() || !result.trace || !result.trace.length) return;
     const shown = result.trace.slice(0, 120), key = P.viewKey();
     let i = 0;
@@ -234,6 +304,53 @@
       for (let k = 0; k < 2 && i < shown.length; k += 1, i += 1) travel(shown[i], 700);
       if (i >= shown.length) clearInterval(flowTimer);
     }, 70);
+  }
+
+  // Which shape is which, shown only when the run had actors that are not people.
+  function legend(kinds) {
+    let line = $("game-legend");
+    if (!line) {
+      line = P.el("p", "", { id: "game-legend", class: "game-legend muted small" });
+      $("sim-summary").after(line);
+    }
+    const others = Object.keys(kinds).filter((k) => k !== "human");
+    line.hidden = !others.length;
+    if (!others.length) return;
+    const names = { agent: "◆ an AI agent", timer: "◷ a timer", system: "■ an external system" };
+    line.textContent = `On the diagram: ● a person, ${others.map((k) => names[k] || k).join(", ")}. Red stops where the kernel refused.`;
+  }
+
+  // An AI agent the kernel refused is the guardrail working: say how often, from the run's own counts.
+  function guarded(kinds) {
+    const agent = kinds.agent;
+    if (!live || !agent || !agent.refused) return;
+    const top = Object.entries(agent.codes || {}).sort((a, b) => b[1] - a[1])[0];
+    note(`Kernel stopped AI agents ${agent.refused}×`, "guard",
+      `The kernel stopped AI agents ${agent.refused} time${agent.refused === 1 ? "" : "s"} in this run${top ? `, mostly ${top[0]}` : ""}`);
+  }
+
+  // The system's class diagrams (ADR-0203): a disagreement resolved is progress; none left is a moment.
+  let system = null;
+  function landscape(event) {
+    const { warning = 0 } = event.detail || {}, pack = (P.pack() && P.pack().id) || "";
+    if (system && system.pack === pack && live) {
+      if (system.warning > 0 && warning === 0) { note("The system agrees now", "ready", "The system's class diagrams agree now"); flash($("health"), "game-burst"); }
+      else if (warning < system.warning) note(`✓ ${system.warning - warning} resolved, ${warning} left`, "pass", `${system.warning - warning} class-diagram disagreement${system.warning - warning === 1 ? "" : "s"} resolved, ${warning} left`);
+    }
+    system = { pack, warning };
+  }
+
+  // What a new system still needs (owned by the greenfield start flow): each item comes from a real check, and this
+  // only marks one going away and the list emptying.
+  let missing = null;
+  function gaps(event) {
+    const { key = "", items = [] } = event.detail || {}, ids = new Set(items.map((x) => x.id));
+    if (missing && missing.key === key && live) {
+      for (const was of missing.items) if (!ids.has(was.id)) note(`✓ ${was.text}`, "pass");
+      if (missing.items.length && !items.length) { note("Nothing missing: build it", "ready", "Nothing missing: ready to build"); flash($("health"), "game-burst"); }
+    }
+    missing = { key, items: items.map((x) => ({ id: x.id, text: x.text })) };
+    if (shownChecks) nextCheck(shownChecks);
   }
 
   // The simulation's counts count up, so the result lands rather than appears.
@@ -272,5 +389,7 @@
   document.addEventListener("playide:checks", (event) => { init(); if (P) checks(event); });
   document.addEventListener("playide:earn", (event) => { init(); if (P) earned(event); });
   document.addEventListener("playide:step", (event) => { init(); if (P) stepped(event); });
+  document.addEventListener("playide:landscape", (event) => { init(); if (P) landscape(event); });
+  document.addEventListener("playide:missing", (event) => { init(); if (P) gaps(event); });
   document.addEventListener("playide:ready", () => { init(); live = true; });
 })();
