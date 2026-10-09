@@ -2,6 +2,7 @@
 
 ## 2026-10-09
 
+* **Agents in sequence diagrams**: re-synced `application.sequence_layout.place` (actor lifelines carry `actor_kind` and a «kind» label). No Notes were hand-edited and nothing was recorded as verified.
 * **A partly read UML file removes nothing**: re-synced ADR-0190 after issue #165 (an import that could not read part of a state machine withholds every removal and lists it). No Notes were hand-edited and nothing was recorded as verified.
 * **The ripple reaches the system**: synced ADR-0204; `application.ripple` (`ripple` takes the system's landscape before and after, `diagrams.system`) and `interfaces.play` (`siblings`, shared by the landscape and ripple routes) refreshed. No Notes were hand-edited and nothing was recorded as verified.
 * **Readable with Simulate open, new actions on the canvas**: re-synced ADR-0174 (fitting keeps labels readable, #139; the transition editor takes a new action or role on your own system) and ADR-0201 (its canvas gap resolved). No Notes were hand-edited and nothing was recorded as verified.

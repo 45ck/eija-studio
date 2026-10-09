@@ -1,0 +1,209 @@
+{
+  "schema_version": "eija.scenarios.v1",
+  "id": "ai-ops",
+  "scenarios": [
+    {
+      "id": "agent-to-production",
+      "title": "The agent opens a change, CI is green, on-call signs off, it goes live",
+      "steps": [
+        {
+          "actor": "ops-agent",
+          "action": "StartBuild",
+          "then": {
+            "state": "InBuild"
+          }
+        },
+        {
+          "actor": "ci",
+          "action": "ReportGreen",
+          "then": {
+            "state": "AwaitingSignoff"
+          }
+        },
+        {
+          "actor": "oncall-on-rota",
+          "action": "SignOffDeploy",
+          "then": {
+            "state": "Scheduled"
+          }
+        },
+        {
+          "actor": "deploy-window",
+          "action": "OpenWindow",
+          "then": {
+            "state": "Rolling"
+          }
+        },
+        {
+          "actor": "health-monitor",
+          "action": "ConfirmHealthy",
+          "then": {
+            "state": "InProduction"
+          }
+        }
+      ]
+    },
+    {
+      "id": "agent-cannot-sign-off",
+      "title": "The AI agent cannot sign its own deploy off",
+      "steps": [
+        {
+          "actor": "ops-agent",
+          "action": "StartBuild",
+          "then": {
+            "state": "InBuild"
+          }
+        },
+        {
+          "actor": "ci",
+          "action": "ReportGreen",
+          "then": {
+            "state": "AwaitingSignoff"
+          }
+        },
+        {
+          "actor": "ops-agent",
+          "action": "SignOffDeploy",
+          "then": {
+            "refused": "ROLE_DENIED"
+          }
+        }
+      ]
+    },
+    {
+      "id": "agent-cannot-fake-green",
+      "title": "The AI agent cannot report its own build green",
+      "steps": [
+        {
+          "actor": "ops-agent",
+          "action": "StartBuild",
+          "then": {
+            "state": "InBuild"
+          }
+        },
+        {
+          "actor": "ops-agent",
+          "action": "ReportGreen",
+          "then": {
+            "refused": "ROLE_DENIED"
+          }
+        }
+      ]
+    },
+    {
+      "id": "red-then-patched",
+      "title": "CI reports red, the agent patches, CI reports green",
+      "steps": [
+        {
+          "actor": "ops-agent",
+          "action": "StartBuild",
+          "then": {
+            "state": "InBuild"
+          }
+        },
+        {
+          "actor": "ci",
+          "action": "ReportRed",
+          "then": {
+            "state": "BuildRed"
+          }
+        },
+        {
+          "actor": "ops-agent",
+          "action": "PatchAndRetry",
+          "then": {
+            "state": "InBuild"
+          }
+        },
+        {
+          "actor": "ci",
+          "action": "ReportGreen",
+          "then": {
+            "state": "AwaitingSignoff"
+          }
+        }
+      ]
+    },
+    {
+      "id": "monitor-rolls-back",
+      "title": "The monitor rolls an unhealthy rollout back on its own",
+      "steps": [
+        {
+          "actor": "ops-agent",
+          "action": "StartBuild",
+          "then": {
+            "state": "InBuild"
+          }
+        },
+        {
+          "actor": "ci",
+          "action": "ReportGreen",
+          "then": {
+            "state": "AwaitingSignoff"
+          }
+        },
+        {
+          "actor": "oncall-on-rota",
+          "action": "SignOffDeploy",
+          "then": {
+            "state": "Scheduled"
+          }
+        },
+        {
+          "actor": "deploy-window",
+          "action": "OpenWindow",
+          "then": {
+            "state": "Rolling"
+          }
+        },
+        {
+          "actor": "health-monitor",
+          "action": "AutoRollback",
+          "then": {
+            "state": "RolledBack"
+          }
+        }
+      ]
+    },
+    {
+      "id": "off-rota-cannot-sign",
+      "title": "An engineer off the rota cannot sign off",
+      "steps": [
+        {
+          "actor": "ops-agent",
+          "action": "StartBuild",
+          "then": {
+            "state": "InBuild"
+          }
+        },
+        {
+          "actor": "ci",
+          "action": "ReportGreen",
+          "then": {
+            "state": "AwaitingSignoff"
+          }
+        },
+        {
+          "actor": "oncall-off-rota",
+          "action": "SignOffDeploy",
+          "then": {
+            "refused": "ASSIGNMENT_DENIED"
+          }
+        }
+      ]
+    },
+    {
+      "id": "paused-agent-is-stopped",
+      "title": "A paused agent is refused at once (its kill switch)",
+      "steps": [
+        {
+          "actor": "ops-agent-paused",
+          "action": "StartBuild",
+          "then": {
+            "refused": "ACTOR_REVOKED"
+          }
+        }
+      ]
+    }
+  ]
+}
