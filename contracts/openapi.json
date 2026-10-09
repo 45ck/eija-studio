@@ -128,6 +128,23 @@
         }
       }
     },
+    "/api/play/roles": {
+      "get": {
+        "summary": "Play Roles",
+        "description": "Each role with the kind of actor that holds it (ADR-0210): a person, an AI agent, a timer or an external system.",
+        "operationId": "play_roles_api_play_roles_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/play/screens": {
       "post": {
         "summary": "Play Screens",

@@ -226,6 +226,11 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
         data = data_for(studio.pack)
         return {"data": data.model_dump(mode="json") if data else None, "digest": data.digest if data else None}
 
+    @app.get("/api/play/roles")
+    def play_roles():
+        """Each role with the kind of actor that holds it (ADR-0210): a person, an AI agent, a timer or an external system."""
+        return {"roles": [{"id": r.id, "kind": r.kind, "description": r.description} for r in studio.pack.roles]}
+
     def screens_of(body: BuildRequest, model: Workflow) -> Screens:
         if body.screens is not None:
             return parse_screens(body.screens, studio.pack.id)

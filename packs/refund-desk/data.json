@@ -1,0 +1,115 @@
+{
+  "schema_version": "eija.data.v1",
+  "id": "refund-desk",
+  "record": "Refund",
+  "entities": [
+    {
+      "name": "Refund",
+      "description": "One refund request; it moves through the refund workflow.",
+      "attributes": [
+        {
+          "name": "orderNumber",
+          "type": "text",
+          "required": true,
+          "max_length": 20
+        },
+        {
+          "name": "reason",
+          "type": "choice",
+          "required": true,
+          "choices": [
+            "Damaged",
+            "Late",
+            "Wrong item",
+            "Changed mind"
+          ]
+        },
+        {
+          "name": "amount",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "agentNote",
+          "type": "text",
+          "max_length": 500
+        },
+        {
+          "name": "decidedOn",
+          "type": "date"
+        }
+      ]
+    },
+    {
+      "name": "Customer",
+      "attributes": [
+        {
+          "name": "email",
+          "type": "text",
+          "required": true,
+          "max_length": 120
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "Order",
+      "attributes": [
+        {
+          "name": "number",
+          "type": "text",
+          "required": true,
+          "max_length": 20
+        },
+        {
+          "name": "total",
+          "type": "number",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "Payout",
+      "description": "What the payment system reports back for one refund.",
+      "attributes": [
+        {
+          "name": "reference",
+          "type": "text",
+          "max_length": 40
+        },
+        {
+          "name": "settled",
+          "type": "boolean"
+        }
+      ]
+    }
+  ],
+  "associations": [
+    {
+      "source": "Refund",
+      "target": "Order",
+      "role": "order",
+      "source_multiplicity": "0..*",
+      "target_multiplicity": "1"
+    },
+    {
+      "source": "Order",
+      "target": "Customer",
+      "role": "customer",
+      "source_multiplicity": "0..*",
+      "target_multiplicity": "1"
+    },
+    {
+      "source": "Refund",
+      "target": "Payout",
+      "kind": "composition",
+      "role": "payouts",
+      "source_multiplicity": "1",
+      "target_multiplicity": "0..*"
+    }
+  ]
+}

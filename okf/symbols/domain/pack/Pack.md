@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/pack.py#Pack
   title: domain/pack.py
   hash_method: ast-sig-v1
-  sha256: 1b4f7635edf9ba6723aa37479c5fffc053833135d457da86767c135c247dfc1b
-notes_baseline: a6ea635cf6b40e4d496511ee5d29538ecb81248da967975e77652b4d1d2dbd5d
+  sha256: bccf0814306f4e9611d5f87c73a8fdfc49fd4703d191813b7ba27c447b82a811
+notes_baseline: 4a3a5a0bf346c0e0ae6024a773f947b746083dd34ce9430baf208e67f3792ea4
 ---
 
 # domain.pack.Pack
@@ -58,6 +58,7 @@ _The source carries no docstring._
 * [`effect`](/symbols/domain/pack/Pack.effect.md) - `def effect(self, effect_id: str) -> Effect \| None`
 * [`id`](/symbols/domain/pack/Pack.id.md) - `def id(self) -> str`
 * [`meaning`](/symbols/domain/pack/Pack.meaning.md) - `def meaning(self, meaning_id: str) -> Meaning \| None`
+* [`role_kind`](/symbols/domain/pack/Pack.role_kind.md) - `def role_kind(self, role: str) -> str \| None`
 * [`verifier`](/symbols/domain/pack/Pack.verifier.md) - `def verifier(self, kind: str) -> Verifier \| None`
 <!-- okf:generated:end facts -->
 
@@ -79,7 +80,7 @@ _No curated notes yet._
 * [domain.pack.Language](/symbols/domain/pack/Language.md) - `class Language(Contract)` in `domain/pack`.
 * [domain.pack.Meaning](/symbols/domain/pack/Meaning.md) - One interpretation of a request.
 * [domain.pack.PackInfo](/symbols/domain/pack/PackInfo.md) - `class PackInfo(Contract)` in `domain/pack`.
-* [domain.pack.Role](/symbols/domain/pack/Role.md) - `class Role(Contract)` in `domain/pack`.
+* [domain.pack.Role](/symbols/domain/pack/Role.md) - A role and the kind of actor that holds it (ADR-0210): a person by default, or an AI agent, a timer or an external system.
 * [domain.pack.Verifier](/symbols/domain/pack/Verifier.md) - An evidence kind that applies to this pack (``kind`` is the evidence kind's name).
 
 ## Referenced by
@@ -144,6 +145,7 @@ _No curated notes yet._
 * [domain.pack.Pack.effect](/symbols/domain/pack/Pack.effect.md) - `def effect(self, effect_id: str) -> Effect | None` in `domain/pack`.
 * [domain.pack.Pack.id](/symbols/domain/pack/Pack.id.md) - `def id(self) -> str` in `domain/pack`.
 * [domain.pack.Pack.meaning](/symbols/domain/pack/Pack.meaning.md) - `def meaning(self, meaning_id: str) -> Meaning | None` in `domain/pack`.
+* [domain.pack.Pack.role_kind](/symbols/domain/pack/Pack.role_kind.md) - The kind of actor holding `role`, or None for a role this pack does not declare.
 * [domain.pack.Pack.verifier](/symbols/domain/pack/Pack.verifier.md) - `def verifier(self, kind: str) -> Verifier | None` in `domain/pack`.
 * [domain.pack.coherence_problems](/symbols/domain/pack/coherence_problems.md) - Every cross-reference defect of a structurally valid pack, sorted.
 * [domain.pack.default_pack](/symbols/domain/pack/default_pack.md) - The configured pack, reread on every call and validated from a content-keyed cache.
