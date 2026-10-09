@@ -16,7 +16,7 @@ from typing import Annotated, Any, Literal
 from pydantic import Field, ValidationError, model_validator
 
 from .models import Contract, DomainError, fingerprint
-from .pack import Pack, pack_directory
+from .pack import Pack, held, pack_directory
 
 DATA_FILE = "data.json"
 NAME = r"^[A-Z][A-Za-z0-9]{0,39}$"  # UML class names: UpperCamelCase
@@ -114,7 +114,10 @@ def load_data(pack_directory: str | Path, pack_id: str) -> DataModel | None:
 
 
 def data_for(pack: Pack) -> DataModel | None:
-    """The data model beside this pack's `pack.json`, if it has one."""
+    """The data model beside this pack's `pack.json`, if it has one: the one a draft holds (ADR-0202), else `data.json`."""
+    draft = held(pack, DATA_FILE)
+    if isinstance(draft, DataModel):
+        return draft
     directory = pack_directory(pack)
     return load_data(directory, pack.id) if directory is not None else None
 

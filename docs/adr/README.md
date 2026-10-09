@@ -90,6 +90,7 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0198](0198-undo-redo-and-autosave-of-the-edited-document.md) | Undo, redo and autosave of the edited document in PlayIDE | accepted |
 | [0199](0199-playide-at-the-kernel-limits.md) | PlayIDE at the kernel's limits: measured, and the kernel's repeated questions memoised | accepted |
 | [0201](0201-build-a-new-system-in-chat-round-after-round.md) | Build a new system in chat, round after round | accepted for state-machine systems |
+| [0202](0202-grow-the-class-diagram-in-chat.md) | Grow the class diagram in chat | accepted for systems started in PlayIDE |
 <!-- adr-index:end -->
 
 ## Reserved numbers for capability lanes

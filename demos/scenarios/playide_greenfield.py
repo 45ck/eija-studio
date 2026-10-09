@@ -2,7 +2,7 @@
 
 The storyboard is docs/demos/PLAYIDE-GREENFIELD-STORYBOARD.md. This script drives the real PlayIDE page (`/play`) of
 an ephemeral `eija serve`, offline, starts a new system from a three-line sketch, and builds it in five asks: a new
-feature, a new requirement, a rename, a new role, and going back on the first decision. After every round it reads the
+feature, the record's fields, a new requirement, a rename, a new role, and going back on the first decision. After every round it reads the
 change in the Changes view (that round alone, then every round), and at the end builds the app and runs it. Every
 step asserts what the page renders, so the take doubles as an end-to-end check. The chat's proposer is the offline
 phrase reader (`offline-plan-fixture-v1`), and the video says so. Nothing is approved or applied.
@@ -18,6 +18,7 @@ CARD = ".msg.ai:last-child"  # the plan card moves under the latest ask
 BUILD_TIMEOUT_MS = 600_000
 ROUNDS = (
     "add Cancel from Placed to Cancelled for Customer",
+    "add field size as choice Small, Medium, Large required then add field notes",
     "add Pay from Placed to Paid for Customer then move Start source to Paid",
     "rename state Ready to AwaitingPickup",
     "allow Manager to Cancel",
@@ -44,6 +45,7 @@ def run(scene: Scene, server: RunningServer) -> None:
     chapter = _Chapters(scene)
     _sketch(scene, chapter)
     _feature(scene, chapter)
+    _fields(scene, chapter)
     _requirement(scene, chapter)
     _rename_and_role(scene, chapter)
     _change_your_mind(scene, chapter)
@@ -118,11 +120,31 @@ def _feature(scene: Scene, chapter: _Chapters) -> None:
     scene.zoom_out()
 
 
-def _requirement(scene: Scene, chapter: _Chapters) -> None:
-    chapter("Round 2: a new requirement")
-    scene.caption("Customers pay before brewing starts. The ask is planned on top of round 1, not instead of it.")
+def _fields(scene: Scene, chapter: _Chapters) -> None:
+    chapter("Round 2: the record's fields")
+    scene.caption("The sketch gave Order one attribute, its title. Ask for the fields the app's form needs.")
     _ask(scene, ROUNDS[1])
     scene.expect_text(f"{CARD} .plan-summary", "2 rounds")
+    scene.expect_text(f"{CARD} .plan-steps", "Add attribute size: one of Small, Medium, Large to Order, required")
+    scene.expect_text(f"{CARD} .plan-verdict", "Order gains size")
+    scene.zoom(f"{CARD} .plan-steps", scale=1.4)
+    scene.wait(1500)
+    scene.zoom_out()
+    scene.click("#tab-classes")
+    scene.wait_for("#class-canvas svg", timeout_ms=30_000)
+    scene.expect_text("#class-canvas", "+ size")
+    scene.caption("The class diagram shows the draft: size and notes are new. The built app's form follows it.")
+    scene.zoom("#class-canvas", scale=1.4)
+    scene.wait(1800)
+    scene.zoom_out()
+    scene.click("#tab-states")
+
+
+def _requirement(scene: Scene, chapter: _Chapters) -> None:
+    chapter("Round 3: a new requirement")
+    scene.caption("Customers pay before brewing starts. The ask is planned on top of the rounds before, not instead of them.")
+    _ask(scene, ROUNDS[2])
+    scene.expect_text(f"{CARD} .plan-summary", "3 rounds")
     scene.expect_text(f"{CARD} .plan-verdict", "The policy allows the result")
     scene.zoom(f"{CARD} .round-head >> nth=-1", scale=1.5)
     scene.wait(1000)
@@ -141,11 +163,11 @@ def _requirement(scene: Scene, chapter: _Chapters) -> None:
 
 
 def _rename_and_role(scene: Scene, chapter: _Chapters) -> None:
-    chapter("Rounds 3 and 4: rename, and a new role")
-    _ask(scene, ROUNDS[2])
-    scene.expect_text(f"{CARD} .plan-summary", "3 rounds")
-    scene.caption("Rename a state. Every transition that touches it follows.")
+    chapter("Rounds 4 and 5: rename, and a new role")
     _ask(scene, ROUNDS[3])
+    scene.expect_text(f"{CARD} .plan-summary", "4 rounds")
+    scene.caption("Rename a state. Every transition that touches it follows.")
+    _ask(scene, ROUNDS[4])
     scene.expect_text(f"{CARD} .plan-steps", "new role Manager")
     scene.expect_text(f"{CARD} .plan-verdict", "New in this system: actions Cancel, Pay; role Manager")
     scene.caption("A manager may cancel too. Manager is a new role, with a test user, and the verdict says what is new.")
@@ -162,10 +184,10 @@ def _rename_and_role(scene: Scene, chapter: _Chapters) -> None:
 
 
 def _change_your_mind(scene: Scene, chapter: _Chapters) -> None:
-    chapter("Round 5: change your mind")
+    chapter("Round 6: change your mind")
     scene.caption("No cancelling after all. Removing a state that is in use removes its transition first, as its own step.")
-    _ask(scene, ROUNDS[4])
-    scene.expect_text(f"{CARD} .plan-summary", "5 rounds")
+    _ask(scene, ROUNDS[5])
+    scene.expect_text(f"{CARD} .plan-summary", "6 rounds")
     scene.expect_text(f"{CARD} .plan-verdict", "The policy allows the result")
     _changes(scene, "round")
     scene.expect_text(".diff-summary", "removed")

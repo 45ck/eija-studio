@@ -62,6 +62,7 @@ _No curated notes yet._
 
 ## Referenced by
 
+* [application.data_steps.AddAttribute](/symbols/application/data_steps/AddAttribute.md) - `class AddAttribute(Contract)` in `application/data_steps`.
 * [domain.data.Attribute.coherent](/symbols/domain/data/Attribute.coherent.md) - `def coherent(self) -> Attribute` in `domain/data`.
 * [domain.data.Entity](/symbols/domain/data/Entity.md) - `class Entity(Contract)` in `domain/data`.
 <!-- okf:generated:end links -->

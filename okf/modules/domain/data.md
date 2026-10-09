@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/data.py
   title: domain/data.py
   hash_method: ast-api-v1
-  sha256: 909e8067e61a1d93934143c7751a723a67d67545007d5502abd67640cf9a00f0
-notes_baseline: 5947c6b707e41160b0f1339dccdb4e2a6e4724c8601539dc658849979aaffb6c
+  sha256: b95e3e22c25b081710481fe3934ac350f80e0dc4314146310a9370d1d0b7da15
+notes_baseline: 9a947b15aa6e7f324849392a9d65f43b592fbb6237a26dc4a574dcb69541c6c0
 ---
 
 # domain.data
@@ -49,7 +49,7 @@ is no second reading of the rules.
 * [`Multiplicity`](/symbols/domain/data/Multiplicity.md) (type-alias) - no docstring
 * [`NAME`](/symbols/domain/data/NAME.md) (constant) - no docstring
 * [`check_values`](/symbols/domain/data/check_values.md) (function) - Validate a record's values against its entity.
-* [`data_for`](/symbols/domain/data/data_for.md) (function) - The data model beside this pack's `pack.json`, if it has one.
+* [`data_for`](/symbols/domain/data/data_for.md) (function) - The data model beside this pack's `pack.json`, if it has one: the one a draft holds (ADR-0202), else `data.json`.
 * [`load_data`](/symbols/domain/data/load_data.md) (function) - The pack's data model, or None when the pack has no `data.json`.
 * [`parse_data`](/symbols/domain/data/parse_data.md) (function) - no docstring
 
@@ -72,7 +72,9 @@ _No curated notes yet._
 ## Referenced by
 
 * [application.appgen](/modules/application/appgen.md) - App generation: a reviewed workflow model becomes a runnable app and its conformance oracle (ADR-0150).
+* [application.data_steps](/modules/application/data_steps.md) - Data-model steps in a chat plan (ADR-0202): add an attribute to a class, remove one, or make one required or optional.
 * [application.new_system](/modules/application/new_system.md) - Start a new system (ADR-0185): the pack documents for a system started from a sketch or copied from a template.
+* [application.plan](/modules/application/plan.md) - Plan mode for the PlayIDE chat (ADR-0156): an AI proposes a change as numbered typed steps; the person accepts or rejects each one and sees what the accepted o…
 * [application.ripple](/modules/application/ripple.md) - Ripple (ADR-0158): what one change to the state machine does to every other diagram of the same system, and the follow-on edits that would keep them in agreeme…
 * [application.sequences](/modules/application/sequences.md) - The pack's scenarios drawn as UML sequence diagrams the kernel checks (ADR-0195).
 * [domain.screens](/modules/domain/screens.md) - Screens: the user interface of a pack's app, designed against its use cases and data model (ADR-0154).
@@ -95,7 +97,7 @@ _No curated notes yet._
 * [domain.data.Multiplicity](/symbols/domain/data/Multiplicity.md) - Type alias `Multiplicity` in `domain/data`.
 * [domain.data.NAME](/symbols/domain/data/NAME.md) - Constant `NAME` in `domain/data`.
 * [domain.data.check_values](/symbols/domain/data/check_values.md) - Validate a record's values against its entity.
-* [domain.data.data_for](/symbols/domain/data/data_for.md) - The data model beside this pack's `pack.json`, if it has one.
+* [domain.data.data_for](/symbols/domain/data/data_for.md) - The data model beside this pack's `pack.json`, if it has one: the one a draft holds (ADR-0202), else `data.json`.
 * [domain.data.load_data](/symbols/domain/data/load_data.md) - The pack's data model, or None when the pack has no `data.json`.
 * [domain.data.parse_data](/symbols/domain/data/parse_data.md) - `def parse_data(document: Any, pack_id: str) -> DataModel` in `domain/data`.
 <!-- okf:generated:end links -->

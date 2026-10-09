@@ -8,7 +8,7 @@
   // Drop the token from the address bar but keep ?case=, so a reload still shows the same model.
   if (location.hash) { sessionStorage.setItem("eija-session", token); history.replaceState(null, "", location.pathname + location.search); }
   const STATE = { width: 150, height: 54 }, INITIAL = 22;
-  let graph, model, selected = "", sim = null, replayTimer = 0, data = null, classGraph = null, useCaseGraph = null, tab = "states";
+  let graph, model, selected = "", sim = null, replayTimer = 0, data = null, savedData = null, classGraph = null, useCaseGraph = null, tab = "states";
   let components = null, componentGraph = null, lastBuild = null;
   let baseModel = null, plan = null; // the server's model, and the chat plan being previewed on top of it (if any)
   let packInfo = null, points = 0, simKey = null, cards = 0, problemsFor = null; // the pack's actions and roles; check points; what was simulated
@@ -394,13 +394,24 @@
   const enumName = () => data.record + "State"; // the record's states as a UML enumeration, read from the state machine
   // The enumeration's literals: the states, or while the Changes view is on, the states of both models with their status.
   const literalsOf = () => (shownChange ? shownChange.states.map((x) => [x.name, x.status]) : model.states.map((x) => [x, "same"]));
-  const widthOf = (e) => Math.max(200, e.name.length * 9 + 60, ...e.attributes.map((a) => attributeLine(a).length * 7 + 24));
+  // A class's attribute rows. While a plan that changes the class diagram is previewed (ADR-0202), each row says whether
+  // the plan adds or changes it, and an attribute the plan removes stays as a struck-through ghost row.
+  function rowsOf(e) {
+    const old = savedData && data !== savedData ? savedData.entities.find((x) => x.name === e.name) : null;
+    if (!old) return e.attributes.map((a) => [a, "same"]);
+    const was = new Map(old.attributes.map((a) => [a.name, a]));
+    const rows = e.attributes.map((a) => [a, !was.has(a.name) ? "added" : attributeLine(was.get(a.name)) !== attributeLine(a) ? "changed" : "same"]);
+    return rows.concat(old.attributes.filter((a) => !e.attributes.some((x) => x.name === a.name)).map((a) => [a, "removed"]));
+  }
+  const ROW_LOOK = { added: { fontColor: "#17734a", fontStyle: 1 }, changed: { fontColor: "#a35f00", fontStyle: 1 }, removed: { fontColor: "#8a94a6", fontStyle: 8 } };
+  const ROW_MARK = { added: "+ ", changed: "~ ", removed: "− " };
+  const widthOf = (e) => Math.max(200, e.name.length * 9 + 60, ...rowsOf(e).map(([a]) => attributeLine(a).length * 7 + 40));
 
   function classLayout() {
     const g = new dagre.graphlib.Graph({ multigraph: true });
     g.setGraph({ rankdir: "LR", nodesep: 50, ranksep: 140, marginx: 30, marginy: 30 });
     g.setDefaultEdgeLabel(() => ({}));
-    for (const e of data.entities) g.setNode(e.name, { width: widthOf(e), height: HEAD + ROW * Math.max(1, e.attributes.length) + 8 });
+    for (const e of data.entities) g.setNode(e.name, { width: widthOf(e), height: HEAD + ROW * Math.max(1, rowsOf(e).length) + 8 });
     data.associations.forEach((a, i) => g.setEdge(a.source, a.target, { width: 90, height: 20 }, "a" + i));
     const literals = literalsOf();
     g.setNode(enumName(), { width: Math.max(200, ...literals.map(([x]) => x.length * 8 + 30)), height: HEAD + ROW * literals.length + 8 });
@@ -447,9 +458,9 @@
         const box = cells[e.name] = classGraph.insertVertex({ parent, id: "class:" + e.name, value: (record ? "«record»\n" : "") + e.name,
           position: [x, y], size: [w, h], style: { ...font, shape: "swimlane", startSize: HEAD, horizontal: true, fontStyle: 1, fontSize: 13,
             fillColor: record ? "#dfe6ff" : "#eef2ff", swimlaneFillColor: "#ffffff", strokeColor: "#5b74d6", rounded: false, collapsible: false } });
-        e.attributes.forEach((a, i) => classGraph.insertVertex({ parent: box, id: `attr:${e.name}.${a.name}`, value: attributeLine(a),
+        rowsOf(e).forEach(([a, status], i) => classGraph.insertVertex({ parent: box, id: `attr:${e.name}.${a.name}`, value: (ROW_MARK[status] || "") + attributeLine(a),
           position: [8, HEAD + 4 + i * ROW], size: [w - 16, ROW], style: { ...font, fontSize: 12, align: "left", strokeColor: "none",
-            fillColor: "none", movable: false, selectable: false } }));
+            fillColor: "none", movable: false, selectable: false, ...(ROW_LOOK[status] || {}) } }));
       }
       const [ex, ey, ew, eh] = at(enumName());
         const literals = cells[enumName()] = classGraph.insertVertex({ parent, id: "enum:" + enumName(), value: `«enumeration»\n${enumName()}`,
@@ -751,7 +762,7 @@
     const verdict = plan.card.querySelector(".plan-verdict");
     verdict.className = "plan-verdict " + (result.legal ? "ok" : "bad");
     verdict.textContent = !result.accepted ? "No step accepted: nothing would change."
-      : result.legal ? `${result.accepted} of ${plan.steps.length} step${plan.steps.length === 1 ? "" : "s"} accepted. The policy allows the result: ${changes(result.diff)}.${declaredText(result.declared)}`
+      : result.legal ? `${result.accepted} of ${plan.steps.length} step${plan.steps.length === 1 ? "" : "s"} accepted. The policy allows the result: ${changesOf(result)}.${declaredText(result.declared)}`
       : result.codes.includes("PLAN_STEP_DOES_NOT_APPLY")
         ? `Step ${result.steps.findIndex((x) => x.status === "does_not_apply") + 1} does not apply after the steps you kept (${result.steps.find((x) => x.status === "does_not_apply").message}).`
         : (result.laws && result.laws.length
@@ -769,6 +780,12 @@
     const named = (one, list) => (list.length ? `${one}${list.length > 1 ? "s" : ""} ${list.join(", ")}` : "");
     const parts = [named("action", declared.actions), named("role", declared.roles)].filter(Boolean);
     return ` New in this system: ${parts.join("; ")}, declared as a sketch declares them.`;
+  }
+
+  // The state machine's changes, then the class diagram's (ADR-0202).
+  function changesOf(result) {
+    const states = changes(result.diff), classes = (result.data_changes || []).join("; ");
+    return states === "no visible change" && classes ? classes : [states, classes].filter(Boolean).join("; ");
   }
 
   function changes(diff) {
@@ -802,17 +819,19 @@
   function enterPreview() {
     if (!plan || !plan.result || !plan.result.legal) return;
     plan.previewing = true;
+    data = plan.result.data || savedData; // the class diagram as the plan's data-model steps leave it (ADR-0202)
     redrawAll(plan.result.candidate);
     highlight(plan.result.diff);
     for (const which of Object.keys(DIAGRAMS)) markRipple(which);
     $("plan-banner").hidden = false;
-    $("plan-banner-text").textContent = `Previewing the plan: ${changes(plan.result.diff)}. Nothing is applied to the model.`;
+    $("plan-banner-text").textContent = `Previewing the plan: ${changesOf(plan.result)}. Nothing is applied to the model.`;
     plan.card.querySelector(".plan-tools .primary").textContent = "Back to the model";
   }
 
   function leavePreview() {
     if (!plan || !plan.previewing) return;
     plan.previewing = false;
+    data = savedData;
     redrawAll(baseModel);
     for (const which of Object.keys(DIAGRAMS)) markRipple(which);
     $("plan-banner").hidden = true;
@@ -1122,9 +1141,23 @@
     return note;
   }
 
+  const DATA_STEPS = ["add_attribute", "remove_attribute", "set_required"];
+
+  // A data-model step is shown on the class diagram, on the class it changes (ADR-0202).
+  function showClassStep(i) {
+    const step = plan.steps[i];
+    showTab("classes");
+    const cell = classGraph && classGraph.getDataModel().getCell("class:" + step.transaction.entity);
+    if (cell) { classGraph.setSelectionCell(cell); classGraph.scrollCellToVisible(cell, true); }
+    $("inspector").prepend(stepNote(i));
+    if (cell && step.author === "ai" && !step.checked) { step.checked = true; earn(1, `Looked at AI step ${i + 1} on the diagram`); }
+    if (plan.result) renderPlan(plan.result);
+  }
+
   function showStep(i) {
     const step = plan.steps[i];
     if (!plan.previewing && plan.result && plan.result.legal) enterPreview();
+    if (DATA_STEPS.includes(step.transaction.kind)) { showClassStep(i); return; }
     if (tab !== "states") showTab("states");
     const id = cellOf(step.transaction);
     let cell = graph.getDataModel().getCell(id);
@@ -2255,7 +2288,7 @@
     const status = await api("/api/status");
     $("model-name").textContent = status.pack.name + (caseId ? " · change case" : "");
     packInfo = status.pack;
-    data = (await api("/api/play/data")).data;
+    data = savedData = (await api("/api/play/data")).data;
     await loadScreens(null);
     outline();
     draw(model);
