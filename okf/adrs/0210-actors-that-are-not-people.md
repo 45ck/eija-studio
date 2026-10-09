@@ -65,5 +65,6 @@ _No curated notes yet._
 ## Referenced by
 
 * [ADR-0190: UML import and export: XMI, PlantUML, Mermaid and draw.io, with every import judged by the kernel](/adrs/0190-uml-import-and-export-through-the-kernel.md) - PlayIDE's users already know UML and already keep UML somewhere else: XMI in Enterprise Architect, Cameo, Papyrus or Visual Paradigm; PlantUML beside the code;…
+* [ADR-0208: Moments for real checks, and the run as traffic on the diagram](/adrs/0208-check-moments-and-traffic.md) - ADR-0157 gave PlayIDE a checks ring and points that reward checking, never producing.
 * [ADR-0215: See and run the app as each role](/adrs/0215-see-and-run-the-app-as-each-role.md) - PlayIDE already models the human side of a system: roles and fixture actors in the pack, a use case diagram (ADR-0154), one screen per use case, and a Permissi…
 <!-- okf:generated:end links -->
