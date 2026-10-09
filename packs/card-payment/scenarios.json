@@ -1,0 +1,237 @@
+{
+  "schema_version": "eija.scenarios.v1",
+  "id": "card-payment",
+  "scenarios": [
+    {
+      "id": "pay-and-refund",
+      "title": "A captured payment is refunded on finance approval",
+      "steps": [
+        {
+          "actor": "gateway",
+          "action": "AuthoriseCard",
+          "then": {
+            "state": "Authorised"
+          }
+        },
+        {
+          "actor": "gateway",
+          "action": "CaptureFunds",
+          "then": {
+            "state": "FundsCaptured"
+          }
+        },
+        {
+          "actor": "customer-a",
+          "action": "RequestRefund",
+          "then": {
+            "state": "RefundRequested"
+          }
+        },
+        {
+          "actor": "finance-merchant",
+          "action": "ApproveRefund",
+          "then": {
+            "state": "Refunded"
+          }
+        }
+      ]
+    },
+    {
+      "id": "support-cannot-refund",
+      "title": "Support cannot approve a refund",
+      "steps": [
+        {
+          "actor": "gateway",
+          "action": "AuthoriseCard",
+          "then": {
+            "state": "Authorised"
+          }
+        },
+        {
+          "actor": "gateway",
+          "action": "CaptureFunds",
+          "then": {
+            "state": "FundsCaptured"
+          }
+        },
+        {
+          "actor": "customer-a",
+          "action": "RequestRefund",
+          "then": {
+            "state": "RefundRequested"
+          }
+        },
+        {
+          "actor": "support-agent",
+          "action": "ApproveRefund",
+          "then": {
+            "refused": "ROLE_DENIED"
+          }
+        },
+        {
+          "actor": "support-agent",
+          "action": "RejectRefund",
+          "then": {
+            "state": "FundsCaptured"
+          }
+        }
+      ]
+    },
+    {
+      "id": "refund-needs-own-payment",
+      "title": "A customer cannot ask for a refund of someone else's payment",
+      "steps": [
+        {
+          "actor": "gateway",
+          "action": "AuthoriseCard",
+          "then": {
+            "state": "Authorised"
+          }
+        },
+        {
+          "actor": "gateway",
+          "action": "CaptureFunds",
+          "then": {
+            "state": "FundsCaptured"
+          }
+        },
+        {
+          "actor": "customer-b",
+          "action": "RequestRefund",
+          "then": {
+            "refused": "ASSIGNMENT_DENIED"
+          }
+        }
+      ]
+    },
+    {
+      "id": "no-refund-before-capture",
+      "title": "Nothing is refunded that was never captured",
+      "steps": [
+        {
+          "actor": "gateway",
+          "action": "AuthoriseCard",
+          "then": {
+            "state": "Authorised"
+          }
+        },
+        {
+          "actor": "customer-a",
+          "action": "RequestRefund",
+          "then": {
+            "refused": "STATE_DENIED"
+          }
+        },
+        {
+          "actor": "support-agent",
+          "action": "VoidAuthorisation",
+          "then": {
+            "state": "Voided"
+          }
+        }
+      ]
+    },
+    {
+      "id": "void-only-before-capture",
+      "title": "A captured payment cannot be voided",
+      "steps": [
+        {
+          "actor": "gateway",
+          "action": "AuthoriseCard",
+          "then": {
+            "state": "Authorised"
+          }
+        },
+        {
+          "actor": "gateway",
+          "action": "CaptureFunds",
+          "then": {
+            "state": "FundsCaptured"
+          }
+        },
+        {
+          "actor": "support-agent",
+          "action": "VoidAuthorisation",
+          "then": {
+            "refused": "STATE_DENIED"
+          }
+        }
+      ]
+    },
+    {
+      "id": "dispute-lost",
+      "title": "A dispute is lost and the payment is charged back",
+      "steps": [
+        {
+          "actor": "gateway",
+          "action": "AuthoriseCard",
+          "then": {
+            "state": "Authorised"
+          }
+        },
+        {
+          "actor": "gateway",
+          "action": "CaptureFunds",
+          "then": {
+            "state": "FundsCaptured"
+          }
+        },
+        {
+          "actor": "gateway",
+          "action": "OpenDispute",
+          "then": {
+            "state": "Disputed"
+          }
+        },
+        {
+          "actor": "finance-other",
+          "action": "LoseDispute",
+          "then": {
+            "refused": "ASSIGNMENT_DENIED"
+          }
+        },
+        {
+          "actor": "finance-merchant",
+          "action": "LoseDispute",
+          "then": {
+            "state": "ChargedBack"
+          }
+        }
+      ]
+    },
+    {
+      "id": "revoked-finance",
+      "title": "A finance approver whose access was revoked cannot refund",
+      "steps": [
+        {
+          "actor": "gateway",
+          "action": "AuthoriseCard",
+          "then": {
+            "state": "Authorised"
+          }
+        },
+        {
+          "actor": "gateway",
+          "action": "CaptureFunds",
+          "then": {
+            "state": "FundsCaptured"
+          }
+        },
+        {
+          "actor": "customer-a",
+          "action": "RequestRefund",
+          "then": {
+            "state": "RefundRequested"
+          }
+        },
+        {
+          "actor": "finance-revoked",
+          "action": "ApproveRefund",
+          "then": {
+            "refused": "ACTOR_REVOKED"
+          }
+        }
+      ]
+    }
+  ]
+}

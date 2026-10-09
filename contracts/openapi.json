@@ -128,6 +128,23 @@
         }
       }
     },
+    "/api/play/roles": {
+      "get": {
+        "summary": "Play Roles",
+        "description": "Each role with the kind of actor that holds it (ADR-0210): a person, an AI agent, a timer or an external system.",
+        "operationId": "play_roles_api_play_roles_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/play/screens": {
       "post": {
         "summary": "Play Screens",
@@ -649,6 +666,43 @@
         "summary": "Play Access",
         "description": "Who can do what (ADR-0171): role by state, each cell tried in the kernel; with a plan, what it changes.",
         "operationId": "play_access_api_play_access_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuildRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/play/landscape": {
+      "post": {
+        "summary": "Play Landscape",
+        "description": "The system this workflow is part of (ADR-0203): the packs beside it that share a class with it, as one UML\ncomponent diagram, and where their class diagrams disagree. The open one is the model and data model shown.",
+        "operationId": "play_landscape_api_play_landscape_post",
         "requestBody": {
           "content": {
             "application/json": {

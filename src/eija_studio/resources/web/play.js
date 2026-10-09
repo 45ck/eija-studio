@@ -17,9 +17,15 @@
   const earned = [];
   let screens = null, screensEdited = false, useCase = null, checkTimer = 0, problems = [], useCaseList = [];
   const base = {}; // each cell's own style and label, so overlays can be cleared
-  const hooks = { redraw: [], inspect: [], laws: [], tab: [], changeSelect: [], edit: [] }; // the run bar (play-run.js) redraws its marks and adds inspector tools; play-laws.js and play-access.js draw their tabs
+  // The kind of actor holding each role (ADR-0210). UML draws all four as actors; a person keeps the stick figure, the
+  // others are drawn as an actor classifier with their keyword, as UML allows.
+  let roleKinds = {};
+  const ACTOR_KINDS = { human: "person", agent: "AI agent", timer: "timer", system: "external system" };
+  const ACTOR_GROUPS = { human: "People", agent: "AI agents", timer: "Timers", system: "External systems" };
+  const roleKind = (role) => roleKinds[role] || "human";
+  const hooks = { redraw: [], inspect: [], laws: [], tab: [], changeSelect: [], edit: [], screens: [] }; // the run bar (play-run.js) redraws its marks and adds inspector tools; play-laws.js and play-access.js draw their tabs
   // the Changes view (play-diff.js, ADR-0176) closes when another tab is shown and answers current() while open;
-  // edit hears every undoable edit (ADR-0198)
+  // edit hears every undoable edit (ADR-0198); screens hears the screen designer redraw its list and card (play-roles.js)
 
   async function api(path, body) {
     const options = { headers: { Authorization: "Bearer " + token } };
@@ -267,7 +273,8 @@
 
   function transition(id) { return model.transitions.find((t) => t.id === id); }
 
-  const current = () => (hooks.diffGraph && hooks.diffGraph()) || ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: componentGraph, review: PlayReview.graph(),
+  const current = () => (hooks.diffGraph && hooks.diffGraph()) || ({ states: graph, classes: classGraph, usecases: useCaseGraph, review: PlayReview.graph(),
+    components: (hooks.componentGraph && hooks.componentGraph()) || componentGraph, // the System lens (play-landscape.js, ADR-0203)
     sequences: hooks.sequenceGraph && hooks.sequenceGraph() })[tab];
   const PANELS = { states: "canvas", sequences: "sequences", classes: "class-canvas", usecases: "usecase-canvas", screens: "screens", components: "component-canvas", laws: "laws", tests: "tests", review: "review", access: "access-panel" };
   const HINTS = {
@@ -277,17 +284,27 @@
     usecases: "Select a use case to inspect it. Double-click one to design its screen.",
     screens: "Design each use case's screen. The design check runs as you edit; Build & run uses these screens.",
     components: "The built app's components, read from its generated files: every line is an import, a route or a file read.",
-    laws: "The pack's laws: what this model must never do, whatever is drawn. Each is proved over every run the kernel allows, by every kind of actor.",
+    laws: "The pack's laws: what this model must never do, whatever is drawn. Each is proved over every run the kernel allows, by every class of actor (each role, active or not, assigned or not).",
     tests: "The pack's test cases: scenarios of who does what and what must happen, each step run by the kernel on the model shown.",
     access: "Who can do what, from each state. Every cell is tried in the kernel with the pack's fixture actors; a previewed plan's changes are flagged.",
     review: "Review the change shown against the model in force: look at each change, predict what the kernel does, then decide. Nothing is approved from here.",
   };
 
-  function fit() {
-    if (!current()) return;
-    const plugin = current().getPlugin("fit");
+  // Fitting never shrinks a diagram below READABLE (labels of about 10px and up): when the canvas is short, as with the
+  // Simulation panel open, the diagram keeps that size and starts at its top left (where the initial state is), and the
+  // rest is a drag away. Only the Fit button, asked for "all of it", may go smaller (#139).
+  const READABLE = 0.8, MARGIN = 24;
+  function fit(all) {
+    const g = current();
+    if (!g) return;
+    const plugin = g.getPlugin("fit");
     plugin.maxFitScale = 1.4;
-    plugin.fitCenter({ margin: 24 });
+    const scale = plugin.fitCenter({ margin: MARGIN });
+    if (all === true || !(scale < READABLE)) return;
+    const v = g.view, b = g.getGraphBounds(), box = g.container, k = READABLE;
+    const w = b.width / v.scale, h = b.height / v.scale, x0 = b.x / v.scale - v.translate.x, y0 = b.y / v.scale - v.translate.y;
+    const along = (room, size, start) => (size * k <= room - 2 * MARGIN ? (room / k - size) / 2 - start : MARGIN / k - start);
+    v.scaleAndTranslate(k, along(box.clientWidth, w, x0), along(box.clientHeight, h, y0));
   }
 
   function row(dl, term, value) { dl.append(el("dt", term), el("dd", value)); }
@@ -308,8 +325,17 @@
       box.append(el("h3", `«enumeration» ${id.slice(5)}`), el("p", `The states a ${data.record} can be in: ${model.states.join(", ")}. Read from the state machine, so a state you draw there appears here.`, { class: "muted" }));
       return;
     }
+    if (id.startsWith("system:") && window.PlayLandscape) { // the System lens of the Components tab (ADR-0203)
+      window.PlayLandscape.inspect(id.slice(7), box);
+      return;
+    }
     if (id.startsWith("component:")) {
       inspectComponent(id.slice(10), box);
+      return;
+    }
+    if (id.startsWith("role:")) { // an actor: play-roles.js says what it may do and runs the app as one (ADR-0215)
+      box.append(el("h3", "Actor " + id.slice(5)));
+      for (const f of hooks.inspect) f(id, box);
       return;
     }
     if (id === "usecase:create") {
@@ -375,10 +401,11 @@
     fill("outline-transitions", model.transitions.map((t) => ["transition:" + t.id, label(t)]));
     fill("outline-classes", data ? data.entities.map((e) => ["class:" + e.name, e.name + (e.name === data.record ? " «record»" : "")]) : []);
     if (!data) $("outline-classes").replaceChildren(el("li", "No data model yet", { class: "muted" }));
-    // A role is not a diagram element; what it may do is the Permissions tab's column, so that is where a role opens.
+    // A role is an actor of the use case diagram: choosing one shows what it may do, its screens and its fixture
+    // actors in the inspector (play-roles.js, ADR-0215), without leaving the diagram on screen.
     $("outline-roles").replaceChildren(...[...new Set(model.transitions.map((t) => t.role))].map((r) => {
-      const button = el("button", r, { type: "button", title: `What ${r} may do, on the Permissions tab` });
-      button.addEventListener("click", () => showTab("access"));
+      const button = el("button", r, { type: "button", "data-id": "role:" + r, "aria-current": "false", title: `What ${r} may do and sees` });
+      button.addEventListener("click", () => select("role:" + r, false));
       const li = el("li");
       li.append(button);
       return li;
@@ -530,6 +557,9 @@
     return { cases: [...u.cases].sort((a, b) => rank(a) - rank(b)), actors: u.actors, links: u.links };
   }
 
+  const ACTOR_LOOK = { human: {}, agent: { fill: "#f3edff", stroke: "#6b46c1" }, timer: { fill: "#fff7e6", stroke: "#b7791f" },
+    system: { fill: "#eef2f6", stroke: "#4a5568" } };
+
   function drawUseCases() {
     if (useCaseGraph) return;
     const { Graph, InternalEvent } = maxgraph;
@@ -562,10 +592,14 @@
         const mine = cases.map((t, j) => [t, j]).filter(([t]) => t.role === role);
         const near = mine.length ? mine : cases.map((t, j) => [t, j]).filter(([t]) => t.was_role === role); // an actor left with only a moved line
         const y = near.reduce((sum, [, j]) => sum + rowY(j), 0) / Math.max(1, near.length) - 8;
-        const left = i % 2 === 0;
-        const actor = useCaseGraph.insertVertex({ parent, id: "role:" + role, value: role, position: [left ? 90 : boundary.x + boundary.w + 120, y],
-          size: [36, 64], style: { ...font, shape: "actor", fillColor: "#ffffff", strokeColor: "#1b2130", verticalLabelPosition: "bottom",
-            verticalAlign: "top", fontSize: 13, ...changeLook(actorStatus[role], "actor") } });
+        const left = i % 2 === 0, kind = roleKind(role), look = ACTOR_LOOK[kind];
+        const actor = kind === "human"
+          ? useCaseGraph.insertVertex({ parent, id: "role:" + role, value: role, position: [left ? 90 : boundary.x + boundary.w + 120, y],
+            size: [36, 64], style: { ...font, shape: "actor", fillColor: "#ffffff", strokeColor: "#1b2130", verticalLabelPosition: "bottom",
+              verticalAlign: "top", fontSize: 13, ...changeLook(actorStatus[role], "actor") } })
+          : useCaseGraph.insertVertex({ parent, id: "role:" + role, value: `«${kind}»\n${role}`, position: [left ? 40 : boundary.x + boundary.w + 70, y + 8],
+            size: [136, 48], style: { ...font, shape: "rectangle", rounded: kind === "agent", whiteSpace: "wrap", fillColor: look.fill,
+              strokeColor: look.stroke, fontSize: 12, ...changeLook(actorStatus[role], "actor") } });
         for (const link of shape.links.filter((l) => l.role === role)) {
           useCaseGraph.insertEdge({ parent, source: actor, target: cells[link.case], style: { strokeColor: "#4a5568", endArrow: "none", ...changeLook(link.status, "line") } });
         }
@@ -574,6 +608,7 @@
     useCaseGraph.getSelectionModel().addListener(InternalEvent.CHANGE, () => {
       const cell = useCaseGraph.getSelectionCell(), id = cell && cell.id && cell.id.startsWith("uc:") ? cell.id.slice(3) : "";
       if (shownChange) { for (const f of hooks.changeSelect) f(cell ? cell.id : ""); return; } // the Changes view reads its own cells
+      if (cell && cell.id && cell.id.startsWith("role:")) { select(cell.id, false); return; } // an actor (ADR-0215)
       select(id === "create" ? "usecase:create" : id ? "transition:" + id : "", false);
     });
     useCaseGraph.addListener(InternalEvent.DOUBLE_CLICK, (_sender, event) => {
@@ -586,6 +621,10 @@
   }
 
   function showTab(which) {
+    if (which === "system") { // the System lens of the Components tab (ADR-0203), which the ripple names as a diagram
+      if (window.PlayLandscape) window.PlayLandscape.setLens("system");
+      which = "components";
+    }
     tab = which;
     for (const [name, panel] of Object.entries(PANELS)) {
       $("tab-" + name).setAttribute("aria-selected", String(which === name));
@@ -857,7 +896,8 @@
   // to every diagram and asks the proposer for follow-on edits, each re-checked by the policy or the screen design
   // check. Tabs carry a badge; the affected elements are marked on each diagram while the plan is previewed.
   const DIAGRAMS = { states: "State machine", classes: "Class diagram", usecases: "Use cases", screens: "Screens", components: "Components" };
-  const RIPPLE = { ...DIAGRAMS, sequences: "Sequences" }; // sequence diagrams are listed in the ripple; play-sequence.js marks its own tab
+  const RIPPLE = { ...DIAGRAMS, sequences: "Sequences", system: "System" }; // sequence diagrams are listed in the ripple; play-sequence.js marks its own tab
+  // "System" is the other workflows of the system (ADR-0203, #146): the Components tab's System lens shows it.
   const MARK = { added: "+", removed: "−", changed: "~", warning: "⚠", problem: "✗" };
   const TINT = { added: { strokeColor: "#17734a", fillColor: "#e5f5ec", strokeWidth: 2.5 }, changed: { strokeColor: "#c27c0e", strokeWidth: 2.5 },
     warning: { strokeColor: "#c27c0e", dashed: true, strokeWidth: 2.5 }, problem: { strokeColor: "#a12f2f", strokeWidth: 3 },
@@ -987,7 +1027,8 @@
     }
     if (key === "sequences" && item.ref && window.PlaySequence) window.PlaySequence.open(item.ref.slice(9));
     showTab(key);
-    const g = current(), ids = key === "screens" || !item.ref ? [] : cellsFor(key, item.ref);
+    if (key === "system" && item.ref && window.PlayLandscape) window.PlayLandscape.focus(item.ref.slice(7)); // drawn once it loads
+    const g = key === "system" ? null : current(), ids = key === "screens" || !item.ref ? [] : cellsFor(key, item.ref);
     const cell = g && ids.map((id) => g.getDataModel().getCell(id)).find(Boolean);
     if (cell && cell.isVertex() && !cell.id.startsWith("literal:")) g.setSelectionCell(cell);
     else if (cell && cell.isEdge()) g.setSelectionCell(cell);
@@ -1007,7 +1048,8 @@
     for (const key of Object.keys(DIAGRAMS)) {
       const badge = $("tab-" + key).querySelector(".badge");
       if (!badge) continue;
-      const items = ripple && !ripple.error ? ripple.diagrams[key] : [];
+      // The Components tab also shows the System lens, so it counts what the change does to the other workflows (#146).
+      const items = ripple && !ripple.error ? [...ripple.diagrams[key], ...(key === "components" ? ripple.diagrams.system || [] : [])] : [];
       badge.hidden = !items.length;
       badge.textContent = String(items.length);
       badge.className = "badge" + (items.some((i) => i.change === "problem") ? " bad" : items.some((i) => i.change === "warning") ? " warn" : "");
@@ -1507,6 +1549,25 @@
     return select;
   }
 
+  // On a system you started (ADR-0201), an action or role can be one it declares or a new name, which the step then
+  // declares as a sketch would: a text box that suggests the declared names and says when a name is new.
+  function named(values, value, what, used = new Set()) {
+    const id = `names-${what}-${++named.n}`, list = el("datalist", undefined, { id });
+    for (const v of values) list.append(el("option", undefined, { value: v, label: used.has(v) ? `${v} (already used)` : v }));
+    const input = el("input", undefined, { list: id, value, required: "", maxlength: "40", pattern: "[A-Za-z][A-Za-z0-9_]{0,39}",
+      placeholder: `A ${what}, or a new name`, autocomplete: "off", title: "Letters, digits and _; starts with a letter" });
+    const note = el("span", "", { class: "muted small new-name" });
+    const say = () => { const v = input.value.trim(); note.textContent = v && !values.includes(v) ? `New ${what}: the step declares ${v}` : ""; };
+    input.addEventListener("input", say);
+    say();
+    const wrap = el("span", undefined, { class: "named" });
+    wrap.append(input, list, note);
+    Object.defineProperty(wrap, "value", { get: () => input.value.trim(), set: (v) => { input.value = v; say(); } });
+    wrap.focus = () => input.focus();
+    return wrap;
+  }
+  named.n = 0;
+
   function field(text, control) {
     const wrap = el("label", text);
     wrap.append(control);
@@ -1542,8 +1603,10 @@
       return { fields: [[`Move ${t.action}'s`, end], ["to state", state]], make: () => ({ kind: "retarget_transition", transition: t.id, end: end.value, state: state.value }) };
     }
     const from = choose(model.states, at || model.states[0]), to = choose(model.states, at || model.states[0]);
-    const action = choose(packInfo.actions, packInfo.actions.find((a) => !used.has(a)) || packInfo.actions[0], (a) => a + (used.has(a) ? " (already used)" : ""));
-    const role = choose(packInfo.roles, packInfo.roles[0]);
+    const fresh = packInfo.actions.find((a) => !used.has(a));
+    const action = packInfo.own_system ? named(packInfo.actions, fresh || "", "action", used) // your own system can name a new one
+      : choose(packInfo.actions, fresh || packInfo.actions[0], (a) => a + (used.has(a) ? " (already used)" : ""));
+    const role = packInfo.own_system ? named(packInfo.roles, packInfo.roles[0], "role") : choose(packInfo.roles, packInfo.roles[0]);
     return { fields: [["From", from], ["To", to], ["Action", action], ["Who may take it", role]],
       make: () => ({ kind: "add_transition", id: newId(action.value), action: action.value, from_state: from.value, to_state: to.value, role: role.value }) };
   }
@@ -1627,7 +1690,11 @@
     // A package's members share one column, the deepest of theirs, so the package is one box.
     const deepest = {};
     for (const c of components.components) if (GROUPS[c.stereotype]) deepest[c.stereotype] = Math.max(deepest[c.stereotype] || 0, visit(c.id));
-    for (const c of components.components) (columns[GROUPS[c.stereotype] ? deepest[c.stereotype] : visit(c.id)] ||= []).push(c);
+    // The framework a module runs on sits under that module, out of the way of the module's own uses (a framework in
+    // the next column stood under every edge that column sends on).
+    const runsOn = (c) => Math.min(...edges.filter((d) => d.target === c.id).map((d) => visit(d.source)));
+    const column = (c) => GROUPS[c.stereotype] ? deepest[c.stereotype] : c.stereotype === "framework" && visit(c.id) > 0 ? runsOn(c) : visit(c.id);
+    for (const c of components.components) (columns[column(c)] ||= []).push(c);
     for (const [col, members] of Object.entries(columns)) {
       let y = 20;
       const x = 40 + Number(col) * COLUMN;
@@ -1647,10 +1714,22 @@
         y += h + GAP;
       }
     }
+    for (const c of components.components) if (c.stereotype === "framework") clearOfLines(c.id, boxes, edges);
     return (id) => {
       if (id.startsWith("iface:")) { const [x, y, , h] = boxes[id.slice(6)]; return [x - 34, y + h / 2 - 8, 16, 16]; } // the ball, left of its provider
       return boxes[id] || [0, 0, 0, 0];
     };
+  }
+
+  // Moves a box (and its interface ball and label, to its left) down until no other line crosses it or another box.
+  function clearOfLines(id, boxes, edges) {
+    const centre = (key) => { const [x, y, w, h] = boxes[key]; return [x + w / 2, y + h / 2]; };
+    const lines = edges.filter((d) => d.source !== id && d.target !== id && boxes[d.source] && boxes[d.target]).map((d) => [centre(d.source), centre(d.target)]);
+    const others = Object.entries(boxes).filter(([key]) => key !== id && !key.startsWith("pkg:")).map(([, b]) => b);
+    const b = boxes[id], hits = ([x, y, w, h]) => others.some(([ox, oy, ow, oh]) => ox < x + w && x < ox + ow && oy < y + h && y < oy + oh)
+      || lines.some(([[x1, y1], [x2, y2]]) => Array.from({ length: 41 }, (_, i) => [x1 + (x2 - x1) * i / 40, y1 + (y2 - y1) * i / 40])
+        .some(([px, py]) => px > x && px < x + w && py > y && py < y + h));
+    for (let tries = 0; tries < 60 && hits([b[0] - 120, b[1] - 16, b[2] + 150, b[3] + 22]); tries++) b[1] += 18;
   }
 
   async function drawComponents() {
@@ -1814,6 +1893,7 @@
       li.append(b);
       list.append(li);
     }
+    for (const f of hooks.screens) f({ list, names });
   }
 
   function addField(name, at) {
@@ -1846,7 +1926,7 @@
     const grip = el("span", "⠿", { class: "grip", "aria-hidden": "true" });
     const name = input(f.label, `Label for ${f.attribute}`, (v) => { f.label = v; changed(`relabel ${f.attribute}`); });
     name.placeholder = f.attribute;
-    const preview = el("span", a ? (a.type === "choice" ? `one of ${a.choices.join(", ")}` : a.type) + (a.required ? " · required" : "") : "not in the record", { class: "muted small" });
+    const preview = el("span", a ? (a.type === "choice" ? `one of ${a.choices.join(", ")}` : a.type) + (a.required ? " · required" : "") : "not in the record", { class: "muted small field-meta" });
     const up = el("button", "↑", { type: "button", class: "quiet", "aria-label": `Move ${f.attribute} up` });
     up.disabled = i === 0;
     up.addEventListener("click", () => moveField(i, i - 1));
@@ -1916,6 +1996,7 @@
     button.placeholder = useCase === null ? "Create" : useCase;
     button.classList.add("screen-button");
     card.append(list, button);
+    for (const f of hooks.screens) f({ card, useCase });
   }
 
   function renderPalette() {
@@ -1945,7 +2026,21 @@
     link.href = URL.createObjectURL(new Blob([JSON.stringify(screens, null, 2) + "\n"], { type: "application/json" }));
   }
 
-  async function build() {
+  // The running app opens acting as `actor` when one is given (ADR-0215): the generated page reads #actor=<id>.
+  function showRun(url, actor) {
+    const at = url + (actor ? "#actor=" + encodeURIComponent(actor) : "");
+    $("run").hidden = false;
+    $("run-frame").src = at;
+    $("run-open").href = at;
+  }
+
+  // Run the app as one fixture actor: the last build when it is of the model and screens on show, else a new one.
+  async function runAs(actor) {
+    if (lastBuild && lastBuild.url && lastBuild.key === viewKey() && lastBuild.conformance.status === "PASS") showRun(lastBuild.url, actor);
+    else await build(actor);
+  }
+
+  async function build(actor) {
     const button = $("build"), score = $("score");
     button.disabled = true;
     score.hidden = false;
@@ -1963,11 +2058,7 @@
       score.className = "score " + (pass ? "ok" : "bad");
       score.textContent = pass ? `✓ ${result.cases}/${result.cases} cases match the kernel` : `✗ Conformance ${result.conformance.status}: not started`;
       score.title = `Model ${result.model.slice(0, 12)} · ${result.files} files · kernel source review: ${result.kernel_source_review}`;
-      if (result.url) {
-        $("run").hidden = false;
-        $("run-frame").src = result.url;
-        $("run-open").href = result.url;
-      }
+      if (result.url) showRun(result.url, typeof actor === "string" ? actor : "");
     } catch (error) {
       score.className = "score bad";
       score.textContent = error.code === "MODEL_CHANGED"
@@ -2018,7 +2109,7 @@
   }
 
   function step(entry) {
-    const parts = [entry.actor, entry.outcome === "CREATED" ? `created ${entry.record}` : `${entry.action} on ${entry.record}`];
+    const kind = roleKind(entry.role), parts = [entry.actor + (kind === "human" ? "" : ` (${ACTOR_KINDS[kind]})`), entry.outcome === "CREATED" ? `created ${entry.record}` : `${entry.action} on ${entry.record}`];
     if (entry.outcome === "COMMITTED") parts.push(`→ ${entry.to}`);
     if (entry.outcome === "REFUSED") parts.push(`refused: ${entry.code}`);
     return parts.join(" ");
@@ -2031,6 +2122,7 @@
       el("strong", String(result.records)), document.createTextNode(" records: "), el("strong", String(result.committed)),
       document.createTextNode(" went through, "), el("strong", String(result.refused)), document.createTextNode(" refused by the kernel."));
     $("sim-codes").replaceChildren(...Object.entries(result.codes).map(([code, n]) => el("span", `${code} ${n}`, { class: "chip" })));
+    showKinds(result.by_kind || {});
     $("sim-findings").replaceChildren(...(result.findings.length ? result.findings.map((f) => {
       const li = el("li", undefined, { class: f.severity }), b = el("button", f.text, { type: "button" });
       b.addEventListener("click", () => select(f.element, true));
@@ -2045,6 +2137,21 @@
     $("sim-limits").textContent = `Seed ${result.seed}, ${result.steps} steps. ` + result.limits.join(" ");
     paint(result);
     document.dispatchEvent(new CustomEvent("playide:simulated", { detail: result }));
+  }
+
+  // Who acted, by kind of actor (ADR-0210): what the AI agents, timers and external systems tried and what the kernel
+  // said, beside the people. Shown only when the system has an actor that is not a person.
+  function showKinds(byKind) {
+    const kinds = Object.keys(byKind), box = $("sim-kinds");
+    box.hidden = !kinds.some((k) => k !== "human");
+    box.replaceChildren(...(box.hidden ? [] : kinds.map((kind) => {
+      const k = byKind[kind], row = el("li", undefined, { class: "kind-" + kind });
+      const codes = Object.entries(k.codes).slice(0, 2).map(([code, n]) => `${code} ${n}`).join(", ");
+      row.title = Object.entries(k.codes).map(([code, n]) => `${code} ${n}`).join(", ");
+      row.append(el("strong", ACTOR_GROUPS[kind]), el("span", ` (${k.roles.join(", ")}) `, { class: "muted" }),
+        document.createTextNode(`${k.attempts} tries · ${k.committed} went through · ${k.refused} refused` + (codes ? `: ${codes}` : "")));
+      return row;
+    })));
   }
 
   function replay() {
@@ -2303,6 +2410,7 @@
     $("model-name").textContent = status.pack.name + (caseId ? " · change case" : "");
     packInfo = status.pack;
     data = savedData = (await api("/api/play/data")).data;
+    roleKinds = Object.fromEntries((await api("/api/play/roles")).roles.map((r) => [r.id, r.kind]));
     await loadScreens(null);
     outline();
     draw(model);
@@ -2319,7 +2427,7 @@
     $("simulate").addEventListener("click", simulate);
     $("sim-replay").addEventListener("click", replay);
     $("sim-clear").addEventListener("click", clearSim);
-    $("fit").addEventListener("click", fit);
+    $("fit").addEventListener("click", () => fit(true));
     $("tidy").addEventListener("click", tidy);
     $("zoom-in").addEventListener("click", () => current() && current().zoomIn());
     $("zoom-out").addEventListener("click", () => current() && current().zoomOut());
@@ -2370,7 +2478,8 @@
   const changeLook = (status, part) => (window.PlayDiff && shownChange ? window.PlayDiff.look(status, part) : {});
 
   window.PlayIDE = {
-    api, el, hooks, about, viewKey, label, restyle, clearSim, select, showTab, fit, importPlan,
+    api, el, hooks, about, roleKind, kinds: ACTOR_KINDS, viewKey, label, restyle, clearSim, select, showTab, fit, importPlan, runAs, openScreen,
+    screens: () => screens, data: () => data, // the screen designer's screens and the class diagram (play-roles.js reads them)
     graph: () => graph, tab: () => tab, model: () => model, selected: () => selected, pack: () => packInfo, base: () => baseModel,
     direction: () => direction || "LR", // the state machine's layout, which the Changes view follows
     planned: () => (plan && plan.result && plan.result.legal ? accepted() : null), // the change the Changes view draws (ADR-0176)
@@ -2388,7 +2497,7 @@
     // What the Changes view says about the change: who made each accepted step, and the ripple for exactly these steps.
     steps: () => (plan && plan.result && plan.result.legal ? plan.steps.filter((_, i) => plan.accepted[i]).map((x) => ({ author: x.author, transaction: x.transaction })) : []),
     ripple: () => (ripple && !ripple.error && ripple.key === rippleKey() ? ripple : null), diagramNames: RIPPLE,
-    setChanges, diagram: (key) => ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: componentGraph, sequences: hooks.sequenceGraph && hooks.sequenceGraph() })[key],
+    setChanges, diagram: (key) => ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: (hooks.componentGraph && hooks.componentGraph()) || componentGraph, sequences: hooks.sequenceGraph && hooks.sequenceGraph() })[key],
     // Undo, redo and the edited document (ADR-0198): document() is what a save writes; restore(doc, label) opens one as
     // an undoable edit, checked by the server like any other.
     undo, redo, document: documentNow, history: () => ({ at: edits.at, labels: edits.stack.map((e) => e.label) }),

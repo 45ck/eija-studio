@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/ripple.py#ripple
   title: application/ripple.py
   hash_method: ast-v2
-  sha256: bdf6dc9221a79f01a9bc1c6672dceffa3a6946cee75f5b521c0b3a34b90345cc
-notes_baseline: 0b9b58643451b072ff6b73362a52f602df7189288044fb8bbde6ed0964b2a193
+  sha256: c0d13437eaa5d8a220c8e9991a64ca6ef691dc225cc64163235f11018dcf6b86
+notes_baseline: 560e0e3aea6bb39c4b3a3504994a85309d8b4354bf5a188abcfaf8170e3c6eba
 ---
 
 # application.ripple.ripple
@@ -25,7 +25,7 @@ notes_baseline: 0b9b58643451b072ff6b73362a52f602df7189288044fb8bbde6ed0964b2a193
 |---|---|
 | Kind | function |
 | Module | [`application/ripple`](/modules/application/ripple.md) |
-| Signature | `def ripple(base: Workflow, candidate: Workflow, data: DataModel \| None, screens: tuple[Screens, Screens], builds: tuple[Build, Build], components: Iterable[dict[str, Any]], sequences: dict[str, Any] \| None=None, attributes: Iterable[str]=()) -> dict[str, Any]` |
+| Signature | `def ripple(base: Workflow, candidate: Workflow, data: DataModel \| None, screens: tuple[Screens, Screens], builds: tuple[Build, Build], components: Iterable[dict[str, Any]], sequences: dict[str, Any] \| None=None, attributes: Iterable[str]=(), system: tuple[dict[str, Any], dict[str, Any]] \| None=None) -> dict[str, Any]` |
 | Code | `repo://src/eija_studio/application/ripple.py#ripple` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
@@ -35,7 +35,8 @@ notes_baseline: 0b9b58643451b072ff6b73362a52f602df7189288044fb8bbde6ed0964b2a193
 Every diagram's effects of going from `base` to `candidate`. `screens` and `builds` are each (before, after);
 `components` are the after build's components (each with its `files`), naming whose files changed; `sequences` is
 `application.sequences.check_sequences` of the scenarios on `candidate` against `base`; `attributes` are the
-class diagram's attribute changes in words (`data_steps.data_changes`).
+class diagram's attribute changes in words (`data_steps.data_changes`); `system` is the landscape of the workflows
+this one forms a system with (`application.landscape`), before and after, or None when it has none.
 ~~~
 <!-- okf:generated:end facts -->
 

@@ -129,15 +129,39 @@ def _edit_steps(model: Workflow, wanted: list[tuple[Edge, str, str]], taken: set
     return steps
 
 
-def _steps(model: Workflow, parsed: Parsed, wanted: list[tuple[Edge, str, str]], named: set[str]) -> list[dict[str, Any]]:
+def _partial(parsed: Parsed, wanted: list[tuple[Edge, str, str]]) -> int:
+    """How many transitions or composite states of the file's state machine were not read."""
+    return len(parsed.edges) - len(wanted) + sum(1 for s in parsed.skipped if s["element"].startswith("composite state"))
+
+
+def _removals(model: Workflow, parsed: Parsed, wanted: list[tuple[Edge, str, str]], named: set[str],
+              report: ImportReport) -> list[dict[str, Any]]:
+    """What the file no longer has, removed only when its whole state machine was read (issue #165).
+
+    A transition the file renamed to an undeclared action, or drew in a way PlayIDE cannot read, is missing from what
+    was read; removing it would offer a plan that breaks the model. So a partial read removes nothing and says so."""
+    removals = [({"kind": "remove_transition", "transition": t.id}, f"transition {t.action}")
+                for t in model.transitions if t.action not in named]
+    removals += [({"kind": "remove_state", "state": s}, f"state {s}") for s in model.states if s not in (parsed.states or [])]
+    missed = _partial(parsed, wanted)
+    if not missed:
+        return [step for step, _ in removals]
+    why = (f"kept: {missed} part{'s' if missed > 1 else ''} of the file's state machine could not be read, so the import "
+           "removes nothing. Fix the file and import it again, or remove it on the diagram")
+    for _, element in removals:
+        report.add("unmapped", "state machine", f"removing {element}", why)
+    return []
+
+
+def _steps(model: Workflow, parsed: Parsed, wanted: list[tuple[Edge, str, str]], named: set[str],
+           report: ImportReport) -> list[dict[str, Any]]:
     """The difference as typed edits: add states, set the initial state, add and change transitions, then remove."""
     states = parsed.states or []
     steps: list[dict[str, Any]] = [{"kind": "add_state", "state": s} for s in states if s not in model.states]
     if parsed.initial not in (None, model.initial_state):
         steps.append({"kind": "set_initial", "state": parsed.initial})
     steps += _edit_steps(model, wanted, {t.id for t in model.transitions})
-    steps += [{"kind": "remove_transition", "transition": t.id} for t in model.transitions if t.action not in named]
-    return steps + [{"kind": "remove_state", "state": s} for s in model.states if s not in states]
+    return steps + _removals(model, parsed, wanted, named, report)
 
 
 def _apply(pack: Pack, model: Workflow, steps: list[dict[str, Any]],
@@ -201,7 +225,7 @@ def import_state_machine(pack: Pack, model: Workflow, parsed: Parsed, report: Im
         report.add("defaulted", "state machine", "initial state", f"the file marks none; kept {model.initial_state}")
     seen: set[str] = set()
     wanted = _wanted(pack, model, parsed, seen, report)
-    candidate, applied = _apply(pack, model, _steps(model, parsed, wanted, seen), report)
+    candidate, applied = _apply(pack, model, _steps(model, parsed, wanted, seen, report), report)
     _record_states(parsed, report)
     _record_transitions(candidate, wanted, report)
     refused = check_policy(candidate, pack)

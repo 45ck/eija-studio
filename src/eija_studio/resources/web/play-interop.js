@@ -150,7 +150,9 @@
     if (steps.length && !REVIEW) {
       const add = el("button", steps.length > MAX_PLAN ? `Too many edits for one plan (${steps.length} of ${MAX_PLAN})` : "Preview as a plan", { type: "button", class: "primary", id: "uml-plan" });
       add.disabled = steps.length > MAX_PLAN;
-      add.addEventListener("click", async () => { close(); await view().importPlan(steps, `Imported from ${report.filename}`); });
+      const partial = report.status === "PARTIAL";  // issue #165: say the plan is only what was read
+      add.addEventListener("click", async () => { close(); await view().importPlan(steps, `${partial ? "Partly imported" : "Imported"} from ${report.filename}`); });
+      if (partial) box.append(el("p", "Only the parts that were read are in this plan, and it removes nothing while part of the file could not be read.", { class: "muted small", id: "uml-partial" }));
       box.append(add);
       if (steps.length > MAX_PLAN) box.append(el("p", "Import it in parts, or run eija uml import to get the whole candidate model.", { class: "muted small" }));
     }

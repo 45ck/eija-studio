@@ -167,8 +167,9 @@
   }
 
   // ---- Diagram tabs that do not fit ---------------------------------------------------------------------------------
-  // As in VS Code: the strip scrolls (the wheel scrolls it sideways), the chosen tab is scrolled into view, an edge that
-  // hides tabs fades, and a "More tabs" button lists every tab, the hidden ones marked, whenever any is out of view.
+  // As in VS Code: the strip scrolls (the wheel scrolls it sideways), the chosen tab is scrolled into view, and a "More
+  // tabs" button lists every tab, the hidden ones marked, whenever any is out of view. A tab is shown whole or not at
+  // all: one the edge would cut leaves a gap, since "Use" for "Use cases" reads as another tab.
   function tabOverflow() {
     const strip = document.querySelector(".stage-tools .tabs");
     if (!strip) return;
@@ -186,8 +187,10 @@
     const update = () => {
       const over = strip.scrollWidth > strip.clientWidth + 1;
       more.hidden = !over;
-      strip.classList.toggle("fade-start", over && strip.scrollLeft > 1);
-      strip.classList.toggle("fade-end", over && strip.scrollLeft + strip.clientWidth < strip.scrollWidth - 1);
+      for (const t of tabs()) {
+        const left = t.offsetLeft - strip.scrollLeft, right = left + t.offsetWidth;
+        t.classList.toggle("cut", over && right > 1 && left < strip.clientWidth - 1 && (left < -1 || right > strip.clientWidth + 1));
+      }
       if (!over) close();
     };
     const close = () => { menu.hidden = true; more.setAttribute("aria-expanded", "false"); };

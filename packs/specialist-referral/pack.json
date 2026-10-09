@@ -1,0 +1,748 @@
+{
+  "schema_version": "eija.pack.v1",
+  "pack": {
+    "id": "specialist-referral",
+    "name": "Specialist referral",
+    "version": "1.0.0",
+    "description": "Healthcare: a GP refers a patient to a specialist clinic. A triage nurse on the clinic's rota triages it, a scheduler books it, the specialist sees the patient and discharges them back to the GP with a letter. Three ways to end besides discharge: declined, withdrawn by the patient, or rebooked after a missed appointment."
+  },
+  "model": {
+    "schema_version": "eija.workflow.v1",
+    "id": "specialist-referral",
+    "initial_state": "Drafted",
+    "states": [
+      "Drafted",
+      "Submitted",
+      "Vetted",
+      "Booked",
+      "Seen",
+      "Discharged",
+      "Declined",
+      "Withdrawn"
+    ],
+    "transitions": [
+      {
+        "id": "TR-SUBMIT",
+        "action": "Submit",
+        "from_state": "Drafted",
+        "to_state": "Submitted",
+        "role": "GP",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:ReferralSubmitted"
+        ],
+        "forbidden_effects": [
+          "RecordSharedWithoutConsent",
+          "ResultEmailedUnencrypted"
+        ]
+      },
+      {
+        "id": "TR-TRIAGE",
+        "action": "VetReferral",
+        "from_state": "Submitted",
+        "to_state": "Vetted",
+        "role": "TriageNurse",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding",
+          "actor_assigned"
+        ],
+        "required_effects": [
+          "Audit:ReferralTriaged"
+        ],
+        "forbidden_effects": [
+          "RecordSharedWithoutConsent",
+          "ResultEmailedUnencrypted"
+        ]
+      },
+      {
+        "id": "TR-DECLINE",
+        "action": "Decline",
+        "from_state": "Submitted",
+        "to_state": "Declined",
+        "role": "Specialist",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding",
+          "actor_assigned"
+        ],
+        "required_effects": [
+          "Audit:ReferralDeclined",
+          "Notification:GpToldDeclined"
+        ],
+        "forbidden_effects": [
+          "RecordSharedWithoutConsent",
+          "ResultEmailedUnencrypted"
+        ]
+      },
+      {
+        "id": "TR-WITHDRAW",
+        "action": "Withdraw",
+        "from_state": "Submitted",
+        "to_state": "Withdrawn",
+        "role": "Patient",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:ReferralWithdrawn"
+        ],
+        "forbidden_effects": [
+          "RecordSharedWithoutConsent",
+          "ResultEmailedUnencrypted"
+        ]
+      },
+      {
+        "id": "TR-BOOK",
+        "action": "Book",
+        "from_state": "Vetted",
+        "to_state": "Booked",
+        "role": "Scheduler",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:AppointmentBooked",
+          "Notification:PatientInvited"
+        ],
+        "forbidden_effects": [
+          "RecordSharedWithoutConsent",
+          "ResultEmailedUnencrypted"
+        ]
+      },
+      {
+        "id": "TR-NOSHOW",
+        "action": "RecordNoShow",
+        "from_state": "Booked",
+        "to_state": "Vetted",
+        "role": "Scheduler",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:NoShowRecorded",
+          "Notification:RebookOffered"
+        ],
+        "forbidden_effects": [
+          "RecordSharedWithoutConsent",
+          "ResultEmailedUnencrypted"
+        ]
+      },
+      {
+        "id": "TR-ATTEND",
+        "action": "SeePatient",
+        "from_state": "Booked",
+        "to_state": "Seen",
+        "role": "Specialist",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding",
+          "actor_assigned"
+        ],
+        "required_effects": [
+          "Audit:PatientSeen"
+        ],
+        "forbidden_effects": [
+          "RecordSharedWithoutConsent",
+          "ResultEmailedUnencrypted"
+        ]
+      },
+      {
+        "id": "TR-DISCHARGE",
+        "action": "Discharge",
+        "from_state": "Seen",
+        "to_state": "Discharged",
+        "role": "Specialist",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding",
+          "actor_assigned"
+        ],
+        "required_effects": [
+          "Audit:PatientDischarged",
+          "Notification:DischargeLetterSent"
+        ],
+        "forbidden_effects": [
+          "RecordSharedWithoutConsent",
+          "ResultEmailedUnencrypted"
+        ]
+      }
+    ]
+  },
+  "roles": [
+    {
+      "id": "GP",
+      "description": "Refers the patient and receives the discharge letter."
+    },
+    {
+      "id": "TriageNurse",
+      "description": "Triages referrals for a clinic; must be on that clinic's rota."
+    },
+    {
+      "id": "Specialist",
+      "description": "Declines, sees and discharges; must be assigned to the clinic."
+    },
+    {
+      "id": "Scheduler",
+      "description": "Books appointments and records missed ones; makes no clinical decision."
+    },
+    {
+      "id": "Patient",
+      "description": "May withdraw a referral before it is triaged."
+    }
+  ],
+  "actions": [
+    {
+      "id": "Submit",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:ReferralSubmitted"
+      ]
+    },
+    {
+      "id": "VetReferral",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding",
+        "actor_assigned"
+      ],
+      "required_effects": [
+        "Audit:ReferralTriaged"
+      ]
+    },
+    {
+      "id": "Decline",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding",
+        "actor_assigned"
+      ],
+      "required_effects": [
+        "Audit:ReferralDeclined",
+        "Notification:GpToldDeclined"
+      ]
+    },
+    {
+      "id": "Withdraw",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:ReferralWithdrawn"
+      ]
+    },
+    {
+      "id": "Book",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:AppointmentBooked",
+        "Notification:PatientInvited"
+      ]
+    },
+    {
+      "id": "RecordNoShow",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:NoShowRecorded",
+        "Notification:RebookOffered"
+      ]
+    },
+    {
+      "id": "SeePatient",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding",
+        "actor_assigned"
+      ],
+      "required_effects": [
+        "Audit:PatientSeen"
+      ]
+    },
+    {
+      "id": "Discharge",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding",
+        "actor_assigned"
+      ],
+      "required_effects": [
+        "Audit:PatientDischarged",
+        "Notification:DischargeLetterSent"
+      ]
+    },
+    {
+      "id": "GiveAdvice",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding",
+        "actor_assigned"
+      ],
+      "required_effects": [
+        "Audit:AdviceGiven",
+        "Notification:AdviceSentToGp"
+      ]
+    }
+  ],
+  "effects": {
+    "catalog": [
+      {
+        "id": "Audit:ReferralSubmitted",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:ReferralTriaged",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:ReferralDeclined",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:GpToldDeclined",
+        "kind": "notification",
+        "recipient": "gp"
+      },
+      {
+        "id": "Audit:ReferralWithdrawn",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:AppointmentBooked",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:PatientInvited",
+        "kind": "notification",
+        "recipient": "patient"
+      },
+      {
+        "id": "Audit:NoShowRecorded",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:RebookOffered",
+        "kind": "notification",
+        "recipient": "patient"
+      },
+      {
+        "id": "Audit:PatientSeen",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:PatientDischarged",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:DischargeLetterSent",
+        "kind": "notification",
+        "recipient": "gp"
+      },
+      {
+        "id": "Audit:AdviceGiven",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:AdviceSentToGp",
+        "kind": "notification",
+        "recipient": "gp"
+      }
+    ],
+    "forbidden": [
+      "RecordSharedWithoutConsent",
+      "ResultEmailedUnencrypted"
+    ]
+  },
+  "laws": [
+    {
+      "id": "seen-requires-triage",
+      "kind": "path_requires",
+      "code": "REFERRAL_SEEN_WITHOUT_TRIAGE",
+      "description": "Every path to Seen passes through Vetted: no patient is seen on an untriaged referral.",
+      "state": "Seen",
+      "via": "Vetted"
+    },
+    {
+      "id": "booked-only-via-book",
+      "kind": "state_only_via",
+      "code": "PROTECTED_STATE:Booked",
+      "description": "Only booking (or a rebooking) puts a referral in Booked.",
+      "state": "Booked",
+      "actions": [
+        "Book"
+      ]
+    },
+    {
+      "id": "triage-by-nurse",
+      "kind": "only_role_holds",
+      "code": "PROTECTED_AUTHORITY:VetReferral",
+      "description": "Only a triage nurse triages.",
+      "action": "VetReferral",
+      "role": "TriageNurse"
+    },
+    {
+      "id": "triage-needs-rota",
+      "kind": "action_requires_guard",
+      "code": "GUARD_POLICY:VetReferral",
+      "description": "VetReferral needs the nurse to be on the clinic's rota.",
+      "action": "VetReferral",
+      "guards": [
+        "actor_assigned"
+      ]
+    },
+    {
+      "id": "scheduler-never-sees",
+      "kind": "role_never_enters",
+      "code": "PROTECTED_AUTHORITY:Seen",
+      "description": "A scheduler never records a clinical encounter.",
+      "role": "Scheduler",
+      "state": "Seen"
+    },
+    {
+      "id": "patient-never-books",
+      "kind": "role_never_enters",
+      "code": "PROTECTED_AUTHORITY:Booked",
+      "description": "A patient never books themselves into a clinic.",
+      "role": "Patient",
+      "state": "Booked"
+    },
+    {
+      "id": "withdraw-before-triage",
+      "kind": "action_source_in",
+      "code": "PROTECTED_STATE:Withdraw",
+      "description": "A patient withdraws a referral only before it is triaged.",
+      "action": "Withdraw",
+      "states": [
+        "Submitted"
+      ]
+    },
+    {
+      "id": "discharged-final",
+      "kind": "state_final",
+      "code": "FINAL_STATE_LEFT:Discharged",
+      "description": "A discharged referral is closed.",
+      "state": "Discharged"
+    },
+    {
+      "id": "declined-final",
+      "kind": "state_final",
+      "code": "FINAL_STATE_LEFT:Declined",
+      "description": "A declined referral is closed; the GP refers again.",
+      "state": "Declined"
+    },
+    {
+      "id": "withdrawn-final",
+      "kind": "state_final",
+      "code": "FINAL_STATE_LEFT:Withdrawn",
+      "description": "A withdrawn referral is closed.",
+      "state": "Withdrawn"
+    },
+    {
+      "id": "no-forbidden-effects",
+      "kind": "forbidden_effects",
+      "code": "EFFECT_POLICY:forbidden",
+      "description": "No transition shares the record without consent or emails a result unencrypted.",
+      "effects": [
+        "RecordSharedWithoutConsent",
+        "ResultEmailedUnencrypted"
+      ]
+    },
+    {
+      "id": "runtime-evidence",
+      "kind": "requires_evidence",
+      "code": "EVIDENCE_REQUIRED:runtime_matrix",
+      "description": "A change is reviewed with the runtime matrix.",
+      "evidence": "runtime_matrix"
+    }
+  ],
+  "meanings": [
+    {
+      "id": "advice_and_guidance",
+      "label": "Specialists answer with advice instead of an appointment",
+      "supported": true,
+      "consequences": [
+        "A specialist assigned to the clinic may close a triaged referral with written advice to the GP.",
+        "No patient is seen without triage.",
+        "Schedulers and patients gain no clinical authority."
+      ],
+      "transactions": [
+        {
+          "kind": "add_state",
+          "state": "AdviceGiven",
+          "after": "Vetted"
+        },
+        {
+          "kind": "add_transition",
+          "id": "TR-ADVISE",
+          "action": "GiveAdvice",
+          "from_state": "Vetted",
+          "to_state": "AdviceGiven",
+          "role": "Specialist"
+        }
+      ]
+    },
+    {
+      "id": "patient_self_booking",
+      "label": "Patients book their own appointment",
+      "supported": false,
+      "consequences": [
+        "Moves booking to patients; blocked by this pack's law that a patient never books themselves."
+      ],
+      "transactions": [
+        {
+          "kind": "set_role",
+          "transition": "TR-BOOK",
+          "role": "Patient"
+        }
+      ]
+    },
+    {
+      "id": "unsupported",
+      "label": "Outside the modelled scope",
+      "supported": false,
+      "consequences": [
+        "Requires domain and source-level engineering; no automatic application."
+      ]
+    }
+  ],
+  "language": {
+    "terms": [
+      {
+        "id": "referral",
+        "label": "Referral",
+        "definition": "One request from a GP for one patient to be seen by one specialist clinic; the workflow instance.",
+        "binds": [
+          "repo://packs/specialist-referral/pack.json"
+        ],
+        "refs": [
+          "state:Submitted"
+        ]
+      },
+      {
+        "id": "triage",
+        "label": "VetReferral",
+        "definition": "A nurse on the clinic's rota checks the referral is appropriate and sets its urgency.",
+        "binds": [
+          "repo://packs/specialist-referral/pack.json"
+        ],
+        "refs": [
+          "state:Vetted",
+          "law:seen-requires-triage"
+        ]
+      },
+      {
+        "id": "no-show",
+        "label": "Did not attend",
+        "definition": "The patient missed the appointment; the referral goes back to be rebooked.",
+        "binds": [
+          "repo://packs/specialist-referral/pack.json"
+        ],
+        "refs": [
+          "transition:TR-NOSHOW"
+        ]
+      }
+    ]
+  },
+  "fixtures": {
+    "actors": [
+      {
+        "id": "gp-a",
+        "role": "GP",
+        "active": true,
+        "assigned": false
+      },
+      {
+        "id": "nurse-on-rota",
+        "role": "TriageNurse",
+        "active": true,
+        "assigned": true
+      },
+      {
+        "id": "nurse-off-rota",
+        "role": "TriageNurse",
+        "active": true,
+        "assigned": false
+      },
+      {
+        "id": "nurse-revoked",
+        "role": "TriageNurse",
+        "active": false,
+        "assigned": true
+      },
+      {
+        "id": "specialist-clinic",
+        "role": "Specialist",
+        "active": true,
+        "assigned": true
+      },
+      {
+        "id": "specialist-other",
+        "role": "Specialist",
+        "active": true,
+        "assigned": false
+      },
+      {
+        "id": "scheduler",
+        "role": "Scheduler",
+        "active": true,
+        "assigned": false
+      },
+      {
+        "id": "patient-a",
+        "role": "Patient",
+        "active": true,
+        "assigned": false
+      }
+    ],
+    "demo_request": "Let specialists reply with advice and guidance instead of booking an appointment.",
+    "proposals": {
+      "summary": "Deterministic demonstration; no model inference was used.",
+      "rules": [
+        {
+          "all": [],
+          "any": [
+            "advice",
+            "guidance"
+          ],
+          "alternatives": [
+            {
+              "interpretation": "advice_and_guidance",
+              "explanation": "A specialist on the clinic may close a triaged referral with advice to the GP."
+            }
+          ]
+        },
+        {
+          "all": [],
+          "any": [
+            "patient book",
+            "self-book",
+            "self book"
+          ],
+          "alternatives": [
+            {
+              "interpretation": "patient_self_booking",
+              "explanation": "Lets patients book themselves. The pack's laws block this."
+            }
+          ]
+        }
+      ],
+      "fallback": [
+        {
+          "interpretation": "unsupported",
+          "explanation": "This offline fixture only demonstrates advice and guidance."
+        }
+      ],
+      "unknowns": [
+        "Actual clinic policy is unknown.",
+        "Urgency deadlines (such as a two-week wait) are not modelled.",
+        "Reviewer comprehension has not been measured."
+      ]
+    }
+  },
+  "verifiers": [
+    {
+      "kind": "runtime_matrix",
+      "mode": "kernel"
+    },
+    {
+      "kind": "smt_proof",
+      "mode": "generated",
+      "reason": "The generated-law proof runs in the gate (python -m verification.smt.laws); binding its report into the review packet is WBS 1.7."
+    },
+    {
+      "kind": "bounded_model_check",
+      "mode": "generated",
+      "reason": "The BMC law property is the pack's laws judged by evaluate_run; a BMC search over this pack's runtime is not wired yet (WBS 1.7)."
+    },
+    {
+      "kind": "bend_proof",
+      "mode": "not_run",
+      "reason": "Generating Bend laws is deferred (docs/engineering/FUTURE-WORK.md)."
+    },
+    {
+      "kind": "tlc",
+      "mode": "not_run",
+      "reason": "Generating TLA+ laws is deferred (docs/engineering/FUTURE-WORK.md)."
+    }
+  ],
+  "journey": {
+    "questions": [
+      {
+        "id": "triage_authority",
+        "question": "Who may triage a referral?",
+        "expected": "TriageNurse"
+      },
+      {
+        "id": "seen_entry",
+        "question": "Which state must a referral pass through before the patient is seen?",
+        "expected": "Vetted"
+      }
+    ]
+  }
+}

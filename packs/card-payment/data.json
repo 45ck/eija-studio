@@ -1,0 +1,133 @@
+{
+  "schema_version": "eija.data.v1",
+  "id": "card-payment",
+  "record": "Payment",
+  "entities": [
+    {
+      "name": "Payment",
+      "description": "One card payment for one order. It keeps only the last four card digits, never the card number.",
+      "attributes": [
+        {
+          "name": "orderNumber",
+          "type": "text",
+          "required": true,
+          "max_length": 20
+        },
+        {
+          "name": "amount",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "currency",
+          "type": "choice",
+          "required": true,
+          "choices": [
+            "AUD",
+            "EUR",
+            "GBP",
+            "USD"
+          ]
+        },
+        {
+          "name": "cardLast4",
+          "type": "text",
+          "required": true,
+          "max_length": 4
+        },
+        {
+          "name": "refundReason",
+          "type": "choice",
+          "choices": [
+            "Damaged",
+            "NotReceived",
+            "ChangedMind",
+            "Duplicate"
+          ]
+        },
+        {
+          "name": "refundAmount",
+          "type": "number"
+        }
+      ]
+    },
+    {
+      "name": "Order",
+      "attributes": [
+        {
+          "name": "orderNumber",
+          "type": "text",
+          "required": true,
+          "max_length": 20
+        },
+        {
+          "name": "total",
+          "type": "number",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "Merchant",
+      "attributes": [
+        {
+          "name": "accountId",
+          "type": "text",
+          "required": true,
+          "max_length": 30
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "Dispute",
+      "attributes": [
+        {
+          "name": "caseNumber",
+          "type": "text",
+          "required": true,
+          "max_length": 30
+        },
+        {
+          "name": "reasonCode",
+          "type": "text",
+          "required": true,
+          "max_length": 10
+        },
+        {
+          "name": "respondBy",
+          "type": "date",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "associations": [
+    {
+      "source": "Payment",
+      "target": "Order",
+      "role": "order",
+      "source_multiplicity": "0..*",
+      "target_multiplicity": "1"
+    },
+    {
+      "source": "Payment",
+      "target": "Merchant",
+      "role": "merchant",
+      "source_multiplicity": "0..*",
+      "target_multiplicity": "1"
+    },
+    {
+      "source": "Payment",
+      "target": "Dispute",
+      "kind": "composition",
+      "role": "dispute",
+      "source_multiplicity": "1",
+      "target_multiplicity": "0..1"
+    }
+  ]
+}

@@ -1,0 +1,160 @@
+{
+  "schema_version": "eija.data.v1",
+  "id": "specialist-referral",
+  "record": "Referral",
+  "entities": [
+    {
+      "name": "Referral",
+      "description": "One GP's request for one patient to be seen by one clinic.",
+      "attributes": [
+        {
+          "name": "patientNumber",
+          "type": "text",
+          "required": true,
+          "max_length": 10
+        },
+        {
+          "name": "specialty",
+          "type": "choice",
+          "required": true,
+          "choices": [
+            "Cardiology",
+            "Dermatology",
+            "Orthopaedics",
+            "Neurology"
+          ]
+        },
+        {
+          "name": "urgency",
+          "type": "choice",
+          "required": true,
+          "choices": [
+            "Routine",
+            "Urgent",
+            "TwoWeekWait"
+          ]
+        },
+        {
+          "name": "reason",
+          "type": "text",
+          "required": true,
+          "max_length": 2000
+        },
+        {
+          "name": "consentToShare",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "appointmentDate",
+          "type": "date"
+        }
+      ]
+    },
+    {
+      "name": "Patient",
+      "attributes": [
+        {
+          "name": "patientNumber",
+          "type": "text",
+          "required": true,
+          "max_length": 10
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "dateOfBirth",
+          "type": "date",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "Clinic",
+      "attributes": [
+        {
+          "name": "name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "specialty",
+          "type": "text",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "Clinician",
+      "attributes": [
+        {
+          "name": "registration",
+          "type": "text",
+          "required": true,
+          "max_length": 12
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "Appointment",
+      "attributes": [
+        {
+          "name": "start",
+          "type": "date",
+          "required": true
+        },
+        {
+          "name": "room",
+          "type": "text"
+        }
+      ]
+    }
+  ],
+  "associations": [
+    {
+      "source": "Referral",
+      "target": "Patient",
+      "role": "patient",
+      "source_multiplicity": "0..*",
+      "target_multiplicity": "1"
+    },
+    {
+      "source": "Referral",
+      "target": "Clinic",
+      "role": "clinic",
+      "source_multiplicity": "0..*",
+      "target_multiplicity": "1"
+    },
+    {
+      "source": "Referral",
+      "target": "Clinician",
+      "role": "referrer",
+      "source_multiplicity": "0..*",
+      "target_multiplicity": "1"
+    },
+    {
+      "source": "Referral",
+      "target": "Appointment",
+      "kind": "composition",
+      "role": "appointments",
+      "source_multiplicity": "1",
+      "target_multiplicity": "0..*"
+    },
+    {
+      "source": "Clinic",
+      "target": "Clinician",
+      "kind": "aggregation",
+      "role": "staff",
+      "source_multiplicity": "0..*",
+      "target_multiplicity": "1..*"
+    }
+  ]
+}
