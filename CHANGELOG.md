@@ -8,6 +8,10 @@
 - When scenarios fail, a panel above the diagram names each one, the failing step and why, with **Show the step** and **Expect what the model does now**.
 - A system with no scenarios yet (one started from a sketch) gets scenarios drafted from the model, so the tab is never empty. See [ADR-0195](docs/adr/0195-sequence-diagrams-the-kernel-checks.md).
 
+### 9 October 2026: PlayIDE keeps transition labels apart
+
+- The labels of a back-and-forth pair of transitions no longer sit on top of each other (#153): RequestRefund and RejectRefund on Card payment, FailPayout and RetryPayout on Refund desk, RequestInfo and SupplyInfo on Building permit, MissPayment and PayOverdue on SaaS subscription. The layout now leaves room for each label at its real size, centred on its edge, and the label is drawn there instead of halfway along the line, on the state machine and in the Changes view. A state you drag still takes its lines straight again, with their labels halfway along.
+
 ### 9 October 2026: PlayIDE polish, round 9 (agents, timers and systems look the same everywhere)
 
 - An AI agent, a timer or an external system is drawn the same way on the System lens as on the use case diagram: a box marked «agent», «timer» or «system» in the use case diagram's colours. Before, the Components tab's System lens drew every role as a stick figure, so Refund desk's payment gateway looked like a person. A person is still a stick figure.  The System lens takes each actor's kind from every workflow that declares it, and a role that is a person in one workflow and an agent in another is drawn as a box naming both.

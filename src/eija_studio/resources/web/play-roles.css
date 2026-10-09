@@ -37,3 +37,29 @@ label.role-kind select{font:inherit}
 .role-calls{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px;font-size:.8rem}
 .role-calls code{font-size:.78rem;white-space:normal;overflow-wrap:anywhere;background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:1px 6px}
 .role-calls code.body{color:var(--muted)}
+/* The screen flow: every screen as a wireframe, arrows labelled with the state the record is then in. */
+.flow-toggle{margin-left:auto;padding:4px 12px;border-radius:999px;font-size:.84rem}
+.flow-toggle[aria-pressed="true"]{background:var(--state);border-color:var(--state-line);color:var(--state-line);font-weight:600}
+.screen-flow{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 10px;overflow:auto;max-height:420px}
+.screen-flow[hidden]{display:none}
+.screen-flow>p{margin:0 0 6px}
+.flow-canvas{position:relative}
+.flow-canvas>svg{position:absolute;left:0;top:0;overflow:visible}
+.flow-edge{fill:none;stroke:#8a94a8;stroke-width:1.4}
+#flow-arrow path{fill:#8a94a8}
+.flow-state{font-size:11px;fill:var(--muted);text-anchor:middle;paint-order:stroke;stroke:var(--panel);stroke-width:4px}
+.flow-card{position:absolute;display:flex;flex-direction:column;gap:4px;padding:8px 9px;text-align:left;border:1px solid var(--state-line);border-radius:9px;background:#fff;box-shadow:0 1px 3px rgba(27,33,48,.12);font-size:.76rem;cursor:pointer}
+.flow-card:hover{box-shadow:0 2px 8px rgba(49,87,213,.25)}
+.flow-card.faded{opacity:.38;border-color:var(--line)}
+.flow-head{display:flex;flex-direction:column;gap:1px;padding-bottom:4px;border-bottom:1px solid var(--line)}
+.flow-title{font-weight:700;font-size:.84rem;color:var(--ink)}
+.flow-role{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.flow-field{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px;align-items:center}
+.flow-label{color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.flow-ctl{height:17px;border-radius:4px;font-size:.66rem;color:var(--muted);padding:1px 4px;overflow:hidden;white-space:nowrap}
+.flow-ctl.input{border:1px solid #c5ccda;background:#fbfcfe}
+.flow-ctl.input.missing{border-color:var(--bad);background:var(--bad-bg)}
+.flow-ctl.shown{background:var(--busy-bg)}
+.flow-more{color:var(--muted);font-size:.68rem}
+.flow-button{align-self:flex-start;margin-top:3px;padding:2px 9px;border-radius:5px;background:var(--accent);color:var(--accent-ink);font-weight:600;font-size:.72rem}
+.flow-end{position:absolute;display:grid;place-items:center;height:34px;padding:0 12px;white-space:nowrap;border-radius:999px;border:1.5px solid #1b2130;background:var(--panel);font-size:.74rem;font-weight:600}

@@ -42,7 +42,10 @@
     for (const s of ghost.states) g.setNode(s.name, { ...STATE });
     g.setEdge("__initial", ghost.initial.after, {}, "start");
     if (ghost.initial.before !== ghost.initial.after) g.setEdge("__initial", ghost.initial.before, {}, "was-start");
-    for (const t of ghost.transitions) g.setEdge(t.from_state, t.to_state, { width: 130, height: 20 }, t.key);
+    // Each label at its real size, centred on its edge, as on the state machine tab, so a back-and-forth pair's labels
+    // never overlap (#153); mount then draws each label in the room left for it.
+    const measured = ide() && ide().textWidth, size = (t) => (measured ? measured(`${LOOK[t.status].mark}${t.action} [${t.role}]`) + 16 : 130);
+    for (const t of ghost.transitions) g.setEdge(t.from_state, t.to_state, { width: size(t), height: 28, labelpos: "c" }, t.key);
     dagre.layout(g);
     const at = (id) => { const n = g.node(id); return [n.x - n.width / 2, n.y - n.height / 2]; };
     const bends = (t) => g.edge(t.from_state, t.to_state, t.key).points.slice(1, -1);
@@ -85,6 +88,7 @@
         items[t.key] = { status: t.status, touched: t.status !== "same", kind: "transition", data: t, text: `${t.action} [${t.role}]` };
       }
     });
+    if (ide() && ide().liftLabels) ide().liftLabels(graph, (cell) => Boolean(items[cell.id] && items[cell.id].kind === "transition"));
     graph.getTooltipForCell = (cell) => { // a node, not a string: maxGraph puts string tooltips into innerHTML
       const text = tooltip(items[cell && cell.id]);
       return text ? el("div", text, { class: "diff-tip" }) : "";
