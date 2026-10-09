@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### 9 October 2026: agents in sequence diagrams, and an AI ops example
+
+- In the **Sequences** tab, an AI agent, a timer or an external system is drawn as an actor box with «agent», «timer» or «system» (copied exports carry the keyword too). People stay stick figures.
+- A second agent-heavy example pack, **AI ops deploys**: an AI agent opens and patches changes, the CI server reports the build, the person on call signs the deploy off, a deploy window starts the rollout and the health monitor confirms it or rolls it back. The agent can neither sign its own deploy off nor report its own build green.
+- A kind-path law on the initial state now also judges steps back into that state, on the table as on every run (found by review of the first agents change).
+
 ### 9 October 2026: AI agents, timers and external systems in the model
 
 - A role can now be held by a person (the default), an AI agent, a timer or an external system. The use case diagram draws a person as a stick figure and the others as «agent», «timer» and «system» actor boxes ([ADR-0210](docs/adr/0210-actors-that-are-not-people.md)).
