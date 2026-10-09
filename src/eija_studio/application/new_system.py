@@ -91,15 +91,23 @@ def _transition_id(action: str, taken: set[str]) -> str:
     return found
 
 
-def _role_actor(role: str) -> str:
-    return re.sub(r"[^a-z0-9]+", "-", role.lower()).strip("-") or "actor"
+def _role_actor(role: str, taken: set[str]) -> str:
+    """An actor id stem for `role`, unlike every stem in `taken`: roles such as `Agent` and `agent` slug alike."""
+    slug = re.sub(r"[^a-z0-9]+", "-", role.lower()).strip("-") or "actor"
+    found, n = slug, 2
+    while found in taken:
+        found, n = f"{slug}-{n}", n + 1
+    taken.add(found)
+    return found
 
 
 def _fixtures(roles: list[str], states: list[str]) -> dict[str, Any]:
     """One active, assigned user per role, one revoked user of the first role so a simulation meets a refusal, and an
     offline proposer that says this system has no modelled change requests."""
-    actors = [{"id": f"{_role_actor(role)}-1", "role": role, "active": True, "assigned": True} for role in roles]
-    return {"actors": [*actors, {"id": f"{_role_actor(roles[0])}-revoked", "role": roles[0], "active": False, "assigned": True}],
+    taken: set[str] = set()
+    stems = [_role_actor(role, taken) for role in roles]
+    actors = [{"id": f"{stem}-1", "role": role, "active": True, "assigned": True} for stem, role in zip(stems, roles, strict=True)]
+    return {"actors": [*actors, {"id": f"{stems[0]}-revoked", "role": roles[0], "active": False, "assigned": True}],
             "proposals": {"summary": "Offline: this system has no modelled change requests; no model inference was used.",
                           "rules": [], "fallback": [{"interpretation": UNSUPPORTED, "explanation": "This system has no modelled change requests yet."}],
                           "unknowns": []},

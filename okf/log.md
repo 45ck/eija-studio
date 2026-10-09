@@ -1,5 +1,9 @@
 # Update log
 
+## 2026-10-09
+
+* **Your own systems, two fixes**: re-synced `application.new_system.sketch_documents` after roles that slug alike got unique user ids. No Notes were hand-edited and nothing was recorded as verified.
+
 ## 2026-10-08
 
 * **A new system from a UML file**: re-synced ADR-0190 and ADR-0185 and `interfaces.play_systems` (the `uml` start, its `uml` and `filename` fields and `eija new --uml`). No Notes were hand-edited and nothing was recorded as verified.
