@@ -94,6 +94,8 @@
   function renderNew() {
     const list = $("systems-templates");
     sketch = sketch || $("systems-sketch-box"); // kept across renders: it lives inside the list, so clearing the list detaches it
+    // The verdict and Create and open may sit inside the list too, under the chosen option: keep them in the form
+    $("systems-form").append($("systems-check"), $("systems-create").parentElement);
     list.replaceChildren();
     const options = [{ id: "describe", name: "Describe it", description: "Say what the app is for, who does what and what it records. Every model and view is made from it, and the kernel checks it." },
       { id: "blank", name: "Blank, from a sketch", description: "Type the state machine as the diagram labels it; the kernel checks it as you type." },

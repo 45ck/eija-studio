@@ -343,8 +343,37 @@ def _stakeholder_view(scene: Scene, chapter: _Chapters, server: RunningServer) -
     scene.zoom_out()
 
 
+# A test that takes the AI's new Renew, recorded step by step: What's missing asks for one (ADR-0216).
+RENEW_TEST = (("librarian-assigned", "CheckOut"), ("clerk", "MarkOverdue"), ("librarian-assigned", "Renew"))
+
+
+def _test_renew(scene: Scene) -> None:
+    """What's missing says no test takes Renew yet; record one in Tests, each step tried in the kernel."""
+    scene.expect_text("#missing", "No test takes Renew", timeout_ms=60_000)
+    scene.caption("What's missing has one thing left: no test takes the new Renew yet. Record one.")
+    scene.zoom("#missing", scale=1.6)
+    scene.wait(2000)
+    scene.zoom_out()
+    scene.click("#tab-tests")
+    scene.click("#tests-new")
+    scene.type_text("#rec-title", "A late loan is renewed", clear=True)
+    for actor, action in RENEW_TEST:
+        scene.select_option("#rec-actor", actor)
+        scene.select_option("#rec-action", action)
+        scene.click("#rec-step")
+        scene.expect_text("#rec-steps", f"takes {action}", timeout_ms=30_000)
+    scene.caption("Each step is tried in the kernel as you add it: checked out, marked overdue, then renewed.")
+    scene.zoom("#tests-recorder", scale=1.4)
+    scene.wait(2200)
+    scene.zoom_out()
+    scene.click("#rec-keep")
+    scene.expect_text("#tests-summary", "All 8 tests pass", timeout_ms=60_000)
+    scene.expect_text("#missing", "All 6 views ready", timeout_ms=60_000)
+
+
 def _prove_it(scene: Scene, chapter: _Chapters) -> None:
     chapter("Prove it, then play again")
+    _test_renew(scene)
     scene.caption("Build the changed system, run its conformance cases, and send the users through again.")
     scene.click("#build")
     scene.expect_text("#score", "cases match the kernel", timeout_ms=BUILD_TIMEOUT_MS)
@@ -366,7 +395,7 @@ def _prove_it(scene: Scene, chapter: _Chapters) -> None:
     scene.wait(1800)
     scene.zoom_out()
     scene.click("#tab-tests")
-    scene.expect_text("#tests-summary", "All 7 tests pass", timeout_ms=60_000)
+    scene.expect_text("#tests-summary", "All 8 tests pass", timeout_ms=60_000)
     scene.caption("And every scenario test passes again on the changed model.")
     scene.wait(1400)
     scene.click("#tab-states")

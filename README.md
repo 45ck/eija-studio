@@ -2,126 +2,76 @@
   <img src="docs/assets/banner.svg" alt="EIJA Studio: review the meaning of a change, not every generated line. AI proposes, the kernel checks, the local owner decides." width="100%">
 </p>
 
-# EIJA Studio
+# PlayIDE (EIJA Studio)
 
-**Review the meaning of a change, not every generated line.**
+**Design a system in UML, press play, and check every change before you accept it.**
 
-EIJA (Executable Intent and Journey Assurance) is an open-source code/model workbench under development for **UML-literate engineers who build with AI**. Its purpose is to let engineers inspect the concepts, rules and consequences behind an agent's changes, follow those concepts into actual source, and judge evidence without reconstructing every generated line. A deterministic assurance kernel checks supported model edits; the local owner selects meaning and decides. **AI proposes. The kernel checks. The local owner decides.**
-
-## Two outcome goals
-
-1. **A complete, polished IDE experience that makes a world-class WOW demo possible.** Build a coherent, non-linear workbench with an explorer, model editors, source navigation, agent changes, review, evidence, history, keyboard control and clear feedback. Engineers should be able to move freely through the supported workflow, understand what changes and recover safely. Walkthroughs and showcase clips must come from that usable product, not a thin happy-path presentation. The four flagship scenes remain the demonstration roadmap; unfinished capabilities stay labeled as planned.
-2. **A reproducible GitHub POC and POF.** Demonstrate the supported IDE experience end-to-end (**proof of concept**) and let another engineer clone, launch, use it and replay its scoped evidence (**proof of feasibility**). Publish clear setup, supported coverage, actual UX and test results, limitations, license/OSS records and demo artifacts together when that product experience is ready.
-
-**Delivery order:** finish the coherent EIJA self-dogfood IDE, exercise normal use and recovery paths, meet the visual and interaction quality bar, then produce the GitHub package and videos from retained runs. A wizard, attractive shell or isolated passing demonstration does not close this goal. The supported semantics remain explicit; a full IDE experience does not mean a universal solver or unmeasured superiority. Current status is **in integration; the full experience and both outcome goals remain unconfirmed**. The [mission and readiness criteria](docs/engineering/MISSION.md) govern these goals; the [run record](docs/engineering/SELF-DOGFOOD-ACCEPTANCE.md#run-record) supplies execution evidence.
-
-**Build on OSS.** Reuse maintained frameworks, parsers, diagram tooling and verification engines. EIJA adds domain contracts, adapters and generators; record adoption decisions before building a replacement engine. Use one coordinated integration path with a named writer for each file and a visible milestone/evidence ledger. [OSS register](docs/oss/REGISTER.md)
-
-The first acceptance target is **EIJA's own checkout**. External applications come after this self-dogfood flow works. Repository intake, structural extraction, behavior bindings and verified properties are separate coverage levels; accepting a codebase does not imply that EIJA understands or verifies all of it. This is an engineering preview, with no measured claim of superior V&V or reduced human comprehension burden.
+PlayIDE is a local, open-source IDE for engineers who already read UML. You design a system as a state machine, class, use case, sequence, screen, component and deployment diagrams that all come from one model. The model is the program: PlayIDE builds a real web app, API and database from it and checks the app against the model on every case. When you or an AI change the model, you see the change on the diagrams, with what to consider before you accept it: the laws it breaks, the tests it fails, the other views it touches. A deterministic kernel decides what every change means, not the AI.
 
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
-[![Status: local proof of concept](https://img.shields.io/badge/status-local%20proof%20of%20concept-orange.svg)](docs/TECHNICAL_LEAD_REVIEW.md)
+[![Status: working preview](https://img.shields.io/badge/status-working%20preview-orange.svg)](#how-close-is-it)
 [![Hosted CI: none, gates run locally](https://img.shields.io/badge/hosted%20CI-none%20(local%20gates)-lightgrey.svg)](docs/adr/0017-local-quality-gates.md)
 
-[IDE design reference](docs/design/README.md): an interactive ten-surface/state handoff plus generated visual concepts, all explicitly design-only. Prepared examples and concepts are not product execution evidence. Showcase recordings use the real application.
+## See it
 
-## PlayIDE in three minutes
+**Highlights (3:50).** Your change and the AI's change at a glance, what to consider, recording a test the change needs, the proof, the people who use the app, and an AI agent on a refund desk that the laws stop from approving refunds itself.
 
 [![PlayIDE highlights: add a state to a UML state machine and see what to consider before you accept it](docs/demos/assets/playide-showcase/playide-highlights-poster.png)](docs/demos/assets/playide-showcase/playide-highlights.mp4)
 
-PlayIDE is the visual workbench on top of EIJA. You design a system in UML, press play, and review every change to it, your own or an AI's, on the diagrams you already know. Each change comes with what to consider before you accept it: the warnings, whether every law still holds, the other diagrams it changes and the tests it adds. Review the change, not the code. The app is built from the model and checked against it, so it cannot disobey the model.
+**Start from a sentence (4:52).** Describe an app in one box and get every model and view. Then change it by chat and on the diagrams, round after round, with "What's missing" saying what is left.
 
-The highlights also show the people who use the app (see it as a Clerk) and an AI agent on a refund desk that the laws stop from approving refunds itself.
+[![PlayIDE greenfield: describe a coffee shop app and get every UML view of it](docs/demos/assets/playide-showcase/playide-greenfield-poster.png)](docs/demos/assets/playide-showcase/playide-greenfield.mp4)
 
-**The full tour (13:03)** goes further: sequence diagrams, tests, permissions, the accessibility check on the generated screens, the whole system as UML components and a deployment diagram of the running app with its API contract, a review-only view for stakeholders, UML import and export with PlantUML, XMI, Mermaid and draw.io, real-sector templates (a building permit whose laws refuse a dead end), and starting a system of your own.
+**The full tour (13:52).** Everything above plus sequence diagrams, tests, permissions, the accessibility check on the generated screens, the whole system as components and a deployment diagram with its API contract, a review-only view for stakeholders, UML import and export (PlantUML, XMI, Mermaid, draw.io) and real-sector templates.
 
-[![The full PlayIDE tour: a UML deployment diagram of the running app, read from what was built](docs/demos/assets/playide-showcase/playide-showcase-poster.png)](docs/demos/assets/playide-showcase/playide-showcase.mp4)
+[![The full PlayIDE tour: four workflows drawn as one system of UML components, with the class they disagree about marked](docs/demos/assets/playide-showcase/playide-showcase-poster.png)](docs/demos/assets/playide-showcase/playide-showcase.mp4)
 
-Each video is one unedited take of the real `/play` page (Linux/Chromium). The chat's proposer is an offline phrase reader rather than a live model, and the videos say so. Verify, approve and apply are not shown yet; they wait on the owner's source review ([#80](https://github.com/45ck/eija-studio/issues/80)). The tour starts a new system from a short typed sketch; describing an app in a sentence comes in a later take. The [storyboard](docs/demos/PLAYIDE-SHOWCASE-STORYBOARD.md) lists every beat and how to re-record both. See [PlayIDE](docs/playide.md).
+Each video is one unedited take of the real app in Chromium, and every step asserts what the page shows. The chat is an offline phrase reader, not a live model, and the videos say so. The storyboards list every beat and how to re-record: [showcase](docs/demos/PLAYIDE-SHOWCASE-STORYBOARD.md), [greenfield](docs/demos/PLAYIDE-GREENFIELD-STORYBOARD.md).
 
-## Recorded integration preview
+## Try it
 
-**The IDE is on main (8 October):** [PR #78](https://github.com/45ck/eija-studio/pull/78) merged the source-connected IDE from #29 and #76 onto `main`. Run it with `eija serve --pack packs/eija-review-slice --repo . --open` (see [Try the connected IDE](#try-the-connected-ide-preview)). The [IDE walkthrough](docs/demos/2026-10-08-IDE-WALKTHROUGH.md) is a 2:34 real-browser recording of EIJA reviewing a change to its own review journey, with stills, provenance and reproduction steps. It is **PARTIAL**: verification is refused with `SOURCE_REVIEW_REQUIRED` until the owner reviews the changed source ([#80](https://github.com/45ck/eija-studio/issues/80)). The [merge record](docs/engineering/2026-10-08-IDE-ON-MAIN.md) lists what landed and the checks run. Fast passes 22/22 and 2,672 tests pass. Full fails in `hci` and `metrics`, both from two HCI budgets awaiting owner re-derivation ([#79](https://github.com/45ck/eija-studio/issues/79)). Full IDE acceptance, live-provider and human-benefit claims remain open. The checkpoints below are earlier, dated records.
+You need Python 3.11 or later and git. No Node or frontend build.
 
-![EIJA followed into its own captured source](docs/demos/assets/ide-walkthrough-20261008/source-binding.png)
-
-*Frame from the recorded walkthrough on Linux/Chromium 141 ([provenance](docs/demos/assets/ide-walkthrough-20261008/provenance.json)).*
-
-**Published merged IDE checkpoint (3 October):** [`ad9394e1`](https://github.com/45ck/eija-studio/commit/ad9394e1d4ae93259ee43ce8448b60c96a826a40) in [draft PR76](https://github.com/45ck/eija-studio/pull/76) combines explicit offline edit proposals, readable paired model changes, exact captured source, formal-evidence context and runtime refusal → rule → return. Its [checkpoint record](docs/engineering/2026-10-03-MERGED-IDE-CHECKPOINT.md) binds **ten offline browser journeys PASS to the same 114 product files**, plus **495 JavaScript tests PASS**. The committed source matches the tested merge of `efd33fa7` and `d861d454`; these results stay bound to `ad9394e1` as subsequent work continues.
-
-The [checkpoint HCI report](https://github.com/45ck/eija-studio/blob/ad9394e1d4ae93259ee43ce8448b60c96a826a40/docs/hci/REPORT.md) captures **18/18 required opened/pinned work states**, while its unchanged budgets retain **two FAILs** (density 50 > 27; predicted KLM 65.31 > 65 seconds) and **two GAPs** (settled-DOM p95 825 ms; one lost-focus activation). **Fast passes 22/22 sessions; full and release are NOT_RUN on this merge.** The published predecessor `efd33fa7` separately passed a fresh GitHub clone, new Python environment, installed CLI startup and four scoped Windows replays; that earlier proof does not cover `ad9394e1`. The [whole-app design](docs/design/README.md), manual accessibility and hands-on UX acceptance remain the bar before the WOW recording and final POC/POF package.
-
-**Earlier agent candidate-edit checkpoint (3 October):** In [draft PR29](https://github.com/45ck/eija-studio/pull/29), a bounded request such as `Move Verify source to SAVED` now produces an explicitly synthetic, untrusted offline proposal. Review its actual before/after UML, explicitly save the candidate edit, follow the same transition through Model, Changes, Rules and captured source, then drag an endpoint and undo. Source remains read-only; this is not live inference or arbitrary code generation.
-
-The [reproducible browser acceptance](tests/hci/agent_edit_review.md) passed **8/8 checks** in installed Chrome, including refusal and stale-response recovery; **116 backend checks** passed separately. That checkpoint's HCI measurements reported **16 PASS / 2 GAP / 0 FAIL**, with density and tail-latency improvement gaps. The [implementation ledger](docs/design/IMPLEMENTATION-STATUS.md#agent-proposal-to-model-edit) retains the exact subject and scope; repository gates and publication readiness are recorded in PR29. Source review, live-provider usefulness and human value remain open.
-
-**Historical selected-change review checkpoint (3 October):** Changes now shows exact before/after fields above the model comparison; Evidence groups current blockers with keyboard routes. The [source checkpoint](https://github.com/45ck/eija-studio/commit/bdb7a2836e86cda60a511a7c59f550dab97cd040) remains in draft PR29; this docs-only update does not add it to main. The [implementation ledger](docs/design/IMPLEMENTATION-STATUS.md#selected-change-summary-and-evidence-triage) records passing browser/fast checks, retained HCI failures and release's source-review requirement. Full on these new bytes is NOT_RUN. Whole-IDE, human-validation and POC/POF goals remain open.
-
-![Actual selected-change summary above the model comparison](docs/demos/assets/review-comprehension-20261003/ordinary-summary-top-1280.png)
-
-*Actual 1280×800 capture from draft integration **bdb7a28**, not main's shipped UI. Synthetic QA cases; [source-bound provenance](docs/demos/assets/review-comprehension-20261003/provenance.json).*
-
-**Historical navigation checkpoint (3 October):** The [navigation ledger](docs/design/IMPLEMENTATION-STATUS.md#workspace-navigation-and-keyboard-access) retains `72e0f824`, its scoped passes and HCI/metrics/release limits. Those results describe that earlier implementation.
-
-**Previous workspace checkpoint (3 October):** [Prospective edit review](docs/design/2026-10-03-PROSPECTIVE-EDIT-REVIEW.md) shows the working server-derived comparison before a typed model edit, explicit Apply and no-write Close/Escape. [Watch real preview then Close](https://raw.githubusercontent.com/45ck/eija-studio/8633d7d8e950cc407b458382b5b03ec60be35f30/pr/29/prospective-edit-close-20261003.gif) with zero edit POSTs and unchanged revision/hash. Five final browser runs pass within their declared scopes; fast passes 22/22 sessions and JavaScript 288/288. Full fails HCI and aggregate metrics: 32 successful sessions, two failed, one skipped. Release requires source review despite passing tests. Full US06 gesture parity, ten-surface UX and IDE/POC/POF acceptance remain open. Implementation: **ca95f468206fec706f7a274788faf872877ac4a1**; this docs-only update does not add it to main. The [earlier Run/Evidence record](docs/design/2026-10-03-RUN-EVIDENCE-REVIEW.md) retains its original subjects and recording.
-
-**3 October checkpoint:** the [code/model review observations](docs/design/2026-10-03-CODE-REVIEW-VALIDATION.md) and [historical navigation proof](docs/demos/2026-10-03-NAVIGATION-RECOVERY-PROOF.md) record the new review capabilities, exact evidence subjects and remaining acceptance work. The corresponding implementation is pinned at [`1f1b07f64889`](https://github.com/45ck/eija-studio/tree/1f1b07f648890d8e03f81d4269fa479d80a0f46a). This docs-only update does not add that implementation to main or declare the full IDE/POC/POF goals complete.
-
-The [2 October preview and reproduction record](docs/demos/2026-10-02-IDE-PREVIEW.md) shows the working source-connected model IDE from a fresh GitHub checkout: semantic before/after review, captured source, checked model edits, history and recovery. It includes actual screenshots, an unedited browser recording and the exact tested revision. The implementation remains in [draft PR #29](https://github.com/45ck/eija-studio/pull/29); this documentation does not merge that code onto main.
-
-[Historical 2 October model-workbench screenshot](docs/demos/assets/ide-preview-20261002/working-model.png)
-
-Fresh Windows installation, real CLI startup and 20 recorded browser checks passed within the preview's declared scope. Full IDE acceptance remains open: the HCI density budget fails, source review is required, and human comprehension and live-provider usefulness are unmeasured. The linked generated design concepts describe the target; the linked recording shows the actual product.
-
-The [3 October review checkpoint](docs/design/2026-10-03-CODE-REVIEW-VALIDATION.md) adds paired model graphs and immutable local-commit review with exact historical source, changed syntax references and explicit coverage gaps. The [reproducible navigation proof](docs/demos/2026-10-03-NAVIGATION-RECOVERY-PROOF.md) demonstrates two observed failures in the earlier revision and their repaired behavior. The refreshed HCI report retains its density and predicted-effort failures; these increments do not close full IDE acceptance.
-
-**Historical gate snapshot, 29 September 2026 — stale for the current integration work.** These numbers describe an earlier branch state, not the self-dogfood acceptance result: <!-- GATE-STATUS -->2026-09-29, Windows 11, Python 3.12, this branch merged with `main` at `0f51b62`: `nox -t full` succeeded (254 tests passed, 1 skipped because Playwright is not installed; coverage 78.85 %), and the `demos_dry` gate was skipped as `NOT_RUN` for the same reason. The owner-only release fixture check does not pass on `main` (see the quickstart).<!-- /GATE-STATUS --> Reproduce it yourself with `nox -t full`; there is no hosted CI to trust instead of your own run. Hosted CI is unavailable for this repository ([ADR-0017](docs/adr/0017-local-quality-gates.md)).
-
-## Current scope and acceptance
-
-The current integration connects a configured EIJA checkout read-only and indexes supported tracked Python and annotated UI structure. The delivery goal is a coherent IDE around that connection: domain explorer, editable model views, source navigation, repository impact, agent-change review, evidence and history that stay in sync as the engineer moves between them. SVG edits remain server-checked; the agent surface exposes read-only pack context, affordances, edit checks and repository impact. These are **requirements under integration**, not a claim that the full experience has passed. Both [engineering and UX acceptance](docs/engineering/SELF-DOGFOOD-ACCEPTANCE.md) must be demonstrated.
-
-See [self-dogfood acceptance](docs/engineering/SELF-DOGFOOD-ACCEPTANCE.md) for the exact flow, coverage boundaries and [run record](docs/engineering/SELF-DOGFOOD-ACCEPTANCE.md#run-record). The first connection does not rewrite repository source or generate an arbitrary application. `SOURCE_REVIEW_REQUIRED` remains an expected, visible condition until the maintainer reviews the changed source; agents must not restamp it. Live model validation and the engineer study are **NOT_RUN**.
-
-The [product thesis](docs/engineering/PRODUCT-THESIS.md), [current alternatives](docs/research/2026-10-02-current-alternatives.md) and [V&V protocol](docs/research/2026-10-02-vv-protocol.md) explain what is being built and how its value will be tested. The [whole-app design](docs/design/README.md) connects four personas, 15 user stories, ten screen states and explicit HCI criteria to the implementation. Generated concepts set the design target; the [dated browser evidence](docs/engineering/2026-10-02-IDE-SELF-DOGFOOD.md) records actual behavior and remaining gaps.
-
-> **Historical examples below.** The excursion diagrams, v0.2 quickstart and dated `main`/PR gate tables preserve the earlier kernel demonstration. They do not describe current integration readiness. Excursion and library-loan packs remain fixtures for the supported model contract; EIJA itself is the first repository connection target.
-
-## The problem
-
-Agents write code faster than people can read it. A reviewer who is handed a 900-line generated diff has to reconstruct what business rule changed, who now has authority to do what, and what else depends on it, before they can say yes. Under that pressure, a green check and a plausible summary can substitute for understanding. The characteristic failure is not a syntax error; it is a silent change of meaning: an approval step that quietly lost a prerequisite, a role that gained a power.
-
-## Why use it
-
-| You get | How |
-|---|---|
-| **Review the change to the model, not the diff.** | A change is a typed `SemanticTransaction` over a `Workflow`. The rule table, state diagram and journey text are derived from the same executable transitions and checked for consistency within that model; this does not establish complete source fidelity. |
-| **See the ripple.** | A fixed-point impact closure (`domain/impact.py`) lists the rule, runtime, state view, journey, obligation and receipt artefacts a change reaches; the example below prints it. The Studio's visual before/after diff is not on `main` yet. |
-| **Agents cannot approve their own work.** | Provider output is an untrusted proposal. There is no approve or apply port for providers, authority is re-checked at commit time, and selecting a meaning, approving and applying are three separate owner actions. |
-| **Evidence you can recompute.** | A receipt keeps its raw observations, and eligibility is recomputed from them; a green label on a receipt is not trusted. In this proof of concept human understanding is always `UNKNOWN`: an owner acknowledgement is recorded, but it is not a measurement of understanding. |
-| **Local and open.** | Loopback-only server, SQLite, no telemetry, Apache-2.0. Live model calls need explicit flags and per-request consent. |
-
-## The loop
-
-```mermaid
-flowchart LR
-    R[Request in plain language] --> I[Interpretations proposed by AI or offline fixture]
-    I --> S{Owner selects the meaning}
-    S --> T[Typed semantic transaction]
-    T --> V[Generated views: rules, states, journeys, impact]
-    V --> E[Executed evidence: 125-observation runtime matrix]
-    E --> D{Owner decision on the exact revision}
-    D --> A[Apply to the local baseline]
-    S -. unsupported meaning stays blocked .-> X[Rejected, not rewritten]
-    E -. drift or stale receipt .-> V
+```bash
+git clone https://github.com/45ck/eija-studio.git && cd eija-studio
+python3 -m venv .venv && source .venv/bin/activate      # Windows: py -3 -m venv .venv; .\.venv\Scripts\Activate.ps1
+python -m pip install -e ".[dev]"
+eija serve --pack packs/library-loan --open
 ```
 
-The two diamonds and the final apply are the human actions; a provider can take part in none of them. The kernel rejects a candidate that changes protected authority, and it does not silently rewrite an unsupported meaning into a supported one.
+The server prints two private links. Open the PlayIDE one (it ends in `/play#…`; the part after `#` is your session key, so don't share it). Then try **Simulate**, **Build & run**, the diagram tabs, or ask the chat for a change such as `add Renew from Overdue to OnLoan for Librarian`. **Systems › New system** starts your own, from a sentence, a sketch, a UML file or a template. Everything runs on your machine: a loopback server, SQLite, no telemetry, and no network calls unless you turn on a live model provider.
 
-## A visual example, generated from the real model
+The [PlayIDE guide](docs/playide.md) explains every view. [Getting started](docs/getting-started.md) covers the command line, providers and verification.
 
-The excursion workflow before and after the owner selects the `recommend_only` meaning of "Let teachers sign off excursions." Teachers get a *recommend* step; the registrar keeps final approval and rejection.
+## How close is it
+
+Close for a demo, not yet a tool you can ship changes with. Everything in the videos runs on the real app. What is not real yet: the AI, applying a change to the model in force, and the owner's verify and approve step.
+
+| Part | Status |
+|---|---|
+| UML views from one model: state machine, class, use case, sequence, screens, components, deployment | **Works** on the real app |
+| Edit on the diagrams, undo and redo, see your change and the AI's with what to consider | **Works** |
+| Laws proved over every run the kernel allows, tests and sequences run through the kernel | **Works**, for the law kinds the kernel has ([#151](https://github.com/45ck/eija-studio/issues/151) lists missing ones) |
+| Build & run: a web app, API and SQLite database checked against the kernel on every conformance case | **Works**, for the modelled cases and the pack's fixture actors ([how far](docs/build-an-app.md)) |
+| Simulate, see the app as a role, Run as | **Works**, with seeded simulated users, not real people |
+| UML import and export, new systems from templates, sketches or UML files | **Works**, and says what it could not carry |
+| AI chat in plan mode | **Partial**: an offline phrase reader that understands fixed phrasings such as `add Renew from Overdue to OnLoan for Librarian`. No live model is wired up, and a request outside its phrasings is refused or can be read as a different supported change ([#152](https://github.com/45ck/eija-studio/issues/152)) |
+| Describe your app in a sentence | **Partial**: an offline reader with a fixed set of app shapes, not a general model |
+| Accepting a change | **Partial**: plans and edits are previewed, built, simulated and saved as drafts, but never become the model in force ([#89](https://github.com/45ck/eija-studio/issues/89), [#80](https://github.com/45ck/eija-studio/issues/80)) |
+| Class diagram | **Partial**: only the record class is built; other classes and associations are drawn, not built ([#145](https://github.com/45ck/eija-studio/issues/145)) |
+| Several workflows as one system | **Partial**: drawn and checked for disagreements; at run time each keeps its own data and they don't message each other ([#93](https://github.com/45ck/eija-studio/issues/93)) |
+| Verify, approve and apply (the ship step) | **Not built into the demo**: skipped in the videos until the owner's source review ([#80](https://github.com/45ck/eija-studio/issues/80)) |
+| Who may start a record, separation of duties, one action from several states | **Not modelled yet** ([#142](https://github.com/45ck/eija-studio/issues/142), [#149](https://github.com/45ck/eija-studio/issues/149), [#148](https://github.com/45ck/eija-studio/issues/148)) |
+| A live AI provider, a study with real engineers, hosted CI | **Not done**: live calls need the owner's permission for spend; quality gates run locally (`nox -t fast`, `nox -t full`) |
+
+## How it works
+
+A change is a typed transaction over an executable model, not a text diff. The kernel checks it against the model's laws, re-derives every view from it, and refuses what it cannot give a meaning to rather than guessing. AI output is only ever an untrusted proposal: it cannot choose a meaning, approve or apply. **AI proposes. The kernel checks. The owner decides.** [Security and trust](docs/SECURITY_AND_TRUST.md) states the limits, and [Executable UML on the EIJA engine](docs/architecture/executable-uml.md) says which views the kernel runs.
+
+<details><summary>A diagram generated from the real model, checked by a gate</summary>
+
+The excursion workflow before and after the owner selects the `recommend_only` meaning of "Let teachers sign off excursions."
 
 <!-- BEGIN GENERATED: excursion-diff (scripts/gen_readme_diagram.py; do not edit by hand) -->
 **Diff** (`eija render --workflow examples/excursion-candidate.json --view diff --format mermaid`): green is added, amber is changed, a `+` label is a new or changed transition and a `-` label is a transition the candidate no longer has. The first two comment lines carry the semantic hashes of the two workflows the diagram was generated from.
@@ -207,137 +157,25 @@ The kernel's own impact closure, `domain.impact.model_impact(baseline, candidate
 `check_policy(baseline)` -> `[]`. `check_policy(candidate)` -> `[]`. A candidate that lets a Teacher approve is rejected: `check_policy(unsafe)` -> `['PROTECTED_AUTHORITY:Approve']`.
 <!-- END GENERATED: excursion-diff -->
 
-The block above is not hand-drawn: `python scripts/gen_readme_diagram.py --check` (nox session `readme_diagram`) fails if it differs from what `domain.policy` produces today. It shows structure only. It does not show human understanding, and it is not a proof.
+The block above is not hand-drawn: `python scripts/gen_readme_diagram.py --check` (nox session `readme_diagram`) fails if it differs from what `domain.policy` produces today.
 
-## Build an app from the model
+</details>
 
-`eija build` turns a workflow model into an app you can run: a local web page, an API and a SQLite database. The build also writes the kernel's answer for every state, action, actor and version, and fails if the app disagrees with any of them.
-
-```console
-eija build --pack packs/excursion --out myapp
-python myapp/run.py   # http://127.0.0.1:8000, needs eija-studio installed
-```
-
-The app calls EIJA's kernel for every decision. The check is exhaustive only for the modelled cases and the pack's fixture actors. Records carry only a title until entities and fields are modelled. See [Build an app from the model](docs/build-an-app.md) and [ADR-0150](docs/adr/0150-build-apps-from-the-model-with-a-kernel-oracle.md).
-
-## PlayIDE: see the model, build it, run it
-
-`eija serve --pack packs/excursion --open` also prints a PlayIDE link (`/play`). It shows the model as a UML state machine and has a **Build & run** button that builds the app, checks it against the kernel and runs it beside the diagram. The **Class diagram** tab shows the pack's data model in UML, and its record class becomes the app's form. The **Use cases** tab draws the use case diagram, and the **Screens** tab designs each use case's screen against the record class, with a design check as you edit. The **Components** tab is the built app's UML component diagram, read from its generated code. Drag states and transitions from the palette to draw changes of your own, and the checks ring in the header fills as you check them. The **chat** in plan mode proposes a change as typed steps you accept or reject and preview on every diagram before anything is saved. **Simulate** sends seeded simulated users through the kernel and shows on the diagram where they got through and where they were refused. See [PlayIDE](docs/playide.md).
-
-## Try the connected IDE preview
-
-The connected IDE is on `main` since [PR #78](https://github.com/45ck/eija-studio/pull/78) (8 October). From a checkout of `main`, create and activate a Python virtual environment as below, then run:
-
-```console
-python -m pip install -e ".[dev,hci,source-analysis]"
-eija serve --provider offline --pack packs/eija-review-slice --repo . --workspace .eija/self-dogfood --open
-```
-
-Use a fresh `.eija/self-dogfood` workspace for this pack. The explorer connects to the current checkout read-only. Start with **New intent**, inspect the offline proposal, choose a supported meaning, then move between Model, Source, Changes and Evidence. The offline provider is a deterministic fixture, not a live model. Source-review and unrun-conformance limits remain visible.
-
-**Code changes** compares two full local Git commit IDs independently of model cases. Inspect the native Git diff, bounded historical source and supported Python/JavaScript syntax changes; missing extraction and incomplete impact stay explicit. The optional `source-analysis` extra supplies pinned JavaScript parsing. Follow the [actual EIJA navigation-change example and its limits](docs/engineering/IMMUTABLE-CODE-REVIEW.md). This is source inspection, not a claim that a model receipt verifies the compared application.
-
-For an isolated, recorded replay, install Chromium with `python -m playwright install chromium`, then run `python tests/hci/self_dogfood_replay.py --record`. The [replay guide](docs/engineering/SELF-DOGFOOD-BROWSER-REPLAY.md) explains its exact checks, subject manifest and limitations. Local endpoint browser rules still apply.
-
-## Historical 60-second quickstart
-
-> **Historical v0.2 walkthrough.** The commands and excursion interaction below preserve the earlier demonstration. Use the [current acceptance flow](docs/engineering/SELF-DOGFOOD-ACCEPTANCE.md#first-flow-contract) and [agent setup](docs/agents/quickstart.md) for the integration milestone; new interface behavior must be confirmed by the current run record.
-
-Requires Python 3.11 or later and git. No Node or frontend build. Installation downloads Python packages, so the first install is not air-gapped.
-
-macOS or Linux:
-
-```bash
-git clone https://github.com/45ck/eija-studio.git && cd eija-studio
-python3 -m venv .venv && source .venv/bin/activate
-python -m pip install -e '.[dev]'
-eija doctor
-eija serve --open
-```
-
-Windows (PowerShell):
-
-```powershell
-git clone https://github.com/45ck/eija-studio.git; cd eija-studio
-py -3 -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -e ".[dev]"
-eija doctor
-eija serve --open
-```
-
-Open the private launch URL that `eija serve` prints (keep the `#fragment`; it is the session capability, do not share it). Create a case with the default request, generate interpretations with the offline fixture, select **recommendation only**, and preview the candidate under **Try**.
-
-Without a browser:
-
-```bash
-eija compile examples/excursion-candidate.json --out output/compiled   # model, projections, impact
-python -m pytest -q                                                     # 254 passed, 1 skipped on the date above
-```
-
-> **Known state of `main`.** The verification and apply gates check that the running source matches an owner-stamped release fixture. Kernel changes merged after v0.2.0 (for example the Windows durability fix) mean the fixture does not match, so `eija doctor` reports `release_fixture_matches: false` and `eija demo`, `--verify` and the Studio's Verify button return `SOURCE_REVIEW_REQUIRED`. That is by design and only the maintainer can re-stamp the fixture; agents never do. Until then `eija doctor` and `eija compile` **exit with code 2** even though the compile output is written; read `source_review_required` (expected `true` here) and `policy_errors` in `compiled.json` rather than the exit code. Everything else above works. Full detail, provider setup (OpenRouter, Codex) and the verification commands are in [docs/getting-started.md](docs/getting-started.md).
-
-## Use it from your agent
-
-The integration checkout contains CLI and MCP entry points; use the [agent contract](docs/agents/contract.md) and [setup guide](docs/agents/quickstart.md) for the supported interface. The current acceptance work adds read-only pack context, affordances, `edit_check` and `repository_impact`, so an agent can inspect the same model and repository facts as the engineer. The final available tool names and validation results belong to that interface documentation and the current run record.
-
-Agent proposals remain untrusted. No agent may choose the owner's meaning, approve or apply a change, mint evidence, or bypass source review. A successful read or dry-run check is not an owner decision and does not modify connected repository source.
-
-## Historical assurance inventory: 29 September 2026
-
-"What you see matches the code" is a claim to verify for a stated model, source revision and extraction scope. The following table is the historical `main`/PR inventory from 2026-09-29; its branch states and numbers are stale and are not current acceptance evidence. Use the [self-dogfood run record](docs/engineering/SELF-DOGFOOD-ACCEPTANCE.md#run-record) for the integrated result.
-
-| Claim | Mechanism | Status |
-|---|---|---|
-| Views match the model | Rules, state cards and journey text are `projections(model)`; nothing is written by AI or by hand | on `main` |
-| Diagrams match the model | Mermaid, PlantUML and DOT generated from the typed `Workflow`, plus a visual before/after diff ([ADR-0019](docs/adr/0019-diagrams-generated-from-executable-model.md)); the README example above already comes from `domain.policy` | generators in open PR #6; the README example is added by open PR #14 |
-| Receipts are computed, not asserted | `assess_receipt` recomputes claim, subject, observations and coverage from raw data; an HMAC seal gives local integrity, not external certification | on `main` |
-| Authority cannot be replayed or borrowed | Current-authority check before operation replay, CAS versions, audit and outbox in the same transaction; providers have no approve or apply port | on `main` |
-| One-step behaviour of the candidate | 5 actors x states x 5 actions runtime matrix against the real runtime (125 observations). The oracle is same-author | on `main` |
-| Implementation identity | Source must match an owner-stamped fixture before verify or apply | on `main` (currently mismatched; owner re-stamp pending) |
-| Local gates | `nox -t fast`, `-t full`, `-t release` ([ADR-0017](docs/adr/0017-local-quality-gates.md)); linting, typing, architecture, complexity and dependency gates are on `main` (merged PR #3, [gate table](docs/quality/gates.md)); the docs, link and README-drift gates are added by open PR #14 | tests and quality gates on `main`; docs gates in open PR #14 |
-| Machine-checked laws over all action sequences | Bend 2 laws generated from the model ([ADR-0018](docs/adr/0018-formal-vv-portfolio.md)); evidence kind `bend_proof`; the claim is about the generated model, not the Python runtime ([details](docs/formal/bend.md)) | on `main` (merged PR #18); the proof runs in Docker and is `NOT_RUN` without it |
-| Safety invariants over the workflow and commit protocol | TLA+ with TLC, up to declared bounds; `tlc_model_check` | branch `lane/tla` pushed, no PR |
-| Policy soundness across the transaction grammar | Z3 SMT proof; bounded exhaustive runtime search | open PR #11 |
-| Runtime agrees with an independent reference model | Hypothesis stateful tests; `property_test` | branch `lane/property` pushed, no PR |
-| The tests can detect faults | Mutation analysis; `mutation_score` measures detection power, not correctness | planned |
-
-Each technique is a distinct kind of evidence and none may be relabelled as another. A proof about a model is not a proof about the Python runtime; conformance between them is a separate claim. Hashes show integrity, not truth. Read the limits in [Security and trust](docs/SECURITY_AND_TRUST.md).
-
-## How it compares
-
-Specification-driven agents, semantic review interfaces, executable modeling tools and formal checkers already overlap with EIJA. Kiro documents SMT-backed requirements analysis and property-based testing; MPS exposes model edits to coding agents; Stately connects statecharts and tests; CodeRabbit and Qodo address guided review and change impact. See the [dated primary-source comparison](docs/research/2026-10-02-current-alternatives.md) for feature boundaries and preview status.
-
-EIJA's product hypothesis is that an explicit domain model, deterministic source connections and reviewable evidence help UML-literate engineers make more accurate decisions at a useful total cost. Neither novelty nor superiority is established by the presence of those features. The [V&V protocol](docs/research/2026-10-02-vv-protocol.md) separates software verification, model fidelity and observed engineer benefit.
-
-## Built on open source
-
-EIJA adopts mature open source and writes only EIJA-specific generators, adapters and glue ([ADR-0016](docs/adr/0016-oss-first-adapters-not-engines.md)): FastAPI, Uvicorn, Pydantic, httpx, SQLite, pytest, nox and MADR today, MkDocs Material for the docs site, and Mermaid, PlantUML, Graphviz, Bend, TLA+, Z3, Hypothesis and others as the lanes land. Every tool adopted and every custom module is in the [OSS register](docs/oss/REGISTER.md), with the alternatives checked and the replacement path.
-
-## Architecture decisions
-
-Decisions follow [MADR](https://adr.github.io/madr/) and are never rewritten, only superseded. The index is generated from the ADR files (`python -m quality.tools.adr_index --write`), so it is the one place that lists every record and its status; it also holds the number blocks reserved for each lane: [docs/adr/README.md](docs/adr/README.md). Start with [ADR-0000](docs/adr/0000-poc-decision-log.md) (the v0.2 decision log: modular monolith, frozen vocabulary, AI proposal-only, SQLite unit of work, computed evidence, single local owner), [ADR-0016](docs/adr/0016-oss-first-adapters-not-engines.md) (OSS first) and [ADR-0043](docs/adr/0043-readme-truthfulness-and-docs-site.md) (why this README is verifiable).
-
-## Where to go next
+## Learn more
 
 | Purpose | Entry point |
 |---|---|
-| Install, run, provider setup, verification commands | [docs/getting-started.md](docs/getting-started.md) |
-| Current product scope and self-dogfood acceptance | [Product thesis](docs/engineering/PRODUCT-THESIS.md), [acceptance and run record](docs/engineering/SELF-DOGFOOD-ACCEPTANCE.md) |
-| Historical v0.2 engineering review | [docs/TECHNICAL_LEAD_REVIEW.md](docs/TECHNICAL_LEAD_REVIEW.md) |
-| Domain boundaries, ubiquitous language, contracts | [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md), [`contracts/`](contracts/) |
-| Risks and trust assumptions | [docs/SECURITY_AND_TRUST.md](docs/SECURITY_AND_TRUST.md) |
-| Reproduce measured results | [docs/verification/VERIFICATION.md](docs/verification/VERIFICATION.md), [`evidence/`](evidence/) |
-| Operate, back up, upgrade | [docs/OPERATIONS.md](docs/OPERATIONS.md) |
-| Roadmap and lane status | [docs/ROADMAP.md](docs/ROADMAP.md) |
-| Hand off to an agent | [AGENTS.md](AGENTS.md) |
+| Every PlayIDE view and its limits | [docs/playide.md](docs/playide.md) |
+| Install, command line, providers, verification | [docs/getting-started.md](docs/getting-started.md) |
+| Build an app from the model | [docs/build-an-app.md](docs/build-an-app.md) |
+| Agents over MCP | [docs/agents/quickstart.md](docs/agents/quickstart.md), [contract](docs/agents/contract.md) |
+| Architecture and decisions | [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md), [ADR index](docs/adr/README.md) |
+| How it compares | [Current alternatives](docs/research/2026-10-02-current-alternatives.md) |
+| Open source we build on | [OSS register](docs/oss/REGISTER.md) |
+| Earlier checkpoints, the v0.2 quickstart and dated gate results | [README history](docs/README-HISTORY.md) |
 
-Build the docs site locally with `python -m pip install -e ".[docs]"` and `mkdocs serve`. It is not deployed anywhere.
+## Contributing and license
 
-## Contributing, security, community
+Read [CONTRIBUTING.md](CONTRIBUTING.md) and [AGENTS.md](AGENTS.md). Report vulnerabilities as described in [SECURITY.md](SECURITY.md). Participation follows the [Code of Conduct](CODE_OF_CONDUCT.md). Cite with [CITATION.cff](CITATION.cff); changes are in [CHANGELOG.md](CHANGELOG.md).
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md) (lanes, gate tiers, OSS-first, ADRs, evidence honesty). Report vulnerabilities privately as described in [SECURITY.md](SECURITY.md). Participation is governed by the [Code of Conduct](CODE_OF_CONDUCT.md). To cite this software, see [CITATION.cff](CITATION.cff). Changes are recorded in [CHANGELOG.md](CHANGELOG.md).
-
-## License
-
-Apache License 2.0; see [LICENSE](LICENSE) and [NOTICE.md](NOTICE.md). This does not relicense the original research packs, which remain separate archival material.
+Apache License 2.0; see [LICENSE](LICENSE) and [NOTICE.md](NOTICE.md).

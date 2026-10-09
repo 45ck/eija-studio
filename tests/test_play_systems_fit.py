@@ -44,3 +44,30 @@ def test_create_and_open_stays_in_view_with_every_template_listed(size):
             assert page.evaluate("() => { const s = document.getElementById('systems-new-pane'); return s.scrollWidth - s.clientWidth; }") <= 0
         finally:
             chrome.close()
+
+
+@pytest.mark.browser
+@pytest.mark.slow
+@pytest.mark.skipif(os.environ.get("EIJA_BROWSER_TESTS") != "1", reason="NOT_RUN: real-browser check; set EIJA_BROWSER_TESTS=1")
+def test_create_and_open_survives_reopening_after_a_uml_file():
+    """Choosing "From a UML file" moves the verdict and Create and open under it; reopening the dialog must keep them."""
+    api = pytest.importorskip("playwright.sync_api", reason="NOT_RUN: install the hci or demos extra")
+    from demos.lib import ephemeral_eija_server  # noqa: PLC0415 - demos start a real server; only this opt-in test needs it
+
+    with ephemeral_eija_server(pack=ROOT / "packs" / "library-loan") as server, api.sync_playwright() as playwright:
+        chrome = _launch(api, playwright)
+        try:
+            page = chrome.new_page(viewport={"width": 1440, "height": 900})
+            page.goto(f"{server.base_url}/play#{server.token}")
+            page.wait_for_selector("body[data-ready=true]", timeout=60_000)
+            page.click("#system-menu")
+            page.click("#systems-tab-new")
+            page.check("#systems-templates input[value=uml]")
+            page.click("#systems-close")
+            page.click("#system-menu")
+            page.click("#systems-tab-new")
+            page.check("#systems-templates input[value=refund-desk]")
+            page.wait_for_selector("#systems-create:not([disabled])", timeout=30_000)
+            assert page.locator("#systems-form #systems-create").is_visible()
+        finally:
+            chrome.close()
