@@ -281,6 +281,7 @@
   }
 
   function inspectorTool(id, box) {
+    if (!id.startsWith("state:") && !id.startsWith("transition:")) return; // a breakpoint is on a state or a transition, never an actor
     const on = marks.has(id), b = P.el("button", on ? "Remove breakpoint" : "Add breakpoint", { type: "button", class: "quiet", "aria-keyshortcuts": "F9" });
     b.title = id.startsWith("state:") ? "Stop the run when a record enters this state (F9)" : "Stop the run when someone tries this transition (F9)";
     b.addEventListener("click", () => toggle(id));
