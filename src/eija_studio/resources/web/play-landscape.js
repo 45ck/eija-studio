@@ -193,6 +193,7 @@
       if (uses.length) row(dl, "Uses", uses.map((l) => `${l.target} (${l.class})`).join(", "));
       if (used.length) row(dl, "Used by", used.map((l) => `${l.source} (${l.class})`).join(", "));
       box.append(dl);
+      if (w.id === result.focus && window.PlayDeployment) box.append(window.PlayDeployment.contractButton()); // its interface as an API (ADR-0207)
       findings(box, about(id));
     } else if (id.startsWith("class:")) {
       const c = result.classes.find((x) => x.name === id.slice(6));

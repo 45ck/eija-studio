@@ -42,7 +42,8 @@ graph = ["jsonschema==4.26.0", "rfc8785==0.1.4", "networkx==3.5", "numpy==2.5.3"
 dod = []
 smt = ["z3-solver==5.1.0.0"]  # lane smt-bmc: Z3 policy-soundness proof
 okf = ["PyYAML==6.0.3", "markdown-it-py==4.0.0"]
-xuml = ["python-statemachine==3.2.1"]  # ADR-0165: an independent SCXML engine for the differential check; absence gives NOT_RUN
+xuml = ["python-statemachine==3.2.1"]
+interop-api = ["openapi-spec-validator==0.9.0"]  # ADR-0207: the oracle that each built app's API contract is valid OpenAPI 3.1; absence gives NOT_RUN  # ADR-0165: an independent SCXML engine for the differential check; absence gives NOT_RUN
 graph-formal = ["hypothesis==6.168.3", "clingo==5.8.2"]  # both optional: absence gives NOT_RUN in tests/graph/formal, never a pass
 
 [project.scripts]
@@ -259,7 +260,7 @@ known_first_party = ["eija_studio", "quality", "verification", "eijaref", "human
 extend_exclude = ['\.tmp', 'reports', 'docs/weave/research']
 # Only tool-only extras (dev, lint, docs) are dev groups. Feature extras (providers, agents, formal, hci, ...) are optional
 # RUNTIME dependencies that lane code legitimately imports, so listing them here made every lane fail DEP004.
-optional_dependencies_dev_groups = ["dev", "lint", "docs", "testing", "graph-formal"]  # testing and graph-formal (hypothesis) are imported by tests only
+optional_dependencies_dev_groups = ["dev", "lint", "docs", "testing", "graph-formal", "interop-api"]  # testing, graph-formal (hypothesis) and interop-api (openapi-spec-validator) are imported by tests only
 
 [tool.deptry.package_module_name_map]
 # distribution name -> import name, where they differ

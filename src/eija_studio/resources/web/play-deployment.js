@@ -124,6 +124,19 @@
     P.fit();
   }
 
+  // The API contract (ADR-0207): the OpenAPI 3.1 document of the routes the process serves, written by the server from
+  // the model, the pack and the record class. Offered wherever the app's provided interface is drawn.
+  function contractButton() {
+    const button = P.el("button", "Download the API contract (OpenAPI 3.1)", { type: "button", class: "quiet" });
+    button.addEventListener("click", async () => {
+      const doc = await P.api("/api/play/api-contract", P.about());
+      const link = P.el("a", "", { download: `${P.pack().id}.openapi.json`, href: URL.createObjectURL(new Blob([JSON.stringify(doc, null, 2) + "\n"], { type: "application/json" })) });
+      link.click();
+      button.textContent = `Downloaded: ${Object.keys(doc.paths).length} paths, ${doc.components.schemas.Action.enum.length} actions`;
+    });
+    return button;
+  }
+
   function inspect(id, box) {
     const dl = P.el("dl"), row = (t, v) => dl.append(P.el("dt", t), P.el("dd", v));
     const node = report && report.nodes.find((n) => id.startsWith(n.id));
@@ -142,6 +155,7 @@
         if (node.id === "node:process") row("Start", report.start);
       }
       box.append(dl);
+      if (node.id === "node:process" && !artifact) box.append(contractButton());
     } else {
       box.append(P.el("h3", `«device» ${report.device}`), P.el("p", "The built app runs on the computer you build it on. The address is local, so only this computer can reach it.", { class: "muted" }));
     }
@@ -153,7 +167,7 @@
     P = window.PlayIDE;
   }
 
-  window.PlayDeployment = { draw, inspect, graph: () => graph, restyle: () => { if (graph && report && !$("deployment").hidden) draw(); } };
+  window.PlayDeployment = { draw, inspect, contractButton, graph: () => graph, restyle: () => { if (graph && report && !$("deployment").hidden) draw(); } };
   init();
   document.addEventListener("playide:ready", init);
 })();
