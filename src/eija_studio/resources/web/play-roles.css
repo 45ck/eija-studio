@@ -1,0 +1,32 @@
+/* PlayIDE roles (ADR-0215): "See the app as" on the Screens tab, the role's screens, and the actor inspector. */
+/* The lens spans the designer above its columns, at every width the shell's container queries give it. */
+.designer>.role-lens-wrap{grid-area:lens;display:flex;flex-direction:column;gap:8px}
+.designer{grid-template-areas:"lens lens lens" "list screen attrs"}
+@container stage (max-width:880px){.designer{grid-template-areas:"lens lens" "list screen" "list attrs"}}
+@container stage (max-width:600px){.designer{grid-template-areas:"lens" "list" "screen" "attrs"}}
+.role-lens{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.role-lens .lens-label{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-right:4px}
+.lens-role{padding:4px 12px;border-radius:999px;font-size:.84rem}
+.lens-role[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.role-app{display:flex;flex-direction:column;gap:8px;padding:10px 12px;background:var(--panel);border:1px solid var(--line);border-radius:10px}
+.role-app[hidden]{display:none}
+.role-app-head{margin:0;font-size:.88rem}
+.role-flow{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0;list-style:none;counter-reset:screen}
+.role-flow li{display:flex;align-items:center;counter-increment:screen}
+.role-flow li::before{content:counter(screen);display:inline-grid;place-items:center;width:18px;height:18px;margin-right:4px;border-radius:50%;background:var(--state);color:var(--state-line);font-size:.7rem;font-weight:700}
+.role-flow button{padding:4px 10px;font-size:.84rem}
+.role-never{margin:0}
+.run-as-tools{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.run-as-tools button{font-size:.84rem;padding:5px 11px}
+.screen-list li.not-theirs button{opacity:.42}
+.screen-list li.not-theirs button span:first-child{text-decoration:line-through}
+.role-note{margin:0 0 6px;padding:5px 9px;border-radius:7px;font-size:.82rem}
+.role-note.ok{background:var(--ok-bg);color:var(--ok)}
+.role-note.warn{background:#fdf4e3;color:#8a5a00}
+.role-inspect h4{margin:10px 0 4px;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.role-cases,.role-actors{margin:0;padding:0;list-style:none;font-size:.88rem}
+.role-cases li,.role-actors li{padding:2px 0}
+.role-cases button{padding:1px 6px;font-weight:600;color:var(--state-line);border:0;background:transparent}
+.role-actors li.no{color:var(--muted);text-decoration:line-through}
+.role-inspect .inspector-tools{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 6px}
+.access-grid th .role-head{border:0;background:transparent;padding:0;font:inherit;color:var(--state-line);text-transform:inherit;letter-spacing:inherit;cursor:pointer;text-decoration:underline dotted}

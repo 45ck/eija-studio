@@ -17,9 +17,9 @@
   const earned = [];
   let screens = null, screensEdited = false, useCase = null, checkTimer = 0, problems = [], useCaseList = [];
   const base = {}; // each cell's own style and label, so overlays can be cleared
-  const hooks = { redraw: [], inspect: [], laws: [], tab: [], changeSelect: [], edit: [] }; // the run bar (play-run.js) redraws its marks and adds inspector tools; play-laws.js and play-access.js draw their tabs
+  const hooks = { redraw: [], inspect: [], laws: [], tab: [], changeSelect: [], edit: [], screens: [] }; // the run bar (play-run.js) redraws its marks and adds inspector tools; play-laws.js and play-access.js draw their tabs
   // the Changes view (play-diff.js, ADR-0176) closes when another tab is shown and answers current() while open;
-  // edit hears every undoable edit (ADR-0198)
+  // edit hears every undoable edit (ADR-0198); screens hears the screen designer redraw its list and card (play-roles.js)
 
   async function api(path, body) {
     const options = { headers: { Authorization: "Bearer " + token } };
@@ -312,6 +312,11 @@
       inspectComponent(id.slice(10), box);
       return;
     }
+    if (id.startsWith("role:")) { // an actor: play-roles.js says what it may do and runs the app as one (ADR-0215)
+      box.append(el("h3", "Actor " + id.slice(5)));
+      for (const f of hooks.inspect) f(id, box);
+      return;
+    }
     if (id === "usecase:create") {
       box.append(el("h3", "Use case: create a record"), el("p", `Any fixture actor may start a record. It starts in ${model.initial_state}.`, { class: "muted" }));
       box.append(screenLink(null));
@@ -375,10 +380,11 @@
     fill("outline-transitions", model.transitions.map((t) => ["transition:" + t.id, label(t)]));
     fill("outline-classes", data ? data.entities.map((e) => ["class:" + e.name, e.name + (e.name === data.record ? " «record»" : "")]) : []);
     if (!data) $("outline-classes").replaceChildren(el("li", "No data model yet", { class: "muted" }));
-    // A role is not a diagram element; what it may do is the Permissions tab's column, so that is where a role opens.
+    // A role is an actor of the use case diagram: choosing one shows what it may do, its screens and its fixture
+    // actors in the inspector (play-roles.js, ADR-0215), without leaving the diagram on screen.
     $("outline-roles").replaceChildren(...[...new Set(model.transitions.map((t) => t.role))].map((r) => {
-      const button = el("button", r, { type: "button", title: `What ${r} may do, on the Permissions tab` });
-      button.addEventListener("click", () => showTab("access"));
+      const button = el("button", r, { type: "button", "data-id": "role:" + r, "aria-current": "false", title: `What ${r} may do and sees` });
+      button.addEventListener("click", () => select("role:" + r, false));
       const li = el("li");
       li.append(button);
       return li;
@@ -574,6 +580,7 @@
     useCaseGraph.getSelectionModel().addListener(InternalEvent.CHANGE, () => {
       const cell = useCaseGraph.getSelectionCell(), id = cell && cell.id && cell.id.startsWith("uc:") ? cell.id.slice(3) : "";
       if (shownChange) { for (const f of hooks.changeSelect) f(cell ? cell.id : ""); return; } // the Changes view reads its own cells
+      if (cell && cell.id && cell.id.startsWith("role:")) { select(cell.id, false); return; } // an actor (ADR-0215)
       select(id === "create" ? "usecase:create" : id ? "transition:" + id : "", false);
     });
     useCaseGraph.addListener(InternalEvent.DOUBLE_CLICK, (_sender, event) => {
@@ -1811,6 +1818,7 @@
       li.append(b);
       list.append(li);
     }
+    for (const f of hooks.screens) f({ list, names });
   }
 
   function addField(name, at) {
@@ -1913,6 +1921,7 @@
     button.placeholder = useCase === null ? "Create" : useCase;
     button.classList.add("screen-button");
     card.append(list, button);
+    for (const f of hooks.screens) f({ card, useCase });
   }
 
   function renderPalette() {
@@ -1942,7 +1951,21 @@
     link.href = URL.createObjectURL(new Blob([JSON.stringify(screens, null, 2) + "\n"], { type: "application/json" }));
   }
 
-  async function build() {
+  // The running app opens acting as `actor` when one is given (ADR-0215): the generated page reads #actor=<id>.
+  function showRun(url, actor) {
+    const at = url + (actor ? "#actor=" + encodeURIComponent(actor) : "");
+    $("run").hidden = false;
+    $("run-frame").src = at;
+    $("run-open").href = at;
+  }
+
+  // Run the app as one fixture actor: the last build when it is of the model and screens on show, else a new one.
+  async function runAs(actor) {
+    if (lastBuild && lastBuild.url && lastBuild.key === viewKey() && lastBuild.conformance.status === "PASS") showRun(lastBuild.url, actor);
+    else await build(actor);
+  }
+
+  async function build(actor) {
     const button = $("build"), score = $("score");
     button.disabled = true;
     score.hidden = false;
@@ -1960,11 +1983,7 @@
       score.className = "score " + (pass ? "ok" : "bad");
       score.textContent = pass ? `✓ ${result.cases}/${result.cases} cases match the kernel` : `✗ Conformance ${result.conformance.status}: not started`;
       score.title = `Model ${result.model.slice(0, 12)} · ${result.files} files · kernel source review: ${result.kernel_source_review}`;
-      if (result.url) {
-        $("run").hidden = false;
-        $("run-frame").src = result.url;
-        $("run-open").href = result.url;
-      }
+      if (result.url) showRun(result.url, typeof actor === "string" ? actor : "");
     } catch (error) {
       score.className = "score bad";
       score.textContent = error.code === "MODEL_CHANGED"
@@ -2356,7 +2375,8 @@
   const changeLook = (status, part) => (window.PlayDiff && shownChange ? window.PlayDiff.look(status, part) : {});
 
   window.PlayIDE = {
-    api, el, hooks, about, viewKey, label, restyle, clearSim, select, showTab, fit, importPlan,
+    api, el, hooks, about, viewKey, label, restyle, clearSim, select, showTab, fit, importPlan, runAs, openScreen,
+    screens: () => screens, data: () => data, // the screen designer's screens and the class diagram (play-roles.js reads them)
     graph: () => graph, tab: () => tab, model: () => model, selected: () => selected, pack: () => packInfo, base: () => baseModel,
     direction: () => direction || "LR", // the state machine's layout, which the Changes view follows
     planned: () => (plan && plan.result && plan.result.legal ? accepted() : null), // the change the Changes view draws (ADR-0176)

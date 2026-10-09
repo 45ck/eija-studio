@@ -14,6 +14,7 @@
 <link rel="stylesheet" href="/assets/play-systems.css">
 <link rel="stylesheet" href="/assets/play-tests.css">
 <link rel="stylesheet" href="/assets/play-interop.css">
+<link rel="stylesheet" href="/assets/play-roles.css">
 <script src="/assets/vendor/dagre.min.js" defer></script>
 <script src="/assets/vendor/maxgraph.min.js" defer></script>
 <script src="/assets/play-shell.js" defer></script>
@@ -28,6 +29,7 @@
 <script src="/assets/play-sequence.js" defer></script>
 <script src="/assets/play-systems.js" defer></script>
 <script src="/assets/play-interop.js" defer></script>
+<script src="/assets/play-roles.js" defer></script>
 </head>
 <body>
 <header class="bar">
@@ -144,6 +146,10 @@
       <div id="component-canvas" class="canvas" tabindex="0" role="tabpanel" aria-labelledby="tab-components" hidden></div>
       <div id="access-panel" class="access" tabindex="0" role="tabpanel" aria-labelledby="tab-access" hidden></div>
       <div id="screens" class="designer" role="tabpanel" aria-labelledby="tab-screens" hidden>
+        <div class="role-lens-wrap">
+          <div id="role-lens" class="role-lens" role="toolbar" aria-label="See the app as a role"></div>
+          <section id="role-app" class="role-app" aria-label="What this role sees" aria-live="polite" hidden></section>
+        </div>
         <nav class="screen-list" aria-labelledby="screen-list-title"><h3 id="screen-list-title">Use cases</h3><ul id="screen-list"></ul></nav>
         <div class="screen-stage">
           <div id="screen-problems" class="problems" role="status" aria-live="polite"></div>
