@@ -21,6 +21,12 @@
   };
 
   // ---- Lens ------------------------------------------------------------------------------------------------------
+  // The Deployment lens (ADR-0206) is drawn by play-deployment.js; this file switches between the three.
+  const HELP = {
+    system: "The workflows this one forms a system with: they share a class on their class diagrams. Each provides its actions to the roles that hold them; a marked shape is where their class diagrams disagree.",
+    app: "The built app's components, read from its generated files: every line is an import, a route or a file read.",
+    deployment: "Where the built app runs, read from its generated files: the processes, the files deployed on them, the database file, and the routes and connection between them.",
+  };
   function setLens(next) {
     lens = next;
     for (const b of document.querySelectorAll("#component-lens button")) b.setAttribute("aria-pressed", String(b.dataset.lens === lens));
@@ -28,16 +34,16 @@
     $("component-canvas").hidden = lens !== "app";
     $("landscape").hidden = lens !== "system";
     $("landscape-summary").hidden = lens !== "system";
-    $("canvas-help").textContent = lens === "system"
-      ? "The workflows this one forms a system with: they share a class on their class diagrams. Each provides its actions to the roles that hold them; a marked shape is where their class diagrams disagree."
-      : "The built app's components, read from its generated files: every line is an import, a route or a file read.";
+    $("deployment").hidden = lens !== "deployment";
+    $("canvas-help").textContent = HELP[lens];
     if (lens === "system") draw();
+    else if (lens === "deployment" && window.PlayDeployment) window.PlayDeployment.draw();
     else P.fit();
   }
 
   function onTab(which) {
     $("component-bar").hidden = which !== "components";
-    if (which !== "components") { $("landscape").hidden = true; return; }
+    if (which !== "components") { $("landscape").hidden = $("deployment").hidden = true; return; }
     setLens(lens);
   }
 
@@ -209,9 +215,10 @@
     if (P || !window.PlayIDE) return;
     P = window.PlayIDE;
     P.hooks.tab.push(onTab);
-    P.hooks.componentGraph = () => (lens === "system" ? graph : null);
+    P.hooks.componentGraph = () => (lens === "system" ? graph : lens === "deployment" && window.PlayDeployment ? window.PlayDeployment.graph() : null);
     for (const b of document.querySelectorAll("#component-lens button")) b.addEventListener("click", () => setLens(b.dataset.lens));
-    if (new URLSearchParams(location.search).get("lens") === "system") lens = "system";
+    const asked = new URLSearchParams(location.search).get("lens");
+    if (asked === "system" || asked === "deployment") lens = asked;
   }
 
   window.PlayLandscape = { inspect, lens: () => lens, result: () => result, setLens: (next) => setLens(next), focus: select };

@@ -2,6 +2,7 @@
 
 ## 2026-10-09
 
+* **Deployment view**: synced ADR-0206 and the new `application.deployment` module and `app_deployment` symbol (where a built app runs, read from `run.py`, `app/server.py` and the page); `interfaces.play` (`/api/play/components` returns `deployment`) and `interfaces.http` (the `play-deployment.js` asset) refreshed. No Notes were hand-edited and nothing was recorded as verified.
 * **What the class diagram builds**: synced ADR-0205 and the new `application.class_build` module and `class_build` symbol (the built record class, the classes and associations drawn only, and record attributes that stand in for an association); `application.ripple` (`ripple` takes `data_before`), `application.plan` (`class_build` in the preview) and `interfaces.play` (`/api/play/data` returns `build`) refreshed. No Notes were hand-edited and nothing was recorded as verified.
 * **Actor kinds in the system landscape**: re-synced `application.landscape.landscape` after each workflow began reporting its roles' kinds and each actor the kinds its workflows declare. No Notes were hand-edited and nothing was recorded as verified.
 * **Change who holds a role**: synced the new `application.data_steps` symbols `SetRoleKind`, `kind_steps`, `set_kinds` and `ACTOR_WORDS`, re-synced ADR-0210 after its amendment (#156), and refreshed the pages that link `data_steps` and `plan`. No Notes were hand-edited and nothing was recorded as verified.
