@@ -2,6 +2,7 @@
 
 ## 2026-10-09
 
+* **Deployment view**: synced ADR-0206 and the new `application.deployment` module and `app_deployment` symbol (where a built app runs, read from `run.py`, `app/server.py` and the page); `interfaces.play` (`/api/play/components` returns `deployment`) and `interfaces.http` (the `play-deployment.js` asset) refreshed. No Notes were hand-edited and nothing was recorded as verified.
 * **Traffic labels (#184)**: re-synced ADR-0208 after its round 3 amendment (dots fade over transition labels; a clock ring for timers). No Notes were hand-edited and nothing was recorded as verified.
 * **Screen flow**: re-synced ADR-0215 after its screen flow amendment (presentation only). No Notes were hand-edited and nothing was recorded as verified.
 * **Game notes in the toolbar (#179)**: re-synced ADR-0208. No Notes were hand-edited and nothing was recorded as verified.
