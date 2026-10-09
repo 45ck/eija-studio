@@ -2,6 +2,7 @@
 
 ## 2026-10-09
 
+* **What the class diagram builds**: synced ADR-0205 and the new `application.class_build` module and `class_build` symbol (the built record class, the classes and associations drawn only, and record attributes that stand in for an association); `application.ripple` (`ripple` takes `data_before`), `application.plan` (`class_build` in the preview) and `interfaces.play` (`/api/play/data` returns `build`) refreshed. No Notes were hand-edited and nothing was recorded as verified.
 * **The ripple reaches the system**: synced ADR-0204; `application.ripple` (`ripple` takes the system's landscape before and after, `diagrams.system`) and `interfaces.play` (`siblings`, shared by the landscape and ripple routes) refreshed. No Notes were hand-edited and nothing was recorded as verified.
 * **Readable with Simulate open, new actions on the canvas**: re-synced ADR-0174 (fitting keeps labels readable, #139; the transition editor takes a new action or role on your own system) and ADR-0201 (its canvas gap resolved). No Notes were hand-edited and nothing was recorded as verified.
 * **See and run the app as each role**: synced ADR-0215 and `interfaces.http` (`pack_summary` adds `role_notes`); ADR-0154 and ADR-0171 gained the back-link. No Notes were hand-edited and nothing was recorded as verified.

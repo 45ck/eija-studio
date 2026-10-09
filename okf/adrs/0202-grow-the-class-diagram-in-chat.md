@@ -72,4 +72,5 @@ _No curated notes yet._
 * [ADR-0201: Build a new system in chat, round after round](/adrs/0201-build-a-new-system-in-chat-round-after-round.md) - The showcase changes a pack that already exists (Library loan).
 * [ADR-0203: A system landscape of the workflows that share classes](/adrs/0203-system-landscape-of-workflows-that-share-classes.md) - PlayIDE edits one workflow at a time: one state machine moving one record class, with its class diagram, use cases, screens and laws.
 * [ADR-0204: The ripple reaches the other workflows of the system](/adrs/0204-the-ripple-reaches-the-other-workflows-of-the-system.md) - The ripple (ADR-0158) shows what a change does to every diagram of one workflow.
+* [ADR-0205: The class diagram says what is drawn and what is built](/adrs/0205-the-class-diagram-says-what-is-drawn-and-what-is-built.md) - The built app stores records of the record class only (ADR-0150, ADR-0153).
 <!-- okf:generated:end links -->

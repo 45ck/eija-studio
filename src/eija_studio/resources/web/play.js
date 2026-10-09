@@ -280,7 +280,7 @@
   const HINTS = {
     states: "Pick State, Transition or Initial in the palette, then click the diagram (or drag it there). Double-click empty space for a new state, a state to rename it. Changes join the plan for you to preview; nothing is saved.",
     sequences: "The Tests tab's scenarios as UML sequences, each step run through the kernel: a step the model can't do is red with the kernel's reason. Select one to change it; a step in a neg must be refused.",
-    classes: "Select a class to see its attributes and associations.",
+    classes: "Select a class to see its attributes and associations. Only the «record» class is built: its attributes are the app's form. Grey classes and the associations are drawn, not built.",
     usecases: "Select a use case to inspect it. Double-click one to design its screen.",
     screens: "Design each use case's screen. The design check runs as you edit; Build & run uses these screens.",
     components: "The built app's components, read from its generated files: every line is an import, a route or a file read.",
@@ -432,6 +432,11 @@
   }
   const ROW_LOOK = { added: { fontColor: "#17734a", fontStyle: 1 }, changed: { fontColor: "#a35f00", fontStyle: 1 }, removed: { fontColor: "#8a94a6", fontStyle: 8 } };
   const ROW_MARK = { added: "+ ", changed: "~ ", removed: "− " };
+  // What the built app does with the class diagram (#145): the server says which classes and associations are drawn but
+  // not built, and which record attributes stand in for an association. A previewed plan carries its own report.
+  let savedBuild = null;
+  const classBuild = () => (plan && plan.previewing && plan.result.class_build) || (data === savedData ? savedBuild : null);
+  const standsIn = (name) => ((classBuild() || {}).findings || []).filter((f) => f.subject[1] === "attribute:" + name);
   const widthOf = (e) => Math.max(200, e.name.length * 9 + 60, ...rowsOf(e).map(([a]) => attributeLine(a).length * 7 + 40));
 
   function classLayout() {
@@ -477,17 +482,20 @@
     classGraph.setDropEnabled(false);
     classGraph.setPanning(true);
     lean(classGraph);
-    const parent = classGraph.getDefaultParent(), at = classLayout(), cells = {};
+    const parent = classGraph.getDefaultParent(), at = classLayout(), cells = {}, drawnOnly = new Set((classBuild() || {}).drawn_only || []);
     const font = { fontFamily: "system-ui, sans-serif", fontColor: "#1b2130" };
+    const DRAWN_ONLY = { fillColor: "#f4f5f8", strokeColor: "#9aa3b5", fontColor: "#4a5568" }; // drawn, not built
     classGraph.batchUpdate(() => {
       for (const e of data.entities) {
         const [x, y, w, h] = at(e.name), record = e.name === data.record;
         const box = cells[e.name] = classGraph.insertVertex({ parent, id: "class:" + e.name, value: (record ? "«record»\n" : "") + e.name,
           position: [x, y], size: [w, h], style: { ...font, shape: "swimlane", startSize: HEAD, horizontal: true, fontStyle: 1, fontSize: 13,
-            fillColor: record ? "#dfe6ff" : "#eef2ff", swimlaneFillColor: "#ffffff", strokeColor: "#5b74d6", rounded: false, collapsible: false } });
+            fillColor: record ? "#dfe6ff" : "#eef2ff", swimlaneFillColor: "#ffffff", strokeColor: "#5b74d6", rounded: false, collapsible: false,
+            ...(drawnOnly.has(e.name) ? DRAWN_ONLY : {}) } });
         rowsOf(e).forEach(([a, status], i) => classGraph.insertVertex({ parent: box, id: `attr:${e.name}.${a.name}`, value: (ROW_MARK[status] || "") + attributeLine(a),
           position: [8, HEAD + 4 + i * ROW], size: [w - 16, ROW], style: { ...font, fontSize: 12, align: "left", strokeColor: "none",
-            fillColor: "none", movable: false, selectable: false, ...(ROW_LOOK[status] || {}) } }));
+            fillColor: "none", movable: false, selectable: false, ...(status === "same" && standsIn(`${e.name}.${a.name}`).length ? { fontColor: "#a35f00" } : {}),
+            ...(ROW_LOOK[status] || {}) } }));
       }
       const [ex, ey, ew, eh] = at(enumName());
         const literals = cells[enumName()] = classGraph.insertVertex({ parent, id: "enum:" + enumName(), value: `«enumeration»\n${enumName()}`,
@@ -528,6 +536,13 @@
     }
     box.append(dl);
     if (name === data.record) box.append(el("p", "Records of this class move through the state machine. Its attributes are the built app's form, checked on the server.", { class: "muted" }));
+    const build = classBuild();
+    if (!build) return;
+    for (const f of build.findings.filter((x) => x.subject[0] === "class:" + name)) box.insertBefore(el("p", "To consider: " + f.message, { class: "consider" }), dl);
+    if (build.drawn_only.includes(name)) box.append(el("p", `Drawn, not built: the app stores ${data.record} records only, so it never stores or looks up a ${name}.`, { class: "muted" }));
+    const links = build.associations.filter((a) => a.source === name || a.target === name);
+    if (links.length) box.append(el("p", links.map((a) => a.message).join(" "), { class: "muted small" }));
+    box.append(el("p", build.limits.join(" "), { class: "muted small" }));
   }
 
   // Use case diagram: a view of the same workflow. Each role is an actor; each transition's action is a use case
@@ -2404,7 +2419,9 @@
     const status = await api("/api/status");
     $("model-name").textContent = status.pack.name + (caseId ? " · change case" : "");
     packInfo = status.pack;
-    data = savedData = (await api("/api/play/data")).data;
+    const dataDoc = await api("/api/play/data");
+    data = savedData = dataDoc.data;
+    savedBuild = dataDoc.build;
     roleKinds = Object.fromEntries((await api("/api/play/roles")).roles.map((r) => [r.id, r.kind]));
     await loadScreens(null);
     outline();
