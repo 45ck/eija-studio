@@ -63,6 +63,16 @@ The owner tried it and wrote that a dragged state did not "put it in the right p
 * Fitting never shrinks the diagram below a readable size (labels of about 10 pixels and up). When the canvas is short, as with the Simulation panel open, the diagram keeps that size and starts at its top left; only the **Fit** button may go smaller (#139).
 * On a system you started yourself, the transition editor takes a typed action and role, with the declared ones offered as suggestions, and says when the step will declare a new one (ADR-0201). Template and sample models keep the fixed lists.
 
+## Amendment, 9 October 2026: the diagram stays on camera
+
+The demo dry run (round 11) found three places where the state machine left the canvas on camera.
+
+* On first load at 1280 by 800, the foot of the state machine was clipped by 3 pixels. Fitting now measures the diagram again after scaling, because labels do not scale exactly with the view, and takes off what still overflows. While nobody has placed a shape or moved the view, a canvas that settles to a new height where it stands is fitted again.
+* When the plan banner pushed the canvas down, holding the drawing still slid its top (the initial dot) under the banner. Holding still now never moves the top above the canvas margin, and a diagram that was all on screen before the canvas moved is fitted again when it no longer fits.
+* With Run or Simulation open, the diagram keeps its readable size from #139 and starts at its top, so a state near the foot, such as Returned, was off screen. Run and Replay now pan, without zooming, to keep the current step and its transition in view. A refused step keeps the state it was refused in.
+
+The code is in `play.js` (`fit`, `holdStill`, `follow`) and `play-run.js`. `tests/test_play_canvas_on_camera.py` checks all three in a real browser.
+
 ## OSS check (required for any custom module)
 
 | OSS checked | Why adapter/dependency use was insufficient | Replacement or fork path |
