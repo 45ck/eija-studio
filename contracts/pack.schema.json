@@ -716,6 +716,140 @@
       "title": "Meaning",
       "type": "object"
     },
+    "OnlyKindEnters": {
+      "additionalProperties": false,
+      "description": "Every transition entering ``state`` is held by a role of one of ``role_kinds``.",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "code": {
+          "pattern": "^[A-Z][A-Z0-9_]{0,63}(:[A-Za-z0-9_-]{1,64})?$",
+          "title": "Code",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 400,
+          "title": "Description",
+          "type": "string"
+        },
+        "when": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/When"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "role_kinds": {
+          "items": {
+            "enum": [
+              "human",
+              "agent",
+              "timer",
+              "system"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Role Kinds",
+          "type": "array"
+        },
+        "kind": {
+          "const": "only_kind_enters",
+          "title": "Kind",
+          "type": "string"
+        },
+        "state": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "code",
+        "role_kinds",
+        "kind",
+        "state"
+      ],
+      "title": "OnlyKindEnters",
+      "type": "object"
+    },
+    "OnlyKindHolds": {
+      "additionalProperties": false,
+      "description": "Every transition performing ``action`` is held by a role of one of ``role_kinds`` (e.g. only a human approves).",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "code": {
+          "pattern": "^[A-Z][A-Z0-9_]{0,63}(:[A-Za-z0-9_-]{1,64})?$",
+          "title": "Code",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 400,
+          "title": "Description",
+          "type": "string"
+        },
+        "when": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/When"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "role_kinds": {
+          "items": {
+            "enum": [
+              "human",
+              "agent",
+              "timer",
+              "system"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Role Kinds",
+          "type": "array"
+        },
+        "kind": {
+          "const": "only_kind_holds",
+          "title": "Kind",
+          "type": "string"
+        },
+        "action": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "Action",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "code",
+        "role_kinds",
+        "kind",
+        "action"
+      ],
+      "title": "OnlyKindHolds",
+      "type": "object"
+    },
     "OnlyRoleHolds": {
       "additionalProperties": false,
       "description": "Every transition performing ``action`` is held by ``role``.",
@@ -866,6 +1000,73 @@
         "via"
       ],
       "title": "PathRequires",
+      "type": "object"
+    },
+    "PathRequiresKind": {
+      "additionalProperties": false,
+      "description": "Every path from the initial state to ``state`` includes a step by a role of one of ``role_kinds``, the step\nentering ``state`` included: a human in the loop before an agent's work takes effect (a sequence law).",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "code": {
+          "pattern": "^[A-Z][A-Z0-9_]{0,63}(:[A-Za-z0-9_-]{1,64})?$",
+          "title": "Code",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 400,
+          "title": "Description",
+          "type": "string"
+        },
+        "when": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/When"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "role_kinds": {
+          "items": {
+            "enum": [
+              "human",
+              "agent",
+              "timer",
+              "system"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Role Kinds",
+          "type": "array"
+        },
+        "kind": {
+          "const": "path_requires_kind",
+          "title": "Kind",
+          "type": "string"
+        },
+        "state": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "code",
+        "role_kinds",
+        "kind",
+        "state"
+      ],
+      "title": "PathRequiresKind",
       "type": "object"
     },
     "ProposalRule": {
@@ -1173,6 +1374,7 @@
     },
     "Role": {
       "additionalProperties": false,
+      "description": "A role and the kind of actor that holds it (ADR-0210): a person by default, or an AI agent, a timer or an\nexternal system. The kernel authorises every kind alike; laws such as ``only_kind_holds`` tell them apart.",
       "properties": {
         "id": {
           "maxLength": 60,
@@ -1184,6 +1386,17 @@
           "default": "",
           "maxLength": 400,
           "title": "Description",
+          "type": "string"
+        },
+        "kind": {
+          "default": "human",
+          "enum": [
+            "human",
+            "agent",
+            "timer",
+            "system"
+          ],
+          "title": "Kind",
           "type": "string"
         }
       },
@@ -1825,8 +2038,11 @@
             "action_target": "#/$defs/ActionTarget",
             "closed_shape": "#/$defs/ClosedShape",
             "forbidden_effects": "#/$defs/ForbiddenEffects",
+            "only_kind_enters": "#/$defs/OnlyKindEnters",
+            "only_kind_holds": "#/$defs/OnlyKindHolds",
             "only_role_holds": "#/$defs/OnlyRoleHolds",
             "path_requires": "#/$defs/PathRequires",
+            "path_requires_kind": "#/$defs/PathRequiresKind",
             "requires_evidence": "#/$defs/RequiresEvidence",
             "role_never_enters": "#/$defs/RoleNeverEnters",
             "role_never_holds": "#/$defs/RoleNeverHolds",
@@ -1868,6 +2084,15 @@
           },
           {
             "$ref": "#/$defs/PathRequires"
+          },
+          {
+            "$ref": "#/$defs/OnlyKindHolds"
+          },
+          {
+            "$ref": "#/$defs/OnlyKindEnters"
+          },
+          {
+            "$ref": "#/$defs/PathRequiresKind"
           },
           {
             "$ref": "#/$defs/RequiresEvidence"

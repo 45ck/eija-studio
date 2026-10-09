@@ -79,6 +79,8 @@
   async function inspectRole(id, box) {
     if (!id.startsWith("role:")) return;
     const role = id.slice(5), notes = (P.pack() && P.pack().role_notes) || {};
+    const kind = P.roleKind ? P.roleKind(role) : "human"; // a person, an AI agent, a timer or an external system (ADR-0210)
+    if (kind !== "human" && P.kinds) box.append(P.el("p", `«${P.kinds[kind]}»`, { class: "role-kind" }));
     if (notes[role]) box.append(P.el("p", notes[role], { class: "muted" }));
     const body = P.el("div", undefined, { class: "role-inspect", "aria-live": "polite" });
     body.append(P.el("p", "Asking the kernel…", { class: "muted small" }));

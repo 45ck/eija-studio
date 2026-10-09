@@ -17,6 +17,12 @@
   const earned = [];
   let screens = null, screensEdited = false, useCase = null, checkTimer = 0, problems = [], useCaseList = [];
   const base = {}; // each cell's own style and label, so overlays can be cleared
+  // The kind of actor holding each role (ADR-0210). UML draws all four as actors; a person keeps the stick figure, the
+  // others are drawn as an actor classifier with their keyword, as UML allows.
+  let roleKinds = {};
+  const ACTOR_KINDS = { human: "person", agent: "AI agent", timer: "timer", system: "external system" };
+  const ACTOR_GROUPS = { human: "People", agent: "AI agents", timer: "Timers", system: "External systems" };
+  const roleKind = (role) => roleKinds[role] || "human";
   const hooks = { redraw: [], inspect: [], laws: [], tab: [], changeSelect: [], edit: [], screens: [] }; // the run bar (play-run.js) redraws its marks and adds inspector tools; play-laws.js and play-access.js draw their tabs
   // the Changes view (play-diff.js, ADR-0176) closes when another tab is shown and answers current() while open;
   // edit hears every undoable edit (ADR-0198); screens hears the screen designer redraw its list and card (play-roles.js)
@@ -278,7 +284,7 @@
     usecases: "Select a use case to inspect it. Double-click one to design its screen.",
     screens: "Design each use case's screen. The design check runs as you edit; Build & run uses these screens.",
     components: "The built app's components, read from its generated files: every line is an import, a route or a file read.",
-    laws: "The pack's laws: what this model must never do, whatever is drawn. Each is proved over every run the kernel allows, by every kind of actor.",
+    laws: "The pack's laws: what this model must never do, whatever is drawn. Each is proved over every run the kernel allows, by every class of actor (each role, active or not, assigned or not).",
     tests: "The pack's test cases: scenarios of who does what and what must happen, each step run by the kernel on the model shown.",
     access: "Who can do what, from each state. Every cell is tried in the kernel with the pack's fixture actors; a previewed plan's changes are flagged.",
     review: "Review the change shown against the model in force: look at each change, predict what the kernel does, then decide. Nothing is approved from here.",
@@ -541,6 +547,9 @@
     return { cases: [...u.cases].sort((a, b) => rank(a) - rank(b)), actors: u.actors, links: u.links };
   }
 
+  const ACTOR_LOOK = { human: {}, agent: { fill: "#f3edff", stroke: "#6b46c1" }, timer: { fill: "#fff7e6", stroke: "#b7791f" },
+    system: { fill: "#eef2f6", stroke: "#4a5568" } };
+
   function drawUseCases() {
     if (useCaseGraph) return;
     const { Graph, InternalEvent } = maxgraph;
@@ -573,10 +582,14 @@
         const mine = cases.map((t, j) => [t, j]).filter(([t]) => t.role === role);
         const near = mine.length ? mine : cases.map((t, j) => [t, j]).filter(([t]) => t.was_role === role); // an actor left with only a moved line
         const y = near.reduce((sum, [, j]) => sum + rowY(j), 0) / Math.max(1, near.length) - 8;
-        const left = i % 2 === 0;
-        const actor = useCaseGraph.insertVertex({ parent, id: "role:" + role, value: role, position: [left ? 90 : boundary.x + boundary.w + 120, y],
-          size: [36, 64], style: { ...font, shape: "actor", fillColor: "#ffffff", strokeColor: "#1b2130", verticalLabelPosition: "bottom",
-            verticalAlign: "top", fontSize: 13, ...changeLook(actorStatus[role], "actor") } });
+        const left = i % 2 === 0, kind = roleKind(role), look = ACTOR_LOOK[kind];
+        const actor = kind === "human"
+          ? useCaseGraph.insertVertex({ parent, id: "role:" + role, value: role, position: [left ? 90 : boundary.x + boundary.w + 120, y],
+            size: [36, 64], style: { ...font, shape: "actor", fillColor: "#ffffff", strokeColor: "#1b2130", verticalLabelPosition: "bottom",
+              verticalAlign: "top", fontSize: 13, ...changeLook(actorStatus[role], "actor") } })
+          : useCaseGraph.insertVertex({ parent, id: "role:" + role, value: `«${kind}»\n${role}`, position: [left ? 40 : boundary.x + boundary.w + 70, y + 8],
+            size: [136, 48], style: { ...font, shape: "rectangle", rounded: kind === "agent", whiteSpace: "wrap", fillColor: look.fill,
+              strokeColor: look.stroke, fontSize: 12, ...changeLook(actorStatus[role], "actor") } });
         for (const link of shape.links.filter((l) => l.role === role)) {
           useCaseGraph.insertEdge({ parent, source: actor, target: cells[link.case], style: { strokeColor: "#4a5568", endArrow: "none", ...changeLook(link.status, "line") } });
         }
@@ -2039,7 +2052,7 @@
   }
 
   function step(entry) {
-    const parts = [entry.actor, entry.outcome === "CREATED" ? `created ${entry.record}` : `${entry.action} on ${entry.record}`];
+    const kind = roleKind(entry.role), parts = [entry.actor + (kind === "human" ? "" : ` (${ACTOR_KINDS[kind]})`), entry.outcome === "CREATED" ? `created ${entry.record}` : `${entry.action} on ${entry.record}`];
     if (entry.outcome === "COMMITTED") parts.push(`→ ${entry.to}`);
     if (entry.outcome === "REFUSED") parts.push(`refused: ${entry.code}`);
     return parts.join(" ");
@@ -2052,6 +2065,7 @@
       el("strong", String(result.records)), document.createTextNode(" records: "), el("strong", String(result.committed)),
       document.createTextNode(" went through, "), el("strong", String(result.refused)), document.createTextNode(" refused by the kernel."));
     $("sim-codes").replaceChildren(...Object.entries(result.codes).map(([code, n]) => el("span", `${code} ${n}`, { class: "chip" })));
+    showKinds(result.by_kind || {});
     $("sim-findings").replaceChildren(...(result.findings.length ? result.findings.map((f) => {
       const li = el("li", undefined, { class: f.severity }), b = el("button", f.text, { type: "button" });
       b.addEventListener("click", () => select(f.element, true));
@@ -2065,6 +2079,21 @@
     }));
     $("sim-limits").textContent = `Seed ${result.seed}, ${result.steps} steps. ` + result.limits.join(" ");
     paint(result);
+  }
+
+  // Who acted, by kind of actor (ADR-0210): what the AI agents, timers and external systems tried and what the kernel
+  // said, beside the people. Shown only when the system has an actor that is not a person.
+  function showKinds(byKind) {
+    const kinds = Object.keys(byKind), box = $("sim-kinds");
+    box.hidden = !kinds.some((k) => k !== "human");
+    box.replaceChildren(...(box.hidden ? [] : kinds.map((kind) => {
+      const k = byKind[kind], row = el("li", undefined, { class: "kind-" + kind });
+      const codes = Object.entries(k.codes).slice(0, 2).map(([code, n]) => `${code} ${n}`).join(", ");
+      row.title = Object.entries(k.codes).map(([code, n]) => `${code} ${n}`).join(", ");
+      row.append(el("strong", ACTOR_GROUPS[kind]), el("span", ` (${k.roles.join(", ")}) `, { class: "muted" }),
+        document.createTextNode(`${k.attempts} tries · ${k.committed} went through · ${k.refused} refused` + (codes ? `: ${codes}` : "")));
+      return row;
+    })));
   }
 
   function replay() {
@@ -2322,6 +2351,7 @@
     $("model-name").textContent = status.pack.name + (caseId ? " · change case" : "");
     packInfo = status.pack;
     data = savedData = (await api("/api/play/data")).data;
+    roleKinds = Object.fromEntries((await api("/api/play/roles")).roles.map((r) => [r.id, r.kind]));
     await loadScreens(null);
     outline();
     draw(model);
@@ -2389,7 +2419,7 @@
   const changeLook = (status, part) => (window.PlayDiff && shownChange ? window.PlayDiff.look(status, part) : {});
 
   window.PlayIDE = {
-    api, el, hooks, about, viewKey, label, restyle, clearSim, select, showTab, fit, importPlan, runAs, openScreen,
+    api, el, hooks, about, roleKind, kinds: ACTOR_KINDS, viewKey, label, restyle, clearSim, select, showTab, fit, importPlan, runAs, openScreen,
     screens: () => screens, data: () => data, // the screen designer's screens and the class diagram (play-roles.js reads them)
     graph: () => graph, tab: () => tab, model: () => model, selected: () => selected, pack: () => packInfo, base: () => baseModel,
     direction: () => direction || "LR", // the state machine's layout, which the Changes view follows

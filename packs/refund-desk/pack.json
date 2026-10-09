@@ -1,0 +1,870 @@
+{
+  "schema_version": "eija.pack.v1",
+  "pack": {
+    "id": "refund-desk",
+    "name": "Refund desk",
+    "version": "1.0.0",
+    "description": "A support desk where an AI agent triages refund requests and proposes refunds, a timer escalates the ones nobody decided, a payment system reports the payout, and only a person approves. It shows actors that are not people (ADR-0210): laws about the kind of actor keep a human in the loop whatever the agent is given."
+  },
+  "model": {
+    "schema_version": "eija.workflow.v1",
+    "id": "refund-desk",
+    "initial_state": "Requested",
+    "states": [
+      "Requested",
+      "Assessed",
+      "AwaitingApproval",
+      "WithSupervisor",
+      "Approved",
+      "Paid",
+      "PayoutFailed",
+      "Declined",
+      "Withdrawn"
+    ],
+    "transitions": [
+      {
+        "id": "TR-TRIAGE",
+        "action": "AssessRequest",
+        "from_state": "Requested",
+        "to_state": "Assessed",
+        "role": "SupportAgent",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:RefundTriaged"
+        ],
+        "forbidden_effects": [
+          "CardDataSentToModel",
+          "RefundSentUnapproved"
+        ]
+      },
+      {
+        "id": "TR-WITHDRAW",
+        "action": "Withdraw",
+        "from_state": "Requested",
+        "to_state": "Withdrawn",
+        "role": "Customer",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:RequestWithdrawn"
+        ],
+        "forbidden_effects": [
+          "CardDataSentToModel",
+          "RefundSentUnapproved"
+        ]
+      },
+      {
+        "id": "TR-PROPOSE",
+        "action": "ProposeRefund",
+        "from_state": "Assessed",
+        "to_state": "AwaitingApproval",
+        "role": "SupportAgent",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:RefundProposed",
+          "Notification:SupervisorAsked"
+        ],
+        "forbidden_effects": [
+          "CardDataSentToModel",
+          "RefundSentUnapproved"
+        ]
+      },
+      {
+        "id": "TR-APPROVE",
+        "action": "ApproveRefund",
+        "from_state": "AwaitingApproval",
+        "to_state": "Approved",
+        "role": "Supervisor",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding",
+          "actor_assigned"
+        ],
+        "required_effects": [
+          "Audit:RefundApproved"
+        ],
+        "forbidden_effects": [
+          "CardDataSentToModel",
+          "RefundSentUnapproved"
+        ]
+      },
+      {
+        "id": "TR-DECLINE",
+        "action": "DeclineRefund",
+        "from_state": "AwaitingApproval",
+        "to_state": "Declined",
+        "role": "Supervisor",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:RefundDeclined",
+          "Notification:CustomerToldDeclined"
+        ],
+        "forbidden_effects": [
+          "CardDataSentToModel",
+          "RefundSentUnapproved"
+        ]
+      },
+      {
+        "id": "TR-ESCALATE",
+        "action": "EscalateStale",
+        "from_state": "AwaitingApproval",
+        "to_state": "WithSupervisor",
+        "role": "SlaTimer",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:RefundEscalated",
+          "Notification:SupervisorPaged"
+        ],
+        "forbidden_effects": [
+          "CardDataSentToModel",
+          "RefundSentUnapproved"
+        ]
+      },
+      {
+        "id": "TR-RESOLVE",
+        "action": "ResolveEscalation",
+        "from_state": "WithSupervisor",
+        "to_state": "Approved",
+        "role": "Supervisor",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding",
+          "actor_assigned"
+        ],
+        "required_effects": [
+          "Audit:EscalationResolved"
+        ],
+        "forbidden_effects": [
+          "CardDataSentToModel",
+          "RefundSentUnapproved"
+        ]
+      },
+      {
+        "id": "TR-DISMISS",
+        "action": "DismissEscalation",
+        "from_state": "WithSupervisor",
+        "to_state": "Declined",
+        "role": "Supervisor",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:EscalationDismissed",
+          "Notification:CustomerToldDeclined"
+        ],
+        "forbidden_effects": [
+          "CardDataSentToModel",
+          "RefundSentUnapproved"
+        ]
+      },
+      {
+        "id": "TR-CONFIRM",
+        "action": "ConfirmPayout",
+        "from_state": "Approved",
+        "to_state": "Paid",
+        "role": "PaymentGateway",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:RefundPaid",
+          "Notification:CustomerToldPaid"
+        ],
+        "forbidden_effects": [
+          "CardDataSentToModel",
+          "RefundSentUnapproved"
+        ]
+      },
+      {
+        "id": "TR-FAIL",
+        "action": "FailPayout",
+        "from_state": "Approved",
+        "to_state": "PayoutFailed",
+        "role": "PaymentGateway",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:PayoutFailed"
+        ],
+        "forbidden_effects": [
+          "CardDataSentToModel",
+          "RefundSentUnapproved"
+        ]
+      },
+      {
+        "id": "TR-RETRY",
+        "action": "RetryPayout",
+        "from_state": "PayoutFailed",
+        "to_state": "Approved",
+        "role": "Supervisor",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:PayoutRetried"
+        ],
+        "forbidden_effects": [
+          "CardDataSentToModel",
+          "RefundSentUnapproved"
+        ]
+      }
+    ]
+  },
+  "roles": [
+    {
+      "id": "Customer",
+      "description": "Asks for a refund; may withdraw a request nobody has picked up."
+    },
+    {
+      "id": "SupportAgent",
+      "kind": "agent",
+      "description": "An AI agent: triages requests and proposes a refund. It never decides one."
+    },
+    {
+      "id": "Supervisor",
+      "description": "A person on the support desk: approves or declines a proposed refund when on shift (assigned)."
+    },
+    {
+      "id": "SlaTimer",
+      "kind": "timer",
+      "description": "A scheduled job: escalates a proposal nobody decided within the service level."
+    },
+    {
+      "id": "PaymentGateway",
+      "kind": "system",
+      "description": "The external payment system: calls back when a payout settles or fails."
+    }
+  ],
+  "actions": [
+    {
+      "id": "AssessRequest",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:RefundTriaged"
+      ]
+    },
+    {
+      "id": "Withdraw",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:RequestWithdrawn"
+      ]
+    },
+    {
+      "id": "ProposeRefund",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:RefundProposed",
+        "Notification:SupervisorAsked"
+      ]
+    },
+    {
+      "id": "HandOff",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:RefundHandedOff",
+        "Notification:SupervisorPaged"
+      ]
+    },
+    {
+      "id": "ApproveRefund",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding",
+        "actor_assigned"
+      ],
+      "required_effects": [
+        "Audit:RefundApproved"
+      ]
+    },
+    {
+      "id": "DeclineRefund",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:RefundDeclined",
+        "Notification:CustomerToldDeclined"
+      ]
+    },
+    {
+      "id": "EscalateStale",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:RefundEscalated",
+        "Notification:SupervisorPaged"
+      ]
+    },
+    {
+      "id": "ResolveEscalation",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding",
+        "actor_assigned"
+      ],
+      "required_effects": [
+        "Audit:EscalationResolved"
+      ]
+    },
+    {
+      "id": "DismissEscalation",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:EscalationDismissed",
+        "Notification:CustomerToldDeclined"
+      ]
+    },
+    {
+      "id": "ConfirmPayout",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:RefundPaid",
+        "Notification:CustomerToldPaid"
+      ]
+    },
+    {
+      "id": "FailPayout",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:PayoutFailed"
+      ]
+    },
+    {
+      "id": "RetryPayout",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:PayoutRetried"
+      ]
+    }
+  ],
+  "effects": {
+    "catalog": [
+      {
+        "id": "Audit:RefundTriaged",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:RequestWithdrawn",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:RefundProposed",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:SupervisorAsked",
+        "kind": "notification",
+        "recipient": "supervisor"
+      },
+      {
+        "id": "Audit:RefundHandedOff",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:SupervisorPaged",
+        "kind": "notification",
+        "recipient": "supervisor"
+      },
+      {
+        "id": "Audit:RefundApproved",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:RefundDeclined",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:CustomerToldDeclined",
+        "kind": "notification",
+        "recipient": "customer"
+      },
+      {
+        "id": "Audit:RefundEscalated",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:EscalationResolved",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:EscalationDismissed",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:RefundPaid",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:CustomerToldPaid",
+        "kind": "notification",
+        "recipient": "customer"
+      },
+      {
+        "id": "Audit:PayoutFailed",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:PayoutRetried",
+        "kind": "audit"
+      }
+    ],
+    "forbidden": [
+      "CardDataSentToModel",
+      "RefundSentUnapproved"
+    ]
+  },
+  "laws": [
+    {
+      "id": "only-people-approve",
+      "kind": "only_kind_holds",
+      "code": "HUMAN_DECISION:ApproveRefund",
+      "role_kinds": [
+        "human"
+      ],
+      "action": "ApproveRefund",
+      "description": "Only a person approves a refund: no AI agent, timer or external system holds that decision."
+    },
+    {
+      "id": "only-people-resolve",
+      "kind": "only_kind_holds",
+      "code": "HUMAN_DECISION:ResolveEscalation",
+      "role_kinds": [
+        "human"
+      ],
+      "action": "ResolveEscalation",
+      "description": "Only a person resolves an escalation."
+    },
+    {
+      "id": "approved-by-people",
+      "kind": "only_kind_enters",
+      "code": "HUMAN_DECISION:Approved",
+      "role_kinds": [
+        "human"
+      ],
+      "state": "Approved",
+      "description": "Only a person moves a refund into Approved, by any action."
+    },
+    {
+      "id": "person-in-the-loop",
+      "kind": "path_requires_kind",
+      "code": "HUMAN_IN_THE_LOOP:Paid",
+      "role_kinds": [
+        "human"
+      ],
+      "state": "Paid",
+      "description": "Every refund that is paid had a person act on it first: no run is agents and machines alone."
+    },
+    {
+      "id": "payout-confirmed-by-gateway",
+      "kind": "only_kind_holds",
+      "code": "PROTECTED_AUTHORITY:ConfirmPayout",
+      "role_kinds": [
+        "system"
+      ],
+      "action": "ConfirmPayout",
+      "description": "Only the payment system confirms a payout: nobody marks a refund paid by hand."
+    },
+    {
+      "id": "paid-requires-approval",
+      "kind": "path_requires",
+      "code": "REFUND_PAID_WITHOUT_APPROVAL",
+      "state": "Paid",
+      "via": "Approved",
+      "description": "Every path to Paid passes through Approved."
+    },
+    {
+      "id": "paid-final",
+      "kind": "state_final",
+      "code": "FINAL_STATE_LEFT:Paid",
+      "state": "Paid",
+      "description": "A paid refund is closed."
+    },
+    {
+      "id": "declined-final",
+      "kind": "state_final",
+      "code": "FINAL_STATE_LEFT:Declined",
+      "state": "Declined",
+      "description": "A declined refund is closed."
+    },
+    {
+      "id": "withdrawn-final",
+      "kind": "state_final",
+      "code": "FINAL_STATE_LEFT:Withdrawn",
+      "state": "Withdrawn",
+      "description": "A withdrawn request is closed."
+    },
+    {
+      "id": "withdraw-before-triage",
+      "kind": "action_source_in",
+      "code": "PROTECTED_STATE:Withdraw",
+      "action": "Withdraw",
+      "states": [
+        "Requested"
+      ],
+      "description": "A customer withdraws only a request nobody has picked up."
+    },
+    {
+      "id": "approve-on-shift",
+      "kind": "action_requires_guard",
+      "code": "GUARD_POLICY:ApproveRefund",
+      "action": "ApproveRefund",
+      "guards": [
+        "actor_assigned"
+      ],
+      "description": "Approving needs the supervisor to be on shift (assigned)."
+    },
+    {
+      "id": "no-card-data-to-model",
+      "kind": "forbidden_effects",
+      "code": "EFFECT_POLICY:forbidden",
+      "effects": [
+        "CardDataSentToModel",
+        "RefundSentUnapproved"
+      ],
+      "description": "No step sends card data to a model or pays a refund nobody approved."
+    },
+    {
+      "id": "runtime-evidence",
+      "kind": "requires_evidence",
+      "code": "EVIDENCE_REQUIRED:runtime_matrix",
+      "evidence": "runtime_matrix",
+      "description": "A change is reviewed with the runtime matrix."
+    }
+  ],
+  "meanings": [
+    {
+      "id": "agent_hands_off",
+      "label": "The agent hands unclear requests to a supervisor",
+      "supported": true,
+      "consequences": [
+        "The AI agent may escalate a triaged request straight to a person instead of proposing a refund.",
+        "A person still approves every refund that is paid.",
+        "The agent gains no deciding authority."
+      ],
+      "transactions": [
+        {
+          "kind": "add_transition",
+          "id": "TR-HANDOFF",
+          "action": "HandOff",
+          "from_state": "Assessed",
+          "to_state": "WithSupervisor",
+          "role": "SupportAgent"
+        }
+      ]
+    },
+    {
+      "id": "agent_auto_approve",
+      "label": "The agent approves refunds itself",
+      "supported": false,
+      "consequences": [
+        "Takes the person out of the loop; blocked by this pack's laws about who decides."
+      ],
+      "transactions": [
+        {
+          "kind": "set_role",
+          "transition": "TR-APPROVE",
+          "role": "SupportAgent"
+        }
+      ]
+    },
+    {
+      "id": "unsupported",
+      "label": "Outside the modelled scope",
+      "supported": false,
+      "consequences": [
+        "Requires domain and source-level engineering; no automatic application."
+      ]
+    }
+  ],
+  "language": {
+    "terms": [
+      {
+        "id": "refund",
+        "label": "Refund",
+        "definition": "Money returned to one customer for one order; the workflow instance.",
+        "binds": [
+          "repo://packs/refund-desk/pack.json"
+        ],
+        "refs": [
+          "state:Paid"
+        ]
+      },
+      {
+        "id": "support-agent",
+        "label": "Support agent",
+        "definition": "The AI agent on the desk. It triages and proposes; a person decides.",
+        "binds": [
+          "repo://packs/refund-desk/pack.json"
+        ],
+        "refs": [
+          "role:SupportAgent",
+          "law:only-people-approve"
+        ]
+      },
+      {
+        "id": "escalation",
+        "label": "Escalation",
+        "definition": "A proposal nobody decided in time, put in front of a supervisor by the service-level timer.",
+        "binds": [
+          "repo://packs/refund-desk/pack.json"
+        ],
+        "refs": [
+          "state:WithSupervisor",
+          "transition:TR-ESCALATE"
+        ]
+      },
+      {
+        "id": "human-in-the-loop",
+        "label": "Person in the loop",
+        "definition": "A person acts on every refund before it is paid.",
+        "binds": [
+          "repo://packs/refund-desk/pack.json"
+        ],
+        "refs": [
+          "law:person-in-the-loop"
+        ]
+      }
+    ]
+  },
+  "fixtures": {
+    "actors": [
+      {
+        "id": "customer-a",
+        "role": "Customer",
+        "active": true,
+        "assigned": false
+      },
+      {
+        "id": "support-bot",
+        "role": "SupportAgent",
+        "active": true,
+        "assigned": false
+      },
+      {
+        "id": "support-bot-paused",
+        "role": "SupportAgent",
+        "active": false,
+        "assigned": false
+      },
+      {
+        "id": "supervisor-on-shift",
+        "role": "Supervisor",
+        "active": true,
+        "assigned": true
+      },
+      {
+        "id": "supervisor-off-shift",
+        "role": "Supervisor",
+        "active": true,
+        "assigned": false
+      },
+      {
+        "id": "sla-clock",
+        "role": "SlaTimer",
+        "active": true,
+        "assigned": false
+      },
+      {
+        "id": "payment-gateway",
+        "role": "PaymentGateway",
+        "active": true,
+        "assigned": false
+      }
+    ],
+    "demo_request": "Let the support agent approve refunds itself.",
+    "proposals": {
+      "summary": "Deterministic demonstration; no model inference was used.",
+      "rules": [
+        {
+          "all": [
+            "agent"
+          ],
+          "any": [
+            "approve",
+            "decide",
+            "itself",
+            "hand",
+            "escalate",
+            "unsure"
+          ],
+          "alternatives": [
+            {
+              "interpretation": "agent_hands_off",
+              "explanation": "The agent hands requests it cannot settle to a supervisor; a person still approves every refund."
+            },
+            {
+              "interpretation": "agent_auto_approve",
+              "explanation": "Would let the agent approve refunds itself. The pack's laws keep that decision with a person."
+            }
+          ]
+        }
+      ],
+      "fallback": [
+        {
+          "interpretation": "unsupported",
+          "explanation": "This offline fixture only demonstrates the agent's hand-off."
+        }
+      ],
+      "unknowns": [
+        "Actual refund policy and amounts are unknown; the kernel has no value guards yet (issue #93).",
+        "Timer behaviour is modelled as a scheduled actor, not as elapsed time."
+      ]
+    }
+  },
+  "verifiers": [
+    {
+      "kind": "runtime_matrix",
+      "mode": "kernel"
+    },
+    {
+      "kind": "smt_proof",
+      "mode": "generated",
+      "reason": "The generated-law proof runs in the gate (python -m verification.smt.laws); binding its report into the review packet is WBS 1.7."
+    },
+    {
+      "kind": "bounded_model_check",
+      "mode": "generated",
+      "reason": "The BMC law property is the pack's laws judged by evaluate_run; a BMC search over this pack's runtime is not wired yet (WBS 1.7)."
+    },
+    {
+      "kind": "bend_proof",
+      "mode": "not_run",
+      "reason": "Generating Bend laws is deferred (docs/engineering/FUTURE-WORK.md)."
+    },
+    {
+      "kind": "tlc",
+      "mode": "not_run",
+      "reason": "Generating TLA+ laws is deferred (docs/engineering/FUTURE-WORK.md)."
+    }
+  ],
+  "journey": {
+    "questions": [
+      {
+        "id": "approve_authority",
+        "question": "Who may approve a refund?",
+        "expected": "Supervisor"
+      },
+      {
+        "id": "agent_kind",
+        "question": "What kind of actor is the support agent?",
+        "expected": "agent"
+      }
+    ]
+  }
+}

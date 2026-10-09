@@ -7,8 +7,11 @@
 * [domain.laws.ActionTarget](ActionTarget.md) - Every transition performing ``action`` ends in ``state``.
 * [domain.laws.ClosedShape](ClosedShape.md) - The workflow has exactly these states and actions and this initial state.
 * [domain.laws.ForbiddenEffects](ForbiddenEffects.md) - No transition requires any of ``effects`` and every transition declares them forbidden.
+* [domain.laws.OnlyKindEnters](OnlyKindEnters.md) - Every transition entering ``state`` is held by a role of one of ``role_kinds``.
+* [domain.laws.OnlyKindHolds](OnlyKindHolds.md) - Every transition performing ``action`` is held by a role of one of ``role_kinds`` (e.g.
 * [domain.laws.OnlyRoleHolds](OnlyRoleHolds.md) - Every transition performing ``action`` is held by ``role``.
 * [domain.laws.PathRequires](PathRequires.md) - Every path from the initial state to ``state`` passes through ``via`` (a sequence law).
+* [domain.laws.PathRequiresKind](PathRequiresKind.md) - Every path from the initial state to ``state`` includes a step by a role of one of ``role_kinds``, the step entering ``state`` included: a human in the loop before an agent's work takes effect (a sequence law).
 * [domain.laws.RequiresEvidence](RequiresEvidence.md) - A review needs evidence of this kind; judged by the evidence matrix, never by the table.
 * [domain.laws.RoleNeverEnters](RoleNeverEnters.md) - No transition held by ``role`` enters ``state``.
 * [domain.laws.RoleNeverHolds](RoleNeverHolds.md) - No transition performing ``action`` is held by ``role``.
@@ -21,8 +24,10 @@
 # Constants
 
 * [domain.laws.CODE](CODE.md) - Constant `CODE` in `domain/laws`.
+* [domain.laws.KIND_LAWS](KIND_LAWS.md) - Constant `KIND_LAWS` in `domain/laws`.
 * [domain.laws.LAW_ID](LAW_ID.md) - Constant `LAW_ID` in `domain/laws`.
 * [domain.laws.LAW_KINDS](LAW_KINDS.md) - Constant `LAW_KINDS` in `domain/laws`.
+* [domain.laws.ROLE_KINDS](ROLE_KINDS.md) - Constant `ROLE_KINDS` in `domain/laws`.
 
 # Functions
 
@@ -35,3 +40,4 @@
 
 * [domain.laws.Law](Law.md) - Type alias `Law` in `domain/laws`.
 * [domain.laws.Name](Name.md) - Type alias `Name` in `domain/laws`.
+* [domain.laws.RoleKind](RoleKind.md) - Type alias `RoleKind` in `domain/laws`.

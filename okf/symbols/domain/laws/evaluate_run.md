@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/laws.py#evaluate_run
   title: domain/laws.py
   hash_method: ast-v2
-  sha256: 0c68034c5103df1fc5a786be2183b10380a14fe63ed68c3cf6ebea980098e8b1
-notes_baseline: 5b3fe9f4f0514e1aa29ec2834d89fb4e5cc45f5fb25764f55a46327528c2449a
+  sha256: 8b88218b14751fd96343339419b658463a7e5a2d3e0239cfc25121d60ebe61ba
+notes_baseline: b9efcf76754b97624b8f0c2da2e73880a36653910183fbe5f72563a6783d817a
 ---
 
 # domain.laws.evaluate_run
@@ -49,6 +49,7 @@ _No curated notes yet._
 ## Depends on
 
 * [domain.laws.PathRequires](/symbols/domain/laws/PathRequires.md) - Every path from the initial state to ``state`` passes through ``via`` (a sequence law).
+* [domain.laws.PathRequiresKind](/symbols/domain/laws/PathRequiresKind.md) - Every path from the initial state to ``state`` includes a step by a role of one of ``role_kinds``, the step entering ``state`` included: a human in the loop be…
 * [domain.laws.Step](/symbols/domain/laws/Step.md) - One executed transition of a run.
 * [domain.laws.Violation](/symbols/domain/laws/Violation.md) - One broken law: its id, the code the policy reports, and the model elements involved.
 * [domain.laws.applies](/symbols/domain/laws/applies.md) - `def applies(law: _Law, actions: set[str]) -> bool` in `domain/laws`.
