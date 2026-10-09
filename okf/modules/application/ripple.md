@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/ripple.py
   title: application/ripple.py
   hash_method: ast-api-v1
-  sha256: 72a65527f85889375a9223b3616a1fc28b6583c77f26d841df68fb79a9dd1d7b
-notes_baseline: d3622ad5408d53f792c2646dabb3ab850e5cf8ffd4f2cf1bfaa91ced5723a27b
+  sha256: e238a4a73a823aa54bc0be270c6b5c1be491f62fb1544777234df92aaaecd9d7
+notes_baseline: a7e94f0851d6644208bf2be8decfe01a015c6a0003dd91d34601af9f8fb9f25e
 ---
 
 # application.ripple

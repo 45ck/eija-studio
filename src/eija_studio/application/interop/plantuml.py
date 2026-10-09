@@ -3,7 +3,8 @@
 PlantUML is the text UML most engineers already keep beside their code, so this is the first format. The export is
 faithful: every state, transition (as a UML label, `trigger [guard] / effects`), class, attribute with its type,
 multiplicity and maximum length, enumeration, association with its kind, ends and role, the record class
-(`<<record>>`) and every description (as notes) is in the text. The reader takes the same subset back, plus the
+(`<<record>>`), the kind of each actor that is not a person (`<<agent>>`, `<<timer>>`, `<<system>>`, ADR-0210) and every
+description (as notes) is in the text. The reader takes the same subset back, plus the
 common variants people write by hand, and records every other line it meets as not imported.
 """
 from __future__ import annotations
@@ -16,7 +17,7 @@ from eija_studio.domain.data import DataModel, Entity
 from eija_studio.domain.models import Workflow
 from eija_studio.domain.pack import Pack
 
-from .model import (GENERATOR, Parsed, attribute_type, enumerations, export_report, multiplicity, terminals,
+from .model import (ACTOR_KINDS, GENERATOR, PERSON_STEREOTYPES, Parsed, attribute_type, enumerations, export_report, multiplicity, terminals,
                     transition_label, use_case_links)
 from .textual import read_body, read_relation, read_transition
 
@@ -81,7 +82,8 @@ def _classes(pack: Pack, data: DataModel) -> list[str]:
 
 def _use_cases(pack: Pack, model: Workflow) -> list[str]:
     out = ["@startuml " + model.id + "-use-cases", f"title {_text(pack.pack.name)}: use cases", "left to right direction"]
-    out += [f'actor "{_text(r.id)}" as A_{r.id.encode().hex()}' for r in pack.roles]
+    out += [f'actor "{_text(r.id)}" as A_{r.id.encode().hex()}' + ("" if r.kind == "human" else f" <<{r.kind}>>")
+            for r in pack.roles]
     actions = sorted({t.action for t in model.transitions})
     out += [f'usecase "{_text(a)}" as UC_{a.encode().hex()}' for a in actions]
     out += [f"A_{role.encode().hex()} -- UC_{action.encode().hex()}" for role, action in use_case_links(model)]
@@ -237,6 +239,24 @@ def _read_classes(block: list[tuple[str, str]], parsed: Parsed) -> None:
     _apply_notes(notes, parsed)
 
 
+_ACTOR = re.compile(r'^(?:actor\s+(?:"(?P<quoted>[^"]+)"|:(?P<colon>[^:]+):|(?P<plain>[^\s<"]+))|:(?P<short>[^:]+):)'
+                    r'(?:\s+as\s+\S+)?(?P<rest>.*)$', re.IGNORECASE)
+
+
+def _read_actors(block: list[tuple[str, str]], parsed: Parsed) -> None:
+    """The actors of a use case diagram and their kinds (ADR-0210); the use cases and links are derived."""
+    for line, where in block:
+        found = _ACTOR.match(line)
+        if found is None:
+            continue
+        name = unescape(" ".join(next(g for g in found.group("quoted", "colon", "plain", "short") if g).split()))
+        stereotypes = re.findall(r"<<\s*([^<>]+?)\s*>>", found.group("rest"))
+        odd = [s for s in stereotypes if s.strip().lower() not in (*ACTOR_KINDS, *PERSON_STEREOTYPES)]
+        if odd:
+            parsed.skip(where, f"actor {name} <<{odd[0]}>>", "an actor's kind is <<agent>>, <<timer>> or <<system>>, or none for a person")
+        parsed.actor(name, stereotypes, where)
+
+
 def parse(text: str) -> Parsed:
     parsed = Parsed()
     for block in _blocks(text):
@@ -244,6 +264,7 @@ def parse(text: str) -> Parsed:
         if kind == "usecase":
             where = block[0][1] if block else ""
             parsed.derive(where, "use case diagram")
+            _read_actors(block, parsed)
         elif kind == "class":
             _read_classes(block, parsed)
         else:

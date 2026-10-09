@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/data_steps.py
   title: application/data_steps.py
   hash_method: ast-api-v1
-  sha256: 67b6663de6fce1b0bd58d2a7c7df7cc7514cfb8b1a7bf9bceefa656dc182d132
-notes_baseline: 7ccda7c4ecadf6f99ffd99a76504424e0287919200929cb6f29f249d8c2edc06
+  sha256: 275280c1c15ce2537e21e469d2f69d61c5b914d93ba1b6875ce8ad5452fce52a
+notes_baseline: 727e08d77c32c8f5301e63d88c407643318a5252875fa89cc9ce6c3ced1d49a1
 ---
 
 # application.data_steps

@@ -34,6 +34,7 @@ ENDS = {"composition": "endArrow=open;endFill=0;startArrow=diamondThin;startFill
 EDGE_LABEL = "edgeLabel;resizable=0;html=1;verticalAlign=bottom;"
 ACTOR = "shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;"
 USE_CASE = "ellipse;whiteSpace=wrap;html=1;"
+ACTOR_BOX = "rounded=0;whiteSpace=wrap;html=1;"  # an actor that is not a person: the classifier notation with its keyword
 
 
 class _Page:
@@ -140,7 +141,11 @@ def _use_case_page(pack: Pack, model: Workflow) -> _Page:
     page = _Page("Use cases")
     actions = sorted({t.action for t in model.transitions})
     for n, declared in enumerate(pack.roles):
-        page.vertex(f"actor-{n}", html.escape(declared.id), ACTOR, 40, 60 + n * 120, 30, 60, tooltip=declared.description)
+        if declared.kind == "human":
+            page.vertex(f"actor-{n}", html.escape(declared.id), ACTOR, 40, 60 + n * 120, 30, 60, tooltip=declared.description)
+        else:  # ADR-0210: «agent», «timer» or «system» over the name, as the use case diagram draws it
+            page.vertex(f"actor-{n}", f"&laquo;{declared.kind}&raquo;<br><b>{html.escape(declared.id)}</b>", ACTOR_BOX,
+                        10, 60 + n * 120, 120, 60, tooltip=declared.description)
     for n, action in enumerate(actions):
         page.vertex(f"usecase-{n}", html.escape(action), USE_CASE, 360, 40 + n * 90, 160, 60)
     roles = {r.id: n for n, r in enumerate(pack.roles)}

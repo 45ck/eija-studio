@@ -53,12 +53,38 @@
   };
   const article = (word) => (/^[AEIOU]/i.test(word) ? "An " : "A ") + word;
   const a = (word) => (/^[AEIOU]/i.test(word) ? "an " : "a ") + word;
+  // An AI agent, a timer or an external system holds a role too (ADR-0210), but it has no screens: it calls the built
+  // app's API, and the kernel decides each call exactly as it decides a click.
+  const KIND_WORDS = { agent: "AI agent", timer: "timer", system: "external system" };
+  const kindOf = (role) => (P.roleKind ? P.roleKind(role) : "human");
+  const machine = (role) => kindOf(role) !== "human";
+  const who = (role) => (machine(role) ? `${a(KIND_WORDS[kindOf(role)])} (${role})` : a(role));
+  const Who = (role) => who(role).replace(/^a/, "A");
+
+  // The calls a role without screens makes, written as the built app's own endpoints (resources/appgen/server.py.tmpl).
+  function apiCalls(role, actions) {
+    const actor = (actorsOf(role).find((x) => x.active) || actorsOf(role)[0] || { id: "<actor>" }).id;
+    const list = P.el("ul", undefined, { class: "role-calls", "aria-label": `API calls ${role} makes` });
+    for (const action of actions) {
+      const li = P.el("li");
+      li.append(P.el("code", "POST /api/records/{id}/act"), " ",
+        P.el("code", JSON.stringify({ action, actor, expected_version: "n" }).replace('"n"', "n"), { class: "body" }));
+      list.append(li);
+    }
+    if (!actions.length) list.append(P.el("li", `${role} takes no step of the workflow.`, { class: "muted" }));
+    const start = P.el("li", undefined, { class: "muted" }); // any active actor may start a record (issue #142)
+    start.append(P.el("code", "POST /api/records"), " ", P.el("code", JSON.stringify({ title: "…", actor, fields: {} }), { class: "body" }));
+    list.append(start);
+    return list;
+  }
 
   // ---- Run the app as one actor -------------------------------------------------------------------------------------
   function runButton(actor, primary) {
-    const label = `▶ Run as ${actor.id}` + (actor.active ? "" : " (inactive)");
+    const stand = machine(actor.role);
+    const label = `▶ ${stand ? "Stand in for" : "Run as"} ${actor.id}` + (actor.active ? "" : " (inactive)");
     const b = P.el("button", label, { type: "button", class: primary ? "primary run-as" : "quiet run-as", "data-actor": actor.id,
-      title: actor.active ? `Build and run the app acting as ${actor.id}` : `${actor.id} is inactive: the kernel refuses every step it tries` });
+      title: !actor.active ? `${actor.id} is inactive: the kernel refuses every step it tries`
+        : stand ? `Open the built app acting as ${actor.id}: each press is the API call it would make` : `Build and run the app acting as ${actor.id}` });
     b.addEventListener("click", () => P.runAs(actor.id));
     return b;
   }
@@ -127,8 +153,12 @@
     const who = P.el("button", "Who can do what", { type: "button", class: "quiet" });
     who.addEventListener("click", () => P.showTab("access"));
     tools.append(see, who);
-    body.replaceChildren(P.el("h4", "May"), list, P.el("p", "Any active actor may start a record.", { class: "muted small" }),
-      P.el("h4", "Played by"), actors, tools, runTools(role));
+    const parts = [P.el("h4", "May"), list, P.el("p", "Any active actor may start a record.", { class: "muted small" })];
+    if (machine(role)) {
+      parts.push(P.el("h4", "No screens: it calls"), apiCalls(role, cases.map((u) => u.action)));
+      see.textContent = "See what it calls";
+    }
+    body.replaceChildren(...parts, P.el("h4", "Played by"), actors, tools, runTools(role));
   }
 
   // ---- "See the app as" on the Screens tab --------------------------------------------------------------------------
@@ -144,13 +174,20 @@
     if (lens && !result.roles.includes(lens)) lens = "";
     bar.replaceChildren(P.el("span", "See the app as", { class: "lens-label" }));
     for (const role of ["", ...result.roles]) {
-      const b = P.el("button", role || "Everyone", { type: "button", class: "lens-role", "aria-pressed": String(role === lens), "data-role": role });
+      const b = P.el("button", role || "Everyone", { type: "button", class: "lens-role" + (role && machine(role) ? " machine" : ""), "aria-pressed": String(role === lens), "data-role": role,
+        title: role && machine(role) ? `${Who(role)}: no screens, only API calls` : "" });
       b.addEventListener("click", () => { lens = role; renderLens(); });
       bar.append(b);
     }
     strip.replaceChildren();
     strip.hidden = !lens;
-    if (lens) {
+    if (lens && machine(lens)) {
+      const actions = useCasesOf(result, lens).map((u) => u.action);
+      const head = P.el("p", undefined, { class: "role-app-head" });
+      head.append(P.el("strong", `${Who(lens)} has no screens.`),
+        " It calls the built app's API, and the kernel decides each call exactly as it decides a click. Standing in for it opens the app as it, so each press is one of these calls.");
+      strip.append(head, apiCalls(lens, actions), runTools(lens));
+    } else if (lens) {
       const mine = theirs(result, lens), cases = [null, ...useCasesOf(result, lens).map((u) => u.action)];
       const all = [null, ...new Set(P.model().transitions.map((t) => t.action))];
       const never = all.filter((a) => a !== null && !mine.has(a));
@@ -175,13 +212,14 @@
   // Dim the screens the chosen role never sees, and say on the card who sees the one open.
   function decorate(event) {
     if (event && event.list) lastList = event;
-    const result = current(), mine = result && lens ? theirs(result, lens) : null;
+    const result = current(), mine = result && lens ? (machine(lens) ? new Set() : theirs(result, lens)) : null;
+    const calls = result && lens && machine(lens) ? theirs(result, lens) : new Set();
     if (lastList && lastList.list.isConnected) {
       [...lastList.list.children].forEach((li, i) => {
-        const name = lastList.names[i], hide = mine !== null && name !== null && !mine.has(name);
+        const name = lastList.names[i], hide = mine !== null && (machine(lens) || (name !== null && !mine.has(name)));
         li.classList.toggle("not-theirs", hide);
         const b = li.querySelector("button");
-        if (b) b.title = hide ? `${article(lens)} never sees this screen` : "";
+        if (b) b.title = !hide ? "" : machine(lens) ? `${Who(lens)} has no screens` : `${article(lens)} never sees this screen`;
       });
     }
     const card = $("screen-card");
@@ -190,10 +228,11 @@
     if (!card || !mine || !card.querySelector(".screen-title")) return;
     const open = event && "useCase" in event ? event.useCase : (lastCard || {}).useCase;
     let text;
-    if (open === null) text = `${article(lens)} sees this screen: any active actor may start a record.`;
+    if (machine(lens)) text = calls.has(open) ? `${Who(lens)} takes ${open} by an API call, not on a screen. This is the screen a person standing in for it sees.` : `${Who(lens)} has no screens.`;
+    else if (open === null) text = `${article(lens)} sees this screen: any active actor may start a record.`;
     else if (mine.has(open)) text = `${article(lens)} sees this screen.`;
     else text = `${article(lens)} never sees this screen: only ${roleOfAction(open) ? a(roleOfAction(open)) : "another role"} may take ${open}.`;
-    card.prepend(P.el("p", text, { class: "role-note " + (open === null || mine.has(open) ? "ok" : "warn") }));
+    card.prepend(P.el("p", text, { class: "role-note " + (!machine(lens) && (open === null || mine.has(open)) ? "ok" : "warn") }));
   }
 
   function onScreens(event) {

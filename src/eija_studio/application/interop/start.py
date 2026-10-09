@@ -8,7 +8,8 @@ result before anything is created; the caller creates it.
 
 As with any import, nothing is dropped silently. The report lists every element as read (`mapped`), kept or filled
 in by PlayIDE (`defaulted`), derived, or not imported with the reason (`unmapped`). What a UML file never carries
-(laws, meanings, fixtures beyond one user per role) starts empty or default, as in a sketch.
+(laws, meanings, fixtures beyond one user per role) starts empty or default, as in a sketch. A role's kind (ADR-0210)
+comes from its actor's stereotype on the use case diagram, «agent», «timer» or «system», else it is a person.
 """
 from __future__ import annotations
 
@@ -23,7 +24,7 @@ from eija_studio.domain.pack import PackError, parse_pack
 from eija_studio.domain.policy import check_policy
 
 from .mapping import ImportReport, import_class_model
-from .model import Edge, Label, Parsed, parse_label
+from .model import Edge, Label, Parsed, kind_label, parse_label
 
 FORMAT = "eija.uml-start.v1"
 DEFAULT_ROLE = "User"
@@ -126,6 +127,24 @@ def _states(pack: dict[str, Any], parsed: Parsed, report: ImportReport) -> None:
                    f"used {pack['model']['initial_state']}, the source of the first transition")
 
 
+def _kinds(pack: dict[str, Any], parsed: Parsed, report: ImportReport) -> None:
+    """Each role's kind from its actor on the use case diagram (ADR-0210): «agent», «timer», «system», else a person."""
+    if parsed.actors is None:
+        report.add("defaulted", "use case diagram", "role kinds", "the file draws no actors; every role is a person")
+        return
+    roles = {r["id"]: r for r in pack["roles"]}
+    for name, (kind, where) in parsed.actors.items():
+        if name not in roles:
+            report.add("unmapped", where, f"actor {name}",
+                       f"{name!r} is not a name the built app's code can use (letters, digits and _, starting with a letter)")
+            continue
+        if kind != "human":
+            roles[name]["kind"] = kind
+        report.add("mapped", where, f"actor {name} ({kind_label(kind)})")
+    for name in (r for r in roles if r not in parsed.actors):
+        report.add("defaulted", "use case diagram", f"{name}: kind", "the file draws no actor for it; a person")
+
+
 def _record(parsed: Parsed, record: str) -> str:
     classes = parsed.classes or []
     return next((k.name for k in classes if k.record), None) or (classes[0].name if classes else record)
@@ -145,6 +164,25 @@ def _class_model(documents: dict[str, Any], parsed: Parsed, record: str, report:
                    f"it could not be imported; the record class is {record}, with one attribute, title")
 
 
+def _sketch(parsed: Parsed, kept: list[tuple[Edge, Label, str]]) -> str:
+    """The kept transitions as sketch lines; actors that perform nothing yet are still declared, as `roles:`."""
+    sketch = "\n".join(f"{edge.source} -> {edge.target} : {label.trigger} [{role}]" for edge, label, role in kept)
+    idle = [a for a in parsed.actors or {} if a not in {role for _, _, role in kept} and re.fullmatch(NAME, a)]
+    return sketch + ("\nroles: " + ", ".join(idle) if idle else "")
+
+
+def _judge(documents: dict[str, Any]) -> None:
+    """The kernel's pack and data checks and the protected policy; `PackError` with what they refuse."""
+    checked = parse_pack(documents["pack.json"])
+    try:
+        parse_data(documents["data.json"], checked.id)
+    except DomainError as error:
+        raise PackError([error.message]) from None
+    refused = check_policy(checked.model, checked)
+    if refused:
+        raise PackError([f"the protected policy refuses it: {code}" for code in refused])
+
+
 def start_documents(fmt: str, parsed: Parsed, name: str, pack_id: str, record: str = "Record") -> tuple[dict[str, Any], dict[str, Any]]:
     """The new system's documents and the import report; `PackError` when the kernel refuses them."""
     if not parsed.edges:
@@ -154,21 +192,14 @@ def start_documents(fmt: str, parsed: Parsed, name: str, pack_id: str, record: s
     if not kept:
         raise PackError(["no transition in the file could be imported: " + "; ".join(u["reason"] for u in report.unmapped[:3])])
     record = _record(parsed, record)
-    sketch = "\n".join(f"{edge.source} -> {edge.target} : {label.trigger} [{role}]" for edge, label, role in kept)
-    documents = sketch_documents(name, record, sketch, pack_id)
+    documents = sketch_documents(name, record, _sketch(parsed, kept), pack_id)
     pack = documents["pack.json"]
     _declare(pack, kept, report)
     _states(pack, parsed, report)
+    _kinds(pack, parsed, report)
     pack["pack"]["description"] = f"Started in PlayIDE from a UML file ({fmt}): one {record} moving through {len(pack['model']['states'])} states."
     _class_model(documents, parsed, record, report)
-    checked = parse_pack(pack)
-    try:
-        parse_data(documents["data.json"], checked.id)
-    except DomainError as error:
-        raise PackError([error.message]) from None
-    refused = check_policy(checked.model, checked)
-    if refused:
-        raise PackError([f"the protected policy refuses it: {code}" for code in refused])
+    _judge(documents)
     return documents, {"format": FORMAT, "from": fmt, "status": "PARTIAL" if report.unmapped else "CLEAN",
                        "mapped": report.mapped, "defaulted": report.defaulted, "unmapped": report.unmapped,
                        "derived": report.derived}

@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/data_steps.py#SetRoleKind
   title: application/data_steps.py
   hash_method: ast-sig-v1
-  sha256: 3760abd7c8d6f65e3f4b6cd393c3a864b554db38d57f3a77845922251ef8b86c
-notes_baseline: bd0e200f6cecc4fb12cf283eaee7814c555cc2c08b970177b84fa7d1c3e3a1a8
+  sha256: 4deadb95b03bc51c48dc726f2e74d615722fb76fe9d22975bb2db49068abd126
+notes_baseline: cd0b5bd4a161504e1d90876898e1cce38a0775a6748d1b624c7e7347d1c692ca
 ---
 
 # application.data_steps.SetRoleKind
@@ -42,7 +42,7 @@ transaction and not a data-model step: it changes a draft of the pack's roles, w
 | Field | Annotation | Default |
 |---|---|---|
 | `kind` | `Literal['set_role_kind']` |  |
-| `role` | `str` | `Field(pattern=NAME)` |
+| `role` | `str` | `Field(min_length=1, max_length=60)` |
 | `to` | `RoleKind` |  |
 <!-- okf:generated:end facts -->
 
@@ -53,7 +53,6 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [domain.data.NAME](/symbols/domain/data/NAME.md) - Constant `NAME` in `domain/data`.
 * [domain.laws.RoleKind](/symbols/domain/laws/RoleKind.md) - Type alias `RoleKind` in `domain/laws`.
 * [domain.models.Contract](/symbols/domain/models/Contract.md) - `class Contract(BaseModel)` in `domain/models`.
 

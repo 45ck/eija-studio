@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0210-actors-that-are-not-people.md
   title: 0210-actors-that-are-not-people.md
   hash_method: lf-sha256-v1
-  sha256: 78265f7d598390f2be654326a6a8139f4df93f0e2abeea289e905fff4129008f
-notes_baseline: 52f3b6ea65ff28c5c4411f339577ba65fcd8fece9d3d49c88fde2ac820b6fe69
+  sha256: 350eb7c5e71a1c62290f33425effb4bb0dfe8da82e867fa5920e2e59bac3e8de
+notes_baseline: 9fc2c8af0bb53264d9256d8d56e448e9d2273a1c74fee51ac8ec0e9825b6eb6d
 ---
 
 # ADR-0210: Actors that are not people: AI agents, timers and external systems in the model
@@ -61,4 +61,9 @@ _No curated notes yet._
 * [ADR-0165: Executable UML on the EIJA kernel: one interpreter, a closed action vocabulary, SCXML as the standard cross-check](/adrs/0165-executable-uml-on-the-eija-kernel.md) - PlayIDE draws six UML views (state machine, class, use case, screens, component, sequence) over one model (ADR-0093), and `eija build` turns the model into a r…
 * [ADR-0166: Laws as the layer above the UML, proved over every run for any pack, with a Laws tab in PlayIDE](/adrs/0166-laws-proved-over-every-run-for-any-pack.md) - Every pack already states its laws as typed data in `pack.json` (`domain/laws.py`, twelve kinds): "only a librarian checks a loan out", "every path to Returned…
 * [ADR-0202: Grow the class diagram in chat](/adrs/0202-grow-the-class-diagram-in-chat.md) - ADR-0201 let a system started from a sketch grow its state machine round after round in chat.
+
+## Referenced by
+
+* [ADR-0190: UML import and export: XMI, PlantUML, Mermaid and draw.io, with every import judged by the kernel](/adrs/0190-uml-import-and-export-through-the-kernel.md) - PlayIDE's users already know UML and already keep UML somewhere else: XMI in Enterprise Architect, Cameo, Papyrus or Visual Paradigm; PlantUML beside the code;…
+* [ADR-0215: See and run the app as each role](/adrs/0215-see-and-run-the-app-as-each-role.md) - PlayIDE already models the human side of a system: roles and fixture actors in the pack, a use case diagram (ADR-0154), one screen per use case, and a Permissi…
 <!-- okf:generated:end links -->
