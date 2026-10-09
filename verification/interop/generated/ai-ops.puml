@@ -60,11 +60,11 @@ note top of BuildRun : One CI run for the change.
 @startuml ai-ops-use-cases
 title AI ops deploys: use cases
 left to right direction
-actor "OpsAgent" as A_4f70734167656e74
-actor "CiServer" as A_4369536572766572
+actor "OpsAgent" as A_4f70734167656e74 <<agent>>
+actor "CiServer" as A_4369536572766572 <<system>>
 actor "OnCall" as A_4f6e43616c6c
-actor "DeployWindow" as A_4465706c6f7957696e646f77
-actor "HealthMonitor" as A_4865616c74684d6f6e69746f72
+actor "DeployWindow" as A_4465706c6f7957696e646f77 <<timer>>
+actor "HealthMonitor" as A_4865616c74684d6f6e69746f72 <<system>>
 usecase "AbandonChange" as UC_4162616e646f6e4368616e6765
 usecase "AutoRollback" as UC_4175746f526f6c6c6261636b
 usecase "ConfirmHealthy" as UC_436f6e6669726d4865616c746879

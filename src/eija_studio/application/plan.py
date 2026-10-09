@@ -13,9 +13,11 @@ from typing import Any
 from eija_studio.domain.data import data_for
 from eija_studio.domain.models import DomainError, Workflow
 from eija_studio.domain.pack import Pack
-from eija_studio.domain.policy import apply_structural_all, apply_transactions
+from eija_studio.domain.policy import apply_structural_all, apply_transactions, ensure_policy
 from eija_studio.domain.transactions import AddTransition, Transaction
-from .data_steps import DATA_EDITS, FIXED, Step, apply_data, data_changes, describe_data, draft_pack, is_data, parse_step, split
+from .class_build import class_build
+from .data_steps import (DATA_EDITS, FIXED, SetRoleKind, Step, apply_data, data_changes, describe_data, draft_pack, is_data, kind_steps,
+                         parse_step, set_kinds, split)
 from .diagrams import diff_summary
 from .new_system import new_names
 from .ports import PlanProposer
@@ -31,7 +33,7 @@ def describe(tx: Step, model: Workflow | None = None, pack: Pack | None = None,
     when `model` has it or a step of the same `plan` adds it. An action or role `pack` does not declare yet is
     called new, so a person sees when a step grows the system's vocabulary (ADR-0201). A data-model step reads as the
     class diagram says it (ADR-0202)."""
-    if isinstance(tx, DATA_EDITS):
+    if isinstance(tx, (*DATA_EDITS, SetRoleKind)):
         return describe_data(tx)
     d = tx.model_dump()
     actions = {t.id: t.action for t in model.transitions} if model is not None else {}
@@ -99,7 +101,9 @@ def _statuses(model: Workflow, pack: Pack, transactions: list[Step], accepted: l
 
 def _try(model: Workflow, pack: Pack, steps: list[Step], step: Step) -> None:
     transactions, data_steps = split(steps)
-    if is_data(step):
+    if isinstance(step, SetRoleKind):
+        set_kinds(pack, [step])
+    elif is_data(step):
         apply_data(data_for(pack), data_steps)
     else:
         apply_structural_all(model, transactions, pack)
@@ -125,9 +129,9 @@ def preview_plan(model: Workflow, pack: Pack, transactions: list[Step], accepted
     chosen = [tx for tx, keep in zip(transactions, accepted, strict=True) if keep]
     result: dict[str, Any] = {"steps": [], "accepted": sum(accepted), "legal": False, "codes": [], "refs": [],
                               "candidate": None, "candidate_semantic_hash": None, "diff": None, "declared": None,
-                              "data": None, "data_changes": []}
+                              "data": None, "data_changes": [], "class_build": None}
     try:
-        working = draft_pack(pack, split(chosen)[0], grows)
+        working = draft_pack(pack, [*split(chosen)[0], *kind_steps(chosen)], grows)
     except DomainError as error:
         return result | {"steps": _statuses(model, pack, transactions, accepted, pack), "codes": [error.code], "message": error.message}
     status = _statuses(model, working, transactions, accepted, pack if grows else None)
@@ -149,12 +153,15 @@ def _checked(model: Workflow, pack: Pack, chosen: list[Step], result: dict[str, 
     transactions, data_steps = split(chosen)
     try:
         candidate = apply_transactions(model, transactions, pack) if transactions else model
+        if kind_steps(chosen):  # the laws about kinds of actor judge the model again with the draft's kinds (ADR-0210)
+            ensure_policy(candidate, pack)
     except DomainError as error:
         return result | _refusal(error, pack)
     before = data_for(pack)
     after = apply_data(before, data_steps)
     if data_steps and after is not None:
-        result = result | {"data": after.model_dump(mode="json"), "data_changes": data_changes(before, after)}
+        result = result | {"data": after.model_dump(mode="json"), "data_changes": data_changes(before, after),
+                           "class_build": class_build(after)}
     return result | {"legal": True, "candidate": candidate.model_dump(mode="json"),
                      "candidate_semantic_hash": candidate.semantic_hash, "diff": diff_summary(model, candidate)}
 

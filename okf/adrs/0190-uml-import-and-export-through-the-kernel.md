@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0190-uml-import-and-export-through-the-kernel.md
   title: 0190-uml-import-and-export-through-the-kernel.md
   hash_method: lf-sha256-v1
-  sha256: 312f7f34310cd3e9bba7e502801df5c7fe9d577c6f47c1360c12a3bbbbb2a563
-notes_baseline: 7e641af55b2814dace480bac9b2fc19fefe40b02677f98626fed3a4ab652aa4a
+  sha256: 60863bd39154176248666ce84ff524797cd0492df65e392c726fb48478517d98
+notes_baseline: 4abb9e6ff29851f1189adb5cd23fb53ffd4d924a937cd0864c8f757dddcf8689
 ---
 
 # ADR-0190: UML import and export: XMI, PlantUML, Mermaid and draw.io, with every import judged by the kernel
@@ -41,6 +41,7 @@ notes_baseline: 7e641af55b2814dace480bac9b2fc19fefe40b02677f98626fed3a4ab652aa4a
 
 Existence-checked by the gate; not hashed (an ADR is a decision record, not a description of current code).
 
+* `repo://tests/test_uml_actor_kinds.py`
 * `repo://tests/test_uml_new_system.py`
 <!-- okf:generated:end facts -->
 
@@ -53,6 +54,7 @@ _No curated notes yet._
 
 * [ADR-0016: OSS first: build adapters, not engines](/adrs/0016-oss-first-adapters-not-engines.md) - EIJA's value is the assurance kernel: meaning selection, typed semantic transactions, subject-bound evidence and separated human authority.
 * [ADR-0185: Start, open and save your own system in PlayIDE](/adrs/0185-start-open-and-save-your-own-system.md) - PlayIDE could only show the pack the server was started with (`eija serve --pack …`), and every pack was one that ships with EIJA.
+* [ADR-0210: Actors that are not people: AI agents, timers and external systems in the model](/adrs/0210-actors-that-are-not-people.md) - Systems people design now have AI agents in them: a support bot that triages tickets and proposes refunds, a scheduled job that escalates what nobody handled,…
 
 ## Referenced by
 

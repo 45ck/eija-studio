@@ -4,6 +4,7 @@
 
 * [access](access/) - Symbols of application.access
 * [appgen](appgen/) - Symbols of application.appgen
+* [class_build](class_build/) - Symbols of application.class_build
 * [compiler](compiler/) - Symbols of application.compiler
 * [components](components/) - Symbols of application.components
 * [data_steps](data_steps/) - Symbols of application.data_steps

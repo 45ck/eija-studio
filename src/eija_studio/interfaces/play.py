@@ -31,6 +31,7 @@ from fastapi.responses import FileResponse
 from pydantic import Field
 
 from eija_studio.application.access import access, reach
+from eija_studio.application.class_build import class_build
 from eija_studio.application.components import app_components
 from eija_studio.application.landscape import landscape
 from eija_studio.application.law_proof import compare_laws, prove_laws, with_laws
@@ -226,7 +227,8 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
     def play_data():
         """The pack's data model for the class diagram, or null when the pack has none (ADR-0153)."""
         data = data_for(studio.pack)
-        return {"data": data.model_dump(mode="json") if data else None, "digest": data.digest if data else None}
+        return {"data": data.model_dump(mode="json") if data else None, "digest": data.digest if data else None,
+                "build": class_build(data) if data else None}
 
     @app.get("/api/play/roles")
     def play_roles():
@@ -300,7 +302,7 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
         scenarios = check_sequences(pack, candidate, scenarios_or_draft(pack, scenarios_for(studio.pack), start)[0], start)
         others, _ = siblings(pack.id)  # the system this workflow is part of, before and after (ADR-0203, #146)
         system = (landscape(pack.id, [(earlier, data_before, start), *others]), landscape(pack.id, [(pack, data, candidate), *others])) if others else None
-        report = ripple(start, candidate, data, (before, after), (old, new), components, scenarios, data_changes(data_before, data), system)
+        report = ripple(start, candidate, data, (before, after), (old, new), components, scenarios, data_changes(data_before, data), system, data_before)
         document = proposer().follow_on(report, candidate, pack) if report["problems"] else {"steps": []}
         return report | {"provider": proposer().name, "live": proposer().live,
                          "follow_ons": check_follow_ons(document, base, body.plan or [], pack, candidate, after, data)}

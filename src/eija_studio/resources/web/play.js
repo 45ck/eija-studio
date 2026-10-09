@@ -21,8 +21,16 @@
   // others are drawn as an actor classifier with their keyword, as UML allows.
   let roleKinds = {};
   const ACTOR_KINDS = { human: "person", agent: "AI agent", timer: "timer", system: "external system" };
+  const A_KIND = { human: "a person", agent: "an AI agent", timer: "a timer", system: "an external system" };
   const ACTOR_GROUPS = { human: "People", agent: "AI agents", timer: "Timers", system: "External systems" };
-  const roleKind = (role) => roleKinds[role] || "human";
+  // A role's kind as the plan would have it, while the plan is previewed (and so allowed): an accepted "make X an AI
+  // agent" step shows on every diagram (#156). Back on the model, the kind in force.
+  const roleKind = (role) => {
+    const shown = plan && plan.previewing && plan.result && plan.result.legal;
+    const step = shown ? accepted().filter((t) => t.kind === "set_role_kind" && t.role === role).at(-1) : null;
+    return step ? step.to : roleKinds[role] || "human";
+  };
+  const kindNote = (role) => (roleKind(role) === "human" ? "" : ` (${ACTOR_KINDS[roleKind(role)]})`); // "Who may take it" says who
   const hooks = { redraw: [], inspect: [], laws: [], tab: [], changeSelect: [], edit: [], screens: [] }; // the run bar (play-run.js) redraws its marks and adds inspector tools; play-laws.js and play-access.js draw their tabs
   // the Changes view (play-diff.js, ADR-0176) closes when another tab is shown and answers current() while open;
   // edit hears every undoable edit (ADR-0198); screens hears the screen designer redraw its list and card (play-roles.js)
@@ -280,7 +288,7 @@
   const HINTS = {
     states: "Pick State, Transition or Initial in the palette, then click the diagram (or drag it there). Double-click empty space for a new state, a state to rename it. Changes join the plan for you to preview; nothing is saved.",
     sequences: "The Tests tab's scenarios as UML sequences, each step run through the kernel: a step the model can't do is red with the kernel's reason. Select one to change it; a step in a neg must be refused.",
-    classes: "Select a class to see its attributes and associations.",
+    classes: "Select a class to see its attributes and associations. Only the «record» class is built: its attributes are the app's form. Grey classes and the associations are drawn, not built.",
     usecases: "Select a use case to inspect it. Double-click one to design its screen.",
     screens: "Design each use case's screen. The design check runs as you edit; Build & run uses these screens.",
     components: "The built app's components, read from its generated files: every line is an import, a route or a file read.",
@@ -298,12 +306,16 @@
     const g = current();
     if (!g) return;
     const plugin = g.getPlugin("fit");
-    plugin.maxFitScale = 1.4;
-    const scale = plugin.fitCenter({ margin: MARGIN });
+    // The Components tab's lens bar floats over the top of its diagram: leave room for it, and draw a small system no
+    // larger than life, so one workflow is not blown up beside the other tabs.
+    const bar = tab === "components" && !$("component-bar").hidden ? $("component-bar").offsetHeight + 16 : 0;
+    const margin = Math.max(MARGIN, bar);
+    plugin.maxFitScale = bar ? 1 : 1.4;
+    const scale = plugin.fitCenter({ margin });
     if (all === true || !(scale < READABLE)) return;
     const v = g.view, b = g.getGraphBounds(), box = g.container, k = READABLE;
     const w = b.width / v.scale, h = b.height / v.scale, x0 = b.x / v.scale - v.translate.x, y0 = b.y / v.scale - v.translate.y;
-    const along = (room, size, start) => (size * k <= room - 2 * MARGIN ? (room / k - size) / 2 - start : MARGIN / k - start);
+    const along = (room, size, start) => (size * k <= room - 2 * margin ? (room / k - size) / 2 - start : margin / k - start);
     v.scaleAndTranslate(k, along(box.clientWidth, w, x0), along(box.clientHeight, h, y0));
   }
 
@@ -357,7 +369,7 @@
       const t = transition(id.slice(11));
       box.append(el("h3", `${t.action} (${t.id})`));
       row(dl, "Path", `${t.from_state} → ${t.to_state}`);
-      row(dl, "Who", t.role);
+      row(dl, "Who", t.role + kindNote(t.role));
       row(dl, "Guards", t.guards.join(", "));
       row(dl, "Effects", t.required_effects.join(", ") || "none");
       row(dl, "Never", t.forbidden_effects.join(", ") || "nothing listed");
@@ -432,6 +444,11 @@
   }
   const ROW_LOOK = { added: { fontColor: "#17734a", fontStyle: 1 }, changed: { fontColor: "#a35f00", fontStyle: 1 }, removed: { fontColor: "#8a94a6", fontStyle: 8 } };
   const ROW_MARK = { added: "+ ", changed: "~ ", removed: "− " };
+  // What the built app does with the class diagram (#145): the server says which classes and associations are drawn but
+  // not built, and which record attributes stand in for an association. A previewed plan carries its own report.
+  let savedBuild = null;
+  const classBuild = () => (plan && plan.previewing && plan.result.class_build) || (data === savedData ? savedBuild : null);
+  const standsIn = (name) => ((classBuild() || {}).findings || []).filter((f) => f.subject[1] === "attribute:" + name);
   const widthOf = (e) => Math.max(200, e.name.length * 9 + 60, ...rowsOf(e).map(([a]) => attributeLine(a).length * 7 + 40));
 
   function classLayout() {
@@ -477,17 +494,20 @@
     classGraph.setDropEnabled(false);
     classGraph.setPanning(true);
     lean(classGraph);
-    const parent = classGraph.getDefaultParent(), at = classLayout(), cells = {};
+    const parent = classGraph.getDefaultParent(), at = classLayout(), cells = {}, drawnOnly = new Set((classBuild() || {}).drawn_only || []);
     const font = { fontFamily: "system-ui, sans-serif", fontColor: "#1b2130" };
+    const DRAWN_ONLY = { fillColor: "#f4f5f8", strokeColor: "#9aa3b5", fontColor: "#4a5568" }; // drawn, not built
     classGraph.batchUpdate(() => {
       for (const e of data.entities) {
         const [x, y, w, h] = at(e.name), record = e.name === data.record;
         const box = cells[e.name] = classGraph.insertVertex({ parent, id: "class:" + e.name, value: (record ? "«record»\n" : "") + e.name,
           position: [x, y], size: [w, h], style: { ...font, shape: "swimlane", startSize: HEAD, horizontal: true, fontStyle: 1, fontSize: 13,
-            fillColor: record ? "#dfe6ff" : "#eef2ff", swimlaneFillColor: "#ffffff", strokeColor: "#5b74d6", rounded: false, collapsible: false } });
+            fillColor: record ? "#dfe6ff" : "#eef2ff", swimlaneFillColor: "#ffffff", strokeColor: "#5b74d6", rounded: false, collapsible: false,
+            ...(drawnOnly.has(e.name) ? DRAWN_ONLY : {}) } });
         rowsOf(e).forEach(([a, status], i) => classGraph.insertVertex({ parent: box, id: `attr:${e.name}.${a.name}`, value: (ROW_MARK[status] || "") + attributeLine(a),
           position: [8, HEAD + 4 + i * ROW], size: [w - 16, ROW], style: { ...font, fontSize: 12, align: "left", strokeColor: "none",
-            fillColor: "none", movable: false, selectable: false, ...(ROW_LOOK[status] || {}) } }));
+            fillColor: "none", movable: false, selectable: false, ...(status === "same" && standsIn(`${e.name}.${a.name}`).length ? { fontColor: "#a35f00" } : {}),
+            ...(ROW_LOOK[status] || {}) } }));
       }
       const [ex, ey, ew, eh] = at(enumName());
         const literals = cells[enumName()] = classGraph.insertVertex({ parent, id: "enum:" + enumName(), value: `«enumeration»\n${enumName()}`,
@@ -528,6 +548,13 @@
     }
     box.append(dl);
     if (name === data.record) box.append(el("p", "Records of this class move through the state machine. Its attributes are the built app's form, checked on the server.", { class: "muted" }));
+    const build = classBuild();
+    if (!build) return;
+    for (const f of build.findings.filter((x) => x.subject[0] === "class:" + name)) box.insertBefore(el("p", "To consider: " + f.message, { class: "consider" }), dl);
+    if (build.drawn_only.includes(name)) box.append(el("p", `Drawn, not built: the app stores ${data.record} records only, so it never stores or looks up a ${name}.`, { class: "muted" }));
+    const links = build.associations.filter((a) => a.source === name || a.target === name);
+    if (links.length) box.append(el("p", links.map((a) => a.message).join(" "), { class: "muted small" }));
+    box.append(el("p", build.limits.join(" "), { class: "muted small" }));
   }
 
   // Use case diagram: a view of the same workflow. Each role is an actor; each transition's action is a use case
@@ -823,7 +850,8 @@
 
   // The state machine's changes, then the class diagram's (ADR-0202).
   function changesOf(result) {
-    const states = changes(result.diff), classes = (result.data_changes || []).join("; ");
+    const kinds = accepted().filter((t) => t.kind === "set_role_kind").map((t) => `makes ${t.role} ${A_KIND[t.to]}`);
+    const states = changes(result.diff), classes = [...(result.data_changes || []), ...kinds].join("; ");
     return states === "no visible change" && classes ? classes : [states, classes].filter(Boolean).join("; ");
   }
 
@@ -1058,13 +1086,13 @@
   }
 
   function rippleCheck() {
-    const name = "Diagrams agree";
-    if (!plan || !plan.steps.length) return { name, ok: true, detail: "No change, so nothing ripples" };
-    if (!plan.result || !plan.result.legal) return { name, ok: false, detail: "The plan is refused or empty: nothing to ripple" };
-    if (!ripple || ripple.key !== rippleKey()) return { name, ok: false, detail: "Working out the ripple…" };
-    if (ripple.error) return { name, ok: false, detail: `${ripple.error.code || "ERROR"}: ${ripple.error.message}` };
+    const name = "Diagrams agree", id = "ripple";
+    if (!plan || !plan.steps.length) return { id, name, ok: true, detail: "No change, so nothing ripples" };
+    if (!plan.result || !plan.result.legal) return { id, name, ok: false, detail: "The plan is refused or empty: nothing to ripple" };
+    if (!ripple || ripple.key !== rippleKey()) return { id, name, ok: false, detail: "Working out the ripple…" };
+    if (ripple.error) return { id, name, ok: false, detail: `${ripple.error.code || "ERROR"}: ${ripple.error.message}` };
     const bad = ripple.problems.filter((p) => p.change === "problem").length, warn = ripple.problems.length - bad;
-    return { name, ok: ripple.agree, detail: bad ? `${bad} diagram(s) out of step: see the plan's ripple` : warn ? `They agree; ${warn} warning(s) to look at` : "Every diagram agrees with the change" };
+    return { id, name, ok: ripple.agree, detail: bad ? `${bad} diagram(s) out of step: see the plan's ripple` : warn ? `They agree; ${warn} warning(s) to look at` : "Every diagram agrees with the change" };
   }
 
   async function makeCase() {
@@ -1158,7 +1186,7 @@
     const now = await refreshPlan();
     if (now && step.author === "ai" && !on && !step.caught && was && was.accepted && !was.legal && now.legal) {
       step.caught = true;
-      earn(3, `Caught AI step ${i + 1}: without it the policy allows the plan`);
+      earn(3, `Caught AI step ${i + 1}: without it the policy allows the plan`, "caught");
     }
   }
 
@@ -1196,10 +1224,20 @@
     if (plan.result) renderPlan(plan.result);
   }
 
+  // A role-kind step is shown on the use case diagram, on the actor it changes (ADR-0210, #156).
+  function showRoleStep(i) {
+    showTab("usecases");
+    select("role:" + plan.steps[i].transaction.role, false);
+    $("inspector").prepend(stepNote(i));
+    if (plan.steps[i].author === "ai" && !plan.steps[i].checked) { plan.steps[i].checked = true; earn(1, `Looked at AI step ${i + 1} on the diagram`); }
+    if (plan.result) renderPlan(plan.result);
+  }
+
   function showStep(i) {
     const step = plan.steps[i];
     if (!plan.previewing && plan.result && plan.result.legal) enterPreview();
     if (DATA_STEPS.includes(step.transaction.kind)) { showClassStep(i); return; }
+    if (step.transaction.kind === "set_role_kind") { showRoleStep(i); return; }
     if (tab !== "states") showTab("states");
     const id = cellOf(step.transaction);
     let cell = graph.getDataModel().getCell(id);
@@ -1234,9 +1272,12 @@
     earn(n, why);
   }
 
-  function earn(n, why) {
+  // The game layer (play-game.js, ADR-0208) hears every award and every change to the checks; it adds motion and the
+  // next check to run, and awards nothing itself.
+  function earn(n, why, kind = "") {
     points += n;
     earned.unshift({ n, why });
+    document.dispatchEvent(new CustomEvent("playide:earn", { detail: { n, why, kind, points } }));
     const toast = $("toast");
     toast.textContent = `+${n} ${why}`;
     toast.classList.add("show");
@@ -1250,13 +1291,13 @@
     const seen = ai.filter((s) => s.checked).length, built = lastBuild && lastBuild.key === key ? lastBuild : null;
     const simulated = sim && simKey === key ? sim : null;
     return [
-      { name: "AI steps checked", ok: seen === ai.length, detail: ai.length ? `${seen} of ${ai.length} AI steps looked at on the diagram` : "No AI plan to check" },
-      { name: "Screens pass the design check", ok: problemsFor === screensKey() && !problems.length,
+      { id: "ai", name: "AI steps checked", ok: seen === ai.length, detail: ai.length ? `${seen} of ${ai.length} AI steps looked at on the diagram` : "No AI plan to check" },
+      { id: "screens", name: "Screens pass the design check", ok: problemsFor === screensKey() && !problems.length,
         detail: problemsFor !== screensKey() ? "Checking the screens…" : problems.length ? `${problems.length} design problem(s): see Screens` : "Every screen can be built" },
-      { name: "Conformance", ok: Boolean(built) && built.conformance.status === "PASS",
+      { id: "conformance", name: "Conformance", ok: Boolean(built) && built.conformance.status === "PASS",
         detail: built ? `${built.conformance.status}: ${built.cases} cases checked against the kernel` : "Not built since the last change: press Build & run" },
       rippleCheck(),
-      { name: "Simulated", ok: Boolean(simulated),
+      { id: "simulated", name: "Simulated", ok: Boolean(simulated),
         detail: simulated ? `${simulated.attempts} attempts, ${simulated.refused} refused by the kernel` : "Not simulated since the last change: press Simulate" },
     ];
   }
@@ -1264,13 +1305,12 @@
   function renderHealth() {
     const checks = checksNow(), done = checks.filter((c) => c.ok).length, ring = $("health-ring"), ns = "http://www.w3.org/2000/svg";
     const r = 14, length = 2 * Math.PI * r, part = length / checks.length;
-    ring.replaceChildren(...checks.map((c, i) => {
-      const arc = document.createElementNS(ns, "circle");
+    if (ring.children.length !== checks.length) ring.replaceChildren(...checks.map(() => document.createElementNS(ns, "circle")));
+    checks.forEach((c, i) => { // the same arcs are kept, so a part filling or emptying can be animated
       const attrs = { cx: 18, cy: 18, r, stroke: c.ok ? "#17734a" : "#dfe3ea", "stroke-dasharray": `${part - 2} ${length - part + 2}`,
-        "stroke-dashoffset": String(-i * part), transform: "rotate(-90 18 18)" };
-      for (const [k, v] of Object.entries(attrs)) arc.setAttribute(k, v);
-      return arc;
-    }));
+        "stroke-dashoffset": String(-i * part), transform: "rotate(-90 18 18)", "data-check": c.id || "" };
+      for (const [k, v] of Object.entries(attrs)) ring.children[i].setAttribute(k, v);
+    });
     $("health-text").textContent = `${done}/${checks.length} checks · ${points} pts`;
     $("health").title = checks.map((c) => `${c.ok ? "✓" : "○"} ${c.name}: ${c.detail}`).join("\n");
     $("points").textContent = `${points} pts`;
@@ -1284,6 +1324,7 @@
       li.append(el("strong", `+${e.n}`), document.createTextNode(e.why));
       return li;
     }) : [el("li", "Nothing yet. Look at an AI step on the diagram, untick one the policy refuses, or build and simulate an AI change.")]));
+    document.dispatchEvent(new CustomEvent("playide:checks", { detail: { checks, points, key: viewKey(), plan: Boolean(plan && plan.steps.length) } }));
   }
 
   // Adding without dragging (ADR-0174), after draw.io and Visio: click a palette item, then the diagram, to place it;
@@ -1400,7 +1441,7 @@
   function changeRole(cell) {
     const t = transition(cell.id.slice(11)), [x, y] = cellBox(cell) ? [cellBox(cell).x, cellBox(cell).y] : [20, 20];
     if (!t) return; // drawn in this plan: change it in the plan instead
-    const role = choose(packInfo.roles, t.role);
+    const role = choose(packInfo.roles, t.role, (r) => r + kindNote(r));
     inlineEdit(`Who may take ${t.action}`, { fields: [["Who may take it", role]], make: () => ({ kind: "set_role", transition: t.id, role: role.value }) },
       x + 8, y + 8);
   }
@@ -1550,7 +1591,7 @@
   // declares as a sketch would: a text box that suggests the declared names and says when a name is new.
   function named(values, value, what, used = new Set()) {
     const id = `names-${what}-${++named.n}`, list = el("datalist", undefined, { id });
-    for (const v of values) list.append(el("option", undefined, { value: v, label: used.has(v) ? `${v} (already used)` : v }));
+    for (const v of values) list.append(el("option", undefined, { value: v, label: used.has(v) ? `${v} (already used)` : what === "role" ? v + kindNote(v) : v }));
     const input = el("input", undefined, { list: id, value, required: "", maxlength: "40", pattern: "[A-Za-z][A-Za-z0-9_]{0,39}",
       placeholder: `A ${what}, or a new name`, autocomplete: "off", title: "Letters, digits and _; starts with a letter" });
     const note = el("span", "", { class: "muted small new-name" });
@@ -1603,7 +1644,7 @@
     const fresh = packInfo.actions.find((a) => !used.has(a));
     const action = packInfo.own_system ? named(packInfo.actions, fresh || "", "action", used) // your own system can name a new one
       : choose(packInfo.actions, fresh || packInfo.actions[0], (a) => a + (used.has(a) ? " (already used)" : ""));
-    const role = packInfo.own_system ? named(packInfo.roles, packInfo.roles[0], "role") : choose(packInfo.roles, packInfo.roles[0]);
+    const role = packInfo.own_system ? named(packInfo.roles, packInfo.roles[0], "role") : choose(packInfo.roles, packInfo.roles[0], (r) => r + kindNote(r));
     return { fields: [["From", from], ["To", to], ["Action", action], ["Who may take it", role]],
       make: () => ({ kind: "add_transition", id: newId(action.value), action: action.value, from_state: from.value, to_state: to.value, role: role.value }) };
   }
@@ -1643,7 +1684,7 @@
   function transitionTools(t) {
     const others = packInfo.roles.filter((r) => r !== t.role);
     return draftTools([
-      ...others.map((r) => [`Let ${r} take it`, () => addStep({ kind: "set_role", transition: t.id, role: r })]),
+      ...others.map((r) => [`Let ${r}${kindNote(r)} take it`, () => addStep({ kind: "set_role", transition: t.id, role: r })]),
       ["Move an end…", () => drawForm("move", t.id)],
       ["Remove", () => addStep({ kind: "remove_transition", transition: t.id })],
     ]);
@@ -2033,7 +2074,9 @@
 
   // Run the app as one fixture actor: the last build when it is of the model and screens on show, else a new one.
   async function runAs(actor) {
-    if (lastBuild && lastBuild.url && lastBuild.key === viewKey() && lastBuild.conformance.status === "PASS") showRun(lastBuild.url, actor);
+    // Reuse it only while its app still runs in the frame: the run bar's Stop ends the process and blanks the frame.
+    const running = Boolean(lastBuild && lastBuild.url) && !$("run").hidden && $("run-frame").src.startsWith(lastBuild.url);
+    if (running && lastBuild.key === viewKey() && lastBuild.conformance.status === "PASS") showRun(lastBuild.url, actor);
     else await build(actor);
   }
 
@@ -2133,6 +2176,7 @@
     }));
     $("sim-limits").textContent = `Seed ${result.seed}, ${result.steps} steps. ` + result.limits.join(" ");
     paint(result);
+    document.dispatchEvent(new CustomEvent("playide:simulated", { detail: result }));
   }
 
   // Who acted, by kind of actor (ADR-0210): what the AI agents, timers and external systems tried and what the kernel
@@ -2169,6 +2213,7 @@
         if (t) restyle("transition:" + t.id, { strokeColor: entry.outcome === "REFUSED" ? "#a12f2f" : "#3157d5", strokeWidth: 6 }, graph.getDataModel().getCell("transition:" + t.id).value);
         const at = entry.outcome === "REFUSED" ? entry.from : entry.to;
         if (at) restyle("state:" + at, { strokeColor: entry.outcome === "REFUSED" ? "#a12f2f" : "#3157d5", strokeWidth: 4 }, graph.getDataModel().getCell("state:" + at).value);
+        document.dispatchEvent(new CustomEvent("playide:step", { detail: { ...entry, transition: t ? t.id : null, ms: 450 } }));
       });
       i += 1;
     }, 450);
@@ -2224,7 +2269,7 @@
     return ({
       add_state: () => `add state ${tx.state}`, remove_state: () => `remove state ${tx.state}`, rename_state: () => `rename ${tx.state} to ${tx.to}`,
       set_initial: () => `start records in ${tx.state}`, add_transition: () => `add ${tx.action}`, remove_transition: () => `remove ${name}`,
-      set_role: () => `let ${tx.role} take ${name}`, retarget_transition: () => `move ${name}'s ${tx.end} to ${tx.state}`,
+      set_role: () => `let ${tx.role} take ${name}`, set_role_kind: () => `make ${tx.role} ${A_KIND[tx.to]}`, retarget_transition: () => `move ${name}'s ${tx.end} to ${tx.state}`,
     }[tx.kind] || (() => tx.kind.replace(/_/g, " ")))();
   }
 
@@ -2404,7 +2449,9 @@
     const status = await api("/api/status");
     $("model-name").textContent = status.pack.name + (caseId ? " · change case" : "");
     packInfo = status.pack;
-    data = savedData = (await api("/api/play/data")).data;
+    const dataDoc = await api("/api/play/data");
+    data = savedData = dataDoc.data;
+    savedBuild = dataDoc.build;
     roleKinds = Object.fromEntries((await api("/api/play/roles")).roles.map((r) => [r.id, r.kind]));
     await loadScreens(null);
     outline();
@@ -2473,7 +2520,10 @@
   const changeLook = (status, part) => (window.PlayDiff && shownChange ? window.PlayDiff.look(status, part) : {});
 
   window.PlayIDE = {
-    api, el, hooks, about, roleKind, kinds: ACTOR_KINDS, viewKey, label, restyle, clearSim, select, showTab, fit, importPlan, runAs, openScreen,
+    api, el, hooks, about, roleKind, kinds: ACTOR_KINDS, actorLook: ACTOR_LOOK, inForce: (role) => roleKinds[role] || "human",
+    // Change who holds a role: a step in the plan like any drawn edit, checked by the server against the laws about
+    // kinds of actor; nothing is saved (#156). The review view changes nothing.
+    setKind: (role, to) => (REVIEW_VIEW ? null : addStep({ kind: "set_role_kind", role, to })), reviewing: () => REVIEW_VIEW, viewKey, label, restyle, clearSim, select, showTab, fit, importPlan, runAs, openScreen,
     screens: () => screens, data: () => data, // the screen designer's screens and the class diagram (play-roles.js reads them)
     graph: () => graph, tab: () => tab, model: () => model, selected: () => selected, pack: () => packInfo, base: () => baseModel,
     direction: () => direction || "LR", // the state machine's layout, which the Changes view follows
