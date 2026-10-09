@@ -155,3 +155,36 @@ def test_an_ai_agent_has_no_screens_only_calls_in_a_real_browser():
             assert errors == []
         finally:
             chrome.close()
+
+
+@pytest.mark.browser
+@pytest.mark.slow
+@browser
+def test_the_screen_flow_is_read_from_the_state_machine_and_the_screens_in_a_real_browser():
+    api = pytest.importorskip("playwright.sync_api", reason="NOT_RUN: install the hci or demos extra")
+    from demos.lib import ephemeral_eija_server  # noqa: PLC0415 - demos start a real server; only this opt-in test needs it
+
+    with ephemeral_eija_server(pack=ROOT / "packs/library-loan") as server, api.sync_playwright() as playwright:
+        chrome = _launch(api, playwright)
+        try:
+            page = chrome.new_page(viewport={"width": 1600, "height": 900})
+            errors: list[str] = []
+            page.on("pageerror", lambda error: errors.append(str(error)))
+            page.goto(f"{server.base_url}/play#{server.token}")
+            page.wait_for_selector("body[data-ready=true]", timeout=60_000)
+            page.click("#tab-screens")
+            page.click("#screen-flow-toggle")
+            page.wait_for_selector("#screen-flow .flow-card")
+            assert page.locator("#screen-flow .flow-card").count() == 6  # creating a record and five actions
+            assert sorted(page.locator("#screen-flow .flow-end").all_inner_texts()) == ["Ends in Cancelled", "Ends in Returned"]
+            states = page.eval_on_selector_all("#screen-flow .flow-state", "els => els.map((e) => e.textContent)")  # SVG text
+            assert states.count("Requested") == 2 and "Overdue" in states  # create leads to Check out and to Cancel
+            create = page.locator('#screen-flow .flow-card[data-use-case=""]')
+            assert "Request a loan" in create.inner_text() and "Due back *" in create.inner_text()  # the designed screen and the data model
+            page.click(".lens-role[data-role=Member]")
+            assert page.locator("#screen-flow .flow-card.faded").count() == 4  # Create and Cancel stay
+            page.click('#screen-flow .flow-card[data-use-case="Return"]')
+            assert page.input_value("#screen-card .screen-title") == "Return"
+            assert errors == []
+        finally:
+            chrome.close()
