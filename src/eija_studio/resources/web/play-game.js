@@ -227,9 +227,10 @@
     clearInterval(flowTimer);
     countUp();
     if (still() || !result.trace || !result.trace.length) return;
-    const shown = result.trace.slice(0, 120);
+    const shown = result.trace.slice(0, 120), key = P.viewKey();
     let i = 0;
     flowTimer = setInterval(() => {
+      if (P.viewKey() !== key || $("sim").hidden) { clearInterval(flowTimer); return; } // that run was of another view
       for (let k = 0; k < 2 && i < shown.length; k += 1, i += 1) travel(shown[i], 700);
       if (i >= shown.length) clearInterval(flowTimer);
     }, 70);

@@ -35,5 +35,5 @@ g.game-arrive,.game-arrive{animation:game-arrive .5s ease}
 @media (prefers-reduced-motion:reduce){
   .health.game-bump,.health.game-burst,.health.game-drain,#health-ring circle.game-pop,.game-note,#build.game-stale,#simulate.game-stale,
   #chat-log .plan.game-caught,.game-cross,.game-arrive{animation:none}
-  #health-ring circle{transition:none}
+  #health-ring circle,.health{transition:none}
 }

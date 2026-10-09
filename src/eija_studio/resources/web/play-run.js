@@ -157,8 +157,9 @@
       return;
     }
     const now = log.trace[pos - 1], { records, ...counts } = sofar(), graph = P.graph();
-    // The game layer (play-game.js, ADR-0208) moves a dot along this step's transition, once per step forward.
-    if (pos !== shownPos && pos > 0) document.dispatchEvent(new CustomEvent("playide:step", { detail: { ...now, ms: Number($("run-speed").value) } }));
+    // The game layer (play-game.js, ADR-0208) moves a dot along this step's transition, once per single step forward.
+    // A jump straight to the next stop (the fastest speed, or reduced motion) draws no traffic for the steps it skips.
+    if (pos === shownPos + 1) document.dispatchEvent(new CustomEvent("playide:step", { detail: { ...now, ms: Number($("run-speed").value) } }));
     shownPos = pos;
     graph.batchUpdate(() => {
       paint(counts);
