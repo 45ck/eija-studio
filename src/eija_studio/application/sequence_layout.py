@@ -29,7 +29,10 @@ class _Layout:
         roles = {a.id: a.role for a in pack.fixtures.actors}
         self.lifelines: dict[str, dict[str, Any]] = {}
         for s in scenario.steps:
-            self._lifeline("actor", s.actor, f"{s.actor} : {roles.get(s.actor, '?')}")
+            kind = pack.role_kind(roles.get(s.actor, "")) or "human"  # ADR-0210: an agent, timer or system says so
+            keyword = "" if kind == "human" else f"«{kind}» "
+            key = self._lifeline("actor", s.actor, f"{keyword}{s.actor} : {roles.get(s.actor, '?')}")
+            self.lifelines[key]["actor_kind"] = kind
         self.record = self._lifeline("record", record[0], f"{record[0]} : {record[1]}")
         for v in steps:
             for effect in v["effects"]:
