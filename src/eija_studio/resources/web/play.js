@@ -376,10 +376,13 @@
     const v = graph.view, box = graph.container, m = graph.getDataModel(), pad = 16;
     const boxes = ids.map((id) => m.getCell(id)).filter(Boolean).map((c) => v.getState(c)).filter(Boolean).map((st) => st.text && st.cell.isEdge() ? st.text.boundingBox || st : st);
     if (!boxes.length) return;
-    const x1 = Math.min(...boxes.map((b) => b.x)), y1 = Math.min(...boxes.map((b) => b.y));
-    const x2 = Math.max(...boxes.map((b) => b.x + b.width)), y2 = Math.max(...boxes.map((b) => b.y + b.height));
-    const shift = (lo, hi, size) => (lo >= pad && hi <= size - pad ? 0 : hi - lo > size - 2 * pad ? pad - lo : lo < pad ? pad - lo : size - pad - hi);
-    const dx = shift(x1, x2, box.clientWidth), dy = shift(y1, y2, box.clientHeight);
+    // Keep them all in view; when they do not fit together, the first (the current state) wins over the line taken.
+    const shift = (lo, hi, size) => (lo >= pad && hi <= size - pad ? 0 : lo < pad ? pad - lo : size - pad - hi);
+    const along = (start, length, size) => {
+      const lo = Math.min(...boxes.map((b) => b[start])), hi = Math.max(...boxes.map((b) => b[start] + b[length]));
+      return hi - lo <= size - 2 * pad ? shift(lo, hi, size) : shift(boxes[0][start], boxes[0][start] + boxes[0][length], size);
+    };
+    const dx = along("x", "width", box.clientWidth), dy = along("y", "height", box.clientHeight);
     if (dx || dy) v.setTranslate(v.translate.x + dx / v.scale, v.translate.y + dy / v.scale);
   }
 
@@ -2330,8 +2333,8 @@
         if (at) restyle("state:" + at, { strokeColor: entry.outcome === "REFUSED" ? "#a12f2f" : "#3157d5", strokeWidth: 4 }, graph.getDataModel().getCell("state:" + at).value);
         document.dispatchEvent(new CustomEvent("playide:step", { detail: { ...entry, transition: t ? t.id : null, ms: 450 } }));
       });
-      const here = entry.outcome === "REFUSED" ? entry.from : entry.to;
-      if (here) follow(["state:" + here]);
+      const here = entry.outcome === "REFUSED" ? entry.from : entry.to, step = entry.action && model.transitions.find((x) => x.action === entry.action);
+      if (here) follow(["state:" + here, ...(step ? ["transition:" + step.id] : [])]); // the state and the line taken, as Run does
       i += 1;
     }, 450);
   }

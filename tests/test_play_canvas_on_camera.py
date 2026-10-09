@@ -91,3 +91,31 @@ def test_a_paused_run_keeps_the_current_state_on_screen_with_the_dock_open(width
             assert errors == []
         finally:
             chrome.close()
+
+
+def test_replaying_a_simulation_keeps_the_replayed_step_on_screen():
+    api = pytest.importorskip("playwright.sync_api", reason="NOT_RUN: install the hci or demos extra")
+    from demos.lib import ephemeral_eija_server  # noqa: PLC0415 - demos start a real server; only this opt-in test needs it
+
+    replayed = """() => { const g = window.PlayIDE.diagram('states'), c = document.getElementById('canvas'), out = [];
+        for (const cell of Object.values(g.getDataModel().cells)) if (cell.id && ['#3157d5', '#a12f2f'].includes(cell.style.strokeColor) && cell.style.strokeWidth === (cell.isEdge() ? 6 : 4)) {
+          const s = g.view.getState(cell), b = s.text && cell.isEdge() ? s.text.boundingBox || s : s;
+          out.push([cell.id, b.y, b.y + b.height, c.clientHeight]); } return out; }"""
+    with ephemeral_eija_server(pack=ROOT / "packs" / "library-loan") as server, api.sync_playwright() as playwright:
+        chrome, page, errors = _open(api, playwright, server, 1280, 800)
+        try:
+            page.click("#simulate")
+            page.wait_for_selector("#sim-summary:not(:empty)", timeout=60_000)
+            page.click("#sim-replay")
+            seen = []
+            for _ in range(60):
+                page.wait_for_timeout(100)
+                seen += page.evaluate(replayed)
+            states = [s for s in seen if s[0].startswith("state:")]  # the line taken shows too when both fit
+            assert states, "the replay marked no state"
+            assert {"state:Returned", "state:Cancelled"} & {s[0] for s in states}  # it reached the foot of the diagram
+            off = [s for s in states if not (s[1] >= 0 and s[2] <= s[3])]
+            assert off == []
+            assert errors == []
+        finally:
+            chrome.close()
