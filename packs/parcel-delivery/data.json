@@ -1,0 +1,126 @@
+{
+  "schema_version": "eija.data.v1",
+  "id": "parcel-delivery",
+  "record": "Parcel",
+  "entities": [
+    {
+      "name": "Parcel",
+      "description": "One consignment from one shipper to one recipient.",
+      "attributes": [
+        {
+          "name": "trackingNumber",
+          "type": "text",
+          "required": true,
+          "max_length": 24
+        },
+        {
+          "name": "weightKg",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "service",
+          "type": "choice",
+          "required": true,
+          "choices": [
+            "Standard",
+            "Express",
+            "International"
+          ]
+        },
+        {
+          "name": "recipientName",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "deliveryAddress",
+          "type": "text",
+          "required": true,
+          "max_length": 400
+        },
+        {
+          "name": "declaredValue",
+          "type": "number"
+        },
+        {
+          "name": "signatureRequired",
+          "type": "boolean"
+        }
+      ]
+    },
+    {
+      "name": "Route",
+      "attributes": [
+        {
+          "name": "code",
+          "type": "text",
+          "required": true,
+          "max_length": 12
+        },
+        {
+          "name": "depot",
+          "type": "text",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "Scan",
+      "attributes": [
+        {
+          "name": "at",
+          "type": "date",
+          "required": true
+        },
+        {
+          "name": "location",
+          "type": "text",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "CustomsDeclaration",
+      "attributes": [
+        {
+          "name": "hsCode",
+          "type": "text",
+          "required": true,
+          "max_length": 10
+        },
+        {
+          "name": "originCountry",
+          "type": "text",
+          "required": true,
+          "max_length": 2
+        }
+      ]
+    }
+  ],
+  "associations": [
+    {
+      "source": "Parcel",
+      "target": "Route",
+      "role": "route",
+      "source_multiplicity": "0..*",
+      "target_multiplicity": "0..1"
+    },
+    {
+      "source": "Parcel",
+      "target": "Scan",
+      "kind": "composition",
+      "role": "scans",
+      "source_multiplicity": "1",
+      "target_multiplicity": "0..*"
+    },
+    {
+      "source": "Parcel",
+      "target": "CustomsDeclaration",
+      "kind": "composition",
+      "role": "declaration",
+      "source_multiplicity": "1",
+      "target_multiplicity": "0..1"
+    }
+  ]
+}
