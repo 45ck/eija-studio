@@ -69,6 +69,13 @@ def test_a_record_must_be_a_uml_class_name():
         sketch_documents("X", "ticket", SKETCH, "x")
 
 
+def test_roles_that_slug_alike_still_get_their_own_users():
+    documents = sketch_documents("Desk", "Ticket", "Open -> Done : Close [Agent]\nDone -> Open : Reopen [agent]\nroles: A_B, A__B", "desk")
+    actors = documents["pack.json"]["fixtures"]["actors"]
+    assert len({a["id"] for a in actors}) == len(actors) == 5
+    assert [a["role"] for a in actors if a["active"]] == ["Agent", "agent", "A_B", "A__B"]
+
+
 def test_ids_are_slugs_that_never_collide():
     assert system_id("Support desk!", set()) == "support-desk"
     assert system_id("Support desk", {"support-desk", "support-desk-2"}) == "support-desk-3"

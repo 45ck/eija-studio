@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/diagrams.py
   title: application/diagrams.py
   hash_method: ast-api-v1
-  sha256: 49a01fb0303b64974b85b503a45ba22a373ec668aca86fa148307db16cdab64e
-notes_baseline: dea0b4093fe67149ebf7ce46c0b10cac31c15a758278c084253f656bdfd5cbab
+  sha256: 46f22e4685795eb38be1189d114ba9829faff6b6ba3d456519a8a55608ea39a8
+notes_baseline: 6d6163469d03e60c5c9868ad69e69dee5bdc6dad30cd963492fc06f57fa461bf
 ---
 
 # application.diagrams
@@ -54,7 +54,7 @@ from it) and the DDD stereotypes (a curated vocabulary). A picture is a review a
 * [`DDD_ROLE`](/symbols/application/diagrams/DDD_ROLE.md) (constant) - no docstring
 * [`Diagram`](/symbols/application/diagrams/Diagram.md) (type-alias) - no docstring
 * [`Edge`](/symbols/application/diagrams/Edge.md) (class) - no docstring
-* [`Fragment`](/symbols/application/diagrams/Fragment.md) (class) - A conditional block (`opt`): the steps happen only when `label` holds.
+* [`Fragment`](/symbols/application/diagrams/Fragment.md) (class) - A combined fragment.
 * [`GUARD_FAILURES`](/symbols/application/diagrams/GUARD_FAILURES.md) (constant) - no docstring
 * [`Graph`](/symbols/application/diagrams/Graph.md) (class) - A state machine (`kind="state"`) or a flow (`kind="flow"`) of labelled nodes and edges.
 * [`IMPACT_LEGEND`](/symbols/application/diagrams/IMPACT_LEGEND.md) (constant) - no docstring
@@ -108,6 +108,7 @@ _No curated notes yet._
 * [application.plan](/modules/application/plan.md) - Plan mode for the PlayIDE chat (ADR-0156): an AI proposes a change as numbered typed steps; the person accepts or rejects each one and sees what the accepted o…
 * [application.review](/modules/application/review.md) - Review a model change in PlayIDE instead of a pull request (ADR-0175).
 * [application.ripple](/modules/application/ripple.md) - Ripple (ADR-0158): what one change to the state machine does to every other diagram of the same system, and the follow-on edits that would keep them in agreeme…
+* [application.sequence_layout](/modules/application/sequence_layout.md) - Where a scenario's sequence diagram is drawn, and its export (ADR-0195).
 * [application.diagrams.BLOCKED_ID](/symbols/application/diagrams/BLOCKED_ID.md) - Constant `BLOCKED_ID` in `application/diagrams`.
 * [application.diagrams.CONTRACTS](/symbols/application/diagrams/CONTRACTS.md) - Constant `CONTRACTS` in `application/diagrams`.
 * [application.diagrams.ClassModel](/symbols/application/diagrams/ClassModel.md) - `class ClassModel` in `application/diagrams`.
@@ -116,7 +117,7 @@ _No curated notes yet._
 * [application.diagrams.DDD_ROLE](/symbols/application/diagrams/DDD_ROLE.md) - Constant `DDD_ROLE` in `application/diagrams`.
 * [application.diagrams.Diagram](/symbols/application/diagrams/Diagram.md) - Type alias `Diagram` in `application/diagrams`.
 * [application.diagrams.Edge](/symbols/application/diagrams/Edge.md) - `class Edge` in `application/diagrams`.
-* [application.diagrams.Fragment](/symbols/application/diagrams/Fragment.md) - A conditional block (`opt`): the steps happen only when `label` holds.
+* [application.diagrams.Fragment](/symbols/application/diagrams/Fragment.md) - A combined fragment.
 * [application.diagrams.GUARD_FAILURES](/symbols/application/diagrams/GUARD_FAILURES.md) - Constant `GUARD_FAILURES` in `application/diagrams`.
 * [application.diagrams.Graph](/symbols/application/diagrams/Graph.md) - A state machine (`kind="state"`) or a flow (`kind="flow"`) of labelled nodes and edges.
 * [application.diagrams.IMPACT_LEGEND](/symbols/application/diagrams/IMPACT_LEGEND.md) - Constant `IMPACT_LEGEND` in `application/diagrams`.

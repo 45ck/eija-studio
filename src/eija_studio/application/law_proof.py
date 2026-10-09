@@ -29,6 +29,7 @@ from eija_studio.domain.models import DomainError, ExecuteCommand, Workflow
 from eija_studio.domain.pack import Pack, PackError, parse_pack
 from eija_studio.domain.policy import check_policy
 from . import runtime
+from .memo import model_hash
 from .simulation import MemorySession
 
 FORMAT = "eija.law-proof.v1"
@@ -69,7 +70,7 @@ def _try(pack: Pack, model: Workflow, actors: list[dict[str, Any]], state: str, 
          action: str) -> Step | None:
     """What the kernel does when this actor takes this action on a record in this state: the step, or None if refused."""
     session = _session(pack, actors)
-    session.create_instance({"id": "r", "case_id": "proof", "model_hash": model.semantic_hash, "state": state, "version": 0})
+    session.create_instance({"id": "r", "case_id": "proof", "model_hash": model_hash(model), "state": state, "version": 0})
     command = ExecuteCommand(operation_id="op", actor_id=actor["id"], instance_id="r", action=action, expected_version=0)
     try:
         result = runtime.execute(session, "proof", model, command, pack=pack)  # type: ignore[arg-type]

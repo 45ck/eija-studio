@@ -154,7 +154,7 @@ def test_the_ripple_of_a_plan_reaches_every_diagram_and_saves_nothing(tmp_path):
     plan = [{"kind": "add_state", "state": "Lost", "after": studio.pack.model.states[-1]}]
     result = client.post("/api/play/ripple", json={"plan": plan}, headers=HEADERS).json()
     assert result.get("code") is None, result
-    assert result["format"] == "eija.ripple.v1" and set(result["diagrams"]) == {"states", "classes", "usecases", "screens", "components"}
+    assert result["format"] == "eija.ripple.v1" and set(result["diagrams"]) == {"states", "classes", "usecases", "screens", "components", "sequences"}
     assert "Adds state Lost" in [i["text"] for i in result["diagrams"]["states"]]
     assert [p["code"] for p in result["problems"]] == ["STATE_UNREACHABLE"]  # nothing leads into the new state yet
     assert result["live"] is False and [s["fixes"] for s in result["follow_ons"]] == ["STATE_UNREACHABLE"]

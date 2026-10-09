@@ -70,17 +70,25 @@
       item.append(el("span", "Import a UML file…"), el("span", "checked by the kernel; nothing is saved", { class: "muted small" }));
       item.addEventListener("click", () => { closeMenu(); $("uml-file").click(); });
       pop.append(item);
+      if (window.PlaySystems) { // a new system from a file goes through the Systems dialog (ADR-0185)
+        const start = el("button", undefined, { type: "button", role: "menuitem", id: "uml-new-system" });
+        start.append(el("span", "Start a new system from a UML file…"), el("span", "the file's model, checked by the kernel", { class: "muted small" }));
+        start.addEventListener("click", () => { closeMenu(); window.PlaySystems.new("uml"); });
+        pop.append(start);
+      }
     }
     const file = el("input", undefined, { id: "uml-file", type: "file", accept: ACCEPT, hidden: "" });
     file.addEventListener("change", () => { if (file.files[0]) readFile(file.files[0]); file.value = ""; });
     opener.addEventListener("click", () => {
-      const open = pop.hidden;
+      const open = pop.hidden, start = $("uml-new-system");
+      if (start) start.hidden = Boolean($("system-controls") && $("system-controls").hidden); // no systems on this server
+      const items = [...pop.querySelectorAll("button")].filter((b) => !b.hidden);
       pop.hidden = !open;
       opener.setAttribute("aria-expanded", String(open));
-      if (open) pop.querySelector("button").focus();
+      if (open) items[0].focus();
     });
     pop.addEventListener("keydown", (event) => {
-      const items = [...pop.querySelectorAll("button")], i = items.indexOf(document.activeElement);
+      const items = [...pop.querySelectorAll("button")].filter((b) => !b.hidden), i = items.indexOf(document.activeElement);
       if (event.key === "Escape") { closeMenu(); opener.focus(); }
       if (event.key === "ArrowDown" || event.key === "ArrowUp") {
         event.preventDefault();
@@ -187,6 +195,8 @@
     dialog.querySelector(".uml-actions").append(shut);
     dialog.showModal();
   }
+
+  window.PlayInterop = { entries }; // the Systems dialog shows a new system's import report the same way
 
   function start() {
     if (!window.PlayIDE) { setTimeout(start, 50); return; }

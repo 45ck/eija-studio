@@ -8,6 +8,15 @@
 - The Laws tab on a system with no laws says so, instead of "Every law in force holds… ." with a stray full stop.
 - The Laws and Tests tabs name the system's own files (`~/PlayIDE/support-desk/pack.json`), not `packs/support-desk/…`, which does not exist. Shipped packs still read `packs/library-loan/…`.
 
+### 8 October 2026: sequence diagrams
+
+- PlayIDE has a **Sequences** tab: the pack's scenarios (the Tests tab's `scenarios.json`) drawn in UML sequence notation (lifelines, calls, refusal replies, state invariants, effects as asynchronous messages, and a `neg` fragment around each step that must be refused), each step run through the kernel. A step the model can't do is flagged with the kernel's reason. Edit in the tab (the same draft the Tests tab shows), export as Mermaid or PlantUML, or download `scenarios.json`. A plan's ripple lists the scenarios it breaks. New route `POST /api/play/sequences`. See [ADR-0195](docs/adr/0195-sequence-diagrams-the-kernel-checks.md).
+
+### 9 October 2026: your own systems, two fixes
+
+- The Systems dialog opens again after you close it. Before, a second open did nothing until the page was reloaded.
+- A sketch whose roles differ only in case or punctuation (`Agent` and `agent`) now gets one user per role instead of being refused for duplicate user ids.
+
 ### 8 October 2026: PlayIDE polish, round 3
 
 - The Tests tab's **Run all** is no longer cut off at the right edge on a laptop screen: when the header's text and buttons do not fit side by side, the buttons go under the text, on the Laws tab too.

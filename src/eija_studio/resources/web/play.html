@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="/assets/play-review.css">
 <link rel="stylesheet" href="/assets/play-shell.css">
 <link rel="stylesheet" href="/assets/play-diff.css">
+<link rel="stylesheet" href="/assets/play-sequence.css">
 <link rel="stylesheet" href="/assets/play-systems.css">
 <link rel="stylesheet" href="/assets/play-tests.css">
 <link rel="stylesheet" href="/assets/play-interop.css">
@@ -24,6 +25,7 @@
 <script src="/assets/play-assist.js" defer></script>
 <script src="/assets/play-access.js" defer></script>
 <script src="/assets/play-diff.js" defer></script>
+<script src="/assets/play-sequence.js" defer></script>
 <script src="/assets/play-systems.js" defer></script>
 <script src="/assets/play-interop.js" defer></script>
 </head>
@@ -46,6 +48,11 @@
   </div>
 </header>
 <div class="toolbar">
+  <div id="history" class="runbar edit-tools" role="toolbar" aria-label="Edit history">
+    <button id="undo" class="run-btn" type="button" aria-label="Undo" title="Undo (Ctrl+Z)" aria-keyshortcuts="Control+Z" disabled><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M5.5 3 1.5 7l4 4V8.2h4a3 3 0 0 1 0 6H8v1.5h1.5a4.5 4.5 0 0 0 0-9h-4z"/></svg></button>
+    <button id="redo" class="run-btn" type="button" aria-label="Redo" title="Redo (Ctrl+Shift+Z)" aria-keyshortcuts="Control+Shift+Z Control+Y" disabled><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M10.5 3l4 4-4 4V8.2h-4a3 3 0 0 0 0 6H8v1.5H6.5a4.5 4.5 0 0 1 0-9h4z"/></svg></button>
+  </div>
+  <span class="sep edit-tools" aria-hidden="true"></span>
   <div id="runbar" class="runbar" role="toolbar" aria-label="Run">
     <button id="run-play" class="run-btn go" type="button" aria-keyshortcuts="F5"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4 2.5v11l9-5.5z"/></svg><span>Run</span></button>
     <button id="run-pause" class="run-btn" type="button" aria-label="Pause" title="Pause (F6)" aria-keyshortcuts="F6" disabled><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M4 2.5h3v11H4zM9 2.5h3v11H9z"/></svg></button>
@@ -91,6 +98,7 @@
       <div class="stage-tools">
         <div class="tabs" role="tablist" aria-label="Diagram">
           <button id="tab-states" role="tab" type="button" aria-selected="true" aria-controls="canvas">State machine</button>
+          <button id="tab-sequences" role="tab" type="button" aria-selected="false" aria-controls="sequences">Sequences</button>
           <button id="tab-classes" role="tab" type="button" aria-selected="false" aria-controls="class-canvas">Class diagram</button>
           <button id="tab-usecases" role="tab" type="button" aria-selected="false" aria-controls="usecase-canvas">Use cases</button>
           <button id="tab-screens" role="tab" type="button" aria-selected="false" aria-controls="screens">Screens</button>
@@ -113,6 +121,23 @@
       </div>
       <div id="canvas" class="canvas" tabindex="0" aria-describedby="canvas-help" role="tabpanel" aria-labelledby="tab-states"></div>
       <div id="diff-view" class="diff-view" role="region" aria-label="The change on the state machine" hidden></div>
+      <div id="sequences" class="sequences" role="tabpanel" aria-labelledby="tab-sequences" hidden>
+        <nav class="seq-list" aria-labelledby="seq-list-title"><h3 id="seq-list-title">Scenarios</h3><ul id="seq-list"></ul>
+          <button id="seq-new" type="button" class="quiet seq-edit">New scenario</button></nav>
+        <div class="seq-stage">
+          <div class="seq-head"><p id="seq-verdict" class="seq-verdict" role="status" aria-live="polite"></p>
+            <details class="seq-export"><summary class="quiet">Export</summary><div class="seq-export-menu">
+              <button id="seq-copy-mermaid" type="button" class="quiet">Copy as Mermaid</button>
+              <button id="seq-copy-plantuml" type="button" class="quiet">Copy as PlantUML</button>
+              <a id="seq-download" class="quiet" download="scenarios.json">Download scenarios.json</a>
+              <button id="seq-reset" type="button" class="quiet seq-edit">Reset to the pack's scenarios</button></div></details></div>
+          <div id="sequence-canvas" class="canvas" tabindex="0" aria-label="Sequence diagram"></div>
+          <form id="seq-add" class="seq-add seq-edit" aria-label="Add a message">
+            <span>Add message</span><select id="seq-actor" aria-label="From actor"></select><span aria-hidden="true">→</span>
+            <select id="seq-action" aria-label="Action"></select>
+            <button type="submit" class="primary">Add</button></form>
+        </div>
+      </div>
       <div id="class-canvas" class="canvas" tabindex="0" role="tabpanel" aria-labelledby="tab-classes" hidden></div>
       <div id="usecase-canvas" class="canvas" tabindex="0" role="tabpanel" aria-labelledby="tab-usecases" hidden></div>
       <div id="component-canvas" class="canvas" tabindex="0" role="tabpanel" aria-labelledby="tab-components" hidden></div>
@@ -246,6 +271,7 @@
   <span id="status-model"></span>
   <span id="status-plan" class="plan-chip" hidden>Previewing a plan</span>
   <span id="status-selection"></span>
+  <span id="status-saved" class="saved" role="status" aria-live="polite"></span>
   <span class="end">
     <span id="toast" class="toast" role="status" aria-live="polite"></span>
     <span id="score" class="score" role="status" aria-live="polite" hidden></span>
