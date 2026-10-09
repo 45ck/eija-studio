@@ -117,3 +117,26 @@ def test_the_page_loads_the_system_lens_after_play_js(client):
         assert client.get(f"/assets/{name}").status_code == 200
     source = (ROOT / "src/eija_studio/resources/web/play-landscape.js").read_text(encoding="utf-8")
     assert "fetch(" not in source  # it asks the server through the page's api(); the server decides
+
+
+def test_a_notification_no_transition_requires_is_not_published():
+    pack = load_pack(PACKS_ROOT / "library-loan")
+    unused = pack.effects.model_copy(update={"catalog": (*pack.effects.catalog, pack.effects.catalog[1].model_copy(update={"id": "Notification:Unused", "recipient": "nobody"}))})
+    result = landscape("library-loan", [(pack.model_copy(update={"effects": unused}), data_for(pack), pack.model)])
+    loan = result["workflows"][0]
+    assert "Notification:Unused" not in [p["effect"] for p in loan["publishes"]] and result["findings"] == []
+
+
+def test_a_second_folder_with_a_taken_id_is_reported_not_merged(tmp_path):
+    import shutil  # noqa: PLC0415
+
+    for name in ("library-loan", "library-fines"):
+        shutil.copytree(PACKS_ROOT / name, tmp_path / name)
+    shutil.copytree(PACKS_ROOT / "library-fines", tmp_path / "fines-copy")
+    app = create_app(harness_studio(tmp_path / "workspace", pack=tmp_path / "library-loan"), SESSION)
+    try:
+        result = TestClient(app, base_url=HEADERS["Origin"]).post("/api/play/landscape", json={}, headers=HEADERS).json()
+    finally:
+        app.state.play.stop()
+    assert [w["id"] for w in result["workflows"]] == ["library-fines", "library-loan"]
+    assert result["unreadable"] == ["library-fines (its id library-fines is taken)"]

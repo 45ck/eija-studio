@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/landscape.py#landscape
   title: application/landscape.py
   hash_method: ast-v2
-  sha256: 46ef302a26cb5432f624bea8526bd23e18db5152b284ba10fe6bf7911402f9a2
-notes_baseline: 57e03f720b42a2462d56e670e038a57dbc81e1fb440fbc9622a7173a6b48dd80
+  sha256: 739e2507787446f58fef421de0a03ae721f655c9f9ec1bcf3cf759b2838a9fc9
+notes_baseline: 1f6dad3fa549654e3416d0db3818badc2d653e4979ba35542e465fbe7dc30ec2
 ---
 
 # application.landscape.landscape
@@ -37,7 +37,7 @@ The system the workflow `focus` is part of: its workflows, actors, links and fin
 `systems` are the workflows that could be part of it (the packs beside the open one, each with its data model and the
 model shown for it), the open one included. Workflows that share no class with the open one's system are listed
 under `elsewhere`, so nothing is silently left out; `unreadable` names folders whose documents the kernel's checks
-refused.
+refused. Pack ids must be unique; the caller reports a second folder with an id already read as unreadable.
 ~~~
 <!-- okf:generated:end facts -->
 

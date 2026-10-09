@@ -390,10 +390,13 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
                 continue
             try:
                 other = load_pack(sibling)
-                if other.id != pack.id:
-                    found.append((other, data_for(other), other.model))
             except (DomainError, OSError):
                 unreadable.append(sibling.name)
+                continue
+            if any(other.id == known.id for known, _, _ in found):  # two folders, one id: which is meant is ambiguous
+                unreadable.append(f"{sibling.name} (its id {other.id} is taken)")
+            else:
+                found.append((other, data_for(other), other.model))
         return landscape(pack.id, found, unreadable)
 
     @app.post("/api/play/reach")

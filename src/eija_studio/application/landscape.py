@@ -47,6 +47,12 @@ def _held(model: Workflow) -> dict[str, set[str]]:
     return held
 
 
+def _emitted(model: Workflow) -> set[str]:
+    """The effects a transition requires: the runtime writes only these, so a catalog entry no transition names is not
+    published."""
+    return {e for t in model.transitions for e in t.required_effects}
+
+
 def _final(model: Workflow) -> list[str]:
     return sorted(s for s in model.states if not any(t.from_state == s for t in model.transitions))
 
@@ -57,7 +63,8 @@ def _workflow(pack: Pack, data: DataModel | None, model: Workflow) -> dict[str, 
         "id": pack.id, "name": pack.pack.name, "record": data.record if data else None,
         "states": len(model.states), "final_states": _final(model),
         "provides": [{"action": a.id, "roles": sorted(held.get(a.id, ()))} for a in pack.actions],
-        "publishes": [{"effect": e.id, "recipient": e.recipient} for e in pack.effects.catalog if e.kind == "notification"],
+        "publishes": [{"effect": e.id, "recipient": e.recipient} for e in pack.effects.catalog
+                      if e.kind == "notification" and e.id in _emitted(model)],
         "roles": sorted(r.id for r in pack.roles),
         "classes": sorted(e.name for e in data.entities) if data else [],
         "model": model.semantic_hash,
@@ -178,7 +185,7 @@ def landscape(focus: str, systems: Iterable[tuple[Pack, DataModel | None, Workfl
     `systems` are the workflows that could be part of it (the packs beside the open one, each with its data model and the
     model shown for it), the open one included. Workflows that share no class with the open one's system are listed
     under `elsewhere`, so nothing is silently left out; `unreadable` names folders whose documents the kernel's checks
-    refused."""
+    refused. Pack ids must be unique; the caller reports a second folder with an id already read as unreadable."""
     by_id = {pack.id: (pack, data, model) for pack, data, model in systems}
     data = {wid: found[1] for wid, found in by_id.items()}
     members = _connected(focus, {wid: _names(d) for wid, d in data.items()})
