@@ -6,6 +6,7 @@
 
 ## 2026-10-08
 
+* **PlayIDE polish, round 3**: re-synced `application.simulation.simulate` (refusal findings say "once" or "N times"). No Notes were hand-edited and nothing was recorded as verified.
 * **Your own systems in PlayIDE**: synced ADR-0185 and the new `application.new_system`, `adapters.system_library` and `interfaces.play_systems` module and symbol pages; `interfaces.http`, `interfaces.cli` and the pages that link to the reused domain symbols (`parse_pack`, `PackError`, `BASE_GUARDS`, `parse_data`, `parse_screens`, `parse_transaction`, the plan `MAX_STEPS`) refreshed. After merging main (ADR-0177), re-synced for template copies that also carry `scenarios.json` (`domain.scenarios.parse_scenarios`). No Notes were hand-edited and nothing was recorded as verified.
 * **UML import fixes**: re-synced ADR-0190 after its Safety bullet gained the compressed draw.io page bound and the second-initial-state report. No Notes were hand-edited and nothing was recorded as verified.
 * **PlayIDE polish**: re-synced `application.plan.preview_plan` (a refusal now also returns the refs and the descriptions of the laws it breaks). No Notes were hand-edited and nothing was recorded as verified.

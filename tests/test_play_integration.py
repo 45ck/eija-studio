@@ -2,7 +2,8 @@
 the policy for the open pack, a paused run keeps who tried what in view, a role in the outline opens the Permissions
 tab, the plan banner does not offer to open the Review tab while it is open, asking whether a
 state can be reached at all treats Yes as expected, the status bar names the selection as the outline does,
-an empty Review tab uses the whole tab, and the screen designer fits a laptop screen.
+an empty Review tab uses the whole tab, the screen designer fits a laptop screen,
+and the Tests tab's buttons and the review view's title bar fit too.
 
 Marked `browser`: it runs only with EIJA_BROWSER_TESTS=1 (NOT_RUN otherwise). It uses the installed Chrome, or the
 Chromium at EIJA_CHROMIUM, and never downloads a browser.
@@ -71,8 +72,10 @@ def test_playide_features_fit_together_in_a_real_browser(pack):
             assert page.text_content("#status-selection") == "transition " + page.locator("#outline-transitions button").first.text_content()
             page.locator("#outline-states button").nth(1).click()
             page.keyboard.press("F9")
+            before = page.locator("#simulate").bounding_box()
             page.click("#run-play")
             page.wait_for_selector("#run-status:has-text('Paused')", timeout=60_000)
+            assert page.locator("#simulate").bounding_box()["x"] == before["x"]  # the run status does not push the tool bar
             now, body = page.locator("#debug-now").bounding_box(), page.locator(".dock-body").bounding_box()
             assert now and body and body["y"] <= now["y"] < body["y"] + body["height"]
             # On a laptop screen with the side bar and the chat open, the screen designer stacks the record attributes
@@ -82,6 +85,16 @@ def test_playide_features_fit_together_in_a_real_browser(pack):
             page.wait_for_selector("#screen-card .screen-field")
             assert page.evaluate("""() => { const d = document.getElementById('screens');
                 return d.scrollWidth <= d.clientWidth && document.getElementById('screen-card').clientWidth >= 360; }""")
+            # The Tests tab's buttons stay inside the tab, and the review view's title bar keeps its buttons on one line.
+            page.click("#tab-tests")
+            page.wait_for_selector("#tests-file:not(:empty)")  # the file chip widens the text beside the buttons
+            assert page.evaluate("""() => { const t = document.getElementById('tests'), r = t.getBoundingClientRect();
+                return t.scrollWidth <= t.clientWidth
+                    && [...t.querySelectorAll('.head-tools button')].every((b) => b.getBoundingClientRect().right <= r.right - 8); }""")
+            page.goto(f"{server.base_url}/play?view=review#{server.token}")
+            page.wait_for_selector("body[data-ready=true]", timeout=60_000)
+            assert page.evaluate("""() => { const tops = [...document.querySelectorAll('.bar-end > *')].filter((e) => e.offsetParent)
+                .map((e) => e.getBoundingClientRect()); return tops.every((r) => r.height < 40 && Math.abs(r.top - tops[0].top) < 8); }""")
             assert errors == []
         finally:
             chrome.close()
