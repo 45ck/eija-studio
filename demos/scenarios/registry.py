@@ -92,7 +92,7 @@ SCENARIOS: tuple[Scenario, ...] = (
              "press play to a breakpoint, edit in place and watch it ripple, let the offline AI propose a change, "
              "catch the step that deletes late returns with a prediction and the broken sequence diagram, then prove it "
              "with conformance, simulation, the laws and the scenario tests. Verify, approve and apply wait on #80."),
-    Scenario("playide_greenfield", "Greenfield in PlayIDE: build a new app in chat, round after round", "scripted-not-recorded", (),
+    Scenario("playide_greenfield", "Greenfield in PlayIDE: build a new app in chat, round after round", "recorded", (),
              "A new system from a three-line sketch, built in five offline chat asks (ADR-0201): a feature with a new "
              "action, a new requirement planned on top of the first, a rename, a new role, and going back on the first "
              "decision. Each round is read alone and all together in the Changes view with what to consider; then the "
