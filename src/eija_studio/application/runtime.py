@@ -5,6 +5,7 @@ from uuid import uuid4
 from eija_studio.domain.models import Workflow, ExecuteCommand, DomainError, Transition, fingerprint
 from eija_studio.domain.pack import Pack, default_pack
 from eija_studio.domain.policy import ensure_policy
+from .memo import ensure_conforms, model_hash
 from .ports import UnitOfWork
 
 
@@ -31,11 +32,11 @@ def _perform(session: UnitOfWork, pack: Pack, effect: str, case_id: str, command
 
 def initialise(session: UnitOfWork, case_id: str, model: Workflow, *, state: str | None = None,
                pack: Pack | None = None) -> dict[str, Any]:
-    ensure_policy(model, pack)
+    ensure_conforms(model, pack if pack is not None else default_pack(), ensure_policy)
     state = state or model.initial_state
     if state not in model.states:
         raise DomainError("INVALID_STATE", "State is not in the current model")
-    item = {"id": uuid4().hex, "case_id": case_id, "model_hash": model.semantic_hash, "state": state, "version": 0}
+    item = {"id": uuid4().hex, "case_id": case_id, "model_hash": model_hash(model), "state": state, "version": 0}
     session.create_instance(item)
     return item
 
@@ -45,12 +46,12 @@ def execute(
     fault: Callable[[str], None] | None = None, pack: Pack | None = None,
 ) -> dict[str, Any]:
     pack = pack if pack is not None else default_pack()
-    ensure_policy(model, pack)
+    ensure_conforms(model, pack, ensure_policy)  # the policy check, asked once per model and pack object (ADR-0199)
     row = session.find_instance(command.instance_id, case_id)
     if row is None:
         raise DomainError("NOT_FOUND", "Preview instance not found in this case")
     instance = dict(row)
-    if instance["model_hash"] != model.semantic_hash:
+    if instance["model_hash"] != model_hash(model):
         raise DomainError("STALE_INSTANCE", "Model changed; reset the isolated preview")
     t = next((t for t in model.transitions if t.action == command.action), None)
     if t is None:
@@ -58,7 +59,7 @@ def execute(
     actor = session.actor(command.actor_id)
     # Authorise BEFORE lookup/replay. A cached success is not continuing authority.
     check_actor(actor, t, command)
-    binding = fingerprint({"case": case_id, "subject": model.semantic_hash, "command": command.model_dump(mode="json")})
+    binding = fingerprint({"case": case_id, "subject": model_hash(model), "command": command.model_dump(mode="json")})
     prior = session.find_operation(command.operation_id)
     if prior is not None:
         if prior["binding"] != binding:

@@ -8,6 +8,8 @@ says so.
 """
 from __future__ import annotations
 
+from pathlib import Path
+
 from demos.lib import RunningServer, Scene
 
 TITLE = "The PlayIDE showcase: software engineering as play"
@@ -16,6 +18,11 @@ AI_REQUEST = "add Renew from Overdue to OnLoan for Librarian then remove transit
 BUILD_TIMEOUT_MS = 600_000
 AI_CARD = ".msg.ai:last-child"
 RIPPLE_CARD = ".msg:last-child"  # the chat card that shows a drawn change's ripple (ADR-0158)
+ROOT = Path(__file__).resolve().parents[2]
+EXPORTED = ROOT / "verification/interop/generated/library-loan.puml"  # what PlayIDE exports for the pack (ADR-0190)
+EDITED_IN_ANOTHER_TOOL = "Overdue --> OnLoan : Renew [role = Librarian]"
+NEW_SYSTEM_SKETCH = ("Open -> Triaged : Triage [Agent]\nTriaged -> Resolved : Resolve [Agent]\n"
+                     "Resolved -> Closed : Close [Customer]")
 
 # Beats that wait on work still in progress. Each becomes a real act when its feature merges (see the storyboard).
 PENDING = {
@@ -31,7 +38,7 @@ class _Chapters:
 
     def __call__(self, title: str) -> None:
         self.n += 1
-        self.scene.chapter(self.n, title)
+        self.scene.chapter(self.n, title, card=True)
 
 
 def run(scene: Scene, server: RunningServer) -> None:
@@ -43,7 +50,7 @@ def run(scene: Scene, server: RunningServer) -> None:
     chapter = _Chapters(scene)
     _model_is_the_program(scene, chapter)
     _press_play(scene, chapter)
-    _fix_by_dragging(scene, chapter)
+    _fix_in_place(scene, chapter)
     _ripple(scene, chapter)
     _ai_busywork(scene, chapter)
     _review(scene, chapter)
@@ -53,6 +60,8 @@ def run(scene: Scene, server: RunningServer) -> None:
     scene.title_card("Then the owner ships it", "Verify, approve and apply stay with the owner in the review workbench. "
                      "Not shown yet: they wait on the owner's source review (issue #80).", hold_ms=3600)
     _stakeholder_view(scene, chapter, server)
+    _bring_your_own_uml(scene, chapter, server)
+    _start_your_own(scene, chapter)
     scene.clear_caption()
     scene.zoom_out()
     scene.title_card("Less typing. No diff archaeology.",
@@ -112,18 +121,19 @@ def _press_play(scene: Scene, chapter: _Chapters) -> None:
     scene.click("#tab-states")
 
 
-def _fix_by_dragging(scene: Scene, chapter: _Chapters) -> None:
-    chapter("Fix it by dragging, not typing")
-    scene.caption("Design in place. Drag a new state from the palette onto the diagram.")
+def _fix_in_place(scene: Scene, chapter: _Chapters) -> None:
+    chapter("Fix it in place, not in code")
+    scene.caption("Design in place. Pick State, click where it goes, and type its name right on the diagram.")
     canvas = scene.page.locator("#canvas").bounding_box()
     width, height = (canvas["width"], canvas["height"]) if canvas else (800.0, 600.0)
-    scene.drag('#draw-palette [data-kind="state"]', "#canvas", position=(width * 0.82, height * 0.82))
-    scene.type_text(".draft-form input", "Lost")
-    scene.click('.draft-form button[type="submit"]')
+    scene.click('#draw-palette [data-kind="state"]')
+    scene.click_at("#canvas", (width * 0.82, height * 0.82))
+    scene.type_text(".inline-edit input", "Lost")
+    scene.click('.inline-edit button[type="submit"]')
     scene.expect_text(f"{RIPPLE_CARD} .ripple", "LoanState gains the literal Lost", timeout_ms=60_000)
-    scene.caption("Each gesture is a typed step the policy checks at once. The diagram previews it; nothing is saved.")
+    scene.caption("Each edit is a typed step the policy checks at once. The diagram previews it; nothing is saved.")
     scene.zoom("#canvas", scale=1.8)
-    scene.wait(1800)
+    scene.wait(1600)
     scene.zoom_out()
 
 
@@ -214,8 +224,17 @@ def _review(scene: Scene, chapter: _Chapters) -> None:
     scene.expect_text("#review-item-1 .answer", "Not what you expected")
     scene.caption("The kernel says no. The AI quietly deleted late returns, and your wrong guess caught it.")
     scene.zoom("#review-item-1", scale=1.6)
-    scene.wait(2200)
+    scene.wait(1800)
     scene.zoom_out()
+    scene.click("#tab-tests")
+    scene.expect_text("#tests-summary", "1 of 7 tests fail", timeout_ms=60_000)
+    scene.caption("The pack's tests agree: the late-return scenario now fails. Show it on the diagram.")
+    scene.click("#tests-list li.broken button:has-text('Show on diagram')")
+    scene.caption("The kernel replays the scenario and paints the step that breaks: there is no way back from Overdue.")
+    scene.zoom("#canvas", scale=1.3)
+    scene.wait(2000)
+    scene.zoom_out()
+    scene.click("#tab-review")
     scene.click("#review-item-1 .verdict-tools button:has-text('Needs a change')")
     scene.type_text("#review-item-1 textarea", "Keep ReturnLate: an overdue loan must still be returnable.")
     scene.click("#review-item-2 .show")
@@ -239,9 +258,9 @@ def _review(scene: Scene, chapter: _Chapters) -> None:
 
 
 def _stakeholder_view(scene: Scene, chapter: _Chapters, server: RunningServer) -> None:
-    chapter("Share it as UML")
     scene.goto(f"{server.base_url}/play?view=review#{server.token}")
     scene.wait_for("body[data-ready=true]", timeout_ms=60_000)
+    chapter("Share it as UML")
     scene.expect_text("#review-badge", "Review view")
     scene.caption("A stakeholder opens the same UML read-only: the diagrams, who may do what, and the runs. No "
                   "editing tools, no chat.")
@@ -268,11 +287,70 @@ def _prove_it(scene: Scene, chapter: _Chapters) -> None:
     scene.expect_text("#laws-summary", "holds on every run the kernel allows")
     scene.caption("Every law holds on every reachable run, and the summary says how far the proof searched.")
     scene.zoom("#laws", scale=1.3)
-    scene.wait(2200)
+    scene.wait(1800)
     scene.zoom_out()
+    scene.click("#tab-tests")
+    scene.expect_text("#tests-summary", "All 7 tests pass", timeout_ms=60_000)
+    scene.caption("And every scenario test passes again on the changed model.")
+    scene.wait(1400)
     scene.click("#tab-states")
     scene.click("#health")
     scene.expect_text("#health-text", "5/5 checks")
     scene.caption("The ring fills only from real checks on what you are looking at. That is the score.")
     scene.zoom("#checks", scale=1.6)
     scene.wait(2400)
+
+
+def _bring_your_own_uml(scene: Scene, chapter: _Chapters, server: RunningServer) -> None:
+    scene.goto(f"{server.base_url}/play#{server.token}")
+    scene.wait_for("body[data-ready=true]", timeout_ms=60_000)
+    chapter("Bring your own UML tools")
+    scene.caption("The model goes out as XMI, PlantUML, Mermaid or draw.io, and comes back in.")
+    scene.click("#uml-menu")
+    scene.zoom("#uml-pop", scale=1.6)
+    scene.wait(1600)
+    scene.zoom_out()
+    scene.page.keyboard.press("Escape")
+    # The pack's PlantUML export with one line added, as if edited in another UML tool.
+    edited = ROOT / "demos/output/library-loan-edited.puml"
+    edited.parent.mkdir(parents=True, exist_ok=True)
+    text = EXPORTED.read_text(encoding="utf-8").replace("Returned --> [*]", EDITED_IN_ANOTHER_TOOL + "\nReturned --> [*]", 1)
+    edited.write_text(text, encoding="utf-8", newline="\n")
+    scene.caption("Edit the PlantUML anywhere and import it. The kernel reads it as typed edits and checks the laws.")
+    scene.page.set_input_files("#uml-file", str(edited))
+    scene.wait_for("#uml-import-dialog[open]", timeout_ms=30_000)
+    scene.expect_text("#uml-import-dialog", "1 edit to the model in force. Laws: HOLDS")
+    scene.zoom("#uml-import-dialog", scale=1.3)
+    scene.wait(2000)
+    scene.zoom_out()
+    scene.click("#uml-plan")
+    scene.expect_text(RIPPLE_CARD, "Imported from library-loan-edited.puml", timeout_ms=30_000)
+    scene.caption("It lands as a plan like any other: previewed, rippled and checked, and nothing is saved.")
+    scene.wait(1400)
+
+
+def _start_your_own(scene: Scene, chapter: _Chapters) -> None:
+    chapter("Start your own system")
+    scene.caption("Start your own: name it, name its record, and sketch the state machine one line at a time.")
+    scene.click("#system-menu")
+    scene.click("#systems-tab-new")
+    scene.type_text("#systems-name", "Support desk", clear=True)
+    scene.type_text("#systems-record", "Ticket", clear=True)
+    scene.type_text("#systems-sketch", NEW_SYSTEM_SKETCH, clear=True, delay_range_ms=(20, 60))
+    scene.wait_for("#systems-check.ok", timeout_ms=30_000)
+    scene.expect_text("#systems-check", "4 states (starts in Open)")
+    scene.caption("The kernel checks the sketch as you type. Then it opens as a system like any other.")
+    scene.zoom("#systems-check", scale=1.5)
+    scene.wait(1600)
+    scene.zoom_out()
+    # The imported plan is still open (PlayIDE keeps work in progress), so it asks before leaving: yes, it is a throwaway.
+    scene.page.once("dialog", lambda dialog: dialog.accept())
+    with scene.page.expect_navigation(timeout=60_000):
+        scene.click("#systems-create")
+    scene.reattach("body[data-ready=true]")
+    scene.expect_text("#outline-states", "Triaged")
+    scene.chapter(chapter.n, "Start your own system")  # the reload dropped the chip: show it again, same number
+    scene.caption("Support desk, live: the state machine, classes, use cases and screens, all from that sketch.")
+    scene.zoom("#canvas", scale=1.6)
+    scene.wait(2000)
+    scene.zoom_out()

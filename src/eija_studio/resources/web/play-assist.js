@@ -313,6 +313,7 @@
       ["Stop (Shift+F5)", "run-stop", press("run-stop")],
       ["Restart (Ctrl+Shift+F5)", "run-restart", press("run-restart")],
       ["Show the state machine", "tab-states", press("tab-states")],
+      ["Show the sequence diagrams", "tab-sequences", press("tab-sequences")],
       ["Show the class diagram", "tab-classes", press("tab-classes")],
       ["Show the use cases", "tab-usecases", press("tab-usecases")],
       ["Show the screens", "tab-screens", press("tab-screens")],

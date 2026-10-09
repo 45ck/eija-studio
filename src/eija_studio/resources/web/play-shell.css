@@ -152,6 +152,8 @@ body[data-dock="closed"] #split-dock,body[data-dock="closed"] .dock{display:none
 .statusbar .plan-chip{padding:1px 8px;border-radius:999px;background:#2f8f5b;color:#fff;font-weight:600}
 .statusbar .plan-chip[hidden]{display:none}
 .statusbar .toast{color:#9ff0c3}
+.statusbar .saved{opacity:.8}
+.statusbar .saved.bad{opacity:1;color:#ffc9c9}
 .statusbar .score{padding:1px 8px;background:rgba(255,255,255,.14);color:inherit}
 .statusbar .score.ok{background:#2f8f5b;color:#fff}
 .statusbar .score.bad{background:#a33b3b;color:#fff}

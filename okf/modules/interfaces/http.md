@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/http.py
   title: interfaces/http.py
   hash_method: ast-api-v1
-  sha256: eea963f061fceeb3fa02155d0b3858f1a85888953399a711b572bbf01fd49ce2
-notes_baseline: 91e511f9be73a574ed4bb1de2d7793301a9d7cfc33f2ea9cade52f3129f8d43d
+  sha256: 7eb6af53b6f6a3eae01283338440397c8a488749be11698977e158a433ba85b1
+notes_baseline: 24f4a0db8de0a9e5df980cac1bb2e076b65ca80bbfcd395d25f167e27e671971
 ---
 
 # interfaces.http
@@ -41,6 +41,7 @@ _Symbol pages are generated for the domain and application layers only._
 * [`application/diagram_catalog`](/modules/application/diagram_catalog.md)
 * [`application/edit_preview`](/modules/application/edit_preview.md)
 * [`application/edit_proposal`](/modules/application/edit_proposal.md)
+* [`application/plan`](/modules/application/plan.md)
 * [`application/repository`](/modules/application/repository.md)
 * [`domain/models`](/modules/domain/models.md)
 * [`domain/pack`](/modules/domain/pack.md)
@@ -59,6 +60,7 @@ _No curated notes yet._
 * [application.diagram_catalog](/modules/application/diagram_catalog.md) - Named diagram views over a baseline and an optional candidate Workflow.
 * [application.edit_preview](/modules/application/edit_preview.md) - Read-only edit projection over one captured case, using the same interpreter as owner edits.
 * [application.edit_proposal](/modules/application/edit_proposal.md) - A read-only offline proposal over one captured candidate; owner edits keep their existing boundary.
+* [application.plan](/modules/application/plan.md) - Plan mode for the PlayIDE chat (ADR-0156): an AI proposes a change as numbered typed steps; the person accepts or rejects each one and sees what the accepted o…
 * [application.repository](/modules/application/repository.md) - Read-only repository evidence port; this does not grant project execution or approval.
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).

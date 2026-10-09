@@ -6,7 +6,8 @@ across every diagram with the follow-on edits the proposer suggests, each re-che
 seeded run log with breakpoints and Stop (ADR-0160), who can do what with reachability questions (ADR-0171), and the
 review of a change as a UML diff whose behaviour the kernel runs on both sides (ADR-0175), and how a change looks:
 the model in force and the change on one state machine, removed elements kept as ghosts (ADR-0176), and the law file
-and the scenarios (test cases) as files a person can read, edit as a draft and run here, never saved from here (ADR-0177).
+and the scenarios (test cases) as files a person can read, edit as a draft and run here, never saved from here (ADR-0177), and
+the same scenarios drawn as UML sequence diagrams, every message run on the shown model and on the model in force (ADR-0195).
 
 Build & run reuses `eija build` (ADR-0150): the app is generated into the workspace, its kernel conformance tests run,
 and only a PASSing app is started, as a separate local process on a free loopback port. One app runs at a time; a new
@@ -37,10 +38,11 @@ from eija_studio.application.plan import preview_plan, propose_plan
 from eija_studio.application.review import review_change
 from eija_studio.application.ripple import check_follow_ons, ripple
 from eija_studio.application.scenario_run import record_steps, run_scenarios
+from eija_studio.application.sequences import check_sequences
 from eija_studio.application.simulation import MAX_BREAKPOINTS, MAX_STEPS, run_log, simulate
 from eija_studio.domain.data import data_for
 from eija_studio.domain.models import Contract, DomainError, Workflow
-from eija_studio.domain.pack import Pack
+from eija_studio.domain.pack import Pack, pack_directory
 from eija_studio.domain.scenarios import parse_scenarios, scenarios_for
 from eija_studio.domain.policy import apply_transactions
 from eija_studio.domain.transactions import parse_transaction
@@ -167,6 +169,19 @@ class AppRunner:
             return was
 
 
+def pack_file(pack: Pack, name: str) -> str:
+    """Where one of the pack's files is, as its owner would find it: relative to the working directory when under it
+    (packs/<id>/pack.json), else from the home folder (~/PlayIDE/support-desk/pack.json), else in full."""
+    folder = pack_directory(pack)
+    if folder is None:
+        return f"packs/{pack.id}/{name}"
+    path = folder / name
+    for base, prefix in ((Path.cwd(), ""), (Path.home(), "~/")):
+        if path.is_relative_to(base):
+            return prefix + path.relative_to(base).as_posix()
+    return path.as_posix()
+
+
 def register(app, studio, web: Path) -> AppRunner:
     runner = AppRunner(lambda: Path(studio.store.directory) / "apps")
 
@@ -247,7 +262,8 @@ def register(app, studio, web: Path) -> AppRunner:
         before, after = screens_for(studio.pack, base, data_for(studio.pack)), screens_of(body, candidate)
         (old, _), (new, components) = built(base, before), built(candidate, after)
         data = data_for(studio.pack)
-        report = ripple(base, candidate, data, (before, after), (old, new), components)
+        scenarios = check_sequences(studio.pack, candidate, scenarios_for(studio.pack), base)
+        report = ripple(base, candidate, data, (before, after), (old, new), components, scenarios)
         document = proposer().follow_on(report, candidate, studio.pack) if report["problems"] else {"steps": []}
         return report | {"provider": proposer().name, "live": proposer().live,
                          "follow_ons": check_follow_ons(document, base, body.plan or [], studio.pack, candidate, after, data)}
@@ -272,6 +288,13 @@ def register(app, studio, web: Path) -> AppRunner:
         before, after = baseline(body), resolve(body)
         return review_change(studio.pack, before, after) | {"ghost": ghost_diff(before, after)}  # drawn as in ADR-0176
 
+    @app.post("/api/play/sequences")
+    def play_sequences(body: ScenariosRequest):
+        """The pack's scenarios (or a draft of them, shared with the Tests tab) drawn as sequence diagrams, each step run
+        through the kernel on the shown model and, when it differs, on the model in force (ADR-0195). Read-only."""
+        before, after = baseline(body), resolve(body)
+        return check_sequences(studio.pack, after, scenarios_of(body), before) | {"source": "edited" if body.scenarios is not None else "pack"}
+
     @app.post("/api/play/build")
     def play_build(body: BuildRequest):
         model = resolve(body)
@@ -293,7 +316,7 @@ def register(app, studio, web: Path) -> AppRunner:
         law file, the draft is checked and proved instead, and what it changes is listed; nothing is saved (ADR-0177)."""
         pack = studio.pack if body.laws is None else with_laws(studio.pack, body.laws)
         report = prove_laws(pack, resolve(body))
-        file: dict[str, Any] = {"path": f"packs/{studio.pack.id}/pack.json", "section": "laws",
+        file: dict[str, Any] = {"path": pack_file(studio.pack, "pack.json"), "section": "laws",
                 "laws": [law.model_dump(mode="json", exclude_none=True) for law in studio.pack.laws],
                 "verifiers": [v.model_dump(mode="json", exclude_none=True) for v in studio.pack.verifiers]}
         if body.laws is not None:
@@ -308,7 +331,7 @@ def register(app, studio, web: Path) -> AppRunner:
         """The pack's scenarios (or a draft of them), each run by the kernel on the model shown (ADR-0177)."""
         scenarios = scenarios_of(body)
         return run_scenarios(studio.pack, resolve(body), scenarios) | {
-            "file": {"path": f"packs/{studio.pack.id}/scenarios.json", "document": scenarios.model_dump(mode="json", exclude_none=True)},
+            "file": {"path": pack_file(studio.pack, "scenarios.json"), "document": scenarios.model_dump(mode="json", exclude_none=True)},
             "actors": [a.model_dump(mode="json") for a in studio.pack.fixtures.actors]}
 
     @app.post("/api/play/tests/try")

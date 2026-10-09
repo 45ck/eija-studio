@@ -69,6 +69,7 @@ Every view has one of three standings. **Executable**: the kernel runs it. **Che
 | Screens | Screen, field, button | checked design | Which attributes a use case shows, in what order. `check_screens` refuses a create screen missing a required attribute or a field the record lacks; no app is built from screens it refuses. | `domain/screens.py` |
 | Sequence | Commit sequence | derived | The order of calls in one `execute`, drawn from the algorithm. | `application/diagrams.py` |
 | Sequence | Simulate trace | derived | What seeded users did, step by step, as the kernel decided it. | `application/simulation.py` |
+| Sequence | Scenario (`scenarios.json`): lifelines, messages, state invariants, `neg` fragments | checked design | Each step is run through `execute` by `scenario_run` with the pack's fixture actors; one the model can't do is flagged with the kernel's refusal, and a step drawn in a `neg` must be refused (ADR-0177, ADR-0195). | `application/sequences.py` |
 | Component | Components, interfaces | derived | Read from the generated app's code: it shows the app asking the kernel for every decision. | `application/components.py` |
 
 The change vocabulary is closed too. Each kind is a typed record the policy checks before anyone accepts it:

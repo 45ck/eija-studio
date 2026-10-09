@@ -2,12 +2,12 @@
   "mode": "record",
   "platform": "Linux 6.18.44-fc-v80 / Python 3.13.16",
   "scenario": "playide_showcase",
-  "scenario_sha256": "860979632914d9c29b370e728e708c3e852411fb1f5a2f1eb86d393e66e58f75",
+  "scenario_sha256": "6b5272b14f1fbcc07edff152e6a81cdc706ad7bafbedb1745ac28fa4b48a310e",
   "skipped": [
     "beat 8 (verify, approve and apply) waits on the owner's source review and restamp (issue #80)"
   ],
   "status": "PARTIAL",
   "video": "demos/output/playide_showcase.webm",
-  "video_bytes": 37732845,
-  "video_sha256": "3586a6540fdb8627de03a25df384fbccaea30393fee93821a957e2184c56e65a"
+  "video_bytes": 46226499,
+  "video_sha256": "02daf623533d414d111bafccec2ea21623af684d4efaed15d98e6c3d9263033a"
 }

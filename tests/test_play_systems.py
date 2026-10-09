@@ -129,6 +129,17 @@ def test_a_new_system_is_created_opened_and_runs_through_the_kernel(served):
     assert data_for(systems.handle.pack).record == "Ticket"
 
 
+
+def test_a_new_system_names_its_own_files_and_does_not_offer_its_demo_request_to_the_chat(served):
+    client, _, _ = served
+    assert client.get("/api/status", headers=HEADERS).json()["pack"]["demo_modelled"] is True  # Library loan models its own
+    post(client, "/api/play/systems/new", {"name": "Support desk", "record": "Ticket", "sketch": SKETCH})
+    # A sketched system has no proposal rules, so the chat would refuse its demo request: the page offers typed steps.
+    assert client.get("/api/status", headers=HEADERS).json()["pack"]["demo_modelled"] is False
+    laws, tests = post(client, "/api/play/laws", {}).json(), post(client, "/api/play/tests", {}).json()
+    assert laws["file"]["path"].endswith("home/support-desk/pack.json") and not laws["file"]["path"].startswith("packs/")
+    assert tests["file"]["path"].endswith("home/support-desk/scenarios.json") and not tests["file"]["path"].startswith("packs/")
+
 def test_a_template_system_and_reopening_the_one_the_server_started_with(served):
     client, _systems, tmp = served
     first = post(client, "/api/play/systems/new", {"name": "Trips", "template": "excursion"}).json()

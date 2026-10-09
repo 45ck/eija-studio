@@ -15,6 +15,7 @@
 * [ghost_diff](ghost_diff/) - Symbols of application.ghost_diff
 * [history](history/) - Symbols of application.history
 * [law_proof](law_proof/) - Symbols of application.law_proof
+* [memo](memo/) - Symbols of application.memo
 * [new_system](new_system/) - Symbols of application.new_system
 * [plan](plan/) - Symbols of application.plan
 * [ports](ports/) - Symbols of application.ports
@@ -24,6 +25,8 @@
 * [runtime](runtime/) - Symbols of application.runtime
 * [scenario_run](scenario_run/) - Symbols of application.scenario_run
 * [scxml](scxml/) - Symbols of application.scxml
+* [sequence_layout](sequence_layout/) - Symbols of application.sequence_layout
+* [sequences](sequences/) - Symbols of application.sequences
 * [service](service/) - Symbols of application.service
 * [simulation](simulation/) - Symbols of application.simulation
 * [verifier](verifier/) - Symbols of application.verifier

@@ -1,20 +1,23 @@
 """`eija build`: write a runnable app generated from a pack's model, then run its kernel conformance tests (ADR-0150)."""
 from __future__ import annotations
 
+import copy
 import json
 import os
 import subprocess
 import sys
+from collections import OrderedDict
 from hashlib import sha256
 from importlib.resources import files as resource_files
 from pathlib import Path
+from threading import Lock
 from typing import Any, Callable
 
 from eija_studio import __version__
 from eija_studio.application.appgen import FORMAT, generate
 from eija_studio.domain.data import data_for
 from eija_studio.domain.screens import Screens, screens_for
-from eija_studio.domain.models import DomainError, Workflow
+from eija_studio.domain.models import DomainError, Workflow, fingerprint
 from eija_studio.domain.pack import Pack
 
 MANIFEST = "BUILD.json"
@@ -39,13 +42,33 @@ def add_parser(subs) -> None:
     build.add_argument("--no-test", action="store_true", help="Skip the conformance run (reported as NOT_RUN)")
 
 
+# The same app is asked for again and again while a change is edited: the ripple builds the model in force beside the
+# candidate on every edit, then the component diagram and Build & run build the candidate once more (ADR-0199). The
+# app is a function of the pack, the model, the data model and the screens, so the last few are kept by their hashes.
+# The model's key is its exact content, order included, not its semantic hash, since the files follow the order.
+_BUILT: OrderedDict[tuple[int, str, str, str], tuple[Any, dict[str, str], dict]] = OrderedDict()
+_BUILT_SIZE, _BUILT_LOCK = 8, Lock()
+
+
 def app_files(pack, model: Workflow, screens: Screens | None = None) -> tuple[dict[str, str], dict]:
     """The app's files. The data model and screens beside pack.json are used unless other screens are given."""
     data = data_for(pack)
-    generated, manifest = generate(pack, model, data, screens if screens is not None else screens_for(pack, model, data))
+    screens = screens if screens is not None else screens_for(pack, model, data)
+    key = (id(pack), fingerprint(model), data.digest if data else "", screens.digest)  # in order: the files follow it
+    with _BUILT_LOCK:
+        hit = _BUILT.get(key)
+        if hit is not None and hit[0] is pack:
+            _BUILT.move_to_end(key)
+            return dict(hit[1]), copy.deepcopy(hit[2])
+    generated, manifest = generate(pack, model, data, screens)
     root = resource_files("eija_studio.resources").joinpath("appgen")
     static = {target: root.joinpath(source).read_text(encoding="utf-8") for source, target in TEMPLATES.items()}
-    return static | {"tests/__init__.py": ""} | generated, manifest
+    files = static | {"tests/__init__.py": ""} | generated
+    with _BUILT_LOCK:
+        _BUILT[key] = (pack, files, copy.deepcopy(manifest))  # the pack itself is kept, so its id is never reused
+        while len(_BUILT) > _BUILT_SIZE:
+            _BUILT.popitem(last=False)
+    return dict(files), manifest
 
 
 KEPT = ("data", "__pycache__")  # the app's records, and bytecode from running it, are never treated as foreign files
