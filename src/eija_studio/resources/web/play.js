@@ -98,11 +98,12 @@
 
   // maxGraph puts an edge's label halfway along the line, which is not where the layout left room for it: move each
   // transition's label to its middle bend, the point dagre routed the edge through for the label (#153).
-  function liftLabels(g) {
+  // The Changes view (play-diff.js) uses it too, for its own transitions.
+  function liftLabels(g, isTransition = (cell) => cell.id.startsWith("transition:")) {
     const v = g.view, m = g.getDataModel(), { Point } = maxgraph;
     g.batchUpdate(() => {
       for (const cell of Object.values(m.cells)) {
-        if (!cell.id || !cell.id.startsWith("transition:") || !cell.geometry) continue;
+        if (!cell.id || !isTransition(cell) || !cell.geometry) continue;
         const points = cell.geometry.points || [], state = v.getState(cell);
         if (!points.length || !state || !state.absoluteOffset) continue;
         const room = points[Math.floor(points.length / 2)], was = cell.geometry.offset || { x: 0, y: 0 };
@@ -2528,7 +2529,7 @@
   const changeLook = (status, part) => (window.PlayDiff && shownChange ? window.PlayDiff.look(status, part) : {});
 
   window.PlayIDE = {
-    api, el, hooks, about, roleKind, kinds: ACTOR_KINDS, inForce: (role) => roleKinds[role] || "human",
+    api, el, hooks, about, textWidth, liftLabels, roleKind, kinds: ACTOR_KINDS, inForce: (role) => roleKinds[role] || "human",
     // Change who holds a role: a step in the plan like any drawn edit, checked by the server against the laws about
     // kinds of actor; nothing is saved (#156). The review view changes nothing.
     setKind: (role, to) => (REVIEW_VIEW ? null : addStep({ kind: "set_role_kind", role, to })), reviewing: () => REVIEW_VIEW, viewKey, label, restyle, clearSim, select, showTab, fit, importPlan, runAs, openScreen,
