@@ -39,6 +39,6 @@ Writing these packs as a real team would turned up the following gaps. Each pack
 
 Time-driven steps (a trial ending, a dispute arriving) are given to a system role (`BillingSystem`, `Gateway`) until the kernel has timers. That is the closest honest approximation, and it is why those roles appear on the use case diagrams.
 
-Some state and role names are less natural than a team would write (`FundsCaptured`, `PermitRefused`, `WorkspaceOwner`, `Vetted`) because the vocabulary gate refuses pack words that also appear in generic code ([#154](https://github.com/45ck/eija-studio/issues/154)).
+Some state and role names were made more specific (`FundsCaptured`, `PermitRefused`, `WorkspaceOwner`, `Vetted`) while the vocabulary gate treated every pack word as a whole-word search in generic code. The gate now reads a plain English word (`Active`, `Owner`) only where it names something in Python code (an identifier or a string literal). Compound names such as `FundsCaptured` are still checked everywhere ([#154](https://github.com/45ck/eija-studio/issues/154)).
 
 The offline chat proposer plans the supported meaning that a request matches. When a request matches only an unsafe meaning it says it could not read it ([#152](https://github.com/45ck/eija-studio/issues/152)); type the step instead, for example `change who may ApproveRefund to SupportAgent`, to see the policy refuse it and name the law.
