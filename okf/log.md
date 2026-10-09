@@ -2,6 +2,7 @@
 
 ## 2026-10-09
 
+* **Sketch names that differ only in case**: re-synced `application.new_system.sketch_documents` and ADR-0185 after a sketch began refusing states, actions or roles that differ only in case. No Notes were hand-edited and nothing was recorded as verified.
 * **PlayIDE polish, round 4**: synced the new `application.plan.example_passes` symbol, `interfaces.http` (`/api/status` reports `demo_modelled`) and `interfaces.play` (`pack_file` names the pack's own folder for the Laws and Tests files). No Notes were hand-edited and nothing was recorded as verified.
 * **Your own systems, two fixes**: re-synced `application.new_system.sketch_documents` after roles that slug alike got unique user ids. No Notes were hand-edited and nothing was recorded as verified.
 

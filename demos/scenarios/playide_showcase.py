@@ -21,6 +21,24 @@ RIPPLE_CARD = ".msg:last-child"  # the chat card that shows a drawn change's rip
 ROOT = Path(__file__).resolve().parents[2]
 EXPORTED = ROOT / "verification/interop/generated/library-loan.puml"  # what PlayIDE exports for the pack (ADR-0190)
 EDITED_IN_ANOTHER_TOOL = "Overdue --> OnLoan : Renew [role = Librarian]"
+# A support desk drawn in another UML tool, with things PlayIDE cannot carry (a guard term, a second Resolve, a state
+# name with spaces): starting a system from it reports each one with its reason (ADR-0190).
+DESK_PUML = """@startuml
+[*] --> Open
+Open --> Triaged : Triage [role = Agent] / Audit:Triaged
+Triaged --> Resolved : Resolve [role = Agent and assigned] / Audit:Resolved, Notification:CustomerTold
+Triaged --> Escalated : Escalate
+Escalated --> Resolved : Fix [role = Engineer and severity > 2]
+Escalated --> Resolved : Resolve [role = Engineer]
+Escalated --> "Waiting on vendor" : Wait [role = Engineer]
+@enduml
+@startuml
+class Ticket <<record>> {
+  +subject : String [1] {maxLength = 120}
+  +urgent : Boolean [0..1]
+}
+@enduml
+"""
 NEW_SYSTEM_SKETCH = ("Open -> Triaged : Triage [Agent]\nTriaged -> Resolved : Resolve [Agent]\n"
                      "Resolved -> Closed : Close [Customer]")
 
@@ -75,8 +93,9 @@ def _model_is_the_program(scene: Scene, chapter: _Chapters) -> None:
     scene.zoom("#canvas", scale=1.9)
     scene.wait(2200)
     scene.zoom_out()
-    scene.caption("One model, many views: classes, use cases and screens are all drawn from it.", hold_ms=1800)
-    for tab, target in (("classes", "#class-canvas"), ("usecases", "#usecase-canvas"), ("screens", "#screen-card")):
+    scene.caption("One model, many views: classes, use cases, sequences and screens are all drawn from it.", hold_ms=2000)
+    for tab, target in (("classes", "#class-canvas"), ("usecases", "#usecase-canvas"), ("sequences", "#sequence-canvas"),
+                        ("screens", "#screen-card")):
         scene.click(f"#tab-{tab}", duration_ms=380)
         scene.highlight(target, duration_ms=900)
     scene.expect_text("#screen-problems", "Design check passed")
@@ -135,6 +154,13 @@ def _fix_in_place(scene: Scene, chapter: _Chapters) -> None:
     scene.zoom("#canvas", scale=1.8)
     scene.wait(1600)
     scene.zoom_out()
+    scene.caption("Every edit can be undone and redone, the AI's included, like in any editor.")
+    scene.click("#undo")
+    scene.expect_text("#toast", "Undid")
+    scene.wait(900)
+    scene.click("#redo")
+    scene.expect_text(f"{RIPPLE_CARD} .ripple", "LoanState gains the literal Lost", timeout_ms=60_000)
+    scene.wait(700)
 
 
 def _ripple(scene: Scene, chapter: _Chapters) -> None:
@@ -234,6 +260,7 @@ def _review(scene: Scene, chapter: _Chapters) -> None:
     scene.zoom("#canvas", scale=1.3)
     scene.wait(2000)
     scene.zoom_out()
+    _broken_sequence(scene)
     scene.click("#tab-review")
     scene.click("#review-item-1 .verdict-tools button:has-text('Needs a change')")
     scene.type_text("#review-item-1 textarea", "Keep ReturnLate: an overdue loan must still be returnable.")
@@ -327,6 +354,17 @@ def _bring_your_own_uml(scene: Scene, chapter: _Chapters, server: RunningServer)
     scene.expect_text(RIPPLE_CARD, "Imported from library-loan-edited.puml", timeout_ms=30_000)
     scene.caption("It lands as a plan like any other: previewed, rippled and checked, and nothing is saved.")
     scene.wait(1400)
+    desk = ROOT / "demos/output/support-desk.puml"
+    desk.write_text(DESK_PUML, encoding="utf-8", newline="\n")
+    scene.caption("A whole system can start from a UML file too. What the kernel cannot carry is listed, with the reason.")
+    scene.click("#uml-menu")
+    scene.click("#uml-new-system")
+    scene.page.set_input_files("#systems-uml-file", str(desk))
+    scene.expect_text("#systems-import", "4 not imported", timeout_ms=30_000)
+    scene.zoom("#systems-import", scale=1.3)
+    scene.wait(2400)
+    scene.zoom_out()
+    scene.click("#systems-close")
 
 
 def _start_your_own(scene: Scene, chapter: _Chapters) -> None:
@@ -334,6 +372,7 @@ def _start_your_own(scene: Scene, chapter: _Chapters) -> None:
     scene.caption("Start your own: name it, name its record, and sketch the state machine one line at a time.")
     scene.click("#system-menu")
     scene.click("#systems-tab-new")
+    scene.click("#systems-templates input[value=blank]")
     scene.type_text("#systems-name", "Support desk", clear=True)
     scene.type_text("#systems-record", "Ticket", clear=True)
     scene.type_text("#systems-sketch", NEW_SYSTEM_SKETCH, clear=True, delay_range_ms=(20, 60))
@@ -353,4 +392,16 @@ def _start_your_own(scene: Scene, chapter: _Chapters) -> None:
     scene.caption("Support desk, live: the state machine, classes, use cases and screens, all from that sketch.")
     scene.zoom("#canvas", scale=1.6)
     scene.wait(2000)
+    scene.zoom_out()
+
+
+def _broken_sequence(scene: Scene) -> None:
+    """The same late-return scenario as a UML sequence diagram (ADR-0195), broken by the change on screen."""
+    scene.click("#tab-sequences")
+    scene.click("#seq-list li:has-text('returned late') button")
+    scene.wait_for(".seq-verdict.bad", timeout_ms=30_000)
+    scene.expect_text("#seq-verdict", "The change shown breaks it")
+    scene.caption("As a UML sequence diagram, the late return now ends in the kernel's refusal. The model in force still does it.")
+    scene.zoom("#sequence-canvas", scale=1.3)
+    scene.wait(2200)
     scene.zoom_out()

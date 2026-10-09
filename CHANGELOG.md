@@ -19,7 +19,8 @@
 ### 9 October 2026: your own systems, two fixes
 
 - The Systems dialog opens again after you close it. Before, a second open did nothing until the page was reloaded.
-- A sketch whose roles differ only in case or punctuation (`Agent` and `agent`) now gets one user per role instead of being refused for duplicate user ids.
+- A sketch whose roles differ only in punctuation (`A_B` and `A__B`) now gets one user per role instead of being refused for duplicate user ids.
+- A sketch whose states, actions or roles differ only in case (`Agent` and `agent`) is refused with a line saying so: chat matches names ignoring case, so one of them could never be named there.
 
 ### 8 October 2026: PlayIDE polish, round 3
 
