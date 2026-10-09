@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0201-build-a-new-system-in-chat-round-after-round.md
   title: 0201-build-a-new-system-in-chat-round-after-round.md
   hash_method: lf-sha256-v1
-  sha256: 2790a25b8f52d98ed22c0cbb6d2ae56456458054ed4cbfdb5a659cd17a6a70be
-notes_baseline: 896ba91f33b8ae7df27a0ea9b47197ab7d307c11e71610a09bd9bc1c43e76d09
+  sha256: 74603c8001fc2c2308213f9dc14d8877597715b633bf62944cd67c492099cef6
+notes_baseline: 1d8c7c5cdc65d102cf32bffdd43e4d4fbbc4d3bfae66e1ba13c5302a978c033f
 ---
 
 # ADR-0201: Build a new system in chat, round after round
@@ -62,6 +62,7 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Related decisions
 
+* [ADR-0174: Add UML elements without dragging, and edit them where they are](/adrs/0174-add-without-dragging-and-edit-inline.md) - After watching the showcase cut, the owner said "dragging sucks kind of" and asked whether to "use a modal when dragging or not even just edit inline?".
 * [ADR-0176: How a UML change looks: one stable layout, removed parts kept as ghosts, and lenses](/adrs/0176-how-a-uml-change-looks.md) - The owner asked how a change can be reviewed as a UML change instead of a pull request, and "how you even view a UML change (ghost UI/UX?)".
 * [ADR-0185: Start, open and save your own system in PlayIDE](/adrs/0185-start-open-and-save-your-own-system.md) - PlayIDE could only show the pack the server was started with (`eija serve --pack …`), and every pack was one that ships with EIJA.
 * [ADR-0190: UML import and export: XMI, PlantUML, Mermaid and draw.io, with every import judged by the kernel](/adrs/0190-uml-import-and-export-through-the-kernel.md) - PlayIDE's users already know UML and already keep UML somewhere else: XMI in Enterprise Architect, Cameo, Papyrus or Visual Paradigm; PlantUML beside the code;…
@@ -70,6 +71,7 @@ _No curated notes yet._
 
 ## Referenced by
 
+* [ADR-0174: Add UML elements without dragging, and edit them where they are](/adrs/0174-add-without-dragging-and-edit-inline.md) - After watching the showcase cut, the owner said "dragging sucks kind of" and asked whether to "use a modal when dragging or not even just edit inline?".
 * [ADR-0202: Grow the class diagram in chat](/adrs/0202-grow-the-class-diagram-in-chat.md) - ADR-0201 let a system started from a sketch grow its state machine round after round in chat.
 * [ADR-0216: Describe your app, and what's missing](/adrs/0216-describe-your-app-and-whats-missing.md) - Until now a new system started from three sketch lines, a template or a UML file (ADR-0185, ADR-0190), and then grew in chat (ADR-0201, ADR-0202).
 <!-- okf:generated:end links -->

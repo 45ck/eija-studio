@@ -60,8 +60,10 @@ def test_playide_features_fit_together_in_a_real_browser(pack):
             page.wait_for_selector("#review:not([data-empty]) .review-list")
             page.click("#plan-back")
             page.click("#tab-states")
-            # A role is not a diagram element: it opens what that role may do.
+            # A role is not a diagram element: the inspector says what that role may do (ADR-0215), and links to permissions.
             page.locator("#outline-roles button").first.click()
+            page.wait_for_selector("#inspector .role-cases")
+            page.click("#inspector button:has-text('Who can do what')")
             page.wait_for_selector("#access-panel:not([hidden])")
             # Asked whether a record can reach a state at all, Yes is the expected answer, not a warning.
             page.click(".reach button.primary")

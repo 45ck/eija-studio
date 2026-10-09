@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0174-add-without-dragging-and-edit-inline.md
   title: 0174-add-without-dragging-and-edit-inline.md
   hash_method: lf-sha256-v1
-  sha256: dd286fa2763d345be60f139c466f123f50a1f4be2688fbe601a4de0efef3a2e3
-notes_baseline: b55194521482174f697d428d0e39f091315076823d63136422f87fd006442b77
+  sha256: 4f1d311c7a08d8961a26bb3aabbcc2d35f4316c6cebfa58de68747fcc114fa8d
+notes_baseline: b3fb9cc31e9ef4a15f4d741f3f21e18b615b463e22cf1af899fb3b46d57c9019
 ---
 
 # ADR-0174: Add UML elements without dragging, and edit them where they are
@@ -67,4 +67,9 @@ _No curated notes yet._
 * [ADR-0170: PlayIDE asks about the selection, completes exact names, has a command palette and keyboard plan review](/adrs/0170-playide-assist-ask-complete-palette-review.md) - PlayIDE's chat proposes typed steps (ADR-0156) and rewards checking them (ADR-0157).
 * [ADR-0172: A read-only review view of PlayIDE for people who review the model](/adrs/0172-review-view-for-reading-the-model.md) - The owner set the audience as people who know UML, and noted that UML "is meant for non technical people to review it sometimes".
 * [ADR-0173: PlayIDE's workbench shell, after Visual Studio, VS Code, Cursor and draw.io](/adrs/0173-playide-workbench-shell.md) - After watching the recorded tours, the owner said there was "too much going on in sidebar" and that it "feels weird", and asked to "make playIDE really good, c…
+* [ADR-0201: Build a new system in chat, round after round](/adrs/0201-build-a-new-system-in-chat-round-after-round.md) - The showcase changes a pack that already exists (Library loan).
+
+## Referenced by
+
+* [ADR-0201: Build a new system in chat, round after round](/adrs/0201-build-a-new-system-in-chat-round-after-round.md) - The showcase changes a pack that already exists (Library loan).
 <!-- okf:generated:end links -->

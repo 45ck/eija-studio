@@ -24,7 +24,7 @@ PAGE_CSP = ("default-src 'none'; script-src 'self'; style-src 'self'; connect-sr
             "frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
 FRAME_CSP = ("default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src data:; connect-src 'none'; "
              "frame-ancestors 'self'; base-uri 'none'; form-action 'none'; sandbox allow-scripts")
-WEB_ASSETS = frozenset({"app.js", "app.css", "canvas.js", "tree.js", "review.js", "compare.js", "compare.css", "repository-review.js", "repository-review.css", "source.js", "shell.js", "agent-edit.js", "visual-frame.js", "visual-frame.css", "play.js", "play-run.js", "play.css", "play-laws.js", "play-assist.js", "play-assist.css", "play-review.js", "play-review.css", "play-access.js", "play-access.css", "play-shell.js", "play-shell.css", "play-diff.js", "play-diff.css", "play-tests.js", "play-tests.css", "play-interop.js", "play-interop.css", "play-systems.js", "play-systems.css", "play-sequence.js", "play-sequence.css", "play-landscape.js", "play-landscape.css", "play-roles.js", "play-roles.css", "play-missing.js"})
+WEB_ASSETS = frozenset({"app.js", "app.css", "canvas.js", "tree.js", "review.js", "compare.js", "compare.css", "repository-review.js", "repository-review.css", "source.js", "shell.js", "agent-edit.js", "visual-frame.js", "visual-frame.css", "play.js", "play-run.js", "play.css", "play-laws.js", "play-assist.js", "play-assist.css", "play-review.js", "play-review.css", "play-access.js", "play-access.css", "play-shell.js", "play-shell.css", "play-diff.js", "play-diff.css", "play-tests.js", "play-tests.css", "play-interop.js", "play-interop.css", "play-systems.js", "play-systems.css", "play-sequence.js", "play-sequence.css", "play-landscape.js", "play-landscape.css", "play-roles.js", "play-roles.css", "play-game.js", "play-game.css", "play-missing.js"})
 # PlayIDE frames the app built from the model, which runs as a separate process on its own loopback port (ADR-0151).
 PLAY_CSP = PAGE_CSP.replace("frame-src 'self'", "frame-src 'self' http://127.0.0.1:*")
 
@@ -150,7 +150,8 @@ def create_app(studio, token: str, port: int = 8765, systems=None) -> FastAPI:
             "provider_networked": studio.provider.networked, "baseline_version": active["version"], "baseline": active["model"],
             "trusted_fixture": identity["trusted_fixture"], "identity_boundary": "Single local owner; synthetic actors only",
             "pack": pack_summary(studio.pack) | {"demo_modelled": example_passes(
-                studio.pack.fixtures.demo_request, Workflow.model_validate(active["model"]), studio.pack, studio.plan_proposer)}}
+                studio.pack.fixtures.demo_request, Workflow.model_validate(active["model"]), studio.pack, studio.plan_proposer),
+                "own_system": own()}}  # a system you started: a drawn step may name a new action or role (ADR-0201)
 
     @app.get("/api/doctor")
     def doctor():

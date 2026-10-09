@@ -17,7 +17,7 @@ from dataclasses import replace
 
 from eija_studio.domain.models import DomainError
 
-from .model import MAX_XML_BYTES, Edge, Klass, Link, Parsed, xml_root
+from .model import ACTOR_KINDS, MAX_XML_BYTES, Edge, Klass, Link, Parsed, xml_root
 from .textual import read_member
 
 
@@ -260,8 +260,20 @@ def _read_states(cells: list[_Cell], parsed: Parsed) -> None:
         _state_edge(cell, kinds.get(cell.source, other), kinds.get(cell.target, other), label, parsed)
 
 
+def _actor_box(cell: _Cell) -> bool:
+    """An actor drawn as a classifier with «agent», «timer» or «system» over its name (ADR-0210)."""
+    return cell.vertex and not cell.has("swimlane") and bool(_header(cell.value)[1] & set(ACTOR_KINDS))
+
+
+def _read_actors(cells: list[_Cell], parsed: Parsed) -> None:
+    for cell in (c for c in cells if c.vertex and c.parent in ("1", "")):
+        name, stereotypes = _header(cell.value)
+        if "shape=umlActor" in cell.style or _actor_box(cell):
+            parsed.actor(" ".join(name.split()), stereotypes, f"cell {cell.id}")
+
+
 def _page_kind(cells: list[_Cell]) -> str:
-    if any("shape=umlActor" in c.style for c in cells):
+    if any("shape=umlActor" in c.style or _actor_box(c) for c in cells):
         return "usecase"
     if any(c.vertex and _is_class(c, [x for x in cells if x.parent == c.id]) for c in cells):
         return "class"
@@ -282,6 +294,7 @@ def parse(text: str) -> Parsed:
         kind = _page_kind(cells)
         if kind == "usecase":
             parsed.derive(name, "use case diagram")
+            _read_actors(cells, parsed)
         elif kind == "class":
             _read_classes(cells, parsed)
         else:

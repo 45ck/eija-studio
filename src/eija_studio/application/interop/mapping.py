@@ -29,7 +29,8 @@ from eija_studio.domain.policy import apply_structural_all, check_policy
 from eija_studio.domain.transactions import Transaction, parse_transaction
 from eija_studio.application.law_proof import prove_laws
 
-from .model import DEFAULT_MAX_LENGTH, MULTIPLICITIES, READ_TYPES, WIDENED, Attr, Edge, Klass, Label, Link, Parsed, parse_label
+from .model import (DEFAULT_MAX_LENGTH, MULTIPLICITIES, READ_TYPES, WIDENED, Attr, Edge, Klass, Label, Link, Parsed, kind_label,
+                    parse_label)
 
 FORMAT = "eija.uml-import.v1"
 
@@ -129,15 +130,39 @@ def _edit_steps(model: Workflow, wanted: list[tuple[Edge, str, str]], taken: set
     return steps
 
 
-def _steps(model: Workflow, parsed: Parsed, wanted: list[tuple[Edge, str, str]], named: set[str]) -> list[dict[str, Any]]:
+def _partial(parsed: Parsed, wanted: list[tuple[Edge, str, str]]) -> int:
+    """How many transitions or composite states of the file's state machine were not read."""
+    return len(parsed.edges) - len(wanted) + sum(1 for s in parsed.skipped if s["element"].startswith("composite state"))
+
+
+def _removals(model: Workflow, parsed: Parsed, wanted: list[tuple[Edge, str, str]], named: set[str],
+              report: ImportReport) -> list[dict[str, Any]]:
+    """What the file no longer has, removed only when its whole state machine was read (issue #165).
+
+    A transition the file renamed to an undeclared action, or drew in a way PlayIDE cannot read, is missing from what
+    was read; removing it would offer a plan that breaks the model. So a partial read removes nothing and says so."""
+    removals = [({"kind": "remove_transition", "transition": t.id}, f"transition {t.action}")
+                for t in model.transitions if t.action not in named]
+    removals += [({"kind": "remove_state", "state": s}, f"state {s}") for s in model.states if s not in (parsed.states or [])]
+    missed = _partial(parsed, wanted)
+    if not missed:
+        return [step for step, _ in removals]
+    why = (f"kept: {missed} part{'s' if missed > 1 else ''} of the file's state machine could not be read, so the import "
+           "removes nothing. Fix the file and import it again, or remove it on the diagram")
+    for _, element in removals:
+        report.add("unmapped", "state machine", f"removing {element}", why)
+    return []
+
+
+def _steps(model: Workflow, parsed: Parsed, wanted: list[tuple[Edge, str, str]], named: set[str],
+           report: ImportReport) -> list[dict[str, Any]]:
     """The difference as typed edits: add states, set the initial state, add and change transitions, then remove."""
     states = parsed.states or []
     steps: list[dict[str, Any]] = [{"kind": "add_state", "state": s} for s in states if s not in model.states]
     if parsed.initial not in (None, model.initial_state):
         steps.append({"kind": "set_initial", "state": parsed.initial})
     steps += _edit_steps(model, wanted, {t.id for t in model.transitions})
-    steps += [{"kind": "remove_transition", "transition": t.id} for t in model.transitions if t.action not in named]
-    return steps + [{"kind": "remove_state", "state": s} for s in model.states if s not in states]
+    return steps + _removals(model, parsed, wanted, named, report)
 
 
 def _apply(pack: Pack, model: Workflow, steps: list[dict[str, Any]],
@@ -201,7 +226,7 @@ def import_state_machine(pack: Pack, model: Workflow, parsed: Parsed, report: Im
         report.add("defaulted", "state machine", "initial state", f"the file marks none; kept {model.initial_state}")
     seen: set[str] = set()
     wanted = _wanted(pack, model, parsed, seen, report)
-    candidate, applied = _apply(pack, model, _steps(model, parsed, wanted, seen), report)
+    candidate, applied = _apply(pack, model, _steps(model, parsed, wanted, seen, report), report)
     _record_states(parsed, report)
     _record_transitions(candidate, wanted, report)
     refused = check_policy(candidate, pack)
@@ -334,11 +359,27 @@ def _status(machine: dict[str, Any], classes: dict[str, Any], report: ImportRepo
     return "PARTIAL" if report.unmapped else "CLEAN"
 
 
+def import_actor_kinds(pack: Pack, parsed: Parsed, report: ImportReport) -> None:
+    """Each actor's kind against its role's (ADR-0210). A kind is never changed by an import: kind laws read it, so a
+    different kind is reported, to be changed in the pack's roles where the protected policy sees it."""
+    for name, (kind, where) in (parsed.actors or {}).items():
+        declared = pack.role_kind(name)
+        if declared is None:
+            report.add("unmapped", where, f"actor {name}", f"role {name} is not declared by pack {pack.id}")
+        elif declared == kind:
+            report.add("mapped", where, f"actor {name} ({kind_label(kind)})")
+        else:
+            report.add("unmapped", where, f"actor {name} kind",
+                       f"the file draws {kind_label(kind)}; the pack declares {kind_label(declared)}. Kind laws read a "
+                       "role's kind, so it is changed in the pack's roles, not by an import")
+
+
 def import_parsed(fmt: str, parsed: Parsed, pack: Pack, model: Workflow, data: DataModel | None) -> dict[str, Any]:
     """The import report: the typed edits the kernel applied, its verdict, the candidate models and every element's fate."""
     report = ImportReport(parsed.skipped, parsed.derived)
     machine = import_state_machine(pack, model, parsed, report)
     classes = import_class_model(pack, data, parsed, report)
+    import_actor_kinds(pack, parsed, report)
     return {"format": FORMAT, "from": fmt, "pack": pack.id, "model": model.semantic_hash,
             "status": _status(machine, classes, report), "state_machine": machine, "class_model": classes,
             "mapped": report.mapped, "defaulted": report.defaulted, "unmapped": report.unmapped, "derived": report.derived}

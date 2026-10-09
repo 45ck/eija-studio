@@ -290,11 +290,21 @@
     review: "Review the change shown against the model in force: look at each change, predict what the kernel does, then decide. Nothing is approved from here.",
   };
 
-  function fit() {
-    if (!current()) return;
-    const plugin = current().getPlugin("fit");
+  // Fitting never shrinks a diagram below READABLE (labels of about 10px and up): when the canvas is short, as with the
+  // Simulation panel open, the diagram keeps that size and starts at its top left (where the initial state is), and the
+  // rest is a drag away. Only the Fit button, asked for "all of it", may go smaller (#139).
+  const READABLE = 0.8, MARGIN = 24;
+  function fit(all) {
+    const g = current();
+    if (!g) return;
+    const plugin = g.getPlugin("fit");
     plugin.maxFitScale = 1.4;
-    plugin.fitCenter({ margin: 24 });
+    const scale = plugin.fitCenter({ margin: MARGIN });
+    if (all === true || !(scale < READABLE)) return;
+    const v = g.view, b = g.getGraphBounds(), box = g.container, k = READABLE;
+    const w = b.width / v.scale, h = b.height / v.scale, x0 = b.x / v.scale - v.translate.x, y0 = b.y / v.scale - v.translate.y;
+    const along = (room, size, start) => (size * k <= room - 2 * MARGIN ? (room / k - size) / 2 - start : MARGIN / k - start);
+    v.scaleAndTranslate(k, along(box.clientWidth, w, x0), along(box.clientHeight, h, y0));
   }
 
   function row(dl, term, value) { dl.append(el("dt", term), el("dd", value)); }
@@ -611,6 +621,10 @@
   }
 
   function showTab(which) {
+    if (which === "system") { // the System lens of the Components tab (ADR-0203), which the ripple names as a diagram
+      if (window.PlayLandscape) window.PlayLandscape.setLens("system");
+      which = "components";
+    }
     tab = which;
     for (const [name, panel] of Object.entries(PANELS)) {
       $("tab-" + name).setAttribute("aria-selected", String(which === name));
@@ -884,7 +898,8 @@
   // to every diagram and asks the proposer for follow-on edits, each re-checked by the policy or the screen design
   // check. Tabs carry a badge; the affected elements are marked on each diagram while the plan is previewed.
   const DIAGRAMS = { states: "State machine", classes: "Class diagram", usecases: "Use cases", screens: "Screens", components: "Components" };
-  const RIPPLE = { ...DIAGRAMS, sequences: "Sequences" }; // sequence diagrams are listed in the ripple; play-sequence.js marks its own tab
+  const RIPPLE = { ...DIAGRAMS, sequences: "Sequences", system: "System" }; // sequence diagrams are listed in the ripple; play-sequence.js marks its own tab
+  // "System" is the other workflows of the system (ADR-0203, #146): the Components tab's System lens shows it.
   const MARK = { added: "+", removed: "−", changed: "~", warning: "⚠", problem: "✗" };
   const TINT = { added: { strokeColor: "#17734a", fillColor: "#e5f5ec", strokeWidth: 2.5 }, changed: { strokeColor: "#c27c0e", strokeWidth: 2.5 },
     warning: { strokeColor: "#c27c0e", dashed: true, strokeWidth: 2.5 }, problem: { strokeColor: "#a12f2f", strokeWidth: 3 },
@@ -1014,7 +1029,8 @@
     }
     if (key === "sequences" && item.ref && window.PlaySequence) window.PlaySequence.open(item.ref.slice(9));
     showTab(key);
-    const g = current(), ids = key === "screens" || !item.ref ? [] : cellsFor(key, item.ref);
+    if (key === "system" && item.ref && window.PlayLandscape) window.PlayLandscape.focus(item.ref.slice(7)); // drawn once it loads
+    const g = key === "system" ? null : current(), ids = key === "screens" || !item.ref ? [] : cellsFor(key, item.ref);
     const cell = g && ids.map((id) => g.getDataModel().getCell(id)).find(Boolean);
     if (cell && cell.isVertex() && !cell.id.startsWith("literal:")) g.setSelectionCell(cell);
     else if (cell && cell.isEdge()) g.setSelectionCell(cell);
@@ -1034,7 +1050,8 @@
     for (const key of Object.keys(DIAGRAMS)) {
       const badge = $("tab-" + key).querySelector(".badge");
       if (!badge) continue;
-      const items = ripple && !ripple.error ? ripple.diagrams[key] : [];
+      // The Components tab also shows the System lens, so it counts what the change does to the other workflows (#146).
+      const items = ripple && !ripple.error ? [...ripple.diagrams[key], ...(key === "components" ? ripple.diagrams.system || [] : [])] : [];
       badge.hidden = !items.length;
       badge.textContent = String(items.length);
       badge.className = "badge" + (items.some((i) => i.change === "problem") ? " bad" : items.some((i) => i.change === "warning") ? " warn" : "");
@@ -1043,13 +1060,13 @@
   }
 
   function rippleCheck() {
-    const name = "Diagrams agree";
-    if (!plan || !plan.steps.length) return { name, ok: true, detail: "No change, so nothing ripples" };
-    if (!plan.result || !plan.result.legal) return { name, ok: false, detail: "The plan is refused or empty: nothing to ripple" };
-    if (!ripple || ripple.key !== rippleKey()) return { name, ok: false, detail: "Working out the ripple…" };
-    if (ripple.error) return { name, ok: false, detail: `${ripple.error.code || "ERROR"}: ${ripple.error.message}` };
+    const name = "Diagrams agree", id = "ripple";
+    if (!plan || !plan.steps.length) return { id, name, ok: true, detail: "No change, so nothing ripples" };
+    if (!plan.result || !plan.result.legal) return { id, name, ok: false, detail: "The plan is refused or empty: nothing to ripple" };
+    if (!ripple || ripple.key !== rippleKey()) return { id, name, ok: false, detail: "Working out the ripple…" };
+    if (ripple.error) return { id, name, ok: false, detail: `${ripple.error.code || "ERROR"}: ${ripple.error.message}` };
     const bad = ripple.problems.filter((p) => p.change === "problem").length, warn = ripple.problems.length - bad;
-    return { name, ok: ripple.agree, detail: bad ? `${bad} diagram(s) out of step: see the plan's ripple` : warn ? `They agree; ${warn} warning(s) to look at` : "Every diagram agrees with the change" };
+    return { id, name, ok: ripple.agree, detail: bad ? `${bad} diagram(s) out of step: see the plan's ripple` : warn ? `They agree; ${warn} warning(s) to look at` : "Every diagram agrees with the change" };
   }
 
   async function makeCase() {
@@ -1143,7 +1160,7 @@
     const now = await refreshPlan();
     if (now && step.author === "ai" && !on && !step.caught && was && was.accepted && !was.legal && now.legal) {
       step.caught = true;
-      earn(3, `Caught AI step ${i + 1}: without it the policy allows the plan`);
+      earn(3, `Caught AI step ${i + 1}: without it the policy allows the plan`, "caught");
     }
   }
 
@@ -1229,9 +1246,12 @@
     earn(n, why);
   }
 
-  function earn(n, why) {
+  // The game layer (play-game.js, ADR-0208) hears every award and every change to the checks; it adds motion and the
+  // next check to run, and awards nothing itself.
+  function earn(n, why, kind = "") {
     points += n;
     earned.unshift({ n, why });
+    document.dispatchEvent(new CustomEvent("playide:earn", { detail: { n, why, kind, points } }));
     const toast = $("toast");
     toast.textContent = `+${n} ${why}`;
     toast.classList.add("show");
@@ -1245,13 +1265,13 @@
     const seen = ai.filter((s) => s.checked).length, built = lastBuild && lastBuild.key === key ? lastBuild : null;
     const simulated = sim && simKey === key ? sim : null;
     return [
-      { name: "AI steps checked", ok: seen === ai.length, detail: ai.length ? `${seen} of ${ai.length} AI steps looked at on the diagram` : "No AI plan to check" },
-      { name: "Screens pass the design check", ok: problemsFor === screensKey() && !problems.length,
+      { id: "ai", name: "AI steps checked", ok: seen === ai.length, detail: ai.length ? `${seen} of ${ai.length} AI steps looked at on the diagram` : "No AI plan to check" },
+      { id: "screens", name: "Screens pass the design check", ok: problemsFor === screensKey() && !problems.length,
         detail: problemsFor !== screensKey() ? "Checking the screens…" : problems.length ? `${problems.length} design problem(s): see Screens` : "Every screen can be built" },
-      { name: "Conformance", ok: Boolean(built) && built.conformance.status === "PASS",
+      { id: "conformance", name: "Conformance", ok: Boolean(built) && built.conformance.status === "PASS",
         detail: built ? `${built.conformance.status}: ${built.cases} cases checked against the kernel` : "Not built since the last change: press Build & run" },
       rippleCheck(),
-      { name: "Simulated", ok: Boolean(simulated),
+      { id: "simulated", name: "Simulated", ok: Boolean(simulated),
         detail: simulated ? `${simulated.attempts} attempts, ${simulated.refused} refused by the kernel` : "Not simulated since the last change: press Simulate" },
     ];
   }
@@ -1259,13 +1279,12 @@
   function renderHealth() {
     const checks = checksNow(), done = checks.filter((c) => c.ok).length, ring = $("health-ring"), ns = "http://www.w3.org/2000/svg";
     const r = 14, length = 2 * Math.PI * r, part = length / checks.length;
-    ring.replaceChildren(...checks.map((c, i) => {
-      const arc = document.createElementNS(ns, "circle");
+    if (ring.children.length !== checks.length) ring.replaceChildren(...checks.map(() => document.createElementNS(ns, "circle")));
+    checks.forEach((c, i) => { // the same arcs are kept, so a part filling or emptying can be animated
       const attrs = { cx: 18, cy: 18, r, stroke: c.ok ? "#17734a" : "#dfe3ea", "stroke-dasharray": `${part - 2} ${length - part + 2}`,
-        "stroke-dashoffset": String(-i * part), transform: "rotate(-90 18 18)" };
-      for (const [k, v] of Object.entries(attrs)) arc.setAttribute(k, v);
-      return arc;
-    }));
+        "stroke-dashoffset": String(-i * part), transform: "rotate(-90 18 18)", "data-check": c.id || "" };
+      for (const [k, v] of Object.entries(attrs)) ring.children[i].setAttribute(k, v);
+    });
     $("health-text").textContent = `${done}/${checks.length} checks · ${points} pts`;
     $("health").title = checks.map((c) => `${c.ok ? "✓" : "○"} ${c.name}: ${c.detail}`).join("\n");
     $("points").textContent = `${points} pts`;
@@ -1279,6 +1298,7 @@
       li.append(el("strong", `+${e.n}`), document.createTextNode(e.why));
       return li;
     }) : [el("li", "Nothing yet. Look at an AI step on the diagram, untick one the policy refuses, or build and simulate an AI change.")]));
+    document.dispatchEvent(new CustomEvent("playide:checks", { detail: { checks, points, key: viewKey(), plan: Boolean(plan && plan.steps.length) } }));
   }
 
   // Adding without dragging (ADR-0174), after draw.io and Visio: click a palette item, then the diagram, to place it;
@@ -1541,6 +1561,25 @@
     return select;
   }
 
+  // On a system you started (ADR-0201), an action or role can be one it declares or a new name, which the step then
+  // declares as a sketch would: a text box that suggests the declared names and says when a name is new.
+  function named(values, value, what, used = new Set()) {
+    const id = `names-${what}-${++named.n}`, list = el("datalist", undefined, { id });
+    for (const v of values) list.append(el("option", undefined, { value: v, label: used.has(v) ? `${v} (already used)` : v }));
+    const input = el("input", undefined, { list: id, value, required: "", maxlength: "40", pattern: "[A-Za-z][A-Za-z0-9_]{0,39}",
+      placeholder: `A ${what}, or a new name`, autocomplete: "off", title: "Letters, digits and _; starts with a letter" });
+    const note = el("span", "", { class: "muted small new-name" });
+    const say = () => { const v = input.value.trim(); note.textContent = v && !values.includes(v) ? `New ${what}: the step declares ${v}` : ""; };
+    input.addEventListener("input", say);
+    say();
+    const wrap = el("span", undefined, { class: "named" });
+    wrap.append(input, list, note);
+    Object.defineProperty(wrap, "value", { get: () => input.value.trim(), set: (v) => { input.value = v; say(); } });
+    wrap.focus = () => input.focus();
+    return wrap;
+  }
+  named.n = 0;
+
   function field(text, control) {
     const wrap = el("label", text);
     wrap.append(control);
@@ -1576,8 +1615,10 @@
       return { fields: [[`Move ${t.action}'s`, end], ["to state", state]], make: () => ({ kind: "retarget_transition", transition: t.id, end: end.value, state: state.value }) };
     }
     const from = choose(model.states, at || model.states[0]), to = choose(model.states, at || model.states[0]);
-    const action = choose(packInfo.actions, packInfo.actions.find((a) => !used.has(a)) || packInfo.actions[0], (a) => a + (used.has(a) ? " (already used)" : ""));
-    const role = choose(packInfo.roles, packInfo.roles[0]);
+    const fresh = packInfo.actions.find((a) => !used.has(a));
+    const action = packInfo.own_system ? named(packInfo.actions, fresh || "", "action", used) // your own system can name a new one
+      : choose(packInfo.actions, fresh || packInfo.actions[0], (a) => a + (used.has(a) ? " (already used)" : ""));
+    const role = packInfo.own_system ? named(packInfo.roles, packInfo.roles[0], "role") : choose(packInfo.roles, packInfo.roles[0]);
     return { fields: [["From", from], ["To", to], ["Action", action], ["Who may take it", role]],
       make: () => ({ kind: "add_transition", id: newId(action.value), action: action.value, from_state: from.value, to_state: to.value, role: role.value }) };
   }
@@ -1661,7 +1702,11 @@
     // A package's members share one column, the deepest of theirs, so the package is one box.
     const deepest = {};
     for (const c of components.components) if (GROUPS[c.stereotype]) deepest[c.stereotype] = Math.max(deepest[c.stereotype] || 0, visit(c.id));
-    for (const c of components.components) (columns[GROUPS[c.stereotype] ? deepest[c.stereotype] : visit(c.id)] ||= []).push(c);
+    // The framework a module runs on sits under that module, out of the way of the module's own uses (a framework in
+    // the next column stood under every edge that column sends on).
+    const runsOn = (c) => Math.min(...edges.filter((d) => d.target === c.id).map((d) => visit(d.source)));
+    const column = (c) => GROUPS[c.stereotype] ? deepest[c.stereotype] : c.stereotype === "framework" && visit(c.id) > 0 ? runsOn(c) : visit(c.id);
+    for (const c of components.components) (columns[column(c)] ||= []).push(c);
     for (const [col, members] of Object.entries(columns)) {
       let y = 20;
       const x = 40 + Number(col) * COLUMN;
@@ -1681,10 +1726,22 @@
         y += h + GAP;
       }
     }
+    for (const c of components.components) if (c.stereotype === "framework") clearOfLines(c.id, boxes, edges);
     return (id) => {
       if (id.startsWith("iface:")) { const [x, y, , h] = boxes[id.slice(6)]; return [x - 34, y + h / 2 - 8, 16, 16]; } // the ball, left of its provider
       return boxes[id] || [0, 0, 0, 0];
     };
+  }
+
+  // Moves a box (and its interface ball and label, to its left) down until no other line crosses it or another box.
+  function clearOfLines(id, boxes, edges) {
+    const centre = (key) => { const [x, y, w, h] = boxes[key]; return [x + w / 2, y + h / 2]; };
+    const lines = edges.filter((d) => d.source !== id && d.target !== id && boxes[d.source] && boxes[d.target]).map((d) => [centre(d.source), centre(d.target)]);
+    const others = Object.entries(boxes).filter(([key]) => key !== id && !key.startsWith("pkg:")).map(([, b]) => b);
+    const b = boxes[id], hits = ([x, y, w, h]) => others.some(([ox, oy, ow, oh]) => ox < x + w && x < ox + ow && oy < y + h && y < oy + oh)
+      || lines.some(([[x1, y1], [x2, y2]]) => Array.from({ length: 41 }, (_, i) => [x1 + (x2 - x1) * i / 40, y1 + (y2 - y1) * i / 40])
+        .some(([px, py]) => px > x && px < x + w && py > y && py < y + h));
+    for (let tries = 0; tries < 60 && hits([b[0] - 120, b[1] - 16, b[2] + 150, b[3] + 22]); tries++) b[1] += 18;
   }
 
   async function drawComponents() {
@@ -1991,7 +2048,9 @@
 
   // Run the app as one fixture actor: the last build when it is of the model and screens on show, else a new one.
   async function runAs(actor) {
-    if (lastBuild && lastBuild.url && lastBuild.key === viewKey() && lastBuild.conformance.status === "PASS") showRun(lastBuild.url, actor);
+    // Reuse it only while its app still runs in the frame: the run bar's Stop ends the process and blanks the frame.
+    const running = Boolean(lastBuild && lastBuild.url) && !$("run").hidden && $("run-frame").src.startsWith(lastBuild.url);
+    if (running && lastBuild.key === viewKey() && lastBuild.conformance.status === "PASS") showRun(lastBuild.url, actor);
     else await build(actor);
   }
 
@@ -2091,6 +2150,7 @@
     }));
     $("sim-limits").textContent = `Seed ${result.seed}, ${result.steps} steps. ` + result.limits.join(" ");
     paint(result);
+    document.dispatchEvent(new CustomEvent("playide:simulated", { detail: result }));
   }
 
   // Who acted, by kind of actor (ADR-0210): what the AI agents, timers and external systems tried and what the kernel
@@ -2127,6 +2187,7 @@
         if (t) restyle("transition:" + t.id, { strokeColor: entry.outcome === "REFUSED" ? "#a12f2f" : "#3157d5", strokeWidth: 6 }, graph.getDataModel().getCell("transition:" + t.id).value);
         const at = entry.outcome === "REFUSED" ? entry.from : entry.to;
         if (at) restyle("state:" + at, { strokeColor: entry.outcome === "REFUSED" ? "#a12f2f" : "#3157d5", strokeWidth: 4 }, graph.getDataModel().getCell("state:" + at).value);
+        document.dispatchEvent(new CustomEvent("playide:step", { detail: { ...entry, transition: t ? t.id : null, ms: 450 } }));
       });
       i += 1;
     }, 450);
@@ -2380,7 +2441,7 @@
     $("simulate").addEventListener("click", simulate);
     $("sim-replay").addEventListener("click", replay);
     $("sim-clear").addEventListener("click", clearSim);
-    $("fit").addEventListener("click", fit);
+    $("fit").addEventListener("click", () => fit(true));
     $("tidy").addEventListener("click", tidy);
     $("zoom-in").addEventListener("click", () => current() && current().zoomIn());
     $("zoom-out").addEventListener("click", () => current() && current().zoomOut());

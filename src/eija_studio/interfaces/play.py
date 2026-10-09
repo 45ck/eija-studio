@@ -298,7 +298,9 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
         before, after = screens_for(studio.pack, start, data_before), screens_of(body, candidate)
         (old, _), (new, components) = built(earlier, start, before), built(pack, candidate, after)
         scenarios = check_sequences(pack, candidate, scenarios_for(studio.pack), start)
-        report = ripple(start, candidate, data, (before, after), (old, new), components, scenarios, data_changes(data_before, data))
+        others, _ = siblings(pack.id)  # the system this workflow is part of, before and after (ADR-0203, #146)
+        system = (landscape(pack.id, [(earlier, data_before, start), *others]), landscape(pack.id, [(pack, data, candidate), *others])) if others else None
+        report = ripple(start, candidate, data, (before, after), (old, new), components, scenarios, data_changes(data_before, data), system)
         document = proposer().follow_on(report, candidate, pack) if report["problems"] else {"steps": []}
         return report | {"provider": proposer().name, "live": proposer().live,
                          "follow_ons": check_follow_ons(document, base, body.plan or [], pack, candidate, after, data)}
@@ -390,12 +392,10 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
         model = resolve(body)
         return access(pack_of(body.plan), model, resolve(body.model_copy(update={"plan": None})) if body.plan else None)
 
-    @app.post("/api/play/landscape")
-    def play_landscape(body: BuildRequest):
-        """The system this workflow is part of (ADR-0203): the packs beside it that share a class with it, as one UML
-        component diagram, and where their class diagrams disagree. The open one is the model and data model shown."""
-        pack = pack_of(body.plan)
-        found: list[tuple[Pack, Any, Workflow]] = [(pack, data_for(pack), resolve(body))]
+    def siblings(focus: str) -> tuple[list[tuple[Pack, Any, Workflow]], list[str]]:
+        """The workflows in the folders beside the open one (ADR-0203), each as in force, and the folders not read:
+        refused by the kernel's pack check, or a second folder with an id already read (the open one is read first)."""
+        found: list[tuple[Pack, Any, Workflow]] = []
         unreadable: list[str] = []
         folder = pack_directory(studio.pack)
         for sibling in sorted(folder.parent.iterdir()) if folder is not None else ():
@@ -406,11 +406,19 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
             except (DomainError, OSError):
                 unreadable.append(sibling.name)
                 continue
-            if any(other.id == known.id for known, _, _ in found):  # two folders, one id: which is meant is ambiguous
+            if other.id == focus or any(other.id == known.id for known, _, _ in found):  # two folders, one id: ambiguous
                 unreadable.append(f"{sibling.name} (its id {other.id} is taken)")
             else:
                 found.append((other, data_for(other), other.model))
-        return landscape(pack.id, found, unreadable)
+        return found, unreadable
+
+    @app.post("/api/play/landscape")
+    def play_landscape(body: BuildRequest):
+        """The system this workflow is part of (ADR-0203): the packs beside it that share a class with it, as one UML
+        component diagram, and where their class diagrams disagree. The open one is the model and data model shown."""
+        pack = pack_of(body.plan)
+        others, unreadable = siblings(pack.id)
+        return landscape(pack.id, [(pack, data_for(pack), resolve(body)), *others], unreadable)
 
     @app.post("/api/play/reach")
     def play_reach(body: ReachRequest):

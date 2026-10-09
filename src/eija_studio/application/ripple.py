@@ -149,13 +149,43 @@ def _sequence_items(checked: dict[str, Any] | None) -> list[dict[str, Any]]:
     return items
 
 
+def _finding_key(finding: dict[str, Any]) -> tuple[str, tuple[str, ...]]:
+    return finding["code"], tuple(finding["subject"])
+
+
+def _introduced(finding: dict[str, Any]) -> dict[str, Any]:
+    """A disagreement with another workflow is a warning; a "to consider" is a change worth a look."""
+    warning = finding["severity"] == "warning"
+    return _item("warning" if warning else "changed", ("" if warning else "To consider: ") + finding["message"],
+                 "system:" + finding["subject"][0], finding["code"])
+
+
+def _links(landscape: dict[str, Any]) -> set[tuple[str, str, str]]:
+    return {(x["source"], x["target"], x["class"]) for x in landscape["links"]}
+
+
+def _system_items(system: tuple[dict[str, Any], dict[str, Any]] | None) -> list[dict[str, Any]]:
+    """What the change does to the system the workflow is part of (ADR-0203, #146): the landscape before and after.
+    A disagreement with another workflow it introduces is a warning; one it resolves, or a "to consider" it raises, is
+    a change; a «use» link from another workflow it breaks is a warning. The other workflows are reported, never edited."""
+    if system is None:
+        return []
+    before, after = system
+    old, new = {_finding_key(f): f for f in before["findings"]}, {_finding_key(f): f for f in after["findings"]}
+    items = [_introduced(f) for key, f in new.items() if key not in old]
+    items += [_item("changed", "Resolves: " + f["message"], "system:" + f["subject"][0]) for key, f in old.items() if key not in new]
+    return items + [_item("warning", f"{source} no longer uses {target} through {name}", "system:workflow:" + source, "SYSTEM_LINK_BROKEN")
+                    for source, target, name in sorted(_links(before) - _links(after))]
+
+
 def ripple(base: Workflow, candidate: Workflow, data: DataModel | None, screens: tuple[Screens, Screens],
            builds: tuple[Build, Build], components: Iterable[dict[str, Any]], sequences: dict[str, Any] | None = None,
-           attributes: Iterable[str] = ()) -> dict[str, Any]:
+           attributes: Iterable[str] = (), system: tuple[dict[str, Any], dict[str, Any]] | None = None) -> dict[str, Any]:
     """Every diagram's effects of going from `base` to `candidate`. `screens` and `builds` are each (before, after);
     `components` are the after build's components (each with its `files`), naming whose files changed; `sequences` is
     `application.sequences.check_sequences` of the scenarios on `candidate` against `base`; `attributes` are the
-    class diagram's attribute changes in words (`data_steps.data_changes`)."""
+    class diagram's attribute changes in words (`data_steps.data_changes`); `system` is the landscape of the workflows
+    this one forms a system with (`application.landscape`), before and after, or None when it has none."""
     before, after = screens
     diagrams = {
         "states": _state_items(base, candidate),
@@ -164,6 +194,7 @@ def ripple(base: Workflow, candidate: Workflow, data: DataModel | None, screens:
         "screens": _screen_items(before, after, base, candidate, data),
         "components": _component_items(builds[0], builds[1], _owners(components)),
         "sequences": _sequence_items(sequences),
+        "system": _system_items(system),
     }
     cases = [None if isinstance(b, DomainError) else b[1] for b in builds]
     problems = [i for items in diagrams.values() for i in items if i["change"] in ("problem", "warning")]

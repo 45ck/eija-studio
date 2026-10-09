@@ -1,0 +1,813 @@
+{
+  "schema_version": "eija.pack.v1",
+  "pack": {
+    "id": "ai-ops",
+    "name": "AI ops deploys",
+    "version": "1.0.0",
+    "description": "An AI ops agent opens a change and asks CI to build it; the CI server reports green or red; a person on call signs the deploy off; the deploy window (a timer) starts the rollout; the health monitor confirms it or rolls it back. Machines may roll back on their own, but only a person sends a change toward production (ADR-0210)."
+  },
+  "model": {
+    "schema_version": "eija.workflow.v1",
+    "id": "ai-ops",
+    "initial_state": "Opened",
+    "states": [
+      "Opened",
+      "InBuild",
+      "BuildRed",
+      "AwaitingSignoff",
+      "Scheduled",
+      "Rolling",
+      "InProduction",
+      "RolledBack",
+      "Abandoned"
+    ],
+    "transitions": [
+      {
+        "id": "TR-BUILD",
+        "action": "StartBuild",
+        "from_state": "Opened",
+        "to_state": "InBuild",
+        "role": "OpsAgent",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:BuildRequested"
+        ],
+        "forbidden_effects": [
+          "SecretsSentToModel",
+          "ProductionTouchedUnapproved"
+        ]
+      },
+      {
+        "id": "TR-GREEN",
+        "action": "ReportGreen",
+        "from_state": "InBuild",
+        "to_state": "AwaitingSignoff",
+        "role": "CiServer",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:BuildPassed",
+          "Notification:OnCallAsked"
+        ],
+        "forbidden_effects": [
+          "SecretsSentToModel",
+          "ProductionTouchedUnapproved"
+        ]
+      },
+      {
+        "id": "TR-RED",
+        "action": "ReportRed",
+        "from_state": "InBuild",
+        "to_state": "BuildRed",
+        "role": "CiServer",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:BuildFailed"
+        ],
+        "forbidden_effects": [
+          "SecretsSentToModel",
+          "ProductionTouchedUnapproved"
+        ]
+      },
+      {
+        "id": "TR-PATCH",
+        "action": "PatchAndRetry",
+        "from_state": "BuildRed",
+        "to_state": "InBuild",
+        "role": "OpsAgent",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:PatchPushed"
+        ],
+        "forbidden_effects": [
+          "SecretsSentToModel",
+          "ProductionTouchedUnapproved"
+        ]
+      },
+      {
+        "id": "TR-ABANDON",
+        "action": "AbandonChange",
+        "from_state": "BuildRed",
+        "to_state": "Abandoned",
+        "role": "OnCall",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:ChangeAbandoned"
+        ],
+        "forbidden_effects": [
+          "SecretsSentToModel",
+          "ProductionTouchedUnapproved"
+        ]
+      },
+      {
+        "id": "TR-SIGNOFF",
+        "action": "SignOffDeploy",
+        "from_state": "AwaitingSignoff",
+        "to_state": "Scheduled",
+        "role": "OnCall",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding",
+          "actor_assigned"
+        ],
+        "required_effects": [
+          "Audit:DeploySignedOff"
+        ],
+        "forbidden_effects": [
+          "SecretsSentToModel",
+          "ProductionTouchedUnapproved"
+        ]
+      },
+      {
+        "id": "TR-TURNDOWN",
+        "action": "TurnDown",
+        "from_state": "AwaitingSignoff",
+        "to_state": "Abandoned",
+        "role": "OnCall",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:DeployTurnedDown"
+        ],
+        "forbidden_effects": [
+          "SecretsSentToModel",
+          "ProductionTouchedUnapproved"
+        ]
+      },
+      {
+        "id": "TR-WINDOW",
+        "action": "OpenWindow",
+        "from_state": "Scheduled",
+        "to_state": "Rolling",
+        "role": "DeployWindow",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:RolloutStarted",
+          "Notification:TeamTold"
+        ],
+        "forbidden_effects": [
+          "SecretsSentToModel",
+          "ProductionTouchedUnapproved"
+        ]
+      },
+      {
+        "id": "TR-HEALTHY",
+        "action": "ConfirmHealthy",
+        "from_state": "Rolling",
+        "to_state": "InProduction",
+        "role": "HealthMonitor",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:RolloutHealthy"
+        ],
+        "forbidden_effects": [
+          "SecretsSentToModel",
+          "ProductionTouchedUnapproved"
+        ]
+      },
+      {
+        "id": "TR-ROLLBACK",
+        "action": "AutoRollback",
+        "from_state": "Rolling",
+        "to_state": "RolledBack",
+        "role": "HealthMonitor",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:RolloutReverted",
+          "Notification:OnCallPaged"
+        ],
+        "forbidden_effects": [
+          "SecretsSentToModel",
+          "ProductionTouchedUnapproved"
+        ]
+      }
+    ]
+  },
+  "roles": [
+    {
+      "id": "OpsAgent",
+      "kind": "agent",
+      "description": "An AI ops agent: opens a change, asks for a build, patches a red build. It never signs a deploy off."
+    },
+    {
+      "id": "CiServer",
+      "kind": "system",
+      "description": "The CI server: reports whether the build is green or red."
+    },
+    {
+      "id": "OnCall",
+      "description": "The engineer on call: signs a deploy off (when on the rota) or turns it down."
+    },
+    {
+      "id": "DeployWindow",
+      "kind": "timer",
+      "description": "The scheduled deploy window: starts the rollout of a signed-off change."
+    },
+    {
+      "id": "HealthMonitor",
+      "kind": "system",
+      "description": "The production monitor: confirms a healthy rollout or rolls it back."
+    }
+  ],
+  "actions": [
+    {
+      "id": "StartBuild",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:BuildRequested"
+      ]
+    },
+    {
+      "id": "ReportGreen",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:BuildPassed",
+        "Notification:OnCallAsked"
+      ]
+    },
+    {
+      "id": "ReportRed",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:BuildFailed"
+      ]
+    },
+    {
+      "id": "PatchAndRetry",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:PatchPushed"
+      ]
+    },
+    {
+      "id": "AbandonChange",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:ChangeAbandoned"
+      ]
+    },
+    {
+      "id": "AgentAbandon",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:ChangeWithdrawnByAgent"
+      ]
+    },
+    {
+      "id": "SignOffDeploy",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding",
+        "actor_assigned"
+      ],
+      "required_effects": [
+        "Audit:DeploySignedOff"
+      ]
+    },
+    {
+      "id": "TurnDown",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:DeployTurnedDown"
+      ]
+    },
+    {
+      "id": "OpenWindow",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:RolloutStarted",
+        "Notification:TeamTold"
+      ]
+    },
+    {
+      "id": "ConfirmHealthy",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:RolloutHealthy"
+      ]
+    },
+    {
+      "id": "AutoRollback",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:RolloutReverted",
+        "Notification:OnCallPaged"
+      ]
+    }
+  ],
+  "effects": {
+    "catalog": [
+      {
+        "id": "Audit:BuildRequested",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:BuildPassed",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:OnCallAsked",
+        "kind": "notification",
+        "recipient": "oncall"
+      },
+      {
+        "id": "Audit:BuildFailed",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:PatchPushed",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:ChangeAbandoned",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:ChangeWithdrawnByAgent",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:DeploySignedOff",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:DeployTurnedDown",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:RolloutStarted",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:TeamTold",
+        "kind": "notification",
+        "recipient": "team"
+      },
+      {
+        "id": "Audit:RolloutHealthy",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:RolloutReverted",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:OnCallPaged",
+        "kind": "notification",
+        "recipient": "oncall"
+      }
+    ],
+    "forbidden": [
+      "SecretsSentToModel",
+      "ProductionTouchedUnapproved"
+    ]
+  },
+  "laws": [
+    {
+      "id": "only-on-call-signs-off",
+      "kind": "only_kind_holds",
+      "code": "HUMAN_DECISION:SignOffDeploy",
+      "role_kinds": [
+        "human"
+      ],
+      "action": "SignOffDeploy",
+      "description": "Only a person signs a deploy off: no AI agent, timer or other system does."
+    },
+    {
+      "id": "scheduled-by-people",
+      "kind": "only_kind_enters",
+      "code": "HUMAN_DECISION:Scheduled",
+      "role_kinds": [
+        "human"
+      ],
+      "state": "Scheduled",
+      "description": "Only a person puts a change into a deploy window, by any action."
+    },
+    {
+      "id": "person-before-production",
+      "kind": "path_requires_kind",
+      "code": "HUMAN_IN_THE_LOOP:InProduction",
+      "role_kinds": [
+        "human"
+      ],
+      "state": "InProduction",
+      "description": "Every change that reaches production had a person act on it first."
+    },
+    {
+      "id": "ci-reports-green",
+      "kind": "only_kind_holds",
+      "code": "PROTECTED_AUTHORITY:ReportGreen",
+      "role_kinds": [
+        "system"
+      ],
+      "action": "ReportGreen",
+      "description": "Only a system reports a green build: the agent cannot mark its own change as passing."
+    },
+    {
+      "id": "production-after-signoff",
+      "kind": "path_requires",
+      "code": "DEPLOY_WITHOUT_SIGNOFF",
+      "state": "InProduction",
+      "via": "Scheduled",
+      "description": "Every path to production passes through a signed-off window."
+    },
+    {
+      "id": "rollback-only-while-rolling",
+      "kind": "action_source_in",
+      "code": "PROTECTED_STATE:AutoRollback",
+      "action": "AutoRollback",
+      "states": [
+        "Rolling"
+      ],
+      "description": "The monitor rolls back only a rollout in progress."
+    },
+    {
+      "id": "production-final",
+      "kind": "state_final",
+      "code": "FINAL_STATE_LEFT:InProduction",
+      "state": "InProduction",
+      "description": "A change in production is closed; a fix is a new change."
+    },
+    {
+      "id": "rolled-back-final",
+      "kind": "state_final",
+      "code": "FINAL_STATE_LEFT:RolledBack",
+      "state": "RolledBack",
+      "description": "A rolled-back change is closed."
+    },
+    {
+      "id": "abandoned-final",
+      "kind": "state_final",
+      "code": "FINAL_STATE_LEFT:Abandoned",
+      "state": "Abandoned",
+      "description": "An abandoned change is closed."
+    },
+    {
+      "id": "signoff-on-rota",
+      "kind": "action_requires_guard",
+      "code": "GUARD_POLICY:SignOffDeploy",
+      "action": "SignOffDeploy",
+      "guards": [
+        "actor_assigned"
+      ],
+      "description": "Signing off needs the engineer to be on the rota (assigned)."
+    },
+    {
+      "id": "no-secrets-to-model",
+      "kind": "forbidden_effects",
+      "code": "EFFECT_POLICY:forbidden",
+      "effects": [
+        "SecretsSentToModel",
+        "ProductionTouchedUnapproved"
+      ],
+      "description": "No step sends secrets to a model or touches production without sign-off."
+    },
+    {
+      "id": "runtime-evidence",
+      "kind": "requires_evidence",
+      "code": "EVIDENCE_REQUIRED:runtime_matrix",
+      "evidence": "runtime_matrix",
+      "description": "A change is reviewed with the runtime matrix."
+    }
+  ],
+  "meanings": [
+    {
+      "id": "agent_withdraws",
+      "label": "The agent withdraws a change it cannot fix",
+      "supported": true,
+      "consequences": [
+        "The AI ops agent may abandon a red build instead of patching it again.",
+        "Stopping work is the safe direction: no person is needed to give up.",
+        "Nothing reaches production without a person's sign-off."
+      ],
+      "transactions": [
+        {
+          "kind": "add_transition",
+          "id": "TR-AGENTABANDON",
+          "action": "AgentAbandon",
+          "from_state": "BuildRed",
+          "to_state": "Abandoned",
+          "role": "OpsAgent"
+        }
+      ]
+    },
+    {
+      "id": "agent_self_deploy",
+      "label": "The agent signs its own deploys off",
+      "supported": false,
+      "consequences": [
+        "Takes the person out of the path to production; blocked by this pack's laws about who decides."
+      ],
+      "transactions": [
+        {
+          "kind": "set_role",
+          "transition": "TR-SIGNOFF",
+          "role": "OpsAgent"
+        }
+      ]
+    },
+    {
+      "id": "unsupported",
+      "label": "Outside the modelled scope",
+      "supported": false,
+      "consequences": [
+        "Requires domain and source-level engineering; no automatic application."
+      ]
+    }
+  ],
+  "language": {
+    "terms": [
+      {
+        "id": "deploy-request",
+        "label": "Deploy request",
+        "definition": "One change the agent wants in production; the workflow instance.",
+        "binds": [
+          "repo://packs/ai-ops/pack.json"
+        ],
+        "refs": [
+          "state:InProduction"
+        ]
+      },
+      {
+        "id": "ops-agent",
+        "label": "Ops agent",
+        "definition": "The AI agent that opens and patches changes. A person signs every deploy off.",
+        "binds": [
+          "repo://packs/ai-ops/pack.json"
+        ],
+        "refs": [
+          "role:OpsAgent",
+          "law:only-on-call-signs-off"
+        ]
+      },
+      {
+        "id": "deploy-window",
+        "label": "Deploy window",
+        "definition": "The scheduled slot in which a signed-off change starts rolling out.",
+        "binds": [
+          "repo://packs/ai-ops/pack.json"
+        ],
+        "refs": [
+          "role:DeployWindow",
+          "transition:TR-WINDOW"
+        ]
+      },
+      {
+        "id": "rollback",
+        "label": "Rollback",
+        "definition": "The monitor reverts an unhealthy rollout on its own; machines may always move toward safety.",
+        "binds": [
+          "repo://packs/ai-ops/pack.json"
+        ],
+        "refs": [
+          "transition:TR-ROLLBACK",
+          "law:rollback-only-while-rolling"
+        ]
+      }
+    ]
+  },
+  "fixtures": {
+    "actors": [
+      {
+        "id": "ops-agent",
+        "role": "OpsAgent",
+        "active": true,
+        "assigned": false
+      },
+      {
+        "id": "ops-agent-paused",
+        "role": "OpsAgent",
+        "active": false,
+        "assigned": false
+      },
+      {
+        "id": "ci",
+        "role": "CiServer",
+        "active": true,
+        "assigned": false
+      },
+      {
+        "id": "oncall-on-rota",
+        "role": "OnCall",
+        "active": true,
+        "assigned": true
+      },
+      {
+        "id": "oncall-off-rota",
+        "role": "OnCall",
+        "active": true,
+        "assigned": false
+      },
+      {
+        "id": "deploy-window",
+        "role": "DeployWindow",
+        "active": true,
+        "assigned": false
+      },
+      {
+        "id": "health-monitor",
+        "role": "HealthMonitor",
+        "active": true,
+        "assigned": false
+      }
+    ],
+    "demo_request": "Let the ops agent ship green builds itself.",
+    "proposals": {
+      "summary": "Deterministic demonstration; no model inference was used.",
+      "rules": [
+        {
+          "all": [
+            "agent"
+          ],
+          "any": [
+            "ship",
+            "deploy",
+            "itself",
+            "sign",
+            "abandon",
+            "withdraw",
+            "give"
+          ],
+          "alternatives": [
+            {
+              "interpretation": "agent_withdraws",
+              "explanation": "The agent may withdraw a change it cannot fix; a person still signs off every deploy."
+            },
+            {
+              "interpretation": "agent_self_deploy",
+              "explanation": "Would let the agent sign its own deploys off. The pack's laws keep that with the person on call."
+            }
+          ]
+        }
+      ],
+      "fallback": [
+        {
+          "interpretation": "unsupported",
+          "explanation": "This offline fixture only demonstrates the agent withdrawing a change."
+        }
+      ],
+      "unknowns": [
+        "Real change-risk thresholds are unknown; the kernel has no value guards yet (issue #93).",
+        "The deploy window is a scheduled actor, not elapsed time (issue #93)."
+      ]
+    }
+  },
+  "verifiers": [
+    {
+      "kind": "runtime_matrix",
+      "mode": "kernel"
+    },
+    {
+      "kind": "smt_proof",
+      "mode": "generated",
+      "reason": "The generated-law proof runs in the gate (python -m verification.smt.laws); binding its report into the review packet is WBS 1.7."
+    },
+    {
+      "kind": "bounded_model_check",
+      "mode": "generated",
+      "reason": "The BMC law property is the pack's laws judged by evaluate_run; a BMC search over this pack's runtime is not wired yet (WBS 1.7)."
+    },
+    {
+      "kind": "bend_proof",
+      "mode": "not_run",
+      "reason": "Generating Bend laws is deferred (docs/engineering/FUTURE-WORK.md)."
+    },
+    {
+      "kind": "tlc",
+      "mode": "not_run",
+      "reason": "Generating TLA+ laws is deferred (docs/engineering/FUTURE-WORK.md)."
+    }
+  ],
+  "journey": {
+    "questions": [
+      {
+        "id": "signoff_authority",
+        "question": "Who may sign a deploy off?",
+        "expected": "OnCall"
+      },
+      {
+        "id": "green_authority",
+        "question": "Which role reports a green build?",
+        "expected": "CiServer"
+      }
+    ]
+  }
+}
