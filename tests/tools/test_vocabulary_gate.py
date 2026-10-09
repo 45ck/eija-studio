@@ -143,3 +143,37 @@ def test_missing_source_and_forged_export_path_fail_closed(tmp_path, monkeypatch
     assert "Blossom" in V.pack_tokens(root / "packs")
     monkeypatch.setattr(V, "KERNEL_EXPORTS", {"../outside.py#Review": "stage_enum"})
     assert V.kernel_exports(root) == {}
+
+
+# Plain words (Picker, Blossom) are ordinary English too: they are findings only where they name something in code.
+# Compound and delimited tokens (library-loan, PaymentCaptured) stay findings wherever they appear.
+
+def test_a_plain_word_in_prose_comments_and_ui_copy_is_not_a_finding(tmp_path):
+    root = _tree(tmp_path, {
+        "src/app/notes.md": "The Picker reviews each Blossom before it is Harvested.\n",
+        "src/app/ui.html": "<p>Picker</p>\n",
+        "src/app/doc.py": '"""The Picker opens the Blossom."""\n# Picker, then Harvested\nx = 1\n',
+        "src/app/ui.js": "// the Picker closes it\nlet a = 'pick';\n",
+    })
+    assert V.scan(root) == []
+
+
+def test_a_plain_word_as_an_identifier_or_string_literal_in_python_is_a_finding(tmp_path):
+    root = _tree(tmp_path, {
+        "src/app/model.py": "class Picker:\n    pass\nrole = 'Picker'\n",
+        "src/app/ui.js": "const label = 'Picker';\n",  # UI copy: JavaScript and JSON are not read for plain words
+        "src/app/data.json": '{"title": "Picker"}\n',
+    })
+    assert {(f.path, f.line, f.token) for f in V.scan(root)} == {
+        ("src/app/model.py", 1, "Picker"), ("src/app/model.py", 3, "Picker"),
+    }
+
+
+def test_a_compound_token_is_a_finding_in_prose_too(tmp_path):
+    root = _tree(tmp_path, {"src/app/notes.md": "The Picker in the notes is picker-1 by convention.\n"})
+    assert [(f.path, f.token) for f in V.scan(root)] == [("src/app/notes.md", "picker-1")]
+
+
+def test_a_plain_word_in_code_with_a_vocab_ok_marker_is_exempt(tmp_path):
+    root = _tree(tmp_path, {"src/app/model.py": "class Picker:  # vocab-ok: test\n    pass\n"})
+    assert V.scan(root) == []

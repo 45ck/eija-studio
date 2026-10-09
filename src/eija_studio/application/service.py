@@ -148,7 +148,7 @@ class Studio:
         except DomainError as error:
             with self.store.transaction() as u:
                 u.event("ProviderCallNotAccepted", {"case_id": case_id, "attempt_id": attempt_id,
-                    "error_code": error.code, "billing": "UNKNOWN for a started network request"})
+                    "error_code": error.code, "billing": "UNKNOWN for a started network request"})  # vocab-ok: provider cost field of an event payload, not a pack actor
             raise
         finally:
             self._provider_lock.release()
