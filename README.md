@@ -32,7 +32,11 @@ The first acceptance target is **EIJA's own checkout**. External applications co
 
 PlayIDE is the visual workbench on top of EIJA. You design a system in UML, press play, and review every change to it, your own or an AI's, on the diagrams you already know. Each change comes with what to consider before you accept it: the warnings, whether every law still holds, the other diagrams it changes and the tests it adds. Review the change, not the code. The app is built from the model and checked against it, so it cannot disobey the model.
 
-The video is one unedited take of the real `/play` page (2:39, Linux/Chromium). The chat's proposer is an offline phrase reader rather than a live model, and the video says so. Verify, approve and apply are not shown yet; they wait on the owner's source review ([#80](https://github.com/45ck/eija-studio/issues/80)). The [storyboard](docs/demos/PLAYIDE-SHOWCASE-STORYBOARD.md) lists every beat and how to re-record it, including the full 8:43 cut. See [PlayIDE](docs/playide.md).
+**The full tour (8:43)** goes further: sequence diagrams, tests, permissions, a review-only view for stakeholders, UML import and export with PlantUML, XMI, Mermaid and draw.io, and starting a system of your own.
+
+[![The full PlayIDE tour: stepping through the AI's change to a UML state machine, with what to consider beside it](docs/demos/assets/playide-showcase/playide-showcase-poster.png)](docs/demos/assets/playide-showcase/playide-showcase.mp4)
+
+Each video is one unedited take of the real `/play` page (Linux/Chromium). The chat's proposer is an offline phrase reader rather than a live model, and the videos say so. Verify, approve and apply are not shown yet; they wait on the owner's source review ([#80](https://github.com/45ck/eija-studio/issues/80)). The [storyboard](docs/demos/PLAYIDE-SHOWCASE-STORYBOARD.md) lists every beat and how to re-record both. See [PlayIDE](docs/playide.md).
 
 ## Recorded integration preview
 
