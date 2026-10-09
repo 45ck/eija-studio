@@ -12,7 +12,8 @@
   const tests = () => (window.PlayTests ? window.PlayTests.draft() : null);
   const asked = () => {
     const steps = P.steps().map((x) => x.transaction); // the work in progress, previewed or not: what it still lacks
-    return { ...P.about(), plan: steps.length ? steps : null, ...(tests() ? { scenarios: tests() } : {}) };
+    const screens = P.editedScreens ? P.editedScreens() : null; // the designer's edits, which its own check reads too
+    return { ...P.about(), plan: steps.length ? steps : null, screens, ...(tests() ? { scenarios: tests() } : {}) };
   };
 
   function refresh() {
@@ -94,6 +95,7 @@
     P = window.PlayIDE;
     document.addEventListener("playide:plan", refresh);
     document.addEventListener("playide:tests", refresh); // the Tests tab's draft changed
+    document.addEventListener("playide:edit", refresh); // a screen, canvas or other edit to the document
     P.hooks.redraw.push(refresh);
     refresh();
   }

@@ -162,3 +162,15 @@ def test_chat_says_who_holds_a_role_on_a_system_you_started(served):
     with pytest.raises(DomainError) as fixed:
         draft_pack(refund, [parse_step({"kind": "set_role_kind", "role": "SupportAgent", "role_kind": "human"})], False)
     assert fixed.value.code == "PLAN_DATA_FIXED"
+
+
+def test_a_round_that_only_sets_a_kind_builds_and_runs_another_app(served):
+    """A role's kind is part of the built app (ADR-0215), so the running app is not reused when only a kind changed."""
+    client, systems = served
+    new_system(client, systems)
+    play = client.app.state.play
+    first = post(client, "/api/play/build", {})
+    key = play.running["key"]
+    steps, _ = ask(client, "make Barista an AI agent", [])
+    second = post(client, "/api/play/build", {"plan": steps})
+    assert first["url"] and second["url"] and play.running["key"] != key

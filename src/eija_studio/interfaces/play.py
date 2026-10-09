@@ -16,6 +16,7 @@ model's build replaces it and the IDE stops it on exit. The generated app has no
 from __future__ import annotations
 
 import atexit
+import hashlib
 import os
 import socket
 import subprocess
@@ -133,6 +134,9 @@ class AppRunner:
         with self.lock:
             data = data_for(pack)  # the same model with another data model or other screens is another app
             key = model.semantic_hash[:12] + (f"-{data.digest[:8]}" if data else "") + f"-{screens.digest[:8]}"
+            # Who holds each role is part of the app too (ADR-0215): a round that only sets a role's kind is another app.
+            kinds = "".join(sorted(f"{r.id}={r.kind};" for r in pack.roles))
+            key += "-" + hashlib.sha256(kinds.encode()).hexdigest()[:8]
             out = self.root() / key
             manifest = build_into(out, pack, model, identity, screens=screens)
             result = {"model": model.semantic_hash, "screens": screens.digest, "cases": manifest["oracle"]["cases"],
