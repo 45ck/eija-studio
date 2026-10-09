@@ -25,6 +25,7 @@ EMPTY = """() => { const g = window.PlayIDE.diagram("states"), box = document.ge
       if (!g.getCellAt(x, y)) return [r.left + x, r.top + y];
     }
     return null; }"""
+GEOMETRY = """([key, id]) => { const c = window.PlayIDE.diagram(key).getDataModel().getCell(id); return [c.geometry.x, c.geometry.y]; }"""
 STEPS = "document.querySelectorAll('.msg .plan-steps > li').length"
 
 
@@ -146,6 +147,143 @@ def test_pick_then_click_double_click_and_edit_inline_in_a_real_browser():
             page.mouse.dblclick(*_at(page, CENTRE, "state:Overdue"))
             page.wait_for_timeout(300)
             assert page.locator(".inline-edit").count() == 0
+            assert errors == []
+        finally:
+            chrome.close()
+
+
+def _near(page, cell: str, point, tolerance: float = 3.0) -> None:
+    for _ in range(50):  # the preview redraws after each step
+        centre = page.evaluate(CENTRE, cell)
+        if centre and abs(centre[0] - point[0]) <= tolerance and abs(centre[1] - point[1]) <= tolerance:
+            return
+        page.wait_for_timeout(100)
+    raise AssertionError(f"{cell} is at {page.evaluate(CENTRE, cell)}, not {point}")
+
+
+@pytest.mark.browser
+@pytest.mark.slow
+@pytest.mark.skipif(os.environ.get("EIJA_BROWSER_TESTS") != "1", reason="NOT_RUN: real-browser check; set EIJA_BROWSER_TESTS=1")
+def test_a_state_lands_where_you_put_it_and_stays_there_in_a_real_browser():
+    api = pytest.importorskip("playwright.sync_api", reason="NOT_RUN: install the hci or demos extra")
+    from demos.lib import ephemeral_eija_server  # noqa: PLC0415 - demos start a real server; only this opt-in test needs it
+
+    with ephemeral_eija_server(pack=ROOT / "packs/library-loan") as server, api.sync_playwright() as playwright:
+        chrome = _launch(api, playwright)
+        try:
+            page = chrome.new_page(viewport={"width": 1600, "height": 900})
+            errors: list[str] = []
+            page.on("pageerror", lambda error: errors.append(str(error)))
+            page.goto(f"{server.base_url}/play#{server.token}")
+            page.wait_for_selector("body[data-ready=true]", timeout=60_000)
+            state = '#draw-palette [data-kind="state"]'
+            page.click("#zoom-in")  # not at the fitted scale
+            page.wait_for_timeout(300)
+            requested = _at(page, CENTRE, "state:Requested")
+
+            # Before the click, an outline shows where the state will land; after it, the state is centred there and
+            # nothing else on the diagram has moved.
+            page.click(state)
+            spot = _at(page, EMPTY)
+            page.mouse.move(*spot)
+            ghost = page.evaluate("""() => { const r = document.querySelector('.place-preview .ghost-state').getBoundingClientRect();
+                return [r.left + r.width / 2, r.top + r.height / 2]; }""")
+            assert abs(ghost[0] - spot[0]) <= 1 and abs(ghost[1] - spot[1]) <= 1
+            page.mouse.click(*spot)
+            page.keyboard.type("Lost")
+            page.keyboard.press("Enter")
+            _steps(page, 1)
+            _near(page, "state:Lost", spot)
+            _near(page, "state:Requested", requested)
+
+            # Drag a state to move it: it stays where you let go, through the next redraw too.
+            overdue = _at(page, CENTRE, "state:Overdue")
+            target = _at(page, EMPTY)
+            page.mouse.move(*overdue)
+            page.mouse.down()
+            page.mouse.move((overdue[0] + target[0]) / 2, (overdue[1] + target[1]) / 2, steps=5)
+            page.mouse.move(*target, steps=5)
+            page.mouse.up()
+            _near(page, "state:Overdue", target, tolerance=12)  # maxGraph snaps a move to its 10px grid
+            moved = page.evaluate(CENTRE, "state:Overdue")
+            assert page.is_visible("#tidy")
+            page.mouse.dblclick(*_at(page, CENTRE, "state:Lost"))
+            page.fill(".inline-edit input", "Missing")
+            page.keyboard.press("Enter")
+            _steps(page, 2)
+            _near(page, "state:Missing", spot)
+            _near(page, "state:Overdue", moved)
+
+            # A drag from the palette, zoomed out, drops the state exactly where it is let go.
+            page.click("#zoom-out")
+            page.click("#zoom-out")
+            page.wait_for_timeout(300)
+            drop = _at(page, EMPTY)
+            box = page.locator("#canvas").bounding_box()
+            page.drag_and_drop(state, "#canvas", target_position={"x": drop[0] - box["x"], "y": drop[1] - box["y"]})
+            page.wait_for_selector(".inline-edit input:focus")
+            page.keyboard.type("Found")
+            page.keyboard.press("Enter")
+            _steps(page, 3)
+            _near(page, "state:Found", drop)
+
+            # Tidy forgets the positions and lays the diagram out again.
+            page.click("#tidy")
+            page.wait_for_selector("#tidy", state="hidden")
+            _at(page, CENTRE, "state:Found")
+            assert errors == []
+        finally:
+            chrome.close()
+
+
+@pytest.mark.browser
+@pytest.mark.slow
+@pytest.mark.skipif(os.environ.get("EIJA_BROWSER_TESTS") != "1", reason="NOT_RUN: real-browser check; set EIJA_BROWSER_TESTS=1")
+def test_a_shape_moved_on_the_other_diagrams_stays_there_in_a_real_browser():
+    api = pytest.importorskip("playwright.sync_api", reason="NOT_RUN: install the hci or demos extra")
+    from demos.lib import ephemeral_eija_server  # noqa: PLC0415 - demos start a real server; only this opt-in test needs it
+
+    centre = """([key, id]) => { const g = window.PlayIDE.diagram(key), cell = g.getDataModel().getCell(id);
+        const s = cell && g.view.getState(cell), r = g.container.getBoundingClientRect();
+        return s ? [r.left + s.getCenterX(), r.top + s.getCenterY()] : null; }"""
+    first = """(key) => { const g = window.PlayIDE.diagram(key);
+        const c = Object.values(g.getDataModel().cells).find((x) => x.isVertex() && x.id && x.parent === g.getDefaultParent() && x.style.movable !== false);
+        return c ? c.id : null; }"""
+    with ephemeral_eija_server(pack=ROOT / "packs/library-loan") as server, api.sync_playwright() as playwright:
+        chrome = _launch(api, playwright)
+        try:
+            page = chrome.new_page(viewport={"width": 1600, "height": 900})
+            errors: list[str] = []
+            page.on("pageerror", lambda error: errors.append(str(error)))
+            page.goto(f"{server.base_url}/play#{server.token}")
+            page.wait_for_selector("body[data-ready=true]", timeout=60_000)
+            kept = {}
+            for key, tab in (("classes", "#tab-classes"), ("usecases", "#tab-usecases"), ("components", "#tab-components")):
+                page.click(tab)
+                page.wait_for_timeout(400)
+                cell = page.evaluate(first, key)
+                start = page.evaluate(centre, [key, cell])
+                page.mouse.move(*start)
+                page.mouse.down()
+                page.mouse.move(start[0] + 30, start[1] + 40, steps=4)
+                page.mouse.move(start[0] + 60, start[1] + 80, steps=4)
+                page.mouse.up()
+                after = page.evaluate(centre, [key, cell])
+                assert abs(after[1] - start[1]) > 40, (key, start, after)
+                assert page.is_visible("#tidy")
+                kept[key] = (cell, page.evaluate(GEOMETRY, [key, cell]))
+            # A plan preview redraws every diagram: what was moved stays where it was put.
+            page.click("#tab-states")
+            page.click('#draw-palette [data-kind="state"]')
+            page.mouse.click(*_at(page, EMPTY))
+            page.keyboard.type("Lost")
+            page.keyboard.press("Enter")
+            _steps(page, 1)
+            for key, tab in (("classes", "#tab-classes"), ("usecases", "#tab-usecases"), ("components", "#tab-components")):
+                page.click(tab)
+                page.wait_for_timeout(300)
+                cell, where = kept[key]
+                assert page.evaluate(GEOMETRY, [key, cell]) == where, key
             assert errors == []
         finally:
             chrome.close()

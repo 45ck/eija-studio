@@ -64,6 +64,136 @@
     return { at, bends };
   }
 
+  // Where you put a state is where it stays (ADR-0174). The first gesture on the diagram (placing, moving, renaming,
+  // removing) pins every shape where it is drawn, by cell id, so nothing jumps when the plan redraws; a state you
+  // place goes exactly where you clicked or dropped it, and one you drag stays where you let go. Positions are
+  // presentation only: they never reach the model or the plan. Tidy forgets them and lays the diagram out again.
+  const placed = {}, bent = {}; // cell id -> [x, y] top-left in graph units; transition cell id -> bend points
+  let layoutKey = "", lastView = null;
+
+  function layoutStore() {
+    const key = "playide.layout.v1:" + $("model-name").textContent.split(" · ")[0];
+    if (key === layoutKey) return;
+    layoutKey = key;
+    for (const k of Object.keys(placed)) delete placed[k];
+    for (const k of Object.keys(bent)) delete bent[k];
+    try { const kept = JSON.parse(localStorage.getItem(key) || "{}"); Object.assign(placed, kept.placed || {}); Object.assign(bent, kept.bent || {}); } catch { /* storage blocked: positions last this visit only */ }
+  }
+
+  function hasMoves(which) {
+    return which === "states" ? Object.keys(placed).length > 0 : Boolean(movedOn[which] && Object.keys(movedOn[which]).length);
+  }
+
+  function saveLayout() {
+    try { localStorage.setItem(layoutKey, JSON.stringify({ placed, bent })); } catch { /* storage blocked */ }
+    const tidy = $("tidy");
+    if (tidy) tidy.hidden = !hasMoves(tab);
+  }
+
+  function pinAll() {
+    if (!graph || hooks.diffGraph && hooks.diffGraph()) return;
+    for (const cell of Object.values(graph.getDataModel().cells)) {
+      if (!cell.id || !cell.geometry) continue;
+      if (cell.id === "initial" || cell.id.startsWith("state:")) placed[cell.id] = [cell.geometry.x, cell.geometry.y];
+      else if (cell.id.startsWith("transition:") && !(cell.id in bent)) bent[cell.id] = (cell.geometry.points || []).map((pt) => [pt.x, pt.y]);
+    }
+    saveLayout();
+  }
+
+  // Pinned shapes keep their place; any other state (one the AI added, say) goes below them, in the layout's order.
+  function arrange(workflow, place) {
+    layoutStore();
+    const ids = ["initial", ...workflow.states.map((x) => "state:" + x)], pinned = ids.filter((id) => placed[id]);
+    const dagreId = (id) => (id === "initial" ? "__initial" : id.slice(6));
+    const below = pinned.length ? Math.max(...pinned.map((id) => placed[id][1])) + STATE.height + 70 : 0;
+    const top = Math.min(...ids.filter((id) => !placed[id]).map((id) => place.at(dagreId(id))[1]), Infinity);
+    const at = (id) => placed[id] || (pinned.length ? [place.at(dagreId(id))[0], below + place.at(dagreId(id))[1] - top] : place.at(dagreId(id)));
+    const bends = (t) => {
+      const id = "transition:" + t.id, ends = [placed["state:" + t.from_state], placed["state:" + t.to_state]];
+      if (ends[0] && ends[1]) return (bent[id] || []).map(([x, y]) => ({ x, y }));
+      return ends[0] || ends[1] ? [] : place.bends(t);
+    };
+    return { at, bends };
+  }
+
+  // You moved shapes: keep them there, and let the edges that touch them route straight again.
+  function moved(cells) {
+    const ids = new Set(cells.filter((c) => c.isVertex()).map((c) => c.id));
+    if (!ids.size) return;
+    pinAll();
+    graph.batchUpdate(() => straighten(graph, ids));
+    for (const cell of Object.values(graph.getDataModel().cells)) {
+      if (cell.isEdge() && cell.id && cell.id.startsWith("transition:") && !(cell.geometry.points || []).length) bent[cell.id] = [];
+    }
+    saveLayout();
+  }
+
+  // The plan banner (and the panel below) change where the canvas sits on the page. Keep the drawing still on the
+  // screen when that happens, so a state you just placed does not slide away from where you put it.
+  let canvasTop = null;
+  function holdStill() {
+    if (!$("canvas").offsetParent) return; // hidden behind another tab: nothing on screen to hold
+    const top = $("canvas").getBoundingClientRect().top;
+    if (graph && graph.view && canvasTop !== null && top !== canvasTop) {
+      const v = graph.view;
+      v.setTranslate(v.translate.x, v.translate.y - (top - canvasTop) / v.scale);
+    }
+    canvasTop = top;
+  }
+
+  // The class, use case and component diagrams are drawn from the model, but a shape you drag there stays where you
+  // let go too, for this visit, through preview redraws. Edges that touch it route straight again.
+  const movedOn = { classes: {}, usecases: {}, components: {} };
+  function straighten(g, ids) {
+    const inside = (cell) => { for (let c = cell; c; c = c.parent) if (ids.has(c.id)) return true; return false; };
+    for (const cell of Object.values(g.getDataModel().cells)) {
+      if (!cell.isEdge() || !(inside(cell.source) || inside(cell.target)) || !cell.geometry) continue;
+      const geo = cell.geometry.clone();
+      geo.points = [];
+      g.getDataModel().setGeometry(cell, geo);
+    }
+  }
+
+  function keepMoves(g, key) {
+    const kept = movedOn[key], m = g.getDataModel(), handler = g.getPlugin("SelectionHandler");
+    g.isCellMovable = (cell) => cell.isVertex() && cell.style.movable !== false;
+    if (handler) { // pressing on a class's attribute row (or any fixed part of a shape) takes hold of the shape itself
+      const initial = handler.getInitialCellForEvent.bind(handler);
+      handler.getInitialCellForEvent = (me) => {
+        let cell = initial(me);
+        while (cell && cell.style && cell.style.selectable === false && cell.parent && cell.parent.isVertex()) cell = cell.parent;
+        return cell;
+      };
+    }
+    g.batchUpdate(() => {
+      for (const [id, [x, y]] of Object.entries(kept)) {
+        const cell = m.getCell(id);
+        if (!cell || !cell.geometry) continue;
+        const geo = cell.geometry.clone();
+        geo.x = x;
+        geo.y = y;
+        m.setGeometry(cell, geo);
+      }
+      straighten(g, new Set(Object.keys(kept)));
+    });
+    g.addListener(maxgraph.InternalEvent.CELLS_MOVED, (_sender, evt) => {
+      const cells = (evt.getProperty("cells") || []).filter((c) => c.isVertex() && c.id);
+      for (const c of cells) kept[c.id] = [c.geometry.x, c.geometry.y];
+      g.batchUpdate(() => straighten(g, new Set(cells.map((c) => c.id))));
+      $("tidy").hidden = !hasMoves(tab);
+    });
+  }
+
+  function tidy() {
+    for (const kept of Object.values(movedOn)) for (const k of Object.keys(kept)) delete kept[k];
+    for (const k of Object.keys(placed)) delete placed[k];
+    for (const k of Object.keys(bent)) delete bent[k];
+    saveLayout();
+    redrawAll(model);
+    if (plan && plan.previewing && plan.result) highlight(plan.result.diff);
+    for (const which of Object.keys(DIAGRAMS)) markRipple(which);
+  }
+
   function label(t) { return `${t.action} [${t.role}]`; }
 
   function draw(workflow) {
@@ -78,13 +208,14 @@
     graph.setPanning(true);
     graph.setTooltips(true);
     graph.getTooltipForCell = (cell) => tooltip(cell);
-    const parent = graph.getDefaultParent(), place = layout(workflow), cells = {};
+    graph.isCellMovable = (cell) => cell.isVertex(); // states and the initial dot move; edges follow
+    const parent = graph.getDefaultParent(), place = arrange(workflow, layout(workflow)), cells = {};
     const font = { fontFamily: "system-ui, sans-serif", fontColor: "#1b2130" };
     graph.batchUpdate(() => {
-      const initial = graph.insertVertex({ parent, id: "initial", position: place.at("__initial"), size: [INITIAL, INITIAL],
+      const initial = graph.insertVertex({ parent, id: "initial", position: place.at("initial"), size: [INITIAL, INITIAL],
         style: { shape: "ellipse", fillColor: "#1b2130", strokeColor: "#1b2130", resizable: false, editable: false } });
       for (const s of workflow.states) {
-        cells[s] = graph.insertVertex({ parent, id: "state:" + s, value: s, position: place.at(s), size: [STATE.width, STATE.height],
+        cells[s] = graph.insertVertex({ parent, id: "state:" + s, value: s, position: place.at("state:" + s), size: [STATE.width, STATE.height],
           style: { ...font, rounded: true, arcSize: 22, fillColor: "#eef2ff", strokeColor: "#5b74d6", strokeWidth: 1.5, fontSize: 14, fontStyle: 1, resizable: false } });
       }
       graph.insertEdge({ parent, id: "initial-edge", source: initial, target: cells[workflow.initial_state],
@@ -102,7 +233,10 @@
       select(cell ? cell.id : "", false);
     });
     wireCanvas(graph);
-    fit();
+    if (lastView && Object.keys(placed).length) graph.view.scaleAndTranslate(lastView.scale, lastView.x, lastView.y);
+    else fit();
+    lastView = null;
+    canvasTop = box.offsetParent ? box.getBoundingClientRect().top : null; // the drawing is placed for where the canvas is now
     for (const f of hooks.redraw) f();
   }
 
@@ -326,6 +460,7 @@
       const id = cell && cell.id && cell.id.startsWith("assoc:") ? "class:" + data.associations[+cell.id.slice(6)].source : cell ? cell.id : "";
       select(id && (id.startsWith("class:") || id.startsWith("enum:")) ? id : "", false);
     });
+    keepMoves(classGraph, "classes");
   }
 
   function inspectClass(name, box) {
@@ -420,6 +555,7 @@
       const id = cell.id.slice(3);
       openScreen(id === "create" ? null : transition(id).action);
     });
+    keepMoves(useCaseGraph, "usecases");
   }
 
   function showTab(which) {
@@ -430,6 +566,7 @@
     }
     $("canvas-help").textContent = HINTS[which];
     for (const id of ["fit", "zoom-in", "zoom-out"]) $(id).hidden = which === "screens" || which === "laws" || which === "tests" || which === "access";
+    $("tidy").hidden = !hasMoves(which);
     $("draw-palette").hidden = which !== "states";
     $("plan-review").hidden = which === "review";
     for (const f of hooks.tab) f(which);
@@ -592,6 +729,7 @@
 
   function redrawAll(workflow) {
     model = workflow;
+    lastView = graph && graph.view ? { scale: graph.view.scale, x: graph.view.translate.x, y: graph.view.translate.y } : null;
     for (const g of [graph, classGraph, useCaseGraph, componentGraph]) if (g) g.destroy();
     for (const box of ["canvas", "class-canvas", "usecase-canvas", "component-canvas"]) $(box).replaceChildren();
     classGraph = useCaseGraph = componentGraph = components = null;
@@ -833,6 +971,8 @@
   const KINDS = { state: "a state", transition: "a transition", initial: "the initial state", rename: "a new name", move: "a moved transition" };
 
   async function addStep(transaction) {
+    pinAll(); // nothing you did not touch moves when the plan redraws
+    if (transaction.kind === "rename_state" && placed["state:" + transaction.state]) placed["state:" + transaction.to] = placed["state:" + transaction.state];
     if (!plan) {
       plan = { scope: "plan-draft", provider: "drawn by you", live: false, summary: "Your changes", meaning: null, request: "",
         model: "draft", steps: [], accepted: [], previewing: false, card: null, rewarded: new Set(), uid: ++planUid };
@@ -1027,6 +1167,7 @@
     toolFrom = null;
     for (const b of $("draw-palette").querySelectorAll("button")) b.setAttribute("aria-pressed", String(b.dataset.kind === tool));
     $("canvas").classList.toggle("placing", Boolean(tool));
+    if (!tool && graph) preview("", 0, 0);
     $("canvas-help").textContent = tool ? TOOL_HINTS[tool] + " Escape cancels." : HINTS.states;
     if (tool) {
       if (tab !== "states") showTab("states");
@@ -1045,6 +1186,7 @@
   // show; the others keep their values.
   function inlineEdit(title, spec, x, y, show = spec.fields.map(([text]) => text)) {
     closeEditor();
+    preview("", 0, 0);
     const box = $("canvas"), form = el("form", undefined, { class: "draft-form inline-edit", "aria-label": title });
     form.append(el("p", title, { class: "inline-title" }));
     for (const [text, control] of spec.fields) if (show.includes(text)) form.append(field(text, control));
@@ -1092,8 +1234,20 @@
     return [event.clientX - r.left, event.clientY - r.top];
   }
 
+  function toGraph(x, y) {
+    const v = graph.view;
+    return [x / v.scale - v.translate.x - STATE.width / 2, y / v.scale - v.translate.y - STATE.height / 2];
+  }
+
   function newState(x, y, after) {
-    const spec = formFor("state", after);
+    const spec = formFor("state", after), make = spec.make, spot = toGraph(x, y);
+    spec.make = () => {
+      const step = make();
+      pinAll();
+      placed["state:" + step.state] = spot; // centred where you clicked or dropped
+      saveLayout();
+      return step;
+    };
     inlineEdit(after ? `New state after ${after}` : "New state", spec, x, y, ["Name"]);
   }
 
@@ -1125,6 +1279,7 @@
       $("canvas-help").textContent = (toolFrom ? `From ${toolFrom}: click the state it goes to.` : TOOL_HINTS.transition) + " Escape cancels.";
     } else if (!toolFrom) {
       toolFrom = s;
+      preview("transition", x, y);
       $("canvas-help").textContent = `From ${s}: now click the state it goes to (the same state for a self-transition). Escape cancels.`;
     } else {
       const from = toolFrom, spec = formFor("transition", s), b = cellBox(cell); // below the target, leaving it in view
@@ -1149,13 +1304,48 @@
     const { InternalEvent } = maxgraph;
     g.addListener(InternalEvent.CLICK, (_sender, evt) => onCanvasClick(evt.getProperty("cell"), evt.getProperty("event")));
     g.addListener(InternalEvent.DOUBLE_CLICK, (_sender, evt) => onCanvasDoubleClick(evt.getProperty("cell"), evt.getProperty("event")));
+    g.addListener(InternalEvent.CELLS_MOVED, (_sender, evt) => moved(evt.getProperty("cells") || []));
   }
+
+  // What a click or a drop will do, drawn under the pointer before you commit: the outline of the new state where
+  // it will land, the state a transition or the initial arrow will attach to, and a line from a transition's source.
+  let dragKind = "";
+  function overlay() {
+    const box = $("canvas");
+    let svg = box.querySelector(".place-preview");
+    if (!svg) {
+      svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("class", "place-preview");
+      svg.setAttribute("aria-hidden", "true");
+      box.append(svg);
+    }
+    return svg;
+  }
+
+  function preview(kind, x, y) {
+    const svg = overlay(), ns = "http://www.w3.org/2000/svg", parts = [];
+    const shape = (name, attrs) => { const n = document.createElementNS(ns, name); for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v); parts.push(n); };
+    const cell = kind && graph.getCellAt(x, y), s = stateAt(cell), box = s && cellBox(cell);
+    if (kind === "state") {
+      const k = graph.view.scale, w = STATE.width * k, h = STATE.height * k;
+      shape("rect", { x: x - w / 2, y: y - h / 2, width: w, height: h, rx: 10 * k, class: "ghost-state" });
+      if (box) shape("rect", { x: box.x - 4, y: box.y - 4, width: box.width + 8, height: box.height + 8, rx: 12, class: "ghost-target" });
+    } else if (kind === "transition" || kind === "initial") {
+      if (box) shape("rect", { x: box.x - 4, y: box.y - 4, width: box.width + 8, height: box.height + 8, rx: 12, class: "ghost-target" });
+      const from = kind === "transition" && toolFrom && graph.getDataModel().getCell("state:" + toolFrom), fb = from && cellBox(from);
+      if (fb) shape("line", { x1: fb.x + fb.width / 2, y1: fb.y + fb.height / 2, x2: x, y2: y, class: "ghost-edge" });
+    }
+    svg.replaceChildren(...parts);
+  }
+
 
   function startDrawing() {
     const box = $("canvas");
+    new ResizeObserver(holdStill).observe(box);
     for (const b of $("draw-palette").querySelectorAll("button")) {
       b.setAttribute("aria-pressed", "false");
-      b.addEventListener("dragstart", (event) => { arm(null); event.dataTransfer.setData("text/x-eija-kind", b.dataset.kind); event.dataTransfer.effectAllowed = "copy"; });
+      b.addEventListener("dragstart", (event) => { arm(null); dragKind = b.dataset.kind; event.dataTransfer.setData("text/x-eija-kind", b.dataset.kind); event.dataTransfer.effectAllowed = "copy"; });
+      b.addEventListener("dragend", () => { dragKind = ""; preview("", 0, 0); });
       // A pointer click arms the tool; Enter or Space on the button opens the full form, so the keyboard needs no pointing.
       b.addEventListener("click", (event) => (event.detail > 0 ? arm(b.dataset.kind) : drawForm(b.dataset.kind, null)));
     }
@@ -1164,11 +1354,19 @@
       event.preventDefault();
       event.dataTransfer.dropEffect = "copy";
       box.classList.add("drop-over");
+      preview(dragKind, ...pointIn(event));
     });
-    box.addEventListener("dragleave", () => box.classList.remove("drop-over"));
+    box.addEventListener("dragleave", (event) => {
+      if (box.contains(event.relatedTarget)) return; // moving over a child of the canvas, still inside it
+      box.classList.remove("drop-over");
+      preview("", 0, 0);
+    });
+    box.addEventListener("pointermove", (event) => { if (tool && !editor) preview(tool, ...pointIn(event)); });
+    box.addEventListener("pointerleave", () => preview("", 0, 0));
     box.addEventListener("drop", (event) => {
       const kind = event.dataTransfer.getData("text/x-eija-kind");
       box.classList.remove("drop-over");
+      preview("", 0, 0);
       if (!kind) return;
       event.preventDefault();
       const [x, y] = pointIn(event), s = stateAt(graph.getCellAt(x, y));
@@ -1407,6 +1605,7 @@
       const id = cell && cell.id ? (cell.id.startsWith("iface:") ? "component:" + cell.id.slice(6) : cell.id) : "";
       select(id.startsWith("component:") ? id : "", false);
     });
+    keepMoves(componentGraph, "components");
     fit();
   }
 
@@ -1557,14 +1756,29 @@
   }
 
   function dropZone(list) {
-    list.addEventListener("dragover", (event) => { event.preventDefault(); list.classList.add("over"); });
-    list.addEventListener("dragleave", () => list.classList.remove("over"));
-    list.addEventListener("drop", (event) => {
-      event.preventDefault();
-      list.classList.remove("over");
+    // A line shows where the field will go before you let go: above the row under the pointer's upper half, or last.
+    const slot = (event) => {
       const rows = [...list.querySelectorAll(".screen-field")];
       const target = rows.findIndex((r) => event.clientY < r.getBoundingClientRect().top + r.offsetHeight / 2);
-      const at = target === -1 ? rows.length : target;
+      return [rows, target === -1 ? rows.length : target];
+    };
+    const clear = () => {
+      list.classList.remove("over", "drop-end");
+      for (const r of list.querySelectorAll(".drop-before")) r.classList.remove("drop-before");
+    };
+    list.addEventListener("dragover", (event) => {
+      event.preventDefault();
+      const [rows, at] = slot(event);
+      clear();
+      list.classList.add("over");
+      if (at < rows.length) rows[at].classList.add("drop-before");
+      else if (rows.length) list.classList.add("drop-end");
+    });
+    list.addEventListener("dragleave", (event) => { if (!list.contains(event.relatedTarget)) clear(); });
+    list.addEventListener("drop", (event) => {
+      event.preventDefault();
+      clear();
+      const [, at] = slot(event);
       const moving = event.dataTransfer.getData("text/eija-field"), adding = event.dataTransfer.getData("text/eija-attribute");
       if (moving !== "") moveField(Number(moving), at);
       else if (adding) addField(adding, at);
@@ -1994,6 +2208,7 @@
     $("sim-replay").addEventListener("click", replay);
     $("sim-clear").addEventListener("click", clearSim);
     $("fit").addEventListener("click", fit);
+    $("tidy").addEventListener("click", tidy);
     $("zoom-in").addEventListener("click", () => current() && current().zoomIn());
     $("zoom-out").addEventListener("click", () => current() && current().zoomOut());
     $("tab-states").addEventListener("click", () => showTab("states"));
