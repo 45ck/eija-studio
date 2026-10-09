@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### 9 October 2026: PlayIDE polish, round 11 (the New system dialog fits the screen)
+
+- Systems, New system lists every sector template two to a row, and the kernel's verdict and Create and open stay at the bottom of the dialog while the list scrolls. Before, the list ran past the bottom of the dialog on a 1080p screen, so Create and open was off screen and the last template was cut. The blank sketch and a UML file still take the full width under their own option.
+
 ### 9 October 2026: PlayIDE keeps transition labels apart
 
 - The labels of a back-and-forth pair of transitions no longer sit on top of each other (#153): RequestRefund and RejectRefund on Card payment, FailPayout and RetryPayout on Refund desk, RequestInfo and SupplyInfo on Building permit, MissPayment and PayOverdue on SaaS subscription. The layout now leaves room for each label at its real size, centred on its edge, and the label is drawn there instead of halfway along the line, on the state machine and in the Changes view. A state you drag still takes its lines straight again, with their labels halfway along.
