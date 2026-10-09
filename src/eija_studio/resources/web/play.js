@@ -49,19 +49,34 @@
     return { states: [...new Set(models.flatMap((w) => w.states))], initials: [...new Set(models.map((w) => w.initial_state))], transitions };
   }
 
+  // The state machine runs left to right, or top to bottom when that draws it clearly larger in the canvas: on a laptop
+  // with the side bar and the chat open the canvas is taller than it is wide, and a left-to-right chain shrinks its
+  // labels to a few pixels. The direction is chosen once, on the first drawing, so an edit or a preview never turns it.
+  let direction = null;
   function layout(workflow) {
-    const g = new dagre.graphlib.Graph({ multigraph: true }), shape = basis(workflow);
-    g.setGraph({ rankdir: "LR", nodesep: 60, ranksep: 120, edgesep: 30, marginx: 30, marginy: 30 });
+    const shape = basis(workflow), box = $("canvas");
+    if (!direction) {
+      const fits = (g) => Math.min(1.4, (box.clientWidth - 48) / g.graph().width, (box.clientHeight - 48) / g.graph().height);
+      direction = box.clientWidth && fits(laidOut(shape, "TB")) > fits(laidOut(shape, "LR")) * 1.15 ? "TB" : "LR";
+    }
+    const g = laidOut(shape, direction);
+    const at = (id) => { const n = g.node(id); return [n.x - n.width / 2, n.y - n.height / 2]; };
+    // dagre's bend points, without the two ends maxGraph attaches to the state borders itself.
+    const bends = (t) => g.edge(t.from_state, t.to_state, t.id).points.slice(1, -1);
+    return { at, bends };
+  }
+
+  function laidOut(shape, rankdir) {
+    const g = new dagre.graphlib.Graph({ multigraph: true });
+    g.setGraph(rankdir === "TB" ? { rankdir, nodesep: 60, ranksep: 70, edgesep: 30, marginx: 30, marginy: 30 }
+      : { rankdir, nodesep: 60, ranksep: 120, edgesep: 30, marginx: 30, marginy: 30 });
     g.setDefaultEdgeLabel(() => ({}));
     g.setNode("__initial", { width: INITIAL, height: INITIAL });
     for (const s of shape.states) g.setNode(s, { ...STATE });
     for (const s of shape.initials) g.setEdge("__initial", s, {}, s);
     for (const t of shape.transitions) g.setEdge(t.from_state, t.to_state, { width: 120, height: 20 }, t.id);
     dagre.layout(g);
-    const at = (id) => { const n = g.node(id); return [n.x - n.width / 2, n.y - n.height / 2]; };
-    // dagre's bend points, without the two ends maxGraph attaches to the state borders itself.
-    const bends = (t) => g.edge(t.from_state, t.to_state, t.id).points.slice(1, -1);
-    return { at, bends };
+    return g;
   }
 
   function label(t) { return `${t.action} [${t.role}]`; }
@@ -2045,6 +2060,7 @@
   window.PlayIDE = {
     api, el, hooks, about, viewKey, label, restyle, clearSim, select, showTab, fit, importPlan,
     graph: () => graph, tab: () => tab, model: () => model, selected: () => selected, pack: () => packInfo, base: () => baseModel,
+    direction: () => direction || "LR", // the state machine's layout, which the Changes view follows
     planned: () => (plan && plan.result && plan.result.legal ? accepted() : null), // the change the Changes view draws (ADR-0176)
     changes: () => shownChange, // the union while the Changes view is on (ADR-0176), else null
     draft, restoreDraft, // saving and reopening the work in progress (ADR-0185)

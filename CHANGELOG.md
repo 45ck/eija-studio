@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### 9 October 2026: PlayIDE polish, round 7 (readable on a laptop)
+
+- The state machine is laid out top to bottom when that draws it clearly larger, as on a laptop with the side bar and the chat open. Before, Library loan was shrunk to a third of its size in one long row, with 5-pixel labels; at 1280 pixels it is now drawn at full size. The direction is chosen once, when the diagram is first drawn, so an edit or a preview never turns it. The Changes view follows the same direction.
+- On a 1280-pixel laptop screen, an edit no longer scrolls the whole page sideways. "Unsaved changes" in the title bar had made the page 42 pixels wider than the window; the title bar now gives way inside the window instead.
+
 ### 9 October 2026: PlayIDE polish, round 6 (the Import / Export menu)
 
 - The Import / Export menu wraps its longer lines again. Since round 3 kept the title bar's buttons on one line, the menu inherited that, and the XMI line ("Enterprise Architect, Cameo, …, StarUML") ran past the menu's edge into the chat panel.
