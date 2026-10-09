@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0215-see-and-run-the-app-as-each-role.md
   title: 0215-see-and-run-the-app-as-each-role.md
   hash_method: lf-sha256-v1
-  sha256: a63db47c6a7706ae399646180abed3cdc27619b9101151caf46d77a14bbd5a87
-notes_baseline: 813a8e9f5d33aecde539acf3673578f8e499701b7e7e3a97789169090126b736
+  sha256: f49777d6aeece1e24cdf029b242b69b46354c8959e6973e97011f26401b85e00
+notes_baseline: 4e7146c3dba11859fbaea2c20c55bedcdf05bd4a3523cb4d56cc4f7a92a8210c
 ---
 
 # ADR-0215: See and run the app as each role
@@ -38,6 +38,8 @@ notes_baseline: 813a8e9f5d33aecde539acf3673578f8e499701b7e7e3a97789169090126b736
 >
 > * **Actors that are not people** (amended 2026-10-09, after [ADR-0210](repo://docs/adr/0210-actors-that-are-not-people.md)). An AI agent, a timer or an external system has no screens. Choosing one in **See the app as** says so, strikes through every screen and lists the calls it makes as the built app's own endpoints (`POST /api/records/{id}/act` with its action and actor, and `POST /api/records` to start a record). The open screen says that the role takes that use case by an API call, and that the screen is what a person standing in for it sees. The inspector shows the kind («agent», «timer», «system») and the same calls. Its buttons say **Stand in for**, and the built app names the kind beside the picker (`describe()` now serves `kinds`).
 > * **Run as after Stop.** Run as reuses the last build only while its app still runs in the frame. The run bar's Stop ends the process and blanks the frame, so the next Run as builds again rather than opening a dead address.
+>
+> * **Screen flow** (amended 2026-10-09). **Screen flow** on the Screens tab draws every screen as a wireframe and lays them out left to right in the order a record meets them. An arrow goes from a screen to each screen the record can reach next, labelled with the state it is then in, and an end state is an end node. The wireframe is drawn from the screen and the record class: the create screen shows an input per field, shaped by the attribute's type (a choice shows its first literal and ▾, a date shows dd/mm/yyyy) with * for required. Its tooltip gives the rule the server checks ("text, up to 120, required"). An action screen shows the values it displays. Nothing in it is drawn by hand: a transition added on the state machine adds an arrow, and an edit in the designer redraws the card. Under **See the app as**, the other roles' screens fade, so the hand-offs between roles show. Choosing a card opens that screen in the designer. The layout uses the vendored dagre, as the state machine does, and each card is measured before layout so a wrapped title keeps its room.
 
 ## Sections
 
