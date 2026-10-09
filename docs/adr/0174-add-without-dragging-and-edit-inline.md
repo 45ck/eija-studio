@@ -50,6 +50,17 @@ After watching the showcase cut, the owner said "dragging sucks kind of" and ask
 * Bad: gestures that are not visible have to be learnt; the hint under the diagram names them, and the palette items' tooltips say what to click.
 * Revisit when: a usability study (owed under ADR-0170) shows people missing the double-click gestures, or the class and use case diagrams become editable.
 
+## Amendment, 9 October 2026: shapes land where you put them
+
+The owner tried it and wrote that a dragged state did not "put it in the right place". It did not. The state machine was laid out again by Dagre after every step, and fitted to the window again, so a new state went wherever the layout put it. The plan banner that appears with the first step also pushed the canvas down by about 46 pixels. Dragging a state to move it worked until the next redraw, then it snapped back. The class, use case and component diagrams did the same, and pressing on a class's attribute row did not take hold of the class.
+
+* A state you place by clicking or dropping is centred exactly where you clicked or let go, at any zoom. Before you commit, a dashed outline shows where it will land. A transition shows a dashed line from the state it leaves to the pointer, and the state under the pointer is outlined.
+* The first gesture on the state machine pins every shape where it is drawn, so nothing you did not touch moves when the plan redraws. A state you drag stays where you let go, and the transitions that touch it route straight again. Any state the AI adds goes below the pinned ones. The view keeps its zoom and scroll across those redraws, and holds still when the plan banner or the panel moves the canvas.
+* On the class, use case and component diagrams, a shape you drag stays where you let go for the visit, through preview redraws. Pressing on an attribute row or another fixed part of a shape takes hold of the shape.
+* **Tidy** (beside Fit, and in Ctrl+K) forgets every position and lays the diagrams out again. It shows only when something has been placed or moved.
+* Positions are presentation only. They never reach the model, the plan or the server. The state machine's positions are kept in this browser per model (`localStorage`), and the page works the same when storage is blocked.
+* On the Screens tab, a line shows where a dragged field or attribute will go before you let go.
+
 ## OSS check (required for any custom module)
 
 | OSS checked | Why adapter/dependency use was insufficient | Replacement or fork path |

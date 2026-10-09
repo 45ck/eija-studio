@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0174-add-without-dragging-and-edit-inline.md
   title: 0174-add-without-dragging-and-edit-inline.md
   hash_method: lf-sha256-v1
-  sha256: 466d4383f6cbe12d17d9f521783f835c7e63b3fb23888135450beb9db78693b1
-notes_baseline: b0784ef43dc3893a8972e7c20e5ab2a25c159106111a72e9d9d37537741292b8
+  sha256: dd286fa2763d345be60f139c466f123f50a1f4be2688fbe601a4de0efef3a2e3
+notes_baseline: b55194521482174f697d428d0e39f091315076823d63136422f87fd006442b77
 ---
 
 # ADR-0174: Add UML elements without dragging, and edit them where they are
@@ -51,6 +51,7 @@ notes_baseline: b0784ef43dc3893a8972e7c20e5ab2a25c159106111a72e9d9d37537741292b8
 * Decision drivers
 * Considered options
 * Decision outcome
+* Amendment, 9 October 2026: shapes land where you put them
 * OSS check (required for any custom module)
 <!-- okf:generated:end facts -->
 
