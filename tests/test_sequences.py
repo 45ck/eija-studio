@@ -11,9 +11,11 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
+from eija_studio.application.new_system import sketch_documents
+from eija_studio.application.sequence_draft import draft_scenarios, scenarios_or_draft
 from eija_studio.application.sequences import check_sequences
 from eija_studio.domain.models import DomainError
-from eija_studio.domain.pack import load_pack
+from eija_studio.domain.pack import load_pack, parse_pack
 from eija_studio.domain.policy import apply_transactions
 from eija_studio.domain.scenarios import parse_scenarios, scenarios_for
 from eija_studio.domain.transactions import parse_transaction
@@ -58,7 +60,8 @@ def test_every_packs_scenarios_are_drawn_and_produced_by_the_kernel():
     assert [(m["verdict"], m["states"], m["transition"]) for m in late["messages"]] == [
         ("OK", ["OnLoan"], "TR-CHECKOUT"), ("OK", ["Overdue"], "TR-MARKOVERDUE"), ("OK", ["Returned"], "TR-RETURNLATE")]
     assert [v["text"] for v in late["invariants"]] == ["{Requested}", "{OnLoan}", "{Overdue}", "{Returned}"]
-    assert [e["label"] for e in late["effects"] if e["ref"] == "0"] == ["LoanCheckedOut", "MemberNotified"]  # the transition's effects
+    assert [e["label"] for e in late["effects"] if e["ref"] == "0"] == ["Audit: LoanCheckedOut", "Notification: MemberNotified"]  # lost messages
+    assert [(a["ref"], a["y0"] < a["y1"]) for a in late["activations"]] == [("0", True), ("1", True), ("2", True)]
     cancels = report["sequences"][6]
     assert [(f["operator"], f["verdict"], f["refused"]) for f in cancels["fragments"]] == [("neg", "HOLDS", "STATE_DENIED")]
     assert [(r["label"], r["tone"]) for r in cancels["replies"]] == [("refused: STATE_DENIED", "expected")]
@@ -124,6 +127,17 @@ def test_sequences_export_through_the_existing_mermaid_and_plantuml_emitters():
     assert "group neg [refused: STATE_DENIED]" in plantuml and "loan --> librarian_assigned : refused: STATE_DENIED" in plantuml
     assert "note over loan : {Requested}" in plantuml and "note over loan : {Cancelled}" in plantuml  # the invariants the canvas draws
     assert plantuml.index("{Requested}") < plantuml.index("Cancel()") < plantuml.index("{Cancelled}")
+
+
+def test_a_system_without_scenarios_gets_a_draft_whose_expectations_the_kernel_wrote():
+    sketch = "Booked -> InRepair : StartRepair [Mechanic]\nInRepair -> Ready : FinishRepair [Mechanic]\nReady -> Collected : Collect [Customer]\nBooked -> Cancelled : Cancel [Customer]"
+    pack = parse_pack(sketch_documents("Bike repair", "Repair", sketch, "bike-repair")["pack.json"])
+    drafted, source = scenarios_or_draft(pack, scenarios_for(pack), pack.model)
+    assert source == "drafted" and [s.title for s in drafted.scenarios] == ["Booked to Collected", "Booked to Cancelled", "Only the Customer role may Cancel"]
+    assert drafted == draft_scenarios(pack, pack.model)  # deterministic
+    assert drafted.scenarios[2].steps[0].then.refused == "ROLE_DENIED"  # what the kernel answered, not a guess
+    assert check_sequences(pack, pack.model, drafted)["status"] == "PRODUCIBLE"
+    assert scenarios_or_draft(LOAN, scenarios_for(LOAN), LOAN.model)[1] == "pack"  # a pack's own scenarios win
 
 
 def test_scenarios_of_another_pack_are_refused():
@@ -202,6 +216,8 @@ def test_the_sequences_tab_draws_flags_and_edits_in_a_real_browser():
             page.wait_for_selector(".seq-verdict.bad")  # now it expects a move the model can't make: flagged with the reason
             assert "Renew is not in the model" in page.inner_text("#seq-verdict")
             assert page.inner_text("#tab-sequences .badge") == "✗ 1"
+            problems = page.inner_text("#seq-problems")  # a red tab names the scenario, the step and why, with the way out
+            assert "1 of 7 scenarios fail" in problems and "Step 4, Renew" in problems and "Expect what the model does now" in problems
             assert page.evaluate("PlayTests.draft().scenarios[1].steps.length") == 4  # one draft, shared with the Tests tab
             assert errors == []
         finally:

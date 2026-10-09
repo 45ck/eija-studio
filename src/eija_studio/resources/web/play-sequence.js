@@ -77,6 +77,7 @@
       return;
     }
     verdict(s);
+    problems();
     composer();
     draw(s);
     exports(s);
@@ -84,6 +85,9 @@
   }
 
   function list() {
+    const note = $("seq-drafted");
+    note.hidden = result.source !== "drafted";
+    note.textContent = "Drafted from the model, since this system has no scenarios yet. Edit one or download scenarios.json to keep them.";
     $("seq-list").replaceChildren(...result.sequences.map((s, i) => {
       const b = P.el("button", undefined, { type: "button", "aria-current": String(i === at), title: s.first_problem || "The kernel does every step as written" });
       b.append(P.el("span", s.verdict === "BROKEN" ? "✗" : "✓", { class: "seq-mark " + (s.verdict === "BROKEN" ? "bad" : "ok"), "aria-hidden": "true" }), P.el("span", s.title));
@@ -103,6 +107,40 @@
     if (s.change === "breaks") line.append(P.el("span", " The change shown breaks it; the model in force produces it.", { class: "small" }));
     if (s.change === "fixes") line.append(P.el("span", " The change shown fixes it; the model in force can't produce it.", { class: "small" }));
     if (edited()) line.append(P.el("span", " Edited, not saved (the Tests tab shows the same draft).", { class: "muted small" }));
+  }
+
+  // A red tab says which scenarios fail, at which step and why, and offers the two ways out: expect what the model
+  // does now (when the change is intended), or look at the step (when the model is wrong).
+  function problems() {
+    const box = $("seq-problems"), failing = result.sequences.map((s, i) => [s, i]).filter(([s]) => s.verdict === "BROKEN");
+    box.hidden = !failing.length;
+    if (!failing.length) return box.replaceChildren();
+    const head = P.el("p", undefined, { class: "seq-problems-head" });
+    head.append(P.el("strong", `${failing.length} of ${result.sequences.length} scenarios fail on the model shown.`),
+      " A scenario says what should happen; the model now does something else at the step named.");
+    box.replaceChildren(head, P.el("ul", undefined, {}));
+    for (const [s, i] of failing) {
+      const m = s.messages.find((x) => x.verdict === "BROKEN"), li = P.el("li");
+      li.append(P.el("span", s.title, { class: "seq-problem-title" }),
+        P.el("span", m ? `Step ${Number(m.ref) + 1}, ${m.action}: ${m.why}.` : `${s.first_problem}.`, { class: "seq-problem-why" }));
+      const tools = P.el("span", undefined, { class: "seq-problem-tools" });
+      if (m) tools.append(button("Show the step", () => { at = i; picked = `msg:${m.ref}`; kept = null; render(); }));
+      if (!REVIEW) tools.append(button("Expect what the model does now", () => rerecord(i), { title: "Rewrite this scenario's expectations from what the kernel does on the model shown" }));
+      li.append(tools);
+      box.lastChild.append(li);
+    }
+  }
+
+  // Keep the scenario's actors and actions, and write down what the kernel does now as what each step must do.
+  async function rerecord(i) {
+    const scenario = doc.scenarios[i];
+    try {
+      const steps = await tried(scenario.start, scenario.steps.map((x) => [x.actor, x.action]));
+      at = i;
+      edit((a) => { a.steps = steps; });
+    } catch (error) {
+      failed(error);
+    }
   }
 
   function select(node, options, value) {
@@ -143,7 +181,7 @@
 
   function line(parent, id, value, from, to, style) {
     const { Point } = maxgraph;
-    const edge = graph.insertEdge({ parent, id, value, style: { ...FONT, fontSize: 12, verticalAlign: "bottom", labelBackgroundColor: "none", ...style } });
+    const edge = graph.insertEdge({ parent, id, value, style: { ...FONT, fontSize: 13, verticalAlign: "bottom", labelBackgroundColor: "none", ...style } });
     edge.geometry.setTerminalPoint(new Point(from[0], from[1]), true);
     edge.geometry.setTerminalPoint(new Point(to[0], to[1]), false);
     return edge;
@@ -157,7 +195,7 @@
     if (changes && window.PlayDiff && status !== "same") style = { ...style, ...window.PlayDiff.look(status, "line"), fontColor: style.fontColor };
     const mark = changes && window.PlayDiff && status !== "same" ? window.PlayDiff.mark(status) : "";
     const was = m.was && m.was !== m.verdict ? `  (was ${{ OK: "produced", HOLDS: "refused" }[m.was] || m.was.toLowerCase().replace("_", " ")})` : "";
-    return { style, value: (m.verdict === "BROKEN" ? "✗ " : "") + mark + m.label + was };
+    return { style, value: `${m.verdict === "BROKEN" ? "✗ " : ""}${mark}${Number(m.ref) + 1}: ${m.label}${was}` }; // numbered as the Tests tab's steps
   }
 
   function draw(s) {
@@ -177,23 +215,34 @@
     const parent = graph.getDefaultParent(), x = Object.fromEntries(s.lifelines.map((l) => [l.id, l.x]));
     graph.batchUpdate(() => {
       for (const f of s.fragments) frame(parent, f);
-      for (const l of s.lifelines) lifeline(parent, l, s);
+      for (const l of s.lifelines) if (l.kind !== "effect") lifeline(parent, l, s); // effects are lost messages: no lifeline
+      for (const a of s.activations) { // the record's execution specification, from the call to its outcome
+        graph.insertVertex({ parent, id: `act:${a.ref}`, value: "", position: [x[a.lifeline] - 6, a.y0], size: [12, a.y1 - a.y0],
+          style: { fillColor: "#ffffff", strokeColor: "#5b74d6", strokeWidth: 1.2, selectable: false } });
+      }
       for (const v of s.invariants) {
-        graph.insertVertex({ parent, id: `inv:${v.ref}`, value: v.text, position: [x[v.lifeline] - 60, v.y - 13], size: [120, 26],
-          style: { ...FONT, fontSize: 12, rounded: true, arcSize: 40, selectable: false,
+        const w = Math.max(96, v.text.length * 8 + 22);
+        graph.insertVertex({ parent, id: `inv:${v.ref}`, value: v.text, position: [x[v.lifeline] - w / 2, v.y - 13], size: [w, 26],
+          style: { ...FONT, fontSize: 13, rounded: true, arcSize: 40, selectable: false,
             ...(v.tone === "bad" ? { fillColor: "#fdecec", strokeColor: BAD, fontColor: BAD } : { fillColor: "#eef2ff", strokeColor: "#5b74d6" }) } });
       }
       for (const m of s.messages) {
         const { style, value } = messageLook(m);
-        line(parent, `msg:${m.ref}`, value, [x[m.from], m.y], [x[m.to], m.y], style);
+        line(parent, `msg:${m.ref}`, value, [x[m.from], m.y], [x[m.to] - 6, m.y], style); // to the activation's edge
       }
       for (const r of s.replies) {
         const tone = r.tone === "bad" ? BAD : OK;
-        line(parent, `reply:${r.ref}`, r.label, [x[r.from], r.y], [x[r.to], r.y],
-          { strokeColor: tone, fontColor: tone, dashed: true, endArrow: "open", endSize: 8, fontSize: 11 });
+        line(parent, `reply:${r.ref}`, r.label, [x[r.from] - 6, r.y], [x[r.to], r.y],
+          { strokeColor: tone, fontColor: tone, dashed: true, endArrow: "open", endSize: 8, fontSize: 12 });
       }
-      s.effects.forEach((e, i) => line(parent, `effect:${e.ref}:${i}`, e.label, [x[e.from], e.y], [x[e.to], e.y],
-        { strokeColor: "#7a8396", fontColor: "#5f687a", endArrow: "open", endSize: 7, fontSize: 11, selectable: false }));
+      s.effects.forEach((e, i) => { // a UML lost message: sent to the world outside, ending in a filled dot
+        line(parent, `effect:${e.ref}:${i}`, "", [x[e.from] + 6, e.y], [x[e.to] - 5, e.y],
+          { strokeColor: "#7a8396", endArrow: "open", endSize: 7, selectable: false });
+        graph.insertVertex({ parent, id: `effect-label:${e.ref}:${i}`, value: e.label, position: [x[e.from] + 14, e.y - 19], size: [x[e.to] - x[e.from] + 40, 16],
+          style: { ...FONT, fillColor: "none", strokeColor: "none", fontSize: 12, align: "left", fontColor: "#4f5869", selectable: false } });
+        graph.insertVertex({ parent, id: `lost:${e.ref}:${i}`, value: "", position: [x[e.to] - 5, e.y - 5], size: [10, 10],
+          style: { shape: "ellipse", fillColor: "#7a8396", strokeColor: "#7a8396", selectable: false } });
+      });
     });
     graph.getSelectionModel().addListener(InternalEvent.CHANGE, () => {
       const cell = graph.getSelectionCell(), id = cell ? cell.id : "";
@@ -210,25 +259,28 @@
     }
   }
 
-  // Readable first: the sequence fills the width down to 70% scale, top aligned; wider ones pan (Fit shows all of it).
+  // The whole width shows, top aligned, never above 115%; a sequence wider than the stage pans below 80%, where the
+  // labels stay readable on a laptop and in a recording.
   function place() {
     const s = shown(), box = $("sequence-canvas");
     if (!graph || !s || !box.clientWidth) return;
-    const scale = Math.max(0.7, Math.min(1.1, (box.clientWidth - 24) / s.width));
+    const scale = Math.max(0.8, Math.min(1.15, (box.clientWidth - 24) / s.width));
     graph.view.scaleAndTranslate(scale, Math.max(12 / scale, (box.clientWidth / scale - s.width) / 2), 8 / scale);
   }
 
   function lifeline(parent, l, s) {
     const top = s.head.y, h = s.head.height;
     if (l.kind === "actor") {
-      graph.insertVertex({ parent, id: `head:${l.id}`, value: l.label, position: [l.x - 14, top - 4], size: [28, h - 8],
-        style: { ...FONT, shape: "actor", fillColor: "#ffffff", strokeColor: INK, verticalLabelPosition: "bottom", verticalAlign: "top", fontSize: 12, selectable: false } });
+      // A stick figure with its name and role under it, on two lines so neighbours never overlap.
+      graph.insertVertex({ parent, id: `head:${l.id}`, value: "", position: [l.x - 11, top - 6], size: [22, 30],
+        style: { shape: "actor", fillColor: "#ffffff", strokeColor: INK, strokeWidth: 1.4, selectable: false } });
+      graph.insertVertex({ parent, id: `name:${l.id}`, value: l.head || l.label, position: [l.x - l.width / 2, top + 26], size: [l.width, 32],
+        style: { ...FONT, fillColor: "none", strokeColor: "none", fontSize: 12.5, whiteSpace: "wrap", verticalAlign: "top", selectable: false } });
     } else {
-      graph.insertVertex({ parent, id: `head:${l.id}`, value: l.label, position: [l.x - 80, top], size: [160, h - 6],
-        style: { ...FONT, fillColor: l.kind === "record" ? "#eef2ff" : "#f4f5f8", strokeColor: l.kind === "record" ? "#5b74d6" : "#8a93a6",
-          fontSize: 12, fontStyle: l.kind === "record" ? 1 : 0, selectable: false } });
+      graph.insertVertex({ parent, id: `head:${l.id}`, value: l.head || l.label, position: [l.x - l.width / 2, top + 4], size: [l.width, h - 14],
+        style: { ...FONT, fillColor: "#eef2ff", strokeColor: "#5b74d6", fontSize: 13, fontStyle: 5, whiteSpace: "wrap", selectable: false } }); // bold, underlined: an instance
     }
-    line(parent, `ll:${l.id}`, "", [l.x, top + h + (l.kind === "actor" ? 14 : 0)], [l.x, s.height],
+    line(parent, `ll:${l.id}`, "", [l.x, top + h + 4], [l.x, s.height],
       { strokeColor: "#9aa3b5", dashed: true, dashPattern: "4 4", endArrow: "none", startArrow: "none", selectable: false });
   }
 
@@ -238,14 +290,14 @@
       style: { fillColor: f.operator === "neg" ? "#fbfbfd" : "none", strokeColor: tone, strokeWidth: bad ? 2.5 : 1.2 } });
     const tag = f.operator === "neg" ? `neg${f.verdict === "HOLDS" ? " ✓" : f.verdict === "BROKEN" ? " ✗" : ""}` : f.operator;
     graph.insertVertex({ parent, id: `frame-tab:${f.ref}`, value: tag, position: [f.x0, f.y0], size: [Math.max(44, tag.length * 8 + 16), 22],
-      style: { ...FONT, shape: "umlFrameTab", fillColor: "#ffffff", strokeColor: tone, fontColor: tone, fontSize: 12, fontStyle: 1 } });
+      style: { ...FONT, shape: "umlFrameTab", fillColor: "#ffffff", strokeColor: tone, fontColor: tone, fontSize: 13, fontStyle: 1 } });
     f.operands.forEach((o, k) => {
       if (k) line(parent, `operand:${f.ref}:${k}`, "", [f.x0, o.y - 15], [f.x1, o.y - 15],
         { strokeColor: LINE, dashed: true, dashPattern: "6 4", endArrow: "none", selectable: false });
       if (o.guard || f.operator !== "neg") {
         graph.insertVertex({ parent, id: `guard:${f.ref}:${k}`, value: `[${o.guard || (f.operator === "alt" && k ? "else" : "guard")}]`,
           position: [f.x0 + (k ? 8 : 70), o.y - 11], size: [170, 18],
-          style: { ...FONT, fillColor: "none", strokeColor: "none", fontSize: 11, align: "left", fontColor: "#5f687a", selectable: false } });
+          style: { ...FONT, fillColor: "none", strokeColor: "none", fontSize: 12, align: "left", fontColor: "#4f5869", selectable: false } });
       }
     });
   }
@@ -337,7 +389,7 @@
     const s = shown(), a = authored();
     const out = [P.el("h3", "Scenario"), facts([["Steps", String(s.steps)], ["Starts in", s.invariants[0].text],
       ["Kernel", s.verdict === "BROKEN" ? s.first_problem : "Every step does what it says"],
-      ["Source", result.source === "edited" ? "a draft of scenarios.json, not saved" : "the pack's scenarios.json"]])];
+      ["Source", { edited: "a draft of scenarios.json, not saved", drafted: "drafted from the model: this system has no scenarios.json yet" }[result.source] || "the pack's scenarios.json"]])];
     out.push(P.el("p", "Select a message or a neg fragment to see what the kernel said about it. The Tests tab runs the same scenarios.", { class: "muted small" }));
     if (REVIEW) return out;
     const title = P.el("input", undefined, { type: "text", maxlength: "120", "aria-label": "Title", value: a.title });

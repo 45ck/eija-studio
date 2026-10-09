@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### 9 October 2026: sequence diagrams that read well
+
+- The Sequences tab is legible at laptop and recording size: lifeline names wrap onto two lines, labels are larger, steps are numbered as in the Tests tab, the record shows an activation bar for each call, and effects are UML lost messages instead of a column each. It never scales below 80%.
+- When scenarios fail, a panel above the diagram names each one, the failing step and why, with **Show the step** and **Expect what the model does now**.
+- A system with no scenarios yet (one started from a sketch) gets scenarios drafted from the model, so the tab is never empty. See [ADR-0195](docs/adr/0195-sequence-diagrams-the-kernel-checks.md).
+
 ### 9 October 2026: PlayIDE keeps the diagram readable with Simulate open, and a drawn transition can name a new action
 
 - Opening Simulate no longer shrinks the state machine until its labels are about 7 pixels high (#139). When the canvas is short, fitting stops at a readable size and starts at the top left, where the initial state is, and the rest is a drag away. The **Fit** button still fits the whole diagram, however small. Before, Library loan went to about half size at 1280 by 800 with the panel open.
