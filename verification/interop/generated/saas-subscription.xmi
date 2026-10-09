@@ -291,7 +291,7 @@
     </packagedElement>
     <packagedElement xmi:type="uml:Actor" xmi:id="actor.BillingSystem" name="BillingSystem">
       <ownedComment xmi:type="uml:Comment" xmi:id="actor.BillingSystem.comment">
-        <body>The billing system: ends trials, records failed payments and suspends.</body>
+        <body>The external billing system: ends trials, records failed payments and suspends.</body>
       </ownedComment>
     </packagedElement>
     <packagedElement xmi:type="uml:Actor" xmi:id="actor.SuccessManager" name="SuccessManager">

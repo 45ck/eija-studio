@@ -1,4 +1,4 @@
-<mxfile host="PlayIDE (eija.uml-interop.v1)" agent="pack card-payment 1.0.0, model d183835f9f040a42ef9ff5e56fe61b322c0b9219f163503f8ca3102d62516037">
+<mxfile host="PlayIDE (eija.uml-interop.v1)" agent="pack card-payment 1.0.0, model f9f5dd39c0773ce3f3226397afc42f0ef1dc6a75e44fe532332d718925d24d2f">
   <diagram id="page-0" name="State machine">
     <mxGraphModel grid="1" gridSize="10" page="1" pageWidth="1169" pageHeight="827">
       <root>
@@ -55,13 +55,13 @@
         <mxCell id="transition-5" value="LoseDispute [role = FinanceApprover and assigned] / Audit:ChargebackAccepted, Notification:MerchantToldChargeback" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="state-5" target="state-6">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="transition-6" value="RejectRefund [role = SupportAgent] / Audit:RefundRejected, Notification:CustomerToldRefundRejected" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="state-3" target="state-2">
+        <mxCell id="transition-6" value="RejectRefund [role = SupportRep] / Audit:RefundRejected, Notification:CustomerToldRefundRejected" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="state-3" target="state-2">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="transition-7" value="RequestRefund [role = Customer and assigned] / Audit:RefundRequested" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="state-2" target="state-3">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="transition-8" value="VoidAuthorisation [role = SupportAgent] / Audit:AuthorisationVoided, Notification:CustomerToldVoided" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="state-1" target="state-8">
+        <mxCell id="transition-8" value="VoidAuthorisation [role = SupportRep] / Audit:AuthorisationVoided, Notification:CustomerToldVoided" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="state-1" target="state-8">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="transition-9" value="WinDispute [role = FinanceApprover and assigned] / Audit:DisputeWon" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="state-5" target="state-2">
@@ -222,12 +222,12 @@
             <mxGeometry x="40" y="60" width="30" height="60" as="geometry" />
           </mxCell>
         </UserObject>
-        <UserObject label="Gateway" tooltip="The payment gateway: authorises, declines, captures and reports disputes." id="actor-1">
+        <UserObject label="Gateway" tooltip="The external payment gateway: authorises, declines, captures and reports disputes." id="actor-1">
           <mxCell style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" vertex="1" parent="1">
             <mxGeometry x="40" y="180" width="30" height="60" as="geometry" />
           </mxCell>
         </UserObject>
-        <UserObject label="SupportAgent" tooltip="Voids an authorisation and turns down refund requests; never issues money." id="actor-2">
+        <UserObject label="SupportRep" tooltip="A person on the support team: voids an authorisation and turns down refund requests; never issues money." id="actor-2">
           <mxCell style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" vertex="1" parent="1">
             <mxGeometry x="40" y="300" width="30" height="60" as="geometry" />
           </mxCell>

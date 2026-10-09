@@ -204,7 +204,7 @@
             <mxGeometry x="40" y="60" width="30" height="60" as="geometry" />
           </mxCell>
         </UserObject>
-        <UserObject label="BillingSystem" tooltip="The billing system: ends trials, records failed payments and suspends." id="actor-1">
+        <UserObject label="BillingSystem" tooltip="The external billing system: ends trials, records failed payments and suspends." id="actor-1">
           <mxCell style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" vertex="1" parent="1">
             <mxGeometry x="40" y="180" width="30" height="60" as="geometry" />
           </mxCell>
