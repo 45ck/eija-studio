@@ -6,6 +6,13 @@
 
 - PlayIDE has a **Sequences** tab: the pack's scenarios (the Tests tab's `scenarios.json`) drawn in UML sequence notation (lifelines, calls, refusal replies, state invariants, effects as asynchronous messages, and a `neg` fragment around each step that must be refused), each step run through the kernel. A step the model can't do is flagged with the kernel's reason. Edit in the tab (the same draft the Tests tab shows), export as Mermaid or PlantUML, or download `scenarios.json`. A plan's ripple lists the scenarios it breaks. New route `POST /api/play/sequences`. See [ADR-0195](docs/adr/0195-sequence-diagrams-the-kernel-checks.md).
 
+### 8 October 2026: PlayIDE polish, round 3
+
+- The Tests tab's **Run all** is no longer cut off at the right edge on a laptop screen: when the header's text and buttons do not fit side by side, the buttons go under the text, on the Laws tab too.
+- Starting or pausing a run no longer shifts **Simulate** and **Build & run** to the right: the run status has a fixed width, with the full text in its tooltip, and the Run button keeps room for "Continue".
+- Simulation findings say "refused once" and "refused 12 times", not "time(s)".
+- The review view's title bar keeps **Import / Export** and **Review workbench** on one line, and the layout toggles side by side, beside the read-only badge.
+
 ### 8 October 2026: your own systems in PlayIDE
 
 - PlayIDE is no longer limited to the shipped packs. **Systems** in the title bar opens a dialog: **Open** lists recent systems and the ones in your systems home, and **New system** starts one from a sketch or from a template. A sketch is the state machine typed as the diagram labels it, one `From -> To : Action [Role]` per line, and the kernel's pack check runs as you type. **Save** (Ctrl+S) keeps your plan and edited screens as a draft on that system; reopening it restores them and checks every step again. Nothing is applied to the model. Systems live in `~/PlayIDE` (`--systems` or `EIJA_SYSTEMS` to change it), each with its own workspace. `eija new` does the same from the command line. See [ADR-0185](docs/adr/0185-start-open-and-save-your-own-system.md).

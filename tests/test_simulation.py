@@ -66,6 +66,8 @@ def test_findings_name_elements_the_ide_can_select():
     ids = {"state:" + s for s in p.model.states} | {"transition:" + t.id for t in p.model.transitions}
     assert run["findings"] and all(f["element"] in ids for f in run["findings"])
     assert any(f["severity"] == "warning" for f in run["findings"])
+    long = simulate(p, p.model, seed=7, steps=300)["findings"]
+    assert any(" times, mostly " in f["text"] for f in long) and all("(s)" not in f["text"] for f in long)  # never "time(s)"
 
 
 def test_bad_requests_are_refused():

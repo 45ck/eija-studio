@@ -185,10 +185,11 @@ dd{margin:0}
 .run-btn:hover:not(:disabled){background:var(--panel)}
 .run-btn:disabled{opacity:.35;cursor:default}
 .run-btn.go{color:var(--ok);font-weight:600}
+.run-btn.go span{min-width:5.4em;text-align:left}  /* room for "Continue" and "Run again", so the label does not push the tool bar */
 .run-btn.go span{color:var(--ink)}
 .run-btn.stop{color:var(--bad)}
 .run-speed{font:inherit;font-size:.8rem;border:0;background:transparent;color:var(--muted);padding:4px}
-.run-status{font-size:.8rem;color:var(--muted);padding:0 8px 0 4px;min-width:9em;max-width:26em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.run-status{font-size:.8rem;color:var(--muted);padding:0 8px 0 4px;width:14em;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}  /* a fixed width, so starting a run does not shift the buttons after it; the full text is in its title */
 body[data-run="running"] .run-status{color:var(--ok)}
 body[data-run="paused"] .run-status{color:#8a6100;font-weight:600}
 .debug{border:1px solid #f0d58a;border-radius:10px;padding:10px 12px;background:#fffbea;display:flex;flex-direction:column;gap:4px}
