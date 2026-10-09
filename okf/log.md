@@ -2,6 +2,7 @@
 
 ## 2026-10-08
 
+* **UML import fixes**: re-synced ADR-0190 after its Safety bullet gained the compressed draw.io page bound and the second-initial-state report. No Notes were hand-edited and nothing was recorded as verified.
 * **PlayIDE polish**: re-synced `application.plan.preview_plan` (a refusal now also returns the refs and the descriptions of the laws it breaks). No Notes were hand-edited and nothing was recorded as verified.
 * **UML import and export**: synced ADR-0190, the `interop` gate family (`interop_roundtrip`, `interop_mermaid`, `interop_plantuml`) and the new `interfaces.uml_interop` and `interfaces.play_interop` module pages; `interfaces.cli`, `interfaces.http` and `interfaces.play` refreshed for the `eija uml` command, the two web assets and the `/api/play/export` and `/api/play/import` routes. No Notes were hand-edited and nothing was recorded as verified.
 * **Add without dragging**: synced the new ADR-0174 page; ADR-0156, 0157, 0170, 0172 and 0173 changed only in generated backlinks (presentation only, no module or symbol changes). No Notes were hand-edited and nothing was recorded as verified.
