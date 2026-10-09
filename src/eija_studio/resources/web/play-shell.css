@@ -1,7 +1,7 @@
 /* PlayIDE shell (ADR-0173): title bar, toolbar, outline over inspector, diagram tabs, chat, bottom panel, status bar.
    Loaded after play.css; it only places and dresses regions, so the diagrams, chat and run bar keep their own styles. */
 :root{--left-w:272px;--chat-w:380px;--dock-h:280px;--chrome:#f7f8fb;--tab-line:#3157d5}
-body{display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;height:100vh;overflow:hidden}
+body{display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;grid-template-columns:minmax(0,1fr);height:100vh;overflow:hidden}
 body.resizing{user-select:none}
 body.resizing iframe{pointer-events:none}
 

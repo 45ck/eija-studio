@@ -393,6 +393,7 @@
     $("inspector").replaceChildren(consider(), el("h3", "Changes"), changeList(result.changes),
       el("p", "Read-only: the change is not saved, approved or applied here.", { class: "muted small" }));
     view = mount(canvas, result, {
+      direction: ide().direction(), // laid out the way the state machine is, so the change reads in the same places
       onLens: (lens, onion) => {
         for (const b of host.querySelectorAll(".lens button")) b.setAttribute("aria-checked", String(b.dataset.lens === lens));
         $("diff-onion").value = String(Math.round(onion * 100));
