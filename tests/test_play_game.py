@@ -140,7 +140,12 @@ def test_agents_show_as_diamonds_and_gaps_and_disagreements_count_down_in_a_real
             page.goto(f"{server.base_url}/play#{server.token}")
             page.wait_for_selector("body[data-assist=ready]", timeout=60_000)
             seen = page.evaluate("""() => new Promise((done) => {
-                let diamonds = 0, squares = 0, notes = '', overlaps = [];
+                let diamonds = 0, squares = 0, rings = 0, notes = '', overlaps = [], onLabel = 0, faded = 0;
+                const graph = window.PlayIDE.graph(), view = graph.getView(), boxes = [];
+                for (const cell of Object.values(graph.getDataModel().cells)) {
+                  const b = cell.isEdge() && view.getState(cell) && view.getState(cell).text && view.getState(cell).text.boundingBox;
+                  if (b && b.width > 0) boxes.push(b);
+                }
                 const box = (e) => e.getBoundingClientRect(), cross = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
                 const others = ['#simulate', '#build', 'aside.side', '#chat-title', '.tabs', '#run-status'].map((s) => document.querySelector(s)).filter(Boolean);
                 const watch = setInterval(() => {
@@ -148,13 +153,22 @@ def test_agents_show_as_diamonds_and_gaps_and_disagreements_count_down_in_a_real
                     for (const o of others) if (cross(box(n), box(o))) overlaps.push(o.id || o.className);
                   diamonds = Math.max(diamonds, document.querySelectorAll('g.game-traffic > path[d^="M0-7.5"]').length);
                   squares = Math.max(squares, document.querySelectorAll('g.game-traffic > rect').length);
+                  rings = Math.max(rings, document.querySelectorAll('g.game-traffic > circle.game-timer').length);
+                  for (const dot of document.querySelectorAll('g.game-traffic[opacity]')) {
+                    const m = /translate\\(([-\\d.]+) ([-\\d.]+)\\)/.exec(dot.getAttribute('transform') || '');
+                    const inside = m && boxes.some((b) => +m[1] >= b.x && +m[1] <= b.x + b.width && +m[2] >= b.y && +m[2] <= b.y + b.height);
+                    if (inside && dot.getAttribute('opacity') === '1') onLabel += 1;
+                    if (dot.getAttribute('opacity') !== '1') faded += 1;
+                  }
                   notes += document.getElementById('game-notes').innerText;
                 }, 30);
                 document.getElementById('simulate').click();
-                setTimeout(() => { clearInterval(watch); done({ diamonds, squares, notes, overlaps }); }, 4000);
+                setTimeout(() => { clearInterval(watch); done({ diamonds, squares, rings, notes, overlaps, onLabel, faded }); }, 4000);
             })""")
             assert seen["overlaps"] == []  # #179: at 1280 a note sits in the toolbar's free space, over no other panel
-            assert seen["diamonds"] > 0 and seen["squares"] > 0  # the support agent, and the timer and payment system
+            assert seen["diamonds"] > 0 and seen["squares"] > 0  # the support agent, and the payment system
+            assert seen["rings"] > 0  # the timer: a clock ring, not the payment system's square
+            assert seen["onLabel"] == 0 and seen["faded"] > 0  # #184: a dot crossing a label fades and never covers it
             assert "Kernel stopped AI agents" in seen["notes"]
             assert "AI agents" in page.inner_text("#sim")  # the same count Simulate reports per kind
             assert "an AI agent" in page.inner_text("#game-legend")
