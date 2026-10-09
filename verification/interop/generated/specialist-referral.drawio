@@ -1,0 +1,305 @@
+<mxfile host="PlayIDE (eija.uml-interop.v1)" agent="pack specialist-referral 1.0.0, model c5a8c728038ab411e9a189e5197a3f7dd7a725e39106998879e1df5f9803219d">
+  <diagram id="page-0" name="State machine">
+    <mxGraphModel grid="1" gridSize="10" page="1" pageWidth="1169" pageHeight="827">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell style="ellipse;html=1;shape=startState;fillColor=#000000;strokeColor=#ff0000;" vertex="1" parent="1" id="initial" value="">
+          <mxGeometry x="40" y="73" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="start" value="" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="initial" target="state-0">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell style="rounded=1;whiteSpace=wrap;html=1;arcSize=40;fontColor=#000080;fillColor=#ffffc0;strokeColor=#ff0000;" vertex="1" parent="1" id="state-0" value="Drafted">
+          <mxGeometry x="120" y="60" width="140" height="56" as="geometry" />
+        </mxCell>
+        <mxCell style="rounded=1;whiteSpace=wrap;html=1;arcSize=40;fontColor=#000080;fillColor=#ffffc0;strokeColor=#ff0000;" vertex="1" parent="1" id="state-1" value="Submitted">
+          <mxGeometry x="360" y="60" width="140" height="56" as="geometry" />
+        </mxCell>
+        <mxCell style="rounded=1;whiteSpace=wrap;html=1;arcSize=40;fontColor=#000080;fillColor=#ffffc0;strokeColor=#ff0000;" vertex="1" parent="1" id="state-2" value="Vetted">
+          <mxGeometry x="600" y="60" width="140" height="56" as="geometry" />
+        </mxCell>
+        <mxCell style="rounded=1;whiteSpace=wrap;html=1;arcSize=40;fontColor=#000080;fillColor=#ffffc0;strokeColor=#ff0000;" vertex="1" parent="1" id="state-3" value="Booked">
+          <mxGeometry x="840" y="60" width="140" height="56" as="geometry" />
+        </mxCell>
+        <mxCell style="rounded=1;whiteSpace=wrap;html=1;arcSize=40;fontColor=#000080;fillColor=#ffffc0;strokeColor=#ff0000;" vertex="1" parent="1" id="state-4" value="Seen">
+          <mxGeometry x="1080" y="60" width="140" height="56" as="geometry" />
+        </mxCell>
+        <mxCell style="rounded=1;whiteSpace=wrap;html=1;arcSize=40;fontColor=#000080;fillColor=#ffffc0;strokeColor=#ff0000;" vertex="1" parent="1" id="state-5" value="Discharged">
+          <mxGeometry x="1320" y="60" width="140" height="56" as="geometry" />
+        </mxCell>
+        <mxCell style="rounded=1;whiteSpace=wrap;html=1;arcSize=40;fontColor=#000080;fillColor=#ffffc0;strokeColor=#ff0000;" vertex="1" parent="1" id="state-6" value="Declined">
+          <mxGeometry x="600" y="200" width="140" height="56" as="geometry" />
+        </mxCell>
+        <mxCell style="rounded=1;whiteSpace=wrap;html=1;arcSize=40;fontColor=#000080;fillColor=#ffffc0;strokeColor=#ff0000;" vertex="1" parent="1" id="state-7" value="Withdrawn">
+          <mxGeometry x="600" y="340" width="140" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="transition-0" value="SeePatient [role = Specialist and assigned] / Audit:PatientSeen" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="state-3" target="state-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="transition-1" value="Book [role = Scheduler] / Audit:AppointmentBooked, Notification:PatientInvited" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="state-2" target="state-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="transition-2" value="Decline [role = Specialist and assigned] / Audit:ReferralDeclined, Notification:GpToldDeclined" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="state-1" target="state-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="transition-3" value="Discharge [role = Specialist and assigned] / Audit:PatientDischarged, Notification:DischargeLetterSent" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="state-4" target="state-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="transition-4" value="RecordNoShow [role = Scheduler] / Audit:NoShowRecorded, Notification:RebookOffered" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="state-3" target="state-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="transition-5" value="Submit [role = GP] / Audit:ReferralSubmitted" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="state-0" target="state-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="transition-6" value="VetReferral [role = TriageNurse and assigned] / Audit:ReferralTriaged" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="state-1" target="state-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="transition-7" value="Withdraw [role = Patient] / Audit:ReferralWithdrawn" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="state-1" target="state-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell style="ellipse;html=1;shape=endState;fillColor=#000000;strokeColor=#ff0000;" vertex="1" parent="1" id="final-0" value="">
+          <mxGeometry x="1500" y="73" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="end-0" value="" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="state-5" target="final-0">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell style="ellipse;html=1;shape=endState;fillColor=#000000;strokeColor=#ff0000;" vertex="1" parent="1" id="final-1" value="">
+          <mxGeometry x="780" y="213" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="end-1" value="" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="state-6" target="final-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell style="ellipse;html=1;shape=endState;fillColor=#000000;strokeColor=#ff0000;" vertex="1" parent="1" id="final-2" value="">
+          <mxGeometry x="780" y="353" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="end-2" value="" style="html=1;verticalAlign=bottom;endArrow=open;endSize=8;strokeColor=#ff0000;" edge="1" parent="1" source="state-7" target="final-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="page-1" name="Class model">
+    <mxGraphModel grid="1" gridSize="10" page="1" pageWidth="1169" pageHeight="827">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <UserObject label="&amp;laquo;record&amp;raquo;&lt;br&gt;Referral" tooltip="One GP's request for one patient to be seen by one clinic." id="class-0">
+          <mxCell style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+            <mxGeometry x="40" y="60" width="260" height="196" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="class-0" id="class-0.0" value="+ patientNumber : String [1] {maxLength = 10}">
+          <mxGeometry x="0" y="40" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="class-0" id="class-0.1" value="+ specialty : ReferralSpecialty [1]">
+          <mxGeometry x="0" y="66" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="class-0" id="class-0.2" value="+ urgency : ReferralUrgency [1]">
+          <mxGeometry x="0" y="92" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="class-0" id="class-0.3" value="+ reason : String [1] {maxLength = 2000}">
+          <mxGeometry x="0" y="118" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="class-0" id="class-0.4" value="+ consentToShare : Boolean [1]">
+          <mxGeometry x="0" y="144" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="class-0" id="class-0.5" value="+ appointmentDate : Date [0..1]">
+          <mxGeometry x="0" y="170" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="1" id="class-1" value="Patient">
+          <mxGeometry x="340" y="60" width="260" height="118" as="geometry" />
+        </mxCell>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="class-1" id="class-1.0" value="+ patientNumber : String [1] {maxLength = 10}">
+          <mxGeometry x="0" y="40" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="class-1" id="class-1.1" value="+ name : String [1] {maxLength = 200}">
+          <mxGeometry x="0" y="66" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="class-1" id="class-1.2" value="+ dateOfBirth : Date [1]">
+          <mxGeometry x="0" y="92" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="1" id="class-2" value="Clinic">
+          <mxGeometry x="640" y="60" width="260" height="92" as="geometry" />
+        </mxCell>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="class-2" id="class-2.0" value="+ name : String [1] {maxLength = 200}">
+          <mxGeometry x="0" y="40" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="class-2" id="class-2.1" value="+ specialty : String [1] {maxLength = 200}">
+          <mxGeometry x="0" y="66" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="1" id="class-3" value="Clinician">
+          <mxGeometry x="940" y="60" width="260" height="92" as="geometry" />
+        </mxCell>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="class-3" id="class-3.0" value="+ registration : String [1] {maxLength = 12}">
+          <mxGeometry x="0" y="40" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="class-3" id="class-3.1" value="+ name : String [1] {maxLength = 200}">
+          <mxGeometry x="0" y="66" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="1" id="class-4" value="Appointment">
+          <mxGeometry x="1240" y="60" width="260" height="92" as="geometry" />
+        </mxCell>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="class-4" id="class-4.0" value="+ start : Date [1]">
+          <mxGeometry x="0" y="40" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="class-4" id="class-4.1" value="+ room : String [0..1] {maxLength = 200}">
+          <mxGeometry x="0" y="66" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="1" id="enum-0" value="&amp;laquo;enumeration&amp;raquo;&lt;br&gt;ReferralSpecialty">
+          <mxGeometry x="40" y="420" width="260" height="144" as="geometry" />
+        </mxCell>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="enum-0" id="enum-0.0" value="Cardiology">
+          <mxGeometry x="0" y="40" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="enum-0" id="enum-0.1" value="Dermatology">
+          <mxGeometry x="0" y="66" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="enum-0" id="enum-0.2" value="Orthopaedics">
+          <mxGeometry x="0" y="92" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="enum-0" id="enum-0.3" value="Neurology">
+          <mxGeometry x="0" y="118" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="1" id="enum-1" value="&amp;laquo;enumeration&amp;raquo;&lt;br&gt;ReferralUrgency">
+          <mxGeometry x="340" y="420" width="260" height="118" as="geometry" />
+        </mxCell>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="enum-1" id="enum-1.0" value="Routine">
+          <mxGeometry x="0" y="40" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="enum-1" id="enum-1.1" value="Urgent">
+          <mxGeometry x="0" y="66" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" vertex="1" parent="enum-1" id="enum-1.2" value="TwoWeekWait">
+          <mxGeometry x="0" y="92" width="260" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc-0" value="patient" style="endArrow=open;endFill=0;html=1;" edge="1" parent="1" source="class-0" target="class-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc-0.src" value="0..*" style="edgeLabel;resizable=0;html=1;verticalAlign=bottom;align=left;" vertex="1" connectable="0" parent="assoc-0">
+          <mxGeometry x="-1" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc-0.dst" value="1" style="edgeLabel;resizable=0;html=1;verticalAlign=bottom;align=right;" vertex="1" connectable="0" parent="assoc-0">
+          <mxGeometry x="1" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc-1" value="clinic" style="endArrow=open;endFill=0;html=1;" edge="1" parent="1" source="class-0" target="class-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc-1.src" value="0..*" style="edgeLabel;resizable=0;html=1;verticalAlign=bottom;align=left;" vertex="1" connectable="0" parent="assoc-1">
+          <mxGeometry x="-1" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc-1.dst" value="1" style="edgeLabel;resizable=0;html=1;verticalAlign=bottom;align=right;" vertex="1" connectable="0" parent="assoc-1">
+          <mxGeometry x="1" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc-2" value="referrer" style="endArrow=open;endFill=0;html=1;" edge="1" parent="1" source="class-0" target="class-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc-2.src" value="0..*" style="edgeLabel;resizable=0;html=1;verticalAlign=bottom;align=left;" vertex="1" connectable="0" parent="assoc-2">
+          <mxGeometry x="-1" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc-2.dst" value="1" style="edgeLabel;resizable=0;html=1;verticalAlign=bottom;align=right;" vertex="1" connectable="0" parent="assoc-2">
+          <mxGeometry x="1" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc-3" value="appointments" style="endArrow=open;endFill=0;startArrow=diamondThin;startFill=1;startSize=14;html=1;" edge="1" parent="1" source="class-0" target="class-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc-3.src" value="1" style="edgeLabel;resizable=0;html=1;verticalAlign=bottom;align=left;" vertex="1" connectable="0" parent="assoc-3">
+          <mxGeometry x="-1" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc-3.dst" value="0..*" style="edgeLabel;resizable=0;html=1;verticalAlign=bottom;align=right;" vertex="1" connectable="0" parent="assoc-3">
+          <mxGeometry x="1" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc-4" value="staff" style="endArrow=open;endFill=0;startArrow=diamondThin;startFill=0;startSize=14;html=1;" edge="1" parent="1" source="class-2" target="class-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc-4.src" value="0..*" style="edgeLabel;resizable=0;html=1;verticalAlign=bottom;align=left;" vertex="1" connectable="0" parent="assoc-4">
+          <mxGeometry x="-1" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc-4.dst" value="1..*" style="edgeLabel;resizable=0;html=1;verticalAlign=bottom;align=right;" vertex="1" connectable="0" parent="assoc-4">
+          <mxGeometry x="1" relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="page-2" name="Use cases">
+    <mxGraphModel grid="1" gridSize="10" page="1" pageWidth="1169" pageHeight="827">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <UserObject label="GP" tooltip="Refers the patient and receives the discharge letter." id="actor-0">
+          <mxCell style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" vertex="1" parent="1">
+            <mxGeometry x="40" y="60" width="30" height="60" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="TriageNurse" tooltip="Triages referrals for a clinic; must be on that clinic's rota." id="actor-1">
+          <mxCell style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" vertex="1" parent="1">
+            <mxGeometry x="40" y="180" width="30" height="60" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Specialist" tooltip="Declines, sees and discharges; must be assigned to the clinic." id="actor-2">
+          <mxCell style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" vertex="1" parent="1">
+            <mxGeometry x="40" y="300" width="30" height="60" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Scheduler" tooltip="Books appointments and records missed ones; makes no clinical decision." id="actor-3">
+          <mxCell style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" vertex="1" parent="1">
+            <mxGeometry x="40" y="420" width="30" height="60" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Patient" tooltip="May withdraw a referral before it is triaged." id="actor-4">
+          <mxCell style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" vertex="1" parent="1">
+            <mxGeometry x="40" y="540" width="30" height="60" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1" id="usecase-0" value="Book">
+          <mxGeometry x="360" y="40" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1" id="usecase-1" value="Decline">
+          <mxGeometry x="360" y="130" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1" id="usecase-2" value="Discharge">
+          <mxGeometry x="360" y="220" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1" id="usecase-3" value="RecordNoShow">
+          <mxGeometry x="360" y="310" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1" id="usecase-4" value="SeePatient">
+          <mxGeometry x="360" y="400" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1" id="usecase-5" value="Submit">
+          <mxGeometry x="360" y="490" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1" id="usecase-6" value="VetReferral">
+          <mxGeometry x="360" y="580" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1" id="usecase-7" value="Withdraw">
+          <mxGeometry x="360" y="670" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="performs-0" value="" style="endArrow=none;html=1;" edge="1" parent="1" source="actor-2" target="usecase-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="performs-1" value="" style="endArrow=none;html=1;" edge="1" parent="1" source="actor-3" target="usecase-0">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="performs-2" value="" style="endArrow=none;html=1;" edge="1" parent="1" source="actor-2" target="usecase-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="performs-3" value="" style="endArrow=none;html=1;" edge="1" parent="1" source="actor-2" target="usecase-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="performs-4" value="" style="endArrow=none;html=1;" edge="1" parent="1" source="actor-3" target="usecase-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="performs-5" value="" style="endArrow=none;html=1;" edge="1" parent="1" source="actor-0" target="usecase-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="performs-6" value="" style="endArrow=none;html=1;" edge="1" parent="1" source="actor-1" target="usecase-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="performs-7" value="" style="endArrow=none;html=1;" edge="1" parent="1" source="actor-4" target="usecase-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

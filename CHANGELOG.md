@@ -9,6 +9,11 @@
 - A lifeline's name and role take a line each on the Sequences tab, so long ones ("supervisor-on-shift : Supervisor") no longer run into the next lifeline.
 - The Components tab's lens bar no longer covers the top of either diagram, and a system of one workflow is drawn at its real size rather than blown up to 140 percent.
 
+### 9 October 2026: PlayIDE keeps the diagram readable with Simulate open, and a drawn transition can name a new action
+
+- Opening Simulate no longer shrinks the state machine until its labels are about 7 pixels high (#139). When the canvas is short, fitting stops at a readable size and starts at the top left, where the initial state is, and the rest is a drag away. The **Fit** button still fits the whole diagram, however small. Before, Library loan went to about half size at 1280 by 800 with the panel open.
+- On a system you started yourself, a transition drawn on the canvas can name a new action or role: type it, and the editor says "New action: the step declares" it. Before, the editor offered only actions the model already had, so a new action needed the chat ([ADR-0201](docs/adr/0201-build-a-new-system-in-chat-round-after-round.md)). Template and sample models still offer only their own actions.
+
 ### 9 October 2026: PlayIDE polish, round 8 (tabs and screen fields on a laptop)
 
 - A diagram tab is never shown cut off at the edge of the tab strip. At 1280 pixels the strip ended on "Use" or "Scre", which reads as another tab; a tab the edge would cut now leaves a gap, and More tabs (») still lists every tab (#141).

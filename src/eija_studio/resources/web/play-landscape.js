@@ -11,7 +11,7 @@
   const INK = "#1b2130", LINE = "#4a5568", WARN = "#b7791f", CONSIDER = "#3157d5";
   const FONT = { fontFamily: "system-ui, sans-serif", fontColor: INK, fontSize: 12 };
   const SEVERITY = { warning: "Disagrees", consider: "To consider" };
-  let P = null, lens = "app", result = null, graph = null, asked = "", seq = 0;
+  let P = null, lens = "app", result = null, graph = null, asked = "", seq = 0, pending = "";
 
   const short = (names) => (names.length > 3 ? names.slice(0, 3).join(", ") + ` +${names.length - 3}` : names.join(", "));
   const about = (subject) => (result ? result.findings.filter((f) => f.subject.includes(subject) || (subject.startsWith("workflow:") && f.workflows.includes(subject.slice(9)))) : []);
@@ -59,6 +59,7 @@
     summary();
     if (!graph) render();
     P.fit();
+    if (pending) { const id = pending; pending = ""; select(id); }
   }
 
   function summary() {
@@ -147,6 +148,16 @@
     });
   }
 
+  // Select one shape (a ripple item names it, #146): now if it is drawn, else once the system has loaded.
+  function select(id) {
+    const owned = id.startsWith("class:") && result && result.classes.find((c) => c.name === id.slice(6) && c.owner);
+    if (owned) id = "workflow:" + owned.owner; // an owned class is drawn as its workflow
+    const cell = graph && asked === P.viewKey() && graph.getDataModel().getCell("system:" + id); // not a graph about to be redrawn
+    if (!cell) { pending = id; return; }
+    graph.setSelectionCell(cell);
+    graph.scrollCellToVisible(cell, true);
+  }
+
   // ---- Inspector -------------------------------------------------------------------------------------------------
   function row(dl, term, value) { dl.append(P.el("dt", term), P.el("dd", value)); }
 
@@ -203,7 +214,7 @@
     if (new URLSearchParams(location.search).get("lens") === "system") lens = "system";
   }
 
-  window.PlayLandscape = { inspect, lens: () => lens, result: () => result, setLens: (next) => setLens(next) };
+  window.PlayLandscape = { inspect, lens: () => lens, result: () => result, setLens: (next) => setLens(next), focus: select };
   init();
   document.addEventListener("playide:ready", init);
 })();

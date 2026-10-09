@@ -142,6 +142,50 @@ def test_a_second_folder_with_a_taken_id_is_reported_not_merged(tmp_path):
     assert result["unreadable"] == ["library-fines (its id library-fines is taken)"]
 
 
+def test_the_ripple_reports_what_a_change_does_to_the_other_workflows(tmp_path):
+    """#146: on your own systems, removing an attribute from a class another workflow uses is a warning in the ripple."""
+    from eija_studio.adapters.system_library import SystemLibrary  # noqa: PLC0415
+    from eija_studio.interfaces.play_systems import StudioHandle, Systems  # noqa: PLC0415
+
+    launched = PACKS_ROOT / "library-loan"
+    handle = StudioHandle(harness_studio(tmp_path / "workspace", pack=launched))
+    systems = Systems(handle, SystemLibrary(tmp_path / "home"), lambda pack, workspace: harness_studio(workspace, pack=pack),
+                      launched, tmp_path / "workspace")
+    app = create_app(handle, SESSION, systems=systems)
+    client = TestClient(app, base_url=HEADERS["Origin"])
+    try:
+        for name, template in (("City fines", "library-fines"), ("City loans", "library-loan")):  # the last one stays open
+            made = client.post("/api/play/systems/new", json={"name": name, "template": template}, headers=HEADERS).json()
+            assert made["created"], made
+        drop = [{"kind": "remove_attribute", "entity": "Loan", "name": "dueDate"}]
+        rippled = client.post("/api/play/ripple", json={"plan": drop}, headers=HEADERS).json()
+        system = rippled["diagrams"]["system"]
+        assert [(i["change"], i["code"], i["ref"]) for i in system] == [("warning", "ATTRIBUTE_NOT_ON_OWNER", "system:class:Loan")]
+        assert "Loan.dueDate is in city-fines but not in city-loans" in system[0]["text"]
+        assert system[0] in rippled["problems"]  # with the screens that showed dueDate, which the class diagram ripple flags too
+        unchanged = client.post("/api/play/ripple", json={"plan": [{"kind": "add_state", "state": "Lost", "after": "Cancelled"}]},
+                                headers=HEADERS).json()
+        assert unchanged["diagrams"]["system"] == []  # a state-machine step changes no class
+    finally:
+        app.state.play.stop()
+
+
+def test_system_ripple_items_say_what_is_introduced_resolved_and_broken():
+    from eija_studio.application.ripple import _system_items  # noqa: PLC0415
+
+    before = landscape("library-fines", shipped("library-loan", "library-fines"))
+    fines = data_for(load_pack(PACKS_ROOT / "library-fines")).model_dump(mode="json")
+    agreed = {**fines, "entities": [e if e["name"] != "Member" else {**e, "attributes": [{**a, "max_length": 20} if a["name"] == "card" else a for a in e["attributes"]]}
+                                    for e in fines["entities"]]}
+    after = landscape("library-fines", [*shipped("library-loan"), with_data("library-fines", {k: v for k, v in agreed.items() if k != "id"})])
+    assert [(i["change"], i["text"][:9]) for i in _system_items((before, after))] == [("changed", "Resolves:")]
+    moved = {**{k: v for k, v in fines.items() if k != "id"}, "record": "Loan"}
+    broken = _system_items((before, landscape("library-fines", [*shipped("library-loan"), with_data("library-fines", moved)])))
+    assert ("warning", "RECORD_MOVED_TWICE") in [(i["change"], i["code"]) for i in broken]
+    assert ("warning", "SYSTEM_LINK_BROKEN") in [(i["change"], i["code"]) for i in broken]
+    assert _system_items(None) == [] and _system_items((before, before)) == []
+
+
 def test_each_actor_carries_the_kind_its_workflows_declare_and_a_disagreement_shows():
     loan, fines = load_pack(PACKS_ROOT / "library-loan"), load_pack(PACKS_ROOT / "library-fines")
     # Fines hands disputes to an AI agent that loan does not know, and calls its clerk a timer where loan has a person.

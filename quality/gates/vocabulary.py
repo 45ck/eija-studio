@@ -3,6 +3,10 @@
 Tokens are read from every pack under ``packs/`` (pack and model ids, states, roles, actions, transition ids, effect
 ids and their bare names, meaning ids, law ids, fixture actor ids). Every text file in the scanned roots is searched for
 each token as a whole word (case-sensitive; a token is delimited by anything that is not a letter, digit or ``_``).
+A plain single word (``Active``, ``support``) is also an ordinary English word, so it is searched only where it names
+something in code: in Python, a whole string literal or an identifier. Its use in prose, comments, docstrings, JavaScript,
+JSON and UI copy is not a finding; that is the trade for letting packs use ordinary domain words. A compound or delimited token (``FundsCaptured``,
+``library-loan``) cannot be mistaken for prose, so it is searched as a whole word in every scanned file.
 A hit is a finding unless the file is under ``packs/``, is GENERATED-headed, or is on the justified ALLOWLIST below.
 A pack can refer to EIJA's own lifecycle vocabulary by binding an explicit kernel export. Its declared names are
 resolved from the source AST; this discounts only that pack's grounded token provenance, never another pack's use.
@@ -17,9 +21,11 @@ from __future__ import annotations
 
 import argparse
 import ast
+import io
 import json
 import re
 import sys
+import tokenize
 from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 from pathlib import Path
@@ -209,6 +215,17 @@ def _pattern(tokens: Iterable[str]) -> re.Pattern[str]:
     return re.compile(rf"(?<![A-Za-z0-9_])(?:{alternatives})(?![A-Za-z0-9_])")
 
 
+# A plain word: at most an initial capital and nothing else (``Active``, ``support``). Anything else is compound or delimited.
+PLAIN_WORD = re.compile(r"[A-Z]?[a-z]+")
+# Plain words are read only from Python, where a string literal or identifier is domain logic (an enum, a dispatch value).
+# JavaScript and JSON carry UI labels and schema titles, which are ordinary English (``"Owner"`` on a button).
+CODE_SUFFIXES = frozenset({".py"})
+
+
+def _plain(token: str) -> bool:
+    return PLAIN_WORD.fullmatch(token) is not None
+
+
 def allowlisted(rel: str) -> str | None:
     for key, why in ALLOWLIST.items():
         if rel == key or (key.endswith("/") and rel.startswith(key)):
@@ -268,20 +285,70 @@ def literal_hits(text: str, tokens: set[str]) -> Iterator[tuple[int, str]]:
                     yield const.lineno, const.value
 
 
+def _named_word(tok: tokenize.TokenInfo, plain: set[str]) -> str | None:
+    """The plain pack word that a Python identifier or whole string literal names, if any."""
+    if tok.type == tokenize.NAME:
+        return tok.string if tok.string in plain else None
+    if tok.type != tokenize.STRING:
+        return None
+    try:
+        value = ast.literal_eval(tok.string)
+    except (ValueError, SyntaxError):
+        return None
+    return value if isinstance(value, str) and value in plain else None
+
+
+def code_hits(path: Path, text: str, plain: set[str]) -> Iterator[tuple[int, str]]:
+    """Plain pack words that name something in code: a whole string literal, or in Python an identifier.
+
+    Comments and docstrings are not read (tokenize yields them as comments or as a string that is not the whole word).
+    Only ``CODE_SUFFIXES`` are read at all.
+    """
+    if path.suffix not in CODE_SUFFIXES or not plain:
+        return
+    try:
+        tokens = list(tokenize.generate_tokens(io.StringIO(text).readline))
+    except (tokenize.TokenError, SyntaxError):
+        return
+    lines = text.splitlines()
+    for tok in tokens:
+        hit = _named_word(tok, plain)
+        if hit is not None and LINE_MARK not in lines[tok.start[0] - 1]:
+            yield tok.start[0], hit
+
+
+def _file_findings(
+    path: Path,
+    rel: str,
+    text: str,
+    pattern: re.Pattern[str] | None,
+    plain: set[str],
+    tokens: dict[str, set[str]],
+    include_allowlisted: bool,
+) -> list[Finding]:
+    found: list[Finding] = []
+    if path.suffix == ".py":
+        found += [Finding(rel, n, t, "literal") for n, t in literal_hits(text, set(tokens))]
+    if _generated(text) or (allowlisted(rel) and not include_allowlisted):
+        return found
+    if pattern is not None:
+        found += [Finding(rel, n, t, "word") for n, t in word_hits(text, pattern)]
+    found += [Finding(rel, n, t, "word") for n, t in code_hits(path, text, plain)]
+    return found
+
+
 def scan(
     root: Path = ROOT, tokens: dict[str, set[str]] | None = None, include_allowlisted: bool = False
 ) -> list[Finding]:
     tokens = pack_tokens(root / "packs") if tokens is None else tokens
-    pattern = _pattern(tokens)
+    compound = {t for t in tokens if not _plain(t)}
+    plain = set(tokens) - compound
+    pattern = _pattern(compound) if compound else None
     found: list[Finding] = []
     for path in files(root):
         rel = path.relative_to(root).as_posix()
         text = path.read_text(encoding="utf-8", errors="replace")
-        if path.suffix == ".py":
-            found += [Finding(rel, n, t, "literal") for n, t in literal_hits(text, set(tokens))]
-        if _generated(text) or (allowlisted(rel) and not include_allowlisted):
-            continue
-        found += [Finding(rel, n, t, "word") for n, t in word_hits(text, pattern)]
+        found += _file_findings(path, rel, text, pattern, plain, tokens, include_allowlisted)
     return found
 
 

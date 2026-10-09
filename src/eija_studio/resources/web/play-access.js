@@ -95,13 +95,16 @@
     const grid = P.el("table", undefined, { class: "access-grid" });
     grid.append(P.el("caption", "Rows are states, columns are roles. Each entry is an action that role may take from that state."));
     const head = P.el("tr");
-    // A role held by an AI agent, a timer or an external system says so, in its colours on the use case diagram.
-    const roleHead = (r) => {
-      const th = P.el("th", r, { scope: "col" }), kind = P.roleKind(r);
+    head.append(P.el("th", "From state", { scope: "col" }), ...result.roles.map((r) => {
+      // A role heads its column; choosing it shows the actor's screens and runs the app as one (play-roles.js, ADR-0215).
+      // A role held by an AI agent, a timer or an external system says so, in its colours on the use case diagram.
+      const th = P.el("th", undefined, { scope: "col" }), b = P.el("button", r, { type: "button", class: "role-head", title: `What ${r} may do and sees` });
+      b.addEventListener("click", () => P.select("role:" + r, false));
+      th.append(b);
+      const kind = P.roleKind(r);
       if (kind !== "human") th.append(P.el("span", P.kinds[kind], { class: `actor-kind ${kind}` }));
       return th;
-    };
-    head.append(P.el("th", "From state", { scope: "col" }), ...result.roles.map(roleHead));
+    }));
     grid.append(head);
     for (const state of result.states) {
       const tr = P.el("tr");

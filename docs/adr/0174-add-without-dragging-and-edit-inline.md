@@ -60,6 +60,8 @@ The owner tried it and wrote that a dragged state did not "put it in the right p
 * **Tidy** (beside Fit, and in Ctrl+K) forgets every position and lays the diagrams out again. It shows only when something has been placed or moved.
 * Positions are presentation only. They never reach the model, the plan or the server. The state machine's positions are kept in this browser per model (`localStorage`), and the page works the same when storage is blocked.
 * On the Screens tab, a line shows where a dragged field or attribute will go before you let go.
+* Fitting never shrinks the diagram below a readable size (labels of about 10 pixels and up). When the canvas is short, as with the Simulation panel open, the diagram keeps that size and starts at its top left; only the **Fit** button may go smaller (#139).
+* On a system you started yourself, the transition editor takes a typed action and role, with the declared ones offered as suggestions, and says when the step will declare a new one (ADR-0201). Template and sample models keep the fixed lists.
 
 ## OSS check (required for any custom module)
 
