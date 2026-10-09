@@ -26,6 +26,14 @@ The first acceptance target is **EIJA's own checkout**. External applications co
 
 [IDE design reference](docs/design/README.md): an interactive ten-surface/state handoff plus generated visual concepts, all explicitly design-only. Prepared examples and concepts are not product execution evidence. Showcase recordings use the real application.
 
+## PlayIDE in two minutes
+
+[![PlayIDE highlights: drag a state onto a UML state machine and see what to consider before you accept it](docs/demos/assets/playide-showcase/playide-highlights-poster.png)](docs/demos/assets/playide-showcase/playide-highlights.mp4)
+
+PlayIDE is the visual workbench on top of EIJA. You design a system in UML, press play, and review every change to it, your own or an AI's, on the diagrams you already know. Each change comes with what to consider before you accept it: the warnings, whether every law still holds, the other diagrams it changes and the tests it adds. Review the change, not the code. The app is built from the model and checked against it, so it cannot disobey the model.
+
+The video is one unedited take of the real `/play` page (2:39, Linux/Chromium). The chat's proposer is an offline phrase reader rather than a live model, and the video says so. Verify, approve and apply are not shown yet; they wait on the owner's source review ([#80](https://github.com/45ck/eija-studio/issues/80)). The [storyboard](docs/demos/PLAYIDE-SHOWCASE-STORYBOARD.md) lists every beat and how to re-record it, including the full 8:43 cut. See [PlayIDE](docs/playide.md).
+
 ## Recorded integration preview
 
 **The IDE is on main (8 October):** [PR #78](https://github.com/45ck/eija-studio/pull/78) merged the source-connected IDE from #29 and #76 onto `main`. Run it with `eija serve --pack packs/eija-review-slice --repo . --open` (see [Try the connected IDE](#try-the-connected-ide-preview)). The [IDE walkthrough](docs/demos/2026-10-08-IDE-WALKTHROUGH.md) is a 2:34 real-browser recording of EIJA reviewing a change to its own review journey, with stills, provenance and reproduction steps. It is **PARTIAL**: verification is refused with `SOURCE_REVIEW_REQUIRED` until the owner reviews the changed source ([#80](https://github.com/45ck/eija-studio/issues/80)). The [merge record](docs/engineering/2026-10-08-IDE-ON-MAIN.md) lists what landed and the checks run. Fast passes 22/22 and 2,672 tests pass. Full fails in `hci` and `metrics`, both from two HCI budgets awaiting owner re-derivation ([#79](https://github.com/45ck/eija-studio/issues/79)). Full IDE acceptance, live-provider and human-benefit claims remain open. The checkpoints below are earlier, dated records.

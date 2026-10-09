@@ -10,6 +10,8 @@ Design it in UML, press play, watch it run, fix it in place, let the AI do the f
 
 ## Beats
 
+The spine (Calvin, 2026-10-09): how easy it is to understand a UML change, your own and the AI's, and what to consider before accepting it. Beat 4 shows your own edit in the Changes view and its ripple as the things to consider; beat 5 shows the AI's change in the same view; beat 6 is what to consider before you accept it. The highlights cut is built on those three beats.
+
 | # | Beat | What the viewer sees | What is real | Status |
 |---|---|---|---|---|
 | 0 | Title | "Software engineering, played." | A title card | Recorded |
@@ -41,7 +43,9 @@ Every beat is filmed on the workbench shell (ADR-0173): outline and inspector on
 
 ## The highlights cut
 
-[`demos/scenarios/playide_highlights.py`](../../demos/scenarios/playide_highlights.py) tells the same story in about two minutes for the README: the model, a breakpoint, an edit in place and its ripple, the AI's change, the catch (a wrong prediction and the late-return sequence diagram ending in a refusal), and the proof. It is its own unedited take of the real product, not a cut of the full one, so it is checked the same way. It runs with `scene.pace = 0.8`, which tightens caption holds and camera motion but never skips an act or an assertion.
+[`demos/scenarios/playide_highlights.py`](../../demos/scenarios/playide_highlights.py) tells the same story in about two minutes for the README: the model, a breakpoint, an edit in place and its ripple, the AI's change, the catch (a wrong prediction and the late-return sequence diagram ending in a refusal), and the proof. It is its own unedited take of the real product, not a cut of the full one, so it is checked the same way. It runs with `scene.pace = 0.75`, which tightens caption holds and camera motion but never skips an act or an assertion.
+
+The README embeds this cut as [`assets/playide-showcase/playide-highlights.mp4`](assets/playide-showcase/playide-highlights.mp4), a 1280-wide H.264 re-encode (`ffmpeg -vf scale=1280:-2 -crf 30 -an -movflags +faststart`) of the finished take, with a poster frame from the "Your change, at a glance" chapter. Re-encode both after each new take of the highlights.
 
 ## Record it
 

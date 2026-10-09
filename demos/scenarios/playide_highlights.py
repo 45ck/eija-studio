@@ -10,7 +10,7 @@ from __future__ import annotations
 from demos.lib import RunningServer, Scene
 from demos.scenarios.playide_showcase import AI_CARD, AI_REQUEST, BUILD_TIMEOUT_MS, PACK, PENDING, RIPPLE_CARD
 
-PACE = 0.8  # tighter holds and motion than the full showcase; every act and assertion still runs
+PACE = 0.75  # tighter holds and motion than the full showcase; every act and assertion still runs
 TITLE = "The PlayIDE highlights: software engineering as play, in two minutes"
 __all__ = ["PACK", "TITLE", "run"]
 
@@ -30,8 +30,8 @@ def run(scene: Scene, server: RunningServer) -> None:
     scene.pace = PACE
     scene.goto(f"{server.base_url}/play#{server.token}")
     scene.wait_for("body[data-ready=true]", timeout_ms=60_000)
-    scene.title_card("Software engineering, played.", "Design it in UML. Press play. Let the AI do the busywork, "
-                     "and catch what it gets wrong.", hold_ms=3400)
+    scene.title_card("Understand every UML change.", "Yours and the AI's: what changed, what it touches, and what to "
+                     "consider before you accept it.", hold_ms=3600)
     chapter = _Chapters(scene)
     _design(scene, chapter)
     _play(scene, chapter)
@@ -79,26 +79,37 @@ def _play(scene: Scene, chapter: _Chapters) -> None:
 
 
 def _edit(scene: Scene, chapter: _Chapters) -> None:
-    chapter("Edit in place, watch it ripple")
-    scene.caption("Pick State, click the diagram, type the name. No code.")
+    chapter("Your change, at a glance")
+    scene.caption("Drag a state onto the diagram. It lands exactly where you drop it. Type its name: no code.")
     canvas = scene.page.locator("#canvas").bounding_box()
     width, height = (canvas["width"], canvas["height"]) if canvas else (800.0, 600.0)
-    scene.click('#draw-palette [data-kind="state"]')
-    scene.click_at("#canvas", (width * 0.82, height * 0.82))
+    scene.drag('#draw-palette [data-kind="state"]', "#canvas", position=(width * 0.82, height * 0.82))
     scene.type_text(".inline-edit input", "Lost")
     scene.click('.inline-edit button[type="submit"]')
     scene.expect_text(f"{RIPPLE_CARD} .ripple", "LoanState gains the literal Lost", timeout_ms=60_000)
-    scene.caption("The change ripples: the class diagram gains the literal, and nothing leads into Lost yet.")
-    scene.zoom(f"{RIPPLE_CARD} .ripple-list", scale=1.5)
+    scene.click("#show-changes")
+    scene.wait_for(".diff-item", timeout_ms=30_000)
+    scene.expect_text(".diff-summary", "1 change")
+    scene.caption("Your own edit is drawn like any change: what is new is green, on the diagram you know.")
+    scene.zoom("#diff-view", scale=1.4)
     scene.wait(1300)
     scene.zoom_out()
+    scene.wait_for("#diff-consider li.ok", timeout_ms=60_000)  # the laws are proved on the changed model
+    scene.expect_text("#inspector .diff-item .who.you", "You")
+    scene.caption("And what to consider, in one place: a warning, the laws, the other diagrams it changes, the tests it adds.")
+    scene.click("#diff-flags summary")
+    scene.expect_text("#diff-consider", "No record can ever reach Lost")
+    scene.zoom("#diff-consider", scale=1.7)
+    scene.wait(2000)
+    scene.zoom_out()
+    scene.click("#show-changes")  # back to the diagram
     scene.caption("The AI proposes a way in, the server re-checks it, and it ripples on.")
     scene.click(f"{RIPPLE_CARD} .follow-ons li.applies button")
     scene.expect_text(f"{RIPPLE_CARD} .ripple", "New use case Renew", timeout_ms=60_000)
 
 
 def _ai(scene: Scene, chapter: _Chapters) -> None:
-    chapter("Let the AI do the busywork")
+    chapter("The AI's change, at a glance")
     scene.caption("Ask in plain words. Offline here: a phrase reader stands in for a live model.")
     scene.type_text("#chat-input", AI_REQUEST)
     scene.click("#chat-send")
@@ -110,17 +121,26 @@ def _ai(scene: Scene, chapter: _Chapters) -> None:
     scene.click("#tab-states")
     scene.click("#show-changes")
     scene.wait_for(".diff-item", timeout_ms=30_000)
-    scene.caption("Both models on one layout: added in green, the removed arrow kept as a ghost.")
+    scene.caption("The same view: a new arrow in green, and the arrow it removes kept as a dashed ghost, never hidden.")
     scene.zoom("#diff-view", scale=1.3)
-    scene.wait(1400)
+    scene.wait(1600)
+    scene.zoom_out()
+    scene.wait_for("#diff-consider li.ok, #diff-consider li.bad:not(:has(details))", timeout_ms=60_000)
+    scene.expect_text("#diff-consider", "Breaks the sequence")
+    scene.expect_text("#diff-consider", "2 problems")
+    scene.expect_text("#inspector .diff-item .who.ai", "AI")
+    scene.caption("Each change is tagged AI or You. To consider: two problems, and it breaks the late-return scenario.")
+    scene.click("#diff-flags summary")
+    scene.zoom("#diff-consider", scale=1.6)
+    scene.wait(2200)
     scene.zoom_out()
 
 
 def _catch(scene: Scene, chapter: _Chapters) -> None:
-    chapter("Review the change, not the code")
+    chapter("What to consider before you accept")
     scene.click(f"{AI_CARD} .plan-tools .review-it")
     scene.expect_text("#review-head-text", "2 changes: 1 high risk")
-    scene.caption("Predict before you see the answer: can a librarian still return an overdue loan?")
+    scene.caption("The riskiest change comes first. Predict before you see the answer: can a librarian still return an overdue loan?")
     scene.click("#review-item-1 .show")
     scene.click("#review-item-1 .predict-tools button:has-text('Yes')")
     scene.expect_text("#review-item-1 .answer", "Not what you expected")
@@ -156,9 +176,6 @@ def _prove(scene: Scene, chapter: _Chapters) -> None:
     scene.wait_for("#laws-summary.ok, #laws-summary.bad", timeout_ms=120_000)
     scene.expect_text("#laws-summary", "holds on every run the kernel allows")
     scene.caption("Every law holds on every run the kernel allows.")
-    scene.zoom("#laws", scale=1.3)
-    scene.wait(1300)
-    scene.zoom_out()
     scene.click("#tab-tests")
     scene.expect_text("#tests-summary", "All 7 tests pass", timeout_ms=60_000)
     scene.click("#tab-states")

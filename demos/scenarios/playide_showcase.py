@@ -63,8 +63,8 @@ def run(scene: Scene, server: RunningServer) -> None:
     scene.goto(f"{server.base_url}/play#{server.token}")
     scene.wait_for("body[data-ready=true]", timeout_ms=60_000)
     scene.title_card("Software engineering, played.",
-                     "Design it in UML. Press play. Watch it run. Let the AI do the busywork, and check it.",
-                     hold_ms=3400)
+                     "Design it in UML. Press play. Understand every change, yours and the AI's, before you accept it.",
+                     hold_ms=3600)
     chapter = _Chapters(scene)
     _model_is_the_program(scene, chapter)
     _press_play(scene, chapter)
@@ -142,11 +142,10 @@ def _press_play(scene: Scene, chapter: _Chapters) -> None:
 
 def _fix_in_place(scene: Scene, chapter: _Chapters) -> None:
     chapter("Fix it in place, not in code")
-    scene.caption("Design in place. Pick State, click where it goes, and type its name right on the diagram.")
+    scene.caption("Design in place. Drag a state onto an empty spot: it lands exactly there. Type its name on the diagram.")
     canvas = scene.page.locator("#canvas").bounding_box()
     width, height = (canvas["width"], canvas["height"]) if canvas else (800.0, 600.0)
-    scene.click('#draw-palette [data-kind="state"]')
-    scene.click_at("#canvas", (width * 0.82, height * 0.82))
+    scene.drag('#draw-palette [data-kind="state"]', "#canvas", position=(width * 0.82, height * 0.82))
     scene.type_text(".inline-edit input", "Lost")
     scene.click('.inline-edit button[type="submit"]')
     scene.expect_text(f"{RIPPLE_CARD} .ripple", "LoanState gains the literal Lost", timeout_ms=60_000)
@@ -164,7 +163,23 @@ def _fix_in_place(scene: Scene, chapter: _Chapters) -> None:
 
 
 def _ripple(scene: Scene, chapter: _Chapters) -> None:
-    chapter("Watch it ripple")
+    chapter("Your change: what to consider")
+    scene.click("#show-changes")
+    scene.wait_for(".diff-item", timeout_ms=30_000)
+    scene.expect_text(".diff-summary", "1 change")
+    scene.caption("Your own edit reads like any change: what is new is green, on the diagram you already know.")
+    scene.zoom("#diff-view", scale=1.4)
+    scene.wait(1600)
+    scene.zoom_out()
+    scene.wait_for("#diff-consider li.ok", timeout_ms=60_000)  # the laws are proved on the changed model
+    scene.expect_text("#inspector .diff-item .who.you", "You")
+    scene.caption("And what to consider, in one place: a warning, the laws, the other diagrams it changes, the tests it adds.")
+    scene.click("#diff-flags summary")
+    scene.expect_text("#diff-consider", "No record can ever reach Lost")
+    scene.zoom("#diff-consider", scale=1.7)
+    scene.wait(2000)
+    scene.zoom_out()
+    scene.click("#show-changes")  # back to the diagram
     scene.caption("One change ripples through the whole model. Every tab counts the elements it touches.")
     scene.zoom(".tabs", scale=1.8)
     scene.wait(1600)
@@ -197,7 +212,7 @@ def _ripple(scene: Scene, chapter: _Chapters) -> None:
 
 
 def _ai_busywork(scene: Scene, chapter: _Chapters) -> None:
-    chapter("Let the AI do the busywork")
+    chapter("The AI's change, at a glance")
     scene.caption("Ask for a bigger change in plain words: let librarians renew overdue loans. Offline here: a "
                   "deterministic phrase reader stands in for a live model.")
     scene.type_text("#chat-input", AI_REQUEST)
@@ -219,6 +234,15 @@ def _ai_busywork(scene: Scene, chapter: _Chapters) -> None:
     scene.zoom("#diff-view", scale=1.3)
     scene.wait(1800)
     scene.zoom_out()
+    scene.wait_for("#diff-consider li.ok, #diff-consider li.bad:not(:has(details))", timeout_ms=60_000)
+    scene.expect_text("#diff-consider", "Breaks the sequence")
+    scene.expect_text("#diff-consider", "2 problems")
+    scene.expect_text("#inspector .diff-item .who.ai", "AI")
+    scene.caption("Each change is tagged AI or You. To consider: two problems, and it breaks the late-return scenario.")
+    scene.click("#diff-flags summary")
+    scene.zoom("#diff-consider", scale=1.6)
+    scene.wait(2200)
+    scene.zoom_out()
     scene.caption("Step through the changes like hunks in a code review. Compare flips between before and after; nothing moves.")
     scene.click("#diff-view button[aria-label='Next change']")
     scene.expect_text("#diff-pos", "Change 1 of")
@@ -235,7 +259,7 @@ def _ai_busywork(scene: Scene, chapter: _Chapters) -> None:
 
 
 def _review(scene: Scene, chapter: _Chapters) -> None:
-    chapter("Review the change, not the code")
+    chapter("What to consider before you accept")
     scene.click(f"{AI_CARD} .plan-tools .review-it")
     scene.expect_text("#review-head-text", "2 changes: 1 high risk")
     scene.caption("Both models on one diagram: the new path in green, the deleted path dashed in red.")
