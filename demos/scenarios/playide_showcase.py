@@ -12,11 +12,14 @@ from pathlib import Path
 
 from demos.lib import RunningServer, Scene
 
-TITLE = "The PlayIDE showcase: software engineering as play"
+TITLE = "The PlayIDE showcase: design the whole system, then play it"
 PACK = "packs/library-loan"
 AI_REQUEST = "add Renew from Overdue to OnLoan for Librarian then remove transition ReturnLate"
 BUILD_TIMEOUT_MS = 600_000
 AI_CARD = ".msg.ai:last-child"
+APP = "#run-frame >> internal:control=enter-frame >>"  # inside the built app's frame
+AGENT_RISKY = "allow SupportAgent to ApproveRefund"
+AGENT_ASK = "Let the support agent approve refunds itself"
 RIPPLE_CARD = ".msg:last-child"  # the chat card that shows a drawn change's ripple (ADR-0158)
 ROOT = Path(__file__).resolve().parents[2]
 EXPORTED = ROOT / "verification/interop/generated/library-loan.puml"  # what PlayIDE exports for the pack (ADR-0190)
@@ -62,9 +65,9 @@ class _Chapters:
 def run(scene: Scene, server: RunningServer) -> None:
     scene.goto(f"{server.base_url}/play#{server.token}")
     scene.wait_for("body[data-ready=true]", timeout_ms=60_000)
-    scene.title_card("Software engineering, played.",
-                     "Design it in UML. Press play. Understand every change, yours and the AI's, before you accept it.",
-                     hold_ms=3600)
+    scene.title_card("Design the whole system. Then play it.",
+                     "People, AI agents and software in one UML model. Read every change, yours and the AI's, and let "
+                     "the kernel check it before you accept it.", hold_ms=4200)
     chapter = _Chapters(scene)
     _model_is_the_program(scene, chapter)
     _press_play(scene, chapter)
@@ -73,18 +76,20 @@ def run(scene: Scene, server: RunningServer) -> None:
     _ai_busywork(scene, chapter)
     _review(scene, chapter)
     _prove_it(scene, chapter)
-    scene.skip(PENDING["ship"])
-    scene.clear_caption()
-    scene.title_card("Then the owner ships it", "Verify, approve and apply stay with the owner in the review workbench. "
-                     "Not shown yet: they wait on the owner's source review (issue #80).", hold_ms=3600)
+    _people(scene, chapter)
+    _whole_system(scene, chapter)
     _stakeholder_view(scene, chapter, server)
     _bring_your_own_uml(scene, chapter, server)
+    _agents(scene, chapter)
     _start_your_own(scene, chapter)
+    scene.skip(PENDING["ship"])
     scene.clear_caption()
     scene.zoom_out()
-    scene.title_card("Less typing. No diff archaeology.",
+    scene.title_card("Then the owner ships it", "Verify, approve and apply stay with the owner in the review workbench. "
+                     "Not shown yet: they wait on the owner's source review (issue #80).", hold_ms=3600)
+    scene.title_card("Design the people, the agents and the software. Then play it.",
                      "Review the change, not the code. The app cannot disobey the model. You decide what ships. "
-                     "PlayIDE, built on EIJA Studio (Apache-2.0)", hold_ms=4200)
+                     "PlayIDE, built on EIJA Studio (Apache-2.0)", hold_ms=4600)
 
 
 def _model_is_the_program(scene: Scene, chapter: _Chapters) -> None:
@@ -350,6 +355,125 @@ def _prove_it(scene: Scene, chapter: _Chapters) -> None:
     scene.caption("The ring fills only from real checks on what you are looking at. That is the score.")
     scene.zoom("#checks", scale=1.6)
     scene.wait(2400)
+
+
+def _people(scene: Scene, chapter: _Chapters) -> None:
+    """Humans in the model (ADR-0215): what each role sees, and the built app run as one of them."""
+    chapter("People: who sees what")
+    scene.caption("Design the people too. Pick a role and see the app the way they will.")
+    scene.click("#tab-screens")
+    scene.click("#role-lens button[data-role=Clerk]")
+    scene.expect_text("#role-app", "A Clerk sees 2 of 7 screens")
+    scene.zoom("#role-app", scale=1.5)
+    scene.wait(1800)
+    scene.zoom_out()
+    scene.caption(
+        "The screens a Clerk never sees are struck through, because the kernel never lets a Clerk take them."
+    )
+    scene.zoom("#screen-list", scale=1.6)
+    scene.wait(1600)
+    scene.zoom_out()
+    scene.click("#role-lens button[data-role='']")
+    scene.click("#outline-roles button:has-text('Librarian')")
+    scene.expect_text("#inspector", "assigned only")
+    scene.caption(
+        "Each actor lists what the kernel lets it do. CheckOut is narrowed by a guard: assigned librarians only."
+    )
+    scene.zoom("#inspector", scale=1.5)
+    scene.wait(2000)
+    scene.zoom_out()
+    scene.caption("Run as opens the built app acting as that person, with their own actions first.")
+    scene.click("#inspector button.run-as[data-actor='librarian-unassigned']")
+    scene.expect_text(f"{APP} body", "librarian-unassigned", timeout_ms=BUILD_TIMEOUT_MS)
+    scene.click("#dock-tab-run")  # the last build is reused, so bring its panel forward over Simulation
+    scene.zoom("#run", scale=1.3)
+    scene.wait(1800)
+    scene.zoom_out()
+    scene.click("#dock-close")
+
+
+def _whole_system(scene: Scene, chapter: _Chapters) -> None:
+    """Software architecture (ADR-0203): the workflows this one forms a system with, and where their classes disagree."""
+    chapter("Software: the whole system")
+    scene.caption(
+        "Zoom out to the software. Workflows that share a class form one system, drawn as UML components."
+    )
+    scene.click("#tab-components")
+    scene.click("#component-lens button[data-lens=system]")
+    scene.expect_text("#landscape-summary", "disagree", timeout_ms=30_000)
+    scene.zoom("#component-bar", scale=1.6)
+    scene.wait(1600)
+    scene.zoom_out()
+    scene.caption(
+        "The shared Member class is marked: two workflows' class diagrams disagree about it, before either ships."
+    )
+    scene.zoom("#landscape", scale=1.25)
+    scene.wait(2200)
+    scene.zoom_out()
+    scene.click("#component-lens button[data-lens=app]")
+    scene.click("#tab-states")
+
+
+def _agents(scene: Scene, chapter: _Chapters) -> None:
+    """AI agents, timers and outside systems as actors (ADR-0210), in a real-sector template (#159, #161)."""
+    chapter("AI agents in the model")
+    scene.caption(
+        "Real systems have more than people in them. Start one from a template: permits, payments, parcels, care."
+    )
+    scene.click("#system-menu")
+    scene.click("#systems-tab-new")
+    scene.zoom("#systems-templates", scale=1.2)
+    scene.wait(1800)
+    scene.zoom_out()
+    scene.click("#systems-templates input[value=refund-desk]")
+    scene.type_text("#systems-name", "Refund desk", clear=True)
+    scene.page.once("dialog", lambda dialog: dialog.accept())  # the imported plan is a throwaway: leave it
+    with scene.page.expect_navigation(timeout=60_000):
+        scene.click("#systems-create")
+    scene.reattach("body[data-ready=true]")
+    scene.expect_text("#outline-states", "WithSupervisor")
+    scene.chapter(
+        chapter.n, "AI agents in the model"
+    )  # the reload dropped the chip: show it again, same number
+    scene.click("#tab-usecases")
+    scene.caption(
+        "An AI agent triages refunds, a timer escalates, the payment system reports back. Each is a UML actor."
+    )
+    scene.zoom("#usecase-canvas", scale=1.2)
+    scene.wait(2400)
+    scene.zoom_out()
+    scene.caption("Now ask for something risky: let the agent approve refunds.")
+    scene.type_text("#chat-input", AGENT_RISKY)
+    scene.click("#chat-send")
+    scene.expect_text(f"{AI_CARD} .plan-verdict.bad", "Only a person approves a refund", timeout_ms=30_000)
+    scene.caption(
+        "The laws refuse it: only a person approves, and a person acts on every refund before it is paid."
+    )
+    scene.zoom(f"{AI_CARD} .plan-verdict", scale=1.5)
+    scene.wait(2600)
+    scene.zoom_out()
+    scene.caption("Ask the AI in plain words instead, and it offers the safe version.")
+    scene.type_text("#chat-input", AGENT_ASK)
+    scene.click("#chat-send")
+    scene.expect_text(
+        f"{AI_CARD} .plan-verdict", "The policy allows the result: adds HandOff", timeout_ms=30_000
+    )
+    scene.caption(
+        "The agent hands what it cannot settle to a supervisor. A person still approves every refund."
+    )
+    scene.zoom(f"{AI_CARD} .plan-steps", scale=1.5)
+    scene.wait(2000)
+    scene.zoom_out()
+    scene.caption(
+        "Simulate: people, agents, timers and systems act, and the kernel refuses what the model forbids."
+    )
+    scene.click("#simulate")
+    scene.expect_text("#sim-summary", "refused by the kernel", timeout_ms=60_000)
+    scene.expect_text("#sim", "AI agents", timeout_ms=30_000)
+    scene.zoom("#sim", scale=1.3)
+    scene.wait(2600)
+    scene.zoom_out()
+    scene.click("#dock-close")
 
 
 def _bring_your_own_uml(scene: Scene, chapter: _Chapters, server: RunningServer) -> None:

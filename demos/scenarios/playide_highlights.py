@@ -8,10 +8,18 @@ keeps the strongest moment of each beat and shorter captions. The chat's propose
 from __future__ import annotations
 
 from demos.lib import RunningServer, Scene
-from demos.scenarios.playide_showcase import AI_CARD, AI_REQUEST, BUILD_TIMEOUT_MS, PACK, PENDING, RIPPLE_CARD
+from demos.scenarios.playide_showcase import (
+    AGENT_RISKY,
+    AI_CARD,
+    AI_REQUEST,
+    BUILD_TIMEOUT_MS,
+    PACK,
+    PENDING,
+    RIPPLE_CARD,
+)
 
 PACE = 0.75  # tighter holds and motion than the full showcase; every act and assertion still runs
-TITLE = "The PlayIDE highlights: software engineering as play, in two minutes"
+TITLE = "The PlayIDE highlights: design the whole system, then play it"
 __all__ = ["PACK", "TITLE", "run"]
 
 
@@ -30,21 +38,22 @@ def run(scene: Scene, server: RunningServer) -> None:
     scene.pace = PACE
     scene.goto(f"{server.base_url}/play#{server.token}")
     scene.wait_for("body[data-ready=true]", timeout_ms=60_000)
-    scene.title_card("Understand every UML change.", "Yours and the AI's: what changed, what it touches, and what to "
-                     "consider before you accept it.", hold_ms=3600)
+    scene.title_card("Design the whole system. Then play it.", "People, AI agents and software in one UML model. "
+                     "Understand every change, yours and the AI's, before you accept it.", hold_ms=3800)
     chapter = _Chapters(scene)
     _design(scene, chapter)
-    _play(scene, chapter)
     _edit(scene, chapter)
     _ai(scene, chapter)
     _catch(scene, chapter)
     _prove(scene, chapter)
+    _people(scene, chapter)
+    _agents(scene, chapter)
     scene.skip(PENDING["ship"])
     scene.zoom_out()
     scene.title_card("Then the owner ships it", "Verify, approve and apply stay with the owner. Not shown yet: they "
                      "wait on the owner's source review (issue #80).", hold_ms=3000)
-    scene.title_card("Less typing. No diff archaeology.", "Review the change, not the code. The app cannot disobey "
-                     "the model. PlayIDE, built on EIJA Studio (Apache-2.0)", hold_ms=4200)
+    scene.title_card("Design the people, the agents and the software.", "Review the change, not the code. The app "
+                     "cannot disobey the model. PlayIDE, built on EIJA Studio (Apache-2.0)", hold_ms=4400)
 
 
 def _design(scene: Scene, chapter: _Chapters) -> None:
@@ -59,23 +68,6 @@ def _design(scene: Scene, chapter: _Chapters) -> None:
         scene.highlight(target, duration_ms=800)
         scene.wait(500)
     scene.click("#tab-states", duration_ms=340)
-
-
-def _play(scene: Scene, chapter: _Chapters) -> None:
-    chapter("Press play")
-    scene.caption("Set a breakpoint on a state, like on a line of code, and press Run.")
-    scene.click("#outline-states button:has-text('Overdue')")
-    scene.click("#inspector button:has-text('Add breakpoint')")
-    scene.select_option("#run-speed", "40")
-    scene.click("#run-play")
-    scene.expect_text("#run-status", "Paused at step", timeout_ms=60_000)
-    scene.caption("Seeded users act, the kernel decides every step, and it stops where you asked.")
-    scene.zoom("#canvas", scale=1.7)
-    scene.wait(1500)
-    scene.zoom_out()
-    scene.click("#run-stop")
-    scene.expect_text("#run-status", "Stopped the run")
-    scene.click("#dock-close")
 
 
 def _edit(scene: Scene, chapter: _Chapters) -> None:
@@ -184,4 +176,49 @@ def _prove(scene: Scene, chapter: _Chapters) -> None:
     scene.caption("The ring fills only from real checks on what you are looking at.")
     scene.zoom("#checks", scale=1.6)
     scene.wait(1500)
+    scene.zoom_out()
+
+
+def _people(scene: Scene, chapter: _Chapters) -> None:
+    chapter("People: who sees what")
+    scene.click("#dock-close")
+    scene.click("#tab-screens")
+    scene.click("#role-lens button[data-role=Clerk]")
+    scene.expect_text("#role-app", "A Clerk sees 2 of 7 screens")
+    scene.caption(
+        "Design the people too. See the app as a Clerk: the screens the kernel never lets them take are struck through."
+    )
+    scene.zoom("#screens", scale=1.3)
+    scene.wait(2400)
+    scene.zoom_out()
+    scene.click("#role-lens button[data-role='']")
+
+
+def _agents(scene: Scene, chapter: _Chapters) -> None:
+    chapter("AI agents in the model")
+    scene.caption(
+        "And the agents. Start Refund desk from a template: an AI agent, a timer and a payment system are UML actors."
+    )
+    scene.click("#system-menu")
+    scene.click("#systems-tab-new")
+    scene.click("#systems-templates input[value=refund-desk]")
+    scene.type_text("#systems-name", "Refund desk", clear=True)
+    scene.page.once("dialog", lambda dialog: dialog.accept())  # the reviewed plan is a throwaway: leave it
+    with scene.page.expect_navigation(timeout=60_000):
+        scene.click("#systems-create")
+    scene.reattach("body[data-ready=true]")
+    scene.expect_text("#outline-states", "WithSupervisor")
+    scene.chapter(chapter.n, "AI agents in the model")
+    scene.click("#tab-usecases")
+    scene.zoom("#usecase-canvas", scale=1.2)
+    scene.wait(1600)
+    scene.zoom_out()
+    scene.type_text("#chat-input", AGENT_RISKY)
+    scene.click("#chat-send")
+    scene.expect_text(f"{AI_CARD} .plan-verdict.bad", "Only a person approves a refund", timeout_ms=30_000)
+    scene.caption(
+        "Let the agent approve refunds? The laws refuse: only a person approves, before anything is paid."
+    )
+    scene.zoom(f"{AI_CARD} .plan-verdict", scale=1.5)
+    scene.wait(2600)
     scene.zoom_out()
