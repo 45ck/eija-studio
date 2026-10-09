@@ -621,6 +621,10 @@
   }
 
   function showTab(which) {
+    if (which === "system") { // the System lens of the Components tab (ADR-0203), which the ripple names as a diagram
+      if (window.PlayLandscape) window.PlayLandscape.setLens("system");
+      which = "components";
+    }
     tab = which;
     for (const [name, panel] of Object.entries(PANELS)) {
       $("tab-" + name).setAttribute("aria-selected", String(which === name));
@@ -892,7 +896,8 @@
   // to every diagram and asks the proposer for follow-on edits, each re-checked by the policy or the screen design
   // check. Tabs carry a badge; the affected elements are marked on each diagram while the plan is previewed.
   const DIAGRAMS = { states: "State machine", classes: "Class diagram", usecases: "Use cases", screens: "Screens", components: "Components" };
-  const RIPPLE = { ...DIAGRAMS, sequences: "Sequences" }; // sequence diagrams are listed in the ripple; play-sequence.js marks its own tab
+  const RIPPLE = { ...DIAGRAMS, sequences: "Sequences", system: "System" }; // sequence diagrams are listed in the ripple; play-sequence.js marks its own tab
+  // "System" is the other workflows of the system (ADR-0203, #146): the Components tab's System lens shows it.
   const MARK = { added: "+", removed: "−", changed: "~", warning: "⚠", problem: "✗" };
   const TINT = { added: { strokeColor: "#17734a", fillColor: "#e5f5ec", strokeWidth: 2.5 }, changed: { strokeColor: "#c27c0e", strokeWidth: 2.5 },
     warning: { strokeColor: "#c27c0e", dashed: true, strokeWidth: 2.5 }, problem: { strokeColor: "#a12f2f", strokeWidth: 3 },
@@ -1022,7 +1027,8 @@
     }
     if (key === "sequences" && item.ref && window.PlaySequence) window.PlaySequence.open(item.ref.slice(9));
     showTab(key);
-    const g = current(), ids = key === "screens" || !item.ref ? [] : cellsFor(key, item.ref);
+    if (key === "system" && item.ref && window.PlayLandscape) window.PlayLandscape.focus(item.ref.slice(7)); // drawn once it loads
+    const g = key === "system" ? null : current(), ids = key === "screens" || !item.ref ? [] : cellsFor(key, item.ref);
     const cell = g && ids.map((id) => g.getDataModel().getCell(id)).find(Boolean);
     if (cell && cell.isVertex() && !cell.id.startsWith("literal:")) g.setSelectionCell(cell);
     else if (cell && cell.isEdge()) g.setSelectionCell(cell);
@@ -1042,7 +1048,8 @@
     for (const key of Object.keys(DIAGRAMS)) {
       const badge = $("tab-" + key).querySelector(".badge");
       if (!badge) continue;
-      const items = ripple && !ripple.error ? ripple.diagrams[key] : [];
+      // The Components tab also shows the System lens, so it counts what the change does to the other workflows (#146).
+      const items = ripple && !ripple.error ? [...ripple.diagrams[key], ...(key === "components" ? ripple.diagrams.system || [] : [])] : [];
       badge.hidden = !items.length;
       badge.textContent = String(items.length);
       badge.className = "badge" + (items.some((i) => i.change === "problem") ? " bad" : items.some((i) => i.change === "warning") ? " warn" : "");
@@ -1680,7 +1687,11 @@
     // A package's members share one column, the deepest of theirs, so the package is one box.
     const deepest = {};
     for (const c of components.components) if (GROUPS[c.stereotype]) deepest[c.stereotype] = Math.max(deepest[c.stereotype] || 0, visit(c.id));
-    for (const c of components.components) (columns[GROUPS[c.stereotype] ? deepest[c.stereotype] : visit(c.id)] ||= []).push(c);
+    // The framework a module runs on sits under that module, out of the way of the module's own uses (a framework in
+    // the next column stood under every edge that column sends on).
+    const runsOn = (c) => Math.min(...edges.filter((d) => d.target === c.id).map((d) => visit(d.source)));
+    const column = (c) => GROUPS[c.stereotype] ? deepest[c.stereotype] : c.stereotype === "framework" && visit(c.id) > 0 ? runsOn(c) : visit(c.id);
+    for (const c of components.components) (columns[column(c)] ||= []).push(c);
     for (const [col, members] of Object.entries(columns)) {
       let y = 20;
       const x = 40 + Number(col) * COLUMN;
@@ -1700,10 +1711,22 @@
         y += h + GAP;
       }
     }
+    for (const c of components.components) if (c.stereotype === "framework") clearOfLines(c.id, boxes, edges);
     return (id) => {
       if (id.startsWith("iface:")) { const [x, y, , h] = boxes[id.slice(6)]; return [x - 34, y + h / 2 - 8, 16, 16]; } // the ball, left of its provider
       return boxes[id] || [0, 0, 0, 0];
     };
+  }
+
+  // Moves a box (and its interface ball and label, to its left) down until no other line crosses it or another box.
+  function clearOfLines(id, boxes, edges) {
+    const centre = (key) => { const [x, y, w, h] = boxes[key]; return [x + w / 2, y + h / 2]; };
+    const lines = edges.filter((d) => d.source !== id && d.target !== id && boxes[d.source] && boxes[d.target]).map((d) => [centre(d.source), centre(d.target)]);
+    const others = Object.entries(boxes).filter(([key]) => key !== id && !key.startsWith("pkg:")).map(([, b]) => b);
+    const b = boxes[id], hits = ([x, y, w, h]) => others.some(([ox, oy, ow, oh]) => ox < x + w && x < ox + ow && oy < y + h && y < oy + oh)
+      || lines.some(([[x1, y1], [x2, y2]]) => Array.from({ length: 41 }, (_, i) => [x1 + (x2 - x1) * i / 40, y1 + (y2 - y1) * i / 40])
+        .some(([px, py]) => px > x && px < x + w && py > y && py < y + h));
+    for (let tries = 0; tries < 60 && hits([b[0] - 120, b[1] - 16, b[2] + 150, b[3] + 22]); tries++) b[1] += 18;
   }
 
   async function drawComponents() {
