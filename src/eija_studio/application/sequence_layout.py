@@ -17,9 +17,12 @@ from eija_studio.domain.scenarios import Scenario
 from .diagram_emitters import emit
 from .diagrams import Fragment as DiagramFragment, Message as DiagramMessage, Note, Participant, Sequence
 
-# Layout, in pixels: lifeline columns and the height of each kind of row.
-COLUMN, LEFT, HEAD_Y, HEAD_H = 180, 100, 16, 46
-ROW = {"message": 40, "reply": 30, "invariant": 36, "effect": 28, "frame": 34, "end": 16}
+# Layout, in pixels: each kind of lifeline's column width, and the height of each kind of row.
+# Effects are UML lost messages: arrows from the record that end LOST pixels to its right, with no lifeline of their own.
+WIDTH = {"actor": 150, "record": 190, "effect": 0}
+LEFT, HEAD_Y, HEAD_H, LOST = 24, 16, 64, 190
+CHAR = 7.4  # an average character of a lifeline head at 12.5 to 13 pixels: a column widens so its longest line fits
+ROW = {"message": 40, "reply": 30, "invariant": 36, "effect": 26, "frame": 34, "end": 16}
 
 
 class _Layout:
@@ -28,23 +31,30 @@ class _Layout:
     def __init__(self, pack: Pack, scenario: Scenario, steps: list[dict[str, Any]], record: tuple[str, str]):
         roles = {a.id: a.role for a in pack.fixtures.actors}
         self.lifelines: dict[str, dict[str, Any]] = {}
+        self.right = LEFT
         for s in scenario.steps:
+            role = roles.get(s.actor, "?")
             kind = pack.role_kind(roles.get(s.actor, "")) or "human"  # ADR-0210: an agent, timer or system says so
             keyword = "" if kind == "human" else f"«{kind}» "
-            key = self._lifeline("actor", s.actor, f"{keyword}{s.actor} : {roles.get(s.actor, '?')}")
+            head = f"{s.actor}\n: {role}" if kind == "human" else f"«{kind}»\n{s.actor}\n: {role}"
+            key = self._lifeline("actor", s.actor, f"{keyword}{s.actor} : {role}", head)
             self.lifelines[key]["actor_kind"] = kind
-        self.record = self._lifeline("record", record[0], f"{record[0]} : {record[1]}")
+        self.record = self._lifeline("record", record[0], f"{record[0]} : {record[1]}", f"{record[0]} : {record[1]}")
         for v in steps:
             for effect in v["effects"]:
                 channel = effect.split(":", 1)[0] if ":" in effect else "Effects"
-                self._lifeline("effect", channel, f"«effect» {channel}")
+                self._lifeline("effect", channel, f"«effect» {channel}", f"«effect»\n{channel}")
         self.y = HEAD_Y + HEAD_H + 26
-        self.items: dict[str, list[dict[str, Any]]] = {k: [] for k in ("messages", "replies", "invariants", "effects", "fragments")}
+        self.items: dict[str, list[dict[str, Any]]] = {k: [] for k in ("messages", "replies", "invariants", "effects", "fragments", "activations")}
 
-    def _lifeline(self, kind: str, name: str, label: str) -> str:
+    def _lifeline(self, kind: str, name: str, label: str, head: str) -> str:
+        """A lifeline in the next column; `head` is its label as drawn, broken over two lines where it is long."""
         key = f"{kind}:{name}"
         if key not in self.lifelines:
-            self.lifelines[key] = {"id": key, "kind": kind, "name": name, "label": label, "x": LEFT + COLUMN * len(self.lifelines)}
+            width = max(WIDTH[kind], int(max(map(len, head.split("\n"))) * CHAR) + 28) if WIDTH[kind] else 0
+            x = self.lifelines[self.record]["x"] + LOST if kind == "effect" else self.right + width // 2
+            self.lifelines[key] = {"id": key, "kind": kind, "name": name, "label": label, "head": head, "x": x, "width": width - 16}
+            self.right += width
         return key
 
     def row(self, kind: str) -> int:
@@ -67,7 +77,7 @@ def _outcome(layout: _Layout, ref: str, actor: str, v: dict[str, Any]) -> list[s
                                            "tone": "bad" if v["verdict"] == "BROKEN" else "ok"})
     for effect in v["effects"]:
         channel = "effect:" + (effect.split(":", 1)[0] if ":" in effect else "Effects")
-        layout.items["effects"].append({"ref": ref, "from": record, "to": channel, "y": layout.row("effect"), "label": effect.split(":", 1)[-1]})
+        layout.items["effects"].append({"ref": ref, "from": record, "to": channel, "y": layout.row("effect"), "label": effect.replace(":", ": ", 1)})
         touched.append(channel)
     return touched
 
@@ -81,7 +91,10 @@ def _place_step(layout: _Layout, ref: str, v: dict[str, Any]) -> list[str]:
                                      "action": step["action"], "actor": step["actor"], "role": step.get("role"), "before": step["from"],
                                      "expect": step["expect"], "transition": next((c[11:] for c in t if c.startswith("transition:")), None),
                                      **{k: v[k] for k in ("verdict", "why", "code", "states")}})
-    return _outcome(layout, ref, actor, v)
+    touched = _outcome(layout, ref, actor, v)
+    y0 = layout.items["messages"][-1]["y"]  # the record is active from the call until its outcome is drawn
+    layout.items["activations"].append({"ref": ref, "lifeline": layout.record, "y0": y0, "y1": max(layout.y - 10, y0 + 18)})
+    return touched
 
 
 def place(pack: Pack, scenario: Scenario, start: str, steps: list[dict[str, Any]], record: tuple[str, str]) -> dict[str, Any]:
@@ -96,10 +109,12 @@ def place(pack: Pack, scenario: Scenario, start: str, steps: list[dict[str, Any]
         layout.row("frame")
         xs = [layout.x(key) for key in _place_step(layout, str(i), v)]
         layout.row("end")
-        layout.items["fragments"].append({"ref": str(i), "operator": "neg", "x0": min(xs) - 90, "x1": max(xs) + 90, "y0": top, "y1": layout.y - 4,
+        layout.items["fragments"].append({"ref": str(i), "operator": "neg", "x0": min(xs) - 66, "x1": max(xs) + 66, "y0": top, "y1": layout.y - 4,
                                           "operands": [{"guard": f"refused: {refused}", "y": top + ROW["frame"] - 8}], "refused": refused,
                                           "verdict": v["verdict"], "why": v["why"]})
-    width = LEFT + COLUMN * max(len(layout.lifelines) - 1, 0) + LEFT
+    lost = any(ll["kind"] == "effect" for ll in layout.lifelines.values())
+    column = int(layout.lifelines[layout.record]["width"]) + 16
+    width = layout.right + LEFT + (LOST - column // 2 + 70 if lost else 0)
     return {"lifelines": list(layout.lifelines.values()), **layout.items, "width": width, "height": layout.y + 30,
             "head": {"y": HEAD_Y, "height": HEAD_H}}
 

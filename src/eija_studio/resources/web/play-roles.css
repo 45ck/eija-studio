@@ -40,10 +40,19 @@ label.role-kind select{font:inherit}
 /* The screen flow: every screen as a wireframe, arrows labelled with the state the record is then in. */
 .flow-toggle{margin-left:auto;padding:4px 12px;border-radius:999px;font-size:.84rem}
 .flow-toggle[aria-pressed="true"]{background:var(--state);border-color:var(--state-line);color:var(--state-line);font-weight:600}
-.screen-flow{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 10px;overflow:auto;max-height:420px}
+.screen-flow{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 10px;max-height:460px;display:flex;flex-direction:column;min-width:0}
 .screen-flow[hidden]{display:none}
-.screen-flow>p{margin:0 0 6px}
-.flow-canvas{position:relative}
+.flow-canvas{position:relative;transform-origin:0 0}
+.flow-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.flow-bar>p{margin:0 0 6px}
+.flow-fit{flex:none;font-size:.78rem}
+.flow-fit[aria-pressed=true]{background:var(--state);border-color:var(--state-line)}
+.flow-view{position:relative;overflow:auto;min-height:0}
+.flow-sizer{position:relative;overflow:hidden}
+.flow-frame{position:relative;min-height:0;display:flex;flex-direction:column}
+.flow-cue{position:absolute;right:6px;bottom:10px;z-index:2;font-size:.78rem;padding:4px 10px;border-radius:999px;
+  border:1px solid var(--state-line);background:var(--panel);color:var(--ink);box-shadow:-16px 0 16px 6px var(--panel)}
+.flow-cue[hidden]{display:none}
 .flow-canvas>svg{position:absolute;left:0;top:0;overflow:visible}
 .flow-edge{fill:none;stroke:#8a94a8;stroke-width:1.4}
 #flow-arrow path{fill:#8a94a8}
@@ -63,3 +72,21 @@ label.role-kind select{font:inherit}
 .flow-more{color:var(--muted);font-size:.68rem}
 .flow-button{align-self:flex-start;margin-top:3px;padding:2px 9px;border-radius:5px;background:var(--accent);color:var(--accent-ink);font-weight:600;font-size:.72rem}
 .flow-end{position:absolute;display:grid;place-items:center;height:34px;padding:0 12px;white-space:nowrap;border-radius:999px;border:1.5px solid #1b2130;background:var(--panel);font-size:.74rem;font-weight:600}
+
+/* The accessibility check on the generated screens (ADR-0218). */
+.a11y{font-size:.84rem;padding:6px 10px;border-radius:8px;margin-top:6px;background:var(--busy-bg)}
+.a11y.ok{background:var(--ok-bg)}
+.a11y.bad{background:var(--bad-bg)}
+.a11y summary{cursor:pointer;display:flex;gap:6px;align-items:center}
+.a11y.ok .a11y-mark{color:var(--ok)}
+.a11y.bad .a11y-mark{color:var(--bad)}
+.a11y-checks{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:5px}
+.a11y-checks>li{display:grid;grid-template-columns:auto 1fr auto;gap:2px 8px;align-items:baseline}
+.a11y-status{font-size:.7rem;font-weight:600;padding:0 6px;border-radius:999px;background:var(--ok-bg);color:var(--ok)}
+.a11y-fail .a11y-status{background:var(--bad-bg);color:var(--bad)}
+.a11y-warn .a11y-status{background:var(--panel);color:var(--ink);outline:1px solid var(--line)}
+.a11y-sc{font-size:.72rem;white-space:nowrap}
+.a11y-pairs{grid-column:2 / -1;list-style:none;margin:2px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:4px 10px;font-size:.76rem}
+.a11y-pairs li{display:flex;gap:4px;align-items:center}
+.a11y-pairs li.low{color:var(--bad);font-weight:600}
+.a11y-swatch{display:inline-block;padding:0 4px;border-radius:4px;border:1px solid var(--line);font-weight:600}

@@ -15,7 +15,7 @@
   let shownChange = null; // while the Changes view is on: the union of the model in force and the change (ADR-0176), drawn on the class and use case diagrams too
   let ripple = null, rippleSeq = 0; // what the accepted plan does to every diagram, with the proposer's follow-ons (ADR-0158)
   const earned = [];
-  let screens = null, screensEdited = false, useCase = null, checkTimer = 0, problems = [], useCaseList = [];
+  let screens = null, screensEdited = false, useCase = null, checkTimer = 0, problems = [], useCaseList = [], a11y = null;
   const base = {}; // each cell's own style and label, so overlays can be cleared
   // The kind of actor holding each role (ADR-0210). UML draws all four as actors; a person keeps the stick figure, the
   // others are drawn as an actor classifier with their keyword, as UML allows.
@@ -187,15 +187,26 @@
 
   // The plan banner (and the panel below) change where the canvas sits on the page. Keep the drawing still on the
   // screen when that happens, so a state you just placed does not slide away from where you put it.
-  let canvasTop = null;
+  let canvasTop = null, canvasSize = null;
   function holdStill() {
     if (!$("canvas").offsetParent) return; // hidden behind another tab: nothing on screen to hold
-    const top = $("canvas").getBoundingClientRect().top;
-    if (graph && graph.view && canvasTop !== null && top !== canvasTop) {
-      const v = graph.view;
+    const top = $("canvas").getBoundingClientRect().top, size = `${$("canvas").clientWidth} ${$("canvas").clientHeight}`;
+    // Nobody placed a shape or moved the view since it was fitted: fit the canvas as it is now (the plan banner or a
+    // panel made it shorter), so neither the top nor the foot of the diagram is cut off.
+    const untouched = graph && graph.view && tab === "states" && !Object.keys(placed).length && fitted.view === viewOf(graph);
+    if (untouched && canvasSize !== null && size !== canvasSize && top === canvasTop) fit(); // grew where it stands, as on first load
+    else if (graph && graph.view && canvasTop !== null && top !== canvasTop) {
+      const v = graph.view, was = graph.getGraphBounds(), before = was.y, high = +canvasSize.split(" ")[1];
       v.setTranslate(v.translate.x, v.translate.y - (top - canvasTop) / v.scale);
+      // ... and holding still never slides the top of the diagram (the initial state) under the banner that moved it.
+      const after = graph.getGraphBounds().y, floor = Math.min(before, MARGIN);
+      if (before >= 0 && after < floor) v.setTranslate(v.translate.x, v.translate.y + (floor - after) / v.scale);
+      // A diagram that was all on screen stays all on screen: when the banner leaves too little room, it is fitted again.
+      const now = graph.getGraphBounds(), tall = $("canvas").clientHeight;
+      if (was.y >= 0 && was.y + was.height <= high && (now.y < 0 || now.y + now.height > tall)) fit();
     }
     canvasTop = top;
+    canvasSize = size;
   }
 
   // The class, use case and component diagrams are drawn from the model, but a shape you drag there stays where you
@@ -297,6 +308,7 @@
     else fit();
     lastView = null;
     canvasTop = box.offsetParent ? box.getBoundingClientRect().top : null; // the drawing is placed for where the canvas is now
+    canvasSize = box.offsetParent ? `${box.clientWidth} ${box.clientHeight}` : null;
     for (const f of hooks.redraw) f();
   }
 
@@ -335,18 +347,43 @@
   function fit(all) {
     const g = current();
     if (!g) return;
-    const plugin = g.getPlugin("fit");
     // The Components tab's lens bar floats over the top of its diagram: leave room for it, and draw a small system no
     // larger than life, so one workflow is not blown up beside the other tabs.
     const bar = tab === "components" && !$("component-bar").hidden ? $("component-bar").offsetHeight + 16 : 0;
-    const margin = Math.max(MARGIN, bar);
-    plugin.maxFitScale = bar ? 1 : 1.4;
-    const scale = plugin.fitCenter({ margin });
-    if (all === true || !(scale < READABLE)) return;
-    const v = g.view, b = g.getGraphBounds(), box = g.container, k = READABLE;
-    const w = b.width / v.scale, h = b.height / v.scale, x0 = b.x / v.scale - v.translate.x, y0 = b.y / v.scale - v.translate.y;
-    const along = (room, size, start) => (size * k <= room - 2 * margin ? (room / k - size) / 2 - start : margin / k - start);
-    v.scaleAndTranslate(k, along(box.clientWidth, w, x0), along(box.clientHeight, h, y0));
+    const margin = Math.max(MARGIN, bar), most = bar ? 1 : 1.4, v = g.view, box = g.container;
+    // Measured, not maxGraph's fitCenter: labels do not scale exactly with the view, so measure again after scaling
+    // and take off what still overflows (a 1280-pixel screen clipped the foot of the state machine by 3 pixels).
+    const floor = all === true ? 0 : Math.min(READABLE, most);
+    for (let pass = 0; pass < 2; pass++) {
+      const b = g.getGraphBounds();
+      if (!b.width || !b.height) return;
+      const w = b.width / v.scale, h = b.height / v.scale, x0 = b.x / v.scale - v.translate.x, y0 = b.y / v.scale - v.translate.y;
+      const wide = box.clientWidth - 2 * margin, high = box.clientHeight - 2 * margin;
+      const k = Math.max(floor, pass ? v.scale * Math.min(1, wide / b.width, high / b.height) : Math.min(most, wide / w, high / h));
+      if (pass && k === v.scale) break;
+      const along = (space, size, start) => (size * k <= space - 2 * margin ? (space / k - size) / 2 - start : margin / k - start);
+      v.scaleAndTranslate(k, along(box.clientWidth, w, x0), along(box.clientHeight, h, y0));
+    }
+    fitted.view = g === graph ? viewOf(g) : null;
+  }
+  const fitted = { view: null }; // the state machine's view as fit() left it, so holdStill can tell a view nobody moved
+  const viewOf = (g) => `${g.view.scale.toFixed(4)} ${g.view.translate.x.toFixed(2)} ${g.view.translate.y.toFixed(2)}`;
+
+  // Bring cells into view, as a debugger follows the current line: the view pans (never zooms) only when one is outside
+  // the canvas, so a short canvas (the Run or Simulation panel open) still shows what the run is doing (play-run.js).
+  function follow(ids) {
+    if (!graph || !$("canvas").offsetParent) return;
+    const v = graph.view, box = graph.container, m = graph.getDataModel(), pad = 16;
+    const boxes = ids.map((id) => m.getCell(id)).filter(Boolean).map((c) => v.getState(c)).filter(Boolean).map((st) => st.text && st.cell.isEdge() ? st.text.boundingBox || st : st);
+    if (!boxes.length) return;
+    // Keep them all in view; when they do not fit together, the first (the current state) wins over the line taken.
+    const shift = (lo, hi, size) => (lo >= pad && hi <= size - pad ? 0 : lo < pad ? pad - lo : size - pad - hi);
+    const along = (start, length, size) => {
+      const lo = Math.min(...boxes.map((b) => b[start])), hi = Math.max(...boxes.map((b) => b[start] + b[length]));
+      return hi - lo <= size - 2 * pad ? shift(lo, hi, size) : shift(boxes[0][start], boxes[0][start] + boxes[0][length], size);
+    };
+    const dx = along("x", "width", box.clientWidth), dy = along("y", "height", box.clientHeight);
+    if (dx || dy) v.setTranslate(v.translate.x + dx / v.scale, v.translate.y + dy / v.scale);
   }
 
   function row(dl, term, value) { dl.append(el("dt", term), el("dd", value)); }
@@ -1326,8 +1363,9 @@
     const simulated = sim && simKey === key ? sim : null;
     return [
       { id: "ai", name: "AI steps checked", ok: seen === ai.length, detail: ai.length ? `${seen} of ${ai.length} AI steps looked at on the diagram` : "No AI plan to check" },
-      { id: "screens", name: "Screens pass the design check", ok: problemsFor === screensKey() && !problems.length,
-        detail: problemsFor !== screensKey() ? "Checking the screens…" : problems.length ? `${problems.length} design problem(s): see Screens` : "Every screen can be built" },
+      { id: "screens", name: "Screens pass the design check", ok: problemsFor === screensKey() && !problems.length && Boolean(a11y) && !a11y.failed,
+        detail: problemsFor !== screensKey() ? "Checking the screens…" : problems.length ? `${problems.length} design problem(s): see Screens`
+          : a11y && a11y.failed ? `${a11y.failed} accessibility check(s) fail: see Screens` : "Every screen can be built and meets the accessibility checks" },
       { id: "conformance", name: "Conformance", ok: Boolean(built) && built.conformance.status === "PASS",
         detail: built ? `${built.conformance.status}: ${built.cases} cases checked against the kernel` : "Not built since the last change: press Build & run" },
       rippleCheck(),
@@ -1917,6 +1955,7 @@
     if (JSON.stringify(about().plan) !== planAt || (sent !== null && JSON.stringify(screens) !== sent)) return result;
     if (!edited) screens = result.screens;
     problems = result.problems;
+    a11y = result.accessibility;
     problemsFor = screensKey();
     useCaseList = result.use_cases;
     renderHealth();
@@ -1938,9 +1977,11 @@
         await loadScreens(screens);
       } catch (error) {
         problems = [{ code: error.code || "ERROR", use_case: useCase, text: error.message }];
+        a11y = null;
         problemsFor = screensKey();
       }
       renderProblems();
+      renderAccessibility();
       renderScreenList();
       renderHealth();
       if (plan) refreshRipple();
@@ -1957,6 +1998,40 @@
       b.addEventListener("click", () => { useCase = p.use_case; renderDesigner(); });
       box.append(b);
     }
+  }
+
+  // The accessibility check (ADR-0218): the server judges the screens and the built app's page against WCAG 2.2 AA
+  // success criteria; each check shows its criteria, its verdict and, for contrast, the measured ratios.
+  function renderAccessibility() {
+    const box = $("screen-a11y");
+    if (!box) return;
+    if (!a11y) { box.hidden = true; return; }
+    const warned = a11y.checks.filter((c) => c.status === "WARN").length;
+    box.hidden = false;
+    box.className = "a11y " + (a11y.failed ? "bad" : warned ? "warn" : "ok");
+    box.open = Boolean(a11y.failed) || box.open;
+    const summary = el("summary");
+    summary.append(el("span", a11y.failed ? "✗" : "✓", { class: "a11y-mark" }),
+      el("span", `Accessibility (${a11y.standard}): ${a11y.passed} of ${a11y.checks.length} checks pass` + (a11y.failed ? `, ${a11y.failed} fail` : "") + (warned ? `, ${warned} to look at` : "")));
+    const list = el("ul", undefined, { class: "a11y-checks" });
+    for (const c of a11y.checks) {
+      const li = el("li", undefined, { class: "a11y-" + c.status.toLowerCase(), "data-check": c.check });
+      li.append(el("span", c.status, { class: "a11y-status" }), el("span", c.text), el("span", `SC ${c.wcag}`, { class: "a11y-sc muted" }));
+      if (c.detail && c.detail.pairs) {
+        const pairs = el("ul", undefined, { class: "a11y-pairs" });
+        for (const p of c.detail.pairs) {
+          const swatch = el("span", "Aa", { class: "a11y-swatch", "aria-hidden": "true" });
+          swatch.style.color = p.foreground;
+          swatch.style.background = p.background;
+          const row = el("li", undefined, { class: p.ratio < 4.5 ? "low" : "" });
+          row.append(swatch, el("span", `${p.what}: ${p.ratio}:1`));
+          pairs.append(row);
+        }
+        li.append(pairs);
+      }
+      list.append(li);
+    }
+    box.replaceChildren(summary, list, el("p", a11y.limits, { class: "muted small" }));
   }
 
   function renderScreenList() {
@@ -2099,6 +2174,7 @@
     if (!screens) return;
     renderScreenList();
     renderProblems();
+    renderAccessibility();
     renderCard();
     renderPalette();
     const link = $("screens-download");
@@ -2257,6 +2333,8 @@
         if (at) restyle("state:" + at, { strokeColor: entry.outcome === "REFUSED" ? "#a12f2f" : "#3157d5", strokeWidth: 4 }, graph.getDataModel().getCell("state:" + at).value);
         document.dispatchEvent(new CustomEvent("playide:step", { detail: { ...entry, transition: t ? t.id : null, ms: 450 } }));
       });
+      const here = entry.outcome === "REFUSED" ? entry.from : entry.to, step = entry.action && model.transitions.find((x) => x.action === entry.action);
+      if (here) follow(["state:" + here, ...(step ? ["transition:" + step.id] : [])]); // the state and the line taken, as Run does
       i += 1;
     }, 450);
   }
@@ -2562,7 +2640,7 @@
   const changeLook = (status, part) => (window.PlayDiff && shownChange ? window.PlayDiff.look(status, part) : {});
 
   window.PlayIDE = {
-    api, el, hooks, about, textWidth, liftLabels, roleKind, kinds: ACTOR_KINDS, actorLook: ACTOR_LOOK, inForce: (role) => roleKinds[role] || "human",
+    api, el, hooks, about, textWidth, liftLabels, follow, roleKind, kinds: ACTOR_KINDS, actorLook: ACTOR_LOOK, inForce: (role) => roleKinds[role] || "human",
     // Change who holds a role: a step in the plan like any drawn edit, checked by the server against the laws about
     // kinds of actor; nothing is saved (#156). The review view changes nothing.
     setKind: (role, to) => (REVIEW_VIEW ? null : addStep({ kind: "set_role_kind", role, to })), reviewing: () => REVIEW_VIEW, viewKey, label, restyle, clearSim, select, showTab, fit, importPlan, runAs, openScreen,

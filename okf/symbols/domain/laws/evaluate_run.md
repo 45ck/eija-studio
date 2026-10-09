@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/laws.py#evaluate_run
   title: domain/laws.py
   hash_method: ast-v2
-  sha256: 8b88218b14751fd96343339419b658463a7e5a2d3e0239cfc25121d60ebe61ba
-notes_baseline: b9efcf76754b97624b8f0c2da2e73880a36653910183fbe5f72563a6783d817a
+  sha256: 677bfc7ee98f04ac01e7229eab7b23d18c30c0c0ab23325d5594920f0a174205
+notes_baseline: d82d440569a0ca6f2c21ace5e7cca0139fab0fcdb329b192f89a6ce95797cab4
 ---
 
 # domain.laws.evaluate_run
@@ -35,8 +35,8 @@ notes_baseline: b9efcf76754b97624b8f0c2da2e73880a36653910183fbe5f72563a6783d817a
 Violations by one executed run: per-step laws on every step, sequence laws on the whole run.
 
 ``actions`` is the action set of the workflow the run executed (for ``when`` conditions). Structural laws
-(``closed_shape``, ``action_requires_guard``) and evidence requirements are about the table, not a run, and are
-not judged here. Only
+(``closed_shape``, ``action_requires_guard``), ``can_reach_end`` (about every run a record could still take) and
+evidence requirements are about the table, not a run, and are not judged here. Only
 a step's REQUIRED effects are known, so the ``forbidden_effects`` law judges that nothing forbidden ran.
 ~~~
 <!-- okf:generated:end facts -->

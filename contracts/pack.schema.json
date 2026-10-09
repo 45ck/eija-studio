@@ -374,6 +374,62 @@
       "title": "Alternative",
       "type": "object"
     },
+    "CanReachEnd": {
+      "additionalProperties": false,
+      "description": "From every state a record can get to, some run still reaches one of ``states`` (its ends): no record is left\nin a dead end or a loop with no way out. A liveness law about the whole table, judged on no single run (ADR-0221).",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "code": {
+          "pattern": "^[A-Z][A-Z0-9_]{0,63}(:[A-Za-z0-9_-]{1,64})?$",
+          "title": "Code",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "maxLength": 400,
+          "title": "Description",
+          "type": "string"
+        },
+        "when": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/When"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "kind": {
+          "const": "can_reach_end",
+          "title": "Kind",
+          "type": "string"
+        },
+        "states": {
+          "items": {
+            "maxLength": 60,
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "States",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "code",
+        "kind",
+        "states"
+      ],
+      "title": "CanReachEnd",
+      "type": "object"
+    },
     "ClosedShape": {
       "additionalProperties": false,
       "description": "The workflow has exactly these states and actions and this initial state.",
@@ -2036,6 +2092,7 @@
             "action_requires_guard": "#/$defs/ActionRequiresGuard",
             "action_source_in": "#/$defs/ActionSourceIn",
             "action_target": "#/$defs/ActionTarget",
+            "can_reach_end": "#/$defs/CanReachEnd",
             "closed_shape": "#/$defs/ClosedShape",
             "forbidden_effects": "#/$defs/ForbiddenEffects",
             "only_kind_enters": "#/$defs/OnlyKindEnters",
@@ -2093,6 +2150,9 @@
           },
           {
             "$ref": "#/$defs/PathRequiresKind"
+          },
+          {
+            "$ref": "#/$defs/CanReachEnd"
           },
           {
             "$ref": "#/$defs/RequiresEvidence"

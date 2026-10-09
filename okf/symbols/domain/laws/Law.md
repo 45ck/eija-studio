@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/laws.py#Law
   title: domain/laws.py
   hash_method: ast-v2
-  sha256: b68ab777c24d857f37003363deb290ec1ca03b4d33bcf1f65e50f6c1cca7a519
-notes_baseline: 3c7463ac8554221112f6807691de563a309f83feec6e874514d668c629f5432a
+  sha256: e3f3728bfe58fbe0fce53c290f6bc94c4153de7dee1ff99447b70feca4bab1b0
+notes_baseline: eef926e63e399e5a680ddb9846f14753ece3f34d5e9c9272710fa6185615b151
 ---
 
 # domain.laws.Law
@@ -44,6 +44,7 @@ _No curated notes yet._
 * [domain.laws.ActionRequiresGuard](/symbols/domain/laws/ActionRequiresGuard.md) - Every transition performing ``action`` carries at least ``guards``.
 * [domain.laws.ActionSourceIn](/symbols/domain/laws/ActionSourceIn.md) - Every transition performing ``action`` starts in one of ``states``.
 * [domain.laws.ActionTarget](/symbols/domain/laws/ActionTarget.md) - Every transition performing ``action`` ends in ``state``.
+* [domain.laws.CanReachEnd](/symbols/domain/laws/CanReachEnd.md) - From every state a record can get to, some run still reaches one of ``states`` (its ends): no record is left in a dead end or a loop with no way out.
 * [domain.laws.ClosedShape](/symbols/domain/laws/ClosedShape.md) - The workflow has exactly these states and actions and this initial state.
 * [domain.laws.ForbiddenEffects](/symbols/domain/laws/ForbiddenEffects.md) - No transition requires any of ``effects`` and every transition declares them forbidden.
 * [domain.laws.OnlyKindEnters](/symbols/domain/laws/OnlyKindEnters.md) - Every transition entering ``state`` is held by a role of one of ``role_kinds``.
