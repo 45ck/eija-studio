@@ -52,7 +52,7 @@
         const was = last.checks.find((x) => x.id === c.id);
         if (!was || was.ok === c.ok || !c.ok) return;
         flash(ring && ring.children[i], "game-pop");
-        note(`✓ ${c.name}. ${c.detail}`, "pass");
+        if (!was.detail.endsWith("…")) note(`✓ ${c.name}. ${c.detail}`, "pass"); // not for a check that was only still working
       });
     } else if (live && last) { // the view changed: the build and the simulation were of something else
       const lost = now.filter((c) => !c.ok && STALE[c.id] && last.checks.some((x) => x.id === c.id && x.ok));
@@ -74,7 +74,7 @@
       }
     }
     if (!all && readyFor === key) readyFor = null;
-    last = { key, checks: now.map((c) => ({ id: c.id, ok: c.ok })) };
+    last = { key, checks: now.map((c) => ({ id: c.id, ok: c.ok, detail: c.detail })) };
     nextCheck(now);
   }
 
