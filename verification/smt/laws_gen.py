@@ -30,6 +30,7 @@ from .encoding import Clause, Invariant, SymTransition, SymWorkflow
 OTHER = "<other>"
 TRUE, FALSE = z3.BoolVal(True), z3.BoolVal(False)
 NOT_ENCODED = {"path_requires": "a reachability law: its inductive proof is deferred (docs/engineering/FUTURE-WORK.md)",
+               "path_requires_kind": "a reachability law: its inductive proof is deferred (docs/engineering/FUTURE-WORK.md)",
                "requires_evidence": "judged by the evidence matrix, not by the transition table"}
 _ids = count()
 
@@ -172,6 +173,11 @@ def _shape(g: Grammar, law: L.ClosedShape) -> z3.BoolRef:
     return z3.Or(actions, states, g.w.initial != g.state[law.initial_state])
 
 
+def _not_of_kind(g: Grammar, law: Any, t: SymTransition) -> z3.BoolRef:
+    """The transition's role is none of the law's roles of its kinds (so `<other>`, an undeclared role, never counts)."""
+    return z3.And(*(t.role != g.role[r] for r in sorted(law.roles)))
+
+
 _VIOLATION: dict[type, Callable[[Grammar, Any], z3.BoolRef]] = {
     L.ClosedShape: _shape,
     L.OnlyRoleHolds: lambda g, law: _action(g, law.action, lambda t: t.role != g.role[law.role]),
@@ -183,6 +189,8 @@ _VIOLATION: dict[type, Callable[[Grammar, Any], z3.BoolRef]] = {
     L.ActionRequiresGuard: lambda g, law: _action(g, law.action, lambda t: z3.Or(*(z3.Not(t.guards[x]) for x in law.guards))),
     L.ForbiddenEffects: lambda g, law: _any(g, lambda t: z3.Or(*(z3.Or(t.required[e], z3.Not(t.forbidden[e])) for e in law.effects))),
     L.StateFinal: lambda g, law: _any(g, lambda t: t.source == g.state[law.state]),
+    L.OnlyKindHolds: lambda g, law: _action(g, law.action, lambda t: _not_of_kind(g, law, t)),
+    L.OnlyKindEnters: lambda g, law: _any(g, lambda t: z3.And(t.target == g.state[law.state], _not_of_kind(g, law, t))),
 }
 
 

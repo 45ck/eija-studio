@@ -9,17 +9,21 @@ Nothing here names a domain: every state, role, action and effect comes from the
 """
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from typing import Annotated, Any, Literal, Union
 
-from pydantic import Field
+from pydantic import Field, PrivateAttr
 
 from .models import Contract, Guard, Transition, Workflow
 
 LAW_ID = r"^[a-z][a-z0-9-]{0,63}$"
 CODE = r"^[A-Z][A-Z0-9_]{0,63}(:[A-Za-z0-9_-]{1,64})?$"
 Name = Annotated[str, Field(min_length=1, max_length=60)]
+# What kind of actor holds a role (ADR-0210): a person, an AI agent, a timer (a scheduled job or clock) or an external
+# system calling in. UML draws all four as actors; the kernel treats them alike, and laws can tell them apart.
+RoleKind = Literal["human", "agent", "timer", "system"]
+ROLE_KINDS: tuple[str, ...] = ("human", "agent", "timer", "system")
 
 
 class When(Contract):
@@ -111,6 +115,45 @@ class PathRequires(_Law):
     via: Name
 
 
+class _KindLaw(_Law):
+    """A law about the KIND of actor that holds a role, not one named role, so it still bites when a new agent role
+    appears. The pack fills `_roles` with its roles of `role_kinds` when it loads; a role it does not declare is of no
+    kind, so these laws fail closed: an undeclared role never counts as a human."""
+    role_kinds: tuple[RoleKind, ...] = Field(min_length=1)
+    _roles: frozenset[str] = PrivateAttr(default_factory=frozenset)
+
+    def resolve(self, kinds: Mapping[str, str]) -> None:
+        """Bind the law to the pack's roles (role id -> kind)."""
+        self._roles = frozenset(role for role, kind in kinds.items() if kind in self.role_kinds)
+
+    @property
+    def roles(self) -> frozenset[str]:
+        """The pack's roles of `role_kinds` (empty until the pack binds the law)."""
+        return self._roles
+
+    def counts(self, role: str) -> bool:
+        return role in self._roles
+
+
+class OnlyKindHolds(_KindLaw):
+    """Every transition performing ``action`` is held by a role of one of ``role_kinds`` (e.g. only a human approves)."""
+    kind: Literal["only_kind_holds"]
+    action: Name
+
+
+class OnlyKindEnters(_KindLaw):
+    """Every transition entering ``state`` is held by a role of one of ``role_kinds``."""
+    kind: Literal["only_kind_enters"]
+    state: Name
+
+
+class PathRequiresKind(_KindLaw):
+    """Every path from the initial state to ``state`` includes a step by a role of one of ``role_kinds``, the step
+    entering ``state`` included: a human in the loop before an agent's work takes effect (a sequence law)."""
+    kind: Literal["path_requires_kind"]
+    state: Name
+
+
 class RequiresEvidence(_Law):
     """A review needs evidence of this kind; judged by the evidence matrix, never by the table."""
     kind: Literal["requires_evidence"]
@@ -118,10 +161,13 @@ class RequiresEvidence(_Law):
 
 
 Law = Annotated[Union[ClosedShape, OnlyRoleHolds, RoleNeverHolds, RoleNeverEnters, StateOnlyVia, ActionTarget,  # noqa: UP007
-                      ActionSourceIn, ActionRequiresGuard, ForbiddenEffects, StateFinal, PathRequires, RequiresEvidence],
+                      ActionSourceIn, ActionRequiresGuard, ForbiddenEffects, StateFinal, PathRequires, OnlyKindHolds,
+                      OnlyKindEnters, PathRequiresKind, RequiresEvidence],
                 Field(discriminator="kind")]
 LAW_KINDS = ("closed_shape", "only_role_holds", "role_never_holds", "role_never_enters", "state_only_via", "action_target",
-             "action_source_in", "action_requires_guard", "forbidden_effects", "state_final", "path_requires", "requires_evidence")
+             "action_source_in", "action_requires_guard", "forbidden_effects", "state_final", "path_requires",
+             "only_kind_holds", "only_kind_enters", "path_requires_kind", "requires_evidence")
+KIND_LAWS = (OnlyKindHolds, OnlyKindEnters, PathRequiresKind)
 
 
 @dataclass(frozen=True)
@@ -193,10 +239,19 @@ def _final(law: StateFinal, t: Transition) -> bool:
     return t.from_state == law.state
 
 
+def _kind_holds(law: OnlyKindHolds, t: Transition) -> bool:
+    return t.action == law.action and not law.counts(t.role)
+
+
+def _kind_enters(law: OnlyKindEnters, t: Transition) -> bool:
+    return t.to_state == law.state and not law.counts(t.role)
+
+
 _TRANSITION_CHECKS: dict[type, Callable[[Any, Transition], bool]] = {
     OnlyRoleHolds: _only_role, RoleNeverHolds: _never_role, RoleNeverEnters: _never_enters,
     StateOnlyVia: _only_via, ActionTarget: _target, ActionSourceIn: _source,
     ActionRequiresGuard: _guard, ForbiddenEffects: _effects, StateFinal: _final,
+    OnlyKindHolds: _kind_holds, OnlyKindEnters: _kind_enters,
 }
 
 
@@ -229,9 +284,19 @@ def _path_breaks(law: PathRequires, model: Workflow) -> bool:
     return law.state in reachable(edges, model.initial_state, blocked=law.via)
 
 
+def _kind_path_breaks(law: PathRequiresKind, model: Workflow) -> bool:
+    """`state` is reachable using only steps by roles that do not count."""
+    if law.state == model.initial_state:
+        return False
+    edges = [(t.from_state, t.to_state) for t in model.transitions if not law.counts(t.role)]
+    return law.state in reachable(edges, model.initial_state)
+
+
 def _table_violation(law: _Law, model: Workflow) -> Violation | None:
     if isinstance(law, ClosedShape) and _shape_breaks(law, model):
         return Violation(law.id, law.code, ("law:" + law.id,))
+    if isinstance(law, PathRequiresKind) and _kind_path_breaks(law, model):
+        return Violation(law.id, law.code, ("law:" + law.id, "state:" + law.state))
     if isinstance(law, PathRequires) and _path_breaks(law, model):
         return Violation(law.id, law.code, ("law:" + law.id, "state:" + law.state))
     return None
@@ -266,6 +331,15 @@ def _run_path_breaks(law: PathRequires, initial: str, steps: Sequence[Step]) -> 
     return False
 
 
+def _run_kind_breaks(law: PathRequiresKind, steps: Sequence[Step]) -> bool:
+    signed = False
+    for step in steps:
+        signed = signed or law.counts(step.role)
+        if step.target == law.state and not signed:
+            return True
+    return False
+
+
 def evaluate_run(laws: Sequence[_Law], initial: str, steps: Sequence[Step], actions: set[str]) -> list[Violation]:
     """Violations by one executed run: per-step laws on every step, sequence laws on the whole run.
 
@@ -278,6 +352,8 @@ def evaluate_run(laws: Sequence[_Law], initial: str, steps: Sequence[Step], acti
         if not applies(law, actions):
             continue
         if isinstance(law, PathRequires) and _run_path_breaks(law, initial, steps):
+            found.append(Violation(law.id, law.code, ("law:" + law.id, "state:" + law.state)))
+        if isinstance(law, PathRequiresKind) and _run_kind_breaks(law, steps):
             found.append(Violation(law.id, law.code, ("law:" + law.id, "state:" + law.state)))
         found += [Violation(law.id, law.code, ("law:" + law.id, f"step:{i}"))
                   for i, step in enumerate(steps) if _step_breaks(law, _as_transition(step, i))]

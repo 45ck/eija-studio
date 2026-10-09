@@ -111,7 +111,7 @@
     const parts = ["HOLDS", "BROKEN", "VACUOUS", "INACTIVE", "EVIDENCE", "UNKNOWN"].filter(count).map((s) => `${count(s)} ${BADGE[s][0].toLowerCase()}`);
     const search = report.search;
     const scope = search.status === "NOT_RUN" ? (report.status === "REFUSED" ? "" : search.why)
-      : `Searched ${search.configurations} reachable configurations with ${search.actor_classes} kinds of actor` +
+      : `Searched ${search.configurations} reachable configurations with ${search.actor_classes} classes of actor` +
         (search.status === "COMPLETE" ? ", every one." : ", then stopped.") +
         (search.unreached.length ? ` Never reached: ${search.unreached.join(", ")}.` : "");
     $("laws-summary").className = "laws-summary " + (!report.laws.length ? "" : report.status === "HOLDS" ? "ok" : "bad");
