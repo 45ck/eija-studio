@@ -270,7 +270,11 @@
 
   function lifeline(parent, l, s) {
     const top = s.head.y, h = s.head.height;
-    if (l.kind === "actor") {
+    const look = { agent: ["#f3edff", "#6b46c1"], timer: ["#fff7e6", "#b7791f"], system: ["#eef2f6", "#4a5568"] }[l.actor_kind];
+    if (l.kind === "actor" && look) { // an AI agent, timer or external system (ADR-0210): an actor box with its keyword
+      graph.insertVertex({ parent, id: `head:${l.id}`, value: l.head || l.label, position: [l.x - l.width / 2, top + 4], size: [l.width, h - 14],
+        style: { ...FONT, fillColor: look[0], strokeColor: look[1], rounded: l.actor_kind === "agent", whiteSpace: "wrap", fontSize: 12.5, selectable: false } });
+    } else if (l.kind === "actor") {
       // A stick figure with its name and role under it, on two lines so neighbours never overlap.
       graph.insertVertex({ parent, id: `head:${l.id}`, value: "", position: [l.x - 11, top - 6], size: [22, 30],
         style: { shape: "actor", fillColor: "#ffffff", strokeColor: INK, strokeWidth: 1.4, selectable: false } });

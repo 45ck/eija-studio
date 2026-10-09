@@ -18,6 +18,7 @@ from fastapi.testclient import TestClient
 
 from eija_studio.application.law_proof import prove_laws, with_laws
 from eija_studio.application.scenario_run import run_scenarios
+from eija_studio.application.sequences import check_sequences
 from eija_studio.application.simulation import simulate
 from eija_studio.domain.laws import OnlyKindHolds, PathRequiresKind, Step, evaluate_run, evaluate_table
 from eija_studio.domain.pack import PackError, load_pack, parse_pack
@@ -30,6 +31,7 @@ from kernel_support import harness_studio
 ROOT = Path(__file__).resolve().parents[1]
 DESK = load_pack(ROOT / "packs" / "refund-desk")
 LOAN = load_pack(ROOT / "packs" / "library-loan")
+OPS = load_pack(ROOT / "packs" / "ai-ops")
 KIND_LAWS = {"only-people-approve", "only-people-resolve", "approved-by-people", "person-in-the-loop", "payout-confirmed-by-gateway"}
 SESSION = "synthetic-actor-kinds-test"
 HEADERS = {"Authorization": "Bearer " + SESSION, "Origin": "http://127.0.0.1:8765"}
@@ -165,3 +167,22 @@ def test_a_kind_path_law_on_the_initial_state_judges_steps_back_into_it():
     run = [Step("AssessRequest", "SupportAgent", "Requested", "Assessed"), Step("HandOff", "SupportAgent", "Assessed", "Requested")]
     assert [v.law for v in evaluate_table([law], reopened)] == ["people-reopen"]
     assert [v.law for v in evaluate_run([law], "Requested", run, {"HandOff"})] == ["people-reopen"]
+
+
+def test_the_ai_ops_pack_keeps_a_person_before_production():
+    """A second agent-heavy pack: every law holds and its test cases pass; the agent signing its own deploy off, or
+    reporting its own build green, breaks the kind laws."""
+    assert prove_laws(OPS)["status"] == "HOLDS"
+    assert run_scenarios(OPS, OPS.model, scenarios_for(OPS))["status"] == "PASS"
+    for transition, role, code in (("TR-SIGNOFF", "OpsAgent", "HUMAN_IN_THE_LOOP:InProduction"), ("TR-GREEN", "OpsAgent", "PROTECTED_AUTHORITY:ReportGreen")):
+        candidate = apply_structural_all(OPS.model, [parse_transaction({"kind": "set_role", "transition": transition, "role": role})], OPS)
+        assert code in check_policy(candidate, OPS)
+
+
+def test_sequence_lifelines_say_which_actors_are_not_people():
+    report = check_sequences(DESK, DESK.model, scenarios_for(DESK))
+    heads = {ll["name"]: ll for s in report["sequences"] for ll in s["lifelines"] if ll["kind"] == "actor"}
+    assert heads["support-bot"]["actor_kind"] == "agent" and heads["support-bot"]["label"].startswith("«agent» ")
+    assert heads["supervisor-on-shift"]["actor_kind"] == "human" and "«" not in heads["supervisor-on-shift"]["label"]
+    refused = next(s for s in report["sequences"] if s["id"] == "agent-cannot-approve")
+    assert refused["verdict"] == "PRODUCIBLE" and any(f["operator"] == "neg" for f in refused["fragments"])

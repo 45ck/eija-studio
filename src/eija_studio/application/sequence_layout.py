@@ -33,7 +33,11 @@ class _Layout:
         self.right = LEFT
         for s in scenario.steps:
             role = roles.get(s.actor, "?")
-            self._lifeline("actor", s.actor, f"{s.actor} : {role}", f"{s.actor}\n: {role}")
+            kind = pack.role_kind(roles.get(s.actor, "")) or "human"  # ADR-0210: an agent, timer or system says so
+            keyword = "" if kind == "human" else f"«{kind}» "
+            head = f"{s.actor}\n: {role}" if kind == "human" else f"«{kind}»\n{s.actor} : {role}"
+            key = self._lifeline("actor", s.actor, f"{keyword}{s.actor} : {role}", head)
+            self.lifelines[key]["actor_kind"] = kind
         self.record = self._lifeline("record", record[0], f"{record[0]} : {record[1]}", f"{record[0]} : {record[1]}")
         for v in steps:
             for effect in v["effects"]:
