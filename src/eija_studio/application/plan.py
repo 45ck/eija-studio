@@ -15,6 +15,7 @@ from eija_studio.domain.models import DomainError, Workflow
 from eija_studio.domain.pack import Pack
 from eija_studio.domain.policy import apply_structural_all, apply_transactions, ensure_policy
 from eija_studio.domain.transactions import AddTransition, Transaction
+from .class_build import class_build
 from .data_steps import (DATA_EDITS, FIXED, SetRoleKind, Step, apply_data, data_changes, describe_data, draft_pack, is_data, kind_steps,
                          parse_step, set_kinds, split)
 from .diagrams import diff_summary
@@ -128,7 +129,7 @@ def preview_plan(model: Workflow, pack: Pack, transactions: list[Step], accepted
     chosen = [tx for tx, keep in zip(transactions, accepted, strict=True) if keep]
     result: dict[str, Any] = {"steps": [], "accepted": sum(accepted), "legal": False, "codes": [], "refs": [],
                               "candidate": None, "candidate_semantic_hash": None, "diff": None, "declared": None,
-                              "data": None, "data_changes": []}
+                              "data": None, "data_changes": [], "class_build": None}
     try:
         working = draft_pack(pack, [*split(chosen)[0], *kind_steps(chosen)], grows)
     except DomainError as error:
@@ -159,7 +160,8 @@ def _checked(model: Workflow, pack: Pack, chosen: list[Step], result: dict[str, 
     before = data_for(pack)
     after = apply_data(before, data_steps)
     if data_steps and after is not None:
-        result = result | {"data": after.model_dump(mode="json"), "data_changes": data_changes(before, after)}
+        result = result | {"data": after.model_dump(mode="json"), "data_changes": data_changes(before, after),
+                           "class_build": class_build(after)}
     return result | {"legal": True, "candidate": candidate.model_dump(mode="json"),
                      "candidate_semantic_hash": candidate.semantic_hash, "diff": diff_summary(model, candidate)}
 

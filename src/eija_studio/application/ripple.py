@@ -24,6 +24,7 @@ from eija_studio.domain.pack import Pack
 from eija_studio.domain.policy import apply_transactions
 from eija_studio.domain.screens import Screen, Screens, check_screens, default_screen, use_cases
 from eija_studio.domain.transactions import Transaction, parse_transaction
+from .class_build import class_build
 from .data_steps import parse_step, split
 from .diagrams import diff_summary
 from .plan import describe
@@ -73,6 +74,16 @@ def _class_items(base: Workflow, candidate: Workflow, data: DataModel | None, at
     name = enumeration(data)
     return ([_attribute_item(text) for text in attributes] + [_item("added", f"{name} gains the literal {s}", "literal:" + s) for s in candidate.states if s not in base.states]
             + [_item("removed", f"{name} loses the literal {s}", "literal:" + s) for s in base.states if s not in candidate.states])
+
+
+def _build_items(before: DataModel | None, after: DataModel | None) -> list[dict[str, Any]]:
+    """What a change to the class diagram leaves drawn but not built (#145): a record attribute that now stands in for
+    an association is a "to consider"."""
+    if before is None or after is None:
+        return []
+    old = {tuple(f["subject"][:2]) for f in class_build(before)["findings"]}
+    return [_item("changed", "To consider: " + f["message"], f["subject"][0], f["code"])
+            for f in class_build(after)["findings"] if tuple(f["subject"][:2]) not in old]
 
 
 def _attribute_item(text: str) -> dict[str, Any]:
@@ -180,16 +191,18 @@ def _system_items(system: tuple[dict[str, Any], dict[str, Any]] | None) -> list[
 
 def ripple(base: Workflow, candidate: Workflow, data: DataModel | None, screens: tuple[Screens, Screens],
            builds: tuple[Build, Build], components: Iterable[dict[str, Any]], sequences: dict[str, Any] | None = None,
-           attributes: Iterable[str] = (), system: tuple[dict[str, Any], dict[str, Any]] | None = None) -> dict[str, Any]:
+           attributes: Iterable[str] = (), system: tuple[dict[str, Any], dict[str, Any]] | None = None,
+           data_before: DataModel | None = None) -> dict[str, Any]:
     """Every diagram's effects of going from `base` to `candidate`. `screens` and `builds` are each (before, after);
     `components` are the after build's components (each with its `files`), naming whose files changed; `sequences` is
     `application.sequences.check_sequences` of the scenarios on `candidate` against `base`; `attributes` are the
     class diagram's attribute changes in words (`data_steps.data_changes`); `system` is the landscape of the workflows
-    this one forms a system with (`application.landscape`), before and after, or None when it has none."""
+    this one forms a system with (`application.landscape`), before and after, or None when it has none; `data_before` is
+    the class diagram before the change, so a record attribute the change makes stand in for an association is named."""
     before, after = screens
     diagrams = {
         "states": _state_items(base, candidate),
-        "classes": _class_items(base, candidate, data, attributes),
+        "classes": _class_items(base, candidate, data, attributes) + _build_items(data_before, data),
         "usecases": _use_case_items(base, candidate),
         "screens": _screen_items(before, after, base, candidate, data),
         "components": _component_items(builds[0], builds[1], _owners(components)),
