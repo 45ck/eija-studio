@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### 9 October 2026: PlayIDE polish, round 6 (the Import / Export menu)
+
+- The Import / Export menu wraps its longer lines again. Since round 3 kept the title bar's buttons on one line, the menu inherited that, and the XMI line ("Enterprise Architect, Cameo, …, StarUML") ran past the menu's edge into the chat panel.
+
 ### 9 October 2026: PlayIDE polish, round 5 (the command palette)
 
 - Ctrl+K now reaches Undo, Redo, Save the work on this system, and Open another system or start a new one. Before, those were only on the title bar. In the review view (`/play?view=review`) the palette offers none of the commands that change the model.
