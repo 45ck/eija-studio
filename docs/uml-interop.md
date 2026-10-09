@@ -61,6 +61,18 @@ These are reported, never guessed:
 
 XML with a DTD or entities is refused before it is parsed, and so is a compressed draw.io page that holds one. A compressed page may inflate to at most 8 MB.
 
+## Start a new system from a UML file
+
+**Systems → New system → From a UML file** (or **Import / Export → Start a new system from a UML file**, or `eija new "Support desk" --uml desk.puml`) makes the file's model a new system in your systems home ([ADR-0185](adr/0185-start-open-and-save-your-own-system.md)). There is no model in force to compare with, so the file's state machine is the model:
+
+- each trigger becomes a declared action and each `role = X` a declared role; `and assigned` adds the assigned-actor guard;
+- `Audit:Name` and `Notification:Name` effects are kept (at most one of each per action, as the runtime records them); a notification's recipient is not in UML, so it is the transition's role, and the report says so; an action with no effects gets one audit entry;
+- a transition with no role is done by `User`, and the report says so;
+- the class model becomes `data.json`, and its `«record»` class (else the first) is the record. With no class model the record is a class with one `title` attribute;
+- a name the built app's code cannot use (with spaces, say), a second transition for the same action, a value guard and a state with no imported transition are not imported, each with the reason.
+
+The kernel's pack check and protected policy judge the result before **Create and open** is offered; laws, meanings and test cases start empty. An export of any shipped pack, in any format, starts a system with the same state machine, guards, effects and class model.
+
 ## How it is checked
 
 - `nox -s interop_roundtrip`: every pack's export, in every format, imports back clean, with no edits and the identical class model, and the committed exports are current.
@@ -77,4 +89,4 @@ Without Chromium, Java or the jar these two report NOT_RUN. XMI has no independe
 
 - An import that needs more than 12 edits cannot be previewed as one plan. `eija uml import` gives the whole candidate.
 - draw.io import reads draw.io's UML palette shapes and the one-cell class box. Other shapes are listed one by one as not imported.
-- Creating a new system from an imported file belongs to the new-system flow.
+- A new system from a file starts without laws, meanings or test cases, since no UML file carries them.

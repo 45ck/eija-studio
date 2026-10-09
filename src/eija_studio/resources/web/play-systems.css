@@ -40,3 +40,9 @@
 .systems-check p{margin:0}
 .systems-check ul{margin:4px 0 0;padding-left:18px}
 .systems-actions{display:flex;justify-content:flex-end;margin-top:6px}
+/* From a UML file (ADR-0190): the file under its option, and what the server read from it */
+#systems-uml-box{display:grid;gap:6px;margin:2px 0 8px 26px}
+#systems-uml-box[hidden]{display:none}
+.systems-import{margin-top:6px}
+.systems-import details{margin-top:4px}
+.systems-import li{margin:2px 0}
