@@ -67,10 +67,10 @@ note top of Payout : What the payment system reports back for one refund.
 title Refund desk: use cases
 left to right direction
 actor "Customer" as A_437573746f6d6572
-actor "SupportAgent" as A_537570706f72744167656e74
+actor "SupportAgent" as A_537570706f72744167656e74 <<agent>>
 actor "Supervisor" as A_53757065727669736f72
-actor "SlaTimer" as A_536c6154696d6572
-actor "PaymentGateway" as A_5061796d656e7447617465776179
+actor "SlaTimer" as A_536c6154696d6572 <<timer>>
+actor "PaymentGateway" as A_5061796d656e7447617465776179 <<system>>
 usecase "ApproveRefund" as UC_417070726f7665526566756e64
 usecase "AssessRequest" as UC_41737365737352657175657374
 usecase "ConfirmPayout" as UC_436f6e6669726d5061796f7574
