@@ -4,9 +4,10 @@
 
 * [application.access](access.md) - Who can do what (ADR-0171): the model's permissions as a role by state matrix, each cell checked by the kernel, and reachability questions such as "can a record reach this state without that role ever acting?".
 * [application.appgen](appgen.md) - App generation: a reviewed workflow model becomes a runnable app and its conformance oracle (ADR-0150).
+* [application.class_build](class_build.md) - What the built app does with each part of the class diagram (#145, ADR-0205): the record class is built and checked; the other classes and the associations are drawn but not built.
 * [application.compiler](compiler.md) - Compiler: model → projections + impacts + obligations + computed review packet.
 * [application.components](components.md) - The component diagram of an app built from the model (ADR-0155), extracted from the generated files themselves.
-* [application.data_steps](data_steps.md) - Data-model steps in a chat plan (ADR-0202): add an attribute to a class, remove one, or make one required or optional.
+* [application.data_steps](data_steps.md) - Data-model steps in a chat plan (ADR-0202): add an attribute to a class, remove one, or make one required or optional; and the step that changes the kind of actor holding a role (ADR-0210, issue #156).
 * [application.diagram_catalog](diagram_catalog.md) - Named diagram views over a baseline and an optional candidate Workflow.
 * [application.diagram_emitters](diagram_emitters.md) - Text emitters for the diagram models in `application.diagrams`: Mermaid, PlantUML and Graphviz DOT.
 * [application.diagrams](diagrams.md) - Diagram models derived from the executable Workflow (ADR-0019, ADR-0023).

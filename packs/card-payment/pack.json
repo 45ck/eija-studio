@@ -70,7 +70,7 @@
         "action": "VoidAuthorisation",
         "from_state": "Authorised",
         "to_state": "Voided",
-        "role": "SupportAgent",
+        "role": "SupportRep",
         "guards": [
           "actor_active",
           "role_current",
@@ -159,7 +159,7 @@
         "action": "RejectRefund",
         "from_state": "RefundRequested",
         "to_state": "FundsCaptured",
-        "role": "SupportAgent",
+        "role": "SupportRep",
         "guards": [
           "actor_active",
           "role_current",
@@ -252,11 +252,12 @@
     },
     {
       "id": "Gateway",
-      "description": "The payment gateway: authorises, declines, captures and reports disputes."
+      "kind": "system",
+      "description": "The external payment gateway: authorises, declines, captures and reports disputes."
     },
     {
-      "id": "SupportAgent",
-      "description": "Voids an authorisation and turns down refund requests; never issues money."
+      "id": "SupportRep",
+      "description": "A person on the support team: voids an authorisation and turns down refund requests; never issues money."
     },
     {
       "id": "FinanceApprover",
@@ -540,7 +541,17 @@
       "code": "SUPPORT_NEVER_REFUNDS:ApproveRefund",
       "description": "Support never issues a refund.",
       "action": "ApproveRefund",
-      "role": "SupportAgent"
+      "role": "SupportRep"
+    },
+    {
+      "id": "people-approve-refunds",
+      "kind": "only_kind_holds",
+      "code": "HUMAN_APPROVAL:ApproveRefund",
+      "description": "A refund is approved by a person, never by an agent or an automated system.",
+      "action": "ApproveRefund",
+      "role_kinds": [
+        "human"
+      ]
     },
     {
       "id": "refund-needs-assignment",
@@ -655,7 +666,7 @@
         {
           "kind": "set_role",
           "transition": "TR-APPROVEREFUND",
-          "role": "SupportAgent"
+          "role": "SupportRep"
         }
       ]
     },
@@ -729,7 +740,7 @@
       },
       {
         "id": "support-agent",
-        "role": "SupportAgent",
+        "role": "SupportRep",
         "active": true,
         "assigned": false
       },

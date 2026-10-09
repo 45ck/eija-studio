@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/plan.py#describe
   title: application/plan.py
   hash_method: ast-v2
-  sha256: 6fe93f102e2fe149b109e8b09dc8b414685bdf361271d00b8f5b89ff5f6e4350
-notes_baseline: ff5c9e38bc47cda1e68b16737edbaabb80efe961489b53b7aadf9432ef94a7cc
+  sha256: a3a498d2148a484709c69939e5fb0da7590f0709d2e27eacc9d55f3edba1600b
+notes_baseline: ce970ba673366a55e6d488db1824299f3067db9443473ba4d7ec16b8426d6271
 ---
 
 # application.plan.describe
@@ -47,8 +47,9 @@ _No curated notes yet._
 ## Depends on
 
 * [application.data_steps.DATA_EDITS](/symbols/application/data_steps/DATA_EDITS.md) - Constant `DATA_EDITS` in `application/data_steps`.
+* [application.data_steps.SetRoleKind](/symbols/application/data_steps/SetRoleKind.md) - Make the actor holding `role` a person, an AI agent, a timer or an external system (ADR-0210).
 * [application.data_steps.Step](/symbols/application/data_steps/Step.md) - Type alias `Step` in `application/data_steps`.
-* [application.data_steps.describe_data](/symbols/application/data_steps/describe_data.md) - One line a person can check against the class diagram.
+* [application.data_steps.describe_data](/symbols/application/data_steps/describe_data.md) - One line a person can check against the class diagram, or the use case diagram for a role's kind.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
 * [domain.transactions.AddTransition](/symbols/domain/transactions/AddTransition.md) - A transition performing a declared action; its guards and effects are the action's declared ones.
