@@ -1,0 +1,150 @@
+{
+  "schema_version": "eija.screens.v1",
+  "id": "building-permit",
+  "screens": [
+    {
+      "title": "Lodge an application",
+      "fields": [
+        {
+          "attribute": "siteAddress",
+          "label": "Site address"
+        },
+        {
+          "attribute": "workType",
+          "label": "Type of work"
+        },
+        {
+          "attribute": "estimatedCost",
+          "label": "Estimated cost"
+        },
+        {
+          "attribute": "reference",
+          "label": "Reference"
+        }
+      ],
+      "button": "Lodge"
+    },
+    {
+      "use_case": "Withdraw",
+      "title": "Withdraw",
+      "fields": [
+        {
+          "attribute": "reference",
+          "label": "Reference"
+        }
+      ],
+      "button": "Withdraw application"
+    },
+    {
+      "use_case": "AcceptLodgement",
+      "title": "Accept lodgement",
+      "fields": [
+        {
+          "attribute": "reference",
+          "label": "Reference"
+        },
+        {
+          "attribute": "feePaid",
+          "label": "Fee paid"
+        }
+      ],
+      "button": "Accept"
+    },
+    {
+      "use_case": "StartReview",
+      "title": "Start plan review",
+      "fields": [
+        {
+          "attribute": "workType",
+          "label": "Type of work"
+        }
+      ],
+      "button": "Start review"
+    },
+    {
+      "use_case": "RequestInfo",
+      "title": "Ask for information",
+      "fields": [
+        {
+          "attribute": "decisionReasons",
+          "label": "What is needed"
+        }
+      ],
+      "button": "Send request"
+    },
+    {
+      "use_case": "SupplyInfo",
+      "title": "Supply information",
+      "fields": [
+        {
+          "attribute": "siteAddress",
+          "label": "Site address"
+        }
+      ],
+      "button": "Send"
+    },
+    {
+      "use_case": "Approve",
+      "title": "Approve",
+      "fields": [
+        {
+          "attribute": "decisionReasons",
+          "label": "Reasons for decision"
+        },
+        {
+          "attribute": "decidedOn",
+          "label": "Decided on"
+        }
+      ],
+      "button": "Approve"
+    },
+    {
+      "use_case": "RefusePermit",
+      "title": "RefusePermit",
+      "fields": [
+        {
+          "attribute": "decisionReasons",
+          "label": "Reasons for decision"
+        },
+        {
+          "attribute": "decidedOn",
+          "label": "Decided on"
+        }
+      ],
+      "button": "RefusePermit"
+    },
+    {
+      "use_case": "IssuePermit",
+      "title": "Issue permit",
+      "fields": [
+        {
+          "attribute": "feePaid",
+          "label": "Fee paid"
+        }
+      ],
+      "button": "Issue"
+    },
+    {
+      "use_case": "PassInspection",
+      "title": "Inspection",
+      "fields": [
+        {
+          "attribute": "siteAddress",
+          "label": "Site address"
+        }
+      ],
+      "button": "Pass inspection"
+    },
+    {
+      "use_case": "CertifyCompletion",
+      "title": "Completion certificate",
+      "fields": [
+        {
+          "attribute": "reference",
+          "label": "Reference"
+        }
+      ],
+      "button": "Certify"
+    }
+  ]
+}

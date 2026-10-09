@@ -33,7 +33,7 @@ function renderRules() {
   const body = $("rules");
   body.replaceChildren();
   for (const [action, t] of Object.entries(state.app.transitions)) {
-    const row = el("tr");
+    const row = el("tr", undefined, { "data-role": t.role });
     for (const text of [action, t.from, t.to, t.role]) row.append(el("td", text));
     body.append(row);
   }
@@ -61,10 +61,11 @@ function openAction(option, record) {
   for (const a of screenFields(screen)) values.append(el("dt", a.label), el("dd", a.name in record.fields ? String(record.fields[a.name]) : "—"));
   const go = el("button", `${screen.button || option.action} → ${option.to}`, { type: "button" });
   go.addEventListener("click", () => { box.hidden = true; act(option.action, record.version); });
-  const cancel = el("button", "Cancel", { type: "button", class: "quiet" });
-  cancel.addEventListener("click", () => { box.hidden = true; });
+  // Close, never Cancel: a workflow may have an action of that name, and this button only closes the screen.
+  const close = el("button", "Close", { type: "button", class: "quiet" });
+  close.addEventListener("click", () => { box.hidden = true; });
   const row = el("div", undefined, { class: "option" });
-  row.append(go, cancel);
+  row.append(go, close);
   box.append(values, row);
   go.focus();
 }
@@ -128,6 +129,45 @@ async function renderOutbox() {
   if (!list.children.length) list.append(el("li", "Empty"));
 }
 
+function actorRole() {
+  const actor = state.app.actors[state.actor];
+  return actor ? actor.role : "";
+}
+
+function optionRow(o, record) {
+  const row = el("div", undefined, { class: "option" });
+  const screen = state.app.screens.actions[o.action];
+  const button = el("button", `${(screen && screen.title) || o.action} → ${o.to}`, { type: "button", title: o.action });
+  button.disabled = !o.allowed;
+  button.addEventListener("click", () => openAction(o, record));
+  row.append(button);
+  if (o.role !== actorRole()) row.append(el("span", `for a ${o.role}`, { class: "why" }));
+  else if (!o.allowed) row.append(el("span", o.reason, { class: "why" }));
+  return row;
+}
+
+// Who is acting: the role, and a warning when the actor is inactive, since the kernel refuses every step it tries.
+function renderActor() {
+  const actor = state.app.actors[state.actor];
+  $("actor-role").textContent = actor ? `${actor.role}${actor.active ? "" : " · inactive: every step is refused"}` : "";
+  $("actor-role").className = "role" + (actor && !actor.active ? " warn" : "");
+  for (const row of $("rules").children) row.classList.toggle("mine", row.dataset.role === actorRole());
+}
+
+// The page opens acting as #actor=<id> when that actor is in the directory (PlayIDE's "Run as", ADR-0215).
+function actorFromLink() {
+  const wanted = new URLSearchParams(location.hash.slice(1)).get("actor");
+  return wanted && wanted in state.app.actors ? wanted : "";
+}
+
+async function actAs(id) {
+  state.actor = id;
+  $("actor").value = id;
+  $("result").hidden = true;
+  renderActor();
+  await renderDetail();
+}
+
 async function renderDetail() {
   if (!state.selected) return;
   const view = await api(`/api/records/${state.selected}?actor=${encodeURIComponent(state.actor)}`);
@@ -141,19 +181,19 @@ async function renderDetail() {
   const flow = $("flow");
   flow.replaceChildren();
   for (const s of state.app.states) flow.append(el("li", s, s === view.record.state ? { "aria-current": "step" } : {}));
-  const options = $("options");
+  // The acting role's screens come first; the screens of other roles are folded away, as that role would never see
+  // them. The server still says, for each one, whether this actor may act and why not.
+  const options = $("options"), role = actorRole();
   options.replaceChildren();
-  for (const o of view.options) {
-    const row = el("div", undefined, { class: "option" });
-    const screen = state.app.screens.actions[o.action];
-    const button = el("button", `${(screen && screen.title) || o.action} → ${o.to}`, { type: "button", title: o.action });
-    button.disabled = !o.allowed;
-    button.addEventListener("click", () => openAction(o, view.record));
-    row.append(button);
-    if (!o.allowed) row.append(el("span", o.reason, { class: "why" }));
-    options.append(row);
+  const mine = view.options.filter((o) => o.role === role), others = view.options.filter((o) => o.role !== role);
+  for (const o of mine) options.append(optionRow(o, view.record));
+  if (!mine.length) options.append(el("p", view.options.length ? `Nothing for a ${role} to do in ${view.record.state}.` : `Nothing leaves ${view.record.state}.`, { class: "muted" }));
+  if (others.length) {
+    const fold = el("details", undefined, { class: "others" });
+    fold.append(el("summary", `For other roles (${others.length})`));
+    for (const o of others) fold.append(optionRow(o, view.record));
+    options.append(fold);
   }
-  if (!view.options.length) options.append(el("p", `Nothing leaves ${view.record.state}.`, { class: "muted" }));
   const history = $("history");
   history.replaceChildren();
   for (const h of view.history) history.append(el("li", `${h.effect} by ${h.actor}, now ${h.state}`));
@@ -193,8 +233,10 @@ async function start() {
   for (const [id, a] of Object.entries(state.app.actors)) {
     picker.append(el("option", `${id} (${a.role}${a.active ? "" : ", inactive"})`, { value: id }));
   }
-  state.actor = picker.value;
-  picker.addEventListener("change", async () => { state.actor = picker.value; $("result").hidden = true; await renderDetail(); });
+  state.actor = actorFromLink() || picker.value;
+  picker.value = state.actor;
+  picker.addEventListener("change", () => actAs(picker.value));
+  window.addEventListener("hashchange", () => { const id = actorFromLink(); if (id) actAs(id); });
   $("create").addEventListener("submit", async (event) => {
     event.preventDefault();
     try {
@@ -207,6 +249,7 @@ async function start() {
     }
   });
   renderRules();
+  renderActor();
   renderFields();
   await refresh();
 }

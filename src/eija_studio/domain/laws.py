@@ -285,11 +285,11 @@ def _path_breaks(law: PathRequires, model: Workflow) -> bool:
 
 
 def _kind_path_breaks(law: PathRequiresKind, model: Workflow) -> bool:
-    """`state` is reachable using only steps by roles that do not count."""
-    if law.state == model.initial_state:
-        return False
+    """`state` is entered by a step after only steps by roles that do not count. A new record in the initial state
+    has taken no step, so it does not break the law; re-entering the initial state does, as `evaluate_run` judges it."""
     edges = [(t.from_state, t.to_state) for t in model.transitions if not law.counts(t.role)]
-    return law.state in reachable(edges, model.initial_state)
+    before = reachable(edges, model.initial_state)
+    return any(source in before and target == law.state for source, target in edges)
 
 
 def _table_violation(law: _Law, model: Workflow) -> Violation | None:

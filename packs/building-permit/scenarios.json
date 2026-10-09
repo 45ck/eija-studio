@@ -1,0 +1,223 @@
+{
+  "schema_version": "eija.scenarios.v1",
+  "id": "building-permit",
+  "scenarios": [
+    {
+      "id": "lodge-to-certificate",
+      "title": "An application is reviewed, approved, issued, inspected and certified",
+      "steps": [
+        {
+          "actor": "intake-officer",
+          "action": "AcceptLodgement",
+          "then": {
+            "state": "Registered"
+          }
+        },
+        {
+          "actor": "reviewer-allocated",
+          "action": "StartReview",
+          "then": {
+            "state": "InReview"
+          }
+        },
+        {
+          "actor": "manager-area",
+          "action": "Approve",
+          "then": {
+            "state": "Approved"
+          }
+        },
+        {
+          "actor": "intake-officer",
+          "action": "IssuePermit",
+          "then": {
+            "state": "Issued"
+          }
+        },
+        {
+          "actor": "inspector-site",
+          "action": "PassInspection",
+          "then": {
+            "state": "Inspected"
+          }
+        },
+        {
+          "actor": "manager-area",
+          "action": "CertifyCompletion",
+          "then": {
+            "state": "Completed"
+          }
+        }
+      ]
+    },
+    {
+      "id": "more-information",
+      "title": "The reviewer asks for more information and the applicant supplies it",
+      "steps": [
+        {
+          "actor": "intake-officer",
+          "action": "AcceptLodgement",
+          "then": {
+            "state": "Registered"
+          }
+        },
+        {
+          "actor": "reviewer-allocated",
+          "action": "StartReview",
+          "then": {
+            "state": "InReview"
+          }
+        },
+        {
+          "actor": "reviewer-allocated",
+          "action": "RequestInfo",
+          "then": {
+            "state": "InfoRequested"
+          }
+        },
+        {
+          "actor": "applicant-b",
+          "action": "SupplyInfo",
+          "then": {
+            "refused": "ASSIGNMENT_DENIED"
+          }
+        },
+        {
+          "actor": "applicant-a",
+          "action": "SupplyInfo",
+          "then": {
+            "state": "InReview"
+          }
+        },
+        {
+          "actor": "manager-area",
+          "action": "RefusePermit",
+          "then": {
+            "state": "PermitRefused"
+          }
+        }
+      ]
+    },
+    {
+      "id": "no-decision-without-review",
+      "title": "Nobody approves an application that was never reviewed",
+      "steps": [
+        {
+          "actor": "intake-officer",
+          "action": "AcceptLodgement",
+          "then": {
+            "state": "Registered"
+          }
+        },
+        {
+          "actor": "manager-area",
+          "action": "Approve",
+          "then": {
+            "refused": "STATE_DENIED"
+          }
+        }
+      ]
+    },
+    {
+      "id": "reviewer-cannot-decide",
+      "title": "The plan reviewer cannot approve",
+      "steps": [
+        {
+          "actor": "intake-officer",
+          "action": "AcceptLodgement",
+          "then": {
+            "state": "Registered"
+          }
+        },
+        {
+          "actor": "reviewer-allocated",
+          "action": "StartReview",
+          "then": {
+            "state": "InReview"
+          }
+        },
+        {
+          "actor": "reviewer-allocated",
+          "action": "Approve",
+          "then": {
+            "refused": "ROLE_DENIED"
+          }
+        }
+      ]
+    },
+    {
+      "id": "manager-outside-area",
+      "title": "A manager outside the delegated area cannot approve",
+      "steps": [
+        {
+          "actor": "intake-officer",
+          "action": "AcceptLodgement",
+          "then": {
+            "state": "Registered"
+          }
+        },
+        {
+          "actor": "reviewer-allocated",
+          "action": "StartReview",
+          "then": {
+            "state": "InReview"
+          }
+        },
+        {
+          "actor": "manager-other-area",
+          "action": "Approve",
+          "then": {
+            "refused": "ASSIGNMENT_DENIED"
+          }
+        }
+      ]
+    },
+    {
+      "id": "revoked-manager",
+      "title": "A manager whose delegation was revoked cannot approve",
+      "steps": [
+        {
+          "actor": "intake-officer",
+          "action": "AcceptLodgement",
+          "then": {
+            "state": "Registered"
+          }
+        },
+        {
+          "actor": "reviewer-allocated",
+          "action": "StartReview",
+          "then": {
+            "state": "InReview"
+          }
+        },
+        {
+          "actor": "manager-revoked",
+          "action": "Approve",
+          "then": {
+            "refused": "ACTOR_REVOKED"
+          }
+        }
+      ]
+    },
+    {
+      "id": "withdrawn-before-acceptance",
+      "title": "An applicant withdraws before acceptance, and it stays withdrawn",
+      "steps": [
+        {
+          "actor": "applicant-a",
+          "action": "Withdraw",
+          "then": {
+            "state": "Withdrawn"
+          }
+        },
+        {
+          "actor": "intake-officer",
+          "action": "AcceptLodgement",
+          "then": {
+            "refused": "STATE_DENIED"
+          }
+        }
+      ]
+    }
+  ]
+}

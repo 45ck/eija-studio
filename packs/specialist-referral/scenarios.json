@@ -1,0 +1,195 @@
+{
+  "schema_version": "eija.scenarios.v1",
+  "id": "specialist-referral",
+  "scenarios": [
+    {
+      "id": "referral-to-discharge",
+      "title": "A referral is triaged, booked, seen and discharged",
+      "steps": [
+        {
+          "actor": "gp-a",
+          "action": "Submit",
+          "then": {
+            "state": "Submitted"
+          }
+        },
+        {
+          "actor": "nurse-on-rota",
+          "action": "VetReferral",
+          "then": {
+            "state": "Vetted"
+          }
+        },
+        {
+          "actor": "scheduler",
+          "action": "Book",
+          "then": {
+            "state": "Booked"
+          }
+        },
+        {
+          "actor": "specialist-clinic",
+          "action": "SeePatient",
+          "then": {
+            "state": "Seen"
+          }
+        },
+        {
+          "actor": "specialist-clinic",
+          "action": "Discharge",
+          "then": {
+            "state": "Discharged"
+          }
+        }
+      ]
+    },
+    {
+      "id": "missed-appointment-is-rebooked",
+      "title": "A missed appointment goes back to be rebooked",
+      "steps": [
+        {
+          "actor": "gp-a",
+          "action": "Submit",
+          "then": {
+            "state": "Submitted"
+          }
+        },
+        {
+          "actor": "nurse-on-rota",
+          "action": "VetReferral",
+          "then": {
+            "state": "Vetted"
+          }
+        },
+        {
+          "actor": "scheduler",
+          "action": "Book",
+          "then": {
+            "state": "Booked"
+          }
+        },
+        {
+          "actor": "scheduler",
+          "action": "RecordNoShow",
+          "then": {
+            "state": "Vetted"
+          }
+        },
+        {
+          "actor": "scheduler",
+          "action": "Book",
+          "then": {
+            "state": "Booked"
+          }
+        }
+      ]
+    },
+    {
+      "id": "no-visit-without-triage",
+      "title": "Nobody is seen on an untriaged referral",
+      "steps": [
+        {
+          "actor": "gp-a",
+          "action": "Submit",
+          "then": {
+            "state": "Submitted"
+          }
+        },
+        {
+          "actor": "specialist-clinic",
+          "action": "SeePatient",
+          "then": {
+            "refused": "STATE_DENIED"
+          }
+        }
+      ]
+    },
+    {
+      "id": "triage-needs-rota",
+      "title": "A nurse who is not on the clinic's rota cannot triage",
+      "steps": [
+        {
+          "actor": "gp-a",
+          "action": "Submit",
+          "then": {
+            "state": "Submitted"
+          }
+        },
+        {
+          "actor": "nurse-off-rota",
+          "action": "VetReferral",
+          "then": {
+            "refused": "ASSIGNMENT_DENIED"
+          }
+        }
+      ]
+    },
+    {
+      "id": "revoked-nurse",
+      "title": "A nurse whose access was revoked cannot triage",
+      "steps": [
+        {
+          "actor": "gp-a",
+          "action": "Submit",
+          "then": {
+            "state": "Submitted"
+          }
+        },
+        {
+          "actor": "nurse-revoked",
+          "action": "VetReferral",
+          "then": {
+            "refused": "ACTOR_REVOKED"
+          }
+        }
+      ]
+    },
+    {
+      "id": "scheduler-makes-no-clinical-call",
+      "title": "A scheduler cannot decline a referral",
+      "steps": [
+        {
+          "actor": "gp-a",
+          "action": "Submit",
+          "then": {
+            "state": "Submitted"
+          }
+        },
+        {
+          "actor": "scheduler",
+          "action": "Decline",
+          "then": {
+            "refused": "ROLE_DENIED"
+          }
+        }
+      ]
+    },
+    {
+      "id": "patient-withdraws",
+      "title": "A patient withdraws, and the referral stays closed",
+      "steps": [
+        {
+          "actor": "gp-a",
+          "action": "Submit",
+          "then": {
+            "state": "Submitted"
+          }
+        },
+        {
+          "actor": "patient-a",
+          "action": "Withdraw",
+          "then": {
+            "state": "Withdrawn"
+          }
+        },
+        {
+          "actor": "nurse-on-rota",
+          "action": "VetReferral",
+          "then": {
+            "refused": "STATE_DENIED"
+          }
+        }
+      ]
+    }
+  ]
+}

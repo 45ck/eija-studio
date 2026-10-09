@@ -62,4 +62,8 @@ _No curated notes yet._
 * [ADR-0093: Consistency and synchronisation between views: one source per fact, one-way generation, keyed merge](/adrs/0093-weave-consistency-sync.md) - EIJA keeps many views of one system: code, workflow model, diagrams, OKF pages, term registry, UI sidecar, requirements, links, ledger, exports.
 * [ADR-0155: Component diagrams read from the generated code](/adrs/0155-component-diagrams-read-from-the-generated-code.md) - The owner's roadmap asks for component diagrams after use cases and screens.
 * [ADR-0202: Grow the class diagram in chat](/adrs/0202-grow-the-class-diagram-in-chat.md) - ADR-0201 let a system started from a sketch grow its state machine round after round in chat.
+
+## Referenced by
+
+* [ADR-0204: The ripple reaches the other workflows of the system](/adrs/0204-the-ripple-reaches-the-other-workflows-of-the-system.md) - The ripple (ADR-0158) shows what a change does to every diagram of one workflow.
 <!-- okf:generated:end links -->
