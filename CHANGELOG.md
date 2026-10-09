@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### 9 October 2026: PlayIDE polish, round 8 (tabs and screen fields on a laptop)
+
+- A diagram tab is never shown cut off at the edge of the tab strip. At 1280 pixels the strip ended on "Use" or "Scre", which reads as another tab; a tab the edge would cut now leaves a gap, and More tabs (») still lists every tab (#141).
+- On the Screens tab, a field shows its whole label ("Member card", not "Member c"), and its type and whether it is required sit on the line beneath, taking two lines at most rather than four (#140).
+
 ### 9 October 2026: PlayIDE polish, round 7 (readable on a laptop)
 
 - The state machine is laid out top to bottom when that draws it clearly larger, as on a laptop with the side bar and the chat open. Before, Library loan was shrunk to a third of its size in one long row, with 5-pixel labels; at 1280 pixels it is now drawn at full size. The direction is chosen once, when the diagram is first drawn, so an edit or a preview never turns it. The Changes view follows the same direction.
