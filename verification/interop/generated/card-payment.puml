@@ -74,7 +74,7 @@ note top of Payment : One card payment for one order. It keeps only the last fou
 title Card payment and refund: use cases
 left to right direction
 actor "Customer" as A_437573746f6d6572
-actor "Gateway" as A_47617465776179
+actor "Gateway" as A_47617465776179 <<system>>
 actor "SupportRep" as A_537570706f7274526570
 actor "FinanceApprover" as A_46696e616e6365417070726f766572
 usecase "ApproveRefund" as UC_417070726f7665526566756e64

@@ -222,9 +222,9 @@
             <mxGeometry x="40" y="60" width="30" height="60" as="geometry" />
           </mxCell>
         </UserObject>
-        <UserObject label="Gateway" tooltip="The external payment gateway: authorises, declines, captures and reports disputes." id="actor-1">
-          <mxCell style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" vertex="1" parent="1">
-            <mxGeometry x="40" y="180" width="30" height="60" as="geometry" />
+        <UserObject label="&amp;laquo;system&amp;raquo;&lt;br&gt;&lt;b&gt;Gateway&lt;/b&gt;" tooltip="The external payment gateway: authorises, declines, captures and reports disputes." id="actor-1">
+          <mxCell style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+            <mxGeometry x="10" y="180" width="120" height="60" as="geometry" />
           </mxCell>
         </UserObject>
         <UserObject label="SupportRep" tooltip="A person on the support team: voids an authorisation and turns down refund requests; never issues money." id="actor-2">

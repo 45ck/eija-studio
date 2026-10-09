@@ -70,7 +70,7 @@ note top of Workspace : One customer's tenant and its subscription.
 title SaaS workspace subscription: use cases
 left to right direction
 actor "WorkspaceOwner" as A_576f726b73706163654f776e6572
-actor "BillingSystem" as A_42696c6c696e6753797374656d
+actor "BillingSystem" as A_42696c6c696e6753797374656d <<system>>
 actor "SuccessManager" as A_537563636573734d616e61676572
 actor "TrustAndSafety" as A_5472757374416e64536166657479
 usecase "CancelSubscription" as UC_43616e63656c537562736372697074696f6e
