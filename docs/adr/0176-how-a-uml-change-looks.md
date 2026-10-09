@@ -90,3 +90,17 @@ The owner found the drawing right but the view around it too busy: two toolbars 
 * **Use cases.** `ghost_diff` also returns `use_cases`, the use case diagram of both models (ADR-0153). It has a use case per action, an actor per role, and who takes which, each with a status. A removed use case or actor stays as a dashed, struck-through ghost. A role change keeps the use case (amber) and moves its association, with the old line as a ghost. A moved arrow is the same use case. A test checks that it names the same new and gone use cases and actors as the ripple.
 * **Classes.** The record's state enumeration lists the states of both models. Added literals are green, removed ones struck through, and the rest faded.
 * The change list stays in the inspector on each diagram. Picking a change selects its use case, or the enumeration that holds its literal.
+
+### Update: your changes and the AI's, and what to consider
+
+The owner asked that the AI's UML changes and your own be equally easy to read, with what each one needs you to consider.
+
+* **Who.** Each line in the change list carries **AI** or **You**, taken from the accepted steps that name its element. A change you draw (palette, double-click, inline edit) goes through the same plan, the same server checks and the same Changes view as the AI's.
+* **To consider.** A short block sits above the list, built from what the server already computes:
+  * the ripple's problems and warnings (ADR-0158), shown as one line of counts that opens to the details;
+  * whether any law breaks on the changed model, from `POST /api/play/laws` (ADR-0166);
+  * which other diagrams change, each a link to its tab;
+  * the conformance cases before and after.
+
+  The page counts and links; it never judges.
+* **Drawing where you drop.** A state drawn on empty space stays where it was dropped, and a drawn edit keeps the view, so nothing jumps under the pointer. Arrows to a placed state are drawn without the layout's bends.

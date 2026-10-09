@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0176-how-a-uml-change-looks.md
   title: 0176-how-a-uml-change-looks.md
   hash_method: lf-sha256-v1
-  sha256: 663ff7a8d889f9d8b6b232d9f91501a2252fc450bdcf40e0b728b4672ffb2800
-notes_baseline: c0777714c87b764036eca9d9684cc236dbdd382ca1123a3c9a18a9a36c315782
+  sha256: 5d904ed20dd701a36cb0e236e0966bf73881e0272fd7c06c3213edb33e4103ba
+notes_baseline: 916845390dfd986aa74c866e1365f902bcaf14fad605f8ec463f3a80ccfee98b
 ---
 
 # ADR-0176: How a UML change looks: one stable layout, removed parts kept as ghosts, and lenses
@@ -67,6 +67,7 @@ _No curated notes yet._
 * [ADR-0153: Data models as UML class diagrams, checked in the built app](/adrs/0153-data-models-as-uml-class-diagrams.md) - Until now, records in a built app (ADR-0150) carried only a title, because the model had no data.
 * [ADR-0156: Chat plan mode proposes typed steps the person accepts or rejects](/adrs/0156-chat-plan-mode-proposes-typed-steps.md) - The owner's roadmap asks for an AI chat sidebar "like T3 Code, with plan mode prominent", in which the AI proposes changes to the UML and the person accepts or…
 * [ADR-0158: A change ripples across every diagram, and the AI's follow-on edits are re-checked](/adrs/0158-ripple-across-diagrams-with-checked-follow-ons.md) - PlayIDE draws five diagrams of one system: the state machine, the class diagram, the use cases, the screens and the components of the built app.
+* [ADR-0166: Laws as the layer above the UML, proved over every run for any pack, with a Laws tab in PlayIDE](/adrs/0166-laws-proved-over-every-run-for-any-pack.md) - Every pack already states its laws as typed data in `pack.json` (`domain/laws.py`, twelve kinds): "only a librarian checks a loan out", "every path to Returned…
 * [ADR-0175: Review a change as a UML diff you can run, not as a pull request](/adrs/0175-review-a-change-as-a-uml-diff-you-can-run.md) - The owner wants engineers to stop "reviewing changes in a GitHub PR when you can do it through the IDE in a much better, fun, quicker way that is more accurate…
 
 ## Referenced by

@@ -49,6 +49,10 @@
     return { states: [...new Set(models.flatMap((w) => w.states))], initials: [...new Set(models.map((w) => w.initial_state))], transitions };
   }
 
+  // Where you put a state you drew: dropped or double-clicked on empty space, it stays there (in diagram coordinates)
+  // instead of being laid out with the rest. Arrows to it are drawn straight rather than along the layout's bends.
+  const placed = {};
+
   function layout(workflow) {
     const g = new dagre.graphlib.Graph({ multigraph: true }), shape = basis(workflow);
     g.setGraph({ rankdir: "LR", nodesep: 60, ranksep: 120, edgesep: 30, marginx: 30, marginy: 30 });
@@ -58,9 +62,9 @@
     for (const s of shape.initials) g.setEdge("__initial", s, {}, s);
     for (const t of shape.transitions) g.setEdge(t.from_state, t.to_state, { width: 120, height: 20 }, t.id);
     dagre.layout(g);
-    const at = (id) => { const n = g.node(id); return [n.x - n.width / 2, n.y - n.height / 2]; };
+    const at = (id) => { const n = g.node(id), p = placed[id]; return p ? [p[0] - n.width / 2, p[1] - n.height / 2] : [n.x - n.width / 2, n.y - n.height / 2]; };
     // dagre's bend points, without the two ends maxGraph attaches to the state borders itself.
-    const bends = (t) => g.edge(t.from_state, t.to_state, t.id).points.slice(1, -1);
+    const bends = (t) => (placed[t.from_state] || placed[t.to_state] ? [] : g.edge(t.from_state, t.to_state, t.id).points.slice(1, -1));
     return { at, bends };
   }
 
@@ -670,6 +674,7 @@
     renderBadges();
     renderHealth();
     for (const which of Object.keys(DIAGRAMS)) markRipple(which);
+    document.dispatchEvent(new CustomEvent("playide:ripple")); // the Changes view lists what to consider (ADR-0176)
   }
 
   function renderRipple() {
@@ -842,8 +847,10 @@
     plan.accepted.push(true);
     commit(stepLabel(transaction));
     plan.card.replaceChildren(planCard());
+    const v = graph.view, held = [v.scale, v.translate.x, v.translate.y]; // a drawn edit keeps the view: nothing jumps under the pointer
     const result = await refreshPlan();
     if (result && result.legal && !plan.previewing) enterPreview();
+    if (tab === "states" && graph) graph.view.scaleAndTranslate(...held);
     plan.card.scrollIntoView({ block: "nearest" });
   }
 
@@ -1093,7 +1100,11 @@
   }
 
   function newState(x, y, after) {
-    const spec = formFor("state", after);
+    const spec = formFor("state", after), make = spec.make;
+    if (!after) { // on empty space: remember the spot, in diagram coordinates, so the state appears where it was put
+      const v = graph.view, spot = [x / v.scale - v.translate.x, y / v.scale - v.translate.y];
+      spec.make = () => { const step = make(); if (step.state) placed[step.state] = spot; return step; };
+    }
     inlineEdit(after ? `New state after ${after}` : "New state", spec, x, y, ["Name"]);
   }
 
@@ -2049,6 +2060,9 @@
     changes: () => shownChange, // the union while the Changes view is on (ADR-0176), else null
     draft, restoreDraft, // saving and reopening the work in progress (ADR-0185)
     recovered: () => recoveredWork, // work this browser kept came back on load, so the saved draft was not opened over it
+    // What the Changes view says about the change: who made each accepted step, and the ripple for exactly these steps.
+    steps: () => (plan && plan.result && plan.result.legal ? plan.steps.filter((_, i) => plan.accepted[i]).map((x) => ({ author: x.author, transaction: x.transaction })) : []),
+    ripple: () => (ripple && !ripple.error && ripple.key === rippleKey() ? ripple : null), diagramNames: RIPPLE,
     setChanges, diagram: (key) => ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: componentGraph, sequences: hooks.sequenceGraph && hooks.sequenceGraph() })[key],
     // Undo, redo and the edited document (ADR-0198): document() is what a save writes; restore(doc, label) opens one as
     // an undoable edit, checked by the server like any other.
