@@ -591,6 +591,10 @@
   }
 
   function showTab(which) {
+    if (which === "system") { // the System lens of the Components tab (ADR-0203), which the ripple names as a diagram
+      if (window.PlayLandscape) window.PlayLandscape.setLens("system");
+      which = "components";
+    }
     tab = which;
     for (const [name, panel] of Object.entries(PANELS)) {
       $("tab-" + name).setAttribute("aria-selected", String(which === name));
@@ -862,7 +866,8 @@
   // to every diagram and asks the proposer for follow-on edits, each re-checked by the policy or the screen design
   // check. Tabs carry a badge; the affected elements are marked on each diagram while the plan is previewed.
   const DIAGRAMS = { states: "State machine", classes: "Class diagram", usecases: "Use cases", screens: "Screens", components: "Components" };
-  const RIPPLE = { ...DIAGRAMS, sequences: "Sequences" }; // sequence diagrams are listed in the ripple; play-sequence.js marks its own tab
+  const RIPPLE = { ...DIAGRAMS, sequences: "Sequences", system: "System" }; // sequence diagrams are listed in the ripple; play-sequence.js marks its own tab
+  // "System" is the other workflows of the system (ADR-0203, #146): the Components tab's System lens shows it.
   const MARK = { added: "+", removed: "−", changed: "~", warning: "⚠", problem: "✗" };
   const TINT = { added: { strokeColor: "#17734a", fillColor: "#e5f5ec", strokeWidth: 2.5 }, changed: { strokeColor: "#c27c0e", strokeWidth: 2.5 },
     warning: { strokeColor: "#c27c0e", dashed: true, strokeWidth: 2.5 }, problem: { strokeColor: "#a12f2f", strokeWidth: 3 },
@@ -992,7 +997,8 @@
     }
     if (key === "sequences" && item.ref && window.PlaySequence) window.PlaySequence.open(item.ref.slice(9));
     showTab(key);
-    const g = current(), ids = key === "screens" || !item.ref ? [] : cellsFor(key, item.ref);
+    if (key === "system" && item.ref && window.PlayLandscape) window.PlayLandscape.focus(item.ref.slice(7)); // drawn once it loads
+    const g = key === "system" ? null : current(), ids = key === "screens" || !item.ref ? [] : cellsFor(key, item.ref);
     const cell = g && ids.map((id) => g.getDataModel().getCell(id)).find(Boolean);
     if (cell && cell.isVertex() && !cell.id.startsWith("literal:")) g.setSelectionCell(cell);
     else if (cell && cell.isEdge()) g.setSelectionCell(cell);
@@ -1012,7 +1018,8 @@
     for (const key of Object.keys(DIAGRAMS)) {
       const badge = $("tab-" + key).querySelector(".badge");
       if (!badge) continue;
-      const items = ripple && !ripple.error ? ripple.diagrams[key] : [];
+      // The Components tab also shows the System lens, so it counts what the change does to the other workflows (#146).
+      const items = ripple && !ripple.error ? [...ripple.diagrams[key], ...(key === "components" ? ripple.diagrams.system || [] : [])] : [];
       badge.hidden = !items.length;
       badge.textContent = String(items.length);
       badge.className = "badge" + (items.some((i) => i.change === "problem") ? " bad" : items.some((i) => i.change === "warning") ? " warn" : "");

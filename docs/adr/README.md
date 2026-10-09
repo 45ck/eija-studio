@@ -92,6 +92,7 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0201](0201-build-a-new-system-in-chat-round-after-round.md) | Build a new system in chat, round after round | accepted for state-machine systems |
 | [0202](0202-grow-the-class-diagram-in-chat.md) | Grow the class diagram in chat | accepted for systems started in PlayIDE |
 | [0203](0203-system-landscape-of-workflows-that-share-classes.md) | A system landscape of the workflows that share classes | accepted for workflows in one folder |
+| [0204](0204-the-ripple-reaches-the-other-workflows-of-the-system.md) | The ripple reaches the other workflows of the system | accepted |
 <!-- adr-index:end -->
 
 ## Reserved numbers for capability lanes
