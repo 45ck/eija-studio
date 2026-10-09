@@ -222,7 +222,8 @@
     const top = s.head.y, h = s.head.height;
     // A person is a stick figure; an AI agent, a timer or an external system is a box, as on the use case diagram. Either
     // way the name and the role take a line each, so a long one stays inside its column.
-    const kind = l.kind === "actor" ? P.roleKind(l.label.split(" : ")[1]) : "", look = kind && P.actorLook[kind];
+    const role = l.kind === "actor" && (result.actors.find((x) => x.id === l.name) || {}).role;
+    const kind = l.kind === "actor" ? P.roleKind(role) : "", look = kind && P.actorLook[kind];
     if (kind === "human") {
       graph.insertVertex({ parent, id: `head:${l.id}`, value: l.label.replace(" : ", " :\n"), position: [l.x - 14, top - 4], size: [28, h - 8],
         style: { ...FONT, shape: "actor", fillColor: "#ffffff", strokeColor: INK, verticalLabelPosition: "bottom", verticalAlign: "top", fontSize: 12, selectable: false } });

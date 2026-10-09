@@ -140,3 +140,16 @@ def test_a_second_folder_with_a_taken_id_is_reported_not_merged(tmp_path):
         app.state.play.stop()
     assert [w["id"] for w in result["workflows"]] == ["library-fines", "library-loan"]
     assert result["unreadable"] == ["library-fines (its id library-fines is taken)"]
+
+
+def test_each_actor_carries_the_kind_its_workflows_declare_and_a_disagreement_shows():
+    loan, fines = load_pack(PACKS_ROOT / "library-loan"), load_pack(PACKS_ROOT / "library-fines")
+    # Fines hands disputes to an AI agent that loan does not know, and calls its clerk a timer where loan has a person.
+    roles = [*fines.roles, fines.roles[0].model_copy(update={"id": "Clerk", "kind": "timer"}),
+             fines.roles[0].model_copy(update={"id": "DisputeBot", "kind": "agent"})]
+    fines = fines.model_copy(update={"roles": roles})
+    result = landscape("library-loan", [(p, data_for(p), p.model) for p in (loan, fines)])
+    kinds = {a["name"]: a["kinds"] for a in result["actors"]}
+    assert kinds["Librarian"] == ["human"]
+    assert kinds["DisputeBot"] == ["agent"]  # declared only by the other workflow, and still not a person
+    assert kinds["Clerk"] == ["human", "timer"]
