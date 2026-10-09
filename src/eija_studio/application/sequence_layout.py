@@ -20,7 +20,8 @@ from .diagrams import Fragment as DiagramFragment, Message as DiagramMessage, No
 # Layout, in pixels: each kind of lifeline's column width, and the height of each kind of row.
 # Effects are UML lost messages: arrows from the record that end LOST pixels to its right, with no lifeline of their own.
 WIDTH = {"actor": 150, "record": 190, "effect": 0}
-LEFT, HEAD_Y, HEAD_H, LOST = 24, 16, 56, 190
+LEFT, HEAD_Y, HEAD_H, LOST = 24, 16, 64, 190
+CHAR = 7.4  # an average character of a lifeline head at 12.5 to 13 pixels: a column widens so its longest line fits
 ROW = {"message": 40, "reply": 30, "invariant": 36, "effect": 26, "frame": 34, "end": 16}
 
 
@@ -35,7 +36,7 @@ class _Layout:
             role = roles.get(s.actor, "?")
             kind = pack.role_kind(roles.get(s.actor, "")) or "human"  # ADR-0210: an agent, timer or system says so
             keyword = "" if kind == "human" else f"«{kind}» "
-            head = f"{s.actor}\n: {role}" if kind == "human" else f"«{kind}»\n{s.actor} : {role}"
+            head = f"{s.actor}\n: {role}" if kind == "human" else f"«{kind}»\n{s.actor}\n: {role}"
             key = self._lifeline("actor", s.actor, f"{keyword}{s.actor} : {role}", head)
             self.lifelines[key]["actor_kind"] = kind
         self.record = self._lifeline("record", record[0], f"{record[0]} : {record[1]}", f"{record[0]} : {record[1]}")
@@ -50,9 +51,10 @@ class _Layout:
         """A lifeline in the next column; `head` is its label as drawn, broken over two lines where it is long."""
         key = f"{kind}:{name}"
         if key not in self.lifelines:
-            x = self.lifelines[self.record]["x"] + LOST if kind == "effect" else self.right + WIDTH[kind] // 2
-            self.lifelines[key] = {"id": key, "kind": kind, "name": name, "label": label, "head": head, "x": x, "width": WIDTH[kind] - 16}
-            self.right += WIDTH[kind]
+            width = max(WIDTH[kind], int(max(map(len, head.split("\n"))) * CHAR) + 28) if WIDTH[kind] else 0
+            x = self.lifelines[self.record]["x"] + LOST if kind == "effect" else self.right + width // 2
+            self.lifelines[key] = {"id": key, "kind": kind, "name": name, "label": label, "head": head, "x": x, "width": width - 16}
+            self.right += width
         return key
 
     def row(self, kind: str) -> int:
@@ -111,7 +113,8 @@ def place(pack: Pack, scenario: Scenario, start: str, steps: list[dict[str, Any]
                                           "operands": [{"guard": f"refused: {refused}", "y": top + ROW["frame"] - 8}], "refused": refused,
                                           "verdict": v["verdict"], "why": v["why"]})
     lost = any(ll["kind"] == "effect" for ll in layout.lifelines.values())
-    width = layout.right + LEFT + (LOST - WIDTH["record"] // 2 + 70 if lost else 0)
+    record = layout.lifelines[layout.record]
+    width = layout.right + LEFT + (LOST - (record["width"] + 16) // 2 + 70 if lost else 0)
     return {"lifelines": list(layout.lifelines.values()), **layout.items, "width": width, "height": layout.y + 30,
             "head": {"y": HEAD_Y, "height": HEAD_H}}
 

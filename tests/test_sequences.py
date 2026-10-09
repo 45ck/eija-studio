@@ -120,6 +120,15 @@ def test_the_layout_puts_lifelines_in_columns_and_rows_top_to_bottom():
     assert frame["y0"] < inside["y"] < frame["y1"] and frame["y0"] > by_ref(sequence)["0"]["y"]
 
 
+def test_lifeline_heads_never_overlap_however_long_the_names():
+    for name in ("refund-desk", "ai-ops", "library-loan"):
+        pack = load_pack(ROOT / "packs" / name)
+        for sequence in check_sequences(pack, pack.model, scenarios_for(pack))["sequences"]:
+            heads = sorted((ll["x"] - ll["width"] / 2, ll["x"] + ll["width"] / 2) for ll in sequence["lifelines"] if ll["kind"] != "effect")
+            assert all(right <= left for (_, right), (left, _) in zip(heads, heads[1:])), (name, sequence["id"])
+            assert all(len(line) * 7 <= ll["width"] for ll in sequence["lifelines"] for line in ll["head"].split("\n") if ll["kind"] != "effect")
+
+
 def test_sequences_export_through_the_existing_mermaid_and_plantuml_emitters():
     sequence = checked(scenarios_for(LOAN))["sequences"][6]
     mermaid, plantuml = sequence["export"]["mermaid"], sequence["export"]["plantuml"]

@@ -2,6 +2,7 @@
 
 ## 2026-10-09
 
+* **Sequence diagrams that read well**: synced ADR-0195 and the new `application.sequence_draft` module (`draft_scenarios`, `scenarios_or_draft`, `MAX_DRAFTS`) and `application.sequence_layout.WIDTH` and `CHAR` (a lifeline column widens to fit its head); `sequence_layout` (`place` adds activations, lost-message effects and two-line heads) and `interfaces.play` (drafted scenarios on the sequences route and the ripple) refreshed. No Notes were hand-edited and nothing was recorded as verified.
 * **Agents in sequence diagrams**: re-synced `application.sequence_layout.place` (actor lifelines carry `actor_kind` and a «kind» label). No Notes were hand-edited and nothing was recorded as verified.
 * **A partly read UML file removes nothing**: re-synced ADR-0190 after issue #165 (an import that could not read part of a state machine withholds every removal and lists it). No Notes were hand-edited and nothing was recorded as verified.
 * **The ripple reaches the system**: synced ADR-0204; `application.ripple` (`ripple` takes the system's landscape before and after, `diagrams.system`) and `interfaces.play` (`siblings`, shared by the landscape and ripple routes) refreshed. No Notes were hand-edited and nothing was recorded as verified.
