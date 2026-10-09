@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/law_proof.py#LAW_HANDLING
   title: application/law_proof.py
   hash_method: ast-v2
-  sha256: 138a40e011e48b0d7940f0cb06880645ffc664b1b32a90b7e067a2ce5f327bc2
-notes_baseline: 4916ce3ab0a2e0c6b754c258cf793bd0764e44c7158fb8145be5d59a0eff687b
+  sha256: feb83fd984454d6feed013139a970565be258bf56698c591d71f72d9e3ea6ff6
+notes_baseline: 07dfb3211009d57cdaec88f5f7dc8a1e98d862fc03b2c8e3676f34d3d1550198
 ---
 
 # application.law_proof.LAW_HANDLING
@@ -25,7 +25,7 @@ notes_baseline: 4916ce3ab0a2e0c6b754c258cf793bd0764e44c7158fb8145be5d59a0eff687b
 |---|---|
 | Kind | constant |
 | Module | [`application/law_proof`](/modules/application/law_proof.md) |
-| Signature | `LAW_HANDLING = {'closed_shape': 'table', 'action_requires_guard': 'table', 'requires_evidence': 'evidence', 'only_role_holds': 'run', 'role_never_holds': 'run'…` |
+| Signature | `LAW_HANDLING = {'closed_shape': 'table', 'action_requires_guard': 'table', 'requires_evidence': 'evidence', 'can_reach_end': 'reach', 'only_role_holds': 'run',…` |
 | Code | `repo://src/eija_studio/application/law_proof.py#LAW_HANDLING` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
