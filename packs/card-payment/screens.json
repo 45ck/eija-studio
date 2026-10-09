@@ -1,0 +1,150 @@
+{
+  "schema_version": "eija.screens.v1",
+  "id": "card-payment",
+  "screens": [
+    {
+      "title": "Take a payment",
+      "fields": [
+        {
+          "attribute": "orderNumber",
+          "label": "Order"
+        },
+        {
+          "attribute": "amount",
+          "label": "Amount"
+        },
+        {
+          "attribute": "currency",
+          "label": "Currency"
+        },
+        {
+          "attribute": "cardLast4",
+          "label": "Card ending"
+        }
+      ],
+      "button": "Pay"
+    },
+    {
+      "use_case": "AuthoriseCard",
+      "title": "AuthoriseCard",
+      "fields": [
+        {
+          "attribute": "amount",
+          "label": "Amount"
+        },
+        {
+          "attribute": "currency",
+          "label": "Currency"
+        }
+      ],
+      "button": "AuthoriseCard"
+    },
+    {
+      "use_case": "DeclineCard",
+      "title": "Decline",
+      "fields": [
+        {
+          "attribute": "cardLast4",
+          "label": "Card ending"
+        }
+      ],
+      "button": "Decline"
+    },
+    {
+      "use_case": "VoidAuthorisation",
+      "title": "Void the authorisation",
+      "fields": [
+        {
+          "attribute": "orderNumber",
+          "label": "Order"
+        }
+      ],
+      "button": "Void"
+    },
+    {
+      "use_case": "CaptureFunds",
+      "title": "CaptureFunds",
+      "fields": [
+        {
+          "attribute": "amount",
+          "label": "Amount"
+        }
+      ],
+      "button": "CaptureFunds funds"
+    },
+    {
+      "use_case": "RequestRefund",
+      "title": "Ask for a refund",
+      "fields": [
+        {
+          "attribute": "refundReason",
+          "label": "Why"
+        },
+        {
+          "attribute": "refundAmount",
+          "label": "How much"
+        }
+      ],
+      "button": "Request refund"
+    },
+    {
+      "use_case": "ApproveRefund",
+      "title": "Approve refund",
+      "fields": [
+        {
+          "attribute": "refundAmount",
+          "label": "Refund amount"
+        },
+        {
+          "attribute": "refundReason",
+          "label": "Reason"
+        }
+      ],
+      "button": "Approve and refund"
+    },
+    {
+      "use_case": "RejectRefund",
+      "title": "Turn down refund",
+      "fields": [
+        {
+          "attribute": "refundReason",
+          "label": "Reason"
+        }
+      ],
+      "button": "Reject"
+    },
+    {
+      "use_case": "OpenDispute",
+      "title": "Dispute received",
+      "fields": [
+        {
+          "attribute": "orderNumber",
+          "label": "Order"
+        }
+      ],
+      "button": "Open dispute"
+    },
+    {
+      "use_case": "WinDispute",
+      "title": "Dispute won",
+      "fields": [
+        {
+          "attribute": "orderNumber",
+          "label": "Order"
+        }
+      ],
+      "button": "Record win"
+    },
+    {
+      "use_case": "LoseDispute",
+      "title": "Dispute lost",
+      "fields": [
+        {
+          "attribute": "amount",
+          "label": "Amount"
+        }
+      ],
+      "button": "Accept chargeback"
+    }
+  ]
+}
