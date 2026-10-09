@@ -10,7 +10,7 @@ from __future__ import annotations
 from demos.lib import RunningServer, Scene
 from demos.scenarios.playide_showcase import AI_CARD, AI_REQUEST, BUILD_TIMEOUT_MS, PACK, PENDING, RIPPLE_CARD
 
-PACE = 0.8  # tighter holds and motion than the full showcase; every act and assertion still runs
+PACE = 0.75  # tighter holds and motion than the full showcase; every act and assertion still runs
 TITLE = "The PlayIDE highlights: software engineering as play, in two minutes"
 __all__ = ["PACK", "TITLE", "run"]
 
@@ -103,10 +103,6 @@ def _edit(scene: Scene, chapter: _Chapters) -> None:
     scene.wait(2000)
     scene.zoom_out()
     scene.click("#show-changes")  # back to the diagram
-    scene.caption("What to consider: it ripples into the class diagram, and nothing leads into Lost yet.")
-    scene.zoom(f"{RIPPLE_CARD} .ripple-list", scale=1.5)
-    scene.wait(1600)
-    scene.zoom_out()
     scene.caption("The AI proposes a way in, the server re-checks it, and it ripples on.")
     scene.click(f"{RIPPLE_CARD} .follow-ons li.applies button")
     scene.expect_text(f"{RIPPLE_CARD} .ripple", "New use case Renew", timeout_ms=60_000)
@@ -180,9 +176,6 @@ def _prove(scene: Scene, chapter: _Chapters) -> None:
     scene.wait_for("#laws-summary.ok, #laws-summary.bad", timeout_ms=120_000)
     scene.expect_text("#laws-summary", "holds on every run the kernel allows")
     scene.caption("Every law holds on every run the kernel allows.")
-    scene.zoom("#laws", scale=1.3)
-    scene.wait(1300)
-    scene.zoom_out()
     scene.click("#tab-tests")
     scene.expect_text("#tests-summary", "All 7 tests pass", timeout_ms=60_000)
     scene.click("#tab-states")

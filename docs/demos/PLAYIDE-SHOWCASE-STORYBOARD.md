@@ -43,7 +43,7 @@ Every beat is filmed on the workbench shell (ADR-0173): outline and inspector on
 
 ## The highlights cut
 
-[`demos/scenarios/playide_highlights.py`](../../demos/scenarios/playide_highlights.py) tells the same story in about two minutes for the README: the model, a breakpoint, an edit in place and its ripple, the AI's change, the catch (a wrong prediction and the late-return sequence diagram ending in a refusal), and the proof. It is its own unedited take of the real product, not a cut of the full one, so it is checked the same way. It runs with `scene.pace = 0.8`, which tightens caption holds and camera motion but never skips an act or an assertion.
+[`demos/scenarios/playide_highlights.py`](../../demos/scenarios/playide_highlights.py) tells the same story in about two minutes for the README: the model, a breakpoint, an edit in place and its ripple, the AI's change, the catch (a wrong prediction and the late-return sequence diagram ending in a refusal), and the proof. It is its own unedited take of the real product, not a cut of the full one, so it is checked the same way. It runs with `scene.pace = 0.75`, which tightens caption holds and camera motion but never skips an act or an assertion.
 
 ## Record it
 
