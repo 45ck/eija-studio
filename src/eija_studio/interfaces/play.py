@@ -45,6 +45,7 @@ from eija_studio.application.review import review_change
 from eija_studio.application.ripple import check_follow_ons, ripple
 from eija_studio.application.scenario_run import record_steps, run_scenarios
 from eija_studio.application.screen_access import check_accessibility
+from eija_studio.application.sequence_draft import scenarios_or_draft
 from eija_studio.application.sequences import check_sequences
 from eija_studio.application.simulation import MAX_BREAKPOINTS, MAX_STEPS, run_log, simulate
 from eija_studio.domain.data import data_for
@@ -310,7 +311,7 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
         data, data_before = data_for(pack), data_for(earlier)
         before, after = screens_for(studio.pack, start, data_before), screens_of(body, candidate)
         (old, _), (new, components) = built(earlier, start, before), built(pack, candidate, after)
-        scenarios = check_sequences(pack, candidate, scenarios_for(studio.pack), start)
+        scenarios = check_sequences(pack, candidate, scenarios_or_draft(pack, scenarios_for(studio.pack), start)[0], start)
         others, _ = siblings(pack.id)  # the system this workflow is part of, before and after (ADR-0203, #146)
         system = (landscape(pack.id, [(earlier, data_before, start), *others]), landscape(pack.id, [(pack, data, candidate), *others])) if others else None
         report = ripple(start, candidate, data, (before, after), (old, new), components, scenarios, data_changes(data_before, data), system, data_before)
@@ -344,7 +345,11 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
         """The pack's scenarios (or a draft of them, shared with the Tests tab) drawn as sequence diagrams, each step run
         through the kernel on the shown model and, when it differs, on the model in force (ADR-0195). Read-only."""
         before, after = baseline(body), resolve(body)
-        return check_sequences(pack_of(body.plan), after, scenarios_of(body), before) | {"source": "edited" if body.scenarios is not None else "pack"}
+        pack = pack_of(body.plan)
+        if body.scenarios is not None:
+            return check_sequences(pack, after, scenarios_of(body), before) | {"source": "edited"}
+        scenarios, source = scenarios_or_draft(pack, scenarios_for(studio.pack), before)
+        return check_sequences(pack, after, scenarios, before) | {"source": source}
 
     @app.post("/api/play/build")
     def play_build(body: BuildRequest):

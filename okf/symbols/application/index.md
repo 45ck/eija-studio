@@ -30,6 +30,7 @@
 * [scenario_run](scenario_run/) - Symbols of application.scenario_run
 * [screen_access](screen_access/) - Symbols of application.screen_access
 * [scxml](scxml/) - Symbols of application.scxml
+* [sequence_draft](sequence_draft/) - Symbols of application.sequence_draft
 * [sequence_layout](sequence_layout/) - Symbols of application.sequence_layout
 * [sequences](sequences/) - Symbols of application.sequences
 * [service](service/) - Symbols of application.service
