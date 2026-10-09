@@ -42,7 +42,7 @@ from eija_studio.application.sequences import check_sequences
 from eija_studio.application.simulation import MAX_BREAKPOINTS, MAX_STEPS, run_log, simulate
 from eija_studio.domain.data import data_for
 from eija_studio.domain.models import Contract, DomainError, Workflow
-from eija_studio.domain.pack import Pack
+from eija_studio.domain.pack import Pack, pack_directory
 from eija_studio.domain.scenarios import parse_scenarios, scenarios_for
 from eija_studio.domain.policy import apply_transactions
 from eija_studio.domain.transactions import parse_transaction
@@ -167,6 +167,19 @@ class AppRunner:
             was = self.process is not None and self.process.poll() is None
             self._stop()
             return was
+
+
+def pack_file(pack: Pack, name: str) -> str:
+    """Where one of the pack's files is, as its owner would find it: relative to the working directory when under it
+    (packs/<id>/pack.json), else from the home folder (~/PlayIDE/support-desk/pack.json), else in full."""
+    folder = pack_directory(pack)
+    if folder is None:
+        return f"packs/{pack.id}/{name}"
+    path = folder / name
+    for base, prefix in ((Path.cwd(), ""), (Path.home(), "~/")):
+        if path.is_relative_to(base):
+            return prefix + path.relative_to(base).as_posix()
+    return path.as_posix()
 
 
 def register(app, studio, web: Path) -> AppRunner:
@@ -303,7 +316,7 @@ def register(app, studio, web: Path) -> AppRunner:
         law file, the draft is checked and proved instead, and what it changes is listed; nothing is saved (ADR-0177)."""
         pack = studio.pack if body.laws is None else with_laws(studio.pack, body.laws)
         report = prove_laws(pack, resolve(body))
-        file: dict[str, Any] = {"path": f"packs/{studio.pack.id}/pack.json", "section": "laws",
+        file: dict[str, Any] = {"path": pack_file(studio.pack, "pack.json"), "section": "laws",
                 "laws": [law.model_dump(mode="json", exclude_none=True) for law in studio.pack.laws],
                 "verifiers": [v.model_dump(mode="json", exclude_none=True) for v in studio.pack.verifiers]}
         if body.laws is not None:
@@ -318,7 +331,7 @@ def register(app, studio, web: Path) -> AppRunner:
         """The pack's scenarios (or a draft of them), each run by the kernel on the model shown (ADR-0177)."""
         scenarios = scenarios_of(body)
         return run_scenarios(studio.pack, resolve(body), scenarios) | {
-            "file": {"path": f"packs/{studio.pack.id}/scenarios.json", "document": scenarios.model_dump(mode="json", exclude_none=True)},
+            "file": {"path": pack_file(studio.pack, "scenarios.json"), "document": scenarios.model_dump(mode="json", exclude_none=True)},
             "actors": [a.model_dump(mode="json") for a in studio.pack.fixtures.actors]}
 
     @app.post("/api/play/tests/try")

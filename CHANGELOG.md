@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### 9 October 2026: PlayIDE polish, round 4 (your own systems)
+
+- On a system you started in PlayIDE, the chat's example is a typed step the chat reads ("add state Archived after Escalated"). Before, it offered the system's demo request, which a new system does not model, so sending the example as shown was refused. `/api/status` says whether the demo request passes as it stands (`demo_modelled`); only an offline proposer is asked, so a live one is never called on page load.
+- The Laws tab on a system with no laws says so, instead of "Every law in force holds… ." with a stray full stop.
+- The Laws and Tests tabs name the system's own files (`~/PlayIDE/support-desk/pack.json`), not `packs/support-desk/…`, which does not exist. Shipped packs still read `packs/library-loan/…`.
+
 ### 8 October 2026: sequence diagrams
 
 - PlayIDE has a **Sequences** tab: the pack's scenarios (the Tests tab's `scenarios.json`) drawn in UML sequence notation (lifelines, calls, refusal replies, state invariants, effects as asynchronous messages, and a `neg` fragment around each step that must be refused), each step run through the kernel. A step the model can't do is flagged with the kernel's reason. Edit in the tab (the same draft the Tests tab shows), export as Mermaid or PlantUML, or download `scenarios.json`. A plan's ripple lists the scenarios it breaks. New route `POST /api/play/sequences`. See [ADR-0195](docs/adr/0195-sequence-diagrams-the-kernel-checks.md).

@@ -101,6 +101,17 @@ def preview_plan(model: Workflow, pack: Pack, transactions: list[Transaction], a
                      "candidate_semantic_hash": candidate.semantic_hash, "diff": diff_summary(model, candidate)}
 
 
+def example_passes(request: str, model: Workflow, pack: Pack, proposer: PlanProposer | None) -> bool:
+    """Whether `request`, sent to the chat as it stands, becomes a plan the policy allows on `model`. Only an offline
+    proposer is asked: a live one would spend a model call on every page load, so it gets typed steps instead."""
+    if proposer is None or proposer.live or not request.strip():
+        return False
+    try:
+        return bool(propose_plan(request, model, pack, proposer)["preview"]["legal"])
+    except DomainError:
+        return False
+
+
 def propose_plan(request: str, model: Workflow, pack: Pack, proposer: PlanProposer) -> dict[str, Any]:
     """Ask the proposer for a plan, re-check it, and preview it with every step accepted."""
     request = request.strip()

@@ -10,8 +10,9 @@ from pydantic import Field
 from eija_studio.application.diagram_catalog import case_diagrams
 from eija_studio.application.edit_preview import EditPreview
 from eija_studio.application.edit_proposal import TypedEditProposal
+from eija_studio.application.plan import example_passes
 from eija_studio.application.repository import COMMIT_OID_PATTERN
-from eija_studio.domain.models import MEANING_ID, Contract, DomainError, OWNER, LayoutChange, ExecuteCommand
+from eija_studio.domain.models import MEANING_ID, Contract, DomainError, OWNER, LayoutChange, ExecuteCommand, Workflow
 from eija_studio.domain.pack import Pack
 from eija_studio.domain.transactions import Transaction
 from .play import register as register_play
@@ -146,7 +147,8 @@ def create_app(studio, token: str, port: int = 8765, systems=None) -> FastAPI:
         return {"version": "0.2.0", "provider": studio.provider.name, "network_enabled": studio.allow_network,
             "provider_networked": studio.provider.networked, "baseline_version": active["version"], "baseline": active["model"],
             "trusted_fixture": identity["trusted_fixture"], "identity_boundary": "Single local owner; synthetic actors only",
-            "pack": pack_summary(studio.pack)}
+            "pack": pack_summary(studio.pack) | {"demo_modelled": example_passes(
+                studio.pack.fixtures.demo_request, Workflow.model_validate(active["model"]), studio.pack, studio.plan_proposer)}}
 
     @app.get("/api/doctor")
     def doctor():

@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/plan.py
   title: application/plan.py
   hash_method: ast-api-v1
-  sha256: b01886f5fe5894886e044c04f634bbf0d445c0b3d016f03d4d52561563b39a3a
-notes_baseline: 525d16b601880fd7558dde072698c93f5f0610acb2297e00456f3cf62d128da8
+  sha256: 76dc34d8bc85b79e17b149da9f8aaf900a62145796646251d5146a516841b384
+notes_baseline: f24166563e7c9db3e1d64641aab0c5638fcf2167d32a12ff0c19f11c7237aea7
 ---
 
 # application.plan
@@ -43,6 +43,7 @@ choose meaning, approve or apply: making a change real still goes through the ch
 * [`MAX_REQUEST`](/symbols/application/plan/MAX_REQUEST.md) (constant) - no docstring
 * [`MAX_STEPS`](/symbols/application/plan/MAX_STEPS.md) (constant) - no docstring
 * [`describe`](/symbols/application/plan/describe.md) (function) - One line a person can check against the diagram.
+* [`example_passes`](/symbols/application/plan/example_passes.md) (function) - Whether `request`, sent to the chat as it stands, becomes a plan the policy allows on `model`.
 * [`preview_plan`](/symbols/application/plan/preview_plan.md) (function) - What the accepted steps would make of `model`.
 * [`propose_plan`](/symbols/application/plan/propose_plan.md) (function) - Ask the proposer for a plan, re-check it, and preview it with every step accepted.
 
@@ -73,11 +74,13 @@ _No curated notes yet._
 ## Referenced by
 
 * [application.ripple](/modules/application/ripple.md) - Ripple (ADR-0158): what one change to the state machine does to every other diagram of the same system, and the follow-on edits that would keep them in agreeme…
+* [interfaces.http](/modules/interfaces/http.md) - Loopback-only local adapter.
 * [interfaces.play](/modules/interfaces/play.md) - PlayIDE routes: the visual UML canvas page, Build & run of the model as a live app beside it (ADR-0151), and Simulate, seeded simulated users whose every step…
 * [interfaces.play_systems](/modules/interfaces/play_systems.md) - PlayIDE's systems (ADR-0185): start a new system from a sketch or a template, open one you made before, and save the work in progress to carry on later.
 * [application.plan.MAX_REQUEST](/symbols/application/plan/MAX_REQUEST.md) - Constant `MAX_REQUEST` in `application/plan`.
 * [application.plan.MAX_STEPS](/symbols/application/plan/MAX_STEPS.md) - Constant `MAX_STEPS` in `application/plan`.
 * [application.plan.describe](/symbols/application/plan/describe.md) - One line a person can check against the diagram.
+* [application.plan.example_passes](/symbols/application/plan/example_passes.md) - Whether `request`, sent to the chat as it stands, becomes a plan the policy allows on `model`.
 * [application.plan.preview_plan](/symbols/application/plan/preview_plan.md) - What the accepted steps would make of `model`.
 * [application.plan.propose_plan](/symbols/application/plan/propose_plan.md) - Ask the proposer for a plan, re-check it, and preview it with every step accepted.
 <!-- okf:generated:end links -->

@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from eija_studio.adapters.plan_proposals import OfflinePlanProposer
-from eija_studio.application.plan import preview_plan, propose_plan
+from eija_studio.application.plan import example_passes, preview_plan, propose_plan
 from eija_studio.domain.models import DomainError
 from eija_studio.domain.pack import load_pack
 from eija_studio.domain.transactions import parse_transaction
@@ -119,3 +119,13 @@ def test_the_packs_own_demo_request_is_a_plan_the_policy_allows(pack_dir):
     pack = load_pack(ROOT / "packs" / pack_dir)
     result = propose_plan(pack.fixtures.demo_request, pack.model, pack, OfflinePlanProposer())
     assert result["meaning"] is not None and result["preview"]["legal"], result["preview"]["codes"]
+
+
+def test_the_chat_example_is_offered_only_when_it_passes_and_never_asks_a_live_proposer():
+    loan = load_pack(ROOT / "packs" / "library-loan")
+    offline = OfflinePlanProposer()
+    assert example_passes(loan.fixtures.demo_request, loan.model, loan, offline)
+    assert not example_passes("Add a review step before Returned.", loan.model, loan, offline)  # a new system's kind of demo
+    live = type("Live", (), {"name": "live", "live": True, "propose": lambda *a: pytest.fail("a live proposer was called")})()
+    assert not example_passes(loan.fixtures.demo_request, loan.model, loan, live)
+    assert not example_passes(loan.fixtures.demo_request, loan.model, loan, None)
