@@ -58,6 +58,7 @@ These are reported, never guessed:
 | `Integer`, `DateTime` | read as `Real` and `Date`, and listed |
 | a text attribute without a maximum length | 200, and listed |
 | use case diagrams and final states | derived, so redrawn from the imported model |
+| a transition or composite state that could not be read (a renamed action, say) | nothing in the model is removed by that import: each removal the file implies is listed as kept, so a partly read file never offers a plan that drops what it failed to read (issue #165) |
 
 XML with a DTD or entities is refused before it is parsed, and so is a compressed draw.io page that holds one. A compressed page may inflate to at most 8 MB.
 
