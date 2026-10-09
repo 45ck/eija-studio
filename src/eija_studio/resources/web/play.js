@@ -72,7 +72,7 @@
   let layoutKey = "", lastView = null;
 
   function layoutStore() {
-    const key = "playide.layout.v1:" + $("model-name").textContent.split(" · ")[0];
+    const key = `playide.layout.v1:${packInfo ? packInfo.id : $("model-name").textContent}`; // the pack id, as the draft is kept
     if (key === layoutKey) return;
     layoutKey = key;
     for (const k of Object.keys(placed)) delete placed[k];
@@ -1240,8 +1240,14 @@
     return [x / v.scale - v.translate.x - STATE.width / 2, y / v.scale - v.translate.y - STATE.height / 2];
   }
 
+  // A state put after another goes just to its right, level with it; on empty space, centred where you clicked.
+  function spotFor(x, y, after) {
+    const cell = after && graph.getDataModel().getCell("state:" + after);
+    return cell ? [cell.geometry.x + STATE.width + 70, cell.geometry.y] : toGraph(x, y);
+  }
+
   function newState(x, y, after) {
-    const spec = formFor("state", after), make = spec.make, spot = toGraph(x, y);
+    const spec = formFor("state", after), make = spec.make, spot = spotFor(x, y, after);
     spec.make = () => {
       const step = make();
       pinAll();
@@ -1328,8 +1334,8 @@
     const shape = (name, attrs) => { const n = document.createElementNS(ns, name); for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v); parts.push(n); };
     const cell = kind && graph.getCellAt(x, y), s = stateAt(cell), box = s && cellBox(cell);
     if (kind === "state") {
-      const k = graph.view.scale, w = STATE.width * k, h = STATE.height * k;
-      shape("rect", { x: x - w / 2, y: y - h / 2, width: w, height: h, rx: 10 * k, class: "ghost-state" });
+      const k = graph.view.scale, v = graph.view, w = STATE.width * k, h = STATE.height * k, [gx, gy] = spotFor(x, y, s);
+      shape("rect", { x: (gx + v.translate.x) * k, y: (gy + v.translate.y) * k, width: w, height: h, rx: 10 * k, class: "ghost-state" });
       if (box) shape("rect", { x: box.x - 4, y: box.y - 4, width: box.width + 8, height: box.height + 8, rx: 12, class: "ghost-target" });
     } else if (kind === "transition" || kind === "initial") {
       if (box) shape("rect", { x: box.x - 4, y: box.y - 4, width: box.width + 8, height: box.height + 8, rx: 12, class: "ghost-target" });

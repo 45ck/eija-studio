@@ -227,6 +227,17 @@ def test_a_state_lands_where_you_put_it_and_stays_there_in_a_real_browser():
             _steps(page, 3)
             _near(page, "state:Found", drop)
 
+            # Put after a state (State, then a click on it): it goes just to that state's right, level with it, not on top.
+            page.click(state)
+            after = _at(page, CENTRE, "state:Requested")
+            page.mouse.click(*after)
+            page.keyboard.type("Held")
+            page.keyboard.press("Enter")
+            _steps(page, 4)
+            held = _at(page, CENTRE, "state:Held")
+            scale = page.evaluate("() => window.PlayIDE.diagram('states').view.scale")
+            assert held[0] - after[0] >= 150 * scale and abs(held[1] - after[1]) <= 2
+
             # Tidy forgets the positions and lays the diagram out again.
             page.click("#tidy")
             page.wait_for_selector("#tidy", state="hidden")
