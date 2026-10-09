@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### 9 October 2026: PlayIDE polish, round 5 (the command palette)
+
+- Ctrl+K now reaches Undo, Redo, Save the work on this system, and Open another system or start a new one. Before, those were only on the title bar. In the review view (`/play?view=review`) the palette offers none of the commands that change the model.
+
 ### 9 October 2026: PlayIDE polish, round 4 (your own systems)
 
 - On a system you started in PlayIDE, the chat's example is a typed step the chat reads ("add state Archived after Escalated"). Before, it offered the system's demo request, which a new system does not model, so sending the example as shown was refused. `/api/status` says whether the demo request passes as it stands (`demo_modelled`); only an offline proposer is asked, so a live one is never called on page load.
