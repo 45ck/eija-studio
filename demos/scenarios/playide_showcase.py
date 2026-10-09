@@ -142,11 +142,10 @@ def _press_play(scene: Scene, chapter: _Chapters) -> None:
 
 def _fix_in_place(scene: Scene, chapter: _Chapters) -> None:
     chapter("Fix it in place, not in code")
-    scene.caption("Design in place. Pick State, click where it goes, and type its name right on the diagram.")
+    scene.caption("Design in place. Drag a state onto an empty spot: it lands exactly there. Type its name on the diagram.")
     canvas = scene.page.locator("#canvas").bounding_box()
     width, height = (canvas["width"], canvas["height"]) if canvas else (800.0, 600.0)
-    scene.click('#draw-palette [data-kind="state"]')
-    scene.click_at("#canvas", (width * 0.82, height * 0.82))
+    scene.drag('#draw-palette [data-kind="state"]', "#canvas", position=(width * 0.82, height * 0.82))
     scene.type_text(".inline-edit input", "Lost")
     scene.click('.inline-edit button[type="submit"]')
     scene.expect_text(f"{RIPPLE_CARD} .ripple", "LoanState gains the literal Lost", timeout_ms=60_000)

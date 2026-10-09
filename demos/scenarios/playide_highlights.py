@@ -80,11 +80,10 @@ def _play(scene: Scene, chapter: _Chapters) -> None:
 
 def _edit(scene: Scene, chapter: _Chapters) -> None:
     chapter("Your change, at a glance")
-    scene.caption("Pick State, click the diagram, type the name. No code.")
+    scene.caption("Drag a state onto the diagram. It lands exactly where you drop it. Type its name: no code.")
     canvas = scene.page.locator("#canvas").bounding_box()
     width, height = (canvas["width"], canvas["height"]) if canvas else (800.0, 600.0)
-    scene.click('#draw-palette [data-kind="state"]')
-    scene.click_at("#canvas", (width * 0.82, height * 0.82))
+    scene.drag('#draw-palette [data-kind="state"]', "#canvas", position=(width * 0.82, height * 0.82))
     scene.type_text(".inline-edit input", "Lost")
     scene.click('.inline-edit button[type="submit"]')
     scene.expect_text(f"{RIPPLE_CARD} .ripple", "LoanState gains the literal Lost", timeout_ms=60_000)
