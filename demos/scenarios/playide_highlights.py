@@ -95,6 +95,14 @@ def _edit(scene: Scene, chapter: _Chapters) -> None:
     scene.zoom("#diff-view", scale=1.4)
     scene.wait(1300)
     scene.zoom_out()
+    scene.wait_for("#diff-consider li.ok", timeout_ms=60_000)  # the laws are proved on the changed model
+    scene.expect_text("#inspector .diff-item .who.you", "You")
+    scene.caption("And what to consider, in one place: a warning, the laws, the other diagrams it changes, the tests it adds.")
+    scene.click("#diff-flags summary")
+    scene.expect_text("#diff-consider", "No record can ever reach Lost")
+    scene.zoom("#diff-consider", scale=1.7)
+    scene.wait(2000)
+    scene.zoom_out()
     scene.click("#show-changes")  # back to the diagram
     scene.caption("What to consider: it ripples into the class diagram, and nothing leads into Lost yet.")
     scene.zoom(f"{RIPPLE_CARD} .ripple-list", scale=1.5)
@@ -121,6 +129,15 @@ def _ai(scene: Scene, chapter: _Chapters) -> None:
     scene.caption("The same view: a new arrow in green, and the arrow it removes kept as a dashed ghost, never hidden.")
     scene.zoom("#diff-view", scale=1.3)
     scene.wait(1600)
+    scene.zoom_out()
+    scene.wait_for("#diff-consider li.ok, #diff-consider li.bad:not(:has(details))", timeout_ms=60_000)
+    scene.expect_text("#diff-consider", "Breaks the sequence")
+    scene.expect_text("#diff-consider", "2 problems")
+    scene.expect_text("#inspector .diff-item .who.ai", "AI")
+    scene.caption("Each change is tagged AI or You. To consider: two problems, and it breaks the late-return scenario.")
+    scene.click("#diff-flags summary")
+    scene.zoom("#diff-consider", scale=1.6)
+    scene.wait(2200)
     scene.zoom_out()
 
 
