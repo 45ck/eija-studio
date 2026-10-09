@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0174-add-without-dragging-and-edit-inline.md
   title: 0174-add-without-dragging-and-edit-inline.md
   hash_method: lf-sha256-v1
-  sha256: 4f1d311c7a08d8961a26bb3aabbcc2d35f4316c6cebfa58de68747fcc114fa8d
-notes_baseline: b3fb9cc31e9ef4a15f4d741f3f21e18b615b463e22cf1af899fb3b46d57c9019
+  sha256: 209e88b54ef0bc079e69178d3232f893756fa91f9af6748a2e9e5fd3fe3239b7
+notes_baseline: 49f56c87615d0d0852f3ec30b72d0de30300fadd52c40ae16d4cd2ffed5b8ad6
 ---
 
 # ADR-0174: Add UML elements without dragging, and edit them where they are
@@ -52,7 +52,14 @@ notes_baseline: b3fb9cc31e9ef4a15f4d741f3f21e18b615b463e22cf1af899fb3b46d57c9019
 * Considered options
 * Decision outcome
 * Amendment, 9 October 2026: shapes land where you put them
+* Amendment, 9 October 2026: the diagram stays on camera
 * OSS check (required for any custom module)
+
+## Code and docs mentioned
+
+Existence-checked by the gate; not hashed (an ADR is a decision record, not a description of current code).
+
+* `repo://tests/test_play_canvas_on_camera.py`
 <!-- okf:generated:end facts -->
 
 ## Notes

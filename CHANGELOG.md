@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### 9 October 2026: PlayIDE keeps the diagram on camera
+
+- The state machine stays inside the canvas as it changes size (ADR-0174 amendment). First load at 1280 by 800 no longer clips its foot by 3 pixels. The plan banner no longer pushes the initial dot under it after you drop a state, and a diagram that fitted before still fits. With Run or Simulation open, Run and Replay pan to keep the current step on screen, so a state near the foot such as Returned is not cut off.
+
 ### 9 October 2026: PlayIDE polish, round 11 (the New system dialog fits the screen)
 
 - Systems, New system lists every sector template two to a row, and the kernel's verdict and Create and open stay at the bottom of the dialog while the list scrolls. Before, the list ran past the bottom of the dialog on a 1080p screen, so Create and open was off screen and the last template was cut. The blank sketch and a UML file still take the full width under their own option.
