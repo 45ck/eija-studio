@@ -3,7 +3,7 @@ the policy for the open pack, a paused run keeps who tried what in view, a role 
 tab, the plan banner does not offer to open the Review tab while it is open, asking whether a
 state can be reached at all treats Yes as expected, the status bar names the selection as the outline does,
 an empty Review tab uses the whole tab, the screen designer fits a laptop screen,
-the Tests tab's buttons and the review view's title bar fit too,
+the Tests tab's buttons, the review view's title bar and the Import / Export menu fit too,
 and Ctrl+K reaches Systems but offers nothing that edits in the review view.
 
 Marked `browser`: it runs only with EIJA_BROWSER_TESTS=1 (NOT_RUN otherwise). It uses the installed Chrome, or the
@@ -97,6 +97,12 @@ def test_playide_features_fit_together_in_a_real_browser(pack):
             page.keyboard.press("Control+k")
             page.keyboard.type("system")
             assert any("Open another system" in o for o in page.evaluate(options))
+            page.keyboard.press("Escape")
+            # The Import / Export menu wraps its longer lines rather than spilling past its edge.
+            page.click("#uml-menu")
+            page.wait_for_selector("#uml-pop:not([hidden])")
+            assert page.evaluate("""() => { const p = document.getElementById('uml-pop'), r = p.getBoundingClientRect();
+                return [...p.querySelectorAll('span')].every((s) => s.getBoundingClientRect().right <= r.right); }""")
             page.keyboard.press("Escape")
             page.goto(f"{server.base_url}/play?view=review#{server.token}")
             page.wait_for_selector("body[data-ready=true]", timeout=60_000)
