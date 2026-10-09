@@ -34,7 +34,7 @@ from .model import DEFAULT_MAX_LENGTH, MULTIPLICITIES, READ_TYPES, WIDENED, Attr
 FORMAT = "eija.uml-import.v1"
 
 
-class _Report:
+class ImportReport:
     def __init__(self, skipped: list[dict[str, str]], derived: list[dict[str, str]]):
         self.derived = [dict(d) for d in derived]
         self.mapped: list[dict[str, str]] = []
@@ -48,7 +48,7 @@ class _Report:
 
 # ---- state machine ------------------------------------------------------------------------------------------
 
-def _role(label: Label, edge: Edge, current: Transition | None, report: _Report) -> str | None:
+def _role(label: Label, edge: Edge, current: Transition | None, report: ImportReport) -> str | None:
     if label.role is not None:
         return label.role
     if current is not None:
@@ -58,7 +58,7 @@ def _role(label: Label, edge: Edge, current: Transition | None, report: _Report)
     return None
 
 
-def _declared_checks(pack: Pack, label: Label, edge: Edge, report: _Report) -> None:
+def _declared_checks(pack: Pack, label: Label, edge: Edge, report: ImportReport) -> None:
     """Guards and effects are declared per action by the pack. Say so where the file disagrees."""
     spec = pack.action(label.trigger)
     if spec is None:
@@ -76,7 +76,7 @@ def _declared_checks(pack: Pack, label: Label, edge: Edge, report: _Report) -> N
 
 
 def _edge_action(pack: Pack, edge: Edge, current: dict[str, Transition], seen: set[str],
-                 report: _Report) -> tuple[Label, str] | None:
+                 report: ImportReport) -> tuple[Label, str] | None:
     label = parse_label(edge.label)
     if not label.trigger:
         report.add("unmapped", edge.where, f"{edge.source} -> {edge.target}",
@@ -141,7 +141,7 @@ def _steps(model: Workflow, parsed: Parsed, wanted: list[tuple[Edge, str, str]],
 
 
 def _apply(pack: Pack, model: Workflow, steps: list[dict[str, Any]],
-           report: _Report) -> tuple[Workflow, list[dict[str, Any]]]:
+           report: ImportReport) -> tuple[Workflow, list[dict[str, Any]]]:
     """Each edit applied by the kernel in turn; a refused edit is reported and the rest still tried."""
     applied: list[dict[str, Any]] = []
     for step in steps:
@@ -159,7 +159,7 @@ def _describe(step: dict[str, Any]) -> str:
     return " ".join(f"{k}={v}" for k, v in step.items())
 
 
-def _state_names(parsed: Parsed, report: _Report) -> bool:
+def _state_names(parsed: Parsed, report: ImportReport) -> bool:
     for name in parsed.states or []:
         if not 1 <= len(name) <= 60:
             report.add("unmapped", "state machine", f"state {name[:40]!r}", "a state name has 1 to 60 characters")
@@ -167,12 +167,12 @@ def _state_names(parsed: Parsed, report: _Report) -> bool:
     return True
 
 
-def _record_states(parsed: Parsed, report: _Report) -> None:
+def _record_states(parsed: Parsed, report: ImportReport) -> None:
     for name in parsed.states or []:
         report.add("mapped", "state machine", f"state {name}")
 
 
-def _wanted(pack: Pack, model: Workflow, parsed: Parsed, seen: set[str], report: _Report) -> list[tuple[Edge, str, str]]:
+def _wanted(pack: Pack, model: Workflow, parsed: Parsed, seen: set[str], report: ImportReport) -> list[tuple[Edge, str, str]]:
     """The file's transitions PlayIDE can read, as (edge, action, role); `seen` collects the actions named."""
     current = {t.action: t for t in model.transitions}
     wanted: list[tuple[Edge, str, str]] = []
@@ -183,7 +183,7 @@ def _wanted(pack: Pack, model: Workflow, parsed: Parsed, seen: set[str], report:
     return wanted
 
 
-def _record_transitions(candidate: Workflow, wanted: list[tuple[Edge, str, str]], report: _Report) -> None:
+def _record_transitions(candidate: Workflow, wanted: list[tuple[Edge, str, str]], report: ImportReport) -> None:
     """A transition is read when the kernel's candidate has it exactly as the file draws it."""
     drawn = {t.action: (t.from_state, t.to_state, t.role) for t in candidate.transitions}
     for edge, action, role in wanted:
@@ -191,7 +191,7 @@ def _record_transitions(candidate: Workflow, wanted: list[tuple[Edge, str, str]]
             report.add("mapped", edge.where, f"transition {action} ({edge.source} -> {edge.target}, {role})")
 
 
-def import_state_machine(pack: Pack, model: Workflow, parsed: Parsed, report: _Report) -> dict[str, Any]:
+def import_state_machine(pack: Pack, model: Workflow, parsed: Parsed, report: ImportReport) -> dict[str, Any]:
     if parsed.states is None:
         return {"found": False}
     if not parsed.states or not _state_names(parsed, report):
@@ -213,7 +213,7 @@ def import_state_machine(pack: Pack, model: Workflow, parsed: Parsed, report: _R
 # ---- class model --------------------------------------------------------------------------------------------
 
 def _attribute_type(attr: Attr, enums: dict[str, tuple[str, ...]], where: str, element: str,
-                    report: _Report) -> dict[str, Any] | None:
+                    report: ImportReport) -> dict[str, Any] | None:
     if attr.type in enums:
         return {"type": "choice", "choices": list(enums[attr.type])}
     read = READ_TYPES.get(attr.type.lower())
@@ -226,7 +226,7 @@ def _attribute_type(attr: Attr, enums: dict[str, tuple[str, ...]], where: str, e
     return {"type": read}
 
 
-def _attribute(klass: Klass, attr: Attr, enums: dict[str, tuple[str, ...]], report: _Report) -> dict[str, Any] | None:
+def _attribute(klass: Klass, attr: Attr, enums: dict[str, tuple[str, ...]], report: ImportReport) -> dict[str, Any] | None:
     element, where = f"{klass.name}.{attr.name}", attr.where or klass.where
     if attr.upper not in ("1", "0..1", ""):
         report.add("unmapped", where, element, f"multiplicity [{attr.lower}..{attr.upper}]: a collection of values is not "
@@ -243,7 +243,7 @@ def _attribute(klass: Klass, attr: Attr, enums: dict[str, tuple[str, ...]], repo
     return out | ({"description": attr.description[:300]} if attr.description else {})
 
 
-def _entity(klass: Klass, enums: dict[str, tuple[str, ...]], report: _Report) -> dict[str, Any] | None:
+def _entity(klass: Klass, enums: dict[str, tuple[str, ...]], report: ImportReport) -> dict[str, Any] | None:
     if not re.fullmatch(NAME, klass.name):
         report.add("unmapped", klass.where, f"class {klass.name}", "a class name is UpperCamelCase letters and digits")
         return None
@@ -260,7 +260,7 @@ def _entity(klass: Klass, enums: dict[str, tuple[str, ...]], report: _Report) ->
     return {"name": klass.name, "attributes": attributes} | ({"description": klass.description[:300]} if klass.description else {})
 
 
-def _link(link: Link, names: set[str], report: _Report) -> dict[str, Any] | None:
+def _link(link: Link, names: set[str], report: ImportReport) -> dict[str, Any] | None:
     element = f"{link.kind} {link.source} -> {link.target}"
     if link.source not in names or link.target not in names:
         report.add("unmapped", link.where, element, "it joins a class that was not imported")
@@ -275,7 +275,7 @@ def _link(link: Link, names: set[str], report: _Report) -> dict[str, Any] | None
             "source_multiplicity": ends[0], "target_multiplicity": ends[1]}
 
 
-def _record(parsed: Parsed, names: list[str], data: DataModel | None, report: _Report) -> str:
+def _record(parsed: Parsed, names: list[str], data: DataModel | None, report: ImportReport) -> str:
     marked = [k.name for k in parsed.classes or [] if k.record and k.name in names]
     if marked:
         return marked[0]
@@ -294,14 +294,14 @@ def _changes(before: DataModel | None, after: DataModel) -> dict[str, list[str]]
 
 
 def _document(pack: Pack, data: DataModel | None, parsed: Parsed, entities: list[dict[str, Any]],
-              report: _Report) -> dict[str, Any]:
+              report: ImportReport) -> dict[str, Any]:
     names = [e["name"] for e in entities]
     links = [x for link in parsed.links if (x := _link(link, set(names), report)) is not None]
     return {"schema_version": "eija.data.v1", "id": pack.id, "record": _record(parsed, names, data, report),
             "entities": entities, "associations": links}
 
 
-def _validated(document: dict[str, Any], report: _Report) -> DataModel | list[str]:
+def _validated(document: dict[str, Any], report: ImportReport) -> DataModel | list[str]:
     """The class model as the kernel's DataModel, or the reasons it refuses it (each also reported)."""
     try:
         return DataModel.model_validate(document)
@@ -312,7 +312,7 @@ def _validated(document: dict[str, Any], report: _Report) -> DataModel | list[st
     return problems
 
 
-def import_class_model(pack: Pack, data: DataModel | None, parsed: Parsed, report: _Report) -> dict[str, Any]:
+def import_class_model(pack: Pack, data: DataModel | None, parsed: Parsed, report: ImportReport) -> dict[str, Any]:
     if parsed.classes is None:
         return {"found": False}
     entities = [e for k in parsed.classes if (e := _entity(k, parsed.enums, report)) is not None]
@@ -326,7 +326,7 @@ def import_class_model(pack: Pack, data: DataModel | None, parsed: Parsed, repor
             "candidate": candidate.model_dump(mode="json"), "changes": _changes(data, candidate)}
 
 
-def _status(machine: dict[str, Any], classes: dict[str, Any], report: _Report) -> str:
+def _status(machine: dict[str, Any], classes: dict[str, Any], report: ImportReport) -> str:
     if not machine["found"] and not classes["found"]:
         return "EMPTY"
     if machine.get("policy") or (machine["found"] and machine.get("candidate") is None) or classes.get("errors"):
@@ -336,7 +336,7 @@ def _status(machine: dict[str, Any], classes: dict[str, Any], report: _Report) -
 
 def import_parsed(fmt: str, parsed: Parsed, pack: Pack, model: Workflow, data: DataModel | None) -> dict[str, Any]:
     """The import report: the typed edits the kernel applied, its verdict, the candidate models and every element's fate."""
-    report = _Report(parsed.skipped, parsed.derived)
+    report = ImportReport(parsed.skipped, parsed.derived)
     machine = import_state_machine(pack, model, parsed, report)
     classes = import_class_model(pack, data, parsed, report)
     return {"format": FORMAT, "from": fmt, "pack": pack.id, "model": model.semantic_hash,

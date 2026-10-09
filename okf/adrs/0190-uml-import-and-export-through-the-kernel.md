@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0190-uml-import-and-export-through-the-kernel.md
   title: 0190-uml-import-and-export-through-the-kernel.md
   hash_method: lf-sha256-v1
-  sha256: 015eb7b41ef57f319ba5adc60573dc3a3f4591db10c485ece9a9cfff72f63163
-notes_baseline: d94ab141ed8dd32eab5b009ad13e2f58fc0b700614074c1b343032ec0200beb2
+  sha256: 587e6a0266a477e3fc131943ea59916e9ca94bdd30e6d32311d139ae520d95a1
+notes_baseline: ad853b6f4dadf5db9a4f59e66014d1c411cbf74f39b18a06593cc06511257c53
 ---
 
 # ADR-0190: UML import and export: XMI, PlantUML, Mermaid and draw.io, with every import judged by the kernel
@@ -36,6 +36,12 @@ notes_baseline: d94ab141ed8dd32eab5b009ad13e2f58fc0b700614074c1b343032ec0200beb2
 * Decision
 * Evidence
 * Consequences
+
+## Code and docs mentioned
+
+Existence-checked by the gate; not hashed (an ADR is a decision record, not a description of current code).
+
+* `repo://tests/test_uml_new_system.py`
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -46,4 +52,5 @@ _No curated notes yet._
 ## Related decisions
 
 * [ADR-0016: OSS first: build adapters, not engines](/adrs/0016-oss-first-adapters-not-engines.md) - EIJA's value is the assurance kernel: meaning selection, typed semantic transactions, subject-bound evidence and separated human authority.
+* [ADR-0185: Start, open and save your own system in PlayIDE](/adrs/0185-start-open-and-save-your-own-system.md) - PlayIDE could only show the pack the server was started with (`eija serve --pack …`), and every pack was one that ships with EIJA.
 <!-- okf:generated:end links -->
