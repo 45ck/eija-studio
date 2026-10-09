@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0185-start-open-and-save-your-own-system.md
   title: 0185-start-open-and-save-your-own-system.md
   hash_method: lf-sha256-v1
-  sha256: 1014d374745a8dfd3f5cac91ac4de07fe4c2bb57c3e964f6b0e8ab75ddfa0abc
-notes_baseline: 045739682863f14605d0a42fcbbbc741882837c0efc17057f36074e776103349
+  sha256: aa19ae545bf1a8e5df7a70bc282d76feb0656d13efbaa5c18f2cc3112c3a2adf
+notes_baseline: fef892ad61a147f586465173b13573e90dc61a1e4e7f44005536f6fe49064365
 ---
 
 # ADR-0185: Start, open and save your own system in PlayIDE
@@ -31,7 +31,7 @@ notes_baseline: 045739682863f14605d0a42fcbbbc741882837c0efc17057f36074e776103349
 
 > Chosen option.
 >
-> * **Sketch.** `application/new_system.py` turns a name, a record class and a sketch into `pack.json` and `data.json`. A sketch has one transition per line, `From -> To : Action [Role]`, which is how the state machine labels it. Optional `actions: A, B` and `roles: C` lines declare actions and roles to draw later. Every bad line is named (`line 3: action Fix already labels line 2`). The pack gets one audit effect per action, one active user per role and one revoked user, and the `runtime_matrix` verifier. It gets no laws and no supported meanings, because the person did not write any. The record class gets one attribute, `title`.
+> * **Sketch.** `application/new_system.py` turns a name, a record class and a sketch into `pack.json` and `data.json`. A sketch has one transition per line, `From -> To : Action [Role]`, which is how the state machine labels it. Optional `actions: A, B` and `roles: C` lines declare actions and roles to draw later. Every bad line is named (`line 3: action Fix already labels line 2`). States, actions and roles that differ only in case (`Agent` and `agent`) are refused, because chat matches names ignoring case and one would hide the other. The pack gets one audit effect per action, one active user per role and one revoked user, and the `runtime_matrix` verifier. It gets no laws and no supported meanings, because the person did not write any. The record class gets one attribute, `title`.
 > * **Template.** A copy of a shipped pack (`library-loan`, `excursion`, `eija-review-slice`) with a new id and name. It keeps the model, rules, laws, data, screens and test cases (`scenarios.json`, ADR-0177). Laws are copied as they are: starting a system never loosens or drops one. What belonged only to the template is dropped: the language terms' `repo://` bindings, and any `hand_encoded` formal model, which becomes `not_run` with the reason.
 > * **Check.** Both paths end in `parse_pack`, `parse_data`, `parse_screens` and `parse_scenarios`. The dialog checks as you type (`check_only`) and shows the kernel's problems or what will be created. Nothing is written until the documents pass.
 > * **Where.** `adapters/system_library.py` keeps systems in a systems home (`--systems`, `EIJA_SYSTEMS`, default `~/PlayIDE`): `<home>/<id>/pack.json`, `data.json`, `screens.json`, `scenarios.json`, and the system's own workspace `.eija/`. A system is written into a staging folder, then renamed, and never over an existing one. `recent.json` lists the last 12 systems opened.

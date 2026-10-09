@@ -2,6 +2,7 @@
 
 ## 2026-10-09
 
+* **Sketch names that differ only in case**: re-synced `application.new_system.sketch_documents` and ADR-0185 after a sketch began refusing states, actions or roles that differ only in case. No Notes were hand-edited and nothing was recorded as verified.
 * **Your own systems, two fixes**: re-synced `application.new_system.sketch_documents` after roles that slug alike got unique user ids. No Notes were hand-edited and nothing was recorded as verified.
 
 ## 2026-10-08

@@ -70,10 +70,20 @@ def test_a_record_must_be_a_uml_class_name():
 
 
 def test_roles_that_slug_alike_still_get_their_own_users():
-    documents = sketch_documents("Desk", "Ticket", "Open -> Done : Close [Agent]\nDone -> Open : Reopen [agent]\nroles: A_B, A__B", "desk")
+    documents = sketch_documents("Desk", "Ticket", "Open -> Done : Close [Field_agent]\nDone -> Open : Reopen [Field__agent]\nroles: A_B, A__B", "desk")
     actors = documents["pack.json"]["fixtures"]["actors"]
     assert len({a["id"] for a in actors}) == len(actors) == 5
-    assert [a["role"] for a in actors if a["active"]] == ["Agent", "agent", "A_B", "A__B"]
+    assert [a["role"] for a in actors if a["active"]] == ["Field_agent", "Field__agent", "A_B", "A__B"]
+
+
+@pytest.mark.parametrize(("sketch", "problem"), [
+    ("Open -> Done : Close [Agent]\nDone -> Open : Reopen [agent]", "role agent differs from Agent only in case"),
+    ("Open -> Done : Close [Agent]\nactions: close", "action close differs from Close only in case"),
+    ("Open -> Done : Close [Agent]\nDone -> open : Reopen [Agent]", "state open differs from Open only in case"),
+])
+def test_names_that_differ_only_in_case_are_refused(sketch, problem):
+    with pytest.raises(PackError, match=problem):
+        sketch_documents("Desk", "Ticket", sketch, "desk")
 
 
 def test_ids_are_slugs_that_never_collide():

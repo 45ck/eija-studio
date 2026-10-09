@@ -114,14 +114,34 @@ def _fixtures(roles: list[str], states: list[str]) -> dict[str, Any]:
             "demo_request": f"Add a review step before {states[-1]}."}
 
 
+def _one_spelling(kind: str, names: list[str]) -> list[str]:
+    """Names that differ only in case: chat and the plan resolver match names ignoring case, so one would hide the other."""
+    seen: dict[str, str] = {}
+    problems = []
+    for name in names:
+        first = seen.setdefault(name.casefold(), name)
+        if first != name:
+            problems.append(f"{kind} {name} differs from {first} only in case; use one spelling or another name")
+    return problems
+
+
+def _vocabulary(parsed: dict[str, Any]) -> tuple[list[str], list[str], list[str]]:
+    """The states, actions and roles a sketch names, in order of first use; `PackError` if two differ only in case."""
+    states = list(dict.fromkeys(s for t in parsed["transitions"] for s in (t[0], t[1])))
+    actions = list(dict.fromkeys([t[2] for t in parsed["transitions"]] + parsed["actions"]))
+    roles = list(dict.fromkeys([t[3] for t in parsed["transitions"]] + parsed["roles"]))
+    clashes = _one_spelling("state", states) + _one_spelling("action", actions) + _one_spelling("role", roles)
+    if clashes:
+        raise PackError(clashes)
+    return states, actions, roles
+
+
 def sketch_documents(name: str, record: str, sketch: str, pack_id: str) -> dict[str, dict[str, Any]]:
     """`pack.json` and `data.json` for a system started from a sketch, checked by the kernel's pack check."""
     if not RECORD.match(record):
         raise PackError([f"record: {record!r} is not a UML class name (UpperCamelCase, letters and digits)"])
     parsed = parse_sketch(sketch)
-    states = list(dict.fromkeys(s for t in parsed["transitions"] for s in (t[0], t[1])))
-    roles = list(dict.fromkeys([t[3] for t in parsed["transitions"]] + parsed["roles"]))
-    actions = list(dict.fromkeys([t[2] for t in parsed["transitions"]] + parsed["actions"]))
+    states, actions, roles = _vocabulary(parsed)
     ids: set[str] = set()
     transitions = [{"id": _transition_id(action, ids), "action": action, "from_state": source, "to_state": target,
                     "role": role, "guards": list(BASE_GUARDS), "required_effects": [f"Audit:{action}"], "forbidden_effects": []}
