@@ -188,3 +188,32 @@ def test_the_screen_flow_is_read_from_the_state_machine_and_the_screens_in_a_rea
             assert errors == []
         finally:
             chrome.close()
+
+
+@pytest.mark.browser
+@pytest.mark.slow
+@browser
+def test_a_flow_wider_than_the_panel_says_more_screens_are_off_to_the_right_in_a_real_browser():
+    api = pytest.importorskip("playwright.sync_api", reason="NOT_RUN: install the hci or demos extra")
+    from demos.lib import ephemeral_eija_server  # noqa: PLC0415 - demos start a real server; only this opt-in test needs it
+
+    with ephemeral_eija_server(pack=ROOT / "packs/ai-ops") as server, api.sync_playwright() as playwright:
+        chrome = _launch(api, playwright)
+        try:
+            page = chrome.new_page(viewport={"width": 1280, "height": 800})
+            errors: list[str] = []
+            page.on("pageerror", lambda error: errors.append(str(error)))
+            page.goto(f"{server.base_url}/play#{server.token}")
+            page.wait_for_selector("body[data-ready=true]", timeout=60_000)
+            page.click("#tab-screens")
+            page.click("#screen-flow-toggle")
+            page.wait_for_selector("#screen-flow .flow-cue:not([hidden])")  # too wide to fit readably: full size, with a cue
+            assert re.fullmatch(r"\d+ more screens →", page.inner_text("#screen-flow .flow-cue"))
+            assert page.get_attribute("#screen-flow .flow-fit", "aria-pressed") == "false"
+            page.click("#screen-flow .flow-fit")  # the overview: every screen in the panel's width
+            assert page.get_attribute("#screen-flow .flow-fit", "aria-pressed") == "true"
+            assert page.eval_on_selector("#screen-flow .flow-view", "v => v.scrollWidth <= v.clientWidth")
+            assert page.is_hidden("#screen-flow .flow-cue")
+            assert errors == []
+        finally:
+            chrome.close()
