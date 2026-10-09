@@ -90,7 +90,7 @@ SCENARIOS: tuple[Scenario, ...] = (
     Scenario("playide_highlights", "The PlayIDE highlights: the showcase in two minutes", "recorded-partial", (),
              "The showcase's story at README length, recorded as its own unedited take: the model is the program, "
              "press play to a breakpoint, edit in place and watch it ripple, let the offline AI propose a change, "
-             "catch the step that deletes late returns with a prediction and a failing scenario test, then prove it "
+             "catch the step that deletes late returns with a prediction and the broken sequence diagram, then prove it "
              "with conformance, simulation, the laws and the scenario tests. Verify, approve and apply wait on #80."),
     Scenario("playide_review", "Review an AI's change in PlayIDE, not in a pull request", "recorded", (),
              "On the library-loan pack, an offline AI plan adds a renewal and quietly deletes late returns. The Review tab "
