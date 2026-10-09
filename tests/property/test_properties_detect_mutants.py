@@ -66,7 +66,7 @@ HASH_MUTANTS = {
     "ignores_forbidden_effects": (hash_variant(drop=("forbidden_effects",)), hashing.test_every_semantic_edit_changes_the_hash),
     "ignores_role": (hash_variant(drop=("role",)), hashing.test_every_semantic_edit_changes_the_hash),
     "ignores_initial_state": (hash_variant(drop=("initial_state",)), hashing.test_every_semantic_edit_changes_the_hash),
-    "ignores_transition_id": (hash_variant(drop=("id",)), hashing.test_hash_equality_coincides_with_semantic_equality),
+    "ignores_transition_id": (hash_variant(drop=("id",)), hashing.test_every_semantic_edit_changes_the_hash),
 }
 
 

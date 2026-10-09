@@ -482,7 +482,7 @@
   function planCard() {
     const box = el("div", undefined, { class: "plan" });
     box.append(el("p", plan.summary || "A plan", { class: "plan-summary" }),
-      el("p", plan.scope === "plan-draft" ? (plan.provider === "imported" ? "Imported from a UML file · checked by the server like any plan"
+      el("p", plan.saved ? "Saved on this system · checked by the server again, like any plan" : plan.scope === "plan-draft" ? (plan.provider === "imported" ? "Imported from a UML file · checked by the server like any plan"
         : "Drawn by you on the diagram · checked by the server like any plan")
         : `${plan.provider}${plan.live ? "" : " · offline fixture, not a live model"} · untrusted until you check it`, { class: "muted small" }));
     cards += 1;
@@ -591,7 +591,7 @@
     highlight(plan.result.diff);
     for (const which of Object.keys(DIAGRAMS)) markRipple(which);
     $("plan-banner").hidden = false;
-    $("plan-banner-text").textContent = `Previewing the plan: ${changes(plan.result.diff)}. Nothing is saved.`;
+    $("plan-banner-text").textContent = `Previewing the plan: ${changes(plan.result.diff)}. Nothing is applied to the model.`;
     plan.card.querySelector(".plan-tools .primary").textContent = "Back to the model";
   }
 
@@ -820,6 +820,31 @@
     const result = await refreshPlan();
     if (result && result.legal && !plan.previewing) enterPreview();
     plan.card.scrollIntoView({ block: "nearest" });
+  }
+
+  // Saving and reopening the work in progress (ADR-0185, play-systems.js). The draft is the plan's steps, as typed
+  // transactions with who wrote them, and the screens if edited. Restoring it rebuilds the plan and asks the server to
+  // check every step again, exactly as if it had just been drawn: a saved step is never trusted for having been saved.
+  function draft() {
+    return { steps: plan ? plan.steps.map((s) => ({ transaction: s.transaction, author: s.author === "ai" ? "ai" : "you" })) : [],
+      accepted: plan ? [...plan.accepted] : [], screens: screensEdited ? screens : null };
+  }
+
+  async function restoreDraft(saved) {
+    if (saved.screens) { screens = saved.screens; changed(); }
+    if (!saved.steps || !saved.steps.length) return null;
+    retire();
+    plan = { scope: "plan-draft", provider: "drawn by you", live: false, summary: "Your saved changes", meaning: null, request: "",
+      model: "draft", steps: [], accepted: [], previewing: false, card: null, rewarded: new Set(), saved: true };
+    plan.card = say("draft", el("div"));
+    saved.steps.forEach((step, i) => {
+      plan.steps.push({ n: i + 1, transaction: step.transaction, text: "", why: "", author: step.author === "ai" ? "ai" : "you", checked: false, caught: false });
+      plan.accepted.push(saved.accepted && i < saved.accepted.length ? Boolean(saved.accepted[i]) : true);
+    });
+    plan.card.replaceChildren(planCard());
+    const result = await refreshPlan();
+    if (result && result.legal && !plan.previewing) enterPreview();
+    return result;
   }
 
   // An imported UML file's edits (ADR-0190) become the plan, as the person's own steps like drawn edits: the server
@@ -1793,6 +1818,7 @@
     api, el, hooks, about, viewKey, label, restyle, clearSim, select, showTab, fit, importPlan,
     graph: () => graph, tab: () => tab, model: () => model, selected: () => selected, pack: () => packInfo, base: () => baseModel,
     planned: () => (plan && plan.result && plan.result.legal ? accepted() : null), // the change the Changes view draws (ADR-0176)
+    draft, restoreDraft, // saving and reopening the work in progress (ADR-0185)
     setChanges, diagram: (key) => ({ states: graph, classes: classGraph, usecases: useCaseGraph, components: componentGraph })[key],
   };
 
