@@ -13,16 +13,16 @@ Design it in UML, press play, watch it run, fix it in place, let the AI do the f
 | # | Beat | What the viewer sees | What is real | Status |
 |---|---|---|---|---|
 | 0 | Title | "Software engineering, played." | A title card | Recorded |
-| 1 | The model is the program | The library-loan state machine, then the class, use case and screen views drawn from the same model | ADR-0151, 0153, 0154. The design check passes | Recorded |
+| 1 | The model is the program | The library-loan state machine, then the class, use case, sequence and screen views drawn from the same model | ADR-0151, 0153, 0154. The design check passes | Recorded |
 | 2 | Press play | A breakpoint on a state (F9), then Run (F5): seeded users act, the kernel decides every step, and the run pauses on the breakpoint and then on the kernel's refusals, marked on the diagram. Build & run then starts the real app beside the model | ADR-0160 (run bar), ADR-0150 | Recorded |
-| 3 | Fix it in place, not in code | State picked in the palette, a click on the diagram, the name typed in the inline editor there. The policy checks it at once as a typed step | ADR-0157, ADR-0174 | Recorded |
+| 3 | Fix it in place, not in code | State picked in the palette, a click on the diagram, the name typed in the inline editor there. The policy checks it at once as a typed step, and Undo and Redo step it back and forth | ADR-0157, ADR-0174 | Recorded |
 | 4 | Watch it ripple | The new state badges every diagram tab it touches and warns that nothing leads into the new state. The class diagram gains the enum literal. The AI's follow-on (a way in) is re-checked by the server and ripples into a new use case and screen | ADR-0158; offline proposer, labelled | Recorded |
 | 5 | Let the AI do the busywork | A plain-language request (let librarians renew overdue loans) becomes two typed UML steps. The policy allows them, and the viewer looks at each on the diagram | ADR-0156. The offline phrase reader is labelled on screen | Recorded |
-| 6 | Review the change, not the code | The Review tab draws both models on one diagram (new path green, deleted path dashed red). Before each answer the reviewer predicts what the kernel will do. A wrong prediction catches that the AI quietly deleted late returns, the Tests tab shows the late-return scenario failing and paints the broken step on the diagram. The step is rejected, and the review runs again and passes | ADR-0175, ADR-0177 | Recorded |
+| 6 | Review the change, not the code | The Review tab draws both models on one diagram (new path green, deleted path dashed red). Before each answer the reviewer predicts what the kernel will do. A wrong prediction catches that the AI quietly deleted late returns, the Tests tab shows the late-return scenario failing and paints the broken step on the diagram, and the Sequences tab draws the same scenario as a UML interaction that now ends in the kernel's refusal. The step is rejected, and the review runs again and passes | ADR-0175, ADR-0177, ADR-0195 | Recorded |
 | 7 | Prove it, then play again | Build the changed system, run conformance and simulate again. The Laws tab proves every law over every reachable run and names what it never reached. All 7 scenario tests pass again. The checks ring fills to 5 of 5 | ADR-0157, ADR-0158, ADR-0166 | Recorded |
 | 8 | Ship it | Verify, approve and apply | Waits on the owner's source review and restamp (issue #80) | Skipped |
 | 8a | Share it as UML | The same page opened as `/play?view=review`: read-only diagrams, Permissions and runs, with no editing tools and no chat, for a stakeholder who reads UML | ADR-0172, ADR-0171 | Recorded |
-| 8b | Bring your own UML tools | The Import / Export menu (XMI, PlantUML, Mermaid, draw.io). The pack's PlantUML export with one transition added, as if edited elsewhere, is imported: the kernel reads it as one typed edit, the laws hold, and it becomes a plan like any other | ADR-0190 | Recorded |
+| 8b | Bring your own UML tools | The Import / Export menu (XMI, PlantUML, Mermaid, draw.io). The pack's PlantUML export with one transition added, as if edited elsewhere, is imported: the kernel reads it as one typed edit, the laws hold, and it becomes a plan like any other. A support desk drawn in another tool is then offered as a new system, and the report lists what the kernel could not carry, each with its reason | ADR-0190 | Recorded |
 | 8c | Start your own system | Systems, New system: a name, a record class and a three-line sketch of a support desk. The kernel checks the sketch as it is typed, and the page reopens on the new system with every diagram drawn from it | ADR-0185 | Recorded |
 | 9 | End card | "Less typing. No diff archaeology." | A title card | Recorded |
 
@@ -41,7 +41,7 @@ Every beat is filmed on the workbench shell (ADR-0173): outline and inspector on
 
 ## The highlights cut
 
-[`demos/scenarios/playide_highlights.py`](../../demos/scenarios/playide_highlights.py) tells the same story in about two minutes for the README: the model, a breakpoint, an edit in place and its ripple, the AI's change, the catch (a wrong prediction and a failing scenario test), and the proof. It is its own unedited take of the real product, not a cut of the full one, so it is checked the same way. It runs with `scene.pace = 0.8`, which tightens caption holds and camera motion but never skips an act or an assertion.
+[`demos/scenarios/playide_highlights.py`](../../demos/scenarios/playide_highlights.py) tells the same story in about two minutes for the README: the model, a breakpoint, an edit in place and its ripple, the AI's change, the catch (a wrong prediction and the late-return sequence diagram ending in a refusal), and the proof. It is its own unedited take of the real product, not a cut of the full one, so it is checked the same way. It runs with `scene.pace = 0.8`, which tightens caption holds and camera motion but never skips an act or an assertion.
 
 ## Record it
 
