@@ -143,3 +143,47 @@ def test_undo_redo_and_recovery_after_a_reload_in_a_real_browser():
             assert errors == []
         finally:
             chrome.close()
+
+
+@pytest.mark.browser
+@pytest.mark.slow
+@browser
+def test_a_saved_draft_opens_as_an_undoable_edit_and_newer_kept_work_wins_in_a_real_browser():
+    api = pytest.importorskip("playwright.sync_api", reason="NOT_RUN: install the hci or demos extra")
+    from demos.lib import ephemeral_eija_server  # noqa: PLC0415 - demos start a real server; only this opt-in test needs it
+
+    with ephemeral_eija_server(pack=ROOT / "packs/library-loan") as server, api.sync_playwright() as playwright:
+        chrome = _launch(api, playwright)
+        try:
+            page = chrome.new_page(viewport={"width": 1600, "height": 900})
+            errors: list[str] = []
+            page.on("pageerror", lambda error: errors.append(str(error)))
+            page.goto(f"{server.base_url}/play#{server.token}")
+            page.wait_for_selector("body[data-ready=true]", timeout=60_000)
+            page.fill("#chat-input", "add state Archived after Returned")
+            page.click("#chat-send")
+            page.wait_for_selector("#chat-log .msg.ai .plan .plan-verdict")
+            page.click("#system-save")
+            page.wait_for_selector("#system-saved[data-dirty=false]")
+            # Without this browser's copy, a reload opens the saved draft, and opening it is one undoable edit.
+            page.evaluate("() => localStorage.clear()")
+            page.reload()
+            page.wait_for_selector("body[data-ready=true]", timeout=60_000)
+            page.wait_for_selector("#chat-log .plan .plan-verdict")
+            assert page.get_attribute("#undo", "title") == "Undo open the saved work (Ctrl+Z)"
+            assert page.locator("#chat-log .recovered").count() == 0
+            # A change after the save is kept by the browser; on reload it comes back instead of the older save.
+            page.uncheck("#chat-log .plan .plan-steps > li:nth-child(1) input")
+            page.wait_for_selector("#chat-log .plan .plan-steps > li:nth-child(1).rejected")
+            page.reload()
+            page.wait_for_selector("body[data-ready=true]", timeout=60_000)
+            page.wait_for_selector("#chat-log .recovered")
+            page.wait_for_selector("#chat-log .plan .plan-steps > li:nth-child(1).rejected")
+            page.wait_for_timeout(1000)  # the Save mark refreshes on a timer
+            assert page.text_content("#system-saved") == "Unsaved changes"
+            # Saving it makes the two agree again.
+            page.click("#system-save")
+            page.wait_for_selector("#system-saved[data-dirty=false]")
+            assert errors == []
+        finally:
+            chrome.close()

@@ -40,10 +40,7 @@ def read_transition(line: str, where: str, parsed: Parsed, aliases: dict[str, st
         parsed.skip(where, line, "an arrow from the initial pseudostate straight to a final state")
     elif a == INITIAL:
         parsed.state(b)
-        if parsed.initial not in (None, b):
-            parsed.skip(where, f"initial -> {b}", f"a second initial state; kept {parsed.initial}")
-        else:
-            parsed.initial = b
+        parsed.start(b, where)
     elif b == INITIAL:
         parsed.state(a)  # a final state: PlayIDE derives it (no transition leaves the state)
     else:

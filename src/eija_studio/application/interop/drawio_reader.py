@@ -15,8 +15,9 @@ import xml.etree.ElementTree as ET
 import zlib
 from dataclasses import replace
 
+from eija_studio.domain.models import DomainError
 
-from .model import Edge, Klass, Link, Parsed, xml_root
+from .model import MAX_XML_BYTES, Edge, Klass, Link, Parsed, xml_root
 from .textual import read_member
 
 
@@ -39,9 +40,18 @@ def _page_model(diagram: ET.Element) -> ET.Element | None:
         return found
     try:
         packed = base64.b64decode((diagram.text or "").strip(), validate=True)
-        xml = _percent_decode(zlib.decompress(packed, -15).decode("latin-1"))
-        return ET.fromstring(xml)  # noqa: S314 - the outer document was checked for DTDs; this is draw.io's own page XML
-    except (binascii.Error, zlib.error, ET.ParseError, ValueError):
+        inflate = zlib.decompressobj(-15)
+        raw = inflate.decompress(packed, MAX_XML_BYTES + 1)  # bounded: a small page cannot inflate without limit
+    except (binascii.Error, zlib.error, ValueError):
+        return None
+    if len(raw) > MAX_XML_BYTES or inflate.unconsumed_tail:
+        raise DomainError("IMPORT_TOO_LARGE", f"A draw.io page is read up to {MAX_XML_BYTES} bytes once decompressed")
+    xml = _percent_decode(raw.decode("latin-1"))
+    if re.search(r"<!DOCTYPE|<!ENTITY", xml, re.IGNORECASE):  # the page is XML of its own: the same refusal as the file
+        raise DomainError("IMPORT_INVALID", "A draw.io page with a DTD or entities is refused")
+    try:
+        return ET.fromstring(xml)  # noqa: S314 - DTDs and entities are refused above, so nothing expands
+    except ET.ParseError:
         return None
 
 
@@ -111,7 +121,8 @@ def _split_hr(raw: str) -> tuple[str, str, str]:
 
 
 def _is_class(cell: _Cell, children: list[_Cell]) -> bool:
-    return cell.vertex and ((cell.has("swimlane") and bool(children)) or bool(re.search(r"<hr", cell.raw, re.IGNORECASE)))
+    # a class with no attributes is a swimlane with no rows, so the swimlane alone marks a class box
+    return cell.vertex and (cell.has("swimlane") or bool(re.search(r"<hr", cell.raw, re.IGNORECASE)))
 
 
 def _read_class(cell: _Cell, children: list[_Cell], parsed: Parsed, ids: dict[str, str]) -> None:
@@ -232,7 +243,7 @@ def _state_vertices(cells: list[_Cell], parsed: Parsed) -> tuple[dict[str, tuple
 def _state_edge(cell: _Cell, a: tuple[str, str], b: tuple[str, str], label: str, parsed: Parsed) -> None:
     ends = (a[0], b[0])
     if ends == ("initial", "state"):
-        parsed.initial = parsed.initial or b[1]
+        parsed.start(b[1], f"cell {cell.id}")
     elif ends == ("state", "state"):
         parsed.edges.append(Edge(a[1], b[1], label, f"cell {cell.id}"))
     elif ends != ("state", "final"):  # a final state is derived from the model

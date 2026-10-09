@@ -42,6 +42,7 @@ Chosen option: snapshots, because what a person edits in PlayIDE is already one 
 * **Restoring.** The plan is put back as it was, its card in the chat re-enabled, and the server asked to check and preview it again, so a step that no longer applies says so. A drawn plan that is undone away disappears from the chat; an AI plan that is undone away stays as a record marked "Undone." and comes back on redo.
 * **Autosave.** Each snapshot is written to `localStorage` (`playide.draft.v1:<pack>:<case>`) as it is made, with up to 30 history entries either side of the current one; if storage is full, the current document alone is kept. The status bar says "Saved in this browser", or that storage is unavailable. When the document is empty the draft is removed.
 * **Recovery.** On load, a kept draft comes back with its history and a note in the chat ("Recovered your unsaved work from …: 2 plan steps and screen edits"), with **Discard it** (itself undoable). If the model in force has changed since, the note says that every step is checked against it again.
+* **With Save (ADR-0185).** Opening a saved draft and importing a UML file are undoable edits too ("open the saved work", "import a UML file"). Work this browser kept is never older than a save, because every edit is kept as it is made and a save does not clear it, so when it comes back on load the saved draft is not opened over it; the Save mark then compares the recovered work with the saved draft.
 * **For saving to a file.** `window.PlayIDE` gains `document()`, `restore(doc, label)` (opens a document as an undoable edit), `undo()`, `redo()` and `history()`. Every edit fires `playide:edit` and `hooks.edit`. Saving and opening a system is another feature's job; it builds on these rather than keeping its own copy.
 
 ### Consequences
@@ -51,7 +52,7 @@ Chosen option: snapshots, because what a person edits in PlayIDE is already one 
 * Good: a reload or crash loses nothing; recovery is visible and can be discarded.
 * Bad: the draft lives in one browser profile. Another browser or machine does not see it, and clearing site data removes it. Saving to a file is the durable path.
 * Bad: two tabs on the same model write the same draft; the last edit wins.
-* Revisit when: saving a system to a file lands (autosave then also marks the file unsaved), or collaborative editing is wanted (then Yjs).
+* Revisit when: collaborative editing is wanted (then Yjs).
 
 ## OSS check (required for any custom module)
 

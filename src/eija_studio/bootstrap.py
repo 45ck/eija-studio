@@ -12,6 +12,7 @@ from .adapters.repository import RepositoryConnection
 from .adapters.repository_changes import RepositoryChanges
 from .adapters.repository_analysis import syntax_reader
 from .adapters.self_facts import source_profile
+from .adapters.system_library import SystemLibrary  # noqa: F401 - re-exported for interfaces (ADR-0185)
 from .application.service import Studio
 from .domain.pack import Pack, default_pack, load_pack
 
