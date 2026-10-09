@@ -53,9 +53,9 @@ _Symbol pages are generated for the domain and application layers only._
 
 * [`application/access`](/modules/application/access.md)
 * [`application/components`](/modules/application/components.md)
+* [`application/data_steps`](/modules/application/data_steps.md)
 * [`application/ghost_diff`](/modules/application/ghost_diff.md)
 * [`application/law_proof`](/modules/application/law_proof.md)
-* [`application/new_system`](/modules/application/new_system.md)
 * [`application/plan`](/modules/application/plan.md)
 * [`application/review`](/modules/application/review.md)
 * [`application/ripple`](/modules/application/ripple.md)
@@ -68,7 +68,6 @@ _Symbol pages are generated for the domain and application layers only._
 * [`domain/policy`](/modules/domain/policy.md)
 * [`domain/scenarios`](/modules/domain/scenarios.md)
 * [`domain/screens`](/modules/domain/screens.md)
-* [`domain/transactions`](/modules/domain/transactions.md)
 * [`interfaces/app_build`](/modules/interfaces/app_build.md)
 * [`interfaces/play_interop`](/modules/interfaces/play_interop.md)
 <!-- okf:generated:end facts -->
@@ -82,9 +81,9 @@ _No curated notes yet._
 
 * [application.access](/modules/application/access.md) - Who can do what (ADR-0171): the model's permissions as a role by state matrix, each cell checked by the kernel, and reachability questions such as "can a recor…
 * [application.components](/modules/application/components.md) - The component diagram of an app built from the model (ADR-0155), extracted from the generated files themselves.
+* [application.data_steps](/modules/application/data_steps.md) - Data-model steps in a chat plan (ADR-0202): add an attribute to a class, remove one, or make one required or optional.
 * [application.ghost_diff](/modules/application/ghost_diff.md) - How a change looks on the state machine: both models on one canvas, with nothing hidden (ADR-0176).
 * [application.law_proof](/modules/application/law_proof.md) - Prove a pack's laws over every run the kernel allows (ADR-0166).
-* [application.new_system](/modules/application/new_system.md) - Start a new system (ADR-0185): the pack documents for a system started from a sketch or copied from a template.
 * [application.plan](/modules/application/plan.md) - Plan mode for the PlayIDE chat (ADR-0156): an AI proposes a change as numbered typed steps; the person accepts or rejects each one and sees what the accepted o…
 * [application.review](/modules/application/review.md) - Review a model change in PlayIDE instead of a pull request (ADR-0175).
 * [application.ripple](/modules/application/ripple.md) - Ripple (ADR-0158): what one change to the state machine does to every other diagram of the same system, and the follow-on edits that would keep them in agreeme…
@@ -97,7 +96,6 @@ _No curated notes yet._
 * [domain.policy](/modules/domain/policy.md) - Generic policy: coherence with a domain pack's declared action catalog, the pack's laws, and declared effects.
 * [domain.scenarios](/modules/domain/scenarios.md) - Scenarios: a pack's test cases, written as stories a person can read and the kernel can run (ADR-0177).
 * [domain.screens](/modules/domain/screens.md) - Screens: the user interface of a pack's app, designed against its use cases and data model (ADR-0154).
-* [domain.transactions](/modules/domain/transactions.md) - Open change vocabulary (WBS 1.3): the semantic edits an owner (or a pack meaning) may make to a workflow.
 * [interfaces.app_build](/modules/interfaces/app_build.md) - `eija build`: write a runnable app generated from a pack's model, then run its kernel conformance tests (ADR-0150).
 * [interfaces.play_interop](/modules/interfaces/play_interop.md) - PlayIDE routes for UML interchange (ADR-0190): export the model on screen, and read a UML file as a report.
 

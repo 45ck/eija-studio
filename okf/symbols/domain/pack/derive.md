@@ -1,7 +1,7 @@
 ---
 type: Function
 title: domain.pack.derive
-description: A draft of `pack` held in memory (`document`, checked as `parse_pack` checks any pack), whose files beside `pack.json` (`data.json`, `screens.json`, `scenarios.json`) are read from where `pack` was read.
+description: A draft of `pack` held in memory (`document`, checked as `parse_pack` checks any pack), whose files beside `pack.json` (`data.json`, `screens.json`, `scenarios.json`) are read from where `pack` was read, or are the ones…
 resource: repo://src/eija_studio/domain/pack.py#derive
 tags:
 - symbol
@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/pack.py#derive
   title: domain/pack.py
   hash_method: ast-v2
-  sha256: ecf306a817f51d312b038c69f9c6b6e84c9b4e3abff1d0b218cfc9fd3eb62e0f
-notes_baseline: 0d535fb13461cbb0e381cec28f967a121d371cfc2bf250183f9c0b1d4a2775a3
+  sha256: 45bc2888d28b9d5580a1bf3cf850df07d78d620798c4522a79c0470048da42c5
+notes_baseline: 6b5f17f6c942d29ea84e65a3dc2be87775ba871f5c27e1d5e9a4dcb0235151f1
 ---
 
 # domain.pack.derive
@@ -33,8 +33,9 @@ notes_baseline: 0d535fb13461cbb0e381cec28f967a121d371cfc2bf250183f9c0b1d4a2775a3
 
 ~~~text
 A draft of `pack` held in memory (`document`, checked as `parse_pack` checks any pack), whose files beside
-`pack.json` (`data.json`, `screens.json`, `scenarios.json`) are read from where `pack` was read. A draft is never a
-loaded snapshot: `find_pack` cannot resolve it, so no change case or receipt can name it.
+`pack.json` (`data.json`, `screens.json`, `scenarios.json`) are read from where `pack` was read, or are the ones it
+holds (`hold`). A draft is never a loaded snapshot: `find_pack` cannot resolve it, so no change case or receipt can
+name it.
 ~~~
 <!-- okf:generated:end facts -->
 

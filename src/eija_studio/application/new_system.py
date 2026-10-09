@@ -12,7 +12,7 @@ import copy
 import re
 from typing import Any
 
-from eija_studio.domain.data import parse_data
+from eija_studio.domain.data import ATTRIBUTE_NAME, data_for, parse_data
 from eija_studio.domain.models import BASE_GUARDS, DomainError
 from eija_studio.domain.pack import Pack, PackError, derive, parse_pack
 from eija_studio.domain.scenarios import parse_scenarios
@@ -22,6 +22,7 @@ from eija_studio.domain.transactions import AddTransition, SetRole, Transaction
 NAME = r"[A-Za-z][A-Za-z0-9_]{0,39}"  # states, actions and roles: names the built app's code can use as they are
 LINE = re.compile(rf"^\s*({NAME})\s*->\s*({NAME})\s*:\s*({NAME})\s*\[\s*({NAME})\s*\]\s*$")
 LIST = re.compile(r"^\s*(actions|roles)\s*:\s*(.*)$", re.IGNORECASE)
+FIELD = ATTRIBUTE_NAME  # an attribute's name, for a data-model step (ADR-0202): what the built app's form can use
 RECORD = re.compile(r"^[A-Z][A-Za-z0-9]{0,39}$")
 MAX_LINES = 64
 UNSUPPORTED = "unsupported"
@@ -261,3 +262,10 @@ def declare(pack: Pack, transactions: list[Transaction]) -> Pack:
         return derive(pack, _declared_document(pack, actions, roles))
     except PackError as error:
         raise DomainError("PLAN_NAME_INVALID", error.message, {"problems": list(error.diagnostics)}) from None
+
+
+def classes(pack: Pack) -> tuple[str, dict[str, list[str]]] | None:
+    """A system's record class and each class's attribute names, for naming data-model steps (ADR-0202); None when the
+    system has no class diagram. A draft's held data model counts (`domain.pack.hold`)."""
+    data = data_for(pack)
+    return None if data is None else (data.record, {e.name: [a.name for a in e.attributes] for e in data.entities})

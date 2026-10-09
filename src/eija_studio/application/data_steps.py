@@ -8,11 +8,12 @@ held in memory (`domain.pack.hold`); nothing is written, and a shipped pack's da
 """
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import Annotated, Any, Literal, Union
 
 from pydantic import Field, ValidationError
 
-from eija_studio.domain.data import ATTRIBUTE_NAME, DATA_FILE, NAME, Attribute, DataModel, data_for, parse_data
+from eija_studio.domain.data import ATTRIBUTE_NAME, DATA_FILE, NAME, Attribute, DataModel, Entity, data_for, parse_data
 from eija_studio.domain.models import Contract, DomainError
 from eija_studio.domain.pack import Pack, hold
 from eija_studio.domain.transactions import Transaction, parse_transaction
@@ -41,7 +42,8 @@ class SetRequired(Contract):
 
 DataStep = Annotated[Union[AddAttribute, RemoveAttribute, SetRequired], Field(discriminator="kind")]  # noqa: UP007
 DATA_STEP_KINDS = ("add_attribute", "remove_attribute", "set_required")
-Step = Transaction | AddAttribute | RemoveAttribute | SetRequired
+DataEdit = AddAttribute | RemoveAttribute | SetRequired
+Step = Transaction | DataEdit
 FIXED = "This system's data model is its owner's: chat changes the class diagram only on a system you started"
 
 
@@ -59,13 +61,23 @@ def parse_step(data: Any) -> Step:
         raise DomainError("EDIT_INVALID", "Data-model step fields are invalid", details={"codes": ["EDIT_INVALID"], "refs": []}) from None
 
 
+DATA_EDITS = (AddAttribute, RemoveAttribute, SetRequired)
+
+
 def is_data(step: Step) -> bool:
-    return isinstance(step, AddAttribute | RemoveAttribute | SetRequired)
+    return isinstance(step, DATA_EDITS)
 
 
-def split(steps: list[Step]) -> tuple[list[Transaction], list[Step]]:
+def split(steps: Sequence[Step]) -> tuple[list[Transaction], list[DataEdit]]:
     """The kernel transactions and the data-model steps, each in plan order."""
-    return [s for s in steps if not is_data(s)], [s for s in steps if is_data(s)]
+    transactions: list[Transaction] = []
+    edits: list[DataEdit] = []
+    for step in steps:
+        if isinstance(step, DATA_EDITS):
+            edits.append(step)
+        else:
+            transactions.append(step)
+    return transactions, edits
 
 
 def _refused(code: str, message: str, ref: str) -> DomainError:
@@ -73,21 +85,21 @@ def _refused(code: str, message: str, ref: str) -> DomainError:
 
 
 def _entity(document: dict[str, Any], name: str) -> dict[str, Any]:
-    found = next((e for e in document["entities"] if e["name"] == name), None)
+    found: dict[str, Any] | None = next((e for e in document["entities"] if e["name"] == name), None)
     if found is None:
         raise _refused("EDIT_INVALID", f"The class diagram has no class {name}", "class:" + name)
     return found
 
 
 def _attribute(entity: dict[str, Any], name: str) -> dict[str, Any]:
-    found = next((a for a in entity["attributes"] if a["name"] == name), None)
+    found: dict[str, Any] | None = next((a for a in entity["attributes"] if a["name"] == name), None)
     if found is None:
         raise _refused("EDIT_INVALID", f"{entity['name']} has no attribute {name}", f"attribute:{entity['name']}.{name}")
     return found
 
 
-def _apply(document: dict[str, Any], step: Step) -> None:
-    entity = _entity(document, step.entity)  # type: ignore[union-attr]
+def _apply(document: dict[str, Any], step: DataEdit) -> None:
+    entity = _entity(document, step.entity)
     if isinstance(step, AddAttribute):
         if any(a["name"].casefold() == step.attribute.name.casefold() for a in entity["attributes"]):
             raise _refused("EDIT_INVALID", f"{step.entity} already has an attribute {step.attribute.name}",
@@ -99,7 +111,7 @@ def _apply(document: dict[str, Any], step: Step) -> None:
         _attribute(entity, step.name)["required"] = step.required
 
 
-def apply_data(data: DataModel | None, steps: list[Step]) -> DataModel | None:
+def apply_data(data: DataModel | None, steps: Sequence[DataEdit]) -> DataModel | None:
     """`data` with the data-model steps applied in turn, checked by the data model's own contract; `data` when none."""
     if not steps:
         return data
@@ -114,7 +126,7 @@ def apply_data(data: DataModel | None, steps: list[Step]) -> DataModel | None:
         raise DomainError("EDIT_INVALID", error.message, details={"codes": ["EDIT_INVALID"], "refs": []}) from None
 
 
-def draft_pack(pack: Pack, steps: list[Step], grows: bool) -> Pack:
+def draft_pack(pack: Pack, steps: Sequence[Step], grows: bool) -> Pack:
     """`pack` as these plan steps would have it, held in memory: on a system the person started (`grows`), the actions
     and roles they name are declared (ADR-0201) and the data model holds their data-model steps (ADR-0202). A shipped
     pack is itself, and a data-model step on it is refused."""
@@ -131,14 +143,13 @@ def _type(a: dict[str, Any]) -> str:
     return f"one of {', '.join(a['choices'])}" if a["type"] == "choice" else a["type"]
 
 
-def describe_data(step: Step) -> str:
+def describe_data(step: DataEdit) -> str:
     """One line a person can check against the class diagram."""
     if isinstance(step, AddAttribute):
         a = step.attribute.model_dump(mode="json")
         return f"Add attribute {a['name']}: {_type(a)} to {step.entity}" + (", required" if a["required"] else "")
     if isinstance(step, RemoveAttribute):
         return f"Remove attribute {step.name} from {step.entity}"
-    assert isinstance(step, SetRequired)
     return f"Make {step.entity}.{step.name} {'required' if step.required else 'optional'}"
 
 
@@ -146,12 +157,19 @@ def data_changes(before: DataModel | None, after: DataModel | None) -> list[str]
     """What changed on the class diagram, in words: attributes gained and lost, and required ones made optional or back."""
     if before is None or after is None or before.digest == after.digest:
         return []
-    changes = []
-    for entity in after.entities:
-        old = {a.name: a for a in before.entity(entity.name).attributes} if entity.name in {e.name for e in before.entities} else {}
-        new = {a.name: a for a in entity.attributes}
-        changes += [f"{entity.name} gains {n}" for n in new if n not in old]
-        changes += [f"{entity.name} loses {n}" for n in old if n not in new]
-        changes += [f"{entity.name}.{n} is now {'required' if new[n].required else 'optional'}"
-                    for n in new if n in old and new[n].required != old[n].required]
-    return changes
+    known = {e.name for e in before.entities}
+    return [text for entity in after.entities
+            for text in _entity_changes(entity, before.entity(entity.name) if entity.name in known else None)]
+
+
+def _entity_changes(entity: Entity, was: Entity | None) -> list[str]:
+    old = {a.name: a for a in was.attributes} if was is not None else {}
+    new = {a.name: a for a in entity.attributes}
+    gained = [f"{entity.name} gains {n}" for n in new if n not in old]
+    lost = [f"{entity.name} loses {n}" for n in old if n not in new]
+    return gained + lost + _required_changes(entity.name, old, new)
+
+
+def _required_changes(name: str, old: dict[str, Attribute], new: dict[str, Attribute]) -> list[str]:
+    both = [n for n in new if n in old and new[n].required != old[n].required]
+    return [f"{name}.{n} is now {'required' if new[n].required else 'optional'}" for n in both]

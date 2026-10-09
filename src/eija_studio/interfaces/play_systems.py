@@ -18,13 +18,13 @@ from typing import Any, Literal
 
 from pydantic import Field
 
+from eija_studio.application.data_steps import parse_step
 from eija_studio.application.interop import MAX_CHARS, detect_format, start_from_file
 from eija_studio.application.new_system import SKETCH_HELP, sketch_documents, summary, system_id, template_documents
 from eija_studio.application.plan import MAX_DRAFT_STEPS, MAX_REQUEST
 from eija_studio.domain.models import Contract, DomainError, Workflow
 from eija_studio.domain.pack import PACK_FILE, PACKS_ROOT, PackError, load_pack
 from eija_studio.domain.screens import parse_screens
-from eija_studio.domain.transactions import parse_transaction
 
 BLANK = "blank"
 UML = "uml"  # start from a UML file (ADR-0190)
@@ -216,7 +216,7 @@ def register(app, systems: Systems) -> None:
     def play_save_draft(body: SavedWork):
         """Save the work in progress: the plan's steps as typed transactions, and edited screens. Nothing is applied."""
         for step in body.steps:
-            parse_transaction(step.transaction)  # a malformed step is refused here, not on reopening
+            parse_step(step.transaction)  # a malformed step is refused here, not on reopening
         if body.screens is not None:
             parse_screens(body.screens, systems.handle.pack.id)
         saved = body.model_dump(mode="json") | {"saved": int(time.time()), "system": systems.current["id"], "model": in_force()}

@@ -10,12 +10,14 @@ from __future__ import annotations
 
 from typing import Any
 
+from eija_studio.domain.data import data_for
 from eija_studio.domain.models import DomainError, Workflow
 from eija_studio.domain.pack import Pack
 from eija_studio.domain.policy import apply_structural_all, apply_transactions
-from eija_studio.domain.transactions import AddTransition, Transaction, parse_transaction
+from eija_studio.domain.transactions import AddTransition, Transaction
+from .data_steps import DATA_EDITS, FIXED, Step, apply_data, data_changes, describe_data, draft_pack, is_data, parse_step, split
 from .diagrams import diff_summary
-from .new_system import declare, new_names
+from .new_system import new_names
 from .ports import PlanProposer
 
 MAX_STEPS = 12  # steps in one proposal
@@ -23,11 +25,14 @@ MAX_DRAFT_STEPS = 64  # steps in the work in progress: every round of a system b
 MAX_REQUEST = 2000
 
 
-def describe(tx: Transaction, model: Workflow | None = None, pack: Pack | None = None,
-             plan: list[Transaction] | None = None) -> str:
+def describe(tx: Step, model: Workflow | None = None, pack: Pack | None = None,
+             plan: list[Step] | None = None) -> str:
     """One line a person can check against the diagram. A transition is named by its action, as the diagram labels it,
     when `model` has it or a step of the same `plan` adds it. An action or role `pack` does not declare yet is
-    called new, so a person sees when a step grows the system's vocabulary (ADR-0201)."""
+    called new, so a person sees when a step grows the system's vocabulary (ADR-0201). A data-model step reads as the
+    class diagram says it (ADR-0202)."""
+    if isinstance(tx, DATA_EDITS):
+        return describe_data(tx)
     d = tx.model_dump()
     actions = {t.id: t.action for t in model.transitions} if model is not None else {}
     actions |= {step.id: step.action for step in plan or [] if isinstance(step, AddTransition)}
@@ -37,7 +42,7 @@ def describe(tx: Transaction, model: Workflow | None = None, pack: Pack | None =
 
 
 def _new(tx: Transaction, pack: Pack) -> str:
-    actions, roles = new_names(pack, [tx])
+    actions, roles = new_names(pack, split([tx])[0])
     names = [f"new action {a}" for a in actions] + [f"new role {r}" for r in roles]
     return f" ({', '.join(names)})" if names else ""
 
@@ -58,7 +63,7 @@ def _text(d: dict[str, Any]) -> str:
     return texts[d["kind"]]()
 
 
-def _steps(document: Any) -> list[tuple[Transaction, str]]:
+def _steps(document: Any) -> list[tuple[Step, str]]:
     if not isinstance(document, dict) or not isinstance(document.get("steps"), list):
         raise DomainError("PLAN_INVALID", "The proposer did not return a plan")
     if not 1 <= len(document["steps"]) <= MAX_STEPS:
@@ -67,15 +72,16 @@ def _steps(document: Any) -> list[tuple[Transaction, str]]:
     for step in document["steps"]:
         if not isinstance(step, dict):
             raise DomainError("PLAN_INVALID", "A plan step is not an object")
-        steps.append((parse_transaction(step.get("transaction")), str(step.get("why", ""))[:300]))
+        steps.append((parse_step(step.get("transaction")), str(step.get("why", ""))[:300]))
     return steps
 
 
-def _statuses(model: Workflow, pack: Pack, transactions: list[Transaction], accepted: list[bool],
+def _statuses(model: Workflow, pack: Pack, transactions: list[Step], accepted: list[bool],
               named: Pack | None) -> list[dict[str, Any]]:
     """Whether each accepted step applies after the accepted steps before it, with the step in words. `named` is the
-    pack the words call names new against, when the plan may grow the vocabulary."""
-    kept: list[Transaction] = []
+    pack the words call names new against, when the plan may grow the vocabulary. A data-model step applies to the
+    data model after the accepted data-model steps before it (ADR-0202)."""
+    kept: list[Step] = []
     status: list[dict[str, Any]] = []
     for tx, keep in zip(transactions, accepted, strict=True):
         text = describe(tx, model, named, transactions)
@@ -83,12 +89,20 @@ def _statuses(model: Workflow, pack: Pack, transactions: list[Transaction], acce
             status.append({"status": "rejected", "text": text})
             continue
         try:
-            apply_structural_all(model, [*kept, tx], pack)
+            _try(model, pack, [*kept, tx], tx)
             kept.append(tx)
             status.append({"status": "applies", "text": text})
         except DomainError as error:
             status.append({"status": "does_not_apply", "text": text, "code": error.code, "message": error.message})
     return status
+
+
+def _try(model: Workflow, pack: Pack, steps: list[Step], step: Step) -> None:
+    transactions, data_steps = split(steps)
+    if is_data(step):
+        apply_data(data_for(pack), data_steps)
+    else:
+        apply_structural_all(model, transactions, pack)
 
 
 def _refusal(error: DomainError, pack: Pack) -> dict[str, Any]:
@@ -100,33 +114,47 @@ def _refusal(error: DomainError, pack: Pack) -> dict[str, Any]:
             "laws": [laws[r] for r in refs if r in laws]}
 
 
-def preview_plan(model: Workflow, pack: Pack, transactions: list[Transaction], accepted: list[bool],
+def preview_plan(model: Workflow, pack: Pack, transactions: list[Step], accepted: list[bool],
                  grows: bool = False) -> dict[str, Any]:
     """What the accepted steps would make of `model`. Each step reports whether it applies after the accepted ones
     before it; the accepted steps together are then checked against the policy as one change. When the system `grows`
-    (one you started, ADR-0201), an action or role the accepted steps name is declared as a sketch declares it."""
+    (one you started, ADR-0201), an action or role the accepted steps name is declared as a sketch declares it, and its
+    data-model steps change a draft of its class diagram (ADR-0202): `data` is that draft and `data_changes` what changed."""
     if len(accepted) != len(transactions):
         raise DomainError("PLAN_INVALID", "Accept or reject each step")
     chosen = [tx for tx, keep in zip(transactions, accepted, strict=True) if keep]
     result: dict[str, Any] = {"steps": [], "accepted": sum(accepted), "legal": False, "codes": [], "refs": [],
-                              "candidate": None, "candidate_semantic_hash": None, "diff": None, "declared": None}
+                              "candidate": None, "candidate_semantic_hash": None, "diff": None, "declared": None,
+                              "data": None, "data_changes": []}
     try:
-        working = declare(pack, chosen) if grows else pack
+        working = draft_pack(pack, split(chosen)[0], grows)
     except DomainError as error:
         return result | {"steps": _statuses(model, pack, transactions, accepted, pack), "codes": [error.code], "message": error.message}
     status = _statuses(model, working, transactions, accepted, pack if grows else None)
+    if not grows:
+        status = [s | _fixed() if is_data(tx) and s["status"] == "applies" else s for tx, s in zip(transactions, status, strict=True)]
     return _checked(model, working, chosen, result | {"steps": status, "declared": _declared(pack, working)})
 
 
-def _checked(model: Workflow, pack: Pack, chosen: list[Transaction], result: dict[str, Any]) -> dict[str, Any]:
-    """The preview once every step has its status: the accepted steps together, checked by the policy as one change."""
+def _fixed() -> dict[str, Any]:
+    return {"status": "does_not_apply", "code": "PLAN_DATA_FIXED", "message": FIXED}
+
+
+def _checked(model: Workflow, pack: Pack, chosen: list[Step], result: dict[str, Any]) -> dict[str, Any]:
+    """The preview once every step has its status: the accepted steps together, checked by the policy as one change,
+    with the accepted data-model steps applied to the data model."""
     status = result["steps"]
     if not chosen or any(s["status"] == "does_not_apply" for s in status):
         return result | {"codes": [] if not chosen else ["PLAN_STEP_DOES_NOT_APPLY"]}
+    transactions, data_steps = split(chosen)
     try:
-        candidate = apply_transactions(model, chosen, pack)
+        candidate = apply_transactions(model, transactions, pack) if transactions else model
     except DomainError as error:
         return result | _refusal(error, pack)
+    before = data_for(pack)
+    after = apply_data(before, data_steps)
+    if data_steps and after is not None:
+        result = result | {"data": after.model_dump(mode="json"), "data_changes": data_changes(before, after)}
     return result | {"legal": True, "candidate": candidate.model_dump(mode="json"),
                      "candidate_semantic_hash": candidate.semantic_hash, "diff": diff_summary(model, candidate)}
 

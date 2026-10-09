@@ -24,6 +24,7 @@ from eija_studio.domain.pack import Pack
 from eija_studio.domain.policy import apply_transactions
 from eija_studio.domain.screens import Screen, Screens, check_screens, default_screen, use_cases
 from eija_studio.domain.transactions import Transaction, parse_transaction
+from .data_steps import parse_step, split
 from .diagrams import diff_summary
 from .plan import describe
 
@@ -66,12 +67,18 @@ def enumeration(data: DataModel) -> str:
     return data.record + "State"
 
 
-def _class_items(base: Workflow, candidate: Workflow, data: DataModel | None) -> list[dict[str, Any]]:
+def _class_items(base: Workflow, candidate: Workflow, data: DataModel | None, attributes: Iterable[str] = ()) -> list[dict[str, Any]]:
     if data is None:
         return []
     name = enumeration(data)
-    return ([_item("added", f"{name} gains the literal {s}", "literal:" + s) for s in candidate.states if s not in base.states]
+    return ([_attribute_item(text) for text in attributes] + [_item("added", f"{name} gains the literal {s}", "literal:" + s) for s in candidate.states if s not in base.states]
             + [_item("removed", f"{name} loses the literal {s}", "literal:" + s) for s in base.states if s not in candidate.states])
+
+
+def _attribute_item(text: str) -> dict[str, Any]:
+    """A change to a class's attributes from a data-model step (ADR-0202), as `data_steps.data_changes` words it."""
+    change = "added" if " gains " in text else "removed" if " loses " in text else "changed"
+    return _item(change, text, "class:" + text.split(" ", 1)[0].split(".", 1)[0])
 
 
 def _associations(model: Workflow) -> set[tuple[str, str]]:
@@ -143,14 +150,16 @@ def _sequence_items(checked: dict[str, Any] | None) -> list[dict[str, Any]]:
 
 
 def ripple(base: Workflow, candidate: Workflow, data: DataModel | None, screens: tuple[Screens, Screens],
-           builds: tuple[Build, Build], components: Iterable[dict[str, Any]], sequences: dict[str, Any] | None = None) -> dict[str, Any]:
+           builds: tuple[Build, Build], components: Iterable[dict[str, Any]], sequences: dict[str, Any] | None = None,
+           attributes: Iterable[str] = ()) -> dict[str, Any]:
     """Every diagram's effects of going from `base` to `candidate`. `screens` and `builds` are each (before, after);
     `components` are the after build's components (each with its `files`), naming whose files changed; `sequences` is
-    `application.sequences.check_sequences` of the scenarios on `candidate` against `base`."""
+    `application.sequences.check_sequences` of the scenarios on `candidate` against `base`; `attributes` are the
+    class diagram's attribute changes in words (`data_steps.data_changes`)."""
     before, after = screens
     diagrams = {
         "states": _state_items(base, candidate),
-        "classes": _class_items(base, candidate, data),
+        "classes": _class_items(base, candidate, data, attributes),
         "usecases": _use_case_items(base, candidate),
         "screens": _screen_items(before, after, base, candidate, data),
         "components": _component_items(builds[0], builds[1], _owners(components)),
@@ -225,7 +234,7 @@ def check_follow_ons(document: Any, base: Workflow, plan: list[Any], pack: Pack,
     steps = document.get("steps") if isinstance(document, dict) else None
     if not isinstance(steps, list):
         raise DomainError("FOLLOW_ON_INVALID", "The proposer did not return follow-on steps")
-    kept = [parse_transaction(step) for step in plan]
+    kept = split([parse_step(step) for step in plan])[0]
     checked = []
     for n, raw in enumerate(steps[:MAX_FOLLOW_ONS], 1):
         step = raw if isinstance(raw, dict) else {}

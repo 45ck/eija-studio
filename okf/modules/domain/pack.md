@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/pack.py
   title: domain/pack.py
   hash_method: ast-api-v1
-  sha256: 151b6a75fe7ca2e9322b27f5539e8280882ace4a32b136c22a3f9e10f550e768
-notes_baseline: 5c6125357c03069b4e64571285af4c70b85816877c377f608c3938bcf499e588
+  sha256: 0038e7d5be395781004df4a22056984fea80dbeae70ea6f2b151890aeea83ed3
+notes_baseline: 293d9faaaedd88c6650c4c236be460dca181b991a67fb708bf61fcfc1907c809
 ---
 
 # domain.pack
@@ -71,6 +71,8 @@ action or effect) becomes ``PackError`` (code ``PACK_INVALID``) with SORTED diag
 * [`default_pack`](/symbols/domain/pack/default_pack.md) (function) - The configured pack, reread on every call and validated from a content-keyed cache.
 * [`derive`](/symbols/domain/pack/derive.md) (function) - A draft of `pack` held in memory (`document`, checked as `parse_pack` checks any pack), whose files beside `pack.json`…
 * [`find_pack`](/symbols/domain/pack/find_pack.md) (function) - Resolve a loaded snapshot by digest, or an unambiguous id after refreshing its sources.
+* [`held`](/symbols/domain/pack/held.md) (function) - What a draft holds as its file `name` (see `hold`), or None to read the file from the pack's folder.
+* [`hold`](/symbols/domain/pack/hold.md) (function) - A draft of `pack` that holds `content` in memory as its file `name` beside `pack.json` (such as a draft data model for…
 * [`load_pack`](/symbols/domain/pack/load_pack.md) (function) - Read current file contents and retain an immutable, digest-addressed pack snapshot.
 * [`meaning_ids`](/symbols/domain/pack/meaning_ids.md) (function) - The meaning ids of the pack a workflow belongs to, or None when no such pack can be found.
 * [`pack_directory`](/symbols/domain/pack/pack_directory.md) (function) - The directory this exact pack snapshot was read from, or its authored directory, so optional files beside `pack.json` (…
@@ -110,6 +112,7 @@ _No curated notes yet._
 * [application.access](/modules/application/access.md) - Who can do what (ADR-0171): the model's permissions as a role by state matrix, each cell checked by the kernel, and reachability questions such as "can a recor…
 * [application.appgen](/modules/application/appgen.md) - App generation: a reviewed workflow model becomes a runnable app and its conformance oracle (ADR-0150).
 * [application.compiler](/modules/application/compiler.md) - Compiler: model → projections + impacts + obligations + computed review packet.
+* [application.data_steps](/modules/application/data_steps.md) - Data-model steps in a chat plan (ADR-0202): add an attribute to a class, remove one, or make one required or optional.
 * [application.edit_preview](/modules/application/edit_preview.md) - Read-only edit projection over one captured case, using the same interpreter as owner edits.
 * [application.edit_proposal](/modules/application/edit_proposal.md) - A read-only offline proposal over one captured candidate; owner edits keep their existing boundary.
 * [application.formal](/modules/application/formal.md) - Formal evidence in the application layer: seal what an adapter collected, and build the packet view.
@@ -177,6 +180,8 @@ _No curated notes yet._
 * [domain.pack.default_pack](/symbols/domain/pack/default_pack.md) - The configured pack, reread on every call and validated from a content-keyed cache.
 * [domain.pack.derive](/symbols/domain/pack/derive.md) - A draft of `pack` held in memory (`document`, checked as `parse_pack` checks any pack), whose files beside `pack.json` (`data.json`, `screens.json`, `scenarios…
 * [domain.pack.find_pack](/symbols/domain/pack/find_pack.md) - Resolve a loaded snapshot by digest, or an unambiguous id after refreshing its sources.
+* [domain.pack.held](/symbols/domain/pack/held.md) - What a draft holds as its file `name` (see `hold`), or None to read the file from the pack's folder.
+* [domain.pack.hold](/symbols/domain/pack/hold.md) - A draft of `pack` that holds `content` in memory as its file `name` beside `pack.json` (such as a draft data model for `data.json`, ADR-0202).
 * [domain.pack.load_pack](/symbols/domain/pack/load_pack.md) - Read current file contents and retain an immutable, digest-addressed pack snapshot.
 * [domain.pack.meaning_ids](/symbols/domain/pack/meaning_ids.md) - The meaning ids of the pack a workflow belongs to, or None when no such pack can be found.
 * [domain.pack.pack_directory](/symbols/domain/pack/pack_directory.md) - The directory this exact pack snapshot was read from, or its authored directory, so optional files beside `pack.json` (such as `data.json`) are read from the s…

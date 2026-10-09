@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/ripple.py#check_follow_ons
   title: application/ripple.py
   hash_method: ast-v2
-  sha256: 3e55b425575fc22402eb5ac6efc99dc91f1e549b4b732a9b468220acc8cd3c67
-notes_baseline: 366a638528a60f84c8dd90ac17c9d10308179c0abf16155906ab75e712855a1f
+  sha256: 3d4bddf69cf9c6767e785e36b841e994e4b1d36ce74e02829dc00cadcdb406a5
+notes_baseline: 63e1cd78bdd27ea3b04733498264bf22652a85d320f8b9be2f11f21ed5d86b93
 ---
 
 # application.ripple.check_follow_ons
@@ -44,11 +44,12 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
+* [application.data_steps.parse_step](/symbols/application/data_steps/parse_step.md) - A plan step: a data-model step, or else a kernel transaction (`parse_transaction`).
+* [application.data_steps.split](/symbols/application/data_steps/split.md) - The kernel transactions and the data-model steps, each in plan order.
 * [application.ripple.MAX_FOLLOW_ONS](/symbols/application/ripple/MAX_FOLLOW_ONS.md) - Constant `MAX_FOLLOW_ONS` in `application/ripple`.
 * [domain.data.DataModel](/symbols/domain/data/DataModel.md) - `class DataModel(Contract)` in `domain/data`.
 * [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
 * [domain.screens.Screens](/symbols/domain/screens/Screens.md) - `class Screens(Contract)` in `domain/screens`.
-* [domain.transactions.parse_transaction](/symbols/domain/transactions/parse_transaction.md) - Validate one transaction document; a malformed one is ``EDIT_INVALID``, never a crash.
 <!-- okf:generated:end links -->

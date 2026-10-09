@@ -16,7 +16,7 @@
 # Functions
 
 * [domain.data.check_values](check_values.md) - Validate a record's values against its entity.
-* [domain.data.data_for](data_for.md) - The data model beside this pack's `pack.json`, if it has one.
+* [domain.data.data_for](data_for.md) - The data model beside this pack's `pack.json`, if it has one: the one a draft holds (ADR-0202), else `data.json`.
 * [domain.data.load_data](load_data.md) - The pack's data model, or None when the pack has no `data.json`.
 * [domain.data.parse_data](parse_data.md) - `def parse_data(document: Any, pack_id: str) -> DataModel` in `domain/data`.
 

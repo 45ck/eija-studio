@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/plan.py#describe
   title: application/plan.py
   hash_method: ast-v2
-  sha256: e392368459c49799262ac4514728c7e6acca2b7d94fb06bc6725155cf298689d
-notes_baseline: 5bbf041ec629fe2ed6bc157744f6e4f968d051da8bb22bc92e7b3baa86850b2b
+  sha256: 6fe93f102e2fe149b109e8b09dc8b414685bdf361271d00b8f5b89ff5f6e4350
+notes_baseline: ff5c9e38bc47cda1e68b16737edbaabb80efe961489b53b7aadf9432ef94a7cc
 ---
 
 # application.plan.describe
@@ -25,7 +25,7 @@ notes_baseline: 5bbf041ec629fe2ed6bc157744f6e4f968d051da8bb22bc92e7b3baa86850b2b
 |---|---|
 | Kind | function |
 | Module | [`application/plan`](/modules/application/plan.md) |
-| Signature | `def describe(tx: Transaction, model: Workflow \| None=None, pack: Pack \| None=None, plan: list[Transaction] \| None=None) -> str` |
+| Signature | `def describe(tx: Step, model: Workflow \| None=None, pack: Pack \| None=None, plan: list[Step] \| None=None) -> str` |
 | Code | `repo://src/eija_studio/application/plan.py#describe` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
@@ -34,7 +34,8 @@ notes_baseline: 5bbf041ec629fe2ed6bc157744f6e4f968d051da8bb22bc92e7b3baa86850b2b
 ~~~text
 One line a person can check against the diagram. A transition is named by its action, as the diagram labels it,
 when `model` has it or a step of the same `plan` adds it. An action or role `pack` does not declare yet is
-called new, so a person sees when a step grows the system's vocabulary (ADR-0201).
+called new, so a person sees when a step grows the system's vocabulary (ADR-0201). A data-model step reads as the
+class diagram says it (ADR-0202).
 ~~~
 <!-- okf:generated:end facts -->
 
@@ -45,10 +46,12 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
+* [application.data_steps.DATA_EDITS](/symbols/application/data_steps/DATA_EDITS.md) - Constant `DATA_EDITS` in `application/data_steps`.
+* [application.data_steps.Step](/symbols/application/data_steps/Step.md) - Type alias `Step` in `application/data_steps`.
+* [application.data_steps.describe_data](/symbols/application/data_steps/describe_data.md) - One line a person can check against the class diagram.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
 * [domain.transactions.AddTransition](/symbols/domain/transactions/AddTransition.md) - A transition performing a declared action; its guards and effects are the action's declared ones.
-* [domain.transactions.Transaction](/symbols/domain/transactions/Transaction.md) - Type alias `Transaction` in `domain/transactions`.
 
 ## Referenced by
 
