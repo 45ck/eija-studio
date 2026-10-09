@@ -95,7 +95,13 @@
     const grid = P.el("table", undefined, { class: "access-grid" });
     grid.append(P.el("caption", "Rows are states, columns are roles. Each entry is an action that role may take from that state."));
     const head = P.el("tr");
-    head.append(P.el("th", "From state", { scope: "col" }), ...result.roles.map((r) => P.el("th", r, { scope: "col" })));
+    head.append(P.el("th", "From state", { scope: "col" }), ...result.roles.map((r) => {
+      // A role heads its column; choosing it shows the actor's screens and runs the app as one (play-roles.js, ADR-0215).
+      const th = P.el("th", undefined, { scope: "col" }), b = P.el("button", r, { type: "button", class: "role-head", title: `What ${r} may do and sees` });
+      b.addEventListener("click", () => P.select("role:" + r, false));
+      th.append(b);
+      return th;
+    }));
     grid.append(head);
     for (const state of result.states) {
       const tr = P.el("tr");

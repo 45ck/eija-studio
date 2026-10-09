@@ -1,0 +1,209 @@
+{
+  "schema_version": "eija.scenarios.v1",
+  "id": "parcel-delivery",
+  "scenarios": [
+    {
+      "id": "collect-to-delivery",
+      "title": "A parcel is collected, scanned in and delivered with proof",
+      "steps": [
+        {
+          "actor": "driver-route",
+          "action": "CollectParcel",
+          "then": {
+            "state": "Collected"
+          }
+        },
+        {
+          "actor": "hub",
+          "action": "ScanIn",
+          "then": {
+            "state": "AtHub"
+          }
+        },
+        {
+          "actor": "driver-route",
+          "action": "LoadVan",
+          "then": {
+            "state": "OutForDelivery"
+          }
+        },
+        {
+          "actor": "driver-route",
+          "action": "Deliver",
+          "then": {
+            "state": "Delivered"
+          }
+        }
+      ]
+    },
+    {
+      "id": "customs-hold-and-clear",
+      "title": "An international parcel is held and cleared by customs",
+      "steps": [
+        {
+          "actor": "driver-route",
+          "action": "CollectParcel",
+          "then": {
+            "state": "Collected"
+          }
+        },
+        {
+          "actor": "hub",
+          "action": "ScanIn",
+          "then": {
+            "state": "AtHub"
+          }
+        },
+        {
+          "actor": "customs",
+          "action": "HoldForCustoms",
+          "then": {
+            "state": "HeldByCustoms"
+          }
+        },
+        {
+          "actor": "hub",
+          "action": "ClearCustoms",
+          "then": {
+            "refused": "ROLE_DENIED"
+          }
+        },
+        {
+          "actor": "customs",
+          "action": "ClearCustoms",
+          "then": {
+            "state": "AtHub"
+          }
+        }
+      ]
+    },
+    {
+      "id": "missed-then-returned",
+      "title": "A missed delivery is retried once, then returned to the sender",
+      "steps": [
+        {
+          "actor": "driver-route",
+          "action": "CollectParcel",
+          "then": {
+            "state": "Collected"
+          }
+        },
+        {
+          "actor": "hub",
+          "action": "ScanIn",
+          "then": {
+            "state": "AtHub"
+          }
+        },
+        {
+          "actor": "driver-route",
+          "action": "LoadVan",
+          "then": {
+            "state": "OutForDelivery"
+          }
+        },
+        {
+          "actor": "driver-route",
+          "action": "RecordMissedDelivery",
+          "then": {
+            "state": "AttemptFailed"
+          }
+        },
+        {
+          "actor": "hub",
+          "action": "ScheduleReattempt",
+          "then": {
+            "state": "AtHub"
+          }
+        },
+        {
+          "actor": "driver-route",
+          "action": "LoadVan",
+          "then": {
+            "state": "OutForDelivery"
+          }
+        },
+        {
+          "actor": "driver-route",
+          "action": "RecordMissedDelivery",
+          "then": {
+            "state": "AttemptFailed"
+          }
+        },
+        {
+          "actor": "hub",
+          "action": "ReturnToSender",
+          "then": {
+            "state": "ReturnedToSender"
+          }
+        }
+      ]
+    },
+    {
+      "id": "off-route-driver",
+      "title": "A driver not on the route cannot collect",
+      "steps": [
+        {
+          "actor": "driver-other-route",
+          "action": "CollectParcel",
+          "then": {
+            "refused": "ASSIGNMENT_DENIED"
+          }
+        }
+      ]
+    },
+    {
+      "id": "revoked-driver",
+      "title": "A driver whose access was revoked cannot collect",
+      "steps": [
+        {
+          "actor": "driver-revoked",
+          "action": "CollectParcel",
+          "then": {
+            "refused": "ACTOR_REVOKED"
+          }
+        }
+      ]
+    },
+    {
+      "id": "no-delivery-before-hub",
+      "title": "Nothing is delivered straight from collection",
+      "steps": [
+        {
+          "actor": "driver-route",
+          "action": "CollectParcel",
+          "then": {
+            "state": "Collected"
+          }
+        },
+        {
+          "actor": "driver-route",
+          "action": "Deliver",
+          "then": {
+            "refused": "STATE_DENIED"
+          }
+        }
+      ]
+    },
+    {
+      "id": "cancel-before-collection",
+      "title": "A shipper cancels before collection, and it stays cancelled",
+      "steps": [
+        {
+          "actor": "shipper-a",
+          "action": "CancelBooking",
+          "then": {
+            "state": "Cancelled"
+          }
+        },
+        {
+          "actor": "driver-route",
+          "action": "CollectParcel",
+          "then": {
+            "refused": "STATE_DENIED"
+          }
+        }
+      ]
+    }
+  ]
+}

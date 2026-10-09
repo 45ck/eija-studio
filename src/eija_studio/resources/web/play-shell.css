@@ -78,10 +78,8 @@ body[data-dock="closed"] #split-dock,body[data-dock="closed"] .dock{display:none
 .stage-tools{position:relative}
 .stage-tools .tabs{flex:0 1 auto;margin-right:auto;background:transparent;border-radius:0;padding:0;gap:0;overflow-x:auto;scrollbar-width:none;min-width:0;scroll-behavior:smooth}
 .stage-tools .tabs::-webkit-scrollbar{display:none}
-.stage-tools .tabs.fade-end{-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent)}
-.stage-tools .tabs.fade-start{-webkit-mask-image:linear-gradient(to right,transparent,#000 28px);mask-image:linear-gradient(to right,transparent,#000 28px)}
-.stage-tools .tabs.fade-start.fade-end{-webkit-mask-image:linear-gradient(to right,transparent,#000 28px,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(to right,transparent,#000 28px,#000 calc(100% - 28px),transparent)}
 .stage-tools .tabs button{flex:none}
+.stage-tools .tabs [role=tab].cut{opacity:0;pointer-events:none}  /* cut by the edge: see play-shell.js */
 .stage-tools .tabs button{position:relative;border-radius:0;padding:9px 11px;font-size:.84rem;font-weight:500;color:var(--muted);border-right:1px solid var(--line)}
 .stage-tools .tabs button:hover{color:var(--ink);background:var(--busy-bg)}
 .stage-tools .tabs button[aria-selected="true"]{background:var(--panel);color:var(--ink);box-shadow:none}

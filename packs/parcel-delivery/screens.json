@@ -1,0 +1,150 @@
+{
+  "schema_version": "eija.screens.v1",
+  "id": "parcel-delivery",
+  "screens": [
+    {
+      "title": "Book a parcel",
+      "fields": [
+        {
+          "attribute": "recipientName",
+          "label": "Addressee"
+        },
+        {
+          "attribute": "deliveryAddress",
+          "label": "Address"
+        },
+        {
+          "attribute": "service",
+          "label": "Service"
+        },
+        {
+          "attribute": "weightKg",
+          "label": "Weight (kg)"
+        },
+        {
+          "attribute": "trackingNumber",
+          "label": "Tracking number"
+        }
+      ],
+      "button": "Book"
+    },
+    {
+      "use_case": "CancelBooking",
+      "title": "Cancel booking",
+      "fields": [
+        {
+          "attribute": "trackingNumber",
+          "label": "Tracking number"
+        }
+      ],
+      "button": "Cancel"
+    },
+    {
+      "use_case": "CollectParcel",
+      "title": "CollectParcel",
+      "fields": [
+        {
+          "attribute": "trackingNumber",
+          "label": "Tracking number"
+        },
+        {
+          "attribute": "weightKg",
+          "label": "Weight (kg)"
+        }
+      ],
+      "button": "Collected"
+    },
+    {
+      "use_case": "ScanIn",
+      "title": "Hub scan in",
+      "fields": [
+        {
+          "attribute": "trackingNumber",
+          "label": "Tracking number"
+        }
+      ],
+      "button": "Scan in"
+    },
+    {
+      "use_case": "HoldForCustoms",
+      "title": "Customs hold",
+      "fields": [
+        {
+          "attribute": "declaredValue",
+          "label": "Declared value"
+        }
+      ],
+      "button": "Hold"
+    },
+    {
+      "use_case": "ClearCustoms",
+      "title": "Customs clearance",
+      "fields": [
+        {
+          "attribute": "declaredValue",
+          "label": "Declared value"
+        }
+      ],
+      "button": "Clear"
+    },
+    {
+      "use_case": "LoadVan",
+      "title": "Load for delivery",
+      "fields": [
+        {
+          "attribute": "deliveryAddress",
+          "label": "Address"
+        }
+      ],
+      "button": "Out for delivery"
+    },
+    {
+      "use_case": "Deliver",
+      "title": "Proof of delivery",
+      "fields": [
+        {
+          "attribute": "recipientName",
+          "label": "Signed by"
+        },
+        {
+          "attribute": "signatureRequired",
+          "label": "Signature taken"
+        }
+      ],
+      "button": "Delivered"
+    },
+    {
+      "use_case": "RecordMissedDelivery",
+      "title": "Missed delivery",
+      "fields": [
+        {
+          "attribute": "deliveryAddress",
+          "label": "Address"
+        }
+      ],
+      "button": "Leave a card"
+    },
+    {
+      "use_case": "ScheduleReattempt",
+      "title": "Try again",
+      "fields": [
+        {
+          "attribute": "deliveryAddress",
+          "label": "Address"
+        }
+      ],
+      "button": "Schedule another attempt"
+    },
+    {
+      "use_case": "ReturnToSender",
+      "title": "Return to sender",
+      "fields": [
+        {
+          "attribute": "trackingNumber",
+          "label": "Tracking number"
+        }
+      ],
+      "button": "Return"
+    }
+  ]
+}

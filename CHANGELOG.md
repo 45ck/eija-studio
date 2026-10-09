@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### 9 October 2026: PlayIDE polish, round 8 (tabs and screen fields on a laptop)
+
+- A diagram tab is never shown cut off at the edge of the tab strip. At 1280 pixels the strip ended on "Use" or "Scre", which reads as another tab; a tab the edge would cut now leaves a gap, and More tabs (») still lists every tab (#141).
+- On the Screens tab, a field shows its whole label ("Member card", not "Member c"), and its type and whether it is required sit on the line beneath, taking two lines at most rather than four (#140).
+
 ### 9 October 2026: AI agents, timers and external systems in the model
 
 - A role can now be held by a person (the default), an AI agent, a timer or an external system. The use case diagram draws a person as a stick figure and the others as «agent», «timer» and «system» actor boxes ([ADR-0210](docs/adr/0210-actors-that-are-not-people.md)).

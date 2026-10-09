@@ -1,0 +1,243 @@
+{
+  "schema_version": "eija.scenarios.v1",
+  "id": "saas-subscription",
+  "scenarios": [
+    {
+      "id": "trial-to-paid",
+      "title": "A new workspace verifies, trials and subscribes",
+      "steps": [
+        {
+          "actor": "owner-a",
+          "action": "VerifyEmail",
+          "then": {
+            "state": "Trialing"
+          }
+        },
+        {
+          "actor": "owner-a",
+          "action": "Subscribe",
+          "then": {
+            "state": "Paying"
+          }
+        }
+      ]
+    },
+    {
+      "id": "dunning-then-recovered",
+      "title": "A failed payment is paid before suspension",
+      "steps": [
+        {
+          "actor": "owner-a",
+          "action": "VerifyEmail",
+          "then": {
+            "state": "Trialing"
+          }
+        },
+        {
+          "actor": "owner-a",
+          "action": "Subscribe",
+          "then": {
+            "state": "Paying"
+          }
+        },
+        {
+          "actor": "billing-system",
+          "action": "MissPayment",
+          "then": {
+            "state": "PastDue"
+          }
+        },
+        {
+          "actor": "owner-a",
+          "action": "PayOverdue",
+          "then": {
+            "state": "Paying"
+          }
+        }
+      ]
+    },
+    {
+      "id": "suspended-and-reactivated",
+      "title": "A suspended workspace is reactivated by its success manager",
+      "steps": [
+        {
+          "actor": "owner-a",
+          "action": "VerifyEmail",
+          "then": {
+            "state": "Trialing"
+          }
+        },
+        {
+          "actor": "owner-a",
+          "action": "Subscribe",
+          "then": {
+            "state": "Paying"
+          }
+        },
+        {
+          "actor": "billing-system",
+          "action": "MissPayment",
+          "then": {
+            "state": "PastDue"
+          }
+        },
+        {
+          "actor": "billing-system",
+          "action": "Suspend",
+          "then": {
+            "state": "Suspended"
+          }
+        },
+        {
+          "actor": "owner-a",
+          "action": "Reactivate",
+          "then": {
+            "refused": "ROLE_DENIED"
+          }
+        },
+        {
+          "actor": "csm-other",
+          "action": "Reactivate",
+          "then": {
+            "refused": "ASSIGNMENT_DENIED"
+          }
+        },
+        {
+          "actor": "csm-account",
+          "action": "Reactivate",
+          "then": {
+            "state": "Paying"
+          }
+        }
+      ]
+    },
+    {
+      "id": "other-owner",
+      "title": "Another customer's owner cannot verify this workspace",
+      "steps": [
+        {
+          "actor": "owner-b",
+          "action": "VerifyEmail",
+          "then": {
+            "refused": "ASSIGNMENT_DENIED"
+          }
+        }
+      ]
+    },
+    {
+      "id": "no-billing-before-trial",
+      "title": "Nobody subscribes before verifying",
+      "steps": [
+        {
+          "actor": "owner-a",
+          "action": "Subscribe",
+          "then": {
+            "refused": "STATE_DENIED"
+          }
+        }
+      ]
+    },
+    {
+      "id": "trial-ends",
+      "title": "An unconverted trial ends and stays ended",
+      "steps": [
+        {
+          "actor": "owner-a",
+          "action": "VerifyEmail",
+          "then": {
+            "state": "Trialing"
+          }
+        },
+        {
+          "actor": "billing-system",
+          "action": "EndTrial",
+          "then": {
+            "state": "Cancelled"
+          }
+        },
+        {
+          "actor": "owner-a",
+          "action": "Subscribe",
+          "then": {
+            "refused": "STATE_DENIED"
+          }
+        }
+      ]
+    },
+    {
+      "id": "revoked-success-manager",
+      "title": "A success manager whose access was revoked cannot reactivate",
+      "steps": [
+        {
+          "actor": "owner-a",
+          "action": "VerifyEmail",
+          "then": {
+            "state": "Trialing"
+          }
+        },
+        {
+          "actor": "owner-a",
+          "action": "Subscribe",
+          "then": {
+            "state": "Paying"
+          }
+        },
+        {
+          "actor": "billing-system",
+          "action": "MissPayment",
+          "then": {
+            "state": "PastDue"
+          }
+        },
+        {
+          "actor": "billing-system",
+          "action": "Suspend",
+          "then": {
+            "state": "Suspended"
+          }
+        },
+        {
+          "actor": "csm-revoked",
+          "action": "Reactivate",
+          "then": {
+            "refused": "ACTOR_REVOKED"
+          }
+        }
+      ]
+    },
+    {
+      "id": "abuse-freeze",
+      "title": "Trust and safety freezes an active workspace",
+      "steps": [
+        {
+          "actor": "owner-a",
+          "action": "VerifyEmail",
+          "then": {
+            "state": "Trialing"
+          }
+        },
+        {
+          "actor": "owner-a",
+          "action": "Subscribe",
+          "then": {
+            "state": "Paying"
+          }
+        },
+        {
+          "actor": "trust-safety",
+          "action": "FreezeForAbuse",
+          "then": {
+            "state": "FrozenForAbuse"
+          }
+        },
+        {
+          "actor": "owner-a",
+          "action": "CancelSubscription",
+          "then": {
+            "refused": "STATE_DENIED"
+          }
+        }
+      ]
+    }
+  ]
+}

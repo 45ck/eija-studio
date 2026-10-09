@@ -1,0 +1,898 @@
+{
+  "schema_version": "eija.pack.v1",
+  "pack": {
+    "id": "building-permit",
+    "name": "Building permit",
+    "version": "1.0.0",
+    "description": "Government: a building permit application is lodged, accepted by intake, reviewed by a plan reviewer (who may ask the applicant for more information), decided by the permit manager for the area, issued, inspected and certified complete. Decisions stay with the delegated manager and always follow a plan review."
+  },
+  "model": {
+    "schema_version": "eija.workflow.v1",
+    "id": "building-permit",
+    "initial_state": "Lodged",
+    "states": [
+      "Lodged",
+      "Registered",
+      "InReview",
+      "InfoRequested",
+      "Approved",
+      "PermitRefused",
+      "Issued",
+      "Inspected",
+      "Completed",
+      "Withdrawn"
+    ],
+    "transitions": [
+      {
+        "id": "TR-WITHDRAW",
+        "action": "Withdraw",
+        "from_state": "Lodged",
+        "to_state": "Withdrawn",
+        "role": "Applicant",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding",
+          "actor_assigned"
+        ],
+        "required_effects": [
+          "Audit:ApplicationWithdrawn"
+        ],
+        "forbidden_effects": [
+          "DecisionWithoutReasons",
+          "ApplicantDataPublished"
+        ]
+      },
+      {
+        "id": "TR-ACCEPT",
+        "action": "AcceptLodgement",
+        "from_state": "Lodged",
+        "to_state": "Registered",
+        "role": "IntakeOfficer",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:LodgementAccepted",
+          "Notification:ApplicantAcknowledged"
+        ],
+        "forbidden_effects": [
+          "DecisionWithoutReasons",
+          "ApplicantDataPublished"
+        ]
+      },
+      {
+        "id": "TR-STARTREVIEW",
+        "action": "StartReview",
+        "from_state": "Registered",
+        "to_state": "InReview",
+        "role": "PlanReviewer",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding",
+          "actor_assigned"
+        ],
+        "required_effects": [
+          "Audit:ReviewStarted"
+        ],
+        "forbidden_effects": [
+          "DecisionWithoutReasons",
+          "ApplicantDataPublished"
+        ]
+      },
+      {
+        "id": "TR-REQUESTINFO",
+        "action": "RequestInfo",
+        "from_state": "InReview",
+        "to_state": "InfoRequested",
+        "role": "PlanReviewer",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding",
+          "actor_assigned"
+        ],
+        "required_effects": [
+          "Audit:InfoRequested",
+          "Notification:ApplicantAskedForInfo"
+        ],
+        "forbidden_effects": [
+          "DecisionWithoutReasons",
+          "ApplicantDataPublished"
+        ]
+      },
+      {
+        "id": "TR-SUPPLYINFO",
+        "action": "SupplyInfo",
+        "from_state": "InfoRequested",
+        "to_state": "InReview",
+        "role": "Applicant",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding",
+          "actor_assigned"
+        ],
+        "required_effects": [
+          "Audit:InfoSupplied"
+        ],
+        "forbidden_effects": [
+          "DecisionWithoutReasons",
+          "ApplicantDataPublished"
+        ]
+      },
+      {
+        "id": "TR-APPROVE",
+        "action": "Approve",
+        "from_state": "InReview",
+        "to_state": "Approved",
+        "role": "PermitManager",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding",
+          "actor_assigned"
+        ],
+        "required_effects": [
+          "Audit:PermitApproved",
+          "Notification:DecisionLetter"
+        ],
+        "forbidden_effects": [
+          "DecisionWithoutReasons",
+          "ApplicantDataPublished"
+        ]
+      },
+      {
+        "id": "TR-REFUSE",
+        "action": "RefusePermit",
+        "from_state": "InReview",
+        "to_state": "PermitRefused",
+        "role": "PermitManager",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding",
+          "actor_assigned"
+        ],
+        "required_effects": [
+          "Audit:PermitRefused",
+          "Notification:RefusalWithAppealRights"
+        ],
+        "forbidden_effects": [
+          "DecisionWithoutReasons",
+          "ApplicantDataPublished"
+        ]
+      },
+      {
+        "id": "TR-ISSUE",
+        "action": "IssuePermit",
+        "from_state": "Approved",
+        "to_state": "Issued",
+        "role": "IntakeOfficer",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding"
+        ],
+        "required_effects": [
+          "Audit:PermitIssued",
+          "Notification:PermitSent"
+        ],
+        "forbidden_effects": [
+          "DecisionWithoutReasons",
+          "ApplicantDataPublished"
+        ]
+      },
+      {
+        "id": "TR-INSPECT",
+        "action": "PassInspection",
+        "from_state": "Issued",
+        "to_state": "Inspected",
+        "role": "SiteInspector",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding",
+          "actor_assigned"
+        ],
+        "required_effects": [
+          "Audit:InspectionPassed"
+        ],
+        "forbidden_effects": [
+          "DecisionWithoutReasons",
+          "ApplicantDataPublished"
+        ]
+      },
+      {
+        "id": "TR-CERTIFY",
+        "action": "CertifyCompletion",
+        "from_state": "Inspected",
+        "to_state": "Completed",
+        "role": "PermitManager",
+        "guards": [
+          "actor_active",
+          "role_current",
+          "state_equals",
+          "expected_version",
+          "operation_binding",
+          "actor_assigned"
+        ],
+        "required_effects": [
+          "Audit:CompletionCertified",
+          "Notification:CertificateSent"
+        ],
+        "forbidden_effects": [
+          "DecisionWithoutReasons",
+          "ApplicantDataPublished"
+        ]
+      }
+    ]
+  },
+  "roles": [
+    {
+      "id": "Applicant",
+      "description": "Lodges, answers requests for information, and may withdraw before acceptance."
+    },
+    {
+      "id": "IntakeOfficer",
+      "description": "Checks the lodgement is complete and issues approved permits."
+    },
+    {
+      "id": "PlanReviewer",
+      "description": "Reviews the plans against the code; must be allocated the application."
+    },
+    {
+      "id": "PermitManager",
+      "description": "The delegated decision maker for the area; approves, refuses and certifies."
+    },
+    {
+      "id": "SiteInspector",
+      "description": "Inspects the works on site; must be allocated the site."
+    }
+  ],
+  "actions": [
+    {
+      "id": "Withdraw",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding",
+        "actor_assigned"
+      ],
+      "required_effects": [
+        "Audit:ApplicationWithdrawn"
+      ]
+    },
+    {
+      "id": "AcceptLodgement",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:LodgementAccepted",
+        "Notification:ApplicantAcknowledged"
+      ]
+    },
+    {
+      "id": "StartReview",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding",
+        "actor_assigned"
+      ],
+      "required_effects": [
+        "Audit:ReviewStarted"
+      ]
+    },
+    {
+      "id": "RequestInfo",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding",
+        "actor_assigned"
+      ],
+      "required_effects": [
+        "Audit:InfoRequested",
+        "Notification:ApplicantAskedForInfo"
+      ]
+    },
+    {
+      "id": "SupplyInfo",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding",
+        "actor_assigned"
+      ],
+      "required_effects": [
+        "Audit:InfoSupplied"
+      ]
+    },
+    {
+      "id": "Approve",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding",
+        "actor_assigned"
+      ],
+      "required_effects": [
+        "Audit:PermitApproved",
+        "Notification:DecisionLetter"
+      ]
+    },
+    {
+      "id": "RefusePermit",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding",
+        "actor_assigned"
+      ],
+      "required_effects": [
+        "Audit:PermitRefused",
+        "Notification:RefusalWithAppealRights"
+      ]
+    },
+    {
+      "id": "IssuePermit",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:PermitIssued",
+        "Notification:PermitSent"
+      ]
+    },
+    {
+      "id": "PassInspection",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding",
+        "actor_assigned"
+      ],
+      "required_effects": [
+        "Audit:InspectionPassed"
+      ]
+    },
+    {
+      "id": "CertifyCompletion",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding",
+        "actor_assigned"
+      ],
+      "required_effects": [
+        "Audit:CompletionCertified",
+        "Notification:CertificateSent"
+      ]
+    },
+    {
+      "id": "FastTrackApprove",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding",
+        "actor_assigned"
+      ],
+      "required_effects": [
+        "Audit:FastTrackApproved",
+        "Notification:FastTrackLetter"
+      ]
+    },
+    {
+      "id": "LapsePermit",
+      "guards": [
+        "actor_active",
+        "role_current",
+        "state_equals",
+        "expected_version",
+        "operation_binding"
+      ],
+      "required_effects": [
+        "Audit:PermitLapsed",
+        "Notification:LapseNotice"
+      ]
+    }
+  ],
+  "effects": {
+    "catalog": [
+      {
+        "id": "Audit:ApplicationWithdrawn",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:LodgementAccepted",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:ApplicantAcknowledged",
+        "kind": "notification",
+        "recipient": "applicant"
+      },
+      {
+        "id": "Audit:ReviewStarted",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:InfoRequested",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:ApplicantAskedForInfo",
+        "kind": "notification",
+        "recipient": "applicant"
+      },
+      {
+        "id": "Audit:InfoSupplied",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:PermitApproved",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:DecisionLetter",
+        "kind": "notification",
+        "recipient": "applicant"
+      },
+      {
+        "id": "Audit:PermitRefused",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:RefusalWithAppealRights",
+        "kind": "notification",
+        "recipient": "applicant"
+      },
+      {
+        "id": "Audit:PermitIssued",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:PermitSent",
+        "kind": "notification",
+        "recipient": "applicant"
+      },
+      {
+        "id": "Audit:InspectionPassed",
+        "kind": "audit"
+      },
+      {
+        "id": "Audit:CompletionCertified",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:CertificateSent",
+        "kind": "notification",
+        "recipient": "applicant"
+      },
+      {
+        "id": "Audit:FastTrackApproved",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:FastTrackLetter",
+        "kind": "notification",
+        "recipient": "applicant"
+      },
+      {
+        "id": "Audit:PermitLapsed",
+        "kind": "audit"
+      },
+      {
+        "id": "Notification:LapseNotice",
+        "kind": "notification",
+        "recipient": "applicant"
+      }
+    ],
+    "forbidden": [
+      "DecisionWithoutReasons",
+      "ApplicantDataPublished"
+    ]
+  },
+  "laws": [
+    {
+      "id": "approval-after-review",
+      "kind": "path_requires",
+      "code": "APPROVED_WITHOUT_REVIEW",
+      "description": "Every path to Approved passes through InReview: no permit is approved without a plan review.",
+      "state": "Approved",
+      "via": "InReview"
+    },
+    {
+      "id": "issued-after-approval",
+      "kind": "path_requires",
+      "code": "ISSUED_WITHOUT_APPROVAL",
+      "description": "Every path to Issued passes through Approved.",
+      "state": "Issued",
+      "via": "Approved"
+    },
+    {
+      "id": "completed-after-inspection",
+      "kind": "path_requires",
+      "code": "COMPLETED_WITHOUT_INSPECTION",
+      "description": "No completion certificate without a passed inspection.",
+      "state": "Completed",
+      "via": "Inspected"
+    },
+    {
+      "id": "manager-approves",
+      "kind": "only_role_holds",
+      "code": "PROTECTED_AUTHORITY:Approve",
+      "description": "Only the delegated permit manager approves.",
+      "action": "Approve",
+      "role": "PermitManager"
+    },
+    {
+      "id": "manager-refuses",
+      "kind": "only_role_holds",
+      "code": "PROTECTED_AUTHORITY:RefusePermit",
+      "description": "Only the delegated permit manager refuses.",
+      "action": "RefusePermit",
+      "role": "PermitManager"
+    },
+    {
+      "id": "reviewer-never-decides",
+      "kind": "role_never_enters",
+      "code": "PROTECTED_AUTHORITY:Approved",
+      "description": "The plan reviewer recommends but never decides.",
+      "role": "PlanReviewer",
+      "state": "Approved"
+    },
+    {
+      "id": "approve-needs-delegation",
+      "kind": "action_requires_guard",
+      "code": "GUARD_POLICY:Approve",
+      "description": "A manager approves only applications in their delegated area.",
+      "action": "Approve",
+      "guards": [
+        "actor_assigned"
+      ]
+    },
+    {
+      "id": "approved-only-via-approve",
+      "kind": "state_only_via",
+      "code": "PROTECTED_STATE:Approved",
+      "description": "Only a manager's approval approves.",
+      "state": "Approved",
+      "actions": [
+        "Approve"
+      ]
+    },
+    {
+      "id": "withdraw-before-acceptance",
+      "kind": "action_source_in",
+      "code": "PROTECTED_STATE:Withdraw",
+      "description": "An application is withdrawn here only before it is accepted.",
+      "action": "Withdraw",
+      "states": [
+        "Lodged"
+      ]
+    },
+    {
+      "id": "refused-final",
+      "kind": "state_final",
+      "code": "FINAL_STATE_LEFT:PermitRefused",
+      "description": "A refusal is final in this workflow; an appeal is a separate matter.",
+      "state": "PermitRefused"
+    },
+    {
+      "id": "completed-final",
+      "kind": "state_final",
+      "code": "FINAL_STATE_LEFT:Completed",
+      "description": "A certified permit is closed.",
+      "state": "Completed"
+    },
+    {
+      "id": "withdrawn-final",
+      "kind": "state_final",
+      "code": "FINAL_STATE_LEFT:Withdrawn",
+      "description": "A withdrawn application is closed.",
+      "state": "Withdrawn"
+    },
+    {
+      "id": "no-forbidden-effects",
+      "kind": "forbidden_effects",
+      "code": "EFFECT_POLICY:forbidden",
+      "description": "No decision is made without written reasons, and no applicant's personal data is published.",
+      "effects": [
+        "DecisionWithoutReasons",
+        "ApplicantDataPublished"
+      ]
+    },
+    {
+      "id": "runtime-evidence",
+      "kind": "requires_evidence",
+      "code": "EVIDENCE_REQUIRED:runtime_matrix",
+      "description": "A change is reviewed with the runtime matrix.",
+      "evidence": "runtime_matrix"
+    }
+  ],
+  "meanings": [
+    {
+      "id": "permit_lapse",
+      "label": "An issued permit lapses if work never starts",
+      "supported": true,
+      "consequences": [
+        "The permit manager may lapse an issued permit whose work never started.",
+        "Approval still needs a plan review."
+      ],
+      "transactions": [
+        {
+          "kind": "add_state",
+          "state": "Lapsed",
+          "after": "Issued"
+        },
+        {
+          "kind": "add_transition",
+          "id": "TR-LAPSE",
+          "action": "LapsePermit",
+          "from_state": "Issued",
+          "to_state": "Lapsed",
+          "role": "PermitManager"
+        }
+      ]
+    },
+    {
+      "id": "fast_track_minor_works",
+      "label": "Fast-track minor works without a plan review",
+      "supported": false,
+      "consequences": [
+        "Approves straight from intake; blocked by this pack's law that every approval follows a plan review."
+      ],
+      "transactions": [
+        {
+          "kind": "add_transition",
+          "id": "TR-FASTTRACK",
+          "action": "FastTrackApprove",
+          "from_state": "Registered",
+          "to_state": "Approved",
+          "role": "PermitManager"
+        }
+      ]
+    },
+    {
+      "id": "unsupported",
+      "label": "Outside the modelled scope",
+      "supported": false,
+      "consequences": [
+        "Requires domain and source-level engineering; no automatic application."
+      ]
+    }
+  ],
+  "language": {
+    "terms": [
+      {
+        "id": "application",
+        "label": "Application",
+        "definition": "One request for a building permit at one site; the workflow instance.",
+        "binds": [
+          "repo://packs/building-permit/pack.json"
+        ],
+        "refs": [
+          "state:Lodged"
+        ]
+      },
+      {
+        "id": "plan-review",
+        "label": "Plan review",
+        "definition": "A plan reviewer checks the drawings against the building code before any decision.",
+        "binds": [
+          "repo://packs/building-permit/pack.json"
+        ],
+        "refs": [
+          "state:InReview",
+          "law:approval-after-review"
+        ]
+      },
+      {
+        "id": "delegation",
+        "label": "Delegation",
+        "definition": "The permit manager holds the council's delegated authority for an area.",
+        "binds": [
+          "repo://packs/building-permit/pack.json"
+        ],
+        "refs": [
+          "role:PermitManager",
+          "law:approve-needs-delegation"
+        ]
+      }
+    ]
+  },
+  "fixtures": {
+    "actors": [
+      {
+        "id": "applicant-a",
+        "role": "Applicant",
+        "active": true,
+        "assigned": true
+      },
+      {
+        "id": "applicant-b",
+        "role": "Applicant",
+        "active": true,
+        "assigned": false
+      },
+      {
+        "id": "intake-officer",
+        "role": "IntakeOfficer",
+        "active": true,
+        "assigned": false
+      },
+      {
+        "id": "reviewer-allocated",
+        "role": "PlanReviewer",
+        "active": true,
+        "assigned": true
+      },
+      {
+        "id": "reviewer-other",
+        "role": "PlanReviewer",
+        "active": true,
+        "assigned": false
+      },
+      {
+        "id": "manager-area",
+        "role": "PermitManager",
+        "active": true,
+        "assigned": true
+      },
+      {
+        "id": "manager-other-area",
+        "role": "PermitManager",
+        "active": true,
+        "assigned": false
+      },
+      {
+        "id": "manager-revoked",
+        "role": "PermitManager",
+        "active": false,
+        "assigned": true
+      },
+      {
+        "id": "inspector-site",
+        "role": "SiteInspector",
+        "active": true,
+        "assigned": true
+      }
+    ],
+    "demo_request": "Let the permit manager lapse an issued permit when work never starts.",
+    "proposals": {
+      "summary": "Deterministic demonstration; no model inference was used.",
+      "rules": [
+        {
+          "all": [],
+          "any": [
+            "fast",
+            "minor",
+            "skip review",
+            "without a plan review"
+          ],
+          "alternatives": [
+            {
+              "interpretation": "fast_track_minor_works",
+              "explanation": "Approval straight from intake. The pack's law that every approval follows a plan review blocks this."
+            }
+          ]
+        },
+        {
+          "all": [],
+          "any": [
+            "lapse",
+            "expire",
+            "never start"
+          ],
+          "alternatives": [
+            {
+              "interpretation": "permit_lapse",
+              "explanation": "The manager may lapse an issued permit whose work never started."
+            }
+          ]
+        }
+      ],
+      "fallback": [
+        {
+          "interpretation": "unsupported",
+          "explanation": "This offline fixture only demonstrates fast-tracking and lapsing."
+        }
+      ],
+      "unknowns": [
+        "Statutory decision deadlines and the clock stopping while information is requested are not modelled.",
+        "Appeals are a separate workflow, not modelled.",
+        "Reviewer comprehension has not been measured."
+      ]
+    }
+  },
+  "verifiers": [
+    {
+      "kind": "runtime_matrix",
+      "mode": "kernel"
+    },
+    {
+      "kind": "smt_proof",
+      "mode": "generated",
+      "reason": "The generated-law proof runs in the gate (python -m verification.smt.laws); binding its report into the review packet is WBS 1.7."
+    },
+    {
+      "kind": "bounded_model_check",
+      "mode": "generated",
+      "reason": "The BMC law property is the pack's laws judged by evaluate_run; a BMC search over this pack's runtime is not wired yet (WBS 1.7)."
+    },
+    {
+      "kind": "bend_proof",
+      "mode": "not_run",
+      "reason": "Generating Bend laws is deferred (docs/engineering/FUTURE-WORK.md)."
+    },
+    {
+      "kind": "tlc",
+      "mode": "not_run",
+      "reason": "Generating TLA+ laws is deferred (docs/engineering/FUTURE-WORK.md)."
+    }
+  ],
+  "journey": {
+    "questions": [
+      {
+        "id": "approve_authority",
+        "question": "Who may approve a permit?",
+        "expected": "PermitManager"
+      },
+      {
+        "id": "approved_entry",
+        "question": "Which state must an application pass through before it is approved?",
+        "expected": "InReview"
+      }
+    ]
+  }
+}
