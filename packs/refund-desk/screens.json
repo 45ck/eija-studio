@@ -1,0 +1,169 @@
+{
+  "schema_version": "eija.screens.v1",
+  "id": "refund-desk",
+  "screens": [
+    {
+      "title": "Ask for a refund",
+      "fields": [
+        {
+          "attribute": "orderNumber",
+          "label": "Order number"
+        },
+        {
+          "attribute": "reason",
+          "label": "Reason"
+        },
+        {
+          "attribute": "amount",
+          "label": "Amount"
+        }
+      ],
+      "button": "Ask for refund"
+    },
+    {
+      "use_case": "AssessRequest",
+      "title": "Assess the request (AI agent)",
+      "fields": [
+        {
+          "attribute": "reason",
+          "label": "Reason"
+        },
+        {
+          "attribute": "agentNote",
+          "label": "Agent note"
+        }
+      ],
+      "button": "Assess"
+    },
+    {
+      "use_case": "Withdraw",
+      "title": "Withdraw the request",
+      "fields": [
+        {
+          "attribute": "orderNumber",
+          "label": "Order number"
+        }
+      ],
+      "button": "Withdraw request"
+    },
+    {
+      "use_case": "ProposeRefund",
+      "title": "Propose a refund (AI agent)",
+      "fields": [
+        {
+          "attribute": "amount",
+          "label": "Amount"
+        },
+        {
+          "attribute": "agentNote",
+          "label": "Agent note"
+        }
+      ],
+      "button": "Propose"
+    },
+    {
+      "use_case": "ApproveRefund",
+      "title": "Approve the refund",
+      "fields": [
+        {
+          "attribute": "amount",
+          "label": "Amount"
+        },
+        {
+          "attribute": "agentNote",
+          "label": "Agent note"
+        },
+        {
+          "attribute": "decidedOn",
+          "label": "Decided on"
+        }
+      ],
+      "button": "Approve"
+    },
+    {
+      "use_case": "DeclineRefund",
+      "title": "Decline the refund",
+      "fields": [
+        {
+          "attribute": "agentNote",
+          "label": "Agent note"
+        },
+        {
+          "attribute": "decidedOn",
+          "label": "Decided on"
+        }
+      ],
+      "button": "Decline"
+    },
+    {
+      "use_case": "EscalateStale",
+      "title": "Escalate (timer)",
+      "fields": [
+        {
+          "attribute": "orderNumber",
+          "label": "Order number"
+        }
+      ],
+      "button": "Escalate"
+    },
+    {
+      "use_case": "ResolveEscalation",
+      "title": "Resolve the escalation",
+      "fields": [
+        {
+          "attribute": "amount",
+          "label": "Amount"
+        },
+        {
+          "attribute": "decidedOn",
+          "label": "Decided on"
+        }
+      ],
+      "button": "Approve escalated refund"
+    },
+    {
+      "use_case": "DismissEscalation",
+      "title": "Dismiss the escalation",
+      "fields": [
+        {
+          "attribute": "agentNote",
+          "label": "Agent note"
+        }
+      ],
+      "button": "Dismiss"
+    },
+    {
+      "use_case": "ConfirmPayout",
+      "title": "Payout settled (payment system)",
+      "fields": [
+        {
+          "attribute": "orderNumber",
+          "label": "Order number"
+        }
+      ],
+      "button": "Record settlement"
+    },
+    {
+      "use_case": "FailPayout",
+      "title": "Payout failed (payment system)",
+      "fields": [
+        {
+          "attribute": "orderNumber",
+          "label": "Order number"
+        }
+      ],
+      "button": "Record failure"
+    },
+    {
+      "use_case": "RetryPayout",
+      "title": "Retry the payout",
+      "fields": [
+        {
+          "attribute": "amount",
+          "label": "Amount"
+        }
+      ],
+      "button": "Retry payout"
+    }
+  ]
+}

@@ -14,6 +14,7 @@
 <link rel="stylesheet" href="/assets/play-systems.css">
 <link rel="stylesheet" href="/assets/play-tests.css">
 <link rel="stylesheet" href="/assets/play-interop.css">
+<link rel="stylesheet" href="/assets/play-roles.css">
 <link rel="stylesheet" href="/assets/play-landscape.css">
 <script src="/assets/vendor/dagre.min.js" defer></script>
 <script src="/assets/vendor/maxgraph.min.js" defer></script>
@@ -29,6 +30,7 @@
 <script src="/assets/play-sequence.js" defer></script>
 <script src="/assets/play-systems.js" defer></script>
 <script src="/assets/play-interop.js" defer></script>
+<script src="/assets/play-roles.js" defer></script>
 <script src="/assets/play-landscape.js" defer></script>
 </head>
 <body>
@@ -154,6 +156,10 @@
       <div id="landscape" class="canvas" tabindex="0" role="region" aria-label="System: the workflows as one component diagram" hidden></div>
       <div id="access-panel" class="access" tabindex="0" role="tabpanel" aria-labelledby="tab-access" hidden></div>
       <div id="screens" class="designer" role="tabpanel" aria-labelledby="tab-screens" hidden>
+        <div class="role-lens-wrap">
+          <div id="role-lens" class="role-lens" role="toolbar" aria-label="See the app as a role"></div>
+          <section id="role-app" class="role-app" aria-label="What this role sees" aria-live="polite" hidden></section>
+        </div>
         <nav class="screen-list" aria-labelledby="screen-list-title"><h3 id="screen-list-title">Use cases</h3><ul id="screen-list"></ul></nav>
         <div class="screen-stage">
           <div id="screen-problems" class="problems" role="status" aria-live="polite"></div>
@@ -252,6 +258,7 @@
             <span class="sim-tools"><button id="sim-replay" type="button" class="quiet">Replay</button><button id="sim-clear" type="button" class="quiet">Clear</button></span></div>
           <p id="sim-summary" class="sim-summary"></p>
           <div id="sim-codes" class="chips"></div>
+          <ul id="sim-kinds" class="sim-kinds" aria-label="Who acted, by kind of actor" hidden></ul>
           <h3>Worth a look</h3><ul id="sim-findings" class="findings"></ul>
           <h3>Run log</h3><ol id="sim-log" class="log"></ol>
           <p class="muted small" id="sim-limits"></p>

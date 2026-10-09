@@ -16,7 +16,7 @@
 * [domain.pack.ProposalRule](ProposalRule.md) - Offline fixture: when the lower-cased request contains every ``all`` word and at least one ``any`` word.
 * [domain.pack.Proposals](Proposals.md) - `class Proposals(Contract)` in `domain/pack`.
 * [domain.pack.Question](Question.md) - A meaning-check question for the owner.
-* [domain.pack.Role](Role.md) - `class Role(Contract)` in `domain/pack`.
+* [domain.pack.Role](Role.md) - A role and the kind of actor that holds it (ADR-0210): a person by default, or an AI agent, a timer or an external system.
 * [domain.pack.Term](Term.md) - `class Term(Contract)` in `domain/pack`.
 * [domain.pack.Verifier](Verifier.md) - An evidence kind that applies to this pack (``kind`` is the evidence kind's name).
 
@@ -53,4 +53,5 @@
 * [domain.pack.Pack.effect](Pack.effect.md) - `def effect(self, effect_id: str) -> Effect | None` in `domain/pack`.
 * [domain.pack.Pack.id](Pack.id.md) - `def id(self) -> str` in `domain/pack`.
 * [domain.pack.Pack.meaning](Pack.meaning.md) - `def meaning(self, meaning_id: str) -> Meaning | None` in `domain/pack`.
+* [domain.pack.Pack.role_kind](Pack.role_kind.md) - The kind of actor holding `role`, or None for a role this pack does not declare.
 * [domain.pack.Pack.verifier](Pack.verifier.md) - `def verifier(self, kind: str) -> Verifier | None` in `domain/pack`.

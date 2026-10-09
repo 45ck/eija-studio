@@ -1,7 +1,7 @@
 ---
 type: Class
 title: domain.pack.Role
-description: '`class Role(Contract)` in `domain/pack`.'
+description: 'A role and the kind of actor that holds it (ADR-0210): a person by default, or an AI agent, a timer or an external system.'
 resource: repo://src/eija_studio/domain/pack.py#Role
 tags:
 - symbol
@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/pack.py#Role
   title: domain/pack.py
   hash_method: ast-sig-v1
-  sha256: 916ed50a6be5371aaf1417a309fb792a0b62286f1bbfa048955503e7935059cb
-notes_baseline: 8c140cd4128dec144bf21705aef32c9ce4f872231cc3d9c1c2fc8cc16be3161a
+  sha256: a1bfd211ed868dcbd829cd5bf26561bc5cbebefedd0d7f8c4ce78eaf94857d33
+notes_baseline: d3068de4a1939c99f88f1a8c0050a2b2ea091f3eb6ec3743bfe20b9ccb5bb27e
 ---
 
 # domain.pack.Role
@@ -31,7 +31,10 @@ notes_baseline: 8c140cd4128dec144bf21705aef32c9ce4f872231cc3d9c1c2fc8cc16be3161a
 
 ## Docstring
 
-_The source carries no docstring._
+~~~text
+A role and the kind of actor that holds it (ADR-0210): a person by default, or an AI agent, a timer or an
+external system. The kernel authorises every kind alike; laws such as ``only_kind_holds`` tell them apart.
+~~~
 
 ## Fields
 
@@ -39,6 +42,7 @@ _The source carries no docstring._
 |---|---|---|
 | `id` | `str` | `Field(min_length=1, max_length=60)` |
 | `description` | `str` | `Field(default='', max_length=400)` |
+| `kind` | `RoleKind` | `'human'` |
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -48,6 +52,7 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
+* [domain.laws.RoleKind](/symbols/domain/laws/RoleKind.md) - Type alias `RoleKind` in `domain/laws`.
 * [domain.models.Contract](/symbols/domain/models/Contract.md) - `class Contract(BaseModel)` in `domain/models`.
 
 ## Referenced by

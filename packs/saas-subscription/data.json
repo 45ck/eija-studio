@@ -1,0 +1,135 @@
+{
+  "schema_version": "eija.data.v1",
+  "id": "saas-subscription",
+  "record": "Workspace",
+  "entities": [
+    {
+      "name": "Workspace",
+      "description": "One customer's tenant and its subscription.",
+      "attributes": [
+        {
+          "name": "name",
+          "type": "text",
+          "required": true,
+          "max_length": 80
+        },
+        {
+          "name": "ownerEmail",
+          "type": "text",
+          "required": true,
+          "max_length": 254
+        },
+        {
+          "name": "plan",
+          "type": "choice",
+          "required": true,
+          "choices": [
+            "Starter",
+            "Team",
+            "Business",
+            "Enterprise"
+          ]
+        },
+        {
+          "name": "seats",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "trialEnds",
+          "type": "date"
+        },
+        {
+          "name": "renewsOn",
+          "type": "date"
+        },
+        {
+          "name": "cancelReason",
+          "type": "choice",
+          "choices": [
+            "TooExpensive",
+            "MissingFeature",
+            "SwitchedTool",
+            "Other"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Member",
+      "attributes": [
+        {
+          "name": "email",
+          "type": "text",
+          "required": true,
+          "max_length": 254
+        },
+        {
+          "name": "admin",
+          "type": "boolean"
+        }
+      ]
+    },
+    {
+      "name": "Invoice",
+      "attributes": [
+        {
+          "name": "number",
+          "type": "text",
+          "required": true,
+          "max_length": 20
+        },
+        {
+          "name": "amount",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "due",
+          "type": "date",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "Plan",
+      "attributes": [
+        {
+          "name": "name",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "pricePerSeat",
+          "type": "number",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "associations": [
+    {
+      "source": "Workspace",
+      "target": "Member",
+      "kind": "composition",
+      "role": "members",
+      "source_multiplicity": "1",
+      "target_multiplicity": "1..*"
+    },
+    {
+      "source": "Workspace",
+      "target": "Invoice",
+      "kind": "composition",
+      "role": "invoices",
+      "source_multiplicity": "1",
+      "target_multiplicity": "0..*"
+    },
+    {
+      "source": "Workspace",
+      "target": "Plan",
+      "role": "plan",
+      "source_multiplicity": "0..*",
+      "target_multiplicity": "1"
+    }
+  ]
+}

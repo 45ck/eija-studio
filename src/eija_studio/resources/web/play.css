@@ -78,8 +78,9 @@ dd{margin:0}
 .screen-fields.over{border-color:var(--accent);background:var(--state)}
 .screen-field.drop-before{box-shadow:0 -3px 0 var(--accent)}
 .screen-fields.drop-end>.screen-field:last-of-type{box-shadow:0 3px 0 var(--accent)}
-.screen-field{display:grid;grid-template-columns:auto auto minmax(80px,1fr) auto auto auto;align-items:center;gap:8px;padding:4px 6px;border-radius:6px;background:var(--busy-bg);cursor:grab}
+.screen-field{display:grid;grid-template-columns:auto auto minmax(0,1fr) auto auto;align-items:center;gap:8px;padding:4px 6px;border-radius:6px;background:var(--busy-bg);cursor:grab}
 .screen-field code{font-size:.8rem}
+.screen-field .field-meta{grid-column:2/4;grid-row:2;margin-top:-4px}  /* under the name and label, so the label keeps the width */
 .screen-field button{padding:2px 8px}
 .grip{color:var(--muted)}
 .drop-hint{padding:12px;text-align:center}
@@ -237,3 +238,14 @@ button.link{border:0;background:transparent;padding:1px 4px;color:var(--accent);
 .law-run{margin:4px 0 0;padding-left:20px;font-size:.84rem}
 .law-tools{display:flex;gap:6px;margin-top:8px}
 .law-tools button{padding:3px 10px;font-size:.8rem}
+.sim-kinds[hidden]{display:none}
+.sim-kinds{list-style:none;margin:6px 0 0;padding:0;font-size:.8rem;display:grid;gap:3px}
+.sim-kinds li{padding:2px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-left:3px solid var(--line);border-radius:3px}
+.sim-kinds .kind-agent{border-color:#6b46c1}.sim-kinds .kind-timer{border-color:#b7791f}.sim-kinds .kind-system{border-color:#4a5568}
+/* In the docked panel the kinds take a full-width row above "Worth a look", only when shown, so other systems keep their layout. */
+.dock-body section.sim:has(>#sim-kinds:not([hidden]))>#sim-kinds{grid-column:1/-1;grid-row:4}
+.dock-body section.sim:has(>#sim-kinds:not([hidden]))>h3:nth-of-type(1){grid-area:5/1}
+.dock-body section.sim:has(>#sim-kinds:not([hidden]))>h3:nth-of-type(2){grid-area:5/2}
+.dock-body section.sim:has(>#sim-kinds:not([hidden]))>#sim-findings{grid-area:6/1}
+.dock-body section.sim:has(>#sim-kinds:not([hidden]))>#sim-log{grid-area:6/2}
+.dock-body section.sim:has(>#sim-kinds:not([hidden]))>#sim-limits{grid-row:7}
