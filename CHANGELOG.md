@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### 11 October 2026: clearer controls while playing
+
+- Generated apps use quiet action choices with the next state visible before confirmation. Role and current state stay prominent; model, rules and recorded effects are available through native disclosures.
+- Trace outcome and pause remain visible, with inspection and replay grouped under **Inspect trace**. Long record titles keep state labels readable, including narrow layouts.
+
 ### 11 October 2026: review the change, then watch the system run
 
 - Supported workflow drafts transfer their exact accepted commands and reported authorship into owner review. Existing verification, explicit approval, stale-work checks and atomic activation remain in charge; `SOURCE_REVIEW_REQUIRED` is unchanged.

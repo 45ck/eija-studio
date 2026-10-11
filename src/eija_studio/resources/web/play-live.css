@@ -8,7 +8,8 @@
 .live-heading h2{margin:0;font-size:.85rem}
 .live-heading p{margin:0;font-size:.75rem;line-height:1.4;color:var(--muted)}
 .live-controls{display:flex;flex-wrap:wrap;gap:var(--shell-space-xs)}
-.live-controls button{font-size:.75rem;padding:4px 8px}
+.live-controls button{font-size:.75rem;padding:6px 9px;min-height:32px;border-radius:6px;background:var(--panel);color:var(--ink);border-color:var(--line)}
+.live-controls button:focus-visible,.live-steps button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .live-controls button:hover:not(:disabled){background:var(--state);border-color:var(--accent)}
 .live-controls button[aria-pressed="true"]{background:var(--state);color:var(--accent);border-color:var(--accent)}
 .live-controls button:disabled{cursor:default}
@@ -22,7 +23,9 @@
 .live-steps button[aria-current="true"]{border-color:var(--accent);background:var(--state);color:var(--accent)}
 .live-steps button.refused{color:var(--bad)}
 .live-trace details{font-size:.75rem;line-height:1.5;margin-top:var(--shell-space-xs)}
-.live-trace summary{cursor:pointer;color:var(--muted);width:fit-content}
+.live-trace summary{cursor:pointer;color:var(--muted);width:fit-content;padding:6px 0;min-height:30px}
+.live-details[open]{border-top:1px solid var(--line);margin-top:var(--shell-space-sm);padding-top:var(--shell-space-xs)}
+.live-history-controls{margin:var(--shell-space-xs) 0 var(--shell-space-sm)}
 .live-trace summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 #live-inspector{grid-template-columns:auto minmax(0,1fr);font-size:.75rem;padding:var(--shell-space-sm) 0;max-height:180px;overflow:auto}
 #live-inspector dd{overflow-wrap:anywhere}

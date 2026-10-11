@@ -174,6 +174,9 @@ body[data-view="review"] #toggle-chat{display:none}
 .play-layout-toggle[aria-pressed="true"]{border-color:var(--accent);background:var(--state);color:var(--accent);font-weight:600}
 .play-layout-toggle:active{background:var(--busy-bg)}
 .play-app-tools{display:flex;align-items:center;gap:var(--shell-space-sm);flex-wrap:wrap}
+.play-app-tools :is(button,a){font-size:.75rem;line-height:1.4;min-height:32px;padding:6px 9px;border-color:var(--line);background:var(--panel);color:var(--ink);border-radius:6px}
+.play-app-tools :is(button,a):hover:not(:disabled){background:var(--state);border-color:var(--accent);text-decoration:none}
+.play-app-tools :is(button,a):focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .play-app-heading{min-width:0}
 body[data-play="open"] .workbench{grid-template-columns:minmax(0,1fr) 5px var(--play-w);grid-template-rows:minmax(220px,1fr) 5px auto auto;overflow:auto}
 body[data-play="open"] .workbench>.stage{grid-column:1;grid-row:1;min-width:0}

@@ -11,10 +11,10 @@
   <header class="bar">
     <div>
       <h1 id="app-name">Loading</h1>
-      <p class="sub">Built by EIJA Studio from model <code id="model-hash"></code></p>
+      <details class="app-about"><summary>About this app</summary><p id="app-description" class="sub">Preparing your local app…</p></details>
     </div>
     <div class="actor-box">
-      <label class="actor">Fixture actor
+      <label class="actor">Act as <span class="fixture-label">local fixture</span>
         <select id="actor" disabled></select>
       </label>
       <span id="actor-role" class="role" aria-live="polite"></span>
@@ -44,14 +44,17 @@
       <dl id="detail-fields" class="values"></dl>
       <ol id="flow" class="flow" aria-label="States"></ol>
       <div id="stranded" class="notice warn" hidden>This record was created under an earlier model or data model. Actions on it are refused (STALE_INSTANCE or STALE_DATA).</div>
-      <h3>What you can do</h3>
+      <h3>Choose an action</h3>
       <div id="options" class="options"></div>
       <section id="action-screen" class="action-screen" aria-live="polite" hidden></section>
       <p id="result" class="notice" role="status" aria-live="polite" tabindex="-1" hidden></p>
       <h3>History</h3>
       <ol id="history" class="history"></ol>
     </section>
-    <aside class="panel" aria-labelledby="rules-title">
+    <aside class="panel runtime-panel" aria-label="Model and runtime details">
+      <details id="runtime-details">
+        <summary><strong>Model &amp; runtime details</strong><span>Inspect rules, recorded effects and build identity</span></summary>
+        <div class="runtime-body">
       <h2 id="rules-title">Rules from the model</h2>
       <table class="rules" role="table">
         <caption>Allowed state changes and their required role</caption>
@@ -60,7 +63,11 @@
       </table>
       <h3>Outbox</h3>
       <ul id="outbox" class="outbox"></ul>
-      <p class="muted small">Notifications are recorded here, not sent. Actors come from a fixture directory, not a login.</p>
+      <p class="muted small">Notifications are recorded here, not sent.</p>
+      <p class="muted small">Built by EIJA Studio from model <code id="model-hash"></code></p>
+        </div>
+      </details>
+      <p class="runtime-scope">Local fixture actors · real local records. No login or external delivery.</p>
     </aside>
   </main>
 </body>

@@ -146,6 +146,8 @@ def test_long_rules_records_and_controls_reflow_without_losing_text(app_page, wi
     open_app(page, base_url)
     create_refund(page)
     assert page.locator("#detail-title").inner_text() == LONG_TITLE
+    assert not page.locator("#runtime-details").evaluate("node => node.open")
+    page.locator("#runtime-details > summary").click()
     assert page.locator("#rules").inner_text().count("PaymentGateway") == 2
     actual_rules = page.locator("#rules tr").evaluate_all(
         "rows => rows.map(row => Array.from(row.cells, cell => cell.querySelector('.rule-value').textContent))")
@@ -164,12 +166,18 @@ def test_long_rules_records_and_controls_reflow_without_losing_text(app_page, wi
       return {page:document.documentElement.scrollWidth,width:innerWidth,outside};
     }""")
     assert geometry["page"] <= width + 1 and geometry["outside"] == [], geometry
+    assert page.locator("#records .chip").evaluate("""node => {
+      const style=getComputedStyle(node);
+      return node.getBoundingClientRect().height <= parseFloat(style.lineHeight)
+        + parseFloat(style.paddingTop) + parseFloat(style.paddingBottom) + 1;
+    }""")  # a long title must not squeeze 'Requested' into a column of letters
     assert page.locator("#actor-role").inner_text() == "Customer"
     assert page.locator("#record-state").inner_text() == "Current state Requested"
     assert page.locator(".rules th").evaluate_all(
         "cells => cells.every(cell => cell.getAttribute('scope') === 'col')")
     assert page.locator("#title").evaluate("node => Number.parseFloat(getComputedStyle(node).fontSize)") >= 16
-    assert "Actors come from a fixture directory, not a login." in page.locator("aside").inner_text()
+    assert "Local fixture actors" in page.locator(".runtime-scope").inner_text()
+    assert "No login or external delivery." in page.locator(".runtime-scope").inner_text()
 
 
 @pytest.mark.parametrize("width", [320, 1600])
@@ -177,6 +185,7 @@ def test_compact_rule_panel_preserves_headers_and_gives_values_readable_width(ap
     page, base_url = app_page
     page.set_viewport_size({"width": width, "height": 1000})
     open_app(page, base_url)
+    page.locator("#runtime-details > summary").click()
     cells = page.locator("#rules td").evaluate_all("""nodes => nodes.map(node => {
       const label=node.querySelector('.rule-label'), value=node.querySelector('.rule-value');
       const header=document.getElementById(node.getAttribute('headers'));
@@ -200,10 +209,14 @@ def test_keyboard_action_cancel_restores_opener_and_commit_focuses_observed_outc
     open_app(page, base_url)
     create_refund(page)
     opener = page.locator("#options button[title=Withdraw]")
+    assert opener.get_attribute("class") == "quiet action-choice"
+    assert "→" not in opener.inner_text()
     keyboard_to(page, opener)
     assert opener.evaluate("node => getComputedStyle(node).outlineStyle") != "none"
     page.keyboard.press("Enter")
     page.wait_for_function("() => document.activeElement.closest('#action-screen') !== null")
+    assert page.locator(".action-consequence").inner_text() == "Requested → Withdrawn"
+    assert "→" not in page.locator("#action-screen button:not(.quiet)").inner_text()
     page.keyboard.press("Tab")  # the close button follows the confirmation button
     assert page.locator("#action-screen button.quiet").evaluate("node => node === document.activeElement")
     page.keyboard.press("Enter")
@@ -215,7 +228,8 @@ def test_keyboard_action_cancel_restores_opener_and_commit_focuses_observed_outc
     page.keyboard.press("Enter")
     page.wait_for_function("() => document.getElementById('current-state').textContent === 'Withdrawn'")
     page.wait_for_function("() => document.activeElement.id === 'result'")
-    assert page.locator("#result").inner_text() == "Withdraw done. Now Withdrawn."
+    assert page.locator("#result").inner_text() == "Withdraw completed. State: Withdrawn."
+    assert "No further actions from this state." in page.locator("#options").inner_text()
     records = request(base_url, "/api/records")[1]
     view = request(base_url, f"/api/records/{records[0]['id']}?actor=customer-a")[1]
     assert view["record"]["version"] == 1 and len(view["history"]) == 1
@@ -313,7 +327,7 @@ def test_committed_action_with_failed_refresh_keeps_receipt_and_pauses_stale_com
     page.route("**/api/records/*?actor=*", lambda route: route.abort())
     page.locator("#action-screen button:not(.quiet)").click()
     page.wait_for_selector("#load-feedback:not([hidden])")
-    assert page.locator("#result").inner_text() == "Withdraw done. Now Withdrawn."
+    assert page.locator("#result").inner_text() == "Withdraw completed. State: Withdrawn."
     assert page.locator("#current-state").inner_text() == "Requested"  # retained last observation
     assert page.locator("#options button").evaluate_all("buttons => buttons.every(button => button.disabled)")
     assert page.locator("#create-button").is_disabled()

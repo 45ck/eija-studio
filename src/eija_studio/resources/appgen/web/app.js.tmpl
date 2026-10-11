@@ -188,10 +188,11 @@ function openAction(option, record, opener) {
   const screen = state.app.screens.actions[option.action] || { title: option.action, fields: [], button: option.action };
   const box = $("action-screen");
   box.hidden = false;
-  box.replaceChildren(el("h3", screen.title));
+  box.replaceChildren(el("h3", screen.title),
+    el("p", `${record.state} → ${option.to}`, { class: "action-consequence" }));
   const values = el("dl", undefined, { class: "values" });
   for (const a of screenFields(screen)) values.append(el("dt", a.label), el("dd", a.name in record.fields ? String(record.fields[a.name]) : "—"));
-  const go = el("button", `${screen.button || option.action} → ${option.to}`, { type: "button" });
+  const go = el("button", screen.button || option.action, { type: "button" });
   go.addEventListener("click", () => { box.hidden = true; act(option.action, record); });
   // Close, never Cancel: a workflow may have an action of that name, and this button only closes the screen.
   const close = el("button", "Close", { type: "button", class: "quiet" });
@@ -278,11 +279,11 @@ function actorRole() {
 function optionRow(o, record) {
   const row = el("div", undefined, { class: "option" });
   const screen = state.app.screens.actions[o.action];
-  const button = el("button", `${(screen && screen.title) || o.action} → ${o.to}`, { type: "button", title: o.action });
+  const button = el("button", (screen && screen.title) || o.action, { type: "button", title: o.action, class: "quiet action-choice" });
   button.dataset.allowed = String(o.allowed);
   button.disabled = !o.allowed || state.writing || !state.fresh;
   button.addEventListener("click", () => openAction(o, record, button));
-  row.append(button);
+  row.append(button, el("span", `Next: ${o.to}`, { class: "action-destination" }));
   if (o.role !== actorRole()) row.append(el("span", `for a ${o.role}`, { class: "why" }));
   else if (!o.allowed) row.append(el("span", o.reason, { class: "why" }));
   return row;
@@ -339,7 +340,7 @@ async function renderDetail(read) {
   options.replaceChildren();
   const mine = view.options.filter((o) => o.role === role), others = view.options.filter((o) => o.role !== role);
   for (const o of mine) options.append(optionRow(o, view.record));
-  if (!mine.length) options.append(el("p", view.options.length ? `Nothing for a ${role} to do in ${view.record.state}.` : `Nothing leaves ${view.record.state}.`, { class: "muted" }));
+  if (!mine.length) options.append(el("p", view.options.length ? `Nothing for a ${role} to do in ${view.record.state}.` : "No further actions from this state.", { class: "muted" }));
   if (others.length) {
     const fold = el("details", undefined, { class: "others" });
     fold.append(el("summary", `For other roles (${others.length})`));
@@ -384,7 +385,7 @@ async function act(action, record) {
   try {
     const result = await api(`/api/records/${record.id}/act`, {
       action, actor, expected_version: record.version, operation_id: operationId });
-    say(`${action} ${result.duplicate ? "already recorded" : "done"}. Now ${result.record.state}.`, "ok");
+    say(`${action} ${result.duplicate ? "already recorded" : "completed"}. State: ${result.record.state}.`, "ok");
     runtimeOutcome(attempt, result);
   } catch (error) {
     say(error.code ? refusal(error) : `Action result was not confirmed: ${error.message}. Review the refreshed record and history before trying again.`, "bad");
@@ -401,12 +402,13 @@ async function start() {
   runtimeReady();
   document.title = state.app.name;
   $("app-name").textContent = state.app.name;
+  $("app-description").textContent = state.app.description || "Your model, running locally.";
   $("model-hash").textContent = state.app.model_hash.slice(0, 12);
   $("model-hash").title = state.app.model_hash;
   const picker = $("actor");
   picker.replaceChildren();
   for (const [id, a] of Object.entries(state.app.actors)) {
-    picker.append(el("option", `${id} (${a.role}${a.active ? "" : ", inactive"})`, { value: id }));
+    picker.append(el("option", `${a.role} · ${id}${a.active ? "" : " · inactive"}`, { value: id }));
   }
   state.actor = actorFromLink() || picker.value;
   picker.value = state.actor;

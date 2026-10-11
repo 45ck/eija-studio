@@ -109,7 +109,7 @@
     const busy = $("build").disabled;
     for (const id of ["play-empty-build", "play-rebuild"]) {
       $(id).disabled = busy;
-      $(id).textContent = busy ? "Building & checking…" : "Build & play";
+      $(id).textContent = busy ? "Building & checking…" : id === "play-empty-build" ? "Build & play" : checkedModel ? "Rebuild app" : "Update app";
     }
   }
 

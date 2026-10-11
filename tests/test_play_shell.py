@@ -280,6 +280,10 @@ def test_actual_local_actions_reach_the_model_and_replay_without_writing_to_the_
             assert page.evaluate("() => PlayLive.snapshot().cursor") == 0
             assert "1 newer" in page.locator("#live-status").inner_text()
             before_replay = frame.evaluate("() => api('/api/records/' + state.selected + '?actor=' + state.actor)")
+            assert not page.locator("#live-details").evaluate("node => node.open")
+            page.locator("#live-details > summary").focus()
+            page.keyboard.press("Enter")
+            assert page.locator("#live-details").evaluate("node => node.open")
             page.click("#live-replay")
             assert "Replaying recorded outcomes" in page.locator("#live-status").inner_text()
             page.wait_for_function("() => !PlayLive.snapshot().replaying && PlayLive.snapshot().cursor === 1")
@@ -303,7 +307,7 @@ def test_actual_local_actions_reach_the_model_and_replay_without_writing_to_the_
             assert refusal["from"] == refusal["to"] == "Overdue" and refusal["version"] == 2
             assert refusal["transition"] is None and page.locator(".live-traffic, .live-edge, .live-arrival").count() == 0
             assert "no commit reported" in page.locator("#live-outcome").inner_text()
-            page.locator("#live-trace summary").click()
+            page.locator("#live-details > details > summary").click()
             assert "current state was not reported" in page.locator("#live-inspector").inner_text()
             # Forged source/origin and stale or malformed current-frame messages cannot add an entry or trigger an action.
             frame.evaluate("""() => parent.postMessage({type:'playide.runtime.v1',nonce:runtimeConnection.nonce,

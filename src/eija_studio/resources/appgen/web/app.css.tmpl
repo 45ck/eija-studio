@@ -3,7 +3,7 @@
 :root{--bg:#f6f7f9;--panel:#fff;--ink:#1d2330;--muted:#5d6678;--line:#dde1e8;--accent:#2f5bd3;--accent-ink:#fff;
   --ok:#1f7a4d;--ok-bg:#e6f4ec;--bad:#a23434;--bad-bg:#fbeaea;--warn-bg:#fff4dc;--current:#e8eefc;
   --space-1:.25rem;--space-2:.5rem;--space-3:.75rem;--space-4:1rem;--space-6:1.5rem;
-  --text-ui:.875rem;--text-body:1rem;--text-heading:1.25rem;--text-title:1.5rem;--radius-control:4px;--radius-panel:8px;
+  --text-ui:.875rem;--text-body:1rem;--text-heading:1.25rem;--text-title:1.5rem;--radius-control:6px;--radius-panel:8px;
   --app-bar-height:0px;
   font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.5;color:var(--ink);background:var(--bg);
   color-scheme:light;font-variant-numeric:tabular-nums}
@@ -24,19 +24,25 @@ h1{font-size:var(--text-title);line-height:1.333333;margin:0;font-weight:600;ove
 h2{font-size:var(--text-heading);line-height:1.4;margin:0 0 var(--space-4);font-weight:600;overflow-wrap:anywhere}
 h3{font-size:var(--text-ui);font-weight:600;margin:var(--space-6) 0 var(--space-2)}
 .sub,.muted{color:var(--muted);margin:var(--space-1) 0 0;font-size:var(--text-ui);overflow-wrap:anywhere}
+.bar .sub{max-width:65ch}
+.app-about{font-size:var(--text-ui);margin-top:var(--space-1)}
+.app-about summary{width:fit-content;cursor:pointer;color:var(--muted);padding-block:var(--space-1)}
+.app-about[open] .sub{margin-top:var(--space-2)}
 .small{font-size:var(--text-ui)}
 code{font-size:var(--text-ui)}
 .actor{display:flex;align-items:center;gap:var(--space-2);font-size:var(--text-ui);min-width:0;max-width:100%;flex-wrap:wrap}
+.fixture-label{color:var(--muted);font-weight:400}
 select,input,button{font:inherit;font-size:var(--text-body);padding:var(--space-2) var(--space-3);min-height:40px;
   border-radius:var(--radius-control);border:1px solid var(--line);background:var(--panel);color:var(--ink);max-width:100%;min-width:0}
 input,select{caret-color:var(--accent)}
 input::placeholder{color:var(--muted);opacity:1}
 input[type=checkbox]{min-height:24px;width:24px;padding:0;accent-color:var(--accent)}
 button{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);cursor:pointer;
-  overflow-wrap:anywhere;white-space:normal;text-align:left}
-button:hover:not(:disabled){text-decoration:underline;text-underline-offset:3px}
+  overflow-wrap:anywhere;white-space:normal;text-align:left;font-weight:600;transition:background-color .12s,border-color .12s}
+button:hover:not(:disabled){background:color-mix(in srgb,var(--accent) 88%,var(--ink));border-color:color-mix(in srgb,var(--accent) 88%,var(--ink))}
 button:active:not(:disabled){outline:1px solid var(--ink);outline-offset:-3px}
 button.quiet{background:var(--panel);color:var(--ink);border-color:var(--line)}
+button.quiet:hover:not(:disabled){background:var(--current);border-color:var(--accent)}
 button:disabled{background:transparent;color:var(--muted);border-color:var(--line);cursor:not-allowed}
 :focus-visible,.notice:focus{outline:2px solid var(--accent);outline-offset:2px}
 [aria-invalid=true]{border-color:var(--bad)}
@@ -48,21 +54,23 @@ button:disabled{background:transparent;color:var(--muted);border-color:var(--lin
 .create button{align-self:flex-start}
 .create>label{font-size:var(--text-ui)}
 .records{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--space-1)}
-.records button{width:100%;display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-2);
+.records button{width:100%;display:grid;grid-template-columns:minmax(0,1fr);justify-items:start;gap:var(--space-2);
   background:transparent;color:var(--ink);border:1px solid transparent;text-align:left}
 .records button>span{min-width:0;overflow-wrap:anywhere}
 .records button[aria-current="true"]{background:var(--current);border-color:var(--line);font-weight:600}
 .chip{font-size:var(--text-ui);padding:var(--space-1) var(--space-2);border-radius:var(--radius-control);
   background:var(--current);color:var(--ink);overflow-wrap:anywhere}
-.records .chip{flex:0 1 45%}
+.records .chip{max-width:100%;font-weight:400}
 .record-state{margin:0 0 var(--space-4);font-size:var(--text-ui)}
 .record-state strong{display:inline-block;margin-inline-start:var(--space-2)}
-.flow{list-style:none;display:flex;flex-wrap:wrap;gap:var(--space-2);margin:0;padding:0}
-.flow li{font-size:var(--text-ui);padding:var(--space-1) var(--space-2);border-radius:var(--radius-control);
-  border:1px solid var(--line);color:var(--muted);max-width:100%;overflow-wrap:anywhere}
-.flow li[aria-current="step"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.flow{list-style:none;display:flex;flex-wrap:wrap;gap:var(--space-1) var(--space-3);margin:0;padding:0}
+.flow li{font-size:var(--text-ui);padding:var(--space-1) 0;color:var(--muted);max-width:100%;overflow-wrap:anywhere}
+.flow li[aria-current="step"]{color:var(--ink);font-weight:700;text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:5px}
 .options{display:flex;flex-direction:column;gap:var(--space-3)}
 .option{display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap;min-width:0}
+.action-choice{width:100%;padding:var(--space-3);text-align:left}
+.action-destination{font-size:var(--text-ui);color:var(--muted);padding-inline:var(--space-3)}
+.action-consequence{font-size:var(--text-ui);color:var(--muted);margin:0 0 var(--space-4)}
 .option .why{font-size:var(--text-ui);color:var(--muted);overflow-wrap:anywhere;flex-basis:100%}
 .notice{padding:var(--space-3);border-radius:var(--radius-control);margin:var(--space-3) 0 0;
   font-size:var(--text-body);overflow-wrap:anywhere}
@@ -83,6 +91,15 @@ button:disabled{background:transparent;color:var(--muted);border-color:var(--lin
 /* A narrow side panel needs full-width rule values even on a wide desktop.
    Keep the native table and its header associations; only the visual layout changes. */
 .layout>aside{container-type:inline-size;container-name:app-rules}
+.runtime-panel{padding:0}
+.runtime-panel summary{display:list-item;cursor:pointer;padding:var(--space-4);font-size:var(--text-ui);min-height:44px}
+.runtime-panel summary strong{font-weight:600}
+.runtime-panel summary span{display:block;color:var(--muted);font-size:var(--text-ui);margin-top:var(--space-1)}
+.runtime-panel summary:hover{background:var(--bg)}
+.runtime-panel summary:focus-visible{outline-offset:-3px}
+.runtime-body{padding:0 var(--space-4) var(--space-4)}
+.runtime-body h2{font-size:var(--text-ui);margin-top:var(--space-2)}
+.runtime-scope{margin:0;padding:var(--space-3) var(--space-4);border-top:1px solid var(--line);color:var(--muted);font-size:var(--text-ui);line-height:1.5}
 @container app-rules (max-width:32rem){
   .rules{display:block}
   .rules caption{display:block}
@@ -119,3 +136,4 @@ button:disabled{background:transparent;color:var(--muted);border-color:var(--lin
   .load-feedback{margin-inline:var(--space-4)}}
 @media (max-width:400px){.values{grid-template-columns:minmax(0,1fr)}.values dd{margin-bottom:var(--space-2)}
   .actor{display:grid;grid-template-columns:minmax(0,1fr);width:100%}.actor-box{width:100%}}
+@media(prefers-reduced-motion:reduce){button{transition:none}}

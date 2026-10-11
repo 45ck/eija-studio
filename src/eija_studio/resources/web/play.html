@@ -276,17 +276,21 @@
       </div>
       <section id="live-trace" class="live-trace" aria-labelledby="live-title" hidden>
         <div class="live-head"><div class="live-heading"><h2 id="live-title">Actual app trace</h2><p id="live-status" role="status" aria-live="polite">Waiting for a local app</p></div>
-          <div class="live-controls" role="group" aria-label="Inspect recorded app actions">
+          <div class="live-controls" role="group" aria-label="Follow app actions">
             <button id="live-pause" type="button" aria-pressed="false">Pause trace</button>
-            <button id="live-previous" type="button" disabled>Previous</button><button id="live-next" type="button" disabled>Next</button>
-            <button id="live-replay" type="button" disabled>Replay recorded</button><button id="live-show" type="button" disabled>Show on diagram</button>
             <button id="live-reconnect" type="button" disabled hidden title="Clear this local trace history and reconnect to the current app">Start new recording</button>
           </div>
         </div>
         <p id="live-recording" class="live-recording" role="status" hidden></p>
         <div id="live-current" class="live-current"><strong id="live-action"></strong><span id="live-outcome"></span><span id="live-meta"></span></div>
-        <div id="live-steps" class="live-steps" aria-label="Recorded app actions"></div>
-        <details><summary>Inspect this action</summary><dl id="live-inspector"></dl></details>
+        <details id="live-details" class="live-details"><summary>Inspect trace</summary>
+          <div class="live-controls live-history-controls" role="group" aria-label="Inspect recorded app actions">
+            <button id="live-previous" type="button" disabled>Previous</button><button id="live-next" type="button" disabled>Next</button>
+            <button id="live-replay" type="button" disabled>Replay recorded</button><button id="live-show" type="button" disabled>Show on diagram</button>
+          </div>
+          <div id="live-steps" class="live-steps" aria-label="Recorded app actions"></div>
+          <details><summary>Inspect this action</summary><dl id="live-inspector"></dl></details>
+        </details>
       </section>
       <p id="canvas-help" class="hint"></p>
     </section>
@@ -327,7 +331,7 @@
           <p class="muted small" id="sim-limits"></p>
         </section>
         <section id="run" class="run" aria-labelledby="run-title" hidden>
-          <div class="run-head"><div class="play-app-heading"><h2 id="run-title">Local app</h2><p id="play-model-status" class="play-only" role="status" aria-live="polite">Last checked build · fixture actors</p></div><div class="play-app-tools"><button id="play-rebuild" class="quiet play-only" type="button">Build &amp; play</button><a id="run-open" class="quiet" target="_blank" rel="noopener">Open in new tab</a></div></div>
+          <div class="run-head"><div class="play-app-heading"><h2 id="run-title">Local app</h2><p id="play-model-status" class="play-only" role="status" aria-live="polite">Last checked build · fixture actors</p></div><div class="play-app-tools"><button id="play-rebuild" class="quiet play-only" type="button">Rebuild app</button><a id="run-open" class="quiet" target="_blank" rel="noopener" title="Open the local app in a new tab">Open app</a></div></div>
           <iframe id="run-frame" title="The app built from this model"></iframe>
           <p class="play-runtime-scope play-only">Actual app trace shows recorded outcomes. Model simulation stays separate.</p>
         </section>

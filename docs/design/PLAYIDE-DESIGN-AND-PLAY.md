@@ -47,6 +47,13 @@ The local design-token-alignment, accessibility-precheck and cognitive-friction-
 
 ## Acceptance and evidence
 
+The later Play refinement reduces competing controls: action choices are quiet rows,
+confirmation shows the actual state change, and the trace inspector is expandable.
+Role, current state, fixture scope and committed outcomes remain visible. Native
+disclosures keep app descriptions, rules and effects available through keyboard
+controls. Record titles and state labels occupy separate rows to prevent long titles
+from squeezing a state into a one-letter column.
+
 Run the real application under normal CSP. Inspect the paired shell at desktop and narrow supported workbench sizes, persistence, keyboard resizing and the unchanged default dock. Test generated apps with long labels at 320, 768, 1024 and 1600 CSS pixels, both colour schemes, keyboard action cancellation, commit/refusal and explicit read recovery. Preserve meaningful negative tests, records and history. Record an actual 30–90-second interaction after checking the source identity; retain raw media and inspect the final MP4.
 
 Mechanical skill findings, observed layout, service behaviour and human comprehension are separate records. No claim of effortless use, superior builder performance or viral distribution follows from this pass. `SOURCE_REVIEW_REQUIRED` remains visible until legitimate owner review. Earlier clips and review bundles retain their old revision identities.
