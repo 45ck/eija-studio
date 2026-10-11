@@ -3,17 +3,20 @@
 "use strict";
 (() => {
   const $ = (id) => document.getElementById(id);
-  const caseId = new URLSearchParams(location.search).get("case");
+  let caseId = new URLSearchParams(location.search).get("case");
   let token = location.hash.slice(1) || sessionStorage.getItem("eija-session") || "";
   // Drop the token from the address bar but keep ?case=, so a reload still shows the same model.
   if (location.hash) { sessionStorage.setItem("eija-session", token); history.replaceState(null, "", location.pathname + location.search); }
   const STATE = { width: 150, height: 54 }, INITIAL = 22;
   let graph, model, selected = "", sim = null, replayTimer = 0, data = null, savedData = null, classGraph = null, useCaseGraph = null, tab = "states";
   let components = null, componentGraph = null, lastBuild = null;
+  let navigationReady = false, asking = false;
+  let activeStatus = null; // server identities, never re-created or interpreted in the browser
   let baseModel = null, plan = null; // the server's model, and the chat plan being previewed on top of it (if any)
   let packInfo = null, points = 0, simKey = null, cards = 0, problemsFor = null; // the pack's actions and roles; check points; what was simulated
   let shownChange = null; // while the Changes view is on: the union of the model in force and the change (ADR-0176), drawn on the class and use case diagrams too
   let ripple = null, rippleSeq = 0; // what the accepted plan does to every diagram, with the proposer's follow-ons (ADR-0158)
+  let effectsSeq = 0; // late effect reports cannot replace the subject currently being inspected
   const earned = [];
   let screens = null, screensEdited = false, useCase = null, checkTimer = 0, problems = [], useCaseList = [], a11y = null;
   const base = {}; // each cell's own style and label, so overlays can be cleared
@@ -326,18 +329,19 @@
   const current = () => (hooks.diffGraph && hooks.diffGraph()) || ({ states: graph, classes: classGraph, usecases: useCaseGraph, review: PlayReview.graph(),
     components: (hooks.componentGraph && hooks.componentGraph()) || componentGraph, // the System lens (play-landscape.js, ADR-0203)
     sequences: hooks.sequenceGraph && hooks.sequenceGraph() })[tab];
-  const PANELS = { states: "canvas", sequences: "sequences", classes: "class-canvas", usecases: "usecase-canvas", screens: "screens", components: "component-canvas", laws: "laws", tests: "tests", review: "review", access: "access-panel" };
+  const PANELS = { states: "canvas", sequences: "sequences", classes: "class-canvas", usecases: "usecase-canvas", screens: "screens", components: "component-canvas", c4: "c4-panel", laws: "laws", tests: "tests", review: "review", access: "access-panel" };
   const HINTS = {
-    states: "Pick State, Transition or Initial in the palette, then click the diagram (or drag it there). Double-click empty space for a new state, a state to rename it. Changes join the plan for you to preview; nothing is saved.",
+    states: "Pick State, Transition or Initial in the palette, then click the diagram (or drag it there). Double-click empty space for a new state, a state to rename it. Changes join a draft plan; use Review & activate to make a supported workflow change active.",
     sequences: "The Tests tab's scenarios as UML sequences, each step run through the kernel: a step the model can't do is red with the kernel's reason. Select one to change it; a step in a neg must be refused.",
     classes: "Select a class to see its attributes and associations. Only the «record» class is built: its attributes are the app's form. Grey classes and the associations are drawn, not built. An amber attribute stands in for an association: the app checks its value, not that the other object exists.",
     usecases: "Select a use case to inspect it. Double-click one to design its screen.",
     screens: "Design each use case's screen. The design check runs as you edit; Build & run uses these screens.",
     components: "The built app's components, read from its generated files: every line is an import, a route or a file read.",
+    c4: "Explore system context, containers and components from the generated structure. This read-only map is separate from observed runtime behaviour and deployment proof.",
     laws: "The pack's laws: what this model must never do, whatever is drawn. Each is proved over every run the kernel allows, by every class of actor (each role, active or not, assigned or not).",
     tests: "The pack's test cases: scenarios of who does what and what must happen, each step run by the kernel on the model shown.",
     access: "Who can do what, from each state. Every cell is tried in the kernel with the pack's fixture actors; a previewed plan's changes are flagged.",
-    review: "Review the change shown against the model in force: look at each change, predict what the kernel does, then decide. Nothing is approved from here.",
+    review: "Inspect the exact change and its consequences. Review & activate collects the server's checks and your explicit local decision separately.",
   };
 
   // Fitting never shrinks a diagram below READABLE (labels of about 10px and up): when the canvas is short, as with the
@@ -467,6 +471,7 @@
       const target = current(), cell = target && target.getDataModel().getCell(id);
       if (cell) target.setSelectionCell(cell);
     }
+    keepNavigation();
   }
 
   function outline() {
@@ -723,18 +728,20 @@
       if (window.PlayLandscape) window.PlayLandscape.setLens("system");
       which = "components";
     }
+    if (!Object.hasOwn(PANELS, which)) return;
     tab = which;
+    keepNavigation();
     for (const [name, panel] of Object.entries(PANELS)) {
       $("tab-" + name).setAttribute("aria-selected", String(which === name));
       $(panel).hidden = which !== name;
     }
     $("canvas-help").textContent = HINTS[which];
-    for (const id of ["fit", "zoom-in", "zoom-out"]) $(id).hidden = which === "screens" || which === "laws" || which === "tests" || which === "access";
-    $("tidy").hidden = !hasMoves(which);
+    for (const id of ["fit", "zoom-in", "zoom-out"]) $(id).hidden = which === "screens" || which === "laws" || which === "tests" || which === "access" || which === "c4";
+    $("tidy").hidden = which === "c4" || !hasMoves(which);
     $("draw-palette").hidden = which !== "states";
     $("plan-review").hidden = which === "review";
     for (const f of hooks.tab) f(which);
-    if (which === "access" || which === "tests" || which === "sequences") return; // play-access.js, play-tests.js and play-sequence.js draw these on hooks.tab
+    if (which === "access" || which === "tests" || which === "sequences" || which === "c4") return; // view scripts draw these on hooks.tab
     if (which === "screens") { renderDesigner(); return; }
     if (which === "laws") { for (const show of hooks.laws) show(); return; }
     if (which === "usecases") drawUseCases();
@@ -770,10 +777,37 @@
   const rounds = () => (plan ? new Set(plan.steps.map(roundOf)).size : 0);
   const lastRound = () => (plan && plan.steps.length ? Math.max(...plan.steps.map(roundOf)) : 1); // a drawn step joins the round it follows
 
+  function failedRequest(error, text) {
+    const box = el("div", undefined, { class: "request-failure" });
+    const edit = el("button", "Edit request", { type: "button", class: "quiet" });
+    const replacement = el("div", undefined, { hidden: "" });
+    const replace = el("button", "Replace composer with this request", { type: "button", class: "quiet" });
+    const keep = el("button", "Keep newer text", { type: "button", class: "quiet" });
+    const restoreText = () => {
+      const input = $("chat-input");
+      input.value = text;
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      replacement.hidden = true;
+      input.focus();
+    };
+    edit.addEventListener("click", () => {
+      const input = $("chat-input");
+      if (!input.value || input.value === text) { restoreText(); return; }
+      replacement.hidden = false;
+      replace.focus();
+    });
+    replace.addEventListener("click", restoreText);
+    keep.addEventListener("click", () => { replacement.hidden = true; $("chat-input").focus(); });
+    replacement.append(el("p", "Your newer text is still in the composer. Replace it only if you want to return to this request.", { class: "muted small" }), replace, keep);
+    box.append(el("p", `${error.code || "ERROR"}: ${error.message}`, { class: "refusal" }), edit, replacement);
+    say("ai", box);
+  }
+
   async function ask(event) {
     event.preventDefault();
     const input = $("chat-input"), text = input.value.trim();
-    if (!text) return;
+    if (!text || asking) return;
+    asking = true;
     input.value = "";
     say("you", el("p", text));
     const button = $("chat-send");
@@ -790,8 +824,9 @@
       renderPlan(result.preview);
       refreshRipple();
     } catch (error) {
-      say("ai", el("p", `${error.code || "ERROR"}: ${error.message}`, { class: "refusal" }));
+      failedRequest(error, text);
     } finally {
+      asking = false;
       button.disabled = false;
     }
   }
@@ -861,11 +896,9 @@
     const review = el("button", "Review it", { type: "button", class: "review-it", title: "Review the previewed change: what changed, how risky, what the kernel does differently" });
     review.addEventListener("click", () => { if (!plan.previewing) enterPreview(); if (plan.previewing) showTab("review"); });
     tools.append(preview, review);
-    if (plan.meaning && plan.steps.every((step) => step.author === "ai" && !step.followOn)) {
-      const keep = el("button", "Make it a change case", { type: "button" });
-      keep.addEventListener("click", makeCase);
-      tools.append(keep);
-    }
+    const keep = el("button", "Review & activate", { type: "button", class: "plan-activate" });
+    keep.addEventListener("click", makeCase);
+    tools.append(keep);
     box.append(list, verdict, el("div", undefined, { class: "ripple", "aria-live": "polite" }), tools);
     return box;
   }
@@ -949,8 +982,8 @@
     outline();
     draw(model);
     inspect("");
-    const kept = screensEdited ? screens : null; // screen edits survive a preview: they are re-checked against the shown model
-    loadScreens(kept).then(() => { screensEdited = Boolean(kept); if (tab === "screens") renderDesigner(); });
+    const kept = screensEdited ? screens : null, checkingView = viewKey(); // screen edits survive a preview: they are re-checked against the shown model
+    loadScreens(kept).then(() => { if (viewKey() !== checkingView) return; screensEdited = Boolean(kept); if (tab === "screens") renderDesigner(); });
     if (tab !== "states") showTab(tab);
   }
 
@@ -1120,8 +1153,8 @@
   }
 
   function showRipple(key, item) {
-    if (item.change === "removed") leavePreview(); // gone from the preview, so it is shown, in red, on the model
-    else if (!plan.previewing && plan.result && plan.result.legal) enterPreview();
+    if (plan && item.change === "removed") leavePreview(); // gone from the preview, so it is shown, in red, on the model
+    else if (plan && !plan.previewing && plan.result && plan.result.legal) enterPreview();
     if (key === "screens") {
       const name = item.ref ? item.ref.slice(7) : "None", known = screens.screens.some((x) => x.use_case === name) || useCaseList.includes(name);
       useCase = name !== "None" && known ? name : null;
@@ -1138,11 +1171,6 @@
     note.append(el("p", `${RIPPLE[key]}: ${item.text}`, { class: "ripple-note " + item.change }));
     if (item.change === "removed") note.append(el("p", "Shown on the model, marked in red: the plan removes it.", { class: "muted" }));
     $("inspector").prepend(note);
-    const seen = `ripple:${key}:${ripple.key}`; // checking, not making: once per diagram for each version of the plan
-    if (key !== "states" && !plan.rewarded.has(seen)) {
-      plan.rewarded.add(seen);
-      earn(1, `Checked the ripple on the ${RIPPLE[key].toLowerCase()}`);
-    }
   }
 
   function renderBadges() {
@@ -1169,15 +1197,7 @@
   }
 
   async function makeCase() {
-    try {
-      const created = await api("/api/cases", { request: plan.request });
-      const link = el("a", "Open it in PlayIDE", { href: `/play?case=${encodeURIComponent(created.id)}` });
-      const note = el("p", `Change case created. In the review workbench, ask for a proposal and choose “${plan.summary}”: that is where the meaning is chosen, checked and approved. `);
-      note.append(link);
-      say("ai", note);
-    } catch (error) {
-      say("ai", el("p", `${error.code || "ERROR"}: ${error.message}`, { class: "refusal" }));
-    }
+    if (window.PlayActivation) window.PlayActivation.open();
   }
 
   // Drawing and checks (ADR-0157). The palette and the inspector turn mouse gestures into typed steps of your own,
@@ -1185,7 +1205,7 @@
   // saved from here. The checks ring fills only from real results on the model you are looking at (the screen design
   // check, a conformance pass, a simulation, every AI step looked at), and points come from checking AI steps, never
   // from making changes.
-  const viewKey = () => JSON.stringify([about().plan, screensEdited ? screens : null]);
+  const viewKey = () => JSON.stringify([baseModel, about().plan, screensEdited ? screens : null]);
   const screensKey = () => JSON.stringify([about().plan, screens]); // what the last design check was about
   const KINDS = { state: "a state", transition: "a transition", initial: "the initial state", rename: "a new name", move: "a moved transition" };
 
@@ -1240,7 +1260,7 @@
   }
 
   // An imported UML file's edits (ADR-0190) become the plan, as the person's own steps like drawn edits: the server
-  // re-checks each one and previews them through the policy, and nothing is saved from here.
+  // re-checks each one and previews them through the policy; they remain drafts until explicitly activated.
   async function importPlan(transactions, summary) {
     retire();
     plan = { scope: "plan-draft", provider: "imported", live: false, summary, meaning: null, request: "", model: "draft",
@@ -1467,7 +1487,7 @@
     const w = form.offsetWidth, h = form.offsetHeight;
     form.style.left = Math.max(6, Math.min(x, box.clientWidth - w - 6)) + "px";
     form.style.top = Math.max(6, Math.min(y, box.clientHeight - h - 6)) + "px";
-    $("canvas-help").textContent = "Enter adds it to the plan; Escape cancels. The plan previews it; nothing is saved.";
+    $("canvas-help").textContent = "Enter adds it to the plan; Escape cancels. Draft only; not active until Review & activate.";
     const first = form.querySelector("input, select");
     first.focus();
     if (first.select) first.select();
@@ -1732,7 +1752,7 @@
     const tools = el("div", undefined, { class: "draft-tools" }), cancel = el("button", "Never mind", { type: "button", class: "quiet" });
     cancel.addEventListener("click", () => inspect(selected));
     tools.append(el("button", "Add to the plan", { type: "submit", class: "primary" }), cancel);
-    form.append(tools, el("p", "It joins the plan as your step. The server checks it and the diagram previews it; nothing is saved.", { class: "muted small" }));
+    form.append(tools, el("p", "It joins the plan as your step. The server checks it and the diagram previews it. Draft only; not active until Review & activate.", { class: "muted small" }));
     form.addEventListener("submit", (event) => { event.preventDefault(); addStep(spec.make()); });
     box.replaceChildren(el("h3", "Draw " + KINDS[kind]), form);
     form.querySelector("input, select").focus();
@@ -1953,10 +1973,10 @@
 
   // With edits, only the problems come back into the page: the designer keeps editing its own objects.
   async function loadScreens(edited) {
-    const planAt = JSON.stringify(about().plan), sent = edited ? JSON.stringify(edited) : null;
+    const viewAt = viewKey(), screensAt = JSON.stringify(screens);
     const result = await api("/api/play/screens", { ...about(), screens: edited || null });
     // A newer model or design replaced the one checked: its own check is on the way, so this answer is not shown.
-    if (JSON.stringify(about().plan) !== planAt || (sent !== null && JSON.stringify(screens) !== sent)) return result;
+    if (viewKey() !== viewAt || JSON.stringify(screens) !== screensAt) return result;
     if (!edited) screens = result.screens;
     problems = result.problems;
     a11y = result.accessibility;
@@ -2212,13 +2232,15 @@
       // Send the model on screen; the server refuses (MODEL_CHANGED) if it is no longer the one it would build.
       const key = viewKey();
       const result = await api("/api/play/build", { ...about(), screens: screensEdited ? screens : null });
+      if (key !== viewKey()) { score.textContent = "The model changed during this build. Build the current revision again."; score.className = "score bad"; return; }
       const pass = result.conformance.status === "PASS";
       lastBuild = { ...result, key };
       if (pass) rewardTrying("build", 3, `Built the AI's change and ran its ${result.cases} conformance cases`, key);
       renderHealth();
       restyleComponents();
       score.className = "score " + (pass ? "ok" : "bad");
-      score.textContent = pass ? `✓ ${result.cases}/${result.cases} cases match the kernel` : `✗ Conformance ${result.conformance.status}: not started`;
+      score.textContent = (pass ? `✓ ${result.cases}/${result.cases} cases match the kernel` : `✗ Conformance ${result.conformance.status}: not started`)
+        + (result.kernel_source_review === "SOURCE_REVIEW_REQUIRED" ? " · source review required" : "");
       score.title = `Model ${result.model.slice(0, 12)} · ${result.files} files · kernel source review: ${result.kernel_source_review}`;
       if (result.url) showRun(result.url, typeof actor === "string" ? actor : "");
     } catch (error) {
@@ -2376,6 +2398,43 @@
   let restoring = false, planUid = 0, recoveredWork = false;
   const clone = (value) => (value == null ? null : JSON.parse(JSON.stringify(value)));
   const draftKey = () => `playide.draft.v1:${packInfo.id}:${caseId || ""}`;
+  const navigationKey = () => `playide.navigation.v1:${packInfo.id}:${caseId || ""}`;
+
+  // Presentation is deliberately separate from the edit document. No runtime, check or approval is restored.
+  function keepNavigation() {
+    if (!navigationReady || REVIEW_VIEW || !packInfo) return;
+    try { localStorage.setItem(navigationKey(), JSON.stringify({ v: 1, tab, selected })); } catch { /* the current view still works without storage */ }
+  }
+
+  function validSelection(id) {
+    if (typeof id !== "string") return false;
+    if (["", "initial", "initial-edge", "usecase:create"].includes(id)) return true;
+    const at = id.indexOf(":"), kind = id.slice(0, at), name = id.slice(at + 1);
+    const checks = {
+      state: () => model.states.includes(name),
+      transition: () => model.transitions.some((t) => t.id === name),
+      role: () => model.transitions.some((t) => t.role === name),
+      class: () => Boolean(data && data.entities.some((e) => e.name === name)),
+      enum: () => Boolean(data && enumName() === name),
+    };
+    return Boolean(Object.hasOwn(checks, kind) && checks[kind]());
+  }
+
+  function recoverNavigation() {
+    if (REVIEW_VIEW) return;
+    let kept = null;
+    try { kept = JSON.parse(localStorage.getItem(navigationKey()) || "null"); } catch { /* malformed or unavailable storage: use the default view */ }
+    if (kept && kept.v === 1) {
+      showTab(Object.hasOwn(PANELS, kept.tab) ? kept.tab : "states");
+      const id = validSelection(kept.selected) ? kept.selected : "";
+      select(id, false);
+      const target = current(), cellId = tab === "usecases" ? id.replace(/^transition:/, "uc:").replace("usecase:create", "uc:create") : id;
+      const cell = target && target.getDataModel().getCell(cellId);
+      if (cell) target.setSelectionCell(cell);
+    }
+    navigationReady = true;
+    keepNavigation();
+  }
   // A short fingerprint of the model in force, so a restored draft can say when it was made on another model.
   const modelPrint = () => { let h = 2166136261; for (const c of JSON.stringify(baseModel)) h = Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0; return h.toString(16); };
 
@@ -2526,6 +2585,21 @@
     let draft = null;
     try { draft = JSON.parse(localStorage.getItem(draftKey()) || "null"); } catch { draft = null; }
     if (!draft || draft.v !== 1 || !Array.isArray(draft.stack) || !draft.stack[draft.at]) return;
+    if (draft.model !== modelPrint()) {
+      const note = el("p", "An earlier browser draft is retained. The active model changed since it was written, so the active revision stays on the diagrams.");
+      const reopen = el("button", "Reopen earlier draft", { type: "button", class: "quiet" });
+      reopen.addEventListener("click", async () => {
+        reopen.disabled = true;
+        planUid = Math.max(0, ...draft.stack.map((e) => (e.doc.plan && e.doc.plan.uid) || 0));
+        recoveredWork = true;
+        await restore({ ...draft.stack[draft.at], card: null });
+        commit("reopen an earlier browser draft");
+        note.firstChild.textContent = "Earlier draft reopened and checked against the active revision. Nothing was activated.";
+      });
+      note.append(" ", reopen);
+      say("ai", note).classList.add("recovered");
+      return;
+    }
     planUid = Math.max(0, ...draft.stack.map((e) => (e.doc.plan && e.doc.plan.uid) || 0));
     edits.stack = [...(draft.stack[0].doc.plan || draft.stack[0].doc.screens || draft.stack[0].doc.tests ? [edits.stack[0]] : []), ...draft.stack.map((e) => ({ ...e, card: null }))];
     edits.at = edits.stack.length - draft.stack.length + draft.at;
@@ -2554,6 +2628,214 @@
     if (plan) refreshRipple();
   }
 
+  const effectsKey = () => JSON.stringify([about(), screensEdited ? screens : null, window.PlayTests?.draft(), window.PlayLaws?.draft(), window.PlayAssurance?.requirementDrafts()]);
+  const EFFECTS_PREFERENCES = "playide.effects.presentation.v1";
+  const effectsPreferences = { layout: "connected", emphasized: Object.keys(RIPPLE) };
+  try {
+    const saved = JSON.parse(localStorage.getItem(EFFECTS_PREFERENCES));
+    if (saved && ["connected", "grouped"].includes(saved.layout)) effectsPreferences.layout = saved.layout;
+    if (saved && Array.isArray(saved.emphasized)) effectsPreferences.emphasized = Object.keys(RIPPLE).filter((key) => saved.emphasized.includes(key));
+  } catch { /* unavailable preferences never prevent inspection */ }
+  function saveEffectsPreferences() {
+    try { localStorage.setItem(EFFECTS_PREFERENCES, JSON.stringify(effectsPreferences)); } catch { /* presentation remains available in this page */ }
+  }
+
+  function effectsDiagrams(box, report) {
+    const root = el("div", undefined, { class: "effects-comparison" }), controls = el("div", undefined, { class: "effects-layout-tools", role: "group", "aria-label": "Effects presentation" });
+    const content = el("div", undefined, { class: "effects-views" }), buttons = new Map();
+    for (const [layout, label] of [["connected", "Connected overview"], ["grouped", "Grouped details"]]) {
+      const button = el("button", label, { type: "button", id: "effects-layout-" + layout, "aria-pressed": String(effectsPreferences.layout === layout) });
+      button.addEventListener("click", () => { effectsPreferences.layout = layout; saveEffectsPreferences(); render(); });
+      buttons.set(layout, button); controls.append(button);
+    }
+    const custom = el("details", undefined, { class: "effects-customize" }); custom.append(el("summary", "Customize emphasis"));
+    const choices = el("div", undefined, { class: "effects-lenses" });
+    for (const [key, name] of Object.entries(RIPPLE)) {
+      const label = el("label"), input = el("input", undefined, { type: "checkbox", "data-effects-lens": key });
+      input.checked = effectsPreferences.emphasized.includes(key);
+      input.addEventListener("change", () => {
+        effectsPreferences.emphasized = Object.keys(RIPPLE).filter((lens) => lens === key ? input.checked : effectsPreferences.emphasized.includes(lens));
+        saveEffectsPreferences(); render();
+      });
+      label.append(input, el("span", name)); choices.append(label);
+    }
+    custom.append(choices, el("p", "Emphasis and layout are remembered in this browser. Every view and unknown stays visible; model and review evidence are unchanged.", { class: "muted small" }));
+    const identity = el("details", undefined, { id: "effects-identities", class: "effects-identities" });
+    identity.append(el("summary", "Compared revisions"), el("p", `Before ${report.before_model || "not reported"} → candidate ${report.model}`, { class: "small" }));
+    root.append(controls, custom, identity, el("p", "Kernel comparisons. Connectors group views of this same change; they are not causal or runtime edges.", { class: "muted small" }), content);
+    box.append(root);
+    const icons = { states: "○", classes: "▤", usecases: "◇", screens: "▣", components: "⬡", sequences: "⇄", system: "◎" };
+    function render() {
+      for (const [layout, button] of buttons) button.setAttribute("aria-pressed", String(effectsPreferences.layout === layout));
+      content.replaceChildren();
+      const connected = effectsPreferences.layout === "connected", map = el("div", undefined, { class: "effects-map" }), groups = el("div", undefined, { class: "effects-groups" });
+      if (connected) map.append(el("div", undefined, { class: "effects-anchor" }));
+      const anchor = connected ? map.firstChild : null;
+      if (anchor) anchor.append(el("strong", "Compared candidate"), el("span", report.model.slice(0, 16), { class: "small" }));
+      const cards = el("div", undefined, { class: "effects-card-grid" });
+      for (const [key, name] of Object.entries(RIPPLE)) {
+        const items = report.diagrams[key], emphasized = effectsPreferences.emphasized.includes(key), details = el("details", undefined, { id: "effects-detail-" + key, class: "effects-group" });
+        const count = items ? items.length : null;
+        const severity = !items ? "unknown" : items.some((item) => item.change === "problem") ? "problem" : items.some((item) => item.change === "warning") ? "warning" : count ? "changed" : "quiet";
+        const status = (severity === "problem" ? "Problem · " : severity === "warning" ? "Warning · " : "") + (count === null ? "UNKNOWN" : count ? `${count} returned effect(s)` : "No effect returned");
+        const card = el("button", undefined, { type: "button", class: "effects-card " + severity + (emphasized ? " emphasized" : ""), "data-effects-view": key, "aria-controls": "effects-detail-" + key, "aria-expanded": "false" });
+        card.append(el("span", icons[key], { class: "effects-icon", "aria-hidden": "true" }), el("strong", name), el("span", status, { class: "effects-count" }));
+        card.addEventListener("click", () => { details.open = !details.open; card.setAttribute("aria-expanded", String(details.open)); if (details.open) details.scrollIntoView({ block: "nearest" }); });
+        details.addEventListener("toggle", () => card.setAttribute("aria-expanded", String(details.open)));
+        cards.append(card); details.open = !connected && emphasized && Boolean(count);
+        details.append(el("summary", `${name} · ${status}`));
+        const list = el("ul", undefined, { class: "effects-list" });
+        if (!count) list.append(el("li", items ? "No effect returned within this modeled scope." : "This view is not bound by the report; effects are unknown.", { class: "muted small" }));
+        for (const item of items || []) {
+          const button = el("button", undefined, { type: "button", class: "effects-item " + item.change });
+          button.append(el("span", MARK[item.change] || "?", { class: "effects-mark", "aria-hidden": "true" }), el("span", item.text));
+          button.addEventListener("click", () => showRipple(key, item));
+          const li = el("li"); li.append(button); list.append(li);
+        }
+        details.append(list); groups.append(details);
+      }
+      if (connected) { map.append(cards); content.append(map); }
+      content.append(groups);
+    }
+    render();
+    const conformance = report.conformance;
+    if (conformance) box.append(el("p", `Conformance cases: ${conformance.cases_before ?? "unknown"} → ${conformance.cases_after ?? "cannot be built"}. Runtime verification is separate.`, { class: "muted small" }));
+  }
+
+  function effectsRequirements(box, report) {
+    const trace = report.traceability, affected = trace.requirements.filter((item) => item.affected);
+    box.append(el("h4", `Requirements & laws · ${trace.coverage.status}`), el("p", `${affected.length} affected requirement(s) within declared links. Unmodeled dependencies remain unknown. ${trace.coverage.scope}`, { class: "muted small" }));
+    const list = el("ul");
+    for (const item of affected) {
+      const li = el("li", `${item.id} · ${item.area} · current evidence ${item.observed_status}`);
+      li.append(el("p", `Affected checks: ${item.affected_checks.join(", ") || "no check link declared"}. Unresolved links: ${item.unresolved.length}.`, { class: "muted small" })); list.append(li);
+    }
+    box.append(list);
+    const changedLaws = trace.laws.items.filter((law) => law.status !== "unchanged");
+    box.append(el("p", `Law drafts changed: ${changedLaws.map((law) => law.id).join(", ") || "none returned"}. Prose changes never change policy; law edits remain drafts.`, { class: "muted small" }));
+  }
+
+  async function showEffects() {
+    if (plan && plan.result && plan.result.legal && !plan.previewing) enterPreview();
+    showTab("review"); $("review-effects").hidden = false;
+    const own = ++effectsSeq, key = effectsKey(), box = $("review-effects-content");
+    box.replaceChildren(); $("review-effects-status").textContent = "Reading the kernel's effects and declared requirement links…";
+    const scenarios = window.PlayTests?.draft(), laws = window.PlayLaws?.draft(), prose = window.PlayAssurance?.requirementDrafts() || {};
+    const reports = await Promise.allSettled([
+      api("/api/play/ripple", { ...about(), screens: screensEdited ? screens : null, ...(scenarios ? { scenarios } : {}) }),
+      api("/api/play/assurance/compare", { ...about(), requirement_drafts: prose, ...(laws ? { laws } : {}) }),
+    ]);
+    if (own !== effectsSeq) return;
+    if (key !== effectsKey()) { box.replaceChildren(); $("review-effects-status").textContent = "The subject changed while effects were loading. Open Effects across system again for the current change."; return; }
+    const [diagrams, assurance] = reports;
+    if (diagrams.status === "fulfilled") effectsDiagrams(box, diagrams.value);
+    else box.append(el("p", `Diagram effects UNKNOWN: ${diagrams.reason.code || "ERROR"}: ${diagrams.reason.message}`, { class: "refusal" }));
+    const sharedSubject = diagrams.status !== "fulfilled" || assurance.status === "fulfilled" && assurance.value.traceability.subject.model_hash === diagrams.value.model && assurance.value.traceability.subject.baseline_model_hash === diagrams.value.before_model;
+    if (assurance.status === "fulfilled" && sharedSubject) effectsRequirements(box, assurance.value);
+    else box.append(el("p", assurance.status === "rejected" ? `Requirement effects UNKNOWN: ${assurance.reason.code || "ERROR"}: ${assurance.reason.message}` : "Requirement and diagram reports concern different or unreported baselines or candidates. Refresh this inspection; no combined result is shown.", { class: "refusal" }));
+    $("review-effects-status").textContent = "Returned effects for the current subject. No deployment observation or complete dependency-coverage claim.";
+    $("review-effects").scrollIntoView({ block: "start" });
+  }
+
+  $("review-effects-open").addEventListener("click", showEffects);
+  $("review-effects-assurance").addEventListener("click", () => window.PlayAssurance?.open("requirements"));
+  function invalidateEffects() {
+    effectsSeq++; $("review-effects").hidden = true; $("review-effects-content").replaceChildren();
+  }
+  for (const event of ["playide:plan", "playide:edit", "playide:tests", "playide:laws", "playide:activated"]) document.addEventListener(event, invalidateEffects);
+  document.addEventListener("input", (event) => { if (event.target.id === "assurance-prose") invalidateEffects(); });
+
+  function activationDraft() {
+    const steps = plan ? plan.steps.filter((_, i) => plan.accepted[i]).map((s) => ({ transaction: s.transaction,
+      author: s.author === "ai" ? "ai" : "you", round: s.round || 1, request: s.request || "" })) : [];
+    const reasons = [];
+    const workflowKinds = new Set(["add_state", "rename_state", "remove_state", "set_initial", "add_transition",
+      "retarget_transition", "remove_transition", "set_role", "set_guards", "set_effects"]);
+    if (caseId && steps.length) reasons.push("These edits are on a case candidate. Return to that candidate to review it, or draw a new plan from the active model.");
+    if (!caseId && !steps.length) reasons.push("Accept a workflow edit before creating a change case.");
+    if (steps.some((s) => !workflowKinds.has(s.transaction.kind))) reasons.push("Data and actor-kind changes remain drafts; their pack revision and migration contracts are not available.");
+    if (screensEdited) reasons.push("Screen changes remain a draft. Keep or undo them before transferring a workflow-only change.");
+    if (window.PlayTests && window.PlayTests.draft()) reasons.push("Scenario changes remain a draft. Keep or reset them before transferring a workflow-only change.");
+    if (window.PlayLaws && window.PlayLaws.draft()) reasons.push("Law changes remain a draft. Keep or reset them; a workflow change cannot silently discard a policy change.");
+    const declared = plan && plan.result && plan.result.declared;
+    if (declared && (declared.actions.length || declared.roles.length)) reasons.push("New action or role vocabulary changes the pack identity. It cannot be activated by a workflow-only case.");
+    if (plan && (!plan.result || !plan.result.legal)) reasons.push("The accepted plan is not a legal checked candidate. Resolve the refusal on the diagram first.");
+    const rawLaw = $("laws-source");
+    if (rawLaw && !$("laws-editor").hidden) {
+      if (!window.PlayLaws || !window.PlayLaws.report()) reasons.push("The law editor is waiting for its authoritative report. Close the editor or wait and inspect it before continuing.");
+      else {
+        try { if (JSON.stringify(JSON.parse(rawLaw.value)) !== JSON.stringify(window.PlayLaws.draft() || window.PlayLaws.report().file.laws)) reasons.push("The law editor contains an untried change. Keep or reset it before transferring this plan."); }
+        catch { reasons.push("The law editor contains an invalid draft; no policy text will be dropped during transfer."); }
+      }
+    }
+    const rawTests = $("tests-source");
+    if (rawTests && !$("tests-editor").hidden && !window.PlayTests.draft()) reasons.push("Close the scenario editor after keeping or resetting its changes before transferring a workflow-only plan.");
+    if (!$("tests-recorder").hidden) reasons.push("The new-test recorder is open. Keep or discard that test before continuing; its recorded outcomes belong to the current model.");
+    const prose = window.PlayAssurance && window.PlayAssurance.requirementDrafts();
+    const notes = prose && Object.keys(prose).length ? [`Requirement prose: draft only, policy unchanged (${Object.keys(prose).join(", ")}). These text edits remain in the workbench and are not part of this workflow activation.`] : [];
+    return { reasons, notes, shownCandidate: plan && plan.result && plan.result.legal ? plan.result.candidate : baseModel,
+      context: JSON.stringify([caseId, baseModel, draft(), window.PlayLaws && window.PlayLaws.draft()]),
+      originDraftKey: draftKey(), request: { request: (plan && (plan.request || plan.summary)) || "Workflow changes drawn in PlayIDE",
+        pack_id: packInfo.id, expected_pack_digest: activeStatus && activeStatus.pack.digest,
+        expected_baseline_version: activeStatus && activeStatus.baseline_version,
+        expected_baseline_semantic_hash: activeStatus && activeStatus.baseline_semantic_hash,
+        expected_candidate_semantic_hash: plan && plan.result && plan.result.candidate_semantic_hash, steps } };
+  }
+
+  // A committed activation changes the active model, not a preview. Refresh every derived view and discard old
+  // build evidence from this page. The case and its original steps remain in the server's replay history.
+  async function activated(view, originDraftKey, expectedContext) {
+    let status = await api("/api/status");
+    const expected = view.packet && view.packet.subject && view.packet.subject.semantic;
+    if (expected && status.baseline_semantic_hash !== expected) throw Object.assign(new Error("Activation was acknowledged, but the active revision moved again. Refresh to inspect the current model."), { code: "ACTIVE_REVISION_CHANGED" });
+    // Load into local variables before retiring any browser work. A person can keep editing while requests wait.
+    const dataDoc = await api("/api/play/data"), roleDoc = await api("/api/play/roles");
+    const screenDoc = await api("/api/play/screens", { case_id: null, model: status.baseline, plan: null, screens: null });
+    const confirmed = await api("/api/status");
+    if (confirmed.baseline_semantic_hash !== status.baseline_semantic_hash || confirmed.baseline_version !== status.baseline_version || confirmed.pack.digest !== status.pack.digest) throw Object.assign(new Error("The active revision moved during refresh. Browser drafts are retained; open the current active model."), { code: "ACTIVE_REVISION_CHANGED" });
+    status = confirmed;
+    const currentDraft = activationDraft();
+    if (currentDraft.reasons.length || expectedContext && currentDraft.context !== expectedContext) throw Object.assign(new Error("The approved case became active, but newer browser edits are retained. Open the current active model; the earlier draft remains available to reopen."), { code: "ACTIVATED_WITH_NEWER_DRAFT" });
+    const previousKey = draftKey();
+    retire();
+    caseId = null;
+    activeStatus = status;
+    baseModel = model = status.baseline;
+    packInfo = status.pack;
+    screensEdited = false;
+    lastBuild = null;
+    shownChange = null;
+    simKey = null;
+    $("run").hidden = true;
+    $("run-frame").src = "about:blank";
+    $("run-open").removeAttribute("href");
+    $("score").hidden = true;
+    const query = new URLSearchParams(location.search);
+    query.delete("case"); query.delete("view");
+    history.replaceState(null, "", location.pathname + (query.size ? "?" + query : ""));
+    try { localStorage.removeItem(previousKey); if (originDraftKey) localStorage.removeItem(originDraftKey); } catch { /* no persisted copy in this browser */ }
+    edits.stack = [{ label: "open the activated model", doc: { plan: null, screens: null }, card: null, at: Date.now() }]; edits.at = 0;
+    recoveredWork = false;
+    data = savedData = dataDoc.data; savedBuild = dataDoc.build;
+    roleKinds = Object.fromEntries(roleDoc.roles.map((r) => [r.id, r.kind]));
+    screens = screenDoc.screens; problems = screenDoc.problems; a11y = screenDoc.accessibility;
+    problemsFor = screensKey(); useCaseList = screenDoc.use_cases; renderHealth();
+    redrawAll(model);
+    renderHistory(); persist(); renderSourceStatus();
+    document.dispatchEvent(new CustomEvent("playide:activated", { detail: { case_id: view.case.id, baseline_version: status.baseline_version, model: status.baseline_semantic_hash } }));
+    notify(`✓ Revision ${status.baseline_version} is active. Build & run now uses this model.`);
+    return status;
+  }
+
+  function renderSourceStatus() {
+    if (!activeStatus) return;
+    $("model-name").textContent = activeStatus.pack.name + (caseId ? " · case candidate" : ` · active revision ${activeStatus.baseline_version}`);
+    $("source-status").textContent = activeStatus.trusted_fixture ? "Reviewed source fixture" : "SOURCE_REVIEW_REQUIRED";
+    $("source-status").title = activeStatus.trusted_fixture ? "The source matches reviewed fixture bytes; this does not prove correctness."
+      : "Implementation differs from the owner-reviewed fixture. Model previews still run; verification, approval and activation require legitimate source review.";
+    $("source-status").className = "source-status " + (activeStatus.trusted_fixture ? "fixture" : "required");
+  }
+
   function historyKeys(event) {
     if (!(event.ctrlKey || event.metaKey) || event.altKey || event.defaultPrevented || REVIEW_VIEW) return;
     const key = event.key.toLowerCase(), target = event.target;
@@ -2573,7 +2855,8 @@
     }
     baseModel = model;
     const status = await api("/api/status");
-    $("model-name").textContent = status.pack.name + (caseId ? " · change case" : "");
+    activeStatus = status;
+    renderSourceStatus();
     packInfo = status.pack;
     const dataDoc = await api("/api/play/data");
     data = savedData = dataDoc.data;
@@ -2605,6 +2888,7 @@
     $("tab-usecases").addEventListener("click", () => showTab("usecases"));
     $("tab-screens").addEventListener("click", () => showTab("screens"));
     $("tab-components").addEventListener("click", () => showTab("components"));
+    $("tab-c4").addEventListener("click", () => showTab("c4"));
     $("tab-laws").addEventListener("click", () => showTab("laws"));
     $("tab-tests").addEventListener("click", () => showTab("tests"));
     $("tab-access").addEventListener("click", () => showTab("access"));
@@ -2630,6 +2914,7 @@
     await recover();
     document.body.dataset.ready = "true";
     document.dispatchEvent(new CustomEvent("playide:ready"));
+    recoverNavigation();
   }
 
   // What the run bar (play-run.js, ADR-0160) may use. It holds no rules either: it moves through the server's run log.
@@ -2647,10 +2932,13 @@
 
   window.PlayIDE = {
     api, el, hooks, about, textWidth, liftLabels, follow, roleKind, kinds: ACTOR_KINDS, actorLook: ACTOR_LOOK, inForce: (role) => roleKinds[role] || "human",
+    activationDraft, activated, showEffects, status: () => activeStatus,
+    inspectChange: () => { if (plan && !plan.previewing) enterPreview(); showTab("review"); },
     // Change who holds a role: a step in the plan like any drawn edit, checked by the server against the laws about
-    // kinds of actor; nothing is saved (#156). The review view changes nothing.
+    // kinds of actor; those pack changes remain drafts (#156). The review view changes nothing.
     setKind: (role, to) => (REVIEW_VIEW ? null : addStep({ kind: "set_role_kind", role, to })), reviewing: () => REVIEW_VIEW, viewKey, label, restyle, clearSim, select, showTab, fit, importPlan, runAs, openScreen,
     components: loadComponents, buildEvidence: () => evidence(), // the deployment lens (ADR-0206) reads both
+    runningBuild: () => lastBuild && lastBuild.key === viewKey() && lastBuild.conformance.status === "PASS" ? { url: lastBuild.url, model: lastBuild.model, key: lastBuild.key, vocabulary: lastBuild.trace_vocabulary, subject: lastBuild.subject } : null,
     screens: () => screens, data: () => data, editedScreens: () => (screensEdited ? screens : null), // the screen designer's screens and the class diagram (play-roles.js reads them)
     graph: () => graph, tab: () => tab, model: () => model, selected: () => selected, pack: () => packInfo, base: () => baseModel,
     direction: () => direction || "LR", // the state machine's layout, which the Changes view follows

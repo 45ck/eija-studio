@@ -293,9 +293,15 @@ def test_unsafe_scenario_through_the_stored_case_and_the_owner_gate(studio):
         u.insert_case(body)
     view = studio.view(body["id"])
     assert "POLICY_BLOCKED" in view["packet"]["blockers"] and view["packet"]["explanations"]
+    # This deliberately bypasses authoring with an unsafe candidate. Preserve its
+    # policy diagnostic before replay rejects the inconsistent retained history.
+    with studio.store.transaction() as u:
+        before = (u.load_case(body["id"]), u.active(), u.observations(body["id"]), u.effect_counts())
     with pytest.raises(DomainError) as blocked:
         studio.approve(body["id"], 0, view["packet"]["subject_hash"], {}, True, OWNER)
     assert blocked.value.code == "GATE_BLOCKED" and "POLICY_BLOCKED" in blocked.value.message
+    with studio.store.transaction() as u:
+        assert (u.load_case(body["id"]), u.active(), u.observations(body["id"]), u.effect_counts()) == before
 
 
 def test_smt_negative_controls_explain_policy_blocks_too(tmp_path, studio):

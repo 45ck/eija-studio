@@ -3,7 +3,7 @@ from functools import partial
 from pathlib import Path
 from .adapters.sqlite_store import SQLiteStore, sandbox_factory
 from .adapters.receipts import ReceiptSigner
-from .adapters.identity import identity
+from .adapters.identity import identity, implementation_files
 from .adapters.providers import create_provider, KEYED_PROVIDERS, PROVIDER_NAMES  # noqa: F401 - re-exported for interfaces
 from .adapters.formal import FormalReports
 from .adapters.edit_proposals import OfflineEditProposer
@@ -28,6 +28,11 @@ def resolve_pack(pack: Pack | str | Path | None) -> Pack:
 def source_identity(pack: Pack | str | Path | None = None) -> dict:
     """The implementation identity the Studio reports, including whether it matches the owner-stamped fixture."""
     return identity(resolve_pack(pack))
+
+
+def implementation_manifest() -> dict[str, str]:
+    """Measured source bytes for generated-build identity, without owner approval authority."""
+    return implementation_files()
 
 
 def build_studio(workspace: Path, provider="offline", model="", allow_network=False, key=None, formal=False,

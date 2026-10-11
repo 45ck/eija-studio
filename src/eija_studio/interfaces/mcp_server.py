@@ -301,6 +301,7 @@ class AgentSurface:
             "case": {"id": case["id"], "version": case["version"], "stage": case["stage"], "request": case["request"],
                      "created_at": case["created_at"], "baseline_version": case["baseline_version"],
                      "selected_meaning": case["selected_meaning"], "selected_by": case["selected_by"],
+                     "selection": case.get("selection"),
                      "transactions": [t["kind"] for t in case["transactions"]], "receipt_count": len(case["receipts"]),
                      "decision": _decision_summary(case["decision"]), "provider_run": _provider_run_summary(case["provider_run"])},
             "proposal": None if proposal is None else {**proposal, "trust": "UNTRUSTED_PROPOSAL"},

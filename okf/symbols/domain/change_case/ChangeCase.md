@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/domain/change_case.py#ChangeCase
   title: domain/change_case.py
   hash_method: ast-sig-v1
-  sha256: 7215884267546a3c954434ed5b16f2081ef0855f613e7d3fcf56c87f1618bbf0
+  sha256: 058c6a890ec0be7a386674bce474bd365976e432f2356f98676650bf0ff79d61
 description_override: Aggregate linking one request to its interpretations, chosen meaning, baseline, candidate, transactions, receipts and decision.
-notes_baseline: 643098bf4edb2a84d27fd5245c569da35c4b0038a03a119ea4c6f159d74da191
+notes_baseline: 270ed9b56dc0e41518b6f0427eaf9275b0606fd7c0ba899978db118ef56a40a7
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -30,6 +30,14 @@ verified:
   at: '2026-10-02T05:15:30Z'
   notes_sha256: 51dd8c27ccd9424ae7ecefd3ea3e37160645e438b23c1c095d1f596e84695f5a
   sources_sha256: 643098bf4edb2a84d27fd5245c569da35c4b0038a03a119ea4c6f159d74da191
+- by: process:playide-activation
+  at: '2026-10-10T13:50:00+11:00'
+  notes_sha256: 7d023d2aab2f2322e6dd1280ceb09df4ec3d8b25a37018081c6dc32b757e156d
+  sources_sha256: 270ed9b56dc0e41518b6f0427eaf9275b0606fd7c0ba899978db118ef56a40a7
+- by: process:playide-activation
+  at: '2026-10-10T02:55:29+00:00'
+  notes_sha256: 7d023d2aab2f2322e6dd1280ceb09df4ec3d8b25a37018081c6dc32b757e156d
+  sources_sha256: 270ed9b56dc0e41518b6f0427eaf9275b0606fd7c0ba899978db118ef56a40a7
 ---
 
 # domain.change_case.ChangeCase
@@ -64,6 +72,7 @@ Aggregate boundary: transitions are mediated by the application and CAS store.
 | `provider_run` | `dict[str, Any] \| None` |  |
 | `selected_meaning` | `str \| None` |  |
 | `selected_by` | `str \| None` |  |
+| `selection` | `Selection \| None` | `None` |
 | `transactions` | `tuple[Transaction, ...]` |  |
 | `redo_transactions` | `tuple[Transaction, ...]` | `()` |
 | `layout` | `dict[str, dict[str, int]]` |  |
@@ -81,14 +90,20 @@ Aggregate boundary: transitions are mediated by the application and CAS store.
 ## Notes
 
 `redo_transactions` is a persisted command stack, empty by default for older compatible
-cases. The selected meaning stays an atomic prefix outside undo. Restoring a model
+cases. The selected meaning or exact owner plan stays an atomic prefix outside undo. Restoring a model
 does not restore its old version or decision; fresh edits discard the redo branch.
+
+The optional tagged `selection` distinguishes `pack_meaning` from `owner_plan`.
+Legacy cases retain their existing `selected_meaning` and history. Owner plans
+retain pack/baseline/candidate identities and reported step provenance, with
+owner authority recorded separately as `selected_by`.
 
 The aggregate behind [Change Case](/language/change-case.md). Its `version` is a compare-and-swap counter distinct from an instance version. Stage never grants eligibility on its own: [compile_case](/symbols/application/compiler/compile_case.md) computes it. `APPLIED` and `DISCARDED` cases are closed ([require_editable](/symbols/domain/change_case/ChangeCase.require_editable.md)).
 
 <!-- okf:generated:begin links -->
 ## Depends on
 
+* [domain.change_case.Selection](/symbols/domain/change_case/Selection.md) - Type alias `Selection` in `domain/change_case`.
 * [domain.models.Contract](/symbols/domain/models/Contract.md) - `class Contract(BaseModel)` in `domain/models`.
 * [domain.models.Proposal](/symbols/domain/models/Proposal.md) - `class Proposal(Contract)` in `domain/models`.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.

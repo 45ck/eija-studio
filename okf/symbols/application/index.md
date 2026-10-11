@@ -5,6 +5,9 @@
 * [access](access/) - Symbols of application.access
 * [api_contract](api_contract/) - Symbols of application.api_contract
 * [appgen](appgen/) - Symbols of application.appgen
+* [build_subject](build_subject/) - Symbols of application.build_subject
+* [c4](c4/) - Symbols of application.c4
+* [capabilities](capabilities/) - Symbols of application.capabilities
 * [class_build](class_build/) - Symbols of application.class_build
 * [compiler](compiler/) - Symbols of application.compiler
 * [components](components/) - Symbols of application.components
@@ -27,6 +30,7 @@
 * [ports](ports/) - Symbols of application.ports
 * [readiness](readiness/) - Symbols of application.readiness
 * [repository](repository/) - Symbols of application.repository
+* [requirement_trace](requirement_trace/) - Symbols of application.requirement_trace
 * [review](review/) - Symbols of application.review
 * [ripple](ripple/) - Symbols of application.ripple
 * [runtime](runtime/) - Symbols of application.runtime

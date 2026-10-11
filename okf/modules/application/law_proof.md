@@ -93,8 +93,10 @@ _No curated notes yet._
 ## Referenced by
 
 * [application.readiness](/modules/application/readiness.md) - What's missing (ADR-0216): one list across every model and view of what is not ready yet, so a system built in chat or on the canvas says what it still lacks i…
+* [application.requirement_trace](/modules/application/requirement_trace.md) - A bounded declared trace adapter, separate from policy and verification execution.
 * [interfaces.cli](/modules/interfaces/cli.md) - Module `interfaces/cli` (no module docstring).
 * [interfaces.play](/modules/interfaces/play.md) - PlayIDE routes: the visual UML canvas page, Build & run of the model as a live app beside it (ADR-0151), and Simulate, seeded simulated users whose every step…
+* [interfaces.play_assurance](/modules/interfaces/play_assurance.md) - Read-only assurance review.
 * [application.law_proof.FORMAT](/symbols/application/law_proof/FORMAT.md) - Constant `FORMAT` in `application/law_proof`.
 * [application.law_proof.LAW_HANDLING](/symbols/application/law_proof/LAW_HANDLING.md) - Constant `LAW_HANDLING` in `application/law_proof`.
 * [application.law_proof.LIMITS](/symbols/application/law_proof/LIMITS.md) - Constant `LIMITS` in `application/law_proof`.

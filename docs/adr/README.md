@@ -102,6 +102,8 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0216](0216-describe-your-app-and-whats-missing.md) | Describe your app, and what's missing | accepted |
 | [0218](0218-accessibility-check-on-the-generated-screens.md) | An accessibility check on the generated screens | accepted |
 | [0221](0221-every-record-can-reach-an-end.md) | A law that every record can still reach an end | accepted |
+| [0222](0222-exact-owner-plan-selection-and-activation.md) | Exact owner-plan selection and activation | accepted |
+| [0223](0223-generated-build-subject-and-live-architecture.md) | one generated build subject for architecture and runtime observations | accepted |
 <!-- adr-index:end -->
 
 ## Reserved numbers for capability lanes

@@ -128,6 +128,7 @@ def preview_plan(model: Workflow, pack: Pack, transactions: list[Step], accepted
         raise DomainError("PLAN_INVALID", "Accept or reject each step")
     chosen = [tx for tx, keep in zip(transactions, accepted, strict=True) if keep]
     result: dict[str, Any] = {"steps": [], "accepted": sum(accepted), "legal": False, "codes": [], "refs": [],
+                              "before_semantic_hash": model.semantic_hash,
                               "candidate": None, "candidate_semantic_hash": None, "diff": None, "declared": None,
                               "data": None, "data_changes": [], "class_build": None}
     try:

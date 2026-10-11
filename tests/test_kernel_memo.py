@@ -10,6 +10,7 @@ from pathlib import Path
 import pytest
 
 from eija_studio.application.memo import IdentityMemo, ensure_conforms, model_hash
+from eija_studio.bootstrap import source_identity
 from eija_studio.domain.models import DomainError, Workflow
 from eija_studio.domain.pack import load_pack
 from eija_studio.domain.policy import check_policy, ensure_policy
@@ -58,15 +59,15 @@ def test_hash_and_policy_match_the_kernel_for_copies_and_edits():
 def test_a_built_app_is_reused_but_each_caller_gets_its_own_copy():
     model, data = PACK.model, data_for(PACK)
     screens = screens_for(PACK, model, data)
-    files, manifest = app_files(PACK, model, screens)
+    files, manifest = app_files(PACK, model, screens, identity_provider=source_identity)
     files["app/service.py"] = "tampered"
     manifest["oracle"]["cases"] = -1
-    again, kept = app_files(PACK, model, screens)
+    again, kept = app_files(PACK, model, screens, identity_provider=source_identity)
     assert again["app/service.py"] != "tampered" and kept["oracle"]["cases"] > 0
     # Other screens are another app.
     retitled = screens.screens[0].model_copy(update={"title": "Another title"})
     other = screens.model_copy(update={"screens": (retitled, *screens.screens[1:])})
-    assert app_files(PACK, model, other)[0]["app/screens.json"] != again["app/screens.json"]
+    assert app_files(PACK, model, other, identity_provider=source_identity)[0]["app/screens.json"] != again["app/screens.json"]
 
 
 def test_the_largest_model_the_kernel_accepts_loads_and_passes_its_policy(tmp_path):

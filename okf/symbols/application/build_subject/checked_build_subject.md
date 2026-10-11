@@ -1,0 +1,53 @@
+---
+type: Function
+title: application.build_subject.checked_build_subject
+description: Check archived identity, optionally binding it to the installed runtime and prior snapshot.
+resource: repo://src/eija_studio/application/build_subject.py#checked_build_subject
+tags:
+- symbol
+- application
+- function
+status: stable
+generated:
+  by: process:eija-okf-sync
+sources:
+- resource: repo://src/eija_studio/application/build_subject.py#checked_build_subject
+  title: application/build_subject.py
+  hash_method: ast-v2
+  sha256: cba03ad5617de8ede38e45cac194cd16dde3e9e6e0643cbd8aa2328dbb6eb23d
+notes_baseline: 63970d50d2172078340556361178610a9438d618ddeb93ad7797cc98fb4e8d57
+---
+
+# application.build_subject.checked_build_subject
+
+<!-- okf:generated:begin facts -->
+| | |
+|---|---|
+| Kind | function |
+| Module | [`application/build_subject`](/modules/application/build_subject.md) |
+| Signature | `def checked_build_subject(files: dict[str, str], *, implementation_digest: str \| None=None, expected_subject: dict[str, Any] \| None=None) -> dict[str, Any]` |
+| Code | `repo://src/eija_studio/application/build_subject.py#checked_build_subject` |
+| Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
+
+## Docstring
+
+~~~text
+Check archived identity, optionally binding it to the installed runtime and prior snapshot.
+~~~
+<!-- okf:generated:end facts -->
+
+## Notes
+
+_No curated notes yet._
+
+<!-- okf:generated:begin links -->
+## Depends on
+
+* [application.build_subject.SUBJECT_FILE](/symbols/application/build_subject/SUBJECT_FILE.md) - Constant `SUBJECT_FILE` in `application/build_subject`.
+* [application.build_subject.build_subject](/symbols/application/build_subject/build_subject.md) - Bind model, contracts, template bytes and measured implementation to one payload.
+* [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
+
+## Referenced by
+
+* [application.c4.app_c4](/symbols/application/c4/app_c4.md) - Current generated-source architecture, plus explicit fixture and data-design limits.
+<!-- okf:generated:end links -->

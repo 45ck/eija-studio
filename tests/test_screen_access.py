@@ -56,6 +56,28 @@ def test_a_colour_written_outside_the_theme_fails():
     assert report(css=CSS + "\n.extra{color:#999}")["theme-colours"] == "FAIL"
 
 
+@pytest.mark.parametrize(("markup", "expected"), [
+    ('<p tabindex="-1">Outcome</p>', "PASS"),
+    ("<p tabindex='-12'>Outcome</p>", "PASS"),
+    ('<button tabindex="0">Choose</button>', "PASS"),
+    ('<button tabindex="2">Choose</button>', "FAIL"),
+    ('<button tabindex=+12>Choose</button>', "FAIL"),
+])
+def test_template_keyboard_order_distinguishes_programmatic_focus_from_positive_order(markup, expected):
+    assert report(html=HTML + markup)["keyboard-order"] == expected
+
+
+@pytest.mark.parametrize(("statement", "expected"), [
+    ('el("p", "Outcome", { tabindex: "-1" });', "PASS"),
+    ('target.tabIndex = -1;', "PASS"),
+    ('target.tabIndex = 0;', "PASS"),
+    ('el("button", "Choose", { "tabindex": "2" });', "FAIL"),
+    ('target.tabIndex = 12;', "FAIL"),
+])
+def test_template_keyboard_order_checks_literal_javascript_indices(statement, expected):
+    assert report(js=JS + "\n" + statement)["keyboard-order"] == expected
+
+
 def test_a_repeated_label_and_alike_actions_fail():
     screens = screens_for(LOAN, LOAN.model, data_for(LOAN))
     fields = [f.model_dump() for f in screens.screen(CREATE).fields]

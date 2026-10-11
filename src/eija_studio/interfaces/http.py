@@ -14,6 +14,7 @@ from eija_studio.application.plan import example_passes
 from eija_studio.application.repository import COMMIT_OID_PATTERN
 from eija_studio.domain.models import MEANING_ID, Contract, DomainError, OWNER, LayoutChange, ExecuteCommand, Workflow
 from eija_studio.domain.pack import Pack
+from eija_studio.domain.change_case import OwnerPlanRequest
 from eija_studio.domain.transactions import Transaction
 from .play import register as register_play
 from .play_systems import register as register_systems
@@ -25,6 +26,9 @@ PAGE_CSP = ("default-src 'none'; script-src 'self'; style-src 'self'; connect-sr
 FRAME_CSP = ("default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src data:; connect-src 'none'; "
              "frame-ancestors 'self'; base-uri 'none'; form-action 'none'; sandbox allow-scripts")
 WEB_ASSETS = frozenset({"app.js", "app.css", "canvas.js", "tree.js", "review.js", "compare.js", "compare.css", "repository-review.js", "repository-review.css", "source.js", "shell.js", "agent-edit.js", "visual-frame.js", "visual-frame.css", "play.js", "play-run.js", "play.css", "play-laws.js", "play-assist.js", "play-assist.css", "play-review.js", "play-review.css", "play-access.js", "play-access.css", "play-shell.js", "play-shell.css", "play-diff.js", "play-diff.css", "play-tests.js", "play-tests.css", "play-interop.js", "play-interop.css", "play-systems.js", "play-systems.css", "play-sequence.js", "play-sequence.css", "play-landscape.js", "play-landscape.css", "play-deployment.js", "play-roles.js", "play-roles.css", "play-game.js", "play-game.css", "play-missing.js"})
+WEB_ASSETS |= frozenset({"play-activation.js", "play-activation.css", "play-assurance.js", "play-assurance.css"})
+WEB_ASSETS |= frozenset({"play-live.js", "play-live.css"})
+WEB_ASSETS |= frozenset({"play-c4.js", "play-c4.css"})
 # PlayIDE frames the app built from the model, which runs as a separate process on its own loopback port (ADR-0151).
 PLAY_CSP = PAGE_CSP.replace("frame-src 'self'", "frame-src 'self' http://127.0.0.1:*")
 
@@ -66,7 +70,8 @@ def _set_security_headers(response, path: str) -> None:
 def pack_summary(pack: Pack) -> dict[str, object]:
     """What the page needs to name the domain without hardcoding it: the pack's name, demo request, declared actions
     (in declaration order), declared roles with their descriptions and synthetic fixture actors."""
-    return {"id": pack.id, "name": pack.pack.name, "version": pack.pack.version, "demo_request": pack.fixtures.demo_request,
+    return {"id": pack.id, "name": pack.pack.name, "version": pack.pack.version, "digest": pack.digest,
+            "demo_request": pack.fixtures.demo_request,
             "actions": [a.id for a in pack.actions], "roles": [r.id for r in pack.roles],
             "role_notes": {r.id: r.description for r in pack.roles if r.description},
             "actors": [{"id": a.id, "role": a.role, "active": a.active, "assigned": a.assigned} for a in pack.fixtures.actors]}
@@ -148,6 +153,7 @@ def create_app(studio, token: str, port: int = 8765, systems=None) -> FastAPI:
         identity = studio.identity_provider()
         return {"version": "0.2.0", "provider": studio.provider.name, "network_enabled": studio.allow_network,
             "provider_networked": studio.provider.networked, "baseline_version": active["version"], "baseline": active["model"],
+            "baseline_semantic_hash": Workflow.model_validate(active["model"]).semantic_hash,
             "trusted_fixture": identity["trusted_fixture"], "identity_boundary": "Single local owner; synthetic actors only",
             "pack": pack_summary(studio.pack) | {"demo_modelled": example_passes(
                 studio.pack.fixtures.demo_request, Workflow.model_validate(active["model"]), studio.pack, studio.plan_proposer),
@@ -194,6 +200,10 @@ def create_app(studio, token: str, port: int = 8765, systems=None) -> FastAPI:
     @app.post("/api/cases")
     def new_case(body: NewCase):
         return studio.create(body.request)
+
+    @app.post("/api/cases/from-plan", summary="Owner selection of the exact accepted workflow plan")
+    def from_plan(body: OwnerPlanRequest):
+        return studio.from_plan(body, OWNER)
 
     @app.get("/api/cases/{case_id}")
     def get_case(case_id: str):

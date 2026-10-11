@@ -44,4 +44,8 @@ _No curated notes yet._
 ## Depends on
 
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
+
+## Referenced by
+
+* [application.requirement_trace.requirement_review](/symbols/application/requirement_trace/requirement_review.md) - Pinned requirement rows and declared model/law/source/test links with visible gaps.
 <!-- okf:generated:end links -->

@@ -21,6 +21,7 @@
 * [application.service.Studio.execute](Studio.execute.md) - `def execute(self, case_id: str, command: ExecuteCommand, fault: Callable[[str], None] | None=None) -> dict[st…` in `application/service`.
 * [application.service.Studio.export](Studio.export.md) - `def export(self, case_id: str) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.formal_view](Studio.formal_view.md) - Formal evidence for a bare workflow (``eija compile``): collected and sealed in memory, never stored, never a decision.
+* [application.service.Studio.from_plan](Studio.from_plan.md) - Select an exact owner-reviewed command batch; previews and provenance never grant authority.
 * [application.service.Studio.history](Studio.history.md) - Reconstructed semantic revisions and append-only command audit; never changes the case.
 * [application.service.Studio.layout](Studio.layout.md) - `def layout(self, case_id: str, expected: int, change: LayoutChange, principal: Principal) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.propose](Studio.propose.md) - Asks the configured provider for an untrusted interpretation and records the run; networked providers need startup enablement and explicit consent.

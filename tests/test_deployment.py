@@ -9,6 +9,7 @@ from fastapi.testclient import TestClient
 
 from eija_studio import __version__
 from eija_studio.application.deployment import app_deployment
+from eija_studio.bootstrap import source_identity
 from eija_studio.domain.pack import PACKS_ROOT, load_pack
 from eija_studio.interfaces.app_build import app_files
 from eija_studio.interfaces.http import create_app
@@ -21,7 +22,7 @@ HEADERS = {"Authorization": "Bearer " + SESSION, "Origin": "http://127.0.0.1:876
 
 def built() -> dict[str, str]:
     pack = load_pack(PACKS_ROOT / "library-loan")
-    return app_files(pack, pack.model)[0]
+    return app_files(pack, pack.model, identity_provider=source_identity)[0]
 
 
 def nodes(report) -> dict[str, dict]:

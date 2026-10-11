@@ -57,6 +57,7 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Referenced by
 
+* [application.c4](/modules/application/c4.md) - Read-only C4 views of generated source and declared model contracts.
 * [interfaces.play](/modules/interfaces/play.md) - PlayIDE routes: the visual UML canvas page, Build & run of the model as a live app beside it (ADR-0151), and Simulate, seeded simulated users whose every step…
 * [application.deployment.FORMAT](/symbols/application/deployment/FORMAT.md) - Constant `FORMAT` in `application/deployment`.
 * [application.deployment.HOST](/symbols/application/deployment/HOST.md) - Constant `HOST` in `application/deployment`.

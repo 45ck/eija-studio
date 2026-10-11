@@ -10,14 +10,16 @@
   const $ = (id) => document.getElementById(id);
   const KEY = "playide.shell.v1";
   const REVIEW = new URLSearchParams(location.search).get("view") === "review";
-  const DOCK = [["debug", "Run"], ["sim", "Simulation"], ["run", "Running app"]];
-  const LIMITS = { leftWidth: [200, 480], chatWidth: [300, 640], dockHeight: [140, 640] };
-  const state = { left: true, chat: true, dock: true, leftWidth: 272, chatWidth: 380, dockHeight: 280, active: null };
+  const DOCK = [["debug", "Model run"], ["sim", "Model simulation"], ["run", "Local app"]];
+  const LIMITS = { leftWidth: [200, 480], chatWidth: [300, 640], dockHeight: [140, 640], playWidth: [340, 720], playHeight: [220, 540] };
+  const state = { left: true, chat: true, dock: true, play: false, leftWidth: 272, chatWidth: 380, dockHeight: 280, playWidth: 430, playHeight: 320, active: null };
+  let checkedModel = false;
 
   function load() {
     try {
       const kept = JSON.parse(localStorage.getItem(KEY) || "{}");
       for (const k of Object.keys(state)) if (typeof kept[k] === typeof state[k] && k !== "active") state[k] = kept[k];
+      for (const [k, [min, max]] of Object.entries(LIMITS)) state[k] = Math.min(max, Math.max(min, Number.isFinite(state[k]) ? state[k] : min));
     } catch { /* storage blocked: the defaults stand */ }
   }
 
@@ -25,15 +27,16 @@
     try { localStorage.setItem(KEY, JSON.stringify({ ...state, active: null })); } catch { /* not kept; still works */ }
   }
 
-  const shown = () => DOCK.filter(([id]) => $(id) && !$(id).hidden).map(([id]) => id);
+  const shown = () => DOCK.filter(([id]) => $(id) && !$(id).hidden && !(state.play && id === "run")).map(([id]) => id);
 
   // A region opened or closed: the diagram on show is fitted to its new size, once, as a resize of the window would.
   let layoutWas = "";
   function refit() {
-    const now = ["left", "chat", "dock"].map((k) => document.body.dataset[k]).join();
-    if (now === layoutWas) return;
+    const now = ["left", "chat", "dock", "play", "playArrangement"].map((k) => document.body.dataset[k]).join();
+    const layout = now + Boolean($("live-trace") && !$("live-trace").hidden);
+    if (layout === layoutWas) return;
     const first = !layoutWas;
-    layoutWas = now;
+    layoutWas = layout;
     const P = window.PlayIDE;
     if (!first && P && P.fit && P.tab && ["states", "classes", "usecases", "components"].includes(P.tab())) requestAnimationFrame(() => P.fit());
   }
@@ -53,6 +56,7 @@
   // starts from what the person sees.
   function rendered(key) {
     const [left, chat] = fitted();
+    if (key === "playWidth") return Math.min(state.playWidth, Math.max(LIMITS.playWidth[0], document.querySelector(".workbench").clientWidth - 445));
     return { leftWidth: left, chatWidth: chat }[key] ?? state[key];
   }
 
@@ -62,10 +66,24 @@
     body.dataset.left = state.left ? "open" : "closed";
     body.dataset.chat = state.chat && !REVIEW ? "open" : "closed";
     body.dataset.dock = state.dock && available.length ? "open" : "closed";
+    body.dataset.play = state.play ? "open" : "closed";
+    body.dataset.playApp = $("run").hidden ? "empty" : "running";
     const [left, chat] = fitted();
-    for (const [k, v] of [["--left-w", left], ["--chat-w", chat], ["--dock-h", state.dockHeight]]) {
+    const width = document.querySelector(".workbench").clientWidth;
+    body.dataset.playArrangement = width >= 880 ? "beside" : "stacked";
+    const playWidth = Math.min(state.playWidth, Math.max(LIMITS.playWidth[0], width - 445));
+    for (const [k, v] of [["--left-w", left], ["--chat-w", chat], ["--dock-h", state.dockHeight], ["--play-w", playWidth], ["--play-h", state.playHeight]]) {
       document.documentElement.style.setProperty(k, v + "px");
     }
+    $("run").setAttribute("role", state.play ? "region" : "tabpanel");
+    $("run").setAttribute("aria-labelledby", state.play ? "run-title" : "dock-tab-run");
+    $("toggle-play").setAttribute("aria-pressed", String(state.play));
+    const stacked = body.dataset.playArrangement === "stacked", playKey = stacked ? "playHeight" : "playWidth";
+    $("split-play").setAttribute("aria-orientation", stacked ? "horizontal" : "vertical");
+    $("split-play").setAttribute("aria-valuemin", String(LIMITS[playKey][0]));
+    $("split-play").setAttribute("aria-valuemax", String(LIMITS[playKey][1]));
+    $("split-play").setAttribute("aria-valuenow", String(stacked ? state.playHeight : playWidth));
+    playStatus();
     for (const [id] of DOCK) {
       const tab = $("dock-tab-" + id);
       tab.hidden = !available.includes(id);
@@ -81,7 +99,19 @@
     save();
   }
 
-  function reveal(id) { state.active = id; state.dock = true; apply(); }
+  function reveal(id) { if (!(state.play && id === "run")) { state.active = id; state.dock = true; } apply(); }
+
+  // This panel presents the real app without moving or recreating its iframe. Its build freshness is the existing
+  // conformance check's answer. Model playback remains separate; no local app action is inferred from its trace.
+  function playStatus() {
+    $("play-model-status").textContent = checkedModel ? "Checked model on screen · fixture actors" : "Earlier build · rebuild for this model";
+    $("play-model-status").classList.toggle("stale", !checkedModel);
+    const busy = $("build").disabled;
+    for (const id of ["play-empty-build", "play-rebuild"]) {
+      $(id).disabled = busy;
+      $(id).textContent = busy ? "Building & checking…" : "Build & play";
+    }
+  }
 
   // ---- The bottom panel ------------------------------------------------------------------------------------------
   function dock() {
@@ -112,27 +142,31 @@
 
   // ---- Splitters ---------------------------------------------------------------------------------------------------
   function splitter(id, key, axis, sign) {
-    const bar = $(id), [min, max] = LIMITS[key];
-    const set = (v) => { state[key] = Math.round(Math.min(max, Math.max(min, v))); apply(); bar.setAttribute("aria-valuenow", String(state[key])); };
+    const bar = $(id), config = () => typeof key === "function" ? key() : { key, axis, sign };
+    const [min, max] = LIMITS[config().key];
+    const set = (v, picked) => { const [low, high] = LIMITS[picked.key]; state[picked.key] = Math.round(Math.min(high, Math.max(low, v))); apply(); bar.setAttribute("aria-valuenow", String(state[picked.key])); };
     bar.setAttribute("aria-valuemin", String(min));
     bar.setAttribute("aria-valuemax", String(max));
-    bar.setAttribute("aria-valuenow", String(state[key]));
+    bar.setAttribute("aria-valuenow", String(state[config().key]));
     bar.addEventListener("pointerdown", (event) => {
+      if (event.button !== 0) return;
       event.preventDefault();
       bar.setPointerCapture(event.pointerId);
-      const start = axis === "x" ? event.clientX : event.clientY, from = rendered(key);
-      const move = (e) => set(from + sign * ((axis === "x" ? e.clientX : e.clientY) - start));
-      const up = () => { bar.removeEventListener("pointermove", move); bar.removeEventListener("pointerup", up); document.body.classList.remove("resizing"); };
+      const picked = config(), start = picked.axis === "x" ? event.clientX : event.clientY, from = rendered(picked.key);
+      const move = (e) => set(from + picked.sign * ((picked.axis === "x" ? e.clientX : e.clientY) - start), picked);
+      const up = () => { bar.removeEventListener("pointermove", move); bar.removeEventListener("pointerup", up); bar.removeEventListener("pointercancel", up); document.body.classList.remove("resizing"); };
       document.body.classList.add("resizing");
       bar.addEventListener("pointermove", move);
       bar.addEventListener("pointerup", up);
+      bar.addEventListener("pointercancel", up);
     });
     bar.addEventListener("keydown", (event) => {
+      const picked = config();
       const step = event.shiftKey ? 60 : 20;
       const delta = { ArrowLeft: -step, ArrowUp: -step, ArrowRight: step, ArrowDown: step }[event.key];
       if (delta === undefined) return;
       event.preventDefault();
-      set(rendered(key) + sign * delta);
+      set(rendered(picked.key) + picked.sign * delta, picked);
     });
   }
 
@@ -239,6 +273,12 @@
     const flip = (key) => () => { state[key] = !state[key]; apply(); };
     $("toggle-left").addEventListener("click", flip("left"));
     $("toggle-dock").addEventListener("click", flip("dock"));
+    $("toggle-play").addEventListener("click", () => {
+      state.play = !state.play;
+      // Returning to the traditional dock keeps a visible app in front rather than hiding it behind a model trace.
+      if (!state.play && !$("run").hidden) { state.active = "run"; state.dock = true; }
+      apply();
+    });
     $("toggle-chat").addEventListener("click", () => {
       state.chat = !state.chat;
       apply();
@@ -261,11 +301,18 @@
     splitter("split-left", "leftWidth", "x", 1);
     splitter("split-chat", "chatWidth", "x", -1);
     splitter("split-dock", "dockHeight", "y", -1);
+    splitter("split-play", () => document.body.dataset.playArrangement === "stacked"
+      ? { key: "playHeight", axis: "y", sign: -1 } : { key: "playWidth", axis: "x", sign: -1 });
+    for (const id of ["play-empty-build", "play-rebuild"]) $(id).addEventListener("click", () => $("build").click());
+    document.addEventListener("playide:checks", (event) => { checkedModel = Boolean(event.detail.checks.find((c) => c.id === "conformance")?.ok); playStatus(); });
+    new MutationObserver(playStatus).observe($("build"), { attributes: true, attributeFilter: ["disabled"] });
+    if ($("live-trace")) new MutationObserver(refit).observe($("live-trace"), { attributes: true, attributeFilter: ["hidden"] });
     checksPopover();
     statusBar();
     toggles();
     tabOverflow();
     window.addEventListener("resize", apply);
+    new ResizeObserver(apply).observe(document.querySelector(".workbench"));
     apply();
   }
 

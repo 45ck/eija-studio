@@ -7,10 +7,12 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
+from .build_identity import current_subject
 from .service import DATA, MODEL, PACK, SCREENS, Refused, Service
 from .service import RECORD as RECORD_CLASS
 
 WEB = Path(__file__).resolve().parent / "web"
+SUBJECT = current_subject()
 STATIC = {"/": ("index.html", "text/html"), "/app.js": ("app.js", "text/javascript"), "/app.css": ("app.css", "text/css")}
 FORBIDDEN = {"UNKNOWN_ACTOR", "ACTOR_REVOKED", "ROLE_DENIED", "ASSIGNMENT_DENIED"}
 INVALID = {"BAD_REQUEST", "INVALID_TITLE", "FIELD_REQUIRED", "FIELD_TYPE", "FIELD_TOO_LONG", "FIELD_CHOICE", "UNKNOWN_FIELD"}
@@ -19,7 +21,7 @@ MAX_BODY = 16_384
 
 
 def describe() -> dict:
-    return {"name": PACK.pack.name, "description": PACK.pack.description, "model_hash": MODEL.semantic_hash,
+    return {"name": PACK.pack.name, "description": PACK.pack.description, "model_hash": MODEL.semantic_hash, "subject": SUBJECT,
             "initial_state": MODEL.initial_state, "states": list(MODEL.states),
             "roles": {r.id: r.description for r in PACK.roles}, "kinds": {r.id: r.kind for r in PACK.roles},
             "transitions": {t.action: {"from": t.from_state, "to": t.to_state, "role": t.role} for t in MODEL.transitions},

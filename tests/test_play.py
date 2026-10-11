@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 import http.client
 import json
+import shutil
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -13,6 +14,7 @@ from fastapi.testclient import TestClient
 from eija_studio.domain.models import Workflow
 from eija_studio.domain.pack import load_pack
 from eija_studio.interfaces import play
+from eija_studio.interfaces import app_build
 from eija_studio.interfaces.http import create_app
 from kernel_support import harness_studio
 
@@ -57,12 +59,37 @@ def test_build_and_run_starts_the_active_model_as_a_live_app(client, studio):
     described = json.loads(connection.getresponse().read())
     connection.close()
     assert described["model_hash"] == result["model"]
+    assert described["subject"] == result["subject"]
     again = client.post("/api/play/build", json={}, headers=HEADERS).json()
     assert again["url"] == result["url"]  # the same model keeps the same running app
+    assert again["subject"] == result["subject"]
+
+
+def test_changed_template_restarts_the_app_under_a_new_subject(client, tmp_path, monkeypatch):
+    first = client.post("/api/play/build", json={}, headers=HEADERS).json()
+    previous = client.app.state.play.process
+    resources = tmp_path / "resources"
+    shutil.copytree(Path(play.__file__).resolve().parents[1] / "resources/appgen", resources / "appgen")
+    css = resources / "appgen/web/app.css.tmpl"
+    css.write_text(css.read_text(encoding="utf-8") + "\n/* subject replacement fixture */\n", encoding="utf-8")
+    monkeypatch.setattr(app_build, "resource_files", lambda package: resources)
+    second = client.post("/api/play/build", json={}, headers=HEADERS).json()
+    assert second["conformance"]["status"] == "PASS"
+    assert second["model"] == first["model"]
+    assert second["subject"]["digest"] != first["subject"]["digest"]
+    assert previous is not None and previous.poll() is not None
+    assert client.app.state.play.process is not previous
+    url = urlsplit(second["url"])
+    connection = http.client.HTTPConnection("127.0.0.1", url.port, timeout=10)
+    connection.request("GET", "/api/app")
+    described = json.loads(connection.getresponse().read())
+    connection.close()
+    assert described["subject"] == second["subject"]
 
 
 def test_a_failing_app_is_never_started(client, monkeypatch):
     monkeypatch.setattr(play, "build_into", lambda *a, **k: {"oracle": {"cases": 1}, "files": {}, "kernel_source_review": "X",
+                                                              "subject": {"format": "eija.build-subject.v1", "digest": "fixture"},
                                                               "conformance": {"status": "FAIL", "detail": "planted"}})
     result = client.post("/api/play/build", json={}, headers=HEADERS).json()
     assert result["conformance"]["status"] == "FAIL" and result["url"] is None

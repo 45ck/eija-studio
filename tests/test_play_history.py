@@ -187,3 +187,92 @@ def test_a_saved_draft_opens_as_an_undoable_edit_and_newer_kept_work_wins_in_a_r
             assert errors == []
         finally:
             chrome.close()
+
+
+@pytest.mark.browser
+@pytest.mark.slow
+@browser
+def test_navigation_recovers_without_an_edit_and_rejects_stale_or_foreign_selection():
+    api = pytest.importorskip("playwright.sync_api", reason="NOT_RUN: install the hci or demos extra")
+    from demos.lib import ephemeral_eija_server  # noqa: PLC0415 - opt-in browser fixture
+
+    with ephemeral_eija_server(pack=ROOT / "packs/library-loan") as server, api.sync_playwright() as playwright:
+        chrome = _launch(api, playwright)
+        try:
+            page = chrome.new_page(viewport={"width": 1600, "height": 900})
+            errors: list[str] = []
+            page.on("pageerror", lambda error: errors.append(str(error)))
+            page.goto(f"{server.base_url}/play#{server.token}")
+            page.wait_for_selector("body[data-ready=true]", timeout=60_000)
+            page.click('.outline button[data-id="state:Overdue"]')
+            page.click("#tab-screens")
+            kept = page.evaluate("""() => {
+                const pack = PlayIDE.pack().id;
+                const key = `playide.navigation.v1:${pack}:`;
+                return {key, value: JSON.parse(localStorage.getItem(key)),
+                    draft: localStorage.getItem(`playide.draft.v1:${pack}:`)};
+            }""")
+            assert kept["value"] == {"v": 1, "tab": "screens", "selected": "state:Overdue"}
+            assert kept["draft"] is None  # navigation does not create an edit or an undo step
+            page.reload()
+            page.wait_for_selector("body[data-ready=true]", timeout=60_000)
+            assert page.get_attribute("#tab-screens", "aria-selected") == "true"
+            assert page.text_content("#inspector h3") == "State Overdue"
+            assert page.is_disabled("#undo") and page.is_hidden("#run")
+            assert page.evaluate("PlayIDE.runningBuild()") is None
+
+            # A different case and a different pack cannot supply this view's selection.
+            page.evaluate("""key => {
+                localStorage.removeItem(key);
+                localStorage.setItem(key + 'another-case', JSON.stringify({v: 1, tab: 'laws', selected: 'state:Overdue'}));
+                localStorage.setItem('playide.navigation.v1:another-pack:', JSON.stringify({v: 1, tab: 'laws', selected: 'state:Overdue'}));
+            }""", kept["key"])
+            page.reload()
+            page.wait_for_selector("body[data-ready=true]", timeout=60_000)
+            assert page.evaluate("PlayIDE.tab()") == "states"
+            assert page.evaluate("PlayIDE.selected()") == ""
+
+            # Browser storage is untrusted. Removed elements and unsupported tabs are not reopened.
+            page.evaluate("""key => localStorage.setItem(key, JSON.stringify({v: 1,
+                tab: 'missing-panel', selected: 'transition:REMOVED', approved: true, checks: 'PASS'}))""", kept["key"])
+            page.reload()
+            page.wait_for_selector("body[data-ready=true]", timeout=60_000)
+            assert page.evaluate("PlayIDE.tab()") == "states"
+            assert page.evaluate("PlayIDE.selected()") == ""
+            assert page.evaluate("PlayIDE.runningBuild()") is None
+            assert page.evaluate("key => Object.keys(JSON.parse(localStorage.getItem(key))).sort()", kept["key"]) == ["selected", "tab", "v"]
+            assert errors == []
+        finally:
+            chrome.close()
+
+
+@pytest.mark.browser
+@pytest.mark.slow
+@browser
+def test_navigation_is_restored_after_the_draft_model_is_checked():
+    api = pytest.importorskip("playwright.sync_api", reason="NOT_RUN: install the hci or demos extra")
+    from demos.lib import ephemeral_eija_server  # noqa: PLC0415 - opt-in browser fixture
+
+    with ephemeral_eija_server(pack=ROOT / "packs/library-loan") as server, api.sync_playwright() as playwright:
+        chrome = _launch(api, playwright)
+        try:
+            page = chrome.new_page(viewport={"width": 1600, "height": 900})
+            page.goto(f"{server.base_url}/play#{server.token}")
+            page.wait_for_selector("body[data-ready=true]", timeout=60_000)
+            page.fill("#chat-input", "add state Lost after Overdue then add Renew from Overdue to Lost for Librarian")
+            page.click("#chat-send")
+            page.wait_for_selector("#chat-log .plan .plan-verdict.ok", timeout=30_000)
+            page.click('#chat-log .plan .plan-tools .primary:has-text("Preview on the diagram")')
+            page.click('.outline button[data-id="state:Lost"]')
+            page.click("#tab-classes")
+            page.reload()
+            page.wait_for_selector("body[data-ready=true]", timeout=60_000)
+            page.wait_for_selector("#chat-log .recovered")
+            assert page.get_attribute("#tab-classes", "aria-selected") == "true"
+            assert page.evaluate("PlayIDE.selected()") == "state:Lost"
+            assert page.text_content("#inspector h3") == "State Lost"
+            assert "Lost" not in page.evaluate("PlayIDE.base().states")
+            assert "Lost" in page.evaluate("PlayIDE.model().states")
+            assert page.evaluate("PlayIDE.runningBuild()") is None
+        finally:
+            chrome.close()

@@ -183,7 +183,11 @@
     }));
     $("debug-log").replaceChildren(...log.trace.slice(Math.max(0, pos - 40), pos).map((e) => {
       const li = P.el("li", undefined, { class: e.outcome.toLowerCase() + (e.step === pos ? " current" : "") });
-      li.append(P.el("span", String(e.step), { class: "n" }), P.el("span", describe(e)));
+      const pick = P.el("button", describe(e), { type: "button", class: "link trace-step", "aria-label": `Inspect recorded step ${e.step}: ${describe(e)}` });
+      pick.addEventListener("click", () => {
+        clearTimeout(timer); mode = "paused"; pos = e.step; stopNote = "inspecting recorded step"; render();
+      });
+      li.append(P.el("span", String(e.step), { class: "n" }), pick);
       return li;
     }));
     // The newest step shows at the foot of the log; the log scrolls, not the panel, so who tried what stays in view.
@@ -231,6 +235,13 @@
       row("Tried", `${e.action} from ${e.from}`);
       row("Kernel", e.outcome === "REFUSED" ? `refused: ${e.code}` : `committed → ${e.to}`);
       if (e.effects && e.effects.length) row("Effects", e.effects.join(", "));
+      if (e.outcome === "REFUSED" && e.transition) {
+        const inspect = P.el("button", "Inspect the refused transition", { type: "button", class: "quiet small" });
+        inspect.addEventListener("click", () => { pause(); P.showTab("states"); P.select("transition:" + e.transition, true); });
+        const laws = P.el("button", "Inspect its laws", { type: "button", class: "quiet small" });
+        laws.addEventListener("click", () => { pause(); if (window.PlayLaws) window.PlayLaws.showFor("transition:" + e.transition); else P.showTab("laws"); });
+        const tools = P.el("dd", undefined, { class: "trace-tools" }); tools.append(inspect, laws); dl.append(P.el("dt", "Investigate"), tools);
+      }
     }
     return dl;
   }

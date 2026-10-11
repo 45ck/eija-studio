@@ -1,5 +1,7 @@
 # IDE design reference
 
+The [11 October Design and Play contract](PLAYIDE-DESIGN-AND-PLAY.md) guides the opt-in paired workspace and shared generated-app craft pass. It records the common presentation boundary, design guidance and acceptance scope; observed results belong in the matching revision's evidence.
+
 The [3 October code/model review checkpoint](2026-10-03-CODE-REVIEW-VALIDATION.md) records the implemented review workspace, its bounded observations and remaining acceptance work. The [immutable Code review guide](../engineering/IMMUTABLE-CODE-REVIEW.md) applies to the pinned integration checkout, not the code currently on main. The [earlier UX build rationale](https://github.com/45ck/eija-studio/blob/1f1b07f648890d8e03f81d4269fa479d80a0f46a/docs/design/NEXT-UX-PASS.md) remains a proposal/history record; the checkpoint states what was actually observed.
 
 The [whole-application UX contract](WHOLE-APP-UX.md) defines linked screens and HCI acceptance. The [personas and user stories](WHOLE-APP-STORIES.md) turn those screens into tasks with observable outcomes. These documents guide implementation; their planned journeys are not claims of completed validation.

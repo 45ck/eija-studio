@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from eija_studio.application.components import app_components
+from eija_studio.bootstrap import source_identity
 from eija_studio.domain.pack import load_pack
 from eija_studio.interfaces.app_build import app_files
 
@@ -14,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def files_of(name: str) -> dict[str, str]:
     pack = load_pack(ROOT / "packs" / name)
-    return app_files(pack, pack.model)[0]
+    return app_files(pack, pack.model, identity_provider=source_identity)[0]
 
 
 def uses(diagram: dict, source: str, target: str) -> list[str] | None:

@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/history.py#history_view
   title: application/history.py
   hash_method: ast-v2
-  sha256: 0bb0be2e4ec238d1507dffd65689951e02abefe47e3300e1d19d3c35271fce2e
-notes_baseline: 57ca1f6fd0afc8d9ff659fe08ee697652257e8d9af1e946e17597c98a6a43a18
+  sha256: 7b301812f163ea8286e90ddae480d7967fb91059efd27957eabe86e378a7bd8d
+notes_baseline: f490b6bc1a5aa4dc511122877f93a2e37c449c179f9711f1915693f5479d2053
 ---
 
 # application.history.history_view

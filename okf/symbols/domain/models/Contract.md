@@ -58,6 +58,10 @@ The reason unknown fields and operators die at the boundary (acceptance [AC01](/
 * [application.witness_inspection.InspectionStep](/symbols/application/witness_inspection/InspectionStep.md) - An ordered literal recorded step.
 * [application.witness_inspection.WitnessInspection](/symbols/application/witness_inspection/WitnessInspection.md) - Supplemental record inspection; availability never changes the existing evidence status.
 * [domain.change_case.ChangeCase](/symbols/domain/change_case/ChangeCase.md) - Aggregate boundary: transitions are mediated by the application and CAS store.
+* [domain.change_case.OwnerPlanRequest](/symbols/domain/change_case/OwnerPlanRequest.md) - Exact accepted workflow commands and the identities of their reviewed preview.
+* [domain.change_case.OwnerPlanSelection](/symbols/domain/change_case/OwnerPlanSelection.md) - `class OwnerPlanSelection(Contract)` in `domain/change_case`.
+* [domain.change_case.OwnerPlanStep](/symbols/domain/change_case/OwnerPlanStep.md) - Reported proposal provenance, never a capability or an owner decision.
+* [domain.change_case.PackMeaningSelection](/symbols/domain/change_case/PackMeaningSelection.md) - `class PackMeaningSelection(Contract)` in `domain/change_case`.
 * [domain.data.Association](/symbols/domain/data/Association.md) - `class Association(Contract)` in `domain/data`.
 * [domain.data.Attribute](/symbols/domain/data/Attribute.md) - `class Attribute(Contract)` in `domain/data`.
 * [domain.data.DataModel](/symbols/domain/data/DataModel.md) - `class DataModel(Contract)` in `domain/data`.

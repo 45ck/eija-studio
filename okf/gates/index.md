@@ -2,6 +2,7 @@
 
 # Sections
 
+* [activation](activation/) - Gates defined in quality/sessions/activation.py
 * [agents](agents/) - Gates defined in quality/sessions/agents.py
 * [appgen](appgen/) - Gates defined in quality/sessions/appgen.py
 * [demos](demos/) - Gates defined in quality/sessions/demos.py

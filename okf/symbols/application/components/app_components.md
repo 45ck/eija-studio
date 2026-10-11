@@ -44,4 +44,8 @@ _No curated notes yet._
 ## Depends on
 
 * [application.components.FORMAT](/symbols/application/components/FORMAT.md) - Constant `FORMAT` in `application/components`.
+
+## Referenced by
+
+* [application.c4.app_c4](/symbols/application/c4/app_c4.md) - Current generated-source architecture, plus explicit fixture and data-design limits.
 <!-- okf:generated:end links -->

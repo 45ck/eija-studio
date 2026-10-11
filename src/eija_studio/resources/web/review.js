@@ -23,7 +23,8 @@ const EijaReview = (() => {
     root.replaceChildren();
     if(!current){root.append(make("div","Open a change case to compare its baseline and candidate.","editor-empty"));return;}
     const c=current.case,packet=current.packet,header=make("section",undefined,"change-summary");
-    header.append(make("p","SEMANTIC CHANGES","eyebrow"),make("h2",c.request),make("p",c.selected_meaning?`Selected meaning: ${c.selected_meaning} · case revision ${c.version}`:"No meaning selected. The request has not changed the model.","muted"));root.append(header);
+    const selected=c.selection?.kind==="owner_plan"?`Owner-selected exact plan · case revision ${c.version}`:c.selected_meaning?`Selected meaning: ${c.selected_meaning} · case revision ${c.version}`:"No meaning selected. The request has not changed the model.";
+    header.append(make("p","SEMANTIC CHANGES","eyebrow"),make("h2",c.request),make("p",selected,"muted"));root.append(header);
     if(!c.candidate){root.append(make("p","Choose an interpretation in Intent to see its exact consequences."));return;}
     const diff=compare(c.baseline,c.candidate),changed=diff.transitions.filter(x=>x.status!=="unchanged"),summary=make("div",undefined,"diff-summary");
     summary.append(make("span",`${changed.length} changed transitions`),make("span",`${diff.addedStates.length} added states`),make("span",`${diff.removedStates.length} removed states`));header.append(summary);

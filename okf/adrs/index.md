@@ -104,3 +104,5 @@
 * [ADR-0216: Describe your app, and what's missing](0216-describe-your-app-and-whats-missing.md) - Until now a new system started from three sketch lines, a template or a UML file (ADR-0185, ADR-0190), and then grew in chat (ADR-0201, ADR-0202).
 * [ADR-0218: An accessibility check on the generated screens](0218-accessibility-check-on-the-generated-screens.md) - PlayIDE designs the screens of the app it builds (ADR-0154) and the role lens shows them as each role (ADR-0215).
 * [ADR-0221: A law that every record can still reach an end](0221-every-record-can-reach-an-end.md) - Writing the five sector packs (docs/sector-packs.md) turned up laws a real team would want and the law DSL could not say.
+* [ADR-0222: Exact owner-plan selection and activation](0222-exact-owner-plan-selection-and-activation.md) - ADR-0222: Exact owner-plan selection and activation
+* [ADR-0223: one generated build subject for architecture and runtime observations](0223-generated-build-subject-and-live-architecture.md) - This decision covers the local preview implementation.

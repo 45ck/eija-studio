@@ -22,7 +22,7 @@
   const PATH = { strokeColor: "#a12f2f", strokeWidth: 3.5, dashed: 0 };
   const SUBJECT = { strokeColor: "#3157d5", strokeWidth: 3 };
   const MODES = { kernel: "the kernel itself", hand_encoded: "written by hand", generated: "generated from the laws", not_run: "not run" };
-  let P = null, report = null, key = null, draft = null, download = null;
+  let P = null, report = null, key = null, draft = null, download = null, selectedLaw = null, inspection = 0;
 
   const now = () => P.viewKey() + JSON.stringify(P.model()) + JSON.stringify(draft); // the model on screen and any draft
   const transitionFor = (action) => P.model().transitions.find((t) => t.action === action);
@@ -59,10 +59,12 @@
 
   function card(law) {
     const [badge, title] = BADGE[law.status] || [law.status, ""];
-    const item = P.el("li", undefined, { class: "law " + law.status.toLowerCase() });
+    const item = P.el("li", undefined, { class: "law " + law.status.toLowerCase(), id: "law-" + encodeURIComponent(law.id),
+      "data-law-id": law.id, tabindex: "-1", "aria-label": `${law.id}: ${law.description || law.id}. ${badge}`,
+      ...(selectedLaw === law.id ? { "aria-current": "true" } : {}) });
     const head = P.el("div", undefined, { class: "law-head" });
     head.append(P.el("span", badge, { class: "law-badge", title }), P.el("span", law.description || law.id, { class: "law-text" }));
-    item.append(head, P.el("p", `${law.kind.replaceAll("_", " ")} · ${law.code} · ${law.why}`, { class: "muted small law-why" }));
+    item.append(head, P.el("p", law.id, { class: "muted small law-why" }), P.el("p", `${law.kind.replaceAll("_", " ")} · ${law.code} · ${law.why}`, { class: "muted small law-why" }));
     const tools = P.el("div", undefined, { class: "law-tools" });
     if (law.counterexample) {
       const steps = P.el("ol", undefined, { class: "law-run" });
@@ -73,12 +75,19 @@
       tools.append(button);
     }
     if (law.subject.length && cellsOf(law.subject).length) {
-      const button = P.el("button", "Show on diagram", { type: "button", class: "quiet" });
+      const button = P.el("button", "Show what it governs", { type: "button", class: "quiet", "data-law-action": "diagram" });
       button.addEventListener("click", () => showSubject(law));
       tools.append(button);
     }
     if (tools.childElementCount) item.append(tools);
     return item;
+  }
+
+  function focusLaw(id) {
+    const item = $("law-" + encodeURIComponent(id));
+    if (!item || $("laws").hidden) return;
+    item.scrollIntoView({ block: "nearest" });
+    item.focus({ preventScroll: true });
   }
 
   function renderFile() {
@@ -106,6 +115,7 @@
 
   function render() {
     if (!report) return;
+    const retainFocus = selectedLaw && document.activeElement?.getAttribute("data-law-id") === selectedLaw;
     renderFile();
     const count = (status) => report.laws.filter((l) => l.status === status).length;
     const parts = ["HOLDS", "BROKEN", "VACUOUS", "INACTIVE", "EVIDENCE", "UNKNOWN"].filter(count).map((s) => `${count(s)} ${BADGE[s][0].toLowerCase()}`);
@@ -120,6 +130,7 @@
       : `${OVERALL[report.status]} ${parts.join(", ")}. ${scope}`;
     $("laws-list").replaceChildren(...report.laws.map(card));
     $("laws-limits").textContent = report.limits.join(" ");
+    if (retainFocus) focusLaw(selectedLaw);
   }
 
   async function prove() {
@@ -174,11 +185,13 @@
     }
     if (!Array.isArray(laws)) { $("laws-problems").textContent = "The law file is a JSON list of laws."; return; }
     draft = laws;
+    document.dispatchEvent(new CustomEvent("playide:laws"));
     prove();
   }
 
   function reset() {
     draft = null;
+    document.dispatchEvent(new CustomEvent("playide:laws"));
     if (report) $("laws-source").value = JSON.stringify(report.file.laws, null, 2);
     $("laws-problems").textContent = "";
     prove();
@@ -193,6 +206,30 @@
     $("laws-try").addEventListener("click", tryDraft);
     $("laws-reset").addEventListener("click", reset);
     $("laws-source").addEventListener("keydown", (event) => { if ((event.ctrlKey || event.metaKey) && event.key === "Enter") { event.preventDefault(); tryDraft(); } });
+    window.PlayLaws = { draft: () => draft, report: () => report, showFor: async (ref) => {
+      const own = ++inspection;
+      selectedLaw = null;
+      P.showTab("laws");
+      if (!report || key !== now()) await prove();
+      if (own !== inspection || $("laws").hidden) return;
+      if (!report || key !== now()) { $("laws-limits").textContent = "The current law report is unavailable. Inspect the returned proof failure before following this transition's rule links."; return; }
+      const linked = report.laws.filter((law) => law.subject.includes(ref));
+      selectedLaw = linked.length ? linked[0].id : null;
+      render();
+      if (selectedLaw) focusLaw(selectedLaw);
+      $("laws-limits").textContent = linked.length ? `This transition is linked by the server to: ${linked.map((law) => law.title || law.id).join(", ")}. ` + report.limits.join(" ")
+        : "No law subject explicitly links to this transition. Its guard and the returned refusal still need inspection; this is not evidence that no rule applies.";
+    }, showLaw: async (id) => {
+      const own = ++inspection;
+      selectedLaw = id;
+      P.showTab("laws");
+      if (!report || key !== now()) await prove();
+      if (own !== inspection || $("laws").hidden) return;
+      if (!report || key !== now()) { $("laws-limits").textContent = `Law ${id} could not be inspected for the current model. The current proof is unavailable; inspect its failure before continuing.`; return; }
+      const law = report.laws.find((l) => l.id === id);
+      if (law) { render(); focusLaw(id); }
+      else { selectedLaw = null; render(); $("laws-limits").textContent = `Law ${id} is not in the current report. This link is unresolved; no substitute rule was selected. ` + report.limits.join(" "); }
+    } };
   }
 
   if (window.PlayIDE) init(window.PlayIDE);

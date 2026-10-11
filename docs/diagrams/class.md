@@ -22,6 +22,7 @@ classDiagram
         +dict~str, Any~ | None provider_run
         +str | None selected_meaning
         +str | None selected_by
+        +OwnerPlanSelection | PackMeaningSelection | None selection
         +tuple~AddState | AddTransition | RemoveState | RemoveTransition | RenameState | RetargetTransition | SetEffects | SetGuards | SetInitial | SetRole~ transactions
         +tuple~AddState | AddTransition | RemoveState | RemoveTransition | RenameState | RetargetTransition | SetEffects | SetGuards | SetInitial | SetRole~ redo_transactions
         +dict~str, dict~str, int~~ layout

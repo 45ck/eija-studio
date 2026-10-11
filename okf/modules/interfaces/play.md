@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/play.py
   title: interfaces/play.py
   hash_method: ast-api-v1
-  sha256: 86fbec70890991cc82e2194af63bd93c7bf0cbb011b4676c2f38e2218e8f3681
-notes_baseline: b25dce8c22be111b1742d09cdd633f8fe6244ba0c26a840b860414a426b4d8f5
+  sha256: 05c8813c6e7ddb02ceb000704926ec401a3a896f16e04b7713bf84cc61940d9c
+notes_baseline: 7835b6ebc85ec2239e5b94562419c6aab5852f6142b8d46a2c26e4dd9522fc01
 ---
 
 # interfaces.play
@@ -77,6 +77,8 @@ _Symbol pages are generated for the domain and application layers only._
 * [`domain/scenarios`](/modules/domain/scenarios.md)
 * [`domain/screens`](/modules/domain/screens.md)
 * [`interfaces/app_build`](/modules/interfaces/app_build.md)
+* [`interfaces/c4`](/modules/interfaces/c4.md)
+* [`interfaces/play_assurance`](/modules/interfaces/play_assurance.md)
 * [`interfaces/play_interop`](/modules/interfaces/play_interop.md)
 <!-- okf:generated:end facts -->
 
@@ -113,6 +115,8 @@ _No curated notes yet._
 * [domain.scenarios](/modules/domain/scenarios.md) - Scenarios: a pack's test cases, written as stories a person can read and the kernel can run (ADR-0177).
 * [domain.screens](/modules/domain/screens.md) - Screens: the user interface of a pack's app, designed against its use cases and data model (ADR-0154).
 * [interfaces.app_build](/modules/interfaces/app_build.md) - `eija build`: write a runnable app generated from a pack's model, then run its kernel conformance tests (ADR-0150).
+* [interfaces.c4](/modules/interfaces/c4.md) - C4 structural inspection under the existing authenticated PlayIDE boundary.
+* [interfaces.play_assurance](/modules/interfaces/play_assurance.md) - Read-only assurance review.
 * [interfaces.play_interop](/modules/interfaces/play_interop.md) - PlayIDE routes for UML interchange (ADR-0190): export the model on screen, and read a UML file as a report.
 
 ## Referenced by

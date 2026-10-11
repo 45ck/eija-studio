@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.verify
   title: application/service.py
   hash_method: ast-v2
-  sha256: 654315fdb18dfef13b2d0a23a9e5626ab2bf541b818c75d1ef94291d93cea95f
+  sha256: 70a425a682f05ec57bf879d236b6a485fd1cffa84cf1df991e0ef783f22e0ff2
 description_override: Runs the runtime matrix in a sandbox and stores a sealed receipt; refuses a source that differs from the release fixture.
-notes_baseline: 41377bd722fc2f8c6bedb11ed9c90def97da991e6b05c342257ed7fc55a265cd
+notes_baseline: b7bf3985fe556ac02ed7b2dfb3c880e92f45aacdb8113d25d0b5d0b4dd835af8
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -34,6 +34,14 @@ verified:
   at: '2026-10-02T05:15:30Z'
   notes_sha256: 1736d73398d6735d08651269065d70ae2776ea2d04ecfe339cd39add3a1baf33
   sources_sha256: 41377bd722fc2f8c6bedb11ed9c90def97da991e6b05c342257ed7fc55a265cd
+- by: process:playide-activation
+  at: '2026-10-10T14:05:00+11:00'
+  notes_sha256: be4981cad511acb284bab2ef9e8963f93edabb4b76573a765fbe4f4a57ccd677
+  sources_sha256: b7bf3985fe556ac02ed7b2dfb3c880e92f45aacdb8113d25d0b5d0b4dd835af8
+- by: process:playide-activation
+  at: '2026-10-10T02:55:29+00:00'
+  notes_sha256: be4981cad511acb284bab2ef9e8963f93edabb4b76573a765fbe4f4a57ccd677
+  sources_sha256: b7bf3985fe556ac02ed7b2dfb3c880e92f45aacdb8113d25d0b5d0b4dd835af8
 ---
 
 # application.service.Studio.verify
@@ -57,11 +65,16 @@ _The source carries no docstring._
 
 Verification clears any current decision and never approves. Besides the runtime receipt it appends the formal-evidence receipts of the configured source (collected outside the transaction; a missing prerequisite is a `NOT_RUN` artifact, never omitted). A kind the studio's pack does not verify from the checkout's reports (its verifier is `generated`, `not_run` or undeclared) is replaced by a `NOT_RUN` artifact carrying the pack's reason, so another pack's proof never counts for this one. See [verify_runtime](/symbols/application/verifier/verify_runtime.md) and [Evidence Receipt](/language/evidence-receipt.md).
 
+The protected selection and replayed history are checked inside the unit of work
+before receipts or case state are written. A corrupt persisted selection refuses
+without replacing an existing decision or evidence record.
+
 <!-- okf:generated:begin links -->
 ## Depends on
 
 * [application.compiler.subject_for](/symbols/application/compiler/subject_for.md) - `def subject_for(model: Workflow, layout: dict[str, Any], identity: dict[str, Any]) -> dict[str, Any]` in `application/compiler`.
 * [application.formal.attach](/symbols/application/formal/attach.md) - Sealed receipts for every registered kind the source returned, skipping an exact repeat of the latest one.
+* [application.history.replay](/symbols/application/history/replay.md) - Fail closed when stored commands no longer explain the candidate under the exact active pack.
 * [application.service.now](/symbols/application/service/now.md) - `def now() -> str` in `application/service`.
 * [application.verifier.verify_runtime](/symbols/application/verifier/verify_runtime.md) - `def verify_runtime(model: Workflow, subject: dict[str, Any], sandbox: SandboxFactory, pack: Pack | None=None)…` in `application/verifier`.
 * [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.

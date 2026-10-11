@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/change_case.py#ChangeCase.executable
   title: domain/change_case.py
   hash_method: ast-v2
-  sha256: a3e909af42fb86b68b8d1c39b31b641f381f057de4dd0cec0eff1df9a9a40b0b
-notes_baseline: a113479c4c52fd1541aa6c566ac631248d16f0a7c05e19d7aaf6b5758eebff82
+  sha256: 909eb25ca2ae42fa7cfe5c8c8b19f5d4e4f6a008238d210e997eca1353d41504
+notes_baseline: f0ffe33faef5287fb550841aade32a328053c9b9bfb06da89d992b38b2b53ebd
 ---
 
 # domain.change_case.ChangeCase.executable

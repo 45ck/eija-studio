@@ -100,8 +100,16 @@ def _fixed_colours(css: str) -> dict[str, Any]:
                   else f"Colours written outside the theme, unchanged in the dark theme: {', '.join(fixed)}", selectors=fixed)
 
 
+def _positive_tabindex_literals(source: str) -> list[str]:
+    """Positive literal indexes change sequential keyboard order; signed zero and -1 do not."""
+    # A programmatic focus target uses -1 without changing sequential navigation. Parse the sign rather than
+    # skipping every non-digit: that would misclassify a legitimate tabindex="-1" as a positive index.
+    indexes = re.findall(r"\btabindex\b[\"']?\s*[:=]\s*[\"']?\s*([+-]?\d+)\b", source, re.IGNORECASE)
+    return [index for index in indexes if int(index) > 0]
+
+
 def _template_checks(page: str, html: str) -> list[dict[str, Any]]:
-    positive = re.findall(r"tabindex\D{0,4}([1-9]\d*)", page + html)
+    positive = _positive_tabindex_literals(page + html)
     labelled = 'el("label"' in page and "{ for: id }" in page and '<label class="actor">' in html
     required = "input.required = true" in page
     return [

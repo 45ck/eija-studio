@@ -7,6 +7,7 @@ from pathlib import Path
 from eija_studio.adapters.plan_proposals import OfflinePlanProposer
 from eija_studio.application.components import app_components
 from eija_studio.application.ripple import check_follow_ons, ripple
+from eija_studio.bootstrap import source_identity
 from eija_studio.domain.data import data_for
 from eija_studio.domain.models import DomainError, Workflow
 from eija_studio.domain.pack import load_pack
@@ -26,7 +27,7 @@ NO_LATE_RETURN = {"kind": "remove_transition", "transition": "TR-RETURNLATE"}
 
 def built(model: Workflow, screens: Screens):
     try:
-        files, manifest = app_files(LOAN, model, screens)
+        files, manifest = app_files(LOAN, model, screens, identity_provider=source_identity)
     except DomainError as error:
         return error, []
     return (files, manifest["oracle"]["cases"]), app_components(files)["components"]

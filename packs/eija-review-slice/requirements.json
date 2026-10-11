@@ -1,0 +1,110 @@
+{
+  "schema": "eija.requirement-links.v1",
+  "scope": "Explicit declared trace links for EIJA self-dogfood; not inferred source behaviour.",
+  "required_bindings": [
+    "repo://src/eija_studio/application/service.py#Studio.apply",
+    "repo://src/eija_studio/domain/change_case.py#ChangeCase",
+    "repo://src/eija_studio/interfaces/mcp_server.py#AGENT_TOOLS"
+  ],
+  "links": {
+    "AC06": {
+      "satisfies": [
+        "repo://src/eija_studio/application/service.py#Studio.apply",
+        "repo://src/eija_studio/adapters/sqlite_store.py#Session.set_active"
+      ],
+      "verifies": [
+        "repo://tests/test_application.py#test_two_approved_cases_cannot_silently_overwrite"
+      ],
+      "laws": [],
+      "model": []
+    },
+    "AC07": {
+      "satisfies": [
+        "repo://src/eija_studio/application/service.py#Studio.select"
+      ],
+      "verifies": [
+        "repo://tests/test_application.py#test_agent_cannot_choose_meaning_or_approve"
+      ],
+      "laws": [
+        "selectmeaning-owner"
+      ],
+      "model": [
+        "transition:TR-SELECT"
+      ]
+    },
+    "AC08": {
+      "satisfies": [
+        "repo://src/eija_studio/domain/models.py#Principal.require",
+        "repo://src/eija_studio/application/service.py#Studio.approve"
+      ],
+      "verifies": [
+        "repo://tests/test_application.py#test_agent_cannot_choose_meaning_or_approve"
+      ],
+      "laws": [
+        "approve-owner",
+        "apply-owner"
+      ],
+      "model": [
+        "transition:TR-APPROVE",
+        "transition:TR-APPLY"
+      ]
+    },
+    "AC17": {
+      "satisfies": [
+        "repo://src/eija_studio/application/service.py#Studio.edit"
+      ],
+      "verifies": [
+        "repo://tests/test_application.py#test_live_candidate_edit_invalidates_immutable_receipt_and_decision"
+      ],
+      "laws": [],
+      "model": []
+    },
+    "AC18": {
+      "satisfies": [
+        "repo://src/eija_studio/application/compiler.py#subject_for"
+      ],
+      "verifies": [
+        "repo://tests/test_application.py#test_subject_dimension_substitution_cannot_pass"
+      ],
+      "laws": [],
+      "model": []
+    },
+    "AC22": {
+      "satisfies": [
+        "repo://src/eija_studio/application/service.py#Studio.approve",
+        "repo://src/eija_studio/application/service.py#Studio.apply"
+      ],
+      "verifies": [
+        "repo://tests/test_application.py#test_old_review_subject_is_rejected_even_when_evidence_still_applies"
+      ],
+      "laws": [
+        "approved-requires-verified",
+        "applied-requires-approved"
+      ],
+      "model": [
+        "state:APPROVED",
+        "state:APPLIED"
+      ]
+    },
+    "AC23": {
+      "satisfies": [
+        "repo://src/eija_studio/application/service.py#Studio.verify"
+      ],
+      "verifies": [
+        "repo://tests/test_application.py#test_core_change_requires_source_review"
+      ],
+      "laws": [],
+      "model": []
+    },
+    "AC27": {
+      "satisfies": [
+        "repo://src/eija_studio/adapters/sqlite_store.py#Session.set_active"
+      ],
+      "verifies": [
+        "repo://tests/test_application.py#test_restart_preserves_cases_and_receipt_signatures"
+      ],
+      "laws": [],
+      "model": []
+    }
+  }
+}

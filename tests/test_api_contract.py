@@ -13,6 +13,7 @@ from hypothesis import strategies as st
 from hypothesis_jsonschema import from_schema
 
 from eija_studio.application.api_contract import REFUSALS, api_contract
+from eija_studio.bootstrap import source_identity
 from eija_studio.domain.data import check_values, data_for
 from eija_studio.domain.models import DomainError
 from eija_studio.domain.pack import PACKS_ROOT, load_pack
@@ -49,14 +50,14 @@ def served(server: str) -> set[tuple[str, str]]:
 
 def test_every_route_the_server_serves_is_in_the_contract_and_no_other():
     pack, document = contract()
-    server = app_files(pack, pack.model)[0]["app/server.py"]
+    server = app_files(pack, pack.model, identity_provider=source_identity)[0]["app/server.py"]
     documented = {(method, path) for path, item in document["paths"].items() for method in item}
     assert served(server) == documented and len(documented) == 6
 
 
 def test_the_refusal_codes_are_the_servers_by_status():
     pack, _ = contract()
-    server = app_files(pack, pack.model)[0]["app/server.py"]
+    server = app_files(pack, pack.model, identity_provider=source_identity)[0]["app/server.py"]
     sets = {name: set(ast.literal_eval(re.search(rf"^{name} = (\{{.*\}})$", server, re.M).group(1))) for name in ("FORBIDDEN", "INVALID")}
     assert set(REFUSALS["403"][1]) == sets["FORBIDDEN"] and set(REFUSALS["400"][1]) == sets["INVALID"]
 

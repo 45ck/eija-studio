@@ -280,7 +280,9 @@ def test_empty_supported_meaning_still_protects_selection(selected):
     data["meanings"].append({"id": "keep_baseline", "label": "Keep baseline", "supported": True,
                              "consequences": ["No semantic change"], "transactions": []})
     pack = Pack.model_validate(data)
-    case = ChangeCase.model_validate(selected | {"selected_meaning": "keep_baseline", "candidate": selected["baseline"],
+    case = ChangeCase.model_validate(selected | {"selected_meaning": "keep_baseline",
+                                               "selection": {"kind": "pack_meaning", "meaning": "keep_baseline"},
+                                               "candidate": selected["baseline"],
                                                "transactions": [], "redo_transactions": []})
     history = replay(case, pack)
     assert history.initial_count == 0 and history.models == (case.baseline,)

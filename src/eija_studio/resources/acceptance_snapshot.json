@@ -1,0 +1,324 @@
+{
+  "schema": "eija.acceptance-snapshot.v1",
+  "provenance": {
+    "mode": "packaged_historical_snapshot",
+    "reference": "repo://docs/verification/ACCEPTANCE_MATRIX.csv",
+    "revision": "87dc953b222878f95453092ddafb88ff1cf67cfd",
+    "file_sha256": "1ba67ffb888214e283a88b3c782c4554284df53996fcd1e378c0c60009c28939",
+    "scope": "Historical v0.2 acceptance rows, captured for distribution; this is not a current verification run.",
+    "normalization": "Source file hash: raw checkout bytes. Row hashes: Weave csv-row-v1 canonical rows.",
+    "capture_platform": "Windows"
+  },
+  "rows": [
+    {
+      "id": "AC01",
+      "area": "Contract",
+      "observable_acceptance_criterion": "Unknown fields/operators and malformed transactions are rejected before preview.",
+      "required_evidence": "Schema and semantic-validator negative fixtures.",
+      "v0_1_status": "NOT_RUN",
+      "v0_2_status": "PASS_LOCAL",
+      "v0_2_scope_note": "Exercised within supported synthetic/local grammar; not a universal claim.",
+      "v0_2_evidence": "tests/test_domain.py"
+    },
+    {
+      "id": "AC02",
+      "area": "Projection",
+      "observable_acceptance_criterion": "Rule-table and state-view edits of the same meaning yield the same semantic transaction and domain hash.",
+      "required_evidence": "Round-trip command/projection integration test.",
+      "v0_1_status": "NOT_RUN",
+      "v0_2_status": "PASS_LOCAL",
+      "v0_2_scope_note": "Exercised within supported synthetic/local grammar; not a universal claim.",
+      "v0_2_evidence": "tests/test_application.py; scripts/browser_component_smoke.py"
+    },
+    {
+      "id": "AC03",
+      "area": "Projection",
+      "observable_acceptance_criterion": "Layout-only edits preserve domain hash and domain receipts; presentation hash changes and affected UI evidence is reconsidered.",
+      "required_evidence": "Before/after subject and receipt applicability assertions.",
+      "v0_1_status": "NOT_RUN",
+      "v0_2_status": "PARTIAL",
+      "v0_2_scope_note": "Layout coordinate metadata and presentation invalidation tested; drag/drop and UI-evidence system absent.",
+      "v0_2_evidence": "tests/test_application.py"
+    },
+    {
+      "id": "AC04",
+      "area": "Isolation",
+      "observable_acceptance_criterion": "Preview and save do not change baseline files, aggregate state or external effects.",
+      "required_evidence": "Filesystem/database snapshots and effect-log assertions.",
+      "v0_1_status": "NOT_RUN",
+      "v0_2_status": "PASS_LOCAL",
+      "v0_2_scope_note": "Exercised within supported synthetic/local grammar; not a universal claim.",
+      "v0_2_evidence": "tests/test_application.py; tests/test_runtime.py"
+    },
+    {
+      "id": "AC05",
+      "area": "Isolation",
+      "observable_acceptance_criterion": "Discard restores the prior baseline without candidate data leakage.",
+      "required_evidence": "Snapshot and actor-isolation test.",
+      "v0_1_status": "NOT_RUN",
+      "v0_2_status": "PARTIAL",
+      "v0_2_scope_note": "Discard preserves baseline and closes candidate; history retained deliberately, not erased. No multi-tenant actor-isolation study.",
+      "v0_2_evidence": "tests/test_application.py"
+    },
+    {
+      "id": "AC06",
+      "area": "Concurrency",
+      "observable_acceptance_criterion": "A stale baseline or aggregate version rejects apply; no silent overwrite or implicit rebase.",
+      "required_evidence": "Two-candidate interleaving test.",
+      "v0_1_status": "NOT_RUN",
+      "v0_2_status": "PASS_LOCAL",
+      "v0_2_scope_note": "Exercised within supported synthetic/local grammar; not a universal claim.",
+      "v0_2_evidence": "tests/test_application.py; tests/test_runtime.py"
+    },
+    {
+      "id": "AC07",
+      "area": "Intent",
+      "observable_acceptance_criterion": "Ambiguous sign-off request remains proposed until an explicit authority chooses an interpretation.",
+      "required_evidence": "Request-to-transaction integration trace.",
+      "v0_1_status": "NOT_RUN",
+      "v0_2_status": "PASS_LOCAL",
+      "v0_2_scope_note": "Exercised within supported synthetic/local grammar; not a universal claim.",
+      "v0_2_evidence": "tests/test_application.py; scripts/browser_component_smoke.py"
+    },
+    {
+      "id": "AC08",
+      "area": "Authority",
+      "observable_acceptance_criterion": "The proposing agent cannot approve its own change; missing reviewer capability blocks apply.",
+      "required_evidence": "Distinct actor identities and negative capability test.",
+      "v0_1_status": "NOT_RUN",
+      "v0_2_status": "PARTIAL",
+      "v0_2_scope_note": "Capability tests and restricted provider port pass; same OS user can impersonate owner. No adversarial identity separation.",
+      "v0_2_evidence": "tests/test_application.py; tests/test_providers.py"
+    },
+    {
+      "id": "AC09",
+      "area": "Authority",
+      "observable_acceptance_criterion": "Teacher final approval is denied under every candidate path and direct API call.",
+      "required_evidence": "Hand-authored authority oracle and bypass mutations.",
+      "v0_1_status": "NOT_RUN",
+      "v0_2_status": "PASS_LOCAL",
+      "v0_2_scope_note": "Exercised within supported synthetic/local grammar; not a universal claim.",
+      "v0_2_evidence": "tests/test_domain.py; tests/test_http_and_architecture.py; application/verifier.py"
+    },
+    {
+      "id": "AC10",
+      "area": "Guards",
+      "observable_acceptance_criterion": "Recommend requires active and assigned actor from trusted fixture state; missing/unknown resolver blocks rather than ignores.",
+      "required_evidence": "Assigned/unassigned/inactive/unsupported predicate tests.",
+      "v0_1_status": "NOT_RUN",
+      "v0_2_status": "PASS_LOCAL",
+      "v0_2_scope_note": "Exercised within supported synthetic/local grammar; not a universal claim.",
+      "v0_2_evidence": "tests/test_runtime.py; tests/test_domain.py"
+    },
+    {
+      "id": "AC11",
+      "area": "Authority",
+      "observable_acceptance_criterion": "Role or assignment revocation after preview is checked at commit and blocks stale authority.",
+      "required_evidence": "Time-of-check/time-of-use interleaving test.",
+      "v0_1_status": "NOT_RUN",
+      "v0_2_status": "PASS_LOCAL",
+      "v0_2_scope_note": "Exercised within supported synthetic/local grammar; not a universal claim.",
+      "v0_2_evidence": "tests/test_runtime.py"
+    },
+    {
+      "id": "AC12",
+      "area": "Workflow",
+      "observable_acceptance_criterion": "Recommend requires Submitted; registrar Approve/Reject requires Recommended; Submit and Revise remain valid.",
+      "required_evidence": "Exhaustive bounded role/state/action matrix with independent expected outcomes.",
+      "v0_1_status": "NOT_RUN",
+      "v0_2_status": "PARTIAL",
+      "v0_2_scope_note": "Default 125-cell matrix passes with same-author oracle, not independent. Explicit rejection-source edit changes the original prerequisite.",
+      "v0_2_evidence": "application/verifier.py; tests/test_application.py"
+    },
+    {
+      "id": "AC13",
+      "area": "Effects",
+      "observable_acceptance_criterion": "One accepted Recommend produces one audit append and at-most-once local notification enqueue; payments/export never occur.",
+      "required_evidence": "Transactional event/outbox assertions and forbidden-effect mutants.",
+      "v0_1_status": "NOT_RUN",
+      "v0_2_status": "PASS_LOCAL",
+      "v0_2_scope_note": "Exercised within supported synthetic/local grammar; not a universal claim.",
+      "v0_2_evidence": "tests/test_runtime.py; tests/test_domain.py"
+    },
+    {
+      "id": "AC14",
+      "area": "Replay",
+      "observable_acceptance_criterion": "Duplicate operation replay binds actor, target and payload; mismatched reuse is denied and replay does not bypass current authority.",
+      "required_evidence": "Replay/cross-actor/payload-conflict negative tests.",
+      "v0_1_status": "NOT_RUN",
+      "v0_2_status": "PASS_LOCAL",
+      "v0_2_scope_note": "Exercised within supported synthetic/local grammar; not a universal claim.",
+      "v0_2_evidence": "tests/test_runtime.py"
+    },
+    {
+      "id": "AC15",
+      "area": "Truthful UI",
+      "observable_acceptance_criterion": "Success appears only after commit; failure/stale version never renders Recommended/Approved as achieved.",
+      "required_evidence": "Runtime trace plus browser observation of commit/failure cases.",
+      "v0_1_status": "NOT_RUN",
+      "v0_2_status": "PARTIAL",
+      "v0_2_scope_note": "Actual committed runtime + bridged Chromium denial checks pass; ordinary browser-network E2E blocked.",
+      "v0_2_evidence": "scripts/browser_component_smoke.py; scripts/http_smoke.py"
+    },
+    {
+      "id": "AC16",
+      "area": "Impact",
+      "observable_acceptance_criterion": "Typed traversal reaches beyond depth five and terminates on cycles; capped traversal returns complete=false and a frontier.",
+      "required_evidence": "Deep chain, cycle and budget-exhaustion tests with independently enumerated oracle.",
+      "v0_1_status": "NOT_RUN",
+      "v0_2_status": "PASS_LOCAL",
+      "v0_2_scope_note": "Exercised within supported synthetic/local grammar; not a universal claim.",
+      "v0_2_evidence": "tests/test_domain.py"
+    },
+    {
+      "id": "AC17",
+      "area": "Evidence",
+      "observable_acceptance_criterion": "Affected evidence and approvals become inapplicable after material edits; original receipt payloads remain unchanged.",
+      "required_evidence": "Receipt hash preservation and applicability assertions.",
+      "v0_1_status": "NOT_RUN",
+      "v0_2_status": "PASS_LOCAL",
+      "v0_2_scope_note": "Exercised within supported synthetic/local grammar; not a universal claim.",
+      "v0_2_evidence": "tests/test_application.py"
+    },
+    {
+      "id": "AC18",
+      "area": "Evidence",
+      "observable_acceptance_criterion": "Wrong model/core/build/policy/environment/harness identities cannot satisfy a required claim.",
+      "required_evidence": "Subject substitution and stale-context mutations.",
+      "v0_1_status": "NOT_RUN",
+      "v0_2_status": "PASS_LOCAL",
+      "v0_2_scope_note": "Exercised within supported synthetic/local grammar; not a universal claim.",
+      "v0_2_evidence": "tests/test_application.py"
+    },
+    {
+      "id": "AC19",
+      "area": "Admissibility",
+      "observable_acceptance_criterion": "Browser/synthetic evidence cannot satisfy a claim about real teacher comprehension.",
+      "required_evidence": "Historical relabel counterexample adapted to integrated computed gate.",
+      "v0_1_status": "NOT_RUN",
+      "v0_2_status": "PASS_LOCAL",
+      "v0_2_scope_note": "Exercised within supported synthetic/local grammar; not a universal claim.",
+      "v0_2_evidence": "tests/test_application.py"
+    },
+    {
+      "id": "AC20",
+      "area": "Admissibility",
+      "observable_acceptance_criterion": "Caller-supplied PASS/current/admissible/approved flags cannot override independently computed policy.",
+      "required_evidence": "Forged input and missing raw-artifact provenance tests.",
+      "v0_1_status": "NOT_RUN",
+      "v0_2_status": "PASS_LOCAL",
+      "v0_2_scope_note": "Exercised within supported synthetic/local grammar; not a universal claim.",
+      "v0_2_evidence": "tests/test_domain.py; tests/test_application.py; tests/test_providers.py"
+    },
+    {
+      "id": "AC21",
+      "area": "Meaning",
+      "observable_acceptance_criterion": "All projected labels distinguish recommendation from final approval; changed registrar prerequisites are explicit.",
+      "required_evidence": "Projection consistency and critical reviewer questions; real comprehension remains separate.",
+      "v0_1_status": "NOT_RUN",
+      "v0_2_status": "PARTIAL",
+      "v0_2_scope_note": "Generated authority/prerequisite labels and questions tested; no human comprehension study.",
+      "v0_2_evidence": "tests/test_domain.py; scripts/browser_component_smoke.py"
+    },
+    {
+      "id": "AC22",
+      "area": "Decision",
+      "observable_acceptance_criterion": "Approval is bound to reviewer, scope and exact subject; a material edit during review invalidates it before local apply.",
+      "required_evidence": "Review/apply race test and signed-in fixture identity checks.",
+      "v0_1_status": "NOT_RUN",
+      "v0_2_status": "PARTIAL",
+      "v0_2_scope_note": "Local signed subject/baseline/version checks pass; no real signed-in institutional identity.",
+      "v0_2_evidence": "tests/test_application.py"
+    },
+    {
+      "id": "AC23",
+      "area": "Trust boundary",
+      "observable_acceptance_criterion": "Core change or unsupported semantics requires source-level review; ordinary approval cannot silently bless it.",
+      "required_evidence": "Core hash change and unsupported-operation tests.",
+      "v0_1_status": "NOT_RUN",
+      "v0_2_status": "PARTIAL",
+      "v0_2_scope_note": "Core fixture mismatch and unsupported operators block; fixture is self-authored, not independent source review.",
+      "v0_2_evidence": "tests/test_application.py; tests/test_domain.py"
+    },
+    {
+      "id": "AC24",
+      "area": "Scope",
+      "observable_acceptance_criterion": "Technical eligibility may coexist with visible human UNKNOWN; field-use scope requiring that claim cannot pass.",
+      "required_evidence": "Decision policy tests across local-demo and field-use scopes.",
+      "v0_1_status": "NOT_RUN",
+      "v0_2_status": "PASS_LOCAL",
+      "v0_2_scope_note": "Exercised within supported synthetic/local grammar; not a universal claim.",
+      "v0_2_evidence": "tests/test_application.py"
+    },
+    {
+      "id": "AC25",
+      "area": "Export",
+      "observable_acceptance_criterion": "Export includes original intent, transaction, before/after subject, completeness, receipts, traces, decision and unknowns with verified hashes.",
+      "required_evidence": "Round-trip export validation and immutable artifact manifest.",
+      "v0_1_status": "NOT_RUN",
+      "v0_2_status": "PARTIAL",
+      "v0_2_scope_note": "Export covers case/model/receipts/trace/decision/unknowns with payload hash; no trusted import or external attestation.",
+      "v0_2_evidence": "tests/test_application.py; scripts/http_smoke.py"
+    },
+    {
+      "id": "AC26",
+      "area": "Independent evaluation",
+      "observable_acceptance_criterion": "An independent hidden mutation set tests authority, assignment, omissions, evidence, labels, effects and approval; no compensating aggregate score.",
+      "required_evidence": "Holdout mutation results with author/oracle provenance.",
+      "v0_1_status": "NOT_RUN",
+      "v0_2_status": "NOT_RUN",
+      "v0_2_scope_note": "Independent hidden mutation evaluation not performed.",
+      "v0_2_evidence": "docs/verification/VERIFICATION.md"
+    },
+    {
+      "id": "AC27",
+      "area": "Local durability",
+      "observable_acceptance_criterion": "If SQLite persistence is implemented, workflow/operation/audit/outbox commit atomically and crash tests expose no partial accepted operation.",
+      "required_evidence": "Failure-injection/restart tests; otherwise durability stays out of claim scope.",
+      "v0_1_status": "NOT_RUN",
+      "v0_2_status": "PASS_LOCAL",
+      "v0_2_scope_note": "Exercised within supported synthetic/local grammar; not a universal claim.",
+      "v0_2_evidence": "tests/test_runtime.py"
+    },
+    {
+      "id": "AC28",
+      "area": "Human validation",
+      "observable_acceptance_criterion": "Reviewer benefit is not labelled measured until an actual counterbalanced task study records correctness, errors, time and full effort.",
+      "required_evidence": "Study protocol and real anonymised observations; NOT_RUN in this release.",
+      "v0_1_status": "NOT_RUN",
+      "v0_2_status": "NOT_RUN",
+      "v0_2_scope_note": "No actual human task study performed.",
+      "v0_2_evidence": "docs/verification/VERIFICATION.md"
+    }
+  ],
+  "row_hashes": {
+    "AC01": "2634bc8529d993c8f4474112c778b6a96d098327441247bdc0ba391128156473",
+    "AC02": "68c1a1946749c2f3a28dd3d64f739176f4cc7718ae9cb1724a03dd270e80681c",
+    "AC03": "37418ec8ba490f7386896aa2f119c088ac06a69da0294420f285876dd6364dff",
+    "AC04": "6777816227e0c31ba6bcfffaf814db0f6d01cd9ad4c25bc9df3ea21012634a88",
+    "AC05": "4be4ff452ea0f9dab50d04949d47621f6e0eb33638f34c3a744774fa1dfc5db2",
+    "AC06": "9c5da0b493bbc7e900211c56114d871aee2fd24aeb44d731e228c895efa18b7d",
+    "AC07": "5c3c7223d635b1b78875bf8de62506e556109630b70874ec64f4feaed252968e",
+    "AC08": "f7d7f697c3d0409160617d5067967cc35ca372b57858c0a7de62e4d2a3f87e6d",
+    "AC09": "c48eae2cb16055d631008a3c105285bcea21a972e514d17938fecd2449b6ec19",
+    "AC10": "8be1f1c634701ae7295fb18cc361e523acd84bf65b0ad940e0f2373d7558b88b",
+    "AC11": "a4e9e9db999aada55136b4ac4b07fbb21fdc7f3287928401d01434aad6bbd703",
+    "AC12": "71a0cc7af1d1dcf80c9591fd5643f3789b7df6ad61044875ec8fd39d5ba18f77",
+    "AC13": "295f5ad4a6a681dad8dc7c699a0ee1d11f0c08860bc24a38f179bb8ddb2a9386",
+    "AC14": "fa6fcba61b7810c276cf9e682d91556da4bd4de6a09fee92e7fde1cb7005e813",
+    "AC15": "03eed2674dc53d7926e03ce5d88497ecf50d0afe5e483451ae0e21dde4660e70",
+    "AC16": "480d7eb9c45a6afc53222c421b46d97c56dc6256dbabd036a4a83f018a9132d1",
+    "AC17": "df60e93c263677542f6fb7e199124de046ac7a876afa8d2f63835f345e41acc4",
+    "AC18": "15792af5ccf2f63e311e45bd46bb0e3fcdc9667ee1fbe587bf35659d035fe2f0",
+    "AC19": "2fee1af237a28f609d247a3254e1cb6db6e4edb80df033f8e4dbbea6466e250f",
+    "AC20": "69694a00e2841640cefab2d267479781f83e7087b6fd509870162aec65154b45",
+    "AC21": "a20e87bcd552b9822c13dfadee7865ac07e7a96c1e51d8f2b052927d499983fd",
+    "AC22": "ec7f13cdaf48f30c0ec5b2c2083a1fbbad7dc06d84452683c21ae2df80cffb48",
+    "AC23": "557c3c23b574729f7a2ae721aee96e59a53e47495062e8c62859209352ae448d",
+    "AC24": "d79507a97181bada8fe846c2220198fccc78a8ace218520d60582ddf2225a26c",
+    "AC25": "2aacfce42cd6d74a5f03a61e2f1c6366deb4cf90ea36b778b635eecacc90afbe",
+    "AC26": "4a476f06e009d6c00d9bb2e1b64024cd7483ab153a3791f3f7792a2f0da1569a",
+    "AC27": "442db7f07b7a15b9308022e11e085b6819a509ded17348e74b2d926109552a68",
+    "AC28": "57e707e1bf017ebe40f0ba96a362d0973d4aaad49e014ef2194928d2d4a95afb"
+  }
+}

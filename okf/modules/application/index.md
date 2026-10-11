@@ -5,6 +5,9 @@
 * [application.access](access.md) - Who can do what (ADR-0171): the model's permissions as a role by state matrix, each cell checked by the kernel, and reachability questions such as "can a record reach this state without that role ever acting?".
 * [application.api_contract](api_contract.md) - The API contract of an app built from a workflow (ADR-0207): an OpenAPI 3.1 document of what the generated server serves, written from the model, the pack and the data model rather than by hand.
 * [application.appgen](appgen.md) - App generation: a reviewed workflow model becomes a runnable app and its conformance oracle (ADR-0150).
+* [application.build_subject](build_subject.md) - Exact generated-build identity.
+* [application.c4](c4.md) - Read-only C4 views of generated source and declared model contracts.
+* [application.capabilities](capabilities.md) - Explicit support levels for the workbench; design visibility is not execution.
 * [application.class_build](class_build.md) - What the built app does with each part of the class diagram (#145, ADR-0205): the record class is built and checked; the other classes and the associations are drawn but not built.
 * [application.compiler](compiler.md) - Compiler: model → projections + impacts + obligations + computed review packet.
 * [application.components](components.md) - The component diagram of an app built from the model (ADR-0155), extracted from the generated files themselves.
@@ -23,10 +26,12 @@
 * [application.law_proof](law_proof.md) - Prove a pack's laws over every run the kernel allows (ADR-0166).
 * [application.memo](memo.md) - Ask the kernel the same question of the same frozen model once (ADR-0199).
 * [application.new_system](new_system.md) - Start a new system (ADR-0185): the pack documents for a system started from a sketch or copied from a template.
+* [application.owner_plan](owner_plan.md) - Exact owner-plan case construction; authority and atomic storage remain in Studio.
 * [application.plan](plan.md) - Plan mode for the PlayIDE chat (ADR-0156): an AI proposes a change as numbered typed steps; the person accepts or rejects each one and sees what the accepted ones would do.
 * [application.ports](ports.md) - Application-owned ports.
 * [application.readiness](readiness.md) - What's missing (ADR-0216): one list across every model and view of what is not ready yet, so a system built in chat or on the canvas says what it still lacks instead of the person having to look in each tab.
 * [application.repository](repository.md) - Read-only repository evidence port; this does not grant project execution or approval.
+* [application.requirement_trace](requirement_trace.md) - A bounded declared trace adapter, separate from policy and verification execution.
 * [application.review](review.md) - Review a model change in PlayIDE instead of a pull request (ADR-0175).
 * [application.ripple](ripple.md) - Ripple (ADR-0158): what one change to the state machine does to every other diagram of the same system, and the follow-on edits that would keep them in agreement.
 * [application.runtime](runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.

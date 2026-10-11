@@ -12,6 +12,7 @@ import unittest
 from pathlib import Path
 
 from app import service
+from app.build_identity import current_subject
 from eija_studio.domain.screens import check_screens
 
 ORACLE = json.loads((Path(__file__).resolve().parent / "oracle.json").read_text(encoding="utf-8"))
@@ -35,6 +36,14 @@ def observe(svc: service.Service, record_id: str, case: dict) -> dict:
 
 
 class Conformance(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.subject = current_subject()
+
+    @classmethod
+    def tearDownClass(cls):
+        current_subject(cls.subject)
+
     def test_built_from_the_same_model(self):
         self.assertEqual(service.MODEL.semantic_hash, ORACLE["model_hash"])
 

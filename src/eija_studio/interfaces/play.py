@@ -59,7 +59,9 @@ from eija_studio.domain.scenarios import parse_scenarios, scenarios_for
 from eija_studio.domain.policy import apply_transactions
 from eija_studio.domain.screens import Screens, check_screens, parse_screens, screens_for, use_cases
 from .app_build import app_files, build_into
+from .c4 import register as register_c4
 from .play_interop import register as register_interop
+from .play_assurance import register as register_assurance
 
 START_TIMEOUT_S = 10.0
 
@@ -137,7 +139,7 @@ class AppRunner:
         self.running: dict[str, Any] | None = None
         atexit.register(self.stop)
 
-    def build_and_run(self, pack: Pack, model: Workflow, identity: dict[str, Any], screens: Screens) -> dict[str, Any]:
+    def build_and_run(self, pack: Pack, model: Workflow, identity_provider: Callable[[], dict[str, Any]], screens: Screens) -> dict[str, Any]:
         with self.lock:
             data = data_for(pack)  # the same model with another data model or other screens is another app
             key = model.semantic_hash[:12] + (f"-{data.digest[:8]}" if data else "") + f"-{screens.digest[:8]}"
@@ -145,14 +147,16 @@ class AppRunner:
             kinds = "".join(sorted(f"{r.id}={r.kind};" for r in pack.roles))
             key += "-" + hashlib.sha256(kinds.encode()).hexdigest()[:8]
             out = self.root() / key
-            manifest = build_into(out, pack, model, identity, screens=screens)
+            manifest = build_into(out, pack, model, identity_provider, screens=screens, before_write=self._stop)
             result = {"model": model.semantic_hash, "screens": screens.digest, "cases": manifest["oracle"]["cases"],
                       "conformance": manifest["conformance"], "kernel_source_review": manifest["kernel_source_review"],
-                      "files": len(manifest["files"]), "url": None}
+                      "files": len(manifest["files"]), "url": None, "subject": manifest["subject"],
+                      "trace_vocabulary": {"actors": [{"id": a.id, "role": a.role} for a in pack.fixtures.actors],
+                                           "actions": [a.id for a in pack.actions]}}
             if manifest["conformance"]["status"] != "PASS":
                 self._stop()  # never leave an older app running as if it were this model's
                 return result
-            return result | {"url": self._start(out, key)}
+            return result | {"url": self._start(out, manifest["subject"]["digest"])}
 
     def _start(self, out: Path, key: str) -> str:
         alive = self.process is not None and self.process.poll() is None
@@ -235,6 +239,8 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
             model = apply_transactions(model, transactions, pack_of(body.plan)) if transactions else model
         return model
 
+    register_assurance(app, studio, resolve, pack_of)
+
     @app.get("/api/play/data")
     def play_data():
         """The pack's data model for the class diagram, or null when the pack has none (ADR-0153)."""
@@ -258,6 +264,8 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
         if body.screens is not None:
             return parse_screens(body.screens, studio.pack.id)
         return screens_for(studio.pack, model, data_for(pack_of(body.plan)))  # the files beside pack.json, as for any draft
+
+    register_c4(app, studio, resolve, pack_of, screens_of)
 
     @app.post("/api/play/screens")
     def play_screens(body: BuildRequest):
@@ -292,7 +300,7 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
         """The component diagram of the app this model and these screens would build, read from its files (ADR-0155)."""
         model = resolve(body)
         screens = screens_of(body, model)
-        files, manifest = app_files(pack_of(body.plan), model, screens)
+        files, manifest = app_files(pack_of(body.plan), model, screens, identity_provider=studio.identity_provider)
         return app_components(files) | {"model": model.semantic_hash, "screens": screens.digest, "cases": manifest["oracle"]["cases"],
                                         "deployment": app_deployment(files, __version__)}
 
@@ -304,7 +312,7 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
 
     def built(pack: Pack, model: Workflow, screens: Screens) -> tuple[tuple[dict[str, str], int] | DomainError, list[dict[str, Any]]]:
         try:
-            files, manifest = app_files(pack, model, screens)
+            files, manifest = app_files(pack, model, screens, identity_provider=studio.identity_provider)
         except DomainError as error:
             return error, []
         return (files, manifest["oracle"]["cases"]), app_components(files)["components"]
@@ -319,7 +327,7 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
         `since`, what its last round does (ADR-0201); the follow-ons are still for the whole plan."""
         base = resolve(body.model_copy(update={"plan": None}))
         candidate = resolve(body)
-        start = base if body.since is None else before_of(body)
+        start = before_of(body)
         # Before is the saved system with its pack's screens; screens edited in the designer are part of the change.
         pack, earlier = pack_of(body.plan), pack_of(body.since)
         data, data_before = data_for(pack), data_for(earlier)
@@ -331,7 +339,7 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
         system = (landscape(pack.id, [(earlier, data_before, start), *others]), landscape(pack.id, [(pack, data, candidate), *others])) if others else None
         report = ripple(start, candidate, data, (before, after), (old, new), components, scenarios, data_changes(data_before, data), system, data_before)
         document = proposer().follow_on(report, candidate, pack) if report["problems"] else {"steps": []}
-        return report | {"provider": proposer().name, "live": proposer().live,
+        return report | {"before_model": start.semantic_hash, "provider": proposer().name, "live": proposer().live,
                          "follow_ons": check_follow_ons(document, base, body.plan or [], pack, candidate, after, data)}
 
     def baseline(body: BuildRequest) -> Workflow:
@@ -384,7 +392,7 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
     @app.post("/api/play/build")
     def play_build(body: BuildRequest):
         model = resolve(body)
-        return runner.build_and_run(pack_of(body.plan), model, studio.identity_provider(), screens_of(body, model))
+        return runner.build_and_run(pack_of(body.plan), model, studio.identity_provider, screens_of(body, model))
 
     @app.post("/api/play/simulate")
     def play_simulate(body: SimulateRequest):

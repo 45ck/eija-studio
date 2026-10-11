@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/service.py
   title: application/service.py
   hash_method: ast-api-v1
-  sha256: cc3fc5a2552eea3b3be5ed02ec8095d3bf45fe73d6fc4de8f012a40e5640fd1a
-notes_baseline: ea043d1f3a14f847cfb07bc6d5629eb8c194ad9543b9db057e4b290d8aa814e8
+  sha256: 8ab9074a4d30d37aad23dbf4624229355732a9c8155f2050e41d87b378c7e4ec
+notes_baseline: 5200610e618da09ee6d13570b6b4c07b136fac26a88d856e81580b800a7b74df
 ---
 
 # application.service
@@ -42,6 +42,7 @@ _The source carries no module docstring._
 * [`application/edit_proposal`](/modules/application/edit_proposal.md)
 * [`application/formal`](/modules/application/formal.md)
 * [`application/history`](/modules/application/history.md)
+* [`application/owner_plan`](/modules/application/owner_plan.md)
 * [`application/ports`](/modules/application/ports.md)
 * [`application/repository`](/modules/application/repository.md)
 * [`application/runtime`](/modules/application/runtime.md)
@@ -67,6 +68,7 @@ _No curated notes yet._
 * [application.edit_proposal](/modules/application/edit_proposal.md) - A read-only offline proposal over one captured candidate; owner edits keep their existing boundary.
 * [application.formal](/modules/application/formal.md) - Formal evidence in the application layer: seal what an adapter collected, and build the packet view.
 * [application.history](/modules/application/history.md) - Semantic history is a projection of typed commands, replayed by the existing policy interpreter.
+* [application.owner_plan](/modules/application/owner_plan.md) - Exact owner-plan case construction; authority and atomic storage remain in Studio.
 * [application.ports](/modules/application/ports.md) - Application-owned ports.
 * [application.repository](/modules/application/repository.md) - Read-only repository evidence port; this does not grant project execution or approval.
 * [application.runtime](/modules/application/runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.
@@ -96,6 +98,7 @@ _No curated notes yet._
 * [application.service.Studio.execute](/symbols/application/service/Studio.execute.md) - `def execute(self, case_id: str, command: ExecuteCommand, fault: Callable[[str], None] | None=None) -> dict[st…` in `application/service`.
 * [application.service.Studio.export](/symbols/application/service/Studio.export.md) - `def export(self, case_id: str) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.formal_view](/symbols/application/service/Studio.formal_view.md) - Formal evidence for a bare workflow (``eija compile``): collected and sealed in memory, never stored, never a decision.
+* [application.service.Studio.from_plan](/symbols/application/service/Studio.from_plan.md) - Select an exact owner-reviewed command batch; previews and provenance never grant authority.
 * [application.service.Studio.history](/symbols/application/service/Studio.history.md) - Reconstructed semantic revisions and append-only command audit; never changes the case.
 * [application.service.Studio.layout](/symbols/application/service/Studio.layout.md) - `def layout(self, case_id: str, expected: int, change: LayoutChange, principal: Principal) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio](/symbols/application/service/Studio.md) - `class Studio` in `application/service`.

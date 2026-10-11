@@ -1,6 +1,7 @@
 /* PlayIDE shell (ADR-0173): title bar, toolbar, outline over inspector, diagram tabs, chat, bottom panel, status bar.
    Loaded after play.css; it only places and dresses regions, so the diagrams, chat and run bar keep their own styles. */
-:root{--left-w:272px;--chat-w:380px;--dock-h:280px;--chrome:#f7f8fb;--tab-line:#3157d5}
+:root{--left-w:272px;--chat-w:380px;--dock-h:280px;--play-w:430px;--play-h:320px;--chrome:#f7f8fb;--tab-line:#3157d5;
+  --shell-space-xs:4px;--shell-space-sm:8px;--shell-space-md:12px;--shell-space-lg:16px;--shell-space-xl:24px}
 body{display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;grid-template-columns:minmax(0,1fr);height:100vh;overflow:hidden}
 body.resizing{user-select:none}
 body.resizing iframe{pointer-events:none}
@@ -23,7 +24,7 @@ body.resizing iframe{pointer-events:none}
 .bar a.quiet{padding:5px 10px;font-size:.84rem}
 
 /* Toolbar: run bar, Simulate, Build & run, and the checks ring (Visual Studio's standard and debug toolbars) */
-.toolbar{display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--panel);border-bottom:1px solid var(--line)}
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:6px 12px;background:var(--panel);border-bottom:1px solid var(--line)}
 .toolbar .sep{width:1px;align-self:stretch;margin:2px 4px;background:var(--line)}
 .toolbar .spacer{flex:1}
 @media (max-width:1000px){.toolbar{flex-wrap:wrap}}  /* narrow windows wrap the checks pill rather than push the page sideways */
@@ -163,3 +164,52 @@ body[data-view="review"] #toggle-chat{display:none}
 
 @media (max-width:1180px){.palette-open.command-center{width:auto}.palette-open.command-center span{display:none}}
 .side .authority span{white-space:normal}
+
+/* Design + Play is an optional layout of the same regions, not another execution surface. The spacing scale follows
+   the existing 4px rhythm; colour, typography, selection and feedback reuse play.css's semantic tokens. */
+.play-only{display:none}
+.play-layout-toggle{display:inline-flex;align-items:center;gap:var(--shell-space-sm);white-space:nowrap}
+.play-layout-toggle svg{fill:none;stroke:currentColor;stroke-width:1.4}
+.play-layout-toggle:hover{border-color:var(--accent);background:var(--state)}
+.play-layout-toggle[aria-pressed="true"]{border-color:var(--accent);background:var(--state);color:var(--accent);font-weight:600}
+.play-layout-toggle:active{background:var(--busy-bg)}
+.play-app-tools{display:flex;align-items:center;gap:var(--shell-space-sm);flex-wrap:wrap}
+.play-app-heading{min-width:0}
+body[data-play="open"] .workbench{grid-template-columns:minmax(0,1fr) 5px var(--play-w);grid-template-rows:minmax(220px,1fr) 5px auto auto;overflow:auto}
+body[data-play="open"] .workbench>.stage{grid-column:1;grid-row:1;min-width:0}
+body[data-play="open"] #split-play{display:block;grid-column:2;grid-row:1/-1;cursor:col-resize}
+/* display:contents preserves the iframe's DOM and browsing context while projecting output into the workbench grid. */
+body[data-play="open"] .dock,body[data-play="open"] .dock-body{display:contents}
+body[data-play="open"] .dock-head{grid-column:1;grid-row:3;min-width:0}
+body[data-play="open"] #split-dock{grid-column:1;grid-row:2}
+body[data-play="open"][data-dock="closed"] .dock-head,
+body[data-play="open"][data-dock="closed"] #split-dock,
+body[data-play="open"][data-dock="closed"] .dock-body>section:not(#run){display:none}
+body[data-play="open"] .dock-body>section:not(#run).dock-active:not([hidden]){grid-column:1;grid-row:4;height:min(var(--dock-h),32vh);min-height:0;padding:var(--shell-space-md);overflow:auto}
+body[data-play="open"] .dock-body>#run:not([hidden]){display:flex;grid-column:3;grid-row:1/-1;height:100%;min-height:0;min-width:0;overflow:hidden;padding:0;border-left:1px solid var(--line);background:var(--panel)}
+body[data-play="open"] #run .run-head{justify-content:space-between;align-items:start;gap:var(--shell-space-md);padding:var(--shell-space-md) var(--shell-space-lg);margin:0;border-bottom:1px solid var(--line);background:var(--chrome)}
+body[data-play="open"] #run .run-head h2{position:static;width:auto;height:auto;overflow:visible;clip:auto;font-size:.9rem;margin:0}
+body[data-play="open"] #play-model-status{display:block;margin:var(--shell-space-xs) 0 0;color:var(--muted);font-size:.75rem;line-height:1.4}
+body[data-play="open"] #play-model-status.stale{color:#704d05}
+body[data-play="open"] #play-rebuild{display:block}
+body[data-play="open"] #run-frame{border:0;border-radius:0;min-height:0}
+body[data-play="open"] .play-runtime-scope{display:block;padding:var(--shell-space-sm) var(--shell-space-lg);margin:0;border-top:1px solid var(--line);color:var(--muted);background:var(--chrome);font-size:.75rem;line-height:1.5}
+body[data-play="open"][data-play-app="empty"] .play-empty{display:flex;grid-column:3;grid-row:1/-1;flex-direction:column;min-height:0;border-left:1px solid var(--line);background:var(--panel)}
+.play-empty-head{padding:var(--shell-space-md) var(--shell-space-lg);border-bottom:1px solid var(--line);background:var(--chrome)}
+.play-empty-head h2{font-size:.9rem;margin:0}
+.play-empty-head p{font-size:.75rem;color:var(--muted);margin:var(--shell-space-xs) 0 0}
+.play-empty-body{display:flex;flex:1;flex-direction:column;align-items:start;justify-content:center;gap:var(--shell-space-md);padding:var(--shell-space-xl);overflow:auto}
+.play-empty-mark{fill:var(--state);stroke:var(--state-line);stroke-width:1.5;flex:none}
+.play-empty-body h3{margin:var(--shell-space-xs) 0 0;font-size:1rem;line-height:1.4;letter-spacing:normal;text-transform:none;color:var(--ink)}
+.play-empty-body p{margin:0;max-width:42ch;font-size:.875rem;line-height:1.6;color:var(--muted)}
+.play-empty-body .play-empty-scope{margin-top:var(--shell-space-sm);font-size:.75rem}
+body[data-play="open"][data-play-arrangement="stacked"] .workbench{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(200px,1fr) 5px var(--play-h) 5px auto auto}
+body[data-play="open"][data-play-arrangement="stacked"] #split-play{grid-column:1;grid-row:2;cursor:row-resize}
+body[data-play="open"][data-play-arrangement="stacked"] .dock-body>#run:not([hidden]),
+body[data-play="open"][data-play-arrangement="stacked"][data-play-app="empty"] .play-empty{grid-column:1;grid-row:3;border-left:0;border-top:1px solid var(--line)}
+body[data-play="open"][data-play-arrangement="stacked"] #split-dock{grid-row:4}
+body[data-play="open"][data-play-arrangement="stacked"] .dock-head{grid-row:5}
+body[data-play="open"][data-play-arrangement="stacked"] .dock-body>section:not(#run).dock-active:not([hidden]){grid-row:6}
+body[data-play="open"][data-play-arrangement="stacked"] .play-empty-body{padding:var(--shell-space-lg);gap:var(--shell-space-sm)}
+body[data-play="open"][data-play-arrangement="stacked"] .play-empty-mark{width:40px;height:30px}
+@media(prefers-reduced-motion:reduce){.stage-tools .tabs{scroll-behavior:auto}.split::after{transition:none}}

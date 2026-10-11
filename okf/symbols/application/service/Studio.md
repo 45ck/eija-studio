@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio
   title: application/service.py
   hash_method: ast-sig-v1
-  sha256: 416fa1dd78e1129aa5920ca6b4a2bb562c13ec9801956d61e81d2d0d58b78925
+  sha256: eb237d4fcce0c3f0c0d67febfaf1e677097e43ff7b20af47b04a7be745a98f19
 description_override: 'The Studio use cases: create, propose, select, edit, verify, approve, apply and execute over a Change Case.'
-notes_baseline: 2f7e0d1e444142661245db6bca9ff24e01955997b1a5a79ca4de89bf8e6c6480
+notes_baseline: 229db2fa54f8b861f6445777ab1f2c374ff538a314391df91c4ec22915ffc329
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -62,6 +62,18 @@ verified:
   at: '2026-10-08T12:00:00Z'
   notes_sha256: f51b13eee1fbfff154fd0c51929bf594c629036713c7d18f1b352dce3b3de03a
   sources_sha256: 2f7e0d1e444142661245db6bca9ff24e01955997b1a5a79ca4de89bf8e6c6480
+- by: process:playide-activation
+  at: '2026-10-10T13:50:00+11:00'
+  notes_sha256: e135c32f03ba571813161f61f6fb0e6b672e994faa5e1614ff36c87f6cf1cce4
+  sources_sha256: 229db2fa54f8b861f6445777ab1f2c374ff538a314391df91c4ec22915ffc329
+- by: process:playide-activation
+  at: '2026-10-10T14:01:00+11:00'
+  notes_sha256: e135c32f03ba571813161f61f6fb0e6b672e994faa5e1614ff36c87f6cf1cce4
+  sources_sha256: 229db2fa54f8b861f6445777ab1f2c374ff538a314391df91c4ec22915ffc329
+- by: process:playide-activation
+  at: '2026-10-10T02:55:29+00:00'
+  notes_sha256: e135c32f03ba571813161f61f6fb0e6b672e994faa5e1614ff36c87f6cf1cce4
+  sources_sha256: 229db2fa54f8b861f6445777ab1f2c374ff538a314391df91c4ec22915ffc329
 ---
 
 # application.service.Studio
@@ -92,6 +104,7 @@ _The source carries no docstring._
 * [`execute`](/symbols/application/service/Studio.execute.md) - `def execute(self, case_id: str, command: ExecuteCommand, fault: Callable[[str], None] \| None=None) -> dict[str, Any]`
 * [`export`](/symbols/application/service/Studio.export.md) - `def export(self, case_id: str) -> dict[str, Any]`
 * [`formal_view`](/symbols/application/service/Studio.formal_view.md) - `def formal_view(self, model: Workflow) -> dict[str, Any]`
+* [`from_plan`](/symbols/application/service/Studio.from_plan.md) - `def from_plan(self, command: OwnerPlanRequest, principal: Principal) -> dict[str, Any]`
 * [`history`](/symbols/application/service/Studio.history.md) - `def history(self, case_id: str) -> dict[str, Any]`
 * [`layout`](/symbols/application/service/Studio.layout.md) - `def layout(self, case_id: str, expected: int, change: LayoutChange, principal: Principal) -> dict[str, Any]`
 * [`propose`](/symbols/application/service/Studio.propose.md) - `def propose(self, case_id: str, expected: int, *, consent: bool=False) -> dict[str, Any]`
@@ -133,8 +146,13 @@ capture identities, bounded historical source and explicit partial syntax/impact
 These facts neither reuse live source hashes nor establish model conformance,
 agent authorship or behavior evidence. An absent port stays unconfigured.
 
-Semantic edit, undo and redo use the existing interpreter with a protected atomic
-meaning prefix. They create new case versions, append command provenance and clear
+`from_plan` requires owner selection authority and atomically transfers an exact
+typed workflow batch under the captured pack and baseline identity. It recomputes
+the candidate with the existing interpreter; provenance does not grant authority.
+Named pack meanings and owner plans both form a protected atomic selection prefix.
+
+Semantic edit, undo and redo use the existing interpreter with that protected
+selection prefix. They create new case versions, append command provenance and clear
 decisions while retaining receipts, baseline and layout. `history` reconstructs
 semantic snapshots from commands; it does not invent timestamps for legacy edits.
 
@@ -169,6 +187,7 @@ policy-checks each proposed step and previews a candidate without writing anythi
 * [application.ports.SandboxFactory](/symbols/application/ports/SandboxFactory.md) - Type alias `SandboxFactory` in `application/ports`.
 * [application.repository.RepositoryChangeSource](/symbols/application/repository/RepositoryChangeSource.md) - Immutable, read-only facts for an explicit pair in one configured repository.
 * [application.repository.RepositorySource](/symbols/application/repository/RepositorySource.md) - Evidence about one explicitly configured checkout and its declared domain bindings.
+* [domain.change_case.OwnerPlanRequest](/symbols/domain/change_case/OwnerPlanRequest.md) - Exact accepted workflow commands and the identities of their reviewed preview.
 * [domain.models.ExecuteCommand](/symbols/domain/models/ExecuteCommand.md) - `class ExecuteCommand(Contract)` in `domain/models`.
 * [domain.models.LayoutChange](/symbols/domain/models/LayoutChange.md) - `class LayoutChange(Contract)` in `domain/models`.
 * [domain.models.Principal](/symbols/domain/models/Principal.md) - `class Principal(Contract)` in `domain/models`.
@@ -189,6 +208,7 @@ policy-checks each proposed step and previews a candidate without writing anythi
 * [application.service.Studio.execute](/symbols/application/service/Studio.execute.md) - `def execute(self, case_id: str, command: ExecuteCommand, fault: Callable[[str], None] | None=None) -> dict[st…` in `application/service`.
 * [application.service.Studio.export](/symbols/application/service/Studio.export.md) - `def export(self, case_id: str) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.formal_view](/symbols/application/service/Studio.formal_view.md) - Formal evidence for a bare workflow (``eija compile``): collected and sealed in memory, never stored, never a decision.
+* [application.service.Studio.from_plan](/symbols/application/service/Studio.from_plan.md) - Select an exact owner-reviewed command batch; previews and provenance never grant authority.
 * [application.service.Studio.history](/symbols/application/service/Studio.history.md) - Reconstructed semantic revisions and append-only command audit; never changes the case.
 * [application.service.Studio.layout](/symbols/application/service/Studio.layout.md) - `def layout(self, case_id: str, expected: int, change: LayoutChange, principal: Principal) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.propose](/symbols/application/service/Studio.propose.md) - `def propose(self, case_id: str, expected: int, *, consent: bool=False) -> dict[str, Any]` in `application/service`.

@@ -111,6 +111,66 @@
         }
       }
     },
+    "/api/play/assurance": {
+      "get": {
+        "summary": "Assurance",
+        "operationId": "assurance_api_play_assurance_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Assurance Api Play Assurance Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/play/assurance/compare": {
+      "post": {
+        "summary": "Compare",
+        "operationId": "compare_api_play_assurance_compare_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssuranceCompareRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Compare Api Play Assurance Compare Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/play/data": {
       "get": {
         "summary": "Play Data",
@@ -139,6 +199,46 @@
             "content": {
               "application/json": {
                 "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/play/c4": {
+      "post": {
+        "summary": "Inspect",
+        "operationId": "inspect_api_play_c4_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/C4Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Inspect Api Play C4 Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
               }
             }
           }
@@ -1367,6 +1467,42 @@
         }
       }
     },
+    "/api/cases/from-plan": {
+      "post": {
+        "summary": "Owner selection of the exact accepted workflow plan",
+        "operationId": "from_plan_api_cases_from_plan_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OwnerPlanRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/cases/{case_id}": {
       "get": {
         "summary": "Get Case",
@@ -2454,6 +2590,74 @@
         ],
         "title": "Approval"
       },
+      "AssuranceCompareRequest": {
+        "properties": {
+          "case_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Id"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Workflow"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "plan": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array",
+                "maxItems": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plan"
+          },
+          "laws": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array",
+                "maxItems": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Laws"
+          },
+          "requirement_drafts": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "maxProperties": 28,
+            "title": "Requirement Drafts"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "AssuranceCompareRequest"
+      },
       "BuildRequest": {
         "properties": {
           "case_id": {
@@ -2509,6 +2713,62 @@
         "additionalProperties": false,
         "type": "object",
         "title": "BuildRequest"
+      },
+      "C4Request": {
+        "properties": {
+          "case_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Id"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Workflow"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "screens": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Screens"
+          },
+          "plan": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array",
+                "maxItems": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plan"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "C4Request"
       },
       "ChangeRequest": {
         "properties": {
@@ -3216,6 +3476,146 @@
           "request"
         ],
         "title": "NewCase"
+      },
+      "OwnerPlanRequest": {
+        "properties": {
+          "request": {
+            "type": "string",
+            "maxLength": 6000,
+            "minLength": 1,
+            "title": "Request"
+          },
+          "pack_id": {
+            "type": "string",
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Pack Id"
+          },
+          "expected_pack_digest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Expected Pack Digest"
+          },
+          "expected_baseline_version": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Baseline Version"
+          },
+          "expected_baseline_semantic_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Expected Baseline Semantic Hash"
+          },
+          "expected_candidate_semantic_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Expected Candidate Semantic Hash"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/OwnerPlanStep"
+            },
+            "type": "array",
+            "maxItems": 64,
+            "minItems": 1,
+            "title": "Steps"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request",
+          "pack_id",
+          "expected_pack_digest",
+          "expected_baseline_version",
+          "expected_baseline_semantic_hash",
+          "expected_candidate_semantic_hash",
+          "steps"
+        ],
+        "title": "OwnerPlanRequest",
+        "description": "Exact accepted workflow commands and the identities of their reviewed preview."
+      },
+      "OwnerPlanStep": {
+        "properties": {
+          "transaction": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AddState"
+              },
+              {
+                "$ref": "#/components/schemas/RenameState"
+              },
+              {
+                "$ref": "#/components/schemas/RemoveState"
+              },
+              {
+                "$ref": "#/components/schemas/SetInitial"
+              },
+              {
+                "$ref": "#/components/schemas/AddTransition"
+              },
+              {
+                "$ref": "#/components/schemas/RetargetTransition"
+              },
+              {
+                "$ref": "#/components/schemas/RemoveTransition"
+              },
+              {
+                "$ref": "#/components/schemas/SetRole"
+              },
+              {
+                "$ref": "#/components/schemas/SetGuards"
+              },
+              {
+                "$ref": "#/components/schemas/SetEffects"
+              }
+            ],
+            "title": "Transaction",
+            "discriminator": {
+              "propertyName": "kind",
+              "mapping": {
+                "add_state": "#/components/schemas/AddState",
+                "add_transition": "#/components/schemas/AddTransition",
+                "remove_state": "#/components/schemas/RemoveState",
+                "remove_transition": "#/components/schemas/RemoveTransition",
+                "rename_state": "#/components/schemas/RenameState",
+                "retarget_transition": "#/components/schemas/RetargetTransition",
+                "set_effects": "#/components/schemas/SetEffects",
+                "set_guards": "#/components/schemas/SetGuards",
+                "set_initial": "#/components/schemas/SetInitial",
+                "set_role": "#/components/schemas/SetRole"
+              }
+            }
+          },
+          "author": {
+            "type": "string",
+            "enum": [
+              "you",
+              "ai"
+            ],
+            "title": "Author"
+          },
+          "round": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Round"
+          },
+          "request": {
+            "type": "string",
+            "maxLength": 6000,
+            "title": "Request"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "transaction",
+          "author",
+          "round",
+          "request"
+        ],
+        "title": "OwnerPlanStep",
+        "description": "Reported proposal provenance, never a capability or an owner decision."
       },
       "PlanPreviewRequest": {
         "properties": {

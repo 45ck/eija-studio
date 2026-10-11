@@ -73,6 +73,9 @@ _No curated notes yet._
 
 * [application.api_contract](/modules/application/api_contract.md) - The API contract of an app built from a workflow (ADR-0207): an OpenAPI 3.1 document of what the generated server serves, written from the model, the pack and…
 * [application.appgen](/modules/application/appgen.md) - App generation: a reviewed workflow model becomes a runnable app and its conformance oracle (ADR-0150).
+* [application.build_subject](/modules/application/build_subject.md) - Exact generated-build identity.
+* [application.c4](/modules/application/c4.md) - Read-only C4 views of generated source and declared model contracts.
+* [application.capabilities](/modules/application/capabilities.md) - Explicit support levels for the workbench; design visibility is not execution.
 * [application.class_build](/modules/application/class_build.md) - What the built app does with each part of the class diagram (#145, ADR-0205): the record class is built and checked; the other classes and the associations are…
 * [application.data_steps](/modules/application/data_steps.md) - Data-model steps in a chat plan (ADR-0202): add an attribute to a class, remove one, or make one required or optional; and the step that changes the kind of ac…
 * [application.describe_system](/modules/application/describe_system.md) - Describe your app (ADR-0216): a new system from one description, like starting an app in Lovable or Replit.

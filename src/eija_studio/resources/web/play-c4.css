@@ -1,0 +1,65 @@
+/* Source-grounded C4 architecture. Native buttons preserve keyboard inspection. */
+#c4-panel{box-sizing:border-box;padding:22px;overflow:auto;background:var(--panel);color:var(--ink);container-type:inline-size}
+#c4-panel[hidden]{display:none}
+.c4-header{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.c4-header h2{font-size:1.4rem;letter-spacing:-.025em;margin:4px 0 16px}
+.c4-eyebrow{font-size:.68rem;font-weight:750;letter-spacing:.08em;color:var(--accent);margin:0}
+#c4-levels{display:flex;gap:6px;flex-wrap:wrap;padding:6px;background:var(--busy-bg);border:1px solid var(--line);border-radius:11px}
+#c4-levels button{flex:1;padding:10px 12px;white-space:normal;border-color:transparent;background:transparent}
+#c4-levels button[aria-pressed=true]{background:var(--panel);border-color:var(--accent);color:var(--accent);box-shadow:0 2px 6px #3157d512}
+.c4-revision{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:16px;font-size:.72rem;color:var(--muted)}
+.c4-source{font-weight:700;color:var(--ok)}
+.c4-source.required{color:#856014}
+#c4-status{font-size:.75rem;line-height:1.5;color:var(--muted);margin:8px 0 16px}
+.c4-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(200px,28%);gap:18px;align-items:start}
+.c4-map-column{min-width:0}
+.c4-help{font-size:.78rem;line-height:1.5;color:var(--muted);margin:0 0 14px}
+.c4-boundary{font-size:.72rem;font-weight:650;padding:9px 12px;border:1px solid var(--line);border-bottom:0;border-radius:10px 10px 0 0;margin:0;background:var(--busy-bg)}
+.c4-board{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:30px;padding:24px 16px;border:1px dashed #b5c0d9;border-radius:0 0 12px 12px;isolation:isolate;background:#f8faff;min-height:180px}
+.c4-board.context{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:60px}
+.c4-actors{display:flex;flex-direction:column;gap:18px;min-width:0}
+.c4-systems{display:flex;align-items:center;min-width:0}
+.c4-node{position:relative;z-index:1;display:flex;flex-direction:column;align-items:flex-start;gap:6px;width:100%;box-sizing:border-box;min-width:0;text-align:left;white-space:normal;padding:14px;border:1px solid #a9bce8;border-radius:11px;background:#edf3ff;color:#233559;box-shadow:0 4px 10px #203d6710;transition:box-shadow .15s,border-color .15s}
+.c4-node strong{font-size:.9rem;line-height:1.3;overflow-wrap:anywhere}
+.c4-node:hover,.c4-node[aria-pressed=true]{border-color:var(--accent);box-shadow:0 0 0 2px #3157d51f,0 7px 17px #203d6714}
+.c4-node[aria-pressed=true]{background:#e4edff}
+.c4-node.fixture_contract{background:#fbf9f1;border-color:#d9c89a;color:#58492c}
+.c4-node.software_system{padding:24px;background:#3157d5;color:#fff;border-color:#3157d5;box-shadow:0 9px 22px #3157d52b}
+.c4-node.software_system .c4-technology,.c4-node.software_system .c4-support,.c4-node.software_system .c4-drill-hint{color:#e2e9ff}
+.c4-node.database{border-radius:18px;border-top-width:4px}
+.c4-node.artifact{background:#f8f6fc;border-color:#cfc3e5}
+.c4-node.kernel{background:#effaf4;border-color:#b4d7c4}
+.c4-icon{font-size:1.2rem;line-height:1}
+.c4-technology{font-size:.7rem;font-weight:650;color:var(--muted);overflow-wrap:anywhere}
+.c4-description{font-size:.74rem;line-height:1.45;overflow-wrap:anywhere}
+.c4-support{font-size:.63rem;line-height:1.4;font-weight:750;padding-top:6px;color:var(--accent);text-transform:uppercase;letter-spacing:.03em}
+.c4-drill-hint{font-size:.66rem;font-weight:650;margin-top:6px;color:var(--accent)}
+#c4-lines{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:0}
+.c4-edge{fill:none;stroke:#a7b7d6;stroke-width:1.5;stroke-dasharray:4 3}
+.c4-edge.selected{stroke:var(--accent);stroke-width:2.5;stroke-dasharray:none}
+#c4-arrow path{fill:#6d87b7}
+#c4-inspector{padding:16px;border:1px solid var(--line);border-radius:12px;background:var(--panel);min-width:0}
+#c4-inspector h3{font-size:1.1rem;margin:8px 0;overflow-wrap:anywhere}
+#c4-inspector h4{font-size:.78rem;margin:18px 0 8px}
+#c4-inspector p{font-size:.78rem;line-height:1.5}
+#c4-drill{padding:10px 12px;background:var(--accent);color:white;white-space:normal}
+.c4-sources{padding-left:15px;margin:0;font-size:.7rem;color:var(--muted);line-height:1.7;overflow-wrap:anywhere}
+.c4-relationships{list-style:none;padding:0;margin:0;display:grid;gap:10px}
+.c4-relationships li{padding-bottom:10px;border-bottom:1px solid var(--line)}
+.c4-relationships button{font-size:.74rem;text-align:left;white-space:normal;width:100%;padding:6px 8px}
+.c4-relationships span,.c4-relationships small{display:block;line-height:1.5;font-size:.7rem;overflow-wrap:anywhere;margin-top:4px}
+.c4-relationships small{color:var(--muted)}
+.c4-facts{margin:0;font-size:.7rem;line-height:1.5}
+.c4-facts dt{font-weight:700;color:var(--muted);margin-top:10px;text-transform:capitalize}
+.c4-facts dd{margin:3px 0 0;overflow-wrap:anywhere}
+.c4-detail-list{padding-left:15px;margin:0;display:grid;gap:5px}
+.c4-warning{border-left:3px solid #cfaa55;padding:8px;background:#fff8e5;color:#765824}
+.c4-count{color:var(--accent);font-weight:650}
+#c4-limits{border-top:1px solid var(--line);margin-top:22px;padding-top:14px;font-size:.75rem;line-height:1.6}
+#c4-limits summary{font-weight:650;cursor:pointer}
+#c4-panel button:focus-visible,#c4-panel summary:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+@media(max-width:1100px){.c4-layout{grid-template-columns:1fr}.c4-board.components{grid-template-columns:repeat(2,minmax(0,1fr))}#c4-inspector{min-height:100px}}
+@media(max-width:720px){#c4-panel{padding:14px}.c4-header{align-items:flex-start}.c4-header h2{font-size:1.1rem}.c4-board,.c4-board.context,.c4-board.components{grid-template-columns:1fr;gap:22px}.c4-board.context{gap:35px}.c4-systems{display:block}.c4-node{padding:12px}#c4-levels button{font-size:.72rem}}
+@container(max-width:760px){.c4-layout{grid-template-columns:1fr}.c4-board.components{grid-template-columns:repeat(2,minmax(0,1fr))}.c4-header h2{font-size:1.15rem}}
+@container(max-width:440px){.c4-board,.c4-board.context,.c4-board.components{grid-template-columns:1fr;gap:22px}.c4-header{align-items:flex-start}.c4-systems{display:block}.c4-node{padding:12px}#c4-levels button{font-size:.72rem}}
+@media(prefers-reduced-motion:reduce){.c4-node{transition:none}}

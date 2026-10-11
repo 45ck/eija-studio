@@ -11,7 +11,9 @@ PACKAGE = Path(__file__).resolve().parents[1]
 
 
 def implementation_files() -> dict[str, str]:
-    paths = list(PACKAGE.rglob("*.py")) + list((PACKAGE / "resources" / "web").rglob("*"))
+    paths = list(PACKAGE.rglob("*.py"))
+    for resource in ("web", "appgen"):
+        paths.extend((PACKAGE / "resources" / resource).rglob("*"))
     return {str(p.relative_to(PACKAGE)).replace("\\", "/"): sha256(p.read_bytes()).hexdigest()
             for p in sorted(paths) if p.is_file() and "__pycache__" not in p.parts}
 

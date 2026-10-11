@@ -6,7 +6,7 @@ from uuid import uuid4
 import time
 from pydantic import ValidationError
 from eija_studio.domain.models import Workflow, Principal, LayoutChange, ExecuteCommand, DomainError, fingerprint
-from eija_studio.domain.change_case import ChangeCase
+from eija_studio.domain.change_case import ChangeCase, OwnerPlanRequest, PackMeaningSelection
 from eija_studio.domain.pack import Pack, default_pack
 from eija_studio.domain.policy import apply_transaction, apply_transactions, check_policy, meaning_options
 from eija_studio.domain.affordance import affordances as affordance_map, dry_run
@@ -21,6 +21,7 @@ from .repository import RepositoryChangeSource, RepositorySource, compare_reposi
 from .history import command_event, history_view, replay
 from .edit_preview import preview_edit
 from .edit_proposal import propose_edit
+from .owner_plan import _owner_plan_case
 
 
 def now() -> str:
@@ -117,6 +118,20 @@ class Studio:
             u.event("CaseCreated", {"case_id": case.id, "request_hash": fingerprint(request)})
         return body
 
+    def from_plan(self, command: OwnerPlanRequest, principal: Principal) -> dict[str, Any]:
+        """Select an exact owner-reviewed command batch; previews and provenance never grant authority."""
+        principal.require("select")
+        if not command.request.strip():
+            raise DomainError("INVALID_REQUEST", "Provide synthetic request text")
+        with self.store.transaction() as u:
+            active = u.active()
+            case, selection_event = _owner_plan_case(command, principal.id, active, self.pack, now)
+            body = case.model_dump(mode="json")
+            u.insert_case(body)
+            u.event("CaseCreated", {"case_id": case.id, "request_hash": fingerprint(command.request)})
+            u.event("OwnerPlanSelected", selection_event)
+        return body
+
     def propose(self, case_id: str, expected: int, *, consent: bool = False) -> dict[str, Any]:
         with self.store.transaction() as u:
             case = self._case(u, case_id, expected, editable=True)
@@ -175,6 +190,7 @@ class Studio:
             candidate = apply_transactions(case.baseline, meaning.transactions, self.pack)
             txs = [tx.model_dump(mode="json") for tx in meaning.transactions]
             body = self._save(u, case, {"selected_meaning": interpretation, "selected_by": principal.id,
+                "selection": PackMeaningSelection(kind="pack_meaning", meaning=interpretation).model_dump(mode="json"),
                 "transactions": txs, "candidate": candidate.model_dump(mode="json"), "stage": "PREVIEW"})
             u.event("MeaningSelected", {"case_id": case_id, "by": principal.id, "transactions": txs})
         return body
@@ -280,6 +296,7 @@ class Studio:
     def verify(self, case_id: str, expected: int) -> dict[str, Any]:
         with self.store.transaction() as u:
             case = self._case(u, case_id, expected, editable=True)
+            replay(case, self.pack)
         model = case.executable()
         identity = self.identity_provider()
         if not identity["trusted_fixture"]:
@@ -301,6 +318,7 @@ class Studio:
             packet = compile_case(case, self.identity_provider(), self.signer.authentic, u.active()["version"], scope, self.pack)
             if not packet["eligible"]:
                 raise DomainError("GATE_BLOCKED", ", ".join(packet["blockers"]))
+            replay(case, self.pack)
             if packet["subject_hash"] != subject_hash:
                 raise DomainError("SUBJECT_CHANGED", "The exact review subject has changed")
             if not acknowledge_unknowns:
@@ -319,6 +337,7 @@ class Studio:
         principal.require("apply")
         with self.store.transaction() as u:
             case = self._case(u, case_id, expected, editable=True)
+            replay(case, self.pack)
             packet = compile_case(case, self.identity_provider(), self.signer.authentic, u.active()["version"], pack=self.pack)
             decision = case.decision
             if not packet["eligible"] or case.stage != "APPROVED" or not decision:

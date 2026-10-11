@@ -15,6 +15,7 @@ class ChangeCase <<aggregate-root>> {
   +dict<U+003C>str, Any> | None provider_run
   +str | None selected_meaning
   +str | None selected_by
+  +OwnerPlanSelection | PackMeaningSelection | None selection
   +tuple<U+003C>AddState | AddTransition | RemoveState | RemoveTransition | RenameState | RetargetTransition | SetEffects | SetGuards | SetInitial | SetRole> transactions
   +tuple<U+003C>AddState | AddTransition | RemoveState | RemoveTransition | RenameState | RetargetTransition | SetEffects | SetGuards | SetInitial | SetRole> redo_transactions
   +dict<U+003C>str, dict<U+003C>str, int>> layout

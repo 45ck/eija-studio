@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/change_case.py
   title: domain/change_case.py
   hash_method: ast-api-v1
-  sha256: 9dc47137f7f5c69ddc61e5394b3677762a9fe369371fc6c53cb71b977cad58f1
-notes_baseline: ee9890c9dead6335e9922c295069b01a2542557038eb0ac3062e84fdf173f7e5
+  sha256: abca088cbf899205a08b470e144b2bd053cb25400cb5cd6e7ff5b5817e65fc12
+notes_baseline: b18e6529849821eb0a9ae679a1ed96d3dcc3510c2ac2560861331744e771a4a7
 ---
 
 # domain.change_case
@@ -33,6 +33,11 @@ _The source carries no module docstring._
 ## Public symbols
 
 * [`ChangeCase`](/symbols/domain/change_case/ChangeCase.md) (class) - Aggregate boundary: transitions are mediated by the application and CAS store.
+* [`OwnerPlanRequest`](/symbols/domain/change_case/OwnerPlanRequest.md) (class) - Exact accepted workflow commands and the identities of their reviewed preview.
+* [`OwnerPlanSelection`](/symbols/domain/change_case/OwnerPlanSelection.md) (class) - no docstring
+* [`OwnerPlanStep`](/symbols/domain/change_case/OwnerPlanStep.md) (class) - Reported proposal provenance, never a capability or an owner decision.
+* [`PackMeaningSelection`](/symbols/domain/change_case/PackMeaningSelection.md) (class) - no docstring
+* [`Selection`](/symbols/domain/change_case/Selection.md) (type-alias) - no docstring
 
 ## Internal imports
 
@@ -58,9 +63,16 @@ _No curated notes yet._
 * [application.edit_preview](/modules/application/edit_preview.md) - Read-only edit projection over one captured case, using the same interpreter as owner edits.
 * [application.edit_proposal](/modules/application/edit_proposal.md) - A read-only offline proposal over one captured candidate; owner edits keep their existing boundary.
 * [application.history](/modules/application/history.md) - Semantic history is a projection of typed commands, replayed by the existing policy interpreter.
+* [application.owner_plan](/modules/application/owner_plan.md) - Exact owner-plan case construction; authority and atomic storage remain in Studio.
 * [application.service](/modules/application/service.md) - Module `application/service` (no module docstring).
+* [interfaces.http](/modules/interfaces/http.md) - Loopback-only local adapter.
 * [domain.change_case.ChangeCase.at_version](/symbols/domain/change_case/ChangeCase.at_version.md) - `def at_version(self, expected: int) -> None` in `domain/change_case`.
 * [domain.change_case.ChangeCase.executable](/symbols/domain/change_case/ChangeCase.executable.md) - `def executable(self) -> Workflow` in `domain/change_case`.
 * [domain.change_case.ChangeCase](/symbols/domain/change_case/ChangeCase.md) - Aggregate boundary: transitions are mediated by the application and CAS store.
 * [domain.change_case.ChangeCase.require_editable](/symbols/domain/change_case/ChangeCase.require_editable.md) - `def require_editable(self) -> None` in `domain/change_case`.
+* [domain.change_case.OwnerPlanRequest](/symbols/domain/change_case/OwnerPlanRequest.md) - Exact accepted workflow commands and the identities of their reviewed preview.
+* [domain.change_case.OwnerPlanSelection](/symbols/domain/change_case/OwnerPlanSelection.md) - `class OwnerPlanSelection(Contract)` in `domain/change_case`.
+* [domain.change_case.OwnerPlanStep](/symbols/domain/change_case/OwnerPlanStep.md) - Reported proposal provenance, never a capability or an owner decision.
+* [domain.change_case.PackMeaningSelection](/symbols/domain/change_case/PackMeaningSelection.md) - `class PackMeaningSelection(Contract)` in `domain/change_case`.
+* [domain.change_case.Selection](/symbols/domain/change_case/Selection.md) - Type alias `Selection` in `domain/change_case`.
 <!-- okf:generated:end links -->

@@ -692,7 +692,7 @@ async function command(action,extra={}){
 function renderProposals(c,closed){
   const active=document.activeElement,interpretationPanel=$("interpretation-panel"),interpretationKey=JSON.stringify([c.id,!!c.candidate]);
   if(interpretationPanel.dataset.caseState!==interpretationKey){interpretationPanel.open=!c.candidate;interpretationPanel.dataset.caseState=interpretationKey;}
-  $("interpretation-summary").textContent=c.candidate?`Selected intent: ${current.options[c.selected_meaning]?.label||c.selected_meaning}`:"Interpretations";
+  $("interpretation-summary").textContent=c.candidate?c.selection?.kind==="owner_plan"?"Selected intent: exact owner plan":`Selected intent: ${current.options[c.selected_meaning]?.label||c.selected_meaning}`:"Interpretations";
   const options=$("options"),controls=$("proposal-controls");
   const key=JSON.stringify([c.id,c.proposal]),previous=$("proposal-alternatives");
   const retainOpen=previous?.dataset.proposalKey===key&&previous.open;

@@ -3,7 +3,7 @@
 // changed, how risky each change is by fixed rules, and what the kernel does differently when every fixture actor
 // tries every action on both models. The page asks the reviewer to predict before it shows the kernel's answer, and
 // a change can be marked as looking right only after it has been looked at on the diagram and its question answered.
-// Nothing here saves, approves or applies anything; points reward checking, as in the checks ring (ADR-0157).
+// These inspection notes are distinct from the server's evidence packet and the owner's exact-subject decision.
 "use strict";
 (() => {
   const $ = (id) => document.getElementById(id);
@@ -52,7 +52,6 @@
     const state = review.state[item.n];
     if (!state.looked) {
       state.looked = true;
-      ide.earn(1, `Looked at change ${item.n} on the diagram`);
     }
     render();
   }
@@ -61,7 +60,6 @@
     const state = review.state[item.n];
     if (state.predicted) return;
     state.predicted = answer;
-    if (answer === item.question.answer) ide.earn(2, `Predicted what the kernel does for change ${item.n}`);
     render();
   }
 
@@ -170,7 +168,7 @@
     $("review-progress").textContent = `${p.decided} of ${p.items.length} decided` + (p.concerns ? ` · ${p.concerns} need a change` : "")
       + (p.predicted ? ` · ${p.right} of ${p.predicted} predictions right` : "");
     $("review-finish").disabled = review.finished || p.decided < p.items.length;
-    $("review-finish").textContent = review.finished ? "Review finished" : "Finish review";
+    $("review-finish").textContent = review.finished ? "Inspection recorded" : "Finish inspection";
     $("review-finish").title = p.decided < p.items.length ? "Decide every change first" : "";
     box.replaceChildren(...r.items.map(itemCard));
     if (review.finished) summary();
@@ -200,12 +198,12 @@
     box.hidden = false;
     box.replaceChildren();
     box.append(el("h3", p.concerns ? `Changes requested: ${p.concerns} of ${p.items.length}` : `Every change looks right (${p.items.length})`),
-      el("p", ide.about().case_id
-        ? "This review is your record of what you checked. Approving and applying the change stays with the owner in the review workbench, after its evidence is verified."
-        : "This review is your record of what you checked. A previewed plan is not saved: to make it real it becomes a change case, approved by the owner in the review workbench.", { class: "muted small" }));
+      el("p", "These are your inspection notes. Review & activate transfers the exact accepted steps and shows the separate server evidence packet. A check never answers the owner's questions or approves a change.", { class: "muted small" }));
     const tools = el("div", undefined, { class: "verdict-tools" });
     const download = el("a", "Download review.md", { class: "quiet", download: "review.md", href: URL.createObjectURL(new Blob([text], { type: "text/markdown" })) });
-    tools.append(download, el("a", "Open the review workbench", { class: "quiet", href: "/" }));
+    const next = el("button", "Continue to verification", { type: "button", class: "primary" });
+    next.addEventListener("click", () => window.PlayActivation && window.PlayActivation.open());
+    tools.append(download, next);
     box.append(tools, el("pre", text, { class: "review-md" }));
   }
 
@@ -213,7 +211,6 @@
     if (review.finished) return;
     review.finished = true;
     const p = progress();
-    if (p.items.some((i) => i.risk === "high")) ide.earn(2, "Finished a review that decided every high-risk change");
     render();
     $("review-summary").scrollIntoView({ block: "nearest" });
   }
@@ -227,7 +224,7 @@
     $("review-progress").textContent = "";
     $("review-sim").replaceChildren();
     $("review-finish").disabled = true;
-    $("review-finish").textContent = "Finish review";
+    $("review-finish").textContent = "Finish inspection";
     $("review-summary").hidden = true;
     shownKey = null;
   }

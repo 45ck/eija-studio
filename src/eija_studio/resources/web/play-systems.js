@@ -9,7 +9,7 @@
   let P = null, listing = null, leaving = false, notice = "", saved = "", savedAt = 0, checkTimer = 0, checkSeq = 0, choice = "describe";
   let sketch; // the sketch box, found once
   let umlFile = { name: "", text: "" }; // "From a UML file" (ADR-0190): the file chosen, read in the page and checked by the server
-  const canSave = () => !query.get("case") && query.get("view") !== "review";
+  const canSave = () => { const current = new URLSearchParams(location.search); return !current.get("case") && current.get("view") !== "review"; };
 
   const when = (seconds) => new Date(seconds * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   const short = (path) => path.replace(/^.*?([^/\\]+[/\\][^/\\]+)$/, "…/$1");
@@ -48,6 +48,22 @@
       // Newer work this browser kept came back instead (ADR-0198); compare it with the saved draft, not with itself.
       saved = JSON.stringify({ steps: draft.steps.map((s) => ({ transaction: s.transaction, author: s.author === "ai" ? "ai" : "you" })),
         accepted: draft.accepted || draft.steps.map(() => true), screens: draft.screens || null, scenarios: draft.scenarios || null });
+      return;
+    }
+    if (moved) {
+      saved = JSON.stringify(P.draft());
+      const note = P.el("p", "Saved work belongs to an earlier active revision. It is retained; the diagrams show the current active model.");
+      const reopen = P.el("button", "Reopen saved draft", { type: "button", class: "quiet" });
+      reopen.addEventListener("click", async () => {
+        reopen.disabled = true;
+        const result = await P.restoreDraft(draft);
+        note.firstChild.textContent = result && !result.legal ? "Earlier draft reopened. The server refuses these edits on the current model; see the plan."
+          : "Earlier draft reopened and checked against the current model. Nothing was activated.";
+        setSaveState();
+      });
+      note.append(" ", reopen);
+      const li = P.el("li", undefined, { class: "msg ai recovered" }); li.append(note); $("chat-log").append(li);
+      notice = "Earlier draft retained";
       return;
     }
     const result = await P.restoreDraft(draft);
@@ -286,15 +302,16 @@
     $("systems-sketch").value = EXAMPLE;
     for (const id of ["systems-name", "systems-record", "systems-sketch", "systems-describe"]) $(id).addEventListener("input", check);
     $("systems-form").addEventListener("submit", create);
-    if (!canSave()) { $("system-save").hidden = true; return; }
+    $("system-save").hidden = !canSave();
     $("system-save").addEventListener("click", save);
     document.addEventListener("keydown", (event) => {
       if ((event.ctrlKey || event.metaKey) && !event.altKey && event.key.toLowerCase() === "s") { event.preventDefault(); save(); }
     });
-    await reopen();
+    if (canSave()) await reopen();
     setSaveState();
     if (query.get("new") === "describe") showDialog("new", "describe"); // start like Lovable or Replit: one box
     setInterval(setSaveState, 800);
+    document.addEventListener("playide:activated", () => { saved = JSON.stringify(P.draft()); savedAt = 0; notice = "Active revision opened; earlier saved work is retained"; $("system-save").hidden = false; setSaveState(); });
     window.addEventListener("beforeunload", (event) => { if (!leaving && unsaved()) event.preventDefault(); });
   }
 

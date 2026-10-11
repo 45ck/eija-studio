@@ -45,4 +45,8 @@ _No curated notes yet._
 
 * [application.class_build.FORMAT](/symbols/application/class_build/FORMAT.md) - Constant `FORMAT` in `application/class_build`.
 * [domain.data.DataModel](/symbols/domain/data/DataModel.md) - `class DataModel(Contract)` in `domain/data`.
+
+## Referenced by
+
+* [application.c4.app_c4](/symbols/application/c4/app_c4.md) - Current generated-source architecture, plus explicit fixture and data-design limits.
 <!-- okf:generated:end links -->

@@ -8,6 +8,8 @@
 <link rel="stylesheet" href="/assets/play-assist.css">
 <link rel="stylesheet" href="/assets/play-access.css">
 <link rel="stylesheet" href="/assets/play-review.css">
+<link rel="stylesheet" href="/assets/play-activation.css">
+<link rel="stylesheet" href="/assets/play-assurance.css">
 <link rel="stylesheet" href="/assets/play-shell.css">
 <link rel="stylesheet" href="/assets/play-diff.css">
 <link rel="stylesheet" href="/assets/play-sequence.css">
@@ -17,11 +19,15 @@
 <link rel="stylesheet" href="/assets/play-roles.css">
 <link rel="stylesheet" href="/assets/play-landscape.css">
 <link rel="stylesheet" href="/assets/play-game.css">
+<link rel="stylesheet" href="/assets/play-live.css">
+<link rel="stylesheet" href="/assets/play-c4.css">
 <script src="/assets/vendor/dagre.min.js" defer></script>
 <script src="/assets/vendor/maxgraph.min.js" defer></script>
 <script src="/assets/play-shell.js" defer></script>
 <script src="/assets/play-review.js" defer></script>
 <script src="/assets/play.js" defer></script>
+<script src="/assets/play-activation.js" defer></script>
+<script src="/assets/play-assurance.js" defer></script>
 <script src="/assets/play-run.js" defer></script>
 <script src="/assets/play-laws.js" defer></script>
 <script src="/assets/play-tests.js" defer></script>
@@ -36,6 +42,8 @@
 <script src="/assets/play-landscape.js" defer></script>
 <script src="/assets/play-deployment.js" defer></script>
 <script src="/assets/play-game.js" defer></script>
+<script src="/assets/play-live.js" defer></script>
+<script src="/assets/play-c4.js" defer></script>
 </head>
 <body>
 <header class="bar">
@@ -48,6 +56,7 @@
     </span>
   </div>
   <div class="bar-end">
+    <span id="source-status" class="source-status" role="status"></span>
     <div class="layout-toggles" role="group" aria-label="Layout">
       <button id="toggle-left" class="icon-btn" type="button" aria-pressed="true" title="Model and inspector (Ctrl+B)" aria-label="Model and inspector" aria-keyshortcuts="Control+B"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><rect class="fill" x="2.5" y="3.5" width="4" height="9"/></svg></button>
       <button id="toggle-dock" class="icon-btn" type="button" aria-pressed="false" title="Run, Simulation and Running app panel (Ctrl+Alt+P)" aria-label="Bottom panel" aria-keyshortcuts="Control+Alt+P"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><rect class="fill" x="2.5" y="9" width="11" height="3.5"/></svg></button>
@@ -75,6 +84,11 @@
   <span class="sep" aria-hidden="true"></span>
   <button id="simulate" type="button" title="Seeded simulated users act on the model; the kernel decides every step">Simulate</button>
   <button id="build" class="primary" type="button">Build &amp; run</button>
+  <button id="toggle-play" class="play-layout-toggle" type="button" aria-pressed="false" aria-controls="play-empty run" title="Keep the model and its local app together">
+    <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><path d="M8 3v10M4.5 6h1M4.5 9h1M10 5.5l2.5 2.5L10 10.5"/></svg>Design + Play
+  </button>
+  <button id="activation-open" type="button" aria-haspopup="dialog" aria-controls="activation">Review &amp; activate</button>
+  <button id="assurance-open" type="button" aria-haspopup="dialog" aria-controls="assurance">Capabilities &amp; requirements</button>
   <span class="spacer"></span>
   <div class="checks-anchor">
     <button id="health" class="health" type="button" aria-expanded="false" aria-controls="checks" title="Checks you have done on this model">
@@ -117,6 +131,7 @@
           <button id="tab-usecases" role="tab" type="button" aria-selected="false" aria-controls="usecase-canvas">Use cases</button>
           <button id="tab-screens" role="tab" type="button" aria-selected="false" aria-controls="screens">Screens</button>
           <button id="tab-components" role="tab" type="button" aria-selected="false" aria-controls="component-canvas">Components</button>
+          <button id="tab-c4" role="tab" type="button" aria-selected="false" aria-controls="c4-panel">C4 architecture</button>
           <button id="tab-laws" role="tab" type="button" aria-selected="false" aria-controls="laws">Laws</button>
           <button id="tab-tests" role="tab" type="button" aria-selected="false" aria-controls="tests">Tests</button>
           <button id="tab-access" role="tab" type="button" aria-selected="false" aria-controls="access-panel">Permissions</button>
@@ -165,6 +180,7 @@
         <p id="landscape-summary" class="landscape-summary" role="status" aria-live="polite"></p>
       </div>
       <div id="component-canvas" class="canvas" tabindex="0" role="tabpanel" aria-labelledby="tab-components" hidden></div>
+      <section id="c4-panel" class="canvas c4-panel" role="tabpanel" aria-labelledby="tab-c4" tabindex="0" hidden></section>
       <div id="landscape" class="canvas" tabindex="0" role="region" aria-label="System: the workflows as one component diagram" hidden></div>
       <div id="deployment" class="canvas" tabindex="0" role="region" aria-label="Deployment: where the built app runs" hidden></div>
       <div id="access-panel" class="access" tabindex="0" role="tabpanel" aria-labelledby="tab-access" hidden></div>
@@ -240,26 +256,58 @@
         <div class="review-head">
           <div><h2 id="review-title">Review the change</h2><p id="review-head-text" class="muted small" role="status" aria-live="polite"></p></div>
           <div class="review-head-tools"><span id="review-progress" class="small" role="status" aria-live="polite"></span>
+            <button id="review-effects-open" type="button" aria-controls="review-effects">Effects across system</button>
             <button id="review-finish" type="button" class="primary" disabled>Finish review</button></div>
         </div>
         <div class="review-body">
           <div id="review-canvas" class="canvas review-canvas" tabindex="0" aria-label="The change on the state machine: added in green, removed dashed in red, changed in amber"></div>
           <div class="review-list">
+            <section id="review-effects" class="review-summary" aria-labelledby="review-effects-title" hidden>
+              <h3 id="review-effects-title">Effects across system</h3>
+              <p id="review-effects-status" class="muted small" role="status" aria-live="polite"></p>
+              <div id="review-effects-content"></div>
+              <button id="review-effects-assurance" type="button">Requirements & laws</button>
+            </section>
             <div id="review-sim" class="review-sim"></div>
             <ol id="review-items" class="review-items" aria-labelledby="review-title"></ol>
             <section id="review-summary" class="review-summary" aria-live="polite" hidden></section>
           </div>
         </div>
       </div>
+      <section id="live-trace" class="live-trace" aria-labelledby="live-title" hidden>
+        <div class="live-head"><div class="live-heading"><h2 id="live-title">Actual app trace</h2><p id="live-status" role="status" aria-live="polite">Waiting for a local app</p></div>
+          <div class="live-controls" role="group" aria-label="Inspect recorded app actions">
+            <button id="live-pause" type="button" aria-pressed="false">Pause trace</button>
+            <button id="live-previous" type="button" disabled>Previous</button><button id="live-next" type="button" disabled>Next</button>
+            <button id="live-replay" type="button" disabled>Replay recorded</button><button id="live-show" type="button" disabled>Show on diagram</button>
+            <button id="live-reconnect" type="button" disabled hidden title="Clear this local trace history and reconnect to the current app">Start new recording</button>
+          </div>
+        </div>
+        <p id="live-recording" class="live-recording" role="status" hidden></p>
+        <div id="live-current" class="live-current"><strong id="live-action"></strong><span id="live-outcome"></span><span id="live-meta"></span></div>
+        <div id="live-steps" class="live-steps" aria-label="Recorded app actions"></div>
+        <details><summary>Inspect this action</summary><dl id="live-inspector"></dl></details>
+      </section>
       <p id="canvas-help" class="hint"></p>
     </section>
     <div id="split-dock" class="split h" role="separator" aria-orientation="horizontal" aria-label="Resize the bottom panel" tabindex="0"></div>
+    <div id="split-play" class="split v play-only" role="separator" aria-orientation="vertical" aria-label="Resize the local app" tabindex="0"></div>
+    <section id="play-empty" class="play-empty play-only" aria-labelledby="play-empty-title">
+      <div class="play-empty-head"><h2 id="play-empty-title">Local app</h2><p>Built from your model</p></div>
+      <div class="play-empty-body">
+        <svg class="play-empty-mark" viewBox="0 0 64 48" width="64" height="48" aria-hidden="true"><rect x="1" y="5" width="22" height="16" rx="4"/><rect x="41" y="27" width="22" height="16" rx="4"/><path d="M23 13h9v22h9m-5-4 5 4-5 4"/></svg>
+        <h3>Try the system you’re designing</h3>
+        <p>Build the model on screen, then try its screens and roles here.</p>
+        <button id="play-empty-build" class="primary" type="button">Build &amp; play</button>
+        <p class="play-empty-scope">App actions run locally with fixture actors. Trace their outcomes on the diagram, or explore with model simulation.</p>
+      </div>
+    </section>
     <section class="dock" aria-label="Run, simulation and running app">
       <div class="dock-head"><div id="dock-tabs" class="dock-tabs" role="tablist" aria-label="Panel"></div>
         <button id="dock-close" class="icon-btn" type="button" title="Hide the panel (Ctrl+Alt+P)" aria-label="Hide the panel">✕</button></div>
       <div class="dock-body">
         <section id="debug" class="debug" aria-labelledby="debug-title" hidden>
-          <div class="run-head"><h2 id="debug-title">Run</h2><span id="debug-pos" class="pos"></span></div>
+          <div class="run-head"><h2 id="debug-title">Model run</h2><span id="debug-pos" class="pos"></span></div>
           <div id="debug-now" class="debug-now"></div>
           <h3>Records</h3><table class="records"><tbody id="debug-records"></tbody></table>
           <h3>Breakpoints</h3>
@@ -269,7 +317,7 @@
           <p class="muted small" id="debug-limits"></p>
         </section>
         <section id="sim" class="sim" aria-labelledby="sim-title" hidden>
-          <div class="run-head"><h2 id="sim-title">Simulation</h2>
+          <div class="run-head"><h2 id="sim-title">Model simulation</h2>
             <span class="sim-tools"><button id="sim-replay" type="button" class="quiet">Replay</button><button id="sim-clear" type="button" class="quiet">Clear</button></span></div>
           <p id="sim-summary" class="sim-summary"></p>
           <div id="sim-codes" class="chips"></div>
@@ -279,8 +327,9 @@
           <p class="muted small" id="sim-limits"></p>
         </section>
         <section id="run" class="run" aria-labelledby="run-title" hidden>
-          <div class="run-head"><h2 id="run-title">Running app</h2><a id="run-open" class="quiet" target="_blank" rel="noopener">Open in new tab</a></div>
+          <div class="run-head"><div class="play-app-heading"><h2 id="run-title">Local app</h2><p id="play-model-status" class="play-only" role="status" aria-live="polite">Last checked build · fixture actors</p></div><div class="play-app-tools"><button id="play-rebuild" class="quiet play-only" type="button">Build &amp; play</button><a id="run-open" class="quiet" target="_blank" rel="noopener">Open in new tab</a></div></div>
           <iframe id="run-frame" title="The app built from this model"></iframe>
+          <p class="play-runtime-scope play-only">Actual app trace shows recorded outcomes. Model simulation stays separate.</p>
         </section>
       </div>
     </section>
@@ -342,5 +391,39 @@
     </form>
   </section>
 </dialog>
+<dialog id="activation" class="activation" aria-labelledby="activation-title">
+  <div class="activation-head"><div><h2 id="activation-title">Review &amp; activate</h2><p class="muted small">Inspect the meaning, collect checks, then decide on this exact local revision.</p></div>
+    <button id="activation-close" type="button" class="icon-btn" aria-label="Close review and activation">✕</button></div>
+  <div class="activation-body">
+    <ol id="activation-journey" class="activation-journey" aria-label="Change journey"></ol>
+    <p id="activation-status" role="status" aria-live="polite"></p>
+    <p id="activation-source" class="activation-warning"></p>
+    <section aria-labelledby="activation-change-title"><h3 id="activation-change-title">Exact change</h3>
+      <p id="activation-identity" class="muted small"></p><ol id="activation-steps" class="activation-steps"></ol>
+      <ul id="activation-drafts" class="activation-drafts"></ul>
+      <details><summary>Revision identities</summary><dl id="activation-hashes" class="activation-hashes"></dl></details>
+      <div class="activation-tools"><button id="activation-diff" type="button">Inspect UML diff</button>
+        <button id="activation-effects" type="button">Effects across system</button>
+        <button id="activation-transfer" type="button" class="primary">Transfer exact accepted steps</button>
+        <a id="activation-case-link" class="quiet" hidden>Open this case</a><a id="activation-active-link" class="quiet" href="/play">Open current active model</a></div>
+    </section>
+    <section id="activation-evidence" aria-labelledby="activation-checks-title" hidden><h3 id="activation-checks-title">What was checked</h3>
+      <ul id="activation-checks" class="activation-checks"></ul><ul id="activation-blockers" class="activation-drafts"></ul>
+      <div class="activation-tools"><button id="activation-check" type="button">Run verification</button><button id="activation-refresh" type="button" class="quiet">Refresh case and evidence</button></div>
+      <p class="muted small">The UML simulation, generated app conformance and runtime verification are separate observations. A source link or a model proof does not prove implementation behaviour.</p>
+    </section>
+    <details id="activation-decision" hidden><summary>My local review decision</summary>
+      <form id="activation-form"><p id="activation-subject" class="muted small"></p>
+        <div id="activation-questions" class="activation-questions"></div>
+        <label class="activation-acknowledge"><input id="activation-acknowledge" type="checkbox" required> I acknowledge the reported limitations and unknowns for this exact local subject.</label>
+        <ul id="activation-limits" class="muted small"></ul>
+        <button id="activation-approve" type="submit" class="primary" disabled>Approve this exact revision</button>
+      </form>
+    </details>
+    <div id="activation-apply-tools" class="activation-tools" hidden><button id="activation-apply" type="button" class="primary" disabled>Activate approved revision</button>
+      <p class="muted small">Activation updates this local system's active workflow atomically. It does not deploy a production service.</p></div>
+  </div>
+</dialog>
+<dialog id="assurance" aria-labelledby="assurance-title"></dialog>
 </body>
 </html>

@@ -156,3 +156,64 @@ def test_the_review_view_keeps_diagrams_and_simulate_and_hides_every_editing_too
             assert errors == []
         finally:
             chrome.close()
+
+
+@pytest.mark.browser
+@pytest.mark.slow
+@browser
+def test_a_failed_request_can_be_edited_without_losing_the_plan_or_newer_composer_text():
+    api = pytest.importorskip("playwright.sync_api", reason="NOT_RUN: install the hci or demos extra")
+    from demos.lib import ephemeral_eija_server  # noqa: PLC0415 - opt-in browser fixture
+
+    with ephemeral_eija_server(pack=ROOT / "packs/library-loan") as server, api.sync_playwright() as playwright:
+        chrome = _launch(api, playwright)
+        try:
+            page = chrome.new_page(viewport={"width": 1600, "height": 900})
+            page.goto(f"{server.base_url}/play#{server.token}")
+            page.wait_for_selector("body[data-ready=true]", timeout=60_000)
+            page.fill("#chat-input", "add state Archived after Returned")
+            page.click("#chat-send")
+            page.wait_for_selector("#chat-log .plan .plan-verdict.ok", timeout=30_000)
+            previous = page.evaluate("PlayIDE.draft()")
+            pending = []
+
+            def hold_request(route):
+                pending.append(route)  # Playwright attaches metadata, so its handler must be a Python function.
+
+            page.route("**/api/play/plan", hold_request)
+            request = "add Renew from Overdue to OnLoan for Librarian"
+            page.fill("#chat-input", request)
+            # Programmatic duplicate submit bypasses the disabled button, exercising the in-flight guard.
+            with page.expect_request("**/api/play/plan"):
+                page.evaluate("""() => {
+                    document.getElementById('chat-form').dispatchEvent(new Event('submit', {cancelable: true}));
+                    document.getElementById('chat-input').value = 'newer request';
+                    document.getElementById('chat-form').dispatchEvent(new Event('submit', {cancelable: true}));
+                }""")
+            assert page.is_disabled("#chat-send") and len(pending) == 1
+            page.fill("#chat-input", "keep this newer idea")
+            pending[0].fulfill(status=503, json={"code": "PROVIDER_UNAVAILABLE", "message": "Try again later."})
+            failure = page.locator(".request-failure").last
+            failure.get_by_role("button", name="Edit request", exact=True).wait_for()
+            assert page.evaluate("PlayIDE.draft()") == previous
+            assert page.is_enabled("#chat-send")
+            failure.get_by_role("button", name="Edit request", exact=True).click()
+            assert page.input_value("#chat-input") == "keep this newer idea"
+            assert len(pending) == 1
+            failure.get_by_role("button", name="Keep newer text", exact=True).click()
+            assert page.input_value("#chat-input") == "keep this newer idea"
+            failure.get_by_role("button", name="Edit request", exact=True).click()
+            failure.get_by_role("button", name="Replace composer with this request", exact=True).click()
+            assert page.input_value("#chat-input") == request
+            assert page.evaluate("document.activeElement.id") == "chat-input"
+            assert len(pending) == 1  # editing never submits automatically
+            with page.expect_request("**/api/play/plan"):
+                page.click("#chat-send")
+            assert len(pending) == 2
+            pending[1].fulfill(status=503, json={"code": "PROVIDER_UNAVAILABLE", "message": "Still unavailable."})
+            page.locator(".request-failure").nth(1).wait_for()
+            page.locator(".request-failure").nth(1).get_by_role("button", name="Edit request", exact=True).click()
+            assert page.input_value("#chat-input") == request
+            assert len(pending) == 2 and page.evaluate("PlayIDE.draft()") == previous
+        finally:
+            chrome.close()

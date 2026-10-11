@@ -1,5 +1,16 @@
 # Update log
 
+## 2026-10-11
+
+* **Exact generated subject and connected local workbench**: synced ADR-0223, generated build identity, C4 projections, process replacement and capability disclosures. The installed runtime and core review evidence now bind generator templates as implementation. Re-read accessibility Notes against the signed-tabindex helpers as `process:playide-integration`. Workspace recovery stores presentation context, not authority or evidence. Knowledge-base review is separate from the retained browser, regression and installation runs; no human source approval was recorded.
+* **Build identity dependency repair**: the generated-build path now receives the existing live `IdentityProvider` from Studio or CLI composition. Source remeasurement remains in place before and after generation/conformance, without a new dependency from app generation into bootstrap. Synced the affected module pages; the architecture budget is unchanged. Targeted metric and caller observations are recorded separately.
+
+* **Shared app craft and Design + Play**: synced `check_accessibility` after correcting signed literal tabindex handling. Re-read its source and Notes as `process:playide-design`; negative programmatic focus targets no longer look like positive tab order. The paired shell and shared web templates retain server-derived actions and the source gate. Browser and recording evidence is separate from this wiki alignment; no human source approval was recorded.
+
+## 2026-10-10
+
+* **Exact workflow draft activation and assurance**: synced ADR-0222, owner-plan selection, replay, promotion route, capabilities, requirement traces and the disposable activation evidence gate. Reviewed the affected Studio, Studio.select and ChangeCase Notes as `process:playide-activation`; clarified protected selection prefixes and the distinction between reported provenance and owner authority. No human verification or source approval was recorded.
+
 ## 2026-10-09
 
 * **Describe your app, and what's missing**: synced ADR-0216 and the new `application.describe_system` (`describe_documents`, `described_summary`, `tests_for`, `update_tests`, built on `application.sequence_draft.journeys`, now public), `application.readiness` (`missing`, `UPDATE_TESTS`), `adapters.system_describer` (`OfflineSystemDescriber`) and the `application.ports.SystemDescriber` port; `application.new_system` (`checked_documents`, `classes`, `FIELD`, kind lines in a sketch), `adapters.plan_proposals` (its data-model and role-kind phrases moved to the new `adapters.plan_data_phrases`; a role-kind phrase is ADR-0210's `set_role_kind` step), `interfaces.play` (`/api/play/ready`, `/api/play/tests/update`, `ChangeRequest.scenarios`, the running app keyed by role kinds), `interfaces.play_systems` (`NewSystem.description`, `SavedWork.scenarios`) and `bootstrap` refreshed. No Notes were hand-edited and nothing was recorded as verified.

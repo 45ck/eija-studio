@@ -52,7 +52,7 @@ def test_architecture_dependency_direction():
     root=Path(__file__).resolve().parents[1]/"src/eija_studio"
     for layer in ("domain","application"):
         for file in (root/layer).glob("*.py"):
-            tree=ast.parse(file.read_text())
+            tree=ast.parse(file.read_text(encoding="utf-8"))
             for n in ast.walk(tree):
                 if isinstance(n,ast.ImportFrom):
                     module=n.module or ""
@@ -62,7 +62,7 @@ def test_architecture_dependency_direction():
 
 
 def test_browser_never_interprets_provider_html():
-    js=(Path(__file__).resolve().parents[1]/"src/eija_studio/resources/web/app.js").read_text()
+    js=(Path(__file__).resolve().parents[1]/"src/eija_studio/resources/web/app.js").read_text(encoding="utf-8")
     assert "innerHTML" not in js and "eval(" not in js
 
 

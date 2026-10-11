@@ -108,6 +108,156 @@
       "title": "Alternative",
       "type": "object"
     },
+    "OwnerPlanSelection": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "owner_plan",
+          "title": "Kind",
+          "type": "string"
+        },
+        "pack_id": {
+          "title": "Pack Id",
+          "type": "string"
+        },
+        "pack_digest": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Pack Digest",
+          "type": "string"
+        },
+        "baseline_semantic_hash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Baseline Semantic Hash",
+          "type": "string"
+        },
+        "candidate_semantic_hash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Candidate Semantic Hash",
+          "type": "string"
+        },
+        "steps": {
+          "items": {
+            "$ref": "#/$defs/OwnerPlanStep"
+          },
+          "maxItems": 64,
+          "minItems": 1,
+          "title": "Steps",
+          "type": "array"
+        }
+      },
+      "required": [
+        "kind",
+        "pack_id",
+        "pack_digest",
+        "baseline_semantic_hash",
+        "candidate_semantic_hash",
+        "steps"
+      ],
+      "title": "OwnerPlanSelection",
+      "type": "object"
+    },
+    "OwnerPlanStep": {
+      "additionalProperties": false,
+      "description": "Reported proposal provenance, never a capability or an owner decision.",
+      "properties": {
+        "transaction": {
+          "discriminator": {
+            "mapping": {
+              "add_state": "#/$defs/AddState",
+              "add_transition": "#/$defs/AddTransition",
+              "remove_state": "#/$defs/RemoveState",
+              "remove_transition": "#/$defs/RemoveTransition",
+              "rename_state": "#/$defs/RenameState",
+              "retarget_transition": "#/$defs/RetargetTransition",
+              "set_effects": "#/$defs/SetEffects",
+              "set_guards": "#/$defs/SetGuards",
+              "set_initial": "#/$defs/SetInitial",
+              "set_role": "#/$defs/SetRole"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/AddState"
+            },
+            {
+              "$ref": "#/$defs/RenameState"
+            },
+            {
+              "$ref": "#/$defs/RemoveState"
+            },
+            {
+              "$ref": "#/$defs/SetInitial"
+            },
+            {
+              "$ref": "#/$defs/AddTransition"
+            },
+            {
+              "$ref": "#/$defs/RetargetTransition"
+            },
+            {
+              "$ref": "#/$defs/RemoveTransition"
+            },
+            {
+              "$ref": "#/$defs/SetRole"
+            },
+            {
+              "$ref": "#/$defs/SetGuards"
+            },
+            {
+              "$ref": "#/$defs/SetEffects"
+            }
+          ],
+          "title": "Transaction"
+        },
+        "author": {
+          "enum": [
+            "you",
+            "ai"
+          ],
+          "title": "Author",
+          "type": "string"
+        },
+        "round": {
+          "minimum": 1,
+          "title": "Round",
+          "type": "integer"
+        },
+        "request": {
+          "maxLength": 6000,
+          "title": "Request",
+          "type": "string"
+        }
+      },
+      "required": [
+        "transaction",
+        "author",
+        "round",
+        "request"
+      ],
+      "title": "OwnerPlanStep",
+      "type": "object"
+    },
+    "PackMeaningSelection": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "pack_meaning",
+          "title": "Kind",
+          "type": "string"
+        },
+        "meaning": {
+          "title": "Meaning",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "meaning"
+      ],
+      "title": "PackMeaningSelection",
+      "type": "object"
+    },
     "Proposal": {
       "additionalProperties": false,
       "properties": {
@@ -585,6 +735,32 @@
         }
       ],
       "title": "Selected By"
+    },
+    "selection": {
+      "anyOf": [
+        {
+          "discriminator": {
+            "mapping": {
+              "owner_plan": "#/$defs/OwnerPlanSelection",
+              "pack_meaning": "#/$defs/PackMeaningSelection"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/PackMeaningSelection"
+            },
+            {
+              "$ref": "#/$defs/OwnerPlanSelection"
+            }
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Selection"
     },
     "transactions": {
       "items": {

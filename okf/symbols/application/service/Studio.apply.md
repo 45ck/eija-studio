@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.apply
   title: application/service.py
   hash_method: ast-v2
-  sha256: 2b1d1b0e39f3ac6384da2ed8922af411b422ff7cf9203abfcee44764639c1a37
+  sha256: deedd06296dca2ad85ccece8ce0a6b424083aba73c4ce30d63421501aaa5c059
 description_override: Applies an approved candidate to the local baseline only if an eligible, authentic, exact-subject decision exists.
-notes_baseline: f3fe728d004fdf9381dbdb0a3820463ff787d783299933a1d9f3a36bcb10f0a7
+notes_baseline: cf1bc858dd1b62bbf890e9d76492d3d823507a2860b227a34ed146d1da86cc75
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -30,6 +30,14 @@ verified:
   at: '2026-10-02T05:15:30Z'
   notes_sha256: 54d1699727ddc6215c45a311cfd5ca0d7b2baec089d1da3d52e339a74175fd64
   sources_sha256: f3fe728d004fdf9381dbdb0a3820463ff787d783299933a1d9f3a36bcb10f0a7
+- by: process:playide-activation
+  at: '2026-10-10T14:05:00+11:00'
+  notes_sha256: 58c8f2e42e4727bf16cac09f3ca0244846d97fedc8e82e80d843d8b6f8f5565e
+  sources_sha256: cf1bc858dd1b62bbf890e9d76492d3d823507a2860b227a34ed146d1da86cc75
+- by: process:playide-activation
+  at: '2026-10-10T02:55:29+00:00'
+  notes_sha256: 58c8f2e42e4727bf16cac09f3ca0244846d97fedc8e82e80d843d8b6f8f5565e
+  sources_sha256: cf1bc858dd1b62bbf890e9d76492d3d823507a2860b227a34ed146d1da86cc75
 ---
 
 # application.service.Studio.apply
@@ -53,10 +61,15 @@ _The source carries no docstring._
 
 Requires `apply` and re-computes the packet at commit time. A changed active baseline adds the `STALE_BASELINE` blocker and the gate refuses; there is no automatic rebase (acceptance [AC06](/requirements/ac06.md)).
 
+Protected selection and history replay are validated inside the same unit of work
+before the decision and baseline writes. Corrupted persisted selection provenance
+or commands refuse with `HISTORY_INCONSISTENT` and leave the active model unchanged.
+
 <!-- okf:generated:begin links -->
 ## Depends on
 
 * [application.compiler.compile_case](/symbols/application/compiler/compile_case.md) - `def compile_case(case: ChangeCase, identity: dict[str, Any], authenticator: Callable[[dict[str, Any]], bool],…` in `application/compiler`.
+* [application.history.replay](/symbols/application/history/replay.md) - Fail closed when stored commands no longer explain the candidate under the exact active pack.
 * [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [domain.models.Principal](/symbols/domain/models/Principal.md) - `class Principal(Contract)` in `domain/models`.
 <!-- okf:generated:end links -->

@@ -15,9 +15,11 @@ from typing import Any, Callable
 
 from eija_studio import __version__
 from eija_studio.application.appgen import FORMAT, generate
+from eija_studio.application.build_subject import SUBJECT_FILE, build_subject, checked_build_subject
+from eija_studio.application.ports import IdentityProvider
 from eija_studio.domain.data import data_for
 from eija_studio.domain.screens import Screens, screens_for
-from eija_studio.domain.models import DomainError, Workflow, fingerprint
+from eija_studio.domain.models import DomainError, Workflow, canonical, fingerprint
 from eija_studio.domain.pack import Pack
 
 MANIFEST = "BUILD.json"
@@ -25,6 +27,7 @@ TEMPLATES = {  # resource template -> path in the generated app
     "init.py.tmpl": "app/__init__.py",
     "service.py.tmpl": "app/service.py",  # storage only: rules come from the installed kernel
     "server.py.tmpl": "app/server.py",
+    "build_identity.py.tmpl": "app/build_identity.py",
     "web/index.html.tmpl": "app/web/index.html",
     "web/app.js.tmpl": "app/web/app.js",
     "web/app.css.tmpl": "app/web/app.css",
@@ -46,24 +49,31 @@ def add_parser(subs) -> None:
 # candidate on every edit, then the component diagram and Build & run build the candidate once more (ADR-0199). The
 # app is a function of the pack, the model, the data model and the screens, so the last few are kept by their hashes.
 # The model's key is its exact content, order included, not its semantic hash, since the files follow the order.
-_BUILT: OrderedDict[tuple[int, str, str, str], tuple[Any, dict[str, str], dict]] = OrderedDict()
+_BUILT: OrderedDict[tuple[int, str, str, str, str, str], tuple[Any, dict[str, str], dict]] = OrderedDict()
 _BUILT_SIZE, _BUILT_LOCK = 8, Lock()
 
 
-def app_files(pack, model: Workflow, screens: Screens | None = None) -> tuple[dict[str, str], dict]:
+def app_files(pack, model: Workflow, screens: Screens | None = None, *,
+              identity_provider: IdentityProvider) -> tuple[dict[str, str], dict]:
     """The app's files. The data model and screens beside pack.json are used unless other screens are given."""
     data = data_for(pack)
     screens = screens if screens is not None else screens_for(pack, model, data)
-    key = (id(pack), fingerprint(model), data.digest if data else "", screens.digest)  # in order: the files follow it
+    implementation = identity_provider()["implementation"]
+    root = resource_files("eija_studio.resources").joinpath("appgen")
+    static = {target: root.joinpath(source).read_text(encoding="utf-8") for source, target in TEMPLATES.items()}
+    key = (id(pack), fingerprint(model), data.digest if data else "", screens.digest,
+           fingerprint(static), implementation)  # include presentation bytes and installed runtime, not only workflow
     with _BUILT_LOCK:
         hit = _BUILT.get(key)
         if hit is not None and hit[0] is pack:
             _BUILT.move_to_end(key)
             return dict(hit[1]), copy.deepcopy(hit[2])
     generated, manifest = generate(pack, model, data, screens)
-    root = resource_files("eija_studio.resources").joinpath("appgen")
-    static = {target: root.joinpath(source).read_text(encoding="utf-8") for source, target in TEMPLATES.items()}
     files = static | {"tests/__init__.py": ""} | generated
+    if identity_provider()["implementation"] != implementation:
+        raise DomainError("BUILD_SOURCE_CHANGED", "Implementation changed during generation; retry after edits finish")
+    manifest["subject"] = build_subject(files, implementation_digest=implementation, template_paths=static)
+    files[SUBJECT_FILE] = canonical(manifest["subject"]) + "\n"
     with _BUILT_LOCK:
         _BUILT[key] = (pack, files, copy.deepcopy(manifest))  # the pack itself is kept, so its id is never reused
         while len(_BUILT) > _BUILT_SIZE:
@@ -117,6 +127,19 @@ def write(out: Path, files: dict[str, str]) -> dict[str, str]:
     return hashes
 
 
+def _write_changed(out: Path, files: dict[str, str], before_write: Callable[[], None] | None) -> dict[str, str]:
+    """Validate ownership before stopping a runner, and preserve an identical running payload."""
+    previous = _previous(out)
+    same = set(previous) == set(files) and all(
+        (out / path).is_file() and (out / path).read_bytes() == content.encode("utf-8")
+        for path, content in files.items())
+    if same:
+        return {path: sha256(content.encode("utf-8")).hexdigest() for path, content in sorted(files.items())}
+    if before_write is not None:
+        before_write()
+    return write(out, files)
+
+
 def conformance(out: Path) -> dict:
     """Run the generated tests as a separate process, exactly as a user of the app would."""
     env = {k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "PYTHONHOME", "PYTHONSTARTUP")}
@@ -129,12 +152,35 @@ def conformance(out: Path) -> dict:
     return {"status": "PASS" if run.returncode == 0 else "FAIL", "detail": " | ".join(tail)}
 
 
-def build_into(out: Path, pack: Pack, model: Workflow, identity: dict[str, Any], *, run_tests: bool = True,
-               screens: Screens | None = None) -> dict:
+def _require_build_subject(out: Path, files: dict[str, str], subject: dict[str, Any], identity_provider: IdentityProvider) -> None:
+    """Independently bind generated-test outcomes to the parent's captured build snapshot."""
+    if _present(out) - {MANIFEST} != set(files):
+        raise DomainError("BUILD_SUBJECT_MISMATCH", "Generated file inventory changed during the build")
+    try:
+        written = {path: (out / path).read_bytes().decode("utf-8") for path in files}
+    except (OSError, UnicodeError) as error:
+        raise DomainError("BUILD_SUBJECT_MISMATCH", "Generated payload is missing or unreadable") from error
+    checked_build_subject(written, implementation_digest=identity_provider()["implementation"], expected_subject=subject)
+
+
+def _bound_conformance(out: Path, files: dict[str, str], subject: dict[str, Any], run_tests: bool,
+                       identity_provider: IdentityProvider) -> dict:
+    try:
+        _require_build_subject(out, files, subject, identity_provider)
+        result = conformance(out) if run_tests else {"status": "NOT_RUN", "detail": "--no-test"}
+        _require_build_subject(out, files, subject, identity_provider)
+    except DomainError as error:
+        result = {"status": "FAIL", "detail": error.code, "binding": "MISMATCH"}
+    return result | {"subject_digest": subject["digest"]}
+
+
+def build_into(out: Path, pack: Pack, model: Workflow, identity_provider: IdentityProvider, *, run_tests: bool = True,
+               screens: Screens | None = None, before_write: Callable[[], None] | None = None) -> dict:
     """Write one app into `out`, run its conformance tests unless told not to, and record BUILD.json."""
-    files, manifest = app_files(pack, model, screens)
-    hashes = write(out, files)
-    result = conformance(out) if run_tests else {"status": "NOT_RUN", "detail": "--no-test"}
+    files, manifest = app_files(pack, model, screens, identity_provider=identity_provider)
+    hashes = _write_changed(out, files, before_write)
+    result = _bound_conformance(out, files, manifest["subject"], run_tests, identity_provider)
+    identity = identity_provider()
     manifest |= {"generator": f"eija-studio {__version__}", "files": hashes, "conformance": result,
                  "kernel_source_review": "RELEASE_FIXTURE_MATCH" if identity["trusted_fixture"] else "SOURCE_REVIEW_REQUIRED"}
     (out / MANIFEST).write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
@@ -145,7 +191,7 @@ def build(args, pack: Pack, identity_of: Callable[[Pack], dict[str, Any]]) -> tu
     """Write, test and record one build. Returns the exit code and a summary for the caller to print."""
     model = Workflow.model_validate_json(args.workflow.read_text(encoding="utf-8")) if args.workflow else pack.model
     out = args.out.resolve()
-    manifest = build_into(out, pack, model, identity_of(pack), run_tests=not args.no_test)
+    manifest = build_into(out, pack, model, lambda: identity_of(pack), run_tests=not args.no_test)
     status = manifest["conformance"]["status"]
     summary = {"app": str(out), "run": f"python {out / 'run.py'}", "conformance": status,
                "cases": manifest["oracle"]["cases"], "model": manifest["model_semantic_hash"][:12],
