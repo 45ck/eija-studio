@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0044-bundle-authored-domain-packs.md
   title: 0044-bundle-authored-domain-packs.md
   hash_method: lf-sha256-v1
-  sha256: 69695e3dd63b14c3ba852d5d74b23e325f0bc44352d1e51f2d08b03d67b19e42
-notes_baseline: 16cfdaf736bc651c60e51d96d301406be1e4e6993ff70770b3e473d5dc633e67
+  sha256: 25caca94d374b83d098fe13cc528056b60252789814b5e50cfbc1829bcea71ca
+notes_baseline: ba19df2cd9f1999c7d3d95bcd6c04ebf2d36090175ef9c11900c79bdba857394
 verified:
 - by: process:codex-packaging-integration
   at: '2026-10-03T03:27:08Z'

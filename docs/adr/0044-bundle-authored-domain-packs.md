@@ -6,7 +6,7 @@
 
 ## Context and problem statement
 
-The source checkout loads its top-level `packs/` directory. The wheel currently discovers
+The source checkout loads its top-level `packs/` directory. The 3 October baseline wheel discovered
 only `src/` packages and their resources, leaving the default pointer and domain packs out.
 An outside-checkout installation reproduced `PackError` for missing `default.json`;
 the baseline wheel (`8568e592b9ef804bfd13444051088c676e29f7016ded681f0dddfa385d5f33b9`)
@@ -37,7 +37,7 @@ resolution, with no new operator, interpreter, authority, receipt or source conf
 Regressions cover bundled precedence, recognized source checkout fallback, missing entire
 installed bundles beside valid alternate packs, malformed project metadata, explicit
 configuration failures and exact build-output bytes, including obsolete-output removal. A separate candidate
-smoke installs an explicit wheel outside the checkout with reused environment dependencies,
+smoke installs an explicit wheel outside the checkout in a fresh virtual environment,
 checks bundled/source byte identity, missing-entire-bundle refusal beside valid alternate
 packs, asset delivery and read-only typed proposal/refusal.
 The generic installer stays in `scripts/candidate_wheel_smoke.py`; its fixed, explicit
@@ -46,8 +46,11 @@ fixture and independent domain-specific oracles live in
 fixture path. This remains an explicitly invoked installation check, not an automatically
 collected pytest result, and adds no vocabulary exemption or weakened oracle.
 It must preserve the expected untrusted-source boundary. A direct build and a wheel rebuilt
-from its sdist must contain identical authored pack bytes. These checks are not a clean-room
-dependency install, live provider run, human study or release approval.
+from its sdist must contain identical authored pack bytes. These checks are not a
+live provider run, human study or release approval. The 11 October runner revision uses an
+explicit offline dependency wheelhouse and an isolated environment in a path containing spaces,
+runs dependency consistency checks, and retains installation logs and resource manifests.
+An actual execution report is required to establish fresh-install success.
 
 `scripts/wheel_smoke.py` keeps its existing strict release-fixture and eligibility assertions.
 No trusted fixture is stamped or relaxed to pass the candidate installation check.

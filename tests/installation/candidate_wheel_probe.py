@@ -15,8 +15,12 @@ for module in (eija_studio, edit_proposals, edit_proposal):
     assert Path(module.__file__).resolve().is_relative_to(installed), 'Source checkout import leaked'
 assert packs.PACKS_ROOT.resolve().is_relative_to(installed), 'Pack data escaped installed target'
 assert packs.default_pack().id == 'excursion'
+# Exact current authored inventory, independently expected rather than accepting any
+# nonempty bundle. The retained first clean-venv run caught the former three-pack fixture.
 assert {packs.load_pack(path).id for path in packs.PACKS_ROOT.glob('*/pack.json')} == {
-    'excursion', 'library-loan', 'eija-review-slice'}
+    'ai-ops', 'building-permit', 'card-payment', 'eija-review-slice', 'excursion',
+    'library-fines', 'library-loan', 'parcel-delivery', 'refund-desk',
+    'saas-subscription', 'specialist-referral'}
 checks = ['installed imports and all runtime packs resolve inside target']
 
 # Configuration and missing bundled data must not borrow policy from the source checkout.
@@ -70,7 +74,8 @@ finally:
 checks.append('entire missing installed bundle refuses valid adjacent packs')
 
 studio = build_studio(scratch / 'workspace', pack=packs.load_pack(packs.PACKS_ROOT / 'eija-review-slice'))
-assert studio.identity_provider()['trusted_fixture'] is False, 'Candidate fixture unexpectedly trusted'
+measured_identity = studio.identity_provider()
+assert measured_identity['trusted_fixture'] is False, 'Candidate fixture unexpectedly trusted'
 case = studio.create(studio.pack.fixtures.demo_request)
 case = studio.propose(case['id'], case['version'])
 case = studio.select(case['id'], case['version'], 'show_saved_path', OWNER)
@@ -106,4 +111,6 @@ with TestClient(create_app(studio, 'synthetic-wheel-candidate-session'), base_ur
     assert refusal['codes'] == ['REFERENCE_AUTHORITY:Approve']
 assert database() == before, 'Proposal changed persisted state'
 checks.extend(['installed HTTP asset bytes and session guard', 'exact offline proposal and protected refusal without writes'])
-sys.stdout.write(json.dumps({'checks': checks, 'source_review': 'SOURCE_REVIEW_REQUIRED', 'owner_approval_or_baseline_apply': 'NOT_RUN'}) + '\n')
+sys.stdout.write(json.dumps({'checks': checks, 'source_review': 'SOURCE_REVIEW_REQUIRED',
+                            'implementation_identity': measured_identity,
+                            'owner_approval_or_baseline_apply': 'NOT_RUN'}) + '\n')
