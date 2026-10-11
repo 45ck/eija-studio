@@ -1,0 +1,144 @@
+{
+  "schema": "playide.public-demo.v1",
+  "title": "Real app actions through the model, then inside its architecture",
+  "recorded_at": "2026-10-11",
+  "capture_run": "20261011T064943643243Z",
+  "kind": "Actual local browser interaction; manual fixture actors",
+  "status": "PASS",
+  "visual_inspection": "INSPECTED",
+  "video": {
+    "file": "playide-live-c4.mp4",
+    "seconds": 63.28,
+    "sha256": "d467c02153518a857ef40e404811029f4d63dd970ff77be691de9a0fe1ed6b18",
+    "codec": "h264",
+    "viewport": {
+      "width": 1600,
+      "height": 1000
+    },
+    "editing": "H.264 transcode only; no time compression, injected overlays, slideshows or substituted UI"
+  },
+  "poster": {
+    "file": "poster.png",
+    "source": "Frame extracted from the published MP4 at 61 seconds",
+    "sha256": "f4a2464429af45aaf030e597b2bcb1bb10420af8f1075738d71165c76a906d62"
+  },
+  "source": {
+    "source_tree": "dirty working tree",
+    "baseline_commit": "87dc953b222878f95453092ddafb88ff1cf67cfd",
+    "implementation_hash": "a1529ef54662bcfb01e73818f94cc7a55ffdc89bc28f1e6f1c2eab7caed1c818",
+    "generated_template_hash": "57d4beb25ba3180c59181a5ecfe09d44993f8725163518bd8a1b1e35de55a851",
+    "demonstration_source_hash": "6b7dd47e9ff7f8f63387788ebe082d3727a47e78f4205a60876d697f6149bf33",
+    "capture_script_sha256": "fdd32b3ba808d828ad64efd5d7d59cae744fa97b55d545c71333ad8b2562b554",
+    "note": "The baseline commit alone does not identify the working tree. The implementation/template hashes and build subject identify the recorded implementation."
+  },
+  "build_subject": {
+    "format": "eija.build-subject.v1",
+    "model_hash": "7be4c5c4a3a1ed7800a15fd2d82492c2f372381138fb39b14ea452b05ebf178b",
+    "workflow_digest": "93b8c0180739f8f3d211e53ec3babd94f2e6229f1cd09dd516c727d7d8454b93",
+    "pack_digest": "7db64a636c95f308212d591d636c9676c52abc55505997c4f63cf9156e048b57",
+    "data_digest": "0b1902c097d7136533ef45c9fd51b717ab173d09866adf87eba5ef45374c2df1",
+    "screens_digest": "d04bba0084196f2b93a901e6d8a625fa2deb72ff6eb531c6714b8ba87e099f54",
+    "templates_digest": "8b9e3b5ed280b699ea88f8e4ec3031e69fb2dc332acefa45456abd74e13421d6",
+    "template_paths": [
+      "app/__init__.py",
+      "app/build_identity.py",
+      "app/server.py",
+      "app/service.py",
+      "app/web/app.css",
+      "app/web/app.js",
+      "app/web/index.html",
+      "run.py",
+      "tests/test_conformance.py"
+    ],
+    "implementation_digest": "a1529ef54662bcfb01e73818f94cc7a55ffdc89bc28f1e6f1c2eab7caed1c818",
+    "payload_paths": [
+      "README.md",
+      "app/__init__.py",
+      "app/build_identity.py",
+      "app/data.json",
+      "app/model.json",
+      "app/pack.json",
+      "app/screens.json",
+      "app/server.py",
+      "app/service.py",
+      "app/web/app.css",
+      "app/web/app.js",
+      "app/web/index.html",
+      "run.py",
+      "tests/__init__.py",
+      "tests/oracle.json",
+      "tests/test_conformance.py"
+    ],
+    "generated_files_hash": "15e6e8dd62dd85283ed574036d4bd9052388f4f52a44822a226d56c28bd3baaf",
+    "digest": "ead8ab7e8bcbc1164aef969f6d426bd064894048b2ff8d2cf15fc30307f226d2"
+  },
+  "tools": {
+    "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+    "playwright": "1.63.0",
+    "chrome": "154.0.8037.99",
+    "ffmpeg": "ffmpeg version 8.0.1-full_build-www.gyan.dev Copyright (c) 2000-2025 the FFmpeg developers",
+    "harness": "Existing PlayIDE Take/Scene and ephemeral_eija_server; isolated workspace, normal CSP"
+  },
+  "steps": [
+    "RefundDesk: a model beside its local application",
+    "Build passes its conformance checks; source-review gate stays visible",
+    "Create one synthetic record in the real local database",
+    "Assess: the committed action arrives at Assessed",
+    "Propose: the next committed action reaches AwaitingApproval",
+    "Pause the trace to inspect; the application remains live",
+    "Manually fire the clock fixture; its real commit queues for inspection",
+    "Inspect the actor, committed state, version, effects and build identity",
+    "Replay three recorded outcomes; no extra requests or database changes",
+    "Supervisor fixture resolves the escalation",
+    "Payment fixture reports failure; no external payment is attempted",
+    "Supervisor retries the workflow",
+    "Payment fixture reports settlement; no money moves",
+    "C4: explore the architecture generated for this exact app",
+    "Browser, local server and SQLite: responsibilities are visible",
+    "Follow the server's relationship to the same runtime kernel",
+    "Return to the unchanged local result and its recorded actions"
+  ],
+  "checks": {
+    "conformance": {
+      "status": "PASS",
+      "detail": "Ran 6 tests in 0.938s |  | OK",
+      "subject_digest": "ead8ab7e8bcbc1164aef969f6d426bd064894048b2ff8d2cf15fc30307f226d2"
+    },
+    "committed_actions": 7,
+    "replay_mutation_requests": 0,
+    "replay_database_unchanged": true,
+    "c4_exact_build_subject": true,
+    "no_owner_approval_or_apply_requests": true,
+    "source_unchanged_during_capture": true,
+    "normal_csp": true,
+    "full_mp4_decode_exit_code": 0
+  },
+  "inspection": {
+    "method": "13 video-derived timeline frames, full-resolution ending extracted from MP4, full-resolution action/C4 screenshots and complete MP4 decode",
+    "visual_outcome": "NO_ISSUE_REPORTED",
+    "notes": "Actual app commits, visible arrivals, paused inspection, recorded replay and three native C4 levels are readable. Refined final interaction scrolls naturally to visible Paid state, result and history beside the arrival marker. Source-review and fixture labels remain visible. No credentials or private launch URLs appear. Native panels scroll; the video does not claim all graph/details are simultaneously visible."
+  },
+  "limitations": [
+    "Owner source approval and activation",
+    "Live inference",
+    "Elapsed timer",
+    "Actual payment",
+    "Authentication",
+    "Record value updates",
+    "Relationships storage",
+    "External delivery",
+    "Deployment",
+    "Human comprehension study",
+    "C4 is generated structural evidence; it does not establish runtime flow or deployment.",
+    "Manual clock and payment fixture actors; no elapsed timer, money movement or external delivery.",
+    "Local trace observations are not a complete runtime history.",
+    "This scoped demonstration is not full milestone acceptance or human usability evidence."
+  ],
+  "evidence": {
+    "raw_recording_retained": true,
+    "assertion_record_retained": true,
+    "source_and_template_manifests_retained": true,
+    "capture_scripts_retained": true,
+    "location": "Originating local capture workspace; excluded from public package because it is machine-specific."
+  }
+}

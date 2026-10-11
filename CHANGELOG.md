@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### 11 October 2026: review the change, then watch the system run
+
+- Supported workflow drafts transfer their exact accepted commands and reported authorship into owner review. Existing verification, explicit approval, stale-work checks and atomic activation remain in charge; `SOURCE_REVIEW_REQUIRED` is unchanged.
+- **Design + Play** pairs the model with its generated local app. Committed actions animate the matching transition; pause, inspect and replay use recorded observations without submitting the actions again.
+- **C4 architecture** shows context, containers and components derived from one generated snapshot. Build identity includes the workflow, pack, data, screens, templates and installed implementation. Startup and conformance refuse mismatched or changed inputs. C4 structure does not imply external delivery or deployment.
+- Recover the selected view and element with an owned draft, and edit a failed request without losing newer text or submitting twice. Shared generated screens improve narrow layouts, focus, refusals and read recovery.
+- Candidate installation checks now use a fresh offline environment outside the checkout, including paths with spaces. The Windows/Python 3.12.10 probe exercises all eleven bundled packs, session protection and proposal/refusal behavior without granting source approval.
+- The README leads with actual UML differences, system effects, five current screenshots and an inspected [63-second local-app recording](docs/demos/assets/playide-live-20261011/playide-live-c4.mp4). Fixture actors and evidence limits remain visible.
+- Development follows the initial [small-commit, direct-to-main policy](docs/engineering/PLAYIDE-DELIVERY.md). The [integration record](docs/engineering/2026-10-11-PLAYIDE-INTEGRATION.md) separates demonstrated behavior from remaining acceptance, including the unfinished association between workflow review and an exact generated build.
+
 ### 9 October 2026: the Sequences header puts the scenario's title on its own line
 
 - On a wide screen the selected scenario's title no longer runs into the kernel's verdict on one line; it sits above it, as it already did on a laptop.

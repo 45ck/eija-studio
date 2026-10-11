@@ -1,64 +1,87 @@
-# Roadmap
+# PlayIDE roadmap
 
-Status as of **2026-09-29**, checked against `origin/main` at `4bd0ccf` and the pull requests of [45ck/eija-studio](https://github.com/45ck/eija-studio/pulls). A row says **on main** only if you can reproduce it from a checkout of `main`. Statuses go stale; the date is the honest part, and live status is the pull request list. The pull-request numbers below are compared with GitHub by `scripts/check_pr_status.py` (nox session `pr_status`, release tier; `NOT_RUN` without `gh` and network), so a stale one is caught when a maintainer runs that tier, not by the offline gates.
+Status as of **2026-10-11**. This replaces the 29 September lane-status snapshot. It describes the current working tree and approved direction, not a claim that every local change has reached `main` or passed release acceptance. Use Git history and linked run records for exact revisions; old test totals do not describe new code.
 
-Status vocabulary: **on main** (reproducible from a checkout of `main`; a merged PR is named for reference), **open PR #n** (implemented on a branch, not merged; this includes this pull request until it merges), **branch pushed** (work exists on a branch, no PR), **planned** (nothing built yet).
+PlayIDE makes engineering understandable and enjoyable through a living model of the system. It addresses **comprehension debt**: the understanding people still owe software that changes faster than they can explain it. Cities: Skylines, tycoon games, Roblox tycoons and Minecraft inspire building, trying, inspecting consequences and improving systems. The applications extend beyond games.
 
-## Where EIJA is today
+The audience remains UML-literate engineers, including people increasingly building through prompts. Prompt-first creation, model-first editing and source-first exploration belong in one nonlinear workbench. See the [product thesis](engineering/PRODUCT-THESIS.md), [mission](engineering/MISSION.md) and [continuous delivery contract](engineering/PLAYIDE-DELIVERY.md).
 
-Version 0.2.0 is a bounded local proof of concept for one synthetic domain, the excursion approval workflow: a browser Studio, a CLI semantic compiler, a deterministic kernel with authority-before-replay, SQLite unit of work, computed subject-bound evidence, fixed-point impact analysis, and offline, OpenRouter and Codex proposal providers. Foundation work (Apache-2.0, OSS register, ADRs, nox gate plugins, Windows durability), the quality gates (merged PR #3), the merge-hygiene changes and lane map (merged PR #9) the scripted demo harness (merged PR #5) and the Bend 2 machine-checked authority laws over the generated model (merged PR #18, [details](formal/bend.md)) are on `main`. The release fixture check is currently mismatched by design until the owner re-stamps after the kernel-touching lanes settle; agents never stamp.
+## What exists, and what the evidence establishes
 
-Not built, and not claimed: an arbitrary-repository compiler, any formal evidence other than the Bend model laws (no TLA+, Z3, property or mutation result on `main`), live credential-tested providers, institutional identity, drag-and-drop diagram canvas, MCP server, measured human benefit.
+Track four separate states: **implemented** (code exists), **integrated** (connected through the intended product path), **exercised** (observed for a named subject) and **release-ready** (the applicable acceptance criteria are met). A row can have an implementation while its evidence remains PARTIAL, FAIL, STALE or NOT_RUN.
 
-## The 13 capability lanes
+| Capability | Implementation and integration | Evidence and release boundary |
+|---|---|---|
+| Typed workflow kernel, generated views, edit checks, source connection and agent inspection | Existing foundation; the local workbench connects model, source, review and history | The [8 October integration record](engineering/2026-10-08-IDE-ON-MAIN.md) is historical. Current combined SD01–SD12 and UX01–UX08 acceptance remains open. |
+| Exact workflow draft transfer and activation | Owner `POST /api/cases/from-plan`, provenance, candidate checks and existing atomic application are implemented | [Activation contract](engineering/PLAYIDE-ACTIVATION.md) and [service checker](engineering/PLAYIDE-ACTIVATION-EVIDENCE.md). Synthetic owner fixtures exercise mechanics; they do not approve this implementation. |
+| Effects, requirements and lifecycle capability map | Connected/grouped effects and capability views are implemented | Explicit links and known-graph consequences have bounded coverage. Prose, policy and executable meaning remain separate. |
+| Design + Play and shared generated-app presentation | Paired studio/app layout and shared template improvements exist locally | [Design contract](design/PLAYIDE-DESIGN-AND-PLAY.md). Earlier recordings cover their named revisions, not later tracing/C4 changes. |
+| Actual-action tracing and C4 | New local runtime bridge, UI and C4 route exist; integration is being verified | Current combined browser, identity and recovery evidence is incomplete. Presence of code or a drawn connection is not a passed runtime check. |
+| AI creation and proposals | Offline phrase reader plus existing provider adapters; a general live PlayIDE creation experience remains incomplete | A consented live pilot is NOT_RUN for this milestone. Fixtures do not establish provider effectiveness. |
+| Data-dependent actions, general migrations and connected workflows | Next executable semantics; multiple drawn workflows do not yet establish coordinated runtime behaviour | Remain unsupported until typed meaning, persistence, refusal and recovery contracts are exercised. |
+| Production operations, external adoption and measured human benefit | Later milestones | NOT_RUN. The local trusted-user application is not a shared production service. |
 
-Each lane has a branch `lane/<name>` and a reserved [ADR](adr/README.md) number block.
+`SOURCE_REVIEW_REQUIRED` stays visible for changed implementation. A labelled development preview can demonstrate supported capabilities with this restriction. Trusted verification/activation claims require legitimate owner source review; agents never restamp or fabricate that decision.
 
-| # | Lane | Goal | ADR block | Status |
-|---|---|---|---|---|
-| 1 | providers | Codex, Claude Code, OpenCode, Gemini CLI and OpenRouter proposal adapters over one subprocess-isolation base and a shared contract suite; providers stay proposal-only | 0021-0022 | open PR #4 |
-| 2 | visual | UML and state diagrams generated from the executable model (Mermaid, PlantUML, DOT), semantic before/after diff, Studio "Visual" view | 0023-0024 | open PR #6 |
-| 3 | bend | Bend 2 laws and proofs over all action sequences, generated from the model (`bend_proof`) | 0025-0026 | on main (merged PR #18; the proof needs Docker and is `NOT_RUN` without it) |
-| 4 | tla | TLA+/TLC specification of the workflow and commit protocol, plus trace conformance (`tlc_model_check`) | 0027-0028 | branch pushed (`lane/tla`), no PR |
-| 5 | smt-bmc | Z3 policy soundness over the transaction grammar (`smt_proof`) and bounded exhaustive runtime search (`bounded_model_check`) | 0029-0030 | open PR #11 |
-| 6 | testing | Hypothesis property-based and model-based differential tests (`property_test`) | 0031-0032 | branch pushed (`lane/property`), no PR |
-| 7 | mutation | Mutation analysis of the suite (`mutation_score`: fault-detection power, not correctness) | 0033-0034 | planned |
-| 8 | quality | Ruff, mypy, import-linter architecture contracts, complexity budgets, coverage ratchets, noslop hooks | 0035-0036 | on main (merged PR #3) |
-| 9 | metrics | Package metrics, latency, fitted scaling models and a dashboard | 0037-0038 | open PR #12 |
-| 10 | hci | Measured HCI budgets on the running Studio: Fitts, Hick-Hyman, KLM-GOMS, WCAG 2.2, Doherty | 0039-0040 | open PR #7 |
-| 11 | agents | MCP server that can inspect and verify but never approve or apply; skills and one-minute quickstarts for Claude Code, Codex, OpenCode and Gemini | 0041-0042 | open PR #8 |
-| 12 | oss | README, community files, roadmap, docs site, link and diagram-drift gates | 0043-0044 | open PR #14 |
-| 13 | okf | Knowledge base: an OKF v0.2 wiki deterministically linked to code | 0045-0046 | open PR #16 |
+## Milestones
 
-Lane hubs: [formal V&V](lanes/formal.md), [visual](lanes/visual.md), [agents](lanes/agents.md), [quality](lanes/quality.md), [metrics](lanes/metrics.md), [HCI](lanes/hci.md), [knowledge base](lanes/knowledge-base.md).
+Ship small verified increments directly to `main` throughout these milestones. The exit criteria define stronger product claims, not a reason to hold every improvement until the end. See [delivery and checks](engineering/PLAYIDE-DELIVERY.md#ship-continuously).
 
-## Beyond the 13
+| Milestone | Useful outcome and next scope | Exit evidence |
+|---|---|---|
+| **M0 — Baseline** | Preserve existing work, reconcile dated documents, map capabilities to existing requirements/issues and split accumulated work into coherent commits | Exact revision/content inventory; implemented/integrated/exercised/release states; fixed M1 acceptance list. This documentation is part of M0, not its completion. |
+| **M1 — Coherent local workbench** | Complete tracing and C4, shared selections, persistent navigation/recovery, generated-app states and reviewable proposals. Finish PlayIDE's own read-only source dogfooding | Ordinary browser journey: inspect → edit → effects → check → refusal → repair → owner approval → activate → reopen. Fresh SD01–SD12 and UX01–UX08 observations, clean setup, negative controls and inspected demos; owner checkpoint separately recorded. |
+| **M2 — Real data and safe evolution** | RefundDesk typed action inputs, value conditions, bounded calculations and record updates through the existing kernel. Same-schema revision adoption first; explicit migrations before schema/state changes retain real records | Refused values preserve records; accepted effects are transactional. Compatibility preview, backup, migration validation and recovery are exercised through the app. |
+| **M3 — Relationships and connected workflows** | References, multiplicities, aggregate invariants and bounded queries, then versioned events, correlation, idempotency, outbox delivery, timers and recovery | Club application → moderation → Minecraft access → welcome message against isolated services; duplicates and an unavailable service recover without duplicate effects. VibeCord remains separate. |
+| **M4 — Source/model evolution and parallel changes** | Graded repository support; first bounded, statically resolved Python rename/refactoring; agent/worktree visibility and semantic overlap checks | Refuse dynamic/unresolved transformations. Detect a conflict between individually valid branches, resolve it and check the actual combined result. No built-in code editor. |
+| **M5 — Operable shared applications** | Authenticated identities, resource permissions, protected secrets, deployment/configuration, quotas, monitoring/cost, backup, retention and incident recovery | Independent deployment, unauthorised-access refusal, restart/restore and actionable failures. Rollback accounts for migrated data and irreversible external effects. |
 
-Further work is tracked outside this table; the reasoning, dependencies and merge order are in the [lane map](engineering/LANE-MAP.md) and the [product thesis](engineering/PRODUCT-THESIS.md) (merged PR #9), and the end-to-end target is [POC-DEFINITION](engineering/POC-DEFINITION.md). All **planned** unless stated:
+M1 includes a versioned, server-derived build/review subject covering workflow, pack, data, screens, generator/templates and implementation. Evidence also identifies checker and configuration. Preserve existing case/selection contracts and keep old evidence historical; identity is not proof of correctness.
 
-| Lane | Goal | ADR block | Status |
-|---|---|---|---|
-| demos | Scripted live-demo harness and honest scenario registry (cursor and typing recordings of the Studio) | 0047-0048 | on main (merged PR #5); the wave-2 scenarios are planned |
-| ddd-language | Ubiquitous-language editor and DDD tree in the Studio | 0051-0052 | planned |
-| uml-editor | Drag-and-drop UML that issues typed semantic transactions | 0049-0050 | planned |
-| imagegen | Consent-gated image generation through the provider port | 0053-0054 | planned |
-| personas-e2e | Personas, ICP and persona-driven end-to-end scenarios | 0055-0056 | planned |
-| ux, weave, dod, studio-ux | HCI research and prototype, linked-graph compiler, definition of done and scorecard, the IDE workbench shell | 0057-0136 | planned |
-| patterns | Design patterns recognised in the model and code and applied as checked refactorings | 0137-0144 | planned |
-| evidence-kinds, e2e | Formal evidence kinds admitted by the kernel; one offline end-to-end test of the whole chain | 0145-0152 | planned |
+## The whole product, not only diagrams
 
-## Milestones, in the order they unlock trust
+- **Domain and meaning:** DDD vocabulary, contexts, aggregates, requirements, business rules and laws share stable identities and explicit links. Inferred concepts stay proposals until confirmed. Every construct says executable, checked design or unsupported.
+- **Everyday work:** explorer, tabs, splits, search, command palette, inspector, problems, evidence and history preserve context. Source facts, model simulations and observed behaviour remain distinguishable across UML and C4.
+- **AI and collaboration:** selection-grounded proposals show provenance, scope, uncertainty and request status. Agents propose, deterministic services check, owners decide. Parallel changes are checked on their combined result.
+- **Product craft:** workbench and generated apps both need good forms, validation, empty/busy/error states, keyboard operation, readable layout and recovery. Customisable presentation never silently changes policy. Reward recorded useful outcomes.
+- **Lifecycle and portability:** versioned packs/adapters, export, migration, configuration, operations, security and recovery are explicit capabilities. Reuse maintained dependencies and one kernel; retain the local-first Apache-2.0 project.
 
-1. **Merge the foundation lanes**: quality (done), then providers, visual, agents. Result: enforced layering and typing (on `main` now), five agent CLIs as proposers, generated diagrams and the diff, an MCP surface.
-2. **Owner re-stamps the release fixture** once the kernel-touching lanes settle. Result: `eija doctor` reports `release_fixture_matches: true` and verify and apply work from a clean checkout again.
-3. **Formal and testing lanes**: Bend (done), then TLA+, Z3 and bounded search, Hypothesis, mutation. Each lands as its own evidence kind with stated assumptions and bounds; a proof about a model is never presented as a proof about the runtime.
-4. **Generated-artefact lanes**: metrics, HCI, knowledge base, then a single regeneration pass of committed snapshots and the README status table.
-5. **Wave 2**: DDD language tree, drag-and-drop UML editor, image generation, personas and persona-driven end-to-end tests, then re-record the demos.
+## Acceptance and progress
 
-## Non-goals
+The [self-dogfood contract](engineering/SELF-DOGFOOD-ACCEPTANCE.md) remains authoritative for **SD01–SD12** and **UX01–UX08**. Reuse **AC** IDs from the [acceptance matrix](verification/ACCEPTANCE_MATRIX.csv); its dated status columns are historical. Existing issue references include [#79](https://github.com/45ck/eija-studio/issues/79) for HCI budgets, [#93](https://github.com/45ck/eija-studio/issues/93) for connected workflows, [#145](https://github.com/45ck/eija-studio/issues/145) for relationships and [#152](https://github.com/45ck/eija-studio/issues/152) for live chat. These are traceability links, not assertions about current GitHub issue state; check before creating duplicates.
 
-A universal code compiler, a replacement for human code review outside the modelled domain, automatic approval of any kind, production deployment without the changes listed in [Security and trust](SECURITY_AND_TRUST.md), and any claim of measured human benefit without a real human study.
+Keep implementation checks, model fidelity, usability and human benefit as distinct evidence. The [V&V protocol](research/2026-10-02-vv-protocol.md) governs the later engineer comparison. Fresh installation, actual rendering/response measurements and meaningful negative controls cannot be replaced by test counts or a polished recording.
 
-## How to change this page
+Record 30–90-second actual-app clips after verifying each demonstrated increment; retain raw media, build/revision identities, results and skipped functionality. Keep failures visible and distinguish fixtures, simulations, local apps and real integrations. Publish longer walkthroughs when the full supported journey is ready. Audience response, enjoyment and comprehension improvement remain hypotheses until observed.
 
-Edit the table when a pull request merges or opens, update the date at the top, and keep the status vocabulary. Do not mark a row **on main** on the strength of a branch or a description. The README and the lane hubs point here for status rather than repeating it.
+Older [lane hubs](engineering/LANE-MAP.md), [WBS](engineering/WBS.md) and [September status](engineering/STATUS.md) preserve design history. Their old branch/PR sequencing is superseded by the initial direct-main policy. [Future work](engineering/FUTURE-WORK.md) preserves unresolved technical leads without presenting every historical deferral as a fresh audit.
+
+## Historical lane and reserved ADR allocations
+
+These allocations preserve the [ADR registry](adr/README.md) and earlier lane map. They identify responsibility and prevent number collisions; they are not current progress statuses, required branch names or a sequence of releases. Individual ADRs retain their own accepted/proposed status.
+
+| ADR block | Lane responsibility |
+|---|---|
+| 0021-0022 | Proposal providers and CLI isolation |
+| 0023-0024 | Generated UML, visual diff and sandboxed rendering |
+| 0025-0026 | Bend laws and proofs |
+| 0027-0028 | TLA+/TLC and trace conformance |
+| 0029-0030 | SMT soundness and bounded model checking |
+| 0031-0032 | Property-based and model-based testing |
+| 0033-0034 | Mutation analysis |
+| 0035-0036 | Quality gates and architecture checks |
+| 0037-0038 | Metrics and quantitative models |
+| 0039-0040 | HCI and usability instrumentation |
+| 0041-0042 | Agent integration, MCP and skills |
+| 0043-0044 | OSS community, documentation and release |
+| 0045-0046 | OKF knowledge base |
+| 0047-0048 | Recordings and scenario dependency gates |
+| 0049-0050 | Interactive UML editor |
+| 0051-0052 | Ubiquitous language and DDD tree |
+| 0053-0054 | Consent-gated image generation |
+| 0055-0056 | Personas and end-to-end scenarios |
+| 0057-0088 | HCI research and workbench UX |
+| 0089-0112 | Weave linked graph, compiler and lint |
+| 0113-0136 | Definition of done, claims and evaluations |
+| 0137-0144 | Pattern recognition and checked refactoring |
+| 0145-0152 | Evidence kinds and end-to-end integration; includes reserved integration block 0147-0149 |

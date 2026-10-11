@@ -1,5 +1,7 @@
 # Architecture and ubiquitous language
 
+> **Historical scope:** this page retains the early v0.2 architecture and its original capability limits. For the current 11 October 2026 connections between PlayIDE, the EIJA compiler/runtime, both frontends, generated apps and review evidence, start with [How PlayIDE and EIJA fit together](PLAYIDE-EIJA-FLOW.md). Older “not implemented” statements below are not current feature status.
+
 ## Context and dependencies
 
 ```mermaid

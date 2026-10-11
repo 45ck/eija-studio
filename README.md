@@ -1,77 +1,195 @@
-<p align="center">
-  <img src="docs/assets/banner.svg" alt="EIJA Studio: review the meaning of a change, not every generated line. AI proposes, the kernel checks, the local owner decides." width="100%">
-</p>
+# PlayIDE · EIJA Studio
 
-# PlayIDE (EIJA Studio)
+**Review the UML diff. Understand the change. Run the system.**
 
-**Design a system in UML, press play, and check every change before you accept it.**
+You asked an AI for a change. Now you need to understand what it did.
 
-PlayIDE is a local, open-source IDE for engineers who already read UML. You design a system as a state machine, class, use case, sequence, screen, component and deployment diagrams that all come from one model. The model is the program: PlayIDE builds a real web app, API and database from it and checks the app against the model on every case. When you or an AI change the model, you see the change on the diagrams, with what to consider before you accept it: the laws it breaks, the tests it fails, the other views it touches. A deterministic kernel decides what every change means, not the AI.
+PlayIDE is an open-source workbench for people who read UML. It turns supported workflow edits into a visual diff you can inspect and a local application you can run. See the new path, the missing rule, the affected screen and the check that caught a mistake—before deciding what becomes active.
 
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
 [![Status: working preview](https://img.shields.io/badge/status-working%20preview-orange.svg)](#how-close-is-it)
-[![Hosted CI: none, gates run locally](https://img.shields.io/badge/hosted%20CI-none%20(local%20gates)-lightgrey.svg)](docs/adr/0017-local-quality-gates.md)
 
-## See it
+<!-- readme:uml-diff -->
+![UML change review: Renew is added in green; the removed ReturnLate path stays visible in red beside its consequences](docs/assets/readme/uml-diff.png)
 
-**Highlights (3:50).** Your change and the AI's change at a glance, what to consider, recording a test the change needs, the proof, the people who use the app, and an AI agent on a refund desk that the laws stop from approving refunds itself.
+*Actual application, 11 October 2026. A supported offline proposal adds renewal and removes late returns. Both changes stay visible in the draft; the active baseline is unchanged. The proposal comes from a phrase reader, not a live model. [Capture provenance](docs/assets/readme/manifest.json).*
+<!-- /readme:uml-diff -->
 
-[![PlayIDE highlights: add a state to a UML state machine and see what to consider before you accept it](docs/demos/assets/playide-showcase/playide-highlights-poster.png)](docs/demos/assets/playide-showcase/playide-highlights.mp4)
+[Try it](#try-it) · [Features](#what-you-can-do) · [Watch a real run](#watch-a-real-run) · [Roadmap](docs/ROADMAP.md)
 
-**Start from a sentence (4:52).** Describe an app in one box and get every model and view. Then change it by chat and on the diagrams, round after round, with "What's missing" saying what is left.
+## Review the meaning of a change
 
-[![PlayIDE greenfield: describe a coffee shop app and get every UML view of it](docs/demos/assets/playide-showcase/playide-greenfield-poster.png)](docs/demos/assets/playide-showcase/playide-greenfield.mp4)
+A small code diff can change who approves a refund or remove the only way out of a workflow. PlayIDE brings those consequences into the review:
 
-**The full tour (13:52).** Everything above plus sequence diagrams, tests, permissions, the accessibility check on the generated screens, the whole system as components and a deployment diagram with its API contract, a review-only view for stakeholders, UML import and export (PlantUML, XMI, Mermaid, draw.io) and real-sector templates.
+1. **Compare the UML.** See added, changed and removed states, transitions, roles and effects, with the accepted steps and their reported authorship.
+2. **Follow the effects.** Move from a change to related diagrams, requirements, laws, screens and checks. Missing links and unknown effects stay visible.
+3. **Check, try and decide.** Exercise the model, inspect refusals and run its generated app. The exact accepted workflow draft can enter owner review without being reinterpreted.
 
-[![The full PlayIDE tour: four workflows drawn as one system of UML components, with the class they disagree about marked](docs/demos/assets/playide-showcase/playide-showcase-poster.png)](docs/demos/assets/playide-showcase/playide-showcase.mp4)
+<!-- readme:system-effects -->
+![Effects across the system: the same workflow draft has screen and component problems, plus a sequence warning](docs/assets/readme/system-effects.png)
 
-Each video is one unedited take of the real app in Chromium, and every step asserts what the page shows. The chat is an offline phrase reader, not a live model, and the videos say so. The storyboards list every beat and how to re-record: [showcase](docs/demos/PLAYIDE-SHOWCASE-STORYBOARD.md), [greenfield](docs/demos/PLAYIDE-GREENFIELD-STORYBOARD.md).
+*The displayed law checks pass, and there are still two problems and a warning to investigate. Removing a path affects the screens and scenarios that depended on it. These cards group known effects of the same draft; they do not claim complete dependency coverage.*
+<!-- /readme:system-effects -->
+
+This is the practical meaning of **UML as code** here: supported model elements have executable semantics. The model drives a local web app, API and SQLite database; the same kernel decides whether an action is allowed. A diagram of an unsupported construct remains design.
+
+**AI proposes. The kernel checks. The owner decides.** Approval and activation are separate, explicit actions. Changed implementation keeps `SOURCE_REVIEW_REQUIRED` visible until legitimate owner source review. [Read the activation contract →](docs/engineering/PLAYIDE-ACTIVATION.md)
+
+## What you can do
+
+“Supported” below means the declared local workflow scope. It does not mean every UML construct or arbitrary codebase.
+
+| Feature | What you get | Current boundary |
+|---|---|---|
+| **UML diff** | Added, changed and removed paths together, with the exact proposed steps | Supported typed workflow edits |
+| **Diagram editing** | Edit states and transitions, inspect roles/guards, undo and redo | Server-checked edits; unsupported meaning is refused |
+| **Effects across the system** | Connected or grouped views of affected models, screens, laws, requirements and tests | Known and declared relationships; unknowns remain visible |
+| **Build & run** | A real local web app, HTTP API and SQLite records | One supported record class; fixture actors |
+| **Design + Play** | Keep the model beside the running application | Shared generated-app templates and resizable layout |
+| **Live action traces** | See committed actions move through the diagram; pause, inspect and replay | Scoped local observations; replay does not repeat actions |
+| **C4 architecture** | Inspect system context, browser/server/database containers and components | Generated structure; not deployment or external-service proof |
+| **Laws, scenarios and refusals** | Check supported policies and run actor/action sequences through the kernel | Each check has its own scope; no universal correctness claim |
+| **Exact draft review** | Transfer accepted commands, authorship and candidate identity into a retained review case | Workflow-only activation under unchanged pack identity; owner/source gates apply |
+| **Domain language and source** | Inspect DDD terms, declared links and read-only repository references | Structure and explicit bindings; no general source rewriting |
+| **Screens and roles** | Arrange supported forms, inspect actor permissions and run selected accessibility checks | Fixture identities; bounded checks, not full accessibility certification |
+| **UML import/export** | Bring models from supported PlantUML, XMI, Mermaid and draw.io forms | Import reports what it could not carry |
+| **Templates and chat** | Start with a sample system or request supported typed changes | Current PlayIDE chat is an offline phrase reader; general live creation is unfinished |
+| **Relationships and connected workflows** | Draw related classes and several workflows; inspect disagreements | Related records and cross-workflow delivery are not implemented |
+| **Data-driven decisions and migrations** | Next: action inputs, value conditions, record updates and safe evolution | Planned; a stored amount does not yet decide refund eligibility |
+
+[Explore every view](docs/playide.md) · [Generated-app scope](docs/build-an-app.md) · [Lifecycle roadmap](docs/ROADMAP.md)
+
+## Build something you can play with
+
+Start with **Refund desk**. A support-agent fixture assesses a request and proposes a refund. A supervisor approves it. A payment-system fixture records settlement—or fails, leaving a recovery path to inspect.
+
+Switch actors, try an action and see why it commits or refuses. Change the model and inspect the difference. These are useful building blocks for business systems, multiplayer communities and approval workflows.
+
+<!-- readme:design-and-play -->
+![RefundDesk's executable workflow beside its running local app, with matching Paid state and seven recorded actions](docs/assets/readme/design-and-play.png)
+
+*Design + Play, 11 October 2026. Seven actions have committed to the local application. The diagram and record history agree on the outcome: Paid.*
+<!-- /readme:design-and-play -->
+
+Fixture actors are selected manually. RefundDesk moves no money, and notifications enter a local outbox rather than being delivered. Those limits matter when deciding what you can build with it today.
+
+<!-- readme:live-trace -->
+**Follow execution:** the runtime bridge links committed local app actions to the diagram. Pause to inspect recorded outcomes and replay the observation without writing to the database again. Model simulation remains a separate view.
+
+![A committed FailPayout action arrives at PayoutFailed in the UML diagram and appears in the local app's history](docs/assets/readme/live-trace.png)
+
+*A manually operated payment fixture records a failed payout. The action commits successfully; the business outcome is PayoutFailed. The trace identifies that same action and record version, ready to inspect and recover.*
+<!-- /readme:live-trace -->
+
+<!-- readme:c4 -->
+**Zoom out to architecture:** C4 explains the generated application's context, containers and components. Browser, Python server and SQLite are structural projections of the build; an external-system role does not imply a working connector.
+
+![C4 containers view of the same RefundDesk build: web application, Python application server and SQLite record store](docs/assets/readme/c4-architecture.png)
+
+*The same generated build, viewed as C4 containers. Select a container to inspect its source or drill into components. This is generated structure; runtime observations and deployment evidence remain separate. [Screenshot identities and scope](docs/assets/readme/manifest.json).*
+<!-- /readme:c4 -->
+
+## How PlayIDE and EIJA connect
+
+**PlayIDE is the visual workbench. EIJA is the Python engine underneath it.** The workbench sends typed edits to the Studio API; EIJA checks the supported model and derives its diff, views and review packet. Building generates a separate application. Its frontend sends actions to its own API, which calls the same EIJA runtime kernel.
+
+This is the logical flow, not a claim that every box is an independent service:
+
+```mermaid
+flowchart TB
+    P["PlayIDE frontend<br/>UML, diff, effects, inspection"] --> S["Studio API + EIJA model services<br/>policy, compiler, app generator"]
+    S -->|"views and checks"| P
+    S --> R["Owner review + evidence<br/>Studio workspace database"]
+    S -->|"build candidate app"| F["Generated app frontend"]
+    F -->|"record actions"| A["Generated app API<br/>app SQLite adapter"]
+    A --> K["EIJA runtime kernel<br/>commit or refuse"]
+    A --> D[("Application records database")]
+    A -->|"action outcome"| F
+    F -. "scoped observations" .-> P
+```
+
+The two frontends display and request behaviour; the server decides what is allowed. A preview build does not activate the reviewed workflow. C4 describes generated structure, and connected repository source remains read-only. [Follow an edit and a runtime action through the architecture →](docs/architecture/PLAYIDE-EIJA-FLOW.md)
+
+## Why “Play”?
+
+The inspiration is the pleasure of building a working place in **Cities: Skylines**, growing a system in **tycoon games and Roblox tycoons**, or making something useful block by block in **Minecraft**. Place something, see what happens, understand the consequence, improve it.
+
+Vibe coding makes it easy to produce software faster than you understand it. We call the understanding you still owe it **comprehension debt**. PlayIDE's ambition is to make gaining that understanding part of the fun: visible execution, useful failures, experimentation and the satisfaction of a checked improvement becoming real.
+
+We want engineering to be something you want to come back to. Enjoyment and better comprehension still need testing with people; the working software and its limits come first.
+
+## Watch a real run
+
+**1:03 · recorded 11 October 2026.** Follow seven committed RefundDesk actions through the diagram, inspect a payout failure and recovery, replay without database writes, then explore C4 for that same build.
+
+<a href="docs/demos/assets/playide-live-20261011/playide-live-c4.mp4"><img src="docs/demos/assets/playide-live-20261011/poster.png" alt="Watch RefundDesk actions move through the UML model, recover from a reported payout failure and inspect the generated C4 architecture" width="640"></a>
+
+Actual local application, manually operated fixture actors, no external payout. The inspected recording retains the source-review boundary. [Watch the MP4](docs/demos/assets/playide-live-20261011/playide-live-c4.mp4) · [Checks, source identity and limits](docs/demos/assets/playide-live-20261011/manifest.json).
 
 ## Try it
 
-You need Python 3.11 or later and git. No Node or frontend build.
+Python 3.11+ and Git. No Node or frontend build required.
+
+**macOS / Linux shell**
 
 ```bash
-git clone https://github.com/45ck/eija-studio.git && cd eija-studio
-python3 -m venv .venv && source .venv/bin/activate      # Windows: py -3 -m venv .venv; .\.venv\Scripts\Activate.ps1
+git clone https://github.com/45ck/eija-studio.git
+cd eija-studio
+python3 -m venv .venv
+source .venv/bin/activate
 python -m pip install -e ".[dev]"
 eija serve --pack packs/library-loan --open
 ```
 
-The server prints two private links. Open the PlayIDE one (it ends in `/play#…`; the part after `#` is your session key, so don't share it). Then try **Simulate**, **Build & run**, the diagram tabs, or ask the chat for a change such as `add Renew from Overdue to OnLoan for Librarian`. **Systems › New system** starts your own, from a sentence, a sketch, a UML file or a template. Everything runs on your machine: a loopback server, SQLite, no telemetry, and no network calls unless you turn on a live model provider.
+<details>
+<summary>Windows PowerShell</summary>
 
-The [PlayIDE guide](docs/playide.md) explains every view. [Getting started](docs/getting-started.md) covers the command line, providers and verification.
+```powershell
+git clone https://github.com/45ck/eija-studio.git
+cd eija-studio
+py -3 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+.\.venv\Scripts\eija.exe serve --pack packs/library-loan --open
+```
 
-## How close is it
+</details>
 
-Close for a demo, not yet a tool you can ship changes with. Everything in the videos runs on the real app. What is not real yet: the AI, applying a change to the model in force, and the owner's verify and approve step.
+Open the private **PlayIDE** link printed by the server. Its `/play#…` fragment is a session key; keep that link private.
 
-| Part | Status |
-|---|---|
-| UML views from one model: state machine, class, use case, sequence, screens, components, deployment | **Works** on the real app |
-| Edit on the diagrams, undo and redo, see your change and the AI's with what to consider | **Works** |
-| Laws proved over every run the kernel allows, tests and sequences run through the kernel | **Works**, for the law kinds the kernel has ([#151](https://github.com/45ck/eija-studio/issues/151) lists missing ones) |
-| Build & run: a web app, API and SQLite database checked against the kernel on every conformance case | **Works**, for the modelled cases and the pack's fixture actors ([how far](docs/build-an-app.md)) |
-| Simulate, see the app as a role, Run as | **Works**, with seeded simulated users, not real people |
-| UML import and export, new systems from templates, sketches or UML files | **Works**, and says what it could not carry |
-| AI chat in plan mode | **Partial**: an offline phrase reader that understands fixed phrasings such as `add Renew from Overdue to OnLoan for Librarian`. No live model is wired up, and a request outside its phrasings is refused or can be read as a different supported change ([#152](https://github.com/45ck/eija-studio/issues/152)) |
-| Describe your app in a sentence | **Partial**: an offline reader with a fixed set of app shapes, not a general model |
-| Accepting a change | **Partial**: plans and edits are previewed, built, simulated and saved as drafts, but never become the model in force ([#89](https://github.com/45ck/eija-studio/issues/89), [#80](https://github.com/45ck/eija-studio/issues/80)) |
-| Class diagram | **Partial**: only the record class is built; other classes and associations are drawn, not built ([#145](https://github.com/45ck/eija-studio/issues/145)) |
-| Several workflows as one system | **Partial**: drawn and checked for disagreements; at run time each keeps its own data and they don't message each other ([#93](https://github.com/45ck/eija-studio/issues/93)) |
-| Verify, approve and apply (the ship step) | **Not built into the demo**: skipped in the videos until the owner's source review ([#80](https://github.com/45ck/eija-studio/issues/80)) |
-| Who may start a record, separation of duties, one action from several states | **Not modelled yet** ([#142](https://github.com/45ck/eija-studio/issues/142), [#149](https://github.com/45ck/eija-studio/issues/149), [#148](https://github.com/45ck/eija-studio/issues/148)) |
-| A live AI provider, a study with real engineers, hosted CI | **Not done**: live calls need the owner's permission for spend; quality gates run locally (`nox -t fast`, `nox -t full`) |
+Try `add Renew from Overdue to OnLoan for Librarian`, inspect the change, then **Build & run**. Or open **Systems › New system** and choose a template. **Simulate** exercises the model; the running app commits local records.
 
-## How it works
+The default setup uses loopback, SQLite and no telemetry. Live provider calls require explicit network enablement and consent. [Getting started](docs/getting-started.md) covers setup and provider options.
 
-A change is a typed transaction over an executable model, not a text diff. The kernel checks it against the model's laws, re-derives every view from it, and refuses what it cannot give a meaning to rather than guessing. AI output is only ever an untrusted proposal: it cannot choose a meaning, approve or apply. **AI proposes. The kernel checks. The owner decides.** [Security and trust](docs/SECURITY_AND_TRUST.md) states the limits, and [Executable UML on the EIJA engine](docs/architecture/executable-uml.md) says which views the kernel runs.
+## How close is it?
 
-<details><summary>A diagram generated from the real model, checked by a gate</summary>
+**A working local preview, with a much larger goal.** We want someone who understands UML to design, run, debug and maintain supported software without needing to read its implementation.
 
-The excursion workflow before and after the owner selects the `recommend_only` meaning of "Let teachers sign off excursions."
+The current focus is PlayIDE's own change workflow:
+
+**Edit → UML diff → effects → check → explicit owner approval → activate → reopen.**
+
+Exact workflow transfer is implemented. Tracing and C4 now have passing targeted checks and an inspected actual-app recording. Full integrated acceptance, including the complete owner-reviewed activation journey, remains open. General live AI creation, value-driven actions, migrations, connected delivery and production identity remain unfinished. Law, vocabulary, data-schema, screen and scenario edits do not silently become active policy.
+
+We ship small, checked commits directly to `main` throughout this initial stage. Automatic checks on push are not configured; supplied GitHub workflows are manual-only. See the [roadmap](docs/ROADMAP.md), [delivery contract](docs/engineering/PLAYIDE-DELIVERY.md) and [current acceptance criteria](docs/engineering/SELF-DOGFOOD-ACCEPTANCE.md).
+
+## Watch the product tours
+
+These retained recordings show the actual application **before the newer exact-draft activation, Design + Play, live-trace and C4 work**. Their chat uses the labelled offline phrase reader. They are earlier demonstrations, not current release acceptance.
+
+| Highlights · 3:50 | Start from a sentence · 4:52 | Full tour · 13:52 |
+|---|---|---|
+| [![UML changes and their consequences](docs/demos/assets/playide-showcase/playide-highlights-poster.png)](docs/demos/assets/playide-showcase/playide-highlights.mp4) | [![Create a supported coffee-shop workflow](docs/demos/assets/playide-showcase/playide-greenfield-poster.png)](docs/demos/assets/playide-showcase/playide-greenfield.mp4) | [![Models, checks, screens and system views](docs/demos/assets/playide-showcase/playide-showcase-poster.png)](docs/demos/assets/playide-showcase/playide-showcase.mp4) |
+| Review changes, discover a broken scenario and inspect a refusal. | A fixed-shape offline request produces a model you can inspect and edit. | Explore diagrams, permissions, templates and UML interchange. |
+
+Recording steps and scope: [showcase storyboard](docs/demos/PLAYIDE-SHOWCASE-STORYBOARD.md), [greenfield storyboard](docs/demos/PLAYIDE-GREENFIELD-STORYBOARD.md).
+
+## A diff you can reproduce
+
+The screenshot at the top shows the workbench's review. This CLI example is another view of the same principle: derive the difference from two executable models. The excursion example adds a recommendation step while keeping final approval with the Registrar.
+
+<details>
+<summary>Open the generated UML diff, before/after models and impact details</summary>
 
 <!-- BEGIN GENERATED: excursion-diff (scripts/gen_readme_diagram.py; do not edit by hand) -->
 **Diff** (`eija render --workflow examples/excursion-candidate.json --view diff --format mermaid`): green is added, amber is changed, a `+` label is a new or changed transition and a `-` label is a transition the candidate no longer has. The first two comment lines carry the semantic hashes of the two workflows the diagram was generated from.
@@ -156,26 +274,24 @@ The kernel's own impact closure, `domain.impact.model_impact(baseline, candidate
 
 `check_policy(baseline)` -> `[]`. `check_policy(candidate)` -> `[]`. A candidate that lets a Teacher approve is rejected: `check_policy(unsafe)` -> `['PROTECTED_AUTHORITY:Approve']`.
 <!-- END GENERATED: excursion-diff -->
-
-The block above is not hand-drawn: `python scripts/gen_readme_diagram.py --check` (nox session `readme_diagram`) fails if it differs from what `domain.policy` produces today.
+The block above is generated from the real model. `python scripts/gen_readme_diagram.py --check` fails if it drifts from the generator.
 
 </details>
 
-## Learn more
+## Explore the project
 
-| Purpose | Entry point |
+| I want to… | Start here |
 |---|---|
-| Every PlayIDE view and its limits | [docs/playide.md](docs/playide.md) |
-| Install, command line, providers, verification | [docs/getting-started.md](docs/getting-started.md) |
-| Build an app from the model | [docs/build-an-app.md](docs/build-an-app.md) |
-| Agents over MCP | [docs/agents/quickstart.md](docs/agents/quickstart.md), [contract](docs/agents/contract.md) |
-| Architecture and decisions | [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md), [ADR index](docs/adr/README.md) |
-| How it compares | [Current alternatives](docs/research/2026-10-02-current-alternatives.md) |
-| Open source we build on | [OSS register](docs/oss/REGISTER.md) |
-| Earlier checkpoints, the v0.2 quickstart and dated gate results | [README history](docs/README-HISTORY.md) |
+| Understand every view and its limits | [PlayIDE guide](docs/playide.md) |
+| Run a generated application | [Build an app](docs/build-an-app.md) |
+| Inspect the agent interface | [Agent quickstart](docs/agents/quickstart.md) and [contract](docs/agents/contract.md) |
+| Understand the architecture and executable scope | [PlayIDE ↔ EIJA flow](docs/architecture/PLAYIDE-EIJA-FLOW.md), [executable UML](docs/architecture/executable-uml.md), [ADRs](docs/adr/README.md) |
+| Check security and authority boundaries | [Security and trust](docs/SECURITY_AND_TRUST.md) |
+| See what we are building next | [Roadmap](docs/ROADMAP.md) and [product thesis](docs/engineering/PRODUCT-THESIS.md) |
+| Inspect dependencies and earlier evidence | [OSS register](docs/oss/REGISTER.md) and [README history](docs/README-HISTORY.md) |
 
 ## Contributing and license
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md) and [AGENTS.md](AGENTS.md). Report vulnerabilities as described in [SECURITY.md](SECURITY.md). Participation follows the [Code of Conduct](CODE_OF_CONDUCT.md). Cite with [CITATION.cff](CITATION.cff); changes are in [CHANGELOG.md](CHANGELOG.md).
+Read [CONTRIBUTING.md](CONTRIBUTING.md) and [AGENTS.md](AGENTS.md). During this initial stage, the [delivery contract](docs/engineering/PLAYIDE-DELIVERY.md) governs our frequent direct-to-main work. Report vulnerabilities through [SECURITY.md](SECURITY.md); participation follows the [Code of Conduct](CODE_OF_CONDUCT.md).
 
-Apache License 2.0; see [LICENSE](LICENSE) and [NOTICE.md](NOTICE.md).
+Apache License 2.0: [LICENSE](LICENSE), [NOTICE.md](NOTICE.md). Changes: [CHANGELOG.md](CHANGELOG.md). Citation: [CITATION.cff](CITATION.cff).

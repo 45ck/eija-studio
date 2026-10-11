@@ -1,0 +1,212 @@
+{
+  "schema": "playide.readme-screenshots.v1",
+  "images": {
+    "uml-diff.png": {
+      "sha256": "02ef0f39c9bbf7cf690125de5fba785784526f23d1b0f11e9460de549d34cb4a",
+      "source_revision": "87dc953b222878f95453092ddafb88ff1cf67cfd",
+      "implementation_hash": "9fb178f95ce8167dd3abd28939dcc3f300b9a6002e40ef43d1af61e1d23e5ca7",
+      "scope": "Actual semantic UML diff: Renew is added and the ReturnLate path is removed; before/after lenses preserve the change's consequences.",
+      "capture_kind": "Actual PlayIDE browser interactions, offline phrase reader",
+      "visual_inspection": "INSPECTED: current app, readable green Renew addition and red ReturnLate removal; actual risks and source-review gate visible; no launch URLs or credentials",
+      "baseline_hash": "3d7336da8fcbbef8c91c916f3740826fdf2393d6be4e82219cf009413477ffa8",
+      "candidate_hash": "c59ba8ed3809a95a4eaf37907a1a2cecdee34a93a09fb04d77a911c6e8b51745",
+      "viewport": {
+        "width": 1600,
+        "height": 1000
+      },
+      "capture_script_sha256": "f790922527f92c402c9db868bf6b540fdfe1ce5174041dbfea6203be167170a6",
+      "evidence_timestamp": "20261011T063922643913Z",
+      "source_tree": "dirty working tree",
+      "source_revision_role": "Baseline commit; implementation_hash identifies the captured working implementation"
+    },
+    "system-effects.png": {
+      "sha256": "3c67015caba2a6ad23364be8cd73695e513cc949ed63814fd4f24cff8045de16",
+      "source_revision": "87dc953b222878f95453092ddafb88ff1cf67cfd",
+      "implementation_hash": "9fb178f95ce8167dd3abd28939dcc3f300b9a6002e40ef43d1af61e1d23e5ca7",
+      "scope": "Kernel/compiler effects across seven views for the exact Renew-addition and ReturnLate-removal draft; declared scope and unknowns remain visible.",
+      "capture_kind": "Actual PlayIDE browser interactions, offline phrase reader",
+      "visual_inspection": "INSPECTED: current app, readable green Renew addition and red ReturnLate removal; actual risks and source-review gate visible; no launch URLs or credentials",
+      "baseline_hash": "3d7336da8fcbbef8c91c916f3740826fdf2393d6be4e82219cf009413477ffa8",
+      "candidate_hash": "c59ba8ed3809a95a4eaf37907a1a2cecdee34a93a09fb04d77a911c6e8b51745",
+      "viewport": {
+        "width": 1600,
+        "height": 1000
+      },
+      "capture_script_sha256": "f790922527f92c402c9db868bf6b540fdfe1ce5174041dbfea6203be167170a6",
+      "evidence_timestamp": "20261011T063922643913Z",
+      "source_tree": "dirty working tree",
+      "source_revision_role": "Baseline commit; implementation_hash identifies the captured working implementation"
+    },
+    "design-and-play.png": {
+      "sha256": "059e91b8a3be81c91bb744d640e71a35d8f7a7c022b0b90d2e953123d0f22fb4",
+      "source_revision": "87dc953b222878f95453092ddafb88ff1cf67cfd",
+      "implementation_hash": "a1529ef54662bcfb01e73818f94cc7a55ffdc89bc28f1e6f1c2eab7caed1c818",
+      "build_subject": {
+        "format": "eija.build-subject.v1",
+        "model_hash": "7be4c5c4a3a1ed7800a15fd2d82492c2f372381138fb39b14ea452b05ebf178b",
+        "workflow_digest": "93b8c0180739f8f3d211e53ec3babd94f2e6229f1cd09dd516c727d7d8454b93",
+        "pack_digest": "7db64a636c95f308212d591d636c9676c52abc55505997c4f63cf9156e048b57",
+        "data_digest": "0b1902c097d7136533ef45c9fd51b717ab173d09866adf87eba5ef45374c2df1",
+        "screens_digest": "d04bba0084196f2b93a901e6d8a625fa2deb72ff6eb531c6714b8ba87e099f54",
+        "templates_digest": "8b9e3b5ed280b699ea88f8e4ec3031e69fb2dc332acefa45456abd74e13421d6",
+        "template_paths": [
+          "app/__init__.py",
+          "app/build_identity.py",
+          "app/server.py",
+          "app/service.py",
+          "app/web/app.css",
+          "app/web/app.js",
+          "app/web/index.html",
+          "run.py",
+          "tests/test_conformance.py"
+        ],
+        "implementation_digest": "a1529ef54662bcfb01e73818f94cc7a55ffdc89bc28f1e6f1c2eab7caed1c818",
+        "payload_paths": [
+          "README.md",
+          "app/__init__.py",
+          "app/build_identity.py",
+          "app/data.json",
+          "app/model.json",
+          "app/pack.json",
+          "app/screens.json",
+          "app/server.py",
+          "app/service.py",
+          "app/web/app.css",
+          "app/web/app.js",
+          "app/web/index.html",
+          "run.py",
+          "tests/__init__.py",
+          "tests/oracle.json",
+          "tests/test_conformance.py"
+        ],
+        "generated_files_hash": "15e6e8dd62dd85283ed574036d4bd9052388f4f52a44822a226d56c28bd3baaf",
+        "digest": "ead8ab7e8bcbc1164aef969f6d426bd064894048b2ff8d2cf15fc30307f226d2"
+      },
+      "scope": "Actual RefundDesk local application beside its workflow after seven committed actions. Fixture payment actor reports Paid; no money moves.",
+      "capture_kind": "Actual PlayIDE and local RefundDesk browser interactions, manual fixture actors",
+      "visual_inspection": "INSPECTED: paired app and diagram outcomes agree, roles and state/history are readable; C4 container responsibilities and exact-subject statement visible; no launch URLs or credentials",
+      "viewport": {
+        "width": 1600,
+        "height": 1000
+      },
+      "capture_script_sha256": "b9bce842464a798c11ef7b8bc33ef9a3f5606795eeb9d1fe2d7d67f2c62df979",
+      "evidence_timestamp": "20261011T064508093904Z",
+      "source_tree": "dirty working tree",
+      "source_revision_role": "Baseline commit; implementation_hash identifies the captured working implementation"
+    },
+    "live-trace.png": {
+      "sha256": "73fc3606c292723b50902266b9d5477961a1424ed371458ae2290864ed7b2a79",
+      "source_revision": "87dc953b222878f95453092ddafb88ff1cf67cfd",
+      "implementation_hash": "a1529ef54662bcfb01e73818f94cc7a55ffdc89bc28f1e6f1c2eab7caed1c818",
+      "build_subject": {
+        "format": "eija.build-subject.v1",
+        "model_hash": "7be4c5c4a3a1ed7800a15fd2d82492c2f372381138fb39b14ea452b05ebf178b",
+        "workflow_digest": "93b8c0180739f8f3d211e53ec3babd94f2e6229f1cd09dd516c727d7d8454b93",
+        "pack_digest": "7db64a636c95f308212d591d636c9676c52abc55505997c4f63cf9156e048b57",
+        "data_digest": "0b1902c097d7136533ef45c9fd51b717ab173d09866adf87eba5ef45374c2df1",
+        "screens_digest": "d04bba0084196f2b93a901e6d8a625fa2deb72ff6eb531c6714b8ba87e099f54",
+        "templates_digest": "8b9e3b5ed280b699ea88f8e4ec3031e69fb2dc332acefa45456abd74e13421d6",
+        "template_paths": [
+          "app/__init__.py",
+          "app/build_identity.py",
+          "app/server.py",
+          "app/service.py",
+          "app/web/app.css",
+          "app/web/app.js",
+          "app/web/index.html",
+          "run.py",
+          "tests/test_conformance.py"
+        ],
+        "implementation_digest": "a1529ef54662bcfb01e73818f94cc7a55ffdc89bc28f1e6f1c2eab7caed1c818",
+        "payload_paths": [
+          "README.md",
+          "app/__init__.py",
+          "app/build_identity.py",
+          "app/data.json",
+          "app/model.json",
+          "app/pack.json",
+          "app/screens.json",
+          "app/server.py",
+          "app/service.py",
+          "app/web/app.css",
+          "app/web/app.js",
+          "app/web/index.html",
+          "run.py",
+          "tests/__init__.py",
+          "tests/oracle.json",
+          "tests/test_conformance.py"
+        ],
+        "generated_files_hash": "15e6e8dd62dd85283ed574036d4bd9052388f4f52a44822a226d56c28bd3baaf",
+        "digest": "ead8ab7e8bcbc1164aef969f6d426bd064894048b2ff8d2cf15fc30307f226d2"
+      },
+      "scope": "Actual fixture-reported payout-failure commit appears in SQLite history and as an arrival on the workflow; the trace records the same operation and version.",
+      "capture_kind": "Actual PlayIDE and local RefundDesk browser interactions, manual fixture actors",
+      "visual_inspection": "INSPECTED: paired app and diagram outcomes agree, roles and state/history are readable; C4 container responsibilities and exact-subject statement visible; no launch URLs or credentials",
+      "viewport": {
+        "width": 1600,
+        "height": 1000
+      },
+      "capture_script_sha256": "b9bce842464a798c11ef7b8bc33ef9a3f5606795eeb9d1fe2d7d67f2c62df979",
+      "evidence_timestamp": "20261011T064508093904Z",
+      "source_tree": "dirty working tree",
+      "source_revision_role": "Baseline commit; implementation_hash identifies the captured working implementation"
+    },
+    "c4-architecture.png": {
+      "sha256": "6a738d134c9ec8aba76f4bcba13d230551a0a2116ba83d6cc2309ea3d62e02a1",
+      "source_revision": "87dc953b222878f95453092ddafb88ff1cf67cfd",
+      "implementation_hash": "a1529ef54662bcfb01e73818f94cc7a55ffdc89bc28f1e6f1c2eab7caed1c818",
+      "build_subject": {
+        "format": "eija.build-subject.v1",
+        "model_hash": "7be4c5c4a3a1ed7800a15fd2d82492c2f372381138fb39b14ea452b05ebf178b",
+        "workflow_digest": "93b8c0180739f8f3d211e53ec3babd94f2e6229f1cd09dd516c727d7d8454b93",
+        "pack_digest": "7db64a636c95f308212d591d636c9676c52abc55505997c4f63cf9156e048b57",
+        "data_digest": "0b1902c097d7136533ef45c9fd51b717ab173d09866adf87eba5ef45374c2df1",
+        "screens_digest": "d04bba0084196f2b93a901e6d8a625fa2deb72ff6eb531c6714b8ba87e099f54",
+        "templates_digest": "8b9e3b5ed280b699ea88f8e4ec3031e69fb2dc332acefa45456abd74e13421d6",
+        "template_paths": [
+          "app/__init__.py",
+          "app/build_identity.py",
+          "app/server.py",
+          "app/service.py",
+          "app/web/app.css",
+          "app/web/app.js",
+          "app/web/index.html",
+          "run.py",
+          "tests/test_conformance.py"
+        ],
+        "implementation_digest": "a1529ef54662bcfb01e73818f94cc7a55ffdc89bc28f1e6f1c2eab7caed1c818",
+        "payload_paths": [
+          "README.md",
+          "app/__init__.py",
+          "app/build_identity.py",
+          "app/data.json",
+          "app/model.json",
+          "app/pack.json",
+          "app/screens.json",
+          "app/server.py",
+          "app/service.py",
+          "app/web/app.css",
+          "app/web/app.js",
+          "app/web/index.html",
+          "run.py",
+          "tests/__init__.py",
+          "tests/oracle.json",
+          "tests/test_conformance.py"
+        ],
+        "generated_files_hash": "15e6e8dd62dd85283ed574036d4bd9052388f4f52a44822a226d56c28bd3baaf",
+        "digest": "ead8ab7e8bcbc1164aef969f6d426bd064894048b2ff8d2cf15fc30307f226d2"
+      },
+      "scope": "Native C4 containers view of this exact generated build: browser, Python server and SQLite. Structural evidence; runtime behaviour and deployment proof remain separate.",
+      "capture_kind": "Actual PlayIDE and local RefundDesk browser interactions, manual fixture actors",
+      "visual_inspection": "INSPECTED: paired app and diagram outcomes agree, roles and state/history are readable; C4 container responsibilities and exact-subject statement visible; no launch URLs or credentials",
+      "viewport": {
+        "width": 1600,
+        "height": 1000
+      },
+      "capture_script_sha256": "b9bce842464a798c11ef7b8bc33ef9a3f5606795eeb9d1fe2d7d67f2c62df979",
+      "evidence_timestamp": "20261011T064508093904Z",
+      "source_tree": "dirty working tree",
+      "source_revision_role": "Baseline commit; implementation_hash identifies the captured working implementation"
+    }
+  }
+}

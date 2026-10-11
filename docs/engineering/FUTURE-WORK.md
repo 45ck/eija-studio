@@ -1,17 +1,34 @@
-# Future work
+# Future work and retained technical leads
 
-Items that were found, judged real, and deliberately not built yet. Each row says why it waits, what event makes it
-worth doing, and a rough size. Anything that only tests a super-hard edge case goes here instead of into the code.
+**Reconciled 11 October 2026.** The [current roadmap](../ROADMAP.md) and [delivery contract](PLAYIDE-DELIVERY.md) supersede the old phase/branch sequencing below. The older rows are retained technical leads, not a claim that each item is still missing in today's implementation. Recheck linked code, tests and issue state before taking one on; preserve original evidence when an item is resolved.
+
+## Current priorities
+
+| Work | When and why | Required outcome |
+|---|---|---|
+| Finish integrated tracing, C4, shared identities and persistent recovery | M1: new local code does not yet have complete combined browser/release evidence | Current SD01–SD12 and UX01–UX08 observations; exact build/pack/data/screens/template/implementation subject; no inherited green results |
+| Clean installation and distribution | M1: another engineer must reproduce the product outside this checkout | Fresh Windows and Linux records where actually run; correct packs/resources; installation and launch from a path with spaces |
+| Typed action inputs, conditions and updates | M2: RefundDesk amounts currently do not determine eligibility | Typed semantics in the existing kernel, forms/diffs and transactional failure tests |
+| Revision adoption and migrations | M2: retained records and cases cannot depend on disposable workspaces | Compatibility preview, explicit transformations, validation, backup and recovery; no silent schema reinterpretation |
+| Relationships and asynchronous delivery | M3: drawn related classes/workflows do not establish runtime coordination | Referential/multiplicity invariants, aggregate boundaries, idempotency, retries and recovery against real test adapters |
+| Source/model transformations and parallel changes | M4: read-only source facts are not source-generation assurance | Bounded transformation/refusal contract and checks on actual combined changes |
+| Shared operations | M5: local owner fixtures are not production authority | Authentication, authorisation, secrets, deployment, monitoring, backup/restore and incident evidence |
+| Consented live pilot and human benefit | Separate validation after supported journeys work | Actual provider run and the [V&V study](../research/2026-10-02-vv-protocol.md); fixtures, videos and test counts are not substitutes |
+
+Reuse existing requirement and issue identities through the roadmap. Language-edit transactions remain outside the workflow vocabulary in `domain/transactions.py`; treating vocabulary, law, schema or screen drafts as active still needs the corresponding revision contract. The current store refuses incompatible workspace/case identities rather than silently migrating them. Formal backend generalisation and third-party extension work remain evidence-driven additions, not prerequisites for claiming every supported local feature.
+
+## Historical leads to revalidate
+
+These estimates and implementation counts describe the earlier audit. They are neither fresh measurements nor permission to omit current regression checks.
 
 | Item | Why it waits | Trigger | Size |
 |---|---|---|---|
 | Refresh `verification/bend/evidence/bend.json` with the fixed Bend runner (per-law `--verdict`, archive pin, Dockerfile-hash image tag) | The snapshot is a real Docker run and this PC does not start Docker (Docker-backed sessions are NOT_RUN here). The strict xfail `test_the_snapshot_was_produced_by_the_current_gate_and_dockerfile` marks the gap and starts failing loudly (XPASS) once the snapshot is refreshed | A host with Docker: `nox -s formal_bend -- --build --snapshot`, then remove the xfail marker | S (one run, a few minutes, plus one commit) |
 | Put `verification/` under the complexity ratchet (xenon roots and `DEFAULT_ROOTS`) | 32 functions in `verification/{smt,tla,bend,...}` are over the budget of 10 (the worst: `tla/run.py::main` 26, `smt/prove.py::build_report` 26). Recording them as debt would launder new debt; refactoring formal-lane code is a behaviour-risk change that needs its own tests | The formal lanes are next edited, or before Phase 1 exit | M (32 refactors, each with the lane's own regression tests) |
-# Future work: deliberate deferrals
 
-Phase 1 of the [work breakdown](WBS.md) builds the mainline and proves it; anything that only tests a hard edge
-case is recorded here instead of built. Each row says why it waits, what should trigger it, and a rough size
-(S under a day, M one to three days, L more).
+### Earlier phase deferrals
+
+The [work breakdown](WBS.md) supplies historical context. Its phase references and rough sizes below need reconciliation with M0–M5 before scheduling work (S under a day, M one to three days, L more in that original estimate).
 
 | Item | Why deferred | Trigger | Size |
 |---|---|---|---|
