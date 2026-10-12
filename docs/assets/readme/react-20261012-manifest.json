@@ -1,0 +1,54 @@
+{
+  "schema": "playide.public-screenshots.v1",
+  "images": [
+    {
+      "file": "docs/assets/readme/react-navigation-20261012.png",
+      "sha256": "1a261275944d18909aa39ff530776577c5e5c2eb40688705830faea4b1a1c9e7",
+      "kind": "Native browser screenshot; unedited",
+      "capture_date": "2026-10-12",
+      "caption": "Model-derived Records, New Loan and Record detail navigation with standard forms.",
+      "scope": "Normal source; supported candidate preview; fixture actor",
+      "source_revision": "a35071616f54468ccf7fea2080e126a4d2d3cea5",
+      "source_tree": "clean committed tracked tree",
+      "implementation_digest": "08d220be933c725a1e61bc9737af6da1eaa2475ac63d18535c77802b137dea65",
+      "build_subject_digest": "69106fc191eb6abe5856bdf9928399f26e4390371b96ccc8a17451b44f9c341a"
+    },
+    {
+      "file": "docs/assets/readme/screen-to-model-map-20261012.png",
+      "sha256": "39d6f9f573c2e4e527ea99f0822d57d298c4c7a3826c01be865d46334bb3d47e",
+      "kind": "Native browser screenshot; unedited",
+      "capture_date": "2026-10-12",
+      "caption": "The CheckOut screen maps to fields, declared authority, a use case and a record class.",
+      "scope": "CHECKED_DESIGN projection of the exact local React build",
+      "source_revision": "a35071616f54468ccf7fea2080e126a4d2d3cea5",
+      "source_tree": "clean committed tracked tree",
+      "implementation_digest": "08d220be933c725a1e61bc9737af6da1eaa2475ac63d18535c77802b137dea65",
+      "build_subject_digest": "69106fc191eb6abe5856bdf9928399f26e4390371b96ccc8a17451b44f9c341a"
+    },
+    {
+      "file": "docs/assets/readme/exact-app-review-20261012.png",
+      "sha256": "74fe30a7572e79931dc2968eee88ed1166a44e154750b0e8f959058d90368d40",
+      "kind": "Native browser screenshot; unedited",
+      "capture_date": "2026-10-12",
+      "caption": "The review names the captured generated app and shows passing and unknown checks.",
+      "scope": "Explicit synthetic owner test identity; not legitimate owner review",
+      "source_revision": "a35071616f54468ccf7fea2080e126a4d2d3cea5",
+      "source_tree": "clean committed tracked tree",
+      "implementation_digest": "08d220be933c725a1e61bc9737af6da1eaa2475ac63d18535c77802b137dea65",
+      "build_subject_digest": "69106fc191eb6abe5856bdf9928399f26e4390371b96ccc8a17451b44f9c341a"
+    },
+    {
+      "file": "docs/assets/readme/renewal-after-restart-20261012.png",
+      "sha256": "5909beade44ef104b7b4c8fb5ecb1e1bbec84a5e9b2fd934f14c277b1abb497a",
+      "kind": "Native browser screenshot; unedited",
+      "capture_date": "2026-10-12",
+      "caption": "The activated Renew action commits in the same app after a fresh-process restart.",
+      "scope": "Synthetic owner mechanics and fixture actor; real local record mutation",
+      "source_revision": "a35071616f54468ccf7fea2080e126a4d2d3cea5",
+      "source_tree": "clean committed tracked tree",
+      "implementation_digest": "08d220be933c725a1e61bc9737af6da1eaa2475ac63d18535c77802b137dea65",
+      "build_subject_digest": "69106fc191eb6abe5856bdf9928399f26e4390371b96ccc8a17451b44f9c341a"
+    }
+  ],
+  "recordings_manifest": "../../demos/assets/playide-react-20261012/manifest.json"
+}

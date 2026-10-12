@@ -12,18 +12,30 @@ changed the implementation identity, so that browser pass is now historical.
 The ninth run passed both browser tests on the repaired implementation, and the
 second full fast gate passed all 24 sessions. The release verification script's
 tests passed, while its expected exit `2` preserves `SOURCE_REVIEW_REQUIRED`.
-Legitimate source approval, clean wheel proof and new video remain open.
+The implementation is now committed and pushed, and two inspected actual-app
+recordings are complete. The fresh Windows wheel proof passed within the scope
+below, with a separate passing listener/port restart supplement. Legitimate source
+approval remains open. The manually dispatched Linux quality run **failed**;
+Linux clean-install proof remains not run.
 SD01–SD12 and UX01–UX08 remain open wherever their individual acceptance
 observations have not been completed.
 
 ## Subject and scope
 
-The Git baseline is `49a08ea` (`Make Play actions and trace inspection clearer`).
-The new work is that revision **plus modified and untracked files**; the baseline
-commit alone does not identify this tested implementation. Source changes were
-held stable for the reported core run. Its retained text log does not include a
-complete source hash manifest, so a final candidate manifest and final-tree gates
-are still required. The later browser result has its own recorded build subject,
+The implementation is committed and pushed as
+`a35071616f54468ccf7fea2080e126a4d2d3cea5`. Local and remote `main` equality was
+verified at `2026-10-12T05:51:27.6049392+00:00` in
+`outputs/exact-app-main-push-20261012.json`. It contains the frozen implementation
+`08d220…` covered by the final focused, ninth-browser, fast and release-script
+results; the recordings also identify this commit and implementation.
+
+Historically, those implementation changes were tested over baseline `49a08ea`
+(`Make Play actions and trace inspection clearer`) before this commit. The
+baseline alone did not identify the modified/untracked test tree. Source changes
+were held stable for the earlier 94-check core run, but its text log lacks a
+complete contemporaneous source manifest; the later committed identity must not
+be applied retroactively to that earlier run. The fifth browser result separately
+records its own build subject,
 including historical implementation digest
 `3addc01ed0da89e53708812e78d0ebc680d5e3fd310ba3767914d50c5890c151`;
 it does not retroactively identify the earlier core run or the later React bundle.
@@ -90,8 +102,14 @@ Separate runs are not added together into one passing suite.
 | Current combined browser attempt nine — 12 October | **PASS:** 2 actual browser tests, 1 warning in 56.11 s; `outputs/raw/exact-app-browser-proof/exact-app-and-map-ninth.log`, `journey-result-ninth.json` and `final-manifest-ninth.json` | Implementation `08d220…`; fresh exact-app review/activation/restart/runtime and presentation-map checks passed. Zero page errors, all-frame CSP violations and unexpected console records; only three exact deliberate case-409 refusals. Synthetic-owner mechanics remain separate from legitimate owner approval. |
 | Complete knowledge-file check | **PASS:** 1,002 pages, 0 stale source pages and 0 stale Notes pages; `outputs/okf-final-check-20261012.log` | Recorded trust tiers remain 47 machine-confirmed and 955 unverified, with 78 curated-Notes pages. Structural freshness does not establish source approval or application behavior. |
 | Second aggregate fast gate — 12 October | **PASS:** all 24 sessions, exit `0`, approximately 8 minutes; `outputs/exact-app-fast-final-20261012-2.log` | Main pytest: 3,328 passed, 219 skipped, 2 xfailed and 22 warnings in 325.69 s. This is the current repaired implementation's fast gate; skipped and expected-failure cases are not counted as passes. The first failed run remains retained. |
+| Publication fast gate — 12 October | **PASS:** all 24 sessions, exit `0`, approximately 8 minutes; `outputs/exact-app-publication-fast-20261012.log` | Main pytest: 3,328 passed, 219 skipped, 2 xfailed and 22 warnings in 309.90 s. This separately checks the README/media/workflow publication tree with runtime implementation unchanged at `08d220…`; its counts are not added to earlier suites and it does not establish the pending remote rerun's result. |
 | Release verification script — 12 October | **TESTS PASS / SOURCE REVIEW REQUIRED:** script exit `2`, `tests_exit_code: 0`; 3,328 passed, 219 skipped, 2 xfailed and 22 warnings in 317.01 s; `outputs/exact-app-release-final-20261012.log` | Exact implementation `08d220…`, `trusted_fixture: false`, `source_review: SOURCE_REVIEW_REQUIRED`; live providers `NOT_TESTED_BY_THIS_SCRIPT`. This is not full release acceptance or a run of the complete nox release session set. |
-| Clean wheel and video | **PENDING** | Passing tests and the visible source-review block establish neither clean installation nor recording completion. Earlier isolated Windows-wheel results belong to earlier source. |
+| Committed and pushed implementation | **VERIFIED:** local and remote `main` both `a35071616f54468ccf7fea2080e126a4d2d3cea5`; `outputs/exact-app-main-push-20261012.json` | The committed source retains frozen implementation `08d220…`. Push verification is not CI or owner source approval. |
+| Actual-app recordings | **COMPLETE AND INSPECTED:** 64.6-second normal-source clip and 148.04-second synthetic-approval walkthrough; `outputs/playide-react-exact-app-capture-manifest.json` | Both identify commit `a350716…`, implementation `08d220…` and generated subject `69106fc…`. The short clip has a disclosed diff-view presentation limitation; neither records legitimate owner approval. |
+| Linux quality and automatic CI | **MANUAL RUN FAILED:** `38209843422`, completed `2026-10-12T06:10:37Z`; `outputs/exact-app-linux-failed-20261012.log`. Automatic push CI **NOT_CONFIGURED** | The separately dispatched `python -m nox -t full` returned `1`. Seven sessions failed because the job omitted declared setup extras. The workflow now installs those extras; the actual rerun remains pending until pushed. Gates and thresholds are unchanged, and no passing result is predicted. The earlier push record's 0 runs/checks describes that earlier point only. |
+| First final-wheel harness attempt | **FAIL before candidate build:** 0 packs, browser `NOT_RUN`; `outputs/final wheel proof 20261012-170259-740/final-proof.json` | An outside-repository helper selected dependency metadata too broadly. It was narrowed to top-level distribution `METADATA`; this is a proof-harness defect, not an observed product defect. |
+| Fresh Windows wheel proof | **PASS WITH RESTART QUALIFICATION:** `outputs/final wheel proof 20261012-170410-654/final-proof.json` | Exact source `a350716…` / implementation `08d220…`; all 11 packs passed generation, bounded conformance, HTTP, bundled frontend and navigation checks. One actual installed RefundDesk browser journey passed. Restart observations cover changed launcher PIDs and retained data, not proven full-server shutdown. Linux installation and legitimate owner approval remain `NOT_RUN`. |
+| Supplementary installed restart proof | **PASS:** `outputs/installed restart supplement 20261012-171608-988/restart-supplement.json` | Separate installed HTTP-only check on a copied database: actual listeners `44392` then `47268`, first port closed before replacement started, same subject/record/version/history, final port closed. No new browser run; original wheel report, database and build remain unchanged. |
 
 The core log retains a Starlette/AnyIO deprecation warning. Deselected, skipped or
 unrun work is excluded from the passed-test count.
@@ -166,7 +184,7 @@ The eighth combined run began at `2026-10-12T05:02:44.3709986Z` and finished at
 `2026-10-12T05:03:44.661393Z`, as retained in
 `outputs/raw/exact-app-browser-proof/exact-app-and-map-eighth-times.json`.
 It passed **two actual browser tests in 58.95 seconds**. The immutable
-`final-manifest-eighth.json` records the dirty candidate above, implementation
+`final-manifest-eighth.json` records the then-uncommitted candidate, implementation
 `329ce60d20a49c85ca9590b906f4dd7fa614d15eecf65a52bb3d98b1ef098f84`,
 frontend `2b5beec9ac40d4cbb9dec1364d855a490026414d1a2616b185b2bc28e44dcab6`
 and exact generated-app subject
@@ -237,7 +255,7 @@ required asterisk, and one guessed the wrong canonical field-label case.
 The successful test uses actual accessible names and independently checks
 distinct control IDs, native semantics, refusal recovery and persisted values.
 The 14 retained screenshots belong to the preceding `b12293…` full-suite subject;
-current-app footage is a separate pending artifact.
+the later current-app recordings have their own commit and capture manifests.
 
 ## First aggregate failure — 12 October 2026
 
@@ -273,8 +291,8 @@ is now historical for this changed implementation. The ninth browser run passed
 on the repaired implementation; neither that result nor the focused 70-check run
 relabels the first failed aggregate. The second full fast gate subsequently passed,
 as recorded below. Release verification's tests also passed, with source review
-still required. Clean-install and new-video acceptance remain pending their own
-results.
+still required. The later Windows wheel proof and recording results are
+documented separately below.
 
 ## Fresh browser proof after service repair — 12 October 2026
 
@@ -335,18 +353,136 @@ change that outcome. This script is distinct from the complete nox release
 session set, which was not run here. These tests, the passing fast gate and the
 separate browser runs retain their own scopes and counts.
 
+## Inspected recordings of the committed application — 12 October 2026
+
+`outputs/playide-react-exact-app-capture-manifest.json` records two playable MP4s
+from actual application interaction. Both passed full decoding and strict console
+checks, retain raw recordings and observations, and identify source commit
+`a35071616f54468ccf7fea2080e126a4d2d3cea5`, implementation `08d220…` and exact app
+subject `69106fc…`. Source bytes were checked against the captured Git archive.
+Original legacy metadata was preserved where capture metadata needed correction;
+the corrections do not rewrite the original evidence.
+
+- `outputs/18-react-navigation.mp4` — **64.6 seconds**, inspected with a presentation
+  note. Normal-source protected-path refusal is followed by recovery through a
+  supported draft, actual React navigation, record creation and one committed
+  CheckOut action. The exact-subject checked-design map connects screen, use case
+  and record class. This clip performs no approval or activation. During checkout
+  the workbench remains in the UML diff lens, so the claim is the visible committed
+  trace/result, not animation along a live diagram edge.
+- `outputs/17-exact-app-activation.mp4` — **148.04 seconds**, inspected as a longer
+  walkthrough. Explicit synthetic approval is followed by real local activation,
+  a new Python process reopening the same reviewed subject, and the three committed
+  CheckOut → MarkOverdue → Renew actions. The live renewed edge is shown after
+  activation. The normal-source gate remains `SOURCE_REVIEW_REQUIRED` before and
+  after; legitimate owner approval remains unperformed.
+
+The raw directories are
+`outputs/raw/18-react-navigation/20261012T055224926473Z` and
+`outputs/raw/17-exact-app-activation/20261012T055738651924Z`. All five sanity/recorded
+attempts remain retained, including a failed capture adaptation that omitted the
+ordinary Refresh case step after a deliberately wrong synthetic understanding
+answer. The capture script was corrected to follow the passing browser journey;
+no product source changed for that repair. These are local applications and
+fixture actors, with normal CSP, no source stamping and no external integration.
+They establish neither human comprehension nor production identity.
+
+## Fresh Windows wheel proof — 12 October 2026
+
+`outputs/final wheel proof 20261012-170410-654/final-proof.json` records **PASS**
+for source commit `a35071616f54468ccf7fea2080e126a4d2d3cea5` and installed
+implementation `08d220be933c725a1e61bc9737af6da1eaa2475ac63d18535c77802b137dea65`.
+The exact wheel SHA-256 is
+`d86c3f752bc34f5da3caee6a302ff4022f6d1662cfd05e84a01c148989d48135`.
+The retained installed-runtime and candidate-install reports show a fresh isolated
+environment, offline runtime-dependency installation, package and pack resolution
+inside installed `site-packages`, and paths containing spaces. Source/installed
+content parity and fail-closed configuration/bundle behavior were checked.
+The application was installed from the candidate wheel, not an editable checkout.
+Node and npm were not resolvable in the runtime; user-site packages and an in-runtime
+Playwright installation were absent. A separate browser driver exercised that
+installed application. This demonstrates the recorded Windows environment,
+not every machine or installation platform.
+
+All **11 bundled packs** passed generation, actual generated-checker conformance,
+HTTP responses, bundled frontend assets and declared navigation. Their **12,387
+candidate oracle cases** are bounded oracle data, not 12,387 independently written
+tests or eleven browser journeys. The one actual installed-app browser journey
+used RefundDesk. Its first **launcher**, PID `47872`, was observed stopped using
+Windows termination with return code `1`; replacement launcher PID `38632`
+served the same record in state `Withdrawn`, at version `1`, with one history
+entry. The replacement launcher was also observed stopped. Windows `python.exe`
+launches a separate listener worker, and this original proof did not capture
+worker identities or show the old port closing before replacement. Therefore
+the observed claim is **launcher-PID replacement and retained data**, not verified
+full-server shutdown and restart. A later scoped process inventory found no old
+proof processes, but that does not retroactively establish shutdown timing.
+
+A supplementary installed, HTTP-only proof then **passed** on a **copy** of the
+retained database. Its report is
+`outputs/installed restart supplement 20261012-171608-988/restart-supplement.json`.
+The first launcher was `21644`, with actual listener worker `44392`. Both exited;
+port `59525` was observed closed at `2026-10-12T06:16:14.457167+00:00`, before the
+replacement started at `2026-10-12T06:16:14.463244+00:00`. The replacement launcher
+`41656` and listener `47268` used the same copied database and exact app subject,
+preserving the same record in `Withdrawn`, version `1`, with one history entry.
+Both replacement processes exited and port `59533` was observed closed at
+`2026-10-12T06:16:19.098732+00:00`.
+
+This separately closes the missing listener/port evidence for the installed
+application's forced-stop/restart case; it is not a new browser test or proof of
+graceful shutdown. Hashes confirm the original `final-proof.json`, database and
+build stayed unchanged. Product source and the original browser journey also
+remain unchanged. The user's live application at `localhost:61875` uses a separate
+database and was not mutated by this proof.
+
+The earlier attempt remains a failure at
+`outputs/final wheel proof 20261012-170259-740/final-proof.json`: its metadata helper
+failed before building the candidate, with zero packs and browser `NOT_RUN`.
+The external harness was corrected to select top-level distribution `METADATA`
+rather than nested dependency metadata. No product-source repair is claimed for
+that helper error. Source and harness seals were unchanged within the successful
+run, and the earlier report is preserved.
+
+Normal `SOURCE_REVIEW_REQUIRED` remains visible. Legitimate owner approval, live
+providers, external delivery and **Linux installation** are `NOT_RUN` in this
+proof. The independent manual Linux quality job `38209843422` completed with
+**FAILURE** at `2026-10-12T06:10:37Z`. Its retained failed log is
+`outputs/exact-app-linux-failed-20261012.log`; the full nox invocation returned `1`.
+The seven failed sessions were traced to declared setup dependencies absent from
+the job, which previously installed only its narrower extras:
+
+| Failed session | Established missing setup dependency |
+|---|---|
+| `demos_typecheck` | Playwright types used by the demo tools. |
+| `graph_metamodel_full` | `jsonschema` needed for full test collection. |
+| `providers_contract` | `psutil` required by the provider-contract checks. |
+| `typecheck` and `typecheck_win32` | Tree-sitter libraries/types used by source analysis. |
+| `dependencies` | Distribution metadata supplied by the declared `xuml` dependencies. |
+| `coverage` | Hypothesis, JSON Schema and MCP dependencies required by the collected tests. |
+
+The quality workflow now declares installation of
+`.[dev,lint,testing,agents,providers,source-analysis,demos,xuml]`. The gate commands,
+thresholds and assertions are unchanged. This corrects setup for the identified
+failures; it does not establish that a future run will pass. The actual rerun is
+**pending until the workflow repair is pushed and executed**. The failed run and
+its separately skipped optional suites remain recorded; provisioning these extras
+does not turn earlier skipped checks into observed passes or promise that every
+optional tool is present.
+
+This remote failure does not change the distinct Windows observations. Automatic
+push CI remains `NOT_CONFIGURED`, and a manual quality run does not establish a
+Linux clean installation.
+
 ## Acceptance still required
 
-1. Complete legitimate owner source review and applicable remaining release,
-   packaging and clean-install checks on the identified candidate. Keep the
+1. Complete legitimate owner source review and applicable remaining release and
+   platform checks on the identified candidate. Keep the
    observed source-review gate separate from test
    failures. Preserve the eighth browser subject and all earlier outcomes; do not
    transfer approval/restart proof to later changed assets or substitute the
    earlier candidate wheel.
-2. Complete and inspect a new actual-app recording for this exact-app/React slice.
-   `outputs/16-play-polish.mp4` was shared for the earlier polish checkpoint and
-   does not demonstrate this later approval or React implementation.
-3. Complete the applicable [SD/UX acceptance rows](SELF-DOGFOOD-ACCEPTANCE.md),
+2. Complete the applicable [SD/UX acceptance rows](SELF-DOGFOOD-ACCEPTANCE.md),
    including keyboard and enlarged-text use, non-linear recovery, useful failure
    diagnosis and response times. Human comprehension and comparative builder
    performance remain unmeasured.

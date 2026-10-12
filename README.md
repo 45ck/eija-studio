@@ -36,6 +36,14 @@ This is the practical meaning of **UML as code** here: supported model elements 
 
 **AI proposes. The kernel checks. The owner decides.** Approval and activation are separate, explicit actions. Changed implementation keeps `SOURCE_REVIEW_REQUIRED` visible until legitimate owner source review. [Read the activation contract →](docs/engineering/PLAYIDE-ACTIVATION.md)
 
+<!-- readme:exact-app-review -->
+The review names the exact workflow, data contract, screens, generated files and runtime identity. Passing checks and unknowns stay visible.
+
+![The exact generated-app review identifies one captured bundle and displays passing and unknown checks](docs/assets/readme/exact-app-review-20261012.png)
+
+*Actual application, 12 October 2026. An explicitly labelled **synthetic owner test identity** exercises the review mechanics. This is not legitimate owner source review; the normal app still requires it. [Capture identities and scope](docs/assets/readme/react-20261012-manifest.json).*
+<!-- /readme:exact-app-review -->
+
 ## What you can do
 
 “Supported” below means the declared local workflow scope. It does not mean every UML construct or arbitrary codebase.
@@ -64,7 +72,23 @@ This is the practical meaning of **UML as code** here: supported model elements 
 
 ## Build something you can play with
 
-Start with **Refund desk**. A support-agent fixture assesses a request and proposes a refund. A supervisor approves it. A payment-system fixture records settlement—or fails, leaving a recovery path to inspect.
+Start with **Library loan**. A supported model gives you Records, New record, record details and workflow actions, with React forms built from the declared fields. You get a usable starting app alongside the model that explains it.
+
+<!-- readme:react-navigation -->
+![A generated React library app with model-derived record navigation and a creation form beside the accepted Renew UML draft](docs/assets/readme/react-navigation-20261012.png)
+
+*Actual application, 12 October 2026. A local candidate build with fixture actors; the workflow has not been activated. Create/read and supported state changes work here; general record editing and deletion remain unsupported.*
+<!-- /readme:react-navigation -->
+
+<!-- readme:screen-to-model -->
+**Follow a screen back to its meaning.** The app map connects a screen to its fields, declared authority, use case and record class. Its identity matches the generated app you are running; the service checks whether an action is allowed.
+
+![CheckOut in the app map, showing its record fields, declared Librarian authority and links to the screen, use case and record class](docs/assets/readme/screen-to-model-map-20261012.png)
+
+*UWE-inspired checked design, captured from the real app on 12 October 2026. This is a scoped screen-to-model map, not full UWE conformance. [Screenshot identities and scope](docs/assets/readme/react-20261012-manifest.json).*
+<!-- /readme:screen-to-model -->
+
+Try **Refund desk** for a different system. A support-agent fixture assesses a request and proposes a refund. A supervisor approves it. A payment-system fixture records settlement—or fails, leaving a recovery path to inspect.
 
 Switch actors, try an action and see why it commits or refuses. Change the model and inspect the difference. These are useful building blocks for business systems, multiplayer communities and approval workflows.
 
@@ -123,11 +147,25 @@ We want engineering to be something you want to come back to. Enjoyment and bett
 
 ## Watch a real run
 
-**1:03 · recorded 11 October 2026.** Follow seven committed RefundDesk actions through the diagram, inspect a payout failure and recovery, replay without database writes, then explore C4 for that same build.
+**Recorded 12 October 2026 from the actual local application.**
+
+| React app and connected map · 1:05 | Exact app review and restart · 2:28 |
+|---|---|
+| [![Watch a real React checkout and follow the app map into its model](docs/demos/assets/playide-react-20261012/navigation-poster.png)](docs/demos/assets/playide-react-20261012/playide-react-navigation.mp4) | [![Watch synthetic-owner activation survive restart, then commit the new Renew action](docs/demos/assets/playide-react-20261012/activation-poster.png)](docs/demos/assets/playide-react-20261012/playide-exact-app-activation.mp4) |
+| Recover from a refused model change, run a real checkout and follow connected design views. No approval or activation. | An **explicitly labelled synthetic owner** reviews and activates the exact app; a new server process reopens it and completes three real local actions. |
+
+Fixture actors, local records and inspected recordings. The normal source-review gate remains enforced; the longer clip does not establish legitimate owner review. [Checks, exact identities and limitations](docs/demos/assets/playide-react-20261012/manifest.json) · [Post-restart native frame](docs/assets/readme/renewal-after-restart-20261012.png).
+
+<details>
+<summary>Earlier recording: RefundDesk recovery and C4 · 1:03 · 11 October 2026</summary>
+
+Follow seven committed RefundDesk actions through the diagram, inspect a payout failure and recovery, replay without database writes, then explore C4 for that same build. This retained recording predates the React navigation and exact generated-app review shown above.
 
 <a href="docs/demos/assets/playide-live-20261011/playide-live-c4.mp4"><img src="docs/demos/assets/playide-live-20261011/poster.png" alt="Watch RefundDesk actions move through the UML model, recover from a reported payout failure and inspect the generated C4 architecture" width="640"></a>
 
 Actual local application, manually operated fixture actors, no external payout. The inspected recording retains the source-review boundary. [Watch the MP4](docs/demos/assets/playide-live-20261011/playide-live-c4.mp4) · [Checks, source identity and limits](docs/demos/assets/playide-live-20261011/manifest.json).
+
+</details>
 
 ## Try it
 

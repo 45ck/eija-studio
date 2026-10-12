@@ -1,0 +1,282 @@
+{
+  "schema": "playide.public-capture.v1",
+  "capture_date": "2026-10-12",
+  "videos": [
+    {
+      "file": "playide-react-navigation.mp4",
+      "sha256": "b47ecdbe7621cde392ba1cf743f8cd7f0c601caba81f98db2a6e75bf95cc3d37",
+      "seconds": 64.6,
+      "codec": "H.264",
+      "dimensions": [
+        1600,
+        1000
+      ],
+      "poster": {
+        "file": "navigation-poster.png",
+        "sha256": "39d6f9f573c2e4e527ea99f0822d57d298c4c7a3826c01be865d46334bb3d47e",
+        "kind": "Unedited native browser screenshot from this recorded take; no compositing",
+        "source_image": "docs/assets/readme/screen-to-model-map-20261012.png"
+      },
+      "capture_date": "2026-10-12",
+      "source_revision": "a35071616f54468ccf7fea2080e126a4d2d3cea5",
+      "source_tree": "clean committed tracked tree",
+      "implementation_digest": "08d220be933c725a1e61bc9737af6da1eaa2475ac63d18535c77802b137dea65",
+      "scope": "Normal source; protected model refusal, Renew draft, actual React navigation and CheckOut, exact-subject checked-design map. No owner approval or activation.",
+      "build_subject": {
+        "format": "eija.build-subject.v1",
+        "model_hash": "d78eadb63306c71428f49b57101c9fe1773499d9316a9b3102b3b6edbed55cda",
+        "workflow_digest": "548f8aece20cdfee9eebd14973876490dbf804517d8909c560200d6e182701ca",
+        "pack_digest": "088df5ae701b215b9beaa327b18e2de444bc93fb6eb3b5f0e856a773dee556f5",
+        "data_digest": "9a928ece82bad522887572494f3ab96e4a9c0350454d72c7dc08f8ecf6a6ac9b",
+        "screens_digest": "76ca5ea9905ce3c5b6c63ba93fb9c80c520c826eccac6d67b34e8123ee0d4559",
+        "templates_digest": "a8db0100dd00f881c6661470913a40ee0641a5d16c783eadf72d0a88b76008ed",
+        "template_paths": [
+          "app/__init__.py",
+          "app/build_identity.py",
+          "app/server.py",
+          "app/service.py",
+          "app/web/app.css",
+          "app/web/app.js",
+          "app/web/index.html",
+          "frontend/LICENSES.txt",
+          "frontend/app.css",
+          "frontend/build-manifest.json",
+          "frontend/build.mjs",
+          "frontend/controller.js",
+          "frontend/main.jsx",
+          "frontend/package-lock.json",
+          "frontend/package.json",
+          "run.py",
+          "tests/test_conformance.py"
+        ],
+        "implementation_digest": "08d220be933c725a1e61bc9737af6da1eaa2475ac63d18535c77802b137dea65",
+        "payload_paths": [
+          "README.md",
+          "app/__init__.py",
+          "app/build_identity.py",
+          "app/data.json",
+          "app/model.json",
+          "app/navigation.json",
+          "app/pack.json",
+          "app/screens.json",
+          "app/server.py",
+          "app/service.py",
+          "app/web/app.css",
+          "app/web/app.js",
+          "app/web/index.html",
+          "frontend/LICENSES.txt",
+          "frontend/app.css",
+          "frontend/build-manifest.json",
+          "frontend/build.mjs",
+          "frontend/controller.js",
+          "frontend/main.jsx",
+          "frontend/package-lock.json",
+          "frontend/package.json",
+          "run.py",
+          "tests/__init__.py",
+          "tests/oracle.json",
+          "tests/test_conformance.py"
+        ],
+        "generated_files_hash": "f4d449292e2b7f943f6ba6b9e3a6708e912cd9b041a4ce2934ccb484b4408e7d",
+        "digest": "69106fc191eb6abe5856bdf9928399f26e4390371b96ccc8a17451b44f9c341a"
+      },
+      "verification": {
+        "assertions": "PASS",
+        "entire_mp4_decode": "PASS",
+        "visual_inspection": "PASS_WITH_DIFF_VIEW_NOTE",
+        "page_errors": 0,
+        "unexpected_console": 0,
+        "unexpected_http": 0,
+        "csp_errors": 0,
+        "source_and_helpers_unchanged": true
+      },
+      "presentation_note": "Model remains in UML diff view during CheckOut; committed trace and result are visible, not an animated checkout edge."
+    },
+    {
+      "file": "playide-exact-app-activation.mp4",
+      "sha256": "60247c72d55c5bc8b2b6a653165255133d76b33f6f99c48e4ebb9b874196f443",
+      "seconds": 148.04,
+      "codec": "H.264",
+      "dimensions": [
+        1600,
+        1000
+      ],
+      "poster": {
+        "file": "activation-poster.png",
+        "sha256": "5909beade44ef104b7b4c8fb5ecb1e1bbec84a5e9b2fd934f14c277b1abb497a",
+        "kind": "Unedited native browser screenshot from this recorded take; no compositing",
+        "source_image": "docs/assets/readme/renewal-after-restart-20261012.png"
+      },
+      "capture_date": "2026-10-12",
+      "source_revision": "a35071616f54468ccf7fea2080e126a4d2d3cea5",
+      "source_tree": "clean committed tracked tree",
+      "implementation_digest": "08d220be933c725a1e61bc9737af6da1eaa2475ac63d18535c77802b137dea65",
+      "scope": "Explicit synthetic owner mechanics: exact app review, deliberate answer refusal, correction, approval, activation, fresh-process reopening and three committed local actions. Normal source-review gate remains required.",
+      "build_subject": {
+        "format": "eija.build-subject.v1",
+        "model_hash": "d78eadb63306c71428f49b57101c9fe1773499d9316a9b3102b3b6edbed55cda",
+        "workflow_digest": "548f8aece20cdfee9eebd14973876490dbf804517d8909c560200d6e182701ca",
+        "pack_digest": "088df5ae701b215b9beaa327b18e2de444bc93fb6eb3b5f0e856a773dee556f5",
+        "data_digest": "9a928ece82bad522887572494f3ab96e4a9c0350454d72c7dc08f8ecf6a6ac9b",
+        "screens_digest": "76ca5ea9905ce3c5b6c63ba93fb9c80c520c826eccac6d67b34e8123ee0d4559",
+        "templates_digest": "a8db0100dd00f881c6661470913a40ee0641a5d16c783eadf72d0a88b76008ed",
+        "template_paths": [
+          "app/__init__.py",
+          "app/build_identity.py",
+          "app/server.py",
+          "app/service.py",
+          "app/web/app.css",
+          "app/web/app.js",
+          "app/web/index.html",
+          "frontend/LICENSES.txt",
+          "frontend/app.css",
+          "frontend/build-manifest.json",
+          "frontend/build.mjs",
+          "frontend/controller.js",
+          "frontend/main.jsx",
+          "frontend/package-lock.json",
+          "frontend/package.json",
+          "run.py",
+          "tests/test_conformance.py"
+        ],
+        "implementation_digest": "08d220be933c725a1e61bc9737af6da1eaa2475ac63d18535c77802b137dea65",
+        "payload_paths": [
+          "README.md",
+          "app/__init__.py",
+          "app/build_identity.py",
+          "app/data.json",
+          "app/model.json",
+          "app/navigation.json",
+          "app/pack.json",
+          "app/screens.json",
+          "app/server.py",
+          "app/service.py",
+          "app/web/app.css",
+          "app/web/app.js",
+          "app/web/index.html",
+          "frontend/LICENSES.txt",
+          "frontend/app.css",
+          "frontend/build-manifest.json",
+          "frontend/build.mjs",
+          "frontend/controller.js",
+          "frontend/main.jsx",
+          "frontend/package-lock.json",
+          "frontend/package.json",
+          "run.py",
+          "tests/__init__.py",
+          "tests/oracle.json",
+          "tests/test_conformance.py"
+        ],
+        "generated_files_hash": "f4d449292e2b7f943f6ba6b9e3a6708e912cd9b041a4ce2934ccb484b4408e7d",
+        "digest": "69106fc191eb6abe5856bdf9928399f26e4390371b96ccc8a17451b44f9c341a"
+      },
+      "verification": {
+        "assertions": "PASS",
+        "entire_mp4_decode": "PASS",
+        "visual_inspection": "PASS",
+        "page_errors": 0,
+        "unexpected_console": 0,
+        "unexpected_http": 0,
+        "csp_errors": 0,
+        "source_and_helpers_unchanged": true
+      },
+      "presentation_note": "Native source status identifies the synthetic owner; the final measured-source view retains SOURCE_REVIEW_REQUIRED."
+    }
+  ],
+  "images": [
+    {
+      "file": "docs/assets/readme/react-navigation-20261012.png",
+      "sha256": "1a261275944d18909aa39ff530776577c5e5c2eb40688705830faea4b1a1c9e7",
+      "kind": "Native browser screenshot; unedited",
+      "capture_date": "2026-10-12",
+      "caption": "Model-derived Records, New Loan and Record detail navigation with standard forms.",
+      "scope": "Normal source; supported candidate preview; fixture actor",
+      "source_revision": "a35071616f54468ccf7fea2080e126a4d2d3cea5",
+      "source_tree": "clean committed tracked tree",
+      "implementation_digest": "08d220be933c725a1e61bc9737af6da1eaa2475ac63d18535c77802b137dea65",
+      "build_subject_digest": "69106fc191eb6abe5856bdf9928399f26e4390371b96ccc8a17451b44f9c341a"
+    },
+    {
+      "file": "docs/assets/readme/screen-to-model-map-20261012.png",
+      "sha256": "39d6f9f573c2e4e527ea99f0822d57d298c4c7a3826c01be865d46334bb3d47e",
+      "kind": "Native browser screenshot; unedited",
+      "capture_date": "2026-10-12",
+      "caption": "The CheckOut screen maps to fields, declared authority, a use case and a record class.",
+      "scope": "CHECKED_DESIGN projection of the exact local React build",
+      "source_revision": "a35071616f54468ccf7fea2080e126a4d2d3cea5",
+      "source_tree": "clean committed tracked tree",
+      "implementation_digest": "08d220be933c725a1e61bc9737af6da1eaa2475ac63d18535c77802b137dea65",
+      "build_subject_digest": "69106fc191eb6abe5856bdf9928399f26e4390371b96ccc8a17451b44f9c341a"
+    },
+    {
+      "file": "docs/assets/readme/exact-app-review-20261012.png",
+      "sha256": "74fe30a7572e79931dc2968eee88ed1166a44e154750b0e8f959058d90368d40",
+      "kind": "Native browser screenshot; unedited",
+      "capture_date": "2026-10-12",
+      "caption": "The review names the captured generated app and shows passing and unknown checks.",
+      "scope": "Explicit synthetic owner test identity; not legitimate owner review",
+      "source_revision": "a35071616f54468ccf7fea2080e126a4d2d3cea5",
+      "source_tree": "clean committed tracked tree",
+      "implementation_digest": "08d220be933c725a1e61bc9737af6da1eaa2475ac63d18535c77802b137dea65",
+      "build_subject_digest": "69106fc191eb6abe5856bdf9928399f26e4390371b96ccc8a17451b44f9c341a"
+    },
+    {
+      "file": "docs/assets/readme/renewal-after-restart-20261012.png",
+      "sha256": "5909beade44ef104b7b4c8fb5ecb1e1bbec84a5e9b2fd934f14c277b1abb497a",
+      "kind": "Native browser screenshot; unedited",
+      "capture_date": "2026-10-12",
+      "caption": "The activated Renew action commits in the same app after a fresh-process restart.",
+      "scope": "Synthetic owner mechanics and fixture actor; real local record mutation",
+      "source_revision": "a35071616f54468ccf7fea2080e126a4d2d3cea5",
+      "source_tree": "clean committed tracked tree",
+      "implementation_digest": "08d220be933c725a1e61bc9737af6da1eaa2475ac63d18535c77802b137dea65",
+      "build_subject_digest": "69106fc191eb6abe5856bdf9928399f26e4390371b96ccc8a17451b44f9c341a"
+    }
+  ],
+  "tools": {
+    "python": "3.12.10",
+    "playwright": "1.63.0",
+    "pytest": "9.0.2",
+    "httpx": "0.28.1",
+    "ffmpeg": "8.0.1-full_build-www.gyan.dev",
+    "ffprobe": "8.0.1-full_build-www.gyan.dev",
+    "installed_chrome_product_version": "154.0.8037.99"
+  },
+  "steps": {
+    "short": [
+      "Inspect a protected-path refusal and recover with Undo",
+      "Add the supported Renew transition and inspect its UML diff",
+      "Build the generated React app and create a real local record",
+      "Commit CheckOut and inspect its matching trace",
+      "Follow exact-subject map links to the screen, use case and record class"
+    ],
+    "complete": [
+      "Show the normal source-review gate",
+      "Enter the explicitly labelled disposable synthetic-owner fixture",
+      "Refuse and recover a model edit; inspect the accepted Renew diff",
+      "Build and review the exact generated app bundle",
+      "Refuse an incorrect synthetic answer, refresh evidence and correct it",
+      "Explicitly approve and separately activate",
+      "Stop the server and reopen the same workspace in a new process",
+      "Build the same exact approved app and commit CheckOut, MarkOverdue and Renew",
+      "Show that normal SOURCE_REVIEW_REQUIRED remains"
+    ]
+  },
+  "limitations": [
+    "Legitimate owner source review remains NOT_RUN; synthetic approval is test mechanics only.",
+    "Fixture actors do not establish production identity or authentication.",
+    "Record creation/read and supported workflow state changes are demonstrated; general update/delete are unsupported.",
+    "The presentation map is UWE-inspired checked design, not full UWE conformance or independent runtime proof.",
+    "No external delivery, payment, deployment, data migration, human comprehension study or full milestone acceptance claim.",
+    "Raw browser recordings, assertions and the failed capture-only sanity attempt are retained separately; private workspace material is not in this public package."
+  ],
+  "historical_media": "The 11 October RefundDesk/C4 captures remain separate historical recordings with their original provenance; this package does not replace or relabel them.",
+  "security": {
+    "normal_csp": true,
+    "source_stamping": false,
+    "signed_in_profile_reuse": false,
+    "real_owner_approval": false,
+    "response_substitution": false,
+    "image_editing_or_compositing": false
+  }
+}
