@@ -62,6 +62,7 @@ Pure: no IO, no clock, no randomness. The same pack and model always give byte-i
 * [`application/runtime`](/modules/application/runtime.md)
 * [`domain/data`](/modules/domain/data.md)
 * [`domain/models`](/modules/domain/models.md)
+* [`domain/navigation`](/modules/domain/navigation.md)
 * [`domain/pack`](/modules/domain/pack.md)
 * [`domain/policy`](/modules/domain/policy.md)
 * [`domain/screens`](/modules/domain/screens.md)
@@ -78,12 +79,14 @@ _No curated notes yet._
 * [application.runtime](/modules/application/runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.
 * [domain.data](/modules/domain/data.md) - The data model of a pack, shown as a UML class diagram (ADR-0153): entities, typed attributes and associations.
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
+* [domain.navigation](/modules/domain/navigation.md) - The generated app's bounded navigation, derived from its existing contracts.
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
 * [domain.policy](/modules/domain/policy.md) - Generic policy: coherence with a domain pack's declared action catalog, the pack's laws, and declared effects.
 * [domain.screens](/modules/domain/screens.md) - Screens: the user interface of a pack's app, designed against its use cases and data model (ADR-0154).
 
 ## Referenced by
 
+* [application.generated_app](/modules/application/generated_app.md) - Shared generation and exact-app evidence operations for the existing kernel and checker.
 * [interfaces.app_build](/modules/interfaces/app_build.md) - `eija build`: write a runnable app generated from a pack's model, then run its kernel conformance tests (ADR-0150).
 * [application.appgen.FORMAT](/symbols/application/appgen/FORMAT.md) - Constant `FORMAT` in `application/appgen`.
 * [application.appgen.LIMITS](/symbols/application/appgen/LIMITS.md) - Constant `LIMITS` in `application/appgen`.

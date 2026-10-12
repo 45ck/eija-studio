@@ -7,7 +7,7 @@ tags:
 - symbol
 - application
 - method
-status: stable
+status: deprecated
 generated:
   by: process:eija-okf-sync
 sources:

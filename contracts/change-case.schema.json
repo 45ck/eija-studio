@@ -108,6 +108,209 @@
       "title": "Alternative",
       "type": "object"
     },
+    "GeneratedAppBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "format": {
+          "const": "eija.generated-app-review.v1",
+          "title": "Format",
+          "type": "string"
+        },
+        "subject": {
+          "$ref": "#/$defs/GeneratedBuildSubject"
+        },
+        "checker": {
+          "$ref": "#/$defs/GeneratedChecker"
+        },
+        "configuration": {
+          "$ref": "#/$defs/GeneratedCheckConfiguration"
+        },
+        "digest": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Digest",
+          "type": "string"
+        }
+      },
+      "required": [
+        "format",
+        "subject",
+        "checker",
+        "configuration",
+        "digest"
+      ],
+      "title": "GeneratedAppBinding",
+      "type": "object"
+    },
+    "GeneratedBuildSubject": {
+      "additionalProperties": false,
+      "properties": {
+        "format": {
+          "const": "eija.build-subject.v1",
+          "title": "Format",
+          "type": "string"
+        },
+        "model_hash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Model Hash",
+          "type": "string"
+        },
+        "workflow_digest": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Workflow Digest",
+          "type": "string"
+        },
+        "pack_digest": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Pack Digest",
+          "type": "string"
+        },
+        "data_digest": {
+          "anyOf": [
+            {
+              "pattern": "^[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Data Digest"
+        },
+        "screens_digest": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Screens Digest",
+          "type": "string"
+        },
+        "templates_digest": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Templates Digest",
+          "type": "string"
+        },
+        "template_paths": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Template Paths",
+          "type": "array"
+        },
+        "implementation_digest": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Implementation Digest",
+          "type": "string"
+        },
+        "payload_paths": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Payload Paths",
+          "type": "array"
+        },
+        "generated_files_hash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Generated Files Hash",
+          "type": "string"
+        },
+        "digest": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Digest",
+          "type": "string"
+        }
+      },
+      "required": [
+        "format",
+        "model_hash",
+        "workflow_digest",
+        "pack_digest",
+        "data_digest",
+        "screens_digest",
+        "templates_digest",
+        "template_paths",
+        "implementation_digest",
+        "payload_paths",
+        "generated_files_hash",
+        "digest"
+      ],
+      "title": "GeneratedBuildSubject",
+      "type": "object"
+    },
+    "GeneratedCheckConfiguration": {
+      "additionalProperties": false,
+      "properties": {
+        "runner": {
+          "const": "python-unittest-discover",
+          "title": "Runner",
+          "type": "string"
+        },
+        "arguments": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Arguments",
+          "type": "array"
+        },
+        "timeout_seconds": {
+          "exclusiveMinimum": 0,
+          "title": "Timeout Seconds",
+          "type": "integer"
+        },
+        "python_version": {
+          "title": "Python Version",
+          "type": "string"
+        },
+        "platform": {
+          "title": "Platform",
+          "type": "string"
+        },
+        "environment_digest": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Environment Digest",
+          "type": "string"
+        },
+        "runner_environment_digest": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Runner Environment Digest",
+          "type": "string"
+        },
+        "isolation": {
+          "const": "isolated-python-fresh-bytecode-v1",
+          "title": "Isolation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "runner",
+        "arguments",
+        "timeout_seconds",
+        "python_version",
+        "platform",
+        "environment_digest",
+        "runner_environment_digest",
+        "isolation"
+      ],
+      "title": "GeneratedCheckConfiguration",
+      "type": "object"
+    },
+    "GeneratedChecker": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "const": "generated-unittest-conformance-v1",
+          "title": "Id",
+          "type": "string"
+        },
+        "digest": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Digest",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "digest"
+      ],
+      "title": "GeneratedChecker",
+      "type": "object"
+    },
     "OwnerPlanSelection": {
       "additionalProperties": false,
       "properties": {
@@ -898,6 +1101,17 @@
         }
       ],
       "title": "Decision"
+    },
+    "app_build": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/GeneratedAppBinding"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
     },
     "created_at": {
       "title": "Created At",

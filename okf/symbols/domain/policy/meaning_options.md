@@ -47,5 +47,5 @@ _No curated notes yet._
 
 ## Referenced by
 
-* [application.service.Studio.view](/symbols/application/service/Studio.view.md) - `def view(self, case_id: str, scope: str='local-demo') -> dict[str, Any]` in `application/service`.
+* [application.service_views.StudioViews.view](/symbols/application/service_views/StudioViews.view.md) - `def view(self, case_id: str, scope: str='local-demo') -> dict[str, Any]` in `application/service_views`.
 <!-- okf:generated:end links -->

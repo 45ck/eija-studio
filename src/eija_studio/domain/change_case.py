@@ -3,6 +3,7 @@ from typing import Annotated, Any, Literal
 from pydantic import Field
 from .models import Contract, Workflow, Proposal, DomainError
 from .transactions import Transaction
+from .generated_app import GeneratedAppBinding
 
 
 class OwnerPlanStep(Contract):
@@ -22,6 +23,7 @@ class OwnerPlanRequest(Contract):
     expected_baseline_semantic_hash: str = Field(pattern=r"^[a-f0-9]{64}$")
     expected_candidate_semantic_hash: str = Field(pattern=r"^[a-f0-9]{64}$")
     steps: tuple[OwnerPlanStep, ...] = Field(min_length=1, max_length=64)
+    expected_build_digest: str | None = Field(default=None, pattern=r"^[a-f0-9]{64}$")
 
 
 class PackMeaningSelection(Contract):
@@ -60,6 +62,7 @@ class ChangeCase(Contract):
     layout: dict[str, dict[str, int]]
     receipts: tuple[dict[str, Any], ...]
     decision: dict[str, Any] | None
+    app_build: GeneratedAppBinding | None = None
     created_at: str
 
     def require_editable(self) -> None:

@@ -89,6 +89,7 @@ _No curated notes yet._
 * [application.ports](/modules/application/ports.md) - Application-owned ports.
 * [application.ripple](/modules/application/ripple.md) - Ripple (ADR-0158): what one change to the state machine does to every other diagram of the same system, and the follow-on edits that would keep them in agreeme…
 * [application.service](/modules/application/service.md) - Module `application/service` (no module docstring).
+* [application.service_views](/modules/application/service_views.md) - Read-only Studio projections over the same case, pack and exact-app evidence.
 * [domain.affordance](/modules/domain/affordance.md) - Affordance map (WBS 1.3): which single edits the kernel would accept, and why the others are refused.
 * [domain.change_case](/modules/domain/change_case.md) - Module `domain/change_case` (no module docstring).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).

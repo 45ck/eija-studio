@@ -104,14 +104,47 @@ def _positive_tabindex_literals(source: str) -> list[str]:
     """Positive literal indexes change sequential keyboard order; signed zero and -1 do not."""
     # A programmatic focus target uses -1 without changing sequential navigation. Parse the sign rather than
     # skipping every non-digit: that would misclassify a legitimate tabindex="-1" as a positive index.
-    indexes = re.findall(r"\btabindex\b[\"']?\s*[:=]\s*[\"']?\s*([+-]?\d+)\b", source, re.IGNORECASE)
+    indexes = re.findall(r"\btabindex\b[\"']?\s*[:=]\s*[{\"']?\s*([+-]?\d+)\b", source, re.IGNORECASE)
     return [index for index in indexes if int(index) > 0]
+
+
+def _react_labels(page: str) -> bool:
+    """Bounded authored JSX contract for the maintained native input components.
+
+    Check the actual field labels, IDs and actor/title bindings, not marker comments
+    in a minified bundle. Browser axe/focus checks still establish rendered behavior.
+    """
+    contracts = (
+        r'<label\s+htmlFor="actor"', r'<NativeSelect\s+id="actor"',
+        r'<TextInput\s+id="title"\s+label="Record name"',
+        r'const\s+id\s*=\s*`field-\$\{field\.name\}`',
+        r'const\s+common\s*=\s*\{id,\s*label:\s*field\.label',
+        r'<Checkbox\s+\{\.\.\.common\}', r'<NativeSelect\s+\{\.\.\.props\}',
+        r'<TextInput\s+\{\.\.\.props\}', r'const\s+props\s*=\s*\{\.\.\.common,',
+    )
+    return all(re.search(contract, page) for contract in contracts)
+
+
+def _react_required(page: str) -> bool:
+    title = re.search(r'<TextInput\s+id="title"\s+[^>]*\brequired\b', page)
+    fields = re.search(r'const\s+props\s*=\s*\{\.\.\.common,[^}]*required:\s*field\.required', page)
+    return bool(title and fields)
+
+
+def _labelled_controls(page: str, html: str) -> bool:
+    if "<TextInput" in page:
+        return _react_labels(page)
+    return 'el("label"' in page and "{ for: id }" in page and '<label class="actor">' in html
+
+
+def _required_controls(page: str) -> bool:
+    return _react_required(page) if "<TextInput" in page else "input.required = true" in page
 
 
 def _template_checks(page: str, html: str) -> list[dict[str, Any]]:
     positive = _positive_tabindex_literals(page + html)
-    labelled = 'el("label"' in page and "{ for: id }" in page and '<label class="actor">' in html
-    required = "input.required = true" in page
+    labelled = _labelled_controls(page, html)
+    required = _required_controls(page)
     return [
         _check("keyboard-order", "2.4.3", "FAIL" if positive else "PASS",
                "Keyboard order follows the screen: fields in the screen's order, no positive tabindex" if not positive

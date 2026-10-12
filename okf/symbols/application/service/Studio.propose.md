@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.propose
   title: application/service.py
   hash_method: ast-v2
-  sha256: ec580383b5e6826564213f3a9a2ba73defc6e33a4c3ee76bb7186d031783972d
+  sha256: 12f8b3243fd42ada9d897e5293ab0a1d0dd188149e11cce8621370a1baee7576
 description_override: Asks the configured provider for an untrusted interpretation and records the run; networked providers need startup enablement and explicit consent.
-notes_baseline: a88e6a4f634cb928096830759dec859aeb739d1cb0339ecea121bae9dc4d95d2
+notes_baseline: fd4d34fe248cfd60543e5a827dbbe5a18cf7605b66b2c32b89f2cfe3b8da576b
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -30,6 +30,10 @@ verified:
   at: '2026-10-02T05:15:30Z'
   notes_sha256: 9eaed967eadbbad9e46e1dc21c81f14dd4ab9fab4ef1b40dd4b567b578051604
   sources_sha256: a88e6a4f634cb928096830759dec859aeb739d1cb0339ecea121bae9dc4d95d2
+- by: process:playide-exact-app
+  at: '2026-10-11T09:17:31Z'
+  notes_sha256: 9eaed967eadbbad9e46e1dc21c81f14dd4ab9fab4ef1b40dd4b567b578051604
+  sources_sha256: fd4d34fe248cfd60543e5a827dbbe5a18cf7605b66b2c32b89f2cfe3b8da576b
 ---
 
 # application.service.Studio.propose

@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.undo
   title: application/service.py
   hash_method: ast-v2
-  sha256: 8338747a2a5019066b1fd14e7192876fe88cc39fa6740fd33b0cdb42401f51b2
-notes_baseline: 0343a6b191cb70a69d457f074f5a73a45adeea09821e79fc40d484318e69f89f
+  sha256: f4805c1c0bf49b2731dc25a16e022bc758bdc6686ab6bbbc0460b77cbb18f916
+notes_baseline: 89a7f0f97eab90ed3a07be3aba0d77aaf5df0795053ab6a18bcfaa394c319c0b
 ---
 
 # application.service.Studio.undo

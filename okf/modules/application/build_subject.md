@@ -67,6 +67,9 @@ _No curated notes yet._
 ## Referenced by
 
 * [application.c4](/modules/application/c4.md) - Read-only C4 views of generated source and declared model contracts.
+* [application.generated_app](/modules/application/generated_app.md) - Shared generation and exact-app evidence operations for the existing kernel and checker.
+* [application.presentation](/modules/application/presentation.md) - A bounded presentation/navigation lens over one exact generated snapshot.
+* [bootstrap](/modules/bootstrap.md) - The only composition root: wires application ports to concrete adapters.
 * [interfaces.app_build](/modules/interfaces/app_build.md) - `eija build`: write a runnable app generated from a pack's model, then run its kernel conformance tests (ADR-0150).
 * [application.build_subject.FORMAT](/symbols/application/build_subject/FORMAT.md) - Constant `FORMAT` in `application/build_subject`.
 * [application.build_subject.SUBJECT_FILE](/symbols/application/build_subject/SUBJECT_FILE.md) - Constant `SUBJECT_FILE` in `application/build_subject`.

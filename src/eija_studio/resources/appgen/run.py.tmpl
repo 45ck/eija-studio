@@ -3,9 +3,9 @@ from __future__ import annotations
 
 import argparse
 import os
+import sys
 from pathlib import Path
-
-from app.server import serve
+from tempfile import TemporaryDirectory
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
@@ -13,4 +13,9 @@ if __name__ == "__main__":
     parser.add_argument("--data", type=Path, default=Path(__file__).resolve().parent / "data" / "app.sqlite3")
     args = parser.parse_args()
     args.data.parent.mkdir(parents=True, exist_ok=True)
-    serve(str(args.data), args.port)
+    # Source identity must name the modules actually imported, including after a source-preserving cache replacement.
+    with TemporaryDirectory(prefix="app-bytecode-", dir=args.data.parent, ignore_cleanup_errors=True) as cache:
+        sys.pycache_prefix = cache
+        sys.dont_write_bytecode = True
+        from app.server import serve
+        serve(str(args.data), args.port)

@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.select
   title: application/service.py
   hash_method: ast-v2
-  sha256: 76c5d3ed33d7ef674e694868fca61c76b7777ab719ae0cb7ca8ccf997125306b
+  sha256: 82c19f6577cd4667ffcd688af8065d10ea7876652185ca1c6f5c41e640e46f50
 description_override: Records the owner's explicit choice of one supported interpretation and derives the candidate workflow.
-notes_baseline: a06f28bf48eb959585831b6901954565a169d3ccb671b55b8536f18fa1c2d9ed
+notes_baseline: 32b88bbceb5a968f9986b489175d3590c43521498ddcb3f278551cf5b1660e04
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -38,6 +38,10 @@ verified:
   at: '2026-10-10T02:55:29+00:00'
   notes_sha256: a4dd6830ec6017d5baa2488635f63c73e3858353ba331cb525397c59aff89085
   sources_sha256: a06f28bf48eb959585831b6901954565a169d3ccb671b55b8536f18fa1c2d9ed
+- by: process:playide-exact-app
+  at: '2026-10-11T09:17:31Z'
+  notes_sha256: a4dd6830ec6017d5baa2488635f63c73e3858353ba331cb525397c59aff89085
+  sources_sha256: 32b88bbceb5a968f9986b489175d3590c43521498ddcb3f278551cf5b1660e04
 ---
 
 # application.service.Studio.select

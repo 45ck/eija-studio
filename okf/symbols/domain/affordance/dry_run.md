@@ -51,5 +51,5 @@ _No curated notes yet._
 
 ## Referenced by
 
-* [application.service.Studio.edit_check](/symbols/application/service/Studio.edit_check.md) - Dry-run one edit: {legal, codes, refs}.
+* [application.service_views.StudioViews.edit_check](/symbols/application/service_views/StudioViews.edit_check.md) - Dry-run one edit: {legal, codes, refs}.
 <!-- okf:generated:end links -->

@@ -46,6 +46,6 @@ Owned by the application so [verify_runtime](/symbols/application/verifier/verif
 
 ## Referenced by
 
-* [application.service.Studio](/symbols/application/service/Studio.md) - `class Studio` in `application/service`.
+* [application.service.Studio](/symbols/application/service/Studio.md) - `class Studio(StudioViews)` in `application/service`.
 * [application.verifier.verify_runtime](/symbols/application/verifier/verify_runtime.md) - `def verify_runtime(model: Workflow, subject: dict[str, Any], sandbox: SandboxFactory, pack: Pack | None=None)…` in `application/verifier`.
 <!-- okf:generated:end links -->

@@ -1,6 +1,12 @@
 # Update log
 
+## 2026-10-12
+
+* **Separate read views from authority**: synced `application.service_views` and the shared generated-app operations after the unchanged maintainability budget exposed growth in `Studio`. Read-only queries now live in `StudioViews`; commands, signed decisions, concurrency checks and atomic application remain in `Studio`. Re-read the eight affected curated pages as `process:playide-service-cohesion`, including inherited source locations and the difference between supplied-input assembly and port-observed evidence. Deprecated method pages retain their history. The focused 70-test run passed, including race checks and deliberately broken implementations; browser and release results remain separate evidence. No human source approval was recorded.
+
 ## 2026-10-11
+
+* **Exact app approval, React and model-derived navigation**: synced ADR-0224–0226, the generated-app port and association, canonical navigation and presentation inspection. Re-read the twelve affected curated pages against their current source as `process:playide-exact-app`; clarified separate generated execution receipts, post-sealing freshness, atomic association and historical workflow-only cases. The capability map names executable navigation and checked-design presentation links. Re-read the React accessibility Notes as `process:playide-react-record-name` after separating generic record metadata from model attributes; static checks inspect authored controls and browser behavior remains separate evidence. No human source approval was recorded.
 
 * **Exact generated subject and connected local workbench**: synced ADR-0223, generated build identity, C4 projections, process replacement and capability disclosures. The installed runtime and core review evidence now bind generator templates as implementation. Re-read accessibility Notes against the signed-tabindex helpers as `process:playide-integration`. Workspace recovery stores presentation context, not authority or evidence. Knowledge-base review is separate from the retained browser, regression and installation runs; no human source approval was recorded.
 * **Build identity dependency repair**: the generated-build path now receives the existing live `IdentityProvider` from Studio or CLI composition. Source remeasurement remains in place before and after generation/conformance, without a new dependency from app generation into bootstrap. Synced the affected module pages; the architecture budget is unchanged. Targeted metric and caller observations are recorded separately.

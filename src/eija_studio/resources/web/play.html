@@ -21,6 +21,7 @@
 <link rel="stylesheet" href="/assets/play-game.css">
 <link rel="stylesheet" href="/assets/play-live.css">
 <link rel="stylesheet" href="/assets/play-c4.css">
+<link rel="stylesheet" href="/assets/play-presentation.css">
 <script src="/assets/vendor/dagre.min.js" defer></script>
 <script src="/assets/vendor/maxgraph.min.js" defer></script>
 <script src="/assets/play-shell.js" defer></script>
@@ -44,6 +45,7 @@
 <script src="/assets/play-game.js" defer></script>
 <script src="/assets/play-live.js" defer></script>
 <script src="/assets/play-c4.js" defer></script>
+<script src="/assets/play-presentation.js" defer></script>
 </head>
 <body>
 <header class="bar">
@@ -333,6 +335,7 @@
         <section id="run" class="run" aria-labelledby="run-title" hidden>
           <div class="run-head"><div class="play-app-heading"><h2 id="run-title">Local app</h2><p id="play-model-status" class="play-only" role="status" aria-live="polite">Last checked build · fixture actors</p></div><div class="play-app-tools"><button id="play-rebuild" class="quiet play-only" type="button">Rebuild app</button><a id="run-open" class="quiet" target="_blank" rel="noopener" title="Open the local app in a new tab">Open app</a></div></div>
           <iframe id="run-frame" title="The app built from this model"></iframe>
+          <details id="presentation-panel"></details>
           <p class="play-runtime-scope play-only">Actual app trace shows recorded outcomes. Model simulation stays separate.</p>
         </section>
       </div>

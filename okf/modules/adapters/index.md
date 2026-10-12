@@ -3,6 +3,7 @@
 # Modules
 
 * [adapters.edit_proposals](edit_proposals.md) - Bounded offline request fixture: exact model names and complete phrases, never an LLM.
+* [adapters.generated_apps](generated_apps.md) - Retain exact selected app bytes and run their existing generated unittest checker locally.
 * [adapters.identity](identity.md) - Measured release identity, not a proof of correctness or author authenticity.
 * [adapters.plan_data_phrases](plan_data_phrases.md) - The data-model and role-kind phrases of the offline plan proposer (ADR-0202, #156): add a field to a class, remove one, make one required or optional, and say what kind of actor holds a role.
 * [adapters.plan_proposals](plan_proposals.md) - Offline plan proposer for the PlayIDE chat (ADR-0156): a bounded phrase grammar and the pack's modelled meanings, never an LLM.

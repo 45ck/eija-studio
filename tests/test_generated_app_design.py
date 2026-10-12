@@ -90,10 +90,14 @@ def app_page(chrome, generated_server):
     context = chrome.new_context(viewport={"width": 1600, "height": 1000}, reduced_motion="reduce")
     page = context.new_page()
     errors = []
+    violations = []
     page.on("pageerror", lambda error: errors.append(str(error)))
+    page.on("console", lambda message: violations.append(message.text) if "content security policy" in message.text.lower()
+            or "violates the following" in message.text.lower() else None)
     try:
         yield page, generated_server
         assert errors == [], "\n".join(errors)
+        assert violations == [], "\n".join(violations)
     finally:
         context.close()
 
@@ -112,6 +116,7 @@ def request(base_url, path, body=None):
 def open_app(page, base_url):
     page.goto(base_url + "/#actor=customer-a")
     page.wait_for_function("() => document.getElementById('create-button').disabled === false")
+    assert page.locator("html").get_attribute("data-frontend") == "react"
 
 
 def fill_refund(page, title=LONG_TITLE):
@@ -209,7 +214,7 @@ def test_keyboard_action_cancel_restores_opener_and_commit_focuses_observed_outc
     open_app(page, base_url)
     create_refund(page)
     opener = page.locator("#options button[title=Withdraw]")
-    assert opener.get_attribute("class") == "quiet action-choice"
+    assert {"quiet", "action-choice"} <= set(opener.get_attribute("class").split())
     assert "→" not in opener.inner_text()
     keyboard_to(page, opener)
     assert opener.evaluate("node => getComputedStyle(node).outlineStyle") != "none"
@@ -239,6 +244,8 @@ def test_keyboard_action_cancel_restores_opener_and_commit_focuses_observed_outc
 def test_create_refusal_keeps_form_values_and_exposes_a_focused_semantic_error(app_page):
     page, base_url = app_page
     open_app(page, base_url)
+    assert page.locator("#title").evaluate(
+        "node => node.required && [...node.labels].some(label => label.textContent.startsWith('Record name'))")
     fill_refund(page, title="   ")  # HTML accepts it; the actual server rejects the trimmed title.
     page.locator("#create-button").click()
     page.wait_for_function("() => document.activeElement.id === 'create-feedback'")
@@ -541,3 +548,45 @@ def test_embedded_real_refusal_reports_attempted_baseline_without_movement(app_p
     assert event["actorId"] == "customer-a" and event["action"] == "Withdraw"
     view = request(base_url, f"/api/records/{record['id']}?actor=customer-a")[1]
     assert view["record"]["version"] == 1 and len(view["history"]) == 1
+
+
+def test_model_navigation_focuses_real_panels_and_preserves_the_selected_record(app_page):
+    page, base_url = app_page
+    open_app(page, base_url)
+    navigation = request(base_url, "/api/app")[1]["navigation"]
+    assert navigation["schema_version"] == "eija.navigation.v1"
+    destinations = {entry["kind"]: entry for entry in navigation["destinations"] if entry["kind"] != "action"}
+    detail = page.locator(f'[data-nav-id="{destinations["detail"]["id"]}"]')
+    assert detail.is_disabled()
+    page.locator(f'[data-nav-id="{destinations["create"]["id"]}"]').click()
+    page.wait_for_function("() => document.activeElement.id === 'title'")
+    assert request(base_url, "/api/records")[1] == []
+    create_refund(page)
+    record = request(base_url, "/api/records")[1][0]
+    page.locator(f'[data-nav-id="{destinations["records"]["id"]}"]').click()
+    page.wait_for_function("() => document.activeElement.id === 'records-title'")
+    assert page.locator("#detail-title").inner_text() == record["title"]
+    detail.click()
+    page.wait_for_function("() => document.activeElement.id === 'detail-title'")
+    action = next(entry for entry in navigation["destinations"] if entry["use_case"] == "Withdraw")
+    page.locator(f'#options [data-nav-id="{action["id"]}"]').click()
+    page.wait_for_function("() => document.activeElement.closest('#action-screen') !== null")
+    assert request(base_url, "/api/records")[1][0]["version"] == 0
+
+
+def test_missing_navigation_binding_disables_an_otherwise_allowed_action(app_page):
+    """Injected broken descriptor is a UI negative control, not a changed approved app."""
+    page, base_url = app_page
+    descriptor = request(base_url, "/api/app")[1]
+    descriptor["navigation"]["destinations"] = [entry for entry in descriptor["navigation"]["destinations"]
+                                                    if entry["use_case"] != "Withdraw"]
+    page.route("**/api/app", lambda route: route.fulfill(json=descriptor))
+    open_app(page, base_url)
+    create_refund(page)
+    action = page.locator("#options button[title=Withdraw]")
+    assert action.is_disabled()
+    assert "no checked navigation destination" in page.locator("#options").inner_text()
+    record = request(base_url, "/api/records")[1][0]
+    view = request(base_url, f'/api/records/{record["id"]}?actor=customer-a')[1]
+    assert next(option for option in view["options"] if option["action"] == "Withdraw")["allowed"] is True
+    assert record["version"] == 0

@@ -32,7 +32,7 @@
   // A region opened or closed: the diagram on show is fitted to its new size, once, as a resize of the window would.
   let layoutWas = "";
   function refit() {
-    const now = ["left", "chat", "dock", "play", "playArrangement"].map((k) => document.body.dataset[k]).join();
+    const now = ["left", "chat", "dock", "play", "playArrangement", "shellCompact"].map((k) => document.body.dataset[k]).join();
     const layout = now + Boolean($("live-trace") && !$("live-trace").hidden);
     if (layout === layoutWas) return;
     const first = !layoutWas;
@@ -67,6 +67,7 @@
     body.dataset.chat = state.chat && !REVIEW ? "open" : "closed";
     body.dataset.dock = state.dock && available.length ? "open" : "closed";
     body.dataset.play = state.play ? "open" : "closed";
+    body.dataset.shellCompact = window.innerWidth <= 1100 ? "true" : "false";
     body.dataset.playApp = $("run").hidden ? "empty" : "running";
     const [left, chat] = fitted();
     const width = document.querySelector(".workbench").clientWidth;

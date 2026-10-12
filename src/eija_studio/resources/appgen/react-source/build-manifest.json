@@ -1,0 +1,31 @@
+{
+  "format": "eija.react-frontend.v1",
+  "tool": {
+    "name": "esbuild",
+    "version": "0.28.2"
+  },
+  "dependencies": {
+    "@mantine/core": "9.7.1",
+    "@mantine/hooks": "9.7.1",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "sources": {
+    "main.jsx": "5df9266b43d8e881b8e6b0ce833c1a5d711470139f04eedeb6fc41d3d360a847",
+    "controller.js": "0165413d7f6f76ff12ab2cab90ce276062693748982163ab9568bfb9a970508f",
+    "app.css": "621a1a16607c8cfde81edd4e87c66cc83c324a91c9764e321cb56ae650561e43",
+    "package.json": "66ad9503013063689cba5741b9de83078cde7981630331c0b3a0119f4ca02faa",
+    "package-lock.json": "ffab188033c9014c2ba0057618e606e3fdbca3ee482694491f4c14fa690f770f",
+    "build.mjs": "dec3a8f0fcd6a11accc659364b7b6dbb1e6ccd9e847ed088afd96222a1f7a9af",
+    "LICENSES.txt": "e73c794a8066b2b2742e081777f5dc8bdee9a094f1e626e58e9290d494dbba06"
+  },
+  "outputs": {
+    "app.js": "2b5beec9ac40d4cbb9dec1364d855a490026414d1a2616b185b2bc28e44dcab6",
+    "app.css": "621a1a16607c8cfde81edd4e87c66cc83c324a91c9764e321cb56ae650561e43"
+  },
+  "runtime": {
+    "node_required": false,
+    "network_required": false,
+    "csp": "external scripts and styles; no unsafe-inline or unsafe-eval"
+  }
+}

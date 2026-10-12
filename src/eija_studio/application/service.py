@@ -8,20 +8,21 @@ from pydantic import ValidationError
 from eija_studio.domain.models import Workflow, Principal, LayoutChange, ExecuteCommand, DomainError, fingerprint
 from eija_studio.domain.change_case import ChangeCase, OwnerPlanRequest, PackMeaningSelection
 from eija_studio.domain.pack import Pack, default_pack
-from eija_studio.domain.policy import apply_transaction, apply_transactions, check_policy, meaning_options
-from eija_studio.domain.affordance import affordances as affordance_map, dry_run
+from eija_studio.domain.policy import apply_transaction, apply_transactions, check_policy
 from eija_studio.domain.transactions import Transaction
 from eija_studio.domain.formal import Context
-from .ports import ProposalProvider, Repository, ReceiptAuthenticator, IdentityProvider, SandboxFactory, UnitOfWork, FormalEvidenceSource, EditProposer, PlanProposer
-from .formal import attach as attach_formal, packet_view, what_if_model
+from .ports import ProposalProvider, Repository, ReceiptAuthenticator, IdentityProvider, SandboxFactory, UnitOfWork, FormalEvidenceSource, EditProposer, PlanProposer, GeneratedApps
+from .formal import attach as attach_formal, packet_view
 from .compiler import compile_case, subject_for
 from .verifier import verify_runtime
 from .runtime import initialise, execute
-from .repository import RepositoryChangeSource, RepositorySource, compare_repository_changes, read_repository_change_file, read_repository_impact, read_repository_source, read_repository_freshness
-from .history import command_event, history_view, replay
+from .repository import RepositoryChangeSource, RepositorySource
+from .history import command_event, replay
 from .edit_preview import preview_edit
 from .edit_proposal import propose_edit
 from .owner_plan import _owner_plan_case
+from .generated_app import app_current, bind_subject, capture_app, activation_association, require_app_current, verify_app
+from .service_views import StudioViews
 
 
 def now() -> str:
@@ -38,11 +39,13 @@ def _parse_case(body: dict[str, Any]) -> ChangeCase:
         raise
 
 
-class Studio:
+class Studio(StudioViews):
     def __init__(self, store: Repository, provider: ProposalProvider, signer: ReceiptAuthenticator, identity_provider: IdentityProvider, sandbox: SandboxFactory, *, allow_network: bool = False,
                  formal: FormalEvidenceSource | None = None, pack: Pack | None = None,
                  repository: RepositorySource | None = None, repository_changes: RepositoryChangeSource | None = None,
-                 edit_proposer: EditProposer | None = None, plan_proposer: PlanProposer | None = None):
+                 edit_proposer: EditProposer | None = None, plan_proposer: PlanProposer | None = None,
+                 generated_apps: GeneratedApps | None = None):
+        self.generated_apps = generated_apps
         self.pack = pack if pack is not None else default_pack()  # the domain: laws, meanings, fixtures
         self.formal = formal  # optional: without it the formal kinds stay UNKNOWN in the packet, never green
         self.store, self.provider, self.signer = store, provider, signer
@@ -53,43 +56,11 @@ class Studio:
         self.edit_proposer = edit_proposer
         self.plan_proposer = plan_proposer  # the PlayIDE chat's plan mode (ADR-0156); untrusted, read-only
 
-    def workbench(self) -> dict[str, Any]:
-        """Current pack declarations and baseline, with separately labelled read-only repository facts."""
-        with self.store.transaction() as u:
-            active = u.active()
-        return {"pack": {"id": self.pack.id, "name": self.pack.pack.name, "version": self.pack.pack.version,
-                         "digest": self.pack.digest},
-                "language": self.pack.language.model_dump(mode="json"),
-                "roles": [role.model_dump(mode="json") for role in self.pack.roles],
-                "laws": [law.model_dump(mode="json") for law in self.pack.laws],
-                "model": active["model"], "baseline_version": active["version"],
-                "connection": self.repository.snapshot() if self.repository is not None else None,
-                "source_review_required": not self.identity_provider()["trusted_fixture"]}
-
-    def repository_impact(self, term: str, *, expected_source_hash: str | None = None) -> dict[str, Any]:
-        """Known repository links only. This neither edits the repository nor grants evidence or authority."""
-        return read_repository_impact(self.repository, term, expected_source_hash=expected_source_hash)
-
-    def repository_source(self, reference: str, *, expected_source_hash: str | None = None) -> dict[str, Any]:
-        """Bounded source view from the configured repository's captured nodes; no arbitrary path or execution."""
-        return read_repository_source(self.repository, reference, expected_source_hash=expected_source_hash)
-
-    def repository_freshness(self, expected_source_hash: str) -> dict[str, Any]:
-        """Observe captured byte identity; this grants no source conformance, evidence or owner authority."""
-        return read_repository_freshness(self.repository, expected_source_hash)
-
-    def repository_change(self, base: str, head: str) -> dict[str, Any]:
-        """Compare immutable source revisions; this grants no model or repository write authority."""
-        return compare_repository_changes(self.repository_changes, base, head)
-
-    def repository_change_file(self, base: str, head: str, path: str,
-                               reference: str | None = None) -> dict[str, Any]:
-        """Read bounded historical text and syntax; live source identity remains separate."""
-        return read_repository_change_file(self.repository_changes, base, head, path, reference)
-
     @staticmethod
     def _case(u: UnitOfWork, case_id: str, expected: int | None = None, editable: bool = False) -> ChangeCase:
         c = _parse_case(u.load_case(case_id))
+        if c.id != case_id:
+            raise DomainError("CASE_IDENTITY_INVALID", "Stored case identity differs from its record")
         if expected is not None:
             c.at_version(expected)
         if editable:
@@ -106,7 +77,7 @@ class Studio:
 
     def create(self, request: str) -> dict[str, Any]:
         if not isinstance(request, str) or not request.strip() or len(request) > 6000:
-            raise DomainError("INVALID_REQUEST", "Provide 1–6000 characters of synthetic request text")
+            raise DomainError("INVALID_REQUEST", "Provide 1â€“6000 characters of synthetic request text")
         with self.store.transaction() as u:
             active = u.active()
             case = ChangeCase(id=uuid4().hex, version=0, stage="DRAFT", request=request,
@@ -125,7 +96,14 @@ class Studio:
             raise DomainError("INVALID_REQUEST", "Provide synthetic request text")
         with self.store.transaction() as u:
             active = u.active()
-            case, selection_event = _owner_plan_case(command, principal.id, active, self.pack, now)
+        case, selection_event = _owner_plan_case(command, principal.id, active, self.pack, now)
+        if command.expected_build_digest is not None:
+            case, selection_event["app_build_digest"] = capture_app(case, command.expected_build_digest,
+                self.pack, self.generated_apps, self.identity_provider)
+        with self.store.transaction() as u:
+            if u.active() != active:
+                raise DomainError("STALE_BASELINE", "The local baseline changed while selecting the generated app")
+            self._require_app_current(case)
             body = case.model_dump(mode="json")
             u.insert_case(body)
             u.event("CaseCreated", {"case_id": case.id, "request_hash": fingerprint(command.request)})
@@ -240,22 +218,6 @@ class Studio:
         u.event(kind, command_event(case, model, tx, principal.id, now(), discarded_redo))
         return body
 
-    def history(self, case_id: str) -> dict[str, Any]:
-        """Reconstructed semantic revisions and append-only command audit; never changes the case."""
-        with self.store.transaction() as u:
-            case = self._case(u, case_id)
-            return history_view(case, self.pack, u.observations(case_id)["events"])
-
-    def _working(self, case_id: str) -> Workflow:
-        """The model an edit would change: the candidate once a meaning is selected, else the baseline. Read-only."""
-        with self.store.transaction() as u:
-            case = self._case(u, case_id)
-        return case.candidate if case.candidate is not None else case.baseline
-
-    def edit_check(self, case_id: str, tx: Transaction) -> dict[str, Any]:
-        """Dry-run one edit: {legal, codes, refs}. No authority is needed because nothing is written."""
-        return dry_run(self._working(case_id), tx, self.pack)
-
     def edit_preview(self, case_id: str, tx: Transaction) -> dict[str, Any]:
         """Read-only edit preview bound to one case snapshot; the owner edit still requires capability and CAS."""
         with self.store.transaction() as u:
@@ -270,11 +232,6 @@ class Studio:
         with self.store.transaction() as u:
             self._case(u, case_id, expected, editable=True)
         return proposal.model_dump(mode="json")
-
-    def affordances(self, case_id: str) -> dict[str, Any]:
-        """Which single edits of the case's working model the kernel would accept (read-only)."""
-        model = self._working(case_id)
-        return {"pack": self.pack.id, "semantic_hash": model.semantic_hash, "affordances": affordance_map(model, self.pack)}
 
     def layout(self, case_id: str, expected: int, change: LayoutChange, principal: Principal) -> dict[str, Any]:
         principal.require("edit")
@@ -301,21 +258,29 @@ class Studio:
         identity = self.identity_provider()
         if not identity["trusted_fixture"]:
             raise DomainError("SOURCE_REVIEW_REQUIRED", "Implementation differs from the shipped release fixture")
-        subject = subject_for(model, case.layout, identity)
+        self._require_app_current(case)
+        subject = bind_subject(subject_for(model, case.layout, identity), case.app_build)
         receipt = self.signer.seal(verify_runtime(model, subject, self.sandbox, self.pack))
         # Formal artifacts are collected outside any transaction (a tool run may be slow), then sealed and appended with the runtime receipt.
         formal = attach_formal(self.formal, case.baseline, model, subject, list(case.receipts), self.signer.seal, now(), lambda: uuid4().hex,
                                self.pack)
+        generated = self._verify_app(case, subject)
         with self.store.transaction() as u:
             current = self._case(u, case_id, expected, editable=True)
-            return self._save(u, current, {"receipts": list(current.receipts) + [receipt, *formal], "decision": None, "stage": "VERIFIED"})
+            if current.baseline_version != u.active()["version"]:
+                raise DomainError("STALE_BASELINE", "The baseline changed while checks ran")
+            if self.identity_provider() != identity:
+                raise DomainError("SUBJECT_CHANGED", "The implementation or environment changed while checks ran")
+            self._require_app_current(current)
+            return self._save(u, current, {"receipts": list(current.receipts) + [receipt, *formal, *generated],
+                                          "decision": None, "stage": "VERIFIED"})
 
     def approve(self, case_id: str, expected: int, subject_hash: str, answers: dict[str, str], acknowledge_unknowns: bool,
                 principal: Principal, scope: str = "local-demo") -> dict[str, Any]:
         principal.require("approve")
         with self.store.transaction() as u:
             case = self._case(u, case_id, expected, editable=True)
-            packet = compile_case(case, self.identity_provider(), self.signer.authentic, u.active()["version"], scope, self.pack)
+            packet = self._compile(case, u.active()["version"], scope)
             if not packet["eligible"]:
                 raise DomainError("GATE_BLOCKED", ", ".join(packet["blockers"]))
             replay(case, self.pack)
@@ -329,6 +294,7 @@ class Studio:
             decision = self.signer.seal({"by": principal.id, "case_id": case.id, "scope": scope, "subject_hash": subject_hash,
                 "baseline_version": case.baseline_version, "time": now(), "answers": answers,
                 "human_understanding": "UNKNOWN", "kind": "local-owner-acknowledgement"})
+            self._assert_packet_current(case, packet)
             body = self._save(u, case, {"decision": decision, "stage": "APPROVED"})
             u.event("LocalDecision", {"case_id": case_id, "decision": decision})
             return body
@@ -338,13 +304,18 @@ class Studio:
         with self.store.transaction() as u:
             case = self._case(u, case_id, expected, editable=True)
             replay(case, self.pack)
-            packet = compile_case(case, self.identity_provider(), self.signer.authentic, u.active()["version"], pack=self.pack)
+            packet = self._compile(case, u.active()["version"])
             decision = case.decision
             if not packet["eligible"] or case.stage != "APPROVED" or not decision:
                 raise DomainError("GATE_BLOCKED", "A current eligible exact-subject decision is required")
-            if not self.signer.authentic(decision) or decision["subject_hash"] != packet["subject_hash"] or decision["scope"] != "local-demo":
+            if not self._decision_matches(case, packet):
                 raise DomainError("STALE_DECISION", "Decision is invalid or no longer matches the exact subject")
-            u.set_active(case.executable(), case.baseline_version)
+            self._assert_packet_current(case, packet)
+            association = activation_association(case, packet["subject_hash"])
+            if association is None:
+                u.set_active(case.executable(), case.baseline_version)
+            else:
+                u.set_active(case.executable(), case.baseline_version, association)
             body = self._save(u, case, {"stage": "APPLIED"})
             u.event("AppliedToLocalBaseline", {"case_id": case_id, "by": principal.id, "subject": packet["subject"]})
             return body
@@ -366,29 +337,36 @@ class Studio:
             result = execute(u, case_id, case.executable(), command, fault=fault, pack=self.pack)
         return result
 
-    def view(self, case_id: str, scope: str = "local-demo") -> dict[str, Any]:
-        with self.store.transaction() as u:
-            case = self._case(u, case_id)
-            packet = compile_case(case, self.identity_provider(), self.signer.authentic, u.active()["version"], scope, self.pack)
-            observations = u.observations(case_id)
-        # Formal evidence is read (files, no database) after the transaction has ended.
-        packet = packet | {"blocked_meanings": self._blocked_meanings(case)}
-        return {"case": case.model_dump(mode="json"), "packet": packet, "options": meaning_options(self.pack),
-                "pack": {"id": self.pack.id, "name": self.pack.pack.name, "version": self.pack.pack.version}, "observations": observations}
+    def _app_current(self, case: ChangeCase) -> dict[str, Any] | None:
+        return app_current(case, self.pack, self.generated_apps, self.identity_provider)
 
-    def _blocked_meanings(self, case: ChangeCase) -> list[dict[str, Any]]:
-        """For each proposed interpretation the policy refuses: what it would do to the model, the policy errors, and the formal
-        negative-control counterexamples that explain them. Empty once a meaning is selected or without a formal source."""
-        if case.candidate is not None or case.proposal is None or self.formal is None:
-            return []
-        found = []
-        for alternative in case.proposal.alternatives:
-            model = what_if_model(case.baseline, alternative.interpretation, self.pack)
-            meaning = self.pack.meaning(alternative.interpretation)
-            if model is not None and meaning is not None:
-                found.append({"interpretation": alternative.interpretation, "label": meaning.label,
-                              "policy_errors": check_policy(model, self.pack), "explanations": self.formal_view(model)["explanations"]})
-        return found
+    def _require_app_current(self, case: ChangeCase) -> None:
+        if case.app_build is not None:
+            require_app_current(case, self._app_current(case))
+
+    def _compile(self, case: ChangeCase, active_version: int, scope: str = "local-demo") -> dict[str, Any]:
+        current = self._app_current(case)
+        return compile_case(case, self.identity_provider(), self.signer.authentic, active_version, scope, self.pack,
+                            app_current=current)
+
+    def _verify_app(self, case: ChangeCase, subject: dict[str, Any]) -> list[dict[str, Any]]:
+        return verify_app(case, subject, self.generated_apps, self.identity_provider, self.signer.seal, now, lambda: uuid4().hex)
+
+    def _assert_packet_current(self, case: ChangeCase, packet: dict[str, Any]) -> None:
+        self._require_app_current(case)
+        identity = self.identity_provider()
+        if not identity["trusted_fixture"]:
+            raise DomainError("SOURCE_REVIEW_REQUIRED", "Source approval changed before the decision could commit")
+        current = bind_subject(subject_for(case.executable(), case.layout, identity), case.app_build)
+        if fingerprint(current) != packet["subject_hash"]:
+            raise DomainError("SUBJECT_CHANGED", "The exact subject changed before the decision could commit")
+
+    def _decision_matches(self, case: ChangeCase, packet: dict[str, Any]) -> bool:
+        decision = case.decision
+        expected = {"case_id": case.id, "subject_hash": packet["subject_hash"],
+                    "baseline_version": case.baseline_version, "scope": "local-demo", "kind": "local-owner-acknowledgement"}
+        return bool(decision and self.signer.authentic(decision) and
+                    all(decision.get(key) == value for key, value in expected.items()))
 
     def formal_view(self, model: Workflow) -> dict[str, Any]:
         """Formal evidence for a bare workflow (``eija compile``): collected and sealed in memory, never stored, never a decision."""
@@ -397,13 +375,4 @@ class Studio:
         return packet_view(receipts, subject, self.signer.authentic, Context(model.semantic_hash, base.semantic_hash),
                            check_policy(model, self.pack), self.pack)
 
-    def workflows(self, case_id: str) -> tuple[Workflow, Workflow | None]:
-        """Baseline and candidate of a case, for read-only projections (diagrams). No authority, no writes."""
-        with self.store.transaction() as u:
-            case = self._case(u, case_id)
-        return case.baseline, case.candidate
 
-    def export(self, case_id: str) -> dict[str, Any]:
-        content = self.view(case_id)
-        return {"format": "eija.change-case.export.v1", "payload_hash": fingerprint(content), "payload": content,
-                "verification_boundary": "Payload hash detects corruption. Local signatures require the originating workspace key; exports cannot confer fresh authority."}

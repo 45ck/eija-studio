@@ -7,15 +7,15 @@ tags:
 - symbol
 - application
 - method
-status: stable
+status: deprecated
 generated:
   by: process:eija-okf-sync
 sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.view
   title: application/service.py
   hash_method: ast-v2
-  sha256: ff8a00028e8fa85fac47be7d038a08f1141c291fea4491951e71d197ac6a2299
-notes_baseline: f9a53aa292dd41907d759bb6db492072e0ece272e7c5b508857845f48490d384
+  sha256: b0aaf7cdc567faf70754baafd2ee5c866a1d3236a48a2f1efd87591f5b44d8a7
+notes_baseline: b93222aae16910ad9ae95d408be2b895a82fc2bf5365e2b2df9f205f23585c9a
 ---
 
 # application.service.Studio.view
@@ -42,6 +42,5 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [application.compiler.compile_case](/symbols/application/compiler/compile_case.md) - `def compile_case(case: ChangeCase, identity: dict[str, Any], authenticator: Callable[[dict[str, Any]], bool],…` in `application/compiler`.
 * [domain.policy.meaning_options](/symbols/domain/policy/meaning_options.md) - The pack's meanings as the review surface shows them: label, whether supported, consequences.
 <!-- okf:generated:end links -->

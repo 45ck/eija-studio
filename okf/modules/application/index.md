@@ -20,6 +20,7 @@
 * [application.edit_preview](edit_preview.md) - Read-only edit projection over one captured case, using the same interpreter as owner edits.
 * [application.edit_proposal](edit_proposal.md) - A read-only offline proposal over one captured candidate; owner edits keep their existing boundary.
 * [application.formal](formal.md) - Formal evidence in the application layer: seal what an adapter collected, and build the packet view.
+* [application.generated_app](generated_app.md) - Shared generation and exact-app evidence operations for the existing kernel and checker.
 * [application.ghost_diff](ghost_diff.md) - How a change looks on the state machine: both models on one canvas, with nothing hidden (ADR-0176).
 * [application.history](history.md) - Semantic history is a projection of typed commands, replayed by the existing policy interpreter.
 * [application.landscape](landscape.md) - The system landscape (ADR-0203): the workflows that make up one system, drawn as a UML component diagram, and the places where their class diagrams disagree.
@@ -29,6 +30,7 @@
 * [application.owner_plan](owner_plan.md) - Exact owner-plan case construction; authority and atomic storage remain in Studio.
 * [application.plan](plan.md) - Plan mode for the PlayIDE chat (ADR-0156): an AI proposes a change as numbered typed steps; the person accepts or rejects each one and sees what the accepted ones would do.
 * [application.ports](ports.md) - Application-owned ports.
+* [application.presentation](presentation.md) - A bounded presentation/navigation lens over one exact generated snapshot.
 * [application.readiness](readiness.md) - What's missing (ADR-0216): one list across every model and view of what is not ready yet, so a system built in chat or on the canvas says what it still lacks instead of the person having to look in each tab.
 * [application.repository](repository.md) - Read-only repository evidence port; this does not grant project execution or approval.
 * [application.requirement_trace](requirement_trace.md) - A bounded declared trace adapter, separate from policy and verification execution.
@@ -42,6 +44,7 @@
 * [application.sequence_layout](sequence_layout.md) - Where a scenario's sequence diagram is drawn, and its export (ADR-0195).
 * [application.sequences](sequences.md) - The pack's scenarios drawn as UML sequence diagrams the kernel checks (ADR-0195).
 * [application.service](service.md) - Module `application/service` (no module docstring).
+* [application.service_views](service_views.md) - Read-only Studio projections over the same case, pack and exact-app evidence.
 * [application.simulation](simulation.md) - Seeded simulation of people using the app built from a model (ADR-0152).
 * [application.verifier](verifier.md) - Bounded synthetic runtime experiments.
 * [application.witness_inspection](witness_inspection.md) - Immutable display projections of the deciding formal record, never new evidence or verdicts.

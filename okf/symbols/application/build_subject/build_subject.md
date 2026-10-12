@@ -51,4 +51,5 @@ _No curated notes yet._
 ## Referenced by
 
 * [application.build_subject.checked_build_subject](/symbols/application/build_subject/checked_build_subject.md) - Check archived identity, optionally binding it to the installed runtime and prior snapshot.
+* [application.generated_app.assemble_app](/symbols/application/generated_app/assemble_app.md) - One generator and snapshot identity for previews and approved artifacts.
 <!-- okf:generated:end links -->

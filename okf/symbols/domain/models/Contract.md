@@ -66,6 +66,11 @@ The reason unknown fields and operators die at the boundary (acceptance [AC01](/
 * [domain.data.Attribute](/symbols/domain/data/Attribute.md) - `class Attribute(Contract)` in `domain/data`.
 * [domain.data.DataModel](/symbols/domain/data/DataModel.md) - `class DataModel(Contract)` in `domain/data`.
 * [domain.data.Entity](/symbols/domain/data/Entity.md) - `class Entity(Contract)` in `domain/data`.
+* [domain.generated_app.GeneratedAppActivation](/symbols/domain/generated_app/GeneratedAppActivation.md) - `class GeneratedAppActivation(Contract)` in `domain/generated_app`.
+* [domain.generated_app.GeneratedAppBinding](/symbols/domain/generated_app/GeneratedAppBinding.md) - `class GeneratedAppBinding(Contract)` in `domain/generated_app`.
+* [domain.generated_app.GeneratedBuildSubject](/symbols/domain/generated_app/GeneratedBuildSubject.md) - `class GeneratedBuildSubject(Contract)` in `domain/generated_app`.
+* [domain.generated_app.GeneratedCheckConfiguration](/symbols/domain/generated_app/GeneratedCheckConfiguration.md) - `class GeneratedCheckConfiguration(Contract)` in `domain/generated_app`.
+* [domain.generated_app.GeneratedChecker](/symbols/domain/generated_app/GeneratedChecker.md) - `class GeneratedChecker(Contract)` in `domain/generated_app`.
 * [domain.laws.When](/symbols/domain/laws/When.md) - Condition under which a law applies.
 * [domain.models.Alternative](/symbols/domain/models/Alternative.md) - `class Alternative(Contract)` in `domain/models`.
 * [domain.models.ExecuteCommand](/symbols/domain/models/ExecuteCommand.md) - `class ExecuteCommand(Contract)` in `domain/models`.
@@ -75,6 +80,9 @@ The reason unknown fields and operators die at the boundary (acceptance [AC01](/
 * [domain.models.SemanticTransaction](/symbols/domain/models/SemanticTransaction.md) - DEPRECATED closed vocabulary, superseded by the open one in ``domain.transactions`` (WBS 1.3).
 * [domain.models.Transition](/symbols/domain/models/Transition.md) - `class Transition(Contract)` in `domain/models`.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
+* [domain.navigation.Destination](/symbols/domain/navigation/Destination.md) - `class Destination(Contract)` in `domain/navigation`.
+* [domain.navigation.Navigation](/symbols/domain/navigation/Navigation.md) - `class Navigation(Contract)` in `domain/navigation`.
+* [domain.navigation.RecordOperations](/symbols/domain/navigation/RecordOperations.md) - `class RecordOperations(Contract)` in `domain/navigation`.
 * [domain.pack.ActionSpec](/symbols/domain/pack/ActionSpec.md) - The declared guards and required effects of one action; the policy holds every transition to them.
 * [domain.pack.Actor](/symbols/domain/pack/Actor.md) - `class Actor(Contract)` in `domain/pack`.
 * [domain.pack.Effect](/symbols/domain/pack/Effect.md) - A typed effect.

@@ -105,6 +105,12 @@ def test_capabilities_cover_lifecycle_with_bounded_execution_and_draft_only_poli
         "executable", "checked_design", "unsupported"}
     data = next(item for item in result["aspects"] if item["id"] == "data")
     assert next(item for item in data["constructs"] if item["name"] == "Other classes and associations")["level"] == "checked_design"
+    interfaces = next(item for item in result["aspects"] if item["id"] == "interfaces")
+    navigation = next(item for item in interfaces["constructs"] if item["name"] == "Generated React screens and model-driven navigation")
+    presentation = next(item for item in interfaces["constructs"] if item["name"] == "Screen design, presentation map and accessibility checks")
+    assert navigation["level"] == "executable" and "eija.navigation.v1" in navigation["scope"]
+    assert "direct record update/delete is unsupported" in navigation["scope"]
+    assert presentation["level"] == "checked_design" and "does not prove runtime behaviour" in presentation["scope"]
     assert {"laws", "data schema", "requirement prose"} <= set(result["activation"]["draft_only"])
 
 

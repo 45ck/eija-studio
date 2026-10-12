@@ -48,5 +48,6 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Referenced by
 
-* [application.service.Studio](/symbols/application/service/Studio.md) - `class Studio` in `application/service`.
+* [application.service.Studio](/symbols/application/service/Studio.md) - `class Studio(StudioViews)` in `application/service`.
+* [application.service_views.StudioViews](/symbols/application/service_views/StudioViews.md) - Projection half of Studio; callbacks use the command service's case and review checks.
 <!-- okf:generated:end links -->

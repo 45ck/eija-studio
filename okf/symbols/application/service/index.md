@@ -10,9 +10,11 @@
 
 # Methods
 
+* [application.service.Studio.active_app_build](Studio.active_app_build.md) - Read the atomically associated case and remeasure its exact approved generated application.
 * [application.service.Studio.affordances](Studio.affordances.md) - Which single edits of the case's working model the kernel would accept (read-only).
 * [application.service.Studio.apply](Studio.apply.md) - Applies an approved candidate to the local baseline only if an eligible, authentic, exact-subject decision exists.
 * [application.service.Studio.approve](Studio.approve.md) - Seals a local-owner acknowledgement of the exact subject after eligibility, matching subject hash, acknowledged unknowns and correct answers.
+* [application.service.Studio.build_approval](Studio.build_approval.md) - An unreviewed preview may run, but cannot inherit approval from a matching workflow alone.
 * [application.service.Studio.create](Studio.create.md) - `def create(self, request: str) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.discard](Studio.discard.md) - `def discard(self, case_id: str, expected: int) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.edit](Studio.edit.md) - `def edit(self, case_id: str, expected: int, tx: Transaction, principal: Principal) -> dict[str, Any]` in `application/service`.

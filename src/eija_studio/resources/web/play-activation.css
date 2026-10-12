@@ -34,6 +34,14 @@
 .activation-acknowledge{display:flex;gap:10px;align-items:start;font-size:.86rem}.activation-acknowledge input{margin-top:3px}
 #activation-decision summary{cursor:pointer;font-weight:600}
 .activation [hidden]{display:none}
+.activation-app-summary{font-size:.9rem;line-height:1.55;margin:0 0 10px}
+.activation-app-check{padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--busy-bg);font-size:.82rem;line-height:1.5}
+.activation-app-check[data-current="false"]{border-style:dashed}
+.activation-app-scope{display:grid;grid-template-columns:125px minmax(0,1fr);gap:8px 14px;margin:14px 0;font-size:.83rem;line-height:1.45}
+.activation-app-scope dt{font-weight:650}.activation-app-scope dd{margin:0;color:var(--muted)}
+.activation-app-identities{font-size:.8rem;margin:12px 0}.activation-app-identities summary{cursor:pointer}
+#activation-app-limits{padding-left:20px;line-height:1.5}#activation-app-limits li+li{margin-top:5px}
+@media(max-width:520px){.activation-app-scope{grid-template-columns:1fr;gap:4px}.activation-app-scope dd{margin-bottom:8px}}
 .trace-tools{display:flex;flex-wrap:wrap;gap:6px}.trace-step{text-align:left;white-space:normal}
 #laws-list .law[aria-current="true"]{box-shadow:inset 0 0 0 2px var(--accent)}
 /* Effects buttons use an icon and sentence, not the chat ripple's three-column grid. */

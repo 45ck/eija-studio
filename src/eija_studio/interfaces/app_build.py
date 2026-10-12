@@ -10,30 +10,21 @@ from collections import OrderedDict
 from hashlib import sha256
 from importlib.resources import files as resource_files
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from threading import Lock
 from typing import Any, Callable
 
 from eija_studio import __version__
-from eija_studio.application.appgen import FORMAT, generate
-from eija_studio.application.build_subject import SUBJECT_FILE, build_subject, checked_build_subject
+from eija_studio.application.appgen import FORMAT
+from eija_studio.application.generated_app import TEMPLATES, assemble_app
+from eija_studio.application.build_subject import checked_build_subject
 from eija_studio.application.ports import IdentityProvider
 from eija_studio.domain.data import data_for
 from eija_studio.domain.screens import Screens, screens_for
-from eija_studio.domain.models import DomainError, Workflow, canonical, fingerprint
+from eija_studio.domain.models import DomainError, Workflow, fingerprint
 from eija_studio.domain.pack import Pack
 
 MANIFEST = "BUILD.json"
-TEMPLATES = {  # resource template -> path in the generated app
-    "init.py.tmpl": "app/__init__.py",
-    "service.py.tmpl": "app/service.py",  # storage only: rules come from the installed kernel
-    "server.py.tmpl": "app/server.py",
-    "build_identity.py.tmpl": "app/build_identity.py",
-    "web/index.html.tmpl": "app/web/index.html",
-    "web/app.js.tmpl": "app/web/app.js",
-    "web/app.css.tmpl": "app/web/app.css",
-    "run.py.tmpl": "run.py",
-    "test_conformance.py.tmpl": "tests/test_conformance.py",
-}
 TEST_TIMEOUT_S = 600
 
 
@@ -68,12 +59,9 @@ def app_files(pack, model: Workflow, screens: Screens | None = None, *,
         if hit is not None and hit[0] is pack:
             _BUILT.move_to_end(key)
             return dict(hit[1]), copy.deepcopy(hit[2])
-    generated, manifest = generate(pack, model, data, screens)
-    files = static | {"tests/__init__.py": ""} | generated
+    files, manifest = assemble_app(pack, model, data, screens, static, implementation)
     if identity_provider()["implementation"] != implementation:
         raise DomainError("BUILD_SOURCE_CHANGED", "Implementation changed during generation; retry after edits finish")
-    manifest["subject"] = build_subject(files, implementation_digest=implementation, template_paths=static)
-    files[SUBJECT_FILE] = canonical(manifest["subject"]) + "\n"
     with _BUILT_LOCK:
         _BUILT[key] = (pack, files, copy.deepcopy(manifest))  # the pack itself is kept, so its id is never reused
         while len(_BUILT) > _BUILT_SIZE:
@@ -142,10 +130,12 @@ def _write_changed(out: Path, files: dict[str, str], before_write: Callable[[], 
 
 def conformance(out: Path) -> dict:
     """Run the generated tests as a separate process, exactly as a user of the app would."""
-    env = {k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "PYTHONHOME", "PYTHONSTARTUP")}
+    env = {k: v for k, v in os.environ.items() if k.upper() in {"SYSTEMROOT", "WINDIR"}}
     try:
-        run = subprocess.run([sys.executable, "-m", "unittest", "discover", "-s", "tests", "-t", "."], cwd=out, env=env,
-                             capture_output=True, text=True, timeout=TEST_TIMEOUT_S, check=False)
+        with TemporaryDirectory(prefix="eija-build-checker-", ignore_cleanup_errors=True) as cache:
+            run = subprocess.run([sys.executable, "-X", f"pycache_prefix={cache}", "-I", "-B",  # noqa: S603 - fixed checker command and fresh server-owned cache
+                                  "-m", "unittest", "discover", "-s", "tests", "-t", "."], cwd=out, env=env,
+                                 capture_output=True, text=True, timeout=TEST_TIMEOUT_S, check=False)
     except subprocess.TimeoutExpired:
         return {"status": "FAIL", "detail": f"timed out after {TEST_TIMEOUT_S} s"}
     tail = (run.stderr or run.stdout).strip().splitlines()[-3:]

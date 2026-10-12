@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/compiler.py
   title: application/compiler.py
   hash_method: ast-api-v1
-  sha256: d6198d74fc99204a9b537fac19455dcf141156609652726a5b223a66b34e9099
-notes_baseline: 09c54346f29559e179e219706f3870a20267a8f6eb282112c0e149b556c1dc11
+  sha256: ca3bbfcb486d2aa9330ef155dea80e66e614d315a90bd61aa75e116d25bd3362
+notes_baseline: cb771e8b20cc0b88d663a9656b91a9b28dec6b9eb707e8eaefbc26595f7a2444
 ---
 
 # application.compiler
@@ -42,6 +42,7 @@ This is a bounded semantic/report compiler, not a general source-code compiler.
 ## Internal imports
 
 * [`application/formal`](/modules/application/formal.md)
+* [`application/generated_app`](/modules/application/generated_app.md)
 * [`application/witness_inspection`](/modules/application/witness_inspection.md)
 * [`domain/change_case`](/modules/domain/change_case.md)
 * [`domain/evidence`](/modules/domain/evidence.md)
@@ -60,6 +61,7 @@ _No curated notes yet._
 ## Imports
 
 * [application.formal](/modules/application/formal.md) - Formal evidence in the application layer: seal what an adapter collected, and build the packet view.
+* [application.generated_app](/modules/application/generated_app.md) - Shared generation and exact-app evidence operations for the existing kernel and checker.
 * [application.witness_inspection](/modules/application/witness_inspection.md) - Immutable display projections of the deciding formal record, never new evidence or verdicts.
 * [domain.change_case](/modules/domain/change_case.md) - Module `domain/change_case` (no module docstring).
 * [domain.evidence](/modules/domain/evidence.md) - Compatibility is computed.

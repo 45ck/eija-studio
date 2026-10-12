@@ -1,0 +1,182 @@
+{
+  "$defs": {
+    "Destination": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "records",
+            "create",
+            "detail",
+            "action"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "parent": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parent"
+        },
+        "title": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "panel": {
+          "enum": [
+            "records",
+            "create",
+            "detail",
+            "action-screen"
+          ],
+          "title": "Panel",
+          "type": "string"
+        },
+        "focus": {
+          "enum": [
+            "records-title",
+            "title",
+            "detail-title",
+            "action-screen"
+          ],
+          "title": "Focus",
+          "type": "string"
+        },
+        "record_required": {
+          "default": false,
+          "title": "Record Required",
+          "type": "boolean"
+        },
+        "use_case": {
+          "anyOf": [
+            {
+              "maxLength": 60,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Use Case"
+        },
+        "transition_ref": {
+          "anyOf": [
+            {
+              "pattern": "^transition:[A-Z][A-Z0-9_-]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Transition Ref"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "title",
+        "panel",
+        "focus"
+      ],
+      "title": "Destination",
+      "type": "object"
+    },
+    "RecordOperations": {
+      "additionalProperties": false,
+      "properties": {
+        "create": {
+          "const": "executable",
+          "default": "executable",
+          "title": "Create",
+          "type": "string"
+        },
+        "read": {
+          "const": "executable",
+          "default": "executable",
+          "title": "Read",
+          "type": "string"
+        },
+        "update": {
+          "const": "unsupported",
+          "default": "unsupported",
+          "title": "Update",
+          "type": "string"
+        },
+        "delete": {
+          "const": "unsupported",
+          "default": "unsupported",
+          "title": "Delete",
+          "type": "string"
+        }
+      },
+      "title": "RecordOperations",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "eija.navigation.v1",
+      "default": "eija.navigation.v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "id": {
+      "pattern": "^[a-z][a-z0-9-]{0,39}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "record": {
+      "anyOf": [
+        {
+          "pattern": "^[A-Z][A-Za-z0-9]{0,39}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Record"
+    },
+    "capabilities": {
+      "$ref": "#/$defs/RecordOperations"
+    },
+    "destinations": {
+      "items": {
+        "$ref": "#/$defs/Destination"
+      },
+      "maxItems": 67,
+      "minItems": 3,
+      "title": "Destinations",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "destinations"
+  ],
+  "title": "Navigation",
+  "type": "object"
+}

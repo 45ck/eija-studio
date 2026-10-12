@@ -850,16 +850,20 @@
 
   // A newer plan replaces this one: its card stays in the chat as a record, with every control disabled, so no tick or
   // button on it can act on the newer plan.
-  function retire() {
+  function retire({ activeRevision = null } = {}) {
     if (!plan) return;
     ripple = null;
     rippleSeq += 1;
     renderBadges();
-    leavePreview();
+    if (activeRevision !== null) {
+      // Activation has already replaced the baseline. Never redraw or check the obsolete baseline on the way out.
+      plan.previewing = false;
+      $("plan-banner").hidden = true;
+    } else leavePreview();
     for (const control of plan.card.querySelectorAll("input, button")) control.disabled = true;
-    plan.card.firstChild.append(el("p", "Replaced by the newer plan below.", { class: "muted small" }));
+    plan.card.firstChild.append(el("p", activeRevision !== null ? `Activated as revision ${activeRevision}.` : "Replaced by the newer plan below.", { class: "muted small" }));
     plan = null;
-    document.dispatchEvent(new CustomEvent("playide:plan"));
+    if (activeRevision === null) document.dispatchEvent(new CustomEvent("playide:plan"));
   }
 
   function planCard() {
@@ -982,9 +986,36 @@
     outline();
     draw(model);
     inspect("");
-    const kept = screensEdited ? screens : null, checkingView = viewKey(); // screen edits survive a preview: they are re-checked against the shown model
-    loadScreens(kept).then(() => { if (viewKey() !== checkingView) return; screensEdited = Boolean(kept); if (tab === "screens") renderDesigner(); });
+    refreshScreensForView(screensEdited ? screens : null); // screen edits survive a preview and are checked against the shown model
     if (tab !== "states") showTab(tab);
+  }
+
+  async function refreshScreensForView(kept) {
+    const checkingView = viewKey();
+    try {
+      await loadScreens(kept);
+      if (viewKey() !== checkingView) return;
+      screensEdited = Boolean(kept);
+      if (tab === "screens") renderDesigner();
+    } catch (error) {
+      screenCheckFailure(error, checkingView);
+    }
+  }
+
+  function screenCheckFailure(error, checkingView) {
+    if (viewKey() !== checkingView) {
+      notify(`An earlier screen check was refused (${error.code || "ERROR"}) after the model changed. Current screens and checks were retained.`);
+      return;
+    }
+    const text = error.code === "MODEL_CHANGED"
+      ? "The active model changed. Your draft is retained; reload the workbench to inspect the active revision before checking these screens again."
+      : `Screen checking could not finish: ${error.message}. Your draft is retained; reload the workbench to retry.`;
+    problems = [{ code: error.code || "ERROR", use_case: useCase, text }];
+    a11y = null;
+    problemsFor = screensKey();
+    renderHealth();
+    if (tab === "screens") renderDesigner();
+    notify(text);
   }
 
   function enterPreview() {
@@ -1704,6 +1735,8 @@
 
   function field(text, control) {
     const wrap = el("label", text);
+    const input = control.matches("input, select, textarea") ? control : control.querySelector("input, select, textarea");
+    if (input) input.setAttribute("aria-label", text);
     wrap.append(control);
     return wrap;
   }
@@ -1997,13 +2030,14 @@
     problemsFor = null; // pending until the check of this design answers
     renderHealth();
     checkTimer = setTimeout(async () => {
+      const checkingView = viewKey();
       try {
         await loadScreens(screens);
       } catch (error) {
-        problems = [{ code: error.code || "ERROR", use_case: useCase, text: error.message }];
-        a11y = null;
-        problemsFor = screensKey();
+        screenCheckFailure(error, checkingView);
+        return;
       }
+      if (viewKey() !== checkingView) return;
       renderProblems();
       renderAccessibility();
       renderScreenList();
@@ -2243,6 +2277,7 @@
         + (result.kernel_source_review === "SOURCE_REVIEW_REQUIRED" ? " · source review required" : "");
       score.title = `Model ${result.model.slice(0, 12)} · ${result.files} files · kernel source review: ${result.kernel_source_review}`;
       if (result.url) showRun(result.url, typeof actor === "string" ? actor : "");
+      document.dispatchEvent(new CustomEvent("playide:built", { detail: { subject: result.subject, approval: result.approval, conformance: result.conformance } }));
     } catch (error) {
       score.className = "score bad";
       score.textContent = error.code === "MODEL_CHANGED"
@@ -2745,6 +2780,16 @@
   for (const event of ["playide:plan", "playide:edit", "playide:tests", "playide:laws", "playide:activated"]) document.addEventListener(event, invalidateEffects);
   document.addEventListener("input", (event) => { if (event.target.id === "assurance-prose") invalidateEffects(); });
 
+  function requireActiveApp(view, status) {
+    const reviewed = view.packet.app_build, active = status.active_app_build;
+    if (!reviewed?.binding?.digest || !reviewed.subject?.digest || !active || active.freshness !== "CURRENT"
+      || active.case_id !== view.case.id || active.baseline_version !== status.baseline_version
+      || active.binding?.digest !== reviewed.binding.digest || active.subject?.digest !== reviewed.subject.digest
+      || active.subject.model_hash !== status.baseline_semantic_hash) {
+      throw Object.assign(new Error("The active generated app does not match the exact reviewed binding. Browser drafts are retained; inspect the current active app before continuing."), { code: "ACTIVE_APP_CHANGED" });
+    }
+  }
+
   function activationDraft() {
     const steps = plan ? plan.steps.filter((_, i) => plan.accepted[i]).map((s) => ({ transaction: s.transaction,
       author: s.author === "ai" ? "ai" : "you", round: s.round || 1, request: s.request || "" })) : [];
@@ -2773,13 +2818,17 @@
     if (!$("tests-recorder").hidden) reasons.push("The new-test recorder is open. Keep or discard that test before continuing; its recorded outcomes belong to the current model.");
     const prose = window.PlayAssurance && window.PlayAssurance.requirementDrafts();
     const notes = prose && Object.keys(prose).length ? [`Requirement prose: draft only, policy unchanged (${Object.keys(prose).join(", ")}). These text edits remain in the workbench and are not part of this workflow activation.`] : [];
+    const built = !caseId && lastBuild && lastBuild.key === viewKey() && lastBuild.conformance.status === "PASS"
+      && lastBuild.subject?.model_hash === plan?.result?.candidate_semantic_hash ? lastBuild.subject : null;
+    if (!caseId && steps.length && !built) reasons.push("Build & play the accepted candidate before transferring it so this review covers that exact app.");
     return { reasons, notes, shownCandidate: plan && plan.result && plan.result.legal ? plan.result.candidate : baseModel,
-      context: JSON.stringify([caseId, baseModel, draft(), window.PlayLaws && window.PlayLaws.draft()]),
+      context: JSON.stringify([caseId, baseModel, draft(), window.PlayLaws && window.PlayLaws.draft(), built && built.digest]),
       originDraftKey: draftKey(), request: { request: (plan && (plan.request || plan.summary)) || "Workflow changes drawn in PlayIDE",
         pack_id: packInfo.id, expected_pack_digest: activeStatus && activeStatus.pack.digest,
         expected_baseline_version: activeStatus && activeStatus.baseline_version,
         expected_baseline_semantic_hash: activeStatus && activeStatus.baseline_semantic_hash,
-        expected_candidate_semantic_hash: plan && plan.result && plan.result.candidate_semantic_hash, steps } };
+        expected_candidate_semantic_hash: plan && plan.result && plan.result.candidate_semantic_hash,
+        ...(built ? { expected_build_digest: built.digest } : {}), steps } };
   }
 
   // A committed activation changes the active model, not a preview. Refresh every derived view and discard old
@@ -2788,16 +2837,18 @@
     let status = await api("/api/status");
     const expected = view.packet && view.packet.subject && view.packet.subject.semantic;
     if (expected && status.baseline_semantic_hash !== expected) throw Object.assign(new Error("Activation was acknowledged, but the active revision moved again. Refresh to inspect the current model."), { code: "ACTIVE_REVISION_CHANGED" });
+    if (view.packet?.subject?.generated_app) requireActiveApp(view, status);
     // Load into local variables before retiring any browser work. A person can keep editing while requests wait.
     const dataDoc = await api("/api/play/data"), roleDoc = await api("/api/play/roles");
     const screenDoc = await api("/api/play/screens", { case_id: null, model: status.baseline, plan: null, screens: null });
     const confirmed = await api("/api/status");
     if (confirmed.baseline_semantic_hash !== status.baseline_semantic_hash || confirmed.baseline_version !== status.baseline_version || confirmed.pack.digest !== status.pack.digest) throw Object.assign(new Error("The active revision moved during refresh. Browser drafts are retained; open the current active model."), { code: "ACTIVE_REVISION_CHANGED" });
+    if (view.packet?.subject?.generated_app) requireActiveApp(view, confirmed);
     status = confirmed;
     const currentDraft = activationDraft();
     if (currentDraft.reasons.length || expectedContext && currentDraft.context !== expectedContext) throw Object.assign(new Error("The approved case became active, but newer browser edits are retained. Open the current active model; the earlier draft remains available to reopen."), { code: "ACTIVATED_WITH_NEWER_DRAFT" });
     const previousKey = draftKey();
-    retire();
+    retire({ activeRevision: status.baseline_version });
     caseId = null;
     activeStatus = status;
     baseModel = model = status.baseline;
@@ -2822,6 +2873,7 @@
     problemsFor = screensKey(); useCaseList = screenDoc.use_cases; renderHealth();
     redrawAll(model);
     renderHistory(); persist(); renderSourceStatus();
+    document.dispatchEvent(new CustomEvent("playide:plan")); // observers only see the fully refreshed active subject
     document.dispatchEvent(new CustomEvent("playide:activated", { detail: { case_id: view.case.id, baseline_version: status.baseline_version, model: status.baseline_semantic_hash } }));
     notify(`✓ Revision ${status.baseline_version} is active. Build & run now uses this model.`);
     return status;
@@ -2830,8 +2882,9 @@
   function renderSourceStatus() {
     if (!activeStatus) return;
     $("model-name").textContent = activeStatus.pack.name + (caseId ? " · case candidate" : ` · active revision ${activeStatus.baseline_version}`);
-    $("source-status").textContent = activeStatus.trusted_fixture ? "Reviewed source fixture" : "SOURCE_REVIEW_REQUIRED";
-    $("source-status").title = activeStatus.trusted_fixture ? "The source matches reviewed fixture bytes; this does not prove correctness."
+    const source = activeStatus.identity_source, synthetic = typeof source === "string" && (source.includes("synthetic") || source === "pytest-harness");
+    $("source-status").textContent = !activeStatus.trusted_fixture ? "SOURCE_REVIEW_REQUIRED" : synthetic ? "Synthetic owner test identity" : "Shipped source fixture matches";
+    $("source-status").title = synthetic ? `Synthetic identity (${source}); legitimate owner source review has not been performed.` : activeStatus.trusted_fixture ? "The source matches shipped fixture bytes; this does not establish correctness or independent owner source review."
       : "Implementation differs from the owner-reviewed fixture. Model previews still run; verification, approval and activation require legitimate source review.";
     $("source-status").className = "source-status " + (activeStatus.trusted_fixture ? "fixture" : "required");
   }
@@ -2933,12 +2986,13 @@
   window.PlayIDE = {
     api, el, hooks, about, textWidth, liftLabels, follow, roleKind, kinds: ACTOR_KINDS, actorLook: ACTOR_LOOK, inForce: (role) => roleKinds[role] || "human",
     activationDraft, activated, showEffects, status: () => activeStatus,
+    buildForReview: () => { if (plan && !plan.previewing) enterPreview(); return build(); },
     inspectChange: () => { if (plan && !plan.previewing) enterPreview(); showTab("review"); },
     // Change who holds a role: a step in the plan like any drawn edit, checked by the server against the laws about
     // kinds of actor; those pack changes remain drafts (#156). The review view changes nothing.
     setKind: (role, to) => (REVIEW_VIEW ? null : addStep({ kind: "set_role_kind", role, to })), reviewing: () => REVIEW_VIEW, viewKey, label, restyle, clearSim, select, showTab, fit, importPlan, runAs, openScreen,
     components: loadComponents, buildEvidence: () => evidence(), // the deployment lens (ADR-0206) reads both
-    runningBuild: () => lastBuild && lastBuild.key === viewKey() && lastBuild.conformance.status === "PASS" ? { url: lastBuild.url, model: lastBuild.model, key: lastBuild.key, vocabulary: lastBuild.trace_vocabulary, subject: lastBuild.subject } : null,
+    runningBuild: () => lastBuild && lastBuild.key === viewKey() && lastBuild.conformance.status === "PASS" ? { url: lastBuild.url, model: lastBuild.model, key: lastBuild.key, vocabulary: lastBuild.trace_vocabulary, subject: lastBuild.subject, approval: lastBuild.approval } : null,
     screens: () => screens, data: () => data, editedScreens: () => (screensEdited ? screens : null), // the screen designer's screens and the class diagram (play-roles.js reads them)
     graph: () => graph, tab: () => tab, model: () => model, selected: () => selected, pack: () => packInfo, base: () => baseModel,
     direction: () => direction || "LR", // the state machine's layout, which the Changes view follows

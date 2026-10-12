@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/change_case.py
   title: domain/change_case.py
   hash_method: ast-api-v1
-  sha256: abca088cbf899205a08b470e144b2bd053cb25400cb5cd6e7ff5b5817e65fc12
-notes_baseline: b18e6529849821eb0a9ae679a1ed96d3dcc3510c2ac2560861331744e771a4a7
+  sha256: 3aaa2b8cd16f34c15ec6e630e214e55abff947e07945c121c357e28f05083427
+notes_baseline: 3df10055b2f80388f37db937779eb8e1490a5368aeecd932d5e793fc541387e9
 ---
 
 # domain.change_case
@@ -41,6 +41,7 @@ _The source carries no module docstring._
 
 ## Internal imports
 
+* [`domain/generated_app`](/modules/domain/generated_app.md)
 * [`domain/models`](/modules/domain/models.md)
 * [`domain/transactions`](/modules/domain/transactions.md)
 <!-- okf:generated:end facts -->
@@ -52,6 +53,7 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Imports
 
+* [domain.generated_app](/modules/domain/generated_app.md) - Versioned exact generated-app selection and evidence contracts; no authority is implied by a hash.
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.transactions](/modules/domain/transactions.md) - Open change vocabulary (WBS 1.3): the semantic edits an owner (or a pack meaning) may make to a workflow.
 
@@ -62,9 +64,11 @@ _No curated notes yet._
 * [application.diagrams](/modules/application/diagrams.md) - Diagram models derived from the executable Workflow (ADR-0019, ADR-0023).
 * [application.edit_preview](/modules/application/edit_preview.md) - Read-only edit projection over one captured case, using the same interpreter as owner edits.
 * [application.edit_proposal](/modules/application/edit_proposal.md) - A read-only offline proposal over one captured candidate; owner edits keep their existing boundary.
+* [application.generated_app](/modules/application/generated_app.md) - Shared generation and exact-app evidence operations for the existing kernel and checker.
 * [application.history](/modules/application/history.md) - Semantic history is a projection of typed commands, replayed by the existing policy interpreter.
 * [application.owner_plan](/modules/application/owner_plan.md) - Exact owner-plan case construction; authority and atomic storage remain in Studio.
 * [application.service](/modules/application/service.md) - Module `application/service` (no module docstring).
+* [application.service_views](/modules/application/service_views.md) - Read-only Studio projections over the same case, pack and exact-app evidence.
 * [interfaces.http](/modules/interfaces/http.md) - Loopback-only local adapter.
 * [domain.change_case.ChangeCase.at_version](/symbols/domain/change_case/ChangeCase.at_version.md) - `def at_version(self, expected: int) -> None` in `domain/change_case`.
 * [domain.change_case.ChangeCase.executable](/symbols/domain/change_case/ChangeCase.executable.md) - `def executable(self) -> Workflow` in `domain/change_case`.

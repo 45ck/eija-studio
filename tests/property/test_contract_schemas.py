@@ -48,6 +48,9 @@ CROSS_FIELD = (
     "Mandatory guards cannot be removed", "Duplicate guards", "Duplicate required effects",
     "Required/forbidden effect conflict", "Duplicate states or missing initial state", "Dangling transition state",
     "Duplicate or ambiguous transition/action", "Duplicate interpretation", "Unknown description too long",
+    # JSON Schema cannot calculate a cross-field SHA-256. Concrete valid and
+    # invalid bindings are checked separately by the generated-app approval suite.
+    "Generated subject digest does not match its contents", "Generated review digest does not match its contents",
 )
 
 

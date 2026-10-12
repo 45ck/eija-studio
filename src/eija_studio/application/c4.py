@@ -6,6 +6,7 @@ This module generates neither executable meaning nor runtime observations.
 """
 from __future__ import annotations
 
+import json
 from typing import Any
 
 from eija_studio.application.components import app_components
@@ -64,16 +65,27 @@ def _context(pack: Pack, model: Workflow) -> dict[str, Any]:
             "nodes": [*nodes, system], "relationships": relations}
 
 
-def _containers(deployment: dict[str, Any]) -> dict[str, Any]:
-    names = {"node:browser": ("Web application", "HTML · JavaScript · CSS", "Renders screens and calls the local API"),
+def _browser_technology(files: dict[str, str]) -> str:
+    try:
+        manifest = json.loads(files.get("frontend/build-manifest.json", "{}"))
+        package = json.loads(files.get("frontend/package.json", "{}"))
+    except (TypeError, ValueError):
+        return "HTML · JavaScript · CSS"
+    if (manifest.get("format") == "eija.react-frontend.v1" and manifest.get("dependencies") == package.get("dependencies")
+            and isinstance(package.get("dependencies"), dict) and "react" in package["dependencies"]
+            and "@mantine/core" in package["dependencies"]):
+        return "React · Mantine · CSS"
+    return "HTML · JavaScript · CSS"
+
+
+def _containers(deployment: dict[str, Any], files: dict[str, str]) -> dict[str, Any]:
+    names = {"node:browser": ("Web application", _browser_technology(files), "Renders screens and calls the local API"),
              "node:process": ("Application server", "Python · HTTP", "Executes the installed kernel against this workflow"),
              "node:database": ("Record store", "SQLite", "Local workflow records, operation replay, audit and outbox")}
     nodes = []
     for item in deployment["nodes"]:
         name, technology, summary = names[item["id"]]
-        sources = [path for artifact in item["artifacts"] for path in artifact["files"]]
-        if item["id"] == "node:database":
-            sources = ["app/service.py", "run.py"]
+        sources = _container_sources(item, files)
         nodes.append(_node(item["id"], name, "database" if item["id"] == "node:database" else "container",
                            technology, summary, sources, drill="components" if item["id"] == "node:process" else None,
                            details={"address_default": item["address"], "configuration": item["set_by"],
@@ -83,6 +95,15 @@ def _containers(deployment: dict[str, Any]) -> dict[str, Any]:
                                 else ["app/service.py"])
                      for path in deployment["paths"]]
     return {"name": "Containers", "boundary": SYSTEM, "nodes": nodes, "relationships": relationships}
+
+
+def _container_sources(item: dict[str, Any], files: dict[str, str]) -> list[str]:
+    if item["id"] == "node:database":
+        return ["app/service.py", "run.py"]
+    sources = [path for artifact in item["artifacts"] for path in artifact["files"]]
+    if item["id"] == "node:browser" and "frontend/build-manifest.json" in files:
+        sources += ["frontend/package.json", "frontend/build-manifest.json"]
+    return sources
 
 
 def _inside_server(component: dict[str, Any]) -> bool:
@@ -130,7 +151,7 @@ def app_c4(files: dict[str, str], *, kernel_version: str = "unknown") -> dict[st
     components, deployment = app_components(files), app_deployment(files, kernel_version)
     return {"format": FORMAT,
             "subject": subject,
-            "levels": {"context": _context(pack, model), "containers": _containers(deployment),
+            "levels": {"context": _context(pack, model), "containers": _containers(deployment, files),
                        "components": _components(components, model, data)},
             "data_support": class_build(data) if data else None,
             "effects": [{"id": effect.id, "kind": effect.kind, "recipient": effect.recipient,

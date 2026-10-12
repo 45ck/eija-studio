@@ -78,13 +78,17 @@ _No curated notes yet._
 
 * [application.appgen](/modules/application/appgen.md) - App generation: a reviewed workflow model becomes a runnable app and its conformance oracle (ADR-0150).
 * [application.build_subject](/modules/application/build_subject.md) - Exact generated-build identity.
+* [application.generated_app](/modules/application/generated_app.md) - Shared generation and exact-app evidence operations for the existing kernel and checker.
 * [application.new_system](/modules/application/new_system.md) - Start a new system (ADR-0185): the pack documents for a system started from a sketch or copied from a template.
+* [application.presentation](/modules/application/presentation.md) - A bounded presentation/navigation lens over one exact generated snapshot.
 * [application.readiness](/modules/application/readiness.md) - What's missing (ADR-0216): one list across every model and view of what is not ready yet, so a system built in chat or on the canvas says what it still lacks i…
 * [application.ripple](/modules/application/ripple.md) - Ripple (ADR-0158): what one change to the state machine does to every other diagram of the same system, and the follow-on edits that would keep them in agreeme…
 * [application.screen_access](/modules/application/screen_access.md) - Accessibility of the generated screens (ADR-0218): what can be checked without a browser, checked every time.
+* [domain.navigation](/modules/domain/navigation.md) - The generated app's bounded navigation, derived from its existing contracts.
 * [interfaces.app_build](/modules/interfaces/app_build.md) - `eija build`: write a runnable app generated from a pack's model, then run its kernel conformance tests (ADR-0150).
 * [interfaces.c4](/modules/interfaces/c4.md) - C4 structural inspection under the existing authenticated PlayIDE boundary.
 * [interfaces.play](/modules/interfaces/play.md) - PlayIDE routes: the visual UML canvas page, Build & run of the model as a live app beside it (ADR-0151), and Simulate, seeded simulated users whose every step…
+* [interfaces.play_presentation](/modules/interfaces/play_presentation.md) - Read-only presentation inspection within PlayIDE's authenticated boundary.
 * [interfaces.play_systems](/modules/interfaces/play_systems.md) - PlayIDE's systems (ADR-0185): start a new system from a sketch or a template, open one you made before, and save the work in progress to carry on later.
 * [domain.screens.CREATE](/symbols/domain/screens/CREATE.md) - Constant `CREATE` in `domain/screens`.
 * [domain.screens.SCREENS_FILE](/symbols/domain/screens/SCREENS_FILE.md) - Constant `SCREENS_FILE` in `domain/screens`.

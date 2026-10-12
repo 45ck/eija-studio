@@ -57,5 +57,6 @@ _No curated notes yet._
 ## Referenced by
 
 * [application.formal.attach](/symbols/application/formal/attach.md) - Sealed receipts for every registered kind the source returned, skipping an exact repeat of the latest one.
-* [application.service.Studio](/symbols/application/service/Studio.md) - `class Studio` in `application/service`.
+* [application.service.Studio](/symbols/application/service/Studio.md) - `class Studio(StudioViews)` in `application/service`.
+* [application.service_views.StudioViews](/symbols/application/service_views/StudioViews.md) - Projection half of Studio; callbacks use the command service's case and review checks.
 <!-- okf:generated:end links -->

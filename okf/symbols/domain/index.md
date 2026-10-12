@@ -11,9 +11,11 @@
 * [formal_bend](formal_bend/) - Symbols of domain.formal_bend
 * [formal_bmc](formal_bmc/) - Symbols of domain.formal_bmc
 * [formal_smt](formal_smt/) - Symbols of domain.formal_smt
+* [generated_app](generated_app/) - Symbols of domain.generated_app
 * [impact](impact/) - Symbols of domain.impact
 * [laws](laws/) - Symbols of domain.laws
 * [models](models/) - Symbols of domain.models
+* [navigation](navigation/) - Symbols of domain.navigation
 * [pack](pack/) - Symbols of domain.pack
 * [policy](policy/) - Symbols of domain.policy
 * [scenarios](scenarios/) - Symbols of domain.scenarios

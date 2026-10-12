@@ -47,5 +47,5 @@ _No curated notes yet._
 
 ## Referenced by
 
-* [application.service.Studio.repository_freshness](/symbols/application/service/Studio.repository_freshness.md) - Observe captured byte identity; this grants no source conformance, evidence or owner authority.
+* [application.service_views.StudioViews.repository_freshness](/symbols/application/service_views/StudioViews.repository_freshness.md) - Observe captured byte identity; this grants no source conformance, evidence or owner authority.
 <!-- okf:generated:end links -->

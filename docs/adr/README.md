@@ -104,6 +104,9 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0221](0221-every-record-can-reach-an-end.md) | A law that every record can still reach an end | accepted |
 | [0222](0222-exact-owner-plan-selection-and-activation.md) | Exact owner-plan selection and activation | accepted |
 | [0223](0223-generated-build-subject-and-live-architecture.md) | one generated build subject for architecture and runtime observations | accepted |
+| [0224](0224-approve-the-exact-generated-application.md) | approve the exact generated application | accepted for supported workflow activation |
+| [0225](0225-react-for-generated-application-frontends.md) | React for generated application frontends | accepted for the generated local app target |
+| [0226](0226-standard-record-navigation-and-presentation-map.md) | standard record navigation and a connected presentation map | accepted for generated local record apps |
 <!-- adr-index:end -->
 
 ## Reserved numbers for capability lanes

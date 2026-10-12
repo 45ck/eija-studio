@@ -198,7 +198,7 @@
     box.hidden = false;
     box.replaceChildren();
     box.append(el("h3", p.concerns ? `Changes requested: ${p.concerns} of ${p.items.length}` : `Every change looks right (${p.items.length})`),
-      el("p", "These are your inspection notes. Review & activate transfers the exact accepted steps and shows the separate server evidence packet. A check never answers the owner's questions or approves a change.", { class: "muted small" }));
+      el("p", "These are your model inspection notes. Review & activate shows the app covered by the separate server evidence packet: its model, data, screens and runtime. Inspect its exact scope and checks before making an owner decision. A check never answers your questions or approves a change.", { class: "muted small" }));
     const tools = el("div", undefined, { class: "verdict-tools" });
     const download = el("a", "Download review.md", { class: "quiet", download: "review.md", href: URL.createObjectURL(new Blob([text], { type: "text/markdown" })) });
     const next = el("button", "Continue to verification", { type: "button", class: "primary" });

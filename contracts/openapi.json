@@ -245,6 +245,46 @@
         }
       }
     },
+    "/api/play/presentation": {
+      "post": {
+        "summary": "Inspect",
+        "operationId": "inspect_api_play_presentation_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/C4Request"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Inspect Api Play Presentation Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/play/screens": {
       "post": {
         "summary": "Play Screens",
@@ -3519,6 +3559,18 @@
             "maxItems": 64,
             "minItems": 1,
             "title": "Steps"
+          },
+          "expected_build_digest": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Build Digest"
           }
         },
         "additionalProperties": false,

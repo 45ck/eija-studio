@@ -38,5 +38,7 @@ notes_baseline: 05b1656bfe93019666987a115d43a2f63d43870d133a55e1c65c900e2afe298a
 _No curated notes yet._
 
 <!-- okf:generated:begin links -->
-_No generated cross-references._
+## Referenced by
+
+* [ADR-0224: approve the exact generated application](/adrs/0224-approve-the-exact-generated-application.md) - The exact workflow transfer preserved typed edits, but an owner decision did not identify the complete generated app.
 <!-- okf:generated:end links -->

@@ -42,6 +42,23 @@ def test_context_contracts_and_three_real_containers():
     assert actors and all(n["support"] == "fixture_contract" for n in actors)
     assert all(n["details"]["authentication"] == "UNSUPPORTED" for n in actors)
     assert result["observation"] == {"runtime": "NOT_OBSERVED", "deployment": "UNSUPPORTED", "policy_change": False}
+    browser = next(n for n in containers["nodes"] if n["id"] == "node:browser")
+    assert browser["technology"] == "React · Mantine · CSS"
+    assert "frontend/build-manifest.json" in browser["sources"]
+
+
+def test_frontend_label_requires_consistent_emitted_metadata():
+    _, files = projected()
+    manifest = json.loads(files["frontend/build-manifest.json"])
+    manifest["dependencies"] = {"a-different-renderer": "1.0.0"}
+    files["frontend/build-manifest.json"] = canonical(manifest)
+    previous = json.loads(files[SUBJECT_FILE])
+    # An independently constructed structural negative fixture, never approval evidence.
+    files[SUBJECT_FILE] = canonical(build_subject(files, implementation_digest=previous["implementation_digest"],
+                                                 template_paths=previous["template_paths"]))
+    result = app_c4(files)
+    browser = next(n for n in result["levels"]["containers"]["nodes"] if n["id"] == "node:browser")
+    assert browser["technology"] == "HTML · JavaScript · CSS"
 
 
 def test_every_component_relationship_is_an_existing_extracted_dependency():

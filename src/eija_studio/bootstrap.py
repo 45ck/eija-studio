@@ -6,6 +6,9 @@ from .adapters.receipts import ReceiptSigner
 from .adapters.identity import identity, implementation_files
 from .adapters.providers import create_provider, KEYED_PROVIDERS, PROVIDER_NAMES  # noqa: F401 - re-exported for interfaces
 from .adapters.formal import FormalReports
+from .adapters.generated_apps import GeneratedApps
+from .application.build_subject import SUBJECT_FILE
+from .application.generated_app import TEMPLATES, review_snapshot, validate_review_payload
 from .adapters.edit_proposals import OfflineEditProposer
 from .adapters.plan_proposals import OfflinePlanProposer
 from .adapters.repository import RepositoryConnection
@@ -45,5 +48,7 @@ def build_studio(workspace: Path, provider="offline", model="", allow_network=Fa
     return Studio(store, proposal_provider, ReceiptSigner(store.directory), partial(identity, domain), sandbox_factory(store.directory, domain),
                   allow_network=allow_network, formal=FormalReports() if formal else None, pack=domain,
                   edit_proposer=OfflineEditProposer(), plan_proposer=OfflinePlanProposer(),
+                  generated_apps=GeneratedApps(store.directory, templates=TEMPLATES, subject_file=SUBJECT_FILE,
+                                               assemble=review_snapshot, validate=validate_review_payload),
                   repository=RepositoryConnection(repository_root, domain, source_facts=source_profile(domain)) if repository_root is not None else None,
                   repository_changes=RepositoryChanges(repository_root, domain, syntax_reader=syntax_reader) if repository_root is not None else None)

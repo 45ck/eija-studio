@@ -56,11 +56,12 @@ def test_the_page_learns_each_roles_description():
 
 
 def test_the_generated_app_acts_as_the_linked_actor_and_folds_away_other_roles():
-    page = (APP / "app.js.tmpl").read_text(encoding="utf-8")
+    frontend = APP.parent / "react-source"
+    page = "\n".join((frontend / name).read_text(encoding="utf-8") for name in ("controller.js", "main.jsx"))
     assert 'get("actor")' in page and "hashchange" in page  # PlayIDE's "Run as" opens #actor=<id>
-    assert "o.role === role" in page and '"details"' in page  # the acting role's screens first, the rest folded
+    assert "o.role === role" in page and '<details className="others">' in page  # the acting role's screens first
     assert '"Cancel"' not in page  # library-loan has an action named Cancel; the screen's own button says Close
-    assert 'id="actor-role"' in (APP / "index.html.tmpl").read_text(encoding="utf-8")
+    assert 'id="actor-role"' in page
 
 
 browser = pytest.mark.skipif(os.environ.get("EIJA_BROWSER_TESTS") != "1",

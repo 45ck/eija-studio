@@ -168,9 +168,18 @@ def test_actual_owned_draft_action_and_role_trace_the_same_generated_build_vocab
             frame.wait_for_function("() => typeof runtimeConnection !== 'undefined' && runtimeConnection !== null")
             frame.wait_for_function("() => document.getElementById('create-button').disabled === false")
             frame.locator("#actor").select_option("host-1")
+            assert frame.get_by_role("textbox", name="Record name", exact=True).get_attribute("id") == "title"
+            description = frame.evaluate("() => api('/api/app')")
+            title_field = next(field for field in description["screens"]["create"]["fields"] if field["attribute"] == "title")
+            title_label = title_field.get("label") or title_field["attribute"]
+            assert frame.get_by_role("textbox", name=title_label, exact=True).get_attribute("id") == "field-title"
             frame.locator("#title").fill("Friday multiplayer lobby")
-            if frame.locator("#field-title").count():
-                frame.locator("#field-title").fill("Friday multiplayer lobby")
+            # A sketch has a required record attribute named title as well as the app's display title.
+            # Different values catch a frontend binding that silently routes both controls to one field.
+            assert frame.locator("#field-title").count() == 1
+            frame.locator("#field-title").fill("Members-only Friday session")
+            assert frame.locator("#title").input_value() == "Friday multiplayer lobby"
+            assert frame.locator("#field-title").input_value() == "Members-only Friday session"
             frame.locator("#create-button").click()
             frame.wait_for_function("() => document.getElementById('current-state').textContent === 'Open'")
             frame.locator("#options button[title=Finish]").click()
@@ -188,6 +197,8 @@ def test_actual_owned_draft_action_and_role_trace_the_same_generated_build_vocab
             frame.wait_for_function("() => document.getElementById('current-state').textContent === 'Open'")
             trace = page.evaluate("() => PlayLive.snapshot().entries[1]")
             observed = frame.evaluate("() => api('/api/records/' + state.selected + '?actor=' + state.actor)")
+            assert observed["record"]["title"] == "Friday multiplayer lobby"
+            assert observed["record"]["fields"]["title"] == "Members-only Friday session"
             assert (trace["action"], trace["actorId"], trace["transition"], trace["from"], trace["to"]) == (
                 "Remake", "gamemaster-1", "TR-REMAKE", "Done", "Open")
             assert trace["modelHash"] == page.evaluate("() => PlayIDE.runningBuild().model") == observed["record"]["model_hash"]
@@ -479,9 +490,15 @@ def test_the_shell_reveals_hides_and_remembers_its_regions_in_a_real_browser():
             page.wait_for_selector('body[data-chat="open"]')
             assert page.evaluate("document.activeElement.id") == "chat-input"
             assert page.evaluate("document.querySelector('.side').getBoundingClientRect().left") > 1100  # still on the right
-            # Tabs that do not fit scroll, and More tabs lists them; picking one scrolls it into view and nothing in the
-            # tool bar covers the strip.
+            # At 1100px the responsive shell stacks its side panes, giving the diagram the full row:
+            # tabs now fit. At 760px they genuinely overflow; More tabs must still expose every choice.
             page.set_viewport_size({"width": 1100, "height": 800})
+            page.wait_for_function("""() => { const strip=document.querySelector('.stage-tools .tabs');
+                return strip.scrollWidth <= strip.clientWidth + 1; }""")
+            assert page.is_hidden("#tabs-more")
+            page.set_viewport_size({"width": 760, "height": 800})
+            page.wait_for_function("""() => { const strip=document.querySelector('.stage-tools .tabs');
+                return strip.scrollWidth > strip.clientWidth + 1; }""")
             page.wait_for_selector("#tabs-more:not([hidden])")
             page.click("#tabs-more")
             page.keyboard.press("Tab")  # focus leaves the menu, so it closes
@@ -513,6 +530,97 @@ def test_the_shell_reveals_hides_and_remembers_its_regions_in_a_real_browser():
             page.wait_for_selector("body[data-ready=true]", timeout=60_000)
             page.wait_for_selector('body[data-chat="closed"]')
             assert page.is_hidden("#toggle-chat") and page.is_hidden("#chat-input")
+            assert errors == []
+        finally:
+            chrome.close()
+
+
+def _compact_shell_geometry(page):
+    """Measure useful regions and actual control overlap, not just element visibility."""
+    return page.evaluate("""() => {
+      const rect = selector => document.querySelector(selector).getBoundingClientRect();
+      const canvas=rect('#canvas'), trace=rect('#live-trace'), hint=rect('#canvas-help');
+      const main=document.querySelector('main.layout'), collisions=[], outside=[];
+      const selectors=['.bar .logo','.bar .brand > strong','#model-name','#system-controls button',
+        '#palette-open','#source-status','.layout-toggles button','.bar-end > a','.uml-anchor > button',
+        '.toolbar button','.toolbar select','#run-status'];
+      const controls=[...document.querySelectorAll(selectors.join(','))].filter(node=>node.getClientRects().length)
+        .map(node=>({id:node.id || node.textContent.trim(),rect:node.getBoundingClientRect()}));
+      for(let i=0;i<controls.length;i++) {
+        const a=controls[i];
+        if(a.rect.left < -1 || a.rect.right > innerWidth+1) outside.push(a.id);
+        for(const b of controls.slice(i+1)) {
+          if(Math.min(a.rect.right,b.rect.right)-Math.max(a.rect.left,b.rect.left)>1
+            && Math.min(a.rect.bottom,b.rect.bottom)-Math.max(a.rect.top,b.rect.top)>1) collisions.push([a.id,b.id]);
+        }
+      }
+      return {width:innerWidth,pageWidth:document.documentElement.scrollWidth,
+        mainWidth:main.clientWidth,mainContent:main.scrollWidth,canvasWidth:canvas.width,canvasHeight:canvas.height,
+        ordered:canvas.bottom<=trace.top+1 && trace.bottom<=hint.top+1,collisions,outside};
+    }""")
+
+
+@pytest.mark.browser
+@pytest.mark.slow
+@pytest.mark.parametrize("width", [320, 760, 1024])
+@pytest.mark.skipif(os.environ.get("EIJA_BROWSER_TESTS") != "1", reason="NOT_RUN: real-browser check; set EIJA_BROWSER_TESTS=1")
+def test_compact_shell_preserves_canvas_context_and_keyboard_access_with_all_panes_open(width):
+    api = pytest.importorskip("playwright.sync_api", reason="NOT_RUN: install the hci or demos extra")
+    from demos.lib import ephemeral_eija_server  # noqa: PLC0415 - opt-in real-browser fixture
+
+    with ephemeral_eija_server(pack=ROOT / "packs/library-loan") as server, api.sync_playwright() as playwright:
+        executable = os.environ.get("EIJA_CHROMIUM")
+        chrome = (playwright.chromium.launch(headless=True, executable_path=executable) if executable
+                  else playwright.chromium.launch(channel="chrome", headless=True))
+        try:
+            page = chrome.new_page(viewport={"width": 1600, "height": 1000})
+            errors = []
+            page.on("pageerror", lambda error: errors.append(error.stack or str(error)))
+            page.goto(f"{server.base_url}/play#{server.token}")
+            page.wait_for_selector("body[data-ready=true]", timeout=60_000)
+            page.click('.outline button[data-id="state:Overdue"]')
+            selected = page.evaluate("() => PlayIDE.selected()")
+            page.click("#toggle-play")
+            page.click("#play-empty-build")
+            page.wait_for_function("() => window.PlayLive && PlayLive.snapshot().fresh", timeout=60_000)
+            frame_element = page.locator("#run-frame").element_handle()
+            assert frame_element is not None
+            frame = frame_element.content_frame()
+            assert frame is not None
+            frame.wait_for_selector("#title")
+            frame.locator("#title").fill("Keep this unsent record while resizing")
+            page.evaluate("window.__responsiveFrame=document.getElementById('run-frame').contentWindow")
+            source = page.get_attribute("#run-frame", "src")
+            page.click("#simulate")
+            page.wait_for_selector('#dock-tab-sim[aria-selected="true"]', timeout=30_000)
+            page.locator("#live-details > summary").click()
+            kept = page.evaluate("() => JSON.parse(localStorage.getItem('playide.shell.v1'))")
+            page.set_viewport_size({"width": width, "height": 1000})
+            page.wait_for_selector('body[data-shell-compact="true"]')
+            measured = _compact_shell_geometry(page)
+            assert measured["pageWidth"] <= width + 1, measured
+            assert measured["mainContent"] <= measured["mainWidth"] + 1, measured
+            assert measured["canvasWidth"] >= 200 and measured["canvasHeight"] >= 240, measured
+            assert measured["ordered"] and measured["collisions"] == [] and measured["outside"] == [], measured
+            assert page.evaluate("() => PlayIDE.selected()") == selected
+            assert page.evaluate("() => JSON.parse(localStorage.getItem('playide.shell.v1'))") == kept
+            page.locator("#health").focus()
+            page.keyboard.press("Enter")
+            assert page.locator("#checks").is_visible()
+            assert page.locator("#checks").evaluate("node => {const r=node.getBoundingClientRect();return r.left>=0 && r.right<=innerWidth && r.top>=0 && r.bottom<=innerHeight;}")
+            page.keyboard.press("Escape")
+            assert page.locator("#health").evaluate("node => node===document.activeElement")
+            page.keyboard.press("Control+Alt+KeyC")
+            page.keyboard.press("Control+Alt+KeyC")
+            assert page.locator("#chat-input").evaluate("node => node===document.activeElement")
+            assert page.locator("#chat-input").evaluate("node => {const r=node.getBoundingClientRect();return r.left>=0 && r.right<=innerWidth && r.top>=0 && r.bottom<=innerHeight;}")
+            page.set_viewport_size({"width": 1600, "height": 1000})
+            page.wait_for_selector('body[data-shell-compact="false"][data-play-arrangement="beside"]')
+            assert page.evaluate("() => JSON.parse(localStorage.getItem('playide.shell.v1'))") == kept
+            assert page.evaluate("window.__responsiveFrame===document.getElementById('run-frame').contentWindow")
+            assert page.get_attribute("#run-frame", "src") == source
+            assert frame.locator("#title").input_value() == "Keep this unsent record while resizing"
+            assert page.evaluate("() => PlayIDE.selected()") == selected
             assert errors == []
         finally:
             chrome.close()

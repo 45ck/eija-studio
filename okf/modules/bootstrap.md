@@ -39,6 +39,7 @@ _Symbol pages are generated for the domain and application layers only._
 ## Internal imports
 
 * [`adapters/edit_proposals`](/modules/adapters/edit_proposals.md)
+* [`adapters/generated_apps`](/modules/adapters/generated_apps.md)
 * [`adapters/identity`](/modules/adapters/identity.md)
 * [`adapters/plan_proposals`](/modules/adapters/plan_proposals.md)
 * [`adapters/receipts`](/modules/adapters/receipts.md)
@@ -49,6 +50,8 @@ _Symbol pages are generated for the domain and application layers only._
 * [`adapters/sqlite_store`](/modules/adapters/sqlite_store.md)
 * [`adapters/system_describer`](/modules/adapters/system_describer.md)
 * [`adapters/system_library`](/modules/adapters/system_library.md)
+* [`application/build_subject`](/modules/application/build_subject.md)
+* [`application/generated_app`](/modules/application/generated_app.md)
 * [`application/service`](/modules/application/service.md)
 * [`domain/pack`](/modules/domain/pack.md)
 <!-- okf:generated:end facts -->
@@ -61,6 +64,7 @@ _No curated notes yet._
 ## Imports
 
 * [adapters.edit_proposals](/modules/adapters/edit_proposals.md) - Bounded offline request fixture: exact model names and complete phrases, never an LLM.
+* [adapters.generated_apps](/modules/adapters/generated_apps.md) - Retain exact selected app bytes and run their existing generated unittest checker locally.
 * [adapters.identity](/modules/adapters/identity.md) - Measured release identity, not a proof of correctness or author authenticity.
 * [adapters.plan_proposals](/modules/adapters/plan_proposals.md) - Offline plan proposer for the PlayIDE chat (ADR-0156): a bounded phrase grammar and the pack's modelled meanings, never an LLM.
 * [adapters.receipts](/modules/adapters/receipts.md) - Local integrity seal.
@@ -71,6 +75,8 @@ _No curated notes yet._
 * [adapters.sqlite_store](/modules/adapters/sqlite_store.md) - Durable local unit of work.
 * [adapters.system_describer](/modules/adapters/system_describer.md) - Offline system describer for PlayIDE's "Describe your app" start (ADR-0216): a fixed library of app shapes and a small reader for the fields and roles a descri…
 * [adapters.system_library](/modules/adapters/system_library.md) - Where a person's own systems live on disk (ADR-0185): one folder per system under a systems home, the recent list, and the saved draft of the work in progress.
+* [application.build_subject](/modules/application/build_subject.md) - Exact generated-build identity.
+* [application.generated_app](/modules/application/generated_app.md) - Shared generation and exact-app evidence operations for the existing kernel and checker.
 * [application.service](/modules/application/service.md) - Module `application/service` (no module docstring).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
 

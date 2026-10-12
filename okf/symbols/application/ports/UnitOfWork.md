@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/application/ports.py#UnitOfWork
   title: application/ports.py
   hash_method: ast-sig-v1
-  sha256: cd6f3ae57d91ff9471da0d270fb97c5fd4cd89069640f3bc8b055e91f5e7eb61
+  sha256: 86172defbe49d685666da7551c5fc4d23562f9c48e67e5964c6ac41c1c727fe4
 description_override: 'The application-owned persistence port: all mutations on it commit together or roll back together.'
-notes_baseline: 35eaf8f9d8740a3c9cdad00d2333de026fd86e5245a526cd7f1c957ddd5ea7e7
+notes_baseline: 06e26f3221c1b55b1031bedb6a369e24872a980943d6c8e60786facbe105acb1
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -26,6 +26,10 @@ verified:
   at: '2026-09-29T08:20:47Z'
   notes_sha256: 1bac22a1ccff4b30399a3a52a6ab9d82261992b125aa55337fe6cc7ec9447139
   sources_sha256: 35eaf8f9d8740a3c9cdad00d2333de026fd86e5245a526cd7f1c957ddd5ea7e7
+- by: process:playide-exact-app
+  at: '2026-10-11T09:17:31Z'
+  notes_sha256: 52922a912ec79fcbcb0554a013b8665ac986cb84331ccd029c30e8e276da4584
+  sources_sha256: 06e26f3221c1b55b1031bedb6a369e24872a980943d6c8e60786facbe105acb1
 ---
 
 # application.ports.UnitOfWork
@@ -53,7 +57,7 @@ Structural interface implemented by adapters; not a class to instantiate.
 * `def save_case(self, case: dict[str, Any], expected: int) -> None`
 * `def insert_case(self, case: dict[str, Any]) -> None`
 * `def active(self) -> dict[str, Any]`
-* `def set_active(self, model: Workflow, expected: int) -> None`
+* `def set_active(self, model: Workflow, expected: int, app_build: dict[str, Any] \| None=None) -> None`
 * `def event(self, kind: str, body: dict[str, Any]) -> None`
 * `def actor(self, actor_id: str) -> dict[str, Any]`
 * `def create_instance(self, item: dict[str, Any]) -> None`
@@ -69,6 +73,8 @@ Structural interface implemented by adapters; not a class to instantiate.
 ## Notes
 
 Adapters implement it structurally ([SQLite store](/modules/adapters/sqlite_store.md)); domain and application never import SQL types. A new backend must reproduce compare-and-swap, replay and atomicity before use.
+
+set_active also accepts the optional generated-app association. Adapters commit the new baseline, association and applied case together; a workflow-only activation clears an earlier exact-app association rather than borrowing it.
 
 <!-- okf:generated:begin links -->
 ## Depends on

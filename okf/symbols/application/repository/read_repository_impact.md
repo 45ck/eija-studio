@@ -47,5 +47,5 @@ _No curated notes yet._
 
 ## Referenced by
 
-* [application.service.Studio.repository_impact](/symbols/application/service/Studio.repository_impact.md) - Known repository links only.
+* [application.service_views.StudioViews.repository_impact](/symbols/application/service_views/StudioViews.repository_impact.md) - Known repository links only.
 <!-- okf:generated:end links -->

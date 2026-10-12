@@ -78,6 +78,7 @@ _No curated notes yet._
 
 * [application.compiler](/modules/application/compiler.md) - Compiler: model → projections + impacts + obligations + computed review packet.
 * [application.service](/modules/application/service.md) - Module `application/service` (no module docstring).
+* [application.service_views](/modules/application/service_views.md) - Read-only Studio projections over the same case, pack and exact-app evidence.
 * [application.formal.BLOCKING](/symbols/application/formal/BLOCKING.md) - Constant `BLOCKING` in `application/formal`.
 * [application.formal.READS_REPORTS](/symbols/application/formal/READS_REPORTS.md) - Constant `READS_REPORTS` in `application/formal`.
 * [application.formal.attach](/symbols/application/formal/attach.md) - Sealed receipts for every registered kind the source returned, skipping an exact repeat of the latest one.

@@ -21,6 +21,7 @@ class ChangeCase <<aggregate-root>> {
   +dict<U+003C>str, dict<U+003C>str, int>> layout
   +tuple<U+003C>dict<U+003C>str, Any>> receipts
   +dict<U+003C>str, Any> | None decision
+  +GeneratedAppBinding | None app_build
   +str created_at
 }
 class ExecuteCommand <<command>> {

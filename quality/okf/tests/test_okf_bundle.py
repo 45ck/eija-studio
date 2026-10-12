@@ -493,7 +493,7 @@ def test_page_paths_that_differ_only_by_case_are_rejected_not_silently_overwritt
 
 
 def test_a_syntax_error_in_a_covered_source_is_a_finding_not_a_traceback(repo, capsys):
-    edit(repo.root / "src/eija_studio/application/service.py", "class Studio:", "class Studio(:")
+    edit(repo.root / "src/eija_studio/application/service.py", "class Studio(StudioViews):", "class Studio(StudioViews:")
     report = run_checks(repo)
     assert "BROKEN_SOURCE" in codes(report) and not report.ok
     assert cli.main(["--root", str(repo.root), "sync"]) == 1

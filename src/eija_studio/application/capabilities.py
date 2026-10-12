@@ -31,8 +31,8 @@ def capability_map(pack: Pack, model: Workflow) -> dict[str, Any]:
             ("Review, replay and exact-subject evidence", "executable", "Existing service contracts bind changes and receipts; source review can still block approval."),
             ("Multi-user identity and distributed collaboration", "unsupported", "One trusted local OS user; no SSO or distributed coordination guarantee.")]),
         ("interfaces", "Interfaces", [
-            ("Generated record forms and workflow actions", "executable", "Build & run generates the supported local application and checks declared conformance cases."),
-            ("Screen layouts and accessibility checks", "checked_design", "Design and checks have explicit coverage; no claim of complete accessibility or field usability."),
+            ("Generated React screens and model-driven navigation", "executable", "React/Mantine renders declared fields and shipped eija.navigation.v1 destinations for create, list, record detail and workflow actions. Create/read are supported; direct record update/delete is unsupported. Eligibility stays with the local service."),
+            ("Screen design, presentation map and accessibility checks", "checked_design", "UWE-inspired content/navigation/presentation links come from one generated snapshot. A matching subject does not prove runtime behaviour or complete accessibility; checks retain explicit coverage."),
             ("Arbitrary interaction logic and 3D rendering", "unsupported", "The workbench does not compile arbitrary interaction or game-engine behaviour.")]),
         ("integrations", "Integrations", [
             ("Audit and notification intents", "executable", "Audit rows and outbox intents are recorded atomically; notifications are not delivered."),

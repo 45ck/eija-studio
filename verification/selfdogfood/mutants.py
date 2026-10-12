@@ -98,8 +98,8 @@ def _studio_mutation(method: str, check: str, predicate: str | None = None) -> M
 
 def _stale_evidence_mutation() -> Mutation:
     compiler, compiler_hash = _clone(compile_case, _RemoveGuard("evidence != 'PASS'"))
-    view, view_hash = _clone(Studio.view, globals_override={"compile_case": compiler})
-    cls = type("SyntheticStaleEvidenceStudio", (Studio,), {"view": view})
+    view, view_hash = _clone(Studio._compile, globals_override={"compile_case": compiler})
+    cls = type("SyntheticStaleEvidenceStudio", (Studio,), {"_compile": view})
 
     def factory(directory: Path) -> Studio:
         return synthetic_studio(directory, cls=cls)

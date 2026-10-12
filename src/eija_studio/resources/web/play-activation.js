@@ -3,13 +3,22 @@
 "use strict";
 (() => {
   const $ = (id) => document.getElementById(id);
-  let P = null, view = null, context = null, shownCandidate = null, originDraftKey = null, busy = false, message = "", problem = false;
+  let P = null, view = null, context = null, shownCandidate = null, originDraftKey = null, busy = false, message = "", problem = false, packetCurrent = false;
   const short = (hash) => hash ? hash.slice(0, 16) : "not available";
   const closed = () => view && ["APPLIED", "DISCARDED"].includes(view.case.stage);
   const readOnly = () => Boolean(P.reviewing && P.reviewing());
   const candidateCoherent = () => !view || JSON.stringify(shownCandidate) === JSON.stringify(view.case.candidate || view.case.baseline);
   const sameContext = () => !view || context === P.activationDraft().context && candidateCoherent();
-  const eligible = () => Boolean(view && view.packet && view.packet.eligible && Array.isArray(view.packet.blockers) && !view.packet.blockers.length);
+  const appConflict = () => view?.packet?.app_build?.conformance?.status === "CONFLICT";
+  const appEligible = (packet) => {
+    if (!packet.subject?.generated_app) return !view?.case?.app_build && (!packet.app_build || packet.app_build.freshness === "UNBOUND"); // historical workflow-only scope only
+    const app = packet.app_build;
+    return Boolean(app && app.freshness === "CURRENT" && app.binding?.digest === packet.subject.generated_app
+      && app.subject?.digest && app.binding.subject?.digest === app.subject.digest && app.conformance?.status === "PASS");
+  };
+  const eligible = () => Boolean(packetCurrent && view && view.packet && view.packet.eligible
+    && view.packet.core_status === "RELEASE_FIXTURE_MATCH" && Array.isArray(view.packet.blockers)
+    && !view.packet.blockers.length && appEligible(view.packet));
   const el = (...args) => P.el(...args);
   const at = () => P.activationDraft();
   const path = (suffix = "") => `/api/cases/${encodeURIComponent(view.case.id)}${suffix}`;
@@ -31,7 +40,68 @@
     CANDIDATE_CHANGED: "The server recomputed a different candidate. Open the current model and re-preview the retained draft; no different meaning will be silently accepted.",
     APPROVAL_REQUIRED: "Approve the exact checked subject first. Activation remains a separate deliberate action.",
     MIXED_DRAFTS: "This case activates workflow edits only. Inspect or reset the listed drafts before checking or deciding; those drafts are retained.",
+    BUILD_SUBJECT_CHANGED: "The generated app differs from the one you built. Build the candidate again and inspect its new exact scope before transferring.",
+    BUILD_IMPLEMENTATION_MISMATCH: "The installed runtime changed after this app was captured. Build and review the candidate again; the previous approval cannot cover a different runtime.",
+    ACTIVE_APP_CHANGED: "Activation was reported, but the active app binding differs or is no longer current. Your draft is retained. Open the current active model and inspect its app identity before continuing.",
+    APP_CONFORMANCE_CONFLICT: "This review records both failed and passing generated-app checks. Rerunning does not erase the failure. Diagnose and repair the cause, then build and start a new review case; this case remains in history.",
   };
+
+  function mountAppReview() {
+    const section = el("section", undefined, { id: "activation-app", "aria-labelledby": "activation-app-title" });
+    const heading = el("h3", "The app covered by this review", { id: "activation-app-title" });
+    const summary = el("p", "", { id: "activation-app-summary", class: "activation-app-summary" });
+    const checks = el("p", "", { id: "activation-app-check", class: "activation-app-check", role: "status" });
+    const scopes = el("dl", undefined, { id: "activation-app-scope", class: "activation-app-scope" });
+    const limits = el("ul", undefined, { id: "activation-app-limits", class: "muted small" });
+    const recovery = el("p", undefined, { id: "activation-app-recovery", class: "activation-warning" });
+    recovery.append(el("span", RECOVERY.APP_CONFORMANCE_CONFLICT + " "),
+      el("a", "Open the active model to start a new review", { href: "/play" }));
+    const details = el("details", undefined, { class: "activation-app-identities" });
+    details.append(el("summary", "Exact app and checker identities"), el("dl", undefined, { id: "activation-app-identities", class: "activation-hashes" }));
+    const build = el("button", "Build candidate for review", { id: "activation-build", type: "button", class: "primary" });
+    build.addEventListener("click", () => { if (busy || readOnly()) return; $("activation").close(); P.buildForReview(); });
+    section.append(heading, summary, checks, scopes, limits, recovery, details, build);
+    $("activation-evidence").before(section);
+  }
+
+  function appReview(draft) {
+    const packet = view && view.packet, app = packet && packet.app_build, subject = app && app.subject;
+    const bound = Boolean(packet?.subject?.generated_app), pending = !view;
+    $("activation-app-recovery").hidden = !appConflict();
+    $("activation-build").hidden = !pending;
+    $("activation-build").disabled = busy || readOnly() || !draft.request.expected_candidate_semantic_hash;
+    $("activation-app-summary").textContent = pending
+      ? draft.request.expected_build_digest ? `Candidate build ${short(draft.request.expected_build_digest)} passed its local checks. Transfer it to capture this exact generated app for review.`
+        : "Build the candidate first. The server will capture its generated files and declared contracts when you transfer the change."
+      : bound ? `This review names one captured generated app: ${short(subject?.digest)}. Approval covers these exact contracts and files under the reported local runtime.`
+        : "This historical case covers its workflow only. No generated app is bound to its approval; create a new built candidate to review an exact app.";
+    const state = !packetCurrent && view ? "Refresh required" : app?.freshness || "UNBOUND";
+    const conformance = app?.conformance;
+    $("activation-app-check").textContent = pending ? "Generated-app review evidence is collected after transfer. Building alone does not approve a change."
+      : `App binding: ${state} · generated conformance: ${conformance?.status || "NOT_RUN"}${conformance?.cases != null ? ` · ${conformance.cases} cases` : ""}${conformance?.detail ? ". " + conformance.detail : ""}`;
+    $("activation-app-check").dataset.current = String(Boolean(packetCurrent && appEligible(packet || {})));
+    const scopes = subject ? [["Workflow", "Exact candidate and action rules"], ["Data contract", subject.data_digest ? "Captured record schema; stored user records are not included" : "No data schema declared"],
+      ["Screens", "Captured generated screens"], ["Runtime", "Measured installed implementation and generated code"], ["Generated files", `${subject.payload_paths?.length ?? "Reported"} files in the captured payload`]] : [];
+    $("activation-app-scope").replaceChildren(...scopes.flatMap(([name, detail]) => [el("dt", name), el("dd", detail)]));
+    const identities = subject ? [["App build", subject.digest], ["Review binding", app.binding?.digest], ["Workflow", subject.model_hash], ["Data schema", subject.data_digest],
+      ["Screens", subject.screens_digest], ["Templates", subject.templates_digest], ["Runtime", subject.implementation_digest], ["Generated files", subject.generated_files_hash],
+      ["Checker", app.binding?.checker?.id], ["Checker digest", app.binding?.checker?.digest]] : [];
+    $("activation-app-identities").replaceChildren(...identities.flatMap(([name, value]) => [el("dt", name), el("dd", value || "Not declared")]));
+    $("activation-app-limits").replaceChildren(...(app?.limitations || ["Workflow edits only. Screen, schema, policy and vocabulary edits remain drafts.",
+      "Stored records, external services and deployment are outside this local approval."]).map((line) => el("li", line)));
+  }
+
+  function sourceStatus(packet) {
+    const core = packet?.core_status || (!packet && P.status()?.trusted_fixture ? "RELEASE_FIXTURE_MATCH" : "SOURCE_REVIEW_REQUIRED");
+    const source = packet?.identity_source || P.status()?.identity_source;
+    const synthetic = typeof source === "string" && (source.includes("synthetic") || source === "pytest-harness");
+    $("activation-source").textContent = core === "SOURCE_REVIEW_REQUIRED"
+      ? "SOURCE_REVIEW_REQUIRED · source changes need legitimate owner review. Model inspection can continue; trusted verification, approval and activation are blocked."
+      : core !== "RELEASE_FIXTURE_MATCH" ? `Source status ${core}. Current source review has not been established; refresh before deciding.`
+        : synthetic ? `Synthetic owner test identity (${source}). Legitimate owner source review has not been performed; this fixture exercises the review mechanics only.`
+          : "Shipped source fixture matches. Byte identity does not establish correctness or independent owner source review.";
+    $("activation-source").className = core === "RELEASE_FIXTURE_MATCH" && !synthetic ? "activation-source" : "activation-warning";
+  }
 
   function status(text, bad = false) {
     message = text; problem = bad;
@@ -67,6 +137,24 @@
     return (c.transactions || []).map((transaction) => ({ transaction, author: "stored" }));
   }
 
+  function describeStep(step) {
+    const tx = step.transaction, baseline = view?.case?.baseline || P.base();
+    const before = (baseline.transitions || []).find((item) => item.id === tx.transition), action = before?.action || tx.transition;
+    const descriptions = {
+      add_state: () => `Add state ${tx.state}`,
+      rename_state: () => `Rename state ${tx.state} → ${tx.to}`,
+      remove_state: () => `Remove state ${tx.state}`,
+      set_initial: () => `Start new records in ${tx.state}`,
+      add_transition: () => `${tx.role} may ${tx.action}: ${tx.from_state} → ${tx.to_state}`,
+      retarget_transition: () => `${action}: move the ${tx.end === "source" ? "starting" : "destination"} state to ${tx.state}`,
+      remove_transition: () => `Remove action ${action}`,
+      set_role: () => `${action}: ${before?.role || "previous role"} → ${tx.role}`,
+      set_guards: () => `${action}: require ${tx.guards.join(", ")}`,
+      set_effects: () => `${action}: record ${tx.required_effects.length ? tx.required_effects.join(", ") : "no required effects"}`,
+    };
+    return Object.hasOwn(descriptions, tx.kind) ? descriptions[tx.kind]() : tx.kind.replaceAll("_", " ");
+  }
+
   // Questions and acknowledgement belong to one exact subject. Refreshing that same subject preserves unsent
   // answers; a different subject clears them and closes the disclosure. No answer is inferred from the packet.
   function questions(packet) {
@@ -91,12 +179,12 @@
     $("activation-journey").replaceChildren(...stages.map((label, n) => el("li", (n < current ? "✓ " : n === current ? "● " : "○ ") + label,
       { class: n < current ? "done" : n === current ? "current" : "", ...(n === current ? { "aria-current": "step" } : {}) })));
     identities(draft);
+    appReview(draft);
     const steps = displayedSteps(draft);
     $("activation-steps").replaceChildren(...steps.map((s, n) => {
-      const li = el("li"), drawn = P.base().transitions.find((t) => t.id === s.transaction.transition);
-      const name = s.transaction.kind.replaceAll("_", " "), subject = s.transaction.state || s.transaction.action || (drawn && drawn.action) || s.transaction.transition || "";
+      const li = el("li");
       li.append(el("span", s.author === "ai" ? "AI" : s.author === "you" ? "You" : "Stored command", { class: "who " + s.author }),
-        el("span", `${n + 1}. ${name}${subject ? ": " + subject : ""}${s.transaction.to ? " → " + s.transaction.to : ""}`));
+        el("span", `${n + 1}. ${describeStep(s)}`));
       return li;
     }));
     const reasons = [...draft.reasons];
@@ -106,12 +194,9 @@
       ? "The diagram or draft moved since this case was transferred. This case is retained, but its checks and decisions cannot act on the changed draft."
       : "This case has newer behaviour than the diagrams on this page. Open this case again to inspect its current UML before verifying or deciding. Your browser draft is retained.");
     $("activation-drafts").replaceChildren(...[...reasons, ...(draft.notes || [])].map((r) => el("li", r)));
-    const core = packet && packet.core_status || (P.status() && P.status().trusted_fixture ? "RELEASE_FIXTURE_MATCH" : "SOURCE_REVIEW_REQUIRED");
-    $("activation-source").textContent = core === "SOURCE_REVIEW_REQUIRED" ? "SOURCE_REVIEW_REQUIRED · source changes need legitimate owner review. Model inspection can continue; trusted verification, approval and activation are blocked."
-      : "Source matches the reviewed release fixture. Byte identity does not prove correctness.";
-    $("activation-source").className = core === "SOURCE_REVIEW_REQUIRED" ? "activation-warning" : "activation-source";
-    $("activation-transfer").hidden = Boolean(P.about().case_id) || Boolean(view && coherent);
-    $("activation-transfer").textContent = view ? "Transfer current draft as a new case" : "Transfer exact accepted steps";
+    sourceStatus(packet);
+    $("activation-transfer").hidden = Boolean(P.about().case_id) || Boolean(view && coherent && !appConflict());
+    $("activation-transfer").textContent = appConflict() ? "Start a new exact-app review case" : view ? "Transfer current draft as a new case" : "Transfer exact accepted steps";
     $("activation-transfer").disabled = busy || readOnly() || !workflowOnly || Boolean(sizeIssue) || !draft.request.expected_candidate_semantic_hash;
     $("activation-diff").disabled = busy || !c && !draft.request.expected_candidate_semantic_hash;
     $("activation-effects").disabled = busy;
@@ -131,6 +216,7 @@
     $("activation-check").disabled = busy || readOnly() || !workflowOnly || !view || closed() || !coherent;
     $("activation-refresh").disabled = busy || !view;
     $("activation-approve").disabled = busy || readOnly() || !workflowOnly || !view || closed() || !coherent || !eligible() || c.stage === "APPROVED";
+    $("activation-approve").textContent = packet?.subject?.generated_app ? "Approve this exact app revision" : "Approve this workflow revision";
     $("activation-apply").disabled = busy || readOnly() || !workflowOnly || !view || !coherent || !eligible() || c.stage !== "APPROVED";
     $("activation-apply").textContent = c && c.stage === "APPLIED" ? "✓ Revision activated" : "Activate approved revision";
     $("activation-status").textContent = message;
@@ -149,7 +235,11 @@
 
   async function refresh() {
     if (!view) return;
-    view = await P.api(path());
+    packetCurrent = false;
+    const expected = view.case.id, next = await P.api(path());
+    if (!next.case || next.case.id !== expected) throw Object.assign(new Error("The refreshed case did not match the case being reviewed."), { code: "CASE_CONTEXT_CHANGED" });
+    view = next;
+    packetCurrent = true;
   }
 
   async function transfer() {
@@ -160,6 +250,7 @@
     if (sizeIssue) return status(`PLAN_TRANSFER_TOO_LARGE: ${sizeIssue}`, true);
     await task(async () => {
       const created = await P.api("/api/cases/from-plan", draft.request);
+      packetCurrent = false;
       view = { case: created, packet: null };
       context = draft.context; shownCandidate = draft.shownCandidate; originDraftKey = draft.originDraftKey;
       try { sessionStorage.setItem("playide.activation.origin:" + created.id, originDraftKey); } catch { /* origin remains in this page */ }
@@ -172,17 +263,25 @@
     if (readOnly()) throw Object.assign(new Error("Open the editable local case before changing its checks or decision."), { code: "READ_ONLY_VIEW" });
     if (at().reasons.length) throw Object.assign(new Error("Non-workflow drafts remain on this page."), { code: "MIXED_DRAFTS" });
     if (!view || !sameContext() || closed()) throw Object.assign(new Error("The shown case or draft changed. Refresh and inspect the exact revision before continuing."), { code: "CASE_CONTEXT_CHANGED" });
+    packetCurrent = false;
     await P.api(path("/" + action), { expected_version: view.case.version, ...extra });
     await refresh();
   }
 
   async function open() {
     if (!P) return;
+    if (view) packetCurrent = false;
     render(); $("activation").showModal();
+    if (view) {
+      await task(async () => { await refresh(); status("Current case and exact app evidence loaded. Inspect the reported scope before deciding."); }, "Refreshing this case and its exact app evidence…");
+      return;
+    }
     if (!view && P.about().case_id) {
       const opening = at();
       await task(async () => {
-        view = await P.api(`/api/cases/${encodeURIComponent(P.about().case_id)}`);
+        const expected = P.about().case_id, next = await P.api(`/api/cases/${encodeURIComponent(expected)}`);
+        if (!next.case || next.case.id !== expected) throw Object.assign(new Error("The returned case is not the one opened on this page."), { code: "CASE_CONTEXT_CHANGED" });
+        view = next; packetCurrent = true;
         context = opening.context; shownCandidate = opening.shownCandidate;
         try { originDraftKey = sessionStorage.getItem("playide.activation.origin:" + view.case.id); } catch { /* storage unavailable */ }
         status("Case and review evidence loaded. Inspection, checks and owner decisions remain separate.");
@@ -192,6 +291,7 @@
 
   function init(bridge) {
     P = bridge;
+    mountAppReview();
     $("activation-open").addEventListener("click", open);
     $("activation-close").addEventListener("click", () => $("activation").close());
     $("activation-transfer").addEventListener("click", transfer);
@@ -199,7 +299,7 @@
     $("activation-effects").addEventListener("click", () => { if (busy) return; $("activation").close(); P.showEffects(); });
     $("activation-refresh").addEventListener("click", () => task(async () => { await refresh(); status("Current case and evidence loaded. New subject identities clear old unsent answers."); }, "Refreshing the case and evidence…"));
     $("activation-check").addEventListener("click", () => task(async () => {
-      await command("verify"); status("✓ Bounded runtime verification finished for this case. Human understanding remains UNKNOWN; nothing was approved.");
+      await command("verify"); status("✓ Server verification finished for this exact case; inspect generated-app conformance and runtime evidence separately. Human understanding remains UNKNOWN; nothing was approved.");
     }, "Running the server's bounded runtime verification…"));
     $("activation-form").addEventListener("submit", (event) => {
       event.preventDefault();
@@ -221,10 +321,11 @@
         if (currentDraft.context !== applyingContext || currentDraft.reasons.length) throw Object.assign(new Error("The case was activated. Newer browser edits are retained; open the current active model before building or deciding again."), { code: "ACTIVATED_WITH_NEWER_DRAFT" });
         const active = await P.activated(view, originDraftKey, applyingContext);
         context = at().context;
-        status(`✓ Revision ${active.baseline_version} is active and every view uses it. Build & run starts from the active model.${stopped ? "" : " The previous app could not be stopped; its frame was closed. Stop it before using another runtime."}`);
+        const exactApp = view.packet?.subject?.generated_app;
+        status(`✓ Revision ${active.baseline_version} is active and every view uses it. ${exactApp ? "The exact reviewed app binding is active; Build & play reopens its captured bundle." : "This historical approval covers the workflow only."}${stopped ? "" : " The previous app could not be stopped; its frame was closed. Stop it before using another runtime."}`);
       }, "Activating the approved revision atomically…");
     });
-    for (const event of ["playide:plan", "playide:edit", "playide:tests", "playide:laws"]) document.addEventListener(event, () => { if ($("activation").open) render(); });
+    for (const event of ["playide:plan", "playide:edit", "playide:tests", "playide:laws", "playide:built"]) document.addEventListener(event, () => { if ($("activation").open) render(); });
     window.PlayActivation = { open };
   }
   if (window.PlayIDE) init(window.PlayIDE);

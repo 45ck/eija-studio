@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/application/compiler.py#compile_case
   title: application/compiler.py
   hash_method: ast-v2
-  sha256: d739ddf1790765aee87c792e6754a913fe2c85e4e0ca6f54b35e3ce46a4a7ce4
+  sha256: 26e82c41b93a7128fab9a832178588c689c766041a8a6c3be78bdb836235e226
 description_override: 'Computes the review packet: subject, blockers, technical claims, impact, projections and critical questions for a Change Case.'
-notes_baseline: 06d212662b4cca1511b78e77afb21e84628a587e8b15ed24a470bd8e495c43ce
+notes_baseline: d8097e2ad665e5892a5ca3abd2acff69fd0d3b146784040b8a2018a07e14833c
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -34,6 +34,10 @@ verified:
   at: '2026-10-03T01:36:00Z'
   notes_sha256: aa620ff28807e86fc16f5e360e028a9a12d6915b55d399d4328c17bcc07e00c2
   sources_sha256: 06d212662b4cca1511b78e77afb21e84628a587e8b15ed24a470bd8e495c43ce
+- by: process:playide-exact-app
+  at: '2026-10-11T09:17:31Z'
+  notes_sha256: a7021161887ad299a7c1a375a042dcae52ee0f7298b76c072337c03546307f8e
+  sources_sha256: d8097e2ad665e5892a5ca3abd2acff69fd0d3b146784040b8a2018a07e14833c
 ---
 
 # application.compiler.compile_case
@@ -43,7 +47,7 @@ verified:
 |---|---|
 | Kind | function |
 | Module | [`application/compiler`](/modules/application/compiler.md) |
-| Signature | `def compile_case(case: ChangeCase, identity: dict[str, Any], authenticator: Callable[[dict[str, Any]], bool], active_version: int, scope: str='local-demo', pack: Pack \| None=None) -> dict[str, Any]` |
+| Signature | `def compile_case(case: ChangeCase, identity: dict[str, Any], authenticator: Callable[[dict[str, Any]], bool], active_version: int, scope: str='local-demo', pack: Pack \| None=None, app_current: dict[str, Any] \| None=None) -> dict[str, Any]` |
 | Code | `repo://src/eija_studio/application/compiler.py#compile_case` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
@@ -58,11 +62,16 @@ Eligibility is computed, never stored: blockers come from policy findings, sourc
 
 The compiler supplies its captured case ID, version and scope to formal-record inspection. That additive display projection uses each kind's deciding receipt; it does not select another receipt, change a verdict or grant authority. Current review, original receipt and recorded specimen identities remain distinct. Missing records and missing navigation bindings stay explicit.
 
+Exact-app cases add the generated binding to the review subject and inspect a separate generated execution receipt. Workflow/model receipts cannot supply that conformance claim. Historical cases without a binding remain workflow-only; freshness and conflicting checks are explicit blockers.
+
 <!-- okf:generated:begin links -->
 ## Depends on
 
 * [application.compiler.subject_for](/symbols/application/compiler/subject_for.md) - `def subject_for(model: Workflow, layout: dict[str, Any], identity: dict[str, Any]) -> dict[str, Any]` in `application/compiler`.
 * [application.formal.packet_view](/symbols/application/formal/packet_view.md) - The formal part of the review packet: per-kind claims, blockers, the full evidence list, explanations, and (with a pack) the pack's declared verifiers, so a ki…
+* [application.generated_app.app_build_blockers](/symbols/application/generated_app/app_build_blockers.md) - `def app_build_blockers(case: ChangeCase, view: dict[str, Any]) -> list[str]` in `application/generated_app`.
+* [application.generated_app.app_build_view](/symbols/application/generated_app/app_build_view.md) - Keep workflow evidence separate from generated application execution evidence.
+* [application.generated_app.bind_subject](/symbols/application/generated_app/bind_subject.md) - `def bind_subject(subject: dict[str, Any], binding: GeneratedAppBinding | None) -> dict[str, Any]` in `application/generated_app`.
 * [application.witness_inspection.InspectionContext](/symbols/application/witness_inspection/InspectionContext.md) - The case revision and review scope captured by the compiler, not inferred by a browser.
 * [domain.change_case.ChangeCase](/symbols/domain/change_case/ChangeCase.md) - Aggregate boundary: transitions are mediated by the application and CAS store.
 * [domain.evidence.aggregate_status](/symbols/domain/evidence/aggregate_status.md) - `def aggregate_status(receipts: list[dict[str, Any]], subject: dict[str, Any], authenticator: Callable[[dict[s…` in `domain/evidence`.
@@ -75,10 +84,4 @@ The compiler supplies its captured case ID, version and scope to formal-record i
 * [domain.policy.check_policy](/symbols/domain/policy/check_policy.md) - Sorted, de-duplicated policy codes of ``model`` under the pack (empty means the model conforms).
 * [domain.policy.meaning_questions](/symbols/domain/policy/meaning_questions.md) - The pack's meaning-check questions, with expected answers read from the model where the pack says so.
 * [domain.policy.projections](/symbols/domain/policy/projections.md) - Journey wording and rules derive from executable transitions, not AI copy.
-
-## Referenced by
-
-* [application.service.Studio.apply](/symbols/application/service/Studio.apply.md) - `def apply(self, case_id: str, expected: int, principal: Principal) -> dict[str, Any]` in `application/service`.
-* [application.service.Studio.approve](/symbols/application/service/Studio.approve.md) - `def approve(self, case_id: str, expected: int, subject_hash: str, answers: dict[str, str], acknowledge_unknow…` in `application/service`.
-* [application.service.Studio.view](/symbols/application/service/Studio.view.md) - `def view(self, case_id: str, scope: str='local-demo') -> dict[str, Any]` in `application/service`.
 <!-- okf:generated:end links -->

@@ -51,17 +51,23 @@ Deterministic because [canonical](/symbols/domain/models/canonical.md) sorts key
 * [application.compiler.compile_case](/symbols/application/compiler/compile_case.md) - `def compile_case(case: ChangeCase, identity: dict[str, Any], authenticator: Callable[[dict[str, Any]], bool],…` in `application/compiler`.
 * [application.compiler.subject_for](/symbols/application/compiler/subject_for.md) - `def subject_for(model: Workflow, layout: dict[str, Any], identity: dict[str, Any]) -> dict[str, Any]` in `application/compiler`.
 * [application.formal.attach](/symbols/application/formal/attach.md) - Sealed receipts for every registered kind the source returned, skipping an exact repeat of the latest one.
+* [application.generated_app.review_snapshot](/symbols/application/generated_app/review_snapshot.md) - Derive canonical contracts and the review binding through the shared pure assembler.
+* [application.generated_app.verify_app](/symbols/application/generated_app/verify_app.md) - Seal the observed checker artifact, without approving or writing the case.
 * [application.requirement_trace.compare_requirements](/symbols/application/requirement_trace/compare_requirements.md) - Compare prose only for existing IDs.
 * [application.requirement_trace.requirement_review](/symbols/application/requirement_trace/requirement_review.md) - Pinned requirement rows and declared model/law/source/test links with visible gaps.
 * [application.runtime.execute](/symbols/application/runtime/execute.md) - `def execute(session: UnitOfWork, case_id: str, model: Workflow, command: ExecuteCommand, *, fault: Callable[[…` in `application/runtime`.
 * [application.service.Studio.create](/symbols/application/service/Studio.create.md) - `def create(self, request: str) -> dict[str, Any]` in `application/service`.
-* [application.service.Studio.export](/symbols/application/service/Studio.export.md) - `def export(self, case_id: str) -> dict[str, Any]` in `application/service`.
 * [application.service.Studio.from_plan](/symbols/application/service/Studio.from_plan.md) - Select an exact owner-reviewed command batch; previews and provenance never grant authority.
 * [application.service.Studio.propose](/symbols/application/service/Studio.propose.md) - `def propose(self, case_id: str, expected: int, *, consent: bool=False) -> dict[str, Any]` in `application/service`.
+* [application.service_views.StudioViews.export](/symbols/application/service_views/StudioViews.export.md) - `def export(self, case_id: str) -> dict[str, Any]` in `application/service_views`.
 * [application.verifier.verify_runtime](/symbols/application/verifier/verify_runtime.md) - `def verify_runtime(model: Workflow, subject: dict[str, Any], sandbox: SandboxFactory, pack: Pack | None=None)…` in `application/verifier`.
 * [domain.data.DataModel.digest](/symbols/domain/data/DataModel.digest.md) - `def digest(self) -> str` in `domain/data`.
 * [domain.evidence.assess_receipt](/symbols/domain/evidence/assess_receipt.md) - `def assess_receipt(receipt: dict[str, Any], subject: dict[str, Any], claim: str, kind: str, context: Context…` in `domain/evidence`.
+* [domain.generated_app.GeneratedAppBinding.consistent_digest](/symbols/domain/generated_app/GeneratedAppBinding.consistent_digest.md) - `def consistent_digest(self) -> Self` in `domain/generated_app`.
+* [domain.generated_app.GeneratedBuildSubject.consistent_digest](/symbols/domain/generated_app/GeneratedBuildSubject.consistent_digest.md) - `def consistent_digest(self) -> Self` in `domain/generated_app`.
+* [domain.generated_app.generated_receipt_status](/symbols/domain/generated_app/generated_receipt_status.md) - Compute a scoped process observation, never trust its submitted status field.
 * [domain.models.Workflow.semantic_hash](/symbols/domain/models/Workflow.semantic_hash.md) - `def semantic_hash(self) -> str` in `domain/models`.
+* [domain.navigation.Navigation.digest](/symbols/domain/navigation/Navigation.digest.md) - `def digest(self) -> str` in `domain/navigation`.
 * [domain.pack.Pack.digest](/symbols/domain/pack/Pack.digest.md) - `def digest(self) -> str` in `domain/pack`.
 * [domain.scenarios.Scenarios.digest](/symbols/domain/scenarios/Scenarios.digest.md) - `def digest(self) -> str` in `domain/scenarios`.
 * [domain.screens.Screens.digest](/symbols/domain/screens/Screens.digest.md) - `def digest(self) -> str` in `domain/screens`.

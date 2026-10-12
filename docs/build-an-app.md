@@ -1,6 +1,6 @@
 # Build an app from the model
 
-`eija build` turns a workflow model into an app you can run: a local web page, an API and a SQLite database. The build also checks the app against EIJA's kernel. The diagram is the source. To change the app, change the model and build again. See [ADR-0150](adr/0150-build-apps-from-the-model-with-a-kernel-oracle.md) for the design.
+`eija build` turns a workflow model into an app you can run: a React frontend, an API and a SQLite database. The build also checks the app against EIJA's kernel. The diagram is the source. To change the app, change the model and build again. See [ADR-0150](adr/0150-build-apps-from-the-model-with-a-kernel-oracle.md) for the runtime design and [ADR-0225](adr/0225-react-for-generated-application-frontends.md) for the frontend.
 
 ```console
 eija build --pack packs/excursion --out myapp
@@ -16,14 +16,20 @@ Use `--workflow FILE` to build a candidate workflow (for example one exported fr
 |---|---|
 | `app/model.json`, `app/pack.json` | The canonical workflow model (states, transitions, roles, guards, effects) and pack (actors, policy) the app was built from |
 | `app/screens.json` | One screen per use case ([ADR-0154](adr/0154-use-cases-and-screens-designed-against-the-model.md)): the pack's `screens.json`, or the defaults. The create form's attributes, order and labels and the action buttons' labels come from here |
+| `app/navigation.json` | Versioned standard record navigation derived from those screens and the workflow: Records, New record, record details and action destinations; the React shell consumes this same model |
 | `app/data.json` | The pack's data model, when it has a `data.json`: the record class's attributes become the app's form, and every value is checked by EIJA's `check_values` |
 | `app/service.py` | SQLite storage for the kernel. Creating a record calls `runtime.initialise` and each action calls `runtime.execute`; each request commits in a single transaction. |
 | `app/server.py`, `app/web/` | A local HTTP API and page: pick an actor, create records and take the actions the model allows, with reasons for those it refuses |
+| `frontend/` | Authored React components/controller, exact dependency lock, external styles, build manifest and dependency licences; these inputs participate in the exact generated identity |
 | `tests/oracle.json` | The kernel's answer for every state × action × actor × version, plus replays |
 | `tests/test_conformance.py` | Checks the app against every oracle case |
 | `BUILD.json` | Model and pack identity, file hashes, case count, the conformance result and the kernel's source-review status |
 
 ## Why you can trust it, and how far
+
+The shipped frontend is already bundled. Running a generated app needs Python and the matching EIJA package; it does not download scripts or require Node. Maintainers use the pinned React/Mantine/esbuild toolchain to rebuild the assets. Source checks and rendered browser checks remain separate; adopting a component library is not an accessibility certificate.
+
+The default shell provides create/read navigation and supported workflow actions. The current runtime does not expose general record editing or deletion. The presentation map in Design + Play links those destinations and controls to their screen, class and action; it describes checked design rather than granting permission.
 
 The oracle is not the generator's reading of the model. The build asks EIJA's own runtime what should happen in every case, then runs the generated app's tests in a separate process. If the app commits or refuses anywhere the kernel does not, the build reports `FAIL` and exits 2. The repository's tests break the app on purpose five ways (operations not recorded, audit not written, notifications not queued, a role changed in `app/model.json`, an assignment changed in `app/pack.json`) two more for the data model (values stored unchecked, a required attribute made optional) and one for screens (`app/screens.json` swapped after the build), and require each break to be caught. No app is built from screens that fail the design check.
 

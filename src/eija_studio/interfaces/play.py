@@ -60,6 +60,7 @@ from eija_studio.domain.policy import apply_transactions
 from eija_studio.domain.screens import Screens, check_screens, parse_screens, screens_for, use_cases
 from .app_build import app_files, build_into
 from .c4 import register as register_c4
+from .play_presentation import register as register_presentation
 from .play_interop import register as register_interop
 from .play_assurance import register as register_assurance
 
@@ -254,11 +255,12 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
         return {"roles": [{"id": r.id, "kind": r.kind, "description": r.description} for r in studio.pack.roles]}
 
     def accessibility(screens: Screens, model: Workflow, data: Any) -> dict[str, Any]:
-        page = resource_files("eija_studio.resources").joinpath("appgen", "web")
+        page = resource_files("eija_studio.resources").joinpath("appgen")
         def read(name: str) -> str:
             return page.joinpath(name).read_text(encoding="utf-8")
-        return check_accessibility(screens, model, data, theme_css=read("app.css.tmpl"), page_js=read("app.js.tmpl"),
-                                   page_html=read("index.html.tmpl"))
+        authored = read("react-source/controller.js") + "\n" + read("react-source/main.jsx")
+        return check_accessibility(screens, model, data, theme_css=read("web/app.css.tmpl"), page_js=authored,
+                                   page_html=read("web/index.html.tmpl"))
 
     def screens_of(body: BuildRequest, model: Workflow) -> Screens:
         if body.screens is not None:
@@ -266,6 +268,7 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
         return screens_for(studio.pack, model, data_for(pack_of(body.plan)))  # the files beside pack.json, as for any draft
 
     register_c4(app, studio, resolve, pack_of, screens_of)
+    register_presentation(app, studio, resolve, pack_of, screens_of)
 
     @app.post("/api/play/screens")
     def play_screens(body: BuildRequest):
@@ -392,7 +395,11 @@ def register(app, studio, web: Path, own: Callable[[], bool] = lambda: False) ->
     @app.post("/api/play/build")
     def play_build(body: BuildRequest):
         model = resolve(body)
-        return runner.build_and_run(pack_of(body.plan), model, studio.identity_provider, screens_of(body, model))
+        result = runner.build_and_run(pack_of(body.plan), model, studio.identity_provider, screens_of(body, model))
+        approval = studio.build_approval(result["subject"])
+        if result["conformance"]["status"] != "PASS" and approval["status"] == "ACTIVE_APPROVED":
+            approval = approval | {"status": "STALE"}
+        return result | {"approval": approval}
 
     @app.post("/api/play/simulate")
     def play_simulate(body: SimulateRequest):

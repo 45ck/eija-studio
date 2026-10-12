@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.approve
   title: application/service.py
   hash_method: ast-v2
-  sha256: 532c19a7ce9d38be1a1b2a8e7fbd602d1e7780bf085d9740a2fc0e0208dec26a
+  sha256: fa5d8f52d67a7c004170c9f17dc7be3a8196e71f16f11908aaaf52081556f034
 description_override: Seals a local-owner acknowledgement of the exact subject after eligibility, matching subject hash, acknowledged unknowns and correct answers.
-notes_baseline: 68c33ff84805199a4305d2ea1a164289c7b961c89f51e2077022de24f1ab006f
+notes_baseline: f886f3e5512db1f6a13b1ef70cca1dde7058f68eff52cf23847d7813de1a3d7c
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -42,6 +42,14 @@ verified:
   at: '2026-10-10T03:16:54Z'
   notes_sha256: 7bc5f5e1f1cd406e1c54f04ec080af6376b94d55aba2f4e9d83548cb50e11ddc
   sources_sha256: 68c33ff84805199a4305d2ea1a164289c7b961c89f51e2077022de24f1ab006f
+- by: process:playide-exact-app
+  at: '2026-10-11T09:17:31Z'
+  notes_sha256: af421e05bae3d8766c5a9553896ff0d05055a5075632149d27efe919c7d8be2f
+  sources_sha256: 574b8b6e39b20b2c800c25c0fe3edac2cfddfd6a531d58d041092d51ceb6420e
+- by: process:playide-service-cohesion
+  at: '2026-10-12T05:30:41Z'
+  notes_sha256: e8a19a8f289b6b91ec2b198c23855cd62b0e71d4704b4aeee5d41b767cf2d4d7
+  sources_sha256: f886f3e5512db1f6a13b1ef70cca1dde7058f68eff52cf23847d7813de1a3d7c
 ---
 
 # application.service.Studio.approve
@@ -72,10 +80,13 @@ owner, and invalid history never becomes an approval through candidate identity 
 An already ineligible packet reports its policy/evidence refusal before replay;
 eligible packets must pass replay before subject checks or decision writes.
 
+Exact-app approval additionally requires current retained bytes and passing generated execution evidence. The decision is sealed against the complete subject and case identity; source and app identity are rechecked after sealing before persistence.
+
+The projection facade does not take over approval. Studio retains the capability check, exact packet compilation, meaning questions, sealed decision and final subject remeasurement in their existing order. A read view or generated-app helper cannot supply an owner acknowledgement.
+
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [application.compiler.compile_case](/symbols/application/compiler/compile_case.md) - `def compile_case(case: ChangeCase, identity: dict[str, Any], authenticator: Callable[[dict[str, Any]], bool],…` in `application/compiler`.
 * [application.history.replay](/symbols/application/history/replay.md) - Fail closed when stored commands no longer explain the candidate under the exact active pack.
 * [application.service.now](/symbols/application/service/now.md) - `def now() -> str` in `application/service`.
 * [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.

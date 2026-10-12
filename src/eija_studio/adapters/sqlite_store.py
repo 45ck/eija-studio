@@ -12,6 +12,7 @@ from eija_studio.domain.pack import Pack, default_pack
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS schema_info(version INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS active(id INTEGER PRIMARY KEY CHECK(id=1), version INTEGER NOT NULL, model TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS active_app(id INTEGER PRIMARY KEY CHECK(id=1), baseline_version INTEGER NOT NULL, body TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS cases(id TEXT PRIMARY KEY, version INTEGER NOT NULL, body TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS actors(id TEXT PRIMARY KEY, role TEXT NOT NULL, active INTEGER NOT NULL, assigned INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS instances(id TEXT PRIMARY KEY, case_id TEXT NOT NULL, model_hash TEXT NOT NULL, state TEXT NOT NULL, version INTEGER NOT NULL);
@@ -49,12 +50,19 @@ class Session:
 
     def active(self) -> dict:
         row = self.db.execute("SELECT version,model FROM active WHERE id=1").fetchone()
-        return {"version": row[0], "model": json.loads(row[1])}
+        association = self.db.execute("SELECT body FROM active_app WHERE id=1 AND baseline_version=?", (row[0],)).fetchone()
+        result = {"version": row[0], "model": json.loads(row[1])}
+        if association is not None:
+            result["app_build"] = json.loads(association[0])
+        return result
 
-    def set_active(self, model: Workflow, expected: int) -> None:
+    def set_active(self, model: Workflow, expected: int, app_build: dict | None = None) -> None:
         n = self.db.execute("UPDATE active SET version=version+1,model=? WHERE id=1 AND version=?", (canonical(model), expected)).rowcount
         if n != 1:
             raise DomainError("STALE_BASELINE", "The local baseline changed; no automatic rebase")
+        self.db.execute("DELETE FROM active_app WHERE id=1")
+        if app_build is not None:
+            self.db.execute("INSERT INTO active_app VALUES(1,?,?)", (expected + 1, canonical(app_build)))
 
     def event(self, kind: str, body: dict) -> None:
         self.db.execute("INSERT INTO audit(kind,body) VALUES(?,?)", (kind, canonical(body)))

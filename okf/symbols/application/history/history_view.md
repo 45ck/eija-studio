@@ -50,5 +50,5 @@ _No curated notes yet._
 
 ## Referenced by
 
-* [application.service.Studio.history](/symbols/application/service/Studio.history.md) - Reconstructed semantic revisions and append-only command audit; never changes the case.
+* [application.service_views.StudioViews.history](/symbols/application/service_views/StudioViews.history.md) - Reconstructed semantic revisions and append-only command audit; never changes the case.
 <!-- okf:generated:end links -->

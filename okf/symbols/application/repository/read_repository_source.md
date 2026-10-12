@@ -47,5 +47,5 @@ _No curated notes yet._
 
 ## Referenced by
 
-* [application.service.Studio.repository_source](/symbols/application/service/Studio.repository_source.md) - Bounded source view from the configured repository's captured nodes; no arbitrary path or execution.
+* [application.service_views.StudioViews.repository_source](/symbols/application/service_views/StudioViews.repository_source.md) - Bounded source view from the configured repository's captured nodes; no arbitrary path or execution.
 <!-- okf:generated:end links -->

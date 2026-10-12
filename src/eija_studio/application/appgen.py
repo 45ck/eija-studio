@@ -14,6 +14,7 @@ from typing import Any
 
 from eija_studio.domain.data import Attribute, DataModel, Entity, check_values
 from eija_studio.domain.models import DomainError, ExecuteCommand, Workflow, canonical, fingerprint
+from eija_studio.domain.navigation import navigation_for
 from eija_studio.domain.pack import Pack
 from eija_studio.domain.policy import check_policy
 from eija_studio.domain.screens import Screens, default_screens, require_buildable
@@ -203,8 +204,10 @@ def generate(pack: Pack, model: Workflow | None = None, data: DataModel | None =
     cases = oracle_cases(pack, model)
     oracle: dict[str, Any] = {"format": "eija.app-oracle.v1", "model_hash": model.semantic_hash,
                               "source": "eija_studio runtime.execute", "cases": cases, "screens_digest": screens.digest}
+    navigation = navigation_for(pack, model, data, screens)
     files = {"app/model.json": canonical(model) + "\n", "app/pack.json": canonical(pack) + "\n",
              "app/screens.json": canonical(screens) + "\n",
+             "app/navigation.json": canonical(navigation) + "\n",
              "README.md": readme(pack, model, len(cases), data)}
     if data is not None:
         oracle |= {"data_digest": data.digest, "data_cases": data_cases(pack, data)}

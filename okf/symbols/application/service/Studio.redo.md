@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.redo
   title: application/service.py
   hash_method: ast-v2
-  sha256: d1e502df874c5402c74ddec2f1f5bf3b23427ec1bea2191393cddc4cb32637ba
-notes_baseline: ea6a78ed71a3167ab254c9787a72b0e358cc43fcd74885c548e8772bfcd79d69
+  sha256: 43105b083a3a10e86534d7dba44e98001926ef7b2a4a17d92ffc2528546eea0a
+notes_baseline: fbefab2f5f09aa3c158f7aa05d15cc8f5cd0aebda7c51c9608243478f1356e2f
 ---
 
 # application.service.Studio.redo

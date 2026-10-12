@@ -137,3 +137,29 @@ button:disabled{background:transparent;color:var(--muted);border-color:var(--lin
 @media (max-width:400px){.values{grid-template-columns:minmax(0,1fr)}.values dd{margin-bottom:var(--space-2)}
   .actor{display:grid;grid-template-columns:minmax(0,1fr);width:100%}.actor-box{width:100%}}
 @media(prefers-reduced-motion:reduce){button{transition:none}}
+/* Maintained React controls keep native labels and constraints. All presentation
+   is external CSS, including Mantine's internal wrappers. */
+.ui-field,.ui-input{min-width:0;max-width:100%}
+.ui-label{display:block;margin-bottom:var(--space-1);font-size:var(--text-ui);overflow-wrap:anywhere}
+.ui-input{width:100%}
+.ui-select-decoration,.ui-check-icon{display:none}
+.ui-checkbox-body{display:flex;align-items:center;gap:var(--space-2)}
+.ui-checkbox-inner{display:flex;flex:none}
+.ui-checkbox .ui-label{margin:0}
+.ui-button-inner,.ui-button-label{min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.records .ui-button-label{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-2)}
+.records .ui-button-label>span{min-width:0;max-width:100%;overflow-wrap:anywhere}
+.actor .ui-field{flex:1 1 12rem}
+.fields .ui-checkbox{padding-block:var(--space-1)}
+.create>.ui-field{font-size:var(--text-ui)}
+.app-navigation{flex:1 0 100%;border-top:1px solid var(--line);padding-top:var(--space-3);min-width:0}
+.app-navigation ul{display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-2);list-style:none;margin:0;padding:0}
+.app-navigation li{display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-2);min-width:0}
+.app-navigation li>ul{border-inline-start:1px solid var(--line);padding-inline-start:var(--space-2)}
+.navigation-link{background:transparent;color:var(--muted);border:1px solid transparent;font-size:var(--text-ui);min-height:40px;padding:var(--space-2) var(--space-3)}
+.navigation-link[aria-current=page]{background:var(--current);color:var(--ink);border-color:var(--line)}
+.navigation-link:hover:not(:disabled){background:var(--current);color:var(--ink);border-color:var(--line)}
+.navigation-link:disabled{background:transparent;border-color:transparent}
+.navigation-status{flex-basis:100%}
+@media(max-width:400px){.app-navigation li>ul{gap:var(--space-1);padding-inline-start:var(--space-1)}
+  .navigation-link{padding-inline:var(--space-2)}}

@@ -7,15 +7,15 @@ tags:
 - symbol
 - application
 - method
-status: stable
+status: deprecated
 generated:
   by: process:eija-okf-sync
 sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.workbench
   title: application/service.py
   hash_method: ast-v2
-  sha256: b69d62ccf338b6376af3286aa461afc7e89b9448808594ac28500ff1546d1319
-notes_baseline: 1eb39969870f0ba5c43f316516aa73037cd125a478842e76117da8e0ccf36e67
+  sha256: 4cca014b44c0c7f5ef7c8067bdd15175eedf1a82b25ca1a0eb2345bacfb71023
+notes_baseline: d7bdd802ae57c88a0c260d628ba151c1624cb77f3f7e86c150324bf735148a67
 ---
 
 # application.service.Studio.workbench

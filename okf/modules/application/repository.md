@@ -76,6 +76,7 @@ Replacing or removing the connection therefore affects the next query.
 ## Referenced by
 
 * [application.service](/modules/application/service.md) - Module `application/service` (no module docstring).
+* [application.service_views](/modules/application/service_views.md) - Read-only Studio projections over the same case, pack and exact-app evidence.
 * [interfaces.http](/modules/interfaces/http.md) - Loopback-only local adapter.
 * [interfaces.mcp_server](/modules/interfaces/mcp_server.md) - MCP (Model Context Protocol) adapter: the agent-facing face of EIJA Studio.
 * [application.repository.COMMIT_OID_PATTERN](/symbols/application/repository/COMMIT_OID_PATTERN.md) - Constant `COMMIT_OID_PATTERN` in `application/repository`.

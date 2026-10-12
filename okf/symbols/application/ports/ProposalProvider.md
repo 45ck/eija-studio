@@ -67,5 +67,5 @@ Implemented by the adapters in the `src/eija_studio/adapters/providers/` package
 ## Referenced by
 
 * [Provider integration](/contexts/provider-integration.md) - Owns Vendor transport, authentication delegation, limits and response normalization
-* [application.service.Studio](/symbols/application/service/Studio.md) - `class Studio` in `application/service`.
+* [application.service.Studio](/symbols/application/service/Studio.md) - `class Studio(StudioViews)` in `application/service`.
 <!-- okf:generated:end links -->

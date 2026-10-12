@@ -20,6 +20,7 @@
 * [edit_preview](edit_preview/) - Symbols of application.edit_preview
 * [edit_proposal](edit_proposal/) - Symbols of application.edit_proposal
 * [formal](formal/) - Symbols of application.formal
+* [generated_app](generated_app/) - Symbols of application.generated_app
 * [ghost_diff](ghost_diff/) - Symbols of application.ghost_diff
 * [history](history/) - Symbols of application.history
 * [landscape](landscape/) - Symbols of application.landscape
@@ -28,6 +29,7 @@
 * [new_system](new_system/) - Symbols of application.new_system
 * [plan](plan/) - Symbols of application.plan
 * [ports](ports/) - Symbols of application.ports
+* [presentation](presentation/) - Symbols of application.presentation
 * [readiness](readiness/) - Symbols of application.readiness
 * [repository](repository/) - Symbols of application.repository
 * [requirement_trace](requirement_trace/) - Symbols of application.requirement_trace
@@ -41,6 +43,7 @@
 * [sequence_layout](sequence_layout/) - Symbols of application.sequence_layout
 * [sequences](sequences/) - Symbols of application.sequences
 * [service](service/) - Symbols of application.service
+* [service_views](service_views/) - Symbols of application.service_views
 * [simulation](simulation/) - Symbols of application.simulation
 * [verifier](verifier/) - Symbols of application.verifier
 * [witness_inspection](witness_inspection/) - Symbols of application.witness_inspection

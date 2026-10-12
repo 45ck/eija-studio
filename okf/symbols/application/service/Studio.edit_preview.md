@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio.edit_preview
   title: application/service.py
   hash_method: ast-v2
-  sha256: e3ce0cdeab35f9620565e3bc6a6ef72d394fb201188cebae7b986a87a955c85e
-notes_baseline: 1fe3dca48b943c815639f1347f1c92ac42e75786ec5c7951d0c251d547c23d56
+  sha256: 59f353692ee2ef096edd6a23f2ac4c9e76d4af82a0b7d72e9fa146a5a5f2d82e
+notes_baseline: 9315a75dceded5f7f43e6060dc5882e9a92450312e02c36f5aad27951b985201
 ---
 
 # application.service.Studio.edit_preview

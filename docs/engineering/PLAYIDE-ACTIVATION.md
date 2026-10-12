@@ -6,7 +6,7 @@ PlayIDE can transfer the exact accepted workflow draft into a review case. No se
 
 1. Start the normal offline application with a pack and a disposable local workspace. Connect this checkout read-only with `--repo` when inspecting PlayIDE itself.
 2. Draw or request a workflow edit. Inspect the UML difference and the accepted steps, including reported authorship.
-3. Open **Review & activate** and **Transfer exact accepted steps**. The candidate is now a retained case; the active model is unchanged.
+3. Open **Review & activate**, **Build exact app for review**, then **Transfer exact accepted steps**. The server checks the submitted build digest against its own candidate assembly. The candidate and its frozen app are now a retained case; the active model is unchanged.
    **Effects across system** compares the candidate to its retained baseline, using
    the existing ripple checks for states, data classes, use cases, screens,
    generated components, scenarios and the declared system landscape. An explicit
@@ -15,9 +15,9 @@ PlayIDE can transfer the exact accepted workflow draft into a review case. No se
    emphasised. These browser preferences preserve every view and unknown; they do
    not change the model or evidence. Connectors group views of the comparison,
    rather than claiming causal or runtime edges.
-4. Inspect the checks, source-review status, questions and evidence scope. Verification reports a source-review refusal until the source gate permits fresh evidence.
+4. Inspect the app's exact scope, freshness, conformance checker, checks, source-review status and questions. Verification reports a source-review refusal until the source gate permits fresh evidence. A generated-app check must actually execute; model-check results cannot stand in for it.
 5. The local owner enters answers for the exact reviewed subject and acknowledges the unknowns. Approval records that decision. **Activate approved revision** is a separate action.
-6. After commit the active revision is loaded across views. Build & run uses it. Reopening the same workspace preserves it. Earlier drafts remain recoverable but do not automatically replace the active model.
+6. After commit the active revision is loaded across views with its generated-app association. Build & run uses it and reports `ACTIVE_APPROVED` only for the matching bundle. Reopening the same workspace preserves both. Earlier drafts remain recoverable but do not automatically replace the active model.
 
 Changed implementation reports **SOURCE_REVIEW_REQUIRED**. An agent cannot restamp source, fabricate the owner's answers or approve this change autonomously. Engineering fixtures test the mechanics separately and never satisfy that release boundary.
 
@@ -25,7 +25,9 @@ Changed implementation reports **SOURCE_REVIEW_REQUIRED**. An agent cannot resta
 
 The first contract promotes existing typed workflow transactions under an unchanged pack identity. It refuses mixed data-schema, action/role vocabulary, actor-kind, law, screen and scenario edits. Those edits remain drafts until their revision and migration contracts exist. Activation writes the existing SQLite baseline; it does not rewrite pack files, connected source or an already running generated application's records.
 
-`POST /api/cases/from-plan` carries the accepted commands, their reported provenance and expected identities. The response is a selected `PREVIEW` case with a tagged `owner_plan` origin. Named pack meanings retain their `pack_meaning` origin, and old cases remain replayable. Both origins protect their initial command batch from undo; subsequent owner edits keep the existing history and evidence invalidation rules.
+`POST /api/cases/from-plan` carries the accepted commands, their reported provenance, expected identities and optional `expected_build_digest`. The response is a selected `PREVIEW` case with a tagged `owner_plan` origin. Named pack meanings retain their `pack_meaning` origin, and old cases remain replayable. Both origins protect their initial command batch from undo; subsequent owner edits keep the existing history and evidence invalidation rules. Historical unbound cases remain workflow-only.
+
+The exact app binding covers workflow, pack, data, screens, templates, React source/lock/assets, implementation, generated files and checker configuration. A case decision cannot be reused for a different case or changed subject. Model revision, applied case and app association commit together. A failed check followed by a pass produces `CONFLICT`; repair and start a new case until evidence supersession has its own contract. See [ADR-0224](../adr/0224-approve-the-exact-generated-application.md).
 
 ## Requirements, rules and capability coverage
 

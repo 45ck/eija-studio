@@ -28,6 +28,7 @@ classDiagram
         +dict~str, dict~str, int~~ layout
         +tuple~dict~str, Any~~ receipts
         +dict~str, Any~ | None decision
+        +GeneratedAppBinding | None app_build
         +str created_at
     }
     class ExecuteCommand {

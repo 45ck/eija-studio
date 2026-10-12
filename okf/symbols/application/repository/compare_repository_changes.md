@@ -49,5 +49,5 @@ _No curated notes yet._
 
 ## Referenced by
 
-* [application.service.Studio.repository_change](/symbols/application/service/Studio.repository_change.md) - Compare immutable source revisions; this grants no model or repository write authority.
+* [application.service_views.StudioViews.repository_change](/symbols/application/service_views/StudioViews.repository_change.md) - Compare immutable source revisions; this grants no model or repository write authority.
 <!-- okf:generated:end links -->

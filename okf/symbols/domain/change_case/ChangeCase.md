@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/domain/change_case.py#ChangeCase
   title: domain/change_case.py
   hash_method: ast-sig-v1
-  sha256: 058c6a890ec0be7a386674bce474bd365976e432f2356f98676650bf0ff79d61
+  sha256: f2a77561dd11e8237231fe315488ca5864a8c6dbd8fd3dcd496b3917523b3bd1
 description_override: Aggregate linking one request to its interpretations, chosen meaning, baseline, candidate, transactions, receipts and decision.
-notes_baseline: 270ed9b56dc0e41518b6f0427eaf9275b0606fd7c0ba899978db118ef56a40a7
+notes_baseline: 81db29f6cb82731361fd3be68c10f944f76974a178e8a1ed12ea3dc3aca2b3a7
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -38,6 +38,10 @@ verified:
   at: '2026-10-10T02:55:29+00:00'
   notes_sha256: 7d023d2aab2f2322e6dd1280ceb09df4ec3d8b25a37018081c6dc32b757e156d
   sources_sha256: 270ed9b56dc0e41518b6f0427eaf9275b0606fd7c0ba899978db118ef56a40a7
+- by: process:playide-exact-app
+  at: '2026-10-11T09:17:31Z'
+  notes_sha256: c7c985ce593921bffba33e813dee30e3943440c64b0eac2bf2575f1e33e3a6cb
+  sources_sha256: 81db29f6cb82731361fd3be68c10f944f76974a178e8a1ed12ea3dc3aca2b3a7
 ---
 
 # domain.change_case.ChangeCase
@@ -78,6 +82,7 @@ Aggregate boundary: transitions are mediated by the application and CAS store.
 | `layout` | `dict[str, dict[str, int]]` |  |
 | `receipts` | `tuple[dict[str, Any], ...]` |  |
 | `decision` | `dict[str, Any] \| None` |  |
+| `app_build` | `GeneratedAppBinding \| None` | `None` |
 | `created_at` | `str` |  |
 
 ## Methods
@@ -100,10 +105,13 @@ owner authority recorded separately as `selected_by`.
 
 The aggregate behind [Change Case](/language/change-case.md). Its `version` is a compare-and-swap counter distinct from an instance version. Stage never grants eligibility on its own: [compile_case](/symbols/application/compiler/compile_case.md) computes it. `APPLIED` and `DISCARDED` cases are closed ([require_editable](/symbols/domain/change_case/ChangeCase.require_editable.md)).
 
+Optional app_build carries a typed exact generated subject plus checker/configuration binding. It defaults to None for historical case JSON. Existing receipt bytes and workflow-only subject meaning remain unchanged for those cases.
+
 <!-- okf:generated:begin links -->
 ## Depends on
 
 * [domain.change_case.Selection](/symbols/domain/change_case/Selection.md) - Type alias `Selection` in `domain/change_case`.
+* [domain.generated_app.GeneratedAppBinding](/symbols/domain/generated_app/GeneratedAppBinding.md) - `class GeneratedAppBinding(Contract)` in `domain/generated_app`.
 * [domain.models.Contract](/symbols/domain/models/Contract.md) - `class Contract(BaseModel)` in `domain/models`.
 * [domain.models.Proposal](/symbols/domain/models/Proposal.md) - `class Proposal(Contract)` in `domain/models`.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
@@ -117,6 +125,13 @@ The aggregate behind [Change Case](/language/change-case.md). Its `version` is a
 * [application.diagrams.CONTRACTS](/symbols/application/diagrams/CONTRACTS.md) - Constant `CONTRACTS` in `application/diagrams`.
 * [application.edit_preview.preview_edit](/symbols/application/edit_preview/preview_edit.md) - The candidate edit would produce from this snapshot, or its refusal without a guessed model.
 * [application.edit_proposal.propose_edit](/symbols/application/edit_proposal/propose_edit.md) - No persistence or evidence: resolve one request, then use the existing policy-checked projection.
+* [application.generated_app.activation_association](/symbols/application/generated_app/activation_association.md) - Exact-app provenance to be committed atomically with the active model by Studio.
+* [application.generated_app.app_build_blockers](/symbols/application/generated_app/app_build_blockers.md) - `def app_build_blockers(case: ChangeCase, view: dict[str, Any]) -> list[str]` in `application/generated_app`.
+* [application.generated_app.app_build_view](/symbols/application/generated_app/app_build_view.md) - Keep workflow evidence separate from generated application execution evidence.
+* [application.generated_app.app_current](/symbols/application/generated_app/app_current.md) - Remeasure a selected application's current bytes through the existing port.
+* [application.generated_app.capture_app](/symbols/application/generated_app/capture_app.md) - Bind the checked payload to this exact selected case; persistence stays in Studio.
+* [application.generated_app.require_app_current](/symbols/application/generated_app/require_app_current.md) - A workflow-only historical case remains unbound; a bound app must still be current.
+* [application.generated_app.verify_app](/symbols/application/generated_app/verify_app.md) - Seal the observed checker artifact, without approving or writing the case.
 * [application.history.command_event](/symbols/application/history/command_event.md) - Append-only command provenance; decision and receipt payloads remain in their existing audit.
 * [application.history.history_view](/symbols/application/history/history_view.md) - Read-only models for navigation plus actual command audit entries; no invented legacy timestamps.
 * [application.history.replay](/symbols/application/history/replay.md) - Fail closed when stored commands no longer explain the candidate under the exact active pack.

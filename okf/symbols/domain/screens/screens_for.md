@@ -50,4 +50,8 @@ _No curated notes yet._
 * [domain.screens.Screens](/symbols/domain/screens/Screens.md) - `class Screens(Contract)` in `domain/screens`.
 * [domain.screens.default_screens](/symbols/domain/screens/default_screens.md) - One default screen per use case.
 * [domain.screens.load_screens](/symbols/domain/screens/load_screens.md) - The pack's screens, or None when the pack has no `screens.json`.
+
+## Referenced by
+
+* [application.generated_app.review_snapshot](/symbols/application/generated_app/review_snapshot.md) - Derive canonical contracts and the review binding through the shared pure assembler.
 <!-- okf:generated:end links -->

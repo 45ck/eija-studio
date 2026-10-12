@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Exact generated-app review and standard React navigation — 11 October 2026
+
+- Review freezes the generated app's workflow, pack, data, screens, frontend, runtime and checker configuration. Changed bytes or stale evidence block the decision.
+- Activation atomically retains the matching app association; fresh-process reopen and later builds must match it before reporting `ACTIVE_APPROVED`. Historical cases remain workflow-only.
+- Generated apps use bundled React/Mantine components with a model-derived Records → New record / Record details → action hierarchy, retained source/lock/licences and strict CSP.
+- A UWE-inspired presentation map links screens and controls to UML attributes/actions, with checked-design and runtime evidence kept distinct. Narrow workbench panes preserve usable diagram space and keyboard access.
+- General record updates/deletion, migrations, real authentication and external delivery remain unsupported. `SOURCE_REVIEW_REQUIRED` and explicit owner approval remain enforced.
+
 ### 11 October 2026: clearer controls while playing
 
 - Generated apps use quiet action choices with the next state visible before confirmation. Role and current state stay prominent; model, rules and recorded effects are available through native disclosures.

@@ -29,6 +29,7 @@ WEB_ASSETS = frozenset({"app.js", "app.css", "canvas.js", "tree.js", "review.js"
 WEB_ASSETS |= frozenset({"play-activation.js", "play-activation.css", "play-assurance.js", "play-assurance.css"})
 WEB_ASSETS |= frozenset({"play-live.js", "play-live.css"})
 WEB_ASSETS |= frozenset({"play-c4.js", "play-c4.css"})
+WEB_ASSETS |= frozenset({"play-presentation.js", "play-presentation.css"})
 # PlayIDE frames the app built from the model, which runs as a separate process on its own loopback port (ADR-0151).
 PLAY_CSP = PAGE_CSP.replace("frame-src 'self'", "frame-src 'self' http://127.0.0.1:*")
 
@@ -155,6 +156,8 @@ def create_app(studio, token: str, port: int = 8765, systems=None) -> FastAPI:
             "provider_networked": studio.provider.networked, "baseline_version": active["version"], "baseline": active["model"],
             "baseline_semantic_hash": Workflow.model_validate(active["model"]).semantic_hash,
             "trusted_fixture": identity["trusted_fixture"], "identity_boundary": "Single local owner; synthetic actors only",
+            "identity_source": identity.get("identity_source", "measured-local-source"),
+            "active_app_build": studio.active_app_build(active),
             "pack": pack_summary(studio.pack) | {"demo_modelled": example_passes(
                 studio.pack.fixtures.demo_request, Workflow.model_validate(active["model"]), studio.pack, studio.plan_proposer),
                 "own_system": own()}}  # a system you started: a drawn step may name a new action or role (ADR-0201)

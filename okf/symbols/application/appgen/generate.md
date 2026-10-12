@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py#generate
   title: application/appgen.py
   hash_method: ast-v2
-  sha256: eb42d32492be8f88b7a8feacbde8132f9f267ab065fccc3ce0eb3f33b17594b0
-notes_baseline: c528b86d51daf3e178669e99dd679ba0f144dd670e52f88f46d38d11c4710680
+  sha256: 7b7b4c7cfd60670cbf78a5aa19f5f5406d39a477f3c9f885b9f2b8363dbd9225
+notes_baseline: d76beb8ca4049800d5453dcaa68ce987ae4bb7006f2d04889f98d93269263ef4
 ---
 
 # application.appgen.generate
@@ -56,9 +56,14 @@ _No curated notes yet._
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.models.canonical](/symbols/domain/models/canonical.md) - `def canonical(value: Any) -> str` in `domain/models`.
 * [domain.models.fingerprint](/symbols/domain/models/fingerprint.md) - `def fingerprint(value: Any) -> str` in `domain/models`.
+* [domain.navigation.navigation_for](/symbols/domain/navigation/navigation_for.md) - Project actual supported panels from one canonical workflow/data/screens snapshot.
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
 * [domain.policy.check_policy](/symbols/domain/policy/check_policy.md) - Sorted, de-duplicated policy codes of ``model`` under the pack (empty means the model conforms).
 * [domain.screens.Screens](/symbols/domain/screens/Screens.md) - `class Screens(Contract)` in `domain/screens`.
 * [domain.screens.default_screens](/symbols/domain/screens/default_screens.md) - One default screen per use case.
 * [domain.screens.require_buildable](/symbols/domain/screens/require_buildable.md) - `def require_buildable(screens: Screens, model: Workflow, data: DataModel | None) -> None` in `domain/screens`.
+
+## Referenced by
+
+* [application.generated_app.assemble_app](/symbols/application/generated_app/assemble_app.md) - One generator and snapshot identity for previews and approved artifacts.
 <!-- okf:generated:end links -->

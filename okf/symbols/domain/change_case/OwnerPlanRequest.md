@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/change_case.py#OwnerPlanRequest
   title: domain/change_case.py
   hash_method: ast-sig-v1
-  sha256: ea3d66f7efd8d5c935b21df662f91b5ca57df15716f2fbea03fc569190667252
-notes_baseline: a0ff9aad2b3826ab19da1c6621044865e62711806ce3da827bd89c8e05e162f0
+  sha256: 958c6d5921e0097183d777337aa043df3277b4ce9d61bed12f2b06946a1edddc
+notes_baseline: 8203cdb7678e2718fcd79a34309d9594127e73acfb25047a3635468c6fc1c35d
 ---
 
 # domain.change_case.OwnerPlanRequest
@@ -46,6 +46,7 @@ Exact accepted workflow commands and the identities of their reviewed preview.
 | `expected_baseline_semantic_hash` | `str` | `Field(pattern='^[a-f0-9]{64}$')` |
 | `expected_candidate_semantic_hash` | `str` | `Field(pattern='^[a-f0-9]{64}$')` |
 | `steps` | `tuple[OwnerPlanStep, ...]` | `Field(min_length=1, max_length=64)` |
+| `expected_build_digest` | `str \| None` | `Field(default=None, pattern='^[a-f0-9]{64}$')` |
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -61,5 +62,5 @@ _No curated notes yet._
 ## Referenced by
 
 * [application.service.Studio.from_plan](/symbols/application/service/Studio.from_plan.md) - Select an exact owner-reviewed command batch; previews and provenance never grant authority.
-* [application.service.Studio](/symbols/application/service/Studio.md) - `class Studio` in `application/service`.
+* [application.service.Studio](/symbols/application/service/Studio.md) - `class Studio(StudioViews)` in `application/service`.
 <!-- okf:generated:end links -->

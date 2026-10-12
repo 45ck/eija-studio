@@ -85,6 +85,19 @@ def test_template_implementation_and_arbitrary_payload_substitutions_change_subj
         checked_build_subject(extra)
 
 
+def test_navigation_substitution_cannot_borrow_the_same_workflow_build(generated):
+    files, manifest = generated
+    previous = manifest["subject"]
+    changed = changed_json(files, "app/navigation.json", lambda d: d["destinations"][0].update(title="Altered records"))
+    subject = identity_for(changed, previous)
+    assert subject["model_hash"] == previous["model_hash"]
+    assert subject["screens_digest"] == previous["screens_digest"]
+    assert subject["generated_files_hash"] != previous["generated_files_hash"]
+    assert subject["digest"] != previous["digest"]
+    with pytest.raises(DomainError, match="Generated files differ"):
+        checked_build_subject(changed)
+
+
 def test_missing_subject_and_cross_pack_contract_are_refused(generated):
     files, manifest = generated
     with pytest.raises(DomainError, match="missing or invalid"):

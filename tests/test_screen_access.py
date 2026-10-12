@@ -19,7 +19,9 @@ ROOT = Path(__file__).resolve().parents[1]
 APP = ROOT / "src/eija_studio/resources/appgen/web"
 LOAN = load_pack(ROOT / "packs" / "library-loan")
 EXCURSION = load_pack(ROOT / "packs" / "excursion")
-CSS, JS, HTML = ((APP / name).read_text(encoding="utf-8") for name in ("app.css.tmpl", "app.js.tmpl", "index.html.tmpl"))
+CSS, HTML = ((APP / name).read_text(encoding="utf-8") for name in ("app.css.tmpl", "index.html.tmpl"))
+FRONTEND = APP.parent / "react-source"
+JS = "\n".join((FRONTEND / name).read_text(encoding="utf-8") for name in ("controller.js", "main.jsx"))
 
 
 def report(screens: Screens | None = None, pack=LOAN, *, css: str = CSS, js: str = JS, html: str = HTML) -> dict[str, str]:
@@ -94,11 +96,22 @@ def test_attribute_names_shown_as_labels_are_advice_not_a_failure():
 
 @pytest.mark.parametrize(("check", "js", "html"), [
     ("keyboard-order", JS + '\nel("div", "", { tabindex: "2" });', HTML),
-    ("labelled-controls", JS, HTML.replace('<label class="actor">', '<span class="actor">')),
-    ("required-in-code", JS.replace("input.required = true", "input.dataset.required = 1"), HTML),
+    ("labelled-controls", JS.replace('<label htmlFor="actor">', '<span>'), HTML),
+    ("required-in-code", JS.replace("required: field.required", "dataRequired: field.required"), HTML),
 ])
 def test_the_page_template_checks_can_fail(check, js, html):
     assert report(js=js, html=html)[check] == "FAIL"
+
+
+@pytest.mark.parametrize("binding", ['label="Record name"', 'label: field.label', 'htmlFor="actor"'])
+def test_react_control_label_contract_detects_each_missing_binding(binding):
+    assert binding in JS
+    assert report(js=JS.replace(binding, ""))["labelled-controls"] == "FAIL"
+
+
+def test_react_keyboard_order_detects_positive_jsx_index():
+    assert report(js=JS + '<button tabIndex={2}>Choose</button>')["keyboard-order"] == "FAIL"
+    assert report(js=JS + '<p tabIndex={-1}>Outcome</p>')["keyboard-order"] == "PASS"
 
 
 def test_the_designer_gets_the_check_with_the_screens(tmp_path):

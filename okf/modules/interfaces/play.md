@@ -80,6 +80,7 @@ _Symbol pages are generated for the domain and application layers only._
 * [`interfaces/c4`](/modules/interfaces/c4.md)
 * [`interfaces/play_assurance`](/modules/interfaces/play_assurance.md)
 * [`interfaces/play_interop`](/modules/interfaces/play_interop.md)
+* [`interfaces/play_presentation`](/modules/interfaces/play_presentation.md)
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -118,6 +119,7 @@ _No curated notes yet._
 * [interfaces.c4](/modules/interfaces/c4.md) - C4 structural inspection under the existing authenticated PlayIDE boundary.
 * [interfaces.play_assurance](/modules/interfaces/play_assurance.md) - Read-only assurance review.
 * [interfaces.play_interop](/modules/interfaces/play_interop.md) - PlayIDE routes for UML interchange (ADR-0190): export the model on screen, and read a UML file as a report.
+* [interfaces.play_presentation](/modules/interfaces/play_presentation.md) - Read-only presentation inspection within PlayIDE's authenticated boundary.
 
 ## Referenced by
 

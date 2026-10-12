@@ -45,12 +45,14 @@ This is the practical meaning of **UML as code** here: supported model elements 
 | **UML diff** | Added, changed and removed paths together, with the exact proposed steps | Supported typed workflow edits |
 | **Diagram editing** | Edit states and transitions, inspect roles/guards, undo and redo | Server-checked edits; unsupported meaning is refused |
 | **Effects across the system** | Connected or grouped views of affected models, screens, laws, requirements and tests | Known and declared relationships; unknowns remain visible |
-| **Build & run** | A real local web app, HTTP API and SQLite records | One supported record class; fixture actors |
+| **Build & run** | A bundled React app with Mantine controls, HTTP API and SQLite records | One supported record class; fixture actors; no Node/CDN required to run |
+| **Standard app navigation** | Model-derived Records, New record, record details and workflow actions | Create/read and supported state changes; general edit/delete need their own semantics |
+| **Screen-to-model map** | Follow a React control to its record attribute, screen and workflow action | UWE-inspired checked design; the service supplies actual authority |
 | **Design + Play** | Keep the model beside the running application | Shared generated-app templates and resizable layout |
 | **Live action traces** | See committed actions move through the diagram; pause, inspect and replay | Scoped local observations; replay does not repeat actions |
 | **C4 architecture** | Inspect system context, browser/server/database containers and components | Generated structure; not deployment or external-service proof |
 | **Laws, scenarios and refusals** | Check supported policies and run actor/action sequences through the kernel | Each check has its own scope; no universal correctness claim |
-| **Exact draft review** | Transfer accepted commands, authorship and candidate identity into a retained review case | Workflow-only activation under unchanged pack identity; owner/source gates apply |
+| **Exact draft and app review** | Retain accepted commands, authorship, candidate, exact generated bundle and checker configuration | Workflow-only activation under unchanged pack identity; historical unbound cases remain workflow-only |
 | **Domain language and source** | Inspect DDD terms, declared links and read-only repository references | Structure and explicit bindings; no general source rewriting |
 | **Screens and roles** | Arrange supported forms, inspect actor permissions and run selected accessibility checks | Fixture identities; bounded checks, not full accessibility certification |
 | **UML import/export** | Bring models from supported PlantUML, XMI, Mermaid and draw.io forms | Import reports what it could not carry |
@@ -92,7 +94,7 @@ Fixture actors are selected manually. RefundDesk moves no money, and notificatio
 
 ## How PlayIDE and EIJA connect
 
-**PlayIDE is the visual workbench. EIJA is the Python engine underneath it.** The workbench sends typed edits to the Studio API; EIJA checks the supported model and derives its diff, views and review packet. Building generates a separate application. Its frontend sends actions to its own API, which calls the same EIJA runtime kernel.
+**PlayIDE is the visual workbench. EIJA is the Python engine underneath it.** The workbench sends typed edits to the Studio API; EIJA checks the supported model and derives its diff, views and review packet. Building generates a separate React application. Its model-driven frontend sends actions to its own API, which calls the same EIJA runtime kernel. The app's navigation, components and emitted bytes participate in its exact review identity.
 
 This is the logical flow, not a claim that every box is an independent service:
 
@@ -169,7 +171,9 @@ The current focus is PlayIDE's own change workflow:
 
 **Edit → UML diff → effects → check → explicit owner approval → activate → reopen.**
 
-Exact workflow transfer is implemented. Tracing and C4 now have passing targeted checks and an inspected actual-app recording. Full integrated acceptance, including the complete owner-reviewed activation journey, remains open. General live AI creation, value-driven actions, migrations, connected delivery and production identity remain unfinished. Law, vocabulary, data-schema, screen and scenario edits do not silently become active policy.
+Exact workflow and generated-app review are implemented. A fresh-process browser test completes this journey with an explicitly labelled synthetic owner, then uses the changed React app. It checks refusals, atomic activation, duplicate safety and exact identity after restart. Legitimate owner source review and full integrated acceptance remain open. [Current evidence and limitations](docs/engineering/2026-10-11-EXACT-APP-ACCEPTANCE.md).
+
+General live AI creation, value-driven actions, migrations, connected delivery and production identity remain unfinished. Law, vocabulary, data-schema, screen and scenario edits do not silently become active policy.
 
 We ship small, checked commits directly to `main` throughout this initial stage. Automatic checks on push are not configured; supplied GitHub workflows are manual-only. See the [roadmap](docs/ROADMAP.md), [delivery contract](docs/engineering/PLAYIDE-DELIVERY.md) and [current acceptance criteria](docs/engineering/SELF-DOGFOOD-ACCEPTANCE.md).
 

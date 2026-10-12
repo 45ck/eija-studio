@@ -54,6 +54,7 @@ _No curated notes yet._
 
 * [application.capabilities.capability_map](/symbols/application/capabilities/capability_map.md) - The supported constructs, bounded to the current model, with no inferred readiness.
 * [application.data_steps.draft_pack](/symbols/application/data_steps/draft_pack.md) - `pack` as these plan steps would have it, held in memory: on a system the person started (`grows`), the actions and roles they name are declared (ADR-0201) and…
+* [application.generated_app.review_snapshot](/symbols/application/generated_app/review_snapshot.md) - Derive canonical contracts and the review binding through the shared pure assembler.
 * [application.new_system.classes](/symbols/application/new_system/classes.md) - A system's record class and each class's attribute names, for naming data-model steps (ADR-0202); None when the system has no class diagram.
 * [application.sequences.record_name](/symbols/application/sequences/record_name.md) - The record lifeline's name and its class: `loan : Loan` when the pack has a data model.
 <!-- okf:generated:end links -->

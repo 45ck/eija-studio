@@ -13,6 +13,7 @@ from eija_studio.domain.pack import Pack, default_pack
 from eija_studio.domain.formal import Context
 from .formal import packet_view
 from .witness_inspection import InspectionContext
+from .generated_app import app_build_view, app_build_blockers, bind_subject
 
 
 def subject_for(model: Workflow, layout: dict[str, Any], identity: dict[str, Any]) -> dict[str, Any]:
@@ -24,23 +25,31 @@ def _resolve(pack: Pack | None) -> Pack:
     return pack if pack is not None else default_pack()
 
 
+def _workflow_receipts(case: ChangeCase) -> list[dict[str, Any]]:
+    """Generated-app execution is a separate obligation from the existing kernel/formal checks."""
+    return [receipt for receipt in case.receipts if receipt.get("claim") != "generated_app_conformance"]
+
+
 def compile_case(
     case: ChangeCase, identity: dict[str, Any], authenticator: Callable[[dict[str, Any]], bool],
     active_version: int, scope: str = "local-demo", pack: Pack | None = None,
+    app_current: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     pack = _resolve(pack)
     if case.candidate is None:
         return {"eligible": False, "status": "BLOCKED", "blockers": ["MEANING_REQUIRED"], "human_understanding": "UNKNOWN"}
     model = case.candidate
-    subject = subject_for(model, case.layout, identity)
+    subject = bind_subject(subject_for(model, case.layout, identity), case.app_build)
+    app_view = app_build_view(case, app_current, authenticator)
     impact = model_impact(case.baseline, model)
     policy_errors = check_policy(model, pack)
     context = Context(candidate_semantic=model.semantic_hash, baseline_semantic=case.baseline.semantic_hash,
                       runtime=expected_shape(pack, model))
-    evidence = aggregate_status(list(case.receipts), subject, authenticator, context)
-    formal = packet_view(list(case.receipts), subject, authenticator, context, policy_errors, pack,
+    workflow_receipts = _workflow_receipts(case)
+    evidence = aggregate_status(workflow_receipts, subject, authenticator, context)
+    formal = packet_view(workflow_receipts, subject, authenticator, context, policy_errors, pack,
                          review_context=InspectionContext(case_id=case.id, case_version=case.version, scope=scope))
-    blockers = []
+    blockers = app_build_blockers(case, app_view)
     if policy_errors:
         blockers.append("POLICY_BLOCKED")
     if not identity["trusted_fixture"]:
@@ -57,15 +66,17 @@ def compile_case(
     if case.stage == "DISCARDED":
         blockers.append("CASE_DISCARDED")
     return {"schema_version": "eija.review.v1", "scope": scope, "subject": subject,
+        "app_build": app_view, "identity_source": identity.get("identity_source", "measured-local-source"),
         "subject_hash": fingerprint(subject), "eligible": not blockers,
         "status": "ELIGIBLE_FOR_LOCAL_REVIEW" if not blockers else "BLOCKED", "blockers": blockers,
         "policy_errors": policy_errors, "impact": impact, "projections": projections(model),
         "technical_claims": {"schema_policy": "FAIL" if policy_errors else "PASS", "runtime_matrix": evidence,
+            "generated_app_conformance": app_view["conformance"]["status"],
             "modelled_impact_closure": "PASS" if impact["complete"] else "UNKNOWN"} | formal["claims"],
         "formal_evidence": formal["evidence"], "explanations": formal["explanations"],
         "human_understanding": "UNKNOWN", "core_status": "RELEASE_FIXTURE_MATCH" if identity["trusted_fixture"] else "SOURCE_REVIEW_REQUIRED",
         "receipt_applicability": [{"id": r.get("id"), "kind": r.get("kind"), "status": receipt_status(r, subject, authenticator, context)}
-             for r in case.receipts],
+             for r in workflow_receipts],
         "questions": meaning_questions(model, pack),
         "limitations": ["Human comprehension is not established by these checks or questions.",
             "Hash match identifies the shipped fixture; it is not an independent core review.",

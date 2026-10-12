@@ -50,5 +50,5 @@ _No curated notes yet._
 
 ## Referenced by
 
-* [application.service.Studio.repository_change_file](/symbols/application/service/Studio.repository_change_file.md) - Read bounded historical text and syntax; live source identity remains separate.
+* [application.service_views.StudioViews.repository_change_file](/symbols/application/service_views/StudioViews.repository_change_file.md) - Read bounded historical text and syntax; live source identity remains separate.
 <!-- okf:generated:end links -->

@@ -106,3 +106,6 @@
 * [ADR-0221: A law that every record can still reach an end](0221-every-record-can-reach-an-end.md) - Writing the five sector packs (docs/sector-packs.md) turned up laws a real team would want and the law DSL could not say.
 * [ADR-0222: Exact owner-plan selection and activation](0222-exact-owner-plan-selection-and-activation.md) - ADR-0222: Exact owner-plan selection and activation
 * [ADR-0223: one generated build subject for architecture and runtime observations](0223-generated-build-subject-and-live-architecture.md) - This decision covers the local preview implementation.
+* [ADR-0224: approve the exact generated application](0224-approve-the-exact-generated-application.md) - The exact workflow transfer preserved typed edits, but an owner decision did not identify the complete generated app.
+* [ADR-0225: React for generated application frontends](0225-react-for-generated-application-frontends.md) - Generated apps need consistent, maintained form and interaction components while remaining connected to EIJA's executable model.
+* [ADR-0226: standard record navigation and a connected presentation map](0226-standard-record-navigation-and-presentation-map.md) - Generated applications should offer familiar navigation without requiring every project to design a shell from scratch.
