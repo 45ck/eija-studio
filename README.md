@@ -219,7 +219,7 @@ We ship small, checked commits directly to `main` throughout this initial stage.
 
 These retained recordings show the actual application **before the newer exact-draft activation, Design + Play, live-trace and C4 work**. Their chat uses the labelled offline phrase reader. They are earlier demonstrations, not current release acceptance.
 
-| Highlights · 3:50 | Start from a sentence · 4:52 | Full tour · 13:52 |
+| Highlights · 4:04 | Start from a sentence · 4:52 | Full tour · 14:28 |
 |---|---|---|
 | [![UML changes and their consequences](docs/demos/assets/playide-showcase/playide-highlights-poster.png)](docs/demos/assets/playide-showcase/playide-highlights.mp4) | [![Create a supported coffee-shop workflow](docs/demos/assets/playide-showcase/playide-greenfield-poster.png)](docs/demos/assets/playide-showcase/playide-greenfield.mp4) | [![Models, checks, screens and system views](docs/demos/assets/playide-showcase/playide-showcase-poster.png)](docs/demos/assets/playide-showcase/playide-showcase.mp4) |
 | Review changes, discover a broken scenario and inspect a refusal. | A fixed-shape offline request produces a model you can inspect and edit. | Explore diagrams, permissions, templates and UML interchange. |
