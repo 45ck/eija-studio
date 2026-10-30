@@ -13,6 +13,7 @@ from demos.scenarios.playide_showcase import (
     AI_CARD,
     AI_REQUEST,
     BUILD_TIMEOUT_MS,
+    CAUGHT,
     PACK,
     PENDING,
     RIPPLE_CARD,
@@ -231,7 +232,7 @@ def _agents(scene: Scene, chapter: _Chapters) -> None:
     scene.wait(2400)
     scene.zoom_out()
     scene.click(f"{AI_CARD} .plan-steps > li:nth-child(2) input")
-    scene.expect_text("#game-notes", "Caught it", timeout_ms=30_000)
+    scene.expect_text(CAUGHT, "Caught", timeout_ms=30_000)
     scene.expect_text(f"{AI_CARD} .plan-verdict", "The policy allows the result: adds HandOff")
     scene.caption("Untick that step: caught. The hand-off alone is allowed.")
     scene.zoom("#health", scale=1.8)

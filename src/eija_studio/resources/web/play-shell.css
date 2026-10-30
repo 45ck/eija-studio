@@ -10,11 +10,14 @@ body.resizing iframe{pointer-events:none}
 .bar{gap:12px;padding:6px 12px;background:var(--chrome)}
 .bar .brand{flex:1 1 0;min-width:0}
 .bar .model-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .system-controls{flex:none}  /* New, Systems and Save never clip: the system name gives way, not the buttons (#137) */
+.bar .model-name{flex:0 1 auto;min-width:4em}
 .bar-end{flex:1 1 0;display:flex;align-items:center;justify-content:flex-end;gap:6px;min-width:max-content}  /* never wrap its buttons: the brand gives way first */
 .bar-end>*{white-space:nowrap}
 .palette-open.command-center{display:flex;align-items:center;justify-content:space-between;gap:16px;width:min(440px,36vw);padding:5px 10px;border-radius:8px;background:var(--panel);color:var(--muted);font-size:.84rem}
 .palette-open.command-center:hover{border-color:#b9c2d6}
 .palette-open.command-center kbd{font:inherit;font-size:.74rem;padding:0 6px;border:1px solid var(--line);border-radius:4px;background:var(--bg)}
+@media (max-width:1440px){.bar .model-rev{display:none}.palette-open.command-center{width:clamp(180px,18vw,440px);min-width:0;overflow:hidden}.palette-open.command-center span{min-width:0;overflow:hidden;text-overflow:ellipsis}}  /* the revision stays in the status bar; search gives up width before the name */
 .icon-btn{display:inline-grid;place-items:center;width:30px;height:28px;padding:0;border:1px solid transparent;background:transparent;color:var(--muted);border-radius:6px}
 .icon-btn:hover{background:var(--busy-bg);color:var(--ink)}
 .icon-btn[aria-pressed="true"]{color:var(--accent)}
