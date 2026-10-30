@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### 30 October 2026: README names the bundled systems
+
+- The README feature table and setup now point to the five sector packs (Specialist referral, Card payment, Parcel delivery, SaaS subscription, Building permit) and the [sector packs guide](docs/sector-packs.md), with a direct `eija serve --pack` example.
+- It states that the repository, the `eija-studio` package and the `eija` command keep the EIJA name while the product is PlayIDE.
+
 ### Exact generated-app review and standard React navigation — 11 October 2026
 
 - Review freezes the generated app's workflow, pack, data, screens, frontend, runtime and checker configuration. Changed bytes or stale evidence block the decision.

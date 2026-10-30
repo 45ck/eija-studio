@@ -64,7 +64,7 @@ The review names the exact workflow, data contract, screens, generated files and
 | **Domain language and source** | Inspect DDD terms, declared links and read-only repository references | Structure and explicit bindings; no general source rewriting |
 | **Screens and roles** | Arrange supported forms, inspect actor permissions and run selected accessibility checks | Fixture identities; bounded checks, not full accessibility certification |
 | **UML import/export** | Bring models from supported PlantUML, XMI, Mermaid and draw.io forms | Import reports what it could not carry |
-| **Templates and chat** | Start with a sample system or request supported typed changes | Current PlayIDE chat is an offline phrase reader; general live creation is unfinished |
+| **Templates and chat** | Start from one of eleven bundled systems, including five [sector packs](docs/sector-packs.md) (healthcare referral, card payment, parcel delivery, SaaS subscription, building permit), or request supported typed changes | Current PlayIDE chat is an offline phrase reader; general live creation is unfinished |
 | **Relationships and connected workflows** | Draw related classes and several workflows; inspect disagreements | Related records and cross-workflow delivery are not implemented |
 | **Data-driven decisions and migrations** | Next: action inputs, value conditions, record updates and safe evolution | Planned; a stored amount does not yet decide refund eligibility |
 
@@ -118,7 +118,7 @@ Fixture actors are selected manually. RefundDesk moves no money, and notificatio
 
 ## How PlayIDE and EIJA connect
 
-**PlayIDE is the visual workbench. EIJA is the Python engine underneath it.** The workbench sends typed edits to the Studio API; EIJA checks the supported model and derives its diff, views and review packet. Building generates a separate React application. Its model-driven frontend sends actions to its own API, which calls the same EIJA runtime kernel. The app's navigation, components and emitted bytes participate in its exact review identity.
+**PlayIDE is the visual workbench. EIJA is the Python engine underneath it.** The repository, the `eija-studio` package and the `eija` command keep the EIJA name. The workbench sends typed edits to the Studio API; EIJA checks the supported model and derives its diff, views and review packet. Building generates a separate React application. Its model-driven frontend sends actions to its own API, which calls the same EIJA runtime kernel. The app's navigation, components and emitted bytes participate in its exact review identity.
 
 This is the logical flow, not a claim that every box is an independent service:
 
@@ -197,7 +197,7 @@ py -3 -m venv .venv
 
 Open the private **PlayIDE** link printed by the server. Its `/play#…` fragment is a session key; keep that link private.
 
-Try `add Renew from Overdue to OnLoan for Librarian`, inspect the change, then **Build & run**. Or open **Systems › New system** and choose a template. **Simulate** exercises the model; the running app commits local records.
+Try `add Renew from Overdue to OnLoan for Librarian`, inspect the change, then **Build & run**. Or open **Systems › New system** and choose a template, or open another bundled system directly, for example `eija serve --pack packs/card-payment --open`. The [sector packs guide](docs/sector-packs.md) lists each one, the change its chat plans and the unsafe change its laws refuse. **Simulate** exercises the model; the running app commits local records.
 
 The default setup uses loopback, SQLite and no telemetry. Live provider calls require explicit network enablement and consent. [Getting started](docs/getting-started.md) covers setup and provider options.
 
