@@ -17,6 +17,8 @@ PACK = "packs/library-loan"
 AI_REQUEST = "add Renew from Overdue to OnLoan for Librarian then remove transition ReturnLate"
 BUILD_TIMEOUT_MS = 600_000
 AI_CARD = ".msg.ai:last-child"
+# A game note shows by the checks ring, or in the status bar toast when the toolbar leaves the ring no room beside it
+CAUGHT = "#game-notes:has-text('Caught'), #toast:has-text('Caught')"
 APP = "#run-frame >> internal:control=enter-frame >>"  # inside the built app's frame
 PERMIT_HOLD = "add state OnHold after InReview then add HoldApplication from InReview to OnHold for PlanReviewer"
 AGENT_RISKY = "add HandOff from Assessed to WithSupervisor for SupportAgent then allow SupportAgent to ApproveRefund"
@@ -534,7 +536,7 @@ def _agents(scene: Scene, chapter: _Chapters) -> None:
     scene.caption("Untick the step that hands the agent the approval: caught. The hand-off alone is allowed, and a person "
                   "still approves every refund.")
     scene.click(f"{AI_CARD} .plan-steps > li:nth-child(2) input")
-    scene.expect_text("#game-notes", "Caught it", timeout_ms=30_000)  # the ring's biggest note (ADR-0208)
+    scene.expect_text(CAUGHT, "Caught", timeout_ms=30_000)  # the ring's biggest note (ADR-0208)
     scene.expect_text(f"{AI_CARD} .plan-verdict", "The policy allows the result: adds HandOff")
     scene.zoom("#health", scale=1.8)
     scene.wait(1600)

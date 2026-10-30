@@ -799,7 +799,8 @@
     replace.addEventListener("click", restoreText);
     keep.addEventListener("click", () => { replacement.hidden = true; $("chat-input").focus(); });
     replacement.append(el("p", "Your newer text is still in the composer. Replace it only if you want to return to this request.", { class: "muted small" }), replace, keep);
-    box.append(el("p", `${error.code || "ERROR"}: ${error.message}`, { class: "refusal" }), edit, replacement);
+    // The sentence to act on leads; the stable code stays in the tooltip for support (#166).
+    box.append(el("p", error.message || "That request failed.", { class: "refusal", title: error.code || "ERROR", "data-code": error.code || "ERROR" }), edit, replacement);
     say("ai", box);
   }
 
@@ -2881,7 +2882,9 @@
 
   function renderSourceStatus() {
     if (!activeStatus) return;
-    $("model-name").textContent = activeStatus.pack.name + (caseId ? " · case candidate" : ` · active revision ${activeStatus.baseline_version}`);
+    // The revision is a separate span so a narrow title bar can drop it and keep the system's name whole; the status bar mirrors the full text (#137)
+    $("model-name").replaceChildren(activeStatus.pack.name, el("span", caseId ? " · case candidate" : ` · active revision ${activeStatus.baseline_version}`, { class: "model-rev" }));
+    $("model-name").title = $("model-name").textContent;
     const source = activeStatus.identity_source, synthetic = typeof source === "string" && (source.includes("synthetic") || source === "pytest-harness");
     $("source-status").textContent = !activeStatus.trusted_fixture ? "SOURCE_REVIEW_REQUIRED" : synthetic ? "Synthetic owner test identity" : "Shipped source fixture matches";
     $("source-status").title = synthetic ? `Synthetic identity (${source}); legitimate owner source review has not been performed.` : activeStatus.trusted_fixture ? "The source matches shipped fixture bytes; this does not establish correctness or independent owner source review."

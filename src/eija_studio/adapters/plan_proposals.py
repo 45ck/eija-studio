@@ -194,7 +194,7 @@ class OfflinePlanProposer:
     def propose(self, request: str, model: Workflow, pack: Pack, *, grows: bool = False) -> dict[str, Any]:
         clauses = [_normalise(c) for c in SPLIT.split(request) if _normalise(c)]
         if not clauses:
-            raise DomainError("PLAN_REQUEST_UNSUPPORTED", HELP)
+            raise DomainError("PLAN_REQUEST_UNSUPPORTED", f"I can't read that request against this model. {HELP}")
         resolver = _Clause(model, pack, grows)
         steps = [resolver.resolve(c) for c in clauses]
         read = [s for s in steps if s]

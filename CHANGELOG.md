@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### 30 October 2026: PlayIDE title bar, toolbar and chat refusals read cleanly
+
+- A refused chat request now opens with the plain sentence to act on; the stable code (for example `PLAN_REQUEST_UNSUPPORTED`) moves to the tooltip (fixes #166).
+- At 1280 and 1440 px the title bar keeps the system name and the New, Systems and Save buttons whole: the search box gives up width first and the revision stays in the status bar (fixes #137).
+- The toolbar fits on one row at 1440 px again: the Capabilities & requirements button reads "Requirements" (full name in its tooltip) and the run status is narrower.
+- The showcase and highlights demos accept the "caught" game note in the status bar toast when the checks ring has no room beside it.
+
 ### 30 October 2026: README names the bundled systems
 
 - The README feature table and setup now point to the five sector packs (Specialist referral, Card payment, Parcel delivery, SaaS subscription, Building permit) and the [sector packs guide](docs/sector-packs.md), with a direct `eija serve --pack` example.
