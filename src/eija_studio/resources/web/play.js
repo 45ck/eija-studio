@@ -41,10 +41,7 @@
   async function api(path, body) {
     const options = { headers: { Authorization: "Bearer " + token } };
     if (body !== undefined) Object.assign(options, { method: "POST", body: JSON.stringify(body) }, { headers: { ...options.headers, "Content-Type": "application/json" } });
-    const response = await fetch(path, options);
-    const value = await response.json();
-    if (!response.ok) throw Object.assign(new Error(value.message || "Request failed"), { code: value.code });
-    return value;
+    return PlayApi.request(fetch, path, options); // a stopped server or a crash page reads as a sentence, not a parse error
   }
 
   function el(tag, text, attrs = {}) {
