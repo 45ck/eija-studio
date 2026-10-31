@@ -4,6 +4,8 @@ import sys
 
 import nox
 
+from quality.tools.suite import run_lane_tests
+
 PYTHON = sys.executable  # the project environment nox runs in; sessions use python=False
 
 
@@ -19,7 +21,7 @@ def agents(session: nox.Session) -> None:
     sdk = subprocess.run([PYTHON, "-c", "import mcp"], capture_output=True, check=False).returncode == 0
     if sdk:
         tests.append("tests/test_mcp_server.py")
-    session.run(PYTHON, "-m", "pytest", "-q", *tests, *session.posargs)
+    run_lane_tests(session, *tests)
     if not sdk:
         session.skip('NOT_RUN: the MCP SDK is not installed, so tests/test_mcp_server.py did not run (the static checks passed); '
                      'pip install -e ".[agents]"')

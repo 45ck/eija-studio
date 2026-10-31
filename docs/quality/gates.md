@@ -194,6 +194,22 @@ running on the same machine, so read these as a ratio, not as a benchmark; "seri
 Where the remaining `nox -t fast` time goes (parallel run): `tests` about 1 min, `providers_contract` 27 s, `demos_registry` 16 s,
 `graph_metamodel` 7 s, everything else under 5 s. A further speed-up needs the provider process-tree tests split across files.
 
+### One run per test file in a tier
+
+`tests` (fast) and `coverage` (full) run every file under `tests/` with the default marker selection. Lane sessions that also
+ran some of those files themselves (`providers_contract`, `demos_registry`, `adr_index`, `vocabulary`, `agents` and the
+`graph_*` sessions) ran them a second time in the same tier. They now call `run_lane_tests` (`quality/tools/suite.py`), which
+skips the lane's own pytest run, with a log line, when `tests` or `coverage` is selected in the same nox invocation:
+
+* Run alone (`nox -s vocabulary`), a lane session still runs its tests, so the lane loop is unchanged.
+* Each lane's non-pytest check (the vocabulary scan, the ADR index, the demos registry, the psutil probe, the graph
+  self-checks) still runs in every tier.
+* Only plain path and `-k` selections under `tests/` qualify. Sessions that add `-m` (`hci`, the formal sessions), point at
+  files outside `tests/` (`okf_tools`) or need an environment that changes outcomes keep calling pytest themselves.
+* `EIJA_LANE_TESTS=always` restores the double run. If nox's internal manifest shape changes, the helper answers "not
+  selected" and the lane runs its tests: an unknown state costs time, never coverage.
+* Negative control: `tests/tools/test_lane_tests.py` plants a failing lane test and requires `nox -s lane` to fail on it.
+
 ## What these gates do not establish
 
 Passing them shows that style, typing, layering, complexity and dependency hygiene are within budget. It says nothing about

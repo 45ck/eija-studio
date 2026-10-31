@@ -1,5 +1,9 @@
 # Update log
 
+## 2026-10-31
+
+* **One run per test file in a tier**: synced the eleven gate pages whose sessions now call `run_lane_tests` (`quality/tools/suite.py`). In `nox -t fast` and `nox -t full` a lane's own pytest files are left to `tests` or `coverage`, which run the same files under the same marker selection; alone, each lane session still runs them. The non-pytest part of each gate is unchanged. No curated Notes changed and no human source approval was recorded.
+
 ## 2026-10-12
 
 * **Separate read views from authority**: synced `application.service_views` and the shared generated-app operations after the unchanged maintainability budget exposed growth in `Studio`. Read-only queries now live in `StudioViews`; commands, signed decisions, concurrency checks and atomic application remain in `Studio`. Re-read the eight affected curated pages as `process:playide-service-cohesion`, including inherited source locations and the difference between supplied-input assembly and port-observed evidence. Deprecated method pages retain their history. The focused 70-test run passed, including race checks and deliberately broken implementations; browser and release results remain separate evidence. No human source approval was recorded.

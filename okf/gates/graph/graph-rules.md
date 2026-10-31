@@ -14,8 +14,8 @@ sources:
 - resource: repo://quality/sessions/graph.py#graph_rules
   title: graph.py
   hash_method: ast-v2
-  sha256: 50eec6a011df64191334e33f2820a90004133e4b37cb48db8aa59844b12703d1
-notes_baseline: c454020efd196e23316d35dbd973eb4c17f81de021d5dfefc2a4068e8d8b2896
+  sha256: 6f73a1a3faa64a0a510230bbb4ec8840dd6e171cb05a4611965826de5ac82517
+notes_baseline: 788e754c69d5a4454e6e22e51630bdce5f1c070d7abb9db4cbda876fe3e3082f
 ---
 
 # nox -s graph_rules

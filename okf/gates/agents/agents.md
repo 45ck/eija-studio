@@ -13,8 +13,8 @@ sources:
 - resource: repo://quality/sessions/agents.py#agents
   title: agents.py
   hash_method: ast-v2
-  sha256: 8368ba7e61de2bf706f16d59a0bc59eca1c27b4d8a8256aafbc5caf030e79d72
-notes_baseline: 346c4ddc108d465e934cb4eac3019227d9b30d94c7dce214429a8c8e1c7cf795
+  sha256: c1a2df9f9869496133d69651247881b5f63a3836b5b828016c2035b9e2c2449b
+notes_baseline: 856861aaf2086399587816059ba14f104272b11f369e7835575bd56dff478308
 ---
 
 # nox -s agents

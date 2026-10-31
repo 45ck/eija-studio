@@ -9,8 +9,11 @@ from pathlib import Path
 
 import nox
 
+from quality.tools.suite import run_lane_tests
+
 PYTHON = sys.executable  # the project environment nox runs in; sessions use python=False
 ROOT = Path(__file__).resolve().parents[2]
+NO_CACHE = ("-p", "no:cacheprovider")
 
 
 def _env() -> dict[str, str]:
@@ -27,10 +30,10 @@ def graph_rules(session: nox.Session) -> None:
     The SARIF schema check and the pySHACL cross-check skip (NOT_RUN) when the OASIS schema or pyshacl is absent.
     """
     session.run(PYTHON, "graph/rules/check_catalogue.py", env=_env())
-    session.run(
-        PYTHON, "-m", "pytest", "-q", "-p", "no:cacheprovider",
+    run_lane_tests(
+        session, *NO_CACHE,
         "tests/graph/test_rules_catalogue.py", "tests/graph/test_rules_reference.py", "tests/graph/test_rule_language_bench.py",
-        *session.posargs, env=_env(),
+        env=_env(),
     )
 
 
@@ -52,19 +55,14 @@ def graph_metamodel(session: nox.Session) -> None:
     tests skip and the output names NOT_RUN.
     """
     session.run(PYTHON, "graph/schema/build_schemas.py", "--check", env=_env())
-    session.run(
-        PYTHON, "-m", "pytest", "-q", "-p", "no:cacheprovider", "tests/graph/test_metamodel_identity.py",
-        "-k", "not hash_seeds", *session.posargs, env=_env(),
-    )
+    run_lane_tests(session, *NO_CACHE, "tests/graph/test_metamodel_identity.py", "-k", "not hash_seeds", env=_env())
 
 
 @nox.session(python=False, tags=["full"])
 def graph_metamodel_full(session: nox.Session) -> None:
     """ADR-0089: every metamodel and identity oracle, including byte identity of the bench report across PYTHONHASHSEED values."""
     session.run(PYTHON, "graph/schema/build_schemas.py", "--check", env=_env())
-    session.run(
-        PYTHON, "-m", "pytest", "-q", "-p", "no:cacheprovider", "tests/graph/test_metamodel_identity.py", *session.posargs, env=_env(),
-    )
+    run_lane_tests(session, *NO_CACHE, "tests/graph/test_metamodel_identity.py", env=_env())
 
 @nox.session(python=False, tags=["fast", "full"])
 def graph_impact_math(session: nox.Session) -> None:
@@ -72,9 +70,7 @@ def graph_impact_math(session: nox.Session) -> None:
 
     Differential checks against graph/formal/eijaref, the kernel and networkx skip as NOT_RUN when that artefact is absent.
     """
-    session.run(
-        PYTHON, "-m", "pytest", "-q", "-p", "no:cacheprovider", "tests/graph/test_impact_math_oracles.py", *session.posargs, env=_env(),
-    )
+    run_lane_tests(session, *NO_CACHE, "tests/graph/test_impact_math_oracles.py", env=_env())
 
 
 @nox.session(python=False, tags=["release"])
@@ -93,11 +89,11 @@ def graph_formal(session: nox.Session) -> None:
     Missing Hypothesis, clingo, rfc8785, Java or the pinned Alloy jar make the affected tests skip: the output names NOT_RUN, never a pass.
     """
     session.run(PYTHON, "graph/formal/selfcheck.py", env=_env())
-    session.run(
-        PYTHON, "-m", "pytest", "-q", "-p", "no:cacheprovider",
+    run_lane_tests(
+        session, *NO_CACHE,
         "tests/graph/formal/test_formal_canon.py", "tests/graph/formal/test_formal_crosscheck.py",
         "tests/graph/formal/test_formal_rules_lens_metamodel.py", "tests/graph/formal/test_formal_hash_methods.py",
-        "-k", "not alloy", *session.posargs, env=_env(),
+        "-k", "not alloy", env=_env(),
     )
 
 
@@ -111,7 +107,7 @@ def graph_formal_full(session: nox.Session) -> None:
     # and never a failure, so it is reported after the tests have run.
     report = session.run(PYTHON, "graph/formal/selfcheck.py", "--alloy", env=_env(), silent=True, success_codes=[0, 2])
     session.log(report)
-    session.run(PYTHON, "-m", "pytest", "-q", "-p", "no:cacheprovider", "tests/graph/formal", *session.posargs, env=_env())
+    run_lane_tests(session, *NO_CACHE, "tests/graph/formal", env=_env())
     alloy = json.loads(report).get("tools", {}).get("alloy", {})
     if alloy.get("verdict") == "NOT_RUN":
         session.skip(f"NOT_RUN (not a pass): the Alloy certificate models did not run: {alloy.get('reason')}")

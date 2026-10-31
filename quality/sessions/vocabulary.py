@@ -3,6 +3,8 @@ import sys
 
 import nox
 
+from quality.tools.suite import run_lane_tests
+
 PYTHON = sys.executable  # the project environment nox runs in; sessions use python=False
 
 
@@ -10,4 +12,4 @@ PYTHON = sys.executable  # the project environment nox runs in; sessions use pyt
 def vocabulary(session: nox.Session) -> None:
     """Pack tokens outside packs/, GENERATED files and the justified allowlist fail; so does any Literal naming one."""
     session.run(PYTHON, "-m", "quality.gates.vocabulary")
-    session.run(PYTHON, "-m", "pytest", "-q", "tests/tools/test_vocabulary_gate.py", *session.posargs)
+    run_lane_tests(session, "tests/tools/test_vocabulary_gate.py")

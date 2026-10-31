@@ -14,8 +14,8 @@ sources:
 - resource: repo://quality/sessions/graph.py#graph_impact_math
   title: graph.py
   hash_method: ast-v2
-  sha256: 99d0d07766a8feecd872a8db97fab943b32c9d9079d0ef8c6020ffd2d0e3c959
-notes_baseline: c82cdf5b07f5be1fbb2d4a4552757b1c69f992ea61efd73ae962a697bcd5903b
+  sha256: 78d5c9f73e13e259a7fb3e681528fec20fc099178ad179907c8641cc6ee7f26d
+notes_baseline: c2935f5cd46c6f0a3f2611bc2e4e65ff65f01410dc66988c0b8f8f2fd09b3200
 ---
 
 # nox -s graph_impact_math

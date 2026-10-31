@@ -14,8 +14,8 @@ sources:
 - resource: repo://quality/sessions/hygiene.py#adr_index
   title: hygiene.py
   hash_method: ast-v2
-  sha256: 1086a70314aa33c4f3eac4981009e0853a0db724c5dfbca24e8328d6fe64e343
-notes_baseline: 6962d0bf5491e69b77017b36eada594eeb08791c7d0f619c6e1de03dc5e473e6
+  sha256: 9e77a7f1ecaa276c2f535fb6eb7b57dd5c157f5b6d7f56f9bb6e2afd36200798
+notes_baseline: d6460f7c01395d12355b2cf966d0c08306c454fe43a3ad9bc7fcee2f6cdefb7d
 ---
 
 # nox -s adr_index
