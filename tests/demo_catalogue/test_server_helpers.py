@@ -46,7 +46,11 @@ def test_wait_for_ready_fails_fast_when_the_server_crashes(tmp_path):
 
 
 def test_kill_process_tree_stops_a_long_running_child_and_is_idempotent():
-    process = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"])
+    # Its own process group, as ephemeral_eija_server starts the real server: without one, killpg found no group and
+    # the helper fell through to its 10 s wait, so this test spent 10 s on the fallback instead of the group kill.
+    process = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"], start_new_session=sys.platform != "win32")
+    started = time.monotonic()
     server._kill_process_tree(process)
+    assert time.monotonic() - started < 5, "the tree kill waited out its fallback instead of killing the group"
     assert process.poll() is not None
     server._kill_process_tree(process)  # already dead: must not raise
