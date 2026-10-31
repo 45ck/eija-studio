@@ -14,8 +14,8 @@ sources:
 - resource: repo://quality/sessions/demos.py#demos_registry
   title: demos.py
   hash_method: ast-v2
-  sha256: 672aa45a62cbdb9d21dc0ee576a1bd428e95996e32e854f748d3fced1ca5ee4f
-notes_baseline: fc46a17cf7be637469ebf95ea9af6ce28cf6ba9659ea8f76eb841d1c2ad7effc
+  sha256: 0102f8834f3e20428a60ad0edc268c7aff682837e5d66d7790d4ea91749a86b9
+notes_baseline: 8ebf61150259e878c8b3ad196679c6d469b5e1d526a9c947245f981b830cbe71
 ---
 
 # nox -s demos_registry

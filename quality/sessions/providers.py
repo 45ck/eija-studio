@@ -7,6 +7,8 @@ import sys
 
 import nox
 
+from quality.tools.suite import run_lane_tests
+
 PYTHON = sys.executable  # the project environment nox runs in; sessions use python=False
 TESTS = ("tests/test_provider_contract.py", "tests/test_provider_process.py", "tests/test_providers.py")
 DOCTOR = (
@@ -26,7 +28,7 @@ def providers_contract(session: nox.Session) -> None:
     report green without exercising the psutil path, so a missing psutil fails the session instead of passing it.
     """
     session.run(PYTHON, "-c", "import psutil", silent=True)  # a non-zero exit fails the session; install with: pip install -e '.[providers]'
-    session.run(PYTHON, "-m", "pytest", "-q", *TESTS, *session.posargs)
+    run_lane_tests(session, *TESTS)
 
 
 @nox.session(python=False, tags=["release"])

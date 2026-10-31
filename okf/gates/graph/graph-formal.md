@@ -13,8 +13,8 @@ sources:
 - resource: repo://quality/sessions/graph.py#graph_formal
   title: graph.py
   hash_method: ast-v2
-  sha256: d7fd42bb6035c6ca1abc2461b7fbc5070d2a300ec51326847553aeeacac0b643
-notes_baseline: 46a8c301abec6fa8a6abaf07bcec0aa825ea837b687a75ae10cb7fd2e87a3459
+  sha256: 47a20094a438ae910866f34c783f341e7d9a7dcfe557b3a9a751143326eed5bd
+notes_baseline: aa4d1652ffdaad1c50ac5a962e10e1861d05fde8cf3674b5d63fd5acb013d1da
 ---
 
 # nox -s graph_formal

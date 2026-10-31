@@ -14,8 +14,8 @@ sources:
 - resource: repo://quality/sessions/vocabulary.py#vocabulary
   title: vocabulary.py
   hash_method: ast-v2
-  sha256: 28b686f113cdf91cefdc487b8f39f2e8d60d20c8c6928fca545aa7b8d838a107
-notes_baseline: db43739fe0d05ace3255c716b87c18f0c57d4801a107c5d6210d5bbf9789ba7c
+  sha256: f1db61e66c1096f934538440254da2aeceff06c582233bdf1ad0f0a869698f3b
+notes_baseline: f3be75c9771837af139a56986bdf9bd269e2f1681972e0074de7048606b9c9cb
 ---
 
 # nox -s vocabulary

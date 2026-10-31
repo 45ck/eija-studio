@@ -3,6 +3,8 @@ import sys
 
 import nox
 
+from quality.tools.suite import run_lane_tests
+
 PYTHON = sys.executable
 
 
@@ -10,4 +12,4 @@ PYTHON = sys.executable
 def adr_index(session: nox.Session) -> None:
     """docs/adr/README.md index matches the ADR files; numbers unique; every record parses."""
     session.run(PYTHON, "-m", "quality.tools.adr_index", "--check")
-    session.run(PYTHON, "-m", "pytest", "-q", "tests/tools", *session.posargs)
+    run_lane_tests(session, "tests/tools")

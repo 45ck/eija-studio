@@ -13,8 +13,8 @@ sources:
 - resource: repo://quality/sessions/graph.py#graph_metamodel
   title: graph.py
   hash_method: ast-v2
-  sha256: cdf88a83c55ff435428b85500b41f622e7076f1de728a91327bfddbcf83688bb
-notes_baseline: ff2b99dbc779ff27afb5d440aaf378e6c18306598f5e8dbf5ad13317c987ee49
+  sha256: 79aa89e087976c6add9ecebbc9960f23c7186d1c527a407ccea4ce7461095522
+notes_baseline: a8bf484c40920d49d579aa6af960d7f2b5e14b1d273cab77b2d94caafee67158
 ---
 
 # nox -s graph_metamodel

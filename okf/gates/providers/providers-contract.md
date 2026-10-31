@@ -14,8 +14,8 @@ sources:
 - resource: repo://quality/sessions/providers.py#providers_contract
   title: providers.py
   hash_method: ast-v2
-  sha256: 513f9c9bdbe5a51097931c16bc79f61900a7aeb38e973ba2e327e5dee6dc3d9e
-notes_baseline: ada7e6966e37bc92e2303f0c38560abbb25108b281b70fda8716450c84471c76
+  sha256: 5764c0b0789f3bdb268e1b8ca50422e3f9ddd6e7e9e6ab62c33cce6b031333f5
+notes_baseline: e2c5a834f8e5a8c0608e4f5fdf15623686caf3dfa0b66d02979609c3043f1ac8
 ---
 
 # nox -s providers_contract

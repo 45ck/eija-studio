@@ -3,6 +3,8 @@ import sys
 
 import nox
 
+from quality.tools.suite import run_lane_tests
+
 PYTHON = sys.executable
 
 
@@ -10,7 +12,7 @@ PYTHON = sys.executable
 def demos_registry(session: nox.Session) -> None:
     """Catalogue matches the code, REGISTRY.md is fresh, manifests are well formed. No browser needed."""
     session.run(PYTHON, "-m", "demos", "registry", "--check")
-    session.run(PYTHON, "-m", "pytest", "-q", "tests/demo_catalogue", *session.posargs)
+    run_lane_tests(session, "tests/demo_catalogue")
 
 
 @nox.session(python=False, tags=["full"])
