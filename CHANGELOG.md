@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### 31 October 2026: PlayIDE says what to do when its server stops or crashes
+
+- If `eija serve` has stopped, PlayIDE now says it cannot reach its local server and to check that `eija serve` is still running (code `SERVER_UNREACHABLE`), instead of the browser's bare "Failed to fetch".
+- If the server answers with a crash or proxy error page, PlayIDE names the HTTP status and points to the server's terminal (code `RESPONSE_INVALID`), instead of a JSON parse message such as `Unexpected token 'I', "Internal S"... is not valid JSON`.
+- JSON answers and refusals are unchanged. The reader is `play-api.js`, with Node tests in `tests/web/play-api.test.cjs`.
+
 ### 30 October 2026: PlayIDE title bar, toolbar and chat refusals read cleanly
 
 - A refused chat request now opens with the plain sentence to act on; the stable code (for example `PLAN_REQUEST_UNSUPPORTED`) moves to the tooltip (fixes #166).

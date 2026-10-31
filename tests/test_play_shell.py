@@ -624,3 +624,20 @@ def test_compact_shell_preserves_canvas_context_and_keyboard_access_with_all_pan
             assert errors == []
         finally:
             chrome.close()
+
+
+def test_the_request_reader_loads_before_play_and_is_served(client):
+    page = client.get("/play").text
+    assert page.index("/assets/play-api.js") < page.index("/assets/play.js")
+    assert client.get("/assets/play-api.js").status_code == 200
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="NOT_RUN: Node is not installed")
+def test_a_stopped_server_or_crash_page_reads_as_a_sentence_not_a_parse_error():
+    node = shutil.which("node")
+    assert node is not None
+    result = run_bounded(
+        [*resolve_command(node), "--test", str(ROOT / "tests/web/play-api.test.cjs")],
+        cwd=str(ROOT), input=None, env=dict(os.environ), timeout=30,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr

@@ -30,6 +30,7 @@ WEB_ASSETS |= frozenset({"play-activation.js", "play-activation.css", "play-assu
 WEB_ASSETS |= frozenset({"play-live.js", "play-live.css"})
 WEB_ASSETS |= frozenset({"play-c4.js", "play-c4.css"})
 WEB_ASSETS |= frozenset({"play-presentation.js", "play-presentation.css"})
+WEB_ASSETS |= frozenset({"play-api.js"})
 # PlayIDE frames the app built from the model, which runs as a separate process on its own loopback port (ADR-0151).
 PLAY_CSP = PAGE_CSP.replace("frame-src 'self'", "frame-src 'self' http://127.0.0.1:*")
 
