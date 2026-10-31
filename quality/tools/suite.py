@@ -38,7 +38,9 @@ def suite_selected(session: nox.Session) -> bool:
 
 def run_lane_tests(session: nox.Session, *pytest_args: str, env: dict[str, str] | None = None) -> None:
     """`pytest -q <pytest_args> <posargs>`, unless the suite session of this run covers the same files."""
-    if os.environ.get("EIJA_LANE_TESTS") != "always" and suite_selected(session):
+    # Extra arguments (`nox -t fast -- tests/test_x.py`) also narrow the suite session's collection, so it may no longer
+    # cover the lane's files: the lane runs them itself then.
+    if os.environ.get("EIJA_LANE_TESTS") != "always" and not session.posargs and suite_selected(session):
         session.log(
             f"{' '.join(pytest_args)}: run by the suite session in this run (EIJA_LANE_TESTS=always runs them here too)"
         )

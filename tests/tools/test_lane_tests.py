@@ -64,3 +64,8 @@ def test_in_a_tier_with_the_suite_session_the_lane_leaves_its_files_to_it(tmp_pa
 def test_the_old_behaviour_is_one_environment_variable_away(tmp_path, monkeypatch):
     monkeypatch.setenv("EIJA_LANE_TESTS", "always")
     assert _nox(tmp_path, "-t", "tier").returncode != 0
+
+
+def test_extra_arguments_narrow_the_suite_so_the_lane_runs_its_own_tests(tmp_path):
+    """`-- <path>` reaches the suite's pytest too and can exclude the lane's files, so the lane must not leave them to it."""
+    assert _nox(tmp_path, "-t", "tier", "--", "-q").returncode != 0

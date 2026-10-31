@@ -206,6 +206,8 @@ skips the lane's own pytest run, with a log line, when `tests` or `coverage` is 
   self-checks) still runs in every tier.
 * Only plain path and `-k` selections under `tests/` qualify. Sessions that add `-m` (`hci`, the formal sessions), point at
   files outside `tests/` (`okf_tools`) or need an environment that changes outcomes keep calling pytest themselves.
+* Extra pytest arguments (`nox -t fast -- tests/test_x.py`) narrow the suite session's collection too, so with any posargs the
+  lane runs its own files.
 * `EIJA_LANE_TESTS=always` restores the double run. If nox's internal manifest shape changes, the helper answers "not
   selected" and the lane runs its tests: an unknown state costs time, never coverage.
 * Negative control: `tests/tools/test_lane_tests.py` plants a failing lane test and requires `nox -s lane` to fail on it.
