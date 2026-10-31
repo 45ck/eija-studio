@@ -432,12 +432,23 @@ def test_committed_vectors_are_current_and_reproducible_by_the_rfc_package() -> 
 
 
 def test_report_is_byte_identical_across_hash_seeds() -> None:
-    outs = []
+    # Both seeds run at once: the runs are independent, so the test costs one run of the bench instead of two.
+    procs = []
     for seed in ("0", "12345"):
         env = {**os.environ, "PYTHONHASHSEED": seed, "TMP": str(ROOT / ".tmp"), "TEMP": str(ROOT / ".tmp")}
-        proc = subprocess.run([sys.executable, str(ROOT / "graph" / "bench" / "identity_checks.py")], env=env, capture_output=True,
-                              check=True, timeout=300)
-        outs.append(proc.stdout)
+        procs.append(subprocess.Popen([sys.executable, str(ROOT / "graph" / "bench" / "identity_checks.py")], env=env,
+                                      stdout=subprocess.PIPE, stderr=subprocess.PIPE))
+    outs = []
+    try:
+        for proc in procs:
+            out, err = proc.communicate(timeout=300)
+            assert proc.returncode == 0, err.decode("utf-8", "replace")
+            outs.append(out)
+    finally:
+        for proc in procs:
+            if proc.poll() is None:
+                proc.kill()
+                proc.wait()
     assert outs[0] == outs[1]
 
 

@@ -404,7 +404,11 @@ def test_integer_coercions_are_treated_alike_by_schema_and_model(name, coercion)
 
 
 def test_cross_field_rules_are_all_still_in_the_models():
-    """Keeps ``CROSS_FIELD`` honest: every listed message is still raised by some model validator."""
-    source = (ROOT / "src" / "eija_studio" / "domain" / "models.py").read_text(encoding="utf-8")
-    assert all(re.search(re.escape(rule), source) for rule in CROSS_FIELD)
+    """Keeps ``CROSS_FIELD`` honest: every listed message is still raised by some domain model validator.
+
+    The generated-app digest rules live in domain/generated_app.py, not models.py, so the whole domain package is read."""
+    domain = ROOT / "src" / "eija_studio" / "domain"
+    source = "\n".join(path.read_text(encoding="utf-8") for path in sorted(domain.glob("*.py")))
+    missing = [rule for rule in CROSS_FIELD if not re.search(re.escape(rule), source)]
+    assert not missing, f"no domain validator raises: {missing}"
 
