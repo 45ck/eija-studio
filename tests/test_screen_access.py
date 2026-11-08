@@ -169,3 +169,12 @@ def test_the_check_shows_in_the_designer_and_axe_agrees_on_the_built_app_in_a_re
             assert errors == []
         finally:
             chrome.close()
+
+
+SHIPPED = sorted(p.name for p in (ROOT / "packs").iterdir() if (p / "pack.json").exists())
+
+
+@pytest.mark.parametrize("name", [n for n in SHIPPED if n != "excursion"])  # excursion keeps the default screens on purpose
+def test_every_shipped_pack_passes_the_check_with_nothing_to_look_at(name):
+    statuses = report(pack=load_pack(ROOT / "packs" / name))
+    assert {check: status for check, status in statuses.items() if status != "PASS"} == {}
