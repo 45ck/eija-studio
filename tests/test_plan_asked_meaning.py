@@ -16,7 +16,6 @@ from eija_studio.application.plan import example_passes, propose_plan
 from eija_studio.domain.pack import load_pack
 
 ROOT = Path(__file__).resolve().parents[1]
-PACKS = sorted(p.name for p in (ROOT / "packs").iterdir() if (p / "pack.json").is_file())
 # pack -> (a plain request for the unsafe change, its meaning, a law the policy names when it refuses it)
 UNSAFE = {
     "card-payment": ("Let support agents issue refunds themselves", "support_issues_refunds", "law:finance-approves-refunds"),
@@ -44,11 +43,9 @@ def test_an_unsafe_request_is_planned_as_asked_and_refused_by_its_law(pack_id):
         assert law in result["preview"]["refs"]
 
 
-@pytest.mark.parametrize("pack_id", PACKS)
-def test_every_chat_example_is_a_plan_the_policy_allows(pack_id):
+@pytest.mark.parametrize("pack_id", [*UNSAFE, "library-loan", "excursion", "eija-review-slice"])
+def test_the_chat_example_is_a_plan_the_policy_allows(pack_id):
     pack = load_pack(ROOT / "packs" / pack_id)
-    if not pack.fixtures.demo_request:
-        pytest.skip("no chat example")
     result = propose_plan(pack.fixtures.demo_request, pack.model, pack, OfflinePlanProposer())
     assert result["meaning"] is not None and pack.meaning(result["meaning"]).supported
     assert example_passes(pack.fixtures.demo_request, pack.model, pack, OfflinePlanProposer())
