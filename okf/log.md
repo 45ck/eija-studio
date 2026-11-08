@@ -3,6 +3,7 @@
 ## 2026-11-08
 
 * **A rename is one change in the Review tab**: synced `application.review` (new `renames`; `behaviour_diff` takes the rename map) and the ADR-0175 amendment. The pages linking to them (ADR-0176, `domain.transactions`, `Workflow`) gained backlinks only.
+* **Accessibility sweep of the shipped packs**: re-synced ADR-0218 after its amendment (every shipped pack is checked; `library-fines` gained labelled screens). No Notes were hand-edited and nothing was recorded as verified.
 
 ## 2026-10-31
 
