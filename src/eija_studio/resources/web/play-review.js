@@ -8,7 +8,7 @@
 (() => {
   const $ = (id) => document.getElementById(id);
   const RISK_TEXT = { high: "High risk", medium: "Medium", low: "Low" };
-  const CHANGE_TEXT = { added: "added", removed: "removed", changed: "changed", unreachable: "knock-on", dead_end: "knock-on" };
+  const CHANGE_TEXT = { added: "added", removed: "removed", changed: "changed", renamed: "renamed", unreachable: "knock-on", dead_end: "knock-on" };
   const reviews = new Map(); // one review per change shown, so going back to a change keeps what was checked
   let ide = null, review = null, graph = null, focusTimer = 0, shownKey = null;
 
@@ -36,7 +36,8 @@
   function cellsOf(item) { // the renderer keys a transition by its side: t:<id> as it is now, was:<id> as it was
     const id = item.element.startsWith("transition:") ? item.element.slice(11) : null;
     const ids = id ? (item.change === "removed" ? ["was:" + id] : ["t:" + id, "was:" + id])
-      : item.element === "initial" ? ["initial-edge", "was:initial-edge"] : [item.element];
+      : item.element === "initial" ? ["initial-edge", "was:initial-edge"]
+      : item.change === "renamed" ? item.states.map((s) => "state:" + s) : [item.element]; // a rename: the old name and the new
     return ids.map((id) => graph.getDataModel().getCell(id)).filter(Boolean);
   }
 

@@ -50,6 +50,23 @@ Chosen option.
 * Bad: the review note is a download, not stored evidence, and a review is not an approval. Storing reviews with a case, and letting the owner approve from it, wait on issue #80 (restamp) and issue #89 (saving free-form plans).
 * Revisit when: reviews should be stored with a change case, the owner wants a review to gate approval, or fixtures gain data variation.
 
+### Amendment (2026-11-08): a rename is one change
+
+Every legal single edit on all twelve packs was run through the review. A `rename_state` came out as a high-risk
+"Remove state", an "Add state", a medium "moved" item for every arrow touching the state, and behaviour rows for every
+attempt from or into it. That ranks a harmless rename as the riskiest change in the list.
+
+* A state is read as **renamed** when it is gone, and exactly one new state is now used by every transition (on both
+  sides) and the start that used it, with no other existing transition moved onto it. The match must be one to one.
+* The review compares the model in force under the new names (the kernel's own `rename_state`) with the change, so
+  other edits to the renamed state are still reviewed, under its new name.
+* The behaviour diff still runs the kernel on each model as it is; a renamed state is the same state on both sides,
+  and a destination is compared under its new name. Simulation findings are compared the same way.
+* The rename is one **low** item, "Rename state Overdue to Late", with no attempts and no question, since a rename on
+  its own changes no behaviour. The response lists the pairs as `renamed`.
+* Not changed: the diagram (ADR-0176) still draws the old name as removed and the new one as added; **Show me** selects
+  both. The review's limits say so.
+
 ## OSS check (required for any custom module)
 
 | OSS checked | Why adapter/dependency use was insufficient | Replacement or fork path |

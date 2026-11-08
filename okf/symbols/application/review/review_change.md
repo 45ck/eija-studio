@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/review.py#review_change
   title: application/review.py
   hash_method: ast-v2
-  sha256: 2f9345ec89e88175f10c4c471f2cbe3fba78271a0154a83004858093a914fb8d
-notes_baseline: ca065172356aeebb7ebed8657f1a9b2eb5f240d7927a3289faae01335d00b92b
+  sha256: 3c12339ac42801984675783884e20e4466d70c463b1a2b38a9c99b744d197f2e
+notes_baseline: c98a06bca4ca6cc241875fccd24c9aeffae9381482cf5d4f6cee9e742e19550f
 ---
 
 # application.review.review_change
@@ -46,6 +46,7 @@ _No curated notes yet._
 * [application.diagrams.diff_summary](/symbols/application/diagrams/diff_summary.md) - Structured diff of two workflows: states, and transitions by action with each changed field's before and after.
 * [application.review.RISK_ORDER](/symbols/application/review/RISK_ORDER.md) - Constant `RISK_ORDER` in `application/review`.
 * [application.review.behaviour_diff](/symbols/application/review/behaviour_diff.md) - Every fixture actor tries every action from every state on both models; the attempts whose outcome differs.
+* [application.review.renames](/symbols/application/review/renames.md) - States the change renamed: a state that is gone, matched to the one new state that every transition and the start that used it now use instead (counting only t…
 * [application.review.row_text](/symbols/application/review/row_text.md) - `def row_text(row: dict[str, Any]) -> str` in `application/review`.
 * [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.

@@ -1,5 +1,9 @@
 # Update log
 
+## 2026-11-08
+
+* **A rename is one change in the Review tab**: synced `application.review` (new `renames`; `behaviour_diff` takes the rename map) and the ADR-0175 amendment. The pages linking to them (ADR-0176, `domain.transactions`, `Workflow`) gained backlinks only.
+
 ## 2026-10-31
 
 * **One run per test file in a tier**: synced the eleven gate pages whose sessions now call `run_lane_tests` (`quality/tools/suite.py`). In `nox -t fast` and `nox -t full` a lane's own pytest files are left to `tests` or `coverage`, which run the same files under the same marker selection; alone, each lane session still runs them. The non-pytest part of each gate is unchanged. No curated Notes changed and no human source approval was recorded.
