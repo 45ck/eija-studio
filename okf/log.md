@@ -1,5 +1,9 @@
 # Update log
 
+## 2026-11-08
+
+* **Accessibility sweep of the shipped packs**: re-synced ADR-0218 after its amendment (every shipped pack is checked; `library-fines` gained labelled screens). No Notes were hand-edited and nothing was recorded as verified.
+
 ## 2026-10-31
 
 * **One run per test file in a tier**: synced the eleven gate pages whose sessions now call `run_lane_tests` (`quality/tools/suite.py`). In `nox -t fast` and `nox -t full` a lane's own pytest files are left to `tests` or `coverage`, which run the same files under the same marker selection; alone, each lane session still runs them. The non-pytest part of each gate is unchanged. No curated Notes changed and no human source approval was recorded.
