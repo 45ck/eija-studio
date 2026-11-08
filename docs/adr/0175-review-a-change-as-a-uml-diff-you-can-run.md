@@ -61,7 +61,9 @@ attempt from or into it. That ranks a harmless rename as the riskiest change in 
 * The review compares the model in force under the new names (the kernel's own `rename_state`) with the change, so
   other edits to the renamed state are still reviewed, under its new name.
 * The behaviour diff still runs the kernel on each model as it is; a renamed state is the same state on both sides,
-  and a destination is compared under its new name. Simulation findings are compared the same way.
+  and a destination is compared under its new name. Simulation findings are matched by the element they name (a
+  renamed state is the same element) and their text apart from that state's name, never by rewriting the prose, so a
+  name with punctuation such as `Lost (manual)` still matches.
 * The rename is one **low** item, "Rename state Overdue to Late", with no attempts and no question, since a rename on
   its own changes no behaviour. The response lists the pairs as `renamed`.
 * Not changed: the diagram (ADR-0176) still draws the old name as removed and the new one as added; **Show me** selects

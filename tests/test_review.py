@@ -47,6 +47,7 @@ def test_knock_on_effects_nobody_edited_are_reviewed_too():
     assert gone["risk"] == "high" and not gone["edited"] and gone["element"] == "state:Overdue"
     assert "CheckOut → MarkOverdue" in gone["reasons"][0]
     assert items["Remove MarkOverdue: OnLoan → Overdue, by Clerk"]["edited"]
+    assert "No record reached Overdue" in review["simulation"]["new_findings"]
     stuck = review_change(LOAN, LOAN.model, changed({"kind": "remove_transition", "transition": "TR-RETURNLATE"}))
     assert by_text(stuck)["Records in Overdue get stuck"]["reasons"] == [
         "Before, records left Overdue by ReturnLate; now nothing leaves it."]
@@ -107,3 +108,13 @@ def test_a_new_state_that_takes_over_only_some_arrows_is_not_a_rename():
     review = review_change(LOAN, LOAN.model, changed({"kind": "add_state", "state": "Late"},
                                                      {"kind": "retarget_transition", "transition": "TR-MARKOVERDUE", "end": "target", "state": "Late"}))
     assert review["renamed"] == {} and "Add state Late" in by_text(review)
+
+
+def test_a_finding_about_a_renamed_state_stays_the_same_finding_whatever_the_name():
+    lost = changed({"kind": "add_state", "state": "Lost (manual)"},
+                   {"kind": "add_transition", "id": "TR-RENEW", "action": "Renew", "from_state": "Lost (manual)", "to_state": "OnLoan", "role": "Librarian"})
+    found = apply_transactions(lost, [parse_transaction({"kind": "rename_state", "state": "Lost (manual)", "to": "Lost"})], LOAN)
+    review = review_change(LOAN, lost, found)
+    assert review["renamed"] == {"Lost (manual)": "Lost"}
+    assert "No record reached Lost (manual)" in review["simulation"]["before"]["findings"]
+    assert review["simulation"]["new_findings"] == review["simulation"]["gone_findings"] == []

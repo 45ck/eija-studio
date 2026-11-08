@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0175-review-a-change-as-a-uml-diff-you-can-run.md
   title: 0175-review-a-change-as-a-uml-diff-you-can-run.md
   hash_method: lf-sha256-v1
-  sha256: e06480405c8d664f7df86daff0ed9787e0c1a1bf0c395d3b946805f63bcbf23d
-notes_baseline: 28e1ab2eebb8b58cd30e9920b842060829a438b28d2a17b8d167d4d17e0b18bd
+  sha256: eb505f946d58a6037c913862d14ffc528603be2d0f490e0ba753275ef07ca026
+notes_baseline: 4d3e6c1fc931d0afaeb1ba5a7406643045791f7782cde7b33f62305d7e3dfacd
 ---
 
 # ADR-0175: Review a change as a UML diff you can run, not as a pull request
