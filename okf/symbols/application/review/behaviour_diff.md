@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/review.py#behaviour_diff
   title: application/review.py
   hash_method: ast-v2
-  sha256: c456abd2980393de4161f788d25603967873fe416479c4c378918393129768fa
-notes_baseline: 8cb94110c947ae84af0909c5257941219deaf74a35bf9eeba7d4f85373f42df9
+  sha256: 920b981f6bf415bb45429734b6fc3342fa3a683badc193979e462d4dd512f57e
+notes_baseline: fe3efd0b8a69b9b1ceb2b42f41d30ae5fc756b0063651a098fef4cc7eb9c955a
 ---
 
 # application.review.behaviour_diff
@@ -25,7 +25,7 @@ notes_baseline: 8cb94110c947ae84af0909c5257941219deaf74a35bf9eeba7d4f85373f42df9
 |---|---|
 | Kind | function |
 | Module | [`application/review`](/modules/application/review.md) |
-| Signature | `def behaviour_diff(pack: Pack, before: Workflow, after: Workflow) -> dict[str, Any]` |
+| Signature | `def behaviour_diff(pack: Pack, before: Workflow, after: Workflow, names: dict[str, str] \| None=None) -> dict[str, Any]` |
 | Code | `repo://src/eija_studio/application/review.py#behaviour_diff` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
@@ -33,6 +33,8 @@ notes_baseline: 8cb94110c947ae84af0909c5257941219deaf74a35bf9eeba7d4f85373f42df9
 
 ~~~text
 Every fixture actor tries every action from every state on both models; the attempts whose outcome differs.
+A renamed state (`names`, old to new) is the same state on both sides: the kernel runs each model as it is, and a
+destination is compared under its new name.
 ~~~
 <!-- okf:generated:end facts -->
 

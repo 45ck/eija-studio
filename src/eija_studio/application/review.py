@@ -4,7 +4,9 @@ A change is a pair of models: the one in force and the one the change would make
 readings of that pair, none of which the page computes:
 
 * **What changed**, from `diff_summary`: every added, removed or changed state and transition, plus the knock-on
-  effects nobody edited directly (a state that can no longer be reached, a state records can no longer leave).
+  effects nobody edited directly (a state that can no longer be reached, a state records can no longer leave). A
+  state whose every transition and start now use a new name is read as renamed, so a rename is one low-risk change
+  rather than a deleted state, an added one and every arrow that touches it.
 * **How risky each change is**, by fixed rules that a reviewer can read: removing a path, changing who may act,
   dropping a guard or an effect are high; adding a path or moving one is medium; adding a state or a guard is low.
 * **What it does when run.** Every fixture actor tries every action from every state on both models, and the kernel
@@ -16,11 +18,14 @@ Each change that alters behaviour carries a question for the reviewer to answer 
 """
 from __future__ import annotations
 
+import itertools
+import re
 from collections import deque
 from typing import Any
 
 from eija_studio.domain.models import DomainError, ExecuteCommand, Transition, Workflow
 from eija_studio.domain.pack import Pack
+from eija_studio.domain.transactions import RenameState, apply_structural
 from .diagrams import diff_summary
 from .runtime import execute, initialise
 from .simulation import MemorySession, simulate
@@ -70,24 +75,64 @@ def _same(a: dict[str, Any], b: dict[str, Any]) -> bool:
     return allowed(a) == allowed(b)
 
 
-def behaviour_diff(pack: Pack, before: Workflow, after: Workflow) -> dict[str, Any]:
-    """Every fixture actor tries every action from every state on both models; the attempts whose outcome differs."""
+def _ends(model: Workflow, state: str) -> set[tuple[str, str]]:
+    """Where a state is used: each (transition id, end) that names it, and the start."""
+    ends = {(t.id, end) for t in model.transitions for end, s in (("from", t.from_state), ("to", t.to_state)) if s == state}
+    return ends | ({("initial", "")} if model.initial_state == state else set())
+
+
+def _used_alike(before: Workflow, was: str, after: Workflow, now: str, shared: set[str]) -> bool:
+    """`now` is used, by the transitions on both sides and the start, exactly where `was` was (and it was used)."""
+    ends = {e for e in _ends(before, was) if e[0] in shared}
+    return bool(ends) and ends == {e for e in _ends(after, now) if e[0] in shared}
+
+
+def renames(before: Workflow, after: Workflow) -> dict[str, str]:
+    """States the change renamed: a state that is gone, matched to the one new state that every transition and the
+    start that used it now use instead (counting only transitions on both sides, and with nothing else moved onto it)."""
+    shared = {t.id for t in before.transitions} & {t.id for t in after.transitions} | {"initial"}
+    gone, new = sorted(set(before.states) - set(after.states)), sorted(set(after.states) - set(before.states))
+    return _one_to_one([(s, n) for s in gone for n in new if _used_alike(before, s, after, n, shared)])
+
+
+def _one_to_one(pairs: list[tuple[str, str]]) -> dict[str, str]:
+    olds, news = [s for s, _ in pairs], [n for _, n in pairs]
+    return {s: n for s, n in pairs if olds.count(s) == 1 and news.count(n) == 1}
+
+
+def _no_action(*_: str) -> Transition:
+    raise AssertionError("a rename declares no action")
+
+
+def _rename(model: Workflow, names: dict[str, str]) -> Workflow:
+    """The kernel's own rename, so the rest of the review compares like with like."""
+    for was, now in names.items():
+        model = apply_structural(model, RenameState(kind="rename_state", state=was, to=now), _no_action)
+    return model
+
+
+def _named(outcome: dict[str, Any], names: dict[str, str]) -> dict[str, Any]:
+    return outcome | {"to": names.get(outcome["to"], outcome["to"])} if outcome["outcome"] == "COMMITTED" else outcome
+
+
+def behaviour_diff(pack: Pack, before: Workflow, after: Workflow, names: dict[str, str] | None = None) -> dict[str, Any]:
+    """Every fixture actor tries every action from every state on both models; the attempts whose outcome differs.
+    A renamed state (`names`, old to new) is the same state on both sides: the kernel runs each model as it is, and a
+    destination is compared under its new name."""
+    names = names or {}
+    old = {now: was for was, now in names.items()}
     actors = [a.model_dump() for a in pack.fixtures.actors]
-    states = sorted(set(before.states) | set(after.states))
+    states = sorted({names.get(s, s) for s in before.states} | set(after.states))
     actions = sorted({t.action for t in before.transitions} | {t.action for t in after.transitions})
     rows: dict[tuple[str, str, str], dict[str, Any]] = {}
-    n = 0
-    for state in states:
-        for action in actions:
-            for actor in actors:
-                n += 1
-                was, now = _attempt(pack, before, state, actor, action, n), _attempt(pack, after, state, actor, action, n)
-                if _same(was, now):
-                    continue
-                key = (state, action, repr(sorted(was.items())) + repr(sorted(now.items())))
-                row = rows.setdefault(key, {"state": state, "action": action, "role": actor["role"], "actors": [],
-                                            "before": was, "after": now})
-                row["actors"].append(actor["id"])
+    for n, (state, action, actor) in enumerate(itertools.product(states, actions, actors), 1):
+        was = _named(_attempt(pack, before, old.get(state, state), actor, action, n), names)
+        now = _attempt(pack, after, state, actor, action, n)
+        if not _same(was, now):
+            key = (state, action, repr(sorted(was.items())) + repr(sorted(now.items())))
+            rows.setdefault(key, {"state": state, "action": action, "role": actor["role"], "actors": [],
+                                  "before": was, "after": now})["actors"].append(actor["id"])
+    n = len(states) * len(actions) * len(actors)
     ordered = sorted(rows.values(), key=lambda r: (r["action"], r["state"], r["role"], r["actors"]))
     return {"attempts": n * 2, "actors": len(actors), "rows": [r | {"n": i} for i, r in enumerate(ordered, 1)]}
 
@@ -173,6 +218,20 @@ def _state_items(before: Workflow, after: Workflow, diff: dict[str, Any]) -> lis
     return items
 
 
+def _rename_items(before: Workflow, after: Workflow, names: dict[str, str]) -> list[dict[str, Any]]:
+    """A rename on its own changes no behaviour, so it has no attempts or question; other edits to the state are items
+    of their own."""
+    items = []
+    for was, now in sorted(names.items()):
+        kept = {e[0] for e in _ends(after, now) & _ends(before, was) if e[0] != "initial"}
+        start = before.initial_state == was
+        uses = f"{len(kept)} transition{'s' if len(kept) != 1 else ''}" + (" and the start" if start else "")
+        verb = "uses" if len(kept) == 1 and not start else "use"
+        items.append(_item("state:" + now, "renamed", f"Rename state {was} to {now}", "low",
+                           [f"Only the name changes: the {uses} that used {was} now {verb} {now}."], states=[was, now]))
+    return items
+
+
 def _ripple_items(before: Workflow, after: Workflow, reach_before: dict[str, list[str]],
                   reach_after: dict[str, list[str]]) -> list[dict[str, Any]]:
     """Consequences nobody edited directly: states that stop being reachable, and states records can no longer leave."""
@@ -191,6 +250,8 @@ def _ripple_items(before: Workflow, after: Workflow, reach_before: dict[str, lis
 
 def _rows_for(item: dict[str, Any], rows: list[dict[str, Any]]) -> list[int]:
     """The behaviour rows an item explains: its actions, or (for a state item) attempts from or into its states."""
+    if item["change"] == "renamed":
+        return []
     if item["actions"]:
         return [r["n"] for r in rows if r["action"] in item["actions"]]
     states = set(item["states"])
@@ -211,25 +272,30 @@ def _question(item: dict[str, Any], rows: list[dict[str, Any]]) -> dict[str, Any
             "because": f"The kernel says {'yes' if allowed else 'no'}: {_outcome_text(r['after'])} (before: {_outcome_text(r['before'])})."}
 
 
-def _simulation(pack: Pack, before: Workflow, after: Workflow) -> dict[str, Any]:
+def _simulation(pack: Pack, before: Workflow, after: Workflow, names: dict[str, str]) -> dict[str, Any]:
     def brief(run: dict[str, Any]) -> dict[str, Any]:
         return {"model": run["model"], "records": run["records"], "attempts": run["attempts"], "committed": run["committed"],
                 "refused": run["refused"], "findings": [f["text"] for f in run["findings"] if f["severity"] == "warning"]}
+
+    def named(text: str) -> str:  # a finding about a renamed state is the same finding
+        return re.sub(r"\b(" + "|".join(map(re.escape, names)) + r")\b", lambda m: names[m.group(1)], text) if names else text
     was, now = brief(simulate(pack, before, seed=SIM_SEED, steps=SIM_STEPS)), brief(simulate(pack, after, seed=SIM_SEED, steps=SIM_STEPS))
     return {"seed": SIM_SEED, "steps": SIM_STEPS, "before": was, "after": now,
-            "new_findings": [f for f in now["findings"] if f not in was["findings"]],
-            "gone_findings": [f for f in was["findings"] if f not in now["findings"]]}
+            "new_findings": [f for f in now["findings"] if f not in map(named, was["findings"])],
+            "gone_findings": [f for f in was["findings"] if named(f) not in now["findings"]]}
 
 
 def review_change(pack: Pack, before: Workflow, after: Workflow) -> dict[str, Any]:
     """Everything a reviewer needs to check a change: what changed, how risky, and what the kernel does differently."""
     if before.id != pack.id or after.id != pack.id:
         raise DomainError("WORKFLOW_PACK_MISMATCH", "The workflow belongs to a different pack")
-    diff = diff_summary(before, after)
-    reach_before, reach_after = _reach(before), _reach(after)
-    behaviour = behaviour_diff(pack, before, after)
-    items = (_state_items(before, after, diff) + _transition_items(before, after, diff, reach_after)
-             + _ripple_items(before, after, reach_before, reach_after))
+    names = renames(before, after)
+    named = _rename(before, names)  # the model in force under the new names: what remains to compare is the rest
+    diff = diff_summary(named, after)
+    reach_before, reach_after = _reach(named), _reach(after)
+    behaviour = behaviour_diff(pack, before, after, names)
+    items = (_rename_items(before, after, names) + _state_items(named, after, diff)
+             + _transition_items(named, after, diff, reach_after) + _ripple_items(named, after, reach_before, reach_after))
     items.sort(key=lambda i: (RISK_ORDER[i["risk"]], not i["edited"], i["element"]))
     for n, item in enumerate(items, 1):
         item["n"] = n
@@ -242,10 +308,12 @@ def review_change(pack: Pack, before: Workflow, after: Workflow) -> dict[str, An
         "changed": before.semantic_hash != after.semantic_hash, "diff": diff, "items": items, "behaviour": behaviour,
         "risk": {level: sum(1 for i in items if i["risk"] == level) for level in RISK_ORDER},
         "before_model": before.model_dump(mode="json"), "after_model": after.model_dump(mode="json"),
-        "simulation": _simulation(pack, before, after),
+        "renamed": names, "simulation": _simulation(pack, before, after, names),
         "limits": ["Behaviour is every fixture actor trying every action once from a fresh record in every state; "
                    "it does not cover guards that depend on data the fixtures do not vary.",
                    "Risk levels are fixed rules about the kind of change, not a judgement of the domain.",
+                   "A state is read as renamed only when every transition and the start that used it use one new state "
+                   "instead; the diagram still draws the old name as removed and the new one as added.",
                    "A review records what a person checked. It does not approve or apply the change: that stays with the "
                    "owner in the review workbench."],
     }

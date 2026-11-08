@@ -9,5 +9,6 @@
 # Functions
 
 * [application.review.behaviour_diff](behaviour_diff.md) - Every fixture actor tries every action from every state on both models; the attempts whose outcome differs.
+* [application.review.renames](renames.md) - States the change renamed: a state that is gone, matched to the one new state that every transition and the start that used it now use instead (counting only transitions on both sides, and with nothing else moved onto i…
 * [application.review.review_change](review_change.md) - Everything a reviewer needs to check a change: what changed, how risky, and what the kernel does differently.
 * [application.review.row_text](row_text.md) - `def row_text(row: dict[str, Any]) -> str` in `application/review`.

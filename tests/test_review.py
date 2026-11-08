@@ -81,3 +81,29 @@ def test_the_seeded_simulation_runs_on_both_sides():
     sim = review["simulation"]
     assert sim["before"]["model"] == LOAN.model.semantic_hash and sim["after"]["model"] == review["after"]
     assert (sim["seed"], sim["steps"]) == (1, 500) and sim["before"]["committed"] != sim["after"]["committed"]
+
+
+def test_a_renamed_state_is_one_low_risk_change_with_nothing_to_run():
+    review = review_change(LOAN, LOAN.model, changed({"kind": "rename_state", "state": "Overdue", "to": "Late"}))
+    (item,) = review["items"]
+    assert (item["text"], item["risk"], item["change"], item["element"]) == ("Rename state Overdue to Late", "low", "renamed", "state:Late")
+    assert item["reasons"] == ["Only the name changes: the 2 transitions that used Overdue now use Late."]
+    assert item["states"] == ["Overdue", "Late"] and item["rows"] == [] and item["question"] is None
+    assert review["renamed"] == {"Overdue": "Late"} and review["behaviour"]["rows"] == []
+    assert review["simulation"]["new_findings"] == review["simulation"]["gone_findings"] == []
+
+
+def test_other_edits_to_a_renamed_state_are_reviewed_under_its_new_name():
+    review = review_change(LOAN, LOAN.model, changed({"kind": "rename_state", "state": "Overdue", "to": "Late"},
+                                                     {"kind": "remove_transition", "transition": "TR-RETURNLATE"}))
+    items = by_text(review)
+    assert review["risk"] == {"high": 2, "medium": 0, "low": 1}
+    assert items["Remove ReturnLate: Late → Returned, by Librarian"]["question"]["answer"] == "no"
+    assert items["Records in Late get stuck"]["risk"] == "high"
+    assert items["Rename state Overdue to Late"]["reasons"] == ["Only the name changes: the 1 transition that used Overdue now uses Late."]
+
+
+def test_a_new_state_that_takes_over_only_some_arrows_is_not_a_rename():
+    review = review_change(LOAN, LOAN.model, changed({"kind": "add_state", "state": "Late"},
+                                                     {"kind": "retarget_transition", "transition": "TR-MARKOVERDUE", "end": "target", "state": "Late"}))
+    assert review["renamed"] == {} and "Add state Late" in by_text(review)

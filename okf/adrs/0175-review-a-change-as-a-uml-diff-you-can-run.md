@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0175-review-a-change-as-a-uml-diff-you-can-run.md
   title: 0175-review-a-change-as-a-uml-diff-you-can-run.md
   hash_method: lf-sha256-v1
-  sha256: c63c580b88c40c35942be46995a001e3bb15980690e52f76b97acaf125a6c3c0
-notes_baseline: 10fa2d2b4f29b707fa9c45e3f7b9ebddf364c642ac6c94b9827822cb035a0e90
+  sha256: e06480405c8d664f7df86daff0ed9787e0c1a1bf0c395d3b946805f63bcbf23d
+notes_baseline: 28e1ab2eebb8b58cd30e9920b842060829a438b28d2a17b8d167d4d17e0b18bd
 ---
 
 # ADR-0175: Review a change as a UML diff you can run, not as a pull request
@@ -59,6 +59,7 @@ _No curated notes yet._
 
 * [ADR-0156: Chat plan mode proposes typed steps the person accepts or rejects](/adrs/0156-chat-plan-mode-proposes-typed-steps.md) - The owner's roadmap asks for an AI chat sidebar "like T3 Code, with plan mode prominent", in which the AI proposes changes to the UML and the person accepts or…
 * [ADR-0157: Drawn edits join the plan, and a checks ring rewards checking](/adrs/0157-drawn-edits-and-checks-ring.md) - The owner wants PlayIDE to be visual and mouse-driven ("drag and drop, design then test in place") and to feel rewarding, "tied to real checks".
+* [ADR-0176: How a UML change looks: one stable layout, removed parts kept as ghosts, and lenses](/adrs/0176-how-a-uml-change-looks.md) - The owner asked how a change can be reviewed as a UML change instead of a pull request, and "how you even view a UML change (ghost UI/UX?)".
 
 ## Referenced by
 
