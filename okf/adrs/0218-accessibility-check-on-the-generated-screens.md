@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0218-accessibility-check-on-the-generated-screens.md
   title: 0218-accessibility-check-on-the-generated-screens.md
   hash_method: lf-sha256-v1
-  sha256: 841eb8cd2fcf6f402b0380bdc7659d14710e32077d7e5d27154e114cfb8a5af2
-notes_baseline: 187d35a9f0d0cdeeb0e9d3eb93a6e7edb0cd2217f9212044c3e72f77e575c610
+  sha256: 42738e898fa977c40f2a7f284fbdbb4b4d2251867f2fe13e226b2dfb7a7b3c90
+notes_baseline: 564a957605fed3d92387be9ec53f4722cd3d043b643c39bcfd2d885577951951
 ---
 
 # ADR-0218: An accessibility check on the generated screens

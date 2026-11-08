@@ -1,0 +1,21 @@
+{
+  "schema_version": "eija.screens.v1",
+  "id": "library-fines",
+  "screens": [
+    {
+      "title": "Issue a fine",
+      "fields": [
+        {"attribute": "amount", "label": "Amount"},
+        {"attribute": "reason", "label": "Reason"},
+        {"attribute": "issuedOn", "label": "Issued on"},
+        {"attribute": "note", "label": "Note"}
+      ],
+      "button": "Issue fine"
+    },
+    {"use_case": "Pay", "title": "Pay the fine", "fields": [{"attribute": "amount", "label": "Amount"}, {"attribute": "reason", "label": "Reason"}], "button": "Pay"},
+    {"use_case": "Dispute", "title": "Dispute the fine", "fields": [{"attribute": "amount", "label": "Amount"}, {"attribute": "reason", "label": "Reason"}, {"attribute": "issuedOn", "label": "Issued on"}], "button": "Dispute"},
+    {"use_case": "Waive", "title": "Waive the fine", "fields": [{"attribute": "amount", "label": "Amount"}, {"attribute": "reason", "label": "Reason"}], "button": "Waive"},
+    {"use_case": "Uphold", "title": "Uphold the fine", "fields": [{"attribute": "amount", "label": "Amount"}, {"attribute": "reason", "label": "Reason"}, {"attribute": "issuedOn", "label": "Issued on"}], "button": "Uphold"},
+    {"use_case": "Concede", "title": "Concede the dispute", "fields": [{"attribute": "amount", "label": "Amount"}, {"attribute": "issuedOn", "label": "Issued on"}], "button": "Concede"}
+  ]
+}

@@ -35,4 +35,5 @@ The Screens tab shows the report under the design check: each check with PASS, W
 * Good: the defect above is caught and fixed, and any later template change that breaks contrast, labels or keyboard order fails the check and its tests.
 * Good: the browser test runs axe-core (axe-playwright-python, already the HCI lane's tool) on the built app in both themes and finds no WCAG 2.0 to 2.2 A/AA violation, so the pure check and the browser agree.
 * Bad: the template checks read the template text for known patterns (`input.required = true`, `el("label"`); a rewrite of the page that keeps the behaviour but changes the code fails them until the patterns move with it. They are tests of our own templates, not of arbitrary HTML.
+* Good (amended 2026-11-08): a test runs the check on every shipped pack. Each one passes with nothing to look at, except `excursion`, which keeps its default screens on purpose and so shows attribute names as labels. `library-fines` gained designed screens with labels for this.
 * Limits: no check of focus visibility, reflow, target size or screen reader output. The report says it is not a full audit.
