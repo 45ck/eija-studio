@@ -729,7 +729,7 @@
         "assigned": false
       }
     ],
-    "demo_request": "Let the ops agent ship green builds itself.",
+    "demo_request": "Let the ops agent withdraw a change it cannot fix.",
     "proposals": {
       "summary": "Deterministic demonstration; no model inference was used.",
       "rules": [
@@ -738,19 +738,28 @@
             "agent"
           ],
           "any": [
-            "ship",
-            "deploy",
-            "itself",
-            "sign",
             "abandon",
             "withdraw",
-            "give"
+            "give up"
           ],
           "alternatives": [
             {
               "interpretation": "agent_withdraws",
               "explanation": "The agent may withdraw a change it cannot fix; a person still signs off every deploy."
-            },
+            }
+          ]
+        },
+        {
+          "all": [
+            "agent"
+          ],
+          "any": [
+            "ship",
+            "deploy",
+            "itself",
+            "sign"
+          ],
+          "alternatives": [
             {
               "interpretation": "agent_self_deploy",
               "explanation": "Would let the agent sign its own deploys off. The pack's laws keep that with the person on call."

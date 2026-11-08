@@ -173,12 +173,14 @@ class _Clause(DataPhrases):
 
 
 def _meaning_plan(request: str, pack: Pack) -> dict[str, Any] | None:
-    """The first supported meaning with transactions among the pack's proposal rules that match the request."""
+    """The first meaning with transactions among the pack's proposal rules that match the request. An unsupported one
+    is planned too, not skipped for a supported one the person never asked for: the policy then refuses the plan and
+    names the law it breaks (issue #152)."""
     for rule in pack.fixtures.proposals.rules:
         if matches_rule(rule, request):
             for alternative in rule.alternatives:
                 meaning = pack.meaning(alternative.interpretation)
-                if meaning is not None and meaning.supported and meaning.transactions:
+                if meaning is not None and meaning.transactions:
                     return {"summary": meaning.label, "meaning": meaning.id,
                             "steps": [{"transaction": t.model_dump(mode="json"), "why": alternative.explanation} for t in meaning.transactions]}
     return None

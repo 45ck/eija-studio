@@ -772,20 +772,30 @@
             "refund"
           ],
           "any": [
-            "support-agent",
-            "agent",
             "withdraw",
             "take back",
             "cancel"
           ],
           "alternatives": [
             {
-              "interpretation": "support_issues_refunds",
-              "explanation": "Support would move money. The pack's laws block this: only finance approves a refund."
-            },
-            {
               "interpretation": "withdraw_refund_request",
               "explanation": "A customer may withdraw their own refund request; only finance still approves refunds."
+            }
+          ]
+        },
+        {
+          "all": [
+            "refund"
+          ],
+          "any": [
+            "support",
+            "agent",
+            "issue"
+          ],
+          "alternatives": [
+            {
+              "interpretation": "support_issues_refunds",
+              "explanation": "Support would move money. The pack's laws block this: only finance approves a refund."
             }
           ]
         }

@@ -73,7 +73,7 @@ On a system you start in PlayIDE (#156, [ADR-0216](adr/0216-describe-your-app-an
 ## See it work
 
 1. **Use cases** tab: the Supervisor and Customer are stick figures; SupportAgent, SlaTimer and PaymentGateway are «agent», «timer» and «system» boxes.
-2. **Chat**: `allow SupportAgent to ApproveRefund`. The plan is refused and names `only-people-approve`, `approved-by-people` and `person-in-the-loop`. Ask `Let the support agent approve refunds itself` and the offline proposer offers the hand-off instead (the agent escalates to a supervisor), which the policy allows.
+2. **Chat**: `allow SupportAgent to ApproveRefund`. The plan is refused and names `only-people-approve`, `approved-by-people` and `person-in-the-loop`. Ask `Let the support agent approve refunds itself` and the offline proposer plans exactly that, and the policy refuses it, naming the same laws. Ask `Let the agent hand refunds it is unsure about to a supervisor` (the chat's example) and it plans the hand-off, which the policy allows.
 3. **Sequences**: select *The AI agent cannot approve the refund it proposed*. The «agent» lifeline calls `ApproveRefund()` inside a `neg` fragment and the record answers `refused: ROLE_DENIED`.
 4. **Simulate**: under the totals, one line each for People, AI agents, Timers and External systems: what they tried, what went through and the kernel's refusals (the paused agent's `ACTOR_REVOKED`, an agent's slip at `ApproveRefund` as `ROLE_DENIED`).
 5. **Laws** tab: every law holds over every run, with the kind laws named in plain language.
