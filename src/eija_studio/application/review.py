@@ -19,7 +19,6 @@ Each change that alters behaviour carries a question for the reviewer to answer 
 from __future__ import annotations
 
 import itertools
-import re
 from collections import deque
 from typing import Any
 
@@ -272,17 +271,40 @@ def _question(item: dict[str, Any], rows: list[dict[str, Any]]) -> dict[str, Any
             "because": f"The kernel says {'yes' if allowed else 'no'}: {_outcome_text(r['after'])} (before: {_outcome_text(r['before'])})."}
 
 
-def _simulation(pack: Pack, before: Workflow, after: Workflow, names: dict[str, str]) -> dict[str, Any]:
-    def brief(run: dict[str, Any]) -> dict[str, Any]:
-        return {"model": run["model"], "records": run["records"], "attempts": run["attempts"], "committed": run["committed"],
-                "refused": run["refused"], "findings": [f["text"] for f in run["findings"] if f["severity"] == "warning"]}
+def _forms(text: str, name: str) -> set[str]:
+    """The text with one occurrence of `name` blanked out, for each place it occurs (the text itself if none)."""
+    spots = [i for i in range(len(text)) if text.startswith(name, i)]
+    return {text[:i] + "\0" + text[i + len(name):] for i in spots} or {text}
 
-    def named(text: str) -> str:  # a finding about a renamed state is the same finding
-        return re.sub(r"\b(" + "|".join(map(re.escape, names)) + r")\b", lambda m: names[m.group(1)], text) if names else text
-    was, now = brief(simulate(pack, before, seed=SIM_SEED, steps=SIM_STEPS)), brief(simulate(pack, after, seed=SIM_SEED, steps=SIM_STEPS))
+
+def _finding_key(finding: dict[str, str], names: dict[str, str]) -> tuple[str, set[str]]:
+    """What a simulation finding is about, under the new names, and its text with that state's name blanked out."""
+    element = finding["element"]
+    if not element.startswith("state:"):
+        return element, {finding["text"]}
+    state = element.removeprefix("state:")
+    return "state:" + names.get(state, state), _forms(finding["text"], state)
+
+
+def _unmatched(findings: list[dict[str, str]], names: dict[str, str], others: list[dict[str, str]],
+               other_names: dict[str, str]) -> list[str]:
+    """Findings with no counterpart on the other side: same element (a renamed state is the same state) and the same
+    text apart from that state's name."""
+    keys = [_finding_key(f, other_names) for f in others]
+    return [f["text"] for f in findings
+            if not any(el == k[0] and forms & k[1] for k in keys for el, forms in [_finding_key(f, names)])]
+
+
+def _simulation(pack: Pack, before: Workflow, after: Workflow, names: dict[str, str]) -> dict[str, Any]:
+    def warnings(model: Workflow) -> tuple[dict[str, Any], list[dict[str, str]]]:
+        run = simulate(pack, model, seed=SIM_SEED, steps=SIM_STEPS)
+        found = [f for f in run["findings"] if f["severity"] == "warning"]
+        return {"model": run["model"], "records": run["records"], "attempts": run["attempts"], "committed": run["committed"],
+                "refused": run["refused"], "findings": [f["text"] for f in found]}, found
+    (was, was_found), (now, now_found) = warnings(before), warnings(after)
     return {"seed": SIM_SEED, "steps": SIM_STEPS, "before": was, "after": now,
-            "new_findings": [f for f in now["findings"] if f not in map(named, was["findings"])],
-            "gone_findings": [f for f in was["findings"] if named(f) not in now["findings"]]}
+            "new_findings": _unmatched(now_found, {}, was_found, names),
+            "gone_findings": _unmatched(was_found, names, now_found, {})}
 
 
 def review_change(pack: Pack, before: Workflow, after: Workflow) -> dict[str, Any]:
