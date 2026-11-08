@@ -2883,7 +2883,7 @@
     $("model-name").replaceChildren(activeStatus.pack.name, el("span", caseId ? " · case candidate" : ` · active revision ${activeStatus.baseline_version}`, { class: "model-rev" }));
     $("model-name").title = $("model-name").textContent;
     const source = activeStatus.identity_source, synthetic = typeof source === "string" && (source.includes("synthetic") || source === "pytest-harness");
-    $("source-status").textContent = !activeStatus.trusted_fixture ? "SOURCE_REVIEW_REQUIRED" : synthetic ? "Synthetic owner test identity" : "Shipped source fixture matches";
+    $("source-status").textContent = !activeStatus.trusted_fixture ? "Source review required" : synthetic ? "Synthetic owner test identity" : "Shipped source fixture matches";
     $("source-status").title = synthetic ? `Synthetic identity (${source}); legitimate owner source review has not been performed.` : activeStatus.trusted_fixture ? "The source matches shipped fixture bytes; this does not establish correctness or independent owner source review."
       : "Implementation differs from the owner-reviewed fixture. Model previews still run; verification, approval and activation require legitimate source review.";
     $("source-status").className = "source-status " + (activeStatus.trusted_fixture ? "fixture" : "required");
