@@ -1,8 +1,12 @@
-# EIJA Studio
+---
+description: "PlayIDE (EIJA Studio) documentation: an open-source UML workbench that shows AI-proposed changes as a visual UML diff, checks them and runs the system locally."
+---
 
-**Review the meaning of a change, not every generated line.**
+# PlayIDE · EIJA Studio
 
-EIJA (Executable Intent and Journey Assurance) is an open-source (Apache-2.0) Python assurance kernel. AI proposes. The kernel checks. The local owner decides.
+**Review the UML diff. Understand the change. Run the system.**
+
+PlayIDE is an open-source (Apache-2.0) workbench for software engineers who read UML. When an AI or a person proposes a change to a supported workflow, PlayIDE shows it as a visual UML diff, follows its effects to related diagrams, screens, laws and checks, and builds a local app you can run beside the diagram. It runs on the EIJA (Executable Intent and Journey Assurance) Python kernel. AI proposes. The kernel checks. The local owner decides.
 
 This site is the documentation of the repository at <https://github.com/45ck/eija-studio>. The repository [README](https://github.com/45ck/eija-studio#readme) is the front door: the problem, the loop, a diagram generated from the real model, the quickstart and the comparison with alternatives.
 

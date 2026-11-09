@@ -1,3 +1,7 @@
+---
+description: "Model AI agents, timers and external systems as UML actors in PlayIDE, with laws that keep a person where a decision must stay with a person."
+---
+
 # Model AI agents, timers and external systems
 
 Most systems you design now have actors that are not people: an AI agent that triages and proposes, a scheduled job that escalates, a payment provider that calls back. In UML they are all actors. In PlayIDE each is a role with a **kind**, and laws about kinds keep a person where the decision has to stay with a person ([ADR-0210](adr/0210-actors-that-are-not-people.md)).
