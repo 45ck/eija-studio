@@ -1,14 +1,22 @@
-site_name: EIJA Studio
-site_description: Review the meaning of a change, not every generated line. AI proposes, the kernel checks, the local owner decides.
+site_name: PlayIDE · EIJA Studio
+site_description: PlayIDE is an open-source UML workbench. Review an AI-proposed change as a visual UML diff, follow its effects, check it and run the system locally. AI proposes, the kernel checks, the owner decides.
+# site_url is unset on purpose: the site is not hosted yet. Setting it turns on canonical URLs, absolute
+# sitemap entries and og:image (overrides/main.html). docs/llms.txt and docs/robots.txt are served at the root.
 repo_url: https://github.com/45ck/eija-studio
 repo_name: 45ck/eija-studio
 edit_uri: edit/main/docs/
 docs_dir: docs
 site_dir: .tmp/site  # gitignored; there is no deployment (hosted CI is unavailable, ADR-0017)
 strict: true
+# These folders publish a self-contained index.html; their README.md would collide with it on the site.
+exclude_docs: |
+  design/interactive/README.md
+  metrics/README.md
 
 theme:
   name: material
+  custom_dir: overrides
+  language: en
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -37,6 +45,9 @@ validation:
     anchors: warn
     absolute_links: warn
     unrecognized_links: info
+
+extra:
+  version: "0.2.0"  # keep equal to pyproject [project].version; checked by scripts/check_community_files.py
 
 markdown_extensions:
   - admonition

@@ -1,0 +1,38 @@
+# PlayIDE (EIJA Studio)
+
+> PlayIDE is an open-source (Apache-2.0) UML workbench for software engineers who already read UML. When an AI or a person proposes a change to a supported workflow, PlayIDE shows it as a visual UML diff, follows its effects to related diagrams, screens, laws and checks, and builds a local app (React UI, HTTP API, SQLite) you can run beside the diagram. AI proposes, the kernel checks, the owner decides. It is a working local preview written in Python 3.11+, not a hosted service.
+
+Key facts:
+
+- Product name: PlayIDE. Repository, Python package and command: `eija-studio` / `eija`. EIJA means Executable Intent and Journey Assurance.
+- Runs locally: `pip install -e ".[dev]"` then `eija serve --pack packs/library-loan --open`. Loopback, SQLite, no telemetry by default. No Node or frontend build needed.
+- "UML as code" here means supported model elements (states, transitions, roles, guards, laws) have executable semantics; one deterministic kernel decides whether an action is allowed. Unsupported constructs stay design-only.
+- Approval and activation are separate, explicit owner actions. Law, vocabulary, data-schema, screen and scenario edits never silently become active policy.
+- The built-in chat plan mode is an offline phrase reader, not a live model. Live provider calls (OpenRouter, Codex) need explicit opt-in.
+- Imports supported PlantUML, XMI, Mermaid and draw.io forms and reports what it could not carry.
+- Ships eleven bundled systems, including five sector packs: specialist referral (healthcare), card payment, parcel delivery, SaaS subscription and building permit.
+- Not yet done: general live AI creation, value-driven actions, data migrations, connected multi-workflow delivery and production identity.
+
+## Docs
+
+- [README](https://github.com/45ck/eija-studio/blob/main/README.md): what PlayIDE does, feature table with current boundaries, quickstart
+- [Getting started](https://github.com/45ck/eija-studio/blob/main/docs/getting-started.md): install, run and provider setup
+- [PlayIDE guide](https://github.com/45ck/eija-studio/blob/main/docs/playide.md): every view in the IDE
+- [Build an app from the model](https://github.com/45ck/eija-studio/blob/main/docs/build-an-app.md): what the generated app covers
+- [Sector packs](https://github.com/45ck/eija-studio/blob/main/docs/sector-packs.md): the bundled example systems
+- [UML import and export](https://github.com/45ck/eija-studio/blob/main/docs/uml-interop.md): supported formats and limits
+- [Executable UML on the EIJA engine](https://github.com/45ck/eija-studio/blob/main/docs/architecture/executable-uml.md): how model elements get executable meaning
+
+## Project status
+
+- [Roadmap](https://github.com/45ck/eija-studio/blob/main/docs/ROADMAP.md): done, in progress and planned
+- [Technical lead review](https://github.com/45ck/eija-studio/blob/main/docs/TECHNICAL_LEAD_REVIEW.md): readiness, honestly stated
+- [Security and trust](https://github.com/45ck/eija-studio/blob/main/docs/SECURITY_AND_TRUST.md): threat model and local-only defaults
+- [Changelog](https://github.com/45ck/eija-studio/blob/main/CHANGELOG.md)
+
+## Optional
+
+- [Architecture and ubiquitous language](https://github.com/45ck/eija-studio/blob/main/docs/architecture/ARCHITECTURE.md)
+- [ADR index](https://github.com/45ck/eija-studio/blob/main/docs/adr/README.md): architecture decision records
+- [Open-source register](https://github.com/45ck/eija-studio/blob/main/docs/oss/REGISTER.md): the open-source tools PlayIDE builds on
+- [Agents](https://github.com/45ck/eija-studio/blob/main/docs/lanes/agents.md): using EIJA from an AI agent (MCP)

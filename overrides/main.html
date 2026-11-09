@@ -1,0 +1,44 @@
+{#- Search and generative-engine metadata for the docs site (ADR-0227).
+    Open Graph and Twitter cards on every page; SoftwareApplication JSON-LD on the home page.
+    Absolute URLs (og:url, og:image) need site_url, which stays unset until the site is hosted. -#}
+{% extends "base.html" %}
+
+{% block extrahead %}
+  {%- set seo_title = (page.meta.title if page and page.meta and page.meta.title else (page.title ~ " · " ~ config.site_name if page and page.title and not page.is_homepage else config.site_name)) -%}
+  {%- set seo_description = (page.meta.description if page and page.meta and page.meta.description else config.site_description) -%}
+  <meta property="og:type" content="{{ 'website' if page and page.is_homepage else 'article' }}">
+  <meta property="og:site_name" content="{{ config.site_name }}">
+  <meta property="og:title" content="{{ seo_title | striptags }}">
+  <meta property="og:description" content="{{ seo_description }}">
+  <meta name="twitter:title" content="{{ seo_title | striptags }}">
+  <meta name="twitter:description" content="{{ seo_description }}">
+  {%- if config.site_url %}
+  <meta property="og:url" content="{{ page.canonical_url }}">
+  <meta property="og:image" content="{{ config.site_url }}assets/readme/uml-diff.png">
+  <meta property="og:image:alt" content="PlayIDE UML change review: an added transition in green and a removed path in red">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="{{ config.site_url }}assets/readme/uml-diff.png">
+  {%- else %}
+  <meta name="twitter:card" content="summary">
+  {%- endif %}
+  {%- if page and page.is_homepage %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "PlayIDE",
+    "alternateName": "EIJA Studio",
+    "description": {{ config.site_description | tojson }},
+    "applicationCategory": "DeveloperApplication",
+    "applicationSubCategory": "UML modelling and change review",
+    "operatingSystem": "Windows, macOS, Linux (Python 3.11+)",
+    "license": "https://www.apache.org/licenses/LICENSE-2.0",
+    "isAccessibleForFree": true,
+    "softwareVersion": {{ config.extra.version | tojson }},
+    "codeRepository": "https://github.com/45ck/eija-studio",
+    "url": "https://github.com/45ck/eija-studio",
+    "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}
+  }
+  </script>
+  {%- endif %}
+{% endblock %}

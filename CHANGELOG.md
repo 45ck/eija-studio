@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### 9 November 2026: PlayIDE is easier to find and describe
+
+- The package description, keywords, classifiers and project links now describe PlayIDE as it is: an open-source UML workbench for reviewing AI-proposed changes and running the system locally. The old "bounded workflow POC" line is gone.
+- New `llms.txt` (repository root and docs site) gives AI assistants a short, accurate summary with the current limits, and links to the main docs.
+- The docs site is titled PlayIDE, key pages have their own meta descriptions, every page has Open Graph and Twitter tags, and the home page has `SoftwareApplication` structured data ([ADR-0227](docs/adr/0227-search-and-generative-engine-metadata.md)). `mkdocs build --strict` passes again: two README files that collided with published `index.html` pages are excluded.
+
 ### 31 October 2026: PlayIDE says what to do when its server stops or crashes
 
 - If `eija serve` has stopped, PlayIDE now says it cannot reach its local server and to check that `eija serve` is still running (code `SERVER_UNREACHABLE`), instead of the browser's bare "Failed to fetch".

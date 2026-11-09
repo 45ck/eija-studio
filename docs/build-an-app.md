@@ -1,3 +1,7 @@
+---
+description: "What PlayIDE generates from a UML model: a local React app, HTTP API and SQLite records, and the current limits."
+---
+
 # Build an app from the model
 
 `eija build` turns a workflow model into an app you can run: a React frontend, an API and a SQLite database. The build also checks the app against EIJA's kernel. The diagram is the source. To change the app, change the model and build again. See [ADR-0150](adr/0150-build-apps-from-the-model-with-a-kernel-oracle.md) for the runtime design and [ADR-0225](adr/0225-react-for-generated-application-frontends.md) for the frontend.

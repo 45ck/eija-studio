@@ -1,3 +1,7 @@
+---
+description: "Install PlayIDE (EIJA Studio) with Python 3.11+, run a bundled system locally and set up optional AI providers."
+---
+
 # Getting started
 
 Everything you need to install, run and drive EIJA Studio from a terminal or browser. Start with the [connected IDE preview](README-HISTORY.md#try-the-connected-ide-preview) for the current integration. This page retains the earlier provider setup and verification commands; the [historical quickstart](README-HISTORY.md#historical-60-second-quickstart) describes that earlier kernel demonstration.

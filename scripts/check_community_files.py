@@ -49,6 +49,20 @@ def check_citation() -> list[str]:
     return errors
 
 
+def check_discoverability() -> list[str]:
+    """ADR-0227: docs-site version matches the package; the root and docs llms.txt are one file."""
+    project = tomllib.loads(text("pyproject.toml"))["project"]
+    errors = []
+    if (m := re.search(r'^  version:\s*"?([^"\s#]+)', text("mkdocs.yml"), re.M)) is None:
+        errors.append("mkdocs.yml lacks extra.version")
+    elif m.group(1) != project["version"]:
+        errors.append(f"mkdocs.yml extra.version {m.group(1)} != pyproject {project['version']}")
+    errors += [f"missing file: {rel}" for rel in ("llms.txt", "docs/llms.txt") if not (ROOT / rel).is_file()]
+    if not errors and text("llms.txt") != text("docs/llms.txt"):
+        errors.append("docs/llms.txt differs from llms.txt; copy the root file")
+    return errors
+
+
 def check_conduct() -> list[str]:
     coc = text("CODE_OF_CONDUCT.md")
     errors = []
@@ -113,7 +127,7 @@ def main() -> int:
     if errors:  # later checks read these files
         print("\n".join(f"FAIL {e}" for e in errors))
         return 1
-    errors += check_citation() + check_conduct() + check_roadmap() + check_line_endings()
+    errors += check_citation() + check_discoverability() + check_conduct() + check_roadmap() + check_line_endings()
     tmpl_errors, not_run = check_templates()
     errors += tmpl_errors
     for e in errors:
