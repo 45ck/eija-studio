@@ -1,3 +1,7 @@
+---
+description: "Import and export UML in PlayIDE: supported PlantUML, XMI, Mermaid and draw.io forms, and what an import cannot carry."
+---
+
 # UML import and export
 
 PlayIDE reads and writes the UML formats engineers already use, so a model can go into Enterprise Architect, a README or a draw.io page, and an existing diagram can come in as a change you check. The design is [ADR-0190](adr/0190-uml-import-and-export-through-the-kernel.md).

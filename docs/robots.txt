@@ -1,0 +1,3 @@
+# Docs site for PlayIDE (EIJA Studio). Everything here is public documentation.
+User-agent: *
+Allow: /

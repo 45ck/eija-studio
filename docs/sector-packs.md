@@ -1,3 +1,7 @@
+---
+description: "Bundled PlayIDE example systems for healthcare referral, card payment, parcel delivery, SaaS subscription and building permits."
+---
+
 # Sector packs
 
 Five packs model real systems from different sectors. Each is a template in PlayIDE (**Systems › New system › A template**, or `eija new "My clinic" --from specialist-referral`), and each can be opened directly:

@@ -1,3 +1,7 @@
+---
+description: "A guide to every PlayIDE view: UML diagrams, UML diff, effects across the system, checks, simulation and Build & run."
+---
+
 # PlayIDE
 
 PlayIDE is EIJA Studio's visual IDE: you see the model as a UML diagram, then build it and use the real app beside the diagram. The repository, Python package and `eija` command keep their names; PlayIDE is the product name in the interface. See [ADR-0151](adr/0151-playide-canvas-and-build-and-run.md) for the design.
