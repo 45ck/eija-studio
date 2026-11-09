@@ -266,6 +266,9 @@ optional_dependencies_dev_groups = ["dev", "lint", "docs", "testing", "graph-for
 # distribution name -> import name, where they differ
 z3-solver = "z3"
 axe-playwright-python = "axe_playwright_python"
+# These two are named here so the gate does not depend on which extras happen to be installed (xuml is optional).
+python-statemachine = "statemachine"
+markdown-it-py = "markdown_it"
 
 [tool.deptry.per_rule_ignores]
 # nox/pytest/radon/tomlkit are dev tools imported by noxfile.py, quality/ and tests/ (dev-only trees deptry
