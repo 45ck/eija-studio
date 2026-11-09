@@ -25,5 +25,9 @@ import quality.sessions  # noqa: E402
 nox.options.reuse_existing_virtualenvs = True
 nox.options.error_on_missing_interpreters = True
 
-for module in pkgutil.iter_modules(quality.sessions.__path__):
-    importlib.import_module(f"quality.sessions.{module.name}")
+# nox runs the selected sessions in registration order. `metrics` aggregates the reports the other lanes write
+# (LANE-01), so it registers last: otherwise it judges the reports a *previous* run left behind (#206).
+AGGREGATORS = ("metrics",)
+modules = sorted((m.name for m in pkgutil.iter_modules(quality.sessions.__path__)), key=lambda name: name in AGGREGATORS)
+for name in modules:
+    importlib.import_module(f"quality.sessions.{name}")

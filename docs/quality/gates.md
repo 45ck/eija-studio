@@ -19,6 +19,17 @@ are removed in the commit that fixes them. Nothing is silenced with a blanket ig
 **Cost.** The fast tier includes the whole pytest suite; the foundation lane's `tests` session is tagged `fast` only, and `nox -t full`
 runs the suite once, inside `coverage` (with `--cov`), so neither hook runs it twice.
 
+**Session order.** nox runs the selected sessions in registration order, and `noxfile.py` registers `metrics` last because its
+LANE-01 budget aggregates the reports the other lanes write. Before 2026-11-09 it ran before `property`, `formal_tla`, `bmc` and
+`scxml_differential` and so judged the reports the previous run had left (#206).
+
+**Hosted CI spend.** The three workflows in `.github/workflows/` are `workflow_dispatch` only, and no Vercel project builds this
+repository (the server is loopback-only, so there is no site to deploy). Measured on 2026-11-09: 11 Actions runs ever, about
+40 runner-minutes in total, the last a Dependabot dependency-graph job. Each workflow carries a `timeout-minutes` cap (a hung
+session would otherwise bill up to the 6-hour default), a `concurrency` group that cancels a superseded dispatch on the same
+ref, and pip caching keyed on `pyproject.toml`. Re-review this paragraph before adding a `push` or `pull_request` trigger: add
+`paths-ignore` for `docs/**` and `*.md` at the same time, so a docs-only change does not run the full tier.
+
 **Missing prerequisites report `NOT_RUN`, never PASS.** The only gate here that needs anything outside the venv is `audit`
 (network). nox exits 0 for a skipped session, and an exit code cannot tell NOT_RUN from PASS, so `audit` **fails** offline with a
 `NOT_RUN` message unless `EIJA_ALLOW_NOT_RUN=1` is set (then it skips, prints NOT_RUN, and the reader must not count it as PASS).
