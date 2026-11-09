@@ -22,6 +22,20 @@ def test_session_host_origin_and_contract_guards(studio):
         assert c.post("/api/cases",headers=HEADERS,content="x"*40000).status_code in (413,415)
 
 
+def test_an_unhandled_error_is_a_json_internal_error_without_the_exception_text(studio):
+    app=create_app(studio,"unit-test-token")
+
+    @app.get("/api/boom")
+    def boom():
+        raise RuntimeError("secret /home/owner/workspace.sqlite")
+
+    with TestClient(app,base_url="http://127.0.0.1:8765",raise_server_exceptions=False) as c:
+        r=c.get("/api/boom",headers=HEADERS)
+    assert r.status_code==500 and r.json()["code"]=="INTERNAL_ERROR"
+    assert "secret" not in r.text and "workspace.sqlite" not in r.text
+    assert r.headers["cache-control"]=="no-store" and r.headers["x-content-type-options"]=="nosniff"
+
+
 def test_frontend_assets_have_csp_and_no_path_escape(studio):
     with client(studio) as c:
         r=c.get("/");assert r.status_code==200 and "frame-ancestors 'none'" in r.headers["content-security-policy"]

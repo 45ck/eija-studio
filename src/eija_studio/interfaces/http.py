@@ -122,6 +122,15 @@ def create_app(studio, token: str, port: int = 8765, systems=None) -> FastAPI:
         # Do not echo rejected input, which might contain a mistakenly pasted key.
         return JSONResponse({"code": "CONTRACT_REJECTED", "message": "Invalid fields/types for this command"}, status_code=422)
 
+    @app.exception_handler(Exception)
+    async def internal_error(request, exc):
+        # Starlette's default is a plain-text "Internal Server Error". Answer with a stable code the page can show,
+        # never the exception text (it can carry paths or workspace internals); Starlette still logs the traceback.
+        response = JSONResponse({"code": "INTERNAL_ERROR", "message": "The server hit an unexpected error; details are in its log"},
+                                status_code=500)
+        _set_security_headers(response, request.url.path)
+        return response
+
     @app.get("/")
     def index():
         return FileResponse(web / "index.html")
