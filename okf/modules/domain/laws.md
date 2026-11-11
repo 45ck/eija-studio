@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/laws.py
   title: domain/laws.py
   hash_method: ast-api-v1
-  sha256: f85333de7a6ab488097dc522e286783755ba3b11b9409b78bb762572324f11be
-notes_baseline: 58f08202e8f877ccdf5e819031061425b2a99b86677e8cc381e89258b90ae133
+  sha256: 84bedd561a58d92c5aac08d4cedc2c5ac8690033e51baa11360627470c237010
+notes_baseline: 6163960fabc9e489123cbd8c9fdba62310d472e4a1b8e0b911bf901f56ba17fb
 ---
 
 # domain.laws
@@ -47,6 +47,7 @@ Nothing here names a domain: every state, role, action and effect comes from the
 * [`CODE`](/symbols/domain/laws/CODE.md) (constant) - no docstring
 * [`CanReachEnd`](/symbols/domain/laws/CanReachEnd.md) (class) - From every state a record can get to, some run still reaches one of ``states`` (its ends): no record is left in a dead…
 * [`ClosedShape`](/symbols/domain/laws/ClosedShape.md) (class) - The workflow has exactly these states and actions and this initial state.
+* [`DistinctActors`](/symbols/domain/laws/DistinctActors.md) (class) - Separation of duties (issue #149, ADR-0233): on one record, no single actor takes two different ``actions``, such as ra…
 * [`ForbiddenEffects`](/symbols/domain/laws/ForbiddenEffects.md) (class) - No transition requires any of ``effects`` and every transition declares them forbidden.
 * [`KIND_LAWS`](/symbols/domain/laws/KIND_LAWS.md) (constant) - no docstring
 * [`LAW_ID`](/symbols/domain/laws/LAW_ID.md) (constant) - no docstring
@@ -72,6 +73,7 @@ Nothing here names a domain: every state, role, action and effect comes from the
 * [`evaluate_run`](/symbols/domain/laws/evaluate_run.md) (function) - Violations by one executed run: per-step laws on every step, sequence laws on the whole run.
 * [`evaluate_table`](/symbols/domain/laws/evaluate_table.md) (function) - Every violation of the applicable laws by the workflow's transition table, in law order.
 * [`reachable`](/symbols/domain/laws/reachable.md) (function) - States reachable from ``start`` without passing through ``blocked`` (cycle-safe).
+* [`separation_breach`](/symbols/domain/laws/separation_breach.md) (function) - The other listed action ``actor`` already took on this record, if taking ``action`` now breaks ``law``.
 * [`stuck_states`](/symbols/domain/laws/stuck_states.md) (function) - The states a record can get to from ``initial`` along ``edges`` from which no end of ``law`` can be reached.
 
 ## Internal imports
@@ -91,11 +93,13 @@ _No curated notes yet._
 ## Referenced by
 
 * [adapters.plan_proposals](/modules/adapters/plan_proposals.md) - Offline plan proposer for the PlayIDE chat (ADR-0156): a bounded phrase grammar and the pack's modelled meanings, never an LLM.
+* [application.appgen](/modules/application/appgen.md) - App generation: a reviewed workflow model becomes a runnable app and its conformance oracle (ADR-0150).
 * [application.data_steps](/modules/application/data_steps.md) - Data-model steps in a chat plan (ADR-0202): add an attribute to a class, remove one, or make one required or optional; and the step that changes the kind of ac…
 * [application.law_proof](/modules/application/law_proof.md) - Prove a pack's laws over every run the kernel allows (ADR-0166).
 * [application.readiness](/modules/application/readiness.md) - What's missing (ADR-0216): one list across every model and view of what is not ready yet, so a system built in chat or on the canvas says what it still lacks i…
 * [application.requirement_trace](/modules/application/requirement_trace.md) - A bounded declared trace adapter, separate from policy and verification execution.
 * [application.ripple](/modules/application/ripple.md) - Ripple (ADR-0158): what one change to the state machine does to every other diagram of the same system, and the follow-on edits that would keep them in agreeme…
+* [application.runtime](/modules/application/runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.
 * [application.simulation](/modules/application/simulation.md) - Seeded simulation of people using the app built from a model (ADR-0152).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
 * [domain.policy](/modules/domain/policy.md) - Generic policy: coherence with a domain pack's declared action catalog, the pack's laws, and declared effects.
@@ -105,6 +109,7 @@ _No curated notes yet._
 * [domain.laws.CODE](/symbols/domain/laws/CODE.md) - Constant `CODE` in `domain/laws`.
 * [domain.laws.CanReachEnd](/symbols/domain/laws/CanReachEnd.md) - From every state a record can get to, some run still reaches one of ``states`` (its ends): no record is left in a dead end or a loop with no way out.
 * [domain.laws.ClosedShape](/symbols/domain/laws/ClosedShape.md) - The workflow has exactly these states and actions and this initial state.
+* [domain.laws.DistinctActors](/symbols/domain/laws/DistinctActors.md) - Separation of duties (issue #149, ADR-0233): on one record, no single actor takes two different ``actions``, such as raising a request and approving it.
 * [domain.laws.ForbiddenEffects](/symbols/domain/laws/ForbiddenEffects.md) - No transition requires any of ``effects`` and every transition declares them forbidden.
 * [domain.laws.KIND_LAWS](/symbols/domain/laws/KIND_LAWS.md) - Constant `KIND_LAWS` in `domain/laws`.
 * [domain.laws.LAW_ID](/symbols/domain/laws/LAW_ID.md) - Constant `LAW_ID` in `domain/laws`.
@@ -130,5 +135,6 @@ _No curated notes yet._
 * [domain.laws.evaluate_run](/symbols/domain/laws/evaluate_run.md) - Violations by one executed run: per-step laws on every step, sequence laws on the whole run.
 * [domain.laws.evaluate_table](/symbols/domain/laws/evaluate_table.md) - Every violation of the applicable laws by the workflow's transition table, in law order.
 * [domain.laws.reachable](/symbols/domain/laws/reachable.md) - States reachable from ``start`` without passing through ``blocked`` (cycle-safe).
+* [domain.laws.separation_breach](/symbols/domain/laws/separation_breach.md) - The other listed action ``actor`` already took on this record, if taking ``action`` now breaks ``law``.
 * [domain.laws.stuck_states](/symbols/domain/laws/stuck_states.md) - The states a record can get to from ``initial`` along ``edges`` from which no end of ``law`` can be reached.
 <!-- okf:generated:end links -->

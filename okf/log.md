@@ -2,6 +2,7 @@
 
 ## 2026-11-11
 
+* **Separation of duties (issue #149)**: synced ADR-0233, the `distinct_actors` law, the runtime's `SEPARATION_DENIED` check, the act log on the unit-of-work port, the law proof's kernel check and the generated app's separation cases. Re-read the Notes of the runtime module, `execute` and `UnitOfWork` as `process:claude-code` and updated the last two. No human source approval was recorded.
 * **One action from several states (issue #148)**: synced ADR-0232, `Workflow.transition_for`/`sources`, `impact.keyed`, the runtime, transactions, importers and `verification/scope.py`. Re-read the Notes of `execute`, `verify_runtime`, `model_impact`, `Workflow` and the integration-test kind as `process:claude-code` and updated the first four. No human source approval was recorded.
 
 * **Initiators are a set in the semantic hash**: re-read and updated the Note of `Workflow.semantic_hash` as `process:claude-code` (Codex review on PR #223).

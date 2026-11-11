@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/ports.py
   title: application/ports.py
   hash_method: ast-api-v1
-  sha256: 848fa179384be96180b66c5b23ab497f60f195d839e0541d00da22ccbf8b4c63
-notes_baseline: 152dd850884b548a201955725cd8dc8285b1458766e5a7142c8c614ab841503d
+  sha256: 902dc34ef5cf6bbf2bacea04e99ffdaf961b6286828e8c02bd7c5811adcb70cf
+notes_baseline: 6512134a68e215f9f12c660ee2ec0625afaa72830291f262fc77ba61b6d01723
 ---
 
 # application.ports

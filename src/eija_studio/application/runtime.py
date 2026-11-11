@@ -2,6 +2,7 @@
 from __future__ import annotations
 from typing import Any, Callable
 from uuid import uuid4
+from eija_studio.domain.laws import DistinctActors, applies, separation_breach
 from eija_studio.domain.models import Workflow, ExecuteCommand, DomainError, Transition, fingerprint
 from eija_studio.domain.pack import Pack, default_pack
 from eija_studio.domain.policy import ensure_policy
@@ -16,6 +17,29 @@ def check_actor(actor: dict[str, Any], transition: Transition, command: ExecuteC
         raise DomainError("ROLE_DENIED", "Actor does not hold the current required role")
     if "actor_assigned" in transition.guards and not actor["assigned"]:
         raise DomainError("ASSIGNMENT_DENIED", "Actor is not assigned in the trusted fixture directory")
+
+
+def separations(pack: Pack, model: Workflow, action: str) -> list[DistinctActors]:
+    """The pack's separation-of-duties laws in force on ``model`` that name ``action`` (issue #149, ADR-0233)."""
+    actions = {t.action for t in model.transitions}
+    return [law for law in pack.laws if isinstance(law, DistinctActors) and action in law.actions and applies(law, actions)]
+
+
+def check_separation(laws: list[DistinctActors], action: str, actor_id: str, acts: list[tuple[str, str]]) -> None:
+    """Refuse an actor who already took another action of a separation law on this record. ``acts`` is the record's
+    (action, actor) history as the unit of work recorded it."""
+    for law in laws:
+        earlier = separation_breach(law, action, actor_id, acts)
+        if earlier is not None:
+            raise DomainError("SEPARATION_DENIED", f"The same actor may not {action} after they {earlier} on this record",
+                              {"codes": [law.code], "refs": [f"law:{law.id}", f"action:{earlier}", f"action:{action}"]})
+
+
+def _separate(session: UnitOfWork, laws: list[DistinctActors], action: str, actor_id: str, instance_id: str) -> None:
+    """Refuse or log this act for the separation laws naming the action; with none (most packs) the log is untouched."""
+    if laws:
+        check_separation(laws, action, actor_id, session.acts(instance_id))
+        session.record_act(instance_id, action, actor_id)
 
 
 def _perform(session: UnitOfWork, pack: Pack, effect: str, case_id: str, command: ExecuteCommand, result: dict[str, Any]) -> None:
@@ -75,6 +99,7 @@ def execute(
         raise DomainError("STALE_VERSION", "Instance changed; reload before acting")
     if instance["state"] != t.from_state:
         raise DomainError("STATE_DENIED", "Action is invalid from the current state")
+    _separate(session, separations(pack, model, t.action), t.action, command.actor_id, instance["id"])
     instance.update(state=t.to_state, version=instance["version"] + 1)
     session.update_instance(instance, command.expected_version)
     if fault:

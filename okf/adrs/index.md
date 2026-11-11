@@ -115,3 +115,4 @@
 * [ADR-0230: Opt-in live plan mode, and a plan check for coding agents](0230-opt-in-live-plan-mode-and-agent-plan-check.md) - On 2026-10-08 the owner kept PlayIDE's chat offline and synthetic: a phrase reader plus the pack's proposal rules, never a model.
 * [ADR-0231: Who may start a record](0231-who-may-start-a-record.md) - Issue #142: a workflow said who may take each transition, but not who may start a record.
 * [ADR-0232: One action from several states](0232-one-action-from-several-states.md) - Issue #148: `Workflow.coherent` refused a second transition with the same action, so each action labelled exactly one transition.
+* [ADR-0233: Separation of duties](0233-separation-of-duties.md) - Issue #149.

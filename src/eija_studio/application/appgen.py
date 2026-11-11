@@ -13,7 +13,8 @@ from itertools import count, product
 from typing import Any
 
 from eija_studio.domain.data import Attribute, DataModel, Entity, check_values
-from eija_studio.domain.models import DomainError, ExecuteCommand, Workflow, canonical, fingerprint
+from eija_studio.domain.laws import DistinctActors
+from eija_studio.domain.models import DomainError, ExecuteCommand, Transition, Workflow, canonical, fingerprint
 from eija_studio.domain.navigation import navigation_for
 from eija_studio.domain.pack import Pack
 from eija_studio.domain.policy import check_policy
@@ -41,9 +42,16 @@ class _OracleSession:
         self.actors = {a.id: a.model_dump() for a in pack.fixtures.actors}
         self.item = {"id": "r1", "case_id": "app", "model_hash": model_hash(model), "state": state, "version": 0}
         self.operations: dict[str, dict[str, Any]] = {}
+        self.acted: list[tuple[str, str]] = []
 
     def find_instance(self, instance_id: str, case_id: str) -> dict[str, Any] | None:
         return self.item if instance_id == self.item["id"] else None
+
+    def acts(self, instance_id: str) -> list[tuple[str, str]]:
+        return list(self.acted)
+
+    def record_act(self, instance_id: str, action: str, actor_id: str) -> None:
+        self.acted.append((action, actor_id))
 
     def actor(self, actor_id: str) -> dict[str, Any]:
         if actor_id not in self.actors:
@@ -66,8 +74,9 @@ class _OracleSession:
         return None
 
 
-def _kernel(pack: Pack, model: Workflow, session: _OracleSession, actor: str, action: str, version: int) -> dict[str, Any]:
-    command = ExecuteCommand(operation_id="op-1", actor_id=actor, instance_id="r1", action=action, expected_version=version)
+def _kernel(pack: Pack, model: Workflow, session: _OracleSession, actor: str, action: str, version: int,
+            operation: str = "op-1") -> dict[str, Any]:
+    command = ExecuteCommand(operation_id=operation, actor_id=actor, instance_id="r1", action=action, expected_version=version)
     try:
         result = execute(session, "app", model, command, pack=pack)  # type: ignore[arg-type]  # duck-typed session
     except DomainError as refused:
@@ -130,6 +139,39 @@ def start_cases(pack: Pack, model: Workflow) -> list[dict[str, object]]:
         return []
     return [{"actor": a.id, "expect": {"outcome": "CREATED"} if may_start(model, a.role) else {"outcome": "REFUSED", "code": "ROLE_CANNOT_START"}}
             for a in sorted(pack.fixtures.actors, key=lambda a: a.id) if a.active]
+
+
+def _separated_pairs(pack: Pack, model: Workflow) -> list[tuple[Transition, str]]:
+    """Each transition of a separation-of-duties law's action, with each other action of the law that leaves where it ends."""
+    follows = {(t.from_state, t.action) for t in model.transitions}
+    return sorted({(t, then) for law in pack.laws if isinstance(law, DistinctActors) for t in model.transitions
+                   if t.action in law.actions for then in law.actions if then != t.action and (t.to_state, then) in follows},
+                  key=lambda pair: (pair[0].id, pair[1]))
+
+
+def separation_cases(pack: Pack, model: Workflow) -> list[dict[str, object]]:
+    """One fixture actor takes an action of a separation-of-duties law, then tries another the law names, on the same
+    record; the kernel's answer to the second (ADR-0233). Only where the actor's role may take both, since otherwise
+    the role check refuses first. Empty without such a law, so every other oracle keeps its exact bytes."""
+    cases: list[dict[str, object]] = []
+    for t, then in _separated_pairs(pack, model):
+        second = model.transition_for(then, t.to_state)
+        for actor in sorted(pack.fixtures.actors, key=lambda a: a.id):
+            if second is None or actor.role != second.role:
+                continue
+            session = _OracleSession(pack, model, t.from_state)
+            if _kernel(pack, model, session, actor.id, t.action, 0)["outcome"] == "COMMITTED":
+                cases.append({"state": t.from_state, "actor": actor.id, "first": t.action, "then": then,
+                              "expect": _kernel(pack, model, session, actor.id, then, 1, "op-2")})
+    return cases
+
+
+def _people_cases(pack: Pack, model: Workflow) -> dict[str, Any]:
+    """The oracle's checks of who may start a record and who may not act twice, present only when the model or pack
+    asks for them, so every other oracle keeps its exact bytes."""
+    separated = separation_cases(pack, model)
+    return ({"start_cases": start_cases(pack, model)} if model.initiators else {}) | (
+        {"separation_cases": separated} if separated else {})
 
 
 def _creator(pack: Pack, model: Workflow | None) -> str:
@@ -237,9 +279,9 @@ def generate(pack: Pack, model: Workflow | None = None, data: DataModel | None =
     if data is not None:
         oracle |= {"data_digest": data.digest, "data_cases": data_cases(pack, data, model)}
         files["app/data.json"] = canonical(data) + "\n"
-    oracle |= {"start_cases": start_cases(pack, model)} if model.initiators else {}
+    oracle |= _people_cases(pack, model)
     files["tests/oracle.json"] = canonical(oracle) + "\n"
-    total = len(cases) + len(oracle.get("data_cases", [])) + len(oracle.get("start_cases", []))
+    total = len(cases) + sum(len(oracle.get(k, [])) for k in ("data_cases", "start_cases", "separation_cases"))
     manifest = {"format": FORMAT, "pack": {"id": pack.id, "version": pack.pack.version, "digest": pack.digest},
                 "model_semantic_hash": model.semantic_hash, "oracle": {"cases": total, "hash": fingerprint(oracle)},
                 "data": {"digest": data.digest, "record": data.record} if data else None,

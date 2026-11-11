@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py#generate
   title: application/appgen.py
   hash_method: ast-v2
-  sha256: 7e9c41a983b563c8e2449d0e6a1a05776017555ad8beb6de9f32323552d716a4
-notes_baseline: 8c08698e670917794d4274899f8f06bd55a417176bdfb57fbaf1ff38ab81bdb8
+  sha256: 2a2c6ee38188cf515c80edf8a65a7f57e03cf7919db98659f4386afbcedf08ea
+notes_baseline: 81c4a7574d3aceae563f9bc5ec8857d30efe2f5323342fa3f6433cdaf00aaf46
 ---
 
 # application.appgen.generate
@@ -51,7 +51,6 @@ _No curated notes yet._
 * [application.appgen.data_cases](/symbols/application/appgen/data_cases.md) - Record values to create with, and `check_values`' answer for each: a valid record, then each required value missing, each value of the wrong type, each text on…
 * [application.appgen.oracle_cases](/symbols/application/appgen/oracle_cases.md) - Every state x action x actor x expected version, then the same request replayed.
 * [application.appgen.readme](/symbols/application/appgen/readme.md) - `def readme(pack: Pack, model: Workflow, cases: int, data: DataModel | None=None) -> str` in `application/appgen`.
-* [application.appgen.start_cases](/symbols/application/appgen/start_cases.md) - Each active fixture actor starting a record, and the kernel's answer.
 * [domain.data.DataModel](/symbols/domain/data/DataModel.md) - `class DataModel(Contract)` in `domain/data`.
 * [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.

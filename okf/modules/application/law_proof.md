@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/law_proof.py
   title: application/law_proof.py
   hash_method: ast-api-v1
-  sha256: 280326154b79700f0adb19ab2c717a16e34c85b74572ee60c5381c360d597af4
-notes_baseline: 491127e2ed9019eb75b30070012849d2177980dd0eb5060a6662c1b536a497dc
+  sha256: f28165935826ba58149c5f5446dc0ee89836538ac9baf5c2f31a01f01debe1ca
+notes_baseline: 9355bacb1d113dbc48df7029f30ff756db76a54578b65ccb75cf0d97728824ea
 ---
 
 # application.law_proof
@@ -47,6 +47,10 @@ on an in-memory session); the laws are judged by `laws.evaluate_run` itself, so 
   how each kind is judged and a test fails if a new kind is not classified.
 * `can_reach_end` is about the runs a record could still take, not one run: it is judged on the steps the kernel
   committed during the search, so a record is stuck only where the kernel itself leaves no way to an end (ADR-0221).
+* `distinct_actors` (separation of duties, ADR-0233) is about who acted, which the actor classes above do not track.
+  It is judged by asking the kernel directly: wherever one of its actions can directly follow another on a reachable
+  record, one actor takes the first, then holds the role of the second and tries it, and must be refused; a different
+  actor must not be refused for separation.
 * Each configuration is reached first by a shortest run, so a counterexample is the shortest run that breaks the law.
 * A law about a state that is never reached, or an action that never commits, holds vacuously; that is reported.
 

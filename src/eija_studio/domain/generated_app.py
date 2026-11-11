@@ -67,7 +67,7 @@ class GeneratedAppActivation(Contract):
     subject_hash: Digest
 
 
-GENERATED_TESTS = 7  # the conformance template's test methods; the start check joined them in ADR-0231
+GENERATED_TESTS = 8  # the conformance template's test methods; the separation check joined them in ADR-0233
 
 
 def generated_receipt_status(receipt: dict[str, Any], binding: GeneratedAppBinding,
