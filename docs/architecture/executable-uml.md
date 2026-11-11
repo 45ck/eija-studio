@@ -64,6 +64,7 @@ Every view has one of three standings. **Executable**: the kernel runs it. **Che
 | State machine | Required effect | executable | Written exactly once per commit through its typed adapter: `audit` to the audit log, `notification` to the outbox. An undeclared effect is `EFFECT_DENIED`. | `runtime._perform` |
 | State machine | Forbidden effect | executable | A transition may never declare it; the policy refuses the model. | `domain/policy.py` |
 | Class diagram | «record» class and its attributes | executable | Values a record is created with, checked by type, choice, length and required-ness (`FIELD_*` codes). | `domain/data.py` `check_values` |
+| Class diagram | Built to-one association from the record class | executable | A reference field named by the role. The app stores objects of the other class and refuses an id that names none (`REFERENCE_UNKNOWN`, ADR-0235). | `domain/data.py` `check_record` |
 | Class diagram | Other classes and associations | derived design | Drawn and kept with the model; not stored or checked by the app yet. | `domain/data.py` |
 | Use cases | Actor, use case, association | checked design | Roles and actions read from the state machine, plus "Create" for the record. They are the same facts, drawn another way. | `domain/screens.py` `use_cases` |
 | Use cases | Actor «human» (stick figure, the default) | checked design | A role held by a person. The kernel authorises it like any role; kind laws count it for `role_kinds: ["human"]` (ADR-0210). | `domain/pack.py` `Role.kind` |

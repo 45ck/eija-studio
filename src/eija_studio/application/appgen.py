@@ -12,7 +12,7 @@ from __future__ import annotations
 from itertools import count, product
 from typing import Any
 
-from eija_studio.domain.data import Attribute, DataModel, Entity, check_values
+from eija_studio.domain.data import Attribute, DataModel, check_record, record_fields, references
 from eija_studio.domain.laws import DistinctActors
 from eija_studio.domain.models import DomainError, ExecuteCommand, Transition, ValueGuard, Workflow, canonical, fingerprint
 from eija_studio.domain.navigation import navigation_for
@@ -125,9 +125,9 @@ def _breaks(attribute: Attribute, valid: dict[str, object]) -> list[tuple[str, d
     return tries
 
 
-def _answer(entity: Entity, values: dict[str, object]) -> dict[str, object]:
+def _answer(data: DataModel, values: dict[str, object], stored: set[tuple[str, str]]) -> dict[str, object]:
     try:
-        return {"outcome": "CREATED", "fields": check_values(entity, values)}
+        return {"outcome": "CREATED", "fields": check_record(data, values, lambda c, i: (c, i) in stored)}
     except DomainError as refused:
         return {"outcome": "REFUSED", "code": refused.code}
 
@@ -215,15 +215,37 @@ def _creator(pack: Pack, model: Workflow | None) -> str:
     return creator
 
 
+def stock(data: DataModel) -> list[dict[str, object]]:
+    """One valid object of each class a record refers to (ADR-0235), stored before the data cases run. Empty when no
+    association is built, so other oracles keep their exact bytes."""
+    classes = sorted({r.target for r in references(data)})
+    return [{"class": c, "id": f"obj{n}", "fields": {a.name: _sample(a) for a in data.entity(c).attributes}}
+            for n, c in enumerate(classes, start=1)]
+
+
+def _reference_breaks(data: DataModel, valid: dict[str, object]) -> list[tuple[str, dict[str, object]]]:
+    """Ways to get a reference field wrong: missing when required, not an id, and the id of no stored object."""
+    tries = []
+    for ref in references(data):
+        if ref.required:
+            tries.append((f"{ref.name} missing", {k: v for k, v in valid.items() if k != ref.name}))
+        tries += [(f"{ref.name} wrong type", valid | {ref.name: 123}), (f"{ref.name} unknown", valid | {ref.name: "nothing"})]
+    return tries
+
+
 def data_cases(pack: Pack, data: DataModel, model: Workflow | None = None) -> list[dict[str, object]]:
-    """Record values to create with, and `check_values`' answer for each: a valid record, then each required value
-    missing, each value of the wrong type, each text one character too long, an undeclared choice and an unknown field."""
+    """Record values to create with, and `check_record`'s answer for each: a valid record, then each required value
+    missing, each value of the wrong type, each text one character too long, an undeclared choice and an unknown field,
+    then each reference field missing, not an id and naming no stored object (with the `stock` objects stored)."""
     entity = data.entity(data.record)
     creator = _creator(pack, model)
-    valid = {a.name: _sample(a) for a in entity.attributes}
+    stored = {(str(o["class"]), str(o["id"])) for o in stock(data)}
+    valid = {a.name: _sample(a) for a in entity.attributes} | {r.name: next(i for c, i in sorted(stored) if c == r.target)
+                                                                for r in references(data)}
     tries = [("valid", valid), *(bad for a in entity.attributes for bad in _breaks(a, valid)),
-             ("unknown field", valid | {absent("extra", {a.name for a in entity.attributes}): "x"})]
-    return [{"name": name, "actor": creator, "fields": values, "expect": _answer(entity, values)} for name, values in tries]
+             ("unknown field", valid | {absent("extra", {a.name for a in record_fields(data)}): "x"}),
+             *_reference_breaks(data, valid)]
+    return [{"name": name, "actor": creator, "fields": values, "expect": _answer(data, values, stored)} for name, values in tries]
 
 
 def oracle_cases(pack: Pack, model: Workflow) -> list[dict[str, Any]]:
@@ -320,6 +342,7 @@ def generate(pack: Pack, model: Workflow | None = None, data: DataModel | None =
              "README.md": readme(pack, model, len(cases), data)}
     if data is not None:
         oracle |= {"data_digest": data.digest, "data_cases": data_cases(pack, data, model)}
+        oracle |= {"objects": stock(data)} if references(data) else {}
         files["app/data.json"] = canonical(data) + "\n"
     oracle |= _people_cases(pack, model)
     files["tests/oracle.json"] = canonical(oracle) + "\n"

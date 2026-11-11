@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/screens.py#check_screens
   title: domain/screens.py
   hash_method: ast-v2
-  sha256: 63c764875cd0eaa5776dc5416855350e6309108c4e5839c7fd887738a885f1c4
-notes_baseline: 56e8ddfbcad0c11a1963a580caca8cadb22e51aabe1a6ba79150d40f5bda8e5a
+  sha256: 4ac9c17dbc0a845e8f5179f7c05c2922d815aff0c906e9f49d136e78ec8b7aad
+notes_baseline: fb4449704f532fb1b5d86b3c40431716cbf1e780fd7368e0ece18f01d6702292
 ---
 
 # domain.screens.check_screens
@@ -44,6 +44,7 @@ _No curated notes yet._
 ## Depends on
 
 * [domain.data.DataModel](/symbols/domain/data/DataModel.md) - `class DataModel(Contract)` in `domain/data`.
+* [domain.data.record_fields](/symbols/domain/data/record_fields.md) - What a record holds: the record class's attributes, then each reference field as text holding an object's id.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.screens.Screens](/symbols/domain/screens/Screens.md) - `class Screens(Contract)` in `domain/screens`.
 * [domain.screens.use_cases](/symbols/domain/screens/use_cases.md) - Creating a record (None), then each distinct action in transition-id order: the ellipses of the use case diagram.

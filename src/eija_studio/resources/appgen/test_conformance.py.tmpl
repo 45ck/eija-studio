@@ -25,6 +25,13 @@ def seed(svc: service.Service, state: str, values: dict | None = None) -> str:
     return "r1"
 
 
+def stock(svc: service.Service) -> service.Service:
+    """The objects the oracle's records refer to (ADR-0235), stored so a reference field can name them."""
+    for item in ORACLE.get("objects", []):
+        svc.db.execute("INSERT INTO objects VALUES(?,?,?,'oracle')", (item["id"], item["class"], json.dumps(item["fields"])))
+    return svc
+
+
 def observe(svc: service.Service, record_id: str, case: dict, operation: str = "op-1") -> dict:
     try:
         result = svc.act(record_id, case["actor"], case["action"], case["expected_version"], operation)
@@ -67,7 +74,7 @@ class Conformance(unittest.TestCase):
         self.assertEqual(bool(ORACLE.get("data_cases")), service.DATA is not None)
         for case in ORACLE.get("data_cases", []):
             with self.subTest(case=case["name"]):
-                svc = service.Service()
+                svc = stock(service.Service())
                 try:
                     record = svc.create("Data case", case["actor"], case["fields"])
                 except service.Refused as refused:
@@ -81,7 +88,7 @@ class Conformance(unittest.TestCase):
         self.assertEqual(bool(ORACLE.get("start_cases")), bool(service.MODEL.initiators))
         for case in ORACLE.get("start_cases", []):
             with self.subTest(actor=case["actor"]):
-                svc = service.Service()
+                svc = stock(service.Service())
                 fields = ORACLE["data_cases"][0]["fields"] if ORACLE.get("data_cases") else None
                 try:
                     svc.create("Start case", case["actor"], fields)

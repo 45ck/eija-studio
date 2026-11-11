@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/screens.py
   title: domain/screens.py
   hash_method: ast-api-v1
-  sha256: 0edcb505de6874646dce6d1500dc52312aecba338ef72c74b0e60e09010a4970
-notes_baseline: a28f5ac34e371621ceca7580ad068200ba640abca24df2ed2053a76597795921
+  sha256: 2271cebd07c660c69bd877c729aa5a27fe71640f0f3836286d1d88c26a920098
+notes_baseline: f832c4b5009d3154537c01629a302cda44b29fc5a30d5419b14088f124f7b03b
 ---
 
 # domain.screens
@@ -48,7 +48,7 @@ one. `check_screens` is the design check PlayIDE runs as you edit, and an app is
 * [`ScreenField`](/symbols/domain/screens/ScreenField.md) (class) - no docstring
 * [`Screens`](/symbols/domain/screens/Screens.md) (class) - no docstring
 * [`check_screens`](/symbols/domain/screens/check_screens.md) (function) - Design problems, each with a stable code and the use case it is about.
-* [`default_screen`](/symbols/domain/screens/default_screen.md) (function) - The screen a use case gets when nobody designed one: `create` asks for every record attribute; an action shows the requ…
+* [`default_screen`](/symbols/domain/screens/default_screen.md) (function) - The screen a use case gets when nobody designed one: `create` asks for every record field (attributes, then the referen…
 * [`default_screens`](/symbols/domain/screens/default_screens.md) (function) - One default screen per use case.
 * [`load_screens`](/symbols/domain/screens/load_screens.md) (function) - The pack's screens, or None when the pack has no `screens.json`.
 * [`parse_screens`](/symbols/domain/screens/parse_screens.md) (function) - no docstring
@@ -99,7 +99,7 @@ _No curated notes yet._
 * [domain.screens.Screens](/symbols/domain/screens/Screens.md) - `class Screens(Contract)` in `domain/screens`.
 * [domain.screens.Screens.screen](/symbols/domain/screens/Screens.screen.md) - `def screen(self, use_case: str | None) -> Screen | None` in `domain/screens`.
 * [domain.screens.check_screens](/symbols/domain/screens/check_screens.md) - Design problems, each with a stable code and the use case it is about.
-* [domain.screens.default_screen](/symbols/domain/screens/default_screen.md) - The screen a use case gets when nobody designed one: `create` asks for every record attribute; an action shows the required ones.
+* [domain.screens.default_screen](/symbols/domain/screens/default_screen.md) - The screen a use case gets when nobody designed one: `create` asks for every record field (attributes, then the references of built associations); an action sh…
 * [domain.screens.default_screens](/symbols/domain/screens/default_screens.md) - One default screen per use case.
 * [domain.screens.load_screens](/symbols/domain/screens/load_screens.md) - The pack's screens, or None when the pack has no `screens.json`.
 * [domain.screens.parse_screens](/symbols/domain/screens/parse_screens.md) - `def parse_screens(document: Any, pack_id: str) -> Screens` in `domain/screens`.

@@ -15,7 +15,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from eija_studio.domain.data import DataModel
+from eija_studio.domain.data import DataModel, record_fields
 from eija_studio.domain.models import Workflow
 from eija_studio.domain.screens import Screens
 
@@ -166,7 +166,7 @@ def _repeated_labels(screens: Screens) -> list[str]:
 
 
 def _code_like_labels(screens: Screens, data: DataModel | None) -> list[str]:
-    attributes = {a.name for a in data.entity(data.record).attributes} if data else set()
+    attributes = {a.name for a in record_fields(data)} if data else set()
     return [f"{screen.title}: {f.attribute}" for screen in screens.screens for f in screen.fields
             if not f.label and f.attribute in attributes and _CODE_LIKE.search(f.attribute)]
 

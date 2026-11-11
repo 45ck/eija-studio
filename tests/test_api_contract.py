@@ -41,6 +41,8 @@ def served(server: str) -> set[tuple[str, str]]:
             text = ast.unparse(test)
             if literal := re.fullmatch(r"url\.path == '(/api/[a-z/]+)'", text):
                 routes.add((method, literal.group(1)))
+            elif text == "stored":
+                routes.add((method, "/api/objects/{class}"))
             elif text == "match and (not match.group(2))":
                 routes.add((method, "/api/records/{id}"))
             elif text == "match and match.group(2)":
@@ -52,7 +54,7 @@ def test_every_route_the_server_serves_is_in_the_contract_and_no_other():
     pack, document = contract()
     server = app_files(pack, pack.model, identity_provider=source_identity)[0]["app/server.py"]
     documented = {(method, path) for path, item in document["paths"].items() for method in item}
-    assert served(server) == documented and len(documented) == 6
+    assert served(server) == documented and len(documented) == 8
 
 
 def test_the_refusal_codes_are_the_servers_by_status():

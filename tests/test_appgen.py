@@ -91,7 +91,7 @@ MUTANTS = {  # negative controls: each breaks the app's storage or its built-in 
                                 "return None"),
     "approval handed to teachers": ("excursion", "app/model.json", '"role":"Registrar"', '"role":"Teacher"'),
     "unassigned actor treated as assigned": ("library-loan", "app/pack.json", '"assigned":false', '"assigned":true'),
-    "record values not checked": ("library-loan", "app/service.py", "values = check_values(RECORD, fields or {})",
+    "record values not checked": ("library-loan", "app/service.py", "values = check_record(DATA, fields or {}, self._exists)",
                                   "values = dict(fields or {})"),
     "a required attribute made optional": ("excursion", "app/data.json", '"name":"destination","required":true',
                                            '"name":"destination","required":false'),

@@ -1,7 +1,7 @@
 ---
 type: Function
 title: domain.screens.default_screen
-description: 'The screen a use case gets when nobody designed one: `create` asks for every record attribute; an action shows the required ones.'
+description: 'The screen a use case gets when nobody designed one: `create` asks for every record field (attributes, then the references of built associations); an action shows the required ones.'
 resource: repo://src/eija_studio/domain/screens.py#default_screen
 tags:
 - symbol
@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/screens.py#default_screen
   title: domain/screens.py
   hash_method: ast-v2
-  sha256: 2b924ca45e6181ae4b133ef54e6d9b81f56344b58f4361cb989023b335c87efa
-notes_baseline: 5f540621b87f971da822201315884c4cadad22943674140559e558ee1a181679
+  sha256: 4c77c484d2d9b61f1eb611e602dfd089a8e79ea10f8e18e4b96c3f83fd31a5ab
+notes_baseline: 4dc904052203489cda0009c8ca7ec64c37de168aae66f8280d1744cd87611fcc
 ---
 
 # domain.screens.default_screen
@@ -32,8 +32,8 @@ notes_baseline: 5f540621b87f971da822201315884c4cadad22943674140559e558ee1a181679
 ## Docstring
 
 ~~~text
-The screen a use case gets when nobody designed one: `create` asks for every record attribute; an action shows
-the required ones.
+The screen a use case gets when nobody designed one: `create` asks for every record field (attributes, then the
+references of built associations); an action shows the required ones.
 ~~~
 <!-- okf:generated:end facts -->
 
@@ -45,6 +45,7 @@ _No curated notes yet._
 ## Depends on
 
 * [domain.data.DataModel](/symbols/domain/data/DataModel.md) - `class DataModel(Contract)` in `domain/data`.
+* [domain.data.record_fields](/symbols/domain/data/record_fields.md) - What a record holds: the record class's attributes, then each reference field as text holding an object's id.
 * [domain.screens.Screen](/symbols/domain/screens/Screen.md) - `class Screen(Contract)` in `domain/screens`.
 
 ## Referenced by

@@ -1,7 +1,7 @@
 ---
 type: Module
 title: application.class_build
-description: 'What the built app does with each part of the class diagram (#145, ADR-0205): the record class is built and checked; the other classes and the associations are drawn but not built.'
+description: 'What the built app does with each part of the class diagram (#145, ADR-0205, ADR-0235): the record class is built and checked; an association marked built becomes a reference field the app checks against stored objects…'
 resource: repo://src/eija_studio/application/class_build.py
 tags:
 - module
@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/class_build.py
   title: application/class_build.py
   hash_method: ast-api-v1
-  sha256: d01fe218e32025a4a46a046fae950994c7bd18a71cc73b1fa463259e65ffc9d1
-notes_baseline: d2c708423b05bb8623c78cbd761fa2441dc97e650d11384cf5af5cd5e7b97783
+  sha256: 35a9d73c37d8cc1d297c77ec556cd271ba416fb6d85c286ae89acdd4e900afc1
+notes_baseline: 0e04def91050b04c227d8449b792f2d4b5e0752f8cea77a8270367a445e6152b
 ---
 
 # application.class_build
@@ -29,8 +29,9 @@ notes_baseline: d2c708423b05bb8623c78cbd761fa2441dc97e650d11384cf5af5cd5e7b97783
 ## Module docstring
 
 ~~~text
-What the built app does with each part of the class diagram (#145, ADR-0205): the record class is built and checked;
-the other classes and the associations are drawn but not built. The diagram says which is which, so nobody reads an
+What the built app does with each part of the class diagram (#145, ADR-0205, ADR-0235): the record class is built and
+checked; an association marked built becomes a reference field the app checks against stored objects of the other class;
+the other classes and associations are drawn but not built. The diagram says which is which, so nobody reads an
 association as a rule the app enforces.
 
 The built app (ADR-0150, ADR-0153) stores records of the record class only and checks their attribute values. It never

@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from eija_studio.domain.data import Attribute, DataModel
+from eija_studio.domain.data import Attribute, DataModel, record_fields, references
 from eija_studio.domain.models import Workflow
 from eija_studio.domain.pack import Pack
 
@@ -21,9 +21,10 @@ FORMAT = "3.1.0"
 # The refusals the generated server sends, by status (app/server.py: FORBIDDEN, INVALID, NOT_FOUND, else 409).
 REFUSALS = {
     "400": ("The request is malformed, or a field breaks the record class", ["BAD_REQUEST", "INVALID_TITLE", "FIELD_REQUIRED", "FIELD_TYPE",
-                                                                           "FIELD_TOO_LONG", "FIELD_CHOICE", "UNKNOWN_FIELD"]),
+                                                                           "FIELD_TOO_LONG", "FIELD_CHOICE", "UNKNOWN_FIELD",
+                                                                           "REFERENCE_UNKNOWN"]),
     "403": ("The actor may not do this", ["UNKNOWN_ACTOR", "ACTOR_REVOKED", "ROLE_DENIED", "ASSIGNMENT_DENIED"]),
-    "404": ("No such record", ["NOT_FOUND"]),
+    "404": ("No such record, or no stored class of that name", ["NOT_FOUND"]),
     "409": ("The kernel refused the step: the record is not in a state the action leaves, its version moved on, or it was "
             "made under another model or data model", ["STATE_DENIED", "STALE_VERSION", "STALE_INSTANCE", "STALE_DATA"]),
 }
@@ -49,10 +50,10 @@ def _field(attribute: Attribute) -> dict[str, Any]:
 def _fields(data: DataModel | None) -> dict[str, Any]:
     if data is None:
         return {"type": "object", "maxProperties": 0, "description": "This workflow has no record class, so a record has no fields."}
-    record = data.entity(data.record)
+    fields = record_fields(data)  # attributes, then the id fields of built associations (ADR-0235)
     return {"type": "object", "additionalProperties": False, "description": f"The attributes of the {data.record} class (data.json).",
-            "properties": {a.name: _field(a) for a in record.attributes},
-            "required": [a.name for a in record.attributes if a.required]}
+            "properties": {a.name: _field(a) for a in fields},
+            "required": [a.name for a in fields if a.required]}
 
 
 def _error(status: str) -> dict[str, Any]:
@@ -69,7 +70,22 @@ def _body(ref: str) -> dict[str, Any]:
     return {"required": True, "content": {"application/json": {"schema": {"$ref": ref}}}}
 
 
-def _paths(model: Workflow) -> dict[str, Any]:
+def _objects(data: DataModel | None) -> dict[str, Any]:
+    """The object store behind reference fields (ADR-0235): the classes a built association names, or none."""
+    stored = sorted({r.target for r in references(data)})
+    name = {"name": "class", "in": "path", "required": True,
+            "description": f"A class a record refers to: {', '.join(stored)}" if stored else "This app stores no objects: every class is 404",
+            "schema": {"enum": stored} if stored else {"type": "string", "pattern": "^[A-Z][A-Za-z0-9]{0,39}$"}}
+    new = {"required": True, "content": {"application/json": {"schema": {
+        "type": "object", "required": ["actor"], "properties": {"actor": {"$ref": "#/components/schemas/Actor"}, "fields": {"type": "object"}}}}}}
+    return {"get": {"operationId": "listObjects", "summary": "The stored objects of a class a record refers to", "parameters": [name],
+                    "responses": {"200": _ok("The objects", {"type": "array", "items": {"type": "object"}}), "404": _error("404")}},
+            "post": {"operationId": "createObject", "summary": "Store an object a record can refer to; its values are checked",
+                     "parameters": [name], "requestBody": new,
+                     "responses": {"201": _ok("The new object and its id", {"type": "object"}), **{s: _error(s) for s in ("400", "403", "404")}}}}
+
+
+def _paths(model: Workflow, data: DataModel | None) -> dict[str, Any]:
     record_id = {"name": "id", "in": "path", "required": True, "schema": {"type": "string", "pattern": "^[0-9a-f]{1,32}$"}}
     actor = {"name": "actor", "in": "query", "required": False, "description": "Whose options to list", "schema": {"$ref": "#/components/schemas/Actor"}}
     obj, many = {"type": "object"}, {"type": "array", "items": {"type": "object"}}
@@ -87,6 +103,7 @@ def _paths(model: Workflow) -> dict[str, Any]:
                                            "responses": {"200": _ok("The step the kernel took", obj), **{s: _error(s) for s in ("400", "403", "404", "409")}}}},
         "/api/outbox": {"get": {"operationId": "outbox", "summary": "Notifications written by actions; nothing is sent",
                                 "responses": {"200": _ok("The outbox", many)}}},
+        "/api/objects/{class}": _objects(data),
     }
 
 
@@ -100,7 +117,7 @@ def api_contract(pack: Pack, model: Workflow, data: DataModel | None) -> dict[st
                  "description": f"Generated by EIJA Studio from model {model.semantic_hash[:12]}. The kernel decides every action; "
                                 "the actor is chosen from the pack's fixture directory, which is not authentication."},
         "servers": [{"url": "http://127.0.0.1:8000", "description": "run.py's default address (--port or PORT change it)"}],
-        "paths": _paths(model),
+        "paths": _paths(model, data),
         "components": {"schemas": {
             "Actor": {"type": "string", "enum": sorted(a.id for a in pack.fixtures.actors)},
             "Action": {"type": "string", "enum": actions,

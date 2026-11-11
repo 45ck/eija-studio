@@ -8,7 +8,7 @@ from __future__ import annotations
 from typing import Any
 
 from eija_studio.application.build_subject import checked_build_subject, snapshot_contracts
-from eija_studio.domain.data import Attribute, DataModel
+from eija_studio.domain.data import Attribute, DataModel, record_fields
 from eija_studio.domain.models import DomainError, Transition, Workflow
 from eija_studio.domain.navigation import Destination, Navigation, navigation_for
 from eija_studio.domain.pack import Pack
@@ -37,7 +37,7 @@ def _fields(screen: Screen, data: DataModel | None, *, editable: bool, react: bo
         if screen.fields:
             raise DomainError("SCREEN_UNKNOWN_ATTRIBUTE", "A screen without a data model cannot declare record fields")
         return []
-    attributes = {a.name: a for a in data.entity(data.record).attributes}
+    attributes = {a.name: a for a in record_fields(data)}
     return [{"attribute": field.attribute, "label": field.label or field.attribute, "order": order,
              "type": attributes[field.attribute].type, "required": attributes[field.attribute].required,
              "choices": list(attributes[field.attribute].choices), "max_length": attributes[field.attribute].max_length,
@@ -100,7 +100,7 @@ def _record(data: DataModel | None) -> dict[str, Any]:
     if data is None:
         return {"name": "Record", "class_ref": None, "fields": []}
     return {"name": data.record, "class_ref": "class:" + data.record,
-            "fields": [a.name for a in data.entity(data.record).attributes]}
+            "fields": [a.name for a in record_fields(data)]}
 
 
 def app_presentation(files: dict[str, str]) -> dict[str, Any]:

@@ -1,7 +1,7 @@
 ---
 type: Function
 title: application.appgen.data_cases
-description: 'Record values to create with, and `check_values`'' answer for each: a valid record, then each required value missing, each value of the wrong type, each text one character too long, an undeclared choice and an unknown fi…'
+description: 'Record values to create with, and `check_record`''s answer for each: a valid record, then each required value missing, each value of the wrong type, each text one character too long, an undeclared choice and an unknown f…'
 resource: repo://src/eija_studio/application/appgen.py#data_cases
 tags:
 - symbol
@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py#data_cases
   title: application/appgen.py
   hash_method: ast-v2
-  sha256: ba02ccb91830211e7bac2ea5c06fd36bbcd1b4bf4bac180075d6d9ac8919f79f
-notes_baseline: aa99a108822c71fa713a5e8a5517bf2bd0742dc5b4a217c2a1b5bcffcb7e58c7
+  sha256: b5bc2cd0be9747c61d356e14536ff3abb89738f0a37e7356e6b432df610fb4a2
+notes_baseline: 7e2b957c2befa6980f31be9f47b8c8c23ce1be26c2aef3cccd746df92c826234
 ---
 
 # application.appgen.data_cases
@@ -32,8 +32,9 @@ notes_baseline: aa99a108822c71fa713a5e8a5517bf2bd0742dc5b4a217c2a1b5bcffcb7e58c7
 ## Docstring
 
 ~~~text
-Record values to create with, and `check_values`' answer for each: a valid record, then each required value
-missing, each value of the wrong type, each text one character too long, an undeclared choice and an unknown field.
+Record values to create with, and `check_record`'s answer for each: a valid record, then each required value
+missing, each value of the wrong type, each text one character too long, an undeclared choice and an unknown field,
+then each reference field missing, not an id and naming no stored object (with the `stock` objects stored).
 ~~~
 <!-- okf:generated:end facts -->
 
@@ -45,7 +46,10 @@ _No curated notes yet._
 ## Depends on
 
 * [application.appgen.absent](/symbols/application/appgen/absent.md) - A name guaranteed not to be in `taken`, so a negative case can never collide with a declared one.
+* [application.appgen.stock](/symbols/application/appgen/stock.md) - One valid object of each class a record refers to (ADR-0235), stored before the data cases run.
 * [domain.data.DataModel](/symbols/domain/data/DataModel.md) - `class DataModel(Contract)` in `domain/data`.
+* [domain.data.record_fields](/symbols/domain/data/record_fields.md) - What a record holds: the record class's attributes, then each reference field as text holding an object's id.
+* [domain.data.references](/symbols/domain/data/references.md) - The record's reference fields, one per built association, in declaration order.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
 

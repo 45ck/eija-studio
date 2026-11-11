@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py
   title: application/appgen.py
   hash_method: ast-api-v1
-  sha256: 75675aabb8f18b122cd2f04ab06dbb59426453b055d1ac55e9801c80c78b18e5
-notes_baseline: 8dec358008eab542f2ca99ea54bdb02b3a5ae8d1ff9ad04980512af95ebdbe63
+  sha256: 113b099c0b9252489ce1eba57b26bdc71d004efdc7b0e1be558881eebe552dad
+notes_baseline: 5fe2a8571b063dc7cb09a5d6e65f0d9ed9e067dc1ae790ae6ea116d516a7a993
 ---
 
 # application.appgen
@@ -51,13 +51,14 @@ Pure: no IO, no clock, no randomness. The same pack and model always give byte-i
 * [`WRONG`](/symbols/application/appgen/WRONG.md) (constant) - no docstring
 * [`absent`](/symbols/application/appgen/absent.md) (function) - A name guaranteed not to be in `taken`, so a negative case can never collide with a declared one.
 * [`app_limits`](/symbols/application/appgen/app_limits.md) (function) - no docstring
-* [`data_cases`](/symbols/application/appgen/data_cases.md) (function) - Record values to create with, and `check_values`' answer for each: a valid record, then each required value missing, ea…
+* [`data_cases`](/symbols/application/appgen/data_cases.md) (function) - Record values to create with, and `check_record`'s answer for each: a valid record, then each required value missing, e…
 * [`generate`](/symbols/application/appgen/generate.md) (function) - Return the per-model files and the build manifest (without file hashes or test results).
 * [`may_start`](/symbols/application/appgen/may_start.md) (function) - Whether the model lets this role start a record (ADR-0231): any role when it names no initiators.
 * [`oracle_cases`](/symbols/application/appgen/oracle_cases.md) (function) - Every state x action x actor x expected version, then the same request replayed.
 * [`readme`](/symbols/application/appgen/readme.md) (function) - no docstring
 * [`separation_cases`](/symbols/application/appgen/separation_cases.md) (function) - One fixture actor takes an action of a separation-of-duties law, then tries another the law names, on the same record;…
 * [`start_cases`](/symbols/application/appgen/start_cases.md) (function) - Each active fixture actor starting a record, and the kernel's answer.
+* [`stock`](/symbols/application/appgen/stock.md) (function) - One valid object of each class a record refers to (ADR-0235), stored before the data cases run.
 * [`value_cases`](/symbols/application/appgen/value_cases.md) (function) - For each transition with guards over record values, an actor who may take it tries it on records holding every combinat…
 
 ## Internal imports
@@ -106,12 +107,13 @@ _No curated notes yet._
 * [application.appgen.WRONG](/symbols/application/appgen/WRONG.md) - Constant `WRONG` in `application/appgen`.
 * [application.appgen.absent](/symbols/application/appgen/absent.md) - A name guaranteed not to be in `taken`, so a negative case can never collide with a declared one.
 * [application.appgen.app_limits](/symbols/application/appgen/app_limits.md) - `def app_limits(data: DataModel | None) -> list[str]` in `application/appgen`.
-* [application.appgen.data_cases](/symbols/application/appgen/data_cases.md) - Record values to create with, and `check_values`' answer for each: a valid record, then each required value missing, each value of the wrong type, each text on…
+* [application.appgen.data_cases](/symbols/application/appgen/data_cases.md) - Record values to create with, and `check_record`'s answer for each: a valid record, then each required value missing, each value of the wrong type, each text o…
 * [application.appgen.generate](/symbols/application/appgen/generate.md) - Return the per-model files and the build manifest (without file hashes or test results).
 * [application.appgen.may_start](/symbols/application/appgen/may_start.md) - Whether the model lets this role start a record (ADR-0231): any role when it names no initiators.
 * [application.appgen.oracle_cases](/symbols/application/appgen/oracle_cases.md) - Every state x action x actor x expected version, then the same request replayed.
 * [application.appgen.readme](/symbols/application/appgen/readme.md) - `def readme(pack: Pack, model: Workflow, cases: int, data: DataModel | None=None) -> str` in `application/appgen`.
 * [application.appgen.separation_cases](/symbols/application/appgen/separation_cases.md) - One fixture actor takes an action of a separation-of-duties law, then tries another the law names, on the same record; the kernel's answer to the second (ADR-0…
 * [application.appgen.start_cases](/symbols/application/appgen/start_cases.md) - Each active fixture actor starting a record, and the kernel's answer.
+* [application.appgen.stock](/symbols/application/appgen/stock.md) - One valid object of each class a record refers to (ADR-0235), stored before the data cases run.
 * [application.appgen.value_cases](/symbols/application/appgen/value_cases.md) - For each transition with guards over record values, an actor who may take it tries it on records holding every combination of values its guards can tell apart…
 <!-- okf:generated:end links -->
