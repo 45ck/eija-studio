@@ -41,6 +41,7 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Referenced by
 
+* [application.appgen.value_cases](/symbols/application/appgen/value_cases.md) - For each transition with guards over record values, an actor who may take it tries it on records holding every combination of values its guards can tell apart…
 * [application.law_proof.STOPPED](/symbols/application/law_proof/STOPPED.md) - Constant `STOPPED` in `application/law_proof`.
 * [domain.value_guards.combinations](/symbols/domain/value_guards/combinations.md) - `valuations` over these guards, grouped by attribute.
 <!-- okf:generated:end links -->

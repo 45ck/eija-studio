@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py#value_cases
   title: application/appgen.py
   hash_method: ast-v2
-  sha256: e74c32c3a55e1f7259bd138f5d2fd42905b876a6daee434a426637fd76011ae6
-notes_baseline: 3cfa1d72e879d7181487a764b8d87711ac06213ce27d4e47d3804ddc0dcdf182
+  sha256: 6c9dfc2314ee7716798250f9d2a4aab278b383fcb60f03f74f4c260248b950b5
+notes_baseline: 3f2cfaa6f48e4581627c21be4e2fc7a6a309ee8fc201b2a41cef24f6edc9bfca
 ---
 
 # application.appgen.value_cases
@@ -45,8 +45,10 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
+* [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
 * [domain.models.ValueGuard](/symbols/domain/models/ValueGuard.md) - A UML guard over one of the record's values, such as ``[amount > 500]`` (issue #93, ADR-0234).
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.pack.Pack](/symbols/domain/pack/Pack.md) - `class Pack(Contract)` in `domain/pack`.
+* [domain.value_guards.MAX_VALUATIONS](/symbols/domain/value_guards/MAX_VALUATIONS.md) - Constant `MAX_VALUATIONS` in `domain/value_guards`.
 * [domain.value_guards.combinations](/symbols/domain/value_guards/combinations.md) - `valuations` over these guards, grouped by attribute.
 <!-- okf:generated:end links -->

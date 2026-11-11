@@ -30,22 +30,24 @@ def guards_by_attribute(model: Workflow) -> dict[str, list[ValueGuard]]:
     return dict(sorted(found.items()))
 
 
-def _between(low: Any, high: Any) -> list[Any]:
-    """A number strictly between two neighbouring constants, if there is one."""
-    if isinstance(low, int) and isinstance(high, int):
+def _between(low: Any, high: Any, whole: bool) -> list[Any]:
+    """A value strictly between two neighbouring constants, if there is one. Record numbers may be fractional, so
+    between 5 and 6 lies 5.5; days are whole, so between two consecutive days lies none."""
+    if whole:
         return [(low + high) // 2] if high - low >= 2 else []
     return [(low + high) / 2]
 
 
-def _numbers(constants: list[Any]) -> list[Any]:
+def _numbers(constants: list[Any], whole: bool = False) -> list[Any]:
     ordered = sorted(set(constants))
-    inner = [x for a, b in pairwise(ordered) for x in _between(a, b)]
+    inner = [x for a, b in pairwise(ordered) for x in _between(a, b, whole)]
     return sorted({ordered[0] - 1, *ordered, *inner, ordered[-1] + 1})
 
 
 def _dates(constants: list[date]) -> list[str]:
-    days = _numbers([d.toordinal() for d in constants])
-    return [date.fromordinal(int(n)).isoformat() for n in days]
+    """Days standing for every date; a day before 0001-01-01 or after 9999-12-31 does not exist and is left out."""
+    days = _numbers([d.toordinal() for d in constants], whole=True)
+    return [date.fromordinal(int(n)).isoformat() for n in days if 1 <= n <= date.max.toordinal()]
 
 
 def _other(constants: set[str]) -> str:

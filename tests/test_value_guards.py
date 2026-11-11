@@ -122,11 +122,22 @@ def test_guards_are_checked_against_the_data_model():
 def test_points_cover_every_region_the_guards_tell_apart():
     numbers = points([ValueGuard(attribute="a", op="gt", value=500), ValueGuard(attribute="a", op="le", value=100.5)])
     assert numbers == [None, 99.5, 100.5, 300.25, 500, 501]
-    assert points([ValueGuard(attribute="a", op="gt", value=5), ValueGuard(attribute="a", op="lt", value=6)]) == [None, 4, 5, 6, 7]
+    # Record numbers may be fractional: 5.5 lies between 5 and 6 and takes both guards.
+    assert points([ValueGuard(attribute="a", op="gt", value=5), ValueGuard(attribute="a", op="lt", value=6)]) == [None, 4, 5, 5.5, 6, 7]
+    edges = points([ValueGuard(attribute="d", op="ge", value="0001-01-01"), ValueGuard(attribute="d", op="le", value="9999-12-31")])
+    assert edges == [None, "0001-01-01", "5000-07-02", "9999-12-31", "other"]  # no day outside the calendar
     dates = points([ValueGuard(attribute="d", op="lt", value="2026-01-01")])
     assert dates == [None, "2025-12-31", "2026-01-01", "2026-01-02", "other"]
     model = guarded(DESK.model, **{"TR-APPROVE": [SMALL], "TR-DECLINE": [{"attribute": "reason", "op": "eq", "value": "Damaged"}]})
     assert len(valuations(model)) == 4 * 3 and valuations(DESK.model) == [{}]
+
+
+def test_too_many_combinations_refuse_the_build_rather_than_check_nothing():
+    many = [{"attribute": name, "op": "gt", "value": 1} for name in ("amount", "a1", "a2", "a3", "a4", "a5")]
+    model = guarded(DESK.model, **{"TR-APPROVE": many})
+    with pytest.raises(DomainError) as e:
+        value_cases(DESK, model)
+    assert e.value.code == "VALUE_GUARD_TOO_MANY"
 
 
 def test_the_law_proof_finds_values_that_strand_a_record():

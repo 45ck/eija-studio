@@ -19,7 +19,7 @@ from eija_studio.domain.navigation import navigation_for
 from eija_studio.domain.pack import Pack
 from eija_studio.domain.policy import check_policy
 from eija_studio.domain.screens import Screens, default_screens, require_buildable
-from eija_studio.domain.value_guards import combinations, guard_problems
+from eija_studio.domain.value_guards import MAX_VALUATIONS, combinations, guard_problems
 from .memo import model_hash
 from .runtime import execute
 
@@ -189,7 +189,11 @@ def value_cases(pack: Pack, model: Workflow) -> list[dict[str, object]]:
         grouped: dict[str, list[ValueGuard]] = {}
         for guard in t.conditions:
             grouped.setdefault(guard.attribute, []).append(guard)
-        for values in combinations(dict(sorted(grouped.items()))) or []:
+        tried = combinations(dict(sorted(grouped.items())))
+        if tried is None:  # never a silently empty check: the build is refused instead
+            raise DomainError("VALUE_GUARD_TOO_MANY", f"{t.id} has guards over too many combinations of values to check "
+                              f"(more than {MAX_VALUATIONS}); no app is built", {"refs": [f"transition:{t.id}"]})
+        for values in tried:
             session = _OracleSession(pack, model, t.from_state, values)
             cases.append({"state": t.from_state, "action": t.action, "actor": actor, "values": values,
                           "expect": _kernel(pack, model, session, actor, t.action, 0)})
