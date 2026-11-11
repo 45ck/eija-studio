@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/generated_app.py
   title: domain/generated_app.py
   hash_method: ast-api-v1
-  sha256: c3354a3c26df3fc4760ad53879b7345aec75790f576db389a8d0638368f8d50d
-notes_baseline: 910ebcb9b3b12b34bfb89e6bd2159a5e95cc29e1604095f7e469cd40ee577917
+  sha256: 5772ab7e83c41e63bd9ded46d8a763e15f4a7f2c1198c58c5c1e0eebc726011d
+notes_baseline: 159e0625863fa409a500a5097bd9862bcaa4b3f76b8a48ac732da29d52d91ce1
 ---
 
 # domain.generated_app
@@ -35,6 +35,7 @@ Versioned exact generated-app selection and evidence contracts; no authority is 
 ## Public symbols
 
 * [`Digest`](/symbols/domain/generated_app/Digest.md) (type-alias) - no docstring
+* [`GENERATED_TESTS`](/symbols/domain/generated_app/GENERATED_TESTS.md) (constant) - no docstring
 * [`GeneratedAppActivation`](/symbols/domain/generated_app/GeneratedAppActivation.md) (class) - no docstring
 * [`GeneratedAppBinding`](/symbols/domain/generated_app/GeneratedAppBinding.md) (class) - no docstring
 * [`GeneratedBuildSubject`](/symbols/domain/generated_app/GeneratedBuildSubject.md) (class) - no docstring
@@ -64,6 +65,7 @@ _No curated notes yet._
 * [application.service_views](/modules/application/service_views.md) - Read-only Studio projections over the same case, pack and exact-app evidence.
 * [domain.change_case](/modules/domain/change_case.md) - Module `domain/change_case` (no module docstring).
 * [domain.generated_app.Digest](/symbols/domain/generated_app/Digest.md) - Type alias `Digest` in `domain/generated_app`.
+* [domain.generated_app.GENERATED_TESTS](/symbols/domain/generated_app/GENERATED_TESTS.md) - Constant `GENERATED_TESTS` in `domain/generated_app`.
 * [domain.generated_app.GeneratedAppActivation](/symbols/domain/generated_app/GeneratedAppActivation.md) - `class GeneratedAppActivation(Contract)` in `domain/generated_app`.
 * [domain.generated_app.GeneratedAppBinding.consistent_digest](/symbols/domain/generated_app/GeneratedAppBinding.consistent_digest.md) - `def consistent_digest(self) -> Self` in `domain/generated_app`.
 * [domain.generated_app.GeneratedAppBinding](/symbols/domain/generated_app/GeneratedAppBinding.md) - `class GeneratedAppBinding(Contract)` in `domain/generated_app`.

@@ -669,7 +669,10 @@
     for (const setting of ["setConnectable", "setCellsEditable", "setCellsDisconnectable", "setCellsResizable", "setDropEnabled"]) useCaseGraph[setting](false);
     useCaseGraph.setPanning(true);
     const parent = useCaseGraph.getDefaultParent(), shape = useCaseShape();
-    const roles = shape.actors.map((a) => a.name), actorStatus = Object.fromEntries(shape.actors.map((a) => [a.name, a.status]));
+    // A role that may only start records holds no transition, but is still an actor of "Create" (ADR-0231).
+    const creators = (model.initiators || []).filter((r) => !shape.actors.some((a) => a.name === r));
+    const roles = [...shape.actors.map((a) => a.name), ...creators];
+    const actorStatus = Object.fromEntries([...shape.actors.map((a) => [a.name, a.status]), ...creators.map((r) => [r, "same"])]);
     // Group each role's use cases together, in workflow order, and put the actor beside its group: no line crosses a use case.
     // A use case whose association moves sits with its new actor; a removed one with the actor it had.
     const cases = roles.flatMap((role) => shape.cases.filter((t) => t.role === role));
@@ -681,8 +684,10 @@
         position: [boundary.x, 10], size: [boundary.w, height], style: { ...font, verticalAlign: "top", fontStyle: 1, fontSize: 13,
           fillColor: "#fbfcfe", strokeColor: "#4a5568", selectable: false, movable: false } });
       const cells = {};
-      // Starting a record is a use case too; any fixture actor may start one, so it has no association.
-      useCaseGraph.insertVertex({ parent, id: "uc:create", value: `Create ${data ? data.record : "record"}`, position: [boundary.x + 60, TOP - 4],
+      // Starting a record is a use case too. Any actor may start one unless the model names its initiators;
+      // then each initiator is associated with it (issue #142, ADR-0231).
+      const starters = new Set(model.initiators || []);
+      const create = useCaseGraph.insertVertex({ parent, id: "uc:create", value: `Create ${data ? data.record : "record"}`, position: [boundary.x + 60, TOP - 4],
         size: [boundary.w - 120, 48], style: { ...font, shape: "ellipse", fillColor: "#ffffff", strokeColor: "#5b74d6", fontSize: 13 } });
       cases.forEach((t, i) => {
         cells[t.id] = useCaseGraph.insertVertex({ parent, id: "uc:" + t.id, value: changeMark(t.status) + t.action, position: [boundary.x + 60, rowY(i)],
@@ -691,7 +696,7 @@
       roles.forEach((role, i) => {
         const mine = cases.map((t, j) => [t, j]).filter(([t]) => t.role === role);
         const near = mine.length ? mine : cases.map((t, j) => [t, j]).filter(([t]) => t.was_role === role); // an actor left with only a moved line
-        const y = near.reduce((sum, [, j]) => sum + rowY(j), 0) / Math.max(1, near.length) - 8;
+        const y = near.length ? near.reduce((sum, [, j]) => sum + rowY(j), 0) / near.length - 8 : TOP - 12; // a creator sits by "Create"
         const left = i % 2 === 0, kind = roleKind(role), look = ACTOR_LOOK[kind];
         const actor = kind === "human"
           ? useCaseGraph.insertVertex({ parent, id: "role:" + role, value: role, position: [left ? 90 : boundary.x + boundary.w + 120, y],
@@ -700,6 +705,7 @@
           : useCaseGraph.insertVertex({ parent, id: "role:" + role, value: `«${kind}»\n${role}`, position: [left ? 40 : boundary.x + boundary.w + 70, y + 8],
             size: [136, 48], style: { ...font, shape: "rectangle", rounded: kind === "agent", whiteSpace: "wrap", fillColor: look.fill,
               strokeColor: look.stroke, fontSize: 12, ...changeLook(actorStatus[role], "actor") } });
+        if (starters.has(role)) useCaseGraph.insertEdge({ parent, source: actor, target: create, style: { strokeColor: "#4a5568", endArrow: "none" } });
         for (const link of shape.links.filter((l) => l.role === role)) {
           useCaseGraph.insertEdge({ parent, source: actor, target: cells[link.case], style: { strokeColor: "#4a5568", endArrow: "none", ...changeLook(link.status, "line") } });
         }

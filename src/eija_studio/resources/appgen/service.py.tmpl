@@ -136,7 +136,8 @@ class Service:
         title = title.strip()
         if not 1 <= len(title) <= 200:
             raise DomainError("INVALID_TITLE", "Give a title of 1 to 200 characters")
-        if not Session(self.db).actor(actor_id)["active"]:
+        actor = Session(self.db).actor(actor_id)
+        if not actor["active"]:
             raise DomainError("ACTOR_REVOKED", "Actor is not active")
         if RECORD is not None:
             values = check_values(RECORD, fields or {})  # the data model's own check, from eija_studio
@@ -146,7 +147,7 @@ class Service:
             values = {}
 
         def work(session: Session) -> dict[str, Any]:
-            item = initialise(session, CASE, MODEL, pack=PACK)
+            item = initialise(session, CASE, MODEL, pack=PACK, role=actor["role"])  # the model may name who starts a record
             self.db.execute("UPDATE records SET title=?, created_by=?, fields=?, data_digest=? WHERE id=?",
                             (title, actor_id, canonical(values), DATA_DIGEST, item["id"]))
             return self._record(item["id"])

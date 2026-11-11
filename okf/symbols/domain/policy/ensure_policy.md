@@ -56,6 +56,6 @@ The fail-closed wrapper: [runtime.execute](/symbols/application/runtime/execute.
 ## Referenced by
 
 * [application.runtime.execute](/symbols/application/runtime/execute.md) - `def execute(session: UnitOfWork, case_id: str, model: Workflow, command: ExecuteCommand, *, fault: Callable[[…` in `application/runtime`.
-* [application.runtime.initialise](/symbols/application/runtime/initialise.md) - `def initialise(session: UnitOfWork, case_id: str, model: Workflow, *, state: str | None=None, pack: Pack | No…` in `application/runtime`.
+* [application.runtime.initialise](/symbols/application/runtime/initialise.md) - Start a record.
 * [domain.policy.apply_transactions](/symbols/domain/policy/apply_transactions.md) - Apply an edit sequence as one change: the start must conform, the result must conform (intermediate steps need only be coherent workflows).
 <!-- okf:generated:end links -->

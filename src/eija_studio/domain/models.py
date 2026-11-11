@@ -3,7 +3,7 @@ from __future__ import annotations
 from hashlib import sha256
 import json
 from typing import Any, Literal
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, SerializerFunctionWrapHandler, model_serializer, model_validator
 
 
 class DomainError(ValueError):
@@ -61,6 +61,16 @@ class Workflow(Contract):
     initial_state: str
     states: tuple[str, ...] = Field(min_length=1, max_length=32)
     transitions: tuple[Transition, ...] = Field(min_length=1, max_length=64)
+    # Roles that may start a record (ADR-0231, issue #142). Empty means any active actor, as before: an empty tuple is
+    # left out of every dump, so models that do not name initiators keep their exact bytes and hashes.
+    initiators: tuple[str, ...] = Field(default=(), max_length=16)
+
+    @model_serializer(mode="wrap")
+    def _omit_open_start(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        data: dict[str, Any] = handler(self)
+        if not self.initiators:
+            data.pop("initiators", None)
+        return data
 
     @model_validator(mode="after")
     def coherent(self) -> Workflow:
@@ -73,6 +83,8 @@ class Workflow(Contract):
             if t.id in ids or (t.from_state, t.action, t.role) in keys or t.action in actions:
                 raise ValueError("Duplicate or ambiguous transition/action")
             ids.add(t.id); keys.add((t.from_state, t.action, t.role)); actions.add(t.action)
+        if len(set(self.initiators)) != len(self.initiators):
+            raise ValueError("Duplicate initiator role")
         return self
 
     @property
@@ -81,6 +93,8 @@ class Workflow(Contract):
         data = self.model_dump(mode="json")
         data["states"] = sorted(data["states"])
         data["transitions"] = sorted(data["transitions"], key=lambda x: x["id"])
+        if "initiators" in data:  # who may start a record is a set (ADR-0231); absent when empty, so old hashes hold
+            data["initiators"] = sorted(data["initiators"])
         for t in data["transitions"]:
             for key in ("guards", "required_effects", "forbidden_effects"):
                 t[key] = sorted(t[key])

@@ -2039,6 +2039,15 @@
           "minItems": 1,
           "title": "Transitions",
           "type": "array"
+        },
+        "initiators": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Initiators",
+          "type": "array"
         }
       },
       "required": [

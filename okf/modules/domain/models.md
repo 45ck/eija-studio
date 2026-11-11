@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py
   title: domain/models.py
   hash_method: ast-api-v1
-  sha256: 19ee9ee062677e926136fd9126481b5f144184375dc48ef9f27ddae7c4e63a95
-notes_baseline: 61c6c34f6e7082be87df3327b8157143fce5f509c507cb33393ee174af67909e
+  sha256: b11114669c762eb73e9a7564957caabe81e61e9d1a9728bca263a863e8c1b6fb
+notes_baseline: 708d9fec8035b1048b93c67b78481b2de4381afe2a744b0b61f42f8e3c509a5e
 ---
 
 # domain.models

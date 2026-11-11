@@ -207,14 +207,22 @@ def _stop(entry: dict[str, Any], marks: list[str], break_on_refusal: bool) -> di
     return None
 
 
+def _keeps_working(rng: _Dice, workable: list[str]) -> bool:
+    """Whether a user who may start a record acts on an existing one instead (two seeded draws, as before)."""
+    return not rng.chance(NEW_RECORD) and (bool(workable) or not rng.chance(NEW_RECORD))
+
+
 def _step(session: MemorySession, pack: Pack, model: Workflow, run: _Run, rng: _Dice, n: int, actor: dict[str, Any]) -> None:
     """One user's turn: start a record, or act on one they can work on (any record if none)."""
     records = list(session.instances)  # creation order, not the kernel's random ids, so a seed replays exactly
     workable = [r for r in records if _actions_for(model, actor, session.instances[r]["state"])]
-    if records and not rng.chance(NEW_RECORD) and (workable or not rng.chance(NEW_RECORD)):
+    may_start = not model.initiators or actor["role"] in model.initiators  # issue #142, ADR-0231
+    if records and (not may_start or _keeps_working(rng, workable)):
         _attempt(session, pack, model, run, rng, n, actor, rng.choice(workable or records))
         return
-    record = initialise(session, CASE, model, pack=pack)["id"]  # type: ignore[arg-type]
+    if not may_start:
+        return  # nothing to act on, and this user may not start a record
+    record = initialise(session, CASE, model, pack=pack, role=actor["role"])["id"]  # type: ignore[arg-type]
     run.labels[record] = f"R{len(run.labels) + 1}"
     run.entered[model.initial_state] += 1
     run.log({"step": n, "actor": actor["id"], "role": actor["role"], "record": run.labels[record],

@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/generated_app.py#generated_receipt_status
   title: domain/generated_app.py
   hash_method: ast-v2
-  sha256: 15d8c009b6b9430fd14436fe6dfb241fa6086ed257dfe59d41359c8dcde413f2
-notes_baseline: 1f55effbbec876382575d43e7a66cb59c1d368a975bef4f902d8242480c6409e
+  sha256: b3954f31fb0db19d9d569ad273c8537c2be8af28f443e82b44dc21ceda8fd290
+notes_baseline: af69213102e49915b03c8c621e63b24e4b7bcd1ca3ff0d828e103ad9ded684db
 ---
 
 # domain.generated_app.generated_receipt_status

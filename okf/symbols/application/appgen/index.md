@@ -17,5 +17,7 @@
 * [application.appgen.app_limits](app_limits.md) - `def app_limits(data: DataModel | None) -> list[str]` in `application/appgen`.
 * [application.appgen.data_cases](data_cases.md) - Record values to create with, and `check_values`' answer for each: a valid record, then each required value missing, each value of the wrong type, each text one character too long, an undeclared choice and an unknown fi…
 * [application.appgen.generate](generate.md) - Return the per-model files and the build manifest (without file hashes or test results).
+* [application.appgen.may_start](may_start.md) - Whether the model lets this role start a record (ADR-0231): any role when it names no initiators.
 * [application.appgen.oracle_cases](oracle_cases.md) - Every state x action x actor x expected version, then the same request replayed.
 * [application.appgen.readme](readme.md) - `def readme(pack: Pack, model: Workflow, cases: int, data: DataModel | None=None) -> str` in `application/appgen`.
+* [application.appgen.start_cases](start_cases.md) - Each active fixture actor starting a record, and the kernel's answer.

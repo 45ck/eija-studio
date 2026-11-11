@@ -118,13 +118,33 @@ def _answer(entity: Entity, values: dict[str, object]) -> dict[str, object]:
         return {"outcome": "REFUSED", "code": refused.code}
 
 
-def data_cases(pack: Pack, data: DataModel) -> list[dict[str, object]]:
+def may_start(model: Workflow, role: str) -> bool:
+    """Whether the model lets this role start a record (ADR-0231): any role when it names no initiators."""
+    return not model.initiators or role in model.initiators
+
+
+def start_cases(pack: Pack, model: Workflow) -> list[dict[str, object]]:
+    """Each active fixture actor starting a record, and the kernel's answer. Only for a model that names initiators,
+    so the oracle of every other model keeps its exact bytes."""
+    if not model.initiators:
+        return []
+    return [{"actor": a.id, "expect": {"outcome": "CREATED"} if may_start(model, a.role) else {"outcome": "REFUSED", "code": "ROLE_CANNOT_START"}}
+            for a in sorted(pack.fixtures.actors, key=lambda a: a.id) if a.active]
+
+
+def _creator(pack: Pack, model: Workflow | None) -> str:
+    """The first active fixture actor the model lets start a record."""
+    creator = next((a.id for a in pack.fixtures.actors if a.active and (model is None or may_start(model, a.role))), None)
+    if creator is None:
+        raise DomainError("NO_ACTIVE_ACTOR", "No fixture actor is active, so nobody could create a record; no app is built")
+    return creator
+
+
+def data_cases(pack: Pack, data: DataModel, model: Workflow | None = None) -> list[dict[str, object]]:
     """Record values to create with, and `check_values`' answer for each: a valid record, then each required value
     missing, each value of the wrong type, each text one character too long, an undeclared choice and an unknown field."""
     entity = data.entity(data.record)
-    creator = next((a.id for a in pack.fixtures.actors if a.active), None)
-    if creator is None:
-        raise DomainError("NO_ACTIVE_ACTOR", "No fixture actor is active, so nobody could create a record; no app is built")
+    creator = _creator(pack, model)
     valid = {a.name: _sample(a) for a in entity.attributes}
     tries = [("valid", valid), *(bad for a in entity.attributes for bad in _breaks(a, valid)),
              ("unknown field", valid | {absent("extra", {a.name for a in entity.attributes}): "x"})]
@@ -182,6 +202,16 @@ Run it with a Python that has `eija-studio` installed: the app's rules are the E
 """
 
 
+def _require_policy(pack: Pack, model: Workflow) -> None:
+    """Refuse a workflow from another pack, or one the protected policy blocks."""
+    if model.id != pack.id:
+        raise DomainError("WORKFLOW_PACK_MISMATCH", f"Workflow {model.id!r} does not belong to pack {pack.id!r}")
+    errors = check_policy(model, pack)
+    if errors:
+        raise DomainError("POLICY_BLOCKED", "The protected policy refuses this workflow; no app is built",
+                          {"codes": sorted(errors)})
+
+
 def generate(pack: Pack, model: Workflow | None = None, data: DataModel | None = None,
              screens: Screens | None = None) -> tuple[dict[str, str], dict[str, Any]]:
     """Return the per-model files and the build manifest (without file hashes or test results).
@@ -189,12 +219,7 @@ def generate(pack: Pack, model: Workflow | None = None, data: DataModel | None =
     Refuses a model the protected policy blocks: an app is never built from a workflow the kernel would refuse. Nor from
     screens with design problems (ADR-0154); without screens, each use case gets a default one."""
     model = model if model is not None else pack.model
-    if model.id != pack.id:
-        raise DomainError("WORKFLOW_PACK_MISMATCH", f"Workflow {model.id!r} does not belong to pack {pack.id!r}")
-    errors = check_policy(model, pack)
-    if errors:
-        raise DomainError("POLICY_BLOCKED", "The protected policy refuses this workflow; no app is built",
-                          {"codes": sorted(errors)})
+    _require_policy(pack, model)
     if data is not None and data.id != pack.id:
         raise DomainError("DATA_PACK_MISMATCH", f"Data model {data.id!r} does not belong to pack {pack.id!r}")
     screens = screens if screens is not None else default_screens(pack, model, data)
@@ -210,10 +235,11 @@ def generate(pack: Pack, model: Workflow | None = None, data: DataModel | None =
              "app/navigation.json": canonical(navigation) + "\n",
              "README.md": readme(pack, model, len(cases), data)}
     if data is not None:
-        oracle |= {"data_digest": data.digest, "data_cases": data_cases(pack, data)}
+        oracle |= {"data_digest": data.digest, "data_cases": data_cases(pack, data, model)}
         files["app/data.json"] = canonical(data) + "\n"
+    oracle |= {"start_cases": start_cases(pack, model)} if model.initiators else {}
     files["tests/oracle.json"] = canonical(oracle) + "\n"
-    total = len(cases) + len(oracle.get("data_cases", []))
+    total = len(cases) + len(oracle.get("data_cases", [])) + len(oracle.get("start_cases", []))
     manifest = {"format": FORMAT, "pack": {"id": pack.id, "version": pack.pack.version, "digest": pack.digest},
                 "model_semantic_hash": model.semantic_hash, "oracle": {"cases": total, "hash": fingerprint(oracle)},
                 "data": {"digest": data.digest, "record": data.record} if data else None,
