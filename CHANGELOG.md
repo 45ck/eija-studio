@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### 11 November 2026: one place to see what we are doing
+
+- The README's "How close is it?" section now lists the five current steps, and the roadmap opens with "What we are doing now": what each step is, where it stands and what waits on the owner.
+- [Issue #221](https://github.com/45ck/eija-studio/issues/221) is the checklist for current work. Open issues carry `owner-only`, `kernel`, `gates` or `later` labels, and the empty Phase 2 and Phase 3 milestones are closed.
+- The README no longer says hosted checks are manual-only: PRs now run the fast tier ([ADR-0228](docs/adr/0228-hosted-ci-on-pull-requests.md)) once Actions billing is unlocked.
+
 ### 9 November 2026: PlayIDE is easier to find and describe
 
 - The package description, keywords, classifiers and project links now describe PlayIDE as it is: an open-source UML workbench for reviewing AI-proposed changes and running the system locally. The old "bounded workflow POC" line is gone.

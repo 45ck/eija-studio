@@ -1,6 +1,30 @@
+---
+description: "What the PlayIDE team is working on now, what waits on the owner, and the longer milestones."
+---
+
 # PlayIDE roadmap
 
-Status as of **2026-10-11**. This replaces the 29 September lane-status snapshot. It describes the current working tree and approved direction, not a claim that every local change has reached `main` or passed release acceptance. Use Git history and linked run records for exact revisions; old test totals do not describe new code.
+## What we are doing now
+
+Status as of **2026-11-11**. The live checklist is [issue #221](https://github.com/45ck/eija-studio/issues/221); this section says the same thing in prose. Labels sort the rest of the board: [`owner-only`](https://github.com/45ck/eija-studio/labels/owner-only) needs a human, [`kernel`](https://github.com/45ck/eija-studio/labels/kernel) is executable-model work, [`later`](https://github.com/45ck/eija-studio/labels/later) is parked.
+
+The plan has five steps, in order:
+
+| Step | What and why | Where it stands |
+|---|---|---|
+| **1. Checks on every pull request** | Run the fast tier on every PR and the full tier nightly, so a green PR can merge itself | Workflows merged ([#217](https://github.com/45ck/eija-studio/pull/217), [ADR-0228](adr/0228-hosted-ci-on-pull-requests.md)). Hosted jobs cannot start until the account's Actions billing is unlocked; until then local `nox -t fast` is the merge evidence. Follow-ups: [#206](https://github.com/45ck/eija-studio/issues/206) |
+| **2. A backlog that matches the product** | Close stale issues, keep one list of current work, remove tech debt | Stale September issues closed and folded into [#218](https://github.com/45ck/eija-studio/issues/218); this list added; code cleanup in progress; [#55](https://github.com/45ck/eija-studio/issues/55) and [#56](https://github.com/45ck/eija-studio/issues/56) open |
+| **3. Measure how well AI reads a request** | A kernel-graded intent eval: the model names a meaning, the kernel checks the plan | Offline baseline 24 of 32 correct in [#219](https://github.com/45ck/eija-studio/pull/219); one substitution filed as [#220](https://github.com/45ck/eija-studio/issues/220). Live runs need an API key and spend cap ([#51](https://github.com/45ck/eija-studio/issues/51)) |
+| **4. Opt-in live AI, offline by default** | Live chat only with network enabled and per-request consent; a read-only `plan_check` MCP tool for coding agents | In [#219](https://github.com/45ck/eija-studio/pull/219). The default setup and the demo stay offline. How a free-form plan becomes a change case is [#89](https://github.com/45ck/eija-studio/issues/89) |
+| **5. Kernel gaps the sector packs exposed** | Make the model say what real systems need | [#145](https://github.com/45ck/eija-studio/issues/145) associations, [#142](https://github.com/45ck/eija-studio/issues/142) who may start a record, [#148](https://github.com/45ck/eija-studio/issues/148) one action on several transitions, [#149](https://github.com/45ck/eija-studio/issues/149) separation of duties, [#93](https://github.com/45ck/eija-studio/issues/93) next operators |
+
+**Waiting on the owner.** Unlock Actions billing; turn on auto-merge and require `quality-gates / fast` on `main`; an API key and spending cap for live evals ([#51](https://github.com/45ck/eija-studio/issues/51)); owner source review and restamp ([#80](https://github.com/45ck/eija-studio/issues/80), then [#50](https://github.com/45ck/eija-studio/issues/50)); HCI budgets ([#79](https://github.com/45ck/eija-studio/issues/79)); chat plan to change case ([#89](https://github.com/45ck/eija-studio/issues/89)); publication ([#52](https://github.com/45ck/eija-studio/issues/52)). Agents never do these for the owner.
+
+The milestones below (M0 to M5) are the longer arc. The five steps above sit inside M1 and M2.
+
+## Product direction
+
+Direction as of **2026-10-11**. It describes the approved direction, not a claim that every change has reached `main` or passed release acceptance. Use Git history and linked run records for exact revisions; old test totals do not describe new code.
 
 PlayIDE makes engineering understandable and enjoyable through a living model of the system. It addresses **comprehension debt**: the understanding people still owe software that changes faster than they can explain it. Cities: Skylines, tycoon games, Roblox tycoons and Minecraft inspire building, trying, inspecting consequences and improving systems. The applications extend beyond games.
 
@@ -48,7 +72,7 @@ M1 includes a versioned, server-derived build/review subject covering workflow, 
 
 ## Acceptance and progress
 
-The [self-dogfood contract](engineering/SELF-DOGFOOD-ACCEPTANCE.md) remains authoritative for **SD01–SD12** and **UX01–UX08**. Reuse **AC** IDs from the [acceptance matrix](verification/ACCEPTANCE_MATRIX.csv); its dated status columns are historical. Existing issue references include [#79](https://github.com/45ck/eija-studio/issues/79) for HCI budgets, [#93](https://github.com/45ck/eija-studio/issues/93) for connected workflows, [#145](https://github.com/45ck/eija-studio/issues/145) for relationships and [#152](https://github.com/45ck/eija-studio/issues/152) for live chat. These are traceability links, not assertions about current GitHub issue state; check before creating duplicates.
+The [self-dogfood contract](engineering/SELF-DOGFOOD-ACCEPTANCE.md) remains authoritative for **SD01–SD12** and **UX01–UX08**. Reuse **AC** IDs from the [acceptance matrix](verification/ACCEPTANCE_MATRIX.csv); its dated status columns are historical. Existing issue references include [#79](https://github.com/45ck/eija-studio/issues/79) for HCI budgets, [#93](https://github.com/45ck/eija-studio/issues/93) for connected workflows, [#145](https://github.com/45ck/eija-studio/issues/145) for relationships and [#89](https://github.com/45ck/eija-studio/issues/89) for turning a chat plan into a change case. These are traceability links, not assertions about current GitHub issue state; check before creating duplicates.
 
 Keep implementation checks, model fidelity, usability and human benefit as distinct evidence. The [V&V protocol](research/2026-10-02-vv-protocol.md) governs the later engineer comparison. Fresh installation, actual rendering/response measurements and meaningful negative controls cannot be replaced by test counts or a polished recording.
 
