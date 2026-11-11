@@ -117,3 +117,4 @@
 * [ADR-0232: One action from several states](0232-one-action-from-several-states.md) - Issue #148: `Workflow.coherent` refused a second transition with the same action, so each action labelled exactly one transition.
 * [ADR-0233: Separation of duties](0233-separation-of-duties.md) - Issue #149.
 * [ADR-0234: Guards over record values](0234-guards-over-record-values.md) - Issue #93, item 1.
+* [ADR-0235: Built associations as checked reference fields](0235-built-associations.md) - Issue #145, step 2.

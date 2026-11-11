@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/data.py
   title: domain/data.py
   hash_method: ast-api-v1
-  sha256: b95e3e22c25b081710481fe3934ac350f80e0dc4314146310a9370d1d0b7da15
-notes_baseline: 9a947b15aa6e7f324849392a9d65f43b592fbb6237a26dc4a574dcb69541c6c0
+  sha256: ff35c52ad0769193e3619bf838e073eb1f5e272bc3cddfcff8a09b6adadfc4d8
+notes_baseline: 6e206b63994c7d7732040fecf7e8c60a74829290dd84905cdc1c42ed21631f9e
 ---
 
 # domain.data
@@ -48,10 +48,15 @@ is no second reading of the rules.
 * [`FieldType`](/symbols/domain/data/FieldType.md) (type-alias) - no docstring
 * [`Multiplicity`](/symbols/domain/data/Multiplicity.md) (type-alias) - no docstring
 * [`NAME`](/symbols/domain/data/NAME.md) (constant) - no docstring
+* [`REFERENCE_LENGTH`](/symbols/domain/data/REFERENCE_LENGTH.md) (constant) - no docstring
+* [`Reference`](/symbols/domain/data/Reference.md) (class) - A built to-one association seen from the record: the field `name` holds the id of a stored `target` object.
+* [`check_record`](/symbols/domain/data/check_record.md) (function) - Validate a record's values: its attributes with `check_values`, then each reference field, which must hold the id of a…
 * [`check_values`](/symbols/domain/data/check_values.md) (function) - Validate a record's values against its entity.
 * [`data_for`](/symbols/domain/data/data_for.md) (function) - The data model beside this pack's `pack.json`, if it has one: the one a draft holds (ADR-0202), else `data.json`.
 * [`load_data`](/symbols/domain/data/load_data.md) (function) - The pack's data model, or None when the pack has no `data.json`.
 * [`parse_data`](/symbols/domain/data/parse_data.md) (function) - no docstring
+* [`record_fields`](/symbols/domain/data/record_fields.md) (function) - What a record holds: the record class's attributes, then each reference field as text holding an object's id.
+* [`references`](/symbols/domain/data/references.md) (function) - The record's reference fields, one per built association, in declaration order.
 
 ## Internal imports
 
@@ -76,7 +81,7 @@ _No curated notes yet._
 * [application.build_subject](/modules/application/build_subject.md) - Exact generated-build identity.
 * [application.c4](/modules/application/c4.md) - Read-only C4 views of generated source and declared model contracts.
 * [application.capabilities](/modules/application/capabilities.md) - Explicit support levels for the workbench; design visibility is not execution.
-* [application.class_build](/modules/application/class_build.md) - What the built app does with each part of the class diagram (#145, ADR-0205): the record class is built and checked; the other classes and the associations are…
+* [application.class_build](/modules/application/class_build.md) - What the built app does with each part of the class diagram (#145, ADR-0205, ADR-0235): the record class is built and checked; an association marked built beco…
 * [application.data_steps](/modules/application/data_steps.md) - Data-model steps in a chat plan (ADR-0202): add an attribute to a class, remove one, or make one required or optional; and the step that changes the kind of ac…
 * [application.describe_system](/modules/application/describe_system.md) - Describe your app (ADR-0216): a new system from one description, like starting an app in Lovable or Replit.
 * [application.generated_app](/modules/application/generated_app.md) - Shared generation and exact-app evidence operations for the existing kernel and checker.
@@ -109,8 +114,13 @@ _No curated notes yet._
 * [domain.data.FieldType](/symbols/domain/data/FieldType.md) - Type alias `FieldType` in `domain/data`.
 * [domain.data.Multiplicity](/symbols/domain/data/Multiplicity.md) - Type alias `Multiplicity` in `domain/data`.
 * [domain.data.NAME](/symbols/domain/data/NAME.md) - Constant `NAME` in `domain/data`.
+* [domain.data.REFERENCE_LENGTH](/symbols/domain/data/REFERENCE_LENGTH.md) - Constant `REFERENCE_LENGTH` in `domain/data`.
+* [domain.data.Reference](/symbols/domain/data/Reference.md) - A built to-one association seen from the record: the field `name` holds the id of a stored `target` object.
+* [domain.data.check_record](/symbols/domain/data/check_record.md) - Validate a record's values: its attributes with `check_values`, then each reference field, which must hold the id of a stored object of its class (`exists(clas…
 * [domain.data.check_values](/symbols/domain/data/check_values.md) - Validate a record's values against its entity.
 * [domain.data.data_for](/symbols/domain/data/data_for.md) - The data model beside this pack's `pack.json`, if it has one: the one a draft holds (ADR-0202), else `data.json`.
 * [domain.data.load_data](/symbols/domain/data/load_data.md) - The pack's data model, or None when the pack has no `data.json`.
 * [domain.data.parse_data](/symbols/domain/data/parse_data.md) - `def parse_data(document: Any, pack_id: str) -> DataModel` in `domain/data`.
+* [domain.data.record_fields](/symbols/domain/data/record_fields.md) - What a record holds: the record class's attributes, then each reference field as text holding an object's id.
+* [domain.data.references](/symbols/domain/data/references.md) - The record's reference fields, one per built association, in declaration order.
 <!-- okf:generated:end links -->

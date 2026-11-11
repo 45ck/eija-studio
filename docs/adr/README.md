@@ -115,6 +115,7 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0232](0232-one-action-from-several-states.md) | One action from several states | accepted |
 | [0233](0233-separation-of-duties.md) | Separation of duties | accepted |
 | [0234](0234-guards-over-record-values.md) | Guards over record values | accepted |
+| [0235](0235-built-associations.md) | Built associations as checked reference fields | accepted |
 <!-- adr-index:end -->
 
 ## Reserved numbers for capability lanes

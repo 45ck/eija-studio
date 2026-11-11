@@ -45,4 +45,8 @@ _No curated notes yet._
 
 * [domain.data.Entity](/symbols/domain/data/Entity.md) - `class Entity(Contract)` in `domain/data`.
 * [domain.models.DomainError](/symbols/domain/models/DomainError.md) - Stable error code: never expose provider secrets or arbitrary exception text.
+
+## Referenced by
+
+* [domain.data.check_record](/symbols/domain/data/check_record.md) - Validate a record's values: its attributes with `check_values`, then each reference field, which must hold the id of a stored object of its class (`exists(clas…
 <!-- okf:generated:end links -->

@@ -11,9 +11,10 @@ import sqlite3
 import threading
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 from eija_studio.application.runtime import check_actor, check_guards, check_separation, execute, initialise, separations
-from eija_studio.domain.data import DataModel, check_values
+from eija_studio.domain.data import DataModel, check_record, check_values, references
 from eija_studio.domain.models import DomainError, ExecuteCommand, Workflow, canonical
 from eija_studio.domain.pack import parse_pack
 from eija_studio.domain.screens import Screens
@@ -26,6 +27,8 @@ ACTORS = {a.id: a.model_dump() for a in PACK.fixtures.actors}
 DATA = DataModel.model_validate_json((HERE / "data.json").read_text(encoding="utf-8")) if (HERE / "data.json").exists() else None
 RECORD = DATA.entity(DATA.record) if DATA else None  # the class whose instances move through the workflow
 DATA_DIGEST = DATA.digest if DATA else ""  # each record keeps the digest of the data model that checked its values
+REFERENCES = references(DATA)  # built associations: record fields holding the id of a stored object (ADR-0235)
+STORED = sorted({r.target for r in REFERENCES})  # the classes whose objects this app stores
 SCREENS = Screens.model_validate_json((HERE / "screens.json").read_text(encoding="utf-8"))  # how the page looks, not rules
 
 SCHEMA = """
@@ -35,6 +38,7 @@ CREATE TABLE IF NOT EXISTS records(id TEXT PRIMARY KEY, case_id TEXT NOT NULL, m
 CREATE TABLE IF NOT EXISTS operations(id TEXT PRIMARY KEY, binding TEXT NOT NULL, result TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS audit(seq INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT NOT NULL, body TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS outbox(id TEXT PRIMARY KEY, record_id TEXT NOT NULL, effect TEXT NOT NULL, recipient TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS objects(id TEXT PRIMARY KEY, class TEXT NOT NULL, fields TEXT NOT NULL, created_by TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS acts(seq INTEGER PRIMARY KEY AUTOINCREMENT, record_id TEXT NOT NULL, action TEXT NOT NULL, actor_id TEXT NOT NULL);
 """
 
@@ -155,11 +159,9 @@ class Service:
         title = title.strip()
         if not 1 <= len(title) <= 200:
             raise DomainError("INVALID_TITLE", "Give a title of 1 to 200 characters")
-        actor = Session(self.db).actor(actor_id)
-        if not actor["active"]:
-            raise DomainError("ACTOR_REVOKED", "Actor is not active")
-        if RECORD is not None:
-            values = check_values(RECORD, fields or {})  # the data model's own check, from eija_studio
+        actor = self._active(actor_id)
+        if DATA is not None:
+            values = check_record(DATA, fields or {}, self._exists)  # the data model's own check, from eija_studio
         elif fields:
             raise DomainError("UNKNOWN_FIELD", "This app's model has no record attributes")
         else:
@@ -171,6 +173,34 @@ class Service:
                             (title, actor_id, canonical(values), DATA_DIGEST, item["id"]))
             return self._record(item["id"])
         return self._write(work)
+
+    def _active(self, actor_id: str) -> dict[str, Any]:
+        actor = Session(self.db).actor(actor_id)
+        if not actor["active"]:
+            raise DomainError("ACTOR_REVOKED", "Actor is not active")
+        return actor
+
+    def _exists(self, cls: str, object_id: str) -> bool:
+        return self.db.execute("SELECT 1 FROM objects WHERE class=? AND id=?", (cls, object_id)).fetchone() is not None
+
+    def create_object(self, cls: str, actor_id: str, fields: dict[str, Any] | None = None) -> dict[str, Any]:
+        """Store an object of a class a record refers to, its values checked by the data model (ADR-0235)."""
+        if cls not in STORED:
+            raise DomainError("NOT_FOUND", "This app stores no objects of that class")
+        self._active(actor_id)
+        values = check_values(DATA.entity(cls), fields or {})  # type: ignore[union-attr]  # STORED is empty without data
+
+        def work(session: Session) -> dict[str, Any]:
+            object_id = uuid4().hex
+            self.db.execute("INSERT INTO objects VALUES(?,?,?,?)", (object_id, cls, canonical(values), actor_id))
+            return {"id": object_id, "class": cls, "fields": values}
+        return self._write(work)
+
+    def objects(self, cls: str) -> list[dict[str, Any]]:
+        if cls not in STORED:
+            raise DomainError("NOT_FOUND", "This app stores no objects of that class")
+        return [{"id": r["id"], "class": cls, "fields": json.loads(r["fields"])}
+                for r in self.db.execute("SELECT id, fields FROM objects WHERE class=? ORDER BY rowid", (cls,))]
 
     def records(self) -> list[dict[str, Any]]:
         ids = [row[0] for row in self.db.execute("SELECT id FROM records ORDER BY rowid DESC")]

@@ -16,7 +16,7 @@ from typing import Any, Literal
 
 from pydantic import Field, ValidationError, model_validator
 
-from .data import ATTRIBUTE_NAME, Attribute, DataModel
+from .data import ATTRIBUTE_NAME, Attribute, DataModel, record_fields
 from .models import Contract, DomainError, Workflow, fingerprint
 from .pack import Pack, pack_directory
 
@@ -94,9 +94,9 @@ def _default_screen(case: str | None, attributes: tuple[Attribute, ...], record:
 
 
 def default_screen(case: str | None, data: DataModel | None) -> Screen:
-    """The screen a use case gets when nobody designed one: `create` asks for every record attribute; an action shows
-    the required ones."""
-    return _default_screen(case, data.entity(data.record).attributes if data else (), data.record if data else "record")
+    """The screen a use case gets when nobody designed one: `create` asks for every record field (attributes, then the
+    references of built associations); an action shows the required ones."""
+    return _default_screen(case, record_fields(data) if data else (), data.record if data else "record")
 
 
 def default_screens(pack: Pack, model: Workflow, data: DataModel | None) -> Screens:
@@ -148,7 +148,7 @@ def _coverage(screens: Screens, cases: list[str | None]) -> list[dict[str, Any]]
 
 def check_screens(screens: Screens, model: Workflow, data: DataModel | None) -> list[dict[str, Any]]:
     """Design problems, each with a stable code and the use case it is about. Empty means the screens can be built."""
-    attributes = data.entity(data.record).attributes if data else ()
+    attributes = record_fields(data) if data else ()  # reference fields of built associations count (ADR-0235)
     known, required = {a.name for a in attributes}, {a.name for a in attributes if a.required}
     fields = [p for screen in screens.screens for p in _screen_problems(screen, known, required)]
     return _coverage(screens, use_cases(model)) + fields

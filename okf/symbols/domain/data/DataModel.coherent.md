@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/data.py#DataModel.coherent
   title: domain/data.py
   hash_method: ast-v2
-  sha256: 896ff48d81c4ae763e6413b69d32cf051732440fc3362be81a11e395497bf89d
-notes_baseline: 0d0400bf4f68b41f261c8e95bf502299528589e4e75c1915f3f9967286b610c7
+  sha256: 52ca7829819cd47fa9567fef34f8e2956a0f464697f74082165bc3b2406e9707
+notes_baseline: 3281de05a42ae43e6afc0d872b76db16c7973b909f04db649376da1d048b4f17
 ---
 
 # domain.data.DataModel.coherent

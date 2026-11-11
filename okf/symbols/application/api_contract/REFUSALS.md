@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/api_contract.py#REFUSALS
   title: application/api_contract.py
   hash_method: ast-v2
-  sha256: 7673752e61eeb6d1d61db6ccc8047a623447a2fa4c259e8ddefa04f58f4b60b1
-notes_baseline: 49b424c6a25f42aeaabb2ca34f054f59ba7c90a2559ab7e635450d8098383340
+  sha256: d36d88f396825e73c4a322b8e6b1282bea35f613968aaafb3ba3ce3c81e58c2d
+notes_baseline: d3e02e6d3833c2301e83df1ea4b9585a20464f5338deccd30818269760c204d4
 ---
 
 # application.api_contract.REFUSALS

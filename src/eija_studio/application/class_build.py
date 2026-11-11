@@ -1,5 +1,6 @@
-"""What the built app does with each part of the class diagram (#145, ADR-0205): the record class is built and checked;
-the other classes and the associations are drawn but not built. The diagram says which is which, so nobody reads an
+"""What the built app does with each part of the class diagram (#145, ADR-0205, ADR-0235): the record class is built and
+checked; an association marked built becomes a reference field the app checks against stored objects of the other class;
+the other classes and associations are drawn but not built. The diagram says which is which, so nobody reads an
 association as a rule the app enforces.
 
 The built app (ADR-0150, ADR-0153) stores records of the record class only and checks their attribute values. It never
@@ -14,7 +15,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from eija_studio.domain.data import Association, Attribute, DataModel
+from eija_studio.domain.data import Association, Attribute, DataModel, references
 
 FORMAT = "eija.class-build.v1"
 
@@ -46,26 +47,44 @@ def _shadows(data: DataModel) -> list[dict[str, Any]]:
     record = data.entity(data.record)
     for n, link in enumerate(data.associations):
         ends = _ends(data, link)
-        if ends is None:
+        if ends is None or link.built:
             continue
         names = {ends[1].lower(), link.role.lower()} - {""}
         found += [_shadow(data, n, ends[1], a) for a in record.attributes if _stem(a.name) in names]
     return found
 
 
+def _association(data: DataModel, n: int, link: Association) -> dict[str, Any]:
+    name = f"{link.source} to {link.target}{f' ({link.role})' if link.role else ''}"
+    if link.built:
+        other = link.target if link.source == data.record else link.source
+        message = (f"{name} is built: {data.record}.{link.role} holds the id of a stored {other}, and the app refuses "
+                   f"an id that names no {other}.")
+    else:
+        message = f"{name} is drawn, not built: the app stores {data.record} records only and checks no multiplicity."
+    return {"index": n, "source": link.source, "target": link.target, "role": link.role, "built": link.built,
+            "message": message}
+
+
+def _limit(data: DataModel, stored: list[str]) -> str:
+    if not stored:
+        return (f"Only {data.record} is built: its attributes are the app's form, checked on the server. "
+                "Other classes and associations are design; building them needs records of several classes (#65).")
+    return (f"{data.record} is built: its attributes and reference fields are the app's form, checked on the server. "
+            f"{', '.join(stored)} objects are stored so a reference can name one; only to-one associations from "
+            f"{data.record} can be built, and no other multiplicity is checked.")
+
+
 def class_build(data: DataModel) -> dict[str, Any]:
     """Which classes and associations the built app stores and checks, and what to consider about the rest."""
-    others = sorted(e.name for e in data.entities if e.name != data.record)
-    drawn = [{"index": n, "source": a.source, "target": a.target, "role": a.role,
-              "message": f"{a.source} to {a.target}{f' ({a.role})' if a.role else ''} is drawn, not built: the app stores "
-                         f"{data.record} records only and checks no multiplicity."}
-             for n, a in enumerate(data.associations)]
+    stored = sorted({r.target for r in references(data)})
+    others = sorted(e.name for e in data.entities if e.name != data.record and e.name not in stored)
+    drawn = [_association(data, n, a) for n, a in enumerate(data.associations)]
     return {
         "format": FORMAT,
-        "built": [data.record],
+        "built": [data.record, *stored],
         "drawn_only": others,
         "associations": drawn,
         "findings": _shadows(data),
-        "limits": [f"Only {data.record} is built: its attributes are the app's form, checked on the server. "
-                   "Other classes and associations are design; building them needs records of several classes (#65)."],
+        "limits": [_limit(data, stored)],
     }

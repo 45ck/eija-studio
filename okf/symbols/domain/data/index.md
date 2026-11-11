@@ -6,19 +6,24 @@
 * [domain.data.Attribute](Attribute.md) - `class Attribute(Contract)` in `domain/data`.
 * [domain.data.DataModel](DataModel.md) - `class DataModel(Contract)` in `domain/data`.
 * [domain.data.Entity](Entity.md) - `class Entity(Contract)` in `domain/data`.
+* [domain.data.Reference](Reference.md) - A built to-one association seen from the record: the field `name` holds the id of a stored `target` object.
 
 # Constants
 
 * [domain.data.ATTRIBUTE_NAME](ATTRIBUTE_NAME.md) - Constant `ATTRIBUTE_NAME` in `domain/data`.
 * [domain.data.DATA_FILE](DATA_FILE.md) - Constant `DATA_FILE` in `domain/data`.
 * [domain.data.NAME](NAME.md) - Constant `NAME` in `domain/data`.
+* [domain.data.REFERENCE_LENGTH](REFERENCE_LENGTH.md) - Constant `REFERENCE_LENGTH` in `domain/data`.
 
 # Functions
 
+* [domain.data.check_record](check_record.md) - Validate a record's values: its attributes with `check_values`, then each reference field, which must hold the id of a stored object of its class (`exists(class, id)`; ADR-0235).
 * [domain.data.check_values](check_values.md) - Validate a record's values against its entity.
 * [domain.data.data_for](data_for.md) - The data model beside this pack's `pack.json`, if it has one: the one a draft holds (ADR-0202), else `data.json`.
 * [domain.data.load_data](load_data.md) - The pack's data model, or None when the pack has no `data.json`.
 * [domain.data.parse_data](parse_data.md) - `def parse_data(document: Any, pack_id: str) -> DataModel` in `domain/data`.
+* [domain.data.record_fields](record_fields.md) - What a record holds: the record class's attributes, then each reference field as text holding an object's id.
+* [domain.data.references](references.md) - The record's reference fields, one per built association, in declaration order.
 
 # Methods
 

@@ -8,7 +8,7 @@
 * [application.build_subject](build_subject.md) - Exact generated-build identity.
 * [application.c4](c4.md) - Read-only C4 views of generated source and declared model contracts.
 * [application.capabilities](capabilities.md) - Explicit support levels for the workbench; design visibility is not execution.
-* [application.class_build](class_build.md) - What the built app does with each part of the class diagram (#145, ADR-0205): the record class is built and checked; the other classes and the associations are drawn but not built.
+* [application.class_build](class_build.md) - What the built app does with each part of the class diagram (#145, ADR-0205, ADR-0235): the record class is built and checked; an association marked built becomes a reference field the app checks against stored objects…
 * [application.compiler](compiler.md) - Compiler: model → projections + impacts + obligations + computed review packet.
 * [application.components](components.md) - The component diagram of an app built from the model (ADR-0155), extracted from the generated files themselves.
 * [application.data_steps](data_steps.md) - Data-model steps in a chat plan (ADR-0202): add an attribute to a class, remove one, or make one required or optional; and the step that changes the kind of actor holding a role (ADR-0210, issue #156).

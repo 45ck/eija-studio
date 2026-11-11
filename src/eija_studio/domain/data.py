@@ -11,14 +11,17 @@ import json
 import re
 from datetime import date
 from pathlib import Path
+from collections.abc import Callable
+from dataclasses import dataclass
 from typing import Annotated, Any, Literal
 
-from pydantic import Field, ValidationError, model_validator
+from pydantic import Field, SerializerFunctionWrapHandler, ValidationError, model_serializer, model_validator
 
 from .models import Contract, DomainError, fingerprint
 from .pack import Pack, held, pack_directory
 
 DATA_FILE = "data.json"
+REFERENCE_LENGTH = 32  # an object id: what the built app's object store issues
 NAME = r"^[A-Z][A-Za-z0-9]{0,39}$"  # UML class names: UpperCamelCase
 ATTRIBUTE_NAME = r"^[a-z][a-zA-Z0-9_]{0,39}$"
 FieldType = Literal["text", "number", "date", "boolean", "choice"]
@@ -62,6 +65,17 @@ class Association(Contract):
     role: str = Field(default="", max_length=40)  # the target end's role name, e.g. "attendees"
     source_multiplicity: Multiplicity = "1"
     target_multiplicity: Multiplicity = "0..*"
+    # Built (issue #145, ADR-0235): a to-one association from the record class becomes a reference field, named by the
+    # role, that the app checks against stored objects of the other class. False is left out of every dump, so data
+    # models that build nothing keep their exact bytes and digests.
+    built: bool = False
+
+    @model_serializer(mode="wrap")
+    def _omit_drawn(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        data: dict[str, Any] = handler(self)
+        if not self.built:
+            data.pop("built", None)
+        return data
 
 
 class DataModel(Contract):
@@ -81,6 +95,9 @@ class DataModel(Contract):
         for link in self.associations:
             if link.source not in names or link.target not in names:
                 raise ValueError("Association to an undeclared entity")
+        problem = _reference_problem(self)
+        if problem:
+            raise ValueError(problem)
         return self
 
     @property
@@ -89,6 +106,62 @@ class DataModel(Contract):
 
     def entity(self, name: str) -> Entity:
         return next(e for e in self.entities if e.name == name)
+
+
+@dataclass(frozen=True)
+class Reference:
+    """A built to-one association seen from the record: the field `name` holds the id of a stored `target` object."""
+    name: str
+    target: str
+    required: bool
+
+
+def _record_end(data: DataModel, link: Association) -> tuple[str, Multiplicity] | None:
+    """(other class, how many of it one record links to) when the record class is one end, the other end another class."""
+    if link.source == data.record and link.target != data.record:
+        return link.target, link.target_multiplicity
+    if link.target == data.record and link.source != data.record:
+        return link.source, link.source_multiplicity
+    return None
+
+
+def _link_problem(data: DataModel, link: Association, taken: set[str]) -> str:
+    end = _record_end(data, link)
+    if end is None or end[1] not in ("1", "0..1"):
+        return "A built association links the record class to at most one object of another class"
+    if not re.fullmatch(ATTRIBUTE_NAME, link.role) or link.role in taken:
+        return "A built association needs a role name that is a free attribute name of the record class"
+    return ""
+
+
+def _reference_problem(data: DataModel) -> str:
+    """Why the built associations cannot be reference fields, or "" when they can."""
+    taken = {a.name for e in data.entities if e.name == data.record for a in e.attributes}
+    for link in (x for x in data.associations if x.built):
+        problem = _link_problem(data, link, taken)
+        if problem:
+            return problem
+        taken.add(link.role)
+    return ""
+
+
+def references(data: DataModel | None) -> list[Reference]:
+    """The record's reference fields, one per built association, in declaration order. Empty when nothing is built."""
+    if data is None:
+        return []
+    found = []
+    for link in (x for x in data.associations if x.built):
+        end = _record_end(data, link)
+        if end is not None:
+            found.append(Reference(link.role, end[0], end[1] == "1"))
+    return found
+
+
+def record_fields(data: DataModel) -> tuple[Attribute, ...]:
+    """What a record holds: the record class's attributes, then each reference field as text holding an object's id."""
+    return data.entity(data.record).attributes + tuple(
+        Attribute(name=r.name, type="text", required=r.required, max_length=REFERENCE_LENGTH,
+                  description=f"The id of an existing {r.target}") for r in references(data))
 
 
 def parse_data(document: Any, pack_id: str) -> DataModel:
@@ -175,4 +248,29 @@ def check_values(entity: Entity, values: dict[str, Any]) -> dict[str, Any]:
                 raise DomainError("FIELD_REQUIRED", f"{attribute.name} is required")
             continue
         clean[attribute.name] = _CHECKS[attribute.type](attribute, raw)
+    return clean
+
+
+def _check_reference(ref: Reference, raw: Any, exists: Callable[[str, str], bool]) -> str | None:
+    """The clean id a reference field holds, or None when it is empty and may be."""
+    if raw is None or raw == "":
+        if ref.required:
+            raise DomainError("FIELD_REQUIRED", f"{ref.name} is required")
+        return None
+    if not isinstance(raw, str) or len(raw) > REFERENCE_LENGTH:
+        raise DomainError("FIELD_TYPE", f"{ref.name} must be the id of a {ref.target}")
+    if not exists(ref.target, raw):
+        raise DomainError("REFERENCE_UNKNOWN", f"No {ref.target} has the id {raw}")
+    return raw
+
+
+def check_record(data: DataModel, values: dict[str, Any], exists: Callable[[str, str], bool]) -> dict[str, Any]:
+    """Validate a record's values: its attributes with `check_values`, then each reference field, which must hold the id
+    of a stored object of its class (`exists(class, id)`; ADR-0235). Returns the clean values."""
+    refs = {r.name: r for r in references(data)}
+    clean = check_values(data.entity(data.record), {k: v for k, v in values.items() if k not in refs})
+    for ref in refs.values():
+        found = _check_reference(ref, values.get(ref.name), exists)
+        if found is not None:
+            clean[ref.name] = found
     return clean

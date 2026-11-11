@@ -14,7 +14,7 @@
 # Functions
 
 * [domain.screens.check_screens](check_screens.md) - Design problems, each with a stable code and the use case it is about.
-* [domain.screens.default_screen](default_screen.md) - The screen a use case gets when nobody designed one: `create` asks for every record attribute; an action shows the required ones.
+* [domain.screens.default_screen](default_screen.md) - The screen a use case gets when nobody designed one: `create` asks for every record field (attributes, then the references of built associations); an action shows the required ones.
 * [domain.screens.default_screens](default_screens.md) - One default screen per use case.
 * [domain.screens.load_screens](load_screens.md) - The pack's screens, or None when the pack has no `screens.json`.
 * [domain.screens.parse_screens](parse_screens.md) - `def parse_screens(document: Any, pack_id: str) -> Screens` in `domain/screens`.

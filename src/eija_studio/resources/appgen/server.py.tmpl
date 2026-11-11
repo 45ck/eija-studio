@@ -7,10 +7,11 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
+from eija_studio.domain.data import record_fields
 from eija_studio.domain.navigation import Navigation, navigation_for
 
 from .build_identity import current_subject
-from .service import DATA, MODEL, PACK, SCREENS, Refused, Service
+from .service import DATA, MODEL, PACK, REFERENCES, SCREENS, STORED, Refused, Service
 from .service import RECORD as RECORD_CLASS
 
 WEB = Path(__file__).resolve().parent / "web"
@@ -20,9 +21,17 @@ if NAVIGATION != navigation_for(PACK, MODEL, DATA, SCREENS):
     raise ValueError("Generated navigation differs from its model contracts")
 STATIC = {"/": ("index.html", "text/html"), "/app.js": ("app.js", "text/javascript"), "/app.css": ("app.css", "text/css")}
 FORBIDDEN = {"UNKNOWN_ACTOR", "ACTOR_REVOKED", "ROLE_DENIED", "ASSIGNMENT_DENIED"}
-INVALID = {"BAD_REQUEST", "INVALID_TITLE", "FIELD_REQUIRED", "FIELD_TYPE", "FIELD_TOO_LONG", "FIELD_CHOICE", "UNKNOWN_FIELD"}
+INVALID = {"BAD_REQUEST", "INVALID_TITLE", "FIELD_REQUIRED", "FIELD_TYPE", "FIELD_TOO_LONG", "FIELD_CHOICE", "UNKNOWN_FIELD", "REFERENCE_UNKNOWN"}
 RECORD = re.compile(r"^/api/records/([0-9a-f]{1,32})(/act)?$")
+OBJECTS = re.compile(r"^/api/objects/([A-Z][A-Za-z0-9]{0,39})$")  # objects of a class a record refers to (ADR-0235)
 MAX_BODY = 16_384
+
+
+def _record() -> dict | None:
+    """The record class as the form sees it: its attributes, then the id field of each built association."""
+    if RECORD_CLASS is None or DATA is None:
+        return None
+    return RECORD_CLASS.model_dump(mode="json") | {"attributes": [a.model_dump(mode="json") for a in record_fields(DATA)]}
 
 
 def describe() -> dict:
@@ -32,7 +41,9 @@ def describe() -> dict:
             "roles": {r.id: r.description for r in PACK.roles}, "kinds": {r.id: r.kind for r in PACK.roles},
             "transitions": {t.action: {"from": t.from_state, "to": t.to_state, "role": t.role} for t in MODEL.transitions},
             "actors": {a.id: {"role": a.role, "active": a.active} for a in PACK.fixtures.actors},
-            "record": RECORD_CLASS.model_dump(mode="json") if RECORD_CLASS else None, "data_digest": DATA.digest if DATA else None,
+            "record": _record(), "data_digest": DATA.digest if DATA else None,
+            "references": [{"field": r.name, "class": r.target, "required": r.required} for r in REFERENCES],
+            "stored_classes": {name: DATA.entity(name).model_dump(mode="json") for name in STORED} if DATA else {},
             "screens": {"create": SCREENS.screen(None).model_dump(mode="json"),
                         "actions": {s.use_case: s.model_dump(mode="json") for s in SCREENS.screens if s.use_case is not None}}}
 
@@ -88,6 +99,9 @@ def handler_for(service: Service):
                 match = RECORD.match(url.path)
                 if match and not match.group(2):
                     return self._json(200, service.view(match.group(1), actor))
+                stored = OBJECTS.match(url.path)
+                if stored:
+                    return self._json(200, service.objects(stored.group(1)))
             except Refused as refused:
                 return self._refused(refused)
             self._json(404, {"code": "NOT_FOUND", "message": "No such page"})
@@ -101,6 +115,12 @@ def handler_for(service: Service):
                     if not isinstance(fields, dict):
                         raise Refused("BAD_REQUEST", "fields must be a JSON object")
                     return self._json(201, service.create(str(body.get("title", "")), str(body.get("actor", "")), fields))
+                stored = OBJECTS.match(url.path)
+                if stored:
+                    fields = body.get("fields", {})
+                    if not isinstance(fields, dict):
+                        raise Refused("BAD_REQUEST", "fields must be a JSON object")
+                    return self._json(201, service.create_object(stored.group(1), str(body.get("actor", "")), fields))
                 match = RECORD.match(url.path)
                 if match and match.group(2):
                     version = body.get("expected_version")

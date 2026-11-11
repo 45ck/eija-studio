@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/data.py#Association
   title: domain/data.py
   hash_method: ast-sig-v1
-  sha256: c928a24a67d0ef410bd42687100e6131bb59b4ff5e282d883d4996dc537449d4
-notes_baseline: 5f8c31d7ec50e721cb51af02fb521e20a9346915f50870d6f7788957ca136279
+  sha256: 9f2925dc2281e0161958b5300653c28e6cb2b213930b4c98e31a6c725be9811a
+notes_baseline: b453a9c0a86e44d7339575ce228a9422bbed268113b717e16f21df051416964a
 ---
 
 # domain.data.Association
@@ -43,6 +43,7 @@ _The source carries no docstring._
 | `role` | `str` | `Field(default='', max_length=40)` |
 | `source_multiplicity` | `Multiplicity` | `'1'` |
 | `target_multiplicity` | `Multiplicity` | `'0..*'` |
+| `built` | `bool` | `False` |
 <!-- okf:generated:end facts -->
 
 ## Notes
