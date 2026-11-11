@@ -222,6 +222,16 @@ body[data-play="open"][data-play-arrangement="stacked"] .dock-head{grid-row:5}
 body[data-play="open"][data-play-arrangement="stacked"] .dock-body>section:not(#run).dock-active:not([hidden]){grid-row:6}
 body[data-play="open"][data-play-arrangement="stacked"] .play-empty-body{padding:var(--shell-space-lg);gap:var(--shell-space-sm)}
 body[data-play="open"][data-play-arrangement="stacked"] .play-empty-mark{width:40px;height:30px}
+/* Laptop widths (#208): the full toolbar, checks pill included, keeps to one row from 1280px. Tighter gaps and
+   padding, a speed menu sized to its longest choice and a shorter run status (its full text stays in its title). */
+@media(min-width:1181px) and (max-width:1439px){
+  .toolbar{gap:6px}
+  .toolbar .sep{margin-inline:2px}
+  .toolbar .runbar{gap:0}
+  .toolbar button:not(.run-btn):not(.health){padding-inline:8px}
+  .toolbar .run-speed{width:6.6em}
+  .toolbar .run-status{width:6em}
+}
 /* Compact windows retain the person's panel choices. The panels stack in a scrollable main region;
    widening restores the saved desktop arrangement without moving the iframe or changing its document. */
 @media(max-width:1180px){

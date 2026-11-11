@@ -72,7 +72,7 @@ _No curated notes yet._
 
 * [ADR-0000: v0.2 proof-of-concept decision log (ADR-001 … ADR-014)](/adrs/0000-poc-decision-log.md) - These fourteen decisions shipped with EIJA Studio 0.2.0 and are kept verbatim as one log.
 * [ADR-0016: OSS first: build adapters, not engines](/adrs/0016-oss-first-adapters-not-engines.md) - EIJA's value is the assurance kernel: meaning selection, typed semantic transactions, subject-bound evidence and separated human authority.
-* [ADR-0017: Local quality gates with nox sessions and noslop enforcement](/adrs/0017-local-quality-gates.md) - Hosted CI is not currently available for this repository.
+* [ADR-0017: Local quality gates with nox sessions and noslop enforcement](/adrs/0017-local-quality-gates.md) - Hosted CI was not available for this repository when this was written (September 2026).
 * [ADR-0019: Diagrams are generated projections of the executable model](/adrs/0019-diagrams-generated-from-executable-model.md) - Reviewers need to see what a change, usually an agent's change, does: state machines, sequences, classes, journeys and ripple effects.
 * [HCI-ADR-0058: Screen layout model: five persistent regions, derived widths, no page scroll](/adrs/0058-hci-layout-model.md) - HCI-ADR-0058: Screen layout model: five persistent regions, derived widths, no page scroll
 * [HCI-ADR-0065: Content, microcopy and sample-first onboarding for the Studio](/adrs/0065-hci-content-onboarding.md) - HCI-ADR-0065: Content, microcopy and sample-first onboarding for the Studio

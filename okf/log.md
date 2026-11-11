@@ -2,6 +2,7 @@
 
 ## 2026-11-11
 
+* **Repo clean-up, CI wording**: re-synced ADR-0017 (its status now says ADR-0228 supersedes the manual-dispatch part) and ADR-0036 (a pointer to ADR-0228); the pages that link to ADR-0017 changed in their generated link titles only. Neither page has curated Notes. Nothing was recorded as verified.
 * **Hosted CI on pull requests**: synced ADR-0228 (and the missing ADR-0227 page). ADR-0017's page gained backlinks only. No Notes were hand-edited and nothing was recorded as verified.
 
 ## 2026-11-08

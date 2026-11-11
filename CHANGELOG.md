@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### 11 November 2026: repo clean-up
+
+- At 1280 px the PlayIDE toolbar keeps the checks pill on the same row as Run, Simulate and Build & run again (fixes #208). Between 1181 and 1439 px the toolbar uses tighter gaps and padding and a shorter run status (its full text stays in the tooltip). The last run speed is now labelled "Next stop", so the menu is narrower at every width. An opt-in browser test checks 1280 and 1440 px with a three-digit score.
+- README, CONTRIBUTING, ADR-0017 and ADR-0036 no longer say hosted CI is unavailable or manual-only; they point to ADR-0228.
+- `pyproject.toml`: the ADR-0165 comment is back on the `xuml` extra it describes.
+
 ### 9 November 2026: PlayIDE is easier to find and describe
 
 - The package description, keywords, classifiers and project links now describe PlayIDE as it is: an open-source UML workbench for reviewing AI-proposed changes and running the system locally. The old "bounded workflow POC" line is gone.

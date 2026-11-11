@@ -57,5 +57,5 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Related decisions
 
-* [ADR-0017: Local quality gates with nox sessions and noslop enforcement](/adrs/0017-local-quality-gates.md) - Hosted CI is not currently available for this repository.
+* [ADR-0017: Local quality gates with nox sessions and noslop enforcement](/adrs/0017-local-quality-gates.md) - Hosted CI was not available for this repository when this was written (September 2026).
 <!-- okf:generated:end links -->

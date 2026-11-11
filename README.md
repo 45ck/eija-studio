@@ -213,7 +213,7 @@ Exact workflow and generated-app review are implemented. A fresh-process browser
 
 General live AI creation, value-driven actions, migrations, connected delivery and production identity remain unfinished. Law, vocabulary, data-schema, screen and scenario edits do not silently become active policy.
 
-We ship small, checked commits directly to `main` throughout this initial stage. Automatic checks on push are not configured; supplied GitHub workflows are manual-only. See the [roadmap](docs/ROADMAP.md), [delivery contract](docs/engineering/PLAYIDE-DELIVERY.md) and [current acceptance criteria](docs/engineering/SELF-DOGFOOD-ACCEPTANCE.md).
+We ship small, checked commits directly to `main` throughout this initial stage. Hosted CI runs the fast gates on every pull request and push to `main`, and the full tier nightly ([ADR-0228](docs/adr/0228-hosted-ci-on-pull-requests.md)); the local `nox -t fast` run is still the evidence whenever a hosted run is missing. See the [roadmap](docs/ROADMAP.md), [delivery contract](docs/engineering/PLAYIDE-DELIVERY.md) and [current acceptance criteria](docs/engineering/SELF-DOGFOOD-ACCEPTANCE.md).
 
 ## Watch the product tours
 

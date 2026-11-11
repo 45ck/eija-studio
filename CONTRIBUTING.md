@@ -30,7 +30,7 @@ Work is split into capability lanes. Each has a branch `lane/<name>`, a reserved
 
 ## Quality gates (local, tiered)
 
-Hosted CI is unavailable ([ADR-0017](docs/adr/0017-local-quality-gates.md)), so the gates run on your machine and the results you report are local evidence.
+Hosted CI runs `nox -t fast` on pull requests and `nox -t full` nightly ([ADR-0228](docs/adr/0228-hosted-ci-on-pull-requests.md)). Run the same gates on your machine before you push, and when a hosted run is missing, report your local result as local evidence.
 
 | Tier | Command | When |
 |---|---|---|
