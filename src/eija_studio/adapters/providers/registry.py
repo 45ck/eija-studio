@@ -8,14 +8,16 @@ from .claude_code import ClaudeCodeProvider
 from .codex import CodexProvider
 from .gemini import GeminiCliProvider
 from .offline import OfflineProvider
+from .openai_api import OpenAiApiProvider
 from .opencode import OpenCodeProvider
 from .openrouter import OpenRouterProvider
 
-KEYED_PROVIDERS = frozenset({"openrouter", "anthropic"})  # providers that take a key held in memory only
+KEYED_PROVIDERS = frozenset({"openrouter", "anthropic", "openai"})  # providers that take a key held in memory only
 _FACTORIES: dict[str, Callable[[str, str | None, Pack | None], ProposalProvider]] = {
     "offline": lambda model, key, pack: OfflineProvider(pack),
     "openrouter": lambda model, key, pack: OpenRouterProvider(model, key, pack=pack),
     "anthropic": lambda model, key, pack: AnthropicApiProvider(model, key, pack=pack),
+    "openai": lambda model, key, pack: OpenAiApiProvider(model, key, pack=pack),
     "codex": lambda model, key, pack: CodexProvider(model, pack=pack),
     "claude": lambda model, key, pack: ClaudeCodeProvider(model, pack=pack),
     "opencode": lambda model, key, pack: OpenCodeProvider(model, pack=pack),

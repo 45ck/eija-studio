@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/interfaces/mcp_server.py
   title: interfaces/mcp_server.py
   hash_method: ast-api-v1
-  sha256: ecf334eab21e533898d29acad571bf5d75338f1702ca204b3f307853fc7ac2a6
-notes_baseline: 607f0f5f64bb83d19e59cc41d25a310fce47b460ef8dde25f7daba2f25f82142
+  sha256: 901655d8cd62a3e29de99b5248c36e80fccbf4c9eecbcf092ff8027e54ab85c0
+notes_baseline: 8ef6e8f4f67e2aed55d5d681ae9633042864744044e5a2d413238eb18026e501
 ---
 
 # interfaces.mcp_server
@@ -68,6 +68,8 @@ _Symbol pages are generated for the domain and application layers only._
 
 ## Internal imports
 
+* [`application/data_steps`](/modules/application/data_steps.md)
+* [`application/plan`](/modules/application/plan.md)
 * [`application/repository`](/modules/application/repository.md)
 * [`application/service`](/modules/application/service.md)
 * [`domain/models`](/modules/domain/models.md)
@@ -84,6 +86,8 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Imports
 
+* [application.data_steps](/modules/application/data_steps.md) - Data-model steps in a chat plan (ADR-0202): add an attribute to a class, remove one, or make one required or optional; and the step that changes the kind of ac…
+* [application.plan](/modules/application/plan.md) - Plan mode for the PlayIDE chat (ADR-0156): an AI proposes a change as numbered typed steps; the person accepts or rejects each one and sees what the accepted o…
 * [application.repository](/modules/application/repository.md) - Read-only repository evidence port; this does not grant project execution or approval.
 * [application.service](/modules/application/service.md) - Module `application/service` (no module docstring).
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).

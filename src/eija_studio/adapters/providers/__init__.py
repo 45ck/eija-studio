@@ -11,6 +11,7 @@ from .cli_base import CliProposalProvider
 from .codex import CodexProvider
 from .gemini import GeminiCliProvider
 from .offline import OfflineProvider
+from .openai_api import OpenAiApiProvider
 from .opencode import OpenCodeProvider
 from .openrouter import OpenRouterProvider
 from .registry import KEYED_PROVIDERS, PROVIDER_NAMES, create_provider
@@ -26,6 +27,7 @@ __all__ = [
     "CodexProvider",
     "GeminiCliProvider",
     "OfflineProvider",
+    "OpenAiApiProvider",
     "OpenCodeProvider",
     "OpenRouterProvider",
     "create_provider",

@@ -11,6 +11,7 @@ from .application.build_subject import SUBJECT_FILE
 from .application.generated_app import TEMPLATES, review_snapshot, validate_review_payload
 from .adapters.edit_proposals import OfflineEditProposer
 from .adapters.plan_proposals import OfflinePlanProposer
+from .adapters.live_plan_proposals import LivePlanProposer
 from .adapters.repository import RepositoryConnection
 from .adapters.repository_changes import RepositoryChanges
 from .adapters.repository_analysis import syntax_reader
@@ -48,6 +49,7 @@ def build_studio(workspace: Path, provider="offline", model="", allow_network=Fa
     return Studio(store, proposal_provider, ReceiptSigner(store.directory), partial(identity, domain), sandbox_factory(store.directory, domain),
                   allow_network=allow_network, formal=FormalReports() if formal else None, pack=domain,
                   edit_proposer=OfflineEditProposer(), plan_proposer=OfflinePlanProposer(),
+                  live_plan_proposer=LivePlanProposer(proposal_provider, OfflinePlanProposer()) if proposal_provider.networked else None,
                   generated_apps=GeneratedApps(store.directory, templates=TEMPLATES, subject_file=SUBJECT_FILE,
                                                assemble=review_snapshot, validate=validate_review_payload),
                   repository=RepositoryConnection(repository_root, domain, source_facts=source_profile(domain)) if repository_root is not None else None,

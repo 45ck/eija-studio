@@ -102,6 +102,7 @@ _No curated notes yet._
 
 * [adapters.generated_apps](/modules/adapters/generated_apps.md) - Retain exact selected app bytes and run their existing generated unittest checker locally.
 * [adapters.identity](/modules/adapters/identity.md) - Measured release identity, not a proof of correctness or author authenticity.
+* [adapters.live_plan_proposals](/modules/adapters/live_plan_proposals.md) - Live plan proposer for the PlayIDE chat (ADR-0230): a model reads the request, the pack decides the steps.
 * [adapters.plan_data_phrases](/modules/adapters/plan_data_phrases.md) - The data-model and role-kind phrases of the offline plan proposer (ADR-0202, #156): add a field to a class, remove one, make one required or optional, and say…
 * [adapters.plan_proposals](/modules/adapters/plan_proposals.md) - Offline plan proposer for the PlayIDE chat (ADR-0156): a bounded phrase grammar and the pack's modelled meanings, never an LLM.
 * [adapters.repository](/modules/adapters/repository.md) - Repository analysis and bounded source navigation over captured checkout bytes.

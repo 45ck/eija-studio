@@ -47,4 +47,5 @@ _No curated notes yet._
 
 * [ADR-0021: Agent-CLI providers run in one isolated, bounded, tree-killing base class](/adrs/0021-cli-provider-isolation-and-process-tree-kill.md) - Codex, Claude Code, OpenCode and Gemini CLI are agents with shell and file tools.
 * [HCI-ADR-0064: AI and agent interaction: proposal cards, delegation fence, isolated owner controls](/adrs/0064-hci-ai-interaction.md) - HCI-ADR-0064: AI and agent interaction: proposal cards, delegation fence, isolated owner controls
+* [ADR-0229: Kernel-graded intent evals, and an OpenAI Responses API provider](/adrs/0229-kernel-graded-intent-evals-and-openai-provider.md) - PlayIDE's pitch is that AI may propose a change and the kernel decides what it means.
 <!-- okf:generated:end links -->

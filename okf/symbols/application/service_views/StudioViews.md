@@ -14,13 +14,17 @@ sources:
 - resource: repo://src/eija_studio/application/service_views.py#StudioViews
   title: application/service_views.py
   hash_method: ast-sig-v1
-  sha256: 4a82b73f79b217c8f60c1c7f4e156dc55123aa9aee84460c237548b5c38ad5e9
-notes_baseline: 161b07a8295fe61d0001659c8b2b3ac34d9976e508984e5ebee49cc06602ad70
+  sha256: 76b4733b07fdf7733d481d55e36cdd9f5bc4f4954e1893c5deaef8579b2c05ea
+notes_baseline: 866d71a2db2b9ac5dcf5048c2bdc93d6fba9fc1c66dd5ea24c58377b9aaab479
 verified:
 - by: process:playide-service-cohesion
   at: '2026-10-12T05:30:41Z'
   notes_sha256: bd64e3f7e5999b91e18e641fe8e17afc20744e1bf5527c2bff0ab9fad268aeb7
   sources_sha256: 161b07a8295fe61d0001659c8b2b3ac34d9976e508984e5ebee49cc06602ad70
+- by: process:recommend-next-steps-g170dx
+  at: '2026-11-11T04:00:00Z'
+  notes_sha256: 667be48af8588aa40c30df3b9ceb73ef566ea671c8a647cf483e2839fe1d6358
+  sources_sha256: 866d71a2db2b9ac5dcf5048c2bdc93d6fba9fc1c66dd5ea24c58377b9aaab479
 ---
 
 # application.service_views.StudioViews
@@ -61,6 +65,7 @@ Projection half of Studio; callbacks use the command service's case and review c
 * [`export`](/symbols/application/service_views/StudioViews.export.md) - `def export(self, case_id: str) -> dict[str, Any]`
 * [`formal_view`](/symbols/application/service_views/StudioViews.formal_view.md) - `def formal_view(self, model: Workflow) -> dict[str, Any]`
 * [`history`](/symbols/application/service_views/StudioViews.history.md) - `def history(self, case_id: str) -> dict[str, Any]`
+* [`plan_check`](/symbols/application/service_views/StudioViews.plan_check.md) - `def plan_check(self, steps: list[Any]) -> dict[str, Any]`
 * [`repository_change`](/symbols/application/service_views/StudioViews.repository_change.md) - `def repository_change(self, base: str, head: str) -> dict[str, Any]`
 * [`repository_change_file`](/symbols/application/service_views/StudioViews.repository_change_file.md) - `def repository_change_file(self, base: str, head: str, path: str, reference: str \| None=None) -> dict[str, Any]`
 * [`repository_freshness`](/symbols/application/service_views/StudioViews.repository_freshness.md) - `def repository_freshness(self, expected_source_hash: str) -> dict[str, Any]`
@@ -75,7 +80,7 @@ Projection half of Studio; callbacks use the command service's case and review c
 
 StudioViews is the abstract projection part of [Studio](/symbols/application/service/Studio.md), not a standalone authority service. Studio supplies `_case`, `_compile`, `_decision_matches` and `formal_view`; these callbacks reuse its existing case validation, receipt policy, signed decision matching and formal projection.
 
-Its fourteen concrete public views retain their Studio call signatures and make no case, active-model or audit writes. `formal_view` in the generated table is an abstract callback contract; the concrete implementation remains in Studio. Fresh activation badges still require the recorded applied case, matching model/binding, authentic current decision, eligible packet and a second active-record read.
+Its fifteen concrete public views retain their Studio call signatures and make no case, active-model or audit writes. `plan_check` (ADR-0230) previews a plan of typed steps on the model in force through `application.plan.preview_plan`, exactly as the chat does; it needs no case and stores nothing. `formal_view` in the generated table is an abstract callback contract; the concrete implementation remains in Studio. Fresh activation badges still require the recorded applied case, matching model/binding, authentic current decision, eligible packet and a second active-record read.
 
 The class page hashes fields and public signatures, not method bodies, inherited dispatch or adapter behavior. Use the method pages and actual concrete-service observations to inspect those boundaries. A process review of this page grants no source approval, owner authority or runtime evidence.
 
@@ -102,6 +107,7 @@ The class page hashes fields and public signatures, not method bodies, inherited
 * [application.service_views.StudioViews.export](/symbols/application/service_views/StudioViews.export.md) - `def export(self, case_id: str) -> dict[str, Any]` in `application/service_views`.
 * [application.service_views.StudioViews.formal_view](/symbols/application/service_views/StudioViews.formal_view.md) - `def formal_view(self, model: Workflow) -> dict[str, Any]` in `application/service_views`.
 * [application.service_views.StudioViews.history](/symbols/application/service_views/StudioViews.history.md) - Reconstructed semantic revisions and append-only command audit; never changes the case.
+* [application.service_views.StudioViews.plan_check](/symbols/application/service_views/StudioViews.plan_check.md) - Dry-run a whole plan of typed steps on the model in force, in order, as the chat's preview does (ADR-0230).
 * [application.service_views.StudioViews.repository_change](/symbols/application/service_views/StudioViews.repository_change.md) - Compare immutable source revisions; this grants no model or repository write authority.
 * [application.service_views.StudioViews.repository_change_file](/symbols/application/service_views/StudioViews.repository_change_file.md) - Read bounded historical text and syntax; live source identity remains separate.
 * [application.service_views.StudioViews.repository_freshness](/symbols/application/service_views/StudioViews.repository_freshness.md) - Observe captured byte identity; this grants no source conformance, evidence or owner authority.

@@ -17,7 +17,7 @@ If the `eija` MCP server is connected (setup: `docs/agents/quickstart.md`, or `e
 4. After selection: `verify(case_id)` (technical runtime matrix; same-author oracle; not approval, not proof, not human evidence), `impact(case_id)`, and `render(case_id, view, format)` (`rules|states|journeys`, `json|text`; `mermaid|plantuml|dot` use the built-in renderer; SVG requires a separately supplied renderer).
 5. Surface kernel error codes (`MEANING_REQUIRED`, `SOURCE_REVIEW_REQUIRED`, `STALE_VERSION`, `VERIFY_WOULD_INVALIDATE_DECISION`, `PROVIDER_CALL_LIMIT`) to the user; do not work around them.
 
-Read `pack()` for declarations, the active model and optional repository facts. Use `repository_impact(term)` and `repository_source(reference)` to inspect known source links. After owner selection, `affordances(case_id)` exposes checked choices and `edit_check(case_id, proposal)` dry-runs an untrusted edit without persisting or applying it. Use the same `--pack PATH --repo PATH` for Studio and MCP; repository intake does not establish full behavioral coverage.
+Read `pack()` for declarations, the active model and optional repository facts. Use `repository_impact(term)` and `repository_source(reference)` to inspect known source links. After owner selection, `affordances(case_id)` exposes checked choices and `edit_check(case_id, proposal)` dry-runs an untrusted edit without persisting or applying it. `plan_check(steps)` dry-runs a whole plan of typed steps on the model in force, with no case needed: use it before writing code for a change. Use the same `--pack PATH --repo PATH` for Studio and MCP; repository intake does not establish full behavioral coverage.
 
 ## Read-only repository changes
 

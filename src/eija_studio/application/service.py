@@ -44,7 +44,7 @@ class Studio(StudioViews):
                  formal: FormalEvidenceSource | None = None, pack: Pack | None = None,
                  repository: RepositorySource | None = None, repository_changes: RepositoryChangeSource | None = None,
                  edit_proposer: EditProposer | None = None, plan_proposer: PlanProposer | None = None,
-                 generated_apps: GeneratedApps | None = None):
+                 generated_apps: GeneratedApps | None = None, live_plan_proposer: PlanProposer | None = None):
         self.generated_apps = generated_apps
         self.pack = pack if pack is not None else default_pack()  # the domain: laws, meanings, fixtures
         self.formal = formal  # optional: without it the formal kinds stay UNKNOWN in the packet, never green
@@ -55,6 +55,7 @@ class Studio(StudioViews):
         self.repository_changes = repository_changes
         self.edit_proposer = edit_proposer
         self.plan_proposer = plan_proposer  # the PlayIDE chat's plan mode (ADR-0156); untrusted, read-only
+        self.live_plan_proposer = live_plan_proposer  # opt-in, per-request consent (ADR-0230); None unless the provider is networked
 
     @staticmethod
     def _case(u: UnitOfWork, case_id: str, expected: int | None = None, editable: bool = False) -> ChangeCase:

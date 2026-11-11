@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/application/service.py#Studio
   title: application/service.py
   hash_method: ast-sig-v1
-  sha256: 707234dc1ab317efe81bd641d24dcd76232b2b4be298e3ab45df87fb1ff46a22
+  sha256: 9f89e6e7ccafedb556b7c912ec2d959f7ae00418b481cde8d2005e1af621d5c5
 description_override: 'The Studio use cases: create, propose, select, edit, verify, approve, apply and execute over a Change Case.'
-notes_baseline: 42c85686bc107a8fb7053271f1ce3cd75bafaa421dbbd4850084a708d16ef793
+notes_baseline: d8c6791d0b3420d0141862f7d09137213063cbd5234f6a02b7af520c1992634f
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -82,6 +82,10 @@ verified:
   at: '2026-10-12T05:30:41Z'
   notes_sha256: 94cc25fd3d3611292ef77141ced4b93a723ab3d2bd9c4959cfe688ce7aca0cb3
   sources_sha256: 42c85686bc107a8fb7053271f1ce3cd75bafaa421dbbd4850084a708d16ef793
+- by: process:recommend-next-steps-g170dx
+  at: '2026-11-11T04:00:00Z'
+  notes_sha256: db632d4b946620da43165a1cb5def81b8e5d39bd163d68ee5c31fc0a869af664
+  sources_sha256: d8c6791d0b3420d0141862f7d09137213063cbd5234f6a02b7af520c1992634f
 ---
 
 # application.service.Studio
@@ -126,6 +130,8 @@ _The source carries no docstring._
 Studio inherits read-only projections from [StudioViews](/symbols/application/service_views/StudioViews.md). Workbench, repository, history, dry-run, review, activation-read and export calls keep their runtime Studio signatures; their implementations now live in `service_views.py`. Owner commands, signed decisions, packet freshness, version checks and atomic writes remain here. `edit_preview` and `formal_view` also remain here, preserving their existing capture and formal-evidence hooks.
 
 The generated method table lists declarations in this class, not all inherited methods. Follow StudioViews for current projection source; the deprecated Studio projection pages retain earlier locations. Matching signatures, source hashes and this process review establish neither behavioral equivalence nor successful resolution of every source/model binding.
+
+`live_plan_proposer` (ADR-0230) is set only when the composed provider is networked; the PlayIDE chat uses it for one request only with `--allow-network` and that request's consent. It plans pack meanings and writes nothing.
 
 Every mutation runs inside one unit of work with version checks. Governance methods require a [Principal](/symbols/domain/models/Principal.md) capability; verification and approval are separate steps and neither implies apply ([Local Decision](/language/local-decision.md)).
 
