@@ -18,6 +18,8 @@ from eija_studio.domain.policy import baseline, check_policy
 from verification.excursion_pack import EFFECTS, FIXTURE_ACTORS
 from verification.excursion_pack import candidate as excursion_candidate
 
+from ..scope import require_one_transition_per_action
+
 UNKNOWN_ACTORS: tuple[str, ...] = ("ghost",)  # ids that are deliberately absent from the directory
 MUTABLE_ACTORS: tuple[str, ...] = ("teacher-assigned", "registrar")  # the environment may change these
 INVARIANTS: tuple[str, ...] = (
@@ -109,6 +111,7 @@ def forbidden_effects(workflow: Workflow) -> tuple[str, ...]:
 def transition_table(workflow: Workflow) -> dict[str, dict[str, Any]]:
     """action -> transition facts, classifying effects as `runtime.execute` does."""
     table: dict[str, dict[str, Any]] = {}
+    require_one_transition_per_action(workflow)
     for t in sorted(workflow.transitions, key=lambda x: x.action):
         kinds: dict[str, list[str]] = {"audit": [], "notify": [], "other": []}
         for effect in t.required_effects:

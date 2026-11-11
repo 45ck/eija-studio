@@ -58,7 +58,7 @@ def execute(
     instance = dict(row)
     if instance["model_hash"] != model_hash(model):
         raise DomainError("STALE_INSTANCE", "Model changed; reset the isolated preview")
-    t = next((t for t in model.transitions if t.action == command.action), None)
+    t = model.transition_for(command.action, instance["state"])
     if t is None:
         raise DomainError("ACTION_DENIED", "Action is not modelled")
     actor = session.actor(command.actor_id)

@@ -29,6 +29,7 @@ from eija_studio.domain.policy import apply_structural_all, check_policy
 from eija_studio.domain.transactions import Transaction, parse_transaction
 from eija_studio.application.law_proof import prove_laws
 
+from .several import _gone_transitions, _new_id, _several_steps, _single
 from .model import (DEFAULT_MAX_LENGTH, MULTIPLICITIES, READ_TYPES, WIDENED, Attr, Edge, Klass, Label, Link, Parsed, kind_label,
                     parse_label)
 
@@ -76,17 +77,18 @@ def _declared_checks(pack: Pack, label: Label, edge: Edge, report: ImportReport)
                    "not in PlayIDE's guard vocabulary (role, assigned); value guards are planned (issue #93)")
 
 
-def _edge_action(pack: Pack, edge: Edge, current: dict[str, Transition], seen: set[str],
+def _edge_action(pack: Pack, edge: Edge, current: dict[str, Transition], seen: set[str], drawn: set[tuple[str, str]],
                  report: ImportReport) -> tuple[Label, str] | None:
     label = parse_label(edge.label)
     if not label.trigger:
         report.add("unmapped", edge.where, f"{edge.source} -> {edge.target}",
                    "a transition needs a trigger: the action that fires it")
         return None
-    if label.trigger in seen:
+    if (label.trigger, edge.source) in drawn:
         report.add("unmapped", edge.where, f"transition {label.trigger}",
-                   "an action is one transition in PlayIDE; this is a second one")
+                   f"action {label.trigger} already leaves {edge.source}; an action leaves each state at most once")
         return None
+    drawn.add((label.trigger, edge.source))
     seen.add(label.trigger)
     if pack.action(label.trigger) is None:
         report.add("unmapped", edge.where, f"transition {label.trigger}",
@@ -102,21 +104,18 @@ def _edge_action(pack: Pack, edge: Edge, current: dict[str, Transition], seen: s
     return label, role
 
 
-def _new_id(action: str, taken: set[str]) -> str:
-    base = "TR-" + (re.sub(r"[^A-Z0-9_-]", "", action.upper()) or "X")
-    ident, n = base[:64], 1
-    while ident in taken:
-        n += 1
-        ident = f"{base[:60]}-{n}"
-    taken.add(ident)
-    return ident
+
+
 
 
 def _edit_steps(model: Workflow, wanted: list[tuple[Edge, str, str]], taken: set[str]) -> list[dict[str, Any]]:
-    by_action = {t.action: t for t in model.transitions}
     steps: list[dict[str, Any]] = []
+    shared: set[str] = set()
     for edge, action, role in wanted:
-        old = by_action.get(action)
+        if not _single(model, wanted, action):
+            steps += _several_steps(model, edge, action, role, taken, shared)
+            continue
+        old = model.transition_for(action)
         if old is None:
             steps.append({"kind": "add_transition", "id": _new_id(action, taken), "action": action,
                           "from_state": edge.source, "to_state": edge.target, "role": role})
@@ -130,9 +129,15 @@ def _edit_steps(model: Workflow, wanted: list[tuple[Edge, str, str]], taken: set
     return steps
 
 
+
+
 def _partial(parsed: Parsed, wanted: list[tuple[Edge, str, str]]) -> int:
     """How many transitions or composite states of the file's state machine were not read."""
     return len(parsed.edges) - len(wanted) + sum(1 for s in parsed.skipped if s["element"].startswith("composite state"))
+
+
+
+
 
 
 def _removals(model: Workflow, parsed: Parsed, wanted: list[tuple[Edge, str, str]], named: set[str],
@@ -141,8 +146,7 @@ def _removals(model: Workflow, parsed: Parsed, wanted: list[tuple[Edge, str, str
 
     A transition the file renamed to an undeclared action, or drew in a way PlayIDE cannot read, is missing from what
     was read; removing it would offer a plan that breaks the model. So a partial read removes nothing and says so."""
-    removals = [({"kind": "remove_transition", "transition": t.id}, f"transition {t.action}")
-                for t in model.transitions if t.action not in named]
+    removals = _gone_transitions(model, wanted, named)
     removals += [({"kind": "remove_state", "state": s}, f"state {s}") for s in model.states if s not in (parsed.states or [])]
     missed = _partial(parsed, wanted)
     if not missed:
@@ -199,10 +203,11 @@ def _record_states(parsed: Parsed, report: ImportReport) -> None:
 
 def _wanted(pack: Pack, model: Workflow, parsed: Parsed, seen: set[str], report: ImportReport) -> list[tuple[Edge, str, str]]:
     """The file's transitions PlayIDE can read, as (edge, action, role); `seen` collects the actions named."""
-    current = {t.action: t for t in model.transitions}
+    current = {t.action: t for t in model.transitions}  # the role an action already has, for an arrow that names none
     wanted: list[tuple[Edge, str, str]] = []
+    drawn: set[tuple[str, str]] = set()
     for edge in parsed.edges:
-        found = _edge_action(pack, edge, current, seen, report)
+        found = _edge_action(pack, edge, current, seen, drawn, report)
         if found is not None:
             wanted.append((edge, found[0].trigger, found[1]))
     return wanted
@@ -210,9 +215,9 @@ def _wanted(pack: Pack, model: Workflow, parsed: Parsed, seen: set[str], report:
 
 def _record_transitions(candidate: Workflow, wanted: list[tuple[Edge, str, str]], report: ImportReport) -> None:
     """A transition is read when the kernel's candidate has it exactly as the file draws it."""
-    drawn = {t.action: (t.from_state, t.to_state, t.role) for t in candidate.transitions}
+    drawn = {(t.action, t.from_state, t.to_state, t.role) for t in candidate.transitions}
     for edge, action, role in wanted:
-        if drawn.get(action) == (edge.source, edge.target, role):
+        if (action, edge.source, edge.target, role) in drawn:
             report.add("mapped", edge.where, f"transition {action} ({edge.source} -> {edge.target}, {role})")
 
 

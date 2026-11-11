@@ -128,9 +128,13 @@ def _need_state(model: Workflow, state: str) -> None:
 
 
 def _replace(model: Workflow, transition_id: str, **changes: Any) -> dict[str, Any]:
+    """Change one transition. A change to what an action shares (its target, role, guards or effects) is made to every
+    transition that action labels, so they stay alike (ADR-0232); only a source state belongs to one transition."""
     data = model.model_dump(mode="json")
+    action = next(t.action for t in model.transitions if t.id == transition_id)
+    alike = set(changes) != {"from_state"}
     for t in data["transitions"]:
-        if t["id"] == transition_id:
+        if t["id"] == transition_id or (alike and t["action"] == action):
             t.update({k: list(v) if isinstance(v, tuple) else v for k, v in changes.items()})
     return data
 

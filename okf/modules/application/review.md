@@ -63,6 +63,7 @@ Each change that alters behaviour carries a question for the reviewer to answer 
 * [`application/diagrams`](/modules/application/diagrams.md)
 * [`application/runtime`](/modules/application/runtime.md)
 * [`application/simulation`](/modules/application/simulation.md)
+* [`domain/impact`](/modules/domain/impact.md)
 * [`domain/models`](/modules/domain/models.md)
 * [`domain/pack`](/modules/domain/pack.md)
 * [`domain/transactions`](/modules/domain/transactions.md)
@@ -78,6 +79,7 @@ _No curated notes yet._
 * [application.diagrams](/modules/application/diagrams.md) - Diagram models derived from the executable Workflow (ADR-0019, ADR-0023).
 * [application.runtime](/modules/application/runtime.md) - Generic execution algorithm; the domain (policy, laws, typed effects) comes from the pack.
 * [application.simulation](/modules/application/simulation.md) - Seeded simulation of people using the app built from a model (ADR-0152).
+* [domain.impact](/modules/domain/impact.md) - Module `domain/impact` (no module docstring).
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
 * [domain.transactions](/modules/domain/transactions.md) - Open change vocabulary (WBS 1.3): the semantic edits an owner (or a pack meaning) may make to a workflow.

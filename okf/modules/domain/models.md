@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py
   title: domain/models.py
   hash_method: ast-api-v1
-  sha256: b11114669c762eb73e9a7564957caabe81e61e9d1a9728bca263a863e8c1b6fb
-notes_baseline: 708d9fec8035b1048b93c67b78481b2de4381afe2a744b0b61f42f8e3c509a5e
+  sha256: 0193ce592c955a5ab5110d2c8df248b0b7351b4c6cb2acc0bf2e966eb6b4370f
+notes_baseline: cad755598494e713cc2d76056f90d35a89cac72b0b5e4008277fbe28e9501a11
 ---
 
 # domain.models
@@ -159,6 +159,8 @@ _No curated notes yet._
 * [domain.models.Workflow.coherent](/symbols/domain/models/Workflow.coherent.md) - `def coherent(self) -> Workflow` in `domain/models`.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 * [domain.models.Workflow.semantic_hash](/symbols/domain/models/Workflow.semantic_hash.md) - `def semantic_hash(self) -> str` in `domain/models`.
+* [domain.models.Workflow.sources](/symbols/domain/models/Workflow.sources.md) - The states ``action`` leaves, in model order.
+* [domain.models.Workflow.transition_for](/symbols/domain/models/Workflow.transition_for.md) - The transition ``action`` takes from ``state``; without a state, or when it does not leave that state, any transition it labels (they differ only in id and sou…
 * [domain.models.canonical](/symbols/domain/models/canonical.md) - `def canonical(value: Any) -> str` in `domain/models`.
 * [domain.models.fingerprint](/symbols/domain/models/fingerprint.md) - `def fingerprint(value: Any) -> str` in `domain/models`.
 <!-- okf:generated:end links -->

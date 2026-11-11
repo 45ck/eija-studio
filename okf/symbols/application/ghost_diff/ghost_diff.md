@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/ghost_diff.py#ghost_diff
   title: application/ghost_diff.py
   hash_method: ast-v2
-  sha256: 0339beb6ced8f249e1c2150a7c6e90b23d7a9db762f53e80604a1d7670d82fb6
-notes_baseline: d3294d17b7874be0b0f3be8a1f7c4aedc0a365b5d5d6153a29b769f09705349f
+  sha256: d74ff1c2562cdcd7935af3fc5dab495bc6d50b3f1a6ae0b2bd52df63716f035b
+notes_baseline: 246292e7a0df8707f7a904a8c59f45c55a458c42e3dc3c11c5f88d082c86eccc
 ---
 
 # application.ghost_diff.ghost_diff
@@ -44,6 +44,7 @@ _No curated notes yet._
 ## Depends on
 
 * [application.ghost_diff.FORMAT](/symbols/application/ghost_diff/FORMAT.md) - Constant `FORMAT` in `application/ghost_diff`.
+* [domain.impact.keyed](/symbols/domain/impact/keyed.md) - Both models' transitions keyed for comparison.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 
 ## Referenced by

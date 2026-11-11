@@ -62,11 +62,10 @@ def _instance(u: UnitOfWork, instance_id: str) -> dict[str, Any]:
 
 def verify_runtime(model: Workflow, subject: dict[str, Any], sandbox: SandboxFactory, pack: Pack | None = None) -> dict[str, Any]:
     pack = pack if pack is not None else default_pack()
-    by = {t.action: t for t in model.transitions}
     actions = [a.id for a in pack.actions]
     with sandbox() as store:
         cells = [{"actor": actor.id, "state": state, "action": action,
-                  "expected": _expected(actor, state, by.get(action), pack),
+                  "expected": _expected(actor, state, model.transition_for(action, state), pack),
                   "actual": _observe(store, model, actor, state, action, pack)}
                  for actor in pack.fixtures.actors for state in model.states for action in actions]
     artifact = {"protocol": "bounded-runtime-matrix-v1", "expected_cells": len(pack.fixtures.actors) * len(model.states) * len(actions),

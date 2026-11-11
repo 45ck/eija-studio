@@ -63,10 +63,14 @@ def _transition_line(n: int, line: str, used: dict[str, int], transitions: list[
     match = LINE.match(line)
     if not match:
         return [f"line {n}: write it as {SKETCH_HELP.split(': ', 1)[1]}"]
-    action = match.group(3)
-    if action in used:
-        return [f"line {n}: action {action} already labels line {used[action]}; each action labels one transition"]
-    used[action] = n
+    source, target, action, role = match.groups()
+    first = next((t for t in transitions if t[2] == action), None)  # an action may leave several states (ADR-0232)
+    if first is not None and (first[1], first[3]) != (target, role):
+        return [f"line {n}: action {action} already labels line {used[action]}, to {first[1]} by {first[3]}; "
+                "an action may leave several states, but always to the same state and by the same role"]
+    if first is not None and any(t[0] == source and t[2] == action for t in transitions):
+        return [f"line {n}: action {action} already leaves {source}"]
+    used.setdefault(action, n)
     transitions.append(match.groups())
     return []
 

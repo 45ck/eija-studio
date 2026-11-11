@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/domain/impact.py
   title: domain/impact.py
   hash_method: ast-api-v1
-  sha256: 4f201f10eafdb41526bff8428c693cc58d1f76e130fa80af34abb233927b69c5
-notes_baseline: 845f8a234a2105524a4156d02c50a05d1b01e4969d4d70b46eaa29dcd4b7e4ad
+  sha256: b4a07eee63b011d61f2ff829bf1960b91a5d06ff12bfebc250a80482eb03a10f
+notes_baseline: 973a463d3091d015b140ddaa18790e5b0cfaccd55df6cb3d8f8ee94fe886233a
 ---
 
 # domain.impact
@@ -34,6 +34,7 @@ _The source carries no module docstring._
 
 * [`changed_fields`](/symbols/domain/impact/changed_fields.md) (function) - Semantic differences of one action's transition.
 * [`closure`](/symbols/domain/impact/closure.md) (function) - Edges mean source affects target.
+* [`keyed`](/symbols/domain/impact/keyed.md) (function) - Both models' transitions keyed for comparison.
 * [`model_impact`](/symbols/domain/impact/model_impact.md) (function) - no docstring
 
 ## Internal imports
@@ -56,8 +57,10 @@ _No curated notes yet._
 * [application.diagram_catalog](/modules/application/diagram_catalog.md) - Named diagram views over a baseline and an optional candidate Workflow.
 * [application.diagrams](/modules/application/diagrams.md) - Diagram models derived from the executable Workflow (ADR-0019, ADR-0023).
 * [application.ghost_diff](/modules/application/ghost_diff.md) - How a change looks on the state machine: both models on one canvas, with nothing hidden (ADR-0176).
+* [application.review](/modules/application/review.md) - Review a model change in PlayIDE instead of a pull request (ADR-0175).
 * [interfaces.cli](/modules/interfaces/cli.md) - Module `interfaces/cli` (no module docstring).
 * [domain.impact.changed_fields](/symbols/domain/impact/changed_fields.md) - Semantic differences of one action's transition.
 * [domain.impact.closure](/symbols/domain/impact/closure.md) - Edges mean source affects target.
+* [domain.impact.keyed](/symbols/domain/impact/keyed.md) - Both models' transitions keyed for comparison.
 * [domain.impact.model_impact](/symbols/domain/impact/model_impact.md) - `def model_impact(before: Workflow, after: Workflow) -> dict[str, Any]` in `domain/impact`.
 <!-- okf:generated:end links -->

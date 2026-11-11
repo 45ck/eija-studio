@@ -212,8 +212,9 @@ class OfflinePlanProposer:
 
 
 def _spare_action(model: Workflow, pack: Pack) -> str | None:
-    """A declared action the model does not use yet. Each action labels one transition, so there is no other choice:
-    when every declared action is in use, no follow-on is proposed rather than one the policy is sure to refuse."""
+    """A declared action the model does not use yet. An action already in use could only leave another state for its
+    own target and role (ADR-0232), so a follow-on takes a fresh one: when every declared action is in use, none is
+    proposed rather than one the kernel is sure to refuse."""
     used = {t.action for t in model.transitions}
     return next((a.id for a in pack.actions if a.id not in used), None)
 

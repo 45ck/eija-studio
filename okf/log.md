@@ -2,6 +2,8 @@
 
 ## 2026-11-11
 
+* **One action from several states (issue #148)**: synced ADR-0232, `Workflow.transition_for`/`sources`, `impact.keyed`, the runtime, transactions, importers and `verification/scope.py`. Re-read the Notes of `execute`, `verify_runtime`, `model_impact`, `Workflow` and the integration-test kind as `process:claude-code` and updated the first four. No human source approval was recorded.
+
 * **Initiators are a set in the semantic hash**: re-read and updated the Note of `Workflow.semantic_hash` as `process:claude-code` (Codex review on PR #223).
 
 * **Who may start a record (issue #142)**: synced ADR-0231, `Workflow.initiators`, `runtime.initialise(role=)`, the generated app's start check and the simulation. Re-read the Notes of `application.runtime`, `initialise` and `Workflow` against the current source as `process:claude-code` and updated the last two for initiators. No human source approval was recorded.

@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/application/verifier.py#verify_runtime
   title: application/verifier.py
   hash_method: ast-v2
-  sha256: 8452f395c4b9f2584b0f8fe9775d3b147f611951072e44c923ce32ebd6dfde92
+  sha256: 03c5ec6ea4e38f8eb179ccbcfdf9e5bca78568a76459762014cd32ec1143fe41
 description_override: Runs the declared actor x state x action matrix against the real runtime in a disposable sandbox and returns the artifact a receipt is built from.
-notes_baseline: 4068a80e4e9f93b8598cf14f45dbfa6f5a17ec66fc09a7d7a7514d7db66ed786
+notes_baseline: 28e16ae5ccbc85fd121262615895cfd397525b4b9988a6f8a5bb96a8ba1df383
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -26,6 +26,10 @@ verified:
   at: '2026-09-29T08:20:47Z'
   notes_sha256: ae41a14b066723067fde150de45124d29aab995e31cfc9a3df16d86d2534abad
   sources_sha256: 4068a80e4e9f93b8598cf14f45dbfa6f5a17ec66fc09a7d7a7514d7db66ed786
+- by: process:claude-code
+  at: '2026-11-11T13:00:00Z'
+  notes_sha256: 3a069b7a1fa60cbe17689d02a5f6e77289268ee52491c7c971bd393d367b9875
+  sources_sha256: 28e16ae5ccbc85fd121262615895cfd397525b4b9988a6f8a5bb96a8ba1df383
 ---
 
 # application.verifier.verify_runtime
@@ -46,7 +50,7 @@ _The source carries no docstring._
 
 ## Notes
 
-One cell per fixture actor x model state x declared action of the pack (the excursion candidate: 5 x 5 x 5 = 125; the library-loan baseline: 5 x 5 x 6 = 150), each executed through [execute](/symbols/application/runtime/execute.md) in the sandbox from [SandboxFactory](/symbols/application/ports/SandboxFactory.md) and compared with an expected outcome read from the model's transition table and the pack's fixture directory (active, role, assignment guard, typed effect counts).
+One cell per fixture actor x model state x declared action of the pack (the excursion candidate: 5 x 5 x 5 = 125; the library-loan baseline: 5 x 5 x 6 = 150), each executed through [execute](/symbols/application/runtime/execute.md) in the sandbox from [SandboxFactory](/symbols/application/ports/SandboxFactory.md) and compared with an expected outcome read from the transition the action takes from that state (ADR-0232) and the pack's fixture directory (active, role, assignment guard, typed effect counts).
 
 **Honest limits.** The expectation is computed separately from the runtime's guard evaluation but reads the same model and pack: it checks the runtime against the declared table, not against an independently derived policy. The cells are one-step experiments, not a theorem about arbitrary histories. A sandbox observes transaction semantics, not crash durability. See [Bounded runtime matrix](/verification/integration-test.md) and acceptance [AC12](/requirements/ac12.md).
 

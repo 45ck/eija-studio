@@ -648,7 +648,8 @@
   // models (ADR-0176), where a use case or actor the change removes stays as a ghost and a moved association keeps its old line.
   function useCaseShape() {
     if (!shownChange) {
-      const flow = workflowOrder();
+      // One use case per action, even when it leaves several states (ADR-0232).
+      const flow = workflowOrder().filter((t, i, all) => all.findIndex((u) => u.action === t.action) === i);
       return { cases: flow.map((t) => ({ ...t, status: "same" })), actors: [...new Set(flow.map((t) => t.role))].map((name) => ({ name, status: "same" })),
         links: flow.map((t) => ({ role: t.role, case: t.id, status: "same" })) };
     }
@@ -2395,13 +2396,14 @@
       log.scrollTop = Math.max(0, rows[i].offsetTop - log.clientHeight / 2);
       paint(sim);
       graph.batchUpdate(() => {
-        const t = entry.action && model.transitions.find((x) => x.action === entry.action);
+        // The run names the transition it tried: one action may leave several states (ADR-0232).
+        const t = entry.action && (model.transitions.find((x) => x.id === entry.transition) || model.transitions.find((x) => x.action === entry.action));
         if (t) restyle("transition:" + t.id, { strokeColor: entry.outcome === "REFUSED" ? "#a12f2f" : "#3157d5", strokeWidth: 6 }, graph.getDataModel().getCell("transition:" + t.id).value);
         const at = entry.outcome === "REFUSED" ? entry.from : entry.to;
         if (at) restyle("state:" + at, { strokeColor: entry.outcome === "REFUSED" ? "#a12f2f" : "#3157d5", strokeWidth: 4 }, graph.getDataModel().getCell("state:" + at).value);
         document.dispatchEvent(new CustomEvent("playide:step", { detail: { ...entry, transition: t ? t.id : null, ms: 450 } }));
       });
-      const here = entry.outcome === "REFUSED" ? entry.from : entry.to, step = entry.action && model.transitions.find((x) => x.action === entry.action);
+      const here = entry.outcome === "REFUSED" ? entry.from : entry.to, step = entry.action && (model.transitions.find((x) => x.id === entry.transition) || model.transitions.find((x) => x.action === entry.action));
       if (here) follow(["state:" + here, ...(step ? ["transition:" + step.id] : [])]); // the state and the line taken, as Run does
       i += 1;
     }, 450);
@@ -2934,7 +2936,7 @@
     inspect("");
     const t = model.transitions[model.transitions.length - 1];
     // The example has to pass as it stands. On the model in force that is the pack's own demo request, when the pack
-    // models it (a system started here has no modelled changes yet). Otherwise, and on a change case's candidate, typed steps: an action names one transition, so the second step takes a
+    // models it (a system started here has no modelled changes yet). Otherwise, and on a change case's candidate, typed steps: an action in use keeps its own target and role (ADR-0232), so the second step takes a
     // declared action no transition uses yet, and it leaves a state that already has a way out (a pack's laws may keep
     // its end states closed).
     const free = t && packInfo.actions.find((a) => !model.transitions.some((u) => u.action === a));

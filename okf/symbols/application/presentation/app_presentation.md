@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/presentation.py#app_presentation
   title: application/presentation.py
   hash_method: ast-v2
-  sha256: f18d37ad03e276654a0726508ff9b445b567113b4cbb1d47f3db8d39e36f6b9c
-notes_baseline: cb1d8179827350ec3586c8825419c7f23e794a02d312ac1d8cd1b9e313aaf25a
+  sha256: 5de5aaf1625a19decadff59331f49f0aeee075ebffaceafc0c323c2310362183
+notes_baseline: 904806b2a9f59bf3047f65f70ad0b40973042956c3949452ab042378e114d5f1
 ---
 
 # application.presentation.app_presentation

@@ -49,7 +49,7 @@ class _Record:
 
 def _cells(model: Workflow, action: str, source: str, target: str | None) -> list[str]:
     """The diagram elements a step touches: its transition, if modelled, and the states it leaves and reaches."""
-    transition = next((t for t in model.transitions if t.action == action), None)
+    transition = model.transition_for(action, source)
     found = [f"state:{source}"] + ([f"transition:{transition.id}"] if transition else [])
     return found + ([f"state:{target}"] if target and target != source else [])
 
