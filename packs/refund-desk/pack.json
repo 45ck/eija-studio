@@ -787,7 +787,7 @@
         "assigned": false
       }
     ],
-    "demo_request": "Let the support agent approve refunds itself.",
+    "demo_request": "Let the agent hand refunds it is unsure about to a supervisor.",
     "proposals": {
       "summary": "Deterministic demonstration; no model inference was used.",
       "rules": [
@@ -796,18 +796,28 @@
             "agent"
           ],
           "any": [
-            "approve",
-            "decide",
-            "itself",
             "hand",
             "escalate",
-            "unsure"
+            "unsure",
+            "supervisor"
           ],
           "alternatives": [
             {
               "interpretation": "agent_hands_off",
               "explanation": "The agent hands requests it cannot settle to a supervisor; a person still approves every refund."
-            },
+            }
+          ]
+        },
+        {
+          "all": [
+            "agent"
+          ],
+          "any": [
+            "approve",
+            "decide",
+            "itself"
+          ],
+          "alternatives": [
             {
               "interpretation": "agent_auto_approve",
               "explanation": "Would let the agent approve refunds itself. The pack's laws keep that decision with a person."
