@@ -58,7 +58,7 @@ def _authority(transition: Transition | None, model: Workflow) -> dict[str, Any]
 
 
 def _transition(screen: Screen, model: Workflow) -> Transition | None:
-    transition = next((t for t in model.transitions if t.action == screen.use_case), None)
+    transition = model.transition_for(screen.use_case) if screen.use_case is not None else None
     if screen.use_case is not None and transition is None:
         raise DomainError("NAVIGATION_ACTION_MISSING", "The screen's action is absent from this workflow")
     return transition

@@ -55,7 +55,7 @@ def _context(pack: Pack, model: Workflow) -> dict[str, Any]:
                    details={"states": list(model.states), "actions": [t.model_dump(mode="json") for t in model.transitions]})
     nodes, relations = [], []
     for role in pack.roles:
-        actions = [t.action for t in model.transitions if t.role == role.id]
+        actions = list(dict.fromkeys(t.action for t in model.transitions if t.role == role.id))
         cid = "actor:" + role.id
         nodes.append(_actor(pack, role, actions))
         if actions:

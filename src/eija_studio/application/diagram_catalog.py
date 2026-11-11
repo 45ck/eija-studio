@@ -49,7 +49,7 @@ def _diagram(view: str, before: Workflow, after: Workflow | None, action: str | 
     if view == "class":
         return class_model()
     if action is None:
-        raise DomainError("ACTION_REQUIRED", "The sequence view needs an action: " + ", ".join(sorted(t.action for t in subject.transitions)))
+        raise DomainError("ACTION_REQUIRED", "The sequence view needs an action: " + ", ".join(sorted({t.action for t in subject.transitions})))
     return commit_sequence(subject, action)
 
 

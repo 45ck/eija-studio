@@ -55,6 +55,11 @@ class Transition(Contract):
         return self
 
 
+def _shape(t: Transition) -> tuple[Any, ...]:
+    """What every transition one action labels must share: all but its id and source state (ADR-0232)."""
+    return (t.to_state, t.role, frozenset(t.guards), frozenset(t.required_effects), frozenset(t.forbidden_effects))
+
+
 class Workflow(Contract):
     schema_version: Literal["eija.workflow.v1"] = "eija.workflow.v1"
     id: str = Field(pattern=r"^[a-z][a-z0-9-]{0,39}$")  # the id of the domain pack the workflow belongs to
@@ -76,16 +81,30 @@ class Workflow(Contract):
     def coherent(self) -> Workflow:
         if len(set(self.states)) != len(self.states) or self.initial_state not in self.states:
             raise ValueError("Duplicate states or missing initial state")
-        ids, keys, actions = set(), set(), set()
+        ids: set[str] = set()
+        keys: set[tuple[str, str]] = set()
+        shapes: dict[str, tuple[Any, ...]] = {}
         for t in self.transitions:
             if t.from_state not in self.states or t.to_state not in self.states:
                 raise ValueError("Dangling transition state")
-            if t.id in ids or (t.from_state, t.action, t.role) in keys or t.action in actions:
+            # One action may leave several states (issue #148, ADR-0232), but from each state at most once, and every
+            # transition it labels must be the same apart from its id and source state.
+            if t.id in ids or (t.from_state, t.action) in keys or shapes.setdefault(t.action, _shape(t)) != _shape(t):
                 raise ValueError("Duplicate or ambiguous transition/action")
-            ids.add(t.id); keys.add((t.from_state, t.action, t.role)); actions.add(t.action)
+            ids.add(t.id); keys.add((t.from_state, t.action))
         if len(set(self.initiators)) != len(self.initiators):
             raise ValueError("Duplicate initiator role")
         return self
+
+    def transition_for(self, action: str, state: str | None = None) -> Transition | None:
+        """The transition ``action`` takes from ``state``; without a state, or when it does not leave that state,
+        any transition it labels (they differ only in id and source, ADR-0232). None when the action is not modelled."""
+        labelled = [t for t in self.transitions if t.action == action]
+        return next((t for t in labelled if t.from_state == state), labelled[0] if labelled else None)
+
+    def sources(self, action: str) -> tuple[str, ...]:
+        """The states ``action`` leaves, in model order."""
+        return tuple(t.from_state for t in self.transitions if t.action == action)
 
     @property
     def semantic_hash(self) -> str:

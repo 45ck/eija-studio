@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/c4.py#app_c4
   title: application/c4.py
   hash_method: ast-v2
-  sha256: 1cdc736d7805d716c02a52298a0075898259ad93c17bfa49f915eb47e7803200
-notes_baseline: e242e78a0071278eb51f134703098b4cbe35eed8645ab28ef4d2521073251cb2
+  sha256: d734ba8f5049539d5ab9396b6b5d6de0d8a6e4686973af5453692e4b9195a64b
+notes_baseline: dc818a18256ed2a14a7326e1ded215f6aa60e8f5fa865e8761aa5531a9094856
 ---
 
 # application.c4.app_c4

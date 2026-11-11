@@ -32,6 +32,8 @@
 * [domain.models.Transition.guarded](Transition.guarded.md) - `def guarded(self) -> Transition` in `domain/models`.
 * [domain.models.Workflow.coherent](Workflow.coherent.md) - `def coherent(self) -> Workflow` in `domain/models`.
 * [domain.models.Workflow.semantic_hash](Workflow.semantic_hash.md) - Order-insensitive fingerprint of the workflow: definition order is non-semantic, identifiers, states, roles and rules are semantic.
+* [domain.models.Workflow.sources](Workflow.sources.md) - The states ``action`` leaves, in model order.
+* [domain.models.Workflow.transition_for](Workflow.transition_for.md) - The transition ``action`` takes from ``state``; without a state, or when it does not leave that state, any transition it labels (they differ only in id and source, ADR-0232).
 
 # Type Aliases
 

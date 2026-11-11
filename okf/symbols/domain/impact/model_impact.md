@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/domain/impact.py#model_impact
   title: domain/impact.py
   hash_method: ast-v2
-  sha256: cd067b1d87ce123f442f5dbd1f003c2ad457448f41f67e7501fcee007e1c7000
+  sha256: 0c69672c296fd876755149e8d7acd11981cb1be6c63bca9b9cb976f1d123efa8
 description_override: Maps the changed actions between two workflows onto the rule, runtime, state-view, journey, obligation, receipt, review-packet and decision chain and closes over it.
-notes_baseline: 8897e73296bc1446d9ccad15e96b8d676fa9e7c612396800115306d7fcf97e04
+notes_baseline: 903f19f9643615e15a09284a86aa6ca1f0fea1053a69bfb9e7e2e6df10e7db42
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -26,6 +26,10 @@ verified:
   at: '2026-09-29T12:00:00Z'
   notes_sha256: 7068aa48c7c5e00741afaa492ba2f57538338d3e24ab145fbccd6da11b472e1a
   sources_sha256: 8897e73296bc1446d9ccad15e96b8d676fa9e7c612396800115306d7fcf97e04
+- by: process:claude-code
+  at: '2026-11-11T13:00:00Z'
+  notes_sha256: e3bf02b93698b6ff483b51c2fe8acf9cf2e26db135566d5329fb04f79052b6f0
+  sources_sha256: 903f19f9643615e15a09284a86aa6ca1f0fea1053a69bfb9e7e2e6df10e7db42
 ---
 
 # domain.impact.model_impact
@@ -46,13 +50,14 @@ _The source carries no docstring._
 
 ## Notes
 
-The envelope is explicit in the result: it covers dependencies encoded by this projection mapping, not every real-world consequence. Built on [closure](/symbols/domain/impact/closure.md); it is why a rule edit invalidates the receipt and the local decision.
+The envelope is explicit in the result: it covers dependencies encoded by this projection mapping, not every real-world consequence. Transitions are compared through `keyed`: by action, or by action and source once an action leaves several states (ADR-0232); the changed list is still by action. Built on [closure](/symbols/domain/impact/closure.md); it is why a rule edit invalidates the receipt and the local decision.
 
 <!-- okf:generated:begin links -->
 ## Depends on
 
 * [domain.impact.changed_fields](/symbols/domain/impact/changed_fields.md) - Semantic differences of one action's transition.
 * [domain.impact.closure](/symbols/domain/impact/closure.md) - Edges mean source affects target.
+* [domain.impact.keyed](/symbols/domain/impact/keyed.md) - Both models' transitions keyed for comparison.
 * [domain.models.Workflow](/symbols/domain/models/Workflow.md) - `class Workflow(Contract)` in `domain/models`.
 
 ## Referenced by

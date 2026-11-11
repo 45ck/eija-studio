@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/sequences.py#check_sequences
   title: application/sequences.py
   hash_method: ast-v2
-  sha256: 98dbb3b62c8978120b4667e5c7b9b2a1c24ad5f8ff6a9056eef0b20bf7979738
-notes_baseline: ce951a576a1ebd1d071787cf01cfbd3a414954a43f1b84482ebdb5ee3ad71962
+  sha256: 25b6289d68718efab304f1ccb79180e419ddb8e44f113ef6d410d815802e86d1
+notes_baseline: 604e4dc047bf2a38ea2499c4321f71befe2d822be58f77e250f22c2d7296ac46
 ---
 
 # application.sequences.check_sequences

@@ -23,7 +23,7 @@ from pydantic import BaseModel
 
 from eija_studio.domain import models as domain_models
 from eija_studio.domain.change_case import ChangeCase
-from eija_studio.domain.impact import changed_fields, model_impact
+from eija_studio.domain.impact import changed_fields, keyed, model_impact
 from eija_studio.domain.models import (
     Alternative, DomainError, ExecuteCommand, LayoutChange, Principal, Proposal,
     Transition, Workflow,
@@ -199,7 +199,7 @@ def _shown(value: Any) -> Any:
 
 def diff_summary(before: Workflow, after: Workflow) -> dict[str, Any]:
     """Structured diff of two workflows: states, and transitions by action with each changed field's before and after."""
-    a, b = {t.action: t for t in before.transitions}, {t.action: t for t in after.transitions}
+    a, b = keyed(before, after)
     changed = {k: [{"field": f, "before": _shown(getattr(a[k], f)), "after": _shown(getattr(b[k], f))} for f in changed_fields(a[k], b[k])]
                for k in sorted(set(a) & set(b)) if changed_fields(a[k], b[k])}
     initial = {"before": before.initial_state, "after": after.initial_state} if before.initial_state != after.initial_state else None
@@ -224,7 +224,7 @@ def _action_edges(old: Transition | None, new: Transition | None) -> list[Edge]:
 
 
 def _diff_edges(before: Workflow, after: Workflow) -> tuple[Edge, ...]:
-    a, b = {t.action: t for t in before.transitions}, {t.action: t for t in after.transitions}
+    a, b = keyed(before, after)
     edges = [e for action in sorted(set(a) | set(b)) for e in _action_edges(a.get(action), b.get(action))]
     return tuple(sorted(edges, key=lambda e: (e.source, e.target, e.label.lstrip("+-~ "), e.status)))
 
@@ -341,7 +341,7 @@ def commit_sequence(workflow: Workflow, action: str) -> Sequence:
     order, so a reordering in the runtime fails that test, but the runtime source is never parsed. Effects are
     listed audit first, then outbox, each sorted: their order inside the one transaction is non-semantic
     (see `Workflow.semantic_hash`)."""
-    t = next((x for x in workflow.transitions if x.action == action), None)
+    t = workflow.transition_for(action)
     if t is None:
         raise DomainError("ACTION_DENIED", f"Action {action!r} is not modelled; modelled: {', '.join(sorted(x.action for x in workflow.transitions))}")
     steps = [*_authority_steps(t), *_replay_and_state_steps(t), *_effect_steps(t), *_closing_steps()]

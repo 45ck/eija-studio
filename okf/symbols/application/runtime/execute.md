@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/application/runtime.py#execute
   title: application/runtime.py
   hash_method: ast-v2
-  sha256: 5d688ada90b700ecc0b317423ce7279ec4c2709979192f9d86a511f383b44ac4
+  sha256: 6410d725b8f6747e43ebca8d8931aa1d57e58755d2db2dbf70a6b47fe432b648
 description_override: 'Executes one command against a preview instance: authority is checked before replay, versions are compare-and-swap, and audit and outbox commit with the state change.'
-notes_baseline: 873d2643fe7445b3c19bf0d24ea2160e5f314eb805620aa111859af671bf09ed
+notes_baseline: 127bca8128bc242ceeb420ee22c625071d98f51df4452d0744be292adc7f10a9
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -30,6 +30,10 @@ verified:
   at: '2026-10-08T23:55:00Z'
   notes_sha256: d7ed99eb19af019c570df3e501f157e6b7a2759675bb3c3e589bbfab400a3585
   sources_sha256: 873d2643fe7445b3c19bf0d24ea2160e5f314eb805620aa111859af671bf09ed
+- by: process:claude-code
+  at: '2026-11-11T13:00:00Z'
+  notes_sha256: dfe04ae0f939b3dc6f5f14024f1734fc5143e74a17b0b76f63eaa874ed4c6a37
+  sources_sha256: 127bca8128bc242ceeb420ee22c625071d98f51df4452d0744be292adc7f10a9
 ---
 
 # application.runtime.execute
@@ -50,7 +54,7 @@ _The source carries no docstring._
 
 ## Notes
 
-The commit sequence, in the order the code performs it:
+The transition is the one the command's action takes from the record's state; an action may leave several states, all alike but for their source, so authority does not depend on which one ([ADR-0232](/adrs/0232-one-action-from-several-states.md)). The commit sequence, in the order the code performs it:
 1. `ensure_policy` (under the pack) and model-identity check (`STALE_INSTANCE`). Both go through [application.memo](/modules/application/memo.md), which asks them once per frozen model and pack object; a refusal still comes from `ensure_policy` itself ([ADR-0199](/adrs/0199-playide-at-the-kernel-limits.md)).
 2. **Authorise first** with [check_actor](/symbols/application/runtime/check_actor.md): active, current role, and assignment where the guard requires it. A cached success is not continuing authority.
 3. Replay: an existing operation id with a different binding is `OPERATION_CONFLICT`; the same binding returns the original result and enqueues nothing again.

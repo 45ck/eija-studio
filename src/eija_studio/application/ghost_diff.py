@@ -19,7 +19,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from eija_studio.domain.impact import changed_fields
+from eija_studio.domain.impact import changed_fields, keyed
 from eija_studio.domain.models import Transition, Workflow
 
 FORMAT = "eija.ghost-diff.v1"
@@ -113,13 +113,30 @@ def _case(edge: dict[str, Any]) -> tuple[dict[str, Any], list[dict[str, Any]]]:
 def _use_cases(edges: list[dict[str, Any]]) -> dict[str, Any]:
     """The use case diagram of both models (ADR-0153): a use case per action, an actor per role, and who takes which,
     each with a status, so the use case diagram can show a change the way the state machine does."""
-    cases, links = [], []
+    found: dict[str, tuple[dict[str, Any], list[dict[str, Any]]]] = {}
     for edge in edges:
         if edge["status"] != "was":  # a moved arrow's old route is the same use case
             case, case_links = _case(edge)
-            cases.append(case)
-            links += case_links
+            found[case["action"]] = _merged(found[case["action"]], case) if case["action"] in found else (case, case_links)
+    cases = [case for case, _ in found.values()]
+    links = [link for _, case_links in found.values() for link in case_links]
     return {"cases": sorted(cases, key=lambda c: (c["action"], c["id"])), "actors": _actors(links), "links": links}
+
+
+def _merged(first: tuple[dict[str, Any], list[dict[str, Any]]], other: dict[str, Any]) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    """One use case for an action that leaves several states (ADR-0232): it is added or removed only when every one
+    of its transitions is, and a role change is the same on all of them."""
+    case, links = first
+    if other["status"] == "changed" and case["status"] != "changed":  # a role change wins, whichever source sorts first
+        return other, _case_links(other)
+    if case["status"] != other["status"] and case["status"] != "changed":
+        case = case | {"status": "same"}
+        links = [link | {"status": "same"} for link in links]
+    return case, links
+
+
+def _case_links(case: dict[str, Any]) -> list[dict[str, Any]]:
+    return [{"role": case["was_role"], "case": case["id"], "status": "removed"}, {"role": case["role"], "case": case["id"], "status": "added"}]
 
 
 def _actors(links: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -131,7 +148,7 @@ def _actors(links: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 def ghost_diff(before: Workflow, after: Workflow) -> dict[str, Any]:
     """The union of two state machines, each element with its status, and the ordered list of changes."""
-    a, b = {t.action: t for t in before.transitions}, {t.action: t for t in after.transitions}
+    a, b = keyed(before, after)
     edges = sorted((e for action in set(a) | set(b) for e in _action_edges(a.get(action), b.get(action))),
                    key=lambda e: (e["from_state"], e["to_state"], e["action"], e["key"]))
     states = _states(before, after, edges)

@@ -22,6 +22,7 @@ import itertools
 from collections import deque
 from typing import Any
 
+from eija_studio.domain.impact import keyed
 from eija_studio.domain.models import DomainError, ExecuteCommand, Transition, Workflow
 from eija_studio.domain.pack import Pack
 from eija_studio.domain.transactions import RenameState, apply_structural
@@ -193,14 +194,14 @@ def _added_item(t: Transition) -> dict[str, Any]:
 
 
 def _transition_items(before: Workflow, after: Workflow, diff: dict[str, Any], reach_after: dict[str, list[str]]) -> list[dict[str, Any]]:
-    a, b = {t.action: t for t in before.transitions}, {t.action: t for t in after.transitions}
+    a, b = keyed(before, after)
     items = [_removed_item(a[action], after, reach_after) for action in diff["removed_actions"]]
     items += [_added_item(b[action]) for action in diff["added_actions"]]
     for action, fields in diff["changed_actions"].items():
         t, reasons = b[action], [r for f in fields for r in _field_reasons(f)]
         risk = min((level for _, level in reasons), key=RISK_ORDER.__getitem__, default="low")
-        items.append(_item("transition:" + t.id, "changed", f"Change {action}: {t.from_state} → {t.to_state}, by {t.role}", risk,
-                           [text for text, _ in reasons], [action], [t.from_state, t.to_state]))
+        items.append(_item("transition:" + t.id, "changed", f"Change {t.action}: {t.from_state} → {t.to_state}, by {t.role}", risk,
+                           [text for text, _ in reasons], [t.action], [t.from_state, t.to_state]))
     return items
 
 

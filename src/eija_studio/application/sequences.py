@@ -56,7 +56,7 @@ def record_name(pack: Pack) -> tuple[str, str]:
 def _reason(pack: Pack, model: Workflow, step: dict[str, Any]) -> str:
     """The kernel's refusal of a step in words, from its code, the actor's role and the transition's."""
     actor = next((a for a in pack.fixtures.actors if a.id == step["actor"]), None)
-    t = next((t for t in model.transitions if t.action == step["action"]), None)
+    t = model.transition_for(step["action"], step["from"])
     code = step["actual"]["refused"]
     template = WHY.get(code, "the kernel refused it with {code}")
     return template.format(action=step["action"], state=step["from"], actor=step["actor"], role=actor.role if actor else "?",

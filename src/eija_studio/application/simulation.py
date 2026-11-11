@@ -118,11 +118,12 @@ def _attempt(session: MemorySession, pack: Pack, model: Workflow, run: _Run, rng
              actor: dict[str, Any], record: str) -> None:
     item = session.instances[record]
     mine = _actions_for(model, actor, item["state"])
-    action = rng.choice([t.action for t in _ordered(model)]) if not mine or rng.chance(SLIP) else rng.choice(mine)
+    action = rng.choice(list(dict.fromkeys(t.action for t in _ordered(model)))) if not mine or rng.chance(SLIP) else rng.choice(mine)
     version = item["version"] - 1 if item["version"] > 0 and rng.chance(STALE) else item["version"]
     command = ExecuteCommand(operation_id=f"sim-{n}", actor_id=actor["id"], instance_id=record, action=action,
                              expected_version=version)
-    transition = next(t for t in model.transitions if t.action == action)
+    transition = model.transition_for(action, item["state"])
+    assert transition is not None  # noqa: S101  # the action was chosen from this model
     step = {"step": n, "actor": actor["id"], "role": actor["role"], "record": run.labels[record], "action": action,
             "transition": transition.id, "from": item["state"]}
     try:

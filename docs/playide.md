@@ -27,7 +27,7 @@ PlayIDE is not limited to the packs that ship with EIJA ([ADR-0185](adr/0185-sta
     actions: Reopen
     ```
 
-    The first line's source is the initial state. An `actions:` or `roles:` line declares ones you will draw later; a drawn transition can only use a declared action, and each action labels one transition.
+    The first line's source is the initial state. An `actions:` or `roles:` line declares ones you will draw later; a drawn transition can only use a declared action, and an action may leave several states (one line each) as long as it always goes to the same state, by the same role ([ADR-0232](adr/0232-one-action-from-several-states.md)).
   - **From a UML file.** An XMI, PlantUML, Mermaid or draw.io file becomes the new system: its state machine (with its roles, `assigned` guards and `Audit:` and `Notification:` effects) and its class model. Before anything is created the form shows the same report as **Import / Export**: what was read, what PlayIDE filled in (a missing role, a notification's recipient) and what it could not import, with the reason ([UML import and export](uml-interop.md#start-a-new-system-from-a-uml-file)).
   - **A template.** One of the shipped packs, copied with your name and a new id: Library loan, School excursion approval, the EIJA review reference journey, or one of the five [sector packs](sector-packs.md) (Specialist referral, Card payment and refund, Parcel delivery, SaaS workspace subscription, Building permit).
 

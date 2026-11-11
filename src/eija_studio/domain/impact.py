@@ -32,11 +32,32 @@ def changed_fields(old: Transition, new: Transition) -> list[str]:
     return fields
 
 
+def keyed(before: Workflow, after: Workflow) -> tuple[dict[str, Transition], dict[str, Transition]]:
+    """Both models' transitions keyed for comparison. By action while it labels at most one transition in each model,
+    so a moved source reads as a change of that transition; by action and source state ("Cancel from Paused") once it
+    labels several in either (ADR-0232)."""
+    olds, news = _labelled(before), _labelled(after)
+    a: dict[str, Transition] = {}
+    b: dict[str, Transition] = {}
+    for action in olds.keys() | news.keys():
+        single = len(olds.get(action, ())) <= 1 and len(news.get(action, ())) <= 1
+        a |= {(action if single else f"{action} from {t.from_state}"): t for t in olds.get(action, ())}
+        b |= {(action if single else f"{action} from {t.from_state}"): t for t in news.get(action, ())}
+    return a, b
+
+
+def _labelled(model: Workflow) -> dict[str, list[Transition]]:
+    found: dict[str, list[Transition]] = {}
+    for t in model.transitions:
+        found.setdefault(t.action, []).append(t)
+    return found
+
+
 def model_impact(before: Workflow, after: Workflow) -> dict[str, Any]:
-    a, b = {t.action: t for t in before.transitions}, {t.action: t for t in after.transitions}
-    changed = sorted(k for k in set(a) | set(b) if k not in a or k not in b or changed_fields(a[k], b[k]))
+    a, b = keyed(before, after)
+    changed = sorted({(a.get(k) or b[k]).action for k in set(a) | set(b) if k not in a or k not in b or changed_fields(a[k], b[k])})
     graph: dict[str, list[str]] = {}
-    for action in sorted(set(a) | set(b)):
+    for action in sorted({t.action for t in (*before.transitions, *after.transitions)}):
         chain = [f"rule:{action}", f"runtime:{action}", f"state-view:{action}", f"journey:{action}",
                  f"obligation:{action}", f"receipt:{action}", "review-packet", "local-decision"]
         for source, target in zip(chain, chain[1:]):

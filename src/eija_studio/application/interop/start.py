@@ -31,14 +31,26 @@ DEFAULT_ROLE = "User"
 _KINDS = {"audit": "audit", "notification": "notification"}
 
 
-def _refusal(edge: Edge, label: Label, seen: dict[str, str]) -> tuple[str, str] | None:
+def _repeat(edge: Edge, label: Label, first: tuple[Edge, Label]) -> str | None:
+    """Why a second arrow with the same trigger cannot be taken. One action may leave several states, but always to
+    the same state, by the same role, with the same guard and effects (ADR-0232)."""
+    was, said = first
+    if edge.source == was.source:
+        return f"action {label.trigger} already leaves {edge.source}"
+    if (edge.target, label.role, label.assigned, label.effects) != (was.target, said.role, said.assigned, said.effects):
+        return (f"action {label.trigger} already labels {was.source} -> {was.target}; an action may leave several states, "
+                "but always to the same state, by the same role, with the same guard and effects")
+    return None
+
+
+def _refusal(edge: Edge, label: Label, seen: dict[str, tuple[Edge, Label]]) -> tuple[str, str] | None:
     """(element, reason) when a new system cannot take this transition."""
     ends = f"{edge.source} -> {edge.target}"
     if not label.trigger:
         return ends, "the transition has no trigger; PlayIDE names every transition by its action"
-    if label.trigger in seen:
-        return (f"transition {label.trigger} ({ends})",
-                f"action {label.trigger} already labels {seen[label.trigger]}; each action labels one transition")
+    repeat = _repeat(edge, label, seen[label.trigger]) if label.trigger in seen else None
+    if repeat is not None:
+        return f"transition {label.trigger} ({ends})", repeat
     odd = [x for x in (edge.source, edge.target, label.trigger, label.role or DEFAULT_ROLE) if not re.fullmatch(NAME, x)]
     if odd:
         return (f"transition {label.trigger} ({ends})",
@@ -47,9 +59,9 @@ def _refusal(edge: Edge, label: Label, seen: dict[str, str]) -> tuple[str, str] 
 
 
 def _kept_edges(parsed: Parsed, report: ImportReport) -> list[tuple[Edge, Label, str]]:
-    """The transitions a new system can take: one per action, each named by its trigger and done by one role."""
+    """The transitions a new system can take, each named by its trigger and done by one role."""
     kept: list[tuple[Edge, Label, str]] = []
-    seen: dict[str, str] = {}
+    seen: dict[str, tuple[Edge, Label]] = {}
     for edge in parsed.edges:
         label = parse_label(edge.label)
         refused = _refusal(edge, label, seen)
@@ -61,7 +73,7 @@ def _kept_edges(parsed: Parsed, report: ImportReport) -> list[tuple[Edge, Label,
                        "not in PlayIDE's guard vocabulary (role, assigned); value guards are planned (issue #93)")
         if label.role is None:
             report.add("defaulted", edge.where, f"{label.trigger}: role", f"the file names no role; used {DEFAULT_ROLE}")
-        seen[label.trigger] = f"{edge.source} -> {edge.target}"
+        seen.setdefault(label.trigger, (edge, label))
         kept.append((edge, label, label.role or DEFAULT_ROLE))
     return kept
 
@@ -96,17 +108,24 @@ def _effects(edge: Edge, label: Label, role: str, report: ImportReport) -> list[
     return found or _effects(edge, Label(label.trigger, label.role, label.assigned, None, ()), role, report)
 
 
+def _declare_action(pack: dict[str, Any], label: Label, effects: list[str]) -> None:
+    """The action's guards and effects, on its declaration and on every transition it labels."""
+    guards = list(BASE_GUARDS) + (["actor_assigned"] if label.assigned else [])
+    labelled = [t for t in pack["model"]["transitions"] if t["action"] == label.trigger]
+    for declared in (*(a for a in pack["actions"] if a["id"] == label.trigger), *labelled):
+        declared["guards"], declared["required_effects"] = guards, effects
+
+
 def _declare(pack: dict[str, Any], kept: list[tuple[Edge, Label, str]], report: ImportReport) -> None:
     """The file's guards and effects, declared per action and repeated on its transition, as the policy requires."""
-    actions = {a["id"]: a for a in pack["actions"]}
-    transitions = {t["action"]: t for t in pack["model"]["transitions"]}
     catalog: dict[str, dict[str, Any]] = {}
+    declared_once: set[str] = set()
     for edge, label, role in kept:
-        effects = _effects(edge, label, role, report)
-        catalog |= {e["id"]: e for e in effects if e["id"] not in catalog}
-        guards = list(BASE_GUARDS) + (["actor_assigned"] if label.assigned else [])
-        for declared in (actions[label.trigger], transitions[label.trigger]):
-            declared["guards"], declared["required_effects"] = guards, [e["id"] for e in effects]
+        if label.trigger not in declared_once:  # an action's later arrows repeat its first one's guard and effects
+            declared_once.add(label.trigger)
+            effects = _effects(edge, label, role, report)
+            catalog |= {e["id"]: e for e in effects if e["id"] not in catalog}
+            _declare_action(pack, label, [e["id"] for e in effects])
         report.add("mapped", edge.where, f"transition {label.trigger} ({edge.source} -> {edge.target}, {role})")
     pack["effects"]["catalog"] = list(catalog.values())
 

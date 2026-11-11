@@ -158,7 +158,7 @@ def oracle_cases(pack: Pack, model: Workflow) -> list[dict[str, Any]]:
     negative controls for the missing-resolver refusals (ACTION_DENIED, UNKNOWN_ACTOR)."""
     declared_actions = {t.action for t in model.transitions} | {a.id for a in pack.actions}
     declared_actors = {a.id for a in pack.fixtures.actors}
-    actions = [*sorted(t.action for t in model.transitions), absent(UNDECLARED_ACTION, declared_actions)]
+    actions = [*sorted({t.action for t in model.transitions}), absent(UNDECLARED_ACTION, declared_actions)]
     actors = [*sorted(declared_actors), absent(UNKNOWN_ACTOR, declared_actors)]
     cases = []
     for state, action, actor, version in product(sorted(model.states), actions, actors, (0, 1)):
