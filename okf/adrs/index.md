@@ -109,3 +109,5 @@
 * [ADR-0224: approve the exact generated application](0224-approve-the-exact-generated-application.md) - The exact workflow transfer preserved typed edits, but an owner decision did not identify the complete generated app.
 * [ADR-0225: React for generated application frontends](0225-react-for-generated-application-frontends.md) - Generated apps need consistent, maintained form and interaction components while remaining connected to EIJA's executable model.
 * [ADR-0226: standard record navigation and a connected presentation map](0226-standard-record-navigation-and-presentation-map.md) - Generated applications should offer familiar navigation without requiring every project to design a shell from scratch.
+* [ADR-0227: Search and generative-engine metadata for the repository and docs](0227-search-and-generative-engine-metadata.md) - People and AI assistants find PlayIDE through GitHub, PyPI-style package metadata and the MkDocs site.
+* [ADR-0228: Hosted CI on pull requests, nightly full tier and auto-merge](0228-hosted-ci-on-pull-requests.md) - ADR-0017 kept the GitHub workflows on manual `workflow_dispatch` because hosted CI was not available.

@@ -1,8 +1,15 @@
 name: guardrails
 # noslop guardrail: changes to hooks or agent settings need the `noslop-approved` label on their PR.
-# Manual dispatch only while hosted CI is unavailable; a human applies the same check by reading the diff of
-# .githooks/, .claude/settings.json and .claude/hooks/ in review.
+# Runs automatically on pull requests that touch those paths (ADR-0228), and again when the label changes.
+# Manual dispatch with a PR number remains for re-checking an older PR.
 on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+    paths:
+      - '.githooks/**'
+      - '.claude/settings.json'
+      - '.claude/hooks/**'
   workflow_dispatch:
     inputs:
       pr_number:
@@ -19,7 +26,7 @@ jobs:
       - name: Require the noslop-approved label
         env:
           GH_TOKEN: ${{ github.token }}
-          PR: ${{ inputs.pr_number }}
+          PR: ${{ inputs.pr_number || github.event.pull_request.number }}
         run: |
           if ! gh pr view "$PR" --repo "$GITHUB_REPOSITORY" --json labels --jq '.labels[].name' | grep -q 'noslop-approved'; then
             echo "::error::Protected noslop files may have changed. Add the 'noslop-approved' label after review."
