@@ -210,7 +210,22 @@ def _wanted(pack: Pack, model: Workflow, parsed: Parsed, seen: set[str], report:
         found = _edge_action(pack, edge, current, seen, drawn, report)
         if found is not None:
             wanted.append((edge, found[0].trigger, found[1]))
-    return wanted
+    return _alike(wanted, report)
+
+
+def _alike(wanted: list[tuple[Edge, str, str]], report: ImportReport) -> list[tuple[Edge, str, str]]:
+    """Arrows of one action must share its target and role (ADR-0232); a later arrow that does not is reported, not read."""
+    first: dict[str, tuple[str, str]] = {}
+    kept: list[tuple[Edge, str, str]] = []
+    for edge, action, role in wanted:
+        target, by = first.setdefault(action, (edge.target, role))
+        if (edge.target, role) == (target, by):
+            kept.append((edge, action, role))
+        else:
+            report.add("unmapped", edge.where, f"transition {action} ({edge.source} -> {edge.target}, {role})",
+                       f"action {action} already goes to {target} by {by}; an action may leave several states, "
+                       "but always to the same state and by the same role")
+    return kept
 
 
 def _record_transitions(candidate: Workflow, wanted: list[tuple[Edge, str, str]], report: ImportReport) -> None:

@@ -142,3 +142,19 @@ def test_a_uml_file_with_one_action_from_several_states_imports_as_typed_edits(f
     onto = import_model(detect_format("x" + suffix, text), text, LOAN, None, data)["state_machine"]
     shape = lambda m: {(t.action, t.from_state, t.to_state, t.role) for t in m.transitions}  # noqa: E731
     assert shape(Workflow.model_validate(onto["candidate"])) == shape(model)
+
+
+def test_an_arrow_that_contradicts_its_actions_first_arrow_is_reported_not_read():
+    text, _ = export_model("plantuml", LOAN, with_return_late(), data_for(LOAN))
+    odd = text.replace("Overdue --> Returned : Return", "Overdue --> Cancelled : Return")
+    assert odd != text
+    found = import_model("plantuml", odd, LOAN, with_return_late(), data_for(LOAN))
+    assert found["status"] != "CLEAN" and any("Overdue -> Cancelled" in u["element"] for u in found["unmapped"])
+
+
+def test_a_role_change_is_kept_when_an_action_also_gains_a_source():
+    # Return gains a source that sorts before its old one (Cancelled < OnLoan) and changes role in the same change.
+    after = with_return_late(from_state="Cancelled").model_dump(mode="json")
+    after["transitions"] = [t | {"role": "Clerk"} if t["action"] == "Return" else t for t in after["transitions"]]
+    case = next(c for c in ghost_diff(LOAN.model, Workflow.model_validate(after))["use_cases"]["cases"] if c["action"] == "Return")
+    assert case["status"] == "changed" and case["was_role"] == "Librarian" and case["role"] == "Clerk"

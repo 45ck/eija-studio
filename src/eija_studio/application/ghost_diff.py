@@ -127,10 +127,16 @@ def _merged(first: tuple[dict[str, Any], list[dict[str, Any]]], other: dict[str,
     """One use case for an action that leaves several states (ADR-0232): it is added or removed only when every one
     of its transitions is, and a role change is the same on all of them."""
     case, links = first
-    if case["status"] != other["status"] and "changed" not in (case["status"], other["status"]):
+    if other["status"] == "changed" and case["status"] != "changed":  # a role change wins, whichever source sorts first
+        return other, _case_links(other)
+    if case["status"] != other["status"] and case["status"] != "changed":
         case = case | {"status": "same"}
         links = [link | {"status": "same"} for link in links]
     return case, links
+
+
+def _case_links(case: dict[str, Any]) -> list[dict[str, Any]]:
+    return [{"role": case["was_role"], "case": case["id"], "status": "removed"}, {"role": case["role"], "case": case["id"], "status": "added"}]
 
 
 def _actors(links: list[dict[str, Any]]) -> list[dict[str, Any]]:
