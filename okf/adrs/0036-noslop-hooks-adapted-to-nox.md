@@ -13,8 +13,8 @@ sources:
 - resource: repo://docs/adr/0036-noslop-hooks-adapted-to-nox.md
   title: 0036-noslop-hooks-adapted-to-nox.md
   hash_method: lf-sha256-v1
-  sha256: 46f989262de4cdcca589bb568a7b0fb42e1388594662afa640878e2b48372b09
-notes_baseline: ac7dd92c33bd7b8566e5bcade5379ba597be408016030f08e040a0870b4ed3d3
+  sha256: 715ae5c929f3d706268fbc4848cbd4cd4532158cee4a7e3b30fdeea25c2a96d7
+notes_baseline: b662c6484e7745b8cc82eb826c0ffa4c799cbde82d82fbbb364f033c8eb59ae9
 ---
 
 # ADR-0036: noslop guardrails adapted to run nox tiers; hook enablement is an explicit step
@@ -34,7 +34,7 @@ notes_baseline: ac7dd92c33bd7b8566e5bcade5379ba597be408016030f08e040a0870b4ed3d3
 > * `.githooks/pre-commit` and `pre-push` delegate to `.githooks/run-nox`, which locates the venv interpreter for Windows or POSIX, keeps temp files inside the checkout, and fails with an install instruction if nox is absent.
 > * `commit-msg` keeps the Conventional Commits check but allows git-generated merge and revert subjects and validates only the subject line.
 > * `.claude/hooks/pre-tool-use.sh` blocks bypass flags with exit code 2 and no longer refuses every command when `jq` is missing (the generated version did). It is registered in `.claude/settings.json`, which the generated file did not do. **Claude Code reads `.claude/settings.json` automatically, so unlike the git hooks this is repo-wide behaviour for agents, not opt-in.** The first version denied `Bash(*--force*)` and grepped the whole payload, which also blocked `git worktree remove --force`, `--force-reinstall` and any text that merely mentioned a flag. It now denies only force-pushes and `--no-verify` on `git commit`/`git push`, matches the flag only inside those commands, and locates itself through `$CLAUDE_PROJECT_DIR` (a relative path failed open from any other working directory). Covered by `tests/tools/test_claude_hook.py`.
-> * The generated workflows are `workflow_dispatch` only. The label-gating guardrail workflow takes a PR number input.
+> * The generated workflows are `workflow_dispatch` only (since November 2026, `quality.yml` also runs on pull requests and nightly: [ADR-0228](repo://docs/adr/0228-hosted-ci-on-pull-requests.md)). The label-gating guardrail workflow takes a PR number input.
 > * `.github/workflows/**` is not in the deny list of agent edits, because docs and release lanes legitimately edit workflows; hook and agent-settings edits stay denied.
 >
 > The **git hooks** in `.githooks/` are committed but not enabled by this change. The enable step is `git config core.hooksPath .githooks` (see `docs/quality/gates.md`). `noslop doctor` passes 5 of 6 checks and fails that one until then (PARTIAL, expected).
@@ -67,7 +67,8 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Related decisions
 
-* [ADR-0017: Local quality gates with nox sessions and noslop enforcement](/adrs/0017-local-quality-gates.md) - Hosted CI is not currently available for this repository.
+* [ADR-0017: Local quality gates with nox sessions and noslop enforcement](/adrs/0017-local-quality-gates.md) - Hosted CI was not available for this repository when this was written (September 2026).
+* [ADR-0228: Hosted CI on pull requests, nightly full tier and auto-merge](/adrs/0228-hosted-ci-on-pull-requests.md) - ADR-0017 kept the GitHub workflows on manual `workflow_dispatch` because hosted CI was not available.
 
 ## Referenced by
 

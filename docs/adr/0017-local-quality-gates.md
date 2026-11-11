@@ -1,11 +1,11 @@
 # ADR-0017: Local quality gates with nox sessions and noslop enforcement
 
-* Status: accepted
+* Status: accepted (its manual-dispatch-only part is superseded by [ADR-0228](0228-hosted-ci-on-pull-requests.md))
 * Date: 2026-09-28
 
 ## Context and problem statement
 
-Hosted CI is not currently available for this repository. Agents and humans still need one command that reproduces every gate, and hooks that stop gate bypasses.
+Hosted CI was not available for this repository when this was written (September 2026). The repository is now public and hosted CI runs on pull requests: see [ADR-0228](0228-hosted-ci-on-pull-requests.md). Agents and humans still need one command that reproduces every gate, and hooks that stop gate bypasses.
 
 ## Considered options
 
