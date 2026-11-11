@@ -14,9 +14,14 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py#Workflow.semantic_hash
   title: domain/models.py
   hash_method: ast-v2
-  sha256: 8320b3ba427e12549b9120c151630a677b0596d84ff486bc11afa8f53b340786
+  sha256: 559ae6d9733aea8509ac7c9d5bc8f64d6d0c9646705f17ae430cb56972eca089
 description_override: 'Order-insensitive fingerprint of the workflow: definition order is non-semantic, identifiers, states, roles and rules are semantic.'
-notes_baseline: 870f5e36162952709a48b7bb1c919a06b468ea6145b26789815e62a00eddb606
+notes_baseline: eab5996aec1286f9d6c8f0249d81b775b31cb022b17d6aa872cbf610b0f2332e
+verified:
+- by: process:claude-code
+  at: '2026-11-11T13:30:00Z'
+  notes_sha256: 09ac2c3c50ca4cfa91f653da45b99c6994824da24586794cf0fe330ea401db71
+  sources_sha256: eab5996aec1286f9d6c8f0249d81b775b31cb022b17d6aa872cbf610b0f2332e
 ---
 
 # domain.models.Workflow.semantic_hash
@@ -38,7 +43,7 @@ _The source carries no docstring._
 
 ## Notes
 
-Sorted states, transitions by id and sorted guards/effects go through [fingerprint](/symbols/domain/models/fingerprint.md). A changed hash makes old [Preview Instances](/language/preview-instance.md) stale (`STALE_INSTANCE`) and invalidates evidence bound to the previous semantic dimension.
+Sorted states, transitions by id, sorted guards/effects and sorted initiators (when named, ADR-0231) go through [fingerprint](/symbols/domain/models/fingerprint.md). A changed hash makes old [Preview Instances](/language/preview-instance.md) stale (`STALE_INSTANCE`) and invalidates evidence bound to the previous semantic dimension.
 
 <!-- okf:generated:begin links -->
 ## Depends on

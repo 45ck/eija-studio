@@ -93,6 +93,8 @@ class Workflow(Contract):
         data = self.model_dump(mode="json")
         data["states"] = sorted(data["states"])
         data["transitions"] = sorted(data["transitions"], key=lambda x: x["id"])
+        if "initiators" in data:  # who may start a record is a set (ADR-0231); absent when empty, so old hashes hold
+            data["initiators"] = sorted(data["initiators"])
         for t in data["transitions"]:
             for key in ("guards", "required_effects", "forbidden_effects"):
                 t[key] = sorted(t[key])

@@ -2,6 +2,8 @@
 
 ## 2026-11-11
 
+* **Initiators are a set in the semantic hash**: re-read and updated the Note of `Workflow.semantic_hash` as `process:claude-code` (Codex review on PR #223).
+
 * **Who may start a record (issue #142)**: synced ADR-0231, `Workflow.initiators`, `runtime.initialise(role=)`, the generated app's start check and the simulation. Re-read the Notes of `application.runtime`, `initialise` and `Workflow` against the current source as `process:claude-code` and updated the last two for initiators. No human source approval was recorded.
 
 * **Opt-in live plan mode and `plan_check`**: synced ADR-0230, `adapters.live_plan_proposals`, `StudioViews.plan_check` and the MCP surface. Re-read the Notes of `application.service_views`, `Studio` and `StudioViews` against the current source as `process:recommend-next-steps-g170dx` and updated them for `plan_check` and `live_plan_proposer`. No human source approval was recorded.

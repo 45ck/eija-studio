@@ -109,3 +109,7 @@ def test_a_simulated_crowd_only_starts_records_as_the_initiators():
     starters = {entry["role"] for entry in run["trace"] if entry["outcome"] == "CREATED"}
     assert starters == {"Member"}
     assert simulate(LOAN, LOAN.model, seed=3, steps=200) == simulate(LOAN, LOAN.model, seed=3, steps=200)
+
+
+def test_the_order_initiators_are_named_in_is_not_semantic():
+    assert with_initiators(LOAN.model, "Member", "Clerk").semantic_hash == with_initiators(LOAN.model, "Clerk", "Member").semantic_hash

@@ -669,7 +669,10 @@
     for (const setting of ["setConnectable", "setCellsEditable", "setCellsDisconnectable", "setCellsResizable", "setDropEnabled"]) useCaseGraph[setting](false);
     useCaseGraph.setPanning(true);
     const parent = useCaseGraph.getDefaultParent(), shape = useCaseShape();
-    const roles = shape.actors.map((a) => a.name), actorStatus = Object.fromEntries(shape.actors.map((a) => [a.name, a.status]));
+    // A role that may only start records holds no transition, but is still an actor of "Create" (ADR-0231).
+    const creators = (model.initiators || []).filter((r) => !shape.actors.some((a) => a.name === r));
+    const roles = [...shape.actors.map((a) => a.name), ...creators];
+    const actorStatus = Object.fromEntries([...shape.actors.map((a) => [a.name, a.status]), ...creators.map((r) => [r, "same"])]);
     // Group each role's use cases together, in workflow order, and put the actor beside its group: no line crosses a use case.
     // A use case whose association moves sits with its new actor; a removed one with the actor it had.
     const cases = roles.flatMap((role) => shape.cases.filter((t) => t.role === role));
@@ -693,7 +696,7 @@
       roles.forEach((role, i) => {
         const mine = cases.map((t, j) => [t, j]).filter(([t]) => t.role === role);
         const near = mine.length ? mine : cases.map((t, j) => [t, j]).filter(([t]) => t.was_role === role); // an actor left with only a moved line
-        const y = near.reduce((sum, [, j]) => sum + rowY(j), 0) / Math.max(1, near.length) - 8;
+        const y = near.length ? near.reduce((sum, [, j]) => sum + rowY(j), 0) / near.length - 8 : TOP - 12; // a creator sits by "Create"
         const left = i % 2 === 0, kind = roleKind(role), look = ACTOR_LOOK[kind];
         const actor = kind === "human"
           ? useCaseGraph.insertVertex({ parent, id: "role:" + role, value: role, position: [left ? 90 : boundary.x + boundary.w + 120, y],
