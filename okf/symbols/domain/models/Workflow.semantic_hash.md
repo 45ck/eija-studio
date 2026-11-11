@@ -14,14 +14,18 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py#Workflow.semantic_hash
   title: domain/models.py
   hash_method: ast-v2
-  sha256: 559ae6d9733aea8509ac7c9d5bc8f64d6d0c9646705f17ae430cb56972eca089
+  sha256: f58dcbe4fc5d1fd0fa283b0b120a63f55ef7cc6ccc821f4104e93468e9f1dcd9
 description_override: 'Order-insensitive fingerprint of the workflow: definition order is non-semantic, identifiers, states, roles and rules are semantic.'
-notes_baseline: eab5996aec1286f9d6c8f0249d81b775b31cb022b17d6aa872cbf610b0f2332e
+notes_baseline: c9199bd4bb2e922d493c5bae9c4aabdfced54805f28524b40a96d1e44acfdd29
 verified:
 - by: process:claude-code
   at: '2026-11-11T13:30:00Z'
   notes_sha256: 09ac2c3c50ca4cfa91f653da45b99c6994824da24586794cf0fe330ea401db71
   sources_sha256: eab5996aec1286f9d6c8f0249d81b775b31cb022b17d6aa872cbf610b0f2332e
+- by: process:claude-code
+  at: '2026-11-11T22:00:00Z'
+  notes_sha256: f64f5f2801fbd3418f505054d7ad87c365301d1d6d73b99ee15a5735df5f7583
+  sources_sha256: c9199bd4bb2e922d493c5bae9c4aabdfced54805f28524b40a96d1e44acfdd29
 ---
 
 # domain.models.Workflow.semantic_hash
@@ -43,10 +47,11 @@ _The source carries no docstring._
 
 ## Notes
 
-Sorted states, transitions by id, sorted guards/effects and sorted initiators (when named, ADR-0231) go through [fingerprint](/symbols/domain/models/fingerprint.md). A changed hash makes old [Preview Instances](/language/preview-instance.md) stale (`STALE_INSTANCE`) and invalidates evidence bound to the previous semantic dimension.
+Sorted states, transitions by id, sorted guards/effects and sorted initiators (when named, ADR-0231) and each transition's sorted value guards (when it has them, ADR-0234) go through [fingerprint](/symbols/domain/models/fingerprint.md). A changed hash makes old [Preview Instances](/language/preview-instance.md) stale (`STALE_INSTANCE`) and invalidates evidence bound to the previous semantic dimension.
 
 <!-- okf:generated:begin links -->
 ## Depends on
 
+* [domain.models.canonical](/symbols/domain/models/canonical.md) - `def canonical(value: Any) -> str` in `domain/models`.
 * [domain.models.fingerprint](/symbols/domain/models/fingerprint.md) - `def fingerprint(value: Any) -> str` in `domain/models`.
 <!-- okf:generated:end links -->

@@ -18,10 +18,10 @@ from eija_studio.domain.screens import check_screens
 ORACLE = json.loads((Path(__file__).resolve().parent / "oracle.json").read_text(encoding="utf-8"))
 
 
-def seed(svc: service.Service, state: str) -> str:
-    """A record already in `state`, written directly so the case starts exactly where the oracle's did."""
-    svc.db.execute("INSERT INTO records(id,case_id,model_hash,state,version,data_digest) VALUES('r1',?,?,?,0,?)",
-                   (service.CASE, service.MODEL.semantic_hash, state, service.DATA_DIGEST))
+def seed(svc: service.Service, state: str, values: dict | None = None) -> str:
+    """A record already in `state` (holding `values`), written directly so the case starts where the oracle's did."""
+    svc.db.execute("INSERT INTO records(id,case_id,model_hash,state,version,fields,data_digest) VALUES('r1',?,?,?,0,?,?)",
+                   (service.CASE, service.MODEL.semantic_hash, state, json.dumps(values or {}), service.DATA_DIGEST))
     return "r1"
 
 
@@ -101,6 +101,17 @@ class Conformance(unittest.TestCase):
                 svc.act(record_id, case["actor"], case["first"], 0, "op-1")
                 second = {"actor": case["actor"], "action": case["then"], "expected_version": 1}
                 self.assertEqual(observe(svc, record_id, second, "op-2"), case["expect"])
+
+    def test_guards_over_record_values_match_the_kernel(self):
+        """A record's values decide a guarded transition exactly as the kernel decides it (ADR-0234)."""
+        if not any(t.conditions for t in service.MODEL.transitions):
+            self.assertNotIn("value_cases", ORACLE)
+        for case in ORACLE.get("value_cases", []):
+            with self.subTest(action=case["action"], values=case["values"]):
+                svc = service.Service()
+                record_id = seed(svc, case["state"], case["values"])
+                attempt = {"actor": case["actor"], "action": case["action"], "expected_version": 0}
+                self.assertEqual(observe(svc, record_id, attempt), case["expect"])
 
     def test_records_from_another_data_model_are_refused(self):
         """A record whose values another data model checked is never acted on: its values may not fit this one."""

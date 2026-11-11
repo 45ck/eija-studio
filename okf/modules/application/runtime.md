@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/runtime.py
   title: application/runtime.py
   hash_method: ast-api-v1
-  sha256: b63cb1570f8d4103b3598b730f15aeaede1985f812c6722a0fd64906f6159346
-notes_baseline: 3b5b6449b3521bc158efded8179b5506b6cfa66c8809f84e15ae538856ccb623
+  sha256: 643996e7486340452f40da6ce765987f453e11072f9076fcc1515941c7842b00
+notes_baseline: fdc56f3736504a4c366683ec34f24978b49ea17e76b74db40fd88e23b290d894
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -32,6 +32,10 @@ verified:
   at: '2026-11-11T12:00:00Z'
   notes_sha256: 51ed90c46c69260b371ab2a1d5139bf24f4f09c768aa115ebe4f70f4d761e6bb
   sources_sha256: 3b5b6449b3521bc158efded8179b5506b6cfa66c8809f84e15ae538856ccb623
+- by: process:claude-code
+  at: '2026-11-11T22:00:00Z'
+  notes_sha256: 51ed90c46c69260b371ab2a1d5139bf24f4f09c768aa115ebe4f70f4d761e6bb
+  sources_sha256: fdc56f3736504a4c366683ec34f24978b49ea17e76b74db40fd88e23b290d894
 ---
 
 # application.runtime
@@ -52,6 +56,7 @@ Generic execution algorithm; the domain (policy, laws, typed effects) comes from
 ## Public symbols
 
 * [`check_actor`](/symbols/application/runtime/check_actor.md) (function) - no docstring
+* [`check_guards`](/symbols/application/runtime/check_guards.md) (function) - Refuse a transition whose guards over the record's values do not hold (ADR-0234).
 * [`check_separation`](/symbols/application/runtime/check_separation.md) (function) - Refuse an actor who already took another action of a separation law on this record.
 * [`execute`](/symbols/application/runtime/execute.md) (function) - no docstring
 * [`initialise`](/symbols/application/runtime/initialise.md) (function) - Start a record.
@@ -91,6 +96,7 @@ The generic execution algorithm. Policy, laws and typed effects come from the do
 * [application.simulation](/modules/application/simulation.md) - Seeded simulation of people using the app built from a model (ADR-0152).
 * [application.verifier](/modules/application/verifier.md) - Bounded synthetic runtime experiments.
 * [application.runtime.check_actor](/symbols/application/runtime/check_actor.md) - `def check_actor(actor: dict[str, Any], transition: Transition, command: ExecuteCommand) -> None` in `application/runtime`.
+* [application.runtime.check_guards](/symbols/application/runtime/check_guards.md) - Refuse a transition whose guards over the record's values do not hold (ADR-0234).
 * [application.runtime.check_separation](/symbols/application/runtime/check_separation.md) - Refuse an actor who already took another action of a separation law on this record.
 * [application.runtime.execute](/symbols/application/runtime/execute.md) - `def execute(session: UnitOfWork, case_id: str, model: Workflow, command: ExecuteCommand, *, fault: Callable[[…` in `application/runtime`.
 * [application.runtime.initialise](/symbols/application/runtime/initialise.md) - Start a record.

@@ -7,6 +7,7 @@
 * [application.law_proof.LIMITS](LIMITS.md) - Constant `LIMITS` in `application/law_proof`.
 * [application.law_proof.MAX_CONFIGURATIONS](MAX_CONFIGURATIONS.md) - Constant `MAX_CONFIGURATIONS` in `application/law_proof`.
 * [application.law_proof.OUTSIDER](OUTSIDER.md) - Constant `OUTSIDER` in `application/law_proof`.
+* [application.law_proof.STOPPED](STOPPED.md) - Constant `STOPPED` in `application/law_proof`.
 
 # Functions
 
@@ -17,4 +18,5 @@
 
 # Type Aliases
 
+* [application.law_proof.Node](Node.md) - Type alias `Node` in `application/law_proof`.
 * [application.law_proof.Passed](Passed.md) - Type alias `Passed` in `application/law_proof`.

@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/adapters/sqlite_store.py
   title: adapters/sqlite_store.py
   hash_method: ast-api-v1
-  sha256: fccde9123b884d8c6d3305baf9d40543a3e6c8b2b9c159a0a3e29f3b3885050e
-notes_baseline: e8fcd735975240b69679413dfc9f2edeb283f6e21b5af0c74dd0fd2d1c92f34a
+  sha256: 1fafc7e2fbffc499f563c857b4a359af6bf1319ba797138fa9757ed66cd59610
+notes_baseline: 7dac192ed751f2c9df4f0540a073c071a3f75497f9d8b4cc294be535eb869c7e
 ---
 
 # adapters.sqlite_store

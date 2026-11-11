@@ -11,6 +11,7 @@
 * [domain.models.Proposal](Proposal.md) - `class Proposal(Contract)` in `domain/models`.
 * [domain.models.SemanticTransaction](SemanticTransaction.md) - One typed business-meaning edit: enable recommendation or set the registrar rejection source.
 * [domain.models.Transition](Transition.md) - One typed edge: action, from/to state, required role, guards, required effects and forbidden effects.
+* [domain.models.ValueGuard](ValueGuard.md) - A UML guard over one of the record's values, such as ``[amount > 500]`` (issue #93, ADR-0234).
 * [domain.models.Workflow](Workflow.md) - Immutable typed states, transitions, roles, guards and effect declarations with a normalised semantic hash.
 
 # Constants
@@ -19,17 +20,22 @@
 * [domain.models.BASE_GUARDS](BASE_GUARDS.md) - Constant `BASE_GUARDS` in `domain/models`.
 * [domain.models.MEANING_ID](MEANING_ID.md) - Constant `MEANING_ID` in `domain/models`.
 * [domain.models.OWNER](OWNER.md) - Constant `OWNER` in `domain/models`.
+* [domain.models.SYMBOLS](SYMBOLS.md) - Constant `SYMBOLS` in `domain/models`.
 
 # Functions
 
 * [domain.models.canonical](canonical.md) - Canonical JSON text (sorted keys, no whitespace, no NaN) for a value or pydantic model.
 * [domain.models.fingerprint](fingerprint.md) - SHA-256 of the canonical JSON of a value: the identity primitive used for models, subjects, artifacts and command bindings.
+* [domain.models.iso_date](iso_date.md) - The date a YYYY-MM-DD string names, or None.
 
 # Methods
 
 * [domain.models.Principal.require](Principal.require.md) - `def require(self, capability: str) -> None` in `domain/models`.
 * [domain.models.Proposal.unique](Proposal.unique.md) - `def unique(self) -> Proposal` in `domain/models`.
+* [domain.models.Transition.admits](Transition.admits.md) - The first condition these record values fail, or None when the transition's conditions all hold.
 * [domain.models.Transition.guarded](Transition.guarded.md) - `def guarded(self) -> Transition` in `domain/models`.
+* [domain.models.ValueGuard.comparable](ValueGuard.comparable.md) - `def comparable(self) -> ValueGuard` in `domain/models`.
+* [domain.models.ValueGuard.holds](ValueGuard.holds.md) - `def holds(self, values: dict[str, Any]) -> bool` in `domain/models`.
 * [domain.models.Workflow.coherent](Workflow.coherent.md) - `def coherent(self) -> Workflow` in `domain/models`.
 * [domain.models.Workflow.semantic_hash](Workflow.semantic_hash.md) - Order-insensitive fingerprint of the workflow: definition order is non-semantic, identifiers, states, roles and rules are semantic.
 * [domain.models.Workflow.sources](Workflow.sources.md) - The states ``action`` leaves, in model order.
@@ -37,5 +43,6 @@
 
 # Type Aliases
 
+* [domain.models.Comparison](Comparison.md) - Type alias `Comparison` in `domain/models`.
 * [domain.models.Guard](Guard.md) - Type alias `Guard` in `domain/models`.
 * [domain.models.Interpretation](Interpretation.md) - Type alias `Interpretation` in `domain/models`.

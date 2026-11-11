@@ -93,6 +93,10 @@ class Session:
     def record_act(self, instance_id: str, action: str, actor_id: str) -> None:
         self.db.execute("INSERT INTO acts(instance_id,action,actor_id) VALUES(?,?,?)", (instance_id, action, actor_id))
 
+    def values(self, instance_id: str) -> dict:
+        """Studio preview records carry no values, so a value guard is never satisfied here (fail closed, ADR-0234)."""
+        return {}
+
     def find_operation(self, operation_id: str) -> dict | None:
         row = self.db.execute("SELECT binding,body FROM operations WHERE id=?", (operation_id,)).fetchone()
         return {"binding": row[0], "result": json.loads(row[1])} if row else None

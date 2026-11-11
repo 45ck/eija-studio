@@ -70,6 +70,10 @@
       const steps = P.el("ol", undefined, { class: "law-run" });
       for (const s of law.counterexample) steps.append(P.el("li", `${s.actor ? s.actor + " as " : ""}${s.role} takes ${s.action}: ${s.from} → ${s.to}`));
       item.append(P.el("p", "Shortest run that breaks it:", { class: "small" }), steps);
+      if (law.record_values) {
+        const held = Object.entries(law.record_values).map(([k, v]) => `${k} = ${JSON.stringify(v)}`).join(", ");
+        item.append(P.el("p", `On a record holding ${held || "no values"}.`, { class: "small muted" }));
+      }
       const button = P.el("button", "Show this run", { type: "button", class: "quiet" });
       button.addEventListener("click", () => showRun(law));
       tools.append(button);

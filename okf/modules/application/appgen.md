@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py
   title: application/appgen.py
   hash_method: ast-api-v1
-  sha256: 4b9093b2cca7ba8c957d06a93ff210cd15f465634e752a091ed3b30feb454706
-notes_baseline: 33f13d68055e1068032f55fc04c6096e2172f39dc540f41df481143d4ce45aef
+  sha256: 75675aabb8f18b122cd2f04ab06dbb59426453b055d1ac55e9801c80c78b18e5
+notes_baseline: 8dec358008eab542f2ca99ea54bdb02b3a5ae8d1ff9ad04980512af95ebdbe63
 ---
 
 # application.appgen
@@ -58,6 +58,7 @@ Pure: no IO, no clock, no randomness. The same pack and model always give byte-i
 * [`readme`](/symbols/application/appgen/readme.md) (function) - no docstring
 * [`separation_cases`](/symbols/application/appgen/separation_cases.md) (function) - One fixture actor takes an action of a separation-of-duties law, then tries another the law names, on the same record;…
 * [`start_cases`](/symbols/application/appgen/start_cases.md) (function) - Each active fixture actor starting a record, and the kernel's answer.
+* [`value_cases`](/symbols/application/appgen/value_cases.md) (function) - For each transition with guards over record values, an actor who may take it tries it on records holding every combinat…
 
 ## Internal imports
 
@@ -70,6 +71,7 @@ Pure: no IO, no clock, no randomness. The same pack and model always give byte-i
 * [`domain/pack`](/modules/domain/pack.md)
 * [`domain/policy`](/modules/domain/policy.md)
 * [`domain/screens`](/modules/domain/screens.md)
+* [`domain/value_guards`](/modules/domain/value_guards.md)
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -88,6 +90,7 @@ _No curated notes yet._
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
 * [domain.policy](/modules/domain/policy.md) - Generic policy: coherence with a domain pack's declared action catalog, the pack's laws, and declared effects.
 * [domain.screens](/modules/domain/screens.md) - Screens: the user interface of a pack's app, designed against its use cases and data model (ADR-0154).
+* [domain.value_guards](/modules/domain/value_guards.md) - Guards over a record's values (issue #93, ADR-0234): which values can decide them, and whether they fit the data model.
 
 ## Referenced by
 
@@ -110,4 +113,5 @@ _No curated notes yet._
 * [application.appgen.readme](/symbols/application/appgen/readme.md) - `def readme(pack: Pack, model: Workflow, cases: int, data: DataModel | None=None) -> str` in `application/appgen`.
 * [application.appgen.separation_cases](/symbols/application/appgen/separation_cases.md) - One fixture actor takes an action of a separation-of-duties law, then tries another the law names, on the same record; the kernel's answer to the second (ADR-0…
 * [application.appgen.start_cases](/symbols/application/appgen/start_cases.md) - Each active fixture actor starting a record, and the kernel's answer.
+* [application.appgen.value_cases](/symbols/application/appgen/value_cases.md) - For each transition with guards over record values, an actor who may take it tries it on records holding every combination of values its guards can tell apart…
 <!-- okf:generated:end links -->

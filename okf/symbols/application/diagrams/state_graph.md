@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/diagrams.py#state_graph
   title: application/diagrams.py
   hash_method: ast-v2
-  sha256: 262b98df1cb92a95666e921d595f83bfc35d29fc31b631e4d495823daed2317d
-notes_baseline: 4d3db53d24a58297f922299e760c8d0729a5e742fbe92e7feae9e0d58b6b8dd1
+  sha256: 36c54aa8fe7e623834b7b3d6056fee8a8a605072579b743aae53c64ae848d733
+notes_baseline: 0bfd18b960c9a519b17ec5e102f866a20fc32e9677c54d611b38fa4f2b2ccd64
 ---
 
 # application.diagrams.state_graph

@@ -14,6 +14,7 @@ from hashlib import sha256
 from typing import Any
 
 from eija_studio.domain.laws import ROLE_KINDS
+from eija_studio.domain.value_guards import valuations
 from eija_studio.domain.models import DomainError, ExecuteCommand, Transition, Workflow
 from eija_studio.domain.pack import Pack
 from .runtime import execute, initialise
@@ -35,6 +36,7 @@ class MemorySession:
         self.instances: dict[str, dict[str, Any]] = {}
         self.operations: dict[str, dict[str, Any]] = {}
         self.acted: dict[str, list[tuple[str, str]]] = {}  # per record, (action, actor) for separation laws (ADR-0233)
+        self.record_values: dict[str, dict[str, Any]] = {}  # per record, the values its value guards read (ADR-0234)
         self.audit: list[str] = []
         self.outbox: list[str] = []
 
@@ -60,6 +62,9 @@ class MemorySession:
 
     def record_act(self, instance_id: str, action: str, actor_id: str) -> None:
         self.acted.setdefault(instance_id, []).append((action, actor_id))
+
+    def values(self, instance_id: str) -> dict[str, Any]:
+        return dict(self.record_values.get(instance_id, {}))
 
     def find_operation(self, operation_id: str) -> dict[str, Any] | None:
         return self.operations.get(operation_id)
@@ -220,6 +225,15 @@ def _keeps_working(rng: _Dice, workable: list[str]) -> bool:
     return not rng.chance(NEW_RECORD) and (bool(workable) or not rng.chance(NEW_RECORD))
 
 
+def _give_values(session: MemorySession, model: Workflow, rng: _Dice, record: str) -> dict[str, Any]:
+    """A new record's values, for a model with guards over them: one seeded pick among the combinations those guards
+    can tell apart (ADR-0234). A model without value guards draws nothing, so its seeded runs are unchanged."""
+    if not any(t.conditions for t in model.transitions):
+        return {}
+    session.record_values[record] = rng.choice(valuations(model) or [{}])
+    return {"values": session.record_values[record]}
+
+
 def _step(session: MemorySession, pack: Pack, model: Workflow, run: _Run, rng: _Dice, n: int, actor: dict[str, Any]) -> None:
     """One user's turn: start a record, or act on one they can work on (any record if none)."""
     records = list(session.instances)  # creation order, not the kernel's random ids, so a seed replays exactly
@@ -234,7 +248,7 @@ def _step(session: MemorySession, pack: Pack, model: Workflow, run: _Run, rng: _
     run.labels[record] = f"R{len(run.labels) + 1}"
     run.entered[model.initial_state] += 1
     run.log({"step": n, "actor": actor["id"], "role": actor["role"], "record": run.labels[record],
-             "outcome": "CREATED", "to": model.initial_state})
+             "outcome": "CREATED", "to": model.initial_state} | _give_values(session, model, rng, record))
 
 
 def _times(n: int) -> str:

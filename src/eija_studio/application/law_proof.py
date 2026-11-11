@@ -11,7 +11,8 @@ on an in-memory session); the laws are judged by `laws.evaluate_run` itself, so 
   actor per role and per combination of the two flags, plus one actor holding a role the pack does not declare,
   stands for every possible actor.
 * Configurations: the record's state plus the set of path-law waypoints (`path_requires.via`) it has passed and of
-  the `path_requires_kind` laws whose kind of actor has already taken a step (ADR-0210). Every other law kind is
+  the `path_requires_kind` laws whose kind of actor has already taken a step (ADR-0210), and the record's values
+  where the model has guards over them: one search per combination its guards can tell apart (ADR-0234). Every other law kind is
   judged per step, so this product is complete for the current law kinds; `LAW_HANDLING` names
   how each kind is judged and a test fails if a new kind is not classified.
 * `can_reach_end` is about the runs a record could still take, not one run: it is judged on the steps the kernel
@@ -36,6 +37,7 @@ from eija_studio.domain.laws import (LAW_KINDS, CanReachEnd, DistinctActors, Pat
 from eija_studio.domain.models import DomainError, ExecuteCommand, Workflow
 from eija_studio.domain.pack import Pack, PackError, parse_pack
 from eija_studio.domain.policy import check_policy
+from eija_studio.domain.value_guards import MAX_VALUATIONS, valuations
 from . import runtime
 from .memo import model_hash
 from .simulation import MemorySession
@@ -44,6 +46,7 @@ FORMAT = "eija.law-proof.v1"
 MAX_CONFIGURATIONS = 20_000
 OUTSIDER = "(undeclared role)"
 Passed = str | tuple[str, str]  # in a configuration: a waypoint state passed, or ("law", id) of a path_requires_kind law met
+Node = tuple[str, frozenset[Passed], int]  # a configuration: state, what it has passed, and which record values (index)
 LAW_HANDLING = {  # how each law kind is judged here
     "closed_shape": "table", "action_requires_guard": "table",  # about the table, not a run (evaluate_run skips them)
     "requires_evidence": "evidence",  # judged by the evidence matrix of a review
@@ -54,6 +57,8 @@ LAW_HANDLING = {  # how each law kind is judged here
     "path_requires": "run", "only_kind_holds": "run", "only_kind_enters": "run", "path_requires_kind": "run",
 }
 assert set(LAW_HANDLING) == set(LAW_KINDS), "classify every law kind"  # noqa: S101 - a module invariant
+STOPPED = (f"The search stopped at its limit: {MAX_CONFIGURATIONS} configurations, or {MAX_VALUATIONS} combinations of "
+           "record values for the value guards.")
 LIMITS = (
     "Exhaustive over every configuration a new record can reach and every class of actor the kernel distinguishes. "
     "It is about one record at a time; nothing here relates two records.",
@@ -78,10 +83,12 @@ def _session(pack: Pack, actors: list[dict[str, Any]]) -> MemorySession:
 
 
 def _try(pack: Pack, model: Workflow, actors: list[dict[str, Any]], state: str, actor: dict[str, Any],
-         action: str) -> Step | None:
-    """What the kernel does when this actor takes this action on a record in this state: the step, or None if refused."""
+         action: str, values: dict[str, Any]) -> Step | None:
+    """What the kernel does when this actor takes this action on a record in this state holding these values: the
+    step, or None if refused."""
     session = _session(pack, actors)
     session.create_instance({"id": "r", "case_id": "proof", "model_hash": model_hash(model), "state": state, "version": 0})
+    session.record_values["r"] = dict(values)
     command = ExecuteCommand(operation_id="op", actor_id=actor["id"], instance_id="r", action=action, expected_version=0)
     try:
         result = runtime.execute(session, "proof", model, command, pack=pack)  # type: ignore[arg-type]
@@ -108,17 +115,19 @@ def _step_view(step: Step) -> dict[str, Any]:
 class _Search:
     """What the breadth-first search found: configurations, what was reached and the first run breaking each law."""
     actors: int
-    runs: dict[tuple[str, frozenset[Passed]], list[Step]] = field(default_factory=dict)
+    runs: dict[Node, list[Step]] = field(default_factory=dict)
     broken: dict[str, list[Step]] = field(default_factory=dict)
+    valuations: list[dict[str, Any]] = field(default_factory=lambda: [{}])  # the record values tried (ADR-0234)
+    broken_values: dict[str, int] = field(default_factory=dict)  # which record values each broken law's run held
     reached: set[str] = field(default_factory=set)
     committed: set[str] = field(default_factory=set)
-    edges: set[tuple[str, str]] = field(default_factory=set)
+    edges: dict[int, set[tuple[str, str]]] = field(default_factory=dict)  # per record values: what committed
     complete: bool = True
 
 
-def _steps_from(pack: Pack, model: Workflow, actors: list[dict[str, Any]], state: str) -> list[Step]:
-    """Every step the kernel commits from this state, over every action and actor class."""
-    tried = (_try(pack, model, actors, state, actor, action)
+def _steps_from(pack: Pack, model: Workflow, actors: list[dict[str, Any]], state: str, values: dict[str, Any]) -> list[Step]:
+    """Every step the kernel commits from this state, for a record holding these values, over every action and actor class."""
+    tried = (_try(pack, model, actors, state, actor, action, values)
              for action in sorted({t.action for t in model.transitions}) for actor in actors)
     return [step for step in tried if step is not None]
 
@@ -130,16 +139,16 @@ def _passed(step: Step, waypoints: set[str], signers: list[PathRequiresKind]) ->
     return marks | ({step.target} & waypoints)
 
 
-def _record(search: _Search, node: tuple[str, frozenset[Passed]], step: Step, laws: list[Any], model: Workflow,
-            waypoints: set[str]) -> tuple[str, frozenset[Passed]] | None:
+def _record(search: _Search, node: Node, step: Step, laws: list[Any], model: Workflow, waypoints: set[str]) -> Node | None:
     """Judge the run that ends in `step`; return the configuration it leads to if it is new and may be explored."""
     search.committed.add(step.action)
-    search.edges.add((step.source, step.target))
+    search.edges.setdefault(node[2], set()).add((step.source, step.target))
     search.reached.add(step.target)
     run = [*search.runs[node], step]
     for violation in evaluate_run(laws, model.initial_state, run, {t.action for t in model.transitions}):
-        search.broken.setdefault(violation.law, run)
-    following = (step.target, node[1] | _passed(step, waypoints, [x for x in laws if isinstance(x, PathRequiresKind)]))
+        if violation.law not in search.broken:
+            search.broken[violation.law], search.broken_values[violation.law] = run, node[2]
+    following = (step.target, node[1] | _passed(step, waypoints, [x for x in laws if isinstance(x, PathRequiresKind)]), node[2])
     if following in search.runs:
         return None
     if len(search.runs) >= MAX_CONFIGURATIONS:
@@ -149,17 +158,27 @@ def _record(search: _Search, node: tuple[str, frozenset[Passed]], step: Step, la
     return following
 
 
+def _start(model: Workflow, waypoints: set[str], actors: int) -> _Search:
+    """A search with one new record per combination of values (one with none for a model without value guards);
+    stopped before it begins when there are too many combinations to try."""
+    tried = valuations(model)
+    passed = frozenset({model.initial_state} & waypoints)
+    starts: list[Node] = [(model.initial_state, passed, i) for i in range(len(tried or [{}]))]
+    return _Search(actors=actors, runs={start: [] for start in starts}, reached={model.initial_state},
+                   valuations=tried or [{}], complete=tried is not None)
+
+
 def _explore(pack: Pack, model: Workflow) -> _Search:
-    """Breadth-first over (state, waypoints passed), judging every committed run with the laws' own evaluator."""
+    """Breadth-first over (state, waypoints passed, record values), judging every committed run with the laws' own
+    evaluator. A record's values never change, so each combination its value guards can tell apart starts a search."""
     laws = [law for law in pack.laws if LAW_HANDLING[law.kind] == "run"]
     waypoints = {law.via for law in laws if isinstance(law, PathRequires)}
     actors = actor_classes(pack, model)
-    start: tuple[str, frozenset[Passed]] = (model.initial_state, frozenset({model.initial_state} & waypoints))
-    search = _Search(actors=len(actors), runs={start: []}, reached={model.initial_state})
-    queue = deque([start])
+    search = _start(model, waypoints, len(actors))
+    queue = deque(search.runs)
     while queue and search.complete:
         node = queue.popleft()
-        for step in _steps_from(pack, model, actors, node[0]):
+        for step in _steps_from(pack, model, actors, node[0], search.valuations[node[2]]):
             following = _record(search, node, step, laws, model, waypoints)
             if following is not None:
                 queue.append(following)
@@ -181,12 +200,17 @@ def _act(session: MemorySession, pack: Pack, model: Workflow, actor: dict[str, A
                 effects=tuple(result["effects"]), actor=actor["id"]), ""
 
 
-def _pair(pack: Pack, model: Workflow, first: Any, then: str) -> tuple[list[Step], str, str]:
+def _pair(pack: Pack, model: Workflow, first: Any, then: str, tried: list[dict[str, Any]]) -> tuple[list[Step], str, str]:
     """One actor takes `first`, is then given the role that takes `then` and tries it; then a different actor tries.
-    Returns the steps committed and the two refusal codes ("" when the kernel committed)."""
+    The record holds values both transitions' value guards admit. Returns the steps committed and the two refusal
+    codes ("" when the kernel committed)."""
     second = model.transition_for(then, first.to_state)
+    values = next((v for v in tried if first.admits(v) is None and (second is None or second.admits(v) is None)), None)
+    if values is None:
+        return [], "", ""
     session = MemorySession(pack)
     session.create_instance({"id": "r", "case_id": "proof", "model_hash": model_hash(model), "state": first.from_state, "version": 0})
+    session.record_values["r"] = dict(values)
     actor = {"id": "same", "role": first.role, "active": True, "assigned": True}
     step, _ = _act(session, pack, model, actor, first.action, 1)
     if step is None or second is None:
@@ -218,7 +242,7 @@ def _pair_breach(run: list[Step], other: str) -> dict[str, Any] | None:
 def _separation_verdict(pack: Pack, model: Workflow, law: DistinctActors, search: _Search) -> dict[str, Any]:
     """Every place one of the law's actions directly follows another on a record the kernel can reach."""
     checked = [(run, other) for t, then in _following(model, law, search.reached)
-               for run, _same, other in [_pair(pack, model, t, then)] if run]
+               for run, _same, other in [_pair(pack, model, t, then, search.valuations)] if run]
     breach = next((b for run, other in checked if (b := _pair_breach(run, other)) is not None), None)
     if breach is not None:
         return breach
@@ -252,24 +276,38 @@ def _run_verdict(law: Any, subject: list[str], search: _Search) -> dict[str, Any
     if law.id in search.broken:
         run = search.broken[law.id]
         return {"status": "BROKEN", "why": f"A run of {len(run)} step(s) breaks it.",
-                "counterexample": [_step_view(s) for s in run]}
+                "counterexample": [_step_view(s) for s in run]} | _values_view(search, search.broken_values[law.id])
     if not search.complete:
-        return {"status": "UNKNOWN", "why": f"The search stopped at {MAX_CONFIGURATIONS} configurations."}
+        return {"status": "UNKNOWN", "why": STOPPED}
     idle = _idle(subject, search)
     if idle:
         return {"status": "VACUOUS", "why": "Holds only because nothing reaches it: " + ", ".join(idle) + "."}
     return {"status": "HOLDS", "why": f"No run breaks it ({len(search.runs)} configurations searched)."}
 
 
+def _values_view(search: _Search, index: int) -> dict[str, Any]:
+    """The record values a counterexample ran on, shown only for a model with value guards."""
+    return {"record_values": search.valuations[index]} if any(search.valuations) else {}
+
+
+def _stuck(law: CanReachEnd, search: _Search, initial: str) -> tuple[list[str], int]:
+    """Every state a record can be stuck in, under any of the record values tried, and the first values stuck in the
+    first of them (0 when none is stuck)."""
+    found = {i: stuck_states(law, search.edges.get(i, set()), initial) for i in range(len(search.valuations))}
+    stuck = sorted({s for states in found.values() for s in states})
+    return stuck, next((i for i, states in found.items() if stuck and stuck[0] in states), 0)
+
+
 def _reach_verdict(law: CanReachEnd, search: _Search, initial: str) -> dict[str, Any]:
+    """Stuck states for each set of record values: values never change, so a record stuck with some values is stuck."""
     if not search.complete:
-        return {"status": "UNKNOWN", "why": f"The search stopped at {MAX_CONFIGURATIONS} configurations."}
-    stuck = stuck_states(law, search.edges, initial)
+        return {"status": "UNKNOWN", "why": STOPPED}
+    stuck, index = _stuck(law, search, initial)
     if not stuck:
         return {"status": "HOLDS", "why": f"From each of the {len(search.reached)} reachable states a run still reaches an end."}
-    run = min((r for (state, _), r in search.runs.items() if state == stuck[0]), key=len)
+    run = min((r for (state, _, i), r in search.runs.items() if state == stuck[0] and i == index), key=len)
     return {"status": "BROKEN", "why": "A record can get stuck in " + ", ".join(stuck) + ": no step from there leads to an end.",
-            "counterexample": [_step_view(s) for s in run], "stuck": stuck}
+            "counterexample": [_step_view(s) for s in run], "stuck": stuck} | _values_view(search, index)
 
 
 def _verdict(law: Any, table: set[str], search: _Search | None, actions: set[str], initial: str = "",

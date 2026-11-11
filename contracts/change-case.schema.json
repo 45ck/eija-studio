@@ -787,6 +787,15 @@
           },
           "title": "Forbidden Effects",
           "type": "array"
+        },
+        "conditions": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ValueGuard"
+          },
+          "maxItems": 8,
+          "title": "Conditions",
+          "type": "array"
         }
       },
       "required": [
@@ -800,6 +809,53 @@
         "forbidden_effects"
       ],
       "title": "Transition",
+      "type": "object"
+    },
+    "ValueGuard": {
+      "additionalProperties": false,
+      "description": "A UML guard over one of the record's values, such as ``[amount > 500]`` (issue #93, ADR-0234). The transition\nfires only when it holds. A value that is missing, or of another kind, never satisfies it (fail closed).",
+      "properties": {
+        "attribute": {
+          "pattern": "^[a-z][a-zA-Z0-9_]{0,39}$",
+          "title": "Attribute",
+          "type": "string"
+        },
+        "op": {
+          "enum": [
+            "eq",
+            "ne",
+            "lt",
+            "le",
+            "gt",
+            "ge"
+          ],
+          "title": "Op",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "title": "Value"
+        }
+      },
+      "required": [
+        "attribute",
+        "op",
+        "value"
+      ],
+      "title": "ValueGuard",
       "type": "object"
     },
     "Workflow": {

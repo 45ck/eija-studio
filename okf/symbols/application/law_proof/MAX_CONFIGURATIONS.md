@@ -39,5 +39,7 @@ _The source carries no docstring._
 _No curated notes yet._
 
 <!-- okf:generated:begin links -->
-_No generated cross-references._
+## Referenced by
+
+* [application.law_proof.STOPPED](/symbols/application/law_proof/STOPPED.md) - Constant `STOPPED` in `application/law_proof`.
 <!-- okf:generated:end links -->

@@ -63,4 +63,5 @@ _No curated notes yet._
 * [domain.data.DataModel](/symbols/domain/data/DataModel.md) - `class DataModel(Contract)` in `domain/data`.
 * [domain.data.Entity.unique](/symbols/domain/data/Entity.unique.md) - `def unique(self) -> Entity` in `domain/data`.
 * [domain.data.check_values](/symbols/domain/data/check_values.md) - Validate a record's values against its entity.
+* [domain.value_guards.guard_problems](/symbols/domain/value_guards/guard_problems.md) - Codes for value guards that do not fit the data model's record class: no data model, an attribute the record does not have, or a constant of another type (or a…
 <!-- okf:generated:end links -->

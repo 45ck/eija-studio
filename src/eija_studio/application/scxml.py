@@ -13,6 +13,10 @@ runs in production. What it keeps and what it leaves to the kernel:
 * The actor is resolved by whoever sends the event, as the kernel's `UnitOfWork.actor` port does, and travels in the
   event data (`event_data`). `actor_active`, `role_current` and `actor_assigned` (when the transition has it) become
   the transition's `cond`, and an actor not in the directory sends `known` False.
+* A guard over the record's values (`[amount > 500]`, ADR-0234) becomes a `cond` term over the event data too: whoever
+  sends the event reads the record's values, as the kernel's `UnitOfWork.values` port does, and attaches each guarded
+  attribute as `value_<name>` with `has_<name>` (False when the record has no value). The data model has already
+  checked each value's type, so the chart compares without a type test.
 * `expected_version` is a `version` variable in the datamodel, compared in the `cond` and incremented when the
   transition fires.
 * Each required effect is appended, in declared order, to an `effects` list in the datamodel. Writing the audit log
@@ -51,21 +55,39 @@ def _literal(text: str) -> str:
     return json.dumps(text, ensure_ascii=True)  # a JSON string literal is also a Python string literal
 
 
+_OPERATORS = {"eq": "==", "ne": "!=", "lt": "<", "le": "<=", "gt": ">", "ge": ">="}
+
+
+def _constant(value: object) -> str:
+    return _literal(value) if isinstance(value, str) else repr(value)  # repr of a bool, int or finite float is Python
+
+
+def _value_terms(transition: Transition) -> list[str]:
+    return [f"_event.data.has_{g.attribute} and _event.data.value_{g.attribute} {_OPERATORS[g.op]} {_constant(g.value)}"
+            for g in transition.conditions]
+
+
 def guard_condition(transition: Transition) -> str:
-    """The transition's `cond`: the actor checks of `runtime.check_actor` and the version check, over the event data."""
+    """The transition's `cond`: the actor checks of `runtime.check_actor`, its guards over record values and the
+    version check, over the event data."""
     terms = ["_event.data.known", "_event.data.active", f"_event.data.role == {_literal(transition.role)}"]
     if "actor_assigned" in transition.guards:
         terms.append("_event.data.assigned")
+    terms += _value_terms(transition)
     terms.append("_event.data.expected_version == version")
     return " and ".join(terms)
 
 
-def event_data(actor: dict[str, Any] | None, expected_version: int) -> dict[str, Any]:
-    """What the sender of an event attaches: the actor as the directory knows it (None if unknown) and the version."""
+def event_data(actor: dict[str, Any] | None, expected_version: int, values: dict[str, Any] | None = None,
+               attributes: tuple[str, ...] = ()) -> dict[str, Any]:
+    """What the sender of an event attaches: the actor as the directory knows it (None if unknown), the version, and
+    the record's value of each guarded attribute in `attributes`."""
+    held = values or {}
+    record = {f"has_{a}": held.get(a) is not None for a in attributes} | {f"value_{a}": held.get(a) for a in attributes}
     if actor is None:
-        return {"known": False, "active": False, "role": "", "assigned": False, "expected_version": expected_version}
+        return {"known": False, "active": False, "role": "", "assigned": False, "expected_version": expected_version} | record
     return {"known": True, "active": bool(actor["active"]), "role": str(actor["role"]),
-            "assigned": bool(actor["assigned"]), "expected_version": expected_version}
+            "assigned": bool(actor["assigned"]), "expected_version": expected_version} | record
 
 
 def _transition(parent: ET.Element, transition: Transition) -> None:

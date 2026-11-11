@@ -1,7 +1,7 @@
 ---
 type: Function
 title: application.scxml.guard_condition
-description: 'The transition''s `cond`: the actor checks of `runtime.check_actor` and the version check, over the event data.'
+description: 'The transition''s `cond`: the actor checks of `runtime.check_actor`, its guards over record values and the version check, over the event data.'
 resource: repo://src/eija_studio/application/scxml.py#guard_condition
 tags:
 - symbol
@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/application/scxml.py#guard_condition
   title: application/scxml.py
   hash_method: ast-v2
-  sha256: 6a8da9fb9f6fb36136e221e2ddf3a6b27d1d0f1facb57ab7adf2c5dbbb2b508f
-notes_baseline: 827a5c5f6d670e3db8479dc8488029c2847e16a28ddd3e7ae11e0929638daa9a
+  sha256: 366b35735f55aeb4d3d8656ef7685bf0745bab195e2d5b064db38b7bdf9502a7
+notes_baseline: a9665c5662f3e653a5c1f3be8ec13a01970600300043684434485baf6b88fa24
 ---
 
 # application.scxml.guard_condition
@@ -32,7 +32,8 @@ notes_baseline: 827a5c5f6d670e3db8479dc8488029c2847e16a28ddd3e7ae11e0929638daa9a
 ## Docstring
 
 ~~~text
-The transition's `cond`: the actor checks of `runtime.check_actor` and the version check, over the event data.
+The transition's `cond`: the actor checks of `runtime.check_actor`, its guards over record values and the
+version check, over the event data.
 ~~~
 <!-- okf:generated:end facts -->
 

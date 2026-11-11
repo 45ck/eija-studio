@@ -31,7 +31,7 @@ import z3
 from eija_studio.domain.models import Transition, Workflow
 from verification.excursion_pack import EFFECTS
 
-from ..scope import require_one_transition_per_action
+from ..scope import require_formal_scope
 from . import vocabulary as V
 
 RoleSort, ROLE_CONST = z3.EnumSort("Role", [*V.ROLES, "OTHER"])
@@ -291,7 +291,7 @@ def pydantic_valid(w: SymWorkflow) -> z3.BoolRef:
 
 def assignment(w: SymWorkflow, wf: Workflow) -> list[tuple[z3.ExprRef, z3.ExprRef]]:
     """Substitution pairs that make `w` denote the concrete Python workflow `wf`."""
-    by = {t.action: t for t in require_one_transition_per_action(wf).transitions}
+    by = {t.action: t for t in require_formal_scope(wf).transitions}
     pairs: list[tuple[z3.ExprRef, z3.ExprRef]] = [
         (w.has_other_action, (TRUE if any(a not in V.ACTIONS for a in by) else FALSE)),
         (w.states_extra, (TRUE if any(s not in V.STATES for s in wf.states) else FALSE)),

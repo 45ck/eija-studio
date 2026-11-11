@@ -115,6 +115,12 @@ Three laws are about the kind of actor holding a role rather than one named role
 
 `can_reach_end` names a workflow's end states and says no record gets stuck: from every state a record can get to, some end is still reachable, so there is no dead end and no loop with no way out ([ADR-0221](../adr/0221-every-record-can-reach-an-end.md)). The policy refuses a change that strands a reachable state and names the stuck states; the law proof judges it on the steps the kernel committed in its search.
 
+A transition may carry guards over the record's values, UML's `ApproveRefund [amount ≤ 500]` ([ADR-0234](../adr/0234-guards-over-record-values.md)). Each is one attribute of the record class compared with a constant (`eq`, `ne`, `lt`, `le`, `gt`, `ge`), and all must hold. The kernel refuses with `VALUE_GUARD_DENIED` otherwise, and a missing value never satisfies a guard. `eija build` refuses guards that do not fit the data model. The law proof, Simulate, the built app's conformance run and the SCXML differential try every combination of values the guards can tell apart. The TLA+, SMT and BMC encodings refuse a guarded model rather than encode it without its guards.
+
+```json
+{"id": "TR-APPROVE", "action": "ApproveRefund", "...": "...", "conditions": [{"attribute": "amount", "op": "le", "value": 500}]}
+```
+
 `distinct_actors` is separation of duties: on one record, no single actor takes two of its actions, such as proposing a refund and approving it ([ADR-0233](../adr/0233-separation-of-duties.md)). It is about who acted, not which role, so an actor whose role changes mid-record is still caught. The kernel refuses the second step with `SEPARATION_DENIED` and names the law; repeating the same action is allowed. Simulate shows the refusals, the law proof asks the kernel directly, and a built app's conformance run checks the app refuses where the kernel does.
 
 ```json

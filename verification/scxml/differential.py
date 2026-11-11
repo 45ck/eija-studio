@@ -1,7 +1,7 @@
 """Differential check: the exported SCXML chart, run by an independent SCXML engine, agrees with the kernel (ADR-0165).
 
 For every case of the app oracle (`appgen.oracle_cases`: every state x action x fixture actor x expected version, plus
-an undeclared action and an unknown actor), the kernel's answer is compared with what python-statemachine (MIT) does
+an undeclared action and an unknown actor, and `appgen.value_cases` for guards over record values), the kernel's answer is compared with what python-statemachine (MIT) does
 when it runs the exported chart from that state and is sent that action's event:
 
 * COMMITTED: the chart takes the transition to the same state, `version` becomes 1, and `effects` lists the kernel's
@@ -26,10 +26,11 @@ from importlib import metadata
 from pathlib import Path
 from typing import Any
 
-from eija_studio.application.appgen import oracle_cases
+from eija_studio.application.appgen import oracle_cases, value_cases
 from eija_studio.application.scxml import event_data, scxml_id, to_scxml
 from eija_studio.domain.models import Workflow
 from eija_studio.domain.pack import Pack, load_pack
+from eija_studio.domain.value_guards import guards_by_attribute
 
 try:  # optional (the `xuml` extra): run() reports NOT_RUN when it is missing
     from statemachine.io import load
@@ -71,9 +72,11 @@ class Record:
         self.version, self.effects = 0, []
 
 
-def _observed(chart: Any, case: dict[str, Any], actors: dict[str, dict[str, Any]], names: dict[str, str]) -> dict[str, Any]:
+def _observed(chart: Any, case: dict[str, Any], actors: dict[str, dict[str, Any]], names: dict[str, str],
+              attributes: tuple[str, ...] = ()) -> dict[str, Any]:
     machine = chart(model=Record(), start_value=scxml_id(case["state"]))
-    machine.send(scxml_id(case["action"]), **event_data(actors.get(case["actor"]), case["expected_version"]))
+    machine.send(scxml_id(case["action"]), **event_data(actors.get(case["actor"]), case.get("expected_version", 0),
+                                                        case.get("values"), attributes))
     current = sorted(names.get(s.id, s.id) for s in machine.configuration)
     return {"state": current[0] if len(current) == 1 else current, "version": machine.model.version,
             "effects": list(machine.model.effects)}
@@ -93,11 +96,12 @@ def compare(pack: Pack, model: Workflow | None = None, document: str | None = No
     disagreements = []
     if initial != [model.initial_state]:
         disagreements.append({"check": "initial", "expected": model.initial_state, "observed": initial})
-    cases = oracle_cases(pack, model)
+    cases = oracle_cases(pack, model) + value_cases(pack, model)  # value cases: guards over record values (ADR-0234)
+    attributes = tuple(sorted(guards_by_attribute(model)))
     for case in cases:
-        expected, observed = _expected(case, model), _observed(chart, case, actors, names)
+        expected, observed = _expected(case, model), _observed(chart, case, actors, names, attributes)
         if expected != observed:
-            disagreements.append({"case": {k: case[k] for k in ("state", "action", "actor", "expected_version")},
+            disagreements.append({"case": {k: case[k] for k in ("state", "action", "actor", "expected_version", "values") if k in case},
                                   "kernel": case["expect"], "expected": expected, "observed": observed})
     return {"pack": pack.id, "model_hash": model.semantic_hash,
             "scxml_sha256": sha256(document.encode("utf-8")).hexdigest(), "cases": len(cases),

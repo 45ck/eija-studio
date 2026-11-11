@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/simulation.py
   title: application/simulation.py
   hash_method: ast-api-v1
-  sha256: e7296b295f224e914daf488d235434cec47fd228044b6e60f868291d1b15889c
-notes_baseline: ba1eb845c0c01d1fe73e6642b0569e4357ef5e9b1b0f49f3125373f9bf8b1d0d
+  sha256: 002b725e0eaed0e1ac18ebb4d3332d23fe0240f2a0b2c625382c102647ae7660
+notes_baseline: 07d0695603b2385ff47966469bb88126173f2aca5774ac8d601c007d13a6587c
 ---
 
 # application.simulation
@@ -58,6 +58,7 @@ gives the same run. Nothing persists and no effect leaves the process.
 * [`domain/laws`](/modules/domain/laws.md)
 * [`domain/models`](/modules/domain/models.md)
 * [`domain/pack`](/modules/domain/pack.md)
+* [`domain/value_guards`](/modules/domain/value_guards.md)
 <!-- okf:generated:end facts -->
 
 ## Notes
@@ -71,6 +72,7 @@ _No curated notes yet._
 * [domain.laws](/modules/domain/laws.md) - Typed law DSL of a domain pack: what a workflow may never do, stated as data (WBS 1.1/1.2).
 * [domain.models](/modules/domain/models.md) - Module `domain/models` (no module docstring).
 * [domain.pack](/modules/domain/pack.md) - Domain pack: everything domain-specific the kernel needs, as one validated document (WBS 1.1).
+* [domain.value_guards](/modules/domain/value_guards.md) - Guards over a record's values (issue #93, ADR-0234): which values can decide them, and whether they fit the data model.
 
 ## Referenced by
 
@@ -93,6 +95,7 @@ _No curated notes yet._
 * [application.simulation.MemorySession.record_act](/symbols/application/simulation/MemorySession.record_act.md) - `def record_act(self, instance_id: str, action: str, actor_id: str) -> None` in `application/simulation`.
 * [application.simulation.MemorySession.record_operation](/symbols/application/simulation/MemorySession.record_operation.md) - `def record_operation(self, operation_id: str, binding: str, result: dict[str, Any]) -> None` in `application/simulation`.
 * [application.simulation.MemorySession.update_instance](/symbols/application/simulation/MemorySession.update_instance.md) - `def update_instance(self, item: dict[str, Any], expected: int) -> None` in `application/simulation`.
+* [application.simulation.MemorySession.values](/symbols/application/simulation/MemorySession.values.md) - `def values(self, instance_id: str) -> dict[str, Any]` in `application/simulation`.
 * [application.simulation.NEW_RECORD](/symbols/application/simulation/NEW_RECORD.md) - Constant `NEW_RECORD` in `application/simulation`.
 * [application.simulation.SLIP](/symbols/application/simulation/SLIP.md) - Constant `SLIP` in `application/simulation`.
 * [application.simulation.STALE](/symbols/application/simulation/STALE.md) - Constant `STALE` in `application/simulation`.
