@@ -2,6 +2,8 @@
 
 ## 2026-11-11
 
+* **Kernel-graded intent eval and OpenAI provider**: synced ADR-0229 and the new `intent_eval` gate page. ADR-0020 and ADR-0021 gained backlinks only. No Notes were hand-edited and nothing was recorded as verified.
+
 * **Hosted CI on pull requests**: synced ADR-0228 (and the missing ADR-0227 page). ADR-0017's page gained backlinks only. No Notes were hand-edited and nothing was recorded as verified.
 
 ## 2026-11-08

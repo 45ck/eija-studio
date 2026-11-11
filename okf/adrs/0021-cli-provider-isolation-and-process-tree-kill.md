@@ -62,5 +62,6 @@ _No curated notes yet._
 
 ## Referenced by
 
+* [ADR-0229: Kernel-graded intent evals, and an OpenAI Responses API provider](/adrs/0229-kernel-graded-intent-evals-and-openai-provider.md) - PlayIDE's pitch is that AI may propose a change and the kernel decides what it means.
 * [Agent providers (CLI adapters, contract suite)](/lanes/0021-agent-providers.md) - Capability lane with ADR numbers 0021–0022 reserved.
 <!-- okf:generated:end links -->
