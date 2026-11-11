@@ -14,9 +14,9 @@ sources:
 - resource: repo://src/eija_studio/application/runtime.py#initialise
   title: application/runtime.py
   hash_method: ast-v2
-  sha256: ae32000717d985326c65d9f1b40bf992ffc11fc2d69ee9a340ab0c1986e67591
+  sha256: a36af55ab31eadd5d8f19d3d71e26fd6233640c799d050e87d4ebcd054c32b99
 description_override: Creates an isolated preview instance bound to a model hash at version 0, after the policy check.
-notes_baseline: 1542cd517ce45d9c4089f766abc792314ccd6ebe42931854b8bdc37b076ac05a
+notes_baseline: 496d6be764ff839c996699573601ebc078f196ddd5c9016a3494d1f0fdc48704
 verified:
 - by: process:claude-code-integration-phase0
   at: '2026-09-29T04:30:00Z'
@@ -30,6 +30,10 @@ verified:
   at: '2026-10-08T23:55:00Z'
   notes_sha256: 9469f61f318d2fb0871f23aed6c62eedb90c39d4811dc8c723af165ef60ba35c
   sources_sha256: 1542cd517ce45d9c4089f766abc792314ccd6ebe42931854b8bdc37b076ac05a
+- by: process:claude-code
+  at: '2026-11-11T12:00:00Z'
+  notes_sha256: 9539d1eb64ce9ef5e67edc1c5d8bf22e7e6ecb51cf238018332b66c091702f1c
+  sources_sha256: 496d6be764ff839c996699573601ebc078f196ddd5c9016a3494d1f0fdc48704
 ---
 
 # application.runtime.initialise
@@ -39,18 +43,21 @@ verified:
 |---|---|
 | Kind | function |
 | Module | [`application/runtime`](/modules/application/runtime.md) |
-| Signature | `def initialise(session: UnitOfWork, case_id: str, model: Workflow, *, state: str \| None=None, pack: Pack \| None=None) -> dict[str, Any]` |
+| Signature | `def initialise(session: UnitOfWork, case_id: str, model: Workflow, *, state: str \| None=None, pack: Pack \| None=None, role: str \| None=None) -> dict[str, Any]` |
 | Code | `repo://src/eija_studio/application/runtime.py#initialise` |
 | Hash | `ast-v2` over the normalised AST plus the same-module private helpers it reaches (comments and formatting ignored) |
 
 ## Docstring
 
-_The source carries no docstring._
+~~~text
+Start a record. With ``role`` (the creator's role) a model that names its initiators refuses anyone else
+(ADR-0231); without it the caller is a preview or oracle that starts records on the kernel's behalf.
+~~~
 <!-- okf:generated:end facts -->
 
 ## Notes
 
-A changed candidate makes the instance stale; reset creates a new instance instead of migrating the old one ([Preview Instance](/language/preview-instance.md)).
+A changed candidate makes the instance stale; reset creates a new instance instead of migrating the old one ([Preview Instance](/language/preview-instance.md)). Given the creator's `role`, a model that names its initiators refuses anyone else with `ROLE_CANNOT_START` and writes nothing (ADR-0231); without a role there is no check.
 
 <!-- okf:generated:begin links -->
 ## Depends on

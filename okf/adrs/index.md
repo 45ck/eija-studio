@@ -113,3 +113,4 @@
 * [ADR-0228: Hosted CI on pull requests, nightly full tier and auto-merge](0228-hosted-ci-on-pull-requests.md) - ADR-0017 kept the GitHub workflows on manual `workflow_dispatch` because hosted CI was not available.
 * [ADR-0229: Kernel-graded intent evals, and an OpenAI Responses API provider](0229-kernel-graded-intent-evals-and-openai-provider.md) - PlayIDE's pitch is that AI may propose a change and the kernel decides what it means.
 * [ADR-0230: Opt-in live plan mode, and a plan check for coding agents](0230-opt-in-live-plan-mode-and-agent-plan-check.md) - On 2026-10-08 the owner kept PlayIDE's chat offline and synthetic: a phrase reader plus the pack's proposal rules, never a model.
+* [ADR-0231: Who may start a record](0231-who-may-start-a-record.md) - Issue #142: a workflow said who may take each transition, but not who may start a record.

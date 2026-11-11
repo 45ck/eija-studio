@@ -2,10 +2,14 @@
 // case diagram, in the outline or on the Permissions tab) says what it may do, which screens it sees and which fixture
 // actors play it, and runs the built app as one of them. On the Screens tab, "See the app as" dims the screens a role
 // never sees. What a role may do is the kernel's answer (`/api/play/access`, ADR-0171), never a reading of the page;
-// starting a record is open to any active actor, because the model does not say who may.
+// starting a record is open to any active actor unless the model names its initiators (ADR-0231).
 "use strict";
 (() => {
   const $ = (id) => document.getElementById(id);
+  // Who may start a record: the model's initiators, or everyone when it names none (issue #142).
+  const starters = () => (P && P.model().initiators) || [];
+  const mayStart = (role) => !starters().length || starters().includes(role);
+  const startersText = () => starters().length ? `only ${starters().join(", ")} may start a record` : "any active actor may start a record";
   let P = null, lens = "", access = null, accessKey = "", loading = null, lastList = null, lastCard = null;
 
   // ---- The kernel's answer, per role --------------------------------------------------------------------------------
@@ -72,8 +76,9 @@
       list.append(li);
     }
     if (!actions.length) list.append(P.el("li", `${role} takes no step of the workflow.`, { class: "muted" }));
-    const start = P.el("li", undefined, { class: "muted" }); // any active actor may start a record (issue #142)
-    start.append(P.el("code", "POST /api/records"), " ", P.el("code", JSON.stringify({ title: "…", actor, fields: {} }), { class: "body" }));
+    const start = P.el("li", undefined, { class: "muted" }); // starting a record: everyone, or the model's initiators (ADR-0231)
+    if (mayStart(role)) start.append(P.el("code", "POST /api/records"), " ", P.el("code", JSON.stringify({ title: "…", actor, fields: {} }), { class: "body" }));
+    else start.append(`${role} may not start a record (${startersText()}).`);
     list.append(start);
     return list;
   }
@@ -192,12 +197,12 @@
         " It calls the built app's API, and the kernel decides each call exactly as it decides a click. Standing in for it opens the app as it, so each press is one of these calls.");
       strip.append(head, apiCalls(lens, actions), runTools(lens));
     } else if (lens) {
-      const mine = theirs(result, lens), cases = [null, ...useCasesOf(result, lens).map((u) => u.action)];
+      const mine = theirs(result, lens), cases = [...(mayStart(lens) ? [null] : []), ...useCasesOf(result, lens).map((u) => u.action)];
       const all = [null, ...new Set(P.model().transitions.map((t) => t.action))];
       const never = all.filter((a) => a !== null && !mine.has(a));
       const head = P.el("p", undefined, { class: "role-app-head" });
       head.append(P.el("strong", `${article(lens)} sees ${cases.length} of ${all.length} screens.`),
-        " Starting a record is open to any active actor; the rest are what the kernel lets the role do.");
+        ` Starting a record: ${startersText()}; the rest are what the kernel lets the role do.`);
       const flow = P.el("ol", undefined, { class: "role-flow", "aria-label": `Screens ${lens} sees` });
       for (const action of cases) {
         const b = P.el("button", titleOf(action), { type: "button", title: action === null ? "Starts a record" : action });
@@ -234,10 +239,10 @@
     const open = event && "useCase" in event ? event.useCase : (lastCard || {}).useCase;
     let text;
     if (machine(lens)) text = calls.has(open) ? `${Who(lens)} takes ${open} by an API call, not on a screen. This is the screen a person standing in for it sees.` : `${Who(lens)} has no screens.`;
-    else if (open === null) text = `${article(lens)} sees this screen: any active actor may start a record.`;
+    else if (open === null) text = mayStart(lens) ? `${article(lens)} sees this screen: ${startersText()}.` : `${article(lens)} never sees this screen: ${startersText()}.`;
     else if (mine.has(open)) text = `${article(lens)} sees this screen.`;
     else text = `${article(lens)} never sees this screen: only ${roleOfAction(open) ? a(roleOfAction(open)) : "another role"} may take ${open}.`;
-    card.prepend(P.el("p", text, { class: "role-note " + (!machine(lens) && (open === null || mine.has(open)) ? "ok" : "warn") }));
+    card.prepend(P.el("p", text, { class: "role-note " + (!machine(lens) && (open === null ? mayStart(lens) : mine.has(open)) ? "ok" : "warn") }));
   }
 
   // ---- The screen flow ----------------------------------------------------------------------------------------------
@@ -289,7 +294,7 @@
       title: n.action === null ? "Starts a record: open its screen" : `${n.action}: open its screen` });
     const head = P.el("span", undefined, { class: "flow-head" });
     head.append(P.el("span", screen ? screen.title : n.action || "Create", { class: "flow-title" }),
-      P.el("span", n.action === null ? "any active actor" : n.role + (machine(n.role) ? ` «${kindOf(n.role)}»` : ""), { class: "flow-role" }));
+      P.el("span", n.action === null ? (starters().join(", ") || "any active actor") : n.role + (machine(n.role) ? ` «${kindOf(n.role)}»` : ""), { class: "flow-role" }));
     box.append(head);
     const fields = screen ? screen.fields : [];
     for (const f of fields.slice(0, MAX_ROWS)) {

@@ -67,6 +67,8 @@ def declared_codes(model: Workflow, pack: Pack) -> list[str]:
             codes.append("GUARD_POLICY:" + t.action)
         if set(t.required_effects) != set(spec.required_effects) or not set(pack.effects.forbidden) <= set(t.forbidden_effects):
             codes.append("EFFECT_POLICY:" + t.action)
+    declared_roles = {r.id for r in pack.roles}
+    codes += ["UNDECLARED_INITIATOR:" + r for r in model.initiators if r not in declared_roles]  # ADR-0231
     return codes
 
 

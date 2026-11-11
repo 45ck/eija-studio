@@ -14,8 +14,8 @@ sources:
 - resource: repo://src/eija_studio/domain/policy.py#declared_codes
   title: domain/policy.py
   hash_method: ast-v2
-  sha256: d01ed31dd8e9cf2ffe5d81355db1f38807deb9aabdaa162b61fa6eb03fb589fb
-notes_baseline: 51627563ed892b7143231dfe9398c384e7d07641416e217a14b716b3be0ac190
+  sha256: d722b5175dfa73e2ab3d5c603b1ebc025cfe58f7ad4fea46e9262a614c37fd8e
+notes_baseline: 6e95f4237e941b98176b4b8fc66ad6e367b01dd8dbcf8e7877055aab3e1a556e
 ---
 
 # domain.policy.declared_codes

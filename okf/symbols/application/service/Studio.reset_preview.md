@@ -42,5 +42,5 @@ _No curated notes yet._
 <!-- okf:generated:begin links -->
 ## Depends on
 
-* [application.runtime.initialise](/symbols/application/runtime/initialise.md) - `def initialise(session: UnitOfWork, case_id: str, model: Workflow, *, state: str | None=None, pack: Pack | No…` in `application/runtime`.
+* [application.runtime.initialise](/symbols/application/runtime/initialise.md) - Start a record.
 <!-- okf:generated:end links -->

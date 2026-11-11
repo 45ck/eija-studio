@@ -67,6 +67,9 @@ class GeneratedAppActivation(Contract):
     subject_hash: Digest
 
 
+GENERATED_TESTS = 7  # the conformance template's test methods; the start check joined them in ADR-0231
+
+
 def generated_receipt_status(receipt: dict[str, Any], binding: GeneratedAppBinding,
                              authentic: bool) -> str:
     """Compute a scoped process observation, never trust its submitted status field."""
@@ -95,7 +98,7 @@ def _execution_status(artifact: dict[str, Any], binding: GeneratedAppBinding) ->
     if artifact.get("before") != binding.subject.digest or artifact.get("after") != binding.subject.digest:
         return "FAIL"
     observations = (artifact.get("returncode"), artifact.get("timed_out"), artifact.get("tests_run"))
-    if observations != (0, False, 6):
+    if observations != (0, False, GENERATED_TESTS):
         return "FAIL"
     if tuple(type(value) for value in observations) != (int, bool, int):
         return "FAIL"

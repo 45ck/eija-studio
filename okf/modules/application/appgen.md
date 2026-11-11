@@ -13,8 +13,8 @@ sources:
 - resource: repo://src/eija_studio/application/appgen.py
   title: application/appgen.py
   hash_method: ast-api-v1
-  sha256: b3b7128768ba15d153c3eb945d02dfa31c8d6bff882364cb2691e670d8e5c945
-notes_baseline: 3ef559e5507ef9d783ee87093b32d754c0532d8b29c892a0192b93114b265210
+  sha256: 78039a32bf181f2521086a20abe14b119ea47ed7b7f13740fd594f81a988d83a
+notes_baseline: d59725eb9877e9d2b8a4839906a7d0f7af275dd28d337cd5a62814a4a602c980
 ---
 
 # application.appgen
@@ -53,8 +53,10 @@ Pure: no IO, no clock, no randomness. The same pack and model always give byte-i
 * [`app_limits`](/symbols/application/appgen/app_limits.md) (function) - no docstring
 * [`data_cases`](/symbols/application/appgen/data_cases.md) (function) - Record values to create with, and `check_values`' answer for each: a valid record, then each required value missing, ea…
 * [`generate`](/symbols/application/appgen/generate.md) (function) - Return the per-model files and the build manifest (without file hashes or test results).
+* [`may_start`](/symbols/application/appgen/may_start.md) (function) - Whether the model lets this role start a record (ADR-0231): any role when it names no initiators.
 * [`oracle_cases`](/symbols/application/appgen/oracle_cases.md) (function) - Every state x action x actor x expected version, then the same request replayed.
 * [`readme`](/symbols/application/appgen/readme.md) (function) - no docstring
+* [`start_cases`](/symbols/application/appgen/start_cases.md) (function) - Each active fixture actor starting a record, and the kernel's answer.
 
 ## Internal imports
 
@@ -100,6 +102,8 @@ _No curated notes yet._
 * [application.appgen.app_limits](/symbols/application/appgen/app_limits.md) - `def app_limits(data: DataModel | None) -> list[str]` in `application/appgen`.
 * [application.appgen.data_cases](/symbols/application/appgen/data_cases.md) - Record values to create with, and `check_values`' answer for each: a valid record, then each required value missing, each value of the wrong type, each text on…
 * [application.appgen.generate](/symbols/application/appgen/generate.md) - Return the per-model files and the build manifest (without file hashes or test results).
+* [application.appgen.may_start](/symbols/application/appgen/may_start.md) - Whether the model lets this role start a record (ADR-0231): any role when it names no initiators.
 * [application.appgen.oracle_cases](/symbols/application/appgen/oracle_cases.md) - Every state x action x actor x expected version, then the same request replayed.
 * [application.appgen.readme](/symbols/application/appgen/readme.md) - `def readme(pack: Pack, model: Workflow, cases: int, data: DataModel | None=None) -> str` in `application/appgen`.
+* [application.appgen.start_cases](/symbols/application/appgen/start_cases.md) - Each active fixture actor starting a record, and the kernel's answer.
 <!-- okf:generated:end links -->

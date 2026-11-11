@@ -48,5 +48,5 @@ _No curated notes yet._
 ## Referenced by
 
 * [application.runtime.execute](/symbols/application/runtime/execute.md) - `def execute(session: UnitOfWork, case_id: str, model: Workflow, command: ExecuteCommand, *, fault: Callable[[…` in `application/runtime`.
-* [application.runtime.initialise](/symbols/application/runtime/initialise.md) - `def initialise(session: UnitOfWork, case_id: str, model: Workflow, *, state: str | None=None, pack: Pack | No…` in `application/runtime`.
+* [application.runtime.initialise](/symbols/application/runtime/initialise.md) - Start a record.
 <!-- okf:generated:end links -->

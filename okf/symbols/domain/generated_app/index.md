@@ -8,6 +8,10 @@
 * [domain.generated_app.GeneratedCheckConfiguration](GeneratedCheckConfiguration.md) - `class GeneratedCheckConfiguration(Contract)` in `domain/generated_app`.
 * [domain.generated_app.GeneratedChecker](GeneratedChecker.md) - `class GeneratedChecker(Contract)` in `domain/generated_app`.
 
+# Constants
+
+* [domain.generated_app.GENERATED_TESTS](GENERATED_TESTS.md) - Constant `GENERATED_TESTS` in `domain/generated_app`.
+
 # Functions
 
 * [domain.generated_app.generated_receipt_status](generated_receipt_status.md) - Compute a scoped process observation, never trust its submitted status field.

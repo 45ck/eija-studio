@@ -31,8 +31,13 @@ def _perform(session: UnitOfWork, pack: Pack, effect: str, case_id: str, command
 
 
 def initialise(session: UnitOfWork, case_id: str, model: Workflow, *, state: str | None = None,
-               pack: Pack | None = None) -> dict[str, Any]:
+               pack: Pack | None = None, role: str | None = None) -> dict[str, Any]:
+    """Start a record. With ``role`` (the creator's role) a model that names its initiators refuses anyone else
+    (ADR-0231); without it the caller is a preview or oracle that starts records on the kernel's behalf."""
     ensure_conforms(model, pack if pack is not None else default_pack(), ensure_policy)
+    if role is not None and model.initiators and role not in model.initiators:
+        raise DomainError("ROLE_CANNOT_START", f"{role} may not start a record; the model names who may: {', '.join(model.initiators)}",
+                          {"codes": ["ROLE_CANNOT_START"], "refs": [f"role:{r}" for r in model.initiators]})
     state = state or model.initial_state
     if state not in model.states:
         raise DomainError("INVALID_STATE", "State is not in the current model")

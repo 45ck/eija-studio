@@ -14,14 +14,18 @@ sources:
 - resource: repo://src/eija_studio/domain/models.py#Workflow
   title: domain/models.py
   hash_method: ast-sig-v1
-  sha256: cd4c79ed175d0127c702005e2d3c5217d60375e845fb74416f86e20d6aed1afe
+  sha256: de151b0ade89b6aa2792f127d436a2494d7d96c381026e384e80e8176f10e21e
 description_override: Immutable typed states, transitions, roles, guards and effect declarations with a normalised semantic hash.
-notes_baseline: 146394bf54a98c962cfd548bd4eaef511de8b00520b35d2fc43f3e92c08af796
+notes_baseline: dba1cfa26a4b5c6886292133ebaa96b667934a5989b2f4844bf6f1a30758cf52
 verified:
 - by: process:eija-wbs-1.3-agent
   at: '2026-09-29T08:20:47Z'
   notes_sha256: a7a288f44c012d29c8086d7d6d28fe61a78c750f991c1d8043493b5a12c2606e
   sources_sha256: 146394bf54a98c962cfd548bd4eaef511de8b00520b35d2fc43f3e92c08af796
+- by: process:claude-code
+  at: '2026-11-11T12:00:00Z'
+  notes_sha256: aad2c2e6e550b0e63601604f158676e29c8f8ac3181d2ff092b1b0b25aafeeb5
+  sources_sha256: dba1cfa26a4b5c6886292133ebaa96b667934a5989b2f4844bf6f1a30758cf52
 ---
 
 # domain.models.Workflow
@@ -48,6 +52,7 @@ _The source carries no docstring._
 | `initial_state` | `str` |  |
 | `states` | `tuple[str, ...]` | `Field(min_length=1, max_length=32)` |
 | `transitions` | `tuple[Transition, ...]` | `Field(min_length=1, max_length=64)` |
+| `initiators` | `tuple[str, ...]` | `Field(default=(), max_length=16)` |
 
 ## Methods
 
@@ -57,7 +62,7 @@ _The source carries no docstring._
 
 ## Notes
 
-The executable model behind [Workflow Definition](/language/workflow-definition.md). The validator [coherent](/symbols/domain/models/Workflow.coherent.md) rejects dangling states and duplicate or ambiguous transitions; [semantic_hash](/symbols/domain/models/Workflow.semantic_hash.md) is the identity that evidence and preview instances bind to.
+The executable model behind [Workflow Definition](/language/workflow-definition.md). The validator [coherent](/symbols/domain/models/Workflow.coherent.md) rejects dangling states and duplicate or ambiguous transitions; [semantic_hash](/symbols/domain/models/Workflow.semantic_hash.md) is the identity that evidence and preview instances bind to. `initiators` names the roles that may start a record; empty means any active actor and is left out of the serialised model, so existing hashes are unchanged (ADR-0231).
 
 <!-- okf:generated:begin links -->
 ## Depends on
@@ -73,9 +78,12 @@ The executable model behind [Workflow Definition](/language/workflow-definition.
 * [application.access.matrix](/symbols/application/access/matrix.md) - Every role's actions from every state, each tried in the kernel with the fixture actors in that role.
 * [application.access.reach](/symbols/application/access/reach.md) - Can a record reach `target` with no step taken by role `without` (or at all, when it is None)?
 * [application.api_contract.api_contract](/symbols/application/api_contract/api_contract.md) - The OpenAPI 3.1 document of the app this pack, model and data model build.
+* [application.appgen.data_cases](/symbols/application/appgen/data_cases.md) - Record values to create with, and `check_values`' answer for each: a valid record, then each required value missing, each value of the wrong type, each text on…
 * [application.appgen.generate](/symbols/application/appgen/generate.md) - Return the per-model files and the build manifest (without file hashes or test results).
+* [application.appgen.may_start](/symbols/application/appgen/may_start.md) - Whether the model lets this role start a record (ADR-0231): any role when it names no initiators.
 * [application.appgen.oracle_cases](/symbols/application/appgen/oracle_cases.md) - Every state x action x actor x expected version, then the same request replayed.
 * [application.appgen.readme](/symbols/application/appgen/readme.md) - `def readme(pack: Pack, model: Workflow, cases: int, data: DataModel | None=None) -> str` in `application/appgen`.
+* [application.appgen.start_cases](/symbols/application/appgen/start_cases.md) - Each active fixture actor starting a record, and the kernel's answer.
 * [application.build_subject.snapshot_contracts](/symbols/application/build_subject/snapshot_contracts.md) - Parse the very contracts the generated application will load.
 * [application.capabilities.capability_map](/symbols/application/capabilities/capability_map.md) - The supported constructs, bounded to the current model, with no inferred readiness.
 * [application.compiler.subject_for](/symbols/application/compiler/subject_for.md) - `def subject_for(model: Workflow, layout: dict[str, Any], identity: dict[str, Any]) -> dict[str, Any]` in `application/compiler`.
@@ -125,7 +133,7 @@ The executable model behind [Workflow Definition](/language/workflow-definition.
 * [application.ripple.check_follow_ons](/symbols/application/ripple/check_follow_ons.md) - The proposer's follow-on steps, each re-checked on its own on top of the plan: a state-machine step through the policy (`base` with `plan` and the step), a scr…
 * [application.ripple.ripple](/symbols/application/ripple/ripple.md) - Every diagram's effects of going from `base` to `candidate`.
 * [application.runtime.execute](/symbols/application/runtime/execute.md) - `def execute(session: UnitOfWork, case_id: str, model: Workflow, command: ExecuteCommand, *, fault: Callable[[…` in `application/runtime`.
-* [application.runtime.initialise](/symbols/application/runtime/initialise.md) - `def initialise(session: UnitOfWork, case_id: str, model: Workflow, *, state: str | None=None, pack: Pack | No…` in `application/runtime`.
+* [application.runtime.initialise](/symbols/application/runtime/initialise.md) - Start a record.
 * [application.scenario_run.record_steps](/symbols/application/scenario_run/record_steps.md) - What the kernel does for each (actor, action) in turn, written as scenario steps that expect exactly that.
 * [application.scenario_run.run_scenario](/symbols/application/scenario_run/run_scenario.md) - Run one scenario; it stops at the first step whose outcome differs from what it expects.
 * [application.scenario_run.run_scenarios](/symbols/application/scenario_run/run_scenarios.md) - Every scenario run on `model`; a model the policy refuses runs none of them.

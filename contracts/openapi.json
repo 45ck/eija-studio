@@ -2646,7 +2646,7 @@
           "model": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/Workflow"
+                "$ref": "#/components/schemas/Workflow-Input"
               },
               {
                 "type": "null"
@@ -2714,7 +2714,7 @@
           "model": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/Workflow"
+                "$ref": "#/components/schemas/Workflow-Input"
               },
               {
                 "type": "null"
@@ -2770,7 +2770,7 @@
           "model": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/Workflow"
+                "$ref": "#/components/schemas/Workflow-Input"
               },
               {
                 "type": "null"
@@ -2826,7 +2826,7 @@
           "model": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/Workflow"
+                "$ref": "#/components/schemas/Workflow-Input"
               },
               {
                 "type": "null"
@@ -3107,12 +3107,12 @@
             }
           },
           "current": {
-            "$ref": "#/components/schemas/Workflow"
+            "$ref": "#/components/schemas/Workflow-Output"
           },
           "candidate": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/Workflow"
+                "$ref": "#/components/schemas/Workflow-Output"
               },
               {
                 "type": "null"
@@ -3266,7 +3266,7 @@
           "model": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/Workflow"
+                "$ref": "#/components/schemas/Workflow-Input"
               },
               {
                 "type": "null"
@@ -3336,7 +3336,7 @@
           "model": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/Workflow"
+                "$ref": "#/components/schemas/Workflow-Input"
               },
               {
                 "type": "null"
@@ -3396,7 +3396,7 @@
           "model": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/Workflow"
+                "$ref": "#/components/schemas/Workflow-Input"
               },
               {
                 "type": "null"
@@ -3685,7 +3685,7 @@
           "model": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/Workflow"
+                "$ref": "#/components/schemas/Workflow-Input"
               },
               {
                 "type": "null"
@@ -3764,7 +3764,7 @@
           "model": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/Workflow"
+                "$ref": "#/components/schemas/Workflow-Input"
               },
               {
                 "type": "null"
@@ -3880,7 +3880,7 @@
           "model": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/Workflow"
+                "$ref": "#/components/schemas/Workflow-Input"
               },
               {
                 "type": "null"
@@ -4068,7 +4068,7 @@
           "model": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/Workflow"
+                "$ref": "#/components/schemas/Workflow-Input"
               },
               {
                 "type": "null"
@@ -4151,7 +4151,7 @@
           "model": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/Workflow"
+                "$ref": "#/components/schemas/Workflow-Input"
               },
               {
                 "type": "null"
@@ -4361,7 +4361,7 @@
           "model": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/Workflow"
+                "$ref": "#/components/schemas/Workflow-Input"
               },
               {
                 "type": "null"
@@ -4506,7 +4506,7 @@
           "model": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/Workflow"
+                "$ref": "#/components/schemas/Workflow-Input"
               },
               {
                 "type": "null"
@@ -4690,7 +4690,7 @@
         ],
         "title": "Version"
       },
-      "Workflow": {
+      "Workflow-Input": {
         "properties": {
           "schema_version": {
             "type": "string",
@@ -4724,6 +4724,15 @@
             "maxItems": 64,
             "minItems": 1,
             "title": "Transitions"
+          },
+          "initiators": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 16,
+            "title": "Initiators",
+            "default": []
           }
         },
         "additionalProperties": false,
@@ -4735,6 +4744,10 @@
           "transitions"
         ],
         "title": "Workflow"
+      },
+      "Workflow-Output": {
+        "additionalProperties": true,
+        "type": "object"
       }
     }
   }

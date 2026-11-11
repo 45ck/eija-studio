@@ -96,7 +96,7 @@ def test_wrong_inspected_app_is_not_selected(studio, monkeypatch, broken):
 
 
 def _runner_failure_mutant(studio, monkeypatch):
-    execution, _ = _clone(_execution_status, _RemoveGuard("observations != (0, False, 6)"))
+    execution, _ = _clone(_execution_status, _RemoveGuard("observations != (0, False, GENERATED_TESTS)"))
     status, _ = _clone(generated_receipt_status, globals_override={"_execution_status": execution})
     view, _ = _clone(app_build_view, globals_override={"generated_receipt_status": status})
     compiler, _ = _clone(compile_case, globals_override={"app_build_view": view})

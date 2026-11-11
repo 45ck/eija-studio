@@ -681,8 +681,10 @@
         position: [boundary.x, 10], size: [boundary.w, height], style: { ...font, verticalAlign: "top", fontStyle: 1, fontSize: 13,
           fillColor: "#fbfcfe", strokeColor: "#4a5568", selectable: false, movable: false } });
       const cells = {};
-      // Starting a record is a use case too; any fixture actor may start one, so it has no association.
-      useCaseGraph.insertVertex({ parent, id: "uc:create", value: `Create ${data ? data.record : "record"}`, position: [boundary.x + 60, TOP - 4],
+      // Starting a record is a use case too. Any actor may start one unless the model names its initiators;
+      // then each initiator is associated with it (issue #142, ADR-0231).
+      const starters = new Set(model.initiators || []);
+      const create = useCaseGraph.insertVertex({ parent, id: "uc:create", value: `Create ${data ? data.record : "record"}`, position: [boundary.x + 60, TOP - 4],
         size: [boundary.w - 120, 48], style: { ...font, shape: "ellipse", fillColor: "#ffffff", strokeColor: "#5b74d6", fontSize: 13 } });
       cases.forEach((t, i) => {
         cells[t.id] = useCaseGraph.insertVertex({ parent, id: "uc:" + t.id, value: changeMark(t.status) + t.action, position: [boundary.x + 60, rowY(i)],
@@ -700,6 +702,7 @@
           : useCaseGraph.insertVertex({ parent, id: "role:" + role, value: `«${kind}»\n${role}`, position: [left ? 40 : boundary.x + boundary.w + 70, y + 8],
             size: [136, 48], style: { ...font, shape: "rectangle", rounded: kind === "agent", whiteSpace: "wrap", fillColor: look.fill,
               strokeColor: look.stroke, fontSize: 12, ...changeLook(actorStatus[role], "actor") } });
+        if (starters.has(role)) useCaseGraph.insertEdge({ parent, source: actor, target: create, style: { strokeColor: "#4a5568", endArrow: "none" } });
         for (const link of shape.links.filter((l) => l.role === role)) {
           useCaseGraph.insertEdge({ parent, source: actor, target: cells[link.case], style: { strokeColor: "#4a5568", endArrow: "none", ...changeLook(link.status, "line") } });
         }
