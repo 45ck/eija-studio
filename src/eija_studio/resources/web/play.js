@@ -812,7 +812,10 @@
     button.disabled = true;
     const earlier = plan && plan.result && plan.result.legal && plan.result.accepted ? plan : null;
     try {
-      const result = await api("/api/play/plan", { case_id: caseId, model: baseModel, request: text, plan: earlier ? accepted() : null });
+      // Live AI is opt-in per request (ADR-0230): the box unticks after every send.
+      const live = $("chat-live"), consent = !$("chat-live-row").hidden && live.checked === true;
+      live.checked = false;
+      const result = await api("/api/play/plan", { case_id: caseId, model: baseModel, request: text, plan: earlier ? accepted() : null, consent });
       if (result.on_top && earlier && earlier === plan) { await addRound(result, text); return; }
       retire();
       plan = { ...result, steps: result.steps.map((step) => ({ ...step, author: "ai", checked: false, caught: false, round: 1, request: text })),
@@ -2910,6 +2913,10 @@
     const status = await api("/api/status");
     activeStatus = status;
     renderSourceStatus();
+    if (status.live_plan === true) {
+      $("chat-live-row").hidden = false;
+      $("chat-live-text").textContent = `Ask ${status.provider} for this request (sends it and the model to the provider)`;
+    }
     packInfo = status.pack;
     const dataDoc = await api("/api/play/data");
     data = savedData = dataDoc.data;

@@ -13,13 +13,17 @@ sources:
 - resource: repo://src/eija_studio/application/service_views.py
   title: application/service_views.py
   hash_method: ast-api-v1
-  sha256: e61b50e283200bc62161b2d63f300ba2a169680ddf8739fbfc5fb0fae6339195
-notes_baseline: 83f9db46bd368eaa37aca80e51017729c5e3e9c164ab1344875eb4c61c0f660d
+  sha256: e859c80d282f68922b88da75a43f8fac15fe3b0058ac64cae66dd413ca44826a
+notes_baseline: fbac326dd8812a5e71b46f3e8d81cec7ef7774901ccd1f42772921bde8e5cb0a
 verified:
 - by: process:playide-service-cohesion
   at: '2026-10-12T05:30:41Z'
   notes_sha256: 6bd945bb2661744dfe1b774608c855971a0b436bea21f026946dfc61868878aa
   sources_sha256: 83f9db46bd368eaa37aca80e51017729c5e3e9c164ab1344875eb4c61c0f660d
+- by: process:recommend-next-steps-g170dx
+  at: '2026-11-11T04:00:00Z'
+  notes_sha256: 0b8084be6fd6d42f0dd105985ffb5aa0d3b283b810c4a7923b5913f7846d4782
+  sources_sha256: fbac326dd8812a5e71b46f3e8d81cec7ef7774901ccd1f42772921bde8e5cb0a
 ---
 
 # application.service_views
@@ -65,6 +69,8 @@ This module groups Studio's read-only workbench, repository, model/history, revi
 
 Reads retain their transaction scopes. `active_app_build` loads the recorded association and originating applied case, remeasures the review packet outside that read transaction, then rereads the active record before reporting current freshness. `build_approval` requires an exact subject match. Neither method writes an approval or activates a model.
 
+`plan_check` reads the active model and previews a plan of typed steps on it; it is the dry run behind the agent tool of the same name (ADR-0230).
+
 Read-only means no case, baseline or audit mutation here. A view may inspect stored artifacts or call Studio's formal-evidence projection, which can seal observations in memory without persisting a decision. Repository text stays bounded to the existing configured read ports.
 
 Inherited methods now have source definitions in this module. Old Studio method pages remain deprecated history; neither inheritance nor a current code link proves model/implementation fidelity. Command bindings remain in Studio and behavioral checks must exercise the concrete service.
@@ -95,6 +101,7 @@ Inherited methods now have source definitions in this module. Old Studio method 
 * [application.service_views.StudioViews.formal_view](/symbols/application/service_views/StudioViews.formal_view.md) - `def formal_view(self, model: Workflow) -> dict[str, Any]` in `application/service_views`.
 * [application.service_views.StudioViews.history](/symbols/application/service_views/StudioViews.history.md) - Reconstructed semantic revisions and append-only command audit; never changes the case.
 * [application.service_views.StudioViews](/symbols/application/service_views/StudioViews.md) - Projection half of Studio; callbacks use the command service's case and review checks.
+* [application.service_views.StudioViews.plan_check](/symbols/application/service_views/StudioViews.plan_check.md) - Dry-run a whole plan of typed steps on the model in force, in order, as the chat's preview does (ADR-0230).
 * [application.service_views.StudioViews.repository_change](/symbols/application/service_views/StudioViews.repository_change.md) - Compare immutable source revisions; this grants no model or repository write authority.
 * [application.service_views.StudioViews.repository_change_file](/symbols/application/service_views/StudioViews.repository_change_file.md) - Read bounded historical text and syntax; live source identity remains separate.
 * [application.service_views.StudioViews.repository_freshness](/symbols/application/service_views/StudioViews.repository_freshness.md) - Observe captured byte identity; this grants no source conformance, evidence or owner authority.

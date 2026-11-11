@@ -110,6 +110,7 @@ Format: [MADR](https://adr.github.io/madr/); start new records from [template.md
 | [0227](0227-search-and-generative-engine-metadata.md) | Search and generative-engine metadata for the repository and docs | accepted |
 | [0228](0228-hosted-ci-on-pull-requests.md) | Hosted CI on pull requests, nightly full tier and auto-merge | accepted |
 | [0229](0229-kernel-graded-intent-evals-and-openai-provider.md) | Kernel-graded intent evals, and an OpenAI Responses API provider | accepted |
+| [0230](0230-opt-in-live-plan-mode-and-agent-plan-check.md) | Opt-in live plan mode, and a plan check for coding agents | accepted |
 <!-- adr-index:end -->
 
 ## Reserved numbers for capability lanes

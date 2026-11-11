@@ -63,4 +63,8 @@ _No curated notes yet._
 
 * [ADR-0020: Proposal providers for Codex, Claude Code, OpenCode, Gemini CLI and OpenRouter](/adrs/0020-multi-provider-agent-adapters.md) - People use different agent CLIs, often with subscription logins rather than API keys.
 * [ADR-0021: Agent-CLI providers run in one isolated, bounded, tree-killing base class](/adrs/0021-cli-provider-isolation-and-process-tree-kill.md) - Codex, Claude Code, OpenCode and Gemini CLI are agents with shell and file tools.
+
+## Referenced by
+
+* [ADR-0230: Opt-in live plan mode, and a plan check for coding agents](/adrs/0230-opt-in-live-plan-mode-and-agent-plan-check.md) - On 2026-10-08 the owner kept PlayIDE's chat offline and synthetic: a phrase reader plus the pack's proposal rules, never a model.
 <!-- okf:generated:end links -->

@@ -74,6 +74,7 @@ _No curated notes yet._
 ## Referenced by
 
 * [adapters.generated_apps](/modules/adapters/generated_apps.md) - Retain exact selected app bytes and run their existing generated unittest checker locally.
+* [adapters.live_plan_proposals](/modules/adapters/live_plan_proposals.md) - Live plan proposer for the PlayIDE chat (ADR-0230): a model reads the request, the pack decides the steps.
 * [application.describe_system](/modules/application/describe_system.md) - Describe your app (ADR-0216): a new system from one description, like starting an app in Lovable or Replit.
 * [application.edit_proposal](/modules/application/edit_proposal.md) - A read-only offline proposal over one captured candidate; owner edits keep their existing boundary.
 * [application.formal](/modules/application/formal.md) - Formal evidence in the application layer: seal what an adapter collected, and build the packet view.

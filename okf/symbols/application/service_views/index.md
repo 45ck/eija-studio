@@ -13,6 +13,7 @@
 * [application.service_views.StudioViews.export](StudioViews.export.md) - `def export(self, case_id: str) -> dict[str, Any]` in `application/service_views`.
 * [application.service_views.StudioViews.formal_view](StudioViews.formal_view.md) - `def formal_view(self, model: Workflow) -> dict[str, Any]` in `application/service_views`.
 * [application.service_views.StudioViews.history](StudioViews.history.md) - Reconstructed semantic revisions and append-only command audit; never changes the case.
+* [application.service_views.StudioViews.plan_check](StudioViews.plan_check.md) - Dry-run a whole plan of typed steps on the model in force, in order, as the chat's preview does (ADR-0230).
 * [application.service_views.StudioViews.repository_change](StudioViews.repository_change.md) - Compare immutable source revisions; this grants no model or repository write authority.
 * [application.service_views.StudioViews.repository_change_file](StudioViews.repository_change_file.md) - Read bounded historical text and syntax; live source identity remains separate.
 * [application.service_views.StudioViews.repository_freshness](StudioViews.repository_freshness.md) - Observe captured byte identity; this grants no source conformance, evidence or owner authority.
